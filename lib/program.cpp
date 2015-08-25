@@ -2,7 +2,8 @@
 
 using namespace std;
 
-WaveguideProgram::WaveguideProgram(const cl::Context & context, bool build_immediate)
+WaveguideProgram::WaveguideProgram(const cl::Context & context,
+                                   bool build_immediate)
         : Program(context, source, build_immediate) {
 }
 
@@ -11,18 +12,98 @@ const string WaveguideProgram::source{
     "#define DIAGNOSTIC\n"
 #endif
     R"(
-    #define SPEED_OF_SOUND (340.0f)
     #define NULL (0)
 
     typedef float2 Node;
 
+    typedef enum {
+        MIN_X, MAX_X, MIN_Y, MAX_Y, MIN_Z, MAX_Z, CORNER, INSIDE,
+    } Boundary;
+
+    Boundary boundary(int3 pos, int3 dim) {
+        bool min_x = pos.x == 0;
+        bool min_y = pos.y == 0;
+        bool min_z = pos.z == 0;
+        bool max_x = pos.x == dim.x - 1;
+        bool max_y = pos.y == dim.y - 1;
+        bool max_z = pos.z == dim.z - 1;
+
+        if (!min_x && !min_y && !min_z && !max_x && !max_y && !max_z)
+            return INSIDE;
+
+        if (!min_y && !min_z && !max_y && !max_z)
+            return min_x ? MIN_X : MAX_X;
+
+        if (!min_x && !min_z && !max_x && !max_z)
+            return min_y ? MIN_Y : MAX_Y;
+
+        if (!min_x && !min_y && !max_x && !max_y)
+            return min_z ? MIN_Z : MAX_Z;
+
+        return CORNER;
+    }
+
+    size_t get_index(int3 pos, int3 dim) {
+        return pos.x + pos.y * dim.x + pos.z * dim.x * dim.y;
+    }
+
     kernel void waveguide
-    (   int3 read_location
+    (   global Node * mesh
+    ,   float r
     )
     {
-        size_t x = get_global_id(0);
-        size_t y = get_global_id(1);
-        size_t z = get_global_id(2);
+        int3 pos = int3(get_global_id(0),
+                        get_global_id(1),
+                        get_global_id(2));
+        int3 dim = int3(get_global_size(0),
+                        get_global_size(1),
+                        get_global_size(2));
+
+        float temp = 0;
+
+        switch (boundary(pos, dim)) {
+            case INSIDE:
+                temp = (mesh[get_index(int3(pos.x + 1, pos.y, pos.z), dim)].y +
+                        mesh[get_index(int3(pos.x - 1, pos.y, pos.z), dim)].y +
+                        mesh[get_index(int3(pos.x, pos.y + 1, pos.z), dim)].y +
+                        mesh[get_index(int3(pos.x, pos.y - 1, pos.z), dim)].y +
+                        mesh[get_index(int3(pos.x, pos.y, pos.z + 1), dim)].y +
+                        mesh[get_index(int3(pos.x, pos.y, pos.z - 1), dim)].y) / 3;
+                break;
+
+            case MIN_X:
+                temp = (1 + r) * mesh[get_index(int3(1, pos.y, pos.z), dim)].y;
+                break;
+            case MAX_X:
+                temp = (1 + r) * mesh[get_index(int3(dim.x - 2, pos.y, pos.z), dim)].y;
+                break;
+            case MIN_Y:
+                temp = (1 + r) * mesh[get_index(int3(pos.x, 1, pos.z), dim)].y;
+                break;
+            case MAX_Y:
+                temp = (1 + r) * mesh[get_index(int3(pos.x, dim.y - 2, pos.z), dim)].y;
+                break;
+            case MIN_Z:
+                temp = (1 + r) * mesh[get_index(int3(pos.x, pos.y, 1), dim)].y;
+                break;
+            case MAX_Z:
+                temp = (1 + r) * mesh[get_index(int3(pos.x, pos.y, dim.z - 2), dim)].y;
+                break;
+
+            case CORNER:
+            default:
+                break;
+        }
+
+        size_t index = get_index(pos, dim);
+        temp -= mesh[index].x;
+
+        //  wait for all members to be done with reading from memory
+        barrier(CLK_GLOBAL_MEM_FENCE);
+
+        //  update memory
+        global Node * node = mesh + index;
+        node->x = node->y;
+        node->y = temp;
     }
     )"};
-

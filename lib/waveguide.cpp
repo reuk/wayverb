@@ -2,20 +2,40 @@
 
 using namespace std;
 
-Waveguide::Waveguide(const cl::Program & program, cl::CommandQueue & queue, int x, int y, int z)
+using Node = cl_float2;
+
+Waveguide::Waveguide(const cl::Program & program,
+                     cl::CommandQueue & queue,
+                     cl_int3 p)
         : program(program)
         , queue(queue)
-        , x(x)
-        , y(y)
-        , z(z)
-        , mesh(/*TODO*/) {
-
+        , p(p)
+        , mesh(program.getInfo<CL_PROGRAM_CONTEXT>(),
+               CL_MEM_READ_WRITE,
+               sizeof(Node) * p.s[0] * p.s[1] * p.s[2]) {
 }
 
-void Waveguide::iterate() const {
-    cl_int3 in {{10, 10, 10}};
+size_t Waveguide::get_index(cl_int3 pos) const {
+    return pos.s[0] + pos.s[1] * p.s[0] + pos.s[2] * p.s[0] * p.s[1];
+}
 
-    auto kernel = cl::make_kernel<cl_int3>(program, "waveguide");
+vector<float> Waveguide::run(cl_int3 e, cl_int3 o, int steps) {
+    auto kernel = cl::make_kernel<cl::Buffer, cl_float>(program, "waveguide");
 
-    kernel(cl::EnqueueArgs(queue, cl::NDRange(x, y, z)), in);
+    std::vector<Node> nodes(p.s[0] * p.s[1] * p.s[2], {{0, 0}});
+    nodes[get_index(e)].s[1] = 1;
+
+    cl::copy(queue, nodes.begin(), nodes.end(), mesh);
+
+    std::vector<float> ret(steps);
+
+    for (auto i = 0; i != steps; ++i) {
+        kernel(cl::EnqueueArgs(queue, cl::NDRange(p.s[0], p.s[1], p.s[2])),
+               mesh,
+               -1);
+        cl::copy(queue, mesh, nodes.begin(), nodes.end());
+        ret[i] = nodes[get_index(o)].s[1];
+    }
+
+    return ret;
 }
