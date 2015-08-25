@@ -28,17 +28,25 @@ const string WaveguideProgram::source{
         bool max_y = pos.y == dim.y - 1;
         bool max_z = pos.z == dim.z - 1;
 
-        if (!min_x && !min_y && !min_z && !max_x && !max_y && !max_z)
+        bool ux = min_x || max_x;
+        bool uy = min_y || max_y;
+        bool uz = min_z || max_z;
+
+        if (!ux && !uy && !uz) {
             return INSIDE;
+        }
 
-        if (!min_y && !min_z && !max_y && !max_z)
+        if (ux && !(uy || uz)) {
             return min_x ? MIN_X : MAX_X;
+        }
 
-        if (!min_x && !min_z && !max_x && !max_z)
+        if (uy && !(ux || uz)) {
             return min_y ? MIN_Y : MAX_Y;
+        }
 
-        if (!min_x && !min_y && !max_x && !max_y)
+        if (uz && !(ux || uy)) {
             return min_z ? MIN_Z : MAX_Z;
+        }
 
         return CORNER;
     }
@@ -97,6 +105,9 @@ const string WaveguideProgram::source{
 
         size_t index = get_index(pos, dim);
         temp -= mesh[index].x;
+
+        //  TODO
+        temp = index;
 
         //  wait for all members to be done with reading from memory
         barrier(CLK_GLOBAL_MEM_FENCE);

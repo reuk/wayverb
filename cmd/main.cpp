@@ -38,7 +38,7 @@ int main(int argc, char ** argv) {
         Logger::log(program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device));
 
         Waveguide waveguide(program, queue, {{100, 100, 100}});
-        auto results = waveguide.run({{20, 20, 20}}, {{99, 1, 1}}, 200);
+        auto results = waveguide.run({{20, 20, 20}}, {{5, 20, 20}}, 200);
 
         auto mag = accumulate(results.begin(),
                               results.end(),
