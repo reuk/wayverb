@@ -14,8 +14,6 @@ const string WaveguideProgram::source{
     R"(
     #define NULL (0)
 
-    typedef float2 Node;
-
     typedef enum {
         MIN_X, MAX_X, MIN_Y, MAX_Y, MIN_Z, MAX_Z, CORNER, INSIDE,
     } Boundary;
@@ -56,46 +54,48 @@ const string WaveguideProgram::source{
     }
 
     kernel void waveguide
-    (   global Node * mesh
+    (   global float * next
+    ,   global float * current
+    ,   global float * previous
     ,   float r
-    )
-    {
-        int3 pos = int3(get_global_id(0),
-                        get_global_id(1),
-                        get_global_id(2));
-        int3 dim = int3(get_global_size(0),
-                        get_global_size(1),
-                        get_global_size(2));
+    ) {
+        int3 pos = (int3)(get_global_id(0),
+                          get_global_id(1),
+                          get_global_id(2));
+        int3 dim = (int3)(get_global_size(0),
+                          get_global_size(1),
+                          get_global_size(2));
 
-        float temp = 0;
+        size_t index = get_index(pos, dim);
+        float temp = -previous[index];
 
         switch (boundary(pos, dim)) {
             case INSIDE:
-                temp = (mesh[get_index(int3(pos.x + 1, pos.y, pos.z), dim)].y +
-                        mesh[get_index(int3(pos.x - 1, pos.y, pos.z), dim)].y +
-                        mesh[get_index(int3(pos.x, pos.y + 1, pos.z), dim)].y +
-                        mesh[get_index(int3(pos.x, pos.y - 1, pos.z), dim)].y +
-                        mesh[get_index(int3(pos.x, pos.y, pos.z + 1), dim)].y +
-                        mesh[get_index(int3(pos.x, pos.y, pos.z - 1), dim)].y) / 3;
+                temp += (current[get_index(pos + (int3)(-1, 0, 0), dim)] +
+                         current[get_index(pos + (int3)(+1, 0, 0), dim)] +
+                         current[get_index(pos + (int3)(0, -1, 0), dim)] +
+                         current[get_index(pos + (int3)(0, +1, 0), dim)] +
+                         current[get_index(pos + (int3)(0, 0, -1), dim)] +
+                         current[get_index(pos + (int3)(0, 0, +1), dim)]) / 3;
                 break;
 
             case MIN_X:
-                temp = (1 + r) * mesh[get_index(int3(1, pos.y, pos.z), dim)].y;
+                temp += (1 + r) * current[get_index((int3)(1, pos.y, pos.z), dim)];
                 break;
             case MAX_X:
-                temp = (1 + r) * mesh[get_index(int3(dim.x - 2, pos.y, pos.z), dim)].y;
+                temp += (1 + r) * current[get_index((int3)(dim.x - 2, pos.y, pos.z), dim)];
                 break;
             case MIN_Y:
-                temp = (1 + r) * mesh[get_index(int3(pos.x, 1, pos.z), dim)].y;
+                temp += (1 + r) * current[get_index((int3)(pos.x, 1, pos.z), dim)];
                 break;
             case MAX_Y:
-                temp = (1 + r) * mesh[get_index(int3(pos.x, dim.y - 2, pos.z), dim)].y;
+                temp += (1 + r) * current[get_index((int3)(pos.x, dim.y - 2, pos.z), dim)];
                 break;
             case MIN_Z:
-                temp = (1 + r) * mesh[get_index(int3(pos.x, pos.y, 1), dim)].y;
+                temp += (1 + r) * current[get_index((int3)(pos.x, pos.y, 1), dim)];
                 break;
             case MAX_Z:
-                temp = (1 + r) * mesh[get_index(int3(pos.x, pos.y, dim.z - 2), dim)].y;
+                temp += (1 + r) * current[get_index((int3)(pos.x, pos.y, dim.z - 2), dim)];
                 break;
 
             case CORNER:
@@ -103,18 +103,6 @@ const string WaveguideProgram::source{
                 break;
         }
 
-        size_t index = get_index(pos, dim);
-        temp -= mesh[index].x;
-
-        //  TODO
-        temp = index;
-
-        //  wait for all members to be done with reading from memory
-        barrier(CLK_GLOBAL_MEM_FENCE);
-
-        //  update memory
-        global Node * node = mesh + index;
-        node->x = node->y;
-        node->y = temp;
+        next[index] = temp;
     }
     )"};

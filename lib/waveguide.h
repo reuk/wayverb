@@ -8,6 +8,7 @@ public:
     Waveguide(const cl::Program & program, cl::CommandQueue & queue, cl_int3 p);
 
     std::vector<float> run(cl_int3 excitation, cl_int3 read_head, int steps);
+
 private:
     const cl::Program & program;
     cl::CommandQueue & queue;
@@ -16,5 +17,7 @@ private:
 
     const cl_int3 p;
 
-    cl::Buffer mesh;
+    cl::Buffer next;
+    cl::Buffer current;
+    cl::Buffer previous;
 };
