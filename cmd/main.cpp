@@ -30,6 +30,20 @@ void write_sndfile(const string & fname,
     outfile.write(interleaved.data(), interleaved.size());
 }
 
+void print_device_info(const cl::Device & i) {
+    cout << i.getInfo<CL_DEVICE_NAME>() << endl;
+    cout << "available: " << i.getInfo<CL_DEVICE_AVAILABLE>() << endl;
+    cout << "compute units: " << i.getInfo<CL_DEVICE_MAX_COMPUTE_UNITS>()
+         << endl;
+    auto dim = i.getInfo<CL_DEVICE_MAX_WORK_ITEM_DIMENSIONS>();
+    cout << "work dimensions: " << dim << endl;
+    cout << "work items: ";
+    for (auto j = 0; j != dim; ++j)
+        cout << i.getInfo<CL_DEVICE_MAX_WORK_ITEM_SIZES>()[j] << ", ";
+    cout << endl;
+    cout << endl;
+};
+
 int main(int argc, char ** argv) {
     Logger::restart();
 
@@ -79,20 +93,6 @@ int main(int argc, char ** argv) {
 
     cout << "## all devices:" << endl;
 
-    auto print_device_info = [](const cl::Device & i) {
-        cout << i.getInfo<CL_DEVICE_NAME>() << endl;
-        cout << "available: " << i.getInfo<CL_DEVICE_AVAILABLE>() << endl;
-        cout << "compute units: " << i.getInfo<CL_DEVICE_MAX_COMPUTE_UNITS>()
-             << endl;
-        auto dim = i.getInfo<CL_DEVICE_MAX_WORK_ITEM_DIMENSIONS>();
-        cout << "work dimensions: " << dim << endl;
-        cout << "work items: ";
-        for (auto j = 0; j != dim; ++j)
-            cout << i.getInfo<CL_DEVICE_MAX_WORK_ITEM_SIZES>()[j] << ", ";
-        cout << endl;
-        cout << endl;
-    };
-
     for (auto & i : devices) {
         print_device_info(i);
     }
@@ -110,8 +110,8 @@ int main(int argc, char ** argv) {
         program.build({device});
         Logger::log(program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device));
 
-        Waveguide waveguide(program, queue, {{50, 50, 50}});
-        auto results = waveguide.run({{20, 20, 20}}, {{30, 30, 30}}, 5000);
+        Waveguide waveguide(program, queue, {{64, 64, 64}});
+        auto results = waveguide.run({{20, 20, 20}}, {{30, 30, 30}}, 4096);
 
         auto mag = accumulate(results.begin(),
                               results.end(),

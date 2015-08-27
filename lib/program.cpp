@@ -58,6 +58,8 @@ const string WaveguideProgram::source{
     ,   global float * current
     ,   global float * previous
     ,   float r
+    ,   unsigned long read
+    ,   global float * output
     ) {
         int3 pos = (int3)(get_global_id(0),
                           get_global_id(1),
@@ -79,6 +81,7 @@ const string WaveguideProgram::source{
                          current[get_index(pos + (int3)(0, 0, +1), dim)]) / 3;
                 break;
 
+                /*
             case MIN_X:
                 temp += (1 + r) * current[get_index((int3)(1, pos.y, pos.z), dim)];
                 break;
@@ -97,6 +100,7 @@ const string WaveguideProgram::source{
             case MAX_Z:
                 temp += (1 + r) * current[get_index((int3)(pos.x, pos.y, dim.z - 2), dim)];
                 break;
+                */
 
             case CORNER:
             default:
@@ -104,5 +108,7 @@ const string WaveguideProgram::source{
         }
 
         next[index] = temp;
+
+        if (index == read) *output = temp;
     }
     )"};
