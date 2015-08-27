@@ -31,8 +31,10 @@ Waveguide::size_type Waveguide::get_index(cl_int3 pos) const {
     return pos.x + pos.y * p.x + pos.z * p.x * p.y;
 }
 
-vector<cl_float> Waveguide::run(cl_int3 e, cl_int3 o, int steps) {
-    auto waveguide = cl::make_kernel<cl::Buffer,
+vector<cl_float> Waveguide::run(const vector<float> & input, cl_int3 e, cl_int3 o, int steps) {
+    auto waveguide = cl::make_kernel<cl_ulong,
+                                     cl_float,
+                                     cl::Buffer,
                                      cl::Buffer,
                                      cl::Buffer,
                                      cl_float,
@@ -42,22 +44,26 @@ vector<cl_float> Waveguide::run(cl_int3 e, cl_int3 o, int steps) {
     vector<cl_float> nodes(p.x * p.y * p.z, 0);
     cl::copy(queue, nodes.begin(), nodes.end(), next);
     cl::copy(queue, nodes.begin(), nodes.end(), current);
-
-    nodes[get_index(e)] = 1;
     cl::copy(queue, nodes.begin(), nodes.end(), previous);
 
-    vector<cl_float> ret(steps);
+    auto in_copy = input;
+    in_copy.resize(steps, 0);
+
+    vector<cl_float> ret(in_copy.size());
     vector<cl_float> out(1);
 
-    generate(ret.begin(),
-             ret.end(),
-             [this, &waveguide, &o, &out] {
+    transform(in_copy.begin(),
+             in_copy.end(),
+             ret.begin(),
+             [this, &waveguide, &e, &o, &out] (auto i) {
                  waveguide(cl::EnqueueArgs(queue,
                                            cl::NDRange(p.x, p.y, p.z)),
+                           get_index(e),
+                           i,
                            next,
                            current,
                            previous,
-                           0,
+                           -1,
                            get_index(o),
                            output);
 

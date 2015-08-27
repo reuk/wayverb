@@ -54,7 +54,9 @@ const string WaveguideProgram::source{
     }
 
     kernel void waveguide
-    (   global float * next
+    (   unsigned long write
+    ,   float value
+    ,   global float * next
     ,   global float * current
     ,   global float * previous
     ,   float r
@@ -69,7 +71,12 @@ const string WaveguideProgram::source{
                           get_global_size(2));
 
         size_t index = get_index(pos, dim);
-        float temp = -previous[index];
+
+        if (index == write) {
+            current[index] += value;
+        }
+
+        float temp = 0;
 
         switch (boundary(pos, dim)) {
             case INSIDE:
@@ -81,7 +88,6 @@ const string WaveguideProgram::source{
                          current[get_index(pos + (int3)(0, 0, +1), dim)]) / 3;
                 break;
 
-                /*
             case MIN_X:
                 temp += (1 + r) * current[get_index((int3)(1, pos.y, pos.z), dim)];
                 break;
@@ -100,15 +106,22 @@ const string WaveguideProgram::source{
             case MAX_Z:
                 temp += (1 + r) * current[get_index((int3)(pos.x, pos.y, dim.z - 2), dim)];
                 break;
-                */
 
             case CORNER:
             default:
                 break;
         }
 
+        temp -= previous[index];
+
+        //  TODO probably not right way to damp?
+        const float DAMPING_FACTOR = 0.99;
+        temp *= DAMPING_FACTOR;
+
         next[index] = temp;
 
-        if (index == read) *output = temp;
+        if (index == read) {
+            *output = temp;
+        }
     }
     )"};
