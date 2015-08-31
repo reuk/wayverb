@@ -11,7 +11,10 @@ public:
 
     Waveguide(const cl::Program & program, cl::CommandQueue & queue, cl_int3 p);
 
-    std::vector<cl_float> run(const std::vector<float> & input, cl_int3 excitation, cl_int3 read_head, int steps);
+    std::vector<cl_float> run(const std::vector<float> & input,
+                              cl_int3 excitation,
+                              cl_int3 read_head,
+                              int steps);
 
 private:
     const cl::Program & program;

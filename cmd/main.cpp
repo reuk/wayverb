@@ -15,7 +15,7 @@
 
 using namespace std;
 
-template<typename T>
+template <typename T>
 auto max_mag(const T & t) {
     return accumulate(t.begin(),
                       t.end(),
@@ -23,20 +23,18 @@ auto max_mag(const T & t) {
                       [](auto a, auto b) { return max(a, fabs(b)); });
 }
 
-template<typename T>
+template <typename T>
 void normalize(T & t) {
     auto mag = max_mag(t);
     if (mag != 0) {
-        transform(t.begin(),
-                  t.end(),
-                  t.begin(),
-                  [mag](auto i) { return i / mag; });
+        transform(
+            t.begin(), t.end(), t.begin(), [mag](auto i) { return i / mag; });
     }
 }
 
 /// sinc t = sin (pi . t) / pi . t
 template <typename T>
-T sinc (const T & t) {
+T sinc(const T & t) {
     T pit = M_PI * t;
     return sin(pit) / pit;
 }
@@ -44,53 +42,46 @@ T sinc (const T & t) {
 /// Generate a convolution kernel for a lowpass sinc filter (NO WINDOWING!).
 template <typename T = float>
 vector<T> sinc_kernel(double cutoff, unsigned long length) {
-    if (! (length % 2))
-        throw runtime_error ("Length of sinc filter kernel must be odd.");
+    if (!(length % 2))
+        throw runtime_error("Length of sinc filter kernel must be odd.");
 
-    vector <T> ret (length);
-    for (auto i = 0; i != length; ++i)
-    {
+    vector<T> ret(length);
+    for (auto i = 0; i != length; ++i) {
         if (i == ((length - 1) / 2))
-            ret [i] = 1;
+            ret[i] = 1;
         else
-            ret [i] = sinc (2 * cutoff * (i - (length - 1) / 2.0));
+            ret[i] = sinc(2 * cutoff * (i - (length - 1) / 2.0));
     }
     return ret;
 }
 
 /// Generate a blackman window of a specific length.
 template <typename T = float>
-vector <T> blackman (unsigned long length) {
+vector<T> blackman(unsigned long length) {
     const auto a0 = 7938.0 / 18608.0;
     const auto a1 = 9240.0 / 18608.0;
     const auto a2 = 1430.0 / 18608.0;
 
-    vector <T> ret (length);
-    for (auto i = 0; i != length; ++i)
-    {
+    vector<T> ret(length);
+    for (auto i = 0; i != length; ++i) {
         const auto offset = i / (length - 1.0);
-        ret [i] =
-        (   a0
-        -   a1 * cos (2 * M_PI * offset)
-        +   a2 * cos (4 * M_PI * offset)
-        );
+        ret[i] =
+            (a0 - a1 * cos(2 * M_PI * offset) + a2 * cos(4 * M_PI * offset));
     }
     return ret;
 }
 
 /// Generate a windowed, normalized low-pass sinc filter kernel of a specific
 /// length.
-template<typename T = float>
-vector <T> lopass_kernel(float sr, float cutoff, unsigned long length) {
-    auto window = blackman <T> (length);
-    auto kernel = sinc_kernel <T> (cutoff / sr, length);
-    transform
-    (   begin (window)
-    ,   end (window)
-    ,   begin (kernel)
-    ,   begin (kernel)
-    ,   [] (auto i, auto j) { return i * j; }
-    );
+template <typename T = float>
+vector<T> lopass_kernel(float sr, float cutoff, unsigned long length) {
+    auto window = blackman<T>(length);
+    auto kernel = sinc_kernel<T>(cutoff / sr, length);
+    transform(begin(window),
+              end(window),
+              begin(kernel),
+              begin(kernel),
+              [](auto i, auto j) { return i * j; });
     normalize(kernel);
     return kernel;
 }
@@ -111,18 +102,49 @@ void write_sndfile(const string & fname,
 }
 
 void print_device_info(const cl::Device & i) {
-    cout << i.getInfo<CL_DEVICE_NAME>() << endl;
-    cout << "available: " << i.getInfo<CL_DEVICE_AVAILABLE>() << endl;
-    cout << "compute units: " << i.getInfo<CL_DEVICE_MAX_COMPUTE_UNITS>()
-         << endl;
-    auto dim = i.getInfo<CL_DEVICE_MAX_WORK_ITEM_DIMENSIONS>();
-    cout << "work dimensions: " << dim << endl;
-    cout << "work items: ";
-    for (auto j = 0; j != dim; ++j)
-        cout << i.getInfo<CL_DEVICE_MAX_WORK_ITEM_SIZES>()[j] << ", ";
-    cout << endl;
-    cout << endl;
+    Logger::log(i.getInfo<CL_DEVICE_NAME>());
+    Logger::log("available: ", i.getInfo<CL_DEVICE_AVAILABLE>());
 };
+
+cl::Context get_context() {
+    vector<cl::Platform> platform;
+    cl::Platform::get(&platform);
+
+    cl_context_properties cps[3] = {
+        CL_CONTEXT_PLATFORM, (cl_context_properties)(platform[0])(), 0,
+    };
+
+    return cl::Context(CL_DEVICE_TYPE_GPU, cps);
+}
+
+cl::Device get_device(const cl::Context & context) {
+    auto devices = context.getInfo<CL_CONTEXT_DEVICES>();
+
+    Logger::log("## all devices:");
+
+    for (auto & i : devices) {
+        print_device_info(i);
+    }
+
+    auto device = devices.back();
+
+    Logger::log("## used device:");
+    print_device_info(device);
+
+    return device;
+}
+
+WaveguideProgram get_program(const cl::Context & context,
+                             const cl::Device & device) {
+    WaveguideProgram program(context);
+    try {
+        program.build({device});
+    } catch (const cl::Error & e) {
+        Logger::log(program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device));
+        throw;
+    }
+    return program;
+}
 
 int main(int argc, char ** argv) {
     Logger::restart();
@@ -160,40 +182,19 @@ int main(int argc, char ** argv) {
         return EXIT_FAILURE;
     }
 
-    vector<cl::Platform> platform;
-    cl::Platform::get(&platform);
-
-    cl_context_properties cps[3] = {
-        CL_CONTEXT_PLATFORM, (cl_context_properties)(platform[0])(), 0,
-    };
-
-    cl::Context context(CL_DEVICE_TYPE_GPU, cps);
-
-    auto devices = context.getInfo<CL_CONTEXT_DEVICES>();
-
-    cout << "## all devices:" << endl;
-
-    for (auto & i : devices) {
-        print_device_info(i);
-    }
-
-    auto device = devices.back();
-
-    cout << "## used device:" << endl;
-    print_device_info(device);
-
+    auto context = get_context();
+    auto device = get_device(context);
     cl::CommandQueue queue(context, device);
-
     WaveguideProgram program(context, false);
 
     try {
-        program.build({device});
-        Logger::log(program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device));
+        auto program = get_program(context, device);
 
         auto input = lopass_kernel(sr, sr / 4, 255);
 
         Waveguide waveguide(program, queue, {{128, 64, 64}});
-        auto results = waveguide.run(input, {{20, 20, 20}}, {{35, 40, 45}}, 4096);
+        auto results =
+            waveguide.run(input, {{20, 20, 20}}, {{35, 40, 45}}, 4096);
 
         normalize(results);
 

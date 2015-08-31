@@ -31,7 +31,10 @@ Waveguide::size_type Waveguide::get_index(cl_int3 pos) const {
     return pos.x + pos.y * p.x + pos.z * p.x * p.y;
 }
 
-vector<cl_float> Waveguide::run(const vector<float> & input, cl_int3 e, cl_int3 o, int steps) {
+vector<cl_float> Waveguide::run(const vector<float> & input,
+                                cl_int3 e,
+                                cl_int3 o,
+                                int steps) {
     auto waveguide = cl::make_kernel<cl_ulong,
                                      cl_float,
                                      cl::Buffer,
@@ -53,29 +56,28 @@ vector<cl_float> Waveguide::run(const vector<float> & input, cl_int3 e, cl_int3 
     vector<cl_float> out(1);
 
     transform(in_copy.begin(),
-             in_copy.end(),
-             ret.begin(),
-             [this, &waveguide, &e, &o, &out] (auto i) {
-                 waveguide(cl::EnqueueArgs(queue,
-                                           cl::NDRange(p.x, p.y, p.z)),
-                           get_index(e),
-                           i,
-                           next,
-                           current,
-                           previous,
-                           -1,
-                           get_index(o),
-                           output);
+              in_copy.end(),
+              ret.begin(),
+              [this, &waveguide, &e, &o, &out](auto i) {
+                  waveguide(cl::EnqueueArgs(queue, cl::NDRange(p.x, p.y, p.z)),
+                            get_index(e),
+                            i,
+                            next,
+                            current,
+                            previous,
+                            -1,
+                            get_index(o),
+                            output);
 
-                 cl::copy(queue, output, out.begin(), out.end());
+                  cl::copy(queue, output, out.begin(), out.end());
 
-                 auto & temp = previous;
-                 previous = current;
-                 current = next;
-                 next = temp;
+                  auto & temp = previous;
+                  previous = current;
+                  current = next;
+                  next = temp;
 
-                 return out.front();
-             });
+                  return out.front();
+              });
 
     return ret;
 }

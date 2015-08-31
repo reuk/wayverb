@@ -5,7 +5,7 @@
 
 class WaveguideProgram : public cl::Program {
 public:
-    WaveguideProgram(const cl::Context & context, bool build_immediate);
+    WaveguideProgram(const cl::Context & context, bool build_immediate = false);
 
 private:
     static const std::string source;
