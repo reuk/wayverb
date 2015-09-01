@@ -1,6 +1,7 @@
 #include "waveguide.h"
 
 #include <iostream>
+#include <algorithm>
 
 using namespace std;
 
@@ -60,13 +61,13 @@ vector<cl_float> Waveguide::run(const vector<float> & input,
               ret.begin(),
               [this, &waveguide, &e, &o, &out](auto i) {
                   waveguide(cl::EnqueueArgs(queue, cl::NDRange(p.x, p.y, p.z)),
-                            get_index(e),
+                            this->get_index(e),
                             i,
                             next,
                             current,
                             previous,
                             -1,
-                            get_index(o),
+                            this->get_index(o),
                             output);
 
                   cl::copy(queue, output, out.begin(), out.end());

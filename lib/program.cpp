@@ -12,8 +12,6 @@ const string WaveguideProgram::source{
     "#define DIAGNOSTIC\n"
 #endif
     R"(
-    #define NULL (0)
-
     typedef enum {
         MIN_X, MAX_X, MIN_Y, MAX_Y, MIN_Z, MAX_Z, CORNER, INSIDE,
     } Boundary;
