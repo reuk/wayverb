@@ -1,6 +1,7 @@
 #include "waveguide.h"
 #include "logger.h"
 #include "program.h"
+#include "tetrahedral.h"
 
 #define __CL_ENABLE_EXCEPTIONS
 #include "cl.hpp"
@@ -148,6 +149,27 @@ WaveguideProgram get_program(const cl::Context & context,
 
 int main(int argc, char ** argv) {
     Logger::restart();
+
+    auto mesh =
+        tetrahedral_mesh(CuboidBoundary(Vec3f(-1), Vec3f(1)), Vec3f(0), 0.2);
+
+    for (const auto & i : mesh) {
+        Logger::log(i.position.x,
+                    ", ",
+                    i.position.y,
+                    ", ",
+                    i.position.z,
+                    ": ",
+                    i.ports[0],
+                    ", ",
+                    i.ports[1],
+                    ", ",
+                    i.ports[2],
+                    ", ",
+                    i.ports[3]);
+    }
+
+    return 0;
 
     auto speed_of_sound = 340.0;
     auto divisions = 0.2;

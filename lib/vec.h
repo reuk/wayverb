@@ -7,7 +7,7 @@ template <typename T>
 struct Vec3 {
     using value_type = T;
 
-    Vec3(T t)
+    Vec3(T t = T())
             : x(t)
             , y(t)
             , z(t) {
@@ -40,6 +40,10 @@ struct Vec3 {
     auto binop(const Vec3 & rhs, const U & u = U()) const {
         return zip(rhs).map(
             [&u](const auto & i) { return u(std::get<0>(i), std::get<1>(i)); });
+    }
+
+    Vec3<bool> operator==(const Vec3<T> & rhs) const {
+        return binop<std::equal_to<T>>(rhs);
     }
 
     Vec3<bool> operator<(const Vec3<T> & rhs) const {
