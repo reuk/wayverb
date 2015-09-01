@@ -47,7 +47,7 @@ vector<T> sinc_kernel(double cutoff, unsigned long length) {
         throw runtime_error("Length of sinc filter kernel must be odd.");
 
     vector<T> ret(length);
-    for (auto i = 0; i != length; ++i) {
+    for (auto i = 0u; i != length; ++i) {
         if (i == ((length - 1) / 2))
             ret[i] = 1;
         else
@@ -64,7 +64,7 @@ vector<T> blackman(unsigned long length) {
     const auto a2 = 1430.0 / 18608.0;
 
     vector<T> ret(length);
-    for (auto i = 0; i != length; ++i) {
+    for (auto i = 0u; i != length; ++i) {
         const auto offset = i / (length - 1.0);
         ret[i] =
             (a0 - a1 * cos(2 * M_PI * offset) + a2 * cos(4 * M_PI * offset));
@@ -94,8 +94,8 @@ void write_sndfile(const string & fname,
                    unsigned long ftype) {
     vector<float> interleaved(outdata.size() * outdata[0].size());
 
-    for (auto i = 0; i != outdata.size(); ++i)
-        for (auto j = 0; j != outdata[i].size(); ++j)
+    for (auto i = 0u; i != outdata.size(); ++i)
+        for (auto j = 0u; j != outdata[i].size(); ++j)
             interleaved[j * outdata.size() + i] = outdata[i][j];
 
     SndfileHandle outfile(fname, SFM_WRITE, ftype | bd, outdata.size(), sr);
@@ -149,9 +149,6 @@ WaveguideProgram get_program(const cl::Context & context,
 
 int main(int argc, char ** argv) {
     Logger::restart();
-
-    auto mesh =
-        tetrahedral_mesh(CuboidBoundary(Vec3f(-1), Vec3f(1)), Vec3f(0), 0.2);
 
     for (const auto & i : mesh) {
         Logger::log(i.position.x,

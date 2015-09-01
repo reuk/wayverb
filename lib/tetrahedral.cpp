@@ -13,6 +13,16 @@ struct WorkingNode {
     }
     Vec3f position;
     std::vector<int> ports;
+
+    operator Node() const {
+        Node ret;
+        for (auto j = 0; j != sizeof(Node::ports) / sizeof(cl_int); ++j)
+          ret.ports[j] = -1;
+        for (auto j = 0u; j != ports.size(); ++j)
+          ret.ports[j] = ports[j];
+        ret.position = {{position.x, position.y, position.z}};
+        return ret;
+    }
 };
 
 CuboidBoundary::CuboidBoundary(Vec3f c0, Vec3f c1)
@@ -20,8 +30,12 @@ CuboidBoundary::CuboidBoundary(Vec3f c0, Vec3f c1)
         , c1(c1) {
 }
 
+bool is_inside(const Vec3f & lower, const Vec3f & in, const Vec3f & upper) {
+    return (lower < in).all() && (in < upper).all();
+}
+
 bool CuboidBoundary::inside(const Vec3f & v) const {
-    return (c0 < v).all() && (v < c1).all();
+    return is_inside(c0, v, c1);
 }
 
 vector<Vec3f> get_node_positions(bool inverted) {
@@ -36,7 +50,7 @@ vector<Vec3f> get_node_positions(bool inverted) {
         transform(ret.begin(),
                   ret.end(),
                   ret.begin(),
-                  [](const auto & i) { return i * Vec3f(-1, -1, 0); });
+                  [](const auto & i) { return i * Vec3f(1, -1, -1); });
     }
 
     return ret;
@@ -57,8 +71,10 @@ void build_mesh(vector<WorkingNode> & ret,
     transform(next_positions.begin(),
               next_positions.end(),
               next_nodes.begin(),
-              [spacing, &parent](const auto & i) {
-                  return WorkingNode((i * spacing) + parent.position);
+              [spacing, &parent, parent_index](const auto & i) {
+                  WorkingNode ret((i * spacing) + parent.position);
+                  ret.ports.push_back(parent_index);
+                  return ret;
               });
 
     //  filter list on boundary.inside()
@@ -71,11 +87,10 @@ void build_mesh(vector<WorkingNode> & ret,
 
     //  filter list on colliding Nodes
     //  TODO do this by recursive search back through parent nodes instead
-    auto epsilon = 0.00001;
+    auto epsilon = spacing * 0.001;
     for (auto & i : ret) {
         for (auto j = next_nodes.begin(); j != next_nodes.end();) {
-            if ((j->position - epsilon < i.position).all() &&
-                (i.position < j->position + epsilon).all()) {
+            if (is_inside(j->position - epsilon, i.position, j->position + epsilon)) {
                 i.ports.push_back(parent_index);
                 j = next_nodes.erase(j);
             } else {
@@ -89,11 +104,6 @@ void build_mesh(vector<WorkingNode> & ret,
     ret.insert(ret.end(), next_nodes.begin(), next_nodes.end());
     auto end_ind = ret.size();
 
-    //  update parent with indices of new nodes in ret
-    for (auto i = begin_ind; i != end_ind; ++i) {
-        ret[parent_index].ports.push_back(i);
-    }
-
     for (auto i = begin_ind; i != end_ind; ++i) {
         build_mesh(ret, boundary, i, spacing, !inverted);
     }
@@ -105,22 +115,12 @@ vector<Node> tetrahedral_mesh(const Boundary & boundary,
     vector<WorkingNode> temp{WorkingNode(start)};
     build_mesh(temp, boundary, 0, spacing);
 
+    //  implicitly calls the Node cast operator
     vector<Node> ret(temp.size());
     transform(temp.begin(),
               temp.end(),
               ret.begin(),
-              [](const auto & i) {
-                  Node ret;
-                  for (auto j = 0; j != sizeof(Node::ports) / sizeof(cl_int);
-                       ++j) {
-                      ret.ports[j] = -1;
-                  }
-                  for (auto j = 0; j != i.ports.size(); ++j) {
-                      ret.ports[j] = i.ports[j];
-                  }
-                  ret.position = {{i.position.x, i.position.y, i.position.z}};
-                  return ret;
-              });
+              [](const auto & i) { return i; });
 
     return ret;
 }
