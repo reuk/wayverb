@@ -4,8 +4,17 @@
 #include <functional>
 
 template <typename T>
+struct Vec3;
+
+using Vec3f = Vec3<float>;
+using Vec3d = Vec3<double>;
+using Vec3i = Vec3<int>;
+using Vec3b = Vec3<bool>;
+
+template <typename T>
 struct Vec3 {
     using value_type = T;
+    using Vec3t = Vec3<T>;
 
     Vec3(T t = T())
             : x(t)
@@ -42,39 +51,39 @@ struct Vec3 {
             [&u](const auto & i) { return u(std::get<0>(i), std::get<1>(i)); });
     }
 
-    Vec3<bool> operator==(const Vec3<T> & rhs) const {
+    Vec3b operator==(const Vec3t & rhs) const {
         return binop<std::equal_to<T>>(rhs);
     }
 
-    Vec3<bool> operator<(const Vec3<T> & rhs) const {
+    Vec3b operator<(const Vec3t & rhs) const {
         return binop<std::less<T>>(rhs);
     }
 
-    Vec3<bool> operator>(const Vec3<T> & rhs) const {
+    Vec3b operator>(const Vec3t & rhs) const {
         return binop<std::greater<T>>(rhs);
     }
 
-    Vec3<bool> operator&&(const Vec3<T> & rhs) const {
+    Vec3b operator&&(const Vec3t & rhs) const {
         return binop<std::logical_and<T>>(rhs);
     }
 
-    Vec3<bool> operator||(const Vec3<T> & rhs) const {
+    Vec3b operator||(const Vec3t & rhs) const {
         return binop<std::logical_or<T>>(rhs);
     }
 
-    Vec3<T> operator+(const Vec3<T> & rhs) const {
+    Vec3t operator+(const Vec3t & rhs) const {
         return binop<std::plus<T>>(rhs);
     }
 
-    Vec3<T> operator-(const Vec3<T> & rhs) const {
+    Vec3t operator-(const Vec3t & rhs) const {
         return binop<std::minus<T>>(rhs);
     }
 
-    Vec3<T> operator*(const Vec3<T> & rhs) const {
+    Vec3t operator*(const Vec3t & rhs) const {
         return binop<std::multiplies<T>>(rhs);
     }
 
-    Vec3<T> operator/(const Vec3<T> & rhs) const {
+    Vec3t operator/(const Vec3t & rhs) const {
         return binop<std::divides<T>>(rhs);
     }
 
@@ -86,10 +95,11 @@ struct Vec3 {
         return fold<std::logical_or<T>>(false);
     }
 
-    T x, y, z;
-};
+    union {
+        struct {
+            T x, y, z;
+        };
+        T s[3];
+    };
 
-using Vec3f = Vec3<float>;
-using Vec3d = Vec3<double>;
-using Vec3i = Vec3<int>;
-using Vec3b = Vec3<bool>;
+};
