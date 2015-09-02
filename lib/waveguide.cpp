@@ -5,7 +5,7 @@
 
 using namespace std;
 
-Waveguide::Waveguide(const cl::Program & program,
+RectangularWaveguide::RectangularWaveguide(const RectangularProgram & program,
                      cl::CommandQueue & queue,
                      cl_int3 p)
         : program(program)
@@ -28,11 +28,11 @@ Waveguide::Waveguide(const cl::Program & program,
                  sizeof(cl_float)) {
 }
 
-Waveguide::size_type Waveguide::get_index(cl_int3 pos) const {
+RectangularWaveguide::size_type RectangularWaveguide::get_index(cl_int3 pos) const {
     return pos.x + pos.y * p.x + pos.z * p.x * p.y;
 }
 
-vector<cl_float> Waveguide::run(const vector<float> & input,
+vector<cl_float> RectangularWaveguide::run(const vector<float> & input,
                                 cl_int3 e,
                                 cl_int3 o,
                                 int steps) {
@@ -80,5 +80,36 @@ vector<cl_float> Waveguide::run(const vector<float> & input,
                   return out.front();
               });
 
+    return ret;
+}
+
+TetrahedralWaveguide::TetrahedralWaveguide(const TetrahedralProgram & program,
+                     cl::CommandQueue & queue,
+                     const vector<Node> & nodes)
+        : program(program)
+        , queue(queue)
+        , nodes(nodes)
+        , storage({{cl::Buffer(program.getInfo<CL_PROGRAM_CONTEXT>(),
+                               CL_MEM_READ_WRITE,
+                               sizeof(cl_float) * nodes.size()),
+                    cl::Buffer(program.getInfo<CL_PROGRAM_CONTEXT>(),
+                               CL_MEM_READ_WRITE,
+                               sizeof(cl_float) * nodes.size()),
+                    cl::Buffer(program.getInfo<CL_PROGRAM_CONTEXT>(),
+                               CL_MEM_READ_WRITE,
+                               sizeof(cl_float) * nodes.size())}})
+        , previous(storage[0])
+        , current(storage[1])
+        , next(storage[2])
+        , output(program.getInfo<CL_PROGRAM_CONTEXT>(),
+                 CL_MEM_READ_WRITE,
+                 sizeof(cl_float)) {
+}
+
+vector<cl_float> TetrahedralWaveguide::run(const std::vector<float> & input,
+                                           size_type excitation,
+                                           size_type read_head,
+                                           int steps) {
+    vector<cl_float> ret;
     return ret;
 }

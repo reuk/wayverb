@@ -1,13 +1,13 @@
-#include "program.h"
+#include "rectangular_program.h"
 
 using namespace std;
 
-WaveguideProgram::WaveguideProgram(const cl::Context & context,
+RectangularProgram::RectangularProgram(const cl::Context & context,
                                    bool build_immediate)
         : Program(context, source, build_immediate) {
 }
 
-const string WaveguideProgram::source{
+const string RectangularProgram::source{
 #ifdef DIAGNOSTIC
     "#define DIAGNOSTIC\n"
 #endif
@@ -71,7 +71,7 @@ const string WaveguideProgram::source{
         size_t index = get_index(pos, dim);
 
         if (index == write) {
-            current[index] += value;
+            next[index] += value;
         }
 
         float temp = 0;
@@ -113,7 +113,7 @@ const string WaveguideProgram::source{
         temp -= previous[index];
 
         //  TODO probably not right way to damp?
-        const float DAMPING_FACTOR = 0.99;
+        const float DAMPING_FACTOR = 0.995;
         temp *= DAMPING_FACTOR;
 
         next[index] = temp;

@@ -1,6 +1,7 @@
 #include "waveguide.h"
 #include "logger.h"
-#include "program.h"
+#include "rectangular_program.h"
+#include "tetrahedral_program.h"
 #include "tetrahedral.h"
 
 #define __CL_ENABLE_EXCEPTIONS
@@ -135,13 +136,14 @@ cl::Device get_device(const cl::Context & context) {
     return device;
 }
 
-WaveguideProgram get_program(const cl::Context & context,
-                             const cl::Device & device) {
-    WaveguideProgram program(context);
+template <typename T>
+T get_program(const cl::Context & context,
+              const cl::Device & device) {
+    T program(context);
     try {
         program.build({device});
     } catch (const cl::Error & e) {
-        Logger::log(program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device));
+        Logger::log(program.template getBuildInfo<CL_PROGRAM_BUILD_LOG>(device));
         throw;
     }
     return program;
@@ -186,14 +188,14 @@ int main(int argc, char ** argv) {
     auto context = get_context();
     auto device = get_device(context);
     cl::CommandQueue queue(context, device);
-    WaveguideProgram program(context, false);
 
     try {
-        auto program = get_program(context, device);
+        auto rect_program = get_program<RectangularProgram>(context, device);
+        auto tetr_program = get_program<TetrahedralProgram>(context, device);
 
         auto input = lopass_kernel(sr, sr / 4, 255);
 
-        Waveguide waveguide(program, queue, {{128, 64, 64}});
+        Waveguide waveguide(rect_program, queue, {{128, 64, 64}});
         auto results =
             waveguide.run(input, {{20, 20, 20}}, {{35, 40, 45}}, 4096);
 
