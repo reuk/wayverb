@@ -71,8 +71,10 @@ const string RectangularProgram::source{
         size_t index = get_index(pos, dim);
 
         if (index == write) {
-            next[index] += value;
+            current[index] += value;
         }
+
+        barrier(CLK_GLOBAL_MEM_FENCE);
 
         float temp = 0;
 

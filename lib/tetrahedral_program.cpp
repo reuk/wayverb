@@ -13,8 +13,10 @@ const string TetrahedralProgram::source{
 #endif
     R"(
 
+    #define PORTS (4)
+
     typedef struct {
-        int ports[4];
+        int ports[PORTS];
         float3 position;
     } Node;
 
@@ -32,28 +34,24 @@ const string TetrahedralProgram::source{
         global Node * node = nodes + index;
 
         if (index == write) {
-            next[index] += value;
+            current[index] += value;
         }
 
+        barrier(CLK_GLOBAL_MEM_FENCE);
+
         float temp = 0;
-
-        const size_t max_ports = sizeof(Node::ports) / sizeof(int);
-        for (int i = 0; i != max_ports; ++i) {
+        for (int i = 0; i != PORTS; ++i) {
             int port_index = node->ports[i];
-
             if (port_index >= 0) {
-                global Node * port = nodes + port_index;
-
                 temp += current[port_index] / (1 + previous[port_index]);
             }
         }
 
         temp *= 0.5;
 
-        /*
+        //  TODO probably not right way to damp?
         const float DAMPING_FACTOR = 0.995;
         temp *= DAMPING_FACTOR;
-        */
 
         next[index] = temp;
 

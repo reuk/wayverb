@@ -189,7 +189,7 @@ int main(int argc, char ** argv) {
     Logger::restart();
 
     auto speed_of_sound = 340.0;
-    auto divisions = 0.2;
+    auto divisions = 0.1;
     auto sr = (speed_of_sound * sqrt(3)) / divisions;
 
     string fname{"sndfile.aiff"};
@@ -210,19 +210,19 @@ int main(int argc, char ** argv) {
     cl::CommandQueue queue(context, device);
 
     try {
-        //auto input = lopass_kernel(sr, sr / 4, 255);
-        vector<float> input = {1};
+        auto input = lopass_kernel(sr, sr / 4, 255);
 
         vector<cl_float> results;
 
-        auto type = RenderType::RECTANGULAR;
+        auto type = RenderType::TETRAHEDRAL;
         switch (type) {
             case RenderType::TETRAHEDRAL:
                 {
                 auto tetr_program = get_program<TetrahedralProgram>(context, device);
                 auto mesh = tetrahedral_mesh(SphereBoundary(0, 2), 0, divisions);
+                cout << "created mesh with " << mesh.size() << " nodes" << endl;
                 TetrahedralWaveguide t_waveguide(tetr_program, queue, mesh);
-                results = t_waveguide.run(input, 0, 1, 4096);
+                results = t_waveguide.run(input, 0, 1000, 4096);
                 break;
                 }
 

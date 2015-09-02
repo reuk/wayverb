@@ -91,7 +91,7 @@ TetrahedralWaveguide::TetrahedralWaveguide(const TetrahedralProgram & program,
         , node_buffer(program.getInfo<CL_PROGRAM_CONTEXT>(),
                       nodes.begin(),
                       nodes.end(),
-                      false)
+                      true, false)
         , storage({{cl::Buffer(program.getInfo<CL_PROGRAM_CONTEXT>(),
                                CL_MEM_READ_WRITE,
                                sizeof(cl_float) * node_size),
