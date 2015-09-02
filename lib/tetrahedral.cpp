@@ -25,17 +25,26 @@ struct WorkingNode {
     }
 };
 
-CuboidBoundary::CuboidBoundary(Vec3f c0, Vec3f c1)
-        : c0(c0)
-        , c1(c1) {
-}
-
 bool is_inside(const Vec3f & lower, const Vec3f & in, const Vec3f & upper) {
     return (lower < in).all() && (in < upper).all();
 }
 
+CuboidBoundary::CuboidBoundary(const Vec3f & c0, const Vec3f & c1)
+        : c0(c0)
+        , c1(c1) {
+}
+
 bool CuboidBoundary::inside(const Vec3f & v) const {
     return is_inside(c0, v, c1);
+}
+
+SphereBoundary::SphereBoundary(const Vec3f & c, float radius)
+        : c(c)
+        , radius(radius) {
+}
+
+bool SphereBoundary::inside(const Vec3f & v) const {
+    return (v - c).mag() < radius;
 }
 
 vector<Vec3f> get_node_positions(bool inverted) {

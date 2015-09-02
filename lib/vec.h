@@ -2,6 +2,7 @@
 
 #include <tuple>
 #include <functional>
+#include <cmath>
 
 template <typename T>
 struct Vec3;
@@ -51,6 +52,18 @@ struct Vec3 {
             [&u](const auto & i) { return u(std::get<0>(i), std::get<1>(i)); });
     }
 
+    T sum() const {
+        return fold<std::plus<T>>(0);
+    }
+
+    T mag_squared() const {
+        return (*this * *this).sum();
+    }
+
+    T mag() const {
+        return sqrt(mag_squared());
+    }
+
     Vec3b operator==(const Vec3t & rhs) const {
         return binop<std::equal_to<T>>(rhs);
     }
@@ -95,11 +108,5 @@ struct Vec3 {
         return fold<std::logical_or<T>>(false);
     }
 
-    union {
-        struct {
-            T x, y, z;
-        };
-        T s[3];
-    };
-
+    T x, y, z;
 };
