@@ -39,15 +39,18 @@ const string TetrahedralProgram::source{
 
         barrier(CLK_GLOBAL_MEM_FENCE);
 
+        //  TODO I have NO IDEA whether this difference equation is correct
+
         float temp = 0;
         for (int i = 0; i != PORTS; ++i) {
             int port_index = node->ports[i];
             if (port_index >= 0) {
-                temp += current[port_index] / (1 + previous[port_index]);
+                temp += current[port_index];
             }
         }
 
-        temp *= 0.5;
+        temp /= 2;
+        temp -= previous[index];
 
         //  TODO probably not right way to damp?
         const float DAMPING_FACTOR = 0.995;
@@ -56,7 +59,7 @@ const string TetrahedralProgram::source{
         next[index] = temp;
 
         if (index == read) {
-            *output = temp;
+            *output = next[index];
         }
     }
     )"};

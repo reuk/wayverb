@@ -121,7 +121,7 @@ const string RectangularProgram::source{
         next[index] = temp;
 
         if (index == read) {
-            *output = temp;
+            *output = next[index];
         }
     }
     )"};

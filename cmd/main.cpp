@@ -219,10 +219,9 @@ int main(int argc, char ** argv) {
             case RenderType::TETRAHEDRAL:
                 {
                 auto tetr_program = get_program<TetrahedralProgram>(context, device);
-                auto mesh = tetrahedral_mesh(SphereBoundary(0, 2), 0, divisions);
-                cout << "created mesh with " << mesh.size() << " nodes" << endl;
+                auto mesh = tetrahedral_mesh(CuboidBoundary(-2, 2), 0, divisions);
                 TetrahedralWaveguide t_waveguide(tetr_program, queue, mesh);
-                results = t_waveguide.run(input, 0, 1000, 4096);
+                results = t_waveguide.run(input, 0, 0, 4096);
                 break;
                 }
 
