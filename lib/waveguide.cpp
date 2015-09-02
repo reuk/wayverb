@@ -32,7 +32,7 @@ RectangularWaveguide::size_type RectangularWaveguide::get_index(cl_int3 pos) con
     return pos.x + pos.y * p.x + pos.z * p.x * p.y;
 }
 
-vector<cl_float> RectangularWaveguide::run(const vector<float> & input,
+vector<cl_float> RectangularWaveguide::run(vector<float> input,
                                 cl_int3 e,
                                 cl_int3 o,
                                 int steps) {
@@ -50,14 +50,13 @@ vector<cl_float> RectangularWaveguide::run(const vector<float> & input,
     cl::copy(queue, nodes.begin(), nodes.end(), current);
     cl::copy(queue, nodes.begin(), nodes.end(), previous);
 
-    auto in_copy = input;
-    in_copy.resize(steps, 0);
+    input.resize(steps, 0);
 
-    vector<cl_float> ret(in_copy.size());
+    vector<cl_float> ret(input.size());
     vector<cl_float> out(1);
 
-    transform(in_copy.begin(),
-              in_copy.end(),
+    transform(input.begin(),
+              input.end(),
               ret.begin(),
               [this, &waveguide, &e, &o, &out](auto i) {
                   waveguide(cl::EnqueueArgs(queue, cl::NDRange(p.x, p.y, p.z)),
@@ -85,19 +84,23 @@ vector<cl_float> RectangularWaveguide::run(const vector<float> & input,
 
 TetrahedralWaveguide::TetrahedralWaveguide(const TetrahedralProgram & program,
                      cl::CommandQueue & queue,
-                     const vector<Node> & nodes)
+                     vector<Node> & nodes)
         : program(program)
         , queue(queue)
-        , nodes(nodes)
+        , node_size(nodes.size())
+        , node_buffer(program.getInfo<CL_PROGRAM_CONTEXT>(),
+                      nodes.begin(),
+                      nodes.end(),
+                      false)
         , storage({{cl::Buffer(program.getInfo<CL_PROGRAM_CONTEXT>(),
                                CL_MEM_READ_WRITE,
-                               sizeof(cl_float) * nodes.size()),
+                               sizeof(cl_float) * node_size),
                     cl::Buffer(program.getInfo<CL_PROGRAM_CONTEXT>(),
                                CL_MEM_READ_WRITE,
-                               sizeof(cl_float) * nodes.size()),
+                               sizeof(cl_float) * node_size),
                     cl::Buffer(program.getInfo<CL_PROGRAM_CONTEXT>(),
                                CL_MEM_READ_WRITE,
-                               sizeof(cl_float) * nodes.size())}})
+                               sizeof(cl_float) * node_size)}})
         , previous(storage[0])
         , current(storage[1])
         , next(storage[2])
@@ -106,10 +109,52 @@ TetrahedralWaveguide::TetrahedralWaveguide(const TetrahedralProgram & program,
                  sizeof(cl_float)) {
 }
 
-vector<cl_float> TetrahedralWaveguide::run(const std::vector<float> & input,
-                                           size_type excitation,
-                                           size_type read_head,
+vector<cl_float> TetrahedralWaveguide::run(std::vector<float> input,
+                                           size_type e,
+                                           size_type o,
                                            int steps) {
-    vector<cl_float> ret;
+    auto waveguide = cl::make_kernel<cl_ulong,
+                                     cl_float,
+                                     cl::Buffer,
+                                     cl::Buffer,
+                                     cl::Buffer,
+                                     cl::Buffer,
+                                     cl_ulong,
+                                     cl::Buffer>(program, "waveguide");
+
+    vector<cl_float> node_values(node_size, 0);
+    cl::copy(queue, node_values.begin(), node_values.end(), next);
+    cl::copy(queue, node_values.begin(), node_values.end(), current);
+    cl::copy(queue, node_values.begin(), node_values.end(), previous);
+
+    input.resize(steps, 0);
+
+    vector<cl_float> ret(input.size());
+    vector<cl_float> out(1);
+
+    transform(input.begin(),
+              input.end(),
+              ret.begin(),
+              [this, &waveguide, &e, &o, &out](auto i) {
+                  waveguide(cl::EnqueueArgs(queue, cl::NDRange(node_size)),
+                            e,
+                            i,
+                            next,
+                            current,
+                            previous,
+                            node_buffer,
+                            o,
+                            output);
+
+                  cl::copy(queue, output, out.begin(), out.end());
+
+                  auto & temp = previous;
+                  previous = current;
+                  current = next;
+                  next = temp;
+
+                  return out.front();
+              });
+
     return ret;
 }

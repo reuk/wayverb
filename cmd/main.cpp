@@ -149,6 +149,42 @@ T get_program(const cl::Context & context,
     return program;
 }
 
+auto get_file_format(const string & fname) {
+    map<string, unsigned long> ftypeTable{{"aif", SF_FORMAT_AIFF},
+                                          {"aiff", SF_FORMAT_AIFF},
+                                          {"wav", SF_FORMAT_WAV}};
+
+    auto extension = fname.substr(fname.find_last_of(".") + 1);
+    auto ftypeIt = ftypeTable.find(extension);
+    if (ftypeIt == ftypeTable.end()) {
+        stringstream ss;
+        ss << "Invalid output file extension - valid extensions are: ";
+        for (const auto & i : ftypeTable)
+            ss << i.first << " ";
+        throw runtime_error(ss.str());
+    }
+    return ftypeIt->second;
+}
+
+auto get_file_depth(unsigned long bitDepth) {
+    map<unsigned long, unsigned long> depthTable{{16, SF_FORMAT_PCM_16},
+                                                 {24, SF_FORMAT_PCM_24}};
+
+    auto depthIt = depthTable.find(bitDepth);
+    if (depthIt == depthTable.end()) {
+        stringstream ss;
+        ss << "Invalid bitdepth - valid bitdepths are: ";
+        for (const auto & i : depthTable)
+            ss << i.first << " ";
+        throw runtime_error(ss.str());
+    }
+    return depthIt->second;
+}
+
+enum class RenderType {
+    TETRAHEDRAL, RECTANGULAR,
+};
+
 int main(int argc, char ** argv) {
     Logger::restart();
 
@@ -159,29 +195,13 @@ int main(int argc, char ** argv) {
     string fname{"sndfile.aiff"};
     auto bitDepth = 16;
 
-    map<unsigned long, unsigned long> depthTable{{16, SF_FORMAT_PCM_16},
-                                                 {24, SF_FORMAT_PCM_24}};
+    unsigned long format, depth;
 
-    auto depthIt = depthTable.find(bitDepth);
-    if (depthIt == depthTable.end()) {
-        cerr << "Invalid bitdepth - valid bitdepths are: ";
-        for (const auto & i : depthTable)
-            cerr << i.first << " ";
-        cerr << endl;
-        return EXIT_FAILURE;
-    }
-
-    map<string, unsigned long> ftypeTable{{"aif", SF_FORMAT_AIFF},
-                                          {"aiff", SF_FORMAT_AIFF},
-                                          {"wav", SF_FORMAT_WAV}};
-
-    auto extension = fname.substr(fname.find_last_of(".") + 1);
-    auto ftypeIt = ftypeTable.find(extension);
-    if (ftypeIt == ftypeTable.end()) {
-        cerr << "Invalid output file extension - valid extensions are: ";
-        for (const auto & i : ftypeTable)
-            cerr << i.first << " ";
-        cerr << endl;
+    try {
+        format = get_file_format(fname);
+        depth = get_file_depth(bitDepth);
+    } catch (const runtime_error & e) {
+        Logger::log_err("critical runtime error: ", e.what());
         return EXIT_FAILURE;
     }
 
@@ -190,19 +210,34 @@ int main(int argc, char ** argv) {
     cl::CommandQueue queue(context, device);
 
     try {
-        auto rect_program = get_program<RectangularProgram>(context, device);
-        auto tetr_program = get_program<TetrahedralProgram>(context, device);
+        //auto input = lopass_kernel(sr, sr / 4, 255);
+        vector<float> input = {1};
 
-        auto input = lopass_kernel(sr, sr / 4, 255);
+        vector<cl_float> results;
 
-        Waveguide waveguide(rect_program, queue, {{128, 64, 64}});
-        auto results =
-            waveguide.run(input, {{20, 20, 20}}, {{35, 40, 45}}, 4096);
+        auto type = RenderType::RECTANGULAR;
+        switch (type) {
+            case RenderType::TETRAHEDRAL:
+                {
+                auto tetr_program = get_program<TetrahedralProgram>(context, device);
+                auto mesh = tetrahedral_mesh(SphereBoundary(0, 2), 0, divisions);
+                TetrahedralWaveguide t_waveguide(tetr_program, queue, mesh);
+                results = t_waveguide.run(input, 0, 1, 4096);
+                break;
+                }
+
+            case RenderType::RECTANGULAR:
+                {
+                auto rect_program = get_program<RectangularProgram>(context, device);
+                RectangularWaveguide r_waveguide(rect_program, queue, {{64, 64, 64}});
+                results =
+                    r_waveguide.run(input, {{20, 20, 20}}, {{35, 40, 45}}, 4096);
+                break;
+                }
+        }
 
         normalize(results);
-
-        write_sndfile(fname, {results}, sr, depthIt->second, ftypeIt->second);
-
+        write_sndfile(fname, {results}, sr, depth, format);
     } catch (const cl::Error & e) {
         Logger::log_err("critical cl error: ", e.what());
         return EXIT_FAILURE;

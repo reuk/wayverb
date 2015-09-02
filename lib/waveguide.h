@@ -15,7 +15,7 @@ public:
 
     RectangularWaveguide(const RectangularProgram & program, cl::CommandQueue & queue, cl_int3 p);
 
-    std::vector<cl_float> run(const std::vector<float> & input,
+    std::vector<cl_float> run(std::vector<float> input,
                               cl_int3 excitation,
                               cl_int3 read_head,
                               int steps);
@@ -41,9 +41,9 @@ class TetrahedralWaveguide {
 public:
     using size_type = std::vector<cl_float>::size_type;
 
-    TetrahedralWaveguide(const TetrahedralProgram & program, cl::CommandQueue & queue, const std::vector<Node> & nodes);
+    TetrahedralWaveguide(const TetrahedralProgram & program, cl::CommandQueue & queue, std::vector<Node> & nodes);
 
-    std::vector<cl_float> run(const std::vector<float> & input,
+    std::vector<cl_float> run(std::vector<float> input,
                               size_type excitation,
                               size_type read_head,
                               int steps);
@@ -51,7 +51,8 @@ private:
     const TetrahedralProgram & program;
     cl::CommandQueue & queue;
 
-    const std::vector<Node> & nodes;
+    const size_type node_size;
+    cl::Buffer node_buffer;
 
     std::array<cl::Buffer, 3> storage;
 

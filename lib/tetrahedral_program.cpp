@@ -29,6 +29,7 @@ const string TetrahedralProgram::source{
     ,   global float * output
     ) {
         size_t index = get_global_id(0);
+        global Node * node = nodes + index;
 
         if (index == write) {
             next[index] += value;
@@ -36,8 +37,9 @@ const string TetrahedralProgram::source{
 
         float temp = 0;
 
-        for (int i = 0; i != 4; ++i) {
-            int port_index = nodes[index].ports[i];
+        const size_t max_ports = sizeof(Node::ports) / sizeof(int);
+        for (int i = 0; i != max_ports; ++i) {
+            int port_index = node->ports[i];
 
             if (port_index >= 0) {
                 global Node * port = nodes + port_index;
@@ -48,8 +50,10 @@ const string TetrahedralProgram::source{
 
         temp *= 0.5;
 
+        /*
         const float DAMPING_FACTOR = 0.995;
         temp *= DAMPING_FACTOR;
+        */
 
         next[index] = temp;
 
