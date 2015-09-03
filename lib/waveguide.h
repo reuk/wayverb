@@ -56,7 +56,6 @@ private:
     const TetrahedralProgram & program;
     cl::CommandQueue & queue;
 
-    std::vector<Node> & nodes;
     const size_type node_size;
     cl::Buffer node_buffer;
 

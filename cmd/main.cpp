@@ -211,10 +211,11 @@ int main(int argc, char ** argv) {
     cl::CommandQueue queue(context, device);
 
     try {
-        //auto input = lopass_kernel(sr, sr / 4, 255);
-        vector<float> input {1};
+        auto input = lopass_kernel(sr, sr / 4, 255);
 
         vector<cl_float> results;
+
+        auto steps = 4096;
 
         auto type = RenderType::TETRAHEDRAL;
         switch (type) {
@@ -224,7 +225,7 @@ int main(int argc, char ** argv) {
                 auto mesh =
                     tetrahedral_mesh(CuboidBoundary(-2, 2), 0, divisions);
                 TetrahedralWaveguide t_waveguide(tetr_program, queue, mesh);
-                results = t_waveguide.run(input, 0, 0, 300);
+                results = t_waveguide.run(input, 0, 0, steps);
                 break;
             }
 
@@ -234,7 +235,7 @@ int main(int argc, char ** argv) {
                 RectangularWaveguide r_waveguide(
                     rect_program, queue, {{64, 64, 64}});
                 results = r_waveguide.run(
-                    input, {{20, 20, 20}}, {{35, 40, 45}}, 4096);
+                    input, {{20, 20, 20}}, {{35, 40, 45}}, steps);
                 break;
             }
         }
