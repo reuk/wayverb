@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <algorithm>
+#include "logger.h"
 
 using namespace std;
 
@@ -88,6 +89,7 @@ TetrahedralWaveguide::TetrahedralWaveguide(const TetrahedralProgram & program,
                                            vector<Node> & nodes)
         : program(program)
         , queue(queue)
+        , nodes(nodes)
         , node_size(nodes.size())
         , node_buffer(program.getInfo<CL_PROGRAM_CONTEXT>(),
                       nodes.begin(),
@@ -134,10 +136,11 @@ vector<cl_float> TetrahedralWaveguide::run(std::vector<float> input,
     vector<cl_float> ret(input.size());
     vector<cl_float> out(1);
 
+    auto ind = 0;
     transform(input.begin(),
               input.end(),
               ret.begin(),
-              [this, &waveguide, &e, &o, &out](auto i) {
+              [this, &ind, &node_values, &waveguide, &e, &o, &out](auto i) {
                   waveguide(cl::EnqueueArgs(queue, cl::NDRange(node_size)),
                             e,
                             i,
@@ -149,6 +152,16 @@ vector<cl_float> TetrahedralWaveguide::run(std::vector<float> input,
                             output);
 
                   cl::copy(queue, output, out.begin(), out.end());
+
+                  //    TODO don't really need this
+                  cl::copy(queue, next, node_values.begin(), node_values.end());
+                  auto fname = build_string("./file-", ind++, ".txt");
+                  cout << "writing file " << fname << endl;
+                  ofstream file(fname);
+                  for (auto j = 0u; j != nodes.size(); ++j) {
+                      const auto & n = nodes[j];
+                      file << n.position.x << " " << n.position.y << " " << n.position.z << " " << node_values[j] << endl;
+                  }
 
                   auto & temp = previous;
                   previous = current;
