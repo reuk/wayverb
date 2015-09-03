@@ -3,7 +3,7 @@
 using namespace std;
 
 TetrahedralProgram::TetrahedralProgram(const cl::Context & context,
-                                   bool build_immediate)
+                                       bool build_immediate)
         : Program(context, source, build_immediate) {
 }
 

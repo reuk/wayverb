@@ -6,8 +6,8 @@
 using namespace std;
 
 RectangularWaveguide::RectangularWaveguide(const RectangularProgram & program,
-                     cl::CommandQueue & queue,
-                     cl_int3 p)
+                                           cl::CommandQueue & queue,
+                                           cl_int3 p)
         : program(program)
         , queue(queue)
         , p(p)
@@ -28,14 +28,15 @@ RectangularWaveguide::RectangularWaveguide(const RectangularProgram & program,
                  sizeof(cl_float)) {
 }
 
-RectangularWaveguide::size_type RectangularWaveguide::get_index(cl_int3 pos) const {
+RectangularWaveguide::size_type RectangularWaveguide::get_index(
+    cl_int3 pos) const {
     return pos.x + pos.y * p.x + pos.z * p.x * p.y;
 }
 
 vector<cl_float> RectangularWaveguide::run(vector<float> input,
-                                cl_int3 e,
-                                cl_int3 o,
-                                int steps) {
+                                           cl_int3 e,
+                                           cl_int3 o,
+                                           int steps) {
     auto waveguide = cl::make_kernel<cl_ulong,
                                      cl_float,
                                      cl::Buffer,
@@ -83,15 +84,16 @@ vector<cl_float> RectangularWaveguide::run(vector<float> input,
 }
 
 TetrahedralWaveguide::TetrahedralWaveguide(const TetrahedralProgram & program,
-                     cl::CommandQueue & queue,
-                     vector<Node> & nodes)
+                                           cl::CommandQueue & queue,
+                                           vector<Node> & nodes)
         : program(program)
         , queue(queue)
         , node_size(nodes.size())
         , node_buffer(program.getInfo<CL_PROGRAM_CONTEXT>(),
                       nodes.begin(),
                       nodes.end(),
-                      true, false)
+                      true,
+                      false)
         , storage({{cl::Buffer(program.getInfo<CL_PROGRAM_CONTEXT>(),
                                CL_MEM_READ_WRITE,
                                sizeof(cl_float) * node_size),

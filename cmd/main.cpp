@@ -137,13 +137,13 @@ cl::Device get_device(const cl::Context & context) {
 }
 
 template <typename T>
-T get_program(const cl::Context & context,
-              const cl::Device & device) {
+T get_program(const cl::Context & context, const cl::Device & device) {
     T program(context);
     try {
         program.build({device});
     } catch (const cl::Error & e) {
-        Logger::log(program.template getBuildInfo<CL_PROGRAM_BUILD_LOG>(device));
+        Logger::log(
+            program.template getBuildInfo<CL_PROGRAM_BUILD_LOG>(device));
         throw;
     }
     return program;
@@ -182,7 +182,8 @@ auto get_file_depth(unsigned long bitDepth) {
 }
 
 enum class RenderType {
-    TETRAHEDRAL, RECTANGULAR,
+    TETRAHEDRAL,
+    RECTANGULAR,
 };
 
 int main(int argc, char ** argv) {
@@ -216,23 +217,25 @@ int main(int argc, char ** argv) {
 
         auto type = RenderType::TETRAHEDRAL;
         switch (type) {
-            case RenderType::TETRAHEDRAL:
-                {
-                auto tetr_program = get_program<TetrahedralProgram>(context, device);
-                auto mesh = tetrahedral_mesh(CuboidBoundary(-2, 2), 0, divisions);
+            case RenderType::TETRAHEDRAL: {
+                auto tetr_program =
+                    get_program<TetrahedralProgram>(context, device);
+                auto mesh =
+                    tetrahedral_mesh(CuboidBoundary(-2, 2), 0, divisions);
                 TetrahedralWaveguide t_waveguide(tetr_program, queue, mesh);
                 results = t_waveguide.run(input, 0, 0, 4096);
                 break;
-                }
+            }
 
-            case RenderType::RECTANGULAR:
-                {
-                auto rect_program = get_program<RectangularProgram>(context, device);
-                RectangularWaveguide r_waveguide(rect_program, queue, {{64, 64, 64}});
-                results =
-                    r_waveguide.run(input, {{20, 20, 20}}, {{35, 40, 45}}, 4096);
+            case RenderType::RECTANGULAR: {
+                auto rect_program =
+                    get_program<RectangularProgram>(context, device);
+                RectangularWaveguide r_waveguide(
+                    rect_program, queue, {{64, 64, 64}});
+                results = r_waveguide.run(
+                    input, {{20, 20, 20}}, {{35, 40, 45}}, 4096);
                 break;
-                }
+            }
         }
 
         normalize(results);

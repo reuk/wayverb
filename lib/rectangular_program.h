@@ -5,7 +5,8 @@
 
 class RectangularProgram : public cl::Program {
 public:
-    RectangularProgram(const cl::Context & context, bool build_immediate = false);
+    RectangularProgram(const cl::Context & context,
+                       bool build_immediate = false);
 
 private:
     static const std::string source;

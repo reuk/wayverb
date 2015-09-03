@@ -17,9 +17,9 @@ struct WorkingNode {
     operator Node() const {
         Node ret;
         for (auto j = 0; j != sizeof(Node::ports) / sizeof(cl_int); ++j)
-          ret.ports[j] = -1;
+            ret.ports[j] = -1;
         for (auto j = 0u; j != ports.size(); ++j)
-          ret.ports[j] = ports[j];
+            ret.ports[j] = ports[j];
         ret.position = {{position.x, position.y, position.z}};
         return ret;
     }
@@ -99,7 +99,8 @@ void build_mesh(vector<WorkingNode> & ret,
     auto epsilon = spacing * 0.001;
     for (auto & i : ret) {
         for (auto j = next_nodes.begin(); j != next_nodes.end();) {
-            if (is_inside(j->position - epsilon, i.position, j->position + epsilon)) {
+            if (is_inside(
+                    j->position - epsilon, i.position, j->position + epsilon)) {
                 i.ports.push_back(parent_index);
                 j = next_nodes.erase(j);
             } else {
