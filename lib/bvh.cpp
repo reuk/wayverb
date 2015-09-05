@@ -7,7 +7,6 @@
 
 using namespace std;
 
-const unsigned long GRID_0_SIDE = 1024;
 const unsigned long T_SIDE = 128;
 const unsigned long B_SIDE = 8;
 const unsigned long T_SHIFT_FACTOR = 9;
@@ -120,7 +119,7 @@ BVHMesh::BVHMesh(const vector<Triangle> & triangles,
               tri_reference.end(),
               ref_cell_pairs.begin(),
               [this, &counter](const auto & i) {
-                  return RefCellPair(i, get_cell(i, this->vertices, boundary));
+                  return RefCellPair(i, get_cell(this->triangles[i.ref], this->vertices, boundary));
               });
 
     //  TODO this could be a GPU radix sort
