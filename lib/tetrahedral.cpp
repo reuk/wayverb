@@ -1,7 +1,5 @@
 #include "tetrahedral.h"
 
-#include "logger.h"
-
 #include <cmath>
 #include <algorithm>
 
@@ -24,28 +22,6 @@ struct WorkingNode {
         return ret;
     }
 };
-
-bool is_inside(const Vec3f & lower, const Vec3f & in, const Vec3f & upper) {
-    return (lower < in).all() && (in < upper).all();
-}
-
-CuboidBoundary::CuboidBoundary(const Vec3f & c0, const Vec3f & c1)
-        : c0(c0)
-        , c1(c1) {
-}
-
-bool CuboidBoundary::inside(const Vec3f & v) const {
-    return is_inside(c0, v, c1);
-}
-
-SphereBoundary::SphereBoundary(const Vec3f & c, float radius)
-        : c(c)
-        , radius(radius) {
-}
-
-bool SphereBoundary::inside(const Vec3f & v) const {
-    return (v - c).mag() < radius;
-}
 
 vector<Vec3f> get_node_positions(bool inverted) {
     vector<Vec3f> ret{
@@ -99,8 +75,7 @@ void build_mesh(vector<WorkingNode> & ret,
     auto epsilon = spacing * 0.001;
     for (auto & i : ret) {
         for (auto j = next_nodes.begin(); j != next_nodes.end();) {
-            if (is_inside(
-                    j->position - epsilon, i.position, j->position + epsilon)) {
+            if (SphereBoundary(j->position, epsilon).inside(i.position)) {
                 i.ports.push_back(parent_index);
                 j = next_nodes.erase(j);
             } else {
