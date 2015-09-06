@@ -43,7 +43,7 @@ bool SphereBoundary::inside(const Vec3f & v) const {
 }
 
 Vec3i MeshBoundary::hash_point(const Vec3f & v) const {
-    return ((i + cuboid_boundary.c0) / cell_size).map([](auto j){
+    return ((v + cuboid_boundary.c0) / cell_size).map([](auto j){
         return (int)floor(j);
     });
 }
@@ -52,20 +52,17 @@ MeshBoundary::MeshBoundary(const vector<Triangle> & triangles,
                            const vector<cl_float3> & vertices)
         : triangles(triangles)
         , vertices(vertices)
-        , triangle_references(DIVISIONS, vector<vector<uint32_t>>(DIVISIONS))
         , cuboid_boundary(get_cuboid_boundary(vertices))
-        , cell_size(cuboid_boundary.get_dimensions() / DIVISIONS) {
+        , cell_size(cuboid_boundary.get_dimensions() / DIVISIONS)
+        , triangle_references(DIVISIONS, vector<vector<uint32_t>>(DIVISIONS)) {
 
     for (auto i = 0u; i != triangles.size(); ++i) {
         const auto & tri = triangles[i];
         auto bounding_box = get_cuboid_boundary({vertices[tri.v0],
                                                  vertices[tri.v1],
                                                  vertices[tri.v2]});
-        auto get_indices = [&cuboid_boundary, &cell_size](auto i) {
-        };
-
-        Vec3i min_indices = get_indices(bounding_box.c0);
-        Vec3i max_indices = get_indices(bounding_box.c1);
+        Vec3i min_indices = hash_point(bounding_box.c0);
+        Vec3i max_indices = hash_point(bounding_box.c1);
 
         for (auto j = min_indices.x; j != max_indices.x + 1; ++j) {
             for (auto k = min_indices.y; k != max_indices.y + 1; ++k) {
@@ -88,4 +85,9 @@ bool MeshBoundary::inside(const Vec3f & v) const {
     //  TODO count number of intersections on one side of the point
 
     //  TODO if intersection number is even, point is outside, else it's inside
+
+    return false;
 }
+
+const int MeshBoundary::DIVISIONS = 1024;
+

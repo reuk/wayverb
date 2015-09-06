@@ -32,7 +32,7 @@ struct MeshBoundary : public Boundary {
 
     Vec3i hash_point(const Vec3f & v) const;
 
-    static const int DIVISIONS = 1024;
+    static const int DIVISIONS;
 
     std::vector<Triangle> triangles;
     std::vector<cl_float3> vertices;
