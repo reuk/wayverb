@@ -12,10 +12,6 @@ const unsigned long T_SIDE = 128;
 const unsigned long B_SIDE = 8;
 const unsigned long T_SHIFT_FACTOR = 9;
 
-auto convert(const cl_float3 & c) {
-    return Vec3f(c.x, c.y, c.z);
-}
-
 Vec3f min(const Vec3f & a, const Vec3f & b) {
     return a.binop(b, [](auto i, auto j) {return min(i, j);});
 }
@@ -86,17 +82,6 @@ struct RefCellPair {
     CellID cell;        //  identifier for a bvh cell
 };
 
-CuboidBoundary get_cuboid_boundary(const vector<cl_float3> & vertices) {
-    Vec3f mini, maxi;
-    mini = maxi = convert(vertices.front());
-    for (auto i = vertices.begin() + 1; i != vertices.end(); ++i) {
-        auto v = convert(*i);
-        mini = min(v, mini);
-        maxi = max(v, maxi);
-    }
-    return CuboidBoundary(mini, maxi);
-}
-
 BVHMesh::BVHMesh(const vector<Triangle> & triangles,
                  const vector<cl_float3> & vertices)
         : triangles(triangles)
@@ -120,7 +105,7 @@ BVHMesh::BVHMesh(const vector<Triangle> & triangles,
               tri_reference.end(),
               ref_cell_pairs.begin(),
               [this, &counter](const auto & i) {
-                  return RefCellPair(i, get_cell(i, this->vertices, boundary));
+                  return RefCellPair(i, get_cell(this->triangles[i.ref], this->vertices, boundary));
               });
 
     //  TODO this could be a GPU radix sort
