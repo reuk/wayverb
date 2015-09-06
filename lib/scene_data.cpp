@@ -62,3 +62,9 @@ void SceneData::populate(const string & fpath) {
         throw runtime_error("failed to read file");
     }
 }
+
+MeshBoundary SceneData::get_mesh_boundary() const {
+    vector<Vec3f> v(vertices.size());
+    transform(vertices.begin(), vertices.end(), v.begin(), convert);
+    return MeshBoundary(triangles, v);
+}

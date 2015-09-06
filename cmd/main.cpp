@@ -3,6 +3,7 @@
 #include "rectangular_program.h"
 #include "tetrahedral_program.h"
 #include "tetrahedral.h"
+#include "scene_data.h"
 
 #define __CL_ENABLE_EXCEPTIONS
 #include "cl.hpp"
@@ -215,6 +216,7 @@ int main(int argc, char ** argv) {
 
         vector<cl_float> results;
 
+        auto boundary = SceneData("test_scene.obj").get_mesh_boundary();
         auto steps = 4096;
 
         auto type = RenderType::TETRAHEDRAL;
@@ -223,7 +225,7 @@ int main(int argc, char ** argv) {
                 auto tetr_program =
                     get_program<TetrahedralProgram>(context, device);
                 auto mesh =
-                    tetrahedral_mesh(CuboidBoundary(-2, 2), 0, divisions);
+                    tetrahedral_mesh(boundary, 0, divisions);
                 TetrahedralWaveguide t_waveguide(tetr_program, queue, mesh);
                 results = t_waveguide.run(input, 0, 0, steps);
                 break;
