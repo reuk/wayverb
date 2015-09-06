@@ -22,13 +22,12 @@ Vec3f CuboidBoundary::get_dimensions() const {
     return c1 - c0;
 }
 
-CuboidBoundary get_cuboid_boundary(const vector<cl_float3> & vertices) {
+CuboidBoundary get_cuboid_boundary(const vector<Vec3f> & vertices) {
     Vec3f mini, maxi;
-    mini = maxi = convert(vertices.front());
+    mini = maxi = vertices.front();
     for (auto i = vertices.begin() + 1; i != vertices.end(); ++i) {
-        auto v = convert(*i);
-        mini = v.binop(mini, [](auto a, auto b) {return min(a, b);});
-        maxi = v.binop(maxi, [](auto a, auto b) {return max(a, b);});
+        mini = i->binop(mini, [](auto a, auto b) {return min(a, b);});
+        maxi = i->binop(maxi, [](auto a, auto b) {return max(a, b);});
     }
     return CuboidBoundary(mini, maxi);
 }
@@ -43,17 +42,17 @@ bool SphereBoundary::inside(const Vec3f & v) const {
 }
 
 Vec3i MeshBoundary::hash_point(const Vec3f & v) const {
-    return ((v + cuboid_boundary.c0) / cell_size).map([](auto j){
+    return ((v + boundary.c0) / cell_size).map([](auto j){
         return (int)floor(j);
     });
 }
 
 MeshBoundary::MeshBoundary(const vector<Triangle> & triangles,
-                           const vector<cl_float3> & vertices)
+                           const vector<Vec3f> & vertices)
         : triangles(triangles)
         , vertices(vertices)
-        , cuboid_boundary(get_cuboid_boundary(vertices))
-        , cell_size(cuboid_boundary.get_dimensions() / DIVISIONS)
+        , boundary(get_cuboid_boundary(vertices))
+        , cell_size(boundary.get_dimensions() / DIVISIONS)
         , triangle_references(DIVISIONS, vector<vector<uint32_t>>(DIVISIONS)) {
 
     for (auto i = 0u; i != triangles.size(); ++i) {
@@ -72,6 +71,64 @@ MeshBoundary::MeshBoundary(const vector<Triangle> & triangles,
     }
 }
 
+class Ray {
+public:
+    Ray(const Vec3f & position = Vec3f(), const Vec3f & direction = Vec3f())
+            : position(position), direction(direction) {
+    }
+    Vec3f position;
+    Vec3f direction;
+};
+
+class Intersects {
+public:
+    Intersects()
+            : intersects(false) {
+    }
+
+    Intersects(float distance)
+            : intersects(true)
+            , distance(distance) {
+    }
+
+    bool intersects;
+    float distance;
+};
+
+Intersects triangle_intersection(const Triangle & tri,
+                                 const std::vector<Vec3f> & vertices,
+                                 const Ray & ray) {
+    auto EPSILON = 0.0001;
+
+    auto v0 = vertices[tri.v0];
+    auto v1 = vertices[tri.v1];
+    auto v2 = vertices[tri.v1];
+
+    auto e0 = v1 - v0;
+    auto e1 = v2 - v0;
+
+    auto pvec = ray.direction.cross(e1);
+    auto det = e0.dot(pvec);
+
+    if (-EPSILON < det && det < EPSILON)
+        return Intersects();
+
+    auto invdet = 1 / det;
+    auto tvec = ray.position - v0;
+    auto ucomp = invdet * tvec.dot(pvec);
+
+    if (ucomp < 0 || 1 < ucomp)
+        return Intersects();
+
+    auto qvec = tvec.cross(e0);
+    auto vcomp = invdet * ray.direction.dot(qvec);
+
+    if (vcomp < 0 || 1 < vcomp + ucomp)
+        return Intersects();
+
+    return Intersects(invdet * e1.dot(qvec));
+}
+
 bool MeshBoundary::inside(const Vec3f & v) const {
     //  hash v.xy to an index in triangle_references
     auto indices = hash_point(v);
@@ -79,15 +136,19 @@ bool MeshBoundary::inside(const Vec3f & v) const {
     //  get triangle references
     auto references = triangle_references[indices.x][indices.y];
 
-    //  TODO cast ray through point along Z axis and check for intersections
-    //  with each of the referenced triangles
+    //  cast ray through point along Z axis and check for intersections
+    //  with each of the referenced triangles then count number of intersections
+    //  on one side of the point
+    auto count = 0u;
+    Ray ray(Vec3f(v.x, v.y, boundary.c0.z), Vec3f(0, 0, 1));
+    for (const auto & i : references) {
+        auto intersection = triangle_intersection(triangles[i], vertices, ray);
+        if (intersection.intersects && intersection.distance < v.z - boundary.c0.z)
+            count += 1;
+    }
 
-    //  TODO count number of intersections on one side of the point
-
-    //  TODO if intersection number is even, point is outside, else it's inside
-
-    return false;
+    //  if intersection number is even, point is outside, else it's inside
+    return count % 2;
 }
 
 const int MeshBoundary::DIVISIONS = 1024;
-

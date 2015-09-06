@@ -19,12 +19,9 @@ Vec3f max(const Vec3f & a, const Vec3f & b) {
     return a.binop(b, [](auto i, auto j) {return max(i, j);});
 }
 
-auto get_centroid(const Triangle & t,
-                  const vector<cl_float3> & vertices) {
-    auto v0 = convert(vertices[t.v0]);
-    auto v1 = convert(vertices[t.v1]);
-    auto v2 = convert(vertices[t.v2]);
-    return (v0 + v1 + v2) / 3;
+Vec3f get_centroid(const Triangle & t,
+                  const vector<Vec3f> & vertices) {
+    return (t.v0 + t.v1 + t.v2) / 3;
 }
 
 uint32_t cell(const Vec3i & i, unsigned long div) {
@@ -40,7 +37,7 @@ uint32_t b_cell(const Vec3i & i) {
 }
 
 uint32_t get_cell(const Triangle & triangle,
-                  const vector<cl_float3> & vertices,
+                  const vector<Vec3f> & vertices,
                   const CuboidBoundary & boundary) {
     auto boundary_size = boundary.c1 - boundary.c0;
 
@@ -82,7 +79,7 @@ struct RefCellPair {
 };
 
 BVHMesh::BVHMesh(const vector<Triangle> & triangles,
-                 const vector<cl_float3> & vertices)
+                 const vector<Vec3f> & vertices)
         : triangles(triangles)
         , vertices(vertices)
         , boundary(get_cuboid_boundary(vertices)) {

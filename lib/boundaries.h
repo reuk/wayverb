@@ -16,7 +16,7 @@ struct CuboidBoundary : public Boundary {
     Vec3f c0, c1;
 };
 
-CuboidBoundary get_cuboid_boundary(const std::vector<cl_float3> & vertices);
+CuboidBoundary get_cuboid_boundary(const std::vector<Vec3f> & vertices);
 
 struct SphereBoundary : public Boundary {
     SphereBoundary(const Vec3f & c = Vec3f(), float radius = 0);
@@ -27,7 +27,7 @@ struct SphereBoundary : public Boundary {
 
 struct MeshBoundary : public Boundary {
     MeshBoundary(const std::vector<Triangle> & triangles = std::vector<Triangle>(),
-                 const std::vector<cl_float3> & vertices = std::vector<cl_float3>());
+                 const std::vector<Vec3f> & vertices = std::vector<Vec3f>());
     bool inside(const Vec3f & v) const override;
 
     Vec3i hash_point(const Vec3f & v) const;
@@ -35,8 +35,8 @@ struct MeshBoundary : public Boundary {
     static const int DIVISIONS;
 
     std::vector<Triangle> triangles;
-    std::vector<cl_float3> vertices;
-    CuboidBoundary cuboid_boundary;
+    std::vector<Vec3f> vertices;
+    CuboidBoundary boundary;
     Vec3f cell_size;
 
     std::vector<std::vector<std::vector<uint32_t>>> triangle_references;

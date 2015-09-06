@@ -8,9 +8,9 @@
 class BVHMesh {
 public:
     BVHMesh(const std::vector<Triangle> & triangles,
-            const std::vector<cl_float3> & vertices);
+            const std::vector<Vec3f> & vertices);
 private:
     const std::vector<Triangle> triangles;
-    const std::vector<cl_float3> vertices;
+    const std::vector<Vec3f> vertices;
     const CuboidBoundary boundary;
 };

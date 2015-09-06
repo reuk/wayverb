@@ -64,11 +64,23 @@ struct Vec3 {
     }
 
     T mag_squared() const {
-        return (*this * *this).sum();
+        return dot(*this);
     }
 
     T mag() const {
         return sqrt(mag_squared());
+    }
+
+    template<typename U>
+    auto dot(const Vec3<U> & rhs) const {
+        return (*this * rhs).sum();
+    }
+
+    template<typename U>
+    auto cross(const Vec3<U> & rhs) const {
+        return Vec3<std::common_type_t<T, U>>(y * rhs.z - z * rhs.y,
+                                              z * rhs.x - x * rhs.z,
+                                              x * rhs.y - y * rhs.x);
     }
 
     template<typename U>
