@@ -7,7 +7,6 @@
 
 using namespace std;
 
-const unsigned long GRID_0_SIDE = 1024;
 const unsigned long T_SIDE = 128;
 const unsigned long B_SIDE = 8;
 const unsigned long T_SHIFT_FACTOR = 9;
