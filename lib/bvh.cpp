@@ -12,15 +12,14 @@ const unsigned long B_SIDE = 8;
 const unsigned long T_SHIFT_FACTOR = 9;
 
 Vec3f min(const Vec3f & a, const Vec3f & b) {
-    return a.binop(b, [](auto i, auto j) {return min(i, j);});
+    return a.binop(b, [](auto i, auto j) { return min(i, j); });
 }
 
 Vec3f max(const Vec3f & a, const Vec3f & b) {
-    return a.binop(b, [](auto i, auto j) {return max(i, j);});
+    return a.binop(b, [](auto i, auto j) { return max(i, j); });
 }
 
-Vec3f get_centroid(const Triangle & t,
-                  const vector<Vec3f> & vertices) {
+Vec3f get_centroid(const Triangle & t, const vector<Vec3f> & vertices) {
     return (t.v0 + t.v1 + t.v2) / 3;
 }
 
@@ -46,22 +45,28 @@ uint32_t get_cell(const Triangle & triangle,
     auto top_grid_divisions = boundary_size / T_SIDE;
     auto bot_grid_divisions = boundary_size / B_SIDE;
 
-    Vec3i top_grid_pos = (centroid / top_grid_divisions).map([](auto i) {return (int)floor(i);});
+    Vec3i top_grid_pos = (centroid / top_grid_divisions)
+                             .map([](auto i) { return (int)floor(i); });
     Vec3i corrected_centroid = centroid - (top_grid_pos * top_grid_divisions);
-    Vec3i bot_grid_pos = (corrected_centroid / bot_grid_divisions).map([](auto i) {return (int)floor(i);});
+    Vec3i bot_grid_pos = (corrected_centroid / bot_grid_divisions)
+                             .map([](auto i) { return (int)floor(i); });
 
     return (t_cell(top_grid_pos) << T_SHIFT_FACTOR) | b_cell(bot_grid_pos);
 }
 
 struct TriReference {
     TriReference(uint32_t ref = 0, CuboidBoundary boundary = CuboidBoundary())
-            : ref(ref), boundary(boundary) {}
+            : ref(ref)
+            , boundary(boundary) {
+    }
     uint32_t ref;
     CuboidBoundary boundary;
 };
 
 struct CellID {
-    CellID(uint32_t raw = 0): raw(raw) {}
+    CellID(uint32_t raw = 0)
+            : raw(raw) {
+    }
 
     union {
         struct {
@@ -73,9 +78,12 @@ struct CellID {
 };
 
 struct RefCellPair {
-    RefCellPair(const TriReference & ref = 0, CellID cell = 0): ref(ref), cell(cell) {}
-    TriReference ref;   //  offset into a const array/vector of Triangles
-    CellID cell;        //  identifier for a bvh cell
+    RefCellPair(const TriReference & ref = 0, CellID cell = 0)
+            : ref(ref)
+            , cell(cell) {
+    }
+    TriReference ref;  //  offset into a const array/vector of Triangles
+    CellID cell;       //  identifier for a bvh cell
 };
 
 BVHMesh::BVHMesh(const vector<Triangle> & triangles,
@@ -83,7 +91,6 @@ BVHMesh::BVHMesh(const vector<Triangle> & triangles,
         : triangles(triangles)
         , vertices(vertices)
         , boundary(get_cuboid_boundary(vertices)) {
-
     //  TODO
     //  Instead of just allocating a single TriReference for each triangle,
     //  we should divide each triangle into AABBs that are smaller than
@@ -94,21 +101,23 @@ BVHMesh::BVHMesh(const vector<Triangle> & triangles,
     transform(triangles.begin(),
               triangles.end(),
               tri_reference.begin(),
-              [&counter] (const auto & i) { return TriReference(counter++);});
+              [&counter](const auto & i) { return TriReference(counter++); });
 
     vector<RefCellPair> ref_cell_pairs(tri_reference.size());
-    transform(tri_reference.begin(),
-              tri_reference.end(),
-              ref_cell_pairs.begin(),
-              [this, &counter](const auto & i) {
-                  return RefCellPair(i, get_cell(this->triangles[i.ref], this->vertices, boundary));
-              });
+    transform(
+        tri_reference.begin(),
+        tri_reference.end(),
+        ref_cell_pairs.begin(),
+        [this, &counter](const auto & i) {
+            return RefCellPair(
+                i, get_cell(this->triangles[i.ref], this->vertices, boundary));
+        });
 
     //  TODO this could be a GPU radix sort
     //  Sort the TriReferences by CellID
-    sort(ref_cell_pairs.begin(), ref_cell_pairs.end(), [](auto a, auto b) {
-        return a.cell.raw < b.cell.raw;
-    });
+    sort(ref_cell_pairs.begin(),
+         ref_cell_pairs.end(),
+         [](auto a, auto b) { return a.cell.raw < b.cell.raw; });
 
     /* TODO
      * build top grid

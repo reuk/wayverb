@@ -20,6 +20,7 @@ public:
     std::vector<cl_float> run(std::vector<float> input,
                               cl_int3 excitation,
                               cl_int3 read_head,
+                              cl_float attenuation,
                               int steps);
 
 private:
@@ -50,6 +51,7 @@ public:
     std::vector<cl_float> run(std::vector<float> input,
                               size_type excitation,
                               size_type read_head,
+                              cl_float attenuation,
                               int steps);
 
 private:

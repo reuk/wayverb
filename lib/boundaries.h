@@ -26,11 +26,15 @@ struct SphereBoundary : public Boundary {
 };
 
 struct MeshBoundary : public Boundary {
-    MeshBoundary(const std::vector<Triangle> & triangles = std::vector<Triangle>(),
-                 const std::vector<Vec3f> & vertices = std::vector<Vec3f>());
+    MeshBoundary(
+        const std::vector<Triangle> & triangles = std::vector<Triangle>(),
+        const std::vector<Vec3f> & vertices = std::vector<Vec3f>());
     bool inside(const Vec3f & v) const override;
 
+    using reference_store = std::vector<uint32_t>;
+
     Vec3i hash_point(const Vec3f & v) const;
+    reference_store get_references(uint32_t x, uint32_t y) const;
 
     static const int DIVISIONS;
 
@@ -39,5 +43,5 @@ struct MeshBoundary : public Boundary {
     CuboidBoundary boundary;
     Vec3f cell_size;
 
-    std::vector<std::vector<std::vector<uint32_t>>> triangle_references;
+    std::vector<std::vector<reference_store>> triangle_references;
 };

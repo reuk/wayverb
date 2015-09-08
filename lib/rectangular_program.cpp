@@ -54,6 +54,7 @@ const string RectangularProgram::source{
     kernel void waveguide
     (   unsigned long write
     ,   float value
+    ,   float attenuation
     ,   global float * next
     ,   global float * current
     ,   global float * previous
@@ -115,8 +116,7 @@ const string RectangularProgram::source{
         temp -= previous[index];
 
         //  TODO probably not right way to damp?
-        const float DAMPING_FACTOR = 0.995;
-        temp *= DAMPING_FACTOR;
+        temp *= attenuation;
 
         next[index] = temp;
 

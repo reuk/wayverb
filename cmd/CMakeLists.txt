@@ -26,4 +26,4 @@ elseif(UNIX)
     set(frameworks ${opencl_library})
 endif()
 
-target_link_libraries(${name} waveguide ${sndfile_library} ${frameworks})
+target_link_libraries(${name} waveguide ${sndfile_library} ${frameworks} gflags)

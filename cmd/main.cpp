@@ -1,3 +1,4 @@
+//  project internal
 #include "waveguide.h"
 #include "logger.h"
 #include "rectangular_program.h"
@@ -5,11 +6,15 @@
 #include "tetrahedral.h"
 #include "scene_data.h"
 
+//  dependency
 #define __CL_ENABLE_EXCEPTIONS
 #include "cl.hpp"
 
 #include "sndfile.hh"
 
+#include <gflags/gflags.h>
+
+//  stdlib
 #include <iostream>
 #include <algorithm>
 #include <numeric>
@@ -190,11 +195,21 @@ enum class RenderType {
 int main(int argc, char ** argv) {
     Logger::restart();
 
-    auto speed_of_sound = 340.0;
-    auto divisions = 0.1;
-    auto sr = (speed_of_sound * sqrt(3)) / divisions;
+    gflags::ParseCommandLineFlags(&argc, &argv, true);
 
-    string fname{"sndfile.aiff"};
+    if (argc != 3) {
+        return EXIT_FAILURE;
+    }
+
+    //  load from file argv[1]
+    //  save to file argv[2]
+
+    auto speed_of_sound = 340.0;
+    auto divisions = 0.2;
+    auto sr = (speed_of_sound * sqrt(3)) / divisions;
+    auto attenuation_factor = 0.9995;
+
+    string fname(argv[2]);
     auto bitDepth = 16;
 
     unsigned long format, depth;
@@ -216,7 +231,7 @@ int main(int argc, char ** argv) {
 
         vector<cl_float> results;
 
-        auto boundary = SceneData("test_scene.obj").get_mesh_boundary();
+        auto boundary = SceneData(argv[1]).get_mesh_boundary();
         auto steps = 4096;
 
         auto type = RenderType::TETRAHEDRAL;
@@ -224,10 +239,9 @@ int main(int argc, char ** argv) {
             case RenderType::TETRAHEDRAL: {
                 auto tetr_program =
                     get_program<TetrahedralProgram>(context, device);
-                auto mesh =
-                    tetrahedral_mesh(boundary, 0, divisions);
+                auto mesh = tetrahedral_mesh(boundary, 0, divisions);
                 TetrahedralWaveguide t_waveguide(tetr_program, queue, mesh);
-                results = t_waveguide.run(input, 0, 0, steps);
+                results = t_waveguide.run(input, 0, 0, attenuation_factor, steps);
                 break;
             }
 
@@ -237,7 +251,7 @@ int main(int argc, char ** argv) {
                 RectangularWaveguide r_waveguide(
                     rect_program, queue, {{64, 64, 64}});
                 results = r_waveguide.run(
-                    input, {{20, 20, 20}}, {{35, 40, 45}}, steps);
+                    input, {{20, 20, 20}}, {{35, 40, 45}}, attenuation_factor, steps);
                 break;
             }
         }

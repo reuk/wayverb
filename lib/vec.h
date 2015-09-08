@@ -3,6 +3,7 @@
 #include <tuple>
 #include <functional>
 #include <cmath>
+#include <ostream>
 
 template <typename T>
 struct Vec3;
@@ -29,11 +30,11 @@ struct Vec3 {
             , z(z) {
     }
 
-    template<typename U>
+    template <typename U>
     Vec3(const Vec3<U> & u)
-        : x(u.x)
-        , y(u.y)
-        , z(u.z) {
+            : x(u.x)
+            , y(u.y)
+            , z(u.z) {
     }
 
     template <typename V, typename U>
@@ -71,84 +72,84 @@ struct Vec3 {
         return sqrt(mag_squared());
     }
 
-    template<typename U>
+    template <typename U>
     auto dot(const Vec3<U> & rhs) const {
         return (*this * rhs).sum();
     }
 
-    template<typename U>
+    template <typename U>
     auto cross(const Vec3<U> & rhs) const {
         return Vec3<std::common_type_t<T, U>>(y * rhs.z - z * rhs.y,
                                               z * rhs.x - x * rhs.z,
                                               x * rhs.y - y * rhs.x);
     }
 
-    template<typename U>
+    template <typename U>
     Vec3b operator==(const Vec3<U> & rhs) const {
         return binop<std::equal_to<std::common_type_t<T, U>>>(rhs);
     }
 
-    template<typename U>
+    template <typename U>
     Vec3b operator==(const U & rhs) const {
         return operator==(Vec3<U>(rhs));
     }
 
-    template<typename U>
+    template <typename U>
     Vec3b operator<(const Vec3<U> & rhs) const {
         return binop<std::less<std::common_type_t<T, U>>>(rhs);
     }
 
-    template<typename U>
+    template <typename U>
     Vec3b operator>(const Vec3<U> & rhs) const {
         return binop<std::greater<std::common_type_t<T, U>>>(rhs);
     }
 
-    template<typename U>
+    template <typename U>
     Vec3b operator&&(const Vec3<U> & rhs) const {
         return binop<std::logical_and<std::common_type_t<T, U>>>(rhs);
     }
 
-    template<typename U>
+    template <typename U>
     Vec3b operator||(const Vec3<U> & rhs) const {
         return binop<std::logical_or<std::common_type_t<T, U>>>(rhs);
     }
 
-    template<typename U>
+    template <typename U>
     auto operator+(const Vec3<U> & rhs) const {
         return binop<std::plus<std::common_type_t<T, U>>>(rhs);
     }
 
-    template<typename U>
+    template <typename U>
     auto operator+(const U & rhs) const {
         return operator+(Vec3<U>(rhs));
     }
 
-    template<typename U>
+    template <typename U>
     auto operator-(const Vec3<U> & rhs) const {
         return binop<std::minus<std::common_type_t<T, U>>>(rhs);
     }
 
-    template<typename U>
+    template <typename U>
     auto operator-(const U & rhs) const {
         return operator-(Vec3<U>(rhs));
     }
 
-    template<typename U>
+    template <typename U>
     auto operator*(const Vec3<U> & rhs) const {
         return binop<std::multiplies<std::common_type_t<T, U>>>(rhs);
     }
 
-    template<typename U>
+    template <typename U>
     auto operator*(const U & rhs) const {
         return operator*(Vec3<U>(rhs));
     }
 
-    template<typename U>
+    template <typename U>
     auto operator/(const Vec3<U> & rhs) const {
         return binop<std::divides<std::common_type_t<T, U>>>(rhs);
     }
 
-    template<typename U>
+    template <typename U>
     auto operator/(const U & rhs) const {
         return operator/(Vec3<U>(rhs));
     }
@@ -163,3 +164,8 @@ struct Vec3 {
 
     T x, y, z;
 };
+
+template<typename T>
+std::ostream& operator<<(std::ostream& strm, const Vec3<T> & obj) {
+    return strm << "(" << obj.x << ", " << obj.y << ", " << obj.z << ")";
+}

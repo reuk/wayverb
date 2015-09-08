@@ -10,10 +10,10 @@ typedef struct {
 
 typedef _Node_unalign __attribute__((aligned(8))) Node;
 
-typedef struct  {
+typedef struct {
     cl_ulong v0;
     cl_ulong v1;
     cl_ulong v2;
 } _Triangle_unalign;
 
-typedef _Triangle_unalign __attribute__ ((aligned(8))) Triangle;
+typedef _Triangle_unalign __attribute__((aligned(8))) Triangle;

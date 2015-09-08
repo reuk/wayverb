@@ -1,0 +1,14 @@
+#
+## Alias OBJ Material File
+# Exported from SketchUp, (c) 2000-2012 Trimble Navigation Limited
+
+newmtl hard_wall
+Ka 0.000000 0.000000 0.000000
+Kd 0.254902 0.258824 0.298039
+Ks 0.330000 0.330000 0.330000
+
+newmtl tufted_carpet
+Ka 0.000000 0.000000 0.000000
+Kd 0.098039 0.298039 0.000000
+Ks 0.330000 0.330000 0.330000
+

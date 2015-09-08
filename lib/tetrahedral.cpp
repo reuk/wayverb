@@ -62,17 +62,9 @@ void build_mesh(vector<WorkingNode> & ret,
                   return ret;
               });
 
-    //  filter list on boundary.inside()
-    next_nodes.erase(remove_if(next_nodes.begin(),
-                               next_nodes.end(),
-                               [&boundary](const auto & i) {
-                                   return !boundary.inside(i.position);
-                               }),
-                     next_nodes.end());
-
     //  filter list on colliding Nodes
     //  TODO do this by recursive search back through parent nodes instead
-    auto epsilon = spacing * 0.001;
+    auto epsilon = spacing * 0.0001;
     for (auto & i : ret) {
         for (auto j = next_nodes.begin(); j != next_nodes.end();) {
             if (SphereBoundary(j->position, epsilon).inside(i.position)) {
@@ -83,6 +75,14 @@ void build_mesh(vector<WorkingNode> & ret,
             }
         }
     }
+
+    //  filter list on boundary.inside()
+    next_nodes.erase(remove_if(next_nodes.begin(),
+                               next_nodes.end(),
+                               [&boundary](const auto & i) {
+                                   return !boundary.inside(i.position);
+                               }),
+                     next_nodes.end());
 
     //  push nodes into ret
     auto begin_ind = ret.size();

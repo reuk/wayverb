@@ -9,6 +9,7 @@ class BVHMesh {
 public:
     BVHMesh(const std::vector<Triangle> & triangles,
             const std::vector<Vec3f> & vertices);
+
 private:
     const std::vector<Triangle> triangles;
     const std::vector<Vec3f> vertices;
