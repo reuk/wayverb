@@ -9,6 +9,8 @@
 
 #include <array>
 
+#define TESTING
+
 class RectangularWaveguide {
 public:
     using size_type = std::vector<cl_float>::size_type;
@@ -57,6 +59,10 @@ public:
 private:
     const TetrahedralProgram & program;
     cl::CommandQueue & queue;
+
+#ifdef TESTING
+    std::vector<Node> & nodes;
+#endif
 
     const size_type node_size;
     cl::Buffer node_buffer;

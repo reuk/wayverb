@@ -192,12 +192,18 @@ enum class RenderType {
     RECTANGULAR,
 };
 
+enum class InputType {
+    IMPULSE,
+    KERNEL,
+};
+
 int main(int argc, char ** argv) {
     Logger::restart();
 
     gflags::ParseCommandLineFlags(&argc, &argv, true);
 
     if (argc != 3) {
+        Logger::log_err("expecting an input and an output filename");
         return EXIT_FAILURE;
     }
 
@@ -227,15 +233,24 @@ int main(int argc, char ** argv) {
     cl::CommandQueue queue(context, device);
 
     try {
-        auto input = lopass_kernel(sr, sr / 4, 255);
+        vector<float> input;
+        auto inputType = InputType::IMPULSE;
+        switch (inputType) {
+            case InputType::IMPULSE:
+                input = {1};
+                break;
+            case InputType::KERNEL:
+                input = lopass_kernel(sr, sr / 4, 255);
+                break;
+        }
 
         vector<cl_float> results;
 
         auto boundary = SceneData(argv[1]).get_mesh_boundary();
-        auto steps = 4096;
+        auto steps = 200;
 
-        auto type = RenderType::TETRAHEDRAL;
-        switch (type) {
+        auto renderType = RenderType::TETRAHEDRAL;
+        switch (renderType) {
             case RenderType::TETRAHEDRAL: {
                 auto tetr_program =
                     get_program<TetrahedralProgram>(context, device);
