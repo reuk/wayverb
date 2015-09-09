@@ -1,4 +1,4 @@
-#include "tetrahedral_program.h"
+#include "recursive_tetrahedral_program.h"
 
 using namespace std;
 

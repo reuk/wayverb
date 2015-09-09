@@ -2,8 +2,8 @@
 #include "waveguide.h"
 #include "logger.h"
 #include "rectangular_program.h"
-#include "tetrahedral_program.h"
-#include "tetrahedral.h"
+#include "recursive_tetrahedral_program.h"
+#include "recursive_tetrahedral.h"
 #include "scene_data.h"
 
 //  dependency

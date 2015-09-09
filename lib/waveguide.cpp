@@ -11,6 +11,7 @@ RectangularWaveguide::RectangularWaveguide(const RectangularProgram & program,
                                            cl_int3 p)
         : program(program)
         , queue(queue)
+        , kernel(program.get_kernel())
         , p(p)
         , storage({{cl::Buffer(program.getInfo<CL_PROGRAM_CONTEXT>(),
                                CL_MEM_READ_WRITE,
@@ -39,16 +40,6 @@ vector<cl_float> RectangularWaveguide::run(vector<float> input,
                                            cl_int3 o,
                                            cl_float attenuation,
                                            int steps) {
-    auto waveguide = cl::make_kernel<cl_ulong,
-                                     cl_float,
-                                     cl_float,
-                                     cl::Buffer,
-                                     cl::Buffer,
-                                     cl::Buffer,
-                                     cl_float,
-                                     cl_ulong,
-                                     cl::Buffer>(program, "waveguide");
-
     vector<cl_float> nodes(p.x * p.y * p.z, 0);
     cl::copy(queue, nodes.begin(), nodes.end(), next);
     cl::copy(queue, nodes.begin(), nodes.end(), current);
@@ -62,17 +53,17 @@ vector<cl_float> RectangularWaveguide::run(vector<float> input,
     transform(input.begin(),
               input.end(),
               ret.begin(),
-              [this, &waveguide, &attenuation, &e, &o, &out](auto i) {
-                  waveguide(cl::EnqueueArgs(queue, cl::NDRange(p.x, p.y, p.z)),
-                            this->get_index(e),
-                            i,
-                            attenuation,
-                            next,
-                            current,
-                            previous,
-                            -1,
-                            this->get_index(o),
-                            output);
+              [this, &attenuation, &e, &o, &out](auto i) {
+                  kernel(cl::EnqueueArgs(queue, cl::NDRange(p.x, p.y, p.z)),
+                         this->get_index(e),
+                         i,
+                         attenuation,
+                         next,
+                         current,
+                         previous,
+                         -1,
+                         this->get_index(o),
+                         output);
 
                   cl::copy(queue, output, out.begin(), out.end());
 
@@ -92,6 +83,7 @@ TetrahedralWaveguide::TetrahedralWaveguide(const TetrahedralProgram & program,
                                            vector<Node> & nodes)
         : program(program)
         , queue(queue)
+        , kernel(program.get_kernel())
 #ifdef TESTING
         , nodes(nodes)
 #endif
@@ -123,16 +115,6 @@ vector<cl_float> TetrahedralWaveguide::run(std::vector<float> input,
                                            size_type o,
                                            cl_float attenuation,
                                            int steps) {
-    auto waveguide = cl::make_kernel<cl_ulong,
-                                     cl_float,
-                                     cl_float,
-                                     cl::Buffer,
-                                     cl::Buffer,
-                                     cl::Buffer,
-                                     cl::Buffer,
-                                     cl_ulong,
-                                     cl::Buffer>(program, "waveguide");
-
     vector<cl_float> node_values(node_size, 0);
     cl::copy(queue, node_values.begin(), node_values.end(), next);
     cl::copy(queue, node_values.begin(), node_values.end(), current);
@@ -147,17 +129,17 @@ vector<cl_float> TetrahedralWaveguide::run(std::vector<float> input,
     transform(input.begin(),
               input.end(),
               ret.begin(),
-              [this, &attenuation, &ind, &node_values, &waveguide, &e, &o, &out](auto i) {
-                  waveguide(cl::EnqueueArgs(queue, cl::NDRange(node_size)),
-                            e,
-                            i,
-                            attenuation,
-                            next,
-                            current,
-                            previous,
-                            node_buffer,
-                            o,
-                            output);
+              [this, &attenuation, &ind, &node_values, &e, &o, &out](auto i) {
+                  kernel(cl::EnqueueArgs(queue, cl::NDRange(node_size)),
+                         e,
+                         i,
+                         attenuation,
+                         next,
+                         current,
+                         previous,
+                         node_buffer,
+                         o,
+                         output);
 
                   cl::copy(queue, output, out.begin(), out.end());
 

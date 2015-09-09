@@ -1,13 +1,14 @@
 #pragma once
 
 #include "rectangular_program.h"
-#include "tetrahedral_program.h"
-#include "tetrahedral.h"
+#include "recursive_tetrahedral_program.h"
+#include "recursive_tetrahedral.h"
 
 #define __CL_ENABLE_EXCEPTIONS
 #include "cl.hpp"
 
 #include <array>
+#include <type_traits>
 
 #define TESTING
 
@@ -28,6 +29,8 @@ public:
 private:
     const RectangularProgram & program;
     cl::CommandQueue & queue;
+
+    decltype(program.get_kernel()) kernel;
 
     size_type get_index(cl_int3 pos) const;
 
@@ -59,6 +62,8 @@ public:
 private:
     const TetrahedralProgram & program;
     cl::CommandQueue & queue;
+
+    decltype(program.get_kernel()) kernel;
 
 #ifdef TESTING
     std::vector<Node> & nodes;
