@@ -9,8 +9,7 @@ using namespace std;
 RectangularWaveguide::RectangularWaveguide(const RectangularProgram & program,
                                            cl::CommandQueue & queue,
                                            cl_int3 p)
-        : program(program)
-        , queue(queue)
+        : queue(queue)
         , kernel(program.get_kernel())
         , p(p)
         , storage({{cl::Buffer(program.getInfo<CL_PROGRAM_CONTEXT>(),
@@ -81,8 +80,7 @@ vector<cl_float> RectangularWaveguide::run(vector<float> input,
 TetrahedralWaveguide::TetrahedralWaveguide(const TetrahedralProgram & program,
                                            cl::CommandQueue & queue,
                                            vector<Node> & nodes)
-        : program(program)
-        , queue(queue)
+        : queue(queue)
         , kernel(program.get_kernel())
 #ifdef TESTING
         , nodes(nodes)
