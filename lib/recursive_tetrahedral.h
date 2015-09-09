@@ -6,6 +6,6 @@
 
 #include <vector>
 
-std::vector<Node> tetrahedral_mesh(const Boundary & boundary,
-                                   Vec3f start,
-                                   float spacing);
+std::vector<LinkedTetrahedralNode> tetrahedral_mesh(const Boundary & boundary,
+                                                    Vec3f start,
+                                                    float spacing);
