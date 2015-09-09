@@ -15,7 +15,8 @@
 class RectangularWaveguide {
 public:
     using size_type = std::vector<cl_float>::size_type;
-    using kernel_type = decltype(std::declval<RectangularProgram>().get_kernel());
+    using kernel_type =
+        decltype(std::declval<RectangularProgram>().get_kernel());
 
     RectangularWaveguide(const RectangularProgram & program,
                          cl::CommandQueue & queue,
@@ -48,7 +49,8 @@ private:
 class TetrahedralWaveguide {
 public:
     using size_type = std::vector<cl_float>::size_type;
-    using kernel_type = decltype(std::declval<TetrahedralProgram>().get_kernel());
+    using kernel_type =
+        decltype(std::declval<TetrahedralProgram>().get_kernel());
 
     TetrahedralWaveguide(const TetrahedralProgram & program,
                          cl::CommandQueue & queue,

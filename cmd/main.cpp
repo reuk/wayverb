@@ -256,7 +256,8 @@ int main(int argc, char ** argv) {
                     get_program<TetrahedralProgram>(context, device);
                 auto mesh = tetrahedral_mesh(boundary, 0, divisions);
                 TetrahedralWaveguide t_waveguide(tetr_program, queue, mesh);
-                results = t_waveguide.run(input, 0, 0, attenuation_factor, steps);
+                results =
+                    t_waveguide.run(input, 0, 0, attenuation_factor, steps);
                 break;
             }
 
@@ -265,8 +266,11 @@ int main(int argc, char ** argv) {
                     get_program<RectangularProgram>(context, device);
                 RectangularWaveguide r_waveguide(
                     rect_program, queue, {{64, 64, 64}});
-                results = r_waveguide.run(
-                    input, {{20, 20, 20}}, {{35, 40, 45}}, attenuation_factor, steps);
+                results = r_waveguide.run(input,
+                                          {{20, 20, 20}},
+                                          {{35, 40, 45}},
+                                          attenuation_factor,
+                                          steps);
                 break;
             }
         }

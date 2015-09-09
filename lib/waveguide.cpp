@@ -148,7 +148,8 @@ vector<cl_float> TetrahedralWaveguide::run(std::vector<float> input,
                   ofstream file(fname);
                   for (auto j = 0u; j != nodes.size(); ++j) {
                       const auto & n = nodes[j];
-                      file << n.position.x << " " << n.position.y << " " << n.position.z << " " << node_values[j] << endl;
+                      file << n.position.x << " " << n.position.y << " "
+                           << n.position.z << " " << node_values[j] << endl;
                   }
 #endif
 
