@@ -1,6 +1,7 @@
 #pragma once
 
 #include <functional>
+#include <numeric>
 #include <cmath>
 #include <ostream>
 
@@ -41,7 +42,11 @@ struct Vec3 {
 
     template <typename V, typename U>
     auto fold(const U& u = U(), const V& v = V()) const {
+#ifdef __APPLE__
         return v(x, v(y, v(z, u)));
+#else
+        return std::accumulate(std::begin(s), std::end(s), u, v);
+#endif
     }
 
     template <typename U>
@@ -49,17 +54,23 @@ struct Vec3 {
         return make_vec(u(x), u(y), u(z));
     }
 
-    template <typename U>
-    auto zip(const Vec3<U>& u = Vec3<U>()) const {
-        return make_vec(std::make_pair(x, u.x),
-                        std::make_pair(y, u.y),
-                        std::make_pair(z, u.z));
+    template<typename... U>
+    auto zip(const U&... u) const {
+        return make_vec(std::make_tuple(x, u.x...),
+                        std::make_tuple(y, u.y...),
+                        std::make_tuple(z, u.z...));
     }
 
     template <typename U>
-    auto binop(const Vec3& rhs, const U& u = U()) const {
+    auto apply(const Vec3& rhs, const U& u = U()) const {
         return zip(rhs).map(
             [&u](const auto& i) { return u(std::get<0>(i), std::get<1>(i)); });
+    }
+
+    template <typename U, typename V>
+    auto apply(const Vec3 & a, const Vec3& b, const U & u = U()) const {
+        return zip(a, b).map(
+            [&u](const auto & i) { return u(std::get<0>(i), std::get<1>(i), std::get<2>(i)); });
     }
 
     T sum() const {
@@ -88,7 +99,7 @@ struct Vec3 {
 
     template <typename U>
     Vec3b operator==(const Vec3<U>& rhs) const {
-        return binop<std::equal_to<std::common_type_t<T, U>>>(rhs);
+        return apply<std::equal_to<std::common_type_t<T, U>>>(rhs);
     }
 
     template <typename U>
@@ -98,27 +109,27 @@ struct Vec3 {
 
     template <typename U>
     Vec3b operator<(const Vec3<U>& rhs) const {
-        return binop<std::less<std::common_type_t<T, U>>>(rhs);
+        return apply<std::less<std::common_type_t<T, U>>>(rhs);
     }
 
     template <typename U>
     Vec3b operator>(const Vec3<U>& rhs) const {
-        return binop<std::greater<std::common_type_t<T, U>>>(rhs);
+        return apply<std::greater<std::common_type_t<T, U>>>(rhs);
     }
 
     template <typename U>
     Vec3b operator&&(const Vec3<U>& rhs) const {
-        return binop<std::logical_and<std::common_type_t<T, U>>>(rhs);
+        return apply<std::logical_and<std::common_type_t<T, U>>>(rhs);
     }
 
     template <typename U>
     Vec3b operator||(const Vec3<U>& rhs) const {
-        return binop<std::logical_or<std::common_type_t<T, U>>>(rhs);
+        return apply<std::logical_or<std::common_type_t<T, U>>>(rhs);
     }
 
     template <typename U>
     auto operator+(const Vec3<U>& rhs) const {
-        return binop<std::plus<std::common_type_t<T, U>>>(rhs);
+        return apply<std::plus<std::common_type_t<T, U>>>(rhs);
     }
 
     template <typename U>
@@ -128,7 +139,7 @@ struct Vec3 {
 
     template <typename U>
     auto operator-(const Vec3<U>& rhs) const {
-        return binop<std::minus<std::common_type_t<T, U>>>(rhs);
+        return apply<std::minus<std::common_type_t<T, U>>>(rhs);
     }
 
     template <typename U>
@@ -138,7 +149,7 @@ struct Vec3 {
 
     template <typename U>
     auto operator*(const Vec3<U>& rhs) const {
-        return binop<std::multiplies<std::common_type_t<T, U>>>(rhs);
+        return apply<std::multiplies<std::common_type_t<T, U>>>(rhs);
     }
 
     template <typename U>
@@ -148,7 +159,7 @@ struct Vec3 {
 
     template <typename U>
     auto operator/(const Vec3<U>& rhs) const {
-        return binop<std::divides<std::common_type_t<T, U>>>(rhs);
+        return apply<std::divides<std::common_type_t<T, U>>>(rhs);
     }
 
     template <typename U>
@@ -164,12 +175,16 @@ struct Vec3 {
         return fold<std::logical_or<T>>(false);
     }
 
+#ifdef __APPLE__
+    T x, y, z;
+#else
     union {
         T s[3];
         struct {
             T x, y, z;
         };
     };
+#endif
 };
 
 template <typename T>

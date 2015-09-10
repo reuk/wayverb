@@ -12,11 +12,11 @@ const unsigned long B_SIDE = 8;
 const unsigned long T_SHIFT_FACTOR = 9;
 
 Vec3f min(const Vec3f & a, const Vec3f & b) {
-    return a.binop(b, [](auto i, auto j) { return min(i, j); });
+    return a.apply(b, [](auto i, auto j) { return min(i, j); });
 }
 
 Vec3f max(const Vec3f & a, const Vec3f & b) {
-    return a.binop(b, [](auto i, auto j) { return max(i, j); });
+    return a.apply(b, [](auto i, auto j) { return max(i, j); });
 }
 
 Vec3f get_centroid(const Triangle & t, const vector<Vec3f> & vertices) {

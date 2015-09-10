@@ -27,8 +27,8 @@ CuboidBoundary get_cuboid_boundary(const vector<Vec3f>& vertices) {
     Vec3f mini, maxi;
     mini = maxi = vertices.front();
     for (auto i = vertices.begin() + 1; i != vertices.end(); ++i) {
-        mini = i->binop(mini, [](auto a, auto b) { return min(a, b); });
-        maxi = i->binop(maxi, [](auto a, auto b) { return max(a, b); });
+        mini = i->apply(mini, [](auto a, auto b) { return min(a, b); });
+        maxi = i->apply(maxi, [](auto a, auto b) { return max(a, b); });
     }
     return CuboidBoundary(mini, maxi);
 }

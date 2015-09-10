@@ -200,6 +200,14 @@ enum class InputType {
 int main(int argc, char ** argv) {
     Logger::restart();
 
+    //  TODO testing
+
+    Vec3f a(1, 2, 3);
+    Vec3i b(4, 5, 6);
+    Vec3b c(true, true, false);
+
+    auto d = a.zip(b, c);
+
     gflags::ParseCommandLineFlags(&argc, &argv, true);
 
     if (argc != 3) {
