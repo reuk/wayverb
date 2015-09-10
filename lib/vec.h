@@ -12,8 +12,8 @@ using Vec3d = Vec3<double>;
 using Vec3i = Vec3<int>;
 using Vec3b = Vec3<bool>;
 
-template<typename T>
-Vec3<T> make_vec(const T & x, const T & y, const T & z);
+template <typename T>
+Vec3<T> make_vec(const T& x, const T& y, const T& z);
 
 template <typename T>
 struct Vec3 {
@@ -26,7 +26,7 @@ struct Vec3 {
             , z(t) {
     }
 
-    Vec3(const T & x, const T & y, const T & z)
+    Vec3(const T& x, const T& y, const T& z)
             : x(x)
             , y(y)
             , z(z) {
@@ -82,8 +82,8 @@ struct Vec3 {
     template <typename U>
     auto cross(const Vec3<U>& rhs) const {
         return make_vec(y * rhs.z - z * rhs.y,
-                         z * rhs.x - x * rhs.z,
-                         x * rhs.y - y * rhs.x);
+                        z * rhs.x - x * rhs.z,
+                        x * rhs.y - y * rhs.x);
     }
 
     template <typename U>
@@ -166,12 +166,14 @@ struct Vec3 {
 
     union {
         T s[3];
-        struct {T x, y, z;};
+        struct {
+            T x, y, z;
+        };
     };
 };
 
-template<typename T>
-Vec3<T> make_vec(const T & x, const T & y, const T & z) {
+template <typename T>
+Vec3<T> make_vec(const T& x, const T& y, const T& z) {
     return Vec3<T>(x, y, z);
 }
 

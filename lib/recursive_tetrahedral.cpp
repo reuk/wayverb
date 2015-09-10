@@ -14,7 +14,9 @@ struct WorkingNode {
 
     operator LinkedTetrahedralNode() const {
         LinkedTetrahedralNode ret;
-        for (auto j = 0; j != sizeof(LinkedTetrahedralNode::ports) / sizeof(cl_int); ++j)
+        for (auto j = 0;
+             j != sizeof(LinkedTetrahedralNode::ports) / sizeof(cl_int);
+             ++j)
             ret.ports[j] = -1;
         for (auto j = 0u; j != ports.size(); ++j)
             ret.ports[j] = ports[j];
@@ -95,8 +97,8 @@ void build_mesh(vector<WorkingNode> & ret,
 }
 
 vector<LinkedTetrahedralNode> tetrahedral_mesh(const Boundary & boundary,
-                              Vec3f start,
-                              float spacing) {
+                                               Vec3f start,
+                                               float spacing) {
     vector<WorkingNode> temp{WorkingNode(start)};
     build_mesh(temp, boundary, 0, spacing);
 

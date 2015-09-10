@@ -77,9 +77,10 @@ vector<cl_float> RectangularWaveguide::run(vector<float> input,
     return ret;
 }
 
-RecursiveTetrahedralWaveguide::RecursiveTetrahedralWaveguide(const RecursiveTetrahedralProgram & program,
-                                           cl::CommandQueue & queue,
-                                           vector<LinkedTetrahedralNode> & nodes)
+RecursiveTetrahedralWaveguide::RecursiveTetrahedralWaveguide(
+    const RecursiveTetrahedralProgram & program,
+    cl::CommandQueue & queue,
+    vector<LinkedTetrahedralNode> & nodes)
         : queue(queue)
         , kernel(program.get_kernel())
 #ifdef TESTING
@@ -109,10 +110,10 @@ RecursiveTetrahedralWaveguide::RecursiveTetrahedralWaveguide(const RecursiveTetr
 }
 
 vector<cl_float> RecursiveTetrahedralWaveguide::run(std::vector<float> input,
-                                           size_type e,
-                                           size_type o,
-                                           cl_float attenuation,
-                                           int steps) {
+                                                    size_type e,
+                                                    size_type o,
+                                                    cl_float attenuation,
+                                                    int steps) {
     vector<cl_float> node_values(node_size, 0);
     cl::copy(queue, node_values.begin(), node_values.end(), next);
     cl::copy(queue, node_values.begin(), node_values.end(), current);

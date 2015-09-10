@@ -10,11 +10,10 @@ typedef struct {
 
 typedef _LinkedNode_unalign __attribute__((aligned(8))) LinkedTetrahedralNode;
 
-typedef struct {
-    cl_bool inside;
-} _UnlinkedNode_unalign;
+typedef struct { cl_bool inside; } _UnlinkedNode_unalign;
 
-typedef _UnlinkedNode_unalign __attribute__((aligned(8))) UnlinkedTetrahedralNode;
+typedef _UnlinkedNode_unalign
+    __attribute__((aligned(8))) UnlinkedTetrahedralNode;
 
 typedef struct {
     cl_ulong v0;

@@ -2,8 +2,8 @@
 
 using namespace std;
 
-IterativeTetrahedralProgram::IterativeTetrahedralProgram(const cl::Context & context,
-                                                         bool build_immediate)
+IterativeTetrahedralProgram::IterativeTetrahedralProgram(
+    const cl::Context & context, bool build_immediate)
         : Program(context, source, build_immediate) {
 }
 

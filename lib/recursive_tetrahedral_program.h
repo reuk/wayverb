@@ -6,7 +6,7 @@
 class RecursiveTetrahedralProgram : public cl::Program {
 public:
     RecursiveTetrahedralProgram(const cl::Context & context,
-                       bool build_immediate = false);
+                                bool build_immediate = false);
 
     auto get_kernel() const {
         return cl::make_kernel<cl_ulong,

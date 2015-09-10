@@ -2,8 +2,8 @@
 
 using namespace std;
 
-RecursiveTetrahedralProgram::RecursiveTetrahedralProgram(const cl::Context & context,
-                                       bool build_immediate)
+RecursiveTetrahedralProgram::RecursiveTetrahedralProgram(
+    const cl::Context & context, bool build_immediate)
         : Program(context, source, build_immediate) {
 }
 

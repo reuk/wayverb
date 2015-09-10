@@ -6,7 +6,7 @@
 class IterativeTetrahedralProgram : public cl::Program {
 public:
     IterativeTetrahedralProgram(const cl::Context & context,
-                       bool build_immediate = false);
+                                bool build_immediate = false);
 
     /*
     auto get_kernel() const {

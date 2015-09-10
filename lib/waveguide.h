@@ -53,8 +53,8 @@ public:
         decltype(std::declval<RecursiveTetrahedralProgram>().get_kernel());
 
     RecursiveTetrahedralWaveguide(const RecursiveTetrahedralProgram & program,
-                         cl::CommandQueue & queue,
-                         std::vector<LinkedTetrahedralNode> & nodes);
+                                  cl::CommandQueue & queue,
+                                  std::vector<LinkedTetrahedralNode> & nodes);
 
     std::vector<cl_float> run(std::vector<float> input,
                               size_type excitation,
