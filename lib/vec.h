@@ -162,7 +162,10 @@ struct Vec3 {
         return fold<std::logical_or<T>>(false);
     }
 
-    T x, y, z;
+    union {
+        T s[3];
+        struct {T x, y, z;};
+    };
 };
 
 template <typename T>

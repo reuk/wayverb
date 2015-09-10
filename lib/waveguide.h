@@ -46,15 +46,15 @@ private:
     cl::Buffer output;
 };
 
-class TetrahedralWaveguide {
+class RecursiveTetrahedralWaveguide {
 public:
     using size_type = std::vector<cl_float>::size_type;
     using kernel_type =
         decltype(std::declval<TetrahedralProgram>().get_kernel());
 
-    TetrahedralWaveguide(const TetrahedralProgram & program,
+    RecursiveTetrahedralWaveguide(const RecursiveTetrahedralProgram & program,
                          cl::CommandQueue & queue,
-                         std::vector<Node> & nodes);
+                         std::vector<LinkedTetrahedralNode> & nodes);
 
     std::vector<cl_float> run(std::vector<float> input,
                               size_type excitation,
@@ -68,7 +68,7 @@ private:
     kernel_type kernel;
 
 #ifdef TESTING
-    std::vector<Node> & nodes;
+    std::vector<LinkedTetrahedralNode> & nodes;
 #endif
 
     const size_type node_size;
