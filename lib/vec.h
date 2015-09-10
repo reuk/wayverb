@@ -1,6 +1,5 @@
 #pragma once
 
-#include <tuple>
 #include <functional>
 #include <cmath>
 #include <ostream>
@@ -13,6 +12,9 @@ using Vec3d = Vec3<double>;
 using Vec3i = Vec3<int>;
 using Vec3b = Vec3<bool>;
 
+template<typename T>
+Vec3<T> make_vec(const T & x, const T & y, const T & z);
+
 template <typename T>
 struct Vec3 {
     using value_type = T;
@@ -24,7 +26,7 @@ struct Vec3 {
             , z(t) {
     }
 
-    Vec3(T x, T y, T z)
+    Vec3(const T & x, const T & y, const T & z)
             : x(x)
             , y(y)
             , z(z) {
@@ -44,14 +46,14 @@ struct Vec3 {
 
     template <typename U>
     auto map(const U& u = U()) const {
-        return Vec3<decltype(u(x))>(u(x), u(y), u(z));
+        return make_vec(u(x), u(y), u(z));
     }
 
     template <typename U>
     auto zip(const Vec3<U>& u = Vec3<U>()) const {
-        return Vec3<decltype(std::make_tuple(x, u.x))>(std::make_tuple(x, u.x),
-                                                       std::make_tuple(y, u.y),
-                                                       std::make_tuple(z, u.z));
+        return make_vec(std::make_pair(x, u.x),
+                        std::make_pair(y, u.y),
+                        std::make_pair(z, u.z));
     }
 
     template <typename U>
@@ -79,9 +81,9 @@ struct Vec3 {
 
     template <typename U>
     auto cross(const Vec3<U>& rhs) const {
-        return Vec3<std::common_type_t<T, U>>(y * rhs.z - z * rhs.y,
-                                              z * rhs.x - x * rhs.z,
-                                              x * rhs.y - y * rhs.x);
+        return make_vec(y * rhs.z - z * rhs.y,
+                         z * rhs.x - x * rhs.z,
+                         x * rhs.y - y * rhs.x);
     }
 
     template <typename U>
@@ -167,6 +169,11 @@ struct Vec3 {
         struct {T x, y, z;};
     };
 };
+
+template<typename T>
+Vec3<T> make_vec(const T & x, const T & y, const T & z) {
+    return Vec3<T>(x, y, z);
+}
 
 template <typename T>
 std::ostream& operator<<(std::ostream& strm, const Vec3<T>& obj) {

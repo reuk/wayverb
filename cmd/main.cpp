@@ -255,14 +255,8 @@ int main(int argc, char ** argv) {
                 auto tetr_program =
                     get_program<RecursiveTetrahedralProgram>(context, device);
                 auto mesh = tetrahedral_mesh(boundary, 0, divisions);
-<<<<<<< HEAD
-                TetrahedralWaveguide t_waveguide(tetr_program, queue, mesh);
-                results =
-                    t_waveguide.run(input, 0, 0, attenuation_factor, steps);
-=======
                 RecursiveTetrahedralWaveguide t_waveguide(tetr_program, queue, mesh);
                 results = t_waveguide.run(input, 0, 0, attenuation_factor, steps);
->>>>>>> 803ac32c6627c7cd113d42966f4ab9daac23970c
                 break;
             }
 

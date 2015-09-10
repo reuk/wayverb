@@ -50,7 +50,7 @@ class RecursiveTetrahedralWaveguide {
 public:
     using size_type = std::vector<cl_float>::size_type;
     using kernel_type =
-        decltype(std::declval<TetrahedralProgram>().get_kernel());
+        decltype(std::declval<RecursiveTetrahedralProgram>().get_kernel());
 
     RecursiveTetrahedralWaveguide(const RecursiveTetrahedralProgram & program,
                          cl::CommandQueue & queue,
