@@ -42,7 +42,8 @@ class WaveguideMesh:
     def get_index(self, locator):
         i, j, k = self.dim
         x, y, z = locator.pos
-        return locator.mod_ind + x * len(BASIC_CUBE) + y * i * len(BASIC_CUBE)+ z * i * j * len(BASIC_CUBE)
+        l = len(BASIC_CUBE)
+        return locator.mod_ind + x * l + y * i * l + z * i * j * l
 
     def get_neighbor_offsets(self, mod_ind):
         ret =  [[((0, 0, 0), 2), ((-1, 0, -1), 3), ((0, -1, -1), 6), ((-1, -1, 0), 7)],
@@ -64,44 +65,33 @@ def concat(l):
     return reduce(operator.add, l)
 
 def main():
+    waveguide = WaveguideMesh((5, 5, 5), 1)
+    x, y, z = map(lambda i: np.array(i), zip(*waveguide.mesh))
+
     fig = plt.figure()
 
-    waveguide = WaveguideMesh((5, 5, 5), 1)
+    for plot in range(8):
+        ax = fig.add_subplot(241 + plot, projection='3d', aspect='equal')
 
-    mesh = waveguide.mesh
-    x, y, z = zip(*mesh)
+        pos = 400 + plot
+        n = waveguide.get_absolute_neighbors(pos)
+        p = [waveguide.mesh[i] for i in n]
+        p += [waveguide.mesh[pos]]
+        ax.scatter(*zip(*p))
 
-    x = np.array(x)
-    y = np.array(y)
-    z = np.array(z)
+        max_range = np.array([x.max() - x.min(), y.max() - y.min(), z.max() - z.min()]).max() / 2.0
 
-    ax = fig.add_subplot(111, projection='3d', aspect='equal')
+        mean_x = x.mean()
+        mean_y = y.mean()
+        mean_z = z.mean()
 
-    if False:
-        ax.scatter(x, y, z)
+        ax.set_xlim(mean_x - max_range, mean_x + max_range)
+        ax.set_ylim(mean_y - max_range, mean_y + max_range)
+        ax.set_zlim(mean_z - max_range, mean_z + max_range)
 
-    pos = 400
-    print pos
-    n = waveguide.get_absolute_neighbors(pos)
-    print n
-    p = [mesh[i] for i in n]
-    print p
-    p += [mesh[pos]]
-    ax.scatter(*zip(*p))
-
-    max_range = np.array([x.max() - x.min(), y.max() - y.min(), z.max() - z.min()]).max() / 2.0
-
-    mean_x = x.mean()
-    mean_y = y.mean()
-    mean_z = z.mean()
-
-    ax.set_xlim(mean_x - max_range, mean_x + max_range)
-    ax.set_ylim(mean_y - max_range, mean_y + max_range)
-    ax.set_zlim(mean_z - max_range, mean_z + max_range)
-
-    ax.set_xlabel("x")
-    ax.set_ylabel("y")
-    ax.set_zlabel("z")
+        ax.set_xlabel("x")
+        ax.set_ylabel("y")
+        ax.set_zlabel("z")
     plt.show()
 
 if __name__ == "__main__":
