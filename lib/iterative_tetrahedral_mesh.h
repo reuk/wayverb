@@ -17,8 +17,7 @@ public:
         int mod_ind;
     };
 
-    IterativeTetrahedralMesh(const Boundary & boundary,
-                             float cube_side);
+    IterativeTetrahedralMesh(const Boundary & boundary, float cube_side);
 
     size_type get_index(const Locator & locator) const;
     Locator get_locator(size_type index) const;

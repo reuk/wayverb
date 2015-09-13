@@ -270,10 +270,8 @@ int main(int argc, char ** argv) {
             }
 
             case RenderType::RECTANGULAR: {
-                auto program =
-                    get_program<RectangularProgram>(context, device);
-                RectangularWaveguide waveguide(
-                    program, queue, {{64, 64, 64}});
+                auto program = get_program<RectangularProgram>(context, device);
+                RectangularWaveguide waveguide(program, queue, {{64, 64, 64}});
                 results = waveguide.run(input,
                                         {{20, 20, 20}},
                                         {{35, 40, 45}},

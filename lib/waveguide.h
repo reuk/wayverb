@@ -105,6 +105,7 @@ public:
                               size_type read_head,
                               cl_float attenuation,
                               int steps);
+
 private:
     cl::CommandQueue & queue;
 

@@ -5,15 +5,15 @@
 #include <cmath>
 #include <ostream>
 
-#define VEC_OP(sym, functor)                                                \
-    template <typename U>                                                   \
-    auto operator sym (const Vec3<U>& rhs) const {                          \
-        return apply<std::functor<std::common_type_t<T, U>>>(rhs);          \
-    }                                                                       \
-                                                                            \
-    template <typename U>                                                   \
-    auto operator sym (const U& rhs) const {                                \
-        return operator sym (Vec3<U>(rhs));                                 \
+#define VEC_OP(sym, functor)                                       \
+    template <typename U>                                          \
+    auto operator sym(const Vec3<U>& rhs) const {                  \
+        return apply<std::functor<std::common_type_t<T, U>>>(rhs); \
+    }                                                              \
+                                                                   \
+    template <typename U>                                          \
+    auto operator sym(const U& rhs) const {                        \
+        return operator sym(Vec3<U>(rhs));                         \
     }
 
 template <typename T>
@@ -65,7 +65,7 @@ struct Vec3 {
         return make_vec(u(x), u(y), u(z));
     }
 
-    template<typename... U>
+    template <typename... U>
     auto zip(const U&... u) const {
         return make_vec(std::make_tuple(x, u.x...),
                         std::make_tuple(y, u.y...),
@@ -79,9 +79,10 @@ struct Vec3 {
     }
 
     template <typename U, typename V>
-    auto apply(const Vec3 & a, const Vec3& b, const U & u = U()) const {
-        return zip(a, b).map(
-            [&u](const auto & i) { return u(std::get<0>(i), std::get<1>(i), std::get<2>(i)); });
+    auto apply(const Vec3& a, const Vec3& b, const U& u = U()) const {
+        return zip(a, b).map([&u](const auto& i) {
+            return u(std::get<0>(i), std::get<1>(i), std::get<2>(i));
+        });
     }
 
     T sum() const {
@@ -107,7 +108,8 @@ struct Vec3 {
 
     template <typename U>
     auto cross(const Vec3<U>& rhs) const {
-        return Vec3t(y, z, x) * Vec3<U>(rhs.z, rhs.x, rhs.y) - Vec3t(z, x, y) * Vec3<U>(rhs.y, rhs.z, rhs.x);
+        return Vec3t(y, z, x) * Vec3<U>(rhs.z, rhs.x, rhs.y) -
+               Vec3t(z, x, y) * Vec3<U>(rhs.y, rhs.z, rhs.x);
     }
 
     VEC_OP(+, plus);

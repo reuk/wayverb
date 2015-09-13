@@ -84,11 +84,8 @@ RecursiveTetrahedralWaveguide::RecursiveTetrahedralWaveguide(
     const Boundary & boundary,
     Vec3f start,
     float spacing)
-        : RecursiveTetrahedralWaveguide(program,
-                                        queue,
-                                        tetrahedral_mesh(boundary,
-                                                         start,
-                                                         spacing)) {
+        : RecursiveTetrahedralWaveguide(
+              program, queue, tetrahedral_mesh(boundary, start, spacing)) {
 }
 
 RecursiveTetrahedralWaveguide::RecursiveTetrahedralWaveguide(
@@ -209,7 +206,6 @@ IterativeTetrahedralWaveguide::IterativeTetrahedralWaveguide(
                  CL_MEM_READ_WRITE,
                  sizeof(cl_float)) {
 }
-
 
 vector<cl_float> IterativeTetrahedralWaveguide::run(std::vector<float> input,
                                                     size_type e,
