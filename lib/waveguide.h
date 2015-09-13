@@ -96,6 +96,14 @@ public:
     using kernel_type =
         decltype(std::declval<IterativeTetrahedralProgram>().get_kernel());
 
+    class Locator {
+    public:
+        Locator(const Vec3i & pos = Vec3i(), int mod_ind = 0)
+                : pos(pos), mod_ind(mod_ind) {}
+        Vec3i pos;
+        int mod_ind;
+    };
+
     IterativeTetrahedralWaveguide(const IterativeTetrahedralProgram & program,
                                   cl::CommandQueue & queue,
                                   const Boundary & boundary,
@@ -109,9 +117,16 @@ public:
 private:
     static std::vector<Vec3f> get_scaled_cube(float scale);
 
+    size_type get_index(const Locator & locator);
+    Locator get_locator(size_type index);
+
+    std::vector<size_type> get_absolute_neighbors(size_type index);
+
     cl::CommandQueue & queue;
 
     kernel_type kernel;
+
+    Vec3i dim;
 
 #ifdef TESTING
     std::vector<UnlinkedTetrahedralNode> & nodes;
@@ -129,5 +144,7 @@ private:
     cl::Buffer output;
 
     static const std::vector<Vec3f> basic_cube;
+    static const std::vector<std::vector<Locator>> offset_table;
+
     const std::vector<Vec3f> scaled_cube;
 };

@@ -78,7 +78,6 @@ class WaveguideMesh:
                [((1, 1, 0), 0), ((0, 1, 0), 1), ((0, 0, 0), 4), ((1, 0, 0), 5)],
                [((0, 1, 1), 0), ((0, 1, 0), 1), ((0, 0, 1), 4), ((0, 0, 0), 5)]]
         return map(lambda j: map(lambda i: Locator(*i), j), ret)
-        return map(lambda j: map(lambda i: self.get_index(Locator(*i)), j), ret)
 
     def get_neighbor_offsets(self, mod_ind):
         return self.offsets[mod_ind]

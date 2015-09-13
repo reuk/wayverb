@@ -237,3 +237,14 @@ vector<cl_float> IterativeTetrahedralWaveguide::run(std::vector<float> input,
     vector<cl_float> ret;
     return ret;
 }
+
+const vector<vector<IterativeTetrahedralWaveguide::Locator>> IterativeTetrahedralWaveguide::offset_table {
+       {Locator(Vec3i(0, 0, 0), 2), Locator(Vec3i(-1, 0, -1), 3), Locator(Vec3i(-1, -1, 0), 6), Locator(Vec3i(0, -1, -1), 7)},
+       {Locator(Vec3i(0, 0, 0), 2), Locator(Vec3i( 0, 0,  0), 3), Locator(Vec3i( 0, -1, 0), 6), Locator(Vec3i(0, -1,  0), 7)},
+       {Locator(Vec3i(0, 0, 0), 0), Locator(Vec3i( 0, 0,  0), 1), Locator(Vec3i( 0,  0, 0), 4), Locator(Vec3i(0,  0,  0), 5)},
+       {Locator(Vec3i(1, 0, 1), 0), Locator(Vec3i( 0, 0,  0), 1), Locator(Vec3i( 0,  0, 1), 4), Locator(Vec3i(1,  0,  0), 5)},
+       {Locator(Vec3i(0, 0, 0), 2), Locator(Vec3i( 0, 0, -1), 3), Locator(Vec3i( 0,  0, 0), 6), Locator(Vec3i(0,  0, -1), 7)},
+       {Locator(Vec3i(0, 0, 0), 2), Locator(Vec3i(-1, 0,  0), 3), Locator(Vec3i(-1,  0, 0), 6), Locator(Vec3i(0,  0,  0), 7)},
+       {Locator(Vec3i(1, 1, 0), 0), Locator(Vec3i( 0, 1,  0), 1), Locator(Vec3i( 0,  0, 0), 4), Locator(Vec3i(1,  0,  0), 5)},
+       {Locator(Vec3i(0, 1, 1), 0), Locator(Vec3i( 0, 1,  0), 1), Locator(Vec3i( 0,  0, 1), 4), Locator(Vec3i(0,  0,  0), 5)},
+};
