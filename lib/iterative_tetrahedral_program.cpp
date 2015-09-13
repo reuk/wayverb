@@ -40,6 +40,7 @@ const string IterativeTetrahedralProgram::source{
 
         float temp = 0;
 
+        /*
         //  TODO
         //  waveguide logic goes here
         for (int i = 0; i != PORTS; ++i) {
@@ -49,6 +50,7 @@ const string IterativeTetrahedralProgram::source{
                 temp += current[port_index];
             }
         }
+        */
 
         temp /= 2;
         temp -= previous[index];

@@ -1,5 +1,7 @@
 #include "iterative_tetrahedral_mesh.h"
 
+#include "logger.h"
+
 #include <algorithm>
 
 using namespace std;
@@ -78,6 +80,7 @@ vector<UnlinkedTetrahedralNode> get_nodes(const Boundary & boundary,
                                    spacing,
                                    scaled_cube))};
               });
+    Logger::log(total_nodes, " nodes tested against boundary!");
     return ret;
 }
 
