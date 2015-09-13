@@ -3,15 +3,14 @@
 #include "rectangular_program.h"
 #include "recursive_tetrahedral_program.h"
 #include "iterative_tetrahedral_program.h"
+#include "iterative_tetrahedral_mesh.h"
 #include "recursive_tetrahedral.h"
-
-#define __CL_ENABLE_EXCEPTIONS
-#include "cl.hpp"
+#include "cl_structs.h"
 
 #include <array>
 #include <type_traits>
 
-#define TESTING
+//#define TESTING
 
 class RectangularWaveguide {
 public:
@@ -96,14 +95,6 @@ public:
     using kernel_type =
         decltype(std::declval<IterativeTetrahedralProgram>().get_kernel());
 
-    class Locator {
-    public:
-        Locator(const Vec3i & pos = Vec3i(), int mod_ind = 0)
-                : pos(pos), mod_ind(mod_ind) {}
-        Vec3i pos;
-        int mod_ind;
-    };
-
     IterativeTetrahedralWaveguide(const IterativeTetrahedralProgram & program,
                                   cl::CommandQueue & queue,
                                   const Boundary & boundary,
@@ -115,22 +106,11 @@ public:
                               cl_float attenuation,
                               int steps);
 private:
-    static std::vector<Vec3f> get_scaled_cube(float scale);
-
-    size_type get_index(const Locator & locator);
-    Locator get_locator(size_type index);
-
-    std::vector<size_type> get_absolute_neighbors(size_type index);
-
     cl::CommandQueue & queue;
 
     kernel_type kernel;
 
-    Vec3i dim;
-
-#ifdef TESTING
-    std::vector<UnlinkedTetrahedralNode> & nodes;
-#endif
+    IterativeTetrahedralMesh mesh;
 
     const size_type node_size;
     cl::Buffer node_buffer;
@@ -142,9 +122,4 @@ private:
     cl::Buffer & next;
 
     cl::Buffer output;
-
-    static const std::vector<Vec3f> basic_cube;
-    static const std::vector<std::vector<Locator>> offset_table;
-
-    const std::vector<Vec3f> scaled_cube;
 };

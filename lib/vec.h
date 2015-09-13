@@ -77,6 +77,10 @@ struct Vec3 {
         return fold<std::plus<T>>(0);
     }
 
+    T product() const {
+        return fold<std::multiplies<T>>(1);
+    }
+
     T mag_squared() const {
         return dot(*this);
     }

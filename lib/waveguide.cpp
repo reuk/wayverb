@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <algorithm>
+#include <cstdlib>
 #include "logger.h"
 
 using namespace std;
@@ -83,7 +84,11 @@ RecursiveTetrahedralWaveguide::RecursiveTetrahedralWaveguide(
     const Boundary & boundary,
     Vec3f start,
     float spacing)
-        : RecursiveTetrahedralWaveguide(program, queue, tetrahedral_mesh(boundary, start, spacing)) {
+        : RecursiveTetrahedralWaveguide(program,
+                                        queue,
+                                        tetrahedral_mesh(boundary,
+                                                         start,
+                                                         spacing)) {
 }
 
 RecursiveTetrahedralWaveguide::RecursiveTetrahedralWaveguide(
@@ -174,26 +179,6 @@ vector<cl_float> RecursiveTetrahedralWaveguide::run(std::vector<float> input,
     return ret;
 }
 
-const vector<Vec3f> IterativeTetrahedralWaveguide::basic_cube {
-    {0.00,  0.00,   0.00},
-    {0.50,  0.00,   0.50},
-    {0.25,  0.25,   0.25},
-    {0.75,  0.25,   0.75},
-    {0.00,  0.50,   0.50},
-    {0.50,  0.50,   0.00},
-    {0.25,  0.75,   0.75},
-    {0.75,  0.75,   0.25},
-};
-
-std::vector<Vec3f> IterativeTetrahedralWaveguide::get_scaled_cube(float scale) {
-    vector<Vec3f> ret(basic_cube.size());
-    transform(basic_cube.begin(),
-              basic_cube.end(),
-              ret.begin(),
-              [scale](auto i) { return i * scale; });
-    return ret;
-}
-
 IterativeTetrahedralWaveguide::IterativeTetrahedralWaveguide(
     const IterativeTetrahedralProgram & program,
     cl::CommandQueue & queue,
@@ -201,13 +186,11 @@ IterativeTetrahedralWaveguide::IterativeTetrahedralWaveguide(
     float cube_side)
         : queue(queue)
         , kernel(program.get_kernel())
-#ifdef TESTING
-        , nodes(nodes)
-#endif
-        , node_size(nodes.size())
+        , mesh(boundary, cube_side)
+        , node_size(mesh.nodes.size())
         , node_buffer(program.getInfo<CL_PROGRAM_CONTEXT>(),
-                      nodes.begin(),
-                      nodes.end(),
+                      mesh.nodes.begin(),
+                      mesh.nodes.end(),
                       true,
                       false)
         , storage({{cl::Buffer(program.getInfo<CL_PROGRAM_CONTEXT>(),
@@ -224,10 +207,9 @@ IterativeTetrahedralWaveguide::IterativeTetrahedralWaveguide(
         , next(storage[2])
         , output(program.getInfo<CL_PROGRAM_CONTEXT>(),
                  CL_MEM_READ_WRITE,
-                 sizeof(cl_float))
-        , scaled_cube(get_scaled_cube(cube_side))
-{
+                 sizeof(cl_float)) {
 }
+
 
 vector<cl_float> IterativeTetrahedralWaveguide::run(std::vector<float> input,
                                                     size_type excitation,
@@ -237,14 +219,3 @@ vector<cl_float> IterativeTetrahedralWaveguide::run(std::vector<float> input,
     vector<cl_float> ret;
     return ret;
 }
-
-const vector<vector<IterativeTetrahedralWaveguide::Locator>> IterativeTetrahedralWaveguide::offset_table {
-       {Locator(Vec3i(0, 0, 0), 2), Locator(Vec3i(-1, 0, -1), 3), Locator(Vec3i(-1, -1, 0), 6), Locator(Vec3i(0, -1, -1), 7)},
-       {Locator(Vec3i(0, 0, 0), 2), Locator(Vec3i( 0, 0,  0), 3), Locator(Vec3i( 0, -1, 0), 6), Locator(Vec3i(0, -1,  0), 7)},
-       {Locator(Vec3i(0, 0, 0), 0), Locator(Vec3i( 0, 0,  0), 1), Locator(Vec3i( 0,  0, 0), 4), Locator(Vec3i(0,  0,  0), 5)},
-       {Locator(Vec3i(1, 0, 1), 0), Locator(Vec3i( 0, 0,  0), 1), Locator(Vec3i( 0,  0, 1), 4), Locator(Vec3i(1,  0,  0), 5)},
-       {Locator(Vec3i(0, 0, 0), 2), Locator(Vec3i( 0, 0, -1), 3), Locator(Vec3i( 0,  0, 0), 6), Locator(Vec3i(0,  0, -1), 7)},
-       {Locator(Vec3i(0, 0, 0), 2), Locator(Vec3i(-1, 0,  0), 3), Locator(Vec3i(-1,  0, 0), 6), Locator(Vec3i(0,  0,  0), 7)},
-       {Locator(Vec3i(1, 1, 0), 0), Locator(Vec3i( 0, 1,  0), 1), Locator(Vec3i( 0,  0, 0), 4), Locator(Vec3i(1,  0,  0), 5)},
-       {Locator(Vec3i(0, 1, 1), 0), Locator(Vec3i( 0, 1,  0), 1), Locator(Vec3i( 0,  0, 1), 4), Locator(Vec3i(0,  0,  0), 5)},
-};
