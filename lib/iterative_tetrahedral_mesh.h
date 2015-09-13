@@ -23,7 +23,7 @@ public:
     size_type get_index(const Locator & locator) const;
     Locator get_locator(size_type index) const;
     Vec3f get_position(const Locator & locator) const;
-    std::vector<size_type> get_neighbors(size_type index) const;
+    std::vector<int> get_neighbors(size_type index) const;
 
     const float spacing;
     const std::vector<Vec3f> scaled_cube;

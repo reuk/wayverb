@@ -119,6 +119,18 @@ const vector<vector<Locator>> offset_table {
            Locator(Vec3i( 0,  0, 1), 4), Locator(Vec3i(0,  0,  0), 5)},
 };
 
-vector<IterativeTetrahedralMesh::size_type> IterativeTetrahedralMesh::get_neighbors(size_type index) const {
+vector<int> IterativeTetrahedralMesh::get_neighbors(size_type index) const {
+    auto locator = get_locator(index);
+    auto relative = offset_table[locator.mod_ind];
 
+    vector<int> ret;
+    transform(relative.begin(),
+              relative.end(),
+              ret.begin(),
+              [this, &locator](auto i) {
+                  auto summed = locator.pos + i.pos;
+                  return (Vec3i(0) <= summed && summed < dim).all() ? this->get_index(i) : -1;
+              });
+
+    return ret;
 }

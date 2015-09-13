@@ -12,6 +12,11 @@ const string IterativeTetrahedralProgram::source{
     "#define DIAGNOSTIC\n"
 #endif
     R"(
+    #define PORTS (4)
+
+    typedef struct {
+        bool inside;
+    } Node;
 
     kernel void waveguide
     (   unsigned long write
@@ -20,6 +25,7 @@ const string IterativeTetrahedralProgram::source{
     ,   global float * next
     ,   global float * current
     ,   global float * previous
+    ,   global Node * nodes
     ,   unsigned long read
     ,   global float * output
     ) {
@@ -33,6 +39,19 @@ const string IterativeTetrahedralProgram::source{
         barrier(CLK_GLOBAL_MEM_FENCE);
 
         float temp = 0;
+
+        //  TODO
+        //  waveguide logic goes here
+        for (int i = 0; i != PORTS; ++i) {
+            int port_index = neighbor[i];
+            //  TODO set port_index to -1 if not a neighbor I guess
+            if (port_index >= 0 && nodes[port_index].inside)
+                temp += current[port_index];
+            }
+        }
+
+        temp /= 2;
+        temp -= previous[index];
 
         //  TODO probably not right way to damp?
         temp *= attenuation;

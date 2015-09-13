@@ -5,6 +5,17 @@
 #include <cmath>
 #include <ostream>
 
+#define VEC_OP(sym, functor)                                                \
+    template <typename U>                                                   \
+    auto operator sym (const Vec3<U>& rhs) const {                          \
+        return apply<std::functor<std::common_type_t<T, U>>>(rhs);          \
+    }                                                                       \
+                                                                            \
+    template <typename U>                                                   \
+    auto operator sym (const U& rhs) const {                                \
+        return operator sym (Vec3<U>(rhs));                                 \
+    }
+
 template <typename T>
 struct Vec3;
 
@@ -96,80 +107,24 @@ struct Vec3 {
 
     template <typename U>
     auto cross(const Vec3<U>& rhs) const {
-        return make_vec(y * rhs.z - z * rhs.y,
-                        z * rhs.x - x * rhs.z,
-                        x * rhs.y - y * rhs.x);
+        return Vec3t(y, z, x) * Vec3<U>(rhs.z, rhs.x, rhs.y) - Vec3t(z, x, y) * Vec3<U>(rhs.y, rhs.z, rhs.x);
     }
 
-    template <typename U>
-    Vec3b operator==(const Vec3<U>& rhs) const {
-        return apply<std::equal_to<std::common_type_t<T, U>>>(rhs);
-    }
+    VEC_OP(+, plus);
+    VEC_OP(-, minus);
+    VEC_OP(*, multiplies);
+    VEC_OP(/, divides);
+    VEC_OP(%, modulus);
 
-    template <typename U>
-    Vec3b operator==(const U& rhs) const {
-        return operator==(Vec3<U>(rhs));
-    }
+    VEC_OP(==, equal_to);
+    VEC_OP(!=, not_equal_to);
+    VEC_OP(>, greater);
+    VEC_OP(<, less);
+    VEC_OP(>=, greater_equal);
+    VEC_OP(<=, less_equal);
 
-    template <typename U>
-    Vec3b operator<(const Vec3<U>& rhs) const {
-        return apply<std::less<std::common_type_t<T, U>>>(rhs);
-    }
-
-    template <typename U>
-    Vec3b operator>(const Vec3<U>& rhs) const {
-        return apply<std::greater<std::common_type_t<T, U>>>(rhs);
-    }
-
-    template <typename U>
-    Vec3b operator&&(const Vec3<U>& rhs) const {
-        return apply<std::logical_and<std::common_type_t<T, U>>>(rhs);
-    }
-
-    template <typename U>
-    Vec3b operator||(const Vec3<U>& rhs) const {
-        return apply<std::logical_or<std::common_type_t<T, U>>>(rhs);
-    }
-
-    template <typename U>
-    auto operator+(const Vec3<U>& rhs) const {
-        return apply<std::plus<std::common_type_t<T, U>>>(rhs);
-    }
-
-    template <typename U>
-    auto operator+(const U& rhs) const {
-        return operator+(Vec3<U>(rhs));
-    }
-
-    template <typename U>
-    auto operator-(const Vec3<U>& rhs) const {
-        return apply<std::minus<std::common_type_t<T, U>>>(rhs);
-    }
-
-    template <typename U>
-    auto operator-(const U& rhs) const {
-        return operator-(Vec3<U>(rhs));
-    }
-
-    template <typename U>
-    auto operator*(const Vec3<U>& rhs) const {
-        return apply<std::multiplies<std::common_type_t<T, U>>>(rhs);
-    }
-
-    template <typename U>
-    auto operator*(const U& rhs) const {
-        return operator*(Vec3<U>(rhs));
-    }
-
-    template <typename U>
-    auto operator/(const Vec3<U>& rhs) const {
-        return apply<std::divides<std::common_type_t<T, U>>>(rhs);
-    }
-
-    template <typename U>
-    auto operator/(const U& rhs) const {
-        return operator/(Vec3<U>(rhs));
-    }
+    VEC_OP(&&, logical_and);
+    VEC_OP(||, logical_or);
 
     bool all() const {
         return fold<std::logical_and<T>>(true);

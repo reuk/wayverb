@@ -212,10 +212,57 @@ IterativeTetrahedralWaveguide::IterativeTetrahedralWaveguide(
 
 
 vector<cl_float> IterativeTetrahedralWaveguide::run(std::vector<float> input,
-                                                    size_type excitation,
-                                                    size_type read_head,
+                                                    size_type e,
+                                                    size_type o,
                                                     cl_float attenuation,
                                                     int steps) {
-    vector<cl_float> ret;
+    vector<cl_float> node_values(node_size, 0);
+    cl::copy(queue, node_values.begin(), node_values.end(), next);
+    cl::copy(queue, node_values.begin(), node_values.end(), current);
+    cl::copy(queue, node_values.begin(), node_values.end(), previous);
+
+    input.resize(steps, 0);
+
+    vector<cl_float> ret(input.size());
+    vector<cl_float> out(1);
+
+    auto ind = 0;
+    transform(input.begin(),
+              input.end(),
+              ret.begin(),
+              [this, &attenuation, &ind, &node_values, &e, &o, &out](auto i) {
+                  kernel(cl::EnqueueArgs(queue, cl::NDRange(node_size)),
+                         e,
+                         i,
+                         attenuation,
+                         next,
+                         current,
+                         previous,
+                         node_buffer,
+                         o,
+                         output);
+
+                  cl::copy(queue, output, out.begin(), out.end());
+
+#ifdef TESTING
+                  cl::copy(queue, next, node_values.begin(), node_values.end());
+                  auto fname = build_string("./file-", ind++, ".txt");
+                  cout << "writing file " << fname << endl;
+                  ofstream file(fname);
+                  for (auto j = 0u; j != nodes.size(); ++j) {
+                      const auto & n = nodes[j];
+                      file << n.position.x << " " << n.position.y << " "
+                           << n.position.z << " " << node_values[j] << endl;
+                  }
+#endif
+
+                  auto & temp = previous;
+                  previous = current;
+                  current = next;
+                  next = temp;
+
+                  return out.front();
+              });
+
     return ret;
 }

@@ -15,6 +15,7 @@ public:
                                cl::Buffer,
                                cl::Buffer,
                                cl::Buffer,
+                               cl::Buffer,
                                cl_ulong,
                                cl::Buffer>(*this, "waveguide");
     }
