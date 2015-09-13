@@ -19,6 +19,10 @@ bool CuboidBoundary::inside(const Vec3f& v) const {
     return (c0 < v).all() && (v < c1).all();
 }
 
+CuboidBoundary CuboidBoundary::get_aabb() const {
+    return *this;
+}
+
 Vec3f CuboidBoundary::get_dimensions() const {
     return c1 - c0;
 }
@@ -35,11 +39,16 @@ CuboidBoundary get_cuboid_boundary(const vector<Vec3f>& vertices) {
 
 SphereBoundary::SphereBoundary(const Vec3f& c, float radius)
         : c(c)
-        , radius(radius) {
+        , radius(radius)
+        , boundary(-radius, radius) {
 }
 
 bool SphereBoundary::inside(const Vec3f& v) const {
     return (v - c).mag() < radius;
+}
+
+CuboidBoundary SphereBoundary::get_aabb() const {
+    return boundary;
 }
 
 Vec3i MeshBoundary::hash_point(const Vec3f& v) const {
@@ -159,6 +168,10 @@ bool MeshBoundary::inside(const Vec3f& v) const {
 
     //  if intersection number is even, point is outside, else it's inside
     return count % 2;
+}
+
+CuboidBoundary MeshBoundary::get_aabb() const {
+    return boundary;
 }
 
 const int MeshBoundary::DIVISIONS = 1024;

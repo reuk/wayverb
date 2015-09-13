@@ -80,7 +80,16 @@ vector<cl_float> RectangularWaveguide::run(vector<float> input,
 RecursiveTetrahedralWaveguide::RecursiveTetrahedralWaveguide(
     const RecursiveTetrahedralProgram & program,
     cl::CommandQueue & queue,
-    vector<LinkedTetrahedralNode> & nodes)
+    const Boundary & boundary,
+    Vec3f start,
+    float spacing)
+        : RecursiveTetrahedralWaveguide(program, queue, tetrahedral_mesh(boundary, start, spacing)) {
+}
+
+RecursiveTetrahedralWaveguide::RecursiveTetrahedralWaveguide(
+    const RecursiveTetrahedralProgram & program,
+    cl::CommandQueue & queue,
+    std::vector<LinkedTetrahedralNode> nodes)
         : queue(queue)
         , kernel(program.get_kernel())
 #ifdef TESTING
@@ -162,5 +171,69 @@ vector<cl_float> RecursiveTetrahedralWaveguide::run(std::vector<float> input,
                   return out.front();
               });
 
+    return ret;
+}
+
+const vector<Vec3f> IterativeTetrahedralWaveguide::basic_cube {
+    {0.00,  0.00,   0.00},
+    {0.50,  0.00,   0.50},
+    {0.25,  0.25,   0.25},
+    {0.75,  0.25,   0.75},
+    {0.00,  0.50,   0.50},
+    {0.50,  0.50,   0.00},
+    {0.25,  0.75,   0.75},
+    {0.75,  0.75,   0.25},
+};
+
+std::vector<Vec3f> IterativeTetrahedralWaveguide::get_scaled_cube(float scale) {
+    vector<Vec3f> ret(basic_cube.size());
+    transform(basic_cube.begin(),
+              basic_cube.end(),
+              ret.begin(),
+              [scale](auto i) { return i * scale; });
+    return ret;
+}
+
+IterativeTetrahedralWaveguide::IterativeTetrahedralWaveguide(
+    const IterativeTetrahedralProgram & program,
+    cl::CommandQueue & queue,
+    const Boundary & boundary,
+    float cube_side)
+        : queue(queue)
+        , kernel(program.get_kernel())
+#ifdef TESTING
+        , nodes(nodes)
+#endif
+        , node_size(nodes.size())
+        , node_buffer(program.getInfo<CL_PROGRAM_CONTEXT>(),
+                      nodes.begin(),
+                      nodes.end(),
+                      true,
+                      false)
+        , storage({{cl::Buffer(program.getInfo<CL_PROGRAM_CONTEXT>(),
+                               CL_MEM_READ_WRITE,
+                               sizeof(cl_float) * node_size),
+                    cl::Buffer(program.getInfo<CL_PROGRAM_CONTEXT>(),
+                               CL_MEM_READ_WRITE,
+                               sizeof(cl_float) * node_size),
+                    cl::Buffer(program.getInfo<CL_PROGRAM_CONTEXT>(),
+                               CL_MEM_READ_WRITE,
+                               sizeof(cl_float) * node_size)}})
+        , previous(storage[0])
+        , current(storage[1])
+        , next(storage[2])
+        , output(program.getInfo<CL_PROGRAM_CONTEXT>(),
+                 CL_MEM_READ_WRITE,
+                 sizeof(cl_float))
+        , scaled_cube(get_scaled_cube(cube_side))
+{
+}
+
+vector<cl_float> IterativeTetrahedralWaveguide::run(std::vector<float> input,
+                                                    size_type excitation,
+                                                    size_type read_head,
+                                                    cl_float attenuation,
+                                                    int steps) {
+    vector<cl_float> ret;
     return ret;
 }

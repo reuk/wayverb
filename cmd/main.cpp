@@ -188,7 +188,8 @@ auto get_file_depth(unsigned long bitDepth) {
 }
 
 enum class RenderType {
-    TETRAHEDRAL,
+    RECURSIVE_TETRAHEDRAL,
+    ITERATIVE_TETRAHEDRAL,
     RECTANGULAR,
 };
 
@@ -199,15 +200,6 @@ enum class InputType {
 
 int main(int argc, char ** argv) {
     Logger::restart();
-
-    //  TODO testing
-
-    Vec3f a(1, 2, 3);
-    Vec3i b(4, 5, 6);
-    Vec3b c(true, true, false);
-
-    auto d = a.zip(b, c);
-
     gflags::ParseCommandLineFlags(&argc, &argv, true);
 
     if (argc != 3) {
@@ -257,29 +249,36 @@ int main(int argc, char ** argv) {
         auto boundary = SceneData(argv[1]).get_mesh_boundary();
         auto steps = 200;
 
-        auto renderType = RenderType::TETRAHEDRAL;
+        auto renderType = RenderType::ITERATIVE_TETRAHEDRAL;
         switch (renderType) {
-            case RenderType::TETRAHEDRAL: {
-                auto tetr_program =
+            case RenderType::RECURSIVE_TETRAHEDRAL: {
+                auto program =
                     get_program<RecursiveTetrahedralProgram>(context, device);
-                auto mesh = tetrahedral_mesh(boundary, 0, divisions);
-                RecursiveTetrahedralWaveguide t_waveguide(
-                    tetr_program, queue, mesh);
-                results =
-                    t_waveguide.run(input, 0, 0, attenuation_factor, steps);
+                RecursiveTetrahedralWaveguide waveguide(
+                    program, queue, boundary, 0, divisions);
+                results = waveguide.run(input, 0, 0, attenuation_factor, steps);
+                break;
+            }
+
+            case RenderType::ITERATIVE_TETRAHEDRAL: {
+                auto program =
+                    get_program<IterativeTetrahedralProgram>(context, device);
+                IterativeTetrahedralWaveguide waveguide(
+                    program, queue, boundary, divisions);
+                results = waveguide.run(input, 0, 0, attenuation_factor, steps);
                 break;
             }
 
             case RenderType::RECTANGULAR: {
-                auto rect_program =
+                auto program =
                     get_program<RectangularProgram>(context, device);
-                RectangularWaveguide r_waveguide(
-                    rect_program, queue, {{64, 64, 64}});
-                results = r_waveguide.run(input,
-                                          {{20, 20, 20}},
-                                          {{35, 40, 45}},
-                                          attenuation_factor,
-                                          steps);
+                RectangularWaveguide waveguide(
+                    program, queue, {{64, 64, 64}});
+                results = waveguide.run(input,
+                                        {{20, 20, 20}},
+                                        {{35, 40, 45}},
+                                        attenuation_factor,
+                                        steps);
                 break;
             }
         }
