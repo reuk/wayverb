@@ -9,33 +9,93 @@
 
 #include <array>
 #include <type_traits>
+#include <algorithm>
 
 //#define TESTING
 
-class RectangularWaveguide {
+template <typename T>
+class Waveguide {
 public:
     using size_type = std::vector<cl_float>::size_type;
     using kernel_type =
-        decltype(std::declval<RectangularProgram>().get_kernel());
+        decltype(std::declval<T>().get_kernel());
 
-    RectangularWaveguide(const RectangularProgram & program,
-                         cl::CommandQueue & queue,
-                         cl_int3 p);
+    Waveguide(const T & program, cl::CommandQueue & queue, int nodes)
+            : queue(queue)
+            , kernel(program.get_kernel())
+            , nodes(nodes)
+            , storage({{cl::Buffer(program.template getInfo<CL_PROGRAM_CONTEXT>(),
+                                   CL_MEM_READ_WRITE,
+                                   sizeof(cl_float) * nodes),
+                        cl::Buffer(program.template getInfo<CL_PROGRAM_CONTEXT>(),
+                                   CL_MEM_READ_WRITE,
+                                   sizeof(cl_float) * nodes),
+                        cl::Buffer(program.template getInfo<CL_PROGRAM_CONTEXT>(),
+                                   CL_MEM_READ_WRITE,
+                                   sizeof(cl_float) * nodes)}})
+            , previous(storage[0])
+            , current(storage[1])
+            , next(storage[2])
+            , output(program.template getInfo<CL_PROGRAM_CONTEXT>(),
+                     CL_MEM_READ_WRITE,
+                     sizeof(cl_float)) {
+    }
 
-    std::vector<cl_float> run(std::vector<float> input,
-                              cl_int3 excitation,
-                              cl_int3 read_head,
+    virtual cl_float run_step(cl_float i,
+                              int e,
+                              int o,
                               cl_float attenuation,
-                              int steps);
+                              cl::CommandQueue & queue,
+                              kernel_type & kernel,
+                              int nodes,
+                              cl::Buffer & previous,
+                              cl::Buffer & current,
+                              cl::Buffer & next,
+                              cl::Buffer & output) = 0;
+
+    virtual std::vector<cl_float> run(std::vector<float> input,
+                                      int e,
+                                      int o,
+                                      cl_float attenuation,
+                                      int steps) {
+        std::vector<cl_float> n(nodes, 0);
+        cl::copy(queue, n.begin(), n.end(), next);
+        cl::copy(queue, n.begin(), n.end(), current);
+        cl::copy(queue, n.begin(), n.end(), previous);
+
+        input.resize(steps, 0);
+
+        std::vector<cl_float> ret(input.size());
+
+        std::transform(input.begin(),
+                       input.end(),
+                       ret.begin(),
+                       [this, &attenuation, &e, &o](auto i) {
+                           auto ret = this->run_step(i,
+                                                     e,
+                                                     o,
+                                                     attenuation,
+                                                     queue,
+                                                     kernel,
+                                                     nodes,
+                                                     previous,
+                                                     current,
+                                                     next,
+                                                     output);
+                           auto & temp = previous;
+                           previous = current;
+                           current = next;
+                           next = temp;
+                           return ret;
+                       });
+
+        return ret;
+    }
 
 private:
     cl::CommandQueue & queue;
-
     kernel_type kernel;
-
-    size_type get_index(cl_int3 pos) const;
-
-    const cl_int3 p;
+    const int nodes;
 
     std::array<cl::Buffer, 3> storage;
 
@@ -46,81 +106,84 @@ private:
     cl::Buffer output;
 };
 
-class RecursiveTetrahedralWaveguide {
+class RectangularWaveguide: public Waveguide<RectangularProgram> {
 public:
-    using size_type = std::vector<cl_float>::size_type;
-    using kernel_type =
-        decltype(std::declval<RecursiveTetrahedralProgram>().get_kernel());
+    RectangularWaveguide(const RectangularProgram & program,
+                         cl::CommandQueue & queue,
+                         cl_int3 p);
 
+    cl_float run_step(cl_float i,
+                      int e,
+                      int o,
+                      cl_float attenuation,
+                      cl::CommandQueue & queue,
+                      kernel_type & kernel,
+                      int nodes,
+                      cl::Buffer & previous,
+                      cl::Buffer & current,
+                      cl::Buffer & next,
+                      cl::Buffer & output) override;
+
+    size_type get_index(cl_int3 pos) const;
+private:
+    const cl_int3 p;
+};
+
+class RecursiveTetrahedralWaveguide: public Waveguide<RecursiveTetrahedralProgram> {
+public:
     RecursiveTetrahedralWaveguide(const RecursiveTetrahedralProgram & program,
                                   cl::CommandQueue & queue,
                                   const Boundary & boundary,
                                   Vec3f start,
                                   float spacing);
 
-    std::vector<cl_float> run(std::vector<float> input,
-                              size_type excitation,
-                              size_type read_head,
-                              cl_float attenuation,
-                              int steps);
+    cl_float run_step(cl_float i,
+                      int e,
+                      int o,
+                      cl_float attenuation,
+                      cl::CommandQueue & queue,
+                      kernel_type & kernel,
+                      int nodes,
+                      cl::Buffer & previous,
+                      cl::Buffer & current,
+                      cl::Buffer & next,
+                      cl::Buffer & output) override;
 
 private:
     RecursiveTetrahedralWaveguide(const RecursiveTetrahedralProgram & program,
                                   cl::CommandQueue & queue,
                                   std::vector<LinkedTetrahedralNode> nodes);
 
-    cl::CommandQueue & queue;
-
-    kernel_type kernel;
-
 #ifdef TESTING
     std::vector<LinkedTetrahedralNode> & nodes;
 #endif
-
-    const size_type node_size;
     cl::Buffer node_buffer;
-
-    std::array<cl::Buffer, 3> storage;
-
-    cl::Buffer & previous;
-    cl::Buffer & current;
-    cl::Buffer & next;
-
-    cl::Buffer output;
 };
 
-class IterativeTetrahedralWaveguide {
+class IterativeTetrahedralWaveguide: public Waveguide<IterativeTetrahedralProgram> {
 public:
-    using size_type = std::vector<cl_float>::size_type;
-    using kernel_type =
-        decltype(std::declval<IterativeTetrahedralProgram>().get_kernel());
-
     IterativeTetrahedralWaveguide(const IterativeTetrahedralProgram & program,
                                   cl::CommandQueue & queue,
                                   const Boundary & boundary,
                                   float cube_side);
 
-    std::vector<cl_float> run(std::vector<float> input,
-                              size_type excitation,
-                              size_type read_head,
-                              cl_float attenuation,
-                              int steps);
+    cl_float run_step(cl_float i,
+                      int e,
+                      int o,
+                      cl_float attenuation,
+                      cl::CommandQueue & queue,
+                      kernel_type & kernel,
+                      int nodes,
+                      cl::Buffer & previous,
+                      cl::Buffer & current,
+                      cl::Buffer & next,
+                      cl::Buffer & output) override;
 
 private:
-    cl::CommandQueue & queue;
-
-    kernel_type kernel;
+    IterativeTetrahedralWaveguide(const IterativeTetrahedralProgram & program,
+                                  cl::CommandQueue & queue,
+                                  IterativeTetrahedralMesh mesh);
 
     IterativeTetrahedralMesh mesh;
-
-    const size_type node_size;
     cl::Buffer node_buffer;
-
-    std::array<cl::Buffer, 3> storage;
-
-    cl::Buffer & previous;
-    cl::Buffer & current;
-    cl::Buffer & next;
-
-    cl::Buffer output;
 };
