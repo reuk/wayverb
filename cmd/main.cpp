@@ -273,8 +273,8 @@ int main(int argc, char ** argv) {
                 auto program = get_program<RectangularProgram>(context, device);
                 RectangularWaveguide waveguide(program, queue, {{64, 64, 64}});
                 results = waveguide.run(input,
-                                        {{20, 20, 20}},
-                                        {{35, 40, 45}},
+                                        waveguide.get_index({{20, 20, 20}}),
+                                        waveguide.get_index({{35, 40, 45}}),
                                         attenuation_factor,
                                         steps);
                 break;

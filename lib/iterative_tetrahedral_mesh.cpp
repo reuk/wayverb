@@ -81,6 +81,10 @@ vector<UnlinkedTetrahedralNode> get_nodes(const Boundary & boundary,
     return ret;
 }
 
+IterativeTetrahedralMesh::IterativeTetrahedralMesh()
+        : spacing(0) {
+}
+
 IterativeTetrahedralMesh::IterativeTetrahedralMesh(const Boundary & boundary,
                                                    float spacing)
         : spacing(spacing)

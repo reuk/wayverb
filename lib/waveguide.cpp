@@ -10,24 +10,8 @@ using namespace std;
 RectangularWaveguide::RectangularWaveguide(const RectangularProgram & program,
                                            cl::CommandQueue & queue,
                                            cl_int3 p)
-        : queue(queue)
-        , kernel(program.get_kernel())
-        , p(p)
-        , storage({{cl::Buffer(program.getInfo<CL_PROGRAM_CONTEXT>(),
-                               CL_MEM_READ_WRITE,
-                               sizeof(cl_float) * p.x * p.y * p.z),
-                    cl::Buffer(program.getInfo<CL_PROGRAM_CONTEXT>(),
-                               CL_MEM_READ_WRITE,
-                               sizeof(cl_float) * p.x * p.y * p.z),
-                    cl::Buffer(program.getInfo<CL_PROGRAM_CONTEXT>(),
-                               CL_MEM_READ_WRITE,
-                               sizeof(cl_float) * p.x * p.y * p.z)}})
-        , previous(storage[0])
-        , current(storage[1])
-        , next(storage[2])
-        , output(program.getInfo<CL_PROGRAM_CONTEXT>(),
-                 CL_MEM_READ_WRITE,
-                 sizeof(cl_float)) {
+        : Waveguide(program, queue, p.x * p.y * p.z)
+        , p(p) {
 }
 
 RectangularWaveguide::size_type RectangularWaveguide::get_index(
@@ -35,47 +19,33 @@ RectangularWaveguide::size_type RectangularWaveguide::get_index(
     return pos.x + pos.y * p.x + pos.z * p.x * p.y;
 }
 
-vector<cl_float> RectangularWaveguide::run(vector<float> input,
-                                           cl_int3 e,
-                                           cl_int3 o,
-                                           cl_float attenuation,
-                                           int steps) {
-    vector<cl_float> nodes(p.x * p.y * p.z, 0);
-    cl::copy(queue, nodes.begin(), nodes.end(), next);
-    cl::copy(queue, nodes.begin(), nodes.end(), current);
-    cl::copy(queue, nodes.begin(), nodes.end(), previous);
-
-    input.resize(steps, 0);
-
-    vector<cl_float> ret(input.size());
+cl_float RectangularWaveguide::run_step(cl_float i,
+                                        int e,
+                                        int o,
+                                        cl_float attenuation,
+                                        cl::CommandQueue & queue,
+                                        kernel_type & kernel,
+                                        int nodes,
+                                        cl::Buffer & previous,
+                                        cl::Buffer & current,
+                                        cl::Buffer & next,
+                                        cl::Buffer & output) {
     vector<cl_float> out(1);
 
-    transform(input.begin(),
-              input.end(),
-              ret.begin(),
-              [this, &attenuation, &e, &o, &out](auto i) {
-                  kernel(cl::EnqueueArgs(queue, cl::NDRange(p.x, p.y, p.z)),
-                         this->get_index(e),
-                         i,
-                         attenuation,
-                         next,
-                         current,
-                         previous,
-                         -1,
-                         this->get_index(o),
-                         output);
+    kernel(cl::EnqueueArgs(queue, cl::NDRange(p.x, p.y, p.z)),
+           e,
+           i,
+           attenuation,
+           next,
+           current,
+           previous,
+           -1,
+           o,
+           output);
 
-                  cl::copy(queue, output, out.begin(), out.end());
+    cl::copy(queue, output, out.begin(), out.end());
 
-                  auto & temp = previous;
-                  previous = current;
-                  current = next;
-                  next = temp;
-
-                  return out.front();
-              });
-
-    return ret;
+    return out.front();
 }
 
 RecursiveTetrahedralWaveguide::RecursiveTetrahedralWaveguide(
@@ -92,88 +62,52 @@ RecursiveTetrahedralWaveguide::RecursiveTetrahedralWaveguide(
     const RecursiveTetrahedralProgram & program,
     cl::CommandQueue & queue,
     std::vector<LinkedTetrahedralNode> nodes)
-        : queue(queue)
-        , kernel(program.get_kernel())
+        : Waveguide(program, queue, nodes.size())
 #ifdef TESTING
         , nodes(nodes)
 #endif
-        , node_size(nodes.size())
-        , node_buffer(program.getInfo<CL_PROGRAM_CONTEXT>(),
-                      nodes.begin(),
-                      nodes.end(),
-                      true,
-                      false)
-        , storage({{cl::Buffer(program.getInfo<CL_PROGRAM_CONTEXT>(),
-                               CL_MEM_READ_WRITE,
-                               sizeof(cl_float) * node_size),
-                    cl::Buffer(program.getInfo<CL_PROGRAM_CONTEXT>(),
-                               CL_MEM_READ_WRITE,
-                               sizeof(cl_float) * node_size),
-                    cl::Buffer(program.getInfo<CL_PROGRAM_CONTEXT>(),
-                               CL_MEM_READ_WRITE,
-                               sizeof(cl_float) * node_size)}})
-        , previous(storage[0])
-        , current(storage[1])
-        , next(storage[2])
-        , output(program.getInfo<CL_PROGRAM_CONTEXT>(),
-                 CL_MEM_READ_WRITE,
-                 sizeof(cl_float)) {
+        , node_buffer(program.getInfo<CL_PROGRAM_CONTEXT>(), nodes.begin(), nodes.end(), false) {
 }
 
-vector<cl_float> RecursiveTetrahedralWaveguide::run(std::vector<float> input,
-                                                    size_type e,
-                                                    size_type o,
-                                                    cl_float attenuation,
-                                                    int steps) {
-    vector<cl_float> node_values(node_size, 0);
-    cl::copy(queue, node_values.begin(), node_values.end(), next);
-    cl::copy(queue, node_values.begin(), node_values.end(), current);
-    cl::copy(queue, node_values.begin(), node_values.end(), previous);
-
-    input.resize(steps, 0);
-
-    vector<cl_float> ret(input.size());
+cl_float RecursiveTetrahedralWaveguide::run_step(cl_float i,
+                                                 int e,
+                                                 int o,
+                                                 cl_float attenuation,
+                                                 cl::CommandQueue & queue,
+                                                 kernel_type & kernel,
+                                                 int nodes,
+                                                 cl::Buffer & previous,
+                                                 cl::Buffer & current,
+                                                 cl::Buffer & next,
+                                                 cl::Buffer & output) {
     vector<cl_float> out(1);
 
-    auto ind = 0;
-    transform(input.begin(),
-              input.end(),
-              ret.begin(),
-              [this, &attenuation, &ind, &node_values, &e, &o, &out](auto i) {
-                  kernel(cl::EnqueueArgs(queue, cl::NDRange(node_size)),
-                         e,
-                         i,
-                         attenuation,
-                         next,
-                         current,
-                         previous,
-                         node_buffer,
-                         o,
-                         output);
+    kernel(cl::EnqueueArgs(queue, cl::NDRange(nodes)),
+           e,
+           i,
+           attenuation,
+           next,
+           current,
+           previous,
+           node_buffer,
+           o,
+           output);
 
-                  cl::copy(queue, output, out.begin(), out.end());
+    cl::copy(queue, output, out.begin(), out.end());
 
 #ifdef TESTING
-                  cl::copy(queue, next, node_values.begin(), node_values.end());
-                  auto fname = build_string("./file-", ind++, ".txt");
-                  cout << "writing file " << fname << endl;
-                  ofstream file(fname);
-                  for (auto j = 0u; j != nodes.size(); ++j) {
-                      const auto & n = nodes[j];
-                      file << n.position.x << " " << n.position.y << " "
-                           << n.position.z << " " << node_values[j] << endl;
-                  }
+    cl::copy(queue, next, node_values.begin(), node_values.end());
+    auto fname = build_string("./file-", ind++, ".txt");
+    cout << "writing file " << fname << endl;
+    ofstream file(fname);
+    for (auto j = 0u; j != nodes.size(); ++j) {
+        const auto & n = nodes[j];
+        file << n.position.x << " " << n.position.y << " "
+             << n.position.z << " " << node_values[j] << endl;
+    }
 #endif
 
-                  auto & temp = previous;
-                  previous = current;
-                  current = next;
-                  next = temp;
-
-                  return out.front();
-              });
-
-    return ret;
+    return out.front();
 }
 
 IterativeTetrahedralWaveguide::IterativeTetrahedralWaveguide(
@@ -181,84 +115,55 @@ IterativeTetrahedralWaveguide::IterativeTetrahedralWaveguide(
     cl::CommandQueue & queue,
     const Boundary & boundary,
     float cube_side)
-        : queue(queue)
-        , kernel(program.get_kernel())
-        , mesh(boundary, cube_side)
-        , node_size(mesh.nodes.size())
-        , node_buffer(program.getInfo<CL_PROGRAM_CONTEXT>(),
-                      mesh.nodes.begin(),
-                      mesh.nodes.end(),
-                      true,
-                      false)
-        , storage({{cl::Buffer(program.getInfo<CL_PROGRAM_CONTEXT>(),
-                               CL_MEM_READ_WRITE,
-                               sizeof(cl_float) * node_size),
-                    cl::Buffer(program.getInfo<CL_PROGRAM_CONTEXT>(),
-                               CL_MEM_READ_WRITE,
-                               sizeof(cl_float) * node_size),
-                    cl::Buffer(program.getInfo<CL_PROGRAM_CONTEXT>(),
-                               CL_MEM_READ_WRITE,
-                               sizeof(cl_float) * node_size)}})
-        , previous(storage[0])
-        , current(storage[1])
-        , next(storage[2])
-        , output(program.getInfo<CL_PROGRAM_CONTEXT>(),
-                 CL_MEM_READ_WRITE,
-                 sizeof(cl_float)) {
+        : IterativeTetrahedralWaveguide(program, queue, IterativeTetrahedralMesh(boundary, cube_side)) {
 }
 
-vector<cl_float> IterativeTetrahedralWaveguide::run(std::vector<float> input,
-                                                    size_type e,
-                                                    size_type o,
-                                                    cl_float attenuation,
-                                                    int steps) {
-    vector<cl_float> node_values(node_size, 0);
-    cl::copy(queue, node_values.begin(), node_values.end(), next);
-    cl::copy(queue, node_values.begin(), node_values.end(), current);
-    cl::copy(queue, node_values.begin(), node_values.end(), previous);
+IterativeTetrahedralWaveguide::IterativeTetrahedralWaveguide(
+    const IterativeTetrahedralProgram & program,
+    cl::CommandQueue & queue,
+    IterativeTetrahedralMesh mesh)
+        : Waveguide(program, queue, mesh.nodes.size())
+        , mesh(mesh)
+        , node_buffer(program.getInfo<CL_PROGRAM_CONTEXT>(), mesh.nodes.begin(), mesh.nodes.end(), false) {
+}
 
-    input.resize(steps, 0);
-
-    vector<cl_float> ret(input.size());
+cl_float IterativeTetrahedralWaveguide::run_step(cl_float i,
+                                                 int e,
+                                                 int o,
+                                                 cl_float attenuation,
+                                                 cl::CommandQueue & queue,
+                                                 kernel_type & kernel,
+                                                 int nodes,
+                                                 cl::Buffer & previous,
+                                                 cl::Buffer & current,
+                                                 cl::Buffer & next,
+                                                 cl::Buffer & output) {
     vector<cl_float> out(1);
 
-    auto ind = 0;
-    transform(input.begin(),
-              input.end(),
-              ret.begin(),
-              [this, &attenuation, &ind, &node_values, &e, &o, &out](auto i) {
-                  kernel(cl::EnqueueArgs(queue, cl::NDRange(node_size)),
-                         e,
-                         i,
-                         attenuation,
-                         next,
-                         current,
-                         previous,
-                         node_buffer,
-                         o,
-                         output);
+    kernel(cl::EnqueueArgs(queue, cl::NDRange(nodes)),
+           e,
+           i,
+           attenuation,
+           next,
+           current,
+           previous,
+           node_buffer,
+           o,
+           output);
 
-                  cl::copy(queue, output, out.begin(), out.end());
+    cl::copy(queue, output, out.begin(), out.end());
 
 #ifdef TESTING
-                  cl::copy(queue, next, node_values.begin(), node_values.end());
-                  auto fname = build_string("./file-", ind++, ".txt");
-                  cout << "writing file " << fname << endl;
-                  ofstream file(fname);
-                  for (auto j = 0u; j != nodes.size(); ++j) {
-                      const auto & n = nodes[j];
-                      file << n.position.x << " " << n.position.y << " "
-                           << n.position.z << " " << node_values[j] << endl;
-                  }
+    cl::copy(queue, next, node_values.begin(), node_values.end());
+    auto fname = build_string("./file-", ind++, ".txt");
+    cout << "writing file " << fname << endl;
+    ofstream file(fname);
+    for (auto j = 0u; j != nodes.size(); ++j) {
+        const auto & n = nodes[j];
+        file << n.position.x << " " << n.position.y << " "
+             << n.position.z << " " << node_values[j] << endl;
+    }
 #endif
 
-                  auto & temp = previous;
-                  previous = current;
-                  current = next;
-                  next = temp;
-
-                  return out.front();
-              });
-
-    return ret;
+    return out.front();
 }
