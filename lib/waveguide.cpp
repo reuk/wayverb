@@ -66,7 +66,10 @@ RecursiveTetrahedralWaveguide::RecursiveTetrahedralWaveguide(
 #ifdef TESTING
         , nodes(nodes)
 #endif
-        , node_buffer(program.getInfo<CL_PROGRAM_CONTEXT>(), nodes.begin(), nodes.end(), false) {
+        , node_buffer(program.getInfo<CL_PROGRAM_CONTEXT>(),
+                      nodes.begin(),
+                      nodes.end(),
+                      false) {
 }
 
 cl_float RecursiveTetrahedralWaveguide::run_step(cl_float i,
@@ -102,8 +105,8 @@ cl_float RecursiveTetrahedralWaveguide::run_step(cl_float i,
     ofstream file(fname);
     for (auto j = 0u; j != nodes.size(); ++j) {
         const auto & n = nodes[j];
-        file << n.position.x << " " << n.position.y << " "
-             << n.position.z << " " << node_values[j] << endl;
+        file << n.position.x << " " << n.position.y << " " << n.position.z
+             << " " << node_values[j] << endl;
     }
 #endif
 
@@ -115,7 +118,8 @@ IterativeTetrahedralWaveguide::IterativeTetrahedralWaveguide(
     cl::CommandQueue & queue,
     const Boundary & boundary,
     float cube_side)
-        : IterativeTetrahedralWaveguide(program, queue, IterativeTetrahedralMesh(boundary, cube_side)) {
+        : IterativeTetrahedralWaveguide(
+              program, queue, IterativeTetrahedralMesh(boundary, cube_side)) {
 }
 
 IterativeTetrahedralWaveguide::IterativeTetrahedralWaveguide(
@@ -124,7 +128,10 @@ IterativeTetrahedralWaveguide::IterativeTetrahedralWaveguide(
     IterativeTetrahedralMesh mesh)
         : Waveguide(program, queue, mesh.nodes.size())
         , mesh(mesh)
-        , node_buffer(program.getInfo<CL_PROGRAM_CONTEXT>(), mesh.nodes.begin(), mesh.nodes.end(), false) {
+        , node_buffer(program.getInfo<CL_PROGRAM_CONTEXT>(),
+                      mesh.nodes.begin(),
+                      mesh.nodes.end(),
+                      false) {
 }
 
 cl_float IterativeTetrahedralWaveguide::run_step(cl_float i,
@@ -160,8 +167,8 @@ cl_float IterativeTetrahedralWaveguide::run_step(cl_float i,
     ofstream file(fname);
     for (auto j = 0u; j != nodes.size(); ++j) {
         const auto & n = nodes[j];
-        file << n.position.x << " " << n.position.y << " "
-             << n.position.z << " " << node_values[j] << endl;
+        file << n.position.x << " " << n.position.y << " " << n.position.z
+             << " " << node_values[j] << endl;
     }
 #endif
 

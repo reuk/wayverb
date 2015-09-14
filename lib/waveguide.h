@@ -17,22 +17,22 @@ template <typename T>
 class Waveguide {
 public:
     using size_type = std::vector<cl_float>::size_type;
-    using kernel_type =
-        decltype(std::declval<T>().get_kernel());
+    using kernel_type = decltype(std::declval<T>().get_kernel());
 
     Waveguide(const T & program, cl::CommandQueue & queue, int nodes)
             : queue(queue)
             , kernel(program.get_kernel())
             , nodes(nodes)
-            , storage({{cl::Buffer(program.template getInfo<CL_PROGRAM_CONTEXT>(),
-                                   CL_MEM_READ_WRITE,
-                                   sizeof(cl_float) * nodes),
-                        cl::Buffer(program.template getInfo<CL_PROGRAM_CONTEXT>(),
-                                   CL_MEM_READ_WRITE,
-                                   sizeof(cl_float) * nodes),
-                        cl::Buffer(program.template getInfo<CL_PROGRAM_CONTEXT>(),
-                                   CL_MEM_READ_WRITE,
-                                   sizeof(cl_float) * nodes)}})
+            , storage(
+                  {{cl::Buffer(program.template getInfo<CL_PROGRAM_CONTEXT>(),
+                               CL_MEM_READ_WRITE,
+                               sizeof(cl_float) * nodes),
+                    cl::Buffer(program.template getInfo<CL_PROGRAM_CONTEXT>(),
+                               CL_MEM_READ_WRITE,
+                               sizeof(cl_float) * nodes),
+                    cl::Buffer(program.template getInfo<CL_PROGRAM_CONTEXT>(),
+                               CL_MEM_READ_WRITE,
+                               sizeof(cl_float) * nodes)}})
             , previous(storage[0])
             , current(storage[1])
             , next(storage[2])
@@ -106,7 +106,7 @@ private:
     cl::Buffer output;
 };
 
-class RectangularWaveguide: public Waveguide<RectangularProgram> {
+class RectangularWaveguide : public Waveguide<RectangularProgram> {
 public:
     RectangularWaveguide(const RectangularProgram & program,
                          cl::CommandQueue & queue,
@@ -125,11 +125,13 @@ public:
                       cl::Buffer & output) override;
 
     size_type get_index(cl_int3 pos) const;
+
 private:
     const cl_int3 p;
 };
 
-class RecursiveTetrahedralWaveguide: public Waveguide<RecursiveTetrahedralProgram> {
+class RecursiveTetrahedralWaveguide
+    : public Waveguide<RecursiveTetrahedralProgram> {
 public:
     RecursiveTetrahedralWaveguide(const RecursiveTetrahedralProgram & program,
                                   cl::CommandQueue & queue,
@@ -160,7 +162,8 @@ private:
     cl::Buffer node_buffer;
 };
 
-class IterativeTetrahedralWaveguide: public Waveguide<IterativeTetrahedralProgram> {
+class IterativeTetrahedralWaveguide
+    : public Waveguide<IterativeTetrahedralProgram> {
 public:
     IterativeTetrahedralWaveguide(const IterativeTetrahedralProgram & program,
                                   cl::CommandQueue & queue,
