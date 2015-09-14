@@ -247,9 +247,9 @@ int main(int argc, char ** argv) {
         vector<cl_float> results;
 
         auto boundary = SceneData(argv[1]).get_mesh_boundary();
-        auto steps = 200;
+        auto steps = 4096;
 
-        auto renderType = RenderType::ITERATIVE_TETRAHEDRAL;
+        auto renderType = RenderType::RECTANGULAR;
         switch (renderType) {
             case RenderType::RECURSIVE_TETRAHEDRAL: {
                 auto program =
