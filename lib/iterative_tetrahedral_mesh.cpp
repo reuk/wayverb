@@ -45,14 +45,13 @@ vector<TetrahedralNode> IterativeTetrahedralMesh::get_nodes(
               ret.begin(),
               [this, &counter, &boundary](auto i) {
                   TetrahedralNode ret;
-                  ret.inside =
-                      boundary.inside(get_position(get_locator(counter++)));
+                  auto p = get_position(get_locator(counter));
+                  //    TODO ret.ports = blahblahblah
+                  ret.position = {{p.x, p.y, p.z}};
+                  ret.inside = boundary.inside(p);
+                  counter += 1;
                   return ret;
               });
-    Logger::log(total_nodes, " nodes tested against boundary!");
-    Logger::log(
-        count_if(ret.begin(), ret.end(), [](auto i) { return i.inside; }),
-        " nodes inside boundary");
     return ret;
 }
 

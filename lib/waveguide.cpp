@@ -146,19 +146,12 @@ IterativeTetrahedralWaveguide::IterativeTetrahedralWaveguide(
                       mesh.nodes.begin(),
                       mesh.nodes.end(),
                       false)
-#ifdef TESTING
-        , node_positions(mesh.nodes.size())
-#endif
 {
-#ifdef TESTING
-    for (auto i = 0u; i != mesh.nodes.size(); ++i) {
-        node_positions[i] = mesh.get_position(mesh.get_locator(i));
-    }
-#endif
 }
 
 Vec3f IterativeTetrahedralWaveguide::get_node_position(size_type index) const {
-    return mesh.get_position(mesh.get_locator(index));
+    auto p = mesh.nodes[index].position;
+    return Vec3f(p.x, p.y, p.z);
 }
 bool IterativeTetrahedralWaveguide::get_node_inside(size_type index) const {
     return mesh.nodes[index].inside;

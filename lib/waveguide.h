@@ -215,7 +215,4 @@ private:
 
     IterativeTetrahedralMesh mesh;
     cl::Buffer node_buffer;
-#ifdef TESTING
-    std::vector<Vec3f> node_positions;
-#endif
 };
