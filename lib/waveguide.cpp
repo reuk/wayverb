@@ -27,12 +27,12 @@ bool RectangularWaveguide::get_node_inside(size_type index) const {
 }
 
 cl_float RectangularWaveguide::run_step(cl_float i,
-                                        int e,
-                                        int o,
+                                        size_type e,
+                                        size_type o,
                                         cl_float attenuation,
                                         cl::CommandQueue & queue,
                                         kernel_type & kernel,
-                                        int nodes,
+                                        size_type nodes,
                                         cl::Buffer & previous,
                                         cl::Buffer & current,
                                         cl::Buffer & next,
@@ -86,12 +86,12 @@ bool RecursiveTetrahedralWaveguide::get_node_inside(size_type index) const {
 }
 
 cl_float RecursiveTetrahedralWaveguide::run_step(cl_float i,
-                                                 int e,
-                                                 int o,
+                                                 size_type e,
+                                                 size_type o,
                                                  cl_float attenuation,
                                                  cl::CommandQueue & queue,
                                                  kernel_type & kernel,
-                                                 int nodes,
+                                                 size_type nodes,
                                                  cl::Buffer & previous,
                                                  cl::Buffer & current,
                                                  cl::Buffer & next,
@@ -112,7 +112,7 @@ cl_float RecursiveTetrahedralWaveguide::run_step(cl_float i,
     cl::copy(queue, output, out.begin(), out.end());
 
 #ifdef TESTING
-    static int ind = 0;
+    static size_type ind = 0;
 
     vector<cl_float> node_values(nodes);
     cl::copy(queue, next, node_values.begin(), node_values.end());
@@ -158,12 +158,12 @@ bool IterativeTetrahedralWaveguide::get_node_inside(size_type index) const {
 }
 
 cl_float IterativeTetrahedralWaveguide::run_step(cl_float i,
-                                                 int e,
-                                                 int o,
+                                                 size_type e,
+                                                 size_type o,
                                                  cl_float attenuation,
                                                  cl::CommandQueue & queue,
                                                  kernel_type & kernel,
-                                                 int nodes,
+                                                 size_type nodes,
                                                  cl::Buffer & previous,
                                                  cl::Buffer & current,
                                                  cl::Buffer & next,
@@ -185,7 +185,7 @@ cl_float IterativeTetrahedralWaveguide::run_step(cl_float i,
     cl::copy(queue, output, out.begin(), out.end());
 
 #ifdef TESTING
-    static int ind = 0;
+    static size_type ind = 0;
 
     vector<cl_float> node_values(nodes);
     cl::copy(queue, next, node_values.begin(), node_values.end());

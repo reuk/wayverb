@@ -45,8 +45,9 @@ vector<TetrahedralNode> IterativeTetrahedralMesh::get_nodes(
               ret.begin(),
               [this, &counter, &boundary](auto i) {
                   TetrahedralNode ret;
-                  auto p = get_position(get_locator(counter));
-                  //    TODO ret.ports = blahblahblah
+                  auto p = this->get_position(this->get_locator(counter));
+                  auto neighbors = this->get_neighbors(counter);
+                  copy(neighbors.begin(), neighbors.end(), begin(ret.ports));
                   ret.position = {{p.x, p.y, p.z}};
                   ret.inside = boundary.inside(p);
                   counter += 1;
@@ -85,4 +86,39 @@ Vec3f IterativeTetrahedralMesh::get_position(const Locator & locator) const {
     auto cube_pos = locator.pos * spacing;
     auto node_pos = scaled_cube[locator.mod_ind];
     return cube_pos + node_pos + boundary.c0;
+}
+
+using Locator = IterativeTetrahedralMesh::Locator;
+
+const array<array<Locator, IterativeTetrahedralMesh::PORTS>, IterativeTetrahedralMesh::CUBE_NODES>
+IterativeTetrahedralMesh::offset_table = {
+    Locator(Vec3i( 0,  0,  0), 2), Locator(Vec3i(-1,  0, -1), 3),
+    Locator(Vec3i(-1, -1,  0), 6), Locator(Vec3i( 0, -1, -1), 7),
+    Locator(Vec3i( 0,  0,  0), 2), Locator(Vec3i( 0,  0,  0), 3),
+    Locator(Vec3i( 0, -1,  0), 6), Locator(Vec3i( 0, -1,  0), 7),
+    Locator(Vec3i( 0,  0,  0), 0), Locator(Vec3i( 0,  0,  0), 1),
+    Locator(Vec3i( 0,  0,  0), 4), Locator(Vec3i( 0,  0,  0), 5),
+    Locator(Vec3i( 1,  0,  1), 0), Locator(Vec3i( 0,  0,  0), 1),
+    Locator(Vec3i( 0,  0,  1), 4), Locator(Vec3i( 1,  0,  0), 5),
+    Locator(Vec3i( 0,  0,  0), 2), Locator(Vec3i( 0,  0, -1), 3),
+    Locator(Vec3i( 0,  0,  0), 6), Locator(Vec3i( 0,  0, -1), 7),
+    Locator(Vec3i( 0,  0,  0), 2), Locator(Vec3i(-1,  0,  0), 3),
+    Locator(Vec3i(-1,  0,  0), 6), Locator(Vec3i( 0,  0,  0), 7),
+    Locator(Vec3i( 1,  1,  0), 0), Locator(Vec3i( 0,  1,  0), 1),
+    Locator(Vec3i( 0,  0,  0), 4), Locator(Vec3i( 1,  0,  0), 5),
+    Locator(Vec3i( 0,  1,  1), 0), Locator(Vec3i( 0,  1,  0), 1),
+    Locator(Vec3i( 0,  0,  1), 4), Locator(Vec3i( 0,  0,  0), 5),
+};
+
+array<int, IterativeTetrahedralMesh::PORTS>
+IterativeTetrahedralMesh::get_neighbors(size_type index) const {
+    auto locator = get_locator(index);
+    array<int, PORTS> ret;
+    for (auto i = 0u; i != PORTS; ++i) {
+        auto relative = offset_table[locator.mod_ind][i];
+        auto summed = locator.pos + relative.pos;
+        auto is_neighbor = (Vec3i(0) <= summed && summed < dim).all();
+        ret[i] = is_neighbor ? get_index(Locator(summed, relative.mod_ind)) : -1;
+    }
+    return ret;
 }

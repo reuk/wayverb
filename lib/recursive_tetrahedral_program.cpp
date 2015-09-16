@@ -18,6 +18,7 @@ const string RecursiveTetrahedralProgram::source{
     typedef struct {
         int ports[PORTS];
         float3 position;
+        bool inside;
     } Node;
 
     kernel void waveguide

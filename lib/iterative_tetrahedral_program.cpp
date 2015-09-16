@@ -16,6 +16,8 @@ const string IterativeTetrahedralProgram::source{
     #define CUBE_NODES (8)
 
     typedef struct {
+        int ports[PORTS];
+        float3 position;
         bool inside;
     } Node;
 

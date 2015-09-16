@@ -20,7 +20,7 @@ public:
     using size_type = std::vector<cl_float>::size_type;
     using kernel_type = decltype(std::declval<T>().get_kernel());
 
-    Waveguide(const T & program, cl::CommandQueue & queue, int nodes)
+    Waveguide(const T & program, cl::CommandQueue & queue, size_type nodes)
             : queue(queue)
             , kernel(program.get_kernel())
             , nodes(nodes)
@@ -43,12 +43,12 @@ public:
     }
 
     virtual cl_float run_step(cl_float i,
-                              int e,
-                              int o,
+                              size_type e,
+                              size_type o,
                               cl_float attenuation,
                               cl::CommandQueue & queue,
                               kernel_type & kernel,
-                              int nodes,
+                              size_type nodes,
                               cl::Buffer & previous,
                               cl::Buffer & current,
                               cl::Buffer & next,
@@ -58,10 +58,10 @@ public:
     virtual bool get_node_inside(size_type index) const = 0;
 
     virtual std::vector<cl_float> run(std::vector<float> input,
-                                      int e,
-                                      int o,
+                                      size_type e,
+                                      size_type o,
                                       cl_float attenuation,
-                                      int steps) {
+                                      size_type steps) {
 #ifdef TESTING
         auto fname = build_string("./file-positions.txt");
         std::cout << "writing file " << fname << std::endl;
@@ -133,12 +133,12 @@ public:
                          cl_int3 p);
 
     cl_float run_step(cl_float i,
-                      int e,
-                      int o,
+                      size_type e,
+                      size_type o,
                       cl_float attenuation,
                       cl::CommandQueue & queue,
                       kernel_type & kernel,
-                      int nodes,
+                      size_type nodes,
                       cl::Buffer & previous,
                       cl::Buffer & current,
                       cl::Buffer & next,
@@ -162,12 +162,12 @@ public:
                                   float spacing);
 
     cl_float run_step(cl_float i,
-                      int e,
-                      int o,
+                      size_type e,
+                      size_type o,
                       cl_float attenuation,
                       cl::CommandQueue & queue,
                       kernel_type & kernel,
-                      int nodes,
+                      size_type nodes,
                       cl::Buffer & previous,
                       cl::Buffer & current,
                       cl::Buffer & next,
@@ -194,12 +194,12 @@ public:
                                   float cube_side);
 
     cl_float run_step(cl_float i,
-                      int e,
-                      int o,
+                      size_type e,
+                      size_type o,
                       cl_float attenuation,
                       cl::CommandQueue & queue,
                       kernel_type & kernel,
-                      int nodes,
+                      size_type nodes,
                       cl::Buffer & previous,
                       cl::Buffer & current,
                       cl::Buffer & next,
