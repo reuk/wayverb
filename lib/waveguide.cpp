@@ -68,7 +68,7 @@ RecursiveTetrahedralWaveguide::RecursiveTetrahedralWaveguide(
 RecursiveTetrahedralWaveguide::RecursiveTetrahedralWaveguide(
     const RecursiveTetrahedralProgram & program,
     cl::CommandQueue & queue,
-    vector<LinkedTetrahedralNode> nodes)
+    vector<TetrahedralNode> nodes)
         : Waveguide(program, queue, nodes.size())
         , nodes(nodes)
         , node_buffer(program.getInfo<CL_PROGRAM_CONTEXT>(),

@@ -179,9 +179,9 @@ public:
 private:
     RecursiveTetrahedralWaveguide(const RecursiveTetrahedralProgram & program,
                                   cl::CommandQueue & queue,
-                                  std::vector<LinkedTetrahedralNode> nodes);
+                                  std::vector<TetrahedralNode> nodes);
 
-    std::vector<LinkedTetrahedralNode> nodes;
+    std::vector<TetrahedralNode> nodes;
     cl::Buffer node_buffer;
 };
 

@@ -8,7 +8,7 @@
 
 class IterativeTetrahedralMesh {
 public:
-    using size_type = std::vector<UnlinkedTetrahedralNode>::size_type;
+    using size_type = std::vector<TetrahedralNode>::size_type;
 
     class Locator {
     public:
@@ -27,10 +27,10 @@ public:
     const float spacing;
     const std::vector<Vec3f> scaled_cube;
     const Vec3i dim;
-    std::vector<UnlinkedTetrahedralNode> nodes;
+    std::vector<TetrahedralNode> nodes;
 
 private:
     Vec3i get_dim() const;
-    std::vector<UnlinkedTetrahedralNode> get_nodes(const Boundary & boundary) const;
+    std::vector<TetrahedralNode> get_nodes(const Boundary & boundary) const;
     std::vector<Vec3f> get_scaled_cube() const;
 };

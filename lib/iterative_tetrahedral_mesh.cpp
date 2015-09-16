@@ -35,19 +35,24 @@ Vec3i IterativeTetrahedralMesh::get_dim() const {
     return (dimensions / spacing).map([](auto i) { return ceil(i); }) + 1;
 }
 
-vector<UnlinkedTetrahedralNode> IterativeTetrahedralMesh::get_nodes(const Boundary & boundary) const {
+vector<TetrahedralNode> IterativeTetrahedralMesh::get_nodes(
+    const Boundary & boundary) const {
     auto total_nodes = dim.product() * scaled_cube.size();
-    vector<UnlinkedTetrahedralNode> ret(total_nodes);
+    vector<TetrahedralNode> ret(total_nodes);
     auto counter = 0u;
     transform(ret.begin(),
               ret.end(),
               ret.begin(),
               [this, &counter, &boundary](auto i) {
-                  return UnlinkedTetrahedralNode{
-                      boundary.inside(get_position(get_locator(counter++)))};
+                  TetrahedralNode ret;
+                  ret.inside =
+                      boundary.inside(get_position(get_locator(counter++)));
+                  return ret;
               });
     Logger::log(total_nodes, " nodes tested against boundary!");
-    Logger::log(count_if(ret.begin(), ret.end(), [](auto i){return i.inside;}), " nodes inside boundary");
+    Logger::log(
+        count_if(ret.begin(), ret.end(), [](auto i) { return i.inside; }),
+        " nodes inside boundary");
     return ret;
 }
 

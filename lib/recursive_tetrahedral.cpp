@@ -12,10 +12,9 @@ struct WorkingNode {
     Vec3f position;
     std::vector<int> ports;
 
-    operator LinkedTetrahedralNode() const {
-        LinkedTetrahedralNode ret;
-        for (auto j = 0;
-             j != sizeof(LinkedTetrahedralNode::ports) / sizeof(cl_int);
+    operator TetrahedralNode() const {
+        TetrahedralNode ret;
+        for (auto j = 0; j != sizeof(TetrahedralNode::ports) / sizeof(cl_int);
              ++j)
             ret.ports[j] = -1;
         for (auto j = 0u; j != ports.size(); ++j)
@@ -96,14 +95,14 @@ void build_mesh(vector<WorkingNode> & ret,
     }
 }
 
-vector<LinkedTetrahedralNode> tetrahedral_mesh(const Boundary & boundary,
-                                               Vec3f start,
-                                               float spacing) {
+vector<TetrahedralNode> tetrahedral_mesh(const Boundary & boundary,
+                                         Vec3f start,
+                                         float spacing) {
     vector<WorkingNode> temp{WorkingNode(start)};
     build_mesh(temp, boundary, 0, spacing);
 
     //  implicitly calls the Node cast operator
-    vector<LinkedTetrahedralNode> ret(temp.size());
+    vector<TetrahedralNode> ret(temp.size());
     transform(temp.begin(),
               temp.end(),
               ret.begin(),
