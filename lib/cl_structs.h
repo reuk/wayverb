@@ -6,14 +6,10 @@
 typedef struct {
     cl_int ports[4];
     cl_float3 position;
-} _LinkedNode_unalign;
+    cl_bool inside;
+} _Node_unalign;
 
-typedef _LinkedNode_unalign __attribute__((aligned(8))) LinkedTetrahedralNode;
-
-typedef struct { cl_bool inside; } _UnlinkedNode_unalign;
-
-typedef _UnlinkedNode_unalign
-    __attribute__((aligned(8))) UnlinkedTetrahedralNode;
+typedef _Node_unalign __attribute__((aligned(8))) TetrahedralNode;
 
 typedef struct {
     cl_ulong v0;

@@ -214,6 +214,13 @@ int main(int argc, char ** argv) {
     auto divisions = 0.2;
     auto sr = (speed_of_sound * sqrt(3)) / divisions;
     auto attenuation_factor = 0.9995;
+#ifdef TESTING
+    auto inputType = InputType::IMPULSE;
+    auto steps = 200;
+#else
+    auto inputType = InputType::KERNEL;
+    auto steps = 4096;
+#endif
 
     string fname(argv[2]);
     auto bitDepth = 16;
@@ -234,7 +241,6 @@ int main(int argc, char ** argv) {
 
     try {
         vector<float> input;
-        auto inputType = InputType::IMPULSE;
         switch (inputType) {
             case InputType::IMPULSE:
                 input = {1};
@@ -247,9 +253,8 @@ int main(int argc, char ** argv) {
         vector<cl_float> results;
 
         auto boundary = SceneData(argv[1]).get_mesh_boundary();
-        auto steps = 4096;
 
-        auto renderType = RenderType::RECTANGULAR;
+        auto renderType = RenderType::ITERATIVE_TETRAHEDRAL;
         switch (renderType) {
             case RenderType::RECURSIVE_TETRAHEDRAL: {
                 auto program =
@@ -265,7 +270,8 @@ int main(int argc, char ** argv) {
                     get_program<IterativeTetrahedralProgram>(context, device);
                 IterativeTetrahedralWaveguide waveguide(
                     program, queue, boundary, divisions);
-                results = waveguide.run(input, 0, 0, attenuation_factor, steps);
+                results = waveguide.run(
+                    input, 10000, 10000, attenuation_factor, steps);
                 break;
             }
 

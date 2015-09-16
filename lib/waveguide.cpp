@@ -3,7 +3,6 @@
 #include <iostream>
 #include <algorithm>
 #include <cstdlib>
-#include "logger.h"
 
 using namespace std;
 
@@ -17,6 +16,14 @@ RectangularWaveguide::RectangularWaveguide(const RectangularProgram & program,
 RectangularWaveguide::size_type RectangularWaveguide::get_index(
     cl_int3 pos) const {
     return pos.x + pos.y * p.x + pos.z * p.x * p.y;
+}
+
+Vec3f RectangularWaveguide::get_node_position(size_type index) const {
+    //  TODO yeah this isn't right at all
+    return index;
+}
+bool RectangularWaveguide::get_node_inside(size_type index) const {
+    return index < get_nodes();
 }
 
 cl_float RectangularWaveguide::run_step(cl_float i,
@@ -61,15 +68,21 @@ RecursiveTetrahedralWaveguide::RecursiveTetrahedralWaveguide(
 RecursiveTetrahedralWaveguide::RecursiveTetrahedralWaveguide(
     const RecursiveTetrahedralProgram & program,
     cl::CommandQueue & queue,
-    std::vector<LinkedTetrahedralNode> nodes)
+    vector<LinkedTetrahedralNode> nodes)
         : Waveguide(program, queue, nodes.size())
-#ifdef TESTING
         , nodes(nodes)
-#endif
         , node_buffer(program.getInfo<CL_PROGRAM_CONTEXT>(),
                       nodes.begin(),
                       nodes.end(),
                       false) {
+}
+
+Vec3f RecursiveTetrahedralWaveguide::get_node_position(size_type index) const {
+    auto p = nodes[index].position;
+    return Vec3f(p.x, p.y, p.z);
+}
+bool RecursiveTetrahedralWaveguide::get_node_inside(size_type index) const {
+    return index < get_nodes();
 }
 
 cl_float RecursiveTetrahedralWaveguide::run_step(cl_float i,
@@ -99,14 +112,15 @@ cl_float RecursiveTetrahedralWaveguide::run_step(cl_float i,
     cl::copy(queue, output, out.begin(), out.end());
 
 #ifdef TESTING
+    static int ind = 0;
+
+    vector<cl_float> node_values(nodes);
     cl::copy(queue, next, node_values.begin(), node_values.end());
     auto fname = build_string("./file-", ind++, ".txt");
     cout << "writing file " << fname << endl;
     ofstream file(fname);
-    for (auto j = 0u; j != nodes.size(); ++j) {
-        const auto & n = nodes[j];
-        file << n.position.x << " " << n.position.y << " " << n.position.z
-             << " " << node_values[j] << endl;
+    for (auto j = 0u; j != nodes; ++j) {
+        file << node_values[j] << endl;
     }
 #endif
 
@@ -131,7 +145,23 @@ IterativeTetrahedralWaveguide::IterativeTetrahedralWaveguide(
         , node_buffer(program.getInfo<CL_PROGRAM_CONTEXT>(),
                       mesh.nodes.begin(),
                       mesh.nodes.end(),
-                      false) {
+                      false)
+#ifdef TESTING
+        , node_positions(mesh.nodes.size())
+#endif
+{
+#ifdef TESTING
+    for (auto i = 0u; i != mesh.nodes.size(); ++i) {
+        node_positions[i] = mesh.get_position(mesh.get_locator(i));
+    }
+#endif
+}
+
+Vec3f IterativeTetrahedralWaveguide::get_node_position(size_type index) const {
+    return mesh.get_position(mesh.get_locator(index));
+}
+bool IterativeTetrahedralWaveguide::get_node_inside(size_type index) const {
+    return mesh.nodes[index].inside;
 }
 
 cl_float IterativeTetrahedralWaveguide::run_step(cl_float i,
@@ -155,20 +185,24 @@ cl_float IterativeTetrahedralWaveguide::run_step(cl_float i,
            current,
            previous,
            node_buffer,
+           cl_int3{{mesh.dim.x, mesh.dim.y, mesh.dim.z}},
            o,
            output);
 
     cl::copy(queue, output, out.begin(), out.end());
 
 #ifdef TESTING
+    static int ind = 0;
+
+    vector<cl_float> node_values(nodes);
     cl::copy(queue, next, node_values.begin(), node_values.end());
     auto fname = build_string("./file-", ind++, ".txt");
     cout << "writing file " << fname << endl;
     ofstream file(fname);
-    for (auto j = 0u; j != nodes.size(); ++j) {
-        const auto & n = nodes[j];
-        file << n.position.x << " " << n.position.y << " " << n.position.z
-             << " " << node_values[j] << endl;
+    for (auto j = 0u; j != nodes; ++j) {
+        if (get_node_inside(j)) {
+            file << node_values[j] << endl;
+        }
     }
 #endif
 

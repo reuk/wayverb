@@ -72,14 +72,14 @@ struct Vec3 {
                         std::make_tuple(z, u.z...));
     }
 
-    template <typename U>
-    auto apply(const Vec3& rhs, const U& u = U()) const {
+    template <typename U, typename I>
+    auto apply(const Vec3<I>& rhs, const U& u = U()) const {
         return zip(rhs).map(
             [&u](const auto& i) { return u(std::get<0>(i), std::get<1>(i)); });
     }
 
-    template <typename U, typename V>
-    auto apply(const Vec3& a, const Vec3& b, const U& u = U()) const {
+    template <typename U, typename I, typename J>
+    auto apply(const Vec3<I>& a, const Vec3<J>& b, const U& u = U()) const {
         return zip(a, b).map([&u](const auto& i) {
             return u(std::get<0>(i), std::get<1>(i), std::get<2>(i));
         });

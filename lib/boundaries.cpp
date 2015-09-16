@@ -67,8 +67,8 @@ MeshBoundary::MeshBoundary(const vector<Triangle>& triangles,
         auto bounding_box = get_cuboid_boundary({vertices[triangles[i].v0],
                                                  vertices[triangles[i].v1],
                                                  vertices[triangles[i].v2]});
-        Vec3i min_indices = hash_point(bounding_box.c0);
-        Vec3i max_indices = hash_point(bounding_box.c1);
+        auto min_indices = hash_point(bounding_box.c0);
+        auto max_indices = hash_point(bounding_box.c1);
 
         for (auto j = min_indices.x; j != max_indices.x; ++j) {
             for (auto k = min_indices.y; k != max_indices.y; ++k) {
@@ -156,15 +156,16 @@ bool MeshBoundary::inside(const Vec3f& v) const {
     //  cast ray through point along Z axis and check for intersections
     //  with each of the referenced triangles then count number of intersections
     //  on one side of the point
-    auto count = 0u;
+    auto references = get_references(indices.x, indices.y);
     const Ray ray(v, Vec3f(0, 0, 1));
-    for (const auto& i : get_references(indices.x, indices.y)) {
-        const auto intersection =
-            triangle_intersection(triangles[i], vertices, ray);
-        if (intersection.intersects && intersection.distance > 0) {
-            count += 1;
-        }
-    }
+    auto count = count_if(
+        references.begin(),
+        references.end(),
+        [this, &ray](const auto& i) {
+            auto intersection =
+                triangle_intersection(triangles[i], vertices, ray);
+            return intersection.intersects && intersection.distance > 0;
+        });
 
     //  if intersection number is even, point is outside, else it's inside
     return count % 2;

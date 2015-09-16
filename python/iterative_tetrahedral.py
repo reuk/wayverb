@@ -13,6 +13,17 @@ BASIC_CUBE = [(0, 0, 0),            # 0
               (0.25, 0.75, 0.75),   # 6
               (0.75, 0.75, 0.25)]   # 7
 
+def get_neighbor_offset_table():
+    ret = [[((0, 0, 0), 2), ((-1, 0, -1), 3), ((-1, -1, 0), 6), ((0, -1, -1), 7)],
+           [((0, 0, 0), 2), ((0, 0, 0), 3), ((0, -1, 0), 6), ((0, -1, 0), 7)],
+           [((0, 0, 0), 0), ((0, 0, 0), 1), ((0, 0, 0), 4), ((0, 0, 0), 5)],
+           [((1, 0, 1), 0), ((0, 0, 0), 1), ((0, 0, 1), 4), ((1, 0, 0), 5)],
+           [((0, 0, 0), 2), ((0, 0, -1), 3), ((0, 0, 0), 6), ((0, 0, -1), 7)],
+           [((0, 0, 0), 2), ((-1, 0, 0), 3), ((-1, 0, 0), 6), ((0, 0, 0), 7)],
+           [((1, 1, 0), 0), ((0, 1, 0), 1), ((0, 0, 0), 4), ((1, 0, 0), 5)],
+           [((0, 1, 1), 0), ((0, 1, 0), 1), ((0, 0, 1), 4), ((0, 0, 0), 5)]]
+    return map(lambda j: map(lambda i: Locator(*i), j), ret)
+
 def mul((x, y, z), d):
     return (x * d, y * d, z * d)
 
@@ -44,7 +55,7 @@ class WaveguideMesh:
     def __init__(self, dim, spacing):
         self.mesh = get_mesh(dim, spacing)
         self.dim = dim
-        self.offsets = self.get_neighbor_offset_table()
+        self.offsets = get_neighbor_offset_table()
 
     def get_index(self, locator):
         i, j, k = self.dim
@@ -68,20 +79,6 @@ class WaveguideMesh:
         index /= k
         return Locator((x, y, z), mod_ind)
 
-    def get_neighbor_offset_table(self):
-        ret = [[((0, 0, 0), 2), ((-1, 0, -1), 3), ((-1, -1, 0), 6), ((0, -1, -1), 7)],
-               [((0, 0, 0), 2), ((0, 0, 0), 3), ((0, -1, 0), 6), ((0, -1, 0), 7)],
-               [((0, 0, 0), 0), ((0, 0, 0), 1), ((0, 0, 0), 4), ((0, 0, 0), 5)],
-               [((1, 0, 1), 0), ((0, 0, 0), 1), ((0, 0, 1), 4), ((1, 0, 0), 5)],
-               [((0, 0, 0), 2), ((0, 0, -1), 3), ((0, 0, 0), 6), ((0, 0, -1), 7)],
-               [((0, 0, 0), 2), ((-1, 0, 0), 3), ((-1, 0, 0), 6), ((0, 0, 0), 7)],
-               [((1, 1, 0), 0), ((0, 1, 0), 1), ((0, 0, 0), 4), ((1, 0, 0), 5)],
-               [((0, 1, 1), 0), ((0, 1, 0), 1), ((0, 0, 1), 4), ((0, 0, 0), 5)]]
-        return map(lambda j: map(lambda i: Locator(*i), j), ret)
-
-    def get_neighbor_offsets(self, mod_ind):
-        return self.offsets[mod_ind]
-
     def locator_filter(self, c, relative):
         x, y, z = self.dim
         rlx, rly, rlz = add(c.pos, relative.pos)
@@ -92,11 +89,21 @@ class WaveguideMesh:
         x, y, z = locator.pos
         mod_ind = locator.mod_ind
 
-        relative = self.get_neighbor_offsets(mod_ind)
-        relative = filter(lambda x: self.locator_filter(locator, x), relative)
+        relative = self.offsets[mod_ind]
 
-        n = map(lambda i: self.get_index(i) + self.get_index(Locator((x, y, z), 0)), relative)
-        return n
+        ret = []
+        for i in relative:
+            summed = add(locator.pos, i.pos)
+            sx, sy, sz = summed
+
+            is_neighbor = (0 <= summed[0] < self.dim[0] and
+                           0 <= summed[1] < self.dim[1] and
+                           0 <= summed[2] < self.dim[2])
+
+            ind = self.get_index(Locator(summed, i.mod_ind)) if is_neighbor else -1;
+            ret.append(ind)
+
+        return ret
 
 def concat(l):
     return reduce(operator.add, l)
@@ -116,6 +123,7 @@ def main():
 
         pos = waveguide.get_index(Locator((0, 0, 0), plot))
         n = waveguide.get_absolute_neighbors(pos)
+        n = filter(lambda i: i >= 0, n)
         p = []
         p += [waveguide.mesh[i] for i in n]
         p += [waveguide.mesh[pos]]

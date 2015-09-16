@@ -17,16 +17,20 @@ public:
         int mod_ind;
     };
 
-    IterativeTetrahedralMesh();
     IterativeTetrahedralMesh(const Boundary & boundary, float cube_side);
 
     size_type get_index(const Locator & locator) const;
     Locator get_locator(size_type index) const;
     Vec3f get_position(const Locator & locator) const;
-    std::vector<int> get_neighbors(size_type index) const;
 
+    const CuboidBoundary boundary;
     const float spacing;
     const std::vector<Vec3f> scaled_cube;
-    Vec3i dim;
+    const Vec3i dim;
     std::vector<UnlinkedTetrahedralNode> nodes;
+
+private:
+    Vec3i get_dim() const;
+    std::vector<UnlinkedTetrahedralNode> get_nodes(const Boundary & boundary) const;
+    std::vector<Vec3f> get_scaled_cube() const;
 };

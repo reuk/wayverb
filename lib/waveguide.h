@@ -6,12 +6,13 @@
 #include "iterative_tetrahedral_mesh.h"
 #include "recursive_tetrahedral.h"
 #include "cl_structs.h"
+#include "logger.h"
 
 #include <array>
 #include <type_traits>
 #include <algorithm>
 
-//#define TESTING
+#define TESTING
 
 template <typename T>
 class Waveguide {
@@ -53,11 +54,26 @@ public:
                               cl::Buffer & next,
                               cl::Buffer & output) = 0;
 
+    virtual Vec3f get_node_position(size_type index) const = 0;
+    virtual bool get_node_inside(size_type index) const = 0;
+
     virtual std::vector<cl_float> run(std::vector<float> input,
                                       int e,
                                       int o,
                                       cl_float attenuation,
                                       int steps) {
+#ifdef TESTING
+        auto fname = build_string("./file-positions.txt");
+        std::cout << "writing file " << fname << std::endl;
+        std::ofstream file(fname);
+        for (auto j = 0u; j != nodes; ++j) {
+            if (get_node_inside(j)) {
+                auto position = get_node_position(j);
+                file << position.x << " " << position.y << " " << position.z
+                     << std::endl;
+            }
+        }
+#endif
         std::vector<cl_float> n(nodes, 0);
         cl::copy(queue, n.begin(), n.end(), next);
         cl::copy(queue, n.begin(), n.end(), current);
@@ -92,10 +108,14 @@ public:
         return ret;
     }
 
+    size_type get_nodes() const {
+        return nodes;
+    }
+
 private:
     cl::CommandQueue & queue;
     kernel_type kernel;
-    const int nodes;
+    const size_type nodes;
 
     std::array<cl::Buffer, 3> storage;
 
@@ -125,6 +145,8 @@ public:
                       cl::Buffer & output) override;
 
     size_type get_index(cl_int3 pos) const;
+    Vec3f get_node_position(size_type index) const override;
+    bool get_node_inside(size_type index) const override;
 
 private:
     const cl_int3 p;
@@ -151,14 +173,15 @@ public:
                       cl::Buffer & next,
                       cl::Buffer & output) override;
 
+    Vec3f get_node_position(size_type index) const override;
+    bool get_node_inside(size_type index) const override;
+
 private:
     RecursiveTetrahedralWaveguide(const RecursiveTetrahedralProgram & program,
                                   cl::CommandQueue & queue,
                                   std::vector<LinkedTetrahedralNode> nodes);
 
-#ifdef TESTING
-    std::vector<LinkedTetrahedralNode> & nodes;
-#endif
+    std::vector<LinkedTetrahedralNode> nodes;
     cl::Buffer node_buffer;
 };
 
@@ -182,6 +205,9 @@ public:
                       cl::Buffer & next,
                       cl::Buffer & output) override;
 
+    Vec3f get_node_position(size_type index) const override;
+    bool get_node_inside(size_type index) const override;
+
 private:
     IterativeTetrahedralWaveguide(const IterativeTetrahedralProgram & program,
                                   cl::CommandQueue & queue,
@@ -189,4 +215,7 @@ private:
 
     IterativeTetrahedralMesh mesh;
     cl::Buffer node_buffer;
+#ifdef TESTING
+    std::vector<Vec3f> node_positions;
+#endif
 };
