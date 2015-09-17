@@ -47,19 +47,6 @@ cl_float RectangularWaveguide::run_step(cl_float i,
     return out.front();
 }
 
-vector<Node> convert(const vector<TetrahedralNode> & n) {
-    vector<Node> ret(n.size());
-    transform(n.begin(),
-              n.end(),
-              ret.begin(),
-              [](auto i) {
-                  Node ret;
-                  copy(begin(i.ports), end(i.ports), begin(ret.ports));
-                  return ret;
-              });
-    return ret;
-}
-
 RecursiveTetrahedralWaveguide::RecursiveTetrahedralWaveguide(
     const TetrahedralProgram & program,
     cl::CommandQueue & queue,
@@ -69,7 +56,7 @@ RecursiveTetrahedralWaveguide::RecursiveTetrahedralWaveguide(
         : RecursiveTetrahedralWaveguide(
               program,
               queue,
-              convert(tetrahedral_mesh(boundary, start, spacing))) {
+              tetrahedral_mesh(boundary, start, spacing)) {
 }
 
 RecursiveTetrahedralWaveguide::RecursiveTetrahedralWaveguide(
@@ -139,11 +126,11 @@ IterativeTetrahedralWaveguide::IterativeTetrahedralWaveguide(
     const TetrahedralProgram & program,
     cl::CommandQueue & queue,
     IterativeTetrahedralMesh mesh)
-        : Waveguide(program, queue, mesh.filtered_nodes.size())
+        : Waveguide(program, queue, mesh.nodes.size())
         , mesh(mesh)
         , node_buffer(program.getInfo<CL_PROGRAM_CONTEXT>(),
-                      mesh.filtered_nodes.begin(),
-                      mesh.filtered_nodes.end(),
+                      mesh.nodes.begin(),
+                      mesh.nodes.end(),
                       false) {
 }
 

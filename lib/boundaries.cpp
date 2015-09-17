@@ -64,14 +64,14 @@ MeshBoundary::MeshBoundary(const vector<Triangle>& triangles,
         , cell_size(boundary.get_dimensions() / DIVISIONS)
         , triangle_references(DIVISIONS, vector<vector<uint32_t>>(DIVISIONS)) {
     for (auto i = 0u; i != triangles.size(); ++i) {
-        auto bounding_box = get_cuboid_boundary({vertices[triangles[i].v0],
-                                                 vertices[triangles[i].v1],
-                                                 vertices[triangles[i].v2]});
+        auto bounding_box = get_cuboid_boundary({vertices[triangles[i].s[0]],
+                                                 vertices[triangles[i].s[1]],
+                                                 vertices[triangles[i].s[2]]});
         auto min_indices = hash_point(bounding_box.c0);
         auto max_indices = hash_point(bounding_box.c1);
 
-        for (auto j = min_indices.x; j != max_indices.x; ++j) {
-            for (auto k = min_indices.y; k != max_indices.y; ++k) {
+        for (auto j = min_indices.x; j != max_indices.x + 1 && j != triangle_references.size(); ++j) {
+            for (auto k = min_indices.y; k != max_indices.y + 1 && k != triangle_references[j].size(); ++k) {
                 triangle_references[j][k].push_back(i);
             }
         }
@@ -113,9 +113,9 @@ Intersects triangle_intersection(const Triangle& tri,
                                  const Ray& ray) {
     auto EPSILON = 0.0001;
 
-    auto v0 = vertices[tri.v0];
-    auto v1 = vertices[tri.v1];
-    auto v2 = vertices[tri.v2];
+    auto v0 = vertices[tri.s[0]];
+    auto v1 = vertices[tri.s[1]];
+    auto v2 = vertices[tri.s[2]];
 
     auto e0 = v1 - v0;
     auto e1 = v2 - v0;

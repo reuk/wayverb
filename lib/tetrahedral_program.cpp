@@ -18,10 +18,6 @@ const string TetrahedralProgram::source{
         int ports[PORTS];
         float3 position;
         bool inside;
-    } TetrahedralNode;
-
-    typedef struct {
-        int ports[PORTS];
     } Node;
 
     kernel void waveguide

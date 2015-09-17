@@ -35,16 +35,16 @@ Vec3i IterativeTetrahedralMesh::get_dim() const {
     return (dimensions / spacing).map([](auto i) { return ceil(i); }) + 1;
 }
 
-vector<TetrahedralNode> IterativeTetrahedralMesh::get_nodes(
+vector<Node> IterativeTetrahedralMesh::get_nodes(
     const Boundary & boundary) const {
     auto total_nodes = dim.product() * scaled_cube.size();
-    vector<TetrahedralNode> ret(total_nodes);
+    vector<Node> ret(total_nodes);
     auto counter = 0u;
     transform(ret.begin(),
               ret.end(),
               ret.begin(),
               [this, &counter, &boundary](auto i) {
-                  TetrahedralNode ret;
+                  Node ret;
                   auto p = this->get_position(this->get_locator(counter));
                   auto neighbors = this->get_neighbors(counter);
                   copy(neighbors.begin(), neighbors.end(), begin(ret.ports));
@@ -56,30 +56,13 @@ vector<TetrahedralNode> IterativeTetrahedralMesh::get_nodes(
     return ret;
 }
 
-vector<Node> IterativeTetrahedralMesh::get_filtered_nodes() const {
-    auto n = nodes;
-    auto e = remove_if(n.begin(), n.end(), [](auto i) { return !i.inside; });
-    n.erase(e, n.end());
-    vector<Node> ret(n.size());
-    transform(n.begin(),
-              n.end(),
-              ret.begin(),
-              [this](auto i) {
-                  Node ret;
-                  copy(begin(i.ports), end(i.ports), begin(ret.ports));
-                  return ret;
-              });
-    return ret;
-}
-
 IterativeTetrahedralMesh::IterativeTetrahedralMesh(const Boundary & boundary,
                                                    float spacing)
         : boundary(boundary.get_aabb())
         , spacing(spacing)
         , scaled_cube(get_scaled_cube())
         , dim(get_dim())
-        , nodes(get_nodes(boundary))
-        , filtered_nodes(get_filtered_nodes()) {
+        , nodes(get_nodes(boundary)) {
 }
 
 IterativeTetrahedralMesh::size_type IterativeTetrahedralMesh::get_index(

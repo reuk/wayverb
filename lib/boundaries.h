@@ -32,6 +32,8 @@ struct SphereBoundary : public Boundary {
     CuboidBoundary boundary;
 };
 
+using Triangle = Vec3<uint32_t>;
+
 struct MeshBoundary : public Boundary {
     MeshBoundary(
         const std::vector<Triangle> & triangles = std::vector<Triangle>(),

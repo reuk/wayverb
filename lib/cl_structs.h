@@ -7,18 +7,4 @@ typedef struct {
     cl_int ports[4];
     cl_float3 position;
     cl_bool inside;
-} _TNode_unalign;
-
-typedef _TNode_unalign __attribute__((aligned(8))) TetrahedralNode;
-
-typedef struct { cl_int ports[4]; } _Node_unalign;
-
-typedef _Node_unalign __attribute__((aligned(8))) Node;
-
-typedef struct {
-    cl_ulong v0;
-    cl_ulong v1;
-    cl_ulong v2;
-} _Triangle_unalign;
-
-typedef _Triangle_unalign __attribute__((aligned(8))) Triangle;
+} __attribute__((aligned(8))) Node;

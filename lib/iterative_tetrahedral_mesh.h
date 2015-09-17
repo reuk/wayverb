@@ -9,7 +9,7 @@
 
 class IterativeTetrahedralMesh {
 public:
-    using size_type = std::vector<TetrahedralNode>::size_type;
+    using size_type = std::vector<Node>::size_type;
     struct Locator {
         Locator(const Vec3i & pos = Vec3i(), int mod_ind = 0);
         Vec3i pos;
@@ -30,15 +30,13 @@ public:
     const float spacing;
     const std::vector<Vec3f> scaled_cube;
     const Vec3i dim;
-    std::vector<TetrahedralNode> nodes;
-    std::vector<Node> filtered_nodes;
+    std::vector<Node> nodes;
 
 private:
     static const std::array<std::array<Locator, PORTS>, CUBE_NODES>
         offset_table;
 
     Vec3i get_dim() const;
-    std::vector<TetrahedralNode> get_nodes(const Boundary & boundary) const;
-    std::vector<Node> get_filtered_nodes() const;
+    std::vector<Node> get_nodes(const Boundary & boundary) const;
     std::vector<Vec3f> get_scaled_cube() const;
 };
