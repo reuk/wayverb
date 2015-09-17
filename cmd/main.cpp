@@ -1,10 +1,7 @@
 //  project internal
 #include "waveguide.h"
-#include "logger.h"
-#include "rectangular_program.h"
-#include "recursive_tetrahedral_program.h"
-#include "recursive_tetrahedral.h"
 #include "scene_data.h"
+#include "logger.h"
 
 //  dependency
 #define __CL_ENABLE_EXCEPTIONS
@@ -257,8 +254,7 @@ int main(int argc, char ** argv) {
         auto renderType = RenderType::ITERATIVE_TETRAHEDRAL;
         switch (renderType) {
             case RenderType::RECURSIVE_TETRAHEDRAL: {
-                auto program =
-                    get_program<RecursiveTetrahedralProgram>(context, device);
+                auto program = get_program<TetrahedralProgram>(context, device);
                 RecursiveTetrahedralWaveguide waveguide(
                     program, queue, boundary, 0, divisions);
                 results = waveguide.run(input, 0, 0, attenuation_factor, steps);
@@ -266,8 +262,7 @@ int main(int argc, char ** argv) {
             }
 
             case RenderType::ITERATIVE_TETRAHEDRAL: {
-                auto program =
-                    get_program<IterativeTetrahedralProgram>(context, device);
+                auto program = get_program<TetrahedralProgram>(context, device);
                 IterativeTetrahedralWaveguide waveguide(
                     program, queue, boundary, divisions);
                 results = waveguide.run(

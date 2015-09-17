@@ -1,8 +1,7 @@
 #pragma once
 
 #include "rectangular_program.h"
-#include "recursive_tetrahedral_program.h"
-#include "iterative_tetrahedral_program.h"
+#include "tetrahedral_program.h"
 #include "iterative_tetrahedral_mesh.h"
 #include "recursive_tetrahedral.h"
 #include "cl_structs.h"
@@ -12,7 +11,7 @@
 #include <type_traits>
 #include <algorithm>
 
-#define TESTING
+//#define TESTING
 
 template <typename T>
 class Waveguide {
@@ -54,26 +53,11 @@ public:
                               cl::Buffer & next,
                               cl::Buffer & output) = 0;
 
-    virtual Vec3f get_node_position(size_type index) const = 0;
-    virtual bool get_node_inside(size_type index) const = 0;
-
     virtual std::vector<cl_float> run(std::vector<float> input,
                                       size_type e,
                                       size_type o,
                                       cl_float attenuation,
                                       size_type steps) {
-#ifdef TESTING
-        auto fname = build_string("./file-positions.txt");
-        std::cout << "writing file " << fname << std::endl;
-        std::ofstream file(fname);
-        for (auto j = 0u; j != nodes; ++j) {
-            if (get_node_inside(j)) {
-                auto position = get_node_position(j);
-                file << position.x << " " << position.y << " " << position.z
-                     << std::endl;
-            }
-        }
-#endif
         std::vector<cl_float> n(nodes, 0);
         cl::copy(queue, n.begin(), n.end(), next);
         cl::copy(queue, n.begin(), n.end(), current);
@@ -83,10 +67,11 @@ public:
 
         std::vector<cl_float> ret(input.size());
 
+        auto counter = 0u;
         std::transform(input.begin(),
                        input.end(),
                        ret.begin(),
-                       [this, &attenuation, &e, &o](auto i) {
+                       [this, &counter, &steps, &attenuation, &e, &o](auto i) {
                            auto ret = this->run_step(i,
                                                      e,
                                                      o,
@@ -102,8 +87,17 @@ public:
                            previous = current;
                            current = next;
                            next = temp;
+
+                           auto percent = counter * 100 / (steps - 1);
+                           std::cout << "\r" << percent << "% done"
+                                     << std::flush;
+
+                           counter += 1;
+
                            return ret;
                        });
+
+        std::cout << std::endl;
 
         return ret;
     }
@@ -145,17 +139,14 @@ public:
                       cl::Buffer & output) override;
 
     size_type get_index(cl_int3 pos) const;
-    Vec3f get_node_position(size_type index) const override;
-    bool get_node_inside(size_type index) const override;
 
 private:
     const cl_int3 p;
 };
 
-class RecursiveTetrahedralWaveguide
-    : public Waveguide<RecursiveTetrahedralProgram> {
+class RecursiveTetrahedralWaveguide : public Waveguide<TetrahedralProgram> {
 public:
-    RecursiveTetrahedralWaveguide(const RecursiveTetrahedralProgram & program,
+    RecursiveTetrahedralWaveguide(const TetrahedralProgram & program,
                                   cl::CommandQueue & queue,
                                   const Boundary & boundary,
                                   Vec3f start,
@@ -173,22 +164,18 @@ public:
                       cl::Buffer & next,
                       cl::Buffer & output) override;
 
-    Vec3f get_node_position(size_type index) const override;
-    bool get_node_inside(size_type index) const override;
-
 private:
-    RecursiveTetrahedralWaveguide(const RecursiveTetrahedralProgram & program,
+    RecursiveTetrahedralWaveguide(const TetrahedralProgram & program,
                                   cl::CommandQueue & queue,
-                                  std::vector<TetrahedralNode> nodes);
+                                  std::vector<Node> nodes);
 
-    std::vector<TetrahedralNode> nodes;
+    std::vector<Node> nodes;
     cl::Buffer node_buffer;
 };
 
-class IterativeTetrahedralWaveguide
-    : public Waveguide<IterativeTetrahedralProgram> {
+class IterativeTetrahedralWaveguide : public Waveguide<TetrahedralProgram> {
 public:
-    IterativeTetrahedralWaveguide(const IterativeTetrahedralProgram & program,
+    IterativeTetrahedralWaveguide(const TetrahedralProgram & program,
                                   cl::CommandQueue & queue,
                                   const Boundary & boundary,
                                   float cube_side);
@@ -205,11 +192,8 @@ public:
                       cl::Buffer & next,
                       cl::Buffer & output) override;
 
-    Vec3f get_node_position(size_type index) const override;
-    bool get_node_inside(size_type index) const override;
-
 private:
-    IterativeTetrahedralWaveguide(const IterativeTetrahedralProgram & program,
+    IterativeTetrahedralWaveguide(const TetrahedralProgram & program,
                                   cl::CommandQueue & queue,
                                   IterativeTetrahedralMesh mesh);
 

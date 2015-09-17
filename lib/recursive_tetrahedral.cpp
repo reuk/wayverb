@@ -20,6 +20,7 @@ struct WorkingNode {
         for (auto j = 0u; j != ports.size(); ++j)
             ret.ports[j] = ports[j];
         ret.position = {{position.x, position.y, position.z}};
+        ret.inside = true;
         return ret;
     }
 };

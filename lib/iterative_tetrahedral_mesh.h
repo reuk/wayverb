@@ -31,11 +31,14 @@ public:
     const std::vector<Vec3f> scaled_cube;
     const Vec3i dim;
     std::vector<TetrahedralNode> nodes;
+    std::vector<Node> filtered_nodes;
 
 private:
-    static const std::array<std::array<Locator, PORTS>, CUBE_NODES> offset_table;
+    static const std::array<std::array<Locator, PORTS>, CUBE_NODES>
+        offset_table;
 
     Vec3i get_dim() const;
     std::vector<TetrahedralNode> get_nodes(const Boundary & boundary) const;
+    std::vector<Node> get_filtered_nodes() const;
     std::vector<Vec3f> get_scaled_cube() const;
 };

@@ -18,14 +18,6 @@ RectangularWaveguide::size_type RectangularWaveguide::get_index(
     return pos.x + pos.y * p.x + pos.z * p.x * p.y;
 }
 
-Vec3f RectangularWaveguide::get_node_position(size_type index) const {
-    //  TODO yeah this isn't right at all
-    return index;
-}
-bool RectangularWaveguide::get_node_inside(size_type index) const {
-    return index < get_nodes();
-}
-
 cl_float RectangularWaveguide::run_step(cl_float i,
                                         size_type e,
                                         size_type o,
@@ -55,34 +47,41 @@ cl_float RectangularWaveguide::run_step(cl_float i,
     return out.front();
 }
 
+vector<Node> convert(const vector<TetrahedralNode> & n) {
+    vector<Node> ret(n.size());
+    transform(n.begin(),
+              n.end(),
+              ret.begin(),
+              [](auto i) {
+                  Node ret;
+                  copy(begin(i.ports), end(i.ports), begin(ret.ports));
+                  return ret;
+              });
+    return ret;
+}
+
 RecursiveTetrahedralWaveguide::RecursiveTetrahedralWaveguide(
-    const RecursiveTetrahedralProgram & program,
+    const TetrahedralProgram & program,
     cl::CommandQueue & queue,
     const Boundary & boundary,
     Vec3f start,
     float spacing)
         : RecursiveTetrahedralWaveguide(
-              program, queue, tetrahedral_mesh(boundary, start, spacing)) {
+              program,
+              queue,
+              convert(tetrahedral_mesh(boundary, start, spacing))) {
 }
 
 RecursiveTetrahedralWaveguide::RecursiveTetrahedralWaveguide(
-    const RecursiveTetrahedralProgram & program,
+    const TetrahedralProgram & program,
     cl::CommandQueue & queue,
-    vector<TetrahedralNode> nodes)
+    vector<Node> nodes)
         : Waveguide(program, queue, nodes.size())
         , nodes(nodes)
         , node_buffer(program.getInfo<CL_PROGRAM_CONTEXT>(),
                       nodes.begin(),
                       nodes.end(),
                       false) {
-}
-
-Vec3f RecursiveTetrahedralWaveguide::get_node_position(size_type index) const {
-    auto p = nodes[index].position;
-    return Vec3f(p.x, p.y, p.z);
-}
-bool RecursiveTetrahedralWaveguide::get_node_inside(size_type index) const {
-    return index < get_nodes();
 }
 
 cl_float RecursiveTetrahedralWaveguide::run_step(cl_float i,
@@ -128,7 +127,7 @@ cl_float RecursiveTetrahedralWaveguide::run_step(cl_float i,
 }
 
 IterativeTetrahedralWaveguide::IterativeTetrahedralWaveguide(
-    const IterativeTetrahedralProgram & program,
+    const TetrahedralProgram & program,
     cl::CommandQueue & queue,
     const Boundary & boundary,
     float cube_side)
@@ -137,24 +136,15 @@ IterativeTetrahedralWaveguide::IterativeTetrahedralWaveguide(
 }
 
 IterativeTetrahedralWaveguide::IterativeTetrahedralWaveguide(
-    const IterativeTetrahedralProgram & program,
+    const TetrahedralProgram & program,
     cl::CommandQueue & queue,
     IterativeTetrahedralMesh mesh)
-        : Waveguide(program, queue, mesh.nodes.size())
+        : Waveguide(program, queue, mesh.filtered_nodes.size())
         , mesh(mesh)
         , node_buffer(program.getInfo<CL_PROGRAM_CONTEXT>(),
-                      mesh.nodes.begin(),
-                      mesh.nodes.end(),
-                      false)
-{
-}
-
-Vec3f IterativeTetrahedralWaveguide::get_node_position(size_type index) const {
-    auto p = mesh.nodes[index].position;
-    return Vec3f(p.x, p.y, p.z);
-}
-bool IterativeTetrahedralWaveguide::get_node_inside(size_type index) const {
-    return mesh.nodes[index].inside;
+                      mesh.filtered_nodes.begin(),
+                      mesh.filtered_nodes.end(),
+                      false) {
 }
 
 cl_float IterativeTetrahedralWaveguide::run_step(cl_float i,
@@ -178,7 +168,6 @@ cl_float IterativeTetrahedralWaveguide::run_step(cl_float i,
            current,
            previous,
            node_buffer,
-           cl_int3{{mesh.dim.x, mesh.dim.y, mesh.dim.z}},
            o,
            output);
 
@@ -193,9 +182,7 @@ cl_float IterativeTetrahedralWaveguide::run_step(cl_float i,
     cout << "writing file " << fname << endl;
     ofstream file(fname);
     for (auto j = 0u; j != nodes; ++j) {
-        if (get_node_inside(j)) {
-            file << node_values[j] << endl;
-        }
+        file << node_values[j] << endl;
     }
 #endif
 

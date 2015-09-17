@@ -1,24 +1,27 @@
-#include "recursive_tetrahedral_program.h"
+#include "tetrahedral_program.h"
 
 using namespace std;
 
-RecursiveTetrahedralProgram::RecursiveTetrahedralProgram(
-    const cl::Context & context, bool build_immediate)
+TetrahedralProgram::TetrahedralProgram(const cl::Context & context,
+                                       bool build_immediate)
         : Program(context, source, build_immediate) {
 }
 
-const string RecursiveTetrahedralProgram::source{
+const string TetrahedralProgram::source{
 #ifdef DIAGNOSTIC
     "#define DIAGNOSTIC\n"
 #endif
     R"(
-
     #define PORTS (4)
 
     typedef struct {
         int ports[PORTS];
         float3 position;
         bool inside;
+    } TetrahedralNode;
+
+    typedef struct {
+        int ports[PORTS];
     } Node;
 
     kernel void waveguide
@@ -41,20 +44,18 @@ const string RecursiveTetrahedralProgram::source{
 
         barrier(CLK_GLOBAL_MEM_FENCE);
 
-        //  TODO I have NO IDEA whether this difference equation is correct
-
         float temp = 0;
+
+        //  waveguide logic goes here
         for (int i = 0; i != PORTS; ++i) {
             int port_index = node->ports[i];
-            if (port_index >= 0) {
+            if (port_index >= 0)
                 temp += current[port_index];
-            }
         }
 
         temp /= 2;
         temp -= previous[index];
 
-        //  TODO probably not right way to damp?
         temp *= attenuation;
 
         next[index] = temp;
