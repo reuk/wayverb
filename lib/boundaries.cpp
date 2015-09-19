@@ -6,10 +6,14 @@
 
 using namespace std;
 
+Boundary::~Boundary() noexcept {}
+
 CuboidBoundary::CuboidBoundary(const Vec3f& c0, const Vec3f& c1)
         : c0(c0)
         , c1(c1) {
 }
+
+CuboidBoundary::~CuboidBoundary() noexcept {}
 
 bool CuboidBoundary::inside(const Vec3f& v) const {
     return (c0 < v).all() && (v < c1).all();
@@ -38,6 +42,8 @@ SphereBoundary::SphereBoundary(const Vec3f& c, float radius)
         , radius(radius)
         , boundary(-radius, radius) {
 }
+
+SphereBoundary::~SphereBoundary() noexcept {}
 
 bool SphereBoundary::inside(const Vec3f& v) const {
     return (v - c).mag() < radius;
@@ -77,6 +83,8 @@ MeshBoundary::MeshBoundary(const vector<Triangle>& triangles,
         }
     }
 }
+
+MeshBoundary::~MeshBoundary() noexcept {}
 
 class Ray {
 public:

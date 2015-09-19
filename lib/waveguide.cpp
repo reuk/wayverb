@@ -18,6 +18,8 @@ RectangularWaveguide::size_type RectangularWaveguide::get_index(
     return pos.x + pos.y * p.x + pos.z * p.x * p.y;
 }
 
+RectangularWaveguide::~RectangularWaveguide() noexcept {}
+
 cl_float RectangularWaveguide::run_step(cl_float i,
                                         size_type e,
                                         size_type o,
@@ -68,6 +70,8 @@ RecursiveTetrahedralWaveguide::RecursiveTetrahedralWaveguide(
                       nodes.end(),
                       false) {
 }
+
+RecursiveTetrahedralWaveguide::~RecursiveTetrahedralWaveguide() noexcept {}
 
 cl_float RecursiveTetrahedralWaveguide::run_step(cl_float i,
                                                  size_type e,
@@ -131,6 +135,8 @@ IterativeTetrahedralWaveguide::IterativeTetrahedralWaveguide(
                       mesh.nodes.end(),
                       false) {
 }
+
+IterativeTetrahedralWaveguide::~IterativeTetrahedralWaveguide() noexcept {}
 
 cl_float IterativeTetrahedralWaveguide::run_step(cl_float i,
                                                  size_type e,

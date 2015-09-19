@@ -19,6 +19,8 @@ SceneData::SceneData(const aiScene * const scene) {
     populate(scene);
 }
 
+SceneData::~SceneData() noexcept {}
+
 void SceneData::populate(const aiScene * const scene) {
     if (!scene)
         throw runtime_error("scene pointer is null");

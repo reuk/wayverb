@@ -20,6 +20,7 @@ public:
     static const int CUBE_NODES = 8;
 
     IterativeTetrahedralMesh(const Boundary & boundary, float cube_side);
+    virtual ~IterativeTetrahedralMesh() noexcept;
 
     size_type get_index(const Locator & locator) const;
     Locator get_locator(size_type index) const;

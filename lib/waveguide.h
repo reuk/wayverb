@@ -11,7 +11,7 @@
 #include <type_traits>
 #include <algorithm>
 
-//#define TESTING
+#define TESTING
 
 template <typename T>
 class Waveguide {
@@ -40,6 +40,8 @@ public:
                      CL_MEM_READ_WRITE,
                      sizeof(cl_float)) {
     }
+
+    virtual ~Waveguide() noexcept {}
 
     virtual cl_float run_step(cl_float i,
                               size_type e,
@@ -125,6 +127,7 @@ public:
     RectangularWaveguide(const RectangularProgram & program,
                          cl::CommandQueue & queue,
                          cl_int3 p);
+    virtual ~RectangularWaveguide() noexcept;
 
     cl_float run_step(cl_float i,
                       size_type e,
@@ -151,6 +154,7 @@ public:
                                   const Boundary & boundary,
                                   Vec3f start,
                                   float spacing);
+    virtual ~RecursiveTetrahedralWaveguide() noexcept;
 
     cl_float run_step(cl_float i,
                       size_type e,
@@ -179,6 +183,7 @@ public:
                                   cl::CommandQueue & queue,
                                   const Boundary & boundary,
                                   float cube_side);
+    virtual ~IterativeTetrahedralWaveguide() noexcept;
 
     cl_float run_step(cl_float i,
                       size_type e,
