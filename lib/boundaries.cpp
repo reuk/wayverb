@@ -6,10 +6,6 @@
 
 using namespace std;
 
-Vec3f convert(const cl_float3& c) {
-    return Vec3f(c.x, c.y, c.z);
-}
-
 CuboidBoundary::CuboidBoundary(const Vec3f& c0, const Vec3f& c1)
         : c0(c0)
         , c1(c1) {
@@ -70,8 +66,12 @@ MeshBoundary::MeshBoundary(const vector<Triangle>& triangles,
         auto min_indices = hash_point(bounding_box.c0);
         auto max_indices = hash_point(bounding_box.c1);
 
-        for (auto j = min_indices.x; j != max_indices.x + 1 && j != triangle_references.size(); ++j) {
-            for (auto k = min_indices.y; k != max_indices.y + 1 && k != triangle_references[j].size(); ++k) {
+        for (auto j = min_indices.s[0];
+             j != max_indices.s[0] + 1 && j != triangle_references.size();
+             ++j) {
+            for (auto k = min_indices.s[1]; k != max_indices.s[1] + 1 &&
+                                            k != triangle_references[j].size();
+                 ++k) {
                 triangle_references[j][k].push_back(i);
             }
         }
@@ -156,7 +156,7 @@ bool MeshBoundary::inside(const Vec3f& v) const {
     //  cast ray through point along Z axis and check for intersections
     //  with each of the referenced triangles then count number of intersections
     //  on one side of the point
-    auto references = get_references(indices.x, indices.y);
+    auto references = get_references(indices.s[0], indices.s[1]);
     const Ray ray(v, Vec3f(0, 0, 1));
     auto count = count_if(
         references.begin(),

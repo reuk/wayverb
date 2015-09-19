@@ -1,5 +1,7 @@
 #include "recursive_tetrahedral.h"
 
+#include "conversions.h"
+
 #include <cmath>
 #include <algorithm>
 
@@ -14,11 +16,10 @@ struct WorkingNode {
 
     operator Node() const {
         Node ret;
-        for (auto j = 0; j != sizeof(Node::ports) / sizeof(cl_int);
-             ++j)
+        for (auto j = 0; j != sizeof(Node::ports) / sizeof(cl_int); ++j)
             ret.ports[j] = -1;
         copy(ports.begin(), ports.end(), begin(ret.ports));
-        ret.position = {{position.x, position.y, position.z}};
+        ret.position = convert(position);
         ret.inside = true;
         return ret;
     }
@@ -96,8 +97,8 @@ void build_mesh(vector<WorkingNode> & ret,
 }
 
 vector<Node> tetrahedral_mesh(const Boundary & boundary,
-                                         Vec3f start,
-                                         float spacing) {
+                              Vec3f start,
+                              float spacing) {
     vector<WorkingNode> temp{WorkingNode(start)};
     build_mesh(temp, boundary, 0, spacing);
 

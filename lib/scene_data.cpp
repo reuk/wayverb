@@ -1,5 +1,7 @@
 #include "scene_data.h"
 
+#include "conversions.h"
+
 #include <vector>
 #include <stdexcept>
 
@@ -61,6 +63,9 @@ void SceneData::populate(const string & fpath) {
 
 MeshBoundary SceneData::get_mesh_boundary() const {
     vector<Vec3f> v(vertices.size());
-    transform(vertices.begin(), vertices.end(), v.begin(), convert);
+    transform(vertices.begin(),
+              vertices.end(),
+              v.begin(),
+              [](auto i) { return convert(i); });
     return MeshBoundary(triangles, v);
 }

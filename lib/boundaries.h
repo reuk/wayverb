@@ -3,8 +3,6 @@
 #include "vec.h"
 #include "cl_structs.h"
 
-Vec3f convert(const cl_float3 & c);
-
 struct CuboidBoundary;
 
 struct Boundary {

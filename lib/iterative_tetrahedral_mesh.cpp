@@ -1,6 +1,7 @@
 #include "iterative_tetrahedral_mesh.h"
 
 #include "logger.h"
+#include "conversions.h"
 
 #include <algorithm>
 
@@ -48,7 +49,7 @@ vector<Node> IterativeTetrahedralMesh::get_nodes(
                   auto p = this->get_position(this->get_locator(counter));
                   auto neighbors = this->get_neighbors(counter);
                   copy(neighbors.begin(), neighbors.end(), begin(ret.ports));
-                  ret.position = {{p.x, p.y, p.z}};
+                  ret.position = convert(p);
                   ret.inside = boundary.inside(p);
                   counter += 1;
                   return ret;
@@ -68,16 +69,16 @@ IterativeTetrahedralMesh::IterativeTetrahedralMesh(const Boundary & boundary,
 IterativeTetrahedralMesh::size_type IterativeTetrahedralMesh::get_index(
     const Locator & loc) const {
     auto n = scaled_cube.size();
-    return (loc.mod_ind) + (loc.pos.x * n) + (loc.pos.y * dim.x * n) +
-           (loc.pos.z * dim.x * dim.y * n);
+    return (loc.mod_ind) + (loc.pos.s[0] * n) + (loc.pos.s[1] * dim.s[0] * n) +
+           (loc.pos.s[2] * dim.s[0] * dim.s[1] * n);
 }
 
 IterativeTetrahedralMesh::Locator IterativeTetrahedralMesh::get_locator(
     size_type index) const {
     auto mod_ind = div((int)index, (int)scaled_cube.size());
-    auto x = div(mod_ind.quot, dim.x);
-    auto y = div(x.quot, dim.y);
-    auto z = div(y.quot, dim.z);
+    auto x = div(mod_ind.quot, dim.s[0]);
+    auto y = div(x.quot, dim.s[1]);
+    auto z = div(y.quot, dim.s[2]);
     return IterativeTetrahedralMesh::Locator(Vec3i(x.rem, y.rem, z.rem),
                                              mod_ind.rem);
 }

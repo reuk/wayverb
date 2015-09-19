@@ -54,9 +54,7 @@ RecursiveTetrahedralWaveguide::RecursiveTetrahedralWaveguide(
     Vec3f start,
     float spacing)
         : RecursiveTetrahedralWaveguide(
-              program,
-              queue,
-              tetrahedral_mesh(boundary, start, spacing)) {
+              program, queue, tetrahedral_mesh(boundary, start, spacing)) {
 }
 
 RecursiveTetrahedralWaveguide::RecursiveTetrahedralWaveguide(

@@ -4,6 +4,7 @@
 #include <numeric>
 #include <cmath>
 #include <ostream>
+#include <array>
 
 #define VEC_OP(sym, functor)                                       \
     template <typename U>                                          \
@@ -33,43 +34,35 @@ struct Vec3 {
     using Vec3t = Vec3<T>;
 
     Vec3(T t = T())
-            : x(t)
-            , y(t)
-            , z(t) {
+            : s({{t, t, t}}) {
     }
 
     Vec3(const T& x, const T& y, const T& z)
-            : x(x)
-            , y(y)
-            , z(z) {
+            : s({{x, y, z}}) {
     }
 
     template <typename U>
     Vec3(const Vec3<U>& u)
-            : x(u.x)
-            , y(u.y)
-            , z(u.z) {
+            : s({{static_cast<T>(u.s[0]),
+                  static_cast<T>(u.s[1]),
+                  static_cast<T>(u.s[2])}}) {
     }
 
     template <typename V, typename U>
     auto fold(const U& u = U(), const V& v = V()) const {
-#ifdef __APPLE__
-        return v(x, v(y, v(z, u)));
-#else
-        return std::accumulate(std::begin(s), std::end(s), u, v);
-#endif
+        return std::accumulate(s.begin(), s.end(), u, v);
     }
 
     template <typename U>
     auto map(const U& u = U()) const {
-        return make_vec(u(x), u(y), u(z));
+        return make_vec(u(s[0]), u(s[1]), u(s[2]));
     }
 
     template <typename... U>
     auto zip(const U&... u) const {
-        return make_vec(std::make_tuple(x, u.x...),
-                        std::make_tuple(y, u.y...),
-                        std::make_tuple(z, u.z...));
+        return make_vec(std::make_tuple(s[0], u.s[0]...),
+                        std::make_tuple(s[1], u.s[1]...),
+                        std::make_tuple(s[2], u.s[2]...));
     }
 
     template <typename U, typename I>
@@ -108,8 +101,8 @@ struct Vec3 {
 
     template <typename U>
     auto cross(const Vec3<U>& rhs) const {
-        return Vec3t(y, z, x) * Vec3<U>(rhs.z, rhs.x, rhs.y) -
-               Vec3t(z, x, y) * Vec3<U>(rhs.y, rhs.z, rhs.x);
+        return Vec3t(s[1], s[2], s[0]) * Vec3<U>(rhs.s[2], rhs.s[0], rhs.s[1]) -
+               Vec3t(s[2], s[0], s[1]) * Vec3<U>(rhs.s[1], rhs.s[2], rhs.s[0]);
     }
 
     VEC_OP(+, plus);
@@ -136,16 +129,7 @@ struct Vec3 {
         return fold<std::logical_or<T>>(false);
     }
 
-#ifdef __APPLE__
-    T x, y, z;
-#else
-    union {
-        T s[3];
-        struct {
-            T x, y, z;
-        };
-    };
-#endif
+    std::array<T, 3> s;
 };
 
 template <typename T>
@@ -155,5 +139,6 @@ Vec3<T> make_vec(const T& x, const T& y, const T& z) {
 
 template <typename T>
 std::ostream& operator<<(std::ostream& strm, const Vec3<T>& obj) {
-    return strm << "(" << obj.x << ", " << obj.y << ", " << obj.z << ")";
+    return strm << "(" << obj.s[0] << ", " << obj.s[1] << ", " << obj.s[2]
+                << ")";
 }
