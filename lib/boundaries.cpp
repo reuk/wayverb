@@ -52,30 +52,34 @@ Vec3i MeshBoundary::hash_point(const Vec3f& v) const {
         .map([](auto j) { return (int)floor(j); });
 }
 
+vector<vector<MeshBoundary::reference_store>> MeshBoundary::get_triangle_references() const {
+    vector<vector<reference_store>> ret(DIVISIONS, vector<reference_store>(DIVISIONS));
+    for (auto i = 0u; i != triangles.size(); ++i) {
+        auto bounding_box = get_cuboid_boundary({vertices[triangles[i].s[0]],
+                                                 vertices[triangles[i].s[1]],
+                                                 vertices[triangles[i].s[2]]});
+        auto min_indices = hash_point(bounding_box.c0);
+        auto max_indices = hash_point(bounding_box.c1) + 1;
+
+        for (auto j = min_indices.x;
+             j != max_indices.x && j != DIVISIONS;
+             ++j) {
+            for (auto k = min_indices.y; k != max_indices.y && k != DIVISIONS;
+                 ++k) {
+                ret[j][k].push_back(i);
+            }
+        }
+    }
+    return ret;
+}
+
 MeshBoundary::MeshBoundary(const vector<Triangle>& triangles,
                            const vector<Vec3f>& vertices)
         : triangles(triangles)
         , vertices(vertices)
         , boundary(get_cuboid_boundary(vertices))
         , cell_size(boundary.get_dimensions() / DIVISIONS)
-        , triangle_references(DIVISIONS, vector<vector<uint32_t>>(DIVISIONS)) {
-    for (auto i = 0u; i != triangles.size(); ++i) {
-        auto bounding_box = get_cuboid_boundary({vertices[triangles[i].s[0]],
-                                                 vertices[triangles[i].s[1]],
-                                                 vertices[triangles[i].s[2]]});
-        auto min_indices = hash_point(bounding_box.c0);
-        auto max_indices = hash_point(bounding_box.c1);
-
-        for (auto j = min_indices.s[0];
-             j != max_indices.s[0] + 1 && j != triangle_references.size();
-             ++j) {
-            for (auto k = min_indices.s[1]; k != max_indices.s[1] + 1 &&
-                                            k != triangle_references[j].size();
-                 ++k) {
-                triangle_references[j][k].push_back(i);
-            }
-        }
-    }
+        , triangle_references(get_triangle_references()) {
 }
 
 class Ray {
@@ -146,7 +150,7 @@ MeshBoundary::reference_store MeshBoundary::get_references(uint32_t x,
                                                            uint32_t y) const {
     if (x < triangle_references.size() && y < triangle_references[x].size())
         return triangle_references[x][y];
-    return vector<uint32_t>();
+    return reference_store();
 }
 
 bool MeshBoundary::inside(const Vec3f& v) const {
@@ -156,7 +160,7 @@ bool MeshBoundary::inside(const Vec3f& v) const {
     //  cast ray through point along Z axis and check for intersections
     //  with each of the referenced triangles then count number of intersections
     //  on one side of the point
-    auto references = get_references(indices.s[0], indices.s[1]);
+    auto references = get_references(indices.x, indices.y);
     const Ray ray(v, Vec3f(0, 0, 1));
     auto count = count_if(
         references.begin(),

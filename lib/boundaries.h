@@ -55,4 +55,6 @@ struct MeshBoundary : public Boundary {
     CuboidBoundary boundary;
     Vec3f cell_size;
     std::vector<std::vector<reference_store>> triangle_references;
+private:
+    std::vector<std::vector<reference_store>> get_triangle_references() const;
 };
