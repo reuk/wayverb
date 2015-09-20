@@ -6,12 +6,11 @@
 #include "recursive_tetrahedral.h"
 #include "cl_structs.h"
 #include "logger.h"
+#include "test_flag.h"
 
 #include <array>
 #include <type_traits>
 #include <algorithm>
-
-#define TESTING
 
 template <typename T>
 class Waveguide {
@@ -127,7 +126,7 @@ public:
     RectangularWaveguide(const RectangularProgram & program,
                          cl::CommandQueue & queue,
                          cl_int3 p);
-    virtual ~RectangularWaveguide() noexcept;
+    virtual ~RectangularWaveguide() noexcept = default;
 
     cl_float run_step(cl_float i,
                       size_type e,
@@ -154,7 +153,7 @@ public:
                                   const Boundary & boundary,
                                   Vec3f start,
                                   float spacing);
-    virtual ~RecursiveTetrahedralWaveguide() noexcept;
+    virtual ~RecursiveTetrahedralWaveguide() noexcept = default;
 
     cl_float run_step(cl_float i,
                       size_type e,
@@ -183,7 +182,7 @@ public:
                                   cl::CommandQueue & queue,
                                   const Boundary & boundary,
                                   float cube_side);
-    virtual ~IterativeTetrahedralWaveguide() noexcept;
+    virtual ~IterativeTetrahedralWaveguide() noexcept = default;
 
     cl_float run_step(cl_float i,
                       size_type e,

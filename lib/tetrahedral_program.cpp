@@ -38,6 +38,11 @@ const string TetrahedralProgram::source{
             current[index] += value;
         }
 
+        if (! node->inside) {
+            barrier(CLK_GLOBAL_MEM_FENCE);
+            return;
+        }
+
         barrier(CLK_GLOBAL_MEM_FENCE);
 
         float temp = 0;

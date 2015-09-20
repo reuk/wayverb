@@ -1,6 +1,7 @@
 #include "iterative_tetrahedral_mesh.h"
 
 #include "logger.h"
+#include "test_flag.h"
 #include "conversions.h"
 
 #include <algorithm>
@@ -41,19 +42,18 @@ vector<Node> IterativeTetrahedralMesh::get_nodes(
     auto total_nodes = dim.product() * scaled_cube.size();
     vector<Node> ret(total_nodes);
     auto counter = 0u;
-    transform(ret.begin(),
-              ret.end(),
-              ret.begin(),
-              [this, &counter, &boundary](auto i) {
-                  Node ret;
-                  auto p = this->get_position(this->get_locator(counter));
-                  auto neighbors = this->get_neighbors(counter);
-                  copy(neighbors.begin(), neighbors.end(), begin(ret.ports));
-                  ret.position = convert(p);
-                  ret.inside = boundary.inside(p);
-                  counter += 1;
-                  return ret;
-              });
+    generate(ret.begin(),
+             ret.end(),
+             [this, &counter, &boundary]() {
+                 Node ret;
+                 auto p = this->get_position(this->get_locator(counter));
+                 auto neighbors = this->get_neighbors(counter);
+                 copy(neighbors.begin(), neighbors.end(), begin(ret.ports));
+                 ret.position = convert(p);
+                 ret.inside = boundary.inside(p);
+                 counter += 1;
+                 return ret;
+             });
     return ret;
 }
 
@@ -64,6 +64,15 @@ IterativeTetrahedralMesh::IterativeTetrahedralMesh(const Boundary & boundary,
         , scaled_cube(get_scaled_cube())
         , dim(get_dim())
         , nodes(get_nodes(boundary)) {
+#ifdef TESTING
+    auto fname = build_string("./file-positions.txt");
+    cout << "writing file " << fname << endl;
+    ofstream file(fname);
+    for (const auto & i : nodes) {
+        file << i.position.x << " " << i.position.y << " " << i.position.z << " " << i.inside
+             << endl;
+    }
+#endif
 }
 
 IterativeTetrahedralMesh::size_type IterativeTetrahedralMesh::get_index(
