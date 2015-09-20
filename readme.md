@@ -5,3 +5,5 @@ TODO
 ====
 * precompute node linkages for iterative tetrahedral mesh
 * fix the mesh boundary finder because everything's gone to whack
+* try dumping the triangles that are used for the boundary testing and then
+  plotting them

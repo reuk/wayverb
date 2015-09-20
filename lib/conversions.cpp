@@ -4,10 +4,10 @@
 
 #define VEC_CONVERT_FUNCTIONS_DEFINITION(t)     \
     cl_##t##3 convert(const Vec3<t> & v) {      \
-        return {{v.s[0], v.s[1], v.s[2]}};      \
+        return {{v.x, v.y, v.z}};               \
     }                                           \
     Vec3<t> convert(const cl_##t##3 & v) {      \
-        return Vec3<t>(v.s[0], v.s[1], v.s[2]); \
+        return Vec3<t>(v.x, v.y, v.z);          \
     }
 
 VEC_CONVERT_FUNCTIONS_DEFINITION(float)

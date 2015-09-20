@@ -161,19 +161,17 @@ bool MeshBoundary::inside(const Vec3f& v) const {
     //  cast ray through point along Z axis and check for intersections
     //  with each of the referenced triangles then count number of intersections
     //  on one side of the point
+    //  if intersection number is even, point is outside, else it's inside
     auto references = get_references(indices.x, indices.y);
     const Ray ray(v, Vec3f(0, 0, 1));
-    auto count = count_if(
+    return count_if(
         references.begin(),
         references.end(),
         [this, &ray](const auto& i) {
             auto intersection =
                 triangle_intersection(triangles[i], vertices, ray);
             return intersection.intersects && intersection.distance > 0;
-        });
-
-    //  if intersection number is even, point is outside, else it's inside
-    return count % 2;
+        }) % 2;
 }
 
 CuboidBoundary MeshBoundary::get_aabb() const {
