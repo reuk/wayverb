@@ -39,7 +39,7 @@ public:
                 : t(t) {
             Logger::log(t, ": begin");
         }
-        virtual ~ScopedLog() {
+        virtual ~ScopedLog() noexcept {
             Logger::log(t, ": end");
         }
 

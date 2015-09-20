@@ -6,14 +6,14 @@
 struct CuboidBoundary;
 
 struct Boundary {
-    virtual ~Boundary() noexcept;
+    virtual ~Boundary() noexcept = default;
     virtual bool inside(const Vec3f & v) const = 0;
     virtual CuboidBoundary get_aabb() const = 0;
 };
 
 struct CuboidBoundary : public Boundary {
     CuboidBoundary(const Vec3f & c0 = Vec3f(), const Vec3f & c1 = Vec3f());
-    virtual ~CuboidBoundary() noexcept;
+    virtual ~CuboidBoundary() noexcept = default;
     bool inside(const Vec3f & v) const override;
     CuboidBoundary get_aabb() const override;
     Vec3f get_dimensions() const;
@@ -24,7 +24,7 @@ CuboidBoundary get_cuboid_boundary(const std::vector<Vec3f> & vertices);
 
 struct SphereBoundary : public Boundary {
     SphereBoundary(const Vec3f & c = Vec3f(), float radius = 0);
-    virtual ~SphereBoundary() noexcept;
+    virtual ~SphereBoundary() noexcept = default;
     bool inside(const Vec3f & v) const override;
     CuboidBoundary get_aabb() const override;
 
@@ -39,7 +39,7 @@ struct MeshBoundary : public Boundary {
     MeshBoundary(
         const std::vector<Triangle> & triangles = std::vector<Triangle>(),
         const std::vector<Vec3f> & vertices = std::vector<Vec3f>());
-    virtual ~MeshBoundary() noexcept;
+    virtual ~MeshBoundary() noexcept = default;
     bool inside(const Vec3f & v) const override;
     CuboidBoundary get_aabb() const override;
 

@@ -41,7 +41,7 @@ public:
                      sizeof(cl_float)) {
     }
 
-    virtual ~Waveguide() noexcept {}
+    virtual ~Waveguide() noexcept = default;
 
     virtual cl_float run_step(cl_float i,
                               size_type e,

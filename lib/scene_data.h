@@ -13,7 +13,7 @@ class SceneData {
 public:
     SceneData(const std::string & fpath = "");
     SceneData(const aiScene * const scene);
-    virtual ~SceneData() noexcept;
+    virtual ~SceneData() noexcept = default;
     void populate(const aiScene * const scene);
     void populate(const std::string & fpath);
 

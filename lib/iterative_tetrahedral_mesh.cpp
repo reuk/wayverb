@@ -12,8 +12,6 @@ IterativeTetrahedralMesh::Locator::Locator(const Vec3i & pos, int mod_ind)
         , mod_ind(mod_ind) {
 }
 
-IterativeTetrahedralMesh::~IterativeTetrahedralMesh() noexcept {}
-
 vector<Vec3f> IterativeTetrahedralMesh::get_scaled_cube() const {
     const vector<Vec3f> basic_cube{
         {0.00, 0.00, 0.00},
