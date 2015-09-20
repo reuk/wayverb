@@ -146,7 +146,30 @@ private:
     const cl_int3 p;
 };
 
-class RecursiveTetrahedralWaveguide : public Waveguide<TetrahedralProgram> {
+class TetrahedralWaveguide : public Waveguide<TetrahedralProgram> {
+public:
+    TetrahedralWaveguide(const TetrahedralProgram & program,
+                         cl::CommandQueue & queue,
+                         std::vector<Node> nodes);
+    virtual ~TetrahedralWaveguide() noexcept = default;
+
+    cl_float run_step(cl_float i,
+                      size_type e,
+                      size_type o,
+                      cl_float attenuation,
+                      cl::CommandQueue & queue,
+                      kernel_type & kernel,
+                      size_type nodes,
+                      cl::Buffer & previous,
+                      cl::Buffer & current,
+                      cl::Buffer & next,
+                      cl::Buffer & output) override;
+
+private:
+    cl::Buffer node_buffer;
+};
+
+class RecursiveTetrahedralWaveguide : public TetrahedralWaveguide {
 public:
     RecursiveTetrahedralWaveguide(const TetrahedralProgram & program,
                                   cl::CommandQueue & queue,
@@ -154,53 +177,13 @@ public:
                                   Vec3f start,
                                   float spacing);
     virtual ~RecursiveTetrahedralWaveguide() noexcept = default;
-
-    cl_float run_step(cl_float i,
-                      size_type e,
-                      size_type o,
-                      cl_float attenuation,
-                      cl::CommandQueue & queue,
-                      kernel_type & kernel,
-                      size_type nodes,
-                      cl::Buffer & previous,
-                      cl::Buffer & current,
-                      cl::Buffer & next,
-                      cl::Buffer & output) override;
-
-private:
-    RecursiveTetrahedralWaveguide(const TetrahedralProgram & program,
-                                  cl::CommandQueue & queue,
-                                  std::vector<Node> nodes);
-
-    std::vector<Node> nodes;
-    cl::Buffer node_buffer;
 };
 
-class IterativeTetrahedralWaveguide : public Waveguide<TetrahedralProgram> {
+class IterativeTetrahedralWaveguide : public TetrahedralWaveguide {
 public:
     IterativeTetrahedralWaveguide(const TetrahedralProgram & program,
                                   cl::CommandQueue & queue,
                                   const Boundary & boundary,
                                   float cube_side);
     virtual ~IterativeTetrahedralWaveguide() noexcept = default;
-
-    cl_float run_step(cl_float i,
-                      size_type e,
-                      size_type o,
-                      cl_float attenuation,
-                      cl::CommandQueue & queue,
-                      kernel_type & kernel,
-                      size_type nodes,
-                      cl::Buffer & previous,
-                      cl::Buffer & current,
-                      cl::Buffer & next,
-                      cl::Buffer & output) override;
-
-private:
-    IterativeTetrahedralWaveguide(const TetrahedralProgram & program,
-                                  cl::CommandQueue & queue,
-                                  IterativeTetrahedralMesh mesh);
-
-    IterativeTetrahedralMesh mesh;
-    cl::Buffer node_buffer;
 };

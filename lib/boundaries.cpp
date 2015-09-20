@@ -52,8 +52,10 @@ Vec3i MeshBoundary::hash_point(const Vec3f& v) const {
         .map([](auto j) { return (int)floor(j); });
 }
 
-vector<vector<MeshBoundary::reference_store>> MeshBoundary::get_triangle_references() const {
-    vector<vector<reference_store>> ret(DIVISIONS, vector<reference_store>(DIVISIONS));
+vector<vector<MeshBoundary::reference_store>>
+MeshBoundary::get_triangle_references() const {
+    vector<vector<reference_store>> ret(DIVISIONS,
+                                        vector<reference_store>(DIVISIONS));
     for (auto i = 0u; i != triangles.size(); ++i) {
         auto bounding_box = get_cuboid_boundary({vertices[triangles[i].s[0]],
                                                  vertices[triangles[i].s[1]],
@@ -61,8 +63,7 @@ vector<vector<MeshBoundary::reference_store>> MeshBoundary::get_triangle_referen
         auto min_indices = hash_point(bounding_box.c0);
         auto max_indices = hash_point(bounding_box.c1) + 1;
 
-        for (auto j = min_indices.x;
-             j != max_indices.x && j != DIVISIONS;
+        for (auto j = min_indices.x; j != max_indices.x && j != DIVISIONS;
              ++j) {
             for (auto k = min_indices.y; k != max_indices.y && k != DIVISIONS;
                  ++k) {

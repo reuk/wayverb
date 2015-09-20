@@ -33,26 +33,20 @@ struct Vec3 {
     using value_type = T;
     using Vec3t = Vec3<T>;
 
-    Vec3(T t = T()) noexcept
-            : s({{t, t, t}}) {
+    Vec3(T t = T()) noexcept : s({{t, t, t}}) {
     }
 
-    Vec3(const T& x, const T& y, const T& z) noexcept
-            : x(x), y(y), z(z) {
+    Vec3(const T& x, const T& y, const T& z) noexcept : x(x), y(y), z(z) {
     }
 
     template <typename U>
-    Vec3(const Vec3<U>& u) noexcept
-            : x(u.x)
-            , y(u.y)
-            , z(u.z) {
+    Vec3(const Vec3<U>& u) noexcept : x(u.x), y(u.y), z(u.z) {
     }
 
-    Vec3(const Vec3 & u) noexcept
-        : s(u.s) {
+    Vec3(const Vec3& u) noexcept : s(u.s) {
     }
 
-    Vec3 & operator=(const Vec3 & rhs) noexcept {
+    Vec3& operator=(const Vec3& rhs) noexcept {
         s = rhs.s;
         return *this;
     }
@@ -153,6 +147,5 @@ Vec3<T> make_vec(const T& x, const T& y, const T& z) {
 
 template <typename T>
 std::ostream& operator<<(std::ostream& strm, const Vec3<T>& obj) {
-    return strm << "(" << obj.x << ", " << obj.y << ", " << obj.z
-                << ")";
+    return strm << "(" << obj.x << ", " << obj.y << ", " << obj.z << ")";
 }

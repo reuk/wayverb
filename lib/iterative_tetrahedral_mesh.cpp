@@ -64,15 +64,6 @@ IterativeTetrahedralMesh::IterativeTetrahedralMesh(const Boundary & boundary,
         , scaled_cube(get_scaled_cube())
         , dim(get_dim())
         , nodes(get_nodes(boundary)) {
-#ifdef TESTING
-    auto fname = build_string("./file-positions.txt");
-    cout << "writing file " << fname << endl;
-    ofstream file(fname);
-    for (const auto & i : nodes) {
-        file << i.position.x << " " << i.position.y << " " << i.position.z << " " << i.inside
-             << endl;
-    }
-#endif
 }
 
 IterativeTetrahedralMesh::size_type IterativeTetrahedralMesh::get_index(

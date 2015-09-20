@@ -37,7 +37,10 @@ void SceneData::populate(const aiScene * const scene) {
         for (auto j = 0u; j != mesh->mNumFaces; ++j) {
             auto face = mesh->mFaces[j];
 
-            meshTriangles[j] = Vec3<uint32_t>(face.mIndices[0], face.mIndices[1], face.mIndices[2]) + vertices.size();
+            meshTriangles[j] =
+                Vec3<uint32_t>(
+                    face.mIndices[0], face.mIndices[1], face.mIndices[2]) +
+                vertices.size();
         }
 
         vertices.insert(
