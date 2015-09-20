@@ -50,7 +50,7 @@ const string TetrahedralProgram::source{
         //  waveguide logic goes here
         for (int i = 0; i != PORTS; ++i) {
             int port_index = node->ports[i];
-            if (port_index >= 0)
+            if (port_index >= 0 && nodes[port_index].inside)
                 temp += current[port_index];
         }
 

@@ -61,6 +61,11 @@ struct Vec3 {
         return make_vec(u(s[0]), u(s[1]), u(s[2]));
     }
 
+    template <typename U>
+    void for_each(const U& u = U()) const {
+        std::for_each(s.begin(), s.end(), u);
+    }
+
     template <typename... U>
     auto zip(const U&... u) const {
         return make_vec(std::make_tuple(x, u.x...),

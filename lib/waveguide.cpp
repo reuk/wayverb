@@ -98,7 +98,6 @@ cl_float TetrahedralWaveguide::run_step(cl_float i,
     vector<cl_float> node_values(nodes);
     cl::copy(queue, next, node_values.begin(), node_values.end());
     auto fname = build_string("./file-", ind++, ".txt");
-    cout << "writing file " << fname << endl;
     ofstream file(fname);
     for (auto j = 0u; j != nodes; ++j) {
         file << node_values[j] << endl;

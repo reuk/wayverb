@@ -251,6 +251,7 @@ int main(int argc, char ** argv) {
 
         auto boundary = SceneData(argv[1]).get_mesh_boundary();
 
+        //auto renderType = RenderType::RECURSIVE_TETRAHEDRAL;
         auto renderType = RenderType::ITERATIVE_TETRAHEDRAL;
         switch (renderType) {
             case RenderType::RECURSIVE_TETRAHEDRAL: {

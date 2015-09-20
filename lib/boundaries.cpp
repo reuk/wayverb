@@ -61,11 +61,11 @@ MeshBoundary::get_triangle_references() const {
                                                  vertices[triangles[i].s[1]],
                                                  vertices[triangles[i].s[2]]});
         auto min_indices = hash_point(bounding_box.c0);
-        auto max_indices = hash_point(bounding_box.c1) + 1;
+        auto max_indices = hash_point(bounding_box.c1)/* + 1*/;
 
-        for (auto j = min_indices.x; j != max_indices.x && j != DIVISIONS;
+        for (auto j = min_indices.x; j != max_indices.x/* && j != DIVISIONS*/;
              ++j) {
-            for (auto k = min_indices.y; k != max_indices.y && k != DIVISIONS;
+            for (auto k = min_indices.y; k != max_indices.y/* && k != DIVISIONS*/;
                  ++k) {
                 ret[j][k].push_back(i);
             }
