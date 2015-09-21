@@ -1,4 +1,5 @@
 #include "waveguide.h"
+#include "test_flag.h"
 
 #include <iostream>
 #include <algorithm>
@@ -60,8 +61,13 @@ TetrahedralWaveguide::TetrahedralWaveguide(const TetrahedralProgram & program,
     cout << "writing file " << fname << endl;
     ofstream file(fname);
     for (const auto & i : nodes) {
-        file << i.position.x << " " << i.position.y << " " << i.position.z
-             << " " << i.inside << endl;
+        file << build_string(i.position.x,
+                             " ",
+                             i.position.y,
+                             " ",
+                             i.position.z,
+                             " ",
+                             i.inside) << endl;
     }
 #endif
 }
@@ -100,7 +106,7 @@ cl_float TetrahedralWaveguide::run_step(cl_float i,
     auto fname = build_string("./file-", ind++, ".txt");
     ofstream file(fname);
     for (auto j = 0u; j != nodes; ++j) {
-        file << node_values[j] << endl;
+        file << build_string(node_values[j]) << endl;
     }
 #endif
 

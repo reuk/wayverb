@@ -17,7 +17,7 @@ struct CuboidBoundary : public Boundary {
     bool inside(const Vec3f & v) const override;
     CuboidBoundary get_aabb() const override;
     Vec3f get_dimensions() const;
-    Vec3f c0, c1;
+    const Vec3f c0, c1;
 };
 
 CuboidBoundary get_cuboid_boundary(const std::vector<Vec3f> & vertices);
@@ -28,9 +28,9 @@ struct SphereBoundary : public Boundary {
     bool inside(const Vec3f & v) const override;
     CuboidBoundary get_aabb() const override;
 
-    Vec3f c;
-    float radius;
-    CuboidBoundary boundary;
+    const Vec3f c;
+    const float radius;
+    const CuboidBoundary boundary;
 };
 
 using Triangle = Vec3<uint32_t>;
@@ -46,15 +46,16 @@ struct MeshBoundary : public Boundary {
     using reference_store = std::vector<uint32_t>;
 
     Vec3i hash_point(const Vec3f & v) const;
-    reference_store get_references(uint32_t x, uint32_t y) const;
+    reference_store get_references(int x, int y) const;
+    reference_store get_references(const Vec3i & i) const;
 
-    static const int DIVISIONS;
+    const int DIVISIONS{1024};
 
-    std::vector<Triangle> triangles;
-    std::vector<Vec3f> vertices;
-    CuboidBoundary boundary;
-    Vec3f cell_size;
-    std::vector<std::vector<reference_store>> triangle_references;
+    const std::vector<Triangle> triangles;
+    const std::vector<Vec3f> vertices;
+    const CuboidBoundary boundary;
+    const Vec3f cell_size;
+    const std::vector<std::vector<reference_store>> triangle_references;
 
 private:
     std::vector<std::vector<reference_store>> get_triangle_references() const;

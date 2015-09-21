@@ -2,6 +2,7 @@
 #include "waveguide.h"
 #include "scene_data.h"
 #include "logger.h"
+#include "test_flag.h"
 
 //  dependency
 #define __CL_ENABLE_EXCEPTIONS
@@ -251,7 +252,6 @@ int main(int argc, char ** argv) {
 
         auto boundary = SceneData(argv[1]).get_mesh_boundary();
 
-        //auto renderType = RenderType::RECURSIVE_TETRAHEDRAL;
         auto renderType = RenderType::ITERATIVE_TETRAHEDRAL;
         switch (renderType) {
             case RenderType::RECURSIVE_TETRAHEDRAL: {

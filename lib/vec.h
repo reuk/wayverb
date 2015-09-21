@@ -33,7 +33,7 @@ struct Vec3 {
     using value_type = T;
     using Vec3t = Vec3<T>;
 
-    Vec3(T t = T()) noexcept : s({{t, t, t}}) {
+    Vec3(T t = T()) noexcept : x(t), y(t), z(t) {
     }
 
     Vec3(const T& x, const T& y, const T& z) noexcept : x(x), y(y), z(z) {
@@ -43,27 +43,29 @@ struct Vec3 {
     Vec3(const Vec3<U>& u) noexcept : x(u.x), y(u.y), z(u.z) {
     }
 
-    Vec3(const Vec3& u) noexcept : s(u.s) {
+    Vec3(const Vec3& u) noexcept : x(u.x), y(u.y), z(u.z) {
     }
 
     Vec3& operator=(const Vec3& rhs) noexcept {
-        s = rhs.s;
+        x = rhs.x;
+        y = rhs.y;
+        z = rhs.z;
         return *this;
     }
 
     template <typename V, typename U>
     auto fold(const U& u = U(), const V& v = V()) const {
-        return std::accumulate(s.begin(), s.end(), u, v);
+        return std::accumulate(std::begin(s), std::end(s), u, v);
     }
 
     template <typename U>
     auto map(const U& u = U()) const {
-        return make_vec(u(s[0]), u(s[1]), u(s[2]));
+        return make_vec(u(x), u(y), u(z));
     }
 
     template <typename U>
     void for_each(const U& u = U()) const {
-        std::for_each(s.begin(), s.end(), u);
+        std::for_each(std::begin(s), std::end(s), u);
     }
 
     template <typename... U>
@@ -138,7 +140,7 @@ struct Vec3 {
     }
 
     union {
-        std::array<T, 3> s;
+        T s[3];
         struct {
             T x, y, z;
         };

@@ -6,7 +6,6 @@
 #include "recursive_tetrahedral.h"
 #include "cl_structs.h"
 #include "logger.h"
-#include "test_flag.h"
 
 #include <array>
 #include <type_traits>
