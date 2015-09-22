@@ -55,7 +55,7 @@ struct Vec3 {
 
     template <typename V, typename U>
     auto fold(const U& u = U(), const V& v = V()) const {
-        return std::accumulate(std::begin(s), std::end(s), u, v);
+        return v(x, v(y, v(z, u)));
     }
 
     template <typename U>
@@ -65,7 +65,9 @@ struct Vec3 {
 
     template <typename U>
     void for_each(const U& u = U()) const {
-        std::for_each(std::begin(s), std::end(s), u);
+        u(x);
+        u(y);
+        u(z);
     }
 
     template <typename... U>
@@ -139,12 +141,7 @@ struct Vec3 {
         return fold<std::logical_or<T>>(false);
     }
 
-    union {
-        T s[3];
-        struct {
-            T x, y, z;
-        };
-    };
+    T x, y, z;
 };
 
 template <typename T>

@@ -149,7 +149,7 @@ class TetrahedralWaveguide : public Waveguide<TetrahedralProgram> {
 public:
     TetrahedralWaveguide(const TetrahedralProgram & program,
                          cl::CommandQueue & queue,
-                         std::vector<Node> nodes);
+                         const std::vector<Node> & nodes);
     virtual ~TetrahedralWaveguide() noexcept = default;
 
     cl_float run_step(cl_float i,
@@ -165,6 +165,7 @@ public:
                       cl::Buffer & output) override;
 
 private:
+    std::vector<Node> nodes;
     cl::Buffer node_buffer;
 };
 

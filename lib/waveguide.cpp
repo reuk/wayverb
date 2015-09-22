@@ -50,15 +50,15 @@ cl_float RectangularWaveguide::run_step(cl_float i,
 
 TetrahedralWaveguide::TetrahedralWaveguide(const TetrahedralProgram & program,
                                            cl::CommandQueue & queue,
-                                           std::vector<Node> nodes)
+                                           const std::vector<Node> & nodes)
         : Waveguide<TetrahedralProgram>(program, queue, nodes.size())
+        , nodes(nodes)
         , node_buffer(program.getInfo<CL_PROGRAM_CONTEXT>(),
-                      nodes.begin(),
-                      nodes.end(),
-                      false) {
+                      this->nodes.begin(),
+                      this->nodes.end(),
+                      true) {
 #ifdef TESTING
     auto fname = build_string("./file-positions.txt");
-    cout << "writing file " << fname << endl;
     ofstream file(fname);
     for (const auto & i : nodes) {
         file << build_string(i.position.x,
@@ -83,6 +83,20 @@ cl_float TetrahedralWaveguide::run_step(cl_float i,
                                         cl::Buffer & current,
                                         cl::Buffer & next,
                                         cl::Buffer & output) {
+    if (e > this->nodes.size()) {
+        throw runtime_error("requested input node does not exist");
+    }
+    if (o > this->nodes.size()) {
+        throw runtime_error("requested output node does not exist");
+    }
+
+    if (!this->nodes[e].inside) {
+        throw runtime_error("requested input node is outside boundary");
+    }
+    if (!this->nodes[o].inside) {
+        throw runtime_error("requested output node is outside boundary");
+    }
+
     vector<cl_float> out(1);
 
     kernel(cl::EnqueueArgs(queue, cl::NDRange(nodes)),

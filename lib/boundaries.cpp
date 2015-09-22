@@ -50,7 +50,7 @@ CuboidBoundary SphereBoundary::get_aabb() const {
 
 Vec3i MeshBoundary::hash_point(const Vec3f& v) const {
     return ((v - boundary.c0) / cell_size)
-        .map([](auto j) { return (int)floor(j); });
+        .map([](auto i) -> int { return floor(i); });
 }
 
 vector<vector<MeshBoundary::reference_store>>
@@ -58,11 +58,11 @@ MeshBoundary::get_triangle_references() const {
     vector<vector<reference_store>> ret(DIVISIONS,
                                         vector<reference_store>(DIVISIONS));
     for (auto i = 0u; i != triangles.size(); ++i) {
-        auto bounding_box = get_cuboid_boundary({vertices[triangles[i].s[0]],
-                                                 vertices[triangles[i].s[1]],
-                                                 vertices[triangles[i].s[2]]});
-        auto min_indices = hash_point(bounding_box.c0);
-        auto max_indices = hash_point(bounding_box.c1) + 1;
+        const auto& t = triangles[i];
+        const auto bounding_box =
+            get_cuboid_boundary({vertices[t.x], vertices[t.y], vertices[t.z]});
+        const auto min_indices = hash_point(bounding_box.c0);
+        const auto max_indices = hash_point(bounding_box.c1) + 1;
 
         for (auto j = min_indices.x; j != max_indices.x && j != DIVISIONS;
              ++j) {
@@ -86,10 +86,12 @@ MeshBoundary::MeshBoundary(const vector<Triangle>& triangles,
     auto fname = build_string("./file-mesh.txt");
     ofstream file(fname);
     for (const auto& i : this->triangles) {
-        for (const auto& j : i.s) {
-            auto v = this->vertices[j];
-            file << build_string(v.x, " ", v.y, " ", v.z, " ");
-        }
+        auto v0 = this->vertices[i.x];
+        file << build_string(v0.x, " ", v0.y, " ", v0.z, " ");
+        auto v1 = this->vertices[i.y];
+        file << build_string(v1.x, " ", v1.y, " ", v1.z, " ");
+        auto v2 = this->vertices[i.z];
+        file << build_string(v2.x, " ", v2.y, " ", v2.z, " ");
         file << endl;
     }
 #endif
@@ -120,18 +122,18 @@ public:
     float distance;
 };
 
-std::ostream& operator<<(std::ostream& strm, const Intersects& obj) {
+ostream& operator<<(ostream& strm, const Intersects& obj) {
     return strm << "Intersects {" << obj.intersects << ", " << obj.distance
                 << "}";
 }
 
-using TriangleVerts = Vec3<Vec3f>;
+using TriangleVerts = array<Vec3f, 3>;
 
 Intersects triangle_intersection(const TriangleVerts& tri, const Ray& ray) {
     auto EPSILON = 0.0001;
 
-    auto e0 = tri.s[1] - tri.s[0];
-    auto e1 = tri.s[2] - tri.s[0];
+    auto e0 = tri[1] - tri[0];
+    auto e1 = tri[2] - tri[0];
 
     auto pvec = ray.direction.cross(e1);
     auto det = e0.dot(pvec);
@@ -140,7 +142,7 @@ Intersects triangle_intersection(const TriangleVerts& tri, const Ray& ray) {
         return Intersects();
 
     auto invdet = 1 / det;
-    auto tvec = ray.position - tri.s[0];
+    auto tvec = ray.position - tri[0];
     auto ucomp = invdet * tvec.dot(pvec);
 
     if (ucomp < 0 || 1 < ucomp)
@@ -152,16 +154,21 @@ Intersects triangle_intersection(const TriangleVerts& tri, const Ray& ray) {
     if (vcomp < 0 || 1 < vcomp + ucomp)
         return Intersects();
 
-    return Intersects(invdet * e1.dot(qvec));
+    auto dist = invdet * e1.dot(qvec);
+
+    if (dist < 0)
+        return Intersects();
+
+    return Intersects(dist);
 }
 
 Intersects triangle_intersection(const Triangle& tri,
-                                 const std::vector<Vec3f>& vertices,
+                                 const vector<Vec3f>& vertices,
                                  const Ray& ray) {
-    auto v0 = vertices[tri.s[0]];
-    auto v1 = vertices[tri.s[1]];
-    auto v2 = vertices[tri.s[2]];
-    return triangle_intersection(TriangleVerts(v0, v1, v2), ray);
+    const auto v0 = vertices[tri.x];
+    const auto v1 = vertices[tri.y];
+    const auto v2 = vertices[tri.z];
+    return triangle_intersection({{v0, v1, v2}}, ray);
 }
 
 MeshBoundary::reference_store MeshBoundary::get_references(
@@ -170,7 +177,7 @@ MeshBoundary::reference_store MeshBoundary::get_references(
 }
 
 MeshBoundary::reference_store MeshBoundary::get_references(int x, int y) const {
-    if (x < triangle_references.size() && y < triangle_references[x].size())
+    if (0 <= x && x < DIVISIONS && 0 <= y && y < DIVISIONS)
         return triangle_references[x][y];
     return reference_store();
 }
@@ -181,14 +188,13 @@ bool MeshBoundary::inside(const Vec3f& v) const {
     //  on one side of the point
     //  if intersection number is even, point is outside, else it's inside
     const Ray ray(v, Vec3f(0, 0, 1));
-    auto references = get_references(hash_point(v));
+    const auto references = get_references(hash_point(v));
     return count_if(references.begin(),
                     references.end(),
                     [this, &ray](const auto& i) {
                         auto intersection =
                             triangle_intersection(triangles[i], vertices, ray);
-                        return intersection.intersects &&
-                               intersection.distance > 0;
+                        return intersection.intersects;
                     }) %
            2;
 }

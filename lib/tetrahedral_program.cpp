@@ -34,13 +34,13 @@ const string TetrahedralProgram::source{
         size_t index = get_global_id(0);
         global Node * node = nodes + index;
 
-        if (index == write) {
-            current[index] += value;
-        }
-
         if (! node->inside) {
             barrier(CLK_GLOBAL_MEM_FENCE);
             return;
+        }
+
+        if (index == write) {
+            current[index] += value;
         }
 
         barrier(CLK_GLOBAL_MEM_FENCE);

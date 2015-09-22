@@ -214,10 +214,10 @@ int main(int argc, char ** argv) {
     auto attenuation_factor = 0.9995;
 #ifdef TESTING
     auto inputType = InputType::IMPULSE;
-    auto steps = 200;
+    auto steps = 100;
 #else
     auto inputType = InputType::KERNEL;
-    auto steps = 4096;
+    auto steps = 1 << 13;
 #endif
 
     string fname(argv[2]);
@@ -244,7 +244,7 @@ int main(int argc, char ** argv) {
                 input = {1};
                 break;
             case InputType::KERNEL:
-                input = lopass_kernel(sr, sr / 4, 255);
+                input = lopass_kernel(sr, sr / 4, (1 << 7) - 1);
                 break;
         }
 
@@ -267,7 +267,7 @@ int main(int argc, char ** argv) {
                 IterativeTetrahedralWaveguide waveguide(
                     program, queue, boundary, divisions);
                 results = waveguide.run(
-                    input, 10000, 10000, attenuation_factor, steps);
+                    input, 30000, 30000, attenuation_factor, steps);
                 break;
             }
 
