@@ -28,13 +28,13 @@ vector<Vec3f> IterativeTetrahedralMesh::get_scaled_cube() const {
     transform(basic_cube.begin(),
               basic_cube.end(),
               ret.begin(),
-              [this](auto i) { return i * spacing; });
+              [this](auto i) { return i * cube_side; });
     return ret;
 }
 
 Vec3i IterativeTetrahedralMesh::get_dim() const {
     auto dimensions = boundary.get_dimensions();
-    return (dimensions / spacing).map([](auto i) { return ceil(i); }) + 1;
+    return (dimensions / cube_side).map([](auto i) { return ceil(i); }) + 1;
 }
 
 vector<Node> IterativeTetrahedralMesh::get_nodes(
@@ -60,7 +60,7 @@ vector<Node> IterativeTetrahedralMesh::get_nodes(
 IterativeTetrahedralMesh::IterativeTetrahedralMesh(const Boundary & boundary,
                                                    float spacing)
         : boundary(boundary.get_aabb())
-        , spacing(spacing)
+        , cube_side(cube_side_from_node_spacing(spacing))
         , scaled_cube(get_scaled_cube())
         , dim(get_dim())
         , nodes(get_nodes(boundary)) {
@@ -84,7 +84,7 @@ IterativeTetrahedralMesh::Locator IterativeTetrahedralMesh::get_locator(
 }
 
 Vec3f IterativeTetrahedralMesh::get_position(const Locator & locator) const {
-    auto cube_pos = locator.pos * spacing;
+    auto cube_pos = locator.pos * cube_side;
     auto node_pos = scaled_cube[locator.mod_ind];
     return cube_pos + node_pos + boundary.c0;
 }
@@ -140,4 +140,8 @@ IterativeTetrahedralMesh::get_neighbors(size_type index) const {
             is_neighbor ? get_index(Locator(summed, relative.mod_ind)) : -1;
     }
     return ret;
+}
+
+float IterativeTetrahedralMesh::cube_side_from_node_spacing(float spacing) {
+    return spacing / Vec3f(0.25, 0.25, 0.25).mag();
 }

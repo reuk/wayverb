@@ -209,9 +209,14 @@ int main(int argc, char ** argv) {
     //  save to file argv[2]
 
     auto speed_of_sound = 340.0;
-    auto divisions = 0.2;
-    auto sr = (speed_of_sound * sqrt(3)) / divisions;
-    auto attenuation_factor = 0.9995;
+    auto attenuation_factor = 0.999;
+
+    auto max_freq = 500;
+    auto sr = max_freq * 4;
+    auto divisions = (speed_of_sound * sqrt(3)) / sr;
+
+    Logger::log("divisions: ", divisions);
+    Logger::log("cube side: ", IterativeTetrahedralMesh::cube_side_from_node_spacing(divisions));
 #ifdef TESTING
     auto inputType = InputType::IMPULSE;
     auto steps = 100;
@@ -267,7 +272,7 @@ int main(int argc, char ** argv) {
                 IterativeTetrahedralWaveguide waveguide(
                     program, queue, boundary, divisions);
                 results = waveguide.run(
-                    input, 30000, 30000, attenuation_factor, steps);
+                    input, 20000, 20000, attenuation_factor, steps);
                 break;
             }
 

@@ -58,6 +58,8 @@ public:
                                       size_type o,
                                       cl_float attenuation,
                                       size_type steps) {
+        Logger::log("beginning simulation with: ", nodes, " nodes");
+
         std::vector<cl_float> n(nodes, 0);
         cl::copy(queue, n.begin(), n.end(), next);
         cl::copy(queue, n.begin(), n.end(), current);
