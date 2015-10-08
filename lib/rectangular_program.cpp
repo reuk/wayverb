@@ -55,7 +55,6 @@ const string RectangularProgram::source{
     (   unsigned long write
     ,   float value
     ,   float attenuation
-    ,   global float * next
     ,   global float * current
     ,   global float * previous
     ,   float r
@@ -118,10 +117,10 @@ const string RectangularProgram::source{
         //  TODO probably not right way to damp?
         temp *= attenuation;
 
-        next[index] = temp;
+        previous[index] = temp;
 
         if (index == read) {
-            *output = next[index];
+            *output = previous[index];
         }
     }
     )"};

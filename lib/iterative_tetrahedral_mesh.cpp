@@ -93,7 +93,7 @@ using Locator = IterativeTetrahedralMesh::Locator;
 
 const array<array<Locator, IterativeTetrahedralMesh::PORTS>,
             IterativeTetrahedralMesh::CUBE_NODES>
-    IterativeTetrahedralMesh::offset_table = {{
+    IterativeTetrahedralMesh::offset_table {{
         {{Locator(Vec3i(0, 0, 0), 2),
           Locator(Vec3i(-1, 0, -1), 3),
           Locator(Vec3i(-1, -1, 0), 6),

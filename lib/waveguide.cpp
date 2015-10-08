@@ -28,7 +28,6 @@ cl_float RectangularWaveguide::run_step(cl_float i,
                                         size_type nodes,
                                         cl::Buffer & previous,
                                         cl::Buffer & current,
-                                        cl::Buffer & next,
                                         cl::Buffer & output) {
     vector<cl_float> out(1);
 
@@ -36,7 +35,6 @@ cl_float RectangularWaveguide::run_step(cl_float i,
            e,
            i,
            attenuation,
-           next,
            current,
            previous,
            -1,
@@ -81,7 +79,6 @@ cl_float TetrahedralWaveguide::run_step(cl_float i,
                                         size_type nodes,
                                         cl::Buffer & previous,
                                         cl::Buffer & current,
-                                        cl::Buffer & next,
                                         cl::Buffer & output) {
     if (e > this->nodes.size()) {
         throw runtime_error("requested input node does not exist");
@@ -103,7 +100,6 @@ cl_float TetrahedralWaveguide::run_step(cl_float i,
            e,
            i,
            attenuation,
-           next,
            current,
            previous,
            node_buffer,
@@ -116,7 +112,7 @@ cl_float TetrahedralWaveguide::run_step(cl_float i,
     static size_type ind = 0;
 
     vector<cl_float> node_values(nodes);
-    cl::copy(queue, next, node_values.begin(), node_values.end());
+    cl::copy(queue, previous, node_values.begin(), node_values.end());
     auto fname = build_string("./file-", ind++, ".txt");
     ofstream file(fname);
     for (auto j = 0u; j != nodes; ++j) {

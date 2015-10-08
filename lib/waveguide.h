@@ -27,13 +27,9 @@ public:
                                sizeof(cl_float) * nodes),
                     cl::Buffer(program.template getInfo<CL_PROGRAM_CONTEXT>(),
                                CL_MEM_READ_WRITE,
-                               sizeof(cl_float) * nodes),
-                    cl::Buffer(program.template getInfo<CL_PROGRAM_CONTEXT>(),
-                               CL_MEM_READ_WRITE,
                                sizeof(cl_float) * nodes)}})
             , previous(storage[0])
             , current(storage[1])
-            , next(storage[2])
             , output(program.template getInfo<CL_PROGRAM_CONTEXT>(),
                      CL_MEM_READ_WRITE,
                      sizeof(cl_float)) {
@@ -50,7 +46,6 @@ public:
                               size_type nodes,
                               cl::Buffer & previous,
                               cl::Buffer & current,
-                              cl::Buffer & next,
                               cl::Buffer & output) = 0;
 
     virtual std::vector<cl_float> run(std::vector<float> input,
@@ -61,7 +56,6 @@ public:
         Logger::log("beginning simulation with: ", nodes, " nodes");
 
         std::vector<cl_float> n(nodes, 0);
-        cl::copy(queue, n.begin(), n.end(), next);
         cl::copy(queue, n.begin(), n.end(), current);
         cl::copy(queue, n.begin(), n.end(), previous);
 
@@ -83,12 +77,10 @@ public:
                                                      nodes,
                                                      previous,
                                                      current,
-                                                     next,
                                                      output);
                            auto & temp = previous;
                            previous = current;
-                           current = next;
-                           next = temp;
+                           current = temp;
 
                            auto percent = counter * 100 / (steps - 1);
                            std::cout << "\r" << percent << "% done"
@@ -113,11 +105,10 @@ private:
     kernel_type kernel;
     const size_type nodes;
 
-    std::array<cl::Buffer, 3> storage;
+    std::array<cl::Buffer, 2> storage;
 
     cl::Buffer & previous;
     cl::Buffer & current;
-    cl::Buffer & next;
 
     cl::Buffer output;
 };
@@ -138,7 +129,6 @@ public:
                       size_type nodes,
                       cl::Buffer & previous,
                       cl::Buffer & current,
-                      cl::Buffer & next,
                       cl::Buffer & output) override;
 
     size_type get_index(cl_int3 pos) const;
@@ -163,7 +153,6 @@ public:
                       size_type nodes,
                       cl::Buffer & previous,
                       cl::Buffer & current,
-                      cl::Buffer & next,
                       cl::Buffer & output) override;
 
 private:

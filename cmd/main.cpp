@@ -249,7 +249,7 @@ int main(int argc, char ** argv) {
                 input = {1};
                 break;
             case InputType::KERNEL:
-                input = lopass_kernel(sr, sr / 4, (1 << 7) - 1);
+                input = lopass_kernel(sr, sr * 0.24, (1 << 7) - 1);
                 break;
         }
 

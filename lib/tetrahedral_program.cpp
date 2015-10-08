@@ -24,7 +24,6 @@ const string TetrahedralProgram::source{
     (   unsigned long write
     ,   float value
     ,   float attenuation
-    ,   global float * next
     ,   global float * current
     ,   global float * previous
     ,   global Node * nodes
@@ -59,10 +58,10 @@ const string TetrahedralProgram::source{
 
         temp *= attenuation;
 
-        next[index] = temp;
+        previous[index] = temp;
 
         if (index == read) {
-            *output = next[index];
+            *output = previous[index];
         }
     }
     )"};
