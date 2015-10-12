@@ -3,6 +3,8 @@
 #include "scene_data.h"
 #include "logger.h"
 #include "test_flag.h"
+#include "filters.h"
+#include "sample_rate_conversion.h"
 
 //  dependency
 #define __CL_ENABLE_EXCEPTIONS
@@ -20,77 +22,6 @@
 #include <map>
 
 using namespace std;
-
-template <typename T>
-auto max_mag(const T & t) {
-    return accumulate(t.begin(),
-                      t.end(),
-                      typename T::value_type(0),
-                      [](auto a, auto b) { return max(a, fabs(b)); });
-}
-
-template <typename T>
-void normalize(T & t) {
-    auto mag = max_mag(t);
-    if (mag != 0) {
-        transform(
-            t.begin(), t.end(), t.begin(), [mag](auto i) { return i / mag; });
-    }
-}
-
-/// sinc t = sin (pi . t) / pi . t
-template <typename T>
-T sinc(const T & t) {
-    T pit = M_PI * t;
-    return sin(pit) / pit;
-}
-
-/// Generate a convolution kernel for a lowpass sinc filter (NO WINDOWING!).
-template <typename T = float>
-vector<T> sinc_kernel(double cutoff, unsigned long length) {
-    if (!(length % 2))
-        throw runtime_error("Length of sinc filter kernel must be odd.");
-
-    vector<T> ret(length);
-    for (auto i = 0u; i != length; ++i) {
-        if (i == ((length - 1) / 2))
-            ret[i] = 1;
-        else
-            ret[i] = sinc(2 * cutoff * (i - (length - 1) / 2.0));
-    }
-    return ret;
-}
-
-/// Generate a blackman window of a specific length.
-template <typename T = float>
-vector<T> blackman(unsigned long length) {
-    const auto a0 = 7938.0 / 18608.0;
-    const auto a1 = 9240.0 / 18608.0;
-    const auto a2 = 1430.0 / 18608.0;
-
-    vector<T> ret(length);
-    for (auto i = 0u; i != length; ++i) {
-        const auto offset = i / (length - 1.0);
-        ret[i] =
-            (a0 - a1 * cos(2 * M_PI * offset) + a2 * cos(4 * M_PI * offset));
-    }
-    return ret;
-}
-
-/// Generate a windowed, normalized low-pass sinc filter kernel of a specific
-/// length.
-template <typename T = float>
-vector<T> lopass_kernel(float sr, float cutoff, unsigned long length) {
-    auto window = blackman<T>(length);
-    auto kernel = sinc_kernel<T>(cutoff / sr, length);
-    transform(begin(window),
-              end(window),
-              begin(kernel),
-              begin(kernel),
-              [](auto i, auto j) { return i * j; });
-    normalize(kernel);
-    return kernel;
-}
 
 void write_sndfile(const string & fname,
                    const vector<vector<float>> & outdata,
@@ -185,12 +116,6 @@ auto get_file_depth(unsigned long bitDepth) {
     return depthIt->second;
 }
 
-enum class RenderType {
-    RECURSIVE_TETRAHEDRAL,
-    ITERATIVE_TETRAHEDRAL,
-    RECTANGULAR,
-};
-
 enum class InputType {
     IMPULSE,
     KERNEL,
@@ -214,6 +139,8 @@ int main(int argc, char ** argv) {
     auto max_freq = 500;
     auto sr = max_freq * 4;
     auto divisions = (speed_of_sound * sqrt(3)) / sr;
+
+    auto output_sr = 44100;
 
     Logger::log("divisions: ", divisions);
     Logger::log("cube side: ", IterativeTetrahedralMesh::cube_side_from_node_spacing(divisions));
@@ -257,39 +184,22 @@ int main(int argc, char ** argv) {
 
         auto boundary = SceneData(argv[1]).get_mesh_boundary();
 
-        auto renderType = RenderType::ITERATIVE_TETRAHEDRAL;
-        switch (renderType) {
-            case RenderType::RECURSIVE_TETRAHEDRAL: {
-                auto program = get_program<TetrahedralProgram>(context, device);
-                RecursiveTetrahedralWaveguide waveguide(
-                    program, queue, boundary, 0, divisions);
-                results = waveguide.run(input, 0, 0, attenuation_factor, steps);
-                break;
-            }
-
-            case RenderType::ITERATIVE_TETRAHEDRAL: {
-                auto program = get_program<TetrahedralProgram>(context, device);
-                IterativeTetrahedralWaveguide waveguide(
-                    program, queue, boundary, divisions);
-                results = waveguide.run(
-                    input, 20000, 20000, attenuation_factor, steps);
-                break;
-            }
-
-            case RenderType::RECTANGULAR: {
-                auto program = get_program<RectangularProgram>(context, device);
-                RectangularWaveguide waveguide(program, queue, {{64, 64, 64}});
-                results = waveguide.run(input,
-                                        waveguide.get_index({{20, 20, 20}}),
-                                        waveguide.get_index({{35, 40, 45}}),
-                                        attenuation_factor,
-                                        steps);
-                break;
-            }
-        }
+        auto program = get_program<TetrahedralProgram>(context, device);
+        IterativeTetrahedralWaveguide waveguide(
+            program, queue, boundary, divisions);
+        results = waveguide.run(
+            input, 20000, 20000, attenuation_factor, steps);
 
         normalize(results);
-        write_sndfile(fname, {results}, sr, depth, format);
+        Logger::log("normalized signal");
+        Logger::log("normalized signal length: ", results.size());
+
+        auto out_signal = convert_sample_rate(results, output_sr, sr);
+        Logger::log("performed sample rate conversion");
+        Logger::log("converted signal length: ", out_signal.size());
+
+        write_sndfile(fname, {results}, output_sr, depth, format);
+        Logger::log("wrote output file");
     } catch (const cl::Error & e) {
         Logger::log_err("critical cl error: ", e.what());
         return EXIT_FAILURE;

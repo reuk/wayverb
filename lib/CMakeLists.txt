@@ -15,5 +15,6 @@ elseif(UNIX)
 endif()
 
 find_library(assimp_library assimp)
+find_library(fftw_library fftw3f)
 
-target_link_libraries(waveguide ${assimp_library} z ${frameworks})
+target_link_libraries(waveguide ${assimp_library} ${fftw_library} z ${frameworks})
