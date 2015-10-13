@@ -23,6 +23,23 @@
 
 using namespace std;
 
+/*
+bool all_zero(const vector<float> & t) {
+    return all_of(begin(t), end(t), [](auto i){return i == 0;});
+};
+*/
+
+bool all_zero(const vector<float> & t) {
+    auto ret = true;
+    for (auto i = 0u; i != t.size(); ++i) {
+        if (t[i] != 0) {
+            Logger::log("non-zero at element: ", i, ", value: ", t[i]);
+            ret = false;
+        }
+    }
+    return ret;
+}
+
 void write_sndfile(const string & fname,
                    const vector<vector<float>> & outdata,
                    float sr,
@@ -196,17 +213,14 @@ int main(int argc, char ** argv) {
         results = waveguide.run(
             input, 20000, 20000, attenuation_factor, steps);
 
+        Logger::log("all_zero non-normalized: ", all_zero(results));
         normalize(results);
-        Logger::log("normalized signal");
-        Logger::log("normalized signal length: ", results.size());
+        Logger::log("all_zero results: ", all_zero(results));
+        write_sndfile("low_samp_rate_" + fname, {results}, sr, depth, format);
 
         auto out_signal = convert_sample_rate(results, output_sr, sr);
-        Logger::log("performed sample rate conversion");
-        Logger::log("converted signal length: ", out_signal.size());
-
+        Logger::log("all_zero out_signal: ", all_zero(out_signal));
         write_sndfile(fname, {out_signal}, output_sr, depth, format);
-        write_sndfile("low_samp_rate_" + fname, {results}, sr, depth, format);
-        Logger::log("wrote output file");
     } catch (const cl::Error & e) {
         Logger::log_err("critical cl error: ", e.what());
         return EXIT_FAILURE;
