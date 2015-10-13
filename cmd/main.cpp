@@ -29,13 +29,19 @@ void write_sndfile(const string & fname,
                    unsigned long bd,
                    unsigned long ftype) {
     vector<float> interleaved(outdata.size() * outdata[0].size());
+    Logger::log("interleaved allocation: ", interleaved.size());
 
     for (auto i = 0u; i != outdata.size(); ++i)
         for (auto j = 0u; j != outdata[i].size(); ++j)
             interleaved[j * outdata.size() + i] = outdata[i][j];
 
+    Logger::log("interleaved");
+
     SndfileHandle outfile(fname, SFM_WRITE, ftype | bd, outdata.size(), sr);
+    Logger::log("libsndfile new file");
+    Logger::log("current size of interleaved vector: ", interleaved.size());
     outfile.write(interleaved.data(), interleaved.size());
+    Logger::log("libsndfile file written");
 }
 
 void print_device_info(const cl::Device & i) {
@@ -198,7 +204,8 @@ int main(int argc, char ** argv) {
         Logger::log("performed sample rate conversion");
         Logger::log("converted signal length: ", out_signal.size());
 
-        write_sndfile(fname, {results}, output_sr, depth, format);
+        write_sndfile(fname, {out_signal}, output_sr, depth, format);
+        write_sndfile("low_samp_rate_" + fname, {results}, sr, depth, format);
         Logger::log("wrote output file");
     } catch (const cl::Error & e) {
         Logger::log_err("critical cl error: ", e.what());

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "filters.h"
+#include "logger.h"
 
 #include <vector>
 
@@ -35,10 +36,12 @@ public:
     SampleRateConversionFilter(unsigned long kernel_length, unsigned long signal_length)
             : FastConvolution (kernel_length + signal_length - 1)
             , kernel(windowed_sinc_kernel(0.5, kernel_length)) {
+        Logger::log("kernel size: ", kernel.size());
     }
     virtual ~SampleRateConversionFilter() noexcept = default;
 
     auto operator() (const std::vector<float> & signal) {
+        LOG_SCOPE;
         return convolve(signal, kernel);
     }
 
@@ -51,6 +54,8 @@ auto convert_sample_rate(const std::vector<float> & t, int numerator, int denomi
     numerator /= common;
     denominator /= common;
     auto interspersed = intersperse(t, numerator);
+    std::cout << "interspersed" << std::endl;
     auto filtered = SampleRateConversionFilter(127, interspersed.size())(interspersed);
+    std::cout << "filtered" << std::endl;
     return outersperse(filtered, denominator);
 }

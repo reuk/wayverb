@@ -8,6 +8,7 @@ SelfDestructPlan::operator const fftwf_plan & () const {return plan;}
 
 FastConvolution::FastConvolution (unsigned long FFT_LENGTH)
     : FFT_LENGTH(FFT_LENGTH)
+    , CPLX_LENGTH(FFT_LENGTH / 2 + 1)
     , r2c_i (fftwf_alloc_real (FFT_LENGTH))
     , r2c_o (fftwf_alloc_complex (CPLX_LENGTH))
     , c2r_i (fftwf_alloc_complex (CPLX_LENGTH))
@@ -34,7 +35,7 @@ FastConvolution::FastConvolution (unsigned long FFT_LENGTH)
 }
 
 std::vector<float> FastConvolution::convolve(const std::vector<float> & a, const std::vector<float> & b) {
-
+    LOG_SCOPE;
     forward_fft (r2c, a, r2c_i, r2c_o, acplx);
     forward_fft (r2c, b, r2c_i, r2c_o, bcplx);
     Logger::log("forward ffts");
@@ -70,8 +71,10 @@ void FastConvolution::forward_fft
 ,   const fftwf_c & results
 )
 {
-    std::fill (i.get(), i.get() + FFT_LENGTH, 0);
-    memcpy(i.get(), data.data(), FFT_LENGTH * sizeof(float));
+    LOG_SCOPE;
+
+    memset(i.get(), 0, FFT_LENGTH * sizeof(float));
+    memcpy(i.get(), data.data(), data.size() * sizeof(float));
     fftwf_execute (plan);
     memcpy(results.get(), o.get(), CPLX_LENGTH * sizeof(fftwf_complex));
 }

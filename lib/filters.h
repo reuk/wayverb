@@ -123,7 +123,7 @@ private:
     );
 
     const unsigned long FFT_LENGTH;
-    const unsigned long CPLX_LENGTH = FFT_LENGTH / 2 + 1;
+    const unsigned long CPLX_LENGTH;
 
     fftwf_r r2c_i;
     fftwf_c r2c_o;
