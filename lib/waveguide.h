@@ -1,9 +1,7 @@
 #pragma once
 
-#include "rectangular_program.h"
 #include "tetrahedral_program.h"
 #include "iterative_tetrahedral_mesh.h"
-#include "recursive_tetrahedral.h"
 #include "cl_structs.h"
 #include "logger.h"
 
@@ -103,27 +101,6 @@ private:
     cl::Buffer output;
 };
 
-class RectangularWaveguide : public Waveguide<RectangularProgram> {
-public:
-    RectangularWaveguide(const RectangularProgram & program,
-                         cl::CommandQueue & queue,
-                         cl_int3 p);
-    virtual ~RectangularWaveguide() noexcept = default;
-
-    cl_float run_step(size_type o,
-                      cl::CommandQueue & queue,
-                      kernel_type & kernel,
-                      size_type nodes,
-                      cl::Buffer & previous,
-                      cl::Buffer & current,
-                      cl::Buffer & output) override;
-
-    size_type get_index(cl_int3 pos) const;
-
-private:
-    const cl_int3 p;
-};
-
 class TetrahedralWaveguide : public Waveguide<TetrahedralProgram> {
 public:
     TetrahedralWaveguide(const TetrahedralProgram & program,
@@ -142,16 +119,6 @@ public:
 private:
     std::vector<Node> nodes;
     cl::Buffer node_buffer;
-};
-
-class RecursiveTetrahedralWaveguide : public TetrahedralWaveguide {
-public:
-    RecursiveTetrahedralWaveguide(const TetrahedralProgram & program,
-                                  cl::CommandQueue & queue,
-                                  const Boundary & boundary,
-                                  Vec3f start,
-                                  float spacing);
-    virtual ~RecursiveTetrahedralWaveguide() noexcept = default;
 };
 
 class IterativeTetrahedralWaveguide : public TetrahedralWaveguide {
