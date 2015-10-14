@@ -2,22 +2,29 @@ TODO
 ====
 
 * precompute neighbor nodes on the GPU *and benchmark*!
-* conversion of spatial coordinates to input node
-* sort out boundary conditions
-* work out how to do mic modelling or hrtf (multichannel)
 * benchmark whether it's faster to postprocess with lopass filter and
   input raw impulse
     * compare results too to make sure you get the same thing
     * remove input node check in kernel
-* try postprocess enveloping too
-    * pick a cutoff in db and work backwards
+
+* conversion of spatial coordinates to input node
+* sort out boundary conditions
+* work out how to do mic modelling or hrtf (multichannel)
 * try to merge the raytracer + waveguide
-    * look into sample rate conversion
-    * think about ring direction (shouldn't ring both ways!)
-        * github.com/AlexHarker/M4L_Convolution_Reverb_Externals/bufresample.c
     * or even just try mixing with logic + EQs
 
 * look into the Helmholtz equation
+
+* enveloping
+    * look into better envelope models
+    * starting with better attenuation coefficients for the current method
+
+Once I have my mac back:
+========================
+
+* look into sample rate conversion
+    * think about ring direction (shouldn't ring both ways!)
+        * github.com/AlexHarker/M4L_Convolution_Reverb_Externals/bufresample.c
 
 * for next fortnight
     * listen to something

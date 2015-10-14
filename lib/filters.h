@@ -9,6 +9,12 @@
 #include <stdexcept>
 #include <memory>
 
+template <typename T, typename U>
+void elementwise_multiply(T & a, const U & b) {
+    std::transform(std::begin(a), std::end(a), std::begin(b), std::begin(a),
+            [](auto i, auto j) {return i * j;});
+}
+
 template <typename T>
 auto max_mag(const T & t) {
     return std::accumulate(t.begin(),

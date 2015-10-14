@@ -37,10 +37,7 @@ public:
 
     virtual ~Waveguide() noexcept = default;
 
-    virtual cl_float run_step(cl_float i,
-                              size_type e,
-                              size_type o,
-                              cl_float attenuation,
+    virtual cl_float run_step(size_type o,
                               cl::CommandQueue & queue,
                               kernel_type & kernel,
                               size_type nodes,
@@ -48,30 +45,23 @@ public:
                               cl::Buffer & current,
                               cl::Buffer & output) = 0;
 
-    virtual std::vector<cl_float> run(std::vector<float> input,
-                                      size_type e,
+    virtual std::vector<cl_float> run(size_type e,
                                       size_type o,
-                                      cl_float attenuation,
                                       size_type steps) {
         Logger::log("beginning simulation with: ", nodes, " nodes");
 
         std::vector<cl_float> n(nodes, 0);
-        cl::copy(queue, n.begin(), n.end(), current);
         cl::copy(queue, n.begin(), n.end(), previous);
 
-        input.resize(steps, 0);
+        n[e] = 1;
+        cl::copy(queue, n.begin(), n.end(), current);
 
-        std::vector<cl_float> ret(input.size());
+        std::vector<cl_float> ret(steps);
 
         auto counter = 0u;
-        std::transform(input.begin(),
-                       input.end(),
-                       ret.begin(),
-                       [this, &counter, &steps, &attenuation, &e, &o](auto i) {
-                           auto ret = this->run_step(i,
-                                                     e,
-                                                     o,
-                                                     attenuation,
+        std::generate(ret.begin(), ret.end(),
+                       [this, &counter, &steps, &o] {
+                           auto ret = this->run_step(o,
                                                      queue,
                                                      kernel,
                                                      nodes,
@@ -120,10 +110,7 @@ public:
                          cl_int3 p);
     virtual ~RectangularWaveguide() noexcept = default;
 
-    cl_float run_step(cl_float i,
-                      size_type e,
-                      size_type o,
-                      cl_float attenuation,
+    cl_float run_step(size_type o,
                       cl::CommandQueue & queue,
                       kernel_type & kernel,
                       size_type nodes,
@@ -144,10 +131,7 @@ public:
                          const std::vector<Node> & nodes);
     virtual ~TetrahedralWaveguide() noexcept = default;
 
-    cl_float run_step(cl_float i,
-                      size_type e,
-                      size_type o,
-                      cl_float attenuation,
+    cl_float run_step(size_type o,
                       cl::CommandQueue & queue,
                       kernel_type & kernel,
                       size_type nodes,

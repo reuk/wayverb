@@ -54,8 +54,6 @@ auto convert_sample_rate(const std::vector<float> & t, int numerator, int denomi
     numerator /= common;
     denominator /= common;
     auto interspersed = intersperse(t, numerator);
-    std::cout << "interspersed" << std::endl;
     auto filtered = SampleRateConversionFilter(127, interspersed.size())(interspersed);
-    std::cout << "filtered" << std::endl;
     return outersperse(filtered, denominator);
 }

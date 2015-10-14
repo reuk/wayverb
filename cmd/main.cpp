@@ -23,11 +23,17 @@
 
 using namespace std;
 
-/*
-bool all_zero(const vector<float> & t) {
-    return all_of(begin(t), end(t), [](auto i){return i == 0;});
-};
-*/
+vector<float> exponential_decay_envelope(int steps, float attenuation_factor) {
+    vector<float> ret(steps);
+    auto amp = 1.0f;
+    generate(begin(ret),
+             end(ret),
+             [&amp, attenuation_factor] {
+                 auto t = amp;
+                 amp *= attenuation_factor;
+                 return t;});
+    return ret;
+}
 
 bool all_zero(const vector<float> & t) {
     auto ret = true;
@@ -46,19 +52,13 @@ void write_sndfile(const string & fname,
                    unsigned long bd,
                    unsigned long ftype) {
     vector<float> interleaved(outdata.size() * outdata[0].size());
-    Logger::log("interleaved allocation: ", interleaved.size());
 
     for (auto i = 0u; i != outdata.size(); ++i)
         for (auto j = 0u; j != outdata[i].size(); ++j)
             interleaved[j * outdata.size() + i] = outdata[i][j];
 
-    Logger::log("interleaved");
-
     SndfileHandle outfile(fname, SFM_WRITE, ftype | bd, outdata.size(), sr);
-    Logger::log("libsndfile new file");
-    Logger::log("current size of interleaved vector: ", interleaved.size());
     outfile.write(interleaved.data(), interleaved.size());
-    Logger::log("libsndfile file written");
 }
 
 void print_device_info(const cl::Device & i) {
@@ -139,11 +139,6 @@ auto get_file_depth(unsigned long bitDepth) {
     return depthIt->second;
 }
 
-enum class InputType {
-    IMPULSE,
-    KERNEL,
-};
-
 int main(int argc, char ** argv) {
     Logger::restart();
     gflags::ParseCommandLineFlags(&argc, &argv, true);
@@ -165,15 +160,7 @@ int main(int argc, char ** argv) {
 
     auto output_sr = 44100;
 
-    Logger::log("divisions: ", divisions);
-    Logger::log("cube side: ", IterativeTetrahedralMesh::cube_side_from_node_spacing(divisions));
-#ifdef TESTING
-    auto inputType = InputType::IMPULSE;
-    auto steps = 100;
-#else
-    auto inputType = InputType::KERNEL;
     auto steps = 1 << 13;
-#endif
 
     string fname(argv[2]);
     auto bitDepth = 16;
@@ -193,16 +180,6 @@ int main(int argc, char ** argv) {
     cl::CommandQueue queue(context, device);
 
     try {
-        vector<float> input;
-        switch (inputType) {
-            case InputType::IMPULSE:
-                input = {1};
-                break;
-            case InputType::KERNEL:
-                input = lopass_kernel(sr, sr * 0.24, (1 << 7) - 1);
-                break;
-        }
-
         vector<cl_float> results;
 
         auto boundary = SceneData(argv[1]).get_mesh_boundary();
@@ -210,16 +187,18 @@ int main(int argc, char ** argv) {
         auto program = get_program<TetrahedralProgram>(context, device);
         IterativeTetrahedralWaveguide waveguide(
             program, queue, boundary, divisions);
-        results = waveguide.run(
-            input, 20000, 20000, attenuation_factor, steps);
+        results = waveguide.run(20000, 20000, steps);
 
-        Logger::log("all_zero non-normalized: ", all_zero(results));
-        normalize(results);
-        Logger::log("all_zero results: ", all_zero(results));
-        write_sndfile("low_samp_rate_" + fname, {results}, sr, depth, format);
+        auto envelope = exponential_decay_envelope(steps, attenuation_factor);
+        elementwise_multiply(results, envelope);
 
-        auto out_signal = convert_sample_rate(results, output_sr, sr);
-        Logger::log("all_zero out_signal: ", all_zero(out_signal));
+        //  TODO ew ugly
+        auto kernel = lopass_kernel(sr, 0.24, 127);
+        FastConvolution convolver(kernel.size() + results.size() - 1);
+        auto filtered = convolver.convolve(results, kernel);
+
+        normalize(filtered);
+        auto out_signal = convert_sample_rate(filtered, output_sr, sr);
         write_sndfile(fname, {out_signal}, output_sr, depth, format);
     } catch (const cl::Error & e) {
         Logger::log_err("critical cl error: ", e.what());

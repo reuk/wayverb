@@ -9,10 +9,7 @@ public:
                        bool build_immediate = false);
 
     auto get_kernel() const {
-        return cl::make_kernel<cl_ulong,
-                               cl_float,
-                               cl_float,
-                               cl::Buffer,
+        return cl::make_kernel<cl::Buffer,
                                cl::Buffer,
                                cl::Buffer,
                                cl_ulong,

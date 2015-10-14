@@ -52,10 +52,7 @@ const string RectangularProgram::source{
     }
 
     kernel void waveguide
-    (   unsigned long write
-    ,   float value
-    ,   float attenuation
-    ,   global float * current
+    (   global float * current
     ,   global float * previous
     ,   float r
     ,   unsigned long read
@@ -69,12 +66,6 @@ const string RectangularProgram::source{
                           get_global_size(2));
 
         size_t index = get_index(pos, dim);
-
-        if (index == write) {
-            current[index] += value;
-        }
-
-        barrier(CLK_GLOBAL_MEM_FENCE);
 
         float temp = 0;
 
@@ -113,9 +104,6 @@ const string RectangularProgram::source{
         }
 
         temp -= previous[index];
-
-        //  TODO probably not right way to damp?
-        temp *= attenuation;
 
         previous[index] = temp;
 

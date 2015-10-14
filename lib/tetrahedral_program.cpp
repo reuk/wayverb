@@ -21,10 +21,7 @@ const string TetrahedralProgram::source{
     } Node;
 
     kernel void waveguide
-    (   unsigned long write
-    ,   float value
-    ,   float attenuation
-    ,   global float * current
+    (   global float * current
     ,   global float * previous
     ,   global Node * nodes
     ,   unsigned long read
@@ -34,15 +31,8 @@ const string TetrahedralProgram::source{
         global Node * node = nodes + index;
 
         if (! node->inside) {
-            barrier(CLK_GLOBAL_MEM_FENCE);
             return;
         }
-
-        if (index == write) {
-            current[index] += value;
-        }
-
-        barrier(CLK_GLOBAL_MEM_FENCE);
 
         float temp = 0;
 
@@ -55,8 +45,6 @@ const string TetrahedralProgram::source{
 
         temp /= 2;
         temp -= previous[index];
-
-        temp *= attenuation;
 
         previous[index] = temp;
 

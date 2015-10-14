@@ -19,10 +19,7 @@ RectangularWaveguide::size_type RectangularWaveguide::get_index(
     return pos.x + pos.y * p.x + pos.z * p.x * p.y;
 }
 
-cl_float RectangularWaveguide::run_step(cl_float i,
-                                        size_type e,
-                                        size_type o,
-                                        cl_float attenuation,
+cl_float RectangularWaveguide::run_step(size_type o,
                                         cl::CommandQueue & queue,
                                         kernel_type & kernel,
                                         size_type nodes,
@@ -32,9 +29,6 @@ cl_float RectangularWaveguide::run_step(cl_float i,
     vector<cl_float> out(1);
 
     kernel(cl::EnqueueArgs(queue, cl::NDRange(p.x, p.y, p.z)),
-           e,
-           i,
-           attenuation,
            current,
            previous,
            -1,
@@ -70,26 +64,17 @@ TetrahedralWaveguide::TetrahedralWaveguide(const TetrahedralProgram & program,
 #endif
 }
 
-cl_float TetrahedralWaveguide::run_step(cl_float i,
-                                        size_type e,
-                                        size_type o,
-                                        cl_float attenuation,
+cl_float TetrahedralWaveguide::run_step(size_type o,
                                         cl::CommandQueue & queue,
                                         kernel_type & kernel,
                                         size_type nodes,
                                         cl::Buffer & previous,
                                         cl::Buffer & current,
                                         cl::Buffer & output) {
-    if (e > this->nodes.size()) {
-        throw runtime_error("requested input node does not exist");
-    }
     if (o > this->nodes.size()) {
         throw runtime_error("requested output node does not exist");
     }
 
-    if (!this->nodes[e].inside) {
-        throw runtime_error("requested input node is outside boundary");
-    }
     if (!this->nodes[o].inside) {
         throw runtime_error("requested output node is outside boundary");
     }
@@ -97,9 +82,6 @@ cl_float TetrahedralWaveguide::run_step(cl_float i,
     vector<cl_float> out(1);
 
     kernel(cl::EnqueueArgs(queue, cl::NDRange(nodes)),
-           e,
-           i,
-           attenuation,
            current,
            previous,
            node_buffer,
