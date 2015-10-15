@@ -16,5 +16,7 @@ endif()
 
 find_library(assimp_library assimp)
 find_library(fftw_library fftw3f)
+find_package(rtaudiocommon REQUIRED)
+set(libraries rtaudiocommon ${assimp_library} ${fftw_library} z)
 
-target_link_libraries(waveguide ${assimp_library} ${fftw_library} z ${frameworks})
+target_link_libraries(waveguide ${libraries})

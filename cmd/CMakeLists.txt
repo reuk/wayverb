@@ -19,6 +19,6 @@ elseif(UNIX)
     set(frameworks ${opencl_library})
 endif()
 
-find_library(sndfile_library sndfile)
+find_library(sndfile_lib sndfile)
 
-target_link_libraries(${name} waveguide ${sndfile_library} ${frameworks} gflags)
+target_link_libraries(${name} waveguide ${sndfile_lib} ${frameworks} gflags)

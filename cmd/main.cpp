@@ -3,10 +3,11 @@
 #include "scene_data.h"
 #include "logger.h"
 #include "test_flag.h"
-#include "filters.h"
-#include "sample_rate_conversion.h"
 
 //  dependency
+#include "rtaudiocommon/write_audio_file.h"
+#include "rtaudiocommon/sample_rate_conversion.h"
+
 #define __CL_ENABLE_EXCEPTIONS
 #include "cl.hpp"
 
@@ -44,21 +45,6 @@ bool all_zero(const vector<float> & t) {
         }
     }
     return ret;
-}
-
-void write_sndfile(const string & fname,
-                   const vector<vector<float>> & outdata,
-                   float sr,
-                   unsigned long bd,
-                   unsigned long ftype) {
-    vector<float> interleaved(outdata.size() * outdata[0].size());
-
-    for (auto i = 0u; i != outdata.size(); ++i)
-        for (auto j = 0u; j != outdata[i].size(); ++j)
-            interleaved[j * outdata.size() + i] = outdata[i][j];
-
-    SndfileHandle outfile(fname, SFM_WRITE, ftype | bd, outdata.size(), sr);
-    outfile.write(interleaved.data(), interleaved.size());
 }
 
 void print_device_info(const cl::Device & i) {
@@ -105,38 +91,6 @@ T get_program(const cl::Context & context, const cl::Device & device) {
         throw;
     }
     return program;
-}
-
-auto get_file_format(const string & fname) {
-    map<string, unsigned long> ftypeTable{{"aif", SF_FORMAT_AIFF},
-                                          {"aiff", SF_FORMAT_AIFF},
-                                          {"wav", SF_FORMAT_WAV}};
-
-    auto extension = fname.substr(fname.find_last_of(".") + 1);
-    auto ftypeIt = ftypeTable.find(extension);
-    if (ftypeIt == ftypeTable.end()) {
-        stringstream ss;
-        ss << "Invalid output file extension - valid extensions are: ";
-        for (const auto & i : ftypeTable)
-            ss << i.first << " ";
-        throw runtime_error(ss.str());
-    }
-    return ftypeIt->second;
-}
-
-auto get_file_depth(unsigned long bitDepth) {
-    map<unsigned long, unsigned long> depthTable{{16, SF_FORMAT_PCM_16},
-                                                 {24, SF_FORMAT_PCM_24}};
-
-    auto depthIt = depthTable.find(bitDepth);
-    if (depthIt == depthTable.end()) {
-        stringstream ss;
-        ss << "Invalid bitdepth - valid bitdepths are: ";
-        for (const auto & i : depthTable)
-            ss << i.first << " ";
-        throw runtime_error(ss.str());
-    }
-    return depthIt->second;
 }
 
 int main(int argc, char ** argv) {
@@ -192,13 +146,12 @@ int main(int argc, char ** argv) {
         auto envelope = exponential_decay_envelope(steps, attenuation_factor);
         elementwise_multiply(results, envelope);
 
-        //  TODO ew ugly
-        auto kernel = lopass_kernel(sr, 0.24, 127);
-        FastConvolution convolver(kernel.size() + results.size() - 1);
-        auto filtered = convolver.convolve(results, kernel);
+        LopassWindowedSinc lopass(results.size());
+        lopass.setParams(sr * 0.49, sr);
+        lopass.filter(results);
 
-        normalize(filtered);
-        auto out_signal = convert_sample_rate(filtered, output_sr, sr);
+        normalize(results);
+        auto out_signal = convert_sample_rate(results, output_sr, sr);
         write_sndfile(fname, {out_signal}, output_sr, depth, format);
     } catch (const cl::Error & e) {
         Logger::log_err("critical cl error: ", e.what());

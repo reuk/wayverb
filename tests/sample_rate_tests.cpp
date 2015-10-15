@@ -1,4 +1,4 @@
-#include "sample_rate_conversion.h"
+#include "rtaudiocommon/sample_rate_conversion.h"
 
 #include "gtest/gtest.h"
 

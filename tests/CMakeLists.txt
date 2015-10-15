@@ -15,6 +15,8 @@ add_definitions(${test_file_flag})
 
 add_executable(${name} ${sources})
 
-target_link_libraries(${name} waveguide gtest)
+find_library(sndfile_lib sndfile)
+
+target_link_libraries(${name} waveguide ${sndfile_lib} gtest)
 
 add_test(waveguide ${name})
