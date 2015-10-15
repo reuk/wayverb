@@ -67,7 +67,7 @@ vector <vector <float>> flattenImpulses
     for (const auto & i : impulse)
     {
         const auto SAMPLE = round (i.time * samplerate);
-        for (auto j = 0; j != flattened.size(); ++j)
+        for (auto j = 0u; j != flattened.size(); ++j)
         {
             flattened [j] [SAMPLE] += i.volume.s [j];
         }
@@ -100,7 +100,7 @@ void trimTail (vector <vector <float>> & audioChannels, float minVol)
     (   audioChannels.begin()
     ,   audioChannels.end()
     ,   0
-    ,   [minVol] (long current, const auto & i)
+    ,   [minVol] (auto current, const auto & i)
         {
             return max
             (   current
@@ -123,7 +123,7 @@ void trimTail (vector <vector <float>> & audioChannels, float minVol)
 
 /// Collects together all the post-processing steps.
 vector <vector <float>> process
-(   RayverbFiltering::FilterType filtertype
+(   FilterType filtertype
 ,   vector <vector <vector <float>>> & data
 ,   float sr
 ,   bool do_normalize
@@ -132,7 +132,7 @@ vector <vector <float>> process
 ,   float volume_scale
 )
 {
-    RayverbFiltering::filter (filtertype, data, sr, lo_cutoff);
+    filter (filtertype, data, sr, lo_cutoff);
     vector <vector <float>> ret (data.size());
     transform (data.begin(), data.end(), ret.begin(), mixdown);
 
@@ -191,6 +191,16 @@ KernelLoader::KernelLoader(bool verbose)
     queue = cl::CommandQueue (cl_context, used_device);
 }
 
+/// Call binary operation u on pairs of elements from a and b, where a and b are
+/// cl_floatx types.
+template <typename T, typename U>
+inline T elementwise (const T & a, const T & b, const U & u)
+{
+    T ret;
+    std::transform (std::begin (a.s), std::end (a.s), std::begin (b.s), std::begin (ret.s), u);
+    return ret;
+}
+
 /// Find the minimum and maximum boundaries of a set of vertices.
 pair <cl_float3, cl_float3> getBounds
 (   const vector <cl_float3> & vertices
@@ -232,7 +242,7 @@ bool inside
 ,   const cl_float3 & point
 )
 {
-    for (auto i = 0; i != sizeof (cl_float3) / sizeof (float); ++i)
+    for (auto i = 0u; i != sizeof (cl_float3) / sizeof (float); ++i)
         if (! (bounds.first.s [i] <= point.s [i] && point.s [i] <= bounds.second.s [i]))
             return false;
     return true;
@@ -353,7 +363,7 @@ public:
             materialIndices [i.first] = surfaces.size() - 1;
         }
 
-        for (auto i = 0; i != scene->mNumMeshes; ++i)
+        for (auto i = 0u; i != scene->mNumMeshes; ++i)
         {
             const aiMesh * mesh = scene->mMeshes [i];
 
@@ -402,14 +412,14 @@ public:
 
             vector <cl_float3> meshVertices (mesh->mNumVertices);
 
-            for (auto j = 0; j != mesh->mNumVertices; ++j)
+            for (auto j = 0u; j != mesh->mNumVertices; ++j)
             {
                 meshVertices [j] = fromAIVec (mesh->mVertices [j]);
             }
 
             vector <Triangle> meshTriangles (mesh->mNumFaces);
 
-            for (auto j = 0; j != mesh->mNumFaces; ++j)
+            for (auto j = 0u; j != mesh->mNumFaces; ++j)
             {
                 const aiFace face = mesh->mFaces [j];
 
@@ -464,7 +474,7 @@ public:
     {
         for (const auto & s : surfaces)
         {
-            for (auto i = 0; i != 3; ++i)
+            for (auto i = 0u; i != 3; ++i)
             {
                 if
                 (   s.specular.s [i] < 0 || 1 < s.specular.s [i]
@@ -584,7 +594,7 @@ void Raytracer::raytrace
 
     imageSourceTally.clear();
     storedDiffuse.resize (directions.size() * nreflections);
-    for (auto i = 0; i != ceil (directions.size() / float (RAY_GROUP_SIZE)); ++i)
+    for (auto i = 0u; i != ceil (directions.size() / float (RAY_GROUP_SIZE)); ++i)
     {
         auto b = i * RAY_GROUP_SIZE;
         auto e = min (directions.size(), (i + 1) * RAY_GROUP_SIZE);
@@ -693,7 +703,7 @@ RaytracerResults Raytracer::getRawImages (bool removeDirect)
 {
     auto temp = imageSourceTally;
     if (removeDirect)
-        temp.erase ({0});
+        temp.erase (vector<unsigned long>{0});
 
     vector <Impulse> ret (temp.size());
     transform
@@ -754,9 +764,8 @@ vector <vector <AttenuatedImpulse>> HrtfAttenuator::attenuate
     (   begin (channels)
     ,   end (channels)
     ,   begin (attenuated)
-    ,   [this, &results, facing, up] (auto i)
-        {
-            return attenuate (results.mic, i, facing, up, results.impulses);
+    ,   [this, &results, facing, up] (auto i) {
+            return this->attenuate(results.mic, i, facing, up, results.impulses);
         }
     );
     return attenuated;
@@ -847,7 +856,7 @@ vector <vector <AttenuatedImpulse>> SpeakerAttenuator::attenuate
     ,   begin (attenuated)
     ,   [this, &results] (const auto & i)
         {
-            return attenuate (results.mic, i, results.impulses);
+            return this->attenuate(results.mic, i, results.impulses);
         }
     );
     return attenuated;

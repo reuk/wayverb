@@ -2,7 +2,9 @@
 
 #include "filters.h"
 #include "clstructs.h"
-#include "generic_functions.h"
+
+#include "rtaudiocommon/filters.h"
+#include "rtaudiocommon/sinc.h"
 
 #include "rapidjson/document.h"
 
@@ -35,7 +37,7 @@ std::vector <std::vector <std::vector <float>>> flattenImpulses
 /// Filter and mix down each channel of the input data.
 /// Optionally, normalize all channels, trim the tail, and scale the amplitude.
 std::vector <std::vector <float>> process
-(   RayverbFiltering::FilterType filtertype
+(   FilterType filtertype
 ,   std::vector <std::vector <std::vector <float>>> & data
 ,   float sr
 ,   bool do_normalize
@@ -196,7 +198,7 @@ private:
     ,   bool verbose
     );
 
-    static const unsigned long RAY_GROUP_SIZE = 4096;
+    static const unsigned int RAY_GROUP_SIZE = 4096;
 
     decltype
     (   cl::make_kernel

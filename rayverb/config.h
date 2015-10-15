@@ -8,6 +8,7 @@
 #include <string>
 #include <stdexcept>
 #include <map>
+#include <memory>
 
 /// This file contains a set of classes which serve to form a layer over the
 /// rapidjson parser, which can easily be used to validate and read json
@@ -318,15 +319,15 @@ struct JsonEnumGetter
 
 /// JsonGetter for FilterType is just a JsonEnumGetter with a specific map
 template<>
-struct JsonGetter<RayverbFiltering::FilterType>: public JsonEnumGetter <RayverbFiltering::FilterType>
+struct JsonGetter<FilterType>: public JsonEnumGetter <FilterType>
 {
-    JsonGetter (RayverbFiltering::FilterType & t)
+    JsonGetter (FilterType & t)
     :   JsonEnumGetter
         (   t
-        ,   {   {"sinc",           RayverbFiltering::FILTER_TYPE_WINDOWED_SINC}
-            ,   {"onepass",        RayverbFiltering::FILTER_TYPE_BIQUAD_ONEPASS}
-            ,   {"twopass",        RayverbFiltering::FILTER_TYPE_BIQUAD_TWOPASS}
-            ,   {"linkwitz_riley", RayverbFiltering::FILTER_TYPE_LINKWITZ_RILEY}
+        ,   {   {"sinc",           FILTER_TYPE_WINDOWED_SINC}
+            ,   {"onepass",        FILTER_TYPE_BIQUAD_ONEPASS}
+            ,   {"twopass",        FILTER_TYPE_BIQUAD_TWOPASS}
+            ,   {"linkwitz_riley", FILTER_TYPE_LINKWITZ_RILEY}
             }
         )
     {}

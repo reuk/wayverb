@@ -4,6 +4,7 @@ project(tests)
 
 include_directories(
     ${CMAKE_SOURCE_DIR}/lib
+    ${CMAKE_SOURCE_DIR}/common
     ${CMAKE_SOURCE_DIR}/gtest/include
 )
 link_directories(/usr/local/lib)

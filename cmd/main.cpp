@@ -1,10 +1,11 @@
 //  project internal
 #include "waveguide.h"
 #include "scene_data.h"
-#include "logger.h"
 #include "test_flag.h"
+#include "conversions.h"
 
 //  dependency
+#include "rtaudiocommon/logger.h"
 #include "rtaudiocommon/write_audio_file.h"
 #include "rtaudiocommon/sample_rate_conversion.h"
 
@@ -23,6 +24,15 @@
 #include <map>
 
 using namespace std;
+
+MeshBoundary get_mesh_boundary(const SceneData & sd) {
+    vector<Vec3f> v(sd.vertices.size());
+    transform(sd.vertices.begin(),
+              sd.vertices.end(),
+              v.begin(),
+              [](auto i) { return convert(i); });
+    return MeshBoundary(sd.triangles, v);
+}
 
 vector<float> exponential_decay_envelope(int steps, float attenuation_factor) {
     vector<float> ret(steps);
@@ -136,7 +146,7 @@ int main(int argc, char ** argv) {
     try {
         vector<cl_float> results;
 
-        auto boundary = SceneData(argv[1]).get_mesh_boundary();
+        auto boundary = get_mesh_boundary(SceneData(argv[1]));
 
         auto program = get_program<TetrahedralProgram>(context, device);
         IterativeTetrahedralWaveguide waveguide(

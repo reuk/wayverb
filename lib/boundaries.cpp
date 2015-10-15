@@ -1,6 +1,7 @@
 #include "boundaries.h"
-#include "logger.h"
 #include "test_flag.h"
+
+#include "rtaudiocommon/logger.h"
 
 #include <cmath>
 #include <algorithm>

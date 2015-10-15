@@ -4,10 +4,9 @@ file(GLOB sources "*.cpp")
 
 include_directories(
     ${CMAKE_SOURCE_DIR}/include
-    ${CMAKE_SOURCE_DIR}/common
 )
 
-add_library(waveguide STATIC ${sources})
+add_library(common STATIC ${sources})
 
 if(APPLE)
     find_library(opencl_library OpenCL)
@@ -22,6 +21,6 @@ endif()
 find_library(assimp_library assimp)
 find_library(fftw_library fftw3f)
 find_package(rtaudiocommon REQUIRED)
-set(libraries rtaudiocommon ${assimp_library} ${fftw_library} z common)
+set(libraries rtaudiocommon ${assimp_library} ${fftw_library} z)
 
-target_link_libraries(waveguide ${libraries})
+target_link_libraries(common ${libraries})

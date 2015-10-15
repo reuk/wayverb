@@ -1,13 +1,17 @@
 #pragma once
 
-#include "cl_structs.h"
-#include "boundaries.h"
+#include "vec.h"
+
+#define __CL_ENABLE_EXCEPTIONS
+#include "cl.hpp"
 
 #include "assimp/Importer.hpp"
 #include "assimp/postprocess.h"
 #include "assimp/scene.h"
 
 #include <vector>
+
+using Triangle = Vec3<uint32_t>;
 
 class SceneData {
 public:
@@ -16,8 +20,6 @@ public:
     virtual ~SceneData() noexcept = default;
     void populate(const aiScene * const scene);
     void populate(const std::string & fpath);
-
-    MeshBoundary get_mesh_boundary() const;
 
     std::vector<Triangle> triangles;
     std::vector<cl_float3> vertices;

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "vec.h"
+#include "scene_data.h"
 #include "cl_structs.h"
 
 struct CuboidBoundary;
@@ -32,8 +32,6 @@ struct SphereBoundary : public Boundary {
     const float radius;
     const CuboidBoundary boundary;
 };
-
-using Triangle = Vec3<uint32_t>;
 
 struct MeshBoundary : public Boundary {
     MeshBoundary(
