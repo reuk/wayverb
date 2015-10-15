@@ -1,12 +1,6 @@
 TODO
 ====
 
-* precompute neighbor nodes on the GPU *and benchmark*!
-* benchmark whether it's faster to postprocess with lopass filter and
-  input raw impulse
-    * compare results too to make sure you get the same thing
-    * remove input node check in kernel
-
 * conversion of spatial coordinates to input node
 * sort out boundary conditions
 * work out how to do mic modelling or hrtf (multichannel)
@@ -34,6 +28,8 @@ MAYBE
 =====
 
 * remove outside nodes
+* precompute neighbor nodes on the GPU instead
+    * *and benchmark*!
 
 How it works
 ============
