@@ -4,6 +4,8 @@
 #include "test_flag.h"
 #include "conversions.h"
 
+#include "cl_common.h"
+
 //  dependency
 #include "rtaudiocommon/logger.h"
 #include "rtaudiocommon/write_audio_file.h"
@@ -57,63 +59,18 @@ bool all_zero(const vector<float> & t) {
     return ret;
 }
 
-void print_device_info(const cl::Device & i) {
-    Logger::log(i.getInfo<CL_DEVICE_NAME>());
-    Logger::log("available: ", i.getInfo<CL_DEVICE_AVAILABLE>());
-};
-
-cl::Context get_context() {
-    vector<cl::Platform> platform;
-    cl::Platform::get(&platform);
-
-    cl_context_properties cps[3] = {
-        CL_CONTEXT_PLATFORM, (cl_context_properties)(platform[0])(), 0,
-    };
-
-    return cl::Context(CL_DEVICE_TYPE_GPU, cps);
-}
-
-cl::Device get_device(const cl::Context & context) {
-    auto devices = context.getInfo<CL_CONTEXT_DEVICES>();
-
-    Logger::log("## all devices:");
-
-    for (auto & i : devices) {
-        print_device_info(i);
-    }
-
-    auto device = devices.back();
-
-    Logger::log("## used device:");
-    print_device_info(device);
-
-    return device;
-}
-
-template <typename T>
-T get_program(const cl::Context & context, const cl::Device & device) {
-    T program(context);
-    try {
-        program.build({device});
-    } catch (const cl::Error & e) {
-        Logger::log(
-            program.template getBuildInfo<CL_PROGRAM_BUILD_LOG>(device));
-        throw;
-    }
-    return program;
-}
-
 int main(int argc, char ** argv) {
     Logger::restart();
     gflags::ParseCommandLineFlags(&argc, &argv, true);
 
-    if (argc != 3) {
-        Logger::log_err("expecting an input and an output filename");
+    if (argc != 4) {
+        Logger::log_err("expecting an input model, an input material file, and an output filename");
         return EXIT_FAILURE;
     }
 
-    //  load from file argv[1]
-    //  save to file argv[2]
+    auto model_file = argv[1];
+    auto material_file = argv[2];
+    auto output_file = argv[3];
 
     auto speed_of_sound = 340.0;
     auto attenuation_factor = 0.999;
@@ -126,13 +83,12 @@ int main(int argc, char ** argv) {
 
     auto steps = 1 << 13;
 
-    string fname(argv[2]);
     auto bitDepth = 16;
 
     unsigned long format, depth;
 
     try {
-        format = get_file_format(fname);
+        format = get_file_format(output_file);
         depth = get_file_depth(bitDepth);
     } catch (const runtime_error & e) {
         Logger::log_err("critical runtime error: ", e.what());
@@ -146,7 +102,7 @@ int main(int argc, char ** argv) {
     try {
         vector<cl_float> results;
 
-        auto boundary = get_mesh_boundary(SceneData(argv[1]));
+        auto boundary = get_mesh_boundary(SceneData(model_file, material_file));
 
         auto program = get_program<TetrahedralProgram>(context, device);
         IterativeTetrahedralWaveguide waveguide(
@@ -162,7 +118,7 @@ int main(int argc, char ** argv) {
 
         normalize(results);
         auto out_signal = convert_sample_rate(results, output_sr, sr);
-        write_sndfile(fname, {out_signal}, output_sr, depth, format);
+        write_sndfile(output_file, {out_signal}, output_sr, depth, format);
     } catch (const cl::Error & e) {
         Logger::log_err("critical cl error: ", e.what());
         return EXIT_FAILURE;

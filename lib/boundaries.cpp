@@ -61,7 +61,7 @@ MeshBoundary::get_triangle_references() const {
     for (auto i = 0u; i != triangles.size(); ++i) {
         const auto& t = triangles[i];
         const auto bounding_box =
-            get_cuboid_boundary({vertices[t.x], vertices[t.y], vertices[t.z]});
+            get_cuboid_boundary({vertices[t.v0], vertices[t.v1], vertices[t.v2]});
         const auto min_indices = hash_point(bounding_box.c0);
         const auto max_indices = hash_point(bounding_box.c1) + 1;
 
@@ -166,9 +166,9 @@ Intersects triangle_intersection(const TriangleVerts& tri, const Ray& ray) {
 Intersects triangle_intersection(const Triangle& tri,
                                  const vector<Vec3f>& vertices,
                                  const Ray& ray) {
-    const auto v0 = vertices[tri.x];
-    const auto v1 = vertices[tri.y];
-    const auto v2 = vertices[tri.z];
+    const auto v0 = vertices[tri.v0];
+    const auto v1 = vertices[tri.v1];
+    const auto v2 = vertices[tri.v2];
     return triangle_intersection({{v0, v1, v2}}, ray);
 }
 

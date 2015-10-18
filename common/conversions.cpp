@@ -12,3 +12,7 @@
 
 VEC_CONVERT_FUNCTIONS_DEFINITION(float)
 VEC_CONVERT_FUNCTIONS_DEFINITION(int)
+
+cl_float3 convert(const aiVector3D & v) {
+    return {{v.x, v.y, v.z}};
+}

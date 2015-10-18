@@ -23,6 +23,8 @@ Once I have my mac back:
 * for next fortnight
     * listen to something
     * some way of listening to the two models together
+        * move scenedata to common
+        * move cl_common OUT of common
 
 MAYBE
 =====

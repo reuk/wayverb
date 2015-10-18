@@ -1,5 +1,7 @@
 #pragma once
 
+#include "config.h"
+
 #include <array>
 #include <vector>
 #include <cmath>
@@ -22,3 +24,20 @@ void filter
 ,   float sr
 ,   float lo_cutoff
 );
+
+/// JsonGetter for FilterType is just a JsonEnumGetter with a specific map
+template<>
+struct JsonGetter<FilterType>: public JsonEnumGetter <FilterType>
+{
+    JsonGetter (FilterType & t)
+    :   JsonEnumGetter
+        (   t
+        ,   {   {"sinc",           FILTER_TYPE_WINDOWED_SINC}
+            ,   {"onepass",        FILTER_TYPE_BIQUAD_ONEPASS}
+            ,   {"twopass",        FILTER_TYPE_BIQUAD_TWOPASS}
+            ,   {"linkwitz_riley", FILTER_TYPE_LINKWITZ_RILEY}
+            }
+        )
+    {}
+};
+

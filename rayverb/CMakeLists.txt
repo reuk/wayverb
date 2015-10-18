@@ -4,6 +4,7 @@ file(GLOB sources "*.cpp")
 
 include_directories(
     ${CMAKE_SOURCE_DIR}/include
+    ${CMAKE_SOURCE_DIR}/common
 )
 
 add_library(rayverb STATIC ${sources})

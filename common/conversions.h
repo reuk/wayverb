@@ -3,6 +3,8 @@
 #define __CL_ENABLE_EXCEPTIONS
 #include "cl.hpp"
 
+#include "assimp/Importer.hpp"
+
 template <typename T>
 struct Vec3;
 
@@ -12,3 +14,5 @@ struct Vec3;
 
 VEC_CONVERT_FUNCTIONS_DECLARATION(float)
 VEC_CONVERT_FUNCTIONS_DECLARATION(int)
+
+cl_float3 convert(const aiVector3D & v);

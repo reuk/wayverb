@@ -1,7 +1,11 @@
 #pragma once
 
 #include "filters.h"
-#include "clstructs.h"
+#include "cl_structs.h"
+#include "rayverb_program.h"
+
+#include "config.h"
+#include "scene_data.h"
 
 #include "rtaudiocommon/filters.h"
 #include "rtaudiocommon/sinc.h"
@@ -18,7 +22,132 @@
 #include <array>
 #include <map>
 
-//#define DIAGNOSTIC
+typedef struct  {
+    cl_float3 facing;
+    cl_float3 up;
+} __attribute__ ((aligned(8))) HrtfConfig;
+
+/// Describes the attenuation model that should be used to attenuate a raytrace.
+/// There's probably a more elegant (runtime-polymorphic) way of doing this that
+/// doesn't require both the HrtfConfig and the vector <Speaker> to be present
+/// in the object at the same time.
+struct AttenuationModel
+{
+    enum Mode
+    {   SPEAKER
+    ,   HRTF
+    };
+    Mode mode;
+    HrtfConfig hrtf;
+    std::vector <Speaker> speakers;
+};
+
+template<>
+struct JsonGetter<Speaker>
+{
+    JsonGetter (Speaker & t): t (t){}
+
+    /// Returns true if value is a json object.
+    virtual bool check (const rapidjson::Value & value) const
+    {
+        return value.IsObject();
+    }
+
+    /// Attempts to run a ConfigValidator on value.
+    virtual void get (const rapidjson::Value & value) const
+    {
+        ConfigValidator cv;
+
+        cv.addRequiredValidator ("direction", t.direction);
+        cv.addRequiredValidator ("shape", t.coefficient);
+
+        cv.run (value);
+    }
+    Speaker & t;
+};
+
+template<>
+struct JsonGetter<HrtfConfig>
+{
+    JsonGetter (HrtfConfig & t): t (t){}
+
+    /// Returns true if value is a json object.
+    virtual bool check (const rapidjson::Value & value) const
+    {
+        return value.IsObject();
+    }
+
+    /// Attempts to run a ConfigValidator on value.
+    virtual void get (const rapidjson::Value & value) const
+    {
+        ConfigValidator cv;
+
+        cv.addRequiredValidator ("facing", t.facing);
+        cv.addRequiredValidator ("up", t.up);
+
+        cv.run (value);
+
+        normalize (t.facing);
+        normalize (t.up);
+    }
+    HrtfConfig & t;
+private:
+    static void normalize (cl_float3 & v)
+    {
+        cl_float len =
+            1.0 / sqrt (v.s [0] * v.s [0] + v.s [1] * v.s [1] + v.s [2] * v.s [2]);
+        for (auto i = 0; i != sizeof (cl_float3) / sizeof (float); ++i)
+        {
+            v.s [i] *= len;
+        }
+    }
+};
+
+template<>
+struct JsonGetter<AttenuationModel>
+{
+    JsonGetter (AttenuationModel & t)
+    :   t (t)
+    ,   keys
+        (   {   {AttenuationModel::SPEAKER, "speakers"}
+            ,   {AttenuationModel::HRTF, "hrtf"}
+            }
+        )
+    {}
+
+    /// Returns true if value is a json object containing just one valid key.
+    virtual bool check (const rapidjson::Value & value) const
+    {
+        return value.IsObject() && 1 == std::count_if
+        (   keys.begin()
+        ,   keys.end()
+        ,   [&value] (const auto & i)
+            {
+                return value.HasMember (i.second.c_str());
+            }
+        );
+    }
+
+    /// Attempts to run a ConfigValidator on value.
+    virtual void get (const rapidjson::Value & value) const
+    {
+        for (const auto & i : keys)
+            if (value.HasMember (i.second.c_str()))
+                t.mode = i.first;
+
+        ConfigValidator cv;
+
+        if (value.HasMember (keys.at (AttenuationModel::SPEAKER).c_str()))
+            cv.addRequiredValidator (keys.at (AttenuationModel::SPEAKER).c_str(), t.speakers);
+
+        if (value.HasMember (keys.at (AttenuationModel::HRTF).c_str()))
+            cv.addRequiredValidator (keys.at (AttenuationModel::HRTF).c_str(), t.hrtf);
+
+        cv.run (value);
+    }
+    AttenuationModel & t;
+    std::map <AttenuationModel::Mode, std::string> keys;
+};
 
 /// Sum impulses ocurring at the same (sampled) time and return a vector in
 /// which each subsequent item refers to the next sample of an impulse
@@ -98,27 +227,6 @@ inline void fixPredelay (T & ret)
     fixPredelay (ret, predelay);
 }
 
-/// Class wrapping an OpenCL context.
-class ContextProvider
-{
-public:
-    ContextProvider();
-
-    cl::Context cl_context;
-};
-
-/// Builds a specific kernel and sets up a CommandQueue on an OpenCL context.
-class KernelLoader: public ContextProvider
-{
-public:
-    KernelLoader();
-    KernelLoader(bool verbose);
-
-    cl::Program cl_program;
-    cl::CommandQueue queue;
-    static const std::string KERNEL_STRING;
-};
-
 /// Raytraces are calculated in relation to a specific microphone position.
 /// This is a struct to keep the impulses and mic position together, because
 /// you'll probably never need one without the other.
@@ -135,34 +243,36 @@ struct RaytracerResults
 };
 
 /// An exciting raytracer.
-class Raytracer: public KernelLoader
+class Raytrace
 {
 public:
+    using kernel_type = decltype(std::declval<RayverbProgram>().get_raytrace_kernel());
 
     /// If you don't want to use the built-in object loader, you can
     /// initialise a raytracer with your own geometry here.
-    Raytracer
-    (   unsigned long nreflections
+    Raytrace
+    (   const RayverbProgram & program, cl::CommandQueue & queue,
+        unsigned long nreflections
     ,   std::vector <Triangle> & triangles
     ,   std::vector <cl_float3> & vertices
     ,   std::vector <Surface> & surfaces
-    ,   bool verbose
     );
 
     /// Load a 3d model and materials from files.
-    Raytracer
-    (   unsigned long nreflections
+    Raytrace
+    (   const RayverbProgram & program, cl::CommandQueue & queue,
+        unsigned long nreflections
     ,   const std::string & objpath
     ,   const std::string & materialFileName
-    ,   bool verbose
     );
+
+    virtual ~Raytrace() noexcept = default;
 
     /// Run the raytrace with a specific mic, source, and set of directions.
     void raytrace
     (   const cl_float3 & micpos
     ,   const cl_float3 & source
     ,   const std::vector <cl_float3> & directions
-    ,   bool verbose
     );
 
     /// Get raw, unprocessed diffuse results.
@@ -175,6 +285,9 @@ public:
     RaytracerResults getAllRaw (bool removeDirect);
 
 private:
+    cl::CommandQueue & queue;
+    kernel_type kernel;
+
     const unsigned long nreflections;
     const unsigned long ntriangles;
 
@@ -190,56 +303,26 @@ private:
 
     cl_float3 storedMicpos;
 
-    struct SceneData;
-
-    Raytracer
-    (   unsigned long nreflections
+    Raytrace
+    (   const RayverbProgram & program, cl::CommandQueue & queue,
+        unsigned long nreflections
     ,   SceneData sceneData
-    ,   bool verbose
     );
 
     static const unsigned int RAY_GROUP_SIZE = 4096;
-
-    decltype
-    (   cl::make_kernel
-        <   cl::Buffer
-        ,   cl_float3
-        ,   cl::Buffer
-        ,   cl_ulong
-        ,   cl::Buffer
-        ,   cl_float3
-        ,   cl::Buffer
-        ,   cl::Buffer
-        ,   cl::Buffer
-        ,   cl::Buffer
-        ,   cl_ulong
-        ,   VolumeType
-        > (cl_program, "raytrace")
-    ) raytrace_kernel;
 
     std::vector <Impulse> storedDiffuse;
     std::map <std::vector <unsigned long>, Impulse> imageSourceTally;
 };
 
-/// HRTF parameters.
-struct HrtfConfig
-{
-    cl_float3 facing;
-    cl_float3 up;
-};
-
-/// An attenuator is just a KernelLoader with some extra buffers.
-struct Attenuator: public KernelLoader
-{
-    cl::Buffer cl_in;
-    cl::Buffer cl_out;
-};
-
 /// Class for parallel HRTF attenuation of raytrace results.
-class HrtfAttenuator: public Attenuator
+class Hrtf
 {
 public:
-    HrtfAttenuator();
+    using kernel_type = decltype(std::declval<RayverbProgram>().get_hrtf_kernel());
+
+    Hrtf(const RayverbProgram & program, cl::CommandQueue & queue);
+    virtual ~Hrtf() noexcept = default;
 
     /// Attenuate some raytrace results.
     /// The outer vector corresponds to separate channels, the inner vector
@@ -256,6 +339,10 @@ public:
 
     virtual const std::array <std::array <std::array <cl_float8, 180>, 360>, 2> & getHrtfData() const;
 private:
+    cl::CommandQueue & queue;
+    kernel_type kernel;
+    const cl::Context & context;
+
     static const std::array <std::array <std::array <cl_float8, 180>, 360>, 2> HRTF_DATA;
     std::vector <AttenuatedImpulse> attenuate
     (   const cl_float3 & mic_pos
@@ -265,26 +352,20 @@ private:
     ,   const std::vector <Impulse> & impulses
     );
 
-    cl::Buffer cl_hrtf;
+    cl::Buffer cl_in;
+    cl::Buffer cl_out;
 
-    decltype
-    (   cl::make_kernel
-        <   cl_float3
-        ,   cl::Buffer
-        ,   cl::Buffer
-        ,   cl::Buffer
-        ,   cl_float3
-        ,   cl_float3
-        ,   cl_ulong
-        > (cl_program, "hrtf")
-    ) attenuate_kernel;
+    cl::Buffer cl_hrtf;
 };
 
 /// Class for parallel Speaker attenuation of raytrace results.
-class SpeakerAttenuator: public Attenuator
+class Attenuate
 {
 public:
-    SpeakerAttenuator();
+    using kernel_type = decltype(std::declval<RayverbProgram>().get_attenuate_kernel());
+
+    Attenuate(const RayverbProgram & program, cl::CommandQueue & queue);
+    virtual ~Attenuate() noexcept = default;
 
     /// Attenuate some raytrace results.
     /// The outer vector corresponds to separate channels, the inner vector
@@ -299,14 +380,12 @@ private:
     ,   const Speaker & speaker
     ,   const std::vector <Impulse> & impulses
     );
-    decltype
-    (   cl::make_kernel
-        <   cl_float3
-        ,   cl::Buffer
-        ,   cl::Buffer
-        ,   Speaker
-        > (cl_program, "attenuate")
-    ) attenuate_kernel;
+    cl::CommandQueue & queue;
+    kernel_type kernel;
+    const cl::Context & context;
+
+    cl::Buffer cl_in;
+    cl::Buffer cl_out;
 };
 
 /// Try to open and parse a json file.

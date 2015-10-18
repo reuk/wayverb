@@ -148,49 +148,6 @@ vector <vector <float>> process
     return ret;
 }
 
-ContextProvider::ContextProvider()
-{
-    // Set up a GPU context.
-    vector <cl::Platform> platform;
-    cl::Platform::get (&platform);
-
-    cl_context_properties cps [3] = {
-        CL_CONTEXT_PLATFORM,
-        (cl_context_properties) (platform [0]) (),
-        0
-    };
-
-    cl_context = cl::Context (CL_DEVICE_TYPE_GPU, cps);
-}
-
-KernelLoader::KernelLoader()
-:   KernelLoader (false)
-{
-
-}
-
-KernelLoader::KernelLoader(bool verbose)
-:   cl_program (cl_context, KERNEL_STRING, false)
-{
-    // Grab the final device that the context makes available.
-    vector <cl::Device> device = cl_context.getInfo <CL_CONTEXT_DEVICES>();
-    vector <cl::Device> used_devices (device.end() - 1, device.end());
-
-    // Build program for this device.
-    cl_program.build (used_devices);
-    cl::Device used_device = used_devices.front();
-
-    if (verbose)
-    {
-        cerr
-        <<  cl_program.getBuildInfo <CL_PROGRAM_BUILD_LOG> (used_device)
-        <<  endl;
-    }
-
-    // Set up a queue on this device.
-    queue = cl::CommandQueue (cl_context, used_device);
-}
-
 /// Call binary operation u on pairs of elements from a and b, where a and b are
 /// cl_floatx types.
 template <typename T, typename U>
@@ -249,307 +206,75 @@ bool inside
 }
 
 /// Reserve graphics memory.
-Raytracer::Raytracer
-(   unsigned long nreflections
+Raytrace::Raytrace
+(   const RayverbProgram & program, cl::CommandQueue & queue,
+    unsigned long nreflections
 ,   vector <Triangle> & triangles
 ,   vector <cl_float3> & vertices
 ,   vector <Surface> & surfaces
-,   bool verbose
 )
-:   KernelLoader (verbose)
+:   queue(queue)
+,   kernel(program.get_raytrace_kernel())
 ,   nreflections (nreflections)
 ,   ntriangles (triangles.size())
 ,   cl_directions
-    (   cl_context
+    (   program.getInfo<CL_PROGRAM_CONTEXT>()
     ,   CL_MEM_READ_WRITE
     ,   RAY_GROUP_SIZE * sizeof (cl_float3)
     )
-,   cl_triangles  (cl_context, begin (triangles),  end (triangles),  false)
-,   cl_vertices   (cl_context, begin (vertices),   end (vertices),   false)
-,   cl_surfaces   (cl_context, begin (surfaces),   end (surfaces),   false)
+,   cl_triangles  (program.getInfo<CL_PROGRAM_CONTEXT>(), begin (triangles),  end (triangles),  false)
+,   cl_vertices   (program.getInfo<CL_PROGRAM_CONTEXT>(), begin (vertices),   end (vertices),   false)
+,   cl_surfaces   (program.getInfo<CL_PROGRAM_CONTEXT>(), begin (surfaces),   end (surfaces),   false)
 ,   cl_impulses
-    (   cl_context
+    (   program.getInfo<CL_PROGRAM_CONTEXT>()
     ,   CL_MEM_READ_WRITE
     ,   RAY_GROUP_SIZE * nreflections * sizeof (Impulse)
     )
 ,   cl_image_source
-    (   cl_context
+    (   program.getInfo<CL_PROGRAM_CONTEXT>()
     ,   CL_MEM_READ_WRITE
     ,   RAY_GROUP_SIZE * NUM_IMAGE_SOURCE * sizeof (Impulse)
     )
 ,   cl_image_source_index
-    (   cl_context
+    (   program.getInfo<CL_PROGRAM_CONTEXT>()
     ,   CL_MEM_READ_WRITE
     ,   RAY_GROUP_SIZE * NUM_IMAGE_SOURCE * sizeof (cl_ulong)
     )
 ,   bounds (getBounds (vertices))
-,   raytrace_kernel
-    (   cl::make_kernel
-        <   cl::Buffer
-        ,   cl_float3
-        ,   cl::Buffer
-        ,   cl_ulong
-        ,   cl::Buffer
-        ,   cl_float3
-        ,   cl::Buffer
-        ,   cl::Buffer
-        ,   cl::Buffer
-        ,   cl::Buffer
-        ,   cl_ulong
-        ,   VolumeType
-        > (cl_program, "raytrace")
-    )
 {
 }
 
-/// Utility class for loading and extracting data from 3d object files.
-struct Raytracer::SceneData
-{
-public:
-    SceneData (const string & objpath, const string & materialFileName, bool verbose)
-    {
-        populate (objpath, materialFileName, verbose);
-    }
-
-    map <string, Surface> extractSurfaces (const string & materialFileName)
-    {
-        Document document;
-        attemptJsonParse (materialFileName, document);
-        if (! document.IsObject())
-            throw runtime_error ("Materials must be stored in a JSON object");
-
-        map <string, Surface> ret;
-        for
-        (   auto i = document.MemberBegin()
-        ;   i != document.MemberEnd()
-        ;   ++i
-        )
-        {
-            string name = i->name.GetString();
-
-            Surface surface;
-            ValueJsonValidator <Surface> getter (surface);
-            getter.run (i->value);
-            ret [name] = surface;
-        }
-
-        return ret;
-    }
-
-    /// Given a scene and a material file, match meshes to materials and extract
-    /// faces.
-    void populate (const aiScene * scene, const string & materialFileName, bool verbose)
-    {
-        if (! scene)
-            throw runtime_error ("Failed to load object file.");
-
-        Surface defaultSurface = {
-            (VolumeType) {{0.92, 0.92, 0.93, 0.93, 0.94, 0.95, 0.95, 0.95}},
-            (VolumeType) {{0.50, 0.90, 0.95, 0.95, 0.95, 0.95, 0.95, 0.95}}
-        };
-
-        surfaces.push_back (defaultSurface);
-
-        Document document;
-        attemptJsonParse (materialFileName, document);
-        if (! document.IsObject())
-            throw runtime_error ("Materials must be stored in a JSON object");
-
-        auto surfaceMap = extractSurfaces (materialFileName);
-        map <string, int> materialIndices;
-        for (const auto & i : surfaceMap)
-        {
-            surfaces.push_back (i.second);
-            materialIndices [i.first] = surfaces.size() - 1;
-        }
-
-        for (auto i = 0u; i != scene->mNumMeshes; ++i)
-        {
-            const aiMesh * mesh = scene->mMeshes [i];
-
-            aiString meshName = mesh->mName;
-            if (verbose)
-                cerr << "Found mesh: " << meshName.C_Str() << endl;
-            const aiMaterial * material =
-                scene->mMaterials [mesh->mMaterialIndex];
-
-            aiString matName;
-            material->Get (AI_MATKEY_NAME, matName);
-
-            unsigned long mat_index = 0;
-            auto nameIterator = materialIndices.find (matName.C_Str());
-            if (nameIterator != materialIndices.end())
-                mat_index = nameIterator->second;
-
-            if (verbose)
-            {
-                Surface surface = surfaces [mat_index];
-
-                cerr << "    Material name: " << matName.C_Str() << endl;
-
-                cerr << "    Material properties: " << endl;
-                cerr << "        specular: ["
-                     << surface.specular.s [0] << ", "
-                     << surface.specular.s [1] << ", "
-                     << surface.specular.s [2] << ", "
-                     << surface.specular.s [3] << ", "
-                     << surface.specular.s [4] << ", "
-                     << surface.specular.s [5] << ", "
-                     << surface.specular.s [6] << ", "
-                     << surface.specular.s [7] << "]"
-                     << endl;
-                cerr << "        diffuse: ["
-                     << surface.diffuse.s [0] << ", "
-                     << surface.diffuse.s [1] << ", "
-                     << surface.diffuse.s [2] << ", "
-                     << surface.diffuse.s [3] << ", "
-                     << surface.diffuse.s [4] << ", "
-                     << surface.diffuse.s [5] << ", "
-                     << surface.diffuse.s [6] << ", "
-                     << surface.diffuse.s [7] << "]"
-                     << endl;
-            }
-
-            vector <cl_float3> meshVertices (mesh->mNumVertices);
-
-            for (auto j = 0u; j != mesh->mNumVertices; ++j)
-            {
-                meshVertices [j] = fromAIVec (mesh->mVertices [j]);
-            }
-
-            vector <Triangle> meshTriangles (mesh->mNumFaces);
-
-            for (auto j = 0u; j != mesh->mNumFaces; ++j)
-            {
-                const aiFace face = mesh->mFaces [j];
-
-                meshTriangles [j] = (Triangle) {
-                    mat_index,
-                    vertices.size() + face.mIndices [0],
-                    vertices.size() + face.mIndices [1],
-                    vertices.size() + face.mIndices [2]
-                };
-            }
-
-            vertices.insert
-            (   vertices.end()
-            ,   begin (meshVertices)
-            ,   end (meshVertices)
-            );
-
-            triangles.insert
-            (   triangles.end()
-            ,   begin (meshTriangles)
-            ,   end (meshTriangles)
-            );
-        }
-
-        if (verbose)
-        {
-            cerr
-            <<  "Loaded 3D model with "
-            <<  triangles.size()
-            <<  " triangles"
-            <<  endl;
-        }
-    }
-
-    void populate (const string & objpath, const string & materialFileName, bool verbose)
-    {
-        Assimp::Importer importer;
-        populate
-        (   importer.ReadFile
-            (   objpath
-            ,   (   aiProcess_Triangulate
-                |   aiProcess_GenSmoothNormals
-                |   aiProcess_FlipUVs
-                )
-            )
-        ,   materialFileName
-        ,   verbose
-        );
-    }
-
-    bool validSurfaces()
-    {
-        for (const auto & s : surfaces)
-        {
-            for (auto i = 0u; i != 3; ++i)
-            {
-                if
-                (   s.specular.s [i] < 0 || 1 < s.specular.s [i]
-                ||  s.diffuse.s [i] < 0 || 1 < s.diffuse.s [i]
-                )
-                    return false;
-            }
-        }
-
-        return true;
-    }
-
-    bool validTriangles()
-    {
-        for (const auto & t : triangles)
-        {
-            if
-            (   surfaces.size() <= t.surface
-            ||  vertices.size() <= t.v0
-            ||  vertices.size() <= t.v1
-            ||  vertices.size() <= t.v2
-            )
-                return false;
-        }
-
-        return true;
-    }
-
-    bool valid()
-    {
-        if (triangles.empty() || vertices.empty() || surfaces.empty())
-            return false;
-
-        return validSurfaces() && validTriangles();
-    }
-
-    vector <Triangle> triangles;
-    vector <cl_float3> vertices;
-    vector <Surface> surfaces;
-};
-
-Raytracer::Raytracer
-(   unsigned long nreflections
+Raytrace::Raytrace
+(   const RayverbProgram & program, cl::CommandQueue & queue,
+    unsigned long nreflections
 ,   const string & objpath
 ,   const string & materialFileName
-,   bool verbose
 )
-:   Raytracer
-(   nreflections
-,   SceneData (objpath, materialFileName, verbose)
-,   verbose
+:   Raytrace
+(   program, queue, nreflections
+,   SceneData (objpath, materialFileName)
 )
 {
 }
 
-Raytracer::Raytracer
-(   unsigned long nreflections
+Raytrace::Raytrace
+(   const RayverbProgram & program, cl::CommandQueue & queue,
+    unsigned long nreflections
 ,   SceneData sceneData
-,   bool verbose
 )
-:   Raytracer
-(   nreflections
+:   Raytrace
+(   program, queue, nreflections
 ,   sceneData.triangles
 ,   sceneData.vertices
 ,   sceneData.surfaces
-,   verbose
 )
 {
 }
 
-void Raytracer::raytrace
+void Raytrace::raytrace
 (   const cl_float3 & micpos
 ,   const cl_float3 & source
 ,   const vector <cl_float3> & directions
-,   bool verbose
 )
 {
     storedMicpos = micpos;
@@ -557,7 +282,7 @@ void Raytracer::raytrace
     //  check that mic and source are inside model bounds
     bool micinside = inside (bounds, micpos);
     bool srcinside = inside (bounds, source);
-    if (verbose && (! (micinside && srcinside)))
+    if ((! (micinside && srcinside)))
     {
         cerr
         <<  "model bounds: ["
@@ -626,7 +351,7 @@ void Raytracer::raytrace
         );
 
         //  run kernel
-        raytrace_kernel
+        kernel
         (   cl::EnqueueArgs (queue, cl::NDRange (RAY_GROUP_SIZE))
         ,   cl_directions
         ,   micpos
@@ -694,12 +419,12 @@ void Raytracer::raytrace
     }
 }
 
-RaytracerResults Raytracer::getRawDiffuse()
+RaytracerResults Raytrace::getRawDiffuse()
 {
     return RaytracerResults (storedDiffuse, storedMicpos);
 }
 
-RaytracerResults Raytracer::getRawImages (bool removeDirect)
+RaytracerResults Raytrace::getRawImages (bool removeDirect)
 {
     auto temp = imageSourceTally;
     if (removeDirect)
@@ -715,7 +440,7 @@ RaytracerResults Raytracer::getRawImages (bool removeDirect)
     return RaytracerResults (ret, storedMicpos);
 }
 
-RaytracerResults Raytracer::getAllRaw (bool removeDirect)
+RaytracerResults Raytrace::getAllRaw (bool removeDirect)
 {
     auto diffuse = getRawDiffuse().impulses;
     const auto image = getRawImages (removeDirect).impulses;
@@ -723,28 +448,20 @@ RaytracerResults Raytracer::getAllRaw (bool removeDirect)
     return RaytracerResults (diffuse, storedMicpos);
 }
 
-HrtfAttenuator::HrtfAttenuator()
-:   cl_hrtf
-    (   cl_context
+Hrtf::Hrtf(const RayverbProgram & program, cl::CommandQueue & queue)
+:   queue(queue)
+,   kernel(program.get_hrtf_kernel())
+,   context(program.getInfo<CL_PROGRAM_CONTEXT>())
+,   cl_hrtf
+    (   context
     ,   CL_MEM_READ_WRITE
     ,   sizeof (VolumeType) * 360 * 180
-    )
-,   attenuate_kernel
-    (   cl::make_kernel
-        <   cl_float3
-        ,   cl::Buffer
-        ,   cl::Buffer
-        ,   cl::Buffer
-        ,   cl_float3
-        ,   cl_float3
-        ,   cl_ulong
-        > (cl_program, "hrtf")
     )
 {
 
 }
 
-vector <vector <AttenuatedImpulse>> HrtfAttenuator::attenuate
+vector <vector <AttenuatedImpulse>> Hrtf::attenuate
 (   const RaytracerResults & results
 ,   const HrtfConfig & config
 )
@@ -752,7 +469,7 @@ vector <vector <AttenuatedImpulse>> HrtfAttenuator::attenuate
     return attenuate (results, config.facing, config.up);
 }
 
-vector <vector <AttenuatedImpulse>> HrtfAttenuator::attenuate
+vector <vector <AttenuatedImpulse>> Hrtf::attenuate
 (   const RaytracerResults & results
 ,   const cl_float3 & facing
 ,   const cl_float3 & up
@@ -771,7 +488,7 @@ vector <vector <AttenuatedImpulse>> HrtfAttenuator::attenuate
     return attenuated;
 }
 
-vector <AttenuatedImpulse> HrtfAttenuator::attenuate
+vector <AttenuatedImpulse> Hrtf::attenuate
 (   const cl_float3 & mic_pos
 ,   unsigned long channel
 ,   const cl_float3 & facing
@@ -793,12 +510,12 @@ vector <AttenuatedImpulse> HrtfAttenuator::attenuate
 
     //  set up buffers
     cl_in = cl::Buffer
-    (   cl_context
+    (   context
     ,   CL_MEM_READ_WRITE
     ,   impulses.size() * sizeof (Impulse)
     );
     cl_out = cl::Buffer
-    (   cl_context
+    (   context
     ,   CL_MEM_READ_WRITE
     ,   impulses.size() * sizeof (AttenuatedImpulse)
     );
@@ -807,7 +524,7 @@ vector <AttenuatedImpulse> HrtfAttenuator::attenuate
     cl::copy (queue, impulses.begin(), impulses.end(), cl_in);
 
     //  run kernel
-    attenuate_kernel
+    kernel
     (   cl::EnqueueArgs (queue, cl::NDRange (impulses.size()))
     ,   mic_pos
     ,   cl_in
@@ -826,25 +543,20 @@ vector <AttenuatedImpulse> HrtfAttenuator::attenuate
     return ret;
 }
 
-const array <array <array <cl_float8, 180>, 360>, 2> & HrtfAttenuator::getHrtfData() const
+const array <array <array <cl_float8, 180>, 360>, 2> & Hrtf::getHrtfData() const
 {
     return HRTF_DATA;
 }
 
-SpeakerAttenuator::SpeakerAttenuator()
-:   attenuate_kernel
-    (   cl::make_kernel
-        <   cl_float3
-        ,   cl::Buffer
-        ,   cl::Buffer
-        ,   Speaker
-        > (cl_program, "attenuate")
-    )
+Attenuate::Attenuate(const RayverbProgram & program, cl::CommandQueue & queue)
+:   queue(queue)
+,   kernel(program.get_attenuate_kernel())
+,   context(program.getInfo<CL_PROGRAM_CONTEXT>())
 {
 
 }
 
-vector <vector <AttenuatedImpulse>> SpeakerAttenuator::attenuate
+vector <vector <AttenuatedImpulse>> Attenuate::attenuate
 (   const RaytracerResults & results
 ,   const vector <Speaker> & speakers
 )
@@ -862,7 +574,7 @@ vector <vector <AttenuatedImpulse>> SpeakerAttenuator::attenuate
     return attenuated;
 }
 
-vector <AttenuatedImpulse> SpeakerAttenuator::attenuate
+vector <AttenuatedImpulse> Attenuate::attenuate
 (   const cl_float3 & mic_pos
 ,   const Speaker & speaker
 ,   const vector <Impulse> & impulses
@@ -870,12 +582,12 @@ vector <AttenuatedImpulse> SpeakerAttenuator::attenuate
 {
     //  init buffers
     cl_in = cl::Buffer
-    (   cl_context
+    (   context
     ,   CL_MEM_READ_WRITE
     ,   impulses.size() * sizeof (Impulse)
     );
     cl_out = cl::Buffer
-    (   cl_context
+    (   context
     ,   CL_MEM_READ_WRITE
     ,   impulses.size() * sizeof (AttenuatedImpulse)
     );
@@ -884,7 +596,7 @@ vector <AttenuatedImpulse> SpeakerAttenuator::attenuate
     cl::copy (queue, impulses.begin(), impulses.end(), cl_in);
 
     //  run kernel
-    attenuate_kernel
+    kernel
     (   cl::EnqueueArgs (queue, cl::NDRange (impulses.size()))
     ,   mic_pos
     ,   cl_in
