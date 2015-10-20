@@ -4,6 +4,7 @@ file(GLOB sources "*.cpp")
 
 include_directories(
     ${CMAKE_SOURCE_DIR}/include
+    "/usr/local/include/"
 )
 
 add_library(common STATIC ${sources})

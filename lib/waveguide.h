@@ -57,27 +57,23 @@ public:
         std::vector<cl_float> ret(steps);
 
         auto counter = 0u;
-        std::generate(ret.begin(), ret.end(),
-                       [this, &counter, &steps, &o] {
-                           auto ret = this->run_step(o,
-                                                     queue,
-                                                     kernel,
-                                                     nodes,
-                                                     previous,
-                                                     current,
-                                                     output);
-                           auto & temp = previous;
-                           previous = current;
-                           current = temp;
+        std::generate(
+            ret.begin(),
+            ret.end(),
+            [this, &counter, &steps, &o] {
+                auto ret = this->run_step(
+                    o, queue, kernel, nodes, previous, current, output);
+                auto & temp = previous;
+                previous = current;
+                current = temp;
 
-                           auto percent = counter * 100 / (steps - 1);
-                           std::cout << "\r" << percent << "% done"
-                                     << std::flush;
+                auto percent = counter * 100 / (steps - 1);
+                std::cout << "\r" << percent << "% done" << std::flush;
 
-                           counter += 1;
+                counter += 1;
 
-                           return ret;
-                       });
+                return ret;
+            });
 
         std::cout << std::endl;
 

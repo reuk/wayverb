@@ -44,7 +44,8 @@ vector<float> exponential_decay_envelope(int steps, float attenuation_factor) {
              [&amp, attenuation_factor] {
                  auto t = amp;
                  amp *= attenuation_factor;
-                 return t;});
+                 return t;
+             });
     return ret;
 }
 
@@ -64,7 +65,9 @@ int main(int argc, char ** argv) {
     gflags::ParseCommandLineFlags(&argc, &argv, true);
 
     if (argc != 4) {
-        Logger::log_err("expecting an input model, an input material file, and an output filename");
+        Logger::log_err(
+            "expecting an input model, an input material file, and an output "
+            "filename");
         return EXIT_FAILURE;
     }
 

@@ -308,7 +308,7 @@ private:
     ,   SceneData sceneData
     );
 
-    static const unsigned int RAY_GROUP_SIZE = 4096;
+    static const auto RAY_GROUP_SIZE = 4096u;
 
     std::vector <Impulse> storedDiffuse;
     std::map <std::vector <unsigned long>, Impulse> imageSourceTally;
@@ -340,7 +340,7 @@ public:
 private:
     cl::CommandQueue & queue;
     kernel_type kernel;
-    const cl::Context & context;
+    const cl::Context context;
 
     static const std::array <std::array <std::array <cl_float8, 180>, 360>, 2> HRTF_DATA;
     std::vector <AttenuatedImpulse> attenuate
@@ -381,7 +381,7 @@ private:
     );
     cl::CommandQueue & queue;
     kernel_type kernel;
-    const cl::Context & context;
+    const cl::Context context;
 
     cl::Buffer cl_in;
     cl::Buffer cl_out;

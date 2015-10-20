@@ -95,6 +95,11 @@ vector <float> mixdown (const vector <vector <float>> & data)
 /// then resize the vectors down to this length.
 void trimTail (vector <vector <float>> & audioChannels, float minVol)
 {
+    using index_type = common_type_t<
+        iterator_traits<vector<float>::reverse_iterator>::difference_type,
+        int>;
+
+
     // Find last index of required amplitude or greater.
     auto len = accumulate
     (   audioChannels.begin()
@@ -103,15 +108,15 @@ void trimTail (vector <vector <float>> & audioChannels, float minVol)
     ,   [minVol] (auto current, const auto & i)
         {
             return max
-            (   current
-            ,   distance
+            (   index_type{current}
+            ,   index_type{distance
                 (   i.begin()
                 ,   find_if
                     (   i.rbegin()
                     ,   i.rend()
                     ,   [minVol] (auto j) {return abs (j) >= minVol;}
                     ).base()
-                ) - 1
+                ) - 1}
             );
         }
     );
@@ -321,8 +326,9 @@ void Raytrace::raytrace
     storedDiffuse.resize (directions.size() * nreflections);
     for (auto i = 0u; i != ceil (directions.size() / float (RAY_GROUP_SIZE)); ++i)
     {
-        auto b = i * RAY_GROUP_SIZE;
-        auto e = min (directions.size(), (i + 1) * RAY_GROUP_SIZE);
+        using index_type = common_type_t<decltype(i * RAY_GROUP_SIZE), decltype(directions.size())>;
+        index_type b = i * RAY_GROUP_SIZE;
+        index_type e = min (index_type{directions.size()}, index_type{(i + 1) * RAY_GROUP_SIZE});
 
         //  copy input to buffer
         cl::copy

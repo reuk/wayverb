@@ -59,8 +59,8 @@ MeshBoundary::get_triangle_references() const {
                                         vector<reference_store>(DIVISIONS));
     for (auto i = 0u; i != triangles.size(); ++i) {
         const auto& t = triangles[i];
-        const auto bounding_box =
-            get_cuboid_boundary({vertices[t.v0], vertices[t.v1], vertices[t.v2]});
+        const auto bounding_box = get_cuboid_boundary(
+            {vertices[t.v0], vertices[t.v1], vertices[t.v2]});
         const auto min_indices = hash_point(bounding_box.c0);
         const auto max_indices = hash_point(bounding_box.c1) + 1;
 

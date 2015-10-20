@@ -5,6 +5,7 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/common
     ${CMAKE_SOURCE_DIR}/rayverb
     ${CMAKE_SOURCE_DIR}/lib
+    "/usr/local/include"
 )
 
 set(name pwaveguide)
@@ -23,5 +24,6 @@ elseif(UNIX)
 endif()
 
 find_library(sndfile_lib sndfile)
+find_library(gflags_lib gflags)
 
-target_link_libraries(${name} waveguide ${sndfile_lib} ${frameworks} gflags)
+target_link_libraries(${name} waveguide ${sndfile_lib} ${frameworks} ${gflags_lib})

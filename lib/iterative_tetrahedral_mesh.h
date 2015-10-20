@@ -34,6 +34,7 @@ public:
     std::vector<Node> nodes;
 
     static float cube_side_from_node_spacing(float spacing);
+
 private:
     static const std::array<std::array<Locator, PORTS>, CUBE_NODES>
         offset_table;

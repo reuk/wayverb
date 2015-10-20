@@ -6,6 +6,7 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/lib
     ${CMAKE_SOURCE_DIR}/common
     ${CMAKE_SOURCE_DIR}/gtest/include
+    "/usr/local/include/"
 )
 link_directories(/usr/local/lib)
 

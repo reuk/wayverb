@@ -5,6 +5,7 @@ file(GLOB sources "*.cpp")
 include_directories(
     ${CMAKE_SOURCE_DIR}/include
     ${CMAKE_SOURCE_DIR}/common
+    "/usr/local/include/"
 )
 
 add_library(waveguide STATIC ${sources})
