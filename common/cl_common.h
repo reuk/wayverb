@@ -1,6 +1,6 @@
 #pragma once
 
-#include "rtaudiocommon/logger.h"
+#include "logger.h"
 
 #define __CL_ENABLE_EXCEPTIONS
 #include "cl.hpp"

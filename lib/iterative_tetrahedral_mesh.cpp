@@ -2,8 +2,7 @@
 
 #include "test_flag.h"
 #include "conversions.h"
-
-#include "rtaudiocommon/logger.h"
+#include "logger.h"
 
 #include <algorithm>
 

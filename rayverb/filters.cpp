@@ -1,7 +1,7 @@
 #include "filters.h"
+#include "filters_common.h"
 
-#include "rtaudiocommon/filters.h"
-#include "rtaudiocommon/sinc.h"
+#include "sinc.h"
 
 #include <numeric>
 #include <iostream>

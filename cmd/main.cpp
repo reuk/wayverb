@@ -7,9 +7,9 @@
 #include "cl_common.h"
 
 //  dependency
-#include "rtaudiocommon/logger.h"
-#include "rtaudiocommon/write_audio_file.h"
-#include "rtaudiocommon/sample_rate_conversion.h"
+#include "logger.h"
+#include "write_audio_file.h"
+#include "sample_rate_conversion.h"
 
 #define __CL_ENABLE_EXCEPTIONS
 #include "cl.hpp"

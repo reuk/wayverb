@@ -6,9 +6,8 @@
 
 #include "config.h"
 #include "scene_data.h"
-
-#include "rtaudiocommon/filters.h"
-#include "rtaudiocommon/sinc.h"
+#include "filters.h"
+#include "sinc.h"
 
 #include "rapidjson/document.h"
 

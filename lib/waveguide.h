@@ -3,8 +3,7 @@
 #include "tetrahedral_program.h"
 #include "iterative_tetrahedral_mesh.h"
 #include "cl_structs.h"
-
-#include "rtaudiocommon/logger.h"
+#include "logger.h"
 
 #include <array>
 #include <type_traits>

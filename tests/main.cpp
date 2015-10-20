@@ -1,4 +1,4 @@
-#include "rtaudiocommon/logger.h"
+#include "logger.h"
 #include "gtest/gtest.h"
 
 int main(int argc, char * argv[]) {
