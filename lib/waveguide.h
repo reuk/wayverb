@@ -26,8 +26,8 @@ public:
                     cl::Buffer(program.template getInfo<CL_PROGRAM_CONTEXT>(),
                                CL_MEM_READ_WRITE,
                                sizeof(cl_float) * nodes)}})
-            , previous(storage[0])
-            , current(storage[1])
+            , previous(&storage[0])
+            , current(&storage[1])
             , output(program.template getInfo<CL_PROGRAM_CONTEXT>(),
                      CL_MEM_READ_WRITE,
                      sizeof(cl_float)) {
@@ -49,10 +49,10 @@ public:
         Logger::log("beginning simulation with: ", nodes, " nodes");
 
         std::vector<cl_float> n(nodes, 0);
-        cl::copy(queue, n.begin(), n.end(), previous);
+        cl::copy(queue, n.begin(), n.end(), *previous);
 
         n[e] = 1;
-        cl::copy(queue, n.begin(), n.end(), current);
+        cl::copy(queue, n.begin(), n.end(), *current);
 
         std::vector<cl_float> ret(steps);
 
@@ -62,10 +62,9 @@ public:
             ret.end(),
             [this, &counter, &steps, &o] {
                 auto ret = this->run_step(
-                    o, queue, kernel, nodes, previous, current, output);
-                auto & temp = previous;
-                previous = current;
-                current = temp;
+                    o, queue, kernel, nodes, *previous, *current, output);
+
+                std::swap(current, previous);
 
                 auto percent = counter * 100 / (steps - 1);
                 std::cout << "\r" << percent << "% done" << std::flush;
@@ -91,8 +90,8 @@ private:
 
     std::array<cl::Buffer, 2> storage;
 
-    cl::Buffer & previous;
-    cl::Buffer & current;
+    cl::Buffer * previous;
+    cl::Buffer * current;
 
     cl::Buffer output;
 };

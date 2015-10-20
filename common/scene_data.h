@@ -20,12 +20,12 @@ typedef struct {
     cl_ulong v0;
     cl_ulong v1;
     cl_ulong v2;
-} __attribute__ ((aligned(8))) Triangle;
+} __attribute__((aligned(8))) Triangle;
 
-typedef struct  {
+typedef struct {
     VolumeType specular;
     VolumeType diffuse;
-} __attribute__ ((aligned(8))) Surface;
+} __attribute__((aligned(8))) Surface;
 
 class SurfaceLoader {
 public:
@@ -35,6 +35,7 @@ public:
 
     std::vector<Surface> get_surfaces() const;
     size_type get_index(const std::string & name) const;
+
 private:
     void add_surface(const std::string & name, const Surface & surface);
 
@@ -57,27 +58,25 @@ public:
     std::vector<Surface> surfaces;
 };
 
-template<>
-struct JsonGetter<Surface>
-{
-    JsonGetter (Surface & t): t (t) {}
+template <>
+struct JsonGetter<Surface> {
+    JsonGetter(Surface & t)
+            : t(t) {
+    }
 
     /// Returns true if value is a json object.
-    virtual bool check (const rapidjson::Value & value) const
-    {
+    virtual bool check(const rapidjson::Value & value) const {
         return value.IsObject();
     }
 
     /// Attempts to run a ConfigValidator on value
-    virtual void get (const rapidjson::Value & value) const
-    {
+    virtual void get(const rapidjson::Value & value) const {
         ConfigValidator cv;
 
-        cv.addRequiredValidator ("specular", t.specular);
-        cv.addRequiredValidator ("diffuse", t.diffuse);
+        cv.addRequiredValidator("specular", t.specular);
+        cv.addRequiredValidator("diffuse", t.diffuse);
 
-        cv.run (value);
+        cv.run(value);
     }
     Surface & t;
 };
-

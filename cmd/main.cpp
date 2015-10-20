@@ -8,13 +8,15 @@
 
 //  dependency
 #include "logger.h"
+#include "filters_common.h"
+#include "sinc.h"
 #include "write_audio_file.h"
-#include "sample_rate_conversion.h"
 
 #define __CL_ENABLE_EXCEPTIONS
 #include "cl.hpp"
 
 #include "sndfile.hh"
+#include "samplerate.h"
 
 #include <gflags/gflags.h>
 
@@ -71,9 +73,9 @@ int main(int argc, char ** argv) {
         return EXIT_FAILURE;
     }
 
-    auto model_file = argv[1];
-    auto material_file = argv[2];
-    auto output_file = argv[3];
+    string model_file = argv[1];
+    string material_file = argv[2];
+    string output_file = argv[3];
 
     auto speed_of_sound = 340.0;
     auto attenuation_factor = 0.999;
@@ -120,7 +122,17 @@ int main(int argc, char ** argv) {
         lopass.filter(results);
 
         normalize(results);
-        auto out_signal = convert_sample_rate(results, output_sr, sr);
+        write_sndfile("no_samp_" + output_file, {results}, sr, depth, format);
+
+        vector<float> out_signal(output_sr * results.size() / sr);
+
+        SRC_DATA sample_rate_info{
+            results.data(), out_signal.data(), long(results.size()), long(out_signal.size()),
+                0, 0, 0, output_sr / double(sr)};
+
+        auto err = src_simple(&sample_rate_info, SRC_SINC_BEST_QUALITY, 1);
+
+        normalize(out_signal);
         write_sndfile(output_file, {out_signal}, output_sr, depth, format);
     } catch (const cl::Error & e) {
         Logger::log_err("critical cl error: ", e.what());

@@ -6,62 +6,56 @@
 
 template <typename T>
 inline float max_mag(const T & t) {
-    return std::accumulate(t.begin(),
-                           t.end(),
-                           0.0f,
-                           [](auto a, auto b) {
-                               return std::max(a, max_mag(b));
-                           });
+    return std::accumulate(
+        t.begin(),
+        t.end(),
+        0.0f,
+        [](auto a, auto b) { return std::max(a, max_mag(b)); });
 }
 
-template<>
+template <>
 inline float max_mag(const float & t) {
     return std::fabs(t);
 }
 
 /// Recursively divide by reference.
 template <typename T>
-inline void div (T & ret, float f)
-{
+inline void div(T & ret, float f) {
     for (auto && i : ret)
-        div (i, f);
+        div(i, f);
 }
 
 /// The base case of the div recursion.
-template<>
-inline void div (float & ret, float f)
-{
+template <>
+inline void div(float & ret, float f) {
     ret /= f;
 }
 
 /// Recursively multiply by reference.
 template <typename T>
-inline void mul (T & ret, float f)
-{
+inline void mul(T & ret, float f) {
     for (auto && i : ret)
-        mul (i, f);
+        mul(i, f);
 }
 
 /// The base case of the mul recursion.
-template<>
-inline void mul (float & ret, float f)
-{
+template <>
+inline void mul(float & ret, float f) {
     ret *= f;
 }
 
 /// Find the largest absolute value in an arbitarily nested vector, then
 /// divide every item in the vector by that value.
 template <typename T>
-inline void normalize (T & ret)
-{
+inline void normalize(T & ret) {
     auto mag = max_mag(ret);
     if (mag != 0)
-        mul (ret, 1.0 / mag);
+        mul(ret, 1.0 / mag);
 }
 
 /// sinc t = sin (pi . t) / pi . t
 template <typename T>
-T sinc(const T & t) {
+T sinc(T t) {
     T pit = M_PI * t;
     return sin(pit) / pit;
 }
@@ -84,8 +78,11 @@ std::vector<T> sinc_kernel(double cutoff, unsigned long length) {
 
 template <typename T, typename U>
 void elementwise_multiply(T & a, const U & b) {
-    std::transform(std::begin(a), std::end(a), std::begin(b), std::begin(a),
-            [](auto i, auto j) {return i * j;});
+    std::transform(std::begin(a),
+                   std::end(a),
+                   std::begin(b),
+                   std::begin(a),
+                   [](auto i, auto j) { return i * j; });
 }
 
 /// Generate a blackman window of a specific length.
@@ -104,7 +101,7 @@ std::vector<T> blackman(unsigned long length) {
     return ret;
 }
 
-template<typename T = float>
+template <typename T = float>
 std::vector<T> windowed_sinc_kernel(double cutoff, unsigned long length) {
     auto window = blackman<T>(length);
     auto kernel = sinc_kernel<T>(cutoff, length);
@@ -125,11 +122,12 @@ std::vector<T> lopass_sinc_kernel(double sr,
 /// Generate a windowed, normalized high-pass sinc filter kernel of a specific
 /// length.
 template <typename T = float>
-std::vector <T> hipass_sinc_kernel(double sr,
-                                   double cutoff,
-                                   unsigned long length) {
+std::vector<T> hipass_sinc_kernel(double sr,
+                                  double cutoff,
+                                  unsigned long length) {
     auto kernel = lopass_sinc_kernel<T>(sr, cutoff, length);
-    for (auto & i : kernel) i = -i;
-    kernel [(length - 1) / 2] += 1;
+    for (auto & i : kernel)
+        i = -i;
+    kernel[(length - 1) / 2] += 1;
     return kernel;
 }

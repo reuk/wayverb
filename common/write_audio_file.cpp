@@ -21,9 +21,10 @@ void write_sndfile(const string & fname,
 }
 
 unsigned long get_file_format(const string & fname) {
-    unordered_map<string, decltype(SF_FORMAT_AIFF)> ftypeTable{{"aif", SF_FORMAT_AIFF},
-                                          {"aiff", SF_FORMAT_AIFF},
-                                          {"wav", SF_FORMAT_WAV}};
+    unordered_map<string, decltype(SF_FORMAT_AIFF)> ftypeTable{
+        {"aif", SF_FORMAT_AIFF},
+        {"aiff", SF_FORMAT_AIFF},
+        {"wav", SF_FORMAT_WAV}};
 
     auto extension = fname.substr(fname.find_last_of(".") + 1);
     auto ftypeIt = ftypeTable.find(extension);
@@ -38,8 +39,8 @@ unsigned long get_file_format(const string & fname) {
 }
 
 unsigned long get_file_depth(unsigned long bitDepth) {
-    unordered_map<unsigned long, decltype(SF_FORMAT_PCM_16)> depthTable{{16, SF_FORMAT_PCM_16},
-                                                 {24, SF_FORMAT_PCM_24}};
+    unordered_map<unsigned long, decltype(SF_FORMAT_PCM_16)> depthTable{
+        {16, SF_FORMAT_PCM_16}, {24, SF_FORMAT_PCM_24}};
 
     auto depthIt = depthTable.find(bitDepth);
     if (depthIt == depthTable.end()) {
@@ -51,4 +52,3 @@ unsigned long get_file_depth(unsigned long bitDepth) {
     }
     return depthIt->second;
 }
-
