@@ -1,10 +1,11 @@
 #include "iterative_tetrahedral_mesh.h"
 
-#include "logger.h"
 #include "test_flag.h"
 #include "conversions.h"
+#include "logger.h"
 
 #include <algorithm>
+#include <numeric>
 
 using namespace std;
 
@@ -28,13 +29,13 @@ vector<Vec3f> IterativeTetrahedralMesh::get_scaled_cube() const {
     transform(basic_cube.begin(),
               basic_cube.end(),
               ret.begin(),
-              [this](auto i) { return i * spacing; });
+              [this](auto i) { return i * cube_side; });
     return ret;
 }
 
 Vec3i IterativeTetrahedralMesh::get_dim() const {
     auto dimensions = boundary.get_dimensions();
-    return (dimensions / spacing).map([](auto i) { return ceil(i); }) + 1;
+    return (dimensions / cube_side).map([](auto i) { return ceil(i); }) + 1;
 }
 
 vector<Node> IterativeTetrahedralMesh::get_nodes(
@@ -60,7 +61,7 @@ vector<Node> IterativeTetrahedralMesh::get_nodes(
 IterativeTetrahedralMesh::IterativeTetrahedralMesh(const Boundary & boundary,
                                                    float spacing)
         : boundary(boundary.get_aabb())
-        , spacing(spacing)
+        , cube_side(cube_side_from_node_spacing(spacing))
         , scaled_cube(get_scaled_cube())
         , dim(get_dim())
         , nodes(get_nodes(boundary)) {
@@ -83,8 +84,31 @@ IterativeTetrahedralMesh::Locator IterativeTetrahedralMesh::get_locator(
                                              mod_ind.rem);
 }
 
+IterativeTetrahedralMesh::Locator IterativeTetrahedralMesh::get_locator(
+    const Vec3f & v) const {
+    auto transformed = v - boundary.c0;
+    Vec3i cube_pos =
+        (transformed / cube_side).map([](auto i) -> int { return i; });
+    Vec3f difference = (transformed - (cube_pos * cube_side));
+
+    std::vector<int> indices(scaled_cube.size());
+    iota(indices.begin(), indices.end(), 0);
+    auto closest =
+        std::accumulate(indices.begin() + 1,
+                        indices.end(),
+                        indices.front(),
+                        [this, difference](auto i, auto j) {
+                            return (scaled_cube[i] - difference).mag() <
+                                           (scaled_cube[j] - difference).mag()
+                                       ? i
+                                       : j;
+                        });
+
+    return Locator(cube_pos, closest);
+}
+
 Vec3f IterativeTetrahedralMesh::get_position(const Locator & locator) const {
-    auto cube_pos = locator.pos * spacing;
+    auto cube_pos = locator.pos * cube_side;
     auto node_pos = scaled_cube[locator.mod_ind];
     return cube_pos + node_pos + boundary.c0;
 }
@@ -93,7 +117,7 @@ using Locator = IterativeTetrahedralMesh::Locator;
 
 const array<array<Locator, IterativeTetrahedralMesh::PORTS>,
             IterativeTetrahedralMesh::CUBE_NODES>
-    IterativeTetrahedralMesh::offset_table = {{
+    IterativeTetrahedralMesh::offset_table{{
         {{Locator(Vec3i(0, 0, 0), 2),
           Locator(Vec3i(-1, 0, -1), 3),
           Locator(Vec3i(-1, -1, 0), 6),
@@ -140,4 +164,8 @@ IterativeTetrahedralMesh::get_neighbors(size_type index) const {
             is_neighbor ? get_index(Locator(summed, relative.mod_ind)) : -1;
     }
     return ret;
+}
+
+float IterativeTetrahedralMesh::cube_side_from_node_spacing(float spacing) {
+    return spacing / Vec3f(0.25, 0.25, 0.25).mag();
 }

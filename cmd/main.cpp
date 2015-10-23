@@ -1,18 +1,29 @@
 //  project internal
 #include "waveguide.h"
 #include "scene_data.h"
-#include "logger.h"
 #include "test_flag.h"
+#include "conversions.h"
+
+#include "rayverb.h"
+
+#include "cl_common.h"
 
 //  dependency
+#include "logger.h"
+#include "filters_common.h"
+#include "sinc.h"
+#include "write_audio_file.h"
+
 #define __CL_ENABLE_EXCEPTIONS
 #include "cl.hpp"
 
 #include "sndfile.hh"
+#include "samplerate.h"
 
 #include <gflags/gflags.h>
 
 //  stdlib
+#include <random>
 #include <iostream>
 #include <algorithm>
 #include <numeric>
@@ -21,277 +32,250 @@
 
 using namespace std;
 
-template <typename T>
-auto max_mag(const T & t) {
-    return accumulate(t.begin(),
-                      t.end(),
-                      typename T::value_type(0),
-                      [](auto a, auto b) { return max(a, fabs(b)); });
+// -1 <= z <= 1, -pi <= theta <= pi
+cl_float3 spherePoint(float z, float theta) {
+    const float ztemp = sqrtf(1 - z * z);
+    return (cl_float3){{ztemp * cosf(theta), ztemp * sinf(theta), z, 0}};
 }
 
-template <typename T>
-void normalize(T & t) {
-    auto mag = max_mag(t);
-    if (mag != 0) {
-        transform(
-            t.begin(), t.end(), t.begin(), [mag](auto i) { return i / mag; });
-    }
-}
+vector<cl_float3> getRandomDirections(unsigned long num) {
+    vector<cl_float3> ret(num);
+    uniform_real_distribution<float> zDist(-1, 1);
+    uniform_real_distribution<float> thetaDist(-M_PI, M_PI);
+    auto seed = chrono::system_clock::now().time_since_epoch().count();
+    default_random_engine engine(seed);
 
-/// sinc t = sin (pi . t) / pi . t
-template <typename T>
-T sinc(const T & t) {
-    T pit = M_PI * t;
-    return sin(pit) / pit;
-}
+    for (auto && i : ret)
+        i = spherePoint(zDist(engine), thetaDist(engine));
 
-/// Generate a convolution kernel for a lowpass sinc filter (NO WINDOWING!).
-template <typename T = float>
-vector<T> sinc_kernel(double cutoff, unsigned long length) {
-    if (!(length % 2))
-        throw runtime_error("Length of sinc filter kernel must be odd.");
-
-    vector<T> ret(length);
-    for (auto i = 0u; i != length; ++i) {
-        if (i == ((length - 1) / 2))
-            ret[i] = 1;
-        else
-            ret[i] = sinc(2 * cutoff * (i - (length - 1) / 2.0));
-    }
     return ret;
 }
 
-/// Generate a blackman window of a specific length.
-template <typename T = float>
-vector<T> blackman(unsigned long length) {
-    const auto a0 = 7938.0 / 18608.0;
-    const auto a1 = 9240.0 / 18608.0;
-    const auto a2 = 1430.0 / 18608.0;
+double a2db(double a) {
+    return 20 * log10(a);
+}
 
-    vector<T> ret(length);
-    for (auto i = 0u; i != length; ++i) {
-        const auto offset = i / (length - 1.0);
-        ret[i] =
-            (a0 - a1 * cos(2 * M_PI * offset) + a2 * cos(4 * M_PI * offset));
-    }
+double db2a(double db) {
+    return pow(10, db / 20);
+}
+
+vector<float> squintegrate(const std::vector<float> & sig) {
+    vector<float> ret(sig.size());
+    partial_sum(sig.rbegin(),
+                sig.rend(),
+                ret.rbegin(),
+                [](auto i, auto j) { return i + j * j; });
     return ret;
 }
 
-/// Generate a windowed, normalized low-pass sinc filter kernel of a specific
-/// length.
-template <typename T = float>
-vector<T> lopass_kernel(float sr, float cutoff, unsigned long length) {
-    auto window = blackman<T>(length);
-    auto kernel = sinc_kernel<T>(cutoff / sr, length);
-    transform(begin(window),
-              end(window),
-              begin(kernel),
-              begin(kernel),
-              [](auto i, auto j) { return i * j; });
-    normalize(kernel);
-    return kernel;
+int rt60(const vector<float> & sig) {
+    auto squintegrated = squintegrate(sig);
+    normalize(squintegrated);
+    auto target = db2a(-60);
+    return distance(squintegrated.begin(),
+                    find_if(squintegrated.begin(),
+                            squintegrated.end(),
+                            [target](auto i) { return i < target; }));
 }
 
-void write_sndfile(const string & fname,
-                   const vector<vector<float>> & outdata,
-                   float sr,
-                   unsigned long bd,
-                   unsigned long ftype) {
-    vector<float> interleaved(outdata.size() * outdata[0].size());
-
-    for (auto i = 0u; i != outdata.size(); ++i)
-        for (auto j = 0u; j != outdata[i].size(); ++j)
-            interleaved[j * outdata.size() + i] = outdata[i][j];
-
-    SndfileHandle outfile(fname, SFM_WRITE, ftype | bd, outdata.size(), sr);
-    outfile.write(interleaved.data(), interleaved.size());
+MeshBoundary get_mesh_boundary(const SceneData & sd) {
+    vector<Vec3f> v(sd.vertices.size());
+    transform(sd.vertices.begin(),
+              sd.vertices.end(),
+              v.begin(),
+              [](auto i) { return convert(i); });
+    return MeshBoundary(sd.triangles, v);
 }
 
-void print_device_info(const cl::Device & i) {
-    Logger::log(i.getInfo<CL_DEVICE_NAME>());
-    Logger::log("available: ", i.getInfo<CL_DEVICE_AVAILABLE>());
-};
-
-cl::Context get_context() {
-    vector<cl::Platform> platform;
-    cl::Platform::get(&platform);
-
-    cl_context_properties cps[3] = {
-        CL_CONTEXT_PLATFORM, (cl_context_properties)(platform[0])(), 0,
-    };
-
-    return cl::Context(CL_DEVICE_TYPE_GPU, cps);
+vector<float> exponential_decay_envelope(int steps, float attenuation_factor) {
+    vector<float> ret(steps);
+    auto amp = 1.0f;
+    generate(begin(ret),
+             end(ret),
+             [&amp, attenuation_factor] {
+                 auto t = amp;
+                 amp *= attenuation_factor;
+                 return t;
+             });
+    return ret;
 }
 
-cl::Device get_device(const cl::Context & context) {
-    auto devices = context.getInfo<CL_CONTEXT_DEVICES>();
-
-    Logger::log("## all devices:");
-
-    for (auto & i : devices) {
-        print_device_info(i);
+bool all_zero(const vector<float> & t) {
+    auto ret = true;
+    for (auto i = 0u; i != t.size(); ++i) {
+        if (t[i] != 0) {
+            Logger::log("non-zero at element: ", i, ", value: ", t[i]);
+            ret = false;
+        }
     }
-
-    auto device = devices.back();
-
-    Logger::log("## used device:");
-    print_device_info(device);
-
-    return device;
+    return ret;
 }
-
-template <typename T>
-T get_program(const cl::Context & context, const cl::Device & device) {
-    T program(context);
-    try {
-        program.build({device});
-    } catch (const cl::Error & e) {
-        Logger::log(
-            program.template getBuildInfo<CL_PROGRAM_BUILD_LOG>(device));
-        throw;
-    }
-    return program;
-}
-
-auto get_file_format(const string & fname) {
-    map<string, unsigned long> ftypeTable{{"aif", SF_FORMAT_AIFF},
-                                          {"aiff", SF_FORMAT_AIFF},
-                                          {"wav", SF_FORMAT_WAV}};
-
-    auto extension = fname.substr(fname.find_last_of(".") + 1);
-    auto ftypeIt = ftypeTable.find(extension);
-    if (ftypeIt == ftypeTable.end()) {
-        stringstream ss;
-        ss << "Invalid output file extension - valid extensions are: ";
-        for (const auto & i : ftypeTable)
-            ss << i.first << " ";
-        throw runtime_error(ss.str());
-    }
-    return ftypeIt->second;
-}
-
-auto get_file_depth(unsigned long bitDepth) {
-    map<unsigned long, unsigned long> depthTable{{16, SF_FORMAT_PCM_16},
-                                                 {24, SF_FORMAT_PCM_24}};
-
-    auto depthIt = depthTable.find(bitDepth);
-    if (depthIt == depthTable.end()) {
-        stringstream ss;
-        ss << "Invalid bitdepth - valid bitdepths are: ";
-        for (const auto & i : depthTable)
-            ss << i.first << " ";
-        throw runtime_error(ss.str());
-    }
-    return depthIt->second;
-}
-
-enum class RenderType {
-    RECURSIVE_TETRAHEDRAL,
-    ITERATIVE_TETRAHEDRAL,
-    RECTANGULAR,
-};
-
-enum class InputType {
-    IMPULSE,
-    KERNEL,
-};
 
 int main(int argc, char ** argv) {
     Logger::restart();
     gflags::ParseCommandLineFlags(&argc, &argv, true);
 
-    if (argc != 3) {
-        Logger::log_err("expecting an input and an output filename");
+    if (argc != 4) {
+        Logger::log_err(
+            "expecting an input model, an input material file, and an output "
+            "filename");
         return EXIT_FAILURE;
     }
 
-    //  load from file argv[1]
-    //  save to file argv[2]
+    string model_file = argv[1];
+    string material_file = argv[2];
+    string output_file = argv[3];
 
-    auto speed_of_sound = 340.0;
-    auto divisions = 0.2;
-    auto sr = (speed_of_sound * sqrt(3)) / divisions;
-    auto attenuation_factor = 0.9995;
-#ifdef TESTING
-    auto inputType = InputType::IMPULSE;
-    auto steps = 100;
-#else
-    auto inputType = InputType::KERNEL;
-    auto steps = 1 << 13;
-#endif
-
-    string fname(argv[2]);
+    auto output_sr = 44100;
     auto bitDepth = 16;
 
     unsigned long format, depth;
 
     try {
-        format = get_file_format(fname);
+        format = get_file_format(output_file);
         depth = get_file_depth(bitDepth);
     } catch (const runtime_error & e) {
         Logger::log_err("critical runtime error: ", e.what());
         return EXIT_FAILURE;
     }
 
+    //  global params
+    auto speed_of_sound = 340.0;
+
+    auto max_freq = 500;
+    auto filter_freq = max_freq * 0.9;
+    auto sr = max_freq * 4;
+    auto divisions = (speed_of_sound * sqrt(3)) / sr;
+
     auto context = get_context();
     auto device = get_device(context);
     cl::CommandQueue queue(context, device);
 
+    auto num_rays = 1024 * 8;
+    auto num_impulses = 64;
+
+    vector<vector<float>> raytrace_results;
+    auto directions = getRandomDirections(num_rays);
+    cl_float3 source{{0, 2, 0}};
+    cl_float3 mic{{0, 2, 1}};
     try {
-        vector<float> input;
-        switch (inputType) {
-            case InputType::IMPULSE:
-                input = {1};
-                break;
-            case InputType::KERNEL:
-                input = lopass_kernel(sr, sr / 4, (1 << 7) - 1);
-                break;
-        }
+        auto program = get_program<RayverbProgram>(context, device);
+        Raytrace raytrace(
+            program, queue, num_impulses, model_file, material_file);
+        raytrace.raytrace(mic, source, directions);
+        auto results = raytrace.getAllRaw(false);
+        vector<Speaker> speakers{{Speaker{cl_float3{{0, 0, 0}}, 0}}};
+        auto attenuated =
+            Attenuate(program, queue).attenuate(results, speakers);
+        //        fixPredelay(attenuated);
 
-        vector<cl_float> results;
+        auto flattened = flattenImpulses(attenuated, output_sr);
+        raytrace_results = process(FILTER_TYPE_BIQUAD_ONEPASS,
+                                   flattened,
+                                   output_sr,
+                                   true,
+                                   true,
+                                   true,
+                                   1.0);
 
-        auto boundary = SceneData(argv[1]).get_mesh_boundary();
+        LinkwitzRiley hipass;
+        hipass.setParams(filter_freq, output_sr * 0.45, output_sr);
+        for (auto & i : raytrace_results)
+            hipass.filter(i);
+        normalize(raytrace_results);
 
-        auto renderType = RenderType::ITERATIVE_TETRAHEDRAL;
-        switch (renderType) {
-            case RenderType::RECURSIVE_TETRAHEDRAL: {
-                auto program = get_program<TetrahedralProgram>(context, device);
-                RecursiveTetrahedralWaveguide waveguide(
-                    program, queue, boundary, 0, divisions);
-                results = waveguide.run(input, 0, 0, attenuation_factor, steps);
-                break;
-            }
-
-            case RenderType::ITERATIVE_TETRAHEDRAL: {
-                auto program = get_program<TetrahedralProgram>(context, device);
-                IterativeTetrahedralWaveguide waveguide(
-                    program, queue, boundary, divisions);
-                results = waveguide.run(
-                    input, 30000, 30000, attenuation_factor, steps);
-                break;
-            }
-
-            case RenderType::RECTANGULAR: {
-                auto program = get_program<RectangularProgram>(context, device);
-                RectangularWaveguide waveguide(program, queue, {{64, 64, 64}});
-                results = waveguide.run(input,
-                                        waveguide.get_index({{20, 20, 20}}),
-                                        waveguide.get_index({{35, 40, 45}}),
-                                        attenuation_factor,
-                                        steps);
-                break;
-            }
-        }
-
-        normalize(results);
-        write_sndfile(fname, {results}, sr, depth, format);
+        write_sndfile("raytrace_" + output_file,
+                      raytrace_results,
+                      output_sr,
+                      depth,
+                      format);
     } catch (const cl::Error & e) {
         Logger::log_err("critical cl error: ", e.what());
         return EXIT_FAILURE;
     } catch (const runtime_error & e) {
         Logger::log_err("critical runtime error: ", e.what());
         return EXIT_FAILURE;
+    } catch (...) {
+        Logger::log_err("unknown error");
+        return EXIT_FAILURE;
     }
+
+    auto decay_frames = rt60(raytrace_results.front());
+    auto attenuation_factor = pow(db2a(-60), 1.0 / decay_frames);
+    Logger::log("attenuation factor: ", attenuation_factor);
+
+#ifdef TESTING
+    auto steps = 1 << 8;
+#else
+    auto steps = 1 << 13;
+#endif
+
+    vector<vector<cl_float>> waveguide_results;
+    try {
+        auto boundary = get_mesh_boundary(SceneData(model_file, material_file));
+
+        auto program = get_program<TetrahedralProgram>(context, device);
+        IterativeTetrahedralWaveguide waveguide(
+            program, queue, boundary, divisions);
+        auto source_index = waveguide.get_index_for_coordinate(convert(source));
+        auto mic_index = waveguide.get_index_for_coordinate(convert(mic));
+        Logger::log("index: ", index);
+        auto results = waveguide.run(source_index, mic_index, steps);
+
+        auto envelope = exponential_decay_envelope(steps, attenuation_factor);
+        elementwise_multiply(results, envelope);
+        normalize(results);
+
+        vector<float> out_signal(output_sr * results.size() / sr);
+
+        SRC_DATA sample_rate_info{results.data(),
+                                  out_signal.data(),
+                                  long(results.size()),
+                                  long(out_signal.size()),
+                                  0,
+                                  0,
+                                  0,
+                                  output_sr / double(sr)};
+
+        src_simple(&sample_rate_info, SRC_SINC_BEST_QUALITY, 1);
+
+        LinkwitzRiley lopass;
+        lopass.setParams(1, filter_freq, output_sr);
+        lopass.filter(out_signal);
+
+        normalize(out_signal);
+
+        waveguide_results = {out_signal};
+
+        write_sndfile("waveguide_" + output_file,
+                      waveguide_results,
+                      output_sr,
+                      depth,
+                      format);
+    } catch (const cl::Error & e) {
+        Logger::log_err("critical cl error: ", e.what());
+        return EXIT_FAILURE;
+    } catch (const runtime_error & e) {
+        Logger::log_err("critical runtime error: ", e.what());
+        return EXIT_FAILURE;
+    } catch (...) {
+        Logger::log_err("unknown error");
+        return EXIT_FAILURE;
+    }
+
+    auto max_index =
+        max(raytrace_results.front().size(), waveguide_results.front().size());
+    vector<float> summed_results(max_index, 0);
+    for (auto j = 0u; j != raytrace_results.size(); ++j) {
+        for (auto i = 0u; i != max_index; ++i) {
+            if (i < raytrace_results[j].size())
+                summed_results[i] += raytrace_results[j][i];
+            if (i < waveguide_results.size())
+                summed_results[i] += waveguide_results[j][i];
+        }
+    }
+    write_sndfile(
+        "summed_" + output_file, {summed_results}, output_sr, depth, format);
 
     return EXIT_SUCCESS;
 }

@@ -1,9 +1,7 @@
 #pragma once
 
-#include "rectangular_program.h"
 #include "tetrahedral_program.h"
 #include "iterative_tetrahedral_mesh.h"
-#include "recursive_tetrahedral.h"
 #include "cl_structs.h"
 #include "logger.h"
 
@@ -27,13 +25,9 @@ public:
                                sizeof(cl_float) * nodes),
                     cl::Buffer(program.template getInfo<CL_PROGRAM_CONTEXT>(),
                                CL_MEM_READ_WRITE,
-                               sizeof(cl_float) * nodes),
-                    cl::Buffer(program.template getInfo<CL_PROGRAM_CONTEXT>(),
-                               CL_MEM_READ_WRITE,
                                sizeof(cl_float) * nodes)}})
-            , previous(storage[0])
-            , current(storage[1])
-            , next(storage[2])
+            , previous(&storage[0])
+            , current(&storage[1])
             , output(program.template getInfo<CL_PROGRAM_CONTEXT>(),
                      CL_MEM_READ_WRITE,
                      sizeof(cl_float)) {
@@ -41,66 +35,51 @@ public:
 
     virtual ~Waveguide() noexcept = default;
 
-    virtual cl_float run_step(cl_float i,
-                              size_type e,
-                              size_type o,
-                              cl_float attenuation,
+    virtual cl_float run_step(size_type o,
                               cl::CommandQueue & queue,
                               kernel_type & kernel,
                               size_type nodes,
                               cl::Buffer & previous,
                               cl::Buffer & current,
-                              cl::Buffer & next,
                               cl::Buffer & output) = 0;
 
-    virtual std::vector<cl_float> run(std::vector<float> input,
-                                      size_type e,
+    virtual std::vector<cl_float> run(size_type e,
                                       size_type o,
-                                      cl_float attenuation,
                                       size_type steps) {
+        Logger::log("beginning simulation with: ", nodes, " nodes");
+
         std::vector<cl_float> n(nodes, 0);
-        cl::copy(queue, n.begin(), n.end(), next);
-        cl::copy(queue, n.begin(), n.end(), current);
-        cl::copy(queue, n.begin(), n.end(), previous);
+        cl::copy(queue, n.begin(), n.end(), *previous);
 
-        input.resize(steps, 0);
+        n[e] = 1;
+        cl::copy(queue, n.begin(), n.end(), *current);
 
-        std::vector<cl_float> ret(input.size());
+        std::vector<cl_float> ret(steps);
 
         auto counter = 0u;
-        std::transform(input.begin(),
-                       input.end(),
-                       ret.begin(),
-                       [this, &counter, &steps, &attenuation, &e, &o](auto i) {
-                           auto ret = this->run_step(i,
-                                                     e,
-                                                     o,
-                                                     attenuation,
-                                                     queue,
-                                                     kernel,
-                                                     nodes,
-                                                     previous,
-                                                     current,
-                                                     next,
-                                                     output);
-                           auto & temp = previous;
-                           previous = current;
-                           current = next;
-                           next = temp;
+        std::generate(
+            ret.begin(),
+            ret.end(),
+            [this, &counter, &steps, &o] {
+                auto ret = this->run_step(
+                    o, queue, kernel, nodes, *previous, *current, output);
 
-                           auto percent = counter * 100 / (steps - 1);
-                           std::cout << "\r" << percent << "% done"
-                                     << std::flush;
+                std::swap(current, previous);
 
-                           counter += 1;
+                auto percent = counter * 100 / (steps - 1);
+                std::cout << "\r" << percent << "% done" << std::flush;
 
-                           return ret;
-                       });
+                counter += 1;
+
+                return ret;
+            });
 
         std::cout << std::endl;
 
         return ret;
     }
+
+    virtual int get_index_for_coordinate(const Vec3f & v) const = 0;
 
     size_type get_nodes() const {
         return nodes;
@@ -111,38 +90,12 @@ private:
     kernel_type kernel;
     const size_type nodes;
 
-    std::array<cl::Buffer, 3> storage;
+    std::array<cl::Buffer, 2> storage;
 
-    cl::Buffer & previous;
-    cl::Buffer & current;
-    cl::Buffer & next;
+    cl::Buffer * previous;
+    cl::Buffer * current;
 
     cl::Buffer output;
-};
-
-class RectangularWaveguide : public Waveguide<RectangularProgram> {
-public:
-    RectangularWaveguide(const RectangularProgram & program,
-                         cl::CommandQueue & queue,
-                         cl_int3 p);
-    virtual ~RectangularWaveguide() noexcept = default;
-
-    cl_float run_step(cl_float i,
-                      size_type e,
-                      size_type o,
-                      cl_float attenuation,
-                      cl::CommandQueue & queue,
-                      kernel_type & kernel,
-                      size_type nodes,
-                      cl::Buffer & previous,
-                      cl::Buffer & current,
-                      cl::Buffer & next,
-                      cl::Buffer & output) override;
-
-    size_type get_index(cl_int3 pos) const;
-
-private:
-    const cl_int3 p;
 };
 
 class TetrahedralWaveguide : public Waveguide<TetrahedralProgram> {
@@ -152,31 +105,17 @@ public:
                          const std::vector<Node> & nodes);
     virtual ~TetrahedralWaveguide() noexcept = default;
 
-    cl_float run_step(cl_float i,
-                      size_type e,
-                      size_type o,
-                      cl_float attenuation,
+    cl_float run_step(size_type o,
                       cl::CommandQueue & queue,
                       kernel_type & kernel,
                       size_type nodes,
                       cl::Buffer & previous,
                       cl::Buffer & current,
-                      cl::Buffer & next,
                       cl::Buffer & output) override;
 
 private:
     std::vector<Node> nodes;
     cl::Buffer node_buffer;
-};
-
-class RecursiveTetrahedralWaveguide : public TetrahedralWaveguide {
-public:
-    RecursiveTetrahedralWaveguide(const TetrahedralProgram & program,
-                                  cl::CommandQueue & queue,
-                                  const Boundary & boundary,
-                                  Vec3f start,
-                                  float spacing);
-    virtual ~RecursiveTetrahedralWaveguide() noexcept = default;
 };
 
 class IterativeTetrahedralWaveguide : public TetrahedralWaveguide {
@@ -186,4 +125,12 @@ public:
                                   const Boundary & boundary,
                                   float cube_side);
     virtual ~IterativeTetrahedralWaveguide() noexcept = default;
+
+    int get_index_for_coordinate(const Vec3f & v) const override;
+
+private:
+    IterativeTetrahedralWaveguide(const TetrahedralProgram & program,
+                                  cl::CommandQueue & queue,
+                                  const IterativeTetrahedralMesh & mesh);
+    IterativeTetrahedralMesh mesh;
 };

@@ -1,6 +1,6 @@
 #include "boundaries.h"
-#include "logger.h"
 #include "test_flag.h"
+#include "logger.h"
 
 #include <cmath>
 #include <algorithm>
@@ -59,8 +59,8 @@ MeshBoundary::get_triangle_references() const {
                                         vector<reference_store>(DIVISIONS));
     for (auto i = 0u; i != triangles.size(); ++i) {
         const auto& t = triangles[i];
-        const auto bounding_box =
-            get_cuboid_boundary({vertices[t.x], vertices[t.y], vertices[t.z]});
+        const auto bounding_box = get_cuboid_boundary(
+            {vertices[t.v0], vertices[t.v1], vertices[t.v2]});
         const auto min_indices = hash_point(bounding_box.c0);
         const auto max_indices = hash_point(bounding_box.c1) + 1;
 
@@ -86,11 +86,11 @@ MeshBoundary::MeshBoundary(const vector<Triangle>& triangles,
     auto fname = build_string("./file-mesh.txt");
     ofstream file(fname);
     for (const auto& i : this->triangles) {
-        auto v0 = this->vertices[i.x];
+        auto v0 = this->vertices[i.v0];
         file << build_string(v0.x, " ", v0.y, " ", v0.z, " ");
-        auto v1 = this->vertices[i.y];
+        auto v1 = this->vertices[i.v1];
         file << build_string(v1.x, " ", v1.y, " ", v1.z, " ");
-        auto v2 = this->vertices[i.z];
+        auto v2 = this->vertices[i.v2];
         file << build_string(v2.x, " ", v2.y, " ", v2.z, " ");
         file << endl;
     }
@@ -165,9 +165,9 @@ Intersects triangle_intersection(const TriangleVerts& tri, const Ray& ray) {
 Intersects triangle_intersection(const Triangle& tri,
                                  const vector<Vec3f>& vertices,
                                  const Ray& ray) {
-    const auto v0 = vertices[tri.x];
-    const auto v1 = vertices[tri.y];
-    const auto v2 = vertices[tri.z];
+    const auto v0 = vertices[tri.v0];
+    const auto v1 = vertices[tri.v1];
+    const auto v2 = vertices[tri.v2];
     return triangle_intersection({{v0, v1, v2}}, ray);
 }
 

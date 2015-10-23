@@ -1,7 +1,11 @@
 cmake_minimum_required(VERSION 3.0)
 
 include_directories(
+    ${CMAKE_SOURCE_DIR}/include
+    ${CMAKE_SOURCE_DIR}/common
+    ${CMAKE_SOURCE_DIR}/rayverb
     ${CMAKE_SOURCE_DIR}/lib
+    "/usr/local/include"
 )
 
 set(name pwaveguide)
@@ -19,6 +23,8 @@ elseif(UNIX)
     set(frameworks ${opencl_library})
 endif()
 
-find_library(sndfile_library sndfile)
+find_library(sndfile_lib sndfile)
+find_library(samplerate_lib samplerate)
+find_library(gflags_lib gflags)
 
-target_link_libraries(${name} waveguide ${sndfile_library} ${frameworks} gflags)
+target_link_libraries(${name} waveguide rayverb ${sndfile_lib} ${samplerate_lib} ${frameworks} ${gflags_lib})
