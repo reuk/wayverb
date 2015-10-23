@@ -136,7 +136,7 @@ public:
     virtual void setParams(float co, float s);
 
 private:
-    static const auto KERNEL_LENGTH = 29;
+    static const auto KERNEL_LENGTH = 99;
     std::array<float, KERNEL_LENGTH> kernel;
 };
 
@@ -151,7 +151,7 @@ public:
     virtual void setParams(float co, float s);
 
 private:
-    static const auto KERNEL_LENGTH = 29;
+    static const auto KERNEL_LENGTH = 99;
     std::array<float, KERNEL_LENGTH> kernel;
 };
 
@@ -166,7 +166,7 @@ public:
     virtual void setParams(float l, float h, float s);
 
 private:
-    static const auto KERNEL_LENGTH = 29;
+    static const auto KERNEL_LENGTH = 99;
 
     /// Fetch a convolution kernel for a bandpass filter with the given
     /// paramters.

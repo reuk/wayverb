@@ -13,6 +13,8 @@ TODO
     * look into better envelope models
     * starting with better attenuation coefficients for the current method
 
+* find source of weird raytracer reverb tail
+
 Once I have my mac back:
 ========================
 

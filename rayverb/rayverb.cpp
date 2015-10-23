@@ -58,8 +58,8 @@ vector<vector<float>> flattenImpulses(const vector<AttenuatedImpulse> & impulse,
     //  For each impulse, calculate its index, then add the impulse's volumes
     //  to the volumes already in the output array.
     for (const auto & i : impulse) {
-        if (i.time < MAX_TIME_LIMIT) {
-            const auto SAMPLE = round(i.time * samplerate);
+        const auto SAMPLE = round(i.time * samplerate);
+        if (SAMPLE < MAX_SAMPLE) {
             for (auto j = 0u; j != flattened.size(); ++j) {
                 flattened[j][SAMPLE] += i.volume.s[j];
             }
@@ -276,12 +276,14 @@ void Raytrace::raytrace(const cl_float3 & micpos,
                  cl_directions);
 
         //  zero out impulse storage memory
-        vector<Impulse> diffuse(RAY_GROUP_SIZE * nreflections,
-                                (Impulse){{{0}}});
+        vector<Impulse> diffuse(
+            RAY_GROUP_SIZE * nreflections,
+            Impulse{{{0, 0, 0, 0, 0, 0, 0, 0}}, {{0, 0, 0}}, 0});
         cl::copy(queue, begin(diffuse), end(diffuse), cl_impulses);
 
-        vector<Impulse> image(RAY_GROUP_SIZE * NUM_IMAGE_SOURCE,
-                              (Impulse){{{0}}});
+        vector<Impulse> image(
+            RAY_GROUP_SIZE * NUM_IMAGE_SOURCE,
+            Impulse{{{0, 0, 0, 0, 0, 0, 0, 0}}, {{0, 0, 0}}, 0});
         cl::copy(queue, begin(image), end(image), cl_image_source);
 
         vector<unsigned long> image_source_index(
@@ -452,6 +454,7 @@ vector<AttenuatedImpulse> Hrtf::attenuate(const cl_float3 & mic_pos,
 
     //  copy to output
     cl::copy(queue, cl_out, ret.begin(), ret.end());
+
     return ret;
 }
 
@@ -484,9 +487,13 @@ vector<AttenuatedImpulse> Attenuate::attenuate(
     //  init buffers
     cl_in = cl::Buffer(
         context, CL_MEM_READ_WRITE, impulses.size() * sizeof(Impulse));
+
     cl_out = cl::Buffer(context,
                         CL_MEM_READ_WRITE,
                         impulses.size() * sizeof(AttenuatedImpulse));
+    std::vector<AttenuatedImpulse> zero(
+        impulses.size(), AttenuatedImpulse{{{0, 0, 0, 0, 0, 0, 0, 0}}, 0});
+    cl::copy(queue, zero.begin(), zero.end(), cl_out);
 
     //  copy input data to buffer
     cl::copy(queue, impulses.begin(), impulses.end(), cl_in);
@@ -503,5 +510,6 @@ vector<AttenuatedImpulse> Attenuate::attenuate(
 
     //  copy from buffer to output
     cl::copy(queue, cl_out, ret.begin(), ret.end());
+
     return ret;
 }
