@@ -24,6 +24,7 @@ public:
 
     size_type get_index(const Locator & locator) const;
     Locator get_locator(size_type index) const;
+    Locator get_locator(const Vec3f & position) const;
     Vec3f get_position(const Locator & locator) const;
     std::array<int, PORTS> get_neighbors(size_type index) const;
 

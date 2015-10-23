@@ -77,8 +77,19 @@ IterativeTetrahedralWaveguide::IterativeTetrahedralWaveguide(
     cl::CommandQueue & queue,
     const Boundary & boundary,
     float cube_side)
-        : TetrahedralWaveguide(
-              program,
-              queue,
-              IterativeTetrahedralMesh(boundary, cube_side).nodes) {
+        : IterativeTetrahedralWaveguide(
+              program, queue, IterativeTetrahedralMesh(boundary, cube_side)) {
+}
+
+IterativeTetrahedralWaveguide::IterativeTetrahedralWaveguide(
+    const TetrahedralProgram & program,
+    cl::CommandQueue & queue,
+    const IterativeTetrahedralMesh & mesh)
+        : TetrahedralWaveguide(program, queue, mesh.nodes)
+        , mesh(mesh) {
+}
+
+int IterativeTetrahedralWaveguide::get_index_for_coordinate(
+    const Vec3f & v) const {
+    return mesh.get_index(mesh.get_locator(v));
 }

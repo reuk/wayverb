@@ -5,6 +5,7 @@
 #include "logger.h"
 
 #include <algorithm>
+#include <numeric>
 
 using namespace std;
 
@@ -81,6 +82,29 @@ IterativeTetrahedralMesh::Locator IterativeTetrahedralMesh::get_locator(
     auto z = div(y.quot, dim.z);
     return IterativeTetrahedralMesh::Locator(Vec3i(x.rem, y.rem, z.rem),
                                              mod_ind.rem);
+}
+
+IterativeTetrahedralMesh::Locator IterativeTetrahedralMesh::get_locator(
+    const Vec3f & v) const {
+    auto transformed = v - boundary.c0;
+    Vec3i cube_pos =
+        (transformed / cube_side).map([](auto i) -> int { return i; });
+    Vec3f difference = (transformed - (cube_pos * cube_side));
+
+    std::vector<int> indices(scaled_cube.size());
+    iota(indices.begin(), indices.end(), 0);
+    auto closest =
+        std::accumulate(indices.begin() + 1,
+                        indices.end(),
+                        indices.front(),
+                        [this, difference](auto i, auto j) {
+                            return (scaled_cube[i] - difference).mag() <
+                                           (scaled_cube[j] - difference).mag()
+                                       ? i
+                                       : j;
+                        });
+
+    return Locator(cube_pos, closest);
 }
 
 Vec3f IterativeTetrahedralMesh::get_position(const Locator & locator) const {

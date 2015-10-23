@@ -24,8 +24,8 @@ void attemptJsonParse(const string & fname, Document & doc) {
 
 SurfaceLoader::SurfaceLoader(const string & fpath) {
     Surface defaultSurface{
-        VolumeType({0.92, 0.92, 0.93, 0.93, 0.94, 0.95, 0.95, 0.95}),
-        VolumeType({0.50, 0.90, 0.95, 0.95, 0.95, 0.95, 0.95, 0.95})};
+        VolumeType({{0.92, 0.92, 0.93, 0.93, 0.94, 0.95, 0.95, 0.95}}),
+        VolumeType({{0.50, 0.90, 0.95, 0.95, 0.95, 0.95, 0.95, 0.95}})};
 
     add_surface("default", defaultSurface);
 

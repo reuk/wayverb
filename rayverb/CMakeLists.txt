@@ -23,4 +23,4 @@ endif()
 find_library(assimp_library assimp)
 find_library(fftw3f_library fftw3f)
 
-target_link_libraries(${name} rayverb ${assimp_library} z ${fftw3f_library} ${frameworks})
+target_link_libraries(rayverb ${assimp_library} z ${fftw3f_library} ${frameworks})

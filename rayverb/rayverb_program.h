@@ -7,8 +7,7 @@
 
 class RayverbProgram : public cl::Program {
 public:
-    RayverbProgram(const cl::Context & context,
-                       bool build_immediate = false);
+    RayverbProgram(const cl::Context & context, bool build_immediate = false);
 
     auto get_raytrace_kernel() const {
         return cl::make_kernel<cl::Buffer,
@@ -26,10 +25,8 @@ public:
     }
 
     auto get_attenuate_kernel() const {
-        return cl::make_kernel<cl_float3,
-                               cl::Buffer,
-                               cl::Buffer,
-                               Speaker>(*this, "attenuate");
+        return cl::make_kernel<cl_float3, cl::Buffer, cl::Buffer, Speaker>(
+            *this, "attenuate");
     }
 
     auto get_hrtf_kernel() const {

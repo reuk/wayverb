@@ -1,12 +1,22 @@
 #include "rayverb_program.h"
+#include "test_flag.h"
 
-const std::string RayverbProgram::source (
-#ifdef DIAGNOSTIC
-"#define DIAGNOSTIC\n"
+RayverbProgram::RayverbProgram(const cl::Context & context,
+                               bool build_immediate)
+        : Program(context, source, build_immediate) {
+}
+
+const std::string RayverbProgram::source(
+#ifdef TESTING
+    "#define TESTING\n"
 #endif
-"#define NUM_IMAGE_SOURCE " + std::to_string (NUM_IMAGE_SOURCE) + "\n"
-"#define SPEED_OF_SOUND " + std::to_string (SPEED_OF_SOUND) + "\n"
-R"(
+    "#define NUM_IMAGE_SOURCE " +
+    std::to_string(NUM_IMAGE_SOURCE) +
+    "\n"
+    "#define SPEED_OF_SOUND " +
+    std::to_string(SPEED_OF_SOUND) +
+    "\n"
+    R"(
 
 #define EPSILON (0.0001f)
 #define NULL (0)

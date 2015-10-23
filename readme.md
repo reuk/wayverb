@@ -19,6 +19,7 @@ Once I have my mac back:
 * look into sample rate conversion
     * think about ring direction (shouldn't ring both ways!)
         * github.com/AlexHarker/M4L_Convolution_Reverb_Externals/bufresample.c
+    * test libsamplerate
 
 * for next fortnight
     * listen to something

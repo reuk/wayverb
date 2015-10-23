@@ -86,11 +86,11 @@ MeshBoundary::MeshBoundary(const vector<Triangle>& triangles,
     auto fname = build_string("./file-mesh.txt");
     ofstream file(fname);
     for (const auto& i : this->triangles) {
-        auto v0 = this->vertices[i.x];
+        auto v0 = this->vertices[i.v0];
         file << build_string(v0.x, " ", v0.y, " ", v0.z, " ");
-        auto v1 = this->vertices[i.y];
+        auto v1 = this->vertices[i.v1];
         file << build_string(v1.x, " ", v1.y, " ", v1.z, " ");
-        auto v2 = this->vertices[i.z];
+        auto v2 = this->vertices[i.v2];
         file << build_string(v2.x, " ", v2.y, " ", v2.z, " ");
         file << endl;
     }

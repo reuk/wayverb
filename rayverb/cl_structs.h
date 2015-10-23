@@ -14,20 +14,20 @@
 
 /// An impulse contains a volume, a time in seconds, and the direction from
 /// which it came (useful for attenuation/hrtf stuff).
-typedef struct  {
+typedef struct {
     VolumeType volume;
     cl_float3 position;
     cl_float time;
-} __attribute__ ((aligned(8))) Impulse;
+} __attribute__((aligned(8))) Impulse;
 
-typedef struct  {
+typedef struct {
     VolumeType volume;
     cl_float time;
-} __attribute__ ((aligned(8))) AttenuatedImpulse;
+} __attribute__((aligned(8))) AttenuatedImpulse;
 
 /// Each speaker has a (normalized-unit) direction, and a coefficient in the
 /// range 0-1 which describes its polar pattern from omni to bidirectional.
-typedef struct  {
+typedef struct {
     cl_float3 direction;
     cl_float coefficient;
-} __attribute__ ((aligned(8))) Speaker;
+} __attribute__((aligned(8))) Speaker;

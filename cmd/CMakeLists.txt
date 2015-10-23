@@ -27,4 +27,4 @@ find_library(sndfile_lib sndfile)
 find_library(samplerate_lib samplerate)
 find_library(gflags_lib gflags)
 
-target_link_libraries(${name} waveguide ${sndfile_lib} ${samplerate_lib} ${frameworks} ${gflags_lib})
+target_link_libraries(${name} waveguide rayverb ${sndfile_lib} ${samplerate_lib} ${frameworks} ${gflags_lib})

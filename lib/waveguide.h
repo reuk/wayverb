@@ -79,6 +79,8 @@ public:
         return ret;
     }
 
+    virtual int get_index_for_coordinate(const Vec3f & v) const = 0;
+
     size_type get_nodes() const {
         return nodes;
     }
@@ -123,4 +125,12 @@ public:
                                   const Boundary & boundary,
                                   float cube_side);
     virtual ~IterativeTetrahedralWaveguide() noexcept = default;
+
+    int get_index_for_coordinate(const Vec3f & v) const override;
+
+private:
+    IterativeTetrahedralWaveguide(const TetrahedralProgram & program,
+                                  cl::CommandQueue & queue,
+                                  const IterativeTetrahedralMesh & mesh);
+    IterativeTetrahedralMesh mesh;
 };
