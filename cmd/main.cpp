@@ -164,7 +164,7 @@ int main(int argc, char ** argv) {
             program, queue, num_impulses, model_file, material_file);
         raytrace.raytrace(mic, source, directions);
         auto results = raytrace.getAllRaw(false);
-        vector<Speaker> speakers{{Speaker{cl_float3{{0, 0, 0}}, 0}}};
+        vector<Speaker> speakers{Speaker{cl_float3{{0, 0, 0}}, 0}};
         auto attenuated =
             Attenuate(program, queue).attenuate(results, speakers);
         //        fixPredelay(attenuated);

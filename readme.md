@@ -1,11 +1,8 @@
 TODO
 ====
 
-* conversion of spatial coordinates to input node
 * sort out boundary conditions
 * work out how to do mic modelling or hrtf (multichannel)
-* try to merge the raytracer + waveguide
-    * or even just try mixing with logic + EQs
 
 * look into the Helmholtz equation
 
@@ -15,19 +12,10 @@ TODO
 
 * find source of weird raytracer reverb tail
 
-Once I have my mac back:
-========================
-
 * look into sample rate conversion
     * think about ring direction (shouldn't ring both ways!)
         * github.com/AlexHarker/M4L_Convolution_Reverb_Externals/bufresample.c
     * test libsamplerate
-
-* for next fortnight
-    * listen to something
-    * some way of listening to the two models together
-        * move scenedata to common
-        * move cl_common OUT of common
 
 MAYBE
 =====

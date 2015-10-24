@@ -2,19 +2,16 @@
 
 #include <sstream>
 
-template <typename T>
-void build_string(std::stringstream &ss, T &&t) {
-    ss << t;
-}
+inline void build_string(std::stringstream &ss) { }
 
 template <typename T, typename... Ts>
-void build_string(std::stringstream &ss, T &&t, Ts... ts) {
+void build_string(std::stringstream &ss, const T &t, const Ts&... ts) {
     ss << t;
     build_string(ss, ts...);
 }
 
 template <typename... Ts>
-std::string build_string(Ts &&... ts) {
+std::string build_string(const Ts &... ts) {
     std::stringstream ss;
     build_string(ss, ts...);
     return ss.str();
