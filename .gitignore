@@ -2,5 +2,7 @@
 /build
 /Testing
 /reference
+/demo/impulses
+/demo/logfile.txt
 
 *.swp

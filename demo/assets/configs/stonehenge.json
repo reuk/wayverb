@@ -1,0 +1,18 @@
+{
+    "source_position": [0, 2, 0],
+    "mic_position": [0, 2, 10],
+    "rays": 100000,
+    "reflections": 64,
+    "sample_rate": 44100,
+    "bit_depth": 24,
+    "attenuation_model":
+    {   "speakers":
+        [   {   "direction": [-1, 0, 1], "shape": 0.5}
+        ,   {   "direction": [1, 0, 1], "shape": 0.5}
+        ]
+    },
+    "filter": "twopass",
+    "hipass": false,
+    "trim_predelay": true,
+    "output_mode": "all"
+}

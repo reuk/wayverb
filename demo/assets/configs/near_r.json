@@ -1,0 +1,18 @@
+{
+    "source_position": [2, 1, 0],
+    "mic_position": [0, 1, 2],
+    "rays": 50000,
+    "reflections": 128,
+    "sample_rate": 44100,
+    "bit_depth": 24,
+    "attenuation_model":
+    {   "speakers":
+        [   {   "direction": [-1, 0, -1], "shape": 0.5}
+        ,   {   "direction": [ 1, 0, -1], "shape": 0.5}
+        ]
+    },
+    "filter": "linkwitz_riley",
+    "trim_predelay": true,
+    "trim_tail": true,
+    "output_mode": "all"
+}

@@ -31,6 +31,7 @@
 #include <map>
 
 using namespace std;
+using namespace rapidjson;
 
 // -1 <= z <= 1, -pi <= theta <= pi
 cl_float3 spherePoint(float z, float theta) {
@@ -115,25 +116,26 @@ int main(int argc, char ** argv) {
     Logger::restart();
     gflags::ParseCommandLineFlags(&argc, &argv, true);
 
-    if (argc != 4) {
+    if (argc != 5) {
         Logger::log_err(
-            "expecting an input model, an input material file, and an output "
-            "filename");
+            "expecting a config file, an input model, an input material file, "
+            "and an output filename");
         return EXIT_FAILURE;
     }
 
-    string model_file = argv[1];
-    string material_file = argv[2];
-    string output_file = argv[3];
+    string config_file = argv[1];
+    string model_file = argv[2];
+    string material_file = argv[3];
+    string output_file = argv[4];
 
     auto output_sr = 44100;
-    auto bitDepth = 16;
+    auto bit_depth = 16;
 
     unsigned long format, depth;
 
     try {
         format = get_file_format(output_file);
-        depth = get_file_depth(bitDepth);
+        depth = get_file_depth(bit_depth);
     } catch (const runtime_error & e) {
         Logger::log_err("critical runtime error: ", e.what());
         return EXIT_FAILURE;
@@ -153,10 +155,56 @@ int main(int argc, char ** argv) {
 
     auto num_rays = 1024 * 32;
     auto num_impulses = 64;
+    auto ray_hipass = 45.0;
+    auto do_normalize = true;
+    auto trim_predelay = false;
+    auto trim_tail = false;
+    auto remove_direct = false;
+    auto volume_scale = 1.0;
 
     auto directions = getRandomDirections(num_rays);
     cl_float3 source{{0, 2, 0}};
     cl_float3 mic{{0, 2, 5}};
+
+    Document document;
+    attemptJsonParse (config_file, document);
+
+    if (document.HasParseError())
+    {
+        cerr << "Encountered error while parsing config file:" << endl;
+        cerr << GetParseError_En (document.GetParseError()) << endl;
+        exit (1);
+    }
+
+    if (! document.IsObject())
+    {
+        cerr << "Rayverb config must be stored in a JSON object" << endl;
+        exit (1);
+    }
+
+
+    ConfigValidator cv;
+
+    cv.addRequiredValidator("rays", num_rays);
+    cv.addRequiredValidator("reflections", num_impulses);
+    cv.addRequiredValidator("sample_rate", output_sr);
+    cv.addRequiredValidator("bit_depth", bit_depth);
+    cv.addRequiredValidator("source_position", source);
+    cv.addRequiredValidator("mic_position", mic);
+
+    cv.addOptionalValidator("hipass", ray_hipass);
+    cv.addOptionalValidator("normalize", do_normalize);
+    cv.addOptionalValidator("volumme_scale", volume_scale);
+    cv.addOptionalValidator("trim_predelay", trim_predelay);
+    cv.addOptionalValidator("remove_direct", remove_direct);
+    cv.addOptionalValidator("trim_tail", trim_tail);
+
+    try {
+        cv.run(document);
+    } catch (...) {
+        Logger::log_err("error reading config file");
+        return EXIT_FAILURE;
+    }
 
     try {
         SceneData scene_data(model_file, material_file);
@@ -190,12 +238,12 @@ int main(int argc, char ** argv) {
                                         flattened,
                                         output_sr,
                                         true,
-                                        true,
+                                        ray_hipass,
                                         true,
                                         1.0);
         normalize(raytrace_results);
 
-        write_sndfile("raytrace_full_" + output_file,
+        write_sndfile(output_file + ".raytrace.full.wav",
                       raytrace_results,
                       output_sr,
                       depth,
@@ -207,7 +255,7 @@ int main(int argc, char ** argv) {
             hipass.filter(i);
         normalize(raytrace_results);
 
-        write_sndfile("raytrace_hipass_" + output_file,
+        write_sndfile(output_file + ".raytrace.hipass.wav",
                       raytrace_results,
                       output_sr,
                       depth,
@@ -246,7 +294,7 @@ int main(int argc, char ** argv) {
             exponential_decay_envelope(out_signal.size(), attenuation_factor);
         elementwise_multiply(out_signal, envelope);
 
-        write_sndfile("waveguide_full_" + output_file,
+        write_sndfile(output_file + ".waveguide.full.wav",
                       {out_signal},
                       output_sr,
                       depth,
@@ -260,7 +308,7 @@ int main(int argc, char ** argv) {
 
         vector<vector<float>> waveguide_results = {out_signal};
 
-        write_sndfile("waveguide_lopass_" + output_file,
+        write_sndfile(output_file + ".waveguide.lopass.wav",
                       waveguide_results,
                       output_sr,
                       depth,
@@ -280,7 +328,7 @@ int main(int argc, char ** argv) {
                     waveguide_amp * waveguide_results.front()[i];
         }
         normalize(summed_results);
-        write_sndfile("summed_" + output_file,
+        write_sndfile(output_file + ".summed.wav",
                       {summed_results},
                       output_sr,
                       depth,

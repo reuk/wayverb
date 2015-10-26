@@ -10,6 +10,10 @@
 #include "assimp/postprocess.h"
 #include "assimp/scene.h"
 
+#include "rapidjson/rapidjson.h"
+#include "rapidjson/error/en.h"
+#include "rapidjson/document.h"
+
 #include <vector>
 #include <map>
 
@@ -80,3 +84,5 @@ struct JsonGetter<Surface> {
     }
     Surface & t;
 };
+
+void attemptJsonParse(const std::string & fname, rapidjson::Document & doc);

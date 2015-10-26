@@ -1,0 +1,15 @@
+{
+    "source_position": [0, -50, 20],
+    "mic_position": [-5, -125, 25],
+    "rays": 32768,
+    "reflections": 128,
+    "sample_rate": 44100,
+    "bit_depth": 24,
+    "attenuation_model":
+    {   "hrtf": {"facing": [5, 75, -5], "up": [0, 1, 0]}
+    },
+    "filter": "twopass",
+    "hipass": false,
+    "trim_predelay": true,
+    "output_mode": "all"
+}
