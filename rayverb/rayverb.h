@@ -238,6 +238,11 @@ public:
              const std::string & objpath,
              const std::string & materialFileName);
 
+    Raytrace(const RayverbProgram & program,
+             cl::CommandQueue & queue,
+             unsigned long nreflections,
+             SceneData sceneData);
+
     virtual ~Raytrace() noexcept = default;
 
     /// Run the raytrace with a specific mic, source, and set of directions.
@@ -272,11 +277,6 @@ private:
     std::pair<cl_float3, cl_float3> bounds;
 
     cl_float3 storedMicpos;
-
-    Raytrace(const RayverbProgram & program,
-             cl::CommandQueue & queue,
-             unsigned long nreflections,
-             SceneData sceneData);
 
     static const auto RAY_GROUP_SIZE = 4096u;
 

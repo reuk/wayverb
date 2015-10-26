@@ -4,6 +4,7 @@
 #include "iterative_tetrahedral_mesh.h"
 #include "cl_structs.h"
 #include "logger.h"
+#include "conversions.h"
 
 #include <array>
 #include <type_traits>
@@ -12,6 +13,40 @@
 template <typename T>
 class Waveguide {
 public:
+    struct PowerFunction {
+        virtual float operator()(const Vec3f & a, const Vec3f & b) const = 0;
+    };
+
+    struct BasicPowerFunction : public PowerFunction {
+        float operator()(const Vec3f & a, const Vec3f & b) const override {
+            return (a == b).all() ? 1 : 0;
+        }
+    };
+
+    struct InversePowerFunction : public PowerFunction {
+        InversePowerFunction(float power)
+                : power(power) {
+        }
+
+        float operator()(const Vec3f & a, const Vec3f & b) const override {
+            return power / (a - b).mag();
+        }
+
+        const float power;
+    };
+
+    struct InverseSquarePowerFunction : public PowerFunction {
+        InverseSquarePowerFunction(float power)
+                : power(power) {
+        }
+
+        float operator()(const Vec3f & a, const Vec3f & b) const override {
+            return power / (a - b).mag_squared();
+        }
+
+        const float power;
+    };
+
     using size_type = std::vector<cl_float>::size_type;
     using kernel_type = decltype(std::declval<T>().get_kernel());
 
@@ -43,15 +78,39 @@ public:
                               cl::Buffer & current,
                               cl::Buffer & output) = 0;
 
-    virtual std::vector<cl_float> run(size_type e,
-                                      size_type o,
-                                      size_type steps) {
+    virtual size_type get_index_for_coordinate(const Vec3f & v) const = 0;
+    virtual Vec3f get_coordinate_for_index(size_type index) const = 0;
+
+    size_type get_nodes() const {
+        return nodes;
+    }
+
+    std::vector<cl_float> initialise_mesh(const PowerFunction & u,
+                                          const Vec3f & excitation) {
+        std::vector<size_type> indices(nodes);
+        std::iota(indices.begin(), indices.end(), 0);
+
+        std::vector<cl_float> ret(nodes);
+        std::transform(indices.begin(),
+                       indices.end(),
+                       ret.begin(),
+                       [this, &u, &excitation](auto i) {
+                           return u(this->get_coordinate_for_index(i),
+                                    excitation);
+                       });
+        return ret;
+    }
+
+    std::vector<cl_float> run(const Vec3f & e,
+                              const PowerFunction & u,
+                              size_type o,
+                              size_type steps) {
         Logger::log("beginning simulation with: ", nodes, " nodes");
 
         std::vector<cl_float> n(nodes, 0);
         cl::copy(queue, n.begin(), n.end(), *previous);
 
-        n[e] = 1;
+        n = initialise_mesh(u, e);
         cl::copy(queue, n.begin(), n.end(), *current);
 
         std::vector<cl_float> ret(steps);
@@ -79,10 +138,26 @@ public:
         return ret;
     }
 
-    virtual int get_index_for_coordinate(const Vec3f & v) const = 0;
+    std::vector<cl_float> run_basic(const Vec3f & e,
+                                    size_type o,
+                                    size_type steps) {
+        auto estimated_source_index = get_index_for_coordinate(e);
+        auto source_position = get_coordinate_for_index(estimated_source_index);
+        return run(source_position, BasicPowerFunction(), o, steps);
+    }
 
-    size_type get_nodes() const {
-        return nodes;
+    std::vector<cl_float> run_inverse(const Vec3f & e,
+                                      float power,
+                                      size_type o,
+                                      size_type steps) {
+        return run(e, InversePowerFunction(power), o, steps);
+    }
+
+    std::vector<cl_float> run_inverse_square(const Vec3f & e,
+                                             float power,
+                                             size_type o,
+                                             size_type steps) {
+        return run(e, InverseSquarePowerFunction(power), o, steps);
     }
 
 private:
@@ -126,7 +201,8 @@ public:
                                   float cube_side);
     virtual ~IterativeTetrahedralWaveguide() noexcept = default;
 
-    int get_index_for_coordinate(const Vec3f & v) const override;
+    size_type get_index_for_coordinate(const Vec3f & v) const override;
+    Vec3f get_coordinate_for_index(size_type index) const override;
 
 private:
     IterativeTetrahedralWaveguide(const TetrahedralProgram & program,

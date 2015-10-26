@@ -1,6 +1,10 @@
 TODO
 ====
 
+* work plan
+
+* raytracer + waveguide alignment
+
 * sort out boundary conditions
 * work out how to do mic modelling or hrtf (multichannel)
 
@@ -10,12 +14,22 @@ TODO
     * look into better envelope models
     * starting with better attenuation coefficients for the current method
 
-* find source of weird raytracer reverb tail
-
 * look into sample rate conversion
     * think about ring direction (shouldn't ring both ways!)
         * github.com/AlexHarker/M4L_Convolution_Reverb_Externals/bufresample.c
     * test libsamplerate
+
+* interpolate initial impulse position
+
+CRITICAL
+========
+
+* generate 10 to 20 example outputs
+    * different waveguide spacings
+    * different filter frequencies
+    * different models
+    * mono/stereo
+    * different input position interpolation methods
 
 MAYBE
 =====

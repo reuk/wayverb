@@ -1,5 +1,6 @@
 #include "waveguide.h"
 #include "test_flag.h"
+#include "conversions.h"
 
 #include <iostream>
 #include <algorithm>
@@ -89,7 +90,12 @@ IterativeTetrahedralWaveguide::IterativeTetrahedralWaveguide(
         , mesh(mesh) {
 }
 
-int IterativeTetrahedralWaveguide::get_index_for_coordinate(
-    const Vec3f & v) const {
+IterativeTetrahedralWaveguide::size_type
+IterativeTetrahedralWaveguide::get_index_for_coordinate(const Vec3f & v) const {
     return mesh.get_index(mesh.get_locator(v));
+}
+
+Vec3f IterativeTetrahedralWaveguide::get_coordinate_for_index(
+    size_type index) const {
+    return convert(mesh.nodes[index].position);
 }

@@ -142,8 +142,8 @@ int main(int argc, char ** argv) {
     //  global params
     auto speed_of_sound = 340.0;
 
-    auto max_freq = 500;
-    auto filter_freq = max_freq * 0.9;
+    auto max_freq = 1000;
+    auto filter_freq = max_freq * 0.5;
     auto sr = max_freq * 4;
     auto divisions = (speed_of_sound * sqrt(3)) / sr;
 
@@ -151,32 +151,55 @@ int main(int argc, char ** argv) {
     auto device = get_device(context);
     cl::CommandQueue queue(context, device);
 
-    auto num_rays = 1024 * 8;
+    auto num_rays = 1024 * 32;
     auto num_impulses = 64;
 
-    vector<vector<float>> raytrace_results;
     auto directions = getRandomDirections(num_rays);
     cl_float3 source{{0, 2, 0}};
-    cl_float3 mic{{0, 2, 1}};
+    cl_float3 mic{{0, 2, 5}};
+
     try {
-        auto program = get_program<RayverbProgram>(context, device);
-        Raytrace raytrace(
-            program, queue, num_impulses, model_file, material_file);
-        raytrace.raytrace(mic, source, directions);
+        SceneData scene_data(model_file, material_file);
+
+        auto boundary = get_mesh_boundary(scene_data);
+        auto waveguide_program =
+            get_program<TetrahedralProgram>(context, device);
+        IterativeTetrahedralWaveguide waveguide(
+            waveguide_program, queue, boundary, divisions);
+        auto mic_index = waveguide.get_index_for_coordinate(convert(mic));
+        auto source_index = waveguide.get_index_for_coordinate(convert(source));
+
+        auto corrected_mic = waveguide.get_coordinate_for_index(mic_index);
+        auto corrected_source =
+            waveguide.get_coordinate_for_index(source_index);
+
+        auto raytrace_program = get_program<RayverbProgram>(context, device);
+        Raytrace raytrace(raytrace_program, queue, num_impulses, scene_data);
+        raytrace.raytrace(
+            convert(corrected_mic), convert(corrected_source), directions);
         auto results = raytrace.getAllRaw(false);
         vector<Speaker> speakers{Speaker{cl_float3{{0, 0, 0}}, 0}};
         auto attenuated =
-            Attenuate(program, queue).attenuate(results, speakers);
-        //        fixPredelay(attenuated);
+            Attenuate(raytrace_program, queue).attenuate(results, speakers);
+
+        //  TODO ensure outputs are properly aligned
+        //  fixPredelay(attenuated);
 
         auto flattened = flattenImpulses(attenuated, output_sr);
-        raytrace_results = process(FILTER_TYPE_BIQUAD_ONEPASS,
-                                   flattened,
-                                   output_sr,
-                                   true,
-                                   true,
-                                   true,
-                                   1.0);
+        auto raytrace_results = process(FILTER_TYPE_BIQUAD_ONEPASS,
+                                        flattened,
+                                        output_sr,
+                                        true,
+                                        true,
+                                        true,
+                                        1.0);
+        normalize(raytrace_results);
+
+        write_sndfile("raytrace_full_" + output_file,
+                      raytrace_results,
+                      output_sr,
+                      depth,
+                      format);
 
         LinkwitzRiley hipass;
         hipass.setParams(filter_freq, output_sr * 0.45, output_sr);
@@ -184,53 +207,33 @@ int main(int argc, char ** argv) {
             hipass.filter(i);
         normalize(raytrace_results);
 
-        write_sndfile("raytrace_" + output_file,
+        write_sndfile("raytrace_hipass_" + output_file,
                       raytrace_results,
                       output_sr,
                       depth,
                       format);
-    } catch (const cl::Error & e) {
-        Logger::log_err("critical cl error: ", e.what());
-        return EXIT_FAILURE;
-    } catch (const runtime_error & e) {
-        Logger::log_err("critical runtime error: ", e.what());
-        return EXIT_FAILURE;
-    } catch (...) {
-        Logger::log_err("unknown error");
-        return EXIT_FAILURE;
-    }
 
-    auto decay_frames = rt60(raytrace_results.front());
-    auto attenuation_factor = pow(db2a(-60), 1.0 / decay_frames);
-    Logger::log("attenuation factor: ", attenuation_factor);
+        auto decay_frames = rt60(raytrace_results.front());
+        auto attenuation_factor = pow(db2a(-60), 1.0 / decay_frames);
+        attenuation_factor = sqrt(attenuation_factor);
+        Logger::log("attenuation factor: ", attenuation_factor);
 
 #ifdef TESTING
-    auto steps = 1 << 8;
+        auto steps = 1 << 8;
 #else
-    auto steps = 1 << 13;
+        auto steps = 1 << 13;
 #endif
 
-    vector<vector<cl_float>> waveguide_results;
-    try {
-        auto boundary = get_mesh_boundary(SceneData(model_file, material_file));
+        auto w_results =
+            waveguide.run_basic(corrected_source, mic_index, steps);
 
-        auto program = get_program<TetrahedralProgram>(context, device);
-        IterativeTetrahedralWaveguide waveguide(
-            program, queue, boundary, divisions);
-        auto source_index = waveguide.get_index_for_coordinate(convert(source));
-        auto mic_index = waveguide.get_index_for_coordinate(convert(mic));
-        Logger::log("index: ", index);
-        auto results = waveguide.run(source_index, mic_index, steps);
+        normalize(w_results);
 
-        auto envelope = exponential_decay_envelope(steps, attenuation_factor);
-        elementwise_multiply(results, envelope);
-        normalize(results);
+        vector<float> out_signal(output_sr * w_results.size() / sr);
 
-        vector<float> out_signal(output_sr * results.size() / sr);
-
-        SRC_DATA sample_rate_info{results.data(),
+        SRC_DATA sample_rate_info{w_results.data(),
                                   out_signal.data(),
-                                  long(results.size()),
+                                  long(w_results.size()),
                                   long(out_signal.size()),
                                   0,
                                   0,
@@ -239,19 +242,50 @@ int main(int argc, char ** argv) {
 
         src_simple(&sample_rate_info, SRC_SINC_BEST_QUALITY, 1);
 
+        auto envelope =
+            exponential_decay_envelope(out_signal.size(), attenuation_factor);
+        elementwise_multiply(out_signal, envelope);
+
+        write_sndfile("waveguide_full_" + output_file,
+                      {out_signal},
+                      output_sr,
+                      depth,
+                      format);
+
         LinkwitzRiley lopass;
         lopass.setParams(1, filter_freq, output_sr);
         lopass.filter(out_signal);
 
         normalize(out_signal);
 
-        waveguide_results = {out_signal};
+        vector<vector<float>> waveguide_results = {out_signal};
 
-        write_sndfile("waveguide_" + output_file,
+        write_sndfile("waveguide_lopass_" + output_file,
                       waveguide_results,
                       output_sr,
                       depth,
                       format);
+
+        auto raytrace_amp = 0.95;
+        auto waveguide_amp = 0.05;
+
+        auto max_index = max(raytrace_results.front().size(),
+                             waveguide_results.front().size());
+        vector<float> summed_results(max_index, 0);
+        for (auto i = 0u; i != max_index; ++i) {
+            if (i < raytrace_results.front().size())
+                summed_results[i] += raytrace_amp * raytrace_results.front()[i];
+            if (i < waveguide_results.front().size())
+                summed_results[i] +=
+                    waveguide_amp * waveguide_results.front()[i];
+        }
+        normalize(summed_results);
+        write_sndfile("summed_" + output_file,
+                      {summed_results},
+                      output_sr,
+                      depth,
+                      format);
+
     } catch (const cl::Error & e) {
         Logger::log_err("critical cl error: ", e.what());
         return EXIT_FAILURE;
@@ -262,20 +296,6 @@ int main(int argc, char ** argv) {
         Logger::log_err("unknown error");
         return EXIT_FAILURE;
     }
-
-    auto max_index =
-        max(raytrace_results.front().size(), waveguide_results.front().size());
-    vector<float> summed_results(max_index, 0);
-    for (auto j = 0u; j != raytrace_results.size(); ++j) {
-        for (auto i = 0u; i != max_index; ++i) {
-            if (i < raytrace_results[j].size())
-                summed_results[i] += raytrace_results[j][i];
-            if (i < waveguide_results.size())
-                summed_results[i] += waveguide_results[j][i];
-        }
-    }
-    write_sndfile(
-        "summed_" + output_file, {summed_results}, output_sr, depth, format);
 
     return EXIT_SUCCESS;
 }
