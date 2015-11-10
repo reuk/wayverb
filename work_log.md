@@ -78,8 +78,17 @@ Dispersion analysis
         * take the spatial fourier transform of the difference equation,
           replacing function points with corresponding linear phase terms
             * I don't understand this either
-        * 
+        * this gives us a filter equation with a coefficient
+        * we can find the coefficient in terms of the linear phase at the
+          waveguide mesh points (I think)
+        * we can find the phase distance travelled in one time sample using
+          this coefficient
 
     * do the thing
+        * I wrote a python script that replicates the measurements in @duyne
+        * but somehow it's not right quite
+            * read @warren1998 to get a better idea of how dispersion analysis
+              works
 
-        * 
+    * write a program which finds the maximum allowable bandwidth for a given
+      maximum dispersion speed error
