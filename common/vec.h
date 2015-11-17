@@ -106,6 +106,10 @@ struct Vec3 {
         return sqrt(mag_squared());
     }
 
+    auto normalized() const {
+        return *this / mag();
+    }
+
     template <typename U>
     auto dot(const Vec3<U>& rhs) const {
         return (*this * rhs).sum();

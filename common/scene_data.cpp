@@ -11,14 +11,14 @@
 using namespace std;
 using namespace rapidjson;
 
-void attemptJsonParse(const string & fname, Document & doc) {
+void attemptJsonParse(const string& fname, Document& doc) {
     ifstream in(fname);
     string file((istreambuf_iterator<char>(in)), istreambuf_iterator<char>());
 
     doc.Parse(file.c_str());
 }
 
-SurfaceLoader::SurfaceLoader(const string & fpath) {
+SurfaceLoader::SurfaceLoader(const string& fpath) {
     Surface defaultSurface{
         VolumeType({{0.92, 0.92, 0.93, 0.93, 0.94, 0.95, 0.95, 0.95}}),
         VolumeType({{0.50, 0.90, 0.95, 0.95, 0.95, 0.95, 0.95, 0.95}})};
@@ -40,7 +40,7 @@ SurfaceLoader::SurfaceLoader(const string & fpath) {
     }
 }
 
-void SurfaceLoader::add_surface(const string & name, const Surface & surface) {
+void SurfaceLoader::add_surface(const string& name, const Surface& surface) {
     surfaces.push_back(surface);
     surface_indices[name] = surfaces.size() - 1;
 }
@@ -50,7 +50,7 @@ std::vector<Surface> SurfaceLoader::get_surfaces() const {
 }
 
 SurfaceLoader::size_type SurfaceLoader::get_index(
-    const std::string & name) const {
+    const std::string& name) const {
     auto ret = 0;
     auto it = surface_indices.find(name);
     if (it != surface_indices.end())
@@ -58,15 +58,15 @@ SurfaceLoader::size_type SurfaceLoader::get_index(
     return ret;
 }
 
-SceneData::SceneData(const string & fpath, const string & mat_file) {
+SceneData::SceneData(const string& fpath, const string& mat_file) {
     populate(fpath, mat_file);
 }
 
-SceneData::SceneData(const aiScene * const scene, const string & mat_file) {
+SceneData::SceneData(const aiScene* const scene, const string& mat_file) {
     populate(scene, mat_file);
 }
 
-void SceneData::populate(const aiScene * const scene, const string & mat_file) {
+void SceneData::populate(const aiScene* const scene, const string& mat_file) {
     if (!scene)
         throw runtime_error("scene pointer is null");
 
@@ -109,7 +109,7 @@ void SceneData::populate(const aiScene * const scene, const string & mat_file) {
     }
 }
 
-void SceneData::populate(const string & fpath, const string & mat_file) {
+void SceneData::populate(const string& fpath, const string& mat_file) {
     Assimp::Importer importer;
     try {
         populate(

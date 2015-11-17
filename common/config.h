@@ -25,7 +25,7 @@ enum OutputMode { ALL, IMAGE_ONLY, DIFFUSE_ONLY };
 /// A simple interface for a JsonValidator.
 struct JsonValidatorBase {
     /// Overload to dictate what happens when a JsonValidator is Run on a Value
-    virtual void run(const rapidjson::Value & value) const = 0;
+    virtual void run(const rapidjson::Value& value) const = 0;
 };
 
 struct OptionalValidator;
@@ -44,19 +44,19 @@ struct FieldJsonValidator;
 class ConfigValidator : public JsonValidatorBase {
 public:
     template <typename T>
-    void addOptionalValidator(const std::string & s, T & t) {
+    void addOptionalValidator(const std::string& s, T& t) {
         validators.emplace_back(
             new FieldJsonValidator<T, OptionalValidator>(s, t));
     }
 
     template <typename T>
-    void addRequiredValidator(const std::string & s, T & t) {
+    void addRequiredValidator(const std::string& s, T& t) {
         validators.emplace_back(
             new FieldJsonValidator<T, RequiredValidator>(s, t));
     }
 
-    virtual void run(const rapidjson::Value & value) const {
-        for (const auto & i : validators)
+    virtual void run(const rapidjson::Value& value) const {
+        for (const auto& i : validators)
             i->run(value);
     }
 
@@ -66,25 +66,25 @@ private:
 
 /// This is basically just an immutable string.
 struct StringWrapper {
-    StringWrapper(const std::string & s)
+    StringWrapper(const std::string& s)
             : s(s) {
     }
-    const std::string & getString() const {
+    const std::string& getString() const {
         return s;
     }
 
 private:
-    const std::string & s;
+    const std::string& s;
 };
 
 /// An interface for a json value validator.
 /// Set it up with a string, and then supply some way of validating whether
 /// the value is valid for the given string.
 struct Validator : public StringWrapper {
-    Validator(const std::string & s)
+    Validator(const std::string& s)
             : StringWrapper(s) {
     }
-    virtual bool validate(const rapidjson::Value & value) const = 0;
+    virtual bool validate(const rapidjson::Value& value) const = 0;
 };
 
 /// Specialised Validator.
@@ -92,10 +92,10 @@ struct Validator : public StringWrapper {
 /// exception is thrown.
 /// Otherwise, validate returns true.
 struct RequiredValidator : public Validator {
-    RequiredValidator(const std::string & s)
+    RequiredValidator(const std::string& s)
             : Validator(s) {
     }
-    bool validate(const rapidjson::Value & value) const {
+    bool validate(const rapidjson::Value& value) const {
         if (!value.HasMember(getString().c_str()))
             throw std::runtime_error("key " + getString() +
                                      " not found in config object");
@@ -107,10 +107,10 @@ struct RequiredValidator : public Validator {
 /// Returns true if the value contains a member matching the validator's string,
 /// false otherwise.
 struct OptionalValidator : public Validator {
-    OptionalValidator(const std::string & s)
+    OptionalValidator(const std::string& s)
             : Validator(s) {
     }
-    bool validate(const rapidjson::Value & value) const {
+    bool validate(const rapidjson::Value& value) const {
         return value.HasMember(getString().c_str());
     }
 };
@@ -119,92 +119,92 @@ struct OptionalValidator : public Validator {
 /// supplied json value.
 template <typename T>
 struct JsonGetter {
-    virtual bool check(const rapidjson::Value & value) const = 0;
-    virtual void get(const rapidjson::Value & value) const = 0;
+    virtual bool check(const rapidjson::Value& value) const = 0;
+    virtual void get(const rapidjson::Value& value) const = 0;
 };
 
 template <>
 struct JsonGetter<double> {
-    JsonGetter(double & t)
+    JsonGetter(double& t)
             : t(t) {
     }
 
     /// Returns true if value is a number, false otherwise.
-    virtual bool check(const rapidjson::Value & value) const {
+    virtual bool check(const rapidjson::Value& value) const {
         return value.IsNumber();
     }
 
     /// Gets the value as a double.
-    virtual void get(const rapidjson::Value & value) const {
+    virtual void get(const rapidjson::Value& value) const {
         t = value.GetDouble();
     }
-    double & t;
+    double& t;
 };
 
 template <>
 struct JsonGetter<float> {
-    JsonGetter(float & t)
+    JsonGetter(float& t)
             : t(t) {
     }
 
     /// Returns true if value is a number, false otherwise.
-    virtual bool check(const rapidjson::Value & value) const {
+    virtual bool check(const rapidjson::Value& value) const {
         return value.IsNumber();
     }
 
     /// Gets the value as a double, then casts it to float.
-    virtual void get(const rapidjson::Value & value) const {
+    virtual void get(const rapidjson::Value& value) const {
         t = value.GetDouble();
     }
-    float & t;
+    float& t;
 };
 
 template <>
 struct JsonGetter<bool> {
-    JsonGetter(bool & t)
+    JsonGetter(bool& t)
             : t(t) {
     }
 
     /// Returns true if value is 'true' or 'false', false otherwise.
-    virtual bool check(const rapidjson::Value & value) const {
+    virtual bool check(const rapidjson::Value& value) const {
         return value.IsBool();
     }
 
     /// Converts json bool to C++ bool.
-    virtual void get(const rapidjson::Value & value) const {
+    virtual void get(const rapidjson::Value& value) const {
         t = value.GetBool();
     }
-    bool & t;
+    bool& t;
 };
 
 template <>
 struct JsonGetter<int> {
-    JsonGetter(int & t)
+    JsonGetter(int& t)
             : t(t) {
     }
 
     /// Returns true if value is an integer, false otherwise.
-    virtual bool check(const rapidjson::Value & value) const {
+    virtual bool check(const rapidjson::Value& value) const {
         return value.IsInt();
     }
 
     /// Gets json value as integer.
-    virtual void get(const rapidjson::Value & value) const {
+    virtual void get(const rapidjson::Value& value) const {
         t = value.GetInt();
     }
-    int & t;
+    int& t;
 };
 
 /// General class for getting numerical json arrays into cl_floatx types
 template <typename T, int LENGTH>
 struct JsonArrayGetter {
-    JsonArrayGetter(T & t)
+    JsonArrayGetter(T& t)
             : t(t) {
     }
 
     /// Return true if value is an array of length LENGTH containing only
     /// numbers.
-    virtual bool check(const rapidjson::Value & value) const {
+    virtual bool check(const rapidjson::Value& value) const {
         if (!value.IsArray())
             return false;
         if (value.Size() != LENGTH)
@@ -217,19 +217,19 @@ struct JsonArrayGetter {
     }
 
     /// Gets json value as a cl_floatx.
-    virtual void get(const rapidjson::Value & value) const {
+    virtual void get(const rapidjson::Value& value) const {
         for (auto i = 0; i != LENGTH; ++i) {
             t.s[i] = static_cast<cl_float>(value[i].GetDouble());
         }
     }
 
-    T & t;
+    T& t;
 };
 
 /// JsonGetter for cl_float3 is just a JsonArrayGetter with length 3
 template <>
 struct JsonGetter<cl_float3> : public JsonArrayGetter<cl_float3, 3> {
-    JsonGetter(cl_float3 & t)
+    JsonGetter(cl_float3& t)
             : JsonArrayGetter(t) {
     }
 };
@@ -237,7 +237,7 @@ struct JsonGetter<cl_float3> : public JsonArrayGetter<cl_float3, 3> {
 /// JsonGetter for cl_float8 is just a JsonArrayGetter with length 8
 template <>
 struct JsonGetter<cl_float8> : public JsonArrayGetter<cl_float8, 8> {
-    JsonGetter(cl_float8 & t)
+    JsonGetter(cl_float8& t)
             : JsonArrayGetter(t) {
     }
 };
@@ -245,34 +245,34 @@ struct JsonGetter<cl_float8> : public JsonArrayGetter<cl_float8, 8> {
 /// General class for getting a json field with strings mapped to enums
 template <typename T>
 struct JsonEnumGetter {
-    JsonEnumGetter(T & t, const std::map<std::string, T> & m)
+    JsonEnumGetter(T& t, const std::map<std::string, T>& m)
             : t(t)
             , stringkeys(m) {
     }
 
     /// Returns true if value is a string and is equal to an allowed string.
-    virtual bool check(const rapidjson::Value & value) const {
+    virtual bool check(const rapidjson::Value& value) const {
         return value.IsString() &&
                (any_of(stringkeys.begin(),
                        stringkeys.end(),
-                       [&value](const std::pair<std::string, T> & i) {
+                       [&value](const std::pair<std::string, T>& i) {
                            return i.first == value.GetString();
                        }));
     }
 
     /// Look up the string in a dictionary and return the equivalent enum value.
-    virtual void get(const rapidjson::Value & value) const {
+    virtual void get(const rapidjson::Value& value) const {
         t = stringkeys.at(value.GetString());
     }
 
-    T & t;
+    T& t;
     const std::map<std::string, T> stringkeys;
 };
 
 /// JsonGetter for OutputMode is just a JsonEnumGetter with a specific map
 template <>
 struct JsonGetter<OutputMode> : public JsonEnumGetter<OutputMode> {
-    JsonGetter(OutputMode & t)
+    JsonGetter(OutputMode& t)
             : JsonEnumGetter(t,
                              {{"all", ALL},
                               {"image_only", IMAGE_ONLY},
@@ -282,13 +282,13 @@ struct JsonGetter<OutputMode> : public JsonEnumGetter<OutputMode> {
 
 template <typename T>
 struct JsonGetter<std::vector<T>> {
-    JsonGetter(std::vector<T> & t)
+    JsonGetter(std::vector<T>& t)
             : t(t) {
     }
-    virtual bool check(const rapidjson::Value & value) const {
+    virtual bool check(const rapidjson::Value& value) const {
         return value.IsArray();
     }
-    virtual void get(const rapidjson::Value & value) const {
+    virtual void get(const rapidjson::Value& value) const {
         for (auto i = value.Begin(); i != value.End(); ++i) {
             T temp;
             ValueJsonValidator<T> getter(temp);
@@ -296,16 +296,16 @@ struct JsonGetter<std::vector<T>> {
             t.push_back(temp);
         }
     }
-    std::vector<T> & t;
+    std::vector<T>& t;
 };
 
 template <typename T>
 struct ValueJsonValidator : public JsonValidatorBase, public JsonGetter<T> {
-    ValueJsonValidator(T & t)
+    ValueJsonValidator(T& t)
             : JsonGetter<T>(t) {
     }
 
-    virtual void run(const rapidjson::Value & value) const {
+    virtual void run(const rapidjson::Value& value) const {
         if (!JsonGetter<T>::check(value)) {
             throw std::runtime_error("invalid value");
         }
@@ -321,12 +321,12 @@ struct ValueJsonValidator : public JsonValidatorBase, public JsonGetter<T> {
 /// be instantiated, depending on runtime requirements.
 template <typename T, typename U>
 struct FieldJsonValidator : public ValueJsonValidator<T>, public U {
-    FieldJsonValidator(const std::string & s, T & t)
+    FieldJsonValidator(const std::string& s, T& t)
             : ValueJsonValidator<T>(t)
             , U(s) {
     }
 
-    virtual void run(const rapidjson::Value & value) const {
+    virtual void run(const rapidjson::Value& value) const {
         if (U::validate(value)) {
             ValueJsonValidator<T>::run(value[U::getString().c_str()]);
         }

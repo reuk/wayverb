@@ -19,14 +19,14 @@ enum FilterType {
 /// Given a filter type and a vector of vector of float, return the
 /// parallel-filtered and summed data, using the specified filtering method.
 void filter(FilterType ft,
-            std::vector<std::vector<std::vector<float>>> & data,
+            std::vector<std::vector<std::vector<float>>>& data,
             float sr,
             float lo_cutoff);
 
 /// JsonGetter for FilterType is just a JsonEnumGetter with a specific map
 template <>
 struct JsonGetter<FilterType> : public JsonEnumGetter<FilterType> {
-    JsonGetter(FilterType & t)
+    JsonGetter(FilterType& t)
             : JsonEnumGetter(t,
                              {{"sinc", FILTER_TYPE_WINDOWED_SINC},
                               {"onepass", FILTER_TYPE_BIQUAD_ONEPASS},

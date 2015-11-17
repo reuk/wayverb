@@ -39,17 +39,17 @@ struct AttenuationModel {
 
 template <>
 struct JsonGetter<Speaker> {
-    JsonGetter(Speaker & t)
+    JsonGetter(Speaker& t)
             : t(t) {
     }
 
     /// Returns true if value is a json object.
-    virtual bool check(const rapidjson::Value & value) const {
+    virtual bool check(const rapidjson::Value& value) const {
         return value.IsObject();
     }
 
     /// Attempts to run a ConfigValidator on value.
-    virtual void get(const rapidjson::Value & value) const {
+    virtual void get(const rapidjson::Value& value) const {
         ConfigValidator cv;
 
         cv.addRequiredValidator("direction", t.direction);
@@ -57,22 +57,22 @@ struct JsonGetter<Speaker> {
 
         cv.run(value);
     }
-    Speaker & t;
+    Speaker& t;
 };
 
 template <>
 struct JsonGetter<HrtfConfig> {
-    JsonGetter(HrtfConfig & t)
+    JsonGetter(HrtfConfig& t)
             : t(t) {
     }
 
     /// Returns true if value is a json object.
-    virtual bool check(const rapidjson::Value & value) const {
+    virtual bool check(const rapidjson::Value& value) const {
         return value.IsObject();
     }
 
     /// Attempts to run a ConfigValidator on value.
-    virtual void get(const rapidjson::Value & value) const {
+    virtual void get(const rapidjson::Value& value) const {
         ConfigValidator cv;
 
         cv.addRequiredValidator("facing", t.facing);
@@ -83,10 +83,10 @@ struct JsonGetter<HrtfConfig> {
         normalize(t.facing);
         normalize(t.up);
     }
-    HrtfConfig & t;
+    HrtfConfig& t;
 
 private:
-    static void normalize(cl_float3 & v) {
+    static void normalize(cl_float3& v) {
         cl_float len =
             1.0 / sqrt(v.s[0] * v.s[0] + v.s[1] * v.s[1] + v.s[2] * v.s[2]);
         for (auto i = 0; i != sizeof(cl_float3) / sizeof(float); ++i) {
@@ -97,25 +97,25 @@ private:
 
 template <>
 struct JsonGetter<AttenuationModel> {
-    JsonGetter(AttenuationModel & t)
+    JsonGetter(AttenuationModel& t)
             : t(t)
             , keys({{AttenuationModel::SPEAKER, "speakers"},
                     {AttenuationModel::HRTF, "hrtf"}}) {
     }
 
     /// Returns true if value is a json object containing just one valid key.
-    virtual bool check(const rapidjson::Value & value) const {
+    virtual bool check(const rapidjson::Value& value) const {
         return value.IsObject() &&
                1 == std::count_if(keys.begin(),
                                   keys.end(),
-                                  [&value](const auto & i) {
+                                  [&value](const auto& i) {
                                       return value.HasMember(i.second.c_str());
                                   });
     }
 
     /// Attempts to run a ConfigValidator on value.
-    virtual void get(const rapidjson::Value & value) const {
-        for (const auto & i : keys)
+    virtual void get(const rapidjson::Value& value) const {
+        for (const auto& i : keys)
             if (value.HasMember(i.second.c_str()))
                 t.mode = i.first;
 
@@ -131,7 +131,7 @@ struct JsonGetter<AttenuationModel> {
 
         cv.run(value);
     }
-    AttenuationModel & t;
+    AttenuationModel& t;
     std::map<AttenuationModel::Mode, std::string> keys;
 };
 
@@ -139,18 +139,18 @@ struct JsonGetter<AttenuationModel> {
 /// which each subsequent item refers to the next sample of an impulse
 /// response.
 std::vector<std::vector<float>> flattenImpulses(
-    const std::vector<AttenuatedImpulse> & impulse, float samplerate);
+    const std::vector<AttenuatedImpulse>& impulse, float samplerate);
 
 /// Maps flattenImpulses over a vector of input vectors.
 std::vector<std::vector<std::vector<float>>> flattenImpulses(
-    const std::vector<std::vector<AttenuatedImpulse>> & impulse,
+    const std::vector<std::vector<AttenuatedImpulse>>& impulse,
     float samplerate);
 
 /// Filter and mix down each channel of the input data.
 /// Optionally, normalize all channels, trim the tail, and scale the amplitude.
 std::vector<std::vector<float>> process(
     FilterType filtertype,
-    std::vector<std::vector<std::vector<float>>> & data,
+    std::vector<std::vector<std::vector<float>>>& data,
     float sr,
     bool do_normalize,
     float lo_cutoff,
@@ -160,11 +160,11 @@ std::vector<std::vector<float>> process(
 /// Recursively check a collection of Impulses for the earliest non-zero time of
 /// an impulse.
 template <typename T>
-inline float findPredelay(const T & ret) {
+inline float findPredelay(const T& ret) {
     return accumulate(ret.begin() + 1,
                       ret.end(),
                       findPredelay(ret.front()),
-                      [](auto a, const auto & b) {
+                      [](auto a, const auto& b) {
                           auto pd = findPredelay(b);
                           if (a == 0)
                               return pd;
@@ -176,27 +176,27 @@ inline float findPredelay(const T & ret) {
 
 /// The base case of the findPredelay recursion.
 template <>
-inline float findPredelay(const AttenuatedImpulse & i) {
+inline float findPredelay(const AttenuatedImpulse& i) {
     return i.time;
 }
 
 /// Recursively subtract a time value from the time fields of a collection of
 /// Impulses.
 template <typename T>
-inline void fixPredelay(T & ret, float seconds) {
-    for (auto && i : ret)
+inline void fixPredelay(T& ret, float seconds) {
+    for (auto&& i : ret)
         fixPredelay(i, seconds);
 }
 
 /// The base case of the fixPredelay recursion.
 template <>
-inline void fixPredelay(AttenuatedImpulse & ret, float seconds) {
+inline void fixPredelay(AttenuatedImpulse& ret, float seconds) {
     ret.time = ret.time > seconds ? ret.time - seconds : 0;
 }
 
 /// Fixes predelay by finding and then removing predelay.
 template <typename T>
-inline void fixPredelay(T & ret) {
+inline void fixPredelay(T& ret) {
     auto predelay = findPredelay(ret);
     fixPredelay(ret, predelay);
 }
@@ -207,7 +207,7 @@ inline void fixPredelay(T & ret) {
 struct RaytracerResults {
     RaytracerResults() {
     }
-    RaytracerResults(const std::vector<Impulse> impulses, const cl_float3 & c)
+    RaytracerResults(const std::vector<Impulse> impulses, const cl_float3& c)
             : impulses(impulses)
             , mic(c) {
     }
@@ -224,31 +224,31 @@ public:
 
     /// If you don't want to use the built-in object loader, you can
     /// initialise a raytracer with your own geometry here.
-    Raytrace(const RayverbProgram & program,
-             cl::CommandQueue & queue,
+    Raytrace(const RayverbProgram& program,
+             cl::CommandQueue& queue,
              unsigned long nreflections,
-             std::vector<Triangle> & triangles,
-             std::vector<cl_float3> & vertices,
-             std::vector<Surface> & surfaces);
+             std::vector<Triangle>& triangles,
+             std::vector<cl_float3>& vertices,
+             std::vector<Surface>& surfaces);
 
     /// Load a 3d model and materials from files.
-    Raytrace(const RayverbProgram & program,
-             cl::CommandQueue & queue,
+    Raytrace(const RayverbProgram& program,
+             cl::CommandQueue& queue,
              unsigned long nreflections,
-             const std::string & objpath,
-             const std::string & materialFileName);
+             const std::string& objpath,
+             const std::string& materialFileName);
 
-    Raytrace(const RayverbProgram & program,
-             cl::CommandQueue & queue,
+    Raytrace(const RayverbProgram& program,
+             cl::CommandQueue& queue,
              unsigned long nreflections,
              SceneData sceneData);
 
     virtual ~Raytrace() noexcept = default;
 
     /// Run the raytrace with a specific mic, source, and set of directions.
-    void raytrace(const cl_float3 & micpos,
-                  const cl_float3 & source,
-                  const std::vector<cl_float3> & directions);
+    void raytrace(const cl_float3& micpos,
+                  const cl_float3& source,
+                  const std::vector<cl_float3>& directions);
 
     /// Get raw, unprocessed diffuse results.
     RaytracerResults getRawDiffuse();
@@ -260,7 +260,7 @@ public:
     RaytracerResults getAllRaw(bool removeDirect);
 
 private:
-    cl::CommandQueue & queue;
+    cl::CommandQueue& queue;
     kernel_type kernel;
 
     const unsigned long nreflections;
@@ -290,35 +290,35 @@ public:
     using kernel_type =
         decltype(std::declval<RayverbProgram>().get_hrtf_kernel());
 
-    Hrtf(const RayverbProgram & program, cl::CommandQueue & queue);
+    Hrtf(const RayverbProgram& program, cl::CommandQueue& queue);
     virtual ~Hrtf() noexcept = default;
 
     /// Attenuate some raytrace results.
     /// The outer vector corresponds to separate channels, the inner vector
     /// contains the impulses, each of which has a time and an 8-band volume.
     std::vector<std::vector<AttenuatedImpulse>> attenuate(
-        const RaytracerResults & results, const HrtfConfig & config);
+        const RaytracerResults& results, const HrtfConfig& config);
     std::vector<std::vector<AttenuatedImpulse>> attenuate(
-        const RaytracerResults & results,
-        const cl_float3 & facing,
-        const cl_float3 & up);
+        const RaytracerResults& results,
+        const cl_float3& facing,
+        const cl_float3& up);
 
-    virtual const std::array<std::array<std::array<cl_float8, 180>, 360>, 2> &
+    virtual const std::array<std::array<std::array<cl_float8, 180>, 360>, 2>&
     getHrtfData() const;
 
 private:
-    cl::CommandQueue & queue;
+    cl::CommandQueue& queue;
     kernel_type kernel;
     const cl::Context context;
 
     static const std::array<std::array<std::array<cl_float8, 180>, 360>, 2>
         HRTF_DATA;
     std::vector<AttenuatedImpulse> attenuate(
-        const cl_float3 & mic_pos,
+        const cl_float3& mic_pos,
         unsigned long channel,
-        const cl_float3 & facing,
-        const cl_float3 & up,
-        const std::vector<Impulse> & impulses);
+        const cl_float3& facing,
+        const cl_float3& up,
+        const std::vector<Impulse>& impulses);
 
     cl::Buffer cl_in;
     cl::Buffer cl_out;
@@ -332,22 +332,21 @@ public:
     using kernel_type =
         decltype(std::declval<RayverbProgram>().get_attenuate_kernel());
 
-    Attenuate(const RayverbProgram & program, cl::CommandQueue & queue);
+    Attenuate(const RayverbProgram& program, cl::CommandQueue& queue);
     virtual ~Attenuate() noexcept = default;
 
     /// Attenuate some raytrace results.
     /// The outer vector corresponds to separate channels, the inner vector
     /// contains the impulses, each of which has a time and an 8-band volume.
     std::vector<std::vector<AttenuatedImpulse>> attenuate(
-        const RaytracerResults & results,
-        const std::vector<Speaker> & speakers);
+        const RaytracerResults& results, const std::vector<Speaker>& speakers);
 
 private:
     std::vector<AttenuatedImpulse> attenuate(
-        const cl_float3 & mic_pos,
-        const Speaker & speaker,
-        const std::vector<Impulse> & impulses);
-    cl::CommandQueue & queue;
+        const cl_float3& mic_pos,
+        const Speaker& speaker,
+        const std::vector<Impulse>& impulses);
+    cl::CommandQueue& queue;
     kernel_type kernel;
     const cl::Context context;
 

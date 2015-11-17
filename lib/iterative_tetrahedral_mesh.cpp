@@ -9,7 +9,7 @@
 
 using namespace std;
 
-IterativeTetrahedralMesh::Locator::Locator(const Vec3i & pos, int mod_ind)
+IterativeTetrahedralMesh::Locator::Locator(const Vec3i& pos, int mod_ind)
         : pos(pos)
         , mod_ind(mod_ind) {
 }
@@ -39,7 +39,7 @@ Vec3i IterativeTetrahedralMesh::get_dim() const {
 }
 
 vector<Node> IterativeTetrahedralMesh::get_nodes(
-    const Boundary & boundary) const {
+    const Boundary& boundary) const {
     auto total_nodes = dim.product() * scaled_cube.size();
     vector<Node> ret(total_nodes);
     auto counter = 0u;
@@ -58,7 +58,7 @@ vector<Node> IterativeTetrahedralMesh::get_nodes(
     return ret;
 }
 
-IterativeTetrahedralMesh::IterativeTetrahedralMesh(const Boundary & boundary,
+IterativeTetrahedralMesh::IterativeTetrahedralMesh(const Boundary& boundary,
                                                    float spacing)
         : boundary(boundary.get_aabb())
         , cube_side(cube_side_from_node_spacing(spacing))
@@ -68,7 +68,7 @@ IterativeTetrahedralMesh::IterativeTetrahedralMesh(const Boundary & boundary,
 }
 
 IterativeTetrahedralMesh::size_type IterativeTetrahedralMesh::get_index(
-    const Locator & loc) const {
+    const Locator& loc) const {
     auto n = scaled_cube.size();
     return (loc.mod_ind) + (loc.pos.x * n) + (loc.pos.y * dim.x * n) +
            (loc.pos.z * dim.x * dim.y * n);
@@ -85,7 +85,7 @@ IterativeTetrahedralMesh::Locator IterativeTetrahedralMesh::get_locator(
 }
 
 IterativeTetrahedralMesh::Locator IterativeTetrahedralMesh::get_locator(
-    const Vec3f & v) const {
+    const Vec3f& v) const {
     auto transformed = v - boundary.c0;
     Vec3i cube_pos =
         (transformed / cube_side).map([](auto i) -> int { return i; });
@@ -107,7 +107,7 @@ IterativeTetrahedralMesh::Locator IterativeTetrahedralMesh::get_locator(
     return Locator(cube_pos, closest);
 }
 
-Vec3f IterativeTetrahedralMesh::get_position(const Locator & locator) const {
+Vec3f IterativeTetrahedralMesh::get_position(const Locator& locator) const {
     auto cube_pos = locator.pos * cube_side;
     auto node_pos = scaled_cube[locator.mod_ind];
     return cube_pos + node_pos + boundary.c0;

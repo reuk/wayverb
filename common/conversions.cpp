@@ -3,7 +3,7 @@
 #include "vec.h"
 
 #define VEC_CONVERT_FUNCTIONS_DEFINITION(t) \
-    cl_##t##3 convert(const Vec3<t> & v) {  \
+    cl_##t##3 convert(const Vec3<t>& v) {   \
         return {{v.x, v.y, v.z}};           \
     }                                       \
     Vec3<t> convert(const cl_##t##3 & v) {  \
@@ -13,6 +13,6 @@
 VEC_CONVERT_FUNCTIONS_DEFINITION(float)
 VEC_CONVERT_FUNCTIONS_DEFINITION(int)
 
-cl_float3 convert(const aiVector3D & v) {
+cl_float3 convert(const aiVector3D& v) {
     return {{v.x, v.y, v.z}};
 }

@@ -5,8 +5,8 @@
 
 using namespace std;
 
-void write_sndfile(const string & fname,
-                   const vector<vector<float>> & outdata,
+void write_sndfile(const string& fname,
+                   const vector<vector<float>>& outdata,
                    float sr,
                    unsigned long bd,
                    unsigned long ftype) {
@@ -20,7 +20,7 @@ void write_sndfile(const string & fname,
     outfile.write(interleaved.data(), interleaved.size());
 }
 
-unsigned long get_file_format(const string & fname) {
+unsigned long get_file_format(const string& fname) {
     unordered_map<string, decltype(SF_FORMAT_AIFF)> ftypeTable{
         {"aif", SF_FORMAT_AIFF},
         {"aiff", SF_FORMAT_AIFF},
@@ -31,7 +31,7 @@ unsigned long get_file_format(const string & fname) {
     if (ftypeIt == ftypeTable.end()) {
         stringstream ss;
         ss << "Invalid output file extension - valid extensions are: ";
-        for (const auto & i : ftypeTable)
+        for (const auto& i : ftypeTable)
             ss << i.first << " ";
         throw runtime_error(ss.str());
     }
@@ -46,7 +46,7 @@ unsigned long get_file_depth(unsigned long bitDepth) {
     if (depthIt == depthTable.end()) {
         stringstream ss;
         ss << "Invalid bitdepth - valid bitdepths are: ";
-        for (const auto & i : depthTable)
+        for (const auto& i : depthTable)
             ss << i.first << " ";
         throw runtime_error(ss.str());
     }

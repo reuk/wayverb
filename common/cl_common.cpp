@@ -2,7 +2,7 @@
 
 #include <vector>
 
-void print_device_info(const cl::Device & i) {
+void print_device_info(const cl::Device& i) {
     Logger::log(i.getInfo<CL_DEVICE_NAME>());
     Logger::log("available: ", i.getInfo<CL_DEVICE_AVAILABLE>());
 };
@@ -18,12 +18,12 @@ cl::Context get_context() {
     return cl::Context(CL_DEVICE_TYPE_GPU, cps);
 }
 
-cl::Device get_device(const cl::Context & context) {
+cl::Device get_device(const cl::Context& context) {
     auto devices = context.getInfo<CL_CONTEXT_DEVICES>();
 
     Logger::log("## all devices:");
 
-    for (auto & i : devices) {
+    for (auto& i : devices) {
         print_device_info(i);
     }
 

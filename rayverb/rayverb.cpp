@@ -23,30 +23,29 @@
 using namespace std;
 using namespace rapidjson;
 
-inline cl_float3 fromAIVec(const aiVector3D & v) {
+inline cl_float3 fromAIVec(const aiVector3D& v) {
     return (cl_float3){{v.x, v.y, v.z, 0}};
 }
 
 vector<vector<vector<float>>> flattenImpulses(
-    const vector<vector<AttenuatedImpulse>> & attenuated, float samplerate) {
+    const vector<vector<AttenuatedImpulse>>& attenuated, float samplerate) {
     vector<vector<vector<float>>> flattened(attenuated.size());
-    transform(begin(attenuated),
-              end(attenuated),
-              begin(flattened),
-              [samplerate](const auto & i) {
-                  return flattenImpulses(i, samplerate);
-              });
+    transform(
+        begin(attenuated),
+        end(attenuated),
+        begin(flattened),
+        [samplerate](const auto& i) { return flattenImpulses(i, samplerate); });
     return flattened;
 }
 
 /// Turn a collection of AttenuatedImpulses into a vector of 8 vectors, where
 /// each of the 8 vectors represent sample values in a different frequency band.
-vector<vector<float>> flattenImpulses(const vector<AttenuatedImpulse> & impulse,
+vector<vector<float>> flattenImpulses(const vector<AttenuatedImpulse>& impulse,
                                       float samplerate) {
     const auto MAX_TIME_LIMIT = 20.0f;
     // Find the index of the final sample based on time and samplerate
     float maxtime = 0;
-    for (const auto & i : impulse)
+    for (const auto& i : impulse)
         maxtime = max(maxtime, i.time);
     maxtime = min(maxtime, MAX_TIME_LIMIT);
     const auto MAX_SAMPLE = round(maxtime * samplerate) + 1;
@@ -57,7 +56,7 @@ vector<vector<float>> flattenImpulses(const vector<AttenuatedImpulse> & impulse,
 
     //  For each impulse, calculate its index, then add the impulse's volumes
     //  to the volumes already in the output array.
-    for (const auto & i : impulse) {
+    for (const auto& i : impulse) {
         const auto SAMPLE = round(i.time * samplerate);
         if (SAMPLE < MAX_SAMPLE) {
             for (auto j = 0u; j != flattened.size(); ++j) {
@@ -70,9 +69,9 @@ vector<vector<float>> flattenImpulses(const vector<AttenuatedImpulse> & impulse,
 }
 
 /// Sum a collection of vectors of the same length into a single vector
-vector<float> mixdown(const vector<vector<float>> & data) {
+vector<float> mixdown(const vector<vector<float>>& data) {
     vector<float> ret(data.front().size(), 0);
-    for (auto && i : data)
+    for (auto&& i : data)
         transform(
             ret.begin(), ret.end(), i.begin(), ret.begin(), plus<float>());
     return ret;
@@ -80,7 +79,7 @@ vector<float> mixdown(const vector<vector<float>> & data) {
 
 /// Find the index of the last sample with an amplitude of minVol or higher,
 /// then resize the vectors down to this length.
-void trimTail(vector<vector<float>> & audioChannels, float minVol) {
+void trimTail(vector<vector<float>>& audioChannels, float minVol) {
     using index_type = common_type_t<
         iterator_traits<vector<float>::reverse_iterator>::difference_type,
         int>;
@@ -90,7 +89,7 @@ void trimTail(vector<vector<float>> & audioChannels, float minVol) {
         audioChannels.begin(),
         audioChannels.end(),
         0,
-        [minVol](auto current, const auto & i) {
+        [minVol](auto current, const auto& i) {
             return max(index_type{current},
                        index_type{distance(i.begin(),
                                            find_if(i.rbegin(),
@@ -103,13 +102,13 @@ void trimTail(vector<vector<float>> & audioChannels, float minVol) {
         });
 
     // Resize.
-    for (auto && i : audioChannels)
+    for (auto&& i : audioChannels)
         i.resize(len);
 }
 
 /// Collects together all the post-processing steps.
 vector<vector<float>> process(FilterType filtertype,
-                              vector<vector<vector<float>>> & data,
+                              vector<vector<vector<float>>>& data,
                               float sr,
                               bool do_normalize,
                               float lo_cutoff,
@@ -134,7 +133,7 @@ vector<vector<float>> process(FilterType filtertype,
 /// Call binary operation u on pairs of elements from a and b, where a and b are
 /// cl_floatx types.
 template <typename T, typename U>
-inline T elementwise(const T & a, const T & b, const U & u) {
+inline T elementwise(const T& a, const T& b, const U& u) {
     T ret;
     std::transform(
         std::begin(a.s), std::end(a.s), std::begin(b.s), std::begin(ret.s), u);
@@ -142,27 +141,26 @@ inline T elementwise(const T & a, const T & b, const U & u) {
 }
 
 /// Find the minimum and maximum boundaries of a set of vertices.
-pair<cl_float3, cl_float3> getBounds(const vector<cl_float3> & vertices) {
+pair<cl_float3, cl_float3> getBounds(const vector<cl_float3>& vertices) {
     return pair<cl_float3, cl_float3>(
         accumulate(vertices.begin() + 1,
                    vertices.end(),
                    vertices.front(),
-                   [](const auto & a, const auto & b) {
+                   [](const auto& a, const auto& b) {
                        return elementwise(
                            a, b, [](auto i, auto j) { return min(i, j); });
                    }),
         accumulate(vertices.begin() + 1,
                    vertices.end(),
                    vertices.front(),
-                   [](const auto & a, const auto & b) {
+                   [](const auto& a, const auto& b) {
                        return elementwise(
                            a, b, [](auto i, auto j) { return max(i, j); });
                    }));
 }
 
 /// Does a point fall within the cuboid defined by the point pair bounds?
-bool inside(const pair<cl_float3, cl_float3> & bounds,
-            const cl_float3 & point) {
+bool inside(const pair<cl_float3, cl_float3>& bounds, const cl_float3& point) {
     for (auto i = 0u; i != sizeof(cl_float3) / sizeof(float); ++i)
         if (!(bounds.first.s[i] <= point.s[i] &&
               point.s[i] <= bounds.second.s[i]))
@@ -171,12 +169,12 @@ bool inside(const pair<cl_float3, cl_float3> & bounds,
 }
 
 /// Reserve graphics memory.
-Raytrace::Raytrace(const RayverbProgram & program,
-                   cl::CommandQueue & queue,
+Raytrace::Raytrace(const RayverbProgram& program,
+                   cl::CommandQueue& queue,
                    unsigned long nreflections,
-                   vector<Triangle> & triangles,
-                   vector<cl_float3> & vertices,
-                   vector<Surface> & surfaces)
+                   vector<Triangle>& triangles,
+                   vector<cl_float3>& vertices,
+                   vector<Surface>& surfaces)
         : queue(queue)
         , kernel(program.get_raytrace_kernel())
         , nreflections(nreflections)
@@ -209,19 +207,19 @@ Raytrace::Raytrace(const RayverbProgram & program,
         , bounds(getBounds(vertices)) {
 }
 
-Raytrace::Raytrace(const RayverbProgram & program,
-                   cl::CommandQueue & queue,
+Raytrace::Raytrace(const RayverbProgram& program,
+                   cl::CommandQueue& queue,
                    unsigned long nreflections,
-                   const string & objpath,
-                   const string & materialFileName)
+                   const string& objpath,
+                   const string& materialFileName)
         : Raytrace(program,
                    queue,
                    nreflections,
                    SceneData(objpath, materialFileName)) {
 }
 
-Raytrace::Raytrace(const RayverbProgram & program,
-                   cl::CommandQueue & queue,
+Raytrace::Raytrace(const RayverbProgram& program,
+                   cl::CommandQueue& queue,
                    unsigned long nreflections,
                    SceneData sceneData)
         : Raytrace(program,
@@ -232,9 +230,9 @@ Raytrace::Raytrace(const RayverbProgram & program,
                    sceneData.surfaces) {
 }
 
-void Raytrace::raytrace(const cl_float3 & micpos,
-                        const cl_float3 & source,
-                        const vector<cl_float3> & directions) {
+void Raytrace::raytrace(const cl_float3& micpos,
+                        const cl_float3& source,
+                        const vector<cl_float3>& directions) {
     storedMicpos = micpos;
 
     //  check that mic and source are inside model bounds
@@ -263,7 +261,7 @@ void Raytrace::raytrace(const cl_float3 & micpos,
     storedDiffuse.resize(directions.size() * nreflections);
     for (auto i = 0u; i != ceil(directions.size() / float(RAY_GROUP_SIZE));
          ++i) {
-        using index_type = common_type_t<decltype(i * RAY_GROUP_SIZE),
+        using index_type = common_type_t<decltype(i* RAY_GROUP_SIZE),
                                          decltype(directions.size())>;
         index_type b = i * RAY_GROUP_SIZE;
         index_type e = min(index_type{directions.size()},
@@ -349,14 +347,15 @@ void Raytrace::raytrace(const cl_float3 & micpos,
     auto fname = build_string("./debug_output/file-rays.txt");
     ofstream file(fname);
     file << build_string("reflections: ", nreflections) << endl;
-    for (const auto & i : storedDiffuse) {
+    for (const auto& i : storedDiffuse) {
         file << build_string(i.position.x,
                              " ",
                              i.position.y,
                              " ",
                              i.position.z,
                              " ",
-                             i.time) << endl;
+                             i.time)
+             << endl;
     }
 #endif
 }
@@ -374,7 +373,7 @@ RaytracerResults Raytrace::getRawImages(bool removeDirect) {
     transform(begin(temp),
               end(temp),
               begin(ret),
-              [](const auto & i) { return i.second; });
+              [](const auto& i) { return i.second; });
     return RaytracerResults(ret, storedMicpos);
 }
 
@@ -385,7 +384,7 @@ RaytracerResults Raytrace::getAllRaw(bool removeDirect) {
     return RaytracerResults(diffuse, storedMicpos);
 }
 
-Hrtf::Hrtf(const RayverbProgram & program, cl::CommandQueue & queue)
+Hrtf::Hrtf(const RayverbProgram& program, cl::CommandQueue& queue)
         : queue(queue)
         , kernel(program.get_hrtf_kernel())
         , context(program.getInfo<CL_PROGRAM_CONTEXT>())
@@ -393,14 +392,14 @@ Hrtf::Hrtf(const RayverbProgram & program, cl::CommandQueue & queue)
 }
 
 vector<vector<AttenuatedImpulse>> Hrtf::attenuate(
-    const RaytracerResults & results, const HrtfConfig & config) {
+    const RaytracerResults& results, const HrtfConfig& config) {
     return attenuate(results, config.facing, config.up);
 }
 
 vector<vector<AttenuatedImpulse>> Hrtf::attenuate(
-    const RaytracerResults & results,
-    const cl_float3 & facing,
-    const cl_float3 & up) {
+    const RaytracerResults& results,
+    const cl_float3& facing,
+    const cl_float3& up) {
     auto channels = {0, 1};
     vector<vector<AttenuatedImpulse>> attenuated(channels.size());
     transform(begin(channels),
@@ -413,15 +412,15 @@ vector<vector<AttenuatedImpulse>> Hrtf::attenuate(
     return attenuated;
 }
 
-vector<AttenuatedImpulse> Hrtf::attenuate(const cl_float3 & mic_pos,
+vector<AttenuatedImpulse> Hrtf::attenuate(const cl_float3& mic_pos,
                                           unsigned long channel,
-                                          const cl_float3 & facing,
-                                          const cl_float3 & up,
-                                          const vector<Impulse> & impulses) {
+                                          const cl_float3& facing,
+                                          const cl_float3& up,
+                                          const vector<Impulse>& impulses) {
     //  muck around with the table format
     vector<VolumeType> hrtfChannelData(360 * 180);
     auto offset = 0;
-    for (const auto & i : getHrtfData()[channel]) {
+    for (const auto& i : getHrtfData()[channel]) {
         copy(begin(i), end(i), hrtfChannelData.begin() + offset);
         offset += i.size();
     }
@@ -458,32 +457,32 @@ vector<AttenuatedImpulse> Hrtf::attenuate(const cl_float3 & mic_pos,
     return ret;
 }
 
-const array<array<array<cl_float8, 180>, 360>, 2> & Hrtf::getHrtfData() const {
+const array<array<array<cl_float8, 180>, 360>, 2>& Hrtf::getHrtfData() const {
     return HRTF_DATA;
 }
 
-Attenuate::Attenuate(const RayverbProgram & program, cl::CommandQueue & queue)
+Attenuate::Attenuate(const RayverbProgram& program, cl::CommandQueue& queue)
         : queue(queue)
         , kernel(program.get_attenuate_kernel())
         , context(program.getInfo<CL_PROGRAM_CONTEXT>()) {
 }
 
 vector<vector<AttenuatedImpulse>> Attenuate::attenuate(
-    const RaytracerResults & results, const vector<Speaker> & speakers) {
+    const RaytracerResults& results, const vector<Speaker>& speakers) {
     vector<vector<AttenuatedImpulse>> attenuated(speakers.size());
     transform(begin(speakers),
               end(speakers),
               begin(attenuated),
-              [this, &results](const auto & i) {
+              [this, &results](const auto& i) {
                   return this->attenuate(results.mic, i, results.impulses);
               });
     return attenuated;
 }
 
 vector<AttenuatedImpulse> Attenuate::attenuate(
-    const cl_float3 & mic_pos,
-    const Speaker & speaker,
-    const vector<Impulse> & impulses) {
+    const cl_float3& mic_pos,
+    const Speaker& speaker,
+    const vector<Impulse>& impulses) {
     //  init buffers
     cl_in = cl::Buffer(
         context, CL_MEM_READ_WRITE, impulses.size() * sizeof(Impulse));

@@ -5,11 +5,13 @@
 
 class TetrahedralProgram : public cl::Program {
 public:
-    TetrahedralProgram(const cl::Context & context,
+    TetrahedralProgram(const cl::Context& context,
                        bool build_immediate = false);
 
     auto get_kernel() const {
         return cl::make_kernel<cl::Buffer,
+                               cl::Buffer,
+                               cl::Buffer,
                                cl::Buffer,
                                cl::Buffer,
                                cl_ulong,

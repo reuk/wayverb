@@ -5,7 +5,7 @@
 #include <vector>
 
 template <typename T>
-inline float max_mag(const T & t) {
+inline float max_mag(const T& t) {
     return std::accumulate(
         t.begin(),
         t.end(),
@@ -14,40 +14,40 @@ inline float max_mag(const T & t) {
 }
 
 template <>
-inline float max_mag(const float & t) {
+inline float max_mag(const float& t) {
     return std::fabs(t);
 }
 
 /// Recursively divide by reference.
 template <typename T>
-inline void div(T & ret, float f) {
-    for (auto && i : ret)
+inline void div(T& ret, float f) {
+    for (auto&& i : ret)
         div(i, f);
 }
 
 /// The base case of the div recursion.
 template <>
-inline void div(float & ret, float f) {
+inline void div(float& ret, float f) {
     ret /= f;
 }
 
 /// Recursively multiply by reference.
 template <typename T>
-inline void mul(T & ret, float f) {
-    for (auto && i : ret)
+inline void mul(T& ret, float f) {
+    for (auto&& i : ret)
         mul(i, f);
 }
 
 /// The base case of the mul recursion.
 template <>
-inline void mul(float & ret, float f) {
+inline void mul(float& ret, float f) {
     ret *= f;
 }
 
 /// Find the largest absolute value in an arbitarily nested vector, then
 /// divide every item in the vector by that value.
 template <typename T>
-inline void normalize(T & ret) {
+inline void normalize(T& ret) {
     auto mag = max_mag(ret);
     if (mag != 0)
         mul(ret, 1.0 / mag);
@@ -77,7 +77,7 @@ std::vector<T> sinc_kernel(double cutoff, unsigned long length) {
 }
 
 template <typename T, typename U>
-void elementwise_multiply(T & a, const U & b) {
+void elementwise_multiply(T& a, const U& b) {
     std::transform(std::begin(a),
                    std::end(a),
                    std::begin(b),
@@ -126,7 +126,7 @@ std::vector<T> hipass_sinc_kernel(double sr,
                                   double cutoff,
                                   unsigned long length) {
     auto kernel = lopass_sinc_kernel<T>(sr, cutoff, length);
-    for (auto & i : kernel)
+    for (auto& i : kernel)
         i = -i;
     kernel[(length - 1) / 2] += 1;
     return kernel;

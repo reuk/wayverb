@@ -46,7 +46,7 @@ vector<cl_float3> getRandomDirections(unsigned long num) {
     auto seed = chrono::system_clock::now().time_since_epoch().count();
     default_random_engine engine(seed);
 
-    for (auto && i : ret)
+    for (auto&& i : ret)
         i = spherePoint(zDist(engine), thetaDist(engine));
 
     return ret;
@@ -60,7 +60,7 @@ double db2a(double db) {
     return pow(10, db / 20);
 }
 
-vector<float> squintegrate(const std::vector<float> & sig) {
+vector<float> squintegrate(const std::vector<float>& sig) {
     vector<float> ret(sig.size());
     partial_sum(sig.rbegin(),
                 sig.rend(),
@@ -69,7 +69,7 @@ vector<float> squintegrate(const std::vector<float> & sig) {
     return ret;
 }
 
-int rt60(const vector<float> & sig) {
+int rt60(const vector<float>& sig) {
     auto squintegrated = squintegrate(sig);
     normalize(squintegrated);
     auto target = db2a(-60);
@@ -79,7 +79,7 @@ int rt60(const vector<float> & sig) {
                             [target](auto i) { return i < target; }));
 }
 
-MeshBoundary get_mesh_boundary(const SceneData & sd) {
+MeshBoundary get_mesh_boundary(const SceneData& sd) {
     vector<Vec3f> v(sd.vertices.size());
     transform(sd.vertices.begin(),
               sd.vertices.end(),
@@ -101,7 +101,7 @@ vector<float> exponential_decay_envelope(int steps, float attenuation_factor) {
     return ret;
 }
 
-bool all_zero(const vector<float> & t) {
+bool all_zero(const vector<float>& t) {
     auto ret = true;
     for (auto i = 0u; i != t.size(); ++i) {
         if (t[i] != 0) {
@@ -112,7 +112,7 @@ bool all_zero(const vector<float> & t) {
     return ret;
 }
 
-int main(int argc, char ** argv) {
+int main(int argc, char** argv) {
     Logger::restart();
     gflags::ParseCommandLineFlags(&argc, &argv, true);
 
@@ -120,6 +120,12 @@ int main(int argc, char ** argv) {
         Logger::log_err(
             "expecting a config file, an input model, an input material file, "
             "and an output filename");
+
+        Logger::log_err("actually found: ");
+        for (auto i = 0u; i != argc; ++i) {
+            Logger::log_err("arg ", i, ": ", argv[i]);
+        }
+
         return EXIT_FAILURE;
     }
 
@@ -136,7 +142,7 @@ int main(int argc, char ** argv) {
     try {
         format = get_file_format(output_file);
         depth = get_file_depth(bit_depth);
-    } catch (const runtime_error & e) {
+    } catch (const runtime_error& e) {
         Logger::log_err("critical runtime error: ", e.what());
         return EXIT_FAILURE;
     }
@@ -167,21 +173,18 @@ int main(int argc, char ** argv) {
     cl_float3 mic{{0, 2, 5}};
 
     Document document;
-    attemptJsonParse (config_file, document);
+    attemptJsonParse(config_file, document);
 
-    if (document.HasParseError())
-    {
+    if (document.HasParseError()) {
         cerr << "Encountered error while parsing config file:" << endl;
-        cerr << GetParseError_En (document.GetParseError()) << endl;
-        exit (1);
+        cerr << GetParseError_En(document.GetParseError()) << endl;
+        exit(1);
     }
 
-    if (! document.IsObject())
-    {
+    if (!document.IsObject()) {
         cerr << "Rayverb config must be stored in a JSON object" << endl;
-        exit (1);
+        exit(1);
     }
-
 
     ConfigValidator cv;
 
@@ -221,6 +224,13 @@ int main(int argc, char ** argv) {
         auto corrected_source =
             waveguide.get_coordinate_for_index(source_index);
 
+#ifdef TESTING
+        auto steps = 1 << 8;
+#else
+        auto steps = 1 << 13;
+#endif
+
+#if 0
         auto raytrace_program = get_program<RayverbProgram>(context, device);
         Raytrace raytrace(raytrace_program, queue, num_impulses, scene_data);
         raytrace.raytrace(
@@ -265,11 +275,8 @@ int main(int argc, char ** argv) {
         auto attenuation_factor = pow(db2a(-60), 1.0 / decay_frames);
         attenuation_factor = sqrt(attenuation_factor);
         Logger::log("attenuation factor: ", attenuation_factor);
-
-#ifdef TESTING
-        auto steps = 1 << 8;
 #else
-        auto steps = 1 << 13;
+        auto attenuation_factor = pow(db2a(-60), 1.0 / steps);
 #endif
 
         auto w_results =
@@ -317,6 +324,7 @@ int main(int argc, char ** argv) {
         auto raytrace_amp = 0.95;
         auto waveguide_amp = 0.05;
 
+#if 0
         auto max_index = max(raytrace_results.front().size(),
                              waveguide_results.front().size());
         vector<float> summed_results(max_index, 0);
@@ -333,11 +341,12 @@ int main(int argc, char ** argv) {
                       output_sr,
                       depth,
                       format);
+#endif
 
-    } catch (const cl::Error & e) {
+    } catch (const cl::Error& e) {
         Logger::log_err("critical cl error: ", e.what());
         return EXIT_FAILURE;
-    } catch (const runtime_error & e) {
+    } catch (const runtime_error& e) {
         Logger::log_err("critical runtime error: ", e.what());
         return EXIT_FAILURE;
     } catch (...) {
