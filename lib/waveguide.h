@@ -13,6 +13,15 @@
 #include <type_traits>
 #include <algorithm>
 
+struct RunStepResult {
+    RunStepResult(float pressure = 0, const Vec3f& intensity = 0)
+            : pressure(pressure)
+            , intensity(intensity) {
+    }
+    float pressure;
+    Vec3f intensity;
+};
+
 template <typename T>
 class Waveguide {
 public:
@@ -73,13 +82,13 @@ public:
 
     virtual ~Waveguide() noexcept = default;
 
-    virtual cl_float run_step(size_type o,
-                              cl::CommandQueue& queue,
-                              kernel_type& kernel,
-                              size_type nodes,
-                              cl::Buffer& previous,
-                              cl::Buffer& current,
-                              cl::Buffer& output) = 0;
+    virtual RunStepResult run_step(size_type o,
+                                   cl::CommandQueue& queue,
+                                   kernel_type& kernel,
+                                   size_type nodes,
+                                   cl::Buffer& previous,
+                                   cl::Buffer& current,
+                                   cl::Buffer& output) = 0;
 
     virtual size_type get_index_for_coordinate(const Vec3f& v) const = 0;
     virtual Vec3f get_coordinate_for_index(size_type index) const = 0;
@@ -104,14 +113,15 @@ public:
         return ret;
     }
 
-    virtual void setup(cl::CommandQueue& /*queue*/, size_type /*o*/) {
+    virtual void setup(cl::CommandQueue& queue, size_type o, float sr) {
     }
 
-    std::vector<cl_float> run(const Vec3f& e,
-                              const PowerFunction& u,
-                              size_type o,
-                              size_type steps) {
-        setup(queue, o);
+    std::vector<RunStepResult> run(const Vec3f& e,
+                                   const PowerFunction& u,
+                                   size_type o,
+                                   size_type steps,
+                                   float sr) {
+        setup(queue, o, sr);
 
         Logger::log("beginning simulation with: ", nodes, " nodes");
 
@@ -121,7 +131,7 @@ public:
         n = initialise_mesh(u, e);
         cl::copy(queue, n.begin(), n.end(), *current);
 
-        std::vector<cl_float> ret(steps);
+        std::vector<RunStepResult> ret(steps);
 
         auto counter = 0u;
         std::generate(
@@ -146,26 +156,23 @@ public:
         return ret;
     }
 
-    std::vector<cl_float> run_basic(const Vec3f& e,
-                                    size_type o,
-                                    size_type steps) {
+    std::vector<RunStepResult> run_basic(const Vec3f& e,
+                                         size_type o,
+                                         size_type steps,
+                                         float sr) {
         auto estimated_source_index = get_index_for_coordinate(e);
         auto source_position = get_coordinate_for_index(estimated_source_index);
-        return run(source_position, BasicPowerFunction(), o, steps);
+        return run(source_position, BasicPowerFunction(), o, steps, sr);
     }
 
-    std::vector<cl_float> run_inverse(const Vec3f& e,
-                                      float power,
-                                      size_type o,
-                                      size_type steps) {
-        return run(e, InversePowerFunction(power), o, steps);
+    std::vector<RunStepResult> run_inverse(
+        const Vec3f& e, float power, size_type o, size_type steps, float sr) {
+        return run(e, InversePowerFunction(power), o, steps, sr);
     }
 
-    std::vector<cl_float> run_inverse_square(const Vec3f& e,
-                                             float power,
-                                             size_type o,
-                                             size_type steps) {
-        return run(e, InverseSquarePowerFunction(power), o, steps);
+    std::vector<RunStepResult> run_inverse_square(
+        const Vec3f& e, float power, size_type o, size_type steps, float sr) {
+        return run(e, InverseSquarePowerFunction(power), o, steps, sr);
     }
 
 private:
@@ -185,41 +192,33 @@ class TetrahedralWaveguide : public Waveguide<TetrahedralProgram> {
 public:
     TetrahedralWaveguide(const TetrahedralProgram& program,
                          cl::CommandQueue& queue,
-                         const std::vector<Node>& nodes);
+                         const Boundary& boundary,
+                         float spacing);
     virtual ~TetrahedralWaveguide() noexcept = default;
 
-    void setup(cl::CommandQueue& queue, size_type o) override;
+    void setup(cl::CommandQueue& queue, size_type o, float sr) override;
 
-    cl_float run_step(size_type o,
-                      cl::CommandQueue& queue,
-                      kernel_type& kernel,
-                      size_type nodes,
-                      cl::Buffer& previous,
-                      cl::Buffer& current,
-                      cl::Buffer& output) override;
-
-private:
-    Eigen::MatrixXf transform_matrix;
-    std::vector<Node> nodes;
-    cl::Buffer node_buffer;
-    cl::Buffer transform_buffer;
-    cl::Buffer velocity_buffer;
-};
-
-class IterativeTetrahedralWaveguide : public TetrahedralWaveguide {
-public:
-    IterativeTetrahedralWaveguide(const TetrahedralProgram& program,
-                                  cl::CommandQueue& queue,
-                                  const Boundary& boundary,
-                                  float cube_side);
-    virtual ~IterativeTetrahedralWaveguide() noexcept = default;
+    RunStepResult run_step(size_type o,
+                           cl::CommandQueue& queue,
+                           kernel_type& kernel,
+                           size_type nodes,
+                           cl::Buffer& previous,
+                           cl::Buffer& current,
+                           cl::Buffer& output) override;
 
     size_type get_index_for_coordinate(const Vec3f& v) const override;
     Vec3f get_coordinate_for_index(size_type index) const override;
 
 private:
-    IterativeTetrahedralWaveguide(const TetrahedralProgram& program,
-                                  cl::CommandQueue& queue,
-                                  const IterativeTetrahedralMesh& mesh);
+    TetrahedralWaveguide(const TetrahedralProgram& program,
+                         cl::CommandQueue& queue,
+                         const IterativeTetrahedralMesh& mesh);
+
     IterativeTetrahedralMesh mesh;
+    cl::Buffer node_buffer;
+    cl::Buffer transform_buffer;
+    cl::Buffer velocity_buffer;
+    Eigen::MatrixXf transform_matrix;
+
+    float period;
 };

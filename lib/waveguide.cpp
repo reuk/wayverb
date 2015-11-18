@@ -22,12 +22,14 @@ T pinv(const T& a, float epsilon = std::numeric_limits<float>::epsilon()) {
            svd.matrixU().adjoint();
 }
 
-void TetrahedralWaveguide::setup(cl::CommandQueue& queue, size_type o) {
+void TetrahedralWaveguide::setup(cl::CommandQueue& queue,
+                                 size_type o,
+                                 float sr) {
     Eigen::MatrixXf umat(4, 3);
     auto count = 0u;
-    auto basis = convert(nodes[o].position);
-    for (const auto& i : nodes[o].ports) {
-        auto pos = (convert(nodes[i].position) - basis).normalized();
+    auto basis = convert(mesh.get_nodes()[o].position);
+    for (const auto& i : mesh.get_nodes()[o].ports) {
+        auto pos = (convert(mesh.get_nodes()[i].position) - basis).normalized();
         umat.row(count++) << pos.x, pos.y, pos.z;
     }
 
@@ -42,16 +44,20 @@ void TetrahedralWaveguide::setup(cl::CommandQueue& queue, size_type o) {
              starting_velocity.begin(),
              starting_velocity.end(),
              velocity_buffer);
+
+    period = 1 / sr;
 }
 
 TetrahedralWaveguide::TetrahedralWaveguide(const TetrahedralProgram& program,
                                            cl::CommandQueue& queue,
-                                           const std::vector<Node>& nodes)
-        : Waveguide<TetrahedralProgram>(program, queue, nodes.size())
-        , nodes(nodes)
+                                           const IterativeTetrahedralMesh& mesh)
+        : Waveguide<TetrahedralProgram>(program, queue, mesh.get_nodes().size())
+        , mesh(mesh)
+        //    TODO this seems like it's asking for problems
         , node_buffer(program.getInfo<CL_PROGRAM_CONTEXT>(),
-                      this->nodes.begin(),
-                      this->nodes.end(),
+                      const_cast<Node*>(this->mesh.get_nodes().data()),
+                      const_cast<Node*>(this->mesh.get_nodes().data()) +
+                          this->mesh.get_nodes().size(),
                       true)
         , transform_buffer(program.getInfo<CL_PROGRAM_CONTEXT>(),
                            CL_MEM_READ_WRITE,
@@ -75,18 +81,26 @@ TetrahedralWaveguide::TetrahedralWaveguide(const TetrahedralProgram& program,
 #endif
 }
 
-cl_float TetrahedralWaveguide::run_step(size_type o,
-                                        cl::CommandQueue& queue,
-                                        kernel_type& kernel,
-                                        size_type nodes,
-                                        cl::Buffer& previous,
-                                        cl::Buffer& current,
-                                        cl::Buffer& output) {
-    if (o > this->nodes.size()) {
+TetrahedralWaveguide::TetrahedralWaveguide(const TetrahedralProgram& program,
+                                           cl::CommandQueue& queue,
+                                           const Boundary& boundary,
+                                           float spacing)
+        : TetrahedralWaveguide(
+              program, queue, IterativeTetrahedralMesh(boundary, spacing)) {
+}
+
+RunStepResult TetrahedralWaveguide::run_step(size_type o,
+                                             cl::CommandQueue& queue,
+                                             kernel_type& kernel,
+                                             size_type nodes,
+                                             cl::Buffer& previous,
+                                             cl::Buffer& current,
+                                             cl::Buffer& output) {
+    if (o > this->mesh.get_nodes().size()) {
         throw runtime_error("requested output node does not exist");
     }
 
-    if (!this->nodes[o].inside) {
+    if (!this->mesh.get_nodes()[o].inside) {
         throw runtime_error("requested output node is outside boundary");
     }
 
@@ -99,6 +113,8 @@ cl_float TetrahedralWaveguide::run_step(size_type o,
            node_buffer,
            transform_buffer,
            velocity_buffer,
+           mesh.get_spacing(),
+           period,
            o,
            output);
 
@@ -110,7 +126,8 @@ cl_float TetrahedralWaveguide::run_step(size_type o,
 
     auto velocity = convert(current_velocity.front());
     auto intensity = velocity * out.front();
-//    Logger::log("intensity: ", intensity);
+
+    Logger::log("intensity: ", intensity);
 
 #ifdef TESTING
     static size_type ind = 0;
@@ -124,32 +141,14 @@ cl_float TetrahedralWaveguide::run_step(size_type o,
     }
 #endif
 
-    return out.front();
+    return RunStepResult(out.front(), intensity);
 }
 
-IterativeTetrahedralWaveguide::IterativeTetrahedralWaveguide(
-    const TetrahedralProgram& program,
-    cl::CommandQueue& queue,
-    const Boundary& boundary,
-    float cube_side)
-        : IterativeTetrahedralWaveguide(
-              program, queue, IterativeTetrahedralMesh(boundary, cube_side)) {
-}
-
-IterativeTetrahedralWaveguide::IterativeTetrahedralWaveguide(
-    const TetrahedralProgram& program,
-    cl::CommandQueue& queue,
-    const IterativeTetrahedralMesh& mesh)
-        : TetrahedralWaveguide(program, queue, mesh.nodes)
-        , mesh(mesh) {
-}
-
-IterativeTetrahedralWaveguide::size_type
-IterativeTetrahedralWaveguide::get_index_for_coordinate(const Vec3f& v) const {
+TetrahedralWaveguide::size_type TetrahedralWaveguide::get_index_for_coordinate(
+    const Vec3f& v) const {
     return mesh.get_index(mesh.get_locator(v));
 }
 
-Vec3f IterativeTetrahedralWaveguide::get_coordinate_for_index(
-    size_type index) const {
-    return convert(mesh.nodes[index].position);
+Vec3f TetrahedralWaveguide::get_coordinate_for_index(size_type index) const {
+    return convert(mesh.get_nodes()[index].position);
 }

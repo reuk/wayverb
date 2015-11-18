@@ -32,13 +32,18 @@ public:
     const float cube_side;
     const std::vector<Vec3f> scaled_cube;
     const Vec3i dim;
-    std::vector<Node> nodes;
+
+    const std::vector<Node>& get_nodes() const;
+    float get_spacing() const;
 
     static float cube_side_from_node_spacing(float spacing);
 
 private:
     static const std::array<std::array<Locator, PORTS>, CUBE_NODES>
         offset_table;
+
+    std::vector<Node> nodes;
+    float spacing;
 
     Vec3i get_dim() const;
     std::vector<Node> get_nodes(const Boundary& boundary) const;

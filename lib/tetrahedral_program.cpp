@@ -26,6 +26,8 @@ kernel void waveguide
 ,   global Node * nodes
 ,   global float * transform_matrix
 ,   global float3 * velocity_buffer
+,   float spatial_sampling_period
+,   float T
 ,   unsigned long read
 ,   global float * output
 ) {
@@ -64,7 +66,7 @@ kernel void waveguide
             int port_index = node->ports[i];
             if (port_index >= 0 && nodes[port_index].inside)
                 differences[i] = (previous[port_index] - previous[index]) /
-                    distance(nodes[port_index].position, nodes[index].position);
+                    spatial_sampling_period;
         }
 
         //  the default for Eigen is column-major matrices
@@ -90,7 +92,15 @@ kernel void waveguide
         multiplied *= -1 / ambient_density;
 
         //  add result to previous velocity at this junction
-        *velocity_buffer += multiplied;
+        //  numerical integration
+        //
+        //  I thought integration meant just adding to the previous value like
+        //  *velocity_buffer += multiplied;
+        //  but apparently the integrator has the transfer function
+        //  Hint(z) = Tz^-1 / (1 - z^-1)
+        //  so hopefully this is right
+
+        *velocity_buffer = T * multiplied / (1 - multiplied);
     }
 }
 )"};

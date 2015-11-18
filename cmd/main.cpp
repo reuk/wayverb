@@ -3,6 +3,7 @@
 #include "scene_data.h"
 #include "test_flag.h"
 #include "conversions.h"
+#include "microphone.h"
 
 #include "rayverb.h"
 
@@ -215,7 +216,7 @@ int main(int argc, char** argv) {
         auto boundary = get_mesh_boundary(scene_data);
         auto waveguide_program =
             get_program<TetrahedralProgram>(context, device);
-        IterativeTetrahedralWaveguide waveguide(
+        TetrahedralWaveguide waveguide(
             waveguide_program, queue, boundary, divisions);
         auto mic_index = waveguide.get_index_for_coordinate(convert(mic));
         auto source_index = waveguide.get_index_for_coordinate(convert(source));
@@ -280,13 +281,16 @@ int main(int argc, char** argv) {
 #endif
 
         auto w_results =
-            waveguide.run_basic(corrected_source, mic_index, steps);
+            waveguide.run_basic(corrected_source, mic_index, steps, sr);
 
-        normalize(w_results);
+        Microphone microphone(Vec3f(0, 0, 1), 0.5);
+        auto w_pressures = microphone.process(w_results);
+
+        normalize(w_pressures);
 
         vector<float> out_signal(output_sr * w_results.size() / sr);
 
-        SRC_DATA sample_rate_info{w_results.data(),
+        SRC_DATA sample_rate_info{w_pressures.data(),
                                   out_signal.data(),
                                   long(w_results.size()),
                                   long(out_signal.size()),

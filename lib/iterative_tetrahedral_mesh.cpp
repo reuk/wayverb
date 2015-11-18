@@ -64,7 +64,8 @@ IterativeTetrahedralMesh::IterativeTetrahedralMesh(const Boundary& boundary,
         , cube_side(cube_side_from_node_spacing(spacing))
         , scaled_cube(get_scaled_cube())
         , dim(get_dim())
-        , nodes(get_nodes(boundary)) {
+        , nodes(get_nodes(boundary))
+        , spacing(spacing) {
 }
 
 IterativeTetrahedralMesh::size_type IterativeTetrahedralMesh::get_index(
@@ -168,4 +169,12 @@ IterativeTetrahedralMesh::get_neighbors(size_type index) const {
 
 float IterativeTetrahedralMesh::cube_side_from_node_spacing(float spacing) {
     return spacing / Vec3f(0.25, 0.25, 0.25).mag();
+}
+
+const std::vector<Node>& IterativeTetrahedralMesh::get_nodes() const {
+    return nodes;
+}
+
+float IterativeTetrahedralMesh::get_spacing() const {
+    return spacing;
 }
