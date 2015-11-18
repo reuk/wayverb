@@ -6,31 +6,30 @@
 #include <numeric>
 #include <iostream>
 
-using namespace std;
-
 void filter(FilterType ft,
-            vector<vector<vector<float>>>& data,
+            std::vector<std::vector<std::vector<float>>>& data,
             float sr,
             float lo_cutoff) {
-    unique_ptr<Bandpass> bp;
+    std::unique_ptr<Bandpass> bp;
 
     switch (ft) {
         case FILTER_TYPE_WINDOWED_SINC:
-            bp = make_unique<BandpassWindowedSinc>(data.front().front().size());
+            bp = std::make_unique<BandpassWindowedSinc>(
+                data.front().front().size());
             break;
         case FILTER_TYPE_BIQUAD_ONEPASS:
-            bp = make_unique<OnepassBandpassBiquad>();
+            bp = std::make_unique<OnepassBandpassBiquad>();
             break;
         case FILTER_TYPE_BIQUAD_TWOPASS:
-            bp = unique_ptr<TwopassBandpassBiquad>();
+            bp = std::make_unique<TwopassBandpassBiquad>();
             break;
         case FILTER_TYPE_LINKWITZ_RILEY:
-            bp = unique_ptr<LinkwitzRiley>();
+            bp = std::make_unique<LinkwitzRiley>();
             break;
     }
 
     for (auto& channel : data) {
-        const vector<float> EDGES{
+        const std::vector<float> EDGES{
             lo_cutoff, 175, 350, 700, 1400, 2800, 5600, 11200, 20000};
 
         for (auto i = 0u; i != channel.size(); ++i) {

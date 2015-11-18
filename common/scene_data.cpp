@@ -8,30 +8,28 @@
 #include <stdexcept>
 #include <fstream>
 
-using namespace std;
-using namespace rapidjson;
-
-void attemptJsonParse(const string& fname, Document& doc) {
-    ifstream in(fname);
-    string file((istreambuf_iterator<char>(in)), istreambuf_iterator<char>());
+void attemptJsonParse(const std::string& fname, rapidjson::Document& doc) {
+    std::ifstream in(fname);
+    std::string file((std::istreambuf_iterator<char>(in)),
+                     std::istreambuf_iterator<char>());
 
     doc.Parse(file.c_str());
 }
 
-SurfaceLoader::SurfaceLoader(const string& fpath) {
+SurfaceLoader::SurfaceLoader(const std::string& fpath) {
     Surface defaultSurface{
         VolumeType({{0.92, 0.92, 0.93, 0.93, 0.94, 0.95, 0.95, 0.95}}),
         VolumeType({{0.50, 0.90, 0.95, 0.95, 0.95, 0.95, 0.95, 0.95}})};
 
     add_surface("default", defaultSurface);
 
-    Document document;
+    rapidjson::Document document;
     attemptJsonParse(fpath, document);
     if (!document.IsObject())
-        throw runtime_error("Materials must be stored in a JSON object");
+        throw std::runtime_error("Materials must be stored in a JSON object");
 
     for (auto i = document.MemberBegin(); i != document.MemberEnd(); ++i) {
-        string name = i->name.GetString();
+        std::string name = i->name.GetString();
 
         Surface surface;
         ValueJsonValidator<Surface>(surface).run(i->value);
@@ -40,7 +38,8 @@ SurfaceLoader::SurfaceLoader(const string& fpath) {
     }
 }
 
-void SurfaceLoader::add_surface(const string& name, const Surface& surface) {
+void SurfaceLoader::add_surface(const std::string& name,
+                                const Surface& surface) {
     surfaces.push_back(surface);
     surface_indices[name] = surfaces.size() - 1;
 }
@@ -58,17 +57,18 @@ SurfaceLoader::size_type SurfaceLoader::get_index(
     return ret;
 }
 
-SceneData::SceneData(const string& fpath, const string& mat_file) {
+SceneData::SceneData(const std::string& fpath, const std::string& mat_file) {
     populate(fpath, mat_file);
 }
 
-SceneData::SceneData(const aiScene* const scene, const string& mat_file) {
+SceneData::SceneData(const aiScene* const scene, const std::string& mat_file) {
     populate(scene, mat_file);
 }
 
-void SceneData::populate(const aiScene* const scene, const string& mat_file) {
+void SceneData::populate(const aiScene* const scene,
+                         const std::string& mat_file) {
     if (!scene)
-        throw runtime_error("scene pointer is null");
+        throw std::runtime_error("scene pointer is null");
 
     SurfaceLoader surface_loader(mat_file);
     surfaces = surface_loader.get_surfaces();
@@ -85,13 +85,13 @@ void SceneData::populate(const aiScene* const scene, const string& mat_file) {
 
         auto surface_index = surface_loader.get_index(matName.C_Str());
 
-        vector<cl_float3> meshVertices(mesh->mNumVertices);
+        std::vector<cl_float3> meshVertices(mesh->mNumVertices);
 
         for (auto j = 0u; j != mesh->mNumVertices; ++j) {
             meshVertices[j] = convert(mesh->mVertices[j]);
         }
 
-        vector<Triangle> meshTriangles(mesh->mNumFaces);
+        std::vector<Triangle> meshTriangles(mesh->mNumFaces);
 
         for (auto j = 0u; j != mesh->mNumFaces; ++j) {
             auto face = mesh->mFaces[j];
@@ -109,7 +109,8 @@ void SceneData::populate(const aiScene* const scene, const string& mat_file) {
     }
 }
 
-void SceneData::populate(const string& fpath, const string& mat_file) {
+void SceneData::populate(const std::string& fpath,
+                         const std::string& mat_file) {
     Assimp::Importer importer;
     try {
         populate(
@@ -118,6 +119,6 @@ void SceneData::populate(const string& fpath, const string& mat_file) {
                                aiProcess_GenSmoothNormals | aiProcess_FlipUVs)),
             mat_file);
     } catch (...) {
-        throw runtime_error("failed to read file");
+        throw std::runtime_error("failed to read file");
     }
 }

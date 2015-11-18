@@ -1,11 +1,8 @@
 #include "logger.h"
 
-using namespace std;
-using namespace std::chrono;
-
 void Logger::restart() {
-    ofstream of(fname, ofstream::trunc);
+    std::ofstream of(fname, std::ofstream::trunc);
 }
 
-mutex Logger::mutex;
-const string Logger::fname("logfile.txt");
+std::mutex Logger::mutex;
+const std::string Logger::fname("logfile.txt");

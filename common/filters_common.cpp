@@ -4,8 +4,6 @@
 #include <numeric>
 #include <iostream>
 
-using namespace std;
-
 void Lopass::setParams(float co, float s) {
     cutoff = co;
     sr = s;
@@ -26,7 +24,7 @@ LopassWindowedSinc::LopassWindowedSinc(unsigned long inputLength)
         : FastConvolution(KERNEL_LENGTH + inputLength - 1) {
 }
 
-void LopassWindowedSinc::filter(vector<float> &data) {
+void LopassWindowedSinc::filter(std::vector<float> &data) {
     data = convolve(kernel, data);
 }
 
@@ -39,7 +37,7 @@ HipassWindowedSinc::HipassWindowedSinc(unsigned long inputLength)
         : FastConvolution(KERNEL_LENGTH + inputLength - 1) {
 }
 
-void HipassWindowedSinc::filter(vector<float> &data) {
+void HipassWindowedSinc::filter(std::vector<float> &data) {
     data = convolve(kernel, data);
 }
 
@@ -52,9 +50,9 @@ BandpassWindowedSinc::BandpassWindowedSinc(unsigned long inputLength)
         : FastConvolution(KERNEL_LENGTH + inputLength - 1) {
 }
 
-vector<float> BandpassWindowedSinc::bandpassKernel(float sr,
-                                                   float lo,
-                                                   float hi) {
+std::vector<float> BandpassWindowedSinc::bandpassKernel(float sr,
+                                                        float lo,
+                                                        float hi) {
     auto lop = lopass_sinc_kernel(sr, hi, 1 + KERNEL_LENGTH / 2);
     auto hip = hipass_sinc_kernel(sr, lo, 1 + KERNEL_LENGTH / 2);
 
@@ -62,7 +60,7 @@ vector<float> BandpassWindowedSinc::bandpassKernel(float sr,
     return fc.convolve(lop, hip);
 }
 
-void BandpassWindowedSinc::filter(vector<float> &data) {
+void BandpassWindowedSinc::filter(std::vector<float> &data) {
     data = convolve(kernel, data);
 }
 
@@ -71,7 +69,7 @@ void BandpassWindowedSinc::setParams(float l, float h, float s) {
     copy(i.begin(), i.end(), kernel.begin());
 }
 
-void Biquad::onepass(vector<float> &data) {
+void Biquad::onepass(std::vector<float> &data) {
     double z1 = 0;
     double z2 = 0;
 
@@ -92,7 +90,7 @@ void Biquad::setParams(
     a2 = _a2;
 }
 
-void Biquad::twopass(vector<float> &data) {
+void Biquad::twopass(std::vector<float> &data) {
     onepass(data);
     reverse(begin(data), end(data));
     onepass(data);
@@ -116,11 +114,11 @@ void OnepassBandpassBiquad::setParams(float lo, float hi, float sr) {
         nrm * alpha, nrm * 0, nrm * -alpha, nrm * (-2 * cs), nrm * (1 - alpha));
 }
 
-void OnepassBandpassBiquad::filter(vector<float> &data) {
+void OnepassBandpassBiquad::filter(std::vector<float> &data) {
     onepass(data);
 }
 
-void TwopassBandpassBiquad::filter(vector<float> &data) {
+void TwopassBandpassBiquad::filter(std::vector<float> &data) {
     twopass(data);
 }
 
@@ -150,7 +148,7 @@ void LinkwitzRiley::setParams(float l, float h, float s) {
     }
 }
 
-void LinkwitzRiley::filter(vector<float> &data) {
+void LinkwitzRiley::filter(std::vector<float> &data) {
     lopass.twopass(data);
     hipass.twopass(data);
 }

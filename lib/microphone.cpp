@@ -23,8 +23,7 @@ std::vector<float> Microphone::process(
                        auto mag = i.intensity.mag();
                        if (mag == 0)
                            return 0.0f;
-                       mag = sqrt(mag *
-                                   pow(attenuation(i.intensity), 2));
+                       mag = sqrt(mag * pow(attenuation(i.intensity), 2));
                        return std::copysign(mag, i.pressure);
                    });
     return ret;

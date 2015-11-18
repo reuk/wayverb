@@ -5,8 +5,6 @@
 #define __CL_ENABLE_EXCEPTIONS
 #include "cl.hpp"
 
-using namespace std;
-
 void print_device_info(const cl::Device& i);
 cl::Context get_context();
 cl::Device get_device(const cl::Context& context);

@@ -5,8 +5,6 @@
 #include <cmath>
 #include <algorithm>
 
-using namespace std;
-
 CuboidBoundary::CuboidBoundary(const Vec3f& c0, const Vec3f& c1)
         : c0(c0)
         , c1(c1) {
@@ -24,12 +22,12 @@ Vec3f CuboidBoundary::get_dimensions() const {
     return c1 - c0;
 }
 
-CuboidBoundary get_cuboid_boundary(const vector<Vec3f>& vertices) {
+CuboidBoundary get_cuboid_boundary(const std::vector<Vec3f>& vertices) {
     Vec3f mini, maxi;
     mini = maxi = vertices.front();
     for (auto i = vertices.begin() + 1; i != vertices.end(); ++i) {
-        mini = i->apply(mini, [](auto a, auto b) { return min(a, b); });
-        maxi = i->apply(maxi, [](auto a, auto b) { return max(a, b); });
+        mini = i->apply(mini, [](auto a, auto b) { return std::min(a, b); });
+        maxi = i->apply(maxi, [](auto a, auto b) { return std::max(a, b); });
     }
     return CuboidBoundary(mini, maxi);
 }
@@ -53,10 +51,10 @@ Vec3i MeshBoundary::hash_point(const Vec3f& v) const {
         .map([](auto i) -> int { return floor(i); });
 }
 
-vector<vector<MeshBoundary::reference_store>>
+std::vector<std::vector<MeshBoundary::reference_store>>
 MeshBoundary::get_triangle_references() const {
-    vector<vector<reference_store>> ret(DIVISIONS,
-                                        vector<reference_store>(DIVISIONS));
+    std::vector<std::vector<reference_store>> ret(
+        DIVISIONS, std::vector<reference_store>(DIVISIONS));
     for (auto i = 0u; i != triangles.size(); ++i) {
         const auto& t = triangles[i];
         const auto bounding_box = get_cuboid_boundary(
@@ -75,8 +73,8 @@ MeshBoundary::get_triangle_references() const {
     return ret;
 }
 
-MeshBoundary::MeshBoundary(const vector<Triangle>& triangles,
-                           const vector<Vec3f>& vertices)
+MeshBoundary::MeshBoundary(const std::vector<Triangle>& triangles,
+                           const std::vector<Vec3f>& vertices)
         : triangles(triangles)
         , vertices(vertices)
         , boundary(get_cuboid_boundary(vertices))
@@ -122,12 +120,12 @@ public:
     float distance;
 };
 
-ostream& operator<<(ostream& strm, const Intersects& obj) {
+std::ostream& operator<<(std::ostream& strm, const Intersects& obj) {
     return strm << "Intersects {" << obj.intersects << ", " << obj.distance
                 << "}";
 }
 
-using TriangleVerts = array<Vec3f, 3>;
+using TriangleVerts = std::array<Vec3f, 3>;
 
 Intersects triangle_intersection(const TriangleVerts& tri, const Ray& ray) {
     auto EPSILON = 0.0001;
@@ -163,7 +161,7 @@ Intersects triangle_intersection(const TriangleVerts& tri, const Ray& ray) {
 }
 
 Intersects triangle_intersection(const Triangle& tri,
-                                 const vector<Vec3f>& vertices,
+                                 const std::vector<Vec3f>& vertices,
                                  const Ray& ray) {
     const auto v0 = vertices[tri.v0];
     const auto v1 = vertices[tri.v1];

@@ -6,8 +6,6 @@
 #include <algorithm>
 #include <cstdlib>
 
-using namespace std;
-
 template <typename T>
 T pinv(const T& a, float epsilon = std::numeric_limits<float>::epsilon()) {
     //  taken from http://eigen.tuxfamily.org/bz/show_bug.cgi?id=257
@@ -39,7 +37,7 @@ void TetrahedralWaveguide::setup(cl::CommandQueue& queue,
              transform_matrix.data() + 12,
              transform_buffer);
 
-    vector<cl_float3> starting_velocity(1, {{0, 0, 0, 0}});
+    std::vector<cl_float3> starting_velocity(1, {{0, 0, 0, 0}});
     cl::copy(queue,
              starting_velocity.begin(),
              starting_velocity.end(),
@@ -97,15 +95,15 @@ RunStepResult TetrahedralWaveguide::run_step(size_type o,
                                              cl::Buffer& current,
                                              cl::Buffer& output) {
     if (o > this->mesh.get_nodes().size()) {
-        throw runtime_error("requested output node does not exist");
+        throw std::runtime_error("requested output node does not exist");
     }
 
     if (!this->mesh.get_nodes()[o].inside) {
-        throw runtime_error("requested output node is outside boundary");
+        throw std::runtime_error("requested output node is outside boundary");
     }
 
-    vector<cl_float> out(1);
-    vector<cl_float3> current_velocity(1);
+    std::vector<cl_float> out(1);
+    std::vector<cl_float3> current_velocity(1);
 
     kernel(cl::EnqueueArgs(queue, cl::NDRange(nodes)),
            current,

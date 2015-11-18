@@ -7,15 +7,13 @@
 #include <algorithm>
 #include <numeric>
 
-using namespace std;
-
 IterativeTetrahedralMesh::Locator::Locator(const Vec3i& pos, int mod_ind)
         : pos(pos)
         , mod_ind(mod_ind) {
 }
 
-vector<Vec3f> IterativeTetrahedralMesh::get_scaled_cube() const {
-    const vector<Vec3f> basic_cube{
+std::vector<Vec3f> IterativeTetrahedralMesh::get_scaled_cube() const {
+    const std::vector<Vec3f> basic_cube{
         {0.00, 0.00, 0.00},
         {0.50, 0.00, 0.50},
         {0.25, 0.25, 0.25},
@@ -25,7 +23,7 @@ vector<Vec3f> IterativeTetrahedralMesh::get_scaled_cube() const {
         {0.25, 0.75, 0.75},
         {0.75, 0.75, 0.25},
     };
-    vector<Vec3f> ret(basic_cube.size());
+    std::vector<Vec3f> ret(basic_cube.size());
     transform(basic_cube.begin(),
               basic_cube.end(),
               ret.begin(),
@@ -38,10 +36,10 @@ Vec3i IterativeTetrahedralMesh::get_dim() const {
     return (dimensions / cube_side).map([](auto i) { return ceil(i); }) + 1;
 }
 
-vector<Node> IterativeTetrahedralMesh::get_nodes(
+std::vector<Node> IterativeTetrahedralMesh::get_nodes(
     const Boundary& boundary) const {
     auto total_nodes = dim.product() * scaled_cube.size();
-    vector<Node> ret(total_nodes);
+    std::vector<Node> ret(total_nodes);
     auto counter = 0u;
     generate(ret.begin(),
              ret.end(),
@@ -49,7 +47,8 @@ vector<Node> IterativeTetrahedralMesh::get_nodes(
                  Node ret;
                  auto p = this->get_position(this->get_locator(counter));
                  auto neighbors = this->get_neighbors(counter);
-                 copy(neighbors.begin(), neighbors.end(), begin(ret.ports));
+                 std::copy(
+                     neighbors.begin(), neighbors.end(), std::begin(ret.ports));
                  ret.position = convert(p);
                  ret.inside = boundary.inside(p);
                  counter += 1;
@@ -116,8 +115,8 @@ Vec3f IterativeTetrahedralMesh::get_position(const Locator& locator) const {
 
 using Locator = IterativeTetrahedralMesh::Locator;
 
-const array<array<Locator, IterativeTetrahedralMesh::PORTS>,
-            IterativeTetrahedralMesh::CUBE_NODES>
+const std::array<std::array<Locator, IterativeTetrahedralMesh::PORTS>,
+                 IterativeTetrahedralMesh::CUBE_NODES>
     IterativeTetrahedralMesh::offset_table{{
         {{Locator(Vec3i(0, 0, 0), 2),
           Locator(Vec3i(-1, 0, -1), 3),
@@ -153,10 +152,10 @@ const array<array<Locator, IterativeTetrahedralMesh::PORTS>,
           Locator(Vec3i(0, 0, 0), 5)}},
     }};
 
-array<int, IterativeTetrahedralMesh::PORTS>
+std::array<int, IterativeTetrahedralMesh::PORTS>
 IterativeTetrahedralMesh::get_neighbors(size_type index) const {
     auto locator = get_locator(index);
-    array<int, PORTS> ret;
+    std::array<int, PORTS> ret;
     for (auto i = 0u; i != PORTS; ++i) {
         auto relative = offset_table[locator.mod_ind][i];
         auto summed = locator.pos + relative.pos;

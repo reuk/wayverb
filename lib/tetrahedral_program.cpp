@@ -1,13 +1,11 @@
 #include "tetrahedral_program.h"
 
-using namespace std;
-
 TetrahedralProgram::TetrahedralProgram(const cl::Context& context,
                                        bool build_immediate)
         : Program(context, source, build_immediate) {
 }
 
-const string TetrahedralProgram::source{
+const std::string TetrahedralProgram::source{
 #ifdef DIAGNOSTIC
     "#define DIAGNOSTIC\n"
 #endif
