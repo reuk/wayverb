@@ -8,6 +8,7 @@ add_subdirectory(gtest)
 add_subdirectory(lib)
 add_subdirectory(common)
 add_subdirectory(cmd)
+add_subdirectory(mic_test)
 add_subdirectory(rayverb)
 
 enable_testing()

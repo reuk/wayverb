@@ -163,7 +163,6 @@ Melding of the DWM and geometric models
 
 
 
-** TODO **
 Modelling of ambisonic receivers in the dwm mesh
 ================================================
 
@@ -200,5 +199,12 @@ Modelling of ambisonic receivers in the dwm mesh
 ==========
 
 * can I do 2D reverb tail estimation?
-
 * can I do variable grid spacings for microphone placement
+    * I don't think so
+* is it worth doing a bit more estimation, and aiming for a real-time model?
+
+** TODO **
+More Modelling of ambisonic receivers
+=====================================
+
+* 

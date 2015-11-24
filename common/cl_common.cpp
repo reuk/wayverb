@@ -8,7 +8,7 @@ void print_device_info(const cl::Device& i) {
 };
 
 cl::Context get_context() {
-    vector<cl::Platform> platform;
+    std::vector<cl::Platform> platform;
     cl::Platform::get(&platform);
 
     cl_context_properties cps[3] = {
