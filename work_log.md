@@ -207,4 +207,10 @@ Modelling of ambisonic receivers in the dwm mesh
 More Modelling of ambisonic receivers
 =====================================
 
-* 
+* need a good way of modelling microphone diffuse-field response
+    * @hacihaboiboglu2010 uses a tenth-order minimum-phase iir filter
+    * ** TODO ** can I do this too?
+        * I mean, probably
+        * I have a test-case up and running, but my integrator is nonsense
+        * ** TODO ** check the integrator and try to get it working properly
+        * ** TODO ** still need to check the directional error

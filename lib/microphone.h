@@ -14,6 +14,9 @@ public:
 
     std::vector<float> process(const std::vector<RunStepResult>& input) const;
 
+    Vec3f get_direction() const;
+    float get_shape() const;
+
 private:
     Vec3f direction;
     float shape;

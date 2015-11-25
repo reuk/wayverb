@@ -32,6 +32,7 @@ void TetrahedralWaveguide::setup(cl::CommandQueue& queue,
     }
 
     transform_matrix = pinv(umat);
+    Logger::log("transform_matrix: ", transform_matrix);
     cl::copy(queue,
              transform_matrix.data(),
              transform_matrix.data() + 12,
@@ -125,6 +126,7 @@ RunStepResult TetrahedralWaveguide::run_step(size_type o,
     auto velocity = convert(current_velocity.front());
     auto intensity = velocity * out.front();
 
+    Logger::log("velocity: ", velocity);
     Logger::log("intensity: ", intensity);
 
 #ifdef TESTING

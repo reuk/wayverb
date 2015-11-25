@@ -48,8 +48,8 @@ kernel void waveguide
     temp /= 2;
     temp -= previous[index];
 
+    barrier(CLK_GLOBAL_MEM_FENCE);
     previous[index] = temp;
-
     barrier(CLK_GLOBAL_MEM_FENCE);
 
     if (index == read) {
@@ -87,9 +87,8 @@ kernel void waveguide
 
         //  muliply by -1/ambient_density
         float ambient_density = 1.225;
-        multiplied *= -1 / ambient_density;
+        multiplied /= -ambient_density;
 
-        //  add result to previous velocity at this junction
         //  numerical integration
         //
         //  I thought integration meant just adding to the previous value like
@@ -97,8 +96,11 @@ kernel void waveguide
         //  but apparently the integrator has the transfer function
         //  Hint(z) = Tz^-1 / (1 - z^-1)
         //  so hopefully this is right
+        //
+        //  Hint(z) = Y(z)/X(z) = Tz^-1/(1 - z^-1)
+        //  y(n) = Tx(n - 1) + y(n - 1)
 
-        *velocity_buffer = T * multiplied / (1 - multiplied);
+        *velocity_buffer += T * multiplied;
     }
 }
 )"};

@@ -47,10 +47,8 @@ int main(int argc, char** argv) {
     Logger::restart();
     gflags::ParseCommandLineFlags(&argc, &argv, true);
 
-    if (argc != 5) {
-        Logger::log_err(
-            "expecting a config file, an input model, an input material file, "
-            "and an output filename");
+    if (argc != 2) {
+        Logger::log_err("expecting an output folder");
 
         Logger::log_err("actually found: ");
         for (auto i = 0u; i != argc; ++i) {
@@ -60,29 +58,18 @@ int main(int argc, char** argv) {
         return EXIT_FAILURE;
     }
 
-    string config_file = argv[1];
-    string model_file = argv[2];
-    string material_file = argv[3];
-    string output_file = argv[4];
+    string output_folder = argv[1];
 
     auto output_sr = 44100;
     auto bit_depth = 16;
 
     unsigned long format, depth;
 
-    try {
-        format = get_file_format(output_file);
-        depth = get_file_depth(bit_depth);
-    } catch (const runtime_error& e) {
-        Logger::log_err("critical runtime error: ", e.what());
-        return EXIT_FAILURE;
-    }
-
     //  global params
     auto speed_of_sound = 340.0;
 
-    auto max_freq = 44100;
-    auto filter_freq = max_freq * 0.5;
+    auto max_freq = 11025;
+    auto filter_freq = max_freq * 1.0;
     auto sr = max_freq * 4;
     auto divisions = (speed_of_sound * sqrt(3)) / sr;
 
@@ -90,13 +77,12 @@ int main(int argc, char** argv) {
     auto device = get_device(context);
     cl::CommandQueue queue(context, device);
 
-    cl_float3 source{{0, 2, 0}};
-    cl_float3 mic{{0, 2, 5}};
+    cl_float3 source{{0, 0, 0}};
+    cl_float3 mic{{0, -1.15, 0}};
+    auto test_locations = 8;
 
     try {
-        SceneData scene_data(model_file, material_file);
-
-        auto boundary = get_mesh_boundary(scene_data);
+        CuboidBoundary boundary(Vec3f(-2.05, -2.5, -1.05), Vec3f(2.05, 2.5, 1.05));
         auto waveguide_program =
             get_program<TetrahedralProgram>(context, device);
         TetrahedralWaveguide waveguide(
@@ -107,48 +93,60 @@ int main(int argc, char** argv) {
         auto corrected_source =
             waveguide.get_coordinate_for_index(source_index);
 
-        auto steps = 1 << 8;
+ //       auto steps = 4410;
+        auto steps = 1000;
 
         auto w_results =
             waveguide.run_basic(corrected_source, mic_index, steps, sr);
 
-        Microphone microphone(Vec3f(0, 0, 1), 0.5);
-        auto w_pressures = microphone.process(w_results);
+        auto amp_factor = 1e3;
 
-        normalize(w_pressures);
+        for (auto i = 0u; i != test_locations; ++i)
+        {
+            auto angle = i * M_PI * 2 / test_locations;
 
-        vector<float> out_signal(output_sr * w_results.size() / sr);
+            Microphone microphone(Vec3f(cos(angle), sin(angle), 0), 0.5);
 
-        SRC_DATA sample_rate_info{w_pressures.data(),
-                                  out_signal.data(),
-                                  long(w_results.size()),
-                                  long(out_signal.size()),
-                                  0,
-                                  0,
-                                  0,
-                                  output_sr / double(sr)};
+            auto w_pressures = microphone.process(w_results);
 
-        src_simple(&sample_rate_info, SRC_SINC_BEST_QUALITY, 1);
+            vector<float> out_signal(output_sr * w_results.size() / sr);
 
-        write_sndfile(output_file + ".waveguide.full.wav",
-                      {out_signal},
-                      output_sr,
-                      depth,
-                      format);
+            SRC_DATA sample_rate_info{w_pressures.data(),
+                                      out_signal.data(),
+                                      long(w_results.size()),
+                                      long(out_signal.size()),
+                                      0,
+                                      0,
+                                      0,
+                                      output_sr / double(sr)};
 
-        LinkwitzRiley lopass;
-        lopass.setParams(1, filter_freq, output_sr);
-        lopass.filter(out_signal);
+            src_simple(&sample_rate_info, SRC_SINC_BEST_QUALITY, 1);
 
-        normalize(out_signal);
+            mul(out_signal, amp_factor);
 
-        vector<vector<float>> waveguide_results = {out_signal};
+            std::stringstream ss;
+            ss << output_folder << "/" << i << ".waveguide.full.wav";
 
-        write_sndfile(output_file + ".waveguide.lopass.wav",
-                      waveguide_results,
-                      output_sr,
-                      depth,
-                      format);
+            auto output_file = ss.str();
+
+            try {
+                format = get_file_format(output_file);
+                depth = get_file_depth(bit_depth);
+            } catch (const runtime_error& e) {
+                Logger::log_err("critical runtime error: ", e.what());
+                return EXIT_FAILURE;
+            }
+
+            LinkwitzRiley lopass;
+            lopass.setParams(1, filter_freq, output_sr);
+            lopass.filter(out_signal);
+
+            write_sndfile(output_file,
+                          {out_signal},
+                          output_sr,
+                          depth,
+                          format);
+        }
 
     } catch (const cl::Error& e) {
         Logger::log_err("critical cl error: ", e.what());

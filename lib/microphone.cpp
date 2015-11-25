@@ -26,5 +26,17 @@ std::vector<float> Microphone::process(
                        mag = sqrt(mag * pow(attenuation(i.intensity), 2));
                        return std::copysign(mag, i.pressure);
                    });
+
+    //  TODO filter with diffuse-field-response filter here
+    //  make sure to use zero-phase filtering
     return ret;
+}
+
+Vec3f Microphone::get_direction() const
+{
+    return direction;
+}
+float Microphone::get_shape() const
+{
+    return shape;
 }
