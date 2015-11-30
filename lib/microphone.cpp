@@ -32,11 +32,9 @@ std::vector<float> Microphone::process(
     return ret;
 }
 
-Vec3f Microphone::get_direction() const
-{
+Vec3f Microphone::get_direction() const {
     return direction;
 }
-float Microphone::get_shape() const
-{
+float Microphone::get_shape() const {
     return shape;
 }

@@ -31,23 +31,20 @@
 #include <cmath>
 #include <map>
 
-using namespace std;
-using namespace rapidjson;
-
 // -1 <= z <= 1, -pi <= theta <= pi
 cl_float3 spherePoint(float z, float theta) {
     const float ztemp = sqrtf(1 - z * z);
     return (cl_float3){{ztemp * cosf(theta), ztemp * sinf(theta), z, 0}};
 }
 
-vector<cl_float3> getRandomDirections(unsigned long num) {
-    vector<cl_float3> ret(num);
-    uniform_real_distribution<float> zDist(-1, 1);
-    uniform_real_distribution<float> thetaDist(-M_PI, M_PI);
-    auto seed = chrono::system_clock::now().time_since_epoch().count();
-    default_random_engine engine(seed);
+std::vector<cl_float3> getRandomDirections(unsigned long num) {
+    std::vector<cl_float3> ret(num);
+    std::uniform_real_distribution<float> zDist(-1, 1);
+    std::uniform_real_distribution<float> thetaDist(-M_PI, M_PI);
+    auto seed = std::chrono::system_clock::now().time_since_epoch().count();
+    std::default_random_engine engine(seed);
 
-    for (auto&& i : ret)
+    for (auto& i : ret)
         i = spherePoint(zDist(engine), thetaDist(engine));
 
     return ret;
@@ -61,8 +58,8 @@ double db2a(double db) {
     return pow(10, db / 20);
 }
 
-vector<float> squintegrate(const std::vector<float>& sig) {
-    vector<float> ret(sig.size());
+std::vector<float> squintegrate(const std::vector<float>& sig) {
+    std::vector<float> ret(sig.size());
     partial_sum(sig.rbegin(),
                 sig.rend(),
                 ret.rbegin(),
@@ -70,7 +67,7 @@ vector<float> squintegrate(const std::vector<float>& sig) {
     return ret;
 }
 
-int rt60(const vector<float>& sig) {
+int rt60(const std::vector<float>& sig) {
     auto squintegrated = squintegrate(sig);
     normalize(squintegrated);
     auto target = db2a(-60);
@@ -80,17 +77,9 @@ int rt60(const vector<float>& sig) {
                             [target](auto i) { return i < target; }));
 }
 
-MeshBoundary get_mesh_boundary(const SceneData& sd) {
-    vector<Vec3f> v(sd.vertices.size());
-    transform(sd.vertices.begin(),
-              sd.vertices.end(),
-              v.begin(),
-              [](auto i) { return convert(i); });
-    return MeshBoundary(sd.triangles, v);
-}
-
-vector<float> exponential_decay_envelope(int steps, float attenuation_factor) {
-    vector<float> ret(steps);
+std::vector<float> exponential_decay_envelope(int steps,
+                                              float attenuation_factor) {
+    std::vector<float> ret(steps);
     auto amp = 1.0f;
     generate(begin(ret),
              end(ret),
@@ -102,7 +91,7 @@ vector<float> exponential_decay_envelope(int steps, float attenuation_factor) {
     return ret;
 }
 
-bool all_zero(const vector<float>& t) {
+bool all_zero(const std::vector<float>& t) {
     auto ret = true;
     for (auto i = 0u; i != t.size(); ++i) {
         if (t[i] != 0) {
@@ -130,10 +119,10 @@ int main(int argc, char** argv) {
         return EXIT_FAILURE;
     }
 
-    string config_file = argv[1];
-    string model_file = argv[2];
-    string material_file = argv[3];
-    string output_file = argv[4];
+    std::string config_file = argv[1];
+    std::string model_file = argv[2];
+    std::string material_file = argv[3];
+    std::string output_file = argv[4];
 
     auto output_sr = 44100;
     auto bit_depth = 16;
@@ -143,7 +132,7 @@ int main(int argc, char** argv) {
     try {
         format = get_file_format(output_file);
         depth = get_file_depth(bit_depth);
-    } catch (const runtime_error& e) {
+    } catch (const std::runtime_error& e) {
         Logger::log_err("critical runtime error: ", e.what());
         return EXIT_FAILURE;
     }
@@ -173,17 +162,19 @@ int main(int argc, char** argv) {
     cl_float3 source{{0, 2, 0}};
     cl_float3 mic{{0, 2, 5}};
 
-    Document document;
+    rapidjson::Document document;
     attemptJsonParse(config_file, document);
 
     if (document.HasParseError()) {
-        cerr << "Encountered error while parsing config file:" << endl;
-        cerr << GetParseError_En(document.GetParseError()) << endl;
+        std::cerr << "Encountered error while parsing config file:"
+                  << std::endl;
+        std::cerr << GetParseError_En(document.GetParseError()) << std::endl;
         exit(1);
     }
 
     if (!document.IsObject()) {
-        cerr << "Rayverb config must be stored in a JSON object" << endl;
+        std::cerr << "Rayverb config must be stored in a JSON object"
+                  << std::endl;
         exit(1);
     }
 
@@ -213,7 +204,7 @@ int main(int argc, char** argv) {
     try {
         SceneData scene_data(model_file, material_file);
 
-        auto boundary = get_mesh_boundary(scene_data);
+        MeshBoundary boundary(scene_data);
         auto waveguide_program =
             get_program<TetrahedralProgram>(context, device);
         TetrahedralWaveguide waveguide(
@@ -237,7 +228,7 @@ int main(int argc, char** argv) {
         raytrace.raytrace(
             convert(corrected_mic), convert(corrected_source), directions);
         auto results = raytrace.getAllRaw(false);
-        vector<Speaker> speakers{Speaker{cl_float3{{0, 0, 0}}, 0}};
+        std::vector<Speaker> speakers{Speaker{cl_float3{{0, 0, 0}}, 0}};
         auto attenuated =
             Attenuate(raytrace_program, queue).attenuate(results, speakers);
 
@@ -288,7 +279,7 @@ int main(int argc, char** argv) {
 
         normalize(w_pressures);
 
-        vector<float> out_signal(output_sr * w_results.size() / sr);
+        std::vector<float> out_signal(output_sr * w_results.size() / sr);
 
         SRC_DATA sample_rate_info{w_pressures.data(),
                                   out_signal.data(),
@@ -317,7 +308,7 @@ int main(int argc, char** argv) {
 
         normalize(out_signal);
 
-        vector<vector<float>> waveguide_results = {out_signal};
+        std::vector<std::vector<float>> waveguide_results = {out_signal};
 
         write_sndfile(output_file + ".waveguide.lopass.wav",
                       waveguide_results,
@@ -331,7 +322,7 @@ int main(int argc, char** argv) {
 #if 0
         auto max_index = max(raytrace_results.front().size(),
                              waveguide_results.front().size());
-        vector<float> summed_results(max_index, 0);
+        std::vector<float> summed_results(max_index, 0);
         for (auto i = 0u; i != max_index; ++i) {
             if (i < raytrace_results.front().size())
                 summed_results[i] += raytrace_amp * raytrace_results.front()[i];
@@ -350,7 +341,7 @@ int main(int argc, char** argv) {
     } catch (const cl::Error& e) {
         Logger::log_err("critical cl error: ", e.what());
         return EXIT_FAILURE;
-    } catch (const runtime_error& e) {
+    } catch (const std::runtime_error& e) {
         Logger::log_err("critical runtime error: ", e.what());
         return EXIT_FAILURE;
     } catch (...) {

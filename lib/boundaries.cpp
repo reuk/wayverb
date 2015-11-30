@@ -1,6 +1,7 @@
 #include "boundaries.h"
 #include "test_flag.h"
 #include "logger.h"
+#include "conversions.h"
 
 #include <cmath>
 #include <algorithm>
@@ -93,6 +94,25 @@ MeshBoundary::MeshBoundary(const std::vector<Triangle>& triangles,
         file << endl;
     }
 #endif
+}
+
+std::tuple<std::vector<Triangle>, std::vector<Vec3f>> get_mesh_boundary_data(
+    const SceneData& sd) {
+    std::vector<Vec3f> v(sd.vertices.size());
+    std::transform(sd.vertices.begin(),
+                   sd.vertices.end(),
+                   v.begin(),
+                   [](auto i) { return convert(i); });
+    return std::make_tuple(sd.triangles, v);
+}
+
+MeshBoundary::MeshBoundary(const SceneData& sd)
+        : MeshBoundary(get_mesh_boundary_data(sd)) {
+}
+
+MeshBoundary::MeshBoundary(
+    const std::tuple<std::vector<Triangle>, std::vector<Vec3f>>& data)
+        : MeshBoundary(std::get<0>(data), std::get<1>(data)) {
 }
 
 class Ray {

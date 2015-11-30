@@ -37,6 +37,7 @@ struct MeshBoundary : public Boundary {
     MeshBoundary(
         const std::vector<Triangle>& triangles = std::vector<Triangle>(),
         const std::vector<Vec3f>& vertices = std::vector<Vec3f>());
+    MeshBoundary(const SceneData& sd);
     virtual ~MeshBoundary() noexcept = default;
     bool inside(const Vec3f& v) const override;
     CuboidBoundary get_aabb() const override;
@@ -56,5 +57,7 @@ struct MeshBoundary : public Boundary {
     const std::vector<std::vector<reference_store>> triangle_references;
 
 private:
+    MeshBoundary(
+        const std::tuple<std::vector<Triangle>, std::vector<Vec3f>>& data);
     std::vector<std::vector<reference_store>> get_triangle_references() const;
 };

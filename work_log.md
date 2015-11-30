@@ -212,5 +212,12 @@ More Modelling of ambisonic receivers
     * ** TODO ** can I do this too?
         * I mean, probably
         * I have a test-case up and running, but my integrator is nonsense
-        * ** TODO ** check the integrator and try to get it working properly
+        * I checked the integrator, seems to work now
+        * I generated some graphs demonstrating directionality for the cardioid
+          mic
+            * the good news is, it definitely works to some extent
+            * the bad news is, the error seems quite large
+        * test some other polar patterns
+        * ** TODO ** check the actual error between the actual and desired
+          polar patterns
         * ** TODO ** still need to check the directional error

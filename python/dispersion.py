@@ -87,7 +87,7 @@ def hermitian_angle(a, b):
     prod = np.dot(a, np.conj(b)).real
     mag_a = np.sqrt(np.dot(a, np.conj(a)))
     mag_b = np.sqrt(np.dot(b, np.conj(b)))
-    return prod / (mag_a * mag_b)
+    return (prod / (mag_a * mag_b)).real
 
 def direction_difference(arr):
     def get_term_1():
@@ -139,6 +139,25 @@ def main():
 
     print
     print direction_difference(w)
+
+    func = direction_difference
+    vfunc = np.vectorize(lambda x, y, z: func(np.array([x, y, z])))
+
+    max_val = np.pi / 4
+    phi, theta = np.mgrid[0:pi:50j, 0:2*pi:50j]
+    XX = max_val * np.sin(phi) * np.cos(theta)
+    YY = max_val * np.sin(phi) * np.sin(theta)
+    ZZ = max_val * np.cos(phi)
+    zz = vfunc(XX, YY, ZZ)
+    zzmin, zzmax = zz.min(), zz.max()
+    print "dispersion error range:", zzmin, "to", zzmax
+    zz = (zz - zzmin) / (zzmax - zzmin)
+
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+    ax.plot_surface(
+            XX, YY, ZZ, rstride=1, cstride=1, facecolors=cm.jet(zz))
+    plt.show()
 
 #    func = get_speed_campos
 #    vfunc = np.vectorize(lambda x, y, z: func(np.array([x, y, z])))

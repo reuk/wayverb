@@ -10,6 +10,7 @@ add_subdirectory(common)
 add_subdirectory(cmd)
 add_subdirectory(mic_test)
 add_subdirectory(rayverb)
+add_subdirectory(bsp)
 
 enable_testing()
 add_subdirectory(tests)
