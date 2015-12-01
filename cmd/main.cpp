@@ -4,6 +4,7 @@
 #include "test_flag.h"
 #include "conversions.h"
 #include "microphone.h"
+#include "hrtf_attenuator.h"
 
 #include "rayverb.h"
 
@@ -272,10 +273,14 @@ int main(int argc, char** argv) {
 #endif
 
         auto w_results =
-            waveguide.run_basic(corrected_source, mic_index, steps, sr);
+            waveguide.run_gaussian(corrected_source, mic_index, steps, sr);
 
         Microphone microphone(Vec3f(0, 0, 1), 0.5);
-        auto w_pressures = microphone.process(w_results);
+        HrtfAttenuator hrtf_attenuator(Vec3f(0, 0, 1), Vec3f(0, 1, 0), 0, sr);
+        //        auto w_pressures = microphone.process(w_results);
+        auto w_pressures = hrtf_attenuator.process(w_results);
+        for (auto i : w_pressures)
+            std::cout << i << std::endl;
 
         normalize(w_pressures);
 

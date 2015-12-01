@@ -11,6 +11,13 @@ float Microphone::attenuation(const Vec3f& incident) const {
     return (1 - shape) + shape * direction.dot(incident.normalized());
 }
 
+Vec3f Microphone::get_direction() const {
+    return direction;
+}
+float Microphone::get_shape() const {
+    return shape;
+}
+
 std::vector<float> Microphone::process(
     const std::vector<RunStepResult>& input) const {
     std::vector<float> ret(input.size());
@@ -30,11 +37,4 @@ std::vector<float> Microphone::process(
     //  TODO filter with diffuse-field-response filter here
     //  make sure to use zero-phase filtering
     return ret;
-}
-
-Vec3f Microphone::get_direction() const {
-    return direction;
-}
-float Microphone::get_shape() const {
-    return shape;
 }

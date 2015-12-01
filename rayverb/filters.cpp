@@ -1,5 +1,6 @@
 #include "filters.h"
 #include "filters_common.h"
+#include "hrtf.h"
 
 #include "sinc.h"
 
@@ -29,11 +30,8 @@ void filter(FilterType ft,
     }
 
     for (auto& channel : data) {
-        const std::vector<float> EDGES{
-            lo_cutoff, 175, 350, 700, 1400, 2800, 5600, 11200, 20000};
-
         for (auto i = 0u; i != channel.size(); ++i) {
-            bp->setParams(EDGES[i], EDGES[i + 1], sr);
+            bp->setParams(HrtfData::EDGES[i], HrtfData::EDGES[i + 1], sr);
             bp->filter(channel[i]);
         }
     }

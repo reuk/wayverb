@@ -129,7 +129,7 @@ int main(int argc, char** argv) {
             auto steps = 200;
 
             auto w_results =
-                waveguide.run_gaussian(corrected_source, mic_index, steps, sr);
+                waveguide.run_gaussian(convert(source), mic_index, steps, sr);
 
             auto w_pressures = microphone.process(w_results);
 

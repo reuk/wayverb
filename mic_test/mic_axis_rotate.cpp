@@ -70,8 +70,8 @@ int main(int argc, char** argv) {
     auto device = get_device(context);
     cl::CommandQueue queue(context, device);
 
-    cl_float3 source{{0, 0, 0}};
-    cl_float3 mic{{0, -1.15, 0}};
+    cl_float3 source{{-0.007, 0.006, 0.006}};
+    cl_float3 mic{{-0.007, -1.1, 0.006}};
     auto test_locations = 36;
 
     try {
@@ -95,7 +95,7 @@ int main(int argc, char** argv) {
         auto steps = 200;
 
         auto w_results =
-            waveguide.run_basic(corrected_source, mic_index, steps, sr);
+            waveguide.run_gaussian(corrected_source, mic_index, steps, sr);
 
         auto amp_factor = 4e3;
 

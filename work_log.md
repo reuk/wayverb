@@ -211,13 +211,14 @@ More Modelling of ambisonic receivers
     * @hacihaboiboglu2010 uses a tenth-order minimum-phase iir filter
     * ** TODO ** can I do this too?
         * I mean, probably
-        * I have a test-case up and running, but my integrator is nonsense
-        * I checked the integrator, seems to work now
-        * I generated some graphs demonstrating directionality for the cardioid
-          mic
-            * the good news is, it definitely works to some extent
-            * the bad news is, the error seems quite large
-        * test some other polar patterns
-        * ** TODO ** check the actual error between the actual and desired
-          polar patterns
-        * ** TODO ** still need to check the directional error
+    * I have a test-case up and running, but my integrator is nonsense
+    * I checked the integrator, seems to work now
+    * I generated some graphs demonstrating directionality for the cardioid
+      mic
+        * the good news is, it definitely works to some extent
+        * the bad news is, the error seems quite large
+    * test some other polar patterns
+    * check the actual error between the actual and desired polar patterns
+    * ** TODO ** still need to check the directional error
+    * I implemented an hrtf receiver for the waveguide mesh today
+        * ** TODO ** tests and whatnot

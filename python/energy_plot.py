@@ -8,7 +8,7 @@ def main():
     for i in range(bands):
         energies = []
         max_vals = []
-        with open("cardioid.r.energies.txt") as f:
+        with open("cardioid.energies.txt") as f:
             for line in f:
                 energy = float(split(line)[5 + i * 6])
                 max_val = float(split(line)[7 + i * 6])
@@ -24,7 +24,7 @@ def main():
         desired = [(1 - shape) + shape * np.cos(i) for i in theta]
 
         errors = [np.abs((b - a) / b) for a, b in zip(energies, desired)]
-        errors = [val for val in errors if not math.isnan(val)]
+        errors = [val for val in errors if not (math.isnan(val) or math.isinf(val))]
         print "max error:", max(errors)
         print "mean error:", sum(errors) / len(errors)
 

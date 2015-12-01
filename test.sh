@@ -9,10 +9,10 @@ progname_0=./mic_test/mic_axis_rotate
 progname_1=./mic_test/mic_offset_rotate
 
 calltest () {
-    $progname_0 $outdir_0
-#    $progname_1 $outdir_1 omni
-#    $progname_1 $outdir_1 cardioid
-#    $progname_1 $outdir_1 bidirectional
+#    $progname_0 $outdir_0
+    $progname_1 $outdir_1 omni
+    $progname_1 $outdir_1 cardioid
+    $progname_1 $outdir_1 bidirectional
 }
 
 cmake .. && make && ctest -V && calltest && mv *.energies.txt ../python

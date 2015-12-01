@@ -311,8 +311,6 @@ private:
     kernel_type kernel;
     const cl::Context context;
 
-    static const std::array<std::array<std::array<cl_float8, 180>, 360>, 2>
-        HRTF_DATA;
     std::vector<AttenuatedImpulse> attenuate(
         const cl_float3& mic_pos,
         unsigned long channel,

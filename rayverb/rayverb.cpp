@@ -2,6 +2,7 @@
 #include "filters.h"
 #include "config.h"
 #include "test_flag.h"
+#include "hrtf.h"
 
 #include "logger.h"
 
@@ -468,7 +469,7 @@ std::vector<AttenuatedImpulse> Hrtf::attenuate(
 
 const std::array<std::array<std::array<cl_float8, 180>, 360>, 2>&
 Hrtf::getHrtfData() const {
-    return HRTF_DATA;
+    return HrtfData::HRTF_DATA;
 }
 
 Attenuate::Attenuate(const RayverbProgram& program, cl::CommandQueue& queue)
