@@ -153,7 +153,26 @@ int main(int argc, char** argv) {
                 auto bands = 7;
                 auto min_band = 80;
 
+                auto print_energy = [&ofile] (const auto & sig, auto band) {
+                    auto band_energy = std::accumulate(
+                        sig.begin(),
+                        sig.end(),
+                        0.0,
+                        [](auto a, auto b) { return a + b * b; });
+
+                    auto max_val = std::accumulate(
+                        sig.begin(),
+                        sig.end(),
+                        0.0,
+                        [](auto a, auto b) { return std::max(a, fabs(b)); });
+
+                    ofile << " band: " << band << " energy: " << band_energy
+                          << " max: " << max_val;
+                };
+
                 ofile << "iteration: " << i;
+
+                print_energy(out_signal, "full");
 
                 for (auto i = 0; i != bands; ++i) {
                     auto band = out_signal;
@@ -164,20 +183,7 @@ int main(int argc, char** argv) {
                                        output_sr);
                     bandpass.filter(out_signal);
 
-                    auto band_energy = std::accumulate(
-                        out_signal.begin(),
-                        out_signal.end(),
-                        0.0,
-                        [](auto a, auto b) { return a + b * b; });
-
-                    auto max_val = std::accumulate(
-                        out_signal.begin(),
-                        out_signal.end(),
-                        0.0,
-                        [](auto a, auto b) { return std::max(a, fabs(b)); });
-
-                    ofile << " band: " << i << " energy: " << band_energy
-                          << " max: " << max_val;
+                    print_energy(band, i);
                 }
 
                 ofile << std::endl;

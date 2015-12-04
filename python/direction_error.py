@@ -1,6 +1,12 @@
 from math import e, pi
 import numpy as np
+
+import matplotlib
+render = True
+if render:
+    matplotlib.use('pgf')
 import matplotlib.pyplot as plt
+import matplotlib.patches as patches
 from matplotlib import colors, ticker, cm
 from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
@@ -44,10 +50,10 @@ def eq_23(w, pressure):
     return np.dot(np.linalg.pinv(get_U()), eq_22(w, pressure))
 
 def hermitian_angle(a, b):
-    prod = np.dot(a, np.conj(b))
+    prod = np.dot(a, b)
     mag_a = np.sqrt(np.dot(a, np.conj(a)))
     mag_b = np.sqrt(np.dot(b, np.conj(b)))
-    return (prod / (mag_a * mag_b)).real
+    return np.degrees(np.arccos((prod / (mag_a * mag_b)).real))
 
 def direction_difference(arr):
     pressure = 1
@@ -81,32 +87,51 @@ def get_max_valid_frequency(func, accuracy, starting_freq, increments, samples):
 
 def main():
     """
-    This program duplicates the tetrahedral dispersion diagrams from the paper
-    'The Tetrahedral Digital Waveguide Mesh' buy Duyne and Smith.
-
-    I wrote it to try to understand how to do dispersion analysis - the
-    analysis here is of the difference of the actual wavefront speed to the
-    ideal speed.
+    This program replicates the direction error analysis from the paper
+    Simulation of Directional Microphones in Digital Waveguide Mesh-Based
+    Models of Room Acoustics
     """
+
+    pgf_with_rc_fonts = {
+        'font.family': 'serif',
+        'font.serif': [],
+        'font.sans-serif': ['Helvetica Neue'],
+        'font.monospace': ['Input Mono Condensed'],
+    }
+
+    matplotlib.rcParams.update(pgf_with_rc_fonts)
 
     func = direction_difference
     vfunc = np.vectorize(lambda x, y, z: func(np.array([x, y, z])))
 
-    max_val = np.pi / 4
-    phi, theta = np.mgrid[0:pi:50j, 0:2*pi:50j]
-    XX = max_val * np.sin(phi) * np.cos(theta)
-    YY = max_val * np.sin(phi) * np.sin(theta)
-    ZZ = max_val * np.cos(phi)
-    zz = vfunc(XX, YY, ZZ)
-    zzmin, zzmax = zz.min(), zz.max()
-    print "dispersion error range:", zzmin, "to", zzmax
-    zz = (zz - zzmin) / (zzmax - zzmin)
+    plt.figure(figsize=(12, 3), dpi=100)
 
-    fig = plt.figure()
-    ax = fig.add_subplot(111, projection='3d')
-    ax.plot_surface(
-            XX, YY, ZZ, rstride=1, cstride=1, facecolors=cm.jet(zz))
+    for i, max_val in zip(range(3), [pi / 4, pi / 8, pi / 16]):
+        phi, theta = np.mgrid[0:pi:20j, 0:2*pi:40j]
+        XX = max_val * np.sin(phi) * np.cos(theta)
+        YY = max_val * np.sin(phi) * np.sin(theta)
+        ZZ = max_val * np.cos(phi)
+        zz = vfunc(XX, YY, ZZ)
+        zzmin, zzmax = zz.min(), zz.max()
+        print "dispersion error range:", zzmin, "to", zzmax
+
+        my_cm = cm.jet
+        m = cm.ScalarMappable(cmap=my_cm)
+        m.set_array(zz)
+        zz = (zz - zzmin) / (zzmax - zzmin)
+
+        ax = plt.subplot(131 + i, projection='3d')
+        ax.set_aspect("equal")
+        surf = ax.plot_surface(
+                XX, YY, ZZ, rstride=1, cstride=1, facecolors=my_cm(zz), linewidth=0)
+        plt.colorbar(m)
+        bounds = 0.8
+        ax.auto_scale_xyz([-bounds, bounds], [-bounds, bounds], [-bounds, bounds])
+        plt.axis("off")
+
     plt.show()
+    if render:
+        plt.savefig("direction_error_in_tetrahedral_mesh.pdf", bbox_inches="tight")
 
 if __name__ == "__main__":
     main()
