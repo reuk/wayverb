@@ -53,11 +53,11 @@ The current problem:
             * analysis by @hacihabiboglu2010 suggests that directional error
               for the tetrahedral mesh is significantly greater than the cubic
               mesh (but under what circumstances?)
-                * therefore *may not be appropriate* for mic modelling
+            * therefore *may not be appropriate* for mic modelling
             * the same paper mentions that the magnitude error of the
               tetrahedral is lowest for the same spatial sampling period
-                * but the referenced paper [@hacihabiboglu2008] seems to say
-                  otherwise?
+            * but the referenced paper [@hacihabiboglu2008] seems to say
+              otherwise?
         * try to correct the error somehow to increase the usable bandwidth
             * investigate frequency warping to mitigate frequency-dependent
               error
@@ -103,7 +103,6 @@ Dispersion analysis
     * I've read about speed error - now I need to read about other kinds of
       dispersion error
 
-** TODO **
 Dispersion error reduction
 ==========================
 
@@ -115,8 +114,7 @@ Dispersion error reduction
               particularly uniform
         * error might be presented as a function of *spatial* or *temporal*
           frequency
-            * I'm not sure I understand this distinction
-                * maybe ask *Alex*?
+            * I'm not sure I understand this distinction, maybe ask *Alex*?
             * I think it might be trivial to convert from one to the other as
               the spacing of the mesh is governed by temporal sampling frequency
               (or vice versa) anyway
@@ -124,6 +122,8 @@ Dispersion error reduction
       dwm mesh to a point where the error is within acceptable limits
         * this is definitely the most *memory* efficient way, not necessarily
           the most *time* efficient
+
+* yeah let's just oversample if this becomes a problem
 
 Justification for the Tetrahedral Mesh
 ======================================
@@ -158,10 +158,14 @@ Justification for the Tetrahedral Mesh
           correction is lower than the cost of just oversampling the mesh
 
 ** TODO **
+
 Melding of the DWM and geometric models
 =======================================
 
-
+* @siltanen2013
+    * @murphy2008
+    * @artez2009
+    * @southern2011
 
 Modelling of ambisonic receivers in the dwm mesh
 ================================================
@@ -203,8 +207,7 @@ Modelling of ambisonic receivers in the dwm mesh
     * I don't think so
 * is it worth doing a bit more estimation, and aiming for a real-time model?
 
-** TODO **
-More Modelling of ambisonic receivers
+More Modelling of directional receivers
 =====================================
 
 * need a good way of modelling microphone diffuse-field response
@@ -219,6 +222,54 @@ More Modelling of ambisonic receivers
         * the bad news is, the error seems quite large
     * test some other polar patterns
     * check the actual error between the actual and desired polar patterns
-    * ** TODO ** still need to check the directional error
+    * checked the directional error
     * I implemented an hrtf receiver for the waveguide mesh today
         * ** TODO ** tests and whatnot
+
+7/12/2015
+=========
+
+* ** TODO **
+* check error calculations, try to replicate
+    * max error of 19 vs 15 degrees
+* look into validation
+    * how do I validate questionnable bits of the project?
+    * get in contact with damian murphy at York?
+        * he might have time to look at my results etc.
+* go through code with Alex
+    * send Alex a minimal set of documents to read over christmas
+        * plus the github repo
+* think about unit tests
+    * have some way of quickly generating, verifying output
+    * models, scripts, focused towards testing certain parts of the engine
+            * it's ok if they need human verification, better than no
+              verification
+        * very simple models that facilitate certain reflection patterns
+        * cube to test reflection times etc.
+        * cube to test a few different materials
+            * coefficients above, below 1, 0
+            * do I get the reverb times I expect?
+        * comb filtering, flutter echo in larger spaces
+        * test the error
+        * how do my two models differ?
+    * start simple, with no ambiguity about the expected result
+* have a look for existing software packages that I can test/compare with
+* it would be interesting to actually TEST the frequency-dependent error
+* what's good enough?
+* revisit filters?
+* might allow me to optimise for different cases
+    * speed
+    * accuracy
+    * other... (?)
+* validate the two models against one another
+    * same surfaces, sources, recievers - how do the outputs differ
+
+* work on **boundary conditions** next
+    * try to get stuff working soonish after Christmas
+    * spend lots of time checking variables, performance
+    * re-read, re-read, check, etc.
+
+* think about where to cutoff between each model
+    * can I derive it from the model etc?
+
+* ** TODO ** chessboard decomposition method - halve the number of grid points!

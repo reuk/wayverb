@@ -1,42 +1,33 @@
-TODO
-====
+Hybrid Waveguide + Raytracing IR Generator
+==========================================
 
-* work plan
+This is an ongoing research project, I'll have more to say here in a couple of
+months.
 
-* raytracer + waveguide alignment
+Structure
+=========
 
-* sort out boundary conditions
-* work out how to do mic modelling or hrtf (multichannel)
+Important Folders
+-----------------
 
-* look into the Helmholtz equation
+* *lib* - waveguide library
+* *rayverb* - raytracing library
+* *common* - shared code for the waveguide and raytracing libraries
+* *tests* - simple verification tests will live here soon
+* *cmd* - the command-line tool itself
 
-* enveloping
-    * look into better envelope models
-    * starting with better attenuation coefficients for the current method
+Other stuff
+-----------
 
-* look into sample rate conversion
-    * think about ring direction (shouldn't ring both ways!)
-        * github.com/AlexHarker/M4L_Convolution_Reverb_Externals/bufresample.c
-    * test libsamplerate
-
-* interpolate initial impulse position
-
-CRITICAL
-========
-
-* generate 10 to 20 example outputs
-    * different waveguide spacings
-    * different filter frequencies
-    * different models
-    * mono/stereo
-    * different input position interpolation methods
-
-MAYBE
-=====
-
-* remove outside nodes
-* precompute neighbor nodes on the GPU instead
-    * *and benchmark*!
+* *mic_test* - programs for replicating tests similar to those in "Simulation of
+  Directional Microphones in Digital Waveguide Mesh-Based Models of Room
+  Acoustics", Hacıhabiboglu, IEEE transactions on audio, speech, and language
+  processing, vol. 18, no. 2, February 2010 (might be moved to *tests* soon)
+* *bsp* - binary space partition to speed up the raytracer, might be rolled back
+  into *rayverb* if I decide to finish it
+* *python* - handful of programs to check/graph results. Will be removed if I
+  find a good C++ graphing library
+* *docs* - anything I feel like I should write about as I'm working
 
 How it works
 ============
