@@ -229,16 +229,28 @@ More Modelling of directional receivers
 7/12/2015
 =========
 
-* ** TODO **
+Done
+----
+
+* send Alex a minimal set of documents to read over christmas
+    * plus the github repo
+* have a look for existing software packages that I can test/compare with
+    * doesn't look like there's anything
+* look into rotating model to find minimum bounding box
+    * it's a cubic algorithm, may not be worth it
+    * let's ignore this for now
+    * @orourke1984 is the paper to read
+
+TODO
+----
+
+* go through code with Alex
 * check error calculations, try to replicate
     * max error of 19 vs 15 degrees
 * look into validation
     * how do I validate questionnable bits of the project?
     * get in contact with damian murphy at York?
         * he might have time to look at my results etc.
-* go through code with Alex
-    * send Alex a minimal set of documents to read over christmas
-        * plus the github repo
 * think about unit tests
     * have some way of quickly generating, verifying output
     * models, scripts, focused towards testing certain parts of the engine
@@ -253,14 +265,15 @@ More Modelling of directional receivers
         * test the error
         * how do my two models differ?
     * start simple, with no ambiguity about the expected result
-* have a look for existing software packages that I can test/compare with
 * it would be interesting to actually TEST the frequency-dependent error
-* what's good enough?
+    * what's good enough?
 * revisit filters?
+
 * might allow me to optimise for different cases
     * speed
     * accuracy
     * other... (?)
+
 * validate the two models against one another
     * same surfaces, sources, recievers - how do the outputs differ
 
@@ -273,3 +286,6 @@ More Modelling of directional receivers
     * can I derive it from the model etc?
 
 * ** TODO ** chessboard decomposition method - halve the number of grid points!
+* ** TODO ** move grid based on receiver position (supposing gaussian pulses
+  are used as input)
+* ** TODO ** check validity of gaussian pulses as input!
