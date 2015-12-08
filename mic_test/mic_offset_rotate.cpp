@@ -31,8 +31,6 @@
 #include <cmath>
 #include <map>
 
-using namespace rapidjson;
-
 enum class PolarPattern {
     omni,
     cardioid,
@@ -110,7 +108,7 @@ int main(int argc, char** argv) {
         auto waveguide_program =
             get_program<TetrahedralProgram>(context, device);
         TetrahedralWaveguide waveguide(
-            waveguide_program, queue, boundary, divisions);
+            waveguide_program, queue, boundary, divisions, convert(mic));
 
         auto amp_factor = 4e3;
 
@@ -155,12 +153,12 @@ int main(int argc, char** argv) {
             auto bands = 7;
             auto min_band = 80;
 
-            auto print_energy = [&ofile] (const auto & sig, auto band) {
-                auto band_energy = std::accumulate(
-                    sig.begin(),
-                    sig.end(),
-                    0.0,
-                    [](auto a, auto b) { return a + b * b; });
+            auto print_energy = [&ofile](const auto& sig, auto band) {
+                auto band_energy =
+                    std::accumulate(sig.begin(),
+                                    sig.end(),
+                                    0.0,
+                                    [](auto a, auto b) { return a + b * b; });
 
                 auto max_val = std::accumulate(
                     sig.begin(),

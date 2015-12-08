@@ -37,33 +37,36 @@ Vec3i IterativeTetrahedralMesh::get_dim() const {
 }
 
 std::vector<Node> IterativeTetrahedralMesh::get_nodes(
-    const Boundary& boundary) const {
+    const Boundary& boundary, const Vec3f& anchor) const {
     auto total_nodes = dim.product() * scaled_cube.size();
     std::vector<Node> ret(total_nodes);
     auto counter = 0u;
-    generate(ret.begin(),
-             ret.end(),
-             [this, &counter, &boundary]() {
-                 Node ret;
-                 auto p = this->get_position(this->get_locator(counter));
-                 auto neighbors = this->get_neighbors(counter);
-                 std::copy(
-                     neighbors.begin(), neighbors.end(), std::begin(ret.ports));
-                 ret.position = convert(p);
-                 ret.inside = boundary.inside(p);
-                 counter += 1;
-                 return ret;
-             });
+    std::generate(
+        ret.begin(),
+        ret.end(),
+        [this, &counter, &boundary, &anchor]() {
+            Node ret;
+            auto p = this->get_position(this->get_locator(counter), anchor);
+            auto neighbors = this->get_neighbors(counter);
+            std::copy(
+                neighbors.begin(), neighbors.end(), std::begin(ret.ports));
+            ret.position = convert(p);
+            ret.inside = boundary.inside(p);
+            counter += 1;
+            return ret;
+        });
     return ret;
 }
 
 IterativeTetrahedralMesh::IterativeTetrahedralMesh(const Boundary& boundary,
-                                                   float spacing)
+                                                   float spacing,
+                                                   const Vec3f& anchor)
         : boundary(boundary.get_aabb())
         , cube_side(cube_side_from_node_spacing(spacing))
         , scaled_cube(get_scaled_cube())
         , dim(get_dim())
-        , nodes(get_nodes(boundary))
+        , diff(get_diff(anchor))
+        , nodes(get_nodes(boundary, anchor))
         , spacing(spacing) {
 }
 
@@ -86,7 +89,7 @@ IterativeTetrahedralMesh::Locator IterativeTetrahedralMesh::get_locator(
 
 IterativeTetrahedralMesh::Locator IterativeTetrahedralMesh::get_locator(
     const Vec3f& v) const {
-    auto transformed = v - boundary.c0;
+    auto transformed = v - boundary.c0 - diff;
     Vec3i cube_pos =
         (transformed / cube_side).map([](auto i) -> int { return i; });
     Vec3f difference = (transformed - (cube_pos * cube_side));
@@ -107,14 +110,22 @@ IterativeTetrahedralMesh::Locator IterativeTetrahedralMesh::get_locator(
     return Locator(cube_pos, closest);
 }
 
-Vec3f IterativeTetrahedralMesh::get_position(const Locator& locator) const {
+constexpr Vec3f IterativeTetrahedralMesh::get_diff(const Vec3f& anchor) const {
+    auto dif = anchor - boundary.c0;
+    Vec3i floored = (dif / cube_side).map([](auto i) { return floor(i); });
+    return dif - (floored * cube_side);
+}
+
+Vec3f IterativeTetrahedralMesh::get_position(const Locator& locator,
+                                             const Vec3f& anchor) const {
     auto cube_pos = locator.pos * cube_side;
     auto node_pos = scaled_cube[locator.mod_ind];
-    return cube_pos + node_pos + boundary.c0;
+    return cube_pos + node_pos + boundary.c0 + diff;
 }
 
 using Locator = IterativeTetrahedralMesh::Locator;
 
+//  TODO any way to test this?
 const std::array<std::array<Locator, IterativeTetrahedralMesh::PORTS>,
                  IterativeTetrahedralMesh::CUBE_NODES>
     IterativeTetrahedralMesh::offset_table{{

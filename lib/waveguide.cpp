@@ -32,7 +32,6 @@ void TetrahedralWaveguide::setup(cl::CommandQueue& queue,
     }
 
     transform_matrix = pinv(umat);
-    Logger::log("transform_matrix: ", transform_matrix);
     cl::copy(queue,
              transform_matrix.data(),
              transform_matrix.data() + 12,
@@ -83,9 +82,12 @@ TetrahedralWaveguide::TetrahedralWaveguide(const TetrahedralProgram& program,
 TetrahedralWaveguide::TetrahedralWaveguide(const TetrahedralProgram& program,
                                            cl::CommandQueue& queue,
                                            const Boundary& boundary,
-                                           float spacing)
+                                           float spacing,
+                                           const Vec3f& anchor)
         : TetrahedralWaveguide(
-              program, queue, IterativeTetrahedralMesh(boundary, spacing)) {
+              program,
+              queue,
+              IterativeTetrahedralMesh(boundary, spacing, anchor)) {
 }
 
 RunStepResult TetrahedralWaveguide::run_step(size_type o,
@@ -125,9 +127,6 @@ RunStepResult TetrahedralWaveguide::run_step(size_type o,
 
     auto velocity = convert(current_velocity.front());
     auto intensity = velocity * out.front();
-
-    Logger::log("velocity: ", velocity);
-    Logger::log("intensity: ", intensity);
 
 #ifdef TESTING
     static size_type ind = 0;

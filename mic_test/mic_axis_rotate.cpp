@@ -80,7 +80,7 @@ int main(int argc, char** argv) {
         auto waveguide_program =
             get_program<TetrahedralProgram>(context, device);
         TetrahedralWaveguide waveguide(
-            waveguide_program, queue, boundary, divisions);
+            waveguide_program, queue, boundary, divisions, convert(mic));
         auto mic_index = waveguide.get_index_for_coordinate(convert(mic));
         auto source_index = waveguide.get_index_for_coordinate(convert(source));
 
@@ -153,7 +153,7 @@ int main(int argc, char** argv) {
                 auto bands = 7;
                 auto min_band = 80;
 
-                auto print_energy = [&ofile] (const auto & sig, auto band) {
+                auto print_energy = [&ofile](const auto& sig, auto band) {
                     auto band_energy = std::accumulate(
                         sig.begin(),
                         sig.end(),

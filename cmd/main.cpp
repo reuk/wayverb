@@ -92,17 +92,6 @@ std::vector<float> exponential_decay_envelope(int steps,
     return ret;
 }
 
-bool all_zero(const std::vector<float>& t) {
-    auto ret = true;
-    for (auto i = 0u; i != t.size(); ++i) {
-        if (t[i] != 0) {
-            Logger::log("non-zero at element: ", i, ", value: ", t[i]);
-            ret = false;
-        }
-    }
-    return ret;
-}
-
 int main(int argc, char** argv) {
     Logger::restart();
     gflags::ParseCommandLineFlags(&argc, &argv, true);
@@ -209,13 +198,16 @@ int main(int argc, char** argv) {
         auto waveguide_program =
             get_program<TetrahedralProgram>(context, device);
         TetrahedralWaveguide waveguide(
-            waveguide_program, queue, boundary, divisions);
+            waveguide_program, queue, boundary, divisions, convert(mic));
         auto mic_index = waveguide.get_index_for_coordinate(convert(mic));
         auto source_index = waveguide.get_index_for_coordinate(convert(source));
 
         auto corrected_mic = waveguide.get_coordinate_for_index(mic_index);
         auto corrected_source =
             waveguide.get_coordinate_for_index(source_index);
+
+        Logger::log("mic: ", convert(mic));
+        Logger::log("corrected: ", corrected_mic);
 
 #ifdef TESTING
         auto steps = 1 << 8;
@@ -267,7 +259,6 @@ int main(int argc, char** argv) {
         auto decay_frames = rt60(raytrace_results.front());
         auto attenuation_factor = pow(db2a(-60), 1.0 / decay_frames);
         attenuation_factor = sqrt(attenuation_factor);
-        Logger::log("attenuation factor: ", attenuation_factor);
 #else
         auto attenuation_factor = pow(db2a(-60), 1.0 / steps);
 #endif
@@ -279,8 +270,6 @@ int main(int argc, char** argv) {
         HrtfAttenuator hrtf_attenuator(Vec3f(0, 0, 1), Vec3f(0, 1, 0), 0, sr);
         //        auto w_pressures = microphone.process(w_results);
         auto w_pressures = hrtf_attenuator.process(w_results);
-        for (auto i : w_pressures)
-            std::cout << i << std::endl;
 
         normalize(w_pressures);
 

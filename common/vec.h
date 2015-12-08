@@ -8,12 +8,12 @@
 
 #define VEC_OP(sym, functor)                                       \
     template <typename U>                                          \
-    auto operator sym(const Vec3<U>& rhs) const {                  \
+    constexpr auto operator sym(const Vec3<U>& rhs) const {        \
         return apply<std::functor<std::common_type_t<T, U>>>(rhs); \
     }                                                              \
                                                                    \
     template <typename U>                                          \
-    auto operator sym(const U& rhs) const {                        \
+    constexpr auto operator sym(const U& rhs) const {              \
         return operator sym(Vec3<U>(rhs));                         \
     }
 
@@ -33,25 +33,20 @@ struct Vec3 {
     using value_type = T;
     using Vec3t = Vec3<T>;
 
-    Vec3(T t = T()) noexcept : x(t), y(t), z(t) {
+    constexpr Vec3(T t = T()) noexcept : x(t), y(t), z(t) {
     }
 
-    Vec3(const T& x, const T& y, const T& z) noexcept : x(x), y(y), z(z) {
+    constexpr Vec3(const T& x, const T& y, const T& z) noexcept : x(x),
+                                                                  y(y),
+                                                                  z(z) {
     }
 
     template <typename U>
-    Vec3(const Vec3<U>& u) noexcept : x(u.x), y(u.y), z(u.z) {
+    constexpr Vec3(const Vec3<U>& u) noexcept : x(u.x), y(u.y), z(u.z) {
     }
 
-    Vec3(const Vec3& u) noexcept : x(u.x), y(u.y), z(u.z) {
-    }
-
-    Vec3& operator=(const Vec3& rhs) noexcept {
-        x = rhs.x;
-        y = rhs.y;
-        z = rhs.z;
-        return *this;
-    }
+    Vec3(const Vec3& u) noexcept = default;
+    Vec3& operator=(const Vec3& rhs) noexcept = default;
 
     template <typename V, typename U>
     auto fold(const U& u = U(), const V& v = V()) const {

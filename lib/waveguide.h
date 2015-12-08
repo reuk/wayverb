@@ -213,7 +213,8 @@ public:
     TetrahedralWaveguide(const TetrahedralProgram& program,
                          cl::CommandQueue& queue,
                          const Boundary& boundary,
-                         float spacing);
+                         float spacing,
+                         const Vec3f& anchor);
     virtual ~TetrahedralWaveguide() noexcept = default;
 
     void setup(cl::CommandQueue& queue, size_type o, float sr) override;
