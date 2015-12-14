@@ -1,3 +1,6 @@
--Ilib/
--Icommon/
+-Ilib
+-Icommon
 -Irayverb
+-Ibsp
+-I.
+-Igtest

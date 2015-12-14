@@ -240,6 +240,8 @@ Done
     * it's a cubic algorithm, may not be worth it
     * let's ignore this for now
     * @orourke1984 is the paper to read
+* move grid based on receiver position (supposing gaussian pulses
+  are used as input)
 
 TODO
 ----
@@ -286,6 +288,4 @@ TODO
     * can I derive it from the model etc?
 
 * ** TODO ** chessboard decomposition method - halve the number of grid points!
-* ** TODO ** move grid based on receiver position (supposing gaussian pulses
-  are used as input)
 * ** TODO ** check validity of gaussian pulses as input!

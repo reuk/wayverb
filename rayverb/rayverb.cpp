@@ -242,6 +242,8 @@ void Raytrace::raytrace(const cl_float3& micpos,
                         const std::vector<cl_float3>& directions) {
     storedMicpos = micpos;
 
+    //  TODO change this to use meshBoundary for inside/outside check
+
     //  check that mic and source are inside model bounds
     bool micinside = inside(bounds, micpos);
     bool srcinside = inside(bounds, source);

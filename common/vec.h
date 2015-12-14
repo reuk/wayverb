@@ -53,6 +53,11 @@ struct Vec3 {
         return v(x, v(y, v(z, u)));
     }
 
+    template <typename V>
+    auto foldi(const V& v = V()) const {
+        return v(x, v(y, z));
+    }
+
     template <typename U>
     auto map(const U& u = U()) const {
         return make_vec(u(x), u(y), u(z));
@@ -86,11 +91,11 @@ struct Vec3 {
     }
 
     T sum() const {
-        return fold<std::plus<T>>(0);
+        return foldi<std::plus<T>>();
     }
 
     T product() const {
-        return fold<std::multiplies<T>>(1);
+        return foldi<std::multiplies<T>>();
     }
 
     T mag_squared() const {
@@ -99,6 +104,14 @@ struct Vec3 {
 
     T mag() const {
         return sqrt(mag_squared());
+    }
+
+    T max() const {
+        return foldi([](auto a, auto b) { return std::max(a, b); });
+    }
+
+    T min() const {
+        return foldi([](auto a, auto b) { return std::min(a, b); });
     }
 
     auto normalized() const {
@@ -133,11 +146,11 @@ struct Vec3 {
     VEC_OP(||, logical_or);
 
     bool all() const {
-        return fold<std::logical_and<T>>(true);
+        return foldi<std::logical_and<T>>();
     }
 
     bool any() const {
-        return fold<std::logical_or<T>>(false);
+        return foldi<std::logical_or<T>>();
     }
 
     T x, y, z;

@@ -6,3 +6,4 @@ ls cmd/*.(h|cpp) | xargs clang-format -i
 ls tests/*.(h|cpp) | xargs clang-format -i
 ls rayverb/*.(h|cpp) | xargs clang-format -i
 ls mic_test/*.(h|cpp) | xargs clang-format -i
+ls bsp/*.(h|cpp) | xargs clang-format -i

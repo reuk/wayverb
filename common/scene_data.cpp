@@ -1,5 +1,6 @@
 #include "scene_data.h"
 
+#include "boundaries.h"
 #include "conversions.h"
 
 #include "config.h"
@@ -121,4 +122,13 @@ void SceneData::populate(const std::string& fpath,
     } catch (...) {
         throw std::runtime_error("failed to read file");
     }
+}
+
+CuboidBoundary SceneData::get_aabb() const {
+    std::vector<Vec3f> vec(vertices.size());
+    std::transform(vertices.begin(),
+                   vertices.end(),
+                   vec.begin(),
+                   [](auto i) { return convert(i); });
+    return get_cuboid_boundary(vec);
 }

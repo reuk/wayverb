@@ -17,6 +17,9 @@
 #include <vector>
 #include <map>
 
+class CuboidBoundary;
+class MeshBoundary;
+
 using VolumeType = cl_float8;
 
 typedef struct {
@@ -56,6 +59,8 @@ public:
     virtual ~SceneData() noexcept = default;
     void populate(const aiScene* const scene, const std::string& mat_file);
     void populate(const std::string& fpath, const std::string& mat_file);
+
+    CuboidBoundary get_aabb() const;
 
     std::vector<Triangle> triangles;
     std::vector<cl_float3> vertices;

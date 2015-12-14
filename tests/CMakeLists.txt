@@ -5,6 +5,8 @@ project(tests)
 include_directories(
     ${CMAKE_SOURCE_DIR}/lib
     ${CMAKE_SOURCE_DIR}/common
+    ${CMAKE_SOURCE_DIR}/bsp
+    ${CMAKE_SOURCE_DIR}/include
     ${CMAKE_SOURCE_DIR}/gtest/include
     "/usr/local/include/"
 )
