@@ -2,5 +2,4 @@
 -Icommon
 -Irayverb
 -Ibsp
--I.
--Igtest
+-Igtest/include

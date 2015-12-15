@@ -157,12 +157,12 @@ TEST(point_triangle_intersection, point_triangle_intersection) {
     ASSERT_EQ(Rel::idInside,
               point_triangle_intersection(
                   Vec3f(0, 0, 0),
-                  Triangle{0, 0, 1, 2},
-                  {Vec3f(-2, -1, 0), Vec3f(1, -1, 0), Vec3f(2, 1, 0)}));
+                  TriangleVerts(
+                      {{Vec3f(-2, -1, 0), Vec3f(1, -1, 0), Vec3f(2, 1, 0)}})));
 
     ASSERT_EQ(Rel::idOutside,
               point_triangle_intersection(
                   Vec3f(4, 4, 4),
-                  Triangle{0, 0, 1, 2},
-                  {Vec3f(-2, -1, 0), Vec3f(1, -1, 0), Vec3f(2, 1, 0)}));
+                  TriangleVerts(
+                      {{Vec3f(-2, -1, 0), Vec3f(1, -1, 0), Vec3f(2, 1, 0)}})));
 }

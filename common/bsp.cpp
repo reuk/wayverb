@@ -2,11 +2,9 @@
 
 #include "tri_cube_intersection.h"
 
-// Rel t_c_intersection(const Triangle & t, const std::vector<Vec3f> & v);
-
 std::vector<CuboidBoundary> next_boundaries(const CuboidBoundary & parent) {
     auto centre = parent.get_centre();
-    return std::vector<CuboidBoundary> {
+    return std::vector<CuboidBoundary>{
         CuboidBoundary(parent.c0, centre),
 
         CuboidBoundary(Vec3f(parent.c0.x, parent.c0.y, centre.z),
@@ -28,42 +26,35 @@ std::vector<CuboidBoundary> next_boundaries(const CuboidBoundary & parent) {
 }
 
 Octree::Octree(const MeshBoundary & mesh_boundary, int max_depth)
-        : mesh_boundary(mesh_boundary)
-        , aabb(mesh_boundary.get_aabb()) {
-
-    triangles = std::vector<int>(mesh_boundary.triangles.size());
-    std::iota(triangles.begin(), triangles.end(), 0);
-
-    if (max_depth == 0) {
-        return;
-    }
-
-    auto next = next_boundaries(get_aabb());
-    for (const auto & i : next) {
-        nodes.emplace_back(mesh_boundary, max_depth - 1, i, *this);
-    }
+        : Octree(mesh_boundary,
+                 max_depth,
+                 mesh_boundary.get_triangle_indices(),
+                 mesh_boundary.get_aabb()) {
 }
 
 Octree::Octree(const MeshBoundary & mesh_boundary,
                int max_depth,
-               const CuboidBoundary & aabb,
-               const Octree & parent)
-    : mesh_boundary(mesh_boundary)
-    , aabb(aabb) {
-
-    for (auto i : parent.triangles) {
-        if (get_aabb().overlaps(mesh_boundary.triangles[i], mesh_boundary.vertices)) {
+               const std::vector<int> to_test,
+               const CuboidBoundary & aabb)
+        : mesh_boundary(mesh_boundary)
+        , aabb(aabb) {
+    for (const auto i : to_test) {
+        if (get_aabb().overlaps(get_triangle_verts(mesh_boundary.triangles[i],
+                                                   mesh_boundary.vertices))) {
             triangles.push_back(i);
         }
     }
 
-    if (max_depth == 0) {
+    if (max_depth == 0 || to_test.empty()) {
         return;
     }
 
     auto next = next_boundaries(get_aabb());
     for (const auto & i : next) {
-        nodes.emplace_back(mesh_boundary, max_depth - 1, i, *this);
+        Octree test(mesh_boundary, max_depth - 1, get_triangles(), i);
+        if (!test.get_triangles().empty()) {
+            nodes.push_back(test);
+        }
     }
 }
 
@@ -77,4 +68,27 @@ const std::vector<Octree> & Octree::get_nodes() const {
 
 const std::vector<int> & Octree::get_triangles() const {
     return triangles;
+}
+
+//  TODO hahahahahahaha help
+void fill_static_octree(std::vector<int> & ret, const Octree & o) {
+    ret.push_back(o.get_nodes().size());  //  some nodes
+    for (const auto & i : o.get_nodes()) {
+        ret.push_back(0);  //  TODO node offsets
+    }
+    ret.push_back(o.get_triangles().size());  //  some triangles
+    for (const auto & i : o.get_triangles()) {
+        ret.push_back(i);  //  triangle offsets
+    }
+}
+
+std::vector<int> get_static_octree(const Octree & o) {
+    //  int     n nodes
+    //  int[]   node offsets
+    //  int     n triangles
+    //  int[]   triangle indices
+
+    std::vector<int> ret;
+    fill_static_octree(ret, o);
+    return ret;
 }

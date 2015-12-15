@@ -16,6 +16,8 @@ set(name tests)
 file(GLOB sources "*.cpp")
 
 add_definitions(${test_file_flag})
+add_definitions(-DOBJ_PATH="${CMAKE_SOURCE_DIR}/demo/assets/test_models/vault.obj")
+add_definitions(-DMAT_PATH="${CMAKE_SOURCE_DIR}/demo/assets/materials/vault.json")
 
 add_executable(${name} ${sources})
 

@@ -24,11 +24,13 @@ Vec3f get_min(const std::vector<Vec3f>& coll) {
     return sub_elementwise(coll, [](auto i, auto j) { return std::min(i, j); });
 }
 
-bool CuboidBoundary::overlaps(const Triangle& t, const std::vector<Vec3f> & v) const {
-    //  TODO transform t first so that it's position/size undergoes the
-    //  same transformation as this boundary does to become a unit cube at
-    //  the origin
-    return t_c_intersection(t, v) == Rel::idInside;
+bool CuboidBoundary::overlaps(const TriangleVerts& t) const {
+    auto coll = t;
+    for (auto& i : coll) {
+        i = i - get_centre();
+        i = i / get_dimensions();
+    }
+    return t_c_intersection(coll) == Rel::idInside;
 }
 
 CuboidBoundary CuboidBoundary::get_aabb() const {
@@ -239,4 +241,10 @@ bool MeshBoundary::inside(const Vec3f& v) const {
 
 CuboidBoundary MeshBoundary::get_aabb() const {
     return boundary;
+}
+
+std::vector<int> MeshBoundary::get_triangle_indices() const {
+    std::vector<int> ret(triangles.size());
+    std::iota(ret.begin(), ret.end(), 0);
+    return ret;
 }

@@ -9,6 +9,11 @@
 #include <stdexcept>
 #include <fstream>
 
+TriangleVerts get_triangle_verts(const Triangle& t,
+                                 const std::vector<Vec3f>& v) {
+    return TriangleVerts({{v[t.v0], v[t.v1], v[t.v2]}});
+}
+
 void attemptJsonParse(const std::string& fname, rapidjson::Document& doc) {
     std::ifstream in(fname);
     std::string file((std::istreambuf_iterator<char>(in)),

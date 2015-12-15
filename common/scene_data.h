@@ -34,6 +34,10 @@ typedef struct {
     VolumeType diffuse;
 } __attribute__((aligned(8))) Surface;
 
+using TriangleVerts = std::array<Vec3f, 3>;
+TriangleVerts get_triangle_verts(const Triangle& t,
+                                 const std::vector<Vec3f>& v);
+
 class SurfaceLoader {
 public:
     using size_type = std::vector<Surface>::size_type;

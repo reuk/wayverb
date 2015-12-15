@@ -6,8 +6,11 @@
 
 class Octree {
 public:
-    Octree(const MeshBoundary & scene_data, int max_depth);
-    Octree(const MeshBoundary & scene_data, int max_depth, const CuboidBoundary & aabb, const Octree & parent);
+    Octree(const MeshBoundary & mesh_boundary,
+           int max_depth,
+           const std::vector<int> to_test,
+           const CuboidBoundary & aabb);
+    Octree(const MeshBoundary & mesh_boundary, int max_depth);
 
     virtual ~Octree() noexcept = default;
 
@@ -21,3 +24,5 @@ private:
     std::vector<Octree> nodes;
     std::vector<int> triangles;
 };
+
+std::vector<int> get_static_octree(const Octree & o);

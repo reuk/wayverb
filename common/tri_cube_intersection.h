@@ -20,7 +20,5 @@ int bevel_2d(const Vec3f & p);
 int bevel_3d(const Vec3f & p);
 int check_point(const Vec3f & p1, const Vec3f & p2, float alpha, int mask);
 Rel check_line(const Vec3f & p1, const Vec3f & p2, int outcode_diff);
-Rel point_triangle_intersection(const Vec3f & p,
-                                const Triangle & t,
-                                const std::vector<Vec3f> & v);
-Rel t_c_intersection(const Triangle & t, const std::vector<Vec3f> & v);
+Rel point_triangle_intersection(const Vec3f & p, const TriangleVerts & t);
+Rel t_c_intersection(const TriangleVerts & t);

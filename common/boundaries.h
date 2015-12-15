@@ -28,7 +28,7 @@ public:
     CuboidBoundary(const Vec3f& c0 = Vec3f(), const Vec3f& c1 = Vec3f());
     virtual ~CuboidBoundary() noexcept = default;
     bool inside(const Vec3f& v) const override;
-    bool overlaps(const Triangle& t, const std::vector<Vec3f> & v) const;
+    bool overlaps(const TriangleVerts& t) const;
     CuboidBoundary get_aabb() const override;
     Vec3f get_centre() const;
     Vec3f get_dimensions() const;
@@ -56,6 +56,8 @@ public:
     virtual ~MeshBoundary() noexcept = default;
     bool inside(const Vec3f& v) const override;
     CuboidBoundary get_aabb() const override;
+
+    std::vector<int> get_triangle_indices() const;
 
     using reference_store = std::vector<uint32_t>;
 

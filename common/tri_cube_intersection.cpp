@@ -105,12 +105,10 @@ Rel check_line(const Vec3f & p1, const Vec3f & p2, int outcode_diff) {
     return Rel::idOutside;
 }
 
-Rel point_triangle_intersection(const Vec3f & p,
-                                const Triangle & t,
-                                const std::vector<Vec3f> & v) {
-    auto v0 = v[t.v0];
-    auto v1 = v[t.v1];
-    auto v2 = v[t.v2];
+Rel point_triangle_intersection(const Vec3f & p, const TriangleVerts & t) {
+    auto v0 = t[0];
+    auto v1 = t[1];
+    auto v2 = t[2];
 
     std::vector<Vec3f> coll = {v0, v1, v2};
     auto max = get_max(coll);
@@ -135,10 +133,10 @@ Rel point_triangle_intersection(const Vec3f & p,
     return ((sign12 & sign23 & sign31) == 0) ? Rel::idOutside : Rel::idInside;
 }
 
-Rel t_c_intersection(const Triangle & t, const std::vector<Vec3f> & v) {
-    auto v0 = v[t.v0];
-    auto v1 = v[t.v1];
-    auto v2 = v[t.v2];
+Rel t_c_intersection(const TriangleVerts & t) {
+    auto v0 = t[0];
+    auto v1 = t[1];
+    auto v2 = t[2];
 
     auto v0_test = face_plane(v0);
     if (v0_test == 0)
@@ -186,14 +184,14 @@ Rel t_c_intersection(const Triangle & t, const std::vector<Vec3f> & v) {
 
     auto d = norm.dot(v0);
 
-    auto normal_check = [&d, &t, &v](auto denom, auto x, auto y, auto z) {
+    auto normal_check = [&d, &t](auto denom, auto x, auto y, auto z) {
         if (fabs(denom) > eps) {
             auto pos = d / denom;
             Vec3f hit(std::copysign(pos, x),
                       std::copysign(pos, y),
                       std::copysign(pos, z));
             if (fabs(hit.x) <= 0.5) {
-                if (point_triangle_intersection(hit, t, v) == Rel::idInside) {
+                if (point_triangle_intersection(hit, t) == Rel::idInside) {
                     return Rel::idInside;
                 }
             }
