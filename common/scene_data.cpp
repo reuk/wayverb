@@ -14,6 +14,11 @@ TriangleVerts get_triangle_verts(const Triangle& t,
     return TriangleVerts({{v[t.v0], v[t.v1], v[t.v2]}});
 }
 
+TriangleVerts get_triangle_verts(const Triangle& t,
+                                 const std::vector<cl_float3> & v) {
+    return TriangleVerts({{convert(v[t.v0]), convert(v[t.v1]), convert(v[t.v2])}});
+}
+
 void attemptJsonParse(const std::string& fname, rapidjson::Document& doc) {
     std::ifstream in(fname);
     std::string file((std::istreambuf_iterator<char>(in)),
@@ -130,10 +135,20 @@ void SceneData::populate(const std::string& fpath,
 }
 
 CuboidBoundary SceneData::get_aabb() const {
+    return get_cuboid_boundary(get_converted_vertices());
+}
+
+std::vector<Vec3f> SceneData::get_converted_vertices() const {
     std::vector<Vec3f> vec(vertices.size());
     std::transform(vertices.begin(),
                    vertices.end(),
                    vec.begin(),
                    [](auto i) { return convert(i); });
-    return get_cuboid_boundary(vec);
+    return vec;
+}
+
+std::vector<int> SceneData::get_triangle_indices() const {
+    std::vector<int> ret(triangles.size());
+    std::iota(ret.begin(), ret.end(), 0);
+    return ret;
 }

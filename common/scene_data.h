@@ -37,6 +37,8 @@ typedef struct {
 using TriangleVerts = std::array<Vec3f, 3>;
 TriangleVerts get_triangle_verts(const Triangle& t,
                                  const std::vector<Vec3f>& v);
+TriangleVerts get_triangle_verts(const Triangle& t,
+                                 const std::vector<cl_float3> & v);
 
 class SurfaceLoader {
 public:
@@ -65,6 +67,8 @@ public:
     void populate(const std::string& fpath, const std::string& mat_file);
 
     CuboidBoundary get_aabb() const;
+    std::vector<Vec3f> get_converted_vertices() const;
+    std::vector<int> get_triangle_indices() const;
 
     std::vector<Triangle> triangles;
     std::vector<cl_float3> vertices;

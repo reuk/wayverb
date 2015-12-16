@@ -1,4 +1,4 @@
-#include "bsp.h"
+#include "octree.h"
 
 #include "gtest/gtest.h"
 
@@ -25,7 +25,12 @@ void print_nodes(const Octree & o, int level = 0) {
 
 TEST(constructor, constructor) {
     SceneData scene_data(OBJ_PATH, MAT_PATH);
-    MeshBoundary mesh_boundary(scene_data);
-    Octree octree(mesh_boundary, 4);
-    print_nodes(octree);
+    Octree octree(scene_data, 5);
+    //    print_nodes(octree);
+}
+
+TEST(flatten, flatten) {
+    SceneData scene_data(OBJ_PATH, MAT_PATH);
+    Octree octree(scene_data, 5);
+    auto flattened = get_static_octree(octree);
 }
