@@ -38,7 +38,7 @@ using TriangleVerts = std::array<Vec3f, 3>;
 TriangleVerts get_triangle_verts(const Triangle& t,
                                  const std::vector<Vec3f>& v);
 TriangleVerts get_triangle_verts(const Triangle& t,
-                                 const std::vector<cl_float3> & v);
+                                 const std::vector<cl_float3>& v);
 
 class SurfaceLoader {
 public:

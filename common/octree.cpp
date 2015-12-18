@@ -71,7 +71,6 @@ const std::vector<int> & Octree::get_triangles() const {
 }
 
 void fill_static_octree(std::vector<int> & ret, const Octree & o) {
-
     //  int     n triangles
     //  int[]   triangle indices
     //  int     n nodes

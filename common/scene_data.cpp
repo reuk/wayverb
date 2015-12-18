@@ -15,8 +15,9 @@ TriangleVerts get_triangle_verts(const Triangle& t,
 }
 
 TriangleVerts get_triangle_verts(const Triangle& t,
-                                 const std::vector<cl_float3> & v) {
-    return TriangleVerts({{convert(v[t.v0]), convert(v[t.v1]), convert(v[t.v2])}});
+                                 const std::vector<cl_float3>& v) {
+    return TriangleVerts(
+        {{convert(v[t.v0]), convert(v[t.v1]), convert(v[t.v2])}});
 }
 
 void attemptJsonParse(const std::string& fname, rapidjson::Document& doc) {
