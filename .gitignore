@@ -6,4 +6,6 @@
 /demo/impulses
 /demo/logfile.txt
 
+/visualiser/Builds/MacOSX/Build
+
 *.swp
