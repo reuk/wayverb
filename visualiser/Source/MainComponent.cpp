@@ -1,8 +1,10 @@
 #include "MainComponent.h"
 
 MainContentComponent::MainContentComponent()
-        : modelRendererComponent(std::make_unique<ModelRendererComponent>()) {
+        : modelRendererComponent(std::make_unique<ModelRendererComponent>())
+        , configPanel(std::make_unique<ConfigPanel>()) {
     addAndMakeVisible(modelRendererComponent.get());
+    addAndMakeVisible(configPanel.get());
     setSize(600, 400);
 }
 
@@ -10,5 +12,8 @@ void MainContentComponent::paint(Graphics& g) {
 }
 
 void MainContentComponent::resized() {
-    modelRendererComponent->setBounds(getLocalBounds());
+    auto panelHeight = 50;
+    modelRendererComponent->setBounds(
+        getLocalBounds().removeFromTop(getHeight() - panelHeight));
+    configPanel->setBounds(getLocalBounds().removeFromBottom(panelHeight));
 }

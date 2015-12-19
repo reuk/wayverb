@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ModelRendererComponent.hpp"
+#include "ConfigPanel.hpp"
 
 class MainContentComponent final : public Component {
 public:
@@ -11,4 +12,5 @@ public:
 
 private:
     std::unique_ptr<ModelRendererComponent> modelRendererComponent;
+    std::unique_ptr<ConfigPanel> configPanel;
 };

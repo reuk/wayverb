@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		050C13E4FE1E66D137F72242 /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 85DDEFF67D3BFB16084C0A15 /* IOKit.framework */; };
 		17BFF294246BE35E2334DF9F /* QTKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AED820E5E9613936B4CCA98A /* QTKit.framework */; };
+		1B4E90431C258FAF008E288A /* ConfigPanel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1B4E90411C258FAF008E288A /* ConfigPanel.cpp */; };
 		1B7D4FF81C21B4EB0038314B /* ModelRenderer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1B7D4FF61C21B4EB0038314B /* ModelRenderer.cpp */; };
 		1B7D4FFB1C21B62F0038314B /* ModelRendererComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1B7D4FF91C21B62F0038314B /* ModelRendererComponent.cpp */; };
 		1B7D50281C21BE900038314B /* libcommon.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B7D501D1C21BE830038314B /* libcommon.a */; };
@@ -212,6 +213,8 @@
 		1929BB7302A752E59841B8A1 /* juce_video.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; name = juce_video.mm; path = ../../JuceLibraryCode/modules/juce_video/juce_video.mm; sourceTree = SOURCE_ROOT; };
 		1A44838655E7F6CB3B8FE847 /* juce_File.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = juce_File.cpp; path = ../../JuceLibraryCode/modules/juce_core/files/juce_File.cpp; sourceTree = SOURCE_ROOT; };
 		1B0615551C21B21000EF3E7D /* Main.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = Main.hpp; path = ../../Source/Main.hpp; sourceTree = "<group>"; };
+		1B4E90411C258FAF008E288A /* ConfigPanel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ConfigPanel.cpp; path = ../../Source/ConfigPanel.cpp; sourceTree = "<group>"; };
+		1B4E90421C258FAF008E288A /* ConfigPanel.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = ConfigPanel.hpp; path = ../../Source/ConfigPanel.hpp; sourceTree = "<group>"; };
 		1B6108181CA032ADF5CE83F6 /* juce_FileTreeComponent.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = juce_FileTreeComponent.h; path = ../../JuceLibraryCode/modules/juce_gui_basics/filebrowser/juce_FileTreeComponent.h; sourceTree = SOURCE_ROOT; };
 		1B7D4FF61C21B4EB0038314B /* ModelRenderer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ModelRenderer.cpp; path = ../../Source/ModelRenderer.cpp; sourceTree = "<group>"; };
 		1B7D4FF71C21B4EB0038314B /* ModelRenderer.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = ModelRenderer.hpp; path = ../../Source/ModelRenderer.hpp; sourceTree = "<group>"; };
@@ -1159,6 +1162,8 @@
 				1B7D4FF71C21B4EB0038314B /* ModelRenderer.hpp */,
 				1B7D4FF91C21B62F0038314B /* ModelRendererComponent.cpp */,
 				1B7D4FFA1C21B62F0038314B /* ModelRendererComponent.hpp */,
+				1B4E90411C258FAF008E288A /* ConfigPanel.cpp */,
+				1B4E90421C258FAF008E288A /* ConfigPanel.hpp */,
 			);
 			name = Source;
 			sourceTree = "<group>";
@@ -2963,6 +2968,7 @@
 				36746B851FDA76C1EF32BEFA /* juce_gui_extra.mm in Sources */,
 				1B7D4FFB1C21B62F0038314B /* ModelRendererComponent.cpp in Sources */,
 				BA7F8CDA8A16A85DB80804CE /* juce_opengl.mm in Sources */,
+				1B4E90431C258FAF008E288A /* ConfigPanel.cpp in Sources */,
 				B6E7C6736DC0195FF3C82C4E /* juce_video.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

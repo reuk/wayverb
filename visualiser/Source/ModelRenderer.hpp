@@ -37,6 +37,8 @@ public:
     void draw() const override;
     void update(float dt) override;
 
+    void setModelMatrix(const glm::mat4& mat);
+
 private:
     const GenericShader& shader;
 
@@ -46,9 +48,8 @@ private:
     StaticIBO ibo;
     GLuint size;
 
+    glm::mat4 translation;
     glm::mat4 mat;
-
-    float phase{0};
 };
 
 class ModelRenderer final : public OpenGLRenderer {
@@ -60,6 +61,12 @@ public:
 
     void setAspect(float aspect);
     static glm::mat4 getProjectionMatrix(float aspect);
+
+    glm::mat4 getProjectionMatrix() const;
+    glm::mat4 getViewMatrix() const;
+    glm::mat4 getMatrices() const;
+
+    void setModelMatrix(const glm::mat4& mat);
 
 private:
     SceneData scene_data;
