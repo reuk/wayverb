@@ -6,6 +6,9 @@
 #include "microphone.h"
 #include "hrtf_attenuator.h"
 
+#include "rayverb_config.h"
+#include "waveguide_config.h"
+
 #include "rayverb.h"
 
 #include "cl_common.h"
@@ -31,6 +34,31 @@
 #include <numeric>
 #include <cmath>
 #include <map>
+
+class CombinedConfig : public WaveguideConfig, public RayverbConfig {};
+
+template <>
+struct JsonGetter<CombinedConfig> {
+    JsonGetter(CombinedConfig& t)
+            : t(t) {
+    }
+
+    virtual bool check(const rapidjson::Value& value) const {
+        JsonGetter<RayverbConfig> jg_r(t);
+        JsonGetter<WaveguideConfig> jg_w(t);
+        return value.IsObject() && jg_r.check(value) && jg_r.check(value);
+    }
+
+    virtual void get(const rapidjson::Value& value) const {
+        JsonGetter<RayverbConfig> jg_r(t);
+        jg_r.get(value);
+
+        JsonGetter<WaveguideConfig> jg_w(t);
+        jg_w.get(value);
+    }
+
+    CombinedConfig& t;
+};
 
 // -1 <= z <= 1, -pi <= theta <= pi
 cl_float3 spherePoint(float z, float theta) {
@@ -114,43 +142,9 @@ int main(int argc, char** argv) {
     std::string material_file = argv[3];
     std::string output_file = argv[4];
 
-    auto output_sr = 44100;
-    auto bit_depth = 16;
-
-    unsigned long format, depth;
-
-    try {
-        format = get_file_format(output_file);
-        depth = get_file_depth(bit_depth);
-    } catch (const std::runtime_error& e) {
-        Logger::log_err("critical runtime error: ", e.what());
-        return EXIT_FAILURE;
-    }
-
-    //  global params
-    auto speed_of_sound = 340.0;
-
-    auto max_freq = 1000;
-    auto filter_freq = max_freq * 0.5;
-    auto sr = max_freq * 4;
-    auto divisions = (speed_of_sound * sqrt(3)) / sr;
-
     auto context = get_context();
     auto device = get_device(context);
     cl::CommandQueue queue(context, device);
-
-    auto num_rays = 1024 * 32;
-    auto num_impulses = 64;
-    auto ray_hipass = 45.0;
-    auto do_normalize = true;
-    auto trim_predelay = false;
-    auto trim_tail = false;
-    auto remove_direct = false;
-    auto volume_scale = 1.0;
-
-    auto directions = getRandomDirections(num_rays);
-    cl_float3 source{{0, 2, 0}};
-    cl_float3 mic{{0, 2, 5}};
 
     rapidjson::Document document;
     attemptJsonParse(config_file, document);
@@ -168,28 +162,32 @@ int main(int argc, char** argv) {
         exit(1);
     }
 
-    ConfigValidator cv;
+    CombinedConfig cc;
+    auto json_getter = get_json_getter(cc);
 
-    cv.addRequiredValidator("rays", num_rays);
-    cv.addRequiredValidator("reflections", num_impulses);
-    cv.addRequiredValidator("sample_rate", output_sr);
-    cv.addRequiredValidator("bit_depth", bit_depth);
-    cv.addRequiredValidator("source_position", source);
-    cv.addRequiredValidator("mic_position", mic);
+    if (json_getter.check(document)) {
+        try {
+            json_getter.get(document);
+        } catch (...) {
+            Logger::log_err("error reading config file");
+            return EXIT_FAILURE;
+        }
+    }
 
-    cv.addOptionalValidator("hipass", ray_hipass);
-    cv.addOptionalValidator("normalize", do_normalize);
-    cv.addOptionalValidator("volumme_scale", volume_scale);
-    cv.addOptionalValidator("trim_predelay", trim_predelay);
-    cv.addOptionalValidator("remove_direct", remove_direct);
-    cv.addOptionalValidator("trim_tail", trim_tail);
+    Logger::log("mic ", cc.get_mic());
+    Logger::log("source ", cc.get_source());
+
+    unsigned long format, depth;
 
     try {
-        cv.run(document);
-    } catch (...) {
-        Logger::log_err("error reading config file");
+        format = get_file_format(output_file);
+        depth = get_file_depth(cc.get_bit_depth());
+    } catch (const std::runtime_error& e) {
+        Logger::log_err("critical runtime error: ", e.what());
         return EXIT_FAILURE;
     }
+
+    auto directions = getRandomDirections(cc.get_rays());
 
     try {
         SceneData scene_data(model_file, material_file);
@@ -197,16 +195,19 @@ int main(int argc, char** argv) {
         MeshBoundary boundary(scene_data);
         auto waveguide_program =
             get_program<TetrahedralProgram>(context, device);
-        TetrahedralWaveguide waveguide(
-            waveguide_program, queue, boundary, divisions, convert(mic));
-        auto mic_index = waveguide.get_index_for_coordinate(convert(mic));
-        auto source_index = waveguide.get_index_for_coordinate(convert(source));
+        TetrahedralWaveguide waveguide(waveguide_program,
+                                       queue,
+                                       boundary,
+                                       cc.get_divisions(),
+                                       cc.get_mic());
+        auto mic_index = waveguide.get_index_for_coordinate(cc.get_mic());
+        auto source_index = waveguide.get_index_for_coordinate(cc.get_source());
 
         auto corrected_mic = waveguide.get_coordinate_for_index(mic_index);
         auto corrected_source =
             waveguide.get_coordinate_for_index(source_index);
 
-        Logger::log("mic: ", convert(mic));
+        Logger::log("mic: ", cc.get_mic());
         Logger::log("corrected: ", corrected_mic);
 
 #ifdef TESTING
@@ -263,17 +264,20 @@ int main(int argc, char** argv) {
         auto attenuation_factor = pow(db2a(-60), 1.0 / steps);
 #endif
 
-        auto w_results =
-            waveguide.run_gaussian(corrected_source, mic_index, steps, sr);
+        auto w_results = waveguide.run_gaussian(
+            corrected_source, mic_index, steps, cc.get_waveguide_sample_rate());
 
         Microphone microphone(Vec3f(0, 0, 1), 0.5);
-        HrtfAttenuator hrtf_attenuator(Vec3f(0, 0, 1), Vec3f(0, 1, 0), 0, sr);
+        HrtfAttenuator hrtf_attenuator(
+            Vec3f(0, 0, 1), Vec3f(0, 1, 0), 0, cc.get_waveguide_sample_rate());
         //        auto w_pressures = microphone.process(w_results);
         auto w_pressures = hrtf_attenuator.process(w_results);
 
         normalize(w_pressures);
 
-        std::vector<float> out_signal(output_sr * w_results.size() / sr);
+        std::vector<float> out_signal(cc.get_output_sample_rate() *
+                                      w_results.size() /
+                                      cc.get_waveguide_sample_rate());
 
         SRC_DATA sample_rate_info{w_pressures.data(),
                                   out_signal.data(),
@@ -282,7 +286,8 @@ int main(int argc, char** argv) {
                                   0,
                                   0,
                                   0,
-                                  output_sr / double(sr)};
+                                  cc.get_output_sample_rate() /
+                                      double(cc.get_waveguide_sample_rate())};
 
         src_simple(&sample_rate_info, SRC_SINC_BEST_QUALITY, 1);
 
@@ -292,12 +297,13 @@ int main(int argc, char** argv) {
 
         write_sndfile(output_file + ".waveguide.full.wav",
                       {out_signal},
-                      output_sr,
+                      cc.get_output_sample_rate(),
                       depth,
                       format);
 
         LinkwitzRiley lopass;
-        lopass.setParams(1, filter_freq, output_sr);
+        lopass.setParams(
+            1, cc.get_filter_frequency(), cc.get_output_sample_rate());
         lopass.filter(out_signal);
 
         normalize(out_signal);
@@ -306,7 +312,7 @@ int main(int argc, char** argv) {
 
         write_sndfile(output_file + ".waveguide.lopass.wav",
                       waveguide_results,
-                      output_sr,
+                      cc.get_output_sample_rate(),
                       depth,
                       format);
 

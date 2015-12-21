@@ -28,8 +28,12 @@ ModelObject::ModelObject(const GenericShader &shader,
         count += 3;
     }
 
-    auto m = scene_data.get_aabb().get_centre();
+    auto aabb = scene_data.get_aabb();
+    auto m = aabb.get_centre();
     translation = glm::translate(-glm::vec3(m.x, m.y, m.z));
+
+    auto max = (aabb.c1 - aabb.c0).max();
+    setScale(max > 0 ? 20 / max : 1);
 
     size = indices.size();
 
@@ -53,9 +57,13 @@ ModelObject::ModelObject(const GenericShader &shader,
     ibo.bind();
 }
 
+void ModelObject::setScale(float s) {
+    scale = glm::scale(glm::vec3(s, s, s));
+}
+
 void ModelObject::draw() const {
     auto s_shader = shader.get_scoped();
-    shader.set_model_matrix(mat * translation);
+    shader.set_model_matrix(mat * scale * translation);
     shader.set_black(false);
 
     auto s_vao = vao.get_scoped();
@@ -65,19 +73,12 @@ void ModelObject::draw() const {
 void ModelObject::update(float dt) {
 }
 
-const auto OBJ_PATH =
-    "/Users/reuben/dev/waveguide/demo/assets/test_models/vault.obj";
-const auto MAT_PATH =
-    "/Users/reuben/dev/waveguide/demo/assets/materials/vault.json";
-
 ModelRenderer::ModelRenderer()
-        : scene_data(OBJ_PATH, MAT_PATH)
-        , projectionMatrix(getProjectionMatrix(1)) {
+        : projectionMatrix(getProjectionMatrix(1)) {
 }
 
 void ModelRenderer::newOpenGLContextCreated() {
     shader = std::make_unique<GenericShader>();
-    modelObject = std::make_unique<ModelObject>(*shader, scene_data);
 }
 
 void ModelRenderer::renderOpenGL() {
@@ -92,7 +93,8 @@ void ModelRenderer::openGLContextClosing() {
 }
 
 void ModelRenderer::update() {
-    modelObject->update(1);
+    if (modelObject)
+        modelObject->update(1);
 }
 
 glm::mat4 ModelRenderer::getProjectionMatrix(float aspect) {
@@ -113,7 +115,8 @@ void ModelRenderer::draw() const {
         shader->set_projection_matrix(getProjectionMatrix());
 
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-        modelObject->draw();
+        if (modelObject)
+            modelObject->draw();
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     }
 }
@@ -139,5 +142,11 @@ void ModelObject::setModelMatrix(const glm::mat4 &m) {
 
 void ModelRenderer::setModelMatrix(const glm::mat4 &mat) {
     std::lock_guard<std::mutex> lck(mut);
-    modelObject->setModelMatrix(mat);
+    if (modelObject)
+        modelObject->setModelMatrix(mat);
+}
+
+void ModelRenderer::setModelObject(const SceneData &sceneData) {
+    std::lock_guard<std::mutex> lck(mut);
+    modelObject = std::make_unique<ModelObject>(*shader, sceneData);
 }

@@ -6,6 +6,8 @@ MainContentComponent::MainContentComponent()
     addAndMakeVisible(modelRendererComponent.get());
     addAndMakeVisible(configPanel.get());
     setSize(600, 400);
+
+    configPanel->addListener(*modelRendererComponent);
 }
 
 void MainContentComponent::paint(Graphics& g) {

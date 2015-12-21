@@ -37,3 +37,16 @@ void ModelRendererComponent::mouseUp(const juce::MouseEvent &e) {
     azimuth += p.x;
     elevation += p.y;
 }
+
+void ModelRendererComponent::filesChanged(ConfigPanel *p,
+                                          const File &object,
+                                          const File &material,
+                                          const File &config) {
+    if (object.existsAsFile() && material.existsAsFile() &&
+        config.existsAsFile()) {
+        sceneData = std::make_unique<SceneData>(
+            object.getFullPathName().toStdString(),
+            material.getFullPathName().toStdString());
+        modelRenderer->setModelObject(*sceneData);
+    }
+}

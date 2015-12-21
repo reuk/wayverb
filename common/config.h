@@ -1,5 +1,7 @@
 #pragma once
 
+#include "vec.h"
+
 #include "rapidjson/rapidjson.h"
 #include "rapidjson/error/en.h"
 #include "rapidjson/document.h"
@@ -46,13 +48,13 @@ public:
     template <typename T>
     void addOptionalValidator(const std::string& s, T& t) {
         validators.emplace_back(
-            new FieldJsonValidator<T, OptionalValidator>(s, t));
+            std::make_unique<FieldJsonValidator<T, OptionalValidator>>(s, t));
     }
 
     template <typename T>
     void addRequiredValidator(const std::string& s, T& t) {
         validators.emplace_back(
-            new FieldJsonValidator<T, RequiredValidator>(s, t));
+            std::make_unique<FieldJsonValidator<T, RequiredValidator>>(s, t));
     }
 
     virtual void run(const rapidjson::Value& value) const {
@@ -122,6 +124,11 @@ struct JsonGetter {
     virtual bool check(const rapidjson::Value& value) const = 0;
     virtual void get(const rapidjson::Value& value) const = 0;
 };
+
+template <typename T>
+auto get_json_getter(T& t) {
+    return JsonGetter<T>(t);
+}
 
 template <>
 struct JsonGetter<double> {
@@ -311,6 +318,33 @@ struct ValueJsonValidator : public JsonValidatorBase, public JsonGetter<T> {
         }
         JsonGetter<T>::get(value);
     }
+};
+
+template <>
+struct JsonGetter<Vec3f> {
+    JsonGetter(Vec3f& t)
+            : t(t) {
+    }
+
+    virtual bool check(const rapidjson::Value& value) const {
+        if (!value.IsArray())
+            return false;
+        if (value.Size() != 3)
+            return false;
+        for (auto i = 0u; i != 3; ++i) {
+            if (!value[i].IsNumber())
+                return false;
+        }
+        return true;
+    }
+
+    virtual void get(const rapidjson::Value& value) const {
+        t.x = value[0].GetDouble();
+        t.y = value[1].GetDouble();
+        t.z = value[2].GetDouble();
+    }
+
+    Vec3f& t;
 };
 
 /// Combines the functionality of any templated JsonGetter with any Validator,

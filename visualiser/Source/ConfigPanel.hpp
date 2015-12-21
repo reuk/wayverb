@@ -23,9 +23,10 @@ public:
     File getFile() const;
 
 private:
+    ListenerList<Listener> listenerList;
+
     std::unique_ptr<TextButton> textButton;
     std::unique_ptr<Label> label;
-    ListenerList<Listener> listenerList;
     std::string validPatterns;
     File file;
 };
@@ -34,6 +35,15 @@ class ConfigPanel final : public Component,
                           public FileLoaderButton::Listener,
                           public Button::Listener {
 public:
+    class Listener {
+    public:
+        virtual ~Listener() noexcept = default;
+        virtual void filesChanged(ConfigPanel * p,
+                                  const File & object,
+                                  const File & material,
+                                  const File & config) = 0;
+    };
+
     ConfigPanel();
 
     void resized() override;
@@ -42,8 +52,14 @@ public:
     void buttonClicked(Button * b) override;
 
     void updateLaunchButton();
+    void refreshView();
+
+    void addListener(Listener & l);
+    void removeListener(Listener & l);
 
 private:
+    ListenerList<Listener> listenerList;
+
     std::unique_ptr<FileLoaderButton> objectButton;
     std::unique_ptr<FileLoaderButton> materialButton;
     std::unique_ptr<FileLoaderButton> configButton;

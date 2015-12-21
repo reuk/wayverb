@@ -62,6 +62,7 @@ ConfigPanel::ConfigPanel()
     launchButton->addListener(this);
 
     updateLaunchButton();
+    refreshView();
 }
 
 void ConfigPanel::resized() {
@@ -78,12 +79,8 @@ void ConfigPanel::resized() {
 }
 
 void ConfigPanel::fileLoaded(FileLoaderButton *flb, const File &f) {
-    if (flb == objectButton.get()) {
-    } else if (flb == materialButton.get()) {
-    } else if (flb == configButton.get()) {
-    }
-
     updateLaunchButton();
+    refreshView();
 }
 
 void ConfigPanel::buttonClicked(Button *b) {
@@ -95,4 +92,20 @@ void ConfigPanel::updateLaunchButton() {
     launchButton->setEnabled(objectButton->getFile().exists() &&
                              materialButton->getFile().exists() &&
                              configButton->getFile().exists());
+}
+
+void ConfigPanel::addListener(ConfigPanel::Listener &l) {
+    listenerList.add(&l);
+}
+
+void ConfigPanel::removeListener(ConfigPanel::Listener &l) {
+    listenerList.remove(&l);
+}
+
+void ConfigPanel::refreshView() {
+    listenerList.call(&Listener::filesChanged,
+                      this,
+                      objectButton->getFile(),
+                      materialButton->getFile(),
+                      configButton->getFile());
 }

@@ -289,3 +289,16 @@ TODO
 
 * ** TODO ** chessboard decomposition method - halve the number of grid points!
 * ** TODO ** check validity of gaussian pulses as input!
+
+Viewer
+======
+
+TODO
+----
+
+* show config info - source and receiver positions
+* show mesh nodes
+    * with pressure, as the simulation progresses
+* show rays
+    * with volume, as the simulation progresses
+* scroll to zoom?

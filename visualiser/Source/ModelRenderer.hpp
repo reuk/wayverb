@@ -1,5 +1,7 @@
 #pragma once
 
+#include "ConfigPanel.hpp"
+
 //  unfortunately we need to include these first because otherwise GL/glew.h
 //  will do terrible things
 #include "modern_gl_utils/generic_shader.h"
@@ -38,6 +40,7 @@ public:
     void update(float dt) override;
 
     void setModelMatrix(const glm::mat4& mat);
+    void setScale(float s);
 
 private:
     const GenericShader& shader;
@@ -48,6 +51,7 @@ private:
     StaticIBO ibo;
     GLuint size;
 
+    glm::mat4 scale;
     glm::mat4 translation;
     glm::mat4 mat;
 };
@@ -68,9 +72,10 @@ public:
 
     void setModelMatrix(const glm::mat4& mat);
 
-private:
-    SceneData scene_data;
+    void setModelObject(const SceneData& sceneData);
+    void setConfig(const Config& config);
 
+private:
     std::unique_ptr<GenericShader> shader;
     std::unique_ptr<ModelObject> modelObject;
 

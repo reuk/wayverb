@@ -63,6 +63,7 @@ public:
     SceneData(const std::string& fpath, const std::string& mat_file);
     SceneData(const aiScene* const scene, const std::string& mat_file);
     virtual ~SceneData() noexcept = default;
+
     void populate(const aiScene* const scene, const std::string& mat_file);
     void populate(const std::string& fpath, const std::string& mat_file);
 
