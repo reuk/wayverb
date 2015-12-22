@@ -1,5 +1,6 @@
 -Ilib
 -Icommon
+-Icombined
 -Irayverb
 -Ibsp
 -Igtest/include

@@ -81,6 +81,7 @@ struct JsonGetter<Surface> {
     JsonGetter(Surface& t)
             : t(t) {
     }
+    virtual ~JsonGetter() noexcept = default;
 
     /// Returns true if value is a json object.
     virtual bool check(const rapidjson::Value& value) const {

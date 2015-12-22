@@ -31,6 +31,7 @@ struct JsonGetter<Config> {
     JsonGetter(Config& t)
             : t(t) {
     }
+    virtual ~JsonGetter() noexcept = default;
 
     virtual bool check(const rapidjson::Value& value) const {
         return value.IsObject();

@@ -5,9 +5,7 @@
 #include "conversions.h"
 #include "microphone.h"
 #include "hrtf_attenuator.h"
-
-#include "rayverb_config.h"
-#include "waveguide_config.h"
+#include "combined_config.h"
 
 #include "rayverb.h"
 
@@ -34,31 +32,6 @@
 #include <numeric>
 #include <cmath>
 #include <map>
-
-class CombinedConfig : public WaveguideConfig, public RayverbConfig {};
-
-template <>
-struct JsonGetter<CombinedConfig> {
-    JsonGetter(CombinedConfig& t)
-            : t(t) {
-    }
-
-    virtual bool check(const rapidjson::Value& value) const {
-        JsonGetter<RayverbConfig> jg_r(t);
-        JsonGetter<WaveguideConfig> jg_w(t);
-        return value.IsObject() && jg_r.check(value) && jg_r.check(value);
-    }
-
-    virtual void get(const rapidjson::Value& value) const {
-        JsonGetter<RayverbConfig> jg_r(t);
-        jg_r.get(value);
-
-        JsonGetter<WaveguideConfig> jg_w(t);
-        jg_w.get(value);
-    }
-
-    CombinedConfig& t;
-};
 
 // -1 <= z <= 1, -pi <= theta <= pi
 cl_float3 spherePoint(float z, float theta) {
@@ -146,32 +119,12 @@ int main(int argc, char** argv) {
     auto device = get_device(context);
     cl::CommandQueue queue(context, device);
 
-    rapidjson::Document document;
-    attemptJsonParse(config_file, document);
-
-    if (document.HasParseError()) {
-        std::cerr << "Encountered error while parsing config file:"
-                  << std::endl;
-        std::cerr << GetParseError_En(document.GetParseError()) << std::endl;
-        exit(1);
-    }
-
-    if (!document.IsObject()) {
-        std::cerr << "Rayverb config must be stored in a JSON object"
-                  << std::endl;
-        exit(1);
-    }
-
     CombinedConfig cc;
-    auto json_getter = get_json_getter(cc);
-
-    if (json_getter.check(document)) {
-        try {
-            json_getter.get(document);
-        } catch (...) {
-            Logger::log_err("error reading config file");
-            return EXIT_FAILURE;
-        }
+    try {
+        cc = read_config(config_file);
+    } catch (const std::runtime_error& e) {
+        Logger::log_err("config load error: ", e.what());
+        return EXIT_FAILURE;
     }
 
     Logger::log("mic ", cc.get_mic());

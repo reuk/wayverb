@@ -293,10 +293,14 @@ TODO
 Viewer
 ======
 
-TODO
+Done
 ----
 
 * show config info - source and receiver positions
+
+TODO
+----
+
 * show mesh nodes
     * with pressure, as the simulation progresses
 * show rays

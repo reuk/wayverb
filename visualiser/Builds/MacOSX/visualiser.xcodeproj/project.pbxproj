@@ -19,6 +19,7 @@
 		1B7D502E1C21BEFB0038314B /* OpenCL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B7D502D1C21BEFB0038314B /* OpenCL.framework */; };
 		1B7D50301C21BF130038314B /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B7D502F1C21BF130038314B /* libz.tbd */; };
 		1B7D50391C2469BD0038314B /* libmodern_gl_utils.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B7D50311C21C8950038314B /* libmodern_gl_utils.a */; };
+		1B9FC1D01C29A73F007303D4 /* libcombined.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B9FC1CF1C29A6D4007303D4 /* libcombined.a */; };
 		1E09DBF6A82901B168B1DE8F /* MainComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7D2C7F4DDD285709BDAA80DC /* MainComponent.cpp */; };
 		2FE027A88EFF8BB7463872FE /* Main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F6DA86A940C8EF8ED2215947 /* Main.cpp */; };
 		36746B851FDA76C1EF32BEFA /* juce_gui_extra.mm in Sources */ = {isa = PBXBuildFile; fileRef = C645B5A0B3C6905705BC351A /* juce_gui_extra.mm */; };
@@ -110,6 +111,13 @@
 			proxyType = 2;
 			remoteGlobalIDString = D27B38F1BC684770A109BC04;
 			remoteInfo = tests;
+		};
+		1B9FC1CE1C29A6D4007303D4 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 1B7D50061C21BE820038314B /* Project.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 2A50F4978E0D4504A185BBB2;
+			remoteInfo = combined;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -1040,6 +1048,7 @@
 				1B7D50281C21BE900038314B /* libcommon.a in Frameworks */,
 				1B7D50291C21BE900038314B /* librayverb.a in Frameworks */,
 				1B7D502A1C21BE900038314B /* libwaveguide.a in Frameworks */,
+				1B9FC1D01C29A73F007303D4 /* libcombined.a in Frameworks */,
 				1B7D502E1C21BEFB0038314B /* OpenCL.framework in Frameworks */,
 				DA6AA2603B9C033FEBE90F4F /* Accelerate.framework in Frameworks */,
 				4FFA24505243D7C7172E05BD /* AudioToolbox.framework in Frameworks */,
@@ -1194,12 +1203,13 @@
 			children = (
 				1B7D50171C21BE830038314B /* libgtest.a */,
 				1B7D50191C21BE830038314B /* libgtest_main.a */,
-				1B7D501B1C21BE830038314B /* libwaveguide.a */,
 				1B7D501D1C21BE830038314B /* libcommon.a */,
+				1B7D501B1C21BE830038314B /* libwaveguide.a */,
+				1B7D50251C21BE830038314B /* librayverb.a */,
+				1B9FC1CF1C29A6D4007303D4 /* libcombined.a */,
 				1B7D501F1C21BE830038314B /* pwaveguide */,
 				1B7D50211C21BE830038314B /* mic_axis_rotate */,
 				1B7D50231C21BE830038314B /* mic_offset_rotate */,
-				1B7D50251C21BE830038314B /* librayverb.a */,
 				1B7D50271C21BE830038314B /* tests */,
 			);
 			name = Products;
@@ -2846,7 +2856,7 @@
 		AC5AAED156461F13CCF0EB86 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0440;
+				LastUpgradeCheck = 0720;
 			};
 			buildConfigurationList = 813E778BFD8C0E39F6CAC635 /* Build configuration list for PBXProject "visualiser" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -2934,6 +2944,13 @@
 			remoteRef = 1B7D50261C21BE830038314B /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
+		1B9FC1CF1C29A6D4007303D4 /* libcombined.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libcombined.a;
+			remoteRef = 1B9FC1CE1C29A6D4007303D4 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
 /* End PBXReferenceProxy section */
 
 /* Begin PBXResourcesBuildPhase section */
@@ -3008,8 +3025,9 @@
 					/usr/local/Cellar/glew/1.13.0/lib,
 				);
 				MACOSX_DEPLOYMENT_TARGET_ppc = 10.4;
+				PRODUCT_BUNDLE_IDENTIFIER = com.yourcompany.visualiser;
 				SDKROOT_ppc = macosx10.5;
-				USER_HEADER_SEARCH_PATHS = "../../../common ../../../include";
+				USER_HEADER_SEARCH_PATHS = "../../../common ../../../include ../../../combined ../../../rayverb ../../../lib";
 			};
 			name = Debug;
 		};
@@ -3046,8 +3064,9 @@
 					/usr/local/Cellar/glew/1.13.0/lib,
 				);
 				MACOSX_DEPLOYMENT_TARGET_ppc = 10.4;
+				PRODUCT_BUNDLE_IDENTIFIER = com.yourcompany.visualiser;
 				SDKROOT_ppc = macosx10.5;
-				USER_HEADER_SEARCH_PATHS = "../../../common ../../../include";
+				USER_HEADER_SEARCH_PATHS = "../../../common ../../../include ../../../combined ../../../rayverb ../../../lib";
 			};
 			name = Release;
 		};
@@ -3077,6 +3096,7 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_TESTABILITY = YES;
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_INLINES_ARE_PRIVATE_EXTERN = YES;
 				GCC_MODEL_TUNING = G5;

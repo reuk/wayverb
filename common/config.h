@@ -26,6 +26,7 @@ enum OutputMode { ALL, IMAGE_ONLY, DIFFUSE_ONLY };
 
 /// A simple interface for a JsonValidator.
 struct JsonValidatorBase {
+    virtual ~JsonValidatorBase() noexcept = default;
     /// Overload to dictate what happens when a JsonValidator is Run on a Value
     virtual void run(const rapidjson::Value& value) const = 0;
 };
@@ -71,6 +72,7 @@ struct StringWrapper {
     StringWrapper(const std::string& s)
             : s(s) {
     }
+    virtual ~StringWrapper() noexcept = default;
     const std::string& getString() const {
         return s;
     }
@@ -86,6 +88,7 @@ struct Validator : public StringWrapper {
     Validator(const std::string& s)
             : StringWrapper(s) {
     }
+    virtual ~Validator() noexcept = default;
     virtual bool validate(const rapidjson::Value& value) const = 0;
 };
 
@@ -97,6 +100,7 @@ struct RequiredValidator : public Validator {
     RequiredValidator(const std::string& s)
             : Validator(s) {
     }
+    virtual ~RequiredValidator() noexcept = default;
     bool validate(const rapidjson::Value& value) const {
         if (!value.HasMember(getString().c_str()))
             throw std::runtime_error("key " + getString() +
@@ -112,6 +116,7 @@ struct OptionalValidator : public Validator {
     OptionalValidator(const std::string& s)
             : Validator(s) {
     }
+    virtual ~OptionalValidator() noexcept = default;
     bool validate(const rapidjson::Value& value) const {
         return value.HasMember(getString().c_str());
     }
@@ -121,6 +126,7 @@ struct OptionalValidator : public Validator {
 /// supplied json value.
 template <typename T>
 struct JsonGetter {
+    virtual ~JsonGetter() noexcept = default;
     virtual bool check(const rapidjson::Value& value) const = 0;
     virtual void get(const rapidjson::Value& value) const = 0;
 };
@@ -135,6 +141,7 @@ struct JsonGetter<double> {
     JsonGetter(double& t)
             : t(t) {
     }
+    virtual ~JsonGetter() noexcept = default;
 
     /// Returns true if value is a number, false otherwise.
     virtual bool check(const rapidjson::Value& value) const {
@@ -153,6 +160,7 @@ struct JsonGetter<float> {
     JsonGetter(float& t)
             : t(t) {
     }
+    virtual ~JsonGetter() noexcept = default;
 
     /// Returns true if value is a number, false otherwise.
     virtual bool check(const rapidjson::Value& value) const {
@@ -171,6 +179,7 @@ struct JsonGetter<bool> {
     JsonGetter(bool& t)
             : t(t) {
     }
+    virtual ~JsonGetter() noexcept = default;
 
     /// Returns true if value is 'true' or 'false', false otherwise.
     virtual bool check(const rapidjson::Value& value) const {
@@ -189,6 +198,7 @@ struct JsonGetter<int> {
     JsonGetter(int& t)
             : t(t) {
     }
+    virtual ~JsonGetter() noexcept = default;
 
     /// Returns true if value is an integer, false otherwise.
     virtual bool check(const rapidjson::Value& value) const {
@@ -208,6 +218,7 @@ struct JsonArrayGetter {
     JsonArrayGetter(T& t)
             : t(t) {
     }
+    virtual ~JsonArrayGetter() noexcept = default;
 
     /// Return true if value is an array of length LENGTH containing only
     /// numbers.
@@ -239,6 +250,7 @@ struct JsonGetter<cl_float3> : public JsonArrayGetter<cl_float3, 3> {
     JsonGetter(cl_float3& t)
             : JsonArrayGetter(t) {
     }
+    virtual ~JsonGetter() noexcept = default;
 };
 
 /// JsonGetter for cl_float8 is just a JsonArrayGetter with length 8
@@ -247,6 +259,7 @@ struct JsonGetter<cl_float8> : public JsonArrayGetter<cl_float8, 8> {
     JsonGetter(cl_float8& t)
             : JsonArrayGetter(t) {
     }
+    virtual ~JsonGetter() noexcept = default;
 };
 
 /// General class for getting a json field with strings mapped to enums
@@ -256,6 +269,7 @@ struct JsonEnumGetter {
             : t(t)
             , stringkeys(m) {
     }
+    virtual ~JsonEnumGetter() noexcept = default;
 
     /// Returns true if value is a string and is equal to an allowed string.
     virtual bool check(const rapidjson::Value& value) const {
@@ -285,6 +299,7 @@ struct JsonGetter<OutputMode> : public JsonEnumGetter<OutputMode> {
                               {"image_only", IMAGE_ONLY},
                               {"diffuse_only", DIFFUSE_ONLY}}) {
     }
+    virtual ~JsonGetter() noexcept = default;
 };
 
 template <typename T>
@@ -292,6 +307,7 @@ struct JsonGetter<std::vector<T>> {
     JsonGetter(std::vector<T>& t)
             : t(t) {
     }
+    virtual ~JsonGetter() noexcept = default;
     virtual bool check(const rapidjson::Value& value) const {
         return value.IsArray();
     }
@@ -325,6 +341,7 @@ struct JsonGetter<Vec3f> {
     JsonGetter(Vec3f& t)
             : t(t) {
     }
+    virtual ~JsonGetter() noexcept = default;
 
     virtual bool check(const rapidjson::Value& value) const {
         if (!value.IsArray())

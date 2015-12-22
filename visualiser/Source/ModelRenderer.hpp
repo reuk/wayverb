@@ -21,26 +21,17 @@
 #include "glm/gtc/noise.hpp"
 
 #include "scene_data.h"
+#include "app_config.h"
 
 #include "../JuceLibraryCode/JuceHeader.h"
 
 #include <cmath>
 #include <mutex>
 
-class ModelObject final : public ::Drawable, public ::Updatable {
+class ModelObject final : public ::Drawable {
 public:
     ModelObject(const GenericShader& shader, const SceneData& scene_data);
-
-    ModelObject(const ModelObject& rhs) = delete;
-    ModelObject& operator=(const ModelObject& rhs) = delete;
-    ModelObject(ModelObject&& rhs) = delete;
-    ModelObject& operator=(ModelObject&& rhs) = delete;
-
     void draw() const override;
-    void update(float dt) override;
-
-    void setModelMatrix(const glm::mat4& mat);
-    void setScale(float s);
 
 private:
     const GenericShader& shader;
@@ -50,15 +41,33 @@ private:
     StaticVBO colors;
     StaticIBO ibo;
     GLuint size;
-
-    glm::mat4 scale;
-    glm::mat4 translation;
-    glm::mat4 mat;
 };
 
-class ModelRenderer final : public OpenGLRenderer {
+class SphereObject final : public ::Drawable {
 public:
-    ModelRenderer();
+    SphereObject(const GenericShader& shader,
+                 const glm::vec3& position,
+                 const glm::vec4& color);
+    void draw() const override;
+
+    glm::mat4 getMatrix() const;
+
+private:
+    const GenericShader& shader;
+
+    glm::vec3 position;
+    float scale{0.5};
+
+    VAO vao;
+    StaticVBO geometry;
+    StaticVBO colors;
+    StaticIBO ibo;
+    GLuint size;
+};
+
+class SceneRenderer final : public OpenGLRenderer {
+public:
+    SceneRenderer();
     void newOpenGLContextCreated() override;
     void renderOpenGL() override;
     void openGLContextClosing() override;
@@ -68,9 +77,8 @@ public:
 
     glm::mat4 getProjectionMatrix() const;
     glm::mat4 getViewMatrix() const;
-    glm::mat4 getMatrices() const;
 
-    void setModelMatrix(const glm::mat4& mat);
+    void setRotation(float azimuth, float elevation);
 
     void setModelObject(const SceneData& sceneData);
     void setConfig(const Config& config);
@@ -78,11 +86,16 @@ public:
 private:
     std::unique_ptr<GenericShader> shader;
     std::unique_ptr<ModelObject> modelObject;
+    std::unique_ptr<SphereObject> sourceObject;
+    std::unique_ptr<SphereObject> receiverObject;
 
-    void update();
     void draw() const;
 
     glm::mat4 projectionMatrix;
+
+    glm::mat4 rotation;
+    glm::mat4 scale;
+    glm::mat4 translation;
 
     std::mutex mut;
 };

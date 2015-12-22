@@ -6,11 +6,13 @@
 #include <glm/gtc/matrix_inverse.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+#include "combined_config.h"
+
 ModelRendererComponent::ModelRendererComponent()
-        : modelRenderer(std::make_unique<ModelRenderer>())
+        : sceneRenderer(std::make_unique<SceneRenderer>())
         , openGLContext(std::make_unique<OpenGLContext>()) {
     openGLContext->setOpenGLVersionRequired(OpenGLContext::openGL3_2);
-    openGLContext->setRenderer(modelRenderer.get());
+    openGLContext->setRenderer(sceneRenderer.get());
     openGLContext->setContinuousRepainting(true);
     openGLContext->attachTo(*this);
 }
@@ -20,16 +22,14 @@ ModelRendererComponent::~ModelRendererComponent() noexcept {
 }
 
 void ModelRendererComponent::resized() {
-    modelRenderer->setAspect(getLocalBounds().toFloat().getAspectRatio());
+    sceneRenderer->setAspect(getLocalBounds().toFloat().getAspectRatio());
 }
 
 void ModelRendererComponent::mouseDrag(const MouseEvent &e) {
     auto p = e.getOffsetFromDragStart().toFloat() * scale;
     auto az = p.x + azimuth;
     auto el = p.y + elevation;
-    auto i = glm::rotate(az, glm::vec3(0, 1, 0));
-    auto j = glm::rotate(el, glm::vec3(1, 0, 0));
-    modelRenderer->setModelMatrix(j * i);
+    sceneRenderer->setRotation(az, el);
 }
 
 void ModelRendererComponent::mouseUp(const juce::MouseEvent &e) {
@@ -47,6 +47,12 @@ void ModelRendererComponent::filesChanged(ConfigPanel *p,
         sceneData = std::make_unique<SceneData>(
             object.getFullPathName().toStdString(),
             material.getFullPathName().toStdString());
-        modelRenderer->setModelObject(*sceneData);
+        sceneRenderer->setModelObject(*sceneData);
+
+        try {
+            sceneRenderer->setConfig(
+                read_config(config.getFullPathName().toStdString()));
+        } catch (...) {
+        }
     }
 }
