@@ -10,6 +10,7 @@ struct JsonGetter<CombinedConfig> {
     JsonGetter(CombinedConfig& t)
             : t(t) {
     }
+    virtual ~JsonGetter() noexcept = default;
 
     virtual bool check(const rapidjson::Value& value) const {
         JsonGetter<RayverbConfig> jg_r(t);

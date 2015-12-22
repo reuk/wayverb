@@ -26,16 +26,17 @@ template <typename T>
 class Waveguide {
 public:
     struct PowerFunction {
+        virtual ~PowerFunction() noexcept = default;
         virtual float operator()(const Vec3f& a, const Vec3f& b) const = 0;
     };
 
-    struct BasicPowerFunction : public PowerFunction {
+    struct BasicPowerFunction final : public PowerFunction {
         float operator()(const Vec3f& a, const Vec3f& b) const override {
             return (a == b).all() ? 1 : 0;
         }
     };
 
-    struct InversePowerFunction : public PowerFunction {
+    struct InversePowerFunction final : public PowerFunction {
         InversePowerFunction(float power)
                 : power(power) {
         }
@@ -47,7 +48,7 @@ public:
         const float power;
     };
 
-    struct InverseSquarePowerFunction : public PowerFunction {
+    struct InverseSquarePowerFunction final : public PowerFunction {
         InverseSquarePowerFunction(float power)
                 : power(power) {
         }
@@ -59,7 +60,7 @@ public:
         const float power;
     };
 
-    struct GaussianFunction : public PowerFunction {
+    struct GaussianFunction final : public PowerFunction {
         static constexpr float standard_deviation = 2;
 
         static float gaussian(const Vec3f& x, float sdev) {
@@ -136,7 +137,7 @@ public:
                                    float sr) {
         setup(queue, o, sr);
 
-        Logger::log("beginning simulation with: ", nodes, " nodes");
+        ::Logger::log("beginning simulation with: ", nodes, " nodes");
 
         std::vector<cl_float> n(nodes, 0);
         cl::copy(queue, n.begin(), n.end(), *previous);

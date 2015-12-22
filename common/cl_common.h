@@ -15,7 +15,7 @@ T get_program(const cl::Context& context, const cl::Device& device) {
     try {
         program.build({device});
     } catch (const cl::Error& e) {
-        Logger::log(
+        ::Logger::log(
             program.template getBuildInfo<CL_PROGRAM_BUILD_LOG>(device));
         throw;
     }

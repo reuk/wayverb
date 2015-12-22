@@ -40,6 +40,7 @@ struct JsonGetter<RayverbConfig> {
     JsonGetter(RayverbConfig& t)
             : t(t) {
     }
+    virtual ~JsonGetter() noexcept = default;
 
     virtual bool check(const rapidjson::Value& value) const {
         JsonGetter<Config> jg(t);

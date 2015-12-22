@@ -218,7 +218,7 @@ int main(int argc, char** argv) {
 #endif
 
         auto w_results = waveguide.run_gaussian(
-            corrected_source, mic_index, steps, cc.get_waveguide_sample_rate());
+            cc.get_source(), mic_index, steps, cc.get_waveguide_sample_rate());
 
         Microphone microphone(Vec3f(0, 0, 1), 0.5);
         HrtfAttenuator hrtf_attenuator(
