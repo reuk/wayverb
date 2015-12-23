@@ -61,7 +61,9 @@ public:
     };
 
     struct GaussianFunction final : public PowerFunction {
-        static constexpr float standard_deviation = 2;
+        GaussianFunction(float standard_deviation = 2)
+                : standard_deviation(standard_deviation) {
+        }
 
         static float gaussian(const Vec3f& x, float sdev) {
             return 1 / pow(sdev * sqrt(2 * M_PI), 3) *
@@ -71,6 +73,8 @@ public:
         float operator()(const Vec3f& a, const Vec3f& ex) const override {
             return gaussian(ex - a, standard_deviation);
         }
+
+        float standard_deviation;
     };
 
     using size_type = std::vector<cl_float>::size_type;
@@ -104,30 +108,53 @@ public:
                                    cl::Buffer& current,
                                    cl::Buffer& output) = 0;
 
+    std::vector<cl_float> run_step_slow() {
+        run_step(0, queue, kernel, nodes, *previous, *current, output);
+        std::vector<cl_float> ret(nodes, 0);
+        cl::copy(queue, *previous, ret.begin(), ret.end());
+        return ret;
+    }
+
+    void swap_buffers() {
+        std::swap(current, previous);
+    }
+
     virtual size_type get_index_for_coordinate(const Vec3f& v) const = 0;
     virtual Vec3f get_coordinate_for_index(size_type index) const = 0;
+
+    Vec3f get_corrected_coordinate(const Vec3f& v) const {
+        return get_coordinate_for_index(get_index_for_coordinate(v));
+    }
 
     size_type get_nodes() const {
         return nodes;
     }
 
-    std::vector<cl_float> initialise_mesh(const PowerFunction& u,
-                                          const Vec3f& excitation) {
-        std::vector<size_type> indices(nodes);
-        std::iota(indices.begin(), indices.end(), 0);
+    virtual bool inside(size_type index) const {
+        return true;
+    }
 
-        std::vector<cl_float> ret(nodes);
-        std::transform(indices.begin(),
-                       indices.end(),
-                       ret.begin(),
-                       [this, &u, &excitation](auto i) {
-                           return u(this->get_coordinate_for_index(i),
-                                    excitation);
-                       });
-        return ret;
+    void initialise_mesh(const PowerFunction& u,
+                         const Vec3f& excitation,
+                         std::vector<cl_float>& ret) {
+        ret.resize(nodes);
+        for (auto i = 0u; i != nodes; ++i) {
+            if (inside(i))
+                ret[i] = u(this->get_coordinate_for_index(i), excitation);
+        }
     }
 
     virtual void setup(cl::CommandQueue& queue, size_type o, float sr) {
+    }
+
+    void init(const Vec3f& e, const PowerFunction& u, size_type o, float sr) {
+        setup(queue, o, sr);
+
+        std::vector<cl_float> n(nodes, 0);
+        cl::copy(queue, n.begin(), n.end(), *previous);
+
+        initialise_mesh(u, e, n);
+        cl::copy(queue, n.begin(), n.end(), *current);
     }
 
     std::vector<RunStepResult> run(const Vec3f& e,
@@ -135,18 +162,9 @@ public:
                                    size_type o,
                                    size_type steps,
                                    float sr) {
-        setup(queue, o, sr);
-
-        ::Logger::log("beginning simulation with: ", nodes, " nodes");
-
-        std::vector<cl_float> n(nodes, 0);
-        cl::copy(queue, n.begin(), n.end(), *previous);
-
-        n = initialise_mesh(u, e);
-        cl::copy(queue, n.begin(), n.end(), *current);
+        init(e, u, o, sr);
 
         std::vector<RunStepResult> ret(steps);
-
         auto counter = 0u;
         std::generate(
             ret.begin(),
@@ -155,7 +173,7 @@ public:
                 auto ret = this->run_step(
                     o, queue, kernel, nodes, *previous, *current, output);
 
-                std::swap(current, previous);
+                this->swap_buffers();
 
                 auto percent = counter * 100 / (steps - 1);
                 std::cout << "\r" << percent << "% done" << std::flush;
@@ -232,6 +250,7 @@ public:
     Vec3f get_coordinate_for_index(size_type index) const override;
 
     const IterativeTetrahedralMesh& get_mesh() const;
+    bool inside(size_type index) const override;
 
 private:
     TetrahedralWaveguide(const TetrahedralProgram& program,

@@ -28,6 +28,7 @@
 
 #include <cmath>
 #include <mutex>
+#include <future>
 
 class ModelObject final : public ::Drawable {
 public:
@@ -87,6 +88,7 @@ private:
 class SceneRenderer final : public OpenGLRenderer {
 public:
     SceneRenderer();
+    ~SceneRenderer();
     void newOpenGLContextCreated() override;
     void renderOpenGL() override;
     void openGLContextClosing() override;
@@ -108,9 +110,13 @@ private:
     std::unique_ptr<SphereObject> source_object;
     std::unique_ptr<SphereObject> receiver_object;
 
+    std::unique_ptr<TetrahedralWaveguide> waveguide;
     std::unique_ptr<MeshObject> mesh_object;
 
+    std::future<std::vector<cl_float>> future_pressure;
+
     void draw() const;
+    void trigger_pressure_calculation();
 
     glm::mat4 projection_matrix;
 
@@ -119,4 +125,8 @@ private:
     glm::mat4 translation;
 
     std::mutex mut;
+
+    cl::Context context;
+    cl::Device device;
+    cl::CommandQueue queue;
 };

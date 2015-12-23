@@ -112,7 +112,7 @@ void SphereObject::draw() const {
 glm::mat4 SphereObject::get_matrix() const {
     auto s = glm::scale(glm::vec3(scale, scale, scale));
     auto t = glm::translate(position);
-    return s * t;
+    return t * s;
 }
 
 //----------------------------------------------------------------------------//
@@ -178,14 +178,26 @@ void MeshObject::set_pressures(const std::vector<float> &pressures) {
     std::transform(pressures.begin(),
                    pressures.end(),
                    c.begin(),
-                   [](auto i) { return glm::vec4(i, i, i, 1); });
+                   [](auto i) {
+                       auto p = i * 100;
+                       return p > 0 ? glm::vec4(0, p, p, 1)
+                                    : glm::vec4(-p, 0, 0, 1);
+                   });
     colors.data(c);
 }
 
 //----------------------------------------------------------------------------//
 
 SceneRenderer::SceneRenderer()
-        : projection_matrix(get_projection_matrix(1)) {
+        : projection_matrix(get_projection_matrix(1))
+        , context(get_context())
+        , device(get_device(context))
+        , queue(context, device) {
+}
+
+SceneRenderer::~SceneRenderer() {
+    if (future_pressure.valid())
+        future_pressure.get();
 }
 
 void SceneRenderer::newOpenGLContextCreated() {
@@ -206,24 +218,27 @@ void SceneRenderer::newOpenGLContextCreated() {
     }
 
     MeshBoundary boundary(sceneData);
-    auto context = get_context();
-    auto device = get_device(context);
-    cl::CommandQueue queue(context, device);
+
     auto waveguide_program = get_program<TetrahedralProgram>(context, device);
+    //    waveguide = std::make_unique<TetrahedralWaveguide>(
+    //        waveguide_program, queue, boundary, cc.get_divisions(),
+    //        cc.get_mic());
 
-    TetrahedralWaveguide waveguide(
-        waveguide_program, queue, boundary, cc.get_divisions(), cc.get_mic());
+    waveguide = std::make_unique<TetrahedralWaveguide>(
+        waveguide_program, queue, boundary, 0.1, cc.get_mic());
 
-    mesh_object = std::make_unique<MeshObject>(*shader, waveguide);
+    waveguide->init(
+        cc.get_source(), TetrahedralWaveguide::GaussianFunction(0.5), 0, 0);
 
-    //  TODO so here is the bit where I set up a lovely GL model to draw
-    //  out the waveguide pressures and so forth
+    //    auto corrected_source =
+    //        waveguide->get_corrected_coordinate(cc.get_source());
+    //    waveguide->init(
+    //        corrected_source, TetrahedralWaveguide::BasicPowerFunction(), 0,
+    //        0);
 
-    //    auto mic_index = waveguide.get_index_for_coordinate(cc.get_mic());
-    //    auto steps = 1 << 8;
-    //    auto w_results = waveguide.run_gaussian(
-    //        cc.get_source(), mic_index, steps,
-    //        cc.get_waveguide_sample_rate());
+    trigger_pressure_calculation();
+
+    mesh_object = std::make_unique<MeshObject>(*shader, *waveguide);
 
     set_model_object(sceneData);
     set_config(cc);
@@ -231,7 +246,31 @@ void SceneRenderer::newOpenGLContextCreated() {
 
 void SceneRenderer::renderOpenGL() {
     std::lock_guard<std::mutex> lck(mut);
+    if (future_pressure.valid() && waveguide && mesh_object) {
+        try {
+            if (future_pressure.wait_for(std::chrono::milliseconds(1)) ==
+                std::future_status::ready) {
+                mesh_object->set_pressures(future_pressure.get());
+                trigger_pressure_calculation();
+            }
+        } catch (const std::exception &e) {
+            std::cout << e.what() << std::endl;
+        }
+    }
     draw();
+}
+
+void SceneRenderer::trigger_pressure_calculation() {
+    try {
+        future_pressure = std::async(std::launch::async,
+                                     [this] {
+                                         auto ret = waveguide->run_step_slow();
+                                         waveguide->swap_buffers();
+                                         return ret;
+                                     });
+    } catch (...) {
+        std::cout << "async error?" << std::endl;
+    }
 }
 
 void SceneRenderer::openGLContextClosing() {

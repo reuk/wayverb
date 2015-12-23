@@ -98,11 +98,11 @@ RunStepResult TetrahedralWaveguide::run_step(size_type o,
                                              cl::Buffer& current,
                                              cl::Buffer& output) {
     if (o > this->mesh.get_nodes().size()) {
-        throw std::runtime_error("requested output node does not exist");
+        ::Logger::log_err("warning: requested output node does not exist");
     }
 
     if (!this->mesh.get_nodes()[o].inside) {
-        throw std::runtime_error("requested output node is outside boundary");
+        ::Logger::log_err("warning: requested output node is outside boundary");
     }
 
     std::vector<cl_float> out(1);
@@ -154,4 +154,8 @@ Vec3f TetrahedralWaveguide::get_coordinate_for_index(size_type index) const {
 
 const IterativeTetrahedralMesh& TetrahedralWaveguide::get_mesh() const {
     return mesh;
+}
+
+bool TetrahedralWaveguide::inside(size_type index) const {
+    return mesh.get_nodes()[index].inside;
 }
