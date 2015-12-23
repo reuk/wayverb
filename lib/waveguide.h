@@ -231,6 +231,8 @@ public:
     size_type get_index_for_coordinate(const Vec3f& v) const override;
     Vec3f get_coordinate_for_index(size_type index) const override;
 
+    const IterativeTetrahedralMesh& get_mesh() const;
+
 private:
     TetrahedralWaveguide(const TetrahedralProgram& program,
                          cl::CommandQueue& queue,

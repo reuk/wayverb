@@ -12,5 +12,5 @@ public:
 
 private:
     std::unique_ptr<ModelRendererComponent> modelRendererComponent;
-    std::unique_ptr<ConfigPanel> configPanel;
+    //    std::unique_ptr<ConfigPanel> configPanel;
 };

@@ -78,6 +78,11 @@ std::vector<std::vector<MeshBoundary::reference_store>>
 MeshBoundary::get_triangle_references() const {
     std::vector<std::vector<reference_store>> ret(
         DIVISIONS, std::vector<reference_store>(DIVISIONS));
+
+    for (auto& i : ret)
+        for (auto& j : i)
+            j.reserve(8);
+
     for (auto i = 0u; i != triangles.size(); ++i) {
         const auto& t = triangles[i];
         const auto bounding_box = get_cuboid_boundary(

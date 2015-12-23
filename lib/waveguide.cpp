@@ -151,3 +151,7 @@ TetrahedralWaveguide::size_type TetrahedralWaveguide::get_index_for_coordinate(
 Vec3f TetrahedralWaveguide::get_coordinate_for_index(size_type index) const {
     return convert(mesh.get_nodes()[index].position);
 }
+
+const IterativeTetrahedralMesh& TetrahedralWaveguide::get_mesh() const {
+    return mesh;
+}

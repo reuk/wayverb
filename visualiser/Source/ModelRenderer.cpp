@@ -2,8 +2,9 @@
 
 #include "boundaries.h"
 #include "conversions.h"
-
+#include "cl_common.h"
 #include "combined_config.h"
+#include "tetrahedral_program.h"
 
 ModelObject::ModelObject(const GenericShader &shader,
                          const SceneData &scene_data)
@@ -108,7 +109,7 @@ void SphereObject::draw() const {
     glDrawElements(GL_TRIANGLES, size, GL_UNSIGNED_INT, nullptr);
 }
 
-glm::mat4 SphereObject::getMatrix() const {
+glm::mat4 SphereObject::get_matrix() const {
     auto s = glm::scale(glm::vec3(scale, scale, scale));
     auto t = glm::translate(position);
     return s * t;
@@ -116,27 +117,116 @@ glm::mat4 SphereObject::getMatrix() const {
 
 //----------------------------------------------------------------------------//
 
+MeshObject::MeshObject(const GenericShader &shader,
+                       const TetrahedralWaveguide &waveguide)
+        : shader(shader) {
+    auto nodes = waveguide.get_mesh().get_nodes();
+    std::vector<glm::vec3> v(nodes.size());
+    std::transform(nodes.begin(),
+                   nodes.end(),
+                   v.begin(),
+                   [](auto i) {
+                       auto p = i.position;
+                       return glm::vec3(p.x, p.y, p.z);
+                   });
+
+    //  init buffers
+    std::vector<glm::vec4> c(v.size());
+    std::transform(nodes.begin(),
+                   nodes.end(),
+                   c.begin(),
+                   [](auto i) {
+                       auto c = i.inside ? 1 : 0;
+                       return glm::vec4(c, c, c, c);
+                   });
+
+    std::vector<GLuint> indices(v.size());
+    std::iota(indices.begin(), indices.end(), 0);
+
+    size = indices.size();
+
+    geometry.data(v);
+    colors.data(c);
+    ibo.data(indices);
+
+    //  init vao
+    auto s_vao = vao.get_scoped();
+
+    geometry.bind();
+    auto v_pos = shader.get_attrib_location("v_position");
+    glEnableVertexAttribArray(v_pos);
+    glVertexAttribPointer(v_pos, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+
+    colors.bind();
+    auto c_pos = shader.get_attrib_location("v_color");
+    glEnableVertexAttribArray(c_pos);
+    glVertexAttribPointer(c_pos, 4, GL_FLOAT, GL_FALSE, 0, nullptr);
+
+    ibo.bind();
+}
+
+void MeshObject::draw() const {
+    auto s_shader = shader.get_scoped();
+    shader.set_black(false);
+
+    auto s_vao = vao.get_scoped();
+    glDrawElements(GL_POINTS, size, GL_UNSIGNED_INT, nullptr);
+}
+
+void MeshObject::set_pressures(const std::vector<float> &pressures) {
+    std::vector<glm::vec4> c(pressures.size());
+    std::transform(pressures.begin(),
+                   pressures.end(),
+                   c.begin(),
+                   [](auto i) { return glm::vec4(i, i, i, 1); });
+    colors.data(c);
+}
+
+//----------------------------------------------------------------------------//
+
 SceneRenderer::SceneRenderer()
-        : projectionMatrix(getProjectionMatrix(1)) {
+        : projection_matrix(get_projection_matrix(1)) {
 }
 
 void SceneRenderer::newOpenGLContextCreated() {
     shader = std::make_unique<GenericShader>();
 
-#ifdef DEBUG
     File object(
         "/Users/reuben/dev/waveguide/demo/assets/test_models/vault.obj");
     File material(
         "/Users/reuben/dev/waveguide/demo/assets/materials/vault.json");
     File config("/Users/reuben/dev/waveguide/demo/assets/configs/vault.json");
 
-    setModelObject(SceneData(object.getFullPathName().toStdString(),
-                             material.getFullPathName().toStdString()));
+    SceneData sceneData(object.getFullPathName().toStdString(),
+                        material.getFullPathName().toStdString());
+    CombinedConfig cc;
     try {
-        setConfig(read_config(config.getFullPathName().toStdString()));
+        cc = read_config(config.getFullPathName().toStdString());
     } catch (...) {
     }
-#endif
+
+    MeshBoundary boundary(sceneData);
+    auto context = get_context();
+    auto device = get_device(context);
+    cl::CommandQueue queue(context, device);
+    auto waveguide_program = get_program<TetrahedralProgram>(context, device);
+
+    TetrahedralWaveguide waveguide(
+        waveguide_program, queue, boundary, cc.get_divisions(), cc.get_mic());
+
+    mesh_object = std::make_unique<MeshObject>(*shader, waveguide);
+
+    //  TODO so here is the bit where I set up a lovely GL model to draw
+    //  out the waveguide pressures and so forth
+
+    //    auto mic_index = waveguide.get_index_for_coordinate(cc.get_mic());
+    //    auto steps = 1 << 8;
+    //    auto w_results = waveguide.run_gaussian(
+    //        cc.get_source(), mic_index, steps,
+    //        cc.get_waveguide_sample_rate());
+
+    set_model_object(sceneData);
+    set_config(cc);
 }
 
 void SceneRenderer::renderOpenGL() {
@@ -145,63 +235,65 @@ void SceneRenderer::renderOpenGL() {
 }
 
 void SceneRenderer::openGLContextClosing() {
-    modelObject = nullptr;
+    model_object = nullptr;
     shader = nullptr;
 }
 
-glm::mat4 SceneRenderer::getProjectionMatrix(float aspect) {
+glm::mat4 SceneRenderer::get_projection_matrix(float aspect) {
     return glm::perspective(45.0f, aspect, 0.05f, 1000.0f);
 }
 
-void SceneRenderer::setAspect(float aspect) {
+void SceneRenderer::set_aspect(float aspect) {
     std::lock_guard<std::mutex> lck(mut);
-    projectionMatrix = getProjectionMatrix(aspect);
+    projection_matrix = get_projection_matrix(aspect);
 }
 
 void SceneRenderer::draw() const {
     glClearColor(0, 0, 0, 1);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);
-    {
-        auto s_shader = shader->get_scoped();
-        auto mm = rotation * scale * translation;
-        shader->set_model_matrix(mm);
-        shader->set_view_matrix(getViewMatrix());
-        shader->set_projection_matrix(getProjectionMatrix());
 
-        if (modelObject) {
-            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-            modelObject->draw();
-            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    auto s_shader = shader->get_scoped();
+    shader->set_model_matrix(glm::mat4());
+    shader->set_view_matrix(get_view_matrix());
+    shader->set_projection_matrix(get_projection_matrix());
 
-            auto drawHedron = [this, &mm](const auto &i) {
-                auto s_shader = shader->get_scoped();
-                if (i) {
-                    shader->set_model_matrix(mm * i->getMatrix());
-                    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-                    i->draw();
-                    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-                }
-            };
+    if (mesh_object) {
+        mesh_object->draw();
+    }
 
-            drawHedron(sourceObject);
-            drawHedron(receiverObject);
-        }
+    if (model_object) {
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        model_object->draw();
+
+        auto drawThing = [this](const auto &i) {
+            auto s_shader = shader->get_scoped();
+            if (i) {
+                shader->set_model_matrix(i->get_matrix());
+                i->draw();
+            }
+        };
+
+        drawThing(source_object);
+        drawThing(receiver_object);
+
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     }
 }
 
-glm::mat4 SceneRenderer::getProjectionMatrix() const {
-    return projectionMatrix;
+glm::mat4 SceneRenderer::get_projection_matrix() const {
+    return projection_matrix;
 }
-glm::mat4 SceneRenderer::getViewMatrix() const {
+glm::mat4 SceneRenderer::get_view_matrix() const {
     auto rad = 20;
     glm::vec3 eye(0, 0, rad);
     glm::vec3 target(0, 0, 0);
     glm::vec3 up(0, 1, 0);
-    return glm::lookAt(eye, target, up);
+    auto mm = rotation * scale * translation;
+    return glm::lookAt(eye, target, up) * mm;
 }
 
-void SceneRenderer::setModelObject(const SceneData &sceneData) {
+void SceneRenderer::set_model_object(const SceneData &sceneData) {
     std::unique_lock<std::mutex> lck(mut);
 
     auto aabb = sceneData.get_aabb();
@@ -213,10 +305,10 @@ void SceneRenderer::setModelObject(const SceneData &sceneData) {
     auto s = max > 0 ? 20 / max : 1;
     scale = glm::scale(glm::vec3(s, s, s));
 
-    modelObject = std::make_unique<ModelObject>(*shader, sceneData);
+    model_object = std::make_unique<ModelObject>(*shader, sceneData);
 }
 
-void SceneRenderer::setConfig(const Config &config) {
+void SceneRenderer::set_config(const Config &config) {
     std::unique_lock<std::mutex> lck(mut);
 
     auto s = config.get_source();
@@ -224,13 +316,13 @@ void SceneRenderer::setConfig(const Config &config) {
     auto r = config.get_mic();
     glm::vec3 rpos(r.x, r.y, r.z);
 
-    sourceObject =
+    source_object =
         std::make_unique<SphereObject>(*shader, spos, glm::vec4(1, 0, 0, 1));
-    receiverObject =
+    receiver_object =
         std::make_unique<SphereObject>(*shader, rpos, glm::vec4(0, 1, 1, 1));
 }
 
-void SceneRenderer::setRotation(float az, float el) {
+void SceneRenderer::set_rotation(float az, float el) {
     std::lock_guard<std::mutex> lck(mut);
     auto i = glm::rotate(az, glm::vec3(0, 1, 0));
     auto j = glm::rotate(el, glm::vec3(1, 0, 0));

@@ -20,6 +20,7 @@
 #include "glm/gtc/type_ptr.hpp"
 #include "glm/gtc/noise.hpp"
 
+#include "waveguide.h"
 #include "scene_data.h"
 #include "app_config.h"
 
@@ -43,6 +44,24 @@ private:
     GLuint size;
 };
 
+class MeshObject final : public ::Drawable {
+public:
+    MeshObject(const GenericShader& shader,
+               const TetrahedralWaveguide& waveguide);
+    void draw() const override;
+
+    void set_pressures(const std::vector<float>& pressures);
+
+private:
+    const GenericShader& shader;
+
+    VAO vao;
+    StaticVBO geometry;
+    DynamicVBO colors;
+    StaticIBO ibo;
+    GLuint size;
+};
+
 class SphereObject final : public ::Drawable {
 public:
     SphereObject(const GenericShader& shader,
@@ -50,7 +69,7 @@ public:
                  const glm::vec4& color);
     void draw() const override;
 
-    glm::mat4 getMatrix() const;
+    glm::mat4 get_matrix() const;
 
 private:
     const GenericShader& shader;
@@ -72,26 +91,28 @@ public:
     void renderOpenGL() override;
     void openGLContextClosing() override;
 
-    void setAspect(float aspect);
-    static glm::mat4 getProjectionMatrix(float aspect);
+    void set_aspect(float aspect);
+    static glm::mat4 get_projection_matrix(float aspect);
 
-    glm::mat4 getProjectionMatrix() const;
-    glm::mat4 getViewMatrix() const;
+    glm::mat4 get_projection_matrix() const;
+    glm::mat4 get_view_matrix() const;
 
-    void setRotation(float azimuth, float elevation);
+    void set_rotation(float azimuth, float elevation);
 
-    void setModelObject(const SceneData& sceneData);
-    void setConfig(const Config& config);
+    void set_model_object(const SceneData& sceneData);
+    void set_config(const Config& config);
 
 private:
     std::unique_ptr<GenericShader> shader;
-    std::unique_ptr<ModelObject> modelObject;
-    std::unique_ptr<SphereObject> sourceObject;
-    std::unique_ptr<SphereObject> receiverObject;
+    std::unique_ptr<ModelObject> model_object;
+    std::unique_ptr<SphereObject> source_object;
+    std::unique_ptr<SphereObject> receiver_object;
+
+    std::unique_ptr<MeshObject> mesh_object;
 
     void draw() const;
 
-    glm::mat4 projectionMatrix;
+    glm::mat4 projection_matrix;
 
     glm::mat4 rotation;
     glm::mat4 scale;

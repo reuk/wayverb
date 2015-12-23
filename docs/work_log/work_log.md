@@ -297,12 +297,13 @@ Done
 ----
 
 * show config info - source and receiver positions
+* show mesh node positions
 
 TODO
 ----
 
-* show mesh nodes
-    * with pressure, as the simulation progresses
+* fix node positions so that the entire mesh is covered!
+* show mesh node pressure, as the simulation progresses
 * show rays
     * with volume, as the simulation progresses
 * scroll to zoom?

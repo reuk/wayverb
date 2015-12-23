@@ -47,6 +47,7 @@ public:
     const CuboidBoundary boundary;
 };
 
+//  TODO migrate to octree?
 class MeshBoundary : public Boundary {
 public:
     MeshBoundary(
