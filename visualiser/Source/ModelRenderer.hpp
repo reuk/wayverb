@@ -61,6 +61,8 @@ private:
     DynamicVBO colors;
     StaticIBO ibo;
     GLuint size;
+
+    float amp{100};
 };
 
 class SphereObject final : public ::Drawable {

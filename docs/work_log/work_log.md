@@ -298,12 +298,13 @@ Done
 
 * show config info - source and receiver positions
 * show mesh node positions
+* show mesh node pressure, as the simulation progresses
 
 TODO
 ----
 
 * fix node positions so that the entire mesh is covered!
-* show mesh node pressure, as the simulation progresses
 * show rays
     * with volume, as the simulation progresses
+* fix raytracer octree stuff
 * scroll to zoom?

@@ -178,10 +178,15 @@ void MeshObject::set_pressures(const std::vector<float> &pressures) {
     std::transform(pressures.begin(),
                    pressures.end(),
                    c.begin(),
-                   [](auto i) {
-                       auto p = i * 100;
-                       return p > 0 ? glm::vec4(0, p, p, 1)
-                                    : glm::vec4(-p, 0, 0, 1);
+                   [this](auto i) {
+                       auto p = i * amp;
+                       switch (0) {
+                           case 0:
+                               return p > 0 ? glm::vec4(0, p, p, p)
+                                            : glm::vec4(-p, 0, 0, -p);
+                           case 1:
+                               return glm::vec4(1, 1, 1, p);
+                       }
                    });
     colors.data(c);
 }
@@ -217,25 +222,27 @@ void SceneRenderer::newOpenGLContextCreated() {
     } catch (...) {
     }
 
+    cc.get_source() = Vec3f(5, 1.75, 1);
+
     MeshBoundary boundary(sceneData);
 
     auto waveguide_program = get_program<TetrahedralProgram>(context, device);
-    //    waveguide = std::make_unique<TetrahedralWaveguide>(
-    //        waveguide_program, queue, boundary, cc.get_divisions(),
-    //        cc.get_mic());
-
     waveguide = std::make_unique<TetrahedralWaveguide>(
-        waveguide_program, queue, boundary, 0.1, cc.get_mic());
+        waveguide_program, queue, boundary, cc.get_divisions(), cc.get_mic());
 
+    jassert((waveguide->get_corrected_coordinate(cc.get_mic()) == cc.get_mic())
+                .all());
+
+#define CASE 0
+#if CASE == 0
     waveguide->init(
-        cc.get_source(), TetrahedralWaveguide::GaussianFunction(0.5), 0, 0);
-
-    //    auto corrected_source =
-    //        waveguide->get_corrected_coordinate(cc.get_source());
-    //    waveguide->init(
-    //        corrected_source, TetrahedralWaveguide::BasicPowerFunction(), 0,
-    //        0);
-
+        cc.get_source(), TetrahedralWaveguide::GaussianFunction(0.1), 0, 0);
+#else
+    auto corrected_source =
+        waveguide->get_corrected_coordinate(cc.get_source());
+    waveguide->init(
+        corrected_source, TetrahedralWaveguide::BasicPowerFunction(), 0, 0);
+#endif
     trigger_pressure_calculation();
 
     mesh_object = std::make_unique<MeshObject>(*shader, *waveguide);
@@ -290,7 +297,10 @@ void SceneRenderer::set_aspect(float aspect) {
 void SceneRenderer::draw() const {
     glClearColor(0, 0, 0, 1);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glEnable(GL_BLEND);
     glEnable(GL_DEPTH_TEST);
+    glEnable(GL_PROGRAM_POINT_SIZE);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     auto s_shader = shader->get_scoped();
     shader->set_model_matrix(glm::mat4());

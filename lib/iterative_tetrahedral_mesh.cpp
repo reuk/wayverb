@@ -32,8 +32,18 @@ std::vector<Vec3f> IterativeTetrahedralMesh::get_scaled_cube() const {
 }
 
 Vec3i IterativeTetrahedralMesh::get_dim() const {
-    auto dimensions = boundary.get_dimensions();
-    return (dimensions / cube_side).map([](auto i) { return ceil(i); }) + 1;
+    return boundary.get_dimensions() / cube_side;
+}
+
+CuboidBoundary IterativeTetrahedralMesh::get_adjusted_boundary(
+    const CuboidBoundary& min_boundary, const Vec3f& anchor) const {
+    auto dif = anchor - min_boundary.c0;
+    Vec3i floored = (dif / cube_side).map([](auto i) { return floor(i); });
+    auto c0 = anchor - ((floored + 1) * cube_side);
+    auto dim = ((min_boundary.c1 - c0) / cube_side)
+                   .map([](auto i) { return ceil(i); });
+    auto c1 = c0 + dim * cube_side;
+    return CuboidBoundary(c0, c1);
 }
 
 std::vector<Node> IterativeTetrahedralMesh::get_nodes(
@@ -61,11 +71,10 @@ std::vector<Node> IterativeTetrahedralMesh::get_nodes(
 IterativeTetrahedralMesh::IterativeTetrahedralMesh(const Boundary& boundary,
                                                    float spacing,
                                                    const Vec3f& anchor)
-        : boundary(boundary.get_aabb())
-        , cube_side(cube_side_from_node_spacing(spacing))
+        : cube_side(cube_side_from_node_spacing(spacing))
         , scaled_cube(get_scaled_cube())
+        , boundary(get_adjusted_boundary(boundary.get_aabb(), anchor))
         , dim(get_dim())
-        , diff(get_diff(anchor))
         , nodes(get_nodes(boundary, anchor))
         , spacing(spacing) {
 }
@@ -89,7 +98,7 @@ IterativeTetrahedralMesh::Locator IterativeTetrahedralMesh::get_locator(
 
 IterativeTetrahedralMesh::Locator IterativeTetrahedralMesh::get_locator(
     const Vec3f& v) const {
-    auto transformed = v - boundary.c0 - diff;
+    auto transformed = v - boundary.c0;
     Vec3i cube_pos =
         (transformed / cube_side).map([](auto i) -> int { return i; });
     Vec3f difference = (transformed - (cube_pos * cube_side));
@@ -110,17 +119,11 @@ IterativeTetrahedralMesh::Locator IterativeTetrahedralMesh::get_locator(
     return Locator(cube_pos, closest);
 }
 
-constexpr Vec3f IterativeTetrahedralMesh::get_diff(const Vec3f& anchor) const {
-    auto dif = anchor - boundary.c0;
-    Vec3i floored = (dif / cube_side).map([](auto i) { return floor(i); });
-    return dif - (floored * cube_side);
-}
-
 Vec3f IterativeTetrahedralMesh::get_position(const Locator& locator,
                                              const Vec3f& anchor) const {
     auto cube_pos = locator.pos * cube_side;
     auto node_pos = scaled_cube[locator.mod_ind];
-    return cube_pos + node_pos + boundary.c0 + diff;
+    return cube_pos + node_pos + boundary.c0;
 }
 
 using Locator = IterativeTetrahedralMesh::Locator;

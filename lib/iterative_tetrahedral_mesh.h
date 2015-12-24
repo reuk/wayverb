@@ -29,9 +29,9 @@ public:
     Locator get_locator(const Vec3f& position) const;
     std::array<int, PORTS> get_neighbors(size_type index) const;
 
-    const CuboidBoundary boundary;
     const float cube_side;
     const std::vector<Vec3f> scaled_cube;
+    const CuboidBoundary boundary;
     const Vec3i dim;
 
     const std::vector<Node>& get_nodes() const;
@@ -44,10 +44,10 @@ private:
     static const std::array<std::array<Locator, PORTS>, CUBE_NODES>
         offset_table;
 
-    constexpr Vec3f get_diff(const Vec3f& anchor) const;
-    Vec3f diff;
+    CuboidBoundary get_adjusted_boundary(const CuboidBoundary& min_boundary,
+                                         const Vec3f& anchor) const;
 
-    std::vector<Node> nodes;
+    const std::vector<Node> nodes;
     float spacing;
 
     Vec3i get_dim() const;
