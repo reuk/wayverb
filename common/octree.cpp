@@ -4,54 +4,52 @@
 
 std::vector<CuboidBoundary> next_boundaries(const CuboidBoundary & parent) {
     auto centre = parent.get_centre();
+
+    auto x0 = parent.c0.x;
+    auto y0 = parent.c0.y;
+    auto z0 = parent.c0.z;
+    auto xc = centre.x;
+    auto yc = centre.y;
+    auto zc = centre.z;
+    auto x1 = parent.c1.x;
+    auto y1 = parent.c1.y;
+    auto z1 = parent.c1.z;
+
     return std::vector<CuboidBoundary>{
-        CuboidBoundary(parent.c0, centre),
-
-        CuboidBoundary(Vec3f(parent.c0.x, parent.c0.y, centre.z),
-                       Vec3f(centre.x, centre.y, parent.c1.z)),
-        CuboidBoundary(Vec3f(centre.x, parent.c0.y, parent.c0.z),
-                       Vec3f(parent.c1.x, centre.y, centre.z)),
-        CuboidBoundary(Vec3f(centre.x, parent.c0.y, centre.z),
-                       Vec3f(parent.c1.x, centre.y, parent.c1.z)),
-
-        CuboidBoundary(Vec3f(parent.c0.x, centre.y, centre.z),
-                       Vec3f(centre.x, parent.c1.y, parent.c1.z)),
-        CuboidBoundary(Vec3f(centre.x, centre.y, parent.c0.z),
-                       Vec3f(parent.c1.x, parent.c1.y, centre.z)),
-        CuboidBoundary(Vec3f(centre.x, centre.y, centre.z),
-                       Vec3f(parent.c1.x, parent.c1.y, parent.c1.z)),
-
-        CuboidBoundary(centre, parent.c1),
+        CuboidBoundary(Vec3f(x0, y0, z0), Vec3f(xc, yc, zc)),
+        CuboidBoundary(Vec3f(x0, y0, zc), Vec3f(xc, yc, z1)),
+        CuboidBoundary(Vec3f(xc, y0, z0), Vec3f(x1, yc, zc)),
+        CuboidBoundary(Vec3f(xc, y0, zc), Vec3f(x1, yc, z1)),
+        CuboidBoundary(Vec3f(x0, yc, z0), Vec3f(xc, y1, zc)),
+        CuboidBoundary(Vec3f(x0, yc, zc), Vec3f(xc, y1, z1)),
+        CuboidBoundary(Vec3f(xc, yc, z0), Vec3f(x1, y1, zc)),
+        CuboidBoundary(Vec3f(xc, yc, zc), Vec3f(x1, y1, z1)),
     };
 }
 
-Octree::Octree(const SceneData & scene_data, int max_depth)
-        : Octree(scene_data,
-                 max_depth,
-                 scene_data.get_triangle_indices(),
-                 scene_data.get_aabb()) {
+Octree::Octree(const SceneData & sd, int md)
+        : Octree(sd, md, sd.get_triangle_indices(), sd.get_aabb()) {
 }
 
-Octree::Octree(const SceneData & scene_data,
-               int max_depth,
+Octree::Octree(const SceneData & sd,
+               int md,
                const std::vector<int> to_test,
-               const CuboidBoundary & aabb)
-        : scene_data(scene_data)
-        , aabb(aabb) {
+               const CuboidBoundary & ab)
+        : aabb(ab) {
     for (const auto i : to_test) {
-        if (get_aabb().overlaps(get_triangle_verts(scene_data.triangles[i],
-                                                   scene_data.vertices))) {
+        if (get_aabb().overlaps(
+                get_triangle_verts(sd.triangles[i], sd.vertices))) {
             triangles.push_back(i);
         }
     }
 
-    if (max_depth == 0 || to_test.empty()) {
+    if (md == 0 || to_test.empty()) {
         return;
     }
 
     auto next = next_boundaries(get_aabb());
     for (const auto & i : next) {
-        Octree test(scene_data, max_depth - 1, get_triangles(), i);
+        Octree test(sd, md - 1, get_triangles(), i);
         if (!test.get_triangles().empty()) {
             nodes.push_back(test);
         }

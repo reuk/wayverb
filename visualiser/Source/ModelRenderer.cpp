@@ -6,59 +6,147 @@
 #include "combined_config.h"
 #include "tetrahedral_program.h"
 
-ModelObject::ModelObject(const GenericShader &shader,
-                         const SceneData &scene_data)
-        : shader(shader) {
-    //  init buffers
-    auto &scene_verts = scene_data.vertices;
-    std::vector<glm::vec3> v(scene_verts.size());
-    std::vector<glm::vec4> c(scene_verts.size());
-    std::transform(scene_verts.begin(),
-                   scene_verts.end(),
-                   v.begin(),
-                   [](auto i) { return glm::vec3(i.x, i.y, i.z); });
-    std::transform(scene_verts.begin(),
-                   scene_verts.end(),
-                   c.begin(),
-                   [](auto i) { return glm::vec4(1, 1, 1, 1); });
+BoxObject::BoxObject(const GenericShader &shader)
+        : BasicDrawableObject(shader,
+                              {
+                                  {-0.5, -0.5, -0.5},
+                                  {-0.5, -0.5, 0.5},
+                                  {-0.5, 0.5, -0.5},
+                                  {-0.5, 0.5, 0.5},
+                                  {0.5, -0.5, -0.5},
+                                  {0.5, -0.5, 0.5},
+                                  {0.5, 0.5, -0.5},
+                                  {0.5, 0.5, 0.5},
+                              },
+                              std::vector<glm::vec4>(8, glm::vec4(1, 1, 0, 1)),
+                              {
+                                  0,
+                                  1,
+                                  1,
+                                  3,
+                                  3,
+                                  2,
+                                  2,
+                                  0,
 
-    std::vector<GLuint> indices(scene_data.triangles.size() * 3);
-    auto count = 0u;
-    for (const auto &tri : scene_data.triangles) {
-        indices[count + 0] = tri.v0;
-        indices[count + 1] = tri.v1;
-        indices[count + 2] = tri.v2;
-        count += 3;
-    }
+                                  4,
+                                  5,
+                                  5,
+                                  7,
+                                  7,
+                                  6,
+                                  6,
+                                  4,
 
-    size = indices.size();
-
-    geometry.data(v);
-    colors.data(c);
-    ibo.data(indices);
-
-    //  init vao
-    auto s_vao = vao.get_scoped();
-
-    geometry.bind();
-    auto v_pos = shader.get_attrib_location("v_position");
-    glEnableVertexAttribArray(v_pos);
-    glVertexAttribPointer(v_pos, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
-
-    colors.bind();
-    auto c_pos = shader.get_attrib_location("v_color");
-    glEnableVertexAttribArray(c_pos);
-    glVertexAttribPointer(c_pos, 4, GL_FLOAT, GL_FALSE, 0, nullptr);
-
-    ibo.bind();
+                                  0,
+                                  4,
+                                  1,
+                                  5,
+                                  2,
+                                  6,
+                                  3,
+                                  7,
+                              }) {
 }
 
-void ModelObject::draw() const {
-    auto s_shader = shader.get_scoped();
-    shader.set_black(false);
+//----------------------------------------------------------------------------//
 
-    auto s_vao = vao.get_scoped();
-    glDrawElements(GL_TRIANGLES, size, GL_UNSIGNED_INT, nullptr);
+ModelSectionObject::ModelSectionObject(const GenericShader &shader,
+                                       const SceneData &scene_data,
+                                       const Octree &octree)
+        : BasicDrawableObject(shader,
+                              get_vertices(scene_data),
+                              std::vector<glm::vec4>(scene_data.vertices.size(),
+                                                     glm::vec4(1, 1, 1, 1)),
+                              get_indices(scene_data, octree))
+        , octree(octree) {
+}
+
+std::vector<glm::vec3> ModelSectionObject::get_vertices(
+    const SceneData &scene_data) const {
+    std::vector<glm::vec3> ret(scene_data.vertices.size());
+    std::transform(scene_data.vertices.begin(),
+                   scene_data.vertices.end(),
+                   ret.begin(),
+                   [](auto i) { return glm::vec3(i.x, i.y, i.z); });
+    return ret;
+}
+
+void fill_indices_vector(const SceneData &scene_data,
+                         const Octree &octree,
+                         std::vector<GLuint> &ret) {
+    for (const auto &i : octree.get_triangles()) {
+        const auto &tri = scene_data.triangles[i];
+        ret.push_back(tri.v0);
+        ret.push_back(tri.v1);
+        ret.push_back(tri.v2);
+    }
+
+    for (const auto &i : octree.get_nodes()) {
+        fill_indices_vector(scene_data, i, ret);
+    }
+}
+
+std::vector<GLuint> ModelSectionObject::get_indices(
+    const SceneData &scene_data, const Octree &octree) const {
+    std::vector<GLuint> ret;
+    fill_indices_vector(scene_data, octree, ret);
+    return ret;
+}
+
+void ModelSectionObject::draw_octree(const Octree &octree,
+                                     BoxObject &box) const {
+    if (octree.get_nodes().empty()) {
+        auto aabb = octree.get_aabb();
+        auto convert = [](auto i) { return glm::vec3(i.x, i.y, i.z); };
+
+        box.set_scale(convert(aabb.get_dimensions()));
+        box.set_position(convert(aabb.get_centre()));
+        box.draw();
+    }
+
+    for (const auto &i : octree.get_nodes()) {
+        draw_octree(i, box);
+    }
+}
+
+void ModelSectionObject::draw() const {
+    BasicDrawableObject::draw();
+    BoxObject box(get_shader());
+    draw_octree(octree, box);
+}
+
+//----------------------------------------------------------------------------//
+
+ModelObject::ModelObject(const GenericShader &shader,
+                         const SceneData &scene_data)
+        : BasicDrawableObject(shader,
+                              get_vertices(scene_data),
+                              std::vector<glm::vec4>(scene_data.vertices.size(),
+                                                     glm::vec4(1, 1, 1, 1)),
+                              get_indices(scene_data)) {
+}
+
+std::vector<glm::vec3> ModelObject::get_vertices(
+    const SceneData &scene_data) const {
+    std::vector<glm::vec3> ret(scene_data.vertices.size());
+    std::transform(scene_data.vertices.begin(),
+                   scene_data.vertices.end(),
+                   ret.begin(),
+                   [](auto i) { return glm::vec3(i.x, i.y, i.z); });
+    return ret;
+}
+std::vector<GLuint> ModelObject::get_indices(
+    const SceneData &scene_data) const {
+    std::vector<GLuint> ret(scene_data.triangles.size() * 3);
+    auto count = 0u;
+    for (const auto &tri : scene_data.triangles) {
+        ret[count + 0] = tri.v0;
+        ret[count + 1] = tri.v1;
+        ret[count + 2] = tri.v2;
+        count += 3;
+    }
+    return ret;
 }
 
 //----------------------------------------------------------------------------//
@@ -66,53 +154,44 @@ void ModelObject::draw() const {
 SphereObject::SphereObject(const GenericShader &shader,
                            const glm::vec3 &position,
                            const glm::vec4 &color)
-        : shader(shader)
-        , position(position) {
-    //  init buffers
-    std::vector<glm::vec3> v{
-        {0, 0, -1}, {0, 0, 1}, {0, -1, 0}, {0, 1, 0}, {-1, 0, 0}, {1, 0, 0},
-    };
-    std::transform(
-        v.begin(), v.end(), v.begin(), [this](auto i) { return i * scale; });
-    std::vector<glm::vec4> c(v.size(), color);
-
-    std::vector<GLuint> indices{
-        0, 2, 4, 0, 2, 5, 0, 3, 4, 0, 3, 5, 1, 2, 4, 1, 2, 5, 1, 3, 4, 1, 3, 5,
-    };
-    size = indices.size();
-
-    geometry.data(v);
-    colors.data(c);
-    ibo.data(indices);
-
-    //  init vao
-    auto s_vao = vao.get_scoped();
-
-    geometry.bind();
-    auto v_pos = shader.get_attrib_location("v_position");
-    glEnableVertexAttribArray(v_pos);
-    glVertexAttribPointer(v_pos, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
-
-    colors.bind();
-    auto c_pos = shader.get_attrib_location("v_color");
-    glEnableVertexAttribArray(c_pos);
-    glVertexAttribPointer(c_pos, 4, GL_FLOAT, GL_FALSE, 0, nullptr);
-
-    ibo.bind();
-}
-
-void SphereObject::draw() const {
-    auto s_shader = shader.get_scoped();
-    shader.set_black(false);
-
-    auto s_vao = vao.get_scoped();
-    glDrawElements(GL_TRIANGLES, size, GL_UNSIGNED_INT, nullptr);
-}
-
-glm::mat4 SphereObject::get_matrix() const {
-    auto s = glm::scale(glm::vec3(scale, scale, scale));
-    auto t = glm::translate(position);
-    return t * s;
+        : BasicDrawableObject(shader,
+                              {
+                                  {0, 0, -1},
+                                  {0, 0, 1},
+                                  {0, -1, 0},
+                                  {0, 1, 0},
+                                  {-1, 0, 0},
+                                  {1, 0, 0},
+                              },
+                              std::vector<glm::vec4>(6, color),
+                              {
+                                  0,
+                                  2,
+                                  4,
+                                  0,
+                                  2,
+                                  5,
+                                  0,
+                                  3,
+                                  4,
+                                  0,
+                                  3,
+                                  5,
+                                  1,
+                                  2,
+                                  4,
+                                  1,
+                                  2,
+                                  5,
+                                  1,
+                                  3,
+                                  4,
+                                  1,
+                                  3,
+                                  5,
+                              }) {
+    set_position(position);
+    set_scale(0.4);
 }
 
 //----------------------------------------------------------------------------//
@@ -214,8 +293,8 @@ void SceneRenderer::newOpenGLContextCreated() {
         "/Users/reuben/dev/waveguide/demo/assets/materials/vault.json");
     File config("/Users/reuben/dev/waveguide/demo/assets/configs/vault.json");
 
-    SceneData sceneData(object.getFullPathName().toStdString(),
-                        material.getFullPathName().toStdString());
+    SceneData scene_data(object.getFullPathName().toStdString(),
+                         material.getFullPathName().toStdString());
     CombinedConfig cc;
     try {
         cc = read_config(config.getFullPathName().toStdString());
@@ -224,7 +303,7 @@ void SceneRenderer::newOpenGLContextCreated() {
 
     cc.get_source() = Vec3f(5, 1.75, 1);
 
-    MeshBoundary boundary(sceneData);
+    MeshBoundary boundary(scene_data);
 
     auto waveguide_program = get_program<TetrahedralProgram>(context, device);
     waveguide = std::make_unique<TetrahedralWaveguide>(
@@ -247,7 +326,7 @@ void SceneRenderer::newOpenGLContextCreated() {
 
     mesh_object = std::make_unique<MeshObject>(*shader, *waveguide);
 
-    set_model_object(sceneData);
+    set_model_object(scene_data);
     set_config(cc);
 }
 
@@ -316,11 +395,8 @@ void SceneRenderer::draw() const {
         model_object->draw();
 
         auto drawThing = [this](const auto &i) {
-            auto s_shader = shader->get_scoped();
-            if (i) {
-                shader->set_model_matrix(i->get_matrix());
+            if (i)
                 i->draw();
-            }
         };
 
         drawThing(source_object);
@@ -342,10 +418,10 @@ glm::mat4 SceneRenderer::get_view_matrix() const {
     return glm::lookAt(eye, target, up) * mm;
 }
 
-void SceneRenderer::set_model_object(const SceneData &sceneData) {
+void SceneRenderer::set_model_object(const SceneData &scene_data) {
     std::unique_lock<std::mutex> lck(mut);
 
-    auto aabb = sceneData.get_aabb();
+    auto aabb = scene_data.get_aabb();
     auto m = aabb.get_centre();
     lck.unlock();
     translation = glm::translate(-glm::vec3(m.x, m.y, m.z));
@@ -354,7 +430,10 @@ void SceneRenderer::set_model_object(const SceneData &sceneData) {
     auto s = max > 0 ? 20 / max : 1;
     scale = glm::scale(glm::vec3(s, s, s));
 
-    model_object = std::make_unique<ModelObject>(*shader, sceneData);
+    //    model_object = std::make_unique<ModelObject>(*shader, scene_data);
+    Octree octree(scene_data, 4);
+    model_object =
+        std::make_unique<ModelSectionObject>(*shader, scene_data, octree);
 }
 
 void SceneRenderer::set_config(const Config &config) {

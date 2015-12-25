@@ -7,10 +7,6 @@
 
 class Octree {
 public:
-    Octree(const SceneData & mesh_boundary,
-           int max_depth,
-           const std::vector<int> to_test,
-           const CuboidBoundary & aabb);
     Octree(const SceneData & mesh_boundary, int max_depth);
 
     virtual ~Octree() noexcept = default;
@@ -20,7 +16,11 @@ public:
     const std::vector<int> & get_triangles() const;
 
 private:
-    const SceneData & scene_data;
+    Octree(const SceneData & mesh_boundary,
+           int max_depth,
+           const std::vector<int> to_test,
+           const CuboidBoundary & aabb);
+
     const CuboidBoundary aabb;
     std::vector<Octree> nodes;
     std::vector<int> triangles;

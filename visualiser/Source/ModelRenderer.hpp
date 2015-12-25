@@ -23,6 +23,7 @@
 #include "waveguide.h"
 #include "scene_data.h"
 #include "app_config.h"
+#include "octree.h"
 
 #include "../JuceLibraryCode/JuceHeader.h"
 
@@ -30,19 +31,118 @@
 #include <mutex>
 #include <future>
 
-class ModelObject final : public ::Drawable {
+template <int DRAW_MODE>
+class BasicDrawableObject : public ::Drawable {
 public:
-    ModelObject(const GenericShader& shader, const SceneData& scene_data);
-    void draw() const override;
+    BasicDrawableObject(const GenericShader& shader,
+                        const std::vector<glm::vec3>& g,
+                        const std::vector<glm::vec4>& c,
+                        const std::vector<GLuint>& i)
+            : shader(shader)
+            , size(i.size()) {
+        geometry.data(g);
+        colors.data(c);
+        ibo.data(i);
+
+        auto s_vao = vao.get_scoped();
+
+        geometry.bind();
+        auto v_pos = shader.get_attrib_location("v_position");
+        glEnableVertexAttribArray(v_pos);
+        glVertexAttribPointer(v_pos, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+
+        colors.bind();
+        auto c_pos = shader.get_attrib_location("v_color");
+        glEnableVertexAttribArray(c_pos);
+        glVertexAttribPointer(c_pos, 4, GL_FLOAT, GL_FALSE, 0, nullptr);
+
+        ibo.bind();
+    }
+    virtual ~BasicDrawableObject() noexcept = default;
+
+    void draw() const override {
+        auto s_shader = shader.get_scoped();
+        shader.set_model_matrix(get_matrix());
+        shader.set_black(false);
+
+        auto s_vao = vao.get_scoped();
+        glDrawElements(DRAW_MODE, size, GL_UNSIGNED_INT, nullptr);
+    }
+
+    glm::vec3 get_position() const {
+        return position;
+    }
+    void set_position(const glm::vec3& p) {
+        position = p;
+    }
+
+    glm::vec3 get_scale() const {
+        return scale;
+    }
+    void set_scale(const glm::vec3& s) {
+        scale = s;
+    }
+    void set_scale(float s) {
+        scale = glm::vec3(s, s, s);
+    }
+
+    const GenericShader& get_shader() const {
+        return shader;
+    }
 
 private:
+    glm::mat4 get_matrix() const {
+        return glm::translate(position) * glm::scale(scale);
+    }
+
     const GenericShader& shader;
+
+    glm::vec3 position{0, 0, 0};
+    glm::vec3 scale{1, 1, 1};
 
     VAO vao;
     StaticVBO geometry;
     StaticVBO colors;
     StaticIBO ibo;
     GLuint size;
+};
+
+class SphereObject final : public BasicDrawableObject<GL_TRIANGLES> {
+public:
+    SphereObject(const GenericShader& shader,
+                 const glm::vec3& position,
+                 const glm::vec4& color);
+};
+
+class BoxObject final : public BasicDrawableObject<GL_LINES> {
+public:
+    BoxObject(const GenericShader& shader);
+};
+
+class ModelSectionObject final : public BasicDrawableObject<GL_TRIANGLES> {
+public:
+    ModelSectionObject(const GenericShader& shader,
+                       const SceneData& scene_data,
+                       const Octree& octree);
+    void draw() const override;
+
+private:
+    std::vector<glm::vec3> get_vertices(const SceneData& scene_data) const;
+    std::vector<GLuint> get_indices(const SceneData& scene_data,
+                                    const Octree& octree) const;
+
+    void draw_octree(const Octree& octree, BoxObject& box) const;
+
+    Octree octree;
+};
+
+class ModelObject final : public BasicDrawableObject<GL_TRIANGLES> {
+public:
+    ModelObject(const GenericShader& shader, const SceneData& scene_data);
+
+private:
+    std::vector<glm::vec3> get_vertices(const SceneData& scene_data) const;
+    std::vector<GLuint> get_indices(const SceneData& scene_data) const;
 };
 
 class MeshObject final : public ::Drawable {
@@ -63,28 +163,6 @@ private:
     GLuint size;
 
     float amp{100};
-};
-
-class SphereObject final : public ::Drawable {
-public:
-    SphereObject(const GenericShader& shader,
-                 const glm::vec3& position,
-                 const glm::vec4& color);
-    void draw() const override;
-
-    glm::mat4 get_matrix() const;
-
-private:
-    const GenericShader& shader;
-
-    glm::vec3 position;
-    float scale{0.5};
-
-    VAO vao;
-    StaticVBO geometry;
-    StaticVBO colors;
-    StaticIBO ibo;
-    GLuint size;
 };
 
 class SceneRenderer final : public OpenGLRenderer {
@@ -108,7 +186,8 @@ public:
 
 private:
     std::unique_ptr<GenericShader> shader;
-    std::unique_ptr<ModelObject> model_object;
+    //    std::unique_ptr<ModelObject> model_object;
+    std::unique_ptr<ModelSectionObject> model_object;
     std::unique_ptr<SphereObject> source_object;
     std::unique_ptr<SphereObject> receiver_object;
 
