@@ -3,8 +3,8 @@
 #include "boundaries.h"
 #include "conversions.h"
 #include "cl_common.h"
-#include "combined_config.h"
 #include "tetrahedral_program.h"
+#include "rayverb.h"
 
 BoxObject::BoxObject(const GenericShader &shader)
         : BasicDrawableObject(shader,
@@ -253,7 +253,7 @@ void MeshObject::draw() const {
 }
 
 void MeshObject::set_pressures(const std::vector<float> &pressures) {
-    std::vector<glm::vec4> c(pressures.size());
+    std::vector<glm::vec4> c(pressures.size(), glm::vec4(0, 0, 0, 0));
     std::transform(pressures.begin(),
                    pressures.end(),
                    c.begin(),
@@ -282,6 +282,48 @@ SceneRenderer::SceneRenderer()
 SceneRenderer::~SceneRenderer() {
     if (future_pressure.valid())
         future_pressure.get();
+
+    auto join_thread = [](auto &i) {
+        if (i.joinable())
+            i.join();
+    };
+    join_thread(waveguide_load_thread);
+    join_thread(raytracer_load_thread);
+}
+
+void SceneRenderer::init_waveguide(const SceneData &scene_data,
+                                   const WaveguideConfig &cc) {
+    MeshBoundary boundary(scene_data);
+    auto waveguide_program = get_program<TetrahedralProgram>(context, device);
+    auto w = std::make_unique<TetrahedralWaveguide>(
+        waveguide_program, queue, boundary, cc.get_divisions(), cc.get_mic());
+    auto corrected_source = cc.get_source();
+
+#define CASE 0
+#if CASE == 0
+    w->init(
+        corrected_source, TetrahedralWaveguide::GaussianFunction(0.1), 0, 0);
+#else
+    corrected_source = w->get_corrected_coordinate(cc.get_source());
+    w->init(corrected_source, TetrahedralWaveguide::BasicPowerFunction(), 0, 0);
+#endif
+
+    jassert((w->get_corrected_coordinate(cc.get_mic()) == cc.get_mic()).all());
+
+    {
+        std::lock_guard<std::mutex> lck(mut);
+        waveguide = std::move(w);
+        trigger_pressure_calculation();
+    }
+}
+
+void SceneRenderer::init_raytracer(const SceneData &scene_data,
+                                   const RayverbConfig &cc) {
+    auto raytrace_program = get_program<RayverbProgram>(context, device);
+    auto raytrace = std::make_unique<Raytrace>(
+        raytrace_program, queue, cc.get_impulses(), scene_data);
+    raytrace->raytrace(
+        convert(cc.get_mic()), convert(cc.get_source()), cc.get_rays());
 }
 
 void SceneRenderer::newOpenGLContextCreated() {
@@ -303,38 +345,25 @@ void SceneRenderer::newOpenGLContextCreated() {
 
     cc.get_source() = Vec3f(5, 1.75, 1);
 
-    MeshBoundary boundary(scene_data);
-
-    auto waveguide_program = get_program<TetrahedralProgram>(context, device);
-    waveguide = std::make_unique<TetrahedralWaveguide>(
-        waveguide_program, queue, boundary, cc.get_divisions(), cc.get_mic());
-
-    jassert((waveguide->get_corrected_coordinate(cc.get_mic()) == cc.get_mic())
-                .all());
-
-#define CASE 0
-#if CASE == 0
-    waveguide->init(
-        cc.get_source(), TetrahedralWaveguide::GaussianFunction(0.1), 0, 0);
-#else
-    auto corrected_source =
-        waveguide->get_corrected_coordinate(cc.get_source());
-    waveguide->init(
-        corrected_source, TetrahedralWaveguide::BasicPowerFunction(), 0, 0);
-#endif
-    trigger_pressure_calculation();
-
-    mesh_object = std::make_unique<MeshObject>(*shader, *waveguide);
-
     set_model_object(scene_data);
     set_config(cc);
+
+    waveguide_load_thread =
+        std::thread(&SceneRenderer::init_waveguide, this, scene_data, cc);
+    raytracer_load_thread =
+        std::thread(&SceneRenderer::init_raytracer, this, scene_data, cc);
 }
 
 void SceneRenderer::renderOpenGL() {
     std::lock_guard<std::mutex> lck(mut);
+
+    if (waveguide && !mesh_object) {
+        mesh_object = std::make_unique<MeshObject>(*shader, *waveguide);
+    }
+
     if (future_pressure.valid() && waveguide && mesh_object) {
         try {
-            if (future_pressure.wait_for(std::chrono::milliseconds(1)) ==
+            if (future_pressure.wait_for(std::chrono::milliseconds(0)) ==
                 std::future_status::ready) {
                 mesh_object->set_pressures(future_pressure.get());
                 trigger_pressure_calculation();
@@ -374,11 +403,13 @@ void SceneRenderer::set_aspect(float aspect) {
 }
 
 void SceneRenderer::draw() const {
-    glClearColor(0, 0, 0, 1);
+    auto c = 0.25;
+    glClearColor(c, c, c, 1);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glEnable(GL_BLEND);
     glEnable(GL_DEPTH_TEST);
-    glEnable(GL_PROGRAM_POINT_SIZE);
+    //    glEnable(GL_PROGRAM_POINT_SIZE);
+
+    glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     auto s_shader = shader->get_scoped();
@@ -386,21 +417,19 @@ void SceneRenderer::draw() const {
     shader->set_view_matrix(get_view_matrix());
     shader->set_projection_matrix(get_projection_matrix());
 
-    if (mesh_object) {
-        mesh_object->draw();
-    }
+    auto draw_thing = [this](const auto &i) {
+        if (i)
+            i->draw();
+    };
+
+    draw_thing(mesh_object);
 
     if (model_object) {
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         model_object->draw();
 
-        auto drawThing = [this](const auto &i) {
-            if (i)
-                i->draw();
-        };
-
-        drawThing(source_object);
-        drawThing(receiver_object);
+        draw_thing(source_object);
+        draw_thing(receiver_object);
 
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     }
@@ -423,15 +452,13 @@ void SceneRenderer::set_model_object(const SceneData &scene_data) {
 
     auto aabb = scene_data.get_aabb();
     auto m = aabb.get_centre();
-    lck.unlock();
     translation = glm::translate(-glm::vec3(m.x, m.y, m.z));
 
     auto max = (aabb.c1 - aabb.c0).max();
     auto s = max > 0 ? 20 / max : 1;
     scale = glm::scale(glm::vec3(s, s, s));
 
-    //    model_object = std::make_unique<ModelObject>(*shader, scene_data);
-    Octree octree(scene_data, 4);
+    Octree octree(scene_data, 0);
     model_object =
         std::make_unique<ModelSectionObject>(*shader, scene_data, octree);
 }

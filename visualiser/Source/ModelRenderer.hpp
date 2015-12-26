@@ -22,7 +22,7 @@
 
 #include "waveguide.h"
 #include "scene_data.h"
-#include "app_config.h"
+#include "combined_config.h"
 #include "octree.h"
 
 #include "../JuceLibraryCode/JuceHeader.h"
@@ -185,8 +185,12 @@ public:
     void set_config(const Config& config);
 
 private:
+    void draw() const;
+    void trigger_pressure_calculation();
+    void init_waveguide(const SceneData& scene_data, const WaveguideConfig& cc);
+    void init_raytracer(const SceneData& scene_data, const RayverbConfig& cc);
+
     std::unique_ptr<GenericShader> shader;
-    //    std::unique_ptr<ModelObject> model_object;
     std::unique_ptr<ModelSectionObject> model_object;
     std::unique_ptr<SphereObject> source_object;
     std::unique_ptr<SphereObject> receiver_object;
@@ -195,9 +199,8 @@ private:
     std::unique_ptr<MeshObject> mesh_object;
 
     std::future<std::vector<cl_float>> future_pressure;
-
-    void draw() const;
-    void trigger_pressure_calculation();
+    std::thread waveguide_load_thread;
+    std::thread raytracer_load_thread;
 
     glm::mat4 projection_matrix;
 

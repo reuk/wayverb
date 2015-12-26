@@ -26,7 +26,6 @@
 #include <gflags/gflags.h>
 
 //  stdlib
-#include <random>
 #include <iostream>
 #include <algorithm>
 #include <numeric>
@@ -34,24 +33,6 @@
 #include <map>
 
 // -1 <= z <= 1, -pi <= theta <= pi
-cl_float3 spherePoint(float z, float theta) {
-    const float ztemp = sqrtf(1 - z * z);
-    return (cl_float3){{ztemp * cosf(theta), ztemp * sinf(theta), z, 0}};
-}
-
-std::vector<cl_float3> getRandomDirections(unsigned long num) {
-    std::vector<cl_float3> ret(num);
-    std::uniform_real_distribution<float> zDist(-1, 1);
-    std::uniform_real_distribution<float> thetaDist(-M_PI, M_PI);
-    auto seed = std::chrono::system_clock::now().time_since_epoch().count();
-    std::default_random_engine engine(seed);
-
-    for (auto& i : ret)
-        i = spherePoint(zDist(engine), thetaDist(engine));
-
-    return ret;
-}
-
 double a2db(double a) {
     return 20 * log10(a);
 }
@@ -140,8 +121,6 @@ int main(int argc, char** argv) {
         return EXIT_FAILURE;
     }
 
-    auto directions = getRandomDirections(cc.get_rays());
-
     try {
         SceneData scene_data(model_file, material_file);
 
@@ -173,7 +152,7 @@ int main(int argc, char** argv) {
         auto raytrace_program = get_program<RayverbProgram>(context, device);
         Raytrace raytrace(raytrace_program, queue, num_impulses, scene_data);
         raytrace.raytrace(
-            convert(corrected_mic), convert(corrected_source), directions);
+            convert(corrected_mic), convert(corrected_source), cc.get_rays());
         auto results = raytrace.getAllRaw(false);
         std::vector<Speaker> speakers{Speaker{cl_float3{{0, 0, 0}}, 0}};
         auto attenuated =

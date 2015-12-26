@@ -20,6 +20,7 @@
 #include <streambuf>
 #include <sstream>
 #include <iomanip>
+#include <random>
 
 inline cl_float3 fromAIVec(const aiVector3D& v) {
     return (cl_float3){{v.x, v.y, v.z, 0}};
@@ -235,6 +236,30 @@ Raytrace::Raytrace(const RayverbProgram& program,
                    sceneData.triangles,
                    sceneData.vertices,
                    sceneData.surfaces) {
+}
+
+cl_float3 sphere_point(float z, float theta) {
+    const float ztemp = sqrtf(1 - z * z);
+    return (cl_float3){{ztemp * cosf(theta), ztemp * sinf(theta), z, 0}};
+}
+
+std::vector<cl_float3> get_random_directions(unsigned long num) {
+    std::vector<cl_float3> ret(num);
+    std::uniform_real_distribution<float> z(-1, 1);
+    std::uniform_real_distribution<float> theta(-M_PI, M_PI);
+    auto seed = std::chrono::system_clock::now().time_since_epoch().count();
+    std::default_random_engine engine(seed);
+
+    for (auto& i : ret)
+        i = sphere_point(z(engine), theta(engine));
+
+    return ret;
+}
+
+void Raytrace::raytrace(const cl_float3& micpos,
+                        const cl_float3& source,
+                        int rays) {
+    raytrace(micpos, source, get_random_directions(rays));
 }
 
 void Raytrace::raytrace(const cl_float3& micpos,

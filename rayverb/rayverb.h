@@ -249,6 +249,7 @@ public:
     void raytrace(const cl_float3& micpos,
                   const cl_float3& source,
                   const std::vector<cl_float3>& directions);
+    void raytrace(const cl_float3& micpos, const cl_float3& source, int rays);
 
     /// Get raw, unprocessed diffuse results.
     RaytracerResults getRawDiffuse();
