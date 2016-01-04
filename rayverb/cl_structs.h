@@ -31,3 +31,17 @@ typedef struct {
     cl_float3 direction;
     cl_float coefficient;
 } __attribute__((aligned(8))) Speaker;
+
+typedef struct {
+    cl_float3 position;
+    cl_float3 direction;
+} __attribute__((aligned(8))) Ray;
+
+typedef struct {
+    //    TriangleVerts prev_primitives [NUM_IMAGE_SOURCE - 1];
+    Ray ray;
+    VolumeType volume;
+    //    cl_float3 mic_reflection;
+    cl_float distance;
+    cl_uint cont;
+} __attribute__((aligned(8))) RayInfo;

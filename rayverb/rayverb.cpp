@@ -160,11 +160,11 @@ std::vector<cl_float3> get_random_directions(unsigned long num) {
     return ret;
 }
 
-RaytracerResults Raytrace::Results::get_diffuse() const {
+RaytracerResults Results::get_diffuse() const {
     return RaytracerResults(diffuse, mic_pos);
 }
 
-RaytracerResults Raytrace::Results::get_image_source(bool remove_direct) const {
+RaytracerResults Results::get_image_source(bool remove_direct) const {
     auto temp = image_source;
     if (remove_direct)
         temp.erase(std::vector<unsigned long>{0});
@@ -177,54 +177,55 @@ RaytracerResults Raytrace::Results::get_image_source(bool remove_direct) const {
     return RaytracerResults(ret, mic_pos);
 }
 
-RaytracerResults Raytrace::Results::get_all(bool remove_direct) const {
+RaytracerResults Results::get_all(bool remove_direct) const {
     auto diffuse = get_diffuse().impulses;
     const auto image = get_image_source(remove_direct).impulses;
     diffuse.insert(diffuse.end(), image.begin(), image.end());
     return RaytracerResults(diffuse, mic_pos);
 }
 
+//----------------------------------------------------------------------------//
+
 Raytrace::Raytrace(const RayverbProgram& program, cl::CommandQueue& queue)
         : queue(queue)
-        , program(program)
-        , kernel(program.get_raytrace_kernel()) {
+        , kernel(program.get_raytrace_kernel())
+        , context(program.getInfo<CL_PROGRAM_CONTEXT>()) {
 }
 
-Raytrace::Results Raytrace::run(const SceneData& scene_data,
-                                const Vec3f& micpos,
-                                const Vec3f& source,
-                                int rays,
-                                int reflections) {
+Results Raytrace::run(const SceneData& scene_data,
+                      const Vec3f& micpos,
+                      const Vec3f& source,
+                      int rays,
+                      int reflections) {
     auto RAY_GROUP_SIZE = 4096u;
 
     //  init buffers
-    cl::Buffer cl_directions(program.getInfo<CL_PROGRAM_CONTEXT>(),
-                             CL_MEM_READ_WRITE,
-                             RAY_GROUP_SIZE * sizeof(cl_float3));
+    cl::Buffer cl_directions(
+        context, CL_MEM_READ_WRITE, RAY_GROUP_SIZE * sizeof(cl_float3));
     cl::Buffer cl_triangles(
-        program.getInfo<CL_PROGRAM_CONTEXT>(),
+        context,
         begin(const_cast<std::vector<Triangle>&>(scene_data.triangles)),
         end(const_cast<std::vector<Triangle>&>(scene_data.triangles)),
         false);
     cl::Buffer cl_vertices(
-        program.getInfo<CL_PROGRAM_CONTEXT>(),
+        context,
         begin(const_cast<std::vector<cl_float3>&>(scene_data.vertices)),
         end(const_cast<std::vector<cl_float3>&>(scene_data.vertices)),
         false);
     cl::Buffer cl_surfaces(
-        program.getInfo<CL_PROGRAM_CONTEXT>(),
+        context,
         begin(const_cast<std::vector<Surface>&>(scene_data.surfaces)),
         end(const_cast<std::vector<Surface>&>(scene_data.surfaces)),
         false);
-    cl::Buffer cl_impulses(program.getInfo<CL_PROGRAM_CONTEXT>(),
+    cl::Buffer cl_impulses(context,
                            CL_MEM_READ_WRITE,
                            RAY_GROUP_SIZE * reflections * sizeof(Impulse));
     cl::Buffer cl_image_source(
-        program.getInfo<CL_PROGRAM_CONTEXT>(),
+        context,
         CL_MEM_READ_WRITE,
         RAY_GROUP_SIZE * NUM_IMAGE_SOURCE * sizeof(Impulse));
     cl::Buffer cl_image_source_index(
-        program.getInfo<CL_PROGRAM_CONTEXT>(),
+        context,
         CL_MEM_READ_WRITE,
         RAY_GROUP_SIZE * NUM_IMAGE_SOURCE * sizeof(cl_ulong));
 
@@ -335,6 +336,152 @@ Raytrace::Results Raytrace::run(const SceneData& scene_data,
 
     return results;
 }
+
+//----------------------------------------------------------------------------//
+
+ImprovedRaytrace::ImprovedRaytrace(const RayverbProgram& program,
+                                   cl::CommandQueue& queue)
+        : queue(queue)
+        , kernel(program.get_improved_raytrace_kernel())
+        , context(program.getInfo<CL_PROGRAM_CONTEXT>()) {
+}
+
+Results ImprovedRaytrace::run(const SceneData& scene_data,
+                              const Vec3f& micpos,
+                              const Vec3f& source,
+                              int rays,
+                              int reflections) {
+    cl::Buffer cl_ray_info(context, CL_MEM_READ_WRITE, rays * sizeof(RayInfo));
+
+    auto directions = get_random_directions(rays);
+    std::vector<RayInfo> ray_info(directions.size());
+    std::transform(directions.begin(),
+                   directions.end(),
+                   ray_info.begin(),
+                   [micpos, source](const auto& i) {
+                       RayInfo ret;
+                       ret.ray.direction = i;
+                       ret.ray.position = to_cl_float3(source);
+                       ret.distance = 0;
+                       ret.volume = VolumeType{{1, 1, 1, 1, 1, 1, 1, 1}};
+                       ret.cont = 1;
+
+                       //                       ret.mic_reflection =
+                       //                       to_cl_float3(micpos);
+                       return ret;
+                   });
+
+    cl::copy(queue, begin(ray_info), end(ray_info), cl_ray_info);
+
+    cl::Buffer cl_triangles(
+        context,
+        begin(const_cast<std::vector<Triangle>&>(scene_data.triangles)),
+        end(const_cast<std::vector<Triangle>&>(scene_data.triangles)),
+        false);
+    cl::Buffer cl_vertices(
+        context,
+        begin(const_cast<std::vector<cl_float3>&>(scene_data.vertices)),
+        end(const_cast<std::vector<cl_float3>&>(scene_data.vertices)),
+        false);
+    cl::Buffer cl_surfaces(
+        context,
+        begin(const_cast<std::vector<Surface>&>(scene_data.surfaces)),
+        end(const_cast<std::vector<Surface>&>(scene_data.surfaces)),
+        false);
+    cl::Buffer cl_impulses(context, CL_MEM_READ_WRITE, rays * sizeof(Impulse));
+    cl::Buffer cl_image_source(
+        context, CL_MEM_READ_WRITE, rays * sizeof(Impulse));
+    cl::Buffer cl_image_source_index(
+        context, CL_MEM_READ_WRITE, rays * sizeof(cl_ulong));
+
+    MeshBoundary boundary(scene_data);
+    //  check that mic and source are inside model bounds
+    bool mic_inside = boundary.inside(micpos);
+    bool src_inside = boundary.inside(source);
+    if (!mic_inside) {
+        std::cerr << "WARNING: microphone position is outside model"
+                  << std::endl;
+        std::cerr << "position: " << micpos << std::endl;
+    }
+
+    if (!src_inside) {
+        std::cerr << "WARNING: source position is outside model" << std::endl;
+        std::cerr << "position: " << source << std::endl;
+    }
+
+    Results results;
+    results.mic_pos = micpos;
+    results.diffuse.resize(rays * reflections);
+
+    for (auto i = 0u; i != reflections; ++i) {
+        kernel(cl::EnqueueArgs(queue, cl::NDRange(rays)),
+               cl_ray_info,
+               cl_triangles,
+               scene_data.triangles.size(),
+               cl_vertices,
+               cl_surfaces,
+               to_cl_float3(source),
+               to_cl_float3(micpos),
+               cl_impulses,
+               cl_image_source,
+               cl_image_source_index,
+               (VolumeType){{0.001 * -0.1,
+                             0.001 * -0.2,
+                             0.001 * -0.5,
+                             0.001 * -1.1,
+                             0.001 * -2.7,
+                             0.001 * -9.4,
+                             0.001 * -29.0,
+                             0.001 * -60.0}},
+               i);
+
+        auto b = (i + 0) * rays;
+        auto e = (i + 1) * rays;
+
+        cl::copy(queue,
+                 cl_impulses,
+                 results.diffuse.begin() + b,
+                 results.diffuse.begin() + e);
+
+        //  TODO deal with image-source stuff
+        /*
+        cl::copy(queue,
+                 cl_image_source_index,
+                 begin(image_source_index),
+                 end(image_source_index));
+        cl::copy(queue, cl_image_source, begin(image), end(image));
+
+        //  remove duplicate image-source contributions
+        for (auto j = 0; j != RAY_GROUP_SIZE * NUM_IMAGE_SOURCE;
+             j += NUM_IMAGE_SOURCE) {
+            for (auto k = 1; k != NUM_IMAGE_SOURCE + 1; ++k) {
+                std::vector<unsigned long> surfaces(
+                    image_source_index.begin() + j,
+                    image_source_index.begin() + j + k);
+
+                if (k == 1 || surfaces.back() != 0) {
+                    auto it = results.image_source.find(surfaces);
+                    if (it == results.image_source.end()) {
+                        results.image_source[surfaces] = image[j + k - 1];
+                    }
+                }
+            }
+        }
+        */
+    }
+
+    auto transposed = results.diffuse;
+    for (auto ray = 0u; ray != rays; ++ray) {
+        for (auto reflection = 0u; reflection != reflections; ++reflection) {
+            results.diffuse[reflection + ray * reflections] =
+                transposed[ray + reflection * rays];
+        }
+    }
+
+    return results;
+}
+
+//----------------------------------------------------------------------------//
 
 Hrtf::Hrtf(const RayverbProgram& program, cl::CommandQueue& queue)
         : queue(queue)

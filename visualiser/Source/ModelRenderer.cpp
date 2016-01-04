@@ -306,6 +306,7 @@ RaytraceObject::RaytraceObject(const GenericShader &shader,
                                                       0.0f) /
                                       8;
                        auto c = i.time ? fabs(average) * 10 : 0;
+                       //                       auto c = 1;
                        return glm::vec4(0, c, c, c);
                    });
 
@@ -430,19 +431,28 @@ void SceneRenderer::newOpenGLContextCreated() {
 
     waveguide_load_thread =
         std::thread(&SceneRenderer::init_waveguide, this, scene_data, cc);
-    raytracer_results = std::async(
-        std::launch::async,
-        [this, scene_data, cc] {
-            auto raytrace_program =
-                get_program<RayverbProgram>(context, device);
-            auto r = std::make_unique<Raytrace>(raytrace_program, queue);
-            return r->run(scene_data,
-                          cc.get_mic(),
-                          cc.get_source(),
-                          cc.get_rays(),
-                          cc.get_impulses())
-                .get_diffuse();
-        });
+
+    try {
+        raytracer_results =
+            std::async(std::launch::async,
+                       [this, scene_data, cc] {
+                           auto raytrace_program =
+                               get_program<RayverbProgram>(context, device);
+                           auto r = std::make_unique<ImprovedRaytrace>(
+                               raytrace_program, queue);
+                           //            auto r =
+                           //            std::make_unique<Raytrace>(raytrace_program,
+                           //            queue);
+                           return r->run(scene_data,
+                                         cc.get_mic(),
+                                         cc.get_source(),
+                                         cc.get_rays(),
+                                         cc.get_impulses())
+                               .get_diffuse();
+                       });
+    } catch (const std::exception &e) {
+        std::cout << e.what() << std::endl;
+    }
 }
 
 void SceneRenderer::renderOpenGL() {
@@ -460,7 +470,8 @@ void SceneRenderer::renderOpenGL() {
                     *shader, config, raytracer_results.get());
             }
         } catch (const std::exception &e) {
-            std::cout << e.what() << std::endl;
+            std::cout << "exception fetching raytracer results: " << e.what()
+                      << std::endl;
         }
     }
 
@@ -472,7 +483,8 @@ void SceneRenderer::renderOpenGL() {
                 trigger_pressure_calculation();
             }
         } catch (const std::exception &e) {
-            std::cout << e.what() << std::endl;
+            std::cout << "exception fetching waveguide results: " << e.what()
+                      << std::endl;
         }
     }
     draw();
@@ -525,7 +537,7 @@ void SceneRenderer::draw() const {
             i->draw();
     };
 
-    draw_thing(mesh_object);
+    //    draw_thing(mesh_object);
     draw_thing(raytrace_object);
 
     if (model_object) {

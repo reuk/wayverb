@@ -24,6 +24,21 @@ public:
                                VolumeType>(*this, "raytrace");
     }
 
+    auto get_improved_raytrace_kernel() const {
+        return cl::make_kernel<cl::Buffer,
+                               cl::Buffer,
+                               cl_ulong,
+                               cl::Buffer,
+                               cl::Buffer,
+                               cl_float3,
+                               cl_float3,
+                               cl::Buffer,
+                               cl::Buffer,
+                               cl::Buffer,
+                               VolumeType,
+                               cl_ulong>(*this, "raytrace_improved");
+    }
+
     auto get_attenuate_kernel() const {
         return cl::make_kernel<cl_float3, cl::Buffer, cl::Buffer, Speaker>(
             *this, "attenuate");

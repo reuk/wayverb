@@ -29,6 +29,21 @@ typedef struct {
 } Ray;
 
 typedef struct {
+    float3 v0;
+    float3 v1;
+    float3 v2;
+} TriangleVerts;
+
+typedef struct {
+//    TriangleVerts prev_primitives [NUM_IMAGE_SOURCE - 1];
+    Ray ray;
+    VolumeType volume;
+//    float3 mic_reflection;
+    float distance;
+    unsigned int cont;
+} RayInfo;
+
+typedef struct {
     VolumeType specular;
     VolumeType diffuse;
 } Surface;
@@ -43,7 +58,7 @@ typedef struct {
 typedef struct {
     unsigned long primitive;
     float distance;
-    bool intersects;
+    unsigned int intersects;
 } Intersection;
 
 typedef struct {
@@ -62,33 +77,27 @@ typedef struct {
     float coefficient;
 } Speaker;
 
-typedef struct {
-    float3 v0;
-    float3 v1;
-    float3 v2;
-} TriangleVerts;
-
-float triangle_vert_intersection (TriangleVerts * v, Ray * ray);
-float triangle_vert_intersection (TriangleVerts * v, Ray * ray)
+float triangle_vert_intersection (TriangleVerts * v, Ray ray);
+float triangle_vert_intersection (TriangleVerts * v, Ray ray)
 {
     float3 e0 = v->v1 - v->v0;
     float3 e1 = v->v2 - v->v0;
 
-    float3 pvec = cross (ray->direction, e1);
+    float3 pvec = cross (ray.direction, e1);
     float det = dot (e0, pvec);
 
     if (-EPSILON < det && det < EPSILON)
         return 0.0f;
 
     float invdet = 1.0f / det;
-    float3 tvec = ray->position - v->v0;
+    float3 tvec = ray.position - v->v0;
     float ucomp = invdet * dot (tvec, pvec);
 
     if (ucomp < 0.0f || 1.0f < ucomp)
         return 0.0f;
 
     float3 qvec = cross (tvec, e0);
-    float vcomp = invdet * dot (ray->direction, qvec);
+    float vcomp = invdet * dot (ray.direction, qvec);
 
     if (vcomp < 0.0f || 1.0f < vcomp + ucomp)
         return 0.0f;
@@ -99,12 +108,12 @@ float triangle_vert_intersection (TriangleVerts * v, Ray * ray)
 float triangle_intersection
 (   global Triangle * triangle
 ,   global float3 * vertices
-,   Ray * ray
+,   Ray ray
 );
 float triangle_intersection
 (   global Triangle * triangle
 ,   global float3 * vertices
-,   Ray * ray
+,   Ray ray
 )
 {
     TriangleVerts v =
@@ -141,22 +150,22 @@ float3 reflect (float3 normal, float3 direction)
     return direction - (normal * 2 * dot (direction, normal));
 }
 
-Ray ray_reflect (Ray * ray, float3 normal, float3 intersection);
-Ray ray_reflect (Ray * ray, float3 normal, float3 intersection)
+Ray ray_reflect (Ray ray, float3 normal, float3 intersection);
+Ray ray_reflect (Ray ray, float3 normal, float3 intersection)
 {
-    return (Ray) {intersection, reflect (normal, ray->direction)};
+    return (Ray) {intersection, reflect (normal, ray.direction)};
 }
 
 Ray triangle_reflectAt
 (   global Triangle * triangle
 ,   global float3 * vertices
-,   Ray * ray
+,   Ray ray
 ,   float3 intersection
 );
 Ray triangle_reflectAt
 (   global Triangle * triangle
 ,   global float3 * vertices
-,   Ray * ray
+,   Ray ray
 ,   float3 intersection
 )
 {
@@ -168,13 +177,13 @@ Ray triangle_reflectAt
 }
 
 Intersection ray_triangle_intersection
-(   Ray * ray
+(   Ray ray
 ,   global Triangle * triangles
 ,   unsigned long numtriangles
 ,   global float3 * vertices
 );
 Intersection ray_triangle_intersection
-(   Ray * ray
+(   Ray ray
 ,   global Triangle * triangles
 ,   unsigned long numtriangles
 ,   global float3 * vertices
@@ -295,7 +304,7 @@ bool point_intersection
     Ray to_point = {begin, direction};
 
     Intersection inter = ray_triangle_intersection
-    (   &to_point
+    (   to_point
     ,   triangles
     ,   numtriangles
     ,   vertices
@@ -308,6 +317,106 @@ float3 getDirection (float3 from, float3 to);
 float3 getDirection (float3 from, float3 to)
 {
     return normalize (to - from);
+}
+
+kernel void raytrace_improved
+(   global RayInfo * ray_info
+,   global Triangle * triangles
+,   unsigned long numtriangles
+,   global float3 * vertices
+,   global Surface * surfaces
+,   float3 source
+,   float3 mic
+,   global Impulse * impulses
+,   global Impulse * image_source
+,   global unsigned long * image_source_index
+,   VolumeType AIR_COEFFICIENT
+,   unsigned long index
+)
+{
+    size_t thread = get_global_id(0);
+    global RayInfo * info = ray_info + thread;
+
+    /*
+    if (index == 0) {
+        if
+        (   point_intersection
+            (   source
+            ,   info->mic_reflection
+            ,   triangles
+            ,   numtriangles
+            ,   vertices
+            )
+        )
+        {
+            //  TODO add_image
+        }
+    }
+     */
+    
+    if (! info->cont) {
+        return;
+    }
+
+    Ray ray = info->ray;
+
+    Intersection closest = ray_triangle_intersection
+    (   ray
+    ,   triangles
+    ,   numtriangles
+    ,   vertices
+    );
+
+    if (! closest.intersects)
+    {
+        info->cont = false;
+        return;
+    }
+
+    global Triangle * triangle = triangles + closest.primitive;
+
+    if (index < NUM_IMAGE_SOURCE - 1)
+    {
+        //  TODO image source stuff
+    }
+
+    float3 intersection = ray.position + ray.direction * closest.distance;
+    float new_dist = info->distance + closest.distance;
+    VolumeType new_vol = -info->volume * surfaces[triangle->surface].specular;
+
+    const bool is_intersection = point_intersection
+    (   intersection
+    ,   mic
+    ,   triangles
+    ,   numtriangles
+    ,   vertices
+    );
+
+    const float dist = is_intersection ? new_dist + length(mic - intersection) : 0;
+    const float diff = fabs(dot(triangle_normal(triangle, vertices), ray.direction));
+    impulses[thread] = (Impulse)
+    {   (   is_intersection
+        ?   (   new_vol
+            *   attenuation_for_distance(dist, AIR_COEFFICIENT)
+            *   surfaces[triangle->surface].diffuse
+            *   diff
+            )
+        :   0
+        )
+    ,   intersection
+    ,   SECONDS_PER_METER * dist
+    };
+
+    Ray new_ray = triangle_reflectAt
+    (   triangle
+    ,   vertices
+    ,   ray
+    ,   intersection
+    );
+
+    info->ray = new_ray;
+    info->volume = new_vol;
+    info->distance = new_dist;
 }
 
 kernel void raytrace
@@ -370,7 +479,7 @@ kernel void raytrace
         //  Check for an intersection between the current ray and all the
         //  scene geometry.
         Intersection closest = ray_triangle_intersection
-        (   &ray
+        (   ray
         ,   triangles
         ,   numtriangles
         ,   vertices
@@ -409,7 +518,7 @@ kernel void raytrace
             float3 prevIntersection = source;
             for (unsigned long k = 0; k != index + 1 && intersects; ++k)
             {
-                const float TO_INTERSECTION = triangle_vert_intersection (prev_primitives + k, &toMic);
+                const float TO_INTERSECTION = triangle_vert_intersection (prev_primitives + k, toMic);
 
                 if (TO_INTERSECTION <= EPSILON)
                 {
@@ -425,7 +534,7 @@ kernel void raytrace
 
                 Ray intermediate = {prevIntersection, getDirection (prevIntersection, intersectionPoint)};
                 Intersection inter = ray_triangle_intersection
-                (   &intermediate
+                (   intermediate
                 ,   triangles
                 ,   numtriangles
                 ,   vertices
@@ -501,7 +610,7 @@ kernel void raytrace
         Ray newRay = triangle_reflectAt
         (   triangle
         ,   vertices
-        ,   &ray
+        ,   ray
         ,   intersection
         );
 

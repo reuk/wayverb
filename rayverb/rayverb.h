@@ -102,24 +102,23 @@ struct RaytracerResults {
     Vec3f mic;
 };
 
+class Results final {
+public:
+    std::map<std::vector<unsigned long>, Impulse> image_source;
+    std::vector<Impulse> diffuse;
+    Vec3f mic_pos;
+
+    RaytracerResults get_diffuse() const;
+    RaytracerResults get_image_source(bool remove_direct) const;
+    RaytracerResults get_all(bool remove_direct) const;
+};
+
 class Raytrace {
 public:
     using kernel_type =
         decltype(std::declval<RayverbProgram>().get_raytrace_kernel());
 
-    class Results final {
-    public:
-        std::map<std::vector<unsigned long>, Impulse> image_source;
-        std::vector<Impulse> diffuse;
-        Vec3f mic_pos;
-
-        RaytracerResults get_diffuse() const;
-        RaytracerResults get_image_source(bool remove_direct) const;
-        RaytracerResults get_all(bool remove_direct) const;
-    };
-
     Raytrace(const RayverbProgram& program, cl::CommandQueue& queue);
-
     virtual ~Raytrace() noexcept = default;
 
     Results run(const SceneData& scene_data,
@@ -130,8 +129,28 @@ public:
 
 private:
     cl::CommandQueue& queue;
-    RayverbProgram program;
     kernel_type kernel;
+    cl::Context context;
+};
+
+class ImprovedRaytrace {
+public:
+    using kernel_type =
+        decltype(std::declval<RayverbProgram>().get_improved_raytrace_kernel());
+
+    ImprovedRaytrace(const RayverbProgram& program, cl::CommandQueue& queue);
+    virtual ~ImprovedRaytrace() noexcept = default;
+
+    Results run(const SceneData& scene_data,
+                const Vec3f& micpos,
+                const Vec3f& source,
+                int rays,
+                int reflections);
+
+private:
+    cl::CommandQueue& queue;
+    kernel_type kernel;
+    cl::Context context;
 };
 
 /// Class for parallel HRTF attenuation of raytrace results.
