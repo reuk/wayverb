@@ -108,7 +108,7 @@ int main(int argc, char** argv) {
         auto waveguide_program =
             get_program<TetrahedralProgram>(context, device);
         TetrahedralWaveguide waveguide(
-            waveguide_program, queue, boundary, divisions, convert(mic));
+            waveguide_program, queue, boundary, divisions, to_vec3f(mic));
 
         auto amp_factor = 4e3;
 
@@ -116,9 +116,9 @@ int main(int argc, char** argv) {
             float angle = i * M_PI * 2 / test_locations + M_PI;
             cl_float3 source{{std::cos(angle), 0, std::sin(angle)}};
 
-            auto mic_index = waveguide.get_index_for_coordinate(convert(mic));
+            auto mic_index = waveguide.get_index_for_coordinate(to_vec3f(mic));
             auto source_index =
-                waveguide.get_index_for_coordinate(convert(source));
+                waveguide.get_index_for_coordinate(to_vec3f(source));
 
             auto corrected_source =
                 waveguide.get_coordinate_for_index(source_index);
@@ -127,7 +127,7 @@ int main(int argc, char** argv) {
             auto steps = 200;
 
             auto w_results =
-                waveguide.run_gaussian(convert(source), mic_index, steps, sr);
+                waveguide.run_gaussian(to_vec3f(source), mic_index, steps, sr);
 
             auto w_pressures = microphone.process(w_results);
 

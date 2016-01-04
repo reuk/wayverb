@@ -25,9 +25,9 @@ void TetrahedralWaveguide::setup(cl::CommandQueue& queue,
                                  float sr) {
     Eigen::MatrixXf umat(4, 3);
     auto count = 0u;
-    auto basis = convert(mesh.get_nodes()[o].position);
+    auto basis = to_vec3f(mesh.get_nodes()[o].position);
     for (const auto& i : mesh.get_nodes()[o].ports) {
-        auto pos = (convert(mesh.get_nodes()[i].position) - basis).normalized();
+        auto pos = (to_vec3f(mesh.get_nodes()[i].position) - basis).normalized();
         umat.row(count++) << pos.x, pos.y, pos.z;
     }
 
@@ -125,7 +125,7 @@ RunStepResult TetrahedralWaveguide::run_step(size_type o,
              current_velocity.begin(),
              current_velocity.end());
 
-    auto velocity = convert(current_velocity.front());
+    auto velocity = to_vec3f(current_velocity.front());
     auto intensity = velocity * out.front();
 
 #ifdef TESTING
@@ -149,7 +149,7 @@ TetrahedralWaveguide::size_type TetrahedralWaveguide::get_index_for_coordinate(
 }
 
 Vec3f TetrahedralWaveguide::get_coordinate_for_index(size_type index) const {
-    return convert(mesh.get_nodes()[index].position);
+    return to_vec3f(mesh.get_nodes()[index].position);
 }
 
 const IterativeTetrahedralMesh& TetrahedralWaveguide::get_mesh() const {

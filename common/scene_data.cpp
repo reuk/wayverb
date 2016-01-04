@@ -17,7 +17,9 @@ TriangleVerts get_triangle_verts(const Triangle& t,
 TriangleVerts get_triangle_verts(const Triangle& t,
                                  const std::vector<cl_float3>& v) {
     return TriangleVerts(
-        {{convert(v[t.v0]), convert(v[t.v1]), convert(v[t.v2])}});
+        {{to_vec3f(v[t.v0]),
+          to_vec3f(v[t.v1]),
+          to_vec3f(v[t.v2])}});
 }
 
 void attemptJsonParse(const std::string& fname, rapidjson::Document& doc) {
@@ -100,7 +102,7 @@ void SceneData::populate(const aiScene* const scene,
         std::vector<cl_float3> meshVertices(mesh->mNumVertices);
 
         for (auto j = 0u; j != mesh->mNumVertices; ++j) {
-            meshVertices[j] = convert(mesh->mVertices[j]);
+            meshVertices[j] = to_cl_float3(mesh->mVertices[j]);
         }
 
         std::vector<Triangle> meshTriangles(mesh->mNumFaces);
@@ -144,7 +146,7 @@ std::vector<Vec3f> SceneData::get_converted_vertices() const {
     std::transform(vertices.begin(),
                    vertices.end(),
                    vec.begin(),
-                   [](auto i) { return convert(i); });
+                   [](auto i) { return to_vec3f(i); });
     return vec;
 }
 

@@ -21,120 +21,6 @@
 #include <array>
 #include <map>
 
-typedef struct {
-    cl_float3 facing;
-    cl_float3 up;
-} __attribute__((aligned(8))) HrtfConfig;
-
-/// Describes the attenuation model that should be used to attenuate a raytrace.
-/// There's probably a more elegant (runtime-polymorphic) way of doing this that
-/// doesn't require both the HrtfConfig and the vector <Speaker> to be present
-/// in the object at the same time.
-struct AttenuationModel {
-    enum Mode { SPEAKER, HRTF };
-    Mode mode;
-    HrtfConfig hrtf;
-    std::vector<Speaker> speakers;
-};
-
-template <>
-struct JsonGetter<Speaker> {
-    JsonGetter(Speaker& t)
-            : t(t) {
-    }
-
-    /// Returns true if value is a json object.
-    virtual bool check(const rapidjson::Value& value) const {
-        return value.IsObject();
-    }
-
-    /// Attempts to run a ConfigValidator on value.
-    virtual void get(const rapidjson::Value& value) const {
-        ConfigValidator cv;
-
-        cv.addRequiredValidator("direction", t.direction);
-        cv.addRequiredValidator("shape", t.coefficient);
-
-        cv.run(value);
-    }
-    Speaker& t;
-};
-
-template <>
-struct JsonGetter<HrtfConfig> {
-    JsonGetter(HrtfConfig& t)
-            : t(t) {
-    }
-
-    /// Returns true if value is a json object.
-    virtual bool check(const rapidjson::Value& value) const {
-        return value.IsObject();
-    }
-
-    /// Attempts to run a ConfigValidator on value.
-    virtual void get(const rapidjson::Value& value) const {
-        ConfigValidator cv;
-
-        cv.addRequiredValidator("facing", t.facing);
-        cv.addRequiredValidator("up", t.up);
-
-        cv.run(value);
-
-        normalize(t.facing);
-        normalize(t.up);
-    }
-    HrtfConfig& t;
-
-private:
-    static void normalize(cl_float3& v) {
-        cl_float len =
-            1.0 / sqrt(v.s[0] * v.s[0] + v.s[1] * v.s[1] + v.s[2] * v.s[2]);
-        for (auto i = 0; i != sizeof(cl_float3) / sizeof(float); ++i) {
-            v.s[i] *= len;
-        }
-    }
-};
-
-template <>
-struct JsonGetter<AttenuationModel> {
-    JsonGetter(AttenuationModel& t)
-            : t(t)
-            , keys({{AttenuationModel::SPEAKER, "speakers"},
-                    {AttenuationModel::HRTF, "hrtf"}}) {
-    }
-
-    /// Returns true if value is a json object containing just one valid key.
-    virtual bool check(const rapidjson::Value& value) const {
-        return value.IsObject() &&
-               1 == std::count_if(keys.begin(),
-                                  keys.end(),
-                                  [&value](const auto& i) {
-                                      return value.HasMember(i.second.c_str());
-                                  });
-    }
-
-    /// Attempts to run a ConfigValidator on value.
-    virtual void get(const rapidjson::Value& value) const {
-        for (const auto& i : keys)
-            if (value.HasMember(i.second.c_str()))
-                t.mode = i.first;
-
-        ConfigValidator cv;
-
-        if (value.HasMember(keys.at(AttenuationModel::SPEAKER).c_str()))
-            cv.addRequiredValidator(keys.at(AttenuationModel::SPEAKER).c_str(),
-                                    t.speakers);
-
-        if (value.HasMember(keys.at(AttenuationModel::HRTF).c_str()))
-            cv.addRequiredValidator(keys.at(AttenuationModel::HRTF).c_str(),
-                                    t.hrtf);
-
-        cv.run(value);
-    }
-    AttenuationModel& t;
-    std::map<AttenuationModel::Mode, std::string> keys;
-};
-
 /// Sum impulses ocurring at the same (sampled) time and return a vector in
 /// which each subsequent item refers to the next sample of an impulse
 /// response.
@@ -205,43 +91,59 @@ inline void fixPredelay(T& ret) {
 /// This is a struct to keep the impulses and mic position together, because
 /// you'll probably never need one without the other.
 struct RaytracerResults {
-    RaytracerResults() {
-    }
-    RaytracerResults(const std::vector<Impulse> impulses, const cl_float3& c)
-            : impulses(impulses)
-            , mic(c) {
+    RaytracerResults(const std::vector<Impulse> impulses=std::vector<Impulse>(), const Vec3f& c=Vec3f())
+            : impulses{impulses}
+            , mic{c} {
     }
 
     std::vector<Impulse> impulses;
-    cl_float3 mic;
+    Vec3f mic;
 };
 
+class Raytrace {
+public:
+    using kernel_type =
+        decltype(std::declval<RayverbProgram>().get_raytrace_kernel());
+
+    class Results final {
+    public:
+        std::map<std::vector<unsigned long>, Impulse> image_source;
+        std::vector<Impulse> diffuse;
+        Vec3f mic_pos;
+
+        RaytracerResults get_diffuse() const;
+        RaytracerResults get_image_source(bool remove_direct) const;
+        RaytracerResults get_all(bool remove_direct) const;
+    };
+
+    Raytrace(const RayverbProgram& program,
+             cl::CommandQueue& queue);
+
+    virtual ~Raytrace() noexcept = default;
+
+    Results run(const SceneData & scene_data,
+                const Vec3f& micpos,
+                const Vec3f& source,
+                int rays,
+                int reflections);
+
+private:
+    cl::CommandQueue& queue;
+    RayverbProgram program;
+    kernel_type kernel;
+};
+
+#if 0
 /// An exciting raytracer.
 class Raytrace {
 public:
     using kernel_type =
         decltype(std::declval<RayverbProgram>().get_raytrace_kernel());
 
-    /// If you don't want to use the built-in object loader, you can
-    /// initialise a raytracer with your own geometry here.
     Raytrace(const RayverbProgram& program,
              cl::CommandQueue& queue,
              unsigned long nreflections,
-             std::vector<Triangle>& triangles,
-             std::vector<cl_float3>& vertices,
-             std::vector<Surface>& surfaces);
-
-    /// Load a 3d model and materials from files.
-    Raytrace(const RayverbProgram& program,
-             cl::CommandQueue& queue,
-             unsigned long nreflections,
-             const std::string& objpath,
-             const std::string& materialFileName);
-
-    Raytrace(const RayverbProgram& program,
-             cl::CommandQueue& queue,
-             unsigned long nreflections,
-             SceneData sceneData);
+             const SceneData & sceneData);
 
     virtual ~Raytrace() noexcept = default;
 
@@ -264,6 +166,8 @@ private:
     cl::CommandQueue& queue;
     kernel_type kernel;
 
+    SceneData scene_data;
+
     const unsigned long nreflections;
     const unsigned long ntriangles;
 
@@ -275,8 +179,6 @@ private:
     cl::Buffer cl_image_source;
     cl::Buffer cl_image_source_index;
 
-    std::pair<cl_float3, cl_float3> bounds;
-
     cl_float3 storedMicpos;
 
     static const auto RAY_GROUP_SIZE = 4096u;
@@ -284,12 +186,19 @@ private:
     std::vector<Impulse> storedDiffuse;
     std::map<std::vector<unsigned long>, Impulse> imageSourceTally;
 };
+#endif
 
 /// Class for parallel HRTF attenuation of raytrace results.
 class Hrtf {
 public:
     using kernel_type =
         decltype(std::declval<RayverbProgram>().get_hrtf_kernel());
+
+    class Config final {
+    public:
+        Vec3f facing;
+        Vec3f up;
+    };
 
     Hrtf(const RayverbProgram& program, cl::CommandQueue& queue);
     virtual ~Hrtf() noexcept = default;
@@ -298,11 +207,11 @@ public:
     /// The outer vector corresponds to separate channels, the inner vector
     /// contains the impulses, each of which has a time and an 8-band volume.
     std::vector<std::vector<AttenuatedImpulse>> attenuate(
-        const RaytracerResults& results, const HrtfConfig& config);
+        const RaytracerResults& results, const Config& config);
     std::vector<std::vector<AttenuatedImpulse>> attenuate(
         const RaytracerResults& results,
-        const cl_float3& facing,
-        const cl_float3& up);
+        const Vec3f& facing,
+        const Vec3f& up);
 
     virtual const std::array<std::array<std::array<cl_float8, 180>, 360>, 2>&
     getHrtfData() const;
@@ -342,7 +251,7 @@ public:
 
 private:
     std::vector<AttenuatedImpulse> attenuate(
-        const cl_float3& mic_pos,
+        const Vec3f& mic_pos,
         const Speaker& speaker,
         const std::vector<Impulse>& impulses);
     cl::CommandQueue& queue;

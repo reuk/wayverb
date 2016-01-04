@@ -24,6 +24,7 @@
 #include "scene_data.h"
 #include "combined_config.h"
 #include "octree.h"
+#include "rayverb.h"
 
 #include "../JuceLibraryCode/JuceHeader.h"
 
@@ -165,10 +166,24 @@ private:
     float amp{100};
 };
 
+class RaytraceObject final : public ::Drawable {
+public:
+    RaytraceObject(const GenericShader& shader, const RaytracerResults& results);
+    void draw() const override;
+private:
+    const GenericShader& shader;
+    
+    VAO vao;
+    StaticVBO geometry;
+    StaticVBO colors;
+    StaticIBO ibo;
+    GLuint size;
+};
+
 class SceneRenderer final : public OpenGLRenderer {
 public:
     SceneRenderer();
-    ~SceneRenderer();
+    virtual ~SceneRenderer();
     void newOpenGLContextCreated() override;
     void renderOpenGL() override;
     void openGLContextClosing() override;
@@ -197,6 +212,9 @@ private:
 
     std::unique_ptr<TetrahedralWaveguide> waveguide;
     std::unique_ptr<MeshObject> mesh_object;
+    
+    std::unique_ptr<Raytrace> raytrace;
+    std::unique_ptr<RaytraceObject> raytrace_object;
 
     std::future<std::vector<cl_float>> future_pressure;
     std::thread waveguide_load_thread;

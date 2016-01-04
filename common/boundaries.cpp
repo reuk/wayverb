@@ -27,10 +27,13 @@ Vec3f get_min(const std::vector<Vec3f>& coll) {
 bool CuboidBoundary::overlaps(const TriangleVerts& t) const {
     auto coll = t;
     for (auto& i : coll) {
-        i = i - get_centre();
-        i = i / get_dimensions();
+        i = (i - get_centre()) / get_dimensions();
     }
     return t_c_intersection(coll) == Rel::idInside;
+}
+
+CuboidBoundary CuboidBoundary::get_padded(float padding) const {
+    return CuboidBoundary(c0 - padding, c1 + padding);
 }
 
 CuboidBoundary CuboidBoundary::get_aabb() const {
@@ -129,7 +132,7 @@ std::tuple<std::vector<Triangle>, std::vector<Vec3f>> get_mesh_boundary_data(
     std::transform(sd.vertices.begin(),
                    sd.vertices.end(),
                    v.begin(),
-                   [](auto i) { return convert(i); });
+                   [](auto i) { return to_vec3f(i); });
     return std::make_tuple(sd.triangles, v);
 }
 

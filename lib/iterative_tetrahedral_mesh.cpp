@@ -60,7 +60,7 @@ std::vector<Node> IterativeTetrahedralMesh::get_nodes(
             auto neighbors = this->get_neighbors(counter);
             std::copy(
                 neighbors.begin(), neighbors.end(), std::begin(ret.ports));
-            ret.position = convert(p);
+            ret.position = to_cl_float3(p);
             ret.inside = boundary.inside(p);
             counter += 1;
             return ret;

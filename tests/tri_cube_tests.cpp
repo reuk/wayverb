@@ -1,7 +1,12 @@
 #include "helper.h"
 #include "tri_cube_intersection.h"
+#include "boundaries.h"
+
+#include "tri_cube_c.h"
 
 #include "gtest/gtest.h"
+
+#include <random>
 
 TEST(face_plane, face_plane) {
     ASSERT_EQ(0x00, face_plane(Vec3f(0.5, 0.5, 0.5)));
@@ -37,6 +42,16 @@ TEST(face_plane, face_plane) {
     ASSERT_EQ(0x26, face_plane(Vec3f(-1, 1, -1)));
     ASSERT_EQ(0x1a, face_plane(Vec3f(-1, -1, 1)));
     ASSERT_EQ(0x2a, face_plane(Vec3f(-1, -1, -1)));
+
+    std::default_random_engine engine{std::random_device()()};
+    std::uniform_real_distribution<float> dist(-10.0f, 10.0f);
+
+    for (auto i = 0u; i != 100; ++i) {
+        auto x = dist(engine);
+        auto y = dist(engine);
+        auto z = dist(engine);
+        ASSERT_EQ(face_plane(Point3{x, y, z}), face_plane(Vec3f(x, y, z)));
+    }
 }
 
 TEST(bevel_2d, bevel_2d) {
@@ -73,6 +88,16 @@ TEST(bevel_2d, bevel_2d) {
     ASSERT_EQ(0x284, bevel_2d(Vec3f(-1, 1, -1)));
     ASSERT_EQ(0x448, bevel_2d(Vec3f(-1, -1, 1)));
     ASSERT_EQ(0x888, bevel_2d(Vec3f(-1, -1, -1)));
+
+    std::default_random_engine engine{std::random_device()()};
+    std::uniform_real_distribution<float> dist(-10.0f, 10.0f);
+
+    for (auto i = 0u; i != 100; ++i) {
+        auto x = dist(engine);
+        auto y = dist(engine);
+        auto z = dist(engine);
+        ASSERT_EQ(bevel_2d(Point3{x, y, z}), bevel_2d(Vec3f(x, y, z)));
+    }
 }
 
 TEST(bevel_3d, bevel_3d) {
@@ -109,6 +134,16 @@ TEST(bevel_3d, bevel_3d) {
     ASSERT_EQ(0x20, bevel_3d(Vec3f(-1, 1, -1)));
     ASSERT_EQ(0x40, bevel_3d(Vec3f(-1, -1, 1)));
     ASSERT_EQ(0x80, bevel_3d(Vec3f(-1, -1, -1)));
+
+    std::default_random_engine engine{std::random_device()()};
+    std::uniform_real_distribution<float> dist(-10.0f, 10.0f);
+
+    for (auto i = 0u; i != 100; ++i) {
+        auto x = dist(engine);
+        auto y = dist(engine);
+        auto z = dist(engine);
+        ASSERT_EQ(bevel_3d(Point3{x, y, z}), bevel_3d(Vec3f(x, y, z)));
+    }
 }
 
 TEST(lerp, lerp) {
@@ -151,6 +186,23 @@ TEST(check_line, check_line) {
               check_line(Vec3f(0, 0, -1), Vec3f(0, 0, 1), 0x08));
     ASSERT_EQ(Rel::idInside, check_line(Vec3f(0, 0, -1), Vec3f(0, 0, 1), 0x10));
     ASSERT_EQ(Rel::idInside, check_line(Vec3f(0, 0, -1), Vec3f(0, 0, 1), 0x20));
+
+    std::default_random_engine engine{std::random_device()()};
+    std::uniform_real_distribution<float> dist(-10.0f, 10.0f);
+
+    for (auto i = 0u; i != 100; ++i) {
+        auto x0 = dist(engine);
+        auto y0 = dist(engine);
+        auto z0 = dist(engine);
+        auto x1 = dist(engine);
+        auto y1 = dist(engine);
+        auto z1 = dist(engine);
+        for (auto diff = 0u; diff != 0x100; ++diff)
+            ASSERT_EQ(
+                check_line(Point3{x0, y0, z0}, Point3{x1, y1, z1}, diff),
+                Rel::idOutside ==
+                    check_line(Vec3f(x0, y0, z0), Vec3f(x1, y1, z1), diff));
+    }
 }
 
 TEST(point_triangle_intersection, point_triangle_intersection) {
@@ -165,4 +217,248 @@ TEST(point_triangle_intersection, point_triangle_intersection) {
                   Vec3f(4, 4, 4),
                   TriangleVerts(
                       {{Vec3f(-2, -1, 0), Vec3f(1, -1, 0), Vec3f(2, 1, 0)}})));
+
+    ASSERT_EQ(point_triangle_intersection(Point3{0.25, 0.25, 0.25},
+                                          Triangle3{Point3{-0.25, -10, -5},
+                                                    Point3{-0.25, 5, -5},
+                                                    Point3{-0.25, 5, 10}}),
+              Rel::idOutside == point_triangle_intersection(
+                                    Vec3f(0.25, 0.25, 0.25),
+                                    TriangleVerts{{Vec3f(-0.25, -10, -5),
+                                                   Vec3f(-0.25, 5, -5),
+                                                   Vec3f(-0.25, 5, 10)}}));
+
+    std::default_random_engine engine{std::random_device()()};
+    std::uniform_real_distribution<float> dist(-10.0f, 10.0f);
+
+    for (auto i = 0u; i != 100; ++i) {
+        auto x0 = dist(engine);
+        auto y0 = dist(engine);
+        auto z0 = dist(engine);
+        auto x1 = dist(engine);
+        auto y1 = dist(engine);
+        auto z1 = dist(engine);
+        auto x2 = dist(engine);
+        auto y2 = dist(engine);
+        auto z2 = dist(engine);
+        auto x3 = dist(engine);
+        auto y3 = dist(engine);
+        auto z3 = dist(engine);
+        ASSERT_EQ(point_triangle_intersection(Point3{x0, y0, z0},
+                                              Triangle3{Point3{x1, y1, z1},
+                                                        Point3{x2, y2, z2},
+                                                        Point3{x3, y3, z3}}),
+                  Rel::idOutside == point_triangle_intersection(
+                                        Vec3f(x0, y0, z0),
+                                        TriangleVerts{{Vec3f(x1, y1, z1),
+                                                       Vec3f(x2, y2, z2),
+                                                       Vec3f(x3, y3, z3)}}));
+    }
+}
+
+TEST(old, old) {
+    auto edge = 0.5f;
+    ASSERT_EQ(
+        INSIDE,
+        t_c_intersection(Triangle3{
+            Point3{-10, -5, edge}, Point3{5, -5, edge}, Point3{5, 10, edge}}));
+    ASSERT_EQ(INSIDE,
+              t_c_intersection(Triangle3{
+                  Point3{-10, -5, 0}, Point3{5, -5, 0}, Point3{5, 10, 0}}));
+    ASSERT_EQ(INSIDE,
+              t_c_intersection(Triangle3{Point3{-10, -5, -edge},
+                                         Point3{5, -5, -edge},
+                                         Point3{5, 10, -edge}}));
+
+    ASSERT_EQ(
+        INSIDE,
+        t_c_intersection(Triangle3{
+            Point3{-10, edge, -5}, Point3{5, edge, -5}, Point3{5, edge, 10}}));
+    ASSERT_EQ(INSIDE,
+              t_c_intersection(Triangle3{
+                  Point3{-10, 0, -5}, Point3{5, 0, -5}, Point3{5, 0, 10}}));
+    ASSERT_EQ(INSIDE,
+              t_c_intersection(Triangle3{Point3{-10, -edge, -5},
+                                         Point3{5, -edge, -5},
+                                         Point3{5, -edge, 10}}));
+
+    ASSERT_EQ(
+        INSIDE,
+        t_c_intersection(Triangle3{
+            Point3{edge, -10, -5}, Point3{edge, 5, -5}, Point3{edge, 5, 10}}));
+    ASSERT_EQ(INSIDE,
+              t_c_intersection(Triangle3{
+                  Point3{0, -10, -5}, Point3{0, 5, -5}, Point3{0, 5, 10}}));
+    ASSERT_EQ(INSIDE,
+              t_c_intersection(Triangle3{Point3{-0.25, -10, -5},
+                                         Point3{-0.25, 5, -5},
+                                         Point3{-0.25, 5, 10}}));
+    ASSERT_EQ(INSIDE,
+              t_c_intersection(Triangle3{Point3{-edge, -10, -5},
+                                         Point3{-edge, 5, -5},
+                                         Point3{-edge, 5, 10}}));
+
+    auto outside = 1.0f;
+    ASSERT_EQ(OUTSIDE,
+              t_c_intersection(Triangle3{Point3{-10, -5, outside},
+                                         Point3{5, -5, outside},
+                                         Point3{5, 10, outside}}));
+    ASSERT_EQ(OUTSIDE,
+              t_c_intersection(Triangle3{Point3{-10, -5, -outside},
+                                         Point3{5, -5, -outside},
+                                         Point3{5, 10, -outside}}));
+    ASSERT_EQ(OUTSIDE,
+              t_c_intersection(Triangle3{Point3{-10, outside, -5},
+                                         Point3{5, outside, -5},
+                                         Point3{5, outside, 10}}));
+    ASSERT_EQ(OUTSIDE,
+              t_c_intersection(Triangle3{Point3{-10, -outside, -5},
+                                         Point3{5, -outside, -5},
+                                         Point3{5, -outside, 10}}));
+    ASSERT_EQ(OUTSIDE,
+              t_c_intersection(Triangle3{Point3{outside, -10, -5},
+                                         Point3{outside, 5, -5},
+                                         Point3{outside, 5, 10}}));
+    ASSERT_EQ(OUTSIDE,
+              t_c_intersection(Triangle3{Point3{-outside, -10, -5},
+                                         Point3{-outside, 5, -5},
+                                         Point3{-outside, 5, 10}}));
+}
+
+TEST(specific, specific) {
+    auto edge = 0.5;
+    ASSERT_EQ(
+        Rel::idInside,
+        t_c_intersection(TriangleVerts(
+            {{Vec3f(-10, -5, edge), Vec3f(5, -5, edge), Vec3f(5, 10, edge)}})));
+    ASSERT_EQ(Rel::idInside,
+              t_c_intersection(TriangleVerts(
+                  {{Vec3f(-10, -5, 0), Vec3f(5, -5, 0), Vec3f(5, 10, 0)}})));
+    ASSERT_EQ(Rel::idInside,
+              t_c_intersection(TriangleVerts({{Vec3f(-10, -5, -edge),
+                                               Vec3f(5, -5, -edge),
+                                               Vec3f(5, 10, -edge)}})));
+
+    ASSERT_EQ(
+        Rel::idInside,
+        t_c_intersection(TriangleVerts(
+            {{Vec3f(-10, edge, -5), Vec3f(5, edge, -5), Vec3f(5, edge, 10)}})));
+    ASSERT_EQ(Rel::idInside,
+              t_c_intersection(TriangleVerts(
+                  {{Vec3f(-10, 0, -5), Vec3f(5, 0, -5), Vec3f(5, 0, 10)}})));
+    ASSERT_EQ(Rel::idInside,
+              t_c_intersection(TriangleVerts({{Vec3f(-10, -edge, -5),
+                                               Vec3f(5, -edge, -5),
+                                               Vec3f(5, -edge, 10)}})));
+
+    ASSERT_EQ(
+        Rel::idInside,
+        t_c_intersection(TriangleVerts(
+            {{Vec3f(edge, -10, -5), Vec3f(edge, 5, -5), Vec3f(edge, 5, 10)}})));
+    ASSERT_EQ(Rel::idInside,
+              t_c_intersection(TriangleVerts(
+                  {{Vec3f(0, -10, -5), Vec3f(0, 5, -5), Vec3f(0, 5, 10)}})));
+    ASSERT_EQ(Rel::idInside,
+              t_c_intersection(TriangleVerts({{Vec3f(-0.25, -10, -5),
+                                               Vec3f(-0.25, 5, -5),
+                                               Vec3f(-0.25, 5, 10)}})));
+    ASSERT_EQ(Rel::idInside,
+              t_c_intersection(TriangleVerts({{Vec3f(-edge, -10, -5),
+                                               Vec3f(-edge, 5, -5),
+                                               Vec3f(-edge, 5, 10)}})));
+
+    auto outside = 1;
+    ASSERT_EQ(Rel::idOutside,
+              t_c_intersection(TriangleVerts({{Vec3f(-10, -5, outside),
+                                               Vec3f(5, -5, outside),
+                                               Vec3f(5, 10, outside)}})));
+    ASSERT_EQ(Rel::idOutside,
+              t_c_intersection(TriangleVerts({{Vec3f(-10, -5, -outside),
+                                               Vec3f(5, -5, -outside),
+                                               Vec3f(5, 10, -outside)}})));
+    ASSERT_EQ(Rel::idOutside,
+              t_c_intersection(TriangleVerts({{Vec3f(-10, outside, -5),
+                                               Vec3f(5, outside, -5),
+                                               Vec3f(5, outside, 10)}})));
+    ASSERT_EQ(Rel::idOutside,
+              t_c_intersection(TriangleVerts({{Vec3f(-10, -outside, -5),
+                                               Vec3f(5, -outside, -5),
+                                               Vec3f(5, -outside, 10)}})));
+    ASSERT_EQ(Rel::idOutside,
+              t_c_intersection(TriangleVerts({{Vec3f(outside, -10, -5),
+                                               Vec3f(outside, 5, -5),
+                                               Vec3f(outside, 5, 10)}})));
+    ASSERT_EQ(Rel::idOutside,
+              t_c_intersection(TriangleVerts({{Vec3f(-outside, -10, -5),
+                                               Vec3f(-outside, 5, -5),
+                                               Vec3f(-outside, 5, 10)}})));
+
+    {
+        TriangleVerts triangle_verts_0(
+            {{Vec3f(-1.5, 3.0999999, -7.5999999),
+              Vec3f(0, 3.0999999, -9.10000038),
+              Vec3f(0.00000000000000144381996, 3.5999999, -7.5999999)}});
+
+        CuboidBoundary b0(Vec3f(-1.78125, 3.14999986, -8.55000019),
+                          Vec3f(-1.1875, 3.26249981, -8.0749998));
+        CuboidBoundary b1(Vec3f(-1.78125, 3.14999986, -8.0749998),
+                          Vec3f(-1.1875, 3.26249981, -7.5999999));
+
+        CuboidBoundary b2(Vec3f(-9.5, -0.0000000000000021191102, -7.5999999),
+                          Vec3f(-7.125, 0.449999988, -5.69999981));
+        auto centre = b2.get_centre();
+        auto x0 = b2.c0.x;
+        auto y0 = b2.c0.y;
+        auto z0 = b2.c0.z;
+        auto xc = centre.x;
+        auto yc = centre.y;
+        auto zc = centre.z;
+        auto x1 = b2.c1.x;
+        auto y1 = b2.c1.y;
+        auto z1 = b2.c1.z;
+        CuboidBoundary b3(Vec3f(x0, yc, z0), Vec3f(xc, y1, zc));
+
+        TriangleVerts triangle_verts_1({{Vec3f(-9.5, 1.10000002, -6.0999999),
+                                         Vec3f(-9.5, 0.100000001, -6.0999999),
+                                         Vec3f(-9.5, 0.100000001, -9)}});
+
+        ASSERT_EQ(false, b0.overlaps(triangle_verts_0));
+        ASSERT_EQ(true, b1.overlaps(triangle_verts_0));
+
+        ASSERT_EQ(true, b2.overlaps(triangle_verts_1));
+        ASSERT_EQ(true, b3.overlaps(triangle_verts_1));
+    }
+
+    {
+        //        ASSERT_EQ(INSIDE,
+        //        t_c_intersection(Triangle3{Point3{-5.49999523, 0.184210628,
+        //        4.60390043},
+        //            Point3{0.833333611, 0.184210628, 4.60390043},
+        //            Point3{0.833333611, 0.184210628, -3.29220581}}));
+
+        CuboidBoundary aabb(Vec3f(-4.20000029, -0.040625006, -5.02812529),
+                            Vec3f(-3.9000001, 0.0187499933, -4.78750038));
+
+        TriangleVerts verts{{Vec3f(-5.69999981, 0, -3.79999995),
+                             Vec3f(-3.79999995, 0, -3.79999995),
+                             Vec3f(-3.79999995, 0, -5.69999981)}};
+
+        ASSERT_EQ(true, aabb.overlaps(verts));
+    }
+
+    {
+        CuboidBoundary aabb(Vec3f(-7.80000019, 3.46249986, -8.63750076),
+                            Vec3f(-7.20000029, 3.58124971, -8.15625));
+
+        TriangleVerts v0{{Vec3f(-7.5999999, 3.5999999, -7.5999999),
+                          Vec3f(-7.5999999, 3.0999999, -9.10000038),
+                          Vec3f(-6.0999999, 3.0999999, -7.5999999)}};
+
+        TriangleVerts v1{{Vec3f(-9.10000038, 3.0999999, -7.5999999),
+                          Vec3f(-7.5999999, 3.0999999, -9.10000038),
+                          Vec3f(-7.5999999, 3.5999999, -7.5999999)}};
+
+        ASSERT_EQ(false, aabb.overlaps(v0));
+        ASSERT_EQ(false, aabb.overlaps(v1));
+    }
 }

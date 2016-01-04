@@ -4,7 +4,6 @@
 #include "conversions.h"
 #include "cl_common.h"
 #include "tetrahedral_program.h"
-#include "rayverb.h"
 
 BoxObject::BoxObject(const GenericShader &shader)
         : BasicDrawableObject(shader,
@@ -96,7 +95,7 @@ std::vector<GLuint> ModelSectionObject::get_indices(
 
 void ModelSectionObject::draw_octree(const Octree &octree,
                                      BoxObject &box) const {
-    if (octree.get_nodes().empty()) {
+    if (!octree.get_triangles().empty() && octree.get_nodes().empty()) {
         auto aabb = octree.get_aabb();
         auto convert = [](auto i) { return glm::vec3(i.x, i.y, i.z); };
 
@@ -272,6 +271,79 @@ void MeshObject::set_pressures(const std::vector<float> &pressures) {
 
 //----------------------------------------------------------------------------//
 
+RaytraceObject::RaytraceObject(const GenericShader& shader, const RaytracerResults& results)
+: shader(shader)
+{
+    auto impulses = results.impulses;
+    std::vector<glm::vec3> v(impulses.size());
+    std::transform(impulses.begin(),
+                   impulses.end(),
+                   v.begin(),
+                   [](auto i) {
+                       auto p = i.position;
+                       return glm::vec3(p.x, p.y, p.z);
+                   });
+    
+    std::vector<glm::vec4> c(v.size());
+    std::transform(impulses.begin(),
+                   impulses.end(),
+                   c.begin(),
+                   [](auto i) {
+//                       auto c = i.volume.s[0];
+                       auto c = 1;
+                       return glm::vec4(c, c, c, c);
+                   });
+    
+    auto rays = 32;
+    auto per_ray = impulses.size() / rays;
+
+    std::vector<std::pair<GLuint, GLuint>> lines;
+    for (auto ray = 0u; ray != rays; ++ray) {
+        auto prev = ray * per_ray;
+        for (auto pt = 1u; pt != per_ray; prev = pt, ++pt) {
+            auto index = ray * per_ray + pt;
+            lines.push_back(std::make_pair(prev, index));
+        }
+    }
+    
+    std::vector<GLuint> indices;
+    for (const auto & i : lines) {
+        indices.push_back(i.first);
+        indices.push_back(i.second);
+    }
+
+    size = indices.size();
+
+    geometry.data(v);
+    colors.data(c);
+    ibo.data(indices);
+
+    //  init vao
+    auto s_vao = vao.get_scoped();
+
+    geometry.bind();
+    auto v_pos = shader.get_attrib_location("v_position");
+    glEnableVertexAttribArray(v_pos);
+    glVertexAttribPointer(v_pos, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+
+    colors.bind();
+    auto c_pos = shader.get_attrib_location("v_color");
+    glEnableVertexAttribArray(c_pos);
+    glVertexAttribPointer(c_pos, 4, GL_FLOAT, GL_FALSE, 0, nullptr);
+
+    ibo.bind();
+}
+
+void RaytraceObject::draw() const {
+    auto s_shader = shader.get_scoped();
+    shader.set_black(false);
+
+    auto s_vao = vao.get_scoped();
+    glDrawElements(GL_LINES, size, GL_UNSIGNED_INT, nullptr);
+}
+
+//----------------------------------------------------------------------------//
+
 SceneRenderer::SceneRenderer()
         : projection_matrix(get_projection_matrix(1))
         , context(get_context())
@@ -320,10 +392,15 @@ void SceneRenderer::init_waveguide(const SceneData &scene_data,
 void SceneRenderer::init_raytracer(const SceneData &scene_data,
                                    const RayverbConfig &cc) {
     auto raytrace_program = get_program<RayverbProgram>(context, device);
-    auto raytrace = std::make_unique<Raytrace>(
+    auto r = std::make_unique<Raytrace>(
         raytrace_program, queue, cc.get_impulses(), scene_data);
-    raytrace->raytrace(
+    r->raytrace(
         convert(cc.get_mic()), convert(cc.get_source()), cc.get_rays());
+    
+    {
+        std::lock_guard<std::mutex> lck(mut);
+        raytrace = std::move(r);
+    }
 }
 
 void SceneRenderer::newOpenGLContextCreated() {
@@ -344,6 +421,8 @@ void SceneRenderer::newOpenGLContextCreated() {
     }
 
     cc.get_source() = Vec3f(5, 1.75, 1);
+//    cc.get_rays() = 1 << 5;
+    cc.get_rays() = 1 << 0;
 
     set_model_object(scene_data);
     set_config(cc);
@@ -359,6 +438,10 @@ void SceneRenderer::renderOpenGL() {
 
     if (waveguide && !mesh_object) {
         mesh_object = std::make_unique<MeshObject>(*shader, *waveguide);
+    }
+    
+    if (raytrace && !raytrace_object) {
+        raytrace_object = std::make_unique<RaytraceObject>(*shader, raytrace->getRawDiffuse());
     }
 
     if (future_pressure.valid() && waveguide && mesh_object) {
@@ -403,7 +486,7 @@ void SceneRenderer::set_aspect(float aspect) {
 }
 
 void SceneRenderer::draw() const {
-    auto c = 0.25;
+    auto c = 0.0;
     glClearColor(c, c, c, 1);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);
@@ -423,10 +506,11 @@ void SceneRenderer::draw() const {
     };
 
     draw_thing(mesh_object);
-
+    draw_thing(raytrace_object);
+    
     if (model_object) {
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-        model_object->draw();
+//        model_object->draw();
 
         draw_thing(source_object);
         draw_thing(receiver_object);
@@ -458,9 +542,14 @@ void SceneRenderer::set_model_object(const SceneData &scene_data) {
     auto s = max > 0 ? 20 / max : 1;
     scale = glm::scale(glm::vec3(s, s, s));
 
-    Octree octree(scene_data, 0);
+    Octree octree(scene_data, 0, 0.1);
+//    const auto &to_render =
+//        octree.get_nodes()[4].get_nodes()[4].get_nodes()[4].get_nodes()
+//            [7].get_nodes()[2];
+//    const auto & to_render = octree.get_nodes()[0];
+    const auto & to_render = octree;
     model_object =
-        std::make_unique<ModelSectionObject>(*shader, scene_data, octree);
+        std::make_unique<ModelSectionObject>(*shader, scene_data, to_render);
 }
 
 void SceneRenderer::set_config(const Config &config) {

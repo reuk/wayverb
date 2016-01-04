@@ -4,13 +4,20 @@
 
 static const auto eps = 10e-5;
 
-auto sign3(const Vec3f & v) {
-    return (((v.x < eps) ? 0x04 : 0) | ((v.x > -eps) ? 0x20 : 0) |
-            ((v.y < eps) ? 0x02 : 0) | ((v.y > -eps) ? 0x10 : 0) |
-            ((v.z < eps) ? 0x01 : 0) | ((v.z > -eps) ? 0x08 : 0));
+int sign3(const Vec3f& v) {
+    return (v.x < eps) ? 0x04 : 0 | (v.x > -eps)
+                                    ? 0x20
+                                    : 0 | (v.y < eps)
+                                          ? 0x02
+                                          : 0 | (v.y > -eps)
+                                                ? 0x10
+                                                : 0 | (v.z < eps)
+                                                      ? 0x01
+                                                      : 0 | (v.z > -eps) ? 0x08
+                                                                         : 0;
 }
 
-int face_plane(const Vec3f & p) {
+int face_plane(const Vec3f& p) {
     auto ret = 0;
     if (p.x > 0.5)
         ret |= 0x01;
@@ -27,7 +34,7 @@ int face_plane(const Vec3f & p) {
     return ret;
 }
 
-int bevel_2d(const Vec3f & p) {
+int bevel_2d(const Vec3f& p) {
     auto ret = 0;
     if (p.x + p.y > 1.0)
         ret |= 0x001;
@@ -58,7 +65,7 @@ int bevel_2d(const Vec3f & p) {
     return ret;
 }
 
-int bevel_3d(const Vec3f & p) {
+int bevel_3d(const Vec3f& p) {
     auto ret = 0;
     if (p.x + p.y + p.z > 1.5)
         ret |= 0x01;
@@ -79,11 +86,11 @@ int bevel_3d(const Vec3f & p) {
     return ret;
 }
 
-int check_point(const Vec3f & p1, const Vec3f & p2, float alpha, int mask) {
+int check_point(const Vec3f& p1, const Vec3f& p2, float alpha, int mask) {
     return face_plane(lerp(alpha, p1, p2)) & mask;
 }
 
-Rel check_line(const Vec3f & p1, const Vec3f & p2, int outcode_diff) {
+Rel check_line(const Vec3f& p1, const Vec3f& p2, int outcode_diff) {
     if (0x01 & outcode_diff)
         if (!check_point(p1, p2, (0.5 - p1.x) / (p2.x - p1.x), 0x3e))
             return Rel::idInside;
@@ -105,18 +112,15 @@ Rel check_line(const Vec3f & p1, const Vec3f & p2, int outcode_diff) {
     return Rel::idOutside;
 }
 
-Rel point_triangle_intersection(const Vec3f & p, const TriangleVerts & t) {
+Rel point_triangle_intersection(const Vec3f& p, const TriangleVerts& t) {
     auto v0 = t[0];
     auto v1 = t[1];
     auto v2 = t[2];
 
     std::vector<Vec3f> coll = {v0, v1, v2};
-    auto max = get_max(coll);
-    auto min = get_min(coll);
-
-    if ((max < p).any())
+    if ((get_max(coll) < p).any())
         return Rel::idOutside;
-    if ((p < min).any())
+    if ((p < get_min(coll)).any())
         return Rel::idOutside;
 
     auto get_sign = [&p](auto a, auto b) {
@@ -133,6 +137,7 @@ Rel point_triangle_intersection(const Vec3f & p, const TriangleVerts & t) {
     return ((sign12 & sign23 & sign31) == 0) ? Rel::idOutside : Rel::idInside;
 }
 
+/*
 Rel t_c_intersection(const TriangleVerts & t) {
     auto v0 = t[0];
     auto v1 = t[1];
@@ -180,16 +185,16 @@ Rel t_c_intersection(const TriangleVerts & t) {
 
     auto vect01 = v0 - v1;
     auto vect02 = v0 - v2;
-    auto norm = vect01 - vect02;
+    auto norm = vect01.cross(vect02);
 
     auto d = norm.dot(v0);
 
-    auto normal_check = [&d, &t](auto denom, auto x, auto y, auto z) {
+    auto normal_check = [&d, &t](auto norm, auto x, auto y, auto z) {
+        Vec3f mul(x, y, z);
+        auto denom = norm.dot(mul);
         if (fabs(denom) > eps) {
             auto pos = d / denom;
-            Vec3f hit(std::copysign(pos, x),
-                      std::copysign(pos, y),
-                      std::copysign(pos, z));
+            auto hit = mul * pos;
             if (fabs(hit.x) <= 0.5) {
                 if (point_triangle_intersection(hit, t) == Rel::idInside) {
                     return Rel::idInside;
@@ -199,14 +204,60 @@ Rel t_c_intersection(const TriangleVerts & t) {
         return Rel::idOutside;
     };
 
-    if (normal_check(norm.x + norm.y + norm.z, 1, 1, 1) == Rel::idInside)
+    if (normal_check(norm, 1, 1, 1) == Rel::idInside)
         return Rel::idInside;
-    if (normal_check(norm.x + norm.y - norm.z, 1, 1, -1) == Rel::idInside)
+    if (normal_check(norm, 1, 1, -1) == Rel::idInside)
         return Rel::idInside;
-    if (normal_check(norm.x - norm.y + norm.z, 1, -1, 1) == Rel::idInside)
+    if (normal_check(norm, 1, -1, 1) == Rel::idInside)
         return Rel::idInside;
-    if (normal_check(norm.x - norm.y - norm.z, 1, -1, -1) == Rel::idInside)
+    if (normal_check(norm, 1, -1, -1) == Rel::idInside)
         return Rel::idInside;
 
     return Rel::idOutside;
+}
+ */
+
+//  from
+//  https://q3k.org/gentoomen/Game%20Development/Programming/Real-Time%20Collision%20Detection.pdf
+Rel t_c_intersection(const TriangleVerts& t) {
+    auto v0 = t[0];
+    auto v1 = t[1];
+    auto v2 = t[2];
+
+    Vec3f u0(1, 0, 0);
+    Vec3f u1(0, 1, 0);
+    Vec3f u2(0, 0, 1);
+
+    auto f0 = v1 - v0;
+    auto f1 = v2 - v1;
+    auto f2 = v0 - v2;
+
+    for (const auto& a : {
+             Vec3f(0, -f0.z, f0.y),
+             Vec3f(0, -f1.z, f1.y),
+             Vec3f(0, -f2.z, f2.y),
+             Vec3f(f0.z, 0, -f0.x),
+             Vec3f(f1.z, 0, -f1.x),
+             Vec3f(f2.z, 0, -f2.x),
+             Vec3f(-f0.y, f0.x, 0),
+             Vec3f(-f1.y, f1.x, 0),
+             Vec3f(-f2.y, f2.x, 0),
+         }) {
+        auto coll = {a.dot(v0), a.dot(v1), a.dot(v2)};
+        auto r = fabs(a.x) + fabs(a.y) + fabs(a.z);
+        if (std::max(-std::max(coll), std::min(coll)) > r)
+            return Rel::idOutside;
+    }
+
+    auto coll = {v0, v1, v2};
+    if ((get_max(coll) < Vec3f(-0.5)).any())
+        return Rel::idOutside;
+    if ((Vec3f(0.5) < get_min(coll)).any())
+        return Rel::idOutside;
+
+    auto normal = f0.cross(f1);
+    auto dist = normal.dot(v0);
+
+    auto r = 0.5 * fabs(normal.x) + 0.5 * fabs(normal.y) + 0.5 * fabs(normal.z);
+    return fabs(dist) <= r ? Rel::idInside : Rel::idOutside;
 }

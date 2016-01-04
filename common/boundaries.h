@@ -30,6 +30,7 @@ public:
     bool inside(const Vec3f& v) const override;
     bool overlaps(const TriangleVerts& t) const;
     CuboidBoundary get_aabb() const override;
+    CuboidBoundary get_padded(float padding) const;
     Vec3f get_centre() const;
     Vec3f get_dimensions() const;
     const Vec3f c0, c1;
@@ -47,7 +48,6 @@ public:
     const CuboidBoundary boundary;
 };
 
-//  TODO migrate to octree?
 class MeshBoundary : public Boundary {
 public:
     MeshBoundary(

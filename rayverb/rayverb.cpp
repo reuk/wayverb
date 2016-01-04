@@ -3,6 +3,8 @@
 #include "config.h"
 #include "test_flag.h"
 #include "hrtf.h"
+#include "boundaries.h"
+#include "conversions.h"
 
 #include "logger.h"
 
@@ -144,100 +146,6 @@ inline T elementwise(const T& a, const T& b, const U& u) {
     return ret;
 }
 
-/// Find the minimum and maximum boundaries of a set of vertices.
-std::pair<cl_float3, cl_float3> getBounds(
-    const std::vector<cl_float3>& vertices) {
-    return std::pair<cl_float3, cl_float3>(
-        std::accumulate(
-            vertices.begin() + 1,
-            vertices.end(),
-            vertices.front(),
-            [](const auto& a, const auto& b) {
-                return elementwise(
-                    a, b, [](auto i, auto j) { return std::min(i, j); });
-            }),
-        std::accumulate(
-            vertices.begin() + 1,
-            vertices.end(),
-            vertices.front(),
-            [](const auto& a, const auto& b) {
-                return elementwise(
-                    a, b, [](auto i, auto j) { return std::max(i, j); });
-            }));
-}
-
-/// Does a point fall within the cuboid defined by the point pair bounds?
-bool inside(const std::pair<cl_float3, cl_float3>& bounds,
-            const cl_float3& point) {
-    for (auto i = 0u; i != sizeof(cl_float3) / sizeof(float); ++i)
-        if (!(bounds.first.s[i] <= point.s[i] &&
-              point.s[i] <= bounds.second.s[i]))
-            return false;
-    return true;
-}
-
-/// Reserve graphics memory.
-Raytrace::Raytrace(const RayverbProgram& program,
-                   cl::CommandQueue& queue,
-                   unsigned long nreflections,
-                   std::vector<Triangle>& triangles,
-                   std::vector<cl_float3>& vertices,
-                   std::vector<Surface>& surfaces)
-        : queue(queue)
-        , kernel(program.get_raytrace_kernel())
-        , nreflections(nreflections)
-        , ntriangles(triangles.size())
-        , cl_directions(program.getInfo<CL_PROGRAM_CONTEXT>(),
-                        CL_MEM_READ_WRITE,
-                        RAY_GROUP_SIZE * sizeof(cl_float3))
-        , cl_triangles(program.getInfo<CL_PROGRAM_CONTEXT>(),
-                       begin(triangles),
-                       end(triangles),
-                       false)
-        , cl_vertices(program.getInfo<CL_PROGRAM_CONTEXT>(),
-                      begin(vertices),
-                      end(vertices),
-                      false)
-        , cl_surfaces(program.getInfo<CL_PROGRAM_CONTEXT>(),
-                      begin(surfaces),
-                      end(surfaces),
-                      false)
-        , cl_impulses(program.getInfo<CL_PROGRAM_CONTEXT>(),
-                      CL_MEM_READ_WRITE,
-                      RAY_GROUP_SIZE * nreflections * sizeof(Impulse))
-        , cl_image_source(program.getInfo<CL_PROGRAM_CONTEXT>(),
-                          CL_MEM_READ_WRITE,
-                          RAY_GROUP_SIZE * NUM_IMAGE_SOURCE * sizeof(Impulse))
-        , cl_image_source_index(
-              program.getInfo<CL_PROGRAM_CONTEXT>(),
-              CL_MEM_READ_WRITE,
-              RAY_GROUP_SIZE * NUM_IMAGE_SOURCE * sizeof(cl_ulong))
-        , bounds(getBounds(vertices)) {
-}
-
-Raytrace::Raytrace(const RayverbProgram& program,
-                   cl::CommandQueue& queue,
-                   unsigned long nreflections,
-                   const std::string& objpath,
-                   const std::string& materialFileName)
-        : Raytrace(program,
-                   queue,
-                   nreflections,
-                   SceneData(objpath, materialFileName)) {
-}
-
-Raytrace::Raytrace(const RayverbProgram& program,
-                   cl::CommandQueue& queue,
-                   unsigned long nreflections,
-                   SceneData sceneData)
-        : Raytrace(program,
-                   queue,
-                   nreflections,
-                   sceneData.triangles,
-                   sceneData.vertices,
-                   sceneData.surfaces) {
-}
-
 cl_float3 sphere_point(float z, float theta) {
     const float ztemp = sqrtf(1 - z * z);
     return (cl_float3){{ztemp * cosf(theta), ztemp * sinf(theta), z, 0}};
@@ -256,6 +164,217 @@ std::vector<cl_float3> get_random_directions(unsigned long num) {
     return ret;
 }
 
+RaytracerResults Raytrace::Results::get_diffuse() const {
+    return RaytracerResults(diffuse, mic_pos);
+}
+
+RaytracerResults Raytrace::Results::get_image_source(bool remove_direct) const {
+    auto temp = image_source;
+    if (remove_direct)
+        temp.erase(std::vector<unsigned long>{0});
+
+    std::vector<Impulse> ret(temp.size());
+    transform(begin(temp),
+              end(temp),
+              begin(ret),
+              [](const auto& i) { return i.second; });
+    return RaytracerResults(ret, mic_pos);
+}
+
+RaytracerResults Raytrace::Results::get_all(bool remove_direct) const {
+    auto diffuse = get_diffuse().impulses;
+    const auto image = get_image_source(remove_direct).impulses;
+    diffuse.insert(diffuse.end(), image.begin(), image.end());
+    return RaytracerResults(diffuse, mic_pos);
+}
+
+Raytrace::Raytrace(const RayverbProgram& program,
+                   cl::CommandQueue& queue)
+    : queue(queue)
+    , program(program)
+    , kernel(program.get_raytrace_kernel()) {}
+
+Raytrace::Results Raytrace::run(const SceneData& scene_data,
+                                const Vec3f& micpos,
+                                const Vec3f& source,
+                                int rays,
+                                int reflections) {
+    auto RAY_GROUP_SIZE = 4096u;
+
+    //  init buffers
+    cl::Buffer cl_directions(program.getInfo<CL_PROGRAM_CONTEXT>(),
+                             CL_MEM_READ_WRITE,
+                             RAY_GROUP_SIZE * sizeof(cl_float3));
+    cl::Buffer cl_triangles(program.getInfo<CL_PROGRAM_CONTEXT>(),
+                            begin(const_cast<std::vector<Triangle>&>(scene_data.triangles)),
+                            end  (const_cast<std::vector<Triangle>&>(scene_data.triangles)),
+                            false);
+    cl::Buffer cl_vertices(program.getInfo<CL_PROGRAM_CONTEXT>(),
+                           begin (const_cast<std::vector<cl_float3>&>(scene_data.vertices)),
+                           end   (const_cast<std::vector<cl_float3>&>(scene_data.vertices)),
+                           false);
+    cl::Buffer cl_surfaces(program.getInfo<CL_PROGRAM_CONTEXT>(),
+                           begin (const_cast<std::vector<Surface>&>(scene_data.surfaces)),
+                           end   (const_cast<std::vector<Surface>&>(scene_data.surfaces)),
+                           false);
+    cl::Buffer cl_impulses(program.getInfo<CL_PROGRAM_CONTEXT>(),
+                           CL_MEM_READ_WRITE,
+                           RAY_GROUP_SIZE * reflections * sizeof(Impulse));
+    cl::Buffer cl_image_source(program.getInfo<CL_PROGRAM_CONTEXT>(),
+                               CL_MEM_READ_WRITE,
+                               RAY_GROUP_SIZE * NUM_IMAGE_SOURCE * sizeof(Impulse));
+    cl::Buffer cl_image_source_index(
+                   program.getInfo<CL_PROGRAM_CONTEXT>(),
+                   CL_MEM_READ_WRITE,
+                   RAY_GROUP_SIZE * NUM_IMAGE_SOURCE * sizeof(cl_ulong));
+
+    auto directions = get_random_directions(rays);
+
+    MeshBoundary boundary(scene_data);
+    //  check that mic and source are inside model bounds
+    bool mic_inside = boundary.inside(micpos);
+    bool src_inside = boundary.inside(source);
+    if (!mic_inside) {
+        std::cerr << "WARNING: microphone position is outside model"
+                  << std::endl;
+        std::cerr << "position: " << micpos << std::endl;
+    }
+
+    if (!src_inside) {
+        std::cerr << "WARNING: source position is outside model"
+                  << std::endl;
+        std::cerr << "position: " << source << std::endl;
+    }
+
+    Results results;
+    results.mic_pos = micpos;
+    results.diffuse.resize(directions.size() * reflections);
+
+    for (auto i = 0u; i != ceil(directions.size() / float(RAY_GROUP_SIZE));
+         ++i) {
+        using index_type = std::common_type_t<decltype(i* RAY_GROUP_SIZE),
+                                              decltype(directions.size())>;
+        index_type b = i * RAY_GROUP_SIZE;
+        index_type e = std::min(index_type{directions.size()},
+                                index_type{(i + 1) * RAY_GROUP_SIZE});
+
+        //  copy input to buffer
+        cl::copy(queue,
+                 directions.begin() + b,
+                 directions.begin() + e,
+                 cl_directions);
+
+        //  zero out impulse storage memory
+        std::vector<Impulse> diffuse(
+            RAY_GROUP_SIZE * reflections,
+            Impulse{{{0, 0, 0, 0, 0, 0, 0, 0}}, {{0, 0, 0}}, 0});
+        cl::copy(queue, begin(diffuse), end(diffuse), cl_impulses);
+
+        std::vector<Impulse> image(
+            RAY_GROUP_SIZE * NUM_IMAGE_SOURCE,
+            Impulse{{{0, 0, 0, 0, 0, 0, 0, 0}}, {{0, 0, 0}}, 0});
+        cl::copy(queue, begin(image), end(image), cl_image_source);
+
+        std::vector<unsigned long> image_source_index(
+            RAY_GROUP_SIZE * NUM_IMAGE_SOURCE, 0);
+        cl::copy(queue,
+                 begin(image_source_index),
+                 end(image_source_index),
+                 cl_image_source_index);
+
+        //  run kernel
+        kernel(cl::EnqueueArgs(queue, cl::NDRange(RAY_GROUP_SIZE)),
+               cl_directions,
+               to_cl_float3(micpos),
+               cl_triangles,
+               scene_data.triangles.size(),
+               cl_vertices,
+               to_cl_float3(source),
+               cl_surfaces,
+               cl_impulses,
+               cl_image_source,
+               cl_image_source_index,
+               reflections,
+               (VolumeType){{0.001 * -0.1,
+                             0.001 * -0.2,
+                             0.001 * -0.5,
+                             0.001 * -1.1,
+                             0.001 * -2.7,
+                             0.001 * -9.4,
+                             0.001 * -29.0,
+                             0.001 * -60.0}});
+
+        //  copy output to main memory
+        cl::copy(queue,
+                 cl_image_source_index,
+                 begin(image_source_index),
+                 end(image_source_index));
+        cl::copy(queue, cl_image_source, begin(image), end(image));
+
+        //  remove duplicate image-source contributions
+        for (auto j = 0; j != RAY_GROUP_SIZE * NUM_IMAGE_SOURCE;
+             j += NUM_IMAGE_SOURCE) {
+            for (auto k = 1; k != NUM_IMAGE_SOURCE + 1; ++k) {
+                std::vector<unsigned long> surfaces(
+                    image_source_index.begin() + j,
+                    image_source_index.begin() + j + k);
+
+                if (k == 1 || surfaces.back() != 0) {
+                    auto it = results.image_source.find(surfaces);
+                    if (it == results.image_source.end()) {
+                        results.image_source[surfaces] = image[j + k - 1];
+                    }
+                }
+            }
+        }
+
+        cl::copy(queue,
+                 cl_impulses,
+                 results.diffuse.begin() + b * reflections,
+                 results.diffuse.begin() + e * reflections);
+    }
+
+    return results;
+}
+
+#if 0
+/// Reserve graphics memory.
+Raytrace::Raytrace(const RayverbProgram& program,
+                   cl::CommandQueue& queue,
+                   unsigned long nreflections,
+                   const SceneData& scene_data)
+        : queue(queue)
+        , kernel(program.get_raytrace_kernel())
+        , scene_data(scene_data)
+        , nreflections(nreflections)
+        , ntriangles(scene_data.triangles.size())
+        , cl_directions(program.getInfo<CL_PROGRAM_CONTEXT>(),
+                        CL_MEM_READ_WRITE,
+                        RAY_GROUP_SIZE * sizeof(cl_float3))
+        , cl_triangles(program.getInfo<CL_PROGRAM_CONTEXT>(),
+                       begin(const_cast<std::vector<Triangle>&>(scene_data.triangles)),
+                       end  (const_cast<std::vector<Triangle>&>(scene_data.triangles)),
+                       false)
+        , cl_vertices(program.getInfo<CL_PROGRAM_CONTEXT>(),
+                      begin (const_cast<std::vector<cl_float3>&>(scene_data.vertices)),
+                      end   (const_cast<std::vector<cl_float3>&>(scene_data.vertices)),
+                      false)
+        , cl_surfaces(program.getInfo<CL_PROGRAM_CONTEXT>(),
+                      begin (const_cast<std::vector<Surface>&>(scene_data.surfaces)),
+                      end   (const_cast<std::vector<Surface>&>(scene_data.surfaces)),
+                      false)
+        , cl_impulses(program.getInfo<CL_PROGRAM_CONTEXT>(),
+                      CL_MEM_READ_WRITE,
+                      RAY_GROUP_SIZE * nreflections * sizeof(Impulse))
+        , cl_image_source(program.getInfo<CL_PROGRAM_CONTEXT>(),
+                          CL_MEM_READ_WRITE,
+                          RAY_GROUP_SIZE * NUM_IMAGE_SOURCE * sizeof(Impulse))
+        , cl_image_source_index(
+              program.getInfo<CL_PROGRAM_CONTEXT>(),
+              CL_MEM_READ_WRITE,
+              RAY_GROUP_SIZE * NUM_IMAGE_SOURCE * sizeof(cl_ulong)) {
+}
+
 void Raytrace::raytrace(const cl_float3& micpos,
                         const cl_float3& source,
                         int rays) {
@@ -267,30 +386,22 @@ void Raytrace::raytrace(const cl_float3& micpos,
                         const std::vector<cl_float3>& directions) {
     storedMicpos = micpos;
 
-    //  TODO change this to use meshBoundary for inside/outside check
-
+    MeshBoundary boundary(scene_data);
     //  check that mic and source are inside model bounds
-    bool micinside = inside(bounds, micpos);
-    bool srcinside = inside(bounds, source);
-    if ((!(micinside && srcinside))) {
-        std::cerr << "model bounds: [" << bounds.first.s[0] << ", "
-                  << bounds.first.s[1] << ", " << bounds.first.s[2] << "], ["
-                  << bounds.second.s[0] << ", " << bounds.second.s[1] << ", "
-                  << bounds.second.s[2] << "]" << std::endl;
+    bool micinside = boundary.inside(convert(micpos));
+    bool srcinside = boundary.inside(convert(source));
+    if (!micinside) {
+        std::cerr << "WARNING: microphone position is outside model"
+                  << std::endl;
+        std::cerr << "mic position: [" << micpos.s[0] << ", " << micpos.s[1]
+                  << ", " << micpos.s[2] << "]" << std::endl;
+    }
 
-        if (!micinside) {
-            std::cerr << "WARNING: microphone position may be outside model"
-                      << std::endl;
-            std::cerr << "mic position: [" << micpos.s[0] << ", " << micpos.s[1]
-                      << ", " << micpos.s[2] << "]" << std::endl;
-        }
-
-        if (!srcinside) {
-            std::cerr << "WARNING: source position may be outside model"
-                      << std::endl;
-            std::cerr << "src position: [" << source.s[0] << ", " << source.s[1]
-                      << ", " << source.s[2] << "]" << std::endl;
-        }
+    if (!srcinside) {
+        std::cerr << "WARNING: source position is outside model"
+                  << std::endl;
+        std::cerr << "src position: [" << source.s[0] << ", " << source.s[1]
+                  << ", " << source.s[2] << "]" << std::endl;
     }
 
     imageSourceTally.clear();
@@ -419,6 +530,7 @@ RaytracerResults Raytrace::getAllRaw(bool removeDirect) {
     diffuse.insert(diffuse.end(), image.begin(), image.end());
     return RaytracerResults(diffuse, storedMicpos);
 }
+#endif
 
 Hrtf::Hrtf(const RayverbProgram& program, cl::CommandQueue& queue)
         : queue(queue)
@@ -428,14 +540,14 @@ Hrtf::Hrtf(const RayverbProgram& program, cl::CommandQueue& queue)
 }
 
 std::vector<std::vector<AttenuatedImpulse>> Hrtf::attenuate(
-    const RaytracerResults& results, const HrtfConfig& config) {
+    const RaytracerResults& results, const Config& config) {
     return attenuate(results, config.facing, config.up);
 }
 
 std::vector<std::vector<AttenuatedImpulse>> Hrtf::attenuate(
     const RaytracerResults& results,
-    const cl_float3& facing,
-    const cl_float3& up) {
+    const Vec3f& facing,
+    const Vec3f& up) {
     auto channels = {0, 1};
     std::vector<std::vector<AttenuatedImpulse>> attenuated(channels.size());
     transform(begin(channels),
@@ -443,7 +555,11 @@ std::vector<std::vector<AttenuatedImpulse>> Hrtf::attenuate(
               begin(attenuated),
               [this, &results, facing, up](auto i) {
                   return this->attenuate(
-                      results.mic, i, facing, up, results.impulses);
+                      to_cl_float3(results.mic),
+                      i,
+                      to_cl_float3(facing),
+                      to_cl_float3(up),
+                      results.impulses);
               });
     return attenuated;
 }
@@ -518,7 +634,7 @@ std::vector<std::vector<AttenuatedImpulse>> Attenuate::attenuate(
 }
 
 std::vector<AttenuatedImpulse> Attenuate::attenuate(
-    const cl_float3& mic_pos,
+    const Vec3f& mic_pos,
     const Speaker& speaker,
     const std::vector<Impulse>& impulses) {
     //  init buffers
@@ -537,7 +653,7 @@ std::vector<AttenuatedImpulse> Attenuate::attenuate(
 
     //  run kernel
     kernel(cl::EnqueueArgs(queue, cl::NDRange(impulses.size())),
-           mic_pos,
+           to_cl_float3(mic_pos),
            cl_in,
            cl_out,
            speaker);

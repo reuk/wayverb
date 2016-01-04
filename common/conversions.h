@@ -1,18 +1,16 @@
 #pragma once
 
+#include "vec.h"
+
 #define __CL_ENABLE_EXCEPTIONS
 #include "cl.hpp"
 
-#include "assimp/Importer.hpp"
+template<typename T>
+cl_float3 to_cl_float3(const T& t) {
+    return cl_float3{{t.x, t.y, t.z, 0}};
+}
 
-template <typename T>
-struct Vec3;
-
-#define VEC_CONVERT_FUNCTIONS_DECLARATION(t) \
-    cl_##t##3 convert(const Vec3<t>& v);     \
-    Vec3<t> convert(const cl_##t##3 & v);
-
-VEC_CONVERT_FUNCTIONS_DECLARATION(float)
-VEC_CONVERT_FUNCTIONS_DECLARATION(int)
-
-cl_float3 convert(const aiVector3D& v);
+template<typename T>
+Vec3f to_vec3f(const T& t) {
+    return Vec3f{t.x, t.y, t.z};
+}
