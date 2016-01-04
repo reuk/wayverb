@@ -134,61 +134,6 @@ private:
     kernel_type kernel;
 };
 
-#if 0
-/// An exciting raytracer.
-class Raytrace {
-public:
-    using kernel_type =
-        decltype(std::declval<RayverbProgram>().get_raytrace_kernel());
-
-    Raytrace(const RayverbProgram& program,
-             cl::CommandQueue& queue,
-             unsigned long nreflections,
-             const SceneData & sceneData);
-
-    virtual ~Raytrace() noexcept = default;
-
-    /// Run the raytrace with a specific mic, source, and set of directions.
-    void raytrace(const cl_float3& micpos,
-                  const cl_float3& source,
-                  const std::vector<cl_float3>& directions);
-    void raytrace(const cl_float3& micpos, const cl_float3& source, int rays);
-
-    /// Get raw, unprocessed diffuse results.
-    RaytracerResults getRawDiffuse();
-
-    /// Get raw, unprocessed image-source results.
-    RaytracerResults getRawImages(bool removeDirect);
-
-    /// Get all raw, unprocessed results.
-    RaytracerResults getAllRaw(bool removeDirect);
-
-private:
-    cl::CommandQueue& queue;
-    kernel_type kernel;
-
-    SceneData scene_data;
-
-    const unsigned long nreflections;
-    const unsigned long ntriangles;
-
-    cl::Buffer cl_directions;
-    cl::Buffer cl_triangles;
-    cl::Buffer cl_vertices;
-    cl::Buffer cl_surfaces;
-    cl::Buffer cl_impulses;
-    cl::Buffer cl_image_source;
-    cl::Buffer cl_image_source_index;
-
-    cl_float3 storedMicpos;
-
-    static const auto RAY_GROUP_SIZE = 4096u;
-
-    std::vector<Impulse> storedDiffuse;
-    std::map<std::vector<unsigned long>, Impulse> imageSourceTally;
-};
-#endif
-
 /// Class for parallel HRTF attenuation of raytrace results.
 class Hrtf {
 public:
