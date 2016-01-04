@@ -115,4 +115,3 @@ struct JsonGetter<AttenuationModel> {
     AttenuationModel& t;
     std::map<AttenuationModel::Mode, std::string> keys;
 };
-

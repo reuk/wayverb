@@ -91,7 +91,9 @@ inline void fixPredelay(T& ret) {
 /// This is a struct to keep the impulses and mic position together, because
 /// you'll probably never need one without the other.
 struct RaytracerResults {
-    RaytracerResults(const std::vector<Impulse> impulses=std::vector<Impulse>(), const Vec3f& c=Vec3f())
+    RaytracerResults(
+        const std::vector<Impulse> impulses = std::vector<Impulse>(),
+        const Vec3f& c = Vec3f())
             : impulses{impulses}
             , mic{c} {
     }
@@ -116,12 +118,11 @@ public:
         RaytracerResults get_all(bool remove_direct) const;
     };
 
-    Raytrace(const RayverbProgram& program,
-             cl::CommandQueue& queue);
+    Raytrace(const RayverbProgram& program, cl::CommandQueue& queue);
 
     virtual ~Raytrace() noexcept = default;
 
-    Results run(const SceneData & scene_data,
+    Results run(const SceneData& scene_data,
                 const Vec3f& micpos,
                 const Vec3f& source,
                 int rays,
@@ -209,9 +210,7 @@ public:
     std::vector<std::vector<AttenuatedImpulse>> attenuate(
         const RaytracerResults& results, const Config& config);
     std::vector<std::vector<AttenuatedImpulse>> attenuate(
-        const RaytracerResults& results,
-        const Vec3f& facing,
-        const Vec3f& up);
+        const RaytracerResults& results, const Vec3f& facing, const Vec3f& up);
 
     virtual const std::array<std::array<std::array<cl_float8, 180>, 360>, 2>&
     getHrtfData() const;

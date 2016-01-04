@@ -82,7 +82,8 @@ int main(int argc, char** argv) {
         TetrahedralWaveguide waveguide(
             waveguide_program, queue, boundary, divisions, to_vec3f(mic));
         auto mic_index = waveguide.get_index_for_coordinate(to_vec3f(mic));
-        auto source_index = waveguide.get_index_for_coordinate(to_vec3f(source));
+        auto source_index =
+            waveguide.get_index_for_coordinate(to_vec3f(source));
 
         auto corrected_source =
             waveguide.get_coordinate_for_index(source_index);

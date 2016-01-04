@@ -168,11 +168,14 @@ private:
 
 class RaytraceObject final : public ::Drawable {
 public:
-    RaytraceObject(const GenericShader& shader, const RaytracerResults& results);
+    RaytraceObject(const GenericShader& shader,
+                   const RayverbConfig& cc,
+                   const RaytracerResults& results);
     void draw() const override;
+
 private:
     const GenericShader& shader;
-    
+
     VAO vao;
     StaticVBO geometry;
     StaticVBO colors;
@@ -197,13 +200,14 @@ public:
     void set_rotation(float azimuth, float elevation);
 
     void set_model_object(const SceneData& sceneData);
-    void set_config(const Config& config);
+    void set_config(const CombinedConfig& config);
 
 private:
     void draw() const;
     void trigger_pressure_calculation();
     void init_waveguide(const SceneData& scene_data, const WaveguideConfig& cc);
-    void init_raytracer(const SceneData& scene_data, const RayverbConfig& cc);
+
+    CombinedConfig config;
 
     std::unique_ptr<GenericShader> shader;
     std::unique_ptr<ModelSectionObject> model_object;
@@ -212,13 +216,12 @@ private:
 
     std::unique_ptr<TetrahedralWaveguide> waveguide;
     std::unique_ptr<MeshObject> mesh_object;
-    
-    std::unique_ptr<Raytrace> raytrace;
+
+    std::future<RaytracerResults> raytracer_results;
     std::unique_ptr<RaytraceObject> raytrace_object;
 
     std::future<std::vector<cl_float>> future_pressure;
     std::thread waveguide_load_thread;
-    std::thread raytracer_load_thread;
 
     glm::mat4 projection_matrix;
 

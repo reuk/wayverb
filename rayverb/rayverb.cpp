@@ -188,11 +188,11 @@ RaytracerResults Raytrace::Results::get_all(bool remove_direct) const {
     return RaytracerResults(diffuse, mic_pos);
 }
 
-Raytrace::Raytrace(const RayverbProgram& program,
-                   cl::CommandQueue& queue)
-    : queue(queue)
-    , program(program)
-    , kernel(program.get_raytrace_kernel()) {}
+Raytrace::Raytrace(const RayverbProgram& program, cl::CommandQueue& queue)
+        : queue(queue)
+        , program(program)
+        , kernel(program.get_raytrace_kernel()) {
+}
 
 Raytrace::Results Raytrace::run(const SceneData& scene_data,
                                 const Vec3f& micpos,
@@ -205,28 +205,32 @@ Raytrace::Results Raytrace::run(const SceneData& scene_data,
     cl::Buffer cl_directions(program.getInfo<CL_PROGRAM_CONTEXT>(),
                              CL_MEM_READ_WRITE,
                              RAY_GROUP_SIZE * sizeof(cl_float3));
-    cl::Buffer cl_triangles(program.getInfo<CL_PROGRAM_CONTEXT>(),
-                            begin(const_cast<std::vector<Triangle>&>(scene_data.triangles)),
-                            end  (const_cast<std::vector<Triangle>&>(scene_data.triangles)),
-                            false);
-    cl::Buffer cl_vertices(program.getInfo<CL_PROGRAM_CONTEXT>(),
-                           begin (const_cast<std::vector<cl_float3>&>(scene_data.vertices)),
-                           end   (const_cast<std::vector<cl_float3>&>(scene_data.vertices)),
-                           false);
-    cl::Buffer cl_surfaces(program.getInfo<CL_PROGRAM_CONTEXT>(),
-                           begin (const_cast<std::vector<Surface>&>(scene_data.surfaces)),
-                           end   (const_cast<std::vector<Surface>&>(scene_data.surfaces)),
-                           false);
+    cl::Buffer cl_triangles(
+        program.getInfo<CL_PROGRAM_CONTEXT>(),
+        begin(const_cast<std::vector<Triangle>&>(scene_data.triangles)),
+        end(const_cast<std::vector<Triangle>&>(scene_data.triangles)),
+        false);
+    cl::Buffer cl_vertices(
+        program.getInfo<CL_PROGRAM_CONTEXT>(),
+        begin(const_cast<std::vector<cl_float3>&>(scene_data.vertices)),
+        end(const_cast<std::vector<cl_float3>&>(scene_data.vertices)),
+        false);
+    cl::Buffer cl_surfaces(
+        program.getInfo<CL_PROGRAM_CONTEXT>(),
+        begin(const_cast<std::vector<Surface>&>(scene_data.surfaces)),
+        end(const_cast<std::vector<Surface>&>(scene_data.surfaces)),
+        false);
     cl::Buffer cl_impulses(program.getInfo<CL_PROGRAM_CONTEXT>(),
                            CL_MEM_READ_WRITE,
                            RAY_GROUP_SIZE * reflections * sizeof(Impulse));
-    cl::Buffer cl_image_source(program.getInfo<CL_PROGRAM_CONTEXT>(),
-                               CL_MEM_READ_WRITE,
-                               RAY_GROUP_SIZE * NUM_IMAGE_SOURCE * sizeof(Impulse));
+    cl::Buffer cl_image_source(
+        program.getInfo<CL_PROGRAM_CONTEXT>(),
+        CL_MEM_READ_WRITE,
+        RAY_GROUP_SIZE * NUM_IMAGE_SOURCE * sizeof(Impulse));
     cl::Buffer cl_image_source_index(
-                   program.getInfo<CL_PROGRAM_CONTEXT>(),
-                   CL_MEM_READ_WRITE,
-                   RAY_GROUP_SIZE * NUM_IMAGE_SOURCE * sizeof(cl_ulong));
+        program.getInfo<CL_PROGRAM_CONTEXT>(),
+        CL_MEM_READ_WRITE,
+        RAY_GROUP_SIZE * NUM_IMAGE_SOURCE * sizeof(cl_ulong));
 
     auto directions = get_random_directions(rays);
 
@@ -241,8 +245,7 @@ Raytrace::Results Raytrace::run(const SceneData& scene_data,
     }
 
     if (!src_inside) {
-        std::cerr << "WARNING: source position is outside model"
-                  << std::endl;
+        std::cerr << "WARNING: source position is outside model" << std::endl;
         std::cerr << "position: " << source << std::endl;
     }
 
@@ -545,21 +548,18 @@ std::vector<std::vector<AttenuatedImpulse>> Hrtf::attenuate(
 }
 
 std::vector<std::vector<AttenuatedImpulse>> Hrtf::attenuate(
-    const RaytracerResults& results,
-    const Vec3f& facing,
-    const Vec3f& up) {
+    const RaytracerResults& results, const Vec3f& facing, const Vec3f& up) {
     auto channels = {0, 1};
     std::vector<std::vector<AttenuatedImpulse>> attenuated(channels.size());
     transform(begin(channels),
               end(channels),
               begin(attenuated),
               [this, &results, facing, up](auto i) {
-                  return this->attenuate(
-                      to_cl_float3(results.mic),
-                      i,
-                      to_cl_float3(facing),
-                      to_cl_float3(up),
-                      results.impulses);
+                  return this->attenuate(to_cl_float3(results.mic),
+                                         i,
+                                         to_cl_float3(facing),
+                                         to_cl_float3(up),
+                                         results.impulses);
               });
     return attenuated;
 }

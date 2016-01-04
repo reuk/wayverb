@@ -27,7 +27,8 @@ void TetrahedralWaveguide::setup(cl::CommandQueue& queue,
     auto count = 0u;
     auto basis = to_vec3f(mesh.get_nodes()[o].position);
     for (const auto& i : mesh.get_nodes()[o].ports) {
-        auto pos = (to_vec3f(mesh.get_nodes()[i].position) - basis).normalized();
+        auto pos =
+            (to_vec3f(mesh.get_nodes()[i].position) - basis).normalized();
         umat.row(count++) << pos.x, pos.y, pos.z;
     }
 
