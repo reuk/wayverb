@@ -24,7 +24,7 @@ Vec3f get_min(const std::vector<Vec3f>& coll) {
     return sub_elementwise(coll, [](auto i, auto j) { return std::min(i, j); });
 }
 
-bool CuboidBoundary::overlaps(const TriangleVerts& t) const {
+bool CuboidBoundary::overlaps(const TriangleVec3f& t) const {
     auto coll = t;
     for (auto& i : coll) {
         i = (i - get_centre()) / get_dimensions();

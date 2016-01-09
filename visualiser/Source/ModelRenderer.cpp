@@ -284,12 +284,11 @@ auto to_glm_vec3(const T &t) {
 }
 
 RaytraceObject::RaytraceObject(const GenericShader &shader,
-                               const RayverbConfig &cc,
                                const RaytracerResults &results)
         : shader(shader) {
     auto impulses = results.impulses;
     std::vector<glm::vec3> v(impulses.size() + 1);
-    v.front() = to_glm_vec3(cc.get_source());
+    v.front() = to_glm_vec3(results.source);
     std::transform(impulses.begin(),
                    impulses.end(),
                    v.begin() + 1,
@@ -311,10 +310,10 @@ RaytraceObject::RaytraceObject(const GenericShader &shader,
                    });
 
     std::vector<std::pair<GLuint, GLuint>> lines;
-    for (auto ray = 0u; ray != cc.get_rays(); ++ray) {
+    for (auto ray = 0u; ray != results.rays; ++ray) {
         auto prev = 0u;
-        for (auto pt = 0u; pt != cc.get_impulses(); ++pt) {
-            auto index = ray * cc.get_impulses() + pt + 1;
+        for (auto pt = 0u; pt != results.rays; ++pt) {
+            auto index = ray * results.reflections + pt + 1;
             lines.push_back(std::make_pair(prev, index));
             prev = index;
         }
@@ -358,14 +357,32 @@ void RaytraceObject::draw() const {
 
 //----------------------------------------------------------------------------//
 
-SceneRenderer::SceneRenderer()
-        : projection_matrix(get_projection_matrix(1))
+DrawableScene::DrawableScene(const GenericShader &shader,
+                             const SceneData &scene_data,
+                             const CombinedConfig &cc)
+        : shader(shader)
         , context(get_context())
         , device(get_device(context))
-        , queue(context, device) {
+        , queue(context, device)
+        , model_object{std::make_unique<ModelSectionObject>(
+              shader, scene_data, Octree(scene_data, 0, 0.1))}
+        , source_object{std::make_unique<SphereObject>(
+              shader, to_glm_vec3(cc.get_source()), glm::vec4(1, 0, 0, 1))}
+        , receiver_object{std::make_unique<SphereObject>(
+              shader, to_glm_vec3(cc.get_mic()), glm::vec4(0, 1, 1, 1))}
+        , waveguide_load_thread{&DrawableScene::init_waveguide,
+                                this,
+                                scene_data,
+                                cc}
+        , raytracer_results{
+              std::move(std::async(std::launch::async,
+                                   &DrawableScene::get_raytracer_results,
+                                   this,
+                                   scene_data,
+                                   cc))} {
 }
 
-SceneRenderer::~SceneRenderer() {
+DrawableScene::~DrawableScene() noexcept {
     auto join_future = [](auto &i) {
         if (i.valid())
             i.get();
@@ -380,7 +397,7 @@ SceneRenderer::~SceneRenderer() {
     join_thread(waveguide_load_thread);
 }
 
-void SceneRenderer::init_waveguide(const SceneData &scene_data,
+void DrawableScene::init_waveguide(const SceneData &scene_data,
                                    const WaveguideConfig &cc) {
     MeshBoundary boundary(scene_data);
     auto waveguide_program = get_program<TetrahedralProgram>(context, device);
@@ -388,16 +405,8 @@ void SceneRenderer::init_waveguide(const SceneData &scene_data,
         waveguide_program, queue, boundary, cc.get_divisions(), cc.get_mic());
     auto corrected_source = cc.get_source();
 
-#define CASE 0
-#if CASE == 0
     w->init(
         corrected_source, TetrahedralWaveguide::GaussianFunction(0.1), 0, 0);
-#else
-    corrected_source = w->get_corrected_coordinate(cc.get_source());
-    w->init(corrected_source, TetrahedralWaveguide::BasicPowerFunction(), 0, 0);
-#endif
-
-    jassert((w->get_corrected_coordinate(cc.get_mic()) == cc.get_mic()).all());
 
     {
         std::lock_guard<std::mutex> lck(mut);
@@ -406,60 +415,36 @@ void SceneRenderer::init_waveguide(const SceneData &scene_data,
     }
 }
 
-void SceneRenderer::newOpenGLContextCreated() {
-    shader = std::make_unique<GenericShader>();
-
-    File object(
-        "/Users/reuben/dev/waveguide/demo/assets/test_models/vault.obj");
-    File material(
-        "/Users/reuben/dev/waveguide/demo/assets/materials/vault.json");
-    File config("/Users/reuben/dev/waveguide/demo/assets/configs/vault.json");
-
-    SceneData scene_data(object.getFullPathName().toStdString(),
-                         material.getFullPathName().toStdString());
-    CombinedConfig cc;
+void DrawableScene::trigger_pressure_calculation() {
     try {
-        cc = read_config(config.getFullPathName().toStdString());
+        future_pressure = std::async(std::launch::async,
+                                     [this] {
+                                         auto ret = waveguide->run_step_slow();
+                                         waveguide->swap_buffers();
+                                         return ret;
+                                     });
     } catch (...) {
-    }
-
-    cc.get_source() = Vec3f(5, 1.75, 1);
-    cc.get_rays() = 1 << 5;
-
-    set_model_object(scene_data);
-    set_config(cc);
-
-    waveguide_load_thread =
-        std::thread(&SceneRenderer::init_waveguide, this, scene_data, cc);
-
-    try {
-        raytracer_results =
-            std::async(std::launch::async,
-                       [this, scene_data, cc] {
-                           auto raytrace_program =
-                               get_program<RayverbProgram>(context, device);
-                           auto r = std::make_unique<ImprovedRaytrace>(
-                               raytrace_program, queue);
-                           //            auto r =
-                           //            std::make_unique<Raytrace>(raytrace_program,
-                           //            queue);
-                           return r->run(scene_data,
-                                         cc.get_mic(),
-                                         cc.get_source(),
-                                         cc.get_rays(),
-                                         cc.get_impulses())
-                               .get_diffuse();
-                       });
-    } catch (const std::exception &e) {
-        std::cout << e.what() << std::endl;
+        std::cout << "async error?" << std::endl;
     }
 }
 
-void SceneRenderer::renderOpenGL() {
+RaytracerResults DrawableScene::get_raytracer_results(
+    const SceneData &scene_data, const CombinedConfig &cc) {
+    auto raytrace_program = get_program<RayverbProgram>(context, device);
+    return ImprovedRaytrace(raytrace_program, queue)
+        .BaseRaytrace::run(scene_data,
+                           cc.get_mic(),
+                           cc.get_source(),
+                           cc.get_rays(),
+                           cc.get_impulses())
+        .get_diffuse();
+}
+
+void DrawableScene::update(float dt) {
     std::lock_guard<std::mutex> lck(mut);
 
     if (waveguide && !mesh_object) {
-        mesh_object = std::make_unique<MeshObject>(*shader, *waveguide);
+        mesh_object = std::make_unique<MeshObject>(shader, *waveguide);
     }
 
     if (raytracer_results.valid()) {
@@ -467,7 +452,7 @@ void SceneRenderer::renderOpenGL() {
             if (raytracer_results.wait_for(std::chrono::milliseconds(0)) ==
                 std::future_status::ready) {
                 raytrace_object = std::make_unique<RaytraceObject>(
-                    *shader, config, raytracer_results.get());
+                    shader, raytracer_results.get());
             }
         } catch (const std::exception &e) {
             std::cout << "exception fetching raytracer results: " << e.what()
@@ -487,25 +472,76 @@ void SceneRenderer::renderOpenGL() {
                       << std::endl;
         }
     }
-    draw();
 }
 
-void SceneRenderer::trigger_pressure_calculation() {
-    try {
-        future_pressure = std::async(std::launch::async,
-                                     [this] {
-                                         auto ret = waveguide->run_step_slow();
-                                         waveguide->swap_buffers();
-                                         return ret;
-                                     });
-    } catch (...) {
-        std::cout << "async error?" << std::endl;
+void DrawableScene::draw() const {
+    std::lock_guard<std::mutex> lck(mut);
+
+    auto s_shader = shader.get_scoped();
+    auto draw_thing = [this](const auto &i) {
+        if (i)
+            i->draw();
+    };
+
+    draw_thing(mesh_object);
+    draw_thing(raytrace_object);
+
+    if (model_object) {
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        model_object->draw();
+
+        draw_thing(source_object);
+        draw_thing(receiver_object);
+
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     }
 }
 
+//----------------------------------------------------------------------------//
+
+SceneRenderer::SceneRenderer()
+        : projection_matrix(get_projection_matrix(1)) {
+}
+
+SceneRenderer::~SceneRenderer() {
+}
+
+void SceneRenderer::load_from_file_package(const FilePackage &fp) {
+    std::lock_guard<std::mutex> lck(mut);
+
+    SceneData scene_data(fp.get_object().getFullPathName().toStdString(),
+                         fp.get_material().getFullPathName().toStdString());
+    CombinedConfig cc;
+    try {
+        cc = read_config(fp.get_config().getFullPathName().toStdString());
+    } catch (...) {
+    }
+
+    cc.get_rays() = 1 << 5;
+
+    scene = std::make_unique<DrawableScene>(*shader, scene_data, cc);
+
+    auto aabb = scene_data.get_aabb();
+    auto m = aabb.get_centre();
+    auto max = (aabb.c1 - aabb.c0).max();
+    auto s = max > 0 ? 20 / max : 1;
+
+    translation = glm::translate(-glm::vec3(m.x, m.y, m.z));
+    scale = glm::scale(glm::vec3(s, s, s));
+}
+
+void SceneRenderer::newOpenGLContextCreated() {
+    shader = std::make_unique<GenericShader>();
+}
+
+void SceneRenderer::renderOpenGL() {
+    std::lock_guard<std::mutex> lck(mut);
+
+    update();
+    draw();
+}
+
 void SceneRenderer::openGLContextClosing() {
-    model_object = nullptr;
-    shader = nullptr;
 }
 
 glm::mat4 SceneRenderer::get_projection_matrix(float aspect) {
@@ -515,6 +551,11 @@ glm::mat4 SceneRenderer::get_projection_matrix(float aspect) {
 void SceneRenderer::set_aspect(float aspect) {
     std::lock_guard<std::mutex> lck(mut);
     projection_matrix = get_projection_matrix(aspect);
+}
+
+void SceneRenderer::update() {
+    if (scene)
+        scene->update(0);
 }
 
 void SceneRenderer::draw() const {
@@ -537,18 +578,7 @@ void SceneRenderer::draw() const {
             i->draw();
     };
 
-    //    draw_thing(mesh_object);
-    draw_thing(raytrace_object);
-
-    if (model_object) {
-        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-        model_object->draw();
-
-        draw_thing(source_object);
-        draw_thing(receiver_object);
-
-        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    }
+    draw_thing(scene);
 }
 
 glm::mat4 SceneRenderer::get_projection_matrix() const {
@@ -561,43 +591,6 @@ glm::mat4 SceneRenderer::get_view_matrix() const {
     glm::vec3 up(0, 1, 0);
     auto mm = rotation * scale * translation;
     return glm::lookAt(eye, target, up) * mm;
-}
-
-void SceneRenderer::set_model_object(const SceneData &scene_data) {
-    std::unique_lock<std::mutex> lck(mut);
-
-    auto aabb = scene_data.get_aabb();
-    auto m = aabb.get_centre();
-    translation = glm::translate(-glm::vec3(m.x, m.y, m.z));
-
-    auto max = (aabb.c1 - aabb.c0).max();
-    auto s = max > 0 ? 20 / max : 1;
-    scale = glm::scale(glm::vec3(s, s, s));
-
-    Octree octree(scene_data, 0, 0.1);
-    //    const auto &to_render =
-    //        octree.get_nodes()[4].get_nodes()[4].get_nodes()[4].get_nodes()
-    //            [7].get_nodes()[2];
-    //    const auto & to_render = octree.get_nodes()[0];
-    const auto &to_render = octree;
-    model_object =
-        std::make_unique<ModelSectionObject>(*shader, scene_data, to_render);
-}
-
-void SceneRenderer::set_config(const CombinedConfig &cc) {
-    std::unique_lock<std::mutex> lck(mut);
-
-    config = cc;
-
-    auto s = config.get_source();
-    glm::vec3 spos(s.x, s.y, s.z);
-    auto r = config.get_mic();
-    glm::vec3 rpos(r.x, r.y, r.z);
-
-    source_object =
-        std::make_unique<SphereObject>(*shader, spos, glm::vec4(1, 0, 0, 1));
-    receiver_object =
-        std::make_unique<SphereObject>(*shader, rpos, glm::vec4(0, 1, 1, 1));
 }
 
 void SceneRenderer::set_rotation(float az, float el) {

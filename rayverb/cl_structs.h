@@ -4,10 +4,9 @@
 #include "cl.hpp"
 
 #include "scene_data.h"
+#include "app_config.h"
 
 #define NUM_IMAGE_SOURCE 10
-#define SPEED_OF_SOUND (340.0f)
-
 //  These definitions MUST be kept up-to-date with the defs in the cl file.
 //  It might make sense to nest them inside the Scene because I don't think
 //  other classes will need the same data formats.
@@ -38,10 +37,16 @@ typedef struct {
 } __attribute__((aligned(8))) Ray;
 
 typedef struct {
-    //    TriangleVerts prev_primitives [NUM_IMAGE_SOURCE - 1];
+    cl_float3 v0;
+    cl_float3 v1;
+    cl_float3 v2;
+} __attribute__((aligned(8))) TriangleVerts;
+
+typedef struct {
+    TriangleVerts prev_primitives[NUM_IMAGE_SOURCE - 1];
     Ray ray;
     VolumeType volume;
-    //    cl_float3 mic_reflection;
+    cl_float3 mic_reflection;
     cl_float distance;
     cl_uint cont;
 } __attribute__((aligned(8))) RayInfo;

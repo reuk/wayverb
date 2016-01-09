@@ -17,7 +17,7 @@ float WaveguideConfig::get_waveguide_sample_rate() const {
 }
 
 float WaveguideConfig::get_divisions() const {
-    return (get_speed_of_sound() * sqrt(3)) / get_waveguide_sample_rate();
+    return (SPEED_OF_SOUND * sqrt(3)) / get_waveguide_sample_rate();
 }
 
 float WaveguideConfig::get_oversample_ratio() const {

@@ -9,15 +9,15 @@
 #include <stdexcept>
 #include <fstream>
 
-TriangleVerts get_triangle_verts(const Triangle& t,
+TriangleVec3f get_triangle_verts(const Triangle& t,
                                  const std::vector<Vec3f>& v) {
-    return TriangleVerts({{v[t.v0], v[t.v1], v[t.v2]}});
+    return TriangleVec3f{{v[t.v0], v[t.v1], v[t.v2]}};
 }
 
-TriangleVerts get_triangle_verts(const Triangle& t,
+TriangleVec3f get_triangle_verts(const Triangle& t,
                                  const std::vector<cl_float3>& v) {
-    return TriangleVerts(
-        {{to_vec3f(v[t.v0]), to_vec3f(v[t.v1]), to_vec3f(v[t.v2])}});
+    return TriangleVec3f{
+        {to_vec3f(v[t.v0]), to_vec3f(v[t.v1]), to_vec3f(v[t.v2])}};
 }
 
 void attemptJsonParse(const std::string& fname, rapidjson::Document& doc) {

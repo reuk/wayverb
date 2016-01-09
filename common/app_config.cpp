@@ -8,10 +8,6 @@ Vec3f & Config::get_mic() {
     return mic;
 }
 
-float & Config::get_speed_of_sound() {
-    return speed_of_sound;
-}
-
 float & Config::get_output_sample_rate() {
     return sample_rate;
 }
@@ -25,9 +21,6 @@ Vec3f Config::get_source() const {
 }
 Vec3f Config::get_mic() const {
     return mic;
-}
-float Config::get_speed_of_sound() const {
-    return speed_of_sound;
 }
 float Config::get_output_sample_rate() const {
     return sample_rate;

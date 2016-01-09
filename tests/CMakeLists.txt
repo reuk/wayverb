@@ -6,6 +6,7 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/lib
     ${CMAKE_SOURCE_DIR}/common
     ${CMAKE_SOURCE_DIR}/bsp
+    ${CMAKE_SOURCE_DIR}/rayverb
     ${CMAKE_SOURCE_DIR}/include
     ${CMAKE_SOURCE_DIR}/gtest/include
     "/usr/local/include/"
@@ -23,6 +24,6 @@ add_executable(${name} ${sources})
 
 find_library(sndfile_lib sndfile)
 
-target_link_libraries(${name} waveguide ${sndfile_lib} gtest)
+target_link_libraries(${name} waveguide rayverb ${sndfile_lib} gtest)
 
 add_test(waveguide ${name})

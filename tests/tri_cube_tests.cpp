@@ -209,13 +209,13 @@ TEST(point_triangle_intersection, point_triangle_intersection) {
     ASSERT_EQ(Rel::idInside,
               point_triangle_intersection(
                   Vec3f(0, 0, 0),
-                  TriangleVerts(
+                  TriangleVec3f(
                       {{Vec3f(-2, -1, 0), Vec3f(1, -1, 0), Vec3f(2, 1, 0)}})));
 
     ASSERT_EQ(Rel::idOutside,
               point_triangle_intersection(
                   Vec3f(4, 4, 4),
-                  TriangleVerts(
+                  TriangleVec3f(
                       {{Vec3f(-2, -1, 0), Vec3f(1, -1, 0), Vec3f(2, 1, 0)}})));
 
     ASSERT_EQ(point_triangle_intersection(Point3{0.25, 0.25, 0.25},
@@ -224,7 +224,7 @@ TEST(point_triangle_intersection, point_triangle_intersection) {
                                                     Point3{-0.25, 5, 10}}),
               Rel::idOutside == point_triangle_intersection(
                                     Vec3f(0.25, 0.25, 0.25),
-                                    TriangleVerts{{Vec3f(-0.25, -10, -5),
+                                    TriangleVec3f{{Vec3f(-0.25, -10, -5),
                                                    Vec3f(-0.25, 5, -5),
                                                    Vec3f(-0.25, 5, 10)}}));
 
@@ -250,7 +250,7 @@ TEST(point_triangle_intersection, point_triangle_intersection) {
                                                         Point3{x3, y3, z3}}),
                   Rel::idOutside == point_triangle_intersection(
                                         Vec3f(x0, y0, z0),
-                                        TriangleVerts{{Vec3f(x1, y1, z1),
+                                        TriangleVec3f{{Vec3f(x1, y1, z1),
                                                        Vec3f(x2, y2, z2),
                                                        Vec3f(x3, y3, z3)}}));
     }
@@ -329,72 +329,72 @@ TEST(specific, specific) {
     auto edge = 0.5;
     ASSERT_EQ(
         Rel::idInside,
-        t_c_intersection(TriangleVerts(
+        t_c_intersection(TriangleVec3f(
             {{Vec3f(-10, -5, edge), Vec3f(5, -5, edge), Vec3f(5, 10, edge)}})));
     ASSERT_EQ(Rel::idInside,
-              t_c_intersection(TriangleVerts(
+              t_c_intersection(TriangleVec3f(
                   {{Vec3f(-10, -5, 0), Vec3f(5, -5, 0), Vec3f(5, 10, 0)}})));
     ASSERT_EQ(Rel::idInside,
-              t_c_intersection(TriangleVerts({{Vec3f(-10, -5, -edge),
+              t_c_intersection(TriangleVec3f({{Vec3f(-10, -5, -edge),
                                                Vec3f(5, -5, -edge),
                                                Vec3f(5, 10, -edge)}})));
 
     ASSERT_EQ(
         Rel::idInside,
-        t_c_intersection(TriangleVerts(
+        t_c_intersection(TriangleVec3f(
             {{Vec3f(-10, edge, -5), Vec3f(5, edge, -5), Vec3f(5, edge, 10)}})));
     ASSERT_EQ(Rel::idInside,
-              t_c_intersection(TriangleVerts(
+              t_c_intersection(TriangleVec3f(
                   {{Vec3f(-10, 0, -5), Vec3f(5, 0, -5), Vec3f(5, 0, 10)}})));
     ASSERT_EQ(Rel::idInside,
-              t_c_intersection(TriangleVerts({{Vec3f(-10, -edge, -5),
+              t_c_intersection(TriangleVec3f({{Vec3f(-10, -edge, -5),
                                                Vec3f(5, -edge, -5),
                                                Vec3f(5, -edge, 10)}})));
 
     ASSERT_EQ(
         Rel::idInside,
-        t_c_intersection(TriangleVerts(
+        t_c_intersection(TriangleVec3f(
             {{Vec3f(edge, -10, -5), Vec3f(edge, 5, -5), Vec3f(edge, 5, 10)}})));
     ASSERT_EQ(Rel::idInside,
-              t_c_intersection(TriangleVerts(
+              t_c_intersection(TriangleVec3f(
                   {{Vec3f(0, -10, -5), Vec3f(0, 5, -5), Vec3f(0, 5, 10)}})));
     ASSERT_EQ(Rel::idInside,
-              t_c_intersection(TriangleVerts({{Vec3f(-0.25, -10, -5),
+              t_c_intersection(TriangleVec3f({{Vec3f(-0.25, -10, -5),
                                                Vec3f(-0.25, 5, -5),
                                                Vec3f(-0.25, 5, 10)}})));
     ASSERT_EQ(Rel::idInside,
-              t_c_intersection(TriangleVerts({{Vec3f(-edge, -10, -5),
+              t_c_intersection(TriangleVec3f({{Vec3f(-edge, -10, -5),
                                                Vec3f(-edge, 5, -5),
                                                Vec3f(-edge, 5, 10)}})));
 
     auto outside = 1;
     ASSERT_EQ(Rel::idOutside,
-              t_c_intersection(TriangleVerts({{Vec3f(-10, -5, outside),
+              t_c_intersection(TriangleVec3f({{Vec3f(-10, -5, outside),
                                                Vec3f(5, -5, outside),
                                                Vec3f(5, 10, outside)}})));
     ASSERT_EQ(Rel::idOutside,
-              t_c_intersection(TriangleVerts({{Vec3f(-10, -5, -outside),
+              t_c_intersection(TriangleVec3f({{Vec3f(-10, -5, -outside),
                                                Vec3f(5, -5, -outside),
                                                Vec3f(5, 10, -outside)}})));
     ASSERT_EQ(Rel::idOutside,
-              t_c_intersection(TriangleVerts({{Vec3f(-10, outside, -5),
+              t_c_intersection(TriangleVec3f({{Vec3f(-10, outside, -5),
                                                Vec3f(5, outside, -5),
                                                Vec3f(5, outside, 10)}})));
     ASSERT_EQ(Rel::idOutside,
-              t_c_intersection(TriangleVerts({{Vec3f(-10, -outside, -5),
+              t_c_intersection(TriangleVec3f({{Vec3f(-10, -outside, -5),
                                                Vec3f(5, -outside, -5),
                                                Vec3f(5, -outside, 10)}})));
     ASSERT_EQ(Rel::idOutside,
-              t_c_intersection(TriangleVerts({{Vec3f(outside, -10, -5),
+              t_c_intersection(TriangleVec3f({{Vec3f(outside, -10, -5),
                                                Vec3f(outside, 5, -5),
                                                Vec3f(outside, 5, 10)}})));
     ASSERT_EQ(Rel::idOutside,
-              t_c_intersection(TriangleVerts({{Vec3f(-outside, -10, -5),
+              t_c_intersection(TriangleVec3f({{Vec3f(-outside, -10, -5),
                                                Vec3f(-outside, 5, -5),
                                                Vec3f(-outside, 5, 10)}})));
 
     {
-        TriangleVerts triangle_verts_0(
+        TriangleVec3f triangle_verts_0(
             {{Vec3f(-1.5, 3.0999999, -7.5999999),
               Vec3f(0, 3.0999999, -9.10000038),
               Vec3f(0.00000000000000144381996, 3.5999999, -7.5999999)}});
@@ -418,7 +418,7 @@ TEST(specific, specific) {
         auto z1 = b2.c1.z;
         CuboidBoundary b3(Vec3f(x0, yc, z0), Vec3f(xc, y1, zc));
 
-        TriangleVerts triangle_verts_1({{Vec3f(-9.5, 1.10000002, -6.0999999),
+        TriangleVec3f triangle_verts_1({{Vec3f(-9.5, 1.10000002, -6.0999999),
                                          Vec3f(-9.5, 0.100000001, -6.0999999),
                                          Vec3f(-9.5, 0.100000001, -9)}});
 
@@ -439,7 +439,7 @@ TEST(specific, specific) {
         CuboidBoundary aabb(Vec3f(-4.20000029, -0.040625006, -5.02812529),
                             Vec3f(-3.9000001, 0.0187499933, -4.78750038));
 
-        TriangleVerts verts{{Vec3f(-5.69999981, 0, -3.79999995),
+        TriangleVec3f verts{{Vec3f(-5.69999981, 0, -3.79999995),
                              Vec3f(-3.79999995, 0, -3.79999995),
                              Vec3f(-3.79999995, 0, -5.69999981)}};
 
@@ -450,11 +450,11 @@ TEST(specific, specific) {
         CuboidBoundary aabb(Vec3f(-7.80000019, 3.46249986, -8.63750076),
                             Vec3f(-7.20000029, 3.58124971, -8.15625));
 
-        TriangleVerts v0{{Vec3f(-7.5999999, 3.5999999, -7.5999999),
+        TriangleVec3f v0{{Vec3f(-7.5999999, 3.5999999, -7.5999999),
                           Vec3f(-7.5999999, 3.0999999, -9.10000038),
                           Vec3f(-6.0999999, 3.0999999, -7.5999999)}};
 
-        TriangleVerts v1{{Vec3f(-9.10000038, 3.0999999, -7.5999999),
+        TriangleVec3f v1{{Vec3f(-9.10000038, 3.0999999, -7.5999999),
                           Vec3f(-7.5999999, 3.0999999, -9.10000038),
                           Vec3f(-7.5999999, 3.5999999, -7.5999999)}};
 

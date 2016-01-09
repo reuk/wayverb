@@ -2,23 +2,21 @@
 
 MainContentComponent::MainContentComponent()
         : modelRendererComponent(std::make_unique<ModelRendererComponent>())
-//        , configPanel(std::make_unique<ConfigPanel>())
-{
+        , demo_panel(std::make_unique<DemoPanel>()) {
     addAndMakeVisible(modelRendererComponent.get());
-    //    addAndMakeVisible(configPanel.get());
-    setSize(600, 400);
+    addAndMakeVisible(demo_panel.get());
 
-    //    configPanel->addListener(*modelRendererComponent);
+    demo_panel->add_listener(*modelRendererComponent);
+
+    setSize(600, 400);
 }
 
 void MainContentComponent::paint(Graphics& g) {
 }
 
 void MainContentComponent::resized() {
-    //    auto panelHeight = 50;
-    //    modelRendererComponent->setBounds(
-    //        getLocalBounds().removeFromTop(getHeight() - panelHeight));
-    //    configPanel->setBounds(getLocalBounds().removeFromBottom(panelHeight));
-
-    modelRendererComponent->setBounds(getLocalBounds());
+    auto panelHeight = 50;
+    modelRendererComponent->setBounds(
+        getLocalBounds().removeFromTop(getHeight() - panelHeight));
+    demo_panel->setBounds(getLocalBounds().removeFromBottom(panelHeight));
 }

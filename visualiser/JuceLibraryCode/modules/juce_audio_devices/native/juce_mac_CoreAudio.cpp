@@ -155,9 +155,7 @@ public:
          outputLatency (0),
          bitDepth (32),
          callback (nullptr),
-        #if MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_5
          audioProcID (0),
-        #endif
          deviceID (id),
          started (false),
          sampleRate (0),
@@ -352,14 +350,20 @@ public:
 
     int getLatencyFromDevice (AudioObjectPropertyScope scope) const
     {
-        UInt32 lat = 0;
-        UInt32 size = sizeof (lat);
+        UInt32 latency = 0;
+        UInt32 size = sizeof (latency);
         AudioObjectPropertyAddress pa;
         pa.mElement = kAudioObjectPropertyElementMaster;
         pa.mSelector = kAudioDevicePropertyLatency;
         pa.mScope = scope;
-        AudioObjectGetPropertyData (deviceID, &pa, 0, nullptr, &size, &lat);
-        return (int) lat;
+        AudioObjectGetPropertyData (deviceID, &pa, 0, nullptr, &size, &latency);
+
+        UInt32 safetyOffset = 0;
+        size = sizeof (safetyOffset);
+        pa.mSelector = kAudioDevicePropertySafetyOffset;
+        AudioObjectGetPropertyData (deviceID, &pa, 0, nullptr, &size, &safetyOffset);
+
+        return (int) (latency + safetyOffset);
     }
 
     int getBitDepthFromDevice (AudioObjectPropertyScope scope) const
@@ -619,11 +623,7 @@ public:
 
             if (deviceID != 0)
             {
-               #if MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_5
-                if (OK (AudioDeviceAddIOProc (deviceID, audioIOProc, this)))
-               #else
                 if (OK (AudioDeviceCreateIOProcID (deviceID, audioIOProc, this, &audioProcID)))
-               #endif
                 {
                     if (OK (AudioDeviceStart (deviceID, audioIOProc)))
                     {
@@ -631,12 +631,8 @@ public:
                     }
                     else
                     {
-                       #if MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_5
-                        OK (AudioDeviceRemoveIOProc (deviceID, audioIOProc));
-                       #else
                         OK (AudioDeviceDestroyIOProcID (deviceID, audioProcID));
                         audioProcID = 0;
-                       #endif
                     }
                 }
             }
@@ -663,13 +659,8 @@ public:
              && ! leaveInterruptRunning)
         {
             OK (AudioDeviceStop (deviceID, audioIOProc));
-
-           #if MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_5
-            OK (AudioDeviceRemoveIOProc (deviceID, audioIOProc));
-           #else
             OK (AudioDeviceDestroyIOProcID (deviceID, audioProcID));
             audioProcID = 0;
-           #endif
 
             started = false;
 
@@ -787,9 +778,7 @@ public:
     Array<double> sampleRates;
     Array<int> bufferSizes;
     AudioIODeviceCallback* callback;
-   #if MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_5
     AudioDeviceIOProcID audioProcID;
-   #endif
 
 private:
     CriticalSection callbackLock;

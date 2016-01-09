@@ -306,5 +306,6 @@ TODO
 
 * show rays
     * with volume, as the simulation progresses
+    * fix image-source in new raytracer formulation
 * fix raytracer octree stuff
 * scroll to zoom?

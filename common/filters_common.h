@@ -60,7 +60,7 @@ private:
 
 struct fftwf_ptr_destructor {
     template <typename T>
-    inline void operator()(T t) const noexcept {
+    void operator()(T t) const noexcept {
         fftwf_free(t);
     }
 };

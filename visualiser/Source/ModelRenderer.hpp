@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ConfigPanel.hpp"
+#include "FilePackage.hpp"
 
 //  unfortunately we need to include these first because otherwise GL/glew.h
 //  will do terrible things
@@ -59,7 +60,6 @@ public:
 
         ibo.bind();
     }
-    virtual ~BasicDrawableObject() noexcept = default;
 
     void draw() const override {
         auto s_shader = shader.get_scoped();
@@ -169,7 +169,6 @@ private:
 class RaytraceObject final : public ::Drawable {
 public:
     RaytraceObject(const GenericShader& shader,
-                   const RayverbConfig& cc,
                    const RaytracerResults& results);
     void draw() const override;
 
@@ -181,6 +180,43 @@ private:
     StaticVBO colors;
     StaticIBO ibo;
     GLuint size;
+};
+
+class DrawableScene final : public ::Drawable, public ::Updatable {
+public:
+    DrawableScene(const GenericShader& shader,
+                  const SceneData& scene_data,
+                  const CombinedConfig& cc);
+    ~DrawableScene() noexcept;
+
+    void update(float dt) override;
+    void draw() const override;
+
+    void init_waveguide(const SceneData& scene_data, const WaveguideConfig& cc);
+    void trigger_pressure_calculation();
+    RaytracerResults get_raytracer_results(const SceneData& scene_data,
+                                           const CombinedConfig& cc);
+
+private:
+    const GenericShader& shader;
+
+    cl::Context context;
+    cl::Device device;
+    cl::CommandQueue queue;
+
+    std::unique_ptr<ModelSectionObject> model_object;
+    std::unique_ptr<SphereObject> source_object;
+    std::unique_ptr<SphereObject> receiver_object;
+
+    std::unique_ptr<MeshObject> mesh_object;
+    std::unique_ptr<TetrahedralWaveguide> waveguide;
+    std::future<std::vector<cl_float>> future_pressure;
+    std::thread waveguide_load_thread;
+
+    std::unique_ptr<RaytraceObject> raytrace_object;
+    std::future<RaytracerResults> raytracer_results;
+
+    mutable std::mutex mut;
 };
 
 class SceneRenderer final : public OpenGLRenderer {
@@ -199,29 +235,14 @@ public:
 
     void set_rotation(float azimuth, float elevation);
 
-    void set_model_object(const SceneData& sceneData);
-    void set_config(const CombinedConfig& config);
+    void load_from_file_package(const FilePackage& fp);
 
 private:
+    void update();
     void draw() const;
-    void trigger_pressure_calculation();
-    void init_waveguide(const SceneData& scene_data, const WaveguideConfig& cc);
-
-    CombinedConfig config;
-
     std::unique_ptr<GenericShader> shader;
-    std::unique_ptr<ModelSectionObject> model_object;
-    std::unique_ptr<SphereObject> source_object;
-    std::unique_ptr<SphereObject> receiver_object;
 
-    std::unique_ptr<TetrahedralWaveguide> waveguide;
-    std::unique_ptr<MeshObject> mesh_object;
-
-    std::future<RaytracerResults> raytracer_results;
-    std::unique_ptr<RaytraceObject> raytrace_object;
-
-    std::future<std::vector<cl_float>> future_pressure;
-    std::thread waveguide_load_thread;
+    std::unique_ptr<DrawableScene> scene;
 
     glm::mat4 projection_matrix;
 
@@ -230,8 +251,4 @@ private:
     glm::mat4 translation;
 
     std::mutex mut;
-
-    cl::Context context;
-    cl::Device device;
-    cl::CommandQueue queue;
 };

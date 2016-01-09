@@ -112,7 +112,7 @@ Rel check_line(const Vec3f& p1, const Vec3f& p2, int outcode_diff) {
     return Rel::idOutside;
 }
 
-Rel point_triangle_intersection(const Vec3f& p, const TriangleVerts& t) {
+Rel point_triangle_intersection(const Vec3f& p, const TriangleVec3f& t) {
     auto v0 = t[0];
     auto v1 = t[1];
     auto v2 = t[2];
@@ -219,7 +219,7 @@ Rel t_c_intersection(const TriangleVerts & t) {
 
 //  from
 //  https://q3k.org/gentoomen/Game%20Development/Programming/Real-Time%20Collision%20Detection.pdf
-Rel t_c_intersection(const TriangleVerts& t) {
+Rel t_c_intersection(const TriangleVec3f& t) {
     auto v0 = t[0];
     auto v1 = t[1];
     auto v2 = t[2];

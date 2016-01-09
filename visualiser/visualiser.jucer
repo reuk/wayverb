@@ -2,17 +2,28 @@
 
 <JUCERPROJECT id="Wayx2u" name="visualiser" projectType="guiapp" version="1.0.0"
               bundleIdentifier="com.yourcompany.visualiser" includeBinaryInAppConfig="1"
-              jucerVersion="4.0.1">
+              jucerVersion="4.1.0">
   <MAINGROUP id="aLrqtw" name="visualiser">
     <GROUP id="{99297383-F68C-02A8-A8E3-BC9E43EF7E23}" name="Source">
-      <FILE id="bF6pDr" name="MainComponent.cpp" compile="1" resource="0"
+      <FILE id="TIyhYq" name="ConfigPanel.cpp" compile="1" resource="0" file="Source/ConfigPanel.cpp"/>
+      <FILE id="FRuMrW" name="ConfigPanel.hpp" compile="0" resource="0" file="Source/ConfigPanel.hpp"/>
+      <FILE id="iUvkKn" name="Main.cpp" compile="1" resource="0" file="Source/Main.cpp"/>
+      <FILE id="nC7HPf" name="Main.hpp" compile="0" resource="0" file="Source/Main.hpp"/>
+      <FILE id="UcRhDk" name="MainComponent.cpp" compile="1" resource="0"
             file="Source/MainComponent.cpp"/>
-      <FILE id="b5U9vw" name="MainComponent.h" compile="0" resource="0" file="Source/MainComponent.h"/>
-      <FILE id="u9Q4pn" name="Main.cpp" compile="1" resource="0" file="Source/Main.cpp"/>
+      <FILE id="kKa4KB" name="MainComponent.h" compile="0" resource="0" file="Source/MainComponent.h"/>
+      <FILE id="aZ7NTd" name="ModelRenderer.cpp" compile="1" resource="0"
+            file="Source/ModelRenderer.cpp"/>
+      <FILE id="DbVi0b" name="ModelRenderer.hpp" compile="0" resource="0"
+            file="Source/ModelRenderer.hpp"/>
+      <FILE id="vpbpJo" name="ModelRendererComponent.cpp" compile="1" resource="0"
+            file="Source/ModelRendererComponent.cpp"/>
+      <FILE id="bar8Ug" name="ModelRendererComponent.hpp" compile="0" resource="0"
+            file="Source/ModelRendererComponent.hpp"/>
     </GROUP>
   </MAINGROUP>
   <EXPORTFORMATS>
-    <XCODE_MAC targetFolder="Builds/MacOSX">
+    <XCODE_MAC targetFolder="Builds/MacOSX" extraDefs="" extraCompilerFlags="-I/usr/local/include&#10;-I../../../common&#10;-I../../../lib&#10;-I../../../rayverb&#10;-I../../../combined&#10;-I../../../include&#10;-std=gnu++1y">
       <CONFIGURATIONS>
         <CONFIGURATION name="Debug" osxSDK="default" osxCompatibility="default" osxArchitecture="default"
                        isDebug="1" optimisation="1" targetName="visualiser"/>

@@ -28,7 +28,7 @@ public:
     CuboidBoundary(const Vec3f& c0 = Vec3f(), const Vec3f& c1 = Vec3f());
     virtual ~CuboidBoundary() noexcept = default;
     bool inside(const Vec3f& v) const override;
-    bool overlaps(const TriangleVerts& t) const;
+    bool overlaps(const TriangleVec3f& t) const;
     CuboidBoundary get_aabb() const override;
     CuboidBoundary get_padded(float padding) const;
     Vec3f get_centre() const;

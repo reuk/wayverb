@@ -1,21 +1,19 @@
 #pragma once
 
 #include "ModelRenderer.hpp"
+#include "DemoPanel.hpp"
 
-class ModelRendererComponent : public Component, public ConfigPanel::Listener {
+class ModelRendererComponent : public Component, public DemoPanel::Listener {
 public:
     ModelRendererComponent();
     virtual ~ModelRendererComponent() noexcept;
 
     void resized() override;
 
-    void mouseDrag(const MouseEvent & e) override;
-    void mouseUp(const MouseEvent & e) override;
+    void mouseDrag(const MouseEvent& e) override;
+    void mouseUp(const MouseEvent& e) override;
 
-    void filesChanged(ConfigPanel * p,
-                      const File & object,
-                      const File & material,
-                      const File & config) override;
+    void file_package_loaded(DemoPanel&, const FilePackage& fp) override;
 
 private:
     std::unique_ptr<SceneData> sceneData;
