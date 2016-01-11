@@ -13,6 +13,9 @@ public:
     void mouseDrag(const MouseEvent& e) override;
     void mouseUp(const MouseEvent& e) override;
 
+    void mouseWheelMove(const MouseEvent& event,
+                        const MouseWheelDetails& wheel) override;
+
     void file_package_loaded(DemoPanel&, const FilePackage& fp) override;
 
 private:

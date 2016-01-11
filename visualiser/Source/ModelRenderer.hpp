@@ -228,6 +228,7 @@ public:
     void openGLContextClosing() override;
 
     void set_aspect(float aspect);
+    void update_scale(float delta);
     static glm::mat4 get_projection_matrix(float aspect);
 
     glm::mat4 get_projection_matrix() const;
@@ -236,6 +237,8 @@ public:
     void set_rotation(float azimuth, float elevation);
 
     void load_from_file_package(const FilePackage& fp);
+
+    glm::mat4 get_scale_matrix() const;
 
 private:
     void update();
@@ -247,7 +250,7 @@ private:
     glm::mat4 projection_matrix;
 
     glm::mat4 rotation;
-    glm::mat4 scale;
+    float scale;
     glm::mat4 translation;
 
     std::mutex mut;

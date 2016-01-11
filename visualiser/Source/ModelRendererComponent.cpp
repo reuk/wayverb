@@ -43,3 +43,8 @@ void ModelRendererComponent::file_package_loaded(DemoPanel &,
                                                  const FilePackage &fp) {
     sceneRenderer->load_from_file_package(fp);
 }
+
+void ModelRendererComponent::mouseWheelMove(const MouseEvent &event,
+                                            const MouseWheelDetails &wheel) {
+    sceneRenderer->update_scale(wheel.deltaY);
+}

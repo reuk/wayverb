@@ -527,7 +527,7 @@ void SceneRenderer::load_from_file_package(const FilePackage &fp) {
     auto s = max > 0 ? 20 / max : 1;
 
     translation = glm::translate(-glm::vec3(m.x, m.y, m.z));
-    scale = glm::scale(glm::vec3(s, s, s));
+    scale = s;
 }
 
 void SceneRenderer::newOpenGLContextCreated() {
@@ -589,7 +589,7 @@ glm::mat4 SceneRenderer::get_view_matrix() const {
     glm::vec3 eye(0, 0, rad);
     glm::vec3 target(0, 0, 0);
     glm::vec3 up(0, 1, 0);
-    auto mm = rotation * scale * translation;
+    auto mm = rotation * get_scale_matrix() * translation;
     return glm::lookAt(eye, target, up) * mm;
 }
 
@@ -598,4 +598,13 @@ void SceneRenderer::set_rotation(float az, float el) {
     auto i = glm::rotate(az, glm::vec3(0, 1, 0));
     auto j = glm::rotate(el, glm::vec3(1, 0, 0));
     rotation = j * i;
+}
+
+void SceneRenderer::update_scale(float delta) {
+    std::lock_guard<std::mutex> lck(mut);
+    scale = std::max(0.0f, scale + delta);
+}
+
+glm::mat4 SceneRenderer::get_scale_matrix() const {
+    return glm::scale(glm::vec3(scale, scale, scale));
 }
