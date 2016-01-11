@@ -373,30 +373,6 @@ kernel void raytrace_improved
     size_t thread = get_global_id(0);
     global RayInfo * info = ray_info + thread;
 
-    if (index == 0) {
-        if
-        (   point_intersection
-            (   source
-            ,   info->mic_reflection
-            ,   triangles
-            ,   numtriangles
-            ,   vertices
-            )
-        )
-        {
-            add_image_improved
-            (   mic
-            ,   info->mic_reflection
-            ,   source
-            ,   image_source + thread
-            ,   image_source_index + thread
-            ,   info->volume
-            ,   0
-            ,   AIR_COEFFICIENT
-            );
-        }
-    }
-
     if (! info->cont) {
         return;
     }
@@ -418,7 +394,7 @@ kernel void raytrace_improved
 
     global Triangle * triangle = triangles + closest.primitive;
 
-    if (index < NUM_IMAGE_SOURCE - 1)
+    if (index < NUM_IMAGE_SOURCE)
     {
         TriangleVerts current =
         {   vertices [triangle->v0]
@@ -440,10 +416,11 @@ kernel void raytrace_improved
         float3 prev_intersection = source;
         for (unsigned long k = 0; k != index + 1 && intersects; ++k)
         {
-            const float TO_INTERSECTION = triangle_vert_intersection
-            (   info->prev_primitives[k]
-            ,   to_mic
-            );
+
+            TriangleVerts to_test = info->prev_primitives[k];
+
+            const float TO_INTERSECTION = triangle_vert_intersection(to_test, to_mic);
+
 
             if (TO_INTERSECTION <= EPSILON)
             {
@@ -565,46 +542,19 @@ kernel void raytrace
 ,   VolumeType AIR_COEFFICIENT
 )
 {
-    size_t i = get_global_id (0);
+    size_t thread = get_global_id (0);
 
-    //  This is really a recursive algorithm, but I've implemented it
-    //  iteratively.
-    //  These variables will be updated as the ray is traced.
-
-    //  These variables relate to the ray itself, and are used for the diffuse
-    //  trace.
+    if (all(directions[thread] == (float3)(0, 0, 0))) {
+        return;
+    }
 
     RayInfo ray_info;
-    ray_info.ray = (Ray){source, directions[i]};
+    ray_info.ray = (Ray){source, directions[thread]};
     ray_info.distance = 0;
     ray_info.volume = 1;
     ray_info.mic_reflection = position;
 
     RayInfo * info = &ray_info;
-
-    if
-    (   point_intersection
-        (   source
-        ,   info->mic_reflection
-        ,   triangles
-        ,   numtriangles
-        ,   vertices
-        )
-    )
-    {
-        add_image
-        (   position
-        ,   info->mic_reflection
-        ,   source
-        ,   image_source
-        ,   image_source_index
-        ,   i
-        ,   0
-        ,   info->volume
-        ,   0
-        ,   AIR_COEFFICIENT
-        );
-    }
 
     for (unsigned long index = 0; index != outputOffset; ++index)
     {
@@ -619,8 +569,6 @@ kernel void raytrace
         ,   vertices
         );
 
-        //  If there's no intersection, the ray's somehow shot into empty space
-        //  and we should stop tracing.
         if (! closest.intersects)
         {
             break;
@@ -628,8 +576,9 @@ kernel void raytrace
 
         global Triangle * triangle = triangles + closest.primitive;
 
-        if (index < NUM_IMAGE_SOURCE - 1)
+        if (index < NUM_IMAGE_SOURCE)
         {
+
             TriangleVerts current =
             {   vertices [triangle->v0]
             ,   vertices [triangle->v1]
@@ -650,10 +599,11 @@ kernel void raytrace
             float3 prev_intersection = source;
             for (unsigned long k = 0; k != index + 1 && intersects; ++k)
             {
-                const float TO_INTERSECTION = triangle_vert_intersection
-                (   info->prev_primitives[k]
-                ,   to_mic
-                );
+
+                TriangleVerts to_test = info->prev_primitives[k];
+
+                const float TO_INTERSECTION = triangle_vert_intersection(to_test, to_mic);
+
 
                 if (TO_INTERSECTION <= EPSILON)
                 {
@@ -714,7 +664,7 @@ kernel void raytrace
                 ,   source
                 ,   image_source
                 ,   image_source_index
-                ,   i
+                ,   thread
                 ,   index
                 ,   info->volume
                 ,   closest.primitive + 1
@@ -743,7 +693,7 @@ kernel void raytrace
         //  direction of incident light and the normal vector of the surface.
         //  http://www.cs.rit.edu/~jmg/courses/procshade/20073/slides/3-1-brdf.pdf
         const float DIFF = fabs (dot (triangle_normal (triangle, vertices), ray.direction));
-        impulses [i * outputOffset + index] = (Impulse)
+        impulses [thread * outputOffset + index] = (Impulse)
         {   (   IS_INTERSECTION
             ?   (   new_vol
                 *   attenuation_for_distance (DIST, AIR_COEFFICIENT)

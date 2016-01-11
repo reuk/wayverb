@@ -3,6 +3,7 @@
 #include "logger.h"
 #include "conversions.h"
 #include "tri_cube_intersection.h"
+#include "geometric.h"
 
 #include <cmath>
 #include <algorithm>
@@ -145,80 +146,6 @@ MeshBoundary::MeshBoundary(
         : MeshBoundary(std::get<0>(data), std::get<1>(data)) {
 }
 
-class Ray {
-public:
-    Ray(const Vec3f& position = Vec3f(), const Vec3f& direction = Vec3f())
-            : position(position)
-            , direction(direction) {
-    }
-    Vec3f position;
-    Vec3f direction;
-};
-
-class Intersects {
-public:
-    Intersects()
-            : intersects(false) {
-    }
-
-    Intersects(float distance)
-            : intersects(true)
-            , distance(distance) {
-    }
-
-    bool intersects;
-    float distance;
-};
-
-std::ostream& operator<<(std::ostream& strm, const Intersects& obj) {
-    return strm << "Intersects {" << obj.intersects << ", " << obj.distance
-                << "}";
-}
-
-using TriangleVerts = std::array<Vec3f, 3>;
-
-Intersects triangle_intersection(const TriangleVerts& tri, const Ray& ray) {
-    auto EPSILON = 0.0001;
-
-    auto e0 = tri[1] - tri[0];
-    auto e1 = tri[2] - tri[0];
-
-    auto pvec = ray.direction.cross(e1);
-    auto det = e0.dot(pvec);
-
-    if (-EPSILON < det && det < EPSILON)
-        return Intersects();
-
-    auto invdet = 1 / det;
-    auto tvec = ray.position - tri[0];
-    auto ucomp = invdet * tvec.dot(pvec);
-
-    if (ucomp < 0 || 1 < ucomp)
-        return Intersects();
-
-    auto qvec = tvec.cross(e0);
-    auto vcomp = invdet * ray.direction.dot(qvec);
-
-    if (vcomp < 0 || 1 < vcomp + ucomp)
-        return Intersects();
-
-    auto dist = invdet * e1.dot(qvec);
-
-    if (dist < 0)
-        return Intersects();
-
-    return Intersects(dist);
-}
-
-Intersects triangle_intersection(const Triangle& tri,
-                                 const std::vector<Vec3f>& vertices,
-                                 const Ray& ray) {
-    const auto v0 = vertices[tri.v0];
-    const auto v1 = vertices[tri.v1];
-    const auto v2 = vertices[tri.v2];
-    return triangle_intersection({{v0, v1, v2}}, ray);
-}
-
 MeshBoundary::reference_store MeshBoundary::get_references(
     const Vec3i& i) const {
     return get_references(i.x, i.y);
@@ -235,7 +162,7 @@ bool MeshBoundary::inside(const Vec3f& v) const {
     //  with each of the referenced triangles then count number of intersections
     //  on one side of the point
     //  if intersection number is even, point is outside, else it's inside
-    const Ray ray(v, Vec3f(0, 0, 1));
+    const geo::Ray ray(v, Vec3f(0, 0, 1));
     const auto references = get_references(hash_point(v));
     return count_if(references.begin(),
                     references.end(),

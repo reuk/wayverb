@@ -17,10 +17,14 @@ auto get_results(const cl::Context& context,
                  cl::CommandQueue& queue,
                  const Prog& prog,
                  const SceneData& scene_data,
-                 const std::vector<cl_float3>& directions) {
+                 const std::vector<cl_float3>& directions,
+                 int reflections) {
     T raytrace(prog, queue);
-    return raytrace.run(
-        scene_data, Vec3f(0, 1.75, 0), Vec3f(0, 1.75, 3), directions, 128);
+    return raytrace.run(scene_data,
+                        Vec3f(0, 1.75, 0),
+                        Vec3f(0, 1.75, 3),
+                        directions,
+                        reflections);
 }
 
 #define USE_EPSILON
@@ -86,22 +90,27 @@ TEST(improved, improved) {
 
     SceneData scene_data(OBJ_PATH, MAT_PATH);
 
-    auto rays = 1 << 12;
+    auto rays = 1 << 8;
     auto directions = get_random_directions(rays);
+    auto reflections = 128;
 
-    auto results_0 = get_results<Raytrace>(
-        context, device, queue, raytrace_program, scene_data, directions);
-    auto results_1 = get_results<ImprovedRaytrace>(
-        context, device, queue, raytrace_program, scene_data, directions);
+    auto results_0 = get_results<Raytrace>(context,
+                                           device,
+                                           queue,
+                                           raytrace_program,
+                                           scene_data,
+                                           directions,
+                                           reflections);
+    auto results_1 = get_results<ImprovedRaytrace>(context,
+                                                   device,
+                                                   queue,
+                                                   raytrace_program,
+                                                   scene_data,
+                                                   directions,
+                                                   reflections);
 
-    results_0.diffuse.resize(rays);
-    results_1.diffuse.resize(rays);
-
-    //  TODO
-    //  results_0 seems to have image-source contributions which don't start
-    //  with '0'
-    //
-    //  How is this possible? Is this correct?
+    results_0.diffuse.resize(rays * reflections);
+    results_1.diffuse.resize(rays * reflections);
 
     for (auto i = 0u; i != results_0.diffuse.size(); ++i) {
         const auto& a = results_0.diffuse[i];
@@ -109,5 +118,10 @@ TEST(improved, improved) {
         ASSERT_EQ(a.volume, b.volume) << "it: " << i;
         ASSERT_EQ(a.position, b.position) << "it: " << i;
         ASSERT_EQ(a.time, b.time) << "it: " << i;
+    }
+
+    for (const auto& i : results_0.image_source) {
+        auto it = results_1.image_source.find(i.first);
+        ASSERT_NE(results_1.image_source.end(), it);
     }
 }

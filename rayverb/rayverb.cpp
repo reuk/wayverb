@@ -5,6 +5,7 @@
 #include "hrtf.h"
 #include "boundaries.h"
 #include "conversions.h"
+#include "geometric.h"
 
 #include "logger.h"
 
@@ -23,6 +24,18 @@
 #include <sstream>
 #include <iomanip>
 #include <random>
+
+static auto volume_factor = 0.001f;
+static const VolumeType AIR_COEFFICIENT{{
+    volume_factor * -0.1f,
+    volume_factor * -0.2f,
+    volume_factor * -0.5f,
+    volume_factor * -1.1f,
+    volume_factor * -2.7f,
+    volume_factor * -9.4f,
+    volume_factor * -29.0f,
+    volume_factor * -60.0f,
+}};
 
 std::vector<std::vector<std::vector<float>>> flattenImpulses(
     const std::vector<std::vector<AttenuatedImpulse>>& attenuated,
@@ -211,9 +224,56 @@ cl::CommandQueue& BaseRaytrace::get_queue() {
 
 //----------------------------------------------------------------------------//
 
+void remove_duplicates(const std::vector<cl_ulong>& path,
+                       const std::vector<Impulse>& image,
+                       const int RAY_GROUP_SIZE,
+                       Results& results) {
+    for (auto j = 0; j != RAY_GROUP_SIZE * NUM_IMAGE_SOURCE;
+         j += NUM_IMAGE_SOURCE) {
+        for (auto k = 1; k != NUM_IMAGE_SOURCE + 1; ++k) {
+            std::vector<unsigned long> surfaces(path.begin() + j,
+                                                path.begin() + j + k);
+
+            if (k == 1 || surfaces.back() != 0) {
+                auto it = results.image_source.find(surfaces);
+                if (it == results.image_source.end()) {
+                    results.image_source[surfaces] = image[j + k - 1];
+                }
+            }
+        }
+    }
+}
+
 Raytrace::Raytrace(const RayverbProgram& program, cl::CommandQueue& queue)
         : BaseRaytrace(program, queue)
         , kernel(program.get_raytrace_kernel()) {
+}
+
+VolumeType attenuation_for_distance(float distance) {
+    VolumeType ret;
+    std::transform(std::begin(AIR_COEFFICIENT.s),
+                   std::end(AIR_COEFFICIENT.s),
+                   std::begin(ret.s),
+                   [distance](auto i) { return pow(M_E, distance * i); });
+    return ret;
+}
+
+void add_direct_impulse(const Vec3f& micpos,
+                        const Vec3f& source,
+                        const SceneData& scene_data,
+                        Results& results) {
+    if (geo::point_intersection(micpos,
+                                source,
+                                scene_data.triangles,
+                                scene_data.get_converted_vertices())) {
+        auto init_diff = source - micpos;
+        auto init_dist = init_diff.mag();
+        results.image_source[{0}] = Impulse{
+            attenuation_for_distance(init_dist),
+            to_cl_float3(micpos + init_diff),
+            init_dist / SPEED_OF_SOUND,
+        };
+    }
 }
 
 Results Raytrace::run(const SceneData& scene_data,
@@ -253,21 +313,6 @@ Results Raytrace::run(const SceneData& scene_data,
         CL_MEM_READ_WRITE,
         RAY_GROUP_SIZE * NUM_IMAGE_SOURCE * sizeof(cl_ulong));
 
-    MeshBoundary boundary(scene_data);
-    //  check that mic and source are inside model bounds
-    bool mic_inside = boundary.inside(micpos);
-    bool src_inside = boundary.inside(source);
-    if (!mic_inside) {
-        std::cerr << "WARNING: microphone position is outside model"
-                  << std::endl;
-        std::cerr << "position: " << micpos << std::endl;
-    }
-
-    if (!src_inside) {
-        std::cerr << "WARNING: source position is outside model" << std::endl;
-        std::cerr << "position: " << source << std::endl;
-    }
-
     Results results;
     results.mic = micpos;
     results.source = source;
@@ -275,13 +320,15 @@ Results Raytrace::run(const SceneData& scene_data,
     results.reflections = reflections;
     results.diffuse.resize(directions.size() * reflections);
 
+    add_direct_impulse(micpos, source, scene_data, results);
+
     for (auto i = 0u; i != ceil(directions.size() / float(RAY_GROUP_SIZE));
          ++i) {
         using index_type = std::common_type_t<decltype(i* RAY_GROUP_SIZE),
                                               decltype(directions.size())>;
-        index_type b = i * RAY_GROUP_SIZE;
-        index_type e = std::min(index_type{directions.size()},
-                                index_type{(i + 1) * RAY_GROUP_SIZE});
+        auto b = i * RAY_GROUP_SIZE;
+        auto e = std::min(index_type{directions.size()},
+                          index_type{(i + 1) * RAY_GROUP_SIZE});
 
         //  copy input to buffer
         cl::copy(get_queue(),
@@ -300,7 +347,7 @@ Results Raytrace::run(const SceneData& scene_data,
             Impulse{{{0, 0, 0, 0, 0, 0, 0, 0}}, {{0, 0, 0}}, 0});
         cl::copy(get_queue(), begin(image), end(image), cl_image_source);
 
-        std::vector<unsigned long> image_source_index(
+        std::vector<cl_ulong> image_source_index(
             RAY_GROUP_SIZE * NUM_IMAGE_SOURCE, 0);
         cl::copy(get_queue(),
                  begin(image_source_index),
@@ -320,14 +367,7 @@ Results Raytrace::run(const SceneData& scene_data,
                cl_image_source,
                cl_image_source_index,
                reflections,
-               (VolumeType){{0.001 * -0.1,
-                             0.001 * -0.2,
-                             0.001 * -0.5,
-                             0.001 * -1.1,
-                             0.001 * -2.7,
-                             0.001 * -9.4,
-                             0.001 * -29.0,
-                             0.001 * -60.0}});
+               AIR_COEFFICIENT);
 
         //  copy output to main memory
         cl::copy(get_queue(),
@@ -336,22 +376,7 @@ Results Raytrace::run(const SceneData& scene_data,
                  end(image_source_index));
         cl::copy(get_queue(), cl_image_source, begin(image), end(image));
 
-        //  remove duplicate image-source contributions
-        for (auto j = 0; j != RAY_GROUP_SIZE * NUM_IMAGE_SOURCE;
-             j += NUM_IMAGE_SOURCE) {
-            for (auto k = 1; k != NUM_IMAGE_SOURCE + 1; ++k) {
-                std::vector<unsigned long> surfaces(
-                    image_source_index.begin() + j,
-                    image_source_index.begin() + j + k);
-
-                if (k == 1 || surfaces.back() != 0) {
-                    auto it = results.image_source.find(surfaces);
-                    if (it == results.image_source.end()) {
-                        results.image_source[surfaces] = image[j + k - 1];
-                    }
-                }
-            }
-        }
+        remove_duplicates(image_source_index, image, RAY_GROUP_SIZE, results);
 
         cl::copy(get_queue(),
                  cl_impulses,
@@ -432,21 +457,6 @@ Results ImprovedRaytrace::run(const SceneData& scene_data,
     cl::Buffer cl_image_source_index(
         get_context(), CL_MEM_READ_WRITE, rays * sizeof(cl_ulong));
 
-    MeshBoundary boundary(scene_data);
-    //  check that mic and source are inside model bounds
-    bool mic_inside = boundary.inside(micpos);
-    bool src_inside = boundary.inside(source);
-    if (!mic_inside) {
-        std::cerr << "WARNING: microphone position is outside model"
-                  << std::endl;
-        std::cerr << "position: " << micpos << std::endl;
-    }
-
-    if (!src_inside) {
-        std::cerr << "WARNING: source position is outside model" << std::endl;
-        std::cerr << "position: " << source << std::endl;
-    }
-
     Results results;
     results.mic = micpos;
     results.source = source;
@@ -454,7 +464,9 @@ Results ImprovedRaytrace::run(const SceneData& scene_data,
     results.reflections = reflections;
     results.diffuse.resize(rays * reflections);
 
-    std::vector<GLuint> image_source_index(rays * NUM_IMAGE_SOURCE, 0);
+    add_direct_impulse(micpos, source, scene_data, results);
+
+    std::vector<cl_ulong> image_source_index(rays * NUM_IMAGE_SOURCE, 0);
     std::vector<Impulse> image_source(
         rays * NUM_IMAGE_SOURCE,
         Impulse{{{0, 0, 0, 0, 0, 0, 0, 0}}, {{0, 0, 0}}, 0});
@@ -474,8 +486,6 @@ Results ImprovedRaytrace::run(const SceneData& scene_data,
                      cl_image_source);
         }
 
-        auto volume_factor = 0.001f;
-
         kernel(cl::EnqueueArgs(get_queue(), cl::NDRange(rays)),
                cl_ray_info,
                cl_triangles,
@@ -487,14 +497,7 @@ Results ImprovedRaytrace::run(const SceneData& scene_data,
                cl_impulses,
                cl_image_source,
                cl_image_source_index,
-               (VolumeType){{volume_factor * -0.1f,
-                             volume_factor * -0.2f,
-                             volume_factor * -0.5f,
-                             volume_factor * -1.1f,
-                             volume_factor * -2.7f,
-                             volume_factor * -9.4f,
-                             volume_factor * -29.0f,
-                             volume_factor * -60.0f}},
+               AIR_COEFFICIENT,
                i);
 
         cl::copy(get_queue(),
@@ -519,21 +522,7 @@ Results ImprovedRaytrace::run(const SceneData& scene_data,
     image_source = transpose(image_source, rays, NUM_IMAGE_SOURCE);
     image_source_index = transpose(image_source_index, rays, NUM_IMAGE_SOURCE);
 
-    //  remove duplicate image-source contributions
-    for (auto j = 0; j != rays * NUM_IMAGE_SOURCE; j += NUM_IMAGE_SOURCE) {
-        for (auto k = 1; k != NUM_IMAGE_SOURCE + 1; ++k) {
-            std::vector<unsigned long> surfaces(
-                image_source_index.begin() + j,
-                image_source_index.begin() + j + k);
-
-            if (k == 1 || surfaces.back() != 0) {
-                auto it = results.image_source.find(surfaces);
-                if (it == results.image_source.end()) {
-                    results.image_source[surfaces] = image_source[j + k - 1];
-                }
-            }
-        }
-    }
+    remove_duplicates(image_source_index, image_source, rays, results);
 
     return results;
 }

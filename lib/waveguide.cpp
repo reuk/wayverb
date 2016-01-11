@@ -64,20 +64,6 @@ TetrahedralWaveguide::TetrahedralWaveguide(const TetrahedralProgram& program,
         , velocity_buffer(program.getInfo<CL_PROGRAM_CONTEXT>(),
                           CL_MEM_READ_WRITE,
                           sizeof(cl_float3) * 1) {
-#ifdef TESTING
-    auto fname = build_string("./file-positions.txt");
-    ofstream file(fname);
-    for (const auto& i : nodes) {
-        file << build_string(i.position.x,
-                             " ",
-                             i.position.y,
-                             " ",
-                             i.position.z,
-                             " ",
-                             i.inside)
-             << endl;
-    }
-#endif
 }
 
 TetrahedralWaveguide::TetrahedralWaveguide(const TetrahedralProgram& program,
@@ -98,14 +84,6 @@ RunStepResult TetrahedralWaveguide::run_step(size_type o,
                                              cl::Buffer& previous,
                                              cl::Buffer& current,
                                              cl::Buffer& output) {
-    if (o > this->mesh.get_nodes().size()) {
-        ::Logger::log_err("warning: requested output node does not exist");
-    }
-
-    if (!this->mesh.get_nodes()[o].inside) {
-        ::Logger::log_err("warning: requested output node is outside boundary");
-    }
-
     std::vector<cl_float> out(1);
     std::vector<cl_float3> current_velocity(1);
 
@@ -128,18 +106,6 @@ RunStepResult TetrahedralWaveguide::run_step(size_type o,
 
     auto velocity = to_vec3f(current_velocity.front());
     auto intensity = velocity * out.front();
-
-#ifdef TESTING
-    static size_type ind = 0;
-
-    vector<cl_float> node_values(nodes);
-    cl::copy(queue, previous, node_values.begin(), node_values.end());
-    auto fname = build_string("./file-", ind++, ".txt");
-    ofstream file(fname);
-    for (auto j = 0u; j != nodes; ++j) {
-        file << build_string(node_values[j]) << endl;
-    }
-#endif
 
     return RunStepResult(out.front(), intensity);
 }
