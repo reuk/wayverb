@@ -132,8 +132,8 @@ The paper discusses DWMs based on *W-models*, in which each node stores an input
 and an output variable for each immediately adjacent node.
 In such meshes, the memory usage obviously scales with the number of
 interconnections per node, or *coordination number* (so will be low for
-tetrahedral meshes, which has a coordination number of 4, but will be much
-higher for CCP meshes, which has a coordination number of 12).
+tetrahedral meshes, which have a coordination number of 4, but will be much
+higher for CCP meshes, which have a coordination number of 12).
 However, a linear transformation can be applied to the W-DWM, converting it into
 an alternate *K-variable* DWM, or K-DWM.
 This formulation is equivalent to the W-DWM, but requires only a pair of
@@ -152,7 +152,7 @@ microphones, or even approximate HRTFs.
 The method presented requires the node values at the 'output' node and the
 immediately adjacent nodes to be stored.
 It uses these values to calculate a velocity vector at the output node for each
-time-step, and then calculating the 'intensity' at this node.
+time-step, which is then used to find the 'intensity' at this node.
 The directional response is found by multiplying the magnitude of the intensity
 by the squared magnitude of some polar pattern in the direction of the
 intensity.
