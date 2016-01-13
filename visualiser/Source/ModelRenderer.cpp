@@ -445,6 +445,8 @@ void DrawableScene::update(float dt) {
 
     if (waveguide && !mesh_object) {
         mesh_object = std::make_unique<MeshObject>(shader, *waveguide);
+        std::cout << "showing mesh with " << waveguide->get_nodes() << " nodes"
+                  << std::endl;
     }
 
     if (raytracer_results.valid()) {

@@ -220,44 +220,36 @@ Rel t_c_intersection(const TriangleVerts & t) {
 //  from
 //  https://q3k.org/gentoomen/Game%20Development/Programming/Real-Time%20Collision%20Detection.pdf
 Rel t_c_intersection(const TriangleVec3f& t) {
-    auto v0 = t[0];
-    auto v1 = t[1];
-    auto v2 = t[2];
-
-    Vec3f u0(1, 0, 0);
-    Vec3f u1(0, 1, 0);
-    Vec3f u2(0, 0, 1);
-
-    auto f0 = v1 - v0;
-    auto f1 = v2 - v1;
-    auto f2 = v0 - v2;
+    std::array<Vec3f, 3> v{{
+        t[0], t[1], t[2],
+    }};
+    std::array<Vec3f, 3> f{{v[1] - v[0], v[2] - v[1], v[0] - v[2]}};
 
     for (const auto& a : {
-             Vec3f(0, -f0.z, f0.y),
-             Vec3f(0, -f1.z, f1.y),
-             Vec3f(0, -f2.z, f2.y),
-             Vec3f(f0.z, 0, -f0.x),
-             Vec3f(f1.z, 0, -f1.x),
-             Vec3f(f2.z, 0, -f2.x),
-             Vec3f(-f0.y, f0.x, 0),
-             Vec3f(-f1.y, f1.x, 0),
-             Vec3f(-f2.y, f2.x, 0),
+             Vec3f(0, -f[0].z, f[0].y),
+             Vec3f(0, -f[1].z, f[1].y),
+             Vec3f(0, -f[2].z, f[2].y),
+             Vec3f(f[0].z, 0, -f[0].x),
+             Vec3f(f[1].z, 0, -f[1].x),
+             Vec3f(f[2].z, 0, -f[2].x),
+             Vec3f(-f[0].y, f[0].x, 0),
+             Vec3f(-f[1].y, f[1].x, 0),
+             Vec3f(-f[2].y, f[2].x, 0),
          }) {
-        auto coll = {a.dot(v0), a.dot(v1), a.dot(v2)};
-        auto r = fabs(a.x) + fabs(a.y) + fabs(a.z);
+        auto coll = {a.dot(v[0]), a.dot(v[1]), a.dot(v[2])};
+        auto r = a.abs().dot(Vec3f(0.5));
         if (std::max(-std::max(coll), std::min(coll)) > r)
             return Rel::idOutside;
     }
 
-    auto coll = {v0, v1, v2};
-    if ((get_max(coll) < Vec3f(-0.5)).any())
+    if ((get_max(v) < Vec3f(-0.5)).any())
         return Rel::idOutside;
-    if ((Vec3f(0.5) < get_min(coll)).any())
+    if ((Vec3f(0.5) < get_min(v)).any())
         return Rel::idOutside;
 
-    auto normal = f0.cross(f1);
-    auto dist = normal.dot(v0);
+    auto normal = f[0].cross(f[2]).normalized();
+    auto dist = normal.dot(v[0]);
 
-    auto r = 0.5 * fabs(normal.x) + 0.5 * fabs(normal.y) + 0.5 * fabs(normal.z);
+    auto r = normal.abs().dot(Vec3f(0.5));
     return fabs(dist) <= r ? Rel::idInside : Rel::idOutside;
 }

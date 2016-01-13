@@ -121,6 +121,10 @@ struct Vec3 {
         return foldi([](auto a, auto b) { return std::min(a, b); });
     }
 
+    auto abs() const {
+        return map([](auto i) { return std::abs(i); });
+    }
+
     auto normalized() const {
         return *this / mag();
     }

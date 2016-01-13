@@ -300,12 +300,12 @@ Done
 * show mesh node positions
 * show mesh node pressure, as the simulation progresses
 * fix node positions so that the entire mesh is covered!
+* show rays
+    * with volume, as the simulation progresses
+    * fix image-source in new raytracer formulation
+* scroll to zoom?
 
 TODO
 ----
 
-* show rays
-    * with volume, as the simulation progresses
-    * fix image-source in new raytracer formulation
 * fix raytracer octree stuff
-* scroll to zoom?

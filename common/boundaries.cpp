@@ -17,14 +17,6 @@ bool CuboidBoundary::inside(const Vec3f& v) const {
     return (c0 < v).all() && (v < c1).all();
 }
 
-Vec3f get_max(const std::vector<Vec3f>& coll) {
-    return sub_elementwise(coll, [](auto i, auto j) { return std::max(i, j); });
-}
-
-Vec3f get_min(const std::vector<Vec3f>& coll) {
-    return sub_elementwise(coll, [](auto i, auto j) { return std::min(i, j); });
-}
-
 bool CuboidBoundary::overlaps(const TriangleVec3f& t) const {
     auto coll = t;
     for (auto& i : coll) {
