@@ -20,6 +20,11 @@
 		1B2E0BC71C3C7623003A6680 /* libz.1.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B2E0BC61C3C7623003A6680 /* libz.1.dylib */; };
 		1B464A6F1C3FD837006178EB /* FilePackage.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1B464A6D1C3FD837006178EB /* FilePackage.cpp */; };
 		1B464A801C3FEC37006178EB /* DemoPanel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1B464A7E1C3FEC37006178EB /* DemoPanel.cpp */; };
+		1B7251731C47DB54002090B6 /* BasicDrawableObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1B7251711C47DB54002090B6 /* BasicDrawableObject.cpp */; };
+		1B7251841C47DDA8002090B6 /* OctahedronObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1B7251821C47DDA8002090B6 /* OctahedronObject.cpp */; };
+		1B7251871C47DE4F002090B6 /* BoxObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1B7251851C47DE4F002090B6 /* BoxObject.cpp */; };
+		1B72518A1C47DECF002090B6 /* ModelObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1B7251881C47DECF002090B6 /* ModelObject.cpp */; };
+		1B72518D1C47DF46002090B6 /* ModelSectionObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1B72518B1C47DF46002090B6 /* ModelSectionObject.cpp */; };
 		1E09DBF6A82901B168B1DE8F /* MainComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7D2C7F4DDD285709BDAA80DC /* MainComponent.cpp */; };
 		2FE027A88EFF8BB7463872FE /* Main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F6DA86A940C8EF8ED2215947 /* Main.cpp */; };
 		36746B851FDA76C1EF32BEFA /* juce_gui_extra.mm in Sources */ = {isa = PBXBuildFile; fileRef = C645B5A0B3C6905705BC351A /* juce_gui_extra.mm */; };
@@ -239,6 +244,16 @@
 		1B464A7E1C3FEC37006178EB /* DemoPanel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = DemoPanel.cpp; path = ../../Source/DemoPanel.cpp; sourceTree = "<group>"; };
 		1B464A7F1C3FEC37006178EB /* DemoPanel.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = DemoPanel.hpp; path = ../../Source/DemoPanel.hpp; sourceTree = "<group>"; };
 		1B6108181CA032ADF5CE83F6 /* juce_FileTreeComponent.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = juce_FileTreeComponent.h; path = ../../JuceLibraryCode/modules/juce_gui_basics/filebrowser/juce_FileTreeComponent.h; sourceTree = SOURCE_ROOT; };
+		1B7251711C47DB54002090B6 /* BasicDrawableObject.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = BasicDrawableObject.cpp; path = ../../Source/BasicDrawableObject.cpp; sourceTree = "<group>"; };
+		1B7251721C47DB54002090B6 /* BasicDrawableObject.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = BasicDrawableObject.hpp; path = ../../Source/BasicDrawableObject.hpp; sourceTree = "<group>"; };
+		1B7251821C47DDA8002090B6 /* OctahedronObject.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = OctahedronObject.cpp; path = ../../Source/OctahedronObject.cpp; sourceTree = "<group>"; };
+		1B7251831C47DDA8002090B6 /* OctahedronObject.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = OctahedronObject.hpp; path = ../../Source/OctahedronObject.hpp; sourceTree = "<group>"; };
+		1B7251851C47DE4F002090B6 /* BoxObject.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = BoxObject.cpp; path = ../../Source/BoxObject.cpp; sourceTree = "<group>"; };
+		1B7251861C47DE4F002090B6 /* BoxObject.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = BoxObject.hpp; path = ../../Source/BoxObject.hpp; sourceTree = "<group>"; };
+		1B7251881C47DECF002090B6 /* ModelObject.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ModelObject.cpp; path = ../../Source/ModelObject.cpp; sourceTree = "<group>"; };
+		1B7251891C47DECF002090B6 /* ModelObject.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = ModelObject.hpp; path = ../../Source/ModelObject.hpp; sourceTree = "<group>"; };
+		1B72518B1C47DF46002090B6 /* ModelSectionObject.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ModelSectionObject.cpp; path = ../../Source/ModelSectionObject.cpp; sourceTree = "<group>"; };
+		1B72518C1C47DF46002090B6 /* ModelSectionObject.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = ModelSectionObject.hpp; path = ../../Source/ModelSectionObject.hpp; sourceTree = "<group>"; };
 		1BED9283EEEC4F00C846E13B /* juce_MarkerList.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = juce_MarkerList.h; path = ../../JuceLibraryCode/modules/juce_gui_basics/positioning/juce_MarkerList.h; sourceTree = SOURCE_ROOT; };
 		1C291C46A481EA78341ADD3A /* juce_VST3Common.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = juce_VST3Common.h; path = ../../JuceLibraryCode/modules/juce_audio_processors/format_types/juce_VST3Common.h; sourceTree = SOURCE_ROOT; };
 		1C48BE54D95572A176421237 /* juce_osx_MessageQueue.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = juce_osx_MessageQueue.h; path = ../../JuceLibraryCode/modules/juce_events/native/juce_osx_MessageQueue.h; sourceTree = SOURCE_ROOT; };
@@ -1197,8 +1212,18 @@
 				39885B79C601BB747A73B45D /* Main.hpp */,
 				7D2C7F4DDD285709BDAA80DC /* MainComponent.cpp */,
 				D90DF4CA8C5F9E6608F1931E /* MainComponent.h */,
+				1B7251711C47DB54002090B6 /* BasicDrawableObject.cpp */,
+				1B7251721C47DB54002090B6 /* BasicDrawableObject.hpp */,
 				CBC3B00D40D84CA60386DFA8 /* ModelRenderer.cpp */,
 				C07AD9013E3B2F159108D2FD /* ModelRenderer.hpp */,
+				1B72518B1C47DF46002090B6 /* ModelSectionObject.cpp */,
+				1B72518C1C47DF46002090B6 /* ModelSectionObject.hpp */,
+				1B7251881C47DECF002090B6 /* ModelObject.cpp */,
+				1B7251891C47DECF002090B6 /* ModelObject.hpp */,
+				1B7251851C47DE4F002090B6 /* BoxObject.cpp */,
+				1B7251861C47DE4F002090B6 /* BoxObject.hpp */,
+				1B7251821C47DDA8002090B6 /* OctahedronObject.cpp */,
+				1B7251831C47DDA8002090B6 /* OctahedronObject.hpp */,
 				1B464A6D1C3FD837006178EB /* FilePackage.cpp */,
 				1B464A6E1C3FD837006178EB /* FilePackage.hpp */,
 				6B95178A53FFF532F1F55333 /* ModelRendererComponent.cpp */,
@@ -3033,11 +3058,16 @@
 				E153251604EF554763ECE4D8 /* juce_audio_basics.mm in Sources */,
 				3856B01781F9CFA9CC7A43E5 /* juce_audio_devices.mm in Sources */,
 				7F09F3604864CBE2B7BA11B7 /* juce_audio_formats.mm in Sources */,
+				1B72518A1C47DECF002090B6 /* ModelObject.cpp in Sources */,
 				7E522007957055C9E11B917C /* juce_audio_processors.mm in Sources */,
 				624BD933F77DF6F002B3F061 /* juce_core.mm in Sources */,
+				1B7251871C47DE4F002090B6 /* BoxObject.cpp in Sources */,
+				1B72518D1C47DF46002090B6 /* ModelSectionObject.cpp in Sources */,
 				AD4850BC9FE1F2CD11AD8675 /* juce_cryptography.mm in Sources */,
+				1B7251841C47DDA8002090B6 /* OctahedronObject.cpp in Sources */,
 				1B464A6F1C3FD837006178EB /* FilePackage.cpp in Sources */,
 				BDDFB6A4609A94BDECCD94E7 /* juce_data_structures.mm in Sources */,
+				1B7251731C47DB54002090B6 /* BasicDrawableObject.cpp in Sources */,
 				ED025617D220768DE3099439 /* juce_events.mm in Sources */,
 				B6B8BBB8482599AE18E3B0F0 /* juce_graphics.mm in Sources */,
 				1B464A801C3FEC37006178EB /* DemoPanel.cpp in Sources */,

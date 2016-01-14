@@ -29,7 +29,7 @@ template <typename T>
 Vec3<T> make_vec(const T& x, const T& y, const T& z);
 
 template <typename T>
-struct Vec3 {
+struct Vec3 final {
     using value_type = T;
     using Vec3t = Vec3<T>;
 
@@ -45,8 +45,10 @@ struct Vec3 {
     constexpr Vec3(const Vec3<U>& u) noexcept : x(u.x), y(u.y), z(u.z) {
     }
 
-    Vec3(const Vec3& u) noexcept = default;
-    Vec3& operator=(const Vec3& rhs) noexcept = default;
+    constexpr Vec3(const Vec3&) noexcept = default;
+    constexpr Vec3& operator=(const Vec3&) noexcept = default;
+    constexpr Vec3(Vec3&&) noexcept = default;
+    constexpr Vec3& operator=(Vec3&&) noexcept = default;
 
     template <typename V, typename U>
     auto fold(const U& u = U(), const V& v = V()) const {

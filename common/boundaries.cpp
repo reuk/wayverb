@@ -41,6 +41,33 @@ Vec3f CuboidBoundary::get_centre() const {
     return (c0 + c1) / 2;
 }
 
+bool CuboidBoundary::intersects(const geo::Ray& ray, float t0, float t1) {
+    //  from http://people.csail.mit.edu/amy/papers/box-jgt.pdf
+    auto inv = Vec3f(1) / ray.direction;
+    std::array<bool, 3> sign{{inv.x < 0, inv.y < 0, inv.z < 0}};
+    auto get_bounds = [this](auto i) { return i ? c0 : c1; };
+
+    auto tmin = (get_bounds(sign[0]).x - ray.position.x) * inv.x;
+    auto tmax = (get_bounds(!sign[0]).x - ray.position.x) * inv.x;
+    auto tymin = (get_bounds(sign[1]).y - ray.position.y) * inv.y;
+    auto tymax = (get_bounds(!sign[1]).y - ray.position.y) * inv.y;
+    if ((tmin > tymax) || (tymin > tmax))
+        return false;
+    if (tymin > tmin)
+        tmin = tymin;
+    if (tymax < tmax)
+        tmax = tymax;
+    auto tzmin = (get_bounds(sign[2]).z - ray.position.z) * inv.z;
+    auto tzmax = (get_bounds(!sign[2]).z - ray.position.z) * inv.z;
+    if ((tmin > tzmax) || (tzmin > tmax))
+        return false;
+    if (tzmin > tmin)
+        tmin = tzmin;
+    if (tzmax < tmax)
+        tmax = tzmax;
+    return ((t0 < tmax) && (tmin < t1));
+}
+
 CuboidBoundary get_cuboid_boundary(const std::vector<Vec3f>& vertices) {
     Vec3f mini, maxi;
     mini = maxi = vertices.front();

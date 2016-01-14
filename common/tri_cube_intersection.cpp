@@ -218,7 +218,7 @@ Rel t_c_intersection(const TriangleVerts & t) {
  */
 
 //  from
-//  https://q3k.org/gentoomen/Game%20Development/Programming/Real-Time%20Collision%20Detection.pdf
+//  http://fileadmin.cs.lth.se/cs/Personal/Tomas_Akenine-Moller/code/tribox_tam.pdf
 Rel t_c_intersection(const TriangleVec3f& t) {
     std::array<Vec3f, 3> v{{
         t[0], t[1], t[2],

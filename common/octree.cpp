@@ -2,6 +2,8 @@
 
 #include "tri_cube_intersection.h"
 
+#include <iostream>
+
 std::vector<CuboidBoundary> next_boundaries(const CuboidBoundary& parent) {
     auto centre = parent.get_centre();
 
@@ -17,12 +19,12 @@ std::vector<CuboidBoundary> next_boundaries(const CuboidBoundary& parent) {
 
     return std::vector<CuboidBoundary>{
         CuboidBoundary(Vec3f(x0, y0, z0), Vec3f(xc, yc, zc)),
-        CuboidBoundary(Vec3f(x0, y0, zc), Vec3f(xc, yc, z1)),
         CuboidBoundary(Vec3f(xc, y0, z0), Vec3f(x1, yc, zc)),
-        CuboidBoundary(Vec3f(xc, y0, zc), Vec3f(x1, yc, z1)),
         CuboidBoundary(Vec3f(x0, yc, z0), Vec3f(xc, y1, zc)),
-        CuboidBoundary(Vec3f(x0, yc, zc), Vec3f(xc, y1, z1)),
         CuboidBoundary(Vec3f(xc, yc, z0), Vec3f(x1, y1, zc)),
+        CuboidBoundary(Vec3f(x0, y0, zc), Vec3f(xc, yc, z1)),
+        CuboidBoundary(Vec3f(xc, y0, zc), Vec3f(x1, yc, z1)),
+        CuboidBoundary(Vec3f(x0, yc, zc), Vec3f(xc, y1, z1)),
         CuboidBoundary(Vec3f(xc, yc, zc), Vec3f(x1, y1, z1)),
     };
 }
@@ -81,41 +83,90 @@ const std::vector<int>& Octree::get_triangles() const {
     return triangles;
 }
 
-void fill_static_octree(std::vector<int>& ret, const Octree& o) {
-    //  int     n triangles
-    //  int[]   triangle indices
-    //  int     n nodes
-    //  int[]   node offsets
+OctreeInfoField to_oif(cl_uint i) {
+    OctreeInfoField ret;
+    ret.i = i;
+    return ret;
+}
 
-    const auto& nodes = o.get_nodes();
-    const auto& triangles = o.get_triangles();
+OctreeInfoField to_oif(cl_float f) {
+    OctreeInfoField ret;
+    ret.f = f;
+    return ret;
+}
+
+void Octree::fill_flattened(std::vector<OctreeInfoField>& ret) const {
+    //  float[6]    aabb
+    //  int         n triangles
+    //  int[]       triangle indices
+    //  int         n nodes
+    //  int[]       node offsets
+
+    const auto& nodes = get_nodes();
+    const auto& triangles = get_triangles();
+
+    ret.push_back(to_oif(get_aabb().c0.x));
+    ret.push_back(to_oif(get_aabb().c0.y));
+    ret.push_back(to_oif(get_aabb().c0.z));
+    ret.push_back(to_oif(get_aabb().c1.x));
+    ret.push_back(to_oif(get_aabb().c1.y));
+    ret.push_back(to_oif(get_aabb().c1.z));
 
     if (nodes.empty()) {
-        std::vector<int> t(triangles.size() + 1);
-        t[0] = triangles.size();
+        std::vector<OctreeInfoField> t(triangles.size() + 1);
+        t[0].i = triangles.size();
         for (auto i = 0u; i != triangles.size(); ++i)
-            t[i + 1] = triangles[i];
+            t[i + 1].i = triangles[i];
         ret.insert(ret.end(), t.begin(), t.end());
     } else {
-        ret.push_back(0);  //  no triangles
+        ret.push_back(to_oif(0u));  //  no triangles
 
-        ret.push_back(nodes.size());  //  some nodes
+        ret.push_back(
+            to_oif(static_cast<cl_uint>(nodes.size())));  //  some nodes
         auto node_table_start = ret.size();
-        std::for_each(
-            nodes.begin(), nodes.end(), [&ret](auto) { ret.push_back(0); });
+        std::for_each(nodes.begin(),
+                      nodes.end(),
+                      [&ret](auto) { ret.push_back(to_oif(0u)); });
 
         auto counter = node_table_start;
         std::for_each(nodes.begin(),
                       nodes.end(),
                       [&ret, &counter](auto i) {
-                          ret[counter++] = ret.size();
-                          fill_static_octree(ret, i);
+                          ret[counter++].i = ret.size();
+                          i.fill_flattened(ret);
                       });
     }
 }
 
-std::vector<int> get_static_octree(const Octree& o) {
-    std::vector<int> ret;
-    fill_static_octree(ret, o);
+std::vector<OctreeInfoField> Octree::get_flattened() const {
+    std::vector<OctreeInfoField> ret;
+    fill_flattened(ret);
     return ret;
+}
+
+std::vector<const Octree*> Octree::intersect(const geo::Ray& ray) const {
+    auto& starting_node = get_surrounding_leaf(ray.position);
+    std::vector<const Octree*> ret = {&starting_node};
+    return ret;
+}
+
+const Octree& Octree::get_surrounding_node(const Vec3f& v) const {
+    auto c = get_aabb().get_centre();
+    auto x = v.x > c.x ? 1u : 0u;
+    auto y = v.y > c.y ? 2u : 0u;
+    auto z = v.z > c.z ? 4u : 0u;
+    return get_nodes().at(x | y | z);
+}
+
+const Octree& Octree::get_surrounding_leaf(const Vec3f& v) const {
+    if (get_nodes().empty()) {
+        return *this;
+    }
+    return get_surrounding_node(v);
+}
+
+int Octree::get_side() const {
+    if (nodes.empty())
+        return 1;
+    return 2 * nodes.front().get_side();
 }
