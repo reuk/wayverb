@@ -8,7 +8,7 @@ ModelObject::ModelObject(const GenericShader &shader,
               shader,
               get_vertices(scene_data),
               std::vector<glm::vec4>(
-                  scene_data.vertices.size(),
+                  scene_data.get_vertices().size(),
                   glm::vec4(
                       model_colour, model_colour, model_colour, model_colour)),
               get_indices(scene_data),
@@ -17,18 +17,18 @@ ModelObject::ModelObject(const GenericShader &shader,
 
 std::vector<glm::vec3> ModelObject::get_vertices(
     const SceneData &scene_data) const {
-    std::vector<glm::vec3> ret(scene_data.vertices.size());
-    std::transform(scene_data.vertices.begin(),
-                   scene_data.vertices.end(),
+    std::vector<glm::vec3> ret(scene_data.get_vertices().size());
+    std::transform(scene_data.get_vertices().begin(),
+                   scene_data.get_vertices().end(),
                    ret.begin(),
                    [](auto i) { return glm::vec3(i.x, i.y, i.z); });
     return ret;
 }
 std::vector<GLuint> ModelObject::get_indices(
     const SceneData &scene_data) const {
-    std::vector<GLuint> ret(scene_data.triangles.size() * 3);
+    std::vector<GLuint> ret(scene_data.get_triangles().size() * 3);
     auto count = 0u;
-    for (const auto &tri : scene_data.triangles) {
+    for (const auto &tri : scene_data.get_triangles()) {
         ret[count + 0] = tri.v0;
         ret[count + 1] = tri.v1;
         ret[count + 2] = tri.v2;

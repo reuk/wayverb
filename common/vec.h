@@ -5,6 +5,7 @@
 #include <cmath>
 #include <ostream>
 #include <array>
+#include <sstream>
 
 #define VEC_OP(sym, functor)                                       \
     template <typename U>                                          \
@@ -140,6 +141,34 @@ struct Vec3 final {
     auto cross(const Vec3<U>& rhs) const {
         return Vec3t(y, z, x) * Vec3<U>(rhs.z, rhs.x, rhs.y) -
                Vec3t(z, x, y) * Vec3<U>(rhs.y, rhs.z, rhs.x);
+    }
+
+    T& operator[](int i) {
+        switch (i) {
+            case 0:
+                return x;
+            case 1:
+                return y;
+            case 2:
+                return z;
+        }
+        std::stringstream ss;
+        ss << "Vec3<T> has 3 elements, tried to access index: " << i;
+        throw std::out_of_range(ss.str());
+    }
+
+    const T& operator[](int i) const {
+        switch (i) {
+            case 0:
+                return x;
+            case 1:
+                return y;
+            case 2:
+                return z;
+        }
+        std::stringstream ss;
+        ss << "Vec3<T> has 3 elements, tried to access index: " << i;
+        throw std::out_of_range(ss.str());
     }
 
     VEC_OP(+, plus);

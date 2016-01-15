@@ -153,3 +153,13 @@ std::vector<int> SceneData::get_triangle_indices() const {
     std::iota(ret.begin(), ret.end(), 0);
     return ret;
 }
+
+const std::vector<Triangle>& SceneData::get_triangles() const {
+    return triangles;
+}
+const std::vector<cl_float3>& SceneData::get_vertices() const {
+    return vertices;
+}
+const std::vector<Surface>& SceneData::get_surfaces() const {
+    return surfaces;
+}

@@ -164,7 +164,7 @@ VoxelisedObject::VoxelisedObject(const GenericShader &shader,
               shader,
               get_vertices(scene_data),
               std::vector<glm::vec4>(
-                  scene_data.vertices.size(),
+                  scene_data.get_vertices().size(),
                   glm::vec4(
                       model_colour, model_colour, model_colour, model_colour)),
               get_indices(scene_data, voxel),
@@ -174,9 +174,9 @@ VoxelisedObject::VoxelisedObject(const GenericShader &shader,
 
 std::vector<glm::vec3> VoxelisedObject::get_vertices(
     const SceneData &scene_data) const {
-    std::vector<glm::vec3> ret(scene_data.vertices.size());
-    std::transform(scene_data.vertices.begin(),
-                   scene_data.vertices.end(),
+    std::vector<glm::vec3> ret(scene_data.get_vertices().size());
+    std::transform(scene_data.get_vertices().begin(),
+                   scene_data.get_vertices().end(),
                    ret.begin(),
                    [](auto i) { return glm::vec3(i.x, i.y, i.z); });
     return ret;
@@ -189,7 +189,7 @@ void fill_indices_vector(const SceneData &scene_data,
         for (const auto &y : x) {
             for (const auto &z : y) {
                 for (const auto &i : z.get_triangles()) {
-                    const auto &tri = scene_data.triangles[i];
+                    const auto &tri = scene_data.get_triangles()[i];
                     ret.push_back(tri.v0);
                     ret.push_back(tri.v1);
                     ret.push_back(tri.v2);

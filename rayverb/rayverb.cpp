@@ -264,7 +264,7 @@ void add_direct_impulse(const Vec3f& micpos,
                         Results& results) {
     if (geo::point_intersection(micpos,
                                 source,
-                                scene_data.triangles,
+                                scene_data.get_triangles(),
                                 scene_data.get_converted_vertices())) {
         auto init_diff = source - micpos;
         auto init_dist = init_diff.mag();
@@ -288,18 +288,18 @@ Results Raytrace::run(const SceneData& scene_data,
         get_context(), CL_MEM_READ_WRITE, RAY_GROUP_SIZE * sizeof(cl_float3));
     cl::Buffer cl_triangles(
         get_context(),
-        begin(const_cast<std::vector<Triangle>&>(scene_data.triangles)),
-        end(const_cast<std::vector<Triangle>&>(scene_data.triangles)),
+        begin(const_cast<std::vector<Triangle>&>(scene_data.get_triangles())),
+        end(const_cast<std::vector<Triangle>&>(scene_data.get_triangles())),
         false);
     cl::Buffer cl_vertices(
         get_context(),
-        begin(const_cast<std::vector<cl_float3>&>(scene_data.vertices)),
-        end(const_cast<std::vector<cl_float3>&>(scene_data.vertices)),
+        begin(const_cast<std::vector<cl_float3>&>(scene_data.get_vertices())),
+        end(const_cast<std::vector<cl_float3>&>(scene_data.get_vertices())),
         false);
     cl::Buffer cl_surfaces(
         get_context(),
-        begin(const_cast<std::vector<Surface>&>(scene_data.surfaces)),
-        end(const_cast<std::vector<Surface>&>(scene_data.surfaces)),
+        begin(const_cast<std::vector<Surface>&>(scene_data.get_surfaces())),
+        end(const_cast<std::vector<Surface>&>(scene_data.get_surfaces())),
         false);
     cl::Buffer cl_impulses(get_context(),
                            CL_MEM_READ_WRITE,
@@ -359,7 +359,7 @@ Results Raytrace::run(const SceneData& scene_data,
                cl_directions,
                to_cl_float3(micpos),
                cl_triangles,
-               scene_data.triangles.size(),
+               scene_data.get_triangles().size(),
                cl_vertices,
                to_cl_float3(source),
                cl_surfaces,
@@ -437,18 +437,18 @@ Results ImprovedRaytrace::run(const SceneData& scene_data,
 
     cl::Buffer cl_triangles(
         get_context(),
-        begin(const_cast<std::vector<Triangle>&>(scene_data.triangles)),
-        end(const_cast<std::vector<Triangle>&>(scene_data.triangles)),
+        begin(const_cast<std::vector<Triangle>&>(scene_data.get_triangles())),
+        end(const_cast<std::vector<Triangle>&>(scene_data.get_triangles())),
         false);
     cl::Buffer cl_vertices(
         get_context(),
-        begin(const_cast<std::vector<cl_float3>&>(scene_data.vertices)),
-        end(const_cast<std::vector<cl_float3>&>(scene_data.vertices)),
+        begin(const_cast<std::vector<cl_float3>&>(scene_data.get_vertices())),
+        end(const_cast<std::vector<cl_float3>&>(scene_data.get_vertices())),
         false);
     cl::Buffer cl_surfaces(
         get_context(),
-        begin(const_cast<std::vector<Surface>&>(scene_data.surfaces)),
-        end(const_cast<std::vector<Surface>&>(scene_data.surfaces)),
+        begin(const_cast<std::vector<Surface>&>(scene_data.get_surfaces())),
+        end(const_cast<std::vector<Surface>&>(scene_data.get_surfaces())),
         false);
     cl::Buffer cl_impulses(
         get_context(), CL_MEM_READ_WRITE, rays * sizeof(Impulse));
@@ -489,7 +489,7 @@ Results ImprovedRaytrace::run(const SceneData& scene_data,
         kernel(cl::EnqueueArgs(get_queue(), cl::NDRange(rays)),
                cl_ray_info,
                cl_triangles,
-               scene_data.triangles.size(),
+               scene_data.get_triangles().size(),
                cl_vertices,
                cl_surfaces,
                to_cl_float3(source),

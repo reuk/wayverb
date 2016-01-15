@@ -71,6 +71,11 @@ public:
     std::vector<Vec3f> get_converted_vertices() const;
     std::vector<int> get_triangle_indices() const;
 
+    const std::vector<Triangle>& get_triangles() const;
+    const std::vector<cl_float3>& get_vertices() const;
+    const std::vector<Surface>& get_surfaces() const;
+
+private:
     std::vector<Triangle> triangles;
     std::vector<cl_float3> vertices;
     std::vector<Surface> surfaces;

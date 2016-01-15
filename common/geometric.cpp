@@ -9,13 +9,14 @@ Ray::Ray(const Vec3f& position, const Vec3f& direction)
         , direction(direction) {
 }
 
-Intersects::Intersects()
-        : intersects(false) {
-}
-
 Intersects::Intersects(float distance)
         : intersects(true)
         , distance(distance) {
+}
+
+Intersection::Intersection(float distance, int index)
+        : Intersects(distance)
+        , index(index) {
 }
 
 Intersects triangle_intersection(const TriangleVec3f& tri, const Ray& ray) {
@@ -58,21 +59,31 @@ Intersects triangle_intersection(const Triangle& tri,
     return triangle_intersection({{v0, v1, v2}}, ray);
 }
 
-Intersects ray_triangle_intersection(const Ray& ray,
-                                     const std::vector<Triangle>& triangles,
-                                     const std::vector<Vec3f>& vertices) {
-    Intersects ret;
+Intersection ray_triangle_intersection(const Ray& ray,
+                                       const std::vector<int>& triangle_indices,
+                                       const std::vector<Triangle>& triangles,
+                                       const std::vector<Vec3f>& vertices) {
+    Intersection ret;
 
-    for (const auto& i : triangles) {
-        auto inter = triangle_intersection(i, vertices, ray);
+    for (const auto& i : triangle_indices) {
+        auto inter = triangle_intersection(triangles[i], vertices, ray);
         if (inter.intersects &&
             ((!ret.intersects) ||
              (ret.intersects && inter.distance < ret.distance))) {
-            ret = Intersects(inter.distance);
+            ret = Intersection(inter.distance, i);
         }
     }
 
     return ret;
+}
+
+Intersection ray_triangle_intersection(const Ray& ray,
+                                       const std::vector<Triangle>& triangles,
+                                       const std::vector<Vec3f>& vertices) {
+    std::vector<int> triangle_indices(triangles.size());
+    std::iota(triangle_indices.begin(), triangle_indices.end(), 0);
+    return ray_triangle_intersection(
+        ray, triangle_indices, triangles, vertices);
 }
 
 bool point_intersection(const Vec3f& begin,

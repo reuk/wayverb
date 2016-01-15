@@ -11,14 +11,16 @@ typedef union {
 
 class Octree final {
 public:
+    Octree() = default;
     Octree(const SceneData& mesh_boundary, int max_depth, float padding = 0);
     Octree(const SceneData& mesh_boundary,
            int max_depth,
-           const std::vector<int> to_test,
+           const std::vector<int>& to_test,
            const CuboidBoundary& aabb);
 
     CuboidBoundary get_aabb() const;
-    const std::vector<Octree>& get_nodes() const;
+    bool has_nodes() const;
+    const std::array<Octree, 8>& get_nodes() const;
     const std::vector<int>& get_triangles() const;
     std::vector<OctreeInfoField> get_flattened() const;
 
@@ -28,10 +30,9 @@ public:
     const Octree& get_surrounding_leaf(const Vec3f& v) const;
 
 private:
-    const Octree& get_surrounding_node(const Vec3f& v) const;
     void fill_flattened(std::vector<OctreeInfoField>& ret) const;
 
-    const CuboidBoundary aabb;
-    const std::vector<int> triangles;
-    const std::vector<Octree> nodes;
+    CuboidBoundary aabb;
+    std::vector<int> triangles;
+    std::unique_ptr<std::array<Octree, 8>> nodes;
 };
