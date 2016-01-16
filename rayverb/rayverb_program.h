@@ -27,6 +27,9 @@ public:
     auto get_improved_raytrace_kernel() const {
         return cl::make_kernel<cl::Buffer,
                                cl::Buffer,
+                               AABB,
+                               cl_int,
+                               cl::Buffer,
                                cl_ulong,
                                cl::Buffer,
                                cl::Buffer,

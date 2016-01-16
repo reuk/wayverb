@@ -32,10 +32,14 @@ public:
     CuboidBoundary get_voxel_aabb() const;
     const XAxis& get_data() const;
 
+    int get_side() const;
+
     const Voxel& get_voxel(const Vec3i& i) const;
 
     Vec3i get_starting_index(const Vec3f& position) const;
     static Vec3i get_step(const Vec3f& direction);
+
+    std::vector<cl_uint> get_flattened() const;
 
     class TraversalCallback {
     public:

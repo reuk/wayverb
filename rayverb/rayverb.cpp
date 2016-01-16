@@ -6,6 +6,7 @@
 #include "boundaries.h"
 #include "conversions.h"
 #include "geometric.h"
+#include "voxel_collection.h"
 
 #include "logger.h"
 
@@ -413,6 +414,9 @@ Results ImprovedRaytrace::run(const SceneData& scene_data,
                               const Vec3f& source,
                               const std::vector<cl_float3>& directions,
                               int reflections) {
+    VoxelCollection vox(scene_data, 4, 0.1);
+    auto flattened_vox = vox.get_flattened();
+
     auto rays = directions.size();
     cl::Buffer cl_ray_info(
         get_context(), CL_MEM_READ_WRITE, rays * sizeof(RayInfo));
@@ -457,6 +461,9 @@ Results ImprovedRaytrace::run(const SceneData& scene_data,
     cl::Buffer cl_image_source_index(
         get_context(), CL_MEM_READ_WRITE, rays * sizeof(cl_ulong));
 
+    cl::Buffer cl_voxel_index(
+        get_context(), begin(flattened_vox), end(flattened_vox), false);
+
     Results results;
     results.mic = micpos;
     results.source = source;
@@ -470,6 +477,9 @@ Results ImprovedRaytrace::run(const SceneData& scene_data,
     std::vector<Impulse> image_source(
         rays * NUM_IMAGE_SOURCE,
         Impulse{{{0, 0, 0, 0, 0, 0, 0, 0}}, {{0, 0, 0}}, 0});
+
+    AABB global_aabb{to_cl_float3(vox.get_aabb().c0),
+                     to_cl_float3(vox.get_aabb().c1)};
 
     for (auto i = 0u; i != reflections; ++i) {
         auto b = (i + 0) * rays;
@@ -488,6 +498,9 @@ Results ImprovedRaytrace::run(const SceneData& scene_data,
 
         kernel(cl::EnqueueArgs(get_queue(), cl::NDRange(rays)),
                cl_ray_info,
+               cl_voxel_index,
+               global_aabb,
+               vox.get_side(),
                cl_triangles,
                scene_data.get_triangles().size(),
                cl_vertices,

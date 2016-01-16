@@ -97,19 +97,7 @@ const std::vector<int>& Octree::get_triangles() const {
     return triangles;
 }
 
-OctreeInfoField to_oif(cl_uint i) {
-    OctreeInfoField ret;
-    ret.i = i;
-    return ret;
-}
-
-OctreeInfoField to_oif(cl_float f) {
-    OctreeInfoField ret;
-    ret.f = f;
-    return ret;
-}
-
-void Octree::fill_flattened(std::vector<OctreeInfoField>& ret) const {
+void Octree::fill_flattened(std::vector<FloatUInt>& ret) const {
     //  float[6]    aabb
     //  int         n triangles
     //  int[]       triangle indices
@@ -118,29 +106,29 @@ void Octree::fill_flattened(std::vector<OctreeInfoField>& ret) const {
 
     const auto& triangles = get_triangles();
 
-    ret.push_back(to_oif(get_aabb().c0.x));
-    ret.push_back(to_oif(get_aabb().c0.y));
-    ret.push_back(to_oif(get_aabb().c0.z));
-    ret.push_back(to_oif(get_aabb().c1.x));
-    ret.push_back(to_oif(get_aabb().c1.y));
-    ret.push_back(to_oif(get_aabb().c1.z));
+    ret.push_back(to_fui(get_aabb().c0.x));
+    ret.push_back(to_fui(get_aabb().c0.y));
+    ret.push_back(to_fui(get_aabb().c0.z));
+    ret.push_back(to_fui(get_aabb().c1.x));
+    ret.push_back(to_fui(get_aabb().c1.y));
+    ret.push_back(to_fui(get_aabb().c1.z));
 
     if (!has_nodes()) {
-        std::vector<OctreeInfoField> t(triangles.size() + 1);
+        std::vector<FloatUInt> t(triangles.size() + 1);
         t[0].i = triangles.size();
         for (auto i = 0u; i != triangles.size(); ++i)
             t[i + 1].i = triangles[i];
         ret.insert(ret.end(), t.begin(), t.end());
     } else {
         const auto& nodes = get_nodes();
-        ret.push_back(to_oif(0u));  //  no triangles
+        ret.push_back(to_fui(0u));  //  no triangles
 
         ret.push_back(
-            to_oif(static_cast<cl_uint>(nodes.size())));  //  some nodes
+            to_fui(static_cast<cl_uint>(nodes.size())));  //  some nodes
         auto node_table_start = ret.size();
         std::for_each(nodes.begin(),
                       nodes.end(),
-                      [&ret](const auto&) { ret.push_back(to_oif(0u)); });
+                      [&ret](const auto&) { ret.push_back(to_fui(0u)); });
 
         auto counter = node_table_start;
         std::for_each(nodes.begin(),
@@ -152,8 +140,8 @@ void Octree::fill_flattened(std::vector<OctreeInfoField>& ret) const {
     }
 }
 
-std::vector<OctreeInfoField> Octree::get_flattened() const {
-    std::vector<OctreeInfoField> ret;
+std::vector<FloatUInt> Octree::get_flattened() const {
+    std::vector<FloatUInt> ret;
     fill_flattened(ret);
     return ret;
 }

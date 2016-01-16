@@ -105,3 +105,11 @@ TEST(voxel, intersect) {
         ASSERT_FLOAT_EQ(inter_0.distance, inter_1.distance);
     }
 }
+
+TEST(voxel, flatten) {
+    SceneData scene_data(OBJ_PATH, MAT_PATH);
+    Octree octree(scene_data, 5, 0.1);
+    VoxelCollection voxel(octree);
+
+    auto f = voxel.get_flattened();
+}

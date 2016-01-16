@@ -82,7 +82,34 @@ bool operator==(const std::vector<T>& a, const std::vector<T>& b) {
     return true;
 }
 
-TEST(improved, improved) {
+static constexpr auto bench_reflections = 128;
+static constexpr auto bench_rays = 1 << 15;
+
+TEST(raytrace, old) {
+    auto context = get_context();
+    auto device = get_device(context);
+    cl::CommandQueue queue(context, device);
+
+    try {
+        auto raytrace_program = get_program<RayverbProgram>(context, device);
+
+        SceneData scene_data(OBJ_PATH, MAT_PATH);
+
+        auto directions = get_random_directions(bench_rays);
+        auto results_0 = get_results<Raytrace>(context,
+                                               device,
+                                               queue,
+                                               raytrace_program,
+                                               scene_data,
+                                               directions,
+                                               bench_reflections);
+    } catch (const std::exception& e) {
+        std::cout << e.what() << std::endl;
+        throw;
+    }
+}
+
+TEST(raytrace, new) {
     auto context = get_context();
     auto device = get_device(context);
     cl::CommandQueue queue(context, device);
@@ -90,9 +117,26 @@ TEST(improved, improved) {
 
     SceneData scene_data(OBJ_PATH, MAT_PATH);
 
-    auto rays = 1 << 8;
-    auto directions = get_random_directions(rays);
-    auto reflections = 128;
+    auto directions = get_random_directions(bench_rays);
+
+    auto results_1 = get_results<ImprovedRaytrace>(context,
+                                                   device,
+                                                   queue,
+                                                   raytrace_program,
+                                                   scene_data,
+                                                   directions,
+                                                   bench_reflections);
+}
+
+TEST(raytrace, improved) {
+    auto context = get_context();
+    auto device = get_device(context);
+    cl::CommandQueue queue(context, device);
+    auto raytrace_program = get_program<RayverbProgram>(context, device);
+
+    SceneData scene_data(OBJ_PATH, MAT_PATH);
+
+    auto directions = get_random_directions(bench_rays);
 
     auto results_0 = get_results<Raytrace>(context,
                                            device,
@@ -100,17 +144,17 @@ TEST(improved, improved) {
                                            raytrace_program,
                                            scene_data,
                                            directions,
-                                           reflections);
+                                           bench_reflections);
     auto results_1 = get_results<ImprovedRaytrace>(context,
                                                    device,
                                                    queue,
                                                    raytrace_program,
                                                    scene_data,
                                                    directions,
-                                                   reflections);
+                                                   bench_reflections);
 
-    results_0.diffuse.resize(rays * reflections);
-    results_1.diffuse.resize(rays * reflections);
+    results_0.diffuse.resize(bench_rays * bench_reflections);
+    results_1.diffuse.resize(bench_rays * bench_reflections);
 
     for (auto i = 0u; i != results_0.diffuse.size(); ++i) {
         const auto& a = results_0.diffuse[i];

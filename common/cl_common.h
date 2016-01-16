@@ -13,10 +13,11 @@ template <typename T>
 T get_program(const cl::Context& context, const cl::Device& device) {
     T program(context);
     try {
-        program.build({device});
+        program.build({device}, "-Werror");
     } catch (const cl::Error& e) {
         ::Logger::log_err(
             program.template getBuildInfo<CL_PROGRAM_BUILD_LOG>(device));
+        ::Logger::log_err(e.what());
         throw;
     }
     return program;

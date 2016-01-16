@@ -3,11 +3,7 @@
 #include "scene_data.h"
 #include "boundaries.h"
 #include "geometric.h"
-
-typedef union {
-    cl_float f;
-    cl_uint i;
-} __attribute__((aligned(8))) OctreeInfoField;
+#include "float_uint.h"
 
 class Octree final {
 public:
@@ -22,7 +18,7 @@ public:
     bool has_nodes() const;
     const std::array<Octree, 8>& get_nodes() const;
     const std::vector<int>& get_triangles() const;
-    std::vector<OctreeInfoField> get_flattened() const;
+    std::vector<FloatUInt> get_flattened() const;
 
     int get_side() const;
 
@@ -30,7 +26,7 @@ public:
     const Octree& get_surrounding_leaf(const Vec3f& v) const;
 
 private:
-    void fill_flattened(std::vector<OctreeInfoField>& ret) const;
+    void fill_flattened(std::vector<FloatUInt>& ret) const;
 
     CuboidBoundary aabb;
     std::vector<int> triangles;

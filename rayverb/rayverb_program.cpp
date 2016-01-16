@@ -19,6 +19,9 @@ const std::string RayverbProgram::source(
 
 #define EPSILON (0.0001f)
 #define NULL (0)
+                                         
+#define MAKE_INTERSECTION(a, b) \
+    ((Intersection) {(a), (b), true})
 
 constant float SECONDS_PER_METER = 1.0f / SPEED_OF_SOUND;
 typedef float8 VolumeType;
@@ -40,7 +43,7 @@ typedef struct {
     VolumeType volume;
     float3 mic_reflection;
     float distance;
-    unsigned int cont;
+    uint cont;
 } RayInfo;
 
 typedef struct {
@@ -49,16 +52,16 @@ typedef struct {
 } Surface;
 
 typedef struct {
-    unsigned long surface;
-    unsigned long v0;
-    unsigned long v1;
-    unsigned long v2;
+    ulong surface;
+    ulong v0;
+    ulong v1;
+    ulong v2;
 } Triangle;
 
 typedef struct {
-    unsigned long primitive;
+    ulong primitive;
     float distance;
-    unsigned int intersects;
+    bool intersects;
 } Intersection;
 
 typedef struct {
@@ -76,6 +79,11 @@ typedef struct {
     float3 direction;
     float coefficient;
 } Speaker;
+
+typedef struct {
+    float3 c0;
+    float3 c1;
+} AABB;
 
 float triangle_vert_intersection (TriangleVerts v, Ray ray);
 float triangle_vert_intersection (TriangleVerts v, Ray ray)
@@ -106,13 +114,13 @@ float triangle_vert_intersection (TriangleVerts v, Ray ray)
 }
 
 float triangle_intersection
-(   global Triangle * triangle
-,   global float3 * vertices
+(   const global Triangle * triangle
+,   const global float3 * vertices
 ,   Ray ray
 );
 float triangle_intersection
-(   global Triangle * triangle
-,   global float3 * vertices
+(   const global Triangle * triangle
+,   const global float3 * vertices
 ,   Ray ray
 )
 {
@@ -133,8 +141,8 @@ float3 triangle_verts_normal (TriangleVerts t)
     return normalize (cross (e0, e1));
 }
 
-float3 triangle_normal (global Triangle * triangle, global float3 * vertices);
-float3 triangle_normal (global Triangle * triangle, global float3 * vertices)
+float3 triangle_normal (const global Triangle * triangle, const global float3 * vertices);
+float3 triangle_normal (const global Triangle * triangle, const global float3 * vertices)
 {
     TriangleVerts t =
     {   vertices [triangle->v0]
@@ -157,14 +165,14 @@ Ray ray_reflect (Ray ray, float3 normal, float3 intersection)
 }
 
 Ray triangle_reflectAt
-(   global Triangle * triangle
-,   global float3 * vertices
+(   const global Triangle * triangle
+,   const global float3 * vertices
 ,   Ray ray
 ,   float3 intersection
 );
 Ray triangle_reflectAt
-(   global Triangle * triangle
-,   global float3 * vertices
+(   const global Triangle * triangle
+,   const global float3 * vertices
 ,   Ray ray
 ,   float3 intersection
 )
@@ -178,23 +186,22 @@ Ray triangle_reflectAt
 
 Intersection ray_triangle_intersection
 (   Ray ray
-,   global Triangle * triangles
-,   unsigned long numtriangles
-,   global float3 * vertices
+,   const global Triangle * triangles
+,   ulong numtriangles
+,   const global float3 * vertices
 );
 Intersection ray_triangle_intersection
 (   Ray ray
-,   global Triangle * triangles
-,   unsigned long numtriangles
-,   global float3 * vertices
+,   const global Triangle * triangles
+,   ulong numtriangles
+,   const global float3 * vertices
 )
 {
-    Intersection ret = {0, 0, false};
+    Intersection ret = {};
 
-    for (unsigned long i = 0; i != numtriangles; ++i)
+    for (ulong i = 0; i != numtriangles; ++i)
     {
-        global Triangle * thisTriangle = triangles + i;
-        float distance = triangle_intersection (thisTriangle, vertices, ray);
+        float distance = triangle_intersection (triangles + i, vertices, ray);
         if
         (   distance > EPSILON
         &&  (   !ret.intersects
@@ -202,7 +209,46 @@ Intersection ray_triangle_intersection
             )
         )
         {
-            ret = (Intersection) {i, distance, true};
+            ret.primitive = i;
+            ret.distance = distance;
+            ret.intersects = true;
+        }
+    }
+
+    return ret;
+}
+
+Intersection ray_triangle_group_intersection
+(   Ray ray
+,   const global Triangle * triangles
+,   const global uint * indices
+,   ulong numindices
+,   const global float3 * vertices
+);
+Intersection ray_triangle_group_intersection
+(   Ray ray
+,   const global Triangle * triangles
+,   const global uint * indices
+,   ulong numindices
+,   const global float3 * vertices
+)
+{
+    Intersection ret = {};
+
+    for (ulong i = 0; i != numindices; ++i)
+    {
+        ulong index = indices[i];
+        float distance = triangle_intersection (triangles + index, vertices, ray);
+        if
+        (   distance > EPSILON
+        &&  (   !ret.intersects
+            ||  (ret.intersects && distance < ret.distance)
+            )
+        )
+        {
+            ret.primitive = index;
+            ret.distance = distance;
+            ret.intersects = true;
         }
     }
 
@@ -254,9 +300,9 @@ void add_image_improved
 ,   float3 mic_reflection
 ,   float3 source
 ,   global Impulse * image_source
-,   global unsigned long * image_source_index
+,   global ulong * image_source_index
 ,   VolumeType volume
-,   unsigned long object_index
+,   ulong object_index
 ,   VolumeType AIR_COEFFICIENT
 );
 void add_image_improved
@@ -264,9 +310,9 @@ void add_image_improved
 ,   float3 mic_reflection
 ,   float3 source
 ,   global Impulse * image_source
-,   global unsigned long * image_source_index
+,   global ulong * image_source_index
 ,   VolumeType volume
-,   unsigned long object_index
+,   ulong object_index
 ,   VolumeType AIR_COEFFICIENT
 )
 {
@@ -285,11 +331,11 @@ void add_image
 ,   float3 mic_reflection
 ,   float3 source
 ,   global Impulse * image_source
-,   global unsigned long * image_source_index
+,   global ulong * image_source_index
 ,   size_t thread_index
 ,   size_t thread_offset_index
 ,   VolumeType volume
-,   unsigned long object_index
+,   ulong object_index
 ,   VolumeType AIR_COEFFICIENT
 );
 void add_image
@@ -297,11 +343,11 @@ void add_image
 ,   float3 mic_reflection
 ,   float3 source
 ,   global Impulse * image_source
-,   global unsigned long * image_source_index
+,   global ulong * image_source_index
 ,   size_t thread_index
 ,   size_t thread_offset_index
 ,   VolumeType volume
-,   unsigned long object_index
+,   ulong object_index
 ,   VolumeType AIR_COEFFICIENT
 )
 {
@@ -321,16 +367,16 @@ void add_image
 bool point_intersection
 (   float3 begin
 ,   float3 point
-,   global Triangle * triangles
-,   unsigned long numtriangles
-,   global float3 * vertices
+,   const global Triangle * triangles
+,   ulong numtriangles
+,   const global float3 * vertices
 );
 bool point_intersection
 (   float3 begin
 ,   float3 point
-,   global Triangle * triangles
-,   unsigned long numtriangles
-,   global float3 * vertices
+,   const global Triangle * triangles
+,   ulong numtriangles
+,   const global float3 * vertices
 )
 {
     const float3 begin_to_point = point - begin;
@@ -355,19 +401,125 @@ float3 get_direction (float3 from, float3 to)
     return normalize (to - from);
 }
 
+int3 get_starting_index
+(   float3 position
+,   AABB global_aabb
+,   float3 voxel_dimensions
+);
+int3 get_starting_index
+(   float3 position
+,   AABB global_aabb
+,   float3 voxel_dimensions
+)
+{
+    return convert_int3(floor((position - global_aabb.c0) / voxel_dimensions));
+}
+
+uint get_voxel_index
+(   const global uint * voxel_index
+,   int3 i
+,   int side
+);
+uint get_voxel_index
+(   const global uint * voxel_index
+,   int3 i
+,   int side
+)
+{
+    size_t offset = i.x * side * side + i.y * side + i.z;
+    return voxel_index[offset];
+}
+
+Intersection voxel_traversal
+(   const global uint * voxel_index
+,   Ray ray
+,   AABB global_aabb
+,   int side
+,   const global Triangle * triangles
+,   const global float3 * vertices
+);
+Intersection voxel_traversal
+(   const global uint * voxel_index
+,   Ray ray
+,   AABB global_aabb
+,   int side
+,   const global Triangle * triangles
+,   const global float3 * vertices
+)
+{
+    float3 voxel_dimensions = (global_aabb.c1 - global_aabb.c0) / side;
+
+    int3 ind = get_starting_index(ray.position, global_aabb, voxel_dimensions);
+
+    float3 c0 = convert_float3(ind + (int3)(0)) * voxel_dimensions;
+    float3 c1 = convert_float3(ind + (int3)(1)) * voxel_dimensions;
+
+    AABB voxel_bounds =
+    {   global_aabb.c0 + c0
+    ,   global_aabb.c0 + c1
+    };
+
+    //  TODO vectorise
+    int3 step;
+    int3 just_out;
+    float3 boundary;
+    for (int i = 0; i != 3; ++i) {
+        bool gt = ray.direction[i] > 0;
+        step[i]     = gt ? 1                    : -1;
+        just_out[i] = gt ? side                 : -1;
+        boundary[i] = gt ? voxel_bounds.c1[i]   : voxel_bounds.c0[i];
+    }
+
+    float3 t_max = fabs((boundary - ray.position) / ray.direction);
+    float3 t_delta = fabs(voxel_dimensions / ray.direction);
+
+    for (int zz = 0; zz != 100; ++zz) {
+        int min_i = 0;
+        for (int i = 1; i != 3; ++i) {
+            if (t_max[i] < t_max[min_i]) {
+                min_i = i;
+            }
+        }
+
+        uint voxel_offset = get_voxel_index(voxel_index, ind, side);
+        uint num_triangles = voxel_index[voxel_offset];
+        if (num_triangles) {
+            Intersection ret = ray_triangle_group_intersection
+            (   ray
+            ,   triangles
+            ,   voxel_index + voxel_offset + 1
+            ,   num_triangles
+            ,   vertices
+            );
+
+            if (ret.intersects && ret.distance < t_max[min_i]) {
+                return ret;
+            }
+        }
+        ind[min_i] += step[min_i];
+        if (ind[min_i] == just_out[min_i])
+            return (Intersection){};
+        t_max[min_i] += t_delta[min_i];
+    }
+    return (Intersection){};
+}
+
 kernel void raytrace_improved
 (   global RayInfo * ray_info
-,   global Triangle * triangles
-,   unsigned long numtriangles
-,   global float3 * vertices
-,   global Surface * surfaces
+,   const global uint * voxel_index
+,   AABB global_aabb
+,   int side
+,   const global Triangle * triangles
+,   ulong numtriangles
+,   const global float3 * vertices
+,   const global Surface * surfaces
 ,   float3 source
 ,   float3 mic
 ,   global Impulse * impulses
 ,   global Impulse * image_source
-,   global unsigned long * image_source_index
+,   global ulong * image_source_index
 ,   VolumeType AIR_COEFFICIENT
-,   unsigned long index
+,   ulong index
 )
 {
     size_t thread = get_global_id(0);
@@ -379,10 +531,12 @@ kernel void raytrace_improved
 
     Ray ray = info->ray;
 
-    Intersection closest = ray_triangle_intersection
-    (   ray
+    Intersection closest = voxel_traversal
+    (   voxel_index
+    ,   ray
+    ,   global_aabb
+    ,   side
     ,   triangles
-    ,   numtriangles
     ,   vertices
     );
 
@@ -392,7 +546,7 @@ kernel void raytrace_improved
         return;
     }
 
-    global Triangle * triangle = triangles + closest.primitive;
+    const global Triangle * triangle = triangles + closest.primitive;
 
     if (index < NUM_IMAGE_SOURCE)
     {
@@ -402,7 +556,7 @@ kernel void raytrace_improved
         ,   vertices [triangle->v2]
         };
 
-        for (unsigned int k = 0; k != index; ++k)
+        for (uint k = 0; k != index; ++k)
         {
             current = mirror_verts (current, info->prev_primitives[k]);
         }
@@ -414,14 +568,12 @@ kernel void raytrace_improved
         Ray to_mic = {source, DIR};
         bool intersects = true;
         float3 prev_intersection = source;
-        for (unsigned long k = 0; k != index + 1 && intersects; ++k)
+        for (ulong k = 0; k != index + 1 && intersects; ++k)
         {
 
             TriangleVerts to_test = info->prev_primitives[k];
 
-            const float TO_INTERSECTION = triangle_vert_intersection(to_test, to_mic);
-
-
+            float TO_INTERSECTION = triangle_vert_intersection(to_test, to_mic);
             if (TO_INTERSECTION <= EPSILON)
             {
                 intersects = false;
@@ -441,10 +593,13 @@ kernel void raytrace_improved
             {   prev_intersection
             ,   get_direction (prev_intersection, intersection_point)
             };
-            Intersection inter = ray_triangle_intersection
-            (   intermediate
+
+            Intersection inter = voxel_traversal
+            (   voxel_index
+            ,   intermediate
+            ,   global_aabb
+            ,   side
             ,   triangles
-            ,   numtriangles
             ,   vertices
             );
 
@@ -500,8 +655,8 @@ kernel void raytrace_improved
     ,   vertices
     );
 
-    const float dist = is_intersection ? new_dist + length(mic - intersection) : 0;
-    const float diff = fabs(dot(triangle_normal(triangle, vertices), ray.direction));
+    float dist = is_intersection ? new_dist + length(mic - intersection) : 0;
+    float diff = fabs(dot(triangle_normal(triangle, vertices), ray.direction));
     impulses[thread] = (Impulse)
     {   (   is_intersection
         ?   (   new_vol
@@ -530,15 +685,15 @@ kernel void raytrace_improved
 kernel void raytrace
 (   global float3 * directions
 ,   float3 position
-,   global Triangle * triangles
-,   unsigned long numtriangles
+,   const global Triangle * triangles
+,   ulong numtriangles
 ,   global float3 * vertices
 ,   float3 source
 ,   global Surface * surfaces
 ,   global Impulse * impulses
 ,   global Impulse * image_source
-,   global unsigned long * image_source_index
-,   unsigned long outputOffset
+,   global ulong * image_source_index
+,   ulong outputOffset
 ,   VolumeType AIR_COEFFICIENT
 )
 {
@@ -556,7 +711,7 @@ kernel void raytrace
 
     RayInfo * info = &ray_info;
 
-    for (unsigned long index = 0; index != outputOffset; ++index)
+    for (ulong index = 0; index != outputOffset; ++index)
     {
         //  Check for an intersection between the current ray and all the
         //  scene geometry.
@@ -574,7 +729,7 @@ kernel void raytrace
             break;
         }
 
-        global Triangle * triangle = triangles + closest.primitive;
+        const global Triangle * triangle = triangles + closest.primitive;
 
         if (index < NUM_IMAGE_SOURCE)
         {
@@ -585,7 +740,7 @@ kernel void raytrace
             ,   vertices [triangle->v2]
             };
 
-            for (unsigned int k = 0; k != index; ++k)
+            for (uint k = 0; k != index; ++k)
             {
                 current = mirror_verts (current, info->prev_primitives[k]);
             }
@@ -597,7 +752,7 @@ kernel void raytrace
             Ray to_mic = {source, DIR};
             bool intersects = true;
             float3 prev_intersection = source;
-            for (unsigned long k = 0; k != index + 1 && intersects; ++k)
+            for (ulong k = 0; k != index + 1 && intersects; ++k)
             {
 
                 TriangleVerts to_test = info->prev_primitives[k];
@@ -807,7 +962,7 @@ kernel void hrtf
 ,   global VolumeType * hrtfData
 ,   float3 pointing
 ,   float3 up
-,   unsigned long channel
+,   ulong channel
 )
 {
     size_t i = get_global_id (0);

@@ -72,19 +72,6 @@ const VoxelCollection::Voxel& VoxelCollection::get_voxel(const Vec3i& i) const {
     return data[i.x][i.y][i.z];
 }
 
-void min_max_ind(const Vec3f& v, int& min_i, int& max_i) {
-    min_i = 0;
-    max_i = 0;
-    for (auto i = 1u; i != 3; ++i) {
-        if (v[i] < v[min_i]) {
-            min_i = i;
-        }
-        if (v[i] > v[max_i]) {
-            max_i = i;
-        }
-    }
-}
-
 geo::Intersection VoxelCollection::traverse(const geo::Ray& ray,
                                             TraversalCallback& fun) {
     //  from http://www.cse.chalmers.se/edu/year/2010/course/TDA361/grid.pdf
@@ -100,11 +87,7 @@ geo::Intersection VoxelCollection::traverse(const geo::Ray& ray,
                    voxel_bounds.c1,
                    [](auto i, auto j, auto k) { return i < 0 ? j : k; });
 
-    auto t_max =
-        boundary.apply(ray.position,
-                       ray.direction,
-                       [](auto i, auto j, auto k) { return (i - j) / k; })
-            .abs();
+    auto t_max = ((boundary - ray.position) / ray.direction).abs();
     auto t_delta = (get_voxel_aabb().get_dimensions() / ray.direction).abs();
 
     for (;;) {
@@ -140,4 +123,35 @@ VoxelCollection::TriangleTraversalCallback::TriangleTraversalCallback(
 geo::Intersection VoxelCollection::TriangleTraversalCallback::operator()(
     const geo::Ray& ray, const std::vector<int>& triangles) {
     return geo::ray_triangle_intersection(ray, triangles, tri, vertices);
+}
+
+std::vector<cl_uint> VoxelCollection::get_flattened() const {
+    auto side = get_data().size();
+    auto dim = pow(side, 3);
+
+    std::vector<cl_uint> ret(dim);
+
+    auto to_flat = [side](auto i) {
+        return i.x * side * side + i.y * side + i.z;
+    };
+
+    for (auto x = 0u; x != side; ++x) {
+        for (auto y = 0u; y != side; ++y) {
+            for (auto z = 0u; z != side; ++z) {
+                Vec3i ind(x, y, z);
+                ret[to_flat(ind)] = ret.size();
+                const auto& v = get_voxel(ind);
+                ret.push_back(v.get_triangles().size());
+                for (const auto& i : v.get_triangles()) {
+                    ret.push_back(i);
+                }
+            }
+        }
+    }
+
+    return ret;
+}
+
+int VoxelCollection::get_side() const {
+    return get_data().size();
 }

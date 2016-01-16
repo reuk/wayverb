@@ -11,11 +11,12 @@ cl::Context get_context() {
     std::vector<cl::Platform> platform;
     cl::Platform::get(&platform);
 
-    cl_context_properties cps[3] = {
+    cl_context_properties cps[] = {
         CL_CONTEXT_PLATFORM, (cl_context_properties)(platform[0])(), 0,
     };
 
     return cl::Context(CL_DEVICE_TYPE_GPU, cps);
+    //    return cl::Context(CL_DEVICE_TYPE_CPU, cps);
 }
 
 cl::Device get_device(const cl::Context& context) {

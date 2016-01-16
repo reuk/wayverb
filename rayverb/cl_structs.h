@@ -50,3 +50,8 @@ typedef struct {
     cl_float distance;
     cl_uint cont;
 } __attribute__((aligned(8))) RayInfo;
+
+typedef struct {
+    cl_float3 c0;
+    cl_float3 c1;
+} __attribute__((aligned(8))) AABB;
