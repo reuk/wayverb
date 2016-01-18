@@ -20,8 +20,11 @@ const std::string RayverbProgram::source(
 #define EPSILON (0.0001f)
 #define NULL (0)
                                          
-#define MAKE_INTERSECTION(a, b) \
-    ((Intersection) {(a), (b), true})
+#define PRINT_INT3(var) \
+    printf("##var: %v3hld\n", var);
+                                         
+#define PRINT_FLOAT3(var) \
+    printf("##var: %2.2v3hlf\n", var);
 
 constant float SECONDS_PER_METER = 1.0f / SPEED_OF_SOUND;
 typedef float8 VolumeType;
@@ -264,8 +267,11 @@ VolumeType air_attenuation_for_distance (float distance, VolumeType AIR_COEFFICI
 float power_attenuation_for_distance (float distance);
 float power_attenuation_for_distance (float distance)
 {
-    //return 1 / (distance * distance);
+#if 0
+    return 1 / (distance * distance);
+#else
     return 1;
+#endif
 }
 
 VolumeType attenuation_for_distance (float distance, VolumeType AIR_COEFFICIENT);
@@ -434,6 +440,7 @@ Intersection voxel_traversal
 (   const global uint * voxel_index
 ,   Ray ray
 ,   AABB global_aabb
+,   float3 voxel_dimensions
 ,   int side
 ,   const global Triangle * triangles
 ,   const global float3 * vertices
@@ -442,38 +449,28 @@ Intersection voxel_traversal
 (   const global uint * voxel_index
 ,   Ray ray
 ,   AABB global_aabb
+,   float3 voxel_dimensions
 ,   int side
 ,   const global Triangle * triangles
 ,   const global float3 * vertices
 )
 {
-    float3 voxel_dimensions = (global_aabb.c1 - global_aabb.c0) / side;
-
     int3 ind = get_starting_index(ray.position, global_aabb, voxel_dimensions);
 
     float3 c0 = convert_float3(ind + (int3)(0)) * voxel_dimensions;
     float3 c1 = convert_float3(ind + (int3)(1)) * voxel_dimensions;
 
-    AABB voxel_bounds =
-    {   global_aabb.c0 + c0
-    ,   global_aabb.c0 + c1
-    };
-
-    //  TODO vectorise
-    int3 step;
-    int3 just_out;
-    float3 boundary;
-    for (int i = 0; i != 3; ++i) {
-        bool gt = ray.direction[i] > 0;
-        step[i]     = gt ? 1                    : -1;
-        just_out[i] = gt ? side                 : -1;
-        boundary[i] = gt ? voxel_bounds.c1[i]   : voxel_bounds.c0[i];
-    }
+    AABB voxel_bounds = {global_aabb.c0 + c0, global_aabb.c0 + c1};
+    
+    int3 gt = signbit(ray.direction);
+    int3 s = select((int3)(1), (int3)(-1), gt);
+    int3 just_out = select((int3)(side), (int3)(-1), gt);
+    float3 boundary = select(voxel_bounds.c1, voxel_bounds.c0, gt);
 
     float3 t_max = fabs((boundary - ray.position) / ray.direction);
     float3 t_delta = fabs(voxel_dimensions / ray.direction);
 
-    for (int zz = 0; zz != 100; ++zz) {
+    while (true) {
         int min_i = 0;
         for (int i = 1; i != 3; ++i) {
             if (t_max[i] < t_max[min_i]) {
@@ -483,20 +480,20 @@ Intersection voxel_traversal
 
         uint voxel_offset = get_voxel_index(voxel_index, ind, side);
         uint num_triangles = voxel_index[voxel_offset];
-        if (num_triangles) {
-            Intersection ret = ray_triangle_group_intersection
-            (   ray
-            ,   triangles
-            ,   voxel_index + voxel_offset + 1
-            ,   num_triangles
-            ,   vertices
-            );
+        
+        Intersection ret = ray_triangle_group_intersection
+        (   ray
+        ,   triangles
+        ,   voxel_index + voxel_offset + 1
+        ,   num_triangles
+        ,   vertices
+        );
 
-            if (ret.intersects && ret.distance < t_max[min_i]) {
-                return ret;
-            }
+        if (ret.intersects && ret.distance < t_max[min_i]) {
+            return ret;
         }
-        ind[min_i] += step[min_i];
+        
+        ind[min_i] += s[min_i];
         if (ind[min_i] == just_out[min_i])
             return (Intersection){};
         t_max[min_i] += t_delta[min_i];
@@ -531,10 +528,12 @@ kernel void raytrace_improved
 
     Ray ray = info->ray;
 
+    float3 voxel_dimensions = (global_aabb.c1 - global_aabb.c0) / side;
     Intersection closest = voxel_traversal
     (   voxel_index
     ,   ray
     ,   global_aabb
+    ,   voxel_dimensions
     ,   side
     ,   triangles
     ,   vertices
@@ -598,6 +597,7 @@ kernel void raytrace_improved
             (   voxel_index
             ,   intermediate
             ,   global_aabb
+            ,   voxel_dimensions
             ,   side
             ,   triangles
             ,   vertices
