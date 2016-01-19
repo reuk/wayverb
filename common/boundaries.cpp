@@ -7,6 +7,7 @@
 
 #include <cmath>
 #include <algorithm>
+#include <unordered_set>
 
 CuboidBoundary::CuboidBoundary(const Vec3f& c0, const Vec3f& c1)
         : c0(c0)
@@ -180,13 +181,22 @@ bool MeshBoundary::inside(const Vec3f& v) const {
     //  with each of the referenced triangles then count number of intersections
     //  on one side of the point
     //  if intersection number is even, point is outside, else it's inside
-    const geo::Ray ray(v, Vec3f(0, 0, 1));
     const auto references = get_references(hash_point(v));
+    geo::Ray ray(v, Vec3f(0, 0, 1));
+    std::unordered_set<float> distances;
     return count_if(references.begin(),
                     references.end(),
-                    [this, &ray](const auto& i) {
+                    [this, &ray, &distances](const auto& i) {
                         auto intersection =
                             triangle_intersection(triangles[i], vertices, ray);
+                        if (intersection.intersects) {
+                            if (distances.find(intersection.distance) !=
+                                distances.end()) {
+                                return false;
+                            } else {
+                                distances.insert(intersection.distance);
+                            }
+                        }
                         return intersection.intersects;
                     }) %
            2;

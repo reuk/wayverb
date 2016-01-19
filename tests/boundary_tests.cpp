@@ -18,11 +18,11 @@ TEST(boundary, mesh) {
     ASSERT_TRUE(boundary.inside(centre));
 
     auto dist = 100;
-    ASSERT_FALSE(boundary.inside(centre + Vec3f( dist, 0, 0)));
+    ASSERT_FALSE(boundary.inside(centre + Vec3f(dist, 0, 0)));
     ASSERT_FALSE(boundary.inside(centre + Vec3f(-dist, 0, 0)));
-    ASSERT_FALSE(boundary.inside(centre + Vec3f(0,  dist, 0)));
+    ASSERT_FALSE(boundary.inside(centre + Vec3f(0, dist, 0)));
     ASSERT_FALSE(boundary.inside(centre + Vec3f(0, -dist, 0)));
-    ASSERT_FALSE(boundary.inside(centre + Vec3f(0, 0,  dist)));
+    ASSERT_FALSE(boundary.inside(centre + Vec3f(0, 0, dist)));
     ASSERT_FALSE(boundary.inside(centre + Vec3f(0, 0, -dist)));
 
     auto test_point = [&boundary](auto pt) {
