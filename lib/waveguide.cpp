@@ -56,8 +56,8 @@ TetrahedralWaveguide::TetrahedralWaveguide(const TetrahedralProgram& program,
         , mesh(mesh)
         //    TODO this seems like it's asking for problems
         , node_buffer(program.getInfo<CL_PROGRAM_CONTEXT>(),
-                      const_cast<Node*>(this->mesh.get_nodes().data()),
-                      const_cast<Node*>(this->mesh.get_nodes().data()) +
+                      const_cast<KNode*>(this->mesh.get_nodes().data()),
+                      const_cast<KNode*>(this->mesh.get_nodes().data()) +
                           this->mesh.get_nodes().size(),
                       true)
         , transform_buffer(program.getInfo<CL_PROGRAM_CONTEXT>(),
@@ -126,5 +126,5 @@ const IterativeTetrahedralMesh& TetrahedralWaveguide::get_mesh() const {
 }
 
 bool TetrahedralWaveguide::inside(size_type index) const {
-    return mesh.get_nodes()[index].inside;
+    return mesh.get_nodes()[index].inside == id_inside;
 }

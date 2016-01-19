@@ -14,7 +14,7 @@ ModelSectionObject::ModelSectionObject(const GenericShader &shader,
                       model_colour, model_colour, model_colour, model_colour)),
               get_indices(scene_data, octree),
               GL_TRIANGLES)
-        , octree(octree) {
+        , octree(shader, octree) {
 }
 
 std::vector<glm::vec3> ModelSectionObject::get_vertices(
@@ -49,22 +49,32 @@ std::vector<GLuint> ModelSectionObject::get_indices(
     return ret;
 }
 
-void ModelSectionObject::draw_octree(const Octree &octree,
-                                     BoxObject &box) const {
-    if (!octree.get_triangles().empty() && octree.get_nodes().empty()) {
-        const auto &aabb = octree.get_aabb();
-        box.set_scale(to_glm_vec3(aabb.get_dimensions()));
-        box.set_position(to_glm_vec3(aabb.get_centre()));
-        box.draw();
-    }
+void ModelSectionObject::draw() const {
+    BasicDrawableObject::draw();
+    octree.draw();
+}
 
-    for (const auto &i : octree.get_nodes()) {
-        draw_octree(i, box);
+ModelSectionObject::DrawableOctree::DrawableOctree(const GenericShader& shader, const Octree& octree)
+: shader(shader)
+, do_draw(!octree.get_triangles().empty() && !octree.has_nodes())
+, aabb(octree.get_aabb()) {
+    if (do_draw) {
+        for (const auto & i : octree.get_nodes()) {
+            nodes.emplace_back(shader, i);
+        }
     }
 }
 
-void ModelSectionObject::draw() const {
-    BasicDrawableObject::draw();
-    BoxObject box(get_shader());
-    draw_octree(octree, box);
+void ModelSectionObject::DrawableOctree::draw_worker(BoxObject& box) const {
+    if (do_draw) {
+        box.set_scale(to_glm_vec3(aabb.get_dimensions()));
+        box.set_position(to_glm_vec3(aabb.get_centre()));
+        box.draw();
+        for (const auto &i : nodes) i.draw_worker(box);
+    }
+}
+
+void ModelSectionObject::DrawableOctree::draw() const {
+    BoxObject box(shader);
+    draw_worker(box);
 }

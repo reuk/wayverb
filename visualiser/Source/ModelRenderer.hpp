@@ -44,6 +44,8 @@ private:
     DynamicVBO colors;
     StaticIBO ibo;
     GLuint size;
+    
+    std::vector<NodeType> node_type;
 
     float amp{100};
 };

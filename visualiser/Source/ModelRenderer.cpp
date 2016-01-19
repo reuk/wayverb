@@ -5,10 +5,23 @@
 #include "cl_common.h"
 #include "tetrahedral_program.h"
 
+std::vector<NodeType> extract_node_type(const std::vector<KNode>& nodes) {
+    std::vector<NodeType> ret (nodes.size());
+    std::transform(nodes.begin(),
+                   nodes.end(),
+                   ret.begin(),
+                   [](const auto & i) {
+                       return i.inside;
+                   });
+    return ret;
+}
+
 MeshObject::MeshObject(const GenericShader &shader,
                        const TetrahedralWaveguide &waveguide)
-        : shader(shader) {
-    auto nodes = waveguide.get_mesh().get_nodes();
+        : shader(shader)
+        , node_type(extract_node_type(waveguide.get_mesh().get_nodes())) {
+    const auto & nodes = waveguide.get_mesh().get_nodes();
+
     std::vector<glm::vec3> v(nodes.size());
     std::transform(nodes.begin(),
                    nodes.end(),
@@ -20,11 +33,11 @@ MeshObject::MeshObject(const GenericShader &shader,
 
     //  init buffers
     std::vector<glm::vec4> c(v.size());
-    std::transform(nodes.begin(),
-                   nodes.end(),
+    std::transform(node_type.begin(),
+                   node_type.end(),
                    c.begin(),
-                   [](auto i) {
-                       auto c = i.inside ? 1 : 0;
+                   [](const auto & i) {
+                       auto c = i == id_inside ? 1 : 0;
                        return glm::vec4(c, c, c, c);
                    });
 
@@ -65,15 +78,15 @@ void MeshObject::set_pressures(const std::vector<float> &pressures) {
     std::vector<glm::vec4> c(pressures.size(), glm::vec4(0, 0, 0, 0));
     std::transform(pressures.begin(),
                    pressures.end(),
+                   node_type.begin(),
                    c.begin(),
-                   [this](auto i) {
-                       auto p = i * amp;
-                       switch (0) {
-                           case 0:
-                               return p > 0 ? glm::vec4(0, p, p, p)
-                                            : glm::vec4(-p, 0, 0, -p);
-                           case 1:
-                               return glm::vec4(1, 1, 1, p);
+                   [this](auto i, auto j) {
+                       if (j == id_boundary) {
+                           return glm::vec4(1, 1, 1, 1);
+                       } else {
+                           auto p = i * amp;
+                           return p > 0 ? glm::vec4(0, p, p, p)
+                                        : glm::vec4(-p, 0, 0, -p);
                        }
                    });
     colors.data(c);
@@ -103,7 +116,6 @@ RaytraceObject::RaytraceObject(const GenericShader &shader,
                                                       0.0f) /
                                       8;
                        auto c = i.time ? fabs(average) * 10 : 0;
-                       //                       auto c = 1;
                        return glm::vec4(0, c, c, c);
                    });
 
@@ -335,7 +347,7 @@ void DrawableScene::update(float dt) {
         try {
             if (future_pressure.wait_for(std::chrono::milliseconds(0)) ==
                 std::future_status::ready) {
-                mesh_object->set_pressures(future_pressure.get());
+//                mesh_object->set_pressures(future_pressure.get());
                 trigger_pressure_calculation();
             }
         } catch (const std::exception &e) {

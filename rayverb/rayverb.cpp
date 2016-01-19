@@ -478,8 +478,8 @@ Results ImprovedRaytrace::run(const SceneData& scene_data,
         rays * NUM_IMAGE_SOURCE,
         Impulse{{{0, 0, 0, 0, 0, 0, 0, 0}}, {{0, 0, 0}}, 0});
 
-    AABB global_aabb{to_cl_float3(vox.get_aabb().c0),
-                     to_cl_float3(vox.get_aabb().c1)};
+    AABB global_aabb{to_cl_float3(vox.get_aabb().get_c0()),
+                     to_cl_float3(vox.get_aabb().get_c1())};
 
     for (auto i = 0u; i != reflections; ++i) {
         auto b = (i + 0) * rays;

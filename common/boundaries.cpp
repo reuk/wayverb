@@ -41,6 +41,9 @@ Vec3f CuboidBoundary::get_centre() const {
     return (c0 + c1) / 2;
 }
 
+Vec3f CuboidBoundary::get_c0() const {return c0;}
+Vec3f CuboidBoundary::get_c1() const {return c1;}
+
 bool CuboidBoundary::intersects(const geo::Ray& ray, float t0, float t1) {
     //  from http://people.csail.mit.edu/amy/papers/box-jgt.pdf
     auto inv = Vec3f(1) / ray.direction;
@@ -93,15 +96,13 @@ CuboidBoundary SphereBoundary::get_aabb() const {
 }
 
 Vec3i MeshBoundary::hash_point(const Vec3f& v) const {
-    return ((v - boundary.c0) / cell_size)
+    return ((v - boundary.get_c0()) / cell_size)
         .map([](auto i) -> int { return floor(i); });
 }
 
-std::vector<std::vector<MeshBoundary::reference_store>>
-MeshBoundary::get_triangle_references() const {
-    std::vector<std::vector<reference_store>> ret(
-        DIVISIONS, std::vector<reference_store>(DIVISIONS));
-
+MeshBoundary::hash_table
+MeshBoundary::compute_triangle_references() const {
+    hash_table ret;
     for (auto& i : ret)
         for (auto& j : i)
             j.reserve(8);
@@ -110,8 +111,8 @@ MeshBoundary::get_triangle_references() const {
         const auto& t = triangles[i];
         const auto bounding_box = get_cuboid_boundary(
             {vertices[t.v0], vertices[t.v1], vertices[t.v2]});
-        const auto min_indices = hash_point(bounding_box.c0);
-        const auto max_indices = hash_point(bounding_box.c1) + 1;
+        const auto min_indices = hash_point(bounding_box.get_c0());
+        const auto max_indices = hash_point(bounding_box.get_c1()) + 1;
 
         for (auto j = min_indices.x; j != max_indices.x && j != DIVISIONS;
              ++j) {
@@ -130,7 +131,7 @@ MeshBoundary::MeshBoundary(const std::vector<Triangle>& triangles,
         , vertices(vertices)
         , boundary(get_cuboid_boundary(vertices))
         , cell_size(boundary.get_dimensions() / DIVISIONS)
-        , triangle_references(get_triangle_references()) {
+        , triangle_references(compute_triangle_references()) {
 #ifdef TESTING
     auto fname = build_string("./file-mesh.txt");
     ofstream file(fname);
@@ -197,3 +198,21 @@ std::vector<int> MeshBoundary::get_triangle_indices() const {
     std::iota(ret.begin(), ret.end(), 0);
     return ret;
 }
+
+const std::vector<Triangle> & MeshBoundary::get_triangles() const {
+    return triangles;
+}
+
+const std::vector<Vec3f> & MeshBoundary::get_vertices() const {
+    return vertices;
+}
+
+const CuboidBoundary & MeshBoundary::get_boundary() const {
+    return boundary;
+}
+
+Vec3f MeshBoundary::get_cell_size() const {
+    return cell_size;
+}
+
+constexpr int MeshBoundary::DIVISIONS;

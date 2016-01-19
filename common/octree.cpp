@@ -8,15 +8,15 @@
 std::array<CuboidBoundary, 8> next_boundaries(const CuboidBoundary& parent) {
     auto centre = parent.get_centre();
 
-    auto x0 = parent.c0.x;
-    auto y0 = parent.c0.y;
-    auto z0 = parent.c0.z;
+    auto x0 = parent.get_c0().x;
+    auto y0 = parent.get_c0().y;
+    auto z0 = parent.get_c0().z;
     auto xc = centre.x;
     auto yc = centre.y;
     auto zc = centre.z;
-    auto x1 = parent.c1.x;
-    auto y1 = parent.c1.y;
-    auto z1 = parent.c1.z;
+    auto x1 = parent.get_c1().x;
+    auto y1 = parent.get_c1().y;
+    auto z1 = parent.get_c1().z;
 
     return std::array<CuboidBoundary, 8>{{
         CuboidBoundary(Vec3f(x0, y0, z0), Vec3f(xc, yc, zc)),
@@ -106,12 +106,12 @@ void Octree::fill_flattened(std::vector<FloatUInt>& ret) const {
 
     const auto& triangles = get_triangles();
 
-    ret.push_back(to_fui(get_aabb().c0.x));
-    ret.push_back(to_fui(get_aabb().c0.y));
-    ret.push_back(to_fui(get_aabb().c0.z));
-    ret.push_back(to_fui(get_aabb().c1.x));
-    ret.push_back(to_fui(get_aabb().c1.y));
-    ret.push_back(to_fui(get_aabb().c1.z));
+    ret.push_back(to_fui(get_aabb().get_c0().x));
+    ret.push_back(to_fui(get_aabb().get_c0().y));
+    ret.push_back(to_fui(get_aabb().get_c0().z));
+    ret.push_back(to_fui(get_aabb().get_c1().x));
+    ret.push_back(to_fui(get_aabb().get_c1().y));
+    ret.push_back(to_fui(get_aabb().get_c1().z));
 
     if (!has_nodes()) {
         std::vector<FloatUInt> t(triangles.size() + 1);

@@ -47,6 +47,11 @@ public:
     Vec3f get_centre() const;
     Vec3f get_dimensions() const;
     bool intersects(const geo::Ray& ray, float t0, float t1);
+
+    Vec3f get_c0() const;
+    Vec3f get_c1() const;
+
+private:
     Vec3f c0, c1;
 };
 
@@ -55,7 +60,7 @@ public:
     SphereBoundary(const Vec3f& c = Vec3f(), float radius = 0);
     bool inside(const Vec3f& v) const override;
     CuboidBoundary get_aabb() const override;
-
+private:
     Vec3f c;
     float radius;
     CuboidBoundary boundary;
@@ -78,16 +83,24 @@ public:
     reference_store get_references(int x, int y) const;
     reference_store get_references(const Vec3i& i) const;
 
-    const int DIVISIONS{1024};
+    static constexpr int DIVISIONS = 1024;
+
+    const std::vector<Triangle> & get_triangles() const;
+    const std::vector<Vec3f> & get_vertices() const;
+    const CuboidBoundary & get_boundary() const;
+    Vec3f get_cell_size() const;
+
+private:
+    MeshBoundary(
+        const std::tuple<std::vector<Triangle>, std::vector<Vec3f>>& data);
+
+    using hash_table = std::array<std::array<reference_store, DIVISIONS>, DIVISIONS>;
+
+    hash_table compute_triangle_references() const;
 
     std::vector<Triangle> triangles;
     std::vector<Vec3f> vertices;
     CuboidBoundary boundary;
     Vec3f cell_size;
-    std::vector<std::vector<reference_store>> triangle_references;
-
-private:
-    MeshBoundary(
-        const std::tuple<std::vector<Triangle>, std::vector<Vec3f>>& data);
-    std::vector<std::vector<reference_store>> get_triangle_references() const;
+    hash_table triangle_references;
 };

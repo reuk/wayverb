@@ -304,8 +304,11 @@ Done
     * with volume, as the simulation progresses
     * fix image-source in new raytracer formulation
 * scroll to zoom?
+* raytracer octree implementation
 
 TODO
 ----
 
-* fix raytracer octree stuff
+* boundary modelling
+* test raytracer, try to find why disparity between implementations ocurrs
+* find out why bedroom model nodes sometimes think they are inside even when they are not

@@ -12,13 +12,24 @@ public:
                        const SceneData& scene_data,
                        const Octree& octree);
     void draw() const override;
-
+    
 private:
+    class DrawableOctree final : public ::Drawable {
+    public:
+        DrawableOctree(const GenericShader& shader, const Octree& octree);
+        void draw() const override;
+    private:
+        void draw_worker(BoxObject& box) const;
+        const GenericShader& shader;
+        
+        bool do_draw;
+        CuboidBoundary aabb;
+        std::vector<DrawableOctree> nodes;
+    };
+    
     std::vector<glm::vec3> get_vertices(const SceneData& scene_data) const;
     std::vector<GLuint> get_indices(const SceneData& scene_data,
                                     const Octree& octree) const;
 
-    void draw_octree(const Octree& octree, BoxObject& box) const;
-
-    Octree octree;
+    DrawableOctree octree;
 };
