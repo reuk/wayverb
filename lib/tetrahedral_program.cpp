@@ -13,7 +13,7 @@ const std::string TetrahedralProgram::source{
 #define PORTS (4)
 
 typedef enum {
-    id_inside,
+    id_inside = 1,
     id_boundary,
     id_outside,
 } NodeType;

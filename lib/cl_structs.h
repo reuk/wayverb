@@ -3,11 +3,11 @@
 #define __CL_ENABLE_EXCEPTIONS
 #include "cl.hpp"
 
-enum NodeType : cl_int {
-    id_inside,
+typedef enum : cl_int {
+    id_inside = 1,
     id_boundary,
     id_outside,
-};
+} NodeType;
 
 typedef struct {
     cl_int ports[4];

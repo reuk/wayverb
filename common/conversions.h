@@ -15,7 +15,7 @@ inline Vec3f to_vec3f(const T& t) {
     return Vec3f{t.x, t.y, t.z};
 }
 
-template<>
+template <>
 inline Vec3f to_vec3f(const cl_float3& t) {
     return Vec3f{t.s[0], t.s[1], t.s[2]};
 }

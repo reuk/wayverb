@@ -12,7 +12,7 @@ callraytrace () {
     echo $args
 
     prefix=""
-    case 2 in
+    case 0 in
         1)
             prefix="valgrind"
             ;;

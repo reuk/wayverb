@@ -54,23 +54,25 @@ void ModelSectionObject::draw() const {
     octree.draw();
 }
 
-ModelSectionObject::DrawableOctree::DrawableOctree(const GenericShader& shader, const Octree& octree)
-: shader(shader)
-, do_draw(!octree.get_triangles().empty() && !octree.has_nodes())
-, aabb(octree.get_aabb()) {
+ModelSectionObject::DrawableOctree::DrawableOctree(const GenericShader &shader,
+                                                   const Octree &octree)
+        : shader(shader)
+        , do_draw(!octree.get_triangles().empty() && !octree.has_nodes())
+        , aabb(octree.get_aabb()) {
     if (do_draw) {
-        for (const auto & i : octree.get_nodes()) {
+        for (const auto &i : octree.get_nodes()) {
             nodes.emplace_back(shader, i);
         }
     }
 }
 
-void ModelSectionObject::DrawableOctree::draw_worker(BoxObject& box) const {
+void ModelSectionObject::DrawableOctree::draw_worker(BoxObject &box) const {
     if (do_draw) {
         box.set_scale(to_glm_vec3(aabb.get_dimensions()));
         box.set_position(to_glm_vec3(aabb.get_centre()));
         box.draw();
-        for (const auto &i : nodes) i.draw_worker(box);
+        for (const auto &i : nodes)
+            i.draw_worker(box);
     }
 }
 

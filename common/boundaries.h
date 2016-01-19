@@ -60,6 +60,7 @@ public:
     SphereBoundary(const Vec3f& c = Vec3f(), float radius = 0);
     bool inside(const Vec3f& v) const override;
     CuboidBoundary get_aabb() const override;
+
 private:
     Vec3f c;
     float radius;
@@ -85,16 +86,16 @@ public:
 
     static constexpr int DIVISIONS = 1024;
 
-    const std::vector<Triangle> & get_triangles() const;
-    const std::vector<Vec3f> & get_vertices() const;
-    const CuboidBoundary & get_boundary() const;
+    const std::vector<Triangle>& get_triangles() const;
+    const std::vector<Vec3f>& get_vertices() const;
+    const CuboidBoundary& get_boundary() const;
     Vec3f get_cell_size() const;
 
 private:
     MeshBoundary(
         const std::tuple<std::vector<Triangle>, std::vector<Vec3f>>& data);
 
-    using hash_table = std::array<std::array<reference_store, DIVISIONS>, DIVISIONS>;
+    using hash_table = std::vector<std::vector<reference_store>>;
 
     hash_table compute_triangle_references() const;
 

@@ -5,14 +5,12 @@
 #include "cl_common.h"
 #include "tetrahedral_program.h"
 
-std::vector<NodeType> extract_node_type(const std::vector<KNode>& nodes) {
-    std::vector<NodeType> ret (nodes.size());
+std::vector<NodeType> extract_node_type(const std::vector<KNode> &nodes) {
+    std::vector<NodeType> ret(nodes.size());
     std::transform(nodes.begin(),
                    nodes.end(),
                    ret.begin(),
-                   [](const auto & i) {
-                       return i.inside;
-                   });
+                   [](const auto &i) { return i.inside; });
     return ret;
 }
 
@@ -20,7 +18,7 @@ MeshObject::MeshObject(const GenericShader &shader,
                        const TetrahedralWaveguide &waveguide)
         : shader(shader)
         , node_type(extract_node_type(waveguide.get_mesh().get_nodes())) {
-    const auto & nodes = waveguide.get_mesh().get_nodes();
+    const auto &nodes = waveguide.get_mesh().get_nodes();
 
     std::vector<glm::vec3> v(nodes.size());
     std::transform(nodes.begin(),
@@ -36,7 +34,7 @@ MeshObject::MeshObject(const GenericShader &shader,
     std::transform(node_type.begin(),
                    node_type.end(),
                    c.begin(),
-                   [](const auto & i) {
+                   [](const auto &i) {
                        auto c = i == id_inside ? 1 : 0;
                        return glm::vec4(c, c, c, c);
                    });
@@ -347,7 +345,7 @@ void DrawableScene::update(float dt) {
         try {
             if (future_pressure.wait_for(std::chrono::milliseconds(0)) ==
                 std::future_status::ready) {
-//                mesh_object->set_pressures(future_pressure.get());
+                //                mesh_object->set_pressures(future_pressure.get());
                 trigger_pressure_calculation();
             }
         } catch (const std::exception &e) {

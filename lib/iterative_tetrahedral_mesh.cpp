@@ -49,7 +49,8 @@ CuboidBoundary IterativeTetrahedralMesh::get_adjusted_boundary(
     auto extra = 6;
     auto c0 = anchor - ((ceiled + 1 + extra) * cube_side);
     Vec3i dim = ((min_boundary.get_c1() - c0) / cube_side)
-                   .map([](auto i) { return ceil(i); }) + extra;
+                    .map([](auto i) { return ceil(i); }) +
+                extra;
     auto c1 = c0 + dim * cube_side;
     return CuboidBoundary(c0, c1);
 }
@@ -59,27 +60,27 @@ std::vector<KNode> IterativeTetrahedralMesh::get_nodes(
     auto total_nodes = dim.product() * scaled_cube.size();
     std::vector<KNode> ret(total_nodes);
     auto counter = 0u;
-    std::generate(
-        ret.begin(),
-        ret.end(),
-        [this, &counter, &boundary]() {
-            KNode ret;
-            auto p = this->get_position(this->get_locator(counter));
-            auto neighbors = this->get_neighbors(counter);
-            std::copy(
-                neighbors.begin(), neighbors.end(), std::begin(ret.ports));
-            ret.position = to_cl_float3(p);
-            counter += 1;
-            return ret;
-        });
+    std::generate(ret.begin(),
+                  ret.end(),
+                  [this, &counter, &boundary]() {
+                      KNode ret;
+                      auto p = this->get_position(this->get_locator(counter));
+                      auto neighbors = this->get_neighbors(counter);
+                      std::copy(neighbors.begin(),
+                                neighbors.end(),
+                                std::begin(ret.ports));
+                      ret.position = to_cl_float3(p);
+                      counter += 1;
+                      return ret;
+                  });
 
     std::vector<bool> inside(ret.size());
     std::transform(ret.begin(),
-            ret.end(),
-            inside.begin(),
-            [&boundary](const auto & i) {
-                return boundary.inside(to_vec3f(i.position));
-            });
+                   ret.end(),
+                   inside.begin(),
+                   [&boundary](const auto& i) {
+                       return boundary.inside(to_vec3f(i.position));
+                   });
 
     std::transform(ret.begin(),
                    ret.end(),

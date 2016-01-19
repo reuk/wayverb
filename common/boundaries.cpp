@@ -41,8 +41,12 @@ Vec3f CuboidBoundary::get_centre() const {
     return (c0 + c1) / 2;
 }
 
-Vec3f CuboidBoundary::get_c0() const {return c0;}
-Vec3f CuboidBoundary::get_c1() const {return c1;}
+Vec3f CuboidBoundary::get_c0() const {
+    return c0;
+}
+Vec3f CuboidBoundary::get_c1() const {
+    return c1;
+}
 
 bool CuboidBoundary::intersects(const geo::Ray& ray, float t0, float t1) {
     //  from http://people.csail.mit.edu/amy/papers/box-jgt.pdf
@@ -100,9 +104,8 @@ Vec3i MeshBoundary::hash_point(const Vec3f& v) const {
         .map([](auto i) -> int { return floor(i); });
 }
 
-MeshBoundary::hash_table
-MeshBoundary::compute_triangle_references() const {
-    hash_table ret;
+MeshBoundary::hash_table MeshBoundary::compute_triangle_references() const {
+    hash_table ret(DIVISIONS, std::vector<reference_store>(DIVISIONS));
     for (auto& i : ret)
         for (auto& j : i)
             j.reserve(8);
@@ -199,15 +202,15 @@ std::vector<int> MeshBoundary::get_triangle_indices() const {
     return ret;
 }
 
-const std::vector<Triangle> & MeshBoundary::get_triangles() const {
+const std::vector<Triangle>& MeshBoundary::get_triangles() const {
     return triangles;
 }
 
-const std::vector<Vec3f> & MeshBoundary::get_vertices() const {
+const std::vector<Vec3f>& MeshBoundary::get_vertices() const {
     return vertices;
 }
 
-const CuboidBoundary & MeshBoundary::get_boundary() const {
+const CuboidBoundary& MeshBoundary::get_boundary() const {
     return boundary;
 }
 
