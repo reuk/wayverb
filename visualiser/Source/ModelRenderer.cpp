@@ -404,7 +404,7 @@ void SceneRenderer::load_from_file_package(const FilePackage &fp) {
 
     auto aabb = scene_data.get_aabb();
     auto m = aabb.get_centre();
-    auto max = (aabb.c1 - aabb.c0).max();
+    auto max = aabb.get_dimensions().max();
     auto s = max > 0 ? 20 / max : 1;
 
     translation = glm::translate(-glm::vec3(m.x, m.y, m.z));

@@ -62,7 +62,7 @@ public:
             const geo::Ray& ray, const std::vector<int>& triangles) override;
 
     private:
-        const std::vector<Triangle>& tri;
+        std::vector<Triangle> tri;
         std::vector<Vec3f> vertices;
     };
 

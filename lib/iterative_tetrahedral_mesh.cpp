@@ -100,6 +100,14 @@ std::vector<KNode> IterativeTetrahedralMesh::get_nodes(
                        }
                        return i;
                    });
+    
+    for (const auto & i : ret) {
+        auto p = to_vec3f(i.position);
+        if (i.inside == id_inside && ! boundary.get_aabb().inside(p)) {
+            std::cout << "what on earth" << std::endl;
+            std::cout << p << std::endl;
+        }
+    }
 
     return ret;
 }
