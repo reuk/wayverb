@@ -46,7 +46,7 @@ CuboidBoundary IterativeTetrahedralMesh::get_adjusted_boundary(
     const CuboidBoundary& min_boundary, const Vec3f& anchor) const {
     auto dif = anchor - min_boundary.get_c0();
     Vec3i ceiled = (dif / cube_side).map([](auto i) { return ceil(i); });
-    auto extra = 6;
+    auto extra = 1;
     auto c0 = anchor - ((ceiled + 1 + extra) * cube_side);
     Vec3i dim = ((min_boundary.get_c1() - c0) / cube_side)
                     .map([](auto i) { return ceil(i); }) +
@@ -100,14 +100,6 @@ std::vector<KNode> IterativeTetrahedralMesh::get_nodes(
                        }
                        return i;
                    });
-
-    for (const auto& i : ret) {
-        auto p = to_vec3f(i.position);
-        if (i.inside == id_inside && !boundary.get_aabb().inside(p)) {
-            std::cout << "what on earth" << std::endl;
-            std::cout << p << std::endl;
-        }
-    }
 
     return ret;
 }

@@ -106,6 +106,8 @@ Vec3i MeshBoundary::hash_point(const Vec3f& v) const {
 }
 
 MeshBoundary::hash_table MeshBoundary::compute_triangle_references() const {
+    //  TODO check!
+    //  TODO divide and conquer!
     hash_table ret(DIVISIONS, std::vector<reference_store>(DIVISIONS));
     for (auto& i : ret)
         for (auto& j : i)
