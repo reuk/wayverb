@@ -67,6 +67,12 @@ private:
     CuboidBoundary boundary;
 };
 
+template <typename T>
+inline bool almost_equal(T x, T y, int ups) {
+    return std::abs(x - y) <= std::numeric_limits<T>::epsilon() *
+                                  std::max(std::abs(x), std::abs(y)) * ups;
+}
+
 class MeshBoundary : public Boundary {
 public:
     MeshBoundary(
