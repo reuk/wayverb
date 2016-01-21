@@ -39,8 +39,9 @@ public:
 
     static float cube_side_from_node_spacing(float spacing);
 
-private:
     Vec3f get_position(const Locator& locator) const;
+
+private:
     static const std::array<std::array<Locator, PORTS>, CUBE_NODES>
         offset_table;
 

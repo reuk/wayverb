@@ -185,21 +185,11 @@ bool MeshBoundary::inside(const Vec3f& v) const {
     //  if intersection number is even, point is outside, else it's inside
     const auto references = get_references(hash_point(v));
     geo::Ray ray(v, Vec3f(0, 0, 1));
-    std::vector<float> distances;
     return count_if(references.begin(),
                     references.end(),
-                    [this, &ray, &distances](const auto& i) {
+                    [this, &ray](const auto& i) {
                         auto intersection =
                             triangle_intersection(triangles[i], vertices, ray);
-                        if (intersection.intersects) {
-                            for (auto d : distances) {
-                                if (almost_equal(d, intersection.distance, 1)) {
-                                    distances.push_back(intersection.distance);
-                                    return false;
-                                }
-                            }
-                            distances.push_back(intersection.distance);
-                        }
                         return intersection.intersects;
                     }) %
            2;

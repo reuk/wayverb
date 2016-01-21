@@ -82,21 +82,34 @@ std::vector<KNode> IterativeTetrahedralMesh::get_nodes(
                        return boundary.inside(to_vec3f(i.position));
                    });
 
+    auto neighbor_inside = [&inside](const auto& i) {
+        for (const auto& it : i.ports) {
+            if (it != -1 && inside[it]) {
+                return true;
+            }
+        }
+        return false;
+    };
+
+    std::transform(ret.begin(),
+                   ret.end(),
+                   inside.begin(),
+                   inside.begin(),
+                   [&neighbor_inside](auto node, auto in) {
+                       return neighbor_inside(node) && in;
+                   });
+
     std::transform(ret.begin(),
                    ret.end(),
                    inside.begin(),
                    ret.begin(),
-                   [&inside](auto i, const auto& j) {
+                   [&neighbor_inside](auto i, auto j) {
                        i.inside = id_outside;
                        if (j) {
                            i.inside = id_inside;
                        } else {
-                           for (const auto& it : i.ports) {
-                               if (it != -1 && inside[it]) {
-                                   i.inside = id_boundary;
-                                   break;
-                               }
-                           }
+                           if (neighbor_inside(i))
+                               i.inside = id_boundary;
                        }
                        return i;
                    });
@@ -137,22 +150,38 @@ IterativeTetrahedralMesh::Locator IterativeTetrahedralMesh::get_locator(
     auto transformed = v - boundary.get_c0();
     Vec3i cube_pos =
         (transformed / cube_side).map([](auto i) -> int { return i; });
-    Vec3f difference = (transformed - (cube_pos * cube_side));
+
+    auto min =
+        (cube_pos - 1)
+            .apply(Vec3i(0), [](auto i, auto j) { return std::max(i, j); });
+    auto max = (cube_pos + 2)
+                   .apply(dim, [](auto i, auto j) { return std::min(i, j); });
 
     std::vector<int> indices(scaled_cube.size());
     iota(indices.begin(), indices.end(), 0);
-    auto closest =
-        std::accumulate(indices.begin() + 1,
-                        indices.end(),
-                        indices.front(),
-                        [this, difference](auto i, auto j) {
-                            return (scaled_cube[i] - difference).mag() <
-                                           (scaled_cube[j] - difference).mag()
-                                       ? i
-                                       : j;
-                        });
 
-    return Locator(cube_pos, closest);
+    auto get_dist = [this, v](auto loc) {
+        return (v - get_position(loc)).mag_squared();
+    };
+
+    Locator closest(min, 0);
+    auto dist = get_dist(closest);
+    for (auto x = min.x; x != max.x; ++x) {
+        for (auto y = min.y; y != max.y; ++y) {
+            for (auto z = min.z; z != max.z; ++z) {
+                for (auto ind = 0u; ind != scaled_cube.size(); ++ind) {
+                    Locator t(Vec3i(x, y, z), ind);
+                    auto t_dist = get_dist(t);
+                    if (t_dist < dist) {
+                        closest = t;
+                        dist = t_dist;
+                    }
+                }
+            }
+        }
+    }
+
+    return closest;
 }
 
 Vec3f IterativeTetrahedralMesh::get_position(const Locator& locator) const {
@@ -169,8 +198,8 @@ const std::array<std::array<Locator, IterativeTetrahedralMesh::PORTS>,
     IterativeTetrahedralMesh::offset_table{{
         {{Locator(Vec3i(0, 0, 0), 2),
           Locator(Vec3i(-1, 0, -1), 3),
-          Locator(Vec3i(-1, -1, 0), 6),
-          Locator(Vec3i(0, -1, -1), 7)}},
+          Locator(Vec3i(0, -1, -1), 6),
+          Locator(Vec3i(-1, -1, 0), 7)}},
         {{Locator(Vec3i(0, 0, 0), 2),
           Locator(Vec3i(0, 0, 0), 3),
           Locator(Vec3i(0, -1, 0), 6),
@@ -181,23 +210,23 @@ const std::array<std::array<Locator, IterativeTetrahedralMesh::PORTS>,
           Locator(Vec3i(0, 0, 0), 5)}},
         {{Locator(Vec3i(1, 0, 1), 0),
           Locator(Vec3i(0, 0, 0), 1),
-          Locator(Vec3i(0, 0, 1), 4),
-          Locator(Vec3i(1, 0, 0), 5)}},
-        {{Locator(Vec3i(0, 0, 0), 2),
-          Locator(Vec3i(0, 0, -1), 3),
-          Locator(Vec3i(0, 0, 0), 6),
-          Locator(Vec3i(0, 0, -1), 7)}},
+          Locator(Vec3i(1, 0, 0), 4),
+          Locator(Vec3i(0, 0, 1), 5)}},
         {{Locator(Vec3i(0, 0, 0), 2),
           Locator(Vec3i(-1, 0, 0), 3),
-          Locator(Vec3i(-1, 0, 0), 6),
+          Locator(Vec3i(0, 0, 0), 6),
+          Locator(Vec3i(-1, 0, 0), 7)}},
+        {{Locator(Vec3i(0, 0, 0), 2),
+          Locator(Vec3i(0, 0, -1), 3),
+          Locator(Vec3i(0, 0, -1), 6),
           Locator(Vec3i(0, 0, 0), 7)}},
-        {{Locator(Vec3i(1, 1, 0), 0),
-          Locator(Vec3i(0, 1, 0), 1),
-          Locator(Vec3i(0, 0, 0), 4),
-          Locator(Vec3i(1, 0, 0), 5)}},
         {{Locator(Vec3i(0, 1, 1), 0),
           Locator(Vec3i(0, 1, 0), 1),
-          Locator(Vec3i(0, 0, 1), 4),
+          Locator(Vec3i(0, 0, 0), 4),
+          Locator(Vec3i(0, 0, 1), 5)}},
+        {{Locator(Vec3i(1, 1, 0), 0),
+          Locator(Vec3i(0, 1, 0), 1),
+          Locator(Vec3i(1, 0, 0), 4),
           Locator(Vec3i(0, 0, 0), 5)}},
     }};
 
