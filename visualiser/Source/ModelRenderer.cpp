@@ -345,7 +345,7 @@ void DrawableScene::update(float dt) {
         try {
             if (future_pressure.wait_for(std::chrono::milliseconds(0)) ==
                 std::future_status::ready) {
-                // mesh_object->set_pressures(future_pressure.get());
+                mesh_object->set_pressures(future_pressure.get());
                 trigger_pressure_calculation();
             }
         } catch (const std::exception &e) {
