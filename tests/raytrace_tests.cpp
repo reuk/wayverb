@@ -128,6 +128,20 @@ TEST(raytrace, new) {
                                                    bench_reflections);
 }
 
+std::ostream& operator<<(std::ostream& strm, const VolumeType& obj) {
+    strm << "( ";
+    for (auto i : obj.s)
+        strm << i << " ";
+    return strm << ")";
+}
+
+std::ostream& operator<<(std::ostream& strm, const cl_float3& obj) {
+    strm << "( ";
+    for (auto i : obj.s)
+        strm << i << " ";
+    return strm << ")";
+}
+
 TEST(raytrace, improved) {
     auto context = get_context();
     auto device = get_device(context);
@@ -159,9 +173,30 @@ TEST(raytrace, improved) {
     for (auto i = 0u; i != results_0.diffuse.size(); ++i) {
         const auto& a = results_0.diffuse[i];
         const auto& b = results_1.diffuse[i];
-        ASSERT_EQ(a.volume, b.volume) << "it: " << i;
-        ASSERT_EQ(a.position, b.position) << "it: " << i;
-        ASSERT_EQ(a.time, b.time) << "it: " << i;
+
+        auto ray_n = i / bench_reflections;
+        auto ref_n = i % bench_reflections;
+        std::stringstream ss;
+        ss << "ray: " << ray_n << ", ref: " << ref_n;
+
+        if (!(a.volume == b.volume && a.position == b.position &&
+              a.time == b.time)) {
+            auto begin_ind = ray_n * bench_reflections;
+            for (auto j = begin_ind; j != i + 1; ++j) {
+                std::cout << j << ": pos 0: " << results_0.diffuse[j].position
+                          << std::endl;
+                std::cout << j << ": pos 1: " << results_1.diffuse[j].position
+                          << std::endl;
+                std::cout << j << ": vol 0: " << results_0.diffuse[j].volume
+                          << std::endl;
+                std::cout << j << ": vol 1: " << results_1.diffuse[j].volume
+                          << std::endl;
+            }
+        }
+
+        ASSERT_EQ(a.volume, b.volume) << ss.str();
+        ASSERT_EQ(a.position, b.position) << ss.str();
+        ASSERT_EQ(a.time, b.time) << ss.str();
     }
 
     for (const auto& i : results_0.image_source) {

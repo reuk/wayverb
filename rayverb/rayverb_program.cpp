@@ -370,6 +370,8 @@ void add_image
     );
 }
 
+#define USE_VOXEL 1
+
 bool point_intersection
 (   float3 begin
 ,   float3 point
@@ -470,7 +472,7 @@ Intersection voxel_traversal
     float3 t_max = fabs((boundary - ray.position) / ray.direction);
     float3 t_delta = fabs(voxel_dimensions / ray.direction);
 
-    while (true) {
+    for (;;) {
         int min_i = 0;
         for (int i = 1; i != 3; ++i) {
             if (t_max[i] < t_max[min_i]) {
@@ -489,7 +491,7 @@ Intersection voxel_traversal
         ,   vertices
         );
 
-        if (ret.intersects && ret.distance < t_max[min_i]) {
+        if (ret.intersects && EPSILON < ret.distance && ret.distance < t_max[min_i]) {
             return ret;
         }
         
@@ -499,6 +501,46 @@ Intersection voxel_traversal
         t_max[min_i] += t_delta[min_i];
     }
     return (Intersection){};
+}
+
+bool voxel_point_intersection
+(   float3 begin
+,   float3 point
+,   const global uint * voxel_index
+,   AABB global_aabb
+,   float3 voxel_dimensions
+,   int side
+,   const global Triangle * triangles
+,   const global float3 * vertices
+);
+bool voxel_point_intersection
+(   float3 begin
+,   float3 point
+,   const global uint * voxel_index
+,   AABB global_aabb
+,   float3 voxel_dimensions
+,   int side
+,   const global Triangle * triangles
+,   const global float3 * vertices
+)
+{
+    const float3 begin_to_point = point - begin;
+    const float mag = length (begin_to_point);
+    const float3 direction = normalize (begin_to_point);
+
+    Ray to_point = {begin, direction};
+
+    Intersection inter = voxel_traversal
+    (   voxel_index
+    ,   to_point
+    ,   global_aabb
+    ,   voxel_dimensions
+    ,   side
+    ,   triangles
+    ,   vertices
+    );
+
+    return (!inter.intersects) || inter.distance > mag;
 }
 
 kernel void raytrace_improved
@@ -520,6 +562,11 @@ kernel void raytrace_improved
 )
 {
     size_t thread = get_global_id(0);
+    //  zero stuff
+    impulses[thread] = (Impulse){};
+    image_source[thread] = (Impulse){};
+    
+    //  get info about this thread
     global RayInfo * info = ray_info + thread;
 
     if (! info->cont) {
@@ -527,7 +574,8 @@ kernel void raytrace_improved
     }
 
     Ray ray = info->ray;
-
+    
+#if USE_VOXEL
     float3 voxel_dimensions = (global_aabb.c1 - global_aabb.c0) / side;
     Intersection closest = voxel_traversal
     (   voxel_index
@@ -538,6 +586,14 @@ kernel void raytrace_improved
     ,   triangles
     ,   vertices
     );
+#else
+    Intersection closest = ray_triangle_intersection
+    (   ray
+    ,   triangles
+    ,   numtriangles
+    ,   vertices
+    );
+#endif
 
     if (! closest.intersects)
     {
@@ -593,6 +649,7 @@ kernel void raytrace_improved
             ,   get_direction (prev_intersection, intersection_point)
             };
 
+#if USE_VOXEL
             Intersection inter = voxel_traversal
             (   voxel_index
             ,   intermediate
@@ -602,6 +659,14 @@ kernel void raytrace_improved
             ,   triangles
             ,   vertices
             );
+#else
+            Intersection inter = ray_triangle_intersection
+            (   intermediate
+            ,   triangles
+            ,   numtriangles
+            ,   vertices
+            );
+#endif
 
             float3 new_intersection_point =
             (   intermediate.position
@@ -619,6 +684,18 @@ kernel void raytrace_improved
 
         if (intersects)
         {
+            #if USE_VOXEL
+            intersects = voxel_point_intersection
+            (   prev_intersection
+            ,   mic
+            ,   voxel_index
+            ,   global_aabb
+            ,   voxel_dimensions
+            ,   side
+            ,   triangles
+            ,   vertices
+            );
+            #else
             intersects = point_intersection
             (   prev_intersection
             ,   mic
@@ -626,6 +703,7 @@ kernel void raytrace_improved
             ,   numtriangles
             ,   vertices
             );
+            #endif
         }
 
         if (intersects)
@@ -647,6 +725,18 @@ kernel void raytrace_improved
     float new_dist = info->distance + closest.distance;
     VolumeType new_vol = -info->volume * surfaces[triangle->surface].specular;
 
+#if USE_VOXEL
+    const bool is_intersection = voxel_point_intersection
+    (   intersection
+    ,   mic
+    ,   voxel_index
+    ,   global_aabb
+    ,   voxel_dimensions
+    ,   side
+    ,   triangles
+    ,   vertices
+    );
+#else
     const bool is_intersection = point_intersection
     (   intersection
     ,   mic
@@ -654,6 +744,7 @@ kernel void raytrace_improved
     ,   numtriangles
     ,   vertices
     );
+#endif
 
     float dist = is_intersection ? new_dist + length(mic - intersection) : 0;
     float diff = fabs(dot(triangle_normal(triangle, vertices), ray.direction));
