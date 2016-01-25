@@ -2,6 +2,7 @@
 
 #include "tetrahedral_program.h"
 #include "rectangular_program.h"
+#include "rectangular_mesh.h"
 #include "iterative_tetrahedral_mesh.h"
 #include "cl_structs.h"
 #include "logger.h"
@@ -230,12 +231,13 @@ private:
 
 class RectangularWaveguide : public Waveguide<RectangularProgram> {
 public:
-    RectangularWaveguide(const RectangularProgram& program,
+    using ProgramType = RectangularProgram;
+
+    RectangularWaveguide(const ProgramType& program,
                          cl::CommandQueue& queue,
                          const Boundary& boundary,
                          float spacing,
                          const Vec3f& anchor);
-    virtual ~RectangularWaveguide() noexcept = default;
 
     void setup(cl::CommandQueue& queue, size_type o, float sr) override;
 
@@ -250,27 +252,32 @@ public:
     size_type get_index_for_coordinate(const Vec3f& v) const override;
     Vec3f get_coordinate_for_index(size_type index) const override;
 
+    const RectangularMesh& get_mesh() const;
     bool inside(size_type index) const override;
 
 private:
-    /*
-    typedef struct {
-        cl_int ports[6];
-        cl_float3 position;
-        NodeType inside;
-    } __attribute__((aligned(8))) RectNode;
-    */
-    std::vector<RectNode> nodes;
+    RectangularWaveguide(const ProgramType& program,
+                         cl::CommandQueue& queue,
+                         const RectangularMesh& mesh);
+
+    RectangularMesh mesh;
+    cl::Buffer node_buffer;
+    cl::Buffer transform_buffer;
+    cl::Buffer velocity_buffer;
+    Eigen::MatrixXf transform_matrix;
+
+    float period;
 };
 
 class TetrahedralWaveguide : public Waveguide<TetrahedralProgram> {
 public:
-    TetrahedralWaveguide(const TetrahedralProgram& program,
+    using ProgramType = TetrahedralProgram;
+
+    TetrahedralWaveguide(const ProgramType& program,
                          cl::CommandQueue& queue,
                          const Boundary& boundary,
                          float spacing,
                          const Vec3f& anchor);
-    virtual ~TetrahedralWaveguide() noexcept = default;
 
     void setup(cl::CommandQueue& queue, size_type o, float sr) override;
 
@@ -289,7 +296,7 @@ public:
     bool inside(size_type index) const override;
 
 private:
-    TetrahedralWaveguide(const TetrahedralProgram& program,
+    TetrahedralWaveguide(const ProgramType& program,
                          cl::CommandQueue& queue,
                          const IterativeTetrahedralMesh& mesh);
 

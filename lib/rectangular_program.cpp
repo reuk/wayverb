@@ -12,105 +12,109 @@ const string RectangularProgram::source{
     "#define DIAGNOSTIC\n"
 #endif
     R"(
-    typedef enum {
-        MIN_X, MAX_X, MIN_Y, MAX_Y, MIN_Z, MAX_Z, CORNER, INSIDE,
-    } Boundary;
+#define PORTS (6)
 
-    Boundary boundary(int3 pos, int3 dim) {
-        bool min_x = pos.x == 0;
-        bool min_y = pos.y == 0;
-        bool min_z = pos.z == 0;
-        bool max_x = pos.x == dim.x - 1;
-        bool max_y = pos.y == dim.y - 1;
-        bool max_z = pos.z == dim.z - 1;
+typedef enum {
+    id_inside = 1,
+    id_boundary,
+    id_outside,
+} NodeType;
 
-        bool ux = min_x || max_x;
-        bool uy = min_y || max_y;
-        bool uz = min_z || max_z;
+typedef struct {
+    int ports[PORTS];
+    float3 position;
+    NodeType inside;
+} RectNode;
 
-        if (!ux && !uy && !uz) {
-            return INSIDE;
-        }
+kernel void waveguide
+(   global float * current
+,   global float * previous
+,   const global RectNode * nodes
+,   const global float * transform_matrix
+,   global float3 * velocity_buffer
+,   float spatial_sampling_period
+,   float T
+,   unsigned long read
+,   global float * output
+) {
+    size_t index = get_global_id(0);
+    const global RectNode * node = nodes + index;
 
-        if (ux && !(uy || uz)) {
-            return min_x ? MIN_X : MAX_X;
-        }
-
-        if (uy && !(ux || uz)) {
-            return min_y ? MIN_Y : MAX_Y;
-        }
-
-        if (uz && !(ux || uy)) {
-            return min_z ? MIN_Z : MAX_Z;
-        }
-
-        return CORNER;
+    if (node->inside != id_inside) {
+        return;
     }
 
-    size_t get_index(int3 pos, int3 dim) {
-        return pos.x + pos.y * dim.x + pos.z * dim.x * dim.y;
+    float temp = 0;
+
+    //  waveguide logic goes here
+    for (int i = 0; i != PORTS; ++i) {
+        int port_index = node->ports[i];
+        if (port_index >= 0 && nodes[port_index].inside == id_inside)
+            temp += current[port_index];
     }
 
-    kernel void waveguide
-    (   global float * current
-    ,   global float * previous
-    ,   float r
-    ,   unsigned long read
-    ,   global float * output
-    ) {
-        int3 pos = (int3)(get_global_id(0),
-                          get_global_id(1),
-                          get_global_id(2));
-        int3 dim = (int3)(get_global_size(0),
-                          get_global_size(1),
-                          get_global_size(2));
+    temp /= 3;
+    temp -= previous[index];
 
-        size_t index = get_index(pos, dim);
+    barrier(CLK_GLOBAL_MEM_FENCE);
+    previous[index] = temp;
+    barrier(CLK_GLOBAL_MEM_FENCE);
 
-        float temp = 0;
+    if (index == read) {
+        *output = previous[index];
 
-        switch (boundary(pos, dim)) {
-            case INSIDE:
-                temp += (current[get_index(pos + (int3)(-1, 0, 0), dim)] +
-                         current[get_index(pos + (int3)(+1, 0, 0), dim)] +
-                         current[get_index(pos + (int3)(0, -1, 0), dim)] +
-                         current[get_index(pos + (int3)(0, +1, 0), dim)] +
-                         current[get_index(pos + (int3)(0, 0, -1), dim)] +
-                         current[get_index(pos + (int3)(0, 0, +1), dim)]) / 3;
-                break;
+        //
+        //  instantaneous intensity for mic modelling
+        //
 
-            case MIN_X:
-                temp += (1 + r) * current[get_index((int3)(1, pos.y, pos.z), dim)];
-                break;
-            case MAX_X:
-                temp += (1 + r) * current[get_index((int3)(dim.x - 2, pos.y, pos.z), dim)];
-                break;
-            case MIN_Y:
-                temp += (1 + r) * current[get_index((int3)(pos.x, 1, pos.z), dim)];
-                break;
-            case MAX_Y:
-                temp += (1 + r) * current[get_index((int3)(pos.x, dim.y - 2, pos.z), dim)];
-                break;
-            case MIN_Z:
-                temp += (1 + r) * current[get_index((int3)(pos.x, pos.y, 1), dim)];
-                break;
-            case MAX_Z:
-                temp += (1 + r) * current[get_index((int3)(pos.x, pos.y, dim.z - 2), dim)];
-                break;
-
-            case CORNER:
-            default:
-                break;
+        float differences[PORTS] = {0, 0, 0, 0, 0, 0};
+        for (int i = 0; i != PORTS; ++i) {
+            int port_index = node->ports[i];
+            if (port_index >= 0 && nodes[port_index].inside == id_inside)
+                differences[i] = (previous[port_index] - previous[index]) /
+                    spatial_sampling_period;
         }
 
-        temp -= previous[index];
+        //  the default for Eigen is column-major matrices
+        //  so we'll assume that transform_matrix is column-major
 
-        barrier(CLK_GLOBAL_MEM_FENCE);
-        previous[index] = temp;
-        barrier(CLK_GLOBAL_MEM_FENCE);
+        //  multiply differences by transformation matrix
+        float3 multiplied = (float3)(
+            transform_matrix[0]  * differences[0] +
+            transform_matrix[3]  * differences[1] +
+            transform_matrix[6]  * differences[2] +
+            transform_matrix[9]  * differences[3] +
+            transform_matrix[12] * differences[4] +
+            transform_matrix[15] * differences[5],
+            transform_matrix[1]  * differences[0] +
+            transform_matrix[4]  * differences[1] +
+            transform_matrix[7]  * differences[2] +
+            transform_matrix[10] * differences[3] +
+            transform_matrix[13] * differences[4] +
+            transform_matrix[16] * differences[5],
+            transform_matrix[2]  * differences[0] +
+            transform_matrix[5]  * differences[1] +
+            transform_matrix[8]  * differences[2] +
+            transform_matrix[11] * differences[3] +
+            transform_matrix[14] * differences[4] +
+            transform_matrix[17] * differences[5]);
 
-        if (index == read) {
-            *output = previous[index];
-        }
+        //  muliply by -1/ambient_density
+        float ambient_density = 1.225;
+        multiplied /= -ambient_density;
+
+        //  numerical integration
+        //
+        //  I thought integration meant just adding to the previous value like
+        //  *velocity_buffer += multiplied;
+        //  but apparently the integrator has the transfer function
+        //  Hint(z) = Tz^-1 / (1 - z^-1)
+        //  so hopefully this is right
+        //
+        //  Hint(z) = Y(z)/X(z) = Tz^-1/(1 - z^-1)
+        //  y(n) = Tx(n - 1) + y(n - 1)
+
+        *velocity_buffer += T * multiplied;
     }
-    )"};
+}
+)"};

@@ -9,9 +9,15 @@ public:
                        bool build_immediate = false);
 
     auto get_kernel() const {
-        return cl::
-            make_kernel<cl::Buffer, cl::Buffer, cl_float, cl_ulong, cl::Buffer>(
-                *this, "waveguide");
+        return cl::make_kernel<cl::Buffer,
+                               cl::Buffer,
+                               cl::Buffer,
+                               cl::Buffer,
+                               cl::Buffer,
+                               cl_float,
+                               cl_float,
+                               cl_ulong,
+                               cl::Buffer>(*this, "waveguide");
     }
 
 private:

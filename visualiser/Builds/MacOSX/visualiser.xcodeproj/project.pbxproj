@@ -254,6 +254,7 @@
 		1B7251891C47DECF002090B6 /* ModelObject.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = ModelObject.hpp; path = ../../Source/ModelObject.hpp; sourceTree = "<group>"; };
 		1B72518B1C47DF46002090B6 /* ModelSectionObject.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ModelSectionObject.cpp; path = ../../Source/ModelSectionObject.cpp; sourceTree = "<group>"; };
 		1B72518C1C47DF46002090B6 /* ModelSectionObject.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = ModelSectionObject.hpp; path = ../../Source/ModelSectionObject.hpp; sourceTree = "<group>"; };
+		1BEC4AC51C5697D700E65480 /* MeshObject.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = MeshObject.h; path = ../../Source/MeshObject.h; sourceTree = "<group>"; };
 		1BED9283EEEC4F00C846E13B /* juce_MarkerList.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = juce_MarkerList.h; path = ../../JuceLibraryCode/modules/juce_gui_basics/positioning/juce_MarkerList.h; sourceTree = SOURCE_ROOT; };
 		1C291C46A481EA78341ADD3A /* juce_VST3Common.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = juce_VST3Common.h; path = ../../JuceLibraryCode/modules/juce_audio_processors/format_types/juce_VST3Common.h; sourceTree = SOURCE_ROOT; };
 		1C48BE54D95572A176421237 /* juce_osx_MessageQueue.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = juce_osx_MessageQueue.h; path = ../../JuceLibraryCode/modules/juce_events/native/juce_osx_MessageQueue.h; sourceTree = SOURCE_ROOT; };
@@ -1214,6 +1215,7 @@
 				D90DF4CA8C5F9E6608F1931E /* MainComponent.h */,
 				1B7251711C47DB54002090B6 /* BasicDrawableObject.cpp */,
 				1B7251721C47DB54002090B6 /* BasicDrawableObject.hpp */,
+				1BEC4AC51C5697D700E65480 /* MeshObject.h */,
 				CBC3B00D40D84CA60386DFA8 /* ModelRenderer.cpp */,
 				C07AD9013E3B2F159108D2FD /* ModelRenderer.hpp */,
 				1B72518B1C47DF46002090B6 /* ModelSectionObject.cpp */,

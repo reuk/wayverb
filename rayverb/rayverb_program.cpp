@@ -19,10 +19,10 @@ const std::string RayverbProgram::source(
 
 #define EPSILON (0.0001f)
 #define NULL (0)
-                                         
+
 #define PRINT_INT3(var) \
     printf("##var: %v3hld\n", var);
-                                         
+
 #define PRINT_FLOAT3(var) \
     printf("##var: %2.2v3hlf\n", var);
 
@@ -463,7 +463,7 @@ Intersection voxel_traversal
     float3 c1 = convert_float3(ind + (int3)(1)) * voxel_dimensions;
 
     AABB voxel_bounds = {global_aabb.c0 + c0, global_aabb.c0 + c1};
-    
+
     int3 gt = signbit(ray.direction);
     int3 s = select((int3)(1), (int3)(-1), gt);
     int3 just_out = select((int3)(side), (int3)(-1), gt);
@@ -482,7 +482,7 @@ Intersection voxel_traversal
 
         uint voxel_offset = get_voxel_index(voxel_index, ind, side);
         uint num_triangles = voxel_index[voxel_offset];
-        
+
         Intersection ret = ray_triangle_group_intersection
         (   ray
         ,   triangles
@@ -494,7 +494,7 @@ Intersection voxel_traversal
         if (ret.intersects && EPSILON < ret.distance && ret.distance < t_max[min_i]) {
             return ret;
         }
-        
+
         ind[min_i] += s[min_i];
         if (ind[min_i] == just_out[min_i])
             return (Intersection){};
@@ -565,7 +565,7 @@ kernel void raytrace_improved
     //  zero stuff
     impulses[thread] = (Impulse){};
     image_source[thread] = (Impulse){};
-    
+
     //  get info about this thread
     global RayInfo * info = ray_info + thread;
 
@@ -574,7 +574,7 @@ kernel void raytrace_improved
     }
 
     Ray ray = info->ray;
-    
+
 #if USE_VOXEL
     float3 voxel_dimensions = (global_aabb.c1 - global_aabb.c0) / side;
     Intersection closest = voxel_traversal

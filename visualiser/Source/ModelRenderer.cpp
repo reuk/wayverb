@@ -5,93 +5,6 @@
 #include "cl_common.h"
 #include "tetrahedral_program.h"
 
-std::vector<NodeType> extract_node_type(const std::vector<KNode> &nodes) {
-    std::vector<NodeType> ret(nodes.size());
-    std::transform(nodes.begin(),
-                   nodes.end(),
-                   ret.begin(),
-                   [](const auto &i) { return i.inside; });
-    return ret;
-}
-
-MeshObject::MeshObject(const GenericShader &shader,
-                       const TetrahedralWaveguide &waveguide)
-        : shader(shader)
-        , node_type(extract_node_type(waveguide.get_mesh().get_nodes())) {
-    const auto &nodes = waveguide.get_mesh().get_nodes();
-
-    std::vector<glm::vec3> v(nodes.size());
-    std::transform(nodes.begin(),
-                   nodes.end(),
-                   v.begin(),
-                   [](auto i) {
-                       auto p = i.position;
-                       return glm::vec3(p.x, p.y, p.z);
-                   });
-
-    //  init buffers
-    std::vector<glm::vec4> c(v.size());
-    std::transform(node_type.begin(),
-                   node_type.end(),
-                   c.begin(),
-                   [](const auto &i) {
-                       auto c = i == id_inside ? 1 : 0;
-                       return glm::vec4(c, c, c, c);
-                   });
-
-    std::vector<GLuint> indices(v.size());
-    std::iota(indices.begin(), indices.end(), 0);
-
-    size = indices.size();
-
-    geometry.data(v);
-    colors.data(c);
-    ibo.data(indices);
-
-    //  init vao
-    auto s_vao = vao.get_scoped();
-
-    geometry.bind();
-    auto v_pos = shader.get_attrib_location("v_position");
-    glEnableVertexAttribArray(v_pos);
-    glVertexAttribPointer(v_pos, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
-
-    colors.bind();
-    auto c_pos = shader.get_attrib_location("v_color");
-    glEnableVertexAttribArray(c_pos);
-    glVertexAttribPointer(c_pos, 4, GL_FLOAT, GL_FALSE, 0, nullptr);
-
-    ibo.bind();
-}
-
-void MeshObject::draw() const {
-    auto s_shader = shader.get_scoped();
-    shader.set_black(false);
-
-    auto s_vao = vao.get_scoped();
-    glDrawElements(GL_POINTS, size, GL_UNSIGNED_INT, nullptr);
-}
-
-void MeshObject::set_pressures(const std::vector<float> &pressures) {
-    std::vector<glm::vec4> c(pressures.size(), glm::vec4(0, 0, 0, 0));
-    std::transform(pressures.begin(),
-                   pressures.end(),
-                   node_type.begin(),
-                   c.begin(),
-                   [this](auto i, auto j) {
-                       if (j == id_boundary) {
-                           return glm::vec4(1, 1, 1, 1);
-                       } else {
-                           auto p = i * amp;
-                           return p > 0 ? glm::vec4(0, p, p, p)
-                                        : glm::vec4(-p, 0, 0, -p);
-                       }
-                   });
-    colors.data(c);
-}
-
-//----------------------------------------------------------------------------//
-
 RaytraceObject::RaytraceObject(const GenericShader &shader,
                                const RaytracerResults &results)
         : shader(shader) {
@@ -165,7 +78,7 @@ void RaytraceObject::draw() const {
 
 //----------------------------------------------------------------------------//
 
-static constexpr auto model_colour = 0.5;
+static constexpr auto model_colour = 0.75;
 
 VoxelisedObject::VoxelisedObject(const GenericShader &shader,
                                  const SceneData &scene_data,
@@ -279,13 +192,13 @@ DrawableScene::~DrawableScene() noexcept {
 void DrawableScene::init_waveguide(const SceneData &scene_data,
                                    const WaveguideConfig &cc) {
     MeshBoundary boundary(scene_data);
-    auto waveguide_program = get_program<TetrahedralProgram>(context, device);
-    auto w = std::make_unique<TetrahedralWaveguide>(
+    auto waveguide_program =
+        get_program<Waveguide::ProgramType>(context, device);
+    auto w = std::make_unique<Waveguide>(
         waveguide_program, queue, boundary, cc.get_divisions(), cc.get_mic());
     auto corrected_source = cc.get_source();
 
-    w->init(
-        corrected_source, TetrahedralWaveguide::GaussianFunction(0.1), 0, 0);
+    w->init(corrected_source, Waveguide::GaussianFunction(0.1), 0, 0);
 
     {
         std::lock_guard<std::mutex> lck(mut);
@@ -323,7 +236,8 @@ void DrawableScene::update(float dt) {
     std::lock_guard<std::mutex> lck(mut);
 
     if (waveguide && !mesh_object) {
-        mesh_object = std::make_unique<MeshObject>(shader, *waveguide);
+        mesh_object =
+            std::make_unique<MeshObject<Waveguide>>(shader, *waveguide);
         std::cout << "showing mesh with " << waveguide->get_nodes() << " nodes"
                   << std::endl;
     }

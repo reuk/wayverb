@@ -27,8 +27,8 @@ typedef struct {
 kernel void waveguide
 (   global float * current
 ,   global float * previous
-,   global KNode * nodes
-,   global float * transform_matrix
+,   const global KNode * nodes
+,   const global float * transform_matrix
 ,   global float3 * velocity_buffer
 ,   float spatial_sampling_period
 ,   float T
@@ -36,7 +36,7 @@ kernel void waveguide
 ,   global float * output
 ) {
     size_t index = get_global_id(0);
-    global KNode * node = nodes + index;
+    const global KNode * node = nodes + index;
 
     if (node->inside != id_inside) {
         return;

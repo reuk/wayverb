@@ -8,6 +8,7 @@
 #include "BoxObject.hpp"
 #include "ModelObject.hpp"
 #include "ModelSectionObject.hpp"
+#include "MeshObject.h"
 
 #define GLM_FORCE_RADIANS
 #include "glm/gtx/rotate_vector.hpp"
@@ -27,28 +28,6 @@
 #include <cmath>
 #include <mutex>
 #include <future>
-
-class MeshObject final : public ::Drawable {
-public:
-    MeshObject(const GenericShader& shader,
-               const TetrahedralWaveguide& waveguide);
-    void draw() const override;
-
-    void set_pressures(const std::vector<float>& pressures);
-
-private:
-    const GenericShader& shader;
-
-    VAO vao;
-    StaticVBO geometry;
-    DynamicVBO colors;
-    StaticIBO ibo;
-    GLuint size;
-
-    std::vector<NodeType> node_type;
-
-    float amp{100};
-};
 
 class RaytraceObject final : public ::Drawable {
 public:
@@ -103,13 +82,14 @@ private:
     cl::Device device;
     cl::CommandQueue queue;
 
-    //    std::unique_ptr<ModelSectionObject> model_object;
     std::unique_ptr<VoxelisedObject> model_object;
     std::unique_ptr<OctahedronObject> source_object;
     std::unique_ptr<OctahedronObject> receiver_object;
 
-    std::unique_ptr<MeshObject> mesh_object;
-    std::unique_ptr<TetrahedralWaveguide> waveguide;
+    using Waveguide = RectangularWaveguide;
+
+    std::unique_ptr<MeshObject<Waveguide>> mesh_object;
+    std::unique_ptr<Waveguide> waveguide;
     std::future<std::vector<cl_float>> future_pressure;
     std::thread waveguide_load_thread;
 
