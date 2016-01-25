@@ -9,15 +9,16 @@ typedef enum : cl_int {
     id_outside,
 } NodeType;
 
-typedef struct {
-    cl_int ports[4];
+typedef struct __KNode {
+    static constexpr int PORTS{4};
+    cl_int ports[PORTS];
     cl_float3 position;
     NodeType inside;
 } __attribute__((aligned(8))) KNode;
 
-typedef struct {
-    cl_int ports[4];
-    cl_float i_var[4];
-    cl_float o_var[4];
+typedef struct __RectNode {
+    static constexpr int PORTS{6};
+    cl_int ports[PORTS];
     cl_float3 position;
-} __attribute__((aligned(8))) WNode;
+    NodeType inside;
+} __attribute__((aligned(8))) RectNode;

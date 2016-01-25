@@ -408,14 +408,14 @@ TEST(specific, specific) {
                           Vec3f(-7.125, 0.449999988, -5.69999981));
         auto centre = b2.get_centre();
         auto x0 = b2.get_c0().x;
-        auto y0 = b2.get_c0().y;
+        //      auto y0 = b2.get_c0().y;
         auto z0 = b2.get_c0().z;
         auto xc = centre.x;
         auto yc = centre.y;
         auto zc = centre.z;
-        auto x1 = b2.get_c1().x;
+        //      auto x1 = b2.get_c1().x;
         auto y1 = b2.get_c1().y;
-        auto z1 = b2.get_c1().z;
+        //      auto z1 = b2.get_c1().z;
         CuboidBoundary b3(Vec3f(x0, yc, z0), Vec3f(xc, y1, zc));
 
         TriangleVec3f triangle_verts_1({{Vec3f(-9.5, 1.10000002, -6.0999999),

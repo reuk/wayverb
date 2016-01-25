@@ -1,4 +1,5 @@
 #include "iterative_tetrahedral_mesh.h"
+#include "rectangular_mesh.h"
 
 #include "gtest/gtest.h"
 
@@ -20,10 +21,11 @@
 #define MAT_PATH_BEDROOM ""
 #endif
 
-TEST(mesh, locator_index) {
+template <typename MeshType>
+void locator_index_test() {
     SceneData scene_data(OBJ_PATH_BEDROOM, MAT_PATH_BEDROOM);
     MeshBoundary boundary(scene_data);
-    IterativeTetrahedralMesh mesh(boundary, 0.1, Vec3f(0));
+    MeshType mesh(boundary, 0.1, Vec3f(0));
 
     for (auto i = 0u; i != mesh.get_nodes().size(); ++i) {
         auto loc = mesh.get_locator(i);
@@ -31,27 +33,54 @@ TEST(mesh, locator_index) {
     }
 }
 
+TEST(tetra, locator_index) {
+    locator_index_test<IterativeTetrahedralMesh>();
+}
+
+TEST(rect, locator_index) {
+    locator_index_test<RectangularMesh>();
+}
+
 bool operator==(const IterativeTetrahedralMesh::Locator& a,
                 const IterativeTetrahedralMesh::Locator& b) {
     return (a.pos == b.pos).all() && a.mod_ind == b.mod_ind;
 }
 
-TEST(mesh, position_index) {
+bool test_equal(const Vec3i& a, const Vec3i& b) {
+    return (a == b).all();
+}
+
+bool test_equal(const IterativeTetrahedralMesh::Locator& a,
+                const IterativeTetrahedralMesh::Locator& b) {
+    return test_equal(a.pos, b.pos) && a.mod_ind == b.mod_ind;
+}
+
+template <typename MeshType>
+void test_position_index() {
     SceneData scene_data(OBJ_PATH_BEDROOM, MAT_PATH_BEDROOM);
     MeshBoundary boundary(scene_data);
-    IterativeTetrahedralMesh mesh(boundary, 0.1, Vec3f(0));
+    MeshType mesh(boundary, 0.1, Vec3f(0));
 
     for (auto i = 0u; i != mesh.get_nodes().size(); ++i) {
         auto loc = mesh.get_locator(i);
         auto pos = mesh.get_position(loc);
-        ASSERT_EQ(loc, mesh.get_locator(pos));
+        ASSERT_TRUE(test_equal(loc, mesh.get_locator(pos)));
     }
 }
 
-TEST(mesh, neighbor) {
+TEST(tetra, position_index) {
+    test_position_index<IterativeTetrahedralMesh>();
+}
+
+TEST(rect, position_index) {
+    test_position_index<RectangularMesh>();
+}
+
+template <typename MeshType>
+void test_neighbor() {
     SceneData scene_data(OBJ_PATH_BEDROOM, MAT_PATH_BEDROOM);
     MeshBoundary boundary(scene_data);
-    IterativeTetrahedralMesh mesh(boundary, 0.1, Vec3f(0));
+    MeshType mesh(boundary, 0.1, Vec3f(0));
 
     auto run_test = [&mesh](auto i) {
         auto loc = mesh.get_locator(i);
@@ -86,4 +115,12 @@ TEST(mesh, neighbor) {
                 ASSERT_TRUE(ports_contains(mesh.get_nodes()[ind], i));
         }
     }
+}
+
+TEST(tetra, neighbor) {
+    test_neighbor<IterativeTetrahedralMesh>();
+}
+
+TEST(rect, neighbor) {
+    test_neighbor<RectangularMesh>();
 }

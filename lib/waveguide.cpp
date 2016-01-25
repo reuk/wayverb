@@ -6,6 +6,8 @@
 #include <algorithm>
 #include <cstdlib>
 
+//----------------------------------------------------------------------------//
+
 template <typename T>
 T pinv(const T& a, float epsilon = std::numeric_limits<float>::epsilon()) {
     //  taken from http://eigen.tuxfamily.org/bz/show_bug.cgi?id=257
@@ -19,6 +21,8 @@ T pinv(const T& a, float epsilon = std::numeric_limits<float>::epsilon()) {
                .asDiagonal() *
            svd.matrixU().adjoint();
 }
+
+//----------------------------------------------------------------------------//
 
 void TetrahedralWaveguide::setup(cl::CommandQueue& queue,
                                  size_type o,
@@ -128,3 +132,15 @@ const IterativeTetrahedralMesh& TetrahedralWaveguide::get_mesh() const {
 bool TetrahedralWaveguide::inside(size_type index) const {
     return mesh.get_nodes()[index].inside == id_inside;
 }
+
+//----------------------------------------------------------------------------//
+
+/*
+RectangularWaveguide::RectangularWaveguide(const RectangularProgram& program,
+                                           cl::CommandQueue& queue,
+                                           const Boundary& boundary,
+                                           float spacing,
+                                           const Vec3f& anchor) {
+
+}
+*/

@@ -117,13 +117,7 @@ int main(int argc, char** argv) {
             cl_float3 source{{std::cos(angle), 0, std::sin(angle)}};
 
             auto mic_index = waveguide.get_index_for_coordinate(to_vec3f(mic));
-            auto source_index =
-                waveguide.get_index_for_coordinate(to_vec3f(source));
 
-            auto corrected_source =
-                waveguide.get_coordinate_for_index(source_index);
-
-            //       auto steps = 4410;
             auto steps = 200;
 
             auto w_results =

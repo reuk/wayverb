@@ -133,14 +133,14 @@ int main(int argc, char** argv) {
                                        cc.get_divisions(),
                                        cc.get_mic());
         auto mic_index = waveguide.get_index_for_coordinate(cc.get_mic());
+
+#if 0
         auto source_index = waveguide.get_index_for_coordinate(cc.get_source());
 
         auto corrected_mic = waveguide.get_coordinate_for_index(mic_index);
         auto corrected_source =
             waveguide.get_coordinate_for_index(source_index);
-
-        Logger::log("mic: ", cc.get_mic());
-        Logger::log("corrected: ", corrected_mic);
+#endif
 
 #ifdef TESTING
         auto steps = 1 << 8;
@@ -248,10 +248,10 @@ int main(int argc, char** argv) {
                       depth,
                       format);
 
+#if 0
         auto raytrace_amp = 0.95;
         auto waveguide_amp = 0.05;
 
-#if 0
         auto max_index = max(raytrace_results.front().size(),
                              waveguide_results.front().size());
         std::vector<float> summed_results(max_index, 0);
