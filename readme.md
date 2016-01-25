@@ -23,8 +23,6 @@ Other stuff
   Directional Microphones in Digital Waveguide Mesh-Based Models of Room
   Acoustics", Hacıhabiboglu, IEEE transactions on audio, speech, and language
   processing, vol. 18, no. 2, February 2010 (might be moved to *tests* soon)
-* *bsp* - binary space partition to speed up the raytracer, might be rolled back
-  into *rayverb* if I decide to finish it
 * *python* - handful of programs to check/graph results. Will be removed if I
   find a good C++ graphing library
 * *docs* - anything I feel like I should write about as I'm working
