@@ -171,6 +171,10 @@ struct Vec3 final {
         throw std::out_of_range(ss.str());
     }
 
+    auto operator-() const {
+        return map([](auto i) { return -i; });
+    }
+
     VEC_OP(+, plus);
     VEC_OP(-, minus);
     VEC_OP(*, multiplies);

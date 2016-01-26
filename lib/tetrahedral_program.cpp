@@ -25,14 +25,14 @@ typedef struct {
 } KNode;
 
 kernel void waveguide
-(   global float * current
+(   const global float * current
 ,   global float * previous
 ,   const global KNode * nodes
 ,   const global float * transform_matrix
 ,   global float3 * velocity_buffer
 ,   float spatial_sampling_period
 ,   float T
-,   unsigned long read
+,   ulong read
 ,   global float * output
 ) {
     size_t index = get_global_id(0);
@@ -51,7 +51,7 @@ kernel void waveguide
             temp += current[port_index];
     }
 
-    temp /= 2;
+    temp /= (PORTS / 2);
     temp -= previous[index];
 
     barrier(CLK_GLOBAL_MEM_FENCE);
@@ -65,7 +65,7 @@ kernel void waveguide
         //  instantaneous intensity for mic modelling
         //
 
-        float differences[PORTS] = {0, 0, 0, 0};
+        float differences[PORTS] = {0};
         for (int i = 0; i != PORTS; ++i) {
             int port_index = node->ports[i];
             if (port_index >= 0 && nodes[port_index].inside == id_inside)
@@ -77,19 +77,14 @@ kernel void waveguide
         //  so we'll assume that transform_matrix is column-major
 
         //  multiply differences by transformation matrix
-        float3 multiplied = (float3)(
-            transform_matrix[0]  * differences[0] +
-            transform_matrix[3]  * differences[1] +
-            transform_matrix[6]  * differences[2] +
-            transform_matrix[9]  * differences[3],
-            transform_matrix[1]  * differences[0] +
-            transform_matrix[4]  * differences[1] +
-            transform_matrix[7]  * differences[2] +
-            transform_matrix[10] * differences[3],
-            transform_matrix[2]  * differences[0] +
-            transform_matrix[5]  * differences[1] +
-            transform_matrix[8]  * differences[2] +
-            transform_matrix[11] * differences[3]);
+        float3 multiplied = (float3)(0);
+        for (int i = 0; i != PORTS; ++i) {
+            multiplied += (float3)(
+                transform_matrix[0 + i * 3],
+                transform_matrix[1 + i * 3],
+                transform_matrix[2 + i * 3]
+            ) * differences[i];
+        }
 
         //  muliply by -1/ambient_density
         float ambient_density = 1.225;

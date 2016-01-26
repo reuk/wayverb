@@ -86,7 +86,7 @@ private:
     std::unique_ptr<OctahedronObject> source_object;
     std::unique_ptr<OctahedronObject> receiver_object;
 
-    using Waveguide = TetrahedralWaveguide;
+    using Waveguide = RectangularWaveguide;
 
     std::unique_ptr<MeshObject<Waveguide>> mesh_object;
     std::unique_ptr<Waveguide> waveguide;

@@ -305,19 +305,16 @@ Done
     * fix image-source in new raytracer formulation
 * scroll to zoom?
 * raytracer octree implementation
+* test raytracer, try to find why disparity between implementations ocurrs
 
 TODO
 ----
 
 * boundary modelling
-* test raytracer, try to find why disparity between implementations ocurrs
 * find out why bedroom model nodes sometimes think they are inside even when
   they are not
 
 * Get in touch with Damian Murphy with specific questions
     * about boundary modelling?
 
-* haart - look at audio file stuff
-    * think about whether to split into a couple of classes instead of one class
-
-
+* check for refactoring possibilities in waveguide and mesh files

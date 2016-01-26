@@ -198,7 +198,7 @@ void DrawableScene::init_waveguide(const SceneData &scene_data,
         waveguide_program, queue, boundary, cc.get_divisions(), cc.get_mic());
     auto corrected_source = cc.get_source();
 
-    w->init(corrected_source, Waveguide::GaussianFunction(0.1), 0, 0);
+    w->init(corrected_source, GaussianFunction(0.1), 0, 0);
 
     {
         std::lock_guard<std::mutex> lck(mut);
@@ -209,12 +209,8 @@ void DrawableScene::init_waveguide(const SceneData &scene_data,
 
 void DrawableScene::trigger_pressure_calculation() {
     try {
-        future_pressure = std::async(std::launch::async,
-                                     [this] {
-                                         auto ret = waveguide->run_step_slow();
-                                         waveguide->swap_buffers();
-                                         return ret;
-                                     });
+        future_pressure = std::async(
+            std::launch::async, [this] { return waveguide->run_step_slow(); });
     } catch (...) {
         std::cout << "async error?" << std::endl;
     }

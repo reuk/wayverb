@@ -8,40 +8,14 @@
 
 //----------------------------------------------------------------------------//
 
-template <typename T>
-T pinv(const T& a, float epsilon = std::numeric_limits<float>::epsilon()) {
-    //  taken from http://eigen.tuxfamily.org/bz/show_bug.cgi?id=257
-    Eigen::JacobiSVD<T> svd(a, Eigen::ComputeThinU | Eigen::ComputeThinV);
-    auto tolerance = epsilon * std::max(a.cols(), a.rows()) *
-                     svd.singularValues().array().abs()(0);
-    return svd.matrixV() *
-           (svd.singularValues().array().abs() > tolerance)
-               .select(svd.singularValues().array().inverse(), 0)
-               .matrix()
-               .asDiagonal() *
-           svd.matrixU().adjoint();
-}
-
-//----------------------------------------------------------------------------//
-
 void TetrahedralWaveguide::setup(cl::CommandQueue& queue,
                                  size_type o,
                                  float sr) {
-    Eigen::MatrixXf umat(4, 3);
-    auto count = 0u;
-    auto basis = to_vec3f(mesh.get_nodes()[o].position);
-    for (const auto& i : mesh.get_nodes()[o].ports) {
-        if (i >= 0) {
-            auto pos =
-                (to_vec3f(mesh.get_nodes()[i].position) - basis).normalized();
-            umat.row(count++) << pos.x, pos.y, pos.z;
-        }
-    }
-
-    transform_matrix = pinv(umat);
+    auto PORTS = decltype(mesh)::PORTS;
+    transform_matrix = get_transform_matrix(PORTS, o, mesh.get_nodes());
     cl::copy(queue,
              transform_matrix.data(),
-             transform_matrix.data() + 12,
+             transform_matrix.data() + PORTS * 3,
              transform_buffer);
 
     std::vector<cl_float3> starting_velocity(1, {{0, 0, 0, 0}});
@@ -166,21 +140,11 @@ RectangularWaveguide::RectangularWaveguide(const RectangularProgram& program,
 void RectangularWaveguide::setup(cl::CommandQueue& queue,
                                  size_type o,
                                  float sr) {
-    Eigen::MatrixXf umat(6, 3);
-    auto count = 0u;
-    auto basis = to_vec3f(mesh.get_nodes()[o].position);
-    for (const auto& i : mesh.get_nodes()[o].ports) {
-        if (i >= 0) {
-            auto pos =
-                (to_vec3f(mesh.get_nodes()[i].position) - basis).normalized();
-            umat.row(count++) << pos.x, pos.y, pos.z;
-        }
-    }
-
-    transform_matrix = pinv(umat);
+    auto PORTS = decltype(mesh)::PORTS;
+    transform_matrix = get_transform_matrix(PORTS, o, mesh.get_nodes());
     cl::copy(queue,
              transform_matrix.data(),
-             transform_matrix.data() + 18,
+             transform_matrix.data() + PORTS * 3,
              transform_buffer);
 
     std::vector<cl_float3> starting_velocity(1, {{0, 0, 0, 0}});

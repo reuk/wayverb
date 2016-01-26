@@ -7,6 +7,7 @@
 #include "cl_structs.h"
 #include "logger.h"
 #include "conversions.h"
+#include "power_function.h"
 
 #include <eigen3/Eigen/LU>
 #include <eigen3/Eigen/SVD>
@@ -14,6 +15,37 @@
 #include <array>
 #include <type_traits>
 #include <algorithm>
+
+template <typename T>
+inline T pinv(const T& a,
+              float epsilon = std::numeric_limits<float>::epsilon()) {
+    //  taken from http://eigen.tuxfamily.org/bz/show_bug.cgi?id=257
+    Eigen::JacobiSVD<T> svd(a, Eigen::ComputeThinU | Eigen::ComputeThinV);
+    auto tolerance = epsilon * std::max(a.cols(), a.rows()) *
+                     svd.singularValues().array().abs()(0);
+    return svd.matrixV() *
+           (svd.singularValues().array().abs() > tolerance)
+               .select(svd.singularValues().array().inverse(), 0)
+               .matrix()
+               .asDiagonal() *
+           svd.matrixU().adjoint();
+}
+
+template <typename T>
+inline Eigen::MatrixXf get_transform_matrix(int ports, int o, const T& nodes) {
+    Eigen::MatrixXf ret(ports, 3);
+    auto count = 0u;
+    auto basis = to_vec3f(nodes[o].position);
+    for (const auto& i : nodes[o].ports) {
+        if (i >= 0) {
+            auto pos = (to_vec3f(nodes[i].position) - basis).normalized();
+            ret.row(count++) << pos.x, pos.y, pos.z;
+        }
+    }
+    return pinv(ret);
+}
+
+//----------------------------------------------------------------------------//
 
 struct RunStepResult {
     RunStepResult(float pressure = 0, const Vec3f& intensity = 0)
@@ -27,62 +59,13 @@ struct RunStepResult {
 template <typename T>
 class Waveguide {
 public:
-    struct PowerFunction {
-        virtual ~PowerFunction() noexcept = default;
-        virtual float operator()(const Vec3f& a, const Vec3f& b) const = 0;
-    };
-
-    struct BasicPowerFunction final : public PowerFunction {
-        float operator()(const Vec3f& a, const Vec3f& b) const override {
-            return (a == b).all() ? 1 : 0;
-        }
-    };
-
-    struct InversePowerFunction final : public PowerFunction {
-        InversePowerFunction(float power)
-                : power(power) {
-        }
-
-        float operator()(const Vec3f& a, const Vec3f& b) const override {
-            return power / (a - b).mag();
-        }
-
-        const float power;
-    };
-
-    struct InverseSquarePowerFunction final : public PowerFunction {
-        InverseSquarePowerFunction(float power)
-                : power(power) {
-        }
-
-        float operator()(const Vec3f& a, const Vec3f& b) const override {
-            return power / (a - b).mag_squared();
-        }
-
-        const float power;
-    };
-
-    struct GaussianFunction final : public PowerFunction {
-        GaussianFunction(float standard_deviation = 2)
-                : standard_deviation(standard_deviation) {
-        }
-
-        static float gaussian(const Vec3f& x, float sdev) {
-            return 1 / pow(sdev * sqrt(2 * M_PI), 3) *
-                   pow(M_E, -x.mag_squared() / (2 * pow(sdev, 2)));
-        }
-
-        float operator()(const Vec3f& a, const Vec3f& ex) const override {
-            return gaussian(ex - a, standard_deviation);
-        }
-
-        float standard_deviation;
-    };
-
+    using ProgramType = T;
     using size_type = std::vector<cl_float>::size_type;
-    using kernel_type = decltype(std::declval<T>().get_kernel());
+    using kernel_type = decltype(std::declval<ProgramType>().get_kernel());
 
-    Waveguide(const T& program, cl::CommandQueue& queue, size_type nodes)
+    Waveguide(const ProgramType& program,
+              cl::CommandQueue& queue,
+              size_type nodes)
             : queue(queue)
             , kernel(program.get_kernel())
             , nodes(nodes)
@@ -114,6 +97,7 @@ public:
         run_step(0, queue, kernel, nodes, *previous, *current, output);
         std::vector<cl_float> ret(nodes, 0);
         cl::copy(queue, *previous, ret.begin(), ret.end());
+        swap_buffers();
         return ret;
     }
 
@@ -132,9 +116,7 @@ public:
         return nodes;
     }
 
-    virtual bool inside(size_type index) const {
-        return true;
-    }
+    virtual bool inside(size_type index) const = 0;
 
     void initialise_mesh(const PowerFunction& u,
                          const Vec3f& excitation,
@@ -231,8 +213,6 @@ private:
 
 class RectangularWaveguide : public Waveguide<RectangularProgram> {
 public:
-    using ProgramType = RectangularProgram;
-
     RectangularWaveguide(const ProgramType& program,
                          cl::CommandQueue& queue,
                          const Boundary& boundary,
@@ -271,8 +251,6 @@ private:
 
 class TetrahedralWaveguide : public Waveguide<TetrahedralProgram> {
 public:
-    using ProgramType = TetrahedralProgram;
-
     TetrahedralWaveguide(const ProgramType& program,
                          cl::CommandQueue& queue,
                          const Boundary& boundary,
