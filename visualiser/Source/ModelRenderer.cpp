@@ -255,7 +255,7 @@ void DrawableScene::update(float dt) {
         try {
             if (future_pressure.wait_for(std::chrono::milliseconds(0)) ==
                 std::future_status::ready) {
-                mesh_object->set_pressures(future_pressure.get());
+                //                mesh_object->set_pressures(future_pressure.get());
                 trigger_pressure_calculation();
             }
         } catch (const std::exception &e) {
@@ -354,7 +354,7 @@ void SceneRenderer::draw() const {
     glClearColor(c, c, c, 1);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);
-    //    glEnable(GL_PROGRAM_POINT_SIZE);
+    glEnable(GL_PROGRAM_POINT_SIZE);
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);

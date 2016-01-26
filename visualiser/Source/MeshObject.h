@@ -12,14 +12,23 @@ std::vector<NodeType> extract_node_type(const std::vector<T> & nodes) {
     return ret;
 }
 
+template <typename T>
+std::vector<cl_int> extract_bitmask(const std::vector<T> & nodes) {
+    std::vector<cl_int> ret(nodes.size());
+    std::transform(nodes.begin(),
+                   nodes.end(),
+                   ret.begin(),
+                   [](const auto & i) { return i.bt; });
+    return ret;
+}
+
 //----------------------------------------------------------------------------//
 
 template <typename WaveguideType>
 class MeshObject final : public ::Drawable {
 public:
     MeshObject(const GenericShader & shader, const WaveguideType & waveguide)
-            : shader(shader)
-            , node_type(extract_node_type(waveguide.get_mesh().get_nodes())) {
+            : shader(shader) {
         const auto & nodes = waveguide.get_mesh().get_nodes();
 
         std::vector<glm::vec3> v(nodes.size());
@@ -33,12 +42,31 @@ public:
 
         //  init buffers
         std::vector<glm::vec4> c(v.size());
-        std::transform(node_type.begin(),
-                       node_type.end(),
+
+        std::transform(nodes.begin(),
+                       nodes.end(),
                        c.begin(),
                        [](const auto & i) {
-                           auto c = i == id_inside ? 1 : 0;
-                           return glm::vec4(c, c, c, c);
+                           switch (i.bt) {
+                               case id_none:
+                                   return glm::vec4(0, 0, 0, 0);
+                               case id_nx:
+                                   return glm::vec4(1, 0, 0, 1);
+                               case id_px:
+                                   return glm::vec4(0, 1, 1, 1);
+                               case id_ny:
+                                   return glm::vec4(0, 1, 0, 1);
+                               case id_py:
+                                   return glm::vec4(1, 0, 1, 1);
+                               case id_nz:
+                                   return glm::vec4(0, 0, 1, 1);
+                               case id_pz:
+                                   return glm::vec4(1, 1, 0, 1);
+
+                               default:
+                                   return glm::vec4(1, 1, 1, 1);
+                           }
+                           return glm::vec4(0, 0, 0, 0);
                        });
 
         std::vector<GLuint> indices(v.size());
@@ -78,21 +106,11 @@ public:
         std::vector<glm::vec4> c(pressures.size(), glm::vec4(0, 0, 0, 0));
         std::transform(pressures.begin(),
                        pressures.end(),
-                       node_type.begin(),
                        c.begin(),
-                       [this](auto i, auto j) {
-#define SHOW_BOUNDARIES 0
-#if SHOW_BOUNDARIES
-                           if (j == id_boundary) {
-                               return glm::vec4(1, 1, 1, 1);
-                           } else {
-#endif
-                               auto p = i * amp;
-                               return p > 0 ? glm::vec4(0, p, p, p)
-                                            : glm::vec4(-p, 0, 0, -p);
-#if SHOW_BOUNDARIES
-                           }
-#endif
+                       [this](auto i) {
+                           auto p = i * amp;
+                           return p > 0 ? glm::vec4(0, p, p, p)
+                                        : glm::vec4(-p, 0, 0, -p);
                        });
         colors.data(c);
     }
@@ -105,8 +123,6 @@ private:
     DynamicVBO colors;
     StaticIBO ibo;
     GLuint size;
-
-    std::vector<NodeType> node_type;
 
     float amp{100};
 };

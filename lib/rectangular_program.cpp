@@ -58,7 +58,6 @@ Sm = current(x - 1, y, z) - current(x + 1, y, z) + previous(x - 1, y, z) - previ
 
 */
 
-
 typedef enum {
     id_inside = 1,
     id_boundary,
@@ -69,6 +68,7 @@ typedef struct {
     int ports[PORTS];
     float3 position;
     NodeType inside;
+    int bt;
 } RectNode;
 
 kernel void waveguide

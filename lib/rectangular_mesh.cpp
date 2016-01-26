@@ -66,6 +66,50 @@ RectangularMesh::Collection RectangularMesh::get_nodes(
                        return i;
                    });
 
+    for (auto i = 0u; i != ret.size(); ++i) {
+        auto& node = ret[i];
+        cl_int bitmask = 0;
+        if (!inside[i]) {
+            for (auto j = 0u; j != 6; ++j) {
+                if (0 <= node.ports[j] && inside[node.ports[j]])
+                    bitmask |= 1 << (j + 1);
+            }
+            node.bt = bitmask;
+        } else {
+            node.bt = id_none;
+        }
+    }
+
+    for (auto i = 0u; i != ret.size(); ++i) {
+        auto& node = ret[i];
+        if (std::bitset<sizeof(cl_int) * 8>(node.bt).count() > 1) {
+            node.bt = id_reentrant;
+        }
+    }
+
+    std::vector<cl_int> bt(ret.size(), 0);
+    for (auto i = 0u; i != ret.size(); ++i) {
+        auto& node = ret[i];
+        if (!inside[i] && node.bt == id_none) {
+            for (auto j = 0u; j != 6; ++j) {
+                if (0 <= node.ports[j]) {
+                    if (std::bitset<sizeof(cl_int) * 8>(ret[node.ports[j]].bt)
+                            .count() == 1) {
+                        bt[i] |= 1 << (j + 1);
+                    }
+                }
+            }
+            if (std::bitset<sizeof(cl_int) * 8>(bt[i]).count() <= 1) {
+                bt[i] = id_none;
+            }
+        } else {
+            bt[i] = node.bt;
+        }
+    }
+    for (auto i = 0u; i != ret.size(); ++i) {
+        ret[i].bt = bt[i];
+    }
+
     return ret;
 }
 
