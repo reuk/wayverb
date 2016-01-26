@@ -63,3 +63,34 @@ Locally Reacting Surfaces
 Frequency Independent Boundaries
 --------------------------------
 
+* by substituting centred finite difference operators into the continuous
+  boundary condition equation, we get an equation which can be written to
+  describe a 'ghost point' which lies outside the modelled space
+
+* this equation can be used to eliminate the ghost point in the discretized
+  wave equation
+    * giving us an update equation for the boundary
+
+* to find an update equation for the corner, recognize that the corner boundary
+  must satisfy the boundary conditions of the two joining edges simultaneously
+    * we find two ghost point equations
+    * then eliminate the ghost points in the discretized wave equation
+    * this gives us the corner update equation
+
+Frequency Dependent Boundaries
+------------------------------
+
+* replace real-valued wall impedance with complex-valued frequency-dependent
+  impedance
+
+* combining impedance equations for mass-like and spring-like boundaries gives
+  a single general boundary impedance equation
+
+* insert the impedance equation into the continuous wave equation
+    * then use finite difference operators to produce a discretized equation
+
+* the continuous equation includes a second-order derivative and an integral
+    * versions of the bilinear transform are used to remove these
+
+* now we use the discretized boundary equation to eliminate the ghost point in
+ the discretized wave equation
