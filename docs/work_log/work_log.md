@@ -304,8 +304,11 @@ Done
     * with volume, as the simulation progresses
     * fix image-source in new raytracer formulation
 * scroll to zoom?
+
 * raytracer octree implementation
 * test raytracer, try to find why disparity between implementations ocurrs
+* streamline the boundary node code, make sure it finds corner (three-or-more
+  boundaries) cases
 
 TODO
 ----
@@ -316,8 +319,6 @@ TODO
 
 * find some way of fixing the inside/outside bug at least for the echo tunnel
   example
-* streamline the boundary node code, make sure it finds corner (three-or-more
-  boundaries) cases
 
 * Get in touch with Damian Murphy with specific questions
     * about boundary modelling?
