@@ -309,6 +309,8 @@ Done
 * test raytracer, try to find why disparity between implementations ocurrs
 * streamline the boundary node code, make sure it finds corner (three-or-more
   boundaries) cases
+* find some way of fixing the inside/outside bug at least for the echo tunnel
+  example
 
 TODO
 ----
@@ -316,9 +318,6 @@ TODO
 * boundary modelling
 * find out why bedroom model nodes sometimes think they are inside even when
   they are not
-
-* find some way of fixing the inside/outside bug at least for the echo tunnel
-  example
 
 * Get in touch with Damian Murphy with specific questions
     * about boundary modelling?

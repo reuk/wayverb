@@ -28,8 +28,8 @@ void locator_index_test() {
     MeshType mesh(boundary, 0.1, Vec3f(0));
 
     for (auto i = 0u; i != mesh.get_nodes().size(); ++i) {
-        auto loc = mesh.get_locator(i);
-        ASSERT_EQ(i, mesh.get_index(loc));
+        auto loc = mesh.compute_locator(i);
+        ASSERT_EQ(i, mesh.compute_index(loc));
     }
 }
 
@@ -62,9 +62,9 @@ void test_position_index() {
     MeshType mesh(boundary, 0.1, Vec3f(0));
 
     for (auto i = 0u; i != mesh.get_nodes().size(); ++i) {
-        auto loc = mesh.get_locator(i);
-        auto pos = mesh.get_position(loc);
-        ASSERT_TRUE(test_equal(loc, mesh.get_locator(pos)));
+        auto loc = mesh.compute_locator(i);
+        auto pos = mesh.compute_position(loc);
+        ASSERT_TRUE(test_equal(loc, mesh.compute_locator(pos)));
     }
 }
 
@@ -83,12 +83,12 @@ void test_neighbor() {
     MeshType mesh(boundary, 0.1, Vec3f(0));
 
     auto run_test = [&mesh](auto i) {
-        auto loc = mesh.get_locator(i);
-        auto pos = mesh.get_position(loc);
-        for (auto j : mesh.get_neighbors(i)) {
+        auto loc = mesh.compute_locator(i);
+        auto pos = mesh.compute_position(loc);
+        for (auto j : mesh.compute_neighbors(i)) {
             if (j != -1) {
-                auto ll = mesh.get_locator(j);
-                auto pp = mesh.get_position(ll);
+                auto ll = mesh.compute_locator(j);
+                auto pp = mesh.compute_position(ll);
                 ASSERT_NEAR(mesh.get_spacing(), (pos - pp).mag(), 0.0001)
                     << i << ", " << j;
             }

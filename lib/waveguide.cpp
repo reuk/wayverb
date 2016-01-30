@@ -92,7 +92,7 @@ RunStepResult TetrahedralWaveguide::run_step(size_type o,
 
 TetrahedralWaveguide::size_type TetrahedralWaveguide::get_index_for_coordinate(
     const Vec3f& v) const {
-    return mesh.get_index(mesh.get_locator(v));
+    return mesh.compute_index(mesh.compute_locator(v));
 }
 
 Vec3f TetrahedralWaveguide::get_coordinate_for_index(size_type index) const {
@@ -191,7 +191,7 @@ RunStepResult RectangularWaveguide::run_step(size_type o,
 
 RectangularWaveguide::size_type RectangularWaveguide::get_index_for_coordinate(
     const Vec3f& v) const {
-    return mesh.get_index(mesh.get_locator(v));
+    return mesh.compute_index(mesh.compute_locator(v));
 }
 
 Vec3f RectangularWaveguide::get_coordinate_for_index(size_type index) const {

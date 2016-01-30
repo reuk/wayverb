@@ -6,25 +6,25 @@
 #include <algorithm>
 #include <numeric>
 
-RectangularMesh::Collection RectangularMesh::get_nodes(
+RectangularMesh::Collection RectangularMesh::compute_nodes(
     const Boundary& boundary) const {
     auto total_nodes = get_dim().product();
     auto ret = std::vector<Node>(total_nodes);
 
     auto counter = 0u;
-    std::generate(ret.begin(),
-                  ret.end(),
-                  [this, &counter, &boundary] {
-                      Node ret;
-                      auto p = this->get_position(this->get_locator(counter));
-                      auto neighbors = this->get_neighbors(counter);
-                      std::copy(neighbors.begin(),
-                                neighbors.end(),
-                                std::begin(ret.ports));
-                      ret.position = to_cl_float3(p);
-                      counter += 1;
-                      return ret;
-                  });
+    std::generate(
+        ret.begin(),
+        ret.end(),
+        [this, &counter, &boundary] {
+            Node ret;
+            auto p = this->compute_position(this->compute_locator(counter));
+            auto neighbors = this->compute_neighbors(counter);
+            std::copy(
+                neighbors.begin(), neighbors.end(), std::begin(ret.ports));
+            ret.position = to_cl_float3(p);
+            counter += 1;
+            return ret;
+        });
 
     std::vector<bool> inside(ret.size());
     std::transform(ret.begin(),
@@ -110,24 +110,25 @@ RectangularMesh::Collection RectangularMesh::get_nodes(
 RectangularMesh::RectangularMesh(const Boundary& b,
                                  float spacing,
                                  const Vec3f& anchor)
-        : spacing(spacing)
-        , aabb(get_adjusted_boundary(b.get_aabb(), anchor, spacing))
-        , dim(aabb.get_dimensions() / spacing)
-        , nodes(get_nodes(b)) {
+        : BaseMesh(spacing,
+                   get_adjusted_boundary(b.get_aabb(), anchor, spacing))
+        , dim(get_aabb().get_dimensions() / spacing)
+        , nodes(compute_nodes(b)) {
 }
 
-RectangularMesh::size_type RectangularMesh::get_index(
+RectangularMesh::size_type RectangularMesh::compute_index(
     const Locator& pos) const {
     return pos.x + pos.y * get_dim().x + pos.z * get_dim().x * get_dim().y;
 }
-RectangularMesh::Locator RectangularMesh::get_locator(
+RectangularMesh::Locator RectangularMesh::compute_locator(
     const size_type index) const {
     auto x = div(index, get_dim().x);
     auto y = div(x.quot, get_dim().y);
     auto z = div(y.quot, get_dim().z);
     return Locator(x.rem, y.rem, z.rem);
 }
-RectangularMesh::Locator RectangularMesh::get_locator(const Vec3f& v) const {
+RectangularMesh::Locator RectangularMesh::compute_locator(
+    const Vec3f& v) const {
     auto transformed = v - get_aabb().get_c0();
     Vec3i cube_pos =
         (transformed / get_spacing()).map([](auto i) -> int { return i; });
@@ -140,7 +141,7 @@ RectangularMesh::Locator RectangularMesh::get_locator(const Vec3f& v) const {
             .apply(get_dim(), [](auto i, auto j) { return std::min(i, j); });
 
     auto get_dist = [this, v](auto loc) {
-        return (v - get_position(loc)).mag_squared();
+        return (v - compute_position(loc)).mag_squared();
     };
 
     Locator closest = min;
@@ -160,13 +161,13 @@ RectangularMesh::Locator RectangularMesh::get_locator(const Vec3f& v) const {
 
     return closest;
 }
-Vec3f RectangularMesh::get_position(const Locator& locator) const {
+Vec3f RectangularMesh::compute_position(const Locator& locator) const {
     return locator * get_spacing() + get_aabb().get_c0();
 }
 
-std::array<int, RectangularMesh::PORTS> RectangularMesh::get_neighbors(
+std::array<int, RectangularMesh::PORTS> RectangularMesh::compute_neighbors(
     size_type index) const {
-    auto loc = get_locator(index);
+    auto loc = compute_locator(index);
     std::array<Locator, RectangularMesh::PORTS> n_loc{{
         loc + Locator(-1, 0, 0),
         loc + Locator(1, 0, 0),
@@ -179,19 +180,13 @@ std::array<int, RectangularMesh::PORTS> RectangularMesh::get_neighbors(
     std::array<int, RectangularMesh::PORTS> ret;
     for (auto i = 0u; i != RectangularMesh::PORTS; ++i) {
         auto inside = (Vec3i(0) <= n_loc[i] && n_loc[i] < dim).all();
-        ret[i] = inside ? get_index(n_loc[i]) : -1;
+        ret[i] = inside ? compute_index(n_loc[i]) : -1;
     }
     return ret;
 }
 
 const RectangularMesh::Collection& RectangularMesh::get_nodes() const {
     return nodes;
-}
-const CuboidBoundary& RectangularMesh::get_aabb() const {
-    return aabb;
-}
-float RectangularMesh::get_spacing() const {
-    return spacing;
 }
 Vec3i RectangularMesh::get_dim() const {
     return dim;

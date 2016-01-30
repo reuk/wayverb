@@ -4,3 +4,4 @@
 -Irayverb
 -Ibsp
 -Igtest/include
+-ferror-limit=100
