@@ -234,8 +234,11 @@ void DrawableScene::update(float dt) {
     if (waveguide && !mesh_object) {
         mesh_object =
             std::make_unique<MeshObject<Waveguide>>(shader, *waveguide);
-        std::cout << "showing mesh with " << waveguide->get_nodes() << " nodes"
+        std::cout << "showing mesh with " << waveguide->get_nodes() << " nodes, of which: "
                   << std::endl;
+        std::cout << "  1d boundary nodes: " << waveguide->get_mesh().compute_num_boundary<1>() << std::endl;
+        std::cout << "  2d boundary nodes: " << waveguide->get_mesh().compute_num_boundary<2>() << std::endl;
+        std::cout << "  3d boundary nodes: " << waveguide->get_mesh().compute_num_boundary<3>() << std::endl;
     }
 
     if (raytracer_results.valid()) {

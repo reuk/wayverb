@@ -25,6 +25,19 @@ public:
 
     Vec3i get_dim() const;
 
+    template <int BITS>
+    size_type compute_num_boundary() const {
+        return std::accumulate(
+            get_nodes().begin(),
+            get_nodes().end(),
+            0u,
+            [](auto i, const auto& j) {
+                return i + ((j.bt != id_reentrant && popcount(j.bt) == BITS)
+                                ? 1
+                                : 0);
+            });
+    }
+
 private:
     Vec3i dim;
     Collection nodes;

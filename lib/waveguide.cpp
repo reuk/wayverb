@@ -129,7 +129,19 @@ RectangularWaveguide::RectangularWaveguide(const RectangularProgram& program,
                            sizeof(cl_float) * 18)
         , velocity_buffer(program.getInfo<CL_PROGRAM_CONTEXT>(),
                           CL_MEM_READ_WRITE,
-                          sizeof(cl_float3) * 1) {
+                          sizeof(cl_float3) * 1)
+        , boundary_data_1_buffer(
+              program.getInfo<CL_PROGRAM_CONTEXT>(),
+              CL_MEM_READ_WRITE,
+              sizeof(BoundaryData1) * mesh.compute_num_boundary<1>())
+        , boundary_data_2_buffer(
+              program.getInfo<CL_PROGRAM_CONTEXT>(),
+              CL_MEM_READ_WRITE,
+              sizeof(BoundaryData2) * mesh.compute_num_boundary<2>())
+        , boundary_data_3_buffer(
+              program.getInfo<CL_PROGRAM_CONTEXT>(),
+              CL_MEM_READ_WRITE,
+              sizeof(BoundaryData3) * mesh.compute_num_boundary<3>()) {
 }
 
 RectangularWaveguide::RectangularWaveguide(const RectangularProgram& program,
@@ -174,6 +186,9 @@ RunStepResult RectangularWaveguide::run_step(size_type o,
            current,
            previous,
            node_buffer,
+           boundary_data_1_buffer,
+           boundary_data_2_buffer,
+           boundary_data_3_buffer,
            transform_buffer,
            velocity_buffer,
            mesh.get_spacing(),

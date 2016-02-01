@@ -61,10 +61,6 @@ RectangularMesh::Collection RectangularMesh::compute_nodes(
                        return i;
                    });
 
-    auto compute_set_bits = [](auto i) {
-        return std::bitset<sizeof(decltype(i)) * 8>(i).count();
-    };
-
     std::vector<cl_int> bt(ret.size());
     for (auto& i : ret) {
         i.bt = id_none;
@@ -79,12 +75,12 @@ RectangularMesh::Collection RectangularMesh::compute_nodes(
                     if (0 <= port_ind) {
                         if ((!set_bits && inside[port_ind]) ||
                             (set_bits && ret[port_ind].bt != id_reentrant &&
-                             compute_set_bits(ret[port_ind].bt) == set_bits)) {
+                             popcount(ret[port_ind].bt) == set_bits)) {
                             bt[i] |= 1 << (j + 1);
                         }
                     }
                 }
-                auto final_bits = compute_set_bits(bt[i]);
+                auto final_bits = popcount(bt[i]);
                 if (set_bits + 1 < final_bits) {
                     bt[i] = id_reentrant;
                 } else if (final_bits <= set_bits) {

@@ -2,26 +2,6 @@
 
 #include "waveguide.h"
 
-template <typename T>
-std::vector<NodeType> extract_node_type(const std::vector<T> & nodes) {
-    std::vector<NodeType> ret(nodes.size());
-    std::transform(nodes.begin(),
-                   nodes.end(),
-                   ret.begin(),
-                   [](const auto & i) { return i.inside; });
-    return ret;
-}
-
-template <typename T>
-std::vector<cl_int> extract_bitmask(const std::vector<T> & nodes) {
-    std::vector<cl_int> ret(nodes.size());
-    std::transform(nodes.begin(),
-                   nodes.end(),
-                   ret.begin(),
-                   [](const auto & i) { return i.bt; });
-    return ret;
-}
-
 //----------------------------------------------------------------------------//
 
 template <typename WaveguideType>

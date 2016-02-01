@@ -14,6 +14,32 @@ const string RectangularProgram::source{
     R"(
 #define PORTS (6)
 
+typedef struct {
+    float sk_current    [1];
+    float sk_previous   [1];
+    float sm_current    [1];
+    float sm_previous   [1];
+    float ghost_current [1];
+    float ghost_previous[1];
+} BoundaryData1;
+
+typedef struct {
+    float sk_current    [2];
+    float sk_previous   [2];
+    float sm_current    [2];
+    float sm_previous   [2];
+    float ghost_current [2];
+    float ghost_previous[2];
+} BoundaryData2;
+
+typedef struct {
+    float sk_current    [3];
+    float sk_previous   [3];
+    float sm_current    [3];
+    float sm_previous   [3];
+    float ghost_current [3];
+    float ghost_previous[3];
+} BoundaryData3;
 
 /*
 
@@ -97,6 +123,9 @@ kernel void waveguide
 (   const global float * current
 ,   global float * previous
 ,   const global RectNode * nodes
+,   global BoundaryData1 * boundary_data_1
+,   global BoundaryData2 * boundary_data_2
+,   global BoundaryData3 * boundary_data_3
 ,   const global float * transform_matrix
 ,   global float3 * velocity_buffer
 ,   float spatial_sampling_period
@@ -116,7 +145,7 @@ kernel void waveguide
             if (node->inside) {
                 for (int i = 0; i != PORTS; ++i) {
                     int port_index = node->ports[i];
-                    if (port_index >= 0 && nodes[port_index].inside == id_inside)
+                    if (port_index >= 0 && nodes[port_index].inside)
                         next_pressure += current[port_index];
                 }
 
@@ -126,15 +155,12 @@ kernel void waveguide
             break;
         //  this is a 1d-boundary node
         case 1:
-            printf("%s\n", "1d boundary");
             break;
         //  this is an edge where two boundaries meet
         case 2:
-            printf("%s\n", "2d boundary");
             break;
         //  this is a corner where three boundaries meet
         case 3:
-            printf("%s\n", "3d boundary");
             break;
     }
 
@@ -152,7 +178,7 @@ kernel void waveguide
         float differences[PORTS] = {0};
         for (int i = 0; i != PORTS; ++i) {
             int port_index = node->ports[i];
-            if (port_index >= 0 && nodes[port_index].inside == id_inside)
+            if (port_index >= 0 && nodes[port_index].inside)
                 differences[i] = (previous[port_index] - previous[index]) /
                     spatial_sampling_period;
         }

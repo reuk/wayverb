@@ -244,6 +244,11 @@ private:
     cl::Buffer node_buffer;
     cl::Buffer transform_buffer;
     cl::Buffer velocity_buffer;
+
+    cl::Buffer boundary_data_1_buffer;
+    cl::Buffer boundary_data_2_buffer;
+    cl::Buffer boundary_data_3_buffer;
+
     Eigen::MatrixXf transform_matrix;
 
     float period;

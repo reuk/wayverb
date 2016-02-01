@@ -21,4 +21,17 @@ struct __attribute__((aligned(8))) NodeStruct {
     cl_float3 position;
     bool inside;
     cl_int bt;
+    cl_int boundary_index;
 };
+
+template <int D>
+struct __attribute__((aligned(8))) BoundaryData {
+    static constexpr int DIMENSIONS{D};
+    float sk_current[DIMENSIONS], sk_previous[DIMENSIONS];
+    float sm_current[DIMENSIONS], sm_previous[DIMENSIONS];
+    float ghost_current[DIMENSIONS], ghost_previous[DIMENSIONS];
+};
+
+using BoundaryData1 = BoundaryData<1>;
+using BoundaryData2 = BoundaryData<2>;
+using BoundaryData3 = BoundaryData<3>;

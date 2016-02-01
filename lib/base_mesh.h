@@ -40,6 +40,11 @@ public:
         return aabb;
     }
 
+    template<typename T>
+    static auto popcount(T t) {
+        return std::bitset<sizeof(T) * 8>(t).count();
+    }
+
 private:
     float spacing;
     CuboidBoundary aabb;
