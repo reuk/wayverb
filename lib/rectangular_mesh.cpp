@@ -8,6 +8,8 @@
 
 RectangularMesh::Collection RectangularMesh::compute_nodes(
     const Boundary& boundary) const {
+    
+    //  TODO this takes for ever, put it on GPU?
     auto total_nodes = get_dim().product();
     auto ret = std::vector<Node>(total_nodes);
 
@@ -78,7 +80,7 @@ RectangularMesh::Collection RectangularMesh::compute_nodes(
         std::fill(bt.begin(), bt.end(), 0);
         for (auto i = 0u; i != ret.size(); ++i) {
             auto& node = ret[i];
-            if (!inside[i] && node.bt == id_none) {
+            if (node.inside != id_inside && node.bt == id_none) {
                 for (auto j = 0; j != 6; ++j) {
                     auto port_ind = node.ports[j];
                     if (0 <= port_ind) {
@@ -111,7 +113,7 @@ RectangularMesh::RectangularMesh(const Boundary& b,
                                  float spacing,
                                  const Vec3f& anchor)
         : BaseMesh(spacing,
-                   get_adjusted_boundary(b.get_aabb(), anchor, spacing))
+                   compute_adjusted_boundary(b.get_aabb(), anchor, spacing))
         , dim(get_aabb().get_dimensions() / spacing)
         , nodes(compute_nodes(b)) {
 }

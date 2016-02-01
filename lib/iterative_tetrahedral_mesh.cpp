@@ -110,7 +110,7 @@ IterativeTetrahedralMesh::IterativeTetrahedralMesh(const Boundary& b,
                                                    const Vec3f& anchor,
                                                    float cube_side)
         : BaseMesh(spacing,
-                   get_adjusted_boundary(b.get_aabb(), anchor, cube_side))
+                   compute_adjusted_boundary(b.get_aabb(), anchor, cube_side))
         , scaled_cube(compute_scaled_cube(cube_side))
         , dim(get_aabb().get_dimensions() / cube_side)
         , nodes(compute_nodes(b)) {

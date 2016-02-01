@@ -27,7 +27,7 @@ RaytraceObject::RaytraceObject(const GenericShader &shader,
                                                       0.0f) /
                                       8;
                        auto c = i.time ? fabs(average) * 10 : 0;
-                       return glm::vec4(0, c, c, c);
+                       return glm::vec4(c, c, c, c);
                    });
 
     std::vector<std::pair<GLuint, GLuint>> lines;
@@ -255,7 +255,7 @@ void DrawableScene::update(float dt) {
         try {
             if (future_pressure.wait_for(std::chrono::milliseconds(0)) ==
                 std::future_status::ready) {
-                //                mesh_object->set_pressures(future_pressure.get());
+                mesh_object->set_pressures(future_pressure.get());
                 trigger_pressure_calculation();
             }
         } catch (const std::exception &e) {
@@ -309,6 +309,7 @@ void SceneRenderer::load_from_file_package(const FilePackage &fp) {
     }
 
     cc.get_rays() = 1 << 5;
+    cc.get_filter_frequency() = 2000;
 
     scene = std::make_unique<DrawableScene>(*shader, scene_data, cc);
 
