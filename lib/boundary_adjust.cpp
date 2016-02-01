@@ -3,8 +3,8 @@
 #include <cassert>
 
 CuboidBoundary compute_adjusted_boundary(const CuboidBoundary& min_boundary,
-                                     const Vec3f& anchor,
-                                     float cube_side) {
+                                         const Vec3f& anchor,
+                                         float cube_side) {
     auto dif = anchor - min_boundary.get_c0();
     Vec3i ceiled = (dif / cube_side).map([](auto i) { return ceil(i); });
     auto extra = 1;

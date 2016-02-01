@@ -82,7 +82,7 @@ void test_neighbor() {
     MeshBoundary boundary(scene_data);
     MeshType mesh(boundary, 0.1, Vec3f(0));
 
-    auto run_test = [&mesh](auto i) {
+    for (auto i = 0u; i != mesh.get_nodes().size(); ++i) {
         auto loc = mesh.compute_locator(i);
         auto pos = mesh.compute_position(loc);
         for (auto j : mesh.compute_neighbors(i)) {
@@ -93,10 +93,6 @@ void test_neighbor() {
                     << i << ", " << j;
             }
         }
-    };
-
-    for (auto i = 0u; i != mesh.get_nodes().size(); ++i) {
-        run_test(i);
     }
 
     auto ports_contains = [](auto i, auto j) {

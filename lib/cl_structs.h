@@ -4,12 +4,6 @@
 #include "cl.hpp"
 
 typedef enum : cl_int {
-    id_inside = 1,
-    id_boundary,
-    id_outside,
-} NodeType;
-
-typedef enum : cl_int {
     id_none = 0,
     id_nx = 1 << 1,
     id_px = 1 << 2,
@@ -25,9 +19,6 @@ struct __attribute__((aligned(8))) NodeStruct {
     static constexpr int PORTS{P};
     cl_int ports[PORTS];
     cl_float3 position;
-    NodeType inside;
+    bool inside;
     cl_int bt;
 };
-
-using KNode = NodeStruct<4>;
-using RectNode = NodeStruct<6>;

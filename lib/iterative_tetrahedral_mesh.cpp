@@ -36,16 +36,16 @@ IterativeTetrahedralMesh::get_nodes() const {
     return nodes;
 }
 
-std::vector<KNode> IterativeTetrahedralMesh::compute_nodes(
-    const Boundary& boundary) const {
+std::vector<IterativeTetrahedralMesh::Node>
+IterativeTetrahedralMesh::compute_nodes(const Boundary& boundary) const {
     auto total_nodes = get_dim().product() * scaled_cube.size();
-    std::vector<KNode> ret(total_nodes);
+    std::vector<Node> ret(total_nodes);
     auto counter = 0u;
     std::generate(
         ret.begin(),
         ret.end(),
         [this, &counter, &boundary] {
-            KNode ret;
+            Node ret;
             auto p = this->compute_position(this->compute_locator(counter));
             auto neighbors = this->compute_neighbors(counter);
             std::copy(
@@ -84,14 +84,8 @@ std::vector<KNode> IterativeTetrahedralMesh::compute_nodes(
                    ret.end(),
                    inside.begin(),
                    ret.begin(),
-                   [&neighbor_inside](auto i, auto j) {
-                       i.inside = id_outside;
-                       if (j) {
-                           i.inside = id_inside;
-                       } else {
-                           if (neighbor_inside(i))
-                               i.inside = id_boundary;
-                       }
+                   [](auto i, auto j) {
+                       i.inside = j;
                        return i;
                    });
 

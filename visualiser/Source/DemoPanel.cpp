@@ -16,16 +16,21 @@ DemoPanel::DemoPanel() {
         File("/Users/reuben/dev/waveguide/demo/assets/test_models/vault.obj"),
         File("/Users/reuben/dev/waveguide/demo/assets/materials/vault.json"),
         File("/Users/reuben/dev/waveguide/demo/assets/configs/vault.json"));
-    
+
     button_map[std::make_unique<TextButton>("small cube")] = FilePackage(
-        File("/Users/reuben/dev/waveguide/demo/assets/test_models/aligned_cube.obj"),
+        File("/Users/reuben/dev/waveguide/demo/assets/test_models/"
+             "aligned_cube.obj"),
         File("/Users/reuben/dev/waveguide/demo/assets/materials/damped.json"),
         File("/Users/reuben/dev/waveguide/demo/assets/configs/near_c.json"));
-    
-    button_map[std::make_unique<TextButton>("badly-behaved cube")] = FilePackage(
-        File("/Users/reuben/dev/waveguide/demo/assets/test_models/small_square.obj"),
-        File("/Users/reuben/dev/waveguide/demo/assets/materials/damped.json"),
-        File("/Users/reuben/dev/waveguide/demo/assets/configs/near_c.json"));
+
+    button_map[std::make_unique<TextButton>("badly-behaved cube")] =
+        FilePackage(
+            File("/Users/reuben/dev/waveguide/demo/assets/test_models/"
+                 "small_square.obj"),
+            File("/Users/reuben/dev/waveguide/demo/assets/materials/"
+                 "damped.json"),
+            File(
+                "/Users/reuben/dev/waveguide/demo/assets/configs/near_c.json"));
 
     for (const auto& i : button_map) {
         addAndMakeVisible(*i.first);

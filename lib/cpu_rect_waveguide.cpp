@@ -25,7 +25,7 @@ void CpuRectangularWaveguide::initialise_mesh(const PowerFunction& u,
     auto size = nodes.size();
     ret.resize(size);
     for (auto i = 0u; i != size; ++i) {
-        if (nodes[i].inside == id_inside)
+        if (nodes[i].inside)
             ret[i] = u(to_vec3f(nodes[i].position), excitation);
     }
 }
@@ -44,7 +44,7 @@ void waveguide_kernel(int index,
                       const std::vector<float>& current,
                       std::vector<float>& previous,
                       std::vector<float>& next,
-                      const std::vector<RectNode>& nodes,
+                      const std::vector<CpuRectangularWaveguide::Node>& nodes,
                       const std::vector<float>& transform_matrix,
                       Vec3f& velocity_buffer,
                       float spatial_sampling_period,
@@ -53,15 +53,15 @@ void waveguide_kernel(int index,
                       float& output) {
     const auto& node = nodes[index];
 
-    if (node.inside != id_inside) {
+    if (node.inside) {
         return;
     }
 
     auto temp = 0.0f;
 
-    for (auto i = 0u; i != RectNode::PORTS; ++i) {
+    for (auto i = 0u; i != CpuRectangularWaveguide::PORTS; ++i) {
         auto port_index = node.ports[i];
-        if (port_index >= 0 && nodes[port_index].inside == id_inside) {
+        if (port_index >= 0 && nodes[port_index].inside) {
             temp += current[port_index];
         }
     }
@@ -74,16 +74,17 @@ void waveguide_kernel(int index,
     if (index == read) {
         output = temp;
 
-        auto differences = std::array<float, RectNode::PORTS>{{0}};
-        for (auto i = 0u; i != RectNode::PORTS; ++i) {
+        auto differences =
+            std::array<float, CpuRectangularWaveguide::PORTS>{{0}};
+        for (auto i = 0u; i != CpuRectangularWaveguide::PORTS; ++i) {
             int port_index = node.ports[i];
-            if (port_index >= 0 && nodes[port_index].inside == id_inside)
+            if (port_index >= 0 && nodes[port_index].inside)
                 differences[i] = (previous[port_index] - previous[index]) /
                                  spatial_sampling_period;
         }
 
         auto multiplied = Vec3f(0);
-        for (auto i = 0u; i != RectNode::PORTS; ++i) {
+        for (auto i = 0u; i != CpuRectangularWaveguide::PORTS; ++i) {
             multiplied = multiplied +
                          Vec3f(transform_matrix.data()[0 + i * 3],
                                transform_matrix.data()[1 + i * 3],
@@ -99,7 +100,8 @@ void waveguide_kernel(int index,
 }
 
 void CpuRectangularWaveguide::setup(size_type o, float sr) {
-    transform_matrix = get_transform_matrix(PORTS, o, mesh.get_nodes());
+    transform_matrix = get_transform_matrix(
+        CpuRectangularWaveguide::PORTS, o, mesh.get_nodes());
     velocity_buffer = Vec3f(0);
     period = 1 / sr;
 }
@@ -145,8 +147,9 @@ RunStepResult CpuRectangularWaveguide::run_step(size_type o,
             previous,
             next,
             mesh.get_nodes(),
-            std::vector<float>(transform_matrix.data(),
-                               transform_matrix.data() + PORTS * 3),
+            std::vector<float>(
+                transform_matrix.data(),
+                transform_matrix.data() + CpuRectangularWaveguide::PORTS * 3),
             velocity_buffer,
             mesh.get_spacing(),
             period,

@@ -1,15 +1,18 @@
 #pragma once
 
 #include "vec.h"
+#include "cl_structs.h"
 
 #include <vector>
 
-template <typename NodeType, typename LocatorType>
+template <int P, typename LocatorType>
 class BaseMesh {
 public:
+    static constexpr int PORTS = P;
+
     using Locator = LocatorType;
-    using Node = NodeType;
-    using Collection = std::vector<NodeType>;
+    using Node = NodeStruct<PORTS>;
+    using Collection = std::vector<Node>;
     using size_type = typename Collection::size_type;
 
     BaseMesh(float spacing, const CuboidBoundary& aabb)
@@ -22,8 +25,6 @@ public:
     BaseMesh& operator=(const BaseMesh&) = default;
     BaseMesh(BaseMesh&&) noexcept = default;
     BaseMesh& operator=(BaseMesh&&) noexcept = default;
-
-    static constexpr int PORTS = NodeType::PORTS;
 
     virtual size_type compute_index(const Locator& locator) const = 0;
     virtual Locator compute_locator(size_type index) const = 0;

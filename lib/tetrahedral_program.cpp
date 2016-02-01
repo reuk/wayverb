@@ -12,16 +12,11 @@ const std::string TetrahedralProgram::source{
     R"(
 #define PORTS (4)
 
-typedef enum {
-    id_inside = 1,
-    id_boundary,
-    id_outside,
-} NodeType;
-
 typedef struct {
     int ports[PORTS];
     float3 position;
-    NodeType inside;
+    bool inside;
+    int bt;
 } KNode;
 
 kernel void waveguide
@@ -38,7 +33,7 @@ kernel void waveguide
     size_t index = get_global_id(0);
     const global KNode * node = nodes + index;
 
-    if (node->inside != id_inside) {
+    if (! node->inside) {
         return;
     }
 
@@ -47,7 +42,7 @@ kernel void waveguide
     //  waveguide logic goes here
     for (int i = 0; i != PORTS; ++i) {
         int port_index = node->ports[i];
-        if (port_index >= 0 && nodes[port_index].inside == id_inside)
+        if (port_index >= 0 && nodes[port_index].inside)
             temp += current[port_index];
     }
 
@@ -68,7 +63,7 @@ kernel void waveguide
         float differences[PORTS] = {0};
         for (int i = 0; i != PORTS; ++i) {
             int port_index = node->ports[i];
-            if (port_index >= 0 && nodes[port_index].inside == id_inside)
+            if (port_index >= 0 && nodes[port_index].inside)
                 differences[i] = (previous[port_index] - previous[index]) /
                     spatial_sampling_period;
         }

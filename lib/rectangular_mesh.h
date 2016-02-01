@@ -7,7 +7,7 @@
 
 #include <vector>
 
-class RectangularMesh : public BaseMesh<RectNode, Vec3i> {
+class RectangularMesh : public BaseMesh<6, Vec3i> {
 public:
     RectangularMesh(const Boundary& boundary,
                     float spacing,

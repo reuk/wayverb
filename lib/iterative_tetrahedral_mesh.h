@@ -13,7 +13,7 @@ struct TetrahedralLocator final {
     int mod_ind;
 };
 
-class IterativeTetrahedralMesh : public BaseMesh<KNode, TetrahedralLocator> {
+class IterativeTetrahedralMesh : public BaseMesh<4, TetrahedralLocator> {
 public:
     static const int CUBE_NODES = 8;
 

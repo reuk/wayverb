@@ -11,9 +11,10 @@
 
 class CpuRectangularWaveguide final {
 public:
+    using Node = NodeStruct<6>;
     using Collection = std::vector<float>;
     using size_type = Collection::size_type;
-    static constexpr int PORTS = RectNode::PORTS;
+    static constexpr int PORTS = Node::PORTS;
 
     CpuRectangularWaveguide(const Boundary& boundary,
                             float spacing,

@@ -34,8 +34,10 @@ TetrahedralWaveguide::TetrahedralWaveguide(const TetrahedralProgram& program,
         , mesh(mesh)
         //    TODO this seems like it's asking for problems
         , node_buffer(program.getInfo<CL_PROGRAM_CONTEXT>(),
-                      const_cast<KNode*>(this->mesh.get_nodes().data()),
-                      const_cast<KNode*>(this->mesh.get_nodes().data()) +
+                      const_cast<IterativeTetrahedralMesh::Node*>(
+                          this->mesh.get_nodes().data()),
+                      const_cast<IterativeTetrahedralMesh::Node*>(
+                          this->mesh.get_nodes().data()) +
                           this->mesh.get_nodes().size(),
                       true)
         , transform_buffer(program.getInfo<CL_PROGRAM_CONTEXT>(),
@@ -104,7 +106,7 @@ const IterativeTetrahedralMesh& TetrahedralWaveguide::get_mesh() const {
 }
 
 bool TetrahedralWaveguide::inside(size_type index) const {
-    return mesh.get_nodes()[index].inside == id_inside;
+    return mesh.get_nodes()[index].inside;
 }
 
 //----------------------------------------------------------------------------//
@@ -115,11 +117,13 @@ RectangularWaveguide::RectangularWaveguide(const RectangularProgram& program,
         : Waveguide<RectangularProgram>(program, queue, mesh.get_nodes().size())
         , mesh(mesh)
         //    TODO this seems like it's asking for problems
-        , node_buffer(program.getInfo<CL_PROGRAM_CONTEXT>(),
-                      const_cast<RectNode*>(this->mesh.get_nodes().data()),
-                      const_cast<RectNode*>(this->mesh.get_nodes().data()) +
-                          this->mesh.get_nodes().size(),
-                      true)
+        , node_buffer(
+              program.getInfo<CL_PROGRAM_CONTEXT>(),
+              const_cast<RectangularMesh::Node*>(this->mesh.get_nodes().data()),
+              const_cast<RectangularMesh::Node*>(
+                  this->mesh.get_nodes().data()) +
+                  this->mesh.get_nodes().size(),
+              true)
         , transform_buffer(program.getInfo<CL_PROGRAM_CONTEXT>(),
                            CL_MEM_READ_WRITE,
                            sizeof(cl_float) * 18)
@@ -203,5 +207,5 @@ const RectangularMesh& RectangularWaveguide::get_mesh() const {
 }
 
 bool RectangularWaveguide::inside(size_type index) const {
-    return mesh.get_nodes()[index].inside == id_inside;
+    return mesh.get_nodes()[index].inside;
 }
