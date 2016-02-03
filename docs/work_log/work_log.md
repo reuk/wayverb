@@ -322,4 +322,15 @@ TODO
 * Get in touch with Damian Murphy with specific questions
     * about boundary modelling?
 
-* check for refactoring possibilities in waveguide and mesh files
+* which papers cite the boundary modelling paper?
+
+* try to predict the frequency response of each boundary using R, M, and K
+  coefficients
+    * is there a way of mapping between the raytracer and this boundary model?
+
+    * can I have a fast-mode tetrahedral mesh and a slow-mode, more accurate,
+      rectangular mesh
+
+* how do the boundary equations break down?
+
+* think about comparing the two models
