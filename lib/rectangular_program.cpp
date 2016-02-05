@@ -1,18 +1,95 @@
 #include "rectangular_program.h"
 
-using namespace std;
+#include <iostream>
 
 RectangularProgram::RectangularProgram(const cl::Context & context,
                                        bool build_immediate)
         : Program(context, source, build_immediate) {
 }
 
-const string RectangularProgram::source{
+const std::string RectangularProgram::source{
+    "#define PORTS (" + std::to_string(PORTS) + ")\n" +
+    "#define BIQUAD_SECTIONS (" + std::to_string(BIQUAD_SECTIONS) +
+    ")\n"
 #ifdef DIAGNOSTIC
     "#define DIAGNOSTIC\n"
 #endif
     R"(
-#define PORTS (6)
+
+typedef enum {
+    id_none = 0,
+    id_nx = 1 << 1,
+    id_px = 1 << 2,
+    id_ny = 1 << 3,
+    id_py = 1 << 4,
+    id_nz = 1 << 5,
+    id_pz = 1 << 6,
+    id_reentrant = 1 << 7,
+} BoundaryType;
+
+typedef struct {
+    int ports[PORTS];
+    float3 position;
+    bool inside;
+    int bt;
+} Node;
+
+typedef struct {
+    float z1;
+    float z2;
+} BiquadMemory;
+
+typedef struct {
+    float b0;
+    float b1;
+    float b2;
+    float a1;
+    float a2;
+} BiquadCoefficients;
+
+typedef struct {
+    BiquadMemory array[BIQUAD_SECTIONS];
+} BiquadMemoryArray;
+
+typedef struct {
+    BiquadCoefficients array[BIQUAD_SECTIONS];
+} BiquadCoefficientsArray;
+
+float biquad_step(float input,
+                  global BiquadMemory * bm,
+                  const global BiquadCoefficients * bc);
+float biquad_step(float input,
+                  global BiquadMemory * bm,
+                  const global BiquadCoefficients * bc) {
+    float out = input * bc->b0 + bm->z1;
+    bm->z1    = input * bc->b1 - bc->a1 * out + bm->z2;
+    bm->z2    = input * bc->b2 - bc->a2 * out;
+    return out;
+}
+
+float biquad_cascade(float input,
+                     global BiquadMemoryArray * bm,
+                     const global BiquadCoefficientsArray * bc);
+float biquad_cascade(float input,
+                     global BiquadMemoryArray * bm,
+                     const global BiquadCoefficientsArray * bc) {
+    for (int i = 0; i != BIQUAD_SECTIONS; ++i) {
+        input = biquad_step(input, bm->array + i, bc->array + i);
+    }
+    return input;
+}
+
+kernel void filter_test(const global float * input,
+                        global float * output,
+                        global BiquadMemoryArray * biquad_memory,
+                        const global BiquadCoefficientsArray * biquad_coefficients) {
+    size_t index = get_global_id(0);
+    output[index] = biquad_cascade
+    (   input[index]
+    ,   biquad_memory + index
+    ,   biquad_coefficients + index
+    );
+}
 
 typedef struct {
     float sk_current    [1];
@@ -21,6 +98,7 @@ typedef struct {
     float sm_previous   [1];
     float ghost_current [1];
     float ghost_previous[1];
+    BiquadMemoryArray biquad_memory[1];
 } BoundaryData1;
 
 typedef struct {
@@ -30,6 +108,7 @@ typedef struct {
     float sm_previous   [2];
     float ghost_current [2];
     float ghost_previous[2];
+    BiquadMemoryArray biquad_memory[2];
 } BoundaryData2;
 
 typedef struct {
@@ -39,7 +118,62 @@ typedef struct {
     float sm_previous   [3];
     float ghost_current [3];
     float ghost_previous[3];
+    BiquadMemoryArray biquad_memory[3];
 } BoundaryData3;
+
+typedef enum {
+    id_port_nx = 0,
+    id_port_px = 1,
+    id_port_ny = 2,
+    id_port_py = 3,
+    id_port_nz = 4,
+    id_port_pz = 5,
+} PortDirections;
+
+PortDirections get_inner_node(BoundaryType boundary_type);
+PortDirections get_inner_node(BoundaryType boundary_type) {
+    switch(boundary_type) {
+    case id_nx: return id_port_px;
+    case id_px: return id_port_nx;
+    case id_ny: return id_port_py;
+    case id_py: return id_port_ny;
+    case id_nz: return id_port_pz;
+    case id_pz: return id_port_nz;
+
+    default: return 0;
+    }
+}
+
+
+void boundary_1d(const global Node * node);
+void boundary_1d(const global Node * node) {
+
+}
+
+
+/*
+ *
+
+//  1d boundary
+
+//  node ports are stored: -x, x, -y, y, -z, z
+float courant = 1 / sqrt(3);
+
+float next_boundary_pressure = ...;
+
+BoundaryType bt;
+Node node;
+BoundaryData1 bd;
+float current_ghost_pressure =
+(   current[node.ports[get_inner_node(bt)]]
++   (a_coeffs[0] * (previous[index] - next_boundary_pressure))
+/   (courant * b_coeffs[0])
++   (gn / b_coeffs[0])
+);
+
+
+ *
+ */
 
 /*
 
@@ -101,28 +235,10 @@ Sm = current(x - 1, y, z) - current(x + 1, y, z) + previous(x - 1, y, z) - previ
 
 */
 
-typedef enum {
-    id_none = 0,
-    id_nx = 1 << 1,
-    id_px = 1 << 2,
-    id_ny = 1 << 3,
-    id_py = 1 << 4,
-    id_nz = 1 << 5,
-    id_pz = 1 << 6,
-    id_reentrant = 1 << 7,
-} BoundaryType;
-
-typedef struct {
-    int ports[PORTS];
-    float3 position;
-    bool inside;
-    int bt;
-} RectNode;
-
 kernel void waveguide
 (   const global float * current
 ,   global float * previous
-,   const global RectNode * nodes
+,   const global Node * nodes
 ,   global BoundaryData1 * boundary_data_1
 ,   global BoundaryData2 * boundary_data_2
 ,   global BoundaryData3 * boundary_data_3
@@ -134,7 +250,7 @@ kernel void waveguide
 ,   global float * output
 ) {
     size_t index = get_global_id(0);
-    const global RectNode * node = nodes + index;
+    const global Node * node = nodes + index;
 
     float next_pressure = 0;
 

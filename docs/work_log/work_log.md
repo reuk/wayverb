@@ -311,26 +311,41 @@ Done
   boundaries) cases
 * find some way of fixing the inside/outside bug at least for the echo tunnel
   example
+* which papers cite the boundary modelling paper?
 
 TODO
 ----
 
 * boundary modelling
-* find out why bedroom model nodes sometimes think they are inside even when
-  they are not
+    * get in touch with an authority with specific questions
 
-* Get in touch with Damian Murphy with specific questions
-    * about boundary modelling?
+    * try to predict the frequency response of each boundary
 
-* which papers cite the boundary modelling paper?
-
-* try to predict the frequency response of each boundary using R, M, and K
-  coefficients
     * is there a way of mapping between the raytracer and this boundary model?
 
     * can I have a fast-mode tetrahedral mesh and a slow-mode, more accurate,
-      rectangular mesh
+      rectangular mesh?
 
-* how do the boundary equations break down?
+    * how do the boundary equations break down?
 
 * think about comparing the two models
+
+digital impedance filters
+=========================
+
+* measure wall reflectance at a certain angle of incidence
+    * e.g. normal to the wall
+* average several readings per octave band
+    * giving a parameter *alpha* per octave band
+* convert to reflection coefficients per octave band
+    * |R| = sqrt(1 - alpha)
+* use these coefficients to create a high-order normal-incidence digital
+  reflectance filter R0(z)
+* ensure R0(z) represents a passive boundary
+    * |R0(z)| <= 1
+    * a complex function of a complex variable is positive real if
+        * z real ==> f(z) real
+        * |z| >= 1 ==> re{f(z)} >= 0
+* convert the reflectance filter to an impedance filter
+    * Ew(z) = (1 + R0(z)) / (1 - R0(z))
+    * oh look, another filter

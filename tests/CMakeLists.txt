@@ -27,7 +27,11 @@ add_definitions(-DMAT_PATH_BEDROOM="${CMAKE_SOURCE_DIR}/demo/assets/materials/ma
 add_executable(${name} ${sources})
 
 find_library(sndfile_lib sndfile)
+find_library(flac_lib flac)
+find_library(ogg_lib ogg)
+find_library(vorbis_lib vorbis)
+find_library(vorbisenc_lib vorbisenc)
 
-target_link_libraries(${name} waveguide rayverb ${sndfile_lib} gtest)
+target_link_libraries(${name} waveguide rayverb ${sndfile_lib} ${flac_lib} ${ogg_lib} ${vorbis_lib} ${vorbisenc_lib} gtest)
 
 add_test(waveguide ${name})

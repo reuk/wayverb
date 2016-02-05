@@ -19,17 +19,41 @@ struct __attribute__((aligned(8))) NodeStruct {
     static constexpr int PORTS{P};
     cl_int ports[PORTS];
     cl_float3 position;
-    bool inside;
+    cl_bool inside;
     cl_int bt;
     cl_int boundary_index;
+};
+
+struct BiquadMemory {
+    cl_float z1;
+    cl_float z2;
+};
+
+struct BiquadCoefficients {
+    cl_float b0;
+    cl_float b1;
+    cl_float b2;
+    cl_float a1;
+    cl_float a2;
+};
+
+struct __attribute__((aligned(8))) BiquadMemoryArray {
+    static constexpr int BIQUAD_SECTIONS{3};
+    BiquadMemory array[BIQUAD_SECTIONS];
+};
+
+struct __attribute__((aligned(8))) BiquadCoefficientsArray {
+    static constexpr int BIQUAD_SECTIONS = BiquadMemoryArray::BIQUAD_SECTIONS;
+    BiquadCoefficients array[BIQUAD_SECTIONS];
 };
 
 template <int D>
 struct __attribute__((aligned(8))) BoundaryData {
     static constexpr int DIMENSIONS{D};
-    float sk_current[DIMENSIONS], sk_previous[DIMENSIONS];
-    float sm_current[DIMENSIONS], sm_previous[DIMENSIONS];
-    float ghost_current[DIMENSIONS], ghost_previous[DIMENSIONS];
+    cl_float sk_current[DIMENSIONS], sk_previous[DIMENSIONS];
+    cl_float sm_current[DIMENSIONS], sm_previous[DIMENSIONS];
+    cl_float ghost_current[DIMENSIONS], ghost_previous[DIMENSIONS];
+    BiquadMemoryArray biquad_memory[DIMENSIONS];
 };
 
 using BoundaryData1 = BoundaryData<1>;
