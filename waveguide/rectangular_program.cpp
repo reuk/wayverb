@@ -122,7 +122,12 @@ kernel void filter_test_2(const global float * input,
                           global float * output,
                           global CanonicalMemoryArray * canonical_memory,
                           const global CanonicalCoefficientsArray * canonical_coefficients) {
-
+    size_t index = get_global_id(0);
+    output[index] = canonical_filter_step
+    (   input[index]
+    ,   canonical_memory + index
+    ,   canonical_coefficients + index
+    );
 }
 
 typedef struct {

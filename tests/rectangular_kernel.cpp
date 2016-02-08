@@ -117,6 +117,36 @@ class rectangular_kernel : public ::testing::Test {
 public:
     virtual ~rectangular_kernel() noexcept = default;
 
+    std::vector<std::vector<cl_float>> compute_input() {
+        auto ret = std::vector<std::vector<cl_float>>{
+            10000, std::vector<cl_float>(size)};
+        for (auto& i : ret)
+            std::generate(i.begin(), i.end(), [this] { return range(engine); });
+        return ret;
+    }
+
+    template <typename Kernel>
+    auto run_kernel(Kernel&& k) {
+        auto kernel = std::move(k);
+        for (auto i = 0u; i != input.size(); ++i) {
+            cl::copy(queue, input[i].begin(), input[i].end(), cl_input);
+
+            kernel(cl::EnqueueArgs(queue, cl::NDRange(size)),
+                   cl_input,
+                   cl_output,
+                   cl_memory,
+                   cl_coeffs);
+
+            cl::copy(queue, cl_output, ret[i].begin(), ret[i].end());
+        }
+        auto buf = std::vector<cl_float>(ret.size());
+        std::transform(ret.begin(),
+                       ret.end(),
+                       buf.begin(),
+                       [](const auto& i) { return i.front(); });
+        return buf;
+    }
+
     cl::Context context{get_context()};
     cl::Device device{get_device(context)};
     cl::CommandQueue queue{context, device};
@@ -128,74 +158,31 @@ public:
     std::vector<Coeffs> coeffs{compute_coeffs<Coeffs>(size, sr)};
     cl::Buffer cl_memory{context, memory.begin(), memory.end(), false};
     cl::Buffer cl_coeffs{context, coeffs.begin(), coeffs.end(), false};
-    std::vector<std::vector<cl_float>> input{10000,
-                                             std::vector<cl_float>(size, 0)};
+    std::default_random_engine engine{std::random_device()()};
+    static constexpr float r{0.25};
+    std::uniform_real_distribution<cl_float> range{-r, r};
+    std::vector<std::vector<cl_float>> input{compute_input()};
     std::vector<std::vector<cl_float>> ret{input.size(),
                                            std::vector<cl_float>(size, 0)};
     cl::Buffer cl_input{context, CL_MEM_READ_WRITE, size * sizeof(cl_float)};
     cl::Buffer cl_output{context, CL_MEM_READ_WRITE, size * sizeof(cl_float)};
-    std::default_random_engine engine{std::random_device()()};
-    static constexpr float r{0.25};
-    std::uniform_real_distribution<cl_float> range{-r, r};
 };
 
 using rk_biquad =
     rectangular_kernel<BiquadMemoryArray, BiquadCoefficientsArray>;
 TEST_F(rk_biquad, filtering) {
-    auto kernel = program.get_filter_test_kernel();
-
-    for (auto& i : input) {
-        std::generate(i.begin(), i.end(), [this] { return range(engine); });
-    }
-
-    for (auto i = 0u; i != input.size(); ++i) {
-        cl::copy(queue, input[i].begin(), input[i].end(), cl_input);
-
-        kernel(cl::EnqueueArgs(queue, cl::NDRange(size)),
-               cl_input,
-               cl_output,
-               cl_memory,
-               cl_coeffs);
-
-        cl::copy(queue, cl_output, ret[i].begin(), ret[i].end());
-    }
-
-    auto buf = std::vector<cl_float>(ret.size());
-    std::transform(ret.begin(),
-                   ret.end(),
-                   buf.begin(),
-                   [](const auto& i) { return i.front(); });
-
-    write_sndfile(
-        "./filtered_noise.wav", {buf}, sr, SF_FORMAT_PCM_16, SF_FORMAT_WAV);
+    write_sndfile("./filtered_noise.wav",
+                  {run_kernel(program.get_filter_test_kernel())},
+                  sr,
+                  SF_FORMAT_PCM_16,
+                  SF_FORMAT_WAV);
 }
 
 using rk_filter = rectangular_kernel<FilterMemory<6>, FilterCoefficients<6>>;
 TEST_F(rk_filter, filtering_2) {
-    auto kernel = program.get_filter_test_kernel();
-
-    for (auto& i : input) {
-        std::generate(i.begin(), i.end(), [this] { return range(engine); });
-    }
-
-    for (auto i = 0u; i != input.size(); ++i) {
-        cl::copy(queue, input[i].begin(), input[i].end(), cl_input);
-
-        kernel(cl::EnqueueArgs(queue, cl::NDRange(size)),
-               cl_input,
-               cl_output,
-               cl_memory,
-               cl_coeffs);
-
-        cl::copy(queue, cl_output, ret[i].begin(), ret[i].end());
-    }
-
-    auto buf = std::vector<cl_float>(ret.size());
-    std::transform(ret.begin(),
-                   ret.end(),
-                   buf.begin(),
-                   [](const auto& i) { return i.front(); });
-
-    write_sndfile(
-        "./filtered_noise_2.wav", {buf}, sr, SF_FORMAT_PCM_16, SF_FORMAT_WAV);
+    write_sndfile("./filtered_noise_2.wav",
+                  {run_kernel(program.get_filter_test_2_kernel())},
+                  sr,
+                  SF_FORMAT_PCM_16,
+                  SF_FORMAT_WAV);
 }

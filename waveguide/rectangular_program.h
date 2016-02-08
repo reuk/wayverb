@@ -30,6 +30,11 @@ public:
             *this, "filter_test");
     }
 
+    auto get_filter_test_2_kernel() const {
+        return cl::make_kernel<cl::Buffer, cl::Buffer, cl::Buffer, cl::Buffer>(
+            *this, "filter_test_2");
+    }
+
 private:
     static constexpr int PORTS = 6;
     static constexpr int BIQUAD_SECTIONS = BiquadMemoryArray::BIQUAD_SECTIONS;
