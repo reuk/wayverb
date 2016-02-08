@@ -15,7 +15,7 @@ typedef enum : cl_int {
 } BoundaryType;
 
 template <int P>
-struct __attribute__((aligned(8))) NodeStruct {
+struct __attribute__((aligned(8))) NodeStruct final {
     static constexpr int PORTS{P};
     cl_int ports[PORTS];
     cl_float3 position;
@@ -24,31 +24,35 @@ struct __attribute__((aligned(8))) NodeStruct {
     cl_int boundary_index;
 };
 
-struct BiquadMemory {
-    cl_float z1;
-    cl_float z2;
+template <int O>
+struct FilterMemory final {
+    static constexpr int ORDER = O;
+    cl_float array[ORDER];
 };
 
-struct BiquadCoefficients {
-    cl_float b0;
-    cl_float b1;
-    cl_float b2;
-    cl_float a1;
-    cl_float a2;
+using BiquadMemory = FilterMemory<2>;
+
+template <int O>
+struct FilterCoefficients final {
+    static constexpr int ORDER = O;
+    cl_float b[ORDER + 1];
+    cl_float a[ORDER + 1];
 };
 
-struct __attribute__((aligned(8))) BiquadMemoryArray {
+using BiquadCoefficients = FilterCoefficients<2>;
+
+struct __attribute__((aligned(8))) BiquadMemoryArray final {
     static constexpr int BIQUAD_SECTIONS{3};
     BiquadMemory array[BIQUAD_SECTIONS];
 };
 
-struct __attribute__((aligned(8))) BiquadCoefficientsArray {
+struct __attribute__((aligned(8))) BiquadCoefficientsArray final {
     static constexpr int BIQUAD_SECTIONS = BiquadMemoryArray::BIQUAD_SECTIONS;
     BiquadCoefficients array[BIQUAD_SECTIONS];
 };
 
 template <int D>
-struct __attribute__((aligned(8))) BoundaryData {
+struct __attribute__((aligned(8))) BoundaryData final {
     static constexpr int DIMENSIONS{D};
     cl_float sk_current[DIMENSIONS], sk_previous[DIMENSIONS];
     cl_float sm_current[DIMENSIONS], sm_previous[DIMENSIONS];

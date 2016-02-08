@@ -18,16 +18,14 @@ BiquadCoefficients get_notch_coefficients(float gain,
     const float sw0 = sin(w0);
     const float alpha = sw0 / 2.0f * Q;
     const float a0 = 1 + alpha / A;
-    return BiquadCoefficients{(1 + alpha * A) / a0,
-                              (-2 * cw0) / a0,
-                              (1 - alpha * A) / a0,
-                              (-2 * cw0) / a0,
-                              (1 - alpha / A) / a0};
+    return BiquadCoefficients{
+        {(1 + alpha * A) / a0, (-2 * cw0) / a0, (1 - alpha * A) / a0},
+        {1, (-2 * cw0) / a0, (1 - alpha / A) / a0}};
 }
 
-BiquadCoefficientsArray get_notch_array(float sr) {
+BiquadCoefficientsArray get_notch_biquads_array(float sr) {
     auto engine = std::default_random_engine{std::random_device()()};
-    auto range = std::uniform_real_distribution<cl_float>(-24, 6);
+    auto range = std::uniform_real_distribution<cl_float>(-24, -24);
     auto centres = std::array<float, BiquadCoefficientsArray::BIQUAD_SECTIONS>{
         {45, 90, 180}};
     BiquadCoefficientsArray ret;
@@ -35,65 +33,119 @@ BiquadCoefficientsArray get_notch_array(float sr) {
                    centres.end(),
                    std::begin(ret.array),
                    [&range, &engine, sr](auto i) {
-                       return get_notch_coefficients(range(engine), i, 0.5, sr);
+                       return get_notch_coefficients(range(engine), i, 1, sr);
                    });
     return ret;
 }
 
-float biquad_step(float input,
-                  BiquadMemory * bm,
-                  const BiquadCoefficients * bc) {
-    float out = input * bc->b0 + bm->z1;
-    bm->z1 = input * bc->b1 - bc->a1 * out + bm->z2;
-    bm->z2 = input * bc->b2 - bc->a2 * out;
-    return out;
-}
-
-float biquad_cascade(float input,
-                     BiquadMemoryArray * bm,
-                     const BiquadCoefficientsArray * bc) {
-    for (int i = 0; i != BiquadMemoryArray::BIQUAD_SECTIONS; ++i) {
-        input = biquad_step(input, bm->array + i, bc->array + i);
+template <int A, int B>
+FilterCoefficients<A + B> convolve(const FilterCoefficients<A>& a,
+                                   const FilterCoefficients<B>& b) {
+    auto ret = FilterCoefficients<A + B>{};
+    for (auto i = 0; i != A + 1; ++i) {
+        for (auto j = 0; j != B + 1; ++j) {
+            ret.b[i + j] += a.b[i] * b.b[j];
+            ret.a[i + j] += a.a[i] * b.a[j];
+        }
     }
-    return input;
+    return ret;
 }
 
-TEST(rectangular_kernel, filtering) {
-    auto context = get_context();
-    auto device = get_device(context);
-    auto queue = cl::CommandQueue(context, device);
-    auto program = get_program<RectangularProgram>(context, device);
+template <typename T, unsigned long I>
+auto head(const std::array<T, I>& a) {
+    return a.front();
+}
+
+template <typename T, unsigned long I>
+auto tail(const std::array<T, I>& a) {
+    auto ret = std::array<T, I - 1>{};
+    std::copy(a.begin() + 1, a.end(), ret.begin());
+    return ret;
+}
+
+template <typename Func, typename A, typename T>
+auto array_reduce(const A& a,
+                  const std::array<T, 0>& t,
+                  const Func& f = Func()) {
+    return a;
+}
+
+template <typename Func, typename A, typename B>
+auto array_reduce(const A& a, const B& b, const Func& f = Func()) {
+    return array_reduce(convolve(a, head(b)), tail(b), f);
+}
+
+auto convolve(const BiquadCoefficientsArray& a) {
+    std::array<BiquadCoefficients, BiquadCoefficientsArray::BIQUAD_SECTIONS> t;
+    std::copy(std::begin(a.array), std::end(a.array), t.begin());
+    return array_reduce(
+        head(t),
+        tail(t),
+        [](const auto& i, const auto& j) { return convolve(i, j); });
+}
+
+auto get_notch_filter_array(float sr) {
+    return convolve(get_notch_biquads_array(sr));
+}
+
+template <typename T>
+std::vector<T> compute_coeffs(int size, float sr) {
+    return std::vector<T>(size);
+}
+
+template <>
+std::vector<BiquadCoefficientsArray> compute_coeffs(int size, float sr) {
+    auto ret = std::vector<BiquadCoefficientsArray>(size);
+    std::generate(
+        ret.begin(), ret.end(), [sr] { return get_notch_biquads_array(sr); });
+    return ret;
+}
+
+using FC = FilterCoefficients<BiquadCoefficientsArray::BIQUAD_SECTIONS *
+                              BiquadCoefficients::ORDER>;
+
+template <>
+std::vector<FC> compute_coeffs(int size, float sr) {
+    auto ret = std::vector<FC>(size);
+    std::generate(
+        ret.begin(), ret.end(), [sr] { return get_notch_filter_array(sr); });
+    return ret;
+}
+
+template <typename Memory, typename Coeffs>
+class rectangular_kernel : public ::testing::Test {
+public:
+    virtual ~rectangular_kernel() noexcept = default;
+
+    cl::Context context{get_context()};
+    cl::Device device{get_device(context)};
+    cl::CommandQueue queue{context, device};
+    RectangularProgram program{
+        get_program<RectangularProgram>(context, device)};
+    static constexpr int size{1 << 13};
+    static constexpr int sr{2000};
+    std::vector<Memory> memory{size, Memory{}};
+    std::vector<Coeffs> coeffs{compute_coeffs<Coeffs>(size, sr)};
+    cl::Buffer cl_memory{context, memory.begin(), memory.end(), false};
+    cl::Buffer cl_coeffs{context, coeffs.begin(), coeffs.end(), false};
+    std::vector<std::vector<cl_float>> input{10000,
+                                             std::vector<cl_float>(size, 0)};
+    std::vector<std::vector<cl_float>> ret{input.size(),
+                                           std::vector<cl_float>(size, 0)};
+    cl::Buffer cl_input{context, CL_MEM_READ_WRITE, size * sizeof(cl_float)};
+    cl::Buffer cl_output{context, CL_MEM_READ_WRITE, size * sizeof(cl_float)};
+    std::default_random_engine engine{std::random_device()()};
+    static constexpr float r{0.25};
+    std::uniform_real_distribution<cl_float> range{-r, r};
+};
+
+using rk_biquad =
+    rectangular_kernel<BiquadMemoryArray, BiquadCoefficientsArray>;
+TEST_F(rk_biquad, filtering) {
     auto kernel = program.get_filter_test_kernel();
 
-    auto size = 1 << 13;
-
-    auto memory = std::vector<BiquadMemoryArray>(size, BiquadMemoryArray{});
-    auto coeffs = std::vector<BiquadCoefficientsArray>(size);
-
-    auto sr = 2000;
-
-    std::generate(
-        coeffs.begin(), coeffs.end(), [sr] { return get_notch_array(sr); });
-
-    auto cl_memory = cl::Buffer(context, memory.begin(), memory.end(), false);
-    auto cl_coeffs = cl::Buffer(context, coeffs.begin(), coeffs.end(), false);
-
-    auto input = std::vector<std::vector<cl_float>>(
-        10000, std::vector<cl_float>(size, 0));
-    auto ret = std::vector<std::vector<cl_float>>(
-        input.size(), std::vector<cl_float>(size, 0));
-
-    auto cl_input =
-        cl::Buffer(context, CL_MEM_READ_WRITE, size * sizeof(cl_float));
-    auto cl_output =
-        cl::Buffer(context, CL_MEM_READ_WRITE, size * sizeof(cl_float));
-
-    auto engine = std::default_random_engine{std::random_device()()};
-    auto r = 0.25;
-    auto range = std::uniform_real_distribution<cl_float>(-r, r);
-    for (auto & i : input) {
-        std::generate(
-            i.begin(), i.end(), [&range, &engine] { return range(engine); });
+    for (auto& i : input) {
+        std::generate(i.begin(), i.end(), [this] { return range(engine); });
     }
 
     for (auto i = 0u; i != input.size(); ++i) {
@@ -112,18 +164,38 @@ TEST(rectangular_kernel, filtering) {
     std::transform(ret.begin(),
                    ret.end(),
                    buf.begin(),
-                   [](const auto & i) { return i.front(); });
+                   [](const auto& i) { return i.front(); });
 
     write_sndfile(
         "./filtered_noise.wav", {buf}, sr, SF_FORMAT_PCM_16, SF_FORMAT_WAV);
+}
 
-    auto bma = BiquadMemoryArray{};
+using rk_filter = rectangular_kernel<FilterMemory<6>, FilterCoefficients<6>>;
+TEST_F(rk_filter, filtering_2) {
+    auto kernel = program.get_filter_test_kernel();
 
-    auto buf2 = std::vector<cl_float>(input.size());
-    std::transform(input.begin(),
-                   input.end(),
-                   buf2.begin(),
-                   [&bma, &coeffs](const auto & i) {
-                       return biquad_cascade(i.front(), &bma, &coeffs.front());
-                   });
+    for (auto& i : input) {
+        std::generate(i.begin(), i.end(), [this] { return range(engine); });
+    }
+
+    for (auto i = 0u; i != input.size(); ++i) {
+        cl::copy(queue, input[i].begin(), input[i].end(), cl_input);
+
+        kernel(cl::EnqueueArgs(queue, cl::NDRange(size)),
+               cl_input,
+               cl_output,
+               cl_memory,
+               cl_coeffs);
+
+        cl::copy(queue, cl_output, ret[i].begin(), ret[i].end());
+    }
+
+    auto buf = std::vector<cl_float>(ret.size());
+    std::transform(ret.begin(),
+                   ret.end(),
+                   buf.begin(),
+                   [](const auto& i) { return i.front(); });
+
+    write_sndfile(
+        "./filtered_noise_2.wav", {buf}, sr, SF_FORMAT_PCM_16, SF_FORMAT_WAV);
 }

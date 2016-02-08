@@ -7,9 +7,11 @@ set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} " -Wall -Werror -std=c++14 -msse -msse2 -
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
+
 add_subdirectory(gtest)
 add_subdirectory(common)
-add_subdirectory(lib)
+add_subdirectory(waveguide)
 add_subdirectory(rayverb)
 add_subdirectory(combined)
 add_subdirectory(cmd)

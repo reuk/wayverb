@@ -1,7 +1,9 @@
--Ilib
+-Iwaveguide
 -Icommon
 -Icombined
 -Irayverb
 -Ibsp
 -Igtest/include
+-Wall
+-Werror
 -ferror-limit=100

@@ -4,7 +4,7 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/include
     ${CMAKE_SOURCE_DIR}/common
     ${CMAKE_SOURCE_DIR}/rayverb
-    ${CMAKE_SOURCE_DIR}/lib
+    ${CMAKE_SOURCE_DIR}/waveguide
     "/usr/local/include"
 )
 

@@ -5,6 +5,7 @@
 RectangularProgram::RectangularProgram(const cl::Context & context,
                                        bool build_immediate)
         : Program(context, source, build_immediate) {
+    //            std::cout << source << std::endl;
 }
 
 const std::string RectangularProgram::source{
@@ -15,6 +16,9 @@ const std::string RectangularProgram::source{
     "#define DIAGNOSTIC\n"
 #endif
     R"(
+#define COURANT (1.0 / sqrt(3.0))
+#define BIQUAD_ORDER (2)
+#define CANONICAL_FILTER_ORDER (BIQUAD_SECTIONS * BIQUAD_ORDER)
 
 typedef enum {
     id_none = 0,
@@ -35,16 +39,12 @@ typedef struct {
 } Node;
 
 typedef struct {
-    float z1;
-    float z2;
+    float array[BIQUAD_ORDER];
 } BiquadMemory;
 
 typedef struct {
-    float b0;
-    float b1;
-    float b2;
-    float a1;
-    float a2;
+    float b[BIQUAD_ORDER + 1];
+    float a[BIQUAD_ORDER + 1];
 } BiquadCoefficients;
 
 typedef struct {
@@ -55,15 +55,42 @@ typedef struct {
     BiquadCoefficients array[BIQUAD_SECTIONS];
 } BiquadCoefficientsArray;
 
+typedef struct {
+    float array[CANONICAL_FILTER_ORDER];
+} CanonicalMemoryArray;
+
+typedef struct {
+    float b[CANONICAL_FILTER_ORDER + 1];
+    float a[CANONICAL_FILTER_ORDER + 1];
+} CanonicalCoefficientsArray;
+
 float biquad_step(float input,
-                  global BiquadMemory * bm,
-                  const global BiquadCoefficients * bc);
+                  global BiquadMemory * m,
+                  const global BiquadCoefficients * c);
 float biquad_step(float input,
-                  global BiquadMemory * bm,
-                  const global BiquadCoefficients * bc) {
-    float out = input * bc->b0 + bm->z1;
-    bm->z1    = input * bc->b1 - bc->a1 * out + bm->z2;
-    bm->z2    = input * bc->b2 - bc->a2 * out;
+                  global BiquadMemory * m,
+                  const global BiquadCoefficients * c) {
+    int i = 0;
+    float out = (input * c->b[i] + m->array[i]) / c->a[i];
+    for (; i != BIQUAD_ORDER - 1; ++i) {
+        m->array[i] = i * c->b[i + 1] - c->a[i + 1] * out + m->array[i + 1];
+    }
+    m->array[i] = i * c->b[i + 1] - c->a[i + 1] * out;
+    return out;
+}
+
+float canonical_filter_step(float input,
+                            global CanonicalMemoryArray * m,
+                            const global CanonicalCoefficientsArray * c);
+float canonical_filter_step(float input,
+                            global CanonicalMemoryArray * m,
+                            const global CanonicalCoefficientsArray * c) {
+    int i = 0;
+    float out = (input * c->b[i] + m->array[i]) / c->a[i];
+    for (; i != CANONICAL_FILTER_ORDER - 1; ++i) {
+        m->array[i] = i * c->b[i + 1] - c->a[i + 1] * out + m->array[i + 1];
+    }
+    m->array[i] = i * c->b[i + 1] - c->a[i + 1] * out;
     return out;
 }
 
@@ -89,6 +116,13 @@ kernel void filter_test(const global float * input,
     ,   biquad_memory + index
     ,   biquad_coefficients + index
     );
+}
+
+kernel void filter_test_2(const global float * input,
+                          global float * output,
+                          global CanonicalMemoryArray * canonical_memory,
+                          const global CanonicalCoefficientsArray * canonical_coefficients) {
+
 }
 
 typedef struct {
@@ -128,10 +162,10 @@ typedef enum {
     id_port_py = 3,
     id_port_nz = 4,
     id_port_pz = 5,
-} PortDirections;
+} PortDirection;
 
-PortDirections get_inner_node(BoundaryType boundary_type);
-PortDirections get_inner_node(BoundaryType boundary_type) {
+PortDirection get_inner_node_direction(BoundaryType boundary_type);
+PortDirection get_inner_node_direction(BoundaryType boundary_type) {
     switch(boundary_type) {
     case id_nx: return id_port_px;
     case id_px: return id_port_nx;
@@ -140,10 +174,48 @@ PortDirections get_inner_node(BoundaryType boundary_type) {
     case id_nz: return id_port_pz;
     case id_pz: return id_port_nz;
 
-    default: return 0;
+    default: return -1;
     }
 }
 
+int get_inner_node_index(const global Node * node, BoundaryType bt);
+int get_inner_node_index(const global Node * node, BoundaryType bt) {
+    return node->ports[get_inner_node_direction(bt)];
+}
+
+PortDirection opposite(PortDirection pd);
+PortDirection opposite(PortDirection pd) {
+    switch(pd) {
+    case id_port_nx: return id_port_px;
+    case id_port_px: return id_port_nx;
+    case id_port_ny: return id_port_py;
+    case id_port_py: return id_port_ny;
+    case id_port_nz: return id_port_pz;
+    case id_port_pz: return id_port_nz;
+
+    default: return -1;
+    }
+}
+
+//  call with the index of the BOUNDARY node, and the relative direction of the
+//  ghost point
+float ghost_point_pressure(const global float * current,
+                           global float * previous,
+                           const global Node * nodes,
+                           BoundaryType bt);
+float ghost_point_pressure(const global float * current,
+                           global float * previous,
+                           const global Node * nodes,
+                           BoundaryType bt) {
+    /*
+    size_t index = get_global_id(0);
+    const global Node * boundary_node = nodes + index;
+    int inner_node_index = get_inner_node_index(boundary_node, bt);
+
+    float current_inner_pressure = current[inner_node_index];
+    */
+    return 0;
+}
 
 void boundary_1d(const global Node * node);
 void boundary_1d(const global Node * node) {

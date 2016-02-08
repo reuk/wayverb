@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.0)
 project(tests)
 
 include_directories(
-    ${CMAKE_SOURCE_DIR}/lib
+    ${CMAKE_SOURCE_DIR}/waveguide
     ${CMAKE_SOURCE_DIR}/common
     ${CMAKE_SOURCE_DIR}/bsp
     ${CMAKE_SOURCE_DIR}/rayverb

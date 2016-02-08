@@ -5,7 +5,7 @@ int main(int argc, char* argv[]) {
     Logger::restart();
     LOG_SCOPE;
 
-    ::testing::GTEST_FLAG(filter) = "*rectangular_kernel*";
+    ::testing::GTEST_FLAG(filter) = "*rk_*";
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
 }

@@ -4,14 +4,13 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/include
     ${CMAKE_SOURCE_DIR}/common
     ${CMAKE_SOURCE_DIR}/rayverb
-    ${CMAKE_SOURCE_DIR}/lib
+    ${CMAKE_SOURCE_DIR}/waveguide
     ${CMAKE_SOURCE_DIR}/combined
     "/usr/local/include"
 )
 
 set(name pwaveguide)
 file(GLOB sources "*.cpp")
-
 add_executable(${name} ${sources})
 
 if(APPLE)
