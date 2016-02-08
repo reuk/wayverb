@@ -71,7 +71,7 @@ float biquad_step(float input,
                   global BiquadMemory * m,
                   const global BiquadCoefficients * c) {
     int i = 0;
-    float out = (input * c->b[i] + m->array[i]) / c->a[i];
+    float out = input * c->b[i] + m->array[i];
     for (; i != BIQUAD_ORDER - 1; ++i) {
         m->array[i] = i * c->b[i + 1] - c->a[i + 1] * out + m->array[i + 1];
     }
@@ -86,7 +86,7 @@ float canonical_filter_step(float input,
                             global CanonicalMemoryArray * m,
                             const global CanonicalCoefficientsArray * c) {
     int i = 0;
-    float out = (input * c->b[i] + m->array[i]) / c->a[i];
+    float out = input * c->b[i] + m->array[i];
     for (; i != CANONICAL_FILTER_ORDER - 1; ++i) {
         m->array[i] = i * c->b[i + 1] - c->a[i + 1] * out + m->array[i + 1];
     }
@@ -212,14 +212,15 @@ float ghost_point_pressure(const global float * current,
                            global float * previous,
                            const global Node * nodes,
                            BoundaryType bt) {
-    /*
     size_t index = get_global_id(0);
     const global Node * boundary_node = nodes + index;
     int inner_node_index = get_inner_node_index(boundary_node, bt);
 
     float current_inner_pressure = current[inner_node_index];
-    */
-    return 0;
+
+    float next_pressure = 0;    //  pass to function?
+    float prev_pressure = 0;    //  ditto?
+    float filt_state =          //  I need a way of accessing filter state
 }
 
 void boundary_1d(const global Node * node);

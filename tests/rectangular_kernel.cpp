@@ -64,15 +64,15 @@ auto tail(const std::array<T, I>& a) {
 }
 
 template <typename Func, typename A, typename T>
-auto array_reduce(const A& a,
-                  const std::array<T, 0>& t,
-                  const Func& f = Func()) {
+A array_reduce(const A& a, const std::array<T, 0>& t, const Func& f = Func()) {
     return a;
 }
 
-template <typename Func, typename A, typename B>
-auto array_reduce(const A& a, const B& b, const Func& f = Func()) {
-    return array_reduce(convolve(a, head(b)), tail(b), f);
+template <typename Func, typename A, typename T, unsigned long I>
+auto array_reduce(const A& a,
+                  const std::array<T, I>& b,
+                  const Func& f = Func()) {
+    return array_reduce(f(a, head(b)), tail(b), f);
 }
 
 auto convolve(const BiquadCoefficientsArray& a) {
