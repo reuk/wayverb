@@ -133,15 +133,19 @@ RectangularWaveguide::RectangularWaveguide(const RectangularProgram& program,
         , boundary_data_1_buffer(
               program.getInfo<CL_PROGRAM_CONTEXT>(),
               CL_MEM_READ_WRITE,
-              sizeof(BoundaryData1) * mesh.compute_num_boundary<1>())
+              sizeof(BoundaryDataArray1) * mesh.compute_num_boundary<1>())
         , boundary_data_2_buffer(
               program.getInfo<CL_PROGRAM_CONTEXT>(),
               CL_MEM_READ_WRITE,
-              sizeof(BoundaryData2) * mesh.compute_num_boundary<2>())
+              sizeof(BoundaryDataArray2) * mesh.compute_num_boundary<2>())
         , boundary_data_3_buffer(
               program.getInfo<CL_PROGRAM_CONTEXT>(),
               CL_MEM_READ_WRITE,
-              sizeof(BoundaryData3) * mesh.compute_num_boundary<3>()) {
+              sizeof(BoundaryDataArray3) * mesh.compute_num_boundary<3>())
+        , boundary_coefficients_buffer(
+              program.getInfo<CL_PROGRAM_CONTEXT>(),
+              CL_MEM_READ_WRITE,
+              sizeof(CanonicalCoefficients) * mesh.compute_num_surface()) {
 }
 
 RectangularWaveguide::RectangularWaveguide(const RectangularProgram& program,
@@ -169,6 +173,15 @@ void RectangularWaveguide::setup(cl::CommandQueue& queue,
              starting_velocity.end(),
              velocity_buffer);
 
+    //  TODO set boundary data structures properly
+    setup_boundary_data_buffer<1>(queue, boundary_data_1_buffer);
+    setup_boundary_data_buffer<2>(queue, boundary_data_2_buffer);
+    setup_boundary_data_buffer<3>(queue, boundary_data_3_buffer);
+
+    //  TODO set coefficients properly
+    std::vector<CanonicalCoefficients> vec(1, CanonicalCoefficients{});
+    cl::copy(queue, vec.begin(), vec.end(), boundary_coefficients_buffer);
+
     period = 1 / sr;
 }
 
@@ -189,6 +202,7 @@ RunStepResult RectangularWaveguide::run_step(size_type o,
            boundary_data_1_buffer,
            boundary_data_2_buffer,
            boundary_data_3_buffer,
+           boundary_coefficients_buffer,
            transform_buffer,
            velocity_buffer,
            mesh.get_spacing(),

@@ -240,6 +240,22 @@ private:
                          cl::CommandQueue& queue,
                          const RectangularMesh& mesh);
 
+    template <int I>
+    void setup_boundary_data_buffer(cl::CommandQueue& queue, cl::Buffer& b) {
+        std::vector<BoundaryDataArray<I>> bda(mesh.compute_num_boundary<I>());
+        //  TODO set boundary coefficient index properly here
+        std::generate(bda.begin(),
+                      bda.end(),
+                      [] {
+                          auto ret = BoundaryDataArray<I>{};
+                          for (auto& i : ret.array) {
+                              i.coefficient_index = 0;
+                          }
+                          return ret;
+                      });
+        cl::copy(queue, bda.begin(), bda.end(), b);
+    }
+
     RectangularMesh mesh;
     cl::Buffer node_buffer;
     cl::Buffer transform_buffer;
@@ -248,6 +264,7 @@ private:
     cl::Buffer boundary_data_1_buffer;
     cl::Buffer boundary_data_2_buffer;
     cl::Buffer boundary_data_3_buffer;
+    cl::Buffer boundary_coefficients_buffer;
 
     Eigen::MatrixXf transform_matrix;
 

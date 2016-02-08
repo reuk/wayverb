@@ -128,6 +128,8 @@ public:
     template <typename Kernel>
     auto run_kernel(Kernel&& k) {
         auto kernel = std::move(k);
+
+        auto tick = std::chrono::steady_clock::now();
         for (auto i = 0u; i != input.size(); ++i) {
             cl::copy(queue, input[i].begin(), input[i].end(), cl_input);
 
@@ -139,6 +141,13 @@ public:
 
             cl::copy(queue, cl_output, ret[i].begin(), ret[i].end());
         }
+        auto tock = std::chrono::steady_clock::now();
+        std::cout << "filtering took: "
+                  << std::chrono::duration_cast<std::chrono::milliseconds>(
+                         tock - tick)
+                         .count()
+                  << " ms" << std::endl;
+
         auto buf = std::vector<cl_float>(ret.size());
         std::transform(ret.begin(),
                        ret.end(),
@@ -152,7 +161,7 @@ public:
     cl::CommandQueue queue{context, device};
     RectangularProgram program{
         get_program<RectangularProgram>(context, device)};
-    static constexpr int size{1 << 13};
+    static constexpr int size{1 << 8};
     static constexpr int sr{2000};
     std::vector<Memory> memory{size, Memory{}};
     std::vector<Coeffs> coeffs{compute_coeffs<Coeffs>(size, sr)};
@@ -178,7 +187,7 @@ TEST_F(rk_biquad, filtering) {
                   SF_FORMAT_WAV);
 }
 
-using rk_filter = rectangular_kernel<FilterMemory<6>, FilterCoefficients<6>>;
+using rk_filter = rectangular_kernel<CanonicalMemory, CanonicalCoefficients>;
 TEST_F(rk_filter, filtering_2) {
     write_sndfile("./filtered_noise_2.wav",
                   {run_kernel(program.get_filter_test_2_kernel())},

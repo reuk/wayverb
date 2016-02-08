@@ -330,6 +330,8 @@ TODO
 
 * think about comparing the two models
 
+* extract boundary frequency curve from model somehow
+
 digital impedance filters
 =========================
 

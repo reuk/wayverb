@@ -19,6 +19,7 @@ public:
                                cl::Buffer,
                                cl::Buffer,
                                cl::Buffer,
+                               cl::Buffer,
                                cl_float,
                                cl_float,
                                cl_ulong,

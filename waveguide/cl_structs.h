@@ -51,15 +51,26 @@ struct __attribute__((aligned(8))) BiquadCoefficientsArray final {
     BiquadCoefficients array[BIQUAD_SECTIONS];
 };
 
-template <int D>
-struct __attribute__((aligned(8))) BoundaryData final {
-    static constexpr int DIMENSIONS{D};
-    cl_float sk_current[DIMENSIONS], sk_previous[DIMENSIONS];
-    cl_float sm_current[DIMENSIONS], sm_previous[DIMENSIONS];
-    cl_float ghost_current[DIMENSIONS], ghost_previous[DIMENSIONS];
-    BiquadMemoryArray biquad_memory[DIMENSIONS];
+using CanonicalMemory =
+    FilterMemory<BiquadMemory::ORDER * BiquadMemoryArray::BIQUAD_SECTIONS>;
+using CanonicalCoefficients =
+    FilterCoefficients<BiquadCoefficients::ORDER *
+                       BiquadCoefficientsArray::BIQUAD_SECTIONS>;
+
+struct BoundaryData final {
+    CanonicalMemory filter_memory;
+    cl_float sk_current, sk_previous;
+    cl_float sm_current, sm_previous;
+    cl_float ghost_current, ghost_previous;
+    cl_int coefficient_index;
 };
 
-using BoundaryData1 = BoundaryData<1>;
-using BoundaryData2 = BoundaryData<2>;
-using BoundaryData3 = BoundaryData<3>;
+template <int D>
+struct __attribute__((aligned(8))) BoundaryDataArray final {
+    static constexpr int DIMENSIONS{D};
+    BoundaryData array[DIMENSIONS];
+};
+
+using BoundaryDataArray1 = BoundaryDataArray<1>;
+using BoundaryDataArray2 = BoundaryDataArray<2>;
+using BoundaryDataArray3 = BoundaryDataArray<3>;

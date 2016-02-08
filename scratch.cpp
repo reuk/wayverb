@@ -1,22 +1,3 @@
-#include "rectangular_program.h"
-
-#include <iostream>
-
-RectangularProgram::RectangularProgram(const cl::Context & context,
-                                       bool build_immediate)
-        : Program(context, source, build_immediate) {
-}
-
-const std::string RectangularProgram::source{
-    "#define PORTS " + std::to_string(PORTS) + "\n" +
-    "#define BIQUAD_SECTIONS " + std::to_string(BIQUAD_SECTIONS) + "\n" +
-    "#define BIQUAD_ORDER " + std::to_string(2) + "\n" +
-    "#define CANONICAL_FILTER_ORDER " + std::to_string(BIQUAD_SECTIONS * 2) +
-    "\n"
-#ifdef DIAGNOSTIC
-    "#define DIAGNOSTIC\n"
-#endif
-    R"(
 #define COURANT (1.0 / sqrt(3.0))
 
 typedef enum {
@@ -340,4 +321,3 @@ kernel void waveguide(const global float * current,
         *velocity_buffer += T * multiplied;
     }
 }
-)"};
