@@ -119,24 +119,94 @@ typedef enum {
     id_port_pz = 5,
 } PortDirection;
 
-PortDirection get_inner_node_direction(BoundaryType boundary_type);
-PortDirection get_inner_node_direction(BoundaryType boundary_type) {
+typedef struct { PortDirection array[1]; } InnerNodeDirections1d;
+typedef struct { PortDirection array[2]; } InnerNodeDirections2d;
+typedef struct { PortDirection array[3]; } InnerNodeDirections3d;
+
+InnerNodeDirections1d get_inner_node_directions_1d(BoundaryType boundary_type);
+InnerNodeDirections1d get_inner_node_directions_1d(BoundaryType boundary_type) {
     switch (boundary_type) {
         case id_nx:
-            return id_port_px;
+            return (InnerNodeDirections1d){{id_port_px}};
         case id_px:
-            return id_port_nx;
+            return (InnerNodeDirections1d){{id_port_nx}};
         case id_ny:
-            return id_port_py;
+            return (InnerNodeDirections1d){{id_port_py}};
         case id_py:
-            return id_port_ny;
+            return (InnerNodeDirections1d){{id_port_ny}};
         case id_nz:
-            return id_port_pz;
+            return (InnerNodeDirections1d){{id_port_pz}};
         case id_pz:
-            return id_port_nz;
+            return (InnerNodeDirections1d){{id_port_nz}};
 
         default:
-            return -1;
+            return (InnerNodeDirections1d){{-1}};
+    }
+}
+
+InnerNodeDirections2d get_inner_node_directions_2d(int boundary_type);
+InnerNodeDirections2d get_inner_node_directions_2d(int boundary_type) {
+    switch (boundary_type) {
+        case id_nx | id_ny:
+            return (InnerNodeDirections2d){{id_port_nx, id_port_ny}};
+        case id_nx | id_py:
+            return (InnerNodeDirections2d){{id_port_nx, id_port_py}};
+        case id_px | id_ny:
+            return (InnerNodeDirections2d){{id_port_px, id_port_ny}};
+        case id_px | id_py:
+            return (InnerNodeDirections2d){{id_port_px, id_port_py}};
+        case id_nx | id_nz:
+            return (InnerNodeDirections2d){{id_port_nx, id_port_nz}};
+        case id_nx | id_pz:
+            return (InnerNodeDirections2d){{id_port_nx, id_port_pz}};
+        case id_px | id_nz:
+            return (InnerNodeDirections2d){{id_port_px, id_port_nz}};
+        case id_px | id_pz:
+            return (InnerNodeDirections2d){{id_port_px, id_port_pz}};
+        case id_ny | id_nz:
+            return (InnerNodeDirections2d){{id_port_ny, id_port_nz}};
+        case id_ny | id_pz:
+            return (InnerNodeDirections2d){{id_port_ny, id_port_pz}};
+        case id_py | id_nz:
+            return (InnerNodeDirections2d){{id_port_py, id_port_nz}};
+        case id_py | id_pz:
+            return (InnerNodeDirections2d){{id_port_py, id_port_pz}};
+
+        default:
+            return (InnerNodeDirections2d){{-1, -1}};
+    }
+}
+
+InnerNodeDirections3d get_inner_node_directions_3d(int boundary_type);
+InnerNodeDirections3d get_inner_node_directions_3d(int boundary_type) {
+    switch (boundary_type) {
+        case id_nx | id_ny | id_nz:
+            return (InnerNodeDirections3d){
+                {id_port_nx, id_port_ny, id_port_nz}};
+        case id_nx | id_ny | id_pz:
+            return (InnerNodeDirections3d){
+                {id_port_nx, id_port_ny, id_port_pz}};
+        case id_nx | id_py | id_nz:
+            return (InnerNodeDirections3d){
+                {id_port_nx, id_port_py, id_port_nz}};
+        case id_nx | id_py | id_pz:
+            return (InnerNodeDirections3d){
+                {id_port_nx, id_port_py, id_port_pz}};
+        case id_px | id_ny | id_nz:
+            return (InnerNodeDirections3d){
+                {id_port_px, id_port_ny, id_port_nz}};
+        case id_px | id_ny | id_pz:
+            return (InnerNodeDirections3d){
+                {id_port_px, id_port_ny, id_port_pz}};
+        case id_px | id_py | id_nz:
+            return (InnerNodeDirections3d){
+                {id_port_px, id_port_py, id_port_nz}};
+        case id_px | id_py | id_pz:
+            return (InnerNodeDirections3d){
+                {id_port_px, id_port_py, id_port_pz}};
+
+        default:
+            return (InnerNodeDirections3d){{-1, -1, -1}};
     }
 }
 
@@ -161,43 +231,71 @@ PortDirection opposite(PortDirection pd) {
     }
 }
 
-PortDirection get_ghost_node_direction(BoundaryType boundary_type);
-PortDirection get_ghost_node_direction(BoundaryType boundary_type) {
-    return opposite(get_inner_node_direction(boundary_type));
-}
+typedef struct { PortDirection array[4]; } PlanePorts;
 
-typedef struct { PortDirection array[4]; } SurroundingPorts;
-
-SurroundingPorts on_boundary_1d(PortDirection pd);
-SurroundingPorts on_boundary_1d(PortDirection pd) {
-    switch (pd) {
+PlanePorts on_boundary_1d(InnerNodeDirections1d pd);
+PlanePorts on_boundary_1d(InnerNodeDirections1d pd) {
+    switch (pd.array[0]) {
         case id_port_nx:
         case id_port_px:
-            return (SurroundingPorts){
+            return (PlanePorts){
                 {id_port_ny, id_port_py, id_port_nz, id_port_pz}};
         case id_port_ny:
         case id_port_py:
-            return (SurroundingPorts){
+            return (PlanePorts){
                 {id_port_nx, id_port_px, id_port_nz, id_port_pz}};
         case id_port_nz:
         case id_port_pz:
-            return (SurroundingPorts){
+            return (PlanePorts){
                 {id_port_nx, id_port_px, id_port_ny, id_port_py}};
 
         default:
-            return (SurroundingPorts){{-1, -1, -1, -1}};
+            return (PlanePorts){{-1, -1, -1, -1}};
     }
 }
 
-float sum_surrounding(const global float * current,
-                      const global Node * node,
-                      PortDirection pd);
-float sum_surrounding(const global float * current,
-                      const global Node * node,
-                      PortDirection pd) {
+typedef struct { PortDirection array[2]; } AxisPorts;
+
+AxisPorts on_boundary_2d(InnerNodeDirections2d ind);
+AxisPorts on_boundary_2d(InnerNodeDirections2d ind) {
+    if (ind.array[0] == id_port_nx || ind.array[0] == id_port_px ||
+        ind.array[1] == id_port_nx || ind.array[1] == id_port_px) {
+        if (ind.array[0] == id_port_ny || ind.array[0] == id_port_py ||
+            ind.array[1] == id_port_ny || ind.array[1] == id_port_py) {
+            return (AxisPorts){{id_port_nz, id_port_pz}};
+        }
+        return (AxisPorts){{id_port_ny, id_port_py}};
+    }
+    return (AxisPorts){{id_port_nx, id_port_px}};
+}
+
+float sum_on_plane(const global float * current,
+                   const global Node * node,
+                   InnerNodeDirections1d pd);
+float sum_on_plane(const global float * current,
+                   const global Node * node,
+                   InnerNodeDirections1d pd) {
     float ret = 0;
-    SurroundingPorts on_boundary = on_boundary_1d(pd);
+    PlanePorts on_boundary = on_boundary_1d(pd);
     for (int i = 0; i != 4; ++i) {
+        int index = node->ports[on_boundary.array[i]];
+        if (index == -1) {
+            //  TODO error!
+        }
+        ret += current[index];
+    }
+    return ret;
+}
+
+float sum_on_axis(const global float * current,
+                  const global Node * node,
+                  InnerNodeDirections2d pd);
+float sum_on_axis(const global float * current,
+                  const global Node * node,
+                  InnerNodeDirections2d pd) {
+    float ret = 0;
+    AxisPorts on_boundary = on_boundary_2d(pd);
+    for (int i = 0; i != 2; ++i) {
         int index = node->ports[on_boundary.array[i]];
         if (index == -1) {
             //  TODO error!
@@ -261,12 +359,12 @@ float boundary_1d(const global float * current,
                   const global CAT(FilterCoefficients, CANONICAL_FILTER_ORDER) *
                       boundary_coefficients,
                   BoundaryType bt) {
-    PortDirection inner_direction = get_inner_node_direction(bt);
+    InnerNodeDirections1d id = get_inner_node_directions_1d(bt);
+    PortDirection inner_direction = id.array[0];
     int inner_index = boundary_node->ports[inner_direction];
     float inner_pressure = current[inner_index];
 
-    float summed_surrounding =
-        sum_surrounding(current, boundary_node, inner_direction);
+    float summed_surrounding = sum_on_plane(current, boundary_node, id);
 
     size_t index = get_global_id(0);
 
@@ -279,11 +377,10 @@ float boundary_1d(const global float * current,
 
     global BoundaryDataArray1 * bda =
         boundary_data_1 + boundary_node->boundary_index;
-    global BoundaryData * boundary_data = &bda->array[0];
     const global CAT(FilterCoefficients, CANONICAL_FILTER_ORDER) * boundary =
-        boundary_coefficients + boundary_data->coefficient_index;
+        boundary_coefficients + bda->array[0].coefficient_index;
 
-    float filt_state = boundary_data->filter_memory.array[0];
+    float filt_state = bda->array[0].filter_memory.array[0];
 
     float b0 = boundary->b[0];
     float a0 = boundary->a[0];
@@ -302,10 +399,89 @@ float boundary_1d(const global float * current,
                                 boundary_node,
                                 ret,
                                 prev_pressure,
-                                boundary_data,
+                                &bda->array[0],
                                 boundary,
                                 inner_direction);
 
+    return ret;
+}
+
+float boundary_2d(const global float * current,
+                  const global float * previous,
+                  const global Node * boundary_node,
+                  global BoundaryDataArray2 * boundary_data_2,
+                  const global CAT(FilterCoefficients, CANONICAL_FILTER_ORDER) *
+                      boundary_coefficients,
+                  int bt);
+float boundary_2d(const global float * current,
+                  const global float * previous,
+                  const global Node * boundary_node,
+                  global BoundaryDataArray2 * boundary_data_2,
+                  const global CAT(FilterCoefficients, CANONICAL_FILTER_ORDER) *
+                      boundary_coefficients,
+                  int bt) {
+    //  TODO vectorise to fuck
+    InnerNodeDirections2d inner_node_directions =
+        get_inner_node_directions_2d(bt);
+    int inner_index[2] = {boundary_node->ports[inner_node_directions.array[0]],
+                          boundary_node->ports[inner_node_directions.array[1]]};
+    float inner_pressure[2] = {current[inner_index[0]],
+                               current[inner_index[1]]};
+
+    float summed_surrounding =
+        sum_on_axis(current, boundary_node, inner_node_directions);
+
+    size_t index = get_global_id(0);
+
+    float COURANT_SQ = COURANT * COURANT;
+
+    float current_surrounding_weighting =
+        COURANT_SQ *
+        (2 * inner_pressure[0] + 2 * inner_pressure[1] + summed_surrounding);
+    float current_boundary_weighting =
+        2 * (1 - 3 * COURANT_SQ) * current[index];
+
+    global BoundaryDataArray2 * bda =
+        boundary_data_2 + boundary_node->boundary_index;
+    const global CAT(FilterCoefficients, CANONICAL_FILTER_ORDER) *
+        boundary[2] = {
+        boundary_coefficients + bda->array[0].coefficient_index,
+        boundary_coefficients + bda->array[1].coefficient_index,
+    };
+
+    float filt_state[2] = {bda->array[0].filter_memory.array[0],
+                           bda->array[1].filter_memory.array[0]};
+
+    float b0[2] = {boundary[0]->b[0], boundary[1]->b[0]};
+    float a0[2] = {boundary[0]->a[0], boundary[1]->a[0]};
+
+    float filter_weighting =
+        COURANT_SQ * ((filt_state[0] / b0[0]) + (filt_state[1] / b0[1]));
+
+    float coeff_weighting[2] = {COURANT * a0[0] / b0[0],
+                                COURANT * a0[1] / b0[1]};
+    float prev_pressure = previous[index];
+    float prev_weighting =
+        (coeff_weighting[0] + coeff_weighting[1] - 1) * prev_pressure;
+
+    float ret = (current_surrounding_weighting + current_boundary_weighting +
+                 filter_weighting + prev_weighting) /
+                (1 + coeff_weighting[0] + coeff_weighting[1]);
+
+    ghost_point_pressure_update(current,
+                                boundary_node,
+                                ret,
+                                prev_pressure,
+                                &bda->array[0],
+                                boundary[0],
+                                inner_node_directions.array[0]);
+    ghost_point_pressure_update(current,
+                                boundary_node,
+                                ret,
+                                prev_pressure,
+                                &bda->array[1],
+                                boundary[1],
+                                inner_node_directions.array[1]);
     return ret;
 }
 
@@ -346,6 +522,12 @@ kernel void waveguide(const global float * current,
             break;
         //  this is a 1d-boundary node
         case 1:
+            next_pressure = boundary_1d(current,
+                                        previous,
+                                        node,
+                                        boundary_data_1,
+                                        boundary_coefficients,
+                                        node->bt);
             break;
         //  this is an edge where two boundaries meet
         case 2:
