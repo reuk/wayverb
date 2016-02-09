@@ -7,6 +7,7 @@
 
 #include <random>
 #include <array>
+#include <type_traits>
 
 BiquadCoefficients get_notch_coefficients(float gain,
                                           float centre,
@@ -51,37 +52,36 @@ FilterCoefficients<A + B> convolve(const FilterCoefficients<A>& a,
     return ret;
 }
 
-template <typename T, unsigned long I>
-auto head(const std::array<T, I>& a) {
-    return a.front();
-}
-
-template <typename T, unsigned long I>
-auto tail(const std::array<T, I>& a) {
-    auto ret = std::array<T, I - 1>{};
-    std::copy(a.begin() + 1, a.end(), ret.begin());
-    return ret;
-}
+template <size_t I>
+struct Indexer : std::integral_constant<decltype(I), I> {
+    using Next = Indexer<I - 1>;
+};
 
 template <typename Func, typename A, typename T>
-A array_reduce(const A& a, const std::array<T, 0>& t, const Func& f = Func()) {
+auto array_reduce(const A& a, const T&, Indexer<0>, const Func& = Func{}) {
     return a;
 }
 
-template <typename Func, typename A, typename T, unsigned long I>
+template <typename Func, typename A, typename T, typename Ind>
 auto array_reduce(const A& a,
-                  const std::array<T, I>& b,
-                  const Func& f = Func()) {
-    return array_reduce(f(a, head(b)), tail(b), f);
+                  const T& data,
+                  Ind i = Ind{},
+                  const Func& f = Func{}) {
+    return array_reduce(
+        f(a, std::get<i - 1>(data)), data, typename Ind::Next{}, f);
+}
+
+template <typename Func, typename T>
+auto array_reduce(const T& data, const Func& f = Func()) {
+    return array_reduce(
+        data.back(), data, Indexer<std::tuple_size<T>() - 1>{}, f);
 }
 
 auto convolve(const BiquadCoefficientsArray& a) {
     std::array<BiquadCoefficients, BiquadCoefficientsArray::BIQUAD_SECTIONS> t;
     std::copy(std::begin(a.array), std::end(a.array), t.begin());
     return array_reduce(
-        head(t),
-        tail(t),
-        [](const auto& i, const auto& j) { return convolve(i, j); });
+        t, [](const auto& i, const auto& j) { return convolve(i, j); });
 }
 
 auto get_notch_filter_array(float sr) {
