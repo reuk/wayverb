@@ -332,6 +332,13 @@ TODO
 
 * extract boundary frequency curve from model somehow
 
+* nodes should not contain their boundary type
+    * if they are a boundary node they should point to a struct which contains
+      the boundary type, otherwise the pointer should be NULL
+        * although maybe not?
+        * at the moment I can encode the boundary type into an int,
+          I don't know how I'd encode it otherwise
+
 digital impedance filters
 =========================
 

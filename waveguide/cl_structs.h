@@ -59,9 +59,6 @@ using CanonicalCoefficients =
 
 struct BoundaryData final {
     CanonicalMemory filter_memory;
-    cl_float sk_current, sk_previous;
-    cl_float sm_current, sm_previous;
-    cl_float ghost_current, ghost_previous;
     cl_int coefficient_index;
 };
 
