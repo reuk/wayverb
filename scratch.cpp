@@ -45,23 +45,23 @@ typedef struct {
 
 //  we assume that a0 == 1.0f
 //  that is, the FILTER COEFFICIENTS ARE NORMALISED
-#define FILTER_STEP(order)                                             \
-    float CAT(filter_step_, order)(                                    \
-        float input,                                                   \
-        global CAT(FilterMemory, order) * m,                           \
-        const global CAT(FilterCoefficients, order) * c);              \
-    float CAT(filter_step_, order)(                                    \
-        float input,                                                   \
-        global CAT(FilterMemory, order) * m,                           \
-        const global CAT(FilterCoefficients, order) * c) {             \
-        int i = 0;                                                     \
-        float out = input * c->b[i] + m->array[i];                     \
-        for (; i != order - 1; ++i) {                                  \
-            m->array[i] =                                              \
-                i * c->b[i + 1] - c->a[i + 1] * out + m->array[i + 1]; \
-        }                                                              \
-        m->array[i] = i * c->b[i + 1] - c->a[i + 1] * out;             \
-        return out;                                                    \
+#define FILTER_STEP(order)                                                 \
+    float CAT(filter_step_, order)(                                        \
+        float input,                                                       \
+        global CAT(FilterMemory, order) * m,                               \
+        const global CAT(FilterCoefficients, order) * c);                  \
+    float CAT(filter_step_, order)(                                        \
+        float input,                                                       \
+        global CAT(FilterMemory, order) * m,                               \
+        const global CAT(FilterCoefficients, order) * c) {                 \
+        int i = 0;                                                         \
+        float out = input * c->b[i] + m->array[i];                         \
+        for (; i != order - 1; ++i) {                                      \
+            m->array[i] =                                                  \
+                input * c->b[i + 1] - c->a[i + 1] * out + m->array[i + 1]; \
+        }                                                                  \
+        m->array[i] = input * c->b[i + 1] - c->a[i + 1] * out;             \
+        return out;                                                        \
     }
 
 FILTER_STEP(BIQUAD_ORDER);
@@ -100,6 +100,17 @@ kernel void filter_test_2(const global float* input,
     size_t index = get_global_id(0);
     output[index] = CAT(filter_step_, CANONICAL_FILTER_ORDER)(
         input[index], canonical_memory + index, canonical_coefficients + index);
+}
+
+#define PRINT_SIZEOF(x) printf("gpu: sizeof(" #x "): %i\n", sizeof(x));
+
+kernel void print_sizes() {
+    if (index == 0) {
+        PRINT_SIZEOF(BiquadMemoryArray);
+        PRINT_SIZEOF(BiquadCoefficientsArray);
+        PRINT_SIZEOF(CAT(FilterMemory, CANONICAL_FILTER_ORDER));
+        PRINT_SIZEOF(CAT(FilterCoefficients, CANONICAL_FILTER_ORDER));
+    }
 }
 
 typedef struct {

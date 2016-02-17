@@ -1,5 +1,6 @@
 #include "rectangular_program.h"
 #include "cl_common.h"
+#include "timed_scope.h"
 
 #include "write_audio_file.h"
 
@@ -58,30 +59,25 @@ struct Indexer : std::integral_constant<decltype(I), I> {
 };
 
 template <typename Func, typename A, typename T>
-auto array_reduce(const A& a, const T&, Indexer<0>, const Func& = Func{}) {
+auto reduce(const A& a, const T&, Indexer<0>, const Func& = Func{}) {
     return a;
 }
 
 template <typename Func, typename A, typename T, typename Ind>
-auto array_reduce(const A& a,
-                  const T& data,
-                  Ind i = Ind{},
-                  const Func& f = Func{}) {
-    return array_reduce(
-        f(a, std::get<i - 1>(data)), data, typename Ind::Next{}, f);
+auto reduce(const A& a, const T& data, Ind i = Ind{}, const Func& f = Func{}) {
+    return reduce(f(a, std::get<i - 1>(data)), data, typename Ind::Next{}, f);
 }
 
 template <typename Func, typename T>
-auto array_reduce(const T& data, const Func& f = Func()) {
-    return array_reduce(
-        data.back(), data, Indexer<std::tuple_size<T>() - 1>{}, f);
+auto reduce(const T& data, const Func& f = Func()) {
+    return reduce(data.back(), data, Indexer<std::tuple_size<T>() - 1>{}, f);
 }
 
 auto convolve(const BiquadCoefficientsArray& a) {
     std::array<BiquadCoefficients, BiquadCoefficientsArray::BIQUAD_SECTIONS> t;
     std::copy(std::begin(a.array), std::end(a.array), t.begin());
-    return array_reduce(
-        t, [](const auto& i, const auto& j) { return convolve(i, j); });
+    return reduce(t,
+                  [](const auto& i, const auto& j) { return convolve(i, j); });
 }
 
 auto get_notch_filter_array(float sr) {
@@ -112,45 +108,98 @@ std::vector<FC> compute_coeffs(int size, float sr) {
     return ret;
 }
 
-template <typename Memory, typename Coeffs>
-class rectangular_kernel : public ::testing::Test {
+class InputGenerator {
 public:
-    virtual ~rectangular_kernel() noexcept = default;
+    virtual std::vector<std::vector<cl_float>> compute_input(int size) = 0;
+};
 
-    std::vector<std::vector<cl_float>> compute_input() {
-        auto ret = std::vector<std::vector<cl_float>>{
-            10000, std::vector<cl_float>(size)};
-        for (auto& i : ret)
-            std::generate(i.begin(), i.end(), [this] { return range(engine); });
+class NoiseGenerator : public InputGenerator {
+public:
+    virtual std::vector<std::vector<cl_float>> compute_input(
+        int size) override {
+        static auto ret = generate(size);
         return ret;
     }
+
+private:
+    static std::vector<std::vector<cl_float>> generate(int size) {
+        auto ret = std::vector<std::vector<cl_float>>{
+            10000, std::vector<cl_float>(size, 0)};
+        for (auto& i : ret)
+            std::generate(i.begin(), i.end(), [] { return range(engine); });
+        return ret;
+    }
+
+    static std::default_random_engine engine;
+    static constexpr float r{0.25};
+    static std::uniform_real_distribution<cl_float> range;
+};
+
+std::default_random_engine NoiseGenerator::engine{std::random_device()()};
+std::uniform_real_distribution<cl_float> NoiseGenerator::range{-r, r};
+
+class ImpulseGenerator : public InputGenerator {
+public:
+    virtual std::vector<std::vector<cl_float>> compute_input(
+        int size) override {
+        auto ret = std::vector<std::vector<cl_float>>{
+            200, std::vector<cl_float>(size, 0)};
+        for (auto& i : ret.front())
+            i = 0.25;
+        return ret;
+    }
+};
+
+class Bracketer {
+public:
+    Bracketer(std::ostream& os)
+            : os(os) {
+        os << "[  ";
+    }
+    virtual ~Bracketer() noexcept {
+        os << "]";
+    }
+
+private:
+    std::ostream& os;
+};
+
+namespace std {
+template <typename T>
+ostream& operator<<(ostream& os, const vector<T>& t) {
+    Bracketer bracketer(os);
+    copy(t.begin(), t.end(), ostream_iterator<T>(os, "  "));
+    return os;
+}
+}
+
+template <typename Memory, typename Coeffs, typename Generator>
+class rectangular_kernel : Generator {
+public:
+    virtual ~rectangular_kernel() noexcept = default;
 
     template <typename Kernel>
     auto run_kernel(Kernel&& k) {
         auto kernel = std::move(k);
 
-        auto tick = std::chrono::steady_clock::now();
-        for (auto i = 0u; i != input.size(); ++i) {
-            cl::copy(queue, input[i].begin(), input[i].end(), cl_input);
+        {
+            TimedScope timer("filtering");
+            for (auto i = 0u; i != input.size(); ++i) {
+                cl::copy(queue, input[i].begin(), input[i].end(), cl_input);
 
-            kernel(cl::EnqueueArgs(queue, cl::NDRange(size)),
-                   cl_input,
-                   cl_output,
-                   cl_memory,
-                   cl_coeffs);
+                kernel(cl::EnqueueArgs(queue, cl::NDRange(size)),
+                       cl_input,
+                       cl_output,
+                       cl_memory,
+                       cl_coeffs);
 
-            cl::copy(queue, cl_output, ret[i].begin(), ret[i].end());
+                cl::copy(queue, cl_output, output[i].begin(), output[i].end());
+                Logger::log(output[i]);
+            }
         }
-        auto tock = std::chrono::steady_clock::now();
-        std::cout << "filtering took: "
-                  << std::chrono::duration_cast<std::chrono::milliseconds>(
-                         tock - tick)
-                         .count()
-                  << " ms" << std::endl;
-
-        auto buf = std::vector<cl_float>(ret.size());
-        std::transform(ret.begin(),
-                       ret.end(),
+        auto buf = std::vector<cl_float>(output.size());
+        std::transform(output.begin(),
+                       output.end(),
                        buf.begin(),
                        [](const auto& i) { return i.front(); });
         return buf;
@@ -167,19 +216,27 @@ public:
     std::vector<Coeffs> coeffs{compute_coeffs<Coeffs>(size, sr)};
     cl::Buffer cl_memory{context, memory.begin(), memory.end(), false};
     cl::Buffer cl_coeffs{context, coeffs.begin(), coeffs.end(), false};
-    std::default_random_engine engine{std::random_device()()};
-    static constexpr float r{0.25};
-    std::uniform_real_distribution<cl_float> range{-r, r};
-    std::vector<std::vector<cl_float>> input{compute_input()};
-    std::vector<std::vector<cl_float>> ret{input.size(),
-                                           std::vector<cl_float>(size, 0)};
+    std::vector<std::vector<cl_float>> input{Generator::compute_input(size)};
+    std::vector<std::vector<cl_float>> output{input.size(),
+                                              std::vector<cl_float>(size, 0)};
     cl::Buffer cl_input{context, CL_MEM_READ_WRITE, size * sizeof(cl_float)};
     cl::Buffer cl_output{context, CL_MEM_READ_WRITE, size * sizeof(cl_float)};
 };
 
+template <typename Generator>
 using rk_biquad =
-    rectangular_kernel<BiquadMemoryArray, BiquadCoefficientsArray>;
-TEST_F(rk_biquad, filtering) {
+    rectangular_kernel<BiquadMemoryArray, BiquadCoefficientsArray, Generator>;
+
+template <typename Generator>
+using rk_filter =
+    rectangular_kernel<CanonicalMemory, CanonicalCoefficients, Generator>;
+
+class testing_rk_biquad : public rk_biquad<NoiseGenerator>,
+                          public ::testing::Test {};
+class testing_rk_filter : public rk_filter<NoiseGenerator>,
+                          public ::testing::Test {};
+
+TEST_F(testing_rk_biquad, filtering) {
     write_sndfile("./filtered_noise.wav",
                   {run_kernel(program.get_filter_test_kernel())},
                   sr,
@@ -187,11 +244,48 @@ TEST_F(rk_biquad, filtering) {
                   SF_FORMAT_WAV);
 }
 
-using rk_filter = rectangular_kernel<CanonicalMemory, CanonicalCoefficients>;
-TEST_F(rk_filter, filtering_2) {
+TEST_F(testing_rk_filter, filtering_2) {
     write_sndfile("./filtered_noise_2.wav",
                   {run_kernel(program.get_filter_test_2_kernel())},
                   sr,
                   SF_FORMAT_PCM_16,
                   SF_FORMAT_WAV);
+}
+
+TEST(compare_filters, compare_filters) {
+    {
+        Logger::log_err("cpu: sizeof(CanonicalMemory): ",
+                        sizeof(CanonicalMemory));
+        Logger::log_err("cpu: sizeof(BiquadMemoryArray): ",
+                        sizeof(BiquadMemoryArray));
+        Logger::log_err("cpu: sizeof(CanonicalCoefficients): ",
+                        sizeof(CanonicalCoefficients));
+        Logger::log_err("cpu: sizeof(BiquadCoefficientsArray): ",
+                        sizeof(BiquadCoefficientsArray));
+    }
+
+    auto test = [](auto&& biquad, auto&& filter) {
+        for (auto i = 0; i != biquad.input.size(); ++i) {
+            for (auto j = 0; j != biquad.input[i].size(); ++j) {
+                ASSERT_EQ(biquad.input[i][j], filter.input[i][j]);
+            }
+        }
+
+        auto buf_1 = biquad.run_kernel(biquad.program.get_filter_test_kernel());
+        auto buf_2 =
+            filter.run_kernel(filter.program.get_filter_test_2_kernel());
+
+        for (auto i = 0; i != buf_1.size(); ++i) {
+            ASSERT_NEAR(buf_1[i], buf_2[i], 0.001) << i;
+        }
+
+        write_sndfile(
+            "./buf_1.wav", {buf_1}, biquad.sr, SF_FORMAT_PCM_16, SF_FORMAT_WAV);
+
+        write_sndfile(
+            "./buf_2.wav", {buf_2}, filter.sr, SF_FORMAT_PCM_16, SF_FORMAT_WAV);
+    };
+
+    test(rk_biquad<ImpulseGenerator>{}, rk_filter<ImpulseGenerator>{});
+    test(rk_biquad<NoiseGenerator>{}, rk_filter<NoiseGenerator>{});
 }
