@@ -6,6 +6,7 @@
 #include "microphone.h"
 #include "hrtf_attenuator.h"
 #include "combined_config.h"
+#include "db.h"
 
 #include "rayverb.h"
 
@@ -29,17 +30,7 @@
 #include <iostream>
 #include <algorithm>
 #include <numeric>
-#include <cmath>
 #include <map>
-
-// -1 <= z <= 1, -pi <= theta <= pi
-double a2db(double a) {
-    return 20 * log10(a);
-}
-
-double db2a(double db) {
-    return pow(10, db / 20);
-}
 
 std::vector<float> squintegrate(const std::vector<float>& sig) {
     std::vector<float> ret(sig.size());

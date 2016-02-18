@@ -1,6 +1,7 @@
 #include "rectangular_program.h"
 #include "cl_common.h"
 #include "timed_scope.h"
+#include "db.h"
 
 #include "write_audio_file.h"
 
@@ -253,16 +254,16 @@ TEST_F(testing_rk_filter, filtering_2) {
 }
 
 TEST(compare_filters, compare_filters) {
-    {
-        Logger::log_err("cpu: sizeof(CanonicalMemory): ",
-                        sizeof(CanonicalMemory));
-        Logger::log_err("cpu: sizeof(BiquadMemoryArray): ",
-                        sizeof(BiquadMemoryArray));
-        Logger::log_err("cpu: sizeof(CanonicalCoefficients): ",
-                        sizeof(CanonicalCoefficients));
-        Logger::log_err("cpu: sizeof(BiquadCoefficientsArray): ",
-                        sizeof(BiquadCoefficientsArray));
-    }
+    /*
+    Logger::log_err("cpu: sizeof(CanonicalMemory): ",
+                    sizeof(CanonicalMemory));
+    Logger::log_err("cpu: sizeof(BiquadMemoryArray): ",
+                    sizeof(BiquadMemoryArray));
+    Logger::log_err("cpu: sizeof(CanonicalCoefficients): ",
+                    sizeof(CanonicalCoefficients));
+    Logger::log_err("cpu: sizeof(BiquadCoefficientsArray): ",
+                    sizeof(BiquadCoefficientsArray));
+    */
 
     auto test = [](auto&& biquad, auto&& filter) {
         for (auto i = 0; i != biquad.input.size(); ++i) {
@@ -275,9 +276,40 @@ TEST(compare_filters, compare_filters) {
         auto buf_2 =
             filter.run_kernel(filter.program.get_filter_test_2_kernel());
 
-        for (auto i = 0; i != buf_1.size(); ++i) {
-            ASSERT_NEAR(buf_1[i], buf_2[i], 0.001) << i;
-        }
+        auto diff = buf_1;
+        std::transform(buf_1.begin(),
+                       buf_1.end(),
+                       buf_2.begin(),
+                       diff.begin(),
+                       [](auto i, auto j) { return std::abs(i - j); });
+
+        auto div = buf_1;
+        std::transform(buf_1.begin(),
+                       buf_1.end(),
+                       buf_2.begin(),
+                       div.begin(),
+                       [](auto i, auto j) {
+                           if (i == 0 || j == 0)
+                               return 0.0;
+                           return std::abs(a2db(std::abs(i / j)));
+                       });
+
+        std::for_each(
+            diff.begin(), diff.end(), [](auto i) { ASSERT_NEAR(i, 0, 0.001); });
+
+        std::for_each(
+            div.begin(), div.end(), [](auto i) { ASSERT_NEAR(i, 0, 24); });
+
+        auto min_diff = *std::min_element(diff.begin(), diff.end());
+        auto max_diff = *std::max_element(diff.begin(), diff.end());
+
+        auto min_div = *std::min_element(div.begin(), div.end());
+        auto max_div = *std::max_element(div.begin(), div.end());
+
+        std::cout << "min diff: " << min_diff << std::endl;
+        std::cout << "max diff: " << max_diff << std::endl;
+        std::cout << "min div / dB: " << min_div << std::endl;
+        std::cout << "max div / dB: " << max_div << std::endl;
 
         write_sndfile(
             "./buf_1.wav", {buf_1}, biquad.sr, SF_FORMAT_PCM_16, SF_FORMAT_WAV);

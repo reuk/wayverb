@@ -8,7 +8,7 @@
 #include "BoxObject.hpp"
 #include "ModelObject.hpp"
 #include "ModelSectionObject.hpp"
-#include "MeshObject.h"
+#include "MeshObject.hpp"
 
 #define GLM_FORCE_RADIANS
 #include "glm/gtx/rotate_vector.hpp"
@@ -16,10 +16,10 @@
 #include "glm/gtc/type_ptr.hpp"
 #include "glm/gtc/noise.hpp"
 
+#include "octree.h"
 #include "waveguide.h"
 #include "scene_data.h"
 #include "combined_config.h"
-#include "octree.h"
 #include "rayverb.h"
 #include "voxel_collection.h"
 

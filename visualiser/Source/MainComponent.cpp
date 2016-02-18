@@ -1,4 +1,4 @@
-#include "MainComponent.h"
+#include "MainComponent.hpp"
 
 MainContentComponent::MainContentComponent()
         : modelRendererComponent(std::make_unique<ModelRendererComponent>())

@@ -1,5 +1,7 @@
 #include "ModelRenderer.hpp"
 
+#include "MoreConversions.hpp"
+
 #include "boundaries.h"
 #include "conversions.h"
 #include "cl_common.h"
@@ -101,7 +103,7 @@ std::vector<glm::vec3> VoxelisedObject::get_vertices(
     std::transform(scene_data.get_vertices().begin(),
                    scene_data.get_vertices().end(),
                    ret.begin(),
-                   [](auto i) { return glm::vec3(i.x, i.y, i.z); });
+                   [](auto i) { return to_glm_vec3(i); });
     return ret;
 }
 
@@ -264,7 +266,7 @@ void DrawableScene::update(float dt) {
         try {
             if (future_pressure.wait_for(std::chrono::milliseconds(0)) ==
                 std::future_status::ready) {
-                //                mesh_object->set_pressures(future_pressure.get());
+                mesh_object->set_pressures(future_pressure.get());
                 trigger_pressure_calculation();
             }
         } catch (const std::exception &e) {

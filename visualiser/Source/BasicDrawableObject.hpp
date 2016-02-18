@@ -10,11 +10,6 @@
 #include "modern_gl_utils/render_buffer.h"
 #include "modern_gl_utils/screen_quad.h"
 
-template <typename T>
-auto to_glm_vec3(const T& t) {
-    return glm::vec3(t.x, t.y, t.z);
-}
-
 class BasicDrawableObject : public ::Drawable {
 public:
     BasicDrawableObject(const GenericShader& shader,

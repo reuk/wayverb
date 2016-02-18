@@ -1,6 +1,6 @@
 #pragma once
 
-#include "MainComponent.h"
+#include "MainComponent.hpp"
 
 class VisualiserApplication final : public JUCEApplication {
 public:

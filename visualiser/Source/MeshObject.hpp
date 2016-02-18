@@ -15,10 +15,7 @@ public:
         std::transform(nodes.begin(),
                        nodes.end(),
                        v.begin(),
-                       [](auto i) {
-                           auto p = i.position;
-                           return glm::vec3(p.x, p.y, p.z);
-                       });
+                       [](auto i) { return to_glm_vec3(i.position); });
 
         //  init buffers
         std::vector<glm::vec4> c(v.size());
@@ -83,20 +80,23 @@ public:
     }
 
     void set_pressures(const std::vector<float> & pressures) {
-        std::vector<glm::vec4> c(pressures.size(), glm::vec4(0, 0, 0, 0));
+        color_storage.resize(pressures.size());
         std::transform(pressures.begin(),
                        pressures.end(),
-                       c.begin(),
+                       color_storage.begin(),
                        [this](auto i) {
                            auto p = i * amp;
                            return p > 0 ? glm::vec4(0, p, p, p)
                                         : glm::vec4(-p, 0, 0, -p);
                        });
-        colors.data(c);
+        colors.data(color_storage);
     }
 
 private:
     const GenericShader & shader;
+
+    std::vector<glm::vec4>
+        color_storage;  //  hopefully we don't have to malloc every frame
 
     VAO vao;
     StaticVBO geometry;

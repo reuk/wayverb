@@ -1,5 +1,7 @@
 #include "ModelObject.hpp"
 
+#include "MoreConversions.hpp"
+
 static constexpr auto model_colour = 0.5;
 
 ModelObject::ModelObject(const GenericShader &shader,
@@ -21,7 +23,7 @@ std::vector<glm::vec3> ModelObject::get_vertices(
     std::transform(scene_data.get_vertices().begin(),
                    scene_data.get_vertices().end(),
                    ret.begin(),
-                   [](auto i) { return glm::vec3(i.x, i.y, i.z); });
+                   [](auto i) { return to_glm_vec3(i); });
     return ret;
 }
 std::vector<GLuint> ModelObject::get_indices(

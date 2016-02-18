@@ -58,6 +58,34 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		1B10C78E1C75EA5E001B3546 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 1B2E0B951C3C754D003A6680 /* Project.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = D8A736E28F854366811F36E4;
+			remoteInfo = waveguide;
+		};
+		1B10C79E1C75EA6C001B3546 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 1B2E0B951C3C754D003A6680 /* Project.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = BF27865C2D3145D5B657E2EA;
+			remoteInfo = common;
+		};
+		1B10C7A01C75EA6C001B3546 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 1B2E0B951C3C754D003A6680 /* Project.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 0C083990238247F78C62CCA2;
+			remoteInfo = rayverb;
+		};
+		1B10C7A21C75EA6C001B3546 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 1B2E0B951C3C754D003A6680 /* Project.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = A40A7FD3CC194A74B1101010;
+			remoteInfo = combined;
+		};
 		1B2E0BA61C3C754D003A6680 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 1B2E0B951C3C754D003A6680 /* Project.xcodeproj */;
@@ -233,6 +261,7 @@
 		18F7F1CC09A0561EE39C9728 /* juce_AudioParameterInt.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = juce_AudioParameterInt.h; path = ../../JuceLibraryCode/modules/juce_audio_processors/utilities/juce_AudioParameterInt.h; sourceTree = SOURCE_ROOT; };
 		1929BB7302A752E59841B8A1 /* juce_video.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; name = juce_video.mm; path = ../../JuceLibraryCode/modules/juce_video/juce_video.mm; sourceTree = SOURCE_ROOT; };
 		1A44838655E7F6CB3B8FE847 /* juce_File.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = juce_File.cpp; path = ../../JuceLibraryCode/modules/juce_core/files/juce_File.cpp; sourceTree = SOURCE_ROOT; };
+		1B10C7A41C75EDEF001B3546 /* MoreConversions.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = MoreConversions.hpp; path = ../../Source/MoreConversions.hpp; sourceTree = "<group>"; };
 		1B2E0B951C3C754D003A6680 /* Project.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = Project.xcodeproj; path = ../../../xcproj/Project.xcodeproj; sourceTree = "<group>"; };
 		1B2E0BBE1C3C757A003A6680 /* libmodern_gl_utils.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libmodern_gl_utils.a; path = ../../../../../../../usr/local/lib/libmodern_gl_utils.a; sourceTree = "<group>"; };
 		1B2E0BC01C3C75BB003A6680 /* libassimp.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libassimp.a; path = ../../../../../../../usr/local/Cellar/assimp/3.1.1/lib/libassimp.a; sourceTree = "<group>"; };
@@ -254,7 +283,7 @@
 		1B7251891C47DECF002090B6 /* ModelObject.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = ModelObject.hpp; path = ../../Source/ModelObject.hpp; sourceTree = "<group>"; };
 		1B72518B1C47DF46002090B6 /* ModelSectionObject.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ModelSectionObject.cpp; path = ../../Source/ModelSectionObject.cpp; sourceTree = "<group>"; };
 		1B72518C1C47DF46002090B6 /* ModelSectionObject.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = ModelSectionObject.hpp; path = ../../Source/ModelSectionObject.hpp; sourceTree = "<group>"; };
-		1BEC4AC51C5697D700E65480 /* MeshObject.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = MeshObject.h; path = ../../Source/MeshObject.h; sourceTree = "<group>"; };
+		1BEC4AC51C5697D700E65480 /* MeshObject.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = MeshObject.hpp; path = ../../Source/MeshObject.hpp; sourceTree = "<group>"; };
 		1BED9283EEEC4F00C846E13B /* juce_MarkerList.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = juce_MarkerList.h; path = ../../JuceLibraryCode/modules/juce_gui_basics/positioning/juce_MarkerList.h; sourceTree = SOURCE_ROOT; };
 		1C291C46A481EA78341ADD3A /* juce_VST3Common.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = juce_VST3Common.h; path = ../../JuceLibraryCode/modules/juce_audio_processors/format_types/juce_VST3Common.h; sourceTree = SOURCE_ROOT; };
 		1C48BE54D95572A176421237 /* juce_osx_MessageQueue.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = juce_osx_MessageQueue.h; path = ../../JuceLibraryCode/modules/juce_events/native/juce_osx_MessageQueue.h; sourceTree = SOURCE_ROOT; };
@@ -934,7 +963,7 @@
 		D883349A9C27AF2923BCDC25 /* juce_TimeSliceThread.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = juce_TimeSliceThread.h; path = ../../JuceLibraryCode/modules/juce_core/threads/juce_TimeSliceThread.h; sourceTree = SOURCE_ROOT; };
 		D884EEC1B3FD47A21E8E4B2F /* juce_ToolbarButton.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = juce_ToolbarButton.h; path = ../../JuceLibraryCode/modules/juce_gui_basics/buttons/juce_ToolbarButton.h; sourceTree = SOURCE_ROOT; };
 		D908BE07DBD5DB364591A1C5 /* juce_SystemAudioVolume.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = juce_SystemAudioVolume.h; path = ../../JuceLibraryCode/modules/juce_audio_devices/audio_io/juce_SystemAudioVolume.h; sourceTree = SOURCE_ROOT; };
-		D90DF4CA8C5F9E6608F1931E /* MainComponent.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = MainComponent.h; path = ../../Source/MainComponent.h; sourceTree = SOURCE_ROOT; };
+		D90DF4CA8C5F9E6608F1931E /* MainComponent.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = MainComponent.hpp; path = ../../Source/MainComponent.hpp; sourceTree = SOURCE_ROOT; };
 		D920220FCD0C674D3B09A1F9 /* juce_Component.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = juce_Component.cpp; path = ../../JuceLibraryCode/modules/juce_gui_basics/components/juce_Component.cpp; sourceTree = SOURCE_ROOT; };
 		D944E46C280B47FF5FFB7704 /* juce_FileInputSource.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = juce_FileInputSource.cpp; path = ../../JuceLibraryCode/modules/juce_core/streams/juce_FileInputSource.cpp; sourceTree = SOURCE_ROOT; };
 		D96AFA5C129E99C20A38D8A0 /* juce_IPAddress.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = juce_IPAddress.h; path = ../../JuceLibraryCode/modules/juce_core/network/juce_IPAddress.h; sourceTree = SOURCE_ROOT; };
@@ -1205,6 +1234,7 @@
 		19997BD6C10697AB22FAF5D3 /* Source */ = {
 			isa = PBXGroup;
 			children = (
+				1B10C7A41C75EDEF001B3546 /* MoreConversions.hpp */,
 				1B464A7E1C3FEC37006178EB /* DemoPanel.cpp */,
 				1B464A7F1C3FEC37006178EB /* DemoPanel.hpp */,
 				EEFE70D817A08F435BB71208 /* ConfigPanel.cpp */,
@@ -1212,10 +1242,10 @@
 				F6DA86A940C8EF8ED2215947 /* Main.cpp */,
 				39885B79C601BB747A73B45D /* Main.hpp */,
 				7D2C7F4DDD285709BDAA80DC /* MainComponent.cpp */,
-				D90DF4CA8C5F9E6608F1931E /* MainComponent.h */,
+				D90DF4CA8C5F9E6608F1931E /* MainComponent.hpp */,
 				1B7251711C47DB54002090B6 /* BasicDrawableObject.cpp */,
 				1B7251721C47DB54002090B6 /* BasicDrawableObject.hpp */,
-				1BEC4AC51C5697D700E65480 /* MeshObject.h */,
+				1BEC4AC51C5697D700E65480 /* MeshObject.hpp */,
 				CBC3B00D40D84CA60386DFA8 /* ModelRenderer.cpp */,
 				C07AD9013E3B2F159108D2FD /* ModelRenderer.hpp */,
 				1B72518B1C47DF46002090B6 /* ModelSectionObject.cpp */,
@@ -2926,6 +2956,10 @@
 			buildRules = (
 			);
 			dependencies = (
+				1B10C79F1C75EA6C001B3546 /* PBXTargetDependency */,
+				1B10C7A11C75EA6C001B3546 /* PBXTargetDependency */,
+				1B10C7A31C75EA6C001B3546 /* PBXTargetDependency */,
+				1B10C78F1C75EA5E001B3546 /* PBXTargetDependency */,
 			);
 			name = visualiser;
 			productInstallPath = "$(HOME)/Applications";
@@ -3082,6 +3116,29 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		1B10C78F1C75EA5E001B3546 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = waveguide;
+			targetProxy = 1B10C78E1C75EA5E001B3546 /* PBXContainerItemProxy */;
+		};
+		1B10C79F1C75EA6C001B3546 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = common;
+			targetProxy = 1B10C79E1C75EA6C001B3546 /* PBXContainerItemProxy */;
+		};
+		1B10C7A11C75EA6C001B3546 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = rayverb;
+			targetProxy = 1B10C7A01C75EA6C001B3546 /* PBXContainerItemProxy */;
+		};
+		1B10C7A31C75EA6C001B3546 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = combined;
+			targetProxy = 1B10C7A21C75EA6C001B3546 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
 		3C9E8D3B7AB90818B68B6792 /* Debug */ = {
 			isa = XCBuildConfiguration;
@@ -3117,12 +3174,13 @@
 				OTHER_CPLUSPLUSFLAGS = (
 					"-I/usr/local/include",
 					"-I../../../common",
-					"-I../../../lib",
+					"-I../../../waveguide",
 					"-I../../../rayverb",
 					"-I../../../combined",
 					"-I../../../include",
-					"-std=gnu++1y",
+					"-std=c++14",
 				);
+				SDKROOT = macosx;
 				SDKROOT_ppc = macosx10.5;
 			};
 			name = Debug;
@@ -3162,12 +3220,13 @@
 				OTHER_CPLUSPLUSFLAGS = (
 					"-I/usr/local/include",
 					"-I../../../common",
-					"-I../../../lib",
+					"-I../../../waveguide",
 					"-I../../../rayverb",
 					"-I../../../combined",
 					"-I../../../include",
-					"-std=gnu++1y",
+					"-std=c++14",
 				);
+				SDKROOT = macosx;
 				SDKROOT_ppc = macosx10.5;
 			};
 			name = Release;
@@ -3175,7 +3234,7 @@
 		8F8D6D55E25C7BEF6200EF30 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
+				ALWAYS_SEARCH_USER_PATHS = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_INLINES_ARE_PRIVATE_EXTERN = YES;
@@ -3196,7 +3255,7 @@
 		FCA7B81DAB21D9146005787A /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
+				ALWAYS_SEARCH_USER_PATHS = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_INLINES_ARE_PRIVATE_EXTERN = YES;

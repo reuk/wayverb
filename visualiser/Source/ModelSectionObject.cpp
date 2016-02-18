@@ -1,5 +1,7 @@
 #include "ModelSectionObject.hpp"
 
+#include "MoreConversions.hpp"
+
 static constexpr auto model_colour = 0.5;
 
 ModelSectionObject::ModelSectionObject(const GenericShader &shader,
@@ -23,7 +25,7 @@ std::vector<glm::vec3> ModelSectionObject::get_vertices(
     std::transform(scene_data.get_vertices().begin(),
                    scene_data.get_vertices().end(),
                    ret.begin(),
-                   [](auto i) { return glm::vec3(i.x, i.y, i.z); });
+                   [](auto i) { return to_glm_vec3(i); });
     return ret;
 }
 
