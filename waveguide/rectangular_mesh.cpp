@@ -73,18 +73,20 @@ RectangularMesh::Collection RectangularMesh::compute_nodes(
 
     std::vector<cl_int> bt(ret.size());
     for (auto& i : ret) {
-        i.bt = id_none;
+        i.bt = RectangularProgram::id_none;
     }
     for (auto set_bits = 0; set_bits != 3; ++set_bits) {
         std::fill(bt.begin(), bt.end(), 0);
         for (auto i = 0u; i != ret.size(); ++i) {
             auto& node = ret[i];
-            if (!node.inside && node.bt == id_none) {
+            if (!node.inside && node.bt == RectangularProgram::id_none) {
                 for (auto j = 0; j != 6; ++j) {
                     auto port_ind = node.ports[j];
                     if (port_ind != Node::NO_NEIGHBOR) {
                         if ((!set_bits && inside[port_ind]) ||
-                            (set_bits && ret[port_ind].bt != id_reentrant &&
+                            (set_bits &&
+                             ret[port_ind].bt !=
+                                 RectangularProgram::id_reentrant &&
                              popcount(ret[port_ind].bt) == set_bits)) {
                             bt[i] |= 1 << (j + 1);
                         }
@@ -92,9 +94,9 @@ RectangularMesh::Collection RectangularMesh::compute_nodes(
                 }
                 auto final_bits = popcount(bt[i]);
                 if (set_bits + 1 < final_bits) {
-                    bt[i] = id_reentrant;
+                    bt[i] = RectangularProgram::id_reentrant;
                 } else if (final_bits <= set_bits) {
-                    bt[i] = id_none;
+                    bt[i] = RectangularProgram::id_none;
                 }
             } else {
                 bt[i] = node.bt;

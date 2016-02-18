@@ -29,17 +29,17 @@ void TetrahedralWaveguide::setup(cl::CommandQueue& queue,
 
 TetrahedralWaveguide::TetrahedralWaveguide(const TetrahedralProgram& program,
                                            cl::CommandQueue& queue,
-                                           const IterativeTetrahedralMesh& mesh)
+                                           const TetrahedralMesh& mesh)
         : Waveguide<TetrahedralProgram>(program, queue, mesh.get_nodes().size())
         , mesh(mesh)
         //    TODO this seems like it's asking for problems
-        , node_buffer(program.getInfo<CL_PROGRAM_CONTEXT>(),
-                      const_cast<IterativeTetrahedralMesh::Node*>(
-                          this->mesh.get_nodes().data()),
-                      const_cast<IterativeTetrahedralMesh::Node*>(
-                          this->mesh.get_nodes().data()) +
-                          this->mesh.get_nodes().size(),
-                      true)
+        , node_buffer(
+              program.getInfo<CL_PROGRAM_CONTEXT>(),
+              const_cast<TetrahedralMesh::Node*>(this->mesh.get_nodes().data()),
+              const_cast<TetrahedralMesh::Node*>(
+                  this->mesh.get_nodes().data()) +
+                  this->mesh.get_nodes().size(),
+              true)
         , transform_buffer(program.getInfo<CL_PROGRAM_CONTEXT>(),
                            CL_MEM_READ_WRITE,
                            sizeof(cl_float) * 12)
@@ -54,9 +54,7 @@ TetrahedralWaveguide::TetrahedralWaveguide(const TetrahedralProgram& program,
                                            float spacing,
                                            const Vec3f& anchor)
         : TetrahedralWaveguide(
-              program,
-              queue,
-              IterativeTetrahedralMesh(boundary, spacing, anchor)) {
+              program, queue, TetrahedralMesh(boundary, spacing, anchor)) {
 }
 
 RunStepResult TetrahedralWaveguide::run_step(size_type o,
@@ -101,7 +99,7 @@ Vec3f TetrahedralWaveguide::get_coordinate_for_index(size_type index) const {
     return to_vec3f(mesh.get_nodes()[index].position);
 }
 
-const IterativeTetrahedralMesh& TetrahedralWaveguide::get_mesh() const {
+const TetrahedralMesh& TetrahedralWaveguide::get_mesh() const {
     return mesh;
 }
 
@@ -133,19 +131,23 @@ RectangularWaveguide::RectangularWaveguide(const RectangularProgram& program,
         , boundary_data_1_buffer(
               program.getInfo<CL_PROGRAM_CONTEXT>(),
               CL_MEM_READ_WRITE,
-              sizeof(BoundaryDataArray1) * mesh.compute_num_boundary<1>())
+              sizeof(RectangularProgram::BoundaryDataArray1) *
+                  mesh.compute_num_boundary<1>())
         , boundary_data_2_buffer(
               program.getInfo<CL_PROGRAM_CONTEXT>(),
               CL_MEM_READ_WRITE,
-              sizeof(BoundaryDataArray2) * mesh.compute_num_boundary<2>())
+              sizeof(RectangularProgram::BoundaryDataArray2) *
+                  mesh.compute_num_boundary<2>())
         , boundary_data_3_buffer(
               program.getInfo<CL_PROGRAM_CONTEXT>(),
               CL_MEM_READ_WRITE,
-              sizeof(BoundaryDataArray3) * mesh.compute_num_boundary<3>())
+              sizeof(RectangularProgram::BoundaryDataArray3) *
+                  mesh.compute_num_boundary<3>())
         , boundary_coefficients_buffer(
               program.getInfo<CL_PROGRAM_CONTEXT>(),
               CL_MEM_READ_WRITE,
-              sizeof(CanonicalCoefficients) * mesh.compute_num_surface()) {
+              sizeof(RectangularProgram::CanonicalCoefficients) *
+                  mesh.compute_num_surface()) {
 }
 
 RectangularWaveguide::RectangularWaveguide(const RectangularProgram& program,
@@ -179,7 +181,8 @@ void RectangularWaveguide::setup(cl::CommandQueue& queue,
     setup_boundary_data_buffer<3>(queue, boundary_data_3_buffer);
 
     //  TODO set coefficients properly
-    std::vector<CanonicalCoefficients> vec(1, CanonicalCoefficients{});
+    std::vector<RectangularProgram::CanonicalCoefficients> vec(
+        1, RectangularProgram::CanonicalCoefficients{});
     cl::copy(queue, vec.begin(), vec.end(), boundary_coefficients_buffer);
 
     period = 1 / sr;

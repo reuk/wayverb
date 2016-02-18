@@ -1,13 +1,13 @@
 #pragma once
 
 #include "vec.h"
-#include "cl_structs.h"
 #include "boundaries.h"
 #include "base_mesh.h"
+#include "rectangular_program.h"
 
 #include <vector>
 
-class RectangularMesh : public BaseMesh<6, Vec3i> {
+class RectangularMesh : public BaseMesh<RectangularProgram, Vec3i> {
 public:
     RectangularMesh(const Boundary& boundary,
                     float spacing,
@@ -32,7 +32,8 @@ public:
             get_nodes().end(),
             0u,
             [](auto i, const auto& j) {
-                return i + ((j.bt != id_reentrant && popcount(j.bt) == BITS)
+                return i + ((j.bt != RectangularProgram::id_reentrant &&
+                             popcount(j.bt) == BITS)
                                 ? 1
                                 : 0);
             });

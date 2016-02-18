@@ -3,8 +3,7 @@
 #include "tetrahedral_program.h"
 #include "rectangular_program.h"
 #include "rectangular_mesh.h"
-#include "iterative_tetrahedral_mesh.h"
-#include "cl_structs.h"
+#include "tetrahedral_mesh.h"
 #include "logger.h"
 #include "conversions.h"
 #include "power_function.h"
@@ -242,12 +241,13 @@ private:
 
     template <int I>
     void setup_boundary_data_buffer(cl::CommandQueue& queue, cl::Buffer& b) {
-        std::vector<BoundaryDataArray<I>> bda(mesh.compute_num_boundary<I>());
+        std::vector<RectangularProgram::BoundaryDataArray<I>> bda(
+            mesh.compute_num_boundary<I>());
         //  TODO set boundary coefficient index properly here
         std::generate(bda.begin(),
                       bda.end(),
                       [] {
-                          auto ret = BoundaryDataArray<I>{};
+                          auto ret = RectangularProgram::BoundaryDataArray<I>{};
                           for (auto& i : ret.array) {
                               i.coefficient_index = 0;
                           }
@@ -292,15 +292,15 @@ public:
     size_type get_index_for_coordinate(const Vec3f& v) const override;
     Vec3f get_coordinate_for_index(size_type index) const override;
 
-    const IterativeTetrahedralMesh& get_mesh() const;
+    const TetrahedralMesh& get_mesh() const;
     bool inside(size_type index) const override;
 
 private:
     TetrahedralWaveguide(const ProgramType& program,
                          cl::CommandQueue& queue,
-                         const IterativeTetrahedralMesh& mesh);
+                         const TetrahedralMesh& mesh);
 
-    IterativeTetrahedralMesh mesh;
+    TetrahedralMesh mesh;
     cl::Buffer node_buffer;
     cl::Buffer transform_buffer;
     cl::Buffer velocity_buffer;

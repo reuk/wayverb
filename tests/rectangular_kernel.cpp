@@ -11,27 +11,29 @@
 #include <array>
 #include <type_traits>
 
-BiquadCoefficients get_notch_coefficients(float gain,
-                                          float centre,
-                                          float Q,
-                                          float sr) {
+RectangularProgram::BiquadCoefficients get_notch_coefficients(float gain,
+                                                              float centre,
+                                                              float Q,
+                                                              float sr) {
     const float A = pow(10.0f, gain / 40.0f);
     const float w0 = 2.0f * M_PI * centre / sr;
     const float cw0 = cos(w0);
     const float sw0 = sin(w0);
     const float alpha = sw0 / 2.0f * Q;
     const float a0 = 1 + alpha / A;
-    return BiquadCoefficients{
+    return RectangularProgram::BiquadCoefficients{
         {(1 + alpha * A) / a0, (-2 * cw0) / a0, (1 - alpha * A) / a0},
         {1, (-2 * cw0) / a0, (1 - alpha / A) / a0}};
 }
 
-BiquadCoefficientsArray get_notch_biquads_array(float sr) {
+RectangularProgram::BiquadCoefficientsArray get_notch_biquads_array(float sr) {
     auto engine = std::default_random_engine{std::random_device()()};
     auto range = std::uniform_real_distribution<cl_float>(-24, -24);
-    auto centres = std::array<float, BiquadCoefficientsArray::BIQUAD_SECTIONS>{
+    auto centres = std::array<
+        float,
+        RectangularProgram::BiquadCoefficientsArray::BIQUAD_SECTIONS>{
         {45, 90, 180}};
-    BiquadCoefficientsArray ret;
+    RectangularProgram::BiquadCoefficientsArray ret;
     std::transform(centres.begin(),
                    centres.end(),
                    std::begin(ret.array),
@@ -42,9 +44,10 @@ BiquadCoefficientsArray get_notch_biquads_array(float sr) {
 }
 
 template <int A, int B>
-FilterCoefficients<A + B> convolve(const FilterCoefficients<A>& a,
-                                   const FilterCoefficients<B>& b) {
-    auto ret = FilterCoefficients<A + B>{};
+RectangularProgram::FilterCoefficients<A + B> convolve(
+    const RectangularProgram::FilterCoefficients<A>& a,
+    const RectangularProgram::FilterCoefficients<B>& b) {
+    auto ret = RectangularProgram::FilterCoefficients<A + B>{};
     for (auto i = 0; i != A + 1; ++i) {
         for (auto j = 0; j != B + 1; ++j) {
             ret.b[i + j] += a.b[i] * b.b[j];
@@ -74,8 +77,9 @@ auto reduce(const T& data, const Func& f = Func()) {
     return reduce(data.back(), data, Indexer<std::tuple_size<T>() - 1>{}, f);
 }
 
-auto convolve(const BiquadCoefficientsArray& a) {
-    std::array<BiquadCoefficients, BiquadCoefficientsArray::BIQUAD_SECTIONS> t;
+auto convolve(const RectangularProgram::BiquadCoefficientsArray& a) {
+    std::array<RectangularProgram::BiquadCoefficients,
+               RectangularProgram::BiquadCoefficientsArray::BIQUAD_SECTIONS> t;
     std::copy(std::begin(a.array), std::end(a.array), t.begin());
     return reduce(t,
                   [](const auto& i, const auto& j) { return convolve(i, j); });
@@ -91,15 +95,17 @@ std::vector<T> compute_coeffs(int size, float sr) {
 }
 
 template <>
-std::vector<BiquadCoefficientsArray> compute_coeffs(int size, float sr) {
-    auto ret = std::vector<BiquadCoefficientsArray>(size);
+std::vector<RectangularProgram::BiquadCoefficientsArray> compute_coeffs(
+    int size, float sr) {
+    auto ret = std::vector<RectangularProgram::BiquadCoefficientsArray>(size);
     std::generate(
         ret.begin(), ret.end(), [sr] { return get_notch_biquads_array(sr); });
     return ret;
 }
 
-using FC = FilterCoefficients<BiquadCoefficientsArray::BIQUAD_SECTIONS *
-                              BiquadCoefficients::ORDER>;
+using FC = RectangularProgram::FilterCoefficients<
+    RectangularProgram::BiquadCoefficientsArray::BIQUAD_SECTIONS *
+    RectangularProgram::BiquadCoefficients::ORDER>;
 
 template <>
 std::vector<FC> compute_coeffs(int size, float sr) {
@@ -212,11 +218,14 @@ public:
 
 template <typename Generator>
 using rk_biquad =
-    rectangular_kernel<BiquadMemoryArray, BiquadCoefficientsArray, Generator>;
+    rectangular_kernel<RectangularProgram::BiquadMemoryArray,
+                       RectangularProgram::BiquadCoefficientsArray,
+                       Generator>;
 
 template <typename Generator>
-using rk_filter =
-    rectangular_kernel<CanonicalMemory, CanonicalCoefficients, Generator>;
+using rk_filter = rectangular_kernel<RectangularProgram::CanonicalMemory,
+                                     RectangularProgram::CanonicalCoefficients,
+                                     Generator>;
 
 class testing_rk_biquad : public rk_biquad<NoiseGenerator>,
                           public ::testing::Test {};

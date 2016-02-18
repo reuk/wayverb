@@ -3,9 +3,18 @@
 #define __CL_ENABLE_EXCEPTIONS
 #include "cl.hpp"
 
-template <int PORTS>
+template <int P>
 class BasicDWMProgram final : public cl::Program {
 public:
+    static constexpr int PORTS{P};
+
+    struct __attribute__((aligned(8))) NodeStruct final {
+        static constexpr cl_uint NO_NEIGHBOR{~cl_uint{0}};
+        cl_uint ports[PORTS];
+        cl_float3 position;
+        cl_bool inside;
+    };
+
     BasicDWMProgram(const cl::Context& context, bool build_immediate = false)
             : Program(context, source, build_immediate) {
     }
@@ -41,8 +50,6 @@ typedef struct {
     uint ports[PORTS];
     float3 position;
     bool inside;
-    int bt;
-    uint boundary_index;
 } Node;
 
 kernel void waveguide

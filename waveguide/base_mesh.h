@@ -1,17 +1,16 @@
 #pragma once
 
 #include "vec.h"
-#include "cl_structs.h"
 
 #include <vector>
 
-template <int P, typename LocatorType>
+template <typename Program, typename LocatorType>
 class BaseMesh {
 public:
-    static constexpr int PORTS = P;
+    static constexpr int PORTS = Program::PORTS;
 
     using Locator = LocatorType;
-    using Node = NodeStruct<PORTS>;
+    using Node = typename Program::NodeStruct;
     using Collection = std::vector<Node>;
     using size_type = typename Collection::size_type;
 

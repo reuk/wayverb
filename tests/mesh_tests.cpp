@@ -1,4 +1,4 @@
-#include "iterative_tetrahedral_mesh.h"
+#include "tetrahedral_mesh.h"
 #include "rectangular_mesh.h"
 
 #include "gtest/gtest.h"
@@ -34,15 +34,15 @@ void locator_index_test() {
 }
 
 TEST(tetra, locator_index) {
-    locator_index_test<IterativeTetrahedralMesh>();
+    locator_index_test<TetrahedralMesh>();
 }
 
 TEST(rect, locator_index) {
     locator_index_test<RectangularMesh>();
 }
 
-bool operator==(const IterativeTetrahedralMesh::Locator& a,
-                const IterativeTetrahedralMesh::Locator& b) {
+bool operator==(const TetrahedralMesh::Locator& a,
+                const TetrahedralMesh::Locator& b) {
     return (a.pos == b.pos).all() && a.mod_ind == b.mod_ind;
 }
 
@@ -50,8 +50,8 @@ bool test_equal(const Vec3i& a, const Vec3i& b) {
     return (a == b).all();
 }
 
-bool test_equal(const IterativeTetrahedralMesh::Locator& a,
-                const IterativeTetrahedralMesh::Locator& b) {
+bool test_equal(const TetrahedralMesh::Locator& a,
+                const TetrahedralMesh::Locator& b) {
     return test_equal(a.pos, b.pos) && a.mod_ind == b.mod_ind;
 }
 
@@ -69,7 +69,7 @@ void test_position_index() {
 }
 
 TEST(tetra, position_index) {
-    test_position_index<IterativeTetrahedralMesh>();
+    test_position_index<TetrahedralMesh>();
 }
 
 TEST(rect, position_index) {
@@ -114,7 +114,7 @@ void test_neighbor() {
 }
 
 TEST(tetra, neighbor) {
-    test_neighbor<IterativeTetrahedralMesh>();
+    test_neighbor<TetrahedralMesh>();
 }
 
 TEST(rect, neighbor) {

@@ -1,9 +1,9 @@
 #pragma once
 
 #include "vec.h"
-#include "cl_structs.h"
 #include "boundaries.h"
 #include "base_mesh.h"
+#include "tetrahedral_program.h"
 
 #include <vector>
 
@@ -13,13 +13,14 @@ struct TetrahedralLocator final {
     int mod_ind;
 };
 
-class IterativeTetrahedralMesh : public BaseMesh<4, TetrahedralLocator> {
+class TetrahedralMesh
+    : public BaseMesh<BasicDWMProgram<4>, TetrahedralLocator> {
 public:
     static const int CUBE_NODES = 8;
 
-    IterativeTetrahedralMesh(const Boundary& boundary,
-                             float spacing,
-                             const Vec3f& anchor);
+    TetrahedralMesh(const Boundary& boundary,
+                    float spacing,
+                    const Vec3f& anchor);
 
     size_type compute_index(const Locator& locator) const override;
     Locator compute_locator(size_type index) const override;
@@ -31,10 +32,10 @@ public:
     const Collection& get_nodes() const override;
 
 private:
-    IterativeTetrahedralMesh(const Boundary& b,
-                             float spacing,
-                             const Vec3f& anchor,
-                             float cube_side);
+    TetrahedralMesh(const Boundary& b,
+                    float spacing,
+                    const Vec3f& anchor,
+                    float cube_side);
     Collection compute_nodes(const Boundary& boundary) const;
 
     float get_cube_side() const;
