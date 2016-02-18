@@ -24,3 +24,4 @@ callraytrace () {
 }
 
 cmake .. && make && ctest -V && callraytrace vault vault vault
+#cmake .. && make && ./boundary_test/boundary_reflect

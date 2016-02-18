@@ -10,6 +10,15 @@
 
 #include "string_builder.h"
 
+class Bracketer {
+public:
+    Bracketer(std::ostream &os);
+    virtual ~Bracketer() noexcept;
+
+private:
+    std::ostream &os;
+};
+
 class Logger {
 public:
     Logger() = delete;

@@ -151,20 +151,6 @@ public:
     }
 };
 
-class Bracketer {
-public:
-    Bracketer(std::ostream& os)
-            : os(os) {
-        os << "[  ";
-    }
-    virtual ~Bracketer() noexcept {
-        os << "]";
-    }
-
-private:
-    std::ostream& os;
-};
-
 namespace std {
 template <typename T>
 ostream& operator<<(ostream& os, const vector<T>& t) {

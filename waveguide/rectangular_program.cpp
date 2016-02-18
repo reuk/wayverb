@@ -20,8 +20,11 @@ const std::string RectangularProgram::source{
 #define COURANT (1.0 / sqrt(3.0))
 #define COURANT_SQ (1.0 / 3.0)
 
+#define NO_NEIGHBOR (~(uint)0)
+
 typedef enum {
     id_none = 0,
+    id_inside = 1 << 0,
     id_nx = 1 << 1,
     id_px = 1 << 2,
     id_ny = 1 << 3,
@@ -32,11 +35,11 @@ typedef enum {
 } BoundaryType;
 
 typedef struct {
-    int ports[PORTS];
+    uint ports[PORTS];
     float3 position;
     bool inside;
     int bt;
-    int boundary_index;
+    uint boundary_index;
 } Node;
 
 #define CAT(a, ...) PRIMITIVE_CAT(a, __VA_ARGS__)
@@ -301,8 +304,8 @@ float sum_on_plane(const global float* current,
     float ret = 0;
     PlanePorts on_boundary = on_boundary_1(pd);
     for (int i = 0; i != 4; ++i) {
-        int index = node->ports[on_boundary.array[i]];
-        if (index == -1) {
+        uint index = node->ports[on_boundary.array[i]];
+        if (index == NO_NEIGHBOR) {
             //  TODO error!
         }
         ret += current[index];
@@ -319,8 +322,8 @@ float sum_on_axis(const global float* current,
     float ret = 0;
     AxisPorts on_boundary = on_boundary_2(pd);
     for (int i = 0; i != 2; ++i) {
-        int index = node->ports[on_boundary.array[i]];
-        if (index == -1) {
+        uint index = node->ports[on_boundary.array[i]];
+        if (index == NO_NEIGHBOR) {
             //  TODO error!
         }
         ret += current[index];
@@ -575,8 +578,8 @@ kernel void waveguide(const global float* current,
         case 0:
             if (node->inside) {
                 for (int i = 0; i != PORTS; ++i) {
-                    int port_index = node->ports[i];
-                    if (port_index >= 0 && nodes[port_index].inside)
+                    uint port_index = node->ports[i];
+                    if (port_index != NO_NEIGHBOR && nodes[port_index].inside)
                         next_pressure += current[port_index];
                 }
 
@@ -626,8 +629,8 @@ kernel void waveguide(const global float* current,
 
         float differences[PORTS] = {0};
         for (int i = 0; i != PORTS; ++i) {
-            int port_index = node->ports[i];
-            if (port_index >= 0 && nodes[port_index].inside)
+            uint port_index = node->ports[i];
+            if (port_index != NO_NEIGHBOR && nodes[port_index].inside)
                 differences[i] = (previous[port_index] - previous[index]) /
                                  spatial_sampling_period;
         }

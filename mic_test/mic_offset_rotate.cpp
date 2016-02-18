@@ -1,5 +1,6 @@
 //  project internal
 #include "waveguide.h"
+#include "waveguide_config.h"
 #include "scene_data.h"
 #include "test_flag.h"
 #include "conversions.h"
@@ -64,18 +65,10 @@ int main(int argc, char** argv) {
     PolarPattern polar_pattern = polar_pattern_map[polar_string];
     std::cout << "polar_pattern: " << polar_string << std::endl;
 
-    auto output_sr = 44100;
-    auto bit_depth = 16;
-
-    unsigned long format, depth;
-
     //  global params
-    auto speed_of_sound = 340.0;
-
-    auto max_freq = 11025;
-    auto filter_freq = max_freq * 1.0;
-    auto sr = max_freq * 4;
-    auto divisions = (speed_of_sound * sqrt(3)) / sr;
+    auto config = WaveguideConfig();
+    config.get_filter_frequency() = 11025;
+    config.get_oversample_ratio() = 1;
 
     auto context = get_context();
     auto device = get_device(context);
@@ -107,8 +100,11 @@ int main(int argc, char** argv) {
                                 Vec3f(2.05, 2.5, 1.05));
         auto waveguide_program =
             get_program<TetrahedralProgram>(context, device);
-        TetrahedralWaveguide waveguide(
-            waveguide_program, queue, boundary, divisions, to_vec3f(mic));
+        TetrahedralWaveguide waveguide(waveguide_program,
+                                       queue,
+                                       boundary,
+                                       config.get_divisions(),
+                                       to_vec3f(mic));
 
         auto amp_factor = 4e3;
 
@@ -121,11 +117,16 @@ int main(int argc, char** argv) {
             auto steps = 200;
 
             auto w_results =
-                waveguide.run_gaussian(to_vec3f(source), mic_index, steps, sr);
+                waveguide.run_gaussian(to_vec3f(source),
+                                       mic_index,
+                                       steps,
+                                       config.get_waveguide_sample_rate());
 
             auto w_pressures = microphone.process(w_results);
 
-            std::vector<float> out_signal(output_sr * w_results.size() / sr);
+            std::vector<float> out_signal(config.get_output_sample_rate() *
+                                          w_results.size() /
+                                          config.get_waveguide_sample_rate());
 
             SRC_DATA sample_rate_info{w_pressures.data(),
                                       out_signal.data(),
@@ -134,14 +135,17 @@ int main(int argc, char** argv) {
                                       0,
                                       0,
                                       0,
-                                      output_sr / double(sr)};
+                                      config.get_output_sample_rate() /
+                                          config.get_waveguide_sample_rate()};
 
             src_simple(&sample_rate_info, SRC_SINC_BEST_QUALITY, 1);
 
             mul(out_signal, amp_factor);
 
             LinkwitzRiley lopass;
-            lopass.setParams(1, filter_freq, output_sr);
+            lopass.setParams(1,
+                             config.get_filter_frequency(),
+                             config.get_output_sample_rate());
             lopass.filter(out_signal);
 
             auto bands = 7;
@@ -170,8 +174,9 @@ int main(int argc, char** argv) {
                 auto band = out_signal;
 
                 LinkwitzRiley bandpass;
-                bandpass.setParams(
-                    pow(2, i) * min_band, pow(2, i + 1) * min_band, output_sr);
+                bandpass.setParams(pow(2, i) * min_band,
+                                   pow(2, i + 1) * min_band,
+                                   config.get_output_sample_rate());
                 bandpass.filter(out_signal);
 
                 print_energy(band, i);
@@ -184,15 +189,21 @@ int main(int argc, char** argv) {
 
             auto output_file = ss.str();
 
+            unsigned long format, depth;
+
             try {
                 format = get_file_format(output_file);
-                depth = get_file_depth(bit_depth);
+                depth = get_file_depth(config.get_bit_depth());
             } catch (const std::runtime_error& e) {
                 Logger::log_err("critical runtime error: ", e.what());
                 return EXIT_FAILURE;
             }
 
-            write_sndfile(output_file, {out_signal}, output_sr, depth, format);
+            write_sndfile(output_file,
+                          {out_signal},
+                          config.get_output_sample_rate(),
+                          depth,
+                          format);
         }
 
     } catch (const cl::Error& e) {

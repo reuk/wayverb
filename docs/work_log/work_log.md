@@ -316,6 +316,13 @@ Done
 TODO
 ----
 
+* CRITICAL: check mic modelling write-up now that the mesh update equations have
+  been fixed, boundaries added
+
+* CRITICAL: check how boundary filter coefficients are calculated
+
+* rearchitect the rectangular mesh for non-insane memory usage
+
 * boundary modelling
     * get in touch with an authority with specific questions
 
@@ -331,13 +338,6 @@ TODO
 * think about comparing the two models
 
 * extract boundary frequency curve from model somehow
-
-* nodes should not contain their boundary type
-    * if they are a boundary node they should point to a struct which contains
-      the boundary type, otherwise the pointer should be NULL
-        * although maybe not?
-        * at the moment I can encode the boundary type into an int,
-          I don't know how I'd encode it otherwise
 
 digital impedance filters
 =========================

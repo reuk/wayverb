@@ -5,6 +5,7 @@
 
 typedef enum : cl_int {
     id_none = 0,
+    id_inside = 1 << 0,
     id_nx = 1 << 1,
     id_px = 1 << 2,
     id_ny = 1 << 3,
@@ -17,11 +18,12 @@ typedef enum : cl_int {
 template <int P>
 struct __attribute__((aligned(8))) NodeStruct final {
     static constexpr int PORTS{P};
-    cl_int ports[PORTS];
+    static constexpr cl_uint NO_NEIGHBOR{~cl_uint{0}};
+    cl_uint ports[PORTS];
     cl_float3 position;
     cl_bool inside;
     cl_int bt;
-    cl_int boundary_index;
+    cl_uint boundary_index;
 };
 
 template <int O>

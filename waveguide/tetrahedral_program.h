@@ -35,11 +35,14 @@ const std::string BasicDWMProgram<PORTS>::source{
     std::to_string(PORTS) +
     ")\n"
     R"(
+#define NO_NEIGHBOR (~(uint)0)
+
 typedef struct {
-    int ports[PORTS];
+    uint ports[PORTS];
     float3 position;
     bool inside;
     int bt;
+    uint boundary_index;
 } Node;
 
 kernel void waveguide
@@ -64,8 +67,8 @@ kernel void waveguide
 
     //  waveguide logic goes here
     for (int i = 0; i != PORTS; ++i) {
-        int port_index = node->ports[i];
-        if (port_index >= 0 && nodes[port_index].inside)
+        uint port_index = node->ports[i];
+        if (port_index != NO_NEIGHBOR && nodes[port_index].inside)
             temp += current[port_index];
     }
 
@@ -85,8 +88,8 @@ kernel void waveguide
 
         float differences[PORTS] = {0};
         for (int i = 0; i != PORTS; ++i) {
-            int port_index = node->ports[i];
-            if (port_index >= 0 && nodes[port_index].inside)
+            uint port_index = node->ports[i];
+            if (port_index != NO_NEIGHBOR && nodes[port_index].inside)
                 differences[i] = (previous[port_index] - previous[index]) /
                     spatial_sampling_period;
         }

@@ -7,6 +7,7 @@
 #include "conversions.h"
 #include "geometric.h"
 #include "voxel_collection.h"
+#include "azimuth_elevation.h"
 
 #include "logger.h"
 
@@ -156,11 +157,6 @@ inline T elementwise(const T& a, const T& b, const U& u) {
     return ret;
 }
 
-cl_float3 sphere_point(float z, float theta) {
-    const float ztemp = sqrtf(1 - z * z);
-    return (cl_float3){{ztemp * cosf(theta), ztemp * sinf(theta), z, 0}};
-}
-
 std::vector<cl_float3> get_random_directions(unsigned long num) {
     std::vector<cl_float3> ret(num);
     std::uniform_real_distribution<float> z(-1, 1);
@@ -169,7 +165,7 @@ std::vector<cl_float3> get_random_directions(unsigned long num) {
     std::default_random_engine engine(seed);
 
     for (auto& i : ret)
-        i = sphere_point(z(engine), theta(engine));
+        i = to_cl_float3(sphere_point(z(engine), theta(engine)));
 
     return ret;
 }

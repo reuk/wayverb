@@ -37,7 +37,7 @@ inline Eigen::MatrixXf get_transform_matrix(int ports, int o, const T& nodes) {
     auto count = 0u;
     auto basis = to_vec3f(nodes[o].position);
     for (const auto& i : nodes[o].ports) {
-        if (i >= 0) {
+        if (i != RectangularMesh::Node::NO_NEIGHBOR) {
             auto pos = (to_vec3f(nodes[i].position) - basis).normalized();
             ret.row(count++) << pos.x, pos.y, pos.z;
         }

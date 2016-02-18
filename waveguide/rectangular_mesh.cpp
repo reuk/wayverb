@@ -3,6 +3,8 @@
 #include "conversions.h"
 #include "boundary_adjust.h"
 
+#include "logger.h"
+
 #include <algorithm>
 #include <numeric>
 
@@ -10,6 +12,14 @@ RectangularMesh::Collection RectangularMesh::compute_nodes(
     const Boundary& boundary) const {
     //  TODO this takes for ever, put it on GPU?
     auto total_nodes = get_dim().product();
+    auto one_node = sizeof(Node);
+    Logger::log_err("one node: ", one_node, " B");
+    auto bytes = total_nodes * one_node;
+    Logger::log_err(bytes, " B required!");
+    Logger::log_err(bytes >> 10, " KB required!");
+    Logger::log_err(bytes >> 20, " MB required!");
+    Logger::log_err(bytes >> 30, " GB required!");
+
     auto ret = std::vector<Node>(total_nodes);
 
     auto counter = 0u;
@@ -72,7 +82,7 @@ RectangularMesh::Collection RectangularMesh::compute_nodes(
             if (!node.inside && node.bt == id_none) {
                 for (auto j = 0; j != 6; ++j) {
                     auto port_ind = node.ports[j];
-                    if (0 <= port_ind) {
+                    if (port_ind != Node::NO_NEIGHBOR) {
                         if ((!set_bits && inside[port_ind]) ||
                             (set_bits && ret[port_ind].bt != id_reentrant &&
                              popcount(ret[port_ind].bt) == set_bits)) {
