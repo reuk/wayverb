@@ -22,7 +22,7 @@ public:
 
     const Collection& get_nodes() const override;
 
-    std::array<int, PORTS> compute_neighbors(size_type index) const override;
+    void compute_neighbors(size_type index, cl_uint* output) const override;
     Collection compute_nodes(const Boundary& boundary) const;
 
     std::vector<CondensedNode> get_condensed_nodes() const;

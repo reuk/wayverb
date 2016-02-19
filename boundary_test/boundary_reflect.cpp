@@ -50,7 +50,7 @@ int main(int argc, char** argv) {
     auto queue = cl::CommandQueue(context, device);
 
     //  set room size based on desired number of nodes
-    auto desired_nodes = Vec3<uint32_t>(1000, 1000, 1000);
+    auto desired_nodes = Vec3<uint32_t>(500, 500, 500);
     auto total_desired_nodes = desired_nodes.product();
 
     auto total_possible_nodes = 1 << 30;
@@ -73,7 +73,7 @@ int main(int argc, char** argv) {
 
     //  place source, receiver (and image) in rooms based on distance in nodes
     //      from the wall
-    auto source_dist_nodes = 400;
+    auto source_dist_nodes = 200;
     auto source_dist = source_dist_nodes * config.get_divisions();
 
     auto azimuth = M_PI / 4;
@@ -123,8 +123,7 @@ int main(int argc, char** argv) {
                                 steps,
                                 config.get_waveguide_sample_rate());
 
-        auto omni = Microphone(Vec3f(0, 0, 0), 0);
-        auto output = omni.process(wall_results);
+        auto output = Microphone::omni.process(wall_results);
 
         std::vector<float> out_signal(
             config.get_output_sample_rate() * output.size() /

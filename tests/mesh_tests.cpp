@@ -85,7 +85,7 @@ void test_neighbor() {
     for (auto i = 0u; i != mesh.get_nodes().size(); ++i) {
         auto loc = mesh.compute_locator(i);
         auto pos = mesh.compute_position(loc);
-        for (auto j : mesh.compute_neighbors(i)) {
+        for (auto j : mesh.BaseMesh::compute_neighbors(i)) {
             if (j != -1) {
                 auto ll = mesh.compute_locator(j);
                 auto pp = mesh.compute_position(ll);

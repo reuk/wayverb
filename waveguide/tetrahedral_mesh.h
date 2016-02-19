@@ -27,7 +27,7 @@ public:
     Locator compute_locator(const Vec3f& position) const override;
     Vec3f compute_position(const Locator& locator) const override;
 
-    std::array<int, PORTS> compute_neighbors(size_type index) const override;
+    void compute_neighbors(size_type index, cl_uint* output) const override;
 
     const Collection& get_nodes() const override;
 

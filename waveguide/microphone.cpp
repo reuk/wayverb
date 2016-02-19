@@ -38,3 +38,5 @@ std::vector<float> Microphone::process(
     //  make sure to use zero-phase filtering
     return ret;
 }
+
+const Microphone Microphone::omni{Vec3f(0)};

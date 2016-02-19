@@ -33,18 +33,12 @@ def get_linkwitz_riley_coeffs(gain, lo, hi, sr):
 
 def get_notch_coeffs(gain, centre, sr, Q):
     A = 10 ** (gain / 40.0)
-    print "A:", A
     w0 = 2 * pi * centre / sr
-    print "w0:", w0
     cw0 = cos(w0)
-    print "cw0:", cw0
     sw0 = sin(w0)
-    print "sw0:", sw0
     alpha = sw0 / 2 * Q
-    print "alpha:", alpha
 
     a0 = 1 + alpha / A
-    print "a0:", a0
 
     b = [(1 + alpha * A) / a0, (-2 * cw0) / a0, (1 - alpha * A) / a0]
     a = [1, (-2 * cw0) / a0, (1 - alpha / A) / a0]
@@ -64,6 +58,15 @@ def biquad_cascade(i, bm, bc):
     for m, c in zip(bm, bc):
         i = biquad_step(i, m, c)
     return i
+
+def impedance_filter(c):
+    num = c[0]
+    den = c[1]
+
+    summed = [a + b for a, b in zip(den, num)]
+    subbed = [a - b for a, b in zip(den, num)]
+
+    return [summed, subbed]
 
 def eighth_order_step(i, m, c):
     out  = i * c[0][0]                 + m[0]
@@ -91,16 +94,14 @@ def main():
 
     c.append(series_coeffs(c))
 
-    for cc in c:
-        print cc
+    c.append(impedance_filter(c[-1]))
 
     wh = [signal.freqz(b, a) for b, a in c]
 
     sig = [1, 0, 0, 0, 0, 0, 0]
 
-
     plt.subplot(111)
-    plt.title("Frequency response")
+    plt.title("Frequency response - reflection filter")
     for w, h in wh:
         plt.semilogx(w, 20 * np.log10(np.abs(h)))
     plt.ylabel('Amplitude Response (dB)')

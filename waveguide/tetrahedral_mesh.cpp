@@ -46,9 +46,7 @@ std::vector<TetrahedralMesh::Node> TetrahedralMesh::compute_nodes(
         [this, &counter, &boundary] {
             Node ret;
             auto p = this->compute_position(this->compute_locator(counter));
-            auto neighbors = this->compute_neighbors(counter);
-            std::copy(
-                neighbors.begin(), neighbors.end(), std::begin(ret.ports));
+            this->compute_neighbors(counter, ret.ports);
             ret.position = to_cl_float3(p);
             counter += 1;
             return ret;
@@ -212,18 +210,16 @@ const std::array<std::array<Locator, TetrahedralMesh::PORTS>,
       Locator(Vec3i(0, 0, 0), 5)}},
 }};
 
-std::array<int, TetrahedralMesh::PORTS> TetrahedralMesh::compute_neighbors(
-    size_type index) const {
+void TetrahedralMesh::compute_neighbors(size_type index,
+                                        cl_uint* output) const {
     auto locator = compute_locator(index);
-    std::array<int, PORTS> ret;
     for (auto i = 0u; i != PORTS; ++i) {
         auto relative = offset_table[locator.mod_ind][i];
         auto summed = locator.pos + relative.pos;
         auto is_neighbor = (Vec3i(0) <= summed && summed < get_dim()).all();
-        ret[i] =
+        output[i] =
             is_neighbor ? compute_index(Locator(summed, relative.mod_ind)) : -1;
     }
-    return ret;
 }
 
 float TetrahedralMesh::cube_side_from_node_spacing(float spacing) {

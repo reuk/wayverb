@@ -30,7 +30,12 @@ public:
     virtual Locator compute_locator(const Vec3f& position) const = 0;
     virtual Vec3f compute_position(const Locator& locator) const = 0;
 
-    virtual std::array<int, PORTS> compute_neighbors(size_type index) const = 0;
+    virtual void compute_neighbors(size_type index, cl_uint* output) const = 0;
+    std::array<cl_uint, PORTS> compute_neighbors(size_type index) const {
+        std::array<cl_uint, PORTS> ret;
+        compute_neighbors(index, ret.data());
+        return ret;
+    }
     float get_spacing() const {
         return spacing;
     }

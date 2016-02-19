@@ -160,7 +160,7 @@ int3 to_locator(size_t index, int3 dim);
 int3 to_locator(size_t index, int3 dim) {
     int xrem = index % dim.x, xquot = index / dim.x;
     int yrem = xquot % dim.y, yquot = xquot / dim.y;
-    int zrem = yquot % dim.y;
+    int zrem = yquot % dim.z;
     return (int3)(xrem, yrem, zrem);
 }
 

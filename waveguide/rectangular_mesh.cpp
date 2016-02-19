@@ -28,10 +28,9 @@ RectangularMesh::Collection RectangularMesh::compute_nodes(
         [this, &counter] {
             Node ret;
             auto p = this->compute_position(this->compute_locator(counter));
-            auto neighbors = this->compute_neighbors(counter);
-            std::copy(
-                neighbors.begin(), neighbors.end(), std::begin(ret.ports));
+            this->compute_neighbors(counter, ret.ports);
             ret.position = to_cl_float3(p);
+
             counter += 1;
             return ret;
         });
@@ -124,10 +123,9 @@ RectangularMesh::size_type RectangularMesh::compute_index(
 }
 RectangularMesh::Locator RectangularMesh::compute_locator(
     const size_type index) const {
-    auto x = div(index, get_dim().x);
-    auto y = div(x.quot, get_dim().y);
-    auto z = div(y.quot, get_dim().z);
-    return Locator(x.rem, y.rem, z.rem);
+    auto x = div(index, dim.x);
+    auto y = div(x.quot, dim.y);
+    return Locator(x.rem, y.rem, y.quot % dim.z);
 }
 RectangularMesh::Locator RectangularMesh::compute_locator(
     const Vec3f& v) const {
@@ -167,24 +165,27 @@ Vec3f RectangularMesh::compute_position(const Locator& locator) const {
     return locator * get_spacing() + get_aabb().get_c0();
 }
 
-std::array<int, RectangularMesh::PORTS> RectangularMesh::compute_neighbors(
-    size_type index) const {
+void RectangularMesh::compute_neighbors(size_type index,
+                                        cl_uint* output) const {
     auto loc = compute_locator(index);
-    std::array<Locator, RectangularMesh::PORTS> n_loc{{
-        loc + Locator(-1, 0, 0),
-        loc + Locator(1, 0, 0),
-        loc + Locator(0, -1, 0),
-        loc + Locator(0, 1, 0),
-        loc + Locator(0, 0, -1),
-        loc + Locator(0, 0, 1),
+    const std::array<Locator, RectangularMesh::PORTS> n_loc{{
+        Locator(loc.x - 1, loc.y, loc.z),
+        Locator(loc.x + 1, loc.y, loc.z),
+        Locator(loc.x, loc.y - 1, loc.z),
+        Locator(loc.x, loc.y + 1, loc.z),
+        Locator(loc.x, loc.y, loc.z - 1),
+        Locator(loc.x, loc.y, loc.z + 1),
     }};
 
-    std::array<int, RectangularMesh::PORTS> ret;
-    for (auto i = 0u; i != RectangularMesh::PORTS; ++i) {
-        auto inside = (Vec3i(0) <= n_loc[i] && n_loc[i] < dim).all();
-        ret[i] = inside ? compute_index(n_loc[i]) : -1;
-    }
-    return ret;
+    std::transform(std::begin(n_loc),
+                   std::end(n_loc),
+                   output,
+                   [this](const auto& i) {
+                       auto inside = (Vec3i(0) <= i).all() && (i < dim).all();
+                       return inside
+                                  ? compute_index(i)
+                                  : RectangularProgram::NodeStruct::NO_NEIGHBOR;
+                   });
 }
 
 std::vector<RectangularMesh::CondensedNode>
@@ -199,7 +200,7 @@ RectangularMesh::get_condensed_nodes() const {
         ret.begin(),
         ret.end(),
         [](const auto& i) {
-            if (i.bt | RectangularProgram::id_inside && popcount(i.bt) > 1) {
+            if (i.bt & RectangularProgram::id_inside && popcount(i.bt) > 1) {
                 Logger::log_err("too many bits set?");
             }
         });

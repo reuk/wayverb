@@ -23,5 +23,5 @@ callraytrace () {
     $prefix $progname $args
 }
 
-cmake .. && make && ctest -V && callraytrace vault vault vault
-#cmake .. && make && ./boundary_test/boundary_reflect
+#cmake .. && make && ctest -V && callraytrace vault vault vault
+cmake .. && make && ./boundary_test/boundary_reflect

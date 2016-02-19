@@ -14,6 +14,8 @@ public:
     Vec3f get_direction() const;
     float get_shape() const;
 
+    static const Microphone omni;
+
 private:
     Vec3f direction;
     float shape;
