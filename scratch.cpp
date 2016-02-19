@@ -1,8 +1,11 @@
 #define COURANT (1.0 / sqrt(3.0))
 #define COURANT_SQ (1.0 / 3.0)
 
+#define NO_NEIGHBOR (~(uint)0)
+
 typedef enum {
     id_none = 0,
+    id_inside = 1 << 0,
     id_nx = 1 << 1,
     id_px = 1 << 2,
     id_ny = 1 << 3,
@@ -13,12 +16,9 @@ typedef enum {
 } BoundaryType;
 
 typedef struct {
-    int ports[PORTS];
-    float3 position;
-    bool inside;
     int bt;
-    int boundary_index;
-} Node;
+    uint boundary_index;
+} CondensedNode;
 
 #define CAT(a, ...) PRIMITIVE_CAT(a, __VA_ARGS__)
 #define PRIMITIVE_CAT(a, ...) a##__VA_ARGS__
@@ -130,6 +130,53 @@ typedef enum {
     id_port_nz = 4,
     id_port_pz = 5,
 } PortDirection;
+
+int3 to_locator(size_t index, int3 dim);
+int3 to_locator(size_t index, int3 dim) {
+    int xrem = index % dim.x, xquot = index / dim.x;
+    int yrem = xquot % dim.y, yquot = xquot / dim.y;
+    int zrem = yquot % dim.y;
+    return (int3)(xrem, yrem, zrem);
+}
+
+size_t to_index(int3 locator, int3 dim);
+size_t to_index(int3 locator, int3 dim) {
+    return locator.x + locator.y * dim.x + locator.z * dim.x * dim.y;
+}
+
+uint neighbor_index(int3 locator, int3 dimensions, PortDirection pd);
+uint neighbor_index(int3 locator, int3 dimensions, PortDirection pd) {
+    switch (pd) {
+        case id_port_nx: {
+            locator += (int3)(-1, 0, 0);
+            break;
+        }
+        case id_port_px: {
+            locator += (int3)(1, 0, 0);
+            break;
+        }
+        case id_port_ny: {
+            locator += (int3)(0, -1, 0);
+            break;
+        }
+        case id_port_py: {
+            locator += (int3)(0, 1, 0);
+            break;
+        }
+        case id_port_nz: {
+            locator += (int3)(0, 0, -1);
+            break;
+        }
+        case id_port_pz: {
+            locator += (int3)(0, 0, 1);
+            break;
+        }
+    }
+    if (any(isless(locator, (int3)(0))) ||
+        any(islessequal(dimensions, locator)))
+        return NO_NEIGHBOR;
+    return to_index(locator, dimensions);
+}
 
 typedef struct { PortDirection array[1]; } InnerNodeDirections1;
 typedef struct { PortDirection array[2]; } InnerNodeDirections2;
@@ -274,16 +321,20 @@ AxisPorts on_boundary_2(InnerNodeDirections2 ind) {
 }
 
 float sum_on_plane(const global float* current,
-                   const global Node* node,
+                   const global CondensedNode* node,
+                   int3 locator,
+                   int3 dimensions,
                    InnerNodeDirections1 pd);
 float sum_on_plane(const global float* current,
-                   const global Node* node,
+                   const global CondensedNode* node,
+                   int3 locator,
+                   int3 dimensions,
                    InnerNodeDirections1 pd) {
     float ret = 0;
     PlanePorts on_boundary = on_boundary_1(pd);
     for (int i = 0; i != 4; ++i) {
-        int index = node->ports[on_boundary.array[i]];
-        if (index == -1) {
+        uint index = neighbor_index(locator, dimensions, on_boundary.array[i]);
+        if (index == NO_NEIGHBOR) {
             //  TODO error!
         }
         ret += current[index];
@@ -292,16 +343,20 @@ float sum_on_plane(const global float* current,
 }
 
 float sum_on_axis(const global float* current,
-                  const global Node* node,
+                  const global CondensedNode* node,
+                  int3 locator,
+                  int3 dimensions,
                   InnerNodeDirections2 pd);
 float sum_on_axis(const global float* current,
-                  const global Node* node,
+                  const global CondensedNode* node,
+                  int3 locator,
+                  int3 dimensions,
                   InnerNodeDirections2 pd) {
     float ret = 0;
     AxisPorts on_boundary = on_boundary_2(pd);
     for (int i = 0; i != 2; ++i) {
-        int index = node->ports[on_boundary.array[i]];
-        if (index == -1) {
+        uint index = neighbor_index(locator, dimensions, on_boundary.array[i]);
+        if (index == NO_NEIGHBOR) {
             //  TODO error!
         }
         ret += current[index];
@@ -315,7 +370,9 @@ float sum_on_axis(const global float* current,
 //  we don't actually care about the pressure at the ghost point other than to
 //  calculate the boundary filter input
 void ghost_point_pressure_update(const global float* current,
-                                 const global Node* boundary_node,
+                                 const global CondensedNode* boundary_node,
+                                 int3 locator,
+                                 int3 dimensions,
                                  float next_pressure,
                                  float prev_pressure,
                                  global BoundaryData* boundary_data,
@@ -324,7 +381,9 @@ void ghost_point_pressure_update(const global float* current,
                                      boundary,
                                  PortDirection inner_direction);
 void ghost_point_pressure_update(const global float* current,
-                                 const global Node* boundary_node,
+                                 const global CondensedNode* boundary_node,
+                                 int3 locator,
+                                 int3 dimensions,
                                  float next_pressure,
                                  float prev_pressure,
                                  global BoundaryData* boundary_data,
@@ -332,7 +391,10 @@ void ghost_point_pressure_update(const global float* current,
                                                   CANONICAL_FILTER_ORDER) *
                                      boundary,
                                  PortDirection inner_direction) {
-    int inner_index = boundary_node->ports[inner_direction];
+    uint inner_index = neighbor_index(locator, dimensions, inner_direction);
+    if (inner_index == NO_NEIGHBOR) {
+        //  TODO error!
+    }
     float inner_pressure = current[inner_index];
 
     float filt_state = boundary_data->filter_memory.array[0];
@@ -353,50 +415,69 @@ void ghost_point_pressure_update(const global float* current,
 
 float get_summed_surrounding_1(InnerNodeDirections1 i,
                                const global float* current,
-                               const global Node* boundary_node);
+                               const global CondensedNode* boundary_node,
+                               int3 locator,
+                               int3 dimensions);
 float get_summed_surrounding_1(InnerNodeDirections1 i,
                                const global float* current,
-                               const global Node* boundary_node) {
-    return sum_on_plane(current, boundary_node, i);
+                               const global CondensedNode* boundary_node,
+                               int3 locator,
+                               int3 dimensions) {
+    return sum_on_plane(current, boundary_node, locator, dimensions, i);
 }
 
 float get_summed_surrounding_2(InnerNodeDirections2 i,
                                const global float* current,
-                               const global Node* boundary_node);
+                               const global CondensedNode* boundary_node,
+                               int3 locator,
+                               int3 dimensions);
 float get_summed_surrounding_2(InnerNodeDirections2 i,
                                const global float* current,
-                               const global Node* boundary_node) {
-    return sum_on_axis(current, boundary_node, i);
+                               const global CondensedNode* boundary_node,
+                               int3 locator,
+                               int3 dimensions) {
+    return sum_on_axis(current, boundary_node, locator, dimensions, i);
 }
 
 float get_summed_surrounding_3(InnerNodeDirections3 i,
                                const global float* current,
-                               const global Node* boundary_node);
+                               const global CondensedNode* boundary_node,
+                               int3 locator,
+                               int3 dimensions);
 float get_summed_surrounding_3(InnerNodeDirections3 i,
                                const global float* current,
-                               const global Node* boundary_node) {
+                               const global CondensedNode* boundary_node,
+                               int3 locator,
+                               int3 dimensions) {
     return 0;
 }
 
 //----------------------------------------------------------------------------//
 
-#define GET_CURRENT_SURROUNDING_WEIGHTING_TEMPLATE(dimensions)               \
-    float CAT(get_current_surrounding_weighting_, dimensions)(               \
-        const global float* current,                                         \
-        const global Node* boundary_node,                                    \
-        int bt);                                                             \
-    float CAT(get_current_surrounding_weighting_, dimensions)(               \
-        const global float* current,                                         \
-        const global Node* boundary_node,                                    \
-        int bt) {                                                            \
-        CAT(InnerNodeDirections, dimensions)                                 \
-        ind = CAT(get_inner_node_directions_, dimensions)(bt);               \
-        float sum = 0;                                                       \
-        for (int i = 0; i != dimensions; ++i) {                              \
-            sum += 2 * current[boundary_node->ports[ind.array[i]]];          \
-        }                                                                    \
-        return COURANT_SQ * (sum + CAT(get_summed_surrounding_, dimensions)( \
-                                       ind, current, boundary_node));        \
+#define GET_CURRENT_SURROUNDING_WEIGHTING_TEMPLATE(dimensions)          \
+    float CAT(get_current_surrounding_weighting_, dimensions)(          \
+        const global float* current,                                    \
+        const global CondensedNode* boundary_node,                      \
+        int3 locator,                                                   \
+        int3 dim,                                                       \
+        int bt);                                                        \
+    float CAT(get_current_surrounding_weighting_, dimensions)(          \
+        const global float* current,                                    \
+        const global CondensedNode* boundary_node,                      \
+        int3 locator,                                                   \
+        int3 dim,                                                       \
+        int bt) {                                                       \
+        CAT(InnerNodeDirections, dimensions)                            \
+        ind = CAT(get_inner_node_directions_, dimensions)(bt);          \
+        float sum = 0;                                                  \
+        for (int i = 0; i != dimensions; ++i) {                         \
+            uint neighbor = neighbor_index(locator, dim, ind.array[i]); \
+            if (neighbor != NO_NEIGHBOR)                                \
+                sum += 2 * current[neighbor];                           \
+        }                                                               \
+        return COURANT_SQ *                                             \
+               (sum + CAT(get_summed_surrounding_, dimensions)(         \
+                          ind, current, boundary_node, locator, dim));  \
     }
 
 GET_CURRENT_SURROUNDING_WEIGHTING_TEMPLATE(1);
@@ -415,12 +496,12 @@ float get_current_boundary_weighting(const global float* current) {
 #define GET_FILTER_WEIGHTING_TEMPLATE(dimensions)                        \
     float CAT(get_filter_weighting_, dimensions)(                        \
         global CAT(BoundaryDataArray, dimensions) * boundary_data,       \
-        const global Node* boundary_node,                                \
+        const global CondensedNode* boundary_node,                       \
         const global CAT(FilterCoefficients, CANONICAL_FILTER_ORDER) *   \
             boundary_coefficients);                                      \
     float CAT(get_filter_weighting_, dimensions)(                        \
         global CAT(BoundaryDataArray, dimensions) * boundary_data,       \
-        const global Node* boundary_node,                                \
+        const global CondensedNode* boundary_node,                       \
         const global CAT(FilterCoefficients, CANONICAL_FILTER_ORDER) *   \
             boundary_coefficients) {                                     \
         global CAT(BoundaryDataArray, dimensions)* bda =                 \
@@ -446,12 +527,12 @@ GET_FILTER_WEIGHTING_TEMPLATE(3);
 #define GET_COEFF_WEIGHTING_TEMPLATE(dimensions)                         \
     float CAT(get_coeff_weighting_, dimensions)(                         \
         global CAT(BoundaryDataArray, dimensions) * boundary_data,       \
-        const global Node* boundary_node,                                \
+        const global CondensedNode* boundary_node,                       \
         const global CAT(FilterCoefficients, CANONICAL_FILTER_ORDER) *   \
             boundary_coefficients);                                      \
     float CAT(get_coeff_weighting_, dimensions)(                         \
         global CAT(BoundaryDataArray, dimensions) * boundary_data,       \
-        const global Node* boundary_node,                                \
+        const global CondensedNode* boundary_node,                       \
         const global CAT(FilterCoefficients, CANONICAL_FILTER_ORDER) *   \
             boundary_coefficients) {                                     \
         global CAT(BoundaryDataArray, dimensions)* bda =                 \
@@ -476,7 +557,9 @@ GET_COEFF_WEIGHTING_TEMPLATE(3);
     float CAT(boundary_, dimensions)(                                     \
         const global float* current,                                      \
         const global float* previous,                                     \
-        const global Node* boundary_node,                                 \
+        const global CondensedNode* boundary_node,                        \
+        int3 locator,                                                     \
+        int3 dim,                                                         \
         global CAT(BoundaryDataArray, dimensions) * boundary_data,        \
         const global CAT(FilterCoefficients, CANONICAL_FILTER_ORDER) *    \
             boundary_coefficients,                                        \
@@ -484,14 +567,16 @@ GET_COEFF_WEIGHTING_TEMPLATE(3);
     float CAT(boundary_, dimensions)(                                     \
         const global float* current,                                      \
         const global float* previous,                                     \
-        const global Node* boundary_node,                                 \
+        const global CondensedNode* boundary_node,                        \
+        int3 locator,                                                     \
+        int3 dim,                                                         \
         global CAT(BoundaryDataArray, dimensions) * boundary_data,        \
         const global CAT(FilterCoefficients, CANONICAL_FILTER_ORDER) *    \
             boundary_coefficients,                                        \
         int bt) {                                                         \
         float current_surrounding_weighting =                             \
             CAT(get_current_surrounding_weighting_, dimensions)(          \
-                current, boundary_node, bt);                              \
+                current, boundary_node, locator, dim, bt);                \
         float current_boundary_weighting =                                \
             get_current_boundary_weighting(current);                      \
         float filter_weighting = CAT(get_filter_weighting_, dimensions)(  \
@@ -515,6 +600,8 @@ GET_COEFF_WEIGHTING_TEMPLATE(3);
                 boundary_coefficients + bda->array[i].coefficient_index;  \
             ghost_point_pressure_update(current,                          \
                                         boundary_node,                    \
+                                        locator,                          \
+                                        dim,                              \
                                         ret,                              \
                                         prev_pressure,                    \
                                         &bda->array[i],                   \
@@ -530,55 +617,61 @@ BOUNDARY_TEMPLATE(3);
 
 //----------------------------------------------------------------------------//
 
-kernel void waveguide(const global float* current,
-                      global float* previous,
-                      const global Node* nodes,
-                      global BoundaryDataArray1* boundary_data_1,
-                      global BoundaryDataArray2* boundary_data_2,
-                      global BoundaryDataArray3* boundary_data_3,
-                      const global CAT(FilterCoefficients,
-                                       CANONICAL_FILTER_ORDER) *
-                          boundary_coefficients,
-                      const global float* transform_matrix,
-                      global float3* velocity_buffer,
-                      float spatial_sampling_period,
-                      float T,
-                      ulong read,
-                      global float* output) {
+kernel void condensed_waveguide(const global float* current,
+                                global float* previous,
+                                const global CondensedNode* nodes,
+                                int3 dimensions,
+                                global BoundaryDataArray1* boundary_data_1,
+                                global BoundaryDataArray2* boundary_data_2,
+                                global BoundaryDataArray3* boundary_data_3,
+                                const global CAT(FilterCoefficients,
+                                                 CANONICAL_FILTER_ORDER) *
+                                    boundary_coefficients,
+                                const global float* transform_matrix,
+                                global float3* velocity_buffer,
+                                float spatial_sampling_period,
+                                float T,
+                                ulong read,
+                                global float* output) {
     size_t index = get_global_id(0);
-    const global Node* node = nodes + index;
+    const global CondensedNode* node = nodes + index;
+
+    int3 locator = to_locator(index, dimensions);
 
     float next_pressure = 0;
 
     //  find the next pressure at this node, assign it to next_pressure
     switch (popcount(node->bt)) {
         //  this is inside or outside, not a boundary
-        case 0:
-            if (node->inside) {
+        case 1:
+            if (node->bt & id_inside) {
                 for (int i = 0; i != PORTS; ++i) {
-                    int port_index = node->ports[i];
-                    if (port_index >= 0 && nodes[port_index].inside)
+                    uint port_index = neighbor_index(locator, dimensions, i);
+                    if (port_index != NO_NEIGHBOR &&
+                        nodes[port_index].bt & id_inside)
                         next_pressure += current[port_index];
                 }
 
                 next_pressure /= (PORTS / 2);
                 next_pressure -= previous[index];
+            } else {
+                next_pressure = boundary_1(current,
+                                           previous,
+                                           node,
+                                           locator,
+                                           dimensions,
+                                           boundary_data_1,
+                                           boundary_coefficients,
+                                           node->bt);
             }
-            break;
-        //  this is a 1d-boundary node
-        case 1:
-            next_pressure = boundary_1(current,
-                                       previous,
-                                       node,
-                                       boundary_data_1,
-                                       boundary_coefficients,
-                                       node->bt);
             break;
         //  this is an edge where two boundaries meet
         case 2:
             next_pressure = boundary_2(current,
                                        previous,
                                        node,
+                                       locator,
+                                       dimensions,
                                        boundary_data_2,
                                        boundary_coefficients,
                                        node->bt);
@@ -588,6 +681,8 @@ kernel void waveguide(const global float* current,
             next_pressure = boundary_3(current,
                                        previous,
                                        node,
+                                       locator,
+                                       dimensions,
                                        boundary_data_3,
                                        boundary_coefficients,
                                        node->bt);
@@ -607,8 +702,8 @@ kernel void waveguide(const global float* current,
 
         float differences[PORTS] = {0};
         for (int i = 0; i != PORTS; ++i) {
-            int port_index = node->ports[i];
-            if (port_index >= 0 && nodes[port_index].inside)
+            uint port_index = neighbor_index(locator, dimensions, i);
+            if (port_index != NO_NEIGHBOR && nodes[port_index].bt & id_inside)
                 differences[i] = (previous[port_index] - previous[index]) /
                                  spatial_sampling_period;
         }
@@ -630,16 +725,6 @@ kernel void waveguide(const global float* current,
         multiplied /= -ambient_density;
 
         //  numerical integration
-        //
-        //  I thought integration meant just adding to the previous value like
-        //  *velocity_buffer += multiplied;
-        //  but apparently the integrator has the transfer function
-        //  Hint(z) = Tz^-1 / (1 - z^-1)
-        //  so hopefully this is right
-        //
-        //  Hint(z) = Y(z)/X(z) = Tz^-1/(1 - z^-1)
-        //  y(n) = Tx(n - 1) + y(n - 1)
-
         *velocity_buffer += T * multiplied;
     }
 }

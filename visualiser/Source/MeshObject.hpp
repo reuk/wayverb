@@ -25,19 +25,20 @@ public:
                        c.begin(),
                        [](const auto & i) {
                            switch (i.bt) {
-                               case id_none:
+                               case RectangularProgram::id_none:
+                               case RectangularProgram::id_inside:
                                    return glm::vec4(0, 0, 0, 0);
-                               case id_nx:
+                               case RectangularProgram::id_nx:
                                    return glm::vec4(1, 0, 0, 1);
-                               case id_px:
+                               case RectangularProgram::id_px:
                                    return glm::vec4(0, 1, 1, 1);
-                               case id_ny:
+                               case RectangularProgram::id_ny:
                                    return glm::vec4(0, 1, 0, 1);
-                               case id_py:
+                               case RectangularProgram::id_py:
                                    return glm::vec4(1, 0, 1, 1);
-                               case id_nz:
+                               case RectangularProgram::id_nz:
                                    return glm::vec4(0, 0, 1, 1);
-                               case id_pz:
+                               case RectangularProgram::id_pz:
                                    return glm::vec4(1, 1, 0, 1);
 
                                default:

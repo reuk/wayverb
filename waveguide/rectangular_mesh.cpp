@@ -12,13 +12,12 @@ RectangularMesh::Collection RectangularMesh::compute_nodes(
     const Boundary& boundary) const {
     //  TODO this takes for ever, put it on GPU?
     auto total_nodes = get_dim().product();
-    auto one_node = sizeof(Node);
-    Logger::log_err("one node: ", one_node, " B");
-    auto bytes = total_nodes * one_node;
+    auto one_node_condensed = sizeof(CondensedNode);
+    Logger::log_err("one node: ", one_node_condensed, " B");
+    auto bytes = total_nodes * one_node_condensed;
     Logger::log_err(bytes, " B required!");
     Logger::log_err(bytes >> 10, " KB required!");
     Logger::log_err(bytes >> 20, " MB required!");
-    Logger::log_err(bytes >> 30, " GB required!");
 
     auto ret = std::vector<Node>(total_nodes);
 
@@ -26,7 +25,7 @@ RectangularMesh::Collection RectangularMesh::compute_nodes(
     std::generate(
         ret.begin(),
         ret.end(),
-        [this, &counter, &boundary] {
+        [this, &counter] {
             Node ret;
             auto p = this->compute_position(this->compute_locator(counter));
             auto neighbors = this->compute_neighbors(counter);
@@ -76,7 +75,7 @@ RectangularMesh::Collection RectangularMesh::compute_nodes(
         i.bt = RectangularProgram::id_none;
     }
     for (auto set_bits = 0; set_bits != 3; ++set_bits) {
-        std::fill(bt.begin(), bt.end(), 0);
+        std::fill(bt.begin(), bt.end(), RectangularProgram::id_none);
         for (auto i = 0u; i != ret.size(); ++i) {
             auto& node = ret[i];
             if (!node.inside && node.bt == RectangularProgram::id_none) {
@@ -188,9 +187,29 @@ std::array<int, RectangularMesh::PORTS> RectangularMesh::compute_neighbors(
     return ret;
 }
 
+std::vector<RectangularMesh::CondensedNode>
+RectangularMesh::get_condensed_nodes() const {
+    std::vector<RectangularMesh::CondensedNode> ret(get_nodes().size());
+    std::transform(
+        get_nodes().begin(),
+        get_nodes().end(),
+        ret.begin(),
+        [](const auto& i) { return RectangularProgram::condense(i); });
+    std::for_each(
+        ret.begin(),
+        ret.end(),
+        [](const auto& i) {
+            if (i.bt | RectangularProgram::id_inside && popcount(i.bt) > 1) {
+                Logger::log_err("too many bits set?");
+            }
+        });
+    return ret;
+}
+
 const RectangularMesh::Collection& RectangularMesh::get_nodes() const {
     return nodes;
 }
+
 Vec3i RectangularMesh::get_dim() const {
     return dim;
 }

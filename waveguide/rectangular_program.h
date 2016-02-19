@@ -27,6 +27,13 @@ public:
         cl_uint boundary_index;
     };
 
+    struct __attribute__((aligned(8))) CondensedNodeStruct final {
+        static constexpr int PORTS{6};
+        static constexpr cl_uint NO_NEIGHBOR{~cl_uint{0}};
+        cl_int bt;
+        cl_uint boundary_index;
+    };
+
     template <int O>
     struct FilterMemory final {
         static constexpr int ORDER = O;
@@ -78,13 +85,14 @@ public:
 
     static constexpr int PORTS = NodeStruct::PORTS;
 
-    RectangularProgram(const cl::Context & context,
+    RectangularProgram(const cl::Context& context,
                        bool build_immediate = false);
 
     auto get_kernel() const {
         return cl::make_kernel<cl::Buffer,
                                cl::Buffer,
                                cl::Buffer,
+                               cl_int3,
                                cl::Buffer,
                                cl::Buffer,
                                cl::Buffer,
@@ -94,7 +102,7 @@ public:
                                cl_float,
                                cl_float,
                                cl_ulong,
-                               cl::Buffer>(*this, "waveguide");
+                               cl::Buffer>(*this, "condensed_waveguide");
     }
 
     auto get_filter_test_kernel() const {
@@ -106,6 +114,8 @@ public:
         return cl::make_kernel<cl::Buffer, cl::Buffer, cl::Buffer, cl::Buffer>(
             *this, "filter_test_2");
     }
+
+    static CondensedNodeStruct condense(const NodeStruct& n);
 
 private:
     static constexpr int BIQUAD_SECTIONS = BiquadMemoryArray::BIQUAD_SECTIONS;

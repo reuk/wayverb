@@ -238,6 +238,10 @@ private:
     RectangularWaveguide(const ProgramType& program,
                          cl::CommandQueue& queue,
                          const RectangularMesh& mesh);
+    RectangularWaveguide(const ProgramType& program,
+                         cl::CommandQueue& queue,
+                         const RectangularMesh& mesh,
+                         std::vector<RectangularMesh::CondensedNode> nodes);
 
     template <int I>
     void setup_boundary_data_buffer(cl::CommandQueue& queue, cl::Buffer& b) {

@@ -112,16 +112,22 @@ bool TetrahedralWaveguide::inside(size_type index) const {
 RectangularWaveguide::RectangularWaveguide(const RectangularProgram& program,
                                            cl::CommandQueue& queue,
                                            const RectangularMesh& mesh)
+        : RectangularWaveguide(
+              program, queue, mesh, mesh.get_condensed_nodes()) {
+}
+
+RectangularWaveguide::RectangularWaveguide(
+    const RectangularProgram& program,
+    cl::CommandQueue& queue,
+    const RectangularMesh& mesh,
+    std::vector<RectangularMesh::CondensedNode> nodes)
         : Waveguide<RectangularProgram>(program, queue, mesh.get_nodes().size())
         , mesh(mesh)
         //    TODO this seems like it's asking for problems
-        , node_buffer(
-              program.getInfo<CL_PROGRAM_CONTEXT>(),
-              const_cast<RectangularMesh::Node*>(this->mesh.get_nodes().data()),
-              const_cast<RectangularMesh::Node*>(
-                  this->mesh.get_nodes().data()) +
-                  this->mesh.get_nodes().size(),
-              true)
+        , node_buffer(program.getInfo<CL_PROGRAM_CONTEXT>(),
+                      nodes.begin(),
+                      nodes.end(),
+                      false)
         , transform_buffer(program.getInfo<CL_PROGRAM_CONTEXT>(),
                            CL_MEM_READ_WRITE,
                            sizeof(cl_float) * 18)
@@ -202,6 +208,7 @@ RunStepResult RectangularWaveguide::run_step(size_type o,
            current,
            previous,
            node_buffer,
+           to_cl_int3(get_mesh().get_dim()),
            boundary_data_1_buffer,
            boundary_data_2_buffer,
            boundary_data_3_buffer,

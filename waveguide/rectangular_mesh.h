@@ -13,6 +13,8 @@ public:
                     float spacing,
                     const Vec3f& anchor);
 
+    using CondensedNode = RectangularProgram::CondensedNodeStruct;
+
     size_type compute_index(const Locator& locator) const override;
     Locator compute_locator(const size_type index) const override;
     Locator compute_locator(const Vec3f& position) const override;
@@ -22,6 +24,8 @@ public:
 
     std::array<int, PORTS> compute_neighbors(size_type index) const override;
     Collection compute_nodes(const Boundary& boundary) const;
+
+    std::vector<CondensedNode> get_condensed_nodes() const;
 
     Vec3i get_dim() const;
 
