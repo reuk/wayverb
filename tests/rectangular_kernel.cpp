@@ -157,15 +157,6 @@ public:
     }
 };
 
-namespace std {
-template <typename T>
-ostream& operator<<(ostream& os, const vector<T>& t) {
-    Bracketer bracketer(os);
-    copy(t.begin(), t.end(), ostream_iterator<T>(os, "  "));
-    return os;
-}
-}
-
 template <typename Memory, typename Coeffs, typename Generator>
 class rectangular_kernel : Generator {
 public:

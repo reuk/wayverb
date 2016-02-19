@@ -39,4 +39,4 @@ std::vector<float> Microphone::process(
     return ret;
 }
 
-const Microphone Microphone::omni{Vec3f(0)};
+const Microphone Microphone::omni{Vec3f(1, 0, 0)};

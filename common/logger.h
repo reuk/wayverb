@@ -7,6 +7,7 @@
 #include <chrono>
 #include <ctime>
 #include <mutex>
+#include <vector>
 
 #include "string_builder.h"
 
@@ -18,6 +19,15 @@ public:
 private:
     std::ostream &os;
 };
+
+namespace std {
+template <typename T>
+ostream &operator<<(ostream &os, const vector<T> &t) {
+    Bracketer bracketer(os);
+    copy(t.begin(), t.end(), ostream_iterator<T>(os, "  "));
+    return os;
+}
+}
 
 class Logger {
 public:

@@ -35,6 +35,77 @@ std::ostream& operator<<(std::ostream& os, const CuboidBoundary& cb) {
     return to_stream(os, cb.get_c0(), "  ", cb.get_c1(), "  ");
 }
 
+std::ostream& operator<<(std::ostream& os, const RunStepResult& rsr) {
+    Bracketer bracketer(os);
+    return to_stream(os, rsr.pressure);
+}
+
+std::vector<float> run_simulation(const cl::Context& context,
+                                  cl::Device& device,
+                                  cl::CommandQueue& queue,
+                                  const Boundary& boundary,
+                                  const WaveguideConfig& config,
+                                  const Vec3f& source,
+                                  const Vec3f& receiver,
+                                  const std::string& fname) {
+    auto waveguide_program =
+        get_program<RectangularProgram>(context, device);
+    RectangularWaveguide waveguide(waveguide_program,
+                                   queue,
+                                   boundary,
+                                   config.get_divisions(),
+                                   receiver);
+
+    auto receiver_index = waveguide.get_index_for_coordinate(receiver);
+    auto source_index = waveguide.get_index_for_coordinate(source);
+
+    if (! waveguide.inside(receiver_index)) {
+        throw std::runtime_error("receiver is outside of mesh!");
+    }
+    if (! waveguide.inside(source_index)) {
+        throw std::runtime_error("source is outside of mesh!");
+    }
+
+    auto corrected_source = waveguide.get_coordinate_for_index(source_index);
+    auto corrected_mic = waveguide.get_coordinate_for_index(receiver_index);
+
+    Logger::log_err("running simulation!");
+    Logger::log_err("source pos: ", corrected_source);
+    Logger::log_err("mic pos: ", corrected_mic);
+
+    auto steps = 10000;
+
+    auto results = waveguide.run_basic(corrected_source,
+                                       receiver_index,
+                                       steps,
+                                       config.get_waveguide_sample_rate());
+
+    auto output = Microphone::omni.process(results);
+
+    normalize(output);
+
+    LinkwitzRiley lopass;
+    lopass.setParams(1,
+                     config.get_filter_frequency(),
+                     config.get_output_sample_rate());
+    lopass.filter(output);
+
+    auto output_folder = ".";
+    auto output_file = build_string(output_folder, "/", fname, ".wav");
+    Logger::log_err("writing file: ", output_file);
+
+    auto format = get_file_format(output_file);
+    auto depth = get_file_depth(config.get_bit_depth());
+
+    write_sndfile(output_file,
+                  {output},
+                  config.get_output_sample_rate(),
+                  depth,
+                  format);
+
+    return output;
+}
+
 int main(int argc, char** argv) {
     Logger::restart();
     gflags::ParseCommandLineFlags(&argc, &argv, true);
@@ -50,7 +121,7 @@ int main(int argc, char** argv) {
     auto queue = cl::CommandQueue(context, device);
 
     //  set room size based on desired number of nodes
-    auto desired_nodes = Vec3<uint32_t>(500, 500, 500);
+    auto desired_nodes = Vec3<uint32_t>(200, 200, 200);
     auto total_desired_nodes = desired_nodes.product();
 
     auto total_possible_nodes = 1 << 30;
@@ -58,7 +129,7 @@ int main(int argc, char** argv) {
         Logger::log_err("total desired nodes: ", total_desired_nodes);
         Logger::log_err("however, total possible nodes: ",
                         total_possible_nodes);
-        return 0;
+        return EXIT_FAILURE;
     }
 
     //  generate two boundaries, one twice the size of the other
@@ -73,7 +144,7 @@ int main(int argc, char** argv) {
 
     //  place source, receiver (and image) in rooms based on distance in nodes
     //      from the wall
-    auto source_dist_nodes = 200;
+    auto source_dist_nodes = desired_nodes.mag() / 4;
     auto source_dist = source_dist_nodes * config.get_divisions();
 
     auto azimuth = M_PI / 4;
@@ -94,68 +165,23 @@ int main(int argc, char** argv) {
         wall_centre + point_on_sphere(azimuth, -elevation) * source_dist;
     Logger::log_err("image position: ", image_position);
 
-    auto steps = 2000;
-
     try {
-        //  run two simulations
-        auto waveguide_program =
-            get_program<RectangularProgram>(context, device);
-        RectangularWaveguide wall_waveguide(waveguide_program,
-                                       queue,
-                                       wall,
-                                       config.get_divisions(),
-                                       receiver_position);
-
-        auto mic_index = wall_waveguide.get_index_for_coordinate(receiver_position);
-        auto source_index =
-            wall_waveguide.get_index_for_coordinate(source_position);
-
-        auto corrected_source =
-            wall_waveguide.get_coordinate_for_index(source_index);
-        auto corrected_mic = wall_waveguide.get_coordinate_for_index(mic_index);
-
-        Logger::log_err("source pos: ", corrected_source);
-        Logger::log_err("mic pos: ", corrected_mic);
-
-        auto wall_results =
-            wall_waveguide.run_basic(corrected_source,
-                                mic_index,
-                                steps,
-                                config.get_waveguide_sample_rate());
-
-        auto output = Microphone::omni.process(wall_results);
-
-        std::vector<float> out_signal(
-            config.get_output_sample_rate() * output.size() /
-            config.get_waveguide_sample_rate());
-
-        LinkwitzRiley lopass;
-        lopass.setParams(1,
-                         config.get_filter_frequency(),
-                         config.get_output_sample_rate());
-        lopass.filter(out_signal);
-
-        auto output_folder = ".";
-
-        auto output_file = build_string(output_folder, "/reflect.wav");
-
-        unsigned long format, depth;
-
-        try {
-            format = get_file_format(output_file);
-            depth = get_file_depth(config.get_bit_depth());
-        } catch (const std::runtime_error& e) {
-            Logger::log_err("critical runtime error: ", e.what());
-            return EXIT_FAILURE;
-        }
-
-        write_sndfile(output_file,
-                      {out_signal},
-                      config.get_output_sample_rate(),
-                      depth,
-                      format);
-
-        //  do some nonsense with the outputs
+        auto reflected = run_simulation(context,
+                                        device,
+                                        queue,
+                                        wall,
+                                        config,
+                                        source_position,
+                                        receiver_position,
+                                        "reflected");
+        auto free_field = run_simulation(context,
+                                        device,
+                                        queue,
+                                        no_wall,
+                                        config,
+                                        source_position,
+                                        image_position,
+                                        "free_field");
     } catch (const cl::Error& e) {
         Logger::log_err("critical cl error: ", e.what());
         return EXIT_FAILURE;

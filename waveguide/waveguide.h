@@ -137,6 +137,10 @@ public:
         cl::copy(queue, n.begin(), n.end(), *previous);
 
         initialise_mesh(u, e, n);
+        bool valid = std::any_of(n.begin(), n.end(), [](auto i) { return i; });
+        if (!valid) {
+            throw std::runtime_error("mesh is completely zeroed!");
+        }
         cl::copy(queue, n.begin(), n.end(), *current);
     }
 
