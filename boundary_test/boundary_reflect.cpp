@@ -73,7 +73,8 @@ std::vector<float> run_simulation(const cl::Context& context,
                                   const WaveguideConfig& config,
                                   const Vec3f& source,
                                   const Vec3f& receiver,
-                                  const std::string& fname) {
+                                  const std::string& fname,
+                                  int steps) {
     auto waveguide_program =
         get_program<RectangularProgram>(context, device);
     RectangularWaveguide waveguide(waveguide_program,
@@ -98,8 +99,6 @@ std::vector<float> run_simulation(const cl::Context& context,
     Logger::log_err("running simulation!");
     Logger::log_err("source pos: ", corrected_source);
     Logger::log_err("mic pos: ", corrected_mic);
-
-    auto steps = 10000;
 
     auto results = waveguide.run_basic(corrected_source,
                                        receiver_index,
@@ -178,6 +177,34 @@ int main(int argc, char** argv) {
         wall_centre + point_on_sphere(azimuth, -elevation) * source_dist;
     Logger::log_err("image position: ", image_position);
 
+    auto wrong_position = [source_dist] (auto pos, auto c) {
+        return std::abs((pos - c).mag() - source_dist) > 1;
+    };
+
+    if (wrong_position(source_position, wall_centre)) {
+        Logger::log_err("source is placed incorrectly");
+        return EXIT_FAILURE;
+    }
+
+    if (wrong_position(receiver_position, wall_centre)) {
+        Logger::log_err("receiver is placed incorrectly");
+        return EXIT_FAILURE;
+    }
+
+    if (wrong_position(image_position, wall_centre)) {
+        Logger::log_err("image is placed incorrectly");
+        return EXIT_FAILURE;
+    }
+
+    if (std::abs((source_position - image_position).mag() - source_dist * 2) >
+        1) {
+        Logger::log_err("image is placed incorrectly");
+        return EXIT_FAILURE;
+    }
+
+    auto steps = source_dist_nodes * 4;
+    Logger::log_err("running for ", steps, " steps");
+
     try {
         auto reflected = run_simulation(context,
                                         device,
@@ -186,15 +213,17 @@ int main(int argc, char** argv) {
                                         config,
                                         source_position,
                                         receiver_position,
-                                        "reflected");
+                                        "reflected",
+                                        steps);
         auto free_field = run_simulation(context,
-                                        device,
-                                        queue,
-                                        no_wall,
-                                        config,
-                                        source_position,
-                                        image_position,
-                                        "free_field");
+                                         device,
+                                         queue,
+                                         no_wall,
+                                         config,
+                                         source_position,
+                                         image_position,
+                                         "free_field",
+                                         steps);
         auto direct = run_simulation(context,
                                      device,
                                      queue,
@@ -202,7 +231,8 @@ int main(int argc, char** argv) {
                                      config,
                                      source_position,
                                      receiver_position,
-                                     "direct");
+                                     "direct",
+                                     steps);
 
         auto subbed = reflected;
         std::transform(reflected.begin(),
