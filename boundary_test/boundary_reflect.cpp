@@ -40,6 +40,32 @@ std::ostream& operator<<(std::ostream& os, const RunStepResult& rsr) {
     return to_stream(os, rsr.pressure);
 }
 
+void write_file(const WaveguideConfig& config,
+                const std::string& fname,
+                const std::vector<float>& output) {
+    auto output_folder = ".";
+    auto output_file = build_string(output_folder, "/", fname, ".wav");
+    Logger::log_err("writing file: ", output_file);
+
+    auto format = get_file_format(output_file);
+    auto depth = get_file_depth(config.get_bit_depth());
+
+    write_sndfile(
+        output_file, {output}, config.get_output_sample_rate(), depth, format);
+}
+
+float hanning_point(float f) {
+    return 0.5 - 0.5 * cos(2 * M_PI * f);
+}
+
+std::vector<float> right_hanning(int length) {
+    std::vector<float> ret(length);
+    for (auto i = 0; i != length; ++i) {
+        ret[i] = hanning_point(0.5 + (i / (2 * (length - 1.0))));
+    }
+    return ret;
+}
+
 std::vector<float> run_simulation(const cl::Context& context,
                                   cl::Device& device,
                                   cl::CommandQueue& queue,
@@ -82,26 +108,13 @@ std::vector<float> run_simulation(const cl::Context& context,
 
     auto output = Microphone::omni.process(results);
 
-    normalize(output);
-
     LinkwitzRiley lopass;
     lopass.setParams(1,
                      config.get_filter_frequency(),
                      config.get_output_sample_rate());
     lopass.filter(output);
 
-    auto output_folder = ".";
-    auto output_file = build_string(output_folder, "/", fname, ".wav");
-    Logger::log_err("writing file: ", output_file);
-
-    auto format = get_file_format(output_file);
-    auto depth = get_file_depth(config.get_bit_depth());
-
-    write_sndfile(output_file,
-                  {output},
-                  config.get_output_sample_rate(),
-                  depth,
-                  format);
+    write_file(config, fname, output);
 
     return output;
 }
@@ -182,6 +195,47 @@ int main(int argc, char** argv) {
                                         source_position,
                                         image_position,
                                         "free_field");
+        auto direct = run_simulation(context,
+                                     device,
+                                     queue,
+                                     no_wall,
+                                     config,
+                                     source_position,
+                                     receiver_position,
+                                     "direct");
+
+        auto subbed = reflected;
+        std::transform(reflected.begin(),
+                       reflected.end(),
+                       direct.begin(),
+                       subbed.begin(),
+                       [](const auto& i, const auto& j) { return i - j; });
+
+        write_file(config, "isolated_reflection", subbed);
+
+        auto h = right_hanning(subbed.size());
+
+        auto windowed_free_field = h;
+        auto windowed_subbed = h;
+
+        std::transform(free_field.begin(),
+                       free_field.end(),
+                       h.begin(),
+                       windowed_free_field.begin(),
+                       [](auto i, auto j) { return i * j; });
+        std::transform(subbed.begin(),
+                       subbed.end(),
+                       h.begin(),
+                       windowed_subbed.begin(),
+                       [](auto i, auto j) { return i * j; });
+
+        auto norm_factor = 1.0 / std::max(max_mag(windowed_free_field), max_mag(windowed_subbed));
+        mul(windowed_free_field, norm_factor);
+        mul(windowed_subbed, norm_factor);
+
+        write_file(config, "windowed_free_field", windowed_free_field);
+        write_file(config, "windowed_subbed", windowed_subbed);
+
     } catch (const cl::Error& e) {
         Logger::log_err("critical cl error: ", e.what());
         return EXIT_FAILURE;

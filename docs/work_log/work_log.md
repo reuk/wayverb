@@ -321,8 +321,6 @@ TODO
 
 * CRITICAL: check how boundary filter coefficients are calculated
 
-* rearchitect the rectangular mesh for non-insane memory usage
-
 * boundary modelling
     * get in touch with an authority with specific questions
 
