@@ -41,9 +41,9 @@ std::ostream& operator<<(std::ostream& os, const RunStepResult& rsr) {
 }
 
 void write_file(const WaveguideConfig& config,
+                const std::string& output_folder,
                 const std::string& fname,
                 const std::vector<float>& output) {
-    auto output_folder = ".";
     auto output_file = build_string(output_folder, "/", fname, ".wav");
     Logger::log_err("writing file: ", output_file);
 
@@ -52,6 +52,18 @@ void write_file(const WaveguideConfig& config,
 
     write_sndfile(
         output_file, {output}, config.get_output_sample_rate(), depth, format);
+
+    auto normalized = output;
+    normalize(normalized);
+
+    auto norm_output_file =
+        build_string(output_folder, "/normalized.", fname, ".wav");
+    Logger::log_err("writing file: ", norm_output_file);
+    write_sndfile(norm_output_file,
+                  {normalized},
+                  config.get_output_sample_rate(),
+                  depth,
+                  format);
 }
 
 float hanning_point(float f) {
@@ -73,23 +85,20 @@ std::vector<float> run_simulation(const cl::Context& context,
                                   const WaveguideConfig& config,
                                   const Vec3f& source,
                                   const Vec3f& receiver,
+                                  const std::string& output_folder,
                                   const std::string& fname,
                                   int steps) {
-    auto waveguide_program =
-        get_program<RectangularProgram>(context, device);
-    RectangularWaveguide waveguide(waveguide_program,
-                                   queue,
-                                   boundary,
-                                   config.get_divisions(),
-                                   receiver);
+    auto waveguide_program = get_program<RectangularProgram>(context, device);
+    RectangularWaveguide waveguide(
+        waveguide_program, queue, boundary, config.get_divisions(), receiver);
 
     auto receiver_index = waveguide.get_index_for_coordinate(receiver);
     auto source_index = waveguide.get_index_for_coordinate(source);
 
-    if (! waveguide.inside(receiver_index)) {
+    if (!waveguide.inside(receiver_index)) {
         throw std::runtime_error("receiver is outside of mesh!");
     }
-    if (! waveguide.inside(source_index)) {
+    if (!waveguide.inside(source_index)) {
         throw std::runtime_error("source is outside of mesh!");
     }
 
@@ -100,20 +109,36 @@ std::vector<float> run_simulation(const cl::Context& context,
     Logger::log_err("source pos: ", corrected_source);
     Logger::log_err("mic pos: ", corrected_mic);
 
+    auto coeffs = RectangularProgram::get_notch_filter_array(
+        {{
+            RectangularProgram::NotchFilterDescriptor{-12, 45, 1},
+            RectangularProgram::NotchFilterDescriptor{-12, 90, 1},
+            RectangularProgram::NotchFilterDescriptor{-12, 180, 1},
+        }},
+        config.get_waveguide_sample_rate());
+
+    Logger::log_err("coefficients: ", coeffs);
+
+    waveguide.set_boundary_coefficient(coeffs);
+
     auto results = waveguide.run_basic(corrected_source,
                                        receiver_index,
                                        steps,
                                        config.get_waveguide_sample_rate());
 
-    auto output = Microphone::omni.process(results);
+    //    auto output = Microphone::omni.process(results);
+    auto output = std::vector<float>(results.size());
+    std::transform(results.begin(),
+                   results.end(),
+                   output.begin(),
+                   [](const auto& i) { return i.pressure; });
 
     LinkwitzRiley lopass;
-    lopass.setParams(1,
-                     config.get_filter_frequency(),
-                     config.get_output_sample_rate());
-    lopass.filter(output);
+    lopass.setParams(
+        1, config.get_filter_frequency(), config.get_output_sample_rate());
+    //    lopass.filter(output);
 
-    write_file(config, fname, output);
+    write_file(config, output_folder, fname, output);
 
     return output;
 }
@@ -122,7 +147,18 @@ int main(int argc, char** argv) {
     Logger::restart();
     gflags::ParseCommandLineFlags(&argc, &argv, true);
 
-    //    auto output_folder = std::string(argv[1]);
+    if (argc != 2) {
+        Logger::log_err("expecting an output folder");
+
+        Logger::log_err("actually found: ");
+        for (auto i = 0u; i != argc; ++i) {
+            Logger::log_err("arg ", i, ": ", argv[i]);
+        }
+
+        return EXIT_FAILURE;
+    }
+
+    auto output_folder = std::string(argv[1]);
 
     auto config = WaveguideConfig();
     config.get_filter_frequency() = 11025;
@@ -133,7 +169,8 @@ int main(int argc, char** argv) {
     auto queue = cl::CommandQueue(context, device);
 
     //  set room size based on desired number of nodes
-    auto desired_nodes = Vec3<uint32_t>(200, 200, 200);
+    auto dim = 200;
+    auto desired_nodes = Vec3<uint32_t>(dim, dim, dim);
     auto total_desired_nodes = desired_nodes.product();
 
     auto total_possible_nodes = 1 << 30;
@@ -177,7 +214,7 @@ int main(int argc, char** argv) {
         wall_centre + point_on_sphere(azimuth, -elevation) * source_dist;
     Logger::log_err("image position: ", image_position);
 
-    auto wrong_position = [source_dist] (auto pos, auto c) {
+    auto wrong_position = [source_dist](auto pos, auto c) {
         return std::abs((pos - c).mag() - source_dist) > 1;
     };
 
@@ -213,17 +250,21 @@ int main(int argc, char** argv) {
                                         config,
                                         source_position,
                                         receiver_position,
+                                        output_folder,
                                         "reflected",
                                         steps);
-        auto free_field = run_simulation(context,
-                                         device,
-                                         queue,
-                                         no_wall,
-                                         config,
-                                         source_position,
-                                         image_position,
-                                         "free_field",
-                                         steps);
+        Logger::log_err("reflected max mag: ", max_mag(reflected));
+        auto image = run_simulation(context,
+                                    device,
+                                    queue,
+                                    no_wall,
+                                    config,
+                                    source_position,
+                                    image_position,
+                                    output_folder,
+                                    "image",
+                                    steps);
+        Logger::log_err("image max mag: ", max_mag(image));
         auto direct = run_simulation(context,
                                      device,
                                      queue,
@@ -231,40 +272,84 @@ int main(int argc, char** argv) {
                                      config,
                                      source_position,
                                      receiver_position,
+                                     output_folder,
                                      "direct",
                                      steps);
+        Logger::log_err("direct max mag: ", max_mag(direct));
 
         auto subbed = reflected;
         std::transform(reflected.begin(),
                        reflected.end(),
                        direct.begin(),
                        subbed.begin(),
-                       [](const auto& i, const auto& j) { return i - j; });
+                       [](const auto& i, const auto& j) { return j - i; });
+        Logger::log_err("subbed max mag: ", max_mag(subbed));
 
-        write_file(config, "isolated_reflection", subbed);
+        auto first_nonzero = [](const auto& i) {
+            auto it =
+                std::find_if(i.begin(), i.end(), [](auto j) { return j; });
+            if (it == i.end())
+                throw std::runtime_error("no non-zero values found");
+            Logger::log_err("first nonzero value: ", *it);
+            return it - i.begin();
+        };
+
+        auto first_nonzero_reflected = first_nonzero(reflected);
+        auto first_nonzero_direct = first_nonzero(direct);
+
+        Logger::log_err("first_nonzero_reflected: ", first_nonzero_reflected);
+        Logger::log_err("first_nonzero_direct: ", first_nonzero_direct);
+
+        if (first_nonzero_reflected != first_nonzero_direct) {
+            Logger::log_err(
+                "WARNING: direct and reflected should receive signal at same "
+                "time");
+            //           return EXIT_FAILURE;
+        }
+
+        auto first_nonzero_image = first_nonzero(image);
+        auto first_nonzero_subbed = first_nonzero(subbed);
+
+        Logger::log_err("first_nonzero_image: ", first_nonzero_image);
+        Logger::log_err("first_nonzero_subbed: ", first_nonzero_subbed);
+
+        if (first_nonzero_image != first_nonzero_subbed) {
+            Logger::log_err(
+                "WARNING: image and subbed should receive signal at same time");
+            //            return EXIT_FAILURE;
+        }
+
+        if (first_nonzero_image <= first_nonzero_direct) {
+            Logger::log_err("WARNING: direct should arrive before image");
+            //            return EXIT_FAILURE;
+        }
+
+        write_file(config, output_folder, "isolated_reflection", subbed);
 
         auto h = right_hanning(subbed.size());
 
         auto windowed_free_field = h;
         auto windowed_subbed = h;
 
-        std::transform(free_field.begin(),
-                       free_field.end(),
-                       h.begin(),
-                       windowed_free_field.begin(),
-                       [](auto i, auto j) { return i * j; });
-        std::transform(subbed.begin(),
-                       subbed.end(),
-                       h.begin(),
-                       windowed_subbed.begin(),
-                       [](auto i, auto j) { return i * j; });
+        auto window = [&h](const auto& in, auto& out) {
+            std::transform(in.begin(),
+                           in.end(),
+                           h.begin(),
+                           out.begin(),
+                           [](auto i, auto j) { return i * j; });
+        };
 
-        auto norm_factor = 1.0 / std::max(max_mag(windowed_free_field), max_mag(windowed_subbed));
+        window(image, windowed_free_field);
+        window(subbed, windowed_subbed);
+
+        auto norm_factor = 1.0 / std::max(max_mag(windowed_free_field),
+                                          max_mag(windowed_subbed));
         mul(windowed_free_field, norm_factor);
         mul(windowed_subbed, norm_factor);
 
-        write_file(config, "windowed_free_field", windowed_free_field);
-        write_file(config, "windowed_subbed", windowed_subbed);
+        write_file(
+            config, output_folder, "windowed_free_field", windowed_free_field);
+        write_file(config, output_folder, "windowed_subbed", windowed_subbed);
 
     } catch (const cl::Error& e) {
         Logger::log_err("critical cl error: ", e.what());

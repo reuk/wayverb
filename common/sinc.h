@@ -21,7 +21,7 @@ inline float max_mag(const float& t) {
 /// Recursively divide by reference.
 template <typename T>
 inline void div(T& ret, float f) {
-    for (auto&& i : ret)
+    for (auto& i : ret)
         div(i, f);
 }
 
@@ -34,7 +34,7 @@ inline void div(float& ret, float f) {
 /// Recursively multiply by reference.
 template <typename T>
 inline void mul(T& ret, float f) {
-    for (auto&& i : ret)
+    for (auto& i : ret)
         mul(i, f);
 }
 

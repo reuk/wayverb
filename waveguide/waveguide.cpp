@@ -8,6 +8,30 @@
 
 //----------------------------------------------------------------------------//
 
+std::ostream& operator<<(std::ostream& os, const cl_float3& f) {
+    Bracketer bracketer(os);
+    return to_stream(os, f.s[0], "  ", f.s[1], "  ", f.s[2], "  ");
+}
+
+std::ostream& operator<<(std::ostream& os,
+                         const RectangularProgram::CanonicalMemory& m) {
+    Bracketer bracketer(os);
+    for (const auto& i : m.array)
+        to_stream(os, i, "  ");
+    return os;
+}
+
+std::ostream& operator<<(std::ostream& os,
+                         const RectangularProgram::BoundaryData& m) {
+    return to_stream(os, m.filter_memory);
+}
+
+std::ostream& operator<<(std::ostream& os,
+                         const RectangularProgram::BoundaryDataArray1& bda) {
+    Bracketer bracketer(os);
+    return to_stream(os, bda.array[0]);
+}
+
 void TetrahedralWaveguide::setup(cl::CommandQueue& queue,
                                  size_type o,
                                  float sr) {
@@ -187,9 +211,10 @@ void RectangularWaveguide::setup(cl::CommandQueue& queue,
     setup_boundary_data_buffer<3>(queue, boundary_data_3_buffer);
 
     //  TODO set coefficients properly
-    std::vector<RectangularProgram::CanonicalCoefficients> vec(
-        1, RectangularProgram::CanonicalCoefficients{});
-    cl::copy(queue, vec.begin(), vec.end(), boundary_coefficients_buffer);
+    cl::copy(queue,
+             boundary_coefficients.begin(),
+             boundary_coefficients.end(),
+             boundary_coefficients_buffer);
 
     period = 1 / sr;
 }
@@ -226,6 +251,18 @@ RunStepResult RectangularWaveguide::run_step(size_type o,
              current_velocity.begin(),
              current_velocity.end());
 
+    std::vector<RectangularProgram::BoundaryDataArray1> bda(
+        mesh.compute_num_boundary<1>());
+    cl::copy(queue, boundary_data_1_buffer, bda.begin(), bda.end());
+
+    for (const auto& i : bda) {
+        const auto& mem = i.array[0].filter_memory.array;
+        if (std::any_of(
+                std::begin(mem), std::end(mem), [](auto x) { return x; })) {
+            Logger::log_err("filter did something!");
+        }
+    }
+
     auto velocity = to_vec3f(current_velocity.front());
     auto intensity = velocity * out.front();
 
@@ -247,4 +284,10 @@ const RectangularMesh& RectangularWaveguide::get_mesh() const {
 
 bool RectangularWaveguide::inside(size_type index) const {
     return mesh.get_nodes()[index].inside;
+}
+
+void RectangularWaveguide::set_boundary_coefficient(
+    const RectangularProgram::CanonicalCoefficients& coefficients) {
+    boundary_coefficients =
+        std::vector<RectangularProgram::CanonicalCoefficients>(1, coefficients);
 }

@@ -3,6 +3,8 @@
 #define __CL_ENABLE_EXCEPTIONS
 #include "cl.hpp"
 
+#include "reduce.h"
+
 class RectangularProgram : public cl::Program {
 public:
     typedef enum : cl_int {
@@ -117,7 +119,43 @@ public:
 
     static CondensedNodeStruct condense(const NodeStruct& n);
 
+    struct NotchFilterDescriptor {
+        float gain{0};
+        float centre{0};
+        float Q{0};
+    };
+
+    static BiquadCoefficients get_notch_coefficients(
+        const NotchFilterDescriptor& n, float sr);
+
+    static BiquadCoefficientsArray get_notch_biquads_array(
+        const std::array<NotchFilterDescriptor,
+                         BiquadCoefficientsArray::BIQUAD_SECTIONS>& n,
+        float sr);
+
+    template <int A, int B>
+    static FilterCoefficients<A + B> convolve(const FilterCoefficients<A>& a,
+                                              const FilterCoefficients<B>& b) {
+        auto ret = FilterCoefficients<A + B>{};
+        for (auto i = 0; i != A + 1; ++i) {
+            for (auto j = 0; j != B + 1; ++j) {
+                ret.b[i + j] += a.b[i] * b.b[j];
+                ret.a[i + j] += a.a[i] * b.a[j];
+            }
+        }
+        return ret;
+    }
+
+    static CanonicalCoefficients convolve(const BiquadCoefficientsArray& a);
+    static CanonicalCoefficients get_notch_filter_array(
+        const std::array<NotchFilterDescriptor,
+                         BiquadCoefficientsArray::BIQUAD_SECTIONS>& n,
+        float sr);
+
 private:
     static constexpr int BIQUAD_SECTIONS = BiquadMemoryArray::BIQUAD_SECTIONS;
     static const std::string source;
 };
+
+std::ostream& operator<<(std::ostream& os,
+                         const RectangularProgram::CanonicalCoefficients& n);

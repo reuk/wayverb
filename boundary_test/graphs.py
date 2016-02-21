@@ -20,8 +20,8 @@ def main():
     matplotlib.rcParams.update(pgf_with_rc_fonts)
 
     files = [
-            "/Users/reuben/dev/waveguide/build/windowed_free_field.wav",
-            "/Users/reuben/dev/waveguide/build/windowed_subbed.wav",
+            "/Users/reuben/dev/waveguide/build/boundary_test/windowed_free_field.wav",
+            "/Users/reuben/dev/waveguide/build/boundary_test/windowed_subbed.wav",
             ]
 
     def get_signals(f):
@@ -36,12 +36,14 @@ def main():
     ffts = [np.fft.rfft(i) for i in signals]
     freq = np.fft.rfftfreq(n)
 
-    for fft in ffts:
-        plt.plot(freq, np.abs(fft))
+#    for fft in ffts:
+#        plt.plot(freq, np.abs(fft))
 
-    quot, rem = sig.deconvolve(signals[0], signals[1])
+    div = ffts[1] / ffts[0]
+    plt.plot(freq, np.abs(div))
 
-    plt.plot(freq, np.abs(np.fft.rfft(rem)))
+#    quot, rem = sig.deconvolve(signals[0], signals[1])
+#    plt.plot(freq, np.abs(np.fft.rfft(rem)))
 
     plt.show()
     if render:

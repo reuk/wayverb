@@ -1,6 +1,8 @@
 #include "rectangular_program.h"
+#include "logger.h"
 
 #include <iostream>
+#include <cmath>
 
 RectangularProgram::RectangularProgram(const cl::Context& context,
                                        bool build_immediate)
@@ -11,6 +13,70 @@ RectangularProgram::CondensedNodeStruct RectangularProgram::condense(
     const NodeStruct& n) {
     return CondensedNodeStruct{n.bt | (n.inside ? id_inside : id_none),
                                n.boundary_index};
+}
+
+RectangularProgram::BiquadCoefficients
+RectangularProgram::get_notch_coefficients(const NotchFilterDescriptor& n,
+                                           float sr) {
+    const float A = pow(10.0f, n.gain / 40.0f);
+    const float w0 = 2.0f * M_PI * n.centre / sr;
+    const float cw0 = cos(w0);
+    const float sw0 = sin(w0);
+    const float alpha = sw0 / 2.0f * n.Q;
+    const float a0 = 1 + alpha / A;
+    return RectangularProgram::BiquadCoefficients{
+        {(1 + alpha * A) / a0, (-2 * cw0) / a0, (1 - alpha * A) / a0},
+        {1, (-2 * cw0) / a0, (1 - alpha / A) / a0}};
+}
+
+RectangularProgram::BiquadCoefficientsArray
+RectangularProgram::get_notch_biquads_array(
+    const std::array<NotchFilterDescriptor,
+                     BiquadCoefficientsArray::BIQUAD_SECTIONS>& n,
+    float sr) {
+    RectangularProgram::BiquadCoefficientsArray ret;
+    std::transform(
+        n.begin(),
+        n.end(),
+        std::begin(ret.array),
+        [sr](const auto& i) { return get_notch_coefficients(i, sr); });
+    return ret;
+}
+
+RectangularProgram::CanonicalCoefficients RectangularProgram::convolve(
+    const BiquadCoefficientsArray& a) {
+    std::array<BiquadCoefficients, BiquadCoefficientsArray::BIQUAD_SECTIONS> t;
+    std::copy(std::begin(a.array), std::end(a.array), t.begin());
+    return reduce(t,
+                  [](const auto& i, const auto& j) { return convolve(i, j); });
+}
+
+RectangularProgram::CanonicalCoefficients
+RectangularProgram::get_notch_filter_array(
+    const std::array<NotchFilterDescriptor,
+                     BiquadCoefficientsArray::BIQUAD_SECTIONS>& n,
+    float sr) {
+    return convolve(get_notch_biquads_array(n, sr));
+}
+
+std::ostream& operator<<(std::ostream& os,
+                         const RectangularProgram::CanonicalCoefficients& n) {
+    Bracketer bracketer(os);
+    {
+        to_stream(os, "b: ");
+        Bracketer bracketer(os);
+        for (const auto& i : n.b)
+            to_stream(os, i, "  ");
+    }
+    to_stream(os, "  ");
+    {
+        to_stream(os, "a: ");
+        Bracketer bracketer(os);
+        for (const auto& i : n.a)
+            to_stream(os, i, "  ");
+    }
+    to_stream(os, "  ");
+    return os;
 }
 
 const std::string RectangularProgram::source{

@@ -11,95 +11,29 @@
 #include <array>
 #include <type_traits>
 
-RectangularProgram::BiquadCoefficients get_notch_coefficients(float gain,
-                                                              float centre,
-                                                              float Q,
-                                                              float sr) {
-    const float A = pow(10.0f, gain / 40.0f);
-    const float w0 = 2.0f * M_PI * centre / sr;
-    const float cw0 = cos(w0);
-    const float sw0 = sin(w0);
-    const float alpha = sw0 / 2.0f * Q;
-    const float a0 = 1 + alpha / A;
-    return RectangularProgram::BiquadCoefficients{
-        {(1 + alpha * A) / a0, (-2 * cw0) / a0, (1 - alpha * A) / a0},
-        {1, (-2 * cw0) / a0, (1 - alpha / A) / a0}};
-}
-
-RectangularProgram::BiquadCoefficientsArray get_notch_biquads_array(float sr) {
-    auto engine = std::default_random_engine{std::random_device()()};
-    auto range = std::uniform_real_distribution<cl_float>(-24, -24);
-    auto centres = std::array<
-        float,
-        RectangularProgram::BiquadCoefficientsArray::BIQUAD_SECTIONS>{
-        {45, 90, 180}};
-    RectangularProgram::BiquadCoefficientsArray ret;
-    std::transform(centres.begin(),
-                   centres.end(),
-                   std::begin(ret.array),
-                   [&range, &engine, sr](auto i) {
-                       return get_notch_coefficients(range(engine), i, 1, sr);
-                   });
-    return ret;
-}
-
-template <int A, int B>
-RectangularProgram::FilterCoefficients<A + B> convolve(
-    const RectangularProgram::FilterCoefficients<A>& a,
-    const RectangularProgram::FilterCoefficients<B>& b) {
-    auto ret = RectangularProgram::FilterCoefficients<A + B>{};
-    for (auto i = 0; i != A + 1; ++i) {
-        for (auto j = 0; j != B + 1; ++j) {
-            ret.b[i + j] += a.b[i] * b.b[j];
-            ret.a[i + j] += a.a[i] * b.a[j];
-        }
-    }
-    return ret;
-}
-
-template <size_t I>
-struct Indexer : std::integral_constant<decltype(I), I> {
-    using Next = Indexer<I - 1>;
-};
-
-template <typename Func, typename A, typename T>
-auto reduce(const A& a, const T&, Indexer<0>, const Func& = Func{}) {
-    return a;
-}
-
-template <typename Func, typename A, typename T, typename Ind>
-auto reduce(const A& a, const T& data, Ind i = Ind{}, const Func& f = Func{}) {
-    return reduce(f(a, std::get<i - 1>(data)), data, typename Ind::Next{}, f);
-}
-
-template <typename Func, typename T>
-auto reduce(const T& data, const Func& f = Func()) {
-    return reduce(data.back(), data, Indexer<std::tuple_size<T>() - 1>{}, f);
-}
-
-auto convolve(const RectangularProgram::BiquadCoefficientsArray& a) {
-    std::array<RectangularProgram::BiquadCoefficients,
-               RectangularProgram::BiquadCoefficientsArray::BIQUAD_SECTIONS> t;
-    std::copy(std::begin(a.array), std::end(a.array), t.begin());
-    return reduce(t,
-                  [](const auto& i, const auto& j) { return convolve(i, j); });
-}
-
-auto get_notch_filter_array(float sr) {
-    return convolve(get_notch_biquads_array(sr));
-}
-
 template <typename T>
-std::vector<T> compute_coeffs(int size, float sr) {
+std::vector<T> compute_coeffs(
+    int size,
+    const std::array<
+        RectangularProgram::NotchFilterDescriptor,
+        RectangularProgram::BiquadCoefficientsArray::BIQUAD_SECTIONS>& n,
+    float sr) {
     return std::vector<T>(size);
 }
 
 template <>
 std::vector<RectangularProgram::BiquadCoefficientsArray> compute_coeffs(
-    int size, float sr) {
+    int size,
+    const std::array<
+        RectangularProgram::NotchFilterDescriptor,
+        RectangularProgram::BiquadCoefficientsArray::BIQUAD_SECTIONS>& n,
+    float sr) {
     auto ret = std::vector<RectangularProgram::BiquadCoefficientsArray>(size);
-    std::generate(
-        ret.begin(), ret.end(), [sr] { return get_notch_biquads_array(sr); });
+    std::generate(ret.begin(),
+                  ret.end(),
+                  [&n, sr] {
+                      return RectangularProgram::get_notch_biquads_array(n, sr);
+                  });
     return ret;
 }
 
@@ -108,10 +42,17 @@ using FC = RectangularProgram::FilterCoefficients<
     RectangularProgram::BiquadCoefficients::ORDER>;
 
 template <>
-std::vector<FC> compute_coeffs(int size, float sr) {
+std::vector<FC> compute_coeffs(
+    int size,
+    const std::array<
+        RectangularProgram::NotchFilterDescriptor,
+        RectangularProgram::BiquadCoefficientsArray::BIQUAD_SECTIONS>& n,
+    float sr) {
     auto ret = std::vector<FC>(size);
     std::generate(
-        ret.begin(), ret.end(), [sr] { return get_notch_filter_array(sr); });
+        ret.begin(),
+        ret.end(),
+        [&n, sr] { return RectangularProgram::get_notch_filter_array(n, sr); });
     return ret;
 }
 
@@ -197,7 +138,14 @@ public:
     static constexpr int size{1 << 8};
     static constexpr int sr{2000};
     std::vector<Memory> memory{size, Memory{}};
-    std::vector<Coeffs> coeffs{compute_coeffs<Coeffs>(size, sr)};
+    std::array<RectangularProgram::NotchFilterDescriptor,
+               RectangularProgram::BiquadCoefficientsArray::BIQUAD_SECTIONS>
+        notches{{
+            RectangularProgram::NotchFilterDescriptor{-12, 45, 1},
+            RectangularProgram::NotchFilterDescriptor{-12, 90, 1},
+            RectangularProgram::NotchFilterDescriptor{-12, 180, 1},
+        }};
+    std::vector<Coeffs> coeffs{compute_coeffs<Coeffs>(size, notches, sr)};
     cl::Buffer cl_memory{context, memory.begin(), memory.end(), false};
     cl::Buffer cl_coeffs{context, coeffs.begin(), coeffs.end(), false};
     std::vector<std::vector<cl_float>> input{Generator::compute_input(size)};

@@ -201,6 +201,10 @@ public:
         return run(e, GaussianFunction(), o, steps, sr);
     }
 
+    cl::CommandQueue& get_queue() const {
+        return queue;
+    }
+
 private:
     cl::CommandQueue& queue;
     kernel_type kernel;
@@ -238,6 +242,9 @@ public:
     const RectangularMesh& get_mesh() const;
     bool inside(size_type index) const override;
 
+    void set_boundary_coefficient(
+        const RectangularProgram::CanonicalCoefficients& coefficients);
+
 private:
     RectangularWaveguide(const ProgramType& program,
                          cl::CommandQueue& queue,
@@ -251,12 +258,12 @@ private:
     void setup_boundary_data_buffer(cl::CommandQueue& queue, cl::Buffer& b) {
         std::vector<RectangularProgram::BoundaryDataArray<I>> bda(
             mesh.compute_num_boundary<I>());
-        //  TODO set boundary coefficient index properly here
         std::generate(bda.begin(),
                       bda.end(),
                       [] {
                           auto ret = RectangularProgram::BoundaryDataArray<I>{};
                           for (auto& i : ret.array) {
+                              //  TODO set this properly
                               i.coefficient_index = 0;
                           }
                           return ret;
@@ -272,7 +279,10 @@ private:
     cl::Buffer boundary_data_1_buffer;
     cl::Buffer boundary_data_2_buffer;
     cl::Buffer boundary_data_3_buffer;
+    std::vector<RectangularProgram::CanonicalCoefficients>
+        boundary_coefficients{1, RectangularProgram::CanonicalCoefficients{}};
     cl::Buffer boundary_coefficients_buffer;
+    cl::Buffer out_boundary_coefficients_buffer;
 
     Eigen::MatrixXf transform_matrix;
 
