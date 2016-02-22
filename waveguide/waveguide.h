@@ -282,7 +282,7 @@ private:
     std::vector<RectangularProgram::CanonicalCoefficients>
         boundary_coefficients{1, RectangularProgram::CanonicalCoefficients{}};
     cl::Buffer boundary_coefficients_buffer;
-    cl::Buffer out_boundary_coefficients_buffer;
+    cl::Buffer debug_buffer;
 
     Eigen::MatrixXf transform_matrix;
 

@@ -104,6 +104,7 @@ public:
                                cl_float,
                                cl_float,
                                cl_ulong,
+                               cl::Buffer,
                                cl::Buffer>(*this, "condensed_waveguide");
     }
 

@@ -177,7 +177,10 @@ RectangularWaveguide::RectangularWaveguide(
               program.getInfo<CL_PROGRAM_CONTEXT>(),
               CL_MEM_READ_WRITE,
               sizeof(RectangularProgram::CanonicalCoefficients) *
-                  mesh.compute_num_surface()) {
+                  mesh.compute_num_surface())
+        , debug_buffer(program.getInfo<CL_PROGRAM_CONTEXT>(),
+                       CL_MEM_READ_WRITE,
+                       sizeof(cl_float) * nodes.size()) {
 }
 
 RectangularWaveguide::RectangularWaveguide(const RectangularProgram& program,
@@ -229,6 +232,10 @@ RunStepResult RectangularWaveguide::run_step(size_type o,
     std::vector<cl_float> out(1);
     std::vector<cl_float3> current_velocity(1);
 
+    //  TODO remove this
+    std::vector<cl_float> debug(nodes, 0);
+    cl::copy(queue, debug.begin(), debug.end(), debug_buffer);
+
     kernel(cl::EnqueueArgs(queue, cl::NDRange(nodes)),
            current,
            previous,
@@ -243,7 +250,8 @@ RunStepResult RectangularWaveguide::run_step(size_type o,
            mesh.get_spacing(),
            period,
            o,
-           output);
+           output,
+           debug_buffer);
 
     cl::copy(queue, output, out.begin(), out.end());
     cl::copy(queue,
@@ -251,6 +259,7 @@ RunStepResult RectangularWaveguide::run_step(size_type o,
              current_velocity.begin(),
              current_velocity.end());
 
+    //  TODO remove this bit
     std::vector<RectangularProgram::BoundaryDataArray1> bda(
         mesh.compute_num_boundary<1>());
     cl::copy(queue, boundary_data_1_buffer, bda.begin(), bda.end());
@@ -261,6 +270,15 @@ RunStepResult RectangularWaveguide::run_step(size_type o,
                 std::begin(mem), std::end(mem), [](auto x) { return x; })) {
             Logger::log_err("filter did something!");
         }
+    }
+
+    //  TODO remove this bit too
+    cl::copy(queue, debug_buffer, debug.begin(), debug.end());
+    auto it = std::find_if(
+        std::begin(debug), std::end(debug), [](auto x) { return x; });
+    if (it != debug.end()) {
+        Logger::log_err(
+            "nonzero debug value: ", *it, " at index: ", it - debug.begin());
     }
 
     auto velocity = to_vec3f(current_velocity.front());

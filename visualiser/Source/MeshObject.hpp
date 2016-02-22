@@ -24,28 +24,26 @@ public:
                        nodes.end(),
                        c.begin(),
                        [](const auto & i) {
-                           /*
-                               switch (i.bt) {
-                                   case RectangularProgram::id_none:
-                                   case RectangularProgram::id_inside:
-                                       return glm::vec4(0, 0, 0, 0);
-                                   case RectangularProgram::id_nx:
-                                       return glm::vec4(1, 0, 0, 1);
-                                   case RectangularProgram::id_px:
-                                       return glm::vec4(0, 1, 1, 1);
-                                   case RectangularProgram::id_ny:
-                                       return glm::vec4(0, 1, 0, 1);
-                                   case RectangularProgram::id_py:
-                                       return glm::vec4(1, 0, 1, 1);
-                                   case RectangularProgram::id_nz:
-                                       return glm::vec4(0, 0, 1, 1);
-                                   case RectangularProgram::id_pz:
-                                       return glm::vec4(1, 1, 0, 1);
+                           switch (i.bt) {
+                               case RectangularProgram::id_none:
+                               case RectangularProgram::id_inside:
+                                   return glm::vec4(0, 0, 0, 0);
+                               case RectangularProgram::id_nx:
+                                   return glm::vec4(1, 0, 0, 1);
+                               case RectangularProgram::id_px:
+                                   return glm::vec4(0, 1, 1, 1);
+                               case RectangularProgram::id_ny:
+                                   return glm::vec4(0, 1, 0, 1);
+                               case RectangularProgram::id_py:
+                                   return glm::vec4(1, 0, 1, 1);
+                               case RectangularProgram::id_nz:
+                                   return glm::vec4(0, 0, 1, 1);
+                               case RectangularProgram::id_pz:
+                                   return glm::vec4(1, 1, 0, 1);
 
-                                   default:
-                                       return glm::vec4(1, 1, 1, 1);
-                               }
-                               */
+                               default:
+                                   return glm::vec4(1, 1, 1, 1);
+                           }
                            return glm::vec4(0, 0, 0, 0);
                        });
 

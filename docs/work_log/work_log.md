@@ -335,7 +335,7 @@ TODO
 
 * think about comparing the two models
 
-* extract boundary frequency curve from model somehow
+* extract boundary frequency curve from input files somehow
 
 digital impedance filters
 =========================
@@ -356,3 +356,8 @@ digital impedance filters
 * convert the reflectance filter to an impedance filter
     * Ew(z) = (1 + R0(z)) / (1 - R0(z))
     * oh look, another filter
+
+testing scratchpad
+==================
+
+filters appear to not be used - try looking at filter inputs
