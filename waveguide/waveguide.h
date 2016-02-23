@@ -263,6 +263,8 @@ private:
                       [] {
                           auto ret = RectangularProgram::BoundaryDataArray<I>{};
                           for (auto& i : ret.array) {
+                              i.filter_memory =
+                                  RectangularProgram::CanonicalMemory{};
                               //  TODO set this properly
                               i.coefficient_index = 0;
                           }

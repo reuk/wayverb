@@ -361,3 +361,5 @@ testing scratchpad
 ==================
 
 filters appear to not be used - try looking at filter inputs
+
+filter inputs sometimes go to NaN

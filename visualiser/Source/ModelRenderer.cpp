@@ -6,6 +6,7 @@
 #include "conversions.h"
 #include "cl_common.h"
 #include "tetrahedral_program.h"
+#include "azimuth_elevation.h"
 
 RaytraceObject::RaytraceObject(const GenericShader &shader,
                                const RaytracerResults &results)
@@ -198,9 +199,21 @@ void DrawableScene::init_waveguide(const SceneData &scene_data,
         get_program<Waveguide::ProgramType>(context, device);
     auto w = std::make_unique<Waveguide>(
         waveguide_program, queue, boundary, cc.get_divisions(), cc.get_mic());
-    auto corrected_source = cc.get_source();
+    auto corrected_source_index = w->get_index_for_coordinate(cc.get_source());
+    auto corrected_source = w->get_coordinate_for_index(corrected_source_index);
+
+    auto coeffs = RectangularProgram::get_notch_filter_array(
+        {{
+            RectangularProgram::NotchFilterDescriptor{-12, 45, 1},
+            RectangularProgram::NotchFilterDescriptor{-12, 90, 1},
+            RectangularProgram::NotchFilterDescriptor{-12, 180, 1},
+        }},
+        cc.get_waveguide_sample_rate());
+
+    w->set_boundary_coefficient(coeffs);
 
     w->init(corrected_source, GaussianFunction(0.1), 0, 0);
+    //    w->init(corrected_source, BasicPowerFunction(), 0, 0);
 
     {
         std::lock_guard<std::mutex> lck(mut);
@@ -312,7 +325,6 @@ SceneRenderer::~SceneRenderer() {
 
 void SceneRenderer::load_from_file_package(const FilePackage &fp) {
     std::lock_guard<std::mutex> lck(mut);
-
     SceneData scene_data(fp.get_object().getFullPathName().toStdString(),
                          fp.get_material().getFullPathName().toStdString());
     CombinedConfig cc;
@@ -322,7 +334,8 @@ void SceneRenderer::load_from_file_package(const FilePackage &fp) {
     }
 
     cc.get_rays() = 1 << 5;
-    cc.get_filter_frequency() = 2000;
+    cc.get_filter_frequency() = 4000;
+    cc.get_oversample_ratio() = 1;
 
     scene = std::make_unique<DrawableScene>(*shader, scene_data, cc);
 

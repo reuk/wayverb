@@ -66,6 +66,10 @@ def impedance_filter(c):
     summed = [a + b for a, b in zip(den, num)]
     subbed = [a - b for a, b in zip(den, num)]
 
+    norm = 1 / subbed[0]
+    summed = [i * norm for i in summed]
+    subbed = [i * norm for i in subbed]
+
     return [summed, subbed]
 
 def eighth_order_step(i, m, c):

@@ -87,6 +87,8 @@ public:
                        color_storage.begin(),
                        [this](auto i) {
                            auto p = i * amp;
+                           if (std::isnan(p))
+                               return glm::vec4(1, 1, 1, 1);
                            return p > 0 ? glm::vec4(0, p, p, p)
                                         : glm::vec4(-p, 0, 0, -p);
                        });

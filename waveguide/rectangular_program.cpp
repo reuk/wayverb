@@ -79,6 +79,22 @@ std::ostream& operator<<(std::ostream& os,
     return os;
 }
 
+RectangularProgram::CanonicalCoefficients
+RectangularProgram::to_impedance_coefficients(const CanonicalCoefficients& c) {
+    CanonicalCoefficients ret;
+    for (auto i = 0; i != CanonicalCoefficients::ORDER + 1; ++i) {
+        ret.b[i] = c.b[i] + c.a[i];
+        ret.a[i] = c.b[i] - c.a[i];
+    }
+    auto norm = 1 / ret.a[0];
+    for (auto i = 0; i != CanonicalCoefficients::ORDER + 1; ++i) {
+        ret.b[i] *= norm;
+        ret.a[i] *= norm;
+    }
+
+    return ret;
+}
+
 const std::string RectangularProgram::source{
     "#define PORTS " + std::to_string(PORTS) + "\n" +
     "#define BIQUAD_SECTIONS " + std::to_string(BIQUAD_SECTIONS) + "\n" +
@@ -89,8 +105,8 @@ const std::string RectangularProgram::source{
     "#define DIAGNOSTIC\n"
 #endif
     R"(
-#define COURANT (1.0 / sqrt(3.0))
-#define COURANT_SQ (1.0 / 3.0)
+#define COURANT (1.0f / sqrt(3.0f))
+#define COURANT_SQ (1.0f / 3.0f)
 
 #define NO_NEIGHBOR (~(uint)0)
 
@@ -421,18 +437,17 @@ float sum_on_plane(const global float* current,
                    const global CondensedNode* node,
                    int3 locator,
                    int3 dimensions,
-                   InnerNodeDirections1 pd);
+                   InnerNodeDirections1 pd, global float * debug_buffer);
 float sum_on_plane(const global float* current,
                    const global CondensedNode* node,
                    int3 locator,
                    int3 dimensions,
-                   InnerNodeDirections1 pd) {
+                   InnerNodeDirections1 pd, global float * debug_buffer) {
     float ret = 0;
     PlanePorts on_boundary = on_boundary_1(pd);
     for (int i = 0; i != 4; ++i) {
         uint index = neighbor_index(locator, dimensions, on_boundary.array[i]);
         if (index == NO_NEIGHBOR) {
-            //  TODO error!
         }
         ret += current[index];
     }
@@ -488,13 +503,8 @@ void ghost_point_pressure_update(
     const global FilterCoefficientsCanonical* boundary,
     PortDirection inner_direction, global float * debug_buffer) {
     uint inner_index = neighbor_index(locator, dimensions, inner_direction);
-    /*
-    if (inner_index == NO_NEIGHBOR) {
-        //  TODO error!
-    }
-    */
+    if (inner_index == NO_NEIGHBOR) { }
     float inner_pressure = current[inner_index];
-    debug_buffer[get_global_id(0)] = inner_pressure;
 
     float filt_state = boundary_data->filter_memory.array[0];
 
@@ -508,7 +518,7 @@ void ghost_point_pressure_update(
     //  now we can update the filter at this boundary node
     float filter_input = inner_pressure - ret;
     filter_step_canonical(
-        filter_input, &boundary_data->filter_memory, boundary);
+        filter_input, &(boundary_data->filter_memory), boundary);
 }
 
 //----------------------------------------------------------------------------//
@@ -517,25 +527,25 @@ float get_summed_surrounding_1(InnerNodeDirections1 i,
                                const global float* current,
                                const global CondensedNode* boundary_node,
                                int3 locator,
-                               int3 dimensions);
+                               int3 dimensions, global float * debug_buffer);
 float get_summed_surrounding_1(InnerNodeDirections1 i,
                                const global float* current,
                                const global CondensedNode* boundary_node,
                                int3 locator,
-                               int3 dimensions) {
-    return sum_on_plane(current, boundary_node, locator, dimensions, i);
+                               int3 dimensions, global float * debug_buffer) {
+    return sum_on_plane(current, boundary_node, locator, dimensions, i, debug_buffer);
 }
 
 float get_summed_surrounding_2(InnerNodeDirections2 i,
                                const global float* current,
                                const global CondensedNode* boundary_node,
                                int3 locator,
-                               int3 dimensions);
+                               int3 dimensions, global float * debug_buffer);
 float get_summed_surrounding_2(InnerNodeDirections2 i,
                                const global float* current,
                                const global CondensedNode* boundary_node,
                                int3 locator,
-                               int3 dimensions) {
+                               int3 dimensions, global float * debug_buffer) {
     return sum_on_axis(current, boundary_node, locator, dimensions, i);
 }
 
@@ -543,12 +553,12 @@ float get_summed_surrounding_3(InnerNodeDirections3 i,
                                const global float* current,
                                const global CondensedNode* boundary_node,
                                int3 locator,
-                               int3 dimensions);
+                               int3 dimensions, global float * debug_buffer);
 float get_summed_surrounding_3(InnerNodeDirections3 i,
                                const global float* current,
                                const global CondensedNode* boundary_node,
                                int3 locator,
-                               int3 dimensions) {
+                               int3 dimensions, global float * debug_buffer) {
     return 0;
 }
 
@@ -560,13 +570,13 @@ float get_summed_surrounding_3(InnerNodeDirections3 i,
         const global CondensedNode* boundary_node,                      \
         int3 locator,                                                   \
         int3 dim,                                                       \
-        int bt);                                                        \
+        int bt, global float * debug_buffer);                           \
     float CAT(get_current_surrounding_weighting_, dimensions)(          \
         const global float* current,                                    \
         const global CondensedNode* boundary_node,                      \
         int3 locator,                                                   \
         int3 dim,                                                       \
-        int bt) {                                                       \
+        int bt, global float * debug_buffer) {                          \
         CAT(InnerNodeDirections, dimensions)                            \
         ind = CAT(get_inner_node_directions_, dimensions)(bt);          \
         float sum = 0;                                                  \
@@ -577,7 +587,7 @@ float get_summed_surrounding_3(InnerNodeDirections3 i,
         }                                                               \
         return COURANT_SQ *                                             \
                (sum + CAT(get_summed_surrounding_, dimensions)(         \
-                          ind, current, boundary_node, locator, dim));  \
+                          ind, current, boundary_node, locator, dim, debug_buffer));  \
     }
 
 GET_CURRENT_SURROUNDING_WEIGHTING_TEMPLATE(1);
@@ -670,7 +680,7 @@ GET_COEFF_WEIGHTING_TEMPLATE(3);
         global float * debug_buffer) {\
         float current_surrounding_weighting =                             \
             CAT(get_current_surrounding_weighting_, dimensions)(          \
-                current, boundary_node, locator, dim, bt);                \
+                current, boundary_node, locator, dim, bt, debug_buffer);  \
         float current_boundary_weighting =                                \
             get_current_boundary_weighting(current);                      \
         float filter_weighting = CAT(get_filter_weighting_, dimensions)(  \
@@ -697,7 +707,7 @@ GET_COEFF_WEIGHTING_TEMPLATE(3);
                                         dim,                              \
                                         ret,                              \
                                         prev_pressure,                    \
-                                        &bda->array[i],                   \
+                                        &(bda->array[i]),                   \
                                         boundary,                         \
                                         inner_node_directions.array[i],   \
                                         debug_buffer);                    \
@@ -798,6 +808,7 @@ kernel void condensed_waveguide(const global float* current,
         //  instantaneous intensity for mic modelling
         //
 
+        //  TODO (maybe) move as much of this as possible outside kernel
         float differences[PORTS] = {0};
         for (int i = 0; i != PORTS; ++i) {
             uint port_index = neighbor_index(locator, dimensions, i);
@@ -819,7 +830,7 @@ kernel void condensed_waveguide(const global float* current,
         }
 
         //  muliply by -1/ambient_density
-        float ambient_density = 1.225;
+        float ambient_density = 1.225f;
         multiplied /= -ambient_density;
 
         //  numerical integration

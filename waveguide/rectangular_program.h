@@ -5,6 +5,8 @@
 
 #include "reduce.h"
 
+#include <cassert>
+
 class RectangularProgram : public cl::Program {
 public:
     typedef enum : cl_int {
@@ -85,27 +87,34 @@ public:
     using BoundaryDataArray2 = BoundaryDataArray<2>;
     using BoundaryDataArray3 = BoundaryDataArray<3>;
 
+    static CanonicalCoefficients to_impedance_coefficients(
+        const CanonicalCoefficients& c);
+
     static constexpr int PORTS = NodeStruct::PORTS;
 
     RectangularProgram(const cl::Context& context,
                        bool build_immediate = false);
 
     auto get_kernel() const {
-        return cl::make_kernel<cl::Buffer,
-                               cl::Buffer,
-                               cl::Buffer,
-                               cl_int3,
-                               cl::Buffer,
-                               cl::Buffer,
-                               cl::Buffer,
-                               cl::Buffer,
-                               cl::Buffer,
-                               cl::Buffer,
-                               cl_float,
-                               cl_float,
-                               cl_ulong,
-                               cl::Buffer,
-                               cl::Buffer>(*this, "condensed_waveguide");
+        int error;
+        auto ret =
+            cl::make_kernel<cl::Buffer,
+                            cl::Buffer,
+                            cl::Buffer,
+                            cl_int3,
+                            cl::Buffer,
+                            cl::Buffer,
+                            cl::Buffer,
+                            cl::Buffer,
+                            cl::Buffer,
+                            cl::Buffer,
+                            cl_float,
+                            cl_float,
+                            cl_ulong,
+                            cl::Buffer,
+                            cl::Buffer>(*this, "condensed_waveguide", &error);
+        assert(error == CL_SUCCESS);
+        return ret;
     }
 
     auto get_filter_test_kernel() const {

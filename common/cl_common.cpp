@@ -16,7 +16,7 @@ cl::Context get_context() {
     };
 
     return cl::Context(CL_DEVICE_TYPE_GPU, cps);
-    //    return cl::Context(CL_DEVICE_TYPE_CPU, cps);
+    // return cl::Context(CL_DEVICE_TYPE_CPU, cps);
 }
 
 cl::Device get_device(const cl::Context& context) {
@@ -29,6 +29,7 @@ cl::Device get_device(const cl::Context& context) {
     }
 
     auto device = devices.back();
+    // auto device = devices.front();
 
     Logger::log("## used device:");
     print_device_info(device);

@@ -144,43 +144,44 @@ RectangularWaveguide::RectangularWaveguide(
     const RectangularProgram& program,
     cl::CommandQueue& queue,
     const RectangularMesh& mesh,
-    std::vector<RectangularMesh::CondensedNode> nodes)
-        : Waveguide<RectangularProgram>(program, queue, mesh.get_nodes().size())
-        , mesh(mesh)
+    std::vector<RectangularMesh::CondensedNode> nodes) try : Waveguide
+    <RectangularProgram>(program, queue, mesh.get_nodes().size()), mesh(mesh)
         //    TODO this seems like it's asking for problems
-        , node_buffer(program.getInfo<CL_PROGRAM_CONTEXT>(),
-                      nodes.begin(),
-                      nodes.end(),
-                      false)
-        , transform_buffer(program.getInfo<CL_PROGRAM_CONTEXT>(),
-                           CL_MEM_READ_WRITE,
-                           sizeof(cl_float) * 18)
-        , velocity_buffer(program.getInfo<CL_PROGRAM_CONTEXT>(),
-                          CL_MEM_READ_WRITE,
-                          sizeof(cl_float3) * 1)
-        , boundary_data_1_buffer(
-              program.getInfo<CL_PROGRAM_CONTEXT>(),
-              CL_MEM_READ_WRITE,
-              sizeof(RectangularProgram::BoundaryDataArray1) *
-                  mesh.compute_num_boundary<1>())
-        , boundary_data_2_buffer(
-              program.getInfo<CL_PROGRAM_CONTEXT>(),
-              CL_MEM_READ_WRITE,
-              sizeof(RectangularProgram::BoundaryDataArray2) *
-                  mesh.compute_num_boundary<2>())
-        , boundary_data_3_buffer(
-              program.getInfo<CL_PROGRAM_CONTEXT>(),
-              CL_MEM_READ_WRITE,
-              sizeof(RectangularProgram::BoundaryDataArray3) *
-                  mesh.compute_num_boundary<3>())
-        , boundary_coefficients_buffer(
-              program.getInfo<CL_PROGRAM_CONTEXT>(),
-              CL_MEM_READ_WRITE,
-              sizeof(RectangularProgram::CanonicalCoefficients) *
-                  mesh.compute_num_surface())
-        , debug_buffer(program.getInfo<CL_PROGRAM_CONTEXT>(),
-                       CL_MEM_READ_WRITE,
-                       sizeof(cl_float) * nodes.size()) {
+        ,
+        node_buffer(program.getInfo<CL_PROGRAM_CONTEXT>(),
+                    nodes.begin(),
+                    nodes.end(),
+                    false),
+        transform_buffer(program.getInfo<CL_PROGRAM_CONTEXT>(),
+                         CL_MEM_READ_WRITE,
+                         sizeof(cl_float) * 18),
+        velocity_buffer(program.getInfo<CL_PROGRAM_CONTEXT>(),
+                        CL_MEM_READ_WRITE,
+                        sizeof(cl_float3) * 1),
+        boundary_data_1_buffer(program.getInfo<CL_PROGRAM_CONTEXT>(),
+                               CL_MEM_READ_WRITE,
+                               sizeof(RectangularProgram::BoundaryDataArray1) *
+                                   mesh.compute_num_boundary<1>()),
+        boundary_data_2_buffer(program.getInfo<CL_PROGRAM_CONTEXT>(),
+                               CL_MEM_READ_WRITE,
+                               sizeof(RectangularProgram::BoundaryDataArray2) *
+                                   mesh.compute_num_boundary<2>()),
+        boundary_data_3_buffer(program.getInfo<CL_PROGRAM_CONTEXT>(),
+                               CL_MEM_READ_WRITE,
+                               sizeof(RectangularProgram::BoundaryDataArray3) *
+                                   mesh.compute_num_boundary<3>()),
+        boundary_coefficients_buffer(
+            program.getInfo<CL_PROGRAM_CONTEXT>(),
+            CL_MEM_READ_WRITE,
+            sizeof(RectangularProgram::CanonicalCoefficients) *
+                mesh.compute_num_surface()),
+        debug_buffer(program.getInfo<CL_PROGRAM_CONTEXT>(),
+                     CL_MEM_READ_WRITE,
+                     sizeof(cl_float) * nodes.size()) {
+    }
+catch (const cl::Error& e) {
+    ::Logger::log_err(e.what());
+    throw;
 }
 
 RectangularWaveguide::RectangularWaveguide(const RectangularProgram& program,
@@ -259,26 +260,52 @@ RunStepResult RectangularWaveguide::run_step(size_type o,
              current_velocity.begin(),
              current_velocity.end());
 
-    //  TODO remove this bit
-    std::vector<RectangularProgram::BoundaryDataArray1> bda(
-        mesh.compute_num_boundary<1>());
-    cl::copy(queue, boundary_data_1_buffer, bda.begin(), bda.end());
+    {
+        std::vector<RectangularProgram::BoundaryDataArray1> bda(
+            mesh.compute_num_boundary<1>());
+        cl::copy(queue, boundary_data_1_buffer, bda.begin(), bda.end());
+        Logger::log_err("memory index 0: ", bda[0]);
+        auto it = std::find_if(
+            bda.begin(),
+            bda.end(),
+            [](const auto& i) {
+                return std::any_of(std::begin(i.array[0].filter_memory.array),
+                                   std::end(i.array[0].filter_memory.array),
+                                   [](auto i) { return std::isnan(i); });
+            });
 
-    for (const auto& i : bda) {
-        const auto& mem = i.array[0].filter_memory.array;
-        if (std::any_of(
-                std::begin(mem), std::end(mem), [](auto x) { return x; })) {
-            Logger::log_err("filter did something!");
+        if (it != bda.end()) {
+            Logger::log_err("nan filter memory value at index: ",
+                            it - bda.begin());
+            Logger::log_err("memory: ", *it);
         }
     }
 
-    //  TODO remove this bit too
-    cl::copy(queue, debug_buffer, debug.begin(), debug.end());
-    auto it = std::find_if(
-        std::begin(debug), std::end(debug), [](auto x) { return x; });
-    if (it != debug.end()) {
-        Logger::log_err(
-            "nonzero debug value: ", *it, " at index: ", it - debug.begin());
+    {
+        //  TODO remove this bit too
+        cl::copy(queue, debug_buffer, debug.begin(), debug.end());
+        auto it = std::find_if(
+            std::begin(debug), std::end(debug), [](auto x) { return x; });
+        if (it != debug.end()) {
+            Logger::log_err("nonzero debug value: ",
+                            *it,
+                            " at index: ",
+                            it - debug.begin());
+        }
+    }
+
+    {
+        //  TODO remove this bit too
+        std::vector<cl_float> ret(nodes, 0);
+        cl::copy(queue, previous, ret.begin(), ret.end());
+        auto is_nan = std::find_if(
+            ret.begin(), ret.end(), [](auto i) { return std::isnan(i); });
+        if (is_nan != ret.end()) {
+            Logger::log_err("nan pressure value: ",
+                            *is_nan,
+                            " at index: ",
+                            is_nan - ret.begin());
+        }
     }
 
     auto velocity = to_vec3f(current_velocity.front());

@@ -116,8 +116,8 @@ std::vector<float> run_simulation(const cl::Context& context,
             RectangularProgram::NotchFilterDescriptor{-12, 180, 1},
         }},
         config.get_waveguide_sample_rate());
-
-    Logger::log_err("coefficients: ", coeffs);
+//    coeffs = RectangularProgram::to_impedance_coefficients(coeffs);
+    Logger::log_err("coeffs: ", coeffs);
 
     waveguide.set_boundary_coefficient(coeffs);
 
@@ -166,6 +166,12 @@ int main(int argc, char** argv) {
 
     auto context = get_context();
     auto device = get_device(context);
+
+    auto available = device.getInfo<CL_DEVICE_AVAILABLE>();
+    if (! available) {
+        Logger::log_err("opencl device is not available!");
+    }
+
     auto queue = cl::CommandQueue(context, device);
 
     //  set room size based on desired number of nodes
