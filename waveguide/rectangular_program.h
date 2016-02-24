@@ -24,24 +24,24 @@ public:
     struct __attribute__((aligned(8))) NodeStruct final {
         static constexpr int PORTS{6};
         static constexpr cl_uint NO_NEIGHBOR{~cl_uint{0}};
-        cl_uint ports[PORTS];
-        cl_float3 position;
-        cl_bool inside;
-        cl_int bt;
-        cl_uint boundary_index;
+        cl_uint ports[PORTS]{};
+        cl_float3 position{};
+        cl_bool inside{};
+        cl_int bt{};
+        cl_uint boundary_index{};
     };
 
     struct __attribute__((aligned(8))) CondensedNodeStruct final {
         static constexpr int PORTS{6};
         static constexpr cl_uint NO_NEIGHBOR{~cl_uint{0}};
-        cl_int bt;
-        cl_uint boundary_index;
+        cl_int bt{};
+        cl_uint boundary_index{};
     };
 
     template <int O>
     struct FilterMemory final {
         static constexpr int ORDER = O;
-        cl_float array[ORDER];
+        cl_float array[ORDER]{};
     };
 
     using BiquadMemory = FilterMemory<2>;
@@ -49,21 +49,21 @@ public:
     template <int O>
     struct FilterCoefficients final {
         static constexpr int ORDER = O;
-        cl_float b[ORDER + 1];
-        cl_float a[ORDER + 1];
+        cl_float b[ORDER + 1]{};
+        cl_float a[ORDER + 1]{};
     };
 
     using BiquadCoefficients = FilterCoefficients<2>;
 
     struct __attribute__((aligned(8))) BiquadMemoryArray final {
         static constexpr int BIQUAD_SECTIONS{3};
-        BiquadMemory array[BIQUAD_SECTIONS];
+        BiquadMemory array[BIQUAD_SECTIONS]{};
     };
 
     struct __attribute__((aligned(8))) BiquadCoefficientsArray final {
         static constexpr int BIQUAD_SECTIONS =
             BiquadMemoryArray::BIQUAD_SECTIONS;
-        BiquadCoefficients array[BIQUAD_SECTIONS];
+        BiquadCoefficients array[BIQUAD_SECTIONS]{};
     };
 
     using CanonicalMemory =
@@ -73,14 +73,14 @@ public:
                            BiquadCoefficientsArray::BIQUAD_SECTIONS>;
 
     struct BoundaryData final {
-        CanonicalMemory filter_memory;
-        cl_int coefficient_index;
+        CanonicalMemory filter_memory{};
+        cl_int coefficient_index{};
     };
 
     template <int D>
     struct __attribute__((aligned(8))) BoundaryDataArray final {
         static constexpr int DIMENSIONS{D};
-        BoundaryData array[DIMENSIONS];
+        BoundaryData array[DIMENSIONS]{};
     };
 
     using BoundaryDataArray1 = BoundaryDataArray<1>;

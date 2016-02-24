@@ -363,3 +363,37 @@ testing scratchpad
 filters appear to not be used - try looking at filter inputs
 
 filter inputs sometimes go to NaN
+
+reading bad memory somewhere, not sure how to find where
+
+try viewing preprocessor output?
+
+news
+====
+
+finished implementing, refactoring equations from the paper - buggy!
+
+looked at memory requirements of 3d paper
+
+quartered memory requirement of node storage in the rectangular mesh
+
+set up python script to replicate testing procedure from the paper (I think)
+
+emailed the paper author to ask about testing simulation size
+
+still to do:
+    fix the bad memory bug
+        debugging support is horrible
+        I ideally would like to compile for the CPU and then valgrind it
+        my kernel will only compile for the dedicated graphics
+            intel compiler for the integrated graphics segfaults for no
+                obvious reason
+            intel compiler for the CPU quits with an actual error message, but
+                not a helpful one - basically just 'I got stuck building
+                an element'
+
+    prove that the implementation is correct
+
+    sort file loader so that it loads info from models appropriately
+
+

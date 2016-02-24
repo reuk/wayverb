@@ -261,10 +261,8 @@ private:
         std::generate(bda.begin(),
                       bda.end(),
                       [] {
-                          auto ret = RectangularProgram::BoundaryDataArray<I>{};
+                          RectangularProgram::BoundaryDataArray<I> ret{};
                           for (auto& i : ret.array) {
-                              i.filter_memory =
-                                  RectangularProgram::CanonicalMemory{};
                               //  TODO set this properly
                               i.coefficient_index = 0;
                           }
@@ -319,6 +317,10 @@ private:
     TetrahedralWaveguide(const ProgramType& program,
                          cl::CommandQueue& queue,
                          const TetrahedralMesh& mesh);
+    TetrahedralWaveguide(const ProgramType& program,
+                         cl::CommandQueue& queue,
+                         const TetrahedralMesh& mesh,
+                         std::vector<TetrahedralMesh::Node> nodes);
 
     TetrahedralMesh mesh;
     cl::Buffer node_buffer;

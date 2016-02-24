@@ -54,16 +54,20 @@ void TetrahedralWaveguide::setup(cl::CommandQueue& queue,
 TetrahedralWaveguide::TetrahedralWaveguide(const TetrahedralProgram& program,
                                            cl::CommandQueue& queue,
                                            const TetrahedralMesh& mesh)
+        : TetrahedralWaveguide(program, queue, mesh, mesh.get_nodes()) {
+}
+
+TetrahedralWaveguide::TetrahedralWaveguide(
+    const TetrahedralProgram& program,
+    cl::CommandQueue& queue,
+    const TetrahedralMesh& mesh,
+    std::vector<TetrahedralMesh::Node> nodes)
         : Waveguide<TetrahedralProgram>(program, queue, mesh.get_nodes().size())
         , mesh(mesh)
-        //    TODO this seems like it's asking for problems
-        , node_buffer(
-              program.getInfo<CL_PROGRAM_CONTEXT>(),
-              const_cast<TetrahedralMesh::Node*>(this->mesh.get_nodes().data()),
-              const_cast<TetrahedralMesh::Node*>(
-                  this->mesh.get_nodes().data()) +
-                  this->mesh.get_nodes().size(),
-              true)
+        , node_buffer(program.getInfo<CL_PROGRAM_CONTEXT>(),
+                      nodes.begin(),
+                      nodes.end(),
+                      false)
         , transform_buffer(program.getInfo<CL_PROGRAM_CONTEXT>(),
                            CL_MEM_READ_WRITE,
                            sizeof(cl_float) * 12)
@@ -145,9 +149,7 @@ RectangularWaveguide::RectangularWaveguide(
     cl::CommandQueue& queue,
     const RectangularMesh& mesh,
     std::vector<RectangularMesh::CondensedNode> nodes) try : Waveguide
-    <RectangularProgram>(program, queue, mesh.get_nodes().size()), mesh(mesh)
-        //    TODO this seems like it's asking for problems
-        ,
+    <RectangularProgram>(program, queue, mesh.get_nodes().size()), mesh(mesh),
         node_buffer(program.getInfo<CL_PROGRAM_CONTEXT>(),
                     nodes.begin(),
                     nodes.end(),
@@ -264,20 +266,39 @@ RunStepResult RectangularWaveguide::run_step(size_type o,
         std::vector<RectangularProgram::BoundaryDataArray1> bda(
             mesh.compute_num_boundary<1>());
         cl::copy(queue, boundary_data_1_buffer, bda.begin(), bda.end());
-        Logger::log_err("memory index 0: ", bda[0]);
-        auto it = std::find_if(
-            bda.begin(),
-            bda.end(),
-            [](const auto& i) {
-                return std::any_of(std::begin(i.array[0].filter_memory.array),
-                                   std::end(i.array[0].filter_memory.array),
-                                   [](auto i) { return std::isnan(i); });
-            });
+        //        Logger::log_err("memory index 0: ", bda[0]);
+        {
+            auto it = std::find_if(
+                bda.begin(),
+                bda.end(),
+                [](const auto& i) {
+                    const auto& array = i.array[0].filter_memory.array;
+                    return std::any_of(std::begin(array),
+                                       std::end(array),
+                                       [](auto i) { return std::isnan(i); });
+                });
 
-        if (it != bda.end()) {
-            Logger::log_err("nan filter memory value at index: ",
-                            it - bda.begin());
-            Logger::log_err("memory: ", *it);
+            if (it != bda.end()) {
+                Logger::log_err("nan filter memory value at index: ",
+                                it - bda.begin());
+                Logger::log_err("memory: ", *it);
+            }
+        }
+        {
+            auto it = std::find_if(
+                bda.begin(),
+                bda.end(),
+                [](const auto& i) {
+                    const auto& array = i.array[0].filter_memory.array;
+                    return std::any_of(std::begin(array),
+                                       std::end(array),
+                                       [](auto i) { return i; });
+                });
+            if (it != bda.end()) {
+                Logger::log_err("nonzero filter memory value at index: ",
+                                it - bda.begin());
+                Logger::log_err("memory: ", *it);
+            }
         }
     }
 

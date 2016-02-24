@@ -552,6 +552,7 @@ float get_summed_surrounding_3(InnerNodeDirections3 i,
             if (neighbor != NO_NEIGHBOR)                                \
                 sum += 2 * current[neighbor];                           \
         }                                                               \
+        debug_buffer[get_global_id(0)] = sum; \
         return COURANT_SQ *                                             \
                (sum + CAT(get_summed_surrounding_, dimensions)(         \
                           ind, current, locator, dim, debug_buffer));   \
