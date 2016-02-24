@@ -220,11 +220,14 @@ private:
 
 class RectangularWaveguide : public Waveguide<RectangularProgram> {
 public:
-    RectangularWaveguide(const ProgramType& program,
-                         cl::CommandQueue& queue,
-                         const Boundary& boundary,
-                         float spacing,
-                         const Vec3f& anchor);
+    RectangularWaveguide(
+        const ProgramType& program,
+        cl::CommandQueue& queue,
+        const Boundary& boundary,
+        float spacing,
+        const Vec3f& anchor,
+        const RectangularProgram::CanonicalCoefficients& coefficients /* =
+            RectangularProgram::CanonicalCoefficients{}*/);
 
     void setup(cl::CommandQueue& queue, size_type o, float sr) override;
 
@@ -242,17 +245,22 @@ public:
     const RectangularMesh& get_mesh() const;
     bool inside(size_type index) const override;
 
-    void set_boundary_coefficient(
-        const RectangularProgram::CanonicalCoefficients& coefficients);
-
 private:
-    RectangularWaveguide(const ProgramType& program,
-                         cl::CommandQueue& queue,
-                         const RectangularMesh& mesh);
-    RectangularWaveguide(const ProgramType& program,
-                         cl::CommandQueue& queue,
-                         const RectangularMesh& mesh,
-                         std::vector<RectangularMesh::CondensedNode> nodes);
+    using MeshType = RectangularMesh;
+    static constexpr auto PORTS = MeshType::PORTS;
+    static constexpr auto TRANSFORM_MATRIX_ELEMENTS = MeshType::PORTS * 3;
+
+    RectangularWaveguide(
+        const ProgramType& program,
+        cl::CommandQueue& queue,
+        const RectangularMesh& mesh,
+        std::vector<RectangularProgram::CanonicalCoefficients> coefficients);
+    RectangularWaveguide(
+        const ProgramType& program,
+        cl::CommandQueue& queue,
+        const RectangularMesh& mesh,
+        std::vector<RectangularMesh::CondensedNode> nodes,
+        std::vector<RectangularProgram::CanonicalCoefficients> coefficients);
 
     template <int I>
     void setup_boundary_data_buffer(cl::CommandQueue& queue, cl::Buffer& b) {
@@ -271,20 +279,16 @@ private:
         cl::copy(queue, bda.begin(), bda.end(), b);
     }
 
-    RectangularMesh mesh;
-    cl::Buffer node_buffer;
-    cl::Buffer transform_buffer;
-    cl::Buffer velocity_buffer;
+    MeshType mesh;
+    const cl::Buffer node_buffer;  //  const, set in constructor
+    cl::Buffer transform_buffer;   //  set in setup
+    cl::Buffer velocity_buffer;    //  set in setup
 
     cl::Buffer boundary_data_1_buffer;
     cl::Buffer boundary_data_2_buffer;
     cl::Buffer boundary_data_3_buffer;
-    std::vector<RectangularProgram::CanonicalCoefficients>
-        boundary_coefficients{1, RectangularProgram::CanonicalCoefficients{}};
-    cl::Buffer boundary_coefficients_buffer;
+    const cl::Buffer boundary_coefficients_buffer;
     cl::Buffer debug_buffer;
-
-    Eigen::MatrixXf transform_matrix;
 
     float period;
 };
@@ -314,6 +318,10 @@ public:
     bool inside(size_type index) const override;
 
 private:
+    using MeshType = TetrahedralMesh;
+    static constexpr auto PORTS = MeshType::PORTS;
+    static constexpr auto TRANSFORM_MATRIX_ELEMENTS = MeshType::PORTS * 3;
+
     TetrahedralWaveguide(const ProgramType& program,
                          cl::CommandQueue& queue,
                          const TetrahedralMesh& mesh);
@@ -322,11 +330,10 @@ private:
                          const TetrahedralMesh& mesh,
                          std::vector<TetrahedralMesh::Node> nodes);
 
-    TetrahedralMesh mesh;
+    MeshType mesh;
     cl::Buffer node_buffer;
     cl::Buffer transform_buffer;
     cl::Buffer velocity_buffer;
-    Eigen::MatrixXf transform_matrix;
 
     float period;
 };

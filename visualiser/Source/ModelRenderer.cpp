@@ -197,11 +197,6 @@ void DrawableScene::init_waveguide(const SceneData &scene_data,
     MeshBoundary boundary(scene_data);
     auto waveguide_program =
         get_program<Waveguide::ProgramType>(context, device);
-    auto w = std::make_unique<Waveguide>(
-        waveguide_program, queue, boundary, cc.get_divisions(), cc.get_mic());
-    auto corrected_source_index = w->get_index_for_coordinate(cc.get_source());
-    auto corrected_source = w->get_coordinate_for_index(corrected_source_index);
-
     auto coeffs = RectangularProgram::get_notch_filter_array(
         {{
             RectangularProgram::NotchFilterDescriptor{-12, 45, 1},
@@ -209,8 +204,14 @@ void DrawableScene::init_waveguide(const SceneData &scene_data,
             RectangularProgram::NotchFilterDescriptor{-12, 180, 1},
         }},
         cc.get_waveguide_sample_rate());
-
-    w->set_boundary_coefficient(coeffs);
+    auto w = std::make_unique<Waveguide>(waveguide_program,
+                                         queue,
+                                         boundary,
+                                         cc.get_divisions(),
+                                         cc.get_mic(),
+                                         coeffs);
+    auto corrected_source_index = w->get_index_for_coordinate(cc.get_source());
+    auto corrected_source = w->get_coordinate_for_index(corrected_source_index);
 
     w->init(corrected_source, GaussianFunction(0.1), 0, 0);
     //    w->init(corrected_source, BasicPowerFunction(), 0, 0);

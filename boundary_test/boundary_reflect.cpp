@@ -89,8 +89,24 @@ std::vector<float> run_simulation(const cl::Context& context,
                                   const std::string& fname,
                                   int steps) {
     auto waveguide_program = get_program<RectangularProgram>(context, device);
-    RectangularWaveguide waveguide(
-        waveguide_program, queue, boundary, config.get_divisions(), receiver);
+
+    auto coeffs = RectangularProgram::get_notch_filter_array(
+        {{
+            RectangularProgram::NotchFilterDescriptor{-12, 45, 1},
+            RectangularProgram::NotchFilterDescriptor{-12, 90, 1},
+            RectangularProgram::NotchFilterDescriptor{-12, 180, 1},
+        }},
+        config.get_waveguide_sample_rate());
+//    coeffs = RectangularProgram::to_impedance_coefficients(coeffs);
+
+    Logger::log_err("coeffs: ", coeffs);
+
+    RectangularWaveguide waveguide(waveguide_program,
+                                   queue,
+                                   boundary,
+                                   config.get_divisions(),
+                                   receiver,
+                                   coeffs);
 
     auto receiver_index = waveguide.get_index_for_coordinate(receiver);
     auto source_index = waveguide.get_index_for_coordinate(source);
@@ -108,18 +124,6 @@ std::vector<float> run_simulation(const cl::Context& context,
     Logger::log_err("running simulation!");
     Logger::log_err("source pos: ", corrected_source);
     Logger::log_err("mic pos: ", corrected_mic);
-
-    auto coeffs = RectangularProgram::get_notch_filter_array(
-        {{
-            RectangularProgram::NotchFilterDescriptor{-12, 45, 1},
-            RectangularProgram::NotchFilterDescriptor{-12, 90, 1},
-            RectangularProgram::NotchFilterDescriptor{-12, 180, 1},
-        }},
-        config.get_waveguide_sample_rate());
-//    coeffs = RectangularProgram::to_impedance_coefficients(coeffs);
-    Logger::log_err("coeffs: ", coeffs);
-
-    waveguide.set_boundary_coefficient(coeffs);
 
     auto results = waveguide.run_basic(corrected_source,
                                        receiver_index,

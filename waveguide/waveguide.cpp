@@ -36,7 +36,7 @@ void TetrahedralWaveguide::setup(cl::CommandQueue& queue,
                                  size_type o,
                                  float sr) {
     auto PORTS = decltype(mesh)::PORTS;
-    transform_matrix = get_transform_matrix(PORTS, o, mesh.get_nodes());
+    auto transform_matrix = get_transform_matrix(PORTS, o, mesh.get_nodes());
     cl::copy(queue,
              transform_matrix.data(),
              transform_matrix.data() + PORTS * 3,
@@ -137,72 +137,77 @@ bool TetrahedralWaveguide::inside(size_type index) const {
 
 //----------------------------------------------------------------------------//
 
-RectangularWaveguide::RectangularWaveguide(const RectangularProgram& program,
-                                           cl::CommandQueue& queue,
-                                           const RectangularMesh& mesh)
+RectangularWaveguide::RectangularWaveguide(
+    const RectangularProgram& program,
+    cl::CommandQueue& queue,
+    const RectangularMesh& mesh,
+    std::vector<RectangularProgram::CanonicalCoefficients> coefficients)
         : RectangularWaveguide(
-              program, queue, mesh, mesh.get_condensed_nodes()) {
+              program, queue, mesh, mesh.get_condensed_nodes(), coefficients) {
 }
 
 RectangularWaveguide::RectangularWaveguide(
     const RectangularProgram& program,
     cl::CommandQueue& queue,
     const RectangularMesh& mesh,
-    std::vector<RectangularMesh::CondensedNode> nodes) try : Waveguide
-    <RectangularProgram>(program, queue, mesh.get_nodes().size()), mesh(mesh),
-        node_buffer(program.getInfo<CL_PROGRAM_CONTEXT>(),
-                    nodes.begin(),
-                    nodes.end(),
-                    false),
-        transform_buffer(program.getInfo<CL_PROGRAM_CONTEXT>(),
-                         CL_MEM_READ_WRITE,
-                         sizeof(cl_float) * 18),
-        velocity_buffer(program.getInfo<CL_PROGRAM_CONTEXT>(),
-                        CL_MEM_READ_WRITE,
-                        sizeof(cl_float3) * 1),
-        boundary_data_1_buffer(program.getInfo<CL_PROGRAM_CONTEXT>(),
-                               CL_MEM_READ_WRITE,
-                               sizeof(RectangularProgram::BoundaryDataArray1) *
-                                   mesh.compute_num_boundary<1>()),
-        boundary_data_2_buffer(program.getInfo<CL_PROGRAM_CONTEXT>(),
-                               CL_MEM_READ_WRITE,
-                               sizeof(RectangularProgram::BoundaryDataArray2) *
-                                   mesh.compute_num_boundary<2>()),
-        boundary_data_3_buffer(program.getInfo<CL_PROGRAM_CONTEXT>(),
-                               CL_MEM_READ_WRITE,
-                               sizeof(RectangularProgram::BoundaryDataArray3) *
-                                   mesh.compute_num_boundary<3>()),
-        boundary_coefficients_buffer(
-            program.getInfo<CL_PROGRAM_CONTEXT>(),
-            CL_MEM_READ_WRITE,
-            sizeof(RectangularProgram::CanonicalCoefficients) *
-                mesh.compute_num_surface()),
-        debug_buffer(program.getInfo<CL_PROGRAM_CONTEXT>(),
-                     CL_MEM_READ_WRITE,
-                     sizeof(cl_float) * nodes.size()) {
-    }
-catch (const cl::Error& e) {
-    ::Logger::log_err(e.what());
-    throw;
+    std::vector<RectangularMesh::CondensedNode> nodes,
+    std::vector<RectangularProgram::CanonicalCoefficients> coefficients)
+        : Waveguide<RectangularProgram>(program, queue, mesh.get_nodes().size())
+        , mesh(mesh)
+        , node_buffer(program.getInfo<CL_PROGRAM_CONTEXT>(),
+                      nodes.begin(),
+                      nodes.end(),
+                      false)
+        , transform_buffer(program.getInfo<CL_PROGRAM_CONTEXT>(),
+                           CL_MEM_READ_WRITE,
+                           sizeof(cl_float) * TRANSFORM_MATRIX_ELEMENTS)
+        , velocity_buffer(program.getInfo<CL_PROGRAM_CONTEXT>(),
+                          CL_MEM_READ_WRITE,
+                          sizeof(cl_float3) * 1)
+        , boundary_data_1_buffer(
+              program.getInfo<CL_PROGRAM_CONTEXT>(),
+              CL_MEM_READ_WRITE,
+              sizeof(RectangularProgram::BoundaryDataArray1) *
+                  mesh.compute_num_boundary<1>())
+        , boundary_data_2_buffer(
+              program.getInfo<CL_PROGRAM_CONTEXT>(),
+              CL_MEM_READ_WRITE,
+              sizeof(RectangularProgram::BoundaryDataArray2) *
+                  mesh.compute_num_boundary<2>())
+        , boundary_data_3_buffer(
+              program.getInfo<CL_PROGRAM_CONTEXT>(),
+              CL_MEM_READ_WRITE,
+              sizeof(RectangularProgram::BoundaryDataArray3) *
+                  mesh.compute_num_boundary<3>())
+        , boundary_coefficients_buffer(program.getInfo<CL_PROGRAM_CONTEXT>(),
+                                       coefficients.begin(),
+                                       coefficients.end(),
+                                       false)
+        , debug_buffer(program.getInfo<CL_PROGRAM_CONTEXT>(),
+                       CL_MEM_READ_WRITE,
+                       sizeof(cl_float) * nodes.size()) {
 }
 
-RectangularWaveguide::RectangularWaveguide(const RectangularProgram& program,
-                                           cl::CommandQueue& queue,
-                                           const Boundary& boundary,
-                                           float spacing,
-                                           const Vec3f& anchor)
-        : RectangularWaveguide(
-              program, queue, RectangularMesh(boundary, spacing, anchor)) {
+RectangularWaveguide::RectangularWaveguide(
+    const RectangularProgram& program,
+    cl::CommandQueue& queue,
+    const Boundary& boundary,
+    float spacing,
+    const Vec3f& anchor,
+    const RectangularProgram::CanonicalCoefficients& coefficients)
+        : RectangularWaveguide(program,
+                               queue,
+                               RectangularMesh(boundary, spacing, anchor),
+                               {coefficients}) {
 }
 
 void RectangularWaveguide::setup(cl::CommandQueue& queue,
                                  size_type o,
                                  float sr) {
-    auto PORTS = decltype(mesh)::PORTS;
-    transform_matrix = get_transform_matrix(PORTS, o, mesh.get_nodes());
+    auto transform_matrix = get_transform_matrix(PORTS, o, mesh.get_nodes());
     cl::copy(queue,
              transform_matrix.data(),
-             transform_matrix.data() + PORTS * 3,
+             transform_matrix.data() + TRANSFORM_MATRIX_ELEMENTS,
              transform_buffer);
 
     std::vector<cl_float3> starting_velocity(1, {{0, 0, 0, 0}});
@@ -215,12 +220,6 @@ void RectangularWaveguide::setup(cl::CommandQueue& queue,
     setup_boundary_data_buffer<1>(queue, boundary_data_1_buffer);
     setup_boundary_data_buffer<2>(queue, boundary_data_2_buffer);
     setup_boundary_data_buffer<3>(queue, boundary_data_3_buffer);
-
-    //  TODO set coefficients properly
-    cl::copy(queue,
-             boundary_coefficients.begin(),
-             boundary_coefficients.end(),
-             boundary_coefficients_buffer);
 
     period = 1 / sr;
 }
@@ -350,10 +349,4 @@ const RectangularMesh& RectangularWaveguide::get_mesh() const {
 
 bool RectangularWaveguide::inside(size_type index) const {
     return mesh.get_nodes()[index].inside;
-}
-
-void RectangularWaveguide::set_boundary_coefficient(
-    const RectangularProgram::CanonicalCoefficients& coefficients) {
-    boundary_coefficients =
-        std::vector<RectangularProgram::CanonicalCoefficients>(1, coefficients);
 }
