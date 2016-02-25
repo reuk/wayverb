@@ -248,7 +248,7 @@ public:
 private:
     using MeshType = RectangularMesh;
     static constexpr auto PORTS = MeshType::PORTS;
-    static constexpr auto TRANSFORM_MATRIX_ELEMENTS = MeshType::PORTS * 3;
+    static constexpr auto TRANSFORM_MATRIX_ELEMENTS = PORTS * 3;
 
     RectangularWaveguide(
         const ProgramType& program,
@@ -284,11 +284,12 @@ private:
     cl::Buffer transform_buffer;   //  set in setup
     cl::Buffer velocity_buffer;    //  set in setup
 
-    cl::Buffer boundary_data_1_buffer;
-    cl::Buffer boundary_data_2_buffer;
-    cl::Buffer boundary_data_3_buffer;
-    const cl::Buffer boundary_coefficients_buffer;
-    cl::Buffer debug_buffer;
+    cl::Buffer boundary_data_1_buffer;  //  set in setup
+    cl::Buffer boundary_data_2_buffer;  //  set in setup
+    cl::Buffer boundary_data_3_buffer;  //  set in setup
+    const cl::Buffer
+        boundary_coefficients_buffer;  //  const, set in constructor
+    cl::Buffer debug_buffer;           //  set each iteration
 
     float period;
 };
@@ -320,7 +321,7 @@ public:
 private:
     using MeshType = TetrahedralMesh;
     static constexpr auto PORTS = MeshType::PORTS;
-    static constexpr auto TRANSFORM_MATRIX_ELEMENTS = MeshType::PORTS * 3;
+    static constexpr auto TRANSFORM_MATRIX_ELEMENTS = PORTS * 3;
 
     TetrahedralWaveguide(const ProgramType& program,
                          cl::CommandQueue& queue,

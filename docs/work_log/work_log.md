@@ -368,32 +368,17 @@ reading bad memory somewhere, not sure how to find where
 
 try viewing preprocessor output?
 
-news
-====
+filter memory goes to nan
+    filter step is the only function which interracts with filter memory
+    filter inputs:
+        float input
+        filter memory array
+        filter coefficients array
 
-finished implementing, refactoring equations from the paper - buggy!
+filter memory goes NaN on same step as filter input!!!
 
-looked at memory requirements of 3d paper
+first 1d filter memory belongs to node 84053
 
-quartered memory requirement of node storage in the rectangular mesh
+something strange about 83847?
 
-set up python script to replicate testing procedure from the paper (I think)
-
-emailed the paper author to ask about testing simulation size
-
-still to do:
-    fix the bad memory bug
-        debugging support is horrible
-        I ideally would like to compile for the CPU and then valgrind it
-        my kernel will only compile for the dedicated graphics
-            intel compiler for the integrated graphics segfaults for no
-                obvious reason
-            intel compiler for the CPU quits with an actual error message, but
-                not a helpful one - basically just 'I got stuck building
-                an element'
-
-    prove that the implementation is correct
-
-    sort file loader so that it loads info from models appropriately
-
-
+filter_weighting

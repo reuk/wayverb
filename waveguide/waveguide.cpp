@@ -32,14 +32,20 @@ std::ostream& operator<<(std::ostream& os,
     return to_stream(os, bda.array[0]);
 }
 
+std::ostream& operator<<(std::ostream& os,
+                         const RectangularProgram::CondensedNodeStruct& cns) {
+    Bracketer bracketer(os);
+    return to_stream(
+        os, "bt: ", cns.bt, "  boundary_index: ", cns.boundary_index);
+}
+
 void TetrahedralWaveguide::setup(cl::CommandQueue& queue,
                                  size_type o,
                                  float sr) {
-    auto PORTS = decltype(mesh)::PORTS;
     auto transform_matrix = get_transform_matrix(PORTS, o, mesh.get_nodes());
     cl::copy(queue,
              transform_matrix.data(),
-             transform_matrix.data() + PORTS * 3,
+             transform_matrix.data() + TRANSFORM_MATRIX_ELEMENTS,
              transform_buffer);
 
     std::vector<cl_float3> starting_velocity(1, {{0, 0, 0, 0}});
@@ -49,6 +55,56 @@ void TetrahedralWaveguide::setup(cl::CommandQueue& queue,
              velocity_buffer);
 
     period = 1 / sr;
+}
+
+template <typename Fun, typename T>
+bool is_any(const T& t, const Fun& fun = Fun()) {
+    return fun(t);
+}
+
+template <typename Fun, typename T>
+bool is_any(const std::vector<T>& t, const Fun& fun = Fun()) {
+    return std::any_of(
+        t.begin(), t.end(), [&fun](const auto& i) { return is_any(i, fun); });
+}
+
+template <typename Fun, int I>
+bool is_any(const RectangularProgram::BoundaryDataArray<I>& t,
+            const Fun& fun = Fun()) {
+    return std::any_of(std::begin(t.array),
+                       std::end(t.array),
+                       [&fun](const auto& i) { return is_any(i, fun); });
+}
+
+template <typename Fun>
+bool is_any(const RectangularProgram::BoundaryData& t, const Fun& fun = Fun()) {
+    return std::any_of(std::begin(t.filter_memory.array),
+                       std::end(t.filter_memory.array),
+                       [&fun](const auto& i) { return is_any(i, fun); });
+}
+
+template <typename Fun, typename T>
+auto find_any(const T& t, const Fun& fun = Fun()) {
+    return std::find_if(
+        t.begin(), t.end(), [&fun](const auto& i) { return is_any(i, fun); });
+}
+
+template <typename T>
+void log_nan_or_nonzero(const T& t, const std::string& identifier) {
+    auto it_nan = find_any(t, [](auto i) { return std::isnan(i); });
+    auto it_nonzero = find_any(t, [](auto i) { return i; });
+
+    if (it_nan != t.end()) {
+        Logger::log_err(identifier + " nan at index: ",
+                        it_nan - t.begin(),
+                        ", value: ",
+                        *it_nan);
+    } else if (it_nonzero != t.end()) {
+        Logger::log_err(identifier + " nonzero at index: ",
+                        it_nonzero - t.begin(),
+                        ", value: ",
+                        *it_nonzero);
+    }
 }
 
 TetrahedralWaveguide::TetrahedralWaveguide(const TetrahedralProgram& program,
@@ -70,7 +126,7 @@ TetrahedralWaveguide::TetrahedralWaveguide(
                       false)
         , transform_buffer(program.getInfo<CL_PROGRAM_CONTEXT>(),
                            CL_MEM_READ_WRITE,
-                           sizeof(cl_float) * 12)
+                           sizeof(cl_float) * TRANSFORM_MATRIX_ELEMENTS)
         , velocity_buffer(program.getInfo<CL_PROGRAM_CONTEXT>(),
                           CL_MEM_READ_WRITE,
                           sizeof(cl_float3) * 1) {
@@ -262,70 +318,24 @@ RunStepResult RectangularWaveguide::run_step(size_type o,
              current_velocity.end());
 
     {
+        //  TODO remove this bit
         std::vector<RectangularProgram::BoundaryDataArray1> bda(
             mesh.compute_num_boundary<1>());
         cl::copy(queue, boundary_data_1_buffer, bda.begin(), bda.end());
-        //        Logger::log_err("memory index 0: ", bda[0]);
-        {
-            auto it = std::find_if(
-                bda.begin(),
-                bda.end(),
-                [](const auto& i) {
-                    const auto& array = i.array[0].filter_memory.array;
-                    return std::any_of(std::begin(array),
-                                       std::end(array),
-                                       [](auto i) { return std::isnan(i); });
-                });
-
-            if (it != bda.end()) {
-                Logger::log_err("nan filter memory value at index: ",
-                                it - bda.begin());
-                Logger::log_err("memory: ", *it);
-            }
-        }
-        {
-            auto it = std::find_if(
-                bda.begin(),
-                bda.end(),
-                [](const auto& i) {
-                    const auto& array = i.array[0].filter_memory.array;
-                    return std::any_of(std::begin(array),
-                                       std::end(array),
-                                       [](auto i) { return i; });
-                });
-            if (it != bda.end()) {
-                Logger::log_err("nonzero filter memory value at index: ",
-                                it - bda.begin());
-                Logger::log_err("memory: ", *it);
-            }
-        }
+        log_nan_or_nonzero(bda, "filter memory");
     }
 
     {
         //  TODO remove this bit too
         cl::copy(queue, debug_buffer, debug.begin(), debug.end());
-        auto it = std::find_if(
-            std::begin(debug), std::end(debug), [](auto x) { return x; });
-        if (it != debug.end()) {
-            Logger::log_err("nonzero debug value: ",
-                            *it,
-                            " at index: ",
-                            it - debug.begin());
-        }
+        log_nan_or_nonzero(debug, "debug");
     }
 
     {
-        //  TODO remove this bit too
+        //  TODO remove this bit also
         std::vector<cl_float> ret(nodes, 0);
         cl::copy(queue, previous, ret.begin(), ret.end());
-        auto is_nan = std::find_if(
-            ret.begin(), ret.end(), [](auto i) { return std::isnan(i); });
-        if (is_nan != ret.end()) {
-            Logger::log_err("nan pressure value: ",
-                            *is_nan,
-                            " at index: ",
-                            is_nan - ret.begin());
-        }
+        log_nan_or_nonzero(ret, "pressure");
     }
 
     auto velocity = to_vec3f(current_velocity.front());

@@ -5,7 +5,7 @@ Bracketer::Bracketer(std::ostream& os)
     os << "[  ";
 }
 Bracketer::~Bracketer() noexcept {
-    os << "]";
+    os << "]  ";
 }
 
 void Logger::restart() {
