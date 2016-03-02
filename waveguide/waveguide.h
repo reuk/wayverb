@@ -338,3 +338,72 @@ private:
 
     float period;
 };
+
+template <typename Fun, typename T>
+bool is_any(const T& t, const Fun& fun = Fun()) {
+    return fun(t);
+}
+
+template <typename Fun, typename T>
+bool is_any(const std::vector<T>& t, const Fun& fun = Fun()) {
+    return std::any_of(
+        t.begin(), t.end(), [&fun](const auto& i) { return is_any(i, fun); });
+}
+
+template <typename Fun, int I>
+bool is_any(const RectangularProgram::BoundaryDataArray<I>& t,
+            const Fun& fun = Fun()) {
+    return std::any_of(std::begin(t.array),
+                       std::end(t.array),
+                       [&fun](const auto& i) { return is_any(i, fun); });
+}
+
+template <typename Fun>
+bool is_any(const RectangularProgram::BoundaryData& t, const Fun& fun = Fun()) {
+    return std::any_of(std::begin(t.filter_memory.array),
+                       std::end(t.filter_memory.array),
+                       [&fun](const auto& i) { return is_any(i, fun); });
+}
+
+template <typename Fun, typename T>
+auto find_any(const T& t, const Fun& fun = Fun()) {
+    return std::find_if(
+        t.begin(), t.end(), [&fun](const auto& i) { return is_any(i, fun); });
+}
+
+template <typename Fun, typename T>
+auto log_find_any(const T& t,
+                  const std::string& identifier,
+                  const std::string& func,
+                  const Fun& fun = Fun()) {
+    auto it = find_any(t, fun);
+    if (it != std::end(t)) {
+        ::Logger::log_err(identifier,
+                          " ",
+                          func,
+                          " index: ",
+                          it - std::begin(t),
+                          ", value: ",
+                          *it);
+    }
+    return it;
+}
+
+template <typename T>
+auto log_nan(const T& t, const std::string& identifier) {
+    return log_find_any(
+        t, identifier, "nan", [](auto i) { return std::isnan(i); });
+}
+
+template <typename T>
+auto log_nonzero(const T& t, const std::string& identifier) {
+    return log_find_any(t, identifier, "nonzero", [](auto i) { return i; });
+}
+
+template <typename T>
+void log_nan_or_nonzero(const T& t, const std::string& identifier) {
+    if (log_nan(t, identifier) != std::end(t))
+        return;
+    if (log_nonzero(t, identifier) != std::end(t))
+        return;
+}

@@ -7,6 +7,7 @@
 #include "cl_common.h"
 #include "tetrahedral_program.h"
 #include "azimuth_elevation.h"
+#include "testing_notches.h"
 
 RaytraceObject::RaytraceObject(const GenericShader &shader,
                                const RaytracerResults &results)
@@ -198,12 +199,7 @@ void DrawableScene::init_waveguide(const SceneData &scene_data,
     auto waveguide_program =
         get_program<Waveguide::ProgramType>(context, device);
     auto coeffs = RectangularProgram::get_notch_filter_array(
-        {{
-            RectangularProgram::NotchFilterDescriptor{-12, 45, 1},
-            RectangularProgram::NotchFilterDescriptor{-12, 90, 1},
-            RectangularProgram::NotchFilterDescriptor{-12, 180, 1},
-        }},
-        cc.get_waveguide_sample_rate());
+        Testing::notches, cc.get_waveguide_sample_rate());
     auto w = std::make_unique<Waveguide>(waveguide_program,
                                          queue,
                                          boundary,
@@ -326,16 +322,21 @@ SceneRenderer::~SceneRenderer() {
 
 void SceneRenderer::load_from_file_package(const FilePackage &fp) {
     std::lock_guard<std::mutex> lck(mut);
+    auto scene_scale = 0.75;
     SceneData scene_data(fp.get_object().getFullPathName().toStdString(),
-                         fp.get_material().getFullPathName().toStdString());
+                         fp.get_material().getFullPathName().toStdString(),
+                         scene_scale);
     CombinedConfig cc;
     try {
         cc = read_config(fp.get_config().getFullPathName().toStdString());
     } catch (...) {
     }
 
+    cc.get_mic() *= scene_scale;
+    cc.get_source() *= scene_scale;
+
     cc.get_rays() = 1 << 5;
-    cc.get_filter_frequency() = 4000;
+    cc.get_filter_frequency() = 11025;
     cc.get_oversample_ratio() = 1;
 
     scene = std::make_unique<DrawableScene>(*shader, scene_data, cc);
@@ -343,10 +344,9 @@ void SceneRenderer::load_from_file_package(const FilePackage &fp) {
     auto aabb = scene_data.get_aabb();
     auto m = aabb.get_centre();
     auto max = aabb.get_dimensions().max();
-    auto s = max > 0 ? 20 / max : 1;
+    scale = max > 0 ? 20 / max : 1;
 
     translation = glm::translate(-glm::vec3(m.x, m.y, m.z));
-    scale = s;
 }
 
 void SceneRenderer::newOpenGLContextCreated() {

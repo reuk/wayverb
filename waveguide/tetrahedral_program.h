@@ -82,16 +82,15 @@ kernel void waveguide
     temp /= (PORTS / 2);
     temp -= previous[index];
 
-    barrier(CLK_GLOBAL_MEM_FENCE);
     previous[index] = temp;
-    barrier(CLK_GLOBAL_MEM_FENCE);
+
+    //  TODO move this stuff outside
+    //  there's a small chance I'll do some out-of-order reading here I think
 
     if (index == read) {
         *output = previous[index];
 
-        //
         //  instantaneous intensity for mic modelling
-        //
 
         float differences[PORTS] = {0};
         for (int i = 0; i != PORTS; ++i) {
@@ -117,17 +116,6 @@ kernel void waveguide
         //  muliply by -1/ambient_density
         float ambient_density = 1.225;
         multiplied /= -ambient_density;
-
-        //  numerical integration
-        //
-        //  I thought integration meant just adding to the previous value like
-        //  *velocity_buffer += multiplied;
-        //  but apparently the integrator has the transfer function
-        //  Hint(z) = Tz^-1 / (1 - z^-1)
-        //  so hopefully this is right
-        //
-        //  Hint(z) = Y(z)/X(z) = Tz^-1/(1 - z^-1)
-        //  y(n) = Tx(n - 1) + y(n - 1)
 
         *velocity_buffer += T * multiplied;
     }

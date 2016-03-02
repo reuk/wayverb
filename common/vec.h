@@ -18,6 +18,17 @@
         return operator sym(Vec3<U>(rhs));                         \
     }
 
+#define COMPOUND_OP(sym, functor)                                            \
+    template <typename U>                                                    \
+    constexpr auto operator sym(const Vec3<U>& rhs) {                        \
+        return (*this = apply<std::functor<std::common_type_t<T, U>>>(rhs)); \
+    }                                                                        \
+                                                                             \
+    template <typename U>                                                    \
+    constexpr auto operator sym(const U& rhs) {                              \
+        return operator sym(Vec3<U>(rhs));                                   \
+    }
+
 template <typename T>
 struct Vec3;
 
@@ -180,6 +191,12 @@ struct Vec3 final {
     VEC_OP(*, multiplies);
     VEC_OP(/, divides);
     VEC_OP(%, modulus);
+
+    COMPOUND_OP(+=, plus);
+    COMPOUND_OP(-=, minus);
+    COMPOUND_OP(*=, multiplies);
+    COMPOUND_OP(/=, divides);
+    COMPOUND_OP(%=, modulus);
 
     VEC_OP(==, equal_to);
     VEC_OP(!=, not_equal_to);

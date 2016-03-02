@@ -4,6 +4,7 @@
 #include "cl.hpp"
 
 #include "reduce.h"
+#include "logger.h"
 
 #include <cassert>
 
@@ -167,5 +168,24 @@ private:
     static const std::string source;
 };
 
+template <int T>
 std::ostream& operator<<(std::ostream& os,
-                         const RectangularProgram::CanonicalCoefficients& n);
+                         const RectangularProgram::FilterCoefficients<T>& n) {
+    Bracketer bracketer(os);
+    {
+        to_stream(os, "b: ");
+        Bracketer bracketer(os);
+        for (const auto& i : n.b)
+            to_stream(os, i, "  ");
+    }
+    {
+        to_stream(os, "a: ");
+        Bracketer bracketer(os);
+        for (const auto& i : n.a)
+            to_stream(os, i, "  ");
+    }
+    return os;
+}
+
+std::ostream& operator<<(std::ostream& os,
+                         const RectangularProgram::BiquadCoefficientsArray& n);

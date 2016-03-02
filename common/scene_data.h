@@ -60,12 +60,20 @@ class SceneData {
 public:
     using size_type = std::vector<Surface>::size_type;
 
-    SceneData(const std::string& fpath, const std::string& mat_file);
-    SceneData(const aiScene* const scene, const std::string& mat_file);
+    SceneData(const std::string& fpath,
+              const std::string& mat_file,
+              float scale = 1);
+    SceneData(const aiScene* const scene,
+              const std::string& mat_file,
+              float scale = 1);
     virtual ~SceneData() noexcept = default;
 
-    void populate(const aiScene* const scene, const std::string& mat_file);
-    void populate(const std::string& fpath, const std::string& mat_file);
+    void populate(const aiScene* const scene,
+                  const std::string& mat_file,
+                  float scale);
+    void populate(const std::string& fpath,
+                  const std::string& mat_file,
+                  float scale);
 
     CuboidBoundary get_aabb() const;
     std::vector<Vec3f> get_converted_vertices() const;

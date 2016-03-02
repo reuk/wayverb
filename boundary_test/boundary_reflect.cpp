@@ -5,6 +5,7 @@
 #include "conversions.h"
 #include "microphone.h"
 #include "azimuth_elevation.h"
+#include "testing_notches.h"
 
 #include "cl_common.h"
 
@@ -91,12 +92,7 @@ std::vector<float> run_simulation(const cl::Context& context,
     auto waveguide_program = get_program<RectangularProgram>(context, device);
 
     auto coeffs = RectangularProgram::get_notch_filter_array(
-        {{
-            RectangularProgram::NotchFilterDescriptor{-12, 45, 1},
-            RectangularProgram::NotchFilterDescriptor{-12, 90, 1},
-            RectangularProgram::NotchFilterDescriptor{-12, 180, 1},
-        }},
-        config.get_waveguide_sample_rate());
+        Testing::notches, config.get_waveguide_sample_rate());
 //    coeffs = RectangularProgram::to_impedance_coefficients(coeffs);
 
     Logger::log_err("coeffs: ", coeffs);
@@ -167,6 +163,9 @@ int main(int argc, char** argv) {
     auto config = WaveguideConfig();
     config.get_filter_frequency() = 11025;
     config.get_oversample_ratio() = 1;
+
+    Logger::log_err("waveguide sampling rate: ",
+                    config.get_waveguide_sample_rate());
 
     auto context = get_context();
     auto device = get_device(context);

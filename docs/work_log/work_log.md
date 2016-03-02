@@ -381,4 +381,10 @@ first 1d filter memory belongs to node 84053
 
 something strange about 83847?
 
-filter_weighting
+get_filter_weighting
+
+it looks like something is changing the filter memory to nan, but that something
+is definitely not the filter input
+    I might be looking at the wrong memory
+    something else might be affecting the values
+        although I can't see this anywhere

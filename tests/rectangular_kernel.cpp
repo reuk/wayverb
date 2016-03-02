@@ -2,6 +2,8 @@
 #include "cl_common.h"
 #include "timed_scope.h"
 #include "db.h"
+#include "waveguide.h"
+#include "testing_notches.h"
 
 #include "write_audio_file.h"
 
@@ -105,6 +107,7 @@ public:
 
     template <typename Kernel>
     auto run_kernel(Kernel&& k) {
+        Logger::log_err("coeffs: ", coeffs.front());
         auto kernel = std::move(k);
 
         {
@@ -136,15 +139,11 @@ public:
     RectangularProgram program{
         get_program<RectangularProgram>(context, device)};
     static constexpr int size{1 << 8};
-    static constexpr int sr{2000};
+    static constexpr int sr{44100};
     std::vector<Memory> memory{size, Memory{}};
     std::array<RectangularProgram::NotchFilterDescriptor,
                RectangularProgram::BiquadCoefficientsArray::BIQUAD_SECTIONS>
-        notches{{
-            RectangularProgram::NotchFilterDescriptor{-12, 45, 1},
-            RectangularProgram::NotchFilterDescriptor{-12, 90, 1},
-            RectangularProgram::NotchFilterDescriptor{-12, 180, 1},
-        }};
+        notches{Testing::notches};
     std::vector<Coeffs> coeffs{compute_coeffs<Coeffs>(size, notches, sr)};
     cl::Buffer cl_memory{context, memory.begin(), memory.end(), false};
     cl::Buffer cl_coeffs{context, coeffs.begin(), coeffs.end(), false};
@@ -172,16 +171,17 @@ class testing_rk_filter : public rk_filter<NoiseGenerator>,
                           public ::testing::Test {};
 
 TEST_F(testing_rk_biquad, filtering) {
-    write_sndfile("./filtered_noise.wav",
-                  {run_kernel(program.get_filter_test_kernel())},
-                  sr,
-                  SF_FORMAT_PCM_16,
-                  SF_FORMAT_WAV);
+    auto results = run_kernel(program.get_filter_test_kernel());
+    ASSERT_TRUE(log_nan(results, "filter 1 results") == results.end());
+    write_sndfile(
+        "./filtered_noise.wav", {results}, sr, SF_FORMAT_PCM_16, SF_FORMAT_WAV);
 }
 
 TEST_F(testing_rk_filter, filtering_2) {
+    auto results = run_kernel(program.get_filter_test_2_kernel());
+    ASSERT_TRUE(log_nan(results, "filter 2 results") == results.end());
     write_sndfile("./filtered_noise_2.wav",
-                  {run_kernel(program.get_filter_test_2_kernel())},
+                  {results},
                   sr,
                   SF_FORMAT_PCM_16,
                   SF_FORMAT_WAV);
@@ -231,19 +231,16 @@ TEST(compare_filters, compare_filters) {
         std::for_each(
             diff.begin(), diff.end(), [](auto i) { ASSERT_NEAR(i, 0, 0.001); });
 
-        std::for_each(
-            div.begin(), div.end(), [](auto i) { ASSERT_NEAR(i, 0, 24); });
-
         auto min_diff = *std::min_element(diff.begin(), diff.end());
         auto max_diff = *std::max_element(diff.begin(), diff.end());
 
         auto min_div = *std::min_element(div.begin(), div.end());
         auto max_div = *std::max_element(div.begin(), div.end());
 
-        std::cout << "min diff: " << min_diff << std::endl;
-        std::cout << "max diff: " << max_diff << std::endl;
-        std::cout << "min div / dB: " << min_div << std::endl;
-        std::cout << "max div / dB: " << max_div << std::endl;
+        Logger::log_err("min diff: ", min_diff);
+        Logger::log_err("max diff: ", max_diff);
+        Logger::log_err("min div / dB: ", min_div);
+        Logger::log_err("max div / dB: ", max_div);
 
         write_sndfile(
             "./buf_1.wav", {buf_1}, biquad.sr, SF_FORMAT_PCM_16, SF_FORMAT_WAV);

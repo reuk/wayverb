@@ -69,16 +69,21 @@ SurfaceLoader::size_type SurfaceLoader::get_index(
     return ret;
 }
 
-SceneData::SceneData(const std::string& fpath, const std::string& mat_file) {
-    populate(fpath, mat_file);
+SceneData::SceneData(const std::string& fpath,
+                     const std::string& mat_file,
+                     float scale) {
+    populate(fpath, mat_file, scale);
 }
 
-SceneData::SceneData(const aiScene* const scene, const std::string& mat_file) {
-    populate(scene, mat_file);
+SceneData::SceneData(const aiScene* const scene,
+                     const std::string& mat_file,
+                     float scale) {
+    populate(scene, mat_file, scale);
 }
 
 void SceneData::populate(const aiScene* const scene,
-                         const std::string& mat_file) {
+                         const std::string& mat_file,
+                         float scale) {
     if (!scene)
         throw std::runtime_error("scene pointer is null");
 
@@ -119,17 +124,27 @@ void SceneData::populate(const aiScene* const scene,
         triangles.insert(
             triangles.end(), meshTriangles.begin(), meshTriangles.end());
     }
+
+    std::for_each(vertices.begin(),
+                  vertices.end(),
+                  [scale](auto& i) {
+                      std::for_each(std::begin(i.s),
+                                    std::end(i.s),
+                                    [scale](auto& i) { i *= scale; });
+                  });
 }
 
 void SceneData::populate(const std::string& fpath,
-                         const std::string& mat_file) {
+                         const std::string& mat_file,
+                         float scale) {
     Assimp::Importer importer;
     try {
         populate(
             importer.ReadFile(fpath,
                               (aiProcess_Triangulate |
                                aiProcess_GenSmoothNormals | aiProcess_FlipUVs)),
-            mat_file);
+            mat_file,
+            scale);
     } catch (...) {
         throw std::runtime_error("failed to read file");
     }

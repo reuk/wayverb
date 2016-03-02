@@ -26,10 +26,13 @@ std::ostream& operator<<(std::ostream& os,
     return to_stream(os, m.filter_memory);
 }
 
+template <int I>
 std::ostream& operator<<(std::ostream& os,
-                         const RectangularProgram::BoundaryDataArray1& bda) {
+                         const RectangularProgram::BoundaryDataArray<I>& bda) {
     Bracketer bracketer(os);
-    return to_stream(os, bda.array[0]);
+    for (const auto& i : bda.array)
+        to_stream(os, i);
+    return os;
 }
 
 std::ostream& operator<<(std::ostream& os,
@@ -55,56 +58,6 @@ void TetrahedralWaveguide::setup(cl::CommandQueue& queue,
              velocity_buffer);
 
     period = 1 / sr;
-}
-
-template <typename Fun, typename T>
-bool is_any(const T& t, const Fun& fun = Fun()) {
-    return fun(t);
-}
-
-template <typename Fun, typename T>
-bool is_any(const std::vector<T>& t, const Fun& fun = Fun()) {
-    return std::any_of(
-        t.begin(), t.end(), [&fun](const auto& i) { return is_any(i, fun); });
-}
-
-template <typename Fun, int I>
-bool is_any(const RectangularProgram::BoundaryDataArray<I>& t,
-            const Fun& fun = Fun()) {
-    return std::any_of(std::begin(t.array),
-                       std::end(t.array),
-                       [&fun](const auto& i) { return is_any(i, fun); });
-}
-
-template <typename Fun>
-bool is_any(const RectangularProgram::BoundaryData& t, const Fun& fun = Fun()) {
-    return std::any_of(std::begin(t.filter_memory.array),
-                       std::end(t.filter_memory.array),
-                       [&fun](const auto& i) { return is_any(i, fun); });
-}
-
-template <typename Fun, typename T>
-auto find_any(const T& t, const Fun& fun = Fun()) {
-    return std::find_if(
-        t.begin(), t.end(), [&fun](const auto& i) { return is_any(i, fun); });
-}
-
-template <typename T>
-void log_nan_or_nonzero(const T& t, const std::string& identifier) {
-    auto it_nan = find_any(t, [](auto i) { return std::isnan(i); });
-    auto it_nonzero = find_any(t, [](auto i) { return i; });
-
-    if (it_nan != t.end()) {
-        Logger::log_err(identifier + " nan at index: ",
-                        it_nan - t.begin(),
-                        ", value: ",
-                        *it_nan);
-    } else if (it_nonzero != t.end()) {
-        Logger::log_err(identifier + " nonzero at index: ",
-                        it_nonzero - t.begin(),
-                        ", value: ",
-                        *it_nonzero);
-    }
 }
 
 TetrahedralWaveguide::TetrahedralWaveguide(const TetrahedralProgram& program,
@@ -322,7 +275,23 @@ RunStepResult RectangularWaveguide::run_step(size_type o,
         std::vector<RectangularProgram::BoundaryDataArray1> bda(
             mesh.compute_num_boundary<1>());
         cl::copy(queue, boundary_data_1_buffer, bda.begin(), bda.end());
-        log_nan_or_nonzero(bda, "filter memory");
+        log_nan_or_nonzero(bda, "filter memory (1)");
+    }
+
+    {
+        //  TODO remove this bit
+        std::vector<RectangularProgram::BoundaryDataArray2> bda(
+            mesh.compute_num_boundary<2>());
+        cl::copy(queue, boundary_data_2_buffer, bda.begin(), bda.end());
+        log_nan_or_nonzero(bda, "filter memory (2)");
+    }
+
+    {
+        //  TODO remove this bit
+        std::vector<RectangularProgram::BoundaryDataArray3> bda(
+            mesh.compute_num_boundary<3>());
+        cl::copy(queue, boundary_data_3_buffer, bda.begin(), bda.end());
+        log_nan_or_nonzero(bda, "filter memory (3)");
     }
 
     {
