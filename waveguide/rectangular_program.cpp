@@ -423,42 +423,27 @@ SurroundingPorts2 on_boundary_2(InnerNodeDirections2 ind) {
 //  we don't actually care about the pressure at the ghost point other than to
 //  calculate the boundary filter input
 void ghost_point_pressure_update(
-    const global float* current,
-    int3 locator,
-    int3 dimensions,
     float next_pressure,
     float prev_pressure,
     global BoundaryData* boundary_data,
     const global FilterCoefficientsCanonical* boundary,
-    PortDirection inner_direction,
     global float* debug_buffer);
 void ghost_point_pressure_update(
-    const global float* current,
-    int3 locator,
-    int3 dimensions,
     float next_pressure,
     float prev_pressure,
     global BoundaryData* boundary_data,
     const global FilterCoefficientsCanonical* boundary,
-    PortDirection inner_direction,
     global float* debug_buffer) {
-    uint inner_index = neighbor_index(locator, dimensions, inner_direction);
-    if (inner_index == NO_NEIGHBOR) {
-    }
-    float inner_pressure = current[inner_index];
+
+    //  TODO this is quite different from what's presented in the paper
+    //  check that everything cancels in the way that I think it does
 
     float filt_state = boundary_data->filter_memory.array[0];
-
     float b0 = boundary->b[0];
     float a0 = boundary->a[0];
 
-    float filter_input =
-        inner_pressure -
-        ((a0 * (prev_pressure - next_pressure)) / (b0 * COURANT) +
-         filt_state / b0);
-
+    float filter_input = -((a0 * (prev_pressure - next_pressure)) / (b0 * COURANT) + filt_state / b0);
     debug_buffer[get_global_id(0)] = filter_input;
-
     filter_step_canonical(
         filter_input, &(boundary_data->filter_memory), boundary);
 }
@@ -630,25 +615,34 @@ GET_COEFF_WEIGHTING_TEMPLATE(3);
             (current_surrounding_weighting + current_boundary_weighting +      \
              filter_weighting + prev_weighting) /                              \
             (1 + coeff_weighting);                                             \
-        CAT(InnerNodeDirections, dimensions)                                   \
-        inner_node_directions =                                                \
-            CAT(get_inner_node_directions_, dimensions)(node.bt);              \
         for (int i = 0; i != dimensions; ++i) {                                \
-            global BoundaryData* bd = &(bda->array[i]);                        \
+            global BoundaryData* bd = bda->array + i;                          \
             const global FilterCoefficientsCanonical* boundary =               \
                 boundary_coefficients + bd->coefficient_index;                 \
-            ghost_point_pressure_update(current,                               \
-                                        locator,                               \
-                                        dim,                                   \
-                                        ret,                                   \
+            ghost_point_pressure_update(ret,                                   \
                                         prev_pressure,                         \
                                         bd,                                    \
                                         boundary,                              \
-                                        inner_node_directions.array[i],        \
                                         debug_buffer);                         \
         }                                                                      \
         return ret;                                                            \
     }
+
+//        CAT(InnerNodeDirections, dimensions)                                   \
+//        inner_node_directions =                                                \
+//            CAT(get_inner_node_directions_, dimensions)(node.bt);              \
+//
+//        for (...)
+//
+//            ghost_point_pressure_update(current,                               \
+//                                        locator,                               \
+//                                        dim,                                   \
+//                                        ret,                                   \
+//                                        prev_pressure,                         \
+//                                        bd,                                    \
+//                                        boundary,                              \
+//                                        inner_node_directions.array[i],        \
+//                                        debug_buffer);                         \
 
 BOUNDARY_TEMPLATE(1);
 BOUNDARY_TEMPLATE(2);

@@ -270,6 +270,20 @@ RunStepResult RectangularWaveguide::run_step(size_type o,
              current_velocity.begin(),
              current_velocity.end());
 
+    /*
+    {
+        //  TODO remove this bit too
+        cl::copy(queue, debug_buffer, debug.begin(), debug.end());
+        log_nan_or_nonzero(debug, "debug");
+    }
+
+    {
+        //  TODO remove this bit also
+        std::vector<cl_float> ret(nodes, 0);
+        cl::copy(queue, previous, ret.begin(), ret.end());
+        log_nan_or_nonzero(ret, "pressure");
+    }
+
     {
         //  TODO remove this bit
         std::vector<RectangularProgram::BoundaryDataArray1> bda(
@@ -293,19 +307,7 @@ RunStepResult RectangularWaveguide::run_step(size_type o,
         cl::copy(queue, boundary_data_3_buffer, bda.begin(), bda.end());
         log_nan_or_nonzero(bda, "filter memory (3)");
     }
-
-    {
-        //  TODO remove this bit too
-        cl::copy(queue, debug_buffer, debug.begin(), debug.end());
-        log_nan_or_nonzero(debug, "debug");
-    }
-
-    {
-        //  TODO remove this bit also
-        std::vector<cl_float> ret(nodes, 0);
-        cl::copy(queue, previous, ret.begin(), ret.end());
-        log_nan_or_nonzero(ret, "pressure");
-    }
+    */
 
     auto velocity = to_vec3f(current_velocity.front());
     auto intensity = velocity * out.front();

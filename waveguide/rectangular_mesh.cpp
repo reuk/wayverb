@@ -12,12 +12,8 @@ RectangularMesh::Collection RectangularMesh::compute_nodes(
     const Boundary& boundary) const {
     //  TODO this takes for ever, put it on GPU?
     auto total_nodes = get_dim().product();
-    auto one_node_condensed = sizeof(CondensedNode);
-    Logger::log_err("one node: ", one_node_condensed, " B");
-    auto bytes = total_nodes * one_node_condensed;
-    Logger::log_err(bytes, " B required!");
-    Logger::log_err(bytes >> 10, " KB required!");
-    Logger::log_err(bytes >> 20, " MB required!");
+    auto bytes = total_nodes * sizeof(RectangularMesh::CondensedNode);
+    Logger::log_err(bytes >> 20, " MB required for node metadata storage!");
 
     auto ret = std::vector<Node>(total_nodes);
 
@@ -102,6 +98,23 @@ RectangularMesh::Collection RectangularMesh::compute_nodes(
         }
         for (auto i = 0u; i != ret.size(); ++i) {
             ret[i].bt = bt[i];
+        }
+    }
+
+    auto num_boundary_1 = 0;
+    auto num_boundary_2 = 0;
+    auto num_boundary_3 = 0;
+    for (auto& i : ret) {
+        switch (popcount(i.bt)) {
+            case 1:
+                i.boundary_index = num_boundary_1++;
+                break;
+            case 2:
+                i.boundary_index = num_boundary_2++;
+                break;
+            case 3:
+                i.boundary_index = num_boundary_3++;
+                break;
         }
     }
 

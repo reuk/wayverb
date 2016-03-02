@@ -388,3 +388,6 @@ is definitely not the filter input
     I might be looking at the wrong memory
     something else might be affecting the values
         although I can't see this anywhere
+
+
+

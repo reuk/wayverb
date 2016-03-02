@@ -401,9 +401,10 @@ auto log_nonzero(const T& t, const std::string& identifier) {
 }
 
 template <typename T>
-void log_nan_or_nonzero(const T& t, const std::string& identifier) {
+bool log_nan_or_nonzero(const T& t, const std::string& identifier) {
     if (log_nan(t, identifier) != std::end(t))
-        return;
+        return true;
     if (log_nonzero(t, identifier) != std::end(t))
-        return;
+        return true;
+    return false;
 }

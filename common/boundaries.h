@@ -87,8 +87,8 @@ public:
     using reference_store = std::vector<uint32_t>;
 
     Vec3i hash_point(const Vec3f& v) const;
-    reference_store get_references(int x, int y) const;
-    reference_store get_references(const Vec3i& i) const;
+    const reference_store& get_references(int x, int y) const;
+    const reference_store& get_references(const Vec3i& i) const;
 
     static constexpr int DIVISIONS = 1024;
 
@@ -110,4 +110,6 @@ private:
     CuboidBoundary boundary;
     Vec3f cell_size;
     hash_table triangle_references;
+
+    static const reference_store empty_reference_store;
 };

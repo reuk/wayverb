@@ -167,15 +167,16 @@ MeshBoundary::MeshBoundary(
         : MeshBoundary(std::get<0>(data), std::get<1>(data)) {
 }
 
-MeshBoundary::reference_store MeshBoundary::get_references(
+const MeshBoundary::reference_store& MeshBoundary::get_references(
     const Vec3i& i) const {
     return get_references(i.x, i.y);
 }
 
-MeshBoundary::reference_store MeshBoundary::get_references(int x, int y) const {
+const MeshBoundary::reference_store& MeshBoundary::get_references(int x,
+                                                                  int y) const {
     if (0 <= x && x < DIVISIONS && 0 <= y && y < DIVISIONS)
         return triangle_references[x][y];
-    return reference_store();
+    return empty_reference_store;
 }
 
 bool MeshBoundary::inside(const Vec3f& v) const {
@@ -237,3 +238,5 @@ Vec3f MeshBoundary::get_cell_size() const {
 }
 
 constexpr int MeshBoundary::DIVISIONS;
+
+const MeshBoundary::reference_store MeshBoundary::empty_reference_store{};

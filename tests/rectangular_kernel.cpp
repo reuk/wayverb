@@ -88,6 +88,31 @@ private:
 std::default_random_engine NoiseGenerator::engine{std::random_device()()};
 std::uniform_real_distribution<cl_float> NoiseGenerator::range{-r, r};
 
+class QuietNoiseGenerator : public InputGenerator {
+public:
+    virtual std::vector<std::vector<cl_float>> compute_input(
+        int size) override {
+        static auto ret = generate(size);
+        return ret;
+    }
+
+private:
+    static std::vector<std::vector<cl_float>> generate(int size) {
+        auto ret = std::vector<std::vector<cl_float>>{
+            40000, std::vector<cl_float>(size, 0)};
+        for (auto& i : ret)
+            std::generate(i.begin(), i.end(), [] { return range(engine); });
+        return ret;
+    }
+
+    static std::default_random_engine engine;
+    static constexpr float r{1e-35};
+    static std::uniform_real_distribution<cl_float> range;
+};
+
+std::default_random_engine QuietNoiseGenerator::engine{std::random_device()()};
+std::uniform_real_distribution<cl_float> QuietNoiseGenerator::range{-r, r};
+
 class ImpulseGenerator : public InputGenerator {
 public:
     virtual std::vector<std::vector<cl_float>> compute_input(
@@ -122,7 +147,6 @@ public:
                        cl_coeffs);
 
                 cl::copy(queue, cl_output, output[i].begin(), output[i].end());
-                Logger::log(output[i]);
             }
         }
         auto buf = std::vector<cl_float>(output.size());
@@ -187,6 +211,31 @@ TEST_F(testing_rk_filter, filtering_2) {
                   SF_FORMAT_WAV);
 }
 
+class testing_rk_biquad_quiet : public rk_biquad<QuietNoiseGenerator>,
+                                public ::testing::Test {};
+class testing_rk_filter_quiet : public rk_filter<QuietNoiseGenerator>,
+                                public ::testing::Test {};
+
+TEST_F(testing_rk_biquad_quiet, filtering) {
+    auto results = run_kernel(program.get_filter_test_kernel());
+    ASSERT_TRUE(log_nan(results, "filter 1 quiet results") == results.end());
+    write_sndfile("./filtered_noise_quiet.wav",
+                  {results},
+                  sr,
+                  SF_FORMAT_PCM_16,
+                  SF_FORMAT_WAV);
+}
+
+TEST_F(testing_rk_filter_quiet, filtering_2) {
+    auto results = run_kernel(program.get_filter_test_2_kernel());
+    ASSERT_TRUE(log_nan(results, "filter 2 quiet results") == results.end());
+    write_sndfile("./filtered_noise_2_quiet.wav",
+                  {results},
+                  sr,
+                  SF_FORMAT_PCM_16,
+                  SF_FORMAT_WAV);
+}
+
 TEST(compare_filters, compare_filters) {
     /*
     Logger::log_err("cpu: sizeof(CanonicalMemory): ",
@@ -228,11 +277,15 @@ TEST(compare_filters, compare_filters) {
                            return std::abs(a2db(std::abs(i / j)));
                        });
 
+        /*
         std::for_each(
             diff.begin(), diff.end(), [](auto i) { ASSERT_NEAR(i, 0, 0.001); });
+        */
 
         auto min_diff = *std::min_element(diff.begin(), diff.end());
         auto max_diff = *std::max_element(diff.begin(), diff.end());
+
+        ASSERT_TRUE(max_diff < 0.001) << max_diff;
 
         auto min_div = *std::min_element(div.begin(), div.end());
         auto max_div = *std::max_element(div.begin(), div.end());
