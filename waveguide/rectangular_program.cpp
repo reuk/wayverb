@@ -11,8 +11,8 @@ RectangularProgram::RectangularProgram(const cl::Context& context,
 
 RectangularProgram::CondensedNodeStruct RectangularProgram::condense(
     const NodeStruct& n) {
-    return CondensedNodeStruct{n.bt | (n.inside ? id_inside : id_none),
-                               n.boundary_index};
+    return CondensedNodeStruct{
+        n.boundary_type | (n.inside ? id_inside : id_none), n.boundary_index};
 }
 
 RectangularProgram::BiquadCoefficients
@@ -117,7 +117,15 @@ typedef enum {
 } ErrorCode;
 
 typedef struct {
-    int bt;
+    uint ports[PORTS];
+    float3 position;
+    bool inside;
+    int boundary_type;
+    uint boundary_index;
+} Node;
+
+typedef struct {
+    int boundary_type;
     uint boundary_index;
 } CondensedNode;
 
@@ -233,8 +241,8 @@ bool locator_outside(int3 locator, int3 dimensions) {
     return any(locator < (int3)(0)) || any(dimensions <= locator);
 }
 
-int3 to_locator(size_t index, int3 dim, global float* debug_buffer);
-int3 to_locator(size_t index, int3 dim, global float* debug_buffer) {
+int3 to_locator(size_t index, int3 dim);
+int3 to_locator(size_t index, int3 dim) {
     int xrem = index % dim.x, xquot = index / dim.x;
     int yrem = xquot % dim.y, yquot = xquot / dim.y;
     int zrem = yquot % dim.z;
@@ -440,7 +448,6 @@ void ghost_point_pressure_update(
     global BoundaryData* boundary_data,
     const global FilterCoefficientsCanonical* boundary,
     global float* debug_buffer) {
-
     //  TODO this is quite different from what's presented in the paper
     //  check that everything cancels in the way that I think it does
 
@@ -448,7 +455,9 @@ void ghost_point_pressure_update(
     float b0 = boundary->b[0];
     float a0 = boundary->a[0];
 
-    float filter_input = -((a0 * (prev_pressure - next_pressure)) / (b0 * COURANT) + filt_state / b0);
+    float filter_input =
+        -((a0 * (prev_pressure - next_pressure)) / (b0 * COURANT) +
+          filt_state / b0);
     filter_step_canonical(
         filter_input, &(boundary_data->filter_memory), boundary);
 }
@@ -607,7 +616,7 @@ GET_COEFF_WEIGHTING_TEMPLATE(3);
         global float* debug_buffer) {                                          \
         float current_surrounding_weighting =                                  \
             CAT(get_current_surrounding_weighting_, dimensions)(               \
-                current, locator, dim, node.bt, debug_buffer);                 \
+                current, locator, dim, node.boundary_type, debug_buffer);      \
         global CAT(BoundaryDataArray, dimensions)* bda =                       \
             boundary_data + node.boundary_index;                               \
         float filter_weighting = CAT(get_filter_weighting_, dimensions)(       \
@@ -615,21 +624,17 @@ GET_COEFF_WEIGHTING_TEMPLATE(3);
         float coeff_weighting =                                                \
             CAT(get_coeff_weighting_, dimensions)(bda, boundary_coefficients); \
         float prev_weighting = (coeff_weighting - 1) * prev_pressure;          \
-        float ret =                                                            \
-            (current_surrounding_weighting + \
-             filter_weighting + prev_weighting) /                              \
-            (1 + coeff_weighting);                                             \
+        float ret = (current_surrounding_weighting + filter_weighting +        \
+                     prev_weighting) /                                         \
+                    (1 + coeff_weighting);                                     \
         for (int i = 0; i != dimensions; ++i) {                                \
             global BoundaryData* bd = bda->array + i;                          \
             const global FilterCoefficientsCanonical* boundary =               \
                 boundary_coefficients + bd->coefficient_index;                 \
-            ghost_point_pressure_update(ret,                                   \
-                                        prev_pressure,                         \
-                                        bd,                                    \
-                                        boundary,                              \
-                                        debug_buffer);                         \
+            ghost_point_pressure_update(                                       \
+                ret, prev_pressure, bd, boundary, debug_buffer);               \
         }                                                                      \
-        debug_buffer[get_global_id(0)] = ret; \
+        debug_buffer[get_global_id(0)] = ret;                                  \
         return ret;                                                            \
     }
 
@@ -637,7 +642,7 @@ GET_COEFF_WEIGHTING_TEMPLATE(3);
 //            get_current_boundary_weighting(current);                           \
 //        CAT(InnerNodeDirections, dimensions)                                   \
 //        inner_node_directions =                                                \
-//            CAT(get_inner_node_directions_, dimensions)(node.bt);              \
+//            CAT(get_inner_node_directions_, dimensions)(node.boundary_type);              \
 //
 //        for (...)
 //
@@ -678,20 +683,21 @@ kernel void condensed_waveguide(const global float* current,
     size_t index = get_global_id(0);
     CondensedNode node = nodes[index];
 
-    int3 locator = to_locator(index, dimensions, debug_buffer);
+    int3 locator = to_locator(index, dimensions);
 
     float prev_pressure = previous[index];
     float next_pressure = 0;
 
     //  find the next pressure at this node, assign it to next_pressure
-    switch (popcount(node.bt)) {
+    switch (popcount(node.boundary_type)) {
         //  this is inside or outside, not a boundary
         case 1:
-            if (node.bt & id_inside || node.bt & id_reentrant) {
+            if (node.boundary_type & id_inside ||
+                node.boundary_type & id_reentrant) {
                 for (int i = 0; i != PORTS; ++i) {
                     uint port_index = neighbor_index(locator, dimensions, i);
-//                    if (port_index != NO_NEIGHBOR &&
-//                        nodes[port_index].bt & id_inside)
+                    //                    if (port_index != NO_NEIGHBOR &&
+                    //                        nodes[port_index].bt & id_inside)
                     if (port_index != NO_NEIGHBOR)
                         next_pressure += current[port_index];
                 }
@@ -733,8 +739,10 @@ kernel void condensed_waveguide(const global float* current,
             break;
     }
 
-    if (isinf(next_pressure)) *error_flag |= id_inf_error;
-    if (isnan(next_pressure)) *error_flag |= id_nan_error;
+    if (isinf(next_pressure))
+        *error_flag |= id_inf_error;
+    if (isnan(next_pressure))
+        *error_flag |= id_nan_error;
 
     previous[index] = next_pressure;
 
@@ -751,7 +759,8 @@ kernel void condensed_waveguide(const global float* current,
         float differences[PORTS] = {0};
         for (int i = 0; i != PORTS; ++i) {
             uint port_index = neighbor_index(locator, dimensions, i);
-            if (port_index != NO_NEIGHBOR && nodes[port_index].bt & id_inside)
+            if (port_index != NO_NEIGHBOR &&
+                nodes[port_index].boundary_type & id_inside)
                 differences[i] = (previous[port_index] - previous[index]) /
                                  spatial_sampling_period;
         }
@@ -776,4 +785,32 @@ kernel void condensed_waveguide(const global float* current,
         *velocity_buffer += T * multiplied;
     }
 }
+
+kernel void classify_boundaries(global Node* nodes,
+                                int3 dimensions,
+                                int set_bits) {
+    size_t index = get_global_id(0);
+    global Node* node = nodes + index;
+
+    if (!node->inside && node->boundary_type == id_none) {
+        for (int i = 0; i != PORTS; ++i) {
+            uint port_ind = node->ports[i];
+            if (port_ind != NO_NEIGHBOR) {
+                global Node* port_node = nodes + port_ind;
+                if ((!set_bits && port_node->inside) ||
+                    (set_bits && port_node->boundary_type != id_reentrant &&
+                     popcount(port_node->boundary_type) == set_bits)) {
+                    node->boundary_type |= 1 << (i + 1);
+                }
+            }
+        }
+        int final_bits = popcount(node->boundary_type);
+        if (set_bits + 1 < final_bits) {
+            node->boundary_type = id_reentrant;
+        } else if (final_bits <= set_bits) {
+            node->boundary_type = id_none;
+        }
+    }
+}
+
 )"};

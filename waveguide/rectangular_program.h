@@ -34,14 +34,14 @@ public:
         cl_uint ports[PORTS]{};
         cl_float3 position{};
         cl_bool inside{};
-        cl_int bt{};
+        cl_int boundary_type{};
         cl_uint boundary_index{};
     };
 
     struct __attribute__((aligned(8))) CondensedNodeStruct final {
         static constexpr int PORTS{6};
         static constexpr cl_uint NO_NEIGHBOR{~cl_uint{0}};
-        cl_int bt{};
+        cl_int boundary_type{};
         cl_uint boundary_index{};
     };
 
@@ -123,6 +123,11 @@ public:
                             cl::Buffer>(*this, "condensed_waveguide", &error);
         assert(error == CL_SUCCESS);
         return ret;
+    }
+
+    auto get_boundary_classify_kernel() const {
+        return cl::make_kernel<cl::Buffer, cl_int3, cl_int>(
+            *this, "classify_boundaries");
     }
 
     auto get_filter_test_kernel() const {

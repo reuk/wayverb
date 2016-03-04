@@ -9,7 +9,9 @@
 #include <numeric>
 
 RectangularMesh::Collection RectangularMesh::compute_nodes(
-    const Boundary& boundary) const {
+    const Boundary& boundary,
+    const RectangularProgram& program,
+    cl::CommandQueue& queue) const {
     //  TODO this takes for ever, put it on GPU?
     auto total_nodes = get_dim().product();
     auto bytes = total_nodes * sizeof(RectangularMesh::CondensedNode);
@@ -62,26 +64,42 @@ RectangularMesh::Collection RectangularMesh::compute_nodes(
                    ret.begin(),
                    [](auto i, auto j) {
                        i.inside = j;
+                       i.boundary_type = RectangularProgram::id_none;
                        return i;
                    });
 
-    std::vector<cl_int> bt(ret.size());
-    for (auto& i : ret) {
-        i.bt = RectangularProgram::id_none;
+#if 0
+    //------------------------------------------------------------------------//
+    cl::Buffer node_buffer(
+        program.getInfo<CL_PROGRAM_CONTEXT>(), ret.begin(), ret.end(), false);
+    auto kernel = program.get_boundary_classify_kernel();
+    for (auto set_bits = 0; set_bits != 3; ++set_bits) {
+        kernel(cl::EnqueueArgs(queue, cl::NDRange(ret.size())),
+               node_buffer,
+               to_cl_int3(get_dim()),
+               set_bits);
     }
+
+    cl::copy(queue, node_buffer, ret.begin(), ret.end());
+    //------------------------------------------------------------------------//
+#else
+    //------------------------------------------------------------------------//
+    std::vector<cl_int> bt(ret.size());
     for (auto set_bits = 0; set_bits != 3; ++set_bits) {
         std::fill(bt.begin(), bt.end(), RectangularProgram::id_none);
         for (auto i = 0u; i != ret.size(); ++i) {
             auto& node = ret[i];
-            if (!node.inside && node.bt == RectangularProgram::id_none) {
+            if (!node.inside &&
+                node.boundary_type == RectangularProgram::id_none) {
                 for (auto j = 0; j != 6; ++j) {
                     auto port_ind = node.ports[j];
                     if (port_ind != Node::NO_NEIGHBOR) {
-                        if ((!set_bits && inside[port_ind]) ||
+                        if ((!set_bits && ret[port_ind].inside) ||
                             (set_bits &&
-                             ret[port_ind].bt !=
+                             ret[port_ind].boundary_type !=
                                  RectangularProgram::id_reentrant &&
-                             popcount(ret[port_ind].bt) == set_bits)) {
+                             popcount(ret[port_ind].boundary_type) ==
+                                 set_bits)) {
                             bt[i] |= 1 << (j + 1);
                         }
                     }
@@ -93,19 +111,21 @@ RectangularMesh::Collection RectangularMesh::compute_nodes(
                     bt[i] = RectangularProgram::id_none;
                 }
             } else {
-                bt[i] = node.bt;
+                bt[i] = node.boundary_type;
             }
         }
         for (auto i = 0u; i != ret.size(); ++i) {
-            ret[i].bt = bt[i];
+            ret[i].boundary_type = bt[i];
         }
     }
+//------------------------------------------------------------------------//
+#endif
 
     auto num_boundary_1 = 0;
     auto num_boundary_2 = 0;
     auto num_boundary_3 = 0;
     for (auto& i : ret) {
-        switch (popcount(i.bt)) {
+        switch (popcount(i.boundary_type)) {
             case 1:
                 i.boundary_index = num_boundary_1++;
                 break;
@@ -121,13 +141,15 @@ RectangularMesh::Collection RectangularMesh::compute_nodes(
     return ret;
 }
 
-RectangularMesh::RectangularMesh(const Boundary& b,
+RectangularMesh::RectangularMesh(const RectangularProgram& program,
+                                 cl::CommandQueue& queue,
+                                 const Boundary& b,
                                  float spacing,
                                  const Vec3f& anchor)
         : BaseMesh(spacing,
                    compute_adjusted_boundary(b.get_aabb(), anchor, spacing))
         , dim(get_aabb().get_dimensions() / spacing)
-        , nodes(compute_nodes(b)) {
+        , nodes(compute_nodes(b, program, queue)) {
 }
 
 RectangularMesh::size_type RectangularMesh::compute_index(
@@ -213,7 +235,9 @@ RectangularMesh::get_condensed_nodes() const {
         ret.begin(),
         ret.end(),
         [](const auto& i) {
-            if (i.bt & RectangularProgram::id_inside && popcount(i.bt) > 1) {
+            if (all_flags_set(i.boundary_type,
+                              std::make_tuple(RectangularProgram::id_inside)) &&
+                popcount(i.boundary_type) > 1) {
                 Logger::log_err("too many bits set?");
             }
         });

@@ -40,8 +40,11 @@ std::ostream& operator<<(std::ostream& os,
 std::ostream& operator<<(std::ostream& os,
                          const RectangularProgram::CondensedNodeStruct& cns) {
     Bracketer bracketer(os);
-    return to_stream(
-        os, "bt: ", cns.bt, "  boundary_index: ", cns.boundary_index);
+    return to_stream(os,
+                     "bt: ",
+                     cns.boundary_type,
+                     "  boundary_index: ",
+                     cns.boundary_index);
 }
 
 void TetrahedralWaveguide::setup(cl::CommandQueue& queue,
@@ -211,7 +214,7 @@ RectangularWaveguide::RectangularWaveguide(const RectangularProgram& program,
         : RectangularWaveguide(
               program,
               queue,
-              RectangularMesh(boundary, spacing, anchor),
+              RectangularMesh(program, queue, boundary, spacing, anchor),
               to_filter_coefficients(boundary.get_surfaces(), sr)) {
 }
 

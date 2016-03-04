@@ -199,19 +199,12 @@ void DrawableScene::init_waveguide(const SceneData &scene_data,
     auto waveguide_program =
         get_program<Waveguide::ProgramType>(context, device);
 
-#if 1
-    auto coeffs = RectangularProgram::get_notch_filter_array(
-        Testing::notches, cc.get_waveguide_sample_rate());
-#else
-    auto coeffs = RectangularProgram::CanonicalCoefficients{
-        {1, 0, 0, 0, 0, 0, 0}, {1, 0, 0, 0, 0, 0, 0}};
-#endif
     auto w = std::make_unique<Waveguide>(waveguide_program,
                                          queue,
                                          boundary,
                                          cc.get_divisions(),
                                          cc.get_mic(),
-                                         coeffs);
+                                         cc.get_waveguide_sample_rate());
     auto corrected_source_index = w->get_index_for_coordinate(cc.get_source());
     auto corrected_source = w->get_coordinate_for_index(corrected_source_index);
 
@@ -284,7 +277,7 @@ void DrawableScene::update(float dt) {
         try {
             if (future_pressure.wait_for(std::chrono::milliseconds(0)) ==
                 std::future_status::ready) {
-                mesh_object->set_pressures(future_pressure.get());
+                //                mesh_object->set_pressures(future_pressure.get());
                 trigger_pressure_calculation();
             }
         } catch (const std::exception &e) {

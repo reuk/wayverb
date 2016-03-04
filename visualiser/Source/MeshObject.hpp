@@ -24,7 +24,7 @@ public:
                        nodes.end(),
                        c.begin(),
                        [](const auto & i) {
-                           switch (i.bt) {
+                           switch (i.boundary_type) {
                                case RectangularProgram::id_none:
                                case RectangularProgram::id_inside:
                                    return glm::vec4(0, 0, 0, 0);

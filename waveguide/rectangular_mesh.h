@@ -9,7 +9,9 @@
 
 class RectangularMesh : public BaseMesh<RectangularProgram, Vec3i> {
 public:
-    RectangularMesh(const Boundary& boundary,
+    RectangularMesh(const RectangularProgram& program,
+                    cl::CommandQueue& queue,
+                    const Boundary& boundary,
                     float spacing,
                     const Vec3f& anchor);
 
@@ -23,7 +25,9 @@ public:
     const Collection& get_nodes() const override;
 
     void compute_neighbors(size_type index, cl_uint* output) const override;
-    Collection compute_nodes(const Boundary& boundary) const;
+    Collection compute_nodes(const Boundary& boundary,
+                             const RectangularProgram& program,
+                             cl::CommandQueue& queue) const;
 
     std::vector<CondensedNode> get_condensed_nodes() const;
 
@@ -36,10 +40,11 @@ public:
             get_nodes().end(),
             0u,
             [](auto i, const auto& j) {
-                return i + ((j.bt != RectangularProgram::id_reentrant &&
-                             popcount(j.bt) == BITS)
-                                ? 1
-                                : 0);
+                return i +
+                       ((j.boundary_type != RectangularProgram::id_reentrant &&
+                         popcount(j.boundary_type) == BITS)
+                            ? 1
+                            : 0);
             });
     }
 
