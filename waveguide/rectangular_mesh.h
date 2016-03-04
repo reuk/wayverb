@@ -43,8 +43,6 @@ public:
             });
     }
 
-    size_type compute_num_surface() const;
-
 private:
     Vec3i dim;
     Collection nodes;

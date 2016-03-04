@@ -6,8 +6,8 @@ namespace Testing {
 std::array<RectangularProgram::NotchFilterDescriptor,
            RectangularProgram::BiquadCoefficientsArray::BIQUAD_SECTIONS>
     notches{{
-        RectangularProgram::NotchFilterDescriptor{-12, 500, 1},
-        RectangularProgram::NotchFilterDescriptor{-12, 1200, 1},
-        RectangularProgram::NotchFilterDescriptor{-12, 2400, 1},
+        RectangularProgram::NotchFilterDescriptor{-60, 2000, 3},
+        RectangularProgram::NotchFilterDescriptor{-60, 4000, 3},
+        RectangularProgram::NotchFilterDescriptor{-60, 8000, 3},
     }};
 }

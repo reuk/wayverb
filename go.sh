@@ -24,5 +24,4 @@ callraytrace () {
 }
 
 #cmake .. && make && ctest -V && callraytrace vault vault vault
-cmake .. && make && ./boundary_test/boundary_reflect ./boundary_test
-#python ../boundary_test/graphs.py
+cmake .. && make && ./boundary_test/boundary_reflect ./boundary_test && python ../boundary_test/graphs.py

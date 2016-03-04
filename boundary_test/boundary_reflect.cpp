@@ -82,7 +82,7 @@ std::vector<float> right_hanning(int length) {
 std::vector<float> run_simulation(const cl::Context& context,
                                   cl::Device& device,
                                   cl::CommandQueue& queue,
-                                  const Boundary& boundary,
+                                  const CuboidBoundary& boundary,
                                   const WaveguideConfig& config,
                                   const Vec3f& source,
                                   const Vec3f& receiver,
@@ -91,18 +91,12 @@ std::vector<float> run_simulation(const cl::Context& context,
                                   int steps) {
     auto waveguide_program = get_program<RectangularProgram>(context, device);
 
-    auto coeffs = RectangularProgram::get_notch_filter_array(
-        Testing::notches, config.get_waveguide_sample_rate());
-//    coeffs = RectangularProgram::to_impedance_coefficients(coeffs);
-
-    Logger::log_err("coeffs: ", coeffs);
-
     RectangularWaveguide waveguide(waveguide_program,
                                    queue,
                                    boundary,
                                    config.get_divisions(),
                                    receiver,
-                                   coeffs);
+                                   config.get_waveguide_sample_rate());
 
     auto receiver_index = waveguide.get_index_for_coordinate(receiver);
     auto source_index = waveguide.get_index_for_coordinate(source);
@@ -126,21 +120,222 @@ std::vector<float> run_simulation(const cl::Context& context,
                                        steps,
                                        config.get_waveguide_sample_rate());
 
-    //    auto output = Microphone::omni.process(results);
+#if 0
+    auto output = Microphone::omni.process(results);
+#else
     auto output = std::vector<float>(results.size());
     std::transform(results.begin(),
                    results.end(),
                    output.begin(),
                    [](const auto& i) { return i.pressure; });
+#endif
 
     LinkwitzRiley lopass;
     lopass.setParams(
         1, config.get_filter_frequency(), config.get_output_sample_rate());
     //    lopass.filter(output);
 
-    write_file(config, output_folder, fname, output);
-
     return output;
+}
+
+struct FullTestResults {
+    std::vector<float> windowed_free_field_signal;
+    std::vector<float> windowed_reflection_signal;
+
+    bool operator==(const FullTestResults& rhs) const {
+        return windowed_free_field_signal == rhs.windowed_free_field_signal &&
+               windowed_reflection_signal == rhs.windowed_reflection_signal;
+    }
+};
+
+FullTestResults run_full_test(const std::string& test_name,
+                              const cl::Context& context,
+                              cl::Device& device,
+                              cl::CommandQueue& queue,
+                              const std::string& output_folder,
+                              const WaveguideConfig& config,
+                              float azimuth,
+                              float elevation,
+                              int dim,
+                              const std::vector<Surface>& surfaces) {
+    //  set room size based on desired number of nodes
+    auto desired_nodes = Vec3<uint32_t>(dim, dim, dim);
+    auto total_desired_nodes = desired_nodes.product();
+
+    auto total_possible_nodes = 1 << 30;
+    if (total_desired_nodes >= total_possible_nodes) {
+        Logger::log_err("total desired nodes: ", total_desired_nodes);
+        Logger::log_err("however, total possible nodes: ",
+                        total_possible_nodes);
+        throw std::runtime_error("too many nodes");
+    }
+
+    //  generate two boundaries, one twice the size of the other
+    auto wall = CuboidBoundary(
+        Vec3f(0, 0, 0), desired_nodes * config.get_divisions(), surfaces);
+
+    Logger::log_err("boundary: ", wall);
+
+    auto far = wall.get_c1();
+    auto new_dim = Vec3f(far.x * 2, far.y, far.z);
+
+    auto no_wall = CuboidBoundary(Vec3f(0, 0, 0), new_dim, surfaces);
+
+    //  place source, receiver (and image) in rooms based on distance in nodes
+    //      from the wall
+    auto source_dist_nodes = desired_nodes.mag() / 8;
+    auto source_dist = source_dist_nodes * config.get_divisions();
+
+    auto wall_centre = no_wall.get_centre();
+
+    auto source_position =
+        wall_centre + point_on_sphere(azimuth + M_PI, elevation) * source_dist;
+    Logger::log_err("source position: ", source_position);
+
+    auto receiver_position =
+        wall_centre +
+        point_on_sphere(-azimuth + M_PI, -elevation) * source_dist;
+    Logger::log_err("receiver position: ", receiver_position);
+
+    auto image_position =
+        wall_centre + point_on_sphere(azimuth, -elevation) * source_dist;
+    Logger::log_err("image position: ", image_position);
+
+    auto wrong_position = [source_dist, &no_wall](auto pos, auto c) {
+        return std::abs((pos - c).mag() - source_dist) > 1 ||
+               !no_wall.inside(pos);
+    };
+
+    if (wrong_position(source_position, wall_centre)) {
+        Logger::log_err("source is placed incorrectly");
+        throw std::runtime_error("incorrect placement");
+    }
+
+    if (wrong_position(receiver_position, wall_centre)) {
+        Logger::log_err("receiver is placed incorrectly");
+        throw std::runtime_error("incorrect placement");
+    }
+
+    if (wrong_position(image_position, wall_centre)) {
+        Logger::log_err("image is placed incorrectly");
+        throw std::runtime_error("incorrect placement");
+    }
+
+    if (std::abs((source_position - image_position).mag() - source_dist * 2) >
+        1) {
+        Logger::log_err("image is placed incorrectly");
+        throw std::runtime_error("incorrect placement");
+    }
+
+    auto steps = source_dist_nodes * 4;
+    Logger::log_err("running for ", steps, " steps");
+
+    auto reflected = run_simulation(context,
+                                    device,
+                                    queue,
+                                    wall,
+                                    config,
+                                    source_position,
+                                    receiver_position,
+                                    output_folder,
+                                    "reflected",
+                                    steps);
+    Logger::log_err("reflected max mag: ", max_mag(reflected));
+    auto image = run_simulation(context,
+                                device,
+                                queue,
+                                no_wall,
+                                config,
+                                source_position,
+                                image_position,
+                                output_folder,
+                                "image",
+                                steps);
+    Logger::log_err("image max mag: ", max_mag(image));
+    auto direct = run_simulation(context,
+                                 device,
+                                 queue,
+                                 no_wall,
+                                 config,
+                                 source_position,
+                                 receiver_position,
+                                 output_folder,
+                                 "direct",
+                                 steps);
+    Logger::log_err("direct max mag: ", max_mag(direct));
+
+    auto subbed = reflected;
+    std::transform(reflected.begin(),
+                   reflected.end(),
+                   direct.begin(),
+                   subbed.begin(),
+                   [](const auto& i, const auto& j) { return j - i; });
+    Logger::log_err("subbed max mag: ", max_mag(subbed));
+
+    auto first_nonzero = [](const auto& i) {
+        auto it = std::find_if(i.begin(), i.end(), [](auto j) { return j; });
+        if (it == i.end())
+            throw std::runtime_error("no non-zero values found");
+        Logger::log_err("first nonzero value: ", *it);
+        return it - i.begin();
+    };
+
+    auto first_nonzero_reflected = first_nonzero(reflected);
+    auto first_nonzero_direct = first_nonzero(direct);
+
+    Logger::log_err("first_nonzero_reflected: ", first_nonzero_reflected);
+    Logger::log_err("first_nonzero_direct: ", first_nonzero_direct);
+
+    if (first_nonzero_reflected != first_nonzero_direct) {
+        Logger::log_err(
+            "WARNING: direct and reflected should receive signal at same "
+            "time");
+    }
+
+    auto first_nonzero_image = first_nonzero(image);
+    auto first_nonzero_subbed = first_nonzero(subbed);
+
+    Logger::log_err("first_nonzero_image: ", first_nonzero_image);
+    Logger::log_err("first_nonzero_subbed: ", first_nonzero_subbed);
+
+    if (first_nonzero_image != first_nonzero_subbed) {
+        Logger::log_err(
+            "WARNING: image and subbed should receive signal at same time");
+    }
+
+    if (first_nonzero_image <= first_nonzero_direct) {
+        Logger::log_err("WARNING: direct should arrive before image");
+    }
+
+    auto h = right_hanning(subbed.size());
+
+    auto windowed_free_field = h;
+    auto windowed_subbed = h;
+
+    auto window = [&h](const auto& in, auto& out) {
+        std::transform(in.begin(),
+                       in.end(),
+                       h.begin(),
+                       out.begin(),
+                       [](auto i, auto j) { return i * j; });
+    };
+
+    window(image, windowed_free_field);
+    window(subbed, windowed_subbed);
+
+    auto norm_factor =
+        1.0 / std::max(max_mag(windowed_free_field), max_mag(windowed_subbed));
+    mul(windowed_free_field, norm_factor);
+    mul(windowed_subbed, norm_factor);
+
+    write_file(config,
+               output_folder,
+               test_name + "_windowed_free_field",
+               windowed_free_field);
+    write_file(
+        config, output_folder, test_name + "_windowed_subbed", windowed_subbed);
+
+    return FullTestResults{windowed_free_field, windowed_subbed};
 }
 
 int main(int argc, char** argv) {
@@ -171,195 +366,54 @@ int main(int argc, char** argv) {
     auto device = get_device(context);
 
     auto available = device.getInfo<CL_DEVICE_AVAILABLE>();
-    if (! available) {
+    if (!available) {
         Logger::log_err("opencl device is not available!");
     }
 
     auto queue = cl::CommandQueue(context, device);
 
     //  set room size based on desired number of nodes
-    auto dim = 200;
-    auto desired_nodes = Vec3<uint32_t>(dim, dim, dim);
-    auto total_desired_nodes = desired_nodes.product();
-
-    auto total_possible_nodes = 1 << 30;
-    if (total_desired_nodes >= total_possible_nodes) {
-        Logger::log_err("total desired nodes: ", total_desired_nodes);
-        Logger::log_err("however, total possible nodes: ",
-                        total_possible_nodes);
-        return EXIT_FAILURE;
-    }
-
-    //  generate two boundaries, one twice the size of the other
-    auto wall =
-        CuboidBoundary(Vec3f(0, 0, 0), desired_nodes * config.get_divisions());
-    Logger::log_err("boundary: ", wall);
-
-    auto far = wall.get_c1();
-    auto new_dim = Vec3f(far.x * 2, far.y, far.z);
-
-    auto no_wall = CuboidBoundary(Vec3f(0, 0, 0), new_dim);
-
-    //  place source, receiver (and image) in rooms based on distance in nodes
-    //      from the wall
-    auto source_dist_nodes = desired_nodes.mag() / 4;
-    auto source_dist = source_dist_nodes * config.get_divisions();
+    auto dim = 250;
 
     auto azimuth = M_PI / 4;
     auto elevation = M_PI / 6;
 
-    auto wall_centre = no_wall.get_centre();
-
-    auto source_position =
-        wall_centre + point_on_sphere(azimuth + M_PI, elevation) * source_dist;
-    Logger::log_err("source position: ", source_position);
-
-    auto receiver_position =
-        wall_centre +
-        point_on_sphere(-azimuth + M_PI, -elevation) * source_dist;
-    Logger::log_err("receiver position: ", receiver_position);
-
-    auto image_position =
-        wall_centre + point_on_sphere(azimuth, -elevation) * source_dist;
-    Logger::log_err("image position: ", image_position);
-
-    auto wrong_position = [source_dist](auto pos, auto c) {
-        return std::abs((pos - c).mag() - source_dist) > 1;
-    };
-
-    if (wrong_position(source_position, wall_centre)) {
-        Logger::log_err("source is placed incorrectly");
-        return EXIT_FAILURE;
-    }
-
-    if (wrong_position(receiver_position, wall_centre)) {
-        Logger::log_err("receiver is placed incorrectly");
-        return EXIT_FAILURE;
-    }
-
-    if (wrong_position(image_position, wall_centre)) {
-        Logger::log_err("image is placed incorrectly");
-        return EXIT_FAILURE;
-    }
-
-    if (std::abs((source_position - image_position).mag() - source_dist * 2) >
-        1) {
-        Logger::log_err("image is placed incorrectly");
-        return EXIT_FAILURE;
-    }
-
-    auto steps = source_dist_nodes * 4;
-    Logger::log_err("running for ", steps, " steps");
-
     try {
-        auto reflected = run_simulation(context,
-                                        device,
-                                        queue,
-                                        wall,
-                                        config,
-                                        source_position,
-                                        receiver_position,
-                                        output_folder,
-                                        "reflected",
-                                        steps);
-        Logger::log_err("reflected max mag: ", max_mag(reflected));
-        auto image = run_simulation(context,
-                                    device,
-                                    queue,
-                                    no_wall,
-                                    config,
-                                    source_position,
-                                    image_position,
-                                    output_folder,
-                                    "image",
-                                    steps);
-        Logger::log_err("image max mag: ", max_mag(image));
-        auto direct = run_simulation(context,
-                                     device,
-                                     queue,
-                                     no_wall,
-                                     config,
-                                     source_position,
-                                     receiver_position,
-                                     output_folder,
-                                     "direct",
-                                     steps);
-        Logger::log_err("direct max mag: ", max_mag(direct));
-
-        auto subbed = reflected;
-        std::transform(reflected.begin(),
-                       reflected.end(),
-                       direct.begin(),
-                       subbed.begin(),
-                       [](const auto& i, const auto& j) { return j - i; });
-        Logger::log_err("subbed max mag: ", max_mag(subbed));
-
-        auto first_nonzero = [](const auto& i) {
-            auto it =
-                std::find_if(i.begin(), i.end(), [](auto j) { return j; });
-            if (it == i.end())
-                throw std::runtime_error("no non-zero values found");
-            Logger::log_err("first nonzero value: ", *it);
-            return it - i.begin();
+        struct SurfacePackage {
+            std::string name;
+            std::vector<Surface> surfaces;
         };
 
-        auto first_nonzero_reflected = first_nonzero(reflected);
-        auto first_nonzero_direct = first_nonzero(direct);
+        auto surface_set = {
+            SurfacePackage{"filtered",
+                           {Surface{{{0.4, 0.3, 0.5, 0.8, 0.9, 1, 1, 1}},
+                                    {{0.4, 0.3, 0.5, 0.8, 0.9, 1, 1, 1}}}}},
+            SurfacePackage{"flat",
+                           {Surface{{{1, 1, 1, 1, 1, 1, 1, 1}},
+                                    {{1, 1, 1, 1, 1, 1, 1, 1}}}}}};
 
-        Logger::log_err("first_nonzero_reflected: ", first_nonzero_reflected);
-        Logger::log_err("first_nonzero_direct: ", first_nonzero_direct);
+        std::vector<FullTestResults> all_test_results(surface_set.size());
+        std::transform(surface_set.begin(),
+                       surface_set.end(),
+                       all_test_results.begin(),
+                       [&](auto i) {
+                           return run_full_test(i.name,
+                                                context,
+                                                device,
+                                                queue,
+                                                output_folder,
+                                                config,
+                                                azimuth,
+                                                elevation,
+                                                dim,
+                                                i.surfaces);
+                       });
 
-        if (first_nonzero_reflected != first_nonzero_direct) {
+        if (all_test_results.front() == all_test_results.back()) {
             Logger::log_err(
-                "WARNING: direct and reflected should receive signal at same "
-                "time");
-            //           return EXIT_FAILURE;
+                "somehow both test results are the same even though they use "
+                "different boundary coefficients");
         }
-
-        auto first_nonzero_image = first_nonzero(image);
-        auto first_nonzero_subbed = first_nonzero(subbed);
-
-        Logger::log_err("first_nonzero_image: ", first_nonzero_image);
-        Logger::log_err("first_nonzero_subbed: ", first_nonzero_subbed);
-
-        if (first_nonzero_image != first_nonzero_subbed) {
-            Logger::log_err(
-                "WARNING: image and subbed should receive signal at same time");
-            //            return EXIT_FAILURE;
-        }
-
-        if (first_nonzero_image <= first_nonzero_direct) {
-            Logger::log_err("WARNING: direct should arrive before image");
-            //            return EXIT_FAILURE;
-        }
-
-        write_file(config, output_folder, "isolated_reflection", subbed);
-
-        auto h = right_hanning(subbed.size());
-
-        auto windowed_free_field = h;
-        auto windowed_subbed = h;
-
-        auto window = [&h](const auto& in, auto& out) {
-            std::transform(in.begin(),
-                           in.end(),
-                           h.begin(),
-                           out.begin(),
-                           [](auto i, auto j) { return i * j; });
-        };
-
-        window(image, windowed_free_field);
-        window(subbed, windowed_subbed);
-
-        auto norm_factor = 1.0 / std::max(max_mag(windowed_free_field),
-                                          max_mag(windowed_subbed));
-        mul(windowed_free_field, norm_factor);
-        mul(windowed_subbed, norm_factor);
-
-        write_file(
-            config, output_folder, "windowed_free_field", windowed_free_field);
-        write_file(config, output_folder, "windowed_subbed", windowed_subbed);
-
     } catch (const cl::Error& e) {
         Logger::log_err("critical cl error: ", e.what());
         return EXIT_FAILURE;

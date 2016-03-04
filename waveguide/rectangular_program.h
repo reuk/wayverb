@@ -22,6 +22,12 @@ public:
         id_reentrant = 1 << 7,
     } BoundaryType;
 
+    typedef enum : cl_int {
+        id_success = 0,
+        id_inf_error = 1 << 0,
+        id_nan_error = 1 << 1,
+    } ErrorCode;
+
     struct __attribute__((aligned(8))) NodeStruct final {
         static constexpr int PORTS{6};
         static constexpr cl_uint NO_NEIGHBOR{~cl_uint{0}};
@@ -112,6 +118,7 @@ public:
                             cl_float,
                             cl_float,
                             cl_ulong,
+                            cl::Buffer,
                             cl::Buffer,
                             cl::Buffer>(*this, "condensed_waveguide", &error);
         assert(error == CL_SUCCESS);

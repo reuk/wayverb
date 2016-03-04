@@ -227,8 +227,3 @@ const RectangularMesh::Collection& RectangularMesh::get_nodes() const {
 Vec3i RectangularMesh::get_dim() const {
     return dim;
 }
-
-RectangularMesh::size_type RectangularMesh::compute_num_surface() const {
-    //  TODO
-    return 1;
-}

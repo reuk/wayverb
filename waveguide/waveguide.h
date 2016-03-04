@@ -220,14 +220,12 @@ private:
 
 class RectangularWaveguide : public Waveguide<RectangularProgram> {
 public:
-    RectangularWaveguide(
-        const ProgramType& program,
-        cl::CommandQueue& queue,
-        const Boundary& boundary,
-        float spacing,
-        const Vec3f& anchor,
-        const RectangularProgram::CanonicalCoefficients& coefficients /* =
-            RectangularProgram::CanonicalCoefficients{}*/);
+    RectangularWaveguide(const ProgramType& program,
+                         cl::CommandQueue& queue,
+                         const Boundary& boundary,
+                         float spacing,
+                         const Vec3f& anchor,
+                         float sr);
 
     void setup(cl::CommandQueue& queue, size_type o, float sr) override;
 
@@ -244,6 +242,12 @@ public:
 
     const RectangularMesh& get_mesh() const;
     bool inside(size_type index) const override;
+
+    static RectangularProgram::CanonicalCoefficients to_filter_coefficients(
+        const Surface& surface, float sr);
+
+    static std::vector<RectangularProgram::CanonicalCoefficients>
+    to_filter_coefficients(std::vector<Surface> surfaces, float sr);
 
 private:
     using MeshType = RectangularMesh;
@@ -290,6 +294,7 @@ private:
     const cl::Buffer
         boundary_coefficients_buffer;  //  const, set in constructor
     cl::Buffer debug_buffer;           //  set each iteration
+    cl::Buffer error_flag_buffer;      //  set each iteration
 
     float period;
 };
@@ -396,15 +401,22 @@ auto log_nan(const T& t, const std::string& identifier) {
 }
 
 template <typename T>
+auto log_inf(const T& t, const std::string& identifier) {
+    return log_find_any(
+        t, identifier, "inf", [](auto i) { return std::isinf(i); });
+}
+
+template <typename T>
 auto log_nonzero(const T& t, const std::string& identifier) {
     return log_find_any(t, identifier, "nonzero", [](auto i) { return i; });
 }
 
 template <typename T>
-bool log_nan_or_nonzero(const T& t, const std::string& identifier) {
+bool log_nan_or_nonzero_or_inf(const T& t, const std::string& identifier) {
     if (log_nan(t, identifier) != std::end(t))
         return true;
-    if (log_nonzero(t, identifier) != std::end(t))
+    if (log_inf(t, identifier) != std::end(t))
         return true;
+    log_nonzero(t, identifier);
     return false;
 }

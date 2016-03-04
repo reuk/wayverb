@@ -20,14 +20,14 @@
 class CuboidBoundary;
 class MeshBoundary;
 
-using VolumeType = cl_float8;
-
 typedef struct {
     cl_ulong surface;
     cl_ulong v0;
     cl_ulong v1;
     cl_ulong v2;
 } __attribute__((aligned(8))) Triangle;
+
+using VolumeType = cl_float8;
 
 typedef struct {
     VolumeType specular;
@@ -40,13 +40,15 @@ TriangleVec3f get_triangle_verts(const Triangle& t,
 TriangleVec3f get_triangle_verts(const Triangle& t,
                                  const std::vector<cl_float3>& v);
 
+class SurfaceOwner;
+
 class SurfaceLoader {
 public:
     using size_type = std::vector<Surface>::size_type;
 
     SurfaceLoader(const std::string& fpath);
 
-    std::vector<Surface> get_surfaces() const;
+    const std::vector<Surface>& get_surfaces() const;
     size_type get_index(const std::string& name) const;
 
 private:
@@ -54,9 +56,23 @@ private:
 
     std::vector<Surface> surfaces;
     std::map<std::string, size_type> surface_indices;
+
+    friend class SurfaceOwner;
 };
 
-class SceneData {
+class SurfaceOwner {
+public:
+    SurfaceOwner(const std::vector<Surface>& surfaces = std::vector<Surface>());
+    SurfaceOwner(std::vector<Surface>&& surfaces);
+    SurfaceOwner(SurfaceLoader&& surface_loader);
+
+    const std::vector<Surface>& get_surfaces() const;
+
+private:
+    std::vector<Surface> surfaces;
+};
+
+class SceneData : public SurfaceOwner {
 public:
     using size_type = std::vector<Surface>::size_type;
 
@@ -68,25 +84,19 @@ public:
               float scale = 1);
     virtual ~SceneData() noexcept = default;
 
-    void populate(const aiScene* const scene,
-                  const std::string& mat_file,
-                  float scale);
-    void populate(const std::string& fpath,
-                  const std::string& mat_file,
-                  float scale);
-
     CuboidBoundary get_aabb() const;
     std::vector<Vec3f> get_converted_vertices() const;
     std::vector<int> get_triangle_indices() const;
 
     const std::vector<Triangle>& get_triangles() const;
     const std::vector<cl_float3>& get_vertices() const;
-    const std::vector<Surface>& get_surfaces() const;
 
 private:
+    SceneData(const aiScene* const scene,
+              SurfaceLoader&& loader,
+              float scale = 1);
     std::vector<Triangle> triangles;
     std::vector<cl_float3> vertices;
-    std::vector<Surface> surfaces;
 };
 
 template <>

@@ -110,6 +110,12 @@ typedef enum {
     id_reentrant = 1 << 7,
 } BoundaryType;
 
+typedef enum {
+    id_success = 0,
+    id_inf_error = 1 << 0,
+    id_nan_error = 1 << 1,
+} ErrorCode;
+
 typedef struct {
     int bt;
     uint boundary_index;
@@ -443,7 +449,6 @@ void ghost_point_pressure_update(
     float a0 = boundary->a[0];
 
     float filter_input = -((a0 * (prev_pressure - next_pressure)) / (b0 * COURANT) + filt_state / b0);
-    debug_buffer[get_global_id(0)] = filter_input;
     filter_step_canonical(
         filter_input, &(boundary_data->filter_memory), boundary);
 }
@@ -526,6 +531,7 @@ GET_CURRENT_SURROUNDING_WEIGHTING_TEMPLATE(3);
 
 //----------------------------------------------------------------------------//
 
+//  if COURANT_SQ is 1/3 this will always return 0
 float get_current_boundary_weighting(const global float* current);
 float get_current_boundary_weighting(const global float* current) {
     return 2 * (1 - 3 * COURANT_SQ) * current[get_global_id(0)];
@@ -602,8 +608,6 @@ GET_COEFF_WEIGHTING_TEMPLATE(3);
         float current_surrounding_weighting =                                  \
             CAT(get_current_surrounding_weighting_, dimensions)(               \
                 current, locator, dim, node.bt, debug_buffer);                 \
-        float current_boundary_weighting =                                     \
-            get_current_boundary_weighting(current);                           \
         global CAT(BoundaryDataArray, dimensions)* bda =                       \
             boundary_data + node.boundary_index;                               \
         float filter_weighting = CAT(get_filter_weighting_, dimensions)(       \
@@ -612,7 +616,7 @@ GET_COEFF_WEIGHTING_TEMPLATE(3);
             CAT(get_coeff_weighting_, dimensions)(bda, boundary_coefficients); \
         float prev_weighting = (coeff_weighting - 1) * prev_pressure;          \
         float ret =                                                            \
-            (current_surrounding_weighting + current_boundary_weighting +      \
+            (current_surrounding_weighting + \
              filter_weighting + prev_weighting) /                              \
             (1 + coeff_weighting);                                             \
         for (int i = 0; i != dimensions; ++i) {                                \
@@ -625,9 +629,12 @@ GET_COEFF_WEIGHTING_TEMPLATE(3);
                                         boundary,                              \
                                         debug_buffer);                         \
         }                                                                      \
+        debug_buffer[get_global_id(0)] = ret; \
         return ret;                                                            \
     }
 
+//        float current_boundary_weighting =                                     \
+//            get_current_boundary_weighting(current);                           \
 //        CAT(InnerNodeDirections, dimensions)                                   \
 //        inner_node_directions =                                                \
 //            CAT(get_inner_node_directions_, dimensions)(node.bt);              \
@@ -666,7 +673,8 @@ kernel void condensed_waveguide(const global float* current,
                                 float T,
                                 ulong read,
                                 global float* output,
-                                global float* debug_buffer) {
+                                global float* debug_buffer,
+                                global int* error_flag) {
     size_t index = get_global_id(0);
     CondensedNode node = nodes[index];
 
@@ -682,8 +690,9 @@ kernel void condensed_waveguide(const global float* current,
             if (node.bt & id_inside || node.bt & id_reentrant) {
                 for (int i = 0; i != PORTS; ++i) {
                     uint port_index = neighbor_index(locator, dimensions, i);
-                    if (port_index != NO_NEIGHBOR &&
-                        nodes[port_index].bt & id_inside)
+//                    if (port_index != NO_NEIGHBOR &&
+//                        nodes[port_index].bt & id_inside)
+                    if (port_index != NO_NEIGHBOR)
                         next_pressure += current[port_index];
                 }
 
@@ -723,6 +732,9 @@ kernel void condensed_waveguide(const global float* current,
                                        debug_buffer);
             break;
     }
+
+    if (isinf(next_pressure)) *error_flag |= id_inf_error;
+    if (isnan(next_pressure)) *error_flag |= id_nan_error;
 
     previous[index] = next_pressure;
 

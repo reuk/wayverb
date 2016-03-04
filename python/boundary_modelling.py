@@ -92,13 +92,14 @@ def main():
 #c = [get_linkwitz_riley_coeffs(1, b, a, edges[-1] * 2) for b, a in corners]
     sr = 2000
     c = [get_notch_coeffs(-24, i, sr, 1) for i in centres]
+    c.append([[1, 0, 0], [1, 0, 0]])
 
     bm = [BiquadMemory(0, 0) for _ in c]
     bc = [BiquadCoefficients(b0, b1, b2, a1, a2) for [b0, b1, b2], [a0, a1, a2] in c]
 
     c.append(series_coeffs(c))
 
-    c.append(impedance_filter(c[-1]))
+#    c.append(impedance_filter(c[-1]))
 
     wh = [signal.freqz(b, a) for b, a in c]
 

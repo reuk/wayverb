@@ -5,14 +5,14 @@
 
 class CuboidBoundary;
 
-class Boundary {
+class Boundary : public SurfaceOwner {
 public:
-    Boundary() noexcept = default;
+    using SurfaceOwner::SurfaceOwner;
     virtual ~Boundary() noexcept = default;
     Boundary(Boundary&&) noexcept = default;
     Boundary& operator=(Boundary&&) noexcept = default;
-    Boundary(const Boundary&) noexcept = default;
-    Boundary& operator=(const Boundary&) noexcept = default;
+    Boundary(const Boundary&) = default;
+    Boundary& operator=(const Boundary&) = default;
     virtual bool inside(const Vec3f& v) const = 0;
     virtual CuboidBoundary get_aabb() const = 0;
 };
@@ -39,7 +39,10 @@ CuboidBoundary get_cuboid_boundary(const std::vector<Vec3f>& vertices);
 
 class CuboidBoundary : public Boundary {
 public:
-    CuboidBoundary(const Vec3f& c0 = Vec3f(), const Vec3f& c1 = Vec3f());
+    CuboidBoundary(
+        const Vec3f& c0 = Vec3f(),
+        const Vec3f& c1 = Vec3f(),
+        const std::vector<Surface>& surfaces = std::vector<Surface>());
     bool inside(const Vec3f& v) const override;
     bool overlaps(const TriangleVec3f& t) const;
     CuboidBoundary get_aabb() const override;
@@ -57,7 +60,10 @@ private:
 
 class SphereBoundary : public Boundary {
 public:
-    SphereBoundary(const Vec3f& c = Vec3f(), float radius = 0);
+    SphereBoundary(
+        const Vec3f& c = Vec3f(),
+        float radius = 0,
+        const std::vector<Surface>& surfaces = std::vector<Surface>());
     bool inside(const Vec3f& v) const override;
     CuboidBoundary get_aabb() const override;
 
@@ -77,7 +83,8 @@ class MeshBoundary : public Boundary {
 public:
     MeshBoundary(
         const std::vector<Triangle>& triangles = std::vector<Triangle>(),
-        const std::vector<Vec3f>& vertices = std::vector<Vec3f>());
+        const std::vector<Vec3f>& vertices = std::vector<Vec3f>(),
+        const std::vector<Surface>& surfaces = std::vector<Surface>());
     MeshBoundary(const SceneData& sd);
     bool inside(const Vec3f& v) const override;
     CuboidBoundary get_aabb() const override;

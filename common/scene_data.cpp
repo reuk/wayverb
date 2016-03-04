@@ -56,7 +56,7 @@ void SurfaceLoader::add_surface(const std::string& name,
     surface_indices[name] = surfaces.size() - 1;
 }
 
-std::vector<Surface> SurfaceLoader::get_surfaces() const {
+const std::vector<Surface>& SurfaceLoader::get_surfaces() const {
     return surfaces;
 }
 
@@ -69,29 +69,42 @@ SurfaceLoader::size_type SurfaceLoader::get_index(
     return ret;
 }
 
+SurfaceOwner::SurfaceOwner(const std::vector<Surface>& surfaces)
+        : surfaces(surfaces) {
+}
+SurfaceOwner::SurfaceOwner(std::vector<Surface>&& surfaces)
+        : surfaces(std::move(surfaces)) {
+}
+SurfaceOwner::SurfaceOwner(SurfaceLoader&& surface_loader)
+        : surfaces(std::move(surface_loader.surfaces)) {
+}
+
+const std::vector<Surface>& SurfaceOwner::get_surfaces() const {
+    return surfaces;
+}
+
 SceneData::SceneData(const std::string& fpath,
                      const std::string& mat_file,
-                     float scale) {
-    populate(fpath, mat_file, scale);
+                     float scale)
+        : SceneData(Assimp::Importer().ReadFile(
+                        fpath,
+                        (aiProcess_Triangulate | aiProcess_GenSmoothNormals |
+                         aiProcess_FlipUVs)),
+                    mat_file,
+                    scale) {
 }
 
 SceneData::SceneData(const aiScene* const scene,
                      const std::string& mat_file,
-                     float scale) {
-    populate(scene, mat_file, scale);
+                     float scale)
+        : SceneData(scene, SurfaceLoader(mat_file), scale) {
 }
 
-void SceneData::populate(const aiScene* const scene,
-                         const std::string& mat_file,
-                         float scale) {
+SceneData::SceneData(const aiScene* const scene,
+                     SurfaceLoader&& loader,
+                     float scale) {
     if (!scene)
         throw std::runtime_error("scene pointer is null");
-
-    SurfaceLoader surface_loader(mat_file);
-    surfaces = surface_loader.get_surfaces();
-
-    triangles.clear();
-    vertices.clear();
 
     for (auto i = 0u; i != scene->mNumMeshes; ++i) {
         auto mesh = scene->mMeshes[i];
@@ -100,7 +113,7 @@ void SceneData::populate(const aiScene* const scene,
         aiString matName;
         material->Get(AI_MATKEY_NAME, matName);
 
-        auto surface_index = surface_loader.get_index(matName.C_Str());
+        auto surface_index = loader.get_index(matName.C_Str());
 
         std::vector<cl_float3> meshVertices(mesh->mNumVertices);
 
@@ -134,22 +147,6 @@ void SceneData::populate(const aiScene* const scene,
                   });
 }
 
-void SceneData::populate(const std::string& fpath,
-                         const std::string& mat_file,
-                         float scale) {
-    Assimp::Importer importer;
-    try {
-        populate(
-            importer.ReadFile(fpath,
-                              (aiProcess_Triangulate |
-                               aiProcess_GenSmoothNormals | aiProcess_FlipUVs)),
-            mat_file,
-            scale);
-    } catch (...) {
-        throw std::runtime_error("failed to read file");
-    }
-}
-
 CuboidBoundary SceneData::get_aabb() const {
     return get_cuboid_boundary(get_converted_vertices());
 }
@@ -174,7 +171,4 @@ const std::vector<Triangle>& SceneData::get_triangles() const {
 }
 const std::vector<cl_float3>& SceneData::get_vertices() const {
     return vertices;
-}
-const std::vector<Surface>& SceneData::get_surfaces() const {
-    return surfaces;
 }

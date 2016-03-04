@@ -198,8 +198,14 @@ void DrawableScene::init_waveguide(const SceneData &scene_data,
     MeshBoundary boundary(scene_data);
     auto waveguide_program =
         get_program<Waveguide::ProgramType>(context, device);
+
+#if 1
     auto coeffs = RectangularProgram::get_notch_filter_array(
         Testing::notches, cc.get_waveguide_sample_rate());
+#else
+    auto coeffs = RectangularProgram::CanonicalCoefficients{
+        {1, 0, 0, 0, 0, 0, 0}, {1, 0, 0, 0, 0, 0, 0}};
+#endif
     auto w = std::make_unique<Waveguide>(waveguide_program,
                                          queue,
                                          boundary,

@@ -316,26 +316,35 @@ Done
 TODO
 ----
 
+* MOST CRITICAL: prove that supplying different coefficients to boundaries
+  has the *correct* effect on the resulting impulse responses
+
+* test surface -> coeffs code
+    * appropriate failure states etc.
+
+* make boundary classification code parallel
+
 * CRITICAL: check mic modelling write-up now that the mesh update equations have
   been fixed, boundaries added
 
-* CRITICAL: check how boundary filter coefficients are calculated
+* CRITICAL: check how boundary filter coefficients should be calculated
 
 * boundary modelling
-    * get in touch with an authority with specific questions
-
     * try to predict the frequency response of each boundary
 
     * is there a way of mapping between the raytracer and this boundary model?
 
+    * get in touch with an authority with specific questions
+
     * can I have a fast-mode tetrahedral mesh and a slow-mode, more accurate,
       rectangular mesh?
-
-    * how do the boundary equations break down?
 
 * think about comparing the two models
 
 * extract boundary frequency curve from input files somehow
+    * that is, material, model files etc.
+
+* nicer json parsing
 
 digital impedance filters
 =========================
@@ -359,35 +368,44 @@ digital impedance filters
 
 testing scratchpad
 ==================
++------------------------------------------------------------------------------+
+|                          I THINK I FIXED THIS BIT
+|                             (BUT I'M NOT SURE)
+|                   ~ a trilogy in eleventyzillion parts ~
+|
+| filters appear to not be used - try looking at filter inputs
+|
+| filter inputs sometimes go to NaN
+|
+| reading bad memory somewhere, not sure how to find where
+|
+| try viewing preprocessor output?
+|
+| filter memory goes to nan
+|     filter step is the only function which interracts with filter memory
+|     filter inputs:
+|         float input
+|         filter memory array
+|         filter coefficients array
+|
+| filter memory goes NaN on same step as filter input!!!
+|
+| first 1d filter memory belongs to node 84053
+|
+| something strange about 83847?
+|
+| get_filter_weighting
+|
+| it looks like something is changing the filter memory to nan, but that
+| something is definitely not the filter input
+|     I might be looking at the wrong memory
+|     something else might be affecting the values
+|         although I can't see this anywhere
++------------------------------------------------------------------------------+
 
-filters appear to not be used - try looking at filter inputs
+           IGNORE THE HEADING UP THERE
+(I MISSED SOME STUFF AND SOMEHOW IT'S WORSE NOW)
+   ~ in somehow more parts than the prequel ~
 
-filter inputs sometimes go to NaN
-
-reading bad memory somewhere, not sure how to find where
-
-try viewing preprocessor output?
-
-filter memory goes to nan
-    filter step is the only function which interracts with filter memory
-    filter inputs:
-        float input
-        filter memory array
-        filter coefficients array
-
-filter memory goes NaN on same step as filter input!!!
-
-first 1d filter memory belongs to node 84053
-
-something strange about 83847?
-
-get_filter_weighting
-
-it looks like something is changing the filter memory to nan, but that something
-is definitely not the filter input
-    I might be looking at the wrong memory
-    something else might be affecting the values
-        although I can't see this anywhere
-
-
-
+2D boundaries seem to be unstable/blow up over time
+    although 1D ones seem fineish

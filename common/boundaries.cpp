@@ -9,8 +9,11 @@
 #include <algorithm>
 #include <unordered_set>
 
-CuboidBoundary::CuboidBoundary(const Vec3f& c0, const Vec3f& c1)
-        : c0(c0)
+CuboidBoundary::CuboidBoundary(const Vec3f& c0,
+                               const Vec3f& c1,
+                               const std::vector<Surface>& surfaces)
+        : Boundary(surfaces)
+        , c0(c0)
         , c1(c1) {
 }
 
@@ -27,7 +30,7 @@ bool CuboidBoundary::overlaps(const TriangleVec3f& t) const {
 }
 
 CuboidBoundary CuboidBoundary::get_padded(float padding) const {
-    return CuboidBoundary(c0 - padding, c1 + padding);
+    return CuboidBoundary(c0 - padding, c1 + padding, get_surfaces());
 }
 
 CuboidBoundary CuboidBoundary::get_aabb() const {
@@ -86,8 +89,11 @@ CuboidBoundary get_cuboid_boundary(const std::vector<Vec3f>& vertices) {
     return CuboidBoundary(mini, maxi);
 }
 
-SphereBoundary::SphereBoundary(const Vec3f& c, float radius)
-        : c(c)
+SphereBoundary::SphereBoundary(const Vec3f& c,
+                               float radius,
+                               const std::vector<Surface>& surfaces)
+        : Boundary(surfaces)
+        , c(c)
         , radius(radius)
         , boundary(-radius, radius) {
 }
@@ -106,8 +112,6 @@ Vec3i MeshBoundary::hash_point(const Vec3f& v) const {
 }
 
 MeshBoundary::hash_table MeshBoundary::compute_triangle_references() const {
-    //  TODO check!
-    //  TODO divide and conquer!
     hash_table ret(DIVISIONS, std::vector<reference_store>(DIVISIONS));
     for (auto& i : ret)
         for (auto& j : i)
@@ -132,8 +136,10 @@ MeshBoundary::hash_table MeshBoundary::compute_triangle_references() const {
 }
 
 MeshBoundary::MeshBoundary(const std::vector<Triangle>& triangles,
-                           const std::vector<Vec3f>& vertices)
-        : triangles(triangles)
+                           const std::vector<Vec3f>& vertices,
+                           const std::vector<Surface>& surfaces)
+        : Boundary(surfaces)
+        , triangles(triangles)
         , vertices(vertices)
         , boundary(get_cuboid_boundary(vertices))
         , cell_size(boundary.get_dimensions() / DIVISIONS)

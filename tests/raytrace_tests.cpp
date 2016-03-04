@@ -70,18 +70,6 @@ bool operator==(const Impulse& a, const Impulse& b) {
     return true;
 }
 
-template <typename T>
-bool operator==(const std::vector<T>& a, const std::vector<T>& b) {
-    if (a.size() == b.size()) {
-        for (auto i = 0u; i != a.size(); ++i) {
-            if (!(a[i] == b[i]))
-                return false;
-        }
-    }
-
-    return true;
-}
-
 static constexpr auto bench_reflections = 128;
 static constexpr auto bench_rays = 1 << 15;
 

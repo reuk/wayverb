@@ -9,20 +9,8 @@ import scipy.signal as sig
 import wave
 import math
 
-def main():
-    pgf_with_rc_fonts = {
-        'font.family': 'serif',
-        'font.serif': [],
-        'font.sans-serif': ['Helvetica Neue'],
-        'font.monospace': ['Input Mono Condensed'],
-    }
-
-    matplotlib.rcParams.update(pgf_with_rc_fonts)
-
-    files = [
-            "/Users/reuben/dev/waveguide/build/boundary_test/windowed_free_field.wav",
-            "/Users/reuben/dev/waveguide/build/boundary_test/windowed_subbed.wav",
-            ]
+def show_graph(free_field_file, subbed_file):
+    files = [ free_field_file, subbed_file, ]
 
     def get_signals(f):
         spf = wave.open(f)
@@ -36,18 +24,41 @@ def main():
     ffts = [np.fft.rfft(i) for i in signals]
     freq = np.fft.rfftfreq(n)
 
-#    for fft in ffts:
-#        plt.plot(freq, np.abs(fft))
+    def do_plot(a):
+        plt.plot(np.resize(freq, n / 4), np.resize(np.abs(a), n / 4))
 
-    div = ffts[1] / ffts[0]
-    plt.plot(freq, np.abs(div))
+    for fft in ffts:
+        do_plot(fft)
 
-#    quot, rem = sig.deconvolve(signals[0], signals[1])
-#    plt.plot(freq, np.abs(np.fft.rfft(rem)))
+    plt.show()
+
+    do_plot(ffts[1] / ffts[0])
 
     plt.show()
     if render:
         plt.savefig(this_file + ".plot.pdf", bbox_inches="tight")
+
+
+def main():
+    pgf_with_rc_fonts = {
+        'font.family': 'serif',
+        'font.serif': [],
+        'font.sans-serif': ['Helvetica Neue'],
+        'font.monospace': ['Input Mono Condensed'],
+    }
+
+    matplotlib.rcParams.update(pgf_with_rc_fonts)
+
+    files = [[
+            "/Users/reuben/dev/waveguide/build/boundary_test/flat_windowed_free_field.wav",
+            "/Users/reuben/dev/waveguide/build/boundary_test/flat_windowed_subbed.wav",
+        ], [
+            "/Users/reuben/dev/waveguide/build/boundary_test/filtered_windowed_free_field.wav",
+            "/Users/reuben/dev/waveguide/build/boundary_test/filtered_windowed_subbed.wav",
+        ]]
+
+    for a, b in files:
+        show_graph(a, b)
 
 if __name__ == "__main__":
     main()

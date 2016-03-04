@@ -1,6 +1,8 @@
 #include "waveguide.h"
 #include "test_flag.h"
 #include "conversions.h"
+#include "hrtf.h"
+#include "db.h"
 
 #include <iostream>
 #include <algorithm>
@@ -194,20 +196,23 @@ RectangularWaveguide::RectangularWaveguide(
                                        false)
         , debug_buffer(program.getInfo<CL_PROGRAM_CONTEXT>(),
                        CL_MEM_READ_WRITE,
-                       sizeof(cl_float) * nodes.size()) {
+                       sizeof(cl_float) * nodes.size())
+        , error_flag_buffer(program.getInfo<CL_PROGRAM_CONTEXT>(),
+                            CL_MEM_READ_WRITE,
+                            sizeof(cl_int)) {
 }
 
-RectangularWaveguide::RectangularWaveguide(
-    const RectangularProgram& program,
-    cl::CommandQueue& queue,
-    const Boundary& boundary,
-    float spacing,
-    const Vec3f& anchor,
-    const RectangularProgram::CanonicalCoefficients& coefficients)
-        : RectangularWaveguide(program,
-                               queue,
-                               RectangularMesh(boundary, spacing, anchor),
-                               {coefficients}) {
+RectangularWaveguide::RectangularWaveguide(const RectangularProgram& program,
+                                           cl::CommandQueue& queue,
+                                           const Boundary& boundary,
+                                           float spacing,
+                                           const Vec3f& anchor,
+                                           float sr)
+        : RectangularWaveguide(
+              program,
+              queue,
+              RectangularMesh(boundary, spacing, anchor),
+              to_filter_coefficients(boundary.get_surfaces(), sr)) {
 }
 
 void RectangularWaveguide::setup(cl::CommandQueue& queue,
@@ -243,9 +248,12 @@ RunStepResult RectangularWaveguide::run_step(size_type o,
     std::vector<cl_float> out(1);
     std::vector<cl_float3> current_velocity(1);
 
-    //  TODO remove this
+    //  TODO remove this + debug_buffer
     std::vector<cl_float> debug(nodes, 0);
     cl::copy(queue, debug.begin(), debug.end(), debug_buffer);
+
+    auto flag = RectangularProgram::id_success;
+    cl::copy(queue, (&flag) + 0, (&flag) + 1, error_flag_buffer);
 
     kernel(cl::EnqueueArgs(queue, cl::NDRange(nodes)),
            current,
@@ -262,7 +270,18 @@ RunStepResult RectangularWaveguide::run_step(size_type o,
            period,
            o,
            output,
-           debug_buffer);
+           debug_buffer,
+           error_flag_buffer);
+
+    cl::copy(queue, error_flag_buffer, (&flag) + 0, (&flag) + 1);
+
+    if (all_flags_set(flag, std::make_tuple(RectangularProgram::id_inf_error)))
+        throw std::runtime_error(
+            "pressure value is inf, check filter coefficients");
+
+    if (all_flags_set(flag, std::make_tuple(RectangularProgram::id_nan_error)))
+        throw std::runtime_error(
+            "pressure value is nan, check filter coefficients");
 
     cl::copy(queue, output, out.begin(), out.end());
     cl::copy(queue,
@@ -271,42 +290,8 @@ RunStepResult RectangularWaveguide::run_step(size_type o,
              current_velocity.end());
 
     /*
-    {
-        //  TODO remove this bit too
-        cl::copy(queue, debug_buffer, debug.begin(), debug.end());
-        log_nan_or_nonzero(debug, "debug");
-    }
-
-    {
-        //  TODO remove this bit also
-        std::vector<cl_float> ret(nodes, 0);
-        cl::copy(queue, previous, ret.begin(), ret.end());
-        log_nan_or_nonzero(ret, "pressure");
-    }
-
-    {
-        //  TODO remove this bit
-        std::vector<RectangularProgram::BoundaryDataArray1> bda(
-            mesh.compute_num_boundary<1>());
-        cl::copy(queue, boundary_data_1_buffer, bda.begin(), bda.end());
-        log_nan_or_nonzero(bda, "filter memory (1)");
-    }
-
-    {
-        //  TODO remove this bit
-        std::vector<RectangularProgram::BoundaryDataArray2> bda(
-            mesh.compute_num_boundary<2>());
-        cl::copy(queue, boundary_data_2_buffer, bda.begin(), bda.end());
-        log_nan_or_nonzero(bda, "filter memory (2)");
-    }
-
-    {
-        //  TODO remove this bit
-        std::vector<RectangularProgram::BoundaryDataArray3> bda(
-            mesh.compute_num_boundary<3>());
-        cl::copy(queue, boundary_data_3_buffer, bda.begin(), bda.end());
-        log_nan_or_nonzero(bda, "filter memory (3)");
-    }
+    cl::copy(queue, debug_buffer, debug.begin(), debug.end());
+    log_nan_or_nonzero_or_inf(debug, "debug");
     */
 
     auto velocity = to_vec3f(current_velocity.front());
@@ -330,4 +315,32 @@ const RectangularMesh& RectangularWaveguide::get_mesh() const {
 
 bool RectangularWaveguide::inside(size_type index) const {
     return mesh.get_nodes()[index].inside;
+}
+
+RectangularProgram::CanonicalCoefficients
+RectangularWaveguide::to_filter_coefficients(const Surface& surface, float sr) {
+    std::array<RectangularProgram::NotchFilterDescriptor,
+               RectangularProgram::BiquadCoefficientsArray::BIQUAD_SECTIONS>
+        descriptors;
+    for (auto i = 0u; i != descriptors.size(); ++i) {
+        float gain = a2db((surface.specular.s[i] + surface.diffuse.s[i]) / 2);
+        auto centre = (HrtfData::EDGES[i + 0] + HrtfData::EDGES[i + 1]) / 2;
+        descriptors[i] =
+            RectangularProgram::NotchFilterDescriptor{gain, centre, 1.414};
+    }
+    return RectangularProgram::get_notch_filter_array(descriptors, sr);
+}
+
+std::vector<RectangularProgram::CanonicalCoefficients>
+RectangularWaveguide::to_filter_coefficients(std::vector<Surface> surfaces,
+                                             float sr) {
+    surfaces.resize(
+        RectangularProgram::BiquadCoefficientsArray::BIQUAD_SECTIONS);
+
+    std::vector<RectangularProgram::CanonicalCoefficients> ret(surfaces.size());
+    std::transform(surfaces.begin(),
+                   surfaces.end(),
+                   ret.begin(),
+                   [sr](auto i) { return to_filter_coefficients(i, sr); });
+    return ret;
 }
