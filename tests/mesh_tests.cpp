@@ -93,11 +93,6 @@ private:
         get_program<RectangularProgram>(context, device)};
 };
 
-template <>
-auto MeshTest::get_mesh<RectangularMesh>(const SceneData& sd) {
-    return RectangularMesh(program, queue, MeshBoundary(sd), 0.1, Vec3f(0));
-}
-
 TEST_F(MeshTest, locator_index_tetra) {
     locator_index_test<TetrahedralMesh>();
 }

@@ -9,9 +9,7 @@
 #include <numeric>
 
 RectangularMesh::Collection RectangularMesh::compute_nodes(
-    const Boundary& boundary,
-    const RectangularProgram& program,
-    cl::CommandQueue& queue) const {
+    const Boundary& boundary) const {
     //  TODO this takes for ever, put it on GPU?
     auto total_nodes = get_dim().product();
     auto bytes = total_nodes * sizeof(RectangularMesh::CondensedNode);
@@ -68,22 +66,6 @@ RectangularMesh::Collection RectangularMesh::compute_nodes(
                        return i;
                    });
 
-#if 0
-    //------------------------------------------------------------------------//
-    cl::Buffer node_buffer(
-        program.getInfo<CL_PROGRAM_CONTEXT>(), ret.begin(), ret.end(), false);
-    auto kernel = program.get_boundary_classify_kernel();
-    for (auto set_bits = 0; set_bits != 3; ++set_bits) {
-        kernel(cl::EnqueueArgs(queue, cl::NDRange(ret.size())),
-               node_buffer,
-               to_cl_int3(get_dim()),
-               set_bits);
-    }
-
-    cl::copy(queue, node_buffer, ret.begin(), ret.end());
-    //------------------------------------------------------------------------//
-#else
-    //------------------------------------------------------------------------//
     std::vector<cl_int> bt(ret.size());
     for (auto set_bits = 0; set_bits != 3; ++set_bits) {
         std::fill(bt.begin(), bt.end(), RectangularProgram::id_none);
@@ -118,8 +100,6 @@ RectangularMesh::Collection RectangularMesh::compute_nodes(
             ret[i].boundary_type = bt[i];
         }
     }
-//------------------------------------------------------------------------//
-#endif
 
     auto num_boundary_1 = 0;
     auto num_boundary_2 = 0;
@@ -141,15 +121,13 @@ RectangularMesh::Collection RectangularMesh::compute_nodes(
     return ret;
 }
 
-RectangularMesh::RectangularMesh(const RectangularProgram& program,
-                                 cl::CommandQueue& queue,
-                                 const Boundary& b,
+RectangularMesh::RectangularMesh(const Boundary& b,
                                  float spacing,
                                  const Vec3f& anchor)
         : BaseMesh(spacing,
                    compute_adjusted_boundary(b.get_aabb(), anchor, spacing))
         , dim(get_aabb().get_dimensions() / spacing)
-        , nodes(compute_nodes(b, program, queue)) {
+        , nodes(compute_nodes(b)) {
 }
 
 RectangularMesh::size_type RectangularMesh::compute_index(

@@ -786,31 +786,4 @@ kernel void condensed_waveguide(const global float* current,
     }
 }
 
-kernel void classify_boundaries(global Node* nodes,
-                                int3 dimensions,
-                                int set_bits) {
-    size_t index = get_global_id(0);
-    global Node* node = nodes + index;
-
-    if (!node->inside && node->boundary_type == id_none) {
-        for (int i = 0; i != PORTS; ++i) {
-            uint port_ind = node->ports[i];
-            if (port_ind != NO_NEIGHBOR) {
-                global Node* port_node = nodes + port_ind;
-                if ((!set_bits && port_node->inside) ||
-                    (set_bits && port_node->boundary_type != id_reentrant &&
-                     popcount(port_node->boundary_type) == set_bits)) {
-                    node->boundary_type |= 1 << (i + 1);
-                }
-            }
-        }
-        int final_bits = popcount(node->boundary_type);
-        if (set_bits + 1 < final_bits) {
-            node->boundary_type = id_reentrant;
-        } else if (final_bits <= set_bits) {
-            node->boundary_type = id_none;
-        }
-    }
-}
-
 )"};

@@ -214,7 +214,7 @@ RectangularWaveguide::RectangularWaveguide(const RectangularProgram& program,
         : RectangularWaveguide(
               program,
               queue,
-              RectangularMesh(program, queue, boundary, spacing, anchor),
+              RectangularMesh(boundary, spacing, anchor),
               to_filter_coefficients(boundary.get_surfaces(), sr)) {
 }
 
