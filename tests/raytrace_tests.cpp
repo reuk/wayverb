@@ -1,5 +1,6 @@
 #include "rayverb.h"
 #include "cl_common.h"
+#include "ostream_overloads.h"
 
 #include "gtest/gtest.h"
 
@@ -114,20 +115,6 @@ TEST(raytrace, new) {
                                                    scene_data,
                                                    directions,
                                                    bench_reflections);
-}
-
-std::ostream& operator<<(std::ostream& strm, const VolumeType& obj) {
-    strm << "( ";
-    for (auto i : obj.s)
-        strm << i << " ";
-    return strm << ")";
-}
-
-std::ostream& operator<<(std::ostream& strm, const cl_float3& obj) {
-    strm << "( ";
-    for (auto i : obj.s)
-        strm << i << " ";
-    return strm << ")";
 }
 
 TEST(raytrace, improved) {

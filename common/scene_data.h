@@ -29,9 +29,11 @@ typedef struct {
 
 using VolumeType = cl_float8;
 
+std::ostream& operator<<(std::ostream& os, const VolumeType& f);
+
 typedef struct {
-    VolumeType specular;
-    VolumeType diffuse;
+    VolumeType specular{{1, 1, 1, 1, 1, 1, 1, 1}};
+    VolumeType diffuse{{1, 1, 1, 1, 1, 1, 1, 1}};
 } __attribute__((aligned(8))) Surface;
 
 using TriangleVec3f = std::array<Vec3f, 3>;
@@ -62,13 +64,15 @@ private:
 
 class SurfaceOwner {
 public:
-    SurfaceOwner(const std::vector<Surface>& surfaces = std::vector<Surface>());
+    SurfaceOwner(const std::vector<Surface>& surfaces);
     SurfaceOwner(std::vector<Surface>&& surfaces);
+    SurfaceOwner(const SurfaceLoader& surface_loader);
     SurfaceOwner(SurfaceLoader&& surface_loader);
 
     const std::vector<Surface>& get_surfaces() const;
 
 private:
+    void check_num_surfaces() const;
     std::vector<Surface> surfaces;
 };
 

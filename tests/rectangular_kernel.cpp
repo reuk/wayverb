@@ -132,7 +132,6 @@ public:
 
     template <typename Kernel>
     auto run_kernel(Kernel&& k) {
-        Logger::log_err("coeffs: ", coeffs.front());
         auto kernel = std::move(k);
 
         {
@@ -282,11 +281,12 @@ TEST(compare_filters, compare_filters) {
             diff.begin(), diff.end(), [](auto i) { ASSERT_NEAR(i, 0, 0.001); });
         */
 
-        auto min_diff = *std::min_element(diff.begin(), diff.end());
+        // auto min_diff = *std::min_element(diff.begin(), diff.end());
         auto max_diff = *std::max_element(diff.begin(), diff.end());
 
         ASSERT_TRUE(max_diff < 0.001) << max_diff;
 
+        /*
         auto min_div = *std::min_element(div.begin(), div.end());
         auto max_div = *std::max_element(div.begin(), div.end());
 
@@ -294,6 +294,7 @@ TEST(compare_filters, compare_filters) {
         Logger::log_err("max diff: ", max_diff);
         Logger::log_err("min div / dB: ", min_div);
         Logger::log_err("max div / dB: ", max_div);
+        */
 
         write_sndfile(
             "./buf_1.wav", {buf_1}, biquad.sr, SF_FORMAT_PCM_16, SF_FORMAT_WAV);

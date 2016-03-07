@@ -165,12 +165,9 @@ std::tuple<std::vector<Triangle>, std::vector<Vec3f>> get_mesh_boundary_data(
 }
 
 MeshBoundary::MeshBoundary(const SceneData& sd)
-        : MeshBoundary(get_mesh_boundary_data(sd)) {
-}
-
-MeshBoundary::MeshBoundary(
-    const std::tuple<std::vector<Triangle>, std::vector<Vec3f>>& data)
-        : MeshBoundary(std::get<0>(data), std::get<1>(data)) {
+        : MeshBoundary(sd.get_triangles(),
+                       sd.get_converted_vertices(),
+                       sd.get_surfaces()) {
 }
 
 const MeshBoundary::reference_store& MeshBoundary::get_references(

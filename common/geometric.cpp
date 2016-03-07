@@ -1,4 +1,5 @@
 #include "geometric.h"
+#include "logger.h"
 
 static const auto EPSILON = 0.0001;
 
@@ -50,13 +51,18 @@ Intersects triangle_intersection(const TriangleVec3f& tri, const Ray& ray) {
     return Intersects(dist);
 }
 
-Intersects triangle_intersection(const Triangle& tri,
-                                 const std::vector<Vec3f>& vertices,
-                                 const Ray& ray) {
+TriangleVec3f to_triangle_vec3f(const Triangle& tri,
+                                const std::vector<Vec3f>& vertices) {
     const auto v0 = vertices[tri.v0];
     const auto v1 = vertices[tri.v1];
     const auto v2 = vertices[tri.v2];
-    return triangle_intersection({{v0, v1, v2}}, ray);
+    return TriangleVec3f{{v0, v1, v2}};
+}
+
+Intersects triangle_intersection(const Triangle& tri,
+                                 const std::vector<Vec3f>& vertices,
+                                 const Ray& ray) {
+    return triangle_intersection(to_triangle_vec3f(tri, vertices), ray);
 }
 
 Intersection ray_triangle_intersection(const Ray& ray,
@@ -101,8 +107,148 @@ bool point_intersection(const Vec3f& begin,
     return (!inter.intersects) || inter.distance > mag;
 }
 
-std::ostream& operator<<(std::ostream& strm, const Intersects& obj) {
-    return strm << "Intersects {" << obj.intersects << ", " << obj.distance
-                << "}";
+std::ostream& operator<<(std::ostream& os, const Intersects& obj) {
+    Bracketer bracketer(os);
+    return to_stream(
+        os, "intersects: ", obj.intersects, "  distance: ", obj.distance, "  ");
+}
+
+//  adapted from
+//  http://www.geometrictools.com/GTEngine/Include/Mathematics/GteDistPointTriangleExact.h
+float point_triangle_distance_squared(const TriangleVec3f& triangle,
+                                      const Vec3f& point) {
+    //  do I hate this? yes
+    //  am I going to do anything about it? it works
+    auto diff = point - triangle[0];
+    auto e0 = triangle[1] - triangle[0];
+    auto e1 = triangle[2] - triangle[0];
+    auto a00 = e0.dot(e0);
+    auto a01 = e0.dot(e1);
+    auto a11 = e1.dot(e1);
+    auto b0 = -(diff.dot(e0));
+    auto b1 = -(diff.dot(e1));
+    auto det = a00 * a11 - a01 * a01;
+    auto t0 = a01 * b1 - a11 * b0;
+    auto t1 = a01 * b0 - a00 * b1;
+
+    if (t0 + t1 <= det) {
+        if (t0 < 0) {
+            if (t1 < 0) {
+                if (b0 < 0) {
+                    t1 = 0;
+                    if (a00 <= -b0) {
+                        t0 = 1;
+                    } else {
+                        t0 = -b0 / a00;
+                    }
+                } else {
+                    t0 = 0;
+                    if (0 <= b1) {
+                        t1 = 0;
+                    } else if (a11 <= -b1) {
+                        t1 = 1;
+                    } else {
+                        t1 = -b1 / a11;
+                    }
+                }
+            } else {
+                t0 = 0;
+                if (0 <= b1) {
+                    t1 = 0;
+                } else if (a11 <= -b1) {
+                    t1 = 1;
+                } else {
+                    t1 = -b1 / a11;
+                }
+            }
+        } else if (t1 < 0) {
+            t1 = 0;
+            if (0 <= b0) {
+                t0 = 0;
+            } else if (a00 <= -b0) {
+                t0 = 1;
+            } else {
+                t0 = -b0 / a00;
+            }
+        } else {
+            auto invDet = 1 / det;
+            t0 *= invDet;
+            t1 *= invDet;
+        }
+    } else {
+        if (t0 < 0) {
+            auto tmp0 = a01 + b0;
+            auto tmp1 = a11 + b1;
+            if (tmp0 < tmp1) {
+                auto numer = tmp1 - tmp0;
+                auto denom = a00 - 2 * a01 + a11;
+                if (denom <= numer) {
+                    t0 = 1;
+                    t1 = 0;
+                } else {
+                    t0 = numer / denom;
+                    t1 = 1 - t0;
+                }
+            } else {
+                t0 = 0;
+                if (tmp1 <= 0) {
+                    t1 = 1;
+                } else if (0 <= b1) {
+                    t1 = 0;
+                } else {
+                    t1 = -b1 / a11;
+                }
+            }
+        } else if (t1 < 0) {
+            auto tmp0 = a01 + b1;
+            auto tmp1 = a00 + b0;
+            if (tmp0 < tmp1) {
+                auto numer = tmp1 - tmp0;
+                auto denom = a00 - 2 * a01 + a11;
+                if (denom <= numer) {
+                    t1 = 1;
+                    t0 = 0;
+                } else {
+                    t1 = numer / denom;
+                    t0 = 1 - t1;
+                }
+            } else {
+                t1 = 0;
+                if (tmp1 <= 0) {
+                    t0 = 1;
+                } else if (0 <= b0) {
+                    t0 = 0;
+                } else {
+                    t0 = -b0 / a00;
+                }
+            }
+        } else {
+            auto numer = a11 + b1 - a01 - b0;
+            if (numer <= 0) {
+                t0 = 0;
+                t1 = 1;
+            } else {
+                auto denom = a00 - 2 * a01 + a11;
+                if (denom <= numer) {
+                    t0 = 1;
+                    t1 = 0;
+                } else {
+                    t0 = numer / denom;
+                    t1 = 1 - t0;
+                }
+            }
+        }
+    }
+
+    auto closest = triangle[0] + e0 * t0 + e1 * t1;
+    diff = point - closest;
+    return diff.dot(diff);
+}
+
+float point_triangle_distance_squared(const Triangle& tri,
+                                      const std::vector<Vec3f>& vertices,
+                                      const Vec3f& point) {
+    return point_triangle_distance_squared(to_triangle_vec3f(tri, vertices),
+                                           point);
 }
 };

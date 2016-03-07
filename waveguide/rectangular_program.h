@@ -22,15 +22,20 @@ public:
         id_reentrant = 1 << 7,
     } BoundaryType;
 
+    static constexpr BoundaryType port_index_to_boundary_type(unsigned int i) {
+        return static_cast<BoundaryType>(1 << (i + 1));
+    }
+
     typedef enum : cl_int {
         id_success = 0,
         id_inf_error = 1 << 0,
         id_nan_error = 1 << 1,
     } ErrorCode;
 
+    static constexpr cl_uint NO_NEIGHBOR{~cl_uint{0}};
+
     struct __attribute__((aligned(8))) NodeStruct final {
         static constexpr int PORTS{6};
-        static constexpr cl_uint NO_NEIGHBOR{~cl_uint{0}};
         cl_uint ports[PORTS]{};
         cl_float3 position{};
         cl_bool inside{};
@@ -40,7 +45,6 @@ public:
 
     struct __attribute__((aligned(8))) CondensedNodeStruct final {
         static constexpr int PORTS{6};
-        static constexpr cl_uint NO_NEIGHBOR{~cl_uint{0}};
         cl_int boundary_type{};
         cl_uint boundary_index{};
     };
@@ -49,6 +53,11 @@ public:
     struct FilterMemory final {
         static constexpr int ORDER = O;
         cl_float array[ORDER]{};
+
+        bool operator==(const FilterMemory& rhs) const {
+            return std::equal(
+                std::begin(array), std::end(array), std::begin(rhs.array));
+        }
     };
 
     using BiquadMemory = FilterMemory<2>;
@@ -58,6 +67,11 @@ public:
         static constexpr int ORDER = O;
         cl_float b[ORDER + 1]{};
         cl_float a[ORDER + 1]{};
+
+        bool operator==(const FilterCoefficients& rhs) const {
+            return std::equal(std::begin(b), std::end(b), std::begin(rhs.b)) &&
+                   std::equal(std::begin(a), std::end(a), std::begin(rhs.a));
+        }
     };
 
     using BiquadCoefficients = FilterCoefficients<2>;
@@ -180,6 +194,8 @@ private:
     static const std::string source;
 };
 
+//  ostreams  ----------------------------------------------------------------//
+
 template <int T>
 std::ostream& operator<<(std::ostream& os,
                          const RectangularProgram::FilterCoefficients<T>& n) {
@@ -201,3 +217,21 @@ std::ostream& operator<<(std::ostream& os,
 
 std::ostream& operator<<(std::ostream& os,
                          const RectangularProgram::BiquadCoefficientsArray& n);
+std::ostream& operator<<(std::ostream& os,
+                         const RectangularProgram::CanonicalMemory& m);
+std::ostream& operator<<(std::ostream& os,
+                         const RectangularProgram::BoundaryData& m);
+
+template <int I>
+inline std::ostream& operator<<(
+    std::ostream& os, const RectangularProgram::BoundaryDataArray<I>& bda) {
+    Bracketer bracketer(os);
+    for (const auto& i : bda.array)
+        to_stream(os, i);
+    return os;
+}
+
+std::ostream& operator<<(std::ostream& os,
+                         const RectangularProgram::CondensedNodeStruct& cns);
+
+//----------------------------------------------------------------------------//

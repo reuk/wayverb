@@ -10,43 +10,6 @@
 
 //----------------------------------------------------------------------------//
 
-std::ostream& operator<<(std::ostream& os, const cl_float3& f) {
-    Bracketer bracketer(os);
-    return to_stream(os, f.s[0], "  ", f.s[1], "  ", f.s[2], "  ");
-}
-
-std::ostream& operator<<(std::ostream& os,
-                         const RectangularProgram::CanonicalMemory& m) {
-    Bracketer bracketer(os);
-    for (const auto& i : m.array)
-        to_stream(os, i, "  ");
-    return os;
-}
-
-std::ostream& operator<<(std::ostream& os,
-                         const RectangularProgram::BoundaryData& m) {
-    return to_stream(os, m.filter_memory);
-}
-
-template <int I>
-std::ostream& operator<<(std::ostream& os,
-                         const RectangularProgram::BoundaryDataArray<I>& bda) {
-    Bracketer bracketer(os);
-    for (const auto& i : bda.array)
-        to_stream(os, i);
-    return os;
-}
-
-std::ostream& operator<<(std::ostream& os,
-                         const RectangularProgram::CondensedNodeStruct& cns) {
-    Bracketer bracketer(os);
-    return to_stream(os,
-                     "bt: ",
-                     cns.boundary_type,
-                     "  boundary_index: ",
-                     cns.boundary_index);
-}
-
 void TetrahedralWaveguide::setup(cl::CommandQueue& queue,
                                  size_type o,
                                  float sr) {
@@ -156,8 +119,14 @@ RectangularWaveguide::RectangularWaveguide(
     cl::CommandQueue& queue,
     const RectangularMesh& mesh,
     std::vector<RectangularProgram::CanonicalCoefficients> coefficients)
-        : RectangularWaveguide(
-              program, queue, mesh, mesh.get_condensed_nodes(), coefficients) {
+        : RectangularWaveguide(program,
+                               queue,
+                               mesh,
+                               mesh.get_condensed_nodes(),
+                               mesh.get_boundary_data<1>(),
+                               mesh.get_boundary_data<2>(),
+                               mesh.get_boundary_data<3>(),
+                               coefficients) {
 }
 
 RectangularWaveguide::RectangularWaveguide(
@@ -165,6 +134,9 @@ RectangularWaveguide::RectangularWaveguide(
     cl::CommandQueue& queue,
     const RectangularMesh& mesh,
     std::vector<RectangularMesh::CondensedNode> nodes,
+    std::vector<RectangularProgram::BoundaryDataArray1> boundary_data_1,
+    std::vector<RectangularProgram::BoundaryDataArray2> boundary_data_2,
+    std::vector<RectangularProgram::BoundaryDataArray3> boundary_data_3,
     std::vector<RectangularProgram::CanonicalCoefficients> coefficients)
         : Waveguide<RectangularProgram>(program, queue, mesh.get_nodes().size())
         , mesh(mesh)
@@ -178,21 +150,18 @@ RectangularWaveguide::RectangularWaveguide(
         , velocity_buffer(program.getInfo<CL_PROGRAM_CONTEXT>(),
                           CL_MEM_READ_WRITE,
                           sizeof(cl_float3) * 1)
-        , boundary_data_1_buffer(
-              program.getInfo<CL_PROGRAM_CONTEXT>(),
-              CL_MEM_READ_WRITE,
-              sizeof(RectangularProgram::BoundaryDataArray1) *
-                  mesh.compute_num_boundary<1>())
-        , boundary_data_2_buffer(
-              program.getInfo<CL_PROGRAM_CONTEXT>(),
-              CL_MEM_READ_WRITE,
-              sizeof(RectangularProgram::BoundaryDataArray2) *
-                  mesh.compute_num_boundary<2>())
-        , boundary_data_3_buffer(
-              program.getInfo<CL_PROGRAM_CONTEXT>(),
-              CL_MEM_READ_WRITE,
-              sizeof(RectangularProgram::BoundaryDataArray3) *
-                  mesh.compute_num_boundary<3>())
+        , boundary_data_1_buffer(program.getInfo<CL_PROGRAM_CONTEXT>(),
+                                 boundary_data_1.begin(),
+                                 boundary_data_1.end(),
+                                 false)
+        , boundary_data_2_buffer(program.getInfo<CL_PROGRAM_CONTEXT>(),
+                                 boundary_data_2.begin(),
+                                 boundary_data_2.end(),
+                                 false)
+        , boundary_data_3_buffer(program.getInfo<CL_PROGRAM_CONTEXT>(),
+                                 boundary_data_3.begin(),
+                                 boundary_data_3.end(),
+                                 false)
         , boundary_coefficients_buffer(program.getInfo<CL_PROGRAM_CONTEXT>(),
                                        coefficients.begin(),
                                        coefficients.end(),

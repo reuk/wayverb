@@ -157,7 +157,7 @@ FullTestResults run_full_test(const std::string& test_name,
                               float azimuth,
                               float elevation,
                               int dim,
-                              const std::vector<Surface>& surfaces) {
+                              const Surface& surface) {
     //  set room size based on desired number of nodes
     auto desired_nodes = Vec3<uint32_t>(dim, dim, dim);
     auto total_desired_nodes = desired_nodes.product();
@@ -172,14 +172,14 @@ FullTestResults run_full_test(const std::string& test_name,
 
     //  generate two boundaries, one twice the size of the other
     auto wall = CuboidBoundary(
-        Vec3f(0, 0, 0), desired_nodes * config.get_divisions(), surfaces);
+        Vec3f(0, 0, 0), desired_nodes * config.get_divisions(), {surface});
 
     Logger::log_err("boundary: ", wall);
 
     auto far = wall.get_c1();
     auto new_dim = Vec3f(far.x * 2, far.y, far.z);
 
-    auto no_wall = CuboidBoundary(Vec3f(0, 0, 0), new_dim, surfaces);
+    auto no_wall = CuboidBoundary(Vec3f(0, 0, 0), new_dim, {surface});
 
     //  place source, receiver (and image) in rooms based on distance in nodes
     //      from the wall
@@ -381,16 +381,16 @@ int main(int argc, char** argv) {
     try {
         struct SurfacePackage {
             std::string name;
-            std::vector<Surface> surfaces;
+            Surface surface;
         };
 
         auto surface_set = {
             SurfacePackage{"filtered",
-                           {Surface{{{0.4, 0.3, 0.5, 0.8, 0.9, 1, 1, 1}},
-                                    {{0.4, 0.3, 0.5, 0.8, 0.9, 1, 1, 1}}}}},
+                           Surface{{{0.4, 0.3, 0.5, 0.8, 0.9, 1, 1, 1}},
+                                   {{0.4, 0.3, 0.5, 0.8, 0.9, 1, 1, 1}}}},
             SurfacePackage{"flat",
-                           {Surface{{{1, 1, 1, 1, 1, 1, 1, 1}},
-                                    {{1, 1, 1, 1, 1, 1, 1, 1}}}}}};
+                           Surface{{{1, 1, 1, 1, 1, 1, 1, 1}},
+                                   {{1, 1, 1, 1, 1, 1, 1, 1}}}}};
 
         std::vector<FullTestResults> all_test_results(surface_set.size());
         std::transform(surface_set.begin(),
@@ -406,7 +406,7 @@ int main(int argc, char** argv) {
                                                 azimuth,
                                                 elevation,
                                                 dim,
-                                                i.surfaces);
+                                                i.surface);
                        });
 
         if (all_test_results.front() == all_test_results.back()) {

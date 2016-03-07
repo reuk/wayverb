@@ -59,14 +59,6 @@ RectangularProgram::get_notch_filter_array(
     return convolve(get_notch_biquads_array(n, sr));
 }
 
-std::ostream& operator<<(std::ostream& os,
-                         const RectangularProgram::BiquadCoefficientsArray& n) {
-    Bracketer bracketer(os);
-    for (const auto& i : n.array)
-        to_stream(os, i);
-    return os;
-}
-
 RectangularProgram::CanonicalCoefficients
 RectangularProgram::to_impedance_coefficients(const CanonicalCoefficients& c) {
     CanonicalCoefficients ret;
@@ -82,6 +74,41 @@ RectangularProgram::to_impedance_coefficients(const CanonicalCoefficients& c) {
 
     return ret;
 }
+
+//  ostreams  ----------------------------------------------------------------//
+
+std::ostream& operator<<(std::ostream& os,
+                         const RectangularProgram::BiquadCoefficientsArray& n) {
+    Bracketer bracketer(os);
+    for (const auto& i : n.array)
+        to_stream(os, i);
+    return os;
+}
+
+std::ostream& operator<<(std::ostream& os,
+                         const RectangularProgram::CanonicalMemory& m) {
+    Bracketer bracketer(os);
+    for (const auto& i : m.array)
+        to_stream(os, i, "  ");
+    return os;
+}
+
+std::ostream& operator<<(std::ostream& os,
+                         const RectangularProgram::BoundaryData& m) {
+    return to_stream(os, m.filter_memory);
+}
+
+std::ostream& operator<<(std::ostream& os,
+                         const RectangularProgram::CondensedNodeStruct& cns) {
+    Bracketer bracketer(os);
+    return to_stream(os,
+                     "bt: ",
+                     cns.boundary_type,
+                     "  boundary_index: ",
+                     cns.boundary_index);
+}
+
+//----------------------------------------------------------------------------//
 
 const std::string RectangularProgram::source{
     "#define PORTS " + std::to_string(PORTS) + "\n" +

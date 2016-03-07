@@ -37,6 +37,9 @@ public:
 
 std::ostream& operator<<(std::ostream& strm, const Intersects& obj);
 
+TriangleVec3f to_triangle_vec3f(const Triangle& tri,
+                                const std::vector<Vec3f>& vertices);
+
 Intersects triangle_intersection(const TriangleVec3f& tri, const Ray& ray);
 
 Intersects triangle_intersection(const Triangle& tri,
@@ -56,4 +59,11 @@ bool point_intersection(const Vec3f& begin,
                         const Vec3f& point,
                         const std::vector<Triangle>& triangles,
                         const std::vector<Vec3f>& vertices);
+
+float point_triangle_distance_squared(const TriangleVec3f& triangle,
+                                      const Vec3f& point);
+
+float point_triangle_distance_squared(const Triangle& tri,
+                                      const std::vector<Vec3f>& vertices,
+                                      const Vec3f& point);
 };

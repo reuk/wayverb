@@ -2,12 +2,20 @@
 
 #include "boundaries.h"
 #include "conversions.h"
+#include "logger.h"
 
 #include "config.h"
 
 #include <vector>
 #include <stdexcept>
 #include <fstream>
+
+std::ostream& operator<<(std::ostream& os, const VolumeType& f) {
+    Bracketer bracketer(os);
+    for (auto i : f.s)
+        to_stream(os, i, "  ");
+    return os;
+}
 
 TriangleVec3f get_triangle_verts(const Triangle& t,
                                  const std::vector<Vec3f>& v) {
@@ -71,12 +79,25 @@ SurfaceLoader::size_type SurfaceLoader::get_index(
 
 SurfaceOwner::SurfaceOwner(const std::vector<Surface>& surfaces)
         : surfaces(surfaces) {
+    check_num_surfaces();
 }
 SurfaceOwner::SurfaceOwner(std::vector<Surface>&& surfaces)
         : surfaces(std::move(surfaces)) {
+    check_num_surfaces();
+}
+SurfaceOwner::SurfaceOwner(const SurfaceLoader& surface_loader)
+        : surfaces(surface_loader.surfaces) {
+    check_num_surfaces();
 }
 SurfaceOwner::SurfaceOwner(SurfaceLoader&& surface_loader)
         : surfaces(std::move(surface_loader.surfaces)) {
+    check_num_surfaces();
+}
+
+void SurfaceOwner::check_num_surfaces() const {
+    if (surfaces.empty()) {
+        throw std::runtime_error("must own at least one surface");
+    }
 }
 
 const std::vector<Surface>& SurfaceOwner::get_surfaces() const {
@@ -102,7 +123,8 @@ SceneData::SceneData(const aiScene* const scene,
 
 SceneData::SceneData(const aiScene* const scene,
                      SurfaceLoader&& loader,
-                     float scale) {
+                     float scale)
+        : SurfaceOwner(loader) {
     if (!scene)
         throw std::runtime_error("scene pointer is null");
 

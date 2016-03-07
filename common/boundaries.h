@@ -39,10 +39,10 @@ CuboidBoundary get_cuboid_boundary(const std::vector<Vec3f>& vertices);
 
 class CuboidBoundary : public Boundary {
 public:
-    CuboidBoundary(
-        const Vec3f& c0 = Vec3f(),
-        const Vec3f& c1 = Vec3f(),
-        const std::vector<Surface>& surfaces = std::vector<Surface>());
+    CuboidBoundary(const Vec3f& c0 = Vec3f(),
+                   const Vec3f& c1 = Vec3f(),
+                   const std::vector<Surface>& surfaces = std::vector<Surface>{
+                       Surface{}});
     bool inside(const Vec3f& v) const override;
     bool overlaps(const TriangleVec3f& t) const;
     CuboidBoundary get_aabb() const override;
@@ -60,10 +60,10 @@ private:
 
 class SphereBoundary : public Boundary {
 public:
-    SphereBoundary(
-        const Vec3f& c = Vec3f(),
-        float radius = 0,
-        const std::vector<Surface>& surfaces = std::vector<Surface>());
+    SphereBoundary(const Vec3f& c = Vec3f(),
+                   float radius = 0,
+                   const std::vector<Surface>& surfaces = std::vector<Surface>{
+                       Surface{}});
     bool inside(const Vec3f& v) const override;
     CuboidBoundary get_aabb() const override;
 
@@ -84,7 +84,7 @@ public:
     MeshBoundary(
         const std::vector<Triangle>& triangles = std::vector<Triangle>(),
         const std::vector<Vec3f>& vertices = std::vector<Vec3f>(),
-        const std::vector<Surface>& surfaces = std::vector<Surface>());
+        const std::vector<Surface>& surfaces = std::vector<Surface>{Surface{}});
     MeshBoundary(const SceneData& sd);
     bool inside(const Vec3f& v) const override;
     CuboidBoundary get_aabb() const override;
@@ -105,9 +105,6 @@ public:
     Vec3f get_cell_size() const;
 
 private:
-    MeshBoundary(
-        const std::tuple<std::vector<Triangle>, std::vector<Vec3f>>& data);
-
     using hash_table = std::vector<std::vector<reference_store>>;
 
     hash_table compute_triangle_references() const;

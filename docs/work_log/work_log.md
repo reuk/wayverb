@@ -321,13 +321,16 @@ TODO
 
 * test surface -> coeffs code
     * appropriate failure states etc.
-
-* make boundary classification code parallel
+    * some way of checking if the filter is stable
 
 * CRITICAL: check mic modelling write-up now that the mesh update equations have
   been fixed, boundaries added
 
 * CRITICAL: check how boundary filter coefficients should be calculated
+
+* 2d, 3d boundaries maybe  shouldn't store pointers to filter coefficients
+    * they should store indices to adjacent lower-order boundaries
+    * extract coefficients from these boundaries
 
 * boundary modelling
     * try to predict the frequency response of each boundary
@@ -340,9 +343,6 @@ TODO
       rectangular mesh?
 
 * think about comparing the two models
-
-* extract boundary frequency curve from input files somehow
-    * that is, material, model files etc.
 
 * nicer json parsing
 
@@ -409,3 +409,31 @@ testing scratchpad
 
 2D boundaries seem to be unstable/blow up over time
     although 1D ones seem fineish
+
+
+
+boundary nodes
+==============
+
+            nodes: [int boundary, int boundary, int boundary]
+                    |             |             |
+                    |             |             +---------------------------------------------+
+                    |             |                                                           |
+                    +---------+   +---------------+                                           |
+                              |                   |                                           |
+            boundary data 1: [[int coefficients], [int coefficients], [int coefficients]]     |
+                               |                                                              |
+    +--------------------------+                                    +-------------------------+
+    |                                                               |
+    |       boundary data 2: [[int coefficients, int coefficients], [int coefficients, int coefficients]]
+    |                                                                |                 |
+    |+---------------------------------------------------------------+                 |
+    ||+--------------------------------------------------------------------------------+
+    |||
+    |||     boundary data 3: [[int coefficients, int coefficients, int coefficients]]
+    |||
+    ||+-----------------------------+
+    |+---------------------------+  |
+    +-------------------------+  |  |
+                              |  |  |
+            coefficients: [a, b, c, d]
