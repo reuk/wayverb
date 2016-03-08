@@ -300,7 +300,10 @@ RectangularWaveguide::to_filter_coefficients(const Surface& surface, float sr) {
         descriptors[i] =
             RectangularProgram::NotchFilterDescriptor{gain, centre, 1.414};
     }
-    return RectangularProgram::get_notch_filter_array(descriptors, sr);
+    auto ret = RectangularProgram::get_notch_filter_array(descriptors, sr);
+    if (!RectangularProgram::is_stable(ret))
+        throw std::runtime_error("the generated boundary filter is unstable");
+    return ret;
 }
 
 std::vector<RectangularProgram::CanonicalCoefficients>

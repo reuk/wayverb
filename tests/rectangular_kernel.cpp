@@ -306,3 +306,20 @@ TEST(compare_filters, compare_filters) {
     test(rk_biquad<ImpulseGenerator>{}, rk_filter<ImpulseGenerator>{});
     test(rk_biquad<NoiseGenerator>{}, rk_filter<NoiseGenerator>{});
 }
+
+/*
+TEST(filter_stability, filter_stability) {
+    std::default_random_engine engine{std::random_device()()};
+    std::uniform_real_distribution<float> range{-1, 1};
+    constexpr auto order = 200;
+    constexpr auto tries = 20;
+    for (auto i = 0; i != tries; ++i) {
+        std::array<float, order> poly;
+        std::generate(poly.begin(),
+                      poly.end(),
+                      [&engine, &range] { return range(engine); });
+
+        auto stable = RectangularProgram::is_stable(poly);
+    }
+}
+*/

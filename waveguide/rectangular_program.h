@@ -7,6 +7,7 @@
 #include "logger.h"
 
 #include <cassert>
+#include <cmath>
 
 class RectangularProgram : public cl::Program {
 public:
@@ -189,6 +190,26 @@ public:
                          BiquadCoefficientsArray::BIQUAD_SECTIONS>& n,
         float sr);
 
+    template <unsigned long L>
+    static constexpr bool is_stable(const std::array<float, L>& a) {
+        float rci = a[L - 1];
+        if (std::abs(rci) >= 1)
+            return false;
+
+        constexpr auto next_size = L - 1;
+        std::array<float, next_size> next_array;
+        for (auto i = 0; i != next_size; ++i)
+            next_array[i] = (a[i] - rci * a[next_size - i]) / (1 - rci * rci);
+        return is_stable(next_array);
+    }
+
+    template <int L>
+    static constexpr bool is_stable(const FilterCoefficients<L>& coeffs) {
+        std::array<float, L + 1> denom;
+        std::copy(std::begin(coeffs.a), std::end(coeffs.a), denom.begin());
+        return is_stable(denom);
+    }
+
 private:
     static constexpr int BIQUAD_SECTIONS = BiquadMemoryArray::BIQUAD_SECTIONS;
     static const std::string source;
@@ -235,3 +256,8 @@ std::ostream& operator<<(std::ostream& os,
                          const RectangularProgram::CondensedNodeStruct& cns);
 
 //----------------------------------------------------------------------------//
+
+template <>
+constexpr bool RectangularProgram::is_stable(const std::array<float, 0>& a) {
+    return true;
+}

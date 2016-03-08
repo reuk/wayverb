@@ -388,9 +388,8 @@ int main(int argc, char** argv) {
             SurfacePackage{"filtered",
                            Surface{{{0.4, 0.3, 0.5, 0.8, 0.9, 1, 1, 1}},
                                    {{0.4, 0.3, 0.5, 0.8, 0.9, 1, 1, 1}}}},
-            SurfacePackage{"flat",
-                           Surface{{{1, 1, 1, 1, 1, 1, 1, 1}},
-                                   {{1, 1, 1, 1, 1, 1, 1, 1}}}}};
+            SurfacePackage{"flat", Surface{}},
+        };
 
         std::vector<FullTestResults> all_test_results(surface_set.size());
         std::transform(surface_set.begin(),

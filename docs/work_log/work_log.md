@@ -328,10 +328,6 @@ TODO
 
 * CRITICAL: check how boundary filter coefficients should be calculated
 
-* 2d, 3d boundaries maybe  shouldn't store pointers to filter coefficients
-    * they should store indices to adjacent lower-order boundaries
-    * extract coefficients from these boundaries
-
 * boundary modelling
     * try to predict the frequency response of each boundary
 
