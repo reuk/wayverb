@@ -300,9 +300,19 @@ RectangularWaveguide::to_filter_coefficients(const Surface& surface, float sr) {
         descriptors[i] =
             RectangularProgram::NotchFilterDescriptor{gain, centre, 1.414};
     }
-    auto ret = RectangularProgram::get_notch_filter_array(descriptors, sr);
+    auto individual_coeffs =
+        RectangularProgram::get_notch_biquads_array(descriptors, sr);
+    if (!std::all_of(
+            std::begin(individual_coeffs.array),
+            std::end(individual_coeffs.array),
+            [](const auto& i) { return RectangularProgram::is_stable(i); }))
+        throw std::runtime_error(
+            "the generated boundary notch filter is unstable");
+    auto ret = RectangularProgram::convolve(individual_coeffs);
     if (!RectangularProgram::is_stable(ret))
-        throw std::runtime_error("the generated boundary filter is unstable");
+        Logger::log_err(
+            "although individual notches are stable, higher-order boundary "
+            "filter may be unstable due to 32-bit precision limitation");
     return ret;
 }
 

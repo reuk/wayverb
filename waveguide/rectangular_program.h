@@ -258,6 +258,6 @@ std::ostream& operator<<(std::ostream& os,
 //----------------------------------------------------------------------------//
 
 template <>
-constexpr bool RectangularProgram::is_stable(const std::array<float, 0>& a) {
+constexpr bool RectangularProgram::is_stable(const std::array<float, 1>& a) {
     return true;
 }

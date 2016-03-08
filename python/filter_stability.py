@@ -1,6 +1,35 @@
 import numpy as np
+import scipy.signal as signal
+import matplotlib.pyplot as plt
+import matplotlib.patches as patches
 from boundary_modelling import get_notch_coeffs, series_coeffs
 from collections import namedtuple
+
+def zplane(b, a):
+    z, p, k = signal.tf2zpk(b, a)
+
+    plt.figure()
+    plt.title("Pole-zero placement of EQ Filters")
+    plt.plot(z.real, z.imag, 'ko', fillstyle='none', ms=10)
+    plt.plot(p.real, p.imag, 'kx', fillstyle='none', ms=10)
+
+    unit_circle = patches.Circle(
+        (0, 0),
+        radius=1,
+        fill=False,
+        color='black',
+        ls='solid',
+        alpha=0.9)
+    plt.gca().add_patch(unit_circle)
+    plt.axvline(0, color='0.7')
+    plt.axhline(0, color='0.7')
+    plt.grid()
+    plt.ylim([-1, 1])
+    plt.xlim([-1, 1])
+    plt.gca().set_aspect('equal', adjustable='box')
+
+    plt.ylabel('Imaginary')
+    plt.xlabel('Real')
 
 Surface = namedtuple('Surface', ['specular', 'diffuse'])
 
@@ -10,6 +39,7 @@ def a2db(a):
 def to_filter_coefficients(surface, sr):
     num_descriptors = 3
     edges = [40, 175, 350, 700, 1400, 2800, 5600, 11200, 20000]
+    #edges = [1400, 2800, 5600, 11200]
     coeffs = []
     for i in range(num_descriptors):
         gain = a2db((surface.specular[i] + surface.diffuse[i]) * 0.5)
@@ -21,10 +51,11 @@ def is_stable_roots(polynomial):
     return np.all(np.abs(np.roots(polynomial)) < 1)
 
 def is_stable_recursive(a):
-    if len(a) == 0:
+    if len(a) == 1:
         return True
 
     rci = a[-1]
+    print rci
     if np.abs(rci) >= 1:
         return False
 
@@ -36,30 +67,6 @@ def is_stable_recursive(a):
     return is_stable_recursive(next_array)
 
 def is_stable_jury(polynomial):
-    # vvd.push_back(v);
-    # reverse(v.begin(),v.end());
-    # vvd.push_back(v);
-    #
-    # for(i=2;;i+=2)
-    # {
-    #     v.clear();
-    #     double mult=vvd[i-2][vvd[i-2].size()-1]/vvd[i-2][0];
-    #
-    #     for( j=0;j<vvd[i-2].size()-1;j++)
-    #         v.push_back(vvd[i-2][j] - vvd[i-1][j]*mult);
-    #
-    #     vvd.push_back(v);
-    #     reverse(v.begin(),v.end());
-    #     vvd.push_back(v);
-    #     if(v.size()==1)
-    #         break;
-    # }
-    #
-    # for(i=0;i<vvd.size();i+=2)
-    #     if(vvd[i][0]<=0)
-    #         break;
-    #
-    # return i==vvd.size();
     vvd = []
     vvd.append(polynomial)
     vvd.append(polynomial[::-1])
@@ -76,8 +83,8 @@ def is_stable_jury(polynomial):
             break
         i += 2
 
-    for i in range(0, len(vvd), 2):
-        if vvd[i][0] <= 0:
+    for j in range(0, len(vvd), 2):
+        if vvd[j][0] <= 0:
             break
 
     return i == len(vvd)
@@ -89,39 +96,58 @@ def is_stable(polynomial):
     stable_roots = is_stable_roots(polynomial)
     stable_recursive = is_stable_recursive(polynomial)
     stable_jury = is_stable_jury(polynomial)
-    if not all_equal([stable_roots, stable_recursive, stable_jury]):
+    results = [
+            is_stable_roots(polynomial),
+            is_stable_recursive(polynomial),
+            #is_stable_jury(polynomial),
+        ]
+    if not all_equal(results):
         raise RuntimeError("results don't match for polynomial ",
                            polynomial,
-                           " with results: roots - ",
-                           stable_roots,
-                           " recursive - ",
-                           stable_recursive,
-                           " jury - ",
-                           stable_jury)
+                           " with results: ",
+                           results)
     return stable_roots
 
 def random_coeffs():
     return [1] + np.random.rand(20) - 0.5
 
-def check_surface_filters(surface_desc):
+def check_surface_filters(surface_desc, check):
     coeffs = to_filter_coefficients(Surface(surface_desc, surface_desc), 44100)
-    for c in coeffs:
-        is_stable(c[1])
-    return series_coeffs(coeffs)[1]
+    if check:
+        for c in coeffs:
+            is_stable(c[1])
+    return series_coeffs(coeffs)
 
 def random_coeffs_from_surface():
-    return check_surface_filters(np.random.rand(8))
+    surface = np.random.rand(8)
+    return check_surface_filters(surface, False)
+
+def do_graph(coeffs, yes):
+    try:
+        return is_stable(coeffs)
+    except:
+        if yes:
+            zplane(coeffs, coeffs)
+            plt.show()
+        raise
 
 def main():
-    for i in range(2000):
-        is_stable(random_coeffs_from_surface())
+    for i in range(100000):
+        if not do_graph(random_coeffs_from_surface()[1], True):
+            return False
+    return True
 
 def test():
     for i in [
-                 [1, 1, 1, 1, 1, 1, 1, 1],
                  [0.4, 0.3, 0.5, 0.8, 0.9, 1, 1, 1],
+                 [1, 1, 1, 1, 1, 1, 1, 1],
              ]:
-        is_stable(check_surface_filters(i))
+        coeffs = check_surface_filters(i, False)[1]
+        print coeffs
+        if not do_graph(coeffs, True):
+            return False
+    return True
 
 if __name__ == "__main__":
-    main()
+    print test()
+    # print main()
