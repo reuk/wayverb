@@ -17,7 +17,7 @@ template <typename T>
 std::vector<T> compute_coeffs(
     int size,
     const std::array<
-        RectangularProgram::NotchFilterDescriptor,
+        RectangularProgram::FilterDescriptor,
         RectangularProgram::BiquadCoefficientsArray::BIQUAD_SECTIONS>& n,
     float sr) {
     return std::vector<T>(size);
@@ -27,7 +27,7 @@ template <>
 std::vector<RectangularProgram::BiquadCoefficientsArray> compute_coeffs(
     int size,
     const std::array<
-        RectangularProgram::NotchFilterDescriptor,
+        RectangularProgram::FilterDescriptor,
         RectangularProgram::BiquadCoefficientsArray::BIQUAD_SECTIONS>& n,
     float sr) {
     auto ret = std::vector<RectangularProgram::BiquadCoefficientsArray>(size);
@@ -47,14 +47,16 @@ template <>
 std::vector<FC> compute_coeffs(
     int size,
     const std::array<
-        RectangularProgram::NotchFilterDescriptor,
+        RectangularProgram::FilterDescriptor,
         RectangularProgram::BiquadCoefficientsArray::BIQUAD_SECTIONS>& n,
     float sr) {
     auto ret = std::vector<FC>(size);
-    std::generate(
-        ret.begin(),
-        ret.end(),
-        [&n, sr] { return RectangularProgram::get_notch_filter_array(n, sr); });
+    std::generate(ret.begin(),
+                  ret.end(),
+                  [&n, sr] {
+                      return RectangularProgram::convolve(
+                          RectangularProgram::get_peak_biquads_array(n, sr));
+                  });
     return ret;
 }
 
@@ -164,7 +166,7 @@ public:
     static constexpr int size{1 << 8};
     static constexpr int sr{44100};
     std::vector<Memory> memory{size, Memory{}};
-    std::array<RectangularProgram::NotchFilterDescriptor,
+    std::array<RectangularProgram::FilterDescriptor,
                RectangularProgram::BiquadCoefficientsArray::BIQUAD_SECTIONS>
         notches{Testing::notches};
     std::vector<Coeffs> coeffs{compute_coeffs<Coeffs>(size, notches, sr)};

@@ -16,7 +16,7 @@ RectangularProgram::CondensedNodeStruct RectangularProgram::condense(
 }
 
 RectangularProgram::BiquadCoefficients
-RectangularProgram::get_notch_coefficients(const NotchFilterDescriptor& n,
+RectangularProgram::get_notch_coefficients(const FilterDescriptor& n,
                                            float sr) {
     const float A = pow(10.0f, n.gain / 40.0f);
     const float w0 = 2.0f * M_PI * n.centre / sr;
@@ -29,18 +29,47 @@ RectangularProgram::get_notch_coefficients(const NotchFilterDescriptor& n,
         {1, (-2 * cw0) / a0, (1 - alpha / A) / a0}};
 }
 
+RectangularProgram::BiquadCoefficients
+RectangularProgram::get_peak_coefficients(const FilterDescriptor& n, float sr) {
+    const float A = pow(10.0f, n.gain / 40.0f);
+    const float w0 = 2.0f * M_PI * n.centre / sr;
+    const float cw0 = cos(w0);
+    const float sw0 = sin(w0);
+    const float alpha = sw0 / 2.0f * n.Q;
+    const float a0 = 1 + alpha / A;
+    return RectangularProgram::BiquadCoefficients{
+        {(1 + (alpha * A)) / a0, (-2 * cw0) / a0, (1 - alpha * A) / a0},
+        {1, (-2 * cw0) / a0, (1 - alpha / A) / a0}};
+}
+
 RectangularProgram::BiquadCoefficientsArray
-RectangularProgram::get_notch_biquads_array(
-    const std::array<NotchFilterDescriptor,
+RectangularProgram::get_biquads_array(
+    const std::array<FilterDescriptor,
                      BiquadCoefficientsArray::BIQUAD_SECTIONS>& n,
-    float sr) {
+    float sr, coefficient_generator callback) {
     RectangularProgram::BiquadCoefficientsArray ret;
     std::transform(
         n.begin(),
         n.end(),
         std::begin(ret.array),
-        [sr](const auto& i) { return get_notch_coefficients(i, sr); });
+        [sr, callback](const auto& i) { return callback(i, sr); });
     return ret;
+}
+
+RectangularProgram::BiquadCoefficientsArray
+RectangularProgram::get_notch_biquads_array(
+    const std::array<FilterDescriptor,
+                     BiquadCoefficientsArray::BIQUAD_SECTIONS>& n,
+    float sr) {
+    return get_biquads_array(n, sr, get_notch_coefficients);
+}
+
+RectangularProgram::BiquadCoefficientsArray
+RectangularProgram::get_peak_biquads_array(
+    const std::array<FilterDescriptor,
+                     BiquadCoefficientsArray::BIQUAD_SECTIONS>& n,
+    float sr) {
+    return get_biquads_array(n, sr, get_peak_coefficients);
 }
 
 RectangularProgram::CanonicalCoefficients RectangularProgram::convolve(
@@ -52,20 +81,15 @@ RectangularProgram::CanonicalCoefficients RectangularProgram::convolve(
 }
 
 RectangularProgram::CanonicalCoefficients
-RectangularProgram::get_notch_filter_array(
-    const std::array<NotchFilterDescriptor,
-                     BiquadCoefficientsArray::BIQUAD_SECTIONS>& n,
-    float sr) {
-    return convolve(get_notch_biquads_array(n, sr));
-}
-
-RectangularProgram::CanonicalCoefficients
 RectangularProgram::to_impedance_coefficients(const CanonicalCoefficients& c) {
     CanonicalCoefficients ret;
     for (auto i = 0; i != CanonicalCoefficients::ORDER + 1; ++i) {
-        ret.b[i] = c.b[i] + c.a[i];
-        ret.a[i] = c.b[i] - c.a[i];
+        ret.b[i] = c.a[i] + c.b[i];
+        ret.a[i] = c.a[i] - c.b[i];
     }
+
+    if (ret.a[0] == 0)
+        throw std::runtime_error("a0 coefficient is zero");
     auto norm = 1 / ret.a[0];
     for (auto i = 0; i != CanonicalCoefficients::ORDER + 1; ++i) {
         ret.b[i] *= norm;

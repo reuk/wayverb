@@ -291,17 +291,19 @@ bool RectangularWaveguide::inside(size_type index) const {
 
 RectangularProgram::CanonicalCoefficients
 RectangularWaveguide::to_filter_coefficients(const Surface& surface, float sr) {
-    std::array<RectangularProgram::NotchFilterDescriptor,
+    Logger::log_err("surface to convert: ", surface);
+
+    std::array<RectangularProgram::FilterDescriptor,
                RectangularProgram::BiquadCoefficientsArray::BIQUAD_SECTIONS>
         descriptors;
     for (auto i = 0u; i != descriptors.size(); ++i) {
         float gain = a2db((surface.specular.s[i] + surface.diffuse.s[i]) / 2);
         auto centre = (HrtfData::EDGES[i + 0] + HrtfData::EDGES[i + 1]) / 2;
         descriptors[i] =
-            RectangularProgram::NotchFilterDescriptor{gain, centre, 1.414};
+            RectangularProgram::FilterDescriptor{gain, centre, 1.414};
     }
     auto individual_coeffs =
-        RectangularProgram::get_notch_biquads_array(descriptors, sr);
+        RectangularProgram::get_peak_biquads_array(descriptors, sr);
     if (!std::all_of(
             std::begin(individual_coeffs.array),
             std::end(individual_coeffs.array),
@@ -313,6 +315,17 @@ RectangularWaveguide::to_filter_coefficients(const Surface& surface, float sr) {
         Logger::log_err(
             "although individual notches are stable, higher-order boundary "
             "filter may be unstable due to 32-bit precision limitation");
+
+    Logger::log_err("before transformation: ", ret);
+
+    ret = RectangularProgram::to_impedance_coefficients(ret);
+
+    if (!RectangularProgram::is_stable(ret))
+        Logger::log_err(
+            "impedance filter coefficients produce unstable filter");
+
+    Logger::log_err("after transformation: ", ret);
+
     return ret;
 }
 

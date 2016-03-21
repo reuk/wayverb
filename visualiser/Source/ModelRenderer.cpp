@@ -277,7 +277,7 @@ void DrawableScene::update(float dt) {
         try {
             if (future_pressure.wait_for(std::chrono::milliseconds(0)) ==
                 std::future_status::ready) {
-                //                mesh_object->set_pressures(future_pressure.get());
+                mesh_object->set_pressures(future_pressure.get());
                 trigger_pressure_calculation();
             }
         } catch (const std::exception &e) {
@@ -335,7 +335,7 @@ void SceneRenderer::load_from_file_package(const FilePackage &fp) {
     cc.get_source() *= scene_scale;
 
     cc.get_rays() = 1 << 5;
-    cc.get_filter_frequency() = 11025;
+    cc.get_filter_frequency() = 4000;
     cc.get_oversample_ratio() = 1;
 
     scene = std::make_unique<DrawableScene>(*shader, scene_data, cc);

@@ -318,25 +318,34 @@ TODO
 
 * MOST CRITICAL: prove that supplying different coefficients to boundaries
   has the *correct* effect on the resulting impulse responses
-
-* test surface -> coeffs code
-    * appropriate failure states etc.
-    * some way of checking if the filter is stable
+    * this seems to be somewhat working now
 
 * CRITICAL: check mic modelling write-up now that the mesh update equations have
   been fixed, boundaries added
 
 * CRITICAL: check how boundary filter coefficients should be calculated
 
+* can I design my filters the other way up?
+    * search for arbitrary filter response IIR design
+
+* make sure using impedance filters rather than reflectance filters
+
+* check that loading surfaces from file works as expected
+
+* fix bug in boundary finder code
+
+* write up the boundary modelling stuff
+
+* add 0.196 stability limit to waveguide config somehow
+
+* try to find cause of insane memory usage
+
 * boundary modelling
     * try to predict the frequency response of each boundary
 
     * is there a way of mapping between the raytracer and this boundary model?
 
-    * get in touch with an authority with specific questions
-
-    * can I have a fast-mode tetrahedral mesh and a slow-mode, more accurate,
-      rectangular mesh?
+* fast-mode tetrahedral mesh and a slow-mode, more accurate, rectangular mesh
 
 * think about comparing the two models
 
@@ -433,3 +442,9 @@ boundary nodes
     +-------------------------+  |  |
                               |  |  |
             coefficients: [a, b, c, d]
+
+
+talking points
+==============
+
+what's the best way of generating boundary filters?

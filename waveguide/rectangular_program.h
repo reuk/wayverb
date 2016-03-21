@@ -157,17 +157,34 @@ public:
 
     static CondensedNodeStruct condense(const NodeStruct& n);
 
-    struct NotchFilterDescriptor {
+    struct FilterDescriptor {
         float gain{0};
         float centre{0};
         float Q{0};
     };
 
-    static BiquadCoefficients get_notch_coefficients(
-        const NotchFilterDescriptor& n, float sr);
+    using coefficient_generator =
+        BiquadCoefficients (*)(const FilterDescriptor& n, float sr);
+
+    static BiquadCoefficients get_notch_coefficients(const FilterDescriptor& n,
+                                                     float sr);
+
+    static BiquadCoefficients get_peak_coefficients(const FilterDescriptor& n,
+                                                    float sr);
+
+    static BiquadCoefficientsArray get_biquads_array(
+        const std::array<FilterDescriptor,
+                         BiquadCoefficientsArray::BIQUAD_SECTIONS>& n,
+        float sr,
+        coefficient_generator callback);
 
     static BiquadCoefficientsArray get_notch_biquads_array(
-        const std::array<NotchFilterDescriptor,
+        const std::array<FilterDescriptor,
+                         BiquadCoefficientsArray::BIQUAD_SECTIONS>& n,
+        float sr);
+
+    static BiquadCoefficientsArray get_peak_biquads_array(
+        const std::array<FilterDescriptor,
                          BiquadCoefficientsArray::BIQUAD_SECTIONS>& n,
         float sr);
 
@@ -185,10 +202,6 @@ public:
     }
 
     static CanonicalCoefficients convolve(const BiquadCoefficientsArray& a);
-    static CanonicalCoefficients get_notch_filter_array(
-        const std::array<NotchFilterDescriptor,
-                         BiquadCoefficientsArray::BIQUAD_SECTIONS>& n,
-        float sr);
 
     template <unsigned long L>
     static constexpr bool is_stable(const std::array<float, L>& a) {

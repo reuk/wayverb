@@ -11,7 +11,7 @@ TEST(notch_filter_coefficients, notch_filter_coefficients) {
     static std::uniform_real_distribution<cl_float> range{0, sr / 2};
     for (auto i = 0; i != 10; ++i) {
         auto descriptor =
-            RectangularProgram::NotchFilterDescriptor{0, range(engine), 1.414};
+            RectangularProgram::FilterDescriptor{0, range(engine), 1.414};
         auto coefficients =
             RectangularProgram::get_notch_coefficients(descriptor, sr);
 

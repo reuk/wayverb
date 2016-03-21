@@ -3,11 +3,11 @@
 #include "rectangular_program.h"
 
 namespace Testing {
-std::array<RectangularProgram::NotchFilterDescriptor,
+std::array<RectangularProgram::FilterDescriptor,
            RectangularProgram::BiquadCoefficientsArray::BIQUAD_SECTIONS>
     notches{{
-        RectangularProgram::NotchFilterDescriptor{-60, 2000, 3},
-        RectangularProgram::NotchFilterDescriptor{-60, 4000, 3},
-        RectangularProgram::NotchFilterDescriptor{-60, 8000, 3},
+        RectangularProgram::FilterDescriptor{-60, 2000, 3},
+        RectangularProgram::FilterDescriptor{-60, 4000, 3},
+        RectangularProgram::FilterDescriptor{-60, 8000, 3},
     }};
 }

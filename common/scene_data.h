@@ -32,9 +32,11 @@ using VolumeType = cl_float8;
 std::ostream& operator<<(std::ostream& os, const VolumeType& f);
 
 typedef struct {
-    VolumeType specular{{1, 1, 1, 1, 1, 1, 1, 1}};
-    VolumeType diffuse{{1, 1, 1, 1, 1, 1, 1, 1}};
+    VolumeType specular{{0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5}};
+    VolumeType diffuse{{0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5}};
 } __attribute__((aligned(8))) Surface;
+
+std::ostream& operator<<(std::ostream& os, const Surface& s);
 
 using TriangleVec3f = std::array<Vec3f, 3>;
 TriangleVec3f get_triangle_verts(const Triangle& t,

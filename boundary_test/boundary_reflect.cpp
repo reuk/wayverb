@@ -5,7 +5,6 @@
 #include "conversions.h"
 #include "microphone.h"
 #include "azimuth_elevation.h"
-#include "testing_notches.h"
 
 #include "cl_common.h"
 
@@ -53,18 +52,17 @@ void write_file(const WaveguideConfig& config,
 
     write_sndfile(
         output_file, {output}, config.get_output_sample_rate(), depth, format);
-
-    auto normalized = output;
-    normalize(normalized);
-
-    auto norm_output_file =
-        build_string(output_folder, "/normalized.", fname, ".wav");
-    Logger::log_err("writing file: ", norm_output_file);
-    write_sndfile(norm_output_file,
-                  {normalized},
-                  config.get_output_sample_rate(),
-                  depth,
-                  format);
+    //    auto normalized = output;
+    //    normalize(normalized);
+    //
+    //    auto norm_output_file =
+    //        build_string(output_folder, "/normalized.", fname, ".wav");
+    //    Logger::log_err("writing file: ", norm_output_file);
+    //    write_sndfile(norm_output_file,
+    //                  {normalized},
+    //                  config.get_output_sample_rate(),
+    //                  depth,
+    //                  format);
 }
 
 float hanning_point(float f) {
@@ -148,6 +146,110 @@ struct FullTestResults {
     }
 };
 
+std::vector<float> get_free_field_results(const cl::Context& context,
+                                          cl::Device& device,
+                                          cl::CommandQueue& queue,
+                                          const std::string& output_folder,
+                                          const WaveguideConfig& config,
+                                          float azimuth,
+                                          float elevation,
+                                          int dim,
+                                          int steps) {
+    //  set room size based on desired number of nodes
+    auto desired_nodes = Vec3<uint32_t>(dim, dim, dim);
+    auto total_desired_nodes = desired_nodes.product();
+
+    auto total_possible_nodes = 1 << 30;
+    if (total_desired_nodes >= total_possible_nodes) {
+        Logger::log_err("total desired nodes: ", total_desired_nodes);
+        Logger::log_err("however, total possible nodes: ",
+                        total_possible_nodes);
+        throw std::runtime_error("too many nodes");
+    }
+
+    //  generate two boundaries, one twice the size of the other
+    auto wall =
+        CuboidBoundary(Vec3f(0, 0, 0), desired_nodes * config.get_divisions());
+    auto far = wall.get_c1();
+    auto new_dim = Vec3f(far.x * 2, far.y, far.z);
+    auto no_wall = CuboidBoundary(Vec3f(0, 0, 0), new_dim);
+
+    //  place source and image in rooms based on distance in nodes from the wall
+    auto source_dist_nodes = desired_nodes.mag() / 8;
+    auto source_dist = source_dist_nodes * config.get_divisions();
+
+    auto wall_centre = no_wall.get_centre();
+
+    auto log_incorrect_distance = [&source_dist, &wall_centre](
+        auto str, const auto& pos) {
+        Logger::log_err(str, " position: ", pos);
+        auto dist = (wall_centre - pos).mag();
+        if (!almost_equal(dist, source_dist, 5)) {
+            Logger::log_err("incorrect distance: ", str);
+            Logger::log_err("distance: ", dist);
+            Logger::log_err("desired distance: ", source_dist);
+        }
+    };
+
+    auto source_offset =
+        point_on_sphere(azimuth + M_PI, elevation) * source_dist;
+
+    auto source_position = wall_centre + source_offset;
+    log_incorrect_distance("source", source_position);
+
+    auto image_position = wall_centre - source_offset;
+    log_incorrect_distance("image", image_position);
+
+    auto wrong_position = [source_dist, &no_wall](auto pos, auto c) {
+        return std::abs((pos - c).mag() - source_dist) > 1 ||
+               !no_wall.inside(pos);
+    };
+
+    if (wrong_position(source_position, wall_centre)) {
+        Logger::log_err("source is placed incorrectly");
+        throw std::runtime_error("incorrect placement");
+    }
+
+    if (wrong_position(image_position, wall_centre)) {
+        Logger::log_err("image is placed incorrectly");
+        throw std::runtime_error("incorrect placement");
+    }
+
+    if (std::abs((source_position - image_position).mag() - source_dist * 2) >
+        1) {
+        Logger::log_err("image is placed incorrectly");
+        throw std::runtime_error("incorrect placement");
+    }
+
+    Logger::log_err("running for ", steps, " steps");
+
+    auto image = run_simulation(context,
+                                device,
+                                queue,
+                                no_wall,
+                                config,
+                                source_position,
+                                image_position,
+                                output_folder,
+                                "image",
+                                steps);
+    auto h = right_hanning(image.size());
+
+    auto windowed_free_field = h;
+
+    auto window = [&h](const auto& in, auto& out) {
+        std::transform(in.begin(),
+                       in.end(),
+                       h.begin(),
+                       out.begin(),
+                       [](auto i, auto j) { return i * j; });
+    };
+
+    window(image, windowed_free_field);
+
+    return windowed_free_field;
+}
+
 FullTestResults run_full_test(const std::string& test_name,
                               const cl::Context& context,
                               cl::Device& device,
@@ -157,7 +259,9 @@ FullTestResults run_full_test(const std::string& test_name,
                               float azimuth,
                               float elevation,
                               int dim,
-                              const Surface& surface) {
+                              int steps,
+                              const Surface& surface,
+                              std::vector<float> windowed_free_field) {
     //  set room size based on desired number of nodes
     auto desired_nodes = Vec3<uint32_t>(dim, dim, dim);
     auto total_desired_nodes = desired_nodes.product();
@@ -181,25 +285,32 @@ FullTestResults run_full_test(const std::string& test_name,
 
     auto no_wall = CuboidBoundary(Vec3f(0, 0, 0), new_dim, {surface});
 
-    //  place source, receiver (and image) in rooms based on distance in nodes
-    //      from the wall
+    //  place source and receiver in rooms based on distance in nodes from the
+    //  wall
     auto source_dist_nodes = desired_nodes.mag() / 8;
     auto source_dist = source_dist_nodes * config.get_divisions();
 
     auto wall_centre = no_wall.get_centre();
 
-    auto source_position =
-        wall_centre + point_on_sphere(azimuth + M_PI, elevation) * source_dist;
-    Logger::log_err("source position: ", source_position);
+    auto log_incorrect_distance = [&source_dist, &wall_centre](
+        auto str, const auto& pos) {
+        Logger::log_err(str, " position: ", pos);
+        auto dist = (wall_centre - pos).mag();
+        if (!almost_equal(dist, source_dist, 5)) {
+            Logger::log_err("incorrect distance: ", str);
+            Logger::log_err("distance: ", dist);
+            Logger::log_err("desired distance: ", source_dist);
+        }
+    };
 
-    auto receiver_position =
-        wall_centre +
-        point_on_sphere(-azimuth + M_PI, -elevation) * source_dist;
-    Logger::log_err("receiver position: ", receiver_position);
+    auto source_offset =
+        point_on_sphere(azimuth + M_PI, elevation) * source_dist;
 
-    auto image_position =
-        wall_centre + point_on_sphere(azimuth, -elevation) * source_dist;
-    Logger::log_err("image position: ", image_position);
+    auto source_position = wall_centre + source_offset;
+    log_incorrect_distance("source", source_position);
+
+    auto receiver_position = wall_centre + source_offset * Vec3f(1, -1, -1);
+    log_incorrect_distance("receiver", receiver_position);
 
     auto wrong_position = [source_dist, &no_wall](auto pos, auto c) {
         return std::abs((pos - c).mag() - source_dist) > 1 ||
@@ -216,18 +327,6 @@ FullTestResults run_full_test(const std::string& test_name,
         throw std::runtime_error("incorrect placement");
     }
 
-    if (wrong_position(image_position, wall_centre)) {
-        Logger::log_err("image is placed incorrectly");
-        throw std::runtime_error("incorrect placement");
-    }
-
-    if (std::abs((source_position - image_position).mag() - source_dist * 2) >
-        1) {
-        Logger::log_err("image is placed incorrectly");
-        throw std::runtime_error("incorrect placement");
-    }
-
-    auto steps = source_dist_nodes * 4;
     Logger::log_err("running for ", steps, " steps");
 
     auto reflected = run_simulation(context,
@@ -240,18 +339,6 @@ FullTestResults run_full_test(const std::string& test_name,
                                     output_folder,
                                     "reflected",
                                     steps);
-    Logger::log_err("reflected max mag: ", max_mag(reflected));
-    auto image = run_simulation(context,
-                                device,
-                                queue,
-                                no_wall,
-                                config,
-                                source_position,
-                                image_position,
-                                output_folder,
-                                "image",
-                                steps);
-    Logger::log_err("image max mag: ", max_mag(image));
     auto direct = run_simulation(context,
                                  device,
                                  queue,
@@ -262,7 +349,6 @@ FullTestResults run_full_test(const std::string& test_name,
                                  output_folder,
                                  "direct",
                                  steps);
-    Logger::log_err("direct max mag: ", max_mag(direct));
 
     auto subbed = reflected;
     std::transform(reflected.begin(),
@@ -283,33 +369,14 @@ FullTestResults run_full_test(const std::string& test_name,
     auto first_nonzero_reflected = first_nonzero(reflected);
     auto first_nonzero_direct = first_nonzero(direct);
 
-    Logger::log_err("first_nonzero_reflected: ", first_nonzero_reflected);
-    Logger::log_err("first_nonzero_direct: ", first_nonzero_direct);
-
     if (first_nonzero_reflected != first_nonzero_direct) {
         Logger::log_err(
             "WARNING: direct and reflected should receive signal at same "
             "time");
     }
 
-    auto first_nonzero_image = first_nonzero(image);
-    auto first_nonzero_subbed = first_nonzero(subbed);
-
-    Logger::log_err("first_nonzero_image: ", first_nonzero_image);
-    Logger::log_err("first_nonzero_subbed: ", first_nonzero_subbed);
-
-    if (first_nonzero_image != first_nonzero_subbed) {
-        Logger::log_err(
-            "WARNING: image and subbed should receive signal at same time");
-    }
-
-    if (first_nonzero_image <= first_nonzero_direct) {
-        Logger::log_err("WARNING: direct should arrive before image");
-    }
-
     auto h = right_hanning(subbed.size());
 
-    auto windowed_free_field = h;
     auto windowed_subbed = h;
 
     auto window = [&h](const auto& in, auto& out) {
@@ -320,20 +387,24 @@ FullTestResults run_full_test(const std::string& test_name,
                        [](auto i, auto j) { return i * j; });
     };
 
-    window(image, windowed_free_field);
     window(subbed, windowed_subbed);
 
     auto norm_factor =
         1.0 / std::max(max_mag(windowed_free_field), max_mag(windowed_subbed));
-    mul(windowed_free_field, norm_factor);
     mul(windowed_subbed, norm_factor);
+    mul(windowed_free_field, norm_factor);
+
+    auto param_string =
+        build_string(std::setprecision(4), "_az_", azimuth, "_el_", elevation);
 
     write_file(config,
                output_folder,
-               test_name + "_windowed_free_field",
+               test_name + param_string + "_windowed_free_field",
                windowed_free_field);
-    write_file(
-        config, output_folder, test_name + "_windowed_subbed", windowed_subbed);
+    write_file(config,
+               output_folder,
+               test_name + param_string + "_windowed_subbed",
+               windowed_subbed);
 
     return FullTestResults{windowed_free_field, windowed_subbed};
 }
@@ -373,10 +444,12 @@ int main(int argc, char** argv) {
     auto queue = cl::CommandQueue(context, device);
 
     //  set room size based on desired number of nodes
-    auto dim = 250;
+    auto dim = 300;
 
-    auto azimuth = M_PI / 4;
-    auto elevation = M_PI / 6;
+    auto azimuth = M_PI / 3;
+    auto elevation = M_PI / 3;
+    //    auto azimuth = 0;
+    //    auto elevation = 0;
 
     try {
         struct SurfacePackage {
@@ -384,11 +457,61 @@ int main(int argc, char** argv) {
             Surface surface;
         };
 
+        auto steps = dim * 1.4;
+
+        auto windowed_free_field = get_free_field_results(context,
+                                                          device,
+                                                          queue,
+                                                          output_folder,
+                                                          config,
+                                                          azimuth,
+                                                          elevation,
+                                                          dim,
+                                                          steps);
+
         auto surface_set = {
-            SurfacePackage{"filtered",
+            SurfacePackage{
+                "anechoic",
+                Surface{
+                    {{0.001, 0.001, 0.001, 0.001, 0.001, 0.001, 0.001, 0.001}},
+                    {{0.001,
+                      0.001,
+                      0.001,
+                      0.001,
+                      0.001,
+                      0.001,
+                      0.001,
+                      0.001}}}},
+            SurfacePackage{
+                "filtered_1",
+                Surface{
+                    {{1, 0.001, 0.001, 0.001, 0.001, 0.001, 0.001, 0.001}},
+                    {{1, 0.001, 0.001, 0.001, 0.001, 0.001, 0.001, 0.001}}}},
+            SurfacePackage{
+                "filtered_2",
+                Surface{
+                    {{0.001, 1, 0.001, 0.001, 0.001, 0.001, 0.001, 0.001}},
+                    {{0.001, 1, 0.001, 0.001, 0.001, 0.001, 0.001, 0.001}}}},
+            SurfacePackage{
+                "filtered_3",
+                Surface{
+                    {{0.001, 0.001, 1, 0.001, 0.001, 0.001, 0.001, 0.001}},
+                    {{0.001, 0.001, 1, 0.001, 0.001, 0.001, 0.001, 0.001}}}},
+            SurfacePackage{"filtered_4",
                            Surface{{{0.4, 0.3, 0.5, 0.8, 0.9, 1, 1, 1}},
                                    {{0.4, 0.3, 0.5, 0.8, 0.9, 1, 1, 1}}}},
-            SurfacePackage{"flat", Surface{}},
+            SurfacePackage{"flat",
+                           Surface{{{1, 1, 1, 1, 1, 1, 1, 1}},
+                                   {{1, 1, 1, 1, 1, 1, 1, 1}}}},
+            SurfacePackage{"filtered_5",
+                           Surface{{{0.001, 1, 1, 1, 1, 1, 1, 1}},
+                                   {{0.001, 1, 1, 1, 1, 1, 1, 1}}}},
+            SurfacePackage{"filtered_6",
+                           Surface{{{1, 0.001, 1, 1, 1, 1, 1, 1}},
+                                   {{1, 0.001, 1, 1, 1, 1, 1, 1}}}},
+            SurfacePackage{"filtered_7",
+                           Surface{{{1, 1, 0.001, 1, 1, 1, 1, 1}},
+                                   {{1, 1, 0.001, 1, 1, 1, 1, 1}}}},
         };
 
         std::vector<FullTestResults> all_test_results(surface_set.size());
@@ -405,7 +528,9 @@ int main(int argc, char** argv) {
                                                 azimuth,
                                                 elevation,
                                                 dim,
-                                                i.surface);
+                                                steps,
+                                                i.surface,
+                                                windowed_free_field);
                        });
 
         if (all_test_results.front() == all_test_results.back()) {

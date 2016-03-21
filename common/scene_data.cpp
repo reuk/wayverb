@@ -17,6 +17,12 @@ std::ostream& operator<<(std::ostream& os, const VolumeType& f) {
     return os;
 }
 
+std::ostream& operator<<(std::ostream& os, const Surface& s) {
+    Bracketer bracketer(os);
+    return to_stream(
+        os, "specular: ", s.specular, "  diffuse: ", s.diffuse, "  ");
+}
+
 TriangleVec3f get_triangle_verts(const Triangle& t,
                                  const std::vector<Vec3f>& v) {
     return TriangleVec3f{{v[t.v0], v[t.v1], v[t.v2]}};

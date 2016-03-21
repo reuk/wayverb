@@ -8,7 +8,7 @@ from collections import namedtuple
 def zplane(b, a):
     z, p, k = signal.tf2zpk(b, a)
 
-    plt.figure()
+    #plt.figure()
     plt.title("Pole-zero placement of EQ Filters")
     plt.plot(z.real, z.imag, 'ko', fillstyle='none', ms=10)
     plt.plot(p.real, p.imag, 'kx', fillstyle='none', ms=10)
