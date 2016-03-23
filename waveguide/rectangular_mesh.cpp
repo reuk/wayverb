@@ -1,9 +1,6 @@
 #include "rectangular_mesh.h"
 
 #include "conversions.h"
-#include "boundary_adjust.h"
-
-#include "logger.h"
 
 #include <algorithm>
 #include <numeric>
@@ -59,43 +56,114 @@ void RectangularMesh::set_node_inside(const Boundary& boundary,
                    });
 }
 
-void RectangularMesh::set_node_boundary_type(std::vector<Node>& ret) const {
-    std::vector<cl_int> bt(ret.size());
-    for (auto set_bits = 0; set_bits != 3; ++set_bits) {
-        std::fill(bt.begin(), bt.end(), RectangularProgram::id_none);
-        for (auto i = 0u; i != ret.size(); ++i) {
-            auto& node = ret[i];
-            if (!node.inside &&
-                node.boundary_type == RectangularProgram::id_none) {
-                for (auto j = 0; j != 6; ++j) {
-                    auto port_ind = node.ports[j];
-                    if (port_ind != RectangularProgram::NO_NEIGHBOR) {
-                        if ((!set_bits && ret[port_ind].inside) ||
-                            (set_bits &&
-                             ret[port_ind].boundary_type !=
-                                 RectangularProgram::id_reentrant &&
-                             popcount(ret[port_ind].boundary_type) ==
-                                 set_bits)) {
-                            bt[i] |=
-                                RectangularProgram::port_index_to_boundary_type(
-                                    j);
-                        }
+template <int SET_BITS>
+bool do_bt_transform(const RectangularMesh::Node& adjacent) {
+    return adjacent.boundary_type == RectangularProgram::id_reentrant ||
+           popcount(adjacent.boundary_type) == SET_BITS - 1;
+}
+
+template <typename T>
+bool all_unique_elements(T& arr) {
+    std::sort(arr.begin(), arr.end());
+    return std::unique(arr.begin(),
+                       arr.end(),
+                       [](auto i, auto j) {
+                           return i.second != RectangularProgram::id_none &&
+                                  j.second != RectangularProgram::id_none &&
+                                  i.second == j.second;
+                       }) == arr.end();
+}
+
+template <int SET_BITS>
+cl_int compute_single_node_boundary_type(
+    const RectangularMesh::Node& node,
+    const std::vector<RectangularMesh::Node>& ret) {
+    //  for each adjacent node
+    cl_int bt = RectangularProgram::id_none;
+    std::array<cl_int, 6> stored_types{{RectangularProgram::id_none}};
+    for (auto j = 0; j != 6; ++j) {
+        //  find the index of the adjacent node
+        auto port_ind = node.ports[j];
+        //  if the node is part of the mesh
+        //  and the node is next to a reentrant node or a node of n-1 order
+        if (port_ind != RectangularProgram::NO_NEIGHBOR &&
+            do_bt_transform<SET_BITS>(ret[port_ind])) {
+            auto adj_bt = ret[port_ind].boundary_type;
+            if (adj_bt != RectangularProgram::id_reentrant) {
+                for (auto i = 0; i != j; ++i) {
+                    if (stored_types[i] == adj_bt) {
+                        return RectangularProgram::id_none;
                     }
                 }
-                auto final_bits = popcount(bt[i]);
-                if (set_bits + 1 < final_bits) {
-                    bt[i] = RectangularProgram::id_reentrant;
-                } else if (final_bits <= set_bits) {
-                    bt[i] = RectangularProgram::id_none;
-                }
-            } else {
-                bt[i] = node.boundary_type;
+
+                stored_types[j] = adj_bt;
             }
         }
-        for (auto i = 0u; i != ret.size(); ++i) {
-            ret[i].boundary_type = bt[i];
+    }
+
+    for (auto j = 0; j != 6; ++j) {
+        if (stored_types[j] != RectangularProgram::id_none)
+            bt |= RectangularProgram::port_index_to_boundary_type(j);
+    }
+
+    auto final_bits = popcount(bt);
+    if (SET_BITS < final_bits) {
+        return RectangularProgram::id_reentrant;
+    } else if (final_bits < SET_BITS) {
+        return RectangularProgram::id_none;
+    }
+    return bt;
+}
+
+//  in the 1d case
+//  if node is next to one node that is 'inside' then it is a 1d boundary node
+//  if node is next to more than one node that is 'inside' then it is reentrant
+template <>
+cl_int compute_single_node_boundary_type<1>(
+    const RectangularMesh::Node& node,
+    const std::vector<RectangularMesh::Node>& ret) {
+    //  for each adjacent node
+    cl_int bt = RectangularProgram::id_none;
+    for (auto j = 0; j != 6; ++j) {
+        //  find the index of the adjacent node
+        auto port_ind = node.ports[j];
+        //  if the node is part of the mesh and the adjacent node is inside
+        if (port_ind != RectangularProgram::NO_NEIGHBOR &&
+            ret[port_ind].inside) {
+            // log this node
+            bt |= RectangularProgram::port_index_to_boundary_type(j);
         }
     }
+
+    //  if next to more than one inside node
+    if (1 < popcount(bt)) {
+        //  node is reentrant
+        return RectangularProgram::id_reentrant;
+    }
+    return bt;
+}
+
+template <int SET_BITS>
+void set_node_boundary_type(std::vector<RectangularMesh::Node>& ret) {
+    std::vector<cl_int> bt(ret.size(), RectangularProgram::id_none);
+    //  for each node
+    for (auto i = 0u; i != ret.size(); ++i) {
+        const auto& node = ret[i];
+        if (!node.inside && node.boundary_type == RectangularProgram::id_none) {
+            bt[i] = compute_single_node_boundary_type<SET_BITS>(ret[i], ret);
+        } else {
+            bt[i] = node.boundary_type;
+        }
+    }
+    for (auto i = 0u; i != ret.size(); ++i) {
+        ret[i].boundary_type = bt[i];
+    }
+}
+
+void RectangularMesh::set_node_boundary_type(std::vector<Node>& ret) const {
+    ::set_node_boundary_type<1>(ret);
+    ::set_node_boundary_type<2>(ret);
+    ::set_node_boundary_type<3>(ret);
 }
 
 void RectangularMesh::set_node_boundary_index(std::vector<Node>& ret) const {
@@ -104,47 +172,13 @@ void RectangularMesh::set_node_boundary_index(std::vector<Node>& ret) const {
     set_node_boundary_index<3>(ret);
 }
 
-RectangularMesh::Collection RectangularMesh::compute_nodes(
-    const Boundary& boundary) const {
-    //  TODO this takes for ever, put it on GPU?
-
-    auto total_nodes = get_dim().product();
-    auto bytes = total_nodes * sizeof(RectangularMesh::CondensedNode);
-    Logger::log_err(bytes >> 20, " MB required for node metadata storage!");
-
-    //  we will return this eventually
-    auto ret = std::vector<Node>(total_nodes, Node{});
-
-    set_node_positions(ret);
-    set_node_inside(boundary, ret);
-    set_node_boundary_type(ret);
-    set_node_boundary_index(ret);
-
-    return ret;
-}
-
-RectangularMesh::RectangularMesh(const Boundary& b,
-                                 float spacing,
-                                 const Vec3f& anchor)
-        : BaseMesh(spacing,
-                   compute_adjusted_boundary(b.get_aabb(), anchor, spacing))
-        , dim(get_aabb().get_dimensions() / spacing)
-        , nodes(compute_nodes(b))
-        , boundary_data_1(compute_boundary_data_1(b))
-        , boundary_data_2(compute_boundary_data<2>())
-        , boundary_data_3(compute_boundary_data<3>()) {
-}
-
-RectangularMesh::RectangularMesh(const MeshBoundary& b,
-                                 float spacing,
-                                 const Vec3f& anchor)
-        : BaseMesh(spacing,
-                   compute_adjusted_boundary(b.get_aabb(), anchor, spacing))
-        , dim(get_aabb().get_dimensions() / spacing)
-        , nodes(compute_nodes(b))
-        , boundary_data_1(compute_boundary_data_1(b))
-        , boundary_data_2(compute_boundary_data<2>())
-        , boundary_data_3(compute_boundary_data<3>()) {
+RectangularMesh::size_type RectangularMesh::compute_num_reentrant() const {
+    return std::count_if(get_nodes().begin(),
+                         get_nodes().end(),
+                         [](const auto& i) {
+                             return i.boundary_type ==
+                                    RectangularProgram::id_reentrant;
+                         });
 }
 
 RectangularMesh::size_type RectangularMesh::compute_index(
@@ -246,44 +280,25 @@ Vec3i RectangularMesh::get_dim() const {
     return dim;
 }
 
-std::vector<RectangularProgram::BoundaryDataArray1>
-RectangularMesh::compute_boundary_data_1(const Boundary& boundary) const {
-    std::vector<RectangularProgram::BoundaryDataArray1> ret(
-        compute_num_boundary<1>());
-    for (const auto& node : get_nodes()) {
-        if (popcount(node.boundary_type) == 1) {
-            ret[node.boundary_index].array[0].coefficient_index = 0;
-        }
-    }
-    return ret;
+cl_int RectangularMesh::coefficient_index_for_node(
+    const Boundary& b, const RectangularMesh::Node& node) {
+    return 0;
 }
 
-std::vector<RectangularProgram::BoundaryDataArray1>
-RectangularMesh::compute_boundary_data_1(const MeshBoundary& boundary) const {
-    const auto& triangles = boundary.get_triangles();
-    const auto& vertices = boundary.get_vertices();
-    std::vector<RectangularProgram::BoundaryDataArray1> ret(
-        compute_num_boundary<1>());
-    //  for each node
-    for (const auto& node : get_nodes()) {
-        //  if node is 1d boundary node
-        if (popcount(node.boundary_type) == 1) {
-            //  find closest triangle to node
-            //  TODO use octree to speed this up
-            std::vector<float> square_distances(triangles.size());
-            auto min = std::min_element(
-                triangles.begin(),
-                triangles.end(),
-                [&node, &vertices](const auto& i, const auto& j) {
-                    auto get_dist = [&node, &vertices](const auto& i) {
-                        return geo::point_triangle_distance_squared(
-                            i, vertices, to_vec3f(node.position));
-                    };
-                    return get_dist(i) < get_dist(j);
-                });
-            //  set boundary data coefficient to triangle surface index
-            ret[node.boundary_index].array[0].coefficient_index = min->surface;
-        }
-    }
-    return ret;
+cl_int RectangularMesh::coefficient_index_for_node(
+    const MeshBoundary& b, const RectangularMesh::Node& node) {
+    const auto& triangles = b.get_triangles();
+    const auto& vertices = b.get_vertices();
+    auto min =
+        std::min_element(triangles.begin(),
+                         triangles.end(),
+                         [&node, &vertices](const auto& i, const auto& j) {
+                             auto get_dist = [&node, &vertices](const auto& i) {
+                                 return geo::point_triangle_distance_squared(
+                                     i, vertices, to_vec3f(node.position));
+                             };
+                             return get_dist(i) < get_dist(j);
+                         });
+    //  set boundary data coefficient to triangle surface index
+    return min->surface;
 }

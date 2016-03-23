@@ -427,7 +427,7 @@ int main(int argc, char** argv) {
     auto output_folder = std::string(argv[1]);
 
     auto config = WaveguideConfig();
-    config.get_filter_frequency() = 11025;
+    config.get_filter_frequency() = 2000;
     config.get_oversample_ratio() = 1;
 
     Logger::log_err("waveguide sampling rate: ",
@@ -444,12 +444,14 @@ int main(int argc, char** argv) {
     auto queue = cl::CommandQueue(context, device);
 
     //  set room size based on desired number of nodes
-    auto dim = 300;
+    auto dim = 250;
 
-    auto azimuth = M_PI / 3;
-    auto elevation = M_PI / 3;
-    //    auto azimuth = 0;
-    //    auto elevation = 0;
+    auto azimuth = M_PI / 4;
+    auto elevation = M_PI / 4;
+    // auto azimuth = M_PI / 3;
+    // auto elevation = M_PI / 3;
+    // auto azimuth = 0;
+    // auto elevation = 0;
 
     try {
         struct SurfacePackage {
@@ -500,9 +502,6 @@ int main(int argc, char** argv) {
             SurfacePackage{"filtered_4",
                            Surface{{{0.4, 0.3, 0.5, 0.8, 0.9, 1, 1, 1}},
                                    {{0.4, 0.3, 0.5, 0.8, 0.9, 1, 1, 1}}}},
-            SurfacePackage{"flat",
-                           Surface{{{1, 1, 1, 1, 1, 1, 1, 1}},
-                                   {{1, 1, 1, 1, 1, 1, 1, 1}}}},
             SurfacePackage{"filtered_5",
                            Surface{{{0.001, 1, 1, 1, 1, 1, 1, 1}},
                                    {{0.001, 1, 1, 1, 1, 1, 1, 1}}}},
@@ -512,6 +511,9 @@ int main(int argc, char** argv) {
             SurfacePackage{"filtered_7",
                            Surface{{{1, 1, 0.001, 1, 1, 1, 1, 1}},
                                    {{1, 1, 0.001, 1, 1, 1, 1, 1}}}},
+            SurfacePackage{"flat",
+                           Surface{{{0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9}},
+                                   {{0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9}}}},
         };
 
         std::vector<FullTestResults> all_test_results(surface_set.size());

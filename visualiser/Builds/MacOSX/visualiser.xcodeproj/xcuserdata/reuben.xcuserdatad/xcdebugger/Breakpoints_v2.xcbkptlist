@@ -19,53 +19,5 @@
             landmarkType = "3">
          </BreakpointContent>
       </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "Yes"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "../../../waveguide/rectangular_mesh.h"
-            timestampString = "479836076.765099"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "95"
-            endingLineNumber = "95"
-            landmarkName = "compute_coefficient_indices(const Node&amp; node)"
-            landmarkType = "7">
-            <Locations>
-               <Location
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "std::__1::vector&lt;std::__1::pair&lt;RectangularProgram::BoundaryType, unsigned int&gt;, std::__1::allocator&lt;std::__1::pair&lt;RectangularProgram::BoundaryType, unsigned int&gt; &gt; &gt; RectangularMesh::compute_coefficient_indices&lt;2&gt;(RectangularProgram::NodeStruct const&amp;) const"
-                  moduleName = "visualiser"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/reuben/dev/waveguide/waveguide/rectangular_mesh.h"
-                  timestampString = "479855978.321182"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "95"
-                  endingLineNumber = "95"
-                  offsetFromSymbolStart = "2439">
-               </Location>
-               <Location
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "std::__1::vector&lt;std::__1::pair&lt;RectangularProgram::BoundaryType, unsigned int&gt;, std::__1::allocator&lt;std::__1::pair&lt;RectangularProgram::BoundaryType, unsigned int&gt; &gt; &gt; RectangularMesh::compute_coefficient_indices&lt;3&gt;(RectangularProgram::NodeStruct const&amp;) const"
-                  moduleName = "visualiser"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/reuben/dev/waveguide/waveguide/rectangular_mesh.h"
-                  timestampString = "479855978.321422"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "95"
-                  endingLineNumber = "95"
-                  offsetFromSymbolStart = "2439">
-               </Location>
-            </Locations>
-         </BreakpointContent>
-      </BreakpointProxy>
    </Breakpoints>
 </Bucket>

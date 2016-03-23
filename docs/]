@@ -447,7 +447,10 @@ boundary nodes
             coefficients: [a, b, c, d]
 
 
-talking points
-==============
+boundary classification
+=======================
 
-what's the best way of generating boundary filters?
+* first pass
+    * a node is a 1d boundary if it is next to ONE node inside the model
+    * a node is reentrant if it is next to MORE THAN ONE node inside the model
+

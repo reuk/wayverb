@@ -2,7 +2,7 @@ import numpy as np
 import scipy.signal as signal
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
-from boundary_modelling import get_notch_coeffs, series_coeffs
+from boundary_modelling import get_peak_coeffs, series_coeffs, db2a, a2db
 from collections import namedtuple
 
 def zplane(b, a):
@@ -33,9 +33,6 @@ def zplane(b, a):
 
 Surface = namedtuple('Surface', ['specular', 'diffuse'])
 
-def a2db(a):
-    return 20 * np.log10(a)
-
 def to_filter_coefficients(surface, sr):
     num_descriptors = 3
     edges = [40, 175, 350, 700, 1400, 2800, 5600, 11200, 20000]
@@ -44,7 +41,7 @@ def to_filter_coefficients(surface, sr):
     for i in range(num_descriptors):
         gain = a2db((surface.specular[i] + surface.diffuse[i]) * 0.5)
         centre = (edges[i] + edges[i + 1]) * 0.5
-        coeffs.append(get_notch_coeffs(gain, centre, sr, 1.414))
+        coeffs.append(get_peak_coeffs(gain, centre, sr, 1.414))
     return coeffs
 
 def is_stable_roots(polynomial):

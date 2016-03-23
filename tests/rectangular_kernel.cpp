@@ -31,11 +31,10 @@ std::vector<RectangularProgram::BiquadCoefficientsArray> compute_coeffs(
         RectangularProgram::BiquadCoefficientsArray::BIQUAD_SECTIONS>& n,
     float sr) {
     auto ret = std::vector<RectangularProgram::BiquadCoefficientsArray>(size);
-    std::generate(ret.begin(),
-                  ret.end(),
-                  [&n, sr] {
-                      return RectangularProgram::get_notch_biquads_array(n, sr);
-                  });
+    std::generate(
+        ret.begin(),
+        ret.end(),
+        [&n, sr] { return RectangularProgram::get_peak_biquads_array(n, sr); });
     return ret;
 }
 

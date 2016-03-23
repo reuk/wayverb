@@ -46,13 +46,13 @@ RectangularProgram::BiquadCoefficientsArray
 RectangularProgram::get_biquads_array(
     const std::array<FilterDescriptor,
                      BiquadCoefficientsArray::BIQUAD_SECTIONS>& n,
-    float sr, coefficient_generator callback) {
+    float sr,
+    coefficient_generator callback) {
     RectangularProgram::BiquadCoefficientsArray ret;
-    std::transform(
-        n.begin(),
-        n.end(),
-        std::begin(ret.array),
-        [sr, callback](const auto& i) { return callback(i, sr); });
+    std::transform(n.begin(),
+                   n.end(),
+                   std::begin(ret.array),
+                   [sr, callback](const auto& i) { return callback(i, sr); });
     return ret;
 }
 

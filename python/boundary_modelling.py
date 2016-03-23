@@ -5,6 +5,12 @@ import scipy.signal as signal
 import matplotlib.pyplot as plt
 from functools import reduce
 
+def db2a(db):
+    return np.power(10, (db / 20.0))
+
+def a2db(a):
+    return 20 * np.log10(a)
+
 
 def series_coeffs(c):
     return reduce(lambda (a, b), (x, y): (
@@ -39,7 +45,7 @@ def get_linkwitz_riley_coeffs(gain, lo, hi, sr):
 
 
 def get_notch_coeffs(gain, centre, sr, Q):
-    A = 10 ** (gain / 40.0)
+    A = db2a(gain / 2)
     w0 = 2 * pi * centre / sr
     cw0 = cos(w0)
     sw0 = sin(w0)
@@ -53,16 +59,22 @@ def get_notch_coeffs(gain, centre, sr, Q):
     return b, a
 
 def get_peak_coeffs(gain, centre, sr, Q):
-    A = 10 ** (gain / 40.0)
+    global_gain_db = 0
+    global_gain = db2a(global_gain_db)
+
+    A = db2a((gain - global_gain_db) / 2)
     w0 = 2 * pi * centre / sr
     cw0 = cos(w0)
     sw0 = sin(w0)
     alpha = sw0 / 2 * Q
 
-    a0 = 1 + alpha / A
+    b = [1 + (alpha * A), -2 * cw0, 1 - alpha * A]
+    a = [1 + alpha / A, -2 * cw0, 1 - alpha / A]
 
-    b = [(1 + (alpha * A)) / a0, (-2 * cw0) / a0, (1 - alpha * A) / a0]
-    a = [1, (-2 * cw0) / a0, (1 - alpha / A) / a0]
+    a0 = a[0]
+
+    b = [i * global_gain / a0 for i in b]
+    a = [i / a0 for i in a]
 
     return b, a
 
@@ -119,7 +131,7 @@ def main():
 
 #c = [get_linkwitz_riley_coeffs(1, b, a, edges[-1] * 2) for b, a in corners]
     sr = 2000
-    c = [get_peak_coeffs(24, i, sr, 1) for i in centres]
+    c = [get_peak_coeffs(-24, i, sr, 1) for i in centres]
     c.append([[1, 0, 0], [1, 0, 0]])
 
     bm = [BiquadMemory(0, 0) for _ in c]

@@ -12,12 +12,13 @@ import math
 import sys
 sys.path.append("python")
 
-from boundary_modelling import get_notch_coeffs, series_coeffs
+from boundary_modelling import get_notch_coeffs, series_coeffs, db2a, a2db
 from filter_stability import to_filter_coefficients, Surface
 
 COURANT = 1 / np.sqrt(3)
 COURANT_SQ = COURANT * COURANT
 
+USE_DB_AXES = True
 
 def compute_boundary_coefficients(b_imp, a_imp, azimuth, elevation):
     # b_imp - b coefficients of the boundary impedance filter
@@ -48,14 +49,28 @@ def frequency_plot(num, den, sr, label):
 
     plt.ylabel('Amplitude')
     plt.xlabel('Normalized Frequency')
-#    plt.semilogx(w, 20 * np.log10(np.abs(h)), label=label)
-#    plt.plot(w, 20 * np.log10(np.abs(h)), label=label)
-    plt.plot(w, np.abs(h), label=label)
+
+    if USE_DB_AXES:
+        plt.plot(w, a2db(np.abs(h)), label=label)
+    else:
+        plt.plot(w, np.abs(h), label=label)
     plt.axvline(0.196)
 
 
 def base_coeffs(i, sr):
     return series_coeffs(to_filter_coefficients(Surface(i, i), sr))
+
+
+def impedance_coeffs(n, d, sr):
+    num = [a + b for b, a in zip(n, d)]
+    den = [a - b for b, a in zip(n, d)]
+
+    a0 = den[0]
+
+    num = [i / a0 for i in num]
+    den = [i / a0 for i in den]
+
+    return num, den
 
 
 def surface_filter_plot(i, sr):
@@ -65,12 +80,14 @@ def surface_filter_plot(i, sr):
 
 def boundary_coefficient_plot(i, sr, azimuth, elevation):
     num, den = base_coeffs(i, sr)
+    num, den = impedance_coeffs(num, den, sr)
     num, den = compute_boundary_coefficients(num, den, azimuth, elevation)
     frequency_plot(num, den, sr, "predicted")
 
 
 def show_graph(free_field_file, subbed_file, surface, azimuth, elevation):
-    sr = 44100
+    filter_frequency = 2000
+    sr = filter_frequency * 4
 
     files = [("free", free_field_file), ("reflected", subbed_file), ]
 
@@ -89,12 +106,11 @@ def show_graph(free_field_file, subbed_file, surface, azimuth, elevation):
     plt.subplot(3, 1, 1)
     plt.title(subbed_file)
 
-    def do_plot(arg):
-        tag, a = arg
-        plt.plot(np.resize(freq, n / 4), np.resize(np.abs(a), n / 4), label=tag)
+    def do_plot(tag, a):
+        plt.plot(np.resize(freq, n / 4), np.resize(a, n / 4), label=tag)
 
-    for fft in ffts:
-        do_plot(fft)
+    for tag, fft in ffts:
+        do_plot(tag, np.abs(fft))
 
     cutoff = 0.196
 
@@ -102,7 +118,12 @@ def show_graph(free_field_file, subbed_file, surface, azimuth, elevation):
     plt.legend()
 
     plt.subplot(3, 1, 2)
-    do_plot(("divided", ffts[1][1] / ffts[0][1]))
+    div = np.abs(ffts[1][1] / ffts[0][1])
+    print div
+    if USE_DB_AXES:
+        div = a2db(div)
+    print div
+    do_plot("divided", div)
     boundary_coefficient_plot(surface, sr, azimuth, elevation)
     plt.axvline(cutoff)
     plt.legend()
@@ -127,22 +148,20 @@ def main():
 
     matplotlib.rcParams.update(pgf_with_rc_fonts)
 
-    az = 0
-    el = 0
-#    az = 0.7854
-#    el = 0.5236
+#    az = 0
+#    el = 0
+    az = 0.7854
+    el = 0.7854
 #    az = 1.047
 #    el = 1.047
 
     root = "/Users/reuben/dev/waveguide/boundary_test/output/"
-    azel = "_az_" + str(az) + "_el_" + str(el)
+    azel = "az_" + str(az) + "_el_" + str(el)
 
     suffix_free = "_windowed_free_field.wav"
     suffix_subb = "_windowed_subbed.wav"
 
     names = [
-        ("flat",
-            [1, 1, 1, 1, 1, 1, 1, 1]),
         ("anechoic",
             [0.001, 0.001, 0.001, 0.001, 0.001, 0.001, 0.001, 0.001]),
         ("filtered_1",
@@ -159,9 +178,14 @@ def main():
             [1, 0.001, 1, 1, 1, 1, 1, 1]),
         ("filtered_7",
             [1, 1, 0.001, 1, 1, 1, 1, 1]),
+        ("flat",
+            [0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9]),
     ]
 
-    files = [(root + i + azel + suffix_free, root + i + azel + suffix_subb, j)
+    def make_fname(i, suffix):
+        return root + azel + "/" + i + "_" + azel + suffix
+
+    files = [(make_fname(i, suffix_free), make_fname(i, suffix_subb), j)
              for i, j in names]
 
     for a, b, c in files:

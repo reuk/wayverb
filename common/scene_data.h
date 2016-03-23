@@ -36,6 +36,18 @@ typedef struct {
     VolumeType diffuse{{0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5}};
 } __attribute__((aligned(8))) Surface;
 
+constexpr bool validate_surface(const Surface& s,
+                                float min_gain = 0.001,
+                                float max_gain = 0.999) {
+    bool ret = true;
+    for (auto i = 0; i != sizeof(VolumeType) / sizeof(cl_float); ++i) {
+        ret = ret && min_gain <= s.specular.s[i] &&
+              s.specular.s[i] <= max_gain && min_gain <= s.diffuse.s[i] &&
+              s.diffuse.s[i] <= max_gain;
+    }
+    return ret;
+}
+
 std::ostream& operator<<(std::ostream& os, const Surface& s);
 
 using TriangleVec3f = std::array<Vec3f, 3>;

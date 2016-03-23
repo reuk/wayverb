@@ -6,18 +6,39 @@
 #include "rectangular_program.h"
 #include "geometric.h"
 #include "conversions.h"
+#include "logger.h"
+#include "boundary_adjust.h"
 
 #include <vector>
 #include <set>
 
+template <typename T, typename U>
+std::ostream& operator<<(std::ostream& os, const std::pair<T, U>& p) {
+    Bracketer bracketer(os);
+    return to_stream(os, p.first, "  ", p.second, "  ");
+}
+
+template <typename T, unsigned long U>
+std::ostream& operator<<(std::ostream& os, const std::array<T, U>& arr) {
+    Bracketer bracketer(os);
+    for (const auto& i : arr)
+        to_stream(os, i, "  ");
+    return os;
+}
+
 class RectangularMesh : public BaseMesh<RectangularProgram, Vec3i> {
 public:
-    RectangularMesh(const MeshBoundary& boundary,
-                    float spacing,
-                    const Vec3f& anchor);
-    RectangularMesh(const Boundary& boundary,
-                    float spacing,
-                    const Vec3f& anchor);
+    template <typename B>
+    RectangularMesh(const B& boundary, float spacing, const Vec3f& anchor)
+            : BaseMesh(spacing,
+                       compute_adjusted_boundary(
+                           boundary.get_aabb(), anchor, spacing))
+            , dim(get_aabb().get_dimensions() / spacing)
+            , nodes(compute_nodes(boundary))
+            , boundary_data_1(compute_boundary_data_1(boundary))
+            , boundary_data_2(compute_boundary_data<2>())
+            , boundary_data_3(compute_boundary_data<3>()) {
+    }
 
     using CondensedNode = RectangularProgram::CondensedNodeStruct;
 
@@ -39,46 +60,94 @@ public:
 
     template <int BITS>
     size_type compute_num_boundary() const {
-        return std::accumulate(
-            get_nodes().begin(),
-            get_nodes().end(),
-            0u,
-            [](auto i, const auto& j) {
-                return i +
-                       ((j.boundary_type != RectangularProgram::id_reentrant &&
-                         popcount(j.boundary_type) == BITS)
-                            ? 1
-                            : 0);
-            });
+        return std::count_if(get_nodes().begin(),
+                             get_nodes().end(),
+                             [](const auto& i) {
+                                 return i.boundary_type !=
+                                            RectangularProgram::id_reentrant &&
+                                        popcount(i.boundary_type) == BITS;
+                             });
     }
 
+    size_type compute_num_reentrant() const;
+
 private:
-    Collection compute_nodes(const Boundary& boundary) const;
+    template <typename B>
+    Collection compute_nodes(const B& boundary) const {
+        auto total_nodes = get_dim().product();
+        auto bytes = total_nodes * sizeof(RectangularMesh::CondensedNode);
+        ::Logger::log_err(bytes >> 20,
+                          " MB required for node metadata storage!");
 
-    //  for a normal boundary, in the 1d case, we just take the first surface
-    //  that the boundary owns and apply it to all 1d boundary nodes
-    std::vector<RectangularProgram::BoundaryDataArray1> compute_boundary_data_1(
-        const Boundary& boundary) const;
+        //  we will return this eventually
+        auto ret = std::vector<Node>(total_nodes, Node{});
 
-    //  for a mesh boundary, in the 1d case, we want to find the closest
-    //  triangle to each boundary node, and then apply that triangle's surface
-    //  to the node
+        set_node_positions(ret);
+        set_node_inside(boundary, ret);
+        set_node_boundary_type(ret);
+        set_node_boundary_index(ret);
+
+        compute_reentrant_coefficient_indices(ret, boundary);
+
+        return ret;
+    }
+
+    static cl_int coefficient_index_for_node(const Boundary& b,
+                                             const Node& node);
+    static cl_int coefficient_index_for_node(const MeshBoundary& b,
+                                             const Node& node);
+
+    template <typename B>
     std::vector<RectangularProgram::BoundaryDataArray1> compute_boundary_data_1(
-        const MeshBoundary& boundary) const;
+        const B& boundary) const {
+        std::vector<RectangularProgram::BoundaryDataArray1> ret(
+            compute_num_boundary<1>());
+        for (const auto& node : get_nodes()) {
+            if (popcount(node.boundary_type) == 1 &&
+                node.boundary_type != RectangularProgram::id_reentrant) {
+                ret[node.boundary_index].array[0].coefficient_index =
+                    coefficient_index_for_node(boundary, node);
+            }
+        }
+        return ret;
+    }
+
+    //  for a given node
+    //  if it's a 1d boundary node
+    //      find the closest material to that node
+    //  if it's a 2d boundary node
+    //      adjacent nodes will be 1d nodes or reentrant nodes
 
     template <int I>
-    std::vector<std::pair<RectangularProgram::BoundaryType, cl_uint>>
+    std::array<std::pair<RectangularProgram::BoundaryType, cl_uint>, I>
     compute_coefficient_indices(const Node& node) const {
         if (popcount(node.boundary_type) != I)
             throw std::runtime_error("bad bitcount in node boundary type");
-
         std::vector<std::pair<RectangularProgram::BoundaryType, cl_uint>> ret;
+
+        //  for each adjacent port
         for (auto i = 0; i != PORTS; ++i) {
             auto bits = RectangularProgram::port_index_to_boundary_type(i);
+            //  check if there's a boundary node in that direction
             if (all_flags_set(node.boundary_type, std::make_tuple(bits))) {
-                //  get the adjacent boundary node in this direction
-                auto to_merge = compute_coefficient_indices<I - 1>(
-                    get_nodes()[node.ports[i]]);
+                ::Logger::log_err("trying port ", i);
+
+                //  get adjacent node
+                const auto& adjacent = get_nodes()[node.ports[i]];
+                //  find node classification
+                std::array<std::pair<RectangularProgram::BoundaryType, cl_uint>,
+                           I - 1> to_merge;
+                if (adjacent.boundary_type ==
+                    RectangularProgram::id_reentrant) {
+                    std::fill(to_merge.begin(),
+                              to_merge.end(),
+                              std::make_pair(bits, adjacent.boundary_index));
+                } else {
+                    to_merge = compute_coefficient_indices<I - 1>(adjacent);
+                }
+
+                ::Logger::log_err(to_merge);
+
                 //  insert into return set
                 std::vector<std::pair<RectangularProgram::BoundaryType,
                                       cl_uint>> merged;
@@ -87,7 +156,7 @@ private:
                                ret.begin(),
                                ret.end(),
                                std::back_inserter(merged));
-                ret = merged;
+                ret = std::move(merged);
             }
         }
 
@@ -98,13 +167,13 @@ private:
             ret.begin(),
             ret.end(),
             [](const auto& i, const auto& j) { return i.first < j.first; });
-        return ret;
+        std::array<std::pair<RectangularProgram::BoundaryType, cl_uint>, I> o;
+        std::copy(ret.begin(), ret.end(), o.begin());
+        return o;
     }
 
     //  in the 2d and 3d cases, we want to look at the adjacent boundary nodes
     //  and just use the same boundaries
-    //
-    //  the 1d case is a bit different, so there's a specialization for it
     template <int I>
     std::vector<RectangularProgram::BoundaryDataArray<I>>
     compute_boundary_data() const {
@@ -134,13 +203,25 @@ private:
     void set_node_boundary_index(std::vector<Node>& ret) const {
         auto num_boundary = 0;
         for (auto& i : ret) {
-            if (popcount(i.boundary_type) == I) {
+            if (i.boundary_type != RectangularProgram::id_reentrant &&
+                popcount(i.boundary_type) == I) {
                 i.boundary_index = num_boundary++;
             }
         }
     }
 
     void set_node_boundary_index(std::vector<Node>& ret) const;
+
+    template <typename B>
+    void compute_reentrant_coefficient_indices(std::vector<Node>& ret,
+                                               const B& boundary) const {
+        for (auto& node : ret) {
+            if (node.boundary_type == RectangularProgram::id_reentrant) {
+                node.boundary_index =
+                    coefficient_index_for_node(boundary, node);
+            }
+        }
+    }
 
     Vec3i dim;
 
@@ -169,12 +250,14 @@ RectangularMesh::get_boundary_data<3>() const {
 }
 
 template <>
-inline std::vector<std::pair<RectangularProgram::BoundaryType, cl_uint>>
+inline std::array<std::pair<RectangularProgram::BoundaryType, cl_uint>, 1>
 RectangularMesh::compute_coefficient_indices<1>(const Node& node) const {
-    assert(popcount(node.boundary_type) == 1);
-    return {std::pair<RectangularProgram::BoundaryType, cl_uint>(
+    assert(popcount(node.boundary_type) == 1 &&
+           node.boundary_type !=
+               RectangularProgram::BoundaryType::id_reentrant);
+    return {{std::make_pair(
         static_cast<RectangularProgram::BoundaryType>(node.boundary_type),
         get_boundary_data<1>()[node.boundary_index]
             .array[0]
-            .coefficient_index)};
+            .coefficient_index)}};
 }

@@ -291,40 +291,49 @@ bool RectangularWaveguide::inside(size_type index) const {
 
 RectangularProgram::CanonicalCoefficients
 RectangularWaveguide::to_filter_coefficients(const Surface& surface, float sr) {
-    Logger::log_err("surface to convert: ", surface);
-
     std::array<RectangularProgram::FilterDescriptor,
                RectangularProgram::BiquadCoefficientsArray::BIQUAD_SECTIONS>
         descriptors;
+
+    //  for each descriptor
     for (auto i = 0u; i != descriptors.size(); ++i) {
+        //  compute gain and centre frequency for notch
         float gain = a2db((surface.specular.s[i] + surface.diffuse.s[i]) / 2);
         auto centre = (HrtfData::EDGES[i + 0] + HrtfData::EDGES[i + 1]) / 2;
+        //  produce a filter descriptor struct for this filter
         descriptors[i] =
             RectangularProgram::FilterDescriptor{gain, centre, 1.414};
     }
+    //  transform filter parameters into a set of biquad coefficients
     auto individual_coeffs =
         RectangularProgram::get_peak_biquads_array(descriptors, sr);
+    /*
     if (!std::all_of(
             std::begin(individual_coeffs.array),
             std::end(individual_coeffs.array),
             [](const auto& i) { return RectangularProgram::is_stable(i); }))
         throw std::runtime_error(
             "the generated boundary notch filter is unstable");
+    */
+    //  combine biquad coefficients into coefficients for a single high-order
+    //  filter
     auto ret = RectangularProgram::convolve(individual_coeffs);
+    /*
     if (!RectangularProgram::is_stable(ret))
         Logger::log_err(
             "although individual notches are stable, higher-order boundary "
             "filter may be unstable due to 32-bit precision limitation");
 
     Logger::log_err("before transformation: ", ret);
+    */
 
+    //  transform from reflection filter to impedance filter
     ret = RectangularProgram::to_impedance_coefficients(ret);
 
     if (!RectangularProgram::is_stable(ret))
         Logger::log_err(
-            "impedance filter coefficients produce unstable filter");
-
-    Logger::log_err("after transformation: ", ret);
+            "warning: impedance filter coefficients may produce unstable "
+            "filter");
 
     return ret;
 }

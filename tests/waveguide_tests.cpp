@@ -22,9 +22,8 @@ TEST(notch_filter_coefficients, notch_filter_coefficients) {
 }
 
 TEST(filter_coefficients, filter_coefficients) {
-    auto coefficients = RectangularWaveguide::to_filter_coefficients(
-        Surface{{{1, 1, 1, 1, 1, 1, 1, 1}}, {{1, 1, 1, 1, 1, 1, 1, 1}}}, sr);
-    ASSERT_TRUE(std::equal(std::begin(coefficients.b),
-                           std::end(coefficients.b),
-                           std::begin(coefficients.a)));
+    constexpr auto g = 0.99;
+    constexpr auto surface =
+        Surface{{{g, g, g, g, g, g, g, g}}, {{g, g, g, g, g, g, g, g}}};
+    static_assert(validate_surface(surface), "invalid surface");
 }
