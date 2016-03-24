@@ -220,12 +220,19 @@ private:
 
 class RectangularWaveguide : public Waveguide<RectangularProgram> {
 public:
-    RectangularWaveguide(const ProgramType& program,
-                         cl::CommandQueue& queue,
-                         const Boundary& boundary,
-                         float spacing,
-                         const Vec3f& anchor,
-                         float sr);
+    template<typename B>
+    RectangularWaveguide(const RectangularProgram& program,
+                                               cl::CommandQueue& queue,
+                                               const B& boundary,
+                                               float spacing,
+                                               const Vec3f& anchor,
+                                               float sr)
+            : RectangularWaveguide(
+                  program,
+                  queue,
+                  RectangularMesh(boundary, spacing, anchor),
+                  to_filter_coefficients(boundary.get_surfaces(), sr)) {
+    }
 
     void setup(cl::CommandQueue& queue, size_type o, float sr) override;
 

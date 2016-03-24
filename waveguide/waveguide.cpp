@@ -174,19 +174,6 @@ RectangularWaveguide::RectangularWaveguide(
                             sizeof(cl_int)) {
 }
 
-RectangularWaveguide::RectangularWaveguide(const RectangularProgram& program,
-                                           cl::CommandQueue& queue,
-                                           const Boundary& boundary,
-                                           float spacing,
-                                           const Vec3f& anchor,
-                                           float sr)
-        : RectangularWaveguide(
-              program,
-              queue,
-              RectangularMesh(boundary, spacing, anchor),
-              to_filter_coefficients(boundary.get_surfaces(), sr)) {
-}
-
 void RectangularWaveguide::setup(cl::CommandQueue& queue,
                                  size_type o,
                                  float sr) {

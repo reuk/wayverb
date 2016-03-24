@@ -40,6 +40,8 @@ public:
                                    return glm::vec4(0, 0, 1, 1);
                                case RectangularProgram::id_pz:
                                    return glm::vec4(1, 1, 0, 1);
+                               case RectangularProgram::id_reentrant:
+                                   return glm::vec4(0.5, 0.5, 0.5, 1);
 
                                default:
                                    return glm::vec4(1, 1, 1, 1);

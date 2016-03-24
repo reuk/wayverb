@@ -58,20 +58,8 @@ void RectangularMesh::set_node_inside(const Boundary& boundary,
 
 template <int SET_BITS>
 bool do_bt_transform(const RectangularMesh::Node& adjacent) {
-    return adjacent.boundary_type == RectangularProgram::id_reentrant ||
-           popcount(adjacent.boundary_type) == SET_BITS - 1;
-}
-
-template <typename T>
-bool all_unique_elements(T& arr) {
-    std::sort(arr.begin(), arr.end());
-    return std::unique(arr.begin(),
-                       arr.end(),
-                       [](auto i, auto j) {
-                           return i.second != RectangularProgram::id_none &&
-                                  j.second != RectangularProgram::id_none &&
-                                  i.second == j.second;
-                       }) == arr.end();
+//    return adjacent.boundary_type != RectangularProgram::id_none && popcount(adjacent.boundary_type) < SET_BITS;
+    return adjacent.boundary_type != RectangularProgram::id_none && popcount(adjacent.boundary_type) == SET_BITS - 1;
 }
 
 template <int SET_BITS>
@@ -95,9 +83,9 @@ cl_int compute_single_node_boundary_type(
                         return RectangularProgram::id_none;
                     }
                 }
-
-                stored_types[j] = adj_bt;
             }
+
+            stored_types[j] = adj_bt;
         }
     }
 
@@ -147,6 +135,7 @@ template <int SET_BITS>
 void set_node_boundary_type(std::vector<RectangularMesh::Node>& ret) {
     std::vector<cl_int> bt(ret.size(), RectangularProgram::id_none);
     //  for each node
+    //  set populate intermediate array
     for (auto i = 0u; i != ret.size(); ++i) {
         const auto& node = ret[i];
         if (!node.inside && node.boundary_type == RectangularProgram::id_none) {
@@ -155,15 +144,44 @@ void set_node_boundary_type(std::vector<RectangularMesh::Node>& ret) {
             bt[i] = node.boundary_type;
         }
     }
+
+    //  copy array contents
     for (auto i = 0u; i != ret.size(); ++i) {
         ret[i].boundary_type = bt[i];
     }
 }
 
+std::vector<std::pair<cl_int, cl_uint>>
+RectangularMesh::compute_coefficient_indices(const Node& node) const {
+    switch (popcount(node.boundary_type)) {
+        case 1:
+            return compute_coefficient_indices<1>(node);
+        case 2:
+            return compute_coefficient_indices<2>(node);
+        case 3:
+            return compute_coefficient_indices<3>(node);
+    }
+    throw std::runtime_error("invalid number of adjacent boundary nodes");
+}
+
+void RectangularMesh::log_node_stats(const std::vector<Node>& ret) const {
+    Logger::log_err("total nodes: ", ret.size());
+    Logger::log_err("unclassified nodes: ", std::count_if(ret.begin(), ret.end(), [](const auto& i) {return i.boundary_type == RectangularProgram::id_none;}));
+    Logger::log_err("inside nodes: ", std::count_if(ret.begin(), ret.end(), [] (const auto& i) {return i.inside;}));
+    Logger::log_err("reentrant nodes: ", compute_num_reentrant());
+    Logger::log_err("1d nodes: ", compute_num_boundary<1>());
+    Logger::log_err("2d nodes: ", compute_num_boundary<2>());
+    Logger::log_err("3d nodes: ", compute_num_boundary<3>());
+}
+
 void RectangularMesh::set_node_boundary_type(std::vector<Node>& ret) const {
+    log_node_stats(ret);
     ::set_node_boundary_type<1>(ret);
+    log_node_stats(ret);
     ::set_node_boundary_type<2>(ret);
+    log_node_stats(ret);
     ::set_node_boundary_type<3>(ret);
+    log_node_stats(ret);
 }
 
 void RectangularMesh::set_node_boundary_index(std::vector<Node>& ret) const {
