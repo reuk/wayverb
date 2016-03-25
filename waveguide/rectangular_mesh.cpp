@@ -56,132 +56,119 @@ void RectangularMesh::set_node_inside(const Boundary& boundary,
                    });
 }
 
-template <int SET_BITS>
-bool do_bt_transform(const RectangularMesh::Node& adjacent) {
-//    return adjacent.boundary_type != RectangularProgram::id_none && popcount(adjacent.boundary_type) < SET_BITS;
-    return adjacent.boundary_type != RectangularProgram::id_none && popcount(adjacent.boundary_type) == SET_BITS - 1;
+constexpr RectangularMesh::Locator boundary_type_to_locator(
+    RectangularProgram::BoundaryType b) {
+    switch (b) {
+        case RectangularProgram::id_nx:
+            return RectangularMesh::Locator{-1, 0, 0};
+        case RectangularProgram::id_px:
+            return RectangularMesh::Locator{1, 0, 0};
+        case RectangularProgram::id_ny:
+            return RectangularMesh::Locator{0, -1, 0};
+        case RectangularProgram::id_py:
+            return RectangularMesh::Locator{0, 1, 0};
+        case RectangularProgram::id_nz:
+            return RectangularMesh::Locator{0, 0, -1};
+        case RectangularProgram::id_pz:
+            return RectangularMesh::Locator{0, 0, 1};
+        default:
+            return RectangularMesh::Locator{0, 0, 0};
+    }
 }
 
-template <int SET_BITS>
-cl_int compute_single_node_boundary_type(
-    const RectangularMesh::Node& node,
-    const std::vector<RectangularMesh::Node>& ret) {
-    //  for each adjacent node
-    cl_int bt = RectangularProgram::id_none;
-    std::array<cl_int, 6> stored_types{{RectangularProgram::id_none}};
-    for (auto j = 0; j != 6; ++j) {
-        //  find the index of the adjacent node
-        auto port_ind = node.ports[j];
-        //  if the node is part of the mesh
-        //  and the node is next to a reentrant node or a node of n-1 order
-        if (port_ind != RectangularProgram::NO_NEIGHBOR &&
-            do_bt_transform<SET_BITS>(ret[port_ind])) {
-            auto adj_bt = ret[port_ind].boundary_type;
-            if (adj_bt != RectangularProgram::id_reentrant) {
-                for (auto i = 0; i != j; ++i) {
-                    if (stored_types[i] == adj_bt) {
-                        return RectangularProgram::id_none;
-                    }
-                }
+constexpr std::pair<RectangularMesh::Locator, cl_int> make_locator_pair() {
+    return std::make_pair(RectangularMesh::Locator{0, 0, 0}, 0);
+}
+
+template <typename... Ts>
+constexpr std::pair<RectangularMesh::Locator, cl_int> make_locator_pair(
+    RectangularProgram::BoundaryType b, Ts... ts) {
+    auto next = make_locator_pair(ts...);
+    return std::make_pair(boundary_type_to_locator(b) + next.first,
+                          b | next.second);
+}
+
+cl_int RectangularMesh::compute_boundary_type(
+    const Locator& loc, const std::vector<Node>& ret) const {
+    //  look at all nearby nodes
+
+    using RectangularProgram::BoundaryType::id_nx;
+    using RectangularProgram::BoundaryType::id_px;
+    using RectangularProgram::BoundaryType::id_ny;
+    using RectangularProgram::BoundaryType::id_py;
+    using RectangularProgram::BoundaryType::id_nz;
+    using RectangularProgram::BoundaryType::id_pz;
+    using RectangularProgram::BoundaryType::id_none;
+    using RectangularProgram::BoundaryType::id_reentrant;
+
+    auto try_directions = [this, loc, &ret](
+        const std::initializer_list<std::pair<Locator, cl_int>>& directions)
+        -> cl_int {
+            std::vector<std::pair<Locator, cl_int>> nearby;
+            for (const auto& relative : directions) {
+                auto adjacent = loc + relative.first;
+                auto index = compute_index(adjacent);
+                if (index < ret.size() && ret[index].inside)
+                    nearby.push_back(relative);
             }
+            if (nearby.size() == 1)
+                return nearby.front().second;
+            if (nearby.size() > 1)
+                return id_reentrant;
+            return id_none;
+        };
 
-            stored_types[j] = adj_bt;
-        }
-    }
+    auto d1 = try_directions({
+        make_locator_pair(id_nx),
+        make_locator_pair(id_px),
+        make_locator_pair(id_ny),
+        make_locator_pair(id_py),
+        make_locator_pair(id_nz),
+        make_locator_pair(id_pz),
+    });
+    if (d1 != id_none)
+        return d1;
 
-    for (auto j = 0; j != 6; ++j) {
-        if (stored_types[j] != RectangularProgram::id_none)
-            bt |= RectangularProgram::port_index_to_boundary_type(j);
-    }
+    auto d2 = try_directions({
+        make_locator_pair(id_nx, id_ny),
+        make_locator_pair(id_px, id_ny),
+        make_locator_pair(id_nx, id_py),
+        make_locator_pair(id_px, id_py),
+        make_locator_pair(id_nx, id_nz),
+        make_locator_pair(id_px, id_nz),
+        make_locator_pair(id_nx, id_pz),
+        make_locator_pair(id_px, id_pz),
+        make_locator_pair(id_ny, id_nz),
+        make_locator_pair(id_py, id_nz),
+        make_locator_pair(id_ny, id_pz),
+        make_locator_pair(id_py, id_pz),
+    });
+    if (d2 != id_none)
+        return d2;
 
-    auto final_bits = popcount(bt);
-    if (SET_BITS < final_bits) {
-        return RectangularProgram::id_reentrant;
-    } else if (final_bits < SET_BITS) {
-        return RectangularProgram::id_none;
-    }
-    return bt;
-}
+    auto d3 = try_directions({
+        make_locator_pair(id_nx, id_ny, id_nz),
+        make_locator_pair(id_px, id_ny, id_nz),
+        make_locator_pair(id_nx, id_py, id_nz),
+        make_locator_pair(id_px, id_py, id_nz),
+        make_locator_pair(id_nx, id_ny, id_pz),
+        make_locator_pair(id_px, id_ny, id_pz),
+        make_locator_pair(id_nx, id_py, id_pz),
+        make_locator_pair(id_px, id_py, id_pz),
+    });
+    if (d3 != id_none)
+        return d3;
 
-//  in the 1d case
-//  if node is next to one node that is 'inside' then it is a 1d boundary node
-//  if node is next to more than one node that is 'inside' then it is reentrant
-template <>
-cl_int compute_single_node_boundary_type<1>(
-    const RectangularMesh::Node& node,
-    const std::vector<RectangularMesh::Node>& ret) {
-    //  for each adjacent node
-    cl_int bt = RectangularProgram::id_none;
-    for (auto j = 0; j != 6; ++j) {
-        //  find the index of the adjacent node
-        auto port_ind = node.ports[j];
-        //  if the node is part of the mesh and the adjacent node is inside
-        if (port_ind != RectangularProgram::NO_NEIGHBOR &&
-            ret[port_ind].inside) {
-            // log this node
-            bt |= RectangularProgram::port_index_to_boundary_type(j);
-        }
-    }
-
-    //  if next to more than one inside node
-    if (1 < popcount(bt)) {
-        //  node is reentrant
-        return RectangularProgram::id_reentrant;
-    }
-    return bt;
-}
-
-template <int SET_BITS>
-void set_node_boundary_type(std::vector<RectangularMesh::Node>& ret) {
-    std::vector<cl_int> bt(ret.size(), RectangularProgram::id_none);
-    //  for each node
-    //  set populate intermediate array
-    for (auto i = 0u; i != ret.size(); ++i) {
-        const auto& node = ret[i];
-        if (!node.inside && node.boundary_type == RectangularProgram::id_none) {
-            bt[i] = compute_single_node_boundary_type<SET_BITS>(ret[i], ret);
-        } else {
-            bt[i] = node.boundary_type;
-        }
-    }
-
-    //  copy array contents
-    for (auto i = 0u; i != ret.size(); ++i) {
-        ret[i].boundary_type = bt[i];
-    }
-}
-
-std::vector<std::pair<cl_int, cl_uint>>
-RectangularMesh::compute_coefficient_indices(const Node& node) const {
-    switch (popcount(node.boundary_type)) {
-        case 1:
-            return compute_coefficient_indices<1>(node);
-        case 2:
-            return compute_coefficient_indices<2>(node);
-        case 3:
-            return compute_coefficient_indices<3>(node);
-    }
-    throw std::runtime_error("invalid number of adjacent boundary nodes");
-}
-
-void RectangularMesh::log_node_stats(const std::vector<Node>& ret) const {
-    Logger::log_err("total nodes: ", ret.size());
-    Logger::log_err("unclassified nodes: ", std::count_if(ret.begin(), ret.end(), [](const auto& i) {return i.boundary_type == RectangularProgram::id_none;}));
-    Logger::log_err("inside nodes: ", std::count_if(ret.begin(), ret.end(), [] (const auto& i) {return i.inside;}));
-    Logger::log_err("reentrant nodes: ", compute_num_reentrant());
-    Logger::log_err("1d nodes: ", compute_num_boundary<1>());
-    Logger::log_err("2d nodes: ", compute_num_boundary<2>());
-    Logger::log_err("3d nodes: ", compute_num_boundary<3>());
+    return id_none;
 }
 
 void RectangularMesh::set_node_boundary_type(std::vector<Node>& ret) const {
-    log_node_stats(ret);
-    ::set_node_boundary_type<1>(ret);
-    log_node_stats(ret);
-    ::set_node_boundary_type<2>(ret);
-    log_node_stats(ret);
-    ::set_node_boundary_type<3>(ret);
-    log_node_stats(ret);
+    for (auto i = 0u; i != ret.size(); ++i) {
+        auto& node = ret[i];
+        if (!node.inside) {
+            node.boundary_type = compute_boundary_type(compute_locator(i), ret);
+        }
+    }
 }
 
 void RectangularMesh::set_node_boundary_index(std::vector<Node>& ret) const {
@@ -298,12 +285,12 @@ Vec3i RectangularMesh::get_dim() const {
     return dim;
 }
 
-cl_int RectangularMesh::coefficient_index_for_node(
+cl_uint RectangularMesh::coefficient_index_for_node(
     const Boundary& b, const RectangularMesh::Node& node) {
     return 0;
 }
 
-cl_int RectangularMesh::coefficient_index_for_node(
+cl_uint RectangularMesh::coefficient_index_for_node(
     const MeshBoundary& b, const RectangularMesh::Node& node) {
     const auto& triangles = b.get_triangles();
     const auto& vertices = b.get_vertices();

@@ -220,13 +220,13 @@ private:
 
 class RectangularWaveguide : public Waveguide<RectangularProgram> {
 public:
-    template<typename B>
+    template <typename B>
     RectangularWaveguide(const RectangularProgram& program,
-                                               cl::CommandQueue& queue,
-                                               const B& boundary,
-                                               float spacing,
-                                               const Vec3f& anchor,
-                                               float sr)
+                         cl::CommandQueue& queue,
+                         const B& boundary,
+                         float spacing,
+                         const Vec3f& anchor,
+                         float sr)
             : RectangularWaveguide(
                   program,
                   queue,
