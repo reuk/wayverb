@@ -314,30 +314,25 @@ Done
 * which papers cite the boundary modelling paper?
 * can I design my filters the other way up?
     * no
-
-TODO
-----
-
+* CRITICAL: check how boundary filter coefficients should be calculated
+* fix bug in boundary finder code
 * MOST CRITICAL: prove that supplying different coefficients to boundaries
   has the *correct* effect on the resulting impulse responses
     * this seems to be somewhat working now
 
-* CRITICAL: check mic modelling write-up now that the mesh update equations have
-  been fixed, boundaries added
-
-* CRITICAL: check how boundary filter coefficients should be calculated
-
-* search for arbitrary filter response IIR design
-
-* check that loading surfaces from file works as expected
-
-* fix bug in boundary finder code
+TODO
+----
 
 * write up the boundary modelling stuff
 
 * add 0.196 stability limit to waveguide config somehow
 
+* check that loading surfaces from file works as expected
+
 * try to find cause of insane memory usage
+
+* CRITICAL: check mic modelling write-up now that the mesh update equations have
+  been fixed, boundaries added
 
 * boundary modelling
     * try to predict the frequency response of each boundary
@@ -350,9 +345,13 @@ TODO
 
 * nicer json parsing
 
+[
 * how should I model perfectly reflective walls?
     * reflection filters with unity gain turn into impedance filters with
       infinite gain
+
+* search for arbitrary filter response IIR design (??)
+]
 
 digital impedance filters
 =========================

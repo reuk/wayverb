@@ -446,12 +446,14 @@ int main(int argc, char** argv) {
     //  set room size based on desired number of nodes
     auto dim = 250;
 
-    auto azimuth = M_PI / 4;
-    auto elevation = M_PI / 4;
+    // auto azimuth = M_PI / 4;
+    // auto elevation = M_PI / 4;
     // auto azimuth = M_PI / 3;
     // auto elevation = M_PI / 3;
     // auto azimuth = 0;
     // auto elevation = 0;
+    auto azimuth = M_PI / 4;
+    auto elevation = 0;
 
     try {
         struct SurfacePackage {

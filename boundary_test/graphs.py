@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib
-render = False
+render = True
 if render:
     matplotlib.use('pgf')
 import matplotlib.pyplot as plt
@@ -86,6 +86,8 @@ def boundary_coefficient_plot(i, sr, azimuth, elevation):
 
 
 def show_graph(free_field_file, subbed_file, surface, azimuth, elevation):
+    plt.figure()
+
     filter_frequency = 2000
     sr = filter_frequency * 4
 
@@ -103,21 +105,21 @@ def show_graph(free_field_file, subbed_file, surface, azimuth, elevation):
     ffts = [(tag, np.fft.rfft(i)) for tag, i in signals]
     freq = np.fft.rfftfreq(n)
 
-    plt.subplot(3, 1, 1)
-    plt.title(subbed_file)
+#    plt.subplot(3, 1, 1)
+#    plt.title(subbed_file)
 
     def do_plot(tag, a):
         plt.plot(np.resize(freq, n / 4), np.resize(a, n / 4), label=tag)
 
-    for tag, fft in ffts:
-        do_plot(tag, np.abs(fft))
+#    for tag, fft in ffts:
+#        do_plot(tag, np.abs(fft))
 
     cutoff = 0.196
 
     plt.axvline(cutoff)
     plt.legend()
 
-    plt.subplot(3, 1, 2)
+    plt.subplot(2, 1, 2)
     div = np.abs(ffts[1][1] / ffts[0][1])
     print div
     if USE_DB_AXES:
@@ -129,13 +131,14 @@ def show_graph(free_field_file, subbed_file, surface, azimuth, elevation):
     plt.legend()
     #plt.ylim([0, 2])
 
-    plt.subplot(3, 1, 3)
+    plt.subplot(2, 1, 1)
+    plt.title("azimuth: " + str(azimuth) + ", elevation: " + str(elevation))
     surface_filter_plot(surface, sr)
     plt.legend()
 
     plt.show()
     if render:
-        plt.savefig(this_file + ".plot.pdf", bbox_inches="tight")
+        plt.savefig(subbed_file + ".plot.pdf", bbox_inches="tight")
 
 
 def main():
@@ -148,10 +151,10 @@ def main():
 
     matplotlib.rcParams.update(pgf_with_rc_fonts)
 
-#    az = 0
-#    el = 0
-    az = 0.7854
-    el = 0.7854
+    az = 0
+    el = 0
+#    az = 0.7854
+#    el = 0.7854
 #    az = 1.047
 #    el = 1.047
 
