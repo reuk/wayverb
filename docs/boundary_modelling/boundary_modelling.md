@@ -1,5 +1,7 @@
 % Frequency Dependent Locally Reacting Surfaces
 
+\pagenumbering{gobble}
+
 Introduction
 ============
 
@@ -12,12 +14,6 @@ Methods from the literature each have unique drawbacks, meaning none are
 particularly satisfactory for applications where realism is required.
 This essay will review some methods for boundary modelling, explain which
 method was chosen to implement, and present an analysis of the implementation.
-
-<!-- TODO maybe talk about this a bit
-Diffusion Modelling Technique
-=============================
-@shelley2008
--->
 
 KW-Pipe Technique
 =================
@@ -228,15 +224,71 @@ compared to the theoretical reflection of the digital impedance filter being
 tested, which is defined as:
 
 \begin{equation}
-R_{\theta, \phi}(z) = \frac{\xi_W(z)cos\theta cos\phi - 1}{\xi_W(z)cos\theta cos\phi + 1}
+R_{\theta, \phi}(z) = \frac{\xi_W(z)\cos\theta\cos\phi - 1}{\xi_W(z)\cos\theta\cos\phi + 1}
 \end{equation}
 
 where $\theta$ and $\phi$ are the reflection azimuth and elevation respectively.
 
 This test was run several times, for various filter configurations and
 azimuth/elevation combinations.
+The results are shown in figures \ref{filta} to \ref{filtd}.
+In these figures, the original reflectance filter response is shown in red,
+the predicted response of the boundary accounting for the azimuth and elevation
+is shown in green, and the actual experimental results are shown in blue.
+If the green and blue plots coincide, this means the model performs as
+predicted, and accurately models locally reacting surfaces.
 
-The results are shown below:
+![Normal-incidence responses for eight different surface materials. Note that at normal-incidence, the response of the reflectance filter, and the expected boundary response are the same.\label{filta}](boundary_modelling/az_0_el_0.plot.pdf)
+
+![Experimental results for a horizontally-displaced source (azimuth and elevation are given in radians).\label{filtb}](boundary_modelling/az_0.7854_el_0.plot.pdf)
+
+![Experimental results for a horizontally and vertically displaced source (azimuth and elevation are given in radians).\label{filtc}](boundary_modelling/az_0.7854_el_0.7854.plot.pdf)
+
+![Experimental results for a source with great horizontal and vertical displacement (azimuth and elevation are given in radians).\label{filtd}](boundary_modelling/az_1.047_el_1.047.plot.pdf)
+
+Although the waveguide mesh has a theoretical upper frequency limit of 0.25 of
+the mesh sampling rate, the 3D FDTD scheme has a cutoff frequency of 0.196
+of the mesh sampling rate for axial directions.
+This point has been marked as a vertical line on the result graphs.
+
+The experimental results show that the on-axis (normal-incidence) responses
+are the least accurate.
+This can be attributed to numerical dispersion, which will be greatest along
+axial directions.
+The rest of the results, in non-axial directions, adhere much more closely to
+the predicted responses, mostly to within 3dB.
+Exceptions are at the very edges of the spectrum, where the results diverge to
+a greater degree.
+This is not particularly concerning, however, as inaccuracies at the top of
+the spectrum can be overcome by oversampling the mesh.
+The inaccuracies at the bottom of the spectrum are a little more worrying, but
+should not pose any problems for room-acoustics simulation, which is not
+necessarily concerned with frequencies below the range of human hearing.
+
+It is also worth noting that ideally this experiment would be conducted with a
+completely flat wave-front, which is not easily accomplished.
+In his experiments, @kowalczyk2008_2 use large meshes (around 3000 by 3000
+nodes - nine million in total) and place their sources a great distance away from
+the boundary being studied in order to maintain a mostly-flat wavefront.
+However, they only run their experiments in two dimensions - in fact, they does not
+present experimental results for their implementation of boundaries in three
+dimensions at all.
+This is probably because running a 3D simulation on a similar scale would require
+a mesh of twenty-seven billion nodes, which in turn would require gigabytes of
+memory and hours of simulation time.
+@kowalczyk2008_2 note that in some of the experiments with 2D meshes,
+there are disparities at low frequencies between the predicted and actual
+results, which they say is an artifact of non-flat wavefronts.
+It is likely that the low-frequency error seen in my own experiments
+is also due to non-flat wavefronts, which would additionally be amplified by
+running experiments on smaller enclosures (and therefore using rounder
+wavefronts than those in @kowalczyk2008_2's experiments).
+
+In conclusion, for the most part, the off-axis results presented adhere closely
+to the expected results, and even the on-axis results are visibly affected by
+changes to the reflectance filter.
+While not completely accurate, this model is both fast and tunable, making it
+a good candidate for boundary modelling in room acoustics simulations.
 
 Bibliography
 ============

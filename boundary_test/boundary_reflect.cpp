@@ -446,14 +446,10 @@ int main(int argc, char** argv) {
     //  set room size based on desired number of nodes
     auto dim = 250;
 
-    // auto azimuth = M_PI / 4;
-    // auto elevation = M_PI / 4;
-    // auto azimuth = M_PI / 3;
-    // auto elevation = M_PI / 3;
-    // auto azimuth = 0;
-    // auto elevation = 0;
-    auto azimuth = M_PI / 4;
-    auto elevation = 0;
+    // auto azimuth_elevation = std::make_pair(M_PI / 4, M_PI / 4);
+    // auto azimuth_elevation = std::make_pair(M_PI / 3, M_PI / 3);
+    // auto azimuth_elevation = std::make_pair(0, 0);
+    auto azimuth_elevation = std::make_pair(M_PI / 4, 0);
 
     try {
         struct SurfacePackage {
@@ -463,59 +459,48 @@ int main(int argc, char** argv) {
 
         auto steps = dim * 1.4;
 
-        auto windowed_free_field = get_free_field_results(context,
-                                                          device,
-                                                          queue,
-                                                          output_folder,
-                                                          config,
-                                                          azimuth,
-                                                          elevation,
-                                                          dim,
-                                                          steps);
+        auto windowed_free_field =
+            get_free_field_results(context,
+                                   device,
+                                   queue,
+                                   output_folder,
+                                   config,
+                                   azimuth_elevation.first,
+                                   azimuth_elevation.second,
+                                   dim,
+                                   steps);
+
+        cl_float lo = 0.01;
+        cl_float hi = 0.9;
 
         auto surface_set = {
-            SurfacePackage{
-                "anechoic",
-                Surface{
-                    {{0.001, 0.001, 0.001, 0.001, 0.001, 0.001, 0.001, 0.001}},
-                    {{0.001,
-                      0.001,
-                      0.001,
-                      0.001,
-                      0.001,
-                      0.001,
-                      0.001,
-                      0.001}}}},
-            SurfacePackage{
-                "filtered_1",
-                Surface{
-                    {{1, 0.001, 0.001, 0.001, 0.001, 0.001, 0.001, 0.001}},
-                    {{1, 0.001, 0.001, 0.001, 0.001, 0.001, 0.001, 0.001}}}},
-            SurfacePackage{
-                "filtered_2",
-                Surface{
-                    {{0.001, 1, 0.001, 0.001, 0.001, 0.001, 0.001, 0.001}},
-                    {{0.001, 1, 0.001, 0.001, 0.001, 0.001, 0.001, 0.001}}}},
-            SurfacePackage{
-                "filtered_3",
-                Surface{
-                    {{0.001, 0.001, 1, 0.001, 0.001, 0.001, 0.001, 0.001}},
-                    {{0.001, 0.001, 1, 0.001, 0.001, 0.001, 0.001, 0.001}}}},
+            SurfacePackage{"anechoic",
+                           Surface{{{lo, lo, lo, lo, lo, lo, lo, lo}},
+                                   {{lo, lo, lo, lo, lo, lo, lo, lo}}}},
+            SurfacePackage{"filtered_1",
+                           Surface{{{hi, lo, lo, lo, lo, lo, lo, lo}},
+                                   {{hi, lo, lo, lo, lo, lo, lo, lo}}}},
+            SurfacePackage{"filtered_2",
+                           Surface{{{lo, hi, lo, lo, lo, lo, lo, lo}},
+                                   {{lo, hi, lo, lo, lo, lo, lo, lo}}}},
+            SurfacePackage{"filtered_3",
+                           Surface{{{lo, lo, hi, lo, lo, lo, lo, lo}},
+                                   {{lo, lo, hi, lo, lo, lo, lo, lo}}}},
             SurfacePackage{"filtered_4",
-                           Surface{{{0.4, 0.3, 0.5, 0.8, 0.9, 1, 1, 1}},
-                                   {{0.4, 0.3, 0.5, 0.8, 0.9, 1, 1, 1}}}},
+                           Surface{{{0.4, 0.3, 0.5, 0.8, hi, hi, hi, hi}},
+                                   {{0.4, 0.3, 0.5, 0.8, hi, hi, hi, hi}}}},
             SurfacePackage{"filtered_5",
-                           Surface{{{0.001, 1, 1, 1, 1, 1, 1, 1}},
-                                   {{0.001, 1, 1, 1, 1, 1, 1, 1}}}},
+                           Surface{{{lo, hi, hi, hi, hi, hi, hi, hi}},
+                                   {{lo, hi, hi, hi, hi, hi, hi, hi}}}},
             SurfacePackage{"filtered_6",
-                           Surface{{{1, 0.001, 1, 1, 1, 1, 1, 1}},
-                                   {{1, 0.001, 1, 1, 1, 1, 1, 1}}}},
+                           Surface{{{hi, lo, hi, hi, hi, hi, hi, hi}},
+                                   {{hi, lo, hi, hi, hi, hi, hi, hi}}}},
             SurfacePackage{"filtered_7",
-                           Surface{{{1, 1, 0.001, 1, 1, 1, 1, 1}},
-                                   {{1, 1, 0.001, 1, 1, 1, 1, 1}}}},
+                           Surface{{{hi, hi, lo, hi, hi, hi, hi, hi}},
+                                   {{hi, hi, lo, hi, hi, hi, hi, hi}}}},
             SurfacePackage{"flat",
-                           Surface{{{0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9}},
-                                   {{0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9}}}},
+                           Surface{{{hi, hi, hi, hi, hi, hi, hi, hi}},
+                                   {{hi, hi, hi, hi, hi, hi, hi, hi}}}},
         };
 
         std::vector<FullTestResults> all_test_results(surface_set.size());
@@ -529,8 +514,8 @@ int main(int argc, char** argv) {
                                                 queue,
                                                 output_folder,
                                                 config,
-                                                azimuth,
-                                                elevation,
+                                                azimuth_elevation.first,
+                                                azimuth_elevation.second,
                                                 dim,
                                                 steps,
                                                 i.surface,
