@@ -16,31 +16,29 @@
 /// Interface for the most generic boring filter.
 class Filter {
 public:
+    virtual ~Filter() noexcept = default;
     /// Given a vector of data, return a bandpassed version of the data.
     virtual void filter(std::vector<float> &data) = 0;
 };
 
-class Lopass : public Filter {
+class Lopass : public virtual Filter {
 public:
-    virtual ~Lopass() noexcept = default;
     /// A hipass has mutable cutoff and samplerate.
     virtual void setParams(float co, float s);
     float cutoff, sr;
 };
 
 /// Interface for a plain boring hipass filter.
-class Hipass : public Filter {
+class Hipass : public virtual Filter {
 public:
-    virtual ~Hipass() noexcept = default;
     /// A hipass has mutable cutoff and samplerate.
     virtual void setParams(float co, float s);
     float cutoff, sr;
 };
 
 /// Interface for a plain boring bandpass filter.
-class Bandpass : public Filter {
+class Bandpass : public virtual Filter {
 public:
-    virtual ~Bandpass() noexcept = default;
     /// A hipass has mutable lopass, hipass, and samplerate.
     virtual void setParams(float l, float h, float s);
     float lo, hi, sr;
@@ -176,14 +174,10 @@ private:
 };
 
 /// A super-simple biquad filter.
-class Biquad {
+class Biquad : public virtual Filter {
 public:
-    virtual ~Biquad() noexcept = default;
     /// Run the filter foward over some data.
-    void onepass(std::vector<float> &data);
-
-    /// Run the filter forward then backward over some data.
-    void twopass(std::vector<float> &data);
+    void filter(std::vector<float> &data) override;
 
     void setParams(double b0, double b1, double b2, double a1, double a2);
 
@@ -191,29 +185,44 @@ private:
     double b0, b1, b2, a1, a2;
 };
 
-/// Simple biquad bandpass filter.
-class OnepassBandpassBiquad : public Bandpass, public Biquad {
+template <typename T>
+class TwopassFilterWrapper : public T {
 public:
-    virtual ~OnepassBandpassBiquad() noexcept = default;
-    void setParams(float l, float h, float s);
-    void filter(std::vector<float> &data);
+    void filter(std::vector<float> &data) override {
+        T::filter(data);
+        std::reverse(data.begin(), data.end());
+        T::filter(data);
+        std::reverse(data.begin(), data.end());
+    }
 };
 
 /// Simple biquad bandpass filter.
-class TwopassBandpassBiquad : public OnepassBandpassBiquad {
+class BandpassBiquad : public Bandpass, public Biquad {
 public:
-    virtual ~TwopassBandpassBiquad() noexcept = default;
-    void filter(std::vector<float> &data);
+    void setParams(float l, float h, float s);
 };
+
+class LinkwitzRileySingleLopass : public Lopass, public Biquad {
+public:
+    void setParams(float cutoff, float sr) override;
+};
+
+class LinkwitzRileySingleHipass : public Hipass, public Biquad {
+public:
+    void setParams(float cutoff, float sr) override;
+};
+
+using LinkwitzRileyLopass = TwopassFilterWrapper<LinkwitzRileySingleLopass>;
+using LinkwitzRileyHipass = TwopassFilterWrapper<LinkwitzRileySingleHipass>;
 
 /// A linkwitz-riley filter is just a linear-phase lopass and hipass
 /// coupled together.
-class LinkwitzRiley : public Bandpass {
+class LinkwitzRileyBandpass : public Bandpass {
 public:
-    virtual ~LinkwitzRiley() noexcept = default;
     void setParams(float l, float h, float s);
     void filter(std::vector<float> &data);
 
 private:
-    Biquad lopass, hipass;
+    TwopassFilterWrapper<LinkwitzRileyLopass> lopass;
+    TwopassFilterWrapper<LinkwitzRileyHipass> hipass;
 };

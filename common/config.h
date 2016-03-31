@@ -21,6 +21,7 @@
 /// To validate a specific type, just add a specialization of JsonGetter<>
 /// for the type that you want to validate.
 
+//  TODO what is this doing here?
 /// Different components of the output impulse.
 enum OutputMode { ALL, IMAGE_ONLY, DIFFUSE_ONLY };
 

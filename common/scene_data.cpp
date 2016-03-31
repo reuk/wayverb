@@ -110,6 +110,31 @@ const std::vector<Surface>& SurfaceOwner::get_surfaces() const {
     return surfaces;
 }
 
+SceneData::SceneData(const Contents& contents)
+        : SceneData(contents.triangles, contents.vertices, contents.surfaces) {
+}
+SceneData::SceneData(Contents&& contents)
+        : SceneData(std::move(contents.triangles),
+                    std::move(contents.vertices),
+                    std::move(contents.surfaces)) {
+}
+
+SceneData::SceneData(const std::vector<Triangle>& triangles,
+                     const std::vector<cl_float3>& vertices,
+                     const std::vector<Surface>& surfaces)
+        : SurfaceOwner(surfaces)
+        , triangles(triangles)
+        , vertices(vertices) {
+}
+
+SceneData::SceneData(std::vector<Triangle>&& triangles,
+                     std::vector<cl_float3>&& vertices,
+                     std::vector<Surface>&& surfaces)
+        : SurfaceOwner(std::move(surfaces))
+        , triangles(std::move(triangles))
+        , vertices(std::move(vertices)) {
+}
+
 SceneData::SceneData(const std::string& fpath,
                      const std::string& mat_file,
                      float scale)
@@ -128,11 +153,19 @@ SceneData::SceneData(const aiScene* const scene,
 }
 
 SceneData::SceneData(const aiScene* const scene,
-                     SurfaceLoader&& loader,
+                     const SurfaceLoader& loader,
                      float scale)
-        : SurfaceOwner(loader) {
+        : SceneData(get_contents(scene, loader, scale)) {
+}
+
+SceneData::Contents SceneData::get_contents(const aiScene* const scene,
+                                            const SurfaceLoader& loader,
+                                            float scale) {
     if (!scene)
         throw std::runtime_error("scene pointer is null");
+
+    Contents ret;
+    ret.surfaces = loader.get_surfaces();
 
     for (auto i = 0u; i != scene->mNumMeshes; ++i) {
         auto mesh = scene->mMeshes[i];
@@ -155,24 +188,25 @@ SceneData::SceneData(const aiScene* const scene,
             auto face = mesh->mFaces[j];
 
             meshTriangles[j] = Triangle{surface_index,
-                                        face.mIndices[0] + vertices.size(),
-                                        face.mIndices[1] + vertices.size(),
-                                        face.mIndices[2] + vertices.size()};
+                                        face.mIndices[0] + ret.vertices.size(),
+                                        face.mIndices[1] + ret.vertices.size(),
+                                        face.mIndices[2] + ret.vertices.size()};
         }
 
-        vertices.insert(
-            vertices.end(), meshVertices.begin(), meshVertices.end());
-        triangles.insert(
-            triangles.end(), meshTriangles.begin(), meshTriangles.end());
+        ret.vertices.insert(
+            ret.vertices.end(), meshVertices.begin(), meshVertices.end());
+        ret.triangles.insert(
+            ret.triangles.end(), meshTriangles.begin(), meshTriangles.end());
     }
 
-    std::for_each(vertices.begin(),
-                  vertices.end(),
+    std::for_each(ret.vertices.begin(),
+                  ret.vertices.end(),
                   [scale](auto& i) {
                       std::for_each(std::begin(i.s),
                                     std::end(i.s),
                                     [scale](auto& i) { i *= scale; });
                   });
+    return ret;
 }
 
 CuboidBoundary SceneData::get_aabb() const {

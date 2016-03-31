@@ -15,8 +15,6 @@ add_subdirectory(waveguide)
 add_subdirectory(rayverb)
 add_subdirectory(combined)
 add_subdirectory(cmd)
-add_subdirectory(mic_test)
-add_subdirectory(boundary_test)
 
 enable_testing()
 add_subdirectory(tests)

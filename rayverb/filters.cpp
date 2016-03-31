@@ -19,13 +19,13 @@ void filter(FilterType ft,
                 data.front().front().size());
             break;
         case FILTER_TYPE_BIQUAD_ONEPASS:
-            bp = std::make_unique<OnepassBandpassBiquad>();
+            bp = std::make_unique<BandpassBiquad>();
             break;
         case FILTER_TYPE_BIQUAD_TWOPASS:
-            bp = std::make_unique<TwopassBandpassBiquad>();
+            bp = std::make_unique<TwopassFilterWrapper<BandpassBiquad>>();
             break;
         case FILTER_TYPE_LINKWITZ_RILEY:
-            bp = std::make_unique<LinkwitzRiley>();
+            bp = std::make_unique<LinkwitzRileyBandpass>();
             break;
     }
 

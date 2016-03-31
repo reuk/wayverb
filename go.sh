@@ -23,5 +23,5 @@ callraytrace () {
     $prefix $progname $args
 }
 
-cmake .. && make && ctest -V && callraytrace vault vault vault
-#cmake .. && make && ctest -V # && ./boundary_test/boundary_reflect ../boundary_test/output && cd .. && python ../boundary_test/graphs.py
+#cmake .. && make && ctest -V && callraytrace vault vault vault
+cmake .. && make && ./tests/hybrid_test/hybrid_test ../tests/hybrid_test/output

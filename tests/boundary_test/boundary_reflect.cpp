@@ -30,11 +30,6 @@
 #include <map>
 #include <iomanip>
 
-std::ostream& operator<<(std::ostream& os, const CuboidBoundary& cb) {
-    Bracketer bracketer(os);
-    return to_stream(os, cb.get_c0(), "  ", cb.get_c1(), "  ");
-}
-
 std::ostream& operator<<(std::ostream& os, const RunStepResult& rsr) {
     Bracketer bracketer(os);
     return to_stream(os, rsr.pressure);
@@ -128,9 +123,9 @@ std::vector<float> run_simulation(const cl::Context& context,
                    [](const auto& i) { return i.pressure; });
 #endif
 
-    LinkwitzRiley lopass;
-    lopass.setParams(
-        1, config.get_filter_frequency(), config.get_output_sample_rate());
+    LinkwitzRileyLopass lopass;
+    lopass.setParams(config.get_filter_frequency(),
+                     config.get_output_sample_rate());
     //    lopass.filter(output);
 
     return output;

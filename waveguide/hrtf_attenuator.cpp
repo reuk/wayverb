@@ -51,7 +51,7 @@ Vec3f HrtfAttenuator::get_up() const {
 std::vector<float> HrtfAttenuator::process(
     const std::vector<RunStepResult>& input) const {
     std::vector<float> ret(input.size(), 0);
-    LinkwitzRiley bandpass;
+    LinkwitzRileyBandpass bandpass;
     for (auto band = 0u; band != sizeof(VolumeType) / sizeof(float); ++band) {
         if (HrtfData::EDGES[band + 1] < sr / 2) {
             std::vector<float> this_band(input.size());

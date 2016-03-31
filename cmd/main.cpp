@@ -21,7 +21,6 @@
 #include "cl.hpp"
 
 #include "sndfile.hh"
-#include "samplerate.h"
 
 #include <gflags/gflags.h>
 
@@ -199,21 +198,7 @@ int main(int argc, char** argv) {
 
         normalize(w_pressures);
 
-        std::vector<float> out_signal(cc.get_output_sample_rate() *
-                                      w_results.size() /
-                                      cc.get_waveguide_sample_rate());
-
-        SRC_DATA sample_rate_info{w_pressures.data(),
-                                  out_signal.data(),
-                                  long(w_results.size()),
-                                  long(out_signal.size()),
-                                  0,
-                                  0,
-                                  0,
-                                  cc.get_output_sample_rate() /
-                                      double(cc.get_waveguide_sample_rate())};
-
-        src_simple(&sample_rate_info, SRC_SINC_BEST_QUALITY, 1);
+        auto out_signal = adjust_sampling_rate(w_pressures, cc);
 
         auto envelope =
             exponential_decay_envelope(out_signal.size(), attenuation_factor);
@@ -225,9 +210,9 @@ int main(int argc, char** argv) {
                       depth,
                       format);
 
-        LinkwitzRiley lopass;
-        lopass.setParams(
-            1, cc.get_filter_frequency(), cc.get_output_sample_rate());
+        LinkwitzRileyLopass lopass;
+        lopass.setParams(cc.get_filter_frequency(),
+                         cc.get_output_sample_rate());
         lopass.filter(out_signal);
 
         normalize(out_signal);

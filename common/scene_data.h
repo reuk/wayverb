@@ -100,6 +100,12 @@ public:
     SceneData(const aiScene* const scene,
               const std::string& mat_file,
               float scale = 1);
+    SceneData(const std::vector<Triangle>& triangles,
+              const std::vector<cl_float3>& vertices,
+              const std::vector<Surface>& surfaces);
+    SceneData(std::vector<Triangle>&& triangles,
+              std::vector<cl_float3>&& vertices,
+              std::vector<Surface>&& surfaces);
     virtual ~SceneData() noexcept = default;
 
     CuboidBoundary get_aabb() const;
@@ -111,8 +117,22 @@ public:
 
 private:
     SceneData(const aiScene* const scene,
-              SurfaceLoader&& loader,
+              const SurfaceLoader& loader,
               float scale = 1);
+
+    struct Contents {
+        std::vector<Triangle> triangles;
+        std::vector<cl_float3> vertices;
+        std::vector<Surface> surfaces;
+    };
+
+    SceneData(const Contents& contents);
+    SceneData(Contents&& contents);
+
+    static Contents get_contents(const aiScene* const scene,
+                                 const SurfaceLoader& loader,
+                                 float scale);
+
     std::vector<Triangle> triangles;
     std::vector<cl_float3> vertices;
 };

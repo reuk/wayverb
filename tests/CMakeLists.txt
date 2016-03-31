@@ -38,3 +38,7 @@ find_library(glog_lib glog)
 target_link_libraries(${name} waveguide rayverb ${sndfile_lib} ${flac_lib} ${ogg_lib} ${vorbis_lib} ${vorbisenc_lib} ${glog_lib} gtest)
 
 add_test(waveguide ${name})
+
+add_subdirectory(mic_test)
+add_subdirectory(boundary_test)
+add_subdirectory(hybrid_test)

@@ -3,6 +3,9 @@
 #include "conversions.h"
 #include "tri_cube_intersection.h"
 #include "geometric.h"
+#include "string_builder.h"
+
+#include <glog/logging.h>
 
 #include <cmath>
 #include <algorithm>
@@ -51,6 +54,37 @@ Vec3f CuboidBoundary::get_c1() const {
     return c1;
 }
 
+SceneData CuboidBoundary::get_scene_data() const {
+    std::vector<cl_float3> vertices{
+        {{c0.x, c0.y, c0.z}},
+        {{c1.x, c0.y, c0.z}},
+        {{c0.x, c1.y, c0.z}},
+        {{c1.x, c1.y, c0.z}},
+        {{c0.x, c0.y, c1.z}},
+        {{c1.x, c0.y, c1.z}},
+        {{c0.x, c1.y, c1.z}},
+        {{c1.x, c1.y, c1.z}},
+    };
+    std::vector<Triangle> triangles{
+        {0, 0, 1, 5},
+        {0, 0, 4, 5},
+        {0, 0, 1, 3},
+        {0, 0, 2, 3},
+        {0, 0, 2, 6},
+        {0, 0, 4, 6},
+        {0, 1, 5, 7},
+        {0, 1, 3, 7},
+        {0, 2, 3, 7},
+        {0, 2, 6, 7},
+        {0, 4, 5, 7},
+        {0, 4, 6, 7},
+    };
+
+    CHECK(!get_surfaces().empty()) << "boundary has no surfaces";
+
+    return SceneData(triangles, vertices, get_surfaces());
+}
+
 bool CuboidBoundary::intersects(const geo::Ray& ray, float t0, float t1) {
     //  from http://people.csail.mit.edu/amy/papers/box-jgt.pdf
     auto inv = Vec3f(1) / ray.direction;
@@ -86,6 +120,11 @@ CuboidBoundary get_cuboid_boundary(const std::vector<Vec3f>& vertices) {
         maxi = i->apply(maxi, [](auto a, auto b) { return std::max(a, b); });
     }
     return CuboidBoundary(mini, maxi);
+}
+
+std::ostream& operator<<(std::ostream& os, const CuboidBoundary& cb) {
+    Bracketer bracketer(os);
+    return to_stream(os, cb.get_c0(), "  ", cb.get_c1(), "  ");
 }
 
 SphereBoundary::SphereBoundary(const Vec3f& c,

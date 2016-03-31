@@ -181,7 +181,7 @@ int main(int argc, char** argv) {
                 for (auto i = 0; i != bands; ++i) {
                     auto band = out_signal;
 
-                    LinkwitzRiley bandpass;
+                    LinkwitzRileyBandpass bandpass;
                     bandpass.setParams(pow(2, i) * min_band,
                                        pow(2, i + 1) * min_band,
                                        config.get_output_sample_rate());
@@ -205,9 +205,8 @@ int main(int argc, char** argv) {
                     return EXIT_FAILURE;
                 }
 
-                LinkwitzRiley lopass;
-                lopass.setParams(1,
-                                 config.get_filter_frequency(),
+                LinkwitzRileyLopass lopass;
+                lopass.setParams(config.get_filter_frequency(),
                                  config.get_output_sample_rate());
                 lopass.filter(out_signal);
 

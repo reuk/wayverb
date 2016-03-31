@@ -49,3 +49,6 @@ struct JsonGetter<WaveguideConfig> {
 
     WaveguideConfig &t;
 };
+
+std::vector<float> adjust_sampling_rate(std::vector<float> &w_results,
+                                        const WaveguideConfig &cc);

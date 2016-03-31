@@ -6,6 +6,7 @@
 #include "tetrahedral_mesh.h"
 #include "conversions.h"
 #include "power_function.h"
+#include "progress.h"
 
 #include <eigen3/Eigen/LU>
 #include <eigen3/Eigen/SVD>
@@ -15,6 +16,7 @@
 #include <array>
 #include <type_traits>
 #include <algorithm>
+#include <iostream>
 
 template <typename T>
 inline T pinv(const T& a,
@@ -152,26 +154,23 @@ public:
                                    float sr) {
         init(e, u, o, sr);
 
+        ProgressBar pb(std::cout, steps);
+
         std::vector<RunStepResult> ret(steps);
         auto counter = 0u;
         std::generate(
             ret.begin(),
             ret.end(),
-            [this, &counter, &steps, &o] {
+            [this, &counter, &steps, &o, &pb] {
                 auto ret = this->run_step(
                     o, queue, kernel, nodes, *previous, *current, output);
 
                 this->swap_buffers();
 
-                auto percent = counter * 100 / (steps - 1);
-                LOG(INFO) << "\r" << percent << "% done" << std::flush;
-
-                counter += 1;
+                pb += 1;
 
                 return ret;
             });
-
-        LOG(INFO) << std::endl;
 
         return ret;
     }

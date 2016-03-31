@@ -54,9 +54,13 @@ public:
     Vec3f get_c0() const;
     Vec3f get_c1() const;
 
+    SceneData get_scene_data() const;
+
 private:
     Vec3f c0, c1;
 };
+
+std::ostream& operator<<(std::ostream& os, const CuboidBoundary& cb);
 
 class SphereBoundary : public Boundary {
 public:

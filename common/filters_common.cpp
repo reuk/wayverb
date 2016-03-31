@@ -69,7 +69,7 @@ void BandpassWindowedSinc::setParams(float l, float h, float s) {
     copy(i.begin(), i.end(), kernel.begin());
 }
 
-void Biquad::onepass(std::vector<float> &data) {
+void Biquad::filter(std::vector<float> &data) {
     double z1 = 0;
     double z2 = 0;
 
@@ -90,14 +90,7 @@ void Biquad::setParams(
     a2 = _a2;
 }
 
-void Biquad::twopass(std::vector<float> &data) {
-    onepass(data);
-    reverse(begin(data), end(data));
-    onepass(data);
-    reverse(begin(data), end(data));
-}
-
-void OnepassBandpassBiquad::setParams(float lo, float hi, float sr) {
+void BandpassBiquad::setParams(float lo, float hi, float sr) {
     // From www.musicdsp.org/files/Audio-EQ-Cookbook.txt
     const double c = sqrt(lo * hi);
     const double omega = 2 * M_PI * c / sr;
@@ -114,43 +107,41 @@ void OnepassBandpassBiquad::setParams(float lo, float hi, float sr) {
         nrm * alpha, nrm * 0, nrm * -alpha, nrm * (-2 * cs), nrm * (1 - alpha));
 }
 
-void OnepassBandpassBiquad::filter(std::vector<float> &data) {
-    onepass(data);
-}
-
-void TwopassBandpassBiquad::filter(std::vector<float> &data) {
-    twopass(data);
-}
-
 double getC(double co, double sr) {
     const double wcT = M_PI * co / sr;
     return cos(wcT) / sin(wcT);
 }
 
-void LinkwitzRiley::setParams(float l, float h, float s) {
-    {
-        const double c = getC(h, s);
-        const double a0 = c * c + c * sqrt(2) + 1;
-        lopass.setParams(1 / a0,
-                         2 / a0,
-                         1 / a0,
-                         (-2 * (c * c - 1)) / a0,
-                         (c * c - c * sqrt(2) + 1) / a0);
-    }
-    {
-        const double c = getC(l, s);
-        const double a0 = c * c + c * sqrt(2) + 1;
-        hipass.setParams((c * c) / a0,
-                         (-2 * c * c) / a0,
-                         (c * c) / a0,
-                         (-2 * (c * c - 1)) / a0,
-                         (c * c - c * sqrt(2) + 1) / a0);
-    }
+void LinkwitzRileySingleLopass::setParams(float cutoff, float sr) {
+    Lopass::setParams(cutoff, sr);
+    const double c = getC(cutoff, sr);
+    const double a0 = c * c + c * sqrt(2) + 1;
+    Biquad::setParams(1 / a0,
+                      2 / a0,
+                      1 / a0,
+                      (-2 * (c * c - 1)) / a0,
+                      (c * c - c * sqrt(2) + 1) / a0);
 }
 
-void LinkwitzRiley::filter(std::vector<float> &data) {
-    lopass.twopass(data);
-    hipass.twopass(data);
+void LinkwitzRileySingleHipass::setParams(float cutoff, float sr) {
+    Hipass::setParams(cutoff, sr);
+    const double c = getC(cutoff, sr);
+    const double a0 = c * c + c * sqrt(2) + 1;
+    Biquad::setParams((c * c) / a0,
+                      (-2 * c * c) / a0,
+                      (c * c) / a0,
+                      (-2 * (c * c - 1)) / a0,
+                      (c * c - c * sqrt(2) + 1) / a0);
+}
+
+void LinkwitzRileyBandpass::setParams(float l, float h, float s) {
+    lopass.setParams(h, s);
+    hipass.setParams(l, s);
+}
+
+void LinkwitzRileyBandpass::filter(std::vector<float> &data) {
+    lopass.filter(data);
+    hipass.filter(data);
 }
 
 SelfDestructPlan::SelfDestructPlan(const fftwf_plan &plan)

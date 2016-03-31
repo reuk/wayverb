@@ -8,6 +8,7 @@
 #include "geometric.h"
 #include "voxel_collection.h"
 #include "azimuth_elevation.h"
+#include "progress.h"
 
 #include "rapidjson/rapidjson.h"
 #include "rapidjson/error/en.h"
@@ -25,8 +26,8 @@
 #include <iomanip>
 #include <random>
 
-static auto volume_factor = 0.001f;
-static const VolumeType AIR_COEFFICIENT{{
+constexpr static auto volume_factor = 0.001f;
+constexpr static const VolumeType AIR_COEFFICIENT{{
     volume_factor * -0.1f,
     volume_factor * -0.2f,
     volume_factor * -0.5f,
@@ -475,6 +476,8 @@ Results ImprovedRaytrace::run(const SceneData& scene_data,
     AABB global_aabb{to_cl_float3(vox.get_aabb().get_c0()),
                      to_cl_float3(vox.get_aabb().get_c1())};
 
+    ProgressBar pb(std::cout, reflections);
+
     for (auto i = 0u; i != reflections; ++i) {
         auto b = (i + 0) * rays;
         auto e = (i + 1) * rays;
@@ -522,6 +525,8 @@ Results ImprovedRaytrace::run(const SceneData& scene_data,
                      image_source.begin() + b,
                      image_source.begin() + e);
         }
+
+        pb += 1;
     }
 
     results.diffuse = transpose(results.diffuse, rays, reflections);
