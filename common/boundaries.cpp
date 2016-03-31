@@ -1,6 +1,5 @@
 #include "boundaries.h"
 #include "test_flag.h"
-#include "logger.h"
 #include "conversions.h"
 #include "tri_cube_intersection.h"
 #include "geometric.h"

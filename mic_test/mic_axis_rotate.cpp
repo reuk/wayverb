@@ -11,7 +11,6 @@
 #include "cl_common.h"
 
 //  dependency
-#include "logger.h"
 #include "filters_common.h"
 #include "sinc.h"
 #include "write_audio_file.h"
@@ -30,6 +29,7 @@
 #include <algorithm>
 #include <numeric>
 #include <cmath>
+#include <fstream>
 #include <map>
 
 enum class PolarPattern {
@@ -39,15 +39,15 @@ enum class PolarPattern {
 };
 
 int main(int argc, char** argv) {
-    Logger::restart();
+    google::InitGoogleLogging(argv[0]);
     gflags::ParseCommandLineFlags(&argc, &argv, true);
 
     if (argc != 2) {
-        Logger::log_err("expecting an output folder");
+        LOG(INFO) << "expecting an output folder";
 
-        Logger::log_err("actually found: ");
+        LOG(INFO) << "actually found: ";
         for (auto i = 0u; i != argc; ++i) {
-            Logger::log_err("arg ", i, ": ", argv[i]);
+            LOG(INFO) << "arg " << i << ": " << argv[i];
         }
 
         return EXIT_FAILURE;
@@ -201,7 +201,7 @@ int main(int argc, char** argv) {
                     format = get_file_format(output_file);
                     depth = get_file_depth(config.get_bit_depth());
                 } catch (const std::runtime_error& e) {
-                    Logger::log_err("critical runtime error: ", e.what());
+                    LOG(INFO) << "critical runtime error: " << e.what();
                     return EXIT_FAILURE;
                 }
 
@@ -219,13 +219,13 @@ int main(int argc, char** argv) {
             }
         }
     } catch (const cl::Error& e) {
-        Logger::log_err("critical cl error: ", e.what());
+        LOG(INFO) << "critical cl error: " << e.what();
         return EXIT_FAILURE;
     } catch (const std::runtime_error& e) {
-        Logger::log_err("critical runtime error: ", e.what());
+        LOG(INFO) << "critical runtime error: " << e.what();
         return EXIT_FAILURE;
     } catch (...) {
-        Logger::log_err("unknown error");
+        LOG(INFO) << "unknown error";
         return EXIT_FAILURE;
     }
 

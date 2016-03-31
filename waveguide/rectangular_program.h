@@ -3,8 +3,8 @@
 #define __CL_ENABLE_EXCEPTIONS
 #include "cl.hpp"
 
+#include "string_builder.h"
 #include "reduce.h"
-#include "logger.h"
 
 #include <cassert>
 #include <cmath>

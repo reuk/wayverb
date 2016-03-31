@@ -1,5 +1,6 @@
 #include "geometric.h"
-#include "logger.h"
+
+#include "string_builder.h"
 
 static const auto EPSILON = 0.0001;
 

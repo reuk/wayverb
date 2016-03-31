@@ -19,3 +19,21 @@ inline std::string build_string(const Ts&... ts) {
     to_stream(ss, ts...);
     return ss.str();
 }
+
+struct Bracketer final {
+    Bracketer(std::ostream& os,
+              const char* open = "{",
+              const char* closed = "}")
+            : os(os)
+            , closed(closed) {
+        os << open << "  ";
+    }
+
+    ~Bracketer() {
+        os << closed << "  ";
+    }
+
+private:
+    std::ostream& os;
+    const char* closed;
+};

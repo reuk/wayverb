@@ -6,9 +6,10 @@
 #include "rectangular_program.h"
 #include "geometric.h"
 #include "conversions.h"
-#include "logger.h"
 #include "boundary_adjust.h"
 #include "ostream_overloads.h"
+
+#include <glog/logging.h>
 
 #include <vector>
 #include <set>
@@ -206,8 +207,7 @@ private:
     Collection compute_nodes(const B& boundary) const {
         auto total_nodes = get_dim().product();
         auto bytes = total_nodes * sizeof(RectangularMesh::CondensedNode);
-        ::Logger::log_err(bytes >> 20,
-                          " MB required for node metadata storage!");
+        LOG(INFO) << (bytes >> 20) << " MB required for node metadata storage!";
 
         //  we will return this eventually
         auto ret = std::vector<Node>(total_nodes, Node{});

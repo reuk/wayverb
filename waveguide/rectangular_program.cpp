@@ -1,5 +1,4 @@
 #include "rectangular_program.h"
-#include "logger.h"
 
 #include <iostream>
 #include <cmath>

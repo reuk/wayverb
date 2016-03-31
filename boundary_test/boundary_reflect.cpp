@@ -9,7 +9,6 @@
 #include "cl_common.h"
 
 //  dependency
-#include "logger.h"
 #include "filters_common.h"
 #include "sinc.h"
 #include "write_audio_file.h"
@@ -29,6 +28,7 @@
 #include <numeric>
 #include <cmath>
 #include <map>
+#include <iomanip>
 
 std::ostream& operator<<(std::ostream& os, const CuboidBoundary& cb) {
     Bracketer bracketer(os);
@@ -45,7 +45,7 @@ void write_file(const WaveguideConfig& config,
                 const std::string& fname,
                 const std::vector<float>& output) {
     auto output_file = build_string(output_folder, "/", fname, ".wav");
-    Logger::log_err("writing file: ", output_file);
+    LOG(INFO) << "writing file: " << output_file;
 
     auto format = get_file_format(output_file);
     auto depth = get_file_depth(config.get_bit_depth());
@@ -109,9 +109,9 @@ std::vector<float> run_simulation(const cl::Context& context,
     auto corrected_source = waveguide.get_coordinate_for_index(source_index);
     auto corrected_mic = waveguide.get_coordinate_for_index(receiver_index);
 
-    Logger::log_err("running simulation!");
-    Logger::log_err("source pos: ", corrected_source);
-    Logger::log_err("mic pos: ", corrected_mic);
+    LOG(INFO) << "running simulation!";
+    LOG(INFO) << "source pos: " << corrected_source;
+    LOG(INFO) << "mic pos: " << corrected_mic;
 
     auto results = waveguide.run_basic(corrected_source,
                                        receiver_index,
@@ -161,9 +161,8 @@ std::vector<float> get_free_field_results(const cl::Context& context,
 
     auto total_possible_nodes = 1 << 30;
     if (total_desired_nodes >= total_possible_nodes) {
-        Logger::log_err("total desired nodes: ", total_desired_nodes);
-        Logger::log_err("however, total possible nodes: ",
-                        total_possible_nodes);
+        LOG(INFO) << "total desired nodes: " << total_desired_nodes;
+        LOG(INFO) << "however, total possible nodes: " << total_possible_nodes;
         throw std::runtime_error("too many nodes");
     }
 
@@ -182,12 +181,12 @@ std::vector<float> get_free_field_results(const cl::Context& context,
 
     auto log_incorrect_distance = [&source_dist, &wall_centre](
         auto str, const auto& pos) {
-        Logger::log_err(str, " position: ", pos);
+        LOG(INFO) << str << " position: " << pos;
         auto dist = (wall_centre - pos).mag();
         if (!almost_equal(dist, source_dist, 5)) {
-            Logger::log_err("incorrect distance: ", str);
-            Logger::log_err("distance: ", dist);
-            Logger::log_err("desired distance: ", source_dist);
+            LOG(INFO) << "incorrect distance: " << str;
+            LOG(INFO) << "distance: " << dist;
+            LOG(INFO) << "desired distance: " << source_dist;
         }
     };
 
@@ -206,22 +205,20 @@ std::vector<float> get_free_field_results(const cl::Context& context,
     };
 
     if (wrong_position(source_position, wall_centre)) {
-        Logger::log_err("source is placed incorrectly");
+        LOG(INFO) << "source is placed incorrectly";
         throw std::runtime_error("incorrect placement");
     }
-
     if (wrong_position(image_position, wall_centre)) {
-        Logger::log_err("image is placed incorrectly");
+        LOG(INFO) << "image is placed incorrectly";
         throw std::runtime_error("incorrect placement");
     }
-
     if (std::abs((source_position - image_position).mag() - source_dist * 2) >
         1) {
-        Logger::log_err("image is placed incorrectly");
+        LOG(INFO) << "image is placed incorrectly";
         throw std::runtime_error("incorrect placement");
     }
 
-    Logger::log_err("running for ", steps, " steps");
+    LOG(INFO) << "running for " << steps << " steps";
 
     auto image = run_simulation(context,
                                 device,
@@ -268,9 +265,8 @@ FullTestResults run_full_test(const std::string& test_name,
 
     auto total_possible_nodes = 1 << 30;
     if (total_desired_nodes >= total_possible_nodes) {
-        Logger::log_err("total desired nodes: ", total_desired_nodes);
-        Logger::log_err("however, total possible nodes: ",
-                        total_possible_nodes);
+        LOG(INFO) << "total desired nodes: " << total_desired_nodes;
+        LOG(INFO) << "however, total possible nodes: " << total_possible_nodes;
         throw std::runtime_error("too many nodes");
     }
 
@@ -278,7 +274,7 @@ FullTestResults run_full_test(const std::string& test_name,
     auto wall = CuboidBoundary(
         Vec3f(0, 0, 0), desired_nodes * config.get_divisions(), {surface});
 
-    Logger::log_err("boundary: ", wall);
+    LOG(INFO) << "boundary: " << wall;
 
     auto far = wall.get_c1();
     auto new_dim = Vec3f(far.x * 2, far.y, far.z);
@@ -294,12 +290,12 @@ FullTestResults run_full_test(const std::string& test_name,
 
     auto log_incorrect_distance = [&source_dist, &wall_centre](
         auto str, const auto& pos) {
-        Logger::log_err(str, " position: ", pos);
+        LOG(INFO) << str << " position: " << pos;
         auto dist = (wall_centre - pos).mag();
         if (!almost_equal(dist, source_dist, 5)) {
-            Logger::log_err("incorrect distance: ", str);
-            Logger::log_err("distance: ", dist);
-            Logger::log_err("desired distance: ", source_dist);
+            LOG(INFO) << "incorrect distance: " << str;
+            LOG(INFO) << "distance: " << dist;
+            LOG(INFO) << "desired distance: " << source_dist;
         }
     };
 
@@ -318,16 +314,16 @@ FullTestResults run_full_test(const std::string& test_name,
     };
 
     if (wrong_position(source_position, wall_centre)) {
-        Logger::log_err("source is placed incorrectly");
+        LOG(INFO) << "source is placed incorrectly";
         throw std::runtime_error("incorrect placement");
     }
 
     if (wrong_position(receiver_position, wall_centre)) {
-        Logger::log_err("receiver is placed incorrectly");
+        LOG(INFO) << "receiver is placed incorrectly";
         throw std::runtime_error("incorrect placement");
     }
 
-    Logger::log_err("running for ", steps, " steps");
+    LOG(INFO) << "running for " << steps << " steps";
 
     auto reflected = run_simulation(context,
                                     device,
@@ -356,13 +352,13 @@ FullTestResults run_full_test(const std::string& test_name,
                    direct.begin(),
                    subbed.begin(),
                    [](const auto& i, const auto& j) { return j - i; });
-    Logger::log_err("subbed max mag: ", max_mag(subbed));
+    LOG(INFO) << "subbed max mag: " << max_mag(subbed);
 
     auto first_nonzero = [](const auto& i) {
         auto it = std::find_if(i.begin(), i.end(), [](auto j) { return j; });
         if (it == i.end())
             throw std::runtime_error("no non-zero values found");
-        Logger::log_err("first nonzero value: ", *it);
+        LOG(INFO) << "first nonzero value: " << *it;
         return it - i.begin();
     };
 
@@ -370,9 +366,8 @@ FullTestResults run_full_test(const std::string& test_name,
     auto first_nonzero_direct = first_nonzero(direct);
 
     if (first_nonzero_reflected != first_nonzero_direct) {
-        Logger::log_err(
-            "WARNING: direct and reflected should receive signal at same "
-            "time");
+        LOG(INFO) << "WARNING: direct and reflected should receive signal at "
+                     "same time";
     }
 
     auto h = right_hanning(subbed.size());
@@ -410,15 +405,15 @@ FullTestResults run_full_test(const std::string& test_name,
 }
 
 int main(int argc, char** argv) {
-    Logger::restart();
+    google::InitGoogleLogging(argv[0]);
     gflags::ParseCommandLineFlags(&argc, &argv, true);
 
     if (argc != 2) {
-        Logger::log_err("expecting an output folder");
+        LOG(INFO) << "expecting an output folder";
 
-        Logger::log_err("actually found: ");
+        LOG(INFO) << "actually found: ";
         for (auto i = 0u; i != argc; ++i) {
-            Logger::log_err("arg ", i, ": ", argv[i]);
+            LOG(INFO) << "arg " << i << ": " << argv[i];
         }
 
         return EXIT_FAILURE;
@@ -430,15 +425,15 @@ int main(int argc, char** argv) {
     config.get_filter_frequency() = 2000;
     config.get_oversample_ratio() = 1;
 
-    Logger::log_err("waveguide sampling rate: ",
-                    config.get_waveguide_sample_rate());
+    LOG(INFO) << "waveguide sampling rate: "
+              << config.get_waveguide_sample_rate();
 
     auto context = get_context();
     auto device = get_device(context);
 
     auto available = device.getInfo<CL_DEVICE_AVAILABLE>();
     if (!available) {
-        Logger::log_err("opencl device is not available!");
+        LOG(INFO) << "opencl device is not available!";
     }
 
     auto queue = cl::CommandQueue(context, device);
@@ -523,18 +518,17 @@ int main(int argc, char** argv) {
                        });
 
         if (all_test_results.front() == all_test_results.back()) {
-            Logger::log_err(
-                "somehow both test results are the same even though they use "
-                "different boundary coefficients");
+            LOG(INFO) << "somehow both test results are the same even though "
+                         "they use different boundary coefficients";
         }
     } catch (const cl::Error& e) {
-        Logger::log_err("critical cl error: ", e.what());
+        LOG(INFO) << "critical cl error: " << e.what();
         return EXIT_FAILURE;
     } catch (const std::runtime_error& e) {
-        Logger::log_err("critical runtime error: ", e.what());
+        LOG(INFO) << "critical runtime error: " << e.what();
         return EXIT_FAILURE;
     } catch (...) {
-        Logger::log_err("unknown error");
+        LOG(INFO) << "unknown error";
         return EXIT_FAILURE;
     }
 

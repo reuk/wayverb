@@ -9,7 +9,7 @@ include_directories(
     "/usr/local/include"
 )
 
-set(name pwaveguide)
+set(name wayverb)
 file(GLOB sources "*.cpp")
 add_executable(${name} ${sources})
 
@@ -26,9 +26,20 @@ endif()
 find_library(sndfile_lib sndfile)
 find_library(samplerate_lib samplerate)
 find_library(gflags_lib gflags)
+find_library(glog_lig glog)
 find_library(flac_lib flac)
 find_library(ogg_lib ogg)
 find_library(vorbis_lib vorbis)
 find_library(vorbisenc_lib vorbisenc)
 
-target_link_libraries(${name} combined ${sndfile_lib} ${samplerate_lib} ${frameworks} ${gflags_lib} ${flac_lib} ${ogg_lib} ${vorbis_lib} ${vorbisenc_lib})
+target_link_libraries(${name}
+    combined
+    ${sndfile_lib}
+    ${samplerate_lib}
+    ${frameworks}
+    ${gflags_lib}
+    ${glog_lib}
+    ${flac_lib}
+    ${ogg_lib}
+    ${vorbis_lib}
+    ${vorbisenc_lib})

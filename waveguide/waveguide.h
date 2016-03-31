@@ -4,12 +4,13 @@
 #include "rectangular_program.h"
 #include "rectangular_mesh.h"
 #include "tetrahedral_mesh.h"
-#include "logger.h"
 #include "conversions.h"
 #include "power_function.h"
 
 #include <eigen3/Eigen/LU>
 #include <eigen3/Eigen/SVD>
+
+#include <glog/logging.h>
 
 #include <array>
 #include <type_traits>
@@ -163,14 +164,14 @@ public:
                 this->swap_buffers();
 
                 auto percent = counter * 100 / (steps - 1);
-                std::cout << "\r" << percent << "% done" << std::flush;
+                LOG(INFO) << "\r" << percent << "% done" << std::flush;
 
                 counter += 1;
 
                 return ret;
             });
 
-        std::cout << std::endl;
+        LOG(INFO) << std::endl;
 
         return ret;
     }
@@ -393,13 +394,8 @@ auto log_find_any(const T& t,
                   const Fun& fun = Fun()) {
     auto it = find_any(t, fun);
     if (it != std::end(t)) {
-        ::Logger::log_err(identifier,
-                          " ",
-                          func,
-                          " index: ",
-                          it - std::begin(t),
-                          ", value: ",
-                          *it);
+        LOG(INFO) << identifier << " " << func
+                  << " index: " << it - std::begin(t) << ", value: " << *it;
     }
     return it;
 }

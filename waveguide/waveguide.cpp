@@ -318,9 +318,9 @@ RectangularWaveguide::to_filter_coefficients(const Surface& surface, float sr) {
     ret = RectangularProgram::to_impedance_coefficients(ret);
 
     if (!RectangularProgram::is_stable(ret))
-        Logger::log_err(
-            "warning: impedance filter coefficients may produce unstable "
-            "filter");
+        LOG(INFO)
+            << "warning: impedance filter coefficients may produce unstable "
+               "filter";
 
     return ret;
 }

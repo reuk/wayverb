@@ -9,8 +9,6 @@
 #include "voxel_collection.h"
 #include "azimuth_elevation.h"
 
-#include "logger.h"
-
 #include "rapidjson/rapidjson.h"
 #include "rapidjson/error/en.h"
 #include "rapidjson/document.h"

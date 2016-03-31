@@ -1,7 +1,8 @@
 #pragma once
 
-#include "logger.h"
+#include "string_builder.h"
 
+#define __CL_ENABLE_EXCEPTIONS
 #include "cl.hpp"
 
 std::ostream& operator<<(std::ostream& os, const cl_float3& f);
