@@ -8,7 +8,7 @@
 #include "combined_config.h"
 #include "db.h"
 
-#include "rayverb.h"
+#include "raytracer.h"
 
 #include "cl_common.h"
 
@@ -186,9 +186,12 @@ int main(int argc, char** argv) {
 #else
         auto attenuation_factor = pow(db2a(-60), 1.0 / steps);
 #endif
-
-        auto w_results = waveguide.run_gaussian(
-            cc.get_source(), mic_index, steps, cc.get_waveguide_sample_rate());
+        ProgressBar pb(std::cout, steps);
+        auto w_results = waveguide.run_gaussian(cc.get_source(),
+                                                mic_index,
+                                                steps,
+                                                cc.get_waveguide_sample_rate(),
+                                                [&pb] { pb += 1; });
 
         Microphone microphone(Vec3f(0, 0, 1), 0.5);
         HrtfAttenuator hrtf_attenuator(

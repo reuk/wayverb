@@ -1,4 +1,4 @@
-#include "rayverb_program.h"
+#include "raytracer_program.h"
 #include "test_flag.h"
 
 RayverbProgram::RayverbProgram(const cl::Context& context, bool build_immediate)

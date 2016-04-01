@@ -32,6 +32,5 @@ find_library(vorbisenc_lib vorbisenc)
 find_library(samplerate_lib samplerate)
 find_library(gflags_lib gflags)
 
-target_link_libraries(${name_0} waveguide rayverb ${sndfile_lib} ${samplerate_lib} ${frameworks} ${gflags_lib} ${flac_lib} ${ogg_lib} ${vorbis_lib} ${vorbisenc_lib})
-target_link_libraries(${name_1} waveguide rayverb ${sndfile_lib} ${samplerate_lib} ${frameworks} ${gflags_lib} ${flac_lib} ${ogg_lib} ${vorbis_lib} ${vorbisenc_lib})
-
+target_link_libraries(${name_0} waveguide ${sndfile_lib} ${samplerate_lib} ${frameworks} ${gflags_lib} ${flac_lib} ${ogg_lib} ${vorbis_lib} ${vorbisenc_lib})
+target_link_libraries(${name_1} waveguide ${sndfile_lib} ${samplerate_lib} ${frameworks} ${gflags_lib} ${flac_lib} ${ogg_lib} ${vorbis_lib} ${vorbisenc_lib})

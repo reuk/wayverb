@@ -1,4 +1,4 @@
-#include "rayverb.h"
+#include "raytracer.h"
 #include "filters.h"
 #include "config.h"
 #include "test_flag.h"
@@ -38,21 +38,22 @@ constexpr static const VolumeType AIR_COEFFICIENT{{
     volume_factor * -60.0f,
 }};
 
-std::vector<std::vector<std::vector<float>>> flattenImpulses(
+std::vector<std::vector<std::vector<float>>> flatten_impulses(
     const std::vector<std::vector<AttenuatedImpulse>>& attenuated,
     float samplerate) {
     std::vector<std::vector<std::vector<float>>> flattened(attenuated.size());
-    transform(
-        begin(attenuated),
-        end(attenuated),
-        begin(flattened),
-        [samplerate](const auto& i) { return flattenImpulses(i, samplerate); });
+    transform(begin(attenuated),
+              end(attenuated),
+              begin(flattened),
+              [samplerate](const auto& i) {
+                  return flatten_impulses(i, samplerate);
+              });
     return flattened;
 }
 
 /// Turn a collection of AttenuatedImpulses into a vector of 8 vectors, where
 /// each of the 8 vectors represent sample values in a different frequency band.
-std::vector<std::vector<float>> flattenImpulses(
+std::vector<std::vector<float>> flatten_impulses(
     const std::vector<AttenuatedImpulse>& impulse, float samplerate) {
     const auto MAX_TIME_LIMIT = 20.0f;
     // Find the index of the final sample based on time and samplerate
@@ -195,31 +196,6 @@ RaytracerResults Results::get_all(bool remove_direct) const {
 
 //----------------------------------------------------------------------------//
 
-BaseRaytrace::BaseRaytrace(const RayverbProgram& program,
-                           cl::CommandQueue& queue)
-        : queue(queue)
-        , context(program.getInfo<CL_PROGRAM_CONTEXT>()) {
-}
-
-Results BaseRaytrace::run(const SceneData& scene_data,
-                          const Vec3f& micpos,
-                          const Vec3f& source,
-                          int rays,
-                          int reflections) {
-    return run(
-        scene_data, micpos, source, get_random_directions(rays), reflections);
-}
-
-const cl::Context& BaseRaytrace::get_context() const {
-    return context;
-}
-
-cl::CommandQueue& BaseRaytrace::get_queue() {
-    return queue;
-}
-
-//----------------------------------------------------------------------------//
-
 void remove_duplicates(const std::vector<cl_ulong>& path,
                        const std::vector<Impulse>& image,
                        const int RAY_GROUP_SIZE,
@@ -240,9 +216,31 @@ void remove_duplicates(const std::vector<cl_ulong>& path,
     }
 }
 
-Raytrace::Raytrace(const RayverbProgram& program, cl::CommandQueue& queue)
-        : BaseRaytrace(program, queue)
-        , kernel(program.get_raytrace_kernel()) {
+Raytracer::Raytracer(const RayverbProgram& program, cl::CommandQueue& queue)
+        : queue(queue)
+        , context(program.getInfo<CL_PROGRAM_CONTEXT>())
+        , kernel(program.get_improved_raytrace_kernel()) {
+}
+
+const cl::Context& Raytracer::get_context() const {
+    return context;
+}
+
+cl::CommandQueue& Raytracer::get_queue() {
+    return queue;
+}
+
+template <typename T>
+auto transpose(const T& t, int x, int y) {
+    assert(t.size() == x * y);
+
+    auto c = t;
+    for (auto i = 0u; i != x; ++i) {
+        for (auto j = 0u; j != y; ++j) {
+            c[j + i * y] = t[i + j * x];
+        }
+    }
+    return c;
 }
 
 VolumeType attenuation_for_distance(float distance) {
@@ -272,143 +270,12 @@ void add_direct_impulse(const Vec3f& micpos,
     }
 }
 
-Results Raytrace::run(const SceneData& scene_data,
-                      const Vec3f& micpos,
-                      const Vec3f& source,
-                      const std::vector<cl_float3>& directions,
-                      int reflections) {
-    auto RAY_GROUP_SIZE = 4096u;
-
-    //  init buffers
-    cl::Buffer cl_directions(
-        get_context(), CL_MEM_READ_WRITE, RAY_GROUP_SIZE * sizeof(cl_float3));
-    cl::Buffer cl_triangles(
-        get_context(),
-        begin(const_cast<std::vector<Triangle>&>(scene_data.get_triangles())),
-        end(const_cast<std::vector<Triangle>&>(scene_data.get_triangles())),
-        false);
-    cl::Buffer cl_vertices(
-        get_context(),
-        begin(const_cast<std::vector<cl_float3>&>(scene_data.get_vertices())),
-        end(const_cast<std::vector<cl_float3>&>(scene_data.get_vertices())),
-        false);
-    cl::Buffer cl_surfaces(
-        get_context(),
-        begin(const_cast<std::vector<Surface>&>(scene_data.get_surfaces())),
-        end(const_cast<std::vector<Surface>&>(scene_data.get_surfaces())),
-        false);
-    cl::Buffer cl_impulses(get_context(),
-                           CL_MEM_READ_WRITE,
-                           RAY_GROUP_SIZE * reflections * sizeof(Impulse));
-    cl::Buffer cl_image_source(
-        get_context(),
-        CL_MEM_READ_WRITE,
-        RAY_GROUP_SIZE * NUM_IMAGE_SOURCE * sizeof(Impulse));
-    cl::Buffer cl_image_source_index(
-        get_context(),
-        CL_MEM_READ_WRITE,
-        RAY_GROUP_SIZE * NUM_IMAGE_SOURCE * sizeof(cl_ulong));
-
-    Results results;
-    results.mic = micpos;
-    results.source = source;
-    results.rays = directions.size();
-    results.reflections = reflections;
-    results.diffuse.resize(directions.size() * reflections);
-
-    add_direct_impulse(micpos, source, scene_data, results);
-
-    for (auto i = 0u; i != ceil(directions.size() / float(RAY_GROUP_SIZE));
-         ++i) {
-        using index_type = std::common_type_t<decltype(i* RAY_GROUP_SIZE),
-                                              decltype(directions.size())>;
-        auto b = i * RAY_GROUP_SIZE;
-        auto e = std::min(index_type{directions.size()},
-                          index_type{(i + 1) * RAY_GROUP_SIZE});
-
-        //  copy input to buffer
-        cl::copy(get_queue(),
-                 directions.begin() + b,
-                 directions.begin() + e,
-                 cl_directions);
-
-        //  zero out impulse storage memory
-        std::vector<Impulse> diffuse(
-            RAY_GROUP_SIZE * reflections,
-            Impulse{{{0, 0, 0, 0, 0, 0, 0, 0}}, {{0, 0, 0}}, 0});
-        cl::copy(get_queue(), begin(diffuse), end(diffuse), cl_impulses);
-
-        std::vector<Impulse> image(
-            RAY_GROUP_SIZE * NUM_IMAGE_SOURCE,
-            Impulse{{{0, 0, 0, 0, 0, 0, 0, 0}}, {{0, 0, 0}}, 0});
-        cl::copy(get_queue(), begin(image), end(image), cl_image_source);
-
-        std::vector<cl_ulong> image_source_index(
-            RAY_GROUP_SIZE * NUM_IMAGE_SOURCE, 0);
-        cl::copy(get_queue(),
-                 begin(image_source_index),
-                 end(image_source_index),
-                 cl_image_source_index);
-
-        //  run kernel
-        kernel(cl::EnqueueArgs(get_queue(), cl::NDRange(RAY_GROUP_SIZE)),
-               cl_directions,
-               to_cl_float3(micpos),
-               cl_triangles,
-               scene_data.get_triangles().size(),
-               cl_vertices,
-               to_cl_float3(source),
-               cl_surfaces,
-               cl_impulses,
-               cl_image_source,
-               cl_image_source_index,
-               reflections,
-               AIR_COEFFICIENT);
-
-        //  copy output to main memory
-        cl::copy(get_queue(),
-                 cl_image_source_index,
-                 begin(image_source_index),
-                 end(image_source_index));
-        cl::copy(get_queue(), cl_image_source, begin(image), end(image));
-
-        remove_duplicates(image_source_index, image, RAY_GROUP_SIZE, results);
-
-        cl::copy(get_queue(),
-                 cl_impulses,
-                 results.diffuse.begin() + b * reflections,
-                 results.diffuse.begin() + e * reflections);
-    }
-
-    return results;
-}
-
-//----------------------------------------------------------------------------//
-
-ImprovedRaytrace::ImprovedRaytrace(const RayverbProgram& program,
-                                   cl::CommandQueue& queue)
-        : BaseRaytrace(program, queue)
-        , kernel(program.get_improved_raytrace_kernel()) {
-}
-
-template <typename T>
-auto transpose(const T& t, int x, int y) {
-    assert(t.size() == x * y);
-
-    auto c = t;
-    for (auto i = 0u; i != x; ++i) {
-        for (auto j = 0u; j != y; ++j) {
-            c[j + i * y] = t[i + j * x];
-        }
-    }
-    return c;
-}
-
-Results ImprovedRaytrace::run(const SceneData& scene_data,
-                              const Vec3f& micpos,
-                              const Vec3f& source,
-                              const std::vector<cl_float3>& directions,
-                              int reflections) {
+Results Raytracer::run(const SceneData& scene_data,
+                       const Vec3f& micpos,
+                       const Vec3f& source,
+                       const std::vector<cl_float3>& directions,
+                       int reflections,
+                       const RaytraceCallback& callback) {
     VoxelCollection vox(scene_data, 4, 0.1);
     auto flattened_vox = vox.get_flattened();
 
@@ -476,8 +343,6 @@ Results ImprovedRaytrace::run(const SceneData& scene_data,
     AABB global_aabb{to_cl_float3(vox.get_aabb().get_c0()),
                      to_cl_float3(vox.get_aabb().get_c1())};
 
-    ProgressBar pb(std::cout, reflections);
-
     for (auto i = 0u; i != reflections; ++i) {
         auto b = (i + 0) * rays;
         auto e = (i + 1) * rays;
@@ -526,7 +391,7 @@ Results ImprovedRaytrace::run(const SceneData& scene_data,
                      image_source.begin() + e);
         }
 
-        pb += 1;
+        callback();
     }
 
     results.diffuse = transpose(results.diffuse, rays, reflections);
@@ -577,15 +442,15 @@ std::vector<AttenuatedImpulse> Hrtf::attenuate(
     const cl_float3& up,
     const std::vector<Impulse>& impulses) {
     //  muck around with the table format
-    std::vector<VolumeType> hrtfChannelData(360 * 180);
+    std::vector<VolumeType> hrtf_channel_data(360 * 180);
     auto offset = 0;
-    for (const auto& i : getHrtfData()[channel]) {
-        copy(begin(i), end(i), hrtfChannelData.begin() + offset);
+    for (const auto& i : get_hrtf_data()[channel]) {
+        copy(begin(i), end(i), hrtf_channel_data.begin() + offset);
         offset += i.size();
     }
 
     //  copy hrtf table to buffer
-    cl::copy(queue, begin(hrtfChannelData), end(hrtfChannelData), cl_hrtf);
+    cl::copy(queue, begin(hrtf_channel_data), end(hrtf_channel_data), cl_hrtf);
 
     //  set up buffers
     cl_in = cl::Buffer(
@@ -617,7 +482,7 @@ std::vector<AttenuatedImpulse> Hrtf::attenuate(
 }
 
 const std::array<std::array<std::array<cl_float8, 180>, 360>, 2>&
-Hrtf::getHrtfData() const {
+Hrtf::get_hrtf_data() const {
     return HrtfData::HRTF_DATA;
 }
 

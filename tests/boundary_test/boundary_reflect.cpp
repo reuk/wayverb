@@ -108,10 +108,12 @@ std::vector<float> run_simulation(const cl::Context& context,
     LOG(INFO) << "source pos: " << corrected_source;
     LOG(INFO) << "mic pos: " << corrected_mic;
 
+    ProgressBar pb(std::cout, steps);
     auto results = waveguide.run_basic(corrected_source,
                                        receiver_index,
                                        steps,
-                                       config.get_waveguide_sample_rate());
+                                       config.get_waveguide_sample_rate(),
+                                       [&pb] { pb += 1; });
 
 #if 0
     auto output = Microphone::omni.process(results);

@@ -147,27 +147,27 @@ public:
         cl::copy(queue, n.begin(), n.end(), *current);
     }
 
+    template <typename Callback>
     std::vector<RunStepResult> run(const Vec3f& e,
                                    const PowerFunction& u,
                                    size_type o,
                                    size_type steps,
-                                   float sr) {
+                                   float sr,
+                                   const Callback& callback = Callback()) {
         init(e, u, o, sr);
-
-        ProgressBar pb(std::cout, steps);
 
         std::vector<RunStepResult> ret(steps);
         auto counter = 0u;
         std::generate(
             ret.begin(),
             ret.end(),
-            [this, &counter, &steps, &o, &pb] {
+            [this, &counter, &steps, &o, &callback] {
                 auto ret = this->run_step(
                     o, queue, kernel, nodes, *previous, *current, output);
 
                 this->swap_buffers();
 
-                pb += 1;
+                callback();
 
                 return ret;
             });
@@ -175,30 +175,27 @@ public:
         return ret;
     }
 
-    std::vector<RunStepResult> run_basic(const Vec3f& e,
-                                         size_type o,
-                                         size_type steps,
-                                         float sr) {
+    template <typename Callback>
+    std::vector<RunStepResult> run_basic(
+        const Vec3f& e,
+        size_type o,
+        size_type steps,
+        float sr,
+        const Callback& callback = Callback()) {
         auto estimated_source_index = get_index_for_coordinate(e);
         auto source_position = get_coordinate_for_index(estimated_source_index);
-        return run(source_position, BasicPowerFunction(), o, steps, sr);
+        return run(
+            source_position, BasicPowerFunction(), o, steps, sr, callback);
     }
 
-    std::vector<RunStepResult> run_inverse(
-        const Vec3f& e, float power, size_type o, size_type steps, float sr) {
-        return run(e, InversePowerFunction(power), o, steps, sr);
-    }
-
-    std::vector<RunStepResult> run_inverse_square(
-        const Vec3f& e, float power, size_type o, size_type steps, float sr) {
-        return run(e, InverseSquarePowerFunction(power), o, steps, sr);
-    }
-
-    std::vector<RunStepResult> run_gaussian(const Vec3f& e,
-                                            size_type o,
-                                            size_type steps,
-                                            float sr) {
-        return run(e, GaussianFunction(), o, steps, sr);
+    template <typename Callback>
+    std::vector<RunStepResult> run_gaussian(
+        const Vec3f& e,
+        size_type o,
+        size_type steps,
+        float sr,
+        const Callback& callback = Callback()) {
+        return run(e, GaussianFunction(), o, steps, sr, callback);
     }
 
     cl::CommandQueue& get_queue() const {

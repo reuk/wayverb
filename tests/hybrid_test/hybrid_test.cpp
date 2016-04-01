@@ -7,7 +7,7 @@
 #include "microphone.h"
 #include "azimuth_elevation.h"
 
-#include "rayverb.h"
+#include "raytracer.h"
 
 #include "cl_common.h"
 
@@ -100,10 +100,14 @@ auto run_waveguide(const ContextInfo& context_info,
     LOG(INFO) << "mic pos: " << corrected_receiver;
 
     //  run the waveguide
+    //            [                                        ]
+    std::cout << "[ -- running waveguide ----------------- ]" << std::endl;
+    ProgressBar pb(std::cout, steps);
     auto results = waveguide.run_basic(corrected_source,
                                        receiver_index,
                                        steps,
-                                       config.get_waveguide_sample_rate());
+                                       config.get_waveguide_sample_rate(),
+                                       [&pb] { pb += 1; });
 
     auto output = std::vector<float>(results.size());
     std::transform(results.begin(),
@@ -132,17 +136,21 @@ auto run_raytracer(const ContextInfo& context_info,
     auto raytrace_program =
         get_program<RayverbProgram>(context_info.context, context_info.device);
 
-    ImprovedRaytrace raytracer(raytrace_program, context_info.queue);
+    Raytracer raytracer(raytrace_program, context_info.queue);
+    //            [                                        ]
+    std::cout << "[ -- running raytracer ----------------- ]" << std::endl;
+    ProgressBar pb(std::cout, config.get_impulses());
     auto results = raytracer.run(boundary.get_scene_data(),
                                  config.get_mic(),
                                  config.get_source(),
-                                 get_random_directions(config.get_rays()),
-                                 config.get_impulses());
+                                 config.get_rays(),
+                                 config.get_impulses(),
+                                 [&pb] { pb += 1; });
 
     Attenuate attenuator(raytrace_program, context_info.queue);
     Speaker speaker{};
     auto output = attenuator.attenuate(results.get_all(false), {speaker});
-    auto flattened = flattenImpulses(output, config.get_output_sample_rate());
+    auto flattened = flatten_impulses(output, config.get_output_sample_rate());
     auto processed = process(FilterType::FILTER_TYPE_LINKWITZ_RILEY,
                              flattened,
                              config.get_output_sample_rate(),

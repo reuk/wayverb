@@ -4,23 +4,6 @@ float BasicPowerFunction::operator()(const Vec3f& a, const Vec3f& b) const {
     return (a == b).all() ? 1 : 0;
 }
 
-InversePowerFunction::InversePowerFunction(float power)
-        : power(power) {
-}
-
-float InversePowerFunction::operator()(const Vec3f& a, const Vec3f& b) const {
-    return power / (a - b).mag();
-}
-
-InverseSquarePowerFunction::InverseSquarePowerFunction(float power)
-        : power(power) {
-}
-
-float InverseSquarePowerFunction::operator()(const Vec3f& a,
-                                             const Vec3f& b) const {
-    return power / (a - b).mag_squared();
-}
-
 GaussianFunction::GaussianFunction(float standard_deviation)
         : standard_deviation(standard_deviation) {
 }

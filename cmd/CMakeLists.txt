@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.0)
 include_directories(
     ${CMAKE_SOURCE_DIR}/include
     ${CMAKE_SOURCE_DIR}/common
-    ${CMAKE_SOURCE_DIR}/rayverb
+    ${CMAKE_SOURCE_DIR}/raytracer
     ${CMAKE_SOURCE_DIR}/waveguide
     ${CMAKE_SOURCE_DIR}/combined
     "/usr/local/include"

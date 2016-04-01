@@ -12,7 +12,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 add_subdirectory(gtest)
 add_subdirectory(common)
 add_subdirectory(waveguide)
-add_subdirectory(rayverb)
+add_subdirectory(raytracer)
 add_subdirectory(combined)
 add_subdirectory(cmd)
 

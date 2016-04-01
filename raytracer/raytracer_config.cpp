@@ -1,4 +1,4 @@
-#include "rayverb_config.h"
+#include "raytracer_config.h"
 
 int RayverbConfig::get_rays() const {
     return rays;

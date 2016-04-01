@@ -1,6 +1,6 @@
 #pragma once
 
-#include "rayverb_config.h"
+#include "raytracer_config.h"
 #include "waveguide_config.h"
 
 class CombinedConfig : public WaveguideConfig, public RayverbConfig {};

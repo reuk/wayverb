@@ -6,7 +6,7 @@
 #include "conversions.h"
 #include "microphone.h"
 
-#include "rayverb.h"
+#include "raytracer.h"
 
 #include "cl_common.h"
 
@@ -92,11 +92,13 @@ int main(int argc, char** argv) {
         //       auto steps = 4410;
         auto steps = 200;
 
+        ProgressBar pb(std::cout, steps);
         auto w_results =
             waveguide.run_gaussian(corrected_source,
                                    mic_index,
                                    steps,
-                                   config.get_waveguide_sample_rate());
+                                   config.get_waveguide_sample_rate(),
+                                   [&pb] { pb += 1; });
 
         auto amp_factor = 4e3;
 

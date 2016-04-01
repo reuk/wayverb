@@ -1,5 +1,5 @@
 #include "voxel_collection.h"
-#include "rayverb.h"
+#include "raytracer.h"
 #include "conversions.h"
 
 #include "gtest/gtest.h"

@@ -2,7 +2,7 @@
 
 #include "filters.h"
 #include "cl_structs.h"
-#include "rayverb_program.h"
+#include "raytracer_program.h"
 
 #include "config.h"
 #include "scene_data.h"
@@ -24,11 +24,11 @@
 /// Sum impulses ocurring at the same (sampled) time and return a vector in
 /// which each subsequent item refers to the next sample of an impulse
 /// response.
-std::vector<std::vector<float>> flattenImpulses(
+std::vector<std::vector<float>> flatten_impulses(
     const std::vector<AttenuatedImpulse>& impulse, float samplerate);
 
 /// Maps flattenImpulses over a vector of input vectors.
-std::vector<std::vector<std::vector<float>>> flattenImpulses(
+std::vector<std::vector<std::vector<float>>> flatten_impulses(
     const std::vector<std::vector<AttenuatedImpulse>>& impulse,
     float samplerate);
 
@@ -46,7 +46,7 @@ std::vector<std::vector<float>> process(
 /// Recursively check a collection of Impulses for the earliest non-zero time of
 /// an impulse.
 template <typename T>
-inline float findPredelay(const T& ret) {
+inline float find_predelay(const T& ret) {
     return accumulate(ret.begin() + 1,
                       ret.end(),
                       findPredelay(ret.front()),
@@ -62,27 +62,27 @@ inline float findPredelay(const T& ret) {
 
 /// The base case of the findPredelay recursion.
 template <>
-inline float findPredelay(const AttenuatedImpulse& i) {
+inline float find_predelay(const AttenuatedImpulse& i) {
     return i.time;
 }
 
 /// Recursively subtract a time value from the time fields of a collection of
 /// Impulses.
 template <typename T>
-inline void fixPredelay(T& ret, float seconds) {
+inline void fix_predelay(T& ret, float seconds) {
     for (auto&& i : ret)
         fixPredelay(i, seconds);
 }
 
 /// The base case of the fixPredelay recursion.
 template <>
-inline void fixPredelay(AttenuatedImpulse& ret, float seconds) {
+inline void fix_predelay(AttenuatedImpulse& ret, float seconds) {
     ret.time = ret.time > seconds ? ret.time - seconds : 0;
 }
 
 /// Fixes predelay by finding and then removing predelay.
 template <typename T>
-inline void fixPredelay(T& ret) {
+inline void fix_predelay(T& ret) {
     auto predelay = findPredelay(ret);
     fixPredelay(ret, predelay);
 }
@@ -127,64 +127,74 @@ public:
 
 std::vector<cl_float3> get_random_directions(unsigned long num);
 
-class BaseRaytrace {
+class Raytracer final {
 public:
-    BaseRaytrace(const RayverbProgram& program, cl::CommandQueue& queue);
-    virtual ~BaseRaytrace() noexcept = default;
+    using kernel_type =
+        decltype(std::declval<RayverbProgram>().get_improved_raytrace_kernel());
 
-    virtual Results run(const SceneData& scene_data,
-                        const Vec3f& micpos,
-                        const Vec3f& source,
-                        const std::vector<cl_float3>& directions,
-                        int reflections) = 0;
+    Raytracer(const RayverbProgram& program, cl::CommandQueue& queue);
 
+    template <typename Callback>
+    Results run(const SceneData& scene_data,
+                const Vec3f& micpos,
+                const Vec3f& source,
+                const std::vector<cl_float3>& directions,
+                int reflections,
+                const Callback& c = Callback()) {
+        return run(scene_data,
+                   micpos,
+                   source,
+                   directions,
+                   reflections,
+                   static_cast<const RaytraceCallback&>(
+                       CallbackInterfaceAdapter<Callback>(c)));
+    }
+
+    template <typename Callback>
     Results run(const SceneData& scene_data,
                 const Vec3f& micpos,
                 const Vec3f& source,
                 int rays,
-                int reflections);
+                int reflections,
+                const Callback& c = Callback()) {
+        return run(scene_data,
+                   micpos,
+                   source,
+                   get_random_directions(rays),
+                   reflections,
+                   c);
+    }
 
     const cl::Context& get_context() const;
     cl::CommandQueue& get_queue();
 
 private:
+    struct RaytraceCallback {
+        virtual void operator()() const = 0;
+    };
+
+    template <typename T>
+    struct CallbackInterfaceAdapter : public RaytraceCallback {
+        CallbackInterfaceAdapter(const T& t = T())
+                : t(t) {
+        }
+        void operator()() const override {
+            t();
+        };
+
+    private:
+        const T& t;
+    };
+
+    Results run(const SceneData& scene_data,
+                const Vec3f& micpos,
+                const Vec3f& source,
+                const std::vector<cl_float3>& directions,
+                int reflections,
+                const RaytraceCallback& c);
+
     cl::CommandQueue& queue;
     cl::Context context;
-};
-
-class Raytrace : public BaseRaytrace {
-public:
-    using kernel_type =
-        decltype(std::declval<RayverbProgram>().get_raytrace_kernel());
-
-    Raytrace(const RayverbProgram& program, cl::CommandQueue& queue);
-    virtual ~Raytrace() noexcept = default;
-
-    Results run(const SceneData& scene_data,
-                const Vec3f& micpos,
-                const Vec3f& source,
-                const std::vector<cl_float3>& directions,
-                int reflections) override;
-
-private:
-    kernel_type kernel;
-};
-
-class ImprovedRaytrace : public BaseRaytrace {
-public:
-    using kernel_type =
-        decltype(std::declval<RayverbProgram>().get_improved_raytrace_kernel());
-
-    ImprovedRaytrace(const RayverbProgram& program, cl::CommandQueue& queue);
-    virtual ~ImprovedRaytrace() noexcept = default;
-
-    Results run(const SceneData& scene_data,
-                const Vec3f& micpos,
-                const Vec3f& source,
-                const std::vector<cl_float3>& directions,
-                int reflections) override;
-
-private:
     kernel_type kernel;
 };
 
@@ -212,7 +222,7 @@ public:
         const RaytracerResults& results, const Vec3f& facing, const Vec3f& up);
 
     virtual const std::array<std::array<std::array<cl_float8, 180>, 360>, 2>&
-    getHrtfData() const;
+    get_hrtf_data() const;
 
 private:
     cl::CommandQueue& queue;
