@@ -1,7 +1,7 @@
 -Iwaveguide
 -Icommon
 -Icombined
--Irayverb
+-Iraytracer
 -Ibsp
 -Igtest/include
 -Wall
