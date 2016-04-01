@@ -11,6 +11,14 @@ void print_device_info(const cl::Device& i);
 cl::Context get_context();
 cl::Device get_device(const cl::Context& context);
 
+struct ComputeContext {
+    ComputeContext();
+
+    const cl::Context context;
+    const cl::Device device;
+    cl::CommandQueue queue;
+};
+
 template <typename T>
 T get_program(const cl::Context& context, const cl::Device& device) {
     T program(context);
@@ -23,4 +31,9 @@ T get_program(const cl::Context& context, const cl::Device& device) {
         throw;
     }
     return program;
+}
+
+template <typename T>
+T get_program(const ComputeContext& context) {
+    return get_program<T>(context.context, context.device);
 }

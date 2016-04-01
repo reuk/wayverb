@@ -216,7 +216,7 @@ void remove_duplicates(const std::vector<cl_ulong>& path,
     }
 }
 
-Raytracer::Raytracer(const RayverbProgram& program, cl::CommandQueue& queue)
+Raytracer::Raytracer(const RaytracerProgram& program, cl::CommandQueue& queue)
         : queue(queue)
         , context(program.getInfo<CL_PROGRAM_CONTEXT>())
         , kernel(program.get_improved_raytrace_kernel()) {
@@ -275,7 +275,7 @@ Results Raytracer::run(const SceneData& scene_data,
                        const Vec3f& source,
                        const std::vector<cl_float3>& directions,
                        int reflections,
-                       const RaytraceCallback& callback) {
+                       const DoNothingCallback& callback) {
     VoxelCollection vox(scene_data, 4, 0.1);
     auto flattened_vox = vox.get_flattened();
 
@@ -406,7 +406,7 @@ Results Raytracer::run(const SceneData& scene_data,
 
 //----------------------------------------------------------------------------//
 
-Hrtf::Hrtf(const RayverbProgram& program, cl::CommandQueue& queue)
+Hrtf::Hrtf(const RaytracerProgram& program, cl::CommandQueue& queue)
         : queue(queue)
         , kernel(program.get_hrtf_kernel())
         , context(program.getInfo<CL_PROGRAM_CONTEXT>())
@@ -486,7 +486,7 @@ Hrtf::get_hrtf_data() const {
     return HrtfData::HRTF_DATA;
 }
 
-Attenuate::Attenuate(const RayverbProgram& program, cl::CommandQueue& queue)
+Attenuate::Attenuate(const RaytracerProgram& program, cl::CommandQueue& queue)
         : queue(queue)
         , kernel(program.get_attenuate_kernel())
         , context(program.getInfo<CL_PROGRAM_CONTEXT>()) {

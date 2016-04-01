@@ -1,11 +1,12 @@
 #include "raytracer_program.h"
 #include "test_flag.h"
 
-RayverbProgram::RayverbProgram(const cl::Context& context, bool build_immediate)
+RaytracerProgram::RaytracerProgram(const cl::Context& context,
+                                   bool build_immediate)
         : Program(context, source, build_immediate) {
 }
 
-const std::string RayverbProgram::source(
+const std::string RaytracerProgram::source(
 #ifdef TESTING
     "#define TESTING\n"
 #endif

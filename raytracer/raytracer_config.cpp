@@ -1,58 +1,58 @@
 #include "raytracer_config.h"
 
-int RayverbConfig::get_rays() const {
+int RaytracerConfig::get_rays() const {
     return rays;
 }
 
-int RayverbConfig::get_impulses() const {
+int RaytracerConfig::get_impulses() const {
     return impulses;
 }
 
-float RayverbConfig::get_ray_hipass() const {
+float RaytracerConfig::get_ray_hipass() const {
     return ray_hipass;
 }
 
-bool RayverbConfig::get_do_normalize() const {
+bool RaytracerConfig::get_do_normalize() const {
     return do_normalize;
 }
 
-bool RayverbConfig::get_trim_predelay() const {
+bool RaytracerConfig::get_trim_predelay() const {
     return trim_predelay;
 }
 
-bool RayverbConfig::get_trim_tail() const {
+bool RaytracerConfig::get_trim_tail() const {
     return trim_tail;
 }
 
-bool RayverbConfig::get_remove_direct() const {
+bool RaytracerConfig::get_remove_direct() const {
     return remove_direct;
 }
 
-float RayverbConfig::get_volume_scale() const {
+float RaytracerConfig::get_volume_scale() const {
     return volume_scale;
 }
 
-int& RayverbConfig::get_rays() {
+int& RaytracerConfig::get_rays() {
     return rays;
 }
-int& RayverbConfig::get_impulses() {
+int& RaytracerConfig::get_impulses() {
     return impulses;
 }
-float& RayverbConfig::get_ray_hipass() {
+float& RaytracerConfig::get_ray_hipass() {
     return ray_hipass;
 }
-bool& RayverbConfig::get_do_normalize() {
+bool& RaytracerConfig::get_do_normalize() {
     return do_normalize;
 }
-bool& RayverbConfig::get_trim_predelay() {
+bool& RaytracerConfig::get_trim_predelay() {
     return trim_predelay;
 }
-bool& RayverbConfig::get_trim_tail() {
+bool& RaytracerConfig::get_trim_tail() {
     return trim_tail;
 }
-bool& RayverbConfig::get_remove_direct() {
+bool& RaytracerConfig::get_remove_direct() {
     return remove_direct;
 }
-float& RayverbConfig::get_volume_scale() {
+float& RaytracerConfig::get_volume_scale() {
     return volume_scale;
 }

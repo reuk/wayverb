@@ -2,9 +2,9 @@
 
 #include "app_config.h"
 
-class RayverbConfig : public virtual Config {
+class RaytracerConfig : public virtual Config {
 public:
-    virtual ~RayverbConfig() noexcept = default;
+    virtual ~RaytracerConfig() noexcept = default;
 
     int& get_rays();
     int& get_impulses();
@@ -36,8 +36,8 @@ private:
 };
 
 template <>
-struct JsonGetter<RayverbConfig> {
-    JsonGetter(RayverbConfig& t)
+struct JsonGetter<RaytracerConfig> {
+    JsonGetter(RaytracerConfig& t)
             : t(t) {
     }
     virtual ~JsonGetter() noexcept = default;
@@ -65,5 +65,5 @@ struct JsonGetter<RayverbConfig> {
         cv.run(value);
     }
 
-    RayverbConfig& t;
+    RaytracerConfig& t;
 };

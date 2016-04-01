@@ -1,7 +1,9 @@
 #include "raytracer.h"
+#include "raytracer_config.h"
 #include "cl_common.h"
 #include "ostream_overloads.h"
 #include "progress.h"
+#include "boundaries.h"
 
 #include "gtest/gtest.h"
 
@@ -14,21 +16,17 @@
 #endif
 
 template <typename T, typename Prog>
-auto get_results(const cl::Context& context,
-                 const cl::Device& device,
-                 cl::CommandQueue& queue,
+auto get_results(ComputeContext& context,
                  const Prog& prog,
                  const SceneData& scene_data,
                  const std::vector<cl_float3>& directions,
                  int reflections) {
-    T raytrace(prog, queue);
-    ProgressBar pb(std::cout, reflections);
+    T raytrace(prog, context.queue);
     return raytrace.run(scene_data,
                         Vec3f(0, 1.75, 0),
                         Vec3f(0, 1.75, 3),
                         directions,
-                        reflections,
-                        [&pb] { pb += 1; });
+                        reflections);
 }
 
 #define USE_EPSILON
@@ -78,20 +76,40 @@ static constexpr auto bench_reflections = 128;
 static constexpr auto bench_rays = 1 << 15;
 
 TEST(raytrace, new) {
-    auto context = get_context();
-    auto device = get_device(context);
-    cl::CommandQueue queue(context, device);
-    auto raytrace_program = get_program<RayverbProgram>(context, device);
+    ComputeContext context;
+    auto raytrace_program = get_program<RaytracerProgram>(context);
 
     SceneData scene_data(OBJ_PATH, MAT_PATH);
 
     auto directions = get_random_directions(bench_rays);
 
-    auto results_1 = get_results<Raytracer>(context,
-                                            device,
-                                            queue,
-                                            raytrace_program,
-                                            scene_data,
-                                            directions,
-                                            bench_reflections);
+    auto results_1 = get_results<Raytracer>(
+        context, raytrace_program, scene_data, directions, bench_reflections);
+}
+
+TEST(raytrace, image_source) {
+    ComputeContext context;
+    auto raytrace_program = get_program<RaytracerProgram>(context);
+
+    CuboidBoundary boundary(Vec3f(0, 0, 0), Vec3f(4, 3, 6));
+
+    RaytracerConfig config;
+    config.get_source() = Vec3f(2, 1, 1);
+    config.get_mic() = Vec3f(2, 1, 5);
+
+    Raytracer raytracer(raytrace_program, context.queue);
+
+    auto results = raytracer.run(boundary.get_scene_data(),
+                                 config.get_mic(),
+                                 config.get_source(),
+                                 config.get_rays(),
+                                 config.get_impulses());
+
+    Attenuate attenuator(raytrace_program, context.queue);
+    Speaker speaker{};
+    auto output =
+        attenuator.attenuate(results.get_image_source(false), {speaker});
+
+    //  TODO compare image source results to results found analytically or using
+    //  some alternate method
 }

@@ -24,4 +24,4 @@ callraytrace () {
 }
 
 #cmake .. && make && ctest -V && callraytrace vault vault vault
-cmake .. && make && ./tests/hybrid_test/hybrid_test ../tests/hybrid_test/output
+cmake .. && make && ctest -V && ./tests/hybrid_test/hybrid_test ../tests/hybrid_test/output

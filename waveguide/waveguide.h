@@ -7,6 +7,7 @@
 #include "conversions.h"
 #include "power_function.h"
 #include "progress.h"
+#include "callbacks.h"
 
 #include <eigen3/Eigen/LU>
 #include <eigen3/Eigen/SVD>
@@ -147,7 +148,7 @@ public:
         cl::copy(queue, n.begin(), n.end(), *current);
     }
 
-    template <typename Callback>
+    template <typename Callback = DoNothingCallback>
     std::vector<RunStepResult> run(const Vec3f& e,
                                    const PowerFunction& u,
                                    size_type o,
@@ -175,7 +176,7 @@ public:
         return ret;
     }
 
-    template <typename Callback>
+    template <typename Callback = DoNothingCallback>
     std::vector<RunStepResult> run_basic(
         const Vec3f& e,
         size_type o,
@@ -188,7 +189,7 @@ public:
             source_position, BasicPowerFunction(), o, steps, sr, callback);
     }
 
-    template <typename Callback>
+    template <typename Callback = DoNothingCallback>
     std::vector<RunStepResult> run_gaussian(
         const Vec3f& e,
         size_type o,

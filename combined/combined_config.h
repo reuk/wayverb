@@ -3,7 +3,7 @@
 #include "raytracer_config.h"
 #include "waveguide_config.h"
 
-class CombinedConfig : public WaveguideConfig, public RayverbConfig {};
+class CombinedConfig : public WaveguideConfig, public RaytracerConfig {};
 
 template <>
 struct JsonGetter<CombinedConfig> {
@@ -13,13 +13,13 @@ struct JsonGetter<CombinedConfig> {
     virtual ~JsonGetter() noexcept = default;
 
     virtual bool check(const rapidjson::Value& value) const {
-        JsonGetter<RayverbConfig> jg_r(t);
+        JsonGetter<RaytracerConfig> jg_r(t);
         JsonGetter<WaveguideConfig> jg_w(t);
         return value.IsObject() && jg_r.check(value) && jg_r.check(value);
     }
 
     virtual void get(const rapidjson::Value& value) const {
-        JsonGetter<RayverbConfig> jg_r(t);
+        JsonGetter<RaytracerConfig> jg_r(t);
         jg_r.get(value);
 
         JsonGetter<WaveguideConfig> jg_w(t);

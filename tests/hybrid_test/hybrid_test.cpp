@@ -137,8 +137,8 @@ auto run_raytracer(const ContextInfo& context_info,
                    const CuboidBoundary& boundary,
                    const CombinedConfig& config,
                    const std::string& output_folder) {
-    auto raytrace_program =
-        get_program<RayverbProgram>(context_info.context, context_info.device);
+    auto raytrace_program = get_program<RaytracerProgram>(context_info.context,
+                                                          context_info.device);
 
     Raytracer raytracer(raytrace_program, context_info.queue);
     //            [                                        ]
@@ -153,7 +153,9 @@ auto run_raytracer(const ContextInfo& context_info,
 
     Attenuate attenuator(raytrace_program, context_info.queue);
     Speaker speaker{};
-    auto output = attenuator.attenuate(results.get_all(false), {speaker});
+    auto output =
+        attenuator.attenuate(results.get_image_source(false), {speaker});
+    // auto output = attenuator.attenuate(results.get_all(false), {speaker});
     auto flattened = flatten_impulses(output, config.get_output_sample_rate());
     auto processed = process(FilterType::FILTER_TYPE_LINKWITZ_RILEY,
                              flattened,

@@ -3,6 +3,7 @@
 #include "filters.h"
 #include "cl_structs.h"
 #include "raytracer_program.h"
+#include "callbacks.h"
 
 #include "config.h"
 #include "scene_data.h"
@@ -129,12 +130,12 @@ std::vector<cl_float3> get_random_directions(unsigned long num);
 
 class Raytracer final {
 public:
-    using kernel_type =
-        decltype(std::declval<RayverbProgram>().get_improved_raytrace_kernel());
+    using kernel_type = decltype(
+        std::declval<RaytracerProgram>().get_improved_raytrace_kernel());
 
-    Raytracer(const RayverbProgram& program, cl::CommandQueue& queue);
+    Raytracer(const RaytracerProgram& program, cl::CommandQueue& queue);
 
-    template <typename Callback>
+    template <typename Callback = DoNothingCallback>
     Results run(const SceneData& scene_data,
                 const Vec3f& micpos,
                 const Vec3f& source,
@@ -146,11 +147,10 @@ public:
                    source,
                    directions,
                    reflections,
-                   static_cast<const RaytraceCallback&>(
-                       CallbackInterfaceAdapter<Callback>(c)));
+                   static_cast<const DoNothingCallback&>(make_callback(c)));
     }
 
-    template <typename Callback>
+    template <typename Callback = DoNothingCallback>
     Results run(const SceneData& scene_data,
                 const Vec3f& micpos,
                 const Vec3f& source,
@@ -169,29 +169,12 @@ public:
     cl::CommandQueue& get_queue();
 
 private:
-    struct RaytraceCallback {
-        virtual void operator()() const = 0;
-    };
-
-    template <typename T>
-    struct CallbackInterfaceAdapter : public RaytraceCallback {
-        CallbackInterfaceAdapter(const T& t = T())
-                : t(t) {
-        }
-        void operator()() const override {
-            t();
-        };
-
-    private:
-        const T& t;
-    };
-
     Results run(const SceneData& scene_data,
                 const Vec3f& micpos,
                 const Vec3f& source,
                 const std::vector<cl_float3>& directions,
                 int reflections,
-                const RaytraceCallback& c);
+                const DoNothingCallback& c);
 
     cl::CommandQueue& queue;
     cl::Context context;
@@ -202,7 +185,7 @@ private:
 class Hrtf {
 public:
     using kernel_type =
-        decltype(std::declval<RayverbProgram>().get_hrtf_kernel());
+        decltype(std::declval<RaytracerProgram>().get_hrtf_kernel());
 
     class Config final {
     public:
@@ -210,7 +193,7 @@ public:
         Vec3f up;
     };
 
-    Hrtf(const RayverbProgram& program, cl::CommandQueue& queue);
+    Hrtf(const RaytracerProgram& program, cl::CommandQueue& queue);
     virtual ~Hrtf() noexcept = default;
 
     /// Attenuate some raytrace results.
@@ -246,9 +229,9 @@ private:
 class Attenuate {
 public:
     using kernel_type =
-        decltype(std::declval<RayverbProgram>().get_attenuate_kernel());
+        decltype(std::declval<RaytracerProgram>().get_attenuate_kernel());
 
-    Attenuate(const RayverbProgram& program, cl::CommandQueue& queue);
+    Attenuate(const RaytracerProgram& program, cl::CommandQueue& queue);
     virtual ~Attenuate() noexcept = default;
 
     /// Attenuate some raytrace results.

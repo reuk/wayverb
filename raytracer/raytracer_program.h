@@ -5,9 +5,9 @@
 #define __CL_ENABLE_EXCEPTIONS
 #include "cl.hpp"
 
-class RayverbProgram : public cl::Program {
+class RaytracerProgram : public cl::Program {
 public:
-    RayverbProgram(const cl::Context& context, bool build_immediate = false);
+    RaytracerProgram(const cl::Context& context, bool build_immediate = false);
 
     auto get_raytrace_kernel() const {
         return cl::make_kernel<cl::Buffer,

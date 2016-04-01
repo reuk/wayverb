@@ -36,3 +36,9 @@ cl::Device get_device(const cl::Context& context) {
 
     return device;
 }
+
+ComputeContext::ComputeContext()
+        : context(get_context())
+        , device(get_device(context))
+        , queue(context, device) {
+}
