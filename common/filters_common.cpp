@@ -168,3 +168,7 @@ FastConvolution::FastConvolution(unsigned long FFT_LENGTH)
         , c2r(fftwf_plan_dft_c2r_1d(
               FFT_LENGTH, c2r_i.get(), c2r_o.get(), FFTW_ESTIMATE)) {
 }
+
+DCBlocker::DCBlocker() {
+    Biquad::setParams(1, 1, 0, R, 0);
+}

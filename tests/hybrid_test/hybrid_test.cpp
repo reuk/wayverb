@@ -69,7 +69,7 @@ struct ContextInfo {
 
 auto run_waveguide(const ContextInfo& context_info,
                    const CuboidBoundary& boundary,
-                   const WaveguideConfig& config,
+                   const CombinedConfig& config,
                    const std::string& output_folder) {
     auto steps = 4000;
 
@@ -115,23 +115,27 @@ auto run_waveguide(const ContextInfo& context_info,
                    output.begin(),
                    [](const auto& i) { return i.pressure; });
 
-    //  normalize(output);
-
     //  get the valid region of the spectrum
     LinkwitzRileyLopass lopass;
     lopass.setParams(config.get_filter_frequency(),
                      config.get_waveguide_sample_rate());
     lopass.filter(output);
 
+    DCBlocker dc_blocker;
+    dc_blocker.filter(output);
+
     //  adjust sample rate
     auto adjusted = adjust_sampling_rate(output, config);
-    write_file(config, output_folder, "waveguide_filtered", {adjusted});
-    return adjusted;
+    auto ret = adjusted;
+    normalize(adjusted);
+    write_file(
+        config, output_folder, "waveguide_filtered_normalized", {adjusted});
+    return ret;
 }
 
 auto run_raytracer(const ContextInfo& context_info,
                    const CuboidBoundary& boundary,
-                   const RayverbConfig& config,
+                   const CombinedConfig& config,
                    const std::string& output_folder) {
     auto raytrace_program =
         get_program<RayverbProgram>(context_info.context, context_info.device);
@@ -158,8 +162,19 @@ auto run_raytracer(const ContextInfo& context_info,
                              1,
                              true,
                              1);
-    write_file(config, output_folder, "raytrace_filtered", processed);
-    return processed;
+
+    //  get the valid region of the spectrum
+    LinkwitzRileyHipass hipass;
+    hipass.setParams(config.get_filter_frequency(),
+                     config.get_output_sample_rate());
+    for (auto& i : processed)
+        hipass.filter(i);
+
+    auto ret = processed;
+    normalize(processed);
+    write_file(
+        config, output_folder, "raytrace_filtered_normalized", processed);
+    return ret;
 }
 
 int main(int argc, char** argv) {

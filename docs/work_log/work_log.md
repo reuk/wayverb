@@ -319,11 +319,13 @@ Done
 * MOST CRITICAL: prove that supplying different coefficients to boundaries
   has the *correct* effect on the resulting impulse responses
     * this seems to be somewhat working now
+* write up the boundary modelling stuff
+* boundary modelling
+    * try to predict the frequency response of each boundary
+    * is there a way of mapping between the raytracer and this boundary model?
 
 TODO
 ----
-
-* write up the boundary modelling stuff
 
 * add 0.196 stability limit to waveguide config somehow
 
@@ -333,11 +335,6 @@ TODO
 
 * CRITICAL: check mic modelling write-up now that the mesh update equations have
   been fixed, boundaries added
-
-* boundary modelling
-    * try to predict the frequency response of each boundary
-
-    * is there a way of mapping between the raytracer and this boundary model?
 
 * fast-mode tetrahedral mesh and a slow-mode, more accurate, rectangular mesh
 

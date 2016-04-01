@@ -226,3 +226,9 @@ private:
     TwopassFilterWrapper<LinkwitzRileyLopass> lopass;
     TwopassFilterWrapper<LinkwitzRileyHipass> hipass;
 };
+
+class DCBlocker : public Biquad {
+public:
+    DCBlocker();
+    constexpr static auto R = 0.995;
+};
