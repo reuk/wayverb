@@ -3,7 +3,9 @@
 /xcproj
 /Testing
 /reference
-/boundary_test/output
+/tests/boundary_test/output
+/tests/hybrid_test/output
+/tests/mic_test/output
 /demo/impulses
 /demo/logfile.txt
 
