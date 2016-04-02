@@ -6,27 +6,28 @@
 #include <ostream>
 #include <array>
 #include <sstream>
+#include <tuple>
 
-#define VEC_OP(sym, functor)                                       \
-    template <typename U>                                          \
-    constexpr auto operator sym(const Vec3<U>& rhs) const {        \
-        return apply<std::functor<std::common_type_t<T, U>>>(rhs); \
-    }                                                              \
-                                                                   \
-    template <typename U>                                          \
-    constexpr auto operator sym(const U& rhs) const {              \
-        return operator sym(Vec3<U>(rhs));                         \
+#define VEC_OP(sym, functor)                                         \
+    template <typename U>                                            \
+    constexpr auto operator sym(const Vec3<U>& rhs) const {          \
+        return apply(std::functor<std::common_type_t<T, U>>(), rhs); \
+    }                                                                \
+                                                                     \
+    template <typename U>                                            \
+    constexpr auto operator sym(const U& rhs) const {                \
+        return operator sym(Vec3<U>(rhs));                           \
     }
 
-#define COMPOUND_OP(sym, functor)                                            \
-    template <typename U>                                                    \
-    constexpr auto operator sym(const Vec3<U>& rhs) {                        \
-        return (*this = apply<std::functor<std::common_type_t<T, U>>>(rhs)); \
-    }                                                                        \
-                                                                             \
-    template <typename U>                                                    \
-    constexpr auto operator sym(const U& rhs) {                              \
-        return operator sym(Vec3<U>(rhs));                                   \
+#define COMPOUND_OP(sym, functor)                                              \
+    template <typename U>                                                      \
+    constexpr auto operator sym(const Vec3<U>& rhs) {                          \
+        return (*this = apply(std::functor<std::common_type_t<T, U>>(), rhs)); \
+    }                                                                          \
+                                                                               \
+    template <typename U>                                                      \
+    constexpr auto operator sym(const U& rhs) {                                \
+        return operator sym(Vec3<U>(rhs));                                     \
     }
 
 template <typename T>
@@ -38,7 +39,7 @@ using Vec3i = Vec3<int>;
 using Vec3b = Vec3<bool>;
 
 template <typename T>
-Vec3<T> make_vec(const T& x, const T& y, const T& z);
+constexpr Vec3<T> make_vec(const T& x, const T& y, const T& z);
 
 template <typename T>
 struct Vec3 final {
@@ -63,17 +64,17 @@ struct Vec3 final {
     constexpr Vec3& operator=(Vec3&&) noexcept = default;
 
     template <typename V, typename U>
-    auto fold(const U& u = U(), const V& v = V()) const {
+    constexpr auto fold(const U& u = U(), const V& v = V()) const {
         return v(x, v(y, v(z, u)));
     }
 
     template <typename V>
-    auto foldi(const V& v = V()) const {
+    constexpr auto foldi(const V& v = V()) const {
         return v(x, v(y, z));
     }
 
     template <typename U>
-    auto map(const U& u = U()) const {
+    constexpr auto map(const U& u = U()) const {
         return make_vec(u(x), u(y), u(z));
     }
 
@@ -92,34 +93,55 @@ struct Vec3 final {
     }
 
     template <typename... U>
-    auto zip(const U&... u) const {
+    constexpr auto zip(U&&... u) const {
         return make_vec(std::make_tuple(x, u.x...),
                         std::make_tuple(y, u.y...),
                         std::make_tuple(z, u.z...));
     }
 
-    template <typename U, typename I>
-    auto apply(const Vec3<I>& rhs, const U& u = U()) const {
-        return zip(rhs).map(
-            [&u](const auto& i) { return u(std::get<0>(i), std::get<1>(i)); });
+private:
+    template <typename Fun, typename Tup, size_t... Ix>
+    constexpr static auto invoke(Fun&& fun,
+                                 const Tup& tup,
+                                 std::index_sequence<Ix...>) {
+        return std::forward<Fun>(fun)(std::get<Ix>(tup)...);
+    }
+    template <typename Fun, typename Tup>
+    constexpr static auto invoke(Fun&& fun, Tup&& tup) {
+        return invoke(
+            std::forward<Fun>(fun),
+            std::forward<Tup>(tup),
+            std::make_index_sequence<
+                std::tuple_size<typename std::decay<Tup>::type>::value>());
     }
 
-    template <typename U, typename I, typename J>
-    auto apply(const Vec3<I>& a, const Vec3<J>& b, const U& u = U()) const {
-        return zip(a, b).map([&u](const auto& i) {
-            return u(std::get<0>(i), std::get<1>(i), std::get<2>(i));
-        });
+    template <typename Fun>
+    struct InvokeFunctor {
+        constexpr InvokeFunctor(const Fun& fun)
+                : fun(fun) {
+        }
+        template <typename Tup>
+        constexpr auto operator()(Tup&& tup) const {
+            return invoke(fun, tup);
+        }
+        Fun fun;
+    };
+
+public:
+    template <typename U, typename... Ts>
+    constexpr auto apply(const U& u, Ts&&... ts) const {
+        return zip(std::forward<Ts>(ts)...).map(InvokeFunctor<U>(u));
     }
 
-    T sum() const {
+    constexpr T sum() const {
         return foldi<std::plus<T>>();
     }
 
-    T product() const {
+    constexpr T product() const {
         return foldi<std::multiplies<T>>();
     }
 
-    T mag_squared() const {
+    constexpr T mag_squared() const {
         return dot(*this);
     }
 
@@ -168,7 +190,7 @@ struct Vec3 final {
         throw std::out_of_range(ss.str());
     }
 
-    const T& operator[](int i) const {
+    constexpr const T& operator[](int i) const {
         switch (i) {
             case 0:
                 return x;
@@ -177,9 +199,7 @@ struct Vec3 final {
             case 2:
                 return z;
         }
-        std::stringstream ss;
-        ss << "Vec3<T> has 3 elements, tried to access index: " << i;
-        throw std::out_of_range(ss.str());
+        throw std::out_of_range("index must be 0, 1, or 2");
     }
 
     auto operator-() const {
@@ -208,11 +228,11 @@ struct Vec3 final {
     VEC_OP(&&, logical_and);
     VEC_OP(||, logical_or);
 
-    bool all() const {
+    constexpr bool all() const {
         return foldi<std::logical_and<T>>();
     }
 
-    bool any() const {
+    constexpr bool any() const {
         return foldi<std::logical_or<T>>();
     }
 
@@ -220,7 +240,7 @@ struct Vec3 final {
 };
 
 template <typename T>
-Vec3<T> make_vec(const T& x, const T& y, const T& z) {
+constexpr Vec3<T> make_vec(const T& x, const T& y, const T& z) {
     return Vec3<T>(x, y, z);
 }
 

@@ -83,10 +83,9 @@ geo::Intersection VoxelCollection::traverse(const geo::Ray& ray,
     auto just_out =
         step.map([this](auto i) -> int { return i > 0 ? data.size() : -1; });
 
-    auto boundary =
-        step.apply(voxel_bounds.get_c0(),
-                   voxel_bounds.get_c1(),
-                   [](auto i, auto j, auto k) { return i < 0 ? j : k; });
+    auto boundary = step.apply([](auto i, auto j, auto k) {
+        return i < 0 ? j : k;
+    }, voxel_bounds.get_c0(), voxel_bounds.get_c1());
 
     auto t_max = ((boundary - ray.position) / ray.direction).abs();
     auto t_delta = (get_voxel_aabb().get_dimensions() / ray.direction).abs();

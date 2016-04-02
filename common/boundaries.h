@@ -2,6 +2,7 @@
 
 #include "scene_data.h"
 #include "geometric.h"
+#include "reduce.h"
 
 class CuboidBoundary;
 
@@ -17,22 +18,50 @@ public:
     virtual CuboidBoundary get_aabb() const = 0;
 };
 
+template <typename F>
+struct apply_functor {
+    constexpr apply_functor(const F& f = F())
+            : f(f) {
+    }
+    constexpr Vec3f operator()(const Vec3f& a, const Vec3f& b) const {
+        return a.apply(f, b);
+    }
+    const F& f;
+};
+
+template <typename F>
+Vec3f sub_elementwise(const std::vector<Vec3f>& coll, const F& f = F()) {
+    return std::accumulate(
+        coll.begin() + 1, coll.end(), coll.front(), apply_functor<F>(f));
+}
+
 template <typename F, typename T>
-Vec3f sub_elementwise(const T& coll, const F& f = F()) {
-    return std::accumulate(std::begin(coll) + 1,
-                           std::end(coll),
-                           *(std::begin(coll)),
-                           [&f](auto a, auto b) { return a.apply(b, f); });
+constexpr Vec3f sub_elementwise(const T& coll, const F& f = F()) {
+    return reduce(coll, apply_functor<F>(f));
 }
 
 template <typename T>
-Vec3f get_max(const T& coll) {
-    return sub_elementwise(coll, [](auto i, auto j) { return std::max(i, j); });
+struct min_functor {
+    constexpr T operator()(T a, T b) const {
+        return std::min(a, b);
+    }
+};
+
+template <typename T>
+struct max_functor {
+    constexpr T operator()(T a, T b) const {
+        return std::max(a, b);
+    }
+};
+
+template <typename T>
+constexpr Vec3f get_max(const T& coll) {
+    return sub_elementwise<max_functor<float>>(coll);
 }
 
 template <typename T>
-Vec3f get_min(const T& coll) {
-    return sub_elementwise(coll, [](auto i, auto j) { return std::min(i, j); });
+constexpr Vec3f get_min(const T& coll) {
+    return sub_elementwise<min_functor<float>>(coll);
 }
 
 CuboidBoundary get_cuboid_boundary(const std::vector<Vec3f>& vertices);

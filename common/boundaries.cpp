@@ -116,8 +116,8 @@ CuboidBoundary get_cuboid_boundary(const std::vector<Vec3f>& vertices) {
     Vec3f mini, maxi;
     mini = maxi = vertices.front();
     for (auto i = vertices.begin() + 1; i != vertices.end(); ++i) {
-        mini = i->apply(mini, [](auto a, auto b) { return std::min(a, b); });
-        maxi = i->apply(maxi, [](auto a, auto b) { return std::max(a, b); });
+        mini = i->apply([](auto a, auto b) { return std::min(a, b); }, mini);
+        maxi = i->apply([](auto a, auto b) { return std::max(a, b); }, maxi);
     }
     return CuboidBoundary(mini, maxi);
 }

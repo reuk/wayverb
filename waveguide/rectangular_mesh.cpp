@@ -204,10 +204,10 @@ RectangularMesh::Locator RectangularMesh::compute_locator(
 
     auto min =
         (cube_pos - 1)
-            .apply(Vec3i(0), [](auto i, auto j) { return std::max(i, j); });
+            .apply([](auto i, auto j) { return std::max(i, j); }, Vec3i(0));
     auto max =
         (cube_pos + 2)
-            .apply(get_dim(), [](auto i, auto j) { return std::min(i, j); });
+            .apply([](auto i, auto j) { return std::min(i, j); }, get_dim());
 
     auto get_dist = [this, v](auto loc) {
         return (v - compute_position(loc)).mag_squared();

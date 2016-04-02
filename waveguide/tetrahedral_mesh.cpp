@@ -133,10 +133,10 @@ TetrahedralMesh::Locator TetrahedralMesh::compute_locator(
 
     auto min =
         (cube_pos - 1)
-            .apply(Vec3i(0), [](auto i, auto j) { return std::max(i, j); });
+            .apply([](auto i, auto j) { return std::max(i, j); }, Vec3i(0));
     auto max =
         (cube_pos + 2)
-            .apply(get_dim(), [](auto i, auto j) { return std::min(i, j); });
+            .apply([](auto i, auto j) { return std::min(i, j); }, get_dim());
 
     std::vector<int> indices(scaled_cube.size());
     iota(indices.begin(), indices.end(), 0);
