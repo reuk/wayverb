@@ -11,6 +11,8 @@
 
 #include "cl_common.h"
 
+#include "stl_wrappers.h"
+
 //  dependency
 #include "filters_common.h"
 #include "sinc.h"
@@ -110,10 +112,8 @@ auto run_waveguide(const ContextInfo& context_info,
                                        [&pb] { pb += 1; });
 
     auto output = std::vector<float>(results.size());
-    std::transform(results.begin(),
-                   results.end(),
-                   output.begin(),
-                   [](const auto& i) { return i.pressure; });
+    proc::transform(
+        results, output.begin(), [](const auto& i) { return i.pressure; });
 
     //  get the valid region of the spectrum
     LinkwitzRileyLopass lopass;
@@ -147,60 +147,8 @@ static_assert((test_box.mirror_inside(Vec3f(0.5, 1, 1), Box::Direction::z) ==
                   .all(),
               "box fail");
 
-auto run_raytracer(const ContextInfo& context_info,
-                   const CuboidBoundary& boundary,
-                   const CombinedConfig& config,
-                   const std::string& output_folder) {
-    auto raytrace_program = get_program<RaytracerProgram>(context_info.context,
-                                                          context_info.device);
-
-    Raytracer raytracer(raytrace_program, context_info.queue);
-    //            [                                        ]
-    std::cout << "[ -- running raytracer ----------------- ]" << std::endl;
-    ProgressBar pb(std::cout, config.get_impulses());
-    auto results = raytracer.run(boundary.get_scene_data(),
-                                 config.get_mic(),
-                                 config.get_source(),
-                                 config.get_rays(),
-                                 config.get_impulses(),
-                                 [&pb] { pb += 1; });
-
-    Attenuate attenuator(raytrace_program, context_info.queue);
-    Speaker speaker{};
-    auto output =
-        attenuator.attenuate(results.get_image_source(false), {speaker});
-    // auto output = attenuator.attenuate(results.get_all(false), {speaker});
-    auto flattened = flatten_impulses(output, config.get_output_sample_rate());
-
-    write_file(
-        config, output_folder, "raytrace_no_processing", mixdown(flattened));
-
-    auto processed = process(FilterType::FILTER_TYPE_LINKWITZ_RILEY,
-                             flattened,
-                             config.get_output_sample_rate(),
-                             false,
-                             1,
-                             true,
-                             1);
-
-    //  get the valid region of the spectrum
-    LinkwitzRileyHipass hipass;
-    hipass.setParams(config.get_filter_frequency(),
-                     config.get_output_sample_rate());
-    for (auto& i : processed)
-        hipass.filter(i);
-
-    auto ret = processed;
-    normalize(processed);
-    write_file(
-        config, output_folder, "raytrace_filtered_normalized", processed);
-    return ret;
-}
-
 constexpr int outer_boxes_2d(int n) {
-    if (n == 0)
-        return 1;
-    return n * 4;
+    return n == 0 ? 1 : n * 4;
 }
 
 static_assert(outer_boxes_2d(1) == 4, "bad outer");
@@ -283,16 +231,21 @@ int main(int argc, char** argv) {
 
     constexpr auto shells = 2;
     auto images = images_for_shell<shells>();
+    std::array<float, images.size()> distances;
+    proc::transform(
+        images, distances.begin(), [](auto i) { return (receiver - i).mag(); });
     std::array<float, images.size()> times;
-    std::transform(images.begin(),
-                   images.end(),
-                   times.begin(),
-                   [](auto i) { return (receiver - i).mag() / 340; });
+    proc::transform(distances, times.begin(), [](auto i) { return i / 340; });
+    std::array<VolumeType, images.size()> volumes;
+    proc::transform(distances,
+                    volumes.begin(),
+                    [](auto i) { return attenuation_for_distance(i); });
 
-    auto max_time = *std::max_element(times.begin(), times.end());
+    auto max_time = *proc::max_element(times);
     auto max_sample = round(max_time * samplerate) + 1;
-    std::vector<float> proper_image_source(max_sample, 0);
 
+    std::vector<std::vector<float>> proper_image_source(
+        8, std::vector<float>(max_sample, 0));
     constexpr auto L = width_for_shell(shells);
     for (int i = 0; i != L; ++i) {
         for (int j = 0; j != L; ++j) {
@@ -301,8 +254,13 @@ int main(int argc, char** argv) {
                                          std::abs(j - shells),
                                          std::abs(k - shells))
                                        .sum();
-                auto sample = round(times[i + j * L + k * L * L] * samplerate);
-                proper_image_source[sample] += pow(-v, reflections);
+                auto index = i + j * L + k * L * L;
+                auto sample = round(times[index] * samplerate);
+                auto volume = volumes[index];
+                auto base_vol = pow(-v, reflections);
+                for (auto band = 0; band != 8; ++band)
+                    proper_image_source[band][sample] +=
+                        base_vol * volume.s[band];
             }
         }
     }
@@ -330,8 +288,10 @@ int main(int argc, char** argv) {
     config.get_mic() = receiver;
     config.get_output_sample_rate() = samplerate;
 
-    write_file(
-        config, output_folder, "proper_image_source", {proper_image_source});
+    write_file(config,
+               output_folder,
+               "proper_image_source",
+               {mixdown(proper_image_source)});
 
     auto context_info = ContextInfo{context, device, queue};
 
@@ -340,8 +300,52 @@ int main(int argc, char** argv) {
 
     write_file(config, output_folder, "waveguide_filtered", {waveguide_output});
 
-    auto raytracer_output =
-        run_raytracer(context_info, boundary, config, output_folder);
+    auto raytrace_program = get_program<RaytracerProgram>(context_info.context,
+                                                          context_info.device);
 
-    write_file(config, output_folder, "raytracer_filtered", raytracer_output);
+    Raytracer raytracer(raytrace_program, context_info.queue);
+    //            [                                        ]
+    std::cout << "[ -- running raytracer ----------------- ]" << std::endl;
+    ProgressBar pb(std::cout, config.get_impulses());
+    auto results = raytracer.run(boundary.get_scene_data(),
+                                 config.get_mic(),
+                                 config.get_source(),
+                                 config.get_rays(),
+                                 config.get_impulses(),
+                                 [&pb] { pb += 1; });
+
+    Attenuate attenuator(raytrace_program, context_info.queue);
+    Speaker speaker{};
+    auto output =
+        attenuator.attenuate(results.get_image_source(false), {speaker})
+            .front();
+
+    std::set<float> raytracer_times;
+    proc::for_each(
+        output, [&raytracer_times](auto i) { raytracer_times.insert(i.time); });
+    auto flattened = std::vector<std::vector<std::vector<float>>>(
+        1, flatten_impulses(output, config.get_output_sample_rate()));
+
+    write_file(
+        config, output_folder, "raytrace_no_processing", mixdown(flattened));
+
+    auto processed = process(FilterType::FILTER_TYPE_LINKWITZ_RILEY,
+                             flattened,
+                             config.get_output_sample_rate(),
+                             false,
+                             1,
+                             true,
+                             1);
+
+    //  get the valid region of the spectrum
+    LinkwitzRileyHipass hipass;
+    hipass.setParams(config.get_filter_frequency(),
+                     config.get_output_sample_rate());
+    for (auto& i : processed)
+        hipass.filter(i);
+
+    auto ret = processed;
+    normalize(processed);
+    write_file(
+        config, output_folder, "raytrace_filtered_normalized", processed);
 }
