@@ -3,6 +3,7 @@
 #include "boundaries.h"
 #include "conversions.h"
 #include "string_builder.h"
+#include "stl_wrappers.h"
 
 #include "config.h"
 
@@ -199,13 +200,12 @@ SceneData::Contents SceneData::get_contents(const aiScene* const scene,
             ret.triangles.end(), meshTriangles.begin(), meshTriangles.end());
     }
 
-    std::for_each(ret.vertices.begin(),
-                  ret.vertices.end(),
-                  [scale](auto& i) {
-                      std::for_each(std::begin(i.s),
-                                    std::end(i.s),
-                                    [scale](auto& i) { i *= scale; });
-                  });
+    proc::for_each(ret.vertices,
+                   [scale](auto& i) {
+                       std::for_each(std::begin(i.s),
+                                     std::end(i.s),
+                                     [scale](auto& i) { i *= scale; });
+                   });
     return ret;
 }
 
@@ -215,16 +215,13 @@ CuboidBoundary SceneData::get_aabb() const {
 
 std::vector<Vec3f> SceneData::get_converted_vertices() const {
     std::vector<Vec3f> vec(vertices.size());
-    std::transform(vertices.begin(),
-                   vertices.end(),
-                   vec.begin(),
-                   [](auto i) { return to_vec3f(i); });
+    proc::transform(vertices, vec.begin(), [](auto i) { return to_vec3f(i); });
     return vec;
 }
 
 std::vector<int> SceneData::get_triangle_indices() const {
     std::vector<int> ret(triangles.size());
-    std::iota(ret.begin(), ret.end(), 0);
+    proc::iota(ret, 0);
     return ret;
 }
 

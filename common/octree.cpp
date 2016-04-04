@@ -2,6 +2,8 @@
 
 #include "tri_cube_intersection.h"
 
+#include "stl_wrappers.h"
+
 #include <iostream>
 #include <algorithm>
 
@@ -34,13 +36,12 @@ std::vector<int> get_triangles(const SceneData& sd,
                                const std::vector<int>& to_test,
                                const CuboidBoundary& aabb) {
     std::vector<int> ret(to_test.size());
-    ret.resize(std::copy_if(to_test.begin(),
-                            to_test.end(),
-                            ret.begin(),
-                            [&sd, &aabb](auto i) {
-                                return aabb.overlaps(get_triangle_verts(
-                                    sd.get_triangles()[i], sd.get_vertices()));
-                            }) -
+    ret.resize(proc::copy_if(to_test,
+                             ret.begin(),
+                             [&sd, &aabb](auto i) {
+                                 return aabb.overlaps(get_triangle_verts(
+                                     sd.get_triangles()[i], sd.get_vertices()));
+                             }) -
                ret.begin());
     return ret;
 }
@@ -56,12 +57,11 @@ std::unique_ptr<std::array<Octree, 8>> get_nodes(
 
     auto next = next_boundaries(ab);
     auto ret = std::make_unique<std::array<Octree, 8>>();
-    std::transform(next.begin(),
-                   next.end(),
-                   ret->begin(),
-                   [&sd, md, &to_test](const auto& i) {
-                       return Octree(sd, md - 1, to_test, i);
-                   });
+    proc::transform(next,
+                    ret->begin(),
+                    [&sd, md, &to_test](const auto& i) {
+                        return Octree(sd, md - 1, to_test, i);
+                    });
     return ret;
 }
 
@@ -126,17 +126,15 @@ void Octree::fill_flattened(std::vector<FloatUInt>& ret) const {
         ret.push_back(
             to_fui(static_cast<cl_uint>(nodes.size())));  //  some nodes
         auto node_table_start = ret.size();
-        std::for_each(nodes.begin(),
-                      nodes.end(),
-                      [&ret](const auto&) { ret.push_back(to_fui(0u)); });
+        proc::for_each(nodes,
+                       [&ret](const auto&) { ret.push_back(to_fui(0u)); });
 
         auto counter = node_table_start;
-        std::for_each(nodes.begin(),
-                      nodes.end(),
-                      [&ret, &counter](const auto& i) {
-                          ret[counter++].i = ret.size();
-                          i.fill_flattened(ret);
-                      });
+        proc::for_each(nodes,
+                       [&ret, &counter](const auto& i) {
+                           ret[counter++].i = ret.size();
+                           i.fill_flattened(ret);
+                       });
     }
 }
 

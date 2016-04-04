@@ -2,6 +2,7 @@
 
 #include "conversions.h"
 #include "boundary_adjust.h"
+#include "stl_wrappers.h"
 
 #include <algorithm>
 #include <numeric>
@@ -24,10 +25,8 @@ TetrahedralMesh::compute_scaled_cube(float scale) {
         Vec3f(0.75, 0.75, 0.25),
     }};
     std::array<Vec3f, CUBE_NODES> ret;
-    std::transform(basic_cube.begin(),
-                   basic_cube.end(),
-                   ret.begin(),
-                   [scale](auto i) { return i * scale; });
+    proc::transform(
+        basic_cube, ret.begin(), [scale](auto i) { return i * scale; });
     return ret;
 }
 
@@ -40,9 +39,8 @@ std::vector<TetrahedralMesh::Node> TetrahedralMesh::compute_nodes(
     auto total_nodes = get_dim().product() * scaled_cube.size();
     std::vector<Node> ret(total_nodes);
     auto counter = 0u;
-    std::generate(
-        ret.begin(),
-        ret.end(),
+    proc::generate(
+        ret,
         [this, &counter, &boundary] {
             Node ret;
             auto p = this->compute_position(this->compute_locator(counter));
@@ -53,12 +51,11 @@ std::vector<TetrahedralMesh::Node> TetrahedralMesh::compute_nodes(
         });
 
     std::vector<bool> inside(ret.size());
-    std::transform(ret.begin(),
-                   ret.end(),
-                   inside.begin(),
-                   [&boundary](const auto& i) {
-                       return boundary.inside(to_vec3f(i.position));
-                   });
+    proc::transform(ret,
+                    inside.begin(),
+                    [&boundary](const auto& i) {
+                        return boundary.inside(to_vec3f(i.position));
+                    });
 
     auto neighbor_inside = [&inside](const auto& i) {
         for (const auto& it : i.ports) {
@@ -69,22 +66,20 @@ std::vector<TetrahedralMesh::Node> TetrahedralMesh::compute_nodes(
         return false;
     };
 
-    std::transform(ret.begin(),
-                   ret.end(),
-                   inside.begin(),
-                   inside.begin(),
-                   [&neighbor_inside](auto node, auto in) {
-                       return neighbor_inside(node) && in;
-                   });
+    proc::transform(ret,
+                    inside.begin(),
+                    inside.begin(),
+                    [&neighbor_inside](auto node, auto in) {
+                        return neighbor_inside(node) && in;
+                    });
 
-    std::transform(ret.begin(),
-                   ret.end(),
-                   inside.begin(),
-                   ret.begin(),
-                   [](auto i, auto j) {
-                       i.inside = j;
-                       return i;
-                   });
+    proc::transform(ret,
+                    inside.begin(),
+                    ret.begin(),
+                    [](auto i, auto j) {
+                        i.inside = j;
+                        return i;
+                    });
 
     return ret;
 }

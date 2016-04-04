@@ -153,15 +153,11 @@ int main(int argc, char** argv) {
             auto min_band = 80;
 
             auto print_energy = [&ofile](const auto& sig, auto band) {
-                auto band_energy =
-                    std::accumulate(sig.begin(),
-                                    sig.end(),
-                                    0.0,
-                                    [](auto a, auto b) { return a + b * b; });
+                auto band_energy = proc::accumulate(
+                    sig, 0.0, [](auto a, auto b) { return a + b * b; });
 
-                auto max_val = std::accumulate(
-                    sig.begin(),
-                    sig.end(),
+                auto max_val = proc::accumulate(
+                    sig,
                     0.0,
                     [](auto a, auto b) { return std::max(a, fabs(b)); });
 

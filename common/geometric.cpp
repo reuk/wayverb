@@ -1,5 +1,6 @@
 #include "geometric.h"
 
+#include "stl_wrappers.h"
 #include "string_builder.h"
 
 static const auto EPSILON = 0.0001;
@@ -88,7 +89,7 @@ Intersection ray_triangle_intersection(const Ray& ray,
                                        const std::vector<Triangle>& triangles,
                                        const std::vector<Vec3f>& vertices) {
     std::vector<int> triangle_indices(triangles.size());
-    std::iota(triangle_indices.begin(), triangle_indices.end(), 0);
+    proc::iota(triangle_indices, 0);
     return ray_triangle_intersection(
         ray, triangle_indices, triangles, vertices);
 }

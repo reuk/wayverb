@@ -1,16 +1,14 @@
 #pragma once
 
-#include <algorithm>
+#include "stl_wrappers.h"
+
 #include <numeric>
 #include <vector>
 
 template <typename T>
 inline float max_mag(const T& t) {
-    return std::accumulate(
-        t.begin(),
-        t.end(),
-        0.0f,
-        [](auto a, auto b) { return std::max(a, max_mag(b)); });
+    return proc::accumulate(
+        t, 0.0f, [](auto a, auto b) { return std::max(a, max_mag(b)); });
 }
 
 template <>
@@ -78,11 +76,8 @@ std::vector<T> sinc_kernel(double cutoff, unsigned long length) {
 
 template <typename T, typename U>
 void elementwise_multiply(T& a, const U& b) {
-    std::transform(std::begin(a),
-                   std::end(a),
-                   std::begin(b),
-                   std::begin(a),
-                   [](auto i, auto j) { return i * j; });
+    proc::transform(
+        a, std::begin(b), std::begin(a), [](auto i, auto j) { return i * j; });
 }
 
 /// Generate a blackman window of a specific length.

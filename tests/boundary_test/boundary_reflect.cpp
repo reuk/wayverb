@@ -119,10 +119,8 @@ std::vector<float> run_simulation(const cl::Context& context,
     auto output = Microphone::omni.process(results);
 #else
     auto output = std::vector<float>(results.size());
-    std::transform(results.begin(),
-                   results.end(),
-                   output.begin(),
-                   [](const auto& i) { return i.pressure; });
+    proc::transform(
+        results, output.begin(), [](const auto& i) { return i.pressure; });
 #endif
 
     LinkwitzRileyLopass lopass;
@@ -232,11 +230,8 @@ std::vector<float> get_free_field_results(const cl::Context& context,
     auto windowed_free_field = h;
 
     auto window = [&h](const auto& in, auto& out) {
-        std::transform(in.begin(),
-                       in.end(),
-                       h.begin(),
-                       out.begin(),
-                       [](auto i, auto j) { return i * j; });
+        proc::transform(
+            in, h.begin(), out.begin(), [](auto i, auto j) { return i * j; });
     };
 
     window(image, windowed_free_field);
@@ -344,15 +339,14 @@ FullTestResults run_full_test(const std::string& test_name,
                                  steps);
 
     auto subbed = reflected;
-    std::transform(reflected.begin(),
-                   reflected.end(),
-                   direct.begin(),
-                   subbed.begin(),
-                   [](const auto& i, const auto& j) { return j - i; });
+    proc::transform(reflected,
+                    direct.begin(),
+                    subbed.begin(),
+                    [](const auto& i, const auto& j) { return j - i; });
     LOG(INFO) << "subbed max mag: " << max_mag(subbed);
 
     auto first_nonzero = [](const auto& i) {
-        auto it = std::find_if(i.begin(), i.end(), [](auto j) { return j; });
+        auto it = proc::find_if(i, [](auto j) { return j; });
         if (it == i.end())
             throw std::runtime_error("no non-zero values found");
         LOG(INFO) << "first nonzero value: " << *it;
@@ -372,11 +366,8 @@ FullTestResults run_full_test(const std::string& test_name,
     auto windowed_subbed = h;
 
     auto window = [&h](const auto& in, auto& out) {
-        std::transform(in.begin(),
-                       in.end(),
-                       h.begin(),
-                       out.begin(),
-                       [](auto i, auto j) { return i * j; });
+        proc::transform(
+            in, h.begin(), out.begin(), [](auto i, auto j) { return i * j; });
     };
 
     window(subbed, windowed_subbed);
@@ -496,23 +487,22 @@ int main(int argc, char** argv) {
         };
 
         std::vector<FullTestResults> all_test_results(surface_set.size());
-        std::transform(surface_set.begin(),
-                       surface_set.end(),
-                       all_test_results.begin(),
-                       [&](auto i) {
-                           return run_full_test(i.name,
-                                                context,
-                                                device,
-                                                queue,
-                                                output_folder,
-                                                config,
-                                                azimuth_elevation.first,
-                                                azimuth_elevation.second,
-                                                dim,
-                                                steps,
-                                                i.surface,
-                                                windowed_free_field);
-                       });
+        proc::transform(surface_set,
+                        all_test_results.begin(),
+                        [&](auto i) {
+                            return run_full_test(i.name,
+                                                 context,
+                                                 device,
+                                                 queue,
+                                                 output_folder,
+                                                 config,
+                                                 azimuth_elevation.first,
+                                                 azimuth_elevation.second,
+                                                 dim,
+                                                 steps,
+                                                 i.surface,
+                                                 windowed_free_field);
+                        });
 
         if (all_test_results.front() == all_test_results.back()) {
             LOG(INFO) << "somehow both test results are the same even though "

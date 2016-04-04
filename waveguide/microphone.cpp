@@ -1,4 +1,5 @@
 #include "microphone.h"
+#include "stl_wrappers.h"
 
 #include <iostream>
 
@@ -21,18 +22,17 @@ float Microphone::get_shape() const {
 std::vector<float> Microphone::process(
     const std::vector<RunStepResult>& input) const {
     std::vector<float> ret(input.size());
-    std::transform(input.begin(),
-                   input.end(),
-                   ret.begin(),
-                   [this](auto i) {
-                       //  TODO DEFINITELY CHECK THIS
-                       //  RUN TESTS YEAH
-                       auto mag = i.intensity.mag();
-                       if (mag == 0)
-                           return 0.0f;
-                       mag = sqrt(mag * pow(attenuation(i.intensity), 2));
-                       return std::copysign(mag, i.pressure);
-                   });
+    proc::transform(input,
+                    ret.begin(),
+                    [this](auto i) {
+                        //  TODO DEFINITELY CHECK THIS
+                        //  RUN TESTS YEAH
+                        auto mag = i.intensity.mag();
+                        if (mag == 0)
+                            return 0.0f;
+                        mag = sqrt(mag * pow(attenuation(i.intensity), 2));
+                        return std::copysign(mag, i.pressure);
+                    });
 
     //  TODO filter with diffuse-field-response filter here
     //  make sure to use zero-phase filtering

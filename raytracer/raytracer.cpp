@@ -42,12 +42,11 @@ std::vector<std::vector<std::vector<float>>> flatten_impulses(
     const std::vector<std::vector<AttenuatedImpulse>>& attenuated,
     float samplerate) {
     std::vector<std::vector<std::vector<float>>> flattened(attenuated.size());
-    transform(begin(attenuated),
-              end(attenuated),
-              begin(flattened),
-              [samplerate](const auto& i) {
-                  return flatten_impulses(i, samplerate);
-              });
+    proc::transform(attenuated,
+                    begin(flattened),
+                    [samplerate](const auto& i) {
+                        return flatten_impulses(i, samplerate);
+                    });
     return flattened;
 }
 
@@ -85,18 +84,14 @@ std::vector<std::vector<float>> flatten_impulses(
 std::vector<float> mixdown(const std::vector<std::vector<float>>& data) {
     std::vector<float> ret(data.front().size(), 0);
     for (const auto& i : data)
-        transform(
-            ret.begin(), ret.end(), i.begin(), ret.begin(), std::plus<float>());
+        proc::transform(ret, i.begin(), ret.begin(), std::plus<float>());
     return ret;
 }
 
 std::vector<std::vector<float>> mixdown(
     const std::vector<std::vector<std::vector<float>>>& data) {
     std::vector<std::vector<float>> ret(data.size());
-    std::transform(data.begin(),
-                   data.end(),
-                   ret.begin(),
-                   [](auto i) { return mixdown(i); });
+    proc::transform(data, ret.begin(), [](auto i) { return mixdown(i); });
     return ret;
 }
 
@@ -109,9 +104,8 @@ void trimTail(std::vector<std::vector<float>>& audioChannels, float minVol) {
                            int>;
 
     // Find last index of required amplitude or greater.
-    auto len = std::accumulate(
-        audioChannels.begin(),
-        audioChannels.end(),
+    auto len = proc::accumulate(
+        audioChannels,
         0,
         [minVol](auto current, const auto& i) {
             return std::max(
@@ -161,8 +155,7 @@ std::vector<std::vector<float>> process(
 template <typename T, typename U>
 inline T elementwise(const T& a, const T& b, const U& u) {
     T ret;
-    std::transform(
-        std::begin(a.s), std::end(a.s), std::begin(b.s), std::begin(ret.s), u);
+    proc::transform(a.s, std::begin(b.s), std::begin(ret.s), u);
     return ret;
 }
 
@@ -189,10 +182,7 @@ RaytracerResults Results::get_image_source(bool remove_direct) const {
         temp.erase(std::vector<unsigned long>{0});
 
     std::vector<Impulse> ret(temp.size());
-    transform(begin(temp),
-              end(temp),
-              begin(ret),
-              [](const auto& i) { return i.second; });
+    proc::transform(temp, begin(ret), [](const auto& i) { return i.second; });
     return RaytracerResults(ret, mic, source, rays, reflections);
 }
 
@@ -254,10 +244,9 @@ auto transpose(const T& t, int x, int y) {
 
 VolumeType attenuation_for_distance(float distance) {
     VolumeType ret;
-    std::transform(std::begin(AIR_COEFFICIENT.s),
-                   std::end(AIR_COEFFICIENT.s),
-                   std::begin(ret.s),
-                   [distance](auto i) { return pow(M_E, distance * i); });
+    proc::transform(AIR_COEFFICIENT.s,
+                    std::begin(ret.s),
+                    [distance](auto i) { return pow(M_E, distance * i); });
     return ret;
 }
 
@@ -293,20 +282,19 @@ Results Raytracer::run(const SceneData& scene_data,
         get_context(), CL_MEM_READ_WRITE, rays * sizeof(RayInfo));
 
     std::vector<RayInfo> ray_info(directions.size());
-    std::transform(directions.begin(),
-                   directions.end(),
-                   ray_info.begin(),
-                   [micpos, source](const auto& i) {
-                       RayInfo ret;
-                       ret.ray.direction = i;
-                       ret.ray.position = to_cl_float3(source);
-                       ret.distance = 0;
-                       ret.volume = VolumeType{{1, 1, 1, 1, 1, 1, 1, 1}};
-                       ret.cont = 1;
+    proc::transform(directions,
+                    ray_info.begin(),
+                    [micpos, source](const auto& i) {
+                        RayInfo ret;
+                        ret.ray.direction = i;
+                        ret.ray.position = to_cl_float3(source);
+                        ret.distance = 0;
+                        ret.volume = VolumeType{{1, 1, 1, 1, 1, 1, 1, 1}};
+                        ret.cont = 1;
 
-                       ret.mic_reflection = to_cl_float3(micpos);
-                       return ret;
-                   });
+                        ret.mic_reflection = to_cl_float3(micpos);
+                        return ret;
+                    });
 
     cl::copy(get_queue(), begin(ray_info), end(ray_info), cl_ray_info);
 
@@ -431,16 +419,15 @@ std::vector<std::vector<AttenuatedImpulse>> Hrtf::attenuate(
     const RaytracerResults& results, const Vec3f& facing, const Vec3f& up) {
     auto channels = {0, 1};
     std::vector<std::vector<AttenuatedImpulse>> attenuated(channels.size());
-    transform(begin(channels),
-              end(channels),
-              begin(attenuated),
-              [this, &results, facing, up](auto i) {
-                  return this->attenuate(to_cl_float3(results.mic),
-                                         i,
-                                         to_cl_float3(facing),
-                                         to_cl_float3(up),
-                                         results.impulses);
-              });
+    proc::transform(channels,
+                    begin(attenuated),
+                    [this, &results, facing, up](auto i) {
+                        return this->attenuate(to_cl_float3(results.mic),
+                                               i,
+                                               to_cl_float3(facing),
+                                               to_cl_float3(up),
+                                               results.impulses);
+                    });
     return attenuated;
 }
 
@@ -454,7 +441,7 @@ std::vector<AttenuatedImpulse> Hrtf::attenuate(
     std::vector<VolumeType> hrtf_channel_data(360 * 180);
     auto offset = 0;
     for (const auto& i : get_hrtf_data()[channel]) {
-        copy(begin(i), end(i), hrtf_channel_data.begin() + offset);
+        proc::copy(i, hrtf_channel_data.begin() + offset);
         offset += i.size();
     }
 
@@ -504,12 +491,12 @@ Attenuate::Attenuate(const RaytracerProgram& program, cl::CommandQueue& queue)
 std::vector<std::vector<AttenuatedImpulse>> Attenuate::attenuate(
     const RaytracerResults& results, const std::vector<Speaker>& speakers) {
     std::vector<std::vector<AttenuatedImpulse>> attenuated(speakers.size());
-    transform(begin(speakers),
-              end(speakers),
-              begin(attenuated),
-              [this, &results](const auto& i) {
-                  return this->attenuate(results.mic, i, results.impulses);
-              });
+    proc::transform(speakers,
+                    begin(attenuated),
+                    [this, &results](const auto& i) {
+                        return this->attenuate(
+                            results.mic, i, results.impulses);
+                    });
     return attenuated;
 }
 

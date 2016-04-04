@@ -4,6 +4,7 @@
 #include "tri_cube_intersection.h"
 #include "geometric.h"
 #include "string_builder.h"
+#include "stl_wrappers.h"
 
 #include <glog/logging.h>
 
@@ -225,9 +226,8 @@ bool MeshBoundary::inside(const Vec3f& v) const {
                             triangle_intersection(triangles[i], vertices, ray);
                         if (intersection.intersects) {
                             auto already_in =
-                                std::find_if(
-                                    distances.begin(),
-                                    distances.end(),
+                                proc::find_if(
+                                    distances,
                                     [&intersection](auto i) {
                                         return almost_equal(
                                             i, intersection.distance, 10);
@@ -248,7 +248,7 @@ CuboidBoundary MeshBoundary::get_aabb() const {
 
 std::vector<int> MeshBoundary::get_triangle_indices() const {
     std::vector<int> ret(triangles.size());
-    std::iota(ret.begin(), ret.end(), 0);
+    proc::iota(ret, 0);
     return ret;
 }
 

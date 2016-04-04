@@ -1,4 +1,5 @@
 #include "rectangular_program.h"
+#include "stl_wrappers.h"
 
 #include <iostream>
 #include <cmath>
@@ -48,10 +49,9 @@ RectangularProgram::get_biquads_array(
     float sr,
     coefficient_generator callback) {
     RectangularProgram::BiquadCoefficientsArray ret;
-    std::transform(n.begin(),
-                   n.end(),
-                   std::begin(ret.array),
-                   [sr, callback](const auto& i) { return callback(i, sr); });
+    proc::transform(n,
+                    std::begin(ret.array),
+                    [sr, callback](const auto& i) { return callback(i, sr); });
     return ret;
 }
 
@@ -74,7 +74,7 @@ RectangularProgram::get_peak_biquads_array(
 RectangularProgram::CanonicalCoefficients RectangularProgram::convolve(
     const BiquadCoefficientsArray& a) {
     std::array<BiquadCoefficients, BiquadCoefficientsArray::BIQUAD_SECTIONS> t;
-    std::copy(std::begin(a.array), std::end(a.array), t.begin());
+    proc::copy(a.array, t.begin());
     return reduce(t,
                   [](const auto& i, const auto& j) { return convolve(i, j); });
 }

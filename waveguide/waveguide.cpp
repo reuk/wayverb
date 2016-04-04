@@ -3,6 +3,7 @@
 #include "conversions.h"
 #include "hrtf.h"
 #include "db.h"
+#include "stl_wrappers.h"
 
 #include <iostream>
 #include <algorithm>
@@ -332,9 +333,8 @@ RectangularWaveguide::to_filter_coefficients(std::vector<Surface> surfaces,
         RectangularProgram::BiquadCoefficientsArray::BIQUAD_SECTIONS);
 
     std::vector<RectangularProgram::CanonicalCoefficients> ret(surfaces.size());
-    std::transform(surfaces.begin(),
-                   surfaces.end(),
-                   ret.begin(),
-                   [sr](auto i) { return to_filter_coefficients(i, sr); });
+    proc::transform(surfaces,
+                    ret.begin(),
+                    [sr](auto i) { return to_filter_coefficients(i, sr); });
     return ret;
 }

@@ -1,6 +1,7 @@
 #include "hrtf_attenuator.h"
 #include "hrtf.h"
 #include "filters_common.h"
+#include "stl_wrappers.h"
 
 HrtfAttenuator::HrtfAttenuator(const Vec3f& direction,
                                const Vec3f& up,
@@ -55,9 +56,8 @@ std::vector<float> HrtfAttenuator::process(
     for (auto band = 0u; band != sizeof(VolumeType) / sizeof(float); ++band) {
         if (HrtfData::EDGES[band + 1] < sr / 2) {
             std::vector<float> this_band(input.size());
-            std::transform(
-                input.begin(),
-                input.end(),
+            proc::transform(
+                input,
                 this_band.begin(),
                 [this, band](auto i) {
                     //  TODO DEFINITELY CHECK THIS
@@ -73,11 +73,10 @@ std::vector<float> HrtfAttenuator::process(
                 HrtfData::EDGES[band], HrtfData::EDGES[band + 1], sr);
             bandpass.filter(this_band);
 
-            std::transform(this_band.begin(),
-                           this_band.end(),
-                           ret.begin(),
-                           ret.begin(),
-                           [](auto a, auto b) { return a + b; });
+            proc::transform(this_band,
+                            ret.begin(),
+                            ret.begin(),
+                            [](auto a, auto b) { return a + b; });
         }
     }
 
