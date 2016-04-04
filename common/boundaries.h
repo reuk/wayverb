@@ -4,20 +4,6 @@
 #include "geometric.h"
 #include "reduce.h"
 
-class CuboidBoundary;
-
-class Boundary : public SurfaceOwner {
-public:
-    using SurfaceOwner::SurfaceOwner;
-    virtual ~Boundary() noexcept = default;
-    Boundary(Boundary&&) noexcept = default;
-    Boundary& operator=(Boundary&&) noexcept = default;
-    Boundary(const Boundary&) = default;
-    Boundary& operator=(const Boundary&) = default;
-    virtual bool inside(const Vec3f& v) const = 0;
-    virtual CuboidBoundary get_aabb() const = 0;
-};
-
 template <typename F>
 struct apply_functor {
     constexpr apply_functor(const F& f = F())
@@ -64,29 +50,138 @@ constexpr Vec3f get_min(const T& coll) {
     return sub_elementwise<min_functor<float>>(coll);
 }
 
-CuboidBoundary get_cuboid_boundary(const std::vector<Vec3f>& vertices);
+struct Box {
+    enum class Wall {
+        nx,
+        px,
+        ny,
+        py,
+        nz,
+        pz,
+    };
 
-class CuboidBoundary : public Boundary {
+    enum class Direction {
+        x,
+        y,
+        z,
+    };
+
+    constexpr Box() = default;
+
+    constexpr Box(const Vec3f& c0, const Vec3f& c1)
+            : Box(std::array<Vec3f, 2>{{c0, c1}}) {
+    }
+
+    constexpr Box(const std::array<Vec3f, 2>& v)
+            : c0(get_min(v))
+            , c1(get_max(v)) {
+    }
+
+    constexpr bool inside(const Vec3f& v) const {
+        return (c0 < v).all() && (v < c1).all();
+    }
+
+    constexpr Vec3f centre() const {
+        return (c0 + c1) * 0.5;
+    }
+
+    constexpr Vec3f mirror_on_axis(const Vec3f& v,
+                                   const Vec3f& pt,
+                                   Direction d) const {
+        switch (d) {
+            case Direction::x:
+                return Vec3f(2 * pt.x - v.x, v.y, v.z);
+            case Direction::y:
+                return Vec3f(v.x, 2 * pt.y - v.y, v.z);
+            case Direction::z:
+                return Vec3f(v.x, v.y, 2 * pt.z - v.z);
+        }
+    }
+
+    constexpr Vec3f mirror_inside(const Vec3f& v, Direction d) const {
+        return mirror_on_axis(v, centre(), d);
+    }
+
+    constexpr Vec3f mirror(const Vec3f& v, Wall w) const {
+        switch (w) {
+            case Wall::nx:
+                return mirror_on_axis(v, c0, Direction::x);
+            case Wall::px:
+                return mirror_on_axis(v, c1, Direction::x);
+            case Wall::ny:
+                return mirror_on_axis(v, c0, Direction::y);
+            case Wall::py:
+                return mirror_on_axis(v, c1, Direction::y);
+            case Wall::nz:
+                return mirror_on_axis(v, c0, Direction::z);
+            case Wall::pz:
+                return mirror_on_axis(v, c1, Direction::z);
+        }
+    }
+
+    constexpr Box mirror(Wall w) const {
+        return Box(mirror(c0, w), mirror(c1, w));
+    }
+
+    constexpr bool operator==(const Box& b) const {
+        return (c0 == b.c0).all() && (c1 == b.c1).all();
+    }
+
+    constexpr Box operator+(const Vec3f& v) const {
+        return Box(c0 + v, c1 + v);
+    }
+
+    constexpr Box operator-(const Vec3f& v) const {
+        return Box(c0 - v, c1 - v);
+    }
+
+    constexpr Vec3f dimensions() const {
+        return c1 - c0;
+    }
+
+    constexpr Vec3f get_c0() const {
+        return c0;
+    }
+    constexpr Vec3f get_c1() const {
+        return c1;
+    }
+
+private:
+    Vec3f c0, c1;
+};
+
+class CuboidBoundary;
+
+class Boundary : public SurfaceOwner {
 public:
-    CuboidBoundary(const Vec3f& c0 = Vec3f(),
-                   const Vec3f& c1 = Vec3f(),
+    using SurfaceOwner::SurfaceOwner;
+    virtual ~Boundary() noexcept = default;
+    Boundary(Boundary&&) noexcept = default;
+    Boundary& operator=(Boundary&&) noexcept = default;
+    Boundary(const Boundary&) = default;
+    Boundary& operator=(const Boundary&) = default;
+    virtual bool inside(const Vec3f& v) const = 0;
+    virtual CuboidBoundary get_aabb() const = 0;
+};
+
+Box get_surrounding_box(const std::vector<Vec3f>& vertices);
+
+class CuboidBoundary : public Boundary, public Box {
+public:
+    CuboidBoundary(const Box& b = Box(),
+                   const std::vector<Surface>& surfaces = std::vector<Surface>{
+                       Surface{}});
+    CuboidBoundary(const Vec3f& c0,
+                   const Vec3f& c1,
                    const std::vector<Surface>& surfaces = std::vector<Surface>{
                        Surface{}});
     bool inside(const Vec3f& v) const override;
     bool overlaps(const TriangleVec3f& t) const;
     CuboidBoundary get_aabb() const override;
     CuboidBoundary get_padded(float padding) const;
-    Vec3f get_centre() const;
-    Vec3f get_dimensions() const;
     bool intersects(const geo::Ray& ray, float t0, float t1);
 
-    Vec3f get_c0() const;
-    Vec3f get_c1() const;
-
     SceneData get_scene_data() const;
-
-private:
-    Vec3f c0, c1;
 };
 
 std::ostream& operator<<(std::ostream& os, const CuboidBoundary& cb);

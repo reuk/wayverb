@@ -11,59 +11,49 @@
 #include <algorithm>
 #include <unordered_set>
 
+CuboidBoundary::CuboidBoundary(const Box& b,
+                               const std::vector<Surface>& surfaces)
+        : Boundary(surfaces)
+        , Box(b) {
+}
+
 CuboidBoundary::CuboidBoundary(const Vec3f& c0,
                                const Vec3f& c1,
                                const std::vector<Surface>& surfaces)
-        : Boundary(surfaces)
-        , c0(c0)
-        , c1(c1) {
+        : CuboidBoundary(Box(c0, c1), surfaces) {
 }
 
 bool CuboidBoundary::inside(const Vec3f& v) const {
-    return (c0 < v).all() && (v < c1).all();
+    return (get_c0() < v).all() && (v < get_c1()).all();
 }
 
 bool CuboidBoundary::overlaps(const TriangleVec3f& t) const {
     auto coll = t;
     for (auto& i : coll) {
-        i = (i - get_centre()) / get_dimensions();
+        i = (i - centre()) / dimensions();
     }
     return t_c_intersection(coll) == Rel::idInside;
 }
 
 CuboidBoundary CuboidBoundary::get_padded(float padding) const {
-    return CuboidBoundary(c0 - padding, c1 + padding, get_surfaces());
+    return CuboidBoundary(
+        get_c0() - padding, get_c1() + padding, get_surfaces());
 }
 
 CuboidBoundary CuboidBoundary::get_aabb() const {
     return *this;
 }
 
-Vec3f CuboidBoundary::get_dimensions() const {
-    return c1 - c0;
-}
-
-Vec3f CuboidBoundary::get_centre() const {
-    return (c0 + c1) / 2;
-}
-
-Vec3f CuboidBoundary::get_c0() const {
-    return c0;
-}
-Vec3f CuboidBoundary::get_c1() const {
-    return c1;
-}
-
 SceneData CuboidBoundary::get_scene_data() const {
     std::vector<cl_float3> vertices{
-        {{c0.x, c0.y, c0.z}},
-        {{c1.x, c0.y, c0.z}},
-        {{c0.x, c1.y, c0.z}},
-        {{c1.x, c1.y, c0.z}},
-        {{c0.x, c0.y, c1.z}},
-        {{c1.x, c0.y, c1.z}},
-        {{c0.x, c1.y, c1.z}},
-        {{c1.x, c1.y, c1.z}},
+        {{get_c0().x, get_c0().y, get_c0().z}},
+        {{get_c1().x, get_c0().y, get_c0().z}},
+        {{get_c0().x, get_c1().y, get_c0().z}},
+        {{get_c1().x, get_c1().y, get_c0().z}},
+        {{get_c0().x, get_c0().y, get_c1().z}},
+        {{get_c1().x, get_c0().y, get_c1().z}},
+        {{get_c0().x, get_c1().y, get_c1().z}},
+        {{get_c1().x, get_c1().y, get_c1().z}},
     };
     std::vector<Triangle> triangles{
         {0, 0, 1, 5},
@@ -89,7 +79,7 @@ bool CuboidBoundary::intersects(const geo::Ray& ray, float t0, float t1) {
     //  from http://people.csail.mit.edu/amy/papers/box-jgt.pdf
     auto inv = Vec3f(1) / ray.direction;
     std::array<bool, 3> sign{{inv.x < 0, inv.y < 0, inv.z < 0}};
-    auto get_bounds = [this](auto i) { return i ? c0 : c1; };
+    auto get_bounds = [this](auto i) { return i ? get_c0() : get_c1(); };
 
     auto tmin = (get_bounds(sign[0]).x - ray.position.x) * inv.x;
     auto tmax = (get_bounds(!sign[0]).x - ray.position.x) * inv.x;
@@ -112,14 +102,14 @@ bool CuboidBoundary::intersects(const geo::Ray& ray, float t0, float t1) {
     return ((t0 < tmax) && (tmin < t1));
 }
 
-CuboidBoundary get_cuboid_boundary(const std::vector<Vec3f>& vertices) {
+Box get_surrounding_box(const std::vector<Vec3f>& vertices) {
     Vec3f mini, maxi;
     mini = maxi = vertices.front();
     for (auto i = vertices.begin() + 1; i != vertices.end(); ++i) {
         mini = i->apply([](auto a, auto b) { return std::min(a, b); }, mini);
         maxi = i->apply([](auto a, auto b) { return std::max(a, b); }, maxi);
     }
-    return CuboidBoundary(mini, maxi);
+    return Box(mini, maxi);
 }
 
 std::ostream& operator<<(std::ostream& os, const CuboidBoundary& cb) {
@@ -157,7 +147,7 @@ MeshBoundary::hash_table MeshBoundary::compute_triangle_references() const {
 
     for (auto i = 0u; i != triangles.size(); ++i) {
         const auto& t = triangles[i];
-        const auto bounding_box = get_cuboid_boundary(
+        const auto bounding_box = get_surrounding_box(
             {vertices[t.v0], vertices[t.v1], vertices[t.v2]});
         const auto min_indices = hash_point(bounding_box.get_c0());
         const auto max_indices = hash_point(bounding_box.get_c1()) + 1;
@@ -179,8 +169,8 @@ MeshBoundary::MeshBoundary(const std::vector<Triangle>& triangles,
         : Boundary(surfaces)
         , triangles(triangles)
         , vertices(vertices)
-        , boundary(get_cuboid_boundary(vertices))
-        , cell_size(boundary.get_dimensions() / DIVISIONS)
+        , boundary(get_surrounding_box(vertices))
+        , cell_size(boundary.dimensions() / DIVISIONS)
         , triangle_references(compute_triangle_references()) {
 #ifdef TESTING
     auto fname = build_string("./file-mesh.txt");

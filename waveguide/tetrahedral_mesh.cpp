@@ -103,7 +103,7 @@ TetrahedralMesh::TetrahedralMesh(const Boundary& b,
         : BaseMesh(spacing,
                    compute_adjusted_boundary(b.get_aabb(), anchor, cube_side))
         , scaled_cube(compute_scaled_cube(cube_side))
-        , dim(get_aabb().get_dimensions() / cube_side)
+        , dim(get_aabb().dimensions() / cube_side)
         , nodes(compute_nodes(b)) {
 }
 

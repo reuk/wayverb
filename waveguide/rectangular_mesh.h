@@ -32,7 +32,7 @@ public:
             : BaseMesh(spacing,
                        compute_adjusted_boundary(
                            boundary.get_aabb(), anchor, spacing))
-            , dim(get_aabb().get_dimensions() / spacing)
+            , dim(get_aabb().dimensions() / spacing)
             , nodes(compute_nodes(boundary))
             , boundary_data_1(compute_boundary_data<1>(boundary))
             , boundary_data_2(compute_boundary_data<2>(boundary))

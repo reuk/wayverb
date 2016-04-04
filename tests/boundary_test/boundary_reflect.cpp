@@ -174,7 +174,7 @@ std::vector<float> get_free_field_results(const cl::Context& context,
     auto source_dist_nodes = desired_nodes.mag() / 8;
     auto source_dist = source_dist_nodes * config.get_divisions();
 
-    auto wall_centre = no_wall.get_centre();
+    auto wall_centre = no_wall.centre();
 
     auto log_incorrect_distance = [&source_dist, &wall_centre](
         auto str, const auto& pos) {
@@ -283,7 +283,7 @@ FullTestResults run_full_test(const std::string& test_name,
     auto source_dist_nodes = desired_nodes.mag() / 8;
     auto source_dist = source_dist_nodes * config.get_divisions();
 
-    auto wall_centre = no_wall.get_centre();
+    auto wall_centre = no_wall.centre();
 
     auto log_incorrect_distance = [&source_dist, &wall_centre](
         auto str, const auto& pos) {

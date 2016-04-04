@@ -6,7 +6,7 @@
 #include <algorithm>
 
 std::array<CuboidBoundary, 8> next_boundaries(const CuboidBoundary& parent) {
-    auto centre = parent.get_centre();
+    auto centre = parent.centre();
 
     auto x0 = parent.get_c0().x;
     auto y0 = parent.get_c0().y;
@@ -157,7 +157,7 @@ const Octree& Octree::get_surrounding_leaf(const Vec3f& v) const {
         return *this;
     }
 
-    auto c = get_aabb().get_centre();
+    auto c = get_aabb().centre();
     auto x = v.x > c.x ? 1u : 0u;
     auto y = v.y > c.y ? 2u : 0u;
     auto z = v.z > c.z ? 4u : 0u;

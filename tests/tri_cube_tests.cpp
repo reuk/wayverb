@@ -406,7 +406,7 @@ TEST(specific, specific) {
 
         CuboidBoundary b2(Vec3f(-9.5, -0.0000000000000021191102, -7.5999999),
                           Vec3f(-7.125, 0.449999988, -5.69999981));
-        auto centre = b2.get_centre();
+        auto centre = b2.centre();
         auto x0 = b2.get_c0().x;
         //      auto y0 = b2.get_c0().y;
         auto z0 = b2.get_c0().z;

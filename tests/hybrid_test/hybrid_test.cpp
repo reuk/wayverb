@@ -133,96 +133,6 @@ auto run_waveguide(const ContextInfo& context_info,
     return ret;
 }
 
-struct Box {
-    enum class Wall {
-        nx,
-        px,
-        ny,
-        py,
-        nz,
-        pz,
-    };
-
-    enum class Direction {
-        x,
-        y,
-        z,
-    };
-
-    constexpr Box(const Vec3f& c0, const Vec3f& c1)
-            : Box(std::array<Vec3f, 2>{{c0, c1}}) {
-    }
-
-    constexpr Box(const std::array<Vec3f, 2>& v)
-            : c0(get_min(v))
-            , c1(get_max(v)) {
-    }
-
-    constexpr bool inside(const Vec3f& v) const {
-        return (c0 < v).all() && (v < c1).all();
-    }
-
-    constexpr Vec3f centre() const {
-        return (c0 + c1) * 0.5;
-    }
-
-    constexpr Vec3f mirror_on_axis(const Vec3f& v,
-                                   const Vec3f& pt,
-                                   Direction d) const {
-        switch (d) {
-            case Direction::x:
-                return Vec3f(2 * pt.x - v.x, v.y, v.z);
-            case Direction::y:
-                return Vec3f(v.x, 2 * pt.y - v.y, v.z);
-            case Direction::z:
-                return Vec3f(v.x, v.y, 2 * pt.z - v.z);
-        }
-    }
-
-    constexpr Vec3f mirror_inside(const Vec3f& v, Direction d) const {
-        return mirror_on_axis(v, centre(), d);
-    }
-
-    constexpr Vec3f mirror(const Vec3f& v, Wall w) const {
-        switch (w) {
-            case Wall::nx:
-                return mirror_on_axis(v, c0, Direction::x);
-            case Wall::px:
-                return mirror_on_axis(v, c1, Direction::x);
-            case Wall::ny:
-                return mirror_on_axis(v, c0, Direction::y);
-            case Wall::py:
-                return mirror_on_axis(v, c1, Direction::y);
-            case Wall::nz:
-                return mirror_on_axis(v, c0, Direction::z);
-            case Wall::pz:
-                return mirror_on_axis(v, c1, Direction::z);
-        }
-    }
-
-    constexpr Box mirror(Wall w) const {
-        return Box(mirror(c0, w), mirror(c1, w));
-    }
-
-    constexpr bool operator==(const Box& b) const {
-        return (c0 == b.c0).all() && (c1 == b.c1).all();
-    }
-
-    constexpr Box operator+(const Vec3f& v) const {
-        return Box(c0 + v, c1 + v);
-    }
-
-    constexpr Box operator-(const Vec3f& v) const {
-        return Box(c0 - v, c1 - v);
-    }
-
-    constexpr Vec3f dimensions() const {
-        return c1 - c0;
-    }
-
-    Vec3f c0, c1;
-};
-
 constexpr Box test_box(Vec3f(0), Vec3f(2, 4, 6));
 static_assert((test_box.mirror_inside(Vec3f(0.5, 1, 1), Box::Direction::x) ==
                Vec3f(1.5, 1, 1))
@@ -261,6 +171,10 @@ auto run_raytracer(const ContextInfo& context_info,
         attenuator.attenuate(results.get_image_source(false), {speaker});
     // auto output = attenuator.attenuate(results.get_all(false), {speaker});
     auto flattened = flatten_impulses(output, config.get_output_sample_rate());
+
+    write_file(
+        config, output_folder, "raytrace_no_processing", mixdown(flattened));
+
     auto processed = process(FilterType::FILTER_TYPE_LINKWITZ_RILEY,
                              flattened,
                              config.get_output_sample_rate(),
@@ -316,6 +230,9 @@ constexpr Box box(Vec3f(0, 0, 0), Vec3f(4, 3, 6));
 constexpr Vec3f source(1, 1, 1);
 constexpr Vec3f receiver(2, 1, 5);
 constexpr auto samplerate = 44100;
+constexpr auto v = 0.9;
+constexpr Surface surface{{{v, v, v, v, v, v, v, v}},
+                          {{v, v, v, v, v, v, v, v}}};
 
 constexpr int pow(int x, int p) {
     return p == 0 ? 1 : x * pow(x, p - 1);
@@ -364,7 +281,7 @@ int main(int argc, char** argv) {
     google::InitGoogleLogging(argv[0]);
     gflags::ParseCommandLineFlags(&argc, &argv, true);
 
-    constexpr auto shells = 8;
+    constexpr auto shells = 2;
     auto images = images_for_shell<shells>();
     std::array<float, images.size()> times;
     std::transform(images.begin(),
@@ -373,7 +290,8 @@ int main(int argc, char** argv) {
                    [](auto i) { return (receiver - i).mag() / 340; });
 
     auto max_time = *std::max_element(times.begin(), times.end());
-    std::vector<float> proper_image_source(max_time * samplerate + 1, 0);
+    auto max_sample = round(max_time * samplerate) + 1;
+    std::vector<float> proper_image_source(max_sample, 0);
 
     constexpr auto L = width_for_shell(shells);
     for (int i = 0; i != L; ++i) {
@@ -383,12 +301,11 @@ int main(int argc, char** argv) {
                                          std::abs(j - shells),
                                          std::abs(k - shells))
                                        .sum();
-                proper_image_source[times[i + j * L + k * L * L] *
-                                    samplerate] += pow(0.8, reflections);
+                auto sample = round(times[i + j * L + k * L * L] * samplerate);
+                proper_image_source[sample] += pow(-v, reflections);
             }
         }
     }
-    normalize(proper_image_source);
 
     CHECK(argc == 2) << "expected an output folder";
 
@@ -404,7 +321,7 @@ int main(int argc, char** argv) {
     auto queue = cl::CommandQueue(context, device);
 
     //  init simulation parameters
-    CuboidBoundary boundary(box.c0, box.c1);
+    CuboidBoundary boundary(box.get_c0(), box.get_c1(), {surface});
     LOG(INFO) << "boundary: " << boundary;
 
     CombinedConfig config;

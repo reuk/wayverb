@@ -33,6 +33,10 @@ std::vector<std::vector<std::vector<float>>> flatten_impulses(
     const std::vector<std::vector<AttenuatedImpulse>>& impulse,
     float samplerate);
 
+std::vector<float> mixdown(const std::vector<std::vector<float>>& data);
+std::vector<std::vector<float>> mixdown(
+    const std::vector<std::vector<std::vector<float>>>& data);
+
 /// Filter and mix down each channel of the input data.
 /// Optionally, normalize all channels, trim the tail, and scale the amplitude.
 std::vector<std::vector<float>> process(

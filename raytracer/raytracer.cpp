@@ -84,9 +84,19 @@ std::vector<std::vector<float>> flatten_impulses(
 /// Sum a collection of vectors of the same length into a single vector
 std::vector<float> mixdown(const std::vector<std::vector<float>>& data) {
     std::vector<float> ret(data.front().size(), 0);
-    for (auto&& i : data)
+    for (const auto& i : data)
         transform(
             ret.begin(), ret.end(), i.begin(), ret.begin(), std::plus<float>());
+    return ret;
+}
+
+std::vector<std::vector<float>> mixdown(
+    const std::vector<std::vector<std::vector<float>>>& data) {
+    std::vector<std::vector<float>> ret(data.size());
+    std::transform(data.begin(),
+                   data.end(),
+                   ret.begin(),
+                   [](auto i) { return mixdown(i); });
     return ret;
 }
 
@@ -132,8 +142,7 @@ std::vector<std::vector<float>> process(
     bool do_trim_tail,
     float volume_scale) {
     filter(filtertype, data, sr, lo_cutoff);
-    std::vector<std::vector<float>> ret(data.size());
-    transform(data.begin(), data.end(), ret.begin(), mixdown);
+    auto ret = mixdown(data);
 
     if (do_normalize)
         normalize(ret);

@@ -51,7 +51,7 @@ TEST(octree, surrounding) {
 
     {
         Octree octree(scene_data, 1);
-        auto c = octree.get_aabb().get_centre();
+        auto c = octree.get_aabb().centre();
 
         for (const auto & i : a) {
             auto pt = c + i;
@@ -62,7 +62,7 @@ TEST(octree, surrounding) {
 
     {
         Octree octree(scene_data, 4);
-        auto c = octree.get_aabb().get_centre();
+        auto c = octree.get_aabb().centre();
 
         for (const auto & i : a) {
             auto pt = c + i;

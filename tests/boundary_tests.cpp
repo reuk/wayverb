@@ -62,7 +62,7 @@ TEST(boundary, tunnel) {
     SceneData scene_data(OBJ_PATH_TUNNEL, MAT_PATH_TUNNEL);
     MeshBoundary boundary(scene_data);
 
-    auto centre = boundary.get_aabb().get_centre();
+    auto centre = boundary.get_aabb().centre();
     ASSERT_TRUE(boundary.inside(centre));
 
     auto dist = 100;
@@ -90,7 +90,7 @@ TEST(boundary, bedroom) {
     SceneData scene_data(OBJ_PATH_BEDROOM, MAT_PATH_BEDROOM);
     MeshBoundary boundary(scene_data);
 
-    auto centre = boundary.get_aabb().get_centre();
+    auto centre = boundary.get_aabb().centre();
     ASSERT_TRUE(boundary.inside(centre));
 
     auto dist = 100;

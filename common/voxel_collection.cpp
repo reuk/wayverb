@@ -60,8 +60,7 @@ const VoxelCollection::XAxis& VoxelCollection::get_data() const {
 }
 
 Vec3i VoxelCollection::get_starting_index(const Vec3f& position) const {
-    return ((position - get_aabb().get_c0()) /
-            get_voxel_aabb().get_dimensions())
+    return ((position - get_aabb().get_c0()) / get_voxel_aabb().dimensions())
         .map([](auto i) { return floor(i); });
 }
 
@@ -88,7 +87,7 @@ geo::Intersection VoxelCollection::traverse(const geo::Ray& ray,
     }, voxel_bounds.get_c0(), voxel_bounds.get_c1());
 
     auto t_max = ((boundary - ray.position) / ray.direction).abs();
-    auto t_delta = (get_voxel_aabb().get_dimensions() / ray.direction).abs();
+    auto t_delta = (get_voxel_aabb().dimensions() / ray.direction).abs();
 
     for (;;) {
         auto min_i = 0;
