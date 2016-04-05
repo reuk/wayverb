@@ -1,5 +1,7 @@
 #pragma once
 
+#include "extended_algorithms.h"
+
 #include <functional>
 #include <numeric>
 #include <cmath>
@@ -99,38 +101,9 @@ struct Vec3 final {
                         std::make_tuple(z, u.z...));
     }
 
-private:
-    template <typename Fun, typename Tup, size_t... Ix>
-    constexpr static auto invoke(Fun&& fun,
-                                 const Tup& tup,
-                                 std::index_sequence<Ix...>) {
-        return std::forward<Fun>(fun)(std::get<Ix>(tup)...);
-    }
-    template <typename Fun, typename Tup>
-    constexpr static auto invoke(Fun&& fun, Tup&& tup) {
-        return invoke(
-            std::forward<Fun>(fun),
-            std::forward<Tup>(tup),
-            std::make_index_sequence<
-                std::tuple_size<typename std::decay<Tup>::type>::value>());
-    }
-
-    template <typename Fun>
-    struct InvokeFunctor {
-        constexpr InvokeFunctor(const Fun& fun)
-                : fun(fun) {
-        }
-        template <typename Tup>
-        constexpr auto operator()(Tup&& tup) const {
-            return invoke(fun, tup);
-        }
-        Fun fun;
-    };
-
-public:
     template <typename U, typename... Ts>
     constexpr auto apply(const U& u, Ts&&... ts) const {
-        return zip(std::forward<Ts>(ts)...).map(InvokeFunctor<U>(u));
+        return zip(std::forward<Ts>(ts)...).map(proc::InvokeFunctor<U>(u));
     }
 
     constexpr T sum() const {
