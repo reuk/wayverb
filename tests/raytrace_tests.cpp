@@ -18,6 +18,10 @@
 #define MAT_PATH ""
 #endif
 
+#ifndef SCRATCH_PATH
+#define SCRATCH_PATH ""
+#endif
+
 template <typename T, typename Prog>
 auto get_results(ComputeContext& context,
                  const Prog& prog,
@@ -33,10 +37,9 @@ auto get_results(ComputeContext& context,
 }
 
 void write_file(const Config& config,
-                const std::string& output_folder,
                 const std::string& fname,
                 const std::vector<std::vector<float>>& output) {
-    auto output_file = build_string(output_folder, "/", fname, ".wav");
+    auto output_file = build_string(SCRATCH_PATH, "/", fname, ".wav");
     LOG(INFO) << "writing file: " << output_file;
 
     auto format = get_file_format(output_file);
@@ -155,7 +158,7 @@ TEST(raytrace, image_source) {
     constexpr Surface surface{{{v, v, v, v, v, v, v, v}},
                               {{v, v, v, v, v, v, v, v}}};
 
-    constexpr auto shells = 10;
+    constexpr auto shells = 2;
     auto images = images_for_shell<shells>(box, source);
     std::array<float, images.size()> distances;
     proc::transform(images,
@@ -223,7 +226,6 @@ TEST(raytrace, image_source) {
 
     sort_by_time(output);
 
-    /*
     for (auto i : proper_image_source_impulses) {
         auto closest = std::accumulate(
             output.begin() + 1,
@@ -235,20 +237,16 @@ TEST(raytrace, image_source) {
                            : b;
             });
         ASSERT_TRUE(std::abs(i.time - closest.time) < 0.001) << i.time << " "
-                                                        << closest.time;
+                                                             << closest.time;
     }
-    */
 
     auto postprocess = [&config](const auto& i, const std::string& name) {
-        auto output_folder =
-            "/Users/reuben/dev/waveguide/tests/hybrid_test/output/";
         std::vector<std::vector<std::vector<float>>> flattened = {
             flatten_impulses(i, config.get_output_sample_rate())};
         {
             auto mixed_down = mixdown(flattened);
             normalize(mixed_down);
-            write_file(
-                config, output_folder, name + "_no_processing", mixed_down);
+            write_file(config, name + "_no_processing", mixed_down);
         }
         {
             auto processed = process(FilterType::FILTER_TYPE_LINKWITZ_RILEY,
@@ -259,7 +257,7 @@ TEST(raytrace, image_source) {
                                      true,
                                      1);
             normalize(processed);
-            write_file(config, output_folder, name + "_processed", processed);
+            write_file(config, name + "_processed", processed);
         }
     };
 

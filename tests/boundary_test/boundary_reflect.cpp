@@ -60,18 +60,6 @@ void write_file(const WaveguideConfig& config,
     //                  format);
 }
 
-float hanning_point(float f) {
-    return 0.5 - 0.5 * cos(2 * M_PI * f);
-}
-
-std::vector<float> right_hanning(int length) {
-    std::vector<float> ret(length);
-    for (auto i = 0; i != length; ++i) {
-        ret[i] = hanning_point(0.5 + (i / (2 * (length - 1.0))));
-    }
-    return ret;
-}
-
 std::vector<float> run_simulation(const cl::Context& context,
                                   cl::Device& device,
                                   cl::CommandQueue& queue,
@@ -225,16 +213,9 @@ std::vector<float> get_free_field_results(const cl::Context& context,
                                 output_folder,
                                 "image",
                                 steps);
-    auto h = right_hanning(image.size());
 
-    auto windowed_free_field = h;
-
-    auto window = [&h](const auto& in, auto& out) {
-        proc::transform(
-            in, h.begin(), out.begin(), [](auto i, auto j) { return i * j; });
-    };
-
-    window(image, windowed_free_field);
+    auto windowed_free_field = right_hanning(image.size());
+    elementwise_multiply(windowed_free_field, image);
 
     return windowed_free_field;
 }
@@ -361,16 +342,8 @@ FullTestResults run_full_test(const std::string& test_name,
                      "same time";
     }
 
-    auto h = right_hanning(subbed.size());
-
-    auto windowed_subbed = h;
-
-    auto window = [&h](const auto& in, auto& out) {
-        proc::transform(
-            in, h.begin(), out.begin(), [](auto i, auto j) { return i * j; });
-    };
-
-    window(subbed, windowed_subbed);
+    auto windowed_subbed = right_hanning(subbed.size());
+    elementwise_multiply(windowed_subbed, subbed);
 
     auto norm_factor =
         1.0 / std::max(max_mag(windowed_free_field), max_mag(windowed_subbed));

@@ -97,6 +97,21 @@ std::vector<T> blackman(unsigned long length) {
 }
 
 template <typename T = float>
+T hanning_point(double f) {
+    return 0.5 - 0.5 * cos(2 * M_PI * f);
+}
+
+/// Generate the right half of a hanning window
+template <typename T = float>
+std::vector<T> right_hanning(unsigned long length) {
+    std::vector<T> ret(length);
+    for (auto i = 0; i != length; ++i) {
+        ret[i] = hanning_point(0.5 + (i / (2 * (length - 1.0))));
+    }
+    return ret;
+}
+
+template <typename T = float>
 std::vector<T> windowed_sinc_kernel(double cutoff, unsigned long length) {
     auto window = blackman<T>(length);
     auto kernel = sinc_kernel<T>(cutoff, length);

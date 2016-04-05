@@ -44,8 +44,8 @@ constexpr auto COURANT = 0.577350269;
 /// r = distance at which the geometric sound source has intensity 1W/m^2
 /// sr = waveguide mesh sampling rate
 /// c = speed of sound
-constexpr double rectilinear_calibration_factor(double r, double sr, double c) {
-    auto x = COURANT * sr / c;
+constexpr double rectilinear_calibration_factor(double r, double sr) {
+    auto x = SPEED_OF_SOUND / (COURANT * sr);
     return r / (x * 0.3405);
 }
 
@@ -62,12 +62,6 @@ void write_file(const Config& config,
     write_sndfile(
         output_file, output, config.get_output_sample_rate(), depth, format);
 }
-
-struct ContextInfo {
-    cl::Context context;
-    cl::Device device;
-    cl::CommandQueue& queue;
-};
 
 auto run_waveguide(ComputeContext& context_info,
                    const CuboidBoundary& boundary,
@@ -126,11 +120,7 @@ auto run_waveguide(ComputeContext& context_info,
 
     //  adjust sample rate
     auto adjusted = adjust_sampling_rate(output, config);
-    auto ret = adjusted;
-    normalize(adjusted);
-    write_file(
-        config, output_folder, "waveguide_filtered_normalized", {adjusted});
-    return ret;
+    return adjusted;
 }
 
 int main(int argc, char** argv) {
@@ -154,7 +144,7 @@ int main(int argc, char** argv) {
     LOG(INFO) << "boundary: " << boundary;
 
     CombinedConfig config;
-    config.get_filter_frequency() = 1000;
+    config.get_filter_frequency() = 2000;
     config.get_source() = source;
     config.get_mic() = receiver;
     config.get_output_sample_rate() = samplerate;
@@ -192,23 +182,49 @@ int main(int argc, char** argv) {
     write_file(
         config, output_folder, "raytrace_no_processing", mixdown(flattened));
 
-    auto processed = process(FilterType::FILTER_TYPE_LINKWITZ_RILEY,
-                             flattened,
-                             config.get_output_sample_rate(),
-                             false,
-                             1,
-                             true,
-                             1);
+    auto raytracer_output = process(FilterType::FILTER_TYPE_LINKWITZ_RILEY,
+                                    flattened,
+                                    config.get_output_sample_rate(),
+                                    false,
+                                    1,
+                                    true,
+                                    1)
+                                .front();
 
-    //  get the valid region of the spectrum
-    LinkwitzRileyHipass hipass;
-    hipass.setParams(config.get_filter_frequency(),
-                     config.get_output_sample_rate());
-    for (auto& i : processed)
-        hipass.filter(i);
+    auto waveguide_copy = waveguide_output;
+    normalize(waveguide_copy);
+    write_file(config, output_folder, "waveguide_normalized", {waveguide_copy});
 
-    auto ret = processed;
-    normalize(processed);
+    auto raytracer_copy = raytracer_output;
+    normalize(raytracer_copy);
     write_file(
-        config, output_folder, "raytrace_filtered_normalized", processed);
+        config, output_folder, "raytracer_normalized", {raytracer_output});
+
+    mul(waveguide_output,
+        rectilinear_calibration_factor(1, config.get_waveguide_sample_rate()));
+
+    auto max_waveguide = max_mag(waveguide_output);
+    auto max_raytracer = max_mag(raytracer_output);
+    auto max_both = std::max(max_waveguide, max_raytracer);
+    std::cout << "max amplitude between both methods: " << max_both
+              << std::endl;
+
+    auto waveguide_length = waveguide_output.size();
+    auto raytracer_length = raytracer_output.size();
+    auto out_length = std::min(waveguide_length, raytracer_length);
+
+    waveguide_output.resize(out_length);
+    raytracer_output.resize(out_length);
+
+    mul(waveguide_output, 1 / max_both);
+    mul(raytracer_output, 1 / max_both);
+
+    auto window = right_hanning(out_length);
+    elementwise_multiply(waveguide_output, window);
+    elementwise_multiply(raytracer_output, window);
+
+    write_file(
+        config, output_folder, "waveguide_processed", {waveguide_output});
+    write_file(
+        config, output_folder, "raytracer_processed", {raytracer_output});
 }

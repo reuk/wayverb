@@ -16,6 +16,8 @@ link_directories(/usr/local/lib)
 set(name tests)
 file(GLOB sources "*.cpp")
 
+add_definitions(-DSCRATCH_PATH="${CMAKE_BINARY_DIR}")
+
 add_definitions(${test_file_flag})
 add_definitions(-DOBJ_PATH="${CMAKE_SOURCE_DIR}/demo/assets/test_models/vault.obj")
 add_definitions(-DMAT_PATH="${CMAKE_SOURCE_DIR}/demo/assets/materials/vault.json")
