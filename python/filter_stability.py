@@ -2,13 +2,18 @@ import numpy as np
 import scipy.signal as signal
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
-from boundary_modelling import get_peak_coeffs, series_coeffs, db2a, a2db
+from boundary_modelling import (get_peak_coeffs,
+                                series_coeffs,
+                                db2a,
+                                a2db,
+                                impedance_filter)
 from collections import namedtuple
+
 
 def zplane(b, a):
     z, p, k = signal.tf2zpk(b, a)
 
-    #plt.figure()
+    # plt.figure()
     plt.title("Pole-zero placement of EQ Filters")
     plt.plot(z.real, z.imag, 'ko', fillstyle='none', ms=10)
     plt.plot(p.real, p.imag, 'kx', fillstyle='none', ms=10)
@@ -33,10 +38,10 @@ def zplane(b, a):
 
 Surface = namedtuple('Surface', ['specular', 'diffuse'])
 
+
 def to_filter_coefficients(surface, sr):
     num_descriptors = 3
     edges = [40, 175, 350, 700, 1400, 2800, 5600, 11200, 20000]
-    #edges = [1400, 2800, 5600, 11200]
     coeffs = []
     for i in range(num_descriptors):
         gain = a2db((surface.specular[i] + surface.diffuse[i]) * 0.5)
@@ -44,8 +49,10 @@ def to_filter_coefficients(surface, sr):
         coeffs.append(get_peak_coeffs(gain, centre, sr, 1.414))
     return coeffs
 
+
 def is_stable_roots(polynomial):
     return np.all(np.abs(np.roots(polynomial)) < 1)
+
 
 def is_stable_recursive(a):
     if len(a) == 1:
@@ -62,6 +69,7 @@ def is_stable_recursive(a):
         next_array.append((a[i] - rci * a[next_size - i]) / (1 - rci * rci))
 
     return is_stable_recursive(next_array)
+
 
 def is_stable_jury(polynomial):
     vvd = []
@@ -86,18 +94,20 @@ def is_stable_jury(polynomial):
 
     return i == len(vvd)
 
+
 def all_equal(x):
     return x.count(x[0]) == len(x)
+
 
 def is_stable(polynomial):
     stable_roots = is_stable_roots(polynomial)
     stable_recursive = is_stable_recursive(polynomial)
     stable_jury = is_stable_jury(polynomial)
     results = [
-            is_stable_roots(polynomial),
-            is_stable_recursive(polynomial),
-            #is_stable_jury(polynomial),
-        ]
+        is_stable_roots(polynomial),
+        is_stable_recursive(polynomial),
+        # is_stable_jury(polynomial),
+    ]
     if not all_equal(results):
         raise RuntimeError("results don't match for polynomial ",
                            polynomial,
@@ -105,8 +115,10 @@ def is_stable(polynomial):
                            results)
     return stable_roots
 
+
 def random_coeffs():
     return [1] + np.random.rand(20) - 0.5
+
 
 def check_surface_filters(surface_desc, check):
     coeffs = to_filter_coefficients(Surface(surface_desc, surface_desc), 44100)
@@ -115,9 +127,11 @@ def check_surface_filters(surface_desc, check):
             is_stable(c[1])
     return series_coeffs(coeffs)
 
+
 def random_coeffs_from_surface():
     surface = np.random.rand(8)
     return check_surface_filters(surface, False)
+
 
 def do_graph(coeffs, yes):
     try:
@@ -128,17 +142,19 @@ def do_graph(coeffs, yes):
             plt.show()
         raise
 
+
 def main():
     for i in range(100000):
         if not do_graph(random_coeffs_from_surface()[1], True):
             return False
     return True
 
+
 def test():
     for i in [
-                 [0.4, 0.3, 0.5, 0.8, 0.9, 1, 1, 1],
-                 [1, 1, 1, 1, 1, 1, 1, 1],
-             ]:
+        [0.4, 0.3, 0.5, 0.8, 0.9, 1, 1, 1],
+        [1, 1, 1, 1, 1, 1, 1, 1],
+    ]:
         coeffs = check_surface_filters(i, False)[1]
         print coeffs
         if not do_graph(coeffs, True):

@@ -17,26 +17,27 @@ RectangularProgram::CondensedNodeStruct RectangularProgram::condense(
 
 RectangularProgram::BiquadCoefficients
 RectangularProgram::get_notch_coefficients(const FilterDescriptor& n,
-                                           float sr) {
-    const float A = pow(10.0f, n.gain / 40.0f);
-    const float w0 = 2.0f * M_PI * n.centre / sr;
-    const float cw0 = cos(w0);
-    const float sw0 = sin(w0);
-    const float alpha = sw0 / 2.0f * n.Q;
-    const float a0 = 1 + alpha / A;
+                                           double sr) {
+    const auto A = pow(10.0f, n.gain / 40.0f);
+    const auto w0 = 2.0f * M_PI * n.centre / sr;
+    const auto cw0 = cos(w0);
+    const auto sw0 = sin(w0);
+    const auto alpha = sw0 / 2.0f * n.Q;
+    const auto a0 = 1 + alpha / A;
     return RectangularProgram::BiquadCoefficients{
         {(1 + alpha * A) / a0, (-2 * cw0) / a0, (1 - alpha * A) / a0},
         {1, (-2 * cw0) / a0, (1 - alpha / A) / a0}};
 }
 
 RectangularProgram::BiquadCoefficients
-RectangularProgram::get_peak_coefficients(const FilterDescriptor& n, float sr) {
-    const float A = pow(10.0f, n.gain / 40.0f);
-    const float w0 = 2.0f * M_PI * n.centre / sr;
-    const float cw0 = cos(w0);
-    const float sw0 = sin(w0);
-    const float alpha = sw0 / 2.0f * n.Q;
-    const float a0 = 1 + alpha / A;
+RectangularProgram::get_peak_coefficients(const FilterDescriptor& n,
+                                          double sr) {
+    const auto A = pow(10.0f, n.gain / 40.0f);
+    const auto w0 = 2.0f * M_PI * n.centre / sr;
+    const auto cw0 = cos(w0);
+    const auto sw0 = sin(w0);
+    const auto alpha = sw0 / 2.0f * n.Q;
+    const auto a0 = 1 + alpha / A;
     return RectangularProgram::BiquadCoefficients{
         {(1 + (alpha * A)) / a0, (-2 * cw0) / a0, (1 - alpha * A) / a0},
         {1, (-2 * cw0) / a0, (1 - alpha / A) / a0}};
@@ -46,7 +47,7 @@ RectangularProgram::BiquadCoefficientsArray
 RectangularProgram::get_biquads_array(
     const std::array<FilterDescriptor,
                      BiquadCoefficientsArray::BIQUAD_SECTIONS>& n,
-    float sr,
+    double sr,
     coefficient_generator callback) {
     RectangularProgram::BiquadCoefficientsArray ret;
     proc::transform(n,
@@ -59,7 +60,7 @@ RectangularProgram::BiquadCoefficientsArray
 RectangularProgram::get_notch_biquads_array(
     const std::array<FilterDescriptor,
                      BiquadCoefficientsArray::BIQUAD_SECTIONS>& n,
-    float sr) {
+    double sr) {
     return get_biquads_array(n, sr, get_notch_coefficients);
 }
 
@@ -67,7 +68,7 @@ RectangularProgram::BiquadCoefficientsArray
 RectangularProgram::get_peak_biquads_array(
     const std::array<FilterDescriptor,
                      BiquadCoefficientsArray::BIQUAD_SECTIONS>& n,
-    float sr) {
+    double sr) {
     return get_biquads_array(n, sr, get_peak_coefficients);
 }
 
@@ -82,18 +83,23 @@ RectangularProgram::CanonicalCoefficients RectangularProgram::convolve(
 RectangularProgram::CanonicalCoefficients
 RectangularProgram::to_impedance_coefficients(const CanonicalCoefficients& c) {
     CanonicalCoefficients ret;
-    for (auto i = 0; i != CanonicalCoefficients::ORDER + 1; ++i) {
-        ret.b[i] = c.a[i] + c.b[i];
-        ret.a[i] = c.a[i] - c.b[i];
-    }
+    proc::transform(c.a,
+                    std::begin(c.b),
+                    std::begin(ret.b),
+                    [](auto a, auto b) { return a + b; });
+    proc::transform(c.a,
+                    std::begin(c.b),
+                    std::begin(ret.a),
+                    [](auto a, auto b) { return a - b; });
 
     if (ret.a[0] == 0)
         throw std::runtime_error("a0 coefficient is zero");
     auto norm = 1 / ret.a[0];
-    for (auto i = 0; i != CanonicalCoefficients::ORDER + 1; ++i) {
-        ret.b[i] *= norm;
-        ret.a[i] *= norm;
-    }
+    auto do_normalize = [norm](auto& i) {
+        proc::for_each(i, [norm](auto& i) { i *= norm; });
+    };
+    do_normalize(ret.b);
+    do_normalize(ret.a);
 
     return ret;
 }
@@ -148,6 +154,8 @@ const std::string RectangularProgram::source{
 
 #define NO_NEIGHBOR (~(uint)0)
 
+typedef double FilterReal;
+
 typedef enum {
     id_none = 0,
     id_inside = 1 << 0,
@@ -184,15 +192,15 @@ typedef struct {
 #define PRIMITIVE_CAT(a, b) a##b
 
 #define TEMPLATE_FILTER_MEMORY(order) \
-    typedef struct { float array[order]; } CAT(FilterMemory, order);
+    typedef struct { FilterReal array[order]; } CAT(FilterMemory, order);
 
 TEMPLATE_FILTER_MEMORY(BIQUAD_ORDER);
 TEMPLATE_FILTER_MEMORY(CANONICAL_FILTER_ORDER);
 
 #define TEMPLATE_FILTER_COEFFICIENTS(order) \
     typedef struct {                        \
-        float b[order + 1];                 \
-        float a[order + 1];                 \
+        FilterReal b[order + 1];                 \
+        FilterReal a[order + 1];                 \
     } CAT(FilterCoefficients, order);
 
 TEMPLATE_FILTER_COEFFICIENTS(BIQUAD_ORDER);
@@ -220,7 +228,7 @@ typedef struct {
         float input,                                                          \
         global CAT(FilterMemory, order) * m,                                  \
         const global CAT(FilterCoefficients, order) * c) {                    \
-        float output = input * c->b[0] + m->array[0];                         \
+        FilterReal output = input * c->b[0] + m->array[0];                    \
         for (int i = 0; i != order - 1; ++i) {                                \
             m->array[i] =                                                     \
                 input * c->b[i + 1] - c->a[i + 1] * output + m->array[i + 1]; \
@@ -235,10 +243,10 @@ FILTER_STEP(CANONICAL_FILTER_ORDER);
 #define filter_step_biquad CAT(filter_step_, BIQUAD_ORDER)
 #define filter_step_canonical CAT(filter_step_, CANONICAL_FILTER_ORDER)
 
-float biquad_cascade(float input,
+float biquad_cascade(FilterReal input,
                      global BiquadMemoryArray* bm,
                      const global BiquadCoefficientsArray* bc);
-float biquad_cascade(float input,
+float biquad_cascade(FilterReal input,
                      global BiquadMemoryArray* bm,
                      const global BiquadCoefficientsArray* bc) {
     for (int i = 0; i != BIQUAD_SECTIONS; ++i) {
@@ -685,7 +693,6 @@ GET_COEFF_WEIGHTING_TEMPLATE(3);
             ghost_point_pressure_update(                                       \
                 ret, prev_pressure, bd, boundary, debug_buffer);               \
         }                                                                      \
-        debug_buffer[get_global_id(0)] = ret;                                  \
         return ret;                                                            \
     }
 
@@ -792,7 +799,7 @@ kernel void condensed_waveguide(const global float* current,
             break;
     }
 
-    if (-RANGE < next_pressure || next_pressure < RANGE)
+    if (next_pressure < -RANGE || RANGE < next_pressure)
         *error_flag |= id_outside_range_error;
     if (isinf(next_pressure))
         *error_flag |= id_inf_error;
@@ -800,6 +807,7 @@ kernel void condensed_waveguide(const global float* current,
         *error_flag |= id_nan_error;
 
     previous[index] = next_pressure;
+    debug_buffer[get_global_id(0)] = next_pressure;
 
     if (index == read) {
         *output = previous[index];

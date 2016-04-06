@@ -20,7 +20,7 @@
 #include "waveguide.h"
 #include "scene_data.h"
 #include "combined_config.h"
-#include "rayverb.h"
+#include "raytracer.h"
 #include "voxel_collection.h"
 
 #include "../JuceLibraryCode/JuceHeader.h"

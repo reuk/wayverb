@@ -142,8 +142,8 @@ void VoxelisedObject::draw() const {
             for (const auto &z : y) {
                 if (!z.get_triangles().empty()) {
                     const auto &aabb = z.get_aabb();
-                    box.set_scale(to_glm_vec3(aabb.get_dimensions()));
-                    box.set_position(to_glm_vec3(aabb.get_centre()));
+                    box.set_scale(to_glm_vec3(aabb.dimensions()));
+                    box.set_position(to_glm_vec3(aabb.centre()));
                     box.draw();
                 }
             }
@@ -229,13 +229,13 @@ void DrawableScene::trigger_pressure_calculation() {
 
 RaytracerResults DrawableScene::get_raytracer_results(
     const SceneData &scene_data, const CombinedConfig &cc) {
-    auto raytrace_program = get_program<RayverbProgram>(context, device);
-    return ImprovedRaytrace(raytrace_program, queue)
-        .BaseRaytrace::run(scene_data,
-                           cc.get_mic(),
-                           cc.get_source(),
-                           cc.get_rays(),
-                           cc.get_impulses())
+    auto raytrace_program = get_program<RaytracerProgram>(context, device);
+    return Raytracer(raytrace_program, queue)
+        .run(scene_data,
+             cc.get_mic(),
+             cc.get_source(),
+             cc.get_rays(),
+             cc.get_impulses())
         .get_diffuse();
 }
 
@@ -277,7 +277,7 @@ void DrawableScene::update(float dt) {
         try {
             if (future_pressure.wait_for(std::chrono::milliseconds(0)) ==
                 std::future_status::ready) {
-                //                mesh_object->set_pressures(future_pressure.get());
+                mesh_object->set_pressures(future_pressure.get());
                 trigger_pressure_calculation();
             }
         } catch (const std::exception &e) {
@@ -341,8 +341,8 @@ void SceneRenderer::load_from_file_package(const FilePackage &fp) {
     scene = std::make_unique<DrawableScene>(*shader, scene_data, cc);
 
     auto aabb = scene_data.get_aabb();
-    auto m = aabb.get_centre();
-    auto max = aabb.get_dimensions().max();
+    auto m = aabb.centre();
+    auto max = aabb.dimensions().max();
     scale = max > 0 ? 20 / max : 1;
 
     translation = glm::translate(-glm::vec3(m.x, m.y, m.z));

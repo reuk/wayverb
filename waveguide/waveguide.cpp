@@ -4,6 +4,7 @@
 #include "hrtf.h"
 #include "db.h"
 #include "stl_wrappers.h"
+#include "sinc.h"
 
 #include <iostream>
 #include <algorithm>
@@ -233,10 +234,12 @@ RunStepResult RectangularWaveguide::run_step(size_type o,
            debug_buffer,
            error_flag_buffer);
 
+    cl::copy(queue, debug_buffer, debug.begin(), debug.end());
+
     cl::copy(queue, error_flag_buffer, (&flag) + 0, (&flag) + 1);
 
-    if (flag & RectangularProgram::id_outside_range_error)
-        throw std::runtime_error("pressure value is outside valid range");
+    //    if (flag & RectangularProgram::id_outside_range_error)
+    //        throw std::runtime_error("pressure value is outside valid range");
 
     if (flag & RectangularProgram::id_inf_error)
         throw std::runtime_error(
@@ -251,11 +254,6 @@ RunStepResult RectangularWaveguide::run_step(size_type o,
              velocity_buffer,
              current_velocity.begin(),
              current_velocity.end());
-
-    /*
-    cl::copy(queue, debug_buffer, debug.begin(), debug.end());
-    log_nan_or_nonzero_or_inf(debug, "debug");
-    */
 
     auto velocity = to_vec3f(current_velocity.front());
     auto intensity = velocity * out.front();
@@ -298,25 +296,9 @@ RectangularWaveguide::to_filter_coefficients(const Surface& surface, float sr) {
     //  transform filter parameters into a set of biquad coefficients
     auto individual_coeffs =
         RectangularProgram::get_peak_biquads_array(descriptors, sr);
-    /*
-    if (!std::all_of(
-            std::begin(individual_coeffs.array),
-            std::end(individual_coeffs.array),
-            [](const auto& i) { return RectangularProgram::is_stable(i); }))
-        throw std::runtime_error(
-            "the generated boundary notch filter is unstable");
-    */
     //  combine biquad coefficients into coefficients for a single high-order
     //  filter
     auto ret = RectangularProgram::convolve(individual_coeffs);
-    /*
-    if (!RectangularProgram::is_stable(ret))
-        Logger::log_err(
-            "although individual notches are stable, higher-order boundary "
-            "filter may be unstable due to 32-bit precision limitation");
-
-    Logger::log_err("before transformation: ", ret);
-    */
 
     //  transform from reflection filter to impedance filter
     ret = RectangularProgram::to_impedance_coefficients(ret);

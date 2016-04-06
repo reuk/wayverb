@@ -5,6 +5,7 @@
 
 #include "string_builder.h"
 #include "reduce.h"
+#include "stl_wrappers.h"
 
 #include <cassert>
 #include <cmath>
@@ -51,32 +52,35 @@ public:
         cl_uint boundary_index{};
     };
 
+    using FilterReal = cl_double;
+
+    constexpr static auto BIQUAD_ORDER = 2;
+
     template <int O>
     struct FilterMemory final {
         static constexpr int ORDER = O;
-        cl_float array[ORDER]{};
+        FilterReal array[ORDER]{};
 
         bool operator==(const FilterMemory& rhs) const {
-            return std::equal(
-                std::begin(array), std::end(array), std::begin(rhs.array));
+            return proc::equal(array, std::begin(rhs.array));
         }
     };
 
-    using BiquadMemory = FilterMemory<2>;
+    using BiquadMemory = FilterMemory<BIQUAD_ORDER>;
 
     template <int O>
     struct FilterCoefficients final {
         static constexpr int ORDER = O;
-        cl_float b[ORDER + 1]{};
-        cl_float a[ORDER + 1]{};
+        FilterReal b[ORDER + 1]{};
+        FilterReal a[ORDER + 1]{};
 
         bool operator==(const FilterCoefficients& rhs) const {
-            return std::equal(std::begin(b), std::end(b), std::begin(rhs.b)) &&
-                   std::equal(std::begin(a), std::end(a), std::begin(rhs.a));
+            return proc::equal(b, std::begin(rhs.b)) &&
+                   proc::equal(a, std::begin(rhs.a));
         }
     };
 
-    using BiquadCoefficients = FilterCoefficients<2>;
+    using BiquadCoefficients = FilterCoefficients<BIQUAD_ORDER>;
 
     struct __attribute__((aligned(8))) BiquadMemoryArray final {
         static constexpr int BIQUAD_SECTIONS{3};
@@ -159,35 +163,35 @@ public:
     static CondensedNodeStruct condense(const NodeStruct& n);
 
     struct FilterDescriptor {
-        float gain{0};
-        float centre{0};
-        float Q{0};
+        double gain{0};
+        double centre{0};
+        double Q{0};
     };
 
     using coefficient_generator =
-        BiquadCoefficients (*)(const FilterDescriptor& n, float sr);
+        BiquadCoefficients (*)(const FilterDescriptor& n, double sr);
 
     static BiquadCoefficients get_notch_coefficients(const FilterDescriptor& n,
-                                                     float sr);
+                                                     double sr);
 
     static BiquadCoefficients get_peak_coefficients(const FilterDescriptor& n,
-                                                    float sr);
+                                                    double sr);
 
     static BiquadCoefficientsArray get_biquads_array(
         const std::array<FilterDescriptor,
                          BiquadCoefficientsArray::BIQUAD_SECTIONS>& n,
-        float sr,
+        double sr,
         coefficient_generator callback);
 
     static BiquadCoefficientsArray get_notch_biquads_array(
         const std::array<FilterDescriptor,
                          BiquadCoefficientsArray::BIQUAD_SECTIONS>& n,
-        float sr);
+        double sr);
 
     static BiquadCoefficientsArray get_peak_biquads_array(
         const std::array<FilterDescriptor,
                          BiquadCoefficientsArray::BIQUAD_SECTIONS>& n,
-        float sr);
+        double sr);
 
     template <int A, int B>
     static FilterCoefficients<A + B> convolve(const FilterCoefficients<A>& a,

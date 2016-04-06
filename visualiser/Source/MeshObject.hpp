@@ -1,5 +1,6 @@
 #pragma once
 
+#include "sinc.h"
 #include "waveguide.h"
 
 //----------------------------------------------------------------------------//
@@ -84,6 +85,7 @@ public:
 
     void set_pressures(const std::vector<float> & pressures) {
         color_storage.resize(pressures.size());
+        std::cout << "max mag: " << max_mag(pressures) << std::endl;
         std::transform(pressures.begin(),
                        pressures.end(),
                        color_storage.begin(),

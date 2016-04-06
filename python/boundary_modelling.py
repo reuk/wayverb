@@ -73,8 +73,8 @@ def get_peak_coeffs(gain, centre, sr, Q):
 
     a0 = a[0]
 
-    b = [i * global_gain / a0 for i in b]
-    a = [i / a0 for i in a]
+    b = [np.float(i * global_gain / a0) for i in b]
+    a = [np.float(i / a0) for i in a]
 
     return b, a
 

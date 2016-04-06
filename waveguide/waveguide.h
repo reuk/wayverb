@@ -141,7 +141,7 @@ public:
         cl::copy(queue, n.begin(), n.end(), *previous);
 
         initialise_mesh(u, e, n);
-        bool valid = std::any_of(n.begin(), n.end(), [](auto i) { return i; });
+        bool valid = proc::any_of(n, [](auto i) { return i; });
         if (!valid) {
             throw std::runtime_error("mesh is completely zeroed!");
         }
@@ -159,9 +159,8 @@ public:
 
         std::vector<RunStepResult> ret(steps);
         auto counter = 0u;
-        std::generate(
-            ret.begin(),
-            ret.end(),
+        proc::generate(
+            ret,
             [this, &counter, &steps, &o, &callback] {
                 auto ret = this->run_step(
                     o, queue, kernel, nodes, *previous, *current, output);
@@ -278,16 +277,15 @@ private:
     void setup_boundary_data_buffer(cl::CommandQueue& queue, cl::Buffer& b) {
         std::vector<RectangularProgram::BoundaryDataArray<I>> bda(
             mesh.compute_num_boundary<I>());
-        std::generate(bda.begin(),
-                      bda.end(),
-                      [] {
-                          RectangularProgram::BoundaryDataArray<I> ret{};
-                          for (auto& i : ret.array) {
-                              //  TODO set this properly
-                              i.coefficient_index = 0;
-                          }
-                          return ret;
-                      });
+        proc::generate(bda,
+                       [] {
+                           RectangularProgram::BoundaryDataArray<I> ret{};
+                           for (auto& i : ret.array) {
+                               //  TODO set this properly
+                               i.coefficient_index = 0;
+                           }
+                           return ret;
+                       });
         cl::copy(queue, bda.begin(), bda.end(), b);
     }
 
@@ -359,29 +357,25 @@ bool is_any(const T& t, const Fun& fun = Fun()) {
 
 template <typename Fun, typename T>
 bool is_any(const std::vector<T>& t, const Fun& fun = Fun()) {
-    return std::any_of(
-        t.begin(), t.end(), [&fun](const auto& i) { return is_any(i, fun); });
+    return proc::any_of(t, [&fun](const auto& i) { return is_any(i, fun); });
 }
 
 template <typename Fun, int I>
 bool is_any(const RectangularProgram::BoundaryDataArray<I>& t,
             const Fun& fun = Fun()) {
-    return std::any_of(std::begin(t.array),
-                       std::end(t.array),
-                       [&fun](const auto& i) { return is_any(i, fun); });
+    return proc::any_of(t.array,
+                        [&fun](const auto& i) { return is_any(i, fun); });
 }
 
 template <typename Fun>
 bool is_any(const RectangularProgram::BoundaryData& t, const Fun& fun = Fun()) {
-    return std::any_of(std::begin(t.filter_memory.array),
-                       std::end(t.filter_memory.array),
-                       [&fun](const auto& i) { return is_any(i, fun); });
+    return proc::any_of(t.filter_memory.array,
+                        [&fun](const auto& i) { return is_any(i, fun); });
 }
 
 template <typename Fun, typename T>
 auto find_any(const T& t, const Fun& fun = Fun()) {
-    return std::find_if(
-        t.begin(), t.end(), [&fun](const auto& i) { return is_any(i, fun); });
+    return proc::find_if(t, [&fun](const auto& i) { return is_any(i, fun); });
 }
 
 template <typename Fun, typename T>

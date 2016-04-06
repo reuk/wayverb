@@ -43,7 +43,6 @@ constexpr auto COURANT = 0.577350269;
 
 /// r = distance at which the geometric sound source has intensity 1W/m^2
 /// sr = waveguide mesh sampling rate
-/// c = speed of sound
 constexpr double rectilinear_calibration_factor(double r, double sr) {
     auto x = SPEED_OF_SOUND / (COURANT * sr);
     return r / (x * 0.3405);

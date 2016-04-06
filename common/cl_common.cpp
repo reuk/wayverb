@@ -31,6 +31,10 @@ cl::Device get_device(const cl::Context& context) {
     auto device = devices.back();
     // auto device = devices.front();
 
+    auto preferred_double_width =
+        device.getInfo<CL_DEVICE_PREFERRED_VECTOR_WIDTH_DOUBLE>();
+    CHECK(preferred_double_width) << "device must support double precision";
+
     LOG(INFO) << "## used device:";
     print_device_info(device);
 

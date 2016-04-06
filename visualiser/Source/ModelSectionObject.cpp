@@ -70,8 +70,8 @@ ModelSectionObject::DrawableOctree::DrawableOctree(const GenericShader &shader,
 
 void ModelSectionObject::DrawableOctree::draw_worker(BoxObject &box) const {
     if (do_draw) {
-        box.set_scale(to_glm_vec3(aabb.get_dimensions()));
-        box.set_position(to_glm_vec3(aabb.get_centre()));
+        box.set_scale(to_glm_vec3(aabb.dimensions()));
+        box.set_position(to_glm_vec3(aabb.centre()));
         box.draw();
         for (const auto &i : nodes)
             i.draw_worker(box);
