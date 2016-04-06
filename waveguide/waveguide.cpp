@@ -168,9 +168,6 @@ RectangularWaveguide::RectangularWaveguide(
                                        coefficients.begin(),
                                        coefficients.end(),
                                        false)
-        , debug_buffer(program.getInfo<CL_PROGRAM_CONTEXT>(),
-                       CL_MEM_READ_WRITE,
-                       sizeof(cl_float) * nodes.size())
         , error_flag_buffer(program.getInfo<CL_PROGRAM_CONTEXT>(),
                             CL_MEM_READ_WRITE,
                             sizeof(cl_int)) {
@@ -209,10 +206,6 @@ RunStepResult RectangularWaveguide::run_step(size_type o,
     std::vector<cl_float> out(1);
     std::vector<cl_float3> current_velocity(1);
 
-    //  TODO remove this + debug_buffer
-    std::vector<cl_float> debug(nodes, 0);
-    cl::copy(queue, debug.begin(), debug.end(), debug_buffer);
-
     auto flag = RectangularProgram::id_success;
     cl::copy(queue, (&flag) + 0, (&flag) + 1, error_flag_buffer);
 
@@ -231,10 +224,7 @@ RunStepResult RectangularWaveguide::run_step(size_type o,
            period,
            o,
            output,
-           debug_buffer,
            error_flag_buffer);
-
-    cl::copy(queue, debug_buffer, debug.begin(), debug.end());
 
     cl::copy(queue, error_flag_buffer, (&flag) + 0, (&flag) + 1);
 

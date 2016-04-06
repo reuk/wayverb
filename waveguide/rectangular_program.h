@@ -139,7 +139,6 @@ public:
                             cl_float,
                             cl_ulong,
                             cl::Buffer,
-                            cl::Buffer,
                             cl::Buffer>(*this, "condensed_waveguide", &error);
         assert(error == CL_SUCCESS);
         return ret;
