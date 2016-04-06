@@ -164,6 +164,7 @@ typedef enum {
     id_success = 0,
     id_inf_error = 1 << 0,
     id_nan_error = 1 << 1,
+    id_outside_range_error = 1 << 2,
 } ErrorCode;
 
 typedef struct {
@@ -712,6 +713,8 @@ BOUNDARY_TEMPLATE(3);
 
 //----------------------------------------------------------------------------//
 
+#define RANGE (1)
+
 kernel void condensed_waveguide(const global float* current,
                                 global float* previous,
                                 const global CondensedNode* nodes,
@@ -789,6 +792,8 @@ kernel void condensed_waveguide(const global float* current,
             break;
     }
 
+    if (-RANGE < next_pressure || next_pressure < RANGE)
+        *error_flag |= id_outside_range_error;
     if (isinf(next_pressure))
         *error_flag |= id_inf_error;
     if (isnan(next_pressure))

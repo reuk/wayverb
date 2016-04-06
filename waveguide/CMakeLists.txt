@@ -23,6 +23,13 @@ endif()
 find_library(assimp_library assimp)
 find_library(fftw_library fftw3f)
 find_library(glog_library glog)
-set(libraries ${assimp_library} ${fftw_library} ${glog_library} z common)
+find_library(samplerate_lib samplerate)
+set(libraries
+    ${assimp_library}
+    ${samplerate_lib}
+    ${fftw_library}
+    ${glog_library}
+    z
+    common)
 
 target_link_libraries(waveguide ${libraries})

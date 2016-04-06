@@ -235,11 +235,14 @@ RunStepResult RectangularWaveguide::run_step(size_type o,
 
     cl::copy(queue, error_flag_buffer, (&flag) + 0, (&flag) + 1);
 
-    if (all_flags_set(flag, std::make_tuple(RectangularProgram::id_inf_error)))
+    if (flag & RectangularProgram::id_outside_range_error)
+        throw std::runtime_error("pressure value is outside valid range");
+
+    if (flag & RectangularProgram::id_inf_error)
         throw std::runtime_error(
             "pressure value is inf, check filter coefficients");
 
-    if (all_flags_set(flag, std::make_tuple(RectangularProgram::id_nan_error)))
+    if (flag & RectangularProgram::id_nan_error)
         throw std::runtime_error(
             "pressure value is nan, check filter coefficients");
 

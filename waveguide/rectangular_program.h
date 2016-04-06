@@ -31,6 +31,7 @@ public:
         id_success = 0,
         id_inf_error = 1 << 0,
         id_nan_error = 1 << 1,
+        id_outside_range_error = 1 << 2,
     } ErrorCode;
 
     static constexpr cl_uint NO_NEIGHBOR{~cl_uint{0}};

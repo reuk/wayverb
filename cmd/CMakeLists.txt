@@ -24,7 +24,6 @@ elseif(UNIX)
 endif()
 
 find_library(sndfile_lib sndfile)
-find_library(samplerate_lib samplerate)
 find_library(gflags_lib gflags)
 find_library(glog_lig glog)
 find_library(flac_lib flac)
@@ -35,7 +34,6 @@ find_library(vorbisenc_lib vorbisenc)
 target_link_libraries(${name}
     combined
     ${sndfile_lib}
-    ${samplerate_lib}
     ${frameworks}
     ${gflags_lib}
     ${glog_lib}
