@@ -1,14 +1,13 @@
 #include "waveguide.h"
-#include "test_flag.h"
 #include "conversions.h"
-#include "hrtf.h"
 #include "db.h"
-#include "stl_wrappers.h"
 #include "sinc.h"
+#include "stl_wrappers.h"
+#include "test_flag.h"
 
-#include <iostream>
 #include <algorithm>
 #include <cstdlib>
+#include <iostream>
 
 //----------------------------------------------------------------------------//
 
@@ -268,39 +267,6 @@ bool RectangularWaveguide::inside(size_type index) const {
     return mesh.get_nodes()[index].inside;
 }
 
-RectangularProgram::CanonicalCoefficients
-RectangularWaveguide::to_filter_coefficients(const Surface& surface, float sr) {
-    std::array<RectangularProgram::FilterDescriptor,
-               RectangularProgram::BiquadCoefficientsArray::BIQUAD_SECTIONS>
-        descriptors;
-
-    //  for each descriptor
-    for (auto i = 0u; i != descriptors.size(); ++i) {
-        //  compute gain and centre frequency for notch
-        float gain = a2db((surface.specular.s[i] + surface.diffuse.s[i]) / 2);
-        auto centre = (HrtfData::EDGES[i + 0] + HrtfData::EDGES[i + 1]) / 2;
-        //  produce a filter descriptor struct for this filter
-        descriptors[i] =
-            RectangularProgram::FilterDescriptor{gain, centre, 1.414};
-    }
-    //  transform filter parameters into a set of biquad coefficients
-    auto individual_coeffs =
-        RectangularProgram::get_peak_biquads_array(descriptors, sr);
-    //  combine biquad coefficients into coefficients for a single high-order
-    //  filter
-    auto ret = RectangularProgram::convolve(individual_coeffs);
-
-    //  transform from reflection filter to impedance filter
-    ret = RectangularProgram::to_impedance_coefficients(ret);
-
-    if (!RectangularProgram::is_stable(ret))
-        LOG(INFO)
-            << "warning: impedance filter coefficients may produce unstable "
-               "filter";
-
-    return ret;
-}
-
 std::vector<RectangularProgram::CanonicalCoefficients>
 RectangularWaveguide::to_filter_coefficients(std::vector<Surface> surfaces,
                                              float sr) {
@@ -308,8 +274,8 @@ RectangularWaveguide::to_filter_coefficients(std::vector<Surface> surfaces,
         RectangularProgram::BiquadCoefficientsArray::BIQUAD_SECTIONS);
 
     std::vector<RectangularProgram::CanonicalCoefficients> ret(surfaces.size());
-    proc::transform(surfaces,
-                    ret.begin(),
-                    [sr](auto i) { return to_filter_coefficients(i, sr); });
+    proc::transform(surfaces, ret.begin(), [sr](auto i) {
+        return to_filter_coefficients(i, sr);
+    });
     return ret;
 }

@@ -2,11 +2,11 @@
 
 #include "extended_algorithms.h"
 
+#include <array>
+#include <cmath>
 #include <functional>
 #include <numeric>
-#include <cmath>
 #include <ostream>
-#include <array>
 #include <sstream>
 #include <tuple>
 
@@ -48,16 +48,23 @@ struct Vec3 final {
     using value_type = T;
     using Vec3t = Vec3<T>;
 
-    constexpr Vec3(T t = T()) noexcept : x(t), y(t), z(t) {
+    constexpr Vec3(T t = T()) noexcept
+            : x(t)
+            , y(t)
+            , z(t) {
     }
 
-    constexpr Vec3(const T& x, const T& y, const T& z) noexcept : x(x),
-                                                                  y(y),
-                                                                  z(z) {
+    constexpr Vec3(const T& x, const T& y, const T& z) noexcept
+            : x(x)
+            , y(y)
+            , z(z) {
     }
 
     template <typename U>
-    constexpr Vec3(const Vec3<U>& u) noexcept : x(u.x), y(u.y), z(u.z) {
+    constexpr Vec3(const Vec3<U>& u) noexcept
+            : x(u.x)
+            , y(u.y)
+            , z(u.z) {
     }
 
     constexpr Vec3(const Vec3&) noexcept = default;

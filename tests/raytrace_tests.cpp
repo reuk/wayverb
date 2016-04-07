@@ -1,9 +1,9 @@
-#include "raytracer.h"
-#include "raytracer_config.h"
+#include "boundaries.h"
 #include "cl_common.h"
 #include "ostream_overloads.h"
 #include "progress.h"
-#include "boundaries.h"
+#include "raytracer.h"
+#include "raytracer_config.h"
 #include "write_audio_file.h"
 
 #include "gtest/gtest.h"
@@ -161,15 +161,15 @@ TEST(raytrace, image_source) {
     constexpr auto shells = 2;
     auto images = images_for_shell<shells>(box, source);
     std::array<float, images.size()> distances;
-    proc::transform(images,
-                    distances.begin(),
-                    [&receiver](auto i) { return (receiver - i).mag(); });
+    proc::transform(images, distances.begin(), [&receiver](auto i) {
+        return (receiver - i).mag();
+    });
     std::array<float, images.size()> times;
     proc::transform(distances, times.begin(), [](auto i) { return i / 340; });
     std::array<VolumeType, images.size()> volumes;
-    proc::transform(distances,
-                    volumes.begin(),
-                    [](auto i) { return attenuation_for_distance(i); });
+    proc::transform(distances, volumes.begin(), [](auto i) {
+        return attenuation_for_distance(i);
+    });
 
     std::vector<AttenuatedImpulse> proper_image_source_impulses;
 

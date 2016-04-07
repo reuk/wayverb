@@ -1,7 +1,7 @@
 #pragma once
 
-#include "vec.h"
 #include "config.h"
+#include "vec.h"
 
 #define __CL_ENABLE_EXCEPTIONS
 #include "cl.hpp"
@@ -10,12 +10,12 @@
 #include "assimp/postprocess.h"
 #include "assimp/scene.h"
 
-#include "rapidjson/rapidjson.h"
-#include "rapidjson/error/en.h"
 #include "rapidjson/document.h"
+#include "rapidjson/error/en.h"
+#include "rapidjson/rapidjson.h"
 
-#include <vector>
 #include <map>
+#include <vector>
 
 class CuboidBoundary;
 class MeshBoundary;

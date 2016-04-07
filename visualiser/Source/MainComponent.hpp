@@ -1,8 +1,8 @@
 #pragma once
 
-#include "ModelRendererComponent.hpp"
 #include "ConfigPanel.hpp"
 #include "DemoPanel.hpp"
+#include "ModelRendererComponent.hpp"
 
 class MainContentComponent final : public Component {
 public:

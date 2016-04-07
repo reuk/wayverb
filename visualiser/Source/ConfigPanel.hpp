@@ -7,18 +7,18 @@ public:
     class Listener {
     public:
         virtual ~Listener() noexcept = default;
-        virtual void fileLoaded(FileLoaderButton * flb, const File & f) = 0;
+        virtual void fileLoaded(FileLoaderButton* flb, const File& f) = 0;
     };
 
-    FileLoaderButton(const std::string & buttonText,
-                     const std::string & validPatterns);
+    FileLoaderButton(const std::string& buttonText,
+                     const std::string& validPatterns);
 
     void resized() override;
 
-    void buttonClicked(Button * button) override;
+    void buttonClicked(Button* button) override;
 
-    void addListener(Listener & l);
-    void removeListener(Listener & l);
+    void addListener(Listener& l);
+    void removeListener(Listener& l);
 
     File getFile() const;
 
@@ -38,24 +38,24 @@ public:
     class Listener {
     public:
         virtual ~Listener() noexcept = default;
-        virtual void filesChanged(ConfigPanel * p,
-                                  const File & object,
-                                  const File & material,
-                                  const File & config) = 0;
+        virtual void filesChanged(ConfigPanel* p,
+                                  const File& object,
+                                  const File& material,
+                                  const File& config) = 0;
     };
 
     ConfigPanel();
 
     void resized() override;
 
-    void fileLoaded(FileLoaderButton * flb, const File & f) override;
-    void buttonClicked(Button * b) override;
+    void fileLoaded(FileLoaderButton* flb, const File& f) override;
+    void buttonClicked(Button* b) override;
 
     void updateLaunchButton();
     void refreshView();
 
-    void addListener(Listener & l);
-    void removeListener(Listener & l);
+    void addListener(Listener& l);
+    void removeListener(Listener& l);
 
 private:
     ListenerList<Listener> listenerList;

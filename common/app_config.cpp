@@ -1,18 +1,18 @@
 #include "app_config.h"
 
-Vec3f & Config::get_source() {
+Vec3f& Config::get_source() {
     return source;
 }
 
-Vec3f & Config::get_mic() {
+Vec3f& Config::get_mic() {
     return mic;
 }
 
-float & Config::get_output_sample_rate() {
+float& Config::get_output_sample_rate() {
     return sample_rate;
 }
 
-int & Config::get_bit_depth() {
+int& Config::get_bit_depth() {
     return bit_depth;
 }
 

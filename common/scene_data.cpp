@@ -2,14 +2,14 @@
 
 #include "boundaries.h"
 #include "conversions.h"
-#include "string_builder.h"
 #include "stl_wrappers.h"
+#include "string_builder.h"
 
 #include "config.h"
 
-#include <vector>
-#include <stdexcept>
 #include <fstream>
+#include <stdexcept>
+#include <vector>
 
 std::ostream& operator<<(std::ostream& os, const VolumeType& f) {
     Bracketer bracketer(os);
@@ -200,12 +200,10 @@ SceneData::Contents SceneData::get_contents(const aiScene* const scene,
             ret.triangles.end(), meshTriangles.begin(), meshTriangles.end());
     }
 
-    proc::for_each(ret.vertices,
-                   [scale](auto& i) {
-                       std::for_each(std::begin(i.s),
-                                     std::end(i.s),
-                                     [scale](auto& i) { i *= scale; });
-                   });
+    proc::for_each(ret.vertices, [scale](auto& i) {
+        std::for_each(
+            std::begin(i.s), std::end(i.s), [scale](auto& i) { i *= scale; });
+    });
     return ret;
 }
 

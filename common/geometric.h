@@ -1,7 +1,7 @@
 #pragma once
 
-#include "vec.h"
 #include "scene_data.h"
+#include "vec.h"
 
 namespace geo {
 

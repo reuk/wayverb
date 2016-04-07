@@ -4,30 +4,30 @@
 #include "FilePackage.hpp"
 
 #include "BasicDrawableObject.hpp"
-#include "OctahedronObject.hpp"
 #include "BoxObject.hpp"
+#include "MeshObject.hpp"
 #include "ModelObject.hpp"
 #include "ModelSectionObject.hpp"
-#include "MeshObject.hpp"
+#include "OctahedronObject.hpp"
 
 #define GLM_FORCE_RADIANS
-#include "glm/gtx/rotate_vector.hpp"
 #include "glm/gtc/matrix_transform.hpp"
-#include "glm/gtc/type_ptr.hpp"
 #include "glm/gtc/noise.hpp"
+#include "glm/gtc/type_ptr.hpp"
+#include "glm/gtx/rotate_vector.hpp"
 
-#include "octree.h"
-#include "waveguide.h"
-#include "scene_data.h"
 #include "combined_config.h"
+#include "octree.h"
 #include "raytracer.h"
+#include "scene_data.h"
 #include "voxel_collection.h"
+#include "waveguide.h"
 
 #include "../JuceLibraryCode/JuceHeader.h"
 
 #include <cmath>
-#include <mutex>
 #include <future>
+#include <mutex>
 
 class RaytraceObject final : public ::Drawable {
 public:

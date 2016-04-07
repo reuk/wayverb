@@ -1,15 +1,15 @@
 #include "boundaries.h"
-#include "test_flag.h"
 #include "conversions.h"
-#include "tri_cube_intersection.h"
 #include "geometric.h"
-#include "string_builder.h"
 #include "stl_wrappers.h"
+#include "string_builder.h"
+#include "test_flag.h"
+#include "tri_cube_intersection.h"
 
 #include <glog/logging.h>
 
-#include <cmath>
 #include <algorithm>
+#include <cmath>
 #include <unordered_set>
 
 CuboidBoundary::CuboidBoundary(const Box& b,
@@ -136,8 +136,9 @@ CuboidBoundary SphereBoundary::get_aabb() const {
 }
 
 Vec3i MeshBoundary::hash_point(const Vec3f& v) const {
-    return ((v - boundary.get_c0()) / cell_size)
-        .map([](auto i) -> int { return floor(i); });
+    return ((v - boundary.get_c0()) / cell_size).map([](auto i) -> int {
+        return floor(i);
+    });
 }
 
 MeshBoundary::hash_table MeshBoundary::compute_triangle_references() const {
@@ -227,8 +228,7 @@ bool MeshBoundary::inside(const Vec3f& v) const {
                         if (intersection.intersects) {
                             auto already_in =
                                 proc::find_if(
-                                    distances,
-                                    [&intersection](auto i) {
+                                    distances, [&intersection](auto i) {
                                         return almost_equal(
                                             i, intersection.distance, 10);
                                     }) != distances.end();

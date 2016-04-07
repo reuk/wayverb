@@ -1,10 +1,10 @@
 //  project internal
-#include "waveguide.h"
-#include "waveguide_config.h"
-#include "scene_data.h"
-#include "test_flag.h"
 #include "conversions.h"
 #include "microphone.h"
+#include "scene_data.h"
+#include "test_flag.h"
+#include "waveguide.h"
+#include "waveguide_config.h"
 
 #include "raytracer.h"
 
@@ -18,19 +18,19 @@
 #define __CL_ENABLE_EXCEPTIONS
 #include "cl.hpp"
 
-#include "sndfile.hh"
 #include "samplerate.h"
+#include "sndfile.hh"
 
 #include <gflags/gflags.h>
 
 //  stdlib
-#include <random>
-#include <iostream>
 #include <algorithm>
-#include <numeric>
 #include <cmath>
 #include <fstream>
+#include <iostream>
 #include <map>
+#include <numeric>
+#include <random>
 
 enum class PolarPattern {
     omni,
@@ -163,10 +163,10 @@ int main(int argc, char** argv) {
                     auto band_energy = proc::accumulate(
                         sig, 0.0, [](auto a, auto b) { return a + b * b; });
 
-                    auto max_val = proc::accumulate(
-                        sig,
-                        0.0,
-                        [](auto a, auto b) { return std::max(a, fabs(b)); });
+                    auto max_val =
+                        proc::accumulate(sig, 0.0, [](auto a, auto b) {
+                            return std::max(a, fabs(b));
+                        });
 
                     ofile << " band: " << band << " energy: " << band_energy
                           << " max: " << max_val;

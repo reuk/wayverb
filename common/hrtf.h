@@ -1,3 +1,5 @@
+#pragma once
+
 #include "scene_data.h"
 
 struct HrtfData {

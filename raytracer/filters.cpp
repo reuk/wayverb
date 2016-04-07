@@ -4,8 +4,8 @@
 
 #include "sinc.h"
 
-#include <numeric>
 #include <iostream>
+#include <numeric>
 
 void filter(FilterType ft,
             std::vector<std::vector<std::vector<float>>>& data,

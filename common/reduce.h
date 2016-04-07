@@ -1,7 +1,7 @@
 #pragma once
 
-#include <type_traits>
 #include <array>
+#include <type_traits>
 
 template <size_t I>
 struct Indexer : std::integral_constant<decltype(I), I> {

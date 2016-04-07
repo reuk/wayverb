@@ -87,11 +87,10 @@ struct JsonGetter<AttenuationModel> {
     /// Returns true if value is a json object containing just one valid key.
     virtual bool check(const rapidjson::Value& value) const {
         return value.IsObject() &&
-               1 == std::count_if(keys.begin(),
-                                  keys.end(),
-                                  [&value](const auto& i) {
-                                      return value.HasMember(i.second.c_str());
-                                  });
+               1 == std::count_if(
+                        keys.begin(), keys.end(), [&value](const auto& i) {
+                            return value.HasMember(i.second.c_str());
+                        });
     }
 
     /// Attempts to run a ConfigValidator on value.

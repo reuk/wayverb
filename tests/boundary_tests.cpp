@@ -1,6 +1,6 @@
 #include "boundaries.h"
-#include "raytracer.h"
 #include "conversions.h"
+#include "raytracer.h"
 
 #include "gtest/gtest.h"
 
@@ -73,7 +73,7 @@ TEST(boundary, tunnel) {
     ASSERT_FALSE(boundary.inside(centre + Vec3f(0, 0, dist)));
     ASSERT_FALSE(boundary.inside(centre + Vec3f(0, 0, -dist)));
 
-    for (const auto & i : {
+    for (const auto& i : {
              Vec3f(0.679999828, -1.18999958, -52.5300026),
              Vec3f(-0.680000067, 1.19000006, -52.5300026),
              Vec3f(-1.36000013, 2.38000011, -52.7000008),
@@ -101,7 +101,7 @@ TEST(boundary, bedroom) {
     ASSERT_FALSE(boundary.inside(centre + Vec3f(0, 0, dist)));
     ASSERT_FALSE(boundary.inside(centre + Vec3f(0, 0, -dist)));
 
-    for (const auto & i : {
+    for (const auto& i : {
              Vec3f(1.70000005, -1.70000005, -4.11999989),
              Vec3f(-1.70000005, -1.19000006, -3.94999981),
              Vec3f(1.70000005, -1.36000001, -4.11999989),

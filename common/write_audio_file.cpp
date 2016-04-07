@@ -1,7 +1,7 @@
 #include "write_audio_file.h"
 
-#include <unordered_map>
 #include <sstream>
+#include <unordered_map>
 
 void write_sndfile(const std::string& fname,
                    const std::vector<std::vector<float>>& outdata,

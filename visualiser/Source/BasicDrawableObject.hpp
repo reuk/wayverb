@@ -1,14 +1,14 @@
 #pragma once
 
-#include "modern_gl_utils/generic_shader.h"
-#include "modern_gl_utils/drawable.h"
-#include "modern_gl_utils/updatable.h"
-#include "modern_gl_utils/vao.h"
 #include "modern_gl_utils/buffer_object.h"
+#include "modern_gl_utils/drawable.h"
 #include "modern_gl_utils/fbo.h"
-#include "modern_gl_utils/texture_object.h"
+#include "modern_gl_utils/generic_shader.h"
 #include "modern_gl_utils/render_buffer.h"
 #include "modern_gl_utils/screen_quad.h"
+#include "modern_gl_utils/texture_object.h"
+#include "modern_gl_utils/updatable.h"
+#include "modern_gl_utils/vao.h"
 
 class BasicDrawableObject : public ::Drawable {
 public:

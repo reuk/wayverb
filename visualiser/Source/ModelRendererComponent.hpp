@@ -1,7 +1,7 @@
 #pragma once
 
-#include "ModelRenderer.hpp"
 #include "DemoPanel.hpp"
+#include "ModelRenderer.hpp"
 
 class ModelRendererComponent : public Component, public DemoPanel::Listener {
 public:

@@ -1,10 +1,10 @@
-#include "waveguide.h"
-#include "waveguide_config.h"
-#include "scene_data.h"
-#include "test_flag.h"
+#include "azimuth_elevation.h"
 #include "conversions.h"
 #include "microphone.h"
-#include "azimuth_elevation.h"
+#include "scene_data.h"
+#include "test_flag.h"
+#include "waveguide.h"
+#include "waveguide_config.h"
 
 #include "cl_common.h"
 
@@ -16,19 +16,19 @@
 #define __CL_ENABLE_EXCEPTIONS
 #include "cl.hpp"
 
-#include "sndfile.hh"
 #include "samplerate.h"
+#include "sndfile.hh"
 
 #include <gflags/gflags.h>
 
 //  stdlib
-#include <random>
-#include <iostream>
 #include <algorithm>
-#include <numeric>
 #include <cmath>
-#include <map>
 #include <iomanip>
+#include <iostream>
+#include <map>
+#include <numeric>
+#include <random>
 
 std::ostream& operator<<(std::ostream& os, const RunStepResult& rsr) {
     Bracketer bracketer(os);
@@ -460,22 +460,20 @@ int main(int argc, char** argv) {
         };
 
         std::vector<FullTestResults> all_test_results(surface_set.size());
-        proc::transform(surface_set,
-                        all_test_results.begin(),
-                        [&](auto i) {
-                            return run_full_test(i.name,
-                                                 context,
-                                                 device,
-                                                 queue,
-                                                 output_folder,
-                                                 config,
-                                                 azimuth_elevation.first,
-                                                 azimuth_elevation.second,
-                                                 dim,
-                                                 steps,
-                                                 i.surface,
-                                                 windowed_free_field);
-                        });
+        proc::transform(surface_set, all_test_results.begin(), [&](auto i) {
+            return run_full_test(i.name,
+                                 context,
+                                 device,
+                                 queue,
+                                 output_folder,
+                                 config,
+                                 azimuth_elevation.first,
+                                 azimuth_elevation.second,
+                                 dim,
+                                 steps,
+                                 i.surface,
+                                 windowed_free_field);
+        });
 
         if (all_test_results.front() == all_test_results.back()) {
             LOG(INFO) << "somehow both test results are the same even though "

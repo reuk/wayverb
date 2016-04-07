@@ -2,13 +2,13 @@
 
 #include "fftw3.h"
 
-#include <array>
-#include <vector>
-#include <cmath>
 #include <algorithm>
+#include <array>
+#include <cmath>
+#include <cstring>
 #include <iostream>
 #include <memory>
-#include <cstring>
+#include <vector>
 
 /// This namespace houses all of the machinery for multiband crossover
 /// filtering.

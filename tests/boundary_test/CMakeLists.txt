@@ -7,7 +7,7 @@ include_directories(
     "/usr/local/include"
 )
 
-set(name_0 boundary_reflect)
+set(name_0 boundary_test)
 add_executable(${name_0} ${name_0}.cpp)
 
 if(APPLE)

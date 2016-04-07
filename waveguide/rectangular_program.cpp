@@ -1,8 +1,8 @@
 #include "rectangular_program.h"
 #include "stl_wrappers.h"
 
-#include <iostream>
 #include <cmath>
+#include <iostream>
 
 RectangularProgram::RectangularProgram(const cl::Context& context,
                                        bool build_immediate)
@@ -15,63 +15,6 @@ RectangularProgram::CondensedNodeStruct RectangularProgram::condense(
         n.boundary_type | (n.inside ? id_inside : id_none), n.boundary_index};
 }
 
-RectangularProgram::BiquadCoefficients
-RectangularProgram::get_notch_coefficients(const FilterDescriptor& n,
-                                           double sr) {
-    const auto A = pow(10.0f, n.gain / 40.0f);
-    const auto w0 = 2.0f * M_PI * n.centre / sr;
-    const auto cw0 = cos(w0);
-    const auto sw0 = sin(w0);
-    const auto alpha = sw0 / 2.0f * n.Q;
-    const auto a0 = 1 + alpha / A;
-    return RectangularProgram::BiquadCoefficients{
-        {(1 + alpha * A) / a0, (-2 * cw0) / a0, (1 - alpha * A) / a0},
-        {1, (-2 * cw0) / a0, (1 - alpha / A) / a0}};
-}
-
-RectangularProgram::BiquadCoefficients
-RectangularProgram::get_peak_coefficients(const FilterDescriptor& n,
-                                          double sr) {
-    const auto A = pow(10.0f, n.gain / 40.0f);
-    const auto w0 = 2.0f * M_PI * n.centre / sr;
-    const auto cw0 = cos(w0);
-    const auto sw0 = sin(w0);
-    const auto alpha = sw0 / 2.0f * n.Q;
-    const auto a0 = 1 + alpha / A;
-    return RectangularProgram::BiquadCoefficients{
-        {(1 + (alpha * A)) / a0, (-2 * cw0) / a0, (1 - alpha * A) / a0},
-        {1, (-2 * cw0) / a0, (1 - alpha / A) / a0}};
-}
-
-RectangularProgram::BiquadCoefficientsArray
-RectangularProgram::get_biquads_array(
-    const std::array<FilterDescriptor,
-                     BiquadCoefficientsArray::BIQUAD_SECTIONS>& n,
-    double sr,
-    coefficient_generator callback) {
-    RectangularProgram::BiquadCoefficientsArray ret;
-    proc::transform(n,
-                    std::begin(ret.array),
-                    [sr, callback](const auto& i) { return callback(i, sr); });
-    return ret;
-}
-
-RectangularProgram::BiquadCoefficientsArray
-RectangularProgram::get_notch_biquads_array(
-    const std::array<FilterDescriptor,
-                     BiquadCoefficientsArray::BIQUAD_SECTIONS>& n,
-    double sr) {
-    return get_biquads_array(n, sr, get_notch_coefficients);
-}
-
-RectangularProgram::BiquadCoefficientsArray
-RectangularProgram::get_peak_biquads_array(
-    const std::array<FilterDescriptor,
-                     BiquadCoefficientsArray::BIQUAD_SECTIONS>& n,
-    double sr) {
-    return get_biquads_array(n, sr, get_peak_coefficients);
-}
-
 RectangularProgram::CanonicalCoefficients RectangularProgram::convolve(
     const BiquadCoefficientsArray& a) {
     std::array<BiquadCoefficients, BiquadCoefficientsArray::BIQUAD_SECTIONS> t;
@@ -80,17 +23,19 @@ RectangularProgram::CanonicalCoefficients RectangularProgram::convolve(
                   [](const auto& i, const auto& j) { return convolve(i, j); });
 }
 
+/// Given a set of canonical coefficients describing a reflectance filter,
+/// produce an impedance filter which describes the reflective surface
 RectangularProgram::CanonicalCoefficients
 RectangularProgram::to_impedance_coefficients(const CanonicalCoefficients& c) {
     CanonicalCoefficients ret;
-    proc::transform(c.a,
-                    std::begin(c.b),
-                    std::begin(ret.b),
-                    [](auto a, auto b) { return a + b; });
-    proc::transform(c.a,
-                    std::begin(c.b),
-                    std::begin(ret.a),
-                    [](auto a, auto b) { return a - b; });
+    proc::transform(
+        c.a, std::begin(c.b), std::begin(ret.b), [](auto a, auto b) {
+            return a + b;
+        });
+    proc::transform(
+        c.a, std::begin(c.b), std::begin(ret.a), [](auto a, auto b) {
+            return a - b;
+        });
 
     if (ret.a[0] == 0)
         throw std::runtime_error("a0 coefficient is zero");
@@ -508,9 +453,9 @@ void ghost_point_pressure_update(
     //  TODO this is quite different from what's presented in the paper
     //  check that everything cancels in the way that I think it does
 
-    float filt_state = boundary_data->filter_memory.array[0];
-    float b0 = boundary->b[0];
-    float a0 = boundary->a[0];
+    FilterReal filt_state = boundary_data->filter_memory.array[0];
+    FilterReal b0 = boundary->b[0];
+    FilterReal a0 = boundary->a[0];
 
     float filter_input =
         -((a0 * (prev_pressure - next_pressure)) / (b0 * COURANT) +
@@ -608,7 +553,7 @@ float get_current_boundary_weighting(const global float* current) {
         const global FilterCoefficientsCanonical* boundary_coefficients) {   \
         float sum = 0;                                                       \
         for (int i = 0; i != dimensions; ++i) {                              \
-            float filt_state = bda->array[i].filter_memory.array[0];         \
+            FilterReal filt_state = bda->array[i].filter_memory.array[0];    \
             sum +=                                                           \
                 filt_state /                                                 \
                 boundary_coefficients[bda->array[i].coefficient_index].b[0]; \

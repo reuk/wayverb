@@ -8,25 +8,21 @@
 
 void RectangularMesh::set_node_positions(std::vector<Node>& ret) const {
     auto counter = 0u;
-    proc::for_each(
-        ret,
-        [this, &counter](auto& node) {
-            auto p = this->compute_position(this->compute_locator(counter));
-            this->compute_neighbors(counter, node.ports);
-            node.position = to_cl_float3(p);
+    proc::for_each(ret, [this, &counter](auto& node) {
+        auto p = this->compute_position(this->compute_locator(counter));
+        this->compute_neighbors(counter, node.ports);
+        node.position = to_cl_float3(p);
 
-            counter += 1;
-        });
+        counter += 1;
+    });
 }
 
 void RectangularMesh::set_node_inside(const Boundary& boundary,
                                       std::vector<Node>& ret) const {
     std::vector<bool> inside(ret.size());
-    proc::transform(ret,
-                    inside.begin(),
-                    [&boundary](const auto& i) {
-                        return boundary.inside(to_vec3f(i.position));
-                    });
+    proc::transform(ret, inside.begin(), [&boundary](const auto& i) {
+        return boundary.inside(to_vec3f(i.position));
+    });
 
     auto neighbor_inside = [&inside](const auto& i) {
         for (const auto& it : i.ports) {
@@ -44,13 +40,10 @@ void RectangularMesh::set_node_inside(const Boundary& boundary,
                         return neighbor_inside(node) && in;
                     });
 
-    proc::transform(ret,
-                    inside.begin(),
-                    ret.begin(),
-                    [](auto i, auto j) {
-                        i.inside = j;
-                        return i;
-                    });
+    proc::transform(ret, inside.begin(), ret.begin(), [](auto i, auto j) {
+        i.inside = j;
+        return i;
+    });
 }
 
 constexpr RectangularMesh::Locator boundary_type_to_locator(
@@ -175,11 +168,9 @@ void RectangularMesh::set_node_boundary_index(std::vector<Node>& ret) const {
 }
 
 RectangularMesh::size_type RectangularMesh::compute_num_reentrant() const {
-    return proc::count_if(get_nodes(),
-                          [](const auto& i) {
-                              return i.boundary_type ==
-                                     RectangularProgram::id_reentrant;
-                          });
+    return proc::count_if(get_nodes(), [](const auto& i) {
+        return i.boundary_type == RectangularProgram::id_reentrant;
+    });
 }
 
 RectangularMesh::size_type RectangularMesh::compute_index(
@@ -199,11 +190,11 @@ RectangularMesh::Locator RectangularMesh::compute_locator(
         (transformed / get_spacing()).map([](auto i) -> int { return i; });
 
     auto min =
-        (cube_pos - 1)
-            .apply([](auto i, auto j) { return std::max(i, j); }, Vec3i(0));
+        (cube_pos -
+         1).apply([](auto i, auto j) { return std::max(i, j); }, Vec3i(0));
     auto max =
-        (cube_pos + 2)
-            .apply([](auto i, auto j) { return std::min(i, j); }, get_dim());
+        (cube_pos +
+         2).apply([](auto i, auto j) { return std::min(i, j); }, get_dim());
 
     auto get_dist = [this, v](auto loc) {
         return (v - compute_position(loc)).mag_squared();
@@ -242,31 +233,25 @@ void RectangularMesh::compute_neighbors(size_type index,
         Locator(loc.x, loc.y, loc.z + 1),
     }};
 
-    proc::transform(n_loc,
-                    output,
-                    [this](const auto& i) {
-                        auto inside = (Vec3i(0) <= i).all() && (i < dim).all();
-                        return inside ? compute_index(i)
-                                      : RectangularProgram::NO_NEIGHBOR;
-                    });
+    proc::transform(n_loc, output, [this](const auto& i) {
+        auto inside = (Vec3i(0) <= i).all() && (i < dim).all();
+        return inside ? compute_index(i) : RectangularProgram::NO_NEIGHBOR;
+    });
 }
 
 std::vector<RectangularMesh::CondensedNode>
 RectangularMesh::get_condensed_nodes() const {
     std::vector<RectangularMesh::CondensedNode> ret(get_nodes().size());
-    proc::transform(
-        get_nodes(),
-        ret.begin(),
-        [](const auto& i) { return RectangularProgram::condense(i); });
-    proc::for_each(
-        ret,
-        [](const auto& i) {
-            if (all_flags_set(i.boundary_type,
-                              std::make_tuple(RectangularProgram::id_inside)) &&
-                popcount(i.boundary_type) > 1) {
-                LOG(INFO) << "too many bits set?";
-            }
-        });
+    proc::transform(get_nodes(), ret.begin(), [](const auto& i) {
+        return RectangularProgram::condense(i);
+    });
+    proc::for_each(ret, [](const auto& i) {
+        if (all_flags_set(i.boundary_type,
+                          std::make_tuple(RectangularProgram::id_inside)) &&
+            popcount(i.boundary_type) > 1) {
+            LOG(INFO) << "too many bits set?";
+        }
+    });
     return ret;
 }
 
@@ -288,8 +273,7 @@ cl_uint RectangularMesh::coefficient_index_for_node(
     const auto& triangles = b.get_triangles();
     const auto& vertices = b.get_vertices();
     auto min = proc::min_element(
-        triangles,
-        [&node, &vertices](const auto& i, const auto& j) {
+        triangles, [&node, &vertices](const auto& i, const auto& j) {
             auto get_dist = [&node, &vertices](const auto& i) {
                 return geo::point_triangle_distance_squared(
                     i, vertices, to_vec3f(node.position));

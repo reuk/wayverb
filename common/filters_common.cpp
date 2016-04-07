@@ -1,8 +1,8 @@
 #include "filters_common.h"
 #include "sinc.h"
 
-#include <numeric>
 #include <iostream>
+#include <numeric>
 
 void Lopass::setParams(float co, float s) {
     cutoff = co;

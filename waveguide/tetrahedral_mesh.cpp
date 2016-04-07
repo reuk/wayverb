@@ -1,7 +1,7 @@
 #include "tetrahedral_mesh.h"
 
-#include "conversions.h"
 #include "boundary_adjust.h"
+#include "conversions.h"
 #include "stl_wrappers.h"
 
 #include <algorithm>
@@ -39,23 +39,19 @@ std::vector<TetrahedralMesh::Node> TetrahedralMesh::compute_nodes(
     auto total_nodes = get_dim().product() * scaled_cube.size();
     std::vector<Node> ret(total_nodes);
     auto counter = 0u;
-    proc::generate(
-        ret,
-        [this, &counter, &boundary] {
-            Node ret;
-            auto p = this->compute_position(this->compute_locator(counter));
-            this->compute_neighbors(counter, ret.ports);
-            ret.position = to_cl_float3(p);
-            counter += 1;
-            return ret;
-        });
+    proc::generate(ret, [this, &counter, &boundary] {
+        Node ret;
+        auto p = this->compute_position(this->compute_locator(counter));
+        this->compute_neighbors(counter, ret.ports);
+        ret.position = to_cl_float3(p);
+        counter += 1;
+        return ret;
+    });
 
     std::vector<bool> inside(ret.size());
-    proc::transform(ret,
-                    inside.begin(),
-                    [&boundary](const auto& i) {
-                        return boundary.inside(to_vec3f(i.position));
-                    });
+    proc::transform(ret, inside.begin(), [&boundary](const auto& i) {
+        return boundary.inside(to_vec3f(i.position));
+    });
 
     auto neighbor_inside = [&inside](const auto& i) {
         for (const auto& it : i.ports) {
@@ -73,13 +69,10 @@ std::vector<TetrahedralMesh::Node> TetrahedralMesh::compute_nodes(
                         return neighbor_inside(node) && in;
                     });
 
-    proc::transform(ret,
-                    inside.begin(),
-                    ret.begin(),
-                    [](auto i, auto j) {
-                        i.inside = j;
-                        return i;
-                    });
+    proc::transform(ret, inside.begin(), ret.begin(), [](auto i, auto j) {
+        i.inside = j;
+        return i;
+    });
 
     return ret;
 }
@@ -127,11 +120,11 @@ TetrahedralMesh::Locator TetrahedralMesh::compute_locator(
         (transformed / get_cube_side()).map([](auto i) -> int { return i; });
 
     auto min =
-        (cube_pos - 1)
-            .apply([](auto i, auto j) { return std::max(i, j); }, Vec3i(0));
+        (cube_pos -
+         1).apply([](auto i, auto j) { return std::max(i, j); }, Vec3i(0));
     auto max =
-        (cube_pos + 2)
-            .apply([](auto i, auto j) { return std::min(i, j); }, get_dim());
+        (cube_pos +
+         2).apply([](auto i, auto j) { return std::min(i, j); }, get_dim());
 
     std::vector<int> indices(scaled_cube.size());
     iota(indices.begin(), indices.end(), 0);
@@ -170,40 +163,41 @@ using Locator = TetrahedralMesh::Locator;
 
 //  TODO any way to test this?
 const std::array<std::array<Locator, TetrahedralMesh::PORTS>,
-                 TetrahedralMesh::CUBE_NODES> TetrahedralMesh::offset_table{{
-    {{Locator(Vec3i(0, 0, 0), 2),
-      Locator(Vec3i(-1, 0, -1), 3),
-      Locator(Vec3i(0, -1, -1), 6),
-      Locator(Vec3i(-1, -1, 0), 7)}},
-    {{Locator(Vec3i(0, 0, 0), 2),
-      Locator(Vec3i(0, 0, 0), 3),
-      Locator(Vec3i(0, -1, 0), 6),
-      Locator(Vec3i(0, -1, 0), 7)}},
-    {{Locator(Vec3i(0, 0, 0), 0),
-      Locator(Vec3i(0, 0, 0), 1),
-      Locator(Vec3i(0, 0, 0), 4),
-      Locator(Vec3i(0, 0, 0), 5)}},
-    {{Locator(Vec3i(1, 0, 1), 0),
-      Locator(Vec3i(0, 0, 0), 1),
-      Locator(Vec3i(1, 0, 0), 4),
-      Locator(Vec3i(0, 0, 1), 5)}},
-    {{Locator(Vec3i(0, 0, 0), 2),
-      Locator(Vec3i(-1, 0, 0), 3),
-      Locator(Vec3i(0, 0, 0), 6),
-      Locator(Vec3i(-1, 0, 0), 7)}},
-    {{Locator(Vec3i(0, 0, 0), 2),
-      Locator(Vec3i(0, 0, -1), 3),
-      Locator(Vec3i(0, 0, -1), 6),
-      Locator(Vec3i(0, 0, 0), 7)}},
-    {{Locator(Vec3i(0, 1, 1), 0),
-      Locator(Vec3i(0, 1, 0), 1),
-      Locator(Vec3i(0, 0, 0), 4),
-      Locator(Vec3i(0, 0, 1), 5)}},
-    {{Locator(Vec3i(1, 1, 0), 0),
-      Locator(Vec3i(0, 1, 0), 1),
-      Locator(Vec3i(1, 0, 0), 4),
-      Locator(Vec3i(0, 0, 0), 5)}},
-}};
+                 TetrahedralMesh::CUBE_NODES>
+    TetrahedralMesh::offset_table{{
+        {{Locator(Vec3i(0, 0, 0), 2),
+          Locator(Vec3i(-1, 0, -1), 3),
+          Locator(Vec3i(0, -1, -1), 6),
+          Locator(Vec3i(-1, -1, 0), 7)}},
+        {{Locator(Vec3i(0, 0, 0), 2),
+          Locator(Vec3i(0, 0, 0), 3),
+          Locator(Vec3i(0, -1, 0), 6),
+          Locator(Vec3i(0, -1, 0), 7)}},
+        {{Locator(Vec3i(0, 0, 0), 0),
+          Locator(Vec3i(0, 0, 0), 1),
+          Locator(Vec3i(0, 0, 0), 4),
+          Locator(Vec3i(0, 0, 0), 5)}},
+        {{Locator(Vec3i(1, 0, 1), 0),
+          Locator(Vec3i(0, 0, 0), 1),
+          Locator(Vec3i(1, 0, 0), 4),
+          Locator(Vec3i(0, 0, 1), 5)}},
+        {{Locator(Vec3i(0, 0, 0), 2),
+          Locator(Vec3i(-1, 0, 0), 3),
+          Locator(Vec3i(0, 0, 0), 6),
+          Locator(Vec3i(-1, 0, 0), 7)}},
+        {{Locator(Vec3i(0, 0, 0), 2),
+          Locator(Vec3i(0, 0, -1), 3),
+          Locator(Vec3i(0, 0, -1), 6),
+          Locator(Vec3i(0, 0, 0), 7)}},
+        {{Locator(Vec3i(0, 1, 1), 0),
+          Locator(Vec3i(0, 1, 0), 1),
+          Locator(Vec3i(0, 0, 0), 4),
+          Locator(Vec3i(0, 0, 1), 5)}},
+        {{Locator(Vec3i(1, 1, 0), 0),
+          Locator(Vec3i(0, 1, 0), 1),
+          Locator(Vec3i(1, 0, 0), 4),
+          Locator(Vec3i(0, 0, 0), 5)}},
+    }};
 
 void TetrahedralMesh::compute_neighbors(size_type index,
                                         cl_uint* output) const {

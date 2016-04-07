@@ -5,16 +5,16 @@
 static const auto eps = 10e-5;
 
 int sign3(const Vec3f& v) {
-    return (v.x < eps) ? 0x04 : 0 | (v.x > -eps)
-                                    ? 0x20
-                                    : 0 | (v.y < eps)
-                                          ? 0x02
-                                          : 0 | (v.y > -eps)
-                                                ? 0x10
-                                                : 0 | (v.z < eps)
-                                                      ? 0x01
-                                                      : 0 | (v.z > -eps) ? 0x08
-                                                                         : 0;
+    return (v.x < eps) ? 0x04
+                       : 0 | (v.x > -eps)
+                             ? 0x20
+                             : 0 | (v.y < eps)
+                                   ? 0x02
+                                   : 0 | (v.y > -eps)
+                                         ? 0x10
+                                         : 0 | (v.z < eps)
+                                               ? 0x01
+                                               : 0 | (v.z > -eps) ? 0x08 : 0;
 }
 
 int face_plane(const Vec3f& p) {

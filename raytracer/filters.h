@@ -2,11 +2,11 @@
 
 #include "config.h"
 
-#include <array>
-#include <vector>
-#include <cmath>
 #include <algorithm>
+#include <array>
+#include <cmath>
 #include <iostream>
+#include <vector>
 
 /// Enum denoting available filter types.
 enum FilterType {

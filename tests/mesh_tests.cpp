@@ -1,6 +1,6 @@
-#include "tetrahedral_mesh.h"
-#include "rectangular_mesh.h"
 #include "cl_common.h"
+#include "rectangular_mesh.h"
+#include "tetrahedral_mesh.h"
 
 #include "gtest/gtest.h"
 

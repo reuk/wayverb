@@ -2,8 +2,8 @@
 
 #include "sndfile.hh"
 
-#include <vector>
 #include <string>
+#include <vector>
 
 void write_sndfile(const std::string& fname,
                    const std::vector<std::vector<float>>& outdata,

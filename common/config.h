@@ -2,18 +2,18 @@
 
 #include "vec.h"
 
-#include "rapidjson/rapidjson.h"
-#include "rapidjson/error/en.h"
 #include "rapidjson/document.h"
+#include "rapidjson/error/en.h"
+#include "rapidjson/rapidjson.h"
 
 #define __CL_ENABLE_EXCEPTIONS
 #include "cl.hpp"
 
-#include <string>
-#include <vector>
-#include <stdexcept>
 #include <map>
 #include <memory>
+#include <stdexcept>
+#include <string>
+#include <vector>
 
 /// This file contains a set of classes which serve to form a layer over the
 /// rapidjson parser, which can easily be used to validate and read json

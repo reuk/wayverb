@@ -1,13 +1,13 @@
 #pragma once
 
-#include "filters.h"
-#include "cl_structs.h"
-#include "raytracer_program.h"
 #include "callbacks.h"
+#include "cl_structs.h"
+#include "filters.h"
+#include "raytracer_program.h"
 
 #include "config.h"
-#include "scene_data.h"
 #include "filters.h"
+#include "scene_data.h"
 #include "sinc.h"
 
 #include "rapidjson/document.h"
@@ -15,12 +15,12 @@
 #define __CL_ENABLE_EXCEPTIONS
 #include "cl.hpp"
 
-#include <vector>
-#include <cmath>
-#include <numeric>
-#include <iostream>
 #include <array>
+#include <cmath>
+#include <iostream>
 #include <map>
+#include <numeric>
+#include <vector>
 
 /// Sum impulses ocurring at the same (sampled) time and return a vector in
 /// which each subsequent item refers to the next sample of an impulse

@@ -1,8 +1,8 @@
 #pragma once
 
-#include "scene_data.h"
 #include "geometric.h"
 #include "reduce.h"
+#include "scene_data.h"
 
 template <typename F>
 struct apply_functor {

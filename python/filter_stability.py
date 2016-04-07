@@ -100,13 +100,14 @@ def all_equal(x):
 
 
 def is_stable(polynomial):
+    print polynomial
     stable_roots = is_stable_roots(polynomial)
     stable_recursive = is_stable_recursive(polynomial)
     stable_jury = is_stable_jury(polynomial)
     results = [
-        is_stable_roots(polynomial),
-        is_stable_recursive(polynomial),
-        # is_stable_jury(polynomial),
+            stable_roots,
+            stable_recursive,
+            # stable_jury,
     ]
     if not all_equal(results):
         raise RuntimeError("results don't match for polynomial ",
@@ -121,11 +122,21 @@ def random_coeffs():
 
 
 def check_surface_filters(surface_desc, check):
-    coeffs = to_filter_coefficients(Surface(surface_desc, surface_desc), 44100)
+    coeffs = to_filter_coefficients(
+        Surface(
+            surface_desc,
+            surface_desc),
+        44100)
     if check:
         for c in coeffs:
             is_stable(c[1])
-    return series_coeffs(coeffs)
+    coeffs = series_coeffs(coeffs)
+    if check:
+        is_stable(coeffs[1])
+    coeffs = impedance_filter(coeffs)
+    if check:
+        is_stable(coeffs[1])
+    return coeffs
 
 
 def random_coeffs_from_surface():
@@ -140,7 +151,7 @@ def do_graph(coeffs, yes):
         if yes:
             zplane(coeffs, coeffs)
             plt.show()
-        raise
+        return False
 
 
 def main():
@@ -151,15 +162,16 @@ def main():
 
 
 def test():
+    stable = []
     for i in [
-        [0.4, 0.3, 0.5, 0.8, 0.9, 1, 1, 1],
-        [1, 1, 1, 1, 1, 1, 1, 1],
+        [0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9],
+        [0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1],
+        [0.4, 0.3, 0.5, 0.8, 0.9, 0.9, 0.9, 0.9],
     ]:
-        coeffs = check_surface_filters(i, False)[1]
-        print coeffs
-        if not do_graph(coeffs, True):
-            return False
-    return True
+        coeffs = check_surface_filters(i, False)
+        stable.append(do_graph(coeffs[1], True))
+
+    return stable
 
 if __name__ == "__main__":
     print test()

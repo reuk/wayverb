@@ -1,19 +1,19 @@
 #pragma once
 
-#include "vec.h"
-#include "boundaries.h"
 #include "base_mesh.h"
-#include "rectangular_program.h"
-#include "geometric.h"
-#include "conversions.h"
+#include "boundaries.h"
 #include "boundary_adjust.h"
+#include "conversions.h"
+#include "geometric.h"
 #include "ostream_overloads.h"
+#include "rectangular_program.h"
+#include "vec.h"
 
 #include <glog/logging.h>
 
-#include <vector>
 #include <set>
 #include <unordered_map>
+#include <vector>
 
 namespace std {
 template <typename T, typename U>
@@ -92,13 +92,11 @@ public:
 
     template <int BITS>
     size_type compute_num_boundary() const {
-        return std::count_if(get_nodes().begin(),
-                             get_nodes().end(),
-                             [](const auto& i) {
-                                 return i.boundary_type !=
-                                            RectangularProgram::id_reentrant &&
-                                        popcount(i.boundary_type) == BITS;
-                             });
+        return std::count_if(
+            get_nodes().begin(), get_nodes().end(), [](const auto& i) {
+                return i.boundary_type != RectangularProgram::id_reentrant &&
+                       popcount(i.boundary_type) == BITS;
+            });
     }
 
     size_type compute_num_reentrant() const;
@@ -185,12 +183,9 @@ public:
                 return *ideal_it;
             }
 
-            auto ok_it = std::find_if(
-                nearby.begin(),
-                nearby.end(),
-                [](auto i) {
-                    return i.type == RectangularProgram::id_reentrant;
-                });
+            auto ok_it = std::find_if(nearby.begin(), nearby.end(), [](auto i) {
+                return i.type == RectangularProgram::id_reentrant;
+            });
             if (ok_it != nearby.end()) {
                 return *ok_it;
             }

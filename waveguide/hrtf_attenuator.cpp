@@ -1,6 +1,6 @@
 #include "hrtf_attenuator.h"
-#include "hrtf.h"
 #include "filters_common.h"
+#include "hrtf.h"
 #include "stl_wrappers.h"
 
 HrtfAttenuator::HrtfAttenuator(const Vec3f& direction,
@@ -56,27 +56,24 @@ std::vector<float> HrtfAttenuator::process(
     for (auto band = 0u; band != sizeof(VolumeType) / sizeof(float); ++band) {
         if (HrtfData::EDGES[band + 1] < sr / 2) {
             std::vector<float> this_band(input.size());
-            proc::transform(
-                input,
-                this_band.begin(),
-                [this, band](auto i) {
-                    //  TODO DEFINITELY CHECK THIS
-                    //  RUN TESTS YEAH
-                    auto mag = i.intensity.mag();
-                    if (mag == 0)
-                        return 0.0f;
-                    mag = sqrt(mag * pow(attenuation(i.intensity, band), 2));
-                    return std::copysign(mag, i.pressure);
-                });
+            proc::transform(input, this_band.begin(), [this, band](auto i) {
+                //  TODO DEFINITELY CHECK THIS
+                //  RUN TESTS YEAH
+                auto mag = i.intensity.mag();
+                if (mag == 0)
+                    return 0.0f;
+                mag = sqrt(mag * pow(attenuation(i.intensity, band), 2));
+                return std::copysign(mag, i.pressure);
+            });
 
             bandpass.setParams(
                 HrtfData::EDGES[band], HrtfData::EDGES[band + 1], sr);
             bandpass.filter(this_band);
 
-            proc::transform(this_band,
-                            ret.begin(),
-                            ret.begin(),
-                            [](auto a, auto b) { return a + b; });
+            proc::transform(
+                this_band, ret.begin(), ret.begin(), [](auto a, auto b) {
+                    return a + b;
+                });
         }
     }
 

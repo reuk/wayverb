@@ -1,9 +1,9 @@
 #pragma once
 
-#include "vec.h"
-#include "boundaries.h"
 #include "base_mesh.h"
+#include "boundaries.h"
 #include "tetrahedral_program.h"
+#include "vec.h"
 
 #include <vector>
 

@@ -8,47 +8,44 @@
 template <typename WaveguideType>
 class MeshObject final : public ::Drawable {
 public:
-    MeshObject(const GenericShader & shader, const WaveguideType & waveguide)
+    MeshObject(const GenericShader& shader, const WaveguideType& waveguide)
             : shader(shader) {
-        const auto & nodes = waveguide.get_mesh().get_nodes();
+        const auto& nodes = waveguide.get_mesh().get_nodes();
 
         std::vector<glm::vec3> v(nodes.size());
-        std::transform(nodes.begin(),
-                       nodes.end(),
-                       v.begin(),
-                       [](auto i) { return to_glm_vec3(i.position); });
+        std::transform(nodes.begin(), nodes.end(), v.begin(), [](auto i) {
+            return to_glm_vec3(i.position);
+        });
 
         //  init buffers
         std::vector<glm::vec4> c(v.size());
 
-        std::transform(nodes.begin(),
-                       nodes.end(),
-                       c.begin(),
-                       [](const auto & i) {
-                           switch (i.boundary_type) {
-                               case RectangularProgram::id_none:
-                               case RectangularProgram::id_inside:
-                                   return glm::vec4(0, 0, 0, 0);
-                               case RectangularProgram::id_nx:
-                                   return glm::vec4(1, 0, 0, 1);
-                               case RectangularProgram::id_px:
-                                   return glm::vec4(0, 1, 1, 1);
-                               case RectangularProgram::id_ny:
-                                   return glm::vec4(0, 1, 0, 1);
-                               case RectangularProgram::id_py:
-                                   return glm::vec4(1, 0, 1, 1);
-                               case RectangularProgram::id_nz:
-                                   return glm::vec4(0, 0, 1, 1);
-                               case RectangularProgram::id_pz:
-                                   return glm::vec4(1, 1, 0, 1);
-                               case RectangularProgram::id_reentrant:
-                                   return glm::vec4(0.5, 0.5, 0.5, 1);
+        std::transform(
+            nodes.begin(), nodes.end(), c.begin(), [](const auto& i) {
+                switch (i.boundary_type) {
+                    case RectangularProgram::id_none:
+                    case RectangularProgram::id_inside:
+                        return glm::vec4(0, 0, 0, 0);
+                    case RectangularProgram::id_nx:
+                        return glm::vec4(1, 0, 0, 1);
+                    case RectangularProgram::id_px:
+                        return glm::vec4(0, 1, 1, 1);
+                    case RectangularProgram::id_ny:
+                        return glm::vec4(0, 1, 0, 1);
+                    case RectangularProgram::id_py:
+                        return glm::vec4(1, 0, 1, 1);
+                    case RectangularProgram::id_nz:
+                        return glm::vec4(0, 0, 1, 1);
+                    case RectangularProgram::id_pz:
+                        return glm::vec4(1, 1, 0, 1);
+                    case RectangularProgram::id_reentrant:
+                        return glm::vec4(0.5, 0.5, 0.5, 1);
 
-                               default:
-                                   return glm::vec4(1, 1, 1, 1);
-                           }
-                           return glm::vec4(0, 0, 0, 0);
-                       });
+                    default:
+                        return glm::vec4(1, 1, 1, 1);
+                }
+                return glm::vec4(0, 0, 0, 0);
+            });
 
         std::vector<GLuint> indices(v.size());
         std::iota(indices.begin(), indices.end(), 0);
@@ -83,7 +80,7 @@ public:
         glDrawElements(GL_POINTS, size, GL_UNSIGNED_INT, nullptr);
     }
 
-    void set_pressures(const std::vector<float> & pressures) {
+    void set_pressures(const std::vector<float>& pressures) {
         color_storage.resize(pressures.size());
         std::cout << "max mag: " << max_mag(pressures) << std::endl;
         std::transform(pressures.begin(),
@@ -100,7 +97,7 @@ public:
     }
 
 private:
-    const GenericShader & shader;
+    const GenericShader& shader;
 
     std::vector<glm::vec4>
         color_storage;  //  hopefully we don't have to malloc every frame

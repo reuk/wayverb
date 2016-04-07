@@ -59,22 +59,16 @@ def get_notch_coeffs(gain, centre, sr, Q):
     return b, a
 
 def get_peak_coeffs(gain, centre, sr, Q):
-    global_gain_db = 0
-    global_gain = db2a(global_gain_db)
-
-    A = db2a((gain - global_gain_db) / 2)
+    A = db2a(gain / 2)
     w0 = 2 * pi * centre / sr
     cw0 = cos(w0)
     sw0 = sin(w0)
     alpha = sw0 / 2 * Q
 
-    b = [1 + (alpha * A), -2 * cw0, 1 - alpha * A]
-    a = [1 + alpha / A, -2 * cw0, 1 - alpha / A]
+    a0 = 1 + alpha / A
 
-    a0 = a[0]
-
-    b = [np.float(i * global_gain / a0) for i in b]
-    a = [np.float(i / a0) for i in a]
+    b = [(1 + (alpha * A)) / a0, (-2 * cw0) / a0, (1 - alpha * A) / a0]
+    a = [1, (-2 * cw0) / a0, (1 - alpha / A) / a0]
 
     return b, a
 

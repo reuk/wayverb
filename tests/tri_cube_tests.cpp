@@ -1,6 +1,6 @@
+#include "boundaries.h"
 #include "helper.h"
 #include "tri_cube_intersection.h"
-#include "boundaries.h"
 
 #include "tri_cube_c.h"
 

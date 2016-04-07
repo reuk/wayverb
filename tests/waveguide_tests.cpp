@@ -1,27 +1,25 @@
-#include "waveguide.h"
-#include "rectangular_program.h"
 #include "cl_common.h"
-#include "waveguide_config.h"
+#include "rectangular_program.h"
 #include "sinc.h"
+#include "waveguide.h"
+#include "waveguide_config.h"
 
 #include "gtest/gtest.h"
 
 #include <random>
 
-static constexpr float sr{44100};
+static constexpr auto samplerate{44100.0};
 
-TEST(notch_filter_coefficients, notch_filter_coefficients) {
+TEST(peak_filter_coefficients, peak_filter_coefficients) {
     static std::default_random_engine engine{std::random_device()()};
-    static std::uniform_real_distribution<cl_float> range{0, sr / 2};
+    static std::uniform_real_distribution<cl_float> range{0, samplerate / 2};
     for (auto i = 0; i != 10; ++i) {
         auto descriptor =
             RectangularProgram::FilterDescriptor{0, range(engine), 1.414};
         auto coefficients =
-            RectangularProgram::get_notch_coefficients(descriptor, sr);
+            RectangularProgram::get_peak_coefficients(descriptor, samplerate);
 
-        ASSERT_TRUE(std::equal(std::begin(coefficients.b),
-                               std::end(coefficients.b),
-                               std::begin(coefficients.a)));
+        ASSERT_TRUE(proc::equal(coefficients.b, std::begin(coefficients.a)));
     }
 }
 
@@ -33,7 +31,7 @@ TEST(filter_coefficients, filter_coefficients) {
 }
 
 TEST(run_waveguide, run_waveguide) {
-    auto steps = 4000;
+    auto steps = 64000;
 
     ComputeContext context_info;
 
@@ -44,13 +42,12 @@ TEST(run_waveguide, run_waveguide) {
     constexpr Box box(Vec3f(0, 0, 0), Vec3f(4, 3, 6));
     constexpr Vec3f source(1, 1, 1);
     constexpr Vec3f receiver(2, 1, 5);
-    constexpr auto samplerate = 44100;
-    constexpr auto v = 0.9;
+    constexpr auto v = 0.5;
     constexpr Surface surface{{{v, v, v, v, v, v, v, v}},
                               {{v, v, v, v, v, v, v, v}}};
 
     WaveguideConfig config;
-    config.get_filter_frequency() = 2000;
+    config.get_filter_frequency() = 1000;
     config.get_source() = source;
     config.get_mic() = receiver;
     config.get_output_sample_rate() = samplerate;

@@ -156,4 +156,18 @@ struct InvokeFunctor {
     }
     Fun fun;
 };
+
+template <typename T, typename Callback, size_t... Ix>
+constexpr auto map(std::index_sequence<Ix...>,
+                   const T& t,
+                   const Callback& callback) {
+    return std::array<decltype(callback(std::get<0>(t))),
+                      std::tuple_size<T>::value>{callback(std::get<Ix>(t))...};
+}
+
+template <typename T, typename Callback>
+constexpr auto map(const T& t, const Callback& callback) {
+    return map(
+        std::make_index_sequence<std::tuple_size<T>::value>(), t, callback);
+}
 }

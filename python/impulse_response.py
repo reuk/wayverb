@@ -3,7 +3,6 @@ from numpy import zeros
 import matplotlib.pyplot as plt
 
 from filter_stability import check_surface_filters
-from boundary_modelling import impedance_filter
 
 
 def main():
@@ -16,9 +15,6 @@ def main():
         reflectance = check_surface_filters(i, False)
         plt.figure()
         plt.plot(*dlsim((reflectance[0], reflectance[1], 1), dirac))
-
-        impedance = impedance_filter(reflectance)
-        plt.plot(*dlsim((impedance[0], impedance[1], 1), dirac))
 
         plt.show()
 

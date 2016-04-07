@@ -1,9 +1,9 @@
 #pragma once
 
-#include "scene_data.h"
 #include "boundaries.h"
-#include "geometric.h"
 #include "float_uint.h"
+#include "geometric.h"
+#include "scene_data.h"
 
 class Octree final {
 public:

@@ -4,8 +4,8 @@
 
 #include "stl_wrappers.h"
 
-#include <iostream>
 #include <algorithm>
+#include <iostream>
 
 std::array<CuboidBoundary, 8> next_boundaries(const CuboidBoundary& parent) {
     auto centre = parent.centre();
@@ -57,11 +57,9 @@ std::unique_ptr<std::array<Octree, 8>> get_nodes(
 
     auto next = next_boundaries(ab);
     auto ret = std::make_unique<std::array<Octree, 8>>();
-    proc::transform(next,
-                    ret->begin(),
-                    [&sd, md, &to_test](const auto& i) {
-                        return Octree(sd, md - 1, to_test, i);
-                    });
+    proc::transform(next, ret->begin(), [&sd, md, &to_test](const auto& i) {
+        return Octree(sd, md - 1, to_test, i);
+    });
     return ret;
 }
 
@@ -130,11 +128,10 @@ void Octree::fill_flattened(std::vector<FloatUInt>& ret) const {
                        [&ret](const auto&) { ret.push_back(to_fui(0u)); });
 
         auto counter = node_table_start;
-        proc::for_each(nodes,
-                       [&ret, &counter](const auto& i) {
-                           ret[counter++].i = ret.size();
-                           i.fill_flattened(ret);
-                       });
+        proc::for_each(nodes, [&ret, &counter](const auto& i) {
+            ret[counter++].i = ret.size();
+            i.fill_flattened(ret);
+        });
     }
 }
 

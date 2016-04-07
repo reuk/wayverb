@@ -3,12 +3,15 @@
 #define __CL_ENABLE_EXCEPTIONS
 #include "cl.hpp"
 
-#include "string_builder.h"
+#include "db.h"
 #include "reduce.h"
 #include "stl_wrappers.h"
+#include "string_builder.h"
 
 #include <cassert>
 #include <cmath>
+#include <iomanip>
+#include <iostream>
 
 class RectangularProgram : public cl::Program {
 public:
@@ -170,27 +173,49 @@ public:
     using coefficient_generator =
         BiquadCoefficients (*)(const FilterDescriptor& n, double sr);
 
-    static BiquadCoefficients get_notch_coefficients(const FilterDescriptor& n,
-                                                     double sr);
-
     static BiquadCoefficients get_peak_coefficients(const FilterDescriptor& n,
-                                                    double sr);
+                                                    double sr) {
+        auto A = db2a(n.gain / 2);
+        auto w0 = 2.0 * M_PI * n.centre / sr;
+        auto cw0 = cos(w0);
+        auto sw0 = sin(w0);
+        auto alpha = sw0 / 2.0 * n.Q;
+        auto a0 = 1 + alpha / A;
+        return RectangularProgram::BiquadCoefficients{
+            {(1 + (alpha * A)) / a0, (-2 * cw0) / a0, (1 - alpha * A) / a0},
+            {1, (-2 * cw0) / a0, (1 - alpha / A) / a0}};
+    }
 
-    static BiquadCoefficientsArray get_biquads_array(
+    template <size_t... Ix>
+    constexpr static BiquadCoefficientsArray get_biquads_array(
+        std::index_sequence<Ix...>,
         const std::array<FilterDescriptor,
                          BiquadCoefficientsArray::BIQUAD_SECTIONS>& n,
         double sr,
-        coefficient_generator callback);
-
-    static BiquadCoefficientsArray get_notch_biquads_array(
+        coefficient_generator callback) {
+        RectangularProgram::BiquadCoefficientsArray ret{
+            {callback(std::get<Ix>(n), sr)...}};
+        return ret;
+    }
+    constexpr static BiquadCoefficientsArray get_biquads_array(
         const std::array<FilterDescriptor,
                          BiquadCoefficientsArray::BIQUAD_SECTIONS>& n,
-        double sr);
+        double sr,
+        coefficient_generator callback) {
+        return get_biquads_array(
+            std::make_index_sequence<
+                BiquadCoefficientsArray::BIQUAD_SECTIONS>(),
+            n,
+            sr,
+            callback);
+    }
 
-    static BiquadCoefficientsArray get_peak_biquads_array(
+    constexpr static BiquadCoefficientsArray get_peak_biquads_array(
         const std::array<FilterDescriptor,
                          BiquadCoefficientsArray::BIQUAD_SECTIONS>& n,
-        double sr);
+        double sr) {
+        return get_biquads_array(n, sr, get_peak_coefficients);
+    }
 
     template <int A, int B>
     static FilterCoefficients<A + B> convolve(const FilterCoefficients<A>& a,
@@ -208,13 +233,14 @@ public:
     static CanonicalCoefficients convolve(const BiquadCoefficientsArray& a);
 
     template <unsigned long L>
-    static constexpr bool is_stable(const std::array<float, L>& a) {
-        float rci = a[L - 1];
+    static constexpr bool is_stable(const std::array<double, L>& a) {
+        auto rci = a[L - 1];
+        std::cout << std::setprecision(9) << rci << std::endl;
         if (std::abs(rci) >= 1)
             return false;
 
         constexpr auto next_size = L - 1;
-        std::array<float, next_size> next_array;
+        std::array<double, next_size> next_array;
         for (auto i = 0; i != next_size; ++i)
             next_array[i] = (a[i] - rci * a[next_size - i]) / (1 - rci * rci);
         return is_stable(next_array);
@@ -222,8 +248,9 @@ public:
 
     template <int L>
     static constexpr bool is_stable(const FilterCoefficients<L>& coeffs) {
-        std::array<float, L + 1> denom;
-        std::copy(std::begin(coeffs.a), std::end(coeffs.a), denom.begin());
+        std::array<double, L + 1> denom;
+        proc::copy(coeffs.a, denom.begin());
+        std::cout << denom << std::endl;
         return is_stable(denom);
     }
 
@@ -275,6 +302,6 @@ std::ostream& operator<<(std::ostream& os,
 //----------------------------------------------------------------------------//
 
 template <>
-constexpr bool RectangularProgram::is_stable(const std::array<float, 1>& a) {
+constexpr bool RectangularProgram::is_stable(const std::array<double, 1>& a) {
     return true;
 }

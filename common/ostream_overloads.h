@@ -1,7 +1,7 @@
 #pragma once
 
-#include "string_builder.h"
 #include "extended_algorithms.h"
+#include "string_builder.h"
 
 #define __CL_ENABLE_EXCEPTIONS
 #include "cl.hpp"

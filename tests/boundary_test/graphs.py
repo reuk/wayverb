@@ -179,13 +179,13 @@ def main():
 
 def one_page():
     azel = [
-        (0, 0),
+#        (0, 0),
         (0.7854, 0),
-        (0.7854, 0.7854),
-        (1.047, 1.047),
+#        (0.7854, 0.7854),
+#        (1.047, 1.047),
     ]
 
-    root = "/Users/reuben/dev/waveguide/boundary_test/output/"
+    root = "/Users/reuben/dev/waveguide/tests/boundary_test/output/"
     suffix_free = "_windowed_free_field.wav"
     suffix_subb = "_windowed_subbed.wav"
 
@@ -242,7 +242,7 @@ if __name__ == "__main__":
         'font.serif': [],
         'font.sans-serif': ['Helvetica Neue'],
         'font.monospace': ['Input Mono Condensed'],
-        'legend.fontsize': 10,
+        'legend.fontsize': 7,
     }
 
     matplotlib.rcParams.update(pgf_with_rc_fonts)

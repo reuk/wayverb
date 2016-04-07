@@ -1,63 +1,17 @@
-#include "rectangular_program.h"
 #include "cl_common.h"
-#include "timed_scope.h"
 #include "db.h"
+#include "extended_algorithms.h"
+#include "rectangular_program.h"
+#include "timed_scope.h"
 #include "waveguide.h"
-#include "testing_notches.h"
 
 #include "write_audio_file.h"
 
 #include "gtest/gtest.h"
 
-#include <random>
 #include <array>
+#include <random>
 #include <type_traits>
-
-template <typename T>
-std::vector<T> compute_coeffs(
-    int size,
-    const std::array<
-        RectangularProgram::FilterDescriptor,
-        RectangularProgram::BiquadCoefficientsArray::BIQUAD_SECTIONS>& n,
-    float sr) {
-    return std::vector<T>(size);
-}
-
-template <>
-std::vector<RectangularProgram::BiquadCoefficientsArray> compute_coeffs(
-    int size,
-    const std::array<
-        RectangularProgram::FilterDescriptor,
-        RectangularProgram::BiquadCoefficientsArray::BIQUAD_SECTIONS>& n,
-    float sr) {
-    auto ret = std::vector<RectangularProgram::BiquadCoefficientsArray>(size);
-    std::generate(
-        ret.begin(),
-        ret.end(),
-        [&n, sr] { return RectangularProgram::get_peak_biquads_array(n, sr); });
-    return ret;
-}
-
-using FC = RectangularProgram::FilterCoefficients<
-    RectangularProgram::BiquadCoefficientsArray::BIQUAD_SECTIONS *
-    RectangularProgram::BiquadCoefficients::ORDER>;
-
-template <>
-std::vector<FC> compute_coeffs(
-    int size,
-    const std::array<
-        RectangularProgram::FilterDescriptor,
-        RectangularProgram::BiquadCoefficientsArray::BIQUAD_SECTIONS>& n,
-    float sr) {
-    auto ret = std::vector<FC>(size);
-    std::generate(ret.begin(),
-                  ret.end(),
-                  [&n, sr] {
-                      return RectangularProgram::convolve(
-                          RectangularProgram::get_peak_biquads_array(n, sr));
-                  });
-    return ret;
-}
 
 class InputGenerator {
 public:
@@ -102,7 +56,7 @@ private:
         auto ret = std::vector<std::vector<cl_float>>{
             40000, std::vector<cl_float>(size, 0)};
         for (auto& i : ret)
-            std::generate(i.begin(), i.end(), [] { return range(engine); });
+            proc::generate(i, [] { return range(engine); });
         return ret;
     }
 
@@ -114,19 +68,160 @@ private:
 std::default_random_engine QuietNoiseGenerator::engine{std::random_device()()};
 std::uniform_real_distribution<cl_float> QuietNoiseGenerator::range{-r, r};
 
+template <size_t SAMPLES>
 class ImpulseGenerator : public InputGenerator {
 public:
     virtual std::vector<std::vector<cl_float>> compute_input(
         int size) override {
         auto ret = std::vector<std::vector<cl_float>>{
-            200, std::vector<cl_float>(size, 0)};
+            SAMPLES, std::vector<cl_float>(size, 0)};
         for (auto& i : ret.front())
             i = 0.25;
         return ret;
     }
 };
 
-template <typename Memory, typename Coeffs, typename Generator>
+namespace testing {
+constexpr auto sr{44100.0};
+constexpr auto min_v{0.05};
+constexpr auto max_v{0.95};
+
+TEST(stability, filters) {
+    for (auto s : {
+             Surface{{{0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9}},
+                     {{0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9}}},
+             Surface{{{0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1}},
+                     {{0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1}}},
+             Surface{{{0.4, 0.3, 0.5, 0.8, 0.9, 0.9, 0.9, 0.9}},
+                     {{0.4, 0.3, 0.5, 0.8, 0.9, 0.9, 0.9, 0.9}}},
+         }) {
+        auto descriptors = RectangularWaveguide::to_filter_descriptors(s);
+        auto individual_coeffs =
+            RectangularProgram::get_peak_biquads_array(descriptors, sr);
+        std::cout << individual_coeffs << std::endl;
+        auto reflectance = RectangularProgram::convolve(individual_coeffs);
+        //        ASSERT_TRUE(RectangularProgram::is_stable(reflectance)) << s;
+        auto impedance =
+            RectangularProgram::to_impedance_coefficients(reflectance);
+        ASSERT_TRUE(RectangularProgram::is_stable(impedance)) << s;
+    }
+}
+
+constexpr auto parallel_size{1 << 8};
+
+std::default_random_engine engine{std::random_device()()};
+std::uniform_real_distribution<float> range{min_v, max_v};
+
+Surface random_surface() {
+    Surface ret;
+    proc::generate(ret.specular.s, [] { return range(engine); });
+    proc::generate(ret.diffuse.s, [] { return range(engine); });
+    return ret;
+};
+
+std::array<Surface, parallel_size> compute_surfaces() {
+    std::array<Surface, parallel_size> ret;
+    proc::generate(ret, [] { return random_surface(); });
+    return ret;
+}
+
+static const auto surfaces = compute_surfaces();
+
+std::array<
+    std::array<RectangularProgram::FilterDescriptor,
+               RectangularProgram::BiquadCoefficientsArray::BIQUAD_SECTIONS>,
+    parallel_size>
+compute_descriptors() {
+    std::array<
+        std::array<
+            RectangularProgram::FilterDescriptor,
+            RectangularProgram::BiquadCoefficientsArray::BIQUAD_SECTIONS>,
+        parallel_size>
+        ret;
+    proc::transform(surfaces, ret.begin(), [](auto i) {
+        return RectangularWaveguide::to_filter_descriptors(i);
+    });
+    return ret;
+}
+
+static const auto descriptors = compute_descriptors();
+
+enum class FilterType {
+    biquad_cascade,
+    single_reflectance,
+    single_impedance,
+};
+
+template <FilterType FT>
+struct CoefficientTypeTrait;
+
+template <>
+struct CoefficientTypeTrait<FilterType::biquad_cascade> {
+    using type = RectangularProgram::BiquadCoefficientsArray;
+};
+
+template <>
+struct CoefficientTypeTrait<FilterType::single_reflectance> {
+    using type = RectangularProgram::FilterCoefficients<
+        RectangularProgram::BiquadCoefficientsArray::BIQUAD_SECTIONS *
+        RectangularProgram::BiquadCoefficients::ORDER>;
+};
+
+template <>
+struct CoefficientTypeTrait<FilterType::single_impedance> {
+    using type = RectangularProgram::FilterCoefficients<
+        RectangularProgram::BiquadCoefficientsArray::BIQUAD_SECTIONS *
+        RectangularProgram::BiquadCoefficients::ORDER>;
+};
+
+template <FilterType FT>
+std::array<typename CoefficientTypeTrait<FT>::type, parallel_size>
+compute_coeffs();
+
+template <>
+std::array<typename CoefficientTypeTrait<FilterType::biquad_cascade>::type,
+           parallel_size>
+compute_coeffs<FilterType::biquad_cascade>() {
+    std::array<RectangularProgram::BiquadCoefficientsArray, parallel_size> ret;
+    proc::transform(descriptors, ret.begin(), [](const auto& n) {
+        return RectangularProgram::get_peak_biquads_array(n, sr);
+    });
+    return ret;
+}
+
+template <>
+std::array<typename CoefficientTypeTrait<FilterType::single_reflectance>::type,
+           parallel_size>
+compute_coeffs<FilterType::single_reflectance>() {
+    std::array<
+        typename CoefficientTypeTrait<FilterType::single_reflectance>::type,
+        parallel_size>
+        ret;
+    proc::transform(descriptors, ret.begin(), [](const auto& n) {
+        return RectangularProgram::convolve(
+            RectangularProgram::get_peak_biquads_array(n, sr));
+    });
+    return ret;
+}
+
+template <>
+std::array<typename CoefficientTypeTrait<FilterType::single_impedance>::type,
+           parallel_size>
+compute_coeffs<FilterType::single_impedance>() {
+    std::array<
+        typename CoefficientTypeTrait<FilterType::single_reflectance>::type,
+        parallel_size>
+        ret;
+    proc::transform(descriptors, ret.begin(), [](const auto& n) {
+        return RectangularProgram::to_impedance_coefficients(
+            RectangularProgram::convolve(
+                RectangularProgram::get_peak_biquads_array(n, sr)));
+    });
+    return ret;
+}
+}
+
+template <typename Memory, testing::FilterType FT, typename Generator>
 class rectangular_kernel : Generator {
 public:
     virtual ~rectangular_kernel() noexcept = default;
@@ -138,56 +233,67 @@ public:
         {
             TimedScope timer("filtering");
             for (auto i = 0u; i != input.size(); ++i) {
-                cl::copy(queue, input[i].begin(), input[i].end(), cl_input);
+                cl::copy(compute_context.queue,
+                         input[i].begin(),
+                         input[i].end(),
+                         cl_input);
 
-                kernel(cl::EnqueueArgs(queue, cl::NDRange(size)),
+                kernel(cl::EnqueueArgs(compute_context.queue,
+                                       cl::NDRange(testing::parallel_size)),
                        cl_input,
                        cl_output,
                        cl_memory,
                        cl_coeffs);
 
-                cl::copy(queue, cl_output, output[i].begin(), output[i].end());
+                cl::copy(compute_context.queue,
+                         cl_output,
+                         output[i].begin(),
+                         output[i].end());
             }
         }
         auto buf = std::vector<cl_float>(output.size());
-        std::transform(output.begin(),
-                       output.end(),
-                       buf.begin(),
-                       [](const auto& i) { return i.front(); });
+        proc::transform(
+            output, buf.begin(), [](const auto& i) { return i.front(); });
         return buf;
     }
 
-    cl::Context context{get_context()};
-    cl::Device device{get_device(context)};
-    cl::CommandQueue queue{context, device};
-    RectangularProgram program{
-        get_program<RectangularProgram>(context, device)};
-    static constexpr int size{1 << 8};
-    static constexpr int sr{44100};
-    std::vector<Memory> memory{size, Memory{}};
-    std::array<RectangularProgram::FilterDescriptor,
-               RectangularProgram::BiquadCoefficientsArray::BIQUAD_SECTIONS>
-        notches{Testing::notches};
-    std::vector<Coeffs> coeffs{compute_coeffs<Coeffs>(size, notches, sr)};
-    cl::Buffer cl_memory{context, memory.begin(), memory.end(), false};
-    cl::Buffer cl_coeffs{context, coeffs.begin(), coeffs.end(), false};
-    std::vector<std::vector<cl_float>> input{Generator::compute_input(size)};
-    std::vector<std::vector<cl_float>> output{input.size(),
-                                              std::vector<cl_float>(size, 0)};
-    cl::Buffer cl_input{context, CL_MEM_READ_WRITE, size * sizeof(cl_float)};
-    cl::Buffer cl_output{context, CL_MEM_READ_WRITE, size * sizeof(cl_float)};
+    ComputeContext compute_context;
+    RectangularProgram program{get_program<RectangularProgram>(
+        compute_context.context, compute_context.device)};
+    std::vector<Memory> memory{testing::parallel_size, Memory{}};
+    std::array<typename testing::CoefficientTypeTrait<FT>::type,
+               testing::parallel_size>
+        coeffs{testing::compute_coeffs<FT>()};
+    cl::Buffer cl_memory{
+        compute_context.context, memory.begin(), memory.end(), false};
+    cl::Buffer cl_coeffs{
+        compute_context.context, coeffs.begin(), coeffs.end(), false};
+    std::vector<std::vector<cl_float>> input{
+        Generator::compute_input(testing::parallel_size)};
+    std::vector<std::vector<cl_float>> output{
+        input.size(), std::vector<cl_float>(testing::parallel_size, 0)};
+    cl::Buffer cl_input{compute_context.context,
+                        CL_MEM_READ_WRITE,
+                        testing::parallel_size * sizeof(cl_float)};
+    cl::Buffer cl_output{compute_context.context,
+                         CL_MEM_READ_WRITE,
+                         testing::parallel_size * sizeof(cl_float)};
 };
 
 template <typename Generator>
-using rk_biquad =
-    rectangular_kernel<RectangularProgram::BiquadMemoryArray,
-                       RectangularProgram::BiquadCoefficientsArray,
-                       Generator>;
+using rk_biquad = rectangular_kernel<RectangularProgram::BiquadMemoryArray,
+                                     testing::FilterType::biquad_cascade,
+                                     Generator>;
 
 template <typename Generator>
 using rk_filter = rectangular_kernel<RectangularProgram::CanonicalMemory,
-                                     RectangularProgram::CanonicalCoefficients,
+                                     testing::FilterType::single_reflectance,
                                      Generator>;
+
+template <typename Generator>
+using rk_impedance = rectangular_kernel<RectangularProgram::CanonicalMemory,
+                                        testing::FilterType::single_impedance,
+                                        Generator>;
 
 class testing_rk_biquad : public rk_biquad<NoiseGenerator>,
                           public ::testing::Test {};
@@ -197,8 +303,11 @@ class testing_rk_filter : public rk_filter<NoiseGenerator>,
 TEST_F(testing_rk_biquad, filtering) {
     auto results = run_kernel(program.get_filter_test_kernel());
     ASSERT_TRUE(log_nan(results, "filter 1 results") == results.end());
-    write_sndfile(
-        "./filtered_noise.wav", {results}, sr, SF_FORMAT_PCM_16, SF_FORMAT_WAV);
+    write_sndfile("./filtered_noise.wav",
+                  {results},
+                  testing::sr,
+                  SF_FORMAT_PCM_16,
+                  SF_FORMAT_WAV);
 }
 
 TEST_F(testing_rk_filter, filtering_2) {
@@ -206,7 +315,7 @@ TEST_F(testing_rk_filter, filtering_2) {
     ASSERT_TRUE(log_nan(results, "filter 2 results") == results.end());
     write_sndfile("./filtered_noise_2.wav",
                   {results},
-                  sr,
+                  testing::sr,
                   SF_FORMAT_PCM_16,
                   SF_FORMAT_WAV);
 }
@@ -221,7 +330,7 @@ TEST_F(testing_rk_biquad_quiet, filtering) {
     ASSERT_TRUE(log_nan(results, "filter 1 quiet results") == results.end());
     write_sndfile("./filtered_noise_quiet.wav",
                   {results},
-                  sr,
+                  testing::sr,
                   SF_FORMAT_PCM_16,
                   SF_FORMAT_WAV);
 }
@@ -231,7 +340,7 @@ TEST_F(testing_rk_filter_quiet, filtering_2) {
     ASSERT_TRUE(log_nan(results, "filter 2 quiet results") == results.end());
     write_sndfile("./filtered_noise_2_quiet.wav",
                   {results},
-                  sr,
+                  testing::sr,
                   SF_FORMAT_PCM_16,
                   SF_FORMAT_WAV);
 }
@@ -260,22 +369,16 @@ TEST(compare_filters, compare_filters) {
             filter.run_kernel(filter.program.get_filter_test_2_kernel());
 
         auto diff = buf_1;
-        std::transform(buf_1.begin(),
-                       buf_1.end(),
-                       buf_2.begin(),
-                       diff.begin(),
-                       [](auto i, auto j) { return std::abs(i - j); });
+        proc::transform(buf_1, buf_2.begin(), diff.begin(), [](auto i, auto j) {
+            return std::abs(i - j);
+        });
 
         auto div = buf_1;
-        std::transform(buf_1.begin(),
-                       buf_1.end(),
-                       buf_2.begin(),
-                       div.begin(),
-                       [](auto i, auto j) {
-                           if (i == 0 || j == 0)
-                               return 0.0;
-                           return std::abs(a2db(std::abs(i / j)));
-                       });
+        proc::transform(buf_1, buf_2.begin(), div.begin(), [](auto i, auto j) {
+            if (i == 0 || j == 0)
+                return 0.0;
+            return std::abs(a2db(std::abs(i / j)));
+        });
 
         /*
         std::for_each(
@@ -283,7 +386,7 @@ TEST(compare_filters, compare_filters) {
         */
 
         // auto min_diff = *std::min_element(diff.begin(), diff.end());
-        auto max_diff = *std::max_element(diff.begin(), diff.end());
+        auto max_diff = *proc::max_element(diff);
 
         ASSERT_TRUE(max_diff < 0.001) << max_diff;
 
@@ -297,14 +400,22 @@ TEST(compare_filters, compare_filters) {
         Logger::log_err("max div / dB: ", max_div);
         */
 
-        write_sndfile(
-            "./buf_1.wav", {buf_1}, biquad.sr, SF_FORMAT_PCM_16, SF_FORMAT_WAV);
+        write_sndfile("./buf_1.wav",
+                      {buf_1},
+                      testing::sr,
+                      SF_FORMAT_PCM_16,
+                      SF_FORMAT_WAV);
 
-        write_sndfile(
-            "./buf_2.wav", {buf_2}, filter.sr, SF_FORMAT_PCM_16, SF_FORMAT_WAV);
+        write_sndfile("./buf_2.wav",
+                      {buf_2},
+                      testing::sr,
+                      SF_FORMAT_PCM_16,
+                      SF_FORMAT_WAV);
     };
 
-    test(rk_biquad<ImpulseGenerator>{}, rk_filter<ImpulseGenerator>{});
+    using Imp = ImpulseGenerator<200>;
+
+    test(rk_biquad<Imp>{}, rk_filter<Imp>{});
     test(rk_biquad<NoiseGenerator>{}, rk_filter<NoiseGenerator>{});
 }
 
@@ -324,3 +435,67 @@ TEST(filter_stability, filter_stability) {
     }
 }
 */
+
+template <typename T>
+struct PrintType;
+
+template <typename T>
+std::vector<std::vector<T>> transpose(const std::vector<std::vector<T>>& t) {
+    std::vector<std::vector<T>> ret(t.front().size(), std::vector<T>(t.size()));
+    for (auto i = 0u; i != ret.size(); ++i) {
+        for (auto j = 0u; j != ret.front().size(); ++j) {
+            ret[i][j] = t[j][i];
+        }
+    }
+    return ret;
+}
+
+TEST(impulse_response, filters) {
+    {
+        //  try an analytical method to test filter stability
+        proc::for_each(
+            testing::compute_coeffs<testing::FilterType::single_reflectance>(),
+            [](const auto& i) {
+                ASSERT_TRUE(RectangularProgram::is_stable(i));
+            });
+        //  test that the reflectance filters are stable(ish)
+        rk_filter<ImpulseGenerator<10000>> filter;
+        auto buf = filter.run_kernel(filter.program.get_filter_test_2_kernel());
+        auto full_output = transpose(filter.output);
+        ASSERT_EQ(full_output.front(), buf);
+
+        proc::for_each(
+            proc::zip(full_output, testing::surfaces, testing::descriptors),
+            [](const auto& i) {
+                auto samples = std::get<0>(i);
+                proc::transform(samples, samples.begin(), [](auto x) {
+                    return std::abs(x);
+                });
+                ASSERT_TRUE(samples.back() < 1e-10) << std::get<1>(i) << " "
+                                                    << samples;
+            });
+    }
+    {
+        //  try an analytical method to test filter stability
+        proc::for_each(
+            testing::compute_coeffs<testing::FilterType::single_impedance>(),
+            [](const auto& i) {
+                ASSERT_TRUE(RectangularProgram::is_stable(i));
+            });
+        //  TODO need a reliable way of making impedance filters stable if they
+        //  are not already
+        rk_impedance<ImpulseGenerator<10000>> filter;
+        auto buf = filter.run_kernel(filter.program.get_filter_test_2_kernel());
+        auto full_output = transpose(filter.output);
+        ASSERT_EQ(full_output.front(), buf);
+
+        proc::for_each(
+            proc::zip(full_output, testing::surfaces, testing::descriptors),
+            [](const auto& i) {
+                auto samples = std::get<0>(i);
+                proc::transform(samples, samples.begin(), [](auto x) {
+                    return std::abs(x);
+                });
+            });
+    }
+}

@@ -2,12 +2,12 @@
 
 #include "MoreConversions.hpp"
 
-#include "boundaries.h"
-#include "conversions.h"
-#include "cl_common.h"
-#include "tetrahedral_program.h"
 #include "azimuth_elevation.h"
+#include "boundaries.h"
+#include "cl_common.h"
+#include "conversions.h"
 #include "testing_notches.h"
+#include "tetrahedral_program.h"
 
 RaytraceObject::RaytraceObject(const GenericShader &shader,
                                const RaytracerResults &results)
@@ -15,24 +15,19 @@ RaytraceObject::RaytraceObject(const GenericShader &shader,
     auto impulses = results.impulses;
     std::vector<glm::vec3> v(impulses.size() + 1);
     v.front() = to_glm_vec3(results.source);
-    std::transform(impulses.begin(),
-                   impulses.end(),
-                   v.begin() + 1,
-                   [](auto i) { return to_glm_vec3(i.position); });
+    std::transform(impulses.begin(), impulses.end(), v.begin() + 1, [](auto i) {
+        return to_glm_vec3(i.position);
+    });
 
     std::vector<glm::vec4> c(v.size());
     c.front() = glm::vec4(1, 1, 1, 1);
-    std::transform(impulses.begin(),
-                   impulses.end(),
-                   c.begin() + 1,
-                   [](auto i) {
-                       auto average = std::accumulate(std::begin(i.volume.s),
-                                                      std::end(i.volume.s),
-                                                      0.0f) /
-                                      8;
-                       auto c = i.time ? fabs(average) * 10 : 0;
-                       return glm::vec4(c, c, c, c);
-                   });
+    std::transform(impulses.begin(), impulses.end(), c.begin() + 1, [](auto i) {
+        auto average = std::accumulate(
+                           std::begin(i.volume.s), std::end(i.volume.s), 0.0f) /
+                       8;
+        auto c = i.time ? fabs(average) * 10 : 0;
+        return glm::vec4(c, c, c, c);
+    });
 
     std::vector<std::pair<GLuint, GLuint>> lines;
     for (auto ray = 0u; ray != results.rays; ++ray) {

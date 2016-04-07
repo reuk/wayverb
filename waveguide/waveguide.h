@@ -1,23 +1,26 @@
 #pragma once
 
-#include "tetrahedral_program.h"
-#include "rectangular_program.h"
-#include "rectangular_mesh.h"
-#include "tetrahedral_mesh.h"
+#include "callbacks.h"
 #include "conversions.h"
+#include "db.h"
+#include "extended_algorithms.h"
+#include "hrtf.h"
 #include "power_function.h"
 #include "progress.h"
-#include "callbacks.h"
+#include "rectangular_mesh.h"
+#include "rectangular_program.h"
+#include "tetrahedral_mesh.h"
+#include "tetrahedral_program.h"
 
 #include <eigen3/Eigen/LU>
 #include <eigen3/Eigen/SVD>
 
 #include <glog/logging.h>
 
-#include <array>
-#include <type_traits>
 #include <algorithm>
+#include <array>
 #include <iostream>
+#include <type_traits>
 
 template <typename T>
 inline T pinv(const T& a,
@@ -159,18 +162,16 @@ public:
 
         std::vector<RunStepResult> ret(steps);
         auto counter = 0u;
-        proc::generate(
-            ret,
-            [this, &counter, &steps, &o, &callback] {
-                auto ret = this->run_step(
-                    o, queue, kernel, nodes, *previous, *current, output);
+        proc::generate(ret, [this, &counter, &steps, &o, &callback] {
+            auto ret = this->run_step(
+                o, queue, kernel, nodes, *previous, *current, output);
 
-                this->swap_buffers();
+            this->swap_buffers();
 
-                callback();
+            callback();
 
-                return ret;
-            });
+            return ret;
+        });
 
         return ret;
     }
@@ -247,8 +248,47 @@ public:
     const RectangularMesh& get_mesh() const;
     bool inside(size_type index) const override;
 
+    template <size_t I>
+    static RectangularProgram::FilterDescriptor compute_filter_descriptor(
+        const Surface& surface) {
+        auto gain = a2db((surface.specular.s[I] + surface.diffuse.s[I]) / 2);
+        auto centre = (HrtfData::EDGES[I + 0] + HrtfData::EDGES[I + 1]) / 2;
+        //  produce a filter descriptor struct for this filter
+        return RectangularProgram::FilterDescriptor{gain, centre, 1.414};
+    }
+
+    template <size_t... Ix>
+    constexpr static std::array<
+        RectangularProgram::FilterDescriptor,
+        RectangularProgram::BiquadCoefficientsArray::BIQUAD_SECTIONS>
+    to_filter_descriptors(std::index_sequence<Ix...>, const Surface& surface) {
+        return {{compute_filter_descriptor<Ix>(surface)...}};
+    }
+
+    constexpr static std::array<
+        RectangularProgram::FilterDescriptor,
+        RectangularProgram::BiquadCoefficientsArray::BIQUAD_SECTIONS>
+    to_filter_descriptors(const Surface& surface) {
+        return to_filter_descriptors(
+            std::make_index_sequence<
+                RectangularProgram::BiquadCoefficientsArray::BIQUAD_SECTIONS>(),
+            surface);
+    }
+
     static RectangularProgram::CanonicalCoefficients to_filter_coefficients(
-        const Surface& surface, float sr);
+        const Surface& surface, float sr) {
+        auto descriptors = to_filter_descriptors(surface);
+        //  transform filter parameters into a set of biquad coefficients
+        auto individual_coeffs =
+            RectangularProgram::get_peak_biquads_array(descriptors, sr);
+        //  combine biquad coefficients into coefficients for a single
+        //  high-order
+        //  filter
+        auto ret = RectangularProgram::convolve(individual_coeffs);
+
+        //  transform from reflection filter to impedance filter
+        return RectangularProgram::to_impedance_coefficients(ret);
+    }
 
     static std::vector<RectangularProgram::CanonicalCoefficients>
     to_filter_coefficients(std::vector<Surface> surfaces, float sr);
@@ -277,15 +317,14 @@ private:
     void setup_boundary_data_buffer(cl::CommandQueue& queue, cl::Buffer& b) {
         std::vector<RectangularProgram::BoundaryDataArray<I>> bda(
             mesh.compute_num_boundary<I>());
-        proc::generate(bda,
-                       [] {
-                           RectangularProgram::BoundaryDataArray<I> ret{};
-                           for (auto& i : ret.array) {
-                               //  TODO set this properly
-                               i.coefficient_index = 0;
-                           }
-                           return ret;
-                       });
+        proc::generate(bda, [] {
+            RectangularProgram::BoundaryDataArray<I> ret{};
+            for (auto& i : ret.array) {
+                //  TODO set this properly
+                i.coefficient_index = 0;
+            }
+            return ret;
+        });
         cl::copy(queue, bda.begin(), bda.end(), b);
     }
 

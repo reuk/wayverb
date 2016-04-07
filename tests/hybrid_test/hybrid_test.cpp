@@ -1,11 +1,11 @@
 #include "combined_config.h"
 
-#include "waveguide.h"
-#include "scene_data.h"
-#include "test_flag.h"
+#include "azimuth_elevation.h"
 #include "conversions.h"
 #include "microphone.h"
-#include "azimuth_elevation.h"
+#include "scene_data.h"
+#include "test_flag.h"
+#include "waveguide.h"
 
 #include "raytracer.h"
 
@@ -21,21 +21,21 @@
 #define __CL_ENABLE_EXCEPTIONS
 #include "cl.hpp"
 
-#include "sndfile.hh"
 #include "samplerate.h"
+#include "sndfile.hh"
 
 #include <gflags/gflags.h>
 
 #include <glog/logging.h>
 
 //  stdlib
-#include <random>
-#include <iostream>
 #include <algorithm>
-#include <numeric>
 #include <cmath>
-#include <map>
 #include <iomanip>
+#include <iostream>
+#include <map>
+#include <numeric>
+#include <random>
 
 /// courant number is 1 / sqrt(3) for a rectilinear mesh
 /// but sqrt isn't constexpr >:(
@@ -66,7 +66,7 @@ auto run_waveguide(ComputeContext& context_info,
                    const CuboidBoundary& boundary,
                    const CombinedConfig& config,
                    const std::string& output_folder) {
-    auto steps = 4000;
+    auto steps = 16000;
 
     //  get opencl program
     auto waveguide_program = get_program<RectangularProgram>(
@@ -108,18 +108,7 @@ auto run_waveguide(ComputeContext& context_info,
     proc::transform(
         results, output.begin(), [](const auto& i) { return i.pressure; });
 
-    //  get the valid region of the spectrum
-    LinkwitzRileyLopass lopass;
-    lopass.setParams(config.get_filter_frequency(),
-                     config.get_waveguide_sample_rate());
-    lopass.filter(output);
-
-    DCBlocker dc_blocker;
-    dc_blocker.filter(output);
-
-    //  adjust sample rate
-    auto adjusted = adjust_sampling_rate(output, config);
-    return adjusted;
+    return output;
 }
 
 int main(int argc, char** argv) {
@@ -143,7 +132,7 @@ int main(int argc, char** argv) {
     LOG(INFO) << "boundary: " << boundary;
 
     CombinedConfig config;
-    config.get_filter_frequency() = 2000;
+    config.get_filter_frequency() = 1000;
     config.get_source() = source;
     config.get_mic() = receiver;
     config.get_output_sample_rate() = samplerate;
@@ -153,7 +142,21 @@ int main(int argc, char** argv) {
     auto waveguide_output =
         run_waveguide(context_info, boundary, config, output_folder);
 
-    write_file(config, output_folder, "waveguide_filtered", {waveguide_output});
+    std::cout << "max mag: " << max_mag(waveguide_output) << std::endl;
+    write_file(config, output_folder, "waveguide_raw", {waveguide_output});
+
+    //  get the valid region of the spectrum
+    LinkwitzRileyLopass lopass;
+    lopass.setParams(config.get_filter_frequency(),
+                     config.get_waveguide_sample_rate());
+    lopass.filter(waveguide_output);
+
+    //  adjust sample rate
+    auto waveguide_adjusted = adjust_sampling_rate(waveguide_output, config);
+
+    std::cout << "max mag: " << max_mag(waveguide_adjusted) << std::endl;
+    write_file(
+        config, output_folder, "waveguide_adjusted", {waveguide_adjusted});
 
     auto raytrace_program = get_program<RaytracerProgram>(context_info.context,
                                                           context_info.device);
@@ -190,7 +193,7 @@ int main(int argc, char** argv) {
                                     1)
                                 .front();
 
-    auto waveguide_copy = waveguide_output;
+    auto waveguide_copy = waveguide_adjusted;
     normalize(waveguide_copy);
     write_file(config, output_folder, "waveguide_normalized", {waveguide_copy});
 
@@ -199,31 +202,31 @@ int main(int argc, char** argv) {
     write_file(
         config, output_folder, "raytracer_normalized", {raytracer_output});
 
-    mul(waveguide_output,
+    mul(waveguide_adjusted,
         rectilinear_calibration_factor(1, config.get_waveguide_sample_rate()));
 
-    auto max_waveguide = max_mag(waveguide_output);
+    auto max_waveguide = max_mag(waveguide_adjusted);
     auto max_raytracer = max_mag(raytracer_output);
     auto max_both = std::max(max_waveguide, max_raytracer);
     std::cout << "max amplitude between both methods: " << max_both
               << std::endl;
 
-    auto waveguide_length = waveguide_output.size();
+    auto waveguide_length = waveguide_adjusted.size();
     auto raytracer_length = raytracer_output.size();
     auto out_length = std::min(waveguide_length, raytracer_length);
 
-    waveguide_output.resize(out_length);
+    waveguide_adjusted.resize(out_length);
     raytracer_output.resize(out_length);
 
-    mul(waveguide_output, 1 / max_both);
+    mul(waveguide_adjusted, 1 / max_both);
     mul(raytracer_output, 1 / max_both);
 
     auto window = right_hanning(out_length);
-    elementwise_multiply(waveguide_output, window);
+    elementwise_multiply(waveguide_adjusted, window);
     elementwise_multiply(raytracer_output, window);
 
     write_file(
-        config, output_folder, "waveguide_processed", {waveguide_output});
+        config, output_folder, "waveguide_processed", {waveguide_adjusted});
     write_file(
         config, output_folder, "raytracer_processed", {raytracer_output});
 }

@@ -1,12 +1,12 @@
 //  project internal
-#include "waveguide.h"
+#include "combined_config.h"
+#include "conversions.h"
+#include "db.h"
+#include "hrtf_attenuator.h"
+#include "microphone.h"
 #include "scene_data.h"
 #include "test_flag.h"
-#include "conversions.h"
-#include "microphone.h"
-#include "hrtf_attenuator.h"
-#include "combined_config.h"
-#include "db.h"
+#include "waveguide.h"
 
 #include "raytracer.h"
 
@@ -25,10 +25,10 @@
 #include <gflags/gflags.h>
 
 //  stdlib
-#include <iostream>
 #include <algorithm>
-#include <numeric>
+#include <iostream>
 #include <map>
+#include <numeric>
 
 /*
 std::vector<float> squintegrate(const std::vector<float>& sig) {
@@ -55,13 +55,11 @@ std::vector<float> exponential_decay_envelope(int steps,
                                               float attenuation_factor) {
     std::vector<float> ret(steps);
     auto amp = 1.0f;
-    generate(begin(ret),
-             end(ret),
-             [&amp, attenuation_factor] {
-                 auto t = amp;
-                 amp *= attenuation_factor;
-                 return t;
-             });
+    generate(begin(ret), end(ret), [&amp, attenuation_factor] {
+        auto t = amp;
+        amp *= attenuation_factor;
+        return t;
+    });
     return ret;
 }
 

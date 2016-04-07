@@ -3,8 +3,8 @@
 #define __CL_ENABLE_EXCEPTIONS
 #include "cl.hpp"
 
-#include "scene_data.h"
 #include "app_config.h"
+#include "scene_data.h"
 
 #define NUM_IMAGE_SOURCE 10
 //  These definitions MUST be kept up-to-date with the defs in the cl file.
