@@ -10,8 +10,6 @@
 
 #include <cassert>
 #include <cmath>
-#include <iomanip>
-#include <iostream>
 
 class RectangularProgram : public cl::Program {
 public:
@@ -235,7 +233,6 @@ public:
     template <unsigned long L>
     static constexpr bool is_stable(const std::array<double, L>& a) {
         auto rci = a[L - 1];
-        std::cout << std::setprecision(9) << rci << std::endl;
         if (std::abs(rci) >= 1)
             return false;
 
@@ -250,7 +247,6 @@ public:
     static constexpr bool is_stable(const FilterCoefficients<L>& coeffs) {
         std::array<double, L + 1> denom;
         proc::copy(coeffs.a, denom.begin());
-        std::cout << denom << std::endl;
         return is_stable(denom);
     }
 

@@ -2,8 +2,10 @@
 
 #include "octree.h"
 
-#include <iostream>
-
+/// A box full of voxels, where each voxel keeps track of its own boundary
+/// and indices of triangles that overlap that boundary.
+/// Can be 'flattened' - converts the collection into a memory-efficient
+/// array representation, which can be passed to the GPU.
 class VoxelCollection final {
 public:
     class Voxel final {
@@ -23,9 +25,11 @@ public:
     using YAxis = std::vector<ZAxis>;
     using XAxis = std::vector<YAxis>;
 
+    /// Construct from scene data. Uses an octree as an acceleration structure.
     VoxelCollection(const SceneData& scene_data,
                     int depth,
                     float padding = 0.0f);
+    /// Construct directly from an existing octree.
     VoxelCollection(const Octree& o);
 
     CuboidBoundary get_aabb() const;
@@ -39,6 +43,8 @@ public:
     Vec3i get_starting_index(const Vec3f& position) const;
     static Vec3i get_step(const Vec3f& direction);
 
+    /// Returns a flat array-representation of the collection.
+    /// TODO document the array format
     std::vector<cl_uint> get_flattened() const;
 
     class TraversalCallback {
@@ -55,6 +61,11 @@ public:
             const geo::Ray& ray, const std::vector<int>& triangles) = 0;
     };
 
+    /// This callback is used to check for intersections with the contents of
+    /// the collection.
+    /// The colleciton doesn't store any information about the triangles it
+    /// contains, so this callback is constructed with a reference to a
+    /// SceneData object which contains the triangle information.
     class TriangleTraversalCallback final : public TraversalCallback {
     public:
         TriangleTraversalCallback(const SceneData& scene_data);
@@ -66,6 +77,7 @@ public:
         std::vector<Vec3f> vertices;
     };
 
+    /// Find the closest object along a ray.
     geo::Intersection traverse(const geo::Ray& ray, TraversalCallback& fun);
 
 private:

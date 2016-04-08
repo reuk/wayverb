@@ -2,11 +2,11 @@
 
 #include "fftw3.h"
 
-#include <algorithm>
+#include "stl_wrappers.h"
+
 #include <array>
 #include <cmath>
 #include <cstring>
-#include <iostream>
 #include <memory>
 #include <vector>
 
@@ -106,7 +106,7 @@ private:
                      const fftwf_c &o,
                      const fftwf_c &results) {
         std::fill(i.get(), i.get() + FFT_LENGTH, 0);
-        std::copy(data.begin(), data.end(), i.get());
+        proc::copy(data, i.get());
         fftwf_execute(plan);
         memcpy(results.get(), o.get(), CPLX_LENGTH * sizeof(fftwf_complex));
     }
@@ -191,9 +191,9 @@ class TwopassFilterWrapper : public T {
 public:
     void filter(std::vector<float> &data) override {
         T::filter(data);
-        std::reverse(data.begin(), data.end());
+        proc::reverse(data);
         T::filter(data);
-        std::reverse(data.begin(), data.end());
+        proc::reverse(data);
     }
 };
 

@@ -5,7 +5,6 @@
 #include <algorithm>
 #include <array>
 #include <cmath>
-#include <iostream>
 #include <vector>
 
 namespace filter {

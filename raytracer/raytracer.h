@@ -17,7 +17,6 @@
 
 #include <array>
 #include <cmath>
-#include <iostream>
 #include <map>
 #include <numeric>
 #include <vector>
