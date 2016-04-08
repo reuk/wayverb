@@ -40,7 +40,7 @@ std::vector<std::vector<float>> mixdown(
 /// Filter and mix down each channel of the input data.
 /// Optionally, normalize all channels, trim the tail, and scale the amplitude.
 std::vector<std::vector<float>> process(
-    FilterType filtertype,
+    filter::FilterType filtertype,
     std::vector<std::vector<std::vector<float>>>& data,
     float sr,
     bool do_normalize,

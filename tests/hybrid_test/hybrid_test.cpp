@@ -146,7 +146,7 @@ int main(int argc, char** argv) {
     write_file(config, output_folder, "waveguide_raw", {waveguide_output});
 
     //  get the valid region of the spectrum
-    LinkwitzRileyLopass lopass;
+    filter::LinkwitzRileyLopass lopass;
     lopass.setParams(config.get_filter_frequency(),
                      config.get_waveguide_sample_rate());
     lopass.filter(waveguide_output);
@@ -184,7 +184,7 @@ int main(int argc, char** argv) {
     write_file(
         config, output_folder, "raytrace_no_processing", mixdown(flattened));
 
-    auto raytracer_output = process(FilterType::FILTER_TYPE_LINKWITZ_RILEY,
+    auto raytracer_output = process(filter::FilterType::linkwitz_riley,
                                     flattened,
                                     config.get_output_sample_rate(),
                                     false,

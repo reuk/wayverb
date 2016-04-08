@@ -5,25 +5,14 @@
 #include "scene_data.h"
 
 template <typename F>
-struct apply_functor {
-    constexpr apply_functor(const F& f = F())
-            : f(f) {
-    }
-    constexpr Vec3f operator()(const Vec3f& a, const Vec3f& b) const {
-        return a.apply(f, b);
-    }
-    const F& f;
-};
-
-template <typename F>
 Vec3f sub_elementwise(const std::vector<Vec3f>& coll, const F& f = F()) {
     return std::accumulate(
-        coll.begin() + 1, coll.end(), coll.front(), apply_functor<F>(f));
+        coll.begin() + 1, coll.end(), coll.front(), vec::ApplyFunctor<F>(f));
 }
 
 template <typename F, typename T>
 constexpr Vec3f sub_elementwise(const T& coll, const F& f = F()) {
-    return reduce(coll, apply_functor<F>(f));
+    return reduce(coll, vec::ApplyFunctor<F>(f));
 }
 
 template <typename T>

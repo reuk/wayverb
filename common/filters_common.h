@@ -12,6 +12,7 @@
 
 /// This namespace houses all of the machinery for multiband crossover
 /// filtering.
+namespace filter {
 
 /// Interface for the most generic boring filter.
 class Filter {
@@ -232,3 +233,4 @@ public:
     DCBlocker();
     constexpr static auto R = 0.995;
 };
+}

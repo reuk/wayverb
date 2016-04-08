@@ -4,6 +4,8 @@
 #include <iostream>
 #include <numeric>
 
+namespace filter {
+
 void Lopass::setParams(float co, float s) {
     cutoff = co;
     sr = s;
@@ -171,4 +173,5 @@ FastConvolution::FastConvolution(unsigned long FFT_LENGTH)
 
 DCBlocker::DCBlocker() {
     Biquad::setParams(1, 1, 0, R, 0);
+}
 }

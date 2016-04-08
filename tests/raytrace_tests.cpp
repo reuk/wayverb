@@ -249,7 +249,7 @@ TEST(raytrace, image_source) {
             write_file(config, name + "_no_processing", mixed_down);
         }
         {
-            auto processed = process(FilterType::FILTER_TYPE_LINKWITZ_RILEY,
+            auto processed = process(filter::FilterType::linkwitz_riley,
                                      flattened,
                                      config.get_output_sample_rate(),
                                      false,

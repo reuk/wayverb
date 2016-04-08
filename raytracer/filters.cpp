@@ -7,24 +7,26 @@
 #include <iostream>
 #include <numeric>
 
-void filter(FilterType ft,
-            std::vector<std::vector<std::vector<float>>>& data,
-            float sr,
-            float lo_cutoff) {
+namespace filter {
+
+void run(FilterType ft,
+         std::vector<std::vector<std::vector<float>>>& data,
+         float sr,
+         float lo_cutoff) {
     std::unique_ptr<Bandpass> bp;
 
     switch (ft) {
-        case FILTER_TYPE_WINDOWED_SINC:
+        case FilterType::windowed_sinc:
             bp = std::make_unique<BandpassWindowedSinc>(
                 data.front().front().size());
             break;
-        case FILTER_TYPE_BIQUAD_ONEPASS:
+        case FilterType::biquad_onepass:
             bp = std::make_unique<BandpassBiquad>();
             break;
-        case FILTER_TYPE_BIQUAD_TWOPASS:
+        case FilterType::biquad_twopass:
             bp = std::make_unique<TwopassFilterWrapper<BandpassBiquad>>();
             break;
-        case FILTER_TYPE_LINKWITZ_RILEY:
+        case FilterType::linkwitz_riley:
             bp = std::make_unique<LinkwitzRileyBandpass>();
             break;
     }
@@ -35,4 +37,5 @@ void filter(FilterType ft,
             bp->filter(channel[i]);
         }
     }
+}
 }

@@ -124,14 +124,14 @@ void trimTail(std::vector<std::vector<float>>& audioChannels, float minVol) {
 
 /// Collects together all the post-processing steps.
 std::vector<std::vector<float>> process(
-    FilterType filtertype,
+    filter::FilterType filtertype,
     std::vector<std::vector<std::vector<float>>>& data,
     float sr,
     bool do_normalize,
     float lo_cutoff,
     bool do_trim_tail,
     float volume_scale) {
-    filter(filtertype, data, sr, lo_cutoff);
+    filter::run(filtertype, data, sr, lo_cutoff);
     auto ret = mixdown(data);
 
     if (do_normalize)

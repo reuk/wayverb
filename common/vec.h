@@ -1,5 +1,7 @@
 #pragma once
 
+#include "vec_forward.h"
+
 #include "extended_algorithms.h"
 
 #include <array>
@@ -32,16 +34,10 @@
         return operator sym(Vec3<U>(rhs));                                     \
     }
 
+namespace vec {
 template <typename T>
-struct Vec3;
-
-using Vec3f = Vec3<float>;
-using Vec3d = Vec3<double>;
-using Vec3i = Vec3<int>;
-using Vec3b = Vec3<bool>;
-
-template <typename T>
-constexpr Vec3<T> make_vec(const T& x, const T& y, const T& z);
+constexpr Vec3<T> make(const T& x, const T& y, const T& z);
+}
 
 template <typename T>
 struct Vec3 final {
@@ -84,7 +80,7 @@ struct Vec3 final {
 
     template <typename U>
     constexpr auto map(const U& u = U()) const {
-        return make_vec(u(x), u(y), u(z));
+        return vec::make(u(x), u(y), u(z));
     }
 
     template <typename U>
@@ -103,9 +99,9 @@ struct Vec3 final {
 
     template <typename... U>
     constexpr auto zip(U&&... u) const {
-        return make_vec(std::make_tuple(x, u.x...),
-                        std::make_tuple(y, u.y...),
-                        std::make_tuple(z, u.z...));
+        return vec::make(std::make_tuple(x, u.x...),
+                         std::make_tuple(y, u.y...),
+                         std::make_tuple(z, u.z...));
     }
 
     template <typename U, typename... Ts>
@@ -219,9 +215,24 @@ struct Vec3 final {
     T x, y, z;
 };
 
+namespace vec {
+
+template <typename F>
+struct ApplyFunctor {
+    constexpr ApplyFunctor(const F& f = F())
+            : f(f) {
+    }
+    template <typename T, typename... Ts>
+    constexpr auto operator()(const T& a, Ts&&... b) const {
+        return a.apply(f, std::forward<Ts>(b)...);
+    }
+    const F& f;
+};
+
 template <typename T>
-constexpr Vec3<T> make_vec(const T& x, const T& y, const T& z) {
+constexpr Vec3<T> make(const T& x, const T& y, const T& z) {
     return Vec3<T>(x, y, z);
+}
 }
 
 template <typename T>

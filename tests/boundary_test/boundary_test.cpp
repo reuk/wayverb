@@ -111,7 +111,7 @@ std::vector<float> run_simulation(const cl::Context& context,
         results, output.begin(), [](const auto& i) { return i.pressure; });
 #endif
 
-    LinkwitzRileyLopass lopass;
+    filter::LinkwitzRileyLopass lopass;
     lopass.setParams(config.get_filter_frequency(),
                      config.get_output_sample_rate());
     //    lopass.filter(output);

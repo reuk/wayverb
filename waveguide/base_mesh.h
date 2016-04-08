@@ -1,6 +1,7 @@
 #pragma once
 
-#include "vec.h"
+#include "boundaries.h"
+#include "vec_forward.h"
 
 #include <vector>
 

@@ -211,7 +211,7 @@ int main(int argc, char** argv) {
                       depth,
                       format);
 
-        LinkwitzRileyLopass lopass;
+        filter::LinkwitzRileyLopass lopass;
         lopass.setParams(cc.get_filter_frequency(),
                          cc.get_output_sample_rate());
         lopass.filter(out_signal);
