@@ -13,7 +13,7 @@ enum class Rel {
 
 template <typename T, typename U>
 inline T lerp(U a, T b, T c) {
-    return b + (c - b) * a;
+    return T(b + (c - b) * a);
 }
 
 int face_plane(const Vec3f& p);

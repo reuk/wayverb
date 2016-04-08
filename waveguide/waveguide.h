@@ -53,7 +53,7 @@ inline Eigen::MatrixXf get_transform_matrix(int ports, int o, const T& nodes) {
 //----------------------------------------------------------------------------//
 
 struct RunStepResult {
-    RunStepResult(float pressure = 0, const Vec3f& intensity = 0)
+    RunStepResult(float pressure = 0, const Vec3f& intensity = Vec3f())
             : pressure(pressure)
             , intensity(intensity) {
     }

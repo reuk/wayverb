@@ -61,8 +61,9 @@ const VoxelCollection::XAxis& VoxelCollection::get_data() const {
 }
 
 Vec3i VoxelCollection::get_starting_index(const Vec3f& position) const {
-    return ((position - get_aabb().get_c0()) / get_voxel_aabb().dimensions())
-        .map([](auto i) { return floor(i); });
+    return Vec3i(
+        ((position - get_aabb().get_c0()) / get_voxel_aabb().dimensions())
+            .floor());
 }
 
 Vec3i VoxelCollection::get_step(const Vec3f& d) {

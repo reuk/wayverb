@@ -18,14 +18,14 @@ void run(FilterType ft,
          std::vector<std::vector<std::vector<float>>>& data,
          float sr,
          float lo_cutoff);
-}
+}  // namespace filter
 
 namespace config {
 /// JsonGetter for FilterType is just a JsonEnumGetter with a specific map
 template <>
 struct JsonGetter<filter::FilterType>
     : public JsonEnumGetter<filter::FilterType> {
-    JsonGetter(filter::FilterType& t)
+    explicit JsonGetter(filter::FilterType& t)
             : JsonEnumGetter(
                   t,
                   {{"sinc", filter::FilterType::windowed_sinc},
@@ -34,4 +34,4 @@ struct JsonGetter<filter::FilterType>
                    {"linkwitz_riley", filter::FilterType::linkwitz_riley}}) {
     }
 };
-}
+}  // namespace config

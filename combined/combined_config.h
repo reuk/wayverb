@@ -9,7 +9,7 @@ class Combined : public Waveguide, public Raytracer {};
 
 template <>
 struct JsonGetter<Combined> {
-    JsonGetter(Combined& t)
+    explicit JsonGetter(Combined& t)
             : t(t) {
     }
     virtual ~JsonGetter() noexcept = default;
@@ -31,4 +31,4 @@ struct JsonGetter<Combined> {
     Combined& t;
 };
 
-}
+}  // namespace config

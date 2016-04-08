@@ -2,16 +2,17 @@
 
 #include "reduce.h"
 
-constexpr int popcount(unsigned long long t) {
+constexpr int popcount(size_t t) {
     int ret = 0;
-    for (; t; t &= t - 1)
+    for (; t; t &= t - 1) {
         ++ret;
+    }
     return ret;
 }
 
 template <typename Flag>
 struct FlagSet {
-    constexpr FlagSet(Flag flag)
+    constexpr explicit FlagSet(Flag flag)
             : flag(flag) {
     }
     template <typename T>

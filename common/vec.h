@@ -37,14 +37,14 @@
 namespace vec {
 template <typename T>
 constexpr Vec3<T> make(const T& x, const T& y, const T& z);
-}
+}  // namespace vec
 
 template <typename T>
 struct Vec3 final {
     using value_type = T;
     using Vec3t = Vec3<T>;
 
-    constexpr Vec3(T t = T()) noexcept
+    constexpr explicit Vec3(T t = T()) noexcept
             : x(t)
             , y(t)
             , z(t) {
@@ -57,7 +57,7 @@ struct Vec3 final {
     }
 
     template <typename U>
-    constexpr Vec3(const Vec3<U>& u) noexcept
+    constexpr explicit Vec3(const Vec3<U>& u) noexcept
             : x(u.x)
             , y(u.y)
             , z(u.z) {
@@ -131,6 +131,14 @@ struct Vec3 final {
 
     T min() const {
         return foldi([](auto a, auto b) { return std::min(a, b); });
+    }
+
+    auto ceil() const {
+        return map([](auto i) { return std::ceil(i); });
+    }
+
+    auto floor() const {
+        return map([](auto i) { return std::floor(i); });
     }
 
     auto abs() const {
@@ -219,7 +227,7 @@ namespace vec {
 
 template <typename F>
 struct ApplyFunctor {
-    constexpr ApplyFunctor(const F& f = F())
+    constexpr explicit ApplyFunctor(const F& f = F())
             : f(f) {
     }
     template <typename T, typename... Ts>
@@ -233,7 +241,7 @@ template <typename T>
 constexpr Vec3<T> make(const T& x, const T& y, const T& z) {
     return Vec3<T>(x, y, z);
 }
-}
+}  // namespace vec
 
 template <typename T>
 std::ostream& operator<<(std::ostream& strm, const Vec3<T>& obj) {

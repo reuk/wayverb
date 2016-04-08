@@ -9,7 +9,7 @@
 class SceneData;
 namespace geo {
 class Ray;
-}
+}  // namespace geo
 
 template <typename F>
 Vec3f sub_elementwise(const std::vector<Vec3f>& coll, const F& f = F()) {
@@ -68,7 +68,7 @@ struct Box {
             : Box(std::array<Vec3f, 2>{{c0, c1}}) {
     }
 
-    constexpr Box(const std::array<Vec3f, 2>& v)
+    constexpr explicit Box(const std::array<Vec3f, 2>& v)
             : c0(get_min(v))
             , c1(get_max(v)) {
     }
@@ -78,7 +78,7 @@ struct Box {
     }
 
     constexpr Vec3f centre() const {
-        return (c0 + c1) * 0.5;
+        return Vec3f((c0 + c1) * 0.5);
     }
 
     constexpr Vec3f mirror_on_axis(const Vec3f& v,
@@ -164,9 +164,9 @@ Box get_surrounding_box(const std::vector<Vec3f>& vertices);
 
 class CuboidBoundary : public Boundary, public Box {
 public:
-    CuboidBoundary(const Box& b = Box(),
-                   const std::vector<Surface>& surfaces = std::vector<Surface>{
-                       Surface{}});
+    explicit CuboidBoundary(
+        const Box& b = Box(),
+        const std::vector<Surface>& surfaces = std::vector<Surface>{Surface{}});
     CuboidBoundary(const Vec3f& c0,
                    const Vec3f& c1,
                    const std::vector<Surface>& surfaces = std::vector<Surface>{
@@ -184,10 +184,10 @@ std::ostream& operator<<(std::ostream& os, const CuboidBoundary& cb);
 
 class SphereBoundary : public Boundary {
 public:
-    SphereBoundary(const Vec3f& c = Vec3f(),
-                   float radius = 0,
-                   const std::vector<Surface>& surfaces = std::vector<Surface>{
-                       Surface{}});
+    explicit SphereBoundary(
+        const Vec3f& c = Vec3f(),
+        float radius = 0,
+        const std::vector<Surface>& surfaces = std::vector<Surface>{Surface{}});
     bool inside(const Vec3f& v) const override;
     CuboidBoundary get_aabb() const override;
 
@@ -205,11 +205,11 @@ inline bool almost_equal(T x, T y, int ups) {
 
 class MeshBoundary : public Boundary {
 public:
-    MeshBoundary(
+    explicit MeshBoundary(
         const std::vector<Triangle>& triangles = std::vector<Triangle>(),
         const std::vector<Vec3f>& vertices = std::vector<Vec3f>(),
         const std::vector<Surface>& surfaces = std::vector<Surface>{Surface{}});
-    MeshBoundary(const SceneData& sd);
+    explicit MeshBoundary(const SceneData& sd);
     bool inside(const Vec3f& v) const override;
     CuboidBoundary get_aabb() const override;
 

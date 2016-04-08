@@ -103,4 +103,4 @@ BOTH_STL_WRAPPER(adjacent_difference)
 BOTH_STL_WRAPPER(inner_product)
 BOTH_STL_WRAPPER(partial_sum)
 BOTH_STL_WRAPPER(iota)
-}
+}  // namespace proc

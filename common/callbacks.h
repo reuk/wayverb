@@ -7,7 +7,7 @@ struct DoNothingCallback {
 
 template <typename T>
 struct CallbackInterfaceAdapter : public DoNothingCallback {
-    CallbackInterfaceAdapter(const T& t = T())
+    explicit CallbackInterfaceAdapter(const T& t = T())
             : t(t) {
     }
     void operator()() const override {

@@ -21,8 +21,8 @@ inline std::ostream& to_stream_spaced(std::ostream& os,
     return to_stream_spaced(os, std::forward<Ts>(ts)...);
 }
 
-struct to_stream_spaced_functor {
-    to_stream_spaced_functor(std::ostream& os)
+struct ToStreamSpacedFunctor {
+    explicit ToStreamSpacedFunctor(std::ostream& os)
             : os(os) {
     }
     template <typename... Ts>
@@ -40,33 +40,35 @@ inline std::ostream& operator<<(std::ostream& os, const std::pair<T, U>& p) {
     return to_stream_spaced(os, p.first, p.second);
 }
 
-template <typename T, unsigned long U>
+template <typename T, size_t U>
 inline std::ostream& operator<<(std::ostream& os, const std::array<T, U>& t) {
     Bracketer bracketer(os);
-    proc::invoke(to_stream_spaced_functor(os), t);
+    proc::invoke(ToStreamSpacedFunctor(os), t);
     return os;
 }
 
 template <typename... Ts>
 inline std::ostream& operator<<(std::ostream& os, const std::tuple<Ts...>& t) {
     Bracketer bracketer(os);
-    proc::invoke(to_stream_spaced_functor(os), t);
+    proc::invoke(ToStreamSpacedFunctor(os), t);
     return os;
 }
 
 template <typename T>
 inline std::ostream& operator<<(std::ostream& os, const std::vector<T>& t) {
     Bracketer bracketer(os);
-    for (const auto& i : t)
+    for (const auto& i : t) {
         to_stream_spaced(os, i);
+    }
     return os;
 }
 
 template <typename T>
 inline std::ostream& operator<<(std::ostream& os, const std::set<T>& t) {
     Bracketer bracketer(os);
-    for (const auto& i : t)
+    for (const auto& i : t) {
         to_stream_spaced(os, i);
+    }
     return os;
 }
-}
+}  // namespace std

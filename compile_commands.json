@@ -1,0 +1,272 @@
+[
+{
+  "directory": "/Users/reuben/dev/waveguide/build/gtest",
+  "command": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++    -I/Users/reuben/dev/waveguide/gtest/include -I/Users/reuben/dev/waveguide/gtest   -Wall -Werror -std=c++14 -msse -msse2 -msse3 -ferror-limit=100 -O2 -g -DNDEBUG    -Wall -Werror -std=c++14 -msse -msse2 -msse3 -ferror-limit=100  -DGTEST_HAS_PTHREAD=1   -o CMakeFiles/gtest_main.dir/src/gtest_main.cc.o -c /Users/reuben/dev/waveguide/gtest/src/gtest_main.cc",
+  "file": "/Users/reuben/dev/waveguide/gtest/src/gtest_main.cc"
+},
+{
+  "directory": "/Users/reuben/dev/waveguide/build/gtest",
+  "command": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++    -I/Users/reuben/dev/waveguide/gtest/include -I/Users/reuben/dev/waveguide/gtest   -Wall -Werror -std=c++14 -msse -msse2 -msse3 -ferror-limit=100 -O2 -g -DNDEBUG    -Wall -Werror -std=c++14 -msse -msse2 -msse3 -ferror-limit=100  -DGTEST_HAS_PTHREAD=1   -o CMakeFiles/gtest.dir/src/gtest-all.cc.o -c /Users/reuben/dev/waveguide/gtest/src/gtest-all.cc",
+  "file": "/Users/reuben/dev/waveguide/gtest/src/gtest-all.cc"
+},
+{
+  "directory": "/Users/reuben/dev/waveguide/build/common",
+  "command": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++    -I/Users/reuben/dev/waveguide/include -I/usr/local/include   -Wall -Werror -std=c++14 -msse -msse2 -msse3 -ferror-limit=100 -O2 -g -DNDEBUG   -o CMakeFiles/common.dir/app_config.cpp.o -c /Users/reuben/dev/waveguide/common/app_config.cpp",
+  "file": "/Users/reuben/dev/waveguide/common/app_config.cpp"
+},
+{
+  "directory": "/Users/reuben/dev/waveguide/build/common",
+  "command": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++    -I/Users/reuben/dev/waveguide/include -I/usr/local/include   -Wall -Werror -std=c++14 -msse -msse2 -msse3 -ferror-limit=100 -O2 -g -DNDEBUG   -o CMakeFiles/common.dir/azimuth_elevation.cpp.o -c /Users/reuben/dev/waveguide/common/azimuth_elevation.cpp",
+  "file": "/Users/reuben/dev/waveguide/common/azimuth_elevation.cpp"
+},
+{
+  "directory": "/Users/reuben/dev/waveguide/build/common",
+  "command": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++    -I/Users/reuben/dev/waveguide/include -I/usr/local/include   -Wall -Werror -std=c++14 -msse -msse2 -msse3 -ferror-limit=100 -O2 -g -DNDEBUG   -o CMakeFiles/common.dir/boundaries.cpp.o -c /Users/reuben/dev/waveguide/common/boundaries.cpp",
+  "file": "/Users/reuben/dev/waveguide/common/boundaries.cpp"
+},
+{
+  "directory": "/Users/reuben/dev/waveguide/build/common",
+  "command": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++    -I/Users/reuben/dev/waveguide/include -I/usr/local/include   -Wall -Werror -std=c++14 -msse -msse2 -msse3 -ferror-limit=100 -O2 -g -DNDEBUG   -o CMakeFiles/common.dir/cl_common.cpp.o -c /Users/reuben/dev/waveguide/common/cl_common.cpp",
+  "file": "/Users/reuben/dev/waveguide/common/cl_common.cpp"
+},
+{
+  "directory": "/Users/reuben/dev/waveguide/build/common",
+  "command": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++    -I/Users/reuben/dev/waveguide/include -I/usr/local/include   -Wall -Werror -std=c++14 -msse -msse2 -msse3 -ferror-limit=100 -O2 -g -DNDEBUG   -o CMakeFiles/common.dir/config.cpp.o -c /Users/reuben/dev/waveguide/common/config.cpp",
+  "file": "/Users/reuben/dev/waveguide/common/config.cpp"
+},
+{
+  "directory": "/Users/reuben/dev/waveguide/build/common",
+  "command": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++    -I/Users/reuben/dev/waveguide/include -I/usr/local/include   -Wall -Werror -std=c++14 -msse -msse2 -msse3 -ferror-limit=100 -O2 -g -DNDEBUG   -o CMakeFiles/common.dir/filters_common.cpp.o -c /Users/reuben/dev/waveguide/common/filters_common.cpp",
+  "file": "/Users/reuben/dev/waveguide/common/filters_common.cpp"
+},
+{
+  "directory": "/Users/reuben/dev/waveguide/build/common",
+  "command": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++    -I/Users/reuben/dev/waveguide/include -I/usr/local/include   -Wall -Werror -std=c++14 -msse -msse2 -msse3 -ferror-limit=100 -O2 -g -DNDEBUG   -o CMakeFiles/common.dir/geometric.cpp.o -c /Users/reuben/dev/waveguide/common/geometric.cpp",
+  "file": "/Users/reuben/dev/waveguide/common/geometric.cpp"
+},
+{
+  "directory": "/Users/reuben/dev/waveguide/build/common",
+  "command": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++    -I/Users/reuben/dev/waveguide/include -I/usr/local/include   -Wall -Werror -std=c++14 -msse -msse2 -msse3 -ferror-limit=100 -O2 -g -DNDEBUG   -o CMakeFiles/common.dir/hrtf.cpp.o -c /Users/reuben/dev/waveguide/common/hrtf.cpp",
+  "file": "/Users/reuben/dev/waveguide/common/hrtf.cpp"
+},
+{
+  "directory": "/Users/reuben/dev/waveguide/build/common",
+  "command": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++    -I/Users/reuben/dev/waveguide/include -I/usr/local/include   -Wall -Werror -std=c++14 -msse -msse2 -msse3 -ferror-limit=100 -O2 -g -DNDEBUG   -o CMakeFiles/common.dir/octree.cpp.o -c /Users/reuben/dev/waveguide/common/octree.cpp",
+  "file": "/Users/reuben/dev/waveguide/common/octree.cpp"
+},
+{
+  "directory": "/Users/reuben/dev/waveguide/build/common",
+  "command": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++    -I/Users/reuben/dev/waveguide/include -I/usr/local/include   -Wall -Werror -std=c++14 -msse -msse2 -msse3 -ferror-limit=100 -O2 -g -DNDEBUG   -o CMakeFiles/common.dir/ostream_overloads.cpp.o -c /Users/reuben/dev/waveguide/common/ostream_overloads.cpp",
+  "file": "/Users/reuben/dev/waveguide/common/ostream_overloads.cpp"
+},
+{
+  "directory": "/Users/reuben/dev/waveguide/build/common",
+  "command": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++    -I/Users/reuben/dev/waveguide/include -I/usr/local/include   -Wall -Werror -std=c++14 -msse -msse2 -msse3 -ferror-limit=100 -O2 -g -DNDEBUG   -o CMakeFiles/common.dir/progress.cpp.o -c /Users/reuben/dev/waveguide/common/progress.cpp",
+  "file": "/Users/reuben/dev/waveguide/common/progress.cpp"
+},
+{
+  "directory": "/Users/reuben/dev/waveguide/build/common",
+  "command": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++    -I/Users/reuben/dev/waveguide/include -I/usr/local/include   -Wall -Werror -std=c++14 -msse -msse2 -msse3 -ferror-limit=100 -O2 -g -DNDEBUG   -o CMakeFiles/common.dir/scene_data.cpp.o -c /Users/reuben/dev/waveguide/common/scene_data.cpp",
+  "file": "/Users/reuben/dev/waveguide/common/scene_data.cpp"
+},
+{
+  "directory": "/Users/reuben/dev/waveguide/build/common",
+  "command": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++    -I/Users/reuben/dev/waveguide/include -I/usr/local/include   -Wall -Werror -std=c++14 -msse -msse2 -msse3 -ferror-limit=100 -O2 -g -DNDEBUG   -o CMakeFiles/common.dir/string_builder.cpp.o -c /Users/reuben/dev/waveguide/common/string_builder.cpp",
+  "file": "/Users/reuben/dev/waveguide/common/string_builder.cpp"
+},
+{
+  "directory": "/Users/reuben/dev/waveguide/build/common",
+  "command": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++    -I/Users/reuben/dev/waveguide/include -I/usr/local/include   -Wall -Werror -std=c++14 -msse -msse2 -msse3 -ferror-limit=100 -O2 -g -DNDEBUG   -o CMakeFiles/common.dir/timed_scope.cpp.o -c /Users/reuben/dev/waveguide/common/timed_scope.cpp",
+  "file": "/Users/reuben/dev/waveguide/common/timed_scope.cpp"
+},
+{
+  "directory": "/Users/reuben/dev/waveguide/build/common",
+  "command": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++    -I/Users/reuben/dev/waveguide/include -I/usr/local/include   -Wall -Werror -std=c++14 -msse -msse2 -msse3 -ferror-limit=100 -O2 -g -DNDEBUG   -o CMakeFiles/common.dir/tri_cube_intersection.cpp.o -c /Users/reuben/dev/waveguide/common/tri_cube_intersection.cpp",
+  "file": "/Users/reuben/dev/waveguide/common/tri_cube_intersection.cpp"
+},
+{
+  "directory": "/Users/reuben/dev/waveguide/build/common",
+  "command": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++    -I/Users/reuben/dev/waveguide/include -I/usr/local/include   -Wall -Werror -std=c++14 -msse -msse2 -msse3 -ferror-limit=100 -O2 -g -DNDEBUG   -o CMakeFiles/common.dir/triangle_vec.cpp.o -c /Users/reuben/dev/waveguide/common/triangle_vec.cpp",
+  "file": "/Users/reuben/dev/waveguide/common/triangle_vec.cpp"
+},
+{
+  "directory": "/Users/reuben/dev/waveguide/build/common",
+  "command": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++    -I/Users/reuben/dev/waveguide/include -I/usr/local/include   -Wall -Werror -std=c++14 -msse -msse2 -msse3 -ferror-limit=100 -O2 -g -DNDEBUG   -o CMakeFiles/common.dir/voxel_collection.cpp.o -c /Users/reuben/dev/waveguide/common/voxel_collection.cpp",
+  "file": "/Users/reuben/dev/waveguide/common/voxel_collection.cpp"
+},
+{
+  "directory": "/Users/reuben/dev/waveguide/build/common",
+  "command": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++    -I/Users/reuben/dev/waveguide/include -I/usr/local/include   -Wall -Werror -std=c++14 -msse -msse2 -msse3 -ferror-limit=100 -O2 -g -DNDEBUG   -o CMakeFiles/common.dir/write_audio_file.cpp.o -c /Users/reuben/dev/waveguide/common/write_audio_file.cpp",
+  "file": "/Users/reuben/dev/waveguide/common/write_audio_file.cpp"
+},
+{
+  "directory": "/Users/reuben/dev/waveguide/build/waveguide",
+  "command": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++    -I/Users/reuben/dev/waveguide/include -I/Users/reuben/dev/waveguide/common -I/usr/local/include   -Wall -Werror -std=c++14 -msse -msse2 -msse3 -ferror-limit=100 -O2 -g -DNDEBUG   -o CMakeFiles/waveguide.dir/attenuator.cpp.o -c /Users/reuben/dev/waveguide/waveguide/attenuator.cpp",
+  "file": "/Users/reuben/dev/waveguide/waveguide/attenuator.cpp"
+},
+{
+  "directory": "/Users/reuben/dev/waveguide/build/waveguide",
+  "command": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++    -I/Users/reuben/dev/waveguide/include -I/Users/reuben/dev/waveguide/common -I/usr/local/include   -Wall -Werror -std=c++14 -msse -msse2 -msse3 -ferror-limit=100 -O2 -g -DNDEBUG   -o CMakeFiles/waveguide.dir/boundary_adjust.cpp.o -c /Users/reuben/dev/waveguide/waveguide/boundary_adjust.cpp",
+  "file": "/Users/reuben/dev/waveguide/waveguide/boundary_adjust.cpp"
+},
+{
+  "directory": "/Users/reuben/dev/waveguide/build/waveguide",
+  "command": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++    -I/Users/reuben/dev/waveguide/include -I/Users/reuben/dev/waveguide/common -I/usr/local/include   -Wall -Werror -std=c++14 -msse -msse2 -msse3 -ferror-limit=100 -O2 -g -DNDEBUG   -o CMakeFiles/waveguide.dir/hrtf_attenuator.cpp.o -c /Users/reuben/dev/waveguide/waveguide/hrtf_attenuator.cpp",
+  "file": "/Users/reuben/dev/waveguide/waveguide/hrtf_attenuator.cpp"
+},
+{
+  "directory": "/Users/reuben/dev/waveguide/build/waveguide",
+  "command": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++    -I/Users/reuben/dev/waveguide/include -I/Users/reuben/dev/waveguide/common -I/usr/local/include   -Wall -Werror -std=c++14 -msse -msse2 -msse3 -ferror-limit=100 -O2 -g -DNDEBUG   -o CMakeFiles/waveguide.dir/microphone.cpp.o -c /Users/reuben/dev/waveguide/waveguide/microphone.cpp",
+  "file": "/Users/reuben/dev/waveguide/waveguide/microphone.cpp"
+},
+{
+  "directory": "/Users/reuben/dev/waveguide/build/waveguide",
+  "command": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++    -I/Users/reuben/dev/waveguide/include -I/Users/reuben/dev/waveguide/common -I/usr/local/include   -Wall -Werror -std=c++14 -msse -msse2 -msse3 -ferror-limit=100 -O2 -g -DNDEBUG   -o CMakeFiles/waveguide.dir/power_function.cpp.o -c /Users/reuben/dev/waveguide/waveguide/power_function.cpp",
+  "file": "/Users/reuben/dev/waveguide/waveguide/power_function.cpp"
+},
+{
+  "directory": "/Users/reuben/dev/waveguide/build/waveguide",
+  "command": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++    -I/Users/reuben/dev/waveguide/include -I/Users/reuben/dev/waveguide/common -I/usr/local/include   -Wall -Werror -std=c++14 -msse -msse2 -msse3 -ferror-limit=100 -O2 -g -DNDEBUG   -o CMakeFiles/waveguide.dir/rectangular_mesh.cpp.o -c /Users/reuben/dev/waveguide/waveguide/rectangular_mesh.cpp",
+  "file": "/Users/reuben/dev/waveguide/waveguide/rectangular_mesh.cpp"
+},
+{
+  "directory": "/Users/reuben/dev/waveguide/build/waveguide",
+  "command": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++    -I/Users/reuben/dev/waveguide/include -I/Users/reuben/dev/waveguide/common -I/usr/local/include   -Wall -Werror -std=c++14 -msse -msse2 -msse3 -ferror-limit=100 -O2 -g -DNDEBUG   -o CMakeFiles/waveguide.dir/rectangular_program.cpp.o -c /Users/reuben/dev/waveguide/waveguide/rectangular_program.cpp",
+  "file": "/Users/reuben/dev/waveguide/waveguide/rectangular_program.cpp"
+},
+{
+  "directory": "/Users/reuben/dev/waveguide/build/waveguide",
+  "command": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++    -I/Users/reuben/dev/waveguide/include -I/Users/reuben/dev/waveguide/common -I/usr/local/include   -Wall -Werror -std=c++14 -msse -msse2 -msse3 -ferror-limit=100 -O2 -g -DNDEBUG   -o CMakeFiles/waveguide.dir/tetrahedral_mesh.cpp.o -c /Users/reuben/dev/waveguide/waveguide/tetrahedral_mesh.cpp",
+  "file": "/Users/reuben/dev/waveguide/waveguide/tetrahedral_mesh.cpp"
+},
+{
+  "directory": "/Users/reuben/dev/waveguide/build/waveguide",
+  "command": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++    -I/Users/reuben/dev/waveguide/include -I/Users/reuben/dev/waveguide/common -I/usr/local/include   -Wall -Werror -std=c++14 -msse -msse2 -msse3 -ferror-limit=100 -O2 -g -DNDEBUG   -o CMakeFiles/waveguide.dir/waveguide.cpp.o -c /Users/reuben/dev/waveguide/waveguide/waveguide.cpp",
+  "file": "/Users/reuben/dev/waveguide/waveguide/waveguide.cpp"
+},
+{
+  "directory": "/Users/reuben/dev/waveguide/build/waveguide",
+  "command": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++    -I/Users/reuben/dev/waveguide/include -I/Users/reuben/dev/waveguide/common -I/usr/local/include   -Wall -Werror -std=c++14 -msse -msse2 -msse3 -ferror-limit=100 -O2 -g -DNDEBUG   -o CMakeFiles/waveguide.dir/waveguide_config.cpp.o -c /Users/reuben/dev/waveguide/waveguide/waveguide_config.cpp",
+  "file": "/Users/reuben/dev/waveguide/waveguide/waveguide_config.cpp"
+},
+{
+  "directory": "/Users/reuben/dev/waveguide/build/raytracer",
+  "command": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++    -I/Users/reuben/dev/waveguide/include -I/Users/reuben/dev/waveguide/common -I/usr/local/include   -Wall -Werror -std=c++14 -msse -msse2 -msse3 -ferror-limit=100 -O2 -g -DNDEBUG   -o CMakeFiles/raytracer.dir/filters.cpp.o -c /Users/reuben/dev/waveguide/raytracer/filters.cpp",
+  "file": "/Users/reuben/dev/waveguide/raytracer/filters.cpp"
+},
+{
+  "directory": "/Users/reuben/dev/waveguide/build/raytracer",
+  "command": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++    -I/Users/reuben/dev/waveguide/include -I/Users/reuben/dev/waveguide/common -I/usr/local/include   -Wall -Werror -std=c++14 -msse -msse2 -msse3 -ferror-limit=100 -O2 -g -DNDEBUG   -o CMakeFiles/raytracer.dir/raytracer.cpp.o -c /Users/reuben/dev/waveguide/raytracer/raytracer.cpp",
+  "file": "/Users/reuben/dev/waveguide/raytracer/raytracer.cpp"
+},
+{
+  "directory": "/Users/reuben/dev/waveguide/build/raytracer",
+  "command": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++    -I/Users/reuben/dev/waveguide/include -I/Users/reuben/dev/waveguide/common -I/usr/local/include   -Wall -Werror -std=c++14 -msse -msse2 -msse3 -ferror-limit=100 -O2 -g -DNDEBUG   -o CMakeFiles/raytracer.dir/raytracer_config.cpp.o -c /Users/reuben/dev/waveguide/raytracer/raytracer_config.cpp",
+  "file": "/Users/reuben/dev/waveguide/raytracer/raytracer_config.cpp"
+},
+{
+  "directory": "/Users/reuben/dev/waveguide/build/raytracer",
+  "command": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++    -I/Users/reuben/dev/waveguide/include -I/Users/reuben/dev/waveguide/common -I/usr/local/include   -Wall -Werror -std=c++14 -msse -msse2 -msse3 -ferror-limit=100 -O2 -g -DNDEBUG   -o CMakeFiles/raytracer.dir/raytracer_program.cpp.o -c /Users/reuben/dev/waveguide/raytracer/raytracer_program.cpp",
+  "file": "/Users/reuben/dev/waveguide/raytracer/raytracer_program.cpp"
+},
+{
+  "directory": "/Users/reuben/dev/waveguide/build/cmd",
+  "command": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++    -I/Users/reuben/dev/waveguide/include -I/Users/reuben/dev/waveguide/common -I/Users/reuben/dev/waveguide/raytracer -I/Users/reuben/dev/waveguide/waveguide -I/Users/reuben/dev/waveguide/combined -I/usr/local/include   -Wall -Werror -std=c++14 -msse -msse2 -msse3 -ferror-limit=100 -O2 -g -DNDEBUG   -o CMakeFiles/wayverb.dir/main.cpp.o -c /Users/reuben/dev/waveguide/cmd/main.cpp",
+  "file": "/Users/reuben/dev/waveguide/cmd/main.cpp"
+},
+{
+  "directory": "/Users/reuben/dev/waveguide/build/tests",
+  "command": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++   -DMAT_PATH=\\\"/Users/reuben/dev/waveguide/demo/assets/materials/vault.json\\\" -DMAT_PATH_BAD_BOX=\\\"/Users/reuben/dev/waveguide/demo/assets/materials/damped.json\\\" -DMAT_PATH_BEDROOM=\\\"/Users/reuben/dev/waveguide/demo/assets/materials/mat.json\\\" -DMAT_PATH_TUNNEL=\\\"/Users/reuben/dev/waveguide/demo/assets/materials/mat.json\\\" -DOBJ_PATH=\\\"/Users/reuben/dev/waveguide/demo/assets/test_models/vault.obj\\\" -DOBJ_PATH_BAD_BOX=\\\"/Users/reuben/dev/waveguide/demo/assets/test_models/small_square.obj\\\" -DOBJ_PATH_BEDROOM=\\\"/Users/reuben/dev/waveguide/demo/assets/test_models/bedroom.obj\\\" -DOBJ_PATH_TUNNEL=\\\"/Users/reuben/dev/waveguide/demo/assets/test_models/echo_tunnel.obj\\\" -DSCRATCH_PATH=\\\"/Users/reuben/dev/waveguide/build\\\" -I/Users/reuben/dev/waveguide/waveguide -I/Users/reuben/dev/waveguide/common -I/Users/reuben/dev/waveguide/bsp -I/Users/reuben/dev/waveguide/raytracer -I/Users/reuben/dev/waveguide/include -I/Users/reuben/dev/waveguide/gtest/include -I/usr/local/include   -Wall -Werror -std=c++14 -msse -msse2 -msse3 -ferror-limit=100 -O2 -g -DNDEBUG   -o CMakeFiles/tests.dir/boundary_tests.cpp.o -c /Users/reuben/dev/waveguide/tests/boundary_tests.cpp",
+  "file": "/Users/reuben/dev/waveguide/tests/boundary_tests.cpp"
+},
+{
+  "directory": "/Users/reuben/dev/waveguide/build/tests",
+  "command": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++   -DMAT_PATH=\\\"/Users/reuben/dev/waveguide/demo/assets/materials/vault.json\\\" -DMAT_PATH_BAD_BOX=\\\"/Users/reuben/dev/waveguide/demo/assets/materials/damped.json\\\" -DMAT_PATH_BEDROOM=\\\"/Users/reuben/dev/waveguide/demo/assets/materials/mat.json\\\" -DMAT_PATH_TUNNEL=\\\"/Users/reuben/dev/waveguide/demo/assets/materials/mat.json\\\" -DOBJ_PATH=\\\"/Users/reuben/dev/waveguide/demo/assets/test_models/vault.obj\\\" -DOBJ_PATH_BAD_BOX=\\\"/Users/reuben/dev/waveguide/demo/assets/test_models/small_square.obj\\\" -DOBJ_PATH_BEDROOM=\\\"/Users/reuben/dev/waveguide/demo/assets/test_models/bedroom.obj\\\" -DOBJ_PATH_TUNNEL=\\\"/Users/reuben/dev/waveguide/demo/assets/test_models/echo_tunnel.obj\\\" -DSCRATCH_PATH=\\\"/Users/reuben/dev/waveguide/build\\\" -I/Users/reuben/dev/waveguide/waveguide -I/Users/reuben/dev/waveguide/common -I/Users/reuben/dev/waveguide/bsp -I/Users/reuben/dev/waveguide/raytracer -I/Users/reuben/dev/waveguide/include -I/Users/reuben/dev/waveguide/gtest/include -I/usr/local/include   -Wall -Werror -std=c++14 -msse -msse2 -msse3 -ferror-limit=100 -O2 -g -DNDEBUG   -o CMakeFiles/tests.dir/extended_algorithms.cpp.o -c /Users/reuben/dev/waveguide/tests/extended_algorithms.cpp",
+  "file": "/Users/reuben/dev/waveguide/tests/extended_algorithms.cpp"
+},
+{
+  "directory": "/Users/reuben/dev/waveguide/build/tests",
+  "command": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++   -DMAT_PATH=\\\"/Users/reuben/dev/waveguide/demo/assets/materials/vault.json\\\" -DMAT_PATH_BAD_BOX=\\\"/Users/reuben/dev/waveguide/demo/assets/materials/damped.json\\\" -DMAT_PATH_BEDROOM=\\\"/Users/reuben/dev/waveguide/demo/assets/materials/mat.json\\\" -DMAT_PATH_TUNNEL=\\\"/Users/reuben/dev/waveguide/demo/assets/materials/mat.json\\\" -DOBJ_PATH=\\\"/Users/reuben/dev/waveguide/demo/assets/test_models/vault.obj\\\" -DOBJ_PATH_BAD_BOX=\\\"/Users/reuben/dev/waveguide/demo/assets/test_models/small_square.obj\\\" -DOBJ_PATH_BEDROOM=\\\"/Users/reuben/dev/waveguide/demo/assets/test_models/bedroom.obj\\\" -DOBJ_PATH_TUNNEL=\\\"/Users/reuben/dev/waveguide/demo/assets/test_models/echo_tunnel.obj\\\" -DSCRATCH_PATH=\\\"/Users/reuben/dev/waveguide/build\\\" -I/Users/reuben/dev/waveguide/waveguide -I/Users/reuben/dev/waveguide/common -I/Users/reuben/dev/waveguide/bsp -I/Users/reuben/dev/waveguide/raytracer -I/Users/reuben/dev/waveguide/include -I/Users/reuben/dev/waveguide/gtest/include -I/usr/local/include   -Wall -Werror -std=c++14 -msse -msse2 -msse3 -ferror-limit=100 -O2 -g -DNDEBUG   -o CMakeFiles/tests.dir/extended_algorithms_tests.cpp.o -c /Users/reuben/dev/waveguide/tests/extended_algorithms_tests.cpp",
+  "file": "/Users/reuben/dev/waveguide/tests/extended_algorithms_tests.cpp"
+},
+{
+  "directory": "/Users/reuben/dev/waveguide/build/tests",
+  "command": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++   -DMAT_PATH=\\\"/Users/reuben/dev/waveguide/demo/assets/materials/vault.json\\\" -DMAT_PATH_BAD_BOX=\\\"/Users/reuben/dev/waveguide/demo/assets/materials/damped.json\\\" -DMAT_PATH_BEDROOM=\\\"/Users/reuben/dev/waveguide/demo/assets/materials/mat.json\\\" -DMAT_PATH_TUNNEL=\\\"/Users/reuben/dev/waveguide/demo/assets/materials/mat.json\\\" -DOBJ_PATH=\\\"/Users/reuben/dev/waveguide/demo/assets/test_models/vault.obj\\\" -DOBJ_PATH_BAD_BOX=\\\"/Users/reuben/dev/waveguide/demo/assets/test_models/small_square.obj\\\" -DOBJ_PATH_BEDROOM=\\\"/Users/reuben/dev/waveguide/demo/assets/test_models/bedroom.obj\\\" -DOBJ_PATH_TUNNEL=\\\"/Users/reuben/dev/waveguide/demo/assets/test_models/echo_tunnel.obj\\\" -DSCRATCH_PATH=\\\"/Users/reuben/dev/waveguide/build\\\" -I/Users/reuben/dev/waveguide/waveguide -I/Users/reuben/dev/waveguide/common -I/Users/reuben/dev/waveguide/bsp -I/Users/reuben/dev/waveguide/raytracer -I/Users/reuben/dev/waveguide/include -I/Users/reuben/dev/waveguide/gtest/include -I/usr/local/include   -Wall -Werror -std=c++14 -msse -msse2 -msse3 -ferror-limit=100 -O2 -g -DNDEBUG   -o CMakeFiles/tests.dir/geo_tests.cpp.o -c /Users/reuben/dev/waveguide/tests/geo_tests.cpp",
+  "file": "/Users/reuben/dev/waveguide/tests/geo_tests.cpp"
+},
+{
+  "directory": "/Users/reuben/dev/waveguide/build/tests",
+  "command": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++   -DMAT_PATH=\\\"/Users/reuben/dev/waveguide/demo/assets/materials/vault.json\\\" -DMAT_PATH_BAD_BOX=\\\"/Users/reuben/dev/waveguide/demo/assets/materials/damped.json\\\" -DMAT_PATH_BEDROOM=\\\"/Users/reuben/dev/waveguide/demo/assets/materials/mat.json\\\" -DMAT_PATH_TUNNEL=\\\"/Users/reuben/dev/waveguide/demo/assets/materials/mat.json\\\" -DOBJ_PATH=\\\"/Users/reuben/dev/waveguide/demo/assets/test_models/vault.obj\\\" -DOBJ_PATH_BAD_BOX=\\\"/Users/reuben/dev/waveguide/demo/assets/test_models/small_square.obj\\\" -DOBJ_PATH_BEDROOM=\\\"/Users/reuben/dev/waveguide/demo/assets/test_models/bedroom.obj\\\" -DOBJ_PATH_TUNNEL=\\\"/Users/reuben/dev/waveguide/demo/assets/test_models/echo_tunnel.obj\\\" -DSCRATCH_PATH=\\\"/Users/reuben/dev/waveguide/build\\\" -I/Users/reuben/dev/waveguide/waveguide -I/Users/reuben/dev/waveguide/common -I/Users/reuben/dev/waveguide/bsp -I/Users/reuben/dev/waveguide/raytracer -I/Users/reuben/dev/waveguide/include -I/Users/reuben/dev/waveguide/gtest/include -I/usr/local/include   -Wall -Werror -std=c++14 -msse -msse2 -msse3 -ferror-limit=100 -O2 -g -DNDEBUG   -o CMakeFiles/tests.dir/main.cpp.o -c /Users/reuben/dev/waveguide/tests/main.cpp",
+  "file": "/Users/reuben/dev/waveguide/tests/main.cpp"
+},
+{
+  "directory": "/Users/reuben/dev/waveguide/build/tests",
+  "command": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++   -DMAT_PATH=\\\"/Users/reuben/dev/waveguide/demo/assets/materials/vault.json\\\" -DMAT_PATH_BAD_BOX=\\\"/Users/reuben/dev/waveguide/demo/assets/materials/damped.json\\\" -DMAT_PATH_BEDROOM=\\\"/Users/reuben/dev/waveguide/demo/assets/materials/mat.json\\\" -DMAT_PATH_TUNNEL=\\\"/Users/reuben/dev/waveguide/demo/assets/materials/mat.json\\\" -DOBJ_PATH=\\\"/Users/reuben/dev/waveguide/demo/assets/test_models/vault.obj\\\" -DOBJ_PATH_BAD_BOX=\\\"/Users/reuben/dev/waveguide/demo/assets/test_models/small_square.obj\\\" -DOBJ_PATH_BEDROOM=\\\"/Users/reuben/dev/waveguide/demo/assets/test_models/bedroom.obj\\\" -DOBJ_PATH_TUNNEL=\\\"/Users/reuben/dev/waveguide/demo/assets/test_models/echo_tunnel.obj\\\" -DSCRATCH_PATH=\\\"/Users/reuben/dev/waveguide/build\\\" -I/Users/reuben/dev/waveguide/waveguide -I/Users/reuben/dev/waveguide/common -I/Users/reuben/dev/waveguide/bsp -I/Users/reuben/dev/waveguide/raytracer -I/Users/reuben/dev/waveguide/include -I/Users/reuben/dev/waveguide/gtest/include -I/usr/local/include   -Wall -Werror -std=c++14 -msse -msse2 -msse3 -ferror-limit=100 -O2 -g -DNDEBUG   -o CMakeFiles/tests.dir/mesh_tests.cpp.o -c /Users/reuben/dev/waveguide/tests/mesh_tests.cpp",
+  "file": "/Users/reuben/dev/waveguide/tests/mesh_tests.cpp"
+},
+{
+  "directory": "/Users/reuben/dev/waveguide/build/tests",
+  "command": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++   -DMAT_PATH=\\\"/Users/reuben/dev/waveguide/demo/assets/materials/vault.json\\\" -DMAT_PATH_BAD_BOX=\\\"/Users/reuben/dev/waveguide/demo/assets/materials/damped.json\\\" -DMAT_PATH_BEDROOM=\\\"/Users/reuben/dev/waveguide/demo/assets/materials/mat.json\\\" -DMAT_PATH_TUNNEL=\\\"/Users/reuben/dev/waveguide/demo/assets/materials/mat.json\\\" -DOBJ_PATH=\\\"/Users/reuben/dev/waveguide/demo/assets/test_models/vault.obj\\\" -DOBJ_PATH_BAD_BOX=\\\"/Users/reuben/dev/waveguide/demo/assets/test_models/small_square.obj\\\" -DOBJ_PATH_BEDROOM=\\\"/Users/reuben/dev/waveguide/demo/assets/test_models/bedroom.obj\\\" -DOBJ_PATH_TUNNEL=\\\"/Users/reuben/dev/waveguide/demo/assets/test_models/echo_tunnel.obj\\\" -DSCRATCH_PATH=\\\"/Users/reuben/dev/waveguide/build\\\" -I/Users/reuben/dev/waveguide/waveguide -I/Users/reuben/dev/waveguide/common -I/Users/reuben/dev/waveguide/bsp -I/Users/reuben/dev/waveguide/raytracer -I/Users/reuben/dev/waveguide/include -I/Users/reuben/dev/waveguide/gtest/include -I/usr/local/include   -Wall -Werror -std=c++14 -msse -msse2 -msse3 -ferror-limit=100 -O2 -g -DNDEBUG   -o CMakeFiles/tests.dir/octree_tests.cpp.o -c /Users/reuben/dev/waveguide/tests/octree_tests.cpp",
+  "file": "/Users/reuben/dev/waveguide/tests/octree_tests.cpp"
+},
+{
+  "directory": "/Users/reuben/dev/waveguide/build/tests",
+  "command": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++   -DMAT_PATH=\\\"/Users/reuben/dev/waveguide/demo/assets/materials/vault.json\\\" -DMAT_PATH_BAD_BOX=\\\"/Users/reuben/dev/waveguide/demo/assets/materials/damped.json\\\" -DMAT_PATH_BEDROOM=\\\"/Users/reuben/dev/waveguide/demo/assets/materials/mat.json\\\" -DMAT_PATH_TUNNEL=\\\"/Users/reuben/dev/waveguide/demo/assets/materials/mat.json\\\" -DOBJ_PATH=\\\"/Users/reuben/dev/waveguide/demo/assets/test_models/vault.obj\\\" -DOBJ_PATH_BAD_BOX=\\\"/Users/reuben/dev/waveguide/demo/assets/test_models/small_square.obj\\\" -DOBJ_PATH_BEDROOM=\\\"/Users/reuben/dev/waveguide/demo/assets/test_models/bedroom.obj\\\" -DOBJ_PATH_TUNNEL=\\\"/Users/reuben/dev/waveguide/demo/assets/test_models/echo_tunnel.obj\\\" -DSCRATCH_PATH=\\\"/Users/reuben/dev/waveguide/build\\\" -I/Users/reuben/dev/waveguide/waveguide -I/Users/reuben/dev/waveguide/common -I/Users/reuben/dev/waveguide/bsp -I/Users/reuben/dev/waveguide/raytracer -I/Users/reuben/dev/waveguide/include -I/Users/reuben/dev/waveguide/gtest/include -I/usr/local/include   -Wall -Werror -std=c++14 -msse -msse2 -msse3 -ferror-limit=100 -O2 -g -DNDEBUG   -o CMakeFiles/tests.dir/raytrace_tests.cpp.o -c /Users/reuben/dev/waveguide/tests/raytrace_tests.cpp",
+  "file": "/Users/reuben/dev/waveguide/tests/raytrace_tests.cpp"
+},
+{
+  "directory": "/Users/reuben/dev/waveguide/build/tests",
+  "command": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++   -DMAT_PATH=\\\"/Users/reuben/dev/waveguide/demo/assets/materials/vault.json\\\" -DMAT_PATH_BAD_BOX=\\\"/Users/reuben/dev/waveguide/demo/assets/materials/damped.json\\\" -DMAT_PATH_BEDROOM=\\\"/Users/reuben/dev/waveguide/demo/assets/materials/mat.json\\\" -DMAT_PATH_TUNNEL=\\\"/Users/reuben/dev/waveguide/demo/assets/materials/mat.json\\\" -DOBJ_PATH=\\\"/Users/reuben/dev/waveguide/demo/assets/test_models/vault.obj\\\" -DOBJ_PATH_BAD_BOX=\\\"/Users/reuben/dev/waveguide/demo/assets/test_models/small_square.obj\\\" -DOBJ_PATH_BEDROOM=\\\"/Users/reuben/dev/waveguide/demo/assets/test_models/bedroom.obj\\\" -DOBJ_PATH_TUNNEL=\\\"/Users/reuben/dev/waveguide/demo/assets/test_models/echo_tunnel.obj\\\" -DSCRATCH_PATH=\\\"/Users/reuben/dev/waveguide/build\\\" -I/Users/reuben/dev/waveguide/waveguide -I/Users/reuben/dev/waveguide/common -I/Users/reuben/dev/waveguide/bsp -I/Users/reuben/dev/waveguide/raytracer -I/Users/reuben/dev/waveguide/include -I/Users/reuben/dev/waveguide/gtest/include -I/usr/local/include   -Wall -Werror -std=c++14 -msse -msse2 -msse3 -ferror-limit=100 -O2 -g -DNDEBUG   -o CMakeFiles/tests.dir/rectangular_kernel.cpp.o -c /Users/reuben/dev/waveguide/tests/rectangular_kernel.cpp",
+  "file": "/Users/reuben/dev/waveguide/tests/rectangular_kernel.cpp"
+},
+{
+  "directory": "/Users/reuben/dev/waveguide/build/tests",
+  "command": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++   -DMAT_PATH=\\\"/Users/reuben/dev/waveguide/demo/assets/materials/vault.json\\\" -DMAT_PATH_BAD_BOX=\\\"/Users/reuben/dev/waveguide/demo/assets/materials/damped.json\\\" -DMAT_PATH_BEDROOM=\\\"/Users/reuben/dev/waveguide/demo/assets/materials/mat.json\\\" -DMAT_PATH_TUNNEL=\\\"/Users/reuben/dev/waveguide/demo/assets/materials/mat.json\\\" -DOBJ_PATH=\\\"/Users/reuben/dev/waveguide/demo/assets/test_models/vault.obj\\\" -DOBJ_PATH_BAD_BOX=\\\"/Users/reuben/dev/waveguide/demo/assets/test_models/small_square.obj\\\" -DOBJ_PATH_BEDROOM=\\\"/Users/reuben/dev/waveguide/demo/assets/test_models/bedroom.obj\\\" -DOBJ_PATH_TUNNEL=\\\"/Users/reuben/dev/waveguide/demo/assets/test_models/echo_tunnel.obj\\\" -DSCRATCH_PATH=\\\"/Users/reuben/dev/waveguide/build\\\" -I/Users/reuben/dev/waveguide/waveguide -I/Users/reuben/dev/waveguide/common -I/Users/reuben/dev/waveguide/bsp -I/Users/reuben/dev/waveguide/raytracer -I/Users/reuben/dev/waveguide/include -I/Users/reuben/dev/waveguide/gtest/include -I/usr/local/include   -Wall -Werror -std=c++14 -msse -msse2 -msse3 -ferror-limit=100 -O2 -g -DNDEBUG   -o CMakeFiles/tests.dir/rectangular_mesh.cpp.o -c /Users/reuben/dev/waveguide/tests/rectangular_mesh.cpp",
+  "file": "/Users/reuben/dev/waveguide/tests/rectangular_mesh.cpp"
+},
+{
+  "directory": "/Users/reuben/dev/waveguide/build/tests",
+  "command": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++   -DMAT_PATH=\\\"/Users/reuben/dev/waveguide/demo/assets/materials/vault.json\\\" -DMAT_PATH_BAD_BOX=\\\"/Users/reuben/dev/waveguide/demo/assets/materials/damped.json\\\" -DMAT_PATH_BEDROOM=\\\"/Users/reuben/dev/waveguide/demo/assets/materials/mat.json\\\" -DMAT_PATH_TUNNEL=\\\"/Users/reuben/dev/waveguide/demo/assets/materials/mat.json\\\" -DOBJ_PATH=\\\"/Users/reuben/dev/waveguide/demo/assets/test_models/vault.obj\\\" -DOBJ_PATH_BAD_BOX=\\\"/Users/reuben/dev/waveguide/demo/assets/test_models/small_square.obj\\\" -DOBJ_PATH_BEDROOM=\\\"/Users/reuben/dev/waveguide/demo/assets/test_models/bedroom.obj\\\" -DOBJ_PATH_TUNNEL=\\\"/Users/reuben/dev/waveguide/demo/assets/test_models/echo_tunnel.obj\\\" -DSCRATCH_PATH=\\\"/Users/reuben/dev/waveguide/build\\\" -I/Users/reuben/dev/waveguide/waveguide -I/Users/reuben/dev/waveguide/common -I/Users/reuben/dev/waveguide/bsp -I/Users/reuben/dev/waveguide/raytracer -I/Users/reuben/dev/waveguide/include -I/Users/reuben/dev/waveguide/gtest/include -I/usr/local/include   -Wall -Werror -std=c++14 -msse -msse2 -msse3 -ferror-limit=100 -O2 -g -DNDEBUG   -o CMakeFiles/tests.dir/tri_cube_tests.cpp.o -c /Users/reuben/dev/waveguide/tests/tri_cube_tests.cpp",
+  "file": "/Users/reuben/dev/waveguide/tests/tri_cube_tests.cpp"
+},
+{
+  "directory": "/Users/reuben/dev/waveguide/build/tests",
+  "command": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++   -DMAT_PATH=\\\"/Users/reuben/dev/waveguide/demo/assets/materials/vault.json\\\" -DMAT_PATH_BAD_BOX=\\\"/Users/reuben/dev/waveguide/demo/assets/materials/damped.json\\\" -DMAT_PATH_BEDROOM=\\\"/Users/reuben/dev/waveguide/demo/assets/materials/mat.json\\\" -DMAT_PATH_TUNNEL=\\\"/Users/reuben/dev/waveguide/demo/assets/materials/mat.json\\\" -DOBJ_PATH=\\\"/Users/reuben/dev/waveguide/demo/assets/test_models/vault.obj\\\" -DOBJ_PATH_BAD_BOX=\\\"/Users/reuben/dev/waveguide/demo/assets/test_models/small_square.obj\\\" -DOBJ_PATH_BEDROOM=\\\"/Users/reuben/dev/waveguide/demo/assets/test_models/bedroom.obj\\\" -DOBJ_PATH_TUNNEL=\\\"/Users/reuben/dev/waveguide/demo/assets/test_models/echo_tunnel.obj\\\" -DSCRATCH_PATH=\\\"/Users/reuben/dev/waveguide/build\\\" -I/Users/reuben/dev/waveguide/waveguide -I/Users/reuben/dev/waveguide/common -I/Users/reuben/dev/waveguide/bsp -I/Users/reuben/dev/waveguide/raytracer -I/Users/reuben/dev/waveguide/include -I/Users/reuben/dev/waveguide/gtest/include -I/usr/local/include   -Wall -Werror -std=c++14 -msse -msse2 -msse3 -ferror-limit=100 -O2 -g -DNDEBUG   -o CMakeFiles/tests.dir/vec.cpp.o -c /Users/reuben/dev/waveguide/tests/vec.cpp",
+  "file": "/Users/reuben/dev/waveguide/tests/vec.cpp"
+},
+{
+  "directory": "/Users/reuben/dev/waveguide/build/tests",
+  "command": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++   -DMAT_PATH=\\\"/Users/reuben/dev/waveguide/demo/assets/materials/vault.json\\\" -DMAT_PATH_BAD_BOX=\\\"/Users/reuben/dev/waveguide/demo/assets/materials/damped.json\\\" -DMAT_PATH_BEDROOM=\\\"/Users/reuben/dev/waveguide/demo/assets/materials/mat.json\\\" -DMAT_PATH_TUNNEL=\\\"/Users/reuben/dev/waveguide/demo/assets/materials/mat.json\\\" -DOBJ_PATH=\\\"/Users/reuben/dev/waveguide/demo/assets/test_models/vault.obj\\\" -DOBJ_PATH_BAD_BOX=\\\"/Users/reuben/dev/waveguide/demo/assets/test_models/small_square.obj\\\" -DOBJ_PATH_BEDROOM=\\\"/Users/reuben/dev/waveguide/demo/assets/test_models/bedroom.obj\\\" -DOBJ_PATH_TUNNEL=\\\"/Users/reuben/dev/waveguide/demo/assets/test_models/echo_tunnel.obj\\\" -DSCRATCH_PATH=\\\"/Users/reuben/dev/waveguide/build\\\" -I/Users/reuben/dev/waveguide/waveguide -I/Users/reuben/dev/waveguide/common -I/Users/reuben/dev/waveguide/bsp -I/Users/reuben/dev/waveguide/raytracer -I/Users/reuben/dev/waveguide/include -I/Users/reuben/dev/waveguide/gtest/include -I/usr/local/include   -Wall -Werror -std=c++14 -msse -msse2 -msse3 -ferror-limit=100 -O2 -g -DNDEBUG   -o CMakeFiles/tests.dir/vec_tests.cpp.o -c /Users/reuben/dev/waveguide/tests/vec_tests.cpp",
+  "file": "/Users/reuben/dev/waveguide/tests/vec_tests.cpp"
+},
+{
+  "directory": "/Users/reuben/dev/waveguide/build/tests",
+  "command": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++   -DMAT_PATH=\\\"/Users/reuben/dev/waveguide/demo/assets/materials/vault.json\\\" -DMAT_PATH_BAD_BOX=\\\"/Users/reuben/dev/waveguide/demo/assets/materials/damped.json\\\" -DMAT_PATH_BEDROOM=\\\"/Users/reuben/dev/waveguide/demo/assets/materials/mat.json\\\" -DMAT_PATH_TUNNEL=\\\"/Users/reuben/dev/waveguide/demo/assets/materials/mat.json\\\" -DOBJ_PATH=\\\"/Users/reuben/dev/waveguide/demo/assets/test_models/vault.obj\\\" -DOBJ_PATH_BAD_BOX=\\\"/Users/reuben/dev/waveguide/demo/assets/test_models/small_square.obj\\\" -DOBJ_PATH_BEDROOM=\\\"/Users/reuben/dev/waveguide/demo/assets/test_models/bedroom.obj\\\" -DOBJ_PATH_TUNNEL=\\\"/Users/reuben/dev/waveguide/demo/assets/test_models/echo_tunnel.obj\\\" -DSCRATCH_PATH=\\\"/Users/reuben/dev/waveguide/build\\\" -I/Users/reuben/dev/waveguide/waveguide -I/Users/reuben/dev/waveguide/common -I/Users/reuben/dev/waveguide/bsp -I/Users/reuben/dev/waveguide/raytracer -I/Users/reuben/dev/waveguide/include -I/Users/reuben/dev/waveguide/gtest/include -I/usr/local/include   -Wall -Werror -std=c++14 -msse -msse2 -msse3 -ferror-limit=100 -O2 -g -DNDEBUG   -o CMakeFiles/tests.dir/voxel_tests.cpp.o -c /Users/reuben/dev/waveguide/tests/voxel_tests.cpp",
+  "file": "/Users/reuben/dev/waveguide/tests/voxel_tests.cpp"
+},
+{
+  "directory": "/Users/reuben/dev/waveguide/build/tests",
+  "command": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++   -DMAT_PATH=\\\"/Users/reuben/dev/waveguide/demo/assets/materials/vault.json\\\" -DMAT_PATH_BAD_BOX=\\\"/Users/reuben/dev/waveguide/demo/assets/materials/damped.json\\\" -DMAT_PATH_BEDROOM=\\\"/Users/reuben/dev/waveguide/demo/assets/materials/mat.json\\\" -DMAT_PATH_TUNNEL=\\\"/Users/reuben/dev/waveguide/demo/assets/materials/mat.json\\\" -DOBJ_PATH=\\\"/Users/reuben/dev/waveguide/demo/assets/test_models/vault.obj\\\" -DOBJ_PATH_BAD_BOX=\\\"/Users/reuben/dev/waveguide/demo/assets/test_models/small_square.obj\\\" -DOBJ_PATH_BEDROOM=\\\"/Users/reuben/dev/waveguide/demo/assets/test_models/bedroom.obj\\\" -DOBJ_PATH_TUNNEL=\\\"/Users/reuben/dev/waveguide/demo/assets/test_models/echo_tunnel.obj\\\" -DSCRATCH_PATH=\\\"/Users/reuben/dev/waveguide/build\\\" -I/Users/reuben/dev/waveguide/waveguide -I/Users/reuben/dev/waveguide/common -I/Users/reuben/dev/waveguide/bsp -I/Users/reuben/dev/waveguide/raytracer -I/Users/reuben/dev/waveguide/include -I/Users/reuben/dev/waveguide/gtest/include -I/usr/local/include   -Wall -Werror -std=c++14 -msse -msse2 -msse3 -ferror-limit=100 -O2 -g -DNDEBUG   -o CMakeFiles/tests.dir/waveguide_tests.cpp.o -c /Users/reuben/dev/waveguide/tests/waveguide_tests.cpp",
+  "file": "/Users/reuben/dev/waveguide/tests/waveguide_tests.cpp"
+},
+{
+  "directory": "/Users/reuben/dev/waveguide/build/tests/mic_test",
+  "command": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++   -DMAT_PATH=\\\"/Users/reuben/dev/waveguide/demo/assets/materials/vault.json\\\" -DMAT_PATH_BAD_BOX=\\\"/Users/reuben/dev/waveguide/demo/assets/materials/damped.json\\\" -DMAT_PATH_BEDROOM=\\\"/Users/reuben/dev/waveguide/demo/assets/materials/mat.json\\\" -DMAT_PATH_TUNNEL=\\\"/Users/reuben/dev/waveguide/demo/assets/materials/mat.json\\\" -DOBJ_PATH=\\\"/Users/reuben/dev/waveguide/demo/assets/test_models/vault.obj\\\" -DOBJ_PATH_BAD_BOX=\\\"/Users/reuben/dev/waveguide/demo/assets/test_models/small_square.obj\\\" -DOBJ_PATH_BEDROOM=\\\"/Users/reuben/dev/waveguide/demo/assets/test_models/bedroom.obj\\\" -DOBJ_PATH_TUNNEL=\\\"/Users/reuben/dev/waveguide/demo/assets/test_models/echo_tunnel.obj\\\" -DSCRATCH_PATH=\\\"/Users/reuben/dev/waveguide/build\\\" -I/Users/reuben/dev/waveguide/waveguide -I/Users/reuben/dev/waveguide/common -I/Users/reuben/dev/waveguide/bsp -I/Users/reuben/dev/waveguide/raytracer -I/Users/reuben/dev/waveguide/include -I/Users/reuben/dev/waveguide/gtest/include -I/usr/local/include -I/Users/reuben/dev/waveguide/rayverb   -Wall -Werror -std=c++14 -msse -msse2 -msse3 -ferror-limit=100 -O2 -g -DNDEBUG   -o CMakeFiles/mic_offset_rotate.dir/mic_offset_rotate.cpp.o -c /Users/reuben/dev/waveguide/tests/mic_test/mic_offset_rotate.cpp",
+  "file": "/Users/reuben/dev/waveguide/tests/mic_test/mic_offset_rotate.cpp"
+},
+{
+  "directory": "/Users/reuben/dev/waveguide/build/tests/mic_test",
+  "command": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++   -DMAT_PATH=\\\"/Users/reuben/dev/waveguide/demo/assets/materials/vault.json\\\" -DMAT_PATH_BAD_BOX=\\\"/Users/reuben/dev/waveguide/demo/assets/materials/damped.json\\\" -DMAT_PATH_BEDROOM=\\\"/Users/reuben/dev/waveguide/demo/assets/materials/mat.json\\\" -DMAT_PATH_TUNNEL=\\\"/Users/reuben/dev/waveguide/demo/assets/materials/mat.json\\\" -DOBJ_PATH=\\\"/Users/reuben/dev/waveguide/demo/assets/test_models/vault.obj\\\" -DOBJ_PATH_BAD_BOX=\\\"/Users/reuben/dev/waveguide/demo/assets/test_models/small_square.obj\\\" -DOBJ_PATH_BEDROOM=\\\"/Users/reuben/dev/waveguide/demo/assets/test_models/bedroom.obj\\\" -DOBJ_PATH_TUNNEL=\\\"/Users/reuben/dev/waveguide/demo/assets/test_models/echo_tunnel.obj\\\" -DSCRATCH_PATH=\\\"/Users/reuben/dev/waveguide/build\\\" -I/Users/reuben/dev/waveguide/waveguide -I/Users/reuben/dev/waveguide/common -I/Users/reuben/dev/waveguide/bsp -I/Users/reuben/dev/waveguide/raytracer -I/Users/reuben/dev/waveguide/include -I/Users/reuben/dev/waveguide/gtest/include -I/usr/local/include -I/Users/reuben/dev/waveguide/rayverb   -Wall -Werror -std=c++14 -msse -msse2 -msse3 -ferror-limit=100 -O2 -g -DNDEBUG   -o CMakeFiles/mic_axis_rotate.dir/mic_axis_rotate.cpp.o -c /Users/reuben/dev/waveguide/tests/mic_test/mic_axis_rotate.cpp",
+  "file": "/Users/reuben/dev/waveguide/tests/mic_test/mic_axis_rotate.cpp"
+},
+{
+  "directory": "/Users/reuben/dev/waveguide/build/tests/boundary_test",
+  "command": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++   -DMAT_PATH=\\\"/Users/reuben/dev/waveguide/demo/assets/materials/vault.json\\\" -DMAT_PATH_BAD_BOX=\\\"/Users/reuben/dev/waveguide/demo/assets/materials/damped.json\\\" -DMAT_PATH_BEDROOM=\\\"/Users/reuben/dev/waveguide/demo/assets/materials/mat.json\\\" -DMAT_PATH_TUNNEL=\\\"/Users/reuben/dev/waveguide/demo/assets/materials/mat.json\\\" -DOBJ_PATH=\\\"/Users/reuben/dev/waveguide/demo/assets/test_models/vault.obj\\\" -DOBJ_PATH_BAD_BOX=\\\"/Users/reuben/dev/waveguide/demo/assets/test_models/small_square.obj\\\" -DOBJ_PATH_BEDROOM=\\\"/Users/reuben/dev/waveguide/demo/assets/test_models/bedroom.obj\\\" -DOBJ_PATH_TUNNEL=\\\"/Users/reuben/dev/waveguide/demo/assets/test_models/echo_tunnel.obj\\\" -DSCRATCH_PATH=\\\"/Users/reuben/dev/waveguide/build\\\" -I/Users/reuben/dev/waveguide/waveguide -I/Users/reuben/dev/waveguide/common -I/Users/reuben/dev/waveguide/bsp -I/Users/reuben/dev/waveguide/raytracer -I/Users/reuben/dev/waveguide/include -I/Users/reuben/dev/waveguide/gtest/include -I/usr/local/include   -Wall -Werror -std=c++14 -msse -msse2 -msse3 -ferror-limit=100 -O2 -g -DNDEBUG   -o CMakeFiles/boundary_test.dir/boundary_test.cpp.o -c /Users/reuben/dev/waveguide/tests/boundary_test/boundary_test.cpp",
+  "file": "/Users/reuben/dev/waveguide/tests/boundary_test/boundary_test.cpp"
+},
+{
+  "directory": "/Users/reuben/dev/waveguide/build/tests/hybrid_test",
+  "command": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++   -DMAT_PATH=\\\"/Users/reuben/dev/waveguide/demo/assets/materials/vault.json\\\" -DMAT_PATH_BAD_BOX=\\\"/Users/reuben/dev/waveguide/demo/assets/materials/damped.json\\\" -DMAT_PATH_BEDROOM=\\\"/Users/reuben/dev/waveguide/demo/assets/materials/mat.json\\\" -DMAT_PATH_TUNNEL=\\\"/Users/reuben/dev/waveguide/demo/assets/materials/mat.json\\\" -DOBJ_PATH=\\\"/Users/reuben/dev/waveguide/demo/assets/test_models/vault.obj\\\" -DOBJ_PATH_BAD_BOX=\\\"/Users/reuben/dev/waveguide/demo/assets/test_models/small_square.obj\\\" -DOBJ_PATH_BEDROOM=\\\"/Users/reuben/dev/waveguide/demo/assets/test_models/bedroom.obj\\\" -DOBJ_PATH_TUNNEL=\\\"/Users/reuben/dev/waveguide/demo/assets/test_models/echo_tunnel.obj\\\" -DSCRATCH_PATH=\\\"/Users/reuben/dev/waveguide/build\\\" -I/Users/reuben/dev/waveguide/waveguide -I/Users/reuben/dev/waveguide/common -I/Users/reuben/dev/waveguide/bsp -I/Users/reuben/dev/waveguide/raytracer -I/Users/reuben/dev/waveguide/include -I/Users/reuben/dev/waveguide/gtest/include -I/usr/local/include -I/Users/reuben/dev/waveguide/combined -I/Users/reuben/dev/waveguide/rayverb   -Wall -Werror -std=c++14 -msse -msse2 -msse3 -ferror-limit=100 -O2 -g -DNDEBUG   -o CMakeFiles/hybrid_test.dir/hybrid_test.cpp.o -c /Users/reuben/dev/waveguide/tests/hybrid_test/hybrid_test.cpp",
+  "file": "/Users/reuben/dev/waveguide/tests/hybrid_test/hybrid_test.cpp"
+}
+]

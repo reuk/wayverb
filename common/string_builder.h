@@ -21,9 +21,9 @@ inline std::string build_string(const Ts&... ts) {
 }
 
 struct Bracketer final {
-    Bracketer(std::ostream& os,
-              const char* open = "{",
-              const char* closed = "}");
+    explicit Bracketer(std::ostream& os,
+                       const char* open = "{",
+                       const char* closed = "}");
 
     ~Bracketer();
 

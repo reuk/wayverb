@@ -6,7 +6,7 @@
 
 namespace proc {
 
-//  TODO map, reduce, filter
+//  TODO(reuben): map, reduce, filter
 
 template <typename... Ts>
 struct min_tuple_size;
@@ -147,7 +147,7 @@ constexpr static auto invoke(Fun&& fun, Tup&& tup) {
 //  this might not behave properly regarding forwarding
 template <typename Fun>
 struct InvokeFunctor {
-    constexpr InvokeFunctor(const Fun& fun)
+    constexpr explicit InvokeFunctor(const Fun& fun)
             : fun(fun) {
     }
     template <typename Tup>
@@ -170,4 +170,4 @@ constexpr auto map(const T& t, const Callback& callback) {
     return map(
         std::make_index_sequence<std::tuple_size<T>::value>(), t, callback);
 }
-}
+}  // namespace proc

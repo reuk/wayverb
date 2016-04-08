@@ -23,7 +23,7 @@ class SurfaceLoader {
 public:
     using size_type = std::vector<Surface>::size_type;
 
-    SurfaceLoader(const std::string& fpath);
+    explicit SurfaceLoader(const std::string& fpath);
 
     const std::vector<Surface>& get_surfaces() const;
     size_type get_index(const std::string& name) const;
@@ -73,8 +73,8 @@ private:
         std::vector<Surface> surfaces;
     };
 
-    SceneData(const Contents& contents);
-    SceneData(Contents&& contents);
+    explicit SceneData(const Contents& contents);
+    explicit SceneData(Contents&& contents);
 
     static Contents get_contents(const aiScene* const scene,
                                  const SurfaceLoader& loader,
@@ -88,7 +88,7 @@ namespace config {
 
 template <>
 struct JsonGetter<Surface> {
-    JsonGetter(Surface& t)
+    explicit JsonGetter(Surface& t)
             : t(t) {
     }
     virtual ~JsonGetter() noexcept = default;
@@ -109,4 +109,4 @@ struct JsonGetter<Surface> {
     }
     Surface& t;
 };
-}
+}  // namespace config

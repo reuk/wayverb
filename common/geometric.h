@@ -7,7 +7,8 @@ namespace geo {
 
 class Ray {
 public:
-    Ray(const Vec3f& position = Vec3f(), const Vec3f& direction = Vec3f());
+    explicit Ray(const Vec3f& position = Vec3f(),
+                 const Vec3f& direction = Vec3f());
     Vec3f position;
     Vec3f direction;
 };
@@ -15,7 +16,7 @@ public:
 class Intersects {
 public:
     Intersects() = default;
-    Intersects(float distance);
+    explicit Intersects(float distance);
 
     virtual ~Intersects() noexcept = default;
     Intersects(Intersects&&) noexcept = default;
@@ -66,4 +67,4 @@ float point_triangle_distance_squared(const TriangleVec3f& triangle,
 float point_triangle_distance_squared(const Triangle& tri,
                                       const std::vector<Vec3f>& vertices,
                                       const Vec3f& point);
-}
+}  // namespace geo

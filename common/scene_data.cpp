@@ -194,7 +194,7 @@ SceneData::Contents SceneData::get_contents(const aiScene* const scene,
 }
 
 CuboidBoundary SceneData::get_aabb() const {
-    return get_surrounding_box(get_converted_vertices());
+    return CuboidBoundary(get_surrounding_box(get_converted_vertices()));
 }
 
 std::vector<Vec3f> SceneData::get_converted_vertices() const {

@@ -23,6 +23,6 @@ callraytrace () {
     $prefix $progname $args
 }
 
-cmake .. && make #&& make doc && ctest -V
+cmake .. && make && make doc && ctest -V
 #cmake .. && make && ctest -V && callraytrace vault vault vault
 #cmake .. && make && ctest -V && ./tests/hybrid_test/hybrid_test ../tests/hybrid_test/output

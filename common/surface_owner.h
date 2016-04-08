@@ -28,10 +28,10 @@ class SurfaceLoader;
 
 class SurfaceOwner {
 public:
-    SurfaceOwner(const std::vector<Surface>& surfaces);
-    SurfaceOwner(std::vector<Surface>&& surfaces);
-    SurfaceOwner(const SurfaceLoader& surface_loader);
-    SurfaceOwner(SurfaceLoader&& surface_loader);
+    explicit SurfaceOwner(const std::vector<Surface>& surfaces);
+    explicit SurfaceOwner(std::vector<Surface>&& surfaces);
+    explicit SurfaceOwner(const SurfaceLoader& surface_loader);
+    explicit SurfaceOwner(SurfaceLoader&& surface_loader);
 
     const std::vector<Surface>& get_surfaces() const;
 

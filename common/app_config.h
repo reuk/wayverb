@@ -59,7 +59,7 @@ private:
 
 template <>
 struct JsonGetter<App> {
-    JsonGetter(App& t)
+    explicit JsonGetter(App& t)
             : t(t) {
     }
     virtual ~JsonGetter() noexcept = default;
@@ -81,4 +81,4 @@ struct JsonGetter<App> {
 
     App& t;
 };
-}
+}  // namespace config

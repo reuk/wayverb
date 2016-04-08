@@ -49,7 +49,7 @@ public:
 // How to work with FFTW in not a dumb way in C++
 
 struct SelfDestructPlan {
-    SelfDestructPlan(const fftwf_plan &plan);
+    explicit SelfDestructPlan(const fftwf_plan &plan);
     virtual ~SelfDestructPlan() noexcept;
     operator const fftwf_plan &() const;
 
@@ -72,7 +72,7 @@ public:
     /// An fftconvolover has a constant length.
     /// This means you can reuse it for lots of different convolutions
     /// without reallocating memory, as long as they're all the same size.
-    FastConvolution(int FFT_LENGTH);
+    explicit FastConvolution(int FFT_LENGTH);
     virtual ~FastConvolution() noexcept = default;
 
     template <typename T, typename U>
@@ -127,12 +127,11 @@ private:
 
 class LopassWindowedSinc : public Lopass, public FastConvolution {
 public:
-    LopassWindowedSinc(int inputLength);
-    virtual ~LopassWindowedSinc() noexcept = default;
+    explicit LopassWindowedSinc(int inputLength);
 
     /// Filter a vector of data.
-    virtual void filter(std::vector<float> &data);
-    virtual void setParams(float co, float s);
+    void filter(std::vector<float> &data) override;
+    void setParams(float co, float s) override;
 
 private:
     static const auto KERNEL_LENGTH = 99;
@@ -142,12 +141,11 @@ private:
 /// An interesting windowed-sinc hipass filter.
 class HipassWindowedSinc : public Hipass, public FastConvolution {
 public:
-    HipassWindowedSinc(int inputLength);
-    virtual ~HipassWindowedSinc() noexcept = default;
+    explicit HipassWindowedSinc(int inputLength);
 
     /// Filter a vector of data.
-    virtual void filter(std::vector<float> &data);
-    virtual void setParams(float co, float s);
+    void filter(std::vector<float> &data) override;
+    void setParams(float co, float s) override;
 
 private:
     static const auto KERNEL_LENGTH = 99;
@@ -157,12 +155,11 @@ private:
 /// An interesting windowed-sinc bandpass filter.
 class BandpassWindowedSinc : public Bandpass, public FastConvolution {
 public:
-    BandpassWindowedSinc(int inputLength);
-    virtual ~BandpassWindowedSinc() noexcept = default;
+    explicit BandpassWindowedSinc(int inputLength);
 
     /// Filter a vector of data.
-    virtual void filter(std::vector<float> &data);
-    virtual void setParams(float l, float h, float s);
+    void filter(std::vector<float> &data) override;
+    void setParams(float l, float h, float s) override;
 
 private:
     static const auto KERNEL_LENGTH = 99;
@@ -200,7 +197,7 @@ public:
 /// Simple biquad bandpass filter.
 class BandpassBiquad : public Bandpass, public Biquad {
 public:
-    void setParams(float l, float h, float s);
+    void setParams(float l, float h, float s) override;
 };
 
 class LinkwitzRileySingleLopass : public Lopass, public Biquad {
@@ -220,8 +217,8 @@ using LinkwitzRileyHipass = TwopassFilterWrapper<LinkwitzRileySingleHipass>;
 /// coupled together.
 class LinkwitzRileyBandpass : public Bandpass {
 public:
-    void setParams(float l, float h, float s);
-    void filter(std::vector<float> &data);
+    void setParams(float l, float h, float s) override;
+    void filter(std::vector<float> &data) override;
 
 private:
     TwopassFilterWrapper<LinkwitzRileyLopass> lopass;
@@ -233,4 +230,4 @@ public:
     DCBlocker();
     constexpr static auto R = 0.995;
 };
-}
+}  // namespace filter

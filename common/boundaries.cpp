@@ -132,7 +132,7 @@ SphereBoundary::SphereBoundary(const Vec3f& c,
         : Boundary(surfaces)
         , c(c)
         , radius(radius)
-        , boundary(-radius, radius) {
+        , boundary(Vec3f(-radius), Vec3f(radius)) {
 }
 
 bool SphereBoundary::inside(const Vec3f& v) const {

@@ -38,4 +38,4 @@ void run(FilterType ft,
         }
     }
 }
-}
+}  // namespace filter

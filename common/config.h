@@ -60,9 +60,10 @@ public:
             std::make_unique<FieldJsonValidator<T, RequiredValidator>>(s, t));
     }
 
-    virtual void run(const rapidjson::Value& value) const {
-        for (const auto& i : validators)
+    void run(const rapidjson::Value& value) const override {
+        for (const auto& i : validators) {
             i->run(value);
+        }
     }
 
 private:
@@ -71,7 +72,7 @@ private:
 
 /// This is basically just an immutable string.
 struct StringWrapper {
-    StringWrapper(const std::string& s)
+    explicit StringWrapper(const std::string& s)
             : s(s) {
     }
     virtual ~StringWrapper() noexcept = default;
@@ -87,10 +88,9 @@ private:
 /// Set it up with a string, and then supply some way of validating whether
 /// the value is valid for the given string.
 struct Validator : public StringWrapper {
-    Validator(const std::string& s)
+    explicit Validator(const std::string& s)
             : StringWrapper(s) {
     }
-    virtual ~Validator() noexcept = default;
     virtual bool validate(const rapidjson::Value& value) const = 0;
 };
 
@@ -99,14 +99,14 @@ struct Validator : public StringWrapper {
 /// exception is thrown.
 /// Otherwise, validate returns true.
 struct RequiredValidator : public Validator {
-    RequiredValidator(const std::string& s)
+    explicit RequiredValidator(const std::string& s)
             : Validator(s) {
     }
-    virtual ~RequiredValidator() noexcept = default;
-    bool validate(const rapidjson::Value& value) const {
-        if (!value.HasMember(getString().c_str()))
+    bool validate(const rapidjson::Value& value) const override {
+        if (!value.HasMember(getString().c_str())) {
             throw std::runtime_error("key " + getString() +
                                      " not found in config object");
+        }
         return true;
     }
 };
@@ -115,11 +115,10 @@ struct RequiredValidator : public Validator {
 /// Returns true if the value contains a member matching the validator's string,
 /// false otherwise.
 struct OptionalValidator : public Validator {
-    OptionalValidator(const std::string& s)
+    explicit OptionalValidator(const std::string& s)
             : Validator(s) {
     }
-    virtual ~OptionalValidator() noexcept = default;
-    bool validate(const rapidjson::Value& value) const {
+    bool validate(const rapidjson::Value& value) const override {
         return value.HasMember(getString().c_str());
     }
 };
@@ -140,7 +139,7 @@ auto get_json_getter(T& t) {
 
 template <>
 struct JsonGetter<double> {
-    JsonGetter(double& t)
+    explicit JsonGetter(double& t)
             : t(t) {
     }
     virtual ~JsonGetter() noexcept = default;
@@ -159,7 +158,7 @@ struct JsonGetter<double> {
 
 template <>
 struct JsonGetter<float> {
-    JsonGetter(float& t)
+    explicit JsonGetter(float& t)
             : t(t) {
     }
     virtual ~JsonGetter() noexcept = default;
@@ -178,7 +177,7 @@ struct JsonGetter<float> {
 
 template <>
 struct JsonGetter<bool> {
-    JsonGetter(bool& t)
+    explicit JsonGetter(bool& t)
             : t(t) {
     }
     virtual ~JsonGetter() noexcept = default;
@@ -197,7 +196,7 @@ struct JsonGetter<bool> {
 
 template <>
 struct JsonGetter<int> {
-    JsonGetter(int& t)
+    explicit JsonGetter(int& t)
             : t(t) {
     }
     virtual ~JsonGetter() noexcept = default;
@@ -217,7 +216,7 @@ struct JsonGetter<int> {
 /// General class for getting numerical json arrays into cl_floatx types
 template <typename T, int LENGTH>
 struct JsonArrayGetter {
-    JsonArrayGetter(T& t)
+    explicit JsonArrayGetter(T& t)
             : t(t) {
     }
     virtual ~JsonArrayGetter() noexcept = default;
@@ -225,13 +224,16 @@ struct JsonArrayGetter {
     /// Return true if value is an array of length LENGTH containing only
     /// numbers.
     virtual bool check(const rapidjson::Value& value) const {
-        if (!value.IsArray())
+        if (!value.IsArray()) {
             return false;
-        if (value.Size() != LENGTH)
+        }
+        if (value.Size() != LENGTH) {
             return false;
+        }
         for (auto i = 0; i != LENGTH; ++i) {
-            if (!value[i].IsNumber())
+            if (!value[i].IsNumber()) {
                 return false;
+            }
         }
         return true;
     }
@@ -249,19 +251,17 @@ struct JsonArrayGetter {
 /// JsonGetter for cl_float3 is just a JsonArrayGetter with length 3
 template <>
 struct JsonGetter<cl_float3> : public JsonArrayGetter<cl_float3, 3> {
-    JsonGetter(cl_float3& t)
+    explicit JsonGetter(cl_float3& t)
             : JsonArrayGetter(t) {
     }
-    virtual ~JsonGetter() noexcept = default;
 };
 
 /// JsonGetter for cl_float8 is just a JsonArrayGetter with length 8
 template <>
 struct JsonGetter<cl_float8> : public JsonArrayGetter<cl_float8, 8> {
-    JsonGetter(cl_float8& t)
+    explicit JsonGetter(cl_float8& t)
             : JsonArrayGetter(t) {
     }
-    virtual ~JsonGetter() noexcept = default;
 };
 
 /// General class for getting a json field with strings mapped to enums
@@ -294,7 +294,7 @@ struct JsonEnumGetter {
 
 template <typename T>
 struct JsonGetter<std::vector<T>> {
-    JsonGetter(std::vector<T>& t)
+    explicit JsonGetter(std::vector<T>& t)
             : t(t) {
     }
     virtual ~JsonGetter() noexcept = default;
@@ -314,11 +314,11 @@ struct JsonGetter<std::vector<T>> {
 
 template <typename T>
 struct ValueJsonValidator : public JsonValidatorBase, public JsonGetter<T> {
-    ValueJsonValidator(T& t)
+    explicit ValueJsonValidator(T& t)
             : JsonGetter<T>(t) {
     }
 
-    virtual void run(const rapidjson::Value& value) const {
+    void run(const rapidjson::Value& value) const override {
         if (!JsonGetter<T>::check(value)) {
             throw std::runtime_error("invalid value");
         }
@@ -328,19 +328,22 @@ struct ValueJsonValidator : public JsonValidatorBase, public JsonGetter<T> {
 
 template <>
 struct JsonGetter<Vec3f> {
-    JsonGetter(Vec3f& t)
+    explicit JsonGetter(Vec3f& t)
             : t(t) {
     }
     virtual ~JsonGetter() noexcept = default;
 
     virtual bool check(const rapidjson::Value& value) const {
-        if (!value.IsArray())
+        if (!value.IsArray()) {
             return false;
-        if (value.Size() != 3)
+        }
+        if (value.Size() != 3) {
             return false;
+        }
         for (auto i = 0u; i != 3; ++i) {
-            if (!value[i].IsNumber())
+            if (!value[i].IsNumber()) {
                 return false;
+            }
         }
         return true;
     }
@@ -363,10 +366,10 @@ struct FieldJsonValidator : public ValueJsonValidator<T>, public U {
             , U(s) {
     }
 
-    virtual void run(const rapidjson::Value& value) const {
+    void run(const rapidjson::Value& value) const override {
         if (U::validate(value)) {
             ValueJsonValidator<T>::run(value[U::getString().c_str()]);
         }
     }
 };
-}
+}  // namespace config
