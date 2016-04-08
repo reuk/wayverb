@@ -15,9 +15,6 @@
 #include "sinc.h"
 #include "write_audio_file.h"
 
-#define __CL_ENABLE_EXCEPTIONS
-#include "cl.hpp"
-
 #include "samplerate.h"
 #include "sndfile.hh"
 

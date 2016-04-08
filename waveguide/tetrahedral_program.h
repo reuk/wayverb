@@ -1,7 +1,6 @@
 #pragma once
 
-#define __CL_ENABLE_EXCEPTIONS
-#include "cl.hpp"
+#include "cl_include.h"
 
 template <int P>
 class BasicDWMProgram final : public cl::Program {

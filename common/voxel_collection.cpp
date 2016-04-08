@@ -1,4 +1,5 @@
 #include "voxel_collection.h"
+#include "triangle.h"
 
 #include <cmath>
 #include <iostream>

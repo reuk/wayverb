@@ -1,10 +1,8 @@
 #pragma once
 
 #include "config.h"
+#include "surface_owner.h"
 #include "vec.h"
-
-#define __CL_ENABLE_EXCEPTIONS
-#include "cl.hpp"
 
 #include "assimp/Importer.hpp"
 #include "assimp/postprocess.h"
@@ -19,44 +17,7 @@
 
 class CuboidBoundary;
 class MeshBoundary;
-
-typedef struct {
-    cl_ulong surface;
-    cl_ulong v0;
-    cl_ulong v1;
-    cl_ulong v2;
-} __attribute__((aligned(8))) Triangle;
-
-using VolumeType = cl_float8;
-
-std::ostream& operator<<(std::ostream& os, const VolumeType& f);
-
-typedef struct {
-    VolumeType specular{{0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5}};
-    VolumeType diffuse{{0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5}};
-} __attribute__((aligned(8))) Surface;
-
-constexpr bool validate_surface(const Surface& s,
-                                float min_gain = 0.001,
-                                float max_gain = 0.999) {
-    bool ret = true;
-    for (auto i = 0; i != sizeof(VolumeType) / sizeof(cl_float); ++i) {
-        ret = ret && min_gain <= s.specular.s[i] &&
-              s.specular.s[i] <= max_gain && min_gain <= s.diffuse.s[i] &&
-              s.diffuse.s[i] <= max_gain;
-    }
-    return ret;
-}
-
-std::ostream& operator<<(std::ostream& os, const Surface& s);
-
-using TriangleVec3f = std::array<Vec3f, 3>;
-TriangleVec3f get_triangle_verts(const Triangle& t,
-                                 const std::vector<Vec3f>& v);
-TriangleVec3f get_triangle_verts(const Triangle& t,
-                                 const std::vector<cl_float3>& v);
-
-class SurfaceOwner;
+struct Triangle;
 
 class SurfaceLoader {
 public:
@@ -74,20 +35,6 @@ private:
     std::map<std::string, size_type> surface_indices;
 
     friend class SurfaceOwner;
-};
-
-class SurfaceOwner {
-public:
-    SurfaceOwner(const std::vector<Surface>& surfaces);
-    SurfaceOwner(std::vector<Surface>&& surfaces);
-    SurfaceOwner(const SurfaceLoader& surface_loader);
-    SurfaceOwner(SurfaceLoader&& surface_loader);
-
-    const std::vector<Surface>& get_surfaces() const;
-
-private:
-    void check_num_surfaces() const;
-    std::vector<Surface> surfaces;
 };
 
 class SceneData : public SurfaceOwner {

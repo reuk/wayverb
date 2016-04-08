@@ -2,8 +2,7 @@
 
 #include "cl_structs.h"
 
-#define __CL_ENABLE_EXCEPTIONS
-#include "cl.hpp"
+#include "cl_include.h"
 
 class RaytracerProgram : public cl::Program {
 public:

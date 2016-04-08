@@ -1,6 +1,6 @@
 #pragma once
 
-#include "scene_data.h"
+#include "triangle_vec.h"
 #include "vec.h"
 
 namespace geo {
@@ -66,4 +66,4 @@ float point_triangle_distance_squared(const TriangleVec3f& triangle,
 float point_triangle_distance_squared(const Triangle& tri,
                                       const std::vector<Vec3f>& vertices,
                                       const Vec3f& point);
-};
+}

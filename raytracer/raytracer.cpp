@@ -8,6 +8,7 @@
 #include "hrtf.h"
 #include "progress.h"
 #include "test_flag.h"
+#include "triangle.h"
 #include "voxel_collection.h"
 
 #include "rapidjson/document.h"

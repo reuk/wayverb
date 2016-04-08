@@ -35,7 +35,7 @@ constexpr auto reduce(const T& data,
 
 struct Identity {
     template <typename T>
-    auto operator()(const T& t) const {
+    constexpr auto operator()(const T& t) const {
         return t;
     }
 };
@@ -48,35 +48,4 @@ constexpr bool any(const A& arr, const Func& func = Func()) {
 template <typename A, typename Func = Identity>
 constexpr bool all(const A& arr, const Func& func = Func()) {
     return reduce(arr, true, [&func](auto i, auto j) { return i && func(j); });
-}
-
-constexpr int popcount(unsigned long long t) {
-    int ret = 0;
-    for (; t; t &= t - 1)
-        ++ret;
-    return ret;
-}
-
-template <typename Flag>
-struct FlagSet {
-    FlagSet(Flag flag)
-            : flag(flag) {
-    }
-    template <typename T>
-    auto operator()(T t) const {
-        return t & flag;
-    }
-
-private:
-    Flag flag;
-};
-
-template <typename T, typename A>
-constexpr bool any_flags_set(T t, const A& arr) {
-    return any(arr, FlagSet<T>(t));
-}
-
-template <typename T, typename A>
-constexpr bool all_flags_set(T t, const A& arr) {
-    return all(arr, FlagSet<T>(t));
 }

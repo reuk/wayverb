@@ -12,8 +12,7 @@
 
 #include "rapidjson/document.h"
 
-#define __CL_ENABLE_EXCEPTIONS
-#include "cl.hpp"
+#include "cl_include.h"
 
 #include <array>
 #include <cmath>

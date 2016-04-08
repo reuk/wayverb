@@ -1,6 +1,6 @@
 #include "octree.h"
-
 #include "tri_cube_intersection.h"
+#include "triangle.h"
 
 #include "stl_wrappers.h"
 

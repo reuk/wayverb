@@ -6,6 +6,7 @@
 #include "microphone.h"
 #include "scene_data.h"
 #include "test_flag.h"
+#include "triangle.h"
 #include "waveguide.h"
 
 #include "raytracer.h"
@@ -17,8 +18,7 @@
 #include "sinc.h"
 #include "write_audio_file.h"
 
-#define __CL_ENABLE_EXCEPTIONS
-#include "cl.hpp"
+#include "cl_include.h"
 
 #include "sndfile.hh"
 

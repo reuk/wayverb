@@ -3,7 +3,8 @@
 // see:
 // http://www.realtimerendering.com/resources/GraphicsGems/gemsiii/triangleCube.c
 
-#include "scene_data.h"
+#include "triangle_vec.h"
+#include "vec_forward.h"
 
 enum class Rel {
     idInside,

@@ -1,4 +1,5 @@
 #include "rectangular_mesh.h"
+#include "scene_data.h"
 
 #include "gtest/gtest.h"
 

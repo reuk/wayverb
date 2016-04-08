@@ -3,8 +3,7 @@
 #include "extended_algorithms.h"
 #include "string_builder.h"
 
-#define __CL_ENABLE_EXCEPTIONS
-#include "cl.hpp"
+#include "cl_include.h"
 
 #include <set>
 

@@ -2,6 +2,7 @@
 
 #include "stl_wrappers.h"
 #include "string_builder.h"
+#include "triangle.h"
 
 static const auto EPSILON = 0.0001;
 

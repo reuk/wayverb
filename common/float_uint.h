@@ -1,6 +1,6 @@
 #pragma once
 
-#include "cl.hpp"
+#include "cl_include.h"
 
 typedef union {
     cl_float f;

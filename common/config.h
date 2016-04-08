@@ -6,8 +6,7 @@
 #include "rapidjson/error/en.h"
 #include "rapidjson/rapidjson.h"
 
-#define __CL_ENABLE_EXCEPTIONS
-#include "cl.hpp"
+#include "cl_include.h"
 
 #include <map>
 #include <memory>

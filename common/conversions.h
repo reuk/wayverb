@@ -2,8 +2,7 @@
 
 #include "vec.h"
 
-#define __CL_ENABLE_EXCEPTIONS
-#include "cl.hpp"
+#include "cl_include.h"
 
 template <typename T>
 inline cl_float3 to_cl_float3(const T& t) {

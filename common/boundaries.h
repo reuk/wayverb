@@ -1,8 +1,15 @@
 #pragma once
 
-#include "geometric.h"
 #include "reduce.h"
-#include "scene_data.h"
+#include "surface_owner.h"
+#include "triangle.h"
+#include "triangle_vec.h"
+#include "vec.h"
+
+class SceneData;
+namespace geo {
+class Ray;
+}
 
 template <typename F>
 Vec3f sub_elementwise(const std::vector<Vec3f>& coll, const F& f = F()) {

@@ -1,10 +1,12 @@
 #include "boundaries.h"
 #include "conversions.h"
 #include "geometric.h"
+#include "scene_data.h"
 #include "stl_wrappers.h"
 #include "string_builder.h"
 #include "test_flag.h"
 #include "tri_cube_intersection.h"
+#include "triangle.h"
 
 #include <glog/logging.h>
 

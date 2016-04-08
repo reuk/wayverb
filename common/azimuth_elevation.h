@@ -1,6 +1,6 @@
 #pragma once
 
-#include "vec.h"
+#include "vec_forward.h"
 
-Vec3f sphere_point(float z, float theta);
-Vec3f point_on_sphere(float az, float el);
+Vec3f sphere_point(double z, double theta);
+Vec3f point_on_sphere(double az, double el);
