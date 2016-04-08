@@ -19,70 +19,96 @@ int sign3(const Vec3f& v) {
 
 int face_plane(const Vec3f& p) {
     auto ret = 0;
-    if (p.x > 0.5)
+    if (p.x > 0.5) {
         ret |= 0x01;
-    if (p.x < -0.5)
+    }
+    if (p.x < -0.5) {
         ret |= 0x02;
-    if (p.y > 0.5)
+    }
+    if (p.y > 0.5) {
         ret |= 0x04;
-    if (p.y < -0.5)
+    }
+    if (p.y < -0.5) {
         ret |= 0x08;
-    if (p.z > 0.5)
+    }
+    if (p.z > 0.5) {
         ret |= 0x10;
-    if (p.z < -0.5)
+    }
+    if (p.z < -0.5) {
         ret |= 0x20;
+    }
     return ret;
 }
 
 int bevel_2d(const Vec3f& p) {
     auto ret = 0;
-    if (p.x + p.y > 1.0)
+    if (p.x + p.y > 1.0) {
         ret |= 0x001;
-    if (p.x - p.y > 1.0)
+    }
+    if (p.x - p.y > 1.0) {
         ret |= 0x002;
-    if (-p.x + p.y > 1.0)
+    }
+    if (-p.x + p.y > 1.0) {
         ret |= 0x004;
-    if (-p.x - p.y > 1.0)
+    }
+    if (-p.x - p.y > 1.0) {
         ret |= 0x008;
+    }
 
-    if (p.x + p.z > 1.0)
+    if (p.x + p.z > 1.0) {
         ret |= 0x010;
-    if (p.x - p.z > 1.0)
+    }
+    if (p.x - p.z > 1.0) {
         ret |= 0x020;
-    if (-p.x + p.z > 1.0)
+    }
+    if (-p.x + p.z > 1.0) {
         ret |= 0x040;
-    if (-p.x - p.z > 1.0)
+    }
+    if (-p.x - p.z > 1.0) {
         ret |= 0x080;
+    }
 
-    if (p.y + p.z > 1.0)
+    if (p.y + p.z > 1.0) {
         ret |= 0x100;
-    if (p.y - p.z > 1.0)
+    }
+    if (p.y - p.z > 1.0) {
         ret |= 0x200;
-    if (-p.y + p.z > 1.0)
+    }
+    if (-p.y + p.z > 1.0) {
         ret |= 0x400;
-    if (-p.y - p.z > 1.0)
+    }
+    if (-p.y - p.z > 1.0) {
         ret |= 0x800;
+    }
     return ret;
 }
 
 int bevel_3d(const Vec3f& p) {
     auto ret = 0;
-    if (p.x + p.y + p.z > 1.5)
+    if (p.x + p.y + p.z > 1.5) {
         ret |= 0x01;
-    if (p.x + p.y - p.z > 1.5)
+    }
+    if (p.x + p.y - p.z > 1.5) {
         ret |= 0x02;
-    if (p.x - p.y + p.z > 1.5)
+    }
+    if (p.x - p.y + p.z > 1.5) {
         ret |= 0x04;
-    if (p.x - p.y - p.z > 1.5)
+    }
+    if (p.x - p.y - p.z > 1.5) {
         ret |= 0x08;
-    if (-p.x + p.y + p.z > 1.5)
+    }
+    if (-p.x + p.y + p.z > 1.5) {
         ret |= 0x10;
-    if (-p.x + p.y - p.z > 1.5)
+    }
+    if (-p.x + p.y - p.z > 1.5) {
         ret |= 0x20;
-    if (-p.x - p.y + p.z > 1.5)
+    }
+    if (-p.x - p.y + p.z > 1.5) {
         ret |= 0x40;
-    if (-p.x - p.y - p.z > 1.5)
+    }
+    if (-p.x - p.y - p.z > 1.5) {
         ret |= 0x80;
+    }
     return ret;
 }
 
@@ -91,24 +117,36 @@ int check_point(const Vec3f& p1, const Vec3f& p2, float alpha, int mask) {
 }
 
 Rel check_line(const Vec3f& p1, const Vec3f& p2, int outcode_diff) {
-    if (0x01 & outcode_diff)
-        if (!check_point(p1, p2, (0.5 - p1.x) / (p2.x - p1.x), 0x3e))
+    if (0x01 & outcode_diff) {
+        if (!check_point(p1, p2, (0.5 - p1.x) / (p2.x - p1.x), 0x3e)) {
             return Rel::idInside;
-    if (0x02 & outcode_diff)
-        if (!check_point(p1, p2, (-0.5 - p1.x) / (p2.x - p1.x), 0x3d))
+        }
+    }
+    if (0x02 & outcode_diff) {
+        if (!check_point(p1, p2, (-0.5 - p1.x) / (p2.x - p1.x), 0x3d)) {
             return Rel::idInside;
-    if (0x04 & outcode_diff)
-        if (!check_point(p1, p2, (0.5 - p1.y) / (p2.y - p1.y), 0x3b))
+        }
+    }
+    if (0x04 & outcode_diff) {
+        if (!check_point(p1, p2, (0.5 - p1.y) / (p2.y - p1.y), 0x3b)) {
             return Rel::idInside;
-    if (0x08 & outcode_diff)
-        if (!check_point(p1, p2, (-0.5 - p1.y) / (p2.y - p1.y), 0x37))
+        }
+    }
+    if (0x08 & outcode_diff) {
+        if (!check_point(p1, p2, (-0.5 - p1.y) / (p2.y - p1.y), 0x37)) {
             return Rel::idInside;
-    if (0x10 & outcode_diff)
-        if (!check_point(p1, p2, (0.5 - p1.z) / (p2.z - p1.z), 0x2f))
+        }
+    }
+    if (0x10 & outcode_diff) {
+        if (!check_point(p1, p2, (0.5 - p1.z) / (p2.z - p1.z), 0x2f)) {
             return Rel::idInside;
-    if (0x20 & outcode_diff)
-        if (!check_point(p1, p2, (-0.5 - p1.z) / (p2.z - p1.z), 0x1f))
+        }
+    }
+    if (0x20 & outcode_diff) {
+        if (!check_point(p1, p2, (-0.5 - p1.z) / (p2.z - p1.z), 0x1f)) {
             return Rel::idInside;
+        }
+    }
     return Rel::idOutside;
 }
 
@@ -118,10 +156,12 @@ Rel point_triangle_intersection(const Vec3f& p, const TriangleVec3f& t) {
     auto v2 = t[2];
 
     std::vector<Vec3f> coll = {v0, v1, v2};
-    if ((get_max(coll) < p).any())
+    if ((get_max(coll) < p).any()) {
         return Rel::idOutside;
-    if ((p < get_min(coll)).any())
+    }
+    if ((p < get_min(coll)).any()) {
         return Rel::idOutside;
+    }
 
     auto get_sign = [&p](auto a, auto b) {
         auto vec_a = a - b;
@@ -238,14 +278,17 @@ Rel t_c_intersection(const TriangleVec3f& t) {
          }) {
         auto coll = {a.dot(v[0]), a.dot(v[1]), a.dot(v[2])};
         auto r = a.abs().dot(Vec3f(0.5));
-        if (std::max(-std::max(coll), std::min(coll)) > r)
+        if (std::max(-std::max(coll), std::min(coll)) > r) {
             return Rel::idOutside;
+        }
     }
 
-    if ((get_max(v) < Vec3f(-0.5)).any())
+    if ((get_max(v) < Vec3f(-0.5)).any()) {
         return Rel::idOutside;
-    if ((Vec3f(0.5) < get_min(v)).any())
+    }
+    if ((Vec3f(0.5) < get_min(v)).any()) {
         return Rel::idOutside;
+    }
 
     auto normal = f[0].cross(f[2]).normalized();
     auto dist = normal.dot(v[0]);

@@ -30,26 +30,30 @@ Intersects triangle_intersection(const TriangleVec3f& tri, const Ray& ray) {
     auto pvec = ray.direction.cross(e1);
     auto det = e0.dot(pvec);
 
-    if (-EPSILON < det && det < EPSILON)
+    if (-EPSILON < det && det < EPSILON) {
         return Intersects();
+    }
 
     auto invdet = 1 / det;
     auto tvec = ray.position - tri[0];
     auto ucomp = invdet * tvec.dot(pvec);
 
-    if (ucomp < 0 || 1 < ucomp)
+    if (ucomp < 0 || 1 < ucomp) {
         return Intersects();
+    }
 
     auto qvec = tvec.cross(e0);
     auto vcomp = invdet * ray.direction.dot(qvec);
 
-    if (vcomp < 0 || 1 < vcomp + ucomp)
+    if (vcomp < 0 || 1 < vcomp + ucomp) {
         return Intersects();
+    }
 
     auto dist = invdet * e1.dot(qvec);
 
-    if (dist < 0)
+    if (dist < 0) {
         return Intersects();
+    }
 
     return Intersects(dist);
 }
@@ -254,4 +258,4 @@ float point_triangle_distance_squared(const Triangle& tri,
     return point_triangle_distance_squared(to_triangle_vec3f(tri, vertices),
                                            point);
 }
-};
+}  // namespace geo

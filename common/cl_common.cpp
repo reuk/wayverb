@@ -7,12 +7,17 @@ void print_device_info(const cl::Device& i) {
     LOG(INFO) << "available: " << i.getInfo<CL_DEVICE_AVAILABLE>();
 };
 
+template <typename T>
+struct PrintType;
+
 cl::Context get_context() {
     std::vector<cl::Platform> platform;
     cl::Platform::get(&platform);
 
     cl_context_properties cps[] = {
-        CL_CONTEXT_PLATFORM, (cl_context_properties)(platform[0])(), 0,
+        CL_CONTEXT_PLATFORM,
+        reinterpret_cast<cl_context_properties>((platform.front())()),
+        0,
     };
 
     return cl::Context(CL_DEVICE_TYPE_GPU, cps);

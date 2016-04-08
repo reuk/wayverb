@@ -22,7 +22,7 @@ void Bandpass::setParams(float l, float h, float s) {
     sr = s;
 }
 
-LopassWindowedSinc::LopassWindowedSinc(unsigned long inputLength)
+LopassWindowedSinc::LopassWindowedSinc(int inputLength)
         : FastConvolution(KERNEL_LENGTH + inputLength - 1) {
 }
 
@@ -35,7 +35,7 @@ void LopassWindowedSinc::setParams(float co, float s) {
     copy(i.begin(), i.end(), kernel.begin());
 }
 
-HipassWindowedSinc::HipassWindowedSinc(unsigned long inputLength)
+HipassWindowedSinc::HipassWindowedSinc(int inputLength)
         : FastConvolution(KERNEL_LENGTH + inputLength - 1) {
 }
 
@@ -48,7 +48,7 @@ void HipassWindowedSinc::setParams(float co, float s) {
     copy(i.begin(), i.end(), kernel.begin());
 }
 
-BandpassWindowedSinc::BandpassWindowedSinc(unsigned long inputLength)
+BandpassWindowedSinc::BandpassWindowedSinc(int inputLength)
         : FastConvolution(KERNEL_LENGTH + inputLength - 1) {
 }
 
@@ -156,7 +156,7 @@ SelfDestructPlan::operator const fftwf_plan &() const {
     return plan;
 }
 
-FastConvolution::FastConvolution(unsigned long FFT_LENGTH)
+FastConvolution::FastConvolution(int FFT_LENGTH)
         : FFT_LENGTH(FFT_LENGTH)
         , CPLX_LENGTH(FFT_LENGTH / 2 + 1)
         , r2c_i(fftwf_alloc_real(FFT_LENGTH))
@@ -174,4 +174,4 @@ FastConvolution::FastConvolution(unsigned long FFT_LENGTH)
 DCBlocker::DCBlocker() {
     Biquad::setParams(1, 1, 0, R, 0);
 }
-}
+}  // namespace filter

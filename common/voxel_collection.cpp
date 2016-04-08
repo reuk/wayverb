@@ -109,8 +109,9 @@ geo::Intersection VoxelCollection::traverse(const geo::Ray& ray,
         }
 
         ind[min_i] += step[min_i];
-        if (ind[min_i] == just_out[min_i])
+        if (ind[min_i] == just_out[min_i]) {
             return geo::Intersection();
+        }
         t_max[min_i] += t_delta[min_i];
     }
 }

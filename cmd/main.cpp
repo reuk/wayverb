@@ -100,7 +100,7 @@ int main(int argc, char** argv) {
     LOG(INFO) << "mic " << cc.get_mic();
     LOG(INFO) << "source " << cc.get_source();
 
-    unsigned long format, depth;
+    int format, depth;
 
     try {
         format = get_file_format(output_file);

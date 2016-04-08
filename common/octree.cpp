@@ -114,8 +114,9 @@ void Octree::fill_flattened(std::vector<FloatUInt>& ret) const {
     if (!has_nodes()) {
         std::vector<FloatUInt> t(triangles.size() + 1);
         t[0].i = triangles.size();
-        for (auto i = 0u; i != triangles.size(); ++i)
+        for (auto i = 0u; i != triangles.size(); ++i) {
             t[i + 1].i = triangles[i];
+        }
         ret.insert(ret.end(), t.begin(), t.end());
     } else {
         const auto& nodes = get_nodes();
@@ -160,7 +161,8 @@ const Octree& Octree::get_surrounding_leaf(const Vec3f& v) const {
 }
 
 int Octree::get_side() const {
-    if (!has_nodes())
+    if (!has_nodes()) {
         return 1;
+    }
     return 2 * get_nodes().front().get_side();
 }

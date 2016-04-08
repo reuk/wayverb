@@ -14,8 +14,9 @@
 
 std::ostream& operator<<(std::ostream& os, const VolumeType& f) {
     Bracketer bracketer(os);
-    for (auto i : f.s)
+    for (auto i : f.s) {
         to_stream(os, i, "  ");
+    }
     return os;
 }
 
@@ -34,8 +35,9 @@ SurfaceLoader::SurfaceLoader(const std::string& fpath) {
 
     rapidjson::Document document;
     config::attempt_json_parse(fpath, document);
-    if (!document.IsObject())
+    if (!document.IsObject()) {
         throw std::runtime_error("Materials must be stored in a JSON object");
+    }
 
     for (auto i = document.MemberBegin(); i != document.MemberEnd(); ++i) {
         std::string name = i->name.GetString();
@@ -61,8 +63,9 @@ SurfaceLoader::size_type SurfaceLoader::get_index(
     const std::string& name) const {
     auto ret = 0;
     auto it = surface_indices.find(name);
-    if (it != surface_indices.end())
+    if (it != surface_indices.end()) {
         ret = it->second;
+    }
     return ret;
 }
 
@@ -144,8 +147,9 @@ SceneData::SceneData(const aiScene* const scene,
 SceneData::Contents SceneData::get_contents(const aiScene* const scene,
                                             const SurfaceLoader& loader,
                                             float scale) {
-    if (!scene)
+    if (!scene) {
         throw std::runtime_error("scene pointer is null");
+    }
 
     Contents ret;
     ret.surfaces = loader.get_surfaces();

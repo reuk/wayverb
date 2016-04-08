@@ -88,20 +88,26 @@ bool CuboidBoundary::intersects(const geo::Ray& ray, float t0, float t1) {
     auto tmax = (get_bounds(!sign[0]).x - ray.position.x) * inv.x;
     auto tymin = (get_bounds(sign[1]).y - ray.position.y) * inv.y;
     auto tymax = (get_bounds(!sign[1]).y - ray.position.y) * inv.y;
-    if ((tmin > tymax) || (tymin > tmax))
+    if ((tmin > tymax) || (tymin > tmax)) {
         return false;
-    if (tymin > tmin)
+    }
+    if (tymin > tmin) {
         tmin = tymin;
-    if (tymax < tmax)
+    }
+    if (tymax < tmax) {
         tmax = tymax;
+    }
     auto tzmin = (get_bounds(sign[2]).z - ray.position.z) * inv.z;
     auto tzmax = (get_bounds(!sign[2]).z - ray.position.z) * inv.z;
-    if ((tmin > tzmax) || (tzmin > tmax))
+    if ((tmin > tzmax) || (tzmin > tmax)) {
         return false;
-    if (tzmin > tmin)
+    }
+    if (tzmin > tmin) {
         tmin = tzmin;
-    if (tzmax < tmax)
+    }
+    if (tzmax < tmax) {
         tmax = tzmax;
+    }
     return ((t0 < tmax) && (tmin < t1));
 }
 
@@ -145,9 +151,11 @@ Vec3i MeshBoundary::hash_point(const Vec3f& v) const {
 
 MeshBoundary::hash_table MeshBoundary::compute_triangle_references() const {
     hash_table ret(DIVISIONS, std::vector<reference_store>(DIVISIONS));
-    for (auto& i : ret)
-        for (auto& j : i)
+    for (auto& i : ret) {
+        for (auto& j : i) {
             j.reserve(8);
+        }
+    }
 
     for (auto i = 0u; i != triangles.size(); ++i) {
         const auto& t = triangles[i];
@@ -209,8 +217,9 @@ const MeshBoundary::reference_store& MeshBoundary::get_references(
 
 const MeshBoundary::reference_store& MeshBoundary::get_references(int x,
                                                                   int y) const {
-    if (0 <= x && x < DIVISIONS && 0 <= y && y < DIVISIONS)
+    if (0 <= x && x < DIVISIONS && 0 <= y && y < DIVISIONS) {
         return triangle_references[x][y];
+    }
     return empty_reference_store;
 }
 

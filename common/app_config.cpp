@@ -30,4 +30,4 @@ float App::get_output_sample_rate() const {
 int App::get_bit_depth() const {
     return bit_depth;
 }
-}
+}  // namespace config

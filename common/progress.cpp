@@ -15,10 +15,12 @@ void ProgressBar::draw_bar(double progress) {
     int filled = progress * width;
     int blank = width - filled;
     os << '[';
-    for (auto i = 0; i != filled; ++i)
+    for (auto i = 0; i != filled; ++i) {
         os << '/';
-    for (auto i = 0; i != blank; ++i)
+    }
+    for (auto i = 0; i != blank; ++i) {
         os << ' ';
+    }
     os << "] ";
 }
 
@@ -34,8 +36,9 @@ void ProgressBar::draw(double progress) {
 int ProgressBar::operator+=(int i) {
     count += i;
     draw(count / (expected - 1.0));
-    if (count >= expected)
+    if (count >= expected) {
         os << std::endl;
+    }
     return count;
 }
 int ProgressBar::operator++() {

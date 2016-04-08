@@ -31,3 +31,5 @@ if(DOXYGEN_FOUND)
         WORKING_DIRECTORY
         ${CMAKE_CURRENT_BINARY_DIR})
 endif(DOXYGEN_FOUND)
+
+#add_custom_target(compile_commands ALL COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_BINARY_DIR}/compile_commands.json ${CMAKE_CURRENT_SOURCE_DIR}/compile_commands.json)

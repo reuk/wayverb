@@ -72,7 +72,7 @@ public:
     /// An fftconvolover has a constant length.
     /// This means you can reuse it for lots of different convolutions
     /// without reallocating memory, as long as they're all the same size.
-    FastConvolution(unsigned long FFT_LENGTH);
+    FastConvolution(int FFT_LENGTH);
     virtual ~FastConvolution() noexcept = default;
 
     template <typename T, typename U>
@@ -111,8 +111,8 @@ private:
         memcpy(results.get(), o.get(), CPLX_LENGTH * sizeof(fftwf_complex));
     }
 
-    const unsigned long FFT_LENGTH;
-    const unsigned long CPLX_LENGTH;
+    const int FFT_LENGTH;
+    const int CPLX_LENGTH;
 
     fftwf_r r2c_i;
     fftwf_c r2c_o;
@@ -127,7 +127,7 @@ private:
 
 class LopassWindowedSinc : public Lopass, public FastConvolution {
 public:
-    LopassWindowedSinc(unsigned long inputLength);
+    LopassWindowedSinc(int inputLength);
     virtual ~LopassWindowedSinc() noexcept = default;
 
     /// Filter a vector of data.
@@ -142,7 +142,7 @@ private:
 /// An interesting windowed-sinc hipass filter.
 class HipassWindowedSinc : public Hipass, public FastConvolution {
 public:
-    HipassWindowedSinc(unsigned long inputLength);
+    HipassWindowedSinc(int inputLength);
     virtual ~HipassWindowedSinc() noexcept = default;
 
     /// Filter a vector of data.
@@ -157,7 +157,7 @@ private:
 /// An interesting windowed-sinc bandpass filter.
 class BandpassWindowedSinc : public Bandpass, public FastConvolution {
 public:
-    BandpassWindowedSinc(unsigned long inputLength);
+    BandpassWindowedSinc(int inputLength);
     virtual ~BandpassWindowedSinc() noexcept = default;
 
     /// Filter a vector of data.

@@ -8,8 +8,8 @@
 void write_sndfile(const std::string& fname,
                    const std::vector<std::vector<float>>& outdata,
                    float sr,
-                   unsigned long bd,
-                   unsigned long ftype);
+                   int bd,
+                   int ftype);
 
-unsigned long get_file_format(const std::string& fname);
-unsigned long get_file_depth(unsigned long bitDepth);
+int get_file_format(const std::string& fname);
+int get_file_depth(int bitDepth);
