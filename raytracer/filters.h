@@ -2,11 +2,6 @@
 
 #include "config.h"
 
-#include <algorithm>
-#include <array>
-#include <cmath>
-#include <vector>
-
 namespace filter {
 
 /// Enum denoting available filter types.
@@ -25,6 +20,7 @@ void run(FilterType ft,
          float lo_cutoff);
 }
 
+namespace config {
 /// JsonGetter for FilterType is just a JsonEnumGetter with a specific map
 template <>
 struct JsonGetter<filter::FilterType>
@@ -38,3 +34,4 @@ struct JsonGetter<filter::FilterType>
                    {"linkwitz_riley", filter::FilterType::linkwitz_riley}}) {
     }
 };
+}

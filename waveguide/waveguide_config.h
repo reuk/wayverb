@@ -2,9 +2,11 @@
 
 #include "app_config.h"
 
-class WaveguideConfig : public virtual Config {
+namespace config {
+
+class Waveguide : public virtual App {
 public:
-    virtual ~WaveguideConfig() noexcept = default;
+    virtual ~Waveguide() noexcept = default;
 
     float &get_oversample_ratio();
     float &get_filter_frequency();
@@ -22,19 +24,19 @@ private:
 };
 
 template <>
-struct JsonGetter<WaveguideConfig> {
-    JsonGetter(WaveguideConfig &t)
+struct JsonGetter<Waveguide> {
+    JsonGetter(Waveguide &t)
             : t(t) {
     }
     virtual ~JsonGetter() noexcept = default;
 
     virtual bool check(const rapidjson::Value &value) const {
-        JsonGetter<Config> jg(t);
+        JsonGetter<App> jg(t);
         return value.IsObject() && jg.check(value);
     }
 
     virtual void get(const rapidjson::Value &value) const {
-        JsonGetter<Config> jg(t);
+        JsonGetter<App> jg(t);
         jg.get(value);
 
         ConfigValidator cv;
@@ -47,8 +49,9 @@ struct JsonGetter<WaveguideConfig> {
         cv.run(value);
     }
 
-    WaveguideConfig &t;
+    Waveguide &t;
 };
+}
 
 std::vector<float> adjust_sampling_rate(std::vector<float> &w_results,
-                                        const WaveguideConfig &cc);
+                                        const config::Waveguide &cc);

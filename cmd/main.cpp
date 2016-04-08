@@ -89,9 +89,9 @@ int main(int argc, char** argv) {
     auto device = get_device(context);
     cl::CommandQueue queue(context, device);
 
-    CombinedConfig cc;
+    config::Combined cc;
     try {
-        cc = read_config(config_file);
+        cc = config::load_from_file<config::Combined>(config_file);
     } catch (const std::runtime_error& e) {
         LOG(INFO) << "config load error: " << e.what();
         return EXIT_FAILURE;

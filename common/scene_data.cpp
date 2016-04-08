@@ -35,14 +35,6 @@ TriangleVec3f get_triangle_verts(const Triangle& t,
         {to_vec3f(v[t.v0]), to_vec3f(v[t.v1]), to_vec3f(v[t.v2])}};
 }
 
-void attemptJsonParse(const std::string& fname, rapidjson::Document& doc) {
-    std::ifstream in(fname);
-    std::string file((std::istreambuf_iterator<char>(in)),
-                     std::istreambuf_iterator<char>());
-
-    doc.Parse(file.c_str());
-}
-
 SurfaceLoader::SurfaceLoader(const std::string& fpath) {
     Surface defaultSurface{
         VolumeType({{0.92, 0.92, 0.93, 0.93, 0.94, 0.95, 0.95, 0.95}}),
@@ -51,7 +43,7 @@ SurfaceLoader::SurfaceLoader(const std::string& fpath) {
     add_surface("default", defaultSurface);
 
     rapidjson::Document document;
-    attemptJsonParse(fpath, document);
+    config::attempt_json_parse(fpath, document);
     if (!document.IsObject())
         throw std::runtime_error("Materials must be stored in a JSON object");
 
@@ -59,7 +51,7 @@ SurfaceLoader::SurfaceLoader(const std::string& fpath) {
         std::string name = i->name.GetString();
 
         Surface surface;
-        ValueJsonValidator<Surface>(surface).run(i->value);
+        config::ValueJsonValidator<Surface>(surface).run(i->value);
 
         add_surface(name, surface);
     }

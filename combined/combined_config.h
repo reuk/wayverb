@@ -3,30 +3,32 @@
 #include "raytracer_config.h"
 #include "waveguide_config.h"
 
-class CombinedConfig : public WaveguideConfig, public RaytracerConfig {};
+namespace config {
+
+class Combined : public Waveguide, public Raytracer {};
 
 template <>
-struct JsonGetter<CombinedConfig> {
-    JsonGetter(CombinedConfig& t)
+struct JsonGetter<Combined> {
+    JsonGetter(Combined& t)
             : t(t) {
     }
     virtual ~JsonGetter() noexcept = default;
 
     virtual bool check(const rapidjson::Value& value) const {
-        JsonGetter<RaytracerConfig> jg_r(t);
-        JsonGetter<WaveguideConfig> jg_w(t);
+        JsonGetter<Raytracer> jg_r(t);
+        JsonGetter<Waveguide> jg_w(t);
         return value.IsObject() && jg_r.check(value) && jg_r.check(value);
     }
 
     virtual void get(const rapidjson::Value& value) const {
-        JsonGetter<RaytracerConfig> jg_r(t);
+        JsonGetter<Raytracer> jg_r(t);
         jg_r.get(value);
 
-        JsonGetter<WaveguideConfig> jg_w(t);
+        JsonGetter<Waveguide> jg_w(t);
         jg_w.get(value);
     }
 
-    CombinedConfig& t;
+    Combined& t;
 };
 
-CombinedConfig read_config(const std::string & file);
+}

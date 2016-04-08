@@ -48,7 +48,7 @@ constexpr double rectilinear_calibration_factor(double r, double sr) {
     return r / (x * 0.3405);
 }
 
-void write_file(const Config& config,
+void write_file(const config::App& config,
                 const std::string& output_folder,
                 const std::string& fname,
                 const std::vector<std::vector<float>>& output) {
@@ -64,7 +64,7 @@ void write_file(const Config& config,
 
 auto run_waveguide(ComputeContext& context_info,
                    const CuboidBoundary& boundary,
-                   const CombinedConfig& config,
+                   const config::Combined& config,
                    const std::string& output_folder) {
     auto steps = 16000;
 
@@ -131,7 +131,7 @@ int main(int argc, char** argv) {
     CuboidBoundary boundary(box.get_c0(), box.get_c1(), {surface});
     LOG(INFO) << "boundary: " << boundary;
 
-    CombinedConfig config;
+    config::Combined config;
     config.get_filter_frequency() = 1000;
     config.get_source() = source;
     config.get_mic() = receiver;

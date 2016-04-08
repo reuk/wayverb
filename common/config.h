@@ -1,6 +1,6 @@
 #pragma once
 
-#include "vec.h"
+#include "vec_forward.h"
 
 #include "rapidjson/document.h"
 #include "rapidjson/error/en.h"
@@ -20,6 +20,12 @@
 /// fields into specific types.
 /// To validate a specific type, just add a specialization of JsonGetter<>
 /// for the type that you want to validate.
+///
+/// If there is a god this will be deprecated soon.
+
+namespace config {
+
+void attempt_json_parse(const std::string& fname, rapidjson::Document& doc);
 
 /// A simple interface for a JsonValidator.
 struct JsonValidatorBase {
@@ -340,11 +346,7 @@ struct JsonGetter<Vec3f> {
         return true;
     }
 
-    virtual void get(const rapidjson::Value& value) const {
-        t.x = value[0].GetDouble();
-        t.y = value[1].GetDouble();
-        t.z = value[2].GetDouble();
-    }
+    virtual void get(const rapidjson::Value& value) const;
 
     Vec3f& t;
 };
@@ -368,3 +370,4 @@ struct FieldJsonValidator : public ValueJsonValidator<T>, public U {
         }
     }
 };
+}

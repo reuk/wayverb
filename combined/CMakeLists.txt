@@ -12,8 +12,5 @@ include_directories(
 
 set(name combined)
 
-add_library(${name} STATIC ${sources})
-
-set(libraries raytracer waveguide common)
-
-target_link_libraries(${name} ${libraries})
+#add_library(${name} STATIC ${sources})
+#target_link_libraries(${name} raytracer waveguide common)

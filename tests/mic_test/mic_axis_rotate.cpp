@@ -56,7 +56,7 @@ int main(int argc, char** argv) {
     std::string output_folder = argv[1];
 
     //  global params
-    auto config = WaveguideConfig();
+    auto config = config::Waveguide();
     config.get_filter_frequency() = 11025;
     config.get_oversample_ratio() = 1;
 

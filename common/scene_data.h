@@ -137,6 +137,8 @@ private:
     std::vector<cl_float3> vertices;
 };
 
+namespace config {
+
 template <>
 struct JsonGetter<Surface> {
     JsonGetter(Surface& t)
@@ -160,5 +162,4 @@ struct JsonGetter<Surface> {
     }
     Surface& t;
 };
-
-void attemptJsonParse(const std::string& fname, rapidjson::Document& doc);
+}

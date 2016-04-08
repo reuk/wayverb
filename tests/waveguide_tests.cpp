@@ -46,7 +46,7 @@ TEST(run_waveguide, run_waveguide) {
     constexpr Surface surface{{{v, v, v, v, v, v, v, v}},
                               {{v, v, v, v, v, v, v, v}}};
 
-    WaveguideConfig config;
+    config::Waveguide config;
     config.get_filter_frequency() = 1000;
     config.get_source() = source;
     config.get_mic() = receiver;

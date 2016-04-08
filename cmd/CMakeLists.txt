@@ -32,7 +32,7 @@ find_library(vorbis_lib vorbis)
 find_library(vorbisenc_lib vorbisenc)
 
 target_link_libraries(${name}
-    combined
+    raytracer waveguide common
     ${sndfile_lib}
     ${frameworks}
     ${gflags_lib}

@@ -35,7 +35,7 @@ std::ostream& operator<<(std::ostream& os, const RunStepResult& rsr) {
     return to_stream(os, rsr.pressure);
 }
 
-void write_file(const WaveguideConfig& config,
+void write_file(const config::Waveguide& config,
                 const std::string& output_folder,
                 const std::string& fname,
                 const std::vector<float>& output) {
@@ -64,7 +64,7 @@ std::vector<float> run_simulation(const cl::Context& context,
                                   cl::Device& device,
                                   cl::CommandQueue& queue,
                                   const CuboidBoundary& boundary,
-                                  const WaveguideConfig& config,
+                                  const config::Waveguide& config,
                                   const Vec3f& source,
                                   const Vec3f& receiver,
                                   const std::string& output_folder,
@@ -133,7 +133,7 @@ std::vector<float> get_free_field_results(const cl::Context& context,
                                           cl::Device& device,
                                           cl::CommandQueue& queue,
                                           const std::string& output_folder,
-                                          const WaveguideConfig& config,
+                                          const config::Waveguide& config,
                                           float azimuth,
                                           float elevation,
                                           int dim,
@@ -225,7 +225,7 @@ FullTestResults run_full_test(const std::string& test_name,
                               cl::Device& device,
                               cl::CommandQueue& queue,
                               const std::string& output_folder,
-                              const WaveguideConfig& config,
+                              const config::Waveguide& config,
                               float azimuth,
                               float elevation,
                               int dim,
@@ -382,7 +382,7 @@ int main(int argc, char** argv) {
 
     auto output_folder = std::string(argv[1]);
 
-    auto config = WaveguideConfig();
+    auto config = config::Waveguide();
     config.get_filter_frequency() = 2000;
     config.get_oversample_ratio() = 1;
 

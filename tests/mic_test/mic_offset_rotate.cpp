@@ -66,7 +66,7 @@ int main(int argc, char** argv) {
     std::cout << "polar_pattern: " << polar_string << std::endl;
 
     //  global params
-    auto config = WaveguideConfig();
+    auto config = config::Waveguide();
     config.get_filter_frequency() = 11025;
     config.get_oversample_ratio() = 1;
 

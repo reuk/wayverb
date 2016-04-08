@@ -1,12 +1,44 @@
 #pragma once
 
 #include "config.h"
+#include "string_builder.h"
+#include "vec.h"
 
 #define SPEED_OF_SOUND (340.0f)
 
-class Config {
+namespace config {
+
+template <typename T>
+T load_from_file(const std::string& file) {
+    rapidjson::Document document;
+    attempt_json_parse(file, document);
+
+    if (document.HasParseError()) {
+        throw std::runtime_error(
+            build_string("Encountered error while parsing config file:",
+                         GetParseError_En(document.GetParseError())));
+    }
+
+    if (!document.IsObject()) {
+        throw std::runtime_error(
+            "Rayverb config must be stored in a JSON object");
+    }
+
+    T t;
+    auto json_getter = get_json_getter<T>(t);
+
+    if (json_getter.check(document)) {
+        json_getter.get(document);
+    } else {
+        throw std::runtime_error("json getter check failed");
+    }
+
+    return t;
+}
+
+class App {
 public:
-    virtual ~Config() noexcept = default;
+    virtual ~App() noexcept = default;
 
     Vec3f& get_source();
     Vec3f& get_mic();
@@ -26,8 +58,8 @@ private:
 };
 
 template <>
-struct JsonGetter<Config> {
-    JsonGetter(Config& t)
+struct JsonGetter<App> {
+    JsonGetter(App& t)
             : t(t) {
     }
     virtual ~JsonGetter() noexcept = default;
@@ -47,5 +79,6 @@ struct JsonGetter<Config> {
         cv.run(value);
     }
 
-    Config& t;
+    App& t;
 };
+}

@@ -2,9 +2,11 @@
 
 #include "app_config.h"
 
-class RaytracerConfig : public virtual Config {
+namespace config {
+
+class Raytracer : public virtual App {
 public:
-    virtual ~RaytracerConfig() noexcept = default;
+    virtual ~Raytracer() noexcept = default;
 
     /// Different components of the output impulse.
     enum class OutputMode {
@@ -43,19 +45,19 @@ private:
 };
 
 template <>
-struct JsonGetter<RaytracerConfig> {
-    JsonGetter(RaytracerConfig& t)
+struct JsonGetter<Raytracer> {
+    JsonGetter(Raytracer& t)
             : t(t) {
     }
     virtual ~JsonGetter() noexcept = default;
 
     virtual bool check(const rapidjson::Value& value) const {
-        JsonGetter<Config> jg(t);
+        JsonGetter<App> jg(t);
         return value.IsObject() && jg.check(value);
     }
 
     virtual void get(const rapidjson::Value& value) const {
-        JsonGetter<Config> jg(t);
+        JsonGetter<App> jg(t);
         jg.get(value);
 
         ConfigValidator cv;
@@ -72,19 +74,20 @@ struct JsonGetter<RaytracerConfig> {
         cv.run(value);
     }
 
-    RaytracerConfig& t;
+    Raytracer& t;
 };
 
 /// JsonGetter for OutputMode is just a JsonEnumGetter with a specific map
 template <>
-struct JsonGetter<RaytracerConfig::OutputMode>
-    : public JsonEnumGetter<RaytracerConfig::OutputMode> {
-    JsonGetter(RaytracerConfig::OutputMode& t)
+struct JsonGetter<Raytracer::OutputMode>
+    : public JsonEnumGetter<Raytracer::OutputMode> {
+    JsonGetter(Raytracer::OutputMode& t)
             : JsonEnumGetter(
                   t,
-                  {{"all", RaytracerConfig::OutputMode::all},
-                   {"image_only", RaytracerConfig::OutputMode::image},
-                   {"diffuse_only", RaytracerConfig::OutputMode::diffuse}}) {
+                  {{"all", Raytracer::OutputMode::all},
+                   {"image_only", Raytracer::OutputMode::image},
+                   {"diffuse_only", Raytracer::OutputMode::diffuse}}) {
     }
     virtual ~JsonGetter() noexcept = default;
 };
+}

@@ -36,7 +36,7 @@ auto get_results(ComputeContext& context,
                         reflections);
 }
 
-void write_file(const Config& config,
+void write_file(const config::App& config,
                 const std::string& fname,
                 const std::vector<std::vector<float>>& output) {
     auto output_file = build_string(SCRATCH_PATH, "/", fname, ".wav");
@@ -205,7 +205,7 @@ TEST(raytrace, image_source) {
 
     CuboidBoundary boundary(box.get_c0(), box.get_c1(), {surface});
 
-    RaytracerConfig config;
+    config::Raytracer config;
     config.get_source() = source;
     config.get_mic() = receiver;
     config.get_output_sample_rate() = samplerate;
