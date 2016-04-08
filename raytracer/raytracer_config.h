@@ -6,6 +6,13 @@ class RaytracerConfig : public virtual Config {
 public:
     virtual ~RaytracerConfig() noexcept = default;
 
+    /// Different components of the output impulse.
+    enum class OutputMode {
+        all,
+        image,
+        diffuse,
+    };
+
     int& get_rays();
     int& get_impulses();
     float& get_ray_hipass();
@@ -66,4 +73,18 @@ struct JsonGetter<RaytracerConfig> {
     }
 
     RaytracerConfig& t;
+};
+
+/// JsonGetter for OutputMode is just a JsonEnumGetter with a specific map
+template <>
+struct JsonGetter<RaytracerConfig::OutputMode>
+    : public JsonEnumGetter<RaytracerConfig::OutputMode> {
+    JsonGetter(RaytracerConfig::OutputMode& t)
+            : JsonEnumGetter(
+                  t,
+                  {{"all", RaytracerConfig::OutputMode::all},
+                   {"image_only", RaytracerConfig::OutputMode::image},
+                   {"diffuse_only", RaytracerConfig::OutputMode::diffuse}}) {
+    }
+    virtual ~JsonGetter() noexcept = default;
 };

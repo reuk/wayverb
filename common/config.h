@@ -21,10 +21,6 @@
 /// To validate a specific type, just add a specialization of JsonGetter<>
 /// for the type that you want to validate.
 
-//  TODO what is this doing here?
-/// Different components of the output impulse.
-enum OutputMode { ALL, IMAGE_ONLY, DIFFUSE_ONLY };
-
 /// A simple interface for a JsonValidator.
 struct JsonValidatorBase {
     virtual ~JsonValidatorBase() noexcept = default;
@@ -289,18 +285,6 @@ struct JsonEnumGetter {
 
     T& t;
     const std::map<std::string, T> stringkeys;
-};
-
-/// JsonGetter for OutputMode is just a JsonEnumGetter with a specific map
-template <>
-struct JsonGetter<OutputMode> : public JsonEnumGetter<OutputMode> {
-    JsonGetter(OutputMode& t)
-            : JsonEnumGetter(t,
-                             {{"all", ALL},
-                              {"image_only", IMAGE_ONLY},
-                              {"diffuse_only", DIFFUSE_ONLY}}) {
-    }
-    virtual ~JsonGetter() noexcept = default;
 };
 
 template <typename T>
