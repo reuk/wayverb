@@ -86,6 +86,7 @@ constexpr auto sr{44100.0};
 constexpr auto min_v{0.05};
 constexpr auto max_v{0.95};
 
+#if 0
 TEST(stability, filters) {
     for (auto s : {
              Surface{{{0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9}},
@@ -106,6 +107,7 @@ TEST(stability, filters) {
         ASSERT_TRUE(RectangularProgram::is_stable(impedance)) << s;
     }
 }
+#endif
 
 constexpr auto parallel_size{1 << 8};
 
@@ -450,6 +452,7 @@ std::vector<std::vector<T>> transpose(const std::vector<std::vector<T>>& t) {
     return ret;
 }
 
+#if 0
 TEST(impulse_response, filters) {
     {
         //  try an analytical method to test filter stability
@@ -498,4 +501,77 @@ TEST(impulse_response, filters) {
                 });
             });
     }
+}
+#endif
+
+TEST(ghost_point, filters) {
+    ComputeContext compute_context;
+    RectangularProgram program{get_program<RectangularProgram>(
+        compute_context.context, compute_context.device)};
+
+    constexpr auto v = 1;
+    constexpr Surface surface{{{v, v, v, v, v, v, v, v}},
+                              {{v, v, v, v, v, v, v, v}}};
+
+    auto c = RectangularWaveguide::to_filter_coefficients(surface, testing::sr);
+
+    LOG(INFO) << c;
+
+    std::array<RectangularProgram::CanonicalCoefficients,
+               testing::parallel_size>
+#if 0
+        coefficients{{RectangularProgram::CanonicalCoefficients{
+            {2, 0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0, 0}}}};
+
+#else
+        coefficients{{c}};
+#endif
+
+        cl::Buffer cl_coefficients{compute_context.context,
+                                   coefficients.begin(),
+                                   coefficients.end(),
+                                   false};
+    std::array<RectangularProgram::BoundaryData, testing::parallel_size>
+        boundary_data{};
+    cl::Buffer cl_boundary_data{compute_context.context,
+                                boundary_data.begin(),
+                                boundary_data.end(),
+                                false};
+
+    //    std::vector<std::vector<cl_float>> input{
+    //        ImpulseGenerator<10000>().compute_input(testing::parallel_size)};
+    std::vector<std::vector<cl_float>> input{
+        NoiseGenerator().compute_input(testing::parallel_size)};
+    std::vector<std::vector<cl_float>> output{
+        input.size(), std::vector<cl_float>(testing::parallel_size, 0)};
+    cl::Buffer cl_input{compute_context.context,
+                        CL_MEM_READ_WRITE,
+                        testing::parallel_size * sizeof(cl_float)};
+
+    auto kernel = program.get_ghost_point_test_kernel();
+
+    for (auto i = 0u; i != input.size(); ++i) {
+        cl::copy(
+            compute_context.queue, input[i].begin(), input[i].end(), cl_input);
+
+        kernel(cl::EnqueueArgs(compute_context.queue,
+                               cl::NDRange(testing::parallel_size)),
+               cl_input,
+               cl_boundary_data,
+               cl_coefficients);
+
+        cl::copy(compute_context.queue,
+                 cl_boundary_data,
+                 boundary_data.begin(),
+                 boundary_data.end());
+
+        proc::transform(boundary_data, output[i].begin(), [](auto i) {
+            return i.filter_memory.array[0];
+        });
+    }
+    auto buf = std::vector<cl_float>(output.size());
+    proc::transform(
+        output, buf.begin(), [](const auto& i) { return i.front(); });
+
+    LOG(INFO) << buf;
 }

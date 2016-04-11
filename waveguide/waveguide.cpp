@@ -169,7 +169,10 @@ RectangularWaveguide::RectangularWaveguide(
                                        false)
         , error_flag_buffer(program.getInfo<CL_PROGRAM_CONTEXT>(),
                             CL_MEM_READ_WRITE,
-                            sizeof(cl_int)) {
+                            sizeof(cl_int))
+        , debug_buffer(program.getInfo<CL_PROGRAM_CONTEXT>(),
+                       CL_MEM_READ_WRITE,
+                       sizeof(cl_float) * nodes.size()) {
 }
 
 void RectangularWaveguide::setup(cl::CommandQueue& queue,
@@ -205,6 +208,9 @@ RunStepResult RectangularWaveguide::run_step(size_type o,
     std::vector<cl_float> out(1);
     std::vector<cl_float3> current_velocity(1);
 
+    std::vector<cl_float> debug(nodes, 0);
+    cl::copy(queue, debug.begin(), debug.end(), debug_buffer);
+
     auto flag = RectangularProgram::id_success;
     cl::copy(queue, (&flag) + 0, (&flag) + 1, error_flag_buffer);
 
@@ -223,7 +229,8 @@ RunStepResult RectangularWaveguide::run_step(size_type o,
            period,
            o,
            output,
-           error_flag_buffer);
+           error_flag_buffer,
+           debug_buffer);
 
     cl::copy(queue, error_flag_buffer, (&flag) + 0, (&flag) + 1);
 
@@ -237,6 +244,12 @@ RunStepResult RectangularWaveguide::run_step(size_type o,
     if (flag & RectangularProgram::id_nan_error)
         throw std::runtime_error(
             "pressure value is nan, check filter coefficients");
+
+    if (flag & RectangularProgram::id_outside_mesh_error)
+        throw std::runtime_error("tried to read non-existant node");
+
+    cl::copy(queue, debug_buffer, debug.begin(), debug.end());
+    LOG(INFO) << "  " << max_mag(debug) << std::endl;
 
     cl::copy(queue, output, out.begin(), out.end());
     cl::copy(queue,

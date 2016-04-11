@@ -116,7 +116,7 @@ int main(int argc, char** argv) {
     constexpr Vec3f source(1, 1, 1);
     constexpr Vec3f receiver(2, 1, 5);
     constexpr auto samplerate = 44100;
-    constexpr auto v = 0.9;
+    constexpr auto v = 1;
     constexpr Surface surface{{{v, v, v, v, v, v, v, v}},
                               {{v, v, v, v, v, v, v, v}}};
 

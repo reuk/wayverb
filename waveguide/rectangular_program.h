@@ -33,6 +33,7 @@ public:
         id_inf_error = 1 << 0,
         id_nan_error = 1 << 1,
         id_outside_range_error = 1 << 2,
+        id_outside_mesh_error = 1 << 3,
     } ErrorCode;
 
     static constexpr cl_uint NO_NEIGHBOR{~cl_uint{0}};
@@ -139,14 +140,10 @@ public:
                             cl_float,
                             cl_ulong,
                             cl::Buffer,
+                            cl::Buffer,
                             cl::Buffer>(*this, "condensed_waveguide", &error);
         assert(error == CL_SUCCESS);
         return ret;
-    }
-
-    auto get_boundary_classify_kernel() const {
-        return cl::make_kernel<cl::Buffer, cl_int3, cl_int>(
-            *this, "classify_boundaries");
     }
 
     auto get_filter_test_kernel() const {
@@ -157,6 +154,11 @@ public:
     auto get_filter_test_2_kernel() const {
         return cl::make_kernel<cl::Buffer, cl::Buffer, cl::Buffer, cl::Buffer>(
             *this, "filter_test_2");
+    }
+
+    auto get_ghost_point_test_kernel() const {
+        return cl::make_kernel<cl::Buffer, cl::Buffer, cl::Buffer>(
+            *this, "ghost_point_test");
     }
 
     static CondensedNodeStruct condense(const NodeStruct& n);

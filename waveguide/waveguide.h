@@ -339,6 +339,8 @@ private:
         boundary_coefficients_buffer;  //  const, set in constructor
     cl::Buffer error_flag_buffer;      //  set each iteration
 
+    cl::Buffer debug_buffer;
+
     float period;
 };
 

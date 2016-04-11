@@ -39,7 +39,7 @@ find_library(glog_lib glog)
 
 target_link_libraries(${name} raytracer waveguide common ${sndfile_lib} ${flac_lib} ${ogg_lib} ${vorbis_lib} ${vorbisenc_lib} ${glog_lib} gtest)
 
-add_test(waveguide ${name})
+add_test(NAME tests COMMAND ${name})
 
 add_subdirectory(mic_test)
 add_subdirectory(boundary_test)
