@@ -6,7 +6,6 @@
 #include "boundaries.h"
 #include "cl_common.h"
 #include "conversions.h"
-#include "testing_notches.h"
 #include "tetrahedral_program.h"
 
 RaytraceObject::RaytraceObject(const GenericShader &shader,
@@ -150,7 +149,7 @@ void VoxelisedObject::draw() const {
 
 DrawableScene::DrawableScene(const GenericShader &shader,
                              const SceneData &scene_data,
-                             const CombinedConfig &cc)
+                             const config::Combined &cc)
         : shader(shader)
         , context(get_context())
         , device(get_device(context))
@@ -189,7 +188,7 @@ DrawableScene::~DrawableScene() noexcept {
 }
 
 void DrawableScene::init_waveguide(const SceneData &scene_data,
-                                   const WaveguideConfig &cc) {
+                                   const config::Waveguide &cc) {
     MeshBoundary boundary(scene_data);
     auto waveguide_program =
         get_program<Waveguide::ProgramType>(context, device);
@@ -223,7 +222,7 @@ void DrawableScene::trigger_pressure_calculation() {
 }
 
 RaytracerResults DrawableScene::get_raytracer_results(
-    const SceneData &scene_data, const CombinedConfig &cc) {
+    const SceneData &scene_data, const config::Combined &cc) {
     auto raytrace_program = get_program<RaytracerProgram>(context, device);
     return Raytracer(raytrace_program, queue)
         .run(scene_data,
@@ -316,13 +315,19 @@ SceneRenderer::~SceneRenderer() {
 
 void SceneRenderer::load_from_file_package(const FilePackage &fp) {
     std::lock_guard<std::mutex> lck(mut);
-    auto scene_scale = 0.75;
+    auto scene_scale = 0.75f;
     SceneData scene_data(fp.get_object().getFullPathName().toStdString(),
                          fp.get_material().getFullPathName().toStdString(),
                          scene_scale);
-    CombinedConfig cc;
+
+    constexpr auto v = 1;
+    scene_data.surface_at(41) =
+        Surface{{{v, v, v, v, v, v, v, v}}, {{v, v, v, v, v, v, v, v}}};
+
+    config::Combined cc;
     try {
-        cc = read_config(fp.get_config().getFullPathName().toStdString());
+        cc = config::load_from_file<config::Combined>(
+            fp.get_config().getFullPathName().toStdString());
     } catch (...) {
     }
 

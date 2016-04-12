@@ -2,7 +2,6 @@
 
 #include "callbacks.h"
 #include "conversions.h"
-#include "db.h"
 #include "extended_algorithms.h"
 #include "hrtf.h"
 #include "power_function.h"
@@ -250,7 +249,8 @@ public:
     template <size_t I>
     static RectangularProgram::FilterDescriptor compute_filter_descriptor(
         const Surface& surface) {
-        auto gain = a2db((surface.specular.s[I] + surface.diffuse.s[I]) / 2);
+        auto gain =
+            decibels::a2db((surface.specular.s[I] + surface.diffuse.s[I]) / 2);
         auto centre = (HrtfData::EDGES[I + 0] + HrtfData::EDGES[I + 1]) / 2;
         //  produce a filter descriptor struct for this filter
         return RectangularProgram::FilterDescriptor{gain, centre, 1.414};
@@ -332,8 +332,11 @@ private:
     cl::Buffer transform_buffer;   //  set in setup
     cl::Buffer velocity_buffer;    //  set in setup
 
+    size_t num_boundary_1;
     cl::Buffer boundary_data_1_buffer;  //  set in setup
+    size_t num_boundary_2;
     cl::Buffer boundary_data_2_buffer;  //  set in setup
+    size_t num_boundary_3;
     cl::Buffer boundary_data_3_buffer;  //  set in setup
     const cl::Buffer
         boundary_coefficients_buffer;  //  const, set in constructor

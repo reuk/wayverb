@@ -9,7 +9,6 @@
 /* Begin PBXBuildFile section */
 		050C13E4FE1E66D137F72242 /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 85DDEFF67D3BFB16084C0A15 /* IOKit.framework */; };
 		17BFF294246BE35E2334DF9F /* QTKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AED820E5E9613936B4CCA98A /* QTKit.framework */; };
-		1B2E0BBA1C3C7567003A6680 /* libcombined.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B2E0BB11C3C754D003A6680 /* libcombined.a */; };
 		1B2E0BBB1C3C7567003A6680 /* libcommon.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B2E0BAB1C3C754D003A6680 /* libcommon.a */; };
 		1B2E0BBD1C3C7567003A6680 /* libwaveguide.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B2E0BAD1C3C754D003A6680 /* libwaveguide.a */; };
 		1B2E0BBF1C3C757A003A6680 /* libmodern_gl_utils.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B2E0BBE1C3C757A003A6680 /* libmodern_gl_utils.a */; };
@@ -74,13 +73,6 @@
 			remoteGlobalIDString = 683FAD5A463440028ECCC20E;
 			remoteInfo = common;
 		};
-		1B10C7A21C75EA6C001B3546 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 1B2E0B951C3C754D003A6680 /* Project.xcodeproj */;
-			proxyType = 1;
-			remoteGlobalIDString = 2D12230E44CD4D28A7E36F28;
-			remoteInfo = combined;
-		};
 		1B2E0BA61C3C754D003A6680 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 1B2E0B951C3C754D003A6680 /* Project.xcodeproj */;
@@ -108,13 +100,6 @@
 			proxyType = 2;
 			remoteGlobalIDString = 3E95BEB98ED345AA8D970FB0;
 			remoteInfo = waveguide;
-		};
-		1B2E0BB01C3C754D003A6680 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 1B2E0B951C3C754D003A6680 /* Project.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 228BEEDF424A49D5823F2028;
-			remoteInfo = combined;
 		};
 		1B2E0BB41C3C754D003A6680 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -151,19 +136,19 @@
 			remoteGlobalIDString = 12884B1766B349C09A47824C;
 			remoteInfo = wayverb;
 		};
-		1B3706901CB574D800381862 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 1B2E0B951C3C754D003A6680 /* Project.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 56E3CE550F514231AB202A45;
-			remoteInfo = boundary_reflect;
-		};
 		1B3706921CB574D800381862 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 1B2E0B951C3C754D003A6680 /* Project.xcodeproj */;
 			proxyType = 2;
 			remoteGlobalIDString = 492AF5370094478283CAD328;
 			remoteInfo = hybrid_test;
+		};
+		1B49D26E1CBD325B00328CF3 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 1B2E0B951C3C754D003A6680 /* Project.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 94D3E679458140EA901BB8C7;
+			remoteInfo = boundary_test;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -1131,7 +1116,6 @@
 				1B2E0BC31C3C75C4003A6680 /* OpenCL.framework in Frameworks */,
 				1B2E0BC11C3C75BB003A6680 /* libassimp.a in Frameworks */,
 				1B2E0BBF1C3C757A003A6680 /* libmodern_gl_utils.a in Frameworks */,
-				1B2E0BBA1C3C7567003A6680 /* libcombined.a in Frameworks */,
 				1B2E0BBB1C3C7567003A6680 /* libcommon.a in Frameworks */,
 				1B2E0BBD1C3C7567003A6680 /* libwaveguide.a in Frameworks */,
 				DA6AA2603B9C033FEBE90F4F /* Accelerate.framework in Frameworks */,
@@ -1306,12 +1290,11 @@
 				1B2E0BAB1C3C754D003A6680 /* libcommon.a */,
 				1B2E0BAD1C3C754D003A6680 /* libwaveguide.a */,
 				1B37068D1CB574D800381862 /* libraytracer.a */,
-				1B2E0BB11C3C754D003A6680 /* libcombined.a */,
 				1B37068F1CB574D800381862 /* wayverb */,
 				1B2E0BB91C3C754D003A6680 /* tests */,
 				1B2E0BB51C3C754D003A6680 /* mic_axis_rotate */,
 				1B2E0BB71C3C754D003A6680 /* mic_offset_rotate */,
-				1B3706911CB574D800381862 /* boundary_reflect */,
+				1B49D26F1CBD325B00328CF3 /* boundary_test */,
 				1B3706931CB574D800381862 /* hybrid_test */,
 			);
 			name = Products;
@@ -2974,7 +2957,6 @@
 			);
 			dependencies = (
 				1B10C79F1C75EA6C001B3546 /* PBXTargetDependency */,
-				1B10C7A31C75EA6C001B3546 /* PBXTargetDependency */,
 				1B10C78F1C75EA5E001B3546 /* PBXTargetDependency */,
 			);
 			name = visualiser;
@@ -3042,13 +3024,6 @@
 			remoteRef = 1B2E0BAC1C3C754D003A6680 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		1B2E0BB11C3C754D003A6680 /* libcombined.a */ = {
-			isa = PBXReferenceProxy;
-			fileType = archive.ar;
-			path = libcombined.a;
-			remoteRef = 1B2E0BB01C3C754D003A6680 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
 		1B2E0BB51C3C754D003A6680 /* mic_axis_rotate */ = {
 			isa = PBXReferenceProxy;
 			fileType = "compiled.mach-o.executable";
@@ -3084,18 +3059,18 @@
 			remoteRef = 1B37068E1CB574D800381862 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		1B3706911CB574D800381862 /* boundary_reflect */ = {
-			isa = PBXReferenceProxy;
-			fileType = "compiled.mach-o.executable";
-			path = boundary_reflect;
-			remoteRef = 1B3706901CB574D800381862 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
 		1B3706931CB574D800381862 /* hybrid_test */ = {
 			isa = PBXReferenceProxy;
 			fileType = "compiled.mach-o.executable";
 			path = hybrid_test;
 			remoteRef = 1B3706921CB574D800381862 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		1B49D26F1CBD325B00328CF3 /* boundary_test */ = {
+			isa = PBXReferenceProxy;
+			fileType = "compiled.mach-o.executable";
+			path = boundary_test;
+			remoteRef = 1B49D26E1CBD325B00328CF3 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 /* End PBXReferenceProxy section */
@@ -3156,11 +3131,6 @@
 			isa = PBXTargetDependency;
 			name = common;
 			targetProxy = 1B10C79E1C75EA6C001B3546 /* PBXContainerItemProxy */;
-		};
-		1B10C7A31C75EA6C001B3546 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			name = combined;
-			targetProxy = 1B10C7A21C75EA6C001B3546 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 

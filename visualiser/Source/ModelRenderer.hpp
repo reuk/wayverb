@@ -64,16 +64,17 @@ class DrawableScene final : public ::Drawable, public ::Updatable {
 public:
     DrawableScene(const GenericShader& shader,
                   const SceneData& scene_data,
-                  const CombinedConfig& cc);
+                  const config::Combined& cc);
     ~DrawableScene() noexcept;
 
     void update(float dt) override;
     void draw() const override;
 
-    void init_waveguide(const SceneData& scene_data, const WaveguideConfig& cc);
+    void init_waveguide(const SceneData& scene_data,
+                        const config::Waveguide& cc);
     void trigger_pressure_calculation();
     RaytracerResults get_raytracer_results(const SceneData& scene_data,
-                                           const CombinedConfig& cc);
+                                           const config::Combined& cc);
 
 private:
     const GenericShader& shader;

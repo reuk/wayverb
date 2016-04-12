@@ -1,5 +1,4 @@
 #include "cl_common.h"
-#include "db.h"
 #include "extended_algorithms.h"
 #include "rectangular_program.h"
 #include "timed_scope.h"
@@ -379,7 +378,7 @@ TEST(compare_filters, compare_filters) {
         proc::transform(buf_1, buf_2.begin(), div.begin(), [](auto i, auto j) {
             if (i == 0 || j == 0)
                 return 0.0;
-            return std::abs(a2db(std::abs(i / j)));
+            return std::abs(decibels::a2db(std::abs(i / j)));
         });
 
         /*
@@ -509,7 +508,7 @@ TEST(ghost_point, filters) {
     RectangularProgram program{get_program<RectangularProgram>(
         compute_context.context, compute_context.device)};
 
-    constexpr auto v = 1;
+    constexpr auto v = 0.9;
     constexpr Surface surface{{{v, v, v, v, v, v, v, v}},
                               {{v, v, v, v, v, v, v, v}}};
 
@@ -538,6 +537,10 @@ TEST(ghost_point, filters) {
                                 boundary_data.end(),
                                 false};
 
+    std::vector<cl_float> debug(testing::parallel_size, 0);
+    cl::Buffer cl_debug_buffer{
+        compute_context.context, debug.begin(), debug.end(), false};
+
     //    std::vector<std::vector<cl_float>> input{
     //        ImpulseGenerator<10000>().compute_input(testing::parallel_size)};
     std::vector<std::vector<cl_float>> input{
@@ -553,12 +556,15 @@ TEST(ghost_point, filters) {
     for (auto i = 0u; i != input.size(); ++i) {
         cl::copy(
             compute_context.queue, input[i].begin(), input[i].end(), cl_input);
+        cl::copy(
+            compute_context.queue, debug.begin(), debug.end(), cl_debug_buffer);
 
         kernel(cl::EnqueueArgs(compute_context.queue,
                                cl::NDRange(testing::parallel_size)),
                cl_input,
                cl_boundary_data,
-               cl_coefficients);
+               cl_coefficients,
+               cl_debug_buffer);
 
         cl::copy(compute_context.queue,
                  cl_boundary_data,
@@ -572,6 +578,4 @@ TEST(ghost_point, filters) {
     auto buf = std::vector<cl_float>(output.size());
     proc::transform(
         output, buf.begin(), [](const auto& i) { return i.front(); });
-
-    LOG(INFO) << buf;
 }

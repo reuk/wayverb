@@ -2,7 +2,7 @@
 
 #include "cl_include.h"
 
-#include "db.h"
+#include "decibels.h"
 #include "reduce.h"
 #include "stl_wrappers.h"
 #include "string_builder.h"
@@ -34,6 +34,7 @@ public:
         id_nan_error = 1 << 1,
         id_outside_range_error = 1 << 2,
         id_outside_mesh_error = 1 << 3,
+        id_suspicious_boundary_error = 1 << 4,
     } ErrorCode;
 
     static constexpr cl_uint NO_NEIGHBOR{~cl_uint{0}};
@@ -157,7 +158,7 @@ public:
     }
 
     auto get_ghost_point_test_kernel() const {
-        return cl::make_kernel<cl::Buffer, cl::Buffer, cl::Buffer>(
+        return cl::make_kernel<cl::Buffer, cl::Buffer, cl::Buffer, cl::Buffer>(
             *this, "ghost_point_test");
     }
 
@@ -174,7 +175,7 @@ public:
 
     static BiquadCoefficients get_peak_coefficients(const FilterDescriptor& n,
                                                     double sr) {
-        auto A = db2a(n.gain / 2);
+        auto A = decibels::db2a(n.gain / 2);
         auto w0 = 2.0 * M_PI * n.centre / sr;
         auto cw0 = cos(w0);
         auto sw0 = sin(w0);

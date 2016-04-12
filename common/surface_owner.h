@@ -35,6 +35,13 @@ public:
 
     const std::vector<Surface>& get_surfaces() const;
 
+    auto& surface_at(size_t index) {
+        return surfaces.at(index);
+    }
+    const auto& surface_at(size_t index) const {
+        return surfaces.at(index);
+    }
+
 private:
     void check_num_surfaces() const;
     std::vector<Surface> surfaces;

@@ -1,6 +1,5 @@
 #include "waveguide.h"
 #include "conversions.h"
-#include "db.h"
 #include "sinc.h"
 #include "stl_wrappers.h"
 #include "test_flag.h"
@@ -151,14 +150,17 @@ RectangularWaveguide::RectangularWaveguide(
         , velocity_buffer(program.getInfo<CL_PROGRAM_CONTEXT>(),
                           CL_MEM_READ_WRITE,
                           sizeof(cl_float3) * 1)
+        , num_boundary_1(boundary_data_1.size())
         , boundary_data_1_buffer(program.getInfo<CL_PROGRAM_CONTEXT>(),
                                  boundary_data_1.begin(),
                                  boundary_data_1.end(),
                                  false)
+        , num_boundary_2(boundary_data_2.size())
         , boundary_data_2_buffer(program.getInfo<CL_PROGRAM_CONTEXT>(),
                                  boundary_data_2.begin(),
                                  boundary_data_2.end(),
                                  false)
+        , num_boundary_3(boundary_data_3.size())
         , boundary_data_3_buffer(program.getInfo<CL_PROGRAM_CONTEXT>(),
                                  boundary_data_3.begin(),
                                  boundary_data_3.end(),
@@ -248,8 +250,21 @@ RunStepResult RectangularWaveguide::run_step(size_type o,
     if (flag & RectangularProgram::id_outside_mesh_error)
         throw std::runtime_error("tried to read non-existant node");
 
+    if (flag & RectangularProgram::id_suspicious_boundary_error)
+        throw std::runtime_error("suspicious boundary read");
+
+    LOG(INFO);
+
     cl::copy(queue, debug_buffer, debug.begin(), debug.end());
-    LOG(INFO) << "  " << max_mag(debug) << std::endl;
+    LOG(INFO) << "  debug: " << max_mag(debug) << std::endl;
+
+    std::vector<RectangularProgram::BoundaryDataArray1> bd(num_boundary_1);
+    cl::copy(queue, boundary_data_1_buffer, bd.begin(), bd.end());
+    std::vector<float> g(bd.size());
+    proc::transform(bd, g.begin(), [](auto i) {
+        return i.array[0].filter_memory.array[0];
+    });
+    LOG(INFO) << "  1d filter memory g: " << max_mag(g) << std::endl;
 
     cl::copy(queue, output, out.begin(), out.end());
     cl::copy(queue,

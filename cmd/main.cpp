@@ -1,7 +1,6 @@
 //  project internal
 #include "combined_config.h"
 #include "conversions.h"
-#include "db.h"
 #include "hrtf_attenuator.h"
 #include "microphone.h"
 #include "scene_data.h"
@@ -182,7 +181,7 @@ int main(int argc, char** argv) {
         auto attenuation_factor = pow(db2a(-60), 1.0 / decay_frames);
         attenuation_factor = sqrt(attenuation_factor);
 #else
-        auto attenuation_factor = pow(db2a(-60), 1.0 / steps);
+        auto attenuation_factor = pow(decibels::db2a(-60), 1.0 / steps);
 #endif
         ProgressBar pb(std::cout, steps);
         auto w_results = waveguide.run_gaussian(cc.get_source(),
