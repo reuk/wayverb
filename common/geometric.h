@@ -36,8 +36,6 @@ public:
     int index{0};
 };
 
-std::ostream& operator<<(std::ostream& strm, const Intersects& obj);
-
 TriangleVec3f to_triangle_vec3f(const Triangle& tri,
                                 const std::vector<Vec3f>& vertices);
 

@@ -5,12 +5,9 @@
 #include "filters.h"
 #include "raytracer_program.h"
 
-#include "config.h"
 #include "filters.h"
 #include "scene_data.h"
 #include "sinc.h"
-
-#include "rapidjson/document.h"
 
 #include "cl_include.h"
 

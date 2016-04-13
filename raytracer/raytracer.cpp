@@ -1,7 +1,6 @@
 #include "raytracer.h"
 #include "azimuth_elevation.h"
 #include "boundaries.h"
-#include "config.h"
 #include "conversions.h"
 #include "filters.h"
 #include "geometric.h"
@@ -10,10 +9,6 @@
 #include "test_flag.h"
 #include "triangle.h"
 #include "voxel_collection.h"
-
-#include "rapidjson/document.h"
-#include "rapidjson/error/en.h"
-#include "rapidjson/rapidjson.h"
 
 #include "assimp/Importer.hpp"
 #include "assimp/postprocess.h"

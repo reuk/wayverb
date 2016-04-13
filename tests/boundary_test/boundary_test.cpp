@@ -1,12 +1,11 @@
 #include "azimuth_elevation.h"
+#include "cl_common.h"
 #include "conversions.h"
 #include "microphone.h"
 #include "scene_data.h"
 #include "test_flag.h"
 #include "waveguide.h"
 #include "waveguide_config.h"
-
-#include "cl_common.h"
 
 //  dependency
 #include "filters_common.h"
@@ -26,11 +25,6 @@
 #include <map>
 #include <numeric>
 #include <random>
-
-std::ostream& operator<<(std::ostream& os, const RunStepResult& rsr) {
-    Bracketer bracketer(os);
-    return to_stream(os, rsr.pressure);
-}
 
 void write_file(const config::Waveguide& config,
                 const std::string& output_folder,

@@ -1,6 +1,5 @@
 #include "boundaries.h"
 #include "cl_common.h"
-#include "ostream_overloads.h"
 #include "progress.h"
 #include "raytracer.h"
 #include "raytracer_config.h"

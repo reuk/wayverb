@@ -1,6 +1,6 @@
 #pragma once
 
-#include "config.h"
+#include <vector>
 
 namespace filter {
 
@@ -19,19 +19,3 @@ void run(FilterType ft,
          float sr,
          float lo_cutoff);
 }  // namespace filter
-
-namespace config {
-/// JsonGetter for FilterType is just a JsonEnumGetter with a specific map
-template <>
-struct JsonGetter<filter::FilterType>
-    : public JsonEnumGetter<filter::FilterType> {
-    explicit JsonGetter(filter::FilterType& t)
-            : JsonEnumGetter(
-                  t,
-                  {{"sinc", filter::FilterType::windowed_sinc},
-                   {"onepass", filter::FilterType::biquad_onepass},
-                   {"twopass", filter::FilterType::biquad_twopass},
-                   {"linkwitz_riley", filter::FilterType::linkwitz_riley}}) {
-    }
-};
-}  // namespace config

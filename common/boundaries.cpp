@@ -121,11 +121,6 @@ Box get_surrounding_box(const std::vector<Vec3f>& vertices) {
     return Box(mini, maxi);
 }
 
-std::ostream& operator<<(std::ostream& os, const CuboidBoundary& cb) {
-    Bracketer bracketer(os);
-    return to_stream(os, cb.get_c0(), "  ", cb.get_c1(), "  ");
-}
-
 SphereBoundary::SphereBoundary(const Vec3f& c,
                                float radius,
                                const std::vector<Surface>& surfaces)

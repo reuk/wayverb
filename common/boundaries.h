@@ -1,10 +1,13 @@
 #pragma once
 
+#include "json_read_write.h"
 #include "reduce.h"
 #include "surface_owner.h"
 #include "triangle.h"
 #include "triangle_vec.h"
 #include "vec.h"
+
+#include <cereal/archives/json.hpp>
 
 class SceneData;
 namespace geo {
@@ -142,9 +145,16 @@ struct Box {
         return c1;
     }
 
+    template <typename Archive>
+    void serialize(Archive& archive) {
+        archive(CEREAL_NVP(c0), CEREAL_NVP(c1));
+    }
+
 private:
     Vec3f c0, c1;
 };
+
+JSON_OSTREAM_OVERLOAD(Box)
 
 class CuboidBoundary;
 
@@ -158,7 +168,14 @@ public:
     Boundary& operator=(const Boundary&) = default;
     virtual bool inside(const Vec3f& v) const = 0;
     virtual CuboidBoundary get_aabb() const = 0;
+
+    template <typename Archive>
+    void serialize(Archive& archive) {
+        archive(cereal::base_class<SurfaceOwner>(this));
+    }
 };
+
+JSON_OSTREAM_OVERLOAD(Boundary)
 
 Box get_surrounding_box(const std::vector<Vec3f>& vertices);
 
@@ -178,9 +195,15 @@ public:
     bool intersects(const geo::Ray& ray, float t0, float t1);
 
     SceneData get_scene_data() const;
+
+    template <typename Archive>
+    void serialize(Archive& archive) {
+        archive(cereal::base_class<Boundary>(this),
+                cereal::base_class<Box>(this));
+    }
 };
 
-std::ostream& operator<<(std::ostream& os, const CuboidBoundary& cb);
+JSON_OSTREAM_OVERLOAD(CuboidBoundary)
 
 class SphereBoundary : public Boundary {
 public:

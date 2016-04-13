@@ -114,12 +114,6 @@ bool point_intersection(const Vec3f& begin,
     return (!inter.intersects) || inter.distance > mag;
 }
 
-std::ostream& operator<<(std::ostream& os, const Intersects& obj) {
-    Bracketer bracketer(os);
-    return to_stream(
-        os, "intersects: ", obj.intersects, "  distance: ", obj.distance, "  ");
-}
-
 //  adapted from
 //  http://www.geometrictools.com/GTEngine/Include/Mathematics/GteDistPointTriangleExact.h
 float point_triangle_distance_squared(const TriangleVec3f& triangle,

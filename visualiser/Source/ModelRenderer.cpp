@@ -6,6 +6,7 @@
 #include "boundaries.h"
 #include "cl_common.h"
 #include "conversions.h"
+#include "json_read_write.h"
 #include "tetrahedral_program.h"
 
 RaytraceObject::RaytraceObject(const GenericShader &shader,
@@ -326,8 +327,8 @@ void SceneRenderer::load_from_file_package(const FilePackage &fp) {
 
     config::Combined cc;
     try {
-        cc = config::load_from_file<config::Combined>(
-            fp.get_config().getFullPathName().toStdString());
+        json_read_write::read(fp.get_config().getFullPathName().toStdString(),
+                              cc);
     } catch (...) {
     }
 

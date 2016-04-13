@@ -3,12 +3,20 @@
 #include "cl_include.h"
 
 #include "decibels.h"
+#include "json_read_write.h"
 #include "reduce.h"
 #include "stl_wrappers.h"
 #include "string_builder.h"
 
 #include <cassert>
 #include <cmath>
+
+template <typename Archive>
+void serialize(Archive& archive, cl_float3& m) {
+    archive(cereal::make_nvp("x", m.s[0]),
+            cereal::make_nvp("y", m.s[1]),
+            cereal::make_nvp("z", m.s[2]));
+}
 
 class RectangularProgram : public cl::Program {
 public:
@@ -46,12 +54,27 @@ public:
         cl_bool inside{};
         cl_int boundary_type{};
         cl_uint boundary_index{};
+
+        template <typename Archive>
+        void serialize(Archive& archive) {
+            archive(CEREAL_NVP(ports),
+                    CEREAL_NVP(position),
+                    CEREAL_NVP(position),
+                    CEREAL_NVP(inside),
+                    CEREAL_NVP(boundary_type),
+                    CEREAL_NVP(boundary_index));
+        }
     };
 
     struct __attribute__((aligned(8))) CondensedNodeStruct final {
         static constexpr int PORTS{6};
         cl_int boundary_type{};
         cl_uint boundary_index{};
+
+        template <typename Archive>
+        void serialize(Archive& archive) {
+            archive(CEREAL_NVP(boundary_type), CEREAL_NVP(boundary_index));
+        }
     };
 
     using FilterReal = cl_double;
@@ -65,6 +88,11 @@ public:
 
         bool operator==(const FilterMemory& rhs) const {
             return proc::equal(array, std::begin(rhs.array));
+        }
+
+        template <typename Archive>
+        void serialize(Archive& archive) {
+            archive(CEREAL_NVP(array));
         }
     };
 
@@ -80,6 +108,11 @@ public:
             return proc::equal(b, std::begin(rhs.b)) &&
                    proc::equal(a, std::begin(rhs.a));
         }
+
+        template <typename Archive>
+        void serialize(Archive& archive) {
+            archive(CEREAL_NVP(b), CEREAL_NVP(a));
+        }
     };
 
     using BiquadCoefficients = FilterCoefficients<BIQUAD_ORDER>;
@@ -93,6 +126,11 @@ public:
         static constexpr int BIQUAD_SECTIONS =
             BiquadMemoryArray::BIQUAD_SECTIONS;
         BiquadCoefficients array[BIQUAD_SECTIONS]{};
+
+        template <typename Archive>
+        void serialize(Archive& archive) {
+            archive(CEREAL_NVP(array));
+        }
     };
 
     using CanonicalMemory =
@@ -104,12 +142,22 @@ public:
     struct BoundaryData final {
         CanonicalMemory filter_memory{};
         cl_int coefficient_index{};
+
+        template <typename Archive>
+        void serialize(Archive& archive) {
+            archive(CEREAL_NVP(filter_memory), CEREAL_NVP(coefficient_index));
+        }
     };
 
     template <int D>
     struct __attribute__((aligned(8))) BoundaryDataArray final {
         static constexpr int DIMENSIONS{D};
         BoundaryData array[DIMENSIONS]{};
+
+        template <typename Archive>
+        void serialize(Archive& archive) {
+            archive(CEREAL_NVP(array));
+        }
     };
 
     using BoundaryDataArray1 = BoundaryDataArray<1>;
@@ -168,6 +216,11 @@ public:
         double gain{0};
         double centre{0};
         double Q{0};
+
+        template <typename Archive>
+        void serialize(Archive& archive) {
+            archive(CEREAL_NVP(gain), CEREAL_NVP(centre), CEREAL_NVP(Q));
+        }
     };
 
     using coefficient_generator =
@@ -257,49 +310,19 @@ private:
     static const std::string source;
 };
 
-//  ostreams  ----------------------------------------------------------------//
+JSON_OSTREAM_OVERLOAD(RectangularProgram::NodeStruct)
+JSON_OSTREAM_OVERLOAD(RectangularProgram::CondensedNodeStruct)
+template <int O>
+JSON_OSTREAM_OVERLOAD(RectangularProgram::FilterCoefficients<O>)
+JSON_OSTREAM_OVERLOAD(RectangularProgram::BiquadCoefficientsArray)
+    JSON_OSTREAM_OVERLOAD(RectangularProgram::BoundaryData) template <int D>
+    JSON_OSTREAM_OVERLOAD(RectangularProgram::BoundaryDataArray<D>)
+    JSON_OSTREAM_OVERLOAD(RectangularProgram::FilterDescriptor)
 
-template <int T>
-std::ostream& operator<<(std::ostream& os,
-                         const RectangularProgram::FilterCoefficients<T>& n) {
-    Bracketer bracketer(os);
-    {
-        to_stream(os, "b: ");
-        Bracketer bracketer(os);
-        for (const auto& i : n.b)
-            to_stream(os, i, "  ");
-    }
-    {
-        to_stream(os, "a: ");
-        Bracketer bracketer(os);
-        for (const auto& i : n.a)
-            to_stream(os, i, "  ");
-    }
-    return os;
-}
+    //----------------------------------------------------------------------------//
 
-std::ostream& operator<<(std::ostream& os,
-                         const RectangularProgram::BiquadCoefficientsArray& n);
-std::ostream& operator<<(std::ostream& os,
-                         const RectangularProgram::CanonicalMemory& m);
-std::ostream& operator<<(std::ostream& os,
-                         const RectangularProgram::BoundaryData& m);
-
-template <int I>
-inline std::ostream& operator<<(
-    std::ostream& os, const RectangularProgram::BoundaryDataArray<I>& bda) {
-    Bracketer bracketer(os);
-    for (const auto& i : bda.array)
-        to_stream(os, i);
-    return os;
-}
-
-std::ostream& operator<<(std::ostream& os,
-                         const RectangularProgram::CondensedNodeStruct& cns);
-
-//----------------------------------------------------------------------------//
-
-template <>
-constexpr bool RectangularProgram::is_stable(const std::array<double, 1>& a) {
+    template <>
+    constexpr bool RectangularProgram::is_stable(
+        const std::array<double, 1>& a) {
     return true;
 }

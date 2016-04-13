@@ -1,5 +1,4 @@
 #include "extended_algorithms.h"
-#include "ostream_overloads.h"
 
 #include "gtest/gtest.h"
 

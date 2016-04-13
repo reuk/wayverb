@@ -12,6 +12,8 @@
 
 #include "cl_common.h"
 
+#include "json_read_write.h"
+
 //  dependency
 #include "filters_common.h"
 #include "sinc.h"
@@ -28,27 +30,6 @@
 #include <iostream>
 #include <map>
 #include <numeric>
-
-/*
-std::vector<float> squintegrate(const std::vector<float>& sig) {
-    std::vector<float> ret(sig.size());
-    partial_sum(sig.rbegin(),
-                sig.rend(),
-                ret.rbegin(),
-                [](auto i, auto j) { return i + j * j; });
-    return ret;
-}
-
-int rt60(const std::vector<float>& sig) {
-    auto squintegrated = squintegrate(sig);
-    normalize(squintegrated);
-    auto target = db2a(-60);
-    return distance(squintegrated.begin(),
-                    find_if(squintegrated.begin(),
-                            squintegrated.end(),
-                            [target](auto i) { return i < target; }));
-}
-*/
 
 std::vector<float> exponential_decay_envelope(int steps,
                                               float attenuation_factor) {
@@ -90,7 +71,7 @@ int main(int argc, char** argv) {
 
     config::Combined cc;
     try {
-        cc = config::load_from_file<config::Combined>(config_file);
+        json_read_write::read(config_file, cc);
     } catch (const std::runtime_error& e) {
         LOG(INFO) << "config load error: " << e.what();
         return EXIT_FAILURE;

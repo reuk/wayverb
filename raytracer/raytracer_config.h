@@ -2,6 +2,8 @@
 
 #include "app_config.h"
 
+#include <cereal/types/base_class.hpp>
+
 namespace config {
 
 class Raytracer : public virtual App {
@@ -33,6 +35,19 @@ public:
     bool get_remove_direct() const;
     float get_volume_scale() const;
 
+    template <typename Archive>
+    void serialize(Archive& archive) {
+        archive(cereal::virtual_base_class<App>(this),
+                rays,
+                impulses,
+                ray_hipass,
+                do_normalize,
+                trim_predelay,
+                trim_tail,
+                remove_direct,
+                volume_scale);
+    }
+
 private:
     int rays{1024 * 32};
     int impulses{64};
@@ -44,50 +59,4 @@ private:
     float volume_scale{1.0};
 };
 
-template <>
-struct JsonGetter<Raytracer> {
-    JsonGetter(Raytracer& t)
-            : t(t) {
-    }
-    virtual ~JsonGetter() noexcept = default;
-
-    virtual bool check(const rapidjson::Value& value) const {
-        JsonGetter<App> jg(t);
-        return value.IsObject() && jg.check(value);
-    }
-
-    virtual void get(const rapidjson::Value& value) const {
-        JsonGetter<App> jg(t);
-        jg.get(value);
-
-        ConfigValidator cv;
-
-        cv.addOptionalValidator("rays", t.get_rays());
-        cv.addOptionalValidator("reflections", t.get_impulses());
-        cv.addOptionalValidator("hipass", t.get_ray_hipass());
-        cv.addOptionalValidator("normalize", t.get_do_normalize());
-        cv.addOptionalValidator("volume_scale", t.get_volume_scale());
-        cv.addOptionalValidator("trim_predelay", t.get_trim_predelay());
-        cv.addOptionalValidator("trim_tail", t.get_trim_tail());
-        cv.addOptionalValidator("remove_direct", t.get_remove_direct());
-
-        cv.run(value);
-    }
-
-    Raytracer& t;
-};
-
-/// JsonGetter for OutputMode is just a JsonEnumGetter with a specific map
-template <>
-struct JsonGetter<Raytracer::OutputMode>
-    : public JsonEnumGetter<Raytracer::OutputMode> {
-    JsonGetter(Raytracer::OutputMode& t)
-            : JsonEnumGetter(
-                  t,
-                  {{"all", Raytracer::OutputMode::all},
-                   {"image_only", Raytracer::OutputMode::image},
-                   {"diffuse_only", Raytracer::OutputMode::diffuse}}) {
-    }
-    virtual ~JsonGetter() noexcept = default;
-};
-}
+}  // namespace config

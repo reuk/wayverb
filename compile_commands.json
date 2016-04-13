@@ -31,11 +31,6 @@
 },
 {
   "directory": "/Users/reuben/dev/waveguide/build/common",
-  "command": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++    -I/Users/reuben/dev/waveguide/include -I/usr/local/include   -Wall -Werror -std=c++14 -msse -msse2 -msse3 -ferror-limit=100 -O2 -g -DNDEBUG   -o CMakeFiles/common.dir/config.cpp.o -c /Users/reuben/dev/waveguide/common/config.cpp",
-  "file": "/Users/reuben/dev/waveguide/common/config.cpp"
-},
-{
-  "directory": "/Users/reuben/dev/waveguide/build/common",
   "command": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++    -I/Users/reuben/dev/waveguide/include -I/usr/local/include   -Wall -Werror -std=c++14 -msse -msse2 -msse3 -ferror-limit=100 -O2 -g -DNDEBUG   -o CMakeFiles/common.dir/filters_common.cpp.o -c /Users/reuben/dev/waveguide/common/filters_common.cpp",
   "file": "/Users/reuben/dev/waveguide/common/filters_common.cpp"
 },
@@ -53,11 +48,6 @@
   "directory": "/Users/reuben/dev/waveguide/build/common",
   "command": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++    -I/Users/reuben/dev/waveguide/include -I/usr/local/include   -Wall -Werror -std=c++14 -msse -msse2 -msse3 -ferror-limit=100 -O2 -g -DNDEBUG   -o CMakeFiles/common.dir/octree.cpp.o -c /Users/reuben/dev/waveguide/common/octree.cpp",
   "file": "/Users/reuben/dev/waveguide/common/octree.cpp"
-},
-{
-  "directory": "/Users/reuben/dev/waveguide/build/common",
-  "command": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++    -I/Users/reuben/dev/waveguide/include -I/usr/local/include   -Wall -Werror -std=c++14 -msse -msse2 -msse3 -ferror-limit=100 -O2 -g -DNDEBUG   -o CMakeFiles/common.dir/ostream_overloads.cpp.o -c /Users/reuben/dev/waveguide/common/ostream_overloads.cpp",
-  "file": "/Users/reuben/dev/waveguide/common/ostream_overloads.cpp"
 },
 {
   "directory": "/Users/reuben/dev/waveguide/build/common",

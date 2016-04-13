@@ -2,50 +2,35 @@
 
 #include "boundaries.h"
 #include "conversions.h"
+#include "json_read_write.h"
 #include "stl_wrappers.h"
 #include "string_builder.h"
 #include "triangle.h"
 
-#include "config.h"
+#include <cereal/archives/json.hpp>
+
+#include <cereal/types/map.hpp>
 
 #include <fstream>
 #include <stdexcept>
 #include <vector>
 
-std::ostream& operator<<(std::ostream& os, const VolumeType& f) {
-    Bracketer bracketer(os);
-    for (auto i : f.s) {
-        to_stream(os, i, "  ");
-    }
-    return os;
-}
+SurfaceLoader::SurfaceLoader(const std::string& path) {
+    std::map<std::string, Surface> loaded;
 
-std::ostream& operator<<(std::ostream& os, const Surface& s) {
-    Bracketer bracketer(os);
-    return to_stream(
-        os, "specular: ", s.specular, "  diffuse: ", s.diffuse, "  ");
-}
-
-SurfaceLoader::SurfaceLoader(const std::string& fpath) {
-    Surface defaultSurface{
-        VolumeType({{0.92, 0.92, 0.93, 0.93, 0.94, 0.95, 0.95, 0.95}}),
-        VolumeType({{0.50, 0.90, 0.95, 0.95, 0.95, 0.95, 0.95, 0.95}})};
-
-    add_surface("default", defaultSurface);
-
-    rapidjson::Document document;
-    config::attempt_json_parse(fpath, document);
-    if (!document.IsObject()) {
-        throw std::runtime_error("Materials must be stored in a JSON object");
+    try {
+        json_read_write::read(path, cereal::make_nvp("surfaces", loaded));
+    } catch (const cereal::RapidJSONException& e) {
+        std::cout << e.what() << std::endl;
     }
 
-    for (auto i = document.MemberBegin(); i != document.MemberEnd(); ++i) {
-        std::string name = i->name.GetString();
+    add_surface(
+        "default",
+        Surface{VolumeType{{0.92, 0.92, 0.93, 0.93, 0.94, 0.95, 0.95, 0.95}},
+                VolumeType{{0.50, 0.90, 0.95, 0.95, 0.95, 0.95, 0.95, 0.95}}});
 
-        Surface surface;
-        config::ValueJsonValidator<Surface>(surface).run(i->value);
-
-        add_surface(name, surface);
+    for (const auto& i : loaded) {
+        add_surface(i.first, i.second);
     }
 }
 

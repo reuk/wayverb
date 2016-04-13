@@ -1,16 +1,11 @@
 #pragma once
 
-#include "config.h"
 #include "surface_owner.h"
 #include "vec.h"
 
 #include "assimp/Importer.hpp"
 #include "assimp/postprocess.h"
 #include "assimp/scene.h"
-
-#include "rapidjson/document.h"
-#include "rapidjson/error/en.h"
-#include "rapidjson/rapidjson.h"
 
 #include <map>
 #include <vector>
@@ -83,30 +78,3 @@ private:
     std::vector<Triangle> triangles;
     std::vector<cl_float3> vertices;
 };
-
-namespace config {
-
-template <>
-struct JsonGetter<Surface> {
-    explicit JsonGetter(Surface& t)
-            : t(t) {
-    }
-    virtual ~JsonGetter() noexcept = default;
-
-    /// Returns true if value is a json object.
-    virtual bool check(const rapidjson::Value& value) const {
-        return value.IsObject();
-    }
-
-    /// Attempts to run a ConfigValidator on value
-    virtual void get(const rapidjson::Value& value) const {
-        ConfigValidator cv;
-
-        cv.addRequiredValidator("specular", t.specular);
-        cv.addRequiredValidator("diffuse", t.diffuse);
-
-        cv.run(value);
-    }
-    Surface& t;
-};
-}  // namespace config

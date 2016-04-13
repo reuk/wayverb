@@ -5,7 +5,6 @@
 #include "boundary_adjust.h"
 #include "conversions.h"
 #include "geometric.h"
-#include "ostream_overloads.h"
 #include "popcount.h"
 #include "rectangular_program.h"
 #include "vec.h"

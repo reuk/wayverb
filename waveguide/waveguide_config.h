@@ -2,6 +2,8 @@
 
 #include "app_config.h"
 
+#include <cereal/types/base_class.hpp>
+
 namespace config {
 
 class Waveguide : public virtual App {
@@ -18,40 +20,19 @@ public:
     float get_waveguide_sample_rate() const;
     float get_divisions() const;
 
+    template <typename Archive>
+    void serialize(Archive &archive) {
+        archive(cereal::virtual_base_class<App>(this),
+                filter_frequency,
+                oversample_ratio);
+    }
+
 private:
     float filter_frequency{500};
     float oversample_ratio{2};
 };
 
-template <>
-struct JsonGetter<Waveguide> {
-    JsonGetter(Waveguide &t)
-            : t(t) {
-    }
-    virtual ~JsonGetter() noexcept = default;
-
-    virtual bool check(const rapidjson::Value &value) const {
-        JsonGetter<App> jg(t);
-        return value.IsObject() && jg.check(value);
-    }
-
-    virtual void get(const rapidjson::Value &value) const {
-        JsonGetter<App> jg(t);
-        jg.get(value);
-
-        ConfigValidator cv;
-
-        cv.addOptionalValidator("waveguide_filter_frequency",
-                                t.get_filter_frequency());
-        cv.addOptionalValidator("waveguide_oversample_ratio",
-                                t.get_oversample_ratio());
-
-        cv.run(value);
-    }
-
-    Waveguide &t;
-};
-}
+}  // namespace config
 
 std::vector<float> adjust_sampling_rate(std::vector<float> &w_results,
                                         const config::Waveguide &cc);
