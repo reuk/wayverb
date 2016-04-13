@@ -8,7 +8,7 @@
 #include <vector>
 
 struct TetrahedralLocator final {
-    TetrahedralLocator(const Vec3i& pos = Vec3i(), int mod_ind = 0);
+    explicit TetrahedralLocator(const Vec3i& pos = Vec3i(), int mod_ind = 0);
     Vec3i pos;
     int mod_ind;
 };

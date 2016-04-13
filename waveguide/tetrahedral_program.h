@@ -14,7 +14,8 @@ public:
         cl_bool inside;
     };
 
-    BasicDWMProgram(const cl::Context& context, bool build_immediate = false)
+    explicit BasicDWMProgram(const cl::Context& context,
+                             bool build_immediate = false)
             : Program(context, source, build_immediate) {
     }
 

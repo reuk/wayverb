@@ -169,8 +169,8 @@ public:
 
     static constexpr int PORTS = NodeStruct::PORTS;
 
-    RectangularProgram(const cl::Context& context,
-                       bool build_immediate = false);
+    explicit RectangularProgram(const cl::Context& context,
+                                bool build_immediate = false);
 
     auto get_kernel() const {
         int error;
@@ -285,16 +285,18 @@ public:
 
     static CanonicalCoefficients convolve(const BiquadCoefficientsArray& a);
 
-    template <unsigned long L>
+    template <size_t L>
     static constexpr bool is_stable(const std::array<double, L>& a) {
         auto rci = a[L - 1];
-        if (std::abs(rci) >= 1)
+        if (std::abs(rci) >= 1) {
             return false;
+        }
 
         constexpr auto next_size = L - 1;
         std::array<double, next_size> next_array;
-        for (auto i = 0; i != next_size; ++i)
+        for (auto i = 0; i != next_size; ++i) {
             next_array[i] = (a[i] - rci * a[next_size - i]) / (1 - rci * rci);
+        }
         return is_stable(next_array);
     }
 
@@ -310,19 +312,25 @@ private:
     static const std::string source;
 };
 
-JSON_OSTREAM_OVERLOAD(RectangularProgram::NodeStruct)
-JSON_OSTREAM_OVERLOAD(RectangularProgram::CondensedNodeStruct)
+JSON_OSTREAM_OVERLOAD(RectangularProgram::NodeStruct);
+
+JSON_OSTREAM_OVERLOAD(RectangularProgram::CondensedNodeStruct);
+
 template <int O>
-JSON_OSTREAM_OVERLOAD(RectangularProgram::FilterCoefficients<O>)
-JSON_OSTREAM_OVERLOAD(RectangularProgram::BiquadCoefficientsArray)
-    JSON_OSTREAM_OVERLOAD(RectangularProgram::BoundaryData) template <int D>
-    JSON_OSTREAM_OVERLOAD(RectangularProgram::BoundaryDataArray<D>)
-    JSON_OSTREAM_OVERLOAD(RectangularProgram::FilterDescriptor)
+JSON_OSTREAM_OVERLOAD(RectangularProgram::FilterCoefficients<O>);
 
-    //----------------------------------------------------------------------------//
+JSON_OSTREAM_OVERLOAD(RectangularProgram::BiquadCoefficientsArray);
 
-    template <>
-    constexpr bool RectangularProgram::is_stable(
-        const std::array<double, 1>& a) {
+JSON_OSTREAM_OVERLOAD(RectangularProgram::BoundaryData);
+
+template <int D>
+JSON_OSTREAM_OVERLOAD(RectangularProgram::BoundaryDataArray<D>);
+
+JSON_OSTREAM_OVERLOAD(RectangularProgram::FilterDescriptor);
+
+//----------------------------------------------------------------------------//
+
+template <>
+constexpr bool RectangularProgram::is_stable(const std::array<double, 1>& a) {
     return true;
 }

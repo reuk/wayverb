@@ -23,7 +23,7 @@ public:
         return hash<T>()(p.first) ^ hash<U>()(p.second);
     }
 };
-}
+}  // namespace std
 
 class RectangularMesh : public BaseMesh<RectangularProgram, Vec3i> {
 public:

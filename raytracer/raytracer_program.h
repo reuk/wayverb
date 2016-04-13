@@ -6,7 +6,8 @@
 
 class RaytracerProgram : public cl::Program {
 public:
-    RaytracerProgram(const cl::Context& context, bool build_immediate = false);
+    explicit RaytracerProgram(const cl::Context& context,
+                              bool build_immediate = false);
 
     auto get_raytrace_kernel() const {
         return cl::make_kernel<cl::Buffer,

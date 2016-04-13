@@ -8,8 +8,6 @@ namespace config {
 
 class Waveguide : public virtual App {
 public:
-    virtual ~Waveguide() noexcept = default;
-
     float &get_oversample_ratio();
     float &get_filter_frequency();
 

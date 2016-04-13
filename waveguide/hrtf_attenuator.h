@@ -8,7 +8,6 @@ public:
                    const Vec3f& up,
                    int channel,
                    float sr);
-    virtual ~HrtfAttenuator() noexcept = default;
 
     float attenuation(const Vec3f& incident, int band) const;
     std::vector<float> process(

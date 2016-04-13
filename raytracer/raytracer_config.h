@@ -8,8 +8,6 @@ namespace config {
 
 class Raytracer : public virtual App {
 public:
-    virtual ~Raytracer() noexcept = default;
-
     /// Different components of the output impulse.
     enum class OutputMode {
         all,

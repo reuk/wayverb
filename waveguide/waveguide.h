@@ -52,7 +52,7 @@ inline Eigen::MatrixXf get_transform_matrix(int ports, int o, const T& nodes) {
 //----------------------------------------------------------------------------//
 
 struct RunStepResult {
-    RunStepResult(float pressure = 0, const Vec3f& intensity = Vec3f())
+    explicit RunStepResult(float pressure = 0, const Vec3f& intensity = Vec3f())
             : pressure(pressure)
             , intensity(intensity) {
     }
@@ -127,8 +127,9 @@ public:
                          std::vector<cl_float>& ret) {
         ret.resize(nodes);
         for (auto i = 0u; i != nodes; ++i) {
-            if (inside(i))
+            if (inside(i)) {
                 ret[i] = u(this->get_coordinate_for_index(i), excitation);
+            }
         }
     }
 
@@ -453,10 +454,12 @@ auto log_nonzero(const T& t, const std::string& identifier) {
 
 template <typename T>
 bool log_nan_or_nonzero_or_inf(const T& t, const std::string& identifier) {
-    if (log_nan(t, identifier) != std::end(t))
+    if (log_nan(t, identifier) != std::end(t)) {
         return true;
-    if (log_inf(t, identifier) != std::end(t))
+    }
+    if (log_inf(t, identifier) != std::end(t)) {
         return true;
+    }
     log_nonzero(t, identifier);
     return false;
 }

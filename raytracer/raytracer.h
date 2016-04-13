@@ -54,10 +54,12 @@ inline float find_predelay(const T& ret) {
                       findPredelay(ret.front()),
                       [](auto a, const auto& b) {
                           auto pd = findPredelay(b);
-                          if (a == 0)
+                          if (a == 0) {
                               return pd;
-                          if (pd == 0)
+                          }
+                          if (pd == 0) {
                               return a;
+                          }
                           return std::min(a, pd);
                       });
 }
@@ -72,8 +74,9 @@ inline float find_predelay(const AttenuatedImpulse& i) {
 /// Impulses.
 template <typename T>
 inline void fix_predelay(T& ret, float seconds) {
-    for (auto&& i : ret)
+    for (auto& i : ret) {
         fixPredelay(i, seconds);
+    }
 }
 
 /// The base case of the fixPredelay recursion.
@@ -93,7 +96,7 @@ inline void fix_predelay(T& ret) {
 /// This is a struct to keep the impulses and mic position together, because
 /// you'll probably never need one without the other.
 struct RaytracerResults {
-    RaytracerResults(
+    explicit RaytracerResults(
         const std::vector<Impulse> impulses = std::vector<Impulse>(),
         const Vec3f& c = Vec3f(),
         const Vec3f& s = Vec3f(),
@@ -115,7 +118,7 @@ struct RaytracerResults {
 
 class Results final {
 public:
-    std::map<std::vector<unsigned long>, Impulse> image_source;
+    std::map<std::vector<int>, Impulse> image_source;
     std::vector<Impulse> diffuse;
     Vec3f mic;
     Vec3f source;
@@ -127,7 +130,7 @@ public:
     RaytracerResults get_all(bool remove_direct) const;
 };
 
-std::vector<cl_float3> get_random_directions(unsigned long num);
+std::vector<cl_float3> get_random_directions(int num);
 
 class Raytracer final {
 public:
@@ -215,7 +218,7 @@ private:
 
     std::vector<AttenuatedImpulse> attenuate(
         const cl_float3& mic_pos,
-        unsigned long channel,
+        int channel,
         const cl_float3& facing,
         const cl_float3& up,
         const std::vector<Impulse>& impulses);

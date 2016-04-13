@@ -4,8 +4,7 @@
 
 class Microphone : public Attenuator {
 public:
-    Microphone(const Vec3f& direction, float shape = 0);
-    virtual ~Microphone() noexcept = default;
+    explicit Microphone(const Vec3f& direction, float shape = 0);
 
     float attenuation(const Vec3f& incident) const;
     std::vector<float> process(

@@ -12,7 +12,7 @@ struct BasicPowerFunction final : public PowerFunction {
 };
 
 struct GaussianFunction final : public PowerFunction {
-    GaussianFunction(float standard_deviation = 2);
+    explicit GaussianFunction(float standard_deviation = 2);
     static float gaussian(const Vec3f& x, float sdev);
     float operator()(const Vec3f& a, const Vec3f& ex) const override;
     float standard_deviation;
