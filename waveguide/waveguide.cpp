@@ -236,8 +236,8 @@ RunStepResult RectangularWaveguide::run_step(size_type o,
 
     cl::copy(queue, error_flag_buffer, (&flag) + 0, (&flag) + 1);
 
-    //    if (flag & RectangularProgram::id_outside_range_error)
-    //        throw std::runtime_error("pressure value is outside valid range");
+    if (flag & RectangularProgram::id_outside_range_error)
+        throw std::runtime_error("pressure value is outside valid range");
 
     if (flag & RectangularProgram::id_inf_error)
         throw std::runtime_error(
@@ -256,7 +256,10 @@ RunStepResult RectangularWaveguide::run_step(size_type o,
     LOG(INFO);
 
     cl::copy(queue, debug_buffer, debug.begin(), debug.end());
-    LOG(INFO) << "  debug: " << max_mag(debug) << std::endl;
+    LOG(INFO) << "  debug min:  " << *proc::min_element(debug);
+    LOG(INFO) << "  debug max:  " << *proc::max_element(debug);
+    LOG(INFO) << "  debug mean: "
+              << proc::accumulate(debug, 0.0) / debug.size();
 
     std::vector<RectangularProgram::BoundaryDataArray1> bd(num_boundary_1);
     cl::copy(queue, boundary_data_1_buffer, bd.begin(), bd.end());

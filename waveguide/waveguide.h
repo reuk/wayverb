@@ -216,6 +216,7 @@ private:
 
 class RectangularWaveguide : public Waveguide<RectangularProgram> {
 public:
+#if 0
     template <typename B>
     RectangularWaveguide(const RectangularProgram& program,
                          cl::CommandQueue& queue,
@@ -229,6 +230,23 @@ public:
                   RectangularMesh(boundary, spacing, anchor),
                   to_filter_coefficients(boundary.get_surfaces(), sr)) {
     }
+#else
+    template <typename B>
+    RectangularWaveguide(const RectangularProgram& program,
+                         cl::CommandQueue& queue,
+                         const B& boundary,
+                         float spacing,
+                         const Vec3f& anchor,
+                         float sr)
+            : RectangularWaveguide(
+                  program,
+                  queue,
+                  RectangularMesh(boundary, spacing, anchor),
+                  std::vector<RectangularProgram::CanonicalCoefficients>{
+                      RectangularProgram::CanonicalCoefficients{
+                          {1, 0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0, 0}}}) {
+    }
+#endif
 
     void setup(cl::CommandQueue& queue, size_type o, float sr) override;
 

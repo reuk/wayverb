@@ -479,27 +479,26 @@ kernel void ghost_point_test(
     const global FilterCoefficientsCanonical* canonical_coefficients,
     global float* debug_buffer) {
     size_t index = get_global_id(0);
-    ghost_point_pressure_update(
-        input[index],
-        0,
-        0,
-        boundary_data + index,
-        canonical_coefficients,
-        debug_buffer);
+    ghost_point_pressure_update(input[index],
+                                0,
+                                0,
+                                boundary_data + index,
+                                canonical_coefficients,
+                                debug_buffer);
 }
 
 //----------------------------------------------------------------------------//
 
 #define TEMPLATE_SUM_SURROUNDING_PORTS(dimensions)                           \
     float CAT(get_summed_surrounding_, dimensions)(                          \
-        const global CondensedNode* nodes,\
+        const global CondensedNode* nodes,                                   \
         CAT(InnerNodeDirections, dimensions) pd,                             \
         const global float* current,                                         \
         int3 locator,                                                        \
         int3 dim,                                                            \
         global int* error_flag);                                             \
     float CAT(get_summed_surrounding_, dimensions)(                          \
-        const global CondensedNode* nodes,\
+        const global CondensedNode* nodes,                                   \
         CAT(InnerNodeDirections, dimensions) pd,                             \
         const global float* current,                                         \
         int3 locator,                                                        \
@@ -514,11 +513,10 @@ kernel void ghost_point_test(
                 *error_flag |= id_outside_mesh_error;                        \
                 return 0;                                                    \
             }                                                                \
-            int boundary_type = nodes[index].boundary_type; \
-            if (boundary_type == id_none || boundary_type == id_inside) { \
-                *error_flag |= id_suspicious_boundary_error;                    \
-                return 0;\
-            }\
+            int boundary_type = nodes[index].boundary_type;                  \
+            if (boundary_type == id_none || boundary_type == id_inside) {    \
+                *error_flag |= id_suspicious_boundary_error;                 \
+            }                                                                \
             ret += current[index];                                           \
         }                                                                    \
         return ret;                                                          \
@@ -561,37 +559,36 @@ float get_inner_pressure(const global CondensedNode* nodes,
         *error_flag |= id_outside_mesh_error;
         return 0;
     }
-    if (nodes[neighbor].boundary_type == id_none) {
-        *error_flag |= id_suspicious_boundary_error;
-        return 0;
-    }
     return current[neighbor];
 }
 
 #define GET_CURRENT_SURROUNDING_WEIGHTING_TEMPLATE(dimensions)               \
     float CAT(get_current_surrounding_weighting_, dimensions)(               \
-        const global CondensedNode* nodes,\
+        const global CondensedNode* nodes,                                   \
         const global float* current,                                         \
         int3 locator,                                                        \
         int3 dim,                                                            \
         CAT(InnerNodeDirections, dimensions) ind,                            \
-        global int* error_flag, global float* debug_buffer);                 \
+        global int* error_flag,                                              \
+        global float* debug_buffer);                                         \
     float CAT(get_current_surrounding_weighting_, dimensions)(               \
-        const global CondensedNode* nodes,\
+        const global CondensedNode* nodes,                                   \
         const global float* current,                                         \
         int3 locator,                                                        \
         int3 dim,                                                            \
         CAT(InnerNodeDirections, dimensions) ind,                            \
-        global int* error_flag, global float* debug_buffer) {                \
+        global int* error_flag,                                              \
+        global float* debug_buffer) {                                        \
         float sum = 0;                                                       \
         for (int i = 0; i != dimensions; ++i) {                              \
-            sum += 2 * get_inner_pressure(                                   \
-                           nodes, current, locator, dim, ind.array[i], error_flag); \
+            sum +=                                                           \
+                2 *                                                          \
+                get_inner_pressure(                                          \
+                    nodes, current, locator, dim, ind.array[i], error_flag); \
         }                                                                    \
-        debug_buffer[get_global_id(0)] = sum; \
         return COURANT_SQ *                                                  \
                (sum + CAT(get_summed_surrounding_, dimensions)(              \
-                          nodes, ind, current, locator, dim, error_flag));          \
+                          nodes, ind, current, locator, dim, error_flag));   \
     }
 
 GET_CURRENT_SURROUNDING_WEIGHTING_TEMPLATE(1);
@@ -600,21 +597,21 @@ GET_CURRENT_SURROUNDING_WEIGHTING_TEMPLATE(3);
 
 //----------------------------------------------------------------------------//
 
-#define GET_FILTER_WEIGHTING_TEMPLATE(dimensions)                            \
-    float CAT(get_filter_weighting_, dimensions)(                            \
-        global CAT(BoundaryDataArray, dimensions) * bda,                     \
-        const global FilterCoefficientsCanonical* boundary_coefficients);    \
-    float CAT(get_filter_weighting_, dimensions)(                            \
-        global CAT(BoundaryDataArray, dimensions) * bda,                     \
-        const global FilterCoefficientsCanonical* boundary_coefficients) {   \
-        float sum = 0;                                                       \
-        for (int i = 0; i != dimensions; ++i) {                              \
-            FilterReal filt_state = bda->array[i].filter_memory.array[0];    \
-            sum +=                                                           \
-                filt_state /                                                 \
-                boundary_coefficients[bda->array[i].coefficient_index].b[0]; \
-        }                                                                    \
-        return COURANT_SQ * sum;                                             \
+#define GET_FILTER_WEIGHTING_TEMPLATE(dimensions)                              \
+    float CAT(get_filter_weighting_, dimensions)(                              \
+        global CAT(BoundaryDataArray, dimensions) * bda,                       \
+        const global FilterCoefficientsCanonical* boundary_coefficients);      \
+    float CAT(get_filter_weighting_, dimensions)(                              \
+        global CAT(BoundaryDataArray, dimensions) * bda,                       \
+        const global FilterCoefficientsCanonical* boundary_coefficients) {     \
+        float sum = 0;                                                         \
+        for (int i = 0; i != dimensions; ++i) {                                \
+            BoundaryData bd = bda->array[i];                                   \
+            FilterReal filt_state = bd.filter_memory.array[0];                 \
+            sum +=                                                             \
+                filt_state / boundary_coefficients[bd.coefficient_index].b[0]; \
+        }                                                                      \
+        return COURANT_SQ * sum;                                               \
     }
 
 GET_FILTER_WEIGHTING_TEMPLATE(1);
@@ -634,9 +631,9 @@ GET_FILTER_WEIGHTING_TEMPLATE(3);
         for (int i = 0; i != dimensions; ++i) {                            \
             const global FilterCoefficientsCanonical* boundary =           \
                 boundary_coefficients + bda->array[i].coefficient_index;   \
-            sum += COURANT * boundary->a[0] / boundary->b[0];              \
+            sum += boundary->a[0] / boundary->b[0];                        \
         }                                                                  \
-        return sum;                                                        \
+        return sum * COURANT;                                              \
     }
 
 GET_COEFF_WEIGHTING_TEMPLATE(1);
@@ -650,7 +647,7 @@ GET_COEFF_WEIGHTING_TEMPLATE(3);
         const global float* current,                                           \
         float prev_pressure,                                                   \
         CondensedNode node,                                                    \
-        const global CondensedNode* nodes,\
+        const global CondensedNode* nodes,                                     \
         int3 locator,                                                          \
         int3 dim,                                                              \
         global CAT(BoundaryDataArray, dimensions) * boundary_data,             \
@@ -661,7 +658,7 @@ GET_COEFF_WEIGHTING_TEMPLATE(3);
         const global float* current,                                           \
         float prev_pressure,                                                   \
         CondensedNode node,                                                    \
-        const global CondensedNode* nodes,\
+        const global CondensedNode* nodes,                                     \
         int3 locator,                                                          \
         int3 dim,                                                              \
         global CAT(BoundaryDataArray, dimensions) * boundary_data,             \
@@ -672,15 +669,15 @@ GET_COEFF_WEIGHTING_TEMPLATE(3);
         ind = CAT(get_inner_node_directions_, dimensions)(node.boundary_type); \
         float current_surrounding_weighting =                                  \
             CAT(get_current_surrounding_weighting_, dimensions)(               \
-                nodes, current, locator, dim, ind, error_flag, debug_buffer);         \
+                nodes, current, locator, dim, ind, error_flag, debug_buffer);  \
         global CAT(BoundaryDataArray, dimensions)* bda =                       \
             boundary_data + node.boundary_index;                               \
-        float filter_weighting = CAT(get_filter_weighting_, dimensions)(       \
+        const float filter_weighting = CAT(get_filter_weighting_, dimensions)( \
             bda, boundary_coefficients);                                       \
-        float coeff_weighting =                                                \
+        const float coeff_weighting =                                          \
             CAT(get_coeff_weighting_, dimensions)(bda, boundary_coefficients); \
-        float prev_weighting = (coeff_weighting - 1) * prev_pressure;          \
-        float ret = (current_surrounding_weighting + filter_weighting +        \
+        const float prev_weighting = (coeff_weighting - 1) * prev_pressure;    \
+        const float ret = (current_surrounding_weighting + filter_weighting +  \
                      prev_weighting) /                                         \
                     (1 + coeff_weighting);                                     \
         for (int i = 0; i != dimensions; ++i) {                                \
@@ -691,7 +688,7 @@ GET_COEFF_WEIGHTING_TEMPLATE(3);
                 ret,                                                           \
                 prev_pressure,                                                 \
                 get_inner_pressure(                                            \
-                    nodes, current, locator, dim, ind.array[i], error_flag),          \
+                    nodes, current, locator, dim, ind.array[i], error_flag),   \
                 bd,                                                            \
                 boundary,                                                      \
                 debug_buffer);                                                 \
@@ -762,8 +759,6 @@ kernel void condensed_waveguide(const global float* current,
                                            boundary_coefficients,
                                            error_flag,
                                            debug_buffer);
-                //debug_buffer[get_global_id(0)] = boundary_data_1[node.boundary_index].array[0].filter_memory.array[0];
-                //debug_buffer[get_global_id(0)] = next_pressure;
 #endif
             }
             break;
