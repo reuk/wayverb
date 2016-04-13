@@ -116,7 +116,7 @@ int main(int argc, char** argv) {
     constexpr Vec3f source(1, 1, 1);
     constexpr Vec3f receiver(2, 1, 5);
     constexpr auto samplerate = 44100;
-    constexpr auto v = 1;
+    constexpr auto v = 0.9;
     constexpr Surface surface{{{v, v, v, v, v, v, v, v}},
                               {{v, v, v, v, v, v, v, v}}};
 
@@ -142,14 +142,14 @@ int main(int argc, char** argv) {
     std::cout << "max mag: " << max_mag(waveguide_output) << std::endl;
     write_file(config, output_folder, "waveguide_raw", {waveguide_output});
 
+    //  adjust sample rate
+    auto waveguide_adjusted = adjust_sampling_rate(waveguide_output, config);
+
     //  get the valid region of the spectrum
     filter::LinkwitzRileyLopass lopass;
     lopass.setParams(config.get_filter_frequency(),
-                     config.get_waveguide_sample_rate());
-    lopass.filter(waveguide_output);
-
-    //  adjust sample rate
-    auto waveguide_adjusted = adjust_sampling_rate(waveguide_output, config);
+                     config.get_output_sample_rate());
+    lopass.filter(waveguide_adjusted);
 
     std::cout << "max mag: " << max_mag(waveguide_adjusted) << std::endl;
     write_file(
@@ -189,6 +189,10 @@ int main(int argc, char** argv) {
                                     true,
                                     1)
                                 .front();
+    filter::LinkwitzRileyHipass hipass;
+    hipass.setParams(config.get_filter_frequency(),
+                     config.get_output_sample_rate());
+    hipass.filter(raytracer_output);
 
     auto waveguide_copy = waveguide_adjusted;
     normalize(waveguide_copy);
@@ -226,4 +230,11 @@ int main(int argc, char** argv) {
         config, output_folder, "waveguide_processed", {waveguide_adjusted});
     write_file(
         config, output_folder, "raytracer_processed", {raytracer_output});
+
+    std::vector<float> mixed(out_length);
+    for (auto i = 0; i != mixed.size(); ++i) {
+        mixed[i] = waveguide_adjusted[i] + raytracer_output[i];
+    }
+
+    write_file(config, output_folder, "mixed", {mixed});
 }

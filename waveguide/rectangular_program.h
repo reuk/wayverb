@@ -139,8 +139,8 @@ public:
                             cl::Buffer,
                             cl_float,
                             cl_float,
+                            cl_float,
                             cl_ulong,
-                            cl::Buffer,
                             cl::Buffer,
                             cl::Buffer>(*this, "condensed_waveguide", &error);
         assert(error == CL_SUCCESS);
@@ -158,7 +158,7 @@ public:
     }
 
     auto get_ghost_point_test_kernel() const {
-        return cl::make_kernel<cl::Buffer, cl::Buffer, cl::Buffer, cl::Buffer>(
+        return cl::make_kernel<cl::Buffer, cl::Buffer, cl::Buffer>(
             *this, "ghost_point_test");
     }
 

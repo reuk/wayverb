@@ -171,10 +171,12 @@ RectangularWaveguide::RectangularWaveguide(
                                        false)
         , error_flag_buffer(program.getInfo<CL_PROGRAM_CONTEXT>(),
                             CL_MEM_READ_WRITE,
-                            sizeof(cl_int))
-        , debug_buffer(program.getInfo<CL_PROGRAM_CONTEXT>(),
-                       CL_MEM_READ_WRITE,
-                       sizeof(cl_float) * nodes.size()) {
+                            sizeof(cl_int)) {
+    LOG(INFO) << "main memory node storage: "
+              << (sizeof(RectangularProgram::NodeStruct) *
+                      mesh.get_nodes().size() >>
+                  20)
+              << " MB";
 }
 
 void RectangularWaveguide::setup(cl::CommandQueue& queue,
@@ -192,12 +194,15 @@ void RectangularWaveguide::setup(cl::CommandQueue& queue,
              starting_velocity.end(),
              velocity_buffer);
 
+    /*
     //  TODO set boundary data structures properly
     setup_boundary_data_buffer<1>(queue, boundary_data_1_buffer);
     setup_boundary_data_buffer<2>(queue, boundary_data_2_buffer);
     setup_boundary_data_buffer<3>(queue, boundary_data_3_buffer);
+    */
 
     period = 1 / sr;
+    attenuation_factor = std::pow(M_E, mesh.get_spacing() * -0.00025);
 }
 
 RunStepResult RectangularWaveguide::run_step(size_type o,
@@ -209,9 +214,6 @@ RunStepResult RectangularWaveguide::run_step(size_type o,
                                              cl::Buffer& output) {
     std::vector<cl_float> out(1);
     std::vector<cl_float3> current_velocity(1);
-
-    std::vector<cl_float> debug(nodes, 0);
-    cl::copy(queue, debug.begin(), debug.end(), debug_buffer);
 
     auto flag = RectangularProgram::id_success;
     cl::copy(queue, (&flag) + 0, (&flag) + 1, error_flag_buffer);
@@ -229,10 +231,10 @@ RunStepResult RectangularWaveguide::run_step(size_type o,
            velocity_buffer,
            mesh.get_spacing(),
            period,
+           attenuation_factor,
            o,
            output,
-           error_flag_buffer,
-           debug_buffer);
+           error_flag_buffer);
 
     cl::copy(queue, error_flag_buffer, (&flag) + 0, (&flag) + 1);
 
@@ -252,22 +254,6 @@ RunStepResult RectangularWaveguide::run_step(size_type o,
 
     if (flag & RectangularProgram::id_suspicious_boundary_error)
         throw std::runtime_error("suspicious boundary read");
-
-    LOG(INFO);
-
-    cl::copy(queue, debug_buffer, debug.begin(), debug.end());
-    LOG(INFO) << "  debug min:  " << *proc::min_element(debug);
-    LOG(INFO) << "  debug max:  " << *proc::max_element(debug);
-    LOG(INFO) << "  debug mean: "
-              << proc::accumulate(debug, 0.0) / debug.size();
-
-    std::vector<RectangularProgram::BoundaryDataArray1> bd(num_boundary_1);
-    cl::copy(queue, boundary_data_1_buffer, bd.begin(), bd.end());
-    std::vector<float> g(bd.size());
-    proc::transform(bd, g.begin(), [](auto i) {
-        return i.array[0].filter_memory.array[0];
-    });
-    LOG(INFO) << "  1d filter memory g: " << max_mag(g) << std::endl;
 
     cl::copy(queue, output, out.begin(), out.end());
     cl::copy(queue,

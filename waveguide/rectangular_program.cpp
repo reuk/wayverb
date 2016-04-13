@@ -448,15 +448,13 @@ void ghost_point_pressure_update(
     float prev_pressure,
     float inner_pressure,
     global BoundaryData* boundary_data,
-    const global FilterCoefficientsCanonical* boundary,
-    global float* debug_buffer);
+    const global FilterCoefficientsCanonical* boundary);
 void ghost_point_pressure_update(
     float next_pressure,
     float prev_pressure,
     float inner_pressure,
     global BoundaryData* boundary_data,
-    const global FilterCoefficientsCanonical* boundary,
-    global float* debug_buffer) {
+    const global FilterCoefficientsCanonical* boundary) {
     FilterReal filt_state = boundary_data->filter_memory.array[0];
     FilterReal b0 = boundary->b[0];
     FilterReal a0 = boundary->a[0];
@@ -476,15 +474,13 @@ void ghost_point_pressure_update(
 kernel void ghost_point_test(
     const global float* input,
     global BoundaryData* boundary_data,
-    const global FilterCoefficientsCanonical* canonical_coefficients,
-    global float* debug_buffer) {
+    const global FilterCoefficientsCanonical* canonical_coefficients) {
     size_t index = get_global_id(0);
     ghost_point_pressure_update(input[index],
                                 0,
                                 0,
                                 boundary_data + index,
-                                canonical_coefficients,
-                                debug_buffer);
+                                canonical_coefficients);
 }
 
 //----------------------------------------------------------------------------//
@@ -569,16 +565,14 @@ float get_inner_pressure(const global CondensedNode* nodes,
         int3 locator,                                                        \
         int3 dim,                                                            \
         CAT(InnerNodeDirections, dimensions) ind,                            \
-        global int* error_flag,                                              \
-        global float* debug_buffer);                                         \
+        global int* error_flag);                                             \
     float CAT(get_current_surrounding_weighting_, dimensions)(               \
         const global CondensedNode* nodes,                                   \
         const global float* current,                                         \
         int3 locator,                                                        \
         int3 dim,                                                            \
         CAT(InnerNodeDirections, dimensions) ind,                            \
-        global int* error_flag,                                              \
-        global float* debug_buffer) {                                        \
+        global int* error_flag) {                                            \
         float sum = 0;                                                       \
         for (int i = 0; i != dimensions; ++i) {                              \
             sum +=                                                           \
@@ -652,8 +646,7 @@ GET_COEFF_WEIGHTING_TEMPLATE(3);
         int3 dim,                                                              \
         global CAT(BoundaryDataArray, dimensions) * boundary_data,             \
         const global FilterCoefficientsCanonical* boundary_coefficients,       \
-        global int* error_flag,                                                \
-        global float* debug_buffer);                                           \
+        global int* error_flag);                                               \
     float CAT(boundary_, dimensions)(                                          \
         const global float* current,                                           \
         float prev_pressure,                                                   \
@@ -663,13 +656,12 @@ GET_COEFF_WEIGHTING_TEMPLATE(3);
         int3 dim,                                                              \
         global CAT(BoundaryDataArray, dimensions) * boundary_data,             \
         const global FilterCoefficientsCanonical* boundary_coefficients,       \
-        global int* error_flag,                                                \
-        global float* debug_buffer) {                                          \
+        global int* error_flag) {                                              \
         CAT(InnerNodeDirections, dimensions)                                   \
         ind = CAT(get_inner_node_directions_, dimensions)(node.boundary_type); \
         float current_surrounding_weighting =                                  \
             CAT(get_current_surrounding_weighting_, dimensions)(               \
-                nodes, current, locator, dim, ind, error_flag, debug_buffer);  \
+                nodes, current, locator, dim, ind, error_flag);                \
         global CAT(BoundaryDataArray, dimensions)* bda =                       \
             boundary_data + node.boundary_index;                               \
         const float filter_weighting = CAT(get_filter_weighting_, dimensions)( \
@@ -690,8 +682,7 @@ GET_COEFF_WEIGHTING_TEMPLATE(3);
                 get_inner_pressure(                                            \
                     nodes, current, locator, dim, ind.array[i], error_flag),   \
                 bd,                                                            \
-                boundary,                                                      \
-                debug_buffer);                                                 \
+                boundary);                                                     \
         }                                                                      \
         return ret;                                                            \
     }
@@ -719,10 +710,10 @@ kernel void condensed_waveguide(const global float* current,
                                 global float3* velocity_buffer,
                                 float spatial_sampling_period,
                                 float T,
+                                float attenuation_factor,
                                 ulong read,
                                 global float* output,
-                                global int* error_flag,
-                                global float* debug_buffer) {
+                                global int* error_flag) {
     size_t index = get_global_id(0);
     CondensedNode node = nodes[index];
 
@@ -757,8 +748,7 @@ kernel void condensed_waveguide(const global float* current,
                                            dimensions,
                                            boundary_data_1,
                                            boundary_coefficients,
-                                           error_flag,
-                                           debug_buffer);
+                                           error_flag);
 #endif
             }
             break;
@@ -773,8 +763,7 @@ kernel void condensed_waveguide(const global float* current,
                                        dimensions,
                                        boundary_data_2,
                                        boundary_coefficients,
-                                       error_flag,
-                                       debug_buffer);
+                                       error_flag);
 #endif
             break;
         //  this is a corner where three boundaries meet
@@ -788,11 +777,12 @@ kernel void condensed_waveguide(const global float* current,
                                        dimensions,
                                        boundary_data_3,
                                        boundary_coefficients,
-                                       error_flag,
-                                       debug_buffer);
+                                       error_flag);
 #endif
             break;
     }
+
+    next_pressure *= attenuation_factor;
 
     if (next_pressure < -RANGE || RANGE < next_pressure)
         *error_flag |= id_outside_range_error;

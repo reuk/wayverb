@@ -149,6 +149,18 @@ std::array<Vec3f, num_images(SHELL)> images_for_shell(const Box& box,
 }
 
 TEST(raytrace, image_source) {
+    /*
+    auto log_attenuation = [](auto i) {
+        LOG(INFO) << "attenuation for distance: " << i << " = "
+                  << attenuation_for_distance(i);
+    };
+
+    log_attenuation(0);
+    log_attenuation(1);
+    log_attenuation(2);
+    log_attenuation(10);
+    */
+
     //  proper method
     constexpr Box box(Vec3f(0, 0, 0), Vec3f(4, 3, 6));
     constexpr Vec3f source(1, 1, 1);

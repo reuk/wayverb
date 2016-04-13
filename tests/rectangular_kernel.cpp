@@ -563,8 +563,7 @@ TEST(ghost_point, filters) {
                                cl::NDRange(testing::parallel_size)),
                cl_input,
                cl_boundary_data,
-               cl_coefficients,
-               cl_debug_buffer);
+               cl_coefficients);
 
         cl::copy(compute_context.queue,
                  cl_boundary_data,

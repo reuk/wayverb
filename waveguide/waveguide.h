@@ -216,7 +216,6 @@ private:
 
 class RectangularWaveguide : public Waveguide<RectangularProgram> {
 public:
-#if 0
     template <typename B>
     RectangularWaveguide(const RectangularProgram& program,
                          cl::CommandQueue& queue,
@@ -230,23 +229,6 @@ public:
                   RectangularMesh(boundary, spacing, anchor),
                   to_filter_coefficients(boundary.get_surfaces(), sr)) {
     }
-#else
-    template <typename B>
-    RectangularWaveguide(const RectangularProgram& program,
-                         cl::CommandQueue& queue,
-                         const B& boundary,
-                         float spacing,
-                         const Vec3f& anchor,
-                         float sr)
-            : RectangularWaveguide(
-                  program,
-                  queue,
-                  RectangularMesh(boundary, spacing, anchor),
-                  std::vector<RectangularProgram::CanonicalCoefficients>{
-                      RectangularProgram::CanonicalCoefficients{
-                          {1, 0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0, 0}}}) {
-    }
-#endif
 
     void setup(cl::CommandQueue& queue, size_type o, float sr) override;
 
@@ -330,6 +312,7 @@ private:
         std::vector<RectangularProgram::BoundaryDataArray3> boundary_data_3,
         std::vector<RectangularProgram::CanonicalCoefficients> coefficients);
 
+    /*
     template <int I>
     void setup_boundary_data_buffer(cl::CommandQueue& queue, cl::Buffer& b) {
         std::vector<RectangularProgram::BoundaryDataArray<I>> bda(
@@ -344,6 +327,7 @@ private:
         });
         cl::copy(queue, bda.begin(), bda.end(), b);
     }
+    */
 
     MeshType mesh;
     const cl::Buffer node_buffer;  //  const, set in constructor
@@ -360,9 +344,8 @@ private:
         boundary_coefficients_buffer;  //  const, set in constructor
     cl::Buffer error_flag_buffer;      //  set each iteration
 
-    cl::Buffer debug_buffer;
-
     float period;
+    float attenuation_factor;
 };
 
 class TetrahedralWaveguide : public Waveguide<TetrahedralProgram> {
