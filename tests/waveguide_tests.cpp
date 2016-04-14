@@ -47,10 +47,10 @@ TEST(run_waveguide, run_waveguide) {
                               {{v, v, v, v, v, v, v, v}}};
 
     config::Waveguide config;
-    config.get_filter_frequency() = 1000;
-    config.get_source() = source;
-    config.get_mic() = receiver;
-    config.get_output_sample_rate() = samplerate;
+    config.filter_frequency = 1000;
+    config.source = source;
+    config.mic = receiver;
+    config.sample_rate = samplerate;
 
     //  init simulation parameters
     CuboidBoundary boundary(box.get_c0(), box.get_c1(), {surface});
@@ -60,11 +60,11 @@ TEST(run_waveguide, run_waveguide) {
                                    context_info.queue,
                                    boundary,
                                    config.get_divisions(),
-                                   config.get_mic(),
+                                   config.mic,
                                    config.get_waveguide_sample_rate());
 
-    auto source_index = waveguide.get_index_for_coordinate(config.get_source());
-    auto receiver_index = waveguide.get_index_for_coordinate(config.get_mic());
+    auto source_index = waveguide.get_index_for_coordinate(config.source);
+    auto receiver_index = waveguide.get_index_for_coordinate(config.mic);
 
     CHECK(waveguide.inside(source_index)) << "source is outside of mesh!";
     CHECK(waveguide.inside(receiver_index)) << "receiver is outside of mesh!";

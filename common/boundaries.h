@@ -1,13 +1,10 @@
 #pragma once
 
-#include "json_read_write.h"
 #include "reduce.h"
 #include "surface_owner.h"
 #include "triangle.h"
 #include "triangle_vec.h"
 #include "vec.h"
-
-#include <cereal/archives/json.hpp>
 
 class SceneData;
 namespace geo {
@@ -146,15 +143,11 @@ struct Box {
     }
 
     template <typename Archive>
-    void serialize(Archive& archive) {
-        archive(CEREAL_NVP(c0), CEREAL_NVP(c1));
-    }
+    friend void serialize(Archive& archive, Box& m);
 
 private:
     Vec3f c0, c1;
 };
-
-JSON_OSTREAM_OVERLOAD(Box)
 
 class CuboidBoundary;
 
@@ -170,12 +163,8 @@ public:
     virtual CuboidBoundary get_aabb() const = 0;
 
     template <typename Archive>
-    void serialize(Archive& archive) {
-        archive(cereal::base_class<SurfaceOwner>(this));
-    }
+    friend void serialize(Archive& archive, Boundary& m);
 };
-
-JSON_OSTREAM_OVERLOAD(Boundary)
 
 Box get_surrounding_box(const std::vector<Vec3f>& vertices);
 
@@ -197,13 +186,8 @@ public:
     SceneData get_scene_data() const;
 
     template <typename Archive>
-    void serialize(Archive& archive) {
-        archive(cereal::base_class<Boundary>(this),
-                cereal::base_class<Box>(this));
-    }
+    friend void serialize(Archive& archive, CuboidBoundary& m);
 };
-
-JSON_OSTREAM_OVERLOAD(CuboidBoundary)
 
 class SphereBoundary : public Boundary {
 public:

@@ -12,7 +12,9 @@
 
 #include "cl_common.h"
 
-#include "json_read_write.h"
+//  serialize
+#include "boundaries_serialize.h"
+#include "combined_config_serialize.h"
 
 //  dependency
 #include "filters_common.h"
@@ -77,14 +79,14 @@ int main(int argc, char** argv) {
         return EXIT_FAILURE;
     }
 
-    LOG(INFO) << "mic " << cc.get_mic();
-    LOG(INFO) << "source " << cc.get_source();
+    LOG(INFO) << "mic " << cc.mic;
+    LOG(INFO) << "source " << cc.source;
 
     int format, depth;
 
     try {
         format = get_file_format(output_file);
-        depth = get_file_depth(cc.get_bit_depth());
+        depth = get_file_depth(cc.bit_depth);
     } catch (const std::runtime_error& e) {
         LOG(INFO) << "critical runtime error: " << e.what();
         return EXIT_FAILURE;
@@ -96,12 +98,9 @@ int main(int argc, char** argv) {
         MeshBoundary boundary(scene_data);
         auto waveguide_program =
             get_program<TetrahedralProgram>(context, device);
-        TetrahedralWaveguide waveguide(waveguide_program,
-                                       queue,
-                                       boundary,
-                                       cc.get_divisions(),
-                                       cc.get_mic());
-        auto mic_index = waveguide.get_index_for_coordinate(cc.get_mic());
+        TetrahedralWaveguide waveguide(
+            waveguide_program, queue, boundary, cc.get_divisions(), cc.mic);
+        auto mic_index = waveguide.get_index_for_coordinate(cc.mic);
 
 #if 0
         auto source_index = waveguide.get_index_for_coordinate(cc.get_source());
@@ -165,11 +164,10 @@ int main(int argc, char** argv) {
         auto attenuation_factor = pow(decibels::db2a(-60), 1.0 / steps);
 #endif
         ProgressBar pb(std::cout, steps);
-        auto w_results = waveguide.run_gaussian(cc.get_source(),
-                                                mic_index,
-                                                steps,
-                                                cc.get_waveguide_sample_rate(),
-                                                [&pb] { pb += 1; });
+        auto w_results = waveguide.run_gaussian(
+            cc.source, mic_index, steps, cc.get_waveguide_sample_rate(), [&pb] {
+                pb += 1;
+            });
 
         Microphone microphone(Vec3f(0, 0, 1), 0.5);
         HrtfAttenuator hrtf_attenuator(
@@ -187,13 +185,12 @@ int main(int argc, char** argv) {
 
         write_sndfile(output_file + ".waveguide.full.wav",
                       {out_signal},
-                      cc.get_output_sample_rate(),
+                      cc.sample_rate,
                       depth,
                       format);
 
         filter::LinkwitzRileyLopass lopass;
-        lopass.setParams(cc.get_filter_frequency(),
-                         cc.get_output_sample_rate());
+        lopass.setParams(cc.filter_frequency, cc.sample_rate);
         lopass.filter(out_signal);
 
         normalize(out_signal);
@@ -202,7 +199,7 @@ int main(int argc, char** argv) {
 
         write_sndfile(output_file + ".waveguide.lopass.wav",
                       waveguide_results,
-                      cc.get_output_sample_rate(),
+                      cc.sample_rate,
                       depth,
                       format);
 

@@ -13,6 +13,9 @@
 
 #include "stl_wrappers.h"
 
+#include "boundaries_serialize.h"
+#include "surface_owner_serialize.h"
+
 //  dependency
 #include "filters_common.h"
 #include "sinc.h"
@@ -53,10 +56,9 @@ void write_file(const config::App& config,
     LOG(INFO) << "writing file: " << output_file;
 
     auto format = get_file_format(output_file);
-    auto depth = get_file_depth(config.get_bit_depth());
+    auto depth = get_file_depth(config.bit_depth);
 
-    write_sndfile(
-        output_file, output, config.get_output_sample_rate(), depth, format);
+    write_sndfile(output_file, output, config.sample_rate, depth, format);
 }
 
 auto run_waveguide(ComputeContext& context_info,
@@ -74,11 +76,11 @@ auto run_waveguide(ComputeContext& context_info,
                                    context_info.queue,
                                    boundary,
                                    config.get_divisions(),
-                                   config.get_mic(),
+                                   config.mic,
                                    config.get_waveguide_sample_rate());
 
-    auto source_index = waveguide.get_index_for_coordinate(config.get_source());
-    auto receiver_index = waveguide.get_index_for_coordinate(config.get_mic());
+    auto source_index = waveguide.get_index_for_coordinate(config.source);
+    auto receiver_index = waveguide.get_index_for_coordinate(config.mic);
 
     CHECK(waveguide.inside(source_index)) << "source is outside of mesh!";
     CHECK(waveguide.inside(receiver_index)) << "receiver is outside of mesh!";
@@ -129,10 +131,10 @@ int main(int argc, char** argv) {
     LOG(INFO) << "boundary: " << boundary;
 
     config::Combined config;
-    config.get_filter_frequency() = 1000;
-    config.get_source() = source;
-    config.get_mic() = receiver;
-    config.get_output_sample_rate() = samplerate;
+    config.filter_frequency = 1000;
+    config.source = source;
+    config.mic = receiver;
+    config.sample_rate = samplerate;
 
     ComputeContext context_info;
 
@@ -147,8 +149,7 @@ int main(int argc, char** argv) {
 
     //  get the valid region of the spectrum
     filter::LinkwitzRileyLopass lopass;
-    lopass.setParams(config.get_filter_frequency(),
-                     config.get_output_sample_rate());
+    lopass.setParams(config.filter_frequency, config.sample_rate);
     lopass.filter(waveguide_adjusted);
 
     std::cout << "max mag: " << max_mag(waveguide_adjusted) << std::endl;
@@ -161,12 +162,12 @@ int main(int argc, char** argv) {
     Raytracer raytracer(raytrace_program, context_info.queue);
     //            [                                        ]
     std::cout << "[ -- running raytracer ----------------- ]" << std::endl;
-    ProgressBar pb(std::cout, config.get_impulses());
+    ProgressBar pb(std::cout, config.impulses);
     auto results = raytracer.run(boundary.get_scene_data(),
-                                 config.get_mic(),
-                                 config.get_source(),
-                                 config.get_rays(),
-                                 config.get_impulses(),
+                                 config.mic,
+                                 config.source,
+                                 config.rays,
+                                 config.impulses,
                                  [&pb] { pb += 1; });
 
     Attenuate attenuator(raytrace_program, context_info.queue);
@@ -176,22 +177,21 @@ int main(int argc, char** argv) {
             .front();
 
     std::vector<std::vector<std::vector<float>>> flattened = {
-        flatten_impulses(output, config.get_output_sample_rate())};
+        flatten_impulses(output, config.sample_rate)};
 
     write_file(
         config, output_folder, "raytrace_no_processing", mixdown(flattened));
 
     auto raytracer_output = process(filter::FilterType::linkwitz_riley,
                                     flattened,
-                                    config.get_output_sample_rate(),
+                                    config.sample_rate,
                                     false,
                                     1,
                                     true,
                                     1)
                                 .front();
     filter::LinkwitzRileyHipass hipass;
-    hipass.setParams(config.get_filter_frequency(),
-                     config.get_output_sample_rate());
+    hipass.setParams(config.filter_frequency, config.sample_rate);
     hipass.filter(raytracer_output);
 
     auto waveguide_copy = waveguide_adjusted;

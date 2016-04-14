@@ -2,6 +2,8 @@
 
 #include "gtest/gtest.h"
 
+#include "boundaries_serialize.h"
+
 #ifndef OBJ_PATH
 #define OBJ_PATH ""
 #endif

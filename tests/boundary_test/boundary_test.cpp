@@ -7,6 +7,9 @@
 #include "waveguide.h"
 #include "waveguide_config.h"
 
+#include "boundaries_serialize.h"
+#include "surface_owner_serialize.h"
+
 //  dependency
 #include "filters_common.h"
 #include "sinc.h"
@@ -34,10 +37,9 @@ void write_file(const config::Waveguide& config,
     LOG(INFO) << "writing file: " << output_file;
 
     auto format = get_file_format(output_file);
-    auto depth = get_file_depth(config.get_bit_depth());
+    auto depth = get_file_depth(config.bit_depth);
 
-    write_sndfile(
-        output_file, {output}, config.get_output_sample_rate(), depth, format);
+    write_sndfile(output_file, {output}, config.sample_rate, depth, format);
     //    auto normalized = output;
     //    normalize(normalized);
     //
@@ -103,8 +105,7 @@ std::vector<float> run_simulation(const cl::Context& context,
 #endif
 
     filter::LinkwitzRileyLopass lopass;
-    lopass.setParams(config.get_filter_frequency(),
-                     config.get_output_sample_rate());
+    lopass.setParams(config.filter_frequency, config.sample_rate);
     //    lopass.filter(output);
 
     return output;
@@ -374,8 +375,8 @@ int main(int argc, char** argv) {
     auto output_folder = std::string(argv[1]);
 
     auto config = config::Waveguide();
-    config.get_filter_frequency() = 2000;
-    config.get_oversample_ratio() = 1;
+    config.filter_frequency = 2000;
+    config.oversample_ratio = 1;
 
     LOG(INFO) << "waveguide sampling rate: "
               << config.get_waveguide_sample_rate();

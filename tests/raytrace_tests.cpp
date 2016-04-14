@@ -42,10 +42,9 @@ void write_file(const config::App& config,
     LOG(INFO) << "writing file: " << output_file;
 
     auto format = get_file_format(output_file);
-    auto depth = get_file_depth(config.get_bit_depth());
+    auto depth = get_file_depth(config.bit_depth);
 
-    write_sndfile(
-        output_file, output, config.get_output_sample_rate(), depth, format);
+    write_sndfile(output_file, output, config.sample_rate, depth, format);
 }
 
 #define USE_EPSILON
@@ -217,17 +216,17 @@ TEST(raytrace, image_source) {
     CuboidBoundary boundary(box.get_c0(), box.get_c1(), {surface});
 
     config::Raytracer config;
-    config.get_source() = source;
-    config.get_mic() = receiver;
-    config.get_output_sample_rate() = samplerate;
+    config.source = source;
+    config.mic = receiver;
+    config.sample_rate = samplerate;
 
     Raytracer raytracer(raytrace_program, context.queue);
 
     auto results = raytracer.run(boundary.get_scene_data(),
-                                 config.get_mic(),
-                                 config.get_source(),
-                                 config.get_rays(),
-                                 config.get_impulses());
+                                 config.mic,
+                                 config.source,
+                                 config.rays,
+                                 config.impulses);
 
     Attenuate attenuator(raytrace_program, context.queue);
     Speaker speaker{};
@@ -253,7 +252,7 @@ TEST(raytrace, image_source) {
 
     auto postprocess = [&config](const auto& i, const std::string& name) {
         std::vector<std::vector<std::vector<float>>> flattened = {
-            flatten_impulses(i, config.get_output_sample_rate())};
+            flatten_impulses(i, config.sample_rate)};
         {
             auto mixed_down = mixdown(flattened);
             normalize(mixed_down);
@@ -262,7 +261,7 @@ TEST(raytrace, image_source) {
         {
             auto processed = process(filter::FilterType::linkwitz_riley,
                                      flattened,
-                                     config.get_output_sample_rate(),
+                                     config.sample_rate,
                                      false,
                                      1,
                                      true,

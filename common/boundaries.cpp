@@ -8,6 +8,9 @@
 #include "tri_cube_intersection.h"
 #include "triangle.h"
 
+//  serialization
+#include "vec_serialize.h"
+
 #include <glog/logging.h>
 
 #include <algorithm>

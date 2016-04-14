@@ -151,7 +151,7 @@ inline T elementwise(const T& a, const T& b, const U& u) {
     return ret;
 }
 
-std::vector<cl_float3> get_random_directions(unsigned long num) {
+std::vector<cl_float3> get_random_directions(int num) {
     std::vector<cl_float3> ret(num);
     std::uniform_real_distribution<float> z(-1, 1);
     std::uniform_real_distribution<float> theta(-M_PI, M_PI);
@@ -171,7 +171,7 @@ RaytracerResults Results::get_diffuse() const {
 RaytracerResults Results::get_image_source(bool remove_direct) const {
     auto temp = image_source;
     if (remove_direct)
-        temp.erase(std::vector<unsigned long>{0});
+        temp.erase(std::vector<int>{0});
 
     std::vector<Impulse> ret(temp.size());
     proc::transform(temp, begin(ret), [](const auto& i) { return i.second; });
@@ -194,8 +194,7 @@ void remove_duplicates(const std::vector<cl_ulong>& path,
     for (auto j = 0; j != RAY_GROUP_SIZE * NUM_IMAGE_SOURCE;
          j += NUM_IMAGE_SOURCE) {
         for (auto k = 1; k != NUM_IMAGE_SOURCE + 1; ++k) {
-            std::vector<unsigned long> surfaces(path.begin() + j,
-                                                path.begin() + j + k);
+            std::vector<int> surfaces(path.begin() + j, path.begin() + j + k);
 
             if (k == 1 || surfaces.back() != 0) {
                 auto it = results.image_source.find(surfaces);
@@ -423,7 +422,7 @@ std::vector<std::vector<AttenuatedImpulse>> Hrtf::attenuate(
 
 std::vector<AttenuatedImpulse> Hrtf::attenuate(
     const cl_float3& mic_pos,
-    unsigned long channel,
+    int channel,
     const cl_float3& facing,
     const cl_float3& up,
     const std::vector<Impulse>& impulses) {

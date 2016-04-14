@@ -7,7 +7,7 @@
 #include "string_builder.h"
 #include "triangle.h"
 
-#include <cereal/archives/json.hpp>
+#include "surface_owner_serialize.h"
 
 #include <cereal/types/map.hpp>
 

@@ -4,8 +4,6 @@
 
 #include "extended_algorithms.h"
 
-#include "json_read_write.h"
-
 #include <array>
 #include <cmath>
 #include <functional>
@@ -222,11 +220,6 @@ struct Vec3 final {
         return foldi<std::logical_or<T>>();
     }
 
-    template <typename Archive>
-    void serialize(Archive& archive) {
-        archive(CEREAL_NVP(x), CEREAL_NVP(y), CEREAL_NVP(z));
-    }
-
     T x, y, z;
 };
 
@@ -249,6 +242,3 @@ constexpr Vec3<T> make(const T& x, const T& y, const T& z) {
     return Vec3<T>(x, y, z);
 }
 }  // namespace vec
-
-template <typename T>
-JSON_OSTREAM_OVERLOAD(Vec3<T>)
