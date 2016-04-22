@@ -16,6 +16,9 @@
 #include "boundaries_serialize.h"
 #include "surface_owner_serialize.h"
 
+#include "combined_config_serialize.h"
+#include "json_read_write.h"
+
 //  dependency
 #include "filters_common.h"
 #include "sinc.h"
@@ -37,9 +40,20 @@
 #include <numeric>
 #include <random>
 
+namespace std {
+template <typename T>
+JSON_OSTREAM_OVERLOAD(vector<T>);
+}  // namespace std
+
 /// courant number is 1 / sqrt(3) for a rectilinear mesh
 /// but sqrt isn't constexpr >:(
 constexpr auto COURANT = 0.577350269;
+
+/// given a source strength, calculate the distance at which the source produces
+/// intensity 1W/m^2
+double distance_for_unit_intensity(double strength) {
+    return std::sqrt(strength / 4 * M_PI);
+}
 
 /// r = distance at which the geometric sound source has intensity 1W/m^2
 /// sr = waveguide mesh sampling rate
@@ -65,7 +79,7 @@ auto run_waveguide(ComputeContext& context_info,
                    const CuboidBoundary& boundary,
                    const config::Combined& config,
                    const std::string& output_folder) {
-    auto steps = 16000;
+    auto steps = 4000;
 
     //  get opencl program
     auto waveguide_program = get_program<RectangularProgram>(
@@ -86,12 +100,6 @@ auto run_waveguide(ComputeContext& context_info,
     CHECK(waveguide.inside(receiver_index)) << "receiver is outside of mesh!";
 
     auto corrected_source = waveguide.get_coordinate_for_index(source_index);
-    auto corrected_receiver =
-        waveguide.get_coordinate_for_index(receiver_index);
-
-    LOG(INFO) << "running simulation!";
-    LOG(INFO) << "source pos: " << corrected_source;
-    LOG(INFO) << "mic pos: " << corrected_receiver;
 
     //  run the waveguide
     //            [                                        ]
@@ -114,27 +122,28 @@ int main(int argc, char** argv) {
     google::InitGoogleLogging(argv[0]);
     gflags::ParseCommandLineFlags(&argc, &argv, true);
 
-    constexpr Box box(Vec3f(0, 0, 0), Vec3f(4, 3, 6));
-    constexpr Vec3f source(1, 1, 1);
-    constexpr Vec3f receiver(2, 1, 5);
-    constexpr auto samplerate = 44100;
-    constexpr auto v = 0.8;
+    constexpr Box box(Vec3f(0, 0, 0), Vec3f(5.56, 3.97, 2.81));
+    constexpr Vec3f source(2.09, 2.12, 2.12);
+    constexpr Vec3f receiver(2.09, 3.08, 0.96);
+    constexpr auto samplerate = 96000;
+    constexpr auto v = 0.9;
     constexpr Surface surface{{{v, v, v, v, v, v, v, v}},
                               {{v, v, v, v, v, v, v, v}}};
 
     CHECK(argc == 2) << "expected an output folder";
 
-    auto output_folder = argv[1];
+    std::string output_folder = argv[1];
 
     //  init simulation parameters
     CuboidBoundary boundary(box.get_c0(), box.get_c1(), {surface});
-    LOG(INFO) << "boundary: " << boundary;
 
     config::Combined config;
-    config.filter_frequency = 1000;
+    config.filter_frequency = 2000;
     config.source = source;
     config.mic = receiver;
     config.sample_rate = samplerate;
+
+    json_read_write::write(output_folder + "/example_config.json", config);
 
     ComputeContext context_info;
 
@@ -175,6 +184,8 @@ int main(int argc, char** argv) {
     auto output =
         attenuator.attenuate(results.get_image_source(false), {speaker})
             .front();
+    // auto output =
+    //    attenuator.attenuate(results.get_all(false), {speaker}).front();
 
     std::vector<std::vector<std::vector<float>>> flattened = {
         flatten_impulses(output, config.sample_rate)};
@@ -182,17 +193,9 @@ int main(int argc, char** argv) {
     write_file(
         config, output_folder, "raytrace_no_processing", mixdown(flattened));
 
-    auto raytracer_output = process(filter::FilterType::linkwitz_riley,
-                                    flattened,
-                                    config.sample_rate,
-                                    false,
-                                    1,
-                                    true,
-                                    1)
-                                .front();
-    filter::LinkwitzRileyHipass hipass;
-    hipass.setParams(config.filter_frequency, config.sample_rate);
-    hipass.filter(raytracer_output);
+    filter::run(
+        filter::FilterType::linkwitz_riley, flattened, config.sample_rate, 1);
+    auto raytracer_output = mixdown(flattened).front();
 
     auto waveguide_copy = waveguide_adjusted;
     normalize(waveguide_copy);
@@ -200,11 +203,11 @@ int main(int argc, char** argv) {
 
     auto raytracer_copy = raytracer_output;
     normalize(raytracer_copy);
-    write_file(
-        config, output_folder, "raytracer_normalized", {raytracer_output});
+    write_file(config, output_folder, "raytracer_normalized", {raytracer_copy});
 
     mul(waveguide_adjusted,
-        rectilinear_calibration_factor(1, config.get_waveguide_sample_rate()));
+        rectilinear_calibration_factor(distance_for_unit_intensity(1),
+                                       config.get_waveguide_sample_rate()));
 
     auto max_waveguide = max_mag(waveguide_adjusted);
     auto max_raytracer = max_mag(raytracer_output);
@@ -230,6 +233,10 @@ int main(int argc, char** argv) {
         config, output_folder, "waveguide_processed", {waveguide_adjusted});
     write_file(
         config, output_folder, "raytracer_processed", {raytracer_output});
+
+    filter::LinkwitzRileyHipass hipass;
+    hipass.setParams(config.filter_frequency, config.sample_rate);
+    hipass.filter(raytracer_output);
 
     std::vector<float> mixed(out_length);
     for (auto i = 0; i != mixed.size(); ++i) {

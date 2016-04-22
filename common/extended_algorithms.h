@@ -162,7 +162,8 @@ constexpr auto map(std::index_sequence<Ix...>,
                    const T& t,
                    const Callback& callback) {
     return std::array<decltype(callback(std::get<0>(t))),
-                      std::tuple_size<T>::value>{callback(std::get<Ix>(t))...};
+                      std::tuple_size<T>::value>{
+        {callback(std::get<Ix>(t))...}};
 }
 
 template <typename T, typename Callback>

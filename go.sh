@@ -25,8 +25,11 @@ callraytrace () {
 
 export GLOG_logtostderr=1
 #export GTEST_FILTER="*raytrace*"
+#export GTEST_FILTER="*cereal*"
 
 #cmake .. && make && ctest -V
 #cmake .. && make && make doc && ctest -V
 #cmake .. && make && ctest -V && callraytrace vault vault vault
-cmake .. && make && ./tests/hybrid_test/hybrid_test ../tests/hybrid_test/output
+cmake .. && make && ctest -V && ./tests/hybrid_test/hybrid_test ../tests/hybrid_test/output
+
+#cmake .. && make

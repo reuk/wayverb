@@ -179,10 +179,10 @@ def main():
 
 def one_page():
     azel = [
-#        (0, 0),
+        (0, 0),
         (0.7854, 0),
-#        (0.7854, 0.7854),
-#        (1.047, 1.047),
+        (0.7854, 0.7854),
+        (1.047, 1.047),
     ]
 
     root = "/Users/reuben/dev/waveguide/tests/boundary_test/output/"

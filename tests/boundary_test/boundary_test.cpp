@@ -29,7 +29,7 @@
 #include <numeric>
 #include <random>
 
-void write_file(const config::Waveguide& config,
+void write_file(const config::Waveguide& conf,
                 const std::string& output_folder,
                 const std::string& fname,
                 const std::vector<float>& output) {
@@ -37,9 +37,9 @@ void write_file(const config::Waveguide& config,
     LOG(INFO) << "writing file: " << output_file;
 
     auto format = get_file_format(output_file);
-    auto depth = get_file_depth(config.bit_depth);
+    auto depth = get_file_depth(conf.bit_depth);
 
-    write_sndfile(output_file, {output}, config.sample_rate, depth, format);
+    write_sndfile(output_file, {output}, conf.sample_rate, depth, format);
     //    auto normalized = output;
     //    normalize(normalized);
     //
@@ -48,7 +48,7 @@ void write_file(const config::Waveguide& config,
     //    Logger::log_err("writing file: ", norm_output_file);
     //    write_sndfile(norm_output_file,
     //                  {normalized},
-    //                  config.get_output_sample_rate(),
+    //                  conf.get_output_sample_rate(),
     //                  depth,
     //                  format);
 }
@@ -57,7 +57,7 @@ std::vector<float> run_simulation(const cl::Context& context,
                                   cl::Device& device,
                                   cl::CommandQueue& queue,
                                   const CuboidBoundary& boundary,
-                                  const config::Waveguide& config,
+                                  const config::Waveguide& conf,
                                   const Vec3f& source,
                                   const Vec3f& receiver,
                                   const std::string& output_folder,
@@ -68,9 +68,9 @@ std::vector<float> run_simulation(const cl::Context& context,
     RectangularWaveguide waveguide(waveguide_program,
                                    queue,
                                    boundary,
-                                   config.get_divisions(),
+                                   conf.get_divisions(),
                                    receiver,
-                                   config.get_waveguide_sample_rate());
+                                   conf.get_waveguide_sample_rate());
 
     auto receiver_index = waveguide.get_index_for_coordinate(receiver);
     auto source_index = waveguide.get_index_for_coordinate(source);
@@ -93,7 +93,7 @@ std::vector<float> run_simulation(const cl::Context& context,
     auto results = waveguide.run_basic(corrected_source,
                                        receiver_index,
                                        steps,
-                                       config.get_waveguide_sample_rate(),
+                                       conf.get_waveguide_sample_rate(),
                                        [&pb] { pb += 1; });
 
 #if 0
@@ -105,7 +105,7 @@ std::vector<float> run_simulation(const cl::Context& context,
 #endif
 
     filter::LinkwitzRileyLopass lopass;
-    lopass.setParams(config.filter_frequency, config.sample_rate);
+    lopass.setParams(conf.filter_frequency, conf.sample_rate);
     //    lopass.filter(output);
 
     return output;
@@ -125,7 +125,7 @@ std::vector<float> get_free_field_results(const cl::Context& context,
                                           cl::Device& device,
                                           cl::CommandQueue& queue,
                                           const std::string& output_folder,
-                                          const config::Waveguide& config,
+                                          const config::Waveguide& conf,
                                           float azimuth,
                                           float elevation,
                                           int dim,
@@ -143,14 +143,14 @@ std::vector<float> get_free_field_results(const cl::Context& context,
 
     //  generate two boundaries, one twice the size of the other
     auto wall =
-        CuboidBoundary(Vec3f(0, 0, 0), desired_nodes * config.get_divisions());
+        CuboidBoundary(Vec3f(0, 0, 0), desired_nodes * conf.get_divisions());
     auto far = wall.get_c1();
     auto new_dim = Vec3f(far.x * 2, far.y, far.z);
     auto no_wall = CuboidBoundary(Vec3f(0, 0, 0), new_dim);
 
     //  place source and image in rooms based on distance in nodes from the wall
     auto source_dist_nodes = desired_nodes.mag() / 8;
-    auto source_dist = source_dist_nodes * config.get_divisions();
+    auto source_dist = source_dist_nodes * conf.get_divisions();
 
     auto wall_centre = no_wall.centre();
 
@@ -199,7 +199,7 @@ std::vector<float> get_free_field_results(const cl::Context& context,
                                 device,
                                 queue,
                                 no_wall,
-                                config,
+                                conf,
                                 source_position,
                                 image_position,
                                 output_folder,
@@ -217,7 +217,7 @@ FullTestResults run_full_test(const std::string& test_name,
                               cl::Device& device,
                               cl::CommandQueue& queue,
                               const std::string& output_folder,
-                              const config::Waveguide& config,
+                              const config::Waveguide& conf,
                               float azimuth,
                               float elevation,
                               int dim,
@@ -237,7 +237,7 @@ FullTestResults run_full_test(const std::string& test_name,
 
     //  generate two boundaries, one twice the size of the other
     auto wall = CuboidBoundary(
-        Vec3f(0, 0, 0), desired_nodes * config.get_divisions(), {surface});
+        Vec3f(0, 0, 0), desired_nodes * conf.get_divisions(), {surface});
 
     LOG(INFO) << "boundary: " << wall;
 
@@ -249,7 +249,7 @@ FullTestResults run_full_test(const std::string& test_name,
     //  place source and receiver in rooms based on distance in nodes from the
     //  wall
     auto source_dist_nodes = desired_nodes.mag() / 8;
-    auto source_dist = source_dist_nodes * config.get_divisions();
+    auto source_dist = source_dist_nodes * conf.get_divisions();
 
     auto wall_centre = no_wall.centre();
 
@@ -294,7 +294,7 @@ FullTestResults run_full_test(const std::string& test_name,
                                     device,
                                     queue,
                                     wall,
-                                    config,
+                                    conf,
                                     source_position,
                                     receiver_position,
                                     output_folder,
@@ -304,7 +304,7 @@ FullTestResults run_full_test(const std::string& test_name,
                                  device,
                                  queue,
                                  no_wall,
-                                 config,
+                                 conf,
                                  source_position,
                                  receiver_position,
                                  output_folder,
@@ -345,11 +345,11 @@ FullTestResults run_full_test(const std::string& test_name,
     auto param_string =
         build_string(std::setprecision(4), "_az_", azimuth, "_el_", elevation);
 
-    write_file(config,
+    write_file(conf,
                output_folder,
                test_name + param_string + "_windowed_free_field",
                windowed_free_field);
-    write_file(config,
+    write_file(conf,
                output_folder,
                test_name + param_string + "_windowed_subbed",
                windowed_subbed);
@@ -361,8 +361,8 @@ int main(int argc, char** argv) {
     google::InitGoogleLogging(argv[0]);
     gflags::ParseCommandLineFlags(&argc, &argv, true);
 
-    if (argc != 2) {
-        LOG(INFO) << "expecting an output folder";
+    if (argc != 4) {
+        LOG(INFO) << "expecting an output folder, an azimuth, and an elevation";
 
         LOG(INFO) << "actually found: ";
         for (auto i = 0u; i != argc; ++i) {
@@ -374,12 +374,16 @@ int main(int argc, char** argv) {
 
     auto output_folder = std::string(argv[1]);
 
-    auto config = config::Waveguide();
-    config.filter_frequency = 2000;
-    config.oversample_ratio = 1;
+    auto azimuth = std::stod(argv[2]);
+    auto elevation = std::stod(argv[3]);
+    auto azimuth_elevation = std::make_pair(azimuth, elevation);
+
+    config::Waveguide conf;
+    conf.filter_frequency = 2000;
+    conf.oversample_ratio = 1;
 
     LOG(INFO) << "waveguide sampling rate: "
-              << config.get_waveguide_sample_rate();
+              << conf.get_waveguide_sample_rate();
 
     auto context = get_context();
     auto device = get_device(context);
@@ -394,11 +398,6 @@ int main(int argc, char** argv) {
     //  set room size based on desired number of nodes
     auto dim = 250;
 
-    // auto azimuth_elevation = std::make_pair(M_PI / 4, M_PI / 4);
-    // auto azimuth_elevation = std::make_pair(M_PI / 3, M_PI / 3);
-    // auto azimuth_elevation = std::make_pair(0, 0);
-    auto azimuth_elevation = std::make_pair(M_PI / 4, 0);
-
     try {
         struct SurfacePackage {
             std::string name;
@@ -412,7 +411,7 @@ int main(int argc, char** argv) {
                                    device,
                                    queue,
                                    output_folder,
-                                   config,
+                                   conf,
                                    azimuth_elevation.first,
                                    azimuth_elevation.second,
                                    dim,
@@ -458,7 +457,7 @@ int main(int argc, char** argv) {
                                  device,
                                  queue,
                                  output_folder,
-                                 config,
+                                 conf,
                                  azimuth_elevation.first,
                                  azimuth_elevation.second,
                                  dim,

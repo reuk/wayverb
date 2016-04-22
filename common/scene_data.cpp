@@ -11,6 +11,8 @@
 
 #include <cereal/types/map.hpp>
 
+#include <glog/logging.h>
+
 #include <fstream>
 #include <stdexcept>
 #include <vector>
@@ -36,8 +38,12 @@ SurfaceLoader::SurfaceLoader(const std::string& path) {
 
 void SurfaceLoader::add_surface(const std::string& name,
                                 const Surface& surface) {
-    surfaces.push_back(surface);
-    surface_indices[name] = surfaces.size() - 1;
+    if (surface_indices.find(name) == surface_indices.end()) {
+        surfaces.push_back(surface);
+        surface_indices[name] = surfaces.size() - 1;
+    } else {
+        LOG(INFO) << "tried to add duplicate surface";
+    }
 }
 
 const std::vector<Surface>& SurfaceLoader::get_surfaces() const {

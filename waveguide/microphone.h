@@ -1,21 +1,19 @@
 #pragma once
 
+#include "attenuation_configs.h"
 #include "attenuator.h"
 
-class Microphone : public Attenuator {
+class Microphone : public Attenuator, public config::Microphone {
 public:
-    explicit Microphone(const Vec3f& direction, float shape = 0);
+    constexpr explicit Microphone(const Vec3f& facing, float shape = 0)
+            : config::Microphone(facing, shape) {
+    }
 
-    float attenuation(const Vec3f& incident) const;
+    constexpr float attenuation(const Vec3f& incident) const {
+        return (1 - shape) + shape * facing.dot(incident.normalized());
+    }
     std::vector<float> process(
         const std::vector<RunStepResult>& input) const override;
 
-    Vec3f get_direction() const;
-    float get_shape() const;
-
     static const Microphone omni;
-
-private:
-    Vec3f direction;
-    float shape;
 };

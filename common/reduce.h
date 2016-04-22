@@ -1,6 +1,7 @@
 #pragma once
 
 #include <array>
+#include <functional>
 #include <type_traits>
 
 template <size_t I>
@@ -42,10 +43,10 @@ struct Identity {
 
 template <typename A, typename Func = Identity>
 constexpr bool any(const A& arr, const Func& func = Func()) {
-    return reduce(arr, false, [&func](auto i, auto j) { return i || func(j); });
+    return reduce(arr, false, std::logical_or<>());
 }
 
 template <typename A, typename Func = Identity>
 constexpr bool all(const A& arr, const Func& func = Func()) {
-    return reduce(arr, true, [&func](auto i, auto j) { return i && func(j); });
+    return reduce(arr, true, std::logical_and<>());
 }

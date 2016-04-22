@@ -44,6 +44,14 @@ std::vector<std::vector<std::vector<float>>> flatten_impulses(
     return flattened;
 }
 
+double pressure_to_intensity(double pressure, double Z = 400) {
+    return pressure * pressure / Z;
+}
+
+double intensity_to_pressure(double intensity, double Z = 400) {
+    return std::sqrt(intensity * Z);
+}
+
 /// Turn a collection of AttenuatedImpulses into a vector of 8 vectors, where
 /// each of the 8 vectors represent sample values in a different frequency band.
 std::vector<std::vector<float>> flatten_impulses(
@@ -70,6 +78,13 @@ std::vector<std::vector<float>> flatten_impulses(
             }
         }
     }
+
+    //  impulses are intensity levels, now we need to convert to pressure
+    proc::for_each(flattened, [](auto& i) {
+        proc::for_each(i, [](auto& j) {
+            j = std::copysign(intensity_to_pressure(std::abs(j)), j);
+        });
+    });
 
     return flattened;
 }
@@ -233,11 +248,22 @@ auto transpose(const T& t, int x, int y) {
     return c;
 }
 
-VolumeType attenuation_for_distance(float distance) {
+VolumeType air_attenuation_for_distance(float distance) {
     VolumeType ret;
     proc::transform(AIR_COEFFICIENT.s, std::begin(ret.s), [distance](auto i) {
         return pow(M_E, distance * i);
     });
+    return ret;
+}
+
+float power_attenuation_for_distance(float distance) {
+    return 1 / (4 * M_PI * distance * distance);
+}
+
+VolumeType attenuation_for_distance(float distance) {
+    auto ret = air_attenuation_for_distance(distance);
+    auto power = power_attenuation_for_distance(distance);
+    proc::for_each(ret.s, [power](auto& i) { i *= power; });
     return ret;
 }
 

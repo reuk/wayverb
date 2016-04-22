@@ -191,14 +191,17 @@ TEST(raytrace, image_source) {
                                          std::abs(j - shells),
                                          std::abs(k - shells))
                                        .sum();
-                auto index = i + j * L + k * L * L;
-                auto volume = volumes[index];
-                auto base_vol = pow(-v, reflections);
-                for (auto band = 0; band != 8; ++band)
-                    volume.s[band] *= base_vol;
 
-                proper_image_source_impulses.push_back(
-                    AttenuatedImpulse{volume, times[index]});
+                if (reflections <= shells) {
+                    auto index = i + j * L + k * L * L;
+                    auto volume = volumes[index];
+                    auto base_vol = pow(-v, reflections);
+                    for (auto band = 0; band != 8; ++band)
+                        volume.s[band] *= base_vol;
+
+                    proper_image_source_impulses.push_back(
+                        AttenuatedImpulse{volume, times[index]});
+                }
             }
         }
     }

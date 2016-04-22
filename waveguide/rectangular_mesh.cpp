@@ -246,8 +246,7 @@ RectangularMesh::get_condensed_nodes() const {
         return RectangularProgram::condense(i);
     });
     proc::for_each(ret, [](const auto& i) {
-        if (all_flags_set(i.boundary_type,
-                          std::make_tuple(RectangularProgram::id_inside)) &&
+        if ((i.boundary_type & RectangularProgram::id_inside) &&
             popcount(i.boundary_type) > 1) {
             LOG(INFO) << "too many bits set?";
         }

@@ -705,6 +705,9 @@ kernel void condensed_waveguide(const global float* current,
 
                 next_pressure /= (PORTS / 2);
                 next_pressure -= prev_pressure;
+
+                //  attenuation due to air
+                next_pressure *= attenuation_factor;
             } else {
 #if ENABLE_BOUNDARIES
                 next_pressure = boundary_1(current,
@@ -748,8 +751,6 @@ kernel void condensed_waveguide(const global float* current,
 #endif
             break;
     }
-
-    next_pressure *= attenuation_factor;
 
     if (next_pressure < -RANGE || RANGE < next_pressure)
         *error_flag |= id_outside_range_error;

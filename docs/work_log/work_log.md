@@ -447,3 +447,46 @@ talking points
 ==============
 
 what's the best way of generating boundary filters?
+
+questions to research:
+----------------------
+
+why doesn't the wavefront get dimmer as it spreads out?
+    is energy growing in the model?
+    if yes, there's a problem
+    why does the boundary model appear to create energy?
+    what does it mean to have negative pressure?
+
+try running my tests with anechoic boundaries on nearby walls
+
+check perfect reflection = delay
+
+attenuation is probably not the solution
+
+can I simulate standing waves?
+
+relationship between energy and pressure
+
+things to do:
+-------------
+
+find out the link between pressure and energy - what does the waveguide actually
+    model/store?
+
+check whether a perfectly reflective boundary produces an exact copy of the
+incident signal
+    it won't because dispersion
+    also because the wave spreads out
+
+    we could check frequency content, but that will be correct I think
+
+redo proper boundary tests, but longer (with anechoic boundaries) to see whether
+    differences are to do with smoothing or diffusion
+
+try to simulate standing waves
+    this seems to work?
+
+raytracer summing method is likely wrong
+    intensity vs pressure - http://www.sengpielaudio.com/SoundPressureToSoundIntensityFormula.pdf
+
+add dependencies as git submodules?

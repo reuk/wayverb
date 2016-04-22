@@ -4,13 +4,13 @@
             "app": {
                 "source": [
                     0,
-                    1,
+                    0,
                     0
                 ],
                 "mic": [
                     0,
-                    1,
-                    2
+                    0,
+                    0
                 ],
                 "sample rate": 44100,
                 "bit depth": 16,
@@ -23,19 +23,11 @@
                             "microphones": [
                                 {
                                     "facing": [
-                                        -1,
+                                        1,
                                         0,
-                                        -1
+                                        0
                                     ],
-                                    "shape": 0.5
-                                },
-                                {
-                                    "facing": [
-                                        -1,
-                                        0,
-                                        1
-                                    ],
-                                    "shape": 0.5
+                                    "shape": 0
                                 }
                             ]
                         }

@@ -63,9 +63,9 @@ int main(int argc, char** argv) {
     std::cout << "polar_pattern: " << polar_string << std::endl;
 
     //  global params
-    auto config = config::Waveguide();
-    config.filter_frequency = 11025;
-    config.oversample_ratio = 1;
+    config::Waveguide conf;
+    conf.filter_frequency = 11025;
+    conf.oversample_ratio = 1;
 
     auto context = get_context();
     auto device = get_device(context);
@@ -100,7 +100,7 @@ int main(int argc, char** argv) {
         TetrahedralWaveguide waveguide(waveguide_program,
                                        queue,
                                        boundary,
-                                       config.get_divisions(),
+                                       conf.get_divisions(),
                                        to_vec3f(mic));
 
         auto amp_factor = 4e3;
@@ -118,14 +118,13 @@ int main(int argc, char** argv) {
                 waveguide.run_gaussian(to_vec3f(source),
                                        mic_index,
                                        steps,
-                                       config.get_waveguide_sample_rate(),
+                                       conf.get_waveguide_sample_rate(),
                                        [&pb] { pb += 1; });
 
             auto w_pressures = microphone.process(w_results);
 
-            std::vector<float> out_signal(config.sample_rate *
-                                          w_results.size() /
-                                          config.get_waveguide_sample_rate());
+            std::vector<float> out_signal(conf.sample_rate * w_results.size() /
+                                          conf.get_waveguide_sample_rate());
 
             SRC_DATA sample_rate_info{
                 w_pressures.data(),
@@ -135,14 +134,14 @@ int main(int argc, char** argv) {
                 0,
                 0,
                 0,
-                config.sample_rate / config.get_waveguide_sample_rate()};
+                conf.sample_rate / conf.get_waveguide_sample_rate()};
 
             src_simple(&sample_rate_info, SRC_SINC_BEST_QUALITY, 1);
 
             mul(out_signal, amp_factor);
 
             filter::LinkwitzRileyLopass lopass;
-            lopass.setParams(config.filter_frequency, config.sample_rate);
+            lopass.setParams(conf.filter_frequency, conf.sample_rate);
             lopass.filter(out_signal);
 
             auto bands = 7;
@@ -168,7 +167,7 @@ int main(int argc, char** argv) {
                 filter::LinkwitzRileyBandpass bandpass;
                 bandpass.setParams(pow(2, i) * min_band,
                                    pow(2, i + 1) * min_band,
-                                   config.sample_rate);
+                                   conf.sample_rate);
                 bandpass.filter(out_signal);
 
                 print_energy(band, i);
@@ -185,14 +184,14 @@ int main(int argc, char** argv) {
 
             try {
                 format = get_file_format(output_file);
-                depth = get_file_depth(config.bit_depth);
+                depth = get_file_depth(conf.bit_depth);
             } catch (const std::runtime_error& e) {
                 LOG(INFO) << "critical runtime error: " << e.what();
                 return EXIT_FAILURE;
             }
 
             write_sndfile(
-                output_file, {out_signal}, config.sample_rate, depth, format);
+                output_file, {out_signal}, conf.sample_rate, depth, format);
         }
 
     } catch (const cl::Error& e) {

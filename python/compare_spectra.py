@@ -30,11 +30,12 @@ def main():
     n = signals[0][1].size
 
     ffts = [(tag, np.fft.rfft(i)) for tag, i in signals]
-    freq = np.fft.rfftfreq(n)
+    freq = np.fft.rfftfreq(n) * sr
 
     plt.figure()
 
-    num_bins_to_plot = 1000
+    num_bins_to_plot = len(freq)
+    #num_bins_to_plot = 100
 
     def do_plot(tag, a):
         plt.plot(

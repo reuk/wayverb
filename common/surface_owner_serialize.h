@@ -7,7 +7,12 @@
 
 template <typename Archive>
 void serialize(Archive& archive, VolumeType& m) {
-    archive(cereal::make_nvp("volumes", m.s));
+    cereal::size_type s = 8;
+    archive(cereal::make_size_tag(s));
+    if (s != 8) {
+        throw std::runtime_error("volume array must be of length 8");
+    }
+    proc::for_each(m.s, [&archive](auto& i) { archive(i); });
 }
 JSON_OSTREAM_OVERLOAD(VolumeType);
 

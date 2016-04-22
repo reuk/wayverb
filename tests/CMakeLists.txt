@@ -5,6 +5,7 @@ project(tests)
 include_directories(
     ${CMAKE_SOURCE_DIR}/waveguide
     ${CMAKE_SOURCE_DIR}/common
+    ${CMAKE_SOURCE_DIR}/combined
     ${CMAKE_SOURCE_DIR}/bsp
     ${CMAKE_SOURCE_DIR}/raytracer
     ${CMAKE_SOURCE_DIR}/include
