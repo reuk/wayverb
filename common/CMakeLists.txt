@@ -1,9 +1,17 @@
 cmake_minimum_required(VERSION 3.0)
 
+set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} " -Wall -Werror -std=c++14 ")
+
 file(GLOB sources "*.cpp")
+
+get_target_property(GLOG_PUBLIC_H glog PUBLIC_HEADER)
+message(STATUS ${GLOG_PUBLIC_H})
 
 include_directories(
     ${CMAKE_SOURCE_DIR}/include
+    ${CMAKE_SOURCE_DIR}/submodules/glog/src
+    ${CMAKE_BINARY_DIR}/submodules/glog
+    ${CMAKE_SOURCE_DIR}/submodules/assimp/include
     "/usr/local/include/"
 )
 
@@ -19,8 +27,7 @@ elseif(UNIX)
     set(frameworks ${opencl_library})
 endif()
 
-find_library(assimp_library assimp)
 find_library(fftw_library fftw3f)
-set(libraries ${assimp_library} ${fftw_library} z ${frameworks})
+set(libraries assimp ${fftw_library} z ${frameworks})
 
 target_link_libraries(common ${libraries})

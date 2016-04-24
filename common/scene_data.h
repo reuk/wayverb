@@ -3,16 +3,14 @@
 #include "surface_owner.h"
 #include "vec.h"
 
-#include "assimp/Importer.hpp"
-#include "assimp/postprocess.h"
-#include "assimp/scene.h"
-
 #include <map>
 #include <vector>
 
 class CuboidBoundary;
 class MeshBoundary;
 struct Triangle;
+
+struct aiScene;
 
 class SurfaceLoader {
 public:

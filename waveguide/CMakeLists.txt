@@ -1,10 +1,14 @@
 cmake_minimum_required(VERSION 3.0)
 
+set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} " -Wall -Werror -std=c++14 ")
+
 file(GLOB sources "*.cpp")
 
 include_directories(
     ${CMAKE_SOURCE_DIR}/include
     ${CMAKE_SOURCE_DIR}/common
+    ${CMAKE_SOURCE_DIR}/submodules/glog/src
+    ${CMAKE_BINARY_DIR}/submodules/glog
     "/usr/local/include/"
 )
 
@@ -20,15 +24,13 @@ elseif(UNIX)
     set(frameworks ${opencl_library})
 endif()
 
-find_library(assimp_library assimp)
 find_library(fftw_library fftw3f)
-find_library(glog_library glog)
 find_library(samplerate_lib samplerate)
 set(libraries
-    ${assimp_library}
+    assimp
     ${samplerate_lib}
     ${fftw_library}
-    ${glog_library}
+    glog
     z
     common)
 

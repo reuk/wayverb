@@ -9,6 +9,10 @@
 
 #include "surface_owner_serialize.h"
 
+#include "assimp/Importer.hpp"
+#include "assimp/postprocess.h"
+#include "assimp/scene.h"
+
 #include <cereal/types/map.hpp>
 
 #include <glog/logging.h>

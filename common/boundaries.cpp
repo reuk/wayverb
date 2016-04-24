@@ -11,7 +11,7 @@
 //  serialization
 #include "vec_serialize.h"
 
-#include <glog/logging.h>
+#include "glog/logging.h"
 
 #include <algorithm>
 #include <cmath>

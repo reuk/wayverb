@@ -1,10 +1,15 @@
 cmake_minimum_required(VERSION 3.0)
 
+set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} " -Wall -Werror -std=c++14 ")
+
 file(GLOB sources "*.cpp")
 
 include_directories(
     ${CMAKE_SOURCE_DIR}/include
     ${CMAKE_SOURCE_DIR}/common
+    ${CMAKE_SOURCE_DIR}/submodules/glog/src
+    ${CMAKE_BINARY_DIR}/submodules/glog
+    ${CMAKE_SOURCE_DIR}/submodules/assimp/include
     "/usr/local/include"
 )
 
@@ -20,7 +25,5 @@ elseif(UNIX)
     set(frameworks ${opencl_library})
 endif()
 
-find_library(assimp_library assimp)
 find_library(fftw3f_library fftw3f)
-
-target_link_libraries(raytracer ${assimp_library} z ${fftw3f_library} ${frameworks})
+target_link_libraries(raytracer assimp z ${fftw3f_library} ${frameworks})

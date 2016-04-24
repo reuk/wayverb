@@ -486,3 +486,8 @@ redo proper boundary tests, but longer (with anechoic boundaries) to see whether
 check intensity/distance conversion
 
 add dependencies as git submodules?
+    done to some extent, but:
+        libsndfile
+        libsamplerate
+        fftw
+            are all pitas to set up

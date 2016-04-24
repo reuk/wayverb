@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.0)
 
+set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} " -Wall -Werror -std=c++14 ")
+
 include_directories(
     ${CMAKE_SOURCE_DIR}/include
     ${CMAKE_SOURCE_DIR}/common
@@ -24,8 +26,6 @@ elseif(UNIX)
 endif()
 
 find_library(sndfile_lib sndfile)
-find_library(gflags_lib gflags)
-find_library(glog_lig glog)
 find_library(flac_lib flac)
 find_library(ogg_lib ogg)
 find_library(vorbis_lib vorbis)
@@ -35,8 +35,8 @@ target_link_libraries(${name}
     raytracer waveguide common
     ${sndfile_lib}
     ${frameworks}
-    ${gflags_lib}
-    ${glog_lib}
+    glog
+    gflags
     ${flac_lib}
     ${ogg_lib}
     ${vorbis_lib}

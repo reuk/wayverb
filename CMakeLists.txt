@@ -2,14 +2,12 @@ cmake_minimum_required(VERSION 3.0)
 
 set(CMAKE_BUILD_TYPE RelWithDebInfo)
 
-set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} " -Wall -Werror -std=c++14 -msse -msse2 -msse3 -ferror-limit=100")
-
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 
-add_subdirectory(gtest)
+add_subdirectory(submodules)
 add_subdirectory(common)
 add_subdirectory(waveguide)
 add_subdirectory(raytracer)
@@ -32,4 +30,7 @@ if(DOXYGEN_FOUND)
         ${CMAKE_CURRENT_BINARY_DIR})
 endif(DOXYGEN_FOUND)
 
-add_custom_target(compile_commands ALL COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_BINARY_DIR}/compile_commands.json ${CMAKE_CURRENT_SOURCE_DIR}/compile_commands.json)
+add_custom_target(compile_commands ALL
+    COMMAND ${CMAKE_COMMAND} -E copy
+        ${CMAKE_CURRENT_BINARY_DIR}/compile_commands.json
+        ${CMAKE_CURRENT_SOURCE_DIR}/compile_commands.json)

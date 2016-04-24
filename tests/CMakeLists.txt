@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.0)
 
+set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} " -Wall -Werror -std=c++14 ")
+
 project(tests)
 
 include_directories(
@@ -36,9 +38,8 @@ find_library(flac_lib flac)
 find_library(ogg_lib ogg)
 find_library(vorbis_lib vorbis)
 find_library(vorbisenc_lib vorbisenc)
-find_library(glog_lib glog)
 
-target_link_libraries(${name} raytracer waveguide common ${sndfile_lib} ${flac_lib} ${ogg_lib} ${vorbis_lib} ${vorbisenc_lib} ${glog_lib} gtest)
+target_link_libraries(${name} raytracer waveguide common ${sndfile_lib} ${flac_lib} ${ogg_lib} ${vorbis_lib} ${vorbisenc_lib} glog gtest)
 
 add_test(NAME tests COMMAND ${name})
 

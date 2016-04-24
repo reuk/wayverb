@@ -4,7 +4,7 @@
 
 #include "stl_wrappers.h"
 
-#include <glog/logging.h>
+#include "glog/logging.h"
 
 #include <array>
 #include <cmath>
