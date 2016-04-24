@@ -141,7 +141,7 @@ int main(int argc, char** argv) {
             mul(out_signal, amp_factor);
 
             filter::LinkwitzRileyLopass lopass;
-            lopass.setParams(conf.filter_frequency, conf.sample_rate);
+            lopass.set_params(conf.filter_frequency, conf.sample_rate);
             lopass.filter(out_signal);
 
             auto bands = 7;
@@ -165,9 +165,9 @@ int main(int argc, char** argv) {
                 auto band = out_signal;
 
                 filter::LinkwitzRileyBandpass bandpass;
-                bandpass.setParams(pow(2, i) * min_band,
-                                   pow(2, i + 1) * min_band,
-                                   conf.sample_rate);
+                bandpass.set_params(pow(2, i) * min_band,
+                                    pow(2, i + 1) * min_band,
+                                    conf.sample_rate);
                 bandpass.filter(out_signal);
 
                 print_energy(band, i);

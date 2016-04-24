@@ -157,8 +157,9 @@ int main(int argc, char** argv) {
     auto waveguide_adjusted = adjust_sampling_rate(waveguide_output, config);
 
     //  get the valid region of the spectrum
-    filter::LinkwitzRileyLopass lopass;
-    lopass.setParams(config.filter_frequency, config.sample_rate);
+    filter::LopassWindowedSinc lopass(waveguide_adjusted.size());
+    ;
+    lopass.set_params(config.filter_frequency, config.sample_rate);
     lopass.filter(waveguide_adjusted);
 
     std::cout << "max mag: " << max_mag(waveguide_adjusted) << std::endl;
@@ -234,8 +235,8 @@ int main(int argc, char** argv) {
     write_file(
         config, output_folder, "raytracer_processed", {raytracer_output});
 
-    filter::LinkwitzRileyHipass hipass;
-    hipass.setParams(config.filter_frequency, config.sample_rate);
+    filter::HipassWindowedSinc hipass(raytracer_output.size());
+    hipass.set_params(config.filter_frequency, config.sample_rate);
     hipass.filter(raytracer_output);
 
     std::vector<float> mixed(out_length);

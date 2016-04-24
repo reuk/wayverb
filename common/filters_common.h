@@ -4,8 +4,11 @@
 
 #include "stl_wrappers.h"
 
+#include <glog/logging.h>
+
 #include <array>
 #include <cmath>
+#include <complex>
 #include <cstring>
 #include <memory>
 #include <vector>
@@ -25,7 +28,7 @@ public:
 class Lopass : public virtual Filter {
 public:
     /// A hipass has mutable cutoff and samplerate.
-    virtual void setParams(float co, float s);
+    virtual void set_params(float co, float s);
     float cutoff, sr;
 };
 
@@ -33,7 +36,7 @@ public:
 class Hipass : public virtual Filter {
 public:
     /// A hipass has mutable cutoff and samplerate.
-    virtual void setParams(float co, float s);
+    virtual void set_params(float co, float s);
     float cutoff, sr;
 };
 
@@ -41,7 +44,7 @@ public:
 class Bandpass : public virtual Filter {
 public:
     /// A hipass has mutable lopass, hipass, and samplerate.
-    virtual void setParams(float l, float h, float s);
+    virtual void set_params(float l, float h, float s);
     float lo, hi, sr;
 };
 
@@ -77,6 +80,7 @@ public:
 
     template <typename T, typename U>
     std::vector<float> convolve(const T &a, const U &b) {
+        CHECK(a.size() + b.size() - 1 == FFT_LENGTH);
         forward_fft(r2c, a, r2c_i, r2c_o, acplx);
         forward_fft(r2c, b, r2c_i, r2c_o, bcplx);
 
@@ -87,10 +91,13 @@ public:
         auto y = bcplx.get();
         auto z = c2r_i.get();
 
-        // simd is for better people
+        //  dear god I hope this is optimized away
         for (; z != c2r_i.get() + CPLX_LENGTH; ++x, ++y, ++z) {
-            (*z)[0] += (*x)[0] * (*y)[0] - (*x)[1] * (*y)[1];
-            (*z)[1] += (*x)[0] * (*y)[1] + (*x)[1] * (*y)[0];
+            std::complex<float> result((*z)[0], (*z)[1]);
+            result += std::complex<float>((*x)[0], (*x)[1]) *
+                      std::complex<float>((*y)[0], (*y)[1]);
+            (*z)[0] = result.real();
+            (*z)[1] = result.imag();
         }
 
         fftwf_execute(c2r);
@@ -131,7 +138,7 @@ public:
 
     /// Filter a vector of data.
     void filter(std::vector<float> &data) override;
-    void setParams(float co, float s) override;
+    void set_params(float co, float s) override;
 
 private:
     static const auto KERNEL_LENGTH = 99;
@@ -145,7 +152,7 @@ public:
 
     /// Filter a vector of data.
     void filter(std::vector<float> &data) override;
-    void setParams(float co, float s) override;
+    void set_params(float co, float s) override;
 
 private:
     static const auto KERNEL_LENGTH = 99;
@@ -159,15 +166,10 @@ public:
 
     /// Filter a vector of data.
     void filter(std::vector<float> &data) override;
-    void setParams(float l, float h, float s) override;
+    void set_params(float l, float h, float s) override;
 
 private:
     static const auto KERNEL_LENGTH = 99;
-
-    /// Fetch a convolution kernel for a bandpass filter with the given
-    /// paramters.
-    static std::vector<float> bandpassKernel(float sr, float lo, float hi);
-
     std::array<float, KERNEL_LENGTH> kernel;
 };
 
@@ -177,7 +179,7 @@ public:
     /// Run the filter foward over some data.
     void filter(std::vector<float> &data) override;
 
-    void setParams(double b0, double b1, double b2, double a1, double a2);
+    void set_params(double b0, double b1, double b2, double a1, double a2);
 
 private:
     double b0, b1, b2, a1, a2;
@@ -197,17 +199,17 @@ public:
 /// Simple biquad bandpass filter.
 class BandpassBiquad : public Bandpass, public Biquad {
 public:
-    void setParams(float l, float h, float s) override;
+    void set_params(float l, float h, float s) override;
 };
 
 class LinkwitzRileySingleLopass : public Lopass, public Biquad {
 public:
-    void setParams(float cutoff, float sr) override;
+    void set_params(float cutoff, float sr) override;
 };
 
 class LinkwitzRileySingleHipass : public Hipass, public Biquad {
 public:
-    void setParams(float cutoff, float sr) override;
+    void set_params(float cutoff, float sr) override;
 };
 
 using LinkwitzRileyLopass = TwopassFilterWrapper<LinkwitzRileySingleLopass>;
@@ -217,7 +219,7 @@ using LinkwitzRileyHipass = TwopassFilterWrapper<LinkwitzRileySingleHipass>;
 /// coupled together.
 class LinkwitzRileyBandpass : public Bandpass {
 public:
-    void setParams(float l, float h, float s) override;
+    void set_params(float l, float h, float s) override;
     void filter(std::vector<float> &data) override;
 
 private:

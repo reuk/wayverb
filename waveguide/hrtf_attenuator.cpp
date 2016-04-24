@@ -66,7 +66,7 @@ std::vector<float> HrtfAttenuator::process(
                 return std::copysign(mag, i.pressure);
             });
 
-            bandpass.setParams(
+            bandpass.set_params(
                 HrtfData::EDGES[band], HrtfData::EDGES[band + 1], sr);
             bandpass.filter(this_band);
 

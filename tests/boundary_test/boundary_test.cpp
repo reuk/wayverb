@@ -105,7 +105,7 @@ std::vector<float> run_simulation(const cl::Context& context,
 #endif
 
     filter::LinkwitzRileyLopass lopass;
-    lopass.setParams(conf.filter_frequency, conf.sample_rate);
+    lopass.set_params(conf.filter_frequency, conf.sample_rate);
     //    lopass.filter(output);
 
     return output;

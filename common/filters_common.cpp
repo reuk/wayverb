@@ -6,17 +6,17 @@
 
 namespace filter {
 
-void Lopass::setParams(float co, float s) {
+void Lopass::set_params(float co, float s) {
     cutoff = co;
     sr = s;
 }
 
-void Hipass::setParams(float co, float s) {
+void Hipass::set_params(float co, float s) {
     cutoff = co;
     sr = s;
 }
 
-void Bandpass::setParams(float l, float h, float s) {
+void Bandpass::set_params(float l, float h, float s) {
     lo = l;
     hi = h;
     sr = s;
@@ -30,9 +30,9 @@ void LopassWindowedSinc::filter(std::vector<float> &data) {
     data = convolve(kernel, data);
 }
 
-void LopassWindowedSinc::setParams(float co, float s) {
+void LopassWindowedSinc::set_params(float co, float s) {
     auto i = lopass_sinc_kernel(s, co, KERNEL_LENGTH);
-    copy(i.begin(), i.end(), kernel.begin());
+    proc::copy(i, kernel.begin());
 }
 
 HipassWindowedSinc::HipassWindowedSinc(int inputLength)
@@ -43,32 +43,22 @@ void HipassWindowedSinc::filter(std::vector<float> &data) {
     data = convolve(kernel, data);
 }
 
-void HipassWindowedSinc::setParams(float co, float s) {
+void HipassWindowedSinc::set_params(float co, float s) {
     auto i = hipass_sinc_kernel(s, co, KERNEL_LENGTH);
-    copy(i.begin(), i.end(), kernel.begin());
+    proc::copy(i, kernel.begin());
 }
 
 BandpassWindowedSinc::BandpassWindowedSinc(int inputLength)
         : FastConvolution(KERNEL_LENGTH + inputLength - 1) {
 }
 
-std::vector<float> BandpassWindowedSinc::bandpassKernel(float sr,
-                                                        float lo,
-                                                        float hi) {
-    auto lop = lopass_sinc_kernel(sr, hi, 1 + KERNEL_LENGTH / 2);
-    auto hip = hipass_sinc_kernel(sr, lo, 1 + KERNEL_LENGTH / 2);
-
-    FastConvolution fc(KERNEL_LENGTH);
-    return fc.convolve(lop, hip);
-}
-
 void BandpassWindowedSinc::filter(std::vector<float> &data) {
     data = convolve(kernel, data);
 }
 
-void BandpassWindowedSinc::setParams(float l, float h, float s) {
-    auto i = bandpassKernel(s, l, h);
-    copy(i.begin(), i.end(), kernel.begin());
+void BandpassWindowedSinc::set_params(float l, float h, float s) {
+    auto i = bandpass_sinc_kernel(s, l, h, KERNEL_LENGTH);
+    proc::copy(i, kernel.begin());
 }
 
 void Biquad::filter(std::vector<float> &data) {
@@ -83,7 +73,7 @@ void Biquad::filter(std::vector<float> &data) {
     }
 }
 
-void Biquad::setParams(
+void Biquad::set_params(
     double _b0, double _b1, double _b2, double _a1, double _a2) {
     b0 = _b0;
     b1 = _b1;
@@ -92,7 +82,7 @@ void Biquad::setParams(
     a2 = _a2;
 }
 
-void BandpassBiquad::setParams(float lo, float hi, float sr) {
+void BandpassBiquad::set_params(float lo, float hi, float sr) {
     // From www.musicdsp.org/files/Audio-EQ-Cookbook.txt
     const double c = sqrt(lo * hi);
     const double omega = 2 * M_PI * c / sr;
@@ -105,7 +95,7 @@ void BandpassBiquad::setParams(float lo, float hi, float sr) {
     const double a0 = 1 + alpha;
     const double nrm = 1 / a0;
 
-    Biquad::setParams(
+    Biquad::set_params(
         nrm * alpha, nrm * 0, nrm * -alpha, nrm * (-2 * cs), nrm * (1 - alpha));
 }
 
@@ -114,31 +104,31 @@ double getC(double co, double sr) {
     return cos(wcT) / sin(wcT);
 }
 
-void LinkwitzRileySingleLopass::setParams(float cutoff, float sr) {
-    Lopass::setParams(cutoff, sr);
+void LinkwitzRileySingleLopass::set_params(float cutoff, float sr) {
+    Lopass::set_params(cutoff, sr);
     const double c = getC(cutoff, sr);
     const double a0 = c * c + c * sqrt(2) + 1;
-    Biquad::setParams(1 / a0,
-                      2 / a0,
-                      1 / a0,
-                      (-2 * (c * c - 1)) / a0,
-                      (c * c - c * sqrt(2) + 1) / a0);
+    Biquad::set_params(1 / a0,
+                       2 / a0,
+                       1 / a0,
+                       (-2 * (c * c - 1)) / a0,
+                       (c * c - c * sqrt(2) + 1) / a0);
 }
 
-void LinkwitzRileySingleHipass::setParams(float cutoff, float sr) {
-    Hipass::setParams(cutoff, sr);
+void LinkwitzRileySingleHipass::set_params(float cutoff, float sr) {
+    Hipass::set_params(cutoff, sr);
     const double c = getC(cutoff, sr);
     const double a0 = c * c + c * sqrt(2) + 1;
-    Biquad::setParams((c * c) / a0,
-                      (-2 * c * c) / a0,
-                      (c * c) / a0,
-                      (-2 * (c * c - 1)) / a0,
-                      (c * c - c * sqrt(2) + 1) / a0);
+    Biquad::set_params((c * c) / a0,
+                       (-2 * c * c) / a0,
+                       (c * c) / a0,
+                       (-2 * (c * c - 1)) / a0,
+                       (c * c - c * sqrt(2) + 1) / a0);
 }
 
-void LinkwitzRileyBandpass::setParams(float l, float h, float s) {
-    lopass.setParams(h, s);
-    hipass.setParams(l, s);
+void LinkwitzRileyBandpass::set_params(float l, float h, float s) {
+    lopass.set_params(h, s);
+    hipass.set_params(l, s);
 }
 
 void LinkwitzRileyBandpass::filter(std::vector<float> &data) {
@@ -172,6 +162,6 @@ FastConvolution::FastConvolution(int FFT_LENGTH)
 }
 
 DCBlocker::DCBlocker() {
-    Biquad::setParams(1, 1, 0, R, 0);
+    Biquad::set_params(1, 1, 0, R, 0);
 }
 }  // namespace filter

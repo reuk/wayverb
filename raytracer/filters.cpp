@@ -33,7 +33,7 @@ void run(FilterType ft,
 
     for (auto& channel : data) {
         for (auto i = 0u; i != channel.size(); ++i) {
-            bp->setParams(HrtfData::EDGES[i], HrtfData::EDGES[i + 1], sr);
+            bp->set_params(HrtfData::EDGES[i], HrtfData::EDGES[i + 1], sr);
             bp->filter(channel[i]);
         }
     }

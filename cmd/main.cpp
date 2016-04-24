@@ -190,7 +190,7 @@ int main(int argc, char** argv) {
                       format);
 
         filter::LinkwitzRileyLopass lopass;
-        lopass.setParams(cc.filter_frequency, cc.sample_rate);
+        lopass.set_params(cc.filter_frequency, cc.sample_rate);
         lopass.filter(out_signal);
 
         normalize(out_signal);

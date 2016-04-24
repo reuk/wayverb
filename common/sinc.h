@@ -143,3 +143,15 @@ std::vector<T> hipass_sinc_kernel(double sr, double cutoff, int length) {
     kernel[(length - 1) / 2] += 1;
     return kernel;
 }
+
+template <typename T = float>
+std::vector<T> bandpass_sinc_kernel(double sr,
+                                    double lo,
+                                    double hi,
+                                    int length) {
+    auto lop = lopass_sinc_kernel(sr, lo, length);
+    auto hip = lopass_sinc_kernel(sr, hi, length);
+    proc::transform(
+        hip, lop.begin(), hip.begin(), [](auto a, auto b) { return a - b; });
+    return hip;
+}
