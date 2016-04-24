@@ -158,7 +158,6 @@ int main(int argc, char** argv) {
 
     //  get the valid region of the spectrum
     filter::LopassWindowedSinc lopass(waveguide_adjusted.size());
-    ;
     lopass.set_params(config.filter_frequency, config.sample_rate);
     lopass.filter(waveguide_adjusted);
 
@@ -198,23 +197,17 @@ int main(int argc, char** argv) {
         filter::FilterType::linkwitz_riley, flattened, config.sample_rate, 1);
     auto raytracer_output = mixdown(flattened).front();
 
-    auto waveguide_copy = waveguide_adjusted;
-    normalize(waveguide_copy);
-    write_file(config, output_folder, "waveguide_normalized", {waveguide_copy});
+    auto write_normalized = [&config, &output_folder](auto i, auto name) {
+        normalize(i);
+        write_file(config, output_folder, name, {i});
+    };
 
-    auto raytracer_copy = raytracer_output;
-    normalize(raytracer_copy);
-    write_file(config, output_folder, "raytracer_normalized", {raytracer_copy});
+    write_normalized(waveguide_adjusted, "waveguide_normalized");
+    write_normalized(raytracer_output, "raytracer_normalized");
 
     mul(waveguide_adjusted,
         rectilinear_calibration_factor(distance_for_unit_intensity(1),
                                        config.get_waveguide_sample_rate()));
-
-    auto max_waveguide = max_mag(waveguide_adjusted);
-    auto max_raytracer = max_mag(raytracer_output);
-    auto max_both = std::max(max_waveguide, max_raytracer);
-    std::cout << "max amplitude between both methods: " << max_both
-              << std::endl;
 
     auto waveguide_length = waveguide_adjusted.size();
     auto raytracer_length = raytracer_output.size();
@@ -222,6 +215,11 @@ int main(int argc, char** argv) {
 
     waveguide_adjusted.resize(out_length);
     raytracer_output.resize(out_length);
+
+    auto max_waveguide = max_mag(waveguide_adjusted);
+    auto max_raytracer = max_mag(raytracer_output);
+    auto max_both = std::max(max_waveguide, max_raytracer);
+    LOG(INFO) << "max amplitude between both methods: " << max_both;
 
     mul(waveguide_adjusted, 1 / max_both);
     mul(raytracer_output, 1 / max_both);
@@ -240,9 +238,10 @@ int main(int argc, char** argv) {
     hipass.filter(raytracer_output);
 
     std::vector<float> mixed(out_length);
-    for (auto i = 0; i != mixed.size(); ++i) {
-        mixed[i] = waveguide_adjusted[i] + raytracer_output[i];
-    }
+    proc::transform(waveguide_adjusted,
+                    raytracer_output.begin(),
+                    mixed.begin(),
+                    [](auto a, auto b) { return a + b; });
 
     write_file(config, output_folder, "mixed", {mixed});
 }

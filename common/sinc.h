@@ -54,6 +54,14 @@ inline void normalize(T& ret) {
     }
 }
 
+template <typename T>
+inline void kernel_normalize(T& ret) {
+    auto sum = proc::accumulate(ret, 0.0);
+    if (sum != 0) {
+        mul(ret, 1.0 / std::abs(sum));
+    }
+}
+
 /// sinc t = sin (pi . t) / pi . t
 template <typename T>
 T sinc(T t) {
@@ -121,7 +129,6 @@ std::vector<T> windowed_sinc_kernel(double cutoff, int length) {
     auto window = blackman<T>(length);
     auto kernel = sinc_kernel<T>(cutoff, length);
     elementwise_multiply(kernel, window);
-    normalize(kernel);
     return kernel;
 }
 
@@ -129,18 +136,19 @@ std::vector<T> windowed_sinc_kernel(double cutoff, int length) {
 /// length.
 template <typename T = float>
 std::vector<T> lopass_sinc_kernel(double sr, double cutoff, int length) {
-    return windowed_sinc_kernel(cutoff / sr, length);
+    auto kernel = windowed_sinc_kernel<T>(cutoff / sr, length);
+    kernel_normalize(kernel);
+    return kernel;
 }
 
 /// Generate a windowed, normalized high-pass sinc filter kernel of a specific
 /// length.
 template <typename T = float>
 std::vector<T> hipass_sinc_kernel(double sr, double cutoff, int length) {
-    auto kernel = lopass_sinc_kernel<T>(sr, cutoff, length);
-    for (auto& i : kernel) {
-        i = -i;
-    }
+    auto kernel = windowed_sinc_kernel<T>(cutoff / sr, length);
+    proc::for_each(kernel, [](auto& i) { i *= -1; });
     kernel[(length - 1) / 2] += 1;
+    kernel_normalize(kernel);
     return kernel;
 }
 
@@ -150,8 +158,10 @@ std::vector<T> bandpass_sinc_kernel(double sr,
                                     double hi,
                                     int length) {
     auto lop = lopass_sinc_kernel(sr, lo, length);
-    auto hip = lopass_sinc_kernel(sr, hi, length);
-    proc::transform(
-        hip, lop.begin(), hip.begin(), [](auto a, auto b) { return a - b; });
-    return hip;
+    auto kernel = lopass_sinc_kernel(sr, hi, length);
+    proc::transform(kernel, lop.begin(), kernel.begin(), [](auto a, auto b) {
+        return a - b;
+    });
+    kernel_normalize(kernel);
+    return kernel;
 }

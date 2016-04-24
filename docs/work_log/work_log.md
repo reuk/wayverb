@@ -483,10 +483,6 @@ incident signal
 redo proper boundary tests, but longer (with anechoic boundaries) to see whether
     differences are to do with smoothing or diffusion
 
-try to simulate standing waves
-    this seems to work?
-
-raytracer summing method is likely wrong
-    intensity vs pressure - http://www.sengpielaudio.com/SoundPressureToSoundIntensityFormula.pdf
+check intensity/distance conversion
 
 add dependencies as git submodules?

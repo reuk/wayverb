@@ -8,7 +8,6 @@
 
 #include <array>
 #include <cmath>
-#include <complex>
 #include <cstring>
 #include <memory>
 #include <vector>
@@ -91,13 +90,9 @@ public:
         auto y = bcplx.get();
         auto z = c2r_i.get();
 
-        //  dear god I hope this is optimized away
         for (; z != c2r_i.get() + CPLX_LENGTH; ++x, ++y, ++z) {
-            std::complex<float> result((*z)[0], (*z)[1]);
-            result += std::complex<float>((*x)[0], (*x)[1]) *
-                      std::complex<float>((*y)[0], (*y)[1]);
-            (*z)[0] = result.real();
-            (*z)[1] = result.imag();
+            (*z)[0] += (*x)[0] * (*y)[0] - (*x)[1] * (*y)[1];
+            (*z)[1] += (*x)[0] * (*y)[1] + (*x)[1] * (*y)[0];
         }
 
         fftwf_execute(c2r);
