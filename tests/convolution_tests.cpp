@@ -11,8 +11,8 @@ JSON_OSTREAM_OVERLOAD(vector<T>);
 }  // namespace std
 
 TEST(convolution, convolution) {
-    std::vector<float> a = {1, 0, 0, 0};
-    std::vector<float> b = {1, 2, 3, 4, 3, 2, 1};
+    std::vector<float> a = {1, 0, 0, 0, 0};
+    std::vector<float> b = {1, 2, 3, 4, 3, 2, 1, 0, 0};
 
     filter::FastConvolution fc(a.size() + b.size() - 1);
     auto convolved = fc.convolve(a, b);

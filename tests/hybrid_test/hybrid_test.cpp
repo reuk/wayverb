@@ -143,7 +143,7 @@ int main(int argc, char** argv) {
     config.mic = receiver;
     config.sample_rate = samplerate;
 
-    json_read_write::write(output_folder + "/example_config.json", config);
+    json_read_write::write(output_folder + "/used_config.json", config);
 
     ComputeContext context_info;
 
@@ -206,9 +206,11 @@ int main(int argc, char** argv) {
     write_normalized(waveguide_adjusted, "waveguide_normalized");
     write_normalized(raytracer_output, "raytracer_normalized");
 
-    mul(waveguide_adjusted,
-        rectilinear_calibration_factor(distance_for_unit_intensity(1),
-                                       config.get_waveguide_sample_rate()));
+    auto calibration_factor = rectilinear_calibration_factor(
+        distance_for_unit_intensity(1), config.get_waveguide_sample_rate());
+    LOG(INFO) << "calibration factor: " << calibration_factor;
+
+    mul(waveguide_adjusted, calibration_factor);
 
     auto waveguide_length = waveguide_adjusted.size();
     auto raytracer_length = raytracer_output.size();

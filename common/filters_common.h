@@ -97,7 +97,13 @@ public:
 
         fftwf_execute(c2r);
 
-        return std::vector<float>(c2r_o.get(), c2r_o.get() + FFT_LENGTH);
+        std::vector<float> ret(c2r_o.get(), c2r_o.get() + FFT_LENGTH);
+
+        for (auto &i : ret) {
+            i /= FFT_LENGTH;
+        }
+
+        return ret;
     }
 
 private:

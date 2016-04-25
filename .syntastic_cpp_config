@@ -7,6 +7,7 @@
 -Isubmodules/glog/src
 -Ibuild/submodules/gflags/include
 -Isubmodules/googletest/googletest/include
+-Isubmodules/cereal/include
 -Wall
 -Werror
 -ferror-limit=100
