@@ -484,10 +484,3 @@ redo proper boundary tests, but longer (with anechoic boundaries) to see whether
     differences are to do with smoothing or diffusion
 
 check intensity/distance conversion
-
-add dependencies as git submodules?
-    done to some extent, but:
-        libsndfile
-        libsamplerate
-        fftw
-            are all pitas to set up

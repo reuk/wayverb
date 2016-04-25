@@ -12,3 +12,5 @@
 /visualiser/Builds/MacOSX/Build
 
 *.swp
+
+compile_commands.json
