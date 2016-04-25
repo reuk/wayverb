@@ -1,22 +1,26 @@
 cmake_minimum_required(VERSION 3.0)
 
+project(COMMON VERSION 0.1 LANGUAGES CXX)
+
 set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} " -Wall -Werror -std=c++14 ")
 
-file(GLOB sources "*.cpp")
-
-get_target_property(GLOG_PUBLIC_H glog PUBLIC_HEADER)
-message(STATUS ${GLOG_PUBLIC_H})
-
-include_directories(
-    ${CMAKE_SOURCE_DIR}/include
-    ${CMAKE_SOURCE_DIR}/submodules/glog/src
-    ${CMAKE_BINARY_DIR}/submodules/glog
-    ${CMAKE_SOURCE_DIR}/submodules/assimp/include
-    ${CMAKE_SOURCE_DIR}/submodules/cereal/include
-    "/usr/local/include/"
-)
+file(GLOB sources "src/*.cpp")
 
 add_library(common STATIC ${sources})
+
+target_include_directories(common
+    PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>
+    PRIVATE
+    src
+    ${WAYVERB_SOURCE_DIR}/include
+    ${WAYVERB_SOURCE_DIR}/submodules/glog/src
+    ${WAYVERB_BINARY_DIR}/submodules/glog
+    ${WAYVERB_SOURCE_DIR}/submodules/assimp/include
+    ${WAYVERB_SOURCE_DIR}/submodules/cereal/include
+    "/usr/local/include"
+)
 
 if(APPLE)
     find_library(opencl_library OpenCL)
@@ -29,6 +33,4 @@ elseif(UNIX)
 endif()
 
 find_library(fftw_library fftw3f)
-set(libraries assimp ${fftw_library} z ${frameworks})
-
-target_link_libraries(common ${libraries})
+target_link_libraries(common assimp ${fftw_library} ${frameworks})

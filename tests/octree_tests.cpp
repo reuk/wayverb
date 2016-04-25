@@ -1,8 +1,7 @@
-#include "octree.h"
+#include "common/boundaries_serialize.h"
+#include "common/octree.h"
 
 #include "gtest/gtest.h"
-
-#include "boundaries_serialize.h"
 
 #ifndef OBJ_PATH
 #define OBJ_PATH ""

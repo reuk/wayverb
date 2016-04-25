@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.0)
 
+project(WAYVERB VERSION 0.1 LANGUAGES CXX)
+
 set(CMAKE_BUILD_TYPE RelWithDebInfo)
 
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
@@ -7,14 +9,12 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 
-add_subdirectory(submodules)
+add_subdirectory(submodules EXCLUDE_FROM_ALL)
+
+enable_testing()
 add_subdirectory(common)
 add_subdirectory(waveguide)
 add_subdirectory(raytracer)
-add_subdirectory(combined)
-add_subdirectory(cmd)
-
-enable_testing()
 add_subdirectory(tests)
 
 include(CPack)

@@ -1,7 +1,8 @@
-#include "cl_common.h"
-#include "rectangular_mesh.h"
-#include "scene_data.h"
-#include "tetrahedral_mesh.h"
+#include "waveguide/rectangular_mesh.h"
+#include "waveguide/tetrahedral_mesh.h"
+
+#include "common/cl_common.h"
+#include "common/scene_data.h"
 
 #include "gtest/gtest.h"
 

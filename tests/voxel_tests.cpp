@@ -1,6 +1,7 @@
-#include "conversions.h"
-#include "raytracer.h"
-#include "voxel_collection.h"
+#include "raytracer/raytracer.h"
+
+#include "common/conversions.h"
+#include "common/voxel_collection.h"
 
 #include "gtest/gtest.h"
 

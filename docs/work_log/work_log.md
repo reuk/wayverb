@@ -487,3 +487,7 @@ redo proper boundary tests, but longer (with anechoic boundaries) to see whether
     differences are to do with smoothing or diffusion
 
 check intensity/distance conversion
+
+read acoustics paper
+
+check corner stability

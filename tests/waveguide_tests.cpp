@@ -1,8 +1,9 @@
-#include "cl_common.h"
-#include "rectangular_program.h"
-#include "sinc.h"
-#include "waveguide.h"
-#include "waveguide_config.h"
+#include "waveguide/config.h"
+#include "waveguide/rectangular_program.h"
+#include "waveguide/waveguide.h"
+
+#include "common/cl_common.h"
+#include "common/sinc.h"
 
 #include "gtest/gtest.h"
 

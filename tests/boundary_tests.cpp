@@ -1,6 +1,7 @@
-#include "boundaries.h"
-#include "conversions.h"
-#include "raytracer.h"
+#include "raytracer/raytracer.h"
+
+#include "common/boundaries.h"
+#include "common/conversions.h"
 
 #include "gtest/gtest.h"
 

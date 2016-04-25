@@ -1,5 +1,6 @@
 #include "helper.h"
-#include "vec.h"
+
+#include "common/vec.h"
 
 #include "gtest/gtest.h"
 

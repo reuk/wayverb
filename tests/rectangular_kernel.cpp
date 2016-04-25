@@ -1,10 +1,10 @@
-#include "cl_common.h"
-#include "extended_algorithms.h"
-#include "rectangular_program.h"
-#include "timed_scope.h"
-#include "waveguide.h"
+#include "waveguide/rectangular_program.h"
+#include "waveguide/waveguide.h"
 
-#include "write_audio_file.h"
+#include "common/cl_common.h"
+#include "common/extended_algorithms.h"
+#include "common/timed_scope.h"
+#include "common/write_audio_file.h"
 
 #include "gtest/gtest.h"
 

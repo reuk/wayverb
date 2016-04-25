@@ -1,7 +1,7 @@
-#include "boundaries.h"
-#include "helper.h"
-#include "tri_cube_intersection.h"
+#include "common/boundaries.h"
+#include "common/tri_cube_intersection.h"
 
+#include "helper.h"
 #include "tri_cube_c.h"
 
 #include "gtest/gtest.h"

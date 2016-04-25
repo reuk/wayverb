@@ -1,7 +1,7 @@
 #pragma once
 
-#include "raytracer_config.h"
-#include "waveguide_config.h"
+#include "raytracer/config.h"
+#include "waveguide/config.h"
 
 namespace config {
 

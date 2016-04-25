@@ -1,5 +1,6 @@
-#include "rectangular_mesh.h"
-#include "scene_data.h"
+#include "waveguide/rectangular_mesh.h"
+
+#include "common/scene_data.h"
 
 #include "gtest/gtest.h"
 

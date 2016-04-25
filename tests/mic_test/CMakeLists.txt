@@ -2,9 +2,6 @@ cmake_minimum_required(VERSION 3.0)
 
 include_directories(
     ${CMAKE_SOURCE_DIR}/include
-    ${CMAKE_SOURCE_DIR}/common
-    ${CMAKE_SOURCE_DIR}/rayverb
-    ${CMAKE_SOURCE_DIR}/waveguide
     "/usr/local/include"
 )
 
@@ -31,5 +28,5 @@ find_library(vorbis_lib vorbis)
 find_library(vorbisenc_lib vorbisenc)
 find_library(samplerate_lib samplerate)
 
-target_link_libraries(${name_0} waveguide ${sndfile_lib} ${samplerate_lib} ${frameworks} gflags ${flac_lib} ${ogg_lib} ${vorbis_lib} ${vorbisenc_lib})
-target_link_libraries(${name_1} waveguide ${sndfile_lib} ${samplerate_lib} ${frameworks} gflags ${flac_lib} ${ogg_lib} ${vorbis_lib} ${vorbisenc_lib})
+target_link_libraries(${name_0} waveguide common ${sndfile_lib} ${samplerate_lib} ${frameworks} gflags ${flac_lib} ${ogg_lib} ${vorbis_lib} ${vorbisenc_lib})
+target_link_libraries(${name_1} waveguide common ${sndfile_lib} ${samplerate_lib} ${frameworks} gflags ${flac_lib} ${ogg_lib} ${vorbis_lib} ${vorbisenc_lib})

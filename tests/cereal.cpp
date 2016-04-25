@@ -1,9 +1,9 @@
-#include "scene_data.h"
+#include "common/json_read_write.h"
+#include "common/scene_data.h"
+#include "common/surface_owner_serialize.h"
 
 #include "combined_config.h"
 #include "combined_config_serialize.h"
-#include "json_read_write.h"
-#include "surface_owner_serialize.h"
 
 #include "gtest/gtest.h"
 

@@ -1,26 +1,20 @@
-//  project internal
-#include "conversions.h"
-#include "microphone.h"
-#include "scene_data.h"
-#include "test_flag.h"
-#include "waveguide.h"
-#include "waveguide_config.h"
+#include "waveguide/config.h"
+#include "waveguide/microphone.h"
+#include "waveguide/waveguide.h"
 
-#include "raytracer.h"
+#include "common/cl_common.h"
+#include "common/conversions.h"
+#include "common/scene_data.h"
 
-#include "cl_common.h"
-
-//  dependency
-#include "filters_common.h"
-#include "sinc.h"
-#include "write_audio_file.h"
+#include "common/filters_common.h"
+#include "common/sinc.h"
+#include "common/write_audio_file.h"
 
 #include "samplerate.h"
 #include "sndfile.hh"
 
 #include <gflags/gflags.h>
 
-//  stdlib
 #include <algorithm>
 #include <cmath>
 #include <fstream>

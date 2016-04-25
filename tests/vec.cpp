@@ -1,4 +1,4 @@
-#include "vec.h"
+#include "common/vec.h"
 
 //  tests
 static_assert((Vec3f(1, 2, 3) + Vec3f(4, 5, 6) == Vec3f(5, 7, 9)).all(),

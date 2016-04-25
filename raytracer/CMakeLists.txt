@@ -1,19 +1,25 @@
 cmake_minimum_required(VERSION 3.0)
 
+project(RAYTRACER VERSION 0.1 LANGUAGES CXX)
+
 set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} " -Wall -Werror -std=c++14 ")
 
-file(GLOB sources "*.cpp")
-
-include_directories(
-    ${CMAKE_SOURCE_DIR}/include
-    ${CMAKE_SOURCE_DIR}/common
-    ${CMAKE_SOURCE_DIR}/submodules/glog/src
-    ${CMAKE_BINARY_DIR}/submodules/glog
-    ${CMAKE_SOURCE_DIR}/submodules/assimp/include
-    "/usr/local/include"
-)
+file(GLOB sources "src/*.cpp")
 
 add_library(raytracer STATIC ${sources})
+
+target_include_directories(raytracer
+    PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>
+    PRIVATE
+    src
+    ${WAYVERB_SOURCE_DIR}/include
+    ${WAYVERB_SOURCE_DIR}/submodules/glog/src
+    ${WAYVERB_BINARY_DIR}/submodules/glog
+    ${WAYVERB_SOURCE_DIR}/submodules/assimp/include
+    "/usr/local/include"
+)
 
 if(APPLE)
     find_library(opencl_library OpenCL)
@@ -26,4 +32,4 @@ elseif(UNIX)
 endif()
 
 find_library(fftw3f_library fftw3f)
-target_link_libraries(raytracer assimp z ${fftw3f_library} ${frameworks})
+target_link_libraries(raytracer assimp z ${fftw3f_library} ${frameworks} common)

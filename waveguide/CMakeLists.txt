@@ -1,19 +1,25 @@
 cmake_minimum_required(VERSION 3.0)
 
+project(WAVEGUIDE VERSION 0.1 LANGUAGES CXX)
+
 set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} " -Wall -Werror -std=c++14 ")
 
-file(GLOB sources "*.cpp")
-
-include_directories(
-    ${CMAKE_SOURCE_DIR}/include
-    ${CMAKE_SOURCE_DIR}/common
-    ${CMAKE_SOURCE_DIR}/submodules/glog/src
-    ${CMAKE_BINARY_DIR}/submodules/glog
-    ${CMAKE_SOURCE_DIR}/submodules/cereal/include
-    "/usr/local/include/"
-)
+file(GLOB sources "src/*.cpp")
 
 add_library(waveguide STATIC ${sources})
+
+target_include_directories(waveguide
+    PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>
+    PRIVATE
+    src
+    ${WAYVERB_SOURCE_DIR}/include
+    ${WAYVERB_SOURCE_DIR}/submodules/glog/src
+    ${WAYVERB_BINARY_DIR}/submodules/glog
+    ${WAYVERB_SOURCE_DIR}/submodules/cereal/include
+    "/usr/local/include/"
+)
 
 if(APPLE)
     find_library(opencl_library OpenCL)
@@ -27,12 +33,4 @@ endif()
 
 find_library(fftw_library fftw3f)
 find_library(samplerate_lib samplerate)
-set(libraries
-    assimp
-    ${samplerate_lib}
-    ${fftw_library}
-    glog
-    z
-    common)
-
-target_link_libraries(waveguide ${libraries})
+target_link_libraries(waveguide assimp ${samplerate_lib} ${fftw_library} glog z common)

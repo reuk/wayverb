@@ -1,8 +1,7 @@
--Iwaveguide
 -Icommon
+-Iwaveguide/include
+-Iraytracer/include
 -Icombined
--Iraytracer
--Ibsp
 -Ibuild/submodules/glog
 -Isubmodules/glog/src
 -Ibuild/submodules/gflags/include

@@ -1,8 +1,9 @@
 #pragma once
 
 #include "combined_config.h"
-#include "raytracer_config_serialize.h"
-#include "waveguide_config_serialize.h"
+
+#include "raytracer/serialize/config.h"
+#include "waveguide/serialize/config.h"
 
 namespace config {
 template <typename Archive>

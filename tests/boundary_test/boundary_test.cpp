@@ -1,26 +1,24 @@
-#include "azimuth_elevation.h"
-#include "cl_common.h"
-#include "conversions.h"
-#include "microphone.h"
-#include "scene_data.h"
-#include "test_flag.h"
-#include "waveguide.h"
-#include "waveguide_config.h"
+#include "waveguide/config.h"
+#include "waveguide/microphone.h"
+#include "waveguide/waveguide.h"
 
-#include "boundaries_serialize.h"
-#include "surface_owner_serialize.h"
+#include "common/azimuth_elevation.h"
+#include "common/cl_common.h"
+#include "common/conversions.h"
+#include "common/scene_data.h"
 
-//  dependency
-#include "filters_common.h"
-#include "sinc.h"
-#include "write_audio_file.h"
+#include "common/boundaries_serialize.h"
+#include "common/surface_owner_serialize.h"
+
+#include "common/filters_common.h"
+#include "common/sinc.h"
+#include "common/write_audio_file.h"
 
 #include "samplerate.h"
 #include "sndfile.hh"
 
 #include <gflags/gflags.h>
 
-//  stdlib
 #include <algorithm>
 #include <cmath>
 #include <iomanip>

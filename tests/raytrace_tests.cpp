@@ -1,9 +1,10 @@
-#include "boundaries.h"
-#include "cl_common.h"
-#include "progress.h"
-#include "raytracer.h"
-#include "raytracer_config.h"
-#include "write_audio_file.h"
+#include "raytracer/config.h"
+#include "raytracer/raytracer.h"
+
+#include "common/boundaries.h"
+#include "common/cl_common.h"
+#include "common/progress.h"
+#include "common/write_audio_file.h"
 
 #include "gtest/gtest.h"
 

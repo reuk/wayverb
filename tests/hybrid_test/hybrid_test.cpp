@@ -1,28 +1,22 @@
 #include "combined_config.h"
-
-#include "azimuth_elevation.h"
-#include "conversions.h"
-#include "microphone.h"
-#include "scene_data.h"
-#include "test_flag.h"
-#include "waveguide.h"
-
-#include "raytracer.h"
-
-#include "cl_common.h"
-
-#include "stl_wrappers.h"
-
-#include "boundaries_serialize.h"
-#include "surface_owner_serialize.h"
-
 #include "combined_config_serialize.h"
-#include "json_read_write.h"
 
-//  dependency
-#include "filters_common.h"
-#include "sinc.h"
-#include "write_audio_file.h"
+#include "waveguide/microphone.h"
+#include "waveguide/waveguide.h"
+
+#include "raytracer/raytracer.h"
+
+#include "common/azimuth_elevation.h"
+#include "common/boundaries_serialize.h"
+#include "common/cl_common.h"
+#include "common/conversions.h"
+#include "common/filters_common.h"
+#include "common/json_read_write.h"
+#include "common/scene_data.h"
+#include "common/sinc.h"
+#include "common/stl_wrappers.h"
+#include "common/surface_owner_serialize.h"
+#include "common/write_audio_file.h"
 
 #include "samplerate.h"
 #include "sndfile.hh"
@@ -31,7 +25,6 @@
 
 #include "glog/logging.h"
 
-//  stdlib
 #include <algorithm>
 #include <cmath>
 #include <iomanip>
