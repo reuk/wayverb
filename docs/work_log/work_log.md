@@ -467,6 +467,9 @@ can I simulate standing waves?
 
 relationship between energy and pressure
 
+can I speed up waveguide by processing inner and boundary nodes in separate
+passes?
+
 things to do:
 -------------
 

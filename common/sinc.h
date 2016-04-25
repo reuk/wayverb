@@ -56,7 +56,8 @@ inline void normalize(T& ret) {
 
 template <typename T>
 inline void kernel_normalize(T& ret) {
-    auto sum = proc::accumulate(ret, 0.0);
+    auto get_sum = [&ret] { return proc::accumulate(ret, 0.0); };
+    auto sum = get_sum();
     if (sum != 0) {
         mul(ret, 1.0 / std::abs(sum));
     }

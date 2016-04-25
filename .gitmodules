@@ -13,3 +13,6 @@
 [submodule "submodules/assimp"]
 	path = submodules/assimp
 	url = git@github.com:assimp/assimp.git
+[submodule "submodules/cereal"]
+	path = submodules/cereal
+	url = git@github.com:USCiLab/cereal.git

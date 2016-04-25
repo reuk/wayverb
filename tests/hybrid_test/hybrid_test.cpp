@@ -27,9 +27,9 @@
 #include "samplerate.h"
 #include "sndfile.hh"
 
-#include <gflags/gflags.h>
+#include "gflags/gflags.h"
 
-#include <glog/logging.h>
+#include "glog/logging.h"
 
 //  stdlib
 #include <algorithm>
@@ -52,7 +52,7 @@ constexpr auto COURANT = 0.577350269;
 /// given a source strength, calculate the distance at which the source produces
 /// intensity 1W/m^2
 double distance_for_unit_intensity(double strength) {
-    return std::sqrt(strength / 4 * M_PI);
+    return std::sqrt(strength / (4 * M_PI));
 }
 
 /// r = distance at which the geometric sound source has intensity 1W/m^2
@@ -149,19 +149,20 @@ int main(int argc, char** argv) {
 
     auto waveguide_output =
         run_waveguide(context_info, boundary, config, output_folder);
+    LOG(INFO) << "waveguide output mag: " << max_mag(waveguide_output);
 
-    std::cout << "max mag: " << max_mag(waveguide_output) << std::endl;
     write_file(config, output_folder, "waveguide_raw", {waveguide_output});
 
     //  adjust sample rate
     auto waveguide_adjusted = adjust_sampling_rate(waveguide_output, config);
+    LOG(INFO) << "waveguide adjusted mag: " << max_mag(waveguide_adjusted);
 
     //  get the valid region of the spectrum
     filter::LopassWindowedSinc lopass(waveguide_adjusted.size());
     lopass.set_params(config.filter_frequency, config.sample_rate);
     lopass.filter(waveguide_adjusted);
+    LOG(INFO) << "waveguide filtered mag: " << max_mag(waveguide_adjusted);
 
-    std::cout << "max mag: " << max_mag(waveguide_adjusted) << std::endl;
     write_file(
         config, output_folder, "waveguide_adjusted", {waveguide_adjusted});
 
@@ -219,7 +220,8 @@ int main(int argc, char** argv) {
     auto max_waveguide = max_mag(waveguide_adjusted);
     auto max_raytracer = max_mag(raytracer_output);
     auto max_both = std::max(max_waveguide, max_raytracer);
-    LOG(INFO) << "max amplitude between both methods: " << max_both;
+    LOG(INFO) << "max waveguide: " << max_waveguide;
+    LOG(INFO) << "max raytracer: " << max_raytracer;
 
     mul(waveguide_adjusted, 1 / max_both);
     mul(raytracer_output, 1 / max_both);
@@ -236,6 +238,7 @@ int main(int argc, char** argv) {
     filter::HipassWindowedSinc hipass(raytracer_output.size());
     hipass.set_params(config.filter_frequency, config.sample_rate);
     hipass.filter(raytracer_output);
+    LOG(INFO) << "max raytracer filtered: " << max_mag(raytracer_output);
 
     std::vector<float> mixed(out_length);
     proc::transform(waveguide_adjusted,

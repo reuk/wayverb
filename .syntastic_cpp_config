@@ -3,7 +3,10 @@
 -Icombined
 -Iraytracer
 -Ibsp
--Igtest/include
+-Ibuild/submodules/glog
+-Isubmodules/glog/src
+-Ibuild/submodules/gflags/include
+-Isubmodules/googletest/googletest/include
 -Wall
 -Werror
 -ferror-limit=100

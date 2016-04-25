@@ -8,6 +8,7 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/raytracer
     ${CMAKE_SOURCE_DIR}/waveguide
     ${CMAKE_SOURCE_DIR}/combined
+    ${CMAKE_SOURCE_DIR}/submodules/cereal/include
     "/usr/local/include"
 )
 

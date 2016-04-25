@@ -9,6 +9,7 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/common
     ${CMAKE_SOURCE_DIR}/submodules/glog/src
     ${CMAKE_BINARY_DIR}/submodules/glog
+    ${CMAKE_SOURCE_DIR}/submodules/cereal/include
     "/usr/local/include/"
 )
 

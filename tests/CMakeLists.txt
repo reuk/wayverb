@@ -11,7 +11,7 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/bsp
     ${CMAKE_SOURCE_DIR}/raytracer
     ${CMAKE_SOURCE_DIR}/include
-    ${CMAKE_SOURCE_DIR}/gtest/include
+    ${CMAKE_SOURCE_DIR}/submodules/cereal/include
     "/usr/local/include/"
 )
 link_directories(/usr/local/lib)
