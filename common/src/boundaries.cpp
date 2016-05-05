@@ -17,16 +17,12 @@
 #include <cmath>
 #include <unordered_set>
 
-CuboidBoundary::CuboidBoundary(const Box& b,
-                               const std::vector<Surface>& surfaces)
-        : Boundary(surfaces)
-        , Box(b) {
+CuboidBoundary::CuboidBoundary(const Box& b)
+        : Box(b) {
 }
 
-CuboidBoundary::CuboidBoundary(const Vec3f& c0,
-                               const Vec3f& c1,
-                               const std::vector<Surface>& surfaces)
-        : CuboidBoundary(Box(c0, c1), surfaces) {
+CuboidBoundary::CuboidBoundary(const Vec3f& c0, const Vec3f& c1)
+        : CuboidBoundary(Box(c0, c1)) {
 }
 
 bool CuboidBoundary::inside(const Vec3f& v) const {
@@ -42,8 +38,7 @@ bool CuboidBoundary::overlaps(const TriangleVec3f& t) const {
 }
 
 CuboidBoundary CuboidBoundary::get_padded(float padding) const {
-    return CuboidBoundary(
-        get_c0() - padding, get_c1() + padding, get_surfaces());
+    return CuboidBoundary(get_c0() - padding, get_c1() + padding);
 }
 
 CuboidBoundary CuboidBoundary::get_aabb() const {
@@ -75,10 +70,11 @@ SceneData CuboidBoundary::get_scene_data() const {
         {0, 4, 5, 7},
         {0, 4, 6, 7},
     };
+    std::vector<SceneData::Material> materials{
+        {"default", Surface{}},
+    };
 
-    CHECK(!get_surfaces().empty()) << "boundary has no surfaces";
-
-    return SceneData(triangles, vertices, get_surfaces());
+    return SceneData(triangles, vertices, materials);
 }
 
 bool CuboidBoundary::intersects(const geo::Ray& ray, float t0, float t1) {
@@ -127,8 +123,7 @@ Box get_surrounding_box(const std::vector<Vec3f>& vertices) {
 SphereBoundary::SphereBoundary(const Vec3f& c,
                                float radius,
                                const std::vector<Surface>& surfaces)
-        : Boundary(surfaces)
-        , c(c)
+        : c(c)
         , radius(radius)
         , boundary(Vec3f(-radius), Vec3f(radius)) {
 }
@@ -176,30 +171,12 @@ MeshBoundary::hash_table MeshBoundary::compute_triangle_references() const {
 MeshBoundary::MeshBoundary(const std::vector<Triangle>& triangles,
                            const std::vector<Vec3f>& vertices,
                            const std::vector<Surface>& surfaces)
-        : Boundary(surfaces)
-        , triangles(triangles)
+        : triangles(triangles)
         , vertices(vertices)
+        , surfaces(surfaces)
         , boundary(get_surrounding_box(vertices))
         , cell_size(boundary.dimensions() / DIVISIONS)
         , triangle_references(compute_triangle_references()) {
-#ifdef TESTING
-    auto fname = build_string("./file-mesh.txt");
-    ofstream file(fname);
-    for (const auto& i : this->triangles) {
-        auto v0 = this->vertices[i.v0];
-        file << build_string(v0.x, " ", v0.y, " ", v0.z, " ");
-        auto v1 = this->vertices[i.v1];
-        file << build_string(v1.x, " ", v1.y, " ", v1.z, " ");
-        auto v2 = this->vertices[i.v2];
-        file << build_string(v2.x, " ", v2.y, " ", v2.z, " ");
-        file << endl;
-    }
-#endif
-}
-
-std::tuple<std::vector<Triangle>, std::vector<Vec3f>> get_mesh_boundary_data(
-    const SceneData& sd) {
-    return std::make_tuple(sd.get_triangles(), sd.get_converted_vertices());
 }
 
 MeshBoundary::MeshBoundary(const SceneData& sd)
@@ -271,6 +248,10 @@ const std::vector<Vec3f>& MeshBoundary::get_vertices() const {
 
 const CuboidBoundary& MeshBoundary::get_boundary() const {
     return boundary;
+}
+
+const std::vector<Surface>& MeshBoundary::get_surfaces() const {
+    return surfaces;
 }
 
 Vec3f MeshBoundary::get_cell_size() const {

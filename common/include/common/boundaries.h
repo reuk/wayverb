@@ -1,7 +1,7 @@
 #pragma once
 
 #include "reduce.h"
-#include "surface_owner.h"
+#include "scene_data.h"
 #include "triangle.h"
 #include "triangle_vec.h"
 #include "vec.h"
@@ -151,9 +151,9 @@ private:
 
 class CuboidBoundary;
 
-class Boundary : public SurfaceOwner {
+class Boundary {
 public:
-    using SurfaceOwner::SurfaceOwner;
+    Boundary() = default;
     virtual ~Boundary() noexcept = default;
     Boundary(Boundary&&) noexcept = default;
     Boundary& operator=(Boundary&&) noexcept = default;
@@ -170,13 +170,8 @@ Box get_surrounding_box(const std::vector<Vec3f>& vertices);
 
 class CuboidBoundary : public Boundary, public Box {
 public:
-    explicit CuboidBoundary(
-        const Box& b = Box(),
-        const std::vector<Surface>& surfaces = std::vector<Surface>{Surface{}});
-    CuboidBoundary(const Vec3f& c0,
-                   const Vec3f& c1,
-                   const std::vector<Surface>& surfaces = std::vector<Surface>{
-                       Surface{}});
+    explicit CuboidBoundary(const Box& b = Box());
+    CuboidBoundary(const Vec3f& c0, const Vec3f& c1);
     bool inside(const Vec3f& v) const override;
     bool overlaps(const TriangleVec3f& t) const;
     CuboidBoundary get_aabb() const override;
@@ -212,10 +207,9 @@ inline bool almost_equal(T x, T y, int ups) {
 
 class MeshBoundary : public Boundary {
 public:
-    explicit MeshBoundary(
-        const std::vector<Triangle>& triangles = std::vector<Triangle>(),
-        const std::vector<Vec3f>& vertices = std::vector<Vec3f>(),
-        const std::vector<Surface>& surfaces = std::vector<Surface>{Surface{}});
+    MeshBoundary(const std::vector<Triangle>& triangles,
+                 const std::vector<Vec3f>& vertices,
+                 const std::vector<Surface>& surfaces);
     explicit MeshBoundary(const SceneData& sd);
     bool inside(const Vec3f& v) const override;
     CuboidBoundary get_aabb() const override;
@@ -233,6 +227,7 @@ public:
     const std::vector<Triangle>& get_triangles() const;
     const std::vector<Vec3f>& get_vertices() const;
     const CuboidBoundary& get_boundary() const;
+    const std::vector<Surface>& get_surfaces() const;
     Vec3f get_cell_size() const;
 
 private:
@@ -242,6 +237,7 @@ private:
 
     std::vector<Triangle> triangles;
     std::vector<Vec3f> vertices;
+    std::vector<Surface> surfaces;
     CuboidBoundary boundary;
     Vec3f cell_size;
     hash_table triangle_references;

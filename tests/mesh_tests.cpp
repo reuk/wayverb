@@ -33,6 +33,7 @@ public:
 
     template <typename MeshType>
     void locator_index_test() {
+        SceneData sd(OBJ_PATH_BEDROOM);
         auto mesh =
             get_mesh<MeshType>(SceneData(OBJ_PATH_BEDROOM, MAT_PATH_BEDROOM));
         for (auto i = 0u; i != mesh.get_nodes().size(); ++i) {

@@ -8,7 +8,7 @@
 #include "common/scene_data.h"
 
 #include "common/boundaries_serialize.h"
-#include "common/surface_owner_serialize.h"
+#include "common/surface_serialize.h"
 
 #include "common/filters_common.h"
 #include "common/sinc.h"
@@ -55,6 +55,7 @@ std::vector<float> run_simulation(const cl::Context& context,
                                   cl::Device& device,
                                   cl::CommandQueue& queue,
                                   const CuboidBoundary& boundary,
+                                  const Surface& surface,
                                   const config::Waveguide& conf,
                                   const Vec3f& source,
                                   const Vec3f& receiver,
@@ -63,9 +64,12 @@ std::vector<float> run_simulation(const cl::Context& context,
                                   int steps) {
     auto waveguide_program = get_program<RectangularProgram>(context, device);
 
+    auto scene_data = boundary.get_scene_data();
+    scene_data.set_surfaces(surface);
+
     RectangularWaveguide waveguide(waveguide_program,
                                    queue,
-                                   boundary,
+                                   MeshBoundary(scene_data),
                                    conf.get_divisions(),
                                    receiver,
                                    conf.get_waveguide_sample_rate());
@@ -198,6 +202,7 @@ std::vector<float> get_free_field_results(const cl::Context& context,
                                 device,
                                 queue,
                                 no_wall,
+                                Surface{},
                                 conf,
                                 source_position,
                                 image_position,
@@ -235,15 +240,13 @@ FullTestResults run_full_test(const std::string& test_name,
     }
 
     //  generate two boundaries, one twice the size of the other
-    auto wall = CuboidBoundary(
-        Vec3f(0, 0, 0), desired_nodes * conf.get_divisions(), {surface});
-
-    LOG(INFO) << "boundary: " << wall;
+    auto wall =
+        CuboidBoundary(Vec3f(0, 0, 0), desired_nodes * conf.get_divisions());
 
     auto far = wall.get_c1();
     auto new_dim = Vec3f(far.x * 2, far.y, far.z);
 
-    auto no_wall = CuboidBoundary(Vec3f(0, 0, 0), new_dim, {surface});
+    auto no_wall = CuboidBoundary(Vec3f(0, 0, 0), new_dim);
 
     //  place source and receiver in rooms based on distance in nodes from the
     //  wall
@@ -293,6 +296,7 @@ FullTestResults run_full_test(const std::string& test_name,
                                     device,
                                     queue,
                                     wall,
+                                    surface,
                                     conf,
                                     source_position,
                                     receiver_position,
@@ -303,6 +307,7 @@ FullTestResults run_full_test(const std::string& test_name,
                                  device,
                                  queue,
                                  no_wall,
+                                 surface,
                                  conf,
                                  source_position,
                                  receiver_position,

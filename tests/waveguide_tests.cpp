@@ -25,13 +25,6 @@ TEST(peak_filter_coefficients, peak_filter_coefficients) {
     }
 }
 
-TEST(filter_coefficients, filter_coefficients) {
-    constexpr auto g = 0.99;
-    constexpr auto surface =
-        Surface{{{g, g, g, g, g, g, g, g}}, {{g, g, g, g, g, g, g, g}}};
-    static_assert(validate_surface(surface), "invalid surface");
-}
-
 TEST(run_waveguide, run_waveguide) {
     auto steps = 64000;
 
@@ -55,12 +48,15 @@ TEST(run_waveguide, run_waveguide) {
     config.sample_rate = samplerate;
 
     //  init simulation parameters
-    CuboidBoundary boundary(box.get_c0(), box.get_c1(), {surface});
+    CuboidBoundary boundary(box.get_c0(), box.get_c1());
+
+    auto scene_data = boundary.get_scene_data();
+    scene_data.set_surfaces(surface);
 
     //  get a waveguide
     RectangularWaveguide waveguide(waveguide_program,
                                    context_info.queue,
-                                   boundary,
+                                   MeshBoundary(scene_data),
                                    config.get_divisions(),
                                    config.mic,
                                    config.get_waveguide_sample_rate());

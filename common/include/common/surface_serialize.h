@@ -1,7 +1,7 @@
 #pragma once
 
 #include "json_read_write.h"
-#include "surface_owner.h"
+#include "scene_data.h"
 
 #include <cereal/types/vector.hpp>
 
@@ -22,9 +22,3 @@ void serialize(Archive& archive, Surface& m) {
             cereal::make_nvp("diffuse", m.diffuse));
 }
 JSON_OSTREAM_OVERLOAD(Surface);
-
-template <typename Archive>
-void serialize(Archive& archive, SurfaceOwner& m) {
-    archive(cereal::make_nvp("surfaces", m.surfaces));
-}
-JSON_OSTREAM_OVERLOAD(SurfaceOwner);

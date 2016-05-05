@@ -1,12 +1,14 @@
 -Icommon
 -Iwaveguide/include
 -Iraytracer/include
+-Icommon/include
 -Icombined
 -Ibuild/submodules/glog
 -Isubmodules/glog/src
 -Ibuild/submodules/gflags/include
 -Isubmodules/googletest/googletest/include
 -Isubmodules/cereal/include
+-Isubmodules/assimp/include
 -Wall
 -Werror
 -ferror-limit=100

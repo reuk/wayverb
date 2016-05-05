@@ -218,7 +218,7 @@ TEST(raytrace, image_source) {
     ComputeContext context;
     auto raytrace_program = get_program<RaytracerProgram>(context);
 
-    CuboidBoundary boundary(box.get_c0(), box.get_c1(), {surface});
+    CuboidBoundary boundary(box.get_c0(), box.get_c1());
 
     config::Raytracer config;
     config.source = source;
@@ -227,11 +227,11 @@ TEST(raytrace, image_source) {
 
     Raytracer raytracer(raytrace_program, context.queue);
 
-    auto results = raytracer.run(boundary.get_scene_data(),
-                                 config.mic,
-                                 config.source,
-                                 config.rays,
-                                 config.impulses);
+    auto scene_data = boundary.get_scene_data();
+    scene_data.set_surfaces(surface);
+
+    auto results = raytracer.run(
+        scene_data, config.mic, config.source, config.rays, config.impulses);
 
     Attenuate attenuator(raytrace_program, context.queue);
     Speaker speaker{};

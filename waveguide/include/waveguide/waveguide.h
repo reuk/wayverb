@@ -264,10 +264,9 @@ private:
 
 class RectangularWaveguide : public Waveguide<RectangularProgram> {
 public:
-    template <typename B>
     RectangularWaveguide(const RectangularProgram& program,
                          cl::CommandQueue& queue,
-                         const B& boundary,
+                         const MeshBoundary& boundary,
                          float spacing,
                          const Vec3f& anchor,
                          float sr)

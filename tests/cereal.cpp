@@ -1,6 +1,6 @@
 #include "common/json_read_write.h"
 #include "common/scene_data.h"
-#include "common/surface_owner_serialize.h"
+#include "common/surface_serialize.h"
 
 #include "combined_config.h"
 #include "combined_config_serialize.h"
@@ -23,7 +23,7 @@ TEST(cereal, materials) {
              "mat.json",
              "vault.json",
          }) {
-        SurfaceLoader surface_loader(base_path + "/" + i);
+        SurfaceConfig surface_loader(base_path + "/" + i);
         LOG(INFO) << "loaded " << i << " successfully";
     }
 }

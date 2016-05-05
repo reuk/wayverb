@@ -16,7 +16,7 @@
 #include "common/scene_data.h"
 #include "common/sinc.h"
 #include "common/stl_wrappers.h"
-#include "common/surface_owner_serialize.h"
+#include "common/surface_serialize.h"
 #include "common/write_audio_file.h"
 
 #include "samplerate.h"
@@ -93,17 +93,21 @@ std::vector<T> sin_modulated_gaussian_kernel(int length,
 auto run_waveguide(ComputeContext& context_info,
                    const CuboidBoundary& boundary,
                    const config::Combined& config,
-                   const std::string& output_folder) {
+                   const std::string& output_folder,
+                   const Surface& surface) {
     auto steps = 16000;
 
     //  get opencl program
     auto waveguide_program = get_program<RectangularProgram>(
         context_info.context, context_info.device);
 
+    auto scene_data = boundary.get_scene_data();
+    scene_data.set_surfaces(surface);
+
     //  get a waveguide
     RectangularWaveguide waveguide(waveguide_program,
                                    context_info.queue,
-                                   boundary,
+                                   MeshBoundary(scene_data),
                                    config.get_divisions(),
                                    config.mic,
                                    config.get_waveguide_sample_rate());
@@ -157,7 +161,7 @@ int main(int argc, char** argv) {
     std::string output_folder = argv[1];
 
     //  init simulation parameters
-    CuboidBoundary boundary(box.get_c0(), box.get_c1(), {surface});
+    CuboidBoundary boundary(box.get_c0(), box.get_c1());
 
     config::Combined config;
     config.filter_frequency = 2000;
@@ -179,7 +183,7 @@ int main(int argc, char** argv) {
     ComputeContext context_info;
 
     auto waveguide_output =
-        run_waveguide(context_info, boundary, config, output_folder);
+        run_waveguide(context_info, boundary, config, output_folder, surface);
 
     {
         // filter::LinearDCBlocker dc(32);

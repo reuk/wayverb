@@ -325,11 +325,9 @@ Results Raytracer::run(const SceneData& scene_data,
         begin(const_cast<std::vector<cl_float3>&>(scene_data.get_vertices())),
         end(const_cast<std::vector<cl_float3>&>(scene_data.get_vertices())),
         false);
+    auto surfaces = scene_data.get_surfaces();
     cl::Buffer cl_surfaces(
-        get_context(),
-        begin(const_cast<std::vector<Surface>&>(scene_data.get_surfaces())),
-        end(const_cast<std::vector<Surface>&>(scene_data.get_surfaces())),
-        false);
+        get_context(), surfaces.begin(), surfaces.end(), false);
     cl::Buffer cl_impulses(
         get_context(), CL_MEM_READ_WRITE, rays * sizeof(Impulse));
     cl::Buffer cl_image_source(

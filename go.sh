@@ -24,12 +24,12 @@ callraytrace () {
 }
 
 export GLOG_logtostderr=1
-export GTEST_FILTER="*dc_blocker*"
+#export GTEST_FILTER="*dc_blocker*"
 
-#cmake .. && make && ctest -V
+cmake .. && make && ctest -V
 #cmake .. && make && make doc && ctest -V
 #cmake .. && make && ctest -V && callraytrace vault vault vault
-cmake .. && make && ./tests/hybrid_test/hybrid_test ../tests/hybrid_test/output
+#cmake .. && make && ./tests/hybrid_test/hybrid_test ../tests/hybrid_test/output
 #cmake .. && make && ./impulse_gen/impulse_gen
 
 #cmake .. && make
