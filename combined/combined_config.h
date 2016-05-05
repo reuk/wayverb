@@ -5,6 +5,10 @@
 
 namespace config {
 
-class Combined : public Waveguide, public Raytracer {};
+class Combined : public Waveguide, public Raytracer {
+public:
+    template<typename Archive>
+    void serialize(Archive& archive);
+};
 
 }  // namespace config

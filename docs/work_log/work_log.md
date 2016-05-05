@@ -492,28 +492,13 @@ make nice interface?
 interface
 ---------
 
-* make materials hot-swappable somehow
-
-* custom file format for storing
-    * model
-    * config
-    * materials
-        * maybe config + materials can be combined?
-
-* model load procedure
-    * load the names of its materials, create a map from surface indices to
-      names, and names to materials
-    * when a material file is loaded, we replace named surfaces appropriately
-    * otherwise, materials can be edited directly
-    * when we press go, bake material map into a suitable format
+* call from the commandline
 
 * some way of modifying materials per surface
 
 * editor for source and mic position
 
 * output config (bitrate, samplerate)
-
-* call from the commandline
 
 * actual audio output!
     * preview?

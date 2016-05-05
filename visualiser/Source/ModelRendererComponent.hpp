@@ -3,9 +3,10 @@
 #include "DemoPanel.hpp"
 #include "ModelRenderer.hpp"
 
-class ModelRendererComponent : public Component, public DemoPanel::Listener {
+class ModelRendererComponent : public Component {
 public:
-    ModelRendererComponent();
+    ModelRendererComponent(const SceneData& model,
+                           const config::Combined& config);
     virtual ~ModelRendererComponent() noexcept;
 
     void resized() override;
@@ -16,12 +17,13 @@ public:
     void mouseWheelMove(const MouseEvent& event,
                         const MouseWheelDetails& wheel) override;
 
-    void file_package_loaded(DemoPanel&, const FilePackage& fp) override;
-
 private:
-    std::unique_ptr<SceneData> sceneData;
-    std::unique_ptr<SceneRenderer> sceneRenderer;
-    std::unique_ptr<OpenGLContext> openGLContext;
+    const SceneData& model;
+    const config::Combined& config;
+
+    SceneRenderer scene_renderer;
+    OpenGLContext openGLContext;
+
     const float scale{0.01};
     float azimuth{0};
     float elevation{0};

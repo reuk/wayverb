@@ -163,16 +163,16 @@ DrawableScene::DrawableScene(const GenericShader &shader,
               shader, to_glm_vec3(cc.source), glm::vec4(1, 0, 0, 1))}
         , receiver_object{std::make_unique<OctahedronObject>(
               shader, to_glm_vec3(cc.mic), glm::vec4(0, 1, 1, 1))}
-        , waveguide_load_thread{&DrawableScene::init_waveguide,
-                                this,
-                                scene_data,
-                                cc}
-        , raytracer_results{
-              std::move(std::async(std::launch::async,
-                                   &DrawableScene::get_raytracer_results,
-                                   this,
-                                   scene_data,
-                                   cc))} {
+        , future_waveguide{std::async(std::launch::async,
+                                      &DrawableScene::init_waveguide,
+                                      this,
+                                      scene_data,
+                                      cc)}
+        , raytracer_results{std::async(std::launch::async,
+                                       &DrawableScene::get_raytracer_results,
+                                       this,
+                                       scene_data,
+                                       cc)} {
 }
 
 DrawableScene::~DrawableScene() noexcept {
@@ -180,18 +180,14 @@ DrawableScene::~DrawableScene() noexcept {
         if (i.valid())
             i.get();
     };
-    auto join_thread = [](auto &i) {
-        if (i.joinable())
-            i.join();
-    };
 
     join_future(future_pressure);
     join_future(raytracer_results);
-    join_thread(waveguide_load_thread);
+    join_future(future_waveguide);
 }
 
-void DrawableScene::init_waveguide(const SceneData &scene_data,
-                                   const config::Combined &cc) {
+std::unique_ptr<DrawableScene::Waveguide> DrawableScene::init_waveguide(
+    const SceneData &scene_data, const config::Combined &cc) {
     MeshBoundary boundary(scene_data);
     auto waveguide_program =
         get_program<Waveguide::ProgramType>(context, device);
@@ -217,11 +213,7 @@ void DrawableScene::init_waveguide(const SceneData &scene_data,
     w->init(
         corrected_source, std::move(input), 0, cc.get_waveguide_sample_rate());
 
-    {
-        std::lock_guard<std::mutex> lck(mut);
-        waveguide = std::move(w);
-        trigger_pressure_calculation();
-    }
+    return w;
 }
 
 void DrawableScene::trigger_pressure_calculation() {
@@ -243,6 +235,19 @@ RaytracerResults DrawableScene::get_raytracer_results(
 
 void DrawableScene::update(float dt) {
     std::lock_guard<std::mutex> lck(mut);
+
+    if (future_waveguide.valid()) {
+        try {
+            if (future_waveguide.wait_for(std::chrono::milliseconds(0)) ==
+                std::future_status::ready) {
+                waveguide = future_waveguide.get();
+                trigger_pressure_calculation();
+            }
+        } catch (const std::exception &e) {
+            std::cout << "exception fetching waveguide: " << e.what()
+                      << std::endl;
+        }
+    }
 
     if (waveguide && !mesh_object) {
         mesh_object =
@@ -314,50 +319,23 @@ void DrawableScene::draw() const {
 
 //----------------------------------------------------------------------------//
 
-SceneRenderer::SceneRenderer()
-        : projection_matrix(get_projection_matrix(1)) {
-}
-
-SceneRenderer::~SceneRenderer() {
-}
-
-void SceneRenderer::load_from_file_package(const FilePackage &fp) {
-    std::lock_guard<std::mutex> lck(mut);
-    auto scene_scale = 0.5f;
-    SceneData scene_data(fp.get_object().getFullPathName().toStdString(),
-                         fp.get_material().getFullPathName().toStdString(),
-                         scene_scale);
-
-    constexpr auto v = 1.00;
-    scene_data.set_surfaces(
-        Surface{{{v, v, v, v, v, v, v, v}}, {{v, v, v, v, v, v, v, v}}});
-
-    config::Combined cc;
-    try {
-        json_read_write::read(fp.get_config().getFullPathName().toStdString(),
-                              cc);
-    } catch (...) {
-    }
-
-    cc.mic *= scene_scale;
-    cc.source *= scene_scale;
-
-    cc.rays = 1 << 5;
-    cc.filter_frequency = 4000;
-    cc.oversample_ratio = 1;
-
-    scene = std::make_unique<DrawableScene>(*shader, scene_data, cc);
-
-    auto aabb = scene_data.get_aabb();
-    auto m = aabb.centre();
-    auto max = aabb.dimensions().max();
-    scale = max > 0 ? 20 / max : 1;
-
-    translation = glm::translate(-glm::vec3(m.x, m.y, m.z));
+SceneRenderer::SceneRenderer(const SceneData &model,
+                             const config::Combined &config)
+        : model(model)
+        , config(config)
+        , projection_matrix(get_projection_matrix(1)) {
 }
 
 void SceneRenderer::newOpenGLContextCreated() {
+    std::lock_guard<std::mutex> lck(mut);
     shader = std::make_unique<GenericShader>();
+    scene = std::make_unique<DrawableScene>(*shader, model, config);
+
+    auto aabb = model.get_aabb();
+    auto m = aabb.centre();
+    auto max = aabb.dimensions().max();
+    scale = max > 0 ? 20 / max : 1;
+    translation = glm::translate(-glm::vec3(m.x, m.y, m.z));
 }
 
 void SceneRenderer::renderOpenGL() {
@@ -368,6 +346,9 @@ void SceneRenderer::renderOpenGL() {
 }
 
 void SceneRenderer::openGLContextClosing() {
+    std::lock_guard<std::mutex> lck(mut);
+    scene = nullptr;
+    shader = nullptr;
 }
 
 glm::mat4 SceneRenderer::get_projection_matrix(float aspect) {

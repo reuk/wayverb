@@ -73,13 +73,17 @@ public:
     void update(float dt) override;
     void draw() const override;
 
-    void init_waveguide(const SceneData& scene_data,
-                        const config::Combined& cc);
+private:
+    using Waveguide = RectangularWaveguide;
+    //    using Waveguide = TetrahedralWaveguide;
+
+    std::unique_ptr<Waveguide> init_waveguide(const SceneData& scene_data,
+                                              const config::Combined& cc);
     void trigger_pressure_calculation();
+
     RaytracerResults get_raytracer_results(const SceneData& scene_data,
                                            const config::Combined& cc);
 
-private:
     const GenericShader& shader;
 
     cl::Context context;
@@ -90,13 +94,11 @@ private:
     std::unique_ptr<OctahedronObject> source_object;
     std::unique_ptr<OctahedronObject> receiver_object;
 
-    using Waveguide = RectangularWaveguide;
-    //    using Waveguide = TetrahedralWaveguide;
-
     std::unique_ptr<MeshObject<Waveguide>> mesh_object;
-    std::unique_ptr<Waveguide> waveguide;
+    std::future<std::unique_ptr<Waveguide>> future_waveguide;
     std::future<std::vector<cl_float>> future_pressure;
-    std::thread waveguide_load_thread;
+
+    std::unique_ptr<Waveguide> waveguide;
 
     std::unique_ptr<RaytraceObject> raytrace_object;
     std::future<RaytracerResults> raytracer_results;
@@ -106,30 +108,33 @@ private:
 
 class SceneRenderer final : public OpenGLRenderer {
 public:
-    SceneRenderer();
-    virtual ~SceneRenderer();
+    SceneRenderer(const SceneData& model, const config::Combined& config);
+    virtual ~SceneRenderer() noexcept = default;
+
+    //  lock on all public methods
+    //  don't call public methods from one another!
     void newOpenGLContextCreated() override;
     void renderOpenGL() override;
     void openGLContextClosing() override;
 
     void set_aspect(float aspect);
     void update_scale(float delta);
-    static glm::mat4 get_projection_matrix(float aspect);
-
-    glm::mat4 get_projection_matrix() const;
-    glm::mat4 get_view_matrix() const;
-
     void set_rotation(float azimuth, float elevation);
 
-    void load_from_file_package(const FilePackage& fp);
-
-    glm::mat4 get_scale_matrix() const;
-
 private:
+    //  don't lock on anything private
     void update();
     void draw() const;
-    std::unique_ptr<GenericShader> shader;
+    glm::mat4 get_projection_matrix() const;
+    glm::mat4 get_view_matrix() const;
+    glm::mat4 get_scale_matrix() const;
 
+    static glm::mat4 get_projection_matrix(float aspect);
+
+    const SceneData& model;
+    const config::Combined& config;
+
+    std::unique_ptr<GenericShader> shader;
     std::unique_ptr<DrawableScene> scene;
 
     glm::mat4 projection_matrix;
@@ -138,5 +143,5 @@ private:
     float scale;
     glm::mat4 translation;
 
-    std::mutex mut;
+    mutable std::mutex mut;
 };

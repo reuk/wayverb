@@ -7,9 +7,9 @@
 
 namespace config {
 template <typename Archive>
-void serialize(Archive& archive, Combined& m) {
-    archive(cereal::make_nvp("waveguide", cereal::base_class<Waveguide>(&m)),
-            cereal::make_nvp("raytracer", cereal::base_class<Raytracer>(&m)));
+void Combined::serialize(Archive& archive) {
+    archive(cereal::make_nvp("waveguide", cereal::base_class<Waveguide>(this)),
+            cereal::make_nvp("raytracer", cereal::base_class<Raytracer>(this)));
 }
 }  // namespace config
 JSON_OSTREAM_OVERLOAD(config::Combined);

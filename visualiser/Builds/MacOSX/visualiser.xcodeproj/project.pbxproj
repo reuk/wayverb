@@ -11,6 +11,7 @@
 		0A67B2882295EDE60A8C68B8 /* juce_gui_extra.mm in Sources */ = {isa = PBXBuildFile; fileRef = 0A40FFC4DE60A3EA98A445AB /* juce_gui_extra.mm */; };
 		127F610F5B79495C0D092DF7 /* juce_audio_processors.mm in Sources */ = {isa = PBXBuildFile; fileRef = 1F4341A2DEBD8ABD625FA0A5 /* juce_audio_processors.mm */; };
 		17BFF294246BE35E2334DF9F /* QTKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AED820E5E9613936B4CCA98A /* QTKit.framework */; };
+		1B29EECB1CDB93E6003BD0BB /* VisualiserLookAndFeel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1B29EEC91CDB93E6003BD0BB /* VisualiserLookAndFeel.cpp */; };
 		1BA3F39F1CDA20D400073946 /* libmodern_gl_utils.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1BA3F39E1CDA20D400073946 /* libmodern_gl_utils.a */; };
 		1BA3F3BF1CDA216E00073946 /* libfftw3f.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1BA3F3BE1CDA216E00073946 /* libfftw3f.a */; };
 		1BA3F3C11CDA217A00073946 /* OpenCL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1BA3F3C01CDA217A00073946 /* OpenCL.framework */; };
@@ -354,6 +355,9 @@
 		193CCD64DDE4FE3EA75875D8 /* md5.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = md5.h; path = ../../JuceLibraryCode/modules/juce_audio_formats/codecs/flac/libFLAC/include/private/md5.h; sourceTree = SOURCE_ROOT; };
 		19915F8936AEB54626680A0E /* juce_RuntimePermissions.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = juce_RuntimePermissions.cpp; path = ../../JuceLibraryCode/modules/juce_core/misc/juce_RuntimePermissions.cpp; sourceTree = SOURCE_ROOT; };
 		1A44838655E7F6CB3B8FE847 /* juce_File.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = juce_File.cpp; path = ../../JuceLibraryCode/modules/juce_core/files/juce_File.cpp; sourceTree = SOURCE_ROOT; };
+		1B29EEAA1CDB8C2C003BD0BB /* CommandIDs.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = CommandIDs.h; path = ../../Source/CommandIDs.h; sourceTree = "<group>"; };
+		1B29EEC91CDB93E6003BD0BB /* VisualiserLookAndFeel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = VisualiserLookAndFeel.cpp; path = ../../Source/VisualiserLookAndFeel.cpp; sourceTree = "<group>"; };
+		1B29EECA1CDB93E6003BD0BB /* VisualiserLookAndFeel.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = VisualiserLookAndFeel.hpp; path = ../../Source/VisualiserLookAndFeel.hpp; sourceTree = "<group>"; };
 		1B3DE3698539A30ABBE4F207 /* jcprepct.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = jcprepct.c; path = ../../JuceLibraryCode/modules/juce_graphics/image_formats/jpglib/jcprepct.c; sourceTree = SOURCE_ROOT; };
 		1B6108181CA032ADF5CE83F6 /* juce_FileTreeComponent.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = juce_FileTreeComponent.h; path = ../../JuceLibraryCode/modules/juce_gui_basics/filebrowser/juce_FileTreeComponent.h; sourceTree = SOURCE_ROOT; };
 		1BA3F39E1CDA20D400073946 /* libmodern_gl_utils.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libmodern_gl_utils.a; path = ../../../../../../../usr/local/lib/libmodern_gl_utils.a; sourceTree = "<group>"; };
@@ -1686,6 +1690,9 @@
 				1BA3F3DD1CDA21EC00073946 /* MoreConversions.hpp */,
 				1BA3F3DE1CDA21EC00073946 /* OctahedronObject.cpp */,
 				1BA3F3DF1CDA21EC00073946 /* OctahedronObject.hpp */,
+				1B29EEAA1CDB8C2C003BD0BB /* CommandIDs.h */,
+				1B29EEC91CDB93E6003BD0BB /* VisualiserLookAndFeel.cpp */,
+				1B29EECA1CDB93E6003BD0BB /* VisualiserLookAndFeel.hpp */,
 			);
 			name = Source;
 			sourceTree = "<group>";
@@ -3912,6 +3919,7 @@
 				1BA3F3E01CDA21EC00073946 /* BasicDrawableObject.cpp in Sources */,
 				1BA3F3E61CDA21EC00073946 /* MainComponent.cpp in Sources */,
 				1BA3F3E21CDA21EC00073946 /* ConfigPanel.cpp in Sources */,
+				1B29EECB1CDB93E6003BD0BB /* VisualiserLookAndFeel.cpp in Sources */,
 				0A67B2882295EDE60A8C68B8 /* juce_gui_extra.mm in Sources */,
 				1BA3F3EB1CDA21EC00073946 /* OctahedronObject.cpp in Sources */,
 				818A6807A6A72ADAAF25BA49 /* juce_opengl.mm in Sources */,
