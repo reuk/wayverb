@@ -7,6 +7,7 @@
 #include "common/cl_common.h"
 #include "common/conversions.h"
 #include "common/json_read_write.h"
+#include "common/kernel.h"
 
 #include "combined_config_serialize.h"
 
@@ -204,7 +205,9 @@ void DrawableScene::init_waveguide(const SceneData &scene_data,
     auto corrected_source_index = w->get_index_for_coordinate(cc.source);
     auto corrected_source = w->get_coordinate_for_index(corrected_source_index);
 
-    auto input = std::vector<float>{1, 0, 0, 0};
+    // auto input = std::vector<float>{1};
+    auto input = sin_modulated_gaussian_kernel(
+        99, 0.008, cc.get_waveguide_sample_rate());
     //    auto input =
     //        sin_modulated_gaussian_kernel(99,
     //                                      4.0 /
@@ -320,14 +323,14 @@ SceneRenderer::~SceneRenderer() {
 
 void SceneRenderer::load_from_file_package(const FilePackage &fp) {
     std::lock_guard<std::mutex> lck(mut);
-    auto scene_scale = 0.75f;
+    auto scene_scale = 0.5f;
     SceneData scene_data(fp.get_object().getFullPathName().toStdString(),
                          fp.get_material().getFullPathName().toStdString(),
                          scene_scale);
 
-    constexpr auto v = 1.0;
-    scene_data.surface_at(41) =
-        Surface{{{v, v, v, v, v, v, v, v}}, {{v, v, v, v, v, v, v, v}}};
+    constexpr auto v = 1.00;
+    scene_data.set_surfaces(
+        Surface{{{v, v, v, v, v, v, v, v}}, {{v, v, v, v, v, v, v, v}}});
 
     config::Combined cc;
     try {

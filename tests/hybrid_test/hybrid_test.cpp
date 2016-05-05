@@ -13,6 +13,7 @@
 #include "common/dc_blocker.h"
 #include "common/filters_common.h"
 #include "common/json_read_write.h"
+#include "common/kernel.h"
 #include "common/scene_data.h"
 #include "common/sinc.h"
 #include "common/stl_wrappers.h"
@@ -67,27 +68,6 @@ void write_file(const config::App& config,
     auto depth = get_file_depth(config.bit_depth);
 
     write_sndfile(output_file, output, config.sample_rate, depth, format);
-}
-
-double gaussian(double t, double bandwidth) {
-    return std::pow(M_E, -std::pow(t, 2) / (2 * std::pow(bandwidth, 2)));
-}
-
-double sin_modulated_gaussian(double t, double bandwidth, double frequency) {
-    return -gaussian(t, bandwidth) * sin(frequency * t);
-}
-
-template <typename T = float>
-std::vector<T> sin_modulated_gaussian_kernel(int length,
-                                             double bandwidth,
-                                             double sr) {
-    CHECK(length % 2 == 1) << "kernel length must be odd";
-    std::vector<T> ret(length);
-    for (int i = 0; i != length; ++i) {
-        ret[i] =
-            sin_modulated_gaussian((i - (length / 2)) / sr, bandwidth, sr / 8);
-    }
-    return ret;
 }
 
 auto run_waveguide(ComputeContext& context_info,
