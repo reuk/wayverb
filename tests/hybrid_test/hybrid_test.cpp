@@ -10,6 +10,7 @@
 #include "common/boundaries_serialize.h"
 #include "common/cl_common.h"
 #include "common/conversions.h"
+#include "common/dc_blocker.h"
 #include "common/filters_common.h"
 #include "common/json_read_write.h"
 #include "common/scene_data.h"
@@ -68,11 +69,32 @@ void write_file(const config::App& config,
     write_sndfile(output_file, output, config.sample_rate, depth, format);
 }
 
+double gaussian(double t, double bandwidth) {
+    return std::pow(M_E, -std::pow(t, 2) / (2 * std::pow(bandwidth, 2)));
+}
+
+double sin_modulated_gaussian(double t, double bandwidth, double frequency) {
+    return -gaussian(t, bandwidth) * sin(frequency * t);
+}
+
+template <typename T = float>
+std::vector<T> sin_modulated_gaussian_kernel(int length,
+                                             double bandwidth,
+                                             double sr) {
+    CHECK(length % 2 == 1) << "kernel length must be odd";
+    std::vector<T> ret(length);
+    for (int i = 0; i != length; ++i) {
+        ret[i] =
+            sin_modulated_gaussian((i - (length / 2)) / sr, bandwidth, sr / 8);
+    }
+    return ret;
+}
+
 auto run_waveguide(ComputeContext& context_info,
                    const CuboidBoundary& boundary,
                    const config::Combined& config,
                    const std::string& output_folder) {
-    auto steps = 4000;
+    auto steps = 16000;
 
     //  get opencl program
     auto waveguide_program = get_program<RectangularProgram>(
@@ -94,15 +116,22 @@ auto run_waveguide(ComputeContext& context_info,
 
     auto corrected_source = waveguide.get_coordinate_for_index(source_index);
 
+    auto input =
+        //  TODO the bandwidth is wrong, I think
+        sin_modulated_gaussian_kernel(99,
+                                      4.0 / config.get_waveguide_sample_rate(),
+                                      config.get_waveguide_sample_rate());
+
     //  run the waveguide
     //            [                                        ]
     std::cout << "[ -- running waveguide ----------------- ]" << std::endl;
     ProgressBar pb(std::cout, steps);
-    auto results = waveguide.run_basic(corrected_source,
-                                       receiver_index,
-                                       steps,
-                                       config.get_waveguide_sample_rate(),
-                                       [&pb] { pb += 1; });
+    auto results = waveguide.init_and_run(corrected_source,
+                                          std::move(input),
+                                          receiver_index,
+                                          steps,
+                                          config.get_waveguide_sample_rate(),
+                                          [&pb] { pb += 1; });
 
     auto output = std::vector<float>(results.size());
     proc::transform(
@@ -138,11 +167,33 @@ int main(int argc, char** argv) {
 
     json_read_write::write(output_folder + "/used_config.json", config);
 
+    {
+        std::vector<float> sig(44100);
+        for (auto i = 0; i != sig.size(); ++i) {
+            sig[i] = sin(i * 0.01) + 2;
+        }
+        filter::LinearDCBlocker(32).filter(sig);
+        write_file(config, output_folder, "dc_test", {sig});
+    }
+
     ComputeContext context_info;
 
     auto waveguide_output =
         run_waveguide(context_info, boundary, config, output_folder);
-    LOG(INFO) << "waveguide output mag: " << max_mag(waveguide_output);
+
+    {
+        // filter::LinearDCBlocker dc(32);
+        // dc.filter(waveguide_output);
+    }
+
+    {
+        //  TODO this will 'shift' the signal forward in time
+        //  I need to move it around to compensate
+        //  (or move the raytracer output forward a bit)
+        filter::HipassWindowedSinc sinc(waveguide_output.size());
+        sinc.set_params(20, config.get_waveguide_sample_rate());
+        sinc.filter(waveguide_output);
+    }
 
     write_file(config, output_folder, "waveguide_raw", {waveguide_output});
 
@@ -151,14 +202,16 @@ int main(int argc, char** argv) {
     LOG(INFO) << "waveguide adjusted mag: " << max_mag(waveguide_adjusted);
 
     //  get the valid region of the spectrum
-    filter::LopassWindowedSinc lopass(waveguide_adjusted.size());
-    lopass.set_params(config.filter_frequency, config.sample_rate);
-    lopass.filter(waveguide_adjusted);
-    LOG(INFO) << "waveguide filtered mag: " << max_mag(waveguide_adjusted);
-
-    write_file(
-        config, output_folder, "waveguide_adjusted", {waveguide_adjusted});
-
+    //    filter::LopassWindowedSinc lopass(waveguide_adjusted.size());
+    //    lopass.set_params(config.filter_frequency, config.sample_rate);
+    //    lopass.filter(waveguide_adjusted);
+    //    LOG(INFO) << "waveguide filtered mag: " <<
+    //    max_mag(waveguide_adjusted);
+    //
+    //    write_file(
+    //        config, output_folder, "waveguide_adjusted",
+    //        {waveguide_adjusted});
+    //
     auto raytrace_program = get_program<RaytracerProgram>(context_info.context,
                                                           context_info.device);
 

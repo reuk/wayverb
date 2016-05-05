@@ -2,7 +2,7 @@
 
 #include "BasicDrawableObject.hpp"
 
-#include "scene_data.h"
+#include "common/scene_data.h"
 
 class ModelObject final : public BasicDrawableObject {
 public:

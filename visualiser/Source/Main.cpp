@@ -1,5 +1,4 @@
 #include "Main.hpp"
-#include "glog/logging.h"
 
 #include <memory>
 
@@ -14,7 +13,6 @@ bool VisualiserApplication::moreThanOneInstanceAllowed() {
 }
 
 void VisualiserApplication::initialise(const String& commandLine) {
-    google::InitGoogleLogging("visualiser");
     mainWindow = std::make_unique<MainWindow>(getApplicationName());
 }
 

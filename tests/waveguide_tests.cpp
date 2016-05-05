@@ -5,6 +5,7 @@
 #include "common/cl_common.h"
 #include "common/sinc.h"
 
+#include "glog/logging.h"
 #include "gtest/gtest.h"
 
 #include <random>
@@ -73,11 +74,12 @@ TEST(run_waveguide, run_waveguide) {
     auto corrected_source = waveguide.get_coordinate_for_index(source_index);
 
     ProgressBar pb(std::cout, steps);
-    auto results = waveguide.run_basic(corrected_source,
-                                       receiver_index,
-                                       steps,
-                                       config.get_waveguide_sample_rate(),
-                                       [&pb] { pb += 1; });
+    auto results = waveguide.init_and_run(corrected_source,
+                                          std::vector<float>{1},
+                                          receiver_index,
+                                          steps,
+                                          config.get_waveguide_sample_rate(),
+                                          [&pb] { pb += 1; });
 
     auto output = std::vector<float>(results.size());
     proc::transform(

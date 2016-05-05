@@ -159,6 +159,12 @@ public:
         }
     };
 
+    struct __attribute__((aligned(8))) InputInfo final {
+        cl_ulong write_location;
+        cl_float pressure;
+        cl_bool is_on;
+    };
+
     using BoundaryDataArray1 = BoundaryDataArray<1>;
     using BoundaryDataArray2 = BoundaryDataArray<2>;
     using BoundaryDataArray3 = BoundaryDataArray<3>;
@@ -174,7 +180,8 @@ public:
     auto get_kernel() const {
         int error;
         auto ret =
-            cl::make_kernel<cl::Buffer,
+            cl::make_kernel<InputInfo,
+                            cl::Buffer,
                             cl::Buffer,
                             cl::Buffer,
                             cl_int3,
@@ -186,11 +193,9 @@ public:
                             cl::Buffer,
                             cl_float,
                             cl_float,
-                            cl_float,
                             cl_ulong,
                             cl::Buffer,
                             cl::Buffer>(*this, "condensed_waveguide", &error);
-        assert(error == CL_SUCCESS);
         return ret;
     }
 
@@ -202,11 +207,6 @@ public:
     auto get_filter_test_2_kernel() const {
         return cl::make_kernel<cl::Buffer, cl::Buffer, cl::Buffer, cl::Buffer>(
             *this, "filter_test_2");
-    }
-
-    auto get_ghost_point_test_kernel() const {
-        return cl::make_kernel<cl::Buffer, cl::Buffer, cl::Buffer>(
-            *this, "ghost_point_test");
     }
 
     static CondensedNodeStruct condense(const NodeStruct& n);

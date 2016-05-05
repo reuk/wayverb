@@ -2,10 +2,12 @@
 
 #include "string_builder.h"
 
-#include <glog/logging.h>
+//#include <glog/logging.h>
 
 #define __CL_ENABLE_EXCEPTIONS
 #include "cl.hpp"
+
+#include <iostream>
 
 void print_device_info(const cl::Device& i);
 cl::Context get_context();
@@ -25,9 +27,9 @@ T get_program(const cl::Context& context, const cl::Device& device) {
     try {
         program.build({device}, "-Werror");
     } catch (const cl::Error& e) {
-        LOG(INFO) << program.template getBuildInfo<CL_PROGRAM_BUILD_LOG>(
-            device);
-        LOG(INFO) << e.what();
+        std::cerr << program.template getBuildInfo<CL_PROGRAM_BUILD_LOG>(device)
+                  << std::endl;
+        std::cerr << e.what() << std::endl;
         throw;
     }
     return program;

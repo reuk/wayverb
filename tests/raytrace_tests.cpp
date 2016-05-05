@@ -6,6 +6,7 @@
 #include "common/progress.h"
 #include "common/write_audio_file.h"
 
+#include "glog/logging.h"
 #include "gtest/gtest.h"
 
 #include <set>

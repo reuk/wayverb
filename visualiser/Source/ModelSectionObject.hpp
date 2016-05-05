@@ -3,8 +3,8 @@
 #include "BasicDrawableObject.hpp"
 #include "BoxObject.hpp"
 
-#include "octree.h"
-#include "scene_data.h"
+#include "common/octree.h"
+#include "common/scene_data.h"
 
 class ModelSectionObject final : public BasicDrawableObject {
 public:

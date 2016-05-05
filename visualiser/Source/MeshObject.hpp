@@ -1,7 +1,7 @@
 #pragma once
 
-#include "sinc.h"
-#include "waveguide.h"
+#include "common/sinc.h"
+#include "waveguide/waveguide.h"
 
 //----------------------------------------------------------------------------//
 

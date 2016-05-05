@@ -39,14 +39,6 @@
  #define WM_APPCOMMAND                     0x0319
 #endif
 
-#ifndef MI_WP_SIGNATURE
- #define MI_WP_SIGNATURE 0xFF515700
-#endif
-
-#ifndef SIGNATURE_MASK
- #define SIGNATURE_MASK 0xFFFFFF00
-#endif
-
 extern void juce_repeatLastProcessPriority();
 extern void juce_checkCurrentlyFocusedTopLevelWindow();  // in juce_TopLevelWindow.cpp
 extern bool juce_isRunningInWine();
@@ -73,7 +65,6 @@ bool Desktop::canUseSemiTransparentWindows() noexcept
 //==============================================================================
 #ifndef WM_TOUCH
  #define WM_TOUCH 0x0240
- #define TOUCH_COORD_TO_PIXEL(l)  ((l) / 100)
  #define TOUCHEVENTF_MOVE    0x0001
  #define TOUCHEVENTF_DOWN    0x0002
  #define TOUCHEVENTF_UP      0x0004
@@ -454,6 +445,25 @@ private:
 };
 
 //==============================================================================
+Image createSnapshotOfNativeWindow (void* nativeWindowHandle)
+{
+    HWND hwnd = (HWND) nativeWindowHandle;
+
+    RECT r = getWindowRect (hwnd);
+    const int w = r.right - r.left;
+    const int h = r.bottom - r.top;
+
+    WindowsBitmapImage* nativeBitmap = new WindowsBitmapImage (Image::RGB, w, h, true);
+    Image bitmap (nativeBitmap);
+
+    HDC dc = GetDC (hwnd);
+    BitBlt (nativeBitmap->hdc, 0, 0, w, h, dc, 0, 0, SRCCOPY);
+    ReleaseDC (hwnd, dc);
+
+    return SoftwareImageType().convert (bitmap);
+}
+
+//==============================================================================
 namespace IconConverters
 {
     Image createImageFromHBITMAP (HBITMAP bitmap)
@@ -521,7 +531,7 @@ namespace IconConverters
             }
         }
 
-        return Image::null;
+        return Image();
     }
 
     HICON createHICONFromImage (const Image& image, const BOOL isIcon, int hotspotX, int hotspotY)
@@ -848,7 +858,7 @@ public:
 
         if (! makeActive)
         {
-            // in this case a broughttofront call won't have occured, so do it now..
+            // in this case a broughttofront call won't have occurred, so do it now..
             handleBroughtToFront();
         }
     }
@@ -1030,8 +1040,9 @@ public:
 
             Point<float> getMousePos (const POINTL& mousePos) const
             {
-                return owner.globalToLocal (Point<float> (static_cast<float> (mousePos.x),
-                                                          static_cast<float> (mousePos.y)));
+                return owner.globalToLocal (ScalingHelpers::unscaledScreenPosToScaled (owner.getComponent().getDesktopScaleFactor(),
+                                                                                       Point<float> (static_cast<float> (mousePos.x),
+                                                                                                     static_cast<float> (mousePos.y))));
             }
 
             template <typename CharType>
@@ -1176,7 +1187,7 @@ private:
         void timerCallback() override
         {
             stopTimer();
-            image = Image::null;
+            image = Image();
         }
 
     private:
@@ -1548,7 +1559,7 @@ private:
         DeleteObject (rgn);
         EndPaint (hwnd, &paintStruct);
 
-       #ifndef JUCE_GCC
+       #if JUCE_MSVC
         _fpreset(); // because some graphics cards can unmask FP exceptions
        #endif
 
@@ -1716,9 +1727,11 @@ private:
         if (registerTouchWindow == nullptr)
             return false;
 
-        LPARAM dw = GetMessageExtraInfo();
-        // see https://msdn.microsoft.com/en-us/library/windows/desktop/ms703320(v=vs.85).aspx
-        return (dw & SIGNATURE_MASK) == MI_WP_SIGNATURE;
+        // Relevant info about touch/pen detection flags:
+        // https://msdn.microsoft.com/en-us/library/windows/desktop/ms703320(v=vs.85).aspx
+        // http://www.petertissen.de/?p=4
+
+        return (GetMessageExtraInfo() & 0xFFFFFF80 /*SIGNATURE_MASK*/) == 0xFF515780 /*MI_WP_SIGNATURE*/;
     }
 
     void doMouseMove (Point<float> position, bool isMouseDownEvent)
@@ -1926,8 +1939,8 @@ private:
         bool isCancel = false;
         const int touchIndex = currentTouches.getIndexOfTouch (touch.dwID);
         const int64 time = getMouseEventTime();
-        const Point<float> pos (globalToLocal (Point<float> (static_cast<float> (TOUCH_COORD_TO_PIXEL (touch.x)),
-                                                             static_cast<float> (TOUCH_COORD_TO_PIXEL (touch.y)))));
+        const Point<float> pos (globalToLocal (Point<float> (touch.x / 100.0f,
+                                                             touch.y / 100.0f)));
         const float pressure = MouseInputSource::invalidPressure;
         ModifierKeys modsToSend (currentModifiers);
 
@@ -1937,7 +1950,7 @@ private:
             modsToSend = currentModifiers;
 
             // this forces a mouse-enter/up event, in case for some reason we didn't get a mouse-up before.
-            handleMouseEvent (touchIndex, pos.toFloat(), modsToSend.withoutMouseButtons(), pressure, time);
+            handleMouseEvent (touchIndex, pos, modsToSend.withoutMouseButtons(), pressure, time);
 
             if (! isValidPeer (this)) // (in case this component was deleted by the event)
                 return false;
@@ -1961,7 +1974,7 @@ private:
             currentModifiers = currentModifiers.withoutMouseButtons();
         }
 
-        handleMouseEvent (touchIndex, pos.toFloat(), modsToSend, pressure, time);
+        handleMouseEvent (touchIndex, pos, modsToSend, pressure, time);
 
         if (! isValidPeer (this)) // (in case this component was deleted by the event)
             return false;
@@ -3317,6 +3330,8 @@ void Desktop::setKioskComponent (Component* kioskModeComp, bool enableOrDisable,
     if (enableOrDisable)
         kioskModeComp->setBounds (getDisplays().getMainDisplay().totalArea);
 }
+
+void Desktop::allowedOrientationsChanged() {}
 
 //==============================================================================
 struct MonitorInfo

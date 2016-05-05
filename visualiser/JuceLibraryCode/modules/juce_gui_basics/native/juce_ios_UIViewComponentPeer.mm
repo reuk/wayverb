@@ -118,6 +118,8 @@ using namespace juce;
 - (void) willRotateToInterfaceOrientation: (UIInterfaceOrientation) toInterfaceOrientation duration: (NSTimeInterval) duration;
 - (void) didRotateFromInterfaceOrientation: (UIInterfaceOrientation) fromInterfaceOrientation;
 - (void) viewWillTransitionToSize: (CGSize) size withTransitionCoordinator: (id<UIViewControllerTransitionCoordinator>) coordinator;
+- (BOOL) prefersStatusBarHidden;
+- (UIStatusBarStyle) preferredStatusBarStyle;
 
 - (void) viewDidLoad;
 - (void) viewWillAppear: (BOOL) animated;
@@ -209,7 +211,7 @@ public:
 
     static Rectangle<int> rotatedScreenPosToReal (const Rectangle<int>& r)
     {
-        if (isUsingOldRotationMethod())
+        if (! SystemStats::isRunningInAppExtensionSandbox() && isUsingOldRotationMethod())
         {
             const Rectangle<int> screen (convertToRectInt ([UIScreen mainScreen].bounds));
 
@@ -239,7 +241,7 @@ public:
 
     static Rectangle<int> realScreenPosToRotated (const Rectangle<int>& r)
     {
-        if (isUsingOldRotationMethod())
+        if (! SystemStats::isRunningInAppExtensionSandbox() && isUsingOldRotationMethod())
         {
             const Rectangle<int> screen (convertToRectInt ([UIScreen mainScreen].bounds));
 
@@ -298,6 +300,15 @@ static void sendScreenBoundsUpdate (JuceUIViewController* c)
     juceView->owner->updateTransformAndScreenBounds();
 }
 
+static bool isKioskModeView (JuceUIViewController* c)
+{
+    JuceUIView* juceView = (JuceUIView*) [c view];
+    jassert (juceView != nil && juceView->owner != nullptr);
+
+    return Desktop::getInstance().getKioskModeComponent() == &(juceView->owner->getComponent());
+}
+
+
 } // (juce namespace)
 
 //==============================================================================
@@ -339,31 +350,42 @@ static void sendScreenBoundsUpdate (JuceUIViewController* c)
     MessageManager::callAsync ([=]() { sendScreenBoundsUpdate (self); });
 }
 
+- (BOOL) prefersStatusBarHidden
+{
+    return isKioskModeView (self);
+}
+
+- (UIStatusBarStyle) preferredStatusBarStyle
+{
+    return UIStatusBarStyleDefault;
+}
+
 - (void) viewDidLoad
 {
     sendScreenBoundsUpdate (self);
+    [super viewDidLoad];
 }
 
 - (void) viewWillAppear: (BOOL) animated
 {
-    ignoreUnused (animated);
-    [self viewDidLoad];
+    sendScreenBoundsUpdate (self);
+    [super viewWillAppear:animated];
 }
 
 - (void) viewDidAppear: (BOOL) animated
 {
-    ignoreUnused (animated);
-    [self viewDidLoad];
+    sendScreenBoundsUpdate (self);
+    [super viewDidAppear:animated];
 }
 
 - (void) viewWillLayoutSubviews
 {
-    [self viewDidLoad];
+    sendScreenBoundsUpdate (self);
 }
 
 - (void) viewDidLayoutSubviews
 {
-    [self viewDidLoad];
+    sendScreenBoundsUpdate (self);
 }
 
 @end
@@ -448,7 +470,7 @@ static void sendScreenBoundsUpdate (JuceUIViewController* c)
     if (owner != nullptr)
         owner->viewFocusLoss();
 
-    return true;
+    return [super resignFirstResponder];
 }
 
 - (BOOL) canBecomeFirstResponder
@@ -976,7 +998,10 @@ void UIViewComponentPeer::drawRect (CGRect r)
         CGContextClearRect (cg, CGContextGetClipBoundingBox (cg));
 
     CGContextConcatCTM (cg, CGAffineTransformMake (1, 0, 0, -1, 0, getComponent().getHeight()));
-    CoreGraphicsContext g (cg, getComponent().getHeight(), static_cast<float> ([UIScreen mainScreen].scale));
+
+    // NB the CTM on iOS already includes a factor for the display scale, so
+    // we'll tell the context that the scale is 1.0 to avoid it using it twice
+    CoreGraphicsContext g (cg, getComponent().getHeight(), 1.0f);
 
     insideDrawRect = true;
     handlePaint (g);
@@ -991,14 +1016,18 @@ bool UIViewComponentPeer::canBecomeKeyWindow()
 //==============================================================================
 void Desktop::setKioskComponent (Component* kioskModeComp, bool enableOrDisable, bool /*allowMenusAndBars*/)
 {
-    [[UIApplication sharedApplication] setStatusBarHidden: enableOrDisable
-                                            withAnimation: UIStatusBarAnimationSlide];
-
     displays->refresh();
 
-    if (ComponentPeer* const peer = kioskModeComp->getPeer())
+    if (ComponentPeer* peer = kioskModeComp->getPeer())
+    {
+        if (UIViewComponentPeer* uiViewPeer = dynamic_cast<UIViewComponentPeer*> (peer))
+            [uiViewPeer->controller setNeedsStatusBarAppearanceUpdate];
+
         peer->setFullScreen (enableOrDisable);
+    }
 }
+
+void Desktop::allowedOrientationsChanged() {}
 
 //==============================================================================
 void UIViewComponentPeer::repaint (const Rectangle<int>& area)

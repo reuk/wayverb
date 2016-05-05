@@ -4,6 +4,8 @@
 #include "common/sinc.h"
 #include "common/stl_wrappers.h"
 
+#include "glog/logging.h"
+
 #include <algorithm>
 #include <cstdlib>
 #include <iostream>
@@ -62,7 +64,8 @@ TetrahedralWaveguide::TetrahedralWaveguide(const TetrahedralProgram& program,
               program, queue, TetrahedralMesh(boundary, spacing, anchor)) {
 }
 
-RunStepResult TetrahedralWaveguide::run_step(size_type o,
+RunStepResult TetrahedralWaveguide::run_step(const WriteInfo& write_info,
+                                             size_type o,
                                              cl::CommandQueue& queue,
                                              kernel_type& kernel,
                                              size_type nodes,
@@ -188,24 +191,17 @@ void RectangularWaveguide::setup(cl::CommandQueue& queue,
              transform_matrix.data() + TRANSFORM_MATRIX_ELEMENTS,
              transform_buffer);
 
-    std::vector<cl_float3> starting_velocity(1, {{0, 0, 0, 0}});
+    std::vector<cl_float3> starting_velocity{{{0, 0, 0, 0}}};
     cl::copy(queue,
              starting_velocity.begin(),
              starting_velocity.end(),
              velocity_buffer);
 
-    /*
-    //  TODO set boundary data structures properly
-    setup_boundary_data_buffer<1>(queue, boundary_data_1_buffer);
-    setup_boundary_data_buffer<2>(queue, boundary_data_2_buffer);
-    setup_boundary_data_buffer<3>(queue, boundary_data_3_buffer);
-    */
-
     period = 1 / sr;
-    attenuation_factor = std::pow(M_E, mesh.get_spacing() * -0.00025);
 }
 
-RunStepResult RectangularWaveguide::run_step(size_type o,
+RunStepResult RectangularWaveguide::run_step(const WriteInfo& write_info,
+                                             size_type o,
                                              cl::CommandQueue& queue,
                                              kernel_type& kernel,
                                              size_type nodes,
@@ -218,7 +214,11 @@ RunStepResult RectangularWaveguide::run_step(size_type o,
     auto flag = RectangularProgram::id_success;
     cl::copy(queue, (&flag) + 0, (&flag) + 1, error_flag_buffer);
 
+    RectangularProgram::InputInfo input_info{
+        write_info.index, write_info.pressure, write_info.is_on};
+
     kernel(cl::EnqueueArgs(queue, cl::NDRange(nodes)),
+           input_info,
            current,
            previous,
            node_buffer,
@@ -231,7 +231,6 @@ RunStepResult RectangularWaveguide::run_step(size_type o,
            velocity_buffer,
            mesh.get_spacing(),
            period,
-           attenuation_factor,
            o,
            output,
            error_flag_buffer);
@@ -287,9 +286,6 @@ bool RectangularWaveguide::inside(size_type index) const {
 std::vector<RectangularProgram::CanonicalCoefficients>
 RectangularWaveguide::to_filter_coefficients(std::vector<Surface> surfaces,
                                              float sr) {
-    surfaces.resize(
-        RectangularProgram::BiquadCoefficientsArray::BIQUAD_SECTIONS);
-
     std::vector<RectangularProgram::CanonicalCoefficients> ret(surfaces.size());
     proc::transform(surfaces, ret.begin(), [sr](auto i) {
         return to_filter_coefficients(i, sr);

@@ -1,6 +1,8 @@
 #pragma once
 
 struct DoNothingCallback {
+    virtual ~DoNothingCallback() noexcept = default;
+
     virtual void operator()() const {
     }
 };

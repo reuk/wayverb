@@ -4,6 +4,8 @@
 #include "common/stl_wrappers.h"
 #include "common/triangle.h"
 
+#include "glog/logging.h"
+
 #include <algorithm>
 #include <numeric>
 

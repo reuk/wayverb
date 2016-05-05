@@ -439,18 +439,6 @@ void ghost_point_pressure_update(
         filter_input, &(boundary_data->filter_memory), boundary);
 }
 
-kernel void ghost_point_test(
-    const global float* input,
-    global BoundaryData* boundary_data,
-    const global FilterCoefficientsCanonical* canonical_coefficients) {
-    size_t index = get_global_id(0);
-    ghost_point_pressure_update(input[index],
-                                0,
-                                0,
-                                boundary_data + index,
-                                canonical_coefficients);
-}
-
 //----------------------------------------------------------------------------//
 
 #define TEMPLATE_SUM_SURROUNDING_PORTS(dimensions)                           \
@@ -664,30 +652,39 @@ BOUNDARY_TEMPLATE(3);
 #define RANGE (1)
 #define ENABLE_BOUNDARIES (1)
 
-kernel void condensed_waveguide(const global float* current,
-                                global float* previous,
-                                const global CondensedNode* nodes,
-                                int3 dimensions,
-                                global BoundaryDataArray1* boundary_data_1,
-                                global BoundaryDataArray2* boundary_data_2,
-                                global BoundaryDataArray3* boundary_data_3,
-                                const global CAT(FilterCoefficients,
-                                                 CANONICAL_FILTER_ORDER) *
-                                    boundary_coefficients,
-                                const global float* transform_matrix,
-                                global float3* velocity_buffer,
-                                float spatial_sampling_period,
-                                float T,
-                                float attenuation_factor,
-                                ulong read,
-                                global float* output,
-                                global int* error_flag) {
-    size_t index = get_global_id(0);
-    CondensedNode node = nodes[index];
+typedef struct {
+    ulong write_location;
+    float pressure;
+    bool is_on;
+} InputInfo;
 
-    int3 locator = to_locator(index, dimensions);
-
-    float prev_pressure = previous[index];
+float next_waveguide_pressure(const CondensedNode node,
+                              const global CondensedNode* nodes,
+                              float prev_pressure,
+                              const global float* current,
+                              int3 dimensions,
+                              int3 locator,
+                              global BoundaryDataArray1* boundary_data_1,
+                              global BoundaryDataArray2* boundary_data_2,
+                              global BoundaryDataArray3* boundary_data_3,
+                              const global CAT(FilterCoefficients,
+                                               CANONICAL_FILTER_ORDER) *
+                                  boundary_coefficients,
+                              global int* error_flag
+                              );
+float next_waveguide_pressure(const CondensedNode node,
+                              const global CondensedNode* nodes,
+                              float prev_pressure,
+                              const global float* current,
+                              int3 dimensions,
+                              int3 locator,
+                              global BoundaryDataArray1* boundary_data_1,
+                              global BoundaryDataArray2* boundary_data_2,
+                              global BoundaryDataArray3* boundary_data_3,
+                              const global CAT(FilterCoefficients,
+                                               CANONICAL_FILTER_ORDER) *
+                                  boundary_coefficients,
+                              global int* error_flag) {
     float next_pressure = 0;
 
     //  find the next pressure at this node, assign it to next_pressure
@@ -698,17 +695,13 @@ kernel void condensed_waveguide(const global float* current,
                 node.boundary_type & id_reentrant) {
                 for (int i = 0; i != PORTS; ++i) {
                     uint port_index = neighbor_index(locator, dimensions, i);
-                    //                    if (port_index != NO_NEIGHBOR &&
-                    //                        nodes[port_index].bt & id_inside)
-                    if (port_index != NO_NEIGHBOR)
+                    if (port_index != NO_NEIGHBOR) {
                         next_pressure += current[port_index];
+                    }
                 }
 
                 next_pressure /= (PORTS / 2);
                 next_pressure -= prev_pressure;
-
-                //  attenuation due to air
-                next_pressure *= attenuation_factor;
             } else {
 #if ENABLE_BOUNDARIES
                 next_pressure = boundary_1(current,
@@ -752,6 +745,46 @@ kernel void condensed_waveguide(const global float* current,
 #endif
             break;
     }
+
+    return next_pressure;
+}
+
+kernel void condensed_waveguide(const InputInfo input_info,
+                                global float* previous,
+                                const global float* current,
+                                const global CondensedNode* nodes,
+                                int3 dimensions,
+                                global BoundaryDataArray1* boundary_data_1,
+                                global BoundaryDataArray2* boundary_data_2,
+                                global BoundaryDataArray3* boundary_data_3,
+                                const global CAT(FilterCoefficients,
+                                                 CANONICAL_FILTER_ORDER) *
+                                    boundary_coefficients,
+                                const global float* transform_matrix,
+                                global float3* velocity_buffer,
+                                float spatial_sampling_period,
+                                float T,
+                                ulong read,
+                                global float* output,
+                                global int* error_flag) {
+    size_t index = get_global_id(0);
+    CondensedNode node = nodes[index];
+    int3 locator = to_locator(index, dimensions);
+
+    float prev_pressure = previous[index];
+    float next_pressure = (input_info.is_on && index == input_info.write_location)
+        ? input_info.pressure
+        : next_waveguide_pressure(node,
+                                  nodes,
+                                  prev_pressure,
+                                  current,
+                                  dimensions,
+                                  locator,
+                                  boundary_data_1,
+                                  boundary_data_2,
+                                  boundary_data_3,
+                                  boundary_coefficients,
+                                  error_flag);
 
     if (next_pressure < -RANGE || RANGE < next_pressure)
         *error_flag |= id_outside_range_error;

@@ -6,8 +6,9 @@
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#include "boundaries.h"
 #include "combined_config.h"
+
+#include "common/boundaries.h"
 
 ModelRendererComponent::ModelRendererComponent()
         : sceneRenderer(std::make_unique<SceneRenderer>())

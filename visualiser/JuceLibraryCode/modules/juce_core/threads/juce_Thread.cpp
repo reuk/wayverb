@@ -26,11 +26,12 @@
   ==============================================================================
 */
 
-Thread::Thread (const String& threadName_)
+Thread::Thread (const String& threadName_, const size_t stackSize)
     : threadName (threadName_),
       threadHandle (nullptr),
       threadId (0),
       threadPriority (5),
+      threadStackSize (stackSize),
       affinityMask (0),
       shouldExit (false)
 {
@@ -160,6 +161,14 @@ Thread* JUCE_CALLTYPE Thread::getCurrentThread()
 void Thread::signalThreadShouldExit()
 {
     shouldExit = true;
+}
+
+bool Thread::currentThreadShouldExit()
+{
+    if (Thread* currentThread = getCurrentThread())
+        return currentThread->threadShouldExit();
+
+    return false;
 }
 
 bool Thread::waitForThreadToExit (const int timeOutMilliseconds) const

@@ -22,7 +22,7 @@
   ==============================================================================
 */
 
-#if JUCE_PLUGINHOST_VST3
+#if JUCE_PLUGINHOST_VST3 && (JUCE_MAC || JUCE_WIN)
 
 } // namespace juce
 
@@ -93,7 +93,7 @@ static int getHashForTUID (const TUID& tuid) noexcept
     return value;
 }
 
-template<typename ObjectType>
+template <typename ObjectType>
 static void fillDescriptionWith (PluginDescription& description, ObjectType& object)
 {
     description.version  = toString (object.version).trim();
@@ -901,7 +901,7 @@ private:
         Atomic<int> refCount;
 
         //==============================================================================
-        template<typename Type>
+        template <typename Type>
         void addMessageToQueue (AttrID id, const Type& value)
         {
             jassert (id != nullptr);
@@ -920,7 +920,7 @@ private:
             owner->messageQueue.add (ComSmartPtr<Message> (new Message (*owner, this, id, value)));
         }
 
-        template<typename Type>
+        template <typename Type>
         bool findMessageOnQueueWithID (AttrID id, Type& value)
         {
             jassert (id != nullptr);
@@ -1190,6 +1190,7 @@ private:
         if (library.open (filePath))
         {
             typedef bool (PLUGIN_API *InitModuleProc) ();
+
             if (InitModuleProc proc = (InitModuleProc) getFunction ("InitDll"))
             {
                 if (proc())
@@ -1860,23 +1861,15 @@ public:
     bool producesMidi() const override   { return getBusInfo (false, false).channelCount > 0; }
 
     //==============================================================================
-    bool silenceInProducesSilenceOut() const override
-    {
-        if (processor != nullptr)
-            return processor->getTailSamples() == Vst::kNoTail;
-
-        return true;
-    }
-
     /** May return a negative value as a means of informing us that the plugin has "infinite tail," or 0 for "no tail." */
     double getTailLengthSeconds() const override
     {
         if (processor != nullptr)
         {
-            const double currentSampleRate = getSampleRate();
+            const double sampleRate = getSampleRate();
 
-            if (currentSampleRate > 0.0)
-                return jlimit (0, 0x7fffffff, (int) processor->getTailSamples()) / currentSampleRate;
+            if (sampleRate > 0.0)
+                return jlimit (0, 0x7fffffff, (int) processor->getTailSamples()) / sampleRate;
         }
 
         return 0.0;
@@ -2474,9 +2467,14 @@ void VST3PluginFormat::findAllTypesForFile (OwnedArray<PluginDescription>& resul
     VST3Classes::VST3ModuleHandle::getAllDescriptionsForFile (results, fileOrIdentifier);
 }
 
-AudioPluginInstance* VST3PluginFormat::createInstanceFromDescription (const PluginDescription& description, double, int)
+void VST3PluginFormat::createPluginInstance (const PluginDescription& description,
+                                             double,
+                                             int,
+                                             void* userData,
+                                             void (*callback) (void*, AudioPluginInstance*, const String&))
 {
     ScopedPointer<VST3Classes::VST3PluginInstance> result;
+
 
     if (fileMightContainThisPluginType (description.fileOrIdentifier))
     {
@@ -2496,7 +2494,17 @@ AudioPluginInstance* VST3PluginFormat::createInstanceFromDescription (const Plug
         previousWorkingDirectory.setAsCurrentWorkingDirectory();
     }
 
-    return result.release();
+    String errorMsg;
+
+    if (result == nullptr)
+        errorMsg = String (NEEDS_TRANS ("Unable to load XXX plug-in file")).replace ("XXX", "VST-3");
+
+    callback (userData, result.release(), errorMsg);
+}
+
+bool VST3PluginFormat::requiresUnblockedMessageThreadDuringCreation (const PluginDescription&) const noexcept
+{
+    return false;
 }
 
 bool VST3PluginFormat::fileMightContainThisPluginType (const String& fileOrIdentifier)
@@ -2526,7 +2534,7 @@ bool VST3PluginFormat::doesPluginStillExist (const PluginDescription& descriptio
     return File (description.fileOrIdentifier).exists();
 }
 
-StringArray VST3PluginFormat::searchPathsForPlugins (const FileSearchPath& directoriesToSearch, const bool recursive)
+StringArray VST3PluginFormat::searchPathsForPlugins (const FileSearchPath& directoriesToSearch, const bool recursive, bool)
 {
     StringArray results;
 

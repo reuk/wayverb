@@ -664,7 +664,8 @@ namespace WavFileHelpers
                         {
                             MemoryBlock mb;
                             input.readIntoMemoryBlock (mb, (ssize_t) infoLength);
-                            values.set (types[i], mb.toString());
+                            values.set (types[i], String::createStringFromData ((const char*) mb.getData(),
+                                                                                (int) mb.getSize()));
                             break;
                         }
                     }
@@ -1258,7 +1259,7 @@ public:
         if (writeFailed)
             return false;
 
-        const size_t bytes = numChannels * (unsigned int) numSamples * bitsPerSample / 8;
+        const size_t bytes = numChannels * (size_t) numSamples * bitsPerSample / 8;
         tempBlock.ensureSize (bytes, false);
 
         switch (bitsPerSample)

@@ -1,6 +1,5 @@
 #pragma once
 
-#include "power_function.h"
 #include "rectangular_mesh.h"
 #include "rectangular_program.h"
 #include "tetrahedral_mesh.h"
@@ -14,8 +13,6 @@
 
 #include <eigen3/Eigen/LU>
 #include <eigen3/Eigen/SVD>
-
-#include <glog/logging.h>
 
 #include <algorithm>
 #include <array>
@@ -90,7 +87,19 @@ public:
 
     virtual ~Waveguide() noexcept = default;
 
-    virtual RunStepResult run_step(size_type o,
+    struct WriteInfo {
+        WriteInfo(size_type index, float pressure, bool is_on)
+                : index(index)
+                , pressure(pressure)
+                , is_on(is_on) {
+        }
+        size_type index;
+        float pressure;
+        bool is_on;
+    };
+
+    virtual RunStepResult run_step(const WriteInfo& write_info,
+                                   size_type o,
                                    cl::CommandQueue& queue,
                                    kernel_type& kernel,
                                    size_type nodes,
@@ -99,7 +108,14 @@ public:
                                    cl::Buffer& output) = 0;
 
     std::vector<cl_float> run_step_slow() {
-        run_step(0, queue, kernel, nodes, *previous, *current, output);
+        run_step(run_info->get_write_info(),
+                 0,
+                 queue,
+                 kernel,
+                 nodes,
+                 *previous,
+                 *current,
+                 output);
         std::vector<cl_float> ret(nodes, 0);
         cl::copy(queue, *previous, ret.begin(), ret.end());
         swap_buffers();
@@ -123,48 +139,43 @@ public:
 
     virtual bool inside(size_type index) const = 0;
 
-    void initialise_mesh(const PowerFunction& u,
-                         const Vec3f& excitation,
-                         std::vector<cl_float>& ret) {
-        ret.resize(nodes);
-        for (auto i = 0u; i != nodes; ++i) {
-            if (inside(i)) {
-                ret[i] = u(this->get_coordinate_for_index(i), excitation);
-            }
-        }
-    }
-
     virtual void setup(cl::CommandQueue& queue, size_type o, float sr) {
     }
 
-    void init(const Vec3f& e, const PowerFunction& u, size_type o, float sr) {
+    void init(const Vec3f& e,
+              std::vector<float>&& input_sig,
+              size_type o,
+              float sr) {
+        //  whatever unique setup is required
         setup(queue, o, sr);
 
+        //  zero out meshes
         std::vector<cl_float> n(nodes, 0);
         cl::copy(queue, n.begin(), n.end(), *previous);
-
-        initialise_mesh(u, e, n);
-        bool valid = proc::any_of(n, [](auto i) { return i; });
-        if (!valid) {
-            throw std::runtime_error("mesh is completely zeroed!");
-        }
         cl::copy(queue, n.begin(), n.end(), *current);
+
+        run_info = std::make_unique<RunInfo>(
+            get_index_for_coordinate(e), std::move(input_sig), o, sr);
     }
 
     template <typename Callback = DoNothingCallback>
-    std::vector<RunStepResult> run(const Vec3f& e,
-                                   const PowerFunction& u,
-                                   size_type o,
-                                   size_type steps,
-                                   float sr,
+    std::vector<RunStepResult> run(size_type steps,
                                    const Callback& callback = Callback()) {
-        init(e, u, o, sr);
+        if (!run_info) {
+            throw std::runtime_error(
+                "must call init before running waveguide!");
+        }
 
         std::vector<RunStepResult> ret(steps);
-        auto counter = 0u;
-        proc::generate(ret, [this, &counter, &steps, &o, &callback] {
-            auto ret = this->run_step(
-                o, queue, kernel, nodes, *previous, *current, output);
+        proc::generate(ret, [this, &steps, &callback] {
+            auto ret = this->run_step(this->run_info->get_write_info(),
+                                      run_info->get_output_index(),
+                                      queue,
+                                      kernel,
+                                      nodes,
+                                      *previous,
+                                      *current,
+                                      output);
 
             this->swap_buffers();
 
@@ -177,26 +188,15 @@ public:
     }
 
     template <typename Callback = DoNothingCallback>
-    std::vector<RunStepResult> run_basic(
+    std::vector<RunStepResult> init_and_run(
         const Vec3f& e,
+        std::vector<float>&& input,
         size_type o,
         size_type steps,
         float sr,
         const Callback& callback = Callback()) {
-        auto estimated_source_index = get_index_for_coordinate(e);
-        auto source_position = get_coordinate_for_index(estimated_source_index);
-        return run(
-            source_position, BasicPowerFunction(), o, steps, sr, callback);
-    }
-
-    template <typename Callback = DoNothingCallback>
-    std::vector<RunStepResult> run_gaussian(
-        const Vec3f& e,
-        size_type o,
-        size_type steps,
-        float sr,
-        const Callback& callback = Callback()) {
-        return run(e, GaussianFunction(), o, steps, sr, callback);
+        init(e, std::move(input), o, sr);
+        return run(steps, callback);
     }
 
     cl::CommandQueue& get_queue() const {
@@ -204,6 +204,50 @@ public:
     }
 
 private:
+    struct RunInfo final {
+        RunInfo(size_type input_index,
+                std::vector<float>&& input_signal,
+                size_type output_index,
+                float sample_rate)
+                : input_index(input_index)
+                , input_signal(input_signal)
+                , output_index(output_index)
+                , sample_rate(sample_rate) {
+        }
+
+        size_type get_input_index() const {
+            return input_index;
+        }
+        const std::vector<float>& get_input_signal() const {
+            return input_signal;
+        }
+        size_type get_output_index() const {
+            return output_index;
+        }
+        float get_sample_rate() const {
+            return sample_rate;
+        }
+
+        size_type increment_counter() {
+            return counter++;
+        }
+
+        WriteInfo get_write_info() {
+            auto counter = increment_counter();
+            auto is_on = counter < get_input_signal().size();
+            return WriteInfo(get_input_index(),
+                             is_on ? get_input_signal()[counter] : 0,
+                             is_on);
+        }
+
+    private:
+        size_type input_index;
+        std::vector<float> input_signal;
+        size_type output_index;
+        float sample_rate;
+        size_type counter{0};
+    };
+
     cl::CommandQueue& queue;
     kernel_type kernel;
     const size_type nodes;
@@ -214,6 +258,8 @@ private:
     cl::Buffer* current;
 
     cl::Buffer output;
+
+    std::unique_ptr<RunInfo> run_info;
 };
 
 class RectangularWaveguide : public Waveguide<RectangularProgram> {
@@ -234,7 +280,8 @@ public:
 
     void setup(cl::CommandQueue& queue, size_type o, float sr) override;
 
-    RunStepResult run_step(size_type o,
+    RunStepResult run_step(const WriteInfo& write_info,
+                           size_type o,
                            cl::CommandQueue& queue,
                            kernel_type& kernel,
                            size_type nodes,
@@ -347,7 +394,6 @@ private:
     cl::Buffer error_flag_buffer;      //  set each iteration
 
     float period;
-    float attenuation_factor;
 };
 
 class TetrahedralWaveguide : public Waveguide<TetrahedralProgram> {
@@ -360,7 +406,8 @@ public:
 
     void setup(cl::CommandQueue& queue, size_type o, float sr) override;
 
-    RunStepResult run_step(size_type o,
+    RunStepResult run_step(const WriteInfo& write_info,
+                           size_type o,
                            cl::CommandQueue& queue,
                            kernel_type& kernel,
                            size_type nodes,
@@ -430,8 +477,9 @@ auto log_find_any(const T& t,
                   const Fun& fun = Fun()) {
     auto it = find_any(t, fun);
     if (it != std::end(t)) {
-        LOG(INFO) << identifier << " " << func
-                  << " index: " << it - std::begin(t) << ", value: " << *it;
+        std::cerr << identifier << " " << func
+                  << " index: " << it - std::begin(t) << ", value: " << *it
+                  << std::endl;
     }
     return it;
 }

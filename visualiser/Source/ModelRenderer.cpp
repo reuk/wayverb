@@ -2,12 +2,13 @@
 
 #include "MoreConversions.hpp"
 
-#include "azimuth_elevation.h"
-#include "boundaries.h"
-#include "cl_common.h"
-#include "conversions.h"
-#include "json_read_write.h"
-#include "tetrahedral_program.h"
+#include "common/azimuth_elevation.h"
+#include "common/boundaries.h"
+#include "common/cl_common.h"
+#include "common/conversions.h"
+#include "common/json_read_write.h"
+
+#include "combined_config_serialize.h"
 
 RaytraceObject::RaytraceObject(const GenericShader &shader,
                                const RaytracerResults &results)
@@ -158,9 +159,9 @@ DrawableScene::DrawableScene(const GenericShader &shader,
         , model_object{std::make_unique<VoxelisedObject>(
               shader, scene_data, VoxelCollection(scene_data, 4, 0.1))}
         , source_object{std::make_unique<OctahedronObject>(
-              shader, to_glm_vec3(cc.get_source()), glm::vec4(1, 0, 0, 1))}
+              shader, to_glm_vec3(cc.source), glm::vec4(1, 0, 0, 1))}
         , receiver_object{std::make_unique<OctahedronObject>(
-              shader, to_glm_vec3(cc.get_mic()), glm::vec4(0, 1, 1, 1))}
+              shader, to_glm_vec3(cc.mic), glm::vec4(0, 1, 1, 1))}
         , waveguide_load_thread{&DrawableScene::init_waveguide,
                                 this,
                                 scene_data,
@@ -189,7 +190,7 @@ DrawableScene::~DrawableScene() noexcept {
 }
 
 void DrawableScene::init_waveguide(const SceneData &scene_data,
-                                   const config::Waveguide &cc) {
+                                   const config::Combined &cc) {
     MeshBoundary boundary(scene_data);
     auto waveguide_program =
         get_program<Waveguide::ProgramType>(context, device);
@@ -198,13 +199,20 @@ void DrawableScene::init_waveguide(const SceneData &scene_data,
                                          queue,
                                          boundary,
                                          cc.get_divisions(),
-                                         cc.get_mic(),
+                                         cc.mic,
                                          cc.get_waveguide_sample_rate());
-    auto corrected_source_index = w->get_index_for_coordinate(cc.get_source());
+    auto corrected_source_index = w->get_index_for_coordinate(cc.source);
     auto corrected_source = w->get_coordinate_for_index(corrected_source_index);
 
-    w->init(corrected_source, GaussianFunction(0.1), 0, 0);
-    //    w->init(corrected_source, BasicPowerFunction(), 0, 0);
+    auto input = std::vector<float>{1, 0, 0, 0};
+    //    auto input =
+    //        sin_modulated_gaussian_kernel(99,
+    //                                      4.0 /
+    //                                      cc.get_waveguide_sample_rate(),
+    //                                      cc.get_waveguide_sample_rate());
+
+    w->init(
+        corrected_source, std::move(input), 0, cc.get_waveguide_sample_rate());
 
     {
         std::lock_guard<std::mutex> lck(mut);
@@ -226,11 +234,7 @@ RaytracerResults DrawableScene::get_raytracer_results(
     const SceneData &scene_data, const config::Combined &cc) {
     auto raytrace_program = get_program<RaytracerProgram>(context, device);
     return Raytracer(raytrace_program, queue)
-        .run(scene_data,
-             cc.get_mic(),
-             cc.get_source(),
-             cc.get_rays(),
-             cc.get_impulses())
+        .run(scene_data, cc.mic, cc.source, cc.rays, cc.impulses)
         .get_diffuse();
 }
 
@@ -321,7 +325,7 @@ void SceneRenderer::load_from_file_package(const FilePackage &fp) {
                          fp.get_material().getFullPathName().toStdString(),
                          scene_scale);
 
-    constexpr auto v = 1;
+    constexpr auto v = 1.0;
     scene_data.surface_at(41) =
         Surface{{{v, v, v, v, v, v, v, v}}, {{v, v, v, v, v, v, v, v}}};
 
@@ -332,12 +336,12 @@ void SceneRenderer::load_from_file_package(const FilePackage &fp) {
     } catch (...) {
     }
 
-    cc.get_mic() *= scene_scale;
-    cc.get_source() *= scene_scale;
+    cc.mic *= scene_scale;
+    cc.source *= scene_scale;
 
-    cc.get_rays() = 1 << 5;
-    cc.get_filter_frequency() = 4000;
-    cc.get_oversample_ratio() = 1;
+    cc.rays = 1 << 5;
+    cc.filter_frequency = 4000;
+    cc.oversample_ratio = 1;
 
     scene = std::make_unique<DrawableScene>(*shader, scene_data, cc);
 

@@ -473,21 +473,47 @@ passes?
 things to do:
 -------------
 
-find out the link between pressure and energy - what does the waveguide actually
-    model/store?
-
-check whether a perfectly reflective boundary produces an exact copy of the
-incident signal
-    it won't because dispersion
-    also because the wave spreads out
-
-    we could check frequency content, but that will be correct I think
-
-redo proper boundary tests, but longer (with anechoic boundaries) to see whether
-    differences are to do with smoothing or diffusion
+presentation!
+    redo proper boundary tests, but longer (with anechoic boundaries?)
+    redo mic tests
+    fix solution growth issue
 
 check intensity/distance conversion
 
-read acoustics paper
+sinc kernel centre amplitude
 
-check corner stability
+try to reduce waveguide solution growth via inputs rather than by post-filtering
+    if possible
+
+combine two models, remember to correct for ring in filtered waveguide
+
+make nice interface?
+
+interface
+---------
+
+* make materials hot-swappable somehow
+
+* custom file format for storing
+    * model
+    * config
+    * materials
+        * maybe config + materials can be combined?
+
+* model load procedure
+    * load the names of its materials, create a map from surface indices to
+      names, and names to materials
+    * when a material file is loaded, we replace named surfaces appropriately
+    * otherwise, materials can be edited directly
+    * when we press go, bake material map into a suitable format
+
+* some way of modifying materials per surface
+
+* editor for source and mic position
+
+* output config (bitrate, samplerate)
+
+* call from the commandline
+
+* actual audio output!
+    * preview?

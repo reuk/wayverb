@@ -10,8 +10,6 @@
 #include "common/popcount.h"
 #include "common/vec.h"
 
-#include <glog/logging.h>
-
 #include <set>
 #include <unordered_map>
 #include <vector>
@@ -202,8 +200,10 @@ private:
     template <typename B>
     Collection compute_nodes(const B& boundary) const {
         auto total_nodes = get_dim().product();
-        auto bytes = total_nodes * sizeof(RectangularMesh::CondensedNode);
-        LOG(INFO) << (bytes >> 20) << " MB required for node metadata storage!";
+        //        auto bytes = total_nodes *
+        //        sizeof(RectangularMesh::CondensedNode);
+        // LOG(INFO) << (bytes >> 20) << " MB required for node metadata
+        // storage!";
 
         //  we will return this eventually
         auto ret = std::vector<Node>(total_nodes, Node{});

@@ -4,15 +4,15 @@
 <dict>
 	<key>SchemeUserState</key>
 	<dict>
-		<key>visualiser.xcscheme</key>
+		<key>visualiser (App).xcscheme</key>
 		<dict>
 			<key>orderHint</key>
-			<integer>2</integer>
+			<integer>0</integer>
 		</dict>
 	</dict>
 	<key>SuppressBuildableAutocreation</key>
 	<dict>
-		<key>68AA4F967FE6A1F648A4D07E</key>
+		<key>2492ECA7300EB9236A5E17C2</key>
 		<dict>
 			<key>primary</key>
 			<true/>

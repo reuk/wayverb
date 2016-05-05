@@ -9,7 +9,7 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 
-add_subdirectory(submodules EXCLUDE_FROM_ALL)
+add_subdirectory(submodules)
 
 enable_testing()
 add_subdirectory(common)

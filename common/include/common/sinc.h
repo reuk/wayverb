@@ -71,6 +71,7 @@ T sinc(T t) {
 }
 
 /// Generate a convolution kernel for a lowpass sinc filter (NO WINDOWING!).
+//  TODO change centre value - 2 * cutoff?
 template <typename T = float>
 std::vector<T> sinc_kernel(double cutoff, int length) {
     if (!(length % 2)) {
@@ -81,6 +82,7 @@ std::vector<T> sinc_kernel(double cutoff, int length) {
     for (auto i = 0u; i != length; ++i) {
         if (i == ((length - 1) / 2)) {
             ret[i] = 1;
+            //  ret[i] = 2 * cutoff;
         } else {
             ret[i] = sinc(2 * cutoff * (i - (length - 1) / 2.0));
         }

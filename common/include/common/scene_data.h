@@ -25,7 +25,7 @@ private:
     void add_surface(const std::string& name, const Surface& surface);
 
     std::vector<Surface> surfaces;
-    std::map<std::string, size_type> surface_indices;
+    std::map<std::string, Surface> surface_indices;
 
     friend class SurfaceOwner;
 };

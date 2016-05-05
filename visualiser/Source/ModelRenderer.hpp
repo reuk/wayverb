@@ -17,11 +17,14 @@
 #include "glm/gtx/rotate_vector.hpp"
 
 #include "combined_config.h"
-#include "octree.h"
-#include "raytracer.h"
-#include "scene_data.h"
-#include "voxel_collection.h"
-#include "waveguide.h"
+
+#include "common/octree.h"
+#include "common/scene_data.h"
+#include "common/voxel_collection.h"
+
+#include "waveguide/waveguide.h"
+
+#include "raytracer/raytracer.h"
 
 #include "../JuceLibraryCode/JuceHeader.h"
 
@@ -71,7 +74,7 @@ public:
     void draw() const override;
 
     void init_waveguide(const SceneData& scene_data,
-                        const config::Waveguide& cc);
+                        const config::Combined& cc);
     void trigger_pressure_calculation();
     RaytracerResults get_raytracer_results(const SceneData& scene_data,
                                            const config::Combined& cc);

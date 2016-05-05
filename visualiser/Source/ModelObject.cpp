@@ -1,5 +1,6 @@
 #include "ModelObject.hpp"
-#include "triangle.h"
+
+#include "common/triangle.h"
 
 #include "MoreConversions.hpp"
 

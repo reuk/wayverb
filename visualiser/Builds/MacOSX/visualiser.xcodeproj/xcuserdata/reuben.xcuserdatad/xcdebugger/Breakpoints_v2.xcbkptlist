@@ -9,29 +9,13 @@
             shouldBeEnabled = "Yes"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "../../../../../../../usr/local/include/modern_gl_utils/generic_shader.h"
-            timestampString = "471987302.767896"
+            filePath = "../../../waveguide/src/waveguide.cpp"
+            timestampString = "484138871.631089"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "9"
-            endingLineNumber = "9"
-            landmarkName = "class GenericShader"
-            landmarkType = "3">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "Yes"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "../../Source/ModelRenderer.cpp"
-            timestampString = "482257364.553991"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "330"
-            endingLineNumber = "330"
-            landmarkName = "SceneRenderer::load_from_file_package(const FilePackage &amp;fp)"
+            startingLineNumber = "217"
+            endingLineNumber = "217"
+            landmarkName = "RectangularWaveguide::run_step(const WriteInfo&amp; write_info, size_type o, cl::CommandQueue&amp; queue, kernel_type&amp; kernel, size_type nodes, cl::Buffer&amp; previous, cl::Buffer&amp; current, cl::Buffer&amp; output)"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
@@ -41,13 +25,61 @@
             shouldBeEnabled = "Yes"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "../../../common/scene_data.cpp"
-            timestampString = "482259052.625585"
+            filePath = "../../../waveguide/src/waveguide.cpp"
+            timestampString = "484138874.052843"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "19"
-            endingLineNumber = "19"
-            landmarkName = "SurfaceLoader::SurfaceLoader(const std::string&amp; path)"
+            startingLineNumber = "136"
+            endingLineNumber = "136"
+            landmarkName = "RectangularWaveguide::RectangularWaveguide( const RectangularProgram&amp; program, cl::CommandQueue&amp; queue, const RectangularMesh&amp; mesh, std::vector&lt;RectangularMesh::CondensedNode&gt; nodes, std::vector&lt;RectangularProgram::BoundaryDataArray1&gt; boundary_data_1, std::vector&lt;RectangularProgram::BoundaryDataArray2&gt; boundary_data_2, std::vector&lt;RectangularProgram::BoundaryDataArray3&gt; boundary_data_3, std::vector&lt;RectangularProgram::CanonicalCoefficients&gt; coefficients)"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "../../../waveguide/src/rectangular_mesh.cpp"
+            timestampString = "484139104.591374"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "275"
+            endingLineNumber = "275"
+            landmarkName = "RectangularMesh::coefficient_index_for_node( const MeshBoundary&amp; b, const RectangularMesh::Node&amp; node)"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "../../Source/ModelRenderer.cpp"
+            timestampString = "484139206.949455"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "194"
+            endingLineNumber = "194"
+            landmarkName = "DrawableScene::init_waveguide(const SceneData &amp;scene_data, const config::Combined &amp;cc)"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "../../Source/ModelRenderer.cpp"
+            timestampString = "484139269.731376"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "322"
+            endingLineNumber = "322"
+            landmarkName = "SceneRenderer::load_from_file_package(const FilePackage &amp;fp)"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>

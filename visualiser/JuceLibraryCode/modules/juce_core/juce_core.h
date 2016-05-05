@@ -26,6 +26,35 @@
   ==============================================================================
 */
 
+
+/*******************************************************************************
+ The block below describes the properties of this module, and is read by
+ the Projucer to automatically generate project code that uses it.
+ For details about the syntax and how to create or use a module, see the
+ JUCE Module Format.txt file.
+
+
+ BEGIN_JUCE_MODULE_DECLARATION
+
+  ID:               juce_core
+  vendor:           juce
+  version:          4.2.1
+  name:             JUCE core classes
+  description:      The essential set of basic JUCE classes, as required by all the other JUCE modules. Includes text, container, memory, threading and i/o functionality.
+  website:          http://www.juce.com/juce
+  license:          GPL/Commercial
+
+  dependencies:
+  OSXFrameworks:    Cocoa IOKit
+  iOSFrameworks:    Foundation
+  linuxLibs:        rt dl pthread
+  mingwLibs:        uuid wsock32 wininet version ole32 ws2_32 oleaut32 imm32 comdlg32 shlwapi rpcrt4 winmm
+
+ END_JUCE_MODULE_DECLARATION
+
+*******************************************************************************/
+
+
 #ifndef JUCE_CORE_H_INCLUDED
 #define JUCE_CORE_H_INCLUDED
 
@@ -41,7 +70,7 @@
 
 #include "system/juce_TargetPlatform.h"
 
-//=============================================================================
+//==============================================================================
 /** Config: JUCE_FORCE_DEBUG
 
     Normally, JUCE_DEBUG is set to 1 or 0 based on compiler and project settings,
@@ -51,7 +80,7 @@
  //#define JUCE_FORCE_DEBUG 0
 #endif
 
-//=============================================================================
+//==============================================================================
 /** Config: JUCE_LOG_ASSERTIONS
 
     If this flag is enabled, the jassert and jassertfalse macros will always use Logger::writeToLog()
@@ -71,7 +100,7 @@
  #endif
 #endif
 
-//=============================================================================
+//==============================================================================
 /** Config: JUCE_CHECK_MEMORY_LEAKS
 
     Enables a memory-leak check for certain objects when the app terminates. See the LeakedObjectDetector
@@ -81,7 +110,7 @@
  #define JUCE_CHECK_MEMORY_LEAKS 1
 #endif
 
-//=============================================================================
+//==============================================================================
 /** Config: JUCE_DONT_AUTOLINK_TO_WIN32_LIBRARIES
 
     In a Visual C++  build, this can be used to stop the required system libs being
@@ -130,8 +159,12 @@
  #define JUCE_STRING_UTF_TYPE 8
 #endif
 
-//=============================================================================
-//=============================================================================
+//==============================================================================
+//==============================================================================
+
+#if JUCE_CORE_INCLUDE_NATIVE_HEADERS
+ #include "native/juce_BasicNativeHeaders.h"
+#endif
 
 #include "system/juce_StandardHeader.h"
 
@@ -188,6 +221,7 @@ extern JUCE_API void JUCE_CALLTYPE logAssertion (const char* file, int line) noe
 #include "threads/juce_CriticalSection.h"
 #include "maths/juce_Range.h"
 #include "maths/juce_NormalisableRange.h"
+#include "maths/juce_StatisticsAccumulator.h"
 #include "containers/juce_ElementComparator.h"
 #include "containers/juce_ArrayAllocationBase.h"
 #include "containers/juce_Array.h"
@@ -237,6 +271,7 @@ extern JUCE_API void JUCE_CALLTYPE logAssertion (const char* file, int line) noe
 #include "maths/juce_BigInteger.h"
 #include "maths/juce_Expression.h"
 #include "maths/juce_Random.h"
+#include "misc/juce_RuntimePermissions.h"
 #include "misc/juce_Uuid.h"
 #include "misc/juce_WindowsRegistry.h"
 #include "system/juce_SystemStats.h"
@@ -269,6 +304,19 @@ extern JUCE_API void JUCE_CALLTYPE logAssertion (const char* file, int line) noe
 #include "containers/juce_PropertySet.h"
 #include "memory/juce_SharedResourcePointer.h"
 
+#if JUCE_CORE_INCLUDE_OBJC_HELPERS && (JUCE_MAC || JUCE_IOS)
+ #include "native/juce_osx_ObjCHelpers.h"
+#endif
+
+#if JUCE_CORE_INCLUDE_COM_SMART_PTR && JUCE_WINDOWS
+ #include "native/juce_win32_ComSmartPtr.h"
+#endif
+
+#if JUCE_CORE_INCLUDE_JNI_HELPERS && JUCE_ANDROID
+ #include "native/juce_android_JNIHelpers.h"
+#endif
+
+
 #ifndef DOXYGEN
  /*
     As the very long class names here try to explain, the purpose of this code is to cause
@@ -293,6 +341,11 @@ extern JUCE_API void JUCE_CALLTYPE logAssertion (const char* file, int line) noe
 
 #if JUCE_MSVC
  #pragma warning (pop)
+
+ // In DLL builds, need to disable this warnings for other modules
+ #if defined (JUCE_DLL_BUILD) || defined (JUCE_DLL)
+  #pragma warning (disable: 4251)
+ #endif
 #endif
 
 #endif   // JUCE_CORE_H_INCLUDED

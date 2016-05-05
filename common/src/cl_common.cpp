@@ -1,5 +1,7 @@
 #include "common/cl_common.h"
 
+#include "glog/logging.h"
+
 #include <vector>
 
 void print_device_info(const cl::Device& i) {
