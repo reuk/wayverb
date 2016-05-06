@@ -12,19 +12,11 @@
 #include "assimp/postprocess.h"
 #include "assimp/scene.h"
 
-#include "cereal/archives/json.hpp"
-#include "cereal/types/map.hpp"
-
 #include <glog/logging.h>
 
 #include <fstream>
 #include <stdexcept>
 #include <vector>
-
-template <typename Archive>
-void SurfaceConfig::serialize(Archive& archive) {
-    archive(cereal::make_nvp("surfaces", surfaces));
-}
 
 SurfaceConfig::SurfaceConfig(const std::map<std::string, Surface>& surfaces)
         : surfaces(surfaces) {

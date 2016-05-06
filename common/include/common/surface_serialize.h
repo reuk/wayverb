@@ -3,6 +3,7 @@
 #include "json_read_write.h"
 #include "scene_data.h"
 
+#include <cereal/types/map.hpp>
 #include <cereal/types/vector.hpp>
 
 template <typename Archive>
@@ -22,3 +23,9 @@ void serialize(Archive& archive, Surface& m) {
             cereal::make_nvp("diffuse", m.diffuse));
 }
 JSON_OSTREAM_OVERLOAD(Surface);
+
+template <typename Archive>
+void SurfaceConfig::serialize(Archive& archive) {
+    archive(cereal::make_nvp("surfaces", surfaces));
+}
+JSON_OSTREAM_OVERLOAD(SurfaceConfig);

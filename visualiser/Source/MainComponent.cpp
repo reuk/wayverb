@@ -1,6 +1,7 @@
 #include "MainComponent.hpp"
 
 #include "combined_config_serialize.h"
+#include "common/surface_serialize.h"
 
 File check_exists(const File& root, const std::string& file) {
     auto f = root.getChildFile(file.c_str());
