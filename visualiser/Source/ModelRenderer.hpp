@@ -1,8 +1,5 @@
 #pragma once
 
-#include "ConfigPanel.hpp"
-#include "FilePackage.hpp"
-
 #include "BasicDrawableObject.hpp"
 #include "BoxObject.hpp"
 #include "MeshObject.hpp"
@@ -26,7 +23,7 @@
 
 #include "raytracer/raytracer.h"
 
-#include "../JuceLibraryCode/JuceHeader.h"
+#include "RenderState.hpp"
 
 #include <cmath>
 #include <future>
@@ -73,6 +70,9 @@ public:
     void update(float dt) override;
     void draw() const override;
 
+    void start();
+    void stop();
+
 private:
     using Waveguide = RectangularWaveguide;
     //    using Waveguide = TetrahedralWaveguide;
@@ -103,12 +103,16 @@ private:
     std::unique_ptr<RaytraceObject> raytrace_object;
     std::future<RaytracerResults> raytracer_results;
 
+    bool running{false};
+
     mutable std::mutex mut;
 };
 
 class SceneRenderer final : public OpenGLRenderer {
 public:
-    SceneRenderer(const SceneData& model, const config::Combined& config);
+    SceneRenderer(RenderStateManager& render_state_manager,
+                  const SceneData& model,
+                  const config::Combined& config);
     virtual ~SceneRenderer() noexcept = default;
 
     //  lock on all public methods
@@ -121,6 +125,9 @@ public:
     void update_scale(float delta);
     void set_rotation(float azimuth, float elevation);
 
+    void start();
+    void stop();
+
 private:
     //  don't lock on anything private
     void update();
@@ -130,6 +137,8 @@ private:
     glm::mat4 get_scale_matrix() const;
 
     static glm::mat4 get_projection_matrix(float aspect);
+
+    RenderStateManager& render_state_manager;
 
     const SceneData& model;
     const config::Combined& config;

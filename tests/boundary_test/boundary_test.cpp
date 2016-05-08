@@ -96,7 +96,6 @@ std::vector<float> run_simulation(const cl::Context& context,
                                           std::vector<float>{1},
                                           receiver_index,
                                           steps,
-                                          conf.get_waveguide_sample_rate(),
                                           [&pb] { pb += 1; });
 
 #if 0
@@ -400,7 +399,7 @@ int main(int argc, char** argv) {
     auto queue = cl::CommandQueue(context, device);
 
     //  set room size based on desired number of nodes
-    auto dim = 250;
+    auto dim = 300;
 
     try {
         struct SurfacePackage {

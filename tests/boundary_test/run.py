@@ -15,7 +15,9 @@ def main():
         (0, 0),
         (pi / 4, 0),
     ]:
-        o_dir = join(out_dir, "az__" + str(azimuth) + "__el__" + str(elevation))
+        az_string = '%s' % float('%.4g' % azimuth)
+        el_string = '%s' % float('%.4g' % elevation)
+        o_dir = join(out_dir, "az_" + az_string + "_el_" + el_string)
         cmd_1 = ["mkdir", "-p", o_dir]
         cmd_2 = [exe, o_dir, str(azimuth), str(elevation)]
         print cmd_1

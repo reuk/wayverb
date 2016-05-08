@@ -74,7 +74,6 @@ TEST(run_waveguide, run_waveguide) {
                                           std::vector<float>{1},
                                           receiver_index,
                                           steps,
-                                          config.get_waveguide_sample_rate(),
                                           [&pb] { pb += 1; });
 
     auto output = std::vector<float>(results.size());

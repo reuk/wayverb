@@ -473,12 +473,17 @@ passes?
 things to do:
 -------------
 
-presentation!
-    redo proper boundary tests, but longer (with anechoic boundaries?)
-    redo mic tests
-    fix solution growth issue
+before presentation:
+    [x] fix solution growth issue
+    [x] redo proper boundary tests, but longer (with anechoic boundaries?)
+            produce graphs
+    [x] redo mic tests
+            produce graphs
+    [ ] create demos
 
 check intensity/distance conversion
+
+low frequency modal analysis
 
 sinc kernel centre amplitude
 
@@ -487,18 +492,14 @@ try to reduce waveguide solution growth via inputs rather than by post-filtering
 
 combine two models, remember to correct for ring in filtered waveguide
 
-make nice interface?
-
 interface
 ---------
+
+* work out models
+
+* actual audio output!
+    * preview?
 
 * call from the commandline
 
 * some way of modifying materials per surface
-
-* editor for source and mic position
-
-* output config (bitrate, samplerate)
-
-* actual audio output!
-    * preview?

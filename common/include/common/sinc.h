@@ -6,6 +6,33 @@
 #include <vector>
 
 template <typename T>
+inline float sum(const T& t) {
+    return proc::accumulate(
+        t, 0.0f, [](const auto& a, const auto& b) { return a + sum(b); });
+}
+
+template <>
+inline float sum(const float& t) {
+    return t;
+}
+
+template <typename T>
+inline auto count(const T& t) {
+    return proc::accumulate(
+        t, 0u, [](const auto& a, const auto& b) { return a + count(b); });
+}
+
+template <typename T>
+inline auto count(const std::vector<T>& coll) {
+    return coll.size();
+}
+
+template<typename T>
+inline auto mean(const T& t) {
+    return sum(t) / count(t);
+}
+
+template <typename T>
 inline float max_mag(const T& t) {
     return proc::accumulate(
         t, 0.0f, [](auto a, auto b) { return std::max(a, max_mag(b)); });

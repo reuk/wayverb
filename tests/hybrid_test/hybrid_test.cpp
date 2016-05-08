@@ -100,11 +100,9 @@ auto run_waveguide(ComputeContext& context_info,
 
     auto corrected_source = waveguide.get_coordinate_for_index(source_index);
 
-    auto input =
-        //  TODO the bandwidth is wrong, I think
-        sin_modulated_gaussian_kernel(99,
-                                      4.0 / config.get_waveguide_sample_rate(),
-                                      config.get_waveguide_sample_rate());
+    auto input = waveguide_kernel(config.get_waveguide_sample_rate());
+
+    LOG(INFO) << input;
 
     //  run the waveguide
     //            [                                        ]
@@ -114,12 +112,13 @@ auto run_waveguide(ComputeContext& context_info,
                                           std::move(input),
                                           receiver_index,
                                           steps,
-                                          config.get_waveguide_sample_rate(),
                                           [&pb] { pb += 1; });
 
     auto output = std::vector<float>(results.size());
     proc::transform(
         results, output.begin(), [](const auto& i) { return i.pressure; });
+
+    output.erase(output.begin(), output.begin() + input.size() / 2);
 
     return output;
 }
@@ -156,7 +155,7 @@ int main(int argc, char** argv) {
         for (auto i = 0; i != sig.size(); ++i) {
             sig[i] = sin(i * 0.01) + 2;
         }
-        filter::LinearDCBlocker(32).filter(sig);
+        filter::ZeroPhaseDCBlocker(32).filter(sig);
         write_file(config, output_folder, "dc_test", {sig});
     }
 
@@ -165,19 +164,7 @@ int main(int argc, char** argv) {
     auto waveguide_output =
         run_waveguide(context_info, boundary, config, output_folder, surface);
 
-    {
-        // filter::LinearDCBlocker dc(32);
-        // dc.filter(waveguide_output);
-    }
-
-    {
-        //  TODO this will 'shift' the signal forward in time
-        //  I need to move it around to compensate
-        //  (or move the raytracer output forward a bit)
-        filter::HipassWindowedSinc sinc(waveguide_output.size());
-        sinc.set_params(20, config.get_waveguide_sample_rate());
-        sinc.filter(waveguide_output);
-    }
+    filter::ZeroPhaseDCBlocker(32).filter(waveguide_output);
 
     write_file(config, output_folder, "waveguide_raw", {waveguide_output});
 

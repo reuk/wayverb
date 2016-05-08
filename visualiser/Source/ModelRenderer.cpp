@@ -201,17 +201,9 @@ std::unique_ptr<DrawableScene::Waveguide> DrawableScene::init_waveguide(
     auto corrected_source_index = w->get_index_for_coordinate(cc.source);
     auto corrected_source = w->get_coordinate_for_index(corrected_source_index);
 
-    // auto input = std::vector<float>{1};
-    auto input = sin_modulated_gaussian_kernel(
-        99, 0.008, cc.get_waveguide_sample_rate());
-    //    auto input =
-    //        sin_modulated_gaussian_kernel(99,
-    //                                      4.0 /
-    //                                      cc.get_waveguide_sample_rate(),
-    //                                      cc.get_waveguide_sample_rate());
+    auto input = waveguide_kernel(cc.get_waveguide_sample_rate());
 
-    w->init(
-        corrected_source, std::move(input), 0, cc.get_waveguide_sample_rate());
+    w->init(corrected_source, std::move(input), 0);
 
     return w;
 }
@@ -235,6 +227,10 @@ RaytracerResults DrawableScene::get_raytracer_results(
 
 void DrawableScene::update(float dt) {
     std::lock_guard<std::mutex> lck(mut);
+
+    if (!running) {
+        return;
+    }
 
     if (future_waveguide.valid()) {
         try {
@@ -317,11 +313,23 @@ void DrawableScene::draw() const {
     }
 }
 
+void DrawableScene::start() {
+    std::lock_guard<std::mutex> lck(mut);
+    running = true;
+}
+
+void DrawableScene::stop() {
+    std::lock_guard<std::mutex> lck(mut);
+    running = false;
+}
+
 //----------------------------------------------------------------------------//
 
-SceneRenderer::SceneRenderer(const SceneData &model,
+SceneRenderer::SceneRenderer(RenderStateManager &render_state_manager,
+                             const SceneData &model,
                              const config::Combined &config)
-        : model(model)
+        : render_state_manager(render_state_manager)
+        , model(model)
         , config(config)
         , projection_matrix(get_projection_matrix(1)) {
 }
@@ -361,6 +369,10 @@ void SceneRenderer::set_aspect(float aspect) {
 }
 
 void SceneRenderer::update() {
+    if (render_state_manager.get_state() == RenderState::started) {
+        auto progress = render_state_manager.get_progress();
+        render_state_manager.set_progress(progress + 0.001);
+    }
     if (scene)
         scene->update(0);
 }
@@ -414,4 +426,18 @@ void SceneRenderer::update_scale(float delta) {
 
 glm::mat4 SceneRenderer::get_scale_matrix() const {
     return glm::scale(glm::vec3(scale, scale, scale));
+}
+
+void SceneRenderer::start() {
+    std::lock_guard<std::mutex> lck(mut);
+    if (scene) {
+        scene->start();
+    }
+}
+
+void SceneRenderer::stop() {
+    std::lock_guard<std::mutex> lck(mut);
+    if (scene) {
+        scene->stop();
+    }
 }

@@ -67,7 +67,8 @@ public:
 
     Waveguide(const ProgramType& program,
               cl::CommandQueue& queue,
-              size_type nodes)
+              size_type nodes,
+              float sample_rate)
             : queue(queue)
             , kernel(program.get_kernel())
             , nodes(nodes)
@@ -82,7 +83,8 @@ public:
             , current(&storage[1])
             , output(program.template getInfo<CL_PROGRAM_CONTEXT>(),
                      CL_MEM_READ_WRITE,
-                     sizeof(cl_float)) {
+                     sizeof(cl_float))
+            , sample_rate(sample_rate) {
     }
 
     virtual ~Waveguide() noexcept = default;
@@ -139,15 +141,14 @@ public:
 
     virtual bool inside(size_type index) const = 0;
 
-    virtual void setup(cl::CommandQueue& queue, size_type o, float sr) {
+    virtual void setup(cl::CommandQueue& queue, size_type o) {
     }
 
     void init(const Vec3f& e,
               std::vector<float>&& input_sig,
-              size_type o,
-              float sr) {
+              size_type o) {
         //  whatever unique setup is required
-        setup(queue, o, sr);
+        setup(queue, o);
 
         //  zero out meshes
         std::vector<cl_float> n(nodes, 0);
@@ -155,7 +156,7 @@ public:
         cl::copy(queue, n.begin(), n.end(), *current);
 
         run_info = std::make_unique<RunInfo>(
-            get_index_for_coordinate(e), std::move(input_sig), o, sr);
+            get_index_for_coordinate(e), std::move(input_sig), o);
     }
 
     template <typename Callback = DoNothingCallback>
@@ -193,9 +194,8 @@ public:
         std::vector<float>&& input,
         size_type o,
         size_type steps,
-        float sr,
         const Callback& callback = Callback()) {
-        init(e, std::move(input), o, sr);
+        init(e, std::move(input), o);
         return run(steps, callback);
     }
 
@@ -203,16 +203,22 @@ public:
         return queue;
     }
 
+    float get_sample_rate() const {
+        return sample_rate;
+    }
+
+    float get_period() const {
+        return 1 / sample_rate;
+    }
+
 private:
     struct RunInfo final {
         RunInfo(size_type input_index,
                 std::vector<float>&& input_signal,
-                size_type output_index,
-                float sample_rate)
+                size_type output_index)
                 : input_index(input_index)
                 , input_signal(input_signal)
-                , output_index(output_index)
-                , sample_rate(sample_rate) {
+                , output_index(output_index) {
         }
 
         size_type get_input_index() const {
@@ -223,9 +229,6 @@ private:
         }
         size_type get_output_index() const {
             return output_index;
-        }
-        float get_sample_rate() const {
-            return sample_rate;
         }
 
         size_type increment_counter() {
@@ -244,7 +247,6 @@ private:
         size_type input_index;
         std::vector<float> input_signal;
         size_type output_index;
-        float sample_rate;
         size_type counter{0};
     };
 
@@ -260,6 +262,8 @@ private:
     cl::Buffer output;
 
     std::unique_ptr<RunInfo> run_info;
+
+    float sample_rate;
 };
 
 class RectangularWaveguide : public Waveguide<RectangularProgram> {
@@ -274,10 +278,11 @@ public:
                   program,
                   queue,
                   RectangularMesh(boundary, spacing, anchor),
+                  sr,
                   to_filter_coefficients(boundary.get_surfaces(), sr)) {
     }
 
-    void setup(cl::CommandQueue& queue, size_type o, float sr) override;
+    void setup(cl::CommandQueue& queue, size_type o) override;
 
     RunStepResult run_step(const WriteInfo& write_info,
                            size_type o,
@@ -345,20 +350,26 @@ private:
     static constexpr auto PORTS = MeshType::PORTS;
     static constexpr auto TRANSFORM_MATRIX_ELEMENTS = PORTS * 3;
 
-    RectangularWaveguide(
-        const ProgramType& program,
-        cl::CommandQueue& queue,
-        const RectangularMesh& mesh,
-        std::vector<RectangularProgram::CanonicalCoefficients> coefficients);
-    RectangularWaveguide(
-        const ProgramType& program,
-        cl::CommandQueue& queue,
-        const RectangularMesh& mesh,
-        std::vector<RectangularMesh::CondensedNode> nodes,
-        std::vector<RectangularProgram::BoundaryDataArray1> boundary_data_1,
-        std::vector<RectangularProgram::BoundaryDataArray2> boundary_data_2,
-        std::vector<RectangularProgram::BoundaryDataArray3> boundary_data_3,
-        std::vector<RectangularProgram::CanonicalCoefficients> coefficients);
+    RectangularWaveguide(const ProgramType& program,
+                         cl::CommandQueue& queue,
+                         const RectangularMesh& mesh,
+                         float sample_rate,
+                         std::vector<RectangularProgram::CanonicalCoefficients>
+                             coefficients);
+    RectangularWaveguide(const ProgramType& program,
+                         cl::CommandQueue& queue,
+                         const RectangularMesh& mesh,
+                         float sample_rate,
+                         std::vector<RectangularMesh::CondensedNode>
+                             nodes,
+                         std::vector<RectangularProgram::BoundaryDataArray1>
+                             boundary_data_1,
+                         std::vector<RectangularProgram::BoundaryDataArray2>
+                             boundary_data_2,
+                         std::vector<RectangularProgram::BoundaryDataArray3>
+                             boundary_data_3,
+                         std::vector<RectangularProgram::CanonicalCoefficients>
+                             coefficients);
 
     /*
     template <int I>
@@ -391,10 +402,9 @@ private:
     const cl::Buffer
         boundary_coefficients_buffer;  //  const, set in constructor
     cl::Buffer error_flag_buffer;      //  set each iteration
-
-    float period;
 };
 
+/*
 class TetrahedralWaveguide : public Waveguide<TetrahedralProgram> {
 public:
     TetrahedralWaveguide(const ProgramType& program,
@@ -431,7 +441,8 @@ private:
     TetrahedralWaveguide(const ProgramType& program,
                          cl::CommandQueue& queue,
                          const TetrahedralMesh& mesh,
-                         std::vector<TetrahedralMesh::Node> nodes);
+                         std::vector<TetrahedralMesh::Node>
+                             nodes);
 
     MeshType mesh;
     cl::Buffer node_buffer;
@@ -440,6 +451,7 @@ private:
 
     float period;
 };
+*/
 
 template <typename Fun, typename T>
 bool is_any(const T& t, const Fun& fun = Fun()) {

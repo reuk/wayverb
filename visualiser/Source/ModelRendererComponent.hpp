@@ -1,11 +1,13 @@
 #pragma once
 
-#include "DemoPanel.hpp"
 #include "ModelRenderer.hpp"
+#include "RenderState.hpp"
 
-class ModelRendererComponent : public Component {
+class ModelRendererComponent : public Component,
+                               public RenderStateManager::Listener {
 public:
-    ModelRendererComponent(const SceneData& model,
+    ModelRendererComponent(RenderStateManager& render_state_manager,
+                           const SceneData& model,
                            const config::Combined& config);
     virtual ~ModelRendererComponent() noexcept;
 
@@ -17,7 +19,11 @@ public:
     void mouseWheelMove(const MouseEvent& event,
                         const MouseWheelDetails& wheel) override;
 
+    void render_state_changed(RenderStateManager*, RenderState state) override;
+    void render_progress_changed(RenderStateManager*, double progress) override;
+
 private:
+    RenderStateManager& render_state_manager;
     const SceneData& model;
     const config::Combined& config;
 

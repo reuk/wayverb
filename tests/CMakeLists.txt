@@ -39,6 +39,6 @@ target_link_libraries(${name} raytracer waveguide common ${sndfile_lib} ${flac_l
 
 add_test(NAME tests COMMAND ${name})
 
-#add_subdirectory(mic_test)
+add_subdirectory(mic_test)
 add_subdirectory(boundary_test)
 add_subdirectory(hybrid_test)

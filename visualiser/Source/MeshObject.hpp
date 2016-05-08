@@ -82,7 +82,7 @@ public:
 
     void set_pressures(const std::vector<float>& pressures) {
         color_storage.resize(pressures.size());
-        std::cout << "max mag: " << max_mag(pressures) << std::endl;
+        std::cout << "mean: " << mean(pressures) << std::endl;
         std::transform(pressures.begin(),
                        pressures.end(),
                        color_storage.begin(),
@@ -108,5 +108,5 @@ private:
     StaticIBO ibo;
     GLuint size;
 
-    float amp{100};
+    float amp{1000};
 };

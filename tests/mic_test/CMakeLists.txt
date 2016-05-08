@@ -5,9 +5,6 @@ include_directories(
     "/usr/local/include"
 )
 
-set(name_0 mic_axis_rotate)
-add_executable(${name_0} ${name_0}.cpp)
-
 set(name_1 mic_offset_rotate)
 add_executable(${name_1} ${name_1}.cpp)
 
@@ -28,5 +25,4 @@ find_library(vorbis_lib vorbis)
 find_library(vorbisenc_lib vorbisenc)
 find_library(samplerate_lib samplerate)
 
-target_link_libraries(${name_0} waveguide common ${sndfile_lib} ${samplerate_lib} ${frameworks} gflags ${flac_lib} ${ogg_lib} ${vorbis_lib} ${vorbisenc_lib})
 target_link_libraries(${name_1} waveguide common ${sndfile_lib} ${samplerate_lib} ${frameworks} gflags ${flac_lib} ${ogg_lib} ${vorbis_lib} ${vorbisenc_lib})

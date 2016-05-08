@@ -1,13 +1,14 @@
 #pragma once
 
 #include "common/stl_wrappers.h"
+#include "common/filters_common.h"
 
 #include <array>
 #include <vector>
 
 namespace filter {
 
-struct DelayLine final {
+struct DelayLine {
     DelayLine(int length);
 
     double& operator[](size_t i);
@@ -18,7 +19,7 @@ struct DelayLine final {
     size_t index{0};
 };
 
-struct MovingAverage final {
+struct MovingAverage {
     MovingAverage(int d);
 
     double operator()(double x);
@@ -28,18 +29,19 @@ struct MovingAverage final {
     double single_delay{0};
 };
 
-struct LinearDCBlocker final {
+struct LinearDCBlocker : public Filter {
     LinearDCBlocker(int d);
 
     double operator()(double x);
 
-    template <typename T>
-    void filter(T& t) {
+    void filter(std::vector<float>& t) override {
         proc::for_each(t, [this](auto& i) { i = this->operator()(i); });
     }
 
     int d;
     std::array<MovingAverage, 2> moving_average;
 };
+
+using ZeroPhaseDCBlocker = TwopassFilterWrapper<LinearDCBlocker>;
 
 }  // namespace filter

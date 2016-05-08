@@ -4,6 +4,7 @@
 
 #include "common/cl_common.h"
 #include "common/conversions.h"
+#include "common/kernel.h"
 #include "common/scene_data.h"
 
 #include "common/filters_common.h"
@@ -61,9 +62,7 @@ int main(int argc, char** argv) {
     conf.filter_frequency = 11025;
     conf.oversample_ratio = 1;
 
-    auto context = get_context();
-    auto device = get_device(context);
-    cl::CommandQueue queue(context, device);
+    ComputeContext compute_context;
 
     auto directionality = 0.0;
     switch (polar_pattern) {
@@ -84,36 +83,37 @@ int main(int argc, char** argv) {
     cl_float3 mic{{0, 0, 0}};
     auto test_locations = 18;
 
-    std::ofstream ofile(polar_string + ".energies.txt");
+    std::ofstream ofile(output_folder + "/" + polar_string + ".energies.txt");
 
     try {
         CuboidBoundary boundary(Vec3f(-2.05, -2.5, -1.05),
                                 Vec3f(2.05, 2.5, 1.05));
         auto waveguide_program =
-            get_program<TetrahedralProgram>(context, device);
-        TetrahedralWaveguide waveguide(waveguide_program,
-                                       queue,
-                                       boundary,
+            get_program<RectangularProgram>(compute_context);
+        RectangularWaveguide waveguide(waveguide_program,
+                                       compute_context.queue,
+                                       MeshBoundary(boundary.get_scene_data()),
                                        conf.get_divisions(),
-                                       to_vec3f(mic));
+                                       to_vec3f(mic),
+                                       conf.get_waveguide_sample_rate());
 
         auto amp_factor = 4e3;
 
         for (auto i = 0u; i != test_locations; ++i) {
             float angle = i * M_PI * 2 / test_locations + M_PI;
-            cl_float3 source{{std::cos(angle), 0, std::sin(angle)}};
+            cl_float3 source{{std::sin(angle), 0, std::cos(angle)}};
 
             auto mic_index = waveguide.get_index_for_coordinate(to_vec3f(mic));
 
             auto steps = 200;
 
             ProgressBar pb(std::cout, steps);
-            auto w_results =
-                waveguide.run_gaussian(to_vec3f(source),
-                                       mic_index,
-                                       steps,
-                                       conf.get_waveguide_sample_rate(),
-                                       [&pb] { pb += 1; });
+            auto w_results = waveguide.init_and_run(
+                to_vec3f(source),
+                waveguide_kernel(conf.get_waveguide_sample_rate()),
+                mic_index,
+                steps,
+                [&pb] { pb += 1; });
 
             auto w_pressures = microphone.process(w_results);
 
