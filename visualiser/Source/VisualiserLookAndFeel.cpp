@@ -1,5 +1,7 @@
 #include "VisualiserLookAndFeel.hpp"
 
+static const Colour emphasis = Colours::blueviolet;
+
 Colour VisualiserLookAndFeel::create_base_colour(Colour button_colour,
                                                  bool has_keyboard_focus,
                                                  bool is_mouse_over,
@@ -7,17 +9,19 @@ Colour VisualiserLookAndFeel::create_base_colour(Colour button_colour,
     const float sat = has_keyboard_focus ? 1.3f : 0.9f;
     const Colour base_colour(button_colour.withMultipliedSaturation(sat));
 
-    if (is_button_down)
+    if (is_button_down) {
         return base_colour.contrasting(0.2f);
-    if (is_mouse_over)
+    }
+    if (is_mouse_over) {
         return base_colour.contrasting(0.1f);
+    }
 
     return base_colour;
 }
 
 VisualiserLookAndFeel::VisualiserLookAndFeel() {
     setColour(ProgressBar::ColourIds::backgroundColourId, Colours::darkgrey);
-    setColour(ProgressBar::ColourIds::foregroundColourId, Colours::blueviolet);
+    setColour(ProgressBar::ColourIds::foregroundColourId, emphasis);
     setColour(TextButton::ColourIds::buttonColourId, Colours::darkgrey);
     setColour(TextButton::ColourIds::textColourOnId, Colours::lightgrey);
     setColour(TextButton::ColourIds::textColourOffId, Colours::lightgrey);
@@ -27,6 +31,9 @@ VisualiserLookAndFeel::VisualiserLookAndFeel() {
               Colours::darkgrey);
     setColour(PropertyComponent::ColourIds::labelTextColourId,
               Colours::lightgrey);
+    setColour(BubbleComponent::ColourIds::backgroundColourId,
+              Colours::lightgrey.withAlpha(0.8f));
+    setColour(BubbleComponent::ColourIds::outlineColourId, Colours::black);
 }
 
 void horizontal_line(Graphics& g,
@@ -77,10 +84,6 @@ void matte_inner(Graphics& g,
                  const Rectangle<int>& bounds,
                  bool vertical,
                  const Colour& colour) {
-    g.setColour(Colours::black.withAlpha(0.9f));
-    g.drawRect(
-        bounds.getX(), bounds.getY(), bounds.getWidth(), bounds.getHeight(), 1);
-
     g.setColour(colour);
     g.fillRect(bounds);
 
@@ -88,11 +91,11 @@ void matte_inner(Graphics& g,
 
     if (vertical) {
         g.setGradientFill(ColourGradient(Colours::transparentWhite,
-                                         0,
-                                         0,
+                                         bounds.getX(),
+                                         bounds.getY(),
                                          grad,
-                                         bounds.getWidth(),
-                                         0,
+                                         bounds.getRight(),
+                                         bounds.getY(),
                                          false));
         g.fillRect(bounds.getX(),
                    bounds.getY(),
@@ -102,23 +105,25 @@ void matte_inner(Graphics& g,
             g, bounds.getWidth() + 1, bounds.getY(), bounds.getHeight() + 1);
     } else {
         g.setGradientFill(ColourGradient(grad,
-                                         0,
-                                         0,
+                                         bounds.getX(),
+                                         bounds.getY(),
                                          Colours::transparentWhite,
-                                         0,
-                                         bounds.getHeight(),
+                                         bounds.getX(),
+                                         bounds.getBottom(),
                                          false));
         g.fillRect(bounds.getX(),
                    bounds.getY(),
                    bounds.getWidth(),
                    bounds.getHeight());
 
-        horizontal_line(g, 1, bounds.getX(), bounds.getRight());
+        horizontal_line(g, bounds.getY(), bounds.getX(), bounds.getRight());
     }
 }
 
-void matte_background_box(
-    Graphics& g, Rectangle<int> bounds, bool vertical, const Colour& colour) {
+void matte_background_box(Graphics& g,
+                          Rectangle<int> bounds,
+                          bool vertical,
+                          const Colour& colour) {
     bounds = matte_outer(g, bounds, vertical);
     if (vertical) {
         g.setGradientFill(ColourGradient(colour,
@@ -329,8 +334,7 @@ void VisualiserLookAndFeel::drawPropertyPanelSectionHeader(
     //    auto background =
     //        findColour(PropertyComponent::ColourIds::backgroundColourId);
 
-    matte_box(
-        g, Rectangle<int>(0, 0, width, height), false, Colours::blueviolet);
+    matte_box(g, Rectangle<int>(0, 0, width, height), false, emphasis);
 
     auto button_size = height * 0.75f;
     auto button_indent = (height - button_size) * 0.5f;
@@ -354,4 +358,56 @@ void VisualiserLookAndFeel::drawPropertyPanelSectionHeader(
                height,
                Justification::centredLeft,
                true);
+}
+
+void VisualiserLookAndFeel::drawPropertyComponentBackground(
+    Graphics& g, int width, int height, PropertyComponent& p) {
+}
+
+void VisualiserLookAndFeel::drawLinearSliderBackground(
+    Graphics& g,
+    int x,
+    int y,
+    int width,
+    int height,
+    float slider_pos,
+    float min_slider_pos,
+    float max_slider_pos,
+    const Slider::SliderStyle style,
+    Slider&) {
+    if (style == Slider::SliderStyle::LinearVertical) {
+        Rectangle<int> bounds(x, y, width, height);
+        g.setColour(Colours::black.withAlpha(0.5f));
+        g.fillRoundedRectangle(
+            bounds.withSizeKeepingCentre(3, height).toFloat(), 2);
+    }
+}
+
+void VisualiserLookAndFeel::drawLinearSliderThumb(
+    Graphics& g,
+    int x,
+    int y,
+    int width,
+    int height,
+    float slider_pos,
+    float min_slider_pos,
+    float max_slider_pos,
+    const Slider::SliderStyle style,
+    Slider& s) {
+    if (style == Slider::SliderStyle::LinearVertical ||
+        style == Slider::SliderStyle::LinearHorizontal) {
+        const auto slider_radius = (float)(getSliderThumbRadius(s));
+
+        if (style == Slider::LinearVertical) {
+            matte_foreground_box(g,
+                                 x + width * 0.5 - slider_radius,
+                                 slider_pos - slider_radius + 3,
+                                 slider_radius * 2,
+                                 slider_radius * 2 - 6,
+                                 emphasis);
+        } else {
+            //            auto kx = slider_pos;
+            //            auto ky = y + height * 0.5f;
+        }
+    }
 }

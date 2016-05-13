@@ -27,7 +27,7 @@ inline auto count(const std::vector<T>& coll) {
     return coll.size();
 }
 
-template<typename T>
+template <typename T>
 inline auto mean(const T& t) {
     return sum(t) / count(t);
 }

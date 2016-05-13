@@ -108,17 +108,18 @@ auto run_waveguide(ComputeContext& context_info,
     //            [                                        ]
     std::cout << "[ -- running waveguide ----------------- ]" << std::endl;
     ProgressBar pb(std::cout, steps);
-    auto results = waveguide.init_and_run(corrected_source,
-                                          std::move(input),
-                                          receiver_index,
-                                          steps,
-                                          [&pb] { pb += 1; });
+    auto results = waveguide.init_and_run(
+        corrected_source, std::move(input), receiver_index, steps, [&pb] {
+            pb += 1;
+        });
 
     auto output = std::vector<float>(results.size());
     proc::transform(
         results, output.begin(), [](const auto& i) { return i.pressure; });
 
-    output.erase(output.begin(), output.begin() + input.size() / 2);
+    //  correct for filter time offset
+    output.erase(output.begin(),
+                 output.begin() + std::ceil(input.size() / 2.0));
 
     return output;
 }
@@ -150,21 +151,12 @@ int main(int argc, char** argv) {
 
     json_read_write::write(output_folder + "/used_config.json", config);
 
-    {
-        std::vector<float> sig(44100);
-        for (auto i = 0; i != sig.size(); ++i) {
-            sig[i] = sin(i * 0.01) + 2;
-        }
-        filter::ZeroPhaseDCBlocker(32).filter(sig);
-        write_file(config, output_folder, "dc_test", {sig});
-    }
-
     ComputeContext context_info;
 
     auto waveguide_output =
         run_waveguide(context_info, boundary, config, output_folder, surface);
 
-    filter::ZeroPhaseDCBlocker(32).filter(waveguide_output);
+    // filter::ZeroPhaseDCBlocker(32).filter(waveguide_output);
 
     write_file(config, output_folder, "waveguide_raw", {waveguide_output});
 

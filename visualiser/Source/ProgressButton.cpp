@@ -3,7 +3,6 @@
 void TransparentTextButton::paintButton(Graphics& g,
                                         bool is_mouse_over,
                                         bool is_mouse_down) {
-
     auto bounds = getLocalBounds().reduced(1, 1);
     bounds.removeFromBottom(1);
 

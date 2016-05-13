@@ -70,11 +70,10 @@ TEST(run_waveguide, run_waveguide) {
     auto corrected_source = waveguide.get_coordinate_for_index(source_index);
 
     ProgressBar pb(std::cout, steps);
-    auto results = waveguide.init_and_run(corrected_source,
-                                          std::vector<float>{1},
-                                          receiver_index,
-                                          steps,
-                                          [&pb] { pb += 1; });
+    auto results = waveguide.init_and_run(
+        corrected_source, std::vector<float>{1}, receiver_index, steps, [&pb] {
+            pb += 1;
+        });
 
     auto output = std::vector<float>(results.size());
     proc::transform(

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "triangle.h"
 #include "vec.h"
 
 #include "cl_include.h"

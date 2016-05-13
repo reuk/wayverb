@@ -4,11 +4,10 @@
 
 class VisualiserLookAndFeel : public LookAndFeel_V3 {
 public:
-
-static Colour create_base_colour(Colour button_colour,
-                               bool has_keyboard_focus,
-                               bool is_mouse_over,
-                               bool is_button_down) noexcept;
+    static Colour create_base_colour(Colour button_colour,
+                                     bool has_keyboard_focus,
+                                     bool is_mouse_over,
+                                     bool is_button_down) noexcept;
     VisualiserLookAndFeel();
 
     void drawProgressBar(Graphics& g,
@@ -53,4 +52,31 @@ static Colour create_base_colour(Colour button_colour,
                                         bool is_open,
                                         int width,
                                         int height) override;
+
+    void drawPropertyComponentBackground(Graphics& g,
+                                         int width,
+                                         int height,
+                                         PropertyComponent& p) override;
+
+    void drawLinearSliderBackground(Graphics& g,
+                                    int x,
+                                    int y,
+                                    int width,
+                                    int height,
+                                    float slider_pos,
+                                    float min_slider_pos,
+                                    float max_slider_pos,
+                                    const Slider::SliderStyle,
+                                    Slider&) override;
+
+    void drawLinearSliderThumb(Graphics& g,
+                               int x,
+                               int y,
+                               int width,
+                               int height,
+                               float slider_pos,
+                               float min_slider_pos,
+                               float max_slider_pos,
+                               const Slider::SliderStyle,
+                               Slider& s) override;
 };

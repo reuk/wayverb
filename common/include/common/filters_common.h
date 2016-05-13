@@ -189,9 +189,9 @@ private:
 template <typename T>
 class TwopassFilterWrapper : public T {
 public:
-    template<typename... Ts>
-    TwopassFilterWrapper(Ts&&... ts):
-        T(std::forward<Ts>(ts)...) {
+    template <typename... Ts>
+    TwopassFilterWrapper(Ts &&... ts)
+            : T(std::forward<Ts>(ts)...) {
     }
 
     void filter(std::vector<float> &data) override {

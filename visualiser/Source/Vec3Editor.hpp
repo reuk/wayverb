@@ -1,57 +1,155 @@
 #pragma once
 
-#include "../JuceLibraryCode/JuceHeader.h"
+#include "ModelWrapper.hpp"
+#include "ValueWrapperSlider.hpp"
 
 #include <array>
+#include <iomanip>
+#include <sstream>
 
-class NumberEditor : public Component {
+template <typename T>
+class NumberEditor : public Component,
+                     public TextEditor::Listener,
+                     public Button::Listener {
 public:
-    NumberEditor();
-    void resized() override;
+    class Listener {
+    public:
+        Listener() = default;
+        Listener(const Listener& rhs) = default;
+        Listener& operator=(const Listener& rhs) = default;
+        Listener(Listener&& rhs) noexcept = default;
+        Listener& operator=(Listener&& rhs) noexcept = default;
+        virtual ~Listener() noexcept = default;
+
+        virtual void number_editor_value_changed(NumberEditor& e) = 0;
+    };
+
+    NumberEditor()
+            : text_editor()
+            , sub_button("-")
+            , add_button("+") {
+        text_editor.setInputRestrictions(0, "0123456789.-+eE");
+
+        text_editor.addListener(this);
+        sub_button.addListener(this);
+        add_button.addListener(this);
+
+        addAndMakeVisible(text_editor);
+        addAndMakeVisible(sub_button);
+        addAndMakeVisible(add_button);
+
+        set_text(0, false);
+    }
+    void resized() override {
+        auto button_width = 25;
+        auto bounds = getLocalBounds();
+
+        sub_button.setBounds(bounds.withWidth(button_width));
+        text_editor.setBounds(bounds.reduced(button_width + 2, 0));
+        add_button.setBounds(bounds.withLeft(getWidth() - button_width));
+    }
+
+    void buttonClicked(Button* button) override {
+        if (button == &sub_button) {
+            set_value(get_value() - 1, true);
+        } else if (button == &add_button) {
+            set_value(get_value() + 1, true);
+        }
+    }
+
+    void textEditorReturnKeyPressed(TextEditor& editor) override {
+        if (&editor == &text_editor) {
+            set_value(std::stof(editor.getText().toStdString()), true);
+        }
+    }
+
+    void set_value(T x, bool send_changed) {
+        set_text(x, false);
+        if (send_changed) {
+            listener_list.call(&Listener::number_editor_value_changed, *this);
+        }
+    }
+    T get_value() const {
+        return value;
+    }
+
+    void add_listener(Listener& l) {
+        listener_list.add(&l);
+    }
+    void remove_listener(Listener& l) {
+        listener_list.remove(&l);
+    }
 
 private:
+    void set_text(T x, bool send_changed) {
+        value = x;
+
+        std::stringstream ss;
+        ss << value;
+        text_editor.setText(ss.str(), send_changed);
+    }
+
     TextEditor text_editor;
     TextButton sub_button;
     TextButton add_button;
+    T value{0};
+
+    ListenerList<Listener> listener_list;
 };
 
-class NumberProperty : public PropertyComponent {
+template <typename T>
+class NumberProperty : public PropertyComponent,
+                       public NumberEditor<T>::Listener,
+                       public ChangeListener {
 public:
-    NumberProperty(const String& name);
+    NumberProperty(const String& name, model::ValueWrapper<T>& value)
+            : PropertyComponent(name)
+            , value(value) {
+        changeListenerCallback(&value);
+
+        editor.add_listener(*this);
+
+        addAndMakeVisible(editor);
+    }
+    virtual ~NumberProperty() noexcept {
+        editor.remove_listener(*this);
+    }
+    void refresh() override {
+    }
+
+    void number_editor_value_changed(NumberEditor<T>& t) override {
+        if (&t == &editor) {
+            value.set_value(editor.get_value());
+        }
+    }
+
+    void changeListenerCallback(ChangeBroadcaster* cb) override {
+        if (cb == &value) {
+            editor.set_value(value.get_value(), false);
+        }
+    }
+
+private:
+    model::ValueWrapper<T>& value;
+    model::ChangeConnector value_connector{&value, this};
+    NumberEditor<T> editor;
+};
+
+class Vec3fEditor : public Component {
+public:
+    Vec3fEditor(model::Vec3fWrapper& value);
+    void resized() override;
+
+private:
+    model::Vec3fWrapper& value;
+    PropertyPanel property_panel;
+};
+
+class Vec3fProperty : public PropertyComponent {
+public:
+    Vec3fProperty(const String& name, model::Vec3fWrapper& value);
     void refresh() override;
 
 private:
-    NumberEditor editor;
-};
-
-class LabelledNumberEditor : public Component {
-public:
-    LabelledNumberEditor(const String& name);
-    void resized() override;
-
-    static const auto label_width = 50;
-
-private:
-    Label label;
-    NumberEditor editor;
-};
-
-class Vec3Editor : public Component {
-public:
-    Vec3Editor();
-    void resized() override;
-
-private:
-    LabelledNumberEditor x;
-    LabelledNumberEditor y;
-    LabelledNumberEditor z;
-};
-
-class Vec3Property : public PropertyComponent {
-public:
-    Vec3Property(const String& name);
-    void refresh() override;
-
-private:
-    Vec3Editor editor;
+    Vec3fEditor editor;
 };

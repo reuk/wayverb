@@ -14,16 +14,27 @@ public:
     App() = default;
     virtual ~App() noexcept = default;
 
+    static std::unique_ptr<AttenuationModel> clone_attenuation_model(
+        const App& rhs) {
+        return rhs.attenuation_model ? rhs.attenuation_model->clone() : nullptr;
+    }
+
     App(const App& rhs)
             : source(rhs.source)
             , mic(rhs.mic)
             , sample_rate(rhs.sample_rate)
             , bit_depth(rhs.bit_depth)
-            , attenuation_model(rhs.attenuation_model
-                                    ? rhs.attenuation_model->clone()
-                                    : nullptr) {
+            , attenuation_model(clone_attenuation_model(rhs)) {
     }
-    App& operator=(const App&) noexcept = default;
+    App& operator=(const App& rhs) {
+        source = rhs.source;
+        mic = rhs.mic;
+        sample_rate = rhs.sample_rate;
+        bit_depth = rhs.bit_depth;
+        attenuation_model = clone_attenuation_model(rhs);
+
+        return *this;
+    }
 
     App(App&&) noexcept = default;
     App& operator=(App&&) noexcept = default;

@@ -124,8 +124,7 @@ RectangularWaveguide::RectangularWaveguide(
     cl::CommandQueue& queue,
     const RectangularMesh& mesh,
     float sample_rate,
-    std::vector<RectangularProgram::CanonicalCoefficients>
-        coefficients)
+    std::vector<RectangularProgram::CanonicalCoefficients> coefficients)
         : RectangularWaveguide(program,
                                queue,
                                mesh,
@@ -142,16 +141,11 @@ RectangularWaveguide::RectangularWaveguide(
     cl::CommandQueue& queue,
     const RectangularMesh& mesh,
     float sample_rate,
-    std::vector<RectangularMesh::CondensedNode>
-        nodes,
-    std::vector<RectangularProgram::BoundaryDataArray1>
-        boundary_data_1,
-    std::vector<RectangularProgram::BoundaryDataArray2>
-        boundary_data_2,
-    std::vector<RectangularProgram::BoundaryDataArray3>
-        boundary_data_3,
-    std::vector<RectangularProgram::CanonicalCoefficients>
-        coefficients)
+    std::vector<RectangularMesh::CondensedNode> nodes,
+    std::vector<RectangularProgram::BoundaryDataArray1> boundary_data_1,
+    std::vector<RectangularProgram::BoundaryDataArray2> boundary_data_2,
+    std::vector<RectangularProgram::BoundaryDataArray3> boundary_data_3,
+    std::vector<RectangularProgram::CanonicalCoefficients> coefficients)
         : Waveguide<RectangularProgram>(
               program, queue, mesh.get_nodes().size(), sample_rate)
         , mesh(mesh)
@@ -194,8 +188,7 @@ RectangularWaveguide::RectangularWaveguide(
               << " MB";
 }
 
-void RectangularWaveguide::setup(cl::CommandQueue& queue,
-                                 size_type o) {
+void RectangularWaveguide::setup(cl::CommandQueue& queue, size_type o) {
     auto transform_matrix = get_transform_matrix(PORTS, o, mesh.get_nodes());
     cl::copy(queue,
              transform_matrix.data(),

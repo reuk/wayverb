@@ -29,7 +29,7 @@ export GLOG_logtostderr=1
 #cmake .. && make && ctest -V
 #cmake .. && make && make doc && ctest -V
 #cmake .. && make && ctest -V && callraytrace vault vault vault
-#cmake .. && make && ./tests/hybrid_test/hybrid_test ../tests/hybrid_test/output
+cmake .. && make && ./tests/hybrid_test/hybrid_test ../tests/hybrid_test/output
 #cmake .. && make && ./impulse_gen/impulse_gen
 
-cmake .. && make && cd ../tests/mic_test && ./run_and_graph.sh
+#cmake .. && make && cd ../tests/mic_test && ./run_and_graph.sh

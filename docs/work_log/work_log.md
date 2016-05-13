@@ -442,64 +442,46 @@ boundary nodes
                               |  |  |
             coefficients: [a, b, c, d]
 
-
-talking points
-==============
-
-what's the best way of generating boundary filters?
-
-questions to research:
-----------------------
-
-why doesn't the wavefront get dimmer as it spreads out?
-    is energy growing in the model?
-    if yes, there's a problem
-    why does the boundary model appear to create energy?
-    what does it mean to have negative pressure?
-
-try running my tests with anechoic boundaries on nearby walls
-
-check perfect reflection = delay
-
-attenuation is probably not the solution
-
-can I simulate standing waves?
-
-relationship between energy and pressure
-
-can I speed up waveguide by processing inner and boundary nodes in separate
-passes?
-
 things to do:
 -------------
 
-before presentation:
-    [x] fix solution growth issue
-    [x] redo proper boundary tests, but longer (with anechoic boundaries?)
-            produce graphs
-    [x] redo mic tests
-            produce graphs
-    [ ] create demos
+* raytracer diffuse reflections
 
-check intensity/distance conversion
+* check intensity/distance conversion
 
-low frequency modal analysis
+* low frequency modal analysis
 
-sinc kernel centre amplitude
+* try to reduce waveguide solution growth via inputs rather than by
+  post-filtering if possible
+    * frequency response of sine modulated gaussian kernel
+    * how does using a different kernel (and doing the mic processing)
+      affect mixing level?
 
-try to reduce waveguide solution growth via inputs rather than by post-filtering
-    if possible
+* combine two models, remember to correct for ring in filtered waveguide
+    * time-shift due to kernel offset
 
-combine two models, remember to correct for ring in filtered waveguide
+* can I speed up waveguide by processing inner and boundary nodes in separate
+  passes?
+
 
 interface
 ---------
 
-* work out models
-
-* actual audio output!
-    * preview?
+* data models
+    * microphone capsules
+    * material config
+        * presets
+        * db scaling
 
 * call from the commandline
 
-* some way of modifying materials per surface
+* decouple waveguide steps and frame renderer
+
+* hiss convolution -> plugin?
+    * I foresee issues with multithreading
+* actual audio output!
+    * preview?
+
+* slider hover colours
+
+* raytracer - some way of pruning, visualising wave paths

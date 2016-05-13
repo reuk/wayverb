@@ -23,7 +23,7 @@ void VisualiserApplication::initialise(const String& commandLine) {
 
     MenuBarModel::setMacMainMenu(main_menu_bar_model.get(), nullptr);
 
-    command_manager->invoke(CommandIDs::idOpenProject, false);
+    //    command_manager->invoke(CommandIDs::idOpenProject, false);
 }
 
 void VisualiserApplication::shutdown() {

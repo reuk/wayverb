@@ -1,6 +1,7 @@
 #pragma once
 
 #include "LeftPanel.hpp"
+#include "ModelWrapper.hpp"
 #include "RightPanel.hpp"
 
 class MainContentComponent final : public Component {
@@ -13,6 +14,7 @@ public:
     void save_as_project();
 
 private:
+    model::Combined combined_model;
     RenderStateManager render_state_manager;
 
     StretchableLayoutManager layout_manager;

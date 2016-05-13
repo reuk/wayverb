@@ -3,10 +3,13 @@
 #include "combined_config_serialize.h"
 #include "common/surface_serialize.h"
 
+#include "LoadFiles.hpp"
+
 MainContentComponent::MainContentComponent(const File& root)
-        : left_panel(render_state_manager)
+        : combined_model(nullptr, load_config(root))
+        , left_panel(combined_model, render_state_manager)
         , resizer_bar(&layout_manager, 1, true)
-        , right_panel(render_state_manager, root) {
+        , right_panel(combined_model, render_state_manager, root) {
     auto left_panel_width = 250;
     layout_manager.setItemLayout(
         0, left_panel_width, left_panel_width, left_panel_width);
