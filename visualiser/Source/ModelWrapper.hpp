@@ -59,9 +59,11 @@ public:
         return t;
     }
 
-    void set_value(const T& u) {
+    virtual void set_value(const T& u, bool do_notify = true) {
         t = u;
-        notify();
+        if (do_notify) {
+            notify();
+        }
     }
 
 protected:
@@ -71,6 +73,8 @@ protected:
 class Vec3fWrapper : public ValueWrapper<Vec3f> {
 public:
     using ValueWrapper<Vec3f>::ValueWrapper;
+
+    void set_value(const Vec3f& u, bool do_notify = true) override;
 
     ValueWrapper<float> x{this, t.x};
     ValueWrapper<float> y{this, t.y};
@@ -109,6 +113,8 @@ class VolumeTypeWrapper : public ValueWrapper<VolumeType> {
 public:
     using ValueWrapper<VolumeType>::ValueWrapper;
 
+    void set_value(const VolumeType& u, bool do_notify = true) override;
+
     ValueWrapper<float> s0{this, t.s[0]};
     ValueWrapper<float> s1{this, t.s[1]};
     ValueWrapper<float> s2{this, t.s[2]};
@@ -122,6 +128,8 @@ public:
 class SurfaceWrapper : public ValueWrapper<Surface> {
 public:
     using ValueWrapper<Surface>::ValueWrapper;
+
+    void set_value(const Surface& u, bool do_notify = true) override;
 
     VolumeTypeWrapper specular{this, t.specular};
     VolumeTypeWrapper diffuse{this, t.diffuse};

@@ -7,6 +7,32 @@
 #include <iomanip>
 #include <sstream>
 
+/*
+template <typename T>
+class NumberEditor : public ValueWrapperSlider<T> {
+public:
+    NumberEditor(model::ValueWrapper<T>& value)
+            : ValueWrapperSlider<T>(value) {
+        this->changeListenerCallback(&value);
+    }
+};
+
+template <typename T>
+class NumberProperty : public PropertyComponent {
+public:
+    NumberProperty(const String& name, model::ValueWrapper<T>& value)
+            : PropertyComponent(name)
+            , editor(value) {
+        addAndMakeVisible(editor);
+    }
+    void refresh() override {
+    }
+
+private:
+    NumberEditor<T> editor;
+};
+*/
+
 template <typename T>
 class NumberEditor : public Component,
                      public TextEditor::Listener,

@@ -11,17 +11,17 @@ VolumeComponent::VolumeSlider::VolumeSlider(model::ValueWrapper<float>& value)
     set_slider_style(Slider::SliderStyle::LinearVertical);
     set_text_box_style(Slider::TextEntryBoxPosition::NoTextBox, true, 0, 0);
     set_popup_display_enabled(true, nullptr);
-    set_range(-100, 0, 1);
+    set_range(0.01, 1, 0);
 
     changeListenerCallback(&value);
 }
 
-float VolumeComponent::VolumeSlider::slider_to_value(float t) {
-    return Decibels::decibelsToGain(t);
-}
-float VolumeComponent::VolumeSlider::value_to_slider(float t) {
-    return Decibels::gainToDecibels(t);
-}
+// float VolumeComponent::VolumeSlider::slider_to_value(float t) {
+//    return Decibels::decibelsToGain(t);
+//}
+// float VolumeComponent::VolumeSlider::value_to_slider(float t) {
+//    return Decibels::gainToDecibels(t);
+//}
 
 //----------------------------------------------------------------------------//
 
@@ -74,7 +74,7 @@ VolumeComponent::get_slider_array() {
 
 VolumeProperty::VolumeProperty(const String& name,
                                model::VolumeTypeWrapper& value)
-        : PropertyComponent(name, 100)
+        : PropertyComponent(name, 120)
         , editor(value) {
     addAndMakeVisible(editor);
 }
@@ -148,12 +148,14 @@ void FrequencyLabelProperty::refresh() {
 
 //----------------------------------------------------------------------------//
 
-SurfaceComponent::SurfaceComponent(model::SurfaceWrapper& value) {
+SurfaceComponent::SurfaceComponent(model::SurfaceWrapper& value,
+                                   SurfaceModel& preset_model) {
     property_panel.addProperties(
         {new FrequencyLabelProperty("frequencies / KHz")});
     property_panel.addProperties(
-        {new VolumeProperty("diffuse / dB", value.diffuse),
-         new VolumeProperty("specular / dB", value.specular)});
+        {new VolumeProperty("diffuse gain", value.diffuse),
+         new VolumeProperty("specular gain", value.specular)});
+    property_panel.addProperties({new PresetProperty(value, preset_model)});
 
     property_panel.setOpaque(false);
 
@@ -164,4 +166,142 @@ SurfaceComponent::SurfaceComponent(model::SurfaceWrapper& value) {
 
 void SurfaceComponent::resized() {
     property_panel.setBounds(getLocalBounds());
+}
+
+//----------------------------------------------------------------------------//
+
+SurfaceComponentWithTitle::SurfaceComponentWithTitle(
+    SurfaceModel::MaterialWrapper& value, SurfaceModel& preset_model)
+        : title("", value.name.get_value() + " settings")
+        , surface_component(value.surface, preset_model) {
+    title.setJustificationType(Justification::centred);
+
+    addAndMakeVisible(title);
+    addAndMakeVisible(surface_component);
+
+    setSize(surface_component.getWidth(),
+            surface_component.getHeight() + title_height);
+}
+
+void SurfaceComponentWithTitle::resized() {
+    title.setBounds(getLocalBounds().removeFromTop(title_height));
+    surface_component.setBounds(getLocalBounds().withTrimmedTop(title_height));
+}
+
+//----------------------------------------------------------------------------//
+
+PresetComponent::PresetComponent(model::SurfaceWrapper& linked,
+                                 SurfaceModel& preset_model)
+        : linked(linked)
+        , preset_model(preset_model) {
+    combo_box.setEditableText(false);
+
+    combo_box.addListener(this);
+    text_editor.addListener(this);
+    save_button.addListener(this);
+    delete_button.addListener(this);
+
+    addChildComponent(combo_box);
+    addChildComponent(text_editor);
+
+    addAndMakeVisible(save_button);
+    addAndMakeVisible(delete_button);
+
+    changeListenerCallback(&preset_model);
+}
+
+PresetComponent::~PresetComponent() noexcept {
+    save_button.removeListener(this);
+    delete_button.removeListener(this);
+}
+
+void PresetComponent::resized() {
+    auto bottom = getLocalBounds();
+    auto combo_bounds =
+        bottom.withHeight(bottom.getHeight() / 2).withTrimmedBottom(1);
+    combo_box.setBounds(combo_bounds.reduced(1, 0));
+    text_editor.setBounds(combo_bounds.reduced(1, 0));
+
+    auto button_bounds = combo_bounds.withY(combo_bounds.getBottom() + 2);
+    save_button.setBounds(
+        button_bounds.withWidth(button_bounds.getWidth() / 2).reduced(1, 0));
+    delete_button.setBounds(
+        button_bounds.withTrimmedLeft(button_bounds.getWidth() / 2)
+            .reduced(1, 0));
+}
+
+void PresetComponent::comboBoxChanged(ComboBox* cb) {
+    if (cb == &combo_box) {
+        auto selected = combo_box.getSelectedItemIndex();
+        if (0 <= selected) {
+            linked.set_value(preset_model.get_material_at(selected).surface);
+        }
+    }
+}
+
+void PresetComponent::textEditorReturnKeyPressed(TextEditor& e) {
+    if (e.getText().isNotEmpty()) {
+        //  create new entry in model using current material settings
+        preset_model.add_entry(
+            SceneData::Material{e.getText().toStdString(), linked.get_value()});
+
+        //  update combobox view
+        combo_box.setSelectedItemIndex(preset_model.get_num_materials() - 1,
+                                       sendNotificationSync);
+    } else {
+        changeListenerCallback(&linked);
+    }
+}
+
+void PresetComponent::buttonClicked(Button* b) {
+    if (b == &save_button) {
+        combo_box.setVisible(false);
+        text_editor.setVisible(true);
+
+        save_button.setVisible(false);
+        delete_button.setVisible(false);
+
+        text_editor.setText("new preset");
+        text_editor.selectAll();
+
+    } else if (b == &delete_button) {
+        auto ind = combo_box.getSelectedItemIndex();
+        if (0 <= ind) {
+            preset_model.delete_entry(ind);
+        }
+    }
+}
+
+void PresetComponent::changeListenerCallback(ChangeBroadcaster* cb) {
+    text_editor.setVisible(false);
+    combo_box.setVisible(true);
+
+    save_button.setVisible(true);
+    delete_button.setVisible(true);
+
+    if (cb == &linked) {
+        std::cout << "linked model changed" << std::endl;
+
+        combo_box.setSelectedItemIndex(-1, dontSendNotification);
+        combo_box.setEditableText(false);
+    } else if (cb == &preset_model) {
+        combo_box.clear();
+
+        auto counter = 1;
+        for (const auto& i : preset_model.get_materials()) {
+            combo_box.addItem(i.name, counter);
+            counter += 1;
+        }
+    }
+}
+
+//----------------------------------------------------------------------------//
+
+PresetProperty::PresetProperty(model::SurfaceWrapper& linked,
+                               SurfaceModel& preset_model)
+        : PropertyComponent("presets", 52)
+        , preset_component(linked, preset_model) {
+    addAndMakeVisible(preset_component);
+}
+void PresetProperty::refresh() {
 }

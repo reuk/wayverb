@@ -2,10 +2,14 @@
 
 #include "BottomPanel.hpp"
 #include "ModelWrapper.hpp"
+#include "SurfaceModel.hpp"
+
+#include "PropertyComponentLAF.hpp"
 
 class LeftPanel : public Component, public ChangeListener {
 public:
     LeftPanel(model::Combined& combined_model,
+              SurfaceModel& surface_model,
               RenderStateManager& render_state_manager);
 
     void resized() override;
@@ -13,15 +17,24 @@ public:
     void changeListenerCallback(ChangeBroadcaster* cb) override;
 
 private:
+    PropertyComponentLAF pclaf;
+
     model::Combined& combined_model;
-    model::ChangeConnector model_connector{&combined_model, this};
+    model::ChangeConnector combined_connector{&combined_model, this};
+
+    SurfaceModel& surface_model;
+    model::ChangeConnector surface_connector{&surface_model, this};
 
     RenderStateManager& render_state_manager;
 
-    Surface test_surface;
-    model::SurfaceWrapper surface_wrapper{nullptr, test_surface};
-    model::ChangeConnector surface_connector{&surface_wrapper, this};
-
     PropertyPanel property_panel;
     BottomPanel bottom_panel;
+
+    SurfaceModel preset_model{
+        nullptr,
+        std::vector<SceneData::Material>{
+            SceneData::Material{"preset one", Surface()},
+            SceneData::Material{"preset two", Surface()},
+            SceneData::Material{"preset three", Surface()},
+        }};
 };

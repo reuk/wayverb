@@ -7,9 +7,11 @@
 
 MainContentComponent::MainContentComponent(const File& root)
         : combined_model(nullptr, load_config(root))
-        , left_panel(combined_model, render_state_manager)
+        , scene_data(load_model(root, load_materials(root)))
+        , surface_model(nullptr, scene_data.get_materials())
+        , left_panel(combined_model, surface_model, render_state_manager)
         , resizer_bar(&layout_manager, 1, true)
-        , right_panel(combined_model, render_state_manager, root) {
+        , right_panel(combined_model, scene_data, render_state_manager) {
     auto left_panel_width = 250;
     layout_manager.setItemLayout(
         0, left_panel_width, left_panel_width, left_panel_width);

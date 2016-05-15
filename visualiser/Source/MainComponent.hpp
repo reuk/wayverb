@@ -15,6 +15,9 @@ public:
 
 private:
     model::Combined combined_model;
+    SceneData scene_data;
+    SurfaceModel surface_model;
+
     RenderStateManager render_state_manager;
 
     StretchableLayoutManager layout_manager;

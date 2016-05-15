@@ -3,40 +3,48 @@
 #include "SurfacePanel.hpp"
 #include "Vec3Editor.hpp"
 
-class MaterialConfigureButton : public PropertyComponent,
-                                public Button::Listener {
+class MaterialConfigureButton : public ButtonPropertyComponent {
 public:
-    MaterialConfigureButton(model::SurfaceWrapper& surface_wrapper)
-            : PropertyComponent("material")
-            , surface_wrapper(surface_wrapper)
-            , button("configure...") {
-        button.addListener(this);
-        addAndMakeVisible(button);
+    MaterialConfigureButton(SurfaceModel::MaterialWrapper& value,
+                            SurfaceModel& preset_model)
+            : ButtonPropertyComponent(value.name.get_value(), true)
+            , value(value)
+            , preset_model(preset_model) {
     }
 
-    virtual ~MaterialConfigureButton() noexcept {
-        button.removeListener(this);
+    String getButtonText() const override {
+        return "...";
     }
 
-    void buttonClicked(Button* b) override {
-        if (b == &button) {
-            auto panel = new SurfaceComponent(surface_wrapper);
-            CallOutBox::launchAsynchronously(
-                panel, button.getScreenBounds(), nullptr);
-        }
-    }
-
-    void refresh() override {
+    void buttonClicked() override {
+        auto panel = new SurfaceComponentWithTitle(value, preset_model);
+        CallOutBox::launchAsynchronously(panel, getScreenBounds(), nullptr);
     }
 
 private:
-    model::SurfaceWrapper& surface_wrapper;
-    TextButton button;
+    SurfaceModel::MaterialWrapper& value;
+    SurfaceModel& preset_model;
 };
 
+//  ew non-managed pointers
+//  yuck
+Array<PropertyComponent*> make_material_buttons(const SurfaceModel& model,
+                                                SurfaceModel& preset,
+                                                LookAndFeel& laf) {
+    Array<PropertyComponent*> ret;
+    for (const auto& i : model.get_material_wrappers()) {
+        auto to_add = new MaterialConfigureButton(i, preset);
+        to_add->setLookAndFeel(&laf);
+        ret.add(to_add);
+    }
+    return ret;
+}
+
 LeftPanel::LeftPanel(model::Combined& combined_model,
+                     SurfaceModel& surface_model,
                      RenderStateManager& render_state_manager)
         : combined_model(combined_model)
+        , surface_model(surface_model)
         , render_state_manager(render_state_manager)
         , bottom_panel(render_state_manager) {
     property_panel.addSection(
@@ -44,8 +52,10 @@ LeftPanel::LeftPanel(model::Combined& combined_model,
         {new Vec3fProperty("source", combined_model.source),
          new Vec3fProperty("mic", combined_model.mic)});
 
-    property_panel.addSection("materials",
-                              {new MaterialConfigureButton(surface_wrapper)});
+    Array<PropertyComponent*> materials;
+    materials.addArray(
+        make_material_buttons(surface_model, preset_model, pclaf));
+    property_panel.addSection("materials", materials);
 
     property_panel.addSection(
         "waveguide",

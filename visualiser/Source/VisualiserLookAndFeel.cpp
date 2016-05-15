@@ -34,6 +34,7 @@ VisualiserLookAndFeel::VisualiserLookAndFeel() {
     setColour(BubbleComponent::ColourIds::backgroundColourId,
               Colours::lightgrey.withAlpha(0.8f));
     setColour(BubbleComponent::ColourIds::outlineColourId, Colours::black);
+    setColour(Slider::ColourIds::thumbColourId, emphasis);
 }
 
 void horizontal_line(Graphics& g,
@@ -393,10 +394,15 @@ void VisualiserLookAndFeel::drawLinearSliderThumb(
     float min_slider_pos,
     float max_slider_pos,
     const Slider::SliderStyle style,
-    Slider& s) {
+    Slider& slider) {
+    Colour thumb_colour =
+        create_base_colour(slider.findColour(Slider::thumbColourId),
+                           slider.hasKeyboardFocus(false) && slider.isEnabled(),
+                           slider.isMouseOverOrDragging() && slider.isEnabled(),
+                           slider.isMouseButtonDown() && slider.isEnabled());
     if (style == Slider::SliderStyle::LinearVertical ||
         style == Slider::SliderStyle::LinearHorizontal) {
-        const auto slider_radius = (float)(getSliderThumbRadius(s));
+        const auto slider_radius = (float)(getSliderThumbRadius(slider));
 
         if (style == Slider::LinearVertical) {
             matte_foreground_box(g,
@@ -404,7 +410,7 @@ void VisualiserLookAndFeel::drawLinearSliderThumb(
                                  slider_pos - slider_radius + 3,
                                  slider_radius * 2,
                                  slider_radius * 2 - 6,
-                                 emphasis);
+                                 thumb_colour);
         } else {
             //            auto kx = slider_pos;
             //            auto ky = y + height * 0.5f;

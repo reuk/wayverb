@@ -8,8 +8,8 @@
 class RightPanel final : public Component {
 public:
     RightPanel(model::Combined& combined_model,
-               RenderStateManager& render_state_manager,
-               const File& root);
+               SceneData& scene_data,
+               RenderStateManager& render_state_manager);
 
     void resized() override;
 
@@ -17,9 +17,8 @@ public:
 
 private:
     model::Combined& combined_model;
+    SceneData& scene_data;
     RenderStateManager& render_state_manager;
-
-    SceneData model;
 
     ModelRendererComponent model_renderer_component;
 };

@@ -33,6 +33,8 @@
 		1BA3F3EB1CDA21EC00073946 /* OctahedronObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1BA3F3DE1CDA21EC00073946 /* OctahedronObject.cpp */; };
 		1BA3F3ED1CDA223100073946 /* libsamplerate.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1BA3F3EC1CDA223100073946 /* libsamplerate.a */; };
 		1BA8CEB01CE4CC7900F3AF79 /* SurfacePanel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1BA8CEAE1CE4CC7900F3AF79 /* SurfacePanel.cpp */; };
+		1BC2966B1CE5F3F300F4F33F /* SurfaceModel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1BC296691CE5F3F300F4F33F /* SurfaceModel.cpp */; };
+		1BC296711CE63C4A00F4F33F /* PropertyComponentLAF.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1BC2966F1CE63C4A00F4F33F /* PropertyComponentLAF.cpp */; };
 		1BC9C8081CDA087700605865 /* libassimp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1BC9C7F91CDA084000605865 /* libassimp.a */; };
 		1BC9C8091CDA087700605865 /* libcommon.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1BC9C7FD1CDA084000605865 /* libcommon.a */; };
 		1BC9C80A1CDA087700605865 /* libraytracer.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1BC9C8011CDA084000605865 /* libraytracer.a */; };
@@ -410,6 +412,10 @@
 		1BA8CEAF1CE4CC7900F3AF79 /* SurfacePanel.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = SurfacePanel.hpp; path = ../../Source/SurfacePanel.hpp; sourceTree = "<group>"; };
 		1BAF74BB3A7DDB036AACF878 /* infback.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = infback.c; path = ../../JuceLibraryCode/modules/juce_core/zip/zlib/infback.c; sourceTree = SOURCE_ROOT; };
 		1BC296481CE5EC2F00F4F33F /* ValueWrapperSlider.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = ValueWrapperSlider.hpp; path = ../../Source/ValueWrapperSlider.hpp; sourceTree = "<group>"; };
+		1BC296691CE5F3F300F4F33F /* SurfaceModel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SurfaceModel.cpp; path = ../../Source/SurfaceModel.cpp; sourceTree = "<group>"; };
+		1BC2966A1CE5F3F300F4F33F /* SurfaceModel.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = SurfaceModel.hpp; path = ../../Source/SurfaceModel.hpp; sourceTree = "<group>"; };
+		1BC2966F1CE63C4A00F4F33F /* PropertyComponentLAF.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = PropertyComponentLAF.cpp; path = ../../Source/PropertyComponentLAF.cpp; sourceTree = "<group>"; };
+		1BC296701CE63C4A00F4F33F /* PropertyComponentLAF.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = PropertyComponentLAF.hpp; path = ../../Source/PropertyComponentLAF.hpp; sourceTree = "<group>"; };
 		1BC9C7BB1CDA084000605865 /* WAYVERB.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = WAYVERB.xcodeproj; path = ../../../xcproj/WAYVERB.xcodeproj; sourceTree = "<group>"; };
 		1BE99A23F9968165DCF0C571 /* format.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = format.c; path = ../../JuceLibraryCode/modules/juce_audio_formats/codecs/flac/libFLAC/format.c; sourceTree = SOURCE_ROOT; };
 		1BECF4BE1CDCB40B008773FD /* BottomPanel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = BottomPanel.cpp; path = ../../Source/BottomPanel.cpp; sourceTree = "<group>"; };
@@ -1690,8 +1696,12 @@
 		19997BD6C10697AB22FAF5D3 /* Source */ = {
 			isa = PBXGroup;
 			children = (
+				1BC2966F1CE63C4A00F4F33F /* PropertyComponentLAF.cpp */,
+				1BC296701CE63C4A00F4F33F /* PropertyComponentLAF.hpp */,
 				1B6833951CE1087300E4CACC /* ModelWrapper.cpp */,
 				1B6833961CE1087300E4CACC /* ModelWrapper.hpp */,
+				1BC296691CE5F3F300F4F33F /* SurfaceModel.cpp */,
+				1BC2966A1CE5F3F300F4F33F /* SurfaceModel.hpp */,
 				1B0E93B11CDD4A50001A33F5 /* ProgressButton.cpp */,
 				1B0E93B21CDD4A50001A33F5 /* ProgressButton.hpp */,
 				1B0E93871CDD0371001A33F5 /* Vec3Editor.cpp */,
@@ -3954,10 +3964,12 @@
 				1B0E93B31CDD4A50001A33F5 /* ProgressButton.cpp in Sources */,
 				1B6833971CE1087300E4CACC /* ModelWrapper.cpp in Sources */,
 				1BECF4C01CDCB40B008773FD /* BottomPanel.cpp in Sources */,
+				1BC2966B1CE5F3F300F4F33F /* SurfaceModel.cpp in Sources */,
 				1BA3F3E51CDA21EC00073946 /* Main.cpp in Sources */,
 				1BECF4C61CDCD778008773FD /* RightPanel.cpp in Sources */,
 				2A725BEA57789D2477C5B1CC /* juce_audio_devices.mm in Sources */,
 				1BA3F3EA1CDA21EC00073946 /* ModelSectionObject.cpp in Sources */,
+				1BC296711CE63C4A00F4F33F /* PropertyComponentLAF.cpp in Sources */,
 				F210D7F2CFEEB91ED9513DDD /* juce_audio_formats.mm in Sources */,
 				127F610F5B79495C0D092DF7 /* juce_audio_processors.mm in Sources */,
 				D4D94F2D95EF2A6BAB982FEA /* juce_core.mm in Sources */,

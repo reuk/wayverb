@@ -471,7 +471,7 @@ interface
     * microphone capsules
     * material config
         * presets
-        * db scaling
+        * show in model
 
 * call from the commandline
 
@@ -482,6 +482,31 @@ interface
 * actual audio output!
     * preview?
 
-* slider hover colours
-
 * raytracer - some way of pruning, visualising wave paths
+
+* draggable number boxes
+
+* undo/redo
+
+* fix crash if closed while window is shown
+
+* theme combobox
+
+* some way of registering nested valuewrappers?
+
+preset behaviour
+----------------
+
+moving a slider sets the preset box to 'none' or similar
+
+clicking 'save' creates a new preset, selects text in box for editing
+
+editing text in box changes preset name
+
+clicking 'delete' removes the preset
+
+
+combobox shows current list of presets
+
+when we add a preset, we need to prompt for a name, then add to the list
+
