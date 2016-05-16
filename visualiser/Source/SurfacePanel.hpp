@@ -14,12 +14,12 @@ public:
         //        float value_to_slider(float t) override;
     };
 
-    VolumeComponent(model::VolumeTypeWrapper& value);
+    VolumeComponent(model::ValueWrapper<VolumeType>& value);
 
     void resized() override;
 
 private:
-    model::VolumeTypeWrapper& value;
+    model::ValueWrapper<VolumeType>& value;
 
     VolumeSlider s0;
     VolumeSlider s1;
@@ -37,7 +37,7 @@ private:
 
 class VolumeProperty : public PropertyComponent {
 public:
-    VolumeProperty(const String& name, model::VolumeTypeWrapper& value);
+    VolumeProperty(const String& name, model::ValueWrapper<VolumeType>& value);
     void refresh() override;
 
 private:
@@ -83,8 +83,8 @@ class PresetComponent : public Component,
                         public TextButton::Listener,
                         public ChangeListener {
 public:
-    PresetComponent(model::SurfaceWrapper& linked, SurfaceModel& preset_model);
-    virtual ~PresetComponent() noexcept;
+    PresetComponent(model::ValueWrapper<Surface>& linked,
+                    SurfaceModel& preset_model);
     void resized() override;
 
     void comboBoxChanged(ComboBox* cb) override;
@@ -96,23 +96,31 @@ public:
     void textEditorReturnKeyPressed(TextEditor& e) override;
 
 private:
-    model::SurfaceWrapper& linked;
+    model::ValueWrapper<Surface>& linked;
     model::ChangeConnector linked_connector{&linked, this};
 
     SurfaceModel& preset_model;
     model::ChangeConnector preset_connector{&preset_model, this};
 
     ComboBox combo_box;
+    model::Connector<ComboBox> combo_box_connector{&combo_box, this};
+
     TextEditor text_editor;
+    model::Connector<TextEditor> text_editor_connector{&text_editor, this};
+
     TextButton save_button{"save"};
+    model::Connector<TextButton> save_button_connector{&save_button, this};
+
     TextButton delete_button{"delete"};
+    model::Connector<TextButton> delete_button_connector{&delete_button, this};
 };
 
 //----------------------------------------------------------------------------//
 
 class PresetProperty : public PropertyComponent {
 public:
-    PresetProperty(model::SurfaceWrapper& linked, SurfaceModel& preset_model);
+    PresetProperty(model::ValueWrapper<Surface>& linked,
+                   SurfaceModel& preset_model);
     void refresh() override;
 
 private:
@@ -123,7 +131,8 @@ private:
 
 class SurfaceComponent : public Component {
 public:
-    SurfaceComponent(model::SurfaceWrapper& value, SurfaceModel& preset_model);
+    SurfaceComponent(model::ValueWrapper<Surface>& value,
+                     SurfaceModel& preset_model);
     void resized() override;
 
 private:

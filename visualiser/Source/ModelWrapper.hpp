@@ -7,32 +7,65 @@
 
 namespace model {
 
-class ChangeConnector {
+template <typename Broadcaster>
+struct ListenerFunctionTrait {
+    template <typename Listener>
+    static void add_listener(Broadcaster* const b, Listener* const l) {
+        b->addListener(l);
+    }
+
+    template <typename Listener>
+    static void remove_listener(Broadcaster* const b, Listener* const l) {
+        b->removeListener(l);
+    }
+};
+
+template <>
+struct ListenerFunctionTrait<ChangeBroadcaster> {
+    template <typename Listener>
+    static void add_listener(ChangeBroadcaster* const b, Listener* const l) {
+        b->addChangeListener(l);
+    }
+
+    template <typename Listener>
+    static void remove_listener(ChangeBroadcaster* const b, Listener* const l) {
+        b->removeChangeListener(l);
+    }
+};
+
+template <typename Broadcaster,
+          typename Listener = typename Broadcaster::Listener>
+class Connector {
 public:
-    ChangeConnector(ChangeBroadcaster* cb, ChangeListener* cl);
-    virtual ~ChangeConnector() noexcept;
+    Connector(Broadcaster* const cb, Listener* const cl)
+            : cb(cb)
+            , cl(cl) {
+        if (cb && cl) {
+            ListenerFunctionTrait<Broadcaster>::add_listener(cb, cl);
+        }
+    }
+
+    Connector(const Connector&) = delete;
+    Connector& operator=(const Connector&) = delete;
+    Connector(Connector&&) noexcept = delete;
+    Connector& operator=(Connector&&) noexcept = delete;
+
+    virtual ~Connector() noexcept {
+        if (cb && cl) {
+            ListenerFunctionTrait<Broadcaster>::remove_listener(cb, cl);
+        }
+    }
 
 private:
-    ChangeBroadcaster* cb;
-    ChangeListener* cl;
+    Broadcaster* const cb;
+    Listener* const cl;
 };
 
-class Model : public ChangeListener, public ChangeBroadcaster {
-public:
-    Model() = default;
-    Model(const Model&) = delete;
-    Model& operator=(const Model&) = delete;
-    Model(Model&&) noexcept = delete;
-    Model& operator=(Model&&) noexcept = delete;
-    virtual ~Model() noexcept = default;
+using ChangeConnector = Connector<ChangeBroadcaster, ChangeListener>;
 
-    void changeListenerCallback(ChangeBroadcaster* cb) override;
-    void notify();
-};
-
-class ModelMember : public Model {
+class ModelMember : public ChangeListener, public ChangeBroadcaster {
 public:
-    ModelMember(ModelMember* parent);
+    ModelMember(ModelMember* owner);
 
     ModelMember(const ModelMember&) = delete;
     ModelMember& operator=(const ModelMember&) = delete;
@@ -40,80 +73,134 @@ public:
     ModelMember& operator=(ModelMember&&) noexcept = delete;
     virtual ~ModelMember() noexcept = default;
 
-    ModelMember* get_parent() const;
+    void changeListenerCallback(ChangeBroadcaster* cb) override;
+    void notify();
+
+    ModelMember* get_owner() const;
 
 private:
-    ModelMember* parent;
-    ChangeConnector parent_connector{this, parent};
+    ModelMember* owner;
+    ChangeConnector owner_connector{this, owner};
 };
 
 template <typename T>
-class ValueWrapper : public ModelMember {
+class ModelValue : public ModelMember {
 public:
-    ValueWrapper(ModelMember* parent, T& t)
-            : ModelMember(parent)
+    using ModelMember::ModelMember;
+
+    virtual const T& get_value() const = 0;
+    virtual void set_value(const T& u, bool do_notify) = 0;
+};
+
+template <typename T>
+class ValueWrapper : public ModelValue<T> {
+public:
+    ValueWrapper(ModelMember* owner, T& t)
+            : ModelValue<T>(owner)
             , t(t) {
     }
 
-    const T& get_value() const {
+    const T& get_value() const override {
         return t;
     }
 
-    virtual void set_value(const T& u, bool do_notify = true) {
+    void set_value(const T& u, bool do_notify = true) override {
         t = u;
         if (do_notify) {
-            notify();
+            ModelMember::notify();
         }
+    }
+
+private:
+    T& t;
+};
+
+template <typename T, size_t values>
+class NestedValueWrapper : public ModelValue<T> {
+public:
+    NestedValueWrapper(ModelMember* owner, T& t)
+            : ModelValue<T>(owner)
+            , t(t) {
+    }
+
+    const T& get_value() const override {
+        return t;
     }
 
 protected:
     T& t;
 };
 
-class Vec3fWrapper : public ValueWrapper<Vec3f> {
+template <>
+class ValueWrapper<Vec3f> : public NestedValueWrapper<Vec3f, 3> {
 public:
-    using ValueWrapper<Vec3f>::ValueWrapper;
+    using NestedValueWrapper<Vec3f, 3>::NestedValueWrapper;
 
-    void set_value(const Vec3f& u, bool do_notify = true) override;
+    void set_value(const Vec3f& u, bool do_notify = true) override {
+        x.set_value(u.x, do_notify);
+        y.set_value(u.y, do_notify);
+        z.set_value(u.z, do_notify);
+    }
 
     ValueWrapper<float> x{this, t.x};
     ValueWrapper<float> y{this, t.y};
     ValueWrapper<float> z{this, t.z};
 };
 
-class Combined : public ModelMember {
+template <>
+class ValueWrapper<config::Combined>
+    : public NestedValueWrapper<config::Combined, 14> {
 public:
-    //  set model parent
-    Combined(ModelMember* parent,
-             const config::Combined& rhs = config::Combined());
+    using NestedValueWrapper<config::Combined, 14>::NestedValueWrapper;
 
-private:
-    config::Combined data;
+    void set_value(const config::Combined& u, bool do_notify = true) override {
+        filter_frequency.set_value(u.filter_frequency, do_notify);
+        oversample_ratio.set_value(u.oversample_ratio, do_notify);
+        rays.set_value(u.rays, do_notify);
+        impulses.set_value(u.impulses, do_notify);
+        ray_hipass.set_value(u.ray_hipass, do_notify);
+        do_normalize.set_value(u.do_normalize, do_notify);
+        trim_predelay.set_value(u.trim_predelay, do_notify);
+        trim_tail.set_value(u.trim_tail, do_notify);
+        remove_direct.set_value(u.remove_direct, do_notify);
+        volume_scale.set_value(u.volume_scale, do_notify);
+        source.set_value(u.source, do_notify);
+        mic.set_value(u.mic, do_notify);
+        sample_rate.set_value(u.sample_rate, do_notify);
+        bit_depth.set_value(u.bit_depth, do_notify);
+    }
 
-public:
-    ValueWrapper<float> filter_frequency{this, data.filter_frequency};
-    ValueWrapper<float> oversample_ratio{this, data.oversample_ratio};
-    ValueWrapper<int> rays{this, data.rays};
-    ValueWrapper<int> impulses{this, data.impulses};
-    ValueWrapper<float> ray_hipass{this, data.ray_hipass};
-    ValueWrapper<bool> do_normalize{this, data.do_normalize};
-    ValueWrapper<bool> trim_predelay{this, data.trim_predelay};
-    ValueWrapper<bool> trim_tail{this, data.trim_tail};
-    ValueWrapper<bool> remove_direct{this, data.remove_direct};
-    ValueWrapper<float> volume_scale{this, data.volume_scale};
-    Vec3fWrapper source{this, data.source};
-    Vec3fWrapper mic{this, data.mic};
-    ValueWrapper<float> sample_rate{this, data.sample_rate};
-    ValueWrapper<int> bit_depth{this, data.bit_depth};
-
-    const config::Combined& get_data() const;
+    ValueWrapper<float> filter_frequency{this, t.filter_frequency};
+    ValueWrapper<float> oversample_ratio{this, t.oversample_ratio};
+    ValueWrapper<int> rays{this, t.rays};
+    ValueWrapper<int> impulses{this, t.impulses};
+    ValueWrapper<float> ray_hipass{this, t.ray_hipass};
+    ValueWrapper<bool> do_normalize{this, t.do_normalize};
+    ValueWrapper<bool> trim_predelay{this, t.trim_predelay};
+    ValueWrapper<bool> trim_tail{this, t.trim_tail};
+    ValueWrapper<bool> remove_direct{this, t.remove_direct};
+    ValueWrapper<float> volume_scale{this, t.volume_scale};
+    ValueWrapper<Vec3f> source{this, t.source};
+    ValueWrapper<Vec3f> mic{this, t.mic};
+    ValueWrapper<float> sample_rate{this, t.sample_rate};
+    ValueWrapper<int> bit_depth{this, t.bit_depth};
 };
 
-class VolumeTypeWrapper : public ValueWrapper<VolumeType> {
+template <>
+class ValueWrapper<VolumeType> : public NestedValueWrapper<VolumeType, 8> {
 public:
-    using ValueWrapper<VolumeType>::ValueWrapper;
+    using NestedValueWrapper<VolumeType, 8>::NestedValueWrapper;
 
-    void set_value(const VolumeType& u, bool do_notify = true) override;
+    void set_value(const VolumeType& u, bool do_notify = true) override {
+        s0.set_value(u.s0, do_notify);
+        s1.set_value(u.s1, do_notify);
+        s2.set_value(u.s2, do_notify);
+        s3.set_value(u.s3, do_notify);
+        s4.set_value(u.s4, do_notify);
+        s5.set_value(u.s5, do_notify);
+        s6.set_value(u.s6, do_notify);
+        s7.set_value(u.s7, do_notify);
+    }
 
     ValueWrapper<float> s0{this, t.s[0]};
     ValueWrapper<float> s1{this, t.s[1]};
@@ -125,14 +212,77 @@ public:
     ValueWrapper<float> s7{this, t.s[7]};
 };
 
-class SurfaceWrapper : public ValueWrapper<Surface> {
+template <>
+class ValueWrapper<Surface> : public NestedValueWrapper<Surface, 2> {
 public:
-    using ValueWrapper<Surface>::ValueWrapper;
+    using NestedValueWrapper<Surface, 2>::NestedValueWrapper;
 
-    void set_value(const Surface& u, bool do_notify = true) override;
+    void set_value(const Surface& u, bool do_notify = true) override {
+        specular.set_value(u.specular, do_notify);
+        diffuse.set_value(u.diffuse, do_notify);
+    }
 
-    VolumeTypeWrapper specular{this, t.specular};
-    VolumeTypeWrapper diffuse{this, t.diffuse};
+    ValueWrapper<VolumeType> specular{this, t.specular};
+    ValueWrapper<VolumeType> diffuse{this, t.diffuse};
 };
+
+template <>
+class ValueWrapper<SceneData::Material>
+    : public NestedValueWrapper<SceneData::Material, 2> {
+public:
+    using NestedValueWrapper<SceneData::Material, 2>::NestedValueWrapper;
+
+    void set_value(const SceneData::Material& u,
+                   bool do_notify = true) override {
+        name.set_value(u.name, do_notify);
+        surface.set_value(u.surface, do_notify);
+    }
+
+    ValueWrapper<std::string> name{this, t.name};
+    ValueWrapper<Surface> surface{this, t.surface};
+};
+
+template <typename T>
+class ValueWithWrapper : public ModelMember {
+private:
+    T t;
+    ValueWrapper<T> wrapper{this, t};
+
+public:
+    ValueWithWrapper(ModelMember* owner, const T& t = T())
+            : ModelMember(owner)
+            , t(t) {
+    }
+
+    ValueWithWrapper(ModelMember* owner, T&& t)
+            : ModelMember(owner)
+            , t(std::move(t)) {
+    }
+
+    ValueWithWrapper(const ValueWithWrapper&) = delete;
+    ValueWithWrapper& operator=(const ValueWithWrapper&) = delete;
+    ValueWithWrapper(ValueWithWrapper&&) noexcept = delete;
+    ValueWithWrapper& operator=(ValueWithWrapper&&) noexcept = delete;
+
+    virtual ~ValueWithWrapper() noexcept = default;
+
+    const T& get_value() const {
+        return wrapper.get_value();
+    }
+
+    void set_value(const T& u, bool do_notify = true) {
+        wrapper.set_value(u, do_notify);
+    }
+
+    const ValueWrapper<T>& get_wrapper() const {
+        return wrapper;
+    }
+
+    ValueWrapper<T>& get_wrapper() {
+        return wrapper;
+    }
+};
+
+using Combined = ValueWithWrapper<config::Combined>;
 
 }  // namespace model

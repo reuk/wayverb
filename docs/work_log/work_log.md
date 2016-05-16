@@ -473,9 +473,9 @@ interface
         * presets
         * show in model
 
-* call from the commandline
-
 * decouple waveguide steps and frame renderer
+
+* call from the commandline
 
 * hiss convolution -> plugin?
     * I foresee issues with multithreading
@@ -492,8 +492,6 @@ interface
 
 * theme combobox
 
-* some way of registering nested valuewrappers?
-
 preset behaviour
 ----------------
 
@@ -504,9 +502,3 @@ clicking 'save' creates a new preset, selects text in box for editing
 editing text in box changes preset name
 
 clicking 'delete' removes the preset
-
-
-combobox shows current list of presets
-
-when we add a preset, we need to prompt for a name, then add to the list
-

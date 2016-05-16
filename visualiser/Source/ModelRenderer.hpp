@@ -140,8 +140,8 @@ private:
 
     RenderStateManager& render_state_manager;
 
-    const SceneData& model;
-    const config::Combined& config;
+    SceneData model;
+    config::Combined config;
 
     std::unique_ptr<GenericShader> shader;
     std::unique_ptr<DrawableScene> scene;

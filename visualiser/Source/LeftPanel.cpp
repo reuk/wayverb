@@ -49,8 +49,8 @@ LeftPanel::LeftPanel(model::Combined& combined_model,
         , bottom_panel(render_state_manager) {
     property_panel.addSection(
         "general",
-        {new Vec3fProperty("source", combined_model.source),
-         new Vec3fProperty("mic", combined_model.mic)});
+        {new Vec3fProperty("source", combined_model.get_wrapper().source),
+         new Vec3fProperty("mic", combined_model.get_wrapper().mic)});
 
     Array<PropertyComponent*> materials;
     materials.addArray(
@@ -59,14 +59,16 @@ LeftPanel::LeftPanel(model::Combined& combined_model,
 
     property_panel.addSection(
         "waveguide",
-        {new NumberProperty<float>("cutoff", combined_model.filter_frequency),
-         new NumberProperty<float>("oversample",
-                                   combined_model.oversample_ratio)});
+        {new NumberProperty<float>(
+             "cutoff", combined_model.get_wrapper().filter_frequency),
+         new NumberProperty<float>(
+             "oversample", combined_model.get_wrapper().oversample_ratio)});
 
     property_panel.addSection(
         "raytracer",
-        {new NumberProperty<int>("rays", combined_model.rays),
-         new NumberProperty<int>("reflections", combined_model.impulses)});
+        {new NumberProperty<int>("rays", combined_model.get_wrapper().rays),
+         new NumberProperty<int>("reflections",
+                                 combined_model.get_wrapper().impulses)});
 
     property_panel.setOpaque(false);
 

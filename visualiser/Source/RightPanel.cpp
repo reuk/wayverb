@@ -9,7 +9,7 @@ RightPanel::RightPanel(model::Combined& combined_model,
         , scene_data(scene_data)
         , render_state_manager(render_state_manager)
         , model_renderer_component(
-              render_state_manager, scene_data, combined_model.get_data()) {
+              render_state_manager, scene_data, combined_model.get_value()) {
     addAndMakeVisible(model_renderer_component);
 }
 

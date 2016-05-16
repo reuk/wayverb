@@ -30,8 +30,8 @@ public:
     RenderState get_state() const;
     void set_state(RenderState state);
 
-    void add_listener(Listener& listener);
-    void remove_listener(Listener& listener);
+    void addListener(Listener* listener);
+    void removeListener(Listener* listener);
 
 private:
     RenderState state{RenderState::stopped};

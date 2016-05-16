@@ -4,22 +4,8 @@
 
 class SurfaceModel : public model::ModelMember {
 public:
-    class MaterialWrapper : public model::ValueWrapper<SceneData::Material> {
-    public:
-        using model::ValueWrapper<SceneData::Material>::ValueWrapper;
-
-        model::ValueWrapper<std::string> name{this, t.name};
-        model::SurfaceWrapper surface{this, t.surface};
-    };
-
-    class MaterialEntry : public model::ModelMember {
-    public:
-        MaterialEntry(
-            ModelMember* parent,
-            const SceneData::Material& material = SceneData::Material());
-        SceneData::Material material;
-        MaterialWrapper material_wrapper{this, material};
-    };
+    using MaterialWrapper = model::ValueWrapper<SceneData::Material>;
+    using MaterialEntry = model::ValueWithWrapper<SceneData::Material>;
 
     SurfaceModel(ModelMember* parent,
                  const std::map<std::string, Surface>& init);

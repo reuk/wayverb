@@ -13,6 +13,8 @@ private:
 
 class ProgressButton : public Component {
 public:
+    using Listener = Button::Listener;
+
     ProgressButton(double& progress);
 
     void setColour(int colour_id, Colour new_colour);

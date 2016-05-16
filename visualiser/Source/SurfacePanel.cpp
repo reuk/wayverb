@@ -25,7 +25,7 @@ VolumeComponent::VolumeSlider::VolumeSlider(model::ValueWrapper<float>& value)
 
 //----------------------------------------------------------------------------//
 
-VolumeComponent::VolumeComponent(model::VolumeTypeWrapper& value)
+VolumeComponent::VolumeComponent(model::ValueWrapper<VolumeType>& value)
         : value(value)
         , s0(value.s0)
         , s1(value.s1)
@@ -73,7 +73,7 @@ VolumeComponent::get_slider_array() {
 //----------------------------------------------------------------------------//
 
 VolumeProperty::VolumeProperty(const String& name,
-                               model::VolumeTypeWrapper& value)
+                               model::ValueWrapper<VolumeType>& value)
         : PropertyComponent(name, 120)
         , editor(value) {
     addAndMakeVisible(editor);
@@ -148,7 +148,7 @@ void FrequencyLabelProperty::refresh() {
 
 //----------------------------------------------------------------------------//
 
-SurfaceComponent::SurfaceComponent(model::SurfaceWrapper& value,
+SurfaceComponent::SurfaceComponent(model::ValueWrapper<Surface>& value,
                                    SurfaceModel& preset_model) {
     property_panel.addProperties(
         {new FrequencyLabelProperty("frequencies / KHz")});
@@ -190,16 +190,11 @@ void SurfaceComponentWithTitle::resized() {
 
 //----------------------------------------------------------------------------//
 
-PresetComponent::PresetComponent(model::SurfaceWrapper& linked,
+PresetComponent::PresetComponent(model::ValueWrapper<Surface>& linked,
                                  SurfaceModel& preset_model)
         : linked(linked)
         , preset_model(preset_model) {
     combo_box.setEditableText(false);
-
-    combo_box.addListener(this);
-    text_editor.addListener(this);
-    save_button.addListener(this);
-    delete_button.addListener(this);
 
     addChildComponent(combo_box);
     addChildComponent(text_editor);
@@ -208,11 +203,6 @@ PresetComponent::PresetComponent(model::SurfaceWrapper& linked,
     addAndMakeVisible(delete_button);
 
     changeListenerCallback(&preset_model);
-}
-
-PresetComponent::~PresetComponent() noexcept {
-    save_button.removeListener(this);
-    delete_button.removeListener(this);
 }
 
 void PresetComponent::resized() {
@@ -297,7 +287,7 @@ void PresetComponent::changeListenerCallback(ChangeBroadcaster* cb) {
 
 //----------------------------------------------------------------------------//
 
-PresetProperty::PresetProperty(model::SurfaceWrapper& linked,
+PresetProperty::PresetProperty(model::ValueWrapper<Surface>& linked,
                                SurfaceModel& preset_model)
         : PropertyComponent("presets", 52)
         , preset_component(linked, preset_model) {

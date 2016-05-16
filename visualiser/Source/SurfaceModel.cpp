@@ -1,13 +1,5 @@
 #include "SurfaceModel.hpp"
 
-SurfaceModel::MaterialEntry::MaterialEntry(ModelMember* parent,
-                                           const SceneData::Material& material)
-        : ModelMember(parent)
-        , material(material) {
-}
-
-//----------------------------------------------------------------------------//
-
 std::unique_ptr<SurfaceModel::MaterialEntry> SurfaceModel::make_material_entry(
     const SceneData::Material& init) {
     return std::make_unique<MaterialEntry>(this, init);
@@ -53,7 +45,7 @@ SurfaceModel::get_material_wrappers() const {
     std::transform(materials.begin(),
                    materials.end(),
                    std::back_inserter(ret),
-                   [](const auto& i) { return std::ref(i->material_wrapper); });
+                   [](const auto& i) { return std::ref(i->get_wrapper()); });
     return ret;
 }
 
@@ -62,14 +54,14 @@ std::vector<SceneData::Material> SurfaceModel::get_materials() const {
     std::transform(materials.begin(),
                    materials.end(),
                    std::back_inserter(ret),
-                   [](const auto& i) { return i->material; });
+                   [](const auto& i) { return i->get_value(); });
     return ret;
 }
 
 std::map<std::string, Surface> SurfaceModel::get_surfaces() const {
     std::map<std::string, Surface> ret;
     std::for_each(materials.begin(), materials.end(), [&ret](const auto& i) {
-        ret[i->material.name] = i->material.surface;
+        ret[i->get_value().name] = i->get_value().surface;
     });
     return ret;
 }
@@ -77,7 +69,7 @@ std::map<std::string, Surface> SurfaceModel::get_surfaces() const {
 SurfaceModel::MaterialWrapper& SurfaceModel::add_entry(
     const SceneData::Material& m) {
     auto ptr = make_material_entry(m);
-    auto& ret = ptr->material_wrapper;
+    auto& ret = ptr->get_wrapper();
     materials.push_back(std::move(ptr));
     notify();
     return ret;
@@ -93,5 +85,5 @@ const SceneData::Material& SurfaceModel::get_material_at(size_t index) const {
 
 const SurfaceModel::MaterialWrapper& SurfaceModel::get_material_wrapper_at(
     size_t index) const {
-    return materials[index]->material_wrapper;
+    return materials[index]->get_wrapper();
 }

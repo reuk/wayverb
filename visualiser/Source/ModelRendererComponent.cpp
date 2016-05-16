@@ -22,13 +22,9 @@ ModelRendererComponent::ModelRendererComponent(
     openGLContext.setRenderer(&scene_renderer);
     openGLContext.setContinuousRepainting(true);
     openGLContext.attachTo(*this);
-
-    render_state_manager.add_listener(*this);
 }
 
 ModelRendererComponent::~ModelRendererComponent() noexcept {
-    render_state_manager.remove_listener(*this);
-
     openGLContext.detach();
 }
 

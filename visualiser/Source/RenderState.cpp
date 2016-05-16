@@ -19,9 +19,9 @@ void RenderStateManager::set_state(RenderState x) {
     listener_list.call(&Listener::render_state_changed, this, get_state());
 }
 
-void RenderStateManager::add_listener(Listener& listener) {
-    listener_list.add(&listener);
+void RenderStateManager::addListener(Listener* listener) {
+    listener_list.add(listener);
 }
-void RenderStateManager::remove_listener(Listener& listener) {
-    listener_list.remove(&listener);
+void RenderStateManager::removeListener(Listener* listener) {
+    listener_list.remove(listener);
 }

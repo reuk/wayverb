@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ModelRenderer.hpp"
+#include "ModelWrapper.hpp"
 #include "RenderState.hpp"
 
 class ModelRendererComponent : public Component,
@@ -24,13 +25,16 @@ public:
 
 private:
     RenderStateManager& render_state_manager;
+    model::Connector<RenderStateManager> render_state_connector{
+        &render_state_manager, this};
+
     const SceneData& model;
     const config::Combined& config;
-
-    SceneRenderer scene_renderer;
-    OpenGLContext openGLContext;
 
     const float scale{0.01};
     float azimuth{0};
     float elevation{0};
+
+    OpenGLContext openGLContext;
+    SceneRenderer scene_renderer;
 };

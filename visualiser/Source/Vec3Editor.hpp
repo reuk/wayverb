@@ -56,10 +56,6 @@ public:
             , add_button("+") {
         text_editor.setInputRestrictions(0, "0123456789.-+eE");
 
-        text_editor.addListener(this);
-        sub_button.addListener(this);
-        add_button.addListener(this);
-
         addAndMakeVisible(text_editor);
         addAndMakeVisible(sub_button);
         addAndMakeVisible(add_button);
@@ -116,8 +112,14 @@ private:
     }
 
     TextEditor text_editor;
+    model::Connector<TextEditor> text_editor_connector{&text_editor, this};
+
     TextButton sub_button;
+    model::Connector<TextButton> sub_button_connector{&sub_button, this};
+
     TextButton add_button;
+    model::Connector<TextButton> add_button_connector{&add_button, this};
+
     T value{0};
 
     ListenerList<Listener> listener_list;
@@ -163,17 +165,17 @@ private:
 
 class Vec3fEditor : public Component {
 public:
-    Vec3fEditor(model::Vec3fWrapper& value);
+    Vec3fEditor(model::ValueWrapper<Vec3f>& value);
     void resized() override;
 
 private:
-    model::Vec3fWrapper& value;
+    model::ValueWrapper<Vec3f>& value;
     PropertyPanel property_panel;
 };
 
 class Vec3fProperty : public PropertyComponent {
 public:
-    Vec3fProperty(const String& name, model::Vec3fWrapper& value);
+    Vec3fProperty(const String& name, model::ValueWrapper<Vec3f>& value);
     void refresh() override;
 
 private:

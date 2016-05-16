@@ -1,5 +1,6 @@
 #pragma once
 
+#include "ModelWrapper.hpp"
 #include "ProgressButton.hpp"
 #include "RenderState.hpp"
 
@@ -8,7 +9,6 @@ class BottomPanel : public Component,
                     public TextButton::Listener {
 public:
     BottomPanel(RenderStateManager& render_state_manager);
-    virtual ~BottomPanel();
 
     void paint(Graphics& g) override;
     void resized() override;
@@ -21,8 +21,9 @@ public:
 private:
     double progress{0};
     RenderStateManager& render_state_manager;
+    model::Connector<RenderStateManager> render_state_connector{
+        &render_state_manager, this};
 
-    //    TextButton render_button;
-    //    juce::ProgressBar progress_bar;
     ProgressButton progress_button;
+    model::Connector<ProgressButton> progress_connector{&progress_button, this};
 };
