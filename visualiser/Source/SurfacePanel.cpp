@@ -225,6 +225,7 @@ void PresetComponent::comboBoxChanged(ComboBox* cb) {
         auto selected = combo_box.getSelectedItemIndex();
         if (0 <= selected) {
             linked.set_value(preset_model.get_material_at(selected).surface);
+            combo_box.setSelectedItemIndex(selected, dontSendNotification);
         }
     }
 }
@@ -273,7 +274,6 @@ void PresetComponent::changeListenerCallback(ChangeBroadcaster* cb) {
         std::cout << "linked model changed" << std::endl;
 
         combo_box.setSelectedItemIndex(-1, dontSendNotification);
-        combo_box.setEditableText(false);
     } else if (cb == &preset_model) {
         combo_box.clear();
 

@@ -30,11 +30,5 @@ private:
     PropertyPanel property_panel;
     BottomPanel bottom_panel;
 
-    SurfaceModel preset_model{
-        nullptr,
-        std::vector<SceneData::Material>{
-            SceneData::Material{"preset one", Surface()},
-            SceneData::Material{"preset two", Surface()},
-            SceneData::Material{"preset three", Surface()},
-        }};
+    SurfaceModel preset_model;
 };

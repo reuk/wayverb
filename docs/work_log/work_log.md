@@ -470,8 +470,7 @@ interface
 * data models
     * microphone capsules
     * material config
-        * presets
-        * show in model
+        * show in model - button on materialproperty
 
 * decouple waveguide steps and frame renderer
 
@@ -491,6 +490,12 @@ interface
 * fix crash if closed while window is shown
 
 * theme combobox
+
+* save/load presets from file
+
+* update display to show config changes
+
+* use custom materials in simulation
 
 preset behaviour
 ----------------
