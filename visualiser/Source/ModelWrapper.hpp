@@ -1,140 +1,16 @@
 #pragma once
 
+#include "Collection.h"
+
 #include "combined_config.h"
 #include "common/scene_data.h"
 
-#include "../JuceLibraryCode/JuceHeader.h"
-
 namespace model {
 
-template <typename Broadcaster>
-struct ListenerFunctionTrait {
-    template <typename Listener>
-    static void add_listener(Broadcaster* const b, Listener* const l) {
-        b->addListener(l);
-    }
-
-    template <typename Listener>
-    static void remove_listener(Broadcaster* const b, Listener* const l) {
-        b->removeListener(l);
-    }
-};
-
 template <>
-struct ListenerFunctionTrait<ChangeBroadcaster> {
-    template <typename Listener>
-    static void add_listener(ChangeBroadcaster* const b, Listener* const l) {
-        b->addChangeListener(l);
-    }
-
-    template <typename Listener>
-    static void remove_listener(ChangeBroadcaster* const b, Listener* const l) {
-        b->removeChangeListener(l);
-    }
-};
-
-template <typename Broadcaster,
-          typename Listener = typename Broadcaster::Listener>
-class Connector {
+class ValueWrapper<Vec3f> : public NestedValueWrapper<Vec3f> {
 public:
-    Connector(Broadcaster* const cb, Listener* const cl)
-            : cb(cb)
-            , cl(cl) {
-        if (cb && cl) {
-            ListenerFunctionTrait<Broadcaster>::add_listener(cb, cl);
-        }
-    }
-
-    Connector(const Connector&) = delete;
-    Connector& operator=(const Connector&) = delete;
-    Connector(Connector&&) noexcept = delete;
-    Connector& operator=(Connector&&) noexcept = delete;
-
-    virtual ~Connector() noexcept {
-        if (cb && cl) {
-            ListenerFunctionTrait<Broadcaster>::remove_listener(cb, cl);
-        }
-    }
-
-private:
-    Broadcaster* const cb;
-    Listener* const cl;
-};
-
-using ChangeConnector = Connector<ChangeBroadcaster, ChangeListener>;
-
-class ModelMember : public ChangeListener, public ChangeBroadcaster {
-public:
-    ModelMember(ModelMember* owner);
-
-    ModelMember(const ModelMember&) = delete;
-    ModelMember& operator=(const ModelMember&) = delete;
-    ModelMember(ModelMember&&) noexcept = delete;
-    ModelMember& operator=(ModelMember&&) noexcept = delete;
-    virtual ~ModelMember() noexcept = default;
-
-    void changeListenerCallback(ChangeBroadcaster* cb) override;
-    void notify();
-
-    ModelMember* get_owner() const;
-
-private:
-    ModelMember* owner;
-    ChangeConnector owner_connector{this, owner};
-};
-
-template <typename T>
-class ModelValue : public ModelMember {
-public:
-    using ModelMember::ModelMember;
-
-    virtual const T& get_value() const = 0;
-    virtual void set_value(const T& u, bool do_notify) = 0;
-};
-
-template <typename T>
-class ValueWrapper : public ModelValue<T> {
-public:
-    ValueWrapper(ModelMember* owner, T& t)
-            : ModelValue<T>(owner)
-            , t(t) {
-    }
-
-    const T& get_value() const override {
-        return t;
-    }
-
-    void set_value(const T& u, bool do_notify = true) override {
-        t = u;
-        if (do_notify) {
-            ModelMember::notify();
-        }
-    }
-
-private:
-    T& t;
-};
-
-template <typename T, size_t values>
-class NestedValueWrapper : public ModelValue<T> {
-public:
-    NestedValueWrapper(ModelMember* owner, T& t)
-            : ModelValue<T>(owner)
-            , t(t) {
-    }
-
-    const T& get_value() const override {
-        return t;
-    }
-
-protected:
-    T& t;
-};
-
-template <>
-class ValueWrapper<Vec3f> : public NestedValueWrapper<Vec3f, 3> {
-public:
-    using NestedValueWrapper<Vec3f, 3>::NestedValueWrapper;
+    using NestedValueWrapper<Vec3f>::NestedValueWrapper;
 
     void set_value(const Vec3f& u, bool do_notify = true) override {
         x.set_value(u.x, do_notify);
@@ -142,16 +18,22 @@ public:
         z.set_value(u.z, do_notify);
     }
 
-    ValueWrapper<float> x{this, t.x};
-    ValueWrapper<float> y{this, t.y};
-    ValueWrapper<float> z{this, t.z};
+    void reseat(Vec3f& u) override {
+        x.reseat(u.x);
+        y.reseat(u.y);
+        z.reseat(u.z);
+    }
+
+    ValueWrapper<float> x{this, t->x};
+    ValueWrapper<float> y{this, t->y};
+    ValueWrapper<float> z{this, t->z};
 };
 
 template <>
 class ValueWrapper<config::Combined>
-    : public NestedValueWrapper<config::Combined, 14> {
+    : public NestedValueWrapper<config::Combined> {
 public:
-    using NestedValueWrapper<config::Combined, 14>::NestedValueWrapper;
+    using NestedValueWrapper<config::Combined>::NestedValueWrapper;
 
     void set_value(const config::Combined& u, bool do_notify = true) override {
         filter_frequency.set_value(u.filter_frequency, do_notify);
@@ -170,26 +52,43 @@ public:
         bit_depth.set_value(u.bit_depth, do_notify);
     }
 
-    ValueWrapper<float> filter_frequency{this, t.filter_frequency};
-    ValueWrapper<float> oversample_ratio{this, t.oversample_ratio};
-    ValueWrapper<int> rays{this, t.rays};
-    ValueWrapper<int> impulses{this, t.impulses};
-    ValueWrapper<float> ray_hipass{this, t.ray_hipass};
-    ValueWrapper<bool> do_normalize{this, t.do_normalize};
-    ValueWrapper<bool> trim_predelay{this, t.trim_predelay};
-    ValueWrapper<bool> trim_tail{this, t.trim_tail};
-    ValueWrapper<bool> remove_direct{this, t.remove_direct};
-    ValueWrapper<float> volume_scale{this, t.volume_scale};
-    ValueWrapper<Vec3f> source{this, t.source};
-    ValueWrapper<Vec3f> mic{this, t.mic};
-    ValueWrapper<float> sample_rate{this, t.sample_rate};
-    ValueWrapper<int> bit_depth{this, t.bit_depth};
+    void reseat(config::Combined& u) override {
+        filter_frequency.reseat(u.filter_frequency);
+        oversample_ratio.reseat(u.oversample_ratio);
+        rays.reseat(u.rays);
+        impulses.reseat(u.impulses);
+        ray_hipass.reseat(u.ray_hipass);
+        do_normalize.reseat(u.do_normalize);
+        trim_predelay.reseat(u.trim_predelay);
+        trim_tail.reseat(u.trim_tail);
+        remove_direct.reseat(u.remove_direct);
+        volume_scale.reseat(u.volume_scale);
+        source.reseat(u.source);
+        mic.reseat(u.mic);
+        sample_rate.reseat(u.sample_rate);
+        bit_depth.reseat(u.bit_depth);
+    }
+
+    ValueWrapper<float> filter_frequency{this, t->filter_frequency};
+    ValueWrapper<float> oversample_ratio{this, t->oversample_ratio};
+    ValueWrapper<int> rays{this, t->rays};
+    ValueWrapper<int> impulses{this, t->impulses};
+    ValueWrapper<float> ray_hipass{this, t->ray_hipass};
+    ValueWrapper<bool> do_normalize{this, t->do_normalize};
+    ValueWrapper<bool> trim_predelay{this, t->trim_predelay};
+    ValueWrapper<bool> trim_tail{this, t->trim_tail};
+    ValueWrapper<bool> remove_direct{this, t->remove_direct};
+    ValueWrapper<float> volume_scale{this, t->volume_scale};
+    ValueWrapper<Vec3f> source{this, t->source};
+    ValueWrapper<Vec3f> mic{this, t->mic};
+    ValueWrapper<float> sample_rate{this, t->sample_rate};
+    ValueWrapper<int> bit_depth{this, t->bit_depth};
 };
 
 template <>
-class ValueWrapper<VolumeType> : public NestedValueWrapper<VolumeType, 8> {
+class ValueWrapper<VolumeType> : public NestedValueWrapper<VolumeType> {
 public:
-    using NestedValueWrapper<VolumeType, 8>::NestedValueWrapper;
+    using NestedValueWrapper<VolumeType>::NestedValueWrapper;
 
     void set_value(const VolumeType& u, bool do_notify = true) override {
         s0.set_value(u.s0, do_notify);
@@ -202,35 +101,51 @@ public:
         s7.set_value(u.s7, do_notify);
     }
 
-    ValueWrapper<float> s0{this, t.s[0]};
-    ValueWrapper<float> s1{this, t.s[1]};
-    ValueWrapper<float> s2{this, t.s[2]};
-    ValueWrapper<float> s3{this, t.s[3]};
-    ValueWrapper<float> s4{this, t.s[4]};
-    ValueWrapper<float> s5{this, t.s[5]};
-    ValueWrapper<float> s6{this, t.s[6]};
-    ValueWrapper<float> s7{this, t.s[7]};
+    void reseat(VolumeType& u) override {
+        s0.reseat(u.s0);
+        s1.reseat(u.s1);
+        s2.reseat(u.s2);
+        s3.reseat(u.s3);
+        s4.reseat(u.s4);
+        s5.reseat(u.s5);
+        s6.reseat(u.s6);
+        s7.reseat(u.s7);
+    }
+
+    ValueWrapper<float> s0{this, t->s[0]};
+    ValueWrapper<float> s1{this, t->s[1]};
+    ValueWrapper<float> s2{this, t->s[2]};
+    ValueWrapper<float> s3{this, t->s[3]};
+    ValueWrapper<float> s4{this, t->s[4]};
+    ValueWrapper<float> s5{this, t->s[5]};
+    ValueWrapper<float> s6{this, t->s[6]};
+    ValueWrapper<float> s7{this, t->s[7]};
 };
 
 template <>
-class ValueWrapper<Surface> : public NestedValueWrapper<Surface, 2> {
+class ValueWrapper<Surface> : public NestedValueWrapper<Surface> {
 public:
-    using NestedValueWrapper<Surface, 2>::NestedValueWrapper;
+    using NestedValueWrapper<Surface>::NestedValueWrapper;
 
     void set_value(const Surface& u, bool do_notify = true) override {
         specular.set_value(u.specular, do_notify);
         diffuse.set_value(u.diffuse, do_notify);
     }
 
-    ValueWrapper<VolumeType> specular{this, t.specular};
-    ValueWrapper<VolumeType> diffuse{this, t.diffuse};
+    void reseat(Surface& u) override {
+        specular.reseat(u.specular);
+        diffuse.reseat(u.diffuse);
+    }
+
+    ValueWrapper<VolumeType> specular{this, t->specular};
+    ValueWrapper<VolumeType> diffuse{this, t->diffuse};
 };
 
 template <>
 class ValueWrapper<SceneData::Material>
-    : public NestedValueWrapper<SceneData::Material, 2> {
+    : public NestedValueWrapper<SceneData::Material> {
 public:
-    using NestedValueWrapper<SceneData::Material, 2>::NestedValueWrapper;
+    using NestedValueWrapper<SceneData::Material>::NestedValueWrapper;
 
     void set_value(const SceneData::Material& u,
                    bool do_notify = true) override {
@@ -238,9 +153,110 @@ public:
         surface.set_value(u.surface, do_notify);
     }
 
-    ValueWrapper<std::string> name{this, t.name};
-    ValueWrapper<Surface> surface{this, t.surface};
+    void reseat(SceneData::Material& u) override {
+        name.reseat(u.name);
+        surface.reseat(u.surface);
+    }
+
+    ValueWrapper<std::string> name{this, t->name};
+    ValueWrapper<Surface> surface{this, t->surface};
 };
+
+template <>
+class ValueWrapper<config::Microphone>
+    : public NestedValueWrapper<config::Microphone> {
+public:
+    using NestedValueWrapper<config::Microphone>::NestedValueWrapper;
+
+    void set_value(const config::Microphone& u,
+                   bool do_notify = true) override {
+        facing.set_value(u.facing, do_notify);
+        shape.set_value(u.shape, do_notify);
+    }
+
+    void reseat(config::Microphone& u) override {
+        facing.reseat(u.facing);
+        shape.reseat(u.shape);
+    }
+
+    ValueWrapper<Vec3f> facing{this, t->facing};
+    ValueWrapper<float> shape{this, t->shape};
+};
+
+template <>
+class ValueWrapper<config::MicrophoneModel>
+    : public NestedValueWrapper<config::MicrophoneModel> {
+public:
+    using NestedValueWrapper<config::MicrophoneModel>::NestedValueWrapper;
+
+    void set_value(const config::MicrophoneModel& u,
+                   bool do_notify = true) override {
+        microphones.set_value(u.microphones, do_notify);
+    }
+
+    void reseat(config::MicrophoneModel& u) override {
+        microphones.reseat(u.microphones);
+    }
+
+    ValueWrapper<std::vector<config::Microphone>> microphones{this,
+                                                              t->microphones};
+};
+
+template <>
+class ValueWrapper<config::HrtfModel>
+    : public NestedValueWrapper<config::HrtfModel> {
+public:
+    using NestedValueWrapper<config::HrtfModel>::NestedValueWrapper;
+
+    void set_value(const config::HrtfModel& u, bool do_notify = true) override {
+        facing.set_value(u.facing, do_notify);
+        up.set_value(u.up, do_notify);
+    }
+
+    void reseat(config::HrtfModel& u) override {
+        facing.reseat(u.facing);
+        up.reseat(u.up);
+    }
+
+    ValueWrapper<Vec3f> facing{this, t->facing};
+    ValueWrapper<Vec3f> up{this, t->up};
+};
+
+//----------------------------------------------------------------------------//
+
+class FullReceiverConfig {
+public:
+    config::AttenuationModel::Mode mode;
+    config::MicrophoneModel microphone_model;
+    config::HrtfModel hrtf_model;
+};
+
+template <>
+class ValueWrapper<FullReceiverConfig>
+    : public NestedValueWrapper<FullReceiverConfig> {
+public:
+    using NestedValueWrapper<FullReceiverConfig>::NestedValueWrapper;
+
+    void set_value(const FullReceiverConfig& u,
+                   bool do_notify = true) override {
+        mode.set_value(u.mode, do_notify);
+        microphone_model.set_value(u.microphone_model, do_notify);
+        hrtf_model.set_value(u.hrtf_model, do_notify);
+    }
+
+    void reseat(FullReceiverConfig& u) override {
+        mode.reseat(u.mode);
+        microphone_model.reseat(u.microphone_model);
+        hrtf_model.reseat(u.hrtf_model);
+    }
+
+    ValueWrapper<config::AttenuationModel::Mode> mode{this, t->mode};
+    ValueWrapper<config::MicrophoneModel> microphone_model{this,
+                                                           t->microphone_model};
+    ValueWrapper<config::HrtfModel> hrtf_model{this, t->hrtf_model};
+};
+
+//----------------------------------------------------------------------------//
 
 template <typename T>
 class ValueWithWrapper : public ModelMember {

@@ -84,7 +84,7 @@ class PresetComponent : public Component,
                         public ChangeListener {
 public:
     PresetComponent(model::ValueWrapper<Surface>& linked,
-                    SurfaceModel& preset_model);
+                    model::Surfaces& preset_model);
     void resized() override;
 
     void comboBoxChanged(ComboBox* cb) override;
@@ -99,7 +99,7 @@ private:
     model::ValueWrapper<Surface>& linked;
     model::ChangeConnector linked_connector{&linked, this};
 
-    SurfaceModel& preset_model;
+    model::Surfaces& preset_model;
     model::ChangeConnector preset_connector{&preset_model, this};
 
     ComboBox combo_box;
@@ -120,7 +120,7 @@ private:
 class PresetProperty : public PropertyComponent {
 public:
     PresetProperty(model::ValueWrapper<Surface>& linked,
-                   SurfaceModel& preset_model);
+                   model::Surfaces& preset_model);
     void refresh() override;
 
 private:
@@ -132,7 +132,7 @@ private:
 class SurfaceComponent : public Component {
 public:
     SurfaceComponent(model::ValueWrapper<Surface>& value,
-                     SurfaceModel& preset_model);
+                     model::Surfaces& preset_model);
     void resized() override;
 
 private:
@@ -143,8 +143,8 @@ private:
 
 class SurfaceComponentWithTitle : public Component {
 public:
-    SurfaceComponentWithTitle(SurfaceModel::MaterialWrapper& value,
-                              SurfaceModel& preset_model);
+    SurfaceComponentWithTitle(model::ValueWrapper<SceneData::Material>& value,
+                              model::Surfaces& preset_model);
     void resized() override;
 
     static constexpr auto title_height = 25;

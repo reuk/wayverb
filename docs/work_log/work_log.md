@@ -467,8 +467,13 @@ things to do:
 interface
 ---------
 
+* receiver editor is kind of shitty
+    * think about better UI for it
+
 * data models
     * microphone capsules
+        * visualise HRTF facing/up directions
+        * visualise mic directions, directionality
     * material config
         * show in model - button on materialproperty
 
@@ -476,26 +481,33 @@ interface
 
 * call from the commandline
 
+* raytracer
+    * improve ray path visualisation (animate?)
+    * sort out performance
+
+* number boxes
+    * draggable
+    * limits
+
+* undo/redo
+
+* fix crash if closed while calloutbox is shown
+
+* theme
+    * combobox
+    * listbox
+
+* update display to show config changes
+
+* use custom materials in simulation
+
+* save/load presets from file
+
 * hiss convolution -> plugin?
     * I foresee issues with multithreading
 * actual audio output!
     * preview?
 
-* raytracer - some way of pruning, visualising wave paths
-
-* draggable number boxes
-
-* undo/redo
-
-* fix crash if closed while window is shown
-
-* theme combobox
-
-* save/load presets from file
-
-* update display to show config changes
-
-* use custom materials in simulation
 
 preset behaviour
 ----------------

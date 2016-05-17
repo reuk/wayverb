@@ -14,8 +14,8 @@
 		1B0E93891CDD0371001A33F5 /* Vec3Editor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1B0E93871CDD0371001A33F5 /* Vec3Editor.cpp */; };
 		1B0E93B31CDD4A50001A33F5 /* ProgressButton.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1B0E93B11CDD4A50001A33F5 /* ProgressButton.cpp */; };
 		1B29EECB1CDB93E6003BD0BB /* VisualiserLookAndFeel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1B29EEC91CDB93E6003BD0BB /* VisualiserLookAndFeel.cpp */; };
-		1B6833971CE1087300E4CACC /* ModelWrapper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1B6833951CE1087300E4CACC /* ModelWrapper.cpp */; };
 		1B6833BB1CE1FD4100E4CACC /* LoadFiles.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1B6833B91CE1FD4100E4CACC /* LoadFiles.cpp */; };
+		1B6CDDEC1CEB3CD300DA8B3D /* MicrophoneEditor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1B6CDDEA1CEB3CD300DA8B3D /* MicrophoneEditor.cpp */; };
 		1BA3F39F1CDA20D400073946 /* libmodern_gl_utils.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1BA3F39E1CDA20D400073946 /* libmodern_gl_utils.a */; };
 		1BA3F3BF1CDA216E00073946 /* libfftw3f.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1BA3F3BE1CDA216E00073946 /* libfftw3f.a */; };
 		1BA3F3C11CDA217A00073946 /* OpenCL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1BA3F3C01CDA217A00073946 /* OpenCL.framework */; };
@@ -379,10 +379,11 @@
 		1B29EECA1CDB93E6003BD0BB /* VisualiserLookAndFeel.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = VisualiserLookAndFeel.hpp; path = ../../Source/VisualiserLookAndFeel.hpp; sourceTree = "<group>"; };
 		1B3DE3698539A30ABBE4F207 /* jcprepct.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = jcprepct.c; path = ../../JuceLibraryCode/modules/juce_graphics/image_formats/jpglib/jcprepct.c; sourceTree = SOURCE_ROOT; };
 		1B6108181CA032ADF5CE83F6 /* juce_FileTreeComponent.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = juce_FileTreeComponent.h; path = ../../JuceLibraryCode/modules/juce_gui_basics/filebrowser/juce_FileTreeComponent.h; sourceTree = SOURCE_ROOT; };
-		1B6833951CE1087300E4CACC /* ModelWrapper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ModelWrapper.cpp; path = ../../Source/ModelWrapper.cpp; sourceTree = "<group>"; };
 		1B6833961CE1087300E4CACC /* ModelWrapper.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = ModelWrapper.hpp; path = ../../Source/ModelWrapper.hpp; sourceTree = "<group>"; };
 		1B6833B91CE1FD4100E4CACC /* LoadFiles.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = LoadFiles.cpp; path = ../../Source/LoadFiles.cpp; sourceTree = "<group>"; };
 		1B6833BA1CE1FD4100E4CACC /* LoadFiles.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = LoadFiles.hpp; path = ../../Source/LoadFiles.hpp; sourceTree = "<group>"; };
+		1B6CDDEA1CEB3CD300DA8B3D /* MicrophoneEditor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = MicrophoneEditor.cpp; path = ../../Source/MicrophoneEditor.cpp; sourceTree = "<group>"; };
+		1B6CDDEB1CEB3CD300DA8B3D /* MicrophoneEditor.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = MicrophoneEditor.hpp; path = ../../Source/MicrophoneEditor.hpp; sourceTree = "<group>"; };
 		1BA3F39E1CDA20D400073946 /* libmodern_gl_utils.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libmodern_gl_utils.a; path = ../../../../../../../usr/local/lib/libmodern_gl_utils.a; sourceTree = "<group>"; };
 		1BA3F3BE1CDA216E00073946 /* libfftw3f.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libfftw3f.a; path = ../../../../../../../usr/local/Cellar/fftw/3.3.4_1/lib/libfftw3f.a; sourceTree = "<group>"; };
 		1BA3F3C01CDA217A00073946 /* OpenCL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenCL.framework; path = System/Library/Frameworks/OpenCL.framework; sourceTree = SDKROOT; };
@@ -416,6 +417,9 @@
 		1BC2966A1CE5F3F300F4F33F /* SurfaceModel.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = SurfaceModel.hpp; path = ../../Source/SurfaceModel.hpp; sourceTree = "<group>"; };
 		1BC2966F1CE63C4A00F4F33F /* PropertyComponentLAF.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = PropertyComponentLAF.cpp; path = ../../Source/PropertyComponentLAF.cpp; sourceTree = "<group>"; };
 		1BC296701CE63C4A00F4F33F /* PropertyComponentLAF.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = PropertyComponentLAF.hpp; path = ../../Source/PropertyComponentLAF.hpp; sourceTree = "<group>"; };
+		1BC296761CEA161400F4F33F /* Model.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Model.h; path = ../../Source/Model.h; sourceTree = "<group>"; };
+		1BC296781CEA18A200F4F33F /* Collection.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Collection.h; path = ../../Source/Collection.h; sourceTree = "<group>"; };
+		1BC296791CEA18DE00F4F33F /* ValueWrapper.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ValueWrapper.h; path = ../../Source/ValueWrapper.h; sourceTree = "<group>"; };
 		1BC9C7BB1CDA084000605865 /* WAYVERB.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = WAYVERB.xcodeproj; path = ../../../xcproj/WAYVERB.xcodeproj; sourceTree = "<group>"; };
 		1BE99A23F9968165DCF0C571 /* format.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = format.c; path = ../../JuceLibraryCode/modules/juce_audio_formats/codecs/flac/libFLAC/format.c; sourceTree = SOURCE_ROOT; };
 		1BECF4BE1CDCB40B008773FD /* BottomPanel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = BottomPanel.cpp; path = ../../Source/BottomPanel.cpp; sourceTree = "<group>"; };
@@ -1696,10 +1700,10 @@
 		19997BD6C10697AB22FAF5D3 /* Source */ = {
 			isa = PBXGroup;
 			children = (
+				1B6CDDE91CEB3C8100DA8B3D /* visuals */,
+				1B6CDDE81CEB3C3100DA8B3D /* model */,
 				1BC2966F1CE63C4A00F4F33F /* PropertyComponentLAF.cpp */,
 				1BC296701CE63C4A00F4F33F /* PropertyComponentLAF.hpp */,
-				1B6833951CE1087300E4CACC /* ModelWrapper.cpp */,
-				1B6833961CE1087300E4CACC /* ModelWrapper.hpp */,
 				1BC296691CE5F3F300F4F33F /* SurfaceModel.cpp */,
 				1BC2966A1CE5F3F300F4F33F /* SurfaceModel.hpp */,
 				1B0E93B11CDD4A50001A33F5 /* ProgressButton.cpp */,
@@ -1714,16 +1718,42 @@
 				1BECF4C21CDCBA1A008773FD /* RenderState.hpp */,
 				1BECF4C41CDCD778008773FD /* RightPanel.cpp */,
 				1BECF4C51CDCD778008773FD /* RightPanel.hpp */,
-				1BA3F3C61CDA21EC00073946 /* BasicDrawableObject.cpp */,
-				1BA3F3C71CDA21EC00073946 /* BasicDrawableObject.hpp */,
-				1BA3F3C81CDA21EC00073946 /* BoxObject.cpp */,
-				1BA3F3C91CDA21EC00073946 /* BoxObject.hpp */,
 				1BA3F3D01CDA21EC00073946 /* Main.cpp */,
 				1BA3F3D11CDA21EC00073946 /* Main.hpp */,
 				1BA3F3D21CDA21EC00073946 /* MainComponent.cpp */,
 				1BA3F3D31CDA21EC00073946 /* MainComponent.hpp */,
+				1B29EEAA1CDB8C2C003BD0BB /* CommandIDs.h */,
+				1BC296481CE5EC2F00F4F33F /* ValueWrapperSlider.hpp */,
+				1BA8CEAE1CE4CC7900F3AF79 /* SurfacePanel.cpp */,
+				1BA8CEAF1CE4CC7900F3AF79 /* SurfacePanel.hpp */,
+				1B29EEC91CDB93E6003BD0BB /* VisualiserLookAndFeel.cpp */,
+				1B29EECA1CDB93E6003BD0BB /* VisualiserLookAndFeel.hpp */,
+				1B6CDDEA1CEB3CD300DA8B3D /* MicrophoneEditor.cpp */,
+				1B6CDDEB1CEB3CD300DA8B3D /* MicrophoneEditor.hpp */,
+			);
+			name = Source;
+			sourceTree = "<group>";
+		};
+		1B6CDDE81CEB3C3100DA8B3D /* model */ = {
+			isa = PBXGroup;
+			children = (
 				1B6833B91CE1FD4100E4CACC /* LoadFiles.cpp */,
 				1B6833BA1CE1FD4100E4CACC /* LoadFiles.hpp */,
+				1BC296761CEA161400F4F33F /* Model.h */,
+				1BC296791CEA18DE00F4F33F /* ValueWrapper.h */,
+				1BC296781CEA18A200F4F33F /* Collection.h */,
+				1B6833961CE1087300E4CACC /* ModelWrapper.hpp */,
+			);
+			name = model;
+			sourceTree = "<group>";
+		};
+		1B6CDDE91CEB3C8100DA8B3D /* visuals */ = {
+			isa = PBXGroup;
+			children = (
+				1BA3F3C61CDA21EC00073946 /* BasicDrawableObject.cpp */,
+				1BA3F3C71CDA21EC00073946 /* BasicDrawableObject.hpp */,
+				1BA3F3C81CDA21EC00073946 /* BoxObject.cpp */,
+				1BA3F3C91CDA21EC00073946 /* BoxObject.hpp */,
 				1BA3F3D41CDA21EC00073946 /* MeshObject.hpp */,
 				1BA3F3D51CDA21EC00073946 /* ModelObject.cpp */,
 				1BA3F3D61CDA21EC00073946 /* ModelObject.hpp */,
@@ -1736,14 +1766,8 @@
 				1BA3F3DD1CDA21EC00073946 /* MoreConversions.hpp */,
 				1BA3F3DE1CDA21EC00073946 /* OctahedronObject.cpp */,
 				1BA3F3DF1CDA21EC00073946 /* OctahedronObject.hpp */,
-				1B29EEAA1CDB8C2C003BD0BB /* CommandIDs.h */,
-				1BC296481CE5EC2F00F4F33F /* ValueWrapperSlider.hpp */,
-				1BA8CEAE1CE4CC7900F3AF79 /* SurfacePanel.cpp */,
-				1BA8CEAF1CE4CC7900F3AF79 /* SurfacePanel.hpp */,
-				1B29EEC91CDB93E6003BD0BB /* VisualiserLookAndFeel.cpp */,
-				1B29EECA1CDB93E6003BD0BB /* VisualiserLookAndFeel.hpp */,
 			);
-			name = Source;
+			name = visuals;
 			sourceTree = "<group>";
 		};
 		1BC9C7BC1CDA084000605865 /* Products */ = {
@@ -3961,8 +3985,8 @@
 				1BA3F3E91CDA21EC00073946 /* ModelRendererComponent.cpp in Sources */,
 				1D0C4CE425FD7D455AC10C32 /* juce_audio_basics.mm in Sources */,
 				1B0E93891CDD0371001A33F5 /* Vec3Editor.cpp in Sources */,
+				1B6CDDEC1CEB3CD300DA8B3D /* MicrophoneEditor.cpp in Sources */,
 				1B0E93B31CDD4A50001A33F5 /* ProgressButton.cpp in Sources */,
-				1B6833971CE1087300E4CACC /* ModelWrapper.cpp in Sources */,
 				1BECF4C01CDCB40B008773FD /* BottomPanel.cpp in Sources */,
 				1BC2966B1CE5F3F300F4F33F /* SurfaceModel.cpp in Sources */,
 				1BA3F3E51CDA21EC00073946 /* Main.cpp in Sources */,

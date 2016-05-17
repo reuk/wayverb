@@ -1,19 +1,31 @@
 #include "LeftPanel.hpp"
 
+#include "MicrophoneEditor.hpp"
 #include "SurfacePanel.hpp"
 #include "Vec3Editor.hpp"
 
-class MaterialConfigureButton : public ButtonPropertyComponent {
+class ConfigureButton : public ButtonPropertyComponent {
 public:
-    MaterialConfigureButton(SurfaceModel::MaterialWrapper& value,
-                            SurfaceModel& preset_model)
-            : ButtonPropertyComponent(value.name.get_value(), true)
-            , value(value)
-            , preset_model(preset_model) {
+    ConfigureButton(const String& name)
+            : ButtonPropertyComponent(name, true) {
+        setLookAndFeel(&pclaf);
     }
 
     String getButtonText() const override {
         return "...";
+    }
+
+private:
+    PropertyComponentLAF pclaf;
+};
+
+class MaterialConfigureButton : public ConfigureButton {
+public:
+    MaterialConfigureButton(model::ValueWrapper<SceneData::Material>& value,
+                            model::Surfaces& preset_model)
+            : ConfigureButton(value.name.get_value())
+            , value(value)
+            , preset_model(preset_model) {
     }
 
     void buttonClicked() override {
@@ -22,26 +34,149 @@ public:
     }
 
 private:
-    SurfaceModel::MaterialWrapper& value;
-    SurfaceModel& preset_model;
+    model::ValueWrapper<SceneData::Material>& value;
+    model::Surfaces& preset_model;
 };
 
-//  ew non-managed pointers
-//  yuck
-Array<PropertyComponent*> make_material_buttons(const SurfaceModel& model,
-                                                SurfaceModel& preset,
+Array<PropertyComponent*> make_material_buttons(const model::Surfaces& model,
+                                                model::Surfaces& preset,
                                                 LookAndFeel& laf) {
     Array<PropertyComponent*> ret;
-    for (const auto& i : model.get_material_wrappers()) {
-        auto to_add = new MaterialConfigureButton(i, preset);
+    for (const auto& i : model.get_wrapper()) {
+        auto to_add = new MaterialConfigureButton(*i, preset);
         to_add->setLookAndFeel(&laf);
         ret.add(to_add);
     }
     return ret;
 }
 
+//----------------------------------------------------------------------------//
+
+static constexpr auto to_id(config::AttenuationModel::Mode m) {
+    switch (m) {
+        case config::AttenuationModel::Mode::hrtf:
+            return 1;
+        case config::AttenuationModel::Mode::microphone:
+            return 2;
+    }
+}
+
+static constexpr auto to_enum(int i) {
+    switch (i) {
+        case 1:
+            return config::AttenuationModel::Mode::hrtf;
+        case 2:
+            return config::AttenuationModel::Mode::microphone;
+    }
+    return config::AttenuationModel::Mode::hrtf;
+}
+
+class ReceiverPicker : public Component,
+                       public ComboBox::Listener,
+                       public ChangeListener {
+public:
+    ReceiverPicker(model::ValueWrapper<config::AttenuationModel::Mode>& value)
+            : value(value) {
+        combo_box.addItem("microphones",
+                          to_id(config::AttenuationModel::Mode::microphone));
+        combo_box.addItem("HRTF", to_id(config::AttenuationModel::Mode::hrtf));
+
+        changeListenerCallback(&value);
+        addAndMakeVisible(combo_box);
+    }
+
+    void comboBoxChanged(ComboBox* cb) override {
+        if (cb == &combo_box) {
+            value.set_value(to_enum(combo_box.getSelectedId()));
+        }
+    }
+
+    void changeListenerCallback(ChangeBroadcaster* cb) override {
+        if (cb == &value) {
+            combo_box.setSelectedId(to_id(value.get_value()),
+                                    dontSendNotification);
+        }
+    }
+
+    void resized() override {
+        combo_box.setBounds(getLocalBounds());
+    }
+
+private:
+    model::ValueWrapper<config::AttenuationModel::Mode>& value;
+    model::ChangeConnector value_connector{&value, this};
+
+    ComboBox combo_box;
+    model::Connector<ComboBox> combo_box_connector{&combo_box, this};
+};
+
+class ReceiverPickerProperty : public PropertyComponent {
+public:
+    ReceiverPickerProperty(
+        model::ValueWrapper<config::AttenuationModel::Mode>& value)
+            : PropertyComponent("receiver type")
+            , receiver_picker(value) {
+        addAndMakeVisible(receiver_picker);
+    }
+
+    void refresh() override {
+    }
+
+private:
+    ReceiverPicker receiver_picker;
+};
+
+//----------------------------------------------------------------------------//
+
+class HrtfModelComponent : public Component {
+public:
+    HrtfModelComponent(model::ValueWrapper<config::HrtfModel>& hrtf_model) {
+        property_panel.addProperties(
+            {new Vec3fProperty("facing", hrtf_model.facing),
+             new Vec3fProperty("up", hrtf_model.up)});
+
+        addAndMakeVisible(property_panel);
+
+        setSize(300, property_panel.getTotalContentHeight());
+    }
+
+    void resized() override {
+        property_panel.setBounds(getLocalBounds());
+    }
+
+private:
+    PropertyPanel property_panel;
+};
+
+class ReceiverConfigureButton : public ConfigureButton {
+public:
+    ReceiverConfigureButton(
+        model::ValueWrapper<model::FullReceiverConfig>& receiver_config)
+            : ConfigureButton("configure")
+            , receiver_config(receiver_config) {
+    }
+
+    void buttonClicked() override {
+        Component* c = nullptr;
+        switch (receiver_config.mode.get_value()) {
+            case config::AttenuationModel::Mode::hrtf:
+                c = new HrtfModelComponent(receiver_config.hrtf_model);
+                break;
+            case config::AttenuationModel::Mode::microphone:
+                c = new MicrophoneEditorPanel(receiver_config.microphone_model);
+                break;
+        }
+        CallOutBox::launchAsynchronously(c, getScreenBounds(), nullptr);
+    }
+
+private:
+    model::ValueWrapper<model::FullReceiverConfig>& receiver_config;
+};
+
+//----------------------------------------------------------------------------//
+
 LeftPanel::LeftPanel(model::Combined& combined_model,
-                     SurfaceModel& surface_model,
+                     model::Surfaces& surface_model,
                      RenderStateManager& render_state_manager)
         : combined_model(combined_model)
         , surface_model(surface_model)
@@ -208,6 +343,14 @@ LeftPanel::LeftPanel(model::Combined& combined_model,
                       Surface{{0.9, 0.93, 0.94, 0.94, 0.94, 0.94, 0.94, 0.94},
                               {0.95, 0.9, 0.85, 0.8, 0.75, 0.7, 0.65, 0.6}}},
               }) {
+    receiver_config.get_wrapper().hrtf_model.facing.set_value(Vec3f{1, 0, 0});
+    receiver_config.get_wrapper().hrtf_model.up.set_value(Vec3f{0, 1, 0});
+
+    receiver_config.get_wrapper().microphone_model.microphones.push_back(
+        config::Microphone{Vec3f{1, 0, 0}, 0.5});
+    receiver_config.get_wrapper().microphone_model.microphones.push_back(
+        config::Microphone{Vec3f{0, 0, 1}, 0.5});
+
     property_panel.addSection(
         "general",
         {new Vec3fProperty("source", combined_model.get_wrapper().source),
@@ -230,6 +373,12 @@ LeftPanel::LeftPanel(model::Combined& combined_model,
         {new NumberProperty<int>("rays", combined_model.get_wrapper().rays),
          new NumberProperty<int>("reflections",
                                  combined_model.get_wrapper().impulses)});
+
+    Array<PropertyComponent*> receivers;
+    receivers.add(
+        new ReceiverPickerProperty(receiver_config.get_wrapper().mode));
+    receivers.add(new ReceiverConfigureButton(receiver_config.get_wrapper()));
+    property_panel.addSection("receiver", receivers);
 
     property_panel.setOpaque(false);
 

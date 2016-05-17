@@ -95,11 +95,11 @@ public:
         return value;
     }
 
-    void add_listener(Listener& l) {
-        listener_list.add(&l);
+    void addListener(Listener* l) {
+        listener_list.add(l);
     }
-    void remove_listener(Listener& l) {
-        listener_list.remove(&l);
+    void removeListener(Listener* l) {
+        listener_list.remove(l);
     }
 
 private:
@@ -135,12 +135,7 @@ public:
             , value(value) {
         changeListenerCallback(&value);
 
-        editor.add_listener(*this);
-
         addAndMakeVisible(editor);
-    }
-    virtual ~NumberProperty() noexcept {
-        editor.remove_listener(*this);
     }
     void refresh() override {
     }
@@ -160,7 +155,9 @@ public:
 private:
     model::ValueWrapper<T>& value;
     model::ChangeConnector value_connector{&value, this};
+
     NumberEditor<T> editor;
+    model::Connector<NumberEditor<T>> editor_connector{&editor, this};
 };
 
 class Vec3fEditor : public Component {

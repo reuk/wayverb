@@ -12,7 +12,7 @@ MainContentComponent::MainContentComponent(const File& root)
         , left_panel(combined_model, surface_model, render_state_manager)
         , resizer_bar(&layout_manager, 1, true)
         , right_panel(combined_model, scene_data, render_state_manager) {
-    auto left_panel_width = 250;
+    auto left_panel_width = 300;
     layout_manager.setItemLayout(
         0, left_panel_width, left_panel_width, left_panel_width);
     auto bar_width = 0;

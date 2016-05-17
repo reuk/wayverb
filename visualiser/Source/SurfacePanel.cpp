@@ -149,7 +149,7 @@ void FrequencyLabelProperty::refresh() {
 //----------------------------------------------------------------------------//
 
 SurfaceComponent::SurfaceComponent(model::ValueWrapper<Surface>& value,
-                                   SurfaceModel& preset_model) {
+                                   model::Surfaces& preset_model) {
     property_panel.addProperties(
         {new FrequencyLabelProperty("frequencies / KHz")});
     property_panel.addProperties(
@@ -171,7 +171,8 @@ void SurfaceComponent::resized() {
 //----------------------------------------------------------------------------//
 
 SurfaceComponentWithTitle::SurfaceComponentWithTitle(
-    SurfaceModel::MaterialWrapper& value, SurfaceModel& preset_model)
+    model::ValueWrapper<SceneData::Material>& value,
+    model::Surfaces& preset_model)
         : title("", value.name.get_value() + " settings")
         , surface_component(value.surface, preset_model) {
     title.setJustificationType(Justification::centred);
@@ -191,7 +192,7 @@ void SurfaceComponentWithTitle::resized() {
 //----------------------------------------------------------------------------//
 
 PresetComponent::PresetComponent(model::ValueWrapper<Surface>& linked,
-                                 SurfaceModel& preset_model)
+                                 model::Surfaces& preset_model)
         : linked(linked)
         , preset_model(preset_model) {
     combo_box.setEditableText(false);
@@ -224,7 +225,8 @@ void PresetComponent::comboBoxChanged(ComboBox* cb) {
     if (cb == &combo_box) {
         auto selected = combo_box.getSelectedItemIndex();
         if (0 <= selected) {
-            linked.set_value(preset_model.get_material_at(selected).surface);
+            linked.set_value(
+                preset_model.get_wrapper()[selected].surface.get_value());
             combo_box.setSelectedItemIndex(selected, dontSendNotification);
         }
     }
@@ -233,11 +235,11 @@ void PresetComponent::comboBoxChanged(ComboBox* cb) {
 void PresetComponent::textEditorReturnKeyPressed(TextEditor& e) {
     if (e.getText().isNotEmpty()) {
         //  create new entry in model using current material settings
-        preset_model.add_entry(
+        preset_model.get_wrapper().push_back(
             SceneData::Material{e.getText().toStdString(), linked.get_value()});
 
         //  update combobox view
-        combo_box.setSelectedItemIndex(preset_model.get_num_materials() - 1,
+        combo_box.setSelectedItemIndex(preset_model.get_wrapper().size() - 1,
                                        sendNotificationSync);
     } else {
         changeListenerCallback(&linked);
@@ -258,7 +260,7 @@ void PresetComponent::buttonClicked(Button* b) {
     } else if (b == &delete_button) {
         auto ind = combo_box.getSelectedItemIndex();
         if (0 <= ind) {
-            preset_model.delete_entry(ind);
+            preset_model.get_wrapper().erase(ind);
         }
     }
 }
@@ -278,9 +280,8 @@ void PresetComponent::changeListenerCallback(ChangeBroadcaster* cb) {
         combo_box.clear();
 
         auto counter = 1;
-        for (const auto& i : preset_model.get_materials()) {
-            combo_box.addItem(i.name, counter);
-            counter += 1;
+        for (const auto& i : preset_model.get_wrapper()) {
+            combo_box.addItem(i->name.get_value(), counter++);
         }
     }
 }
@@ -288,7 +289,7 @@ void PresetComponent::changeListenerCallback(ChangeBroadcaster* cb) {
 //----------------------------------------------------------------------------//
 
 PresetProperty::PresetProperty(model::ValueWrapper<Surface>& linked,
-                               SurfaceModel& preset_model)
+                               model::Surfaces& preset_model)
         : PropertyComponent("presets", 52)
         , preset_component(linked, preset_model) {
     addAndMakeVisible(preset_component);
