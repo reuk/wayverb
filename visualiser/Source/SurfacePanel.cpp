@@ -206,6 +206,10 @@ PresetComponent::PresetComponent(model::ValueWrapper<Surface>& linked,
     changeListenerCallback(&preset_model);
 }
 
+PresetComponent::~PresetComponent() noexcept {
+    PopupMenu::dismissAllActiveMenus();
+}
+
 void PresetComponent::resized() {
     auto bottom = getLocalBounds();
     auto combo_bounds =

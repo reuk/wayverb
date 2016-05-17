@@ -79,4 +79,19 @@ public:
                                float max_slider_pos,
                                const Slider::SliderStyle,
                                Slider& s) override;
+
+    void drawComboBox(Graphics& g,
+                      int w,
+                      int h,
+                      bool button_down,
+                      int button_x,
+                      int button_y,
+                      int button_w,
+                      int button_h,
+                      ComboBox& cb) override;
+
+    void drawCallOutBoxBackground(CallOutBox& box,
+                                  Graphics& g,
+                                  const Path& path,
+                                  Image& cachedImage) override;
 };

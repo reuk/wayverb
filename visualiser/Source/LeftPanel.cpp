@@ -85,6 +85,10 @@ public:
         addAndMakeVisible(combo_box);
     }
 
+    virtual ~ReceiverPicker() noexcept {
+        PopupMenu::dismissAllActiveMenus();
+    }
+
     void comboBoxChanged(ComboBox* cb) override {
         if (cb == &combo_box) {
             value.set_value(to_enum(combo_box.getSelectedId()));

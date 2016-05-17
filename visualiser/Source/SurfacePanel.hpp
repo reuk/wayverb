@@ -85,6 +85,7 @@ class PresetComponent : public Component,
 public:
     PresetComponent(model::ValueWrapper<Surface>& linked,
                     model::Surfaces& preset_model);
+    virtual ~PresetComponent() noexcept;
     void resized() override;
 
     void comboBoxChanged(ComboBox* cb) override;

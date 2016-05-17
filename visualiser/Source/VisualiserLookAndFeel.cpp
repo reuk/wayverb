@@ -35,6 +35,9 @@ VisualiserLookAndFeel::VisualiserLookAndFeel() {
               Colours::lightgrey.withAlpha(0.8f));
     setColour(BubbleComponent::ColourIds::outlineColourId, Colours::black);
     setColour(Slider::ColourIds::thumbColourId, emphasis);
+    setColour(PopupMenu::ColourIds::highlightedBackgroundColourId,
+              Colours::darkgrey);
+    setColour(ComboBox::ColourIds::arrowColourId, Colours::lightgrey);
 }
 
 void horizontal_line(Graphics& g,
@@ -416,4 +419,73 @@ void VisualiserLookAndFeel::drawLinearSliderThumb(
             //            auto ky = y + height * 0.5f;
         }
     }
+}
+
+void VisualiserLookAndFeel::drawComboBox(Graphics& g,
+                                         int width,
+                                         int height,
+                                         bool button_down,
+                                         int button_x,
+                                         int button_y,
+                                         int button_w,
+                                         int button_h,
+                                         ComboBox& cb) {
+    g.fillAll(Colours::white);
+    g.setColour(Colours::darkgrey);
+    g.drawRect(0, 0, width, height);
+    matte_outer(g, Rectangle<int>(0, 0, width, height), false);
+
+    matte_foreground_box(g,
+                         button_x,
+                         button_y,
+                         button_w,
+                         button_h - 1,
+                         create_base_colour(Colours::darkgrey,
+                                            cb.hasKeyboardFocus(true),
+                                            cb.isMouseOver(),
+                                            button_down));
+
+    const float arrowX = 0.3f;
+    const float arrowH = 0.2f;
+
+    Path p;
+    p.addTriangle(button_x + button_w * 0.5f,
+                  button_y + button_h * (0.45f - arrowH),
+                  button_x + button_w * (1.0f - arrowX),
+                  button_y + button_h * 0.45f,
+                  button_x + button_w * arrowX,
+                  button_y + button_h * 0.45f);
+
+    p.addTriangle(button_x + button_w * 0.5f,
+                  button_y + button_h * (0.55f + arrowH),
+                  button_x + button_w * (1.0f - arrowX),
+                  button_y + button_h * 0.55f,
+                  button_x + button_w * arrowX,
+                  button_y + button_h * 0.55f);
+
+    g.setColour(cb.findColour(ComboBox::arrowColourId)
+                    .withMultipliedAlpha(cb.isEnabled() ? 1.0f : 0.3f));
+    g.fillPath(p);
+}
+
+void VisualiserLookAndFeel::drawCallOutBoxBackground(CallOutBox& box,
+                                                     Graphics& g,
+                                                     const Path& path,
+                                                     Image& cachedImage) {
+    if (cachedImage.isNull()) {
+        cachedImage = Image(Image::ARGB, box.getWidth(), box.getHeight(), true);
+        Graphics g2(cachedImage);
+
+        DropShadow(Colours::black.withAlpha(0.7f), 8, Point<int>(0, 2))
+            .drawForPath(g2, path);
+    }
+
+    g.setColour(Colours::black);
+    g.drawImageAt(cachedImage, 0, 0);
+
+    g.setColour(Colours::darkgrey.withAlpha(0.9f));
+    g.fillPath(path);
+
+    g.setColour(Colours::white.withAlpha(0.8f));
+    g.strokePath(path, PathStrokeType(2.0f));
 }

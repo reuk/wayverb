@@ -3,6 +3,25 @@
 
 #include <memory>
 
+//  taken from the Projucer
+//  no h8 plx
+struct AsyncQuitRetrier : private Timer {
+    AsyncQuitRetrier() {
+        startTimer(500);
+    }
+
+    void timerCallback() override {
+        stopTimer();
+        delete this;
+
+        if (auto* app = JUCEApplicationBase::getInstance()) {
+            app->systemRequestedQuit();
+        }
+    }
+
+    JUCE_DECLARE_NON_COPYABLE(AsyncQuitRetrier)
+};
+
 const String VisualiserApplication::getApplicationName() {
     return ProjectInfo::projectName;
 }
@@ -36,7 +55,11 @@ void VisualiserApplication::shutdown() {
 }
 
 void VisualiserApplication::systemRequestedQuit() {
-    quit();
+    if (ModalComponentManager::getInstance()->cancelAllModalComponents()) {
+        new ::AsyncQuitRetrier();
+    } else {
+        quit();
+    }
 }
 
 void VisualiserApplication::anotherInstanceStarted(const String& commandLine) {

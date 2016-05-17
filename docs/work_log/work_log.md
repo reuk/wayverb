@@ -469,9 +469,12 @@ interface
 
 * receiver editor is kind of shitty
     * think about better UI for it
+* better editors for 3D vectors
 
 * data models
     * microphone capsules
+        * groups?
+            * with their own up + facing pairs
         * visualise HRTF facing/up directions
         * visualise mic directions, directionality
     * material config
@@ -490,12 +493,6 @@ interface
     * limits
 
 * undo/redo
-
-* fix crash if closed while calloutbox is shown
-
-* theme
-    * combobox
-    * listbox
 
 * update display to show config changes
 
@@ -519,3 +516,17 @@ clicking 'save' creates a new preset, selects text in box for editing
 editing text in box changes preset name
 
 clicking 'delete' removes the preset
+
+
+render behaviour
+----------------
+
+do raytrace
+
+find length
+
+work out number of waveguide samples to compute
+
+do waveguide simulation
+
+MERGE
