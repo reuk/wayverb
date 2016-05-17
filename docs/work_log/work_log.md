@@ -505,6 +505,8 @@ interface
 * actual audio output!
     * preview?
 
+* proper audio engine class
+    * visualiser is slaved to this, rather than visuals calling the shots
 
 preset behaviour
 ----------------

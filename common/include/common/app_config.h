@@ -45,7 +45,6 @@ public:
     int bit_depth{16};
 
     std::unique_ptr<AttenuationModel> attenuation_model{
-        std::make_unique<MicrophoneModel>(
-            MicrophoneModel({Microphone(Vec3f(1, 0, 0), 0)}))};
+        std::make_unique<MicrophoneModel>()};
 };
 }  // namespace config

@@ -7,7 +7,7 @@
 class Microphone : public Attenuator, public config::Microphone {
 public:
     constexpr explicit Microphone(const Vec3f& facing, float shape = 0)
-            : config::Microphone(facing, shape) {
+            : config::Microphone{facing, shape} {
     }
 
     constexpr float attenuation(const Vec3f& incident) const {

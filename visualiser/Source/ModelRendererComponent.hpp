@@ -4,12 +4,12 @@
 #include "ModelWrapper.hpp"
 #include "RenderState.hpp"
 
-class ModelRendererComponent : public Component,
-                               public RenderStateManager::Listener {
+class ModelRendererComponent : public Component, public ChangeListener {
 public:
-    ModelRendererComponent(RenderStateManager& render_state_manager,
-                           const SceneData& model,
-                           const config::Combined& config);
+    ModelRendererComponent(
+        const SceneData& model,
+        model::ValueWrapper<config::Combined>& config,
+        model::ValueWrapper<model::RenderStateManager>& render_state_manager);
     virtual ~ModelRendererComponent() noexcept;
 
     void resized() override;
@@ -20,16 +20,14 @@ public:
     void mouseWheelMove(const MouseEvent& event,
                         const MouseWheelDetails& wheel) override;
 
-    void render_state_changed(RenderStateManager*, RenderState state) override;
-    void render_progress_changed(RenderStateManager*, double progress) override;
+    void changeListenerCallback(ChangeBroadcaster* cb) override;
 
 private:
-    RenderStateManager& render_state_manager;
-    model::Connector<RenderStateManager> render_state_connector{
-        &render_state_manager, this};
-
     const SceneData& model;
-    const config::Combined& config;
+    model::ValueWrapper<config::Combined>& config;
+
+    model::ValueWrapper<model::RenderState>& render_state;
+    model::ChangeConnector render_state_connector{&render_state, this};
 
     const float scale{0.01};
     float azimuth{0};

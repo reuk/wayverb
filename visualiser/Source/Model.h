@@ -95,8 +95,12 @@ class ModelValue : public ModelMember {
 public:
     using ModelMember::ModelMember;
 
+    operator const T&() const {
+        return get_value();
+    }
+
     virtual const T& get_value() const = 0;
-    virtual void set_value(const T& u, bool do_notify) = 0;
+    virtual void set_value(const T& u, bool do_notify = true) = 0;
 };
 
 }  // namespace model

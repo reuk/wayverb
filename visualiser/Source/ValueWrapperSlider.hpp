@@ -33,8 +33,7 @@ public:
 
     void changeListenerCallback(ChangeBroadcaster* cb) override {
         if (cb == &value) {
-            slider.setValue(value_to_slider(value.get_value()),
-                            dontSendNotification);
+            slider.setValue(value_to_slider(value), dontSendNotification);
         }
     }
 

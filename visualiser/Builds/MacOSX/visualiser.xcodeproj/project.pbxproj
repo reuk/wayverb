@@ -40,7 +40,6 @@
 		1BC9C80A1CDA087700605865 /* libraytracer.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1BC9C8011CDA084000605865 /* libraytracer.a */; };
 		1BC9C80B1CDA087700605865 /* libwaveguide.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1BC9C7FF1CDA084000605865 /* libwaveguide.a */; };
 		1BECF4C01CDCB40B008773FD /* BottomPanel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1BECF4BE1CDCB40B008773FD /* BottomPanel.cpp */; };
-		1BECF4C31CDCBA1A008773FD /* RenderState.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1BECF4C11CDCBA1A008773FD /* RenderState.cpp */; };
 		1BECF4C61CDCD778008773FD /* RightPanel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1BECF4C41CDCD778008773FD /* RightPanel.cpp */; };
 		1BECF4C91CDCDFCE008773FD /* LeftPanel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1BECF4C71CDCDFCE008773FD /* LeftPanel.cpp */; };
 		1D0C4CE425FD7D455AC10C32 /* juce_audio_basics.mm in Sources */ = {isa = PBXBuildFile; fileRef = BFBA6DD240E8E2C1D9EEFE1C /* juce_audio_basics.mm */; };
@@ -384,6 +383,7 @@
 		1B6833BA1CE1FD4100E4CACC /* LoadFiles.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = LoadFiles.hpp; path = ../../Source/LoadFiles.hpp; sourceTree = "<group>"; };
 		1B6CDDEA1CEB3CD300DA8B3D /* MicrophoneEditor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = MicrophoneEditor.cpp; path = ../../Source/MicrophoneEditor.cpp; sourceTree = "<group>"; };
 		1B6CDDEB1CEB3CD300DA8B3D /* MicrophoneEditor.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = MicrophoneEditor.hpp; path = ../../Source/MicrophoneEditor.hpp; sourceTree = "<group>"; };
+		1B6CDDEE1CEB826700DA8B3D /* FullModel.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = FullModel.hpp; path = ../../Source/FullModel.hpp; sourceTree = "<group>"; };
 		1BA3F39E1CDA20D400073946 /* libmodern_gl_utils.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libmodern_gl_utils.a; path = ../../../../../../../usr/local/lib/libmodern_gl_utils.a; sourceTree = "<group>"; };
 		1BA3F3BE1CDA216E00073946 /* libfftw3f.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libfftw3f.a; path = ../../../../../../../usr/local/Cellar/fftw/3.3.4_1/lib/libfftw3f.a; sourceTree = "<group>"; };
 		1BA3F3C01CDA217A00073946 /* OpenCL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenCL.framework; path = System/Library/Frameworks/OpenCL.framework; sourceTree = SDKROOT; };
@@ -424,7 +424,6 @@
 		1BE99A23F9968165DCF0C571 /* format.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = format.c; path = ../../JuceLibraryCode/modules/juce_audio_formats/codecs/flac/libFLAC/format.c; sourceTree = SOURCE_ROOT; };
 		1BECF4BE1CDCB40B008773FD /* BottomPanel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = BottomPanel.cpp; path = ../../Source/BottomPanel.cpp; sourceTree = "<group>"; };
 		1BECF4BF1CDCB40B008773FD /* BottomPanel.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = BottomPanel.hpp; path = ../../Source/BottomPanel.hpp; sourceTree = "<group>"; };
-		1BECF4C11CDCBA1A008773FD /* RenderState.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = RenderState.cpp; path = ../../Source/RenderState.cpp; sourceTree = "<group>"; };
 		1BECF4C21CDCBA1A008773FD /* RenderState.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = RenderState.hpp; path = ../../Source/RenderState.hpp; sourceTree = "<group>"; };
 		1BECF4C41CDCD778008773FD /* RightPanel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = RightPanel.cpp; path = ../../Source/RightPanel.cpp; sourceTree = "<group>"; };
 		1BECF4C51CDCD778008773FD /* RightPanel.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = RightPanel.hpp; path = ../../Source/RightPanel.hpp; sourceTree = "<group>"; };
@@ -1704,8 +1703,6 @@
 				1B6CDDE81CEB3C3100DA8B3D /* model */,
 				1BC2966F1CE63C4A00F4F33F /* PropertyComponentLAF.cpp */,
 				1BC296701CE63C4A00F4F33F /* PropertyComponentLAF.hpp */,
-				1BC296691CE5F3F300F4F33F /* SurfaceModel.cpp */,
-				1BC2966A1CE5F3F300F4F33F /* SurfaceModel.hpp */,
 				1B0E93B11CDD4A50001A33F5 /* ProgressButton.cpp */,
 				1B0E93B21CDD4A50001A33F5 /* ProgressButton.hpp */,
 				1B0E93871CDD0371001A33F5 /* Vec3Editor.cpp */,
@@ -1714,7 +1711,6 @@
 				1BECF4C81CDCDFCE008773FD /* LeftPanel.hpp */,
 				1BECF4BE1CDCB40B008773FD /* BottomPanel.cpp */,
 				1BECF4BF1CDCB40B008773FD /* BottomPanel.hpp */,
-				1BECF4C11CDCBA1A008773FD /* RenderState.cpp */,
 				1BECF4C21CDCBA1A008773FD /* RenderState.hpp */,
 				1BECF4C41CDCD778008773FD /* RightPanel.cpp */,
 				1BECF4C51CDCD778008773FD /* RightPanel.hpp */,
@@ -1737,12 +1733,15 @@
 		1B6CDDE81CEB3C3100DA8B3D /* model */ = {
 			isa = PBXGroup;
 			children = (
+				1B6CDDEE1CEB826700DA8B3D /* FullModel.hpp */,
 				1B6833B91CE1FD4100E4CACC /* LoadFiles.cpp */,
 				1B6833BA1CE1FD4100E4CACC /* LoadFiles.hpp */,
 				1BC296761CEA161400F4F33F /* Model.h */,
 				1BC296791CEA18DE00F4F33F /* ValueWrapper.h */,
 				1BC296781CEA18A200F4F33F /* Collection.h */,
 				1B6833961CE1087300E4CACC /* ModelWrapper.hpp */,
+				1BC296691CE5F3F300F4F33F /* SurfaceModel.cpp */,
+				1BC2966A1CE5F3F300F4F33F /* SurfaceModel.hpp */,
 			);
 			name = model;
 			sourceTree = "<group>";
@@ -4010,7 +4009,6 @@
 				1B29EECB1CDB93E6003BD0BB /* VisualiserLookAndFeel.cpp in Sources */,
 				0A67B2882295EDE60A8C68B8 /* juce_gui_extra.mm in Sources */,
 				1BA8CEB01CE4CC7900F3AF79 /* SurfacePanel.cpp in Sources */,
-				1BECF4C31CDCBA1A008773FD /* RenderState.cpp in Sources */,
 				1BA3F3EB1CDA21EC00073946 /* OctahedronObject.cpp in Sources */,
 				818A6807A6A72ADAAF25BA49 /* juce_opengl.mm in Sources */,
 				1BA3F3E11CDA21EC00073946 /* BoxObject.cpp in Sources */,

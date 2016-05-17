@@ -23,21 +23,11 @@ struct AttenuationModel {
 };
 
 struct Microphone {
-    constexpr Microphone(const Vec3f& facing = Vec3f(), float shape = 0)
-            : facing(facing)
-            , shape(shape) {
-    }
-
-    Vec3f facing;
-    float shape;
+    Vec3f facing{0, 0, 1};
+    float shape{0};
 };
 
 struct MicrophoneModel : public AttenuationModel {
-    MicrophoneModel(
-        const std::vector<Microphone>& microphones = std::vector<Microphone>())
-            : microphones(microphones) {
-    }
-
     std::unique_ptr<AttenuationModel> clone() const override {
         return std::unique_ptr<AttenuationModel>(
             std::make_unique<MicrophoneModel>(*this));
@@ -47,7 +37,7 @@ struct MicrophoneModel : public AttenuationModel {
         return Mode::microphone;
     }
 
-    std::vector<Microphone> microphones;
+    std::vector<Microphone> microphones{Microphone{}};
 };
 
 struct HrtfModel : public AttenuationModel {
@@ -60,8 +50,8 @@ struct HrtfModel : public AttenuationModel {
             std::make_unique<HrtfModel>(*this));
     }
 
-    Vec3f facing;
-    Vec3f up;
+    Vec3f facing{0, 0, 1};
+    Vec3f up{0, 1, 0};
 };
 
 }  // namespace config

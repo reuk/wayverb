@@ -7,6 +7,8 @@
 #include "ModelSectionObject.hpp"
 #include "OctahedronObject.hpp"
 
+#include "ModelWrapper.hpp"
+
 #define GLM_FORCE_RADIANS
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtc/noise.hpp"
@@ -70,6 +72,9 @@ public:
     void update(float dt) override;
     void draw() const override;
 
+    void set_mic(const Vec3f& u);
+    void set_source(const Vec3f& u);
+
     void start();
     void stop();
 
@@ -92,7 +97,7 @@ private:
 
     std::unique_ptr<VoxelisedObject> model_object;
     std::unique_ptr<OctahedronObject> source_object;
-    std::unique_ptr<OctahedronObject> receiver_object;
+    std::unique_ptr<OctahedronObject> mic_object;
 
     std::unique_ptr<MeshObject<Waveguide>> mesh_object;
     std::future<std::unique_ptr<Waveguide>> future_waveguide;
@@ -108,11 +113,12 @@ private:
     mutable std::mutex mut;
 };
 
-class SceneRenderer final : public OpenGLRenderer {
+class SceneRenderer final : public OpenGLRenderer, public ChangeListener {
 public:
-    SceneRenderer(RenderStateManager& render_state_manager,
-                  const SceneData& model,
-                  const config::Combined& config);
+    SceneRenderer(
+        const SceneData& model,
+        model::ValueWrapper<config::Combined>& config,
+        model::ValueWrapper<model::RenderStateManager>& render_state_manager);
     virtual ~SceneRenderer() noexcept = default;
 
     //  lock on all public methods
@@ -128,6 +134,8 @@ public:
     void start();
     void stop();
 
+    void changeListenerCallback(ChangeBroadcaster* cb) override;
+
 private:
     //  don't lock on anything private
     void update();
@@ -138,10 +146,13 @@ private:
 
     static glm::mat4 get_projection_matrix(float aspect);
 
-    RenderStateManager& render_state_manager;
-
     SceneData model;
-    config::Combined config;
+    model::ValueWrapper<config::Combined>& config;
+
+    model::ChangeConnector mic_connector{&config.mic, this};
+    model::ChangeConnector source_connector{&config.source, this};
+
+    model::ValueWrapper<model::RenderStateManager>& render_state_manager;
 
     std::unique_ptr<GenericShader> shader;
     std::unique_ptr<DrawableScene> scene;

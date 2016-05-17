@@ -14,11 +14,9 @@ public:
     void save_as_project();
 
 private:
-    model::Combined combined_model;
     SceneData scene_data;
-    model::Surfaces surface_model;
 
-    RenderStateManager render_state_manager;
+    model::ValueWithWrapper<model::FullModel> model;
 
     StretchableLayoutManager layout_manager;
 

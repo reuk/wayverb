@@ -1,0 +1,46 @@
+#pragma once
+
+#include "RenderState.hpp"
+
+namespace model {
+
+class FullModel {
+public:
+    config::Combined combined;
+    std::vector<SceneData::Material> materials;
+    std::vector<SceneData::Material> presets;
+    FullReceiverConfig receiver;
+    RenderStateManager render_state_manager;
+};
+
+template <>
+class ValueWrapper<FullModel> : public NestedValueWrapper<FullModel> {
+public:
+    using NestedValueWrapper<FullModel>::NestedValueWrapper;
+
+    void set_value(const FullModel& u, bool do_notify = true) override {
+        combined.set_value(u.combined, do_notify);
+        materials.set_value(u.materials, do_notify);
+        presets.set_value(u.presets, do_notify);
+        receiver.set_value(u.receiver, do_notify);
+        render_state_manager.set_value(u.render_state_manager, do_notify);
+    }
+
+    void reseat(FullModel& u) override {
+        combined.reseat(u.combined);
+        materials.reseat(u.materials);
+        presets.reseat(u.presets);
+        receiver.reseat(u.receiver);
+        render_state_manager.reseat(u.render_state_manager);
+    }
+
+    ValueWrapper<config::Combined> combined{this, t->combined};
+    ValueWrapper<std::vector<SceneData::Material>> materials{this,
+                                                             t->materials};
+    ValueWrapper<std::vector<SceneData::Material>> presets{this, t->presets};
+    ValueWrapper<FullReceiverConfig> receiver{this, t->receiver};
+    ValueWrapper<RenderStateManager> render_state_manager{
+        this, t->render_state_manager};
+};
+
+}  // namespace model

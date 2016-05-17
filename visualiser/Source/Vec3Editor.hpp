@@ -148,7 +148,7 @@ public:
 
     void changeListenerCallback(ChangeBroadcaster* cb) override {
         if (cb == &value) {
-            editor.set_value(value.get_value(), false);
+            editor.set_value(value, false);
         }
     }
 

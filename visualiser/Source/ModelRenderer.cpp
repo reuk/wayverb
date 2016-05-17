@@ -161,7 +161,7 @@ DrawableScene::DrawableScene(const GenericShader &shader,
               shader, scene_data, VoxelCollection(scene_data, 4, 0.1))}
         , source_object{std::make_unique<OctahedronObject>(
               shader, to_glm_vec3(cc.source), glm::vec4(1, 0, 0, 1))}
-        , receiver_object{std::make_unique<OctahedronObject>(
+        , mic_object{std::make_unique<OctahedronObject>(
               shader, to_glm_vec3(cc.mic), glm::vec4(0, 1, 1, 1))}
         , future_waveguide{std::async(std::launch::async,
                                       &DrawableScene::init_waveguide,
@@ -307,10 +307,20 @@ void DrawableScene::draw() const {
         model_object->draw();
 
         draw_thing(source_object);
-        draw_thing(receiver_object);
+        draw_thing(mic_object);
 
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     }
+}
+
+void DrawableScene::set_mic(const Vec3f &u) {
+    std::lock_guard<std::mutex> lck(mut);
+    mic_object->set_position(to_glm_vec3(u));
+}
+
+void DrawableScene::set_source(const Vec3f &u) {
+    std::lock_guard<std::mutex> lck(mut);
+    source_object->set_position(to_glm_vec3(u));
 }
 
 void DrawableScene::start() {
@@ -325,12 +335,13 @@ void DrawableScene::stop() {
 
 //----------------------------------------------------------------------------//
 
-SceneRenderer::SceneRenderer(RenderStateManager &render_state_manager,
-                             const SceneData &model,
-                             const config::Combined &config)
-        : render_state_manager(render_state_manager)
-        , model(model)
+SceneRenderer::SceneRenderer(
+    const SceneData &model,
+    model::ValueWrapper<config::Combined> &config,
+    model::ValueWrapper<model::RenderStateManager> &render_state_manager)
+        : model(model)
         , config(config)
+        , render_state_manager(render_state_manager)
         , projection_matrix(get_projection_matrix(1)) {
 }
 
@@ -369,12 +380,13 @@ void SceneRenderer::set_aspect(float aspect) {
 }
 
 void SceneRenderer::update() {
-    if (render_state_manager.get_state() == RenderState::started) {
-        auto progress = render_state_manager.get_progress();
-        render_state_manager.set_progress(progress + 0.001);
+    if (render_state_manager.state == model::RenderState::started) {
+        render_state_manager.progress.set_value(render_state_manager.progress +
+                                                0.001);
     }
-    if (scene)
+    if (scene) {
         scene->update(0);
+    }
 }
 
 void SceneRenderer::draw() const {
@@ -439,5 +451,18 @@ void SceneRenderer::stop() {
     std::lock_guard<std::mutex> lck(mut);
     if (scene) {
         scene->stop();
+    }
+}
+
+void SceneRenderer::changeListenerCallback(ChangeBroadcaster *cb) {
+    std::lock_guard<std::mutex> lck(mut);
+    if (cb == &config.mic) {
+        if (scene) {
+            scene->set_mic(config.mic);
+        }
+    } else if (cb == &config.source) {
+        if (scene) {
+            scene->set_source(config.source);
+        }
     }
 }

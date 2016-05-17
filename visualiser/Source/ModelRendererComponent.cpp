@@ -11,13 +11,13 @@
 #include "common/boundaries.h"
 
 ModelRendererComponent::ModelRendererComponent(
-    RenderStateManager &render_state_manager,
     const SceneData &model,
-    const config::Combined &config)
-        : render_state_manager(render_state_manager)
-        , model(model)
+    model::ValueWrapper<config::Combined> &config,
+    model::ValueWrapper<model::RenderStateManager> &render_state_manager)
+        : model(model)
         , config(config)
-        , scene_renderer(render_state_manager, model, config) {
+        , render_state(render_state_manager.state)
+        , scene_renderer(model, config, render_state_manager) {
     openGLContext.setOpenGLVersionRequired(OpenGLContext::openGL3_2);
     openGLContext.setRenderer(&scene_renderer);
     openGLContext.setContinuousRepainting(true);
@@ -50,19 +50,15 @@ void ModelRendererComponent::mouseWheelMove(const MouseEvent &event,
     scene_renderer.update_scale(wheel.deltaY);
 }
 
-void ModelRendererComponent::render_state_changed(RenderStateManager *,
-                                                  RenderState state) {
-    switch (state) {
-        case RenderState::stopped:
-            scene_renderer.stop();
-            break;
-        case RenderState::started:
-            scene_renderer.start();
-            break;
+void ModelRendererComponent::changeListenerCallback(ChangeBroadcaster *cb) {
+    if (cb == &render_state) {
+        switch (render_state) {
+            case model::RenderState::stopped:
+                scene_renderer.stop();
+                break;
+            case model::RenderState::started:
+                scene_renderer.start();
+                break;
+        }
     }
-}
-
-void ModelRendererComponent::render_progress_changed(RenderStateManager *,
-                                                     double progress) {
-    //  don't care lol
 }

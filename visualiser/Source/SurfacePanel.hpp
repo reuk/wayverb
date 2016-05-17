@@ -83,8 +83,9 @@ class PresetComponent : public Component,
                         public TextButton::Listener,
                         public ChangeListener {
 public:
-    PresetComponent(model::ValueWrapper<Surface>& linked,
-                    model::Surfaces& preset_model);
+    PresetComponent(
+        model::ValueWrapper<Surface>& linked,
+        model::ValueWrapper<std::vector<SceneData::Material>>& preset_model);
     virtual ~PresetComponent() noexcept;
     void resized() override;
 
@@ -100,7 +101,7 @@ private:
     model::ValueWrapper<Surface>& linked;
     model::ChangeConnector linked_connector{&linked, this};
 
-    model::Surfaces& preset_model;
+    model::ValueWrapper<std::vector<SceneData::Material>>& preset_model;
     model::ChangeConnector preset_connector{&preset_model, this};
 
     ComboBox combo_box;
@@ -120,8 +121,9 @@ private:
 
 class PresetProperty : public PropertyComponent {
 public:
-    PresetProperty(model::ValueWrapper<Surface>& linked,
-                   model::Surfaces& preset_model);
+    PresetProperty(
+        model::ValueWrapper<Surface>& linked,
+        model::ValueWrapper<std::vector<SceneData::Material>>& preset_model);
     void refresh() override;
 
 private:
@@ -132,8 +134,9 @@ private:
 
 class SurfaceComponent : public Component {
 public:
-    SurfaceComponent(model::ValueWrapper<Surface>& value,
-                     model::Surfaces& preset_model);
+    SurfaceComponent(
+        model::ValueWrapper<Surface>& value,
+        model::ValueWrapper<std::vector<SceneData::Material>>& preset_model);
     void resized() override;
 
 private:
@@ -144,8 +147,9 @@ private:
 
 class SurfaceComponentWithTitle : public Component {
 public:
-    SurfaceComponentWithTitle(model::ValueWrapper<SceneData::Material>& value,
-                              model::Surfaces& preset_model);
+    SurfaceComponentWithTitle(
+        model::ValueWrapper<SceneData::Material>& value,
+        model::ValueWrapper<std::vector<SceneData::Material>>& preset_model);
     void resized() override;
 
     static constexpr auto title_height = 25;

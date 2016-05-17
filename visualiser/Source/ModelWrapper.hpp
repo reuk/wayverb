@@ -283,7 +283,7 @@ public:
     virtual ~ValueWithWrapper() noexcept = default;
 
     const T& get_value() const {
-        return wrapper.get_value();
+        return wrapper;
     }
 
     void set_value(const T& u, bool do_notify = true) {
