@@ -174,7 +174,7 @@ void SurfaceComponent::resized() {
 SurfaceComponentWithTitle::SurfaceComponentWithTitle(
     model::ValueWrapper<SceneData::Material>& value,
     model::ValueWrapper<std::vector<SceneData::Material>>& preset_model)
-        : title("", value.name.get_value() + " settings")
+        : title("", value.name.get() + " settings")
         , surface_component(value.surface, preset_model) {
     title.setJustificationType(Justification::centred);
 
@@ -231,7 +231,7 @@ void PresetComponent::comboBoxChanged(ComboBox* cb) {
     if (cb == &combo_box) {
         auto selected = combo_box.getSelectedItemIndex();
         if (0 <= selected) {
-            linked.set_value(preset_model[selected].surface);
+            linked.set(preset_model[selected].surface);
             combo_box.setSelectedItemIndex(selected, dontSendNotification);
         }
     }
@@ -286,7 +286,7 @@ void PresetComponent::changeListenerCallback(ChangeBroadcaster* cb) {
 
         auto counter = 1;
         for (const auto& i : preset_model) {
-            combo_box.addItem(i->name.get_value(), counter++);
+            combo_box.addItem(i->name.get(), counter++);
         }
     }
 }

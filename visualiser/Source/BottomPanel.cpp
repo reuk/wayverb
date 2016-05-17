@@ -24,10 +24,10 @@ void BottomPanel::resized() {
 }
 
 void BottomPanel::buttonClicked(Button*) {
-    render_state_manager.state.set_value(render_state_manager.state ==
-                                                 model::RenderState::stopped
-                                             ? model::RenderState::started
-                                             : model::RenderState::stopped);
+    render_state_manager.state.set(render_state_manager.state ==
+                                           model::RenderState::stopped
+                                       ? model::RenderState::started
+                                       : model::RenderState::stopped);
 }
 
 void BottomPanel::changeListenerCallback(ChangeBroadcaster* cb) {

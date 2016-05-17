@@ -12,12 +12,14 @@ class ValueWrapper<Vec3f> : public NestedValueWrapper<Vec3f> {
 public:
     using NestedValueWrapper<Vec3f>::NestedValueWrapper;
 
+protected:
     void set_value(const Vec3f& u, bool do_notify = true) override {
-        x.set_value(u.x, do_notify);
-        y.set_value(u.y, do_notify);
-        z.set_value(u.z, do_notify);
+        x.set(u.x, do_notify);
+        y.set(u.y, do_notify);
+        z.set(u.z, do_notify);
     }
 
+public:
     void reseat(Vec3f& u) override {
         x.reseat(u.x);
         y.reseat(u.y);
@@ -35,23 +37,25 @@ class ValueWrapper<config::Combined>
 public:
     using NestedValueWrapper<config::Combined>::NestedValueWrapper;
 
+protected:
     void set_value(const config::Combined& u, bool do_notify = true) override {
-        filter_frequency.set_value(u.filter_frequency, do_notify);
-        oversample_ratio.set_value(u.oversample_ratio, do_notify);
-        rays.set_value(u.rays, do_notify);
-        impulses.set_value(u.impulses, do_notify);
-        ray_hipass.set_value(u.ray_hipass, do_notify);
-        do_normalize.set_value(u.do_normalize, do_notify);
-        trim_predelay.set_value(u.trim_predelay, do_notify);
-        trim_tail.set_value(u.trim_tail, do_notify);
-        remove_direct.set_value(u.remove_direct, do_notify);
-        volume_scale.set_value(u.volume_scale, do_notify);
-        source.set_value(u.source, do_notify);
-        mic.set_value(u.mic, do_notify);
-        sample_rate.set_value(u.sample_rate, do_notify);
-        bit_depth.set_value(u.bit_depth, do_notify);
+        filter_frequency.set(u.filter_frequency, do_notify);
+        oversample_ratio.set(u.oversample_ratio, do_notify);
+        rays.set(u.rays, do_notify);
+        impulses.set(u.impulses, do_notify);
+        ray_hipass.set(u.ray_hipass, do_notify);
+        do_normalize.set(u.do_normalize, do_notify);
+        trim_predelay.set(u.trim_predelay, do_notify);
+        trim_tail.set(u.trim_tail, do_notify);
+        remove_direct.set(u.remove_direct, do_notify);
+        volume_scale.set(u.volume_scale, do_notify);
+        source.set(u.source, do_notify);
+        mic.set(u.mic, do_notify);
+        sample_rate.set(u.sample_rate, do_notify);
+        bit_depth.set(u.bit_depth, do_notify);
     }
 
+public:
     void reseat(config::Combined& u) override {
         filter_frequency.reseat(u.filter_frequency);
         oversample_ratio.reseat(u.oversample_ratio);
@@ -90,17 +94,19 @@ class ValueWrapper<VolumeType> : public NestedValueWrapper<VolumeType> {
 public:
     using NestedValueWrapper<VolumeType>::NestedValueWrapper;
 
+protected:
     void set_value(const VolumeType& u, bool do_notify = true) override {
-        s0.set_value(u.s0, do_notify);
-        s1.set_value(u.s1, do_notify);
-        s2.set_value(u.s2, do_notify);
-        s3.set_value(u.s3, do_notify);
-        s4.set_value(u.s4, do_notify);
-        s5.set_value(u.s5, do_notify);
-        s6.set_value(u.s6, do_notify);
-        s7.set_value(u.s7, do_notify);
+        s0.set(u.s0, do_notify);
+        s1.set(u.s1, do_notify);
+        s2.set(u.s2, do_notify);
+        s3.set(u.s3, do_notify);
+        s4.set(u.s4, do_notify);
+        s5.set(u.s5, do_notify);
+        s6.set(u.s6, do_notify);
+        s7.set(u.s7, do_notify);
     }
 
+public:
     void reseat(VolumeType& u) override {
         s0.reseat(u.s0);
         s1.reseat(u.s1);
@@ -127,11 +133,13 @@ class ValueWrapper<Surface> : public NestedValueWrapper<Surface> {
 public:
     using NestedValueWrapper<Surface>::NestedValueWrapper;
 
+protected:
     void set_value(const Surface& u, bool do_notify = true) override {
-        specular.set_value(u.specular, do_notify);
-        diffuse.set_value(u.diffuse, do_notify);
+        specular.set(u.specular, do_notify);
+        diffuse.set(u.diffuse, do_notify);
     }
 
+public:
     void reseat(Surface& u) override {
         specular.reseat(u.specular);
         diffuse.reseat(u.diffuse);
@@ -147,12 +155,14 @@ class ValueWrapper<SceneData::Material>
 public:
     using NestedValueWrapper<SceneData::Material>::NestedValueWrapper;
 
+protected:
     void set_value(const SceneData::Material& u,
                    bool do_notify = true) override {
-        name.set_value(u.name, do_notify);
-        surface.set_value(u.surface, do_notify);
+        name.set(u.name, do_notify);
+        surface.set(u.surface, do_notify);
     }
 
+public:
     void reseat(SceneData::Material& u) override {
         name.reseat(u.name);
         surface.reseat(u.surface);
@@ -168,12 +178,14 @@ class ValueWrapper<config::Microphone>
 public:
     using NestedValueWrapper<config::Microphone>::NestedValueWrapper;
 
+protected:
     void set_value(const config::Microphone& u,
                    bool do_notify = true) override {
-        facing.set_value(u.facing, do_notify);
-        shape.set_value(u.shape, do_notify);
+        facing.set(u.facing, do_notify);
+        shape.set(u.shape, do_notify);
     }
 
+public:
     void reseat(config::Microphone& u) override {
         facing.reseat(u.facing);
         shape.reseat(u.shape);
@@ -189,11 +201,13 @@ class ValueWrapper<config::MicrophoneModel>
 public:
     using NestedValueWrapper<config::MicrophoneModel>::NestedValueWrapper;
 
+protected:
     void set_value(const config::MicrophoneModel& u,
                    bool do_notify = true) override {
-        microphones.set_value(u.microphones, do_notify);
+        microphones.set(u.microphones, do_notify);
     }
 
+public:
     void reseat(config::MicrophoneModel& u) override {
         microphones.reseat(u.microphones);
     }
@@ -208,11 +222,13 @@ class ValueWrapper<config::HrtfModel>
 public:
     using NestedValueWrapper<config::HrtfModel>::NestedValueWrapper;
 
+protected:
     void set_value(const config::HrtfModel& u, bool do_notify = true) override {
-        facing.set_value(u.facing, do_notify);
-        up.set_value(u.up, do_notify);
+        facing.set(u.facing, do_notify);
+        up.set(u.up, do_notify);
     }
 
+public:
     void reseat(config::HrtfModel& u) override {
         facing.reseat(u.facing);
         up.reseat(u.up);
@@ -237,13 +253,15 @@ class ValueWrapper<FullReceiverConfig>
 public:
     using NestedValueWrapper<FullReceiverConfig>::NestedValueWrapper;
 
+protected:
     void set_value(const FullReceiverConfig& u,
                    bool do_notify = true) override {
-        mode.set_value(u.mode, do_notify);
-        microphone_model.set_value(u.microphone_model, do_notify);
-        hrtf_model.set_value(u.hrtf_model, do_notify);
+        mode.set(u.mode, do_notify);
+        microphone_model.set(u.microphone_model, do_notify);
+        hrtf_model.set(u.hrtf_model, do_notify);
     }
 
+public:
     void reseat(FullReceiverConfig& u) override {
         mode.reseat(u.mode);
         microphone_model.reseat(u.microphone_model);
@@ -282,12 +300,12 @@ public:
 
     virtual ~ValueWithWrapper() noexcept = default;
 
-    const T& get_value() const {
+    T get_value() const {
         return wrapper;
     }
 
     void set_value(const T& u, bool do_notify = true) {
-        wrapper.set_value(u, do_notify);
+        wrapper.set(u, do_notify);
     }
 
     const ValueWrapper<T>& get_wrapper() const {

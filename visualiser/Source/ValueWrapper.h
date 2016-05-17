@@ -12,15 +12,15 @@ public:
             , t(&t) {
     }
 
-    const T& get_value() const override {
-        return *t;
-    }
-
     virtual void reseat(T& u) {
         t = &u;
     }
 
 protected:
+    T get_value() const override {
+        return *t;
+    }
+
     T* t;
 };
 
@@ -29,6 +29,7 @@ class ValueWrapper : public NestedValueWrapper<T> {
 public:
     using NestedValueWrapper<T>::NestedValueWrapper;
 
+protected:
     void set_value(const T& u, bool do_notify = true) override {
         *(this->t) = u;
         this->notify(do_notify);

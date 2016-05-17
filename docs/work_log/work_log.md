@@ -467,9 +467,12 @@ things to do:
 interface
 ---------
 
-* receiver editor is kind of shitty
-    * think about better UI for it
-* better editors for 3D vectors
+* editors
+    * receiver editor is kind of shitty
+    * 3D vectors
+    * number boxes
+        * draggable
+        * limits
 
 * data models
     * microphone capsules
@@ -487,10 +490,6 @@ interface
 * raytracer
     * improve ray path visualisation (animate?)
     * sort out performance
-
-* number boxes
-    * draggable
-    * limits
 
 * undo/redo
 

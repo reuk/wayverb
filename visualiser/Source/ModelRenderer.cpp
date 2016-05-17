@@ -381,8 +381,8 @@ void SceneRenderer::set_aspect(float aspect) {
 
 void SceneRenderer::update() {
     if (render_state_manager.state == model::RenderState::started) {
-        render_state_manager.progress.set_value(render_state_manager.progress +
-                                                0.001);
+        render_state_manager.progress.set(render_state_manager.progress +
+                                          0.001);
     }
     if (scene) {
         scene->update(0);

@@ -77,7 +77,8 @@ public:
     }
     void notify(bool do_notify = true) {
         if (do_notify) {
-            sendSynchronousChangeMessage();
+            //            sendSynchronousChangeMessage();
+            sendChangeMessage();
         }
     }
 
@@ -95,12 +96,26 @@ class ModelValue : public ModelMember {
 public:
     using ModelMember::ModelMember;
 
-    operator const T&() const {
+    operator T() const {
+        return get();
+    }
+
+    T get() const {
+        std::lock_guard<std::mutex> l(mut);
         return get_value();
     }
 
-    virtual const T& get_value() const = 0;
+    void set(const T& u, bool do_notify = true) {
+        std::lock_guard<std::mutex> l(mut);
+        set_value(u, do_notify);
+    }
+
+protected:
+    virtual T get_value() const = 0;
     virtual void set_value(const T& u, bool do_notify = true) = 0;
+
+private:
+    mutable std::mutex mut;
 };
 
 }  // namespace model

@@ -21,12 +21,14 @@ class ValueWrapper<RenderStateManager>
 public:
     using NestedValueWrapper<RenderStateManager>::NestedValueWrapper;
 
+protected:
     void set_value(const RenderStateManager& u,
                    bool do_notify = true) override {
-        state.set_value(u.state, do_notify);
-        progress.set_value(u.progress, do_notify);
+        state.set(u.state, do_notify);
+        progress.set(u.progress, do_notify);
     }
 
+public:
     void reseat(RenderStateManager& u) override {
         state.reseat(u.state);
         progress.reseat(u.progress);

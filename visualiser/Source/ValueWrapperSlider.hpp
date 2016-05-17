@@ -27,7 +27,7 @@ public:
 
     void sliderValueChanged(Slider* s) override {
         if (s == &slider) {
-            value.set_value(slider_to_value(slider.getValue()));
+            value.set(slider_to_value(slider.getValue()));
         }
     }
 

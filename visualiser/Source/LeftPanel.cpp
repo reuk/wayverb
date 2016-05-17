@@ -25,7 +25,7 @@ public:
     MaterialConfigureButton(
         model::ValueWrapper<SceneData::Material>& value,
         model::ValueWrapper<std::vector<SceneData::Material>>& preset_model)
-            : ConfigureButton(value.name.get_value())
+            : ConfigureButton(value.name.get())
             , value(value)
             , preset_model(preset_model) {
     }
@@ -92,7 +92,7 @@ public:
 
     void comboBoxChanged(ComboBox* cb) override {
         if (cb == &combo_box) {
-            value.set_value(to_enum(combo_box.getSelectedId()));
+            value.set(to_enum(combo_box.getSelectedId()));
         }
     }
 
@@ -217,4 +217,17 @@ void LeftPanel::resized() {
     auto panel_height = 30;
     property_panel.setBounds(getLocalBounds().withTrimmedBottom(panel_height));
     bottom_panel.setBounds(getLocalBounds().removeFromBottom(panel_height));
+}
+
+void LeftPanel::changeListenerCallback(ChangeBroadcaster* cb) {
+    if (cb == &model.render_state_manager.state) {
+        switch (model.render_state_manager.state) {
+            case model::RenderState::started:
+                property_panel.setEnabled(false);
+                break;
+            case model::RenderState::stopped:
+                property_panel.setEnabled(true);
+                break;
+        }
+    }
 }

@@ -142,7 +142,7 @@ public:
 
     void number_editor_value_changed(NumberEditor<T>& t) override {
         if (&t == &editor) {
-            value.set_value(editor.get_value());
+            value.set(editor.get_value());
         }
     }
 
