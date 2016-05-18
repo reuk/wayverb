@@ -114,7 +114,6 @@ protected:
     virtual T get_value() const = 0;
     virtual void set_value(const T& u, bool do_notify = true) = 0;
 
-private:
     mutable std::mutex mut;
 };
 

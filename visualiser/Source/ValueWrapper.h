@@ -12,13 +12,22 @@ public:
             , t(&t) {
     }
 
-    virtual void reseat(T& u) {
-        t = &u;
+    void reseat(T& u) {
+        std::lock_guard<std::mutex> l(this->mut);
+        reseat_value(u);
+    }
+
+    void reseat() {
+        reseat(*(this->t));
     }
 
 protected:
     T get_value() const override {
         return *t;
+    }
+
+    virtual void reseat_value(T& u) {
+        t = &u;
     }
 
     T* t;

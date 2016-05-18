@@ -28,12 +28,12 @@ protected:
         progress.set(u.progress, do_notify);
     }
 
-public:
-    void reseat(RenderStateManager& u) override {
+    void reseat_value(RenderStateManager& u) override {
         state.reseat(u.state);
         progress.reseat(u.progress);
     }
 
+public:
     ValueWrapper<RenderState> state{this, t->state};
     ValueWrapper<double> progress{this, t->progress};
 };

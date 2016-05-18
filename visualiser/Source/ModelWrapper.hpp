@@ -19,13 +19,13 @@ protected:
         z.set(u.z, do_notify);
     }
 
-public:
-    void reseat(Vec3f& u) override {
+    void reseat_value(Vec3f& u) override {
         x.reseat(u.x);
         y.reseat(u.y);
         z.reseat(u.z);
     }
 
+public:
     ValueWrapper<float> x{this, t->x};
     ValueWrapper<float> y{this, t->y};
     ValueWrapper<float> z{this, t->z};
@@ -55,8 +55,7 @@ protected:
         bit_depth.set(u.bit_depth, do_notify);
     }
 
-public:
-    void reseat(config::Combined& u) override {
+    void reseat_value(config::Combined& u) override {
         filter_frequency.reseat(u.filter_frequency);
         oversample_ratio.reseat(u.oversample_ratio);
         rays.reseat(u.rays);
@@ -73,6 +72,7 @@ public:
         bit_depth.reseat(u.bit_depth);
     }
 
+public:
     ValueWrapper<float> filter_frequency{this, t->filter_frequency};
     ValueWrapper<float> oversample_ratio{this, t->oversample_ratio};
     ValueWrapper<int> rays{this, t->rays};
@@ -106,8 +106,7 @@ protected:
         s7.set(u.s7, do_notify);
     }
 
-public:
-    void reseat(VolumeType& u) override {
+    void reseat_value(VolumeType& u) override {
         s0.reseat(u.s0);
         s1.reseat(u.s1);
         s2.reseat(u.s2);
@@ -118,6 +117,7 @@ public:
         s7.reseat(u.s7);
     }
 
+public:
     ValueWrapper<float> s0{this, t->s[0]};
     ValueWrapper<float> s1{this, t->s[1]};
     ValueWrapper<float> s2{this, t->s[2]};
@@ -139,12 +139,12 @@ protected:
         diffuse.set(u.diffuse, do_notify);
     }
 
-public:
-    void reseat(Surface& u) override {
+    void reseat_value(Surface& u) override {
         specular.reseat(u.specular);
         diffuse.reseat(u.diffuse);
     }
 
+public:
     ValueWrapper<VolumeType> specular{this, t->specular};
     ValueWrapper<VolumeType> diffuse{this, t->diffuse};
 };
@@ -162,12 +162,12 @@ protected:
         surface.set(u.surface, do_notify);
     }
 
-public:
-    void reseat(SceneData::Material& u) override {
+    void reseat_value(SceneData::Material& u) override {
         name.reseat(u.name);
         surface.reseat(u.surface);
     }
 
+public:
     ValueWrapper<std::string> name{this, t->name};
     ValueWrapper<Surface> surface{this, t->surface};
 };
@@ -185,12 +185,12 @@ protected:
         shape.set(u.shape, do_notify);
     }
 
-public:
-    void reseat(config::Microphone& u) override {
+    void reseat_value(config::Microphone& u) override {
         facing.reseat(u.facing);
         shape.reseat(u.shape);
     }
 
+public:
     ValueWrapper<Vec3f> facing{this, t->facing};
     ValueWrapper<float> shape{this, t->shape};
 };
@@ -207,11 +207,11 @@ protected:
         microphones.set(u.microphones, do_notify);
     }
 
-public:
-    void reseat(config::MicrophoneModel& u) override {
+    void reseat_value(config::MicrophoneModel& u) override {
         microphones.reseat(u.microphones);
     }
 
+public:
     ValueWrapper<std::vector<config::Microphone>> microphones{this,
                                                               t->microphones};
 };
@@ -228,12 +228,12 @@ protected:
         up.set(u.up, do_notify);
     }
 
-public:
-    void reseat(config::HrtfModel& u) override {
+    void reseat_value(config::HrtfModel& u) override {
         facing.reseat(u.facing);
         up.reseat(u.up);
     }
 
+public:
     ValueWrapper<Vec3f> facing{this, t->facing};
     ValueWrapper<Vec3f> up{this, t->up};
 };
@@ -261,13 +261,13 @@ protected:
         hrtf_model.set(u.hrtf_model, do_notify);
     }
 
-public:
-    void reseat(FullReceiverConfig& u) override {
+    void reseat_value(FullReceiverConfig& u) override {
         mode.reseat(u.mode);
         microphone_model.reseat(u.microphone_model);
         hrtf_model.reseat(u.hrtf_model);
     }
 
+public:
     ValueWrapper<config::AttenuationModel::Mode> mode{this, t->mode};
     ValueWrapper<config::MicrophoneModel> microphone_model{this,
                                                            t->microphone_model};

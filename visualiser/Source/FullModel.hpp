@@ -27,8 +27,7 @@ protected:
         render_state_manager.set(u.render_state_manager, do_notify);
     }
 
-public:
-    void reseat(FullModel& u) override {
+    void reseat_value(FullModel& u) override {
         combined.reseat(u.combined);
         materials.reseat(u.materials);
         presets.reseat(u.presets);
@@ -36,6 +35,7 @@ public:
         render_state_manager.reseat(u.render_state_manager);
     }
 
+public:
     ValueWrapper<config::Combined> combined{this, t->combined};
     ValueWrapper<std::vector<SceneData::Material>> materials{this,
                                                              t->materials};
