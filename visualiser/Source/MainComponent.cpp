@@ -216,12 +216,12 @@ MainContentComponent::MainContentComponent(const File& root)
                               {0.95, 0.9, 0.85, 0.8, 0.75, 0.7, 0.65, 0.6}}},
                   },
                   model::FullReceiverConfig{},
-                  model::RenderStateManager{}})
+                  model::RenderState{}})
         , left_panel(model.get_wrapper())
         , resizer_bar(&layout_manager, 1, true)
         , right_panel(scene_data,
                       model.get_wrapper().combined,
-                      model.get_wrapper().render_state_manager) {
+                      model.get_wrapper().render_state) {
     auto left_panel_width = 300;
     layout_manager.setItemLayout(
         0, left_panel_width, left_panel_width, left_panel_width);

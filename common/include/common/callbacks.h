@@ -1,26 +1,55 @@
 #pragma once
 
-struct DoNothingCallback {
-    virtual ~DoNothingCallback() noexcept = default;
+template <typename... Ts>
+struct GenericArgumentsCallback {
+    virtual ~GenericArgumentsCallback() noexcept = default;
+
+    virtual void operator()(Ts&&... ts) const {
+    }
+};
+
+template <>
+struct GenericArgumentsCallback<void> {
+    virtual ~GenericArgumentsCallback() noexcept = default;
 
     virtual void operator()() const {
     }
 };
 
-template <typename T>
-struct CallbackInterfaceAdapter : public DoNothingCallback {
-    explicit CallbackInterfaceAdapter(const T& t = T())
-            : t(t) {
+template <typename Callback, typename... Ts>
+struct GenericCallbackAdapter : public GenericArgumentsCallback<Ts...> {
+    explicit GenericCallbackAdapter(const Callback& c = Callback())
+            : c(c) {
     }
-    void operator()() const override {
-        t();
-    };
+
+    void operator()(Ts&&... ts) const override {
+        c(std::forward<Ts>(ts)...);
+    }
 
 private:
-    const T& t;
+    const Callback& c;
 };
 
 template <typename Callback>
-CallbackInterfaceAdapter<Callback> make_callback(const Callback& c) {
-    return CallbackInterfaceAdapter<Callback>(c);
+struct GenericCallbackAdapter<Callback, void>
+    : public GenericArgumentsCallback<void> {
+    explicit GenericCallbackAdapter(const Callback& c = Callback())
+            : c(c) {
+    }
+
+    void operator()() const override {
+        c();
+    }
+
+private:
+    const Callback& c;
+};
+
+//----------------------------------------------------------------------------//
+
+using DoNothingCallback = GenericArgumentsCallback<void>;
+
+template <typename Callback>
+auto make_callback(const Callback& c) {
+    return GenericCallbackAdapter<Callback, void>(c);
 }

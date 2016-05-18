@@ -181,7 +181,7 @@ private:
 
 LeftPanel::LeftPanel(model::ValueWrapper<model::FullModel>& model)
         : model(model)
-        , bottom_panel(model.render_state_manager) {
+        , bottom_panel(model.render_state) {
     property_panel.addSection(
         "general",
         {new Vec3fProperty("source", model.combined.source),
@@ -220,12 +220,12 @@ void LeftPanel::resized() {
 }
 
 void LeftPanel::changeListenerCallback(ChangeBroadcaster* cb) {
-    if (cb == &model.render_state_manager.state) {
-        switch (model.render_state_manager.state) {
-            case model::RenderState::started:
+    if (cb == &model.render_state.state) {
+        switch (model.render_state.state) {
+            case model::RenderState::State::started:
                 property_panel.setEnabled(false);
                 break;
-            case model::RenderState::stopped:
+            case model::RenderState::State::stopped:
                 property_panel.setEnabled(true);
                 break;
         }

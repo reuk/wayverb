@@ -9,7 +9,7 @@ public:
     ModelRendererComponent(
         const SceneData& model,
         model::ValueWrapper<config::Combined>& config,
-        model::ValueWrapper<model::RenderStateManager>& render_state_manager);
+        model::ValueWrapper<model::RenderState>& render_state);
     virtual ~ModelRendererComponent() noexcept;
 
     void resized() override;
@@ -25,9 +25,16 @@ public:
 private:
     const SceneData& model;
     model::ValueWrapper<config::Combined>& config;
-
     model::ValueWrapper<model::RenderState>& render_state;
-    model::ChangeConnector render_state_connector{&render_state, this};
+
+    model::ChangeConnector mic_connector{&config.mic, this};
+    model::ChangeConnector source_connector{&config.source, this};
+
+    model::ChangeConnector state_connector{&render_state.state, this};
+    model::ChangeConnector waveguide_connector{&render_state.show_waveguide,
+                                               this};
+    model::ChangeConnector raytracer_connector{&render_state.show_raytracer,
+                                               this};
 
     const float scale{0.01};
     float azimuth{0};

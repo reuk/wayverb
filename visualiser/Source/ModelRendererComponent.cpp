@@ -13,11 +13,11 @@
 ModelRendererComponent::ModelRendererComponent(
     const SceneData &model,
     model::ValueWrapper<config::Combined> &config,
-    model::ValueWrapper<model::RenderStateManager> &render_state_manager)
+    model::ValueWrapper<model::RenderState> &render_state)
         : model(model)
         , config(config)
-        , render_state(render_state_manager.state)
-        , scene_renderer(model, config, render_state_manager) {
+        , render_state(render_state)
+        , scene_renderer(model) {
     openGLContext.setOpenGLVersionRequired(OpenGLContext::openGL3_2);
     openGLContext.setRenderer(&scene_renderer);
     openGLContext.setContinuousRepainting(true);
@@ -51,14 +51,22 @@ void ModelRendererComponent::mouseWheelMove(const MouseEvent &event,
 }
 
 void ModelRendererComponent::changeListenerCallback(ChangeBroadcaster *cb) {
-    if (cb == &render_state) {
-        switch (render_state) {
-            case model::RenderState::stopped:
-                scene_renderer.stop();
-                break;
-            case model::RenderState::started:
+    if (cb == &config.mic) {
+        scene_renderer.set_mic(config.mic);
+    } else if (cb == &config.source) {
+        scene_renderer.set_source(config.source);
+    } else if (cb == &render_state.state) {
+        switch (render_state.state) {
+            case model::RenderState::State::started:
                 scene_renderer.start();
                 break;
+            case model::RenderState::State::stopped:
+                scene_renderer.stop();
+                break;
         }
+    } else if (cb == &render_state.show_waveguide) {
+        scene_renderer.set_waveguide_enabled(render_state.show_waveguide);
+    } else if (cb == &render_state.show_raytracer) {
+        scene_renderer.set_raytracer_enabled(render_state.show_raytracer);
     }
 }

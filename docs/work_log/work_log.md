@@ -483,19 +483,13 @@ interface
     * material config
         * show in model - button on materialproperty
 
-* decouple waveguide steps and frame renderer
-
 * call from the commandline
 
 * raytracer
     * improve ray path visualisation (animate?)
     * sort out performance
 
-* undo/redo
-
-* update display to show config changes
-
-* use custom materials in simulation
+* use custom config in simulation
 
 * save/load presets from file
 
@@ -505,29 +499,18 @@ interface
     * preview?
 
 * proper audio engine class
+    * proper gl/cl interop using cl::BufferGL, clCreateFromGLBuffer etc
     * visualiser is slaved to this, rather than visuals calling the shots
+    * decouple waveguide steps and frame renderer
+        * or just an option to not visualise
+    * some status readout of the current stage of the algorithm
+        * computing optimisation structures
+        * building mesh
+        * simulating
+        * postprocessing
+        * gathering
 
-preset behaviour
-----------------
+* variable speed of sound
 
-moving a slider sets the preset box to 'none' or similar
+* undo/redo
 
-clicking 'save' creates a new preset, selects text in box for editing
-
-editing text in box changes preset name
-
-clicking 'delete' removes the preset
-
-
-render behaviour
-----------------
-
-do raytrace
-
-find length
-
-work out number of waveguide samples to compute
-
-do waveguide simulation
-
-MERGE

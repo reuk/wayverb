@@ -7,10 +7,9 @@
 
 class RightPanel final : public Component {
 public:
-    RightPanel(
-        SceneData& scene_data,
-        model::ValueWrapper<config::Combined>& combined_model,
-        model::ValueWrapper<model::RenderStateManager>& render_state_manager);
+    RightPanel(SceneData& scene_data,
+               model::ValueWrapper<config::Combined>& combined_model,
+               model::ValueWrapper<model::RenderState>& render_state);
 
     void resized() override;
 

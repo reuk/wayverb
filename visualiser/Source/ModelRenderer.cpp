@@ -152,7 +152,8 @@ void VoxelisedObject::draw() const {
 
 DrawableScene::DrawableScene(const GenericShader &shader,
                              const SceneData &scene_data,
-                             const config::Combined &cc)
+                             const Vec3f &source,
+                             const Vec3f &mic)
         : shader(shader)
         , context(get_context())
         , device(get_device(context))
@@ -160,19 +161,21 @@ DrawableScene::DrawableScene(const GenericShader &shader,
         , model_object{std::make_unique<VoxelisedObject>(
               shader, scene_data, VoxelCollection(scene_data, 4, 0.1))}
         , source_object{std::make_unique<OctahedronObject>(
-              shader, to_glm_vec3(cc.source), glm::vec4(1, 0, 0, 1))}
+              shader, to_glm_vec3(source), glm::vec4(1, 0, 0, 1))}
         , mic_object{std::make_unique<OctahedronObject>(
-              shader, to_glm_vec3(cc.mic), glm::vec4(0, 1, 1, 1))}
-        , future_waveguide{std::async(std::launch::async,
-                                      &DrawableScene::init_waveguide,
-                                      this,
-                                      scene_data,
-                                      cc)}
-        , raytracer_results{std::async(std::launch::async,
-                                       &DrawableScene::get_raytracer_results,
-                                       this,
-                                       scene_data,
-                                       cc)} {
+              shader, to_glm_vec3(mic), glm::vec4(0, 1, 1, 1))}
+/*
+, future_waveguide{std::async(std::launch::async,
+                        &DrawableScene::init_waveguide,
+                        this,
+                        scene_data,
+                        cc)}
+, raytracer_results{std::async(std::launch::async,
+                         &DrawableScene::get_raytracer_results,
+                         this,
+                         scene_data,
+                         cc)} */
+{
 }
 
 DrawableScene::~DrawableScene() noexcept {
@@ -323,6 +326,16 @@ void DrawableScene::set_source(const Vec3f &u) {
     source_object->set_position(to_glm_vec3(u));
 }
 
+void DrawableScene::set_waveguide_enabled(bool b) {
+    std::lock_guard<std::mutex> lck(mut);
+    waveguide_enabled = b;
+}
+
+void DrawableScene::set_raytracer_enabled(bool b) {
+    std::lock_guard<std::mutex> lck(mut);
+    raytracer_enabled = b;
+}
+
 void DrawableScene::start() {
     std::lock_guard<std::mutex> lck(mut);
     running = true;
@@ -335,20 +348,15 @@ void DrawableScene::stop() {
 
 //----------------------------------------------------------------------------//
 
-SceneRenderer::SceneRenderer(
-    const SceneData &model,
-    model::ValueWrapper<config::Combined> &config,
-    model::ValueWrapper<model::RenderStateManager> &render_state_manager)
+SceneRenderer::SceneRenderer(const SceneData &model)
         : model(model)
-        , config(config)
-        , render_state_manager(render_state_manager)
         , projection_matrix(get_projection_matrix(1)) {
 }
 
 void SceneRenderer::newOpenGLContextCreated() {
     std::lock_guard<std::mutex> lck(mut);
     shader = std::make_unique<GenericShader>();
-    scene = std::make_unique<DrawableScene>(*shader, model, config);
+    scene = std::make_unique<DrawableScene>(*shader, model, Vec3f{}, Vec3f{});
 
     auto aabb = model.get_aabb();
     auto m = aabb.centre();
@@ -380,10 +388,6 @@ void SceneRenderer::set_aspect(float aspect) {
 }
 
 void SceneRenderer::update() {
-    if (render_state_manager.state == model::RenderState::started) {
-        render_state_manager.progress.set(render_state_manager.progress +
-                                          0.001);
-    }
     if (scene) {
         scene->update(0);
     }
@@ -454,15 +458,28 @@ void SceneRenderer::stop() {
     }
 }
 
-void SceneRenderer::changeListenerCallback(ChangeBroadcaster *cb) {
+void SceneRenderer::set_mic(const Vec3f &u) {
     std::lock_guard<std::mutex> lck(mut);
-    if (cb == &config.mic) {
-        if (scene) {
-            scene->set_mic(config.mic);
-        }
-    } else if (cb == &config.source) {
-        if (scene) {
-            scene->set_source(config.source);
-        }
+    if (scene) {
+        scene->set_mic(u);
+    }
+}
+void SceneRenderer::set_source(const Vec3f &u) {
+    std::lock_guard<std::mutex> lck(mut);
+    if (scene) {
+        scene->set_source(u);
+    }
+}
+
+void SceneRenderer::set_waveguide_enabled(bool u) {
+    std::lock_guard<std::mutex> lck(mut);
+    if (scene) {
+        scene->set_waveguide_enabled(u);
+    }
+}
+void SceneRenderer::set_raytracer_enabled(bool u) {
+    std::lock_guard<std::mutex> lck(mut);
+    if (scene) {
+        scene->set_raytracer_enabled(u);
     }
 }

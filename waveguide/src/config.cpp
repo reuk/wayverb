@@ -2,7 +2,21 @@
 
 #include "samplerate.h"
 
+#define DIM 3
+
 namespace config {
+
+double speed_of_sound(double time_step, double grid_spacing) {
+    return grid_spacing / (time_step * std::sqrt(DIM));
+}
+
+double time_step(double speed_of_sound, double grid_spacing) {
+    return grid_spacing / (speed_of_sound * std::sqrt(DIM));
+}
+
+double grid_spacing(double speed_of_sound, double time_step) {
+    return speed_of_sound * time_step * std::sqrt(DIM);
+}
 
 float Waveguide::get_max_frequency() const {
     return filter_frequency * oversample_ratio;
@@ -13,7 +27,7 @@ float Waveguide::get_waveguide_sample_rate() const {
 }
 
 float Waveguide::get_divisions() const {
-    return (SPEED_OF_SOUND * sqrt(3)) / get_waveguide_sample_rate();
+    return grid_spacing(SPEED_OF_SOUND, 1 / get_waveguide_sample_rate());
 }
 }
 

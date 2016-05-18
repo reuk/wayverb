@@ -93,7 +93,6 @@ int main(int argc, char** argv) {
         RectangularWaveguide waveguide(waveguide_program,
                                        compute_context.queue,
                                        MeshBoundary(boundary.get_scene_data()),
-                                       conf.get_divisions(),
                                        to_vec3f(mic),
                                        conf.get_waveguide_sample_rate());
 

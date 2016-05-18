@@ -26,19 +26,25 @@ def main():
 
     sr = 16000.0
 
-    kernel = np.pad(waveguide_kernel(sr), 100, 'constant', constant_values=0)
-    ones = np.ones(kernel.size)
+    #kernel = np.pad(waveguide_kernel(sr), 100, 'constant', constant_values=0)
+    kernel = np.pad(np.ones(1), 100, 'constant', constant_values=0)
 
     ax[0].plot(kernel)
+    ax[0].set_xlabel('samples')
+    ax[0].set_ylabel('amplitude')
+    ax[0].set_title('time domain')
 
-    ones_fd = np.fft.rfft(ones)
-    normalization_factor = np.real(ones_fd[0])
+    normalization_factor = np.real(np.fft.rfft(np.ones(kernel.size))[0])
+    #normalization_factor = 1
 
     fd = np.fft.rfft(kernel) / normalization_factor
     n = len(kernel)
     freq = np.fft.rfftfreq(n, 1.0 / sr)
 
     ax[1].plot(freq, np.abs(fd))
+    ax[1].set_xlabel('frequency / Hz')
+    ax[1].set_ylabel('normalized magnitude')
+    ax[1].set_title('frequency domain')
 
     plt.show()
 

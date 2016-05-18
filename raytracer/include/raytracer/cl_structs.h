@@ -1,7 +1,7 @@
 #pragma once
 
-#include "common/app_config.h"
 #include "common/cl_include.h"
+#include "common/config.h"
 #include "common/scene_data.h"
 
 #define NUM_IMAGE_SOURCE 10

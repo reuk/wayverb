@@ -5,7 +5,6 @@ set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} " -Wall -Werror -std=c++14 ")
 project(tests)
 
 include_directories(
-    ${CMAKE_SOURCE_DIR}/combined
     ${CMAKE_SOURCE_DIR}/include
     ${CMAKE_SOURCE_DIR}/submodules/cereal/include
     "/usr/local/include/"
@@ -35,7 +34,7 @@ find_library(ogg_lib ogg)
 find_library(vorbis_lib vorbis)
 find_library(vorbisenc_lib vorbisenc)
 
-target_link_libraries(${name} raytracer waveguide common ${sndfile_lib} ${flac_lib} ${ogg_lib} ${vorbis_lib} ${vorbisenc_lib} glog gtest)
+target_link_libraries(${name} combined raytracer waveguide common ${sndfile_lib} ${flac_lib} ${ogg_lib} ${vorbis_lib} ${vorbisenc_lib} glog gtest)
 
 add_test(NAME tests COMMAND ${name})
 

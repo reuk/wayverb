@@ -1,6 +1,6 @@
 #pragma once
 
-#include "common/app_config.h"
+#include "common/config.h"
 
 #include <cereal/types/base_class.hpp>
 

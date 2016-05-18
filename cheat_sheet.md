@@ -7,14 +7,15 @@ courant number = cT / X
         c = speed of sound
         T = time step
         X = grid spacing
+        D = mesh dimension
     2D: must be < 1/sqrt(2)
     3D: must be < 1/sqrt(3)
-        D = mesh dimension
 
 so:
 
     1 / sqrt(D) = cT / X
 
+so:
     X = cT sqrt(D)
 
     T = X / c sqrt(D)

@@ -66,7 +66,8 @@ class DrawableScene final : public ::Drawable, public ::Updatable {
 public:
     DrawableScene(const GenericShader& shader,
                   const SceneData& scene_data,
-                  const config::Combined& cc);
+                  const Vec3f& source,
+                  const Vec3f& mic);
     ~DrawableScene() noexcept;
 
     void update(float dt) override;
@@ -74,6 +75,9 @@ public:
 
     void set_mic(const Vec3f& u);
     void set_source(const Vec3f& u);
+
+    void set_waveguide_enabled(bool b);
+    void set_raytracer_enabled(bool b);
 
     void start();
     void stop();
@@ -99,11 +103,15 @@ private:
     std::unique_ptr<OctahedronObject> source_object;
     std::unique_ptr<OctahedronObject> mic_object;
 
+    bool waveguide_enabled{true};
+
     std::unique_ptr<MeshObject<Waveguide>> mesh_object;
     std::future<std::unique_ptr<Waveguide>> future_waveguide;
     std::future<std::vector<cl_float>> future_pressure;
 
     std::unique_ptr<Waveguide> waveguide;
+
+    bool raytracer_enabled{true};
 
     std::unique_ptr<RaytraceObject> raytrace_object;
     std::future<RaytracerResults> raytracer_results;
@@ -113,12 +121,9 @@ private:
     mutable std::mutex mut;
 };
 
-class SceneRenderer final : public OpenGLRenderer, public ChangeListener {
+class SceneRenderer final : public OpenGLRenderer {
 public:
-    SceneRenderer(
-        const SceneData& model,
-        model::ValueWrapper<config::Combined>& config,
-        model::ValueWrapper<model::RenderStateManager>& render_state_manager);
+    SceneRenderer(const SceneData& model);
     virtual ~SceneRenderer() noexcept = default;
 
     //  lock on all public methods
@@ -134,7 +139,11 @@ public:
     void start();
     void stop();
 
-    void changeListenerCallback(ChangeBroadcaster* cb) override;
+    void set_mic(const Vec3f& u);
+    void set_source(const Vec3f& u);
+
+    void set_waveguide_enabled(bool u);
+    void set_raytracer_enabled(bool u);
 
 private:
     //  don't lock on anything private
@@ -147,12 +156,6 @@ private:
     static glm::mat4 get_projection_matrix(float aspect);
 
     SceneData model;
-    model::ValueWrapper<config::Combined>& config;
-
-    model::ChangeConnector mic_connector{&config.mic, this};
-    model::ChangeConnector source_connector{&config.source, this};
-
-    model::ValueWrapper<model::RenderStateManager>& render_state_manager;
 
     std::unique_ptr<GenericShader> shader;
     std::unique_ptr<DrawableScene> scene;

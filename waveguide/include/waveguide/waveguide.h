@@ -1,5 +1,6 @@
 #pragma once
 
+#include "config.h"
 #include "rectangular_mesh.h"
 #include "rectangular_program.h"
 #include "tetrahedral_mesh.h"
@@ -269,13 +270,14 @@ public:
     RectangularWaveguide(const RectangularProgram& program,
                          cl::CommandQueue& queue,
                          const MeshBoundary& boundary,
-                         float spacing,
                          const Vec3f& anchor,
                          float sr)
             : RectangularWaveguide(
                   program,
                   queue,
-                  RectangularMesh(boundary, spacing, anchor),
+                  RectangularMesh(boundary,
+                                  config::grid_spacing(SPEED_OF_SOUND, 1 / sr),
+                                  anchor),
                   sr,
                   to_filter_coefficients(boundary.get_surfaces(), sr)) {
     }
@@ -365,23 +367,6 @@ private:
         std::vector<RectangularProgram::BoundaryDataArray3> boundary_data_3,
         std::vector<RectangularProgram::CanonicalCoefficients> coefficients);
 
-    /*
-    template <int I>
-    void setup_boundary_data_buffer(cl::CommandQueue& queue, cl::Buffer& b) {
-        std::vector<RectangularProgram::BoundaryDataArray<I>> bda(
-            mesh.compute_num_boundary<I>());
-        proc::generate(bda, [] {
-            RectangularProgram::BoundaryDataArray<I> ret{};
-            for (auto& i : ret.array) {
-                //  TODO set this properly
-                i.coefficient_index = 0;
-            }
-            return ret;
-        });
-        cl::copy(queue, bda.begin(), bda.end(), b);
-    }
-    */
-
     MeshType mesh;
     const cl::Buffer node_buffer;  //  const, set in constructor
     cl::Buffer transform_buffer;   //  set in setup
@@ -397,55 +382,6 @@ private:
         boundary_coefficients_buffer;  //  const, set in constructor
     cl::Buffer error_flag_buffer;      //  set each iteration
 };
-
-/*
-class TetrahedralWaveguide : public Waveguide<TetrahedralProgram> {
-public:
-    TetrahedralWaveguide(const ProgramType& program,
-                         cl::CommandQueue& queue,
-                         const Boundary& boundary,
-                         float spacing,
-                         const Vec3f& anchor);
-
-    void setup(cl::CommandQueue& queue, size_type o, float sr) override;
-
-    RunStepResult run_step(const WriteInfo& write_info,
-                           size_type o,
-                           cl::CommandQueue& queue,
-                           kernel_type& kernel,
-                           size_type nodes,
-                           cl::Buffer& previous,
-                           cl::Buffer& current,
-                           cl::Buffer& output) override;
-
-    size_type get_index_for_coordinate(const Vec3f& v) const override;
-    Vec3f get_coordinate_for_index(size_type index) const override;
-
-    const TetrahedralMesh& get_mesh() const;
-    bool inside(size_type index) const override;
-
-private:
-    using MeshType = TetrahedralMesh;
-    static constexpr auto PORTS = MeshType::PORTS;
-    static constexpr auto TRANSFORM_MATRIX_ELEMENTS = PORTS * 3;
-
-    TetrahedralWaveguide(const ProgramType& program,
-                         cl::CommandQueue& queue,
-                         const TetrahedralMesh& mesh);
-    TetrahedralWaveguide(const ProgramType& program,
-                         cl::CommandQueue& queue,
-                         const TetrahedralMesh& mesh,
-                         std::vector<TetrahedralMesh::Node>
-                             nodes);
-
-    MeshType mesh;
-    cl::Buffer node_buffer;
-    cl::Buffer transform_buffer;
-    cl::Buffer velocity_buffer;
-
-    float period;
-};
-*/
 
 template <typename Fun, typename T>
 bool is_any(const T& t, const Fun& fun = Fun()) {

@@ -57,7 +57,6 @@ TEST(run_waveguide, run_waveguide) {
     RectangularWaveguide waveguide(waveguide_program,
                                    context_info.queue,
                                    MeshBoundary(scene_data),
-                                   config.get_divisions(),
                                    config.mic,
                                    config.get_waveguide_sample_rate());
 

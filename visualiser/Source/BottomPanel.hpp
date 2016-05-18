@@ -8,8 +8,7 @@ class BottomPanel : public Component,
                     public ChangeListener,
                     public TextButton::Listener {
 public:
-    BottomPanel(
-        model::ValueWrapper<model::RenderStateManager>& render_state_manager);
+    BottomPanel(model::ValueWrapper<model::RenderState>& render_state);
 
     void paint(Graphics& g) override;
     void resized() override;
@@ -20,10 +19,9 @@ public:
 
 private:
     double progress{0};
-    model::ValueWrapper<model::RenderStateManager>& render_state_manager;
-    model::ChangeConnector state_connector{&render_state_manager.state, this};
-    model::ChangeConnector progress_connector{&render_state_manager.progress,
-                                              this};
+    model::ValueWrapper<model::RenderState>& render_state;
+    model::ChangeConnector state_connector{&render_state.state, this};
+    model::ChangeConnector progress_connector{&render_state.progress, this};
 
     ProgressButton progress_button;
     model::Connector<ProgressButton> button_connector{&progress_button, this};

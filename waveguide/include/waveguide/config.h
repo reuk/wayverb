@@ -1,8 +1,12 @@
 #pragma once
 
-#include "common/app_config.h"
+#include "common/config.h"
 
 namespace config {
+
+double speed_of_sound(double time_step, double grid_spacing);
+double time_step(double speed_of_sound, double grid_spacing);
+double grid_spacing(double speed_of_sound, double time_step);
 
 class Waveguide : public virtual App {
 public:

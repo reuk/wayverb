@@ -1,7 +1,7 @@
 #pragma once
 
-#include "app_config.h"
 #include "attenuation_configs_serialize.h"
+#include "config.h"
 #include "vec_serialize.h"
 
 namespace config {

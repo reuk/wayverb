@@ -1,5 +1,5 @@
-#include "combined_config.h"
-#include "combined_config_serialize.h"
+#include "combined/config.h"
+#include "combined/config_serialize.h"
 
 #include "waveguide/microphone.h"
 #include "waveguide/waveguide.h"
@@ -88,7 +88,6 @@ auto run_waveguide(ComputeContext& context_info,
     RectangularWaveguide waveguide(waveguide_program,
                                    context_info.queue,
                                    MeshBoundary(scene_data),
-                                   config.get_divisions(),
                                    config.mic,
                                    config.get_waveguide_sample_rate());
 

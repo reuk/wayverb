@@ -10,7 +10,7 @@ public:
     std::vector<SceneData::Material> materials;
     std::vector<SceneData::Material> presets;
     FullReceiverConfig receiver;
-    RenderStateManager render_state_manager;
+    RenderState render_state;
 };
 
 template <>
@@ -24,7 +24,7 @@ protected:
         materials.set(u.materials, do_notify);
         presets.set(u.presets, do_notify);
         receiver.set(u.receiver, do_notify);
-        render_state_manager.set(u.render_state_manager, do_notify);
+        render_state.set(u.render_state, do_notify);
     }
 
     void reseat_value(FullModel& u) override {
@@ -32,7 +32,7 @@ protected:
         materials.reseat(u.materials);
         presets.reseat(u.presets);
         receiver.reseat(u.receiver);
-        render_state_manager.reseat(u.render_state_manager);
+        render_state.reseat(u.render_state);
     }
 
 public:
@@ -41,8 +41,7 @@ public:
                                                              t->materials};
     ValueWrapper<std::vector<SceneData::Material>> presets{this, t->presets};
     ValueWrapper<FullReceiverConfig> receiver{this, t->receiver};
-    ValueWrapper<RenderStateManager> render_state_manager{
-        this, t->render_state_manager};
+    ValueWrapper<RenderState> render_state{this, t->render_state};
 };
 
 }  // namespace model

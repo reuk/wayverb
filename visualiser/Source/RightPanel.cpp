@@ -2,12 +2,10 @@
 
 #include "LoadFiles.hpp"
 
-RightPanel::RightPanel(
-    SceneData& scene_data,
-    model::ValueWrapper<config::Combined>& combined_model,
-    model::ValueWrapper<model::RenderStateManager>& render_state_manager)
-        : model_renderer_component(
-              scene_data, combined_model, render_state_manager) {
+RightPanel::RightPanel(SceneData& scene_data,
+                       model::ValueWrapper<config::Combined>& combined_model,
+                       model::ValueWrapper<model::RenderState>& render_state)
+        : model_renderer_component(scene_data, combined_model, render_state) {
     addAndMakeVisible(model_renderer_component);
 }
 

@@ -1,16 +1,15 @@
 #include "BottomPanel.hpp"
 
-BottomPanel::BottomPanel(
-    model::ValueWrapper<model::RenderStateManager>& render_state_manager)
-        : render_state_manager(render_state_manager)
+BottomPanel::BottomPanel(model::ValueWrapper<model::RenderState>& render_state)
+        : render_state(render_state)
         , progress_button(progress) {
     progress_button.setColour(TextButton::ColourIds::buttonColourId,
                               Colours::green);
     progress_button.setColour(TextButton::ColourIds::buttonOnColourId,
                               Colours::red);
 
-    changeListenerCallback(&render_state_manager.state);
-    changeListenerCallback(&render_state_manager.progress);
+    changeListenerCallback(&render_state.state);
+    changeListenerCallback(&render_state.progress);
 
     addAndMakeVisible(progress_button);
 }
@@ -24,23 +23,23 @@ void BottomPanel::resized() {
 }
 
 void BottomPanel::buttonClicked(Button*) {
-    render_state_manager.state.set(render_state_manager.state ==
-                                           model::RenderState::stopped
-                                       ? model::RenderState::started
-                                       : model::RenderState::stopped);
+    render_state.state.set(render_state.state ==
+                                   model::RenderState::State::stopped
+                               ? model::RenderState::State::started
+                               : model::RenderState::State::stopped);
 }
 
 void BottomPanel::changeListenerCallback(ChangeBroadcaster* cb) {
-    if (cb == &render_state_manager.state) {
-        switch (render_state_manager.state) {
-            case model::RenderState::stopped:
+    if (cb == &render_state.state) {
+        switch (render_state.state) {
+            case model::RenderState::State::stopped:
                 progress_button.setButtonText("render");
                 break;
-            case model::RenderState::started:
+            case model::RenderState::State::started:
                 progress_button.setButtonText("cancel");
                 break;
         }
-    } else if (cb == &render_state_manager.progress) {
-        progress = render_state_manager.progress;
+    } else if (cb == &render_state.progress) {
+        progress = render_state.progress;
     }
 }

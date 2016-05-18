@@ -1,6 +1,6 @@
 #pragma once
 
-#include "combined_config.h"
+#include "config.h"
 
 #include "raytracer/serialize/config.h"
 #include "waveguide/serialize/config.h"

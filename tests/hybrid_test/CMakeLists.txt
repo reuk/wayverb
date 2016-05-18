@@ -26,4 +26,4 @@ find_library(vorbis_lib vorbis)
 find_library(vorbisenc_lib vorbisenc)
 find_library(samplerate_lib samplerate)
 
-target_link_libraries(${name} raytracer waveguide common ${sndfile_lib} ${samplerate_lib} ${frameworks} gflags ${flac_lib} ${ogg_lib} ${vorbis_lib} ${vorbisenc_lib})
+target_link_libraries(${name} combined raytracer waveguide common ${sndfile_lib} ${samplerate_lib} ${frameworks} gflags ${flac_lib} ${ogg_lib} ${vorbis_lib} ${vorbisenc_lib})

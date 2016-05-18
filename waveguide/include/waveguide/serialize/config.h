@@ -2,7 +2,7 @@
 
 #include "waveguide/config.h"
 
-#include "common/app_config_serialize.h"
+#include "common/config_serialize.h"
 
 #include <cereal/types/base_class.hpp>
 

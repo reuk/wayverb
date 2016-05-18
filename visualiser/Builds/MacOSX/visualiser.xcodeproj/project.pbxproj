@@ -1711,7 +1711,6 @@
 				1BECF4C81CDCDFCE008773FD /* LeftPanel.hpp */,
 				1BECF4BE1CDCB40B008773FD /* BottomPanel.cpp */,
 				1BECF4BF1CDCB40B008773FD /* BottomPanel.hpp */,
-				1BECF4C21CDCBA1A008773FD /* RenderState.hpp */,
 				1BECF4C41CDCD778008773FD /* RightPanel.cpp */,
 				1BECF4C51CDCD778008773FD /* RightPanel.hpp */,
 				1BA3F3D01CDA21EC00073946 /* Main.cpp */,
@@ -1733,6 +1732,7 @@
 		1B6CDDE81CEB3C3100DA8B3D /* model */ = {
 			isa = PBXGroup;
 			children = (
+				1BECF4C21CDCBA1A008773FD /* RenderState.hpp */,
 				1B6CDDEE1CEB826700DA8B3D /* FullModel.hpp */,
 				1B6833B91CE1FD4100E4CACC /* LoadFiles.cpp */,
 				1B6833BA1CE1FD4100E4CACC /* LoadFiles.hpp */,

@@ -70,7 +70,6 @@ std::vector<float> run_simulation(const cl::Context& context,
     RectangularWaveguide waveguide(waveguide_program,
                                    queue,
                                    MeshBoundary(scene_data),
-                                   conf.get_divisions(),
                                    receiver,
                                    conf.get_waveguide_sample_rate());
 
