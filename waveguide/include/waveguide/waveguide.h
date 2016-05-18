@@ -59,27 +59,68 @@ struct RunStepResult {
     Vec3f intensity;
 };
 
-template <typename T>
+enum class BufferType {
+    cl,
+    gl,
+};
+
+namespace detail {
+
+template <BufferType buffer_type>
+struct BufferTypeTrait;
+
+template <>
+struct BufferTypeTrait<BufferType::cl> {
+    using type = cl::Buffer;
+
+    static std::array<type, 2> create_waveguide_storage(
+        const cl::Context& context, size_t nodes) {
+        return {
+            {cl::Buffer(context, CL_MEM_READ_WRITE, sizeof(cl_float) * nodes),
+             cl::Buffer(context, CL_MEM_READ_WRITE, sizeof(cl_float) * nodes)}};
+    }
+};
+
+template <>
+struct BufferTypeTrait<BufferType::gl> {
+    using type = cl::BufferGL;
+
+    static std::array<type, 2> create_waveguide_storage(
+        const cl::Context& context, size_t nodes) {
+        std::array<type, 2> ret;
+        return ret;
+    }
+};
+
+}  // namespace detail
+
+template <typename T, BufferType buffer_type>
 class Waveguide {
 public:
     using ProgramType = T;
-    using size_type = std::vector<cl_float>::size_type;
     using kernel_type = decltype(std::declval<ProgramType>().get_kernel());
+
+    using Trait = detail::BufferTypeTrait<buffer_type>;
+    using PressureBufferType = typename Trait::type;
 
     Waveguide(const ProgramType& program,
               cl::CommandQueue& queue,
-              size_type nodes,
+              size_t nodes,
               float sample_rate)
             : queue(queue)
             , kernel(program.get_kernel())
             , nodes(nodes)
-            , storage(
-                  {{cl::Buffer(program.template getInfo<CL_PROGRAM_CONTEXT>(),
-                               CL_MEM_READ_WRITE,
-                               sizeof(cl_float) * nodes),
-                    cl::Buffer(program.template getInfo<CL_PROGRAM_CONTEXT>(),
-                               CL_MEM_READ_WRITE,
-                               sizeof(cl_float) * nodes)}})
+            /*
+          , storage(
+                {{cl::Buffer(program.template getInfo<CL_PROGRAM_CONTEXT>(),
+                             CL_MEM_READ_WRITE,
+                             sizeof(cl_float) * nodes),
+                  cl::Buffer(program.template getInfo<CL_PROGRAM_CONTEXT>(),
+                             CL_MEM_READ_WRITE,
+                             sizeof(cl_float) * nodes)}})
+             */
+            , storage(Trait::create_waveguide_storage(
+                  program.template getInfo<CL_PROGRAM_CONTEXT>(), nodes))
             , previous(&storage[0])
             , current(&storage[1])
             , output(program.template getInfo<CL_PROGRAM_CONTEXT>(),
@@ -91,21 +132,21 @@ public:
     virtual ~Waveguide() noexcept = default;
 
     struct WriteInfo {
-        WriteInfo(size_type index, float pressure, bool is_on)
+        WriteInfo(size_t index, float pressure, bool is_on)
                 : index(index)
                 , pressure(pressure)
                 , is_on(is_on) {
         }
-        size_type index;
+        size_t index;
         float pressure;
         bool is_on;
     };
 
     virtual RunStepResult run_step(const WriteInfo& write_info,
-                                   size_type o,
+                                   size_t o,
                                    cl::CommandQueue& queue,
                                    kernel_type& kernel,
-                                   size_type nodes,
+                                   size_t nodes,
                                    cl::Buffer& previous,
                                    cl::Buffer& current,
                                    cl::Buffer& output) = 0;
@@ -129,23 +170,23 @@ public:
         std::swap(current, previous);
     }
 
-    virtual size_type get_index_for_coordinate(const Vec3f& v) const = 0;
-    virtual Vec3f get_coordinate_for_index(size_type index) const = 0;
+    virtual size_t get_index_for_coordinate(const Vec3f& v) const = 0;
+    virtual Vec3f get_coordinate_for_index(size_t index) const = 0;
 
     Vec3f get_corrected_coordinate(const Vec3f& v) const {
         return get_coordinate_for_index(get_index_for_coordinate(v));
     }
 
-    size_type get_nodes() const {
+    size_t get_nodes() const {
         return nodes;
     }
 
-    virtual bool inside(size_type index) const = 0;
+    virtual bool inside(size_t index) const = 0;
 
-    virtual void setup(cl::CommandQueue& queue, size_type o) {
+    virtual void setup(cl::CommandQueue& queue, size_t o) {
     }
 
-    void init(const Vec3f& e, std::vector<float>&& input_sig, size_type o) {
+    void init(const Vec3f& e, std::vector<float>&& input_sig, size_t o) {
         //  whatever unique setup is required
         setup(queue, o);
 
@@ -159,7 +200,7 @@ public:
     }
 
     template <typename Callback = DoNothingCallback>
-    std::vector<RunStepResult> run(size_type steps,
+    std::vector<RunStepResult> run(size_t steps,
                                    const Callback& callback = Callback()) {
         if (!run_info) {
             throw std::runtime_error(
@@ -191,8 +232,8 @@ public:
     std::vector<RunStepResult> init_and_run(
         const Vec3f& e,
         std::vector<float>&& input,
-        size_type o,
-        size_type steps,
+        size_t o,
+        size_t steps,
         const Callback& callback = Callback()) {
         init(e, std::move(input), o);
         return run(steps, callback);
@@ -212,25 +253,25 @@ public:
 
 private:
     struct RunInfo final {
-        RunInfo(size_type input_index,
+        RunInfo(size_t input_index,
                 std::vector<float>&& input_signal,
-                size_type output_index)
+                size_t output_index)
                 : input_index(input_index)
                 , input_signal(input_signal)
                 , output_index(output_index) {
         }
 
-        size_type get_input_index() const {
+        size_t get_input_index() const {
             return input_index;
         }
         const std::vector<float>& get_input_signal() const {
             return input_signal;
         }
-        size_type get_output_index() const {
+        size_t get_output_index() const {
             return output_index;
         }
 
-        size_type increment_counter() {
+        size_t increment_counter() {
             return counter++;
         }
 
@@ -243,17 +284,17 @@ private:
         }
 
     private:
-        size_type input_index;
+        size_t input_index;
         std::vector<float> input_signal;
-        size_type output_index;
-        size_type counter{0};
+        size_t output_index;
+        size_t counter{0};
     };
 
     cl::CommandQueue& queue;
     kernel_type kernel;
-    const size_type nodes;
+    const size_t nodes;
 
-    std::array<cl::Buffer, 2> storage;
+    std::array<PressureBufferType, 2> storage;
 
     cl::Buffer* previous;
     cl::Buffer* current;
@@ -265,39 +306,33 @@ private:
     float sample_rate;
 };
 
-class RectangularWaveguide : public Waveguide<RectangularProgram> {
+template <BufferType buffer_type>
+class RectangularWaveguide : public Waveguide<RectangularProgram, buffer_type> {
 public:
+    using Base = Waveguide<RectangularProgram, buffer_type>;
+
     RectangularWaveguide(const RectangularProgram& program,
                          cl::CommandQueue& queue,
                          const MeshBoundary& boundary,
                          const Vec3f& anchor,
-                         float sr)
-            : RectangularWaveguide(
-                  program,
-                  queue,
-                  RectangularMesh(boundary,
-                                  config::grid_spacing(SPEED_OF_SOUND, 1 / sr),
-                                  anchor),
-                  sr,
-                  to_filter_coefficients(boundary.get_surfaces(), sr)) {
-    }
+                         float sr);
 
-    void setup(cl::CommandQueue& queue, size_type o) override;
+    void setup(cl::CommandQueue& queue, size_t o) override;
 
-    RunStepResult run_step(const WriteInfo& write_info,
-                           size_type o,
+    RunStepResult run_step(const typename Base::WriteInfo& write_info,
+                           size_t o,
                            cl::CommandQueue& queue,
-                           kernel_type& kernel,
-                           size_type nodes,
+                           typename Base::kernel_type& kernel,
+                           size_t nodes,
                            cl::Buffer& previous,
                            cl::Buffer& current,
                            cl::Buffer& output) override;
 
-    size_type get_index_for_coordinate(const Vec3f& v) const override;
-    Vec3f get_coordinate_for_index(size_type index) const override;
+    size_t get_index_for_coordinate(const Vec3f& v) const override;
+    Vec3f get_coordinate_for_index(size_t index) const override;
 
     const RectangularMesh& get_mesh() const;
-    bool inside(size_type index) const override;
+    bool inside(size_t index) const override;
 
     template <size_t I>
     static RectangularProgram::FilterDescriptor compute_filter_descriptor(
@@ -351,13 +386,13 @@ private:
     static constexpr auto TRANSFORM_MATRIX_ELEMENTS = PORTS * 3;
 
     RectangularWaveguide(
-        const ProgramType& program,
+        const typename Base::ProgramType& program,
         cl::CommandQueue& queue,
         const RectangularMesh& mesh,
         float sample_rate,
         std::vector<RectangularProgram::CanonicalCoefficients> coefficients);
     RectangularWaveguide(
-        const ProgramType& program,
+        const typename Base::ProgramType& program,
         cl::CommandQueue& queue,
         const RectangularMesh& mesh,
         float sample_rate,

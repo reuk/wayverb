@@ -500,15 +500,8 @@ interface
 
 * proper audio engine class
     * proper gl/cl interop using cl::BufferGL, clCreateFromGLBuffer etc
-    * visualiser is slaved to this, rather than visuals calling the shots
-    * decouple waveguide steps and frame renderer
-        * or just an option to not visualise
-    * some status readout of the current stage of the algorithm
-        * computing optimisation structures
-        * building mesh
-        * simulating
-        * postprocessing
-        * gathering
+    * slave visuals to this engine
+    * option to not visualise
 
 * variable speed of sound
 

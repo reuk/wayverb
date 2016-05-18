@@ -41,6 +41,7 @@ Differences:
 */
 
 /// The Wayverb engine
+template<BufferType buffer_type>
 class WayverbEngine {
 public:
     enum class State {
@@ -54,7 +55,7 @@ public:
     };
 
     WayverbEngine(ComputeContext& compute_context,
-                  const MeshBoundary& boundary,
+                  const SceneData& scene_data,
                   const Vec3f& source,
                   const Vec3f& mic,
                   float waveguide_sample_rate,
@@ -70,11 +71,6 @@ public:
     std::vector<std::vector<float>> attenuate(const Intermediate& i,
                                               //  other args or whatever
                                               const StateCallback& callback);
-
-    template <typename Callback>
-    auto make_adapter(const Callback& callback) {
-        return GenericCallbackAdapter<Callback, State, double>(callback);
-    }
 
     template <typename Callback = StateCallback>
     auto run(const Callback& callback = Callback()) {
@@ -92,17 +88,21 @@ public:
     }
 
 private:
+    template <typename Callback>
+    auto make_adapter(const Callback& callback) {
+        return GenericCallbackAdapter<Callback, State, double>(callback);
+    }
+
+    SceneData scene_data;
     Raytracer raytracer;
-    RectangularWaveguide waveguide;
+    RectangularWaveguide<buffer_type> waveguide;
 
     Vec3f source;
     Vec3f mic;
     float waveguide_sample_rate;
-    /*
     int rays;
     int impulses;
-    float output_sample_rate;
-    */
+    //float output_sample_rate;
 
     size_t source_index;
     size_t mic_index;

@@ -2,21 +2,23 @@
 
 #include "gtest/gtest.h"
 
-static auto to_string(WayverbEngine::State state) {
+using Engine = WayverbEngine<BufferType::cl>;
+
+static auto to_string(Engine::State state) {
     switch (state) {
-        case WayverbEngine::State::starting_raytracer:
+        case Engine::State::starting_raytracer:
             return "starting raytracer";
-        case WayverbEngine::State::running_raytracer:
+        case Engine::State::running_raytracer:
             return "running raytracer";
-        case WayverbEngine::State::finishing_raytracer:
+        case Engine::State::finishing_raytracer:
             return "finishing raytracer";
-        case WayverbEngine::State::starting_waveguide:
+        case Engine::State::starting_waveguide:
             return "starting waveguide";
-        case WayverbEngine::State::running_waveguide:
+        case Engine::State::running_waveguide:
             return "running waveguide";
-        case WayverbEngine::State::finishing_waveguide:
+        case Engine::State::finishing_waveguide:
             return "finishing waveguide";
-        case WayverbEngine::State::postprocessing:
+        case Engine::State::postprocessing:
             return "postprocessing";
     }
 }
@@ -33,9 +35,7 @@ TEST(engine, engine) {
     auto scene_data = cuboid_boundary.get_scene_data();
     scene_data.set_surfaces(surface);
 
-    MeshBoundary mesh_boundary{scene_data};
-
-    constexpr auto waveguide_sample_rate = 16000;
+    constexpr auto waveguide_sample_rate = 8000;
     //    constexpr auto waveguide_filter_frequency = 4000;
 
     constexpr auto rays = 1024 * 32;
@@ -43,19 +43,19 @@ TEST(engine, engine) {
 
     ComputeContext compute_context{};
 
-    WayverbEngine engine{compute_context,
-                         mesh_boundary,
-                         source,
-                         mic,
-                         waveguide_sample_rate,
-                         rays,
-                         impulses,
-                         output_sample_rate};
+    Engine engine{compute_context,
+                  scene_data,
+                  source,
+                  mic,
+                  waveguide_sample_rate,
+                  rays,
+                  impulses,
+                  output_sample_rate};
 
     std::cout << "finished engine init" << std::endl;
 
     struct Callback {
-        void operator()(WayverbEngine::State state, double progress) const {
+        void operator()(Engine::State state, double progress) const {
             std::cout << std::setw(30) << to_string(state) << std::setw(10)
                       << progress << std::endl;
         }
