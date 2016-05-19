@@ -5,6 +5,8 @@
 
 #include "LoadFiles.hpp"
 
+#include <iomanip>
+
 MainContentComponent::MainContentComponent(const File& root)
         : scene_data(load_model(root, load_materials(root)))
         , model(
@@ -236,6 +238,10 @@ MainContentComponent::MainContentComponent(const File& root)
     setSize(800, 500);
 }
 
+MainContentComponent::~MainContentComponent() {
+    join_engine_thread();
+}
+
 void MainContentComponent::paint(Graphics& g) {
     g.fillAll(Colours::darkgrey);
 }
@@ -247,4 +253,87 @@ void MainContentComponent::resized() {
 }
 
 void MainContentComponent::save_as_project() {
+}
+
+void MainContentComponent::join_engine_thread() {
+    if (engine_thread.joinable()) {
+        engine_thread.join();
+    }
+}
+
+static auto to_string(MainContentComponent::Engine::State state) {
+    switch (state) {
+        case MainContentComponent::Engine::State::starting_raytracer:
+            return "starting raytracer";
+        case MainContentComponent::Engine::State::running_raytracer:
+            return "running raytracer";
+        case MainContentComponent::Engine::State::finishing_raytracer:
+            return "finishing raytracer";
+        case MainContentComponent::Engine::State::starting_waveguide:
+            return "starting waveguide";
+        case MainContentComponent::Engine::State::running_waveguide:
+            return "running waveguide";
+        case MainContentComponent::Engine::State::finishing_waveguide:
+            return "finishing waveguide";
+        case MainContentComponent::Engine::State::postprocessing:
+            return "postprocessing";
+    }
+}
+
+void MainContentComponent::changeListenerCallback(ChangeBroadcaster* cb) {
+    if (cb == &model.get_wrapper().render_state.state) {
+        switch (model.get_wrapper().render_state.state) {
+            case model::RenderState::State::started:
+                keep_going = true;
+
+                std::cout << "start render on dedicated thread here"
+                          << std::endl;
+
+                engine_thread = std::thread([this] {
+                    ComputeContext compute_context;
+                    try {
+                        Engine engine(compute_context,
+                                      scene_data,
+                                      model.get_wrapper().combined.source,
+                                      model.get_wrapper().combined.mic,
+                                      model.get_wrapper()
+                                          .combined.get()
+                                          .get_waveguide_sample_rate(),
+                                      model.get_wrapper().combined.rays,
+                                      model.get_wrapper().combined.impulses,
+                                      model.get_wrapper().combined.sample_rate);
+
+                        struct Callback {
+                            void operator()(Engine::State state,
+                                            double progress) const {
+                                std::cout << std::setw(30) << to_string(state)
+                                          << std::setw(10) << progress
+                                          << std::endl;
+                            }
+                        };
+
+                        Callback callback;
+
+                        engine.run(keep_going, callback);
+
+                        //  TODO process or whatever
+
+                        //  TODO write out
+
+                        //  notify
+                        model.get_wrapper().render_state.state.set(
+                            model::RenderState::State::stopped);
+                    } catch (const std::runtime_error& e) {
+                        std::cout << "wayverb thread error: " << e.what()
+                                  << std::endl;
+                    }
+                });
+
+                break;
+            case model::RenderState::State::stopped:
+                keep_going = false;
+                join_engine_thread();
+                break;
+        }
+    }
 }

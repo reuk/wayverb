@@ -14,6 +14,7 @@
 		1B0E93891CDD0371001A33F5 /* Vec3Editor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1B0E93871CDD0371001A33F5 /* Vec3Editor.cpp */; };
 		1B0E93B31CDD4A50001A33F5 /* ProgressButton.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1B0E93B11CDD4A50001A33F5 /* ProgressButton.cpp */; };
 		1B29EECB1CDB93E6003BD0BB /* VisualiserLookAndFeel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1B29EEC91CDB93E6003BD0BB /* VisualiserLookAndFeel.cpp */; };
+		1B655C741CEE0A7100901ED1 /* libcombined.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B655C731CEDE25A00901ED1 /* libcombined.a */; };
 		1B6833BB1CE1FD4100E4CACC /* LoadFiles.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1B6833B91CE1FD4100E4CACC /* LoadFiles.cpp */; };
 		1B6CDDEC1CEB3CD300DA8B3D /* MicrophoneEditor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1B6CDDEA1CEB3CD300DA8B3D /* MicrophoneEditor.cpp */; };
 		1BA3F39F1CDA20D400073946 /* libmodern_gl_utils.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1BA3F39E1CDA20D400073946 /* libmodern_gl_utils.a */; };
@@ -1474,6 +1475,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1B655C741CEE0A7100901ED1 /* libcombined.a in Frameworks */,
 				1BA3F3ED1CDA223100073946 /* libsamplerate.a in Frameworks */,
 				1BA3F3C51CDA21B800073946 /* libglog.a in Frameworks */,
 				1BA3F3C41CDA21AE00073946 /* libgflags.a in Frameworks */,

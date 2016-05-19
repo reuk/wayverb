@@ -91,11 +91,14 @@ std::vector<float> run_simulation(const cl::Context& context,
     LOG(INFO) << "source pos: " << corrected_source;
     LOG(INFO) << "mic pos: " << corrected_mic;
 
+    std::atomic_bool keep_going{true};
     ProgressBar pb(std::cout, steps);
-    auto results = waveguide.init_and_run(
-        corrected_source, std::vector<float>{1}, receiver_index, steps, [&pb] {
-            pb += 1;
-        });
+    auto results = waveguide.init_and_run(corrected_source,
+                                          std::vector<float>{1},
+                                          receiver_index,
+                                          steps,
+                                          keep_going,
+                                          [&pb] { pb += 1; });
 
 #if 0
     auto output = Microphone::omni.process(results);

@@ -61,9 +61,9 @@ TEST(engine, engine) {
         }
     };
 
+    std::atomic_bool keep_going{true};
     Callback callback;
-
-    auto intermediate = engine.run(callback);
+    auto intermediate = engine.run(keep_going, callback);
 
     std::cout << "finished engine run" << std::endl;
 

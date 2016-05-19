@@ -4,7 +4,9 @@
 #include "ModelWrapper.hpp"
 #include "RenderState.hpp"
 
-class ModelRendererComponent : public Component, public ChangeListener {
+class ModelRendererComponent : public Component,
+                               public ChangeListener,
+                               public SceneRenderer::Listener {
 public:
     ModelRendererComponent(
         const SceneData& model,
@@ -21,6 +23,9 @@ public:
                         const MouseWheelDetails& wheel) override;
 
     void changeListenerCallback(ChangeBroadcaster* cb) override;
+
+    void newOpenGLContextCreated(OpenGLRenderer* r) override;
+    void openGLContextClosing(OpenGLRenderer* r) override;
 
 private:
     const SceneData& model;
@@ -42,4 +47,6 @@ private:
 
     OpenGLContext openGLContext;
     SceneRenderer scene_renderer;
+    model::Connector<SceneRenderer> scene_renderer_connector{&scene_renderer,
+                                                             this};
 };

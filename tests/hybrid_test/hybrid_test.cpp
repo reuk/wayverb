@@ -107,11 +107,14 @@ auto run_waveguide(ComputeContext& context_info,
     //  run the waveguide
     //            [                                        ]
     std::cout << "[ -- running waveguide ----------------- ]" << std::endl;
+    std::atomic_bool keep_going{true};
     ProgressBar pb(std::cout, steps);
-    auto results = waveguide.init_and_run(
-        corrected_source, std::move(input), receiver_index, steps, [&pb] {
-            pb += 1;
-        });
+    auto results = waveguide.init_and_run(corrected_source,
+                                          std::move(input),
+                                          receiver_index,
+                                          steps,
+                                          keep_going,
+                                          [&pb] { pb += 1; });
 
     auto output = std::vector<float>(results.size());
     proc::transform(
@@ -181,12 +184,14 @@ int main(int argc, char** argv) {
     Raytracer raytracer(raytrace_program, context_info.queue);
     //            [                                        ]
     std::cout << "[ -- running raytracer ----------------- ]" << std::endl;
+    std::atomic_bool keep_going{true};
     ProgressBar pb(std::cout, config.impulses);
     auto results = raytracer.run(boundary.get_scene_data(),
                                  config.mic,
                                  config.source,
                                  config.rays,
                                  config.impulses,
+                                 keep_going,
                                  [&pb] { pb += 1; });
 
     Attenuate attenuator(raytrace_program, context_info.queue);

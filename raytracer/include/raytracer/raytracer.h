@@ -143,12 +143,14 @@ public:
                 const Vec3f& source,
                 const std::vector<cl_float3>& directions,
                 int reflections,
+                std::atomic_bool& keep_going,
                 const Callback& c = Callback()) {
         return run(scene_data,
                    micpos,
                    source,
                    directions,
                    reflections,
+                   keep_going,
                    static_cast<const DoNothingCallback&>(make_callback(c)));
     }
 
@@ -158,12 +160,14 @@ public:
                 const Vec3f& source,
                 int rays,
                 int reflections,
+                std::atomic_bool& keep_going,
                 const Callback& c = Callback()) {
         return run(scene_data,
                    micpos,
                    source,
                    get_random_directions(rays),
                    reflections,
+                   keep_going,
                    c);
     }
 
@@ -176,6 +180,7 @@ private:
                 const Vec3f& source,
                 const std::vector<cl_float3>& directions,
                 int reflections,
+                std::atomic_bool& keep_going,
                 const DoNothingCallback& c);
 
     cl::CommandQueue& queue;

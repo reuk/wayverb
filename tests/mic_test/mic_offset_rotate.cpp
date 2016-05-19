@@ -107,12 +107,14 @@ int main(int argc, char** argv) {
 
             auto steps = 200;
 
+            std::atomic_bool keep_going{true};
             ProgressBar pb(std::cout, steps);
             auto w_results = waveguide.init_and_run(
                 to_vec3f(source),
                 waveguide_kernel(conf.get_waveguide_sample_rate()),
                 mic_index,
                 steps,
+                keep_going,
                 [&pb] { pb += 1; });
 
             auto w_pressures = microphone.process(w_results);

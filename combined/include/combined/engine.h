@@ -67,14 +67,17 @@ public:
 
     using StateCallback = GenericArgumentsCallback<State, double>;
 
-    Intermediate run(const StateCallback& callback);
+    Intermediate run(std::atomic_bool& keep_going,
+                     const StateCallback& callback);
     std::vector<std::vector<float>> attenuate(const Intermediate& i,
                                               //  other args or whatever
                                               const StateCallback& callback);
 
     template <typename Callback = StateCallback>
-    auto run(const Callback& callback = Callback()) {
-        return run(static_cast<const StateCallback&>(make_adapter(callback)));
+    auto run(std::atomic_bool& keep_going,
+             const Callback& callback = Callback()) {
+        return run(keep_going,
+                   static_cast<const StateCallback&>(make_adapter(callback)));
     }
 
     template <typename Callback = StateCallback>

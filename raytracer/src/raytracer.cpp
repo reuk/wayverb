@@ -291,6 +291,7 @@ Results Raytracer::run(const SceneData& scene_data,
                        const Vec3f& source,
                        const std::vector<cl_float3>& directions,
                        int reflections,
+                       std::atomic_bool& keep_going,
                        const DoNothingCallback& callback) {
     VoxelCollection vox(scene_data, 4, 0.1);
     auto flattened_vox = vox.get_flattened();
@@ -356,6 +357,10 @@ Results Raytracer::run(const SceneData& scene_data,
                      to_cl_float3(vox.get_aabb().get_c1())};
 
     for (auto i = 0u; i != reflections; ++i) {
+        if (!keep_going) {
+            throw std::runtime_error("flag state false, stopping");
+        }
+
         auto b = (i + 0) * rays;
         auto e = (i + 1) * rays;
 

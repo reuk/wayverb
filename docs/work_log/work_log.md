@@ -465,13 +465,21 @@ things to do:
 
 
 interface
----------
+=========
+
+fast stuff
+----------
 
 * editors
     * 3D vectors
     * number boxes
         * draggable
         * limits
+
+* textbox graceful disable
+
+slow stuff
+----------
 
 * data models
     * microphone capsules
@@ -482,27 +490,30 @@ interface
     * material config
         * show in model - button on materialproperty
 
-* call from the commandline
-
 * raytracer
     * improve ray path visualisation (animate?)
     * sort out performance
 
-* use custom config in simulation
+* proper audio engine class
+    * work out scheduling for gl backend
+    * slave visuals to this engine
+    * option to not visualise
+    * use custom config in simulation
 
-* save/load presets from file
+nice-to-have
+------------
+
+* undo/redo
+
+* call from the commandline (?)
 
 * hiss convolution -> plugin?
     * I foresee issues with multithreading
 * actual audio output!
     * preview?
 
-* proper audio engine class
-    * work out scheduling for gl backend
-    * slave visuals to this engine
-    * option to not visualise
+* save/load presets from file
 
 * variable speed of sound
 
-* undo/redo
-
+* axes display

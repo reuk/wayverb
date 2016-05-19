@@ -64,11 +64,7 @@ private:
 
 class DrawableScene final : public ::Drawable, public ::Updatable {
 public:
-    DrawableScene(const GenericShader& shader,
-                  const SceneData& scene_data,
-                  const Vec3f& source,
-                  const Vec3f& mic);
-    ~DrawableScene() noexcept;
+    DrawableScene(const GenericShader& shader, const SceneData& scene_data);
 
     void update(float dt) override;
     void draw() const override;
@@ -79,50 +75,41 @@ public:
     void set_waveguide_enabled(bool b);
     void set_raytracer_enabled(bool b);
 
-    void start();
-    void stop();
+    void set_rendering(bool b);
 
 private:
-    using Waveguide = RectangularWaveguide<BufferType::cl>;
-    //    using Waveguide = TetrahedralWaveguide;
-
-    std::unique_ptr<Waveguide> init_waveguide(const SceneData& scene_data,
-                                              const config::Combined& cc);
-    void trigger_pressure_calculation();
-
-    RaytracerResults get_raytracer_results(const SceneData& scene_data,
-                                           const config::Combined& cc);
-
     const GenericShader& shader;
-
-    cl::Context context;
-    cl::Device device;
-    cl::CommandQueue queue;
 
     std::unique_ptr<VoxelisedObject> model_object;
     std::unique_ptr<OctahedronObject> source_object;
     std::unique_ptr<OctahedronObject> mic_object;
 
     bool waveguide_enabled{true};
-
-    std::unique_ptr<MeshObject<Waveguide>> mesh_object;
-    std::future<std::unique_ptr<Waveguide>> future_waveguide;
-    std::future<std::vector<cl_float>> future_pressure;
-
-    std::unique_ptr<Waveguide> waveguide;
+    std::unique_ptr<MeshObject> mesh_object;
 
     bool raytracer_enabled{true};
-
     std::unique_ptr<RaytraceObject> raytrace_object;
-    std::future<RaytracerResults> raytracer_results;
 
-    bool running{false};
+    bool rendering{false};
 
     mutable std::mutex mut;
 };
 
 class SceneRenderer final : public OpenGLRenderer {
 public:
+    class Listener {
+    public:
+        Listener() = default;
+        Listener(const Listener&) = default;
+        Listener& operator=(const Listener&) = default;
+        Listener(Listener&&) noexcept = default;
+        Listener& operator=(Listener&&) noexcept = default;
+        virtual ~Listener() noexcept = default;
+
+        virtual void newOpenGLContextCreated(OpenGLRenderer* r) = 0;
+        virtual void openGLContextClosing(OpenGLRenderer* r) = 0;
+    };
+
     SceneRenderer(const SceneData& model);
     virtual ~SceneRenderer() noexcept = default;
 
@@ -136,14 +123,16 @@ public:
     void update_scale(float delta);
     void set_rotation(float azimuth, float elevation);
 
-    void start();
-    void stop();
+    void set_rendering(bool b);
 
     void set_mic(const Vec3f& u);
     void set_source(const Vec3f& u);
 
     void set_waveguide_enabled(bool u);
     void set_raytracer_enabled(bool u);
+
+    void addListener(Listener* l);
+    void removeListener(Listener* l);
 
 private:
     //  don't lock on anything private
@@ -158,13 +147,15 @@ private:
     SceneData model;
 
     std::unique_ptr<GenericShader> shader;
-    std::unique_ptr<DrawableScene> scene;
+    std::unique_ptr<DrawableScene> drawable_scene;
 
     glm::mat4 projection_matrix;
 
     glm::mat4 rotation;
     float scale;
     glm::mat4 translation;
+
+    ListenerList<Listener> listener_list;
 
     mutable std::mutex mut;
 };

@@ -29,12 +29,14 @@ auto get_results(ComputeContext& context,
                  const SceneData& scene_data,
                  const std::vector<cl_float3>& directions,
                  int reflections) {
+    std::atomic_bool keep_going{true};
     T raytrace(prog, context.queue);
     return raytrace.run(scene_data,
                         Vec3f(0, 1.75, 0),
                         Vec3f(0, 1.75, 3),
                         directions,
-                        reflections);
+                        reflections,
+                        keep_going);
 }
 
 void write_file(const config::App& config,
@@ -230,8 +232,13 @@ TEST(raytrace, image_source) {
     auto scene_data = boundary.get_scene_data();
     scene_data.set_surfaces(surface);
 
-    auto results = raytracer.run(
-        scene_data, config.mic, config.source, config.rays, config.impulses);
+    std::atomic_bool keep_going{true};
+    auto results = raytracer.run(scene_data,
+                                 config.mic,
+                                 config.source,
+                                 config.rays,
+                                 config.impulses,
+                                 keep_going);
 
     Attenuate attenuator(raytrace_program, context.queue);
     Speaker speaker{};

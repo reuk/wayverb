@@ -195,6 +195,7 @@ public:
 
     template <typename Callback = DoNothingCallback>
     std::vector<RunStepResult> run(size_t steps,
+                                   std::atomic_bool& keep_going,
                                    const Callback& callback = Callback()) {
         if (!run_info) {
             throw std::runtime_error(
@@ -202,22 +203,24 @@ public:
         }
 
         std::vector<RunStepResult> ret(steps);
-        proc::generate(ret, [this, &steps, &callback] {
-            auto ret = this->run_step(this->run_info->get_write_info(),
-                                      run_info->get_output_index(),
-                                      queue,
-                                      kernel,
-                                      nodes,
-                                      *previous,
-                                      *current,
-                                      output);
+        for (auto& i : ret) {
+            if (!keep_going) {
+                throw std::runtime_error("flag state false, stopping");
+            }
+
+            i = this->run_step(this->run_info->get_write_info(),
+                               run_info->get_output_index(),
+                               queue,
+                               kernel,
+                               nodes,
+                               *previous,
+                               *current,
+                               output);
 
             this->swap_buffers();
 
             callback();
-
-            return ret;
-        });
+        }
 
         return ret;
     }
@@ -228,9 +231,10 @@ public:
         std::vector<float>&& input,
         size_t o,
         size_t steps,
+        std::atomic_bool& keep_going,
         const Callback& callback = Callback()) {
         init(e, std::move(input), o);
-        return run(steps, callback);
+        return run(steps, keep_going, callback);
     }
 
     cl::CommandQueue& get_queue() const {

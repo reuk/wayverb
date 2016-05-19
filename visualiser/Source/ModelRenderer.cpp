@@ -151,145 +151,18 @@ void VoxelisedObject::draw() const {
 //----------------------------------------------------------------------------//
 
 DrawableScene::DrawableScene(const GenericShader &shader,
-                             const SceneData &scene_data,
-                             const Vec3f &source,
-                             const Vec3f &mic)
+                             const SceneData &scene_data)
         : shader(shader)
-        , context(get_context())
-        , device(get_device(context))
-        , queue(context, device)
         , model_object{std::make_unique<VoxelisedObject>(
               shader, scene_data, VoxelCollection(scene_data, 4, 0.1))}
         , source_object{std::make_unique<OctahedronObject>(
-              shader, to_glm_vec3(source), glm::vec4(1, 0, 0, 1))}
+              shader, glm::vec3(0, 0, 0), glm::vec4(1, 0, 0, 1))}
         , mic_object{std::make_unique<OctahedronObject>(
-              shader, to_glm_vec3(mic), glm::vec4(0, 1, 1, 1))}
-/*
-, future_waveguide{std::async(std::launch::async,
-                        &DrawableScene::init_waveguide,
-                        this,
-                        scene_data,
-                        cc)}
-, raytracer_results{std::async(std::launch::async,
-                         &DrawableScene::get_raytracer_results,
-                         this,
-                         scene_data,
-                         cc)} */
-{
-}
-
-DrawableScene::~DrawableScene() noexcept {
-    auto join_future = [](auto &i) {
-        if (i.valid())
-            i.get();
-    };
-
-    join_future(future_pressure);
-    join_future(raytracer_results);
-    join_future(future_waveguide);
-}
-
-std::unique_ptr<DrawableScene::Waveguide> DrawableScene::init_waveguide(
-    const SceneData &scene_data, const config::Combined &cc) {
-    MeshBoundary boundary(scene_data);
-    auto waveguide_program =
-        get_program<Waveguide::ProgramType>(context, device);
-
-    auto w = std::make_unique<Waveguide>(waveguide_program,
-                                         queue,
-                                         boundary,
-                                         cc.mic,
-                                         cc.get_waveguide_sample_rate());
-    auto corrected_source_index = w->get_index_for_coordinate(cc.source);
-    auto corrected_source = w->get_coordinate_for_index(corrected_source_index);
-
-    auto input = waveguide_kernel(cc.get_waveguide_sample_rate());
-
-    w->init(corrected_source, std::move(input), 0);
-
-    return w;
-}
-
-void DrawableScene::trigger_pressure_calculation() {
-    try {
-        future_pressure = std::async(
-            std::launch::async, [this] { return waveguide->run_step_slow(); });
-    } catch (...) {
-        std::cout << "async error?" << std::endl;
-    }
-}
-
-RaytracerResults DrawableScene::get_raytracer_results(
-    const SceneData &scene_data, const config::Combined &cc) {
-    auto raytrace_program = get_program<RaytracerProgram>(context, device);
-    return Raytracer(raytrace_program, queue)
-        .run(scene_data, cc.mic, cc.source, cc.rays, cc.impulses)
-        .get_diffuse();
+              shader, glm::vec3(0, 0, 0), glm::vec4(0, 1, 1, 1))} {
 }
 
 void DrawableScene::update(float dt) {
     std::lock_guard<std::mutex> lck(mut);
-
-    if (!running) {
-        return;
-    }
-
-    if (future_waveguide.valid()) {
-        try {
-            if (future_waveguide.wait_for(std::chrono::milliseconds(0)) ==
-                std::future_status::ready) {
-                waveguide = future_waveguide.get();
-                trigger_pressure_calculation();
-            }
-        } catch (const std::exception &e) {
-            std::cout << "exception fetching waveguide: " << e.what()
-                      << std::endl;
-        }
-    }
-
-    if (waveguide && !mesh_object) {
-        mesh_object =
-            std::make_unique<MeshObject<Waveguide>>(shader, *waveguide);
-        /*
-                std::cout << "showing mesh with " << waveguide->get_nodes()
-                          << " nodes, of which: " << std::endl;
-                std::cout << "  1d boundary nodes: "
-                          << waveguide->get_mesh().compute_num_boundary<1>()
-                          << std::endl;
-                std::cout << "  2d boundary nodes: "
-                          << waveguide->get_mesh().compute_num_boundary<2>()
-                          << std::endl;
-                std::cout << "  3d boundary nodes: "
-                          << waveguide->get_mesh().compute_num_boundary<3>()
-                          << std::endl;
-        */
-    }
-
-    if (raytracer_results.valid()) {
-        try {
-            if (raytracer_results.wait_for(std::chrono::milliseconds(0)) ==
-                std::future_status::ready) {
-                raytrace_object = std::make_unique<RaytraceObject>(
-                    shader, raytracer_results.get());
-            }
-        } catch (const std::exception &e) {
-            std::cout << "exception fetching raytracer results: " << e.what()
-                      << std::endl;
-        }
-    }
-
-    if (future_pressure.valid() && waveguide && mesh_object) {
-        try {
-            if (future_pressure.wait_for(std::chrono::milliseconds(0)) ==
-                std::future_status::ready) {
-                mesh_object->set_pressures(future_pressure.get());
-                trigger_pressure_calculation();
-            }
-        } catch (const std::exception &e) {
-            std::cout << "exception fetching waveguide results: " << e.what()
-                      << std::endl;
-        }
-    }
 }
 
 void DrawableScene::draw() const {
@@ -301,8 +174,14 @@ void DrawableScene::draw() const {
             i->draw();
     };
 
-    draw_thing(mesh_object);
-    draw_thing(raytrace_object);
+    if (rendering) {
+        if (waveguide_enabled) {
+            draw_thing(mesh_object);
+        }
+        if (raytracer_enabled) {
+            draw_thing(raytrace_object);
+        }
+    }
 
     if (model_object) {
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -335,14 +214,9 @@ void DrawableScene::set_raytracer_enabled(bool b) {
     raytracer_enabled = b;
 }
 
-void DrawableScene::start() {
+void DrawableScene::set_rendering(bool b) {
     std::lock_guard<std::mutex> lck(mut);
-    running = true;
-}
-
-void DrawableScene::stop() {
-    std::lock_guard<std::mutex> lck(mut);
-    running = false;
+    rendering = b;
 }
 
 //----------------------------------------------------------------------------//
@@ -355,13 +229,15 @@ SceneRenderer::SceneRenderer(const SceneData &model)
 void SceneRenderer::newOpenGLContextCreated() {
     std::lock_guard<std::mutex> lck(mut);
     shader = std::make_unique<GenericShader>();
-    scene = std::make_unique<DrawableScene>(*shader, model, Vec3f{}, Vec3f{});
+    drawable_scene = std::make_unique<DrawableScene>(*shader, model);
 
     auto aabb = model.get_aabb();
     auto m = aabb.centre();
     auto max = aabb.dimensions().max();
     scale = max > 0 ? 20 / max : 1;
     translation = glm::translate(-glm::vec3(m.x, m.y, m.z));
+
+    listener_list.call(&Listener::newOpenGLContextCreated, this);
 }
 
 void SceneRenderer::renderOpenGL() {
@@ -373,8 +249,10 @@ void SceneRenderer::renderOpenGL() {
 
 void SceneRenderer::openGLContextClosing() {
     std::lock_guard<std::mutex> lck(mut);
-    scene = nullptr;
+    drawable_scene = nullptr;
     shader = nullptr;
+
+    listener_list.call(&Listener::openGLContextClosing, this);
 }
 
 glm::mat4 SceneRenderer::get_projection_matrix(float aspect) {
@@ -387,8 +265,8 @@ void SceneRenderer::set_aspect(float aspect) {
 }
 
 void SceneRenderer::update() {
-    if (scene) {
-        scene->update(0);
+    if (drawable_scene) {
+        drawable_scene->update(0);
     }
 }
 
@@ -412,7 +290,7 @@ void SceneRenderer::draw() const {
             i->draw();
     };
 
-    draw_thing(scene);
+    draw_thing(drawable_scene);
 }
 
 glm::mat4 SceneRenderer::get_projection_matrix() const {
@@ -443,42 +321,45 @@ glm::mat4 SceneRenderer::get_scale_matrix() const {
     return glm::scale(glm::vec3(scale, scale, scale));
 }
 
-void SceneRenderer::start() {
+void SceneRenderer::set_rendering(bool b) {
     std::lock_guard<std::mutex> lck(mut);
-    if (scene) {
-        scene->start();
-    }
-}
-
-void SceneRenderer::stop() {
-    std::lock_guard<std::mutex> lck(mut);
-    if (scene) {
-        scene->stop();
+    if (drawable_scene) {
+        drawable_scene->set_rendering(b);
     }
 }
 
 void SceneRenderer::set_mic(const Vec3f &u) {
     std::lock_guard<std::mutex> lck(mut);
-    if (scene) {
-        scene->set_mic(u);
+    if (drawable_scene) {
+        drawable_scene->set_mic(u);
     }
 }
 void SceneRenderer::set_source(const Vec3f &u) {
     std::lock_guard<std::mutex> lck(mut);
-    if (scene) {
-        scene->set_source(u);
+    if (drawable_scene) {
+        drawable_scene->set_source(u);
     }
 }
 
 void SceneRenderer::set_waveguide_enabled(bool u) {
     std::lock_guard<std::mutex> lck(mut);
-    if (scene) {
-        scene->set_waveguide_enabled(u);
+    if (drawable_scene) {
+        drawable_scene->set_waveguide_enabled(u);
     }
 }
 void SceneRenderer::set_raytracer_enabled(bool u) {
     std::lock_guard<std::mutex> lck(mut);
-    if (scene) {
-        scene->set_raytracer_enabled(u);
+    if (drawable_scene) {
+        drawable_scene->set_raytracer_enabled(u);
     }
+}
+
+void SceneRenderer::addListener(Listener *l) {
+    std::lock_guard<std::mutex> lck(mut);
+    listener_list.add(l);
+}
+
+void SceneRenderer::removeListener(Listener *l) {
+    std::lock_guard<std::mutex> lck(mut);
+    listener_list.remove(l);
 }

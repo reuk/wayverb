@@ -56,17 +56,22 @@ void ModelRendererComponent::changeListenerCallback(ChangeBroadcaster *cb) {
     } else if (cb == &config.source) {
         scene_renderer.set_source(config.source);
     } else if (cb == &render_state.state) {
-        switch (render_state.state) {
-            case model::RenderState::State::started:
-                scene_renderer.start();
-                break;
-            case model::RenderState::State::stopped:
-                scene_renderer.stop();
-                break;
-        }
+        scene_renderer.set_rendering(render_state.state ==
+                                     model::RenderState::State::started);
     } else if (cb == &render_state.show_waveguide) {
         scene_renderer.set_waveguide_enabled(render_state.show_waveguide);
     } else if (cb == &render_state.show_raytracer) {
         scene_renderer.set_raytracer_enabled(render_state.show_raytracer);
     }
+}
+
+void ModelRendererComponent::newOpenGLContextCreated(OpenGLRenderer *r) {
+    config.mic.notify();
+    config.source.notify();
+    render_state.state.notify();
+    render_state.show_waveguide.notify();
+    render_state.show_raytracer.notify();
+}
+
+void ModelRendererComponent::openGLContextClosing(OpenGLRenderer *r) {
 }

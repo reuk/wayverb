@@ -60,7 +60,8 @@ WayverbEngine<buffer_type>::WayverbEngine(ComputeContext& compute_context,
 
 template <BufferType buffer_type>
 typename WayverbEngine<buffer_type>::Intermediate
-WayverbEngine<buffer_type>::run(const WayverbEngine::StateCallback& callback) {
+WayverbEngine<buffer_type>::run(std::atomic_bool& keep_going,
+                                const WayverbEngine::StateCallback& callback) {
     //  RAYTRACER  -----------------------------------------------------------//
     callback(State::starting_raytracer, 1.0);
     auto raytracer_step = 0;
@@ -70,6 +71,7 @@ WayverbEngine<buffer_type>::run(const WayverbEngine::StateCallback& callback) {
                       source,
                       rays,
                       impulses,
+                      keep_going,
                       [this, &callback, &raytracer_step] {
                           callback(State::running_raytracer,
                                    raytracer_step++ / (impulses - 1.0));
@@ -101,6 +103,7 @@ WayverbEngine<buffer_type>::run(const WayverbEngine::StateCallback& callback) {
                                std::move(input),
                                mic_index,
                                steps,
+                               keep_going,
                                [&callback, &waveguide_step, steps] {
                                    callback(State::running_waveguide,
                                             waveguide_step++ / (steps - 1.0));

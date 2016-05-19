@@ -4,14 +4,14 @@
 #include <stdexcept>
 #include <vector>
 
-double gaussian(double t, double t0, double bandwidth) {
+inline double gaussian(double t, double t0, double bandwidth) {
     return std::pow(M_E, -std::pow(t - t0, 2) / std::pow(bandwidth, 2));
 }
 
-double sin_modulated_gaussian(double t,
-                              double t0,
-                              double bandwidth,
-                              double frequency) {
+inline double sin_modulated_gaussian(double t,
+                                     double t0,
+                                     double bandwidth,
+                                     double frequency) {
     return -gaussian(t, t0, bandwidth) * sin(2 * M_PI * frequency * (t - t0));
 }
 

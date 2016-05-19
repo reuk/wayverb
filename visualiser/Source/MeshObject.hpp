@@ -3,59 +3,12 @@
 #include "common/sinc.h"
 #include "waveguide/waveguide.h"
 
-//----------------------------------------------------------------------------//
+#include <mutex>
 
-template <typename WaveguideType>
 class MeshObject final : public ::Drawable {
 public:
-    MeshObject(const GenericShader& shader, const WaveguideType& waveguide)
+    MeshObject(const GenericShader& shader)
             : shader(shader) {
-        const auto& nodes = waveguide.get_mesh().get_nodes();
-
-        std::vector<glm::vec3> v(nodes.size());
-        std::transform(nodes.begin(), nodes.end(), v.begin(), [](auto i) {
-            return to_glm_vec3(i.position);
-        });
-
-        //  init buffers
-        std::vector<glm::vec4> c(v.size());
-
-        std::transform(
-            nodes.begin(), nodes.end(), c.begin(), [](const auto& i) {
-                switch (i.boundary_type) {
-                    case RectangularProgram::id_none:
-                    case RectangularProgram::id_inside:
-                        return glm::vec4(0, 0, 0, 0);
-                    case RectangularProgram::id_nx:
-                        return glm::vec4(1, 0, 0, 1);
-                    case RectangularProgram::id_px:
-                        return glm::vec4(0, 1, 1, 1);
-                    case RectangularProgram::id_ny:
-                        return glm::vec4(0, 1, 0, 1);
-                    case RectangularProgram::id_py:
-                        return glm::vec4(1, 0, 1, 1);
-                    case RectangularProgram::id_nz:
-                        return glm::vec4(0, 0, 1, 1);
-                    case RectangularProgram::id_pz:
-                        return glm::vec4(1, 1, 0, 1);
-                    case RectangularProgram::id_reentrant:
-                        return glm::vec4(0.5, 0.5, 0.5, 1);
-
-                    default:
-                        return glm::vec4(1, 1, 1, 1);
-                }
-                return glm::vec4(0, 0, 0, 0);
-            });
-
-        std::vector<GLuint> indices(v.size());
-        std::iota(indices.begin(), indices.end(), 0);
-
-        size = indices.size();
-
-        geometry.data(v);
-        colors.data(c);
-        ibo.data(indices);
-
         //  init vao
         auto s_vao = vao.get_scoped();
 
@@ -73,6 +26,8 @@ public:
     }
 
     void draw() const override {
+        std::lock_guard<std::mutex> lck(mut);
+
         auto s_shader = shader.get_scoped();
         shader.set_black(false);
 
@@ -81,6 +36,26 @@ public:
     }
 
     void set_pressures(const std::vector<float>& pressures) {
+        std::lock_guard<std::mutex> lck(mut);
+        set_pressures_internal(pressures);
+    }
+
+    void set_positions(const std::vector<glm::vec3>& positions) {
+        std::lock_guard<std::mutex> lck(mut);
+
+        size = positions.size();
+
+        geometry.data(positions);
+
+        set_pressures_internal(std::vector<float>(positions.size(), 1));
+
+        std::vector<GLuint> indices(positions.size());
+        std::iota(indices.begin(), indices.end(), 0);
+        ibo.data(indices);
+    }
+
+private:
+    void set_pressures_internal(const std::vector<float>& pressures) {
         color_storage.resize(pressures.size());
         std::cout << "mean: " << mean(pressures) << std::endl;
         std::transform(pressures.begin(),
@@ -96,17 +71,18 @@ public:
         colors.data(color_storage);
     }
 
-private:
     const GenericShader& shader;
 
     std::vector<glm::vec4>
         color_storage;  //  hopefully we don't have to malloc every frame
 
     VAO vao;
-    StaticVBO geometry;
+    DynamicVBO geometry;
     DynamicVBO colors;
-    StaticIBO ibo;
-    GLuint size;
+    DynamicIBO ibo;
+    GLuint size{0};
 
     float amp{1000};
+
+    mutable std::mutex mut;
 };
