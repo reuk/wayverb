@@ -15,7 +15,7 @@
 #include "glm/gtc/type_ptr.hpp"
 #include "glm/gtx/rotate_vector.hpp"
 
-#include "combined_config.h"
+#include "combined/config.h"
 
 #include "common/octree.h"
 #include "common/scene_data.h"
@@ -83,7 +83,7 @@ public:
     void stop();
 
 private:
-    using Waveguide = RectangularWaveguide;
+    using Waveguide = RectangularWaveguide<BufferType::cl>;
     //    using Waveguide = TetrahedralWaveguide;
 
     std::unique_ptr<Waveguide> init_waveguide(const SceneData& scene_data,

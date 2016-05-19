@@ -68,6 +68,13 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		1B655C721CEDE25A00901ED1 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 1BC9C7BB1CDA084000605865 /* WAYVERB.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = E6AD4C5B222E4B33B906B2E6;
+			remoteInfo = combined;
+		};
 		1B6833B71CE1087400E4CACC /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 1BC9C7BB1CDA084000605865 /* WAYVERB.xcodeproj */;
@@ -1791,6 +1798,7 @@
 				1BC9C7FD1CDA084000605865 /* libcommon.a */,
 				1BC9C7FF1CDA084000605865 /* libwaveguide.a */,
 				1BC9C8011CDA084000605865 /* libraytracer.a */,
+				1B655C731CEDE25A00901ED1 /* libcombined.a */,
 				1BC9C8031CDA084000605865 /* tests */,
 				1B6833B81CE1087400E4CACC /* mic_offset_rotate */,
 				1BC9C8051CDA084000605865 /* boundary_test */,
@@ -3801,6 +3809,13 @@
 /* End PBXProject section */
 
 /* Begin PBXReferenceProxy section */
+		1B655C731CEDE25A00901ED1 /* libcombined.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libcombined.a;
+			remoteRef = 1B655C721CEDE25A00901ED1 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
 		1B6833B81CE1087400E4CACC /* mic_offset_rotate */ = {
 			isa = PBXReferenceProxy;
 			fileType = "compiled.mach-o.executable";
@@ -4043,6 +4058,7 @@
 					../../JuceLibraryCode/modules,
 					"$(inherited)",
 					../../../submodules/cereal/include,
+					/usr/local/include,
 				);
 				INFOPLIST_FILE = "Info-App.plist";
 				INSTALL_PATH = "$(HOME)/Applications";
@@ -4053,17 +4069,12 @@
 				);
 				MACOSX_DEPLOYMENT_TARGET_ppc = 10.4;
 				OTHER_CPLUSPLUSFLAGS = (
-					"-I/usr/local/include",
-					"-I../../../common",
 					"-I../../../lib",
-					"-I../../../rayverb",
-					"-I../../../combined",
-					"-I../../../include",
 					"-std=gnu++1y",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.yourcompany.visualiser;
 				SDKROOT_ppc = macosx10.5;
-				USER_HEADER_SEARCH_PATHS = "../../../common/include ../../../waveguide/include ../../../raytracer/include /usr/local/include";
+				USER_HEADER_SEARCH_PATHS = "../../../common/include ../../../waveguide/include ../../../raytracer/include ../../../combined/include ../../../include";
 			};
 			name = Release;
 		};
@@ -4112,6 +4123,7 @@
 					../../JuceLibraryCode/modules,
 					"$(inherited)",
 					../../../submodules/cereal/include,
+					/usr/local/include,
 				);
 				INFOPLIST_FILE = "Info-App.plist";
 				INSTALL_PATH = "$(HOME)/Applications";
@@ -4122,17 +4134,12 @@
 				);
 				MACOSX_DEPLOYMENT_TARGET_ppc = 10.4;
 				OTHER_CPLUSPLUSFLAGS = (
-					"-I/usr/local/include",
-					"-I../../../common",
 					"-I../../../lib",
-					"-I../../../rayverb",
-					"-I../../../combined",
-					"-I../../../include",
 					"-std=gnu++1y",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.yourcompany.visualiser;
 				SDKROOT_ppc = macosx10.5;
-				USER_HEADER_SEARCH_PATHS = "../../../common/include ../../../waveguide/include ../../../raytracer/include /usr/local/include";
+				USER_HEADER_SEARCH_PATHS = "../../../common/include ../../../waveguide/include ../../../raytracer/include ../../../combined/include ../../../include";
 			};
 			name = Debug;
 		};

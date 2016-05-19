@@ -140,7 +140,7 @@ compute_descriptors() {
         parallel_size>
         ret;
     proc::transform(surfaces, ret.begin(), [](auto i) {
-        return RectangularWaveguide::to_filter_descriptors(i);
+        return RectangularProgram::to_filter_descriptors(i);
     });
     return ret;
 }

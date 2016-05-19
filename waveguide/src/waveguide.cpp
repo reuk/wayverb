@@ -10,6 +10,21 @@
 #include <cstdlib>
 #include <iostream>
 
+//----------------------------------------------------------------------------//
+
+namespace detail {
+
+BufferTypeTrait<BufferType::cl>::storage_array_type
+BufferTypeTrait<BufferType::cl>::create_waveguide_storage(
+    const cl::Context& context, size_t nodes) {
+    return {{cl::Buffer(context, CL_MEM_READ_WRITE, sizeof(cl_float) * nodes),
+             cl::Buffer(context, CL_MEM_READ_WRITE, sizeof(cl_float) * nodes)}};
+}
+
+}  // namespace detail
+
+//----------------------------------------------------------------------------//
+
 template <BufferType buffer_type>
 RectangularWaveguide<buffer_type>::RectangularWaveguide(
     const RectangularProgram& program,
@@ -24,7 +39,8 @@ RectangularWaveguide<buffer_type>::RectangularWaveguide(
                               config::grid_spacing(SPEED_OF_SOUND, 1 / sr),
                               anchor),
               sr,
-              to_filter_coefficients(boundary.get_surfaces(), sr)) {
+              RectangularProgram::to_filter_coefficients(
+                  boundary.get_surfaces(), sr)) {
 }
 
 template <BufferType buffer_type>
@@ -205,18 +221,6 @@ bool RectangularWaveguide<buffer_type>::inside(size_t index) const {
     return mesh.get_nodes()[index].inside;
 }
 
-template <BufferType buffer_type>
-std::vector<RectangularProgram::CanonicalCoefficients>
-RectangularWaveguide<buffer_type>::to_filter_coefficients(
-    std::vector<Surface> surfaces, float sr) {
-    std::vector<RectangularProgram::CanonicalCoefficients> ret(surfaces.size());
-    proc::transform(surfaces, ret.begin(), [sr](auto i) {
-        return to_filter_coefficients(i, sr);
-    });
-    return ret;
-}
-
 //  instantiate - maybe special-case out the GL version if gl is not present?
 
 template class RectangularWaveguide<BufferType::cl>;
-template class RectangularWaveguide<BufferType::gl>;

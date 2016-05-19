@@ -1,6 +1,6 @@
 #include "MainComponent.hpp"
 
-#include "combined_config_serialize.h"
+#include "combined/config_serialize.h"
 #include "common/surface_serialize.h"
 
 #include "LoadFiles.hpp"

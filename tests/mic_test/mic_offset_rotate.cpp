@@ -90,11 +90,12 @@ int main(int argc, char** argv) {
                                 Vec3f(2.05, 2.5, 1.05));
         auto waveguide_program =
             get_program<RectangularProgram>(compute_context);
-        RectangularWaveguide waveguide(waveguide_program,
-                                       compute_context.queue,
-                                       MeshBoundary(boundary.get_scene_data()),
-                                       to_vec3f(mic),
-                                       conf.get_waveguide_sample_rate());
+        RectangularWaveguide<BufferType::cl> waveguide(
+            waveguide_program,
+            compute_context.queue,
+            MeshBoundary(boundary.get_scene_data()),
+            to_vec3f(mic),
+            conf.get_waveguide_sample_rate());
 
         auto amp_factor = 4e3;
 

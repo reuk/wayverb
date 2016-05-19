@@ -67,11 +67,12 @@ std::vector<float> run_simulation(const cl::Context& context,
     auto scene_data = boundary.get_scene_data();
     scene_data.set_surfaces(surface);
 
-    RectangularWaveguide waveguide(waveguide_program,
-                                   queue,
-                                   MeshBoundary(scene_data),
-                                   receiver,
-                                   conf.get_waveguide_sample_rate());
+    RectangularWaveguide<BufferType::cl> waveguide(
+        waveguide_program,
+        queue,
+        MeshBoundary(scene_data),
+        receiver,
+        conf.get_waveguide_sample_rate());
 
     auto receiver_index = waveguide.get_index_for_coordinate(receiver);
     auto source_index = waveguide.get_index_for_coordinate(source);

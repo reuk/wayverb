@@ -6,7 +6,7 @@
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#include "combined_config.h"
+#include "combined/config.h"
 
 #include "common/boundaries.h"
 

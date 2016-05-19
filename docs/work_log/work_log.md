@@ -468,7 +468,6 @@ interface
 ---------
 
 * editors
-    * receiver editor is kind of shitty
     * 3D vectors
     * number boxes
         * draggable
@@ -499,7 +498,7 @@ interface
     * preview?
 
 * proper audio engine class
-    * proper gl/cl interop using cl::BufferGL, clCreateFromGLBuffer etc
+    * work out scheduling for gl backend
     * slave visuals to this engine
     * option to not visualise
 

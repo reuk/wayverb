@@ -2,8 +2,9 @@
 
 #include "Collection.h"
 
-#include "combined_config.h"
 #include "common/scene_data.h"
+
+#include "combined/config.h"
 
 namespace model {
 

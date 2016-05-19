@@ -89,8 +89,6 @@ WayverbEngine<buffer_type>::run(const WayverbEngine::StateCallback& callback) {
     auto steps = std::ceil(max_time * waveguide_sample_rate);
 
     //  WAVEGUIDE  -----------------------------------------------------------//
-    //  TODO I can double-buffer this because the waveguide uses two buffers
-    //  anyway!
     callback(State::starting_waveguide, 1.0);
     auto corrected_source = waveguide.get_coordinate_for_index(source_index);
 
@@ -127,6 +125,9 @@ std::vector<std::vector<float>> WayverbEngine<buffer_type>::attenuate(
     const Intermediate& i,
     //  other args or whatever
     const StateCallback& callback) {
+
+    callback(State::postprocessing, 1.0);
+
     //  TODO attenuate raytracer results
     //  TODO attenuate waveguide results
     //  TODO scale waveguide output to match raytracer level
@@ -139,4 +140,3 @@ std::vector<std::vector<float>> WayverbEngine<buffer_type>::attenuate(
 
 //  instantiate
 template class WayverbEngine<BufferType::cl>;
-template class WayverbEngine<BufferType::gl>;

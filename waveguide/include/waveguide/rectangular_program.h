@@ -2,8 +2,10 @@
 
 #include "common/cl_include.h"
 #include "common/decibels.h"
+#include "common/hrtf.h"
 #include "common/json_read_write.h"
 #include "common/reduce.h"
+#include "common/scene_data.h"
 #include "common/stl_wrappers.h"
 #include "common/string_builder.h"
 
@@ -305,6 +307,48 @@ public:
         proc::copy(coeffs.a, denom.begin());
         return is_stable(denom);
     }
+
+    template <size_t I>
+    static FilterDescriptor compute_filter_descriptor(const Surface& surface) {
+        auto gain =
+            decibels::a2db((surface.specular.s[I] + surface.diffuse.s[I]) / 2);
+        auto centre = (HrtfData::EDGES[I + 0] + HrtfData::EDGES[I + 1]) / 2;
+        //  produce a filter descriptor struct for this filter
+        return FilterDescriptor{gain, centre, 1.414};
+    }
+
+    template <size_t... Ix>
+    constexpr static std::array<FilterDescriptor,
+                                BiquadCoefficientsArray::BIQUAD_SECTIONS>
+    to_filter_descriptors(std::index_sequence<Ix...>, const Surface& surface) {
+        return {{compute_filter_descriptor<Ix>(surface)...}};
+    }
+
+    constexpr static std::array<FilterDescriptor,
+                                BiquadCoefficientsArray::BIQUAD_SECTIONS>
+    to_filter_descriptors(const Surface& surface) {
+        return to_filter_descriptors(
+            std::make_index_sequence<
+                BiquadCoefficientsArray::BIQUAD_SECTIONS>(),
+            surface);
+    }
+
+    static CanonicalCoefficients to_filter_coefficients(const Surface& surface,
+                                                        float sr) {
+        auto descriptors = to_filter_descriptors(surface);
+        //  transform filter parameters into a set of biquad coefficients
+        auto individual_coeffs = get_peak_biquads_array(descriptors, sr);
+        //  combine biquad coefficients into coefficients for a single
+        //  high-order
+        //  filter
+        auto ret = convolve(individual_coeffs);
+
+        //  transform from reflection filter to impedance filter
+        return to_impedance_coefficients(ret);
+    }
+
+    static std::vector<CanonicalCoefficients> to_filter_coefficients(
+        std::vector<Surface> surfaces, float sr);
 
 private:
     static constexpr int BIQUAD_SECTIONS = BiquadMemoryArray::BIQUAD_SECTIONS;

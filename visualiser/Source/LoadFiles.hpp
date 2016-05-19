@@ -1,6 +1,6 @@
 #pragma once
 
-#include "combined_config.h"
+#include "combined/config.h"
 #include "common/scene_data.h"
 
 #include "../JuceLibraryCode/JuceHeader.h"

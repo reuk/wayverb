@@ -9,7 +9,7 @@
 #include "common/json_read_write.h"
 #include "common/kernel.h"
 
-#include "combined_config_serialize.h"
+#include "combined/config_serialize.h"
 
 RaytraceObject::RaytraceObject(const GenericShader &shader,
                                const RaytracerResults &results)
@@ -198,7 +198,6 @@ std::unique_ptr<DrawableScene::Waveguide> DrawableScene::init_waveguide(
     auto w = std::make_unique<Waveguide>(waveguide_program,
                                          queue,
                                          boundary,
-                                         cc.get_divisions(),
                                          cc.mic,
                                          cc.get_waveguide_sample_rate());
     auto corrected_source_index = w->get_index_for_coordinate(cc.source);

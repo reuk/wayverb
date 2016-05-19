@@ -50,6 +50,16 @@ RectangularProgram::to_impedance_coefficients(const CanonicalCoefficients& c) {
     return ret;
 }
 
+std::vector<RectangularProgram::CanonicalCoefficients>
+RectangularProgram::to_filter_coefficients(std::vector<Surface> surfaces,
+                                           float sr) {
+    std::vector<CanonicalCoefficients> ret(surfaces.size());
+    proc::transform(surfaces, ret.begin(), [sr](auto i) {
+        return to_filter_coefficients(i, sr);
+    });
+    return ret;
+}
+
 //----------------------------------------------------------------------------//
 
 const std::string RectangularProgram::source{

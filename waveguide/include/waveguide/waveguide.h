@@ -72,23 +72,26 @@ struct BufferTypeTrait;
 template <>
 struct BufferTypeTrait<BufferType::cl> {
     using type = cl::Buffer;
+    using storage_array_type = std::array<type, 2>;
 
-    static std::array<type, 2> create_waveguide_storage(
-        const cl::Context& context, size_t nodes) {
-        return {
-            {cl::Buffer(context, CL_MEM_READ_WRITE, sizeof(cl_float) * nodes),
-             cl::Buffer(context, CL_MEM_READ_WRITE, sizeof(cl_float) * nodes)}};
+    static storage_array_type create_waveguide_storage(
+        const cl::Context& context, size_t nodes);
+
+    static cl::Buffer* index_storage_array(storage_array_type& u, size_t i) {
+        return &(u[i]);
     }
 };
 
 template <>
 struct BufferTypeTrait<BufferType::gl> {
     using type = cl::BufferGL;
+    using storage_array_type = std::array<std::pair<type, unsigned int>, 2>;
 
-    static std::array<type, 2> create_waveguide_storage(
-        const cl::Context& context, size_t nodes) {
-        std::array<type, 2> ret;
-        return ret;
+    static storage_array_type create_waveguide_storage(
+        const cl::Context& context, size_t nodes);
+
+    static cl::Buffer* index_storage_array(storage_array_type& u, size_t i) {
+        return &(u[i].first);
     }
 };
 
@@ -100,8 +103,8 @@ public:
     using ProgramType = T;
     using kernel_type = decltype(std::declval<ProgramType>().get_kernel());
 
-    using Trait = detail::BufferTypeTrait<buffer_type>;
-    using PressureBufferType = typename Trait::type;
+    using trait = detail::BufferTypeTrait<buffer_type>;
+    using storage_array_type = typename trait::storage_array_type;
 
     Waveguide(const ProgramType& program,
               cl::CommandQueue& queue,
@@ -110,19 +113,10 @@ public:
             : queue(queue)
             , kernel(program.get_kernel())
             , nodes(nodes)
-            /*
-          , storage(
-                {{cl::Buffer(program.template getInfo<CL_PROGRAM_CONTEXT>(),
-                             CL_MEM_READ_WRITE,
-                             sizeof(cl_float) * nodes),
-                  cl::Buffer(program.template getInfo<CL_PROGRAM_CONTEXT>(),
-                             CL_MEM_READ_WRITE,
-                             sizeof(cl_float) * nodes)}})
-             */
-            , storage(Trait::create_waveguide_storage(
+            , storage(trait::create_waveguide_storage(
                   program.template getInfo<CL_PROGRAM_CONTEXT>(), nodes))
-            , previous(&storage[0])
-            , current(&storage[1])
+            , previous(trait::index_storage_array(storage, 0))
+            , current(trait::index_storage_array(storage, 1))
             , output(program.template getInfo<CL_PROGRAM_CONTEXT>(),
                      CL_MEM_READ_WRITE,
                      sizeof(cl_float))
@@ -251,6 +245,13 @@ public:
         return 1 / sample_rate;
     }
 
+    std::array<unsigned int, 2> get_gl_indices() const {
+        std::array<unsigned int, 2> ret;
+        proc::transform(
+            this->storage, ret.begin(), [](const auto& i) { return i.second; });
+        return ret;
+    }
+
 private:
     struct RunInfo final {
         RunInfo(size_t input_index,
@@ -294,7 +295,7 @@ private:
     kernel_type kernel;
     const size_t nodes;
 
-    std::array<PressureBufferType, 2> storage;
+    storage_array_type storage;
 
     cl::Buffer* previous;
     cl::Buffer* current;
@@ -333,52 +334,6 @@ public:
 
     const RectangularMesh& get_mesh() const;
     bool inside(size_t index) const override;
-
-    template <size_t I>
-    static RectangularProgram::FilterDescriptor compute_filter_descriptor(
-        const Surface& surface) {
-        auto gain =
-            decibels::a2db((surface.specular.s[I] + surface.diffuse.s[I]) / 2);
-        auto centre = (HrtfData::EDGES[I + 0] + HrtfData::EDGES[I + 1]) / 2;
-        //  produce a filter descriptor struct for this filter
-        return RectangularProgram::FilterDescriptor{gain, centre, 1.414};
-    }
-
-    template <size_t... Ix>
-    constexpr static std::array<
-        RectangularProgram::FilterDescriptor,
-        RectangularProgram::BiquadCoefficientsArray::BIQUAD_SECTIONS>
-    to_filter_descriptors(std::index_sequence<Ix...>, const Surface& surface) {
-        return {{compute_filter_descriptor<Ix>(surface)...}};
-    }
-
-    constexpr static std::array<
-        RectangularProgram::FilterDescriptor,
-        RectangularProgram::BiquadCoefficientsArray::BIQUAD_SECTIONS>
-    to_filter_descriptors(const Surface& surface) {
-        return to_filter_descriptors(
-            std::make_index_sequence<
-                RectangularProgram::BiquadCoefficientsArray::BIQUAD_SECTIONS>(),
-            surface);
-    }
-
-    static RectangularProgram::CanonicalCoefficients to_filter_coefficients(
-        const Surface& surface, float sr) {
-        auto descriptors = to_filter_descriptors(surface);
-        //  transform filter parameters into a set of biquad coefficients
-        auto individual_coeffs =
-            RectangularProgram::get_peak_biquads_array(descriptors, sr);
-        //  combine biquad coefficients into coefficients for a single
-        //  high-order
-        //  filter
-        auto ret = RectangularProgram::convolve(individual_coeffs);
-
-        //  transform from reflection filter to impedance filter
-        return RectangularProgram::to_impedance_coefficients(ret);
-    }
-
-    static std::vector<RectangularProgram::CanonicalCoefficients>
-    to_filter_coefficients(std::vector<Surface> surfaces, float sr);
 
 private:
     using MeshType = RectangularMesh;
