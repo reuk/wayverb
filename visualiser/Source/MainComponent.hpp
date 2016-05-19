@@ -1,14 +1,14 @@
 #pragma once
 
 #include "LeftPanel.hpp"
+#include "ModelRendererComponent.hpp"
 #include "ModelWrapper.hpp"
-#include "RightPanel.hpp"
 
 #include "combined/engine.h"
 
 class MainContentComponent final : public Component, public ChangeListener {
 public:
-    using Engine = WayverbEngine<BufferType::cl>;
+    using Engine = engine::WayverbEngine<BufferType::cl>;
 
     MainContentComponent(const File& root);
     virtual ~MainContentComponent();
@@ -25,8 +25,8 @@ private:
 
     SceneData scene_data;
     model::ValueWithWrapper<model::FullModel> model;
-    model::ChangeConnector render_state_connector{
-        &model.get_wrapper().render_state.state, this};
+    model::ChangeConnector is_rendering_connector{
+        &model.get_wrapper().render_state.is_rendering, this};
 
     std::atomic_bool keep_going{true};
     std::thread engine_thread;
@@ -35,5 +35,5 @@ private:
 
     LeftPanel left_panel;
     StretchableLayoutResizerBar resizer_bar;
-    RightPanel right_panel;
+    ModelRendererComponent right_panel;
 };

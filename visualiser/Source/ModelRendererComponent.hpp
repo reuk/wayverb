@@ -27,6 +27,9 @@ public:
     void newOpenGLContextCreated(OpenGLRenderer* r) override;
     void openGLContextClosing(OpenGLRenderer* r) override;
 
+    void set_positions(const std::vector<cl_float3>& positions);
+    void set_pressures(const std::vector<float>& pressures);
+
 private:
     const SceneData& model;
     model::ValueWrapper<config::Combined>& config;
@@ -35,7 +38,8 @@ private:
     model::ChangeConnector mic_connector{&config.mic, this};
     model::ChangeConnector source_connector{&config.source, this};
 
-    model::ChangeConnector state_connector{&render_state.state, this};
+    model::ChangeConnector is_rendering_connector{&render_state.is_rendering,
+                                                  this};
     model::ChangeConnector waveguide_connector{&render_state.show_waveguide,
                                                this};
     model::ChangeConnector raytracer_connector{&render_state.show_raytracer,

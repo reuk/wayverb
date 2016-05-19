@@ -159,10 +159,21 @@ DrawableScene::DrawableScene(const GenericShader &shader,
               shader, glm::vec3(0, 0, 0), glm::vec4(1, 0, 0, 1))}
         , mic_object{std::make_unique<OctahedronObject>(
               shader, glm::vec3(0, 0, 0), glm::vec4(0, 1, 1, 1))} {
+    //  TODO init raytrace object
 }
 
 void DrawableScene::update(float dt) {
     std::lock_guard<std::mutex> lck(mut);
+
+    if (!positions.empty()) {
+        mesh_object = std::make_unique<MeshObject>(shader, positions);
+        positions.clear();
+    }
+
+    if (!pressures.empty() && mesh_object) {
+        mesh_object->set_pressures(pressures);
+        pressures.clear();
+    }
 }
 
 void DrawableScene::draw() const {
@@ -217,6 +228,24 @@ void DrawableScene::set_raytracer_enabled(bool b) {
 void DrawableScene::set_rendering(bool b) {
     std::lock_guard<std::mutex> lck(mut);
     rendering = b;
+
+    if (!b) {
+        mesh_object = nullptr;
+        positions.clear();
+        pressures.clear();
+    }
+}
+
+void DrawableScene::set_positions(const std::vector<glm::vec3> &p) {
+    //  this might be called from the message thread
+    //  and OpenGL doesn't like me messing with its shit on other threads
+    std::lock_guard<std::mutex> lck(mut);
+    positions = p;
+}
+
+void DrawableScene::set_pressures(const std::vector<float> &p) {
+    std::lock_guard<std::mutex> lck(mut);
+    pressures = p;
 }
 
 //----------------------------------------------------------------------------//
@@ -362,4 +391,22 @@ void SceneRenderer::addListener(Listener *l) {
 void SceneRenderer::removeListener(Listener *l) {
     std::lock_guard<std::mutex> lck(mut);
     listener_list.remove(l);
+}
+
+void SceneRenderer::set_positions(const std::vector<cl_float3> &positions) {
+    std::lock_guard<std::mutex> lck(mut);
+    if (drawable_scene) {
+        std::vector<glm::vec3> ret(positions.size());
+        proc::transform(positions, ret.begin(), [](const auto &i) {
+            return to_glm_vec3(i);
+        });
+        drawable_scene->set_positions(ret);
+    }
+}
+
+void SceneRenderer::set_pressures(const std::vector<float> &pressures) {
+    std::lock_guard<std::mutex> lck(mut);
+    if (drawable_scene) {
+        drawable_scene->set_pressures(pressures);
+    }
 }

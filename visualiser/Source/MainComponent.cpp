@@ -256,84 +256,62 @@ void MainContentComponent::save_as_project() {
 }
 
 void MainContentComponent::join_engine_thread() {
+    keep_going = false;
     if (engine_thread.joinable()) {
         engine_thread.join();
     }
 }
 
-static auto to_string(MainContentComponent::Engine::State state) {
-    switch (state) {
-        case MainContentComponent::Engine::State::starting_raytracer:
-            return "starting raytracer";
-        case MainContentComponent::Engine::State::running_raytracer:
-            return "running raytracer";
-        case MainContentComponent::Engine::State::finishing_raytracer:
-            return "finishing raytracer";
-        case MainContentComponent::Engine::State::starting_waveguide:
-            return "starting waveguide";
-        case MainContentComponent::Engine::State::running_waveguide:
-            return "running waveguide";
-        case MainContentComponent::Engine::State::finishing_waveguide:
-            return "finishing waveguide";
-        case MainContentComponent::Engine::State::postprocessing:
-            return "postprocessing";
-    }
-}
-
 void MainContentComponent::changeListenerCallback(ChangeBroadcaster* cb) {
-    if (cb == &model.get_wrapper().render_state.state) {
-        switch (model.get_wrapper().render_state.state) {
-            case model::RenderState::State::started:
-                keep_going = true;
+    if (cb == &model.get_wrapper().render_state.is_rendering) {
+        if (model.get_wrapper().render_state.is_rendering) {
+            keep_going = true;
 
-                std::cout << "start render on dedicated thread here"
-                          << std::endl;
+            std::cout << "start render on dedicated thread here" << std::endl;
 
-                engine_thread = std::thread([this] {
-                    ComputeContext compute_context;
-                    try {
-                        Engine engine(compute_context,
-                                      scene_data,
-                                      model.get_wrapper().combined.source,
-                                      model.get_wrapper().combined.mic,
-                                      model.get_wrapper()
-                                          .combined.get()
-                                          .get_waveguide_sample_rate(),
-                                      model.get_wrapper().combined.rays,
-                                      model.get_wrapper().combined.impulses,
-                                      model.get_wrapper().combined.sample_rate);
+            engine_thread = std::thread([this] {
+                ComputeContext compute_context;
+                try {
+                    auto callback = [this](auto state, auto progress) {
+                        model.get_wrapper().render_state.state.set(state);
+                        model.get_wrapper().render_state.progress.set(progress);
+                    };
 
-                        struct Callback {
-                            void operator()(Engine::State state,
-                                            double progress) const {
-                                std::cout << std::setw(30) << to_string(state)
-                                          << std::setw(10) << progress
-                                          << std::endl;
-                            }
-                        };
+                    callback(engine::State::initialising, 1.0);
+                    Engine engine(compute_context,
+                                  scene_data,
+                                  model.get_wrapper().combined.source,
+                                  model.get_wrapper().combined.mic,
+                                  model.get_wrapper()
+                                      .combined.get()
+                                      .get_waveguide_sample_rate(),
+                                  model.get_wrapper().combined.rays,
+                                  model.get_wrapper().combined.impulses,
+                                  model.get_wrapper().combined.sample_rate);
 
-                        Callback callback;
+                    right_panel.set_positions(engine.get_node_positions());
 
-                        engine.run(keep_going, callback);
+                    //  TODO this is shitty, but I know WHY it's shitty so
+                    //  it's
+                    //  only 50% unforgivable
+                    auto intermediate = engine.run_visualised(
+                        keep_going, callback, [this](const auto& i) {
+                            right_panel.set_pressures(i);
+                        });
+                    engine.attenuate(intermediate, callback);
+                    //  TODO write out
 
-                        //  TODO process or whatever
-
-                        //  TODO write out
-
-                        //  notify
-                        model.get_wrapper().render_state.state.set(
-                            model::RenderState::State::stopped);
-                    } catch (const std::runtime_error& e) {
-                        std::cout << "wayverb thread error: " << e.what()
-                                  << std::endl;
-                    }
-                });
-
-                break;
-            case model::RenderState::State::stopped:
-                keep_going = false;
-                join_engine_thread();
-                break;
+                } catch (const std::runtime_error& e) {
+                    std::cout << "wayverb thread error: " << e.what()
+                              << std::endl;
+                }
+                //  notify
+                model.get_wrapper().render_state.is_rendering.set(false);
+            });
+        } else {
+            join_engine_thread();
+            model.get_wrapper().render_state.state.set(engine::State::idle);
+            model.get_wrapper().render_state.progress.set(0);
         }
     }
 }

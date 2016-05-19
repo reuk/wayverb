@@ -41,7 +41,6 @@
 		1BC9C80A1CDA087700605865 /* libraytracer.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1BC9C8011CDA084000605865 /* libraytracer.a */; };
 		1BC9C80B1CDA087700605865 /* libwaveguide.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1BC9C7FF1CDA084000605865 /* libwaveguide.a */; };
 		1BECF4C01CDCB40B008773FD /* BottomPanel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1BECF4BE1CDCB40B008773FD /* BottomPanel.cpp */; };
-		1BECF4C61CDCD778008773FD /* RightPanel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1BECF4C41CDCD778008773FD /* RightPanel.cpp */; };
 		1BECF4C91CDCDFCE008773FD /* LeftPanel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1BECF4C71CDCDFCE008773FD /* LeftPanel.cpp */; };
 		1D0C4CE425FD7D455AC10C32 /* juce_audio_basics.mm in Sources */ = {isa = PBXBuildFile; fileRef = BFBA6DD240E8E2C1D9EEFE1C /* juce_audio_basics.mm */; };
 		2A725BEA57789D2477C5B1CC /* juce_audio_devices.mm in Sources */ = {isa = PBXBuildFile; fileRef = C6D9C6FEB679E7D542E70E11 /* juce_audio_devices.mm */; };
@@ -433,8 +432,6 @@
 		1BECF4BE1CDCB40B008773FD /* BottomPanel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = BottomPanel.cpp; path = ../../Source/BottomPanel.cpp; sourceTree = "<group>"; };
 		1BECF4BF1CDCB40B008773FD /* BottomPanel.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = BottomPanel.hpp; path = ../../Source/BottomPanel.hpp; sourceTree = "<group>"; };
 		1BECF4C21CDCBA1A008773FD /* RenderState.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = RenderState.hpp; path = ../../Source/RenderState.hpp; sourceTree = "<group>"; };
-		1BECF4C41CDCD778008773FD /* RightPanel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = RightPanel.cpp; path = ../../Source/RightPanel.cpp; sourceTree = "<group>"; };
-		1BECF4C51CDCD778008773FD /* RightPanel.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = RightPanel.hpp; path = ../../Source/RightPanel.hpp; sourceTree = "<group>"; };
 		1BECF4C71CDCDFCE008773FD /* LeftPanel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = LeftPanel.cpp; path = ../../Source/LeftPanel.cpp; sourceTree = "<group>"; };
 		1BECF4C81CDCDFCE008773FD /* LeftPanel.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = LeftPanel.hpp; path = ../../Source/LeftPanel.hpp; sourceTree = "<group>"; };
 		1BED9283EEEC4F00C846E13B /* juce_MarkerList.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = juce_MarkerList.h; path = ../../JuceLibraryCode/modules/juce_gui_basics/positioning/juce_MarkerList.h; sourceTree = SOURCE_ROOT; };
@@ -1720,8 +1717,6 @@
 				1BECF4C81CDCDFCE008773FD /* LeftPanel.hpp */,
 				1BECF4BE1CDCB40B008773FD /* BottomPanel.cpp */,
 				1BECF4BF1CDCB40B008773FD /* BottomPanel.hpp */,
-				1BECF4C41CDCD778008773FD /* RightPanel.cpp */,
-				1BECF4C51CDCD778008773FD /* RightPanel.hpp */,
 				1BA3F3D01CDA21EC00073946 /* Main.cpp */,
 				1BA3F3D11CDA21EC00073946 /* Main.hpp */,
 				1BA3F3D21CDA21EC00073946 /* MainComponent.cpp */,
@@ -4006,7 +4001,6 @@
 				1BECF4C01CDCB40B008773FD /* BottomPanel.cpp in Sources */,
 				1BC2966B1CE5F3F300F4F33F /* SurfaceModel.cpp in Sources */,
 				1BA3F3E51CDA21EC00073946 /* Main.cpp in Sources */,
-				1BECF4C61CDCD778008773FD /* RightPanel.cpp in Sources */,
 				2A725BEA57789D2477C5B1CC /* juce_audio_devices.mm in Sources */,
 				1BA3F3EA1CDA21EC00073946 /* ModelSectionObject.cpp in Sources */,
 				1BC296711CE63C4A00F4F33F /* PropertyComponentLAF.cpp in Sources */,

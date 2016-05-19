@@ -41,9 +41,6 @@ config::Combined load_config(const File& root) {
     cereal::JSONInputArchive archive(stream);
     config::Combined config;
     archive(cereal::make_nvp("config", config));
-
-    config.rays = 64;
-
     return config;
 }
 

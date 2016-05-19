@@ -145,23 +145,26 @@ public:
                                    cl::Buffer& current,
                                    cl::Buffer& output) = 0;
 
-    std::vector<cl_float> run_step_slow() {
-        run_step(run_info->get_write_info(),
-                 0,
-                 queue,
-                 kernel,
-                 nodes,
-                 *previous,
-                 *current,
-                 output);
-        std::vector<cl_float> ret(nodes, 0);
-        cl::copy(queue, *previous, ret.begin(), ret.end());
-        swap_buffers();
+    RunStepResult run_step(size_t o) {
+        auto ret = run_step(run_info->get_write_info(),
+                            0,
+                            queue,
+                            kernel,
+                            nodes,
+                            *previous,
+                            *current,
+                            output);
+        std::swap(current, previous);
         return ret;
     }
 
-    void swap_buffers() {
-        std::swap(current, previous);
+    std::pair<RunStepResult, std::vector<cl_float>> run_step_visualised(
+        size_t o) {
+        auto ret = run_step(o);
+        std::vector<cl_float> pressures(nodes, 0);
+        cl::copy(queue, *current, pressures.begin(), pressures.end());
+        return std::make_pair(ret, pressures);
+        ;
     }
 
     virtual size_t get_index_for_coordinate(const Vec3f& v) const = 0;
@@ -197,32 +200,28 @@ public:
     std::vector<RunStepResult> run(size_t steps,
                                    std::atomic_bool& keep_going,
                                    const Callback& callback = Callback()) {
-        if (!run_info) {
-            throw std::runtime_error(
-                "must call init before running waveguide!");
-        }
-
-        std::vector<RunStepResult> ret(steps);
-        for (auto& i : ret) {
-            if (!keep_going) {
-                throw std::runtime_error("flag state false, stopping");
-            }
-
-            i = this->run_step(this->run_info->get_write_info(),
-                               run_info->get_output_index(),
-                               queue,
-                               kernel,
-                               nodes,
-                               *previous,
-                               *current,
-                               output);
-
-            this->swap_buffers();
-
+        return run_basic(steps, keep_going, [this, &callback] {
+            auto ret = this->run_step(run_info->get_output_index());
             callback();
-        }
+            return ret;
+        });
+    }
 
-        return ret;
+    template <typename SCallback = DoNothingCallback,
+              typename VCallback = GenericArgumentsCallback<std::vector<float>>>
+    std::vector<RunStepResult> run_visualised(
+        size_t steps,
+        std::atomic_bool& keep_going,
+        const SCallback& callback = SCallback(),
+        const VCallback& visual_callback = VCallback()) {
+        return run_basic(
+            steps, keep_going, [this, &callback, &visual_callback] {
+                auto ret =
+                    this->run_step_visualised(run_info->get_output_index());
+                callback();
+                visual_callback(std::move(ret.second));
+                return ret.first;
+            });
     }
 
     template <typename Callback = DoNothingCallback>
@@ -235,6 +234,21 @@ public:
         const Callback& callback = Callback()) {
         init(e, std::move(input), o);
         return run(steps, keep_going, callback);
+    }
+
+    template <typename SCallback = DoNothingCallback,
+              typename VCallback = GenericArgumentsCallback<std::vector<float>>>
+    std::vector<RunStepResult> init_and_run_visualised(
+        const Vec3f& e,
+        std::vector<float>&& input,
+        size_t o,
+        size_t steps,
+        std::atomic_bool& keep_going,
+        const SCallback& callback = SCallback(),
+        const VCallback& visual_callback = VCallback()) {
+        init(e, std::move(input), o);
+        return this->run_visualised(
+            steps, keep_going, callback, visual_callback);
     }
 
     cl::CommandQueue& get_queue() const {
@@ -257,6 +271,26 @@ public:
     }
 
 private:
+    template <typename Callback>
+    std::vector<RunStepResult> run_basic(size_t steps,
+                                         std::atomic_bool& keep_going,
+                                         const Callback& callback) {
+        if (!run_info) {
+            throw std::runtime_error(
+                "must call init before running waveguide!");
+        }
+
+        std::vector<RunStepResult> ret(steps);
+        for (auto& i : ret) {
+            if (!keep_going) {
+                throw std::runtime_error("flag state false, stopping");
+            }
+            i = callback();
+        }
+
+        return ret;
+    }
+
     struct RunInfo final {
         RunInfo(size_t input_index,
                 std::vector<float>&& input_signal,

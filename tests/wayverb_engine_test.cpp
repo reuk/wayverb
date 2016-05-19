@@ -2,26 +2,7 @@
 
 #include "gtest/gtest.h"
 
-using Engine = WayverbEngine<BufferType::cl>;
-
-static auto to_string(Engine::State state) {
-    switch (state) {
-        case Engine::State::starting_raytracer:
-            return "starting raytracer";
-        case Engine::State::running_raytracer:
-            return "running raytracer";
-        case Engine::State::finishing_raytracer:
-            return "finishing raytracer";
-        case Engine::State::starting_waveguide:
-            return "starting waveguide";
-        case Engine::State::running_waveguide:
-            return "running waveguide";
-        case Engine::State::finishing_waveguide:
-            return "finishing waveguide";
-        case Engine::State::postprocessing:
-            return "postprocessing";
-    }
-}
+using Engine = engine::WayverbEngine<BufferType::cl>;
 
 TEST(engine, engine) {
     CuboidBoundary cuboid_boundary(Vec3f(0, 0, 0), Vec3f(5.56, 3.97, 2.81));
@@ -55,7 +36,7 @@ TEST(engine, engine) {
     std::cout << "finished engine init" << std::endl;
 
     struct Callback {
-        void operator()(Engine::State state, double progress) const {
+        void operator()(engine::State state, double progress) const {
             std::cout << std::setw(30) << to_string(state) << std::setw(10)
                       << progress << std::endl;
         }

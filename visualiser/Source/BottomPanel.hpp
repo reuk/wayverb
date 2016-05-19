@@ -1,7 +1,5 @@
 #pragma once
 
-#include "ModelWrapper.hpp"
-#include "ProgressButton.hpp"
 #include "RenderState.hpp"
 
 class BottomPanel : public Component,
@@ -20,9 +18,12 @@ public:
 private:
     double progress{0};
     model::ValueWrapper<model::RenderState>& render_state;
+    model::ChangeConnector is_rendering_connector{&render_state.is_rendering,
+                                                  this};
     model::ChangeConnector state_connector{&render_state.state, this};
     model::ChangeConnector progress_connector{&render_state.progress, this};
 
-    ProgressButton progress_button;
-    model::Connector<ProgressButton> button_connector{&progress_button, this};
+    juce::ProgressBar bar;
+    TextButton button;
+    model::Connector<TextButton> button_connector{&button, this};
 };

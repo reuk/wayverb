@@ -2,16 +2,12 @@
 
 BottomPanel::BottomPanel(model::ValueWrapper<model::RenderState>& render_state)
         : render_state(render_state)
-        , progress_button(progress) {
-    progress_button.setColour(TextButton::ColourIds::buttonColourId,
-                              Colours::green);
-    progress_button.setColour(TextButton::ColourIds::buttonOnColourId,
-                              Colours::red);
-
+        , bar(progress) {
     changeListenerCallback(&render_state.state);
     changeListenerCallback(&render_state.progress);
 
-    addAndMakeVisible(progress_button);
+    addAndMakeVisible(bar);
+    addAndMakeVisible(button);
 }
 
 void BottomPanel::paint(Graphics& g) {
@@ -19,26 +15,24 @@ void BottomPanel::paint(Graphics& g) {
 }
 
 void BottomPanel::resized() {
-    progress_button.setBounds(getLocalBounds().reduced(2, 2));
+    auto button_width = 100;
+    auto bounds = getLocalBounds().reduced(2, 2);
+
+    bar.setBounds(bounds.withTrimmedRight(button_width + 1));
+    button.setBounds(bounds.removeFromRight(button_width - 1));
 }
 
-void BottomPanel::buttonClicked(Button*) {
-    render_state.state.set(render_state.state ==
-                                   model::RenderState::State::stopped
-                               ? model::RenderState::State::started
-                               : model::RenderState::State::stopped);
+void BottomPanel::buttonClicked(Button* b) {
+    if (b == &button) {
+        render_state.is_rendering.set(!render_state.is_rendering);
+    }
 }
 
 void BottomPanel::changeListenerCallback(ChangeBroadcaster* cb) {
-    if (cb == &render_state.state) {
-        switch (render_state.state) {
-            case model::RenderState::State::stopped:
-                progress_button.setButtonText("render");
-                break;
-            case model::RenderState::State::started:
-                progress_button.setButtonText("cancel");
-                break;
-        }
+    if (cb == &render_state.is_rendering) {
+        button.setButtonText(render_state.is_rendering ? "cancel" : "render");
+    } else if (cb == &render_state.state) {
+        bar.setTextToDisplay(engine::to_string(render_state.state));
     } else if (cb == &render_state.progress) {
         progress = render_state.progress;
     }

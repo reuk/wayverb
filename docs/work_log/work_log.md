@@ -494,11 +494,12 @@ slow stuff
     * improve ray path visualisation (animate?)
     * sort out performance
 
-* proper audio engine class
-    * work out scheduling for gl backend
-    * slave visuals to this engine
-    * option to not visualise
-    * use custom config in simulation
+* option to not visualise
+    * make sure this is actually faster...
+
+* audio output
+
+* proper load and save
 
 nice-to-have
 ------------
@@ -517,3 +518,5 @@ nice-to-have
 * variable speed of sound
 
 * axes display
+
+* work out better scheduling + interop for gl backend

@@ -226,6 +226,14 @@ void VisualiserLookAndFeel::drawProgressBar(Graphics& g,
         g.setTiledImageFill(im, 0, 0, 0.85f);
         g.fillPath(p);
     }
+
+    if (textToShow.isNotEmpty()) {
+        g.setColour(Colours::lightgrey);
+        g.setFont(height * 0.6f);
+
+        g.drawText(
+            textToShow, 0, 0, width, height, Justification::centred, false);
+    }
 }
 
 void VisualiserLookAndFeel::drawButtonBackground(Graphics& g,

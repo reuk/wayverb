@@ -22,6 +22,8 @@ constexpr double rectilinear_calibration_factor(double r, double sr) {
     return r / (x * 0.3405);
 }
 
+namespace engine {
+
 template <BufferType buffer_type>
 WayverbEngine<buffer_type>::WayverbEngine(ComputeContext& compute_context,
                                           const SceneData& scene_data,
@@ -60,8 +62,70 @@ WayverbEngine<buffer_type>::WayverbEngine(ComputeContext& compute_context,
 
 template <BufferType buffer_type>
 typename WayverbEngine<buffer_type>::Intermediate
+WayverbEngine<buffer_type>::run_visualised(
+    std::atomic_bool& keep_going,
+    const WayverbEngine::StateCallback& callback,
+    const WayverbEngine::VisualiserCallback& visualiser_callback) {
+    auto waveguide_step = 0;
+    return this->run_basic(keep_going,
+                           callback,
+                           [&waveguide_step, &visualiser_callback](
+                               RectangularWaveguide<buffer_type>& waveguide,
+                               const Vec3f& corrected_source,
+                               std::vector<float>&& input,
+                               size_t mic_index,
+                               size_t steps,
+                               std::atomic_bool& keep_going,
+                               const StateCallback& callback) {
+                               return waveguide.init_and_run_visualised(
+                                   corrected_source,
+                                   std::move(input),
+                                   mic_index,
+                                   steps,
+                                   keep_going,
+                                   [&callback, &waveguide_step, steps] {
+                                       callback(
+                                           State::running_waveguide,
+                                           waveguide_step++ / (steps - 1.0));
+                                   },
+                                   visualiser_callback);
+                           });
+}
+
+template <BufferType buffer_type>
+typename WayverbEngine<buffer_type>::Intermediate
 WayverbEngine<buffer_type>::run(std::atomic_bool& keep_going,
                                 const WayverbEngine::StateCallback& callback) {
+    auto waveguide_step = 0;
+    return this->run_basic(keep_going,
+                           callback,
+                           [&waveguide_step](
+                               RectangularWaveguide<buffer_type>& waveguide,
+                               const Vec3f& corrected_source,
+                               std::vector<float>&& input,
+                               size_t mic_index,
+                               size_t steps,
+                               std::atomic_bool& keep_going,
+                               const StateCallback& callback) {
+                               return waveguide.init_and_run(
+                                   corrected_source,
+                                   std::move(input),
+                                   mic_index,
+                                   steps,
+                                   keep_going,
+                                   [&callback, &waveguide_step, steps] {
+                                       callback(
+                                           State::running_waveguide,
+                                           waveguide_step++ / (steps - 1.0));
+                                   });
+                           });
+}
+
+template <BufferType buffer_type>
+template <typename Callback>
+auto WayverbEngine<buffer_type>::run_basic(std::atomic_bool& keep_going,
+                                           const StateCallback& callback,
+                                           const Callback& waveguide_callback) {
     //  RAYTRACER  -----------------------------------------------------------//
     callback(State::starting_raytracer, 1.0);
     auto raytracer_step = 0;
@@ -97,17 +161,13 @@ WayverbEngine<buffer_type>::run(std::atomic_bool& keep_going,
     auto input = waveguide_kernel(waveguide_sample_rate);
 
     //  If the max raytracer time is large this could take forever...
-    auto waveguide_step = 0;
-    auto waveguide_results =
-        waveguide.init_and_run(corrected_source,
-                               std::move(input),
-                               mic_index,
-                               steps,
-                               keep_going,
-                               [&callback, &waveguide_step, steps] {
-                                   callback(State::running_waveguide,
-                                            waveguide_step++ / (steps - 1.0));
-                               });
+    auto waveguide_results = waveguide_callback(waveguide,
+                                                corrected_source,
+                                                std::move(input),
+                                                mic_index,
+                                                steps,
+                                                keep_going,
+                                                callback);
     callback(State::finishing_waveguide, 1.0);
 
     auto output = std::vector<float>(waveguide_results.size());
@@ -128,7 +188,6 @@ std::vector<std::vector<float>> WayverbEngine<buffer_type>::attenuate(
     const Intermediate& i,
     //  other args or whatever
     const StateCallback& callback) {
-
     callback(State::postprocessing, 1.0);
 
     //  TODO attenuate raytracer results
@@ -143,3 +202,5 @@ std::vector<std::vector<float>> WayverbEngine<buffer_type>::attenuate(
 
 //  instantiate
 template class WayverbEngine<BufferType::cl>;
+
+}  // namespace engine

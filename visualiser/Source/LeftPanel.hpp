@@ -16,7 +16,8 @@ public:
 private:
     model::ValueWrapper<model::FullModel>& model;
 
-    model::ChangeConnector state_connector{&model.render_state.state, this};
+    model::ChangeConnector is_rendering_connector{
+        &model.render_state.is_rendering, this};
 
     PropertyPanel property_panel;
     BottomPanel bottom_panel;

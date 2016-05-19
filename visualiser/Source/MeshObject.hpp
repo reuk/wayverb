@@ -7,8 +7,11 @@
 
 class MeshObject final : public ::Drawable {
 public:
-    MeshObject(const GenericShader& shader)
+    MeshObject(const GenericShader& shader,
+               const std::vector<glm::vec3>& positions)
             : shader(shader) {
+        set_positions(positions);
+
         //  init vao
         auto s_vao = vao.get_scoped();
 
@@ -40,34 +43,28 @@ public:
         set_pressures_internal(pressures);
     }
 
+private:
     void set_positions(const std::vector<glm::vec3>& positions) {
-        std::lock_guard<std::mutex> lck(mut);
-
         size = positions.size();
 
         geometry.data(positions);
 
-        set_pressures_internal(std::vector<float>(positions.size(), 1));
+        set_pressures_internal(std::vector<float>(positions.size(), 0));
 
         std::vector<GLuint> indices(positions.size());
         std::iota(indices.begin(), indices.end(), 0);
         ibo.data(indices);
     }
 
-private:
     void set_pressures_internal(const std::vector<float>& pressures) {
         color_storage.resize(pressures.size());
         std::cout << "mean: " << mean(pressures) << std::endl;
-        std::transform(pressures.begin(),
-                       pressures.end(),
-                       color_storage.begin(),
-                       [this](auto i) {
-                           auto p = i * amp;
-                           if (std::isnan(p))
-                               return glm::vec4(1, 1, 1, 1);
-                           return p > 0 ? glm::vec4(0, p, p, p)
-                                        : glm::vec4(-p, 0, 0, -p);
-                       });
+        proc::transform(pressures, color_storage.begin(), [this](auto i) {
+            auto p = i * amp;
+            if (std::isnan(p))
+                return glm::vec4(1, 1, 1, 1);
+            return p > 0 ? glm::vec4(0, p, p, p) : glm::vec4(-p, 0, 0, -p);
+        });
         colors.data(color_storage);
     }
 
@@ -77,9 +74,9 @@ private:
         color_storage;  //  hopefully we don't have to malloc every frame
 
     VAO vao;
-    DynamicVBO geometry;
+    StaticVBO geometry;
     DynamicVBO colors;
-    DynamicIBO ibo;
+    StaticIBO ibo;
     GLuint size{0};
 
     float amp{1000};

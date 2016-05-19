@@ -77,6 +77,9 @@ public:
 
     void set_rendering(bool b);
 
+    void set_positions(const std::vector<glm::vec3>& positions);
+    void set_pressures(const std::vector<float>& pressures);
+
 private:
     const GenericShader& shader;
 
@@ -91,6 +94,9 @@ private:
     std::unique_ptr<RaytraceObject> raytrace_object;
 
     bool rendering{false};
+
+    std::vector<glm::vec3> positions;
+    std::vector<float> pressures;
 
     mutable std::mutex mut;
 };
@@ -130,6 +136,9 @@ public:
 
     void set_waveguide_enabled(bool u);
     void set_raytracer_enabled(bool u);
+
+    void set_positions(const std::vector<cl_float3>& positions);
+    void set_pressures(const std::vector<float>& pressures);
 
     void addListener(Listener* l);
     void removeListener(Listener* l);

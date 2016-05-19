@@ -220,14 +220,7 @@ void LeftPanel::resized() {
 }
 
 void LeftPanel::changeListenerCallback(ChangeBroadcaster* cb) {
-    if (cb == &model.render_state.state) {
-        switch (model.render_state.state) {
-            case model::RenderState::State::started:
-                property_panel.setEnabled(false);
-                break;
-            case model::RenderState::State::stopped:
-                property_panel.setEnabled(true);
-                break;
-        }
+    if (cb == &model.render_state.is_rendering) {
+        property_panel.setEnabled(!model.render_state.is_rendering);
     }
 }

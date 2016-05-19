@@ -7,53 +7,47 @@
 #include "raytracer/raytracer.h"
 #include "waveguide/waveguide.h"
 
-/*
-Not sure how to structure this
-Two main usecases:
-    * offline rendering
-        * construct
-        * maybe do some set-up
-        * run the whole thing, with some way of monitoring progress
-        * fetch the result
-    * visualised
-        * construct
-        * maybe do some set-up
-        * every step, update display
-            * hopefully directly using a GL native buffer
+namespace engine {
 
-            * every frame, tell the engine that it is allowed to progress to
-              the next step
-            * every time the engine finishes a step, it must wait for
-              confirmation from the frame thread - spinlock? semaphore?
-            * the renderer keeps a reference to the same buffer as the engine,
-              so I don't need to pass arrays around
+enum class State {
+    idle,
+    initialising,
+    starting_raytracer,
+    running_raytracer,
+    finishing_raytracer,
+    starting_waveguide,
+    running_waveguide,
+    finishing_waveguide,
+    postprocessing,
+};
 
-            * renderer can run all in one go (as a std::future?)
-
-        * fetch the result
-
-Differences:
-    * single 'run' call vs multiple run_step calls
-    * type of buffer to be used - don't want to link against OpenGL unless it's
-      actually being used
-    * result fetch method
-
-*/
+inline constexpr auto to_string(State s) {
+    switch (s) {
+        case State::idle:
+            return "idle";
+        case State::initialising:
+            return "initialising";
+        case State::starting_raytracer:
+            return "starting raytracer";
+        case State::running_raytracer:
+            return "running raytracer";
+        case State::finishing_raytracer:
+            return "finishing raytracer";
+        case State::starting_waveguide:
+            return "starting waveguide";
+        case State::running_waveguide:
+            return "running waveguide";
+        case State::finishing_waveguide:
+            return "finishing waveguide";
+        case State::postprocessing:
+            return "postprocessing";
+    }
+}
 
 /// The Wayverb engine
-template<BufferType buffer_type>
+template <BufferType buffer_type>
 class WayverbEngine {
 public:
-    enum class State {
-        starting_raytracer,
-        running_raytracer,
-        finishing_raytracer,
-        starting_waveguide,
-        running_waveguide,
-        finishing_waveguide,
-        postprocessing,
-    };
-
     WayverbEngine(ComputeContext& compute_context,
                   const SceneData& scene_data,
                   const Vec3f& source,
@@ -66,9 +60,15 @@ public:
     struct Intermediate {};
 
     using StateCallback = GenericArgumentsCallback<State, double>;
+    using VisualiserCallback = GenericArgumentsCallback<std::vector<float>>;
 
     Intermediate run(std::atomic_bool& keep_going,
                      const StateCallback& callback);
+
+    Intermediate run_visualised(std::atomic_bool& keep_going,
+                                const StateCallback& state_callback,
+                                const VisualiserCallback& visualiser_callback);
+
     std::vector<std::vector<float>> attenuate(const Intermediate& i,
                                               //  other args or whatever
                                               const StateCallback& callback);
@@ -76,8 +76,22 @@ public:
     template <typename Callback = StateCallback>
     auto run(std::atomic_bool& keep_going,
              const Callback& callback = Callback()) {
-        return run(keep_going,
-                   static_cast<const StateCallback&>(make_adapter(callback)));
+        return run(
+            keep_going,
+            static_cast<const StateCallback&>(make_state_adapter(callback)));
+    }
+
+    template <typename SCallback = StateCallback,
+              typename VCallback = VisualiserCallback>
+    auto run_visualised(std::atomic_bool& keep_going,
+                        const SCallback& state_callback = SCallback(),
+                        const VCallback& visualiser_callback = VCallback()) {
+        return run_visualised(
+            keep_going,
+            static_cast<const StateCallback&>(
+                make_state_adapter(state_callback)),
+            static_cast<const VisualiserCallback&>(
+                make_visualiser_adapter(visualiser_callback)));
     }
 
     template <typename Callback = StateCallback>
@@ -87,13 +101,32 @@ public:
         return attenuate(
             i,
             //  other args or whatever
-            static_cast<const StateCallback&>(make_adapter(callback)));
+            static_cast<const StateCallback&>(make_state_adapter(callback)));
+    }
+
+    std::vector<cl_float3> get_node_positions() const {
+        const auto& nodes = waveguide.get_mesh().get_nodes();
+        std::vector<cl_float3> ret(nodes.size());
+        proc::transform(nodes, ret.begin(), [] (const auto& i) {
+            return i.position;
+        });
+        return ret;
     }
 
 private:
     template <typename Callback>
-    auto make_adapter(const Callback& callback) {
+    auto run_basic(std::atomic_bool& keep_going,
+                   const StateCallback& state_callback,
+                   const Callback& waveguide_callback);
+
+    template <typename Callback>
+    auto make_state_adapter(const Callback& callback) {
         return GenericCallbackAdapter<Callback, State, double>(callback);
+    }
+
+    template <typename Callback>
+    auto make_visualiser_adapter(const Callback& callback) {
+        return GenericCallbackAdapter<Callback, std::vector<float>>(callback);
     }
 
     SceneData scene_data;
@@ -105,8 +138,10 @@ private:
     float waveguide_sample_rate;
     int rays;
     int impulses;
-    //float output_sample_rate;
+    // float output_sample_rate;
 
     size_t source_index;
     size_t mic_index;
 };
+
+}  // namespace engine
