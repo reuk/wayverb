@@ -7,7 +7,7 @@
 #include "ModelSectionObject.hpp"
 #include "OctahedronObject.hpp"
 
-#include "ModelWrapper.hpp"
+#include "FullModel.hpp"
 
 #define GLM_FORCE_RADIANS
 #include "glm/gtc/matrix_transform.hpp"
@@ -25,7 +25,7 @@
 
 #include "raytracer/raytracer.h"
 
-#include "RenderState.hpp"
+#include "../JuceLibraryCode/JuceHeader.h"
 
 #include <cmath>
 #include <future>

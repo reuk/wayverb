@@ -3,8 +3,8 @@
 BottomPanel::BottomPanel(model::ValueWrapper<model::RenderState>& render_state)
         : render_state(render_state)
         , bar(progress) {
-    changeListenerCallback(&render_state.state);
-    changeListenerCallback(&render_state.progress);
+    receive_broadcast(&render_state.state);
+    receive_broadcast(&render_state.progress);
 
     addAndMakeVisible(bar);
     addAndMakeVisible(button);
@@ -28,7 +28,7 @@ void BottomPanel::buttonClicked(Button* b) {
     }
 }
 
-void BottomPanel::changeListenerCallback(ChangeBroadcaster* cb) {
+void BottomPanel::receive_broadcast(model::Broadcaster* cb) {
     if (cb == &render_state.is_rendering) {
         button.setButtonText(render_state.is_rendering ? "cancel" : "render");
     } else if (cb == &render_state.state) {

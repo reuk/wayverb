@@ -1,11 +1,10 @@
 #pragma once
 
+#include "FullModel.hpp"
 #include "ModelRenderer.hpp"
-#include "ModelWrapper.hpp"
-#include "RenderState.hpp"
 
 class ModelRendererComponent : public Component,
-                               public ChangeListener,
+                               public model::BroadcastListener,
                                public SceneRenderer::Listener {
 public:
     ModelRendererComponent(
@@ -22,7 +21,7 @@ public:
     void mouseWheelMove(const MouseEvent& event,
                         const MouseWheelDetails& wheel) override;
 
-    void changeListenerCallback(ChangeBroadcaster* cb) override;
+    void receive_broadcast(model::Broadcaster* cb) override;
 
     void newOpenGLContextCreated(OpenGLRenderer* r) override;
     void openGLContextClosing(OpenGLRenderer* r) override;
@@ -35,15 +34,14 @@ private:
     model::ValueWrapper<config::Combined>& config;
     model::ValueWrapper<model::RenderState>& render_state;
 
-    model::ChangeConnector mic_connector{&config.mic, this};
-    model::ChangeConnector source_connector{&config.source, this};
-
-    model::ChangeConnector is_rendering_connector{&render_state.is_rendering,
+    model::BroadcastConnector mic_connector{&config.mic, this};
+    model::BroadcastConnector source_connector{&config.source, this};
+    model::BroadcastConnector is_rendering_connector{&render_state.is_rendering,
+                                                     this};
+    model::BroadcastConnector waveguide_connector{&render_state.show_waveguide,
                                                   this};
-    model::ChangeConnector waveguide_connector{&render_state.show_waveguide,
-                                               this};
-    model::ChangeConnector raytracer_connector{&render_state.show_raytracer,
-                                               this};
+    model::BroadcastConnector raytracer_connector{&render_state.show_raytracer,
+                                                  this};
 
     const float scale{0.01};
     float azimuth{0};

@@ -1,9 +1,11 @@
 #pragma once
 
-#include "RenderState.hpp"
+#include "FullModel.hpp"
+
+#include "../JuceLibraryCode/JuceHeader.h"
 
 class BottomPanel : public Component,
-                    public ChangeListener,
+                    public model::BroadcastListener,
                     public TextButton::Listener {
 public:
     BottomPanel(model::ValueWrapper<model::RenderState>& render_state);
@@ -11,17 +13,17 @@ public:
     void paint(Graphics& g) override;
     void resized() override;
 
-    void changeListenerCallback(ChangeBroadcaster* cb) override;
+    void receive_broadcast(model::Broadcaster* cb) override;
 
     void buttonClicked(Button*) override;
 
 private:
     double progress{0};
     model::ValueWrapper<model::RenderState>& render_state;
-    model::ChangeConnector is_rendering_connector{&render_state.is_rendering,
-                                                  this};
-    model::ChangeConnector state_connector{&render_state.state, this};
-    model::ChangeConnector progress_connector{&render_state.progress, this};
+    model::BroadcastConnector is_rendering_connector{&render_state.is_rendering,
+                                                     this};
+    model::BroadcastConnector state_connector{&render_state.state, this};
+    model::BroadcastConnector progress_connector{&render_state.progress, this};
 
     juce::ProgressBar bar;
     TextButton button;

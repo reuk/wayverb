@@ -46,7 +46,7 @@ Component* MicrophoneListBox::refreshComponentForRow(int row,
     return existing;
 }
 
-void MicrophoneListBox::changeListenerCallback(ChangeBroadcaster* cb) {
+void MicrophoneListBox::receive_broadcast(model::Broadcaster* cb) {
     if (cb == &microphone_model) {
         updateContent();
     }
@@ -73,7 +73,7 @@ MicrophoneEditableListBox::MicrophoneEditableListBox(
     addAndMakeVisible(add_button);
     addAndMakeVisible(sub_button);
 
-    changeListenerCallback(&microphone_model);
+    receive_broadcast(&microphone_model);
 }
 
 void MicrophoneEditableListBox::buttonClicked(Button* b) {
@@ -100,7 +100,7 @@ void MicrophoneEditableListBox::resized() {
     add_button.setBounds(button_area.withTrimmedLeft(getWidth() / 2 + 1));
 }
 
-void MicrophoneEditableListBox::changeListenerCallback(ChangeBroadcaster* cb) {
+void MicrophoneEditableListBox::receive_broadcast(model::Broadcaster* cb) {
     if (cb == &microphone_model) {
         update_sub_button_enablement();
     }

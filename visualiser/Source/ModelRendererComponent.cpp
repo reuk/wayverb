@@ -50,7 +50,7 @@ void ModelRendererComponent::mouseWheelMove(const MouseEvent &event,
     scene_renderer.update_scale(wheel.deltaY);
 }
 
-void ModelRendererComponent::changeListenerCallback(ChangeBroadcaster *cb) {
+void ModelRendererComponent::receive_broadcast(model::Broadcaster *cb) {
     if (cb == &config.mic) {
         scene_renderer.set_mic(config.mic);
     } else if (cb == &config.source) {

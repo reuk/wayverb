@@ -385,12 +385,17 @@
 		1B29EECA1CDB93E6003BD0BB /* VisualiserLookAndFeel.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = VisualiserLookAndFeel.hpp; path = ../../Source/VisualiserLookAndFeel.hpp; sourceTree = "<group>"; };
 		1B3DE3698539A30ABBE4F207 /* jcprepct.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = jcprepct.c; path = ../../JuceLibraryCode/modules/juce_graphics/image_formats/jpglib/jcprepct.c; sourceTree = SOURCE_ROOT; };
 		1B6108181CA032ADF5CE83F6 /* juce_FileTreeComponent.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = juce_FileTreeComponent.h; path = ../../JuceLibraryCode/modules/juce_gui_basics/filebrowser/juce_FileTreeComponent.h; sourceTree = SOURCE_ROOT; };
-		1B6833961CE1087300E4CACC /* ModelWrapper.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = ModelWrapper.hpp; path = ../../Source/ModelWrapper.hpp; sourceTree = "<group>"; };
 		1B6833B91CE1FD4100E4CACC /* LoadFiles.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = LoadFiles.cpp; path = ../../Source/LoadFiles.cpp; sourceTree = "<group>"; };
 		1B6833BA1CE1FD4100E4CACC /* LoadFiles.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = LoadFiles.hpp; path = ../../Source/LoadFiles.hpp; sourceTree = "<group>"; };
 		1B6CDDEA1CEB3CD300DA8B3D /* MicrophoneEditor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = MicrophoneEditor.cpp; path = ../../Source/MicrophoneEditor.cpp; sourceTree = "<group>"; };
 		1B6CDDEB1CEB3CD300DA8B3D /* MicrophoneEditor.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = MicrophoneEditor.hpp; path = ../../Source/MicrophoneEditor.hpp; sourceTree = "<group>"; };
 		1B6CDDEE1CEB826700DA8B3D /* FullModel.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = FullModel.hpp; path = ../../Source/FullModel.hpp; sourceTree = "<group>"; };
+		1B7FFFAD1CEFB3250011F405 /* broadcaster.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = broadcaster.h; sourceTree = "<group>"; };
+		1B7FFFAE1CEFB3250011F405 /* collection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = collection.h; sourceTree = "<group>"; };
+		1B7FFFAF1CEFB3250011F405 /* connector.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = connector.h; sourceTree = "<group>"; };
+		1B7FFFB01CEFB3250011F405 /* listener_list.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = listener_list.h; sourceTree = "<group>"; };
+		1B7FFFB11CEFB3250011F405 /* model.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = model.h; sourceTree = "<group>"; };
+		1B7FFFB21CEFB3250011F405 /* value_wrapper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = value_wrapper.h; sourceTree = "<group>"; };
 		1BA3F39E1CDA20D400073946 /* libmodern_gl_utils.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libmodern_gl_utils.a; path = ../../../../../../../usr/local/lib/libmodern_gl_utils.a; sourceTree = "<group>"; };
 		1BA3F3BE1CDA216E00073946 /* libfftw3f.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libfftw3f.a; path = ../../../../../../../usr/local/Cellar/fftw/3.3.4_1/lib/libfftw3f.a; sourceTree = "<group>"; };
 		1BA3F3C01CDA217A00073946 /* OpenCL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenCL.framework; path = System/Library/Frameworks/OpenCL.framework; sourceTree = SDKROOT; };
@@ -424,14 +429,10 @@
 		1BC2966A1CE5F3F300F4F33F /* SurfaceModel.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = SurfaceModel.hpp; path = ../../Source/SurfaceModel.hpp; sourceTree = "<group>"; };
 		1BC2966F1CE63C4A00F4F33F /* PropertyComponentLAF.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = PropertyComponentLAF.cpp; path = ../../Source/PropertyComponentLAF.cpp; sourceTree = "<group>"; };
 		1BC296701CE63C4A00F4F33F /* PropertyComponentLAF.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = PropertyComponentLAF.hpp; path = ../../Source/PropertyComponentLAF.hpp; sourceTree = "<group>"; };
-		1BC296761CEA161400F4F33F /* Model.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Model.h; path = ../../Source/Model.h; sourceTree = "<group>"; };
-		1BC296781CEA18A200F4F33F /* Collection.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Collection.h; path = ../../Source/Collection.h; sourceTree = "<group>"; };
-		1BC296791CEA18DE00F4F33F /* ValueWrapper.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ValueWrapper.h; path = ../../Source/ValueWrapper.h; sourceTree = "<group>"; };
 		1BC9C7BB1CDA084000605865 /* WAYVERB.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = WAYVERB.xcodeproj; path = ../../../xcproj/WAYVERB.xcodeproj; sourceTree = "<group>"; };
 		1BE99A23F9968165DCF0C571 /* format.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = format.c; path = ../../JuceLibraryCode/modules/juce_audio_formats/codecs/flac/libFLAC/format.c; sourceTree = SOURCE_ROOT; };
 		1BECF4BE1CDCB40B008773FD /* BottomPanel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = BottomPanel.cpp; path = ../../Source/BottomPanel.cpp; sourceTree = "<group>"; };
 		1BECF4BF1CDCB40B008773FD /* BottomPanel.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = BottomPanel.hpp; path = ../../Source/BottomPanel.hpp; sourceTree = "<group>"; };
-		1BECF4C21CDCBA1A008773FD /* RenderState.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = RenderState.hpp; path = ../../Source/RenderState.hpp; sourceTree = "<group>"; };
 		1BECF4C71CDCDFCE008773FD /* LeftPanel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = LeftPanel.cpp; path = ../../Source/LeftPanel.cpp; sourceTree = "<group>"; };
 		1BECF4C81CDCDFCE008773FD /* LeftPanel.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = LeftPanel.hpp; path = ../../Source/LeftPanel.hpp; sourceTree = "<group>"; };
 		1BED9283EEEC4F00C846E13B /* juce_MarkerList.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = juce_MarkerList.h; path = ../../JuceLibraryCode/modules/juce_gui_basics/positioning/juce_MarkerList.h; sourceTree = SOURCE_ROOT; };
@@ -1705,6 +1706,7 @@
 		19997BD6C10697AB22FAF5D3 /* Source */ = {
 			isa = PBXGroup;
 			children = (
+				1B7FFFA31CEFB2A80011F405 /* lib_model */,
 				1B6CDDE91CEB3C8100DA8B3D /* visuals */,
 				1B6CDDE81CEB3C3100DA8B3D /* model */,
 				1BC2966F1CE63C4A00F4F33F /* PropertyComponentLAF.cpp */,
@@ -1736,14 +1738,9 @@
 		1B6CDDE81CEB3C3100DA8B3D /* model */ = {
 			isa = PBXGroup;
 			children = (
-				1BECF4C21CDCBA1A008773FD /* RenderState.hpp */,
 				1B6CDDEE1CEB826700DA8B3D /* FullModel.hpp */,
 				1B6833B91CE1FD4100E4CACC /* LoadFiles.cpp */,
 				1B6833BA1CE1FD4100E4CACC /* LoadFiles.hpp */,
-				1BC296761CEA161400F4F33F /* Model.h */,
-				1BC296791CEA18DE00F4F33F /* ValueWrapper.h */,
-				1BC296781CEA18A200F4F33F /* Collection.h */,
-				1B6833961CE1087300E4CACC /* ModelWrapper.hpp */,
 				1BC296691CE5F3F300F4F33F /* SurfaceModel.cpp */,
 				1BC2966A1CE5F3F300F4F33F /* SurfaceModel.hpp */,
 			);
@@ -1771,6 +1768,19 @@
 				1BA3F3DF1CDA21EC00073946 /* OctahedronObject.hpp */,
 			);
 			name = visuals;
+			sourceTree = "<group>";
+		};
+		1B7FFFA31CEFB2A80011F405 /* lib_model */ = {
+			isa = PBXGroup;
+			children = (
+				1B7FFFAD1CEFB3250011F405 /* broadcaster.h */,
+				1B7FFFAE1CEFB3250011F405 /* collection.h */,
+				1B7FFFAF1CEFB3250011F405 /* connector.h */,
+				1B7FFFB01CEFB3250011F405 /* listener_list.h */,
+				1B7FFFB11CEFB3250011F405 /* model.h */,
+				1B7FFFB21CEFB3250011F405 /* value_wrapper.h */,
+			);
+			name = lib_model;
 			sourceTree = "<group>";
 		};
 		1BC9C7BC1CDA084000605865 /* Products */ = {

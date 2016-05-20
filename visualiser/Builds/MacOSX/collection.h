@@ -1,6 +1,9 @@
 #pragma once
 
-#include "ValueWrapper.h"
+#include "value_wrapper.h"
+
+#include <vector>
+#include <cassert>
 
 namespace model {
 
@@ -11,18 +14,16 @@ void for_each(Func&& f, It first, It last, Ts&&... ts) {
     }
 }
 
-//  TODO make this threadsafe
-
 template <typename T>
 class ValueWrapper<std::vector<T>> : public NestedValueWrapper<std::vector<T>> {
 public:
     ValueWrapper(ModelMember* parent, std::vector<T>& t)
             : NestedValueWrapper<std::vector<T>>(parent, t)
             , wrappers(t.size()) {
-        this->reseat();
+        this->reseat(t);
     }
 
-    void set_value(const std::vector<T>& u, bool do_notify = true) override {
+    void set(const std::vector<T>& u, bool do_notify = true) override {
         *(this->t) = u;
         reseat_and_notify(do_notify);
     }
@@ -123,8 +124,7 @@ public:
         reseat_and_notify(do_notify);
     }
 
-protected:
-    void reseat_value(std::vector<T>& u) override {
+    void reseat(std::vector<T>& u) override {
         assert(u.size() == wrappers.size());
         for_each(
             [this](auto& i, auto& j) {
@@ -141,7 +141,7 @@ protected:
 
 private:
     void reseat_and_notify(bool do_notify) {
-        this->reseat();
+        this->reseat(*(this->t));
         this->notify(do_notify);
     }
 

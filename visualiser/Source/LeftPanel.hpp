@@ -2,21 +2,20 @@
 
 #include "BottomPanel.hpp"
 #include "FullModel.hpp"
-#include "ModelWrapper.hpp"
 #include "SurfaceModel.hpp"
 
-class LeftPanel : public Component, public ChangeListener {
+class LeftPanel : public Component, public model::BroadcastListener {
 public:
     LeftPanel(model::ValueWrapper<model::FullModel>& model);
 
     void resized() override;
 
-    void changeListenerCallback(ChangeBroadcaster* cb) override;
+    void receive_broadcast(model::Broadcaster* cb) override;
 
 private:
     model::ValueWrapper<model::FullModel>& model;
 
-    model::ChangeConnector is_rendering_connector{
+    model::BroadcastConnector is_rendering_connector{
         &model.render_state.is_rendering, this};
 
     PropertyPanel property_panel;

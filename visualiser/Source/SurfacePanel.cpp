@@ -13,7 +13,7 @@ VolumeComponent::VolumeSlider::VolumeSlider(model::ValueWrapper<float>& value)
     set_popup_display_enabled(true, nullptr);
     set_range(0.01, 1, 0);
 
-    changeListenerCallback(&value);
+    receive_broadcast(&value);
 }
 
 // float VolumeComponent::VolumeSlider::slider_to_value(float t) {
@@ -205,7 +205,7 @@ PresetComponent::PresetComponent(
     addAndMakeVisible(save_button);
     addAndMakeVisible(delete_button);
 
-    changeListenerCallback(&preset_model);
+    receive_broadcast(&preset_model);
 }
 
 PresetComponent::~PresetComponent() noexcept {
@@ -247,7 +247,7 @@ void PresetComponent::textEditorReturnKeyPressed(TextEditor& e) {
         combo_box.setSelectedItemIndex(preset_model.size() - 1,
                                        sendNotificationSync);
     } else {
-        changeListenerCallback(&linked);
+        receive_broadcast(&linked);
     }
 }
 
@@ -270,7 +270,7 @@ void PresetComponent::buttonClicked(Button* b) {
     }
 }
 
-void PresetComponent::changeListenerCallback(ChangeBroadcaster* cb) {
+void PresetComponent::receive_broadcast(model::Broadcaster* cb) {
     text_editor.setVisible(false);
     combo_box.setVisible(true);
 

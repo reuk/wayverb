@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ModelWrapper.hpp"
+#include "FullModel.hpp"
 #include "SurfaceModel.hpp"
 #include "ValueWrapperSlider.hpp"
 
@@ -81,7 +81,7 @@ class PresetComponent : public Component,
                         public ComboBox::Listener,
                         public TextEditor::Listener,
                         public TextButton::Listener,
-                        public ChangeListener {
+                        public model::BroadcastListener {
 public:
     PresetComponent(
         model::ValueWrapper<Surface>& linked,
@@ -93,16 +93,16 @@ public:
 
     void buttonClicked(Button* b) override;
 
-    void changeListenerCallback(ChangeBroadcaster* cb) override;
+    void receive_broadcast(model::Broadcaster* cb) override;
 
     void textEditorReturnKeyPressed(TextEditor& e) override;
 
 private:
     model::ValueWrapper<Surface>& linked;
-    model::ChangeConnector linked_connector{&linked, this};
+    model::BroadcastConnector linked_connector{&linked, this};
 
     model::ValueWrapper<std::vector<SceneData::Material>>& preset_model;
-    model::ChangeConnector preset_connector{&preset_model, this};
+    model::BroadcastConnector preset_connector{&preset_model, this};
 
     ComboBox combo_box;
     model::Connector<ComboBox> combo_box_connector{&combo_box, this};

@@ -74,7 +74,7 @@ static constexpr auto to_enum(int i) {
 
 class ReceiverPicker : public Component,
                        public ComboBox::Listener,
-                       public ChangeListener {
+                       public model::BroadcastListener {
 public:
     ReceiverPicker(model::ValueWrapper<config::AttenuationModel::Mode>& value)
             : value(value) {
@@ -82,7 +82,7 @@ public:
                           to_id(config::AttenuationModel::Mode::microphone));
         combo_box.addItem("HRTF", to_id(config::AttenuationModel::Mode::hrtf));
 
-        changeListenerCallback(&value);
+        receive_broadcast(&value);
         addAndMakeVisible(combo_box);
     }
 
@@ -96,7 +96,7 @@ public:
         }
     }
 
-    void changeListenerCallback(ChangeBroadcaster* cb) override {
+    void receive_broadcast(model::Broadcaster* cb) override {
         if (cb == &value) {
             combo_box.setSelectedId(to_id(value), dontSendNotification);
         }
@@ -108,7 +108,7 @@ public:
 
 private:
     model::ValueWrapper<config::AttenuationModel::Mode>& value;
-    model::ChangeConnector value_connector{&value, this};
+    model::BroadcastConnector value_connector{&value, this};
 
     ComboBox combo_box;
     model::Connector<ComboBox> combo_box_connector{&combo_box, this};
@@ -219,7 +219,7 @@ void LeftPanel::resized() {
     bottom_panel.setBounds(getLocalBounds().removeFromBottom(panel_height));
 }
 
-void LeftPanel::changeListenerCallback(ChangeBroadcaster* cb) {
+void LeftPanel::receive_broadcast(model::Broadcaster* cb) {
     if (cb == &model.render_state.is_rendering) {
         property_panel.setEnabled(!model.render_state.is_rendering);
     }

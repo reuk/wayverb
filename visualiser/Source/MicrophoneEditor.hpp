@@ -1,10 +1,12 @@
 #pragma once
 
-#include "ModelWrapper.hpp"
+#include "FullModel.hpp"
+
+#include "../JuceLibraryCode/JuceHeader.h"
 
 class MicrophoneListBox : public ListBox,
                           public ListBoxModel,
-                          public ChangeListener {
+                          public model::BroadcastListener {
 public:
     class Listener {
     public:
@@ -30,7 +32,7 @@ public:
                                       bool selected,
                                       Component* existing) override;
 
-    void changeListenerCallback(ChangeBroadcaster* cb) override;
+    void receive_broadcast(model::Broadcaster* b) override;
 
     void selectedRowsChanged(int last) override;
 
@@ -39,7 +41,7 @@ public:
 
 private:
     model::ValueWrapper<config::MicrophoneModel>& microphone_model;
-    model::ChangeConnector microphone_connector{&microphone_model, this};
+    model::BroadcastConnector microphone_connector{&microphone_model, this};
 
     ListenerList<Listener> listener_list;
 };
@@ -49,7 +51,7 @@ private:
 class MicrophoneEditableListBox : public Component,
                                   public MicrophoneListBox::Listener,
                                   public TextButton::Listener,
-                                  public ChangeListener {
+                                  public model::BroadcastListener {
 public:
     class Listener {
     public:
@@ -71,7 +73,7 @@ public:
 
     void resized() override;
 
-    void changeListenerCallback(ChangeBroadcaster* cb) override;
+    void receive_broadcast(model::Broadcaster* cb) override;
 
     void selectedRowsChanged(MicrophoneListBox* lb, int last) override;
 
@@ -82,7 +84,7 @@ private:
     void update_sub_button_enablement();
 
     model::ValueWrapper<config::MicrophoneModel>& microphone_model;
-    model::ChangeConnector microphone_connector{&microphone_model, this};
+    model::BroadcastConnector microphone_connector{&microphone_model, this};
 
     MicrophoneListBox microphone_list_box;
     model::Connector<MicrophoneListBox> microphone_list_box_connector{

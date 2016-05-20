@@ -1,11 +1,13 @@
 #pragma once
 
-#include "ModelWrapper.hpp"
+#include "FullModel.hpp"
+
+#include "../JuceLibraryCode/JuceHeader.h"
 
 template <typename T>
 class ValueWrapperSlider : public Component,
                            public Slider::Listener,
-                           public ChangeListener {
+                           public model::BroadcastListener {
 public:
     ValueWrapperSlider(model::ValueWrapper<T>& value)
             : value(value) {
@@ -31,7 +33,7 @@ public:
         }
     }
 
-    void changeListenerCallback(ChangeBroadcaster* cb) override {
+    void receive_broadcast(model::Broadcaster* cb) override {
         if (cb == &value) {
             slider.setValue(value_to_slider(value), dontSendNotification);
         }
@@ -62,6 +64,6 @@ public:
 
 private:
     model::ValueWrapper<T>& value;
-    model::ChangeConnector value_connector{&value, this};
+    model::BroadcastConnector value_connector{&value, this};
     Slider slider;
 };

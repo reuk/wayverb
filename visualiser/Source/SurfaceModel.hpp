@@ -1,7 +1,6 @@
 #pragma once
 
-#include "Collection.h"
-#include "ModelWrapper.hpp"
+#include "common/scene_data.h"
 
 namespace model {
 
