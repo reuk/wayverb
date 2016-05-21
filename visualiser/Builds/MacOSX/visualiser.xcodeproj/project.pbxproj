@@ -17,6 +17,7 @@
 		1B655C741CEE0A7100901ED1 /* libcombined.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B655C731CEDE25A00901ED1 /* libcombined.a */; };
 		1B6833BB1CE1FD4100E4CACC /* LoadFiles.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1B6833B91CE1FD4100E4CACC /* LoadFiles.cpp */; };
 		1B6CDDEC1CEB3CD300DA8B3D /* MicrophoneEditor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1B6CDDEA1CEB3CD300DA8B3D /* MicrophoneEditor.cpp */; };
+		1B7FFFB71CF0C9800011F405 /* Presets.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1B7FFFB51CF0C9800011F405 /* Presets.cpp */; };
 		1BA3F39F1CDA20D400073946 /* libmodern_gl_utils.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1BA3F39E1CDA20D400073946 /* libmodern_gl_utils.a */; };
 		1BA3F3BF1CDA216E00073946 /* libfftw3f.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1BA3F3BE1CDA216E00073946 /* libfftw3f.a */; };
 		1BA3F3C11CDA217A00073946 /* OpenCL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1BA3F3C01CDA217A00073946 /* OpenCL.framework */; };
@@ -396,6 +397,8 @@
 		1B7FFFB01CEFB3250011F405 /* listener_list.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = listener_list.h; sourceTree = "<group>"; };
 		1B7FFFB11CEFB3250011F405 /* model.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = model.h; sourceTree = "<group>"; };
 		1B7FFFB21CEFB3250011F405 /* value_wrapper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = value_wrapper.h; sourceTree = "<group>"; };
+		1B7FFFB51CF0C9800011F405 /* Presets.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Presets.cpp; path = ../../Source/Presets.cpp; sourceTree = "<group>"; };
+		1B7FFFB61CF0C9800011F405 /* Presets.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = Presets.hpp; path = ../../Source/Presets.hpp; sourceTree = "<group>"; };
 		1BA3F39E1CDA20D400073946 /* libmodern_gl_utils.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libmodern_gl_utils.a; path = ../../../../../../../usr/local/lib/libmodern_gl_utils.a; sourceTree = "<group>"; };
 		1BA3F3BE1CDA216E00073946 /* libfftw3f.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libfftw3f.a; path = ../../../../../../../usr/local/Cellar/fftw/3.3.4_1/lib/libfftw3f.a; sourceTree = "<group>"; };
 		1BA3F3C01CDA217A00073946 /* OpenCL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenCL.framework; path = System/Library/Frameworks/OpenCL.framework; sourceTree = SDKROOT; };
@@ -1723,6 +1726,8 @@
 				1BA3F3D11CDA21EC00073946 /* Main.hpp */,
 				1BA3F3D21CDA21EC00073946 /* MainComponent.cpp */,
 				1BA3F3D31CDA21EC00073946 /* MainComponent.hpp */,
+				1B7FFFB51CF0C9800011F405 /* Presets.cpp */,
+				1B7FFFB61CF0C9800011F405 /* Presets.hpp */,
 				1B29EEAA1CDB8C2C003BD0BB /* CommandIDs.h */,
 				1BC296481CE5EC2F00F4F33F /* ValueWrapperSlider.hpp */,
 				1BA8CEAE1CE4CC7900F3AF79 /* SurfacePanel.cpp */,
@@ -4034,6 +4039,7 @@
 				818A6807A6A72ADAAF25BA49 /* juce_opengl.mm in Sources */,
 				1BA3F3E11CDA21EC00073946 /* BoxObject.cpp in Sources */,
 				9BCFDFA05909B824025EA496 /* juce_video.mm in Sources */,
+				1B7FFFB71CF0C9800011F405 /* Presets.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

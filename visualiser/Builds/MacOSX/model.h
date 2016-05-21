@@ -6,37 +6,46 @@ namespace model {
 
 class ModelMember : public Broadcaster, public BroadcastListener {
 public:
-  ModelMember(ModelMember *owner) : owner(owner) {}
-
-  ModelMember(const ModelMember &) = delete;
-  ModelMember &operator=(const ModelMember &) = delete;
-  ModelMember(ModelMember &&) noexcept = delete;
-  ModelMember &operator=(ModelMember &&) noexcept = delete;
-  virtual ~ModelMember() noexcept = default;
-
-  void receive_broadcast(Broadcaster *b) override { notify(); }
-  void notify(bool do_notify = true) {
-    if (do_notify) {
-      broadcast();
+    ModelMember(ModelMember *owner)
+            : owner(owner) {
     }
-  }
 
-  ModelMember *get_owner() const { return owner; }
+    ModelMember(const ModelMember &) = delete;
+    ModelMember &operator=(const ModelMember &) = delete;
+    ModelMember(ModelMember &&) noexcept = delete;
+    ModelMember &operator=(ModelMember &&) noexcept = delete;
+    virtual ~ModelMember() noexcept = default;
+
+    void receive_broadcast(Broadcaster *b) override {
+        notify();
+    }
+    void notify(bool do_notify = true) {
+        if (do_notify) {
+            broadcast();
+        }
+    }
+
+    ModelMember *get_owner() const {
+        return owner;
+    }
 
 private:
-  ModelMember *owner;
-  BroadcastConnector owner_connector{this, owner};
+    ModelMember *owner;
+    BroadcastConnector owner_connector{this, owner};
 };
 
-template <typename T> class ModelValue : public ModelMember {
+template <typename T>
+class ModelValue : public ModelMember {
 public:
-  using ModelMember::ModelMember;
+    using ModelMember::ModelMember;
 
-  operator T() const { return get(); }
+    operator T() const {
+        return get();
+    }
 
-  virtual void reseat(T &u) = 0;
-  virtual T get() const = 0;
-  virtual void set(const T &u, bool do_notify = true) = 0;
+    virtual void reseat(T &u) = 0;
+    virtual T get() const = 0;
+    virtual void set(const T &u, bool do_notify = true) = 0;
 };
 
-} // namesapce model
+}  // namesapce model

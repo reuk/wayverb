@@ -1,5 +1,6 @@
 #pragma once
 
+#include "FullModel.hpp"
 #include "MainComponent.hpp"
 #include "VisualiserLookAndFeel.hpp"
 
@@ -21,6 +22,7 @@ public:
     static const auto recent_projects_base_id = 100;
 
     void create_file_menu(PopupMenu& menu);
+    void create_view_menu(PopupMenu& menu);
 
     void handle_main_menu_command(int menu_item_id);
 
@@ -44,7 +46,8 @@ public:
     };
 
     class MainWindow final : public DocumentWindow,
-                             public ApplicationCommandTarget {
+                             public ApplicationCommandTarget,
+                             public model::BroadcastListener {
     public:
         MainWindow(String name, const File& project);
         ~MainWindow() noexcept;
@@ -59,7 +62,18 @@ public:
         bool perform(const InvocationInfo& info) override;
         ApplicationCommandTarget* getNextCommandTarget() override;
 
+        void receive_broadcast(model::Broadcaster* b) override;
+
     private:
+        SceneData scene_data;
+        model::FullModel model;
+        model::ValueWrapper<model::FullModel> wrapper{nullptr, model};
+
+        model::BroadcastConnector is_rendering_connector{
+            &wrapper.render_state.is_rendering, this};
+        model::BroadcastConnector visualising_connector{
+            &wrapper.render_state.visualise, this};
+
         JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(MainWindow)
     };
 

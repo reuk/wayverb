@@ -1,6 +1,9 @@
 #include "Main.hpp"
 #include "CommandIDs.h"
 
+#include "LoadFiles.hpp"
+#include "Presets.hpp"
+
 #include <memory>
 
 //  taken from the Projucer
@@ -65,10 +68,16 @@ void VisualiserApplication::systemRequestedQuit() {
 void VisualiserApplication::anotherInstanceStarted(const String& commandLine) {
 }
 
-VisualiserApplication::MainWindow::MainWindow(String name, const File& project)
-        : DocumentWindow(name, Colours::lightgrey, DocumentWindow::allButtons) {
+VisualiserApplication::MainWindow::MainWindow(String name, const File& root)
+        : DocumentWindow(name, Colours::lightgrey, DocumentWindow::allButtons)
+        , scene_data(load_model(root, load_materials(root)))
+        , model{load_config(root),
+                scene_data.get_materials(),
+                model::get_presets(),
+                model::FullReceiverConfig{},
+                model::RenderState{}} {
     setUsingNativeTitleBar(true);
-    setContentOwned(new MainContentComponent(project), true);
+    setContentOwned(new MainContentComponent(scene_data, wrapper), true);
 
     centreWithSize(getWidth(), getHeight());
     setVisible(true);
@@ -90,10 +99,22 @@ VisualiserApplication::MainWindow::~MainWindow() noexcept {
     removeKeyListener(
         VisualiserApplication::get_command_manager().getKeyMappings());
 }
+
+void VisualiserApplication::MainWindow::receive_broadcast(
+    model::Broadcaster* b) {
+    if (b == &wrapper.render_state.is_rendering) {
+        VisualiserApplication::get_command_manager().commandStatusChanged();
+    } else if (b == &wrapper.render_state.visualise) {
+        VisualiserApplication::get_command_manager().commandStatusChanged();
+    }
+}
+
 void VisualiserApplication::MainWindow::getAllCommands(
     Array<CommandID>& commands) {
     commands.addArray({
-        CommandIDs::idSaveAsProject, CommandIDs::idCloseProject,
+        CommandIDs::idSaveAsProject,
+        CommandIDs::idCloseProject,
+        CommandIDs::idVisualise,
     });
 }
 void VisualiserApplication::MainWindow::getCommandInfo(
@@ -111,6 +132,14 @@ void VisualiserApplication::MainWindow::getCommandInfo(
             result.defaultKeypresses.add(
                 KeyPress('w', ModifierKeys::commandModifier, 0));
             break;
+        case CommandIDs::idVisualise:
+            result.setInfo("Visualise",
+                           "Toggle display of ray and wave information",
+                           "General",
+                           0);
+            result.setTicked(wrapper.render_state.visualise);
+            result.setActive(!wrapper.render_state.is_rendering);
+            break;
         default:
             break;
     }
@@ -123,6 +152,10 @@ bool VisualiserApplication::MainWindow::perform(const InvocationInfo& info) {
 
         case CommandIDs::idCloseProject:
             closeButtonPressed();
+            return true;
+
+        case CommandIDs::idVisualise:
+            wrapper.render_state.visualise.toggle();
             return true;
 
         default:
@@ -140,8 +173,6 @@ void VisualiserApplication::MainWindow::closeButtonPressed() {
 }
 
 void VisualiserApplication::MainWindow::save_as_project() {
-    auto& i = dynamic_cast<MainContentComponent&>(*getContentComponent());
-    i.save_as_project();
 }
 
 VisualiserApplication& VisualiserApplication::get_app() {
@@ -170,6 +201,10 @@ void VisualiserApplication::create_file_menu(PopupMenu& menu) {
     menu.addCommandItem(&get_command_manager(),
                         StandardApplicationCommandIDs::quit);
 #endif
+}
+
+void VisualiserApplication::create_view_menu(PopupMenu& menu) {
+    menu.addCommandItem(&get_command_manager(), CommandIDs::idVisualise);
 }
 
 void VisualiserApplication::handle_main_menu_command(int menu_item_id) {
@@ -226,7 +261,7 @@ VisualiserApplication::MainMenuBarModel::MainMenuBarModel() {
 }
 
 StringArray VisualiserApplication::MainMenuBarModel::getMenuBarNames() {
-    return {"File"};
+    return {"File", "View"};
 }
 
 PopupMenu VisualiserApplication::MainMenuBarModel::getMenuForIndex(
@@ -234,6 +269,8 @@ PopupMenu VisualiserApplication::MainMenuBarModel::getMenuForIndex(
     PopupMenu menu;
     if (menu_name == "File") {
         get_app().create_file_menu(menu);
+    } else if (menu_name == "View") {
+        get_app().create_view_menu(menu);
     } else {
         jassertfalse;
     }

@@ -10,8 +10,9 @@ namespace model {
 template <>
 class ValueWrapper<Vec3f> : public StructWrapper<Vec3f, 3> {
 public:
-    using StructWrapper<Vec3f, 3>::StructWrapper;
-    std::array<StructAccessor<Vec3f> *, 3> get_members() override {
+    using struct_wrapper::StructWrapper;
+    using struct_wrapper::operator=;
+    member_array get_members() override {
         return {{&x, &y, &z}};
     }
     MODEL_FIELD_DEFINITION(x);
@@ -22,8 +23,9 @@ public:
 template <>
 class ValueWrapper<VolumeType> : public StructWrapper<VolumeType, 8> {
 public:
-    using StructWrapper<VolumeType, 8>::StructWrapper;
-    std::array<StructAccessor<VolumeType> *, 8> get_members() override {
+    using struct_wrapper::StructWrapper;
+    using struct_wrapper::operator=;
+    member_array get_members() override {
         return {{&s0, &s1, &s2, &s3, &s4, &s5, &s6, &s7}};
     }
     RENAMED_FIELD_DEFINITION(s[0], s0);
@@ -39,8 +41,9 @@ public:
 template <>
 class ValueWrapper<Surface> : public StructWrapper<Surface, 2> {
 public:
-    using StructWrapper<Surface, 2>::StructWrapper;
-    std::array<StructAccessor<Surface> *, 2> get_members() override {
+    using struct_wrapper::StructWrapper;
+    using struct_wrapper::operator=;
+    member_array get_members() override {
         return {{&specular, &diffuse}};
     }
     MODEL_FIELD_DEFINITION(specular);
@@ -51,9 +54,9 @@ template <>
 class ValueWrapper<SceneData::Material>
     : public StructWrapper<SceneData::Material, 2> {
 public:
-    using StructWrapper<SceneData::Material, 2>::StructWrapper;
-    std::array<StructAccessor<SceneData::Material> *, 2> get_members()
-        override {
+    using struct_wrapper::StructWrapper;
+    using struct_wrapper::operator=;
+    member_array get_members() override {
         return {{&name, &surface}};
     }
     MODEL_FIELD_DEFINITION(name);
@@ -64,8 +67,9 @@ template <>
 class ValueWrapper<config::Combined>
     : public StructWrapper<config::Combined, 14> {
 public:
-    using StructWrapper<config::Combined, 14>::StructWrapper;
-    std::array<StructAccessor<config::Combined> *, 14> get_members() override {
+    using struct_wrapper::StructWrapper;
+    using struct_wrapper::operator=;
+    member_array get_members() override {
         return {{&filter_frequency,
                  &oversample_ratio,
                  &rays,
@@ -107,8 +111,9 @@ template <>
 class ValueWrapper<config::Microphone>
     : public StructWrapper<config::Microphone, 2> {
 public:
-    using StructWrapper<config::Microphone, 2>::StructWrapper;
-    std::array<StructAccessor<config::Microphone> *, 2> get_members() override {
+    using struct_wrapper::StructWrapper;
+    using struct_wrapper::operator=;
+    member_array get_members() override {
         return {{&facing, &shape}};
     }
     MODEL_FIELD_DEFINITION(facing);
@@ -119,9 +124,9 @@ template <>
 class ValueWrapper<config::MicrophoneModel>
     : public StructWrapper<config::MicrophoneModel, 1> {
 public:
-    using StructWrapper<config::MicrophoneModel, 1>::StructWrapper;
-    std::array<StructAccessor<config::MicrophoneModel> *, 1> get_members()
-        override {
+    using struct_wrapper::StructWrapper;
+    using struct_wrapper::operator=;
+    member_array get_members() override {
         return {{&microphones}};
     }
     MODEL_FIELD_DEFINITION(microphones);
@@ -131,8 +136,9 @@ template <>
 class ValueWrapper<config::HrtfModel>
     : public StructWrapper<config::HrtfModel, 2> {
 public:
-    using StructWrapper<config::HrtfModel, 2>::StructWrapper;
-    std::array<StructAccessor<config::HrtfModel> *, 2> get_members() override {
+    using struct_wrapper::StructWrapper;
+    using struct_wrapper::operator=;
+    member_array get_members() override {
         return {{&facing, &up}};
     }
     MODEL_FIELD_DEFINITION(facing);
@@ -143,8 +149,9 @@ template <>
 class ValueWrapper<FullReceiverConfig>
     : public StructWrapper<FullReceiverConfig, 3> {
 public:
-    using StructWrapper<FullReceiverConfig, 3>::StructWrapper;
-    std::array<StructAccessor<FullReceiverConfig> *, 3> get_members() override {
+    using struct_wrapper::StructWrapper;
+    using struct_wrapper::operator=;
+    member_array get_members() override {
         return {{&mode, &microphone_model, &hrtf_model}};
     }
     MODEL_FIELD_DEFINITION(mode);
@@ -157,24 +164,28 @@ public:
     bool is_rendering{false};
     engine::State state{engine::State::idle};
     double progress{0};
+    bool visualise{true};
     bool show_waveguide{true};
     bool show_raytracer{true};
 };
 
 template <>
-class ValueWrapper<RenderState> : public StructWrapper<RenderState, 5> {
+class ValueWrapper<RenderState> : public StructWrapper<RenderState, 6> {
 public:
-    using StructWrapper<RenderState, 5>::StructWrapper;
-    std::array<StructAccessor<RenderState> *, 5> get_members() override {
+    using struct_wrapper::StructWrapper;
+    using struct_wrapper::operator=;
+    member_array get_members() override {
         return {{&is_rendering,
                  &state,
                  &progress,
+                 &visualise,
                  &show_waveguide,
                  &show_raytracer}};
     }
     MODEL_FIELD_DEFINITION(is_rendering);
     MODEL_FIELD_DEFINITION(state);
     MODEL_FIELD_DEFINITION(progress);
+    MODEL_FIELD_DEFINITION(visualise);
     MODEL_FIELD_DEFINITION(show_waveguide);
     MODEL_FIELD_DEFINITION(show_raytracer);
 };
@@ -191,8 +202,9 @@ public:
 template <>
 class ValueWrapper<FullModel> : public StructWrapper<FullModel, 5> {
 public:
-    using StructWrapper<FullModel, 5>::StructWrapper;
-    std::array<StructAccessor<FullModel> *, 5> get_members() override {
+    using struct_wrapper::StructWrapper;
+    using struct_wrapper::operator=;
+    member_array get_members() override {
         return {{&combined, &materials, &presets, &receiver, &render_state}};
     }
     MODEL_FIELD_DEFINITION(combined);

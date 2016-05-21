@@ -478,6 +478,8 @@ fast stuff
 
 * textbox graceful disable
 
+* recent projects
+
 slow stuff
 ----------
 
@@ -494,12 +496,13 @@ slow stuff
     * improve ray path visualisation (animate?)
     * sort out performance
 
-* option to not visualise
-    * make sure this is actually faster...
-
 * audio output
 
 * proper load and save
+
+* data model library
+    * polymorphism
+    * multithreading
 
 nice-to-have
 ------------
@@ -520,3 +523,5 @@ nice-to-have
 * axes display
 
 * work out better scheduling + interop for gl backend
+
+* better 3D crosshairs

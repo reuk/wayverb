@@ -36,9 +36,34 @@ public:
     }
 };
 
+template <>
+class ValueWrapper<bool> : public NestedValueWrapper<bool> {
+public:
+    using NestedValueWrapper<bool>::NestedValueWrapper;
+
+    void reseat(bool &u) override {
+        this->t = &u;
+    }
+    void set(const bool &u, bool do_notify = true) override {
+        *(this->t) = u;
+        this->notify(do_notify);
+    }
+
+    void toggle(bool do_notify = true) {
+        set(!(*(this->t)), do_notify);
+    }
+};
+
 template <typename Struct>
 class StructAccessor {
 public:
+    StructAccessor() = default;
+    StructAccessor(const StructAccessor &) = default;
+    StructAccessor &operator=(const StructAccessor &) = default;
+    StructAccessor(StructAccessor &&) noexcept = default;
+    StructAccessor &operator=(StructAccessor &&) noexcept = default;
+    virtual ~StructAccessor() noexcept = default;
+
     virtual void reseat_from_struct(Struct &s) = 0;
     virtual void set_from_struct(const Struct &s, bool do_notify) = 0;
 };
@@ -86,7 +111,9 @@ private:
 template <typename T, size_t members>
 class StructWrapper : public NestedValueWrapper<T> {
 public:
+    using struct_wrapper = StructWrapper;
     using wrapped = T;
+    using member_array = std::array<StructAccessor<T> *, members>;
     using NestedValueWrapper<T>::NestedValueWrapper;
 
     void reseat(T &u) override {
@@ -100,7 +127,7 @@ public:
         }
     }
 
-    virtual std::array<StructAccessor<T> *, members> get_members() = 0;
+    virtual member_array get_members() = 0;
 };
 
 }  // namespace model
