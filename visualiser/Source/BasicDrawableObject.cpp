@@ -4,10 +4,10 @@ BasicDrawableObject::BasicDrawableObject(const GenericShader& shader,
                                          const std::vector<glm::vec3>& g,
                                          const std::vector<glm::vec4>& c,
                                          const std::vector<GLuint>& i,
-                                         GLuint DRAW_MODE)
+                                         GLuint mode)
         : shader(shader)
         , size(i.size())
-        , DRAW_MODE(DRAW_MODE) {
+        , mode(mode) {
     geometry.data(g);
     colors.data(c);
     ibo.data(i);
@@ -33,7 +33,14 @@ void BasicDrawableObject::draw() const {
     shader.set_black(false);
 
     auto s_vao = vao.get_scoped();
-    glDrawElements(DRAW_MODE, size, GL_UNSIGNED_INT, nullptr);
+    glDrawElements(mode, size, GL_UNSIGNED_INT, nullptr);
+}
+
+GLuint BasicDrawableObject::get_mode() const {
+    return mode;
+}
+void BasicDrawableObject::set_mode(GLuint u) {
+    mode = u;
 }
 
 glm::vec3 BasicDrawableObject::get_position() const {

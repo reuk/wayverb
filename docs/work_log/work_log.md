@@ -473,7 +473,6 @@ fast stuff
 * editors
     * 3D vectors
     * number boxes
-        * draggable
         * limits
 
 * textbox graceful disable
@@ -520,8 +519,9 @@ nice-to-have
 
 * variable speed of sound
 
-* axes display
-
 * work out better scheduling + interop for gl backend
 
 * better 3D crosshairs
+
+* number box padding issues
+* hide mouse when dragging

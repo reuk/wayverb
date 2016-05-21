@@ -16,7 +16,7 @@ public:
                         const std::vector<glm::vec3>& g,
                         const std::vector<glm::vec4>& c,
                         const std::vector<GLuint>& i,
-                        GLuint DRAW_MODE);
+                        GLuint mode);
 
     void draw() const override;
 
@@ -28,6 +28,9 @@ public:
     void set_scale(float s);
 
     const GenericShader& get_shader() const;
+
+    GLuint get_mode() const;
+    void set_mode(GLuint mode);
 
 private:
     glm::mat4 get_matrix() const;
@@ -43,5 +46,5 @@ private:
     StaticIBO ibo;
     GLuint size;
 
-    GLuint DRAW_MODE{GL_LINES};
+    GLuint mode{GL_LINES};
 };

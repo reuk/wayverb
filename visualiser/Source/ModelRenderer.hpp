@@ -1,5 +1,6 @@
 #pragma once
 
+#include "AxesObject.hpp"
 #include "BasicDrawableObject.hpp"
 #include "BoxObject.hpp"
 #include "MeshObject.hpp"
@@ -157,6 +158,7 @@ private:
 
     std::unique_ptr<GenericShader> shader;
     std::unique_ptr<DrawableScene> drawable_scene;
+    std::unique_ptr<AxesObject> axes;
 
     glm::mat4 projection_matrix;
 

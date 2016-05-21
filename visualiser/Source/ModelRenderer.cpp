@@ -259,6 +259,7 @@ void SceneRenderer::newOpenGLContextCreated() {
     std::lock_guard<std::mutex> lck(mut);
     shader = std::make_unique<GenericShader>();
     drawable_scene = std::make_unique<DrawableScene>(*shader, model);
+    axes = std::make_unique<AxesObject>(*shader);
 
     auto aabb = model.get_aabb();
     auto m = aabb.centre();
@@ -315,11 +316,13 @@ void SceneRenderer::draw() const {
     shader->set_projection_matrix(get_projection_matrix());
 
     auto draw_thing = [this](const auto &i) {
-        if (i)
+        if (i) {
             i->draw();
+        }
     };
 
     draw_thing(drawable_scene);
+    draw_thing(axes);
 }
 
 glm::mat4 SceneRenderer::get_projection_matrix() const {

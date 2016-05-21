@@ -8,36 +8,135 @@
 #include <iomanip>
 #include <sstream>
 
-/*
 template <typename T>
-class NumberEditor : public ValueWrapperSlider<T> {
+class IncDecButtons : public Component {
 public:
-    NumberEditor(model::ValueWrapper<T>& value)
-            : ValueWrapperSlider<T>(value) {
-        this->changeListenerCallback(&value);
-    }
-};
+    class Listener {
+    public:
+        Listener() = default;
+        Listener(const Listener& rhs) = default;
+        Listener& operator=(const Listener& rhs) = default;
+        Listener(Listener&& rhs) noexcept = default;
+        Listener& operator=(Listener&& rhs) noexcept = default;
+        virtual ~Listener() noexcept = default;
 
-template <typename T>
-class NumberProperty : public PropertyComponent {
-public:
-    NumberProperty(const String& name, model::ValueWrapper<T>& value)
-            : PropertyComponent(name)
-            , editor(value) {
-        addAndMakeVisible(editor);
+        virtual void apply_increment(IncDecButtons* b, T value) = 0;
+    };
+
+    IncDecButtons() {
+        addAndMakeVisible(sub_button);
+        addAndMakeVisible(add_button);
+
+        sub_button.setInterceptsMouseClicks(false, false);
+        add_button.setInterceptsMouseClicks(false, false);
     }
-    void refresh() override {
+
+    void resized() override {
+        auto width = getWidth();
+        auto button_width = (width - 2) / 2;
+
+        sub_button.setSize(button_width, getHeight());
+        add_button.setSize(button_width, getHeight());
+
+        sub_button.setTopLeftPosition(0, 0);
+        add_button.setTopLeftPosition(sub_button.getRight() + 2, 0);
+    }
+
+    void set_increment(T t) {
+        increment = t;
+    }
+
+    T get_increment() const {
+        return increment;
+    }
+
+    void addListener(Listener* l) {
+        listener_list.add(l);
+    }
+    void removeListener(Listener* l) {
+        listener_list.remove(l);
+    }
+
+    void mouseDown(const MouseEvent& e) override {
+        dragged = false;
+        mouse_start_pos = mouse_pos_when_last_dragged = e.position;
+        if (isEnabled()) {
+            value_on_mouse_down = value_on_prev_frame =
+                value_when_last_dragged = 0;
+            mouseDrag(e);
+        }
+    }
+
+    void handleDrag(const MouseEvent& e) {
+        auto mouseDiff = e.position.x - mouse_start_pos.x;
+
+        auto pixelsForFullDragExtent = 250;
+        value_when_last_dragged =
+            increment * mouseDiff / pixelsForFullDragExtent;
+
+        add_button.setState(mouseDiff < 0 ? Button::buttonNormal
+                                          : Button::buttonDown);
+        sub_button.setState(mouseDiff > 0 ? Button::buttonNormal
+                                          : Button::buttonDown);
+    }
+
+    void mouseDrag(const MouseEvent& e) override {
+        if (!dragged) {
+            if (e.getDistanceFromDragStart() < 10 ||
+                !e.mouseWasDraggedSinceMouseDown()) {
+                return;
+            }
+
+            dragged = true;
+            mouse_start_pos = e.position;
+        }
+
+        handleDrag(e);
+
+        //  limit value_when_last_dragged here
+
+        listener_list.call(&Listener::apply_increment,
+                           this,
+                           value_when_last_dragged - value_on_prev_frame);
+        value_on_prev_frame = value_when_last_dragged;
+
+        mouse_pos_when_last_dragged = e.position;
+    }
+
+    void mouseUp(const MouseEvent& e) override {
+        add_button.setState(Button::buttonNormal);
+        sub_button.setState(Button::buttonNormal);
+
+        if (!dragged) {
+            if (add_button.getBounds().contains(e.getPosition())) {
+                listener_list.call(&Listener::apply_increment, this, increment);
+            } else if (sub_button.getBounds().contains(e.getPosition())) {
+                listener_list.call(
+                    &Listener::apply_increment, this, -increment);
+            }
+        }
     }
 
 private:
-    NumberEditor<T> editor;
+    TextButton sub_button{"-"};
+    TextButton add_button{"+"};
+
+    T increment{1};
+
+    bool dragged{false};
+    Point<float> mouse_start_pos;
+    Point<float> mouse_pos_when_last_dragged;
+    T value_on_mouse_down;
+    T value_on_prev_frame;
+    T value_when_last_dragged;
+
+    ListenerList<Listener> listener_list;
 };
-*/
 
 template <typename T>
 class NumberEditor : public Component,
                      public TextEditor::Listener,
-                     public Button::Listener {
+                     public IncDecButtons<T>::Listener {
 public:
     class Listener {
     public:
@@ -51,32 +150,26 @@ public:
         virtual void number_editor_value_changed(NumberEditor& e) = 0;
     };
 
-    NumberEditor()
-            : text_editor()
-            , sub_button("-")
-            , add_button("+") {
+    NumberEditor() {
         text_editor.setInputRestrictions(0, "0123456789.-+eE");
 
         addAndMakeVisible(text_editor);
-        addAndMakeVisible(sub_button);
-        addAndMakeVisible(add_button);
+        addAndMakeVisible(inc_dec_buttons);
 
         set_text(0, false);
     }
+
     void resized() override {
-        auto button_width = 25;
+        auto button_width = 52;
         auto bounds = getLocalBounds();
 
-        sub_button.setBounds(bounds.withWidth(button_width));
-        text_editor.setBounds(bounds.reduced(button_width + 2, 0));
-        add_button.setBounds(bounds.withLeft(getWidth() - button_width));
+        text_editor.setBounds(bounds.withTrimmedRight(button_width + 2));
+        inc_dec_buttons.setBounds(bounds.removeFromRight(button_width));
     }
 
-    void buttonClicked(Button* button) override {
-        if (button == &sub_button) {
-            set_value(get_value() - 1, true);
-        } else if (button == &add_button) {
-            set_value(get_value() + 1, true);
+    void apply_increment(IncDecButtons<T>* idb, T value) override {
+        if (idb == &inc_dec_buttons) {
+            set_value(get_value() + value, true);
         }
     }
 
@@ -103,6 +196,14 @@ public:
         listener_list.remove(l);
     }
 
+    void set_increment(T t) {
+        inc_dec_buttons.set_increment(t);
+    }
+
+    T get_increment() const {
+        return inc_dec_buttons.get_increment();
+    }
+
 private:
     void set_text(T x, bool send_changed) {
         value = x;
@@ -115,11 +216,9 @@ private:
     TextEditor text_editor;
     model::Connector<TextEditor> text_editor_connector{&text_editor, this};
 
-    TextButton sub_button;
-    model::Connector<TextButton> sub_button_connector{&sub_button, this};
-
-    TextButton add_button;
-    model::Connector<TextButton> add_button_connector{&add_button, this};
+    IncDecButtons<T> inc_dec_buttons;
+    model::Connector<IncDecButtons<T>> buttons_connector{&inc_dec_buttons,
+                                                         this};
 
     T value{0};
 
