@@ -135,9 +135,8 @@ private:
 class HrtfModelComponent : public Component {
 public:
     HrtfModelComponent(model::ValueWrapper<config::HrtfModel>& hrtf_model) {
-        property_panel.addProperties(
-            {new Vec3fProperty("facing", hrtf_model.facing),
-             new Vec3fProperty("up", hrtf_model.up)});
+        property_panel.addProperties({new Vec3fProperty(
+            "facing", hrtf_model.facing, Vec3f(-1), Vec3f(1))});
 
         addAndMakeVisible(property_panel);
 
@@ -179,13 +178,17 @@ private:
 
 //----------------------------------------------------------------------------//
 
-LeftPanel::LeftPanel(model::ValueWrapper<model::FullModel>& model)
+LeftPanel::LeftPanel(model::ValueWrapper<model::FullModel>& model,
+                     const SceneData& scene_data)
         : model(model)
         , bottom_panel(model.render_state) {
+    auto aabb = scene_data.get_aabb();
     property_panel.addSection(
         "general",
-        {new Vec3fProperty("source", model.combined.source),
-         new Vec3fProperty("mic", model.combined.mic)});
+        {new Vec3fProperty(
+             "source", model.combined.source, aabb.get_c0(), aabb.get_c1()),
+         new Vec3fProperty(
+             "mic", model.combined.mic, aabb.get_c0(), aabb.get_c1())});
 
     Array<PropertyComponent*> materials;
     materials.addArray(make_material_buttons(model.materials, model.presets));
@@ -193,14 +196,16 @@ LeftPanel::LeftPanel(model::ValueWrapper<model::FullModel>& model)
 
     property_panel.addSection(
         "waveguide",
-        {new NumberProperty<float>("cutoff", model.combined.filter_frequency),
-         new NumberProperty<float>("oversample",
-                                   model.combined.oversample_ratio)});
+        {new NumberProperty<float>(
+             "cutoff", model.combined.filter_frequency, 20, 20000),
+         new NumberProperty<float>(
+             "oversample", model.combined.oversample_ratio, 1, 4)});
 
     property_panel.addSection(
         "raytracer",
-        {new NumberProperty<int>("rays", model.combined.rays),
-         new NumberProperty<int>("reflections", model.combined.impulses)});
+        {new NumberProperty<int>("rays", model.combined.rays, 1000, 1000000),
+         new NumberProperty<int>(
+             "reflections", model.combined.impulses, 20, 200)});
 
     Array<PropertyComponent*> receivers;
     receivers.add(new ReceiverPickerProperty(model.receiver.mode));

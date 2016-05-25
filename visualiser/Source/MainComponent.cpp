@@ -9,7 +9,7 @@ MainContentComponent::MainContentComponent(
     SceneData& scene_data, model::ValueWrapper<model::FullModel>& wrapper)
         : scene_data(scene_data)
         , wrapper(wrapper)
-        , left_panel(wrapper)
+        , left_panel(wrapper, scene_data)
         , resizer_bar(&layout_manager, 1, true)
         , right_panel(scene_data, wrapper.combined, wrapper.render_state) {
     auto left_panel_width = 300;

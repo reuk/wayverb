@@ -472,23 +472,22 @@ interface
 fast stuff
 ----------
 
-* editors
-    * number boxes
-        * limits
-
-* textbox graceful disable
+* graceful errors
+    * source/receiver outside model
 
 * recent projects
 
 slow stuff
 ----------
 
+* microphone/hrtf look-at rather than facing for UI
+    * visualise HRTF facing/up directions
+    * visualise mic directions, directionality
+
 * data models
     * microphone capsules
         * groups?
             * with their own up + facing pairs
-        * visualise HRTF facing/up directions
-        * visualise mic directions, directionality
     * material config
         * show in model - button on materialproperty
 
@@ -501,11 +500,11 @@ slow stuff
 
 * proper load and save
 
-* data model library
-    * polymorphism
-
 nice-to-have
 ------------
+
+* data model library
+    * polymorphic type support
 
 * undo/redo
 
@@ -524,5 +523,4 @@ nice-to-have
 
 * better 3D crosshairs
 
-* number box padding issues
-* hide mouse when dragging
+* stop surface panel combobox getting deselected after selecting something

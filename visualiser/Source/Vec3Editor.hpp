@@ -9,7 +9,7 @@
 #include <sstream>
 
 template <typename T>
-class IncDecButtons : public Component {
+class IncDecButtons : public Component, public Button::Listener {
 public:
     class Listener {
     public:
@@ -27,8 +27,8 @@ public:
         addAndMakeVisible(sub_button);
         addAndMakeVisible(add_button);
 
-        sub_button.setInterceptsMouseClicks(false, false);
-        add_button.setInterceptsMouseClicks(false, false);
+        sub_button.addMouseListener(this, false);
+        add_button.addMouseListener(this, false);
     }
 
     void resized() override {
@@ -70,56 +70,62 @@ public:
     void handleDrag(const MouseEvent& e) {
         auto mouseDiff = e.position.x - mouse_start_pos.x;
 
-        auto pixelsForFullDragExtent = 250;
+        constexpr auto pixels_for_single_increment = 50;
         value_when_last_dragged =
-            increment * mouseDiff / pixelsForFullDragExtent;
+            increment * mouseDiff / pixels_for_single_increment;
 
         add_button.setState(mouseDiff < 0 ? Button::buttonNormal
-                                          : Button::buttonDown);
+                                          : Button::buttonOver);
         sub_button.setState(mouseDiff > 0 ? Button::buttonNormal
-                                          : Button::buttonDown);
+                                          : Button::buttonOver);
+
+        e.source.enableUnboundedMouseMovement(true, false);
     }
 
     void mouseDrag(const MouseEvent& e) override {
-        if (!dragged) {
-            if (e.getDistanceFromDragStart() < 10 ||
-                !e.mouseWasDraggedSinceMouseDown()) {
-                return;
+        if (isEnabled()) {
+            if (!dragged) {
+                if (e.getDistanceFromDragStart() < 10 ||
+                    !e.mouseWasDraggedSinceMouseDown()) {
+                    return;
+                }
+
+                dragged = true;
+                mouse_start_pos = e.position;
             }
 
-            dragged = true;
-            mouse_start_pos = e.position;
+            handleDrag(e);
+
+            //  limit value_when_last_dragged here
+
+            listener_list.call(&Listener::apply_increment,
+                               this,
+                               value_when_last_dragged - value_on_prev_frame);
+            value_on_prev_frame = value_when_last_dragged;
+
+            mouse_pos_when_last_dragged = e.position;
         }
-
-        handleDrag(e);
-
-        //  limit value_when_last_dragged here
-
-        listener_list.call(&Listener::apply_increment,
-                           this,
-                           value_when_last_dragged - value_on_prev_frame);
-        value_on_prev_frame = value_when_last_dragged;
-
-        mouse_pos_when_last_dragged = e.position;
     }
 
     void mouseUp(const MouseEvent& e) override {
-        add_button.setState(Button::buttonNormal);
-        sub_button.setState(Button::buttonNormal);
-
-        if (!dragged) {
-            if (add_button.getBounds().contains(e.getPosition())) {
-                listener_list.call(&Listener::apply_increment, this, increment);
-            } else if (sub_button.getBounds().contains(e.getPosition())) {
-                listener_list.call(
-                    &Listener::apply_increment, this, -increment);
-            }
+        if (isEnabled()) {
+            add_button.setState(Button::buttonNormal);
+            sub_button.setState(Button::buttonNormal);
         }
+    }
+
+    void buttonClicked(Button* b) override {
+        listener_list.call(&Listener::apply_increment,
+                           this,
+                           b == &add_button ? increment : -increment);
     }
 
 private:
     TextButton sub_button{"-"};
     TextButton add_button{"+"};
+
+    model::Connector<TextButton> sub_button_connector{&sub_button, this};
+    model::Connector<TextButton> add_button_connector{&add_button, this};
 
     T increment{1};
 
@@ -177,9 +183,14 @@ public:
         if (&editor == &text_editor) {
             set_value(std::stof(editor.getText().toStdString()), true);
         }
+        moveKeyboardFocusToSibling(true);
     }
 
-    void set_value(T x, bool send_changed) {
+    void textEditorFocusLost(TextEditor& editor) override {
+        set_value(get_value(), false);
+    }
+
+    virtual void set_value(T x, bool send_changed) {
         set_text(x, false);
         if (send_changed) {
             listener_list.call(&Listener::number_editor_value_changed, *this);
@@ -226,13 +237,43 @@ private:
 };
 
 template <typename T>
+class LimitedNumberEditor : public NumberEditor<T> {
+public:
+    LimitedNumberEditor(T min, T max)
+            : min(min)
+            , max(max) {
+    }
+
+    void set_minimum(T u) {
+        min = u;
+    }
+
+    void set_maximum(T u) {
+        max = u;
+    }
+
+    void set_value(T x, bool send_changed) override {
+        NumberEditor<T>::set_value(Range<T>(min, max).clipValue(x),
+                                   send_changed);
+    }
+
+private:
+    T min;
+    T max;
+};
+
+template <typename T>
 class NumberProperty : public PropertyComponent,
                        public NumberEditor<T>::Listener,
                        public model::BroadcastListener {
 public:
-    NumberProperty(const String& name, model::ValueWrapper<T>& value)
+    NumberProperty(const String& name,
+                   model::ValueWrapper<T>& value,
+                   T min,
+                   T max)
             : PropertyComponent(name)
-            , value(value) {
+            , value(value)
+            , editor(min, max) {
         receive_broadcast(&value);
 
         addAndMakeVisible(editor);
@@ -252,17 +293,27 @@ public:
         }
     }
 
+    void set_minimum(T u) {
+        editor.set_minimum(u);
+    }
+
+    void set_maximum(T u) {
+        editor.set_maximum(u);
+    }
+
 private:
     model::ValueWrapper<T>& value;
     model::BroadcastConnector value_connector{&value, this};
 
-    NumberEditor<T> editor;
+    LimitedNumberEditor<T> editor;
     model::Connector<NumberEditor<T>> editor_connector{&editor, this};
 };
 
 class Vec3fEditor : public Component {
 public:
-    Vec3fEditor(model::ValueWrapper<Vec3f>& value);
+    Vec3fEditor(model::ValueWrapper<Vec3f>& value,
+                const Vec3f& min,
+                const Vec3f& max);
     void resized() override;
 
 private:
@@ -272,7 +323,10 @@ private:
 
 class Vec3fProperty : public PropertyComponent {
 public:
-    Vec3fProperty(const String& name, model::ValueWrapper<Vec3f>& value);
+    Vec3fProperty(const String& name,
+                  model::ValueWrapper<Vec3f>& value,
+                  const Vec3f& min,
+                  const Vec3f& max);
     void refresh() override;
 
 private:

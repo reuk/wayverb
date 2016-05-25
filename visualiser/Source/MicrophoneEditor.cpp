@@ -130,9 +130,9 @@ void MicrophoneEditableListBox::update_sub_button_enablement() {
 SingleMicrophoneComponent::SingleMicrophoneComponent(
     model::ValueWrapper<config::Microphone>& microphone) {
     property_panel.addProperties(
-        {new Vec3fProperty("facing", microphone.facing)});
+        {new Vec3fProperty("facing", microphone.facing, Vec3f(-1), Vec3f(1))});
     property_panel.addProperties(
-        {new NumberProperty<float>("shape", microphone.shape)});
+        {new NumberProperty<float>("shape", microphone.shape, 0, 1)});
 
     addAndMakeVisible(property_panel);
 }

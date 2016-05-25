@@ -38,6 +38,9 @@ VisualiserLookAndFeel::VisualiserLookAndFeel() {
     setColour(PopupMenu::ColourIds::highlightedBackgroundColourId,
               Colours::darkgrey);
     setColour(ComboBox::ColourIds::arrowColourId, Colours::lightgrey);
+    setColour(TextEditor::ColourIds::textColourId, Colours::black);
+    setColour(TextEditor::ColourIds::highlightColourId, Colours::darkgrey);
+    setColour(TextEditor::ColourIds::highlightedTextColourId, Colours::white);
 }
 
 void horizontal_line(Graphics& g,
@@ -68,7 +71,10 @@ void vertical_line(Graphics& g,
     }
 }
 
-auto matte_outer(Graphics& g, Rectangle<int> bounds, bool vertical) {
+auto matte_outer(Graphics& g,
+                 Rectangle<int> bounds,
+                 bool vertical,
+                 Colour c = Colours::black) {
     if (vertical) {
         vertical_line(g, bounds.getX(), bounds.getY(), bounds.getBottom());
         bounds.removeFromLeft(1);
@@ -77,7 +83,7 @@ auto matte_outer(Graphics& g, Rectangle<int> bounds, bool vertical) {
             g, bounds.getHeight() - 1, bounds.getX(), bounds.getRight());
         bounds.removeFromBottom(1);
     }
-    g.setColour(Colours::black.withAlpha(0.9f));
+    g.setColour(c.withAlpha(0.9f));
     g.drawRect(
         bounds.getX(), bounds.getY(), bounds.getWidth(), bounds.getHeight(), 1);
     bounds.reduce(1, 1);
@@ -275,10 +281,13 @@ void VisualiserLookAndFeel::fillTextEditorBackground(Graphics& g,
 void VisualiserLookAndFeel::drawTextEditorOutline(Graphics& g,
                                                   int width,
                                                   int height,
-                                                  TextEditor&) {
+                                                  TextEditor& e) {
     g.setColour(Colours::darkgrey);
     g.drawRect(0, 0, width, height);
-    matte_outer(g, Rectangle<int>(0, 0, width, height), false);
+    matte_outer(g,
+                Rectangle<int>(0, 0, width, height),
+                false,
+                e.hasKeyboardFocus(true) ? emphasis : Colours::black);
 }
 
 void VisualiserLookAndFeel::drawGroupComponentOutline(
