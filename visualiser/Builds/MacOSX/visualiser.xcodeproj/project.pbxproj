@@ -13,6 +13,7 @@
 		17BFF294246BE35E2334DF9F /* QTKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AED820E5E9613936B4CCA98A /* QTKit.framework */; };
 		1B0E93891CDD0371001A33F5 /* Vec3Editor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1B0E93871CDD0371001A33F5 /* Vec3Editor.cpp */; };
 		1B0E93B31CDD4A50001A33F5 /* ProgressButton.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1B0E93B11CDD4A50001A33F5 /* ProgressButton.cpp */; };
+		1B1504C11CF621960060BDAA /* LitSceneShader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1B1504BF1CF621960060BDAA /* LitSceneShader.cpp */; };
 		1B29EECB1CDB93E6003BD0BB /* VisualiserLookAndFeel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1B29EEC91CDB93E6003BD0BB /* VisualiserLookAndFeel.cpp */; };
 		1B5B74441CF5C6070030717F /* MeshShader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1B5B74421CF5C6070030717F /* MeshShader.cpp */; };
 		1B655C741CEE0A7100901ED1 /* libcombined.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B655C731CEDE25A00901ED1 /* libcombined.a */; };
@@ -383,6 +384,8 @@
 		1B0E93881CDD0371001A33F5 /* Vec3Editor.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = Vec3Editor.hpp; path = ../../Source/Vec3Editor.hpp; sourceTree = "<group>"; };
 		1B0E93B11CDD4A50001A33F5 /* ProgressButton.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ProgressButton.cpp; path = ../../Source/ProgressButton.cpp; sourceTree = "<group>"; };
 		1B0E93B21CDD4A50001A33F5 /* ProgressButton.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = ProgressButton.hpp; path = ../../Source/ProgressButton.hpp; sourceTree = "<group>"; };
+		1B1504BF1CF621960060BDAA /* LitSceneShader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = LitSceneShader.cpp; path = ../../Source/LitSceneShader.cpp; sourceTree = "<group>"; };
+		1B1504C01CF621960060BDAA /* LitSceneShader.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = LitSceneShader.hpp; path = ../../Source/LitSceneShader.hpp; sourceTree = "<group>"; };
 		1B29EEAA1CDB8C2C003BD0BB /* CommandIDs.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = CommandIDs.h; path = ../../Source/CommandIDs.h; sourceTree = "<group>"; };
 		1B29EEC91CDB93E6003BD0BB /* VisualiserLookAndFeel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = VisualiserLookAndFeel.cpp; path = ../../Source/VisualiserLookAndFeel.cpp; sourceTree = "<group>"; };
 		1B29EECA1CDB93E6003BD0BB /* VisualiserLookAndFeel.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = VisualiserLookAndFeel.hpp; path = ../../Source/VisualiserLookAndFeel.hpp; sourceTree = "<group>"; };
@@ -1763,6 +1766,8 @@
 			children = (
 				1B5B74421CF5C6070030717F /* MeshShader.cpp */,
 				1B5B74431CF5C6070030717F /* MeshShader.hpp */,
+				1B1504BF1CF621960060BDAA /* LitSceneShader.cpp */,
+				1B1504C01CF621960060BDAA /* LitSceneShader.hpp */,
 				1BA3F3C61CDA21EC00073946 /* BasicDrawableObject.cpp */,
 				1BA3F3C71CDA21EC00073946 /* BasicDrawableObject.hpp */,
 				1BB9CEE11CF0D1D500F6B22C /* AxesObject.cpp */,
@@ -4030,6 +4035,7 @@
 				1BA3F3E51CDA21EC00073946 /* Main.cpp in Sources */,
 				2A725BEA57789D2477C5B1CC /* juce_audio_devices.mm in Sources */,
 				1BA3F3EA1CDA21EC00073946 /* ModelSectionObject.cpp in Sources */,
+				1B1504C11CF621960060BDAA /* LitSceneShader.cpp in Sources */,
 				1BC296711CE63C4A00F4F33F /* PropertyComponentLAF.cpp in Sources */,
 				F210D7F2CFEEB91ED9513DDD /* juce_audio_formats.mm in Sources */,
 				127F610F5B79495C0D092DF7 /* juce_audio_processors.mm in Sources */,

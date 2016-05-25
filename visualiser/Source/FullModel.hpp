@@ -199,21 +199,28 @@ public:
     std::vector<SceneData::Material> presets;
     FullReceiverConfig receiver;
     RenderState render_state;
+    int shown_surface{-1};
 };
 
 template <>
-class ValueWrapper<FullModel> : public StructWrapper<FullModel, 5> {
+class ValueWrapper<FullModel> : public StructWrapper<FullModel, 6> {
 public:
     using struct_wrapper::StructWrapper;
     using struct_wrapper::operator=;
     member_array get_members() override {
-        return {{&combined, &materials, &presets, &receiver, &render_state}};
+        return {{&combined,
+                 &materials,
+                 &presets,
+                 &receiver,
+                 &render_state,
+                 &shown_surface}};
     }
     MODEL_FIELD_DEFINITION(combined);
     MODEL_FIELD_DEFINITION(materials);
     MODEL_FIELD_DEFINITION(presets);
     MODEL_FIELD_DEFINITION(receiver);
     MODEL_FIELD_DEFINITION(render_state);
+    MODEL_FIELD_DEFINITION(shown_surface);
 };
 
 }  // namespace model

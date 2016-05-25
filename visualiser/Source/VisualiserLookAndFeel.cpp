@@ -23,6 +23,7 @@ VisualiserLookAndFeel::VisualiserLookAndFeel() {
     setColour(ProgressBar::ColourIds::backgroundColourId, Colours::darkgrey);
     setColour(ProgressBar::ColourIds::foregroundColourId, emphasis);
     setColour(TextButton::ColourIds::buttonColourId, Colours::darkgrey);
+    setColour(TextButton::ColourIds::buttonOnColourId, emphasis);
     setColour(TextButton::ColourIds::textColourOnId, Colours::lightgrey);
     setColour(TextButton::ColourIds::textColourOffId, Colours::lightgrey);
     setColour(Label::ColourIds::textColourId, Colours::lightgrey);

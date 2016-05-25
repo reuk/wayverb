@@ -9,6 +9,7 @@ class ModelRendererComponent : public Component,
 public:
     ModelRendererComponent(
         const SceneData& model,
+        model::ValueWrapper<int>& shown_surface,
         model::ValueWrapper<config::Combined>& config,
         model::ValueWrapper<model::RenderState>& render_state);
     virtual ~ModelRendererComponent() noexcept;
@@ -31,6 +32,9 @@ public:
 
 private:
     const SceneData& model;
+    model::ValueWrapper<int>& shown_surface;
+    model::BroadcastConnector shown_connector{&shown_surface, this};
+
     model::ValueWrapper<config::Combined>& config;
     model::ValueWrapper<model::RenderState>& render_state;
 

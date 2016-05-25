@@ -17,35 +17,98 @@ public:
     }
 
 private:
-    PropertyComponentLAF pclaf;
+    PropertyComponentLAF pclaf{200};
 };
 
-class MaterialConfigureButton : public ConfigureButton {
+class MaterialConfigureButtonComponent : public Component,
+                                         public Button::Listener,
+                                         model::BroadcastListener {
 public:
-    MaterialConfigureButton(
+    MaterialConfigureButtonComponent(
+        int this_surface,
+        model::ValueWrapper<int>& shown_surface,
         model::ValueWrapper<SceneData::Material>& value,
         model::ValueWrapper<std::vector<SceneData::Material>>& preset_model)
-            : ConfigureButton(value.name.get())
+            : this_surface(this_surface)
+            , shown_surface(shown_surface)
             , value(value)
             , preset_model(preset_model) {
+        show_button.setClickingTogglesState(false);
+
+        addAndMakeVisible(show_button);
+        addAndMakeVisible(more_button);
     }
 
-    void buttonClicked() override {
-        auto panel = new SurfaceComponentWithTitle(value, preset_model);
-        CallOutBox::launchAsynchronously(panel, getScreenBounds(), nullptr);
+    void resized() override {
+        auto bounds = getLocalBounds();
+        show_button.setBounds(bounds.removeFromLeft(50));
+        bounds.removeFromLeft(2);
+        more_button.setBounds(bounds);
+    }
+
+    void buttonClicked(Button* b) override {
+        if (b == &show_button) {
+            shown_surface.set(shown_surface == this_surface ? -1
+                                                            : this_surface);
+        } else if (b == &more_button) {
+            auto panel = new SurfaceComponentWithTitle(value, preset_model);
+            CallOutBox::launchAsynchronously(
+                panel, more_button.getScreenBounds(), nullptr);
+        }
+    }
+
+    void receive_broadcast(model::Broadcaster* b) override {
+        if (b == &shown_surface) {
+            show_button.setToggleState(shown_surface == this_surface,
+                                       dontSendNotification);
+        }
     }
 
 private:
+    int this_surface;
+    model::ValueWrapper<int>& shown_surface;
+    model::BroadcastConnector surface_connector{&shown_surface, this};
+
     model::ValueWrapper<SceneData::Material>& value;
     model::ValueWrapper<std::vector<SceneData::Material>>& preset_model;
+
+    TextButton show_button{"show"};
+    model::Connector<TextButton> show_connector{&show_button, this};
+
+    TextButton more_button{"..."};
+    model::Connector<TextButton> more_connector{&more_button, this};
+};
+
+class MaterialConfigureButton : public PropertyComponent {
+public:
+    MaterialConfigureButton(
+        int this_surface,
+        model::ValueWrapper<int>& shown_surface,
+        model::ValueWrapper<SceneData::Material>& value,
+        model::ValueWrapper<std::vector<SceneData::Material>>& preset_model)
+            : PropertyComponent(value.name.get())
+            , contents(this_surface, shown_surface, value, preset_model) {
+        setLookAndFeel(&pclaf);
+        addAndMakeVisible(contents);
+    }
+
+    void refresh() override {
+    }
+
+private:
+    MaterialConfigureButtonComponent contents;
+    PropertyComponentLAF pclaf{200};
 };
 
 Array<PropertyComponent*> make_material_buttons(
+    model::ValueWrapper<int>& shown_surface,
     const model::ValueWrapper<std::vector<SceneData::Material>>& model,
     model::ValueWrapper<std::vector<SceneData::Material>>& preset) {
     Array<PropertyComponent*> ret;
+    auto count = 0;
     for (const auto& i : model) {
-        auto to_add = new MaterialConfigureButton(*i, preset);
+        auto to_add =
+            new MaterialConfigureButton(count++, shown_surface, *i, preset);
         ret.add(to_add);
     }
     return ret;
@@ -191,7 +254,8 @@ LeftPanel::LeftPanel(model::ValueWrapper<model::FullModel>& model,
              "mic", model.combined.mic, aabb.get_c0(), aabb.get_c1())});
 
     Array<PropertyComponent*> materials;
-    materials.addArray(make_material_buttons(model.materials, model.presets));
+    materials.addArray(make_material_buttons(
+        model.shown_surface, model.materials, model.presets));
     property_panel.addSection("materials", materials);
 
     property_panel.addSection(

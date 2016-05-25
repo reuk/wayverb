@@ -11,7 +11,10 @@ MainContentComponent::MainContentComponent(
         , wrapper(wrapper)
         , left_panel(wrapper, scene_data)
         , resizer_bar(&layout_manager, 1, true)
-        , right_panel(scene_data, wrapper.combined, wrapper.render_state) {
+        , right_panel(scene_data,
+                      wrapper.shown_surface,
+                      wrapper.combined,
+                      wrapper.render_state) {
     auto left_panel_width = 300;
     layout_manager.setItemLayout(
         0, left_panel_width, left_panel_width, left_panel_width);

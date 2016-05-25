@@ -30,7 +30,6 @@ BasicDrawableObject::BasicDrawableObject(const GenericShader& shader,
 void BasicDrawableObject::draw() const {
     auto s_shader = shader.get_scoped();
     shader.set_model_matrix(get_matrix());
-    shader.set_black(false);
 
     auto s_vao = vao.get_scoped();
     glDrawElements(mode, size, GL_UNSIGNED_INT, nullptr);

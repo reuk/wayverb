@@ -484,13 +484,6 @@ slow stuff
     * visualise HRTF facing/up directions
     * visualise mic directions, directionality
 
-* data models
-    * microphone capsules
-        * groups?
-            * with their own up + facing pairs
-    * material config
-        * show in model - button on materialproperty
-
 * raytracer
     * improve ray path visualisation (animate?)
     * sort out performance
@@ -499,6 +492,8 @@ slow stuff
 * audio output
 
 * proper load and save
+
+* switching off visualise causes some kind of hang
 
 nice-to-have
 ------------
@@ -524,3 +519,6 @@ nice-to-have
 * better 3D crosshairs
 
 * stop surface panel combobox getting deselected after selecting something
+
+* microphone capsule groups
+    * with their own up + facing pairs

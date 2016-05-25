@@ -3,6 +3,7 @@
 #include "AxesObject.hpp"
 #include "BasicDrawableObject.hpp"
 #include "BoxObject.hpp"
+#include "LitSceneShader.hpp"
 #include "MeshObject.hpp"
 #include "ModelObject.hpp"
 #include "ModelSectionObject.hpp"
@@ -56,17 +57,57 @@ public:
     void draw() const override;
 
 private:
-    std::vector<glm::vec3> get_vertices(const SceneData& scene_data) const;
-    std::vector<GLuint> get_indices(const SceneData& scene_data,
-                                    const VoxelCollection& voxel) const;
+    static std::vector<glm::vec3> get_vertices(const SceneData& scene_data);
+    static std::vector<GLuint> get_indices(const SceneData& scene_data,
+                                           const VoxelCollection& voxel);
 
     VoxelCollection voxel;
+};
+
+class MultiMaterialObject : public ::Drawable {
+public:
+    MultiMaterialObject(const GenericShader& generic_shader,
+                        const LitSceneShader& lit_scene_shader,
+                        const SceneData& scene_data);
+
+    void draw() const override;
+
+    class SingleMaterialSection : public ::Drawable {
+    public:
+        SingleMaterialSection(const SceneData& scene_data, int material_index);
+
+        void draw() const override;
+
+    private:
+        static std::vector<GLuint> get_indices(const SceneData& scene_data,
+                                               int material_index);
+        StaticIBO ibo;
+        GLuint size;
+    };
+
+    void set_highlighted(int material);
+
+private:
+    std::vector<glm::vec3> get_vertices(const SceneData& scene_data) const;
+
+    const GenericShader& generic_shader;
+    const LitSceneShader& lit_scene_shader;
+
+    VAO wire_vao;
+    VAO fill_vao;
+    StaticVBO geometry;
+    StaticVBO colors;
+
+    int highlighted{-1};
+
+    std::vector<SingleMaterialSection> sections;
 };
 
 class DrawableScene final : public ::Drawable, public ::Updatable {
 public:
     DrawableScene(const GenericShader& generic_shader,
                   const MeshShader& mesh_shader,
+                  const LitSceneShader& lit_scene_shader,
                   const SceneData& scene_data);
 
     void update(float dt) override;
@@ -80,11 +121,14 @@ public:
     void set_positions(const std::vector<glm::vec3>& positions);
     void set_pressures(const std::vector<float>& pressures);
 
+    void set_highlighted(int u);
+
 private:
     const GenericShader& generic_shader;
     const MeshShader& mesh_shader;
+    const LitSceneShader& lit_scene_shader;
 
-    VoxelisedObject model_object;
+    MultiMaterialObject model_object;
     OctahedronObject source_object;
     OctahedronObject mic_object;
 
@@ -92,18 +136,13 @@ private:
         std::unique_ptr<MeshObject> mesh_object;
         std::vector<glm::vec3> positions;
         std::vector<float> pressures;
-
         void clear();
-
-        mutable std::mutex mut;
     };
 
     MeshContext mesh_context;
     std::unique_ptr<RaytraceObject> raytrace_object;
 
     bool rendering{false};
-
-    mutable std::mutex mut;
 };
 
 class SceneRenderer final : public OpenGLRenderer {
@@ -141,6 +180,8 @@ public:
     void set_positions(const std::vector<cl_float3>& positions);
     void set_pressures(const std::vector<float>& pressures);
 
+    void set_highlighted(int u);
+
     void addListener(Listener* l);
     void removeListener(Listener* l);
 
@@ -161,6 +202,8 @@ private:
         void set_positions(const std::vector<cl_float3>& positions);
         void set_pressures(const std::vector<float>& pressures);
 
+        void set_highlighted(int u);
+
         void draw() const override;
         void update(float dt) override;
 
@@ -175,6 +218,7 @@ private:
 
         GenericShader generic_shader;
         MeshShader mesh_shader;
+        LitSceneShader lit_scene_shader;
         DrawableScene drawable_scene;
         AxesObject axes;
 
@@ -183,8 +227,6 @@ private:
         glm::mat4 rotation;
         float scale;
         glm::mat4 translation;
-
-        mutable std::mutex mut;
     };
 
     SceneData model;

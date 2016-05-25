@@ -12,9 +12,11 @@
 
 ModelRendererComponent::ModelRendererComponent(
     const SceneData &model,
+    model::ValueWrapper<int> &shown_surface,
     model::ValueWrapper<config::Combined> &config,
     model::ValueWrapper<model::RenderState> &render_state)
         : model(model)
+        , shown_surface(shown_surface)
         , config(config)
         , render_state(render_state)
         , scene_renderer(model) {
@@ -51,7 +53,9 @@ void ModelRendererComponent::mouseWheelMove(const MouseEvent &event,
 }
 
 void ModelRendererComponent::receive_broadcast(model::Broadcaster *cb) {
-    if (cb == &config.mic) {
+    if (cb == &shown_surface) {
+        scene_renderer.set_highlighted(shown_surface);
+    } else if (cb == &config.mic) {
         scene_renderer.set_mic(config.mic);
     } else if (cb == &config.source) {
         scene_renderer.set_source(config.source);
