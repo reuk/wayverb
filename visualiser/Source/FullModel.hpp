@@ -165,8 +165,6 @@ public:
     engine::State state{engine::State::idle};
     double progress{0};
     bool visualise{true};
-    bool show_waveguide{true};
-    bool show_raytracer{true};
 };
 
 template <>
@@ -175,19 +173,23 @@ public:
     using struct_wrapper::StructWrapper;
     using struct_wrapper::operator=;
     member_array get_members() override {
-        return {{&is_rendering,
-                 &state,
-                 &progress,
-                 &visualise,
-                 &show_waveguide,
-                 &show_raytracer}};
+        return {{&is_rendering, &state, &progress, &visualise}};
     }
+
+    void start() {
+        is_rendering.set(true);
+    }
+
+    void stop() {
+        is_rendering.set(false);
+        state.set(engine::State::idle);
+        progress.set(0);
+    }
+
     MODEL_FIELD_DEFINITION(is_rendering);
     MODEL_FIELD_DEFINITION(state);
     MODEL_FIELD_DEFINITION(progress);
     MODEL_FIELD_DEFINITION(visualise);
-    MODEL_FIELD_DEFINITION(show_waveguide);
-    MODEL_FIELD_DEFINITION(show_raytracer);
 };
 
 class FullModel {

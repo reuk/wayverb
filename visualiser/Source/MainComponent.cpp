@@ -51,9 +51,6 @@ void MainContentComponent::receive_broadcast(model::Broadcaster* cb) {
     if (cb == &wrapper.render_state.is_rendering) {
         if (wrapper.render_state.is_rendering) {
             keep_going = true;
-
-            std::cout << "start render on dedicated thread here" << std::endl;
-
             engine_thread = std::thread([this] {
                 ComputeContext compute_context;
                 try {
@@ -80,8 +77,7 @@ void MainContentComponent::receive_broadcast(model::Broadcaster* cb) {
                     auto run_visualised = [this, &engine, &callback] {
                         right_panel.set_positions(engine.get_node_positions());
                         //  TODO this is not great, but I know WHY it's not
-                        //  great so
-                        //  it's only 50% unforgivable
+                        //  great so it's only 50% unforgivable
                         return engine.run_visualised(
                             keep_going, callback, [this](const auto& i) {
                                 right_panel.set_pressures(i);
@@ -96,14 +92,16 @@ void MainContentComponent::receive_broadcast(model::Broadcaster* cb) {
                 } catch (const std::runtime_error& e) {
                     std::cout << "wayverb thread error: " << e.what()
                               << std::endl;
+                } catch (...) {
+                    std::cout << "something went pretty wrong so the render "
+                                 "thread is qutting now"
+                              << std::endl;
                 }
                 //  notify
-                wrapper.render_state.is_rendering.set(false);
+                wrapper.render_state.stop();
             });
         } else {
             join_engine_thread();
-            wrapper.render_state.state.set(engine::State::idle);
-            wrapper.render_state.progress.set(0);
         }
     }
 }

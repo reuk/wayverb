@@ -262,60 +262,64 @@ void DrawableScene::set_pressures(const std::vector<float> &p) {
 
 //----------------------------------------------------------------------------//
 
-SceneRenderer::SceneRenderer(const SceneData &model)
-        : model(model)
+SceneRenderer::ContextLifetime::ContextLifetime(const SceneData &scene_data)
+        : model(scene_data)
+        , drawable_scene(generic_shader, mesh_shader, model)
+        , axes(generic_shader)
         , projection_matrix(get_projection_matrix(1)) {
-}
-
-void SceneRenderer::newOpenGLContextCreated() {
-    std::lock_guard<std::mutex> lck(mut);
-    generic_shader = std::make_unique<GenericShader>();
-    mesh_shader = std::make_unique<MeshShader>();
-    drawable_scene =
-        std::make_unique<DrawableScene>(*generic_shader, *mesh_shader, model);
-    axes = std::make_unique<AxesObject>(*generic_shader);
-
     auto aabb = model.get_aabb();
     auto m = aabb.centre();
     auto max = aabb.dimensions().max();
     scale = max > 0 ? 20 / max : 1;
     translation = glm::translate(-glm::vec3(m.x, m.y, m.z));
-
-    listener_list.call(&Listener::newOpenGLContextCreated, this);
 }
 
-void SceneRenderer::renderOpenGL() {
-    std::lock_guard<std::mutex> lck(mut);
-
-    update();
-    draw();
-}
-
-void SceneRenderer::openGLContextClosing() {
-    std::lock_guard<std::mutex> lck(mut);
-    drawable_scene = nullptr;
-    generic_shader = nullptr;
-    mesh_shader = nullptr;
-
-    listener_list.call(&Listener::openGLContextClosing, this);
-}
-
-glm::mat4 SceneRenderer::get_projection_matrix(float aspect) {
-    return glm::perspective(45.0f, aspect, 0.05f, 1000.0f);
-}
-
-void SceneRenderer::set_aspect(float aspect) {
+void SceneRenderer::ContextLifetime::set_aspect(float aspect) {
     std::lock_guard<std::mutex> lck(mut);
     projection_matrix = get_projection_matrix(aspect);
 }
-
-void SceneRenderer::update() {
-    if (drawable_scene) {
-        drawable_scene->update(0);
-    }
+void SceneRenderer::ContextLifetime::update_scale(float delta) {
+    std::lock_guard<std::mutex> lck(mut);
+    scale = std::max(0.0f, scale + delta);
+}
+void SceneRenderer::ContextLifetime::set_rotation(float azimuth,
+                                                  float elevation) {
+    std::lock_guard<std::mutex> lck(mut);
+    auto i = glm::rotate(azimuth, glm::vec3(0, 1, 0));
+    auto j = glm::rotate(elevation, glm::vec3(1, 0, 0));
+    rotation = j * i;
 }
 
-void SceneRenderer::draw() const {
+void SceneRenderer::ContextLifetime::set_rendering(bool b) {
+    std::lock_guard<std::mutex> lck(mut);
+    drawable_scene.set_rendering(b);
+}
+
+void SceneRenderer::ContextLifetime::set_mic(const Vec3f &u) {
+    std::lock_guard<std::mutex> lck(mut);
+    drawable_scene.set_mic(u);
+}
+void SceneRenderer::ContextLifetime::set_source(const Vec3f &u) {
+    std::lock_guard<std::mutex> lck(mut);
+    drawable_scene.set_source(u);
+}
+
+void SceneRenderer::ContextLifetime::set_positions(
+    const std::vector<cl_float3> &positions) {
+    std::lock_guard<std::mutex> lck(mut);
+    std::vector<glm::vec3> ret(positions.size());
+    proc::transform(
+        positions, ret.begin(), [](const auto &i) { return to_glm_vec3(i); });
+    drawable_scene.set_positions(ret);
+}
+void SceneRenderer::ContextLifetime::set_pressures(
+    const std::vector<float> &pressures) {
+    std::lock_guard<std::mutex> lck(mut);
+    drawable_scene.set_pressures(pressures);
+}
+
+void SceneRenderer::ContextLifetime::draw() const {
+    std::lock_guard<std::mutex> lck(mut);
     auto c = 0.0;
     glClearColor(c, c, c, 1);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -332,23 +336,21 @@ void SceneRenderer::draw() const {
         shader.set_projection_matrix(get_projection_matrix());
     };
 
-    config_shader(*generic_shader);
-    config_shader(*mesh_shader);
+    config_shader(generic_shader);
+    config_shader(mesh_shader);
 
-    auto draw_thing = [this](const auto &i) {
-        if (i) {
-            i->draw();
-        }
-    };
-
-    draw_thing(drawable_scene);
-    draw_thing(axes);
+    drawable_scene.draw();
+    axes.draw();
+}
+void SceneRenderer::ContextLifetime::update(float dt) {
+    std::lock_guard<std::mutex> lck(mut);
+    drawable_scene.update(0);
 }
 
-glm::mat4 SceneRenderer::get_projection_matrix() const {
+glm::mat4 SceneRenderer::ContextLifetime::get_projection_matrix() const {
     return projection_matrix;
 }
-glm::mat4 SceneRenderer::get_view_matrix() const {
+glm::mat4 SceneRenderer::ContextLifetime::get_view_matrix() const {
     auto rad = 20;
     glm::vec3 eye(0, 0, rad);
     glm::vec3 target(0, 0, 0);
@@ -356,54 +358,38 @@ glm::mat4 SceneRenderer::get_view_matrix() const {
     auto mm = rotation * get_scale_matrix() * translation;
     return glm::lookAt(eye, target, up) * mm;
 }
-
-void SceneRenderer::set_rotation(float az, float el) {
-    std::lock_guard<std::mutex> lck(mut);
-    auto i = glm::rotate(az, glm::vec3(0, 1, 0));
-    auto j = glm::rotate(el, glm::vec3(1, 0, 0));
-    rotation = j * i;
-}
-
-void SceneRenderer::update_scale(float delta) {
-    std::lock_guard<std::mutex> lck(mut);
-    scale = std::max(0.0f, scale + delta);
-}
-
-glm::mat4 SceneRenderer::get_scale_matrix() const {
+glm::mat4 SceneRenderer::ContextLifetime::get_scale_matrix() const {
     return glm::scale(glm::vec3(scale, scale, scale));
 }
 
-void SceneRenderer::set_rendering(bool b) {
+glm::mat4 SceneRenderer::ContextLifetime::get_projection_matrix(float aspect) {
+    return glm::perspective(45.0f, aspect, 0.05f, 1000.0f);
+}
+
+//----------------------------------------------------------------------------//
+
+SceneRenderer::SceneRenderer(const SceneData &model)
+        : model(model) {
+}
+
+void SceneRenderer::newOpenGLContextCreated() {
     std::lock_guard<std::mutex> lck(mut);
-    if (drawable_scene) {
-        drawable_scene->set_rendering(b);
+    context_lifetime = std::make_unique<ContextLifetime>(model);
+    listener_list.call(&Listener::newOpenGLContextCreated, this);
+}
+
+void SceneRenderer::renderOpenGL() {
+    std::lock_guard<std::mutex> lck(mut);
+    if (context_lifetime) {
+        context_lifetime->update(0);
+        context_lifetime->draw();
     }
 }
 
-void SceneRenderer::set_mic(const Vec3f &u) {
+void SceneRenderer::openGLContextClosing() {
     std::lock_guard<std::mutex> lck(mut);
-    if (drawable_scene) {
-        drawable_scene->set_mic(u);
-    }
-}
-void SceneRenderer::set_source(const Vec3f &u) {
-    std::lock_guard<std::mutex> lck(mut);
-    if (drawable_scene) {
-        drawable_scene->set_source(u);
-    }
-}
-
-void SceneRenderer::set_waveguide_enabled(bool u) {
-    std::lock_guard<std::mutex> lck(mut);
-    if (drawable_scene) {
-        drawable_scene->set_waveguide_enabled(u);
-    }
-}
-void SceneRenderer::set_raytracer_enabled(bool u) {
-    std::lock_guard<std::mutex> lck(mut);
-    if (drawable_scene) {
-        drawable_scene->set_raytracer_enabled(u);
-    }
+    context_lifetime = nullptr;
+    listener_list.call(&Listener::openGLContextClosing, this);
 }
 
 void SceneRenderer::addListener(Listener *l) {
@@ -416,20 +402,58 @@ void SceneRenderer::removeListener(Listener *l) {
     listener_list.remove(l);
 }
 
+void SceneRenderer::set_aspect(float aspect) {
+    std::lock_guard<std::mutex> lck(mut);
+    if (context_lifetime) {
+        context_lifetime->set_aspect(aspect);
+    }
+}
+
+void SceneRenderer::update_scale(float delta) {
+    std::lock_guard<std::mutex> lck(mut);
+    if (context_lifetime) {
+        context_lifetime->update_scale(delta);
+    }
+}
+
+void SceneRenderer::set_rotation(float azimuth, float elevation) {
+    std::lock_guard<std::mutex> lck(mut);
+    if (context_lifetime) {
+        context_lifetime->set_rotation(azimuth, elevation);
+    }
+}
+
+void SceneRenderer::set_rendering(bool b) {
+    std::lock_guard<std::mutex> lck(mut);
+    if (context_lifetime) {
+        context_lifetime->set_rendering(b);
+    }
+}
+
+void SceneRenderer::set_mic(const Vec3f &u) {
+    std::lock_guard<std::mutex> lck(mut);
+    if (context_lifetime) {
+        context_lifetime->set_mic(u);
+    }
+}
+
+void SceneRenderer::set_source(const Vec3f &u) {
+    std::lock_guard<std::mutex> lck(mut);
+    if (context_lifetime) {
+        context_lifetime->set_source(u);
+    }
+}
+
 void SceneRenderer::set_positions(const std::vector<cl_float3> &positions) {
     std::lock_guard<std::mutex> lck(mut);
-    if (drawable_scene) {
-        std::vector<glm::vec3> ret(positions.size());
-        proc::transform(positions, ret.begin(), [](const auto &i) {
-            return to_glm_vec3(i);
-        });
-        drawable_scene->set_positions(ret);
+    if (context_lifetime) {
+        context_lifetime->set_positions(positions);
     }
 }
 
 void SceneRenderer::set_pressures(const std::vector<float> &pressures) {
     std::lock_guard<std::mutex> lck(mut);
-    if (drawable_scene) {
-        drawable_scene->set_pressures(pressures);
+    if (context_lifetime) {
+        context_lifetime->set_pressures(pressures);
     }
 }

@@ -57,10 +57,6 @@ void ModelRendererComponent::receive_broadcast(model::Broadcaster *cb) {
         scene_renderer.set_source(config.source);
     } else if (cb == &render_state.is_rendering) {
         scene_renderer.set_rendering(render_state.is_rendering);
-    } else if (cb == &render_state.show_waveguide) {
-        scene_renderer.set_waveguide_enabled(render_state.show_waveguide);
-    } else if (cb == &render_state.show_raytracer) {
-        scene_renderer.set_raytracer_enabled(render_state.show_raytracer);
     }
 }
 
@@ -68,8 +64,6 @@ void ModelRendererComponent::newOpenGLContextCreated(OpenGLRenderer *r) {
     config.mic.notify();
     config.source.notify();
     render_state.is_rendering.notify();
-    render_state.show_waveguide.notify();
-    render_state.show_raytracer.notify();
 }
 
 void ModelRendererComponent::openGLContextClosing(OpenGLRenderer *r) {

@@ -137,9 +137,6 @@ public:
     void set_mic(const Vec3f& u);
     void set_source(const Vec3f& u);
 
-    void set_waveguide_enabled(bool u);
-    void set_raytracer_enabled(bool u);
-
     void set_positions(const std::vector<cl_float3>& positions);
     void set_pressures(const std::vector<float>& pressures);
 
@@ -147,27 +144,51 @@ public:
     void removeListener(Listener* l);
 
 private:
-    //  don't lock on anything private
-    void update();
-    void draw() const;
-    glm::mat4 get_projection_matrix() const;
-    glm::mat4 get_view_matrix() const;
-    glm::mat4 get_scale_matrix() const;
+    class ContextLifetime : public ::Drawable, public ::Updatable {
+    public:
+        ContextLifetime(const SceneData& scene_data);
 
-    static glm::mat4 get_projection_matrix(float aspect);
+        void set_aspect(float aspect);
+        void update_scale(float delta);
+        void set_rotation(float azimuth, float elevation);
+
+        void set_rendering(bool b);
+
+        void set_mic(const Vec3f& u);
+        void set_source(const Vec3f& u);
+
+        void set_positions(const std::vector<cl_float3>& positions);
+        void set_pressures(const std::vector<float>& pressures);
+
+        void draw() const override;
+        void update(float dt) override;
+
+    private:
+        glm::mat4 get_projection_matrix() const;
+        glm::mat4 get_view_matrix() const;
+        glm::mat4 get_scale_matrix() const;
+
+        static glm::mat4 get_projection_matrix(float aspect);
+
+        const SceneData& model;
+
+        GenericShader generic_shader;
+        MeshShader mesh_shader;
+        DrawableScene drawable_scene;
+        AxesObject axes;
+
+        glm::mat4 projection_matrix;
+
+        glm::mat4 rotation;
+        float scale;
+        glm::mat4 translation;
+
+        mutable std::mutex mut;
+    };
 
     SceneData model;
 
-    std::unique_ptr<GenericShader> generic_shader;
-    std::unique_ptr<MeshShader> mesh_shader;
-    std::unique_ptr<DrawableScene> drawable_scene;
-    std::unique_ptr<AxesObject> axes;
-
-    glm::mat4 projection_matrix;
-
-    glm::mat4 rotation;
-    float scale;
-    glm::mat4 translation;
+    std::unique_ptr<ContextLifetime> context_lifetime;
 
     ListenerList<Listener> listener_list;
 

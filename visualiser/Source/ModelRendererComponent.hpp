@@ -38,10 +38,6 @@ private:
     model::BroadcastConnector source_connector{&config.source, this};
     model::BroadcastConnector is_rendering_connector{&render_state.is_rendering,
                                                      this};
-    model::BroadcastConnector waveguide_connector{&render_state.show_waveguide,
-                                                  this};
-    model::BroadcastConnector raytracer_connector{&render_state.show_raytracer,
-                                                  this};
 
     const float scale{0.01};
     float azimuth{0};

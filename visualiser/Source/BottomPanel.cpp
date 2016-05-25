@@ -24,7 +24,11 @@ void BottomPanel::resized() {
 
 void BottomPanel::buttonClicked(Button* b) {
     if (b == &button) {
-        render_state.is_rendering.set(!render_state.is_rendering);
+        if (render_state.is_rendering) {
+            render_state.stop();
+        } else {
+            render_state.start();
+        }
     }
 }
 
