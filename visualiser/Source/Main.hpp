@@ -74,6 +74,8 @@ public:
         model::BroadcastConnector visualising_connector{
             &wrapper.render_state.visualise, this};
 
+        MainContentComponent content_component;
+
         JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(MainWindow)
     };
 

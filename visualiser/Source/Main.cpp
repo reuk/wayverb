@@ -75,9 +75,11 @@ VisualiserApplication::MainWindow::MainWindow(String name, const File& root)
                 scene_data.get_materials(),
                 model::get_presets(),
                 model::FullReceiverConfig{},
-                model::RenderState{}} {
+                model::RenderState{}}
+        , content_component(scene_data, wrapper) {
     setUsingNativeTitleBar(true);
-    setContentOwned(new MainContentComponent(scene_data, wrapper), true);
+    //    setContentOwned(new MainContentComponent(scene_data, wrapper), true);
+    setContentNonOwned(&content_component, true);
 
     centreWithSize(getWidth(), getHeight());
     setVisible(true);

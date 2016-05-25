@@ -29,12 +29,12 @@ private:
     model::BroadcastConnector is_rendering_connector{
         &wrapper.render_state.is_rendering, this};
 
-    std::atomic_bool keep_going{true};
-    std::thread engine_thread;
-
     StretchableLayoutManager layout_manager;
 
     LeftPanel left_panel;
     StretchableLayoutResizerBar resizer_bar;
     ModelRendererComponent right_panel;
+
+    std::atomic_bool keep_going{true};
+    std::thread engine_thread;
 };

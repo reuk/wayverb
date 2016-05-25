@@ -463,6 +463,8 @@ things to do:
 * can I speed up waveguide by processing inner and boundary nodes in separate
   passes?
 
+* sort out kernel normalization etc.
+
 
 interface
 =========
@@ -501,9 +503,6 @@ slow stuff
 
 * data model library
     * polymorphism
-    * multithreading
-
-* there's some really nasty crash when you cancel/quit/whatever, why is that?
 
 nice-to-have
 ------------
