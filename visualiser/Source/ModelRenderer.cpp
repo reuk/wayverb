@@ -150,15 +150,17 @@ void VoxelisedObject::draw() const {
 
 //----------------------------------------------------------------------------//
 
-DrawableScene::DrawableScene(const GenericShader &shader,
+DrawableScene::DrawableScene(const GenericShader &generic_shader,
+                             const MeshShader &mesh_shader,
                              const SceneData &scene_data)
-        : shader(shader)
+        : generic_shader(generic_shader)
+        , mesh_shader(mesh_shader)
         , model_object{std::make_unique<VoxelisedObject>(
-              shader, scene_data, VoxelCollection(scene_data, 4, 0.1))}
+              generic_shader, scene_data, VoxelCollection(scene_data, 4, 0.1))}
         , source_object{std::make_unique<OctahedronObject>(
-              shader, glm::vec3(0, 0, 0), glm::vec4(1, 0, 0, 1))}
+              generic_shader, glm::vec3(0, 0, 0), glm::vec4(1, 0, 0, 1))}
         , mic_object{std::make_unique<OctahedronObject>(
-              shader, glm::vec3(0, 0, 0), glm::vec4(0, 1, 1, 1))} {
+              generic_shader, glm::vec3(0, 0, 0), glm::vec4(0, 1, 1, 1))} {
     //  TODO init raytrace object
 }
 
@@ -166,7 +168,7 @@ void DrawableScene::update(float dt) {
     std::lock_guard<std::mutex> lck(mut);
 
     if (!positions.empty()) {
-        mesh_object = std::make_unique<MeshObject>(shader, positions);
+        mesh_object = std::make_unique<MeshObject>(mesh_shader, positions);
         positions.clear();
     }
 
@@ -179,29 +181,39 @@ void DrawableScene::update(float dt) {
 void DrawableScene::draw() const {
     std::lock_guard<std::mutex> lck(mut);
 
-    auto s_shader = shader.get_scoped();
     auto draw_thing = [this](const auto &i) {
-        if (i)
+        if (i) {
             i->draw();
+        }
     };
 
-    if (rendering) {
-        if (waveguide_enabled) {
-            draw_thing(mesh_object);
+    {
+        auto s_shader = generic_shader.get_scoped();
+        if (rendering) {
+            if (raytracer_enabled) {
+                draw_thing(raytrace_object);
+            }
         }
-        if (raytracer_enabled) {
-            draw_thing(raytrace_object);
+
+        if (model_object) {
+            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+            model_object->draw();
+
+            draw_thing(source_object);
+            draw_thing(mic_object);
+
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         }
     }
 
-    if (model_object) {
-        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-        model_object->draw();
+    {
+        auto s_shader = mesh_shader.get_scoped();
 
-        draw_thing(source_object);
-        draw_thing(mic_object);
-
-        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        if (rendering) {
+            if (waveguide_enabled) {
+                draw_thing(mesh_object);
+            }
+        }
     }
 }
 
@@ -257,9 +269,11 @@ SceneRenderer::SceneRenderer(const SceneData &model)
 
 void SceneRenderer::newOpenGLContextCreated() {
     std::lock_guard<std::mutex> lck(mut);
-    shader = std::make_unique<GenericShader>();
-    drawable_scene = std::make_unique<DrawableScene>(*shader, model);
-    axes = std::make_unique<AxesObject>(*shader);
+    generic_shader = std::make_unique<GenericShader>();
+    mesh_shader = std::make_unique<MeshShader>();
+    drawable_scene =
+        std::make_unique<DrawableScene>(*generic_shader, *mesh_shader, model);
+    axes = std::make_unique<AxesObject>(*generic_shader);
 
     auto aabb = model.get_aabb();
     auto m = aabb.centre();
@@ -280,7 +294,8 @@ void SceneRenderer::renderOpenGL() {
 void SceneRenderer::openGLContextClosing() {
     std::lock_guard<std::mutex> lck(mut);
     drawable_scene = nullptr;
-    shader = nullptr;
+    generic_shader = nullptr;
+    mesh_shader = nullptr;
 
     listener_list.call(&Listener::openGLContextClosing, this);
 }
@@ -310,10 +325,15 @@ void SceneRenderer::draw() const {
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    auto s_shader = shader->get_scoped();
-    shader->set_model_matrix(glm::mat4());
-    shader->set_view_matrix(get_view_matrix());
-    shader->set_projection_matrix(get_projection_matrix());
+    auto config_shader = [this](const auto &shader) {
+        auto s_shader = shader.get_scoped();
+        shader.set_model_matrix(glm::mat4());
+        shader.set_view_matrix(get_view_matrix());
+        shader.set_projection_matrix(get_projection_matrix());
+    };
+
+    config_shader(*generic_shader);
+    config_shader(*mesh_shader);
 
     auto draw_thing = [this](const auto &i) {
         if (i) {

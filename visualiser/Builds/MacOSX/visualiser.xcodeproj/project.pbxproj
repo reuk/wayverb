@@ -14,6 +14,7 @@
 		1B0E93891CDD0371001A33F5 /* Vec3Editor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1B0E93871CDD0371001A33F5 /* Vec3Editor.cpp */; };
 		1B0E93B31CDD4A50001A33F5 /* ProgressButton.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1B0E93B11CDD4A50001A33F5 /* ProgressButton.cpp */; };
 		1B29EECB1CDB93E6003BD0BB /* VisualiserLookAndFeel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1B29EEC91CDB93E6003BD0BB /* VisualiserLookAndFeel.cpp */; };
+		1B5B74441CF5C6070030717F /* MeshShader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1B5B74421CF5C6070030717F /* MeshShader.cpp */; };
 		1B655C741CEE0A7100901ED1 /* libcombined.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B655C731CEDE25A00901ED1 /* libcombined.a */; };
 		1B6833BB1CE1FD4100E4CACC /* LoadFiles.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1B6833B91CE1FD4100E4CACC /* LoadFiles.cpp */; };
 		1B6CDDEC1CEB3CD300DA8B3D /* MicrophoneEditor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1B6CDDEA1CEB3CD300DA8B3D /* MicrophoneEditor.cpp */; };
@@ -386,6 +387,8 @@
 		1B29EEC91CDB93E6003BD0BB /* VisualiserLookAndFeel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = VisualiserLookAndFeel.cpp; path = ../../Source/VisualiserLookAndFeel.cpp; sourceTree = "<group>"; };
 		1B29EECA1CDB93E6003BD0BB /* VisualiserLookAndFeel.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = VisualiserLookAndFeel.hpp; path = ../../Source/VisualiserLookAndFeel.hpp; sourceTree = "<group>"; };
 		1B3DE3698539A30ABBE4F207 /* jcprepct.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = jcprepct.c; path = ../../JuceLibraryCode/modules/juce_graphics/image_formats/jpglib/jcprepct.c; sourceTree = SOURCE_ROOT; };
+		1B5B74421CF5C6070030717F /* MeshShader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = MeshShader.cpp; path = ../../Source/MeshShader.cpp; sourceTree = "<group>"; };
+		1B5B74431CF5C6070030717F /* MeshShader.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = MeshShader.hpp; path = ../../Source/MeshShader.hpp; sourceTree = "<group>"; };
 		1B6108181CA032ADF5CE83F6 /* juce_FileTreeComponent.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = juce_FileTreeComponent.h; path = ../../JuceLibraryCode/modules/juce_gui_basics/filebrowser/juce_FileTreeComponent.h; sourceTree = SOURCE_ROOT; };
 		1B6833B91CE1FD4100E4CACC /* LoadFiles.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = LoadFiles.cpp; path = ../../Source/LoadFiles.cpp; sourceTree = "<group>"; };
 		1B6833BA1CE1FD4100E4CACC /* LoadFiles.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = LoadFiles.hpp; path = ../../Source/LoadFiles.hpp; sourceTree = "<group>"; };
@@ -1758,6 +1761,8 @@
 		1B6CDDE91CEB3C8100DA8B3D /* visuals */ = {
 			isa = PBXGroup;
 			children = (
+				1B5B74421CF5C6070030717F /* MeshShader.cpp */,
+				1B5B74431CF5C6070030717F /* MeshShader.hpp */,
 				1BA3F3C61CDA21EC00073946 /* BasicDrawableObject.cpp */,
 				1BA3F3C71CDA21EC00073946 /* BasicDrawableObject.hpp */,
 				1BB9CEE11CF0D1D500F6B22C /* AxesObject.cpp */,
@@ -4016,6 +4021,7 @@
 				1BA3F3E91CDA21EC00073946 /* ModelRendererComponent.cpp in Sources */,
 				1D0C4CE425FD7D455AC10C32 /* juce_audio_basics.mm in Sources */,
 				1BB9CEE31CF0D1D500F6B22C /* AxesObject.cpp in Sources */,
+				1B5B74441CF5C6070030717F /* MeshShader.cpp in Sources */,
 				1B0E93891CDD0371001A33F5 /* Vec3Editor.cpp in Sources */,
 				1B6CDDEC1CEB3CD300DA8B3D /* MicrophoneEditor.cpp in Sources */,
 				1B0E93B31CDD4A50001A33F5 /* ProgressButton.cpp in Sources */,

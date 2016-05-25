@@ -471,7 +471,6 @@ fast stuff
 ----------
 
 * editors
-    * 3D vectors
     * number boxes
         * limits
 
@@ -494,6 +493,7 @@ slow stuff
 * raytracer
     * improve ray path visualisation (animate?)
     * sort out performance
+    * maybe fix this in the engine first
 
 * audio output
 
@@ -502,6 +502,8 @@ slow stuff
 * data model library
     * polymorphism
     * multithreading
+
+* there's some really nasty crash when you cancel/quit/whatever, why is that?
 
 nice-to-have
 ------------

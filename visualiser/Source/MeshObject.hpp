@@ -1,5 +1,7 @@
 #pragma once
 
+#include "MeshShader.hpp"
+
 #include "common/sinc.h"
 #include "waveguide/waveguide.h"
 
@@ -7,7 +9,7 @@
 
 class MeshObject final : public ::Drawable {
 public:
-    MeshObject(const GenericShader& shader,
+    MeshObject(const MeshShader& shader,
                const std::vector<glm::vec3>& positions)
             : shader(shader) {
         set_positions(positions);
@@ -15,15 +17,19 @@ public:
         //  init vao
         auto s_vao = vao.get_scoped();
 
-        geometry.bind();
-        auto v_pos = shader.get_attrib_location("v_position");
-        glEnableVertexAttribArray(v_pos);
-        glVertexAttribPointer(v_pos, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+        {
+            geometry.bind();
+            auto pos = shader.get_attrib_location("v_position");
+            glEnableVertexAttribArray(pos);
+            glVertexAttribPointer(pos, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+        }
 
-        colors.bind();
-        auto c_pos = shader.get_attrib_location("v_color");
-        glEnableVertexAttribArray(c_pos);
-        glVertexAttribPointer(c_pos, 4, GL_FLOAT, GL_FALSE, 0, nullptr);
+        {
+            pressures.bind();
+            auto pos = shader.get_attrib_location("v_pressure");
+            glEnableVertexAttribArray(pos);
+            glVertexAttribPointer(pos, 1, GL_FLOAT, GL_FALSE, 0, nullptr);
+        }
 
         ibo.bind();
     }
@@ -32,15 +38,14 @@ public:
         std::lock_guard<std::mutex> lck(mut);
 
         auto s_shader = shader.get_scoped();
-        shader.set_black(false);
 
         auto s_vao = vao.get_scoped();
         glDrawElements(GL_POINTS, size, GL_UNSIGNED_INT, nullptr);
     }
 
-    void set_pressures(const std::vector<float>& pressures) {
+    void set_pressures(const std::vector<float>& u) {
         std::lock_guard<std::mutex> lck(mut);
-        set_pressures_internal(pressures);
+        set_pressures_internal(u);
     }
 
 private:
@@ -56,30 +61,17 @@ private:
         ibo.data(indices);
     }
 
-    void set_pressures_internal(const std::vector<float>& pressures) {
-        color_storage.resize(pressures.size());
-        std::cout << "mean: " << mean(pressures) << std::endl;
-        proc::transform(pressures, color_storage.begin(), [this](auto i) {
-            auto p = i * amp;
-            if (std::isnan(p))
-                return glm::vec4(1, 1, 1, 1);
-            return p > 0 ? glm::vec4(0, p, p, p) : glm::vec4(-p, 0, 0, -p);
-        });
-        colors.data(color_storage);
+    void set_pressures_internal(const std::vector<float>& u) {
+        pressures.data(u);
     }
 
-    const GenericShader& shader;
-
-    std::vector<glm::vec4>
-        color_storage;  //  hopefully we don't have to malloc every frame
+    const MeshShader& shader;
 
     VAO vao;
     StaticVBO geometry;
-    DynamicVBO colors;
+    DynamicVBO pressures;
     StaticIBO ibo;
     GLuint size{0};
-
-    float amp{1000};
 
     mutable std::mutex mut;
 };

@@ -65,7 +65,9 @@ private:
 
 class DrawableScene final : public ::Drawable, public ::Updatable {
 public:
-    DrawableScene(const GenericShader& shader, const SceneData& scene_data);
+    DrawableScene(const GenericShader& generic_shader,
+                  const MeshShader& mesh_shader,
+                  const SceneData& scene_data);
 
     void update(float dt) override;
     void draw() const override;
@@ -82,7 +84,8 @@ public:
     void set_pressures(const std::vector<float>& pressures);
 
 private:
-    const GenericShader& shader;
+    const GenericShader& generic_shader;
+    const MeshShader& mesh_shader;
 
     std::unique_ptr<VoxelisedObject> model_object;
     std::unique_ptr<OctahedronObject> source_object;
@@ -118,7 +121,6 @@ public:
     };
 
     SceneRenderer(const SceneData& model);
-    virtual ~SceneRenderer() noexcept = default;
 
     //  lock on all public methods
     //  don't call public methods from one another!
@@ -156,7 +158,8 @@ private:
 
     SceneData model;
 
-    std::unique_ptr<GenericShader> shader;
+    std::unique_ptr<GenericShader> generic_shader;
+    std::unique_ptr<MeshShader> mesh_shader;
     std::unique_ptr<DrawableScene> drawable_scene;
     std::unique_ptr<AxesObject> axes;
 
