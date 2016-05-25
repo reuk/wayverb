@@ -75,9 +75,6 @@ public:
     void set_mic(const Vec3f& u);
     void set_source(const Vec3f& u);
 
-    void set_waveguide_enabled(bool b);
-    void set_raytracer_enabled(bool b);
-
     void set_rendering(bool b);
 
     void set_positions(const std::vector<glm::vec3>& positions);
@@ -87,20 +84,24 @@ private:
     const GenericShader& generic_shader;
     const MeshShader& mesh_shader;
 
-    std::unique_ptr<VoxelisedObject> model_object;
-    std::unique_ptr<OctahedronObject> source_object;
-    std::unique_ptr<OctahedronObject> mic_object;
+    VoxelisedObject model_object;
+    OctahedronObject source_object;
+    OctahedronObject mic_object;
 
-    bool waveguide_enabled{true};
-    std::unique_ptr<MeshObject> mesh_object;
+    struct MeshContext {
+        std::unique_ptr<MeshObject> mesh_object;
+        std::vector<glm::vec3> positions;
+        std::vector<float> pressures;
 
-    bool raytracer_enabled{true};
+        void clear();
+
+        mutable std::mutex mut;
+    };
+
+    MeshContext mesh_context;
     std::unique_ptr<RaytraceObject> raytrace_object;
 
     bool rendering{false};
-
-    std::vector<glm::vec3> positions;
-    std::vector<float> pressures;
 
     mutable std::mutex mut;
 };

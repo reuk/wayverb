@@ -155,26 +155,38 @@ DrawableScene::DrawableScene(const GenericShader &generic_shader,
                              const SceneData &scene_data)
         : generic_shader(generic_shader)
         , mesh_shader(mesh_shader)
-        , model_object{std::make_unique<VoxelisedObject>(
-              generic_shader, scene_data, VoxelCollection(scene_data, 4, 0.1))}
-        , source_object{std::make_unique<OctahedronObject>(
-              generic_shader, glm::vec3(0, 0, 0), glm::vec4(1, 0, 0, 1))}
-        , mic_object{std::make_unique<OctahedronObject>(
-              generic_shader, glm::vec3(0, 0, 0), glm::vec4(0, 1, 1, 1))} {
+        , model_object(
+              generic_shader, scene_data, VoxelCollection(scene_data, 4, 0.1))
+        , source_object(
+              generic_shader, glm::vec3(0, 0, 0), glm::vec4(1, 0, 0, 1))
+        , mic_object(
+              generic_shader, glm::vec3(0, 0, 0), glm::vec4(0, 1, 1, 1)) {
     //  TODO init raytrace object
+}
+
+void DrawableScene::MeshContext::clear() {
+    std::lock_guard<std::mutex> lck(mut);
+    mesh_object = nullptr;
+    positions.clear();
+    pressures.clear();
 }
 
 void DrawableScene::update(float dt) {
     std::lock_guard<std::mutex> lck(mut);
 
-    if (!positions.empty()) {
-        mesh_object = std::make_unique<MeshObject>(mesh_shader, positions);
-        positions.clear();
+    if (!mesh_context.positions.empty()) {
+        mesh_context.mesh_object =
+            std::make_unique<MeshObject>(mesh_shader, mesh_context.positions);
+        mesh_context.positions.clear();
     }
 
-    if (!pressures.empty() && mesh_object) {
-        mesh_object->set_pressures(pressures);
-        pressures.clear();
+    if (!mesh_context.pressures.empty() && mesh_context.mesh_object) {
+        mesh_context.mesh_object->set_pressures(mesh_context.pressures);
+        mesh_context.pressures.clear();
+    }
+
+    if (!rendering) {
+        mesh_context.clear();
     }
 }
 
@@ -190,74 +202,52 @@ void DrawableScene::draw() const {
     {
         auto s_shader = generic_shader.get_scoped();
         if (rendering) {
-            if (raytracer_enabled) {
-                draw_thing(raytrace_object);
-            }
+            draw_thing(raytrace_object);
         }
 
-        if (model_object) {
-            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-            model_object->draw();
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        model_object.draw();
+        source_object.draw();
+        mic_object.draw();
+        ;
 
-            draw_thing(source_object);
-            draw_thing(mic_object);
-
-            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-        }
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     }
 
     {
         auto s_shader = mesh_shader.get_scoped();
 
         if (rendering) {
-            if (waveguide_enabled) {
-                draw_thing(mesh_object);
-            }
+            draw_thing(mesh_context.mesh_object);
         }
     }
 }
 
 void DrawableScene::set_mic(const Vec3f &u) {
     std::lock_guard<std::mutex> lck(mut);
-    mic_object->set_position(to_glm_vec3(u));
+    mic_object.set_position(to_glm_vec3(u));
 }
 
 void DrawableScene::set_source(const Vec3f &u) {
     std::lock_guard<std::mutex> lck(mut);
-    source_object->set_position(to_glm_vec3(u));
-}
-
-void DrawableScene::set_waveguide_enabled(bool b) {
-    std::lock_guard<std::mutex> lck(mut);
-    waveguide_enabled = b;
-}
-
-void DrawableScene::set_raytracer_enabled(bool b) {
-    std::lock_guard<std::mutex> lck(mut);
-    raytracer_enabled = b;
+    source_object.set_position(to_glm_vec3(u));
 }
 
 void DrawableScene::set_rendering(bool b) {
     std::lock_guard<std::mutex> lck(mut);
     rendering = b;
-
-    if (!b) {
-        mesh_object = nullptr;
-        positions.clear();
-        pressures.clear();
-    }
 }
 
 void DrawableScene::set_positions(const std::vector<glm::vec3> &p) {
     //  this might be called from the message thread
     //  and OpenGL doesn't like me messing with its shit on other threads
     std::lock_guard<std::mutex> lck(mut);
-    positions = p;
+    mesh_context.positions = p;
 }
 
 void DrawableScene::set_pressures(const std::vector<float> &p) {
     std::lock_guard<std::mutex> lck(mut);
-    pressures = p;
+    mesh_context.pressures = p;
 }
 
 //----------------------------------------------------------------------------//
