@@ -8,6 +8,12 @@
 
 #include <memory>
 
+void register_recent_file(const std::string& file) {
+    RecentlyOpenedFilesList::registerRecentFileNatively(File(file));
+    get_app_settings().recent_files.addFile(File(file));
+    get_app_settings().flush();
+}
+
 //  taken from the Projucer
 //  no h8 plx
 struct AsyncQuitRetrier : private Timer {
@@ -27,6 +33,20 @@ struct AsyncQuitRetrier : private Timer {
     JUCE_DECLARE_NON_COPYABLE(AsyncQuitRetrier)
 };
 
+PropertiesFile::Options VisualiserApplication::get_property_file_options_for(
+    const std::string& name) {
+    PropertiesFile::Options options;
+    options.applicationName = name;
+    options.filenameSuffix = "settings";
+    options.osxLibrarySubFolder = "Application Support";
+#if JUCE_LINUX
+    options.folderName = "~/.config/HAART";
+#else
+    options.folderName = "HAART";
+#endif
+    return options;
+}
+
 const String VisualiserApplication::getApplicationName() {
     return ProjectInfo::projectName;
 }
@@ -40,6 +60,8 @@ bool VisualiserApplication::moreThanOneInstanceAllowed() {
 void VisualiserApplication::initialise(const String& commandLine) {
     LookAndFeel::setDefaultLookAndFeel(&look_and_feel);
 
+    stored_settings = std::make_unique<StoredSettings>();
+
     command_manager = std::make_unique<ApplicationCommandManager>();
     command_manager->registerAllCommandsForTarget(this);
 
@@ -50,6 +72,28 @@ void VisualiserApplication::initialise(const String& commandLine) {
     //    command_manager->invoke(CommandIDs::idOpenProject, false);
 }
 
+void VisualiserApplication::close_main_window() {
+    if (main_window) {
+        if (main_window->needs_save()) {
+            switch (NativeMessageBox::showYesNoCancelBox(
+                AlertWindow::AlertIconType::WarningIcon,
+                "save?",
+                "There are unsaved changes. Do you wish to save?")) {
+                case 0:  // cancel
+                    return;
+                case 1:  // yes
+                    if (main_window->save_project()) {
+                        main_window = nullptr;
+                    }
+                    break;
+                case 2:  // no
+                    main_window = nullptr;
+                    break;
+            }
+        }
+    }
+}
+
 void VisualiserApplication::shutdown() {
     main_window = nullptr;
 
@@ -57,30 +101,17 @@ void VisualiserApplication::shutdown() {
 
     main_menu_bar_model = nullptr;
     command_manager = nullptr;
+
+    stored_settings = nullptr;
 }
 
 void VisualiserApplication::systemRequestedQuit() {
     if (ModalComponentManager::getInstance()->cancelAllModalComponents()) {
         new ::AsyncQuitRetrier();
     } else {
-        if (main_window) {
-            if (main_window->needs_save()) {
-                switch (NativeMessageBox::showYesNoCancelBox(
-                    AlertWindow::AlertIconType::WarningIcon,
-                    "save?",
-                    "There are unsaved changes. Do you wish to save?")) {
-                    case 0:  // cancel
-                        return;
-                    case 1:  // yes
-                        if (main_window->save_project()) {
-                            quit();
-                        }
-                        break;
-                    case 2:  // no
-                        quit();
-                        break;
-                }
-            }
+        close_main_window();
+        if (!main_window) {
+            quit();
         }
     }
 }
@@ -320,6 +351,8 @@ void VisualiserApplication::MainWindow::save_to(const File& f) {
     std::ofstream stream(get_config_path(f).getFullPathName().toStdString());
     cereal::JSONOutputArchive archive(stream);
     archive(cereal::make_nvp("persistent", model.persistent));
+
+    register_recent_file(f.getFullPathName().toStdString());
 }
 
 VisualiserApplication& VisualiserApplication::get_app() {
@@ -337,6 +370,11 @@ ApplicationCommandManager& VisualiserApplication::get_command_manager() {
 
 void VisualiserApplication::create_file_menu(PopupMenu& menu) {
     menu.addCommandItem(&get_command_manager(), CommandIDs::idOpenProject);
+
+    PopupMenu recent;
+    stored_settings->recent_files.createPopupMenuItems(
+        recent, recent_projects_base_id, true, true);
+    menu.addSubMenu("Open Recent", recent);
 
     menu.addSeparator();
 
@@ -357,7 +395,8 @@ void VisualiserApplication::create_view_menu(PopupMenu& menu) {
 
 void VisualiserApplication::handle_main_menu_command(int menu_item_id) {
     if (menu_item_id >= recent_projects_base_id) {
-        //  TODO open recent project
+        open_project(stored_settings->recent_files.getFile(
+            menu_item_id - recent_projects_base_id));
     }
 }
 
@@ -395,7 +434,12 @@ bool VisualiserApplication::perform(const InvocationInfo& info) {
 
 void VisualiserApplication::open_project(const File& file) {
     try {
-        main_window = std::make_unique<MainWindow>(getApplicationName(), file);
+        close_main_window();
+        if (!main_window) {
+            main_window =
+                std::make_unique<MainWindow>(getApplicationName(), file);
+            register_recent_file(file.getFullPathName().toStdString());
+        }
     } catch (const std::exception& e) {
         NativeMessageBox::showMessageBox(
             AlertWindow::WarningIcon,

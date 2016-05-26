@@ -469,16 +469,6 @@ things to do:
 interface
 =========
 
-loading
-
-    model - list of materials, with names
-    config - list of materials, with names and parameters
-
-fast stuff
-----------
-
-* recent projects
-
 slow stuff
 ----------
 
@@ -497,9 +487,6 @@ slow stuff
 
 nice-to-have
 ------------
-
-* data model library
-    * polymorphic type support
 
 * undo/redo
 

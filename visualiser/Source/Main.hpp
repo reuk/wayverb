@@ -2,6 +2,7 @@
 
 #include "FullModel.hpp"
 #include "MainComponent.hpp"
+#include "StoredSettings.hpp"
 #include "VisualiserLookAndFeel.hpp"
 
 class VisualiserApplication final : public JUCEApplication {
@@ -19,7 +20,7 @@ public:
     static VisualiserApplication& get_app();
     static ApplicationCommandManager& get_command_manager();
 
-    static const auto recent_projects_base_id = 100;
+    static constexpr auto recent_projects_base_id = 100;
 
     void create_file_menu(PopupMenu& menu);
     void create_view_menu(PopupMenu& menu);
@@ -33,6 +34,8 @@ public:
 
     void open_project(const File& file);
     void open_project_from_dialog();
+
+    void close_main_window();
 
     class MainMenuBarModel : public MenuBarModel {
     public:
@@ -103,6 +106,11 @@ public:
 
         JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(MainWindow)
     };
+
+    std::unique_ptr<StoredSettings> stored_settings;
+
+    static PropertiesFile::Options get_property_file_options_for(
+        const std::string& name);
 
 private:
     VisualiserLookAndFeel look_and_feel;
