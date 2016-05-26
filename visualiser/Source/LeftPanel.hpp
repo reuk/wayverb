@@ -7,7 +7,7 @@
 class LeftPanel : public Component, public model::BroadcastListener {
 public:
     LeftPanel(model::ValueWrapper<model::FullModel>& model,
-              const SceneData& scene_data);
+              const CuboidBoundary& aabb);
 
     void resized() override;
 

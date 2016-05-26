@@ -6,10 +6,11 @@
 #include <iomanip>
 
 MainContentComponent::MainContentComponent(
-    const SceneData& scene_data, model::ValueWrapper<model::FullModel>& wrapper)
+    const CopyableSceneData& scene_data,
+    model::ValueWrapper<model::FullModel>& wrapper)
         : scene_data(scene_data)
         , wrapper(wrapper)
-        , left_panel(wrapper, scene_data)
+        , left_panel(wrapper, scene_data.get_aabb())
         , resizer_bar(&layout_manager, 1, true)
         , right_panel(scene_data,
                       wrapper.shown_surface,
@@ -62,6 +63,10 @@ void MainContentComponent::receive_broadcast(model::Broadcaster* cb) {
                         wrapper.render_state.progress.set(progress);
                     };
 
+                    //  refresh the scene with current materials
+                    scene_data.set_surfaces(wrapper.persistent.materials);
+
+                    //  init the engine
                     callback(engine::State::initialising, 1.0);
                     Engine engine(compute_context,
                                   scene_data,
@@ -73,6 +78,7 @@ void MainContentComponent::receive_broadcast(model::Broadcaster* cb) {
                                   wrapper.persistent.combined.impulses,
                                   wrapper.persistent.combined.sample_rate);
 
+                    //  check that source and mic are inside model
                     auto check_position = [](auto valid,
                                              const std::string& str) {
                         if (!valid) {
@@ -93,6 +99,7 @@ void MainContentComponent::receive_broadcast(model::Broadcaster* cb) {
                     check_position(engine.get_source_position_is_valid(),
                                    "source");
 
+                    //  now run the simulation proper
                     auto run = [this, &engine, &callback] {
                         return engine.run(keep_going, callback);
                     };
@@ -112,6 +119,9 @@ void MainContentComponent::receive_broadcast(model::Broadcaster* cb) {
                     engine.attenuate(intermediate, callback);
                     //  TODO write out
 
+                    //  if anything goes wrong, flag it up on stdout and quit
+                    //  the
+                    //  thread
                 } catch (const std::runtime_error& e) {
                     std::cout << "wayverb thread error: " << e.what()
                               << std::endl;

@@ -242,10 +242,9 @@ private:
 //----------------------------------------------------------------------------//
 
 LeftPanel::LeftPanel(model::ValueWrapper<model::FullModel>& model,
-                     const SceneData& scene_data)
+                     const CuboidBoundary& aabb)
         : model(model)
         , bottom_panel(model.render_state) {
-    auto aabb = scene_data.get_aabb();
     property_panel.addSection(
         "general",
         {new Vec3fProperty("source",

@@ -8,7 +8,7 @@ class ModelRendererComponent : public Component,
                                public SceneRenderer::Listener {
 public:
     ModelRendererComponent(
-        const SceneData& model,
+        const CopyableSceneData& model,
         model::ValueWrapper<int>& shown_surface,
         model::ValueWrapper<config::Combined>& config,
         model::ValueWrapper<model::RenderState>& render_state);
@@ -31,7 +31,7 @@ public:
     void set_pressures(const std::vector<float>& pressures);
 
 private:
-    const SceneData& model;
+    const CopyableSceneData& model;
     model::ValueWrapper<int>& shown_surface;
     model::BroadcastConnector shown_connector{&shown_surface, this};
 

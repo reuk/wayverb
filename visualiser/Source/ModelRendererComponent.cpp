@@ -11,7 +11,7 @@
 #include "common/boundaries.h"
 
 ModelRendererComponent::ModelRendererComponent(
-    const SceneData &model,
+    const CopyableSceneData &model,
     model::ValueWrapper<int> &shown_surface,
     model::ValueWrapper<config::Combined> &config,
     model::ValueWrapper<model::RenderState> &render_state)

@@ -484,8 +484,6 @@ fast stuff
 slow stuff
 ----------
 
-* remember to load proper surfaces when starting the simulation
-
 * microphone/hrtf look-at rather than facing for UI
     * visualise HRTF facing/up directions
     * visualise mic directions, directionality
