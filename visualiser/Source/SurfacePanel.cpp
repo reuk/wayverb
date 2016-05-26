@@ -198,6 +198,7 @@ PresetComponent::PresetComponent(
         : linked(linked)
         , preset_model(preset_model) {
     combo_box.setEditableText(false);
+    delete_button.setEnabled(false);
 
     addChildComponent(combo_box);
     addChildComponent(text_editor);
@@ -233,6 +234,7 @@ void PresetComponent::comboBoxChanged(ComboBox* cb) {
         if (0 <= selected) {
             linked.set(preset_model[selected].surface);
             combo_box.setSelectedItemIndex(selected, dontSendNotification);
+            delete_button.setEnabled(true);
         }
     }
 }
@@ -279,6 +281,7 @@ void PresetComponent::receive_broadcast(model::Broadcaster* cb) {
 
     if (cb == &linked) {
         combo_box.setSelectedItemIndex(-1, dontSendNotification);
+        delete_button.setEnabled(false);
     } else if (cb == &preset_model) {
         combo_box.clear();
 

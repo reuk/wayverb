@@ -479,8 +479,6 @@ fast stuff
 
 * recent projects
 
-* alphabetical presets for materials
-
 slow stuff
 ----------
 

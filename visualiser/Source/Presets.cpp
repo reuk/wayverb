@@ -3,7 +3,7 @@
 namespace model {
 
 std::vector<SceneData::Material> get_presets() {
-    return {
+    std::vector<SceneData::Material> ret{
         SceneData::Material{
             "concrete_floor",
             Surface{{0.99, 0.97, 0.95, 0.98, 0.98, 0.98, 0.98, 0.98},
@@ -161,6 +161,11 @@ std::vector<SceneData::Material> get_presets() {
             Surface{{0.9, 0.93, 0.94, 0.94, 0.94, 0.94, 0.94, 0.94},
                     {0.95, 0.9, 0.85, 0.8, 0.75, 0.7, 0.65, 0.6}}},
     };
+
+    proc::sort(ret,
+               [](const auto& i, const auto& j) { return i.name < j.name; });
+
+    return ret;
 }
 
 }  // namespace model
