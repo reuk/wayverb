@@ -472,9 +472,6 @@ interface
 fast stuff
 ----------
 
-* graceful errors
-    * source/receiver outside model
-
 * recent projects
 
 slow stuff

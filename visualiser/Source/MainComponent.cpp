@@ -73,6 +73,26 @@ void MainContentComponent::receive_broadcast(model::Broadcaster* cb) {
                         wrapper.combined.impulses,
                         wrapper.combined.sample_rate);
 
+                    auto check_position = [](auto valid,
+                                             const std::string& str) {
+                        if (!valid) {
+                            NativeMessageBox::showMessageBoxAsync(
+                                AlertWindow::AlertIconType::WarningIcon,
+                                str + " position is invalid",
+                                "It looks like that " + str +
+                                    " position is outside the waveguide mesh. "
+                                    "Make sure the 3D model is completely "
+                                    "closed, and the " +
+                                    str + " is inside.");
+                            throw std::runtime_error(str + " is outside mesh");
+                        }
+                    };
+
+                    check_position(engine.get_mic_position_is_valid(),
+                                   "microphone");
+                    check_position(engine.get_source_position_is_valid(),
+                                   "source");
+
                     auto run = [this, &engine, &callback] {
                         return engine.run(keep_going, callback);
                     };

@@ -1,5 +1,5 @@
-#include "combined/engine.h"
 #include "combined/config.h"
+#include "combined/engine.h"
 
 #include "common/kernel.h"
 
@@ -48,15 +48,29 @@ WayverbEngine<buffer_type>::WayverbEngine(ComputeContext& compute_context,
         , waveguide_sample_rate(waveguide_sample_rate)
         , rays(rays)
         , impulses(impulses)
-        //, output_sample_rate(output_sample_rate)
         , source_index(waveguide.get_index_for_coordinate(source))
         , mic_index(waveguide.get_index_for_coordinate(mic)) {
-    if (!waveguide.inside(source_index)) {
-        throw std::runtime_error("source is outside of mesh!");
-    }
+}
 
-    if (!waveguide.inside(mic_index)) {
-        throw std::runtime_error("mic is outside of mesh!");
+template <BufferType buffer_type>
+bool WayverbEngine<buffer_type>::get_source_position_is_valid() const {
+    return waveguide.inside(source_index);
+}
+
+template <BufferType buffer_type>
+bool WayverbEngine<buffer_type>::get_mic_position_is_valid() const {
+    return waveguide.inside(mic_index);
+}
+
+template <BufferType buffer_type>
+void WayverbEngine<buffer_type>::check_source_mic_positions() const {
+    if (!get_source_position_is_valid()) {
+        throw std::runtime_error(
+            "invalid source position - probably outside mesh");
+    }
+    if (!get_mic_position_is_valid()) {
+        throw std::runtime_error(
+            "invalid mic position - probably outside mesh");
     }
 }
 
@@ -97,28 +111,27 @@ typename WayverbEngine<buffer_type>::Intermediate
 WayverbEngine<buffer_type>::run(std::atomic_bool& keep_going,
                                 const WayverbEngine::StateCallback& callback) {
     auto waveguide_step = 0;
-    return this->run_basic(keep_going,
-                           callback,
-                           [&waveguide_step](
-                               RectangularWaveguide<buffer_type>& waveguide,
-                               const Vec3f& corrected_source,
-                               std::vector<float>&& input,
-                               size_t mic_index,
-                               size_t steps,
-                               std::atomic_bool& keep_going,
-                               const StateCallback& callback) {
-                               return waveguide.init_and_run(
-                                   corrected_source,
-                                   std::move(input),
-                                   mic_index,
-                                   steps,
-                                   keep_going,
-                                   [&callback, &waveguide_step, steps] {
-                                       callback(
-                                           State::running_waveguide,
-                                           waveguide_step++ / (steps - 1.0));
-                                   });
-                           });
+    return this->run_basic(
+        keep_going,
+        callback,
+        [&waveguide_step](RectangularWaveguide<buffer_type>& waveguide,
+                          const Vec3f& corrected_source,
+                          std::vector<float>&& input,
+                          size_t mic_index,
+                          size_t steps,
+                          std::atomic_bool& keep_going,
+                          const StateCallback& callback) {
+            return waveguide.init_and_run(
+                corrected_source,
+                std::move(input),
+                mic_index,
+                steps,
+                keep_going,
+                [&callback, &waveguide_step, steps] {
+                    callback(State::running_waveguide,
+                             waveguide_step++ / (steps - 1.0));
+                });
+        });
 }
 
 template <BufferType buffer_type>
@@ -126,6 +139,8 @@ template <typename Callback>
 auto WayverbEngine<buffer_type>::run_basic(std::atomic_bool& keep_going,
                                            const StateCallback& callback,
                                            const Callback& waveguide_callback) {
+    check_source_mic_positions();   //  will throw if the positions are invalid
+
     //  RAYTRACER  -----------------------------------------------------------//
     callback(State::starting_raytracer, 1.0);
     auto raytracer_step = 0;

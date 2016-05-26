@@ -57,6 +57,9 @@ public:
                   int impulses,
                   float output_sample_rate);
 
+    bool get_source_position_is_valid() const;
+    bool get_mic_position_is_valid() const;
+
     struct Intermediate {};
 
     using StateCallback = GenericArgumentsCallback<State, double>;
@@ -114,6 +117,8 @@ public:
     }
 
 private:
+    void check_source_mic_positions() const;
+
     template <typename Callback>
     auto run_basic(std::atomic_bool& keep_going,
                    const StateCallback& state_callback,
