@@ -394,7 +394,19 @@ bool VisualiserApplication::perform(const InvocationInfo& info) {
 }
 
 void VisualiserApplication::open_project(const File& file) {
-    main_window = std::make_unique<MainWindow>(getApplicationName(), file);
+    try {
+        main_window = std::make_unique<MainWindow>(getApplicationName(), file);
+    } catch (const std::exception& e) {
+        NativeMessageBox::showMessageBox(
+            AlertWindow::WarningIcon,
+            "exception...",
+            std::string("Encountered an exception: ") + e.what());
+    } catch (...) {
+        NativeMessageBox::showMessageBox(
+            AlertWindow::WarningIcon,
+            "exception...",
+            std::string("Encountered an unknown exception."));
+    }
 }
 
 void VisualiserApplication::open_project_from_dialog() {

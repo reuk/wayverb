@@ -497,8 +497,6 @@ slow stuff
 
 * switching off visualise causes some kind of hang
 
-* what happens if you load an invalid model/.way?
-
 nice-to-have
 ------------
 
