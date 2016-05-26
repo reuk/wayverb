@@ -270,7 +270,7 @@ VolumeType attenuation_for_distance(float distance) {
 
 void add_direct_impulse(const Vec3f& micpos,
                         const Vec3f& source,
-                        const SceneData& scene_data,
+                        const CopyableSceneData& scene_data,
                         Results& results) {
     if (geo::point_intersection(micpos,
                                 source,
@@ -286,7 +286,7 @@ void add_direct_impulse(const Vec3f& micpos,
     }
 }
 
-Results Raytracer::run(const SceneData& scene_data,
+Results Raytracer::run(const CopyableSceneData& scene_data,
                        const Vec3f& micpos,
                        const Vec3f& source,
                        const std::vector<cl_float3>& directions,

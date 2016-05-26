@@ -45,11 +45,12 @@ in vec3 f_modelview;
 out vec4 frag_color;
 
 const vec3 blueviolet = vec3(0.5411764706, 0.168627451, 0.8823529412);
-const vec3 direction = normalize(vec3(-1, -1, -1));
+const vec3 direction = normalize(vec3(0, -1, -1));
+const vec3 ambient = vec3(0.05);
 
 void main() {
     vec3 f_normal = normalize(cross(dFdx(f_modelview), dFdy(f_modelview)));
     float diffuse = max(0.0, dot(f_normal, -direction));
-    frag_color = vec4(blueviolet * diffuse, 1.0);
+    frag_color = vec4(blueviolet * diffuse + ambient, 1.0);
 }
 )");

@@ -45,7 +45,7 @@ CuboidBoundary CuboidBoundary::get_aabb() const {
     return *this;
 }
 
-SceneData CuboidBoundary::get_scene_data() const {
+CopyableSceneData CuboidBoundary::get_scene_data() const {
     std::vector<cl_float3> vertices{
         {{get_c0().x, get_c0().y, get_c0().z}},
         {{get_c1().x, get_c0().y, get_c0().z}},
@@ -70,11 +70,11 @@ SceneData CuboidBoundary::get_scene_data() const {
         {0, 4, 5, 7},
         {0, 4, 6, 7},
     };
-    std::vector<SceneData::Material> materials{
+    std::vector<CopyableSceneData::Material> materials{
         {"default", Surface{}},
     };
 
-    return SceneData(triangles, vertices, materials);
+    return CopyableSceneData(triangles, vertices, materials);
 }
 
 bool CuboidBoundary::intersects(const geo::Ray& ray, float t0, float t1) {
@@ -179,7 +179,7 @@ MeshBoundary::MeshBoundary(const std::vector<Triangle>& triangles,
         , triangle_references(compute_triangle_references()) {
 }
 
-MeshBoundary::MeshBoundary(const SceneData& sd)
+MeshBoundary::MeshBoundary(const CopyableSceneData& sd)
         : MeshBoundary(sd.get_triangles(),
                        sd.get_converted_vertices(),
                        sd.get_surfaces()) {

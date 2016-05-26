@@ -80,7 +80,7 @@ void RaytraceObject::draw() const {
 static constexpr auto model_colour = 0.75;
 
 VoxelisedObject::VoxelisedObject(const GenericShader &shader,
-                                 const SceneData &scene_data,
+                                 const CopyableSceneData &scene_data,
                                  const VoxelCollection &voxel)
         : BasicDrawableObject(
               shader,
@@ -95,7 +95,7 @@ VoxelisedObject::VoxelisedObject(const GenericShader &shader,
 }
 
 std::vector<glm::vec3> VoxelisedObject::get_vertices(
-    const SceneData &scene_data) {
+    const CopyableSceneData &scene_data) {
     std::vector<glm::vec3> ret(scene_data.get_vertices().size());
     std::transform(scene_data.get_vertices().begin(),
                    scene_data.get_vertices().end(),
@@ -111,7 +111,7 @@ static void push_triangle_indices(std::vector<GLuint> &ret,
     ret.push_back(tri.v2);
 }
 
-void fill_indices_vector(const SceneData &scene_data,
+void fill_indices_vector(const CopyableSceneData &scene_data,
                          const VoxelCollection &voxel,
                          std::vector<GLuint> &ret) {
     for (const auto &x : voxel.get_data()) {
@@ -125,8 +125,8 @@ void fill_indices_vector(const SceneData &scene_data,
     }
 }
 
-std::vector<GLuint> VoxelisedObject::get_indices(const SceneData &scene_data,
-                                                 const VoxelCollection &voxel) {
+std::vector<GLuint> VoxelisedObject::get_indices(
+    const CopyableSceneData &scene_data, const VoxelCollection &voxel) {
     std::vector<GLuint> ret;
     fill_indices_vector(scene_data, voxel, ret);
     return ret;
@@ -153,7 +153,7 @@ void VoxelisedObject::draw() const {
 //----------------------------------------------------------------------------//
 
 std::vector<GLuint> MultiMaterialObject::SingleMaterialSection::get_indices(
-    const SceneData &scene_data, int material_index) {
+    const CopyableSceneData &scene_data, int material_index) {
     std::vector<GLuint> ret;
     for (const auto &i : scene_data.get_triangles()) {
         if (i.surface == material_index) {
@@ -164,7 +164,7 @@ std::vector<GLuint> MultiMaterialObject::SingleMaterialSection::get_indices(
 }
 
 MultiMaterialObject::SingleMaterialSection::SingleMaterialSection(
-    const SceneData &scene_data, int material_index) {
+    const CopyableSceneData &scene_data, int material_index) {
     auto indices = get_indices(scene_data, material_index);
     size = indices.size();
     ibo.data(indices);
@@ -176,7 +176,7 @@ void MultiMaterialObject::SingleMaterialSection::draw() const {
 }
 
 std::vector<glm::vec3> MultiMaterialObject::get_vertices(
-    const SceneData &scene_data) const {
+    const CopyableSceneData &scene_data) const {
     std::vector<glm::vec3> ret(scene_data.get_vertices().size());
     std::transform(scene_data.get_vertices().begin(),
                    scene_data.get_vertices().end(),
@@ -187,7 +187,7 @@ std::vector<glm::vec3> MultiMaterialObject::get_vertices(
 
 MultiMaterialObject::MultiMaterialObject(const GenericShader &generic_shader,
                                          const LitSceneShader &lit_scene_shader,
-                                         const SceneData &scene_data)
+                                         const CopyableSceneData &scene_data)
         : generic_shader(generic_shader)
         , lit_scene_shader(lit_scene_shader) {
     for (auto i = 0; i != scene_data.get_surfaces().size(); ++i) {
@@ -242,7 +242,7 @@ void MultiMaterialObject::set_highlighted(int material) {
 DrawableScene::DrawableScene(const GenericShader &generic_shader,
                              const MeshShader &mesh_shader,
                              const LitSceneShader &lit_scene_shader,
-                             const SceneData &scene_data)
+                             const CopyableSceneData &scene_data)
         : generic_shader(generic_shader)
         , mesh_shader(mesh_shader)
         , lit_scene_shader(lit_scene_shader)
@@ -335,7 +335,8 @@ void DrawableScene::set_highlighted(int u) {
 
 //----------------------------------------------------------------------------//
 
-SceneRenderer::ContextLifetime::ContextLifetime(const SceneData &scene_data)
+SceneRenderer::ContextLifetime::ContextLifetime(
+    const CopyableSceneData &scene_data)
         : model(scene_data)
         , drawable_scene(generic_shader, mesh_shader, lit_scene_shader, model)
         , axes(generic_shader)
@@ -436,7 +437,7 @@ glm::mat4 SceneRenderer::ContextLifetime::get_projection_matrix(float aspect) {
 
 //----------------------------------------------------------------------------//
 
-SceneRenderer::SceneRenderer(const SceneData &model)
+SceneRenderer::SceneRenderer(const CopyableSceneData &model)
         : model(model) {
 }
 

@@ -52,13 +52,14 @@ private:
 class VoxelisedObject final : public BasicDrawableObject {
 public:
     VoxelisedObject(const GenericShader& shader,
-                    const SceneData& scene_data,
+                    const CopyableSceneData& scene_data,
                     const VoxelCollection& voxel);
     void draw() const override;
 
 private:
-    static std::vector<glm::vec3> get_vertices(const SceneData& scene_data);
-    static std::vector<GLuint> get_indices(const SceneData& scene_data,
+    static std::vector<glm::vec3> get_vertices(
+        const CopyableSceneData& scene_data);
+    static std::vector<GLuint> get_indices(const CopyableSceneData& scene_data,
                                            const VoxelCollection& voxel);
 
     VoxelCollection voxel;
@@ -68,19 +69,20 @@ class MultiMaterialObject : public ::Drawable {
 public:
     MultiMaterialObject(const GenericShader& generic_shader,
                         const LitSceneShader& lit_scene_shader,
-                        const SceneData& scene_data);
+                        const CopyableSceneData& scene_data);
 
     void draw() const override;
 
     class SingleMaterialSection : public ::Drawable {
     public:
-        SingleMaterialSection(const SceneData& scene_data, int material_index);
+        SingleMaterialSection(const CopyableSceneData& scene_data,
+                              int material_index);
 
         void draw() const override;
 
     private:
-        static std::vector<GLuint> get_indices(const SceneData& scene_data,
-                                               int material_index);
+        static std::vector<GLuint> get_indices(
+            const CopyableSceneData& scene_data, int material_index);
         StaticIBO ibo;
         GLuint size;
     };
@@ -88,7 +90,8 @@ public:
     void set_highlighted(int material);
 
 private:
-    std::vector<glm::vec3> get_vertices(const SceneData& scene_data) const;
+    std::vector<glm::vec3> get_vertices(
+        const CopyableSceneData& scene_data) const;
 
     const GenericShader& generic_shader;
     const LitSceneShader& lit_scene_shader;
@@ -108,7 +111,7 @@ public:
     DrawableScene(const GenericShader& generic_shader,
                   const MeshShader& mesh_shader,
                   const LitSceneShader& lit_scene_shader,
-                  const SceneData& scene_data);
+                  const CopyableSceneData& scene_data);
 
     void update(float dt) override;
     void draw() const override;
@@ -160,7 +163,7 @@ public:
         virtual void openGLContextClosing(OpenGLRenderer* r) = 0;
     };
 
-    SceneRenderer(const SceneData& model);
+    SceneRenderer(const CopyableSceneData& model);
 
     //  lock on all public methods
     //  don't call public methods from one another!
@@ -188,7 +191,7 @@ public:
 private:
     class ContextLifetime : public ::Drawable, public ::Updatable {
     public:
-        ContextLifetime(const SceneData& scene_data);
+        ContextLifetime(const CopyableSceneData& scene_data);
 
         void set_aspect(float aspect);
         void update_scale(float delta);
@@ -214,7 +217,7 @@ private:
 
         static glm::mat4 get_projection_matrix(float aspect);
 
-        const SceneData& model;
+        const CopyableSceneData& model;
 
         GenericShader generic_shader;
         MeshShader mesh_shader;
@@ -229,7 +232,7 @@ private:
         glm::mat4 translation;
     };
 
-    SceneData model;
+    CopyableSceneData model;
 
     std::unique_ptr<ContextLifetime> context_lifetime;
 

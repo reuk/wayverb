@@ -248,28 +248,33 @@ LeftPanel::LeftPanel(model::ValueWrapper<model::FullModel>& model,
     auto aabb = scene_data.get_aabb();
     property_panel.addSection(
         "general",
-        {new Vec3fProperty(
-             "source", model.combined.source, aabb.get_c0(), aabb.get_c1()),
-         new Vec3fProperty(
-             "mic", model.combined.mic, aabb.get_c0(), aabb.get_c1())});
+        {new Vec3fProperty("source",
+                           model.persistent.combined.source,
+                           aabb.get_c0(),
+                           aabb.get_c1()),
+         new Vec3fProperty("mic",
+                           model.persistent.combined.mic,
+                           aabb.get_c0(),
+                           aabb.get_c1())});
 
     Array<PropertyComponent*> materials;
     materials.addArray(make_material_buttons(
-        model.shown_surface, model.materials, model.presets));
+        model.shown_surface, model.persistent.materials, model.presets));
     property_panel.addSection("materials", materials);
 
     property_panel.addSection(
         "waveguide",
         {new NumberProperty<float>(
-             "cutoff", model.combined.filter_frequency, 20, 20000),
+             "cutoff", model.persistent.combined.filter_frequency, 20, 20000),
          new NumberProperty<float>(
-             "oversample", model.combined.oversample_ratio, 1, 4)});
+             "oversample", model.persistent.combined.oversample_ratio, 1, 4)});
 
     property_panel.addSection(
         "raytracer",
-        {new NumberProperty<int>("rays", model.combined.rays, 1000, 1000000),
+        {new NumberProperty<int>(
+             "rays", model.persistent.combined.rays, 1000, 1000000),
          new NumberProperty<int>(
-             "reflections", model.combined.impulses, 20, 200)});
+             "reflections", model.persistent.combined.impulses, 20, 200)});
 
     Array<PropertyComponent*> receivers;
     receivers.add(new ReceiverPickerProperty(model.receiver.mode));

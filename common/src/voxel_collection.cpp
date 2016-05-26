@@ -28,7 +28,7 @@ VoxelCollection::VoxelCollection(const Octree& o)
     init(o);
 }
 
-VoxelCollection::VoxelCollection(const SceneData& scene_data,
+VoxelCollection::VoxelCollection(const CopyableSceneData& scene_data,
                                  int depth,
                                  float padding)
         : VoxelCollection(Octree(scene_data, depth, padding)) {
@@ -119,7 +119,7 @@ geo::Intersection VoxelCollection::traverse(const geo::Ray& ray,
 }
 
 VoxelCollection::TriangleTraversalCallback::TriangleTraversalCallback(
-    const SceneData& scene_data)
+    const CopyableSceneData& scene_data)
         : tri(scene_data.get_triangles())
         , vertices(scene_data.get_converted_vertices()) {
 }

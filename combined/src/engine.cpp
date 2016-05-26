@@ -26,7 +26,7 @@ namespace engine {
 
 template <BufferType buffer_type>
 WayverbEngine<buffer_type>::WayverbEngine(ComputeContext& compute_context,
-                                          const SceneData& scene_data,
+                                          const CopyableSceneData& scene_data,
                                           const Vec3f& source,
                                           const Vec3f& mic,
                                           float waveguide_sample_rate,

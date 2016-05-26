@@ -49,7 +49,15 @@ public:
                              public ApplicationCommandTarget,
                              public model::BroadcastListener {
     public:
-        MainWindow(String name, const File& project);
+        //  load with a custom config too
+        MainWindow(String name,
+                   SceneData&& scene_data,
+                   model::FullModel&& model);
+
+        //  if the file is a .way, load a project, else just load like a 3d
+        //  model
+        MainWindow(String name, const File& f);
+
         ~MainWindow() noexcept;
 
         void closeButtonPressed() override;
@@ -65,6 +73,13 @@ public:
         void receive_broadcast(model::Broadcaster* b) override;
 
     private:
+        MainWindow(String name, std::tuple<SceneData, model::FullModel>&& p);
+
+        static File get_model_path(const File& way);
+        static File get_config_path(const File& way);
+        static std::tuple<SceneData, model::FullModel>
+        scene_and_model_from_file(const File& f);
+
         SceneData scene_data;
         model::FullModel model;
         model::ValueWrapper<model::FullModel> wrapper{nullptr, model};

@@ -138,7 +138,7 @@ public:
     Raytracer(const RaytracerProgram& program, cl::CommandQueue& queue);
 
     template <typename Callback = DoNothingCallback>
-    Results run(const SceneData& scene_data,
+    Results run(const CopyableSceneData& scene_data,
                 const Vec3f& micpos,
                 const Vec3f& source,
                 const std::vector<cl_float3>& directions,
@@ -155,7 +155,7 @@ public:
     }
 
     template <typename Callback = DoNothingCallback>
-    Results run(const SceneData& scene_data,
+    Results run(const CopyableSceneData& scene_data,
                 const Vec3f& micpos,
                 const Vec3f& source,
                 int rays,
@@ -175,7 +175,7 @@ public:
     cl::CommandQueue& get_queue();
 
 private:
-    Results run(const SceneData& scene_data,
+    Results run(const CopyableSceneData& scene_data,
                 const Vec3f& micpos,
                 const Vec3f& source,
                 const std::vector<cl_float3>& directions,

@@ -6,7 +6,6 @@
 #include "triangle_vec.h"
 #include "vec.h"
 
-class SceneData;
 namespace geo {
 class Ray;
 }  // namespace geo
@@ -178,7 +177,7 @@ public:
     CuboidBoundary get_padded(float padding) const;
     bool intersects(const geo::Ray& ray, float t0, float t1);
 
-    SceneData get_scene_data() const;
+    CopyableSceneData get_scene_data() const;
 
     template <typename Archive>
     friend void serialize(Archive& archive, CuboidBoundary& m);
@@ -210,7 +209,7 @@ public:
     MeshBoundary(const std::vector<Triangle>& triangles,
                  const std::vector<Vec3f>& vertices,
                  const std::vector<Surface>& surfaces);
-    explicit MeshBoundary(const SceneData& sd);
+    explicit MeshBoundary(const CopyableSceneData& sd);
     bool inside(const Vec3f& v) const override;
     CuboidBoundary get_aabb() const override;
 

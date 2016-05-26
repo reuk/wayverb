@@ -8,8 +8,10 @@
 class Octree final {
 public:
     Octree() = default;
-    Octree(const SceneData& mesh_boundary, int max_depth, float padding = 0);
-    Octree(const SceneData& mesh_boundary,
+    Octree(const CopyableSceneData& mesh_boundary,
+           int max_depth,
+           float padding = 0);
+    Octree(const CopyableSceneData& mesh_boundary,
            int max_depth,
            const std::vector<int>& to_test,
            const CuboidBoundary& aabb);

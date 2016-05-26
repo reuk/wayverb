@@ -6,14 +6,14 @@
 #include <iomanip>
 
 MainContentComponent::MainContentComponent(
-    SceneData& scene_data, model::ValueWrapper<model::FullModel>& wrapper)
+    const SceneData& scene_data, model::ValueWrapper<model::FullModel>& wrapper)
         : scene_data(scene_data)
         , wrapper(wrapper)
         , left_panel(wrapper, scene_data)
         , resizer_bar(&layout_manager, 1, true)
         , right_panel(scene_data,
                       wrapper.shown_surface,
-                      wrapper.combined,
+                      wrapper.persistent.combined,
                       wrapper.render_state) {
     auto left_panel_width = 300;
     layout_manager.setItemLayout(
@@ -63,15 +63,15 @@ void MainContentComponent::receive_broadcast(model::Broadcaster* cb) {
                     };
 
                     callback(engine::State::initialising, 1.0);
-                    Engine engine(
-                        compute_context,
-                        scene_data,
-                        wrapper.combined.source,
-                        wrapper.combined.mic,
-                        wrapper.combined.get().get_waveguide_sample_rate(),
-                        wrapper.combined.rays,
-                        wrapper.combined.impulses,
-                        wrapper.combined.sample_rate);
+                    Engine engine(compute_context,
+                                  scene_data,
+                                  wrapper.persistent.combined.source,
+                                  wrapper.persistent.combined.mic,
+                                  wrapper.persistent.combined.get()
+                                      .get_waveguide_sample_rate(),
+                                  wrapper.persistent.combined.rays,
+                                  wrapper.persistent.combined.impulses,
+                                  wrapper.persistent.combined.sample_rate);
 
                     auto check_position = [](auto valid,
                                              const std::string& str) {

@@ -19,8 +19,6 @@ class CuboidBoundary;
 class MeshBoundary;
 struct Triangle;
 
-struct aiScene;
-
 class SurfaceConfig final {
 public:
     SurfaceConfig() = default;
@@ -45,27 +43,36 @@ private:
 
 //----------------------------------------------------------------------------//
 
-class SceneData {
+class CopyableSceneData {
 public:
     struct Material {
         std::string name;
         Surface surface;
     };
 
-    SceneData(const std::string& fpath,
-              const std::string& mat,
-              float scale = 1);
-    SceneData(const std::string& fpath, float scale = 1);
-    SceneData(const aiScene* const scene, float scale = 1);
+    struct Contents {
+        std::vector<Triangle> triangles;
+        std::vector<cl_float3> vertices;
+        std::vector<Material> materials;
+    };
 
-    SceneData(const std::vector<Triangle>& triangles,
-              const std::vector<cl_float3>& vertices,
-              const std::vector<Material>& materials);
+    CopyableSceneData() = default;
+    CopyableSceneData(const std::vector<Triangle>& triangles,
+                      const std::vector<cl_float3>& vertices,
+                      const std::vector<Material>& materials);
+    CopyableSceneData(Contents&& rhs);
+
+    CopyableSceneData(const CopyableSceneData& rhs) = default;
+    CopyableSceneData& operator=(const CopyableSceneData& rhs) = default;
+    CopyableSceneData(CopyableSceneData&& rhs) noexcept = default;
+    CopyableSceneData& operator=(CopyableSceneData&& rhs) noexcept = default;
+    virtual ~CopyableSceneData() noexcept = default;
 
     std::vector<Surface> get_surfaces() const;
+    void set_surfaces(const std::vector<Material>& materials);
     void set_surfaces(const std::map<std::string, Surface>& surfaces);
     void set_surfaces(const SurfaceConfig& surfaces);
-    void set_surface(const std::string& name, const Surface& surface);
+    void set_surface(const Material& material);
 
     void set_surfaces(const Surface& surface);
 
@@ -78,17 +85,32 @@ public:
     const std::vector<Material>& get_materials() const;
 
 private:
-    struct Contents {
-        std::vector<Triangle> triangles;
-        std::vector<cl_float3> vertices;
-        std::vector<Material> materials;
-    };
+    Contents contents;
+};
 
-    SceneData(const Contents& contents);
+//----------------------------------------------------------------------------//
 
-    static Contents load(const aiScene* const scene, float scale = 1);
+class SceneData final : public CopyableSceneData {
+    struct Impl;
+    std::unique_ptr<Impl> pimpl;
 
-    std::vector<Triangle> triangles;
-    std::vector<cl_float3> vertices;
-    std::vector<Material> materials;
+public:
+    //  this class adds the ability to load/save from file
+    SceneData(const std::string& fpath,
+              const std::string& mat,
+              float scale = 1);
+    SceneData(const std::string& fpath, float scale = 1);
+    void save(const std::string& f) const;
+
+    SceneData(const SceneData& rhs) = delete;
+    SceneData& operator=(const SceneData& rhs) = delete;
+    SceneData(SceneData&& rhs) noexcept;
+    SceneData& operator=(SceneData&& rhs) noexcept;
+    ~SceneData() noexcept;
+
+private:
+    SceneData(CopyableSceneData&& rhs, std::unique_ptr<Impl>&& pimpl);
+    SceneData(std::tuple<CopyableSceneData, std::unique_ptr<Impl>>&& rhs);
+    static std::tuple<CopyableSceneData, std::unique_ptr<Impl>> load(
+        const std::string& scene_file, float scale = 1);
 };

@@ -5,6 +5,8 @@
 #include "combined/config.h"
 #include "combined/engine.h"
 
+#include "cereal/types/vector.hpp"
+
 namespace model {
 
 template <>
@@ -192,10 +194,33 @@ public:
     MODEL_FIELD_DEFINITION(visualise);
 };
 
-class FullModel {
+class Persistent {
 public:
     config::Combined combined;
     std::vector<SceneData::Material> materials;
+
+    template <typename Archive>
+    void serialize(Archive& archive) {
+        archive(cereal::make_nvp("config", combined),
+                cereal::make_nvp("materials", materials));
+    }
+};
+
+template <>
+class ValueWrapper<Persistent> : public StructWrapper<Persistent, 2> {
+public:
+    using struct_wrapper::StructWrapper;
+    using struct_wrapper::operator=;
+    member_array get_members() override {
+        return {{&combined, &materials}};
+    }
+    MODEL_FIELD_DEFINITION(combined);
+    MODEL_FIELD_DEFINITION(materials);
+};
+
+class FullModel {
+public:
+    Persistent persistent;
     std::vector<SceneData::Material> presets;
     FullReceiverConfig receiver;
     RenderState render_state;
@@ -203,20 +228,15 @@ public:
 };
 
 template <>
-class ValueWrapper<FullModel> : public StructWrapper<FullModel, 6> {
+class ValueWrapper<FullModel> : public StructWrapper<FullModel, 5> {
 public:
     using struct_wrapper::StructWrapper;
     using struct_wrapper::operator=;
     member_array get_members() override {
-        return {{&combined,
-                 &materials,
-                 &presets,
-                 &receiver,
-                 &render_state,
-                 &shown_surface}};
+        return {
+            {&persistent, &presets, &receiver, &render_state, &shown_surface}};
     }
-    MODEL_FIELD_DEFINITION(combined);
-    MODEL_FIELD_DEFINITION(materials);
+    MODEL_FIELD_DEFINITION(persistent);
     MODEL_FIELD_DEFINITION(presets);
     MODEL_FIELD_DEFINITION(receiver);
     MODEL_FIELD_DEFINITION(render_state);

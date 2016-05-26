@@ -10,7 +10,7 @@ class MainContentComponent final : public Component,
 public:
     using Engine = engine::WayverbEngine<BufferType::cl>;
 
-    MainContentComponent(SceneData& scene_data,
+    MainContentComponent(const SceneData& scene_data,
                          model::ValueWrapper<model::FullModel>& wrapper);
 
     virtual ~MainContentComponent();
@@ -23,7 +23,7 @@ public:
 private:
     void join_engine_thread();
 
-    SceneData& scene_data;
+    const SceneData& scene_data;
     model::ValueWrapper<model::FullModel>& wrapper;
 
     model::BroadcastConnector is_rendering_connector{

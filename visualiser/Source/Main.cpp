@@ -1,8 +1,10 @@
 #include "Main.hpp"
 #include "CommandIDs.h"
 
-#include "LoadFiles.hpp"
 #include "Presets.hpp"
+
+#include "combined/config_serialize.h"
+#include "common/surface_serialize.h"
 
 #include <memory>
 
@@ -68,17 +70,15 @@ void VisualiserApplication::systemRequestedQuit() {
 void VisualiserApplication::anotherInstanceStarted(const String& commandLine) {
 }
 
-VisualiserApplication::MainWindow::MainWindow(String name, const File& root)
+//  init from as much outside info as possible
+VisualiserApplication::MainWindow::MainWindow(String name,
+                                              SceneData&& scene_data,
+                                              model::FullModel&& model)
         : DocumentWindow(name, Colours::lightgrey, DocumentWindow::allButtons)
-        , scene_data(load_model(root, load_materials(root)))
-        , model{load_config(root),
-                scene_data.get_materials(),
-                model::get_presets(),
-                model::FullReceiverConfig{},
-                model::RenderState{}}
-        , content_component(scene_data, wrapper) {
+        , scene_data(std::move(scene_data))
+        , model(std::move(model))
+        , content_component(this->scene_data, wrapper) {
     setUsingNativeTitleBar(true);
-    //    setContentOwned(new MainContentComponent(scene_data, wrapper), true);
     setContentNonOwned(&content_component, true);
 
     centreWithSize(getWidth(), getHeight());
@@ -93,6 +93,84 @@ VisualiserApplication::MainWindow::MainWindow(String name, const File& root)
     command_manager.getKeyMappings()->resetToDefaultMappings();
     addKeyListener(command_manager.getKeyMappings());
     setWantsKeyboardFocus(false);
+}
+
+static model::FullModel construct_full_model(
+    const model::Persistent& persistent) {
+    return model::FullModel{persistent,
+                            model::get_presets(),
+                            model::FullReceiverConfig{},
+                            model::RenderState{}};
+}
+
+static File get_sub_path(const File& way, const std::string& name) {
+    return way.getChildFile(name.c_str());
+}
+
+File VisualiserApplication::MainWindow::get_model_path(const File& way) {
+    return get_sub_path(way, "model.model");
+}
+
+File VisualiserApplication::MainWindow::get_config_path(const File& way) {
+    return get_sub_path(way, "config.json");
+}
+
+std::tuple<SceneData, model::FullModel>
+VisualiserApplication::MainWindow::scene_and_model_from_file(const File& f) {
+    auto is_way = [&f] {
+        //  look inside for a model
+        auto model_file = get_model_path(f);
+        if (!model_file.existsAsFile()) {
+            //  TODO show alert window
+        }
+
+        //  load the model
+        SceneData scene_data(model_file.getFullPathName().toStdString());
+        //  look inside for a config
+        auto config_file = get_config_path(f);
+        if (!config_file.existsAsFile()) {
+            //  TODO show alert window
+        }
+        //  load the config
+        std::ifstream stream(config_file.getFullPathName().toStdString());
+        cereal::JSONInputArchive archive(stream);
+        model::Persistent config;
+        archive(cereal::make_nvp("persistent", config));
+
+        //  make sure the surfaces from the config match the surfaces in the
+        //  model - merge the config surfaces into the scene, and then
+        //  replace the config surfaces with the scene ones
+        scene_data.set_surfaces(config.materials);
+        config.materials = scene_data.get_materials();
+
+        //  return the pair
+        return std::make_tuple(std::move(scene_data),
+                               construct_full_model(config));
+    };
+
+    auto is_not_way = [&f] {
+        //  try to load the model
+        SceneData scene_data(f.getFullPathName().toStdString());
+        //  return the pair
+        return std::make_tuple(
+            std::move(scene_data),
+            construct_full_model(model::Persistent{
+                config::Combined{}, scene_data.get_materials()}));
+    };
+
+    return f.getFileExtension() == ".way" ? is_way() : is_not_way();
+}
+
+//  given just a file, work out whether it's a project or a 3d model, then init
+//  appropriately
+VisualiserApplication::MainWindow::MainWindow(String name, const File& f)
+        : MainWindow(name, scene_and_model_from_file(f)) {
+}
+
+VisualiserApplication::MainWindow::MainWindow(
+    String name, std::tuple<SceneData, model::FullModel>&& p)
+        : MainWindow(
+              name, std::move(std::get<0>(p)), std::move(std::get<1>(p))) {
 }
 
 VisualiserApplication::MainWindow::~MainWindow() noexcept {
@@ -175,6 +253,20 @@ void VisualiserApplication::MainWindow::closeButtonPressed() {
 }
 
 void VisualiserApplication::MainWindow::save_as_project() {
+    FileChooser fc("save project as", File::nonexistent, "*.way");
+    if (fc.browseForFileToSave(true)) {
+        auto root = fc.getResult();
+        root.createDirectory();
+
+        //  write current geometry to file
+        scene_data.save(get_model_path(root).getFullPathName().toStdString());
+
+        //  write config with all current materials to file
+        std::ofstream stream(
+            get_config_path(root).getFullPathName().toStdString());
+        cereal::JSONOutputArchive archive(stream);
+        archive(cereal::make_nvp("persistent", model.persistent));
+    }
 }
 
 VisualiserApplication& VisualiserApplication::get_app() {
@@ -252,7 +344,7 @@ void VisualiserApplication::open_project(const File& file) {
 }
 
 void VisualiserApplication::open_project_from_dialog() {
-    FileChooser fc("open project", File::nonexistent, "*.way");
+    FileChooser fc("open project", File::nonexistent, "*.way,*.obj,*.model");
     if (fc.browseForFileToOpen()) {
         open_project(fc.getResult());
     }

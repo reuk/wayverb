@@ -26,7 +26,7 @@ public:
     using XAxis = std::vector<YAxis>;
 
     /// Construct from scene data. Uses an octree as an acceleration structure.
-    VoxelCollection(const SceneData& scene_data,
+    VoxelCollection(const CopyableSceneData& scene_data,
                     int depth,
                     float padding = 0.0f);
     /// Construct directly from an existing octree.
@@ -68,7 +68,7 @@ public:
     /// SceneData object which contains the triangle information.
     class TriangleTraversalCallback final : public TraversalCallback {
     public:
-        TriangleTraversalCallback(const SceneData& scene_data);
+        TriangleTraversalCallback(const CopyableSceneData& scene_data);
         geo::Intersection operator()(
             const geo::Ray& ray, const std::vector<int>& triangles) override;
 

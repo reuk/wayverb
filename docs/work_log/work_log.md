@@ -469,13 +469,22 @@ things to do:
 interface
 =========
 
+loading
+
+    model - list of materials, with names
+    config - list of materials, with names and parameters
+
 fast stuff
 ----------
 
 * recent projects
 
+* alphabetical presets for materials
+
 slow stuff
 ----------
+
+* remember to load proper surfaces when starting the simulation
 
 * microphone/hrtf look-at rather than facing for UI
     * visualise HRTF facing/up directions
@@ -489,6 +498,17 @@ slow stuff
 * audio output
 
 * proper load and save
+    * load
+        * load a model file, a config file, and a set of materials corresponding
+          to materials in the model
+            * these could be part of the config
+        * match custom materials to materials in the model
+        * this bit is done??
+        * BUT I need to be able to load JUST a 3d model too
+    * save
+        * write the current model to an output folder
+        * also write the current config, and the current states of each of the
+          surfaces currently in use in the model
 
 * switching off visualise causes some kind of hang
 
@@ -512,8 +532,6 @@ nice-to-have
 * variable speed of sound
 
 * work out better scheduling + interop for gl backend
-
-* better 3D crosshairs
 
 * stop surface panel combobox getting deselected after selecting something
 

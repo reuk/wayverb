@@ -49,7 +49,7 @@ template <BufferType buffer_type>
 class WayverbEngine {
 public:
     WayverbEngine(ComputeContext& compute_context,
-                  const SceneData& scene_data,
+                  const CopyableSceneData& scene_data,
                   const Vec3f& source,
                   const Vec3f& mic,
                   float waveguide_sample_rate,
@@ -134,7 +134,7 @@ private:
         return GenericCallbackAdapter<Callback, std::vector<float>>(callback);
     }
 
-    SceneData scene_data;
+    CopyableSceneData scene_data;
     Raytracer raytracer;
     RectangularWaveguide<buffer_type> waveguide;
 

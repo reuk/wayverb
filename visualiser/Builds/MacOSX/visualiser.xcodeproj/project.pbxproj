@@ -17,7 +17,6 @@
 		1B29EECB1CDB93E6003BD0BB /* VisualiserLookAndFeel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1B29EEC91CDB93E6003BD0BB /* VisualiserLookAndFeel.cpp */; };
 		1B5B74441CF5C6070030717F /* MeshShader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1B5B74421CF5C6070030717F /* MeshShader.cpp */; };
 		1B655C741CEE0A7100901ED1 /* libcombined.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B655C731CEDE25A00901ED1 /* libcombined.a */; };
-		1B6833BB1CE1FD4100E4CACC /* LoadFiles.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1B6833B91CE1FD4100E4CACC /* LoadFiles.cpp */; };
 		1B6CDDEC1CEB3CD300DA8B3D /* MicrophoneEditor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1B6CDDEA1CEB3CD300DA8B3D /* MicrophoneEditor.cpp */; };
 		1B7FFFB71CF0C9800011F405 /* Presets.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1B7FFFB51CF0C9800011F405 /* Presets.cpp */; };
 		1BA3F39F1CDA20D400073946 /* libmodern_gl_utils.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1BA3F39E1CDA20D400073946 /* libmodern_gl_utils.a */; };
@@ -393,8 +392,6 @@
 		1B5B74421CF5C6070030717F /* MeshShader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = MeshShader.cpp; path = ../../Source/MeshShader.cpp; sourceTree = "<group>"; };
 		1B5B74431CF5C6070030717F /* MeshShader.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = MeshShader.hpp; path = ../../Source/MeshShader.hpp; sourceTree = "<group>"; };
 		1B6108181CA032ADF5CE83F6 /* juce_FileTreeComponent.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = juce_FileTreeComponent.h; path = ../../JuceLibraryCode/modules/juce_gui_basics/filebrowser/juce_FileTreeComponent.h; sourceTree = SOURCE_ROOT; };
-		1B6833B91CE1FD4100E4CACC /* LoadFiles.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = LoadFiles.cpp; path = ../../Source/LoadFiles.cpp; sourceTree = "<group>"; };
-		1B6833BA1CE1FD4100E4CACC /* LoadFiles.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = LoadFiles.hpp; path = ../../Source/LoadFiles.hpp; sourceTree = "<group>"; };
 		1B6CDDEA1CEB3CD300DA8B3D /* MicrophoneEditor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = MicrophoneEditor.cpp; path = ../../Source/MicrophoneEditor.cpp; sourceTree = "<group>"; };
 		1B6CDDEB1CEB3CD300DA8B3D /* MicrophoneEditor.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = MicrophoneEditor.hpp; path = ../../Source/MicrophoneEditor.hpp; sourceTree = "<group>"; };
 		1B6CDDEE1CEB826700DA8B3D /* FullModel.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = FullModel.hpp; path = ../../Source/FullModel.hpp; sourceTree = "<group>"; };
@@ -1753,8 +1750,6 @@
 			isa = PBXGroup;
 			children = (
 				1B6CDDEE1CEB826700DA8B3D /* FullModel.hpp */,
-				1B6833B91CE1FD4100E4CACC /* LoadFiles.cpp */,
-				1B6833BA1CE1FD4100E4CACC /* LoadFiles.hpp */,
 				1BC296691CE5F3F300F4F33F /* SurfaceModel.cpp */,
 				1BC2966A1CE5F3F300F4F33F /* SurfaceModel.hpp */,
 			);
@@ -4041,7 +4036,6 @@
 				127F610F5B79495C0D092DF7 /* juce_audio_processors.mm in Sources */,
 				D4D94F2D95EF2A6BAB982FEA /* juce_core.mm in Sources */,
 				1BA3F3E71CDA21EC00073946 /* ModelObject.cpp in Sources */,
-				1B6833BB1CE1FD4100E4CACC /* LoadFiles.cpp in Sources */,
 				F33311A7088B136BB9CEF1D2 /* juce_cryptography.mm in Sources */,
 				88C5C1C03717251681E1D566 /* juce_data_structures.mm in Sources */,
 				DC19C8DE75E7E58886E9FE2B /* juce_events.mm in Sources */,

@@ -25,6 +25,13 @@ void serialize(Archive& archive, Surface& m) {
 JSON_OSTREAM_OVERLOAD(Surface);
 
 template <typename Archive>
+void serialize(Archive& archive, SceneData::Material& m) {
+    archive(cereal::make_nvp("name", m.name),
+            cereal::make_nvp("surface", m.surface));
+}
+JSON_OSTREAM_OVERLOAD(SceneData::Material);
+
+template <typename Archive>
 void SurfaceConfig::serialize(Archive& archive) {
     archive(cereal::make_nvp("surfaces", surfaces));
 }
