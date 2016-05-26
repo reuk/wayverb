@@ -26,6 +26,13 @@ void serialize(Archive& archive, HrtfModel& m) {
     archive(cereal::make_nvp("facing", m.facing), cereal::make_nvp("up", m.up));
 }
 
+template <typename Archive>
+void serialize(Archive& archive, ReceiverConfig& m) {
+    archive(cereal::make_nvp("mode", m.mode),
+            cereal::make_nvp("microphone model", m.microphone_model),
+            cereal::make_nvp("hrtf model", m.hrtf_model));
+}
+
 }  // namespace config
 
 CEREAL_REGISTER_TYPE_WITH_NAME(config::MicrophoneModel, "microphone model");

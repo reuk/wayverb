@@ -52,7 +52,8 @@ public:
         //  load with a custom config too
         MainWindow(String name,
                    SceneData&& scene_data,
-                   model::FullModel&& model);
+                   model::FullModel&& model,
+                   File&& this_file);
 
         //  if the file is a .way, load a project, else just load like a 3d
         //  model
@@ -62,7 +63,9 @@ public:
 
         void closeButtonPressed() override;
 
-        void save_as_project();
+        bool needs_save() const;
+        bool save_project();
+        bool save_as_project();
 
         void getAllCommands(Array<CommandID>& commands) override;
         void getCommandInfo(CommandID command_id,
@@ -73,17 +76,24 @@ public:
         void receive_broadcast(model::Broadcaster* b) override;
 
     private:
-        MainWindow(String name, std::tuple<SceneData, model::FullModel>&& p);
+        MainWindow(String name,
+                   std::tuple<SceneData, model::FullModel, File>&& p);
+
+        void save_to(const File& f);
 
         static File get_model_path(const File& way);
         static File get_config_path(const File& way);
-        static std::tuple<SceneData, model::FullModel>
+        static std::tuple<SceneData, model::FullModel, File>
         scene_and_model_from_file(const File& f);
 
         SceneData scene_data;
         model::FullModel model;
         model::ValueWrapper<model::FullModel> wrapper{nullptr, model};
 
+        File this_file;
+
+        model::BroadcastConnector persistent_connector{&wrapper.persistent,
+                                                       this};
         model::BroadcastConnector is_rendering_connector{
             &wrapper.render_state.is_rendering, this};
         model::BroadcastConnector visualising_connector{

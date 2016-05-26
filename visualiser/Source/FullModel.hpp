@@ -66,50 +66,6 @@ public:
 };
 
 template <>
-class ValueWrapper<config::Combined>
-    : public StructWrapper<config::Combined, 14> {
-public:
-    using struct_wrapper::StructWrapper;
-    using struct_wrapper::operator=;
-    member_array get_members() override {
-        return {{&filter_frequency,
-                 &oversample_ratio,
-                 &rays,
-                 &impulses,
-                 &ray_hipass,
-                 &do_normalize,
-                 &trim_predelay,
-                 &trim_tail,
-                 &remove_direct,
-                 &volume_scale,
-                 &source,
-                 &mic,
-                 &sample_rate,
-                 &bit_depth}};
-    }
-    MODEL_FIELD_DEFINITION(filter_frequency);
-    MODEL_FIELD_DEFINITION(oversample_ratio);
-    MODEL_FIELD_DEFINITION(rays);
-    MODEL_FIELD_DEFINITION(impulses);
-    MODEL_FIELD_DEFINITION(ray_hipass);
-    MODEL_FIELD_DEFINITION(do_normalize);
-    MODEL_FIELD_DEFINITION(trim_predelay);
-    MODEL_FIELD_DEFINITION(trim_tail);
-    MODEL_FIELD_DEFINITION(remove_direct);
-    MODEL_FIELD_DEFINITION(volume_scale);
-    MODEL_FIELD_DEFINITION(source);
-    MODEL_FIELD_DEFINITION(mic);
-    MODEL_FIELD_DEFINITION(sample_rate);
-    MODEL_FIELD_DEFINITION(bit_depth);
-};
-
-struct FullReceiverConfig {
-    config::AttenuationModel::Mode mode;
-    config::MicrophoneModel microphone_model;
-    config::HrtfModel hrtf_model;
-};
-
-template <>
 class ValueWrapper<config::Microphone>
     : public StructWrapper<config::Microphone, 2> {
 public:
@@ -148,8 +104,8 @@ public:
 };
 
 template <>
-class ValueWrapper<FullReceiverConfig>
-    : public StructWrapper<FullReceiverConfig, 3> {
+class ValueWrapper<config::ReceiverConfig>
+    : public StructWrapper<config::ReceiverConfig, 3> {
 public:
     using struct_wrapper::StructWrapper;
     using struct_wrapper::operator=;
@@ -159,6 +115,46 @@ public:
     MODEL_FIELD_DEFINITION(mode);
     MODEL_FIELD_DEFINITION(microphone_model);
     MODEL_FIELD_DEFINITION(hrtf_model);
+};
+
+template <>
+class ValueWrapper<config::Combined>
+    : public StructWrapper<config::Combined, 15> {
+public:
+    using struct_wrapper::StructWrapper;
+    using struct_wrapper::operator=;
+    member_array get_members() override {
+        return {{&filter_frequency,
+                 &oversample_ratio,
+                 &rays,
+                 &impulses,
+                 &ray_hipass,
+                 &do_normalize,
+                 &trim_predelay,
+                 &trim_tail,
+                 &remove_direct,
+                 &volume_scale,
+                 &source,
+                 &mic,
+                 &sample_rate,
+                 &bit_depth,
+                 &receiver_config}};
+    }
+    MODEL_FIELD_DEFINITION(filter_frequency);
+    MODEL_FIELD_DEFINITION(oversample_ratio);
+    MODEL_FIELD_DEFINITION(rays);
+    MODEL_FIELD_DEFINITION(impulses);
+    MODEL_FIELD_DEFINITION(ray_hipass);
+    MODEL_FIELD_DEFINITION(do_normalize);
+    MODEL_FIELD_DEFINITION(trim_predelay);
+    MODEL_FIELD_DEFINITION(trim_tail);
+    MODEL_FIELD_DEFINITION(remove_direct);
+    MODEL_FIELD_DEFINITION(volume_scale);
+    MODEL_FIELD_DEFINITION(source);
+    MODEL_FIELD_DEFINITION(mic);
+    MODEL_FIELD_DEFINITION(sample_rate);
+    MODEL_FIELD_DEFINITION(bit_depth);
+    MODEL_FIELD_DEFINITION(receiver_config);
 };
 
 class RenderState {
@@ -222,9 +218,9 @@ class FullModel {
 public:
     Persistent persistent;
     std::vector<SceneData::Material> presets;
-    FullReceiverConfig receiver;
     RenderState render_state;
     int shown_surface{-1};
+    bool needs_save{false};
 };
 
 template <>
@@ -233,14 +229,17 @@ public:
     using struct_wrapper::StructWrapper;
     using struct_wrapper::operator=;
     member_array get_members() override {
-        return {
-            {&persistent, &presets, &receiver, &render_state, &shown_surface}};
+        return {{&persistent,
+                 &presets,
+                 &render_state,
+                 &shown_surface,
+                 &needs_save}};
     }
     MODEL_FIELD_DEFINITION(persistent);
     MODEL_FIELD_DEFINITION(presets);
-    MODEL_FIELD_DEFINITION(receiver);
     MODEL_FIELD_DEFINITION(render_state);
     MODEL_FIELD_DEFINITION(shown_surface);
+    MODEL_FIELD_DEFINITION(needs_save);
 };
 
 }  // namespace model

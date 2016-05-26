@@ -217,7 +217,7 @@ private:
 class ReceiverConfigureButton : public ConfigureButton {
 public:
     ReceiverConfigureButton(
-        model::ValueWrapper<model::FullReceiverConfig>& receiver_config)
+        model::ValueWrapper<config::ReceiverConfig>& receiver_config)
             : ConfigureButton("configure")
             , receiver_config(receiver_config) {
     }
@@ -236,7 +236,7 @@ public:
     }
 
 private:
-    model::ValueWrapper<model::FullReceiverConfig>& receiver_config;
+    model::ValueWrapper<config::ReceiverConfig>& receiver_config;
 };
 
 //----------------------------------------------------------------------------//
@@ -276,8 +276,10 @@ LeftPanel::LeftPanel(model::ValueWrapper<model::FullModel>& model,
              "reflections", model.persistent.combined.impulses, 20, 200)});
 
     Array<PropertyComponent*> receivers;
-    receivers.add(new ReceiverPickerProperty(model.receiver.mode));
-    receivers.add(new ReceiverConfigureButton(model.receiver));
+    receivers.add(new ReceiverPickerProperty(
+        model.persistent.combined.receiver_config.mode));
+    receivers.add(
+        new ReceiverConfigureButton(model.persistent.combined.receiver_config));
     property_panel.addSection("receiver", receivers);
 
     property_panel.setOpaque(false);

@@ -11,7 +11,7 @@ void serialize(Archive& archive, App& m) {
             cereal::make_nvp("mic", m.mic),
             cereal::make_nvp("sample rate", m.sample_rate),
             cereal::make_nvp("bit depth", m.bit_depth),
-            cereal::make_nvp("attenuation model", m.attenuation_model));
+            cereal::make_nvp("attenuation model", m.receiver_config));
 }
 }  // namespace config
 JSON_OSTREAM_OVERLOAD(config::App);

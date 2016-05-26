@@ -63,7 +63,25 @@ void VisualiserApplication::systemRequestedQuit() {
     if (ModalComponentManager::getInstance()->cancelAllModalComponents()) {
         new ::AsyncQuitRetrier();
     } else {
-        quit();
+        if (main_window) {
+            if (main_window->needs_save()) {
+                switch (NativeMessageBox::showYesNoCancelBox(
+                    AlertWindow::AlertIconType::WarningIcon,
+                    "save?",
+                    "There are unsaved changes. Do you wish to save?")) {
+                    case 0:  // cancel
+                        return;
+                    case 1:  // yes
+                        if (main_window->save_project()) {
+                            quit();
+                        }
+                        break;
+                    case 2:  // no
+                        quit();
+                        break;
+                }
+            }
+        }
     }
 }
 
@@ -73,10 +91,12 @@ void VisualiserApplication::anotherInstanceStarted(const String& commandLine) {
 //  init from as much outside info as possible
 VisualiserApplication::MainWindow::MainWindow(String name,
                                               SceneData&& scene_data,
-                                              model::FullModel&& model)
+                                              model::FullModel&& model,
+                                              File&& this_file)
         : DocumentWindow(name, Colours::lightgrey, DocumentWindow::allButtons)
         , scene_data(std::move(scene_data))
         , model(std::move(model))
+        , this_file(std::move(this_file))
         , content_component(this->scene_data, wrapper) {
     setUsingNativeTitleBar(true);
     setContentNonOwned(&content_component, true);
@@ -93,14 +113,14 @@ VisualiserApplication::MainWindow::MainWindow(String name,
     command_manager.getKeyMappings()->resetToDefaultMappings();
     addKeyListener(command_manager.getKeyMappings());
     setWantsKeyboardFocus(false);
+
+    wrapper.needs_save.set(false);
 }
 
 static model::FullModel construct_full_model(
     const model::Persistent& persistent) {
-    return model::FullModel{persistent,
-                            model::get_presets(),
-                            model::FullReceiverConfig{},
-                            model::RenderState{}};
+    return model::FullModel{
+        persistent, model::get_presets(), model::RenderState{}};
 }
 
 static File get_sub_path(const File& way, const std::string& name) {
@@ -115,7 +135,7 @@ File VisualiserApplication::MainWindow::get_config_path(const File& way) {
     return get_sub_path(way, "config.json");
 }
 
-std::tuple<SceneData, model::FullModel>
+std::tuple<SceneData, model::FullModel, File>
 VisualiserApplication::MainWindow::scene_and_model_from_file(const File& f) {
     auto is_way = [&f] {
         //  look inside for a model
@@ -144,8 +164,8 @@ VisualiserApplication::MainWindow::scene_and_model_from_file(const File& f) {
         config.materials = scene_data.get_materials();
 
         //  return the pair
-        return std::make_tuple(std::move(scene_data),
-                               construct_full_model(config));
+        return std::make_tuple(
+            std::move(scene_data), construct_full_model(config), f);
     };
 
     auto is_not_way = [&f] {
@@ -154,8 +174,9 @@ VisualiserApplication::MainWindow::scene_and_model_from_file(const File& f) {
         //  return the pair
         return std::make_tuple(
             std::move(scene_data),
-            construct_full_model(model::Persistent{
-                config::Combined{}, scene_data.get_materials()}));
+            construct_full_model(model::Persistent{config::Combined{},
+                                                   scene_data.get_materials()}),
+            File());
     };
 
     return f.getFileExtension() == ".way" ? is_way() : is_not_way();
@@ -168,21 +189,23 @@ VisualiserApplication::MainWindow::MainWindow(String name, const File& f)
 }
 
 VisualiserApplication::MainWindow::MainWindow(
-    String name, std::tuple<SceneData, model::FullModel>&& p)
-        : MainWindow(
-              name, std::move(std::get<0>(p)), std::move(std::get<1>(p))) {
+    String name, std::tuple<SceneData, model::FullModel, File>&& p)
+        : MainWindow(name,
+                     std::move(std::get<0>(p)),
+                     std::move(std::get<1>(p)),
+                     std::move(std::get<2>(p))) {
 }
 
 VisualiserApplication::MainWindow::~MainWindow() noexcept {
-    //  TODO if you need to save, do it here (?)
-
     removeKeyListener(
         VisualiserApplication::get_command_manager().getKeyMappings());
 }
 
 void VisualiserApplication::MainWindow::receive_broadcast(
     model::Broadcaster* b) {
-    if (b == &wrapper.render_state.is_rendering) {
+    if (b == &wrapper.persistent) {
+        wrapper.needs_save.set(true);
+    } else if (b == &wrapper.render_state.is_rendering) {
         VisualiserApplication::get_command_manager().commandStatusChanged();
     } else if (b == &wrapper.render_state.visualise) {
         VisualiserApplication::get_command_manager().commandStatusChanged();
@@ -192,6 +215,7 @@ void VisualiserApplication::MainWindow::receive_broadcast(
 void VisualiserApplication::MainWindow::getAllCommands(
     Array<CommandID>& commands) {
     commands.addArray({
+        CommandIDs::idSaveProject,
         CommandIDs::idSaveAsProject,
         CommandIDs::idCloseProject,
         CommandIDs::idVisualise,
@@ -200,6 +224,11 @@ void VisualiserApplication::MainWindow::getAllCommands(
 void VisualiserApplication::MainWindow::getCommandInfo(
     CommandID command_id, ApplicationCommandInfo& result) {
     switch (command_id) {
+        case CommandIDs::idSaveProject:
+            result.setInfo("Save...", "Save", "General", 0);
+            result.defaultKeypresses.add(
+                KeyPress('s', ModifierKeys::commandModifier, 0));
+            break;
         case CommandIDs::idSaveAsProject:
             result.setInfo("Save As...", "Save as", "General", 0);
             result.defaultKeypresses.add(KeyPress(
@@ -226,6 +255,10 @@ void VisualiserApplication::MainWindow::getCommandInfo(
 }
 bool VisualiserApplication::MainWindow::perform(const InvocationInfo& info) {
     switch (info.commandID) {
+        case CommandIDs::idSaveProject:
+            save_project();
+            return true;
+
         case CommandIDs::idSaveAsProject:
             save_as_project();
             return true;
@@ -252,21 +285,41 @@ void VisualiserApplication::MainWindow::closeButtonPressed() {
     JUCEApplication::getInstance()->systemRequestedQuit();
 }
 
-void VisualiserApplication::MainWindow::save_as_project() {
+bool VisualiserApplication::MainWindow::needs_save() const {
+    return wrapper.needs_save;
+}
+
+bool VisualiserApplication::MainWindow::save_project() {
+    if (!this_file.exists()) {
+        return save_as_project();
+    } else if (needs_save()) {
+        save_to(this_file);
+        return true;
+    }
+    return false;
+}
+
+bool VisualiserApplication::MainWindow::save_as_project() {
     FileChooser fc("save project as", File::nonexistent, "*.way");
     if (fc.browseForFileToSave(true)) {
         auto root = fc.getResult();
-        root.createDirectory();
-
-        //  write current geometry to file
-        scene_data.save(get_model_path(root).getFullPathName().toStdString());
-
-        //  write config with all current materials to file
-        std::ofstream stream(
-            get_config_path(root).getFullPathName().toStdString());
-        cereal::JSONOutputArchive archive(stream);
-        archive(cereal::make_nvp("persistent", model.persistent));
+        save_to(root);
+        this_file = root;
+        return true;
     }
+    return false;
+}
+
+void VisualiserApplication::MainWindow::save_to(const File& f) {
+    f.createDirectory();
+
+    //  write current geometry to file
+    scene_data.save(get_model_path(f).getFullPathName().toStdString());
+
+    //  write config with all current materials to file
+    std::ofstream stream(get_config_path(f).getFullPathName().toStdString());
+    cereal::JSONOutputArchive archive(stream);
+    archive(cereal::make_nvp("persistent", model.persistent));
 }
 
 VisualiserApplication& VisualiserApplication::get_app() {
@@ -288,6 +341,7 @@ void VisualiserApplication::create_file_menu(PopupMenu& menu) {
     menu.addSeparator();
 
     menu.addCommandItem(&get_command_manager(), CommandIDs::idCloseProject);
+    menu.addCommandItem(&get_command_manager(), CommandIDs::idSaveProject);
     menu.addCommandItem(&get_command_manager(), CommandIDs::idSaveAsProject);
 
 #if !JUCE_MAC

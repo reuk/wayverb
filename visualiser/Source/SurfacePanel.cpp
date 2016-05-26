@@ -278,8 +278,6 @@ void PresetComponent::receive_broadcast(model::Broadcaster* cb) {
     delete_button.setVisible(true);
 
     if (cb == &linked) {
-        std::cout << "linked model changed" << std::endl;
-
         combo_box.setSelectedItemIndex(-1, dontSendNotification);
     } else if (cb == &preset_model) {
         combo_box.clear();

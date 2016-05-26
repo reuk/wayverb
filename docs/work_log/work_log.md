@@ -495,20 +495,9 @@ slow stuff
 
 * audio output
 
-* proper load and save
-    * load
-        * load a model file, a config file, and a set of materials corresponding
-          to materials in the model
-            * these could be part of the config
-        * match custom materials to materials in the model
-        * this bit is done??
-        * BUT I need to be able to load JUST a 3d model too
-    * save
-        * write the current model to an output folder
-        * also write the current config, and the current states of each of the
-          surfaces currently in use in the model
-
 * switching off visualise causes some kind of hang
+
+* what happens if you load an invalid model/.way?
 
 nice-to-have
 ------------

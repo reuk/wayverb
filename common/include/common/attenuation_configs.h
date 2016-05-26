@@ -54,4 +54,10 @@ struct HrtfModel : public AttenuationModel {
     Vec3f up{0, 1, 0};
 };
 
+struct ReceiverConfig {
+    config::AttenuationModel::Mode mode;
+    config::MicrophoneModel microphone_model;
+    config::HrtfModel hrtf_model;
+};
+
 }  // namespace config
