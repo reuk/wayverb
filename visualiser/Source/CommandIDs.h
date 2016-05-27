@@ -9,6 +9,7 @@ enum {
     idCloseProject,
     idRender,
     idVisualise,
+    idShowHelp,
 };
 
 }  // namespace CommandIDs

@@ -1,11 +1,13 @@
 #pragma once
 
 #include "FullModel.hpp"
+#include "HelpWindow.hpp"
 #include "ModelRenderer.hpp"
 
 class ModelRendererComponent : public Component,
                                public model::BroadcastListener,
-                               public SceneRenderer::Listener {
+                               public SceneRenderer::Listener,
+                               public SettableHelpPanelClient {
 public:
     ModelRendererComponent(
         const CopyableSceneData& model,

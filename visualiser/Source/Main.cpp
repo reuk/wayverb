@@ -6,6 +6,8 @@
 #include "combined/config_serialize.h"
 #include "common/surface_serialize.h"
 
+#include "HelpWindow.hpp"
+
 #include <memory>
 
 void register_recent_file(const std::string& file) {
@@ -228,6 +230,7 @@ VisualiserApplication::MainWindow::MainWindow(
 }
 
 VisualiserApplication::MainWindow::~MainWindow() noexcept {
+    delete help_window;
     removeKeyListener(
         VisualiserApplication::get_command_manager().getKeyMappings());
 }
@@ -250,6 +253,7 @@ void VisualiserApplication::MainWindow::getAllCommands(
         CommandIDs::idSaveAsProject,
         CommandIDs::idCloseProject,
         CommandIDs::idVisualise,
+        CommandIDs::idShowHelp,
     });
 }
 void VisualiserApplication::MainWindow::getCommandInfo(
@@ -280,6 +284,12 @@ void VisualiserApplication::MainWindow::getCommandInfo(
             result.setTicked(wrapper.render_state.visualise);
             result.setActive(!wrapper.render_state.is_rendering);
             break;
+        case CommandIDs::idShowHelp:
+            result.setInfo("Show Help Pane",
+                           "Toggle display of help window",
+                           "General",
+                           0);
+            break;
         default:
             break;
     }
@@ -302,6 +312,10 @@ bool VisualiserApplication::MainWindow::perform(const InvocationInfo& info) {
             wrapper.render_state.visualise.toggle();
             return true;
 
+        case CommandIDs::idShowHelp:
+            show_help();
+            return true;
+
         default:
             return false;
     }
@@ -314,6 +328,39 @@ VisualiserApplication::MainWindow::getNextCommandTarget() {
 
 void VisualiserApplication::MainWindow::closeButtonPressed() {
     JUCEApplication::getInstance()->systemRequestedQuit();
+}
+
+class AutoDeleteDocumentWindow : public DocumentWindow {
+public:
+    using DocumentWindow::DocumentWindow;
+    void closeButtonPressed() override {
+        delete this;
+    }
+};
+
+void VisualiserApplication::MainWindow::show_help() {
+    if (!help_window) {
+        help_window = new AutoDeleteDocumentWindow(
+            "help viewer", Colours::darkgrey, closeButton);
+        auto panel = new HelpPanel;
+        panel->setSize(200, 300);
+
+        Rectangle<int> area(0, 0, 200, 300);
+        RectanglePlacement placement(RectanglePlacement::xRight |
+                                     RectanglePlacement::doNotResize);
+        auto result = placement.appliedTo(area,
+                                          Desktop::getInstance()
+                                              .getDisplays()
+                                              .getMainDisplay()
+                                              .userArea.reduced(20));
+
+        help_window->setBounds(result);
+        help_window->setContentOwned(panel, true);
+        help_window->setResizable(false, false);
+        help_window->setUsingNativeTitleBar(true);
+        help_window->setVisible(true);
+        help_window->setAlwaysOnTop(true);
+    }
 }
 
 bool VisualiserApplication::MainWindow::needs_save() const {
@@ -391,6 +438,8 @@ void VisualiserApplication::create_file_menu(PopupMenu& menu) {
 
 void VisualiserApplication::create_view_menu(PopupMenu& menu) {
     menu.addCommandItem(&get_command_manager(), CommandIDs::idVisualise);
+    menu.addSeparator();
+    menu.addCommandItem(&get_command_manager(), CommandIDs::idShowHelp);
 }
 
 void VisualiserApplication::handle_main_menu_command(int menu_item_id) {

@@ -1,12 +1,14 @@
 #pragma once
 
+#include "HelpWindow.hpp"
 #include "LeftPanel.hpp"
 #include "ModelRendererComponent.hpp"
 
 #include "combined/engine.h"
 
 class MainContentComponent final : public Component,
-                                   public model::BroadcastListener {
+                                   public model::BroadcastListener,
+                                   public SettableHelpPanelClient {
 public:
     using Engine = engine::WayverbEngine<BufferType::cl>;
 

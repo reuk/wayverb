@@ -176,6 +176,10 @@ SurfaceComponentWithTitle::SurfaceComponentWithTitle(
     model::ValueWrapper<std::vector<SceneData::Material>>& preset_model)
         : title("", value.name.get() + " settings")
         , surface_component(value.surface, preset_model) {
+    set_help("surface configurator",
+             "Move the sliders to adjust the per-band gain of the material for "
+             "this surface, or choose an existing material from the combobox.");
+
     title.setJustificationType(Justification::centred);
 
     addAndMakeVisible(title);
@@ -197,6 +201,11 @@ PresetComponent::PresetComponent(
     model::ValueWrapper<std::vector<SceneData::Material>>& preset_model)
         : linked(linked)
         , preset_model(preset_model) {
+    set_help("preset selector",
+             "The combobox contains a list of preset materials. To apply one, "
+             "simply select it from the list. To save a new preset, click "
+             "'save' while the sliders are in the desired position, then enter "
+             "a name for the new preset and hit return.");
     combo_box.setEditableText(false);
     delete_button.setEnabled(false);
 

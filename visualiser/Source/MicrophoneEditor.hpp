@@ -1,6 +1,7 @@
 #pragma once
 
 #include "FullModel.hpp"
+#include "HelpWindow.hpp"
 
 #include "../JuceLibraryCode/JuceHeader.h"
 
@@ -115,7 +116,8 @@ private:
 //----------------------------------------------------------------------------//
 
 class MicrophoneEditorPanel : public Component,
-                              public MicrophoneEditableListBox::Listener {
+                              public MicrophoneEditableListBox::Listener,
+                              public SettableHelpPanelClient {
 public:
     MicrophoneEditorPanel(
         model::ValueWrapper<config::MicrophoneModel>& microphone_model);

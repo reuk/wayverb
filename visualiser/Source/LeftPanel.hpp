@@ -2,9 +2,12 @@
 
 #include "BottomPanel.hpp"
 #include "FullModel.hpp"
+#include "HelpWindow.hpp"
 #include "SurfaceModel.hpp"
 
-class LeftPanel : public Component, public model::BroadcastListener {
+class LeftPanel : public Component,
+                  public model::BroadcastListener,
+                  public SettableHelpPanelClient {
 public:
     LeftPanel(model::ValueWrapper<model::FullModel>& model,
               const CuboidBoundary& aabb);

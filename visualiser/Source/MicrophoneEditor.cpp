@@ -147,6 +147,11 @@ MicrophoneEditorPanel::MicrophoneEditorPanel(
     model::ValueWrapper<config::MicrophoneModel>& microphone_model)
         : microphone_model(microphone_model)
         , microphone_list_box(microphone_model) {
+    set_help("microphones configurator",
+             "Simulated microphones behave like a collection of superimposed "
+             "microphone capsules. Add and remove capsules using the list on "
+             "the left, and configure individual capsules using the options on "
+             "the right.");
     addAndMakeVisible(microphone_list_box);
 
     microphone_model.notify();

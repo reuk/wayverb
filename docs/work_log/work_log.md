@@ -465,6 +465,7 @@ things to do:
 
 * sort out kernel normalization etc.
 
+* check that surfaces are used properly in the model (no off-by-ones etc.)
 
 interface
 =========
@@ -473,9 +474,6 @@ slow stuff
 ----------
 
 * microphone/hrtf look-at rather than facing for UI
-    * mic - one or more pointing directions
-    * visualise HRTF facing/up directions
-    * visualise mic directions
     * options:
         * look at mode
             * locked / relative
@@ -493,9 +491,9 @@ slow stuff
 nice-to-have
 ------------
 
-* little display of mic polar pattern next to shape parameter
+* finish adding the help panel info
 
-* help / tooltip panel
+* little display of mic polar pattern next to shape parameter
 
 * undo/redo
 

@@ -70,6 +70,8 @@ public:
         bool save_project();
         bool save_as_project();
 
+        void show_help();
+
         void getAllCommands(Array<CommandID>& commands) override;
         void getCommandInfo(CommandID command_id,
                             ApplicationCommandInfo& result) override;
@@ -103,6 +105,8 @@ public:
             &wrapper.render_state.visualise, this};
 
         MainContentComponent content_component;
+
+        Component::SafePointer<DocumentWindow> help_window{nullptr};
 
         JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(MainWindow)
     };

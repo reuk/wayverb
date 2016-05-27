@@ -22,7 +22,7 @@ private:
 
 class MaterialConfigureButtonComponent : public Component,
                                          public Button::Listener,
-                                         model::BroadcastListener {
+                                         public model::BroadcastListener {
 public:
     MaterialConfigureButtonComponent(
         int this_surface,
@@ -79,7 +79,8 @@ private:
     model::Connector<TextButton> more_connector{&more_button, this};
 };
 
-class MaterialConfigureButton : public PropertyComponent {
+class MaterialConfigureButton : public PropertyComponent,
+                                public SettableHelpPanelClient {
 public:
     MaterialConfigureButton(
         int this_surface,
@@ -88,6 +89,10 @@ public:
         model::ValueWrapper<std::vector<SceneData::Material>>& preset_model)
             : PropertyComponent(value.name.get())
             , contents(this_surface, shown_surface, value, preset_model) {
+        set_help("surface material",
+                 "Click 'show' to highlight everwhere this surface can be "
+                 "found in the model. Click the '...' button to configure how "
+                 "this surface should sound.");
         setLookAndFeel(&pclaf);
         addAndMakeVisible(contents);
     }
@@ -177,12 +182,16 @@ private:
     model::Connector<ComboBox> combo_box_connector{&combo_box, this};
 };
 
-class ReceiverPickerProperty : public PropertyComponent {
+class ReceiverPickerProperty : public PropertyComponent,
+                               public SettableHelpPanelClient {
 public:
     ReceiverPickerProperty(
         model::ValueWrapper<config::AttenuationModel::Mode>& value)
             : PropertyComponent("receiver type")
             , receiver_picker(value) {
+        set_help("receiver type picker",
+                 "Choose whether the simulation should use simulated "
+                 "microphones, or simulated ears (hrtf modelling).");
         addAndMakeVisible(receiver_picker);
     }
 
@@ -195,9 +204,12 @@ private:
 
 //----------------------------------------------------------------------------//
 
-class HrtfModelComponent : public Component {
+class HrtfModelComponent : public Component, public SettableHelpPanelClient {
 public:
     HrtfModelComponent(model::ValueWrapper<config::HrtfModel>& hrtf_model) {
+        set_help("hrtf configurator",
+                 "There's only one option, which allows you to choose the "
+                 "direction that the virtual head should be facing.");
         property_panel.addProperties({new Vec3fProperty(
             "facing", hrtf_model.facing, Vec3f(-1), Vec3f(1))});
 
@@ -245,6 +257,9 @@ LeftPanel::LeftPanel(model::ValueWrapper<model::FullModel>& model,
                      const CuboidBoundary& aabb)
         : model(model)
         , bottom_panel(model.render_state) {
+    set_help("configuration panel",
+             "Use the options in this panel to adjust the various settings of "
+             "the simulation.");
     property_panel.addSection(
         "general",
         {new Vec3fProperty("source",

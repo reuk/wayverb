@@ -1,6 +1,7 @@
 #pragma once
 
 #include "FullModel.hpp"
+#include "HelpWindow.hpp"
 #include "SurfaceModel.hpp"
 #include "ValueWrapperSlider.hpp"
 
@@ -81,7 +82,8 @@ class PresetComponent : public Component,
                         public ComboBox::Listener,
                         public TextEditor::Listener,
                         public TextButton::Listener,
-                        public model::BroadcastListener {
+                        public model::BroadcastListener,
+                        public SettableHelpPanelClient {
 public:
     PresetComponent(
         model::ValueWrapper<Surface>& linked,
@@ -145,7 +147,8 @@ private:
 
 //----------------------------------------------------------------------------//
 
-class SurfaceComponentWithTitle : public Component {
+class SurfaceComponentWithTitle : public Component,
+                                  public SettableHelpPanelClient {
 public:
     SurfaceComponentWithTitle(
         model::ValueWrapper<SceneData::Material>& value,

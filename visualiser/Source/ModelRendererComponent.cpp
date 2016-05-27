@@ -21,6 +21,10 @@ ModelRendererComponent::ModelRendererComponent(
         , config(config)
         , render_state(render_state)
         , scene_renderer(model) {
+    set_help("model viewport",
+             "This area displays the currently loaded 3D model. Click and drag "
+             "to rotate the model, or use the mouse wheel to zoom in and out.");
+
     openGLContext.setOpenGLVersionRequired(OpenGLContext::openGL3_2);
     openGLContext.setRenderer(&scene_renderer);
     openGLContext.setContinuousRepainting(true);

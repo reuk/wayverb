@@ -16,6 +16,7 @@ MainContentComponent::MainContentComponent(
                       wrapper.shown_surface,
                       wrapper.persistent.combined,
                       wrapper.render_state) {
+    set_help("wayverb", "This is the main wayverb app window.");
     auto left_panel_width = 300;
     layout_manager.setItemLayout(
         0, left_panel_width, left_panel_width, left_panel_width);
@@ -54,8 +55,17 @@ void MainContentComponent::join_engine_thread() {
 void MainContentComponent::receive_broadcast(model::Broadcaster* cb) {
     if (cb == &wrapper.render_state.is_rendering) {
         if (wrapper.render_state.is_rendering) {
+            FileChooser fc(
+                "save output", File::nonexistent, "*.wav,*.aif,*.aiff");
+            if (!fc.browseForFileToSave(true)) {
+                wrapper.render_state.stop();
+                return;
+            }
+
+            auto fpath = fc.getResult().getFullPathName().toStdString();
+
             keep_going = true;
-            engine_thread = std::thread([this] {
+            engine_thread = std::thread([this, fpath] {
                 ComputeContext compute_context;
                 try {
                     auto callback = [this](auto state, auto progress) {
