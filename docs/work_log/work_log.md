@@ -473,7 +473,6 @@ slow stuff
 ----------
 
 * microphone/hrtf look-at rather than facing for UI
-    * source - sphere object, no facing
     * mic - one or more pointing directions
     * visualise HRTF facing/up directions
     * visualise mic directions

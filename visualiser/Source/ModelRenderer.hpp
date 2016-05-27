@@ -127,14 +127,14 @@ public:
 
     void set_highlighted(int u);
 
+    void set_mic_pointing(const std::vector<glm::vec3>& directions);
+
 private:
     const GenericShader& generic_shader;
     const MeshShader& mesh_shader;
     const LitSceneShader& lit_scene_shader;
 
     MultiMaterialObject model_object;
-    //    OctahedronObject source_object;
-    //    OctahedronObject mic_object;
     PointObject source_object;
     PointObject mic_object;
 
@@ -188,6 +188,8 @@ public:
 
     void set_highlighted(int u);
 
+    void set_mic_pointing(const std::vector<glm::vec3>& directions);
+
     void addListener(Listener* l);
     void removeListener(Listener* l);
 
@@ -209,6 +211,8 @@ private:
         void set_pressures(const std::vector<float>& pressures);
 
         void set_highlighted(int u);
+
+        void set_mic_pointing(const std::vector<glm::vec3>& directions);
 
         void draw() const override;
         void update(float dt) override;

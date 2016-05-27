@@ -43,6 +43,9 @@ private:
     model::BroadcastConnector is_rendering_connector{&render_state.is_rendering,
                                                      this};
 
+    model::BroadcastConnector facing_direction_connector{
+        &config.receiver_config, this};
+
     const float scale{0.01};
     float azimuth{0};
     float elevation{0};

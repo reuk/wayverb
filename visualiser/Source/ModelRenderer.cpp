@@ -259,10 +259,6 @@ void DrawableScene::MeshContext::clear() {
 }
 
 void DrawableScene::update(float dt) {
-    //  TEMPORARY
-    mic_object.look_at(glm::vec3(0, 0, 0));
-    source_object.look_at(glm::vec3(0, 0, 0));
-
     if (!mesh_context.positions.empty()) {
         mesh_context.mesh_object =
             std::make_unique<MeshObject>(mesh_shader, mesh_context.positions);
@@ -333,6 +329,10 @@ void DrawableScene::set_pressures(const std::vector<float> &p) {
 
 void DrawableScene::set_highlighted(int u) {
     model_object.set_highlighted(u);
+}
+
+void DrawableScene::set_mic_pointing(const std::vector<glm::vec3> &directions) {
+    mic_object.set_pointing(directions);
 }
 
 //----------------------------------------------------------------------------//
@@ -437,6 +437,11 @@ glm::mat4 SceneRenderer::ContextLifetime::get_projection_matrix(float aspect) {
     return glm::perspective(45.0f, aspect, 0.05f, 1000.0f);
 }
 
+void SceneRenderer::ContextLifetime::set_mic_pointing(
+    const std::vector<glm::vec3> &directions) {
+    drawable_scene.set_mic_pointing(directions);
+}
+
 //----------------------------------------------------------------------------//
 
 SceneRenderer::SceneRenderer(const CopyableSceneData &model)
@@ -533,5 +538,12 @@ void SceneRenderer::set_highlighted(int u) {
     std::lock_guard<std::mutex> lck(mut);
     if (context_lifetime) {
         context_lifetime->set_highlighted(u);
+    }
+}
+
+void SceneRenderer::set_mic_pointing(const std::vector<glm::vec3> &directions) {
+    std::lock_guard<std::mutex> lck(mut);
+    if (context_lifetime) {
+        context_lifetime->set_mic_pointing(directions);
     }
 }

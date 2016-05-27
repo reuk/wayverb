@@ -1,4 +1,5 @@
 #include "ModelRendererComponent.hpp"
+#include "MoreConversions.hpp"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_inverse.hpp>
@@ -61,6 +62,21 @@ void ModelRendererComponent::receive_broadcast(model::Broadcaster *cb) {
         scene_renderer.set_source(config.source);
     } else if (cb == &render_state.is_rendering) {
         scene_renderer.set_rendering(render_state.is_rendering);
+    } else if (cb == &config.receiver_config) {
+        std::vector<glm::vec3> directions;
+        switch (config.receiver_config.mode) {
+            case config::AttenuationModel::Mode::microphone:
+                proc::transform(
+                    config.receiver_config.microphone_model.microphones.get(),
+                    std::back_inserter(directions),
+                    [](const auto &i) { return to_glm_vec3(i.facing); });
+                break;
+            case config::AttenuationModel::Mode::hrtf:
+                directions.push_back(
+                    to_glm_vec3(config.receiver_config.hrtf_model.facing));
+                break;
+        }
+        scene_renderer.set_mic_pointing(directions);
     }
 }
 
@@ -68,6 +84,7 @@ void ModelRendererComponent::newOpenGLContextCreated(OpenGLRenderer *r) {
     config.mic.notify();
     config.source.notify();
     render_state.is_rendering.notify();
+    config.receiver_config.notify();
 }
 
 void ModelRendererComponent::openGLContextClosing(OpenGLRenderer *r) {

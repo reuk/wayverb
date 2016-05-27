@@ -52,14 +52,16 @@ RingObject::RingObject(const GenericShader& shader,
 }
 
 //----------------------------------------------------------------------------//
+
 LineObject::LineObject(const GenericShader& shader, const glm::vec4& color)
         : BasicDrawableObject(shader,
                               {{0, 0, 0}, {0, 0, 1}},
                               std::vector<glm::vec4>(2, color),
                               {0, 1},
                               GL_LINES) {
-    set_scale(0.5);
+    set_scale(0.4);
 }
+
 //----------------------------------------------------------------------------//
 
 PointObject::PointObject(const GenericShader& shader, const glm::vec4& color)
@@ -99,6 +101,7 @@ void PointObject::set_pointing(const std::vector<glm::vec3>& directions) {
         if (lines.size() <= i) {
             lines.emplace_back(shader, color);
         }
+        lines[i].set_position(get_position());
         lines[i].set_pointing(directions[i]);
     }
 }
