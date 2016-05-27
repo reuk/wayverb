@@ -260,16 +260,24 @@ LeftPanel::LeftPanel(model::ValueWrapper<model::FullModel>& model,
     set_help("configuration panel",
              "Use the options in this panel to adjust the various settings of "
              "the simulation.");
-    property_panel.addSection(
-        "general",
-        {new Vec3fProperty("source",
-                           model.persistent.combined.source,
-                           aabb.get_c0(),
-                           aabb.get_c1()),
-         new Vec3fProperty("mic",
-                           model.persistent.combined.mic,
-                           aabb.get_c0(),
-                           aabb.get_c1())});
+
+    auto source_property = new Vec3fProperty("source",
+                                             model.persistent.combined.source,
+                                             aabb.get_c0(),
+                                             aabb.get_c1());
+    auto mic_property = new Vec3fProperty("receiver",
+                                          model.persistent.combined.mic,
+                                          aabb.get_c0(),
+                                          aabb.get_c1());
+
+    source_property->set_help("source position",
+                              "Allows you to move the source position in each "
+                              "of the axial directions.");
+    mic_property->set_help("receiver position",
+                           "Allows you to move the receiver position in each "
+                           "of the axial directions.");
+
+    property_panel.addSection("general", {source_property, mic_property});
 
     Array<PropertyComponent*> materials;
     materials.addArray(make_material_buttons(

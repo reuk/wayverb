@@ -1,5 +1,7 @@
 #include "MicrophoneEditor.hpp"
 
+#include "PolarPatternDisplay.hpp"
+
 #include "Vec3Editor.hpp"
 
 MicrophoneListBox::MicrophoneListBox(
@@ -127,12 +129,28 @@ void MicrophoneEditableListBox::update_sub_button_enablement() {
 
 //----------------------------------------------------------------------------//
 
+class PolarPatternProperty : public PropertyComponent {
+public:
+    PolarPatternProperty(model::ValueWrapper<float>& shape)
+            : PropertyComponent("polar pattern", 120)
+            , display(shape) {
+        addAndMakeVisible(display);
+    }
+
+    void refresh() override {
+    }
+
+private:
+    PolarPatternDisplay display;
+};
+
 SingleMicrophoneComponent::SingleMicrophoneComponent(
     model::ValueWrapper<config::Microphone>& microphone) {
     property_panel.addProperties(
         {new Vec3fProperty("facing", microphone.facing, Vec3f(-1), Vec3f(1))});
     property_panel.addProperties(
         {new NumberProperty<float>("shape", microphone.shape, 0, 1)});
+    property_panel.addProperties({new PolarPatternProperty(microphone.shape)});
 
     addAndMakeVisible(property_panel);
 }
@@ -156,7 +174,7 @@ MicrophoneEditorPanel::MicrophoneEditorPanel(
 
     microphone_model.notify();
 
-    setSize(400, 150);
+    setSize(400, 250);
 }
 
 void MicrophoneEditorPanel::resized() {

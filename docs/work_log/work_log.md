@@ -493,8 +493,6 @@ nice-to-have
 
 * finish adding the help panel info
 
-* little display of mic polar pattern next to shape parameter
-
 * undo/redo
 
 * call from the commandline (?)

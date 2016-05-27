@@ -2,6 +2,7 @@
 
 #include "common/vec.h"
 
+#include "HelpWindow.hpp"
 #include "ValueWrapperSlider.hpp"
 
 #include <array>
@@ -321,7 +322,7 @@ private:
     PropertyPanel property_panel;
 };
 
-class Vec3fProperty : public PropertyComponent {
+class Vec3fProperty : public PropertyComponent, public SettableHelpPanelClient {
 public:
     Vec3fProperty(const String& name,
                   model::ValueWrapper<Vec3f>& value,
