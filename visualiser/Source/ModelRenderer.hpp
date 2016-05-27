@@ -8,6 +8,7 @@
 #include "ModelObject.hpp"
 #include "ModelSectionObject.hpp"
 #include "OctahedronObject.hpp"
+#include "PointObject.hpp"
 
 #include "FullModel.hpp"
 
@@ -132,8 +133,10 @@ private:
     const LitSceneShader& lit_scene_shader;
 
     MultiMaterialObject model_object;
-    OctahedronObject source_object;
-    OctahedronObject mic_object;
+    //    OctahedronObject source_object;
+    //    OctahedronObject mic_object;
+    PointObject source_object;
+    PointObject mic_object;
 
     struct MeshContext {
         std::unique_ptr<MeshObject> mesh_object;

@@ -247,10 +247,8 @@ DrawableScene::DrawableScene(const GenericShader &generic_shader,
         , mesh_shader(mesh_shader)
         , lit_scene_shader(lit_scene_shader)
         , model_object(generic_shader, lit_scene_shader, scene_data)
-        , source_object(
-              generic_shader, glm::vec3(0, 0, 0), glm::vec4(1, 0, 0, 1))
-        , mic_object(
-              generic_shader, glm::vec3(0, 0, 0), glm::vec4(0, 1, 1, 1)) {
+        , source_object(generic_shader, glm::vec4(1, 0, 0, 1))
+        , mic_object(generic_shader, glm::vec4(0, 1, 1, 1)) {
     //  TODO init raytrace object
 }
 
@@ -261,6 +259,10 @@ void DrawableScene::MeshContext::clear() {
 }
 
 void DrawableScene::update(float dt) {
+    //  TEMPORARY
+    mic_object.look_at(glm::vec3(0, 0, 0));
+    source_object.look_at(glm::vec3(0, 0, 0));
+
     if (!mesh_context.positions.empty()) {
         mesh_context.mesh_object =
             std::make_unique<MeshObject>(mesh_shader, mesh_context.positions);

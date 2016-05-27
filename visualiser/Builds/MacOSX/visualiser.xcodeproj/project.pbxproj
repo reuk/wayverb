@@ -15,6 +15,7 @@
 		1B0E93B31CDD4A50001A33F5 /* ProgressButton.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1B0E93B11CDD4A50001A33F5 /* ProgressButton.cpp */; };
 		1B1504C11CF621960060BDAA /* LitSceneShader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1B1504BF1CF621960060BDAA /* LitSceneShader.cpp */; };
 		1B1504EC1CF79BEE0060BDAA /* StoredSettings.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1B1504EA1CF79BEE0060BDAA /* StoredSettings.cpp */; };
+		1B1504EF1CF85F0D0060BDAA /* PointObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1B1504ED1CF85F0D0060BDAA /* PointObject.cpp */; };
 		1B29EECB1CDB93E6003BD0BB /* VisualiserLookAndFeel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1B29EEC91CDB93E6003BD0BB /* VisualiserLookAndFeel.cpp */; };
 		1B5B74441CF5C6070030717F /* MeshShader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1B5B74421CF5C6070030717F /* MeshShader.cpp */; };
 		1B655C741CEE0A7100901ED1 /* libcombined.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B655C731CEDE25A00901ED1 /* libcombined.a */; };
@@ -388,6 +389,8 @@
 		1B1504C01CF621960060BDAA /* LitSceneShader.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = LitSceneShader.hpp; path = ../../Source/LitSceneShader.hpp; sourceTree = "<group>"; };
 		1B1504EA1CF79BEE0060BDAA /* StoredSettings.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = StoredSettings.cpp; path = ../../Source/StoredSettings.cpp; sourceTree = "<group>"; };
 		1B1504EB1CF79BEE0060BDAA /* StoredSettings.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = StoredSettings.hpp; path = ../../Source/StoredSettings.hpp; sourceTree = "<group>"; };
+		1B1504ED1CF85F0D0060BDAA /* PointObject.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = PointObject.cpp; path = ../../Source/PointObject.cpp; sourceTree = "<group>"; };
+		1B1504EE1CF85F0D0060BDAA /* PointObject.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = PointObject.hpp; path = ../../Source/PointObject.hpp; sourceTree = "<group>"; };
 		1B29EEAA1CDB8C2C003BD0BB /* CommandIDs.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = CommandIDs.h; path = ../../Source/CommandIDs.h; sourceTree = "<group>"; };
 		1B29EEC91CDB93E6003BD0BB /* VisualiserLookAndFeel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = VisualiserLookAndFeel.cpp; path = ../../Source/VisualiserLookAndFeel.cpp; sourceTree = "<group>"; };
 		1B29EECA1CDB93E6003BD0BB /* VisualiserLookAndFeel.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = VisualiserLookAndFeel.hpp; path = ../../Source/VisualiserLookAndFeel.hpp; sourceTree = "<group>"; };
@@ -1784,6 +1787,8 @@
 				1BA3F3DD1CDA21EC00073946 /* MoreConversions.hpp */,
 				1BA3F3DE1CDA21EC00073946 /* OctahedronObject.cpp */,
 				1BA3F3DF1CDA21EC00073946 /* OctahedronObject.hpp */,
+				1B1504ED1CF85F0D0060BDAA /* PointObject.cpp */,
+				1B1504EE1CF85F0D0060BDAA /* PointObject.hpp */,
 			);
 			name = visuals;
 			sourceTree = "<group>";
@@ -4031,6 +4036,7 @@
 				1B6CDDEC1CEB3CD300DA8B3D /* MicrophoneEditor.cpp in Sources */,
 				1B0E93B31CDD4A50001A33F5 /* ProgressButton.cpp in Sources */,
 				1BECF4C01CDCB40B008773FD /* BottomPanel.cpp in Sources */,
+				1B1504EF1CF85F0D0060BDAA /* PointObject.cpp in Sources */,
 				1B1504EC1CF79BEE0060BDAA /* StoredSettings.cpp in Sources */,
 				1BC2966B1CE5F3F300F4F33F /* SurfaceModel.cpp in Sources */,
 				1BA3F3E51CDA21EC00073946 /* Main.cpp in Sources */,

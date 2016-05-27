@@ -473,8 +473,14 @@ slow stuff
 ----------
 
 * microphone/hrtf look-at rather than facing for UI
+    * source - sphere object, no facing
+    * mic - one or more pointing directions
     * visualise HRTF facing/up directions
-    * visualise mic directions, directionality
+    * visualise mic directions
+    * options:
+        * look at mode
+            * locked / relative
+        * angle mode
 
 * raytracer
     * improve ray path visualisation (animate?)
@@ -487,6 +493,10 @@ slow stuff
 
 nice-to-have
 ------------
+
+* little display of mic polar pattern next to shape parameter
+
+* help / tooltip panel
 
 * undo/redo
 
