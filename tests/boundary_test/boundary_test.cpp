@@ -57,8 +57,8 @@ std::vector<float> run_simulation(const cl::Context& context,
                                   const CuboidBoundary& boundary,
                                   const Surface& surface,
                                   const config::Waveguide& conf,
-                                  const Vec3f& source,
-                                  const Vec3f& receiver,
+                                  const glm::vec3& source,
+                                  const glm::vec3& receiver,
                                   const std::string& output_folder,
                                   const std::string& fname,
                                   int steps) {
@@ -135,8 +135,9 @@ std::vector<float> get_free_field_results(const cl::Context& context,
                                           int dim,
                                           int steps) {
     //  set room size based on desired number of nodes
-    auto desired_nodes = Vec3<uint32_t>(dim, dim, dim);
-    auto total_desired_nodes = desired_nodes.product();
+    auto desired_nodes = glm::ivec3(dim);
+    auto total_desired_nodes =
+        desired_nodes.x * desired_nodes.y * desired_nodes.z;
 
     auto total_possible_nodes = 1 << 30;
     if (total_desired_nodes >= total_possible_nodes) {
@@ -146,14 +147,14 @@ std::vector<float> get_free_field_results(const cl::Context& context,
     }
 
     //  generate two boundaries, one twice the size of the other
-    auto wall =
-        CuboidBoundary(Vec3f(0, 0, 0), desired_nodes * conf.get_divisions());
+    auto wall = CuboidBoundary(glm::vec3(0, 0, 0),
+                               glm::vec3(desired_nodes) * conf.get_divisions());
     auto far = wall.get_c1();
-    auto new_dim = Vec3f(far.x * 2, far.y, far.z);
-    auto no_wall = CuboidBoundary(Vec3f(0, 0, 0), new_dim);
+    auto new_dim = glm::vec3(far.x * 2, far.y, far.z);
+    auto no_wall = CuboidBoundary(glm::vec3(0, 0, 0), new_dim);
 
     //  place source and image in rooms based on distance in nodes from the wall
-    auto source_dist_nodes = desired_nodes.mag() / 8;
+    auto source_dist_nodes = glm::length(glm::vec3(desired_nodes)) / 8;
     auto source_dist = source_dist_nodes * conf.get_divisions();
 
     auto wall_centre = no_wall.centre();
@@ -161,7 +162,7 @@ std::vector<float> get_free_field_results(const cl::Context& context,
     auto log_incorrect_distance = [&source_dist, &wall_centre](
         auto str, const auto& pos) {
         LOG(INFO) << str << " position: " << pos;
-        auto dist = (wall_centre - pos).mag();
+        auto dist = glm::distance(wall_centre, pos);
         if (!almost_equal(dist, source_dist, 5)) {
             LOG(INFO) << "incorrect distance: " << str;
             LOG(INFO) << "distance: " << dist;
@@ -179,7 +180,7 @@ std::vector<float> get_free_field_results(const cl::Context& context,
     log_incorrect_distance("image", image_position);
 
     auto wrong_position = [source_dist, &no_wall](auto pos, auto c) {
-        return std::abs((pos - c).mag() - source_dist) > 1 ||
+        return std::abs(glm::distance(pos, c) - source_dist) > 1 ||
                !no_wall.inside(pos);
     };
 
@@ -191,8 +192,8 @@ std::vector<float> get_free_field_results(const cl::Context& context,
         LOG(INFO) << "image is placed incorrectly";
         throw std::runtime_error("incorrect placement");
     }
-    if (std::abs((source_position - image_position).mag() - source_dist * 2) >
-        1) {
+    if (std::abs(glm::distance(source_position, image_position) -
+                 source_dist * 2) > 1) {
         LOG(INFO) << "image is placed incorrectly";
         throw std::runtime_error("incorrect placement");
     }
@@ -230,8 +231,9 @@ FullTestResults run_full_test(const std::string& test_name,
                               const Surface& surface,
                               std::vector<float> windowed_free_field) {
     //  set room size based on desired number of nodes
-    auto desired_nodes = Vec3<uint32_t>(dim, dim, dim);
-    auto total_desired_nodes = desired_nodes.product();
+    auto desired_nodes = glm::ivec3(dim);
+    auto total_desired_nodes =
+        desired_nodes.x * desired_nodes.y * desired_nodes.z;
 
     auto total_possible_nodes = 1 << 30;
     if (total_desired_nodes >= total_possible_nodes) {
@@ -241,17 +243,17 @@ FullTestResults run_full_test(const std::string& test_name,
     }
 
     //  generate two boundaries, one twice the size of the other
-    auto wall =
-        CuboidBoundary(Vec3f(0, 0, 0), desired_nodes * conf.get_divisions());
+    auto wall = CuboidBoundary(glm::vec3(0, 0, 0),
+                               glm::vec3(desired_nodes) * conf.get_divisions());
 
     auto far = wall.get_c1();
-    auto new_dim = Vec3f(far.x * 2, far.y, far.z);
+    auto new_dim = glm::vec3(far.x * 2, far.y, far.z);
 
-    auto no_wall = CuboidBoundary(Vec3f(0, 0, 0), new_dim);
+    auto no_wall = CuboidBoundary(glm::vec3(0, 0, 0), new_dim);
 
     //  place source and receiver in rooms based on distance in nodes from the
     //  wall
-    auto source_dist_nodes = desired_nodes.mag() / 8;
+    auto source_dist_nodes = glm::length(glm::vec3(desired_nodes)) / 8;
     auto source_dist = source_dist_nodes * conf.get_divisions();
 
     auto wall_centre = no_wall.centre();
@@ -259,7 +261,7 @@ FullTestResults run_full_test(const std::string& test_name,
     auto log_incorrect_distance = [&source_dist, &wall_centre](
         auto str, const auto& pos) {
         LOG(INFO) << str << " position: " << pos;
-        auto dist = (wall_centre - pos).mag();
+        auto dist = glm::distance(wall_centre, pos);
         if (!almost_equal(dist, source_dist, 5)) {
             LOG(INFO) << "incorrect distance: " << str;
             LOG(INFO) << "distance: " << dist;
@@ -273,11 +275,11 @@ FullTestResults run_full_test(const std::string& test_name,
     auto source_position = wall_centre + source_offset;
     log_incorrect_distance("source", source_position);
 
-    auto receiver_position = wall_centre + source_offset * Vec3f(1, -1, -1);
+    auto receiver_position = wall_centre + source_offset * glm::vec3(1, -1, -1);
     log_incorrect_distance("receiver", receiver_position);
 
     auto wrong_position = [source_dist, &no_wall](auto pos, auto c) {
-        return std::abs((pos - c).mag() - source_dist) > 1 ||
+        return std::abs(glm::distance(pos, c) - source_dist) > 1 ||
                !no_wall.inside(pos);
     };
 

@@ -34,7 +34,7 @@ VoxelCollection::VoxelCollection(const CopyableSceneData& scene_data,
         : VoxelCollection(Octree(scene_data, depth, padding)) {
 }
 
-void VoxelCollection::init(const Octree& o, const Vec3i& d) {
+void VoxelCollection::init(const Octree& o, const glm::ivec3& d) {
     if (!o.has_nodes()) {
         data[d.x][d.y][d.z] = Voxel(o);
     } else {
@@ -43,7 +43,7 @@ void VoxelCollection::init(const Octree& o, const Vec3i& d) {
             auto x = (count & 1u) ? 1u : 0u;
             auto y = (count & 2u) ? 1u : 0u;
             auto z = (count & 4u) ? 1u : 0u;
-            init(i, d + Vec3i(x, y, z) * o.get_side() / 2);
+            init(i, d + glm::ivec3(x, y, z) * o.get_side() / 2);
             count += 1;
         }
     }
@@ -61,17 +61,18 @@ const VoxelCollection::XAxis& VoxelCollection::get_data() const {
     return data;
 }
 
-Vec3i VoxelCollection::get_starting_index(const Vec3f& position) const {
-    return Vec3i(
-        ((position - get_aabb().get_c0()) / get_voxel_aabb().dimensions())
-            .floor());
+glm::ivec3 VoxelCollection::get_starting_index(
+    const glm::vec3& position) const {
+    return glm::floor((position - get_aabb().get_c0()) /
+                      get_voxel_aabb().dimensions());
 }
 
-Vec3i VoxelCollection::get_step(const Vec3f& d) {
-    return d.map([](auto i) { return i > 0 ? 1 : -1; });
+glm::ivec3 VoxelCollection::get_step(const glm::vec3& d) {
+    return glm::sign(d);
 }
 
-const VoxelCollection::Voxel& VoxelCollection::get_voxel(const Vec3i& i) const {
+const VoxelCollection::Voxel& VoxelCollection::get_voxel(
+    const glm::ivec3& i) const {
     return data[i.x][i.y][i.z];
 }
 
@@ -79,19 +80,19 @@ geo::Intersection VoxelCollection::traverse(const geo::Ray& ray,
                                             TraversalCallback& fun) {
     //  from http://www.cse.chalmers.se/edu/year/2010/course/TDA361/grid.pdf
     auto ind = get_starting_index(ray.position);
-    auto voxel_bounds = get_voxel(ind).get_aabb();
-    auto step = get_step(ray.direction);
+    const auto voxel_bounds = get_voxel(ind).get_aabb();
+    const auto step = get_step(ray.direction);
 
-    auto just_out =
-        step.map([this](auto i) -> int { return i > 0 ? data.size() : -1; });
+    glm::ivec3 just_out;
+    glm::vec3 boundary;
+    for (auto i = 0; i != 3; ++i) {
+        just_out[i] = 0 < step[i] ? data.size() : -1;
+        boundary[i] =
+            step[i] < 0 ? voxel_bounds.get_c0()[i] : voxel_bounds.get_c1()[i];
+    }
 
-    auto boundary =
-        step.apply([](auto i, auto j, auto k) { return i < 0 ? j : k; },
-                   voxel_bounds.get_c0(),
-                   voxel_bounds.get_c1());
-
-    auto t_max = ((boundary - ray.position) / ray.direction).abs();
-    auto t_delta = (get_voxel_aabb().dimensions() / ray.direction).abs();
+    auto t_max = glm::abs((boundary - ray.position) / ray.direction);
+    auto t_delta = glm::abs(get_voxel_aabb().dimensions() / ray.direction);
 
     for (;;) {
         auto min_i = 0;
@@ -142,7 +143,7 @@ std::vector<cl_uint> VoxelCollection::get_flattened() const {
     for (auto x = 0u; x != side; ++x) {
         for (auto y = 0u; y != side; ++y) {
             for (auto z = 0u; z != side; ++z) {
-                Vec3i ind(x, y, z);
+                glm::ivec3 ind(x, y, z);
                 ret[to_flat(ind)] = ret.size();
                 const auto& v = get_voxel(ind);
                 ret.push_back(v.get_triangles().size());

@@ -2,8 +2,6 @@
 
 #include "waveguide.h"
 
-#include "common/vec.h"
-
 #include <vector>
 
 class Attenuator {

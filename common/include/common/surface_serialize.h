@@ -1,5 +1,6 @@
 #pragma once
 
+#include "extended_algorithms.h"
 #include "json_read_write.h"
 #include "scene_data.h"
 

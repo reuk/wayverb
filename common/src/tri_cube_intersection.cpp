@@ -4,7 +4,7 @@
 
 static const auto eps = 10e-5;
 
-int sign3(const Vec3f& v) {
+int sign3(const glm::vec3& v) {
     return (v.x < eps) ? 0x04
                        : 0 | (v.x > -eps)
                              ? 0x20
@@ -17,7 +17,7 @@ int sign3(const Vec3f& v) {
                                                : 0 | (v.z > -eps) ? 0x08 : 0;
 }
 
-int face_plane(const Vec3f& p) {
+int face_plane(const glm::vec3& p) {
     auto ret = 0;
     if (p.x > 0.5) {
         ret |= 0x01;
@@ -40,7 +40,7 @@ int face_plane(const Vec3f& p) {
     return ret;
 }
 
-int bevel_2d(const Vec3f& p) {
+int bevel_2d(const glm::vec3& p) {
     auto ret = 0;
     if (p.x + p.y > 1.0) {
         ret |= 0x001;
@@ -83,7 +83,7 @@ int bevel_2d(const Vec3f& p) {
     return ret;
 }
 
-int bevel_3d(const Vec3f& p) {
+int bevel_3d(const glm::vec3& p) {
     auto ret = 0;
     if (p.x + p.y + p.z > 1.5) {
         ret |= 0x01;
@@ -112,11 +112,14 @@ int bevel_3d(const Vec3f& p) {
     return ret;
 }
 
-int check_point(const Vec3f& p1, const Vec3f& p2, float alpha, int mask) {
-    return face_plane(lerp(alpha, p1, p2)) & mask;
+int check_point(const glm::vec3& p1,
+                const glm::vec3& p2,
+                float alpha,
+                int mask) {
+    return face_plane(glm::mix(p1, p2, alpha)) & mask;
 }
 
-Rel check_line(const Vec3f& p1, const Vec3f& p2, int outcode_diff) {
+Rel check_line(const glm::vec3& p1, const glm::vec3& p2, int outcode_diff) {
     if (0x01 & outcode_diff) {
         if (!check_point(p1, p2, (0.5 - p1.x) / (p2.x - p1.x), 0x3e)) {
             return Rel::idInside;
@@ -150,23 +153,24 @@ Rel check_line(const Vec3f& p1, const Vec3f& p2, int outcode_diff) {
     return Rel::idOutside;
 }
 
-Rel point_triangle_intersection(const Vec3f& p, const TriangleVec3f& t) {
+Rel point_triangle_intersection(const glm::vec3& p, const TriangleVec3& t) {
     auto v0 = t[0];
     auto v1 = t[1];
     auto v2 = t[2];
 
-    std::vector<Vec3f> coll = {v0, v1, v2};
-    if ((get_max(coll) < p).any()) {
+    const auto mm = min_max(std::array<glm::vec3, 3>{{v0, v1, v2}});
+
+    if (glm::any(glm::lessThan(mm.get_c1(), p))) {
         return Rel::idOutside;
     }
-    if ((p < get_min(coll)).any()) {
+    if (glm::any(glm::lessThan(p, mm.get_c0()))) {
         return Rel::idOutside;
     }
 
     auto get_sign = [&p](auto a, auto b) {
         auto vec_a = a - b;
         auto vec_p = a - p;
-        auto cross = vec_a.cross(vec_p);
+        auto cross = glm::cross(vec_a, vec_p);
         return sign3(cross);
     };
 
@@ -259,40 +263,42 @@ Rel t_c_intersection(const TriangleVerts & t) {
 
 //  from
 //  http://fileadmin.cs.lth.se/cs/Personal/Tomas_Akenine-Moller/code/tribox_tam.pdf
-Rel t_c_intersection(const TriangleVec3f& t) {
-    std::array<Vec3f, 3> v{{
+Rel t_c_intersection(const TriangleVec3& t) {
+    std::array<glm::vec3, 3> v{{
         t[0], t[1], t[2],
     }};
-    std::array<Vec3f, 3> f{{v[1] - v[0], v[2] - v[1], v[0] - v[2]}};
+    std::array<glm::vec3, 3> f{{v[1] - v[0], v[2] - v[1], v[0] - v[2]}};
 
     for (const auto& a : {
-             Vec3f(0, -f[0].z, f[0].y),
-             Vec3f(0, -f[1].z, f[1].y),
-             Vec3f(0, -f[2].z, f[2].y),
-             Vec3f(f[0].z, 0, -f[0].x),
-             Vec3f(f[1].z, 0, -f[1].x),
-             Vec3f(f[2].z, 0, -f[2].x),
-             Vec3f(-f[0].y, f[0].x, 0),
-             Vec3f(-f[1].y, f[1].x, 0),
-             Vec3f(-f[2].y, f[2].x, 0),
+             glm::vec3(0, -f[0].z, f[0].y),
+             glm::vec3(0, -f[1].z, f[1].y),
+             glm::vec3(0, -f[2].z, f[2].y),
+             glm::vec3(f[0].z, 0, -f[0].x),
+             glm::vec3(f[1].z, 0, -f[1].x),
+             glm::vec3(f[2].z, 0, -f[2].x),
+             glm::vec3(-f[0].y, f[0].x, 0),
+             glm::vec3(-f[1].y, f[1].x, 0),
+             glm::vec3(-f[2].y, f[2].x, 0),
          }) {
-        auto coll = {a.dot(v[0]), a.dot(v[1]), a.dot(v[2])};
-        auto r = a.abs().dot(Vec3f(0.5));
+        auto coll = {glm::dot(a, v[0]), glm::dot(a, v[1]), glm::dot(a, v[2])};
+        auto r = glm::dot(glm::abs(a), glm::vec3(0.5));
         if (std::max(-std::max(coll), std::min(coll)) > r) {
             return Rel::idOutside;
         }
     }
 
-    if ((get_max(v) < Vec3f(-0.5)).any()) {
+    const auto mm = min_max(v);
+
+    if (glm::any(glm::lessThan(mm.get_c1(), glm::vec3(-0.5)))) {
         return Rel::idOutside;
     }
-    if ((Vec3f(0.5) < get_min(v)).any()) {
+    if (glm::any(glm::lessThan(glm::vec3(0.5), mm.get_c0()))) {
         return Rel::idOutside;
     }
 
-    auto normal = f[0].cross(f[2]).normalized();
-    auto dist = normal.dot(v[0]);
+    auto normal = glm::normalize(glm::cross(f[0], f[2]));
+    auto dist = glm::dot(normal, v[0]);
 
-    auto r = normal.abs().dot(Vec3f(0.5));
+    auto r = glm::dot(glm::abs(normal), glm::vec3(0.5));
     return fabs(dist) <= r ? Rel::idInside : Rel::idOutside;
 }

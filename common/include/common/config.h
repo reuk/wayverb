@@ -1,9 +1,6 @@
 #pragma once
 
 #include "attenuation_configs.h"
-#include "vec.h"
-
-#include <memory>
 
 #define SPEED_OF_SOUND (340.0f)
 
@@ -19,8 +16,8 @@ public:
     App(App&&) noexcept = default;
     App& operator=(App&&) noexcept = default;
 
-    Vec3f source{0, 0, 0};
-    Vec3f mic{0, 0, 0};
+    glm::vec3 source{0, 0, 0};
+    glm::vec3 mic{0, 0, 0};
     float sample_rate{44100};
     int bit_depth{16};
     ReceiverConfig receiver_config;

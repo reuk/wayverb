@@ -6,12 +6,12 @@
 
 class Microphone : public Attenuator, public config::Microphone {
 public:
-    constexpr explicit Microphone(const Vec3f& facing, float shape = 0)
+    explicit Microphone(const glm::vec3& facing, float shape = 0)
             : config::Microphone{facing, shape} {
     }
 
-    constexpr float attenuation(const Vec3f& incident) const {
-        return (1 - shape) + shape * facing.dot(incident.normalized());
+    float attenuation(const glm::vec3& incident) const {
+        return (1 - shape) + shape * glm::dot(facing, glm::normalize(incident));
     }
     std::vector<float> process(
         const std::vector<RunStepResult>& input) const override;

@@ -22,14 +22,14 @@ static std::array<CuboidBoundary, 8> next_boundaries(
     auto z1 = parent.get_c1().z;
 
     return std::array<CuboidBoundary, 8>{{
-        CuboidBoundary(Vec3f(x0, y0, z0), Vec3f(xc, yc, zc)),
-        CuboidBoundary(Vec3f(xc, y0, z0), Vec3f(x1, yc, zc)),
-        CuboidBoundary(Vec3f(x0, yc, z0), Vec3f(xc, y1, zc)),
-        CuboidBoundary(Vec3f(xc, yc, z0), Vec3f(x1, y1, zc)),
-        CuboidBoundary(Vec3f(x0, y0, zc), Vec3f(xc, yc, z1)),
-        CuboidBoundary(Vec3f(xc, y0, zc), Vec3f(x1, yc, z1)),
-        CuboidBoundary(Vec3f(x0, yc, zc), Vec3f(xc, y1, z1)),
-        CuboidBoundary(Vec3f(xc, yc, zc), Vec3f(x1, y1, z1)),
+        CuboidBoundary(glm::vec3(x0, y0, z0), glm::vec3(xc, yc, zc)),
+        CuboidBoundary(glm::vec3(xc, y0, z0), glm::vec3(x1, yc, zc)),
+        CuboidBoundary(glm::vec3(x0, yc, z0), glm::vec3(xc, y1, zc)),
+        CuboidBoundary(glm::vec3(xc, yc, z0), glm::vec3(x1, y1, zc)),
+        CuboidBoundary(glm::vec3(x0, y0, zc), glm::vec3(xc, yc, z1)),
+        CuboidBoundary(glm::vec3(xc, y0, zc), glm::vec3(x1, yc, z1)),
+        CuboidBoundary(glm::vec3(x0, yc, zc), glm::vec3(xc, y1, z1)),
+        CuboidBoundary(glm::vec3(xc, yc, zc), glm::vec3(x1, y1, z1)),
     }};
 }
 
@@ -149,7 +149,7 @@ std::vector<const Octree*> Octree::intersect(const geo::Ray& ray) const {
     return ret;
 }
 
-const Octree& Octree::get_surrounding_leaf(const Vec3f& v) const {
+const Octree& Octree::get_surrounding_leaf(const glm::vec3& v) const {
     if (!has_nodes()) {
         return *this;
     }

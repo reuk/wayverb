@@ -1,6 +1,6 @@
 #pragma once
 
-#include "vec_forward.h"
+#include "glm/glm.hpp"
 
-Vec3f sphere_point(double z, double theta);
-Vec3f point_on_sphere(double az, double el);
+glm::vec3 sphere_point(double z, double theta);
+glm::vec3 point_on_sphere(double az, double el);

@@ -28,7 +28,7 @@ class MeshTest : public ::testing::Test {
 public:
     template <typename MeshType>
     auto get_mesh(const SceneData& sd) {
-        return MeshType(MeshBoundary(sd), 0.1, Vec3f(0));
+        return MeshType(MeshBoundary(sd), 0.1, glm::vec3(0));
     }
 
     template <typename MeshType>
@@ -49,7 +49,7 @@ public:
         for (auto i = 0u; i != mesh.get_nodes().size(); ++i) {
             auto loc = mesh.compute_locator(i);
             auto pos = mesh.compute_position(loc);
-            ASSERT_TRUE(test_equal(loc, mesh.compute_locator(pos)));
+            ASSERT_TRUE(loc == mesh.compute_locator(pos));
         }
     }
 
@@ -64,7 +64,8 @@ public:
                 if (j != -1) {
                     auto ll = mesh.compute_locator(j);
                     auto pp = mesh.compute_position(ll);
-                    ASSERT_NEAR(mesh.get_spacing(), (pos - pp).mag(), 0.0001)
+                    ASSERT_NEAR(
+                        mesh.get_spacing(), glm::distance(pos, pp), 0.0001)
                         << i << ", " << j;
                 }
             }
@@ -106,16 +107,7 @@ TEST_F(MeshTest, locator_index_rect) {
 
 bool operator==(const TetrahedralMesh::Locator& a,
                 const TetrahedralMesh::Locator& b) {
-    return (a.pos == b.pos).all() && a.mod_ind == b.mod_ind;
-}
-
-bool test_equal(const Vec3i& a, const Vec3i& b) {
-    return (a == b).all();
-}
-
-bool test_equal(const TetrahedralMesh::Locator& a,
-                const TetrahedralMesh::Locator& b) {
-    return test_equal(a.pos, b.pos) && a.mod_ind == b.mod_ind;
+    return std::tie(a.pos, a.mod_ind) == std::tie(b.pos, b.mod_ind);
 }
 
 TEST_F(MeshTest, position_index_tetra) {

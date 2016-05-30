@@ -96,8 +96,8 @@ inline void fix_predelay(T& ret) {
 struct RaytracerResults {
     explicit RaytracerResults(
         const std::vector<Impulse> impulses = std::vector<Impulse>(),
-        const Vec3f& c = Vec3f(),
-        const Vec3f& s = Vec3f(),
+        const glm::vec3& c = glm::vec3(),
+        const glm::vec3& s = glm::vec3(),
         int rays = 0,
         int reflections = 0)
             : impulses{impulses}
@@ -108,8 +108,8 @@ struct RaytracerResults {
     }
 
     const std::vector<Impulse> impulses;
-    const Vec3f mic;
-    const Vec3f source;
+    const glm::vec3 mic;
+    const glm::vec3 source;
     const int rays;
     const int reflections;
 };
@@ -118,8 +118,8 @@ class Results final {
 public:
     std::map<std::vector<int>, Impulse> image_source;
     std::vector<Impulse> diffuse;
-    Vec3f mic;
-    Vec3f source;
+    glm::vec3 mic;
+    glm::vec3 source;
     int rays;
     int reflections;
 
@@ -139,8 +139,8 @@ public:
 
     template <typename Callback = DoNothingCallback>
     Results run(const CopyableSceneData& scene_data,
-                const Vec3f& micpos,
-                const Vec3f& source,
+                const glm::vec3& micpos,
+                const glm::vec3& source,
                 const std::vector<cl_float3>& directions,
                 int reflections,
                 std::atomic_bool& keep_going,
@@ -156,8 +156,8 @@ public:
 
     template <typename Callback = DoNothingCallback>
     Results run(const CopyableSceneData& scene_data,
-                const Vec3f& micpos,
-                const Vec3f& source,
+                const glm::vec3& micpos,
+                const glm::vec3& source,
                 int rays,
                 int reflections,
                 std::atomic_bool& keep_going,
@@ -176,8 +176,8 @@ public:
 
 private:
     Results run(const CopyableSceneData& scene_data,
-                const Vec3f& micpos,
-                const Vec3f& source,
+                const glm::vec3& micpos,
+                const glm::vec3& source,
                 const std::vector<cl_float3>& directions,
                 int reflections,
                 std::atomic_bool& keep_going,
@@ -196,8 +196,8 @@ public:
 
     class Config final {
     public:
-        Vec3f facing;
-        Vec3f up;
+        glm::vec3 facing;
+        glm::vec3 up;
     };
 
     Hrtf(const RaytracerProgram& program, cl::CommandQueue& queue);
@@ -209,7 +209,9 @@ public:
     std::vector<std::vector<AttenuatedImpulse>> attenuate(
         const RaytracerResults& results, const Config& config);
     std::vector<std::vector<AttenuatedImpulse>> attenuate(
-        const RaytracerResults& results, const Vec3f& facing, const Vec3f& up);
+        const RaytracerResults& results,
+        const glm::vec3& facing,
+        const glm::vec3& up);
 
     virtual const std::array<std::array<std::array<cl_float8, 180>, 360>, 2>&
     get_hrtf_data() const;
@@ -249,7 +251,7 @@ public:
 
 private:
     std::vector<AttenuatedImpulse> attenuate(
-        const Vec3f& mic_pos,
+        const glm::vec3& mic_pos,
         const Speaker& speaker,
         const std::vector<Impulse>& impulses);
     cl::CommandQueue& queue;

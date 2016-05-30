@@ -68,11 +68,11 @@ CopyableSceneData::CopyableSceneData(Contents&& rhs)
 }
 
 CuboidBoundary CopyableSceneData::get_aabb() const {
-    return CuboidBoundary(get_surrounding_box(get_converted_vertices()));
+    return CuboidBoundary(min_max(get_converted_vertices()));
 }
 
-std::vector<Vec3f> CopyableSceneData::get_converted_vertices() const {
-    std::vector<Vec3f> vec(get_vertices().size());
+std::vector<glm::vec3> CopyableSceneData::get_converted_vertices() const {
+    std::vector<glm::vec3> vec(get_vertices().size());
     proc::transform(
         get_vertices(), vec.begin(), [](auto i) { return to_vec3f(i); });
     return vec;

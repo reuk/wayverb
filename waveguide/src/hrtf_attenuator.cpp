@@ -4,8 +4,8 @@
 #include "common/hrtf.h"
 #include "common/stl_wrappers.h"
 
-HrtfAttenuator::HrtfAttenuator(const Vec3f& direction,
-                               const Vec3f& up,
+HrtfAttenuator::HrtfAttenuator(const glm::vec3& direction,
+                               const glm::vec3& up,
                                int channel,
                                float sr)
         : direction(direction)
@@ -14,26 +14,28 @@ HrtfAttenuator::HrtfAttenuator(const Vec3f& direction,
         , sr(sr) {
 }
 
-Vec3f transform(const Vec3f& pointing, const Vec3f& up, const Vec3f& d) {
-    auto x = up.cross(pointing).normalized();
-    auto y = pointing.cross(x);
+glm::vec3 transform(const glm::vec3& pointing,
+                    const glm::vec3& up,
+                    const glm::vec3& d) {
+    auto x = glm::normalize(glm::cross(up, pointing));
+    auto y = glm::cross(pointing, x);
     auto z = pointing;
-    return Vec3f(x.dot(d), y.dot(d), z.dot(d));
+    return glm::vec3(glm::dot(x, d), glm::dot(y, d), glm::dot(z, d));
 }
 
-float azimuth(const Vec3f& d) {
+float azimuth(const glm::vec3& d) {
     return atan2(d.x, d.z);
 }
 
-float elevation(const Vec3f& d) {
-    return atan2(d.y, Vec3f(d.x, d.z, 0).mag());
+float elevation(const glm::vec3& d) {
+    return atan2(d.y, glm::length(glm::vec2(d.x, d.z)));
 }
 
 float degrees(float radians) {
     return radians * 180 / M_PI;
 }
 
-float HrtfAttenuator::attenuation(const Vec3f& incident, int band) const {
+float HrtfAttenuator::attenuation(const glm::vec3& incident, int band) const {
     auto transformed = transform(direction, up, incident);
     int a = degrees(azimuth(transformed)) + 180;
     a %= 360;
@@ -42,11 +44,11 @@ float HrtfAttenuator::attenuation(const Vec3f& incident, int band) const {
     return HrtfData::HRTF_DATA[channel][a][e].s[band];
 }
 
-Vec3f HrtfAttenuator::get_direction() const {
+glm::vec3 HrtfAttenuator::get_direction() const {
     return direction;
 }
 
-Vec3f HrtfAttenuator::get_up() const {
+glm::vec3 HrtfAttenuator::get_up() const {
     return up;
 }
 
@@ -60,7 +62,7 @@ std::vector<float> HrtfAttenuator::process(
             proc::transform(input, this_band.begin(), [this, band](auto i) {
                 //  TODO DEFINITELY CHECK THIS
                 //  RUN TESTS YEAH
-                auto mag = i.intensity.mag();
+                auto mag = glm::length(i.intensity);
                 if (mag == 0)
                     return 0.0f;
                 mag = sqrt(mag * pow(attenuation(i.intensity, band), 2));

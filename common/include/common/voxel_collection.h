@@ -38,10 +38,10 @@ public:
 
     int get_side() const;
 
-    const Voxel& get_voxel(const Vec3i& i) const;
+    const Voxel& get_voxel(const glm::ivec3& i) const;
 
-    Vec3i get_starting_index(const Vec3f& position) const;
-    static Vec3i get_step(const Vec3f& direction);
+    glm::ivec3 get_starting_index(const glm::vec3& position) const;
+    static glm::ivec3 get_step(const glm::vec3& direction);
 
     /// Returns a flat array-representation of the collection.
     /// TODO document the array format
@@ -74,14 +74,14 @@ public:
 
     private:
         std::vector<Triangle> tri;
-        std::vector<Vec3f> vertices;
+        std::vector<glm::vec3> vertices;
     };
 
     /// Find the closest object along a ray.
     geo::Intersection traverse(const geo::Ray& ray, TraversalCallback& fun);
 
 private:
-    void init(const Octree& o, const Vec3i& offset = Vec3i(0));
+    void init(const Octree& o, const glm::ivec3& offset = glm::ivec3(0));
 
     CuboidBoundary aabb;
     XAxis data;

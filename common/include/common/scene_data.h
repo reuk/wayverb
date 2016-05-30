@@ -1,9 +1,10 @@
 #pragma once
 
 #include "triangle.h"
-#include "vec.h"
 
 #include "cl_include.h"
+
+#include "glm/glm.hpp"
 
 #include <map>
 #include <vector>
@@ -77,7 +78,7 @@ public:
     void set_surfaces(const Surface& surface);
 
     CuboidBoundary get_aabb() const;
-    std::vector<Vec3f> get_converted_vertices() const;
+    std::vector<glm::vec3> get_converted_vertices() const;
     std::vector<int> get_triangle_indices() const;
 
     const std::vector<Triangle>& get_triangles() const;

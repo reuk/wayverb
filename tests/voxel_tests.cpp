@@ -46,7 +46,7 @@ TEST(voxel, walk) {
     auto directions = get_random_directions(rays);
     for (const auto& i : directions) {
         T t;
-        geo::Ray ray(Vec3f(0, 1, 0), to_vec3f(i));
+        geo::Ray ray(glm::vec3(0, 1, 0), to_vec3f(i));
         voxel.traverse(ray, t);
         ASSERT_TRUE(t.get_has_triangles());
     }
@@ -62,7 +62,7 @@ TEST(voxel, old) {
     std::iota(ind.begin(), ind.end(), 0);
 
     for (const auto& i : get_random_directions(bench_rays)) {
-        geo::Ray ray(Vec3f(0, 1, 0), to_vec3f(i));
+        geo::Ray ray(glm::vec3(0, 1, 0), to_vec3f(i));
 
         auto inter_0 = geo::ray_triangle_intersection(
             ray, ind, scene_data.get_triangles(), v);
@@ -77,7 +77,7 @@ TEST(voxel, new) {
     VoxelCollection::TriangleTraversalCallback t(scene_data);
 
     for (const auto& i : get_random_directions(bench_rays)) {
-        geo::Ray ray(Vec3f(0, 1, 0), to_vec3f(i));
+        geo::Ray ray(glm::vec3(0, 1, 0), to_vec3f(i));
 
         auto inter_1 = voxel.traverse(ray, t);
     }
@@ -95,7 +95,7 @@ TEST(voxel, intersect) {
     std::iota(ind.begin(), ind.end(), 0);
 
     for (const auto& i : get_random_directions(bench_rays)) {
-        geo::Ray ray(Vec3f(0, 1, 0), to_vec3f(i));
+        geo::Ray ray(glm::vec3(0, 1, 0), to_vec3f(i));
 
         auto inter_0 = geo::ray_triangle_intersection(
             ray, ind, scene_data.get_triangles(), v);

@@ -8,7 +8,6 @@
 #include "common/conversions.h"
 #include "common/geometric.h"
 #include "common/popcount.h"
-#include "common/vec.h"
 
 #include <set>
 #include <unordered_map>
@@ -24,10 +23,10 @@ public:
 };
 }  // namespace std
 
-class RectangularMesh : public BaseMesh<RectangularProgram, Vec3i> {
+class RectangularMesh : public BaseMesh<RectangularProgram, glm::ivec3> {
 public:
     template <typename B>
-    RectangularMesh(const B& boundary, float spacing, const Vec3f& anchor)
+    RectangularMesh(const B& boundary, float spacing, const glm::vec3& anchor)
             : BaseMesh(spacing,
                        compute_adjusted_boundary(
                            boundary.get_aabb(), anchor, spacing))
@@ -74,8 +73,8 @@ public:
 
     size_type compute_index(const Locator& locator) const override;
     Locator compute_locator(const size_type index) const override;
-    Locator compute_locator(const Vec3f& position) const override;
-    Vec3f compute_position(const Locator& locator) const override;
+    Locator compute_locator(const glm::vec3& position) const override;
+    glm::vec3 compute_position(const Locator& locator) const override;
 
     const Collection& get_nodes() const override;
 
@@ -87,7 +86,7 @@ public:
 
     std::vector<CondensedNode> get_condensed_nodes() const;
 
-    Vec3i get_dim() const;
+    glm::ivec3 get_dim() const;
 
     template <int BITS>
     size_type compute_num_boundary() const {
@@ -199,7 +198,8 @@ public:
 private:
     template <typename B>
     Collection compute_nodes(const B& boundary) const {
-        auto total_nodes = get_dim().product();
+        const auto dim = get_dim();
+        auto total_nodes = dim.x * dim.y * dim.z;
         //        auto bytes = total_nodes *
         //        sizeof(RectangularMesh::CondensedNode);
         // LOG(INFO) << (bytes >> 20) << " MB required for node metadata
@@ -239,7 +239,7 @@ private:
 
     void set_node_boundary_index(std::vector<Node>& ret) const;
 
-    Vec3i dim;
+    glm::ivec3 dim;
 
     Collection nodes;
     std::vector<RectangularProgram::BoundaryDataArray1> boundary_data_1;

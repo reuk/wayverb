@@ -30,7 +30,7 @@ RectangularWaveguide<buffer_type>::RectangularWaveguide(
     const RectangularProgram& program,
     cl::CommandQueue& queue,
     const MeshBoundary& boundary,
-    const Vec3f& anchor,
+    const glm::vec3& anchor,
     float sr)
         : RectangularWaveguide(
               program,
@@ -201,12 +201,12 @@ RunStepResult RectangularWaveguide<buffer_type>::run_step(
 
 template <BufferType buffer_type>
 size_t RectangularWaveguide<buffer_type>::get_index_for_coordinate(
-    const Vec3f& v) const {
+    const glm::vec3& v) const {
     return mesh.compute_index(mesh.compute_locator(v));
 }
 
 template <BufferType buffer_type>
-Vec3f RectangularWaveguide<buffer_type>::get_coordinate_for_index(
+glm::vec3 RectangularWaveguide<buffer_type>::get_coordinate_for_index(
     size_t index) const {
     return to_vec3f(mesh.get_nodes()[index].position);
 }

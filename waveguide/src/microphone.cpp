@@ -10,7 +10,7 @@ std::vector<float> Microphone::process(
     proc::transform(input, ret.begin(), [this](auto i) {
         //  TODO DEFINITELY CHECK THIS
         //  RUN TESTS YEAH
-        auto mag = i.intensity.mag();
+        auto mag = glm::length(i.intensity);
         if (mag == 0)
             return 0.0f;
         mag = sqrt(mag * pow(attenuation(i.intensity), 2));
@@ -22,4 +22,4 @@ std::vector<float> Microphone::process(
     return ret;
 }
 
-const Microphone Microphone::omni{Vec3f(1, 0, 0)};
+const Microphone Microphone::omni{glm::vec3(1, 0, 0)};

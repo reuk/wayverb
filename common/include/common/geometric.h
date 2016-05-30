@@ -1,16 +1,17 @@
 #pragma once
 
 #include "triangle_vec.h"
-#include "vec.h"
+
+#include "glm/glm.hpp"
 
 namespace geo {
 
 class Ray {
 public:
-    explicit Ray(const Vec3f& position = Vec3f(),
-                 const Vec3f& direction = Vec3f());
-    Vec3f position;
-    Vec3f direction;
+    explicit Ray(const glm::vec3& position = glm::vec3(),
+                 const glm::vec3& direction = glm::vec3());
+    glm::vec3 position;
+    glm::vec3 direction;
 };
 
 class Intersects {
@@ -36,33 +37,33 @@ public:
     int index{0};
 };
 
-TriangleVec3f to_triangle_vec3f(const Triangle& tri,
-                                const std::vector<Vec3f>& vertices);
+TriangleVec3 to_triangle_vec3f(const Triangle& tri,
+                               const std::vector<glm::vec3>& vertices);
 
-Intersects triangle_intersection(const TriangleVec3f& tri, const Ray& ray);
+Intersects triangle_intersection(const TriangleVec3& tri, const Ray& ray);
 
 Intersects triangle_intersection(const Triangle& tri,
-                                 const std::vector<Vec3f>& vertices,
+                                 const std::vector<glm::vec3>& vertices,
                                  const Ray& ray);
 
 Intersection ray_triangle_intersection(const Ray& ray,
                                        const std::vector<int>& triangle_indices,
                                        const std::vector<Triangle>& triangles,
-                                       const std::vector<Vec3f>& vertices);
+                                       const std::vector<glm::vec3>& vertices);
 
 Intersection ray_triangle_intersection(const Ray& ray,
                                        const std::vector<Triangle>& triangles,
-                                       const std::vector<Vec3f>& vertices);
+                                       const std::vector<glm::vec3>& vertices);
 
-bool point_intersection(const Vec3f& begin,
-                        const Vec3f& point,
+bool point_intersection(const glm::vec3& begin,
+                        const glm::vec3& point,
                         const std::vector<Triangle>& triangles,
-                        const std::vector<Vec3f>& vertices);
+                        const std::vector<glm::vec3>& vertices);
 
-float point_triangle_distance_squared(const TriangleVec3f& triangle,
-                                      const Vec3f& point);
+float point_triangle_distance_squared(const TriangleVec3& triangle,
+                                      const glm::vec3& point);
 
 float point_triangle_distance_squared(const Triangle& tri,
-                                      const std::vector<Vec3f>& vertices,
-                                      const Vec3f& point);
+                                      const std::vector<glm::vec3>& vertices,
+                                      const glm::vec3& point);
 }  // namespace geo

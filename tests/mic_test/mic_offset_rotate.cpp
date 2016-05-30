@@ -79,15 +79,15 @@ int main(int argc, char** argv) {
 
     std::cout << "directionality: " << directionality << std::endl;
 
-    Microphone microphone(Vec3f(0, 0, 1), directionality);
+    Microphone microphone(glm::vec3(0, 0, 1), directionality);
     cl_float3 mic{{0, 0, 0}};
     auto test_locations = 18;
 
     std::ofstream ofile(output_folder + "/" + polar_string + ".energies.txt");
 
     try {
-        CuboidBoundary boundary(Vec3f(-2.05, -2.5, -1.05),
-                                Vec3f(2.05, 2.5, 1.05));
+        CuboidBoundary boundary(glm::vec3(-2.05, -2.5, -1.05),
+                                glm::vec3(2.05, 2.5, 1.05));
         auto waveguide_program =
             get_program<RectangularProgram>(compute_context);
         RectangularWaveguide<BufferType::cl> waveguide(

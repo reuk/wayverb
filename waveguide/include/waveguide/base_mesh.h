@@ -1,7 +1,6 @@
 #pragma once
 
 #include "common/boundaries.h"
-#include "common/vec_forward.h"
 
 #include <vector>
 
@@ -28,8 +27,8 @@ public:
 
     virtual size_type compute_index(const Locator& locator) const = 0;
     virtual Locator compute_locator(size_type index) const = 0;
-    virtual Locator compute_locator(const Vec3f& position) const = 0;
-    virtual Vec3f compute_position(const Locator& locator) const = 0;
+    virtual Locator compute_locator(const glm::vec3& position) const = 0;
+    virtual glm::vec3 compute_position(const Locator& locator) const = 0;
 
     virtual void compute_neighbors(size_type index, cl_uint* output) const = 0;
     std::array<cl_uint, PORTS> compute_neighbors(size_type index) const {

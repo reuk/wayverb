@@ -9,6 +9,8 @@
 -Isubmodules/googletest/googletest/include
 -Isubmodules/cereal/include
 -Isubmodules/assimp/include
+-Isubmodules/modern_gl_utils/include
+-Isubmodules/glm/
 -Wall
 -Werror
 -ferror-limit=100

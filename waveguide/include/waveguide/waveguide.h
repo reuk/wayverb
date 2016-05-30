@@ -41,7 +41,7 @@ inline Eigen::MatrixXf get_transform_matrix(int ports, int o, const T& nodes) {
     auto basis = to_vec3f(nodes[o].position);
     for (const auto& i : nodes[o].ports) {
         if (i != RectangularProgram::NO_NEIGHBOR) {
-            auto pos = (to_vec3f(nodes[i].position) - basis).normalized();
+            auto pos = glm::normalize(to_vec3f(nodes[i].position) - basis);
             ret.row(count++) << pos.x, pos.y, pos.z;
         }
     }
@@ -51,12 +51,13 @@ inline Eigen::MatrixXf get_transform_matrix(int ports, int o, const T& nodes) {
 //----------------------------------------------------------------------------//
 
 struct RunStepResult {
-    explicit RunStepResult(float pressure = 0, const Vec3f& intensity = Vec3f())
+    explicit RunStepResult(float pressure = 0,
+                           const glm::vec3& intensity = glm::vec3())
             : pressure(pressure)
             , intensity(intensity) {
     }
     float pressure;
-    Vec3f intensity;
+    glm::vec3 intensity;
 };
 
 enum class BufferType {
@@ -167,10 +168,10 @@ public:
         ;
     }
 
-    virtual size_t get_index_for_coordinate(const Vec3f& v) const = 0;
-    virtual Vec3f get_coordinate_for_index(size_t index) const = 0;
+    virtual size_t get_index_for_coordinate(const glm::vec3& v) const = 0;
+    virtual glm::vec3 get_coordinate_for_index(size_t index) const = 0;
 
-    Vec3f get_corrected_coordinate(const Vec3f& v) const {
+    glm::vec3 get_corrected_coordinate(const glm::vec3& v) const {
         return get_coordinate_for_index(get_index_for_coordinate(v));
     }
 
@@ -183,7 +184,7 @@ public:
     virtual void setup(cl::CommandQueue& queue, size_t o) {
     }
 
-    void init(const Vec3f& e, std::vector<float>&& input_sig, size_t o) {
+    void init(const glm::vec3& e, std::vector<float>&& input_sig, size_t o) {
         //  whatever unique setup is required
         setup(queue, o);
 
@@ -226,7 +227,7 @@ public:
 
     template <typename Callback = DoNothingCallback>
     std::vector<RunStepResult> init_and_run(
-        const Vec3f& e,
+        const glm::vec3& e,
         std::vector<float>&& input,
         size_t o,
         size_t steps,
@@ -239,7 +240,7 @@ public:
     template <typename SCallback = DoNothingCallback,
               typename VCallback = GenericArgumentsCallback<std::vector<float>>>
     std::vector<RunStepResult> init_and_run_visualised(
-        const Vec3f& e,
+        const glm::vec3& e,
         std::vector<float>&& input,
         size_t o,
         size_t steps,
@@ -353,7 +354,7 @@ public:
     RectangularWaveguide(const RectangularProgram& program,
                          cl::CommandQueue& queue,
                          const MeshBoundary& boundary,
-                         const Vec3f& anchor,
+                         const glm::vec3& anchor,
                          float sr);
 
     void setup(cl::CommandQueue& queue, size_t o) override;
@@ -367,8 +368,8 @@ public:
                            cl::Buffer& current,
                            cl::Buffer& output) override;
 
-    size_t get_index_for_coordinate(const Vec3f& v) const override;
-    Vec3f get_coordinate_for_index(size_t index) const override;
+    size_t get_index_for_coordinate(const glm::vec3& v) const override;
+    glm::vec3 get_coordinate_for_index(size_t index) const override;
 
     const RectangularMesh& get_mesh() const;
     bool inside(size_t index) const override;

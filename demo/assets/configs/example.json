@@ -15,22 +15,30 @@
                 "sample rate": 44100,
                 "bit depth": 16,
                 "attenuation model": {
-                    "polymorphic_id": 2147483649,
-                    "polymorphic_name": "microphone model",
-                    "ptr_wrapper": {
-                        "valid": 1,
-                        "data": {
-                            "microphones": [
-                                {
-                                    "facing": [
-                                        1,
-                                        0,
-                                        0
-                                    ],
-                                    "shape": 0
-                                }
-                            ]
-                        }
+                    "mode": -1909451176,
+                    "microphone model": {
+                        "microphones": [
+                            {
+                                "facing": [
+                                    0,
+                                    0,
+                                    1
+                                ],
+                                "shape": 0
+                            }
+                        ]
+                    },
+                    "hrtf model": {
+                        "facing": [
+                            0,
+                            0,
+                            1
+                        ],
+                        "up": [
+                            0,
+                            1,
+                            0
+                        ]
                     }
                 }
             },

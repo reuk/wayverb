@@ -227,6 +227,7 @@ TEST(cereal, write_configs) {
 }
 #endif
 
+#if 0
 TEST(cereal, configs) {
     std::string base_path("/Users/reuben/dev/waveguide/demo/assets/configs");
 
@@ -254,3 +255,4 @@ TEST(cereal, configs) {
         LOG(INFO) << "loaded " << i << " successfully";
     }
 }
+#endif

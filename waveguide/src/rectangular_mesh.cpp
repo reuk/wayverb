@@ -187,20 +187,15 @@ RectangularMesh::Locator RectangularMesh::compute_locator(
     return Locator(x.rem, y.rem, y.quot % dim.z);
 }
 RectangularMesh::Locator RectangularMesh::compute_locator(
-    const Vec3f& v) const {
+    const glm::vec3& v) const {
     auto transformed = v - get_aabb().get_c0();
-    Vec3i cube_pos =
-        (transformed / get_spacing()).map([](auto i) -> int { return i; });
+    glm::ivec3 cube_pos = transformed / get_spacing();
 
-    auto min =
-        (cube_pos -
-         1).apply([](auto i, auto j) { return std::max(i, j); }, Vec3i(0));
-    auto max =
-        (cube_pos +
-         2).apply([](auto i, auto j) { return std::min(i, j); }, get_dim());
+    auto min = glm::max(cube_pos - 1, glm::ivec3(0));
+    auto max = glm::min(cube_pos + 2, get_dim());
 
     auto get_dist = [this, v](auto loc) {
-        return (v - compute_position(loc)).mag_squared();
+        return std::pow(glm::length(v - compute_position(loc)), 2);
     };
 
     Locator closest = min;
@@ -220,8 +215,8 @@ RectangularMesh::Locator RectangularMesh::compute_locator(
 
     return closest;
 }
-Vec3f RectangularMesh::compute_position(const Locator& locator) const {
-    return locator * get_spacing() + get_aabb().get_c0();
+glm::vec3 RectangularMesh::compute_position(const Locator& locator) const {
+    return glm::vec3(locator) * get_spacing() + get_aabb().get_c0();
 }
 
 void RectangularMesh::compute_neighbors(size_type index,
@@ -237,7 +232,8 @@ void RectangularMesh::compute_neighbors(size_type index,
     }};
 
     proc::transform(n_loc, output, [this](const auto& i) {
-        auto inside = (Vec3i(0) <= i).all() && (i < dim).all();
+        auto inside = glm::all(glm::lessThanEqual(glm::ivec3(0), i)) &&
+                      glm::all(glm::lessThan(i, dim));
         return inside ? compute_index(i) : RectangularProgram::NO_NEIGHBOR;
     });
 }
@@ -261,7 +257,7 @@ const RectangularMesh::Collection& RectangularMesh::get_nodes() const {
     return nodes;
 }
 
-Vec3i RectangularMesh::get_dim() const {
+glm::ivec3 RectangularMesh::get_dim() const {
     return dim;
 }
 

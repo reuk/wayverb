@@ -1,6 +1,9 @@
 #pragma once
 
-#include "vec.h"
+#include "glm/glm.hpp"
+
+#include <memory>
+#include <vector>
 
 namespace config {
 
@@ -23,7 +26,7 @@ struct AttenuationModel {
 };
 
 struct Microphone {
-    Vec3f facing{0, 0, 1};
+    glm::vec3 facing{0, 0, 1};
     float shape{0};
 };
 
@@ -50,8 +53,8 @@ struct HrtfModel : public AttenuationModel {
             std::make_unique<HrtfModel>(*this));
     }
 
-    Vec3f facing{0, 0, 1};
-    Vec3f up{0, 1, 0};
+    glm::vec3 facing{0, 0, 1};
+    glm::vec3 up{0, 1, 0};
 };
 
 struct ReceiverConfig {

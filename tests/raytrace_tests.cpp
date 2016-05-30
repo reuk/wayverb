@@ -32,8 +32,8 @@ auto get_results(ComputeContext& context,
     std::atomic_bool keep_going{true};
     T raytrace(prog, context.queue);
     return raytrace.run(scene_data,
-                        Vec3f(0, 1.75, 0),
-                        Vec3f(0, 1.75, 3),
+                        glm::vec3(0, 1.75, 0),
+                        glm::vec3(0, 1.75, 3),
                         directions,
                         reflections,
                         keep_going);
@@ -119,9 +119,9 @@ constexpr int num_images(int shell) {
 }
 
 template <int SHELL>
-std::array<Vec3f, num_images(SHELL)> images_for_shell(const Box& box,
-                                                      const Vec3f& source) {
-    std::array<Vec3f, num_images(SHELL)> ret;
+std::array<glm::vec3, num_images(SHELL)> images_for_shell(
+    const Box& box, const glm::vec3& source) {
+    std::array<glm::vec3, num_images(SHELL)> ret;
 
     auto image = source;
 
@@ -142,7 +142,7 @@ std::array<Vec3f, num_images(SHELL)> images_for_shell(const Box& box,
                           : reflected_y;
 
                 ret[i + j * L + k * L * L] =
-                    reflected_z + Vec3f(x, y, z) * box.dimensions();
+                    reflected_z + glm::vec3(x, y, z) * box.dimensions();
             }
         }
     }
@@ -164,9 +164,9 @@ TEST(raytrace, image_source) {
     */
 
     //  proper method
-    constexpr Box box(Vec3f(0, 0, 0), Vec3f(4, 3, 6));
-    constexpr Vec3f source(1, 1, 1);
-    constexpr Vec3f receiver(2, 1, 5);
+    Box box(glm::vec3(0, 0, 0), glm::vec3(4, 3, 6));
+    constexpr glm::vec3 source(1, 1, 1);
+    constexpr glm::vec3 receiver(2, 1, 5);
     constexpr auto samplerate = 44100;
     constexpr auto v = 0.9;
     constexpr Surface surface{{{v, v, v, v, v, v, v, v}},
@@ -176,7 +176,7 @@ TEST(raytrace, image_source) {
     auto images = images_for_shell<shells>(box, source);
     std::array<float, images.size()> distances;
     proc::transform(images, distances.begin(), [&receiver](auto i) {
-        return (receiver - i).mag();
+        return glm::distance(receiver, i);
     });
     std::array<float, images.size()> times;
     proc::transform(distances, times.begin(), [](auto i) { return i / 340; });
@@ -191,11 +191,10 @@ TEST(raytrace, image_source) {
     for (int i = 0; i != L; ++i) {
         for (int j = 0; j != L; ++j) {
             for (int k = 0; k != L; ++k) {
-                auto reflections = Vec3f(std::abs(i - shells),
-                                         std::abs(j - shells),
-                                         std::abs(k - shells))
-                                       .sum();
-
+                auto shell_dim = glm::vec3(std::abs(i - shells),
+                                           std::abs(j - shells),
+                                           std::abs(k - shells));
+                auto reflections = shell_dim.x + shell_dim.y + shell_dim.z;
                 if (reflections <= shells) {
                     auto index = i + j * L + k * L * L;
                     auto volume = volumes[index];

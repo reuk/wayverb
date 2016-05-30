@@ -268,8 +268,8 @@ VolumeType attenuation_for_distance(float distance) {
     return ret;
 }
 
-void add_direct_impulse(const Vec3f& micpos,
-                        const Vec3f& source,
+void add_direct_impulse(const glm::vec3& micpos,
+                        const glm::vec3& source,
                         const CopyableSceneData& scene_data,
                         Results& results) {
     if (geo::point_intersection(micpos,
@@ -277,7 +277,7 @@ void add_direct_impulse(const Vec3f& micpos,
                                 scene_data.get_triangles(),
                                 scene_data.get_converted_vertices())) {
         auto init_diff = source - micpos;
-        auto init_dist = init_diff.mag();
+        auto init_dist = glm::length(init_diff);
         results.image_source[{0}] = Impulse{
             attenuation_for_distance(init_dist),
             to_cl_float3(micpos + init_diff),
@@ -287,8 +287,8 @@ void add_direct_impulse(const Vec3f& micpos,
 }
 
 Results Raytracer::run(const CopyableSceneData& scene_data,
-                       const Vec3f& micpos,
-                       const Vec3f& source,
+                       const glm::vec3& micpos,
+                       const glm::vec3& source,
                        const std::vector<cl_float3>& directions,
                        int reflections,
                        std::atomic_bool& keep_going,
@@ -436,7 +436,9 @@ std::vector<std::vector<AttenuatedImpulse>> Hrtf::attenuate(
 }
 
 std::vector<std::vector<AttenuatedImpulse>> Hrtf::attenuate(
-    const RaytracerResults& results, const Vec3f& facing, const Vec3f& up) {
+    const RaytracerResults& results,
+    const glm::vec3& facing,
+    const glm::vec3& up) {
     auto channels = {0, 1};
     std::vector<std::vector<AttenuatedImpulse>> attenuated(channels.size());
     proc::transform(
@@ -518,7 +520,7 @@ std::vector<std::vector<AttenuatedImpulse>> Attenuate::attenuate(
 }
 
 std::vector<AttenuatedImpulse> Attenuate::attenuate(
-    const Vec3f& mic_pos,
+    const glm::vec3& mic_pos,
     const Speaker& speaker,
     const std::vector<Impulse>& impulses) {
     //  init buffers

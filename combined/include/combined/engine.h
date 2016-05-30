@@ -50,8 +50,8 @@ class WayverbEngine {
 public:
     WayverbEngine(ComputeContext& compute_context,
                   const CopyableSceneData& scene_data,
-                  const Vec3f& source,
-                  const Vec3f& mic,
+                  const glm::vec3& source,
+                  const glm::vec3& mic,
                   float waveguide_sample_rate,
                   int rays,
                   int impulses,
@@ -138,8 +138,8 @@ private:
     Raytracer raytracer;
     RectangularWaveguide<buffer_type> waveguide;
 
-    Vec3f source;
-    Vec3f mic;
+    glm::vec3 source;
+    glm::vec3 mic;
     float waveguide_sample_rate;
     int rays;
     int impulses;

@@ -2,23 +2,25 @@
 
 #include "attenuator.h"
 
+#include "glm/glm.hpp"
+
 class HrtfAttenuator : public Attenuator {
 public:
-    HrtfAttenuator(const Vec3f& direction,
-                   const Vec3f& up,
+    HrtfAttenuator(const glm::vec3& direction,
+                   const glm::vec3& up,
                    int channel,
                    float sr);
 
-    float attenuation(const Vec3f& incident, int band) const;
+    float attenuation(const glm::vec3& incident, int band) const;
     std::vector<float> process(
         const std::vector<RunStepResult>& input) const override;
 
-    Vec3f get_direction() const;
-    Vec3f get_up() const;
+    glm::vec3 get_direction() const;
+    glm::vec3 get_up() const;
 
 private:
-    Vec3f direction;
-    Vec3f up;
+    glm::vec3 direction;
+    glm::vec3 up;
     int channel;
     float sr;
 };

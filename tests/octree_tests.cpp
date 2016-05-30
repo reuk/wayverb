@@ -40,14 +40,14 @@ TEST(octree, surrounding) {
     SceneData scene_data(OBJ_PATH, MAT_PATH);
 
     auto a = {
-        Vec3f(-1, -1, -1),
-        Vec3f(-1, -1, 1),
-        Vec3f(-1, 1, -1),
-        Vec3f(-1, 1, 1),
-        Vec3f(1, -1, -1),
-        Vec3f(1, -1, 1),
-        Vec3f(1, 1, -1),
-        Vec3f(1, 1, 1),
+        glm::vec3(-1, -1, -1),
+        glm::vec3(-1, -1, 1),
+        glm::vec3(-1, 1, -1),
+        glm::vec3(-1, 1, 1),
+        glm::vec3(1, -1, -1),
+        glm::vec3(1, -1, 1),
+        glm::vec3(1, 1, -1),
+        glm::vec3(1, 1, 1),
     };
 
     {

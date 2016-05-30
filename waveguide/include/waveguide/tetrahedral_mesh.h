@@ -4,13 +4,13 @@
 #include "tetrahedral_program.h"
 
 #include "common/boundaries.h"
-#include "common/vec.h"
 
 #include <vector>
 
 struct TetrahedralLocator final {
-    explicit TetrahedralLocator(const Vec3i& pos = Vec3i(), int mod_ind = 0);
-    Vec3i pos;
+    explicit TetrahedralLocator(const glm::ivec3& pos = glm::ivec3(),
+                                int mod_ind = 0);
+    glm::ivec3 pos;
     int mod_ind;
 };
 
@@ -21,12 +21,12 @@ public:
 
     TetrahedralMesh(const Boundary& boundary,
                     float spacing,
-                    const Vec3f& anchor);
+                    const glm::vec3& anchor);
 
     size_type compute_index(const Locator& locator) const override;
     Locator compute_locator(size_type index) const override;
-    Locator compute_locator(const Vec3f& position) const override;
-    Vec3f compute_position(const Locator& locator) const override;
+    Locator compute_locator(const glm::vec3& position) const override;
+    glm::vec3 compute_position(const Locator& locator) const override;
 
     void compute_neighbors(size_type index, cl_uint* output) const override;
 
@@ -35,21 +35,21 @@ public:
 private:
     TetrahedralMesh(const Boundary& b,
                     float spacing,
-                    const Vec3f& anchor,
+                    const glm::vec3& anchor,
                     float cube_side);
     Collection compute_nodes(const Boundary& boundary) const;
 
     float get_cube_side() const;
-    const std::array<Vec3f, CUBE_NODES>& get_scaled_cube() const;
-    Vec3i get_dim() const;
+    const std::array<glm::vec3, CUBE_NODES>& get_scaled_cube() const;
+    glm::ivec3 get_dim() const;
 
     static float cube_side_from_node_spacing(float spacing);
-    static std::array<Vec3f, CUBE_NODES> compute_scaled_cube(float scale);
+    static std::array<glm::vec3, CUBE_NODES> compute_scaled_cube(float scale);
     static const std::array<std::array<Locator, PORTS>, CUBE_NODES>
         offset_table;
 
     //  data members
-    std::array<Vec3f, CUBE_NODES> scaled_cube;
-    Vec3i dim;
+    std::array<glm::vec3, CUBE_NODES> scaled_cube;
+    glm::ivec3 dim;
     Collection nodes;
 };

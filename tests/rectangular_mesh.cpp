@@ -31,5 +31,5 @@
 TEST(mesh_classification, badbox) {
     SceneData scene_data(OBJ_PATH_BAD_BOX, MAT_PATH_BAD_BOX);
     MeshBoundary boundary(scene_data);
-    RectangularMesh mesh(boundary, 0.05, Vec3f());
+    RectangularMesh mesh(boundary, 0.05, glm::vec3());
 }

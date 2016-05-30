@@ -5,9 +5,10 @@
 using Engine = engine::WayverbEngine<BufferType::cl>;
 
 TEST(engine, engine) {
-    CuboidBoundary cuboid_boundary(Vec3f(0, 0, 0), Vec3f(5.56, 3.97, 2.81));
-    constexpr Vec3f source(2.09, 2.12, 2.12);
-    constexpr Vec3f mic(2.09, 3.08, 0.96);
+    CuboidBoundary cuboid_boundary(glm::vec3(0, 0, 0),
+                                   glm::vec3(5.56, 3.97, 2.81));
+    constexpr glm::vec3 source(2.09, 2.12, 2.12);
+    constexpr glm::vec3 mic(2.09, 3.08, 0.96);
     constexpr auto output_sample_rate = 96000;
     constexpr auto v = 0.9;
     constexpr Surface surface{{{v, v, v, v, v, v, v, v}},

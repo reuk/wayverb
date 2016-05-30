@@ -33,4 +33,4 @@ elseif(UNIX)
 endif()
 
 find_library(fftw_library fftw3f)
-target_link_libraries(common assimp ${fftw_library} ${frameworks})
+target_link_libraries(common assimp glm ${fftw_library} ${frameworks})

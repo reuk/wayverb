@@ -25,7 +25,7 @@ public:
     int get_side() const;
 
     std::vector<const Octree*> intersect(const geo::Ray& ray) const;
-    const Octree& get_surrounding_leaf(const Vec3f& v) const;
+    const Octree& get_surrounding_leaf(const glm::vec3& v) const;
 
 private:
     void fill_flattened(std::vector<FloatUInt>& ret) const;

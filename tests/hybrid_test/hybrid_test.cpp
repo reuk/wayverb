@@ -131,9 +131,9 @@ int main(int argc, char** argv) {
     google::InitGoogleLogging(argv[0]);
     gflags::ParseCommandLineFlags(&argc, &argv, true);
 
-    constexpr Box box(Vec3f(0, 0, 0), Vec3f(5.56, 3.97, 2.81));
-    constexpr Vec3f source(2.09, 2.12, 2.12);
-    constexpr Vec3f receiver(2.09, 3.08, 0.96);
+    Box box(glm::vec3(0, 0, 0), glm::vec3(5.56, 3.97, 2.81));
+    constexpr glm::vec3 source(2.09, 2.12, 2.12);
+    constexpr glm::vec3 receiver(2.09, 3.08, 0.96);
     constexpr auto samplerate = 96000;
     constexpr auto v = 0.9;
     constexpr Surface surface{{{v, v, v, v, v, v, v, v}},

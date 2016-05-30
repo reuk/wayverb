@@ -1,8 +1,8 @@
 #pragma once
 
-#include "vec.h"
-
 #include "cl_include.h"
+
+#include "glm/glm.hpp"
 
 template <typename T>
 inline cl_float3 to_cl_float3(const T& t) {
@@ -15,11 +15,11 @@ inline cl_int3 to_cl_int3(const T& t) {
 }
 
 template <typename T>
-inline Vec3f to_vec3f(const T& t) {
-    return Vec3f{t.x, t.y, t.z};
+inline glm::vec3 to_vec3f(const T& t) {
+    return glm::vec3(t.x, t.y, t.z);
 }
 
 template <>
-inline Vec3f to_vec3f(const cl_float3& t) {
-    return Vec3f{t.s[0], t.s[1], t.s[2]};
+inline glm::vec3 to_vec3f(const cl_float3& t) {
+    return glm::vec3(t.s[0], t.s[1], t.s[2]);
 }
