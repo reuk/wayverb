@@ -1,15 +1,16 @@
 .DS_Store
-/build
-/xcproj
-/Testing
-/reference
-/tests/boundary_test/output
-/tests/hybrid_test/output
-/tests/mic_test/output
-/demo/impulses
-/demo/logfile.txt
+build
+xcproj
+Testing
+reference
+tests/boundary_test/output
+tests/hybrid_test/output
+tests/mic_test/output
+demo/impulses
+demo/logfile.txt
+docs
 
-/visualiser/Builds/MacOSX/Build
+visualiser/Builds/MacOSX/Build
 
 *.swp
 
