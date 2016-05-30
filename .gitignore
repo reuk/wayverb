@@ -10,7 +10,7 @@ demo/impulses
 demo/logfile.txt
 docs
 
-visualiser/Builds/MacOSX/Build
+wayverb/Builds/MacOSX/Build
 
 *.swp
 
