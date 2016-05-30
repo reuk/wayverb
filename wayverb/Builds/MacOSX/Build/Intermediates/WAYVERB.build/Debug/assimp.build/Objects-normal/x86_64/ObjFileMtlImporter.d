@@ -1,0 +1,34 @@
+dependencies: \
+  /Users/reuben/dev/waveguide/submodules/assimp/code/ObjFileMtlImporter.cpp \
+  /Users/reuben/dev/waveguide/submodules/assimp/code/ObjFileMtlImporter.h \
+  /Users/reuben/dev/waveguide/submodules/assimp/code/ObjTools.h \
+  /Users/reuben/dev/waveguide/submodules/assimp/code/fast_atof.h \
+  /Users/reuben/dev/waveguide/submodules/assimp/code/StringComparison.h \
+  /Users/reuben/dev/waveguide/submodules/assimp/code/../include/assimp/ai_assert.h \
+  /Users/reuben/dev/waveguide/submodules/assimp/code/../include/assimp/Compiler/pstdint.h \
+  /Users/reuben/dev/waveguide/submodules/assimp/code/ParsingUtils.h \
+  /Users/reuben/dev/waveguide/submodules/assimp/code/StringUtils.h \
+  /Users/reuben/dev/waveguide/submodules/assimp/code/../include/assimp/defs.h \
+  /Users/reuben/dev/waveguide/submodules/assimp/code/ObjFileData.h \
+  /Users/reuben/dev/waveguide/submodules/assimp/include/assimp/types.h \
+  /Users/reuben/dev/waveguide/submodules/assimp/code/../include/assimp/vector3.h \
+  /Users/reuben/dev/waveguide/submodules/assimp/code/../include/assimp/./Compiler/pushpack1.h \
+  /Users/reuben/dev/waveguide/submodules/assimp/code/../include/assimp/./Compiler/poppack1.h \
+  /Users/reuben/dev/waveguide/submodules/assimp/code/../include/assimp/vector2.h \
+  /Users/reuben/dev/waveguide/submodules/assimp/code/../include/assimp/color4.h \
+  /Users/reuben/dev/waveguide/submodules/assimp/code/../include/assimp/matrix3x3.h \
+  /Users/reuben/dev/waveguide/submodules/assimp/code/../include/assimp/matrix4x4.h \
+  /Users/reuben/dev/waveguide/submodules/assimp/code/../include/assimp/quaternion.h \
+  /Users/reuben/dev/waveguide/submodules/assimp/code/../include/assimp/vector2.inl \
+  /Users/reuben/dev/waveguide/submodules/assimp/code/../include/assimp/vector3.inl \
+  /Users/reuben/dev/waveguide/submodules/assimp/code/../include/assimp/color4.inl \
+  /Users/reuben/dev/waveguide/submodules/assimp/code/../include/assimp/quaternion.inl \
+  /Users/reuben/dev/waveguide/submodules/assimp/code/../include/assimp/matrix3x3.inl \
+  /Users/reuben/dev/waveguide/submodules/assimp/code/../include/assimp/matrix4x4.inl \
+  /Users/reuben/dev/waveguide/submodules/assimp/include/assimp/mesh.h \
+  /Users/reuben/dev/waveguide/submodules/assimp/include/assimp/material.h \
+  /Users/reuben/dev/waveguide/submodules/assimp/code/../include/assimp/material.inl \
+  /Users/reuben/dev/waveguide/submodules/assimp/include/assimp/DefaultLogger.hpp \
+  /Users/reuben/dev/waveguide/submodules/assimp/code/../include/assimp/Logger.hpp \
+  /Users/reuben/dev/waveguide/submodules/assimp/code/../include/assimp/LogStream.hpp \
+  /Users/reuben/dev/waveguide/submodules/assimp/code/../include/assimp/NullLogger.hpp

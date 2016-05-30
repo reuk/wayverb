@@ -16,3 +16,9 @@
 [submodule "submodules/cereal"]
 	path = submodules/cereal
 	url = git@github.com:USCiLab/cereal.git
+[submodule "submodules/glm"]
+	path = submodules/glm
+	url = git@github.com:g-truc/glm.git
+[submodule "submodules/modern_gl_utils"]
+	path = submodules/modern_gl_utils
+	url = git@github.com:reuk/modern_gl_utils.git

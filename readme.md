@@ -31,3 +31,28 @@ Other stuff
 * *python* - handful of programs to check/graph results. Will be removed if I
   find a good C++ graphing library
 * *docs* - anything I feel like I should write about as I'm working
+
+Updating the JUCE project
+=========================
+
+1. Make necessary changes to .jucer file, then click 'save + open'
+2. Run `./mkxcproj.sh` to generate an xcode project for the wayverb engine
+3. Drag `xcproj/WAYVERB.xcodeproj` to the left bar in xc project that the jucer
+   opened previously.
+4. In the wayverb xc project settings, go to `Build Phases` and click on
+   `Link Binary With Libraries`.
+5. Add the following libraries from the engine xc project:
+    * libassimp.a
+    * libcombined.a
+    * libcommon.a
+    * libmodern_gl_utils.a
+    * libraytracer.a
+    * libwaveguide.a
+    * libglog.a
+6. Also add the following libraries from outside the project:
+    * OpenCL.framework
+    * libz.tbd
+7. Also add the following non-standard libraries (you might need to build them
+   from source, or grab them from homebrew):
+    * libsamplerate.a
+    * libfftw3f.a

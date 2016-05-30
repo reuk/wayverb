@@ -1,0 +1,28 @@
+dependencies: \
+  /Users/reuben/dev/waveguide/submodules/assimp/code/FBXBinaryTokenizer.cpp \
+  /Users/reuben/dev/waveguide/submodules/assimp/code/FBXTokenizer.h \
+  /Users/reuben/dev/waveguide/submodules/assimp/code/FBXCompileConfig.h \
+  /Users/reuben/dev/waveguide/submodules/assimp/code/../include/assimp/ai_assert.h \
+  /Users/reuben/dev/waveguide/submodules/assimp/code/FBXUtil.h \
+  /Users/reuben/dev/waveguide/submodules/assimp/code/../include/assimp/defs.h \
+  /Users/reuben/dev/waveguide/submodules/assimp/code/Exceptional.h \
+  /Users/reuben/dev/waveguide/submodules/assimp/code/DefaultIOStream.h \
+  /Users/reuben/dev/waveguide/submodules/assimp/code/../include/assimp/IOStream.hpp \
+  /Users/reuben/dev/waveguide/submodules/assimp/code/../include/assimp/types.h \
+  /Users/reuben/dev/waveguide/submodules/assimp/code/../include/assimp/vector3.h \
+  /Users/reuben/dev/waveguide/submodules/assimp/code/../include/assimp/./Compiler/pushpack1.h \
+  /Users/reuben/dev/waveguide/submodules/assimp/code/../include/assimp/./Compiler/poppack1.h \
+  /Users/reuben/dev/waveguide/submodules/assimp/code/../include/assimp/vector2.h \
+  /Users/reuben/dev/waveguide/submodules/assimp/code/../include/assimp/color4.h \
+  /Users/reuben/dev/waveguide/submodules/assimp/code/../include/assimp/matrix3x3.h \
+  /Users/reuben/dev/waveguide/submodules/assimp/code/../include/assimp/matrix4x4.h \
+  /Users/reuben/dev/waveguide/submodules/assimp/code/../include/assimp/quaternion.h \
+  /Users/reuben/dev/waveguide/submodules/assimp/code/../include/assimp/vector2.inl \
+  /Users/reuben/dev/waveguide/submodules/assimp/code/../include/assimp/vector3.inl \
+  /Users/reuben/dev/waveguide/submodules/assimp/code/../include/assimp/color4.inl \
+  /Users/reuben/dev/waveguide/submodules/assimp/code/../include/assimp/quaternion.inl \
+  /Users/reuben/dev/waveguide/submodules/assimp/code/../include/assimp/matrix3x3.inl \
+  /Users/reuben/dev/waveguide/submodules/assimp/code/../include/assimp/matrix4x4.inl \
+  /Users/reuben/dev/waveguide/submodules/assimp/code/../include/assimp/importerdesc.h \
+  /Users/reuben/dev/waveguide/submodules/assimp/code/Defines.h \
+  /Users/reuben/dev/waveguide/submodules/assimp/code/ByteSwapper.h

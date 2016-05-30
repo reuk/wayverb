@@ -487,6 +487,9 @@ slow stuff
 * audio output
 
 * switching off visualise causes some kind of hang
+* resizing while raytracer is running causes some kind of hang
+
+* rewrite everything to be based on glm
 
 nice-to-have
 ------------
