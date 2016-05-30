@@ -1,9 +1,9 @@
 #pragma once
 
-#include "common/vec.h"
-
 #include "HelpWindow.hpp"
 #include "ValueWrapperSlider.hpp"
+
+#include "glm/glm.hpp"
 
 #include <array>
 #include <iomanip>
@@ -310,26 +310,26 @@ private:
     model::Connector<NumberEditor<T>> editor_connector{&editor, this};
 };
 
-class Vec3fEditor : public Component {
+class Vec3Editor : public Component {
 public:
-    Vec3fEditor(model::ValueWrapper<Vec3f>& value,
-                const Vec3f& min,
-                const Vec3f& max);
+    Vec3Editor(model::ValueWrapper<glm::vec3>& value,
+               const glm::vec3& min,
+               const glm::vec3& max);
     void resized() override;
 
 private:
-    model::ValueWrapper<Vec3f>& value;
+    model::ValueWrapper<glm::vec3>& value;
     PropertyPanel property_panel;
 };
 
-class Vec3fProperty : public PropertyComponent, public SettableHelpPanelClient {
+class Vec3Property : public PropertyComponent, public SettableHelpPanelClient {
 public:
-    Vec3fProperty(const String& name,
-                  model::ValueWrapper<Vec3f>& value,
-                  const Vec3f& min,
-                  const Vec3f& max);
+    Vec3Property(const String& name,
+                 model::ValueWrapper<glm::vec3>& value,
+                 const glm::vec3& min,
+                 const glm::vec3& max);
     void refresh() override;
 
 private:
-    Vec3fEditor editor;
+    Vec3Editor editor;
 };

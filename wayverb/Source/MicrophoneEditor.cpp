@@ -81,7 +81,7 @@ MicrophoneEditableListBox::MicrophoneEditableListBox(
 void MicrophoneEditableListBox::buttonClicked(Button* b) {
     if (b == &add_button) {
         microphone_model.microphones.push_back(
-            config::Microphone{Vec3f{0, 0, 1}, 0.5});
+            config::Microphone{glm::vec3{0, 0, 1}, 0.5});
         microphone_list_box.selectRow(microphone_model.microphones.size() - 1);
     } else if (b == &sub_button) {
         assert(0 <= microphone_list_box.getSelectedRow());
@@ -146,8 +146,8 @@ private:
 
 SingleMicrophoneComponent::SingleMicrophoneComponent(
     model::ValueWrapper<config::Microphone>& microphone) {
-    property_panel.addProperties(
-        {new Vec3fProperty("facing", microphone.facing, Vec3f(-1), Vec3f(1))});
+    property_panel.addProperties({new Vec3Property(
+        "facing", microphone.facing, glm::vec3(-1), glm::vec3(1))});
     property_panel.addProperties(
         {new NumberProperty<float>("shape", microphone.shape, 0, 1)});
     property_panel.addProperties({new PolarPatternProperty(microphone.shape)});

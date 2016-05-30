@@ -127,9 +127,6 @@ dependencies: \
   ../../../waveguide/include/waveguide/config.h \
   ../../../common/include/common/config.h \
   ../../../common/include/common/attenuation_configs.h \
-  ../../../common/include/common/vec.h \
-  ../../../common/include/common/vec_forward.h \
-  ../../../common/include/common/extended_algorithms.h \
   ../../../waveguide/include/waveguide/rectangular_mesh.h \
   ../../../waveguide/include/waveguide/base_mesh.h \
   ../../../common/include/common/boundaries.h \
@@ -170,6 +167,7 @@ dependencies: \
   ../../../waveguide/include/waveguide/tetrahedral_mesh.h \
   ../../../waveguide/include/waveguide/tetrahedral_program.h \
   ../../../common/include/common/callbacks.h \
+  ../../../common/include/common/extended_algorithms.h \
   ../../../common/include/common/progress.h \
   /usr/local/include/eigen3/Eigen/LU \
   /usr/local/include/eigen3/Eigen/Core \

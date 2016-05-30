@@ -118,8 +118,8 @@ public:
     void update(float dt) override;
     void draw() const override;
 
-    void set_mic(const Vec3f& u);
-    void set_source(const Vec3f& u);
+    void set_mic(const glm::vec3& u);
+    void set_source(const glm::vec3& u);
 
     void set_rendering(bool b);
 
@@ -183,8 +183,8 @@ public:
 
     void set_rendering(bool b);
 
-    void set_mic(const Vec3f& u);
-    void set_source(const Vec3f& u);
+    void set_mic(const glm::vec3& u);
+    void set_source(const glm::vec3& u);
 
     void set_positions(const std::vector<cl_float3>& positions);
     void set_pressures(const std::vector<float>& pressures);
@@ -209,8 +209,8 @@ private:
 
         void set_rendering(bool b);
 
-        void set_mic(const Vec3f& u);
-        void set_source(const Vec3f& u);
+        void set_mic(const glm::vec3& u);
+        void set_source(const glm::vec3& u);
 
         void set_positions(const std::vector<cl_float3>& positions);
         void set_pressures(const std::vector<float>& pressures);

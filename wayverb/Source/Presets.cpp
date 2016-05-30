@@ -1,5 +1,7 @@
 #include "Presets.hpp"
 
+#include "common/extended_algorithms.h"
+
 namespace model {
 
 std::vector<SceneData::Material> get_presets() {

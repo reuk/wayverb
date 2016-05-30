@@ -210,8 +210,8 @@ public:
         set_help("hrtf configurator",
                  "There's only one option, which allows you to choose the "
                  "direction that the virtual head should be facing.");
-        property_panel.addProperties({new Vec3fProperty(
-            "facing", hrtf_model.facing, Vec3f(-1), Vec3f(1))});
+        property_panel.addProperties({new Vec3Property(
+            "facing", hrtf_model.facing, glm::vec3(-1), glm::vec3(1))});
 
         addAndMakeVisible(property_panel);
 
@@ -261,11 +261,11 @@ LeftPanel::LeftPanel(model::ValueWrapper<model::FullModel>& model,
              "Use the options in this panel to adjust the various settings of "
              "the simulation.");
 
-    auto source_property = new Vec3fProperty("source",
+    auto source_property = new Vec3Property("source",
                                              model.persistent.combined.source,
                                              aabb.get_c0(),
                                              aabb.get_c1());
-    auto mic_property = new Vec3fProperty("receiver",
+    auto mic_property = new Vec3Property("receiver",
                                           model.persistent.combined.mic,
                                           aabb.get_c0(),
                                           aabb.get_c1());

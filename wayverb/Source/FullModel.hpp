@@ -10,7 +10,7 @@
 namespace model {
 
 template <>
-class ValueWrapper<Vec3f> : public StructWrapper<Vec3f, 3> {
+class ValueWrapper<glm::vec3> : public StructWrapper<glm::vec3, 3> {
 public:
     using struct_wrapper::StructWrapper;
     using struct_wrapper::operator=;

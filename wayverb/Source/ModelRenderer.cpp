@@ -311,11 +311,11 @@ void DrawableScene::draw() const {
     }
 }
 
-void DrawableScene::set_mic(const Vec3f &u) {
+void DrawableScene::set_mic(const glm::vec3 &u) {
     mic_object.set_position(to_glm_vec3(u));
 }
 
-void DrawableScene::set_source(const Vec3f &u) {
+void DrawableScene::set_source(const glm::vec3 &u) {
     source_object.set_position(to_glm_vec3(u));
 }
 
@@ -355,7 +355,7 @@ SceneRenderer::ContextLifetime::ContextLifetime(
         , projection_matrix(get_projection_matrix(1)) {
     auto aabb = model.get_aabb();
     auto m = aabb.centre();
-    auto max = aabb.dimensions().max();
+    auto max = glm::length(aabb.dimensions());
     scale = max > 0 ? 20 / max : 1;
     translation = glm::translate(-glm::vec3(m.x, m.y, m.z));
 }
@@ -377,10 +377,10 @@ void SceneRenderer::ContextLifetime::set_rendering(bool b) {
     drawable_scene.set_rendering(b);
 }
 
-void SceneRenderer::ContextLifetime::set_mic(const Vec3f &u) {
+void SceneRenderer::ContextLifetime::set_mic(const glm::vec3 &u) {
     drawable_scene.set_mic(u);
 }
-void SceneRenderer::ContextLifetime::set_source(const Vec3f &u) {
+void SceneRenderer::ContextLifetime::set_source(const glm::vec3 &u) {
     drawable_scene.set_source(u);
 }
 
@@ -524,14 +524,14 @@ void SceneRenderer::set_rendering(bool b) {
     }
 }
 
-void SceneRenderer::set_mic(const Vec3f &u) {
+void SceneRenderer::set_mic(const glm::vec3 &u) {
     std::lock_guard<std::mutex> lck(mut);
     if (context_lifetime) {
         context_lifetime->set_mic(u);
     }
 }
 
-void SceneRenderer::set_source(const Vec3f &u) {
+void SceneRenderer::set_source(const glm::vec3 &u) {
     std::lock_guard<std::mutex> lck(mut);
     if (context_lifetime) {
         context_lifetime->set_source(u);

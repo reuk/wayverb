@@ -1,8 +1,8 @@
 #include "Vec3Editor.hpp"
 
-Vec3fEditor::Vec3fEditor(model::ValueWrapper<Vec3f>& value,
-                         const Vec3f& min,
-                         const Vec3f& max)
+Vec3Editor::Vec3Editor(model::ValueWrapper<glm::vec3>& value,
+                       const glm::vec3& min,
+                       const glm::vec3& max)
         : value(value) {
     property_panel.addProperties(
         {new NumberProperty<float>("x", value.x, min.x, max.x),
@@ -14,17 +14,17 @@ Vec3fEditor::Vec3fEditor(model::ValueWrapper<Vec3f>& value,
     addAndMakeVisible(property_panel);
 }
 
-void Vec3fEditor::resized() {
+void Vec3Editor::resized() {
     property_panel.setBounds(getLocalBounds());
 }
 
-Vec3fProperty::Vec3fProperty(const String& name,
-                             model::ValueWrapper<Vec3f>& value,
-                             const Vec3f& min,
-                             const Vec3f& max)
+Vec3Property::Vec3Property(const String& name,
+                           model::ValueWrapper<glm::vec3>& value,
+                           const glm::vec3& min,
+                           const glm::vec3& max)
         : PropertyComponent(name, 79)
         , editor(value, min, max) {
     addAndMakeVisible(editor);
 }
-void Vec3fProperty::refresh() {
+void Vec3Property::refresh() {
 }
