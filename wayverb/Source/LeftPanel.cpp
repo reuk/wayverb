@@ -229,9 +229,11 @@ private:
 class ReceiverConfigureButton : public ConfigureButton {
 public:
     ReceiverConfigureButton(
-        model::ValueWrapper<config::ReceiverConfig>& receiver_config)
+        model::ValueWrapper<config::ReceiverConfig>& receiver_config,
+        model::ValueWrapper<glm::vec3>& source_position)
             : ConfigureButton("configure")
-            , receiver_config(receiver_config) {
+            , receiver_config(receiver_config)
+            , source_position(source_position) {
     }
 
     void buttonClicked() override {
@@ -241,7 +243,8 @@ public:
                 c = new HrtfModelComponent(receiver_config.hrtf_model);
                 break;
             case config::AttenuationModel::Mode::microphone:
-                c = new MicrophoneEditorPanel(receiver_config.microphone_model);
+                c = new MicrophoneEditorPanel(receiver_config.microphone_model,
+                                              source_position);
                 break;
         }
         CallOutBox::launchAsynchronously(c, getScreenBounds(), nullptr);
@@ -249,6 +252,7 @@ public:
 
 private:
     model::ValueWrapper<config::ReceiverConfig>& receiver_config;
+    model::ValueWrapper<glm::vec3>& source_position;
 };
 
 //----------------------------------------------------------------------------//
@@ -262,13 +266,13 @@ LeftPanel::LeftPanel(model::ValueWrapper<model::FullModel>& model,
              "the simulation.");
 
     auto source_property = new Vec3Property("source",
-                                             model.persistent.combined.source,
-                                             aabb.get_c0(),
-                                             aabb.get_c1());
+                                            model.persistent.combined.source,
+                                            aabb.get_c0(),
+                                            aabb.get_c1());
     auto mic_property = new Vec3Property("receiver",
-                                          model.persistent.combined.mic,
-                                          aabb.get_c0(),
-                                          aabb.get_c1());
+                                         model.persistent.combined.mic,
+                                         aabb.get_c0(),
+                                         aabb.get_c1());
 
     source_property->set_help("source position",
                               "Allows you to move the source position in each "
@@ -302,7 +306,8 @@ LeftPanel::LeftPanel(model::ValueWrapper<model::FullModel>& model,
     receivers.add(new ReceiverPickerProperty(
         model.persistent.combined.receiver_config.mode));
     receivers.add(
-        new ReceiverConfigureButton(model.persistent.combined.receiver_config));
+        new ReceiverConfigureButton(model.persistent.combined.receiver_config,
+                                    model.persistent.combined.source));
     property_panel.addSection("receiver", receivers);
 
     property_panel.setOpaque(false);

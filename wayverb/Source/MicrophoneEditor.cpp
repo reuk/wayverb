@@ -1,4 +1,5 @@
 #include "MicrophoneEditor.hpp"
+#include "DirectionEditor.hpp"
 
 #include "PolarPatternDisplay.hpp"
 
@@ -145,9 +146,10 @@ private:
 };
 
 SingleMicrophoneComponent::SingleMicrophoneComponent(
-    model::ValueWrapper<config::Microphone>& microphone) {
-    property_panel.addProperties({new Vec3Property(
-        "facing", microphone.facing, glm::vec3(-1), glm::vec3(1))});
+    model::ValueWrapper<config::Microphone>& microphone,
+    model::ValueWrapper<glm::vec3>& source_position) {
+    property_panel.addProperties(
+        {new DirectionProperty(microphone.facing, source_position)});
     property_panel.addProperties(
         {new NumberProperty<float>("shape", microphone.shape, 0, 1)});
     property_panel.addProperties({new PolarPatternProperty(microphone.shape)});
@@ -162,8 +164,10 @@ void SingleMicrophoneComponent::resized() {
 //----------------------------------------------------------------------------//
 
 MicrophoneEditorPanel::MicrophoneEditorPanel(
-    model::ValueWrapper<config::MicrophoneModel>& microphone_model)
+    model::ValueWrapper<config::MicrophoneModel>& microphone_model,
+    model::ValueWrapper<glm::vec3>& source_position)
         : microphone_model(microphone_model)
+        , source_position(source_position)
         , microphone_list_box(microphone_model) {
     set_help("microphones configurator",
              "Simulated microphones behave like a collection of superimposed "
@@ -174,7 +178,7 @@ MicrophoneEditorPanel::MicrophoneEditorPanel(
 
     microphone_model.notify();
 
-    setSize(400, 250);
+    setSize(500, 350);
 }
 
 void MicrophoneEditorPanel::resized() {
@@ -190,7 +194,7 @@ void MicrophoneEditorPanel::selectedRowsChanged(MicrophoneEditableListBox* lb,
     assert(last < static_cast<int>(microphone_model.microphones.size()));
     if (0 <= last) {
         single_microphone = std::make_unique<SingleMicrophoneComponent>(
-            microphone_model.microphones[last]);
+            microphone_model.microphones[last], source_position);
         addAndMakeVisible(*single_microphone);
         resized();
     } else {

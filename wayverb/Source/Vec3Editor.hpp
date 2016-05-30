@@ -318,7 +318,6 @@ public:
     void resized() override;
 
 private:
-    model::ValueWrapper<glm::vec3>& value;
     PropertyPanel property_panel;
 };
 

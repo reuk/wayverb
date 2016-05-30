@@ -105,7 +105,8 @@ private:
 class SingleMicrophoneComponent : public Component {
 public:
     SingleMicrophoneComponent(
-        model::ValueWrapper<config::Microphone>& microphone);
+        model::ValueWrapper<config::Microphone>& microphone,
+        model::ValueWrapper<glm::vec3>& source_position);
 
     void resized() override;
 
@@ -120,7 +121,8 @@ class MicrophoneEditorPanel : public Component,
                               public SettableHelpPanelClient {
 public:
     MicrophoneEditorPanel(
-        model::ValueWrapper<config::MicrophoneModel>& microphone_model);
+        model::ValueWrapper<config::MicrophoneModel>& microphone_model,
+        model::ValueWrapper<glm::vec3>& source_position);
 
     void resized() override;
 
@@ -128,6 +130,7 @@ public:
 
 private:
     model::ValueWrapper<config::MicrophoneModel>& microphone_model;
+    model::ValueWrapper<glm::vec3>& source_position;
 
     MicrophoneEditableListBox microphone_list_box;
     model::Connector<MicrophoneEditableListBox> microphone_list_box_connector{
