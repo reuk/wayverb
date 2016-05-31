@@ -20,7 +20,9 @@ public:
 
         auto n = glm::normalize(pointing.get());
         azimuth_wrapper.set(glm::degrees(Orientable::compute_azimuth(n)));
-        elevation_wrapper.set(glm::degrees(Orientable::compute_elevation(n)));
+        auto e = glm::degrees(Orientable::compute_elevation(n));
+        elevation_wrapper.set(std::isnan(e) ? std::copysign(89, pointing.y)
+                                            : e);
     }
 
     void resized() override {

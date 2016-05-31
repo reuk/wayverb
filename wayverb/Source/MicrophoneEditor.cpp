@@ -75,8 +75,6 @@ MicrophoneEditableListBox::MicrophoneEditableListBox(
     addAndMakeVisible(microphone_list_box);
     addAndMakeVisible(add_button);
     addAndMakeVisible(sub_button);
-
-    receive_broadcast(&microphone_model);
 }
 
 void MicrophoneEditableListBox::buttonClicked(Button* b) {
@@ -90,6 +88,10 @@ void MicrophoneEditableListBox::buttonClicked(Button* b) {
             microphone_list_box.getSelectedRow());
         microphone_list_box.deselectAllRows();
     }
+}
+
+void MicrophoneEditableListBox::selectRow(int row) {
+    microphone_list_box.selectRow(row);
 }
 
 void MicrophoneEditableListBox::resized() {
@@ -177,6 +179,7 @@ MicrophoneEditorPanel::MicrophoneEditorPanel(
     addAndMakeVisible(microphone_list_box);
 
     microphone_model.notify();
+    microphone_list_box.selectRow(0);
 
     setSize(500, 350);
 }

@@ -76,6 +76,7 @@ public:
 
     void receive_broadcast(model::Broadcaster* cb) override;
 
+    void selectRow(int row);
     void selectedRowsChanged(MicrophoneListBox* lb, int last) override;
 
     void addListener(Listener* l);
