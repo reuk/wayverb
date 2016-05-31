@@ -111,6 +111,8 @@ public:
 
     void resized() override;
 
+    int getTotalContentHeight() const;
+
 private:
     PropertyPanel property_panel;
 };

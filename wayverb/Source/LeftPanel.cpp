@@ -218,7 +218,7 @@ public:
 
         addAndMakeVisible(property_panel);
 
-        setSize(300, property_panel.getTotalContentHeight());
+        setSize(400, property_panel.getTotalContentHeight());
     }
 
     void resized() override {

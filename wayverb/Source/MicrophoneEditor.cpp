@@ -159,6 +159,10 @@ SingleMicrophoneComponent::SingleMicrophoneComponent(
     addAndMakeVisible(property_panel);
 }
 
+int SingleMicrophoneComponent::getTotalContentHeight() const {
+    return property_panel.getTotalContentHeight();
+}
+
 void SingleMicrophoneComponent::resized() {
     property_panel.setBounds(getLocalBounds());
 }
@@ -181,7 +185,11 @@ MicrophoneEditorPanel::MicrophoneEditorPanel(
     microphone_model.notify();
     microphone_list_box.selectRow(0);
 
-    setSize(500, 350);
+    if (single_microphone) {
+        setSize(500, single_microphone->getTotalContentHeight());
+    } else {
+        setSize(500, 300);
+    }
 }
 
 void MicrophoneEditorPanel::resized() {

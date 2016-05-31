@@ -183,7 +183,7 @@ void DirectionEditor::changeListenerCallback(ChangeBroadcaster* cb) {
 
 DirectionProperty::DirectionProperty(model::ValueWrapper<glm::vec3>& pointing,
                                      model::ValueWrapper<glm::vec3>& position)
-        : PropertyComponent("direction", 200)
+        : PropertyComponent("direction", 120)
         , direction_editor(pointing, position) {
     addAndMakeVisible(direction_editor);
 }
