@@ -1,5 +1,6 @@
 #include "LeftPanel.hpp"
 
+#include "DirectionEditor.hpp"
 #include "MicrophoneEditor.hpp"
 #include "PropertyComponentLAF.hpp"
 #include "SurfacePanel.hpp"
@@ -206,12 +207,14 @@ private:
 
 class HrtfModelComponent : public Component, public SettableHelpPanelClient {
 public:
-    HrtfModelComponent(model::ValueWrapper<config::HrtfModel>& hrtf_model) {
+    HrtfModelComponent(model::ValueWrapper<config::HrtfModel>& hrtf_model,
+                       model::ValueWrapper<glm::vec3>& mic_position,
+                       model::ValueWrapper<glm::vec3>& source_position) {
         set_help("hrtf configurator",
                  "There's only one option, which allows you to choose the "
                  "direction that the virtual head should be facing.");
-        property_panel.addProperties({new Vec3Property(
-            "facing", hrtf_model.facing, glm::vec3(-1), glm::vec3(1))});
+        property_panel.addProperties(
+            {new DirectionProperty(hrtf_model.facing, mic_position)});
 
         addAndMakeVisible(property_panel);
 
@@ -230,9 +233,11 @@ class ReceiverConfigureButton : public ConfigureButton {
 public:
     ReceiverConfigureButton(
         model::ValueWrapper<config::ReceiverConfig>& receiver_config,
+        model::ValueWrapper<glm::vec3>& mic_position,
         model::ValueWrapper<glm::vec3>& source_position)
             : ConfigureButton("configure")
             , receiver_config(receiver_config)
+            , mic_position(mic_position)
             , source_position(source_position) {
     }
 
@@ -240,11 +245,12 @@ public:
         Component* c = nullptr;
         switch (receiver_config.mode) {
             case config::AttenuationModel::Mode::hrtf:
-                c = new HrtfModelComponent(receiver_config.hrtf_model);
+                c = new HrtfModelComponent(
+                    receiver_config.hrtf_model, mic_position, source_position);
                 break;
             case config::AttenuationModel::Mode::microphone:
                 c = new MicrophoneEditorPanel(receiver_config.microphone_model,
-                                              source_position);
+                                              mic_position);
                 break;
         }
         CallOutBox::launchAsynchronously(c, getScreenBounds(), nullptr);
@@ -252,6 +258,7 @@ public:
 
 private:
     model::ValueWrapper<config::ReceiverConfig>& receiver_config;
+    model::ValueWrapper<glm::vec3>& mic_position;
     model::ValueWrapper<glm::vec3>& source_position;
 };
 
@@ -307,6 +314,7 @@ LeftPanel::LeftPanel(model::ValueWrapper<model::FullModel>& model,
         model.persistent.combined.receiver_config.mode));
     receivers.add(
         new ReceiverConfigureButton(model.persistent.combined.receiver_config,
+                                    model.persistent.combined.mic,
                                     model.persistent.combined.source));
     property_panel.addSection("receiver", receivers);
 

@@ -25,5 +25,6 @@ Vec3Property::Vec3Property(const String& name,
         , editor(value, min, max) {
     addAndMakeVisible(editor);
 }
+
 void Vec3Property::refresh() {
 }

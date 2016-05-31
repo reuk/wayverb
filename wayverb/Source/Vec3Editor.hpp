@@ -69,16 +69,18 @@ public:
     }
 
     void handleDrag(const MouseEvent& e) {
-        auto mouseDiff = e.position.x - mouse_start_pos.x;
+        auto mouse_diff = e.position.x - mouse_start_pos.x;
 
         constexpr auto pixels_for_single_increment = 50;
         value_when_last_dragged =
-            increment * mouseDiff / pixels_for_single_increment;
+            increment * mouse_diff / pixels_for_single_increment;
 
-        add_button.setState(mouseDiff < 0 ? Button::buttonNormal
-                                          : Button::buttonOver);
-        sub_button.setState(mouseDiff > 0 ? Button::buttonNormal
-                                          : Button::buttonOver);
+        auto since_last = e.position.x - mouse_pos_when_last_dragged.x;
+
+        add_button.setState(since_last < 0 ? Button::buttonNormal
+                                           : Button::buttonOver);
+        sub_button.setState(since_last > 0 ? Button::buttonNormal
+                                           : Button::buttonOver);
 
         e.source.enableUnboundedMouseMovement(true, false);
     }
@@ -96,8 +98,6 @@ public:
             }
 
             handleDrag(e);
-
-            //  limit value_when_last_dragged here
 
             listener_list.call(&Listener::apply_increment,
                                this,
@@ -159,6 +159,7 @@ public:
 
     NumberEditor() {
         text_editor.setInputRestrictions(0, "0123456789.-+eE");
+        text_editor.setSelectAllWhenFocused(true);
 
         addAndMakeVisible(text_editor);
         addAndMakeVisible(inc_dec_buttons);
@@ -275,9 +276,8 @@ public:
             : PropertyComponent(name)
             , value(value)
             , editor(min, max) {
-        receive_broadcast(&value);
-
         addAndMakeVisible(editor);
+        receive_broadcast(&value);
     }
     void refresh() override {
     }

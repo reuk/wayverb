@@ -147,9 +147,9 @@ private:
 
 SingleMicrophoneComponent::SingleMicrophoneComponent(
     model::ValueWrapper<config::Microphone>& microphone,
-    model::ValueWrapper<glm::vec3>& source_position) {
+    model::ValueWrapper<glm::vec3>& mic_position) {
     property_panel.addProperties(
-        {new DirectionProperty(microphone.facing, source_position)});
+        {new DirectionProperty(microphone.facing, mic_position)});
     property_panel.addProperties(
         {new NumberProperty<float>("shape", microphone.shape, 0, 1)});
     property_panel.addProperties({new PolarPatternProperty(microphone.shape)});
@@ -165,9 +165,9 @@ void SingleMicrophoneComponent::resized() {
 
 MicrophoneEditorPanel::MicrophoneEditorPanel(
     model::ValueWrapper<config::MicrophoneModel>& microphone_model,
-    model::ValueWrapper<glm::vec3>& source_position)
+    model::ValueWrapper<glm::vec3>& mic_position)
         : microphone_model(microphone_model)
-        , source_position(source_position)
+        , mic_position(mic_position)
         , microphone_list_box(microphone_model) {
     set_help("microphones configurator",
              "Simulated microphones behave like a collection of superimposed "
@@ -194,7 +194,7 @@ void MicrophoneEditorPanel::selectedRowsChanged(MicrophoneEditableListBox* lb,
     assert(last < static_cast<int>(microphone_model.microphones.size()));
     if (0 <= last) {
         single_microphone = std::make_unique<SingleMicrophoneComponent>(
-            microphone_model.microphones[last], source_position);
+            microphone_model.microphones[last], mic_position);
         addAndMakeVisible(*single_microphone);
         resized();
     } else {

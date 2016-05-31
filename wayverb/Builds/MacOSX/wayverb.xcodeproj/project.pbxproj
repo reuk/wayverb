@@ -24,6 +24,7 @@
 		1BDCF6401CFC6C02006B4447 /* libfftw3f.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1BDCF63F1CFC6C02006B4447 /* libfftw3f.a */; };
 		1BDCF6421CFC6C1D006B4447 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 1BDCF6411CFC6C1D006B4447 /* libz.tbd */; };
 		1BDCF6441CFC6C3C006B4447 /* libsamplerate.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1BDCF6431CFC6C3C006B4447 /* libsamplerate.a */; };
+		1BE609331CFCDC230036ED16 /* Orientable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1BE609311CFCDC230036ED16 /* Orientable.cpp */; };
 		1D0C4CE425FD7D455AC10C32 /* juce_audio_basics.mm in Sources */ = {isa = PBXBuildFile; fileRef = BFBA6DD240E8E2C1D9EEFE1C /* juce_audio_basics.mm */; };
 		1E09DBF6A82901B168B1DE8F /* MainComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7D2C7F4DDD285709BDAA80DC /* MainComponent.cpp */; };
 		22A1A2FEBBF078F0D165D702 /* PropertyComponentLAF.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D427A44648B46DF12F248F18 /* PropertyComponentLAF.cpp */; };
@@ -412,6 +413,8 @@
 		1BDCF63F1CFC6C02006B4447 /* libfftw3f.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libfftw3f.a; path = ../../../../../../../usr/local/Cellar/fftw/3.3.4_1/lib/libfftw3f.a; sourceTree = "<group>"; };
 		1BDCF6411CFC6C1D006B4447 /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
 		1BDCF6431CFC6C3C006B4447 /* libsamplerate.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libsamplerate.a; path = ../../../../../../../usr/local/Cellar/libsamplerate/0.1.8/lib/libsamplerate.a; sourceTree = "<group>"; };
+		1BE609311CFCDC230036ED16 /* Orientable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Orientable.cpp; path = ../../Source/Orientable.cpp; sourceTree = "<group>"; };
+		1BE609321CFCDC230036ED16 /* Orientable.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = Orientable.hpp; path = ../../Source/Orientable.hpp; sourceTree = "<group>"; };
 		1BE99A23F9968165DCF0C571 /* format.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = format.c; path = ../../JuceLibraryCode/modules/juce_audio_formats/codecs/flac/libFLAC/format.c; sourceTree = SOURCE_ROOT; };
 		1BED9283EEEC4F00C846E13B /* juce_MarkerList.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = juce_MarkerList.h; path = ../../JuceLibraryCode/modules/juce_gui_basics/positioning/juce_MarkerList.h; sourceTree = SOURCE_ROOT; };
 		1C291C46A481EA78341ADD3A /* juce_VST3Common.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = juce_VST3Common.h; path = ../../JuceLibraryCode/modules/juce_audio_processors/format_types/juce_VST3Common.h; sourceTree = SOURCE_ROOT; };
@@ -2874,6 +2877,8 @@
 				1202BCB7C5D0CA2B6906C527 /* lib_model */,
 				310B1F81490C6B1B7BF0A3EA /* AxesObject.cpp */,
 				9ABE527F0B7E8F37F6C6EBF2 /* AxesObject.hpp */,
+				1BE609311CFCDC230036ED16 /* Orientable.cpp */,
+				1BE609321CFCDC230036ED16 /* Orientable.hpp */,
 				A0B512BC6AD2CF61B16259F4 /* BasicDrawableObject.cpp */,
 				50FB587859CF1EB18F0EF1DD /* BasicDrawableObject.hpp */,
 				8EC991E2A8DBE96759A51D2A /* BottomPanel.cpp */,
@@ -4059,6 +4064,7 @@
 				5034230298C364062EA79AD7 /* BasicDrawableObject.cpp in Sources */,
 				0F3F3BF0CF31990B8A36D2C6 /* BottomPanel.cpp in Sources */,
 				866629B62286C2E53E0B6B3B /* BoxObject.cpp in Sources */,
+				1BE609331CFCDC230036ED16 /* Orientable.cpp in Sources */,
 				3E808799759A875C607B3C97 /* DirectionEditor.cpp in Sources */,
 				4602896138C54B0C2FBB411C /* HelpWindow.cpp in Sources */,
 				092B0FC8A3930A7869B15C19 /* LeftPanel.cpp in Sources */,
