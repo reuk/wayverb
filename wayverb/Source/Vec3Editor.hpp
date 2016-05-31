@@ -277,7 +277,7 @@ public:
             , value(value)
             , editor(min, max) {
         addAndMakeVisible(editor);
-        receive_broadcast(&value);
+        value.broadcast();
     }
     void refresh() override {
     }

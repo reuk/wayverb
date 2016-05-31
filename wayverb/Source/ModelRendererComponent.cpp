@@ -84,16 +84,6 @@ void ModelRendererComponent::receive_broadcast(model::Broadcaster *cb) {
     }
 }
 
-void ModelRendererComponent::newOpenGLContextCreated(OpenGLRenderer *r) {
-    config.mic.notify();
-    config.source.notify();
-    render_state.is_rendering.notify();
-    config.receiver_config.notify();
-}
-
-void ModelRendererComponent::openGLContextClosing(OpenGLRenderer *r) {
-}
-
 void ModelRendererComponent::set_positions(
     const std::vector<cl_float3> &positions) {
     scene_renderer.set_positions(positions);
@@ -102,4 +92,14 @@ void ModelRendererComponent::set_positions(
 void ModelRendererComponent::set_pressures(
     const std::vector<float> &pressures) {
     scene_renderer.set_pressures(pressures);
+}
+
+void ModelRendererComponent::changeListenerCallback(ChangeBroadcaster *u) {
+    if (u == &scene_renderer) {
+        shown_surface.broadcast();
+        config.mic.broadcast();
+        config.source.broadcast();
+        render_state.is_rendering.broadcast();
+        config.receiver_config.broadcast();
+    }
 }

@@ -182,7 +182,7 @@ MicrophoneEditorPanel::MicrophoneEditorPanel(
              "the right.");
     addAndMakeVisible(microphone_list_box);
 
-    microphone_model.notify();
+    microphone_model.broadcast();
     microphone_list_box.selectRow(0);
 
     if (single_microphone) {

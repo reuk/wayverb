@@ -13,7 +13,7 @@ VolumeComponent::VolumeSlider::VolumeSlider(model::ValueWrapper<float>& value)
     set_popup_display_enabled(true, nullptr);
     set_range(0.01, 1, 0);
 
-    receive_broadcast(&value);
+    value.broadcast();
 }
 
 // float VolumeComponent::VolumeSlider::slider_to_value(float t) {
@@ -52,22 +52,13 @@ void VolumeComponent::resized() {
     const auto width = total_width(1);
 
     for (auto i = 0u; i != sliders.size(); ++i) {
-        sliders[i].get().setBounds(total_width(i), 0, width, getHeight());
+        sliders[i]->setBounds(total_width(i), 0, width, getHeight());
     }
 }
 
-std::array<std::reference_wrapper<VolumeComponent::VolumeSlider>, 8>
+std::array<VolumeComponent::VolumeSlider*, 8>
 VolumeComponent::get_slider_array() {
-    return std::array<std::reference_wrapper<VolumeSlider>, 8>{
-        std::ref(s0),
-        std::ref(s1),
-        std::ref(s2),
-        std::ref(s3),
-        std::ref(s4),
-        std::ref(s5),
-        std::ref(s6),
-        std::ref(s7),
-    };
+    return std::array<VolumeSlider*, 8>{&s0, &s1, &s2, &s3, &s4, &s5, &s6, &s7};
 }
 
 //----------------------------------------------------------------------------//
@@ -100,8 +91,7 @@ FrequencyLabelComponent::FrequencyLabelComponent() {
     auto labels = get_label_array();
 
     for (auto i = 0u; i != labels.size(); ++i) {
-        labels[i].get().setText(centres[i],
-                                NotificationType::dontSendNotification);
+        labels[i]->setText(centres[i], NotificationType::dontSendNotification);
         addAndMakeVisible(labels[i]);
     }
 }
@@ -118,22 +108,12 @@ void FrequencyLabelComponent::resized() {
     const auto width = total_width(1);
 
     for (auto i = 0u; i != labels.size(); ++i) {
-        labels[i].get().setBounds(total_width(i), 0, width, getHeight());
+        labels[i]->setBounds(total_width(i), 0, width, getHeight());
     }
 }
 
-std::array<std::reference_wrapper<Label>, 8>
-FrequencyLabelComponent::get_label_array() {
-    return std::array<std::reference_wrapper<Label>, 8>{
-        std::ref(l0),
-        std::ref(l1),
-        std::ref(l2),
-        std::ref(l3),
-        std::ref(l4),
-        std::ref(l5),
-        std::ref(l6),
-        std::ref(l7),
-    };
+std::array<Label*, 8> FrequencyLabelComponent::get_label_array() {
+    return std::array<Label*, 8>{&l0, &l1, &l2, &l3, &l4, &l5, &l6, &l7};
 }
 
 //----------------------------------------------------------------------------//
@@ -215,7 +195,7 @@ PresetComponent::PresetComponent(
     addAndMakeVisible(save_button);
     addAndMakeVisible(delete_button);
 
-    receive_broadcast(&preset_model);
+    preset_model.broadcast();
 }
 
 PresetComponent::~PresetComponent() noexcept {
@@ -241,6 +221,8 @@ void PresetComponent::comboBoxChanged(ComboBox* cb) {
     if (cb == &combo_box) {
         auto selected = combo_box.getSelectedItemIndex();
         if (0 <= selected) {
+            assert(preset_model[selected].name.get() ==
+                   combo_box.getItemText(selected).toStdString());
             linked.set(preset_model[selected].surface);
             combo_box.setSelectedItemIndex(selected, dontSendNotification);
             delete_button.setEnabled(true);
@@ -258,7 +240,7 @@ void PresetComponent::textEditorReturnKeyPressed(TextEditor& e) {
         combo_box.setSelectedItemIndex(preset_model.size() - 1,
                                        sendNotificationSync);
     } else {
-        receive_broadcast(&linked);
+        linked.broadcast();
     }
 }
 

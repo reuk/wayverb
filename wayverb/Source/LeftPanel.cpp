@@ -151,7 +151,7 @@ public:
                           to_id(config::AttenuationModel::Mode::microphone));
         combo_box.addItem("HRTF", to_id(config::AttenuationModel::Mode::hrtf));
 
-        receive_broadcast(&value);
+        value.broadcast();
         addAndMakeVisible(combo_box);
     }
 

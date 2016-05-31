@@ -14,7 +14,7 @@ public:
 
     void resized() override;
 
-    void receive_broadcast(model::Broadcaster* cb) override;
+    void receive_broadcast(model::Broadcaster* b) override;
 
 private:
     model::ValueWrapper<model::FullModel>& model;

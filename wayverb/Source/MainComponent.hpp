@@ -8,7 +8,8 @@
 
 class MainContentComponent final : public Component,
                                    public model::BroadcastListener,
-                                   public SettableHelpPanelClient {
+                                   public SettableHelpPanelClient,
+                                   public AsyncUpdater {
 public:
     using Engine = engine::WayverbEngine<BufferType::cl>;
 
@@ -20,10 +21,13 @@ public:
     void paint(Graphics& g) override;
     void resized() override;
 
-    void receive_broadcast(model::Broadcaster* cb) override;
+    void receive_broadcast(model::Broadcaster* b) override;
+
+    void quit_render_thread();
 
 private:
-    void join_engine_thread();
+    //  will be called to quit the render thread
+    void handleAsyncUpdate() override;
 
     CopyableSceneData scene_data;
     model::ValueWrapper<model::FullModel>& wrapper;

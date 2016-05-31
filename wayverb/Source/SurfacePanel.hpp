@@ -31,7 +31,7 @@ private:
     VolumeSlider s6;
     VolumeSlider s7;
 
-    std::array<std::reference_wrapper<VolumeSlider>, 8> get_slider_array();
+    std::array<VolumeSlider*, 8> get_slider_array();
 };
 
 //----------------------------------------------------------------------------//
@@ -62,7 +62,7 @@ private:
     Label l6;
     Label l7;
 
-    std::array<std::reference_wrapper<Label>, 8> get_label_array();
+    std::array<Label*, 8> get_label_array();
 };
 
 //----------------------------------------------------------------------------//

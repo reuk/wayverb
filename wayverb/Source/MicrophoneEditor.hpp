@@ -74,7 +74,7 @@ public:
 
     void resized() override;
 
-    void receive_broadcast(model::Broadcaster* cb) override;
+    void receive_broadcast(model::Broadcaster* b) override;
 
     void selectRow(int row);
     void selectedRowsChanged(MicrophoneListBox* lb, int last) override;

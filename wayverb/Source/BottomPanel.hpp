@@ -13,7 +13,7 @@ public:
     void paint(Graphics& g) override;
     void resized() override;
 
-    void receive_broadcast(model::Broadcaster* cb) override;
+    void receive_broadcast(model::Broadcaster* b) override;
 
     void buttonClicked(Button*) override;
 

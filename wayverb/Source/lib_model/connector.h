@@ -18,19 +18,6 @@ struct ListenerFunctionTrait {
 };
 
 template <>
-struct ListenerFunctionTrait<Broadcaster> {
-    using Listener = typename Broadcaster::Listener;
-
-    static void add_listener(Broadcaster *const b, Listener *const l) {
-        b->add(l);
-    }
-
-    static void remove_listener(Broadcaster *const b, Listener *const l) {
-        b->remove(l);
-    }
-};
-
-template <>
 struct ListenerFunctionTrait<ChangeBroadcaster> {
     using Listener = ChangeListener;
 

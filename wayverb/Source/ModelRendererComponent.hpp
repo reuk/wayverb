@@ -6,7 +6,7 @@
 
 class ModelRendererComponent : public Component,
                                public model::BroadcastListener,
-                               public SceneRenderer::Listener,
+                               public ChangeListener,
                                public SettableHelpPanelClient {
 public:
     ModelRendererComponent(
@@ -24,13 +24,12 @@ public:
     void mouseWheelMove(const MouseEvent& event,
                         const MouseWheelDetails& wheel) override;
 
-    void receive_broadcast(model::Broadcaster* cb) override;
-
-    void newOpenGLContextCreated(OpenGLRenderer* r) override;
-    void openGLContextClosing(OpenGLRenderer* r) override;
+    void receive_broadcast(model::Broadcaster* b) override;
 
     void set_positions(const std::vector<cl_float3>& positions);
     void set_pressures(const std::vector<float>& pressures);
+
+    void changeListenerCallback(ChangeBroadcaster* cb) override;
 
 private:
     const CopyableSceneData& model;
@@ -54,6 +53,5 @@ private:
 
     OpenGLContext openGLContext;
     SceneRenderer scene_renderer;
-    model::Connector<SceneRenderer> scene_renderer_connector{&scene_renderer,
-                                                             this};
+    model::Connector<ChangeBroadcaster> scene_connector{&scene_renderer, this};
 };

@@ -601,7 +601,6 @@
 		4493747014822911494FBD34 /* juce_win32_Windowing.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = juce_win32_Windowing.cpp; path = ../../JuceLibraryCode/modules/juce_gui_basics/native/juce_win32_Windowing.cpp; sourceTree = SOURCE_ROOT; };
 		44EBB7E07F809002C3B09CD8 /* jcdctmgr.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = jcdctmgr.c; path = ../../JuceLibraryCode/modules/juce_graphics/image_formats/jpglib/jcdctmgr.c; sourceTree = SOURCE_ROOT; };
 		458546A882EC4BB541417178 /* juce_AnimatedPosition.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = juce_AnimatedPosition.h; path = ../../JuceLibraryCode/modules/juce_gui_basics/layout/juce_AnimatedPosition.h; sourceTree = SOURCE_ROOT; };
-		458BC534A6A9C107AC214E4E /* listener_list.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = listener_list.h; path = ../../Source/lib_model/listener_list.h; sourceTree = SOURCE_ROOT; };
 		459C7712B15355E2ED090C94 /* juce_VST3PluginFormat.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = juce_VST3PluginFormat.cpp; path = ../../JuceLibraryCode/modules/juce_audio_processors/format_types/juce_VST3PluginFormat.cpp; sourceTree = SOURCE_ROOT; };
 		45B96BBEDD11B5FD55AE55FB /* juce_mac_SystemStats.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; name = juce_mac_SystemStats.mm; path = ../../JuceLibraryCode/modules/juce_core/native/juce_mac_SystemStats.mm; sourceTree = SOURCE_ROOT; };
 		45FF8539B243B15F15FC35B2 /* juce_linux_Network.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = juce_linux_Network.cpp; path = ../../JuceLibraryCode/modules/juce_core/native/juce_linux_Network.cpp; sourceTree = SOURCE_ROOT; };
@@ -3199,7 +3198,6 @@
 				D97418E6702F57F208D3FAAF /* broadcaster.h */,
 				4AB90C0E16E2313A4007396C /* collection.h */,
 				F9ECC6682A97EAD8B0896EB4 /* connector.h */,
-				458BC534A6A9C107AC214E4E /* listener_list.h */,
 				46FEF0805EC5AEEF1D56F13C /* model.h */,
 				303C7C93276CFB98C9C80C25 /* value_wrapper.h */,
 			);

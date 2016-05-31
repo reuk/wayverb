@@ -3,8 +3,8 @@
 BottomPanel::BottomPanel(model::ValueWrapper<model::RenderState>& render_state)
         : render_state(render_state)
         , bar(progress) {
-    receive_broadcast(&render_state.state);
-    receive_broadcast(&render_state.progress);
+    render_state.state.broadcast();
+    render_state.progress.broadcast();
 
     addAndMakeVisible(bar);
     addAndMakeVisible(button);

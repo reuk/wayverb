@@ -154,21 +154,8 @@ private:
     bool rendering{false};
 };
 
-class SceneRenderer final : public OpenGLRenderer {
+class SceneRenderer final : public OpenGLRenderer, public ChangeBroadcaster {
 public:
-    class Listener {
-    public:
-        Listener() = default;
-        Listener(const Listener&) = default;
-        Listener& operator=(const Listener&) = default;
-        Listener(Listener&&) noexcept = default;
-        Listener& operator=(Listener&&) noexcept = default;
-        virtual ~Listener() noexcept = default;
-
-        virtual void newOpenGLContextCreated(OpenGLRenderer* r) = 0;
-        virtual void openGLContextClosing(OpenGLRenderer* r) = 0;
-    };
-
     SceneRenderer(const CopyableSceneData& model);
 
     //  lock on all public methods
@@ -195,8 +182,7 @@ public:
 
     void set_mic_pointing(const std::vector<glm::vec3>& directions);
 
-    void addListener(Listener* l);
-    void removeListener(Listener* l);
+    bool is_valid() const;
 
 private:
     class ContextLifetime : public ::Drawable, public ::Updatable {
@@ -249,8 +235,6 @@ private:
     CopyableSceneData model;
 
     std::unique_ptr<ContextLifetime> context_lifetime;
-
-    ListenerList<Listener> listener_list;
 
     mutable std::mutex mut;
 };

@@ -15,12 +15,10 @@ public:
     }
 
     T get() const override {
-        std::lock_guard<std::mutex> lck(mut);
         return *t;
     }
 
 protected:
-    mutable std::mutex mut;
     T *t;
 };
 
@@ -30,13 +28,15 @@ public:
     using NestedValueWrapper<T>::NestedValueWrapper;
 
     void reseat(T &u) override {
-        std::lock_guard<std::mutex> lck(this->mut);
         this->t = &u;
     }
-    void set(const T &u, bool do_notify = true) override {
-        std::lock_guard<std::mutex> lck(this->mut);
+    void set(
+        const T &u,
+        bool do_notify = true) override {
         *(this->t) = u;
-        this->notify(do_notify);
+        if (do_notify) {
+            this->broadcast();
+        }
     }
 };
 
@@ -46,17 +46,17 @@ public:
     using NestedValueWrapper<bool>::NestedValueWrapper;
 
     void reseat(bool &u) override {
-        std::lock_guard<std::mutex> lck(this->mut);
         this->t = &u;
     }
-    void set(const bool &u, bool do_notify = true) override {
-        std::lock_guard<std::mutex> lck(this->mut);
+    void set(const bool &u,
+             bool do_notify = true) override {
         *(this->t) = u;
-        this->notify(do_notify);
+        if (do_notify) {
+            this->broadcast();
+        }
     }
 
     void toggle(bool do_notify = true) {
-        std::lock_guard<std::mutex> lck(this->mut);
         set(!(*(this->t)), do_notify);
     }
 };
@@ -94,7 +94,8 @@ public:
         this->reseat(accessor(s));
     }
     void set_from_struct(const Struct &s, bool do_notify = true) override {
-        this->set(const_accessor(s), do_notify);
+        this->set(
+            const_accessor(s), do_notify);
     }
 
 private:
@@ -124,13 +125,13 @@ public:
     using NestedValueWrapper<T>::NestedValueWrapper;
 
     void reseat(T &u) override {
-        std::lock_guard<std::mutex> lck(this->mut);
         for (auto &i : this->get_members()) {
             i->reseat_from_struct(u);
         }
     }
-    void set(const T &u, bool do_notify = true) override {
-        std::lock_guard<std::mutex> lck(this->mut);
+    void set(
+        const T &u,
+        bool do_notify = true) override {
         for (auto &i : this->get_members()) {
             i->set_from_struct(u, do_notify);
         }

@@ -32,7 +32,7 @@ MainContentComponent::MainContentComponent(
 }
 
 MainContentComponent::~MainContentComponent() {
-    join_engine_thread();
+    quit_render_thread();
 }
 
 void MainContentComponent::paint(Graphics& g) {
@@ -45,7 +45,13 @@ void MainContentComponent::resized() {
         component, 3, 0, 0, getWidth(), getHeight(), false, true);
 }
 
-void MainContentComponent::join_engine_thread() {
+void MainContentComponent::handleAsyncUpdate() {
+    assert(engine_thread.joinable());
+    quit_render_thread();
+    wrapper.render_state.stop();
+}
+
+void MainContentComponent::quit_render_thread() {
     keep_going = false;
     if (engine_thread.joinable()) {
         engine_thread.join();
@@ -130,8 +136,7 @@ void MainContentComponent::receive_broadcast(model::Broadcaster* cb) {
                     //  TODO write out
 
                     //  if anything goes wrong, flag it up on stdout and quit
-                    //  the
-                    //  thread
+                    //  the thread
                 } catch (const std::runtime_error& e) {
                     std::cout << "wayverb thread error: " << e.what()
                               << std::endl;
@@ -141,10 +146,12 @@ void MainContentComponent::receive_broadcast(model::Broadcaster* cb) {
                               << std::endl;
                 }
                 //  notify
-                wrapper.render_state.stop();
+                keep_going = false;
+                this->triggerAsyncUpdate();
             });
         } else {
-            join_engine_thread();
+            //  user cancelled the render
+            keep_going = false;
         }
     }
 }

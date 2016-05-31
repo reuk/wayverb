@@ -17,12 +17,7 @@ public:
     virtual ~ModelMember() noexcept = default;
 
     void receive_broadcast(Broadcaster *b) override {
-        notify();
-    }
-    void notify(bool do_notify = true) {
-        if (do_notify) {
-            broadcast();
-        }
+        broadcast();
     }
 
     ModelMember *get_owner() const {
@@ -45,7 +40,8 @@ public:
 
     virtual void reseat(T &u) = 0;
     virtual T get() const = 0;
-    virtual void set(const T &u, bool do_notify = true) = 0;
+    virtual void set(const T &u,
+                     bool do_notify = true) = 0;
 };
 
 }  // namesapce model

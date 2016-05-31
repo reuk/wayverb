@@ -463,13 +463,15 @@ SceneRenderer::SceneRenderer(const CopyableSceneData &model)
 }
 
 void SceneRenderer::newOpenGLContextCreated() {
-    std::lock_guard<std::mutex> lck(mut);
-    context_lifetime = std::make_unique<ContextLifetime>(model);
-    context_lifetime->set_emphasis(
-        glm::vec3(VisualiserLookAndFeel::emphasis.getFloatRed(),
-                  VisualiserLookAndFeel::emphasis.getFloatGreen(),
-                  VisualiserLookAndFeel::emphasis.getFloatBlue()));
-    listener_list.call(&Listener::newOpenGLContextCreated, this);
+    {
+        std::lock_guard<std::mutex> lck(mut);
+        context_lifetime = std::make_unique<ContextLifetime>(model);
+        context_lifetime->set_emphasis(
+            glm::vec3(VisualiserLookAndFeel::emphasis.getFloatRed(),
+                      VisualiserLookAndFeel::emphasis.getFloatGreen(),
+                      VisualiserLookAndFeel::emphasis.getFloatBlue()));
+    }
+    sendChangeMessage();
 }
 
 void SceneRenderer::renderOpenGL() {
@@ -481,19 +483,11 @@ void SceneRenderer::renderOpenGL() {
 }
 
 void SceneRenderer::openGLContextClosing() {
-    std::lock_guard<std::mutex> lck(mut);
-    context_lifetime = nullptr;
-    listener_list.call(&Listener::openGLContextClosing, this);
-}
-
-void SceneRenderer::addListener(Listener *l) {
-    std::lock_guard<std::mutex> lck(mut);
-    listener_list.add(l);
-}
-
-void SceneRenderer::removeListener(Listener *l) {
-    std::lock_guard<std::mutex> lck(mut);
-    listener_list.remove(l);
+    {
+        std::lock_guard<std::mutex> lck(mut);
+        context_lifetime = nullptr;
+    }
+    sendChangeMessage();
 }
 
 void SceneRenderer::set_aspect(float aspect) {
@@ -571,4 +565,9 @@ void SceneRenderer::set_mic_pointing(const std::vector<glm::vec3> &directions) {
     if (context_lifetime) {
         context_lifetime->set_mic_pointing(directions);
     }
+}
+
+bool SceneRenderer::is_valid() const {
+    std::lock_guard<std::mutex> lck(mut);
+    return context_lifetime != nullptr;
 }
