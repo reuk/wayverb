@@ -30,6 +30,9 @@ public:
 
         sub_button.addMouseListener(this, false);
         add_button.addMouseListener(this, false);
+
+        sub_button.setWantsKeyboardFocus(false);
+        add_button.setWantsKeyboardFocus(false);
     }
 
     void resized() override {
@@ -160,6 +163,7 @@ public:
     NumberEditor() {
         text_editor.setInputRestrictions(0, "0123456789.-+eE");
         text_editor.setSelectAllWhenFocused(true);
+        text_editor.setWantsKeyboardFocus(true);
 
         addAndMakeVisible(text_editor);
         addAndMakeVisible(inc_dec_buttons);
@@ -181,6 +185,12 @@ public:
         }
     }
 
+    void textEditorEscapeKeyPressed(TextEditor& editor) override {
+        if (&editor == &text_editor) {
+            set_value(get_value(), false);
+        }
+    }
+
     void textEditorReturnKeyPressed(TextEditor& editor) override {
         if (&editor == &text_editor) {
             try {
@@ -191,11 +201,11 @@ public:
                 set_value(0, true);
             }
         }
-        moveKeyboardFocusToSibling(true);
     }
 
     void textEditorFocusLost(TextEditor& editor) override {
-        set_value(get_value(), false);
+        textEditorReturnKeyPressed(editor);
+        editor.setHighlightedRegion(Range<int>(0, 0));
     }
 
     virtual void set_value(T x, bool send_changed) {

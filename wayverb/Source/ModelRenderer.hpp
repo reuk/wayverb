@@ -58,11 +58,6 @@ public:
         Method method;
     };
 
-    void push(std::unique_ptr<WorkItem>&& u) {
-        std::lock_guard<std::mutex> lck(mut);
-        work_items.push(std::move(u));
-    }
-
     template <typename Method>
     void push(Method&& method) {
         std::lock_guard<std::mutex> lck(mut);
@@ -80,6 +75,11 @@ public:
         while (!work_items.empty()) {
             pop_impl();
         }
+    }
+
+    auto size() const {
+        std::lock_guard<std::mutex> lck(mut);
+        return work_items.size();
     }
 
 private:
