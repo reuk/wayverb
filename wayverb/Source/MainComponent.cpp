@@ -14,7 +14,7 @@ MainContentComponent::MainContentComponent(
         , resizer_bar(&layout_manager, 1, true)
         , right_panel(scene_data,
                       wrapper.shown_surface,
-                      wrapper.persistent.combined,
+                      wrapper.persistent.app,
                       wrapper.render_state) {
     set_help("wayverb", "This is the main wayverb app window.");
     auto left_panel_width = 300;
@@ -86,13 +86,14 @@ void MainContentComponent::receive_broadcast(model::Broadcaster* cb) {
                     callback(engine::State::initialising, 1.0);
                     Engine engine(compute_context,
                                   scene_data,
-                                  wrapper.persistent.combined.source,
-                                  wrapper.persistent.combined.mic,
-                                  wrapper.persistent.combined.get()
+                                  wrapper.persistent.app.source,
+                                  wrapper.persistent.app.receiver,
+                                  wrapper.persistent.app.get()
                                       .get_waveguide_sample_rate(),
-                                  wrapper.persistent.combined.rays,
-                                  wrapper.persistent.combined.impulses,
-                                  wrapper.persistent.combined.sample_rate);
+                                  wrapper.persistent.app.rays,
+                                  wrapper.persistent.app.impulses,
+                                  //    TODO get samplerate from dialog?
+                                  44100);
 
                     //  check that source and mic are inside model
                     auto check_position = [](auto valid,

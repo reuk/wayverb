@@ -28,7 +28,6 @@ private:
         std::vector<DrawableOctree> nodes;
     };
 
-    std::vector<glm::vec3> get_vertices(const SceneData& scene_data) const;
     std::vector<GLuint> get_indices(const SceneData& scene_data,
                                     const Octree& octree) const;
 

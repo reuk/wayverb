@@ -14,11 +14,11 @@
 ModelRendererComponent::ModelRendererComponent(
     const CopyableSceneData &model,
     model::ValueWrapper<int> &shown_surface,
-    model::ValueWrapper<config::Combined> &config,
+    model::ValueWrapper<model::App> &app,
     model::ValueWrapper<model::RenderState> &render_state)
         : model(model)
         , shown_surface(shown_surface)
-        , config(config)
+        , app(app)
         , render_state(render_state)
         , scene_renderer(model) {
     set_help("model viewport",
@@ -57,30 +57,38 @@ void ModelRendererComponent::mouseWheelMove(const MouseEvent &event,
     scene_renderer.update_scale(wheel.deltaY);
 }
 
+static auto get_receiver_directions(
+    const model::ValueWrapper<model::App> &app) {
+    switch (app.receiver_settings.mode) {
+        case model::ReceiverSettings::Mode::microphones: {
+            std::vector<glm::vec3> directions(
+                app.receiver_settings.microphones.size());
+            proc::transform(app.receiver_settings.microphones.get(),
+                            directions.begin(),
+                            [&app](const auto &i) {
+                                return i.pointer.get_pointing(app.receiver);
+                            });
+            return directions;
+        }
+        case model::ReceiverSettings::Mode::hrtf: {
+            return std::vector<glm::vec3>{
+                app.receiver_settings.hrtf.get().get_pointing(app.receiver)};
+        }
+    }
+}
+
 void ModelRendererComponent::receive_broadcast(model::Broadcaster *cb) {
     if (cb == &shown_surface) {
         scene_renderer.set_highlighted(shown_surface);
-    } else if (cb == &config.mic) {
-        scene_renderer.set_mic(config.mic);
-    } else if (cb == &config.source) {
-        scene_renderer.set_source(config.source);
+    } else if (cb == &app.receiver) {
+        scene_renderer.set_receiver(app.receiver);
+        scene_renderer.set_receiver_pointing(get_receiver_directions(app));
+    } else if (cb == &app.source) {
+        scene_renderer.set_source(app.source);
     } else if (cb == &render_state.is_rendering) {
         scene_renderer.set_rendering(render_state.is_rendering);
-    } else if (cb == &config.receiver_config) {
-        std::vector<glm::vec3> directions;
-        switch (config.receiver_config.mode) {
-            case config::AttenuationModel::Mode::microphone:
-                proc::transform(
-                    config.receiver_config.microphone_model.microphones.get(),
-                    std::back_inserter(directions),
-                    [](const auto &i) { return to_glm_vec3(i.facing); });
-                break;
-            case config::AttenuationModel::Mode::hrtf:
-                directions.push_back(to_glm_vec3(
-                    config.receiver_config.hrtf_model.facing.get()));
-                break;
-        }
-        scene_renderer.set_mic_pointing(directions);
+    } else if (cb == &app.receiver_settings) {
+        scene_renderer.set_receiver_pointing(get_receiver_directions(app));
     }
 }
 
@@ -97,7 +105,7 @@ void ModelRendererComponent::set_pressures(
 void ModelRendererComponent::changeListenerCallback(ChangeBroadcaster *u) {
     if (u == &scene_renderer) {
         for (auto i : {&shown_connector,
-                       &mic_connector,
+                       &receiver_connector,
                        &source_connector,
                        &is_rendering_connector,
                        &facing_direction_connector}) {

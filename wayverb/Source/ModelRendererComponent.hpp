@@ -12,7 +12,7 @@ public:
     ModelRendererComponent(
         const CopyableSceneData& model,
         model::ValueWrapper<int>& shown_surface,
-        model::ValueWrapper<config::Combined>& config,
+        model::ValueWrapper<model::App>& app,
         model::ValueWrapper<model::RenderState>& render_state);
     virtual ~ModelRendererComponent() noexcept;
 
@@ -36,16 +36,16 @@ private:
     model::ValueWrapper<int>& shown_surface;
     model::BroadcastConnector shown_connector{&shown_surface, this};
 
-    model::ValueWrapper<config::Combined>& config;
+    model::ValueWrapper<model::App>& app;
     model::ValueWrapper<model::RenderState>& render_state;
 
-    model::BroadcastConnector mic_connector{&config.mic, this};
-    model::BroadcastConnector source_connector{&config.source, this};
+    model::BroadcastConnector receiver_connector{&app.receiver, this};
+    model::BroadcastConnector source_connector{&app.source, this};
     model::BroadcastConnector is_rendering_connector{&render_state.is_rendering,
                                                      this};
 
-    model::BroadcastConnector facing_direction_connector{
-        &config.receiver_config, this};
+    model::BroadcastConnector facing_direction_connector{&app.receiver_settings,
+                                                         this};
 
     const float scale{0.01};
     float azimuth{0};

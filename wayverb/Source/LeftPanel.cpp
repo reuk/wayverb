@@ -123,11 +123,11 @@ Array<PropertyComponent*> make_material_buttons(
 
 //----------------------------------------------------------------------------//
 
-static constexpr auto to_id(config::AttenuationModel::Mode m) {
+static constexpr auto to_id(model::ReceiverSettings::Mode m) {
     switch (m) {
-        case config::AttenuationModel::Mode::hrtf:
+        case model::ReceiverSettings::Mode::hrtf:
             return 1;
-        case config::AttenuationModel::Mode::microphone:
+        case model::ReceiverSettings::Mode::microphones:
             return 2;
     }
 }
@@ -135,22 +135,22 @@ static constexpr auto to_id(config::AttenuationModel::Mode m) {
 static constexpr auto to_enum(int i) {
     switch (i) {
         case 1:
-            return config::AttenuationModel::Mode::hrtf;
+            return model::ReceiverSettings::Mode::hrtf;
         case 2:
-            return config::AttenuationModel::Mode::microphone;
+            return model::ReceiverSettings::Mode::microphones;
     }
-    return config::AttenuationModel::Mode::hrtf;
+    return model::ReceiverSettings::Mode::hrtf;
 }
 
 class ReceiverPicker : public Component,
                        public ComboBox::Listener,
                        public model::BroadcastListener {
 public:
-    ReceiverPicker(model::ValueWrapper<config::AttenuationModel::Mode>& value)
+    ReceiverPicker(model::ValueWrapper<model::ReceiverSettings::Mode>& value)
             : value(value) {
         combo_box.addItem("microphones",
-                          to_id(config::AttenuationModel::Mode::microphone));
-        combo_box.addItem("HRTF", to_id(config::AttenuationModel::Mode::hrtf));
+                          to_id(model::ReceiverSettings::Mode::microphones));
+        combo_box.addItem("HRTF", to_id(model::ReceiverSettings::Mode::hrtf));
 
         value_connector.trigger();
         addAndMakeVisible(combo_box);
@@ -177,7 +177,7 @@ public:
     }
 
 private:
-    model::ValueWrapper<config::AttenuationModel::Mode>& value;
+    model::ValueWrapper<model::ReceiverSettings::Mode>& value;
     model::BroadcastConnector value_connector{&value, this};
 
     ComboBox combo_box;
@@ -188,7 +188,7 @@ class ReceiverPickerProperty : public PropertyComponent,
                                public SettableHelpPanelClient {
 public:
     ReceiverPickerProperty(
-        model::ValueWrapper<config::AttenuationModel::Mode>& value)
+        model::ValueWrapper<model::ReceiverSettings::Mode>& value)
             : PropertyComponent("receiver type")
             , receiver_picker(value) {
         set_help("receiver type picker",
@@ -208,14 +208,13 @@ private:
 
 class HrtfModelComponent : public Component, public SettableHelpPanelClient {
 public:
-    HrtfModelComponent(model::ValueWrapper<config::HrtfModel>& hrtf_model,
+    HrtfModelComponent(model::ValueWrapper<model::Pointer>& hrtf,
                        model::ValueWrapper<glm::vec3>& mic_position,
                        model::ValueWrapper<glm::vec3>& source_position) {
         set_help("hrtf configurator",
                  "There's only one option, which allows you to choose the "
                  "direction that the virtual head should be facing.");
-        property_panel.addProperties(
-            {new DirectionProperty(hrtf_model.facing, mic_position)});
+        property_panel.addProperties({new DirectionProperty(hrtf)});
 
         addAndMakeVisible(property_panel);
 
@@ -233,32 +232,31 @@ private:
 class ReceiverConfigureButton : public ConfigureButton {
 public:
     ReceiverConfigureButton(
-        model::ValueWrapper<config::ReceiverConfig>& receiver_config,
+        model::ValueWrapper<model::ReceiverSettings>& receiver_settings,
         model::ValueWrapper<glm::vec3>& mic_position,
         model::ValueWrapper<glm::vec3>& source_position)
             : ConfigureButton("configure")
-            , receiver_config(receiver_config)
+            , receiver_settings(receiver_settings)
             , mic_position(mic_position)
             , source_position(source_position) {
     }
 
     void buttonClicked() override {
         Component* c = nullptr;
-        switch (receiver_config.mode) {
-            case config::AttenuationModel::Mode::hrtf:
+        switch (receiver_settings.mode) {
+            case model::ReceiverSettings::Mode::hrtf:
                 c = new HrtfModelComponent(
-                    receiver_config.hrtf_model, mic_position, source_position);
+                    receiver_settings.hrtf, mic_position, source_position);
                 break;
-            case config::AttenuationModel::Mode::microphone:
-                c = new MicrophoneEditorPanel(receiver_config.microphone_model,
-                                              mic_position);
+            case model::ReceiverSettings::Mode::microphones:
+                c = new MicrophoneEditorPanel(receiver_settings.microphones);
                 break;
         }
         CallOutBox::launchAsynchronously(c, getScreenBounds(), nullptr);
     }
 
 private:
-    model::ValueWrapper<config::ReceiverConfig>& receiver_config;
+    model::ValueWrapper<model::ReceiverSettings>& receiver_settings;
     model::ValueWrapper<glm::vec3>& mic_position;
     model::ValueWrapper<glm::vec3>& source_position;
 };
@@ -278,13 +276,12 @@ LeftPanel::LeftPanel(model::ValueWrapper<model::FullModel>& model,
     }
 
     {
-        auto source_property =
-            new Vec3Property("source",
-                             model.persistent.combined.source,
-                             aabb.get_c0(),
-                             aabb.get_c1());
+        auto source_property = new Vec3Property("source",
+                                                model.persistent.app.source,
+                                                aabb.get_c0(),
+                                                aabb.get_c1());
         auto mic_property = new Vec3Property("receiver",
-                                             model.persistent.combined.mic,
+                                             model.persistent.app.receiver,
                                              aabb.get_c0(),
                                              aabb.get_c1());
 
@@ -299,11 +296,11 @@ LeftPanel::LeftPanel(model::ValueWrapper<model::FullModel>& model,
 
         Array<PropertyComponent*> general{source_property, mic_property};
         general.add(new ReceiverPickerProperty(
-            model.persistent.combined.receiver_config.mode));
-        general.add(new ReceiverConfigureButton(
-            model.persistent.combined.receiver_config,
-            model.persistent.combined.mic,
-            model.persistent.combined.source));
+            model.persistent.app.receiver_settings.mode));
+        general.add(
+            new ReceiverConfigureButton(model.persistent.app.receiver_settings,
+                                        model.persistent.app.receiver,
+                                        model.persistent.app.source));
         property_panel.addSection("general", general);
     }
 
@@ -316,16 +313,11 @@ LeftPanel::LeftPanel(model::ValueWrapper<model::FullModel>& model,
 
     {
         Array<PropertyComponent*> waveguide;
-        waveguide.addArray({new NumberProperty<float>(
-                                "cutoff",
-                                model.persistent.combined.filter_frequency,
-                                20,
-                                20000),
-                            new NumberProperty<float>(
-                                "oversample",
-                                model.persistent.combined.oversample_ratio,
-                                1,
-                                4)});
+        waveguide.addArray(
+            {new NumberProperty<float>(
+                 "cutoff", model.persistent.app.filter_frequency, 20, 20000),
+             new NumberProperty<float>(
+                 "oversample", model.persistent.app.oversample_ratio, 1, 4)});
         waveguide.add(new TextDisplayProperty<int>(
             "waveguide sr / Hz", 20, waveguide_sampling_rate_wrapper));
         property_panel.addSection("waveguide", waveguide);
@@ -335,9 +327,9 @@ LeftPanel::LeftPanel(model::ValueWrapper<model::FullModel>& model,
         property_panel.addSection(
             "raytracer",
             {new NumberProperty<int>(
-                 "rays", model.persistent.combined.rays, 1000, 1000000),
+                 "rays", model.persistent.app.rays, 1000, 1000000),
              new NumberProperty<int>(
-                 "reflections", model.persistent.combined.impulses, 20, 200)});
+                 "reflections", model.persistent.app.impulses, 20, 200)});
     }
 
     property_panel.setOpaque(false);
@@ -355,9 +347,9 @@ void LeftPanel::resized() {
 void LeftPanel::receive_broadcast(model::Broadcaster* cb) {
     if (cb == &model.render_state.is_rendering) {
         property_panel.setEnabled(!model.render_state.is_rendering);
-    } else if (cb == &model.persistent.combined.filter_frequency ||
-               cb == &model.persistent.combined.oversample_ratio) {
+    } else if (cb == &model.persistent.app.filter_frequency ||
+               cb == &model.persistent.app.oversample_ratio) {
         waveguide_sampling_rate_wrapper.set(
-            model.persistent.combined.get().get_waveguide_sample_rate());
+            model.persistent.app.get().get_waveguide_sample_rate());
     }
 }

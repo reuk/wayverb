@@ -6,37 +6,25 @@
 
 #include "glm/glm.hpp"
 
-class DirectionEditor : public Component, public ChangeListener {
+class DirectionEditor : public TabbedComponent,
+                        public model::BroadcastListener {
 public:
-    enum class Mode { cartesian, spherical, look_at };
+    DirectionEditor(model::ValueWrapper<model::Pointer>& pointer);
 
-    DirectionEditor(model::ValueWrapper<glm::vec3>& pointing,
-                    model::ValueWrapper<glm::vec3>& position);
+    void currentTabChanged(int new_tab, const String& name) override;
 
-    void resized() override;
-    void paint(Graphics& g) override;
-
-    void changeListenerCallback(ChangeBroadcaster* cb) override;
+    void receive_broadcast(model::Broadcaster* b) override;
 
 private:
-    model::ValueWrapper<glm::vec3>& pointing;
-    model::ValueWrapper<glm::vec3>& position;
-
-    //  Really this should be a TabbedComponent, but I want to reconstruct the
-    //  shown panel every time the tab changes, which TabbedComponents don't do.
-    TabbedButtonBar tabs;
-    model::Connector<ChangeBroadcaster, ChangeListener> tabs_connector{&tabs,
-                                                                       this};
-
-    std::unique_ptr<Component> content;
+    model::ValueWrapper<model::Pointer>& pointer;
+    model::BroadcastConnector pointer_connector{&pointer.mode, this};
 };
 
 //----------------------------------------------------------------------------//
 
 class DirectionProperty : public PropertyComponent {
 public:
-    DirectionProperty(model::ValueWrapper<glm::vec3>& pointing,
-                      model::ValueWrapper<glm::vec3>& position);
+    DirectionProperty(model::ValueWrapper<model::Pointer>& pointer);
 
     void refresh() override;
 

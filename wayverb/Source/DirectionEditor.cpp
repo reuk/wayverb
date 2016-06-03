@@ -2,20 +2,12 @@
 #include "Orientable.hpp"
 #include "Vec3Editor.hpp"
 
-class SphericalEditor : public Component, public model::BroadcastListener {
+class SphericalEditor : public Component {
 public:
-    SphericalEditor(model::ValueWrapper<glm::vec3>& pointing)
-            : pointing(pointing) {
-        auto n = glm::normalize(pointing.get());
-        azimuth_wrapper.set(glm::degrees(Orientable::compute_azimuth(n)));
-        auto e = glm::degrees(Orientable::compute_elevation(n));
-        elevation_wrapper.set(std::isnan(e) ? std::copysign(89, pointing.y)
-                                            : e);
-
+    SphericalEditor(model::ValueWrapper<Orientable::AzEl>& azel) {
         property_panel.addProperties(
-            {new NumberProperty<float>("azimuth", azimuth_wrapper, -180, 180),
-             new NumberProperty<float>(
-                 "elevation", elevation_wrapper, -89, 89)});
+            {new NumberProperty<float>("azimuth", azel.azimuth, -180, 180),
+             new NumberProperty<float>("elevation", azel.elevation, -89, 89)});
         property_panel.setOpaque(false);
         addAndMakeVisible(property_panel);
     }
@@ -24,24 +16,7 @@ public:
         property_panel.setBounds(getLocalBounds());
     }
 
-    void receive_broadcast(model::Broadcaster* b) override {
-        if (b == &azimuth_wrapper || b == &elevation_wrapper) {
-            pointing.set(Orientable::compute_pointing(
-                Orientable::AzEl{glm::radians(azimuth_wrapper.get()),
-                                 glm::radians(elevation_wrapper.get())}));
-        }
-    }
-
 private:
-    model::ValueWrapper<glm::vec3>& pointing;
-
-    float azimuth{0};
-    model::ValueWrapper<float> azimuth_wrapper{nullptr, azimuth};
-    model::BroadcastConnector azimuth_connector{&azimuth_wrapper, this};
-    float elevation{0};
-    model::ValueWrapper<float> elevation_wrapper{nullptr, elevation};
-    model::BroadcastConnector elevation_connector{&elevation_wrapper, this};
-
     PropertyPanel property_panel;
 };
 
@@ -81,16 +56,12 @@ private:
     model::Connector<ToggleButton> button_connector{&button, this};
 };
 
-class LookAtEditor : public Component, public model::BroadcastListener {
+class LookAtEditor : public Component {
 public:
-    LookAtEditor(model::ValueWrapper<glm::vec3>& pointing,
-                 model::ValueWrapper<glm::vec3>& position)
-            : pointing(pointing)
-            , position(position) {
-        target_wrapper.set(position.get() + pointing.get());
-
+    LookAtEditor(model::ValueWrapper<glm::vec3>& look_at) {
+        //  TODO (maybe) set min/max based on model dimensions
         property_panel.addProperties({new Vec3Property(
-            "target", target_wrapper, glm::vec3(-1000), glm::vec3(1000))});
+            "look at", look_at, glm::vec3(-1000), glm::vec3(1000))});
         addAndMakeVisible(property_panel);
     }
 
@@ -98,83 +69,51 @@ public:
         property_panel.setBounds(getLocalBounds());
     }
 
-    void receive_broadcast(model::Broadcaster* b) override {
-        if (b == &target_wrapper) {
-            pointing.set(glm::normalize(target_wrapper.get() - position.get()));
-        }
-    }
-
 private:
-    model::ValueWrapper<glm::vec3>& pointing;
-    model::ValueWrapper<glm::vec3>& position;
-
-    glm::vec3 target{0, 0, 0};
-    model::ValueWrapper<glm::vec3> target_wrapper{nullptr, target};
-    model::BroadcastConnector target_connector{&target_wrapper, this};
-
     PropertyPanel property_panel;
 };
 
 //----------------------------------------------------------------------------//
 
-DirectionEditor::DirectionEditor(model::ValueWrapper<glm::vec3>& pointing,
-                                 model::ValueWrapper<glm::vec3>& position)
-        : pointing(pointing)
-        , position(position)
-        , tabs(TabbedButtonBar::TabsAtTop) {
-    tabs.addTab("spherical", Colours::darkgrey, -1);
-    tabs.addTab("look at", Colours::darkgrey, -1);
-
-    addAndMakeVisible(tabs);
+DirectionEditor::DirectionEditor(model::ValueWrapper<model::Pointer>& pointer)
+        : TabbedComponent(TabbedButtonBar::Orientation::TabsAtTop)
+        , pointer(pointer) {
+    auto mode = pointer.mode.get();
+    addTab("spherical",
+           Colours::darkgrey,
+           new SphericalEditor(pointer.spherical),
+           true);
+    addTab(
+        "look at", Colours::darkgrey, new LookAtEditor(pointer.look_at), true);
+    pointer.mode.set(mode);
 }
 
-void DirectionEditor::resized() {
-    auto bounds = getLocalBounds();
-    auto tab_height = 30;
-    tabs.setBounds(bounds.removeFromTop(tab_height));
-    bounds.reduce(2, 2);
-    if (content) {
-        content->setBounds(bounds);
+void DirectionEditor::currentTabChanged(int new_tab, const String& name) {
+    switch (new_tab) {
+        case 0:
+            assert(name == "spherical");
+            pointer.mode.set(model::Pointer::Mode::spherical);
+            break;
+        case 1:
+            assert(name == "look at");
+            pointer.mode.set(model::Pointer::Mode::look_at);
+            break;
     }
 }
 
-void DirectionEditor::paint(Graphics& g) {
-    auto content = getLocalBounds();
-    BorderSize<int> outline(1);
-
-    content.removeFromTop(tabs.getHeight() - 1);
-
-    g.reduceClipRegion(content);
-    g.fillAll(tabs.getTabBackgroundColour(tabs.getCurrentTabIndex()));
-
-    RectangleList<int> rl(content);
-    rl.subtract(outline.subtractedFrom(content));
-
-    g.reduceClipRegion(rl);
-    g.fillAll(tabs.findColour(TabbedButtonBar::ColourIds::tabOutlineColourId));
-}
-
-void DirectionEditor::changeListenerCallback(ChangeBroadcaster* cb) {
-    if (cb == &tabs) {
-        switch (tabs.getCurrentTabIndex()) {
-            case 0:  // spherical
-                content = std::make_unique<SphericalEditor>(pointing);
-                break;
-            case 1:  // look at
-                content = std::make_unique<LookAtEditor>(pointing, position);
-                break;
-        }
-        addAndMakeVisible(*content);
-        resized();
+void DirectionEditor::receive_broadcast(model::Broadcaster* b) {
+    if (b == &pointer.mode) {
+        setCurrentTabIndex(
+            pointer.mode == model::Pointer::Mode::spherical ? 0 : 1, false);
     }
 }
 
 //----------------------------------------------------------------------------//
 
-DirectionProperty::DirectionProperty(model::ValueWrapper<glm::vec3>& pointing,
-                                     model::ValueWrapper<glm::vec3>& position)
+DirectionProperty::DirectionProperty(
+    model::ValueWrapper<model::Pointer>& pointer)
         : PropertyComponent("direction", 120)
-        , direction_editor(pointing, position) {
+        , direction_editor(pointer) {
     addAndMakeVisible(direction_editor);
 }
 

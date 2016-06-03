@@ -33,37 +33,64 @@
 #include <cmath>
 #include <future>
 #include <mutex>
+#include <queue>
 
-class RaytraceObject final : public ::Drawable {
+template <typename T>
+class WorkItemOwner {
 public:
-    RaytraceObject(const GenericShader& shader,
-                   const RaytracerResults& results);
-    void draw() const override;
+    WorkItemOwner(T& obj)
+            : obj(obj) {
+    }
+
+    struct WorkItem {
+        virtual ~WorkItem() noexcept = default;
+        virtual void operator()(T& obj) const = 0;
+    };
+
+    template <typename Method>
+    struct GenericWorkItem : public WorkItem {
+        GenericWorkItem(Method&& method)
+                : method(std::forward<Method>(method)) {
+        }
+        void operator()(T& obj) const override {
+            method(obj);
+        }
+        Method method;
+    };
+
+    void push(std::unique_ptr<WorkItem>&& u) {
+        std::lock_guard<std::mutex> lck(mut);
+        work_items.push(std::move(u));
+    }
+
+    template <typename Method>
+    void push(Method&& method) {
+        std::lock_guard<std::mutex> lck(mut);
+        work_items.push(std::make_unique<GenericWorkItem<Method>>(
+            std::forward<Method>(method)));
+    }
+
+    void pop_one() {
+        std::lock_guard<std::mutex> lck(mut);
+        pop_impl();
+    }
+
+    void pop_all() {
+        std::lock_guard<std::mutex> lck(mut);
+        while (!work_items.empty()) {
+            pop_impl();
+        }
+    }
 
 private:
-    const GenericShader& shader;
+    void pop_impl() {
+        (*work_items.front())(obj);
+        work_items.pop();
+    }
 
-    VAO vao;
-    StaticVBO geometry;
-    StaticVBO colors;
-    StaticIBO ibo;
-    GLuint size;
-};
-
-class VoxelisedObject final : public BasicDrawableObject {
-public:
-    VoxelisedObject(const GenericShader& shader,
-                    const CopyableSceneData& scene_data,
-                    const VoxelCollection& voxel);
-    void draw() const override;
-
-private:
-    static std::vector<glm::vec3> get_vertices(
-        const CopyableSceneData& scene_data);
-    static std::vector<GLuint> get_indices(const CopyableSceneData& scene_data,
-                                           const VoxelCollection& voxel);
-
-    VoxelCollection voxel;
+    T& obj;
+    std::queue<std::unique_ptr<WorkItem>> work_items;
+    mutable std::mutex mut;
 };
 
 class MultiMaterialObject : public ::Drawable {
@@ -92,9 +119,6 @@ public:
     void set_colour(const glm::vec3& c);
 
 private:
-    std::vector<glm::vec3> get_vertices(
-        const CopyableSceneData& scene_data) const;
-
     const GenericShader& generic_shader;
     const LitSceneShader& lit_scene_shader;
 
@@ -108,17 +132,16 @@ private:
     std::vector<SingleMaterialSection> sections;
 };
 
-class DrawableScene final : public ::Drawable, public ::Updatable {
+class DrawableScene final : public ::Drawable {
 public:
     DrawableScene(const GenericShader& generic_shader,
                   const MeshShader& mesh_shader,
                   const LitSceneShader& lit_scene_shader,
                   const CopyableSceneData& scene_data);
 
-    void update(float dt) override;
     void draw() const override;
 
-    void set_mic(const glm::vec3& u);
+    void set_receiver(const glm::vec3& u);
     void set_source(const glm::vec3& u);
 
     void set_rendering(bool b);
@@ -128,7 +151,7 @@ public:
 
     void set_highlighted(int u);
 
-    void set_mic_pointing(const std::vector<glm::vec3>& directions);
+    void set_receiver_pointing(const std::vector<glm::vec3>& directions);
 
     void set_emphasis(const glm::vec3& c);
 
@@ -139,22 +162,16 @@ private:
 
     MultiMaterialObject model_object;
     PointObject source_object;
-    PointObject mic_object;
+    PointObject receiver_object;
 
-    struct MeshContext {
-        std::unique_ptr<MeshObject> mesh_object;
-        std::vector<glm::vec3> positions;
-        std::vector<float> pressures;
-        void clear();
-    };
-
-    MeshContext mesh_context;
-    std::unique_ptr<RaytraceObject> raytrace_object;
+    std::unique_ptr<MeshObject> mesh_object;
 
     bool rendering{false};
 };
 
-class SceneRenderer final : public OpenGLRenderer, public ChangeBroadcaster {
+class SceneRenderer final : public OpenGLRenderer,
+                            public ChangeBroadcaster,
+                            public WorkItemOwner<SceneRenderer> {
 public:
     SceneRenderer(const CopyableSceneData& model);
 
@@ -170,7 +187,7 @@ public:
 
     void set_rendering(bool b);
 
-    void set_mic(const glm::vec3& u);
+    void set_receiver(const glm::vec3& u);
     void set_source(const glm::vec3& u);
 
     void set_positions(const std::vector<cl_float3>& positions);
@@ -180,12 +197,14 @@ public:
 
     void set_emphasis(const glm::vec3& c);
 
-    void set_mic_pointing(const std::vector<glm::vec3>& directions);
-
-    bool is_valid() const;
+    void set_receiver_pointing(const std::vector<glm::vec3>& directions);
 
 private:
-    class ContextLifetime : public ::Drawable, public ::Updatable {
+    //  gl state should be updated inside `update` methods
+    //  where we know that stuff is happening on the gl thread
+    //  if you (e.g.) delete a buffer on a different thread, your computer will
+    //  get mad and maybe freeze
+    class ContextLifetime : public ::Drawable {
     public:
         ContextLifetime(const CopyableSceneData& scene_data);
 
@@ -195,7 +214,7 @@ private:
 
         void set_rendering(bool b);
 
-        void set_mic(const glm::vec3& u);
+        void set_receiver(const glm::vec3& u);
         void set_source(const glm::vec3& u);
 
         void set_positions(const std::vector<cl_float3>& positions);
@@ -205,10 +224,9 @@ private:
 
         void set_emphasis(const glm::vec3& c);
 
-        void set_mic_pointing(const std::vector<glm::vec3>& directions);
+        void set_receiver_pointing(const std::vector<glm::vec3>& directions);
 
         void draw() const override;
-        void update(float dt) override;
 
     private:
         glm::mat4 get_projection_matrix() const;
@@ -235,6 +253,4 @@ private:
     CopyableSceneData model;
 
     std::unique_ptr<ContextLifetime> context_lifetime;
-
-    mutable std::mutex mut;
 };

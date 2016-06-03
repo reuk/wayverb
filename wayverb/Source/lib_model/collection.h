@@ -103,6 +103,7 @@ public:
     }
 
     void erase(size_t pos, bool do_notify = true) {
+        assert(pos < size());
         this->t->erase(this->t->begin() + pos);
         wrappers.erase(wrappers.begin() + pos);
         reseat_and_notify( do_notify);

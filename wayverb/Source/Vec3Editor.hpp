@@ -183,7 +183,13 @@ public:
 
     void textEditorReturnKeyPressed(TextEditor& editor) override {
         if (&editor == &text_editor) {
-            set_value(std::stof(editor.getText().toStdString()), true);
+            try {
+                set_value(std::stof(editor.getText().toStdString()), true);
+            } catch (const std::invalid_argument& e) {
+                set_value(0, true);
+            } catch (std::out_of_range& e) {
+                set_value(0, true);
+            }
         }
         moveKeyboardFocusToSibling(true);
     }

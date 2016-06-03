@@ -12,146 +12,12 @@
 
 #include "combined/config_serialize.h"
 
-RaytraceObject::RaytraceObject(const GenericShader &shader,
-                               const RaytracerResults &results)
-        : shader(shader) {
-    auto impulses = results.impulses;
-    std::vector<glm::vec3> v(impulses.size() + 1);
-    v.front() = to_glm_vec3(results.source);
-    std::transform(impulses.begin(), impulses.end(), v.begin() + 1, [](auto i) {
-        return to_glm_vec3(i.position);
-    });
-
-    std::vector<glm::vec4> c(v.size());
-    c.front() = glm::vec4(1, 1, 1, 1);
-    std::transform(impulses.begin(), impulses.end(), c.begin() + 1, [](auto i) {
-        auto average = std::accumulate(
-                           std::begin(i.volume.s), std::end(i.volume.s), 0.0f) /
-                       8;
-        auto c = i.time ? fabs(average) * 10 : 0;
-        return glm::vec4(c, c, c, c);
-    });
-
-    std::vector<std::pair<GLuint, GLuint>> lines;
-    for (auto ray = 0u; ray != results.rays; ++ray) {
-        auto prev = 0u;
-        for (auto pt = 0u; pt != results.rays; ++pt) {
-            auto index = ray * results.reflections + pt + 1;
-            lines.push_back(std::make_pair(prev, index));
-            prev = index;
-        }
-    }
-
-    std::vector<GLuint> indices;
-    for (const auto &i : lines) {
-        indices.push_back(i.first);
-        indices.push_back(i.second);
-    }
-
-    size = indices.size();
-
-    geometry.data(v);
-    colors.data(c);
-    ibo.data(indices);
-
-    //  init vao
-    auto s_vao = vao.get_scoped();
-
-    geometry.bind();
-    auto v_pos = shader.get_attrib_location("v_position");
-    glEnableVertexAttribArray(v_pos);
-    glVertexAttribPointer(v_pos, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
-
-    colors.bind();
-    auto c_pos = shader.get_attrib_location("v_color");
-    glEnableVertexAttribArray(c_pos);
-    glVertexAttribPointer(c_pos, 4, GL_FLOAT, GL_FALSE, 0, nullptr);
-
-    ibo.bind();
-}
-
-void RaytraceObject::draw() const {
-    auto s_shader = shader.get_scoped();
-    auto s_vao = vao.get_scoped();
-    glDrawElements(GL_LINES, size, GL_UNSIGNED_INT, nullptr);
-}
-
-//----------------------------------------------------------------------------//
-
-static constexpr auto model_colour = 0.75;
-
-VoxelisedObject::VoxelisedObject(const GenericShader &shader,
-                                 const CopyableSceneData &scene_data,
-                                 const VoxelCollection &voxel)
-        : BasicDrawableObject(
-              shader,
-              get_vertices(scene_data),
-              std::vector<glm::vec4>(
-                  scene_data.get_vertices().size(),
-                  glm::vec4(
-                      model_colour, model_colour, model_colour, model_colour)),
-              get_indices(scene_data, voxel),
-              GL_TRIANGLES)
-        , voxel(voxel) {
-}
-
-std::vector<glm::vec3> VoxelisedObject::get_vertices(
-    const CopyableSceneData &scene_data) {
-    std::vector<glm::vec3> ret(scene_data.get_vertices().size());
-    std::transform(scene_data.get_vertices().begin(),
-                   scene_data.get_vertices().end(),
-                   ret.begin(),
-                   [](auto i) { return to_glm_vec3(i); });
-    return ret;
-}
-
 static void push_triangle_indices(std::vector<GLuint> &ret,
                                   const Triangle &tri) {
     ret.push_back(tri.v0);
     ret.push_back(tri.v1);
     ret.push_back(tri.v2);
 }
-
-void fill_indices_vector(const CopyableSceneData &scene_data,
-                         const VoxelCollection &voxel,
-                         std::vector<GLuint> &ret) {
-    for (const auto &x : voxel.get_data()) {
-        for (const auto &y : x) {
-            for (const auto &z : y) {
-                for (auto i : z.get_triangles()) {
-                    push_triangle_indices(ret, scene_data.get_triangles()[i]);
-                }
-            }
-        }
-    }
-}
-
-std::vector<GLuint> VoxelisedObject::get_indices(
-    const CopyableSceneData &scene_data, const VoxelCollection &voxel) {
-    std::vector<GLuint> ret;
-    fill_indices_vector(scene_data, voxel, ret);
-    return ret;
-}
-
-void VoxelisedObject::draw() const {
-    BasicDrawableObject::draw();
-    BoxObject box(get_shader());
-
-    for (const auto &x : voxel.get_data()) {
-        for (const auto &y : x) {
-            for (const auto &z : y) {
-                if (!z.get_triangles().empty()) {
-                    const auto &aabb = z.get_aabb();
-                    box.set_scale(to_glm_vec3(aabb.dimensions()));
-                    box.set_position(to_glm_vec3(aabb.centre()));
-                    box.draw();
-                }
-            }
-        }
-    }
-}
-
-//----------------------------------------------------------------------------//
 
 std::vector<GLuint> MultiMaterialObject::SingleMaterialSection::get_indices(
     const CopyableSceneData &scene_data, int material_index) {
@@ -176,16 +42,6 @@ void MultiMaterialObject::SingleMaterialSection::draw() const {
     glDrawElements(GL_TRIANGLES, size, GL_UNSIGNED_INT, nullptr);
 }
 
-std::vector<glm::vec3> MultiMaterialObject::get_vertices(
-    const CopyableSceneData &scene_data) const {
-    std::vector<glm::vec3> ret(scene_data.get_vertices().size());
-    std::transform(scene_data.get_vertices().begin(),
-                   scene_data.get_vertices().end(),
-                   ret.begin(),
-                   [](auto i) { return to_glm_vec3(i); });
-    return ret;
-}
-
 MultiMaterialObject::MultiMaterialObject(const GenericShader &generic_shader,
                                          const LitSceneShader &lit_scene_shader,
                                          const CopyableSceneData &scene_data)
@@ -195,10 +51,9 @@ MultiMaterialObject::MultiMaterialObject(const GenericShader &generic_shader,
         sections.emplace_back(scene_data, i);
     }
 
-    geometry.data(get_vertices(scene_data));
-    colors.data(std::vector<glm::vec4>(
-        scene_data.get_vertices().size(),
-        glm::vec4(model_colour, model_colour, model_colour, 1.0)));
+    geometry.data(scene_data.get_converted_vertices());
+    colors.data(std::vector<glm::vec4>(scene_data.get_vertices().size(),
+                                       glm::vec4(0.5, 0.5, 0.5, 1.0)));
 
     auto configure_vao = [this](const auto &vao, const auto &shader) {
         auto s_vao = vao.get_scoped();
@@ -254,69 +109,29 @@ DrawableScene::DrawableScene(const GenericShader &generic_shader,
         , lit_scene_shader(lit_scene_shader)
         , model_object(generic_shader, lit_scene_shader, scene_data)
         , source_object(generic_shader, glm::vec4(1, 0, 0, 1))
-        , mic_object(generic_shader, glm::vec4(0, 1, 1, 1)) {
+        , receiver_object(generic_shader, glm::vec4(0, 1, 1, 1)) {
     //  TODO init raytrace object
 }
 
-void DrawableScene::MeshContext::clear() {
-    mesh_object = nullptr;
-    positions.clear();
-    pressures.clear();
-}
-
-void DrawableScene::update(float dt) {
-    if (!mesh_context.positions.empty()) {
-        mesh_context.mesh_object =
-            std::make_unique<MeshObject>(mesh_shader, mesh_context.positions);
-        mesh_context.positions.clear();
-    }
-
-    if (!mesh_context.pressures.empty() && mesh_context.mesh_object) {
-        mesh_context.mesh_object->set_pressures(mesh_context.pressures);
-        mesh_context.pressures.clear();
-    }
-
-    if (!rendering) {
-        mesh_context.clear();
-    }
-}
-
 void DrawableScene::draw() const {
-    auto draw_thing = [this](const auto &i) {
-        if (i) {
-            i->draw();
-        }
-    };
+    model_object.draw();
 
-    {
-        auto s_shader = generic_shader.get_scoped();
-        if (rendering) {
-            draw_thing(raytrace_object);
-        }
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    source_object.draw();
+    receiver_object.draw();
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-        model_object.draw();
-
-        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-        source_object.draw();
-        mic_object.draw();
-        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    }
-
-    {
-        auto s_shader = mesh_shader.get_scoped();
-
-        if (rendering) {
-            draw_thing(mesh_context.mesh_object);
-        }
+    if (rendering && mesh_object) {
+        mesh_object->draw();
     }
 }
 
-void DrawableScene::set_mic(const glm::vec3 &u) {
-    mic_object.set_position(to_glm_vec3(u));
+void DrawableScene::set_receiver(const glm::vec3 &u) {
+    receiver_object.set_position(u);
 }
 
 void DrawableScene::set_source(const glm::vec3 &u) {
-    source_object.set_position(to_glm_vec3(u));
+    source_object.set_position(u);
 }
 
 void DrawableScene::set_rendering(bool b) {
@@ -324,21 +139,20 @@ void DrawableScene::set_rendering(bool b) {
 }
 
 void DrawableScene::set_positions(const std::vector<glm::vec3> &p) {
-    //  this might be called from the message thread
-    //  and OpenGL doesn't like me messing with its shit on other threads
-    mesh_context.positions = p;
+    mesh_object = std::make_unique<MeshObject>(mesh_shader, p);
 }
 
 void DrawableScene::set_pressures(const std::vector<float> &p) {
-    mesh_context.pressures = p;
+    mesh_object->set_pressures(p);
 }
 
 void DrawableScene::set_highlighted(int u) {
     model_object.set_highlighted(u);
 }
 
-void DrawableScene::set_mic_pointing(const std::vector<glm::vec3> &directions) {
-    mic_object.set_pointing(directions);
+void DrawableScene::set_receiver_pointing(
+    const std::vector<glm::vec3> &directions) {
+    receiver_object.set_pointing(directions);
 }
 
 void DrawableScene::set_emphasis(const glm::vec3 &c) {
@@ -377,8 +191,8 @@ void SceneRenderer::ContextLifetime::set_rendering(bool b) {
     drawable_scene.set_rendering(b);
 }
 
-void SceneRenderer::ContextLifetime::set_mic(const glm::vec3 &u) {
-    drawable_scene.set_mic(u);
+void SceneRenderer::ContextLifetime::set_receiver(const glm::vec3 &u) {
+    drawable_scene.set_receiver(u);
 }
 void SceneRenderer::ContextLifetime::set_source(const glm::vec3 &u) {
     drawable_scene.set_source(u);
@@ -428,9 +242,6 @@ void SceneRenderer::ContextLifetime::draw() const {
     drawable_scene.draw();
     axes.draw();
 }
-void SceneRenderer::ContextLifetime::update(float dt) {
-    drawable_scene.update(0);
-}
 
 glm::mat4 SceneRenderer::ContextLifetime::get_projection_matrix() const {
     return projection_matrix;
@@ -451,123 +262,84 @@ glm::mat4 SceneRenderer::ContextLifetime::get_projection_matrix(float aspect) {
     return glm::perspective(45.0f, aspect, 0.05f, 1000.0f);
 }
 
-void SceneRenderer::ContextLifetime::set_mic_pointing(
+void SceneRenderer::ContextLifetime::set_receiver_pointing(
     const std::vector<glm::vec3> &directions) {
-    drawable_scene.set_mic_pointing(directions);
+    drawable_scene.set_receiver_pointing(directions);
 }
 
 //----------------------------------------------------------------------------//
 
 SceneRenderer::SceneRenderer(const CopyableSceneData &model)
-        : model(model) {
+        : WorkItemOwner(*this)
+        , model(model) {
 }
 
 void SceneRenderer::newOpenGLContextCreated() {
-    {
-        std::lock_guard<std::mutex> lck(mut);
-        context_lifetime = std::make_unique<ContextLifetime>(model);
-        context_lifetime->set_emphasis(
-            glm::vec3(VisualiserLookAndFeel::emphasis.getFloatRed(),
-                      VisualiserLookAndFeel::emphasis.getFloatGreen(),
-                      VisualiserLookAndFeel::emphasis.getFloatBlue()));
-    }
+    context_lifetime = std::make_unique<ContextLifetime>(model);
+    context_lifetime->set_emphasis(
+        glm::vec3(VisualiserLookAndFeel::emphasis.getFloatRed(),
+                  VisualiserLookAndFeel::emphasis.getFloatGreen(),
+                  VisualiserLookAndFeel::emphasis.getFloatBlue()));
     sendChangeMessage();
 }
 
 void SceneRenderer::renderOpenGL() {
-    std::lock_guard<std::mutex> lck(mut);
-    if (context_lifetime) {
-        context_lifetime->update(0);
-        context_lifetime->draw();
-    }
+    pop_all();
+    context_lifetime->draw();
 }
 
 void SceneRenderer::openGLContextClosing() {
-    {
-        std::lock_guard<std::mutex> lck(mut);
-        context_lifetime = nullptr;
-    }
     sendChangeMessage();
+    context_lifetime = nullptr;
 }
 
 void SceneRenderer::set_aspect(float aspect) {
-    std::lock_guard<std::mutex> lck(mut);
-    if (context_lifetime) {
-        context_lifetime->set_aspect(aspect);
-    }
+    push([aspect](auto &i) { i.context_lifetime->set_aspect(aspect); });
 }
 
 void SceneRenderer::update_scale(float delta) {
-    std::lock_guard<std::mutex> lck(mut);
-    if (context_lifetime) {
-        context_lifetime->update_scale(delta);
-    }
+    push([delta](auto &i) { i.context_lifetime->update_scale(delta); });
 }
 
 void SceneRenderer::set_rotation(float azimuth, float elevation) {
-    std::lock_guard<std::mutex> lck(mut);
-    if (context_lifetime) {
-        context_lifetime->set_rotation(azimuth, elevation);
-    }
+    push([azimuth, elevation](auto &i) {
+        i.context_lifetime->set_rotation(azimuth, elevation);
+    });
 }
 
 void SceneRenderer::set_rendering(bool b) {
-    std::lock_guard<std::mutex> lck(mut);
-    if (context_lifetime) {
-        context_lifetime->set_rendering(b);
-    }
+    push([b](auto &i) { i.context_lifetime->set_rendering(b); });
 }
 
-void SceneRenderer::set_mic(const glm::vec3 &u) {
-    std::lock_guard<std::mutex> lck(mut);
-    if (context_lifetime) {
-        context_lifetime->set_mic(u);
-    }
+void SceneRenderer::set_receiver(const glm::vec3 &u) {
+    push([u](auto &i) { i.context_lifetime->set_receiver(u); });
 }
 
 void SceneRenderer::set_source(const glm::vec3 &u) {
-    std::lock_guard<std::mutex> lck(mut);
-    if (context_lifetime) {
-        context_lifetime->set_source(u);
-    }
+    push([u](auto &i) { i.context_lifetime->set_source(u); });
 }
 
 void SceneRenderer::set_positions(const std::vector<cl_float3> &positions) {
-    std::lock_guard<std::mutex> lck(mut);
-    if (context_lifetime) {
-        context_lifetime->set_positions(positions);
-    }
+    push(
+        [positions](auto &i) { i.context_lifetime->set_positions(positions); });
 }
 
 void SceneRenderer::set_pressures(const std::vector<float> &pressures) {
-    std::lock_guard<std::mutex> lck(mut);
-    if (context_lifetime) {
-        context_lifetime->set_pressures(pressures);
-    }
+    push(
+        [pressures](auto &i) { i.context_lifetime->set_pressures(pressures); });
 }
 
 void SceneRenderer::set_highlighted(int u) {
-    std::lock_guard<std::mutex> lck(mut);
-    if (context_lifetime) {
-        context_lifetime->set_highlighted(u);
-    }
+    push([u](auto &i) { i.context_lifetime->set_highlighted(u); });
 }
 
 void SceneRenderer::set_emphasis(const glm::vec3 &u) {
-    std::lock_guard<std::mutex> lck(mut);
-    if (context_lifetime) {
-        context_lifetime->set_emphasis(u);
-    }
+    push([u](auto &i) { i.context_lifetime->set_emphasis(u); });
 }
 
-void SceneRenderer::set_mic_pointing(const std::vector<glm::vec3> &directions) {
-    std::lock_guard<std::mutex> lck(mut);
-    if (context_lifetime) {
-        context_lifetime->set_mic_pointing(directions);
-    }
-}
-
-bool SceneRenderer::is_valid() const {
-    std::lock_guard<std::mutex> lck(mut);
-    return context_lifetime != nullptr;
+void SceneRenderer::set_receiver_pointing(
+    const std::vector<glm::vec3> &directions) {
+    push([directions](auto &i) {
+        i.context_lifetime->set_receiver_pointing(directions);
+    });
 }

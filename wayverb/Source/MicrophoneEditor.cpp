@@ -6,15 +6,15 @@
 #include "Vec3Editor.hpp"
 
 MicrophoneListBox::MicrophoneListBox(
-    model::ValueWrapper<config::MicrophoneModel>& microphone_model)
-        : microphone_model(microphone_model) {
+    model::ValueWrapper<std::vector<model::Microphone>>& microphones)
+        : microphones(microphones) {
     //  don't use this with an empy list plz
-    assert(!microphone_model.microphones.empty());
+    assert(!microphones.empty());
     setModel(this);
 }
 
 int MicrophoneListBox::getNumRows() {
-    return microphone_model.microphones.size();
+    return microphones.size();
 }
 
 void MicrophoneListBox::paintListBoxItem(
@@ -50,7 +50,7 @@ Component* MicrophoneListBox::refreshComponentForRow(int row,
 }
 
 void MicrophoneListBox::receive_broadcast(model::Broadcaster* cb) {
-    if (cb == &microphone_model) {
+    if (cb == &microphones) {
         updateContent();
     }
 }
@@ -69,9 +69,9 @@ void MicrophoneListBox::removeListener(Listener* l) {
 //----------------------------------------------------------------------------//
 
 MicrophoneEditableListBox::MicrophoneEditableListBox(
-    model::ValueWrapper<config::MicrophoneModel>& microphone_model)
-        : microphone_model(microphone_model)
-        , microphone_list_box(microphone_model) {
+    model::ValueWrapper<std::vector<model::Microphone>>& microphones)
+        : microphones(microphones)
+        , microphone_list_box(microphones) {
     addAndMakeVisible(microphone_list_box);
     addAndMakeVisible(add_button);
     addAndMakeVisible(sub_button);
@@ -79,14 +79,18 @@ MicrophoneEditableListBox::MicrophoneEditableListBox(
 
 void MicrophoneEditableListBox::buttonClicked(Button* b) {
     if (b == &add_button) {
-        microphone_model.microphones.push_back(
-            config::Microphone{glm::vec3{0, 0, 1}, 0.5});
-        microphone_list_box.selectRow(microphone_model.microphones.size() - 1);
+        microphones.push_back(model::Microphone{});
+        microphone_list_box.selectRow(microphones.size() - 1);
     } else if (b == &sub_button) {
-        assert(0 <= microphone_list_box.getSelectedRow());
-        microphone_model.microphones.erase(
-            microphone_list_box.getSelectedRow());
+        auto to_delete = microphone_list_box.getSelectedRow();
+        assert(0 <= to_delete);
+
+        //  deselect first to remove panel listeners/callbacks
         microphone_list_box.deselectAllRows();
+        //  now delete the microphone
+        microphones.erase(to_delete);
+        //  now select the next mic in the list
+        microphone_list_box.selectRow(std::max(0, to_delete - 1));
     }
 }
 
@@ -106,7 +110,7 @@ void MicrophoneEditableListBox::resized() {
 }
 
 void MicrophoneEditableListBox::receive_broadcast(model::Broadcaster* cb) {
-    if (cb == &microphone_model) {
+    if (cb == &microphones) {
         update_sub_button_enablement();
     }
 }
@@ -125,7 +129,7 @@ void MicrophoneEditableListBox::removeListener(Listener* l) {
 }
 
 void MicrophoneEditableListBox::update_sub_button_enablement() {
-    auto more_than_one_entry = 1 < microphone_model.microphones.size();
+    auto more_than_one_entry = 1 < microphones.size();
     auto row_selected = microphone_list_box.getSelectedRow() != -1;
     sub_button.setEnabled(more_than_one_entry && row_selected);
 }
@@ -148,10 +152,8 @@ private:
 };
 
 SingleMicrophoneComponent::SingleMicrophoneComponent(
-    model::ValueWrapper<config::Microphone>& microphone,
-    model::ValueWrapper<glm::vec3>& mic_position) {
-    property_panel.addProperties(
-        {new DirectionProperty(microphone.facing, mic_position)});
+    model::ValueWrapper<model::Microphone>& microphone) {
+    property_panel.addProperties({new DirectionProperty(microphone.pointer)});
     property_panel.addProperties(
         {new NumberProperty<float>("shape", microphone.shape, 0, 1)});
     property_panel.addProperties({new PolarPatternProperty(microphone.shape)});
@@ -170,11 +172,9 @@ void SingleMicrophoneComponent::resized() {
 //----------------------------------------------------------------------------//
 
 MicrophoneEditorPanel::MicrophoneEditorPanel(
-    model::ValueWrapper<config::MicrophoneModel>& microphone_model,
-    model::ValueWrapper<glm::vec3>& mic_position)
-        : microphone_model(microphone_model)
-        , mic_position(mic_position)
-        , microphone_list_box(microphone_model) {
+    model::ValueWrapper<std::vector<model::Microphone>>& microphones)
+        : microphones(microphones)
+        , microphone_list_box(microphones) {
     set_help("microphones configurator",
              "Simulated microphones behave like a collection of superimposed "
              "microphone capsules. Add and remove capsules using the list on "
@@ -182,7 +182,7 @@ MicrophoneEditorPanel::MicrophoneEditorPanel(
              "the right.");
     addAndMakeVisible(microphone_list_box);
 
-    microphone_model.broadcast();
+    microphones.broadcast();
     microphone_list_box.selectRow(0);
 
     if (single_microphone) {
@@ -202,10 +202,10 @@ void MicrophoneEditorPanel::resized() {
 
 void MicrophoneEditorPanel::selectedRowsChanged(MicrophoneEditableListBox* lb,
                                                 int last) {
-    assert(last < static_cast<int>(microphone_model.microphones.size()));
+    assert(last < static_cast<int>(microphones.size()));
     if (0 <= last) {
-        single_microphone = std::make_unique<SingleMicrophoneComponent>(
-            microphone_model.microphones[last], mic_position);
+        single_microphone =
+            std::make_unique<SingleMicrophoneComponent>(microphones[last]);
         addAndMakeVisible(*single_microphone);
         resized();
     } else {

@@ -9,7 +9,7 @@ ModelSectionObject::ModelSectionObject(const GenericShader &shader,
                                        const Octree &octree)
         : BasicDrawableObject(
               shader,
-              get_vertices(scene_data),
+              scene_data.get_converted_vertices(),
               std::vector<glm::vec4>(
                   scene_data.get_vertices().size(),
                   glm::vec4(
@@ -17,16 +17,6 @@ ModelSectionObject::ModelSectionObject(const GenericShader &shader,
               get_indices(scene_data, octree),
               GL_TRIANGLES)
         , octree(shader, octree) {
-}
-
-std::vector<glm::vec3> ModelSectionObject::get_vertices(
-    const SceneData &scene_data) const {
-    std::vector<glm::vec3> ret(scene_data.get_vertices().size());
-    std::transform(scene_data.get_vertices().begin(),
-                   scene_data.get_vertices().end(),
-                   ret.begin(),
-                   [](auto i) { return to_glm_vec3(i); });
-    return ret;
 }
 
 void fill_indices_vector(const SceneData &scene_data,
@@ -70,8 +60,8 @@ ModelSectionObject::DrawableOctree::DrawableOctree(const GenericShader &shader,
 
 void ModelSectionObject::DrawableOctree::draw_worker(BoxObject &box) const {
     if (do_draw) {
-        box.set_scale(to_glm_vec3(aabb.dimensions()));
-        box.set_position(to_glm_vec3(aabb.centre()));
+        box.set_scale(aabb.dimensions());
+        box.set_position(aabb.centre());
         box.draw();
         for (const auto &i : nodes)
             i.draw_worker(box);

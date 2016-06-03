@@ -205,11 +205,10 @@ VisualiserApplication::MainWindow::scene_and_model_from_file(const File& f) {
         //  try to load the model
         SceneData scene_data(f.getFullPathName().toStdString());
         //  return the pair
-        return std::make_tuple(
-            std::move(scene_data),
-            construct_full_model(model::Persistent{config::Combined{},
-                                                   scene_data.get_materials()}),
-            File());
+        return std::make_tuple(std::move(scene_data),
+                               construct_full_model(model::Persistent{
+                                   model::App{}, scene_data.get_materials()}),
+                               File());
     };
 
     return f.getFileExtension() == ".way" ? is_way() : is_not_way();

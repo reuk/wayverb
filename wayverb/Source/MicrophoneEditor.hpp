@@ -22,7 +22,7 @@ public:
     };
 
     MicrophoneListBox(
-        model::ValueWrapper<config::MicrophoneModel>& microphone_model);
+        model::ValueWrapper<std::vector<model::Microphone>>& microphones);
 
     int getNumRows() override;
 
@@ -41,8 +41,8 @@ public:
     void removeListener(Listener* l);
 
 private:
-    model::ValueWrapper<config::MicrophoneModel>& microphone_model;
-    model::BroadcastConnector microphone_connector{&microphone_model, this};
+    model::ValueWrapper<std::vector<model::Microphone>>& microphones;
+    model::BroadcastConnector microphones_connector{&microphones, this};
 
     ListenerList<Listener> listener_list;
 };
@@ -68,7 +68,7 @@ public:
     };
 
     MicrophoneEditableListBox(
-        model::ValueWrapper<config::MicrophoneModel>& microphone_model);
+        model::ValueWrapper<std::vector<model::Microphone>>& microphones);
 
     void buttonClicked(Button* b) override;
 
@@ -85,8 +85,8 @@ public:
 private:
     void update_sub_button_enablement();
 
-    model::ValueWrapper<config::MicrophoneModel>& microphone_model;
-    model::BroadcastConnector microphone_connector{&microphone_model, this};
+    model::ValueWrapper<std::vector<model::Microphone>>& microphones;
+    model::BroadcastConnector microphones_connector{&microphones, this};
 
     MicrophoneListBox microphone_list_box;
     model::Connector<MicrophoneListBox> microphone_list_box_connector{
@@ -106,8 +106,7 @@ private:
 class SingleMicrophoneComponent : public Component {
 public:
     SingleMicrophoneComponent(
-        model::ValueWrapper<config::Microphone>& microphone,
-        model::ValueWrapper<glm::vec3>& mic_position);
+        model::ValueWrapper<model::Microphone>& microphone);
 
     void resized() override;
 
@@ -124,16 +123,14 @@ class MicrophoneEditorPanel : public Component,
                               public SettableHelpPanelClient {
 public:
     MicrophoneEditorPanel(
-        model::ValueWrapper<config::MicrophoneModel>& microphone_model,
-        model::ValueWrapper<glm::vec3>& mic_position);
+        model::ValueWrapper<std::vector<model::Microphone>>& microphones);
 
     void resized() override;
 
     void selectedRowsChanged(MicrophoneEditableListBox* lb, int last) override;
 
 private:
-    model::ValueWrapper<config::MicrophoneModel>& microphone_model;
-    model::ValueWrapper<glm::vec3>& mic_position;
+    model::ValueWrapper<std::vector<model::Microphone>>& microphones;
 
     MicrophoneEditableListBox microphone_list_box;
     model::Connector<MicrophoneEditableListBox> microphone_list_box_connector{
