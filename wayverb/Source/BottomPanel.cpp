@@ -3,7 +3,8 @@
 BottomPanel::BottomPanel(model::ValueWrapper<model::RenderState>& render_state)
         : render_state(render_state)
         , bar(progress) {
-    for (auto i : {&state_connector, &progress_connector}) {
+    for (auto i :
+         {&is_rendering_connector, &state_connector, &progress_connector}) {
         i->trigger();
     }
 

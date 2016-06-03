@@ -70,8 +70,6 @@ void VisualiserApplication::initialise(const String& commandLine) {
     main_menu_bar_model = std::make_unique<MainMenuBarModel>();
 
     MenuBarModel::setMacMainMenu(main_menu_bar_model.get(), nullptr);
-
-    //    command_manager->invoke(CommandIDs::idOpenProject, false);
 }
 
 void VisualiserApplication::close_main_window() {
