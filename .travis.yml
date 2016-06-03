@@ -7,5 +7,5 @@ before_install:
 install:
 - sudo apt-get install --yes doxygen graphviz cmake
 
-after_success:
+script:
 - ./config/publish-doxygen.sh

@@ -20,7 +20,7 @@ cd -
 cd ${HTML_PATH}
 git add .
 git config user.name "${COMMIT_USER}"
-git config user.email ${COMMIT_EMAIL}"
+git config user.email "${COMMIT_EMAIL}"
 git commit -m "Automated docs for changeset ${CHANGESET}."
 git push origin gh-pages
 cd -
