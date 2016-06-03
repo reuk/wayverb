@@ -92,6 +92,8 @@ void VisualiserApplication::close_main_window() {
                     main_window = nullptr;
                     break;
             }
+        } else {
+            main_window = nullptr;
         }
     }
 }

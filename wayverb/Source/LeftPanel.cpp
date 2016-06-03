@@ -4,6 +4,7 @@
 #include "MicrophoneEditor.hpp"
 #include "PropertyComponentLAF.hpp"
 #include "SurfacePanel.hpp"
+#include "TextDisplayProperty.hpp"
 #include "Vec3Editor.hpp"
 
 class ConfigureButton : public ButtonPropertyComponent {
@@ -151,7 +152,7 @@ public:
                           to_id(config::AttenuationModel::Mode::microphone));
         combo_box.addItem("HRTF", to_id(config::AttenuationModel::Mode::hrtf));
 
-        value.broadcast();
+        value_connector.trigger();
         addAndMakeVisible(combo_box);
     }
 
@@ -272,51 +273,72 @@ LeftPanel::LeftPanel(model::ValueWrapper<model::FullModel>& model,
              "Use the options in this panel to adjust the various settings of "
              "the simulation.");
 
-    auto source_property = new Vec3Property("source",
-                                            model.persistent.combined.source,
-                                            aabb.get_c0(),
-                                            aabb.get_c1());
-    auto mic_property = new Vec3Property("receiver",
-                                         model.persistent.combined.mic,
-                                         aabb.get_c0(),
-                                         aabb.get_c1());
+    for (auto i : {&filter_frequency_connector, &oversample_ratio_connector}) {
+        i->trigger();
+    }
 
-    source_property->set_help("source position",
-                              "Allows you to move the source position in each "
-                              "of the axial directions.");
-    mic_property->set_help("receiver position",
-                           "Allows you to move the receiver position in each "
-                           "of the axial directions.");
+    {
+        auto source_property =
+            new Vec3Property("source",
+                             model.persistent.combined.source,
+                             aabb.get_c0(),
+                             aabb.get_c1());
+        auto mic_property = new Vec3Property("receiver",
+                                             model.persistent.combined.mic,
+                                             aabb.get_c0(),
+                                             aabb.get_c1());
 
-    property_panel.addSection("general", {source_property, mic_property});
+        source_property->set_help(
+            "source position",
+            "Allows you to move the source position in each "
+            "of the axial directions.");
+        mic_property->set_help(
+            "receiver position",
+            "Allows you to move the receiver position in each "
+            "of the axial directions.");
 
-    Array<PropertyComponent*> materials;
-    materials.addArray(make_material_buttons(
-        model.shown_surface, model.persistent.materials, model.presets));
-    property_panel.addSection("materials", materials);
+        Array<PropertyComponent*> general{source_property, mic_property};
+        general.add(new ReceiverPickerProperty(
+            model.persistent.combined.receiver_config.mode));
+        general.add(new ReceiverConfigureButton(
+            model.persistent.combined.receiver_config,
+            model.persistent.combined.mic,
+            model.persistent.combined.source));
+        property_panel.addSection("general", general);
+    }
 
-    property_panel.addSection(
-        "waveguide",
-        {new NumberProperty<float>(
-             "cutoff", model.persistent.combined.filter_frequency, 20, 20000),
-         new NumberProperty<float>(
-             "oversample", model.persistent.combined.oversample_ratio, 1, 4)});
+    {
+        Array<PropertyComponent*> materials;
+        materials.addArray(make_material_buttons(
+            model.shown_surface, model.persistent.materials, model.presets));
+        property_panel.addSection("materials", materials);
+    }
 
-    property_panel.addSection(
-        "raytracer",
-        {new NumberProperty<int>(
-             "rays", model.persistent.combined.rays, 1000, 1000000),
-         new NumberProperty<int>(
-             "reflections", model.persistent.combined.impulses, 20, 200)});
+    {
+        Array<PropertyComponent*> waveguide;
+        waveguide.addArray({new NumberProperty<float>(
+                                "cutoff",
+                                model.persistent.combined.filter_frequency,
+                                20,
+                                20000),
+                            new NumberProperty<float>(
+                                "oversample",
+                                model.persistent.combined.oversample_ratio,
+                                1,
+                                4)});
+        waveguide.add(new TextDisplayProperty<int>(
+            "waveguide sr / Hz", 20, waveguide_sampling_rate_wrapper));
+        property_panel.addSection("waveguide", waveguide);
+    }
 
-    Array<PropertyComponent*> receivers;
-    receivers.add(new ReceiverPickerProperty(
-        model.persistent.combined.receiver_config.mode));
-    receivers.add(
-        new ReceiverConfigureButton(model.persistent.combined.receiver_config,
-                                    model.persistent.combined.mic,
-                                    model.persistent.combined.source));
-    property_panel.addSection("receiver", receivers);
+    {
+        property_panel.addSection(
+            "raytracer",
+            {new NumberProperty<int>(
+                 "rays", model.persistent.combined.rays, 1000, 1000000),
+             new NumberProperty<int>(
+                 "reflections", model.persistent.combined.impulses, 20, 200)});
+    }
 
     property_panel.setOpaque(false);
 
@@ -333,5 +355,9 @@ void LeftPanel::resized() {
 void LeftPanel::receive_broadcast(model::Broadcaster* cb) {
     if (cb == &model.render_state.is_rendering) {
         property_panel.setEnabled(!model.render_state.is_rendering);
+    } else if (cb == &model.persistent.combined.filter_frequency ||
+               cb == &model.persistent.combined.oversample_ratio) {
+        waveguide_sampling_rate_wrapper.set(
+            model.persistent.combined.get().get_waveguide_sample_rate());
     }
 }

@@ -54,11 +54,24 @@ public:
         }
     }
 
+    Broadcaster*const get_broadcaster() const {
+        return cb;
+    }
+    Listener*const get_listener() const {
+        return cl;
+    }
+
 private:
     Broadcaster *const cb;
     Listener *const cl;
 };
 
-using BroadcastConnector = Connector<Broadcaster>;
+class BroadcastConnector : public Connector<Broadcaster> {
+public:
+    using Connector<Broadcaster>::Connector;
+    void trigger() const {
+        get_listener()->receive_broadcast(get_broadcaster());
+    }
+};
 
 }  // namespace model

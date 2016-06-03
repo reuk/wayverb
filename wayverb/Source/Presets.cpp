@@ -162,6 +162,9 @@ std::vector<SceneData::Material> get_presets() {
             "stage_floor",
             Surface{{0.9, 0.93, 0.94, 0.94, 0.94, 0.94, 0.94, 0.94},
                     {0.95, 0.9, 0.85, 0.8, 0.75, 0.7, 0.65, 0.6}}},
+        SceneData::Material{
+            "echo chamber",
+            Surface{{1, 1, 1, 1, 1, 1, 1, 1}, {1, 1, 1, 1, 1, 1, 1, 1}}},
     };
 
     proc::sort(ret,

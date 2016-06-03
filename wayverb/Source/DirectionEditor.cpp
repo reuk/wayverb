@@ -2,27 +2,22 @@
 #include "Orientable.hpp"
 #include "Vec3Editor.hpp"
 
-class CartesianEditor : public Vec3Editor {
-public:
-    using Vec3Editor::Vec3Editor;
-};
-
 class SphericalEditor : public Component, public model::BroadcastListener {
 public:
     SphericalEditor(model::ValueWrapper<glm::vec3>& pointing)
             : pointing(pointing) {
+        auto n = glm::normalize(pointing.get());
+        azimuth_wrapper.set(glm::degrees(Orientable::compute_azimuth(n)));
+        auto e = glm::degrees(Orientable::compute_elevation(n));
+        elevation_wrapper.set(std::isnan(e) ? std::copysign(89, pointing.y)
+                                            : e);
+
         property_panel.addProperties(
             {new NumberProperty<float>("azimuth", azimuth_wrapper, -180, 180),
              new NumberProperty<float>(
                  "elevation", elevation_wrapper, -89, 89)});
         property_panel.setOpaque(false);
         addAndMakeVisible(property_panel);
-
-        auto n = glm::normalize(pointing.get());
-        azimuth_wrapper.set(glm::degrees(Orientable::compute_azimuth(n)));
-        auto e = glm::degrees(Orientable::compute_elevation(n));
-        elevation_wrapper.set(std::isnan(e) ? std::copysign(89, pointing.y)
-                                            : e);
     }
 
     void resized() override {
@@ -92,11 +87,11 @@ public:
                  model::ValueWrapper<glm::vec3>& position)
             : pointing(pointing)
             , position(position) {
+        target_wrapper.set(position.get() + pointing.get());
+
         property_panel.addProperties({new Vec3Property(
             "target", target_wrapper, glm::vec3(-1000), glm::vec3(1000))});
         addAndMakeVisible(property_panel);
-
-        target_wrapper.set(position.get() + pointing.get());
     }
 
     void resized() override {
@@ -127,7 +122,6 @@ DirectionEditor::DirectionEditor(model::ValueWrapper<glm::vec3>& pointing,
         : pointing(pointing)
         , position(position)
         , tabs(TabbedButtonBar::TabsAtTop) {
-    tabs.addTab("cartesian", Colours::darkgrey, -1);
     tabs.addTab("spherical", Colours::darkgrey, -1);
     tabs.addTab("look at", Colours::darkgrey, -1);
 
@@ -163,14 +157,10 @@ void DirectionEditor::paint(Graphics& g) {
 void DirectionEditor::changeListenerCallback(ChangeBroadcaster* cb) {
     if (cb == &tabs) {
         switch (tabs.getCurrentTabIndex()) {
-            case 0:  // cartesian
-                content = std::make_unique<CartesianEditor>(
-                    pointing, glm::vec3(-1), glm::vec3(1));
-                break;
-            case 1:  // spherical
+            case 0:  // spherical
                 content = std::make_unique<SphericalEditor>(pointing);
                 break;
-            case 2:  // look at
+            case 1:  // look at
                 content = std::make_unique<LookAtEditor>(pointing, position);
                 break;
         }

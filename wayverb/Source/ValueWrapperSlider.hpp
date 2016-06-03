@@ -13,6 +13,8 @@ public:
             : value(value) {
         slider.addListener(this);
         addAndMakeVisible(slider);
+
+        value_connector.trigger();
     }
 
     virtual ~ValueWrapperSlider() noexcept {

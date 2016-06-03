@@ -13,6 +13,8 @@
 		0F3F3BF0CF31990B8A36D2C6 /* BottomPanel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8EC991E2A8DBE96759A51D2A /* BottomPanel.cpp */; };
 		127F610F5B79495C0D092DF7 /* juce_audio_processors.mm in Sources */ = {isa = PBXBuildFile; fileRef = 1F4341A2DEBD8ABD625FA0A5 /* juce_audio_processors.mm */; };
 		17BFF294246BE35E2334DF9F /* QTKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AED820E5E9613936B4CCA98A /* QTKit.framework */; };
+		1B469E5C1CFF65B00026567A /* libsamplerate.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B96518A1CFDD23F0084F670 /* libsamplerate.a */; };
+		1B469E7E1CFF65C10026567A /* libfftw3f.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B9651891CFDD23F0084F670 /* libfftw3f.a */; };
 		1B96517E1CFDD2080084F670 /* libassimp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B9651671CFDD1F00084F670 /* libassimp.a */; };
 		1B96517F1CFDD2080084F670 /* libcombined.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B9651751CFDD1F00084F670 /* libcombined.a */; };
 		1B9651801CFDD2080084F670 /* libcommon.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B96516F1CFDD1F00084F670 /* libcommon.a */; };
@@ -22,8 +24,6 @@
 		1B9651841CFDD2080084F670 /* libwaveguide.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B9651711CFDD1F00084F670 /* libwaveguide.a */; };
 		1B9651861CFDD2170084F670 /* OpenCL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B9651851CFDD2170084F670 /* OpenCL.framework */; };
 		1B9651881CFDD2220084F670 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B9651871CFDD2220084F670 /* libz.tbd */; };
-		1B96518B1CFDD23F0084F670 /* libfftw3f.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B9651891CFDD23F0084F670 /* libfftw3f.a */; };
-		1B96518C1CFDD23F0084F670 /* libsamplerate.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B96518A1CFDD23F0084F670 /* libsamplerate.a */; };
 		1D0C4CE425FD7D455AC10C32 /* juce_audio_basics.mm in Sources */ = {isa = PBXBuildFile; fileRef = BFBA6DD240E8E2C1D9EEFE1C /* juce_audio_basics.mm */; };
 		1E09DBF6A82901B168B1DE8F /* MainComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7D2C7F4DDD285709BDAA80DC /* MainComponent.cpp */; };
 		22A1A2FEBBF078F0D165D702 /* PropertyComponentLAF.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D427A44648B46DF12F248F18 /* PropertyComponentLAF.cpp */; };
@@ -407,6 +407,7 @@
 		1B0009F4B06C6DB0FBC35C69 /* FullModel.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = FullModel.hpp; path = ../../Source/FullModel.hpp; sourceTree = SOURCE_ROOT; };
 		1B3DE3698539A30ABBE4F207 /* jcprepct.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = jcprepct.c; path = ../../JuceLibraryCode/modules/juce_graphics/image_formats/jpglib/jcprepct.c; sourceTree = SOURCE_ROOT; };
 		1B6108181CA032ADF5CE83F6 /* juce_FileTreeComponent.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = juce_FileTreeComponent.h; path = ../../JuceLibraryCode/modules/juce_gui_basics/filebrowser/juce_FileTreeComponent.h; sourceTree = SOURCE_ROOT; };
+		1B6A4EF41D00881D003E54FF /* TextDisplayProperty.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = TextDisplayProperty.hpp; path = ../../Source/TextDisplayProperty.hpp; sourceTree = "<group>"; };
 		1B9651251CFDD1F00084F670 /* WAYVERB.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = WAYVERB.xcodeproj; path = ../../../xcproj/WAYVERB.xcodeproj; sourceTree = "<group>"; };
 		1B9651851CFDD2170084F670 /* OpenCL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenCL.framework; path = System/Library/Frameworks/OpenCL.framework; sourceTree = SDKROOT; };
 		1B9651871CFDD2220084F670 /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
@@ -1517,8 +1518,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				1B96518B1CFDD23F0084F670 /* libfftw3f.a in Frameworks */,
-				1B96518C1CFDD23F0084F670 /* libsamplerate.a in Frameworks */,
+				1B469E7E1CFF65C10026567A /* libfftw3f.a in Frameworks */,
+				1B469E5C1CFF65B00026567A /* libsamplerate.a in Frameworks */,
 				1B9651881CFDD2220084F670 /* libz.tbd in Frameworks */,
 				1B9651861CFDD2170084F670 /* OpenCL.framework in Frameworks */,
 				1B96517E1CFDD2080084F670 /* libassimp.a in Frameworks */,
@@ -2621,6 +2622,7 @@
 				9C5C5923C8EFB7B5B8A940E3 /* SurfaceModel.hpp */,
 				5BC8F406BA616D9919448093 /* SurfacePanel.cpp */,
 				465FBBE6120CE6279C613F01 /* SurfacePanel.hpp */,
+				1B6A4EF41D00881D003E54FF /* TextDisplayProperty.hpp */,
 				0E04B6542CA38A9839D815EC /* ValueWrapperSlider.hpp */,
 				07E01F927F5A947DF4EEF9BD /* Vec3Editor.cpp */,
 				273E19C0858C320D163462D5 /* Vec3Editor.hpp */,

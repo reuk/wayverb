@@ -96,10 +96,12 @@ void ModelRendererComponent::set_pressures(
 
 void ModelRendererComponent::changeListenerCallback(ChangeBroadcaster *u) {
     if (u == &scene_renderer) {
-        shown_surface.broadcast();
-        config.mic.broadcast();
-        config.source.broadcast();
-        render_state.is_rendering.broadcast();
-        config.receiver_config.broadcast();
+        for (auto i : {&shown_connector,
+                       &mic_connector,
+                       &source_connector,
+                       &is_rendering_connector,
+                       &facing_direction_connector}) {
+            i->trigger();
+        }
     }
 }

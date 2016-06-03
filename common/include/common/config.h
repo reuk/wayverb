@@ -5,7 +5,6 @@
 #define SPEED_OF_SOUND (340.0f)
 
 namespace config {
-
 class App {
 public:
     App() = default;

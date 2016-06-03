@@ -12,8 +12,6 @@ VolumeComponent::VolumeSlider::VolumeSlider(model::ValueWrapper<float>& value)
     set_text_box_style(Slider::TextEntryBoxPosition::NoTextBox, true, 0, 0);
     set_popup_display_enabled(true, nullptr);
     set_range(0.01, 1, 0);
-
-    value.broadcast();
 }
 
 // float VolumeComponent::VolumeSlider::slider_to_value(float t) {
@@ -195,7 +193,7 @@ PresetComponent::PresetComponent(
     addAndMakeVisible(save_button);
     addAndMakeVisible(delete_button);
 
-    preset_model.broadcast();
+    preset_connector.trigger();
 }
 
 PresetComponent::~PresetComponent() noexcept {
@@ -240,7 +238,7 @@ void PresetComponent::textEditorReturnKeyPressed(TextEditor& e) {
         combo_box.setSelectedItemIndex(preset_model.size() - 1,
                                        sendNotificationSync);
     } else {
-        linked.broadcast();
+        linked_connector.trigger();
     }
 }
 

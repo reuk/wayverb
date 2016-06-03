@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.0)
 
 project(WAYVERB VERSION 0.1 LANGUAGES CXX)
 
+set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
+
 set(CMAKE_BUILD_TYPE RelWithDebInfo)
 
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
@@ -31,7 +33,7 @@ if(DOXYGEN_FOUND)
         ${CMAKE_CURRENT_BINARY_DIR})
 endif(DOXYGEN_FOUND)
 
-add_custom_target(compile_commands ALL
-    COMMAND ${CMAKE_COMMAND} -E copy
-        ${CMAKE_CURRENT_BINARY_DIR}/compile_commands.json
-        ${CMAKE_CURRENT_SOURCE_DIR}/compile_commands.json)
+#add_custom_target(compile_commands ALL
+#    COMMAND ${CMAKE_COMMAND} -E copy
+#        ${CMAKE_CURRENT_BINARY_DIR}/compile_commands.json
+#        ${CMAKE_CURRENT_SOURCE_DIR}/compile_commands.json)
