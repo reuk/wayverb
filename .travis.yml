@@ -8,4 +8,4 @@ install:
 - sudo apt-get install --yes doxygen graphviz cmake
 
 after_success:
-- ./config/publish-doxygen
+- ./config/publish-doxygen.sh
