@@ -24,7 +24,7 @@ include(CPack)
 
 find_package(Doxygen)
 if(DOXYGEN_FOUND)
-    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config/Doxyfile.in
         ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile @ONLY)
     add_custom_target(doc #ALL
         ${DOXYGEN_EXECUTABLE}
