@@ -13,7 +13,7 @@ git rm -rf .
 cd -
 
 cd build
-cmake ..
+cmake -DONLY_BUILD_DOCS=true ..
 make doc
 cd -
 
