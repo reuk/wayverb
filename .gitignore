@@ -10,6 +10,8 @@ demo/impulses
 demo/logfile.txt
 docs
 
+config/travisci_rsa
+
 wayverb/Builds/MacOSX/Build
 
 *.swp
