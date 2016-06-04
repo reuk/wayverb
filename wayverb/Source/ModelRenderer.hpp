@@ -6,7 +6,6 @@
 #include "LitSceneShader.hpp"
 #include "MeshObject.hpp"
 #include "ModelObject.hpp"
-#include "ModelSectionObject.hpp"
 #include "OctahedronObject.hpp"
 #include "PointObject.hpp"
 
@@ -154,6 +153,9 @@ public:
     void set_receiver_pointing(const std::vector<glm::vec3>& directions);
 
     void set_emphasis(const glm::vec3& c);
+
+    /// Should return a list of Nodes which can be selected with the mouse.
+    std::vector<Node*> get_selectable_objects();
 
 private:
     const GenericShader& generic_shader;

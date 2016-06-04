@@ -72,6 +72,12 @@ PointObject::PointObject(const GenericShader& shader, const glm::vec4& color)
         , z_ring(shader, color, RingObject::Axis::z) {
 }
 
+void PointObject::set_highlight(float amount) {
+    x_ring.set_highlight(amount);
+    y_ring.set_highlight(amount);
+    z_ring.set_highlight(amount);
+}
+
 void PointObject::draw() const {
     auto s_shader = shader.get_scoped();
     shader.set_model_matrix(get_matrix());

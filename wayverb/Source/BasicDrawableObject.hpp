@@ -19,15 +19,16 @@ public:
     glm::vec3 get_position() const;
     void set_position(const glm::vec3& v);
 
-    glm::vec3 get_scale() const;
-    void set_scale(const glm::vec3& s);
+    float get_scale() const;
     void set_scale(float s);
 
     glm::mat4 get_matrix() const override;
 
+    virtual void set_highlight(float amount) = 0;
+
 private:
     glm::vec3 position{0, 0, 0};
-    glm::vec3 scale{1, 1, 1};
+    float scale{1};
 };
 
 class BasicDrawableObject : public ::Drawable, public Node {
@@ -45,8 +46,12 @@ public:
     GLuint get_mode() const;
     void set_mode(GLuint mode);
 
+    void set_highlight(float amount) override;
+
 private:
     const GenericShader& shader;
+
+    std::vector<glm::vec4> color_vector;
 
     VAO vao;
     StaticVBO geometry;

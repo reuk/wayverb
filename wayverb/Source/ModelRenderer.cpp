@@ -121,8 +121,8 @@ DrawableScene::DrawableScene(const GenericShader &generic_shader,
         , mesh_shader(mesh_shader)
         , lit_scene_shader(lit_scene_shader)
         , model_object(generic_shader, lit_scene_shader, scene_data)
-        , source_object(generic_shader, glm::vec4(1, 0, 0, 1))
-        , receiver_object(generic_shader, glm::vec4(0, 1, 1, 1)) {
+        , source_object(generic_shader, glm::vec4(0.7, 0, 0, 1))
+        , receiver_object(generic_shader, glm::vec4(0, 0.7, 0.7, 1)) {
     //  TODO init raytrace object
 }
 
@@ -172,6 +172,10 @@ void DrawableScene::set_emphasis(const glm::vec3 &c) {
     model_object.set_colour(c);
 }
 
+std::vector<Node *> DrawableScene::get_selectable_objects() {
+    return {&source_object, &receiver_object};
+}
+
 //----------------------------------------------------------------------------//
 
 class SceneRenderer::ContextLifetime : public ::Drawable {
@@ -186,6 +190,12 @@ public:
         auto max = glm::length(aabb.dimensions());
         scale = max > 0 ? 20 / max : 1;
         translation = -glm::vec3(m.x, m.y, m.z);
+
+        glEnable(GL_DEPTH_TEST);
+        glEnable(GL_PROGRAM_POINT_SIZE);
+
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     }
 
     void set_viewport(const glm::ivec2 &v) {
@@ -205,7 +215,8 @@ public:
     }
 
     void set_rotation(const Orientable::AzEl &u) {
-        azel = u;
+        azel = Orientable::AzEl{
+            std::fmod(u.azimuth, static_cast<float>(M_PI * 2)), u.elevation};
     }
 
     void set_rendering(bool b) {
@@ -243,11 +254,6 @@ public:
         auto c = 0.0;
         glClearColor(c, c, c, 1);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        glEnable(GL_DEPTH_TEST);
-        glEnable(GL_PROGRAM_POINT_SIZE);
-
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
         auto config_shader = [this](const auto &shader) {
             auto s_shader = shader.get_scoped();
@@ -268,32 +274,75 @@ public:
         drawable_scene.set_receiver_pointing(directions);
     }
 
-    void mouse_down(const glm::vec2 &pos) {
-        mousing = std::make_unique<Mousing>(Mousing{pos, azel});
-        //  TODO
-        //  if we're over a source/receiver, we're going to move that
+    //  matrices:
+    //  projection * view * model
 
-        //  otherwise, we want to go into ROTATE MODE
+    Node *get_currently_hovered(const glm::vec2 &pos) {
+        auto ray_clip = glm::vec4{
+            (2 * pos.x) / viewport.x - 1, 1 - (2 * pos.y) / viewport.y, -1, 1};
+        auto ray_eye = glm::inverse(get_projection_matrix()) * ray_clip;
+        ray_eye = glm::vec4{ray_eye.x, ray_eye.y, -1, 0};
+
+        auto camera_world = glm::vec3{glm::inverse(get_view_matrix())[3]};
+
+        auto ray_world = glm::normalize(
+            glm::vec3{glm::inverse(get_view_matrix()) * ray_eye});
+
+        struct Intersection {
+            Node *ref;
+            double distance;
+        };
+
+        Intersection intersection{nullptr, 0};
+        for (auto i : drawable_scene.get_selectable_objects()) {
+            auto diff = camera_world - i->get_position();
+            auto b = glm::dot(ray_world, diff);
+            auto c = glm::dot(diff, diff) - glm::pow(i->get_scale() * 0.4, 2);
+            auto det = glm::pow(b, 2) - c;
+            if (0 <= det) {
+                auto sq_det = std::sqrt(det);
+                auto dist = std::min(-b + sq_det, -b - sq_det);
+                if (!intersection.ref || dist < intersection.distance) {
+                    intersection = Intersection{i, dist};
+                }
+            }
+        }
+
+        return intersection.ref;
+    }
+
+    void mouse_down(const glm::vec2 &pos) {
+        mousing = std::make_unique<Mousing>(
+            Mousing{get_currently_hovered(pos), pos, azel});
+        if (mousing->to_move) {
+            mousing->to_move->set_highlight(0.5);
+        }
     }
 
     void mouse_drag(const glm::vec2 &pos) {
         assert(mousing);
-        //  TODO
-        //  if we're dragging a source/receiver, we're going to move that
+        if (mousing->to_move) {
+            //  if we're dragging a source/receiver, we're going to move that
 
-        //  otherwise, we want to rotate the scene
-        auto diff = pos - mousing->begin;
+        } else {
+            //  otherwise, we want to rotate the scene
+            auto diff = pos - mousing->begin;
 
-        set_rotation(Orientable::AzEl{
-            mousing->begin_orientation.azimuth + diff.x * Mousing::angle_scale,
-            clamp(mousing->begin_orientation.elevation +
-                      diff.y * Mousing::angle_scale,
-                  static_cast<float>(-M_PI / 2),
-                  static_cast<float>(M_PI / 2))});
+            set_rotation(
+                Orientable::AzEl{mousing->begin_orientation.azimuth +
+                                     diff.x * Mousing::angle_scale,
+                                 clamp(mousing->begin_orientation.elevation +
+                                           diff.y * Mousing::angle_scale,
+                                       static_cast<float>(-M_PI / 2),
+                                       static_cast<float>(M_PI / 2))});
+        }
     }
 
     void mouse_up(const glm::vec2 &pos) {
         //  clear all the mousing state
+        if (mousing->to_move) {
+            mousing->to_move->set_highlight(0);
+        }
         mousing = nullptr;
     }
 
@@ -345,6 +394,8 @@ private:
 
     struct Mousing {
         static const float angle_scale;
+
+        Node *to_move{nullptr};
         glm::vec2 begin;
         Orientable::AzEl begin_orientation;
     };

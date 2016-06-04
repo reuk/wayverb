@@ -23,6 +23,8 @@ public:
     void set_position(const glm::vec3& p);
     void set_pointing(const std::vector<glm::vec3>& directions);
 
+    void set_highlight(float amount) override;
+
 private:
     const GenericShader& shader;
     glm::vec4 color;

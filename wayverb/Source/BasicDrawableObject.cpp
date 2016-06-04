@@ -1,5 +1,7 @@
 #include "BasicDrawableObject.hpp"
 
+#include "common/stl_wrappers.h"
+
 glm::vec3 Node::get_position() const {
     return position;
 }
@@ -8,21 +10,17 @@ void Node::set_position(const glm::vec3& v) {
     position = v;
 }
 
-glm::vec3 Node::get_scale() const {
+float Node::get_scale() const {
     return scale;
 }
 
-void Node::set_scale(const glm::vec3& s) {
-    scale = s;
-}
-
 void Node::set_scale(float s) {
-    scale = glm::vec3(s);
+    scale = s;
 }
 
 glm::mat4 Node::get_matrix() const {
     return glm::translate(get_position()) * Orientable::get_matrix() *
-           glm::scale(get_scale());
+           glm::scale(glm::vec3{get_scale()});
 }
 
 //----------------------------------------------------------------------------//
@@ -33,10 +31,11 @@ BasicDrawableObject::BasicDrawableObject(const GenericShader& shader,
                                          const std::vector<GLuint>& i,
                                          GLuint mode)
         : shader(shader)
+        , color_vector(c)
         , size(i.size())
         , mode(mode) {
     geometry.data(g);
-    colors.data(c);
+    set_highlight(0);
     ibo.data(i);
 
     auto s_vao = vao.get_scoped();
@@ -52,6 +51,14 @@ BasicDrawableObject::BasicDrawableObject(const GenericShader& shader,
     glVertexAttribPointer(c_pos, 4, GL_FLOAT, GL_FALSE, 0, nullptr);
 
     ibo.bind();
+}
+
+void BasicDrawableObject::set_highlight(float amount) {
+    std::vector<glm::vec4> highlighted(color_vector.size());
+    proc::transform(color_vector, highlighted.begin(), [amount](const auto& i) {
+        return i + amount;
+    });
+    colors.data(highlighted);
 }
 
 void BasicDrawableObject::draw() const {
