@@ -200,6 +200,10 @@ public:
         scale = std::max(0.0f, u);
     }
 
+    auto get_scale() const {
+        return scale;
+    }
+
     void set_rotation(const Orientable::AzEl &u) {
         azel = u;
     }
@@ -294,8 +298,8 @@ public:
     }
 
     void mouse_wheel_move(float delta_y) {
-        //  TODO
-        //  adjust scale
+        //  TODO tween this
+        set_scale(get_scale() + delta_y);
     }
 
 private:
