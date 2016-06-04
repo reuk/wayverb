@@ -6,8 +6,9 @@ class SphericalEditor : public Component {
 public:
     SphericalEditor(model::ValueWrapper<Orientable::AzEl>& azel) {
         property_panel.addProperties(
-            {new NumberProperty<float>("azimuth", azel.azimuth, -180, 180),
-             new NumberProperty<float>("elevation", azel.elevation, -89, 89)});
+            {new NumberProperty<float>("azimuth", azel.azimuth, -M_PI, M_PI),
+             new NumberProperty<float>(
+                 "elevation", azel.elevation, -M_PI * 0.49, M_PI * 0.49)});
         property_panel.setOpaque(false);
         addAndMakeVisible(property_panel);
     }

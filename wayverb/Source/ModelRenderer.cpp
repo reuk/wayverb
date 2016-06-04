@@ -161,118 +161,179 @@ void DrawableScene::set_emphasis(const glm::vec3 &c) {
 
 //----------------------------------------------------------------------------//
 
-SceneRenderer::ContextLifetime::ContextLifetime(
-    const CopyableSceneData &scene_data)
-        : model(scene_data)
-        , drawable_scene(generic_shader, mesh_shader, lit_scene_shader, model)
-        , axes(generic_shader)
-        , projection_matrix(get_projection_matrix(1)) {
-    auto aabb = model.get_aabb();
-    auto m = aabb.centre();
-    auto max = glm::length(aabb.dimensions());
-    scale = max > 0 ? 20 / max : 1;
-    translation = glm::translate(-glm::vec3(m.x, m.y, m.z));
-}
+class SceneRenderer::ContextLifetime : public ::Drawable {
+public:
+    ContextLifetime(const CopyableSceneData &scene_data)
+            : model(scene_data)
+            , drawable_scene(
+                  generic_shader, mesh_shader, lit_scene_shader, model)
+            , axes(generic_shader) {
+        auto aabb = model.get_aabb();
+        auto m = aabb.centre();
+        auto max = glm::length(aabb.dimensions());
+        scale = max > 0 ? 20 / max : 1;
+        translation = -glm::vec3(m.x, m.y, m.z);
+    }
 
-void SceneRenderer::ContextLifetime::set_aspect(float aspect) {
-    projection_matrix = get_projection_matrix(aspect);
-}
-void SceneRenderer::ContextLifetime::update_scale(float delta) {
-    scale = std::max(0.0f, scale + delta);
-}
-void SceneRenderer::ContextLifetime::set_rotation(float azimuth,
-                                                  float elevation) {
-    auto i = glm::rotate(azimuth, glm::vec3(0, 1, 0));
-    auto j = glm::rotate(elevation, glm::vec3(1, 0, 0));
-    rotation = j * i;
-}
+    void set_viewport(const glm::ivec2 &v) {
+        viewport = v;
+    }
 
-void SceneRenderer::ContextLifetime::set_rendering(bool b) {
-    drawable_scene.set_rendering(b);
-}
+    auto get_aspect() const {
+        return viewport.x / static_cast<float>(viewport.y);
+    }
 
-void SceneRenderer::ContextLifetime::set_receiver(const glm::vec3 &u) {
-    drawable_scene.set_receiver(u);
-}
-void SceneRenderer::ContextLifetime::set_source(const glm::vec3 &u) {
-    drawable_scene.set_source(u);
-}
+    void set_scale(float u) {
+        scale = std::max(0.0f, u);
+    }
 
-void SceneRenderer::ContextLifetime::set_positions(
-    const std::vector<cl_float3> &positions) {
-    std::vector<glm::vec3> ret(positions.size());
-    proc::transform(
-        positions, ret.begin(), [](const auto &i) { return to_glm_vec3(i); });
-    drawable_scene.set_positions(ret);
-}
-void SceneRenderer::ContextLifetime::set_pressures(
-    const std::vector<float> &pressures) {
-    drawable_scene.set_pressures(pressures);
-}
+    void set_rotation(const Orientable::AzEl &u) {
+        azel = u;
+    }
 
-void SceneRenderer::ContextLifetime::set_highlighted(int u) {
-    drawable_scene.set_highlighted(u);
-}
+    void set_rendering(bool b) {
+        drawable_scene.set_rendering(b);
+    }
 
-void SceneRenderer::ContextLifetime::set_emphasis(const glm::vec3 &c) {
-    drawable_scene.set_emphasis(c);
-}
+    void set_receiver(const glm::vec3 &u) {
+        drawable_scene.set_receiver(u);
+    }
 
-void SceneRenderer::ContextLifetime::draw() const {
-    auto c = 0.0;
-    glClearColor(c, c, c, 1);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glEnable(GL_DEPTH_TEST);
-    glEnable(GL_PROGRAM_POINT_SIZE);
+    void set_source(const glm::vec3 &u) {
+        drawable_scene.set_source(u);
+    }
 
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    void set_positions(const std::vector<cl_float3> &positions) {
+        std::vector<glm::vec3> ret(positions.size());
+        proc::transform(positions, ret.begin(), [](const auto &i) {
+            return to_glm_vec3(i);
+        });
+        drawable_scene.set_positions(ret);
+    }
+    void set_pressures(const std::vector<float> &pressures) {
+        drawable_scene.set_pressures(pressures);
+    }
 
-    auto config_shader = [this](const auto &shader) {
-        auto s_shader = shader.get_scoped();
-        shader.set_model_matrix(glm::mat4());
-        shader.set_view_matrix(get_view_matrix());
-        shader.set_projection_matrix(get_projection_matrix());
+    void set_highlighted(int u) {
+        drawable_scene.set_highlighted(u);
+    }
+
+    void set_emphasis(const glm::vec3 &c) {
+        drawable_scene.set_emphasis(c);
+    }
+
+    void draw() const {
+        auto c = 0.0;
+        glClearColor(c, c, c, 1);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glEnable(GL_DEPTH_TEST);
+        glEnable(GL_PROGRAM_POINT_SIZE);
+
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+        auto config_shader = [this](const auto &shader) {
+            auto s_shader = shader.get_scoped();
+            shader.set_model_matrix(glm::mat4());
+            shader.set_view_matrix(get_view_matrix());
+            shader.set_projection_matrix(get_projection_matrix());
+        };
+
+        config_shader(generic_shader);
+        config_shader(mesh_shader);
+        config_shader(lit_scene_shader);
+
+        drawable_scene.draw();
+        axes.draw();
+    }
+
+    void set_receiver_pointing(const std::vector<glm::vec3> &directions) {
+        drawable_scene.set_receiver_pointing(directions);
+    }
+
+    void mouse_down(const glm::vec2 &pos) {
+        mousing = std::make_unique<Mousing>(Mousing{pos});
+        //  TODO
+        //  if we're over a source/receiver, we're going to move that
+
+        //  otherwise, we want to go into ROTATE MODE
+    }
+
+    void mouse_drag(const glm::vec2 &pos) {
+        assert(mousing);
+        //  TODO
+        //  if we're dragging a source/receiver, we're going to move that
+
+        //  otherwise, we want to rotate the scene
+        auto diff = pos - mousing->begin;
+    }
+
+    void mouse_up(const glm::vec2 &pos) {
+        //  clear all the mousing state
+        mousing = nullptr;
+    }
+
+    void mouse_wheel_move(float delta_y) {
+        //  TODO
+        //  adjust scale
+    }
+
+private:
+    glm::mat4 get_projection_matrix() const {
+        return glm::perspective(45.0f, get_aspect(), 0.05f, 1000.0f);
+    }
+
+    glm::mat4 get_rotation_matrix() const {
+        auto i = glm::rotate(azel.azimuth, glm::vec3(0, 1, 0));
+        auto j = glm::rotate(azel.elevation, glm::vec3(1, 0, 0));
+        return j * i;
+    }
+
+    glm::mat4 get_scale_matrix() const {
+        return glm::scale(glm::vec3(scale));
+    }
+
+    glm::mat4 get_translation_matrix() const {
+        return glm::translate(translation);
+    }
+
+    glm::mat4 get_view_matrix() const {
+        auto rad = 20;
+        glm::vec3 eye(0, 0, rad);
+        glm::vec3 target(0, 0, 0);
+        glm::vec3 up(0, 1, 0);
+        return glm::lookAt(eye, target, up) * get_rotation_matrix() *
+               get_scale_matrix() * get_translation_matrix();
+    }
+
+    const CopyableSceneData &model;
+
+    GenericShader generic_shader;
+    MeshShader mesh_shader;
+    LitSceneShader lit_scene_shader;
+    DrawableScene drawable_scene;
+    AxesObject axes;
+
+    glm::ivec2 viewport;
+    Orientable::AzEl azel;
+    float scale;
+    glm::vec3 translation;
+
+    struct Mousing {
+        glm::vec2 begin;
     };
-
-    config_shader(generic_shader);
-    config_shader(mesh_shader);
-    config_shader(lit_scene_shader);
-
-    drawable_scene.draw();
-    axes.draw();
-}
-
-glm::mat4 SceneRenderer::ContextLifetime::get_projection_matrix() const {
-    return projection_matrix;
-}
-glm::mat4 SceneRenderer::ContextLifetime::get_view_matrix() const {
-    auto rad = 20;
-    glm::vec3 eye(0, 0, rad);
-    glm::vec3 target(0, 0, 0);
-    glm::vec3 up(0, 1, 0);
-    auto mm = rotation * get_scale_matrix() * translation;
-    return glm::lookAt(eye, target, up) * mm;
-}
-glm::mat4 SceneRenderer::ContextLifetime::get_scale_matrix() const {
-    return glm::scale(glm::vec3(scale, scale, scale));
-}
-
-glm::mat4 SceneRenderer::ContextLifetime::get_projection_matrix(float aspect) {
-    return glm::perspective(45.0f, aspect, 0.05f, 1000.0f);
-}
-
-void SceneRenderer::ContextLifetime::set_receiver_pointing(
-    const std::vector<glm::vec3> &directions) {
-    drawable_scene.set_receiver_pointing(directions);
-}
+    std::unique_ptr<Mousing> mousing;
+};
 
 //----------------------------------------------------------------------------//
 
 SceneRenderer::SceneRenderer(const CopyableSceneData &model)
-        : WorkItemOwner(*this)
+        : work_queue(*this)
         , model(model) {
 }
+
+//  defined here so that we can PIMPL the ContextLifetime
+SceneRenderer::~SceneRenderer() noexcept = default;
 
 void SceneRenderer::newOpenGLContextCreated() {
     context_lifetime = std::make_unique<ContextLifetime>(model);
@@ -284,7 +345,7 @@ void SceneRenderer::newOpenGLContextCreated() {
 }
 
 void SceneRenderer::renderOpenGL() {
-    pop_all();
+    work_queue.pop_all();
     context_lifetime->draw();
 }
 
@@ -293,53 +354,68 @@ void SceneRenderer::openGLContextClosing() {
     context_lifetime = nullptr;
 }
 
-void SceneRenderer::set_aspect(float aspect) {
-    push([aspect](auto &i) { i.context_lifetime->set_aspect(aspect); });
+void SceneRenderer::set_viewport(const glm::ivec2 &v) {
+    work_queue.push([v](auto &i) { i.context_lifetime->set_viewport(v); });
 }
 
-void SceneRenderer::update_scale(float delta) {
-    push([delta](auto &i) { i.context_lifetime->update_scale(delta); });
+void SceneRenderer::set_scale(float u) {
+    work_queue.push([u](auto &i) { i.context_lifetime->set_scale(u); });
 }
 
-void SceneRenderer::set_rotation(float azimuth, float elevation) {
-    push([azimuth, elevation](auto &i) {
-        i.context_lifetime->set_rotation(azimuth, elevation);
-    });
+void SceneRenderer::set_rotation(const Orientable::AzEl &u) {
+    work_queue.push([u](auto &i) { i.context_lifetime->set_rotation(u); });
 }
 
 void SceneRenderer::set_rendering(bool b) {
-    push([b](auto &i) { i.context_lifetime->set_rendering(b); });
+    work_queue.push([b](auto &i) { i.context_lifetime->set_rendering(b); });
 }
 
 void SceneRenderer::set_receiver(const glm::vec3 &u) {
-    push([u](auto &i) { i.context_lifetime->set_receiver(u); });
+    work_queue.push([u](auto &i) { i.context_lifetime->set_receiver(u); });
 }
 
 void SceneRenderer::set_source(const glm::vec3 &u) {
-    push([u](auto &i) { i.context_lifetime->set_source(u); });
+    work_queue.push([u](auto &i) { i.context_lifetime->set_source(u); });
 }
 
 void SceneRenderer::set_positions(const std::vector<cl_float3> &positions) {
-    push(
+    work_queue.push(
         [positions](auto &i) { i.context_lifetime->set_positions(positions); });
 }
 
 void SceneRenderer::set_pressures(const std::vector<float> &pressures) {
-    push(
+    work_queue.push(
         [pressures](auto &i) { i.context_lifetime->set_pressures(pressures); });
 }
 
 void SceneRenderer::set_highlighted(int u) {
-    push([u](auto &i) { i.context_lifetime->set_highlighted(u); });
+    work_queue.push([u](auto &i) { i.context_lifetime->set_highlighted(u); });
 }
 
 void SceneRenderer::set_emphasis(const glm::vec3 &u) {
-    push([u](auto &i) { i.context_lifetime->set_emphasis(u); });
+    work_queue.push([u](auto &i) { i.context_lifetime->set_emphasis(u); });
 }
 
 void SceneRenderer::set_receiver_pointing(
     const std::vector<glm::vec3> &directions) {
-    push([directions](auto &i) {
+    work_queue.push([directions](auto &i) {
         i.context_lifetime->set_receiver_pointing(directions);
     });
+}
+
+void SceneRenderer::mouse_down(const glm::vec2 &pos) {
+    work_queue.push([pos](auto &i) { i.context_lifetime->mouse_down(pos); });
+}
+
+void SceneRenderer::mouse_drag(const glm::vec2 &pos) {
+    work_queue.push([pos](auto &i) { i.context_lifetime->mouse_drag(pos); });
+}
+
+void SceneRenderer::mouse_up(const glm::vec2 &pos) {
+    work_queue.push([pos](auto &i) { i.context_lifetime->mouse_up(pos); });
+}
+
+void SceneRenderer::mouse_wheel_move(float delta_y) {
+    work_queue.push(
+        [delta_y](auto &i) { i.context_lifetime->mouse_wheel_move(delta_y); });
 }

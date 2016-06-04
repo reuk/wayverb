@@ -25,36 +25,41 @@ ModelRendererComponent::ModelRendererComponent(
              "This area displays the currently loaded 3D model. Click and drag "
              "to rotate the model, or use the mouse wheel to zoom in and out.");
 
-    openGLContext.setOpenGLVersionRequired(OpenGLContext::openGL3_2);
-    openGLContext.setRenderer(&scene_renderer);
-    openGLContext.setContinuousRepainting(true);
-    openGLContext.attachTo(*this);
+    open_gl_context.setOpenGLVersionRequired(OpenGLContext::openGL3_2);
+    open_gl_context.setRenderer(&scene_renderer);
+    open_gl_context.setContinuousRepainting(true);
+    open_gl_context.attachTo(*this);
 }
 
 ModelRendererComponent::~ModelRendererComponent() noexcept {
-    openGLContext.detach();
+    open_gl_context.detach();
+}
+
+template <typename T>
+static glm::vec2 to_glm_vec2(const T &t) {
+    return glm::vec2{t.x, t.y};
 }
 
 void ModelRendererComponent::resized() {
-    scene_renderer.set_aspect(getLocalBounds().toFloat().getAspectRatio());
+    auto bounds = getLocalBounds();
+    scene_renderer.set_viewport(glm::vec2{getWidth(), getHeight()});
+}
+
+void ModelRendererComponent::mouseDown(const MouseEvent &e) {
+    scene_renderer.mouse_down(to_glm_vec2(e.getPosition()));
 }
 
 void ModelRendererComponent::mouseDrag(const MouseEvent &e) {
-    auto p = e.getOffsetFromDragStart().toFloat() * scale;
-    auto az = p.x + azimuth;
-    auto el = Range<double>(-M_PI / 2, M_PI / 2).clipValue(p.y + elevation);
-    scene_renderer.set_rotation(az, el);
+    scene_renderer.mouse_drag(to_glm_vec2(e.getPosition()));
 }
 
 void ModelRendererComponent::mouseUp(const juce::MouseEvent &e) {
-    auto p = e.getOffsetFromDragStart().toFloat() * scale;
-    azimuth += p.x;
-    elevation += p.y;
+    scene_renderer.mouse_up(to_glm_vec2(e.getPosition()));
 }
 
 void ModelRendererComponent::mouseWheelMove(const MouseEvent &event,
                                             const MouseWheelDetails &wheel) {
-    scene_renderer.update_scale(wheel.deltaY);
+    scene_renderer.mouse_wheel_move(wheel.deltaY);
 }
 
 static auto get_receiver_directions(

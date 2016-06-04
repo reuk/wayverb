@@ -169,21 +169,18 @@ private:
     bool rendering{false};
 };
 
-class SceneRenderer final : public OpenGLRenderer,
-                            public ChangeBroadcaster,
-                            public WorkItemOwner<SceneRenderer> {
+class SceneRenderer final : public OpenGLRenderer, public ChangeBroadcaster {
 public:
     SceneRenderer(const CopyableSceneData& model);
+    virtual ~SceneRenderer() noexcept;
 
-    //  lock on all public methods
-    //  don't call public methods from one another!
     void newOpenGLContextCreated() override;
     void renderOpenGL() override;
     void openGLContextClosing() override;
 
-    void set_aspect(float aspect);
-    void update_scale(float delta);
-    void set_rotation(float azimuth, float elevation);
+    void set_viewport(const glm::ivec2& v);
+    void set_scale(float u);
+    void set_rotation(const Orientable::AzEl& u);
 
     void set_rendering(bool b);
 
@@ -199,58 +196,19 @@ public:
 
     void set_receiver_pointing(const std::vector<glm::vec3>& directions);
 
+    void mouse_down(const glm::vec2& pos);
+    void mouse_drag(const glm::vec2& pos);
+    void mouse_up(const glm::vec2& pos);
+    void mouse_wheel_move(float delta_y);
+
 private:
     //  gl state should be updated inside `update` methods
     //  where we know that stuff is happening on the gl thread
     //  if you (e.g.) delete a buffer on a different thread, your computer will
     //  get mad and maybe freeze
-    class ContextLifetime : public ::Drawable {
-    public:
-        ContextLifetime(const CopyableSceneData& scene_data);
-
-        void set_aspect(float aspect);
-        void update_scale(float delta);
-        void set_rotation(float azimuth, float elevation);
-
-        void set_rendering(bool b);
-
-        void set_receiver(const glm::vec3& u);
-        void set_source(const glm::vec3& u);
-
-        void set_positions(const std::vector<cl_float3>& positions);
-        void set_pressures(const std::vector<float>& pressures);
-
-        void set_highlighted(int u);
-
-        void set_emphasis(const glm::vec3& c);
-
-        void set_receiver_pointing(const std::vector<glm::vec3>& directions);
-
-        void draw() const override;
-
-    private:
-        glm::mat4 get_projection_matrix() const;
-        glm::mat4 get_view_matrix() const;
-        glm::mat4 get_scale_matrix() const;
-
-        static glm::mat4 get_projection_matrix(float aspect);
-
-        const CopyableSceneData& model;
-
-        GenericShader generic_shader;
-        MeshShader mesh_shader;
-        LitSceneShader lit_scene_shader;
-        DrawableScene drawable_scene;
-        AxesObject axes;
-
-        glm::mat4 projection_matrix;
-
-        glm::mat4 rotation;
-        float scale;
-        glm::mat4 translation;
-    };
-
+    WorkItemOwner<SceneRenderer> work_queue;
     CopyableSceneData model;
 
+    class ContextLifetime;
     std::unique_ptr<ContextLifetime> context_lifetime;
 };

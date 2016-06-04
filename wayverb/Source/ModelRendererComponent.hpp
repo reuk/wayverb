@@ -18,6 +18,7 @@ public:
 
     void resized() override;
 
+    void mouseDown(const MouseEvent& e) override;
     void mouseDrag(const MouseEvent& e) override;
     void mouseUp(const MouseEvent& e) override;
 
@@ -47,11 +48,7 @@ private:
     model::BroadcastConnector facing_direction_connector{&app.receiver_settings,
                                                          this};
 
-    const float scale{0.01};
-    float azimuth{0};
-    float elevation{0};
-
-    OpenGLContext openGLContext;
+    OpenGLContext open_gl_context;
     SceneRenderer scene_renderer;
     model::Connector<ChangeBroadcaster> scene_connector{&scene_renderer, this};
 };
