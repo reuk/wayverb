@@ -12,6 +12,19 @@
 
 #include "combined/config_serialize.h"
 
+template <class T, class Compare>
+static constexpr const T &clamp(const T &v,
+                                const T &lo,
+                                const T &hi,
+                                Compare comp) {
+    return comp(v, hi) ? std::max(v, lo, comp) : std::min(v, hi, comp);
+}
+
+template <class T>
+static constexpr const T &clamp(const T &v, const T &lo, const T &hi) {
+    return clamp(v, lo, hi, std::less<>());
+}
+
 static void push_triangle_indices(std::vector<GLuint> &ret,
                                   const Triangle &tri) {
     ret.push_back(tri.v0);
@@ -252,7 +265,7 @@ public:
     }
 
     void mouse_down(const glm::vec2 &pos) {
-        mousing = std::make_unique<Mousing>(Mousing{pos});
+        mousing = std::make_unique<Mousing>(Mousing{pos, azel});
         //  TODO
         //  if we're over a source/receiver, we're going to move that
 
@@ -266,6 +279,13 @@ public:
 
         //  otherwise, we want to rotate the scene
         auto diff = pos - mousing->begin;
+
+        set_rotation(Orientable::AzEl{
+            mousing->begin_orientation.azimuth + diff.x * Mousing::angle_scale,
+            clamp(mousing->begin_orientation.elevation +
+                      diff.y * Mousing::angle_scale,
+                  static_cast<float>(-M_PI / 2),
+                  static_cast<float>(M_PI / 2))});
     }
 
     void mouse_up(const glm::vec2 &pos) {
@@ -320,10 +340,14 @@ private:
     glm::vec3 translation;
 
     struct Mousing {
+        static const float angle_scale;
         glm::vec2 begin;
+        Orientable::AzEl begin_orientation;
     };
     std::unique_ptr<Mousing> mousing;
 };
+
+const float SceneRenderer::ContextLifetime::Mousing::angle_scale{0.01};
 
 //----------------------------------------------------------------------------//
 
