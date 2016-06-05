@@ -34,16 +34,11 @@
 #include <mutex>
 #include <queue>
 
-template <typename T>
-class WorkItemOwner {
+class WorkQueue {
 public:
-    WorkItemOwner(T& obj)
-            : obj(obj) {
-    }
-
     struct WorkItem {
         virtual ~WorkItem() noexcept = default;
-        virtual void operator()(T& obj) const = 0;
+        virtual void operator()() const = 0;
     };
 
     template <typename Method>
@@ -51,8 +46,8 @@ public:
         GenericWorkItem(Method&& method)
                 : method(std::forward<Method>(method)) {
         }
-        void operator()(T& obj) const override {
-            method(obj);
+        void operator()() const override {
+            method();
         }
         Method method;
     };
@@ -64,16 +59,14 @@ public:
             std::forward<Method>(method)));
     }
 
-    void pop_one() {
+    std::unique_ptr<WorkItem> pop_one() {
         std::lock_guard<std::mutex> lck(mut);
-        pop_impl();
-    }
-
-    void pop_all() {
-        std::lock_guard<std::mutex> lck(mut);
-        while (!work_items.empty()) {
-            pop_impl();
+        if (work_items.empty()) {
+            return nullptr;
         }
+        auto ret = std::move(work_items.front());
+        work_items.pop();
+        return ret;
     }
 
     auto size() const {
@@ -81,13 +74,12 @@ public:
         return work_items.size();
     }
 
-private:
-    void pop_impl() {
-        (*work_items.front())(obj);
-        work_items.pop();
+    auto empty() const {
+        std::lock_guard<std::mutex> lck(mut);
+        return work_items.empty();
     }
 
-    T& obj;
+private:
     std::queue<std::unique_ptr<WorkItem>> work_items;
     mutable std::mutex mut;
 };
@@ -157,6 +149,9 @@ public:
     /// Should return a list of Nodes which can be selected with the mouse.
     std::vector<Node*> get_selectable_objects();
 
+    Node* get_source();
+    Node* get_receiver();
+
 private:
     const GenericShader& generic_shader;
     const MeshShader& mesh_shader;
@@ -171,8 +166,25 @@ private:
     bool rendering{false};
 };
 
-class SceneRenderer final : public OpenGLRenderer, public ChangeBroadcaster {
+class SceneRenderer final : public OpenGLRenderer,
+                            public ChangeBroadcaster,
+                            public AsyncUpdater {
 public:
+    class Listener {
+    public:
+        Listener() = default;
+        Listener(const Listener&) = default;
+        Listener& operator=(const Listener&) = default;
+        Listener(Listener&&) noexcept = default;
+        Listener& operator=(Listener&&) noexcept = default;
+        virtual ~Listener() noexcept = default;
+
+        virtual void source_dragged(SceneRenderer*,
+                                    const glm::vec3& new_pos) = 0;
+        virtual void receiver_dragged(SceneRenderer*,
+                                      const glm::vec3& new_pos) = 0;
+    };
+
     SceneRenderer(const CopyableSceneData& model);
     virtual ~SceneRenderer() noexcept;
 
@@ -198,19 +210,32 @@ public:
 
     void set_receiver_pointing(const std::vector<glm::vec3>& directions);
 
+    void addListener(Listener*);
+    void removeListener(Listener*);
+
     void mouse_down(const glm::vec2& pos);
     void mouse_drag(const glm::vec2& pos);
     void mouse_up(const glm::vec2& pos);
     void mouse_wheel_move(float delta_y);
 
 private:
+    void handleAsyncUpdate() override;
+
+    void broadcast_receiver_position(const glm::vec3& pos);
+    void broadcast_source_position(const glm::vec3& pos);
+
     //  gl state should be updated inside `update` methods
     //  where we know that stuff is happening on the gl thread
     //  if you (e.g.) delete a buffer on a different thread, your computer will
     //  get mad and maybe freeze
-    WorkItemOwner<SceneRenderer> work_queue;
+    WorkQueue work_queue;
+    WorkQueue outgoing_work_queue;
     CopyableSceneData model;
 
     class ContextLifetime;
     std::unique_ptr<ContextLifetime> context_lifetime;
+
+    ListenerList<Listener> listener_list;
+
+    mutable std::mutex mut;
 };

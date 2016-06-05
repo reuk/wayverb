@@ -6,6 +6,7 @@
 
 class ModelRendererComponent : public Component,
                                public model::BroadcastListener,
+                               public SceneRenderer::Listener,
                                public ChangeListener,
                                public SettableHelpPanelClient {
 public:
@@ -30,6 +31,9 @@ public:
     void set_positions(const std::vector<cl_float3>& positions);
     void set_pressures(const std::vector<float>& pressures);
 
+    void source_dragged(SceneRenderer*, const glm::vec3& v) override;
+    void receiver_dragged(SceneRenderer*, const glm::vec3& v) override;
+
     void changeListenerCallback(ChangeBroadcaster* cb) override;
 
 private:
@@ -51,4 +55,5 @@ private:
     OpenGLContext open_gl_context;
     SceneRenderer scene_renderer;
     model::Connector<ChangeBroadcaster> scene_connector{&scene_renderer, this};
+    model::Connector<SceneRenderer> scene_drag_connector{&scene_renderer, this};
 };

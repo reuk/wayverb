@@ -118,3 +118,12 @@ void ModelRendererComponent::changeListenerCallback(ChangeBroadcaster *u) {
         }
     }
 }
+
+void ModelRendererComponent::source_dragged(SceneRenderer *,
+                                            const glm::vec3 &v) {
+    app.source.set(v);
+}
+void ModelRendererComponent::receiver_dragged(SceneRenderer *,
+                                              const glm::vec3 &v) {
+    app.receiver.set(v);
+}
