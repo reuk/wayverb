@@ -70,10 +70,12 @@ void VisualiserApplication::initialise(const String& commandLine) {
     main_menu_bar_model = std::make_unique<MainMenuBarModel>();
 
     MenuBarModel::setMacMainMenu(main_menu_bar_model.get(), nullptr);
+
+    window = std::make_unique<LoadWindow>(getApplicationName());
 }
 
-void VisualiserApplication::close_main_window() {
-    if (main_window) {
+void VisualiserApplication::attempt_close_window() {
+    if (auto main_window = dynamic_cast<MainWindow*>(window.get())) {
         if (main_window->needs_save()) {
             switch (NativeMessageBox::showYesNoCancelBox(
                 AlertWindow::AlertIconType::WarningIcon,
@@ -83,21 +85,23 @@ void VisualiserApplication::close_main_window() {
                     return;
                 case 1:  // yes
                     if (main_window->save_project()) {
-                        main_window = nullptr;
+                        window = nullptr;
                     }
                     break;
                 case 2:  // no
-                    main_window = nullptr;
+                    window = nullptr;
                     break;
             }
         } else {
-            main_window = nullptr;
+            window = nullptr;
         }
+    } else if (dynamic_cast<LoadWindow*>(window.get())) {
+        window = nullptr;
     }
 }
 
 void VisualiserApplication::shutdown() {
-    main_window = nullptr;
+    window = nullptr;
 
     MenuBarModel::setMacMainMenu(nullptr);
 
@@ -111,8 +115,8 @@ void VisualiserApplication::systemRequestedQuit() {
     if (ModalComponentManager::getInstance()->cancelAllModalComponents()) {
         new ::AsyncQuitRetrier();
     } else {
-        close_main_window();
-        if (!main_window) {
+        attempt_close_window();
+        if (!window) {
             quit();
         }
     }
@@ -120,6 +124,32 @@ void VisualiserApplication::systemRequestedQuit() {
 
 void VisualiserApplication::anotherInstanceStarted(const String& commandLine) {
 }
+
+//----------------------------------------------------------------------------//
+
+VisualiserApplication::LoadWindow::LoadWindow(String name)
+        : DocumentWindow(
+              name, Colours::lightgrey, DocumentWindow::closeButton) {
+    setUsingNativeTitleBar(true);
+    setContentNonOwned(&content_component, true);
+    centreWithSize(getWidth(), getHeight());
+    setVisible(true);
+    setResizable(false, false);
+    setVisible(true);
+
+    auto& command_manager = VisualiserApplication::get_command_manager();
+    command_manager.getKeyMappings()->resetToDefaultMappings();
+    addKeyListener(command_manager.getKeyMappings());
+    setWantsKeyboardFocus(false);
+}
+
+VisualiserApplication::LoadWindow::~LoadWindow() noexcept = default;
+
+void VisualiserApplication::LoadWindow::closeButtonPressed() {
+    JUCEApplication::getInstance()->systemRequestedQuit();
+}
+
+//----------------------------------------------------------------------------//
 
 //  init from as much outside info as possible
 VisualiserApplication::MainWindow::MainWindow(String name,
@@ -133,12 +163,9 @@ VisualiserApplication::MainWindow::MainWindow(String name,
         , content_component(this->scene_data, wrapper) {
     setUsingNativeTitleBar(true);
     setContentNonOwned(&content_component, true);
-
     centreWithSize(getWidth(), getHeight());
     setVisible(true);
-
     setResizable(true, false);
-
     setVisible(true);
 
     auto& command_manager = VisualiserApplication::get_command_manager();
@@ -482,10 +509,9 @@ bool VisualiserApplication::perform(const InvocationInfo& info) {
 
 void VisualiserApplication::open_project(const File& file) {
     try {
-        close_main_window();
-        if (!main_window) {
-            main_window =
-                std::make_unique<MainWindow>(getApplicationName(), file);
+        attempt_close_window();
+        if (!window) {
+            window = std::make_unique<MainWindow>(getApplicationName(), file);
             register_recent_file(file.getFullPathName().toStdString());
         }
     } catch (const std::exception& e) {
@@ -501,8 +527,12 @@ void VisualiserApplication::open_project(const File& file) {
     }
 }
 
+std::string VisualiserApplication::get_valid_file_formats() {
+    return "*.way,*.obj,*.model";
+}
+
 void VisualiserApplication::open_project_from_dialog() {
-    FileChooser fc("open project", File::nonexistent, "*.way,*.obj,*.model");
+    FileChooser fc("open project", File::nonexistent, get_valid_file_formats());
     if (fc.browseForFileToOpen()) {
         open_project(fc.getResult());
     }

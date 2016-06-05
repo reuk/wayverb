@@ -15,6 +15,7 @@
 		17BFF294246BE35E2334DF9F /* QTKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AED820E5E9613936B4CCA98A /* QTKit.framework */; };
 		1B469E5C1CFF65B00026567A /* libsamplerate.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B96518A1CFDD23F0084F670 /* libsamplerate.a */; };
 		1B469E7E1CFF65C10026567A /* libfftw3f.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B9651891CFDD23F0084F670 /* libfftw3f.a */; };
+		1B6545271D0448A9002B8753 /* FileDropComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1B6545251D0448A9002B8753 /* FileDropComponent.cpp */; };
 		1B96517E1CFDD2080084F670 /* libassimp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B9651671CFDD1F00084F670 /* libassimp.a */; };
 		1B96517F1CFDD2080084F670 /* libcombined.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B9651751CFDD1F00084F670 /* libcombined.a */; };
 		1B9651801CFDD2080084F670 /* libcommon.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B96516F1CFDD1F00084F670 /* libcommon.a */; };
@@ -407,6 +408,8 @@
 		1B3DE3698539A30ABBE4F207 /* jcprepct.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = jcprepct.c; path = ../../JuceLibraryCode/modules/juce_graphics/image_formats/jpglib/jcprepct.c; sourceTree = SOURCE_ROOT; };
 		1B5496DA1D01D0E700215D2A /* Model.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Model.h; path = ../../Source/Model.h; sourceTree = "<group>"; };
 		1B6108181CA032ADF5CE83F6 /* juce_FileTreeComponent.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = juce_FileTreeComponent.h; path = ../../JuceLibraryCode/modules/juce_gui_basics/filebrowser/juce_FileTreeComponent.h; sourceTree = SOURCE_ROOT; };
+		1B6545251D0448A9002B8753 /* FileDropComponent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FileDropComponent.cpp; path = ../../Source/FileDropComponent.cpp; sourceTree = "<group>"; };
+		1B6545261D0448A9002B8753 /* FileDropComponent.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = FileDropComponent.hpp; path = ../../Source/FileDropComponent.hpp; sourceTree = "<group>"; };
 		1B6A4EF41D00881D003E54FF /* TextDisplayProperty.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = TextDisplayProperty.hpp; path = ../../Source/TextDisplayProperty.hpp; sourceTree = "<group>"; };
 		1B9651251CFDD1F00084F670 /* WAYVERB.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = WAYVERB.xcodeproj; path = ../../../xcproj/WAYVERB.xcodeproj; sourceTree = "<group>"; };
 		1B9651851CFDD2170084F670 /* OpenCL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenCL.framework; path = System/Library/Frameworks/OpenCL.framework; sourceTree = SDKROOT; };
@@ -2573,6 +2576,8 @@
 				5755040E49DE1FF1EEF35281 /* BoxObject.cpp */,
 				A803F5656DCED7249B8C82B7 /* BoxObject.hpp */,
 				47693DBE27BB132FAA7ED4E1 /* CommandIDs.h */,
+				1B6545251D0448A9002B8753 /* FileDropComponent.cpp */,
+				1B6545261D0448A9002B8753 /* FileDropComponent.hpp */,
 				3EA61E6642837BD860CBF1D8 /* DirectionEditor.cpp */,
 				86F82A45FA8F3FB67F8E2021 /* DirectionEditor.hpp */,
 				1B0009F4B06C6DB0FBC35C69 /* FullModel.hpp */,
@@ -4077,6 +4082,7 @@
 				1E09DBF6A82901B168B1DE8F /* MainComponent.cpp in Sources */,
 				AF1307B2E862AD65942CE3DB /* MeshShader.cpp in Sources */,
 				4FEC4A8CD851289B103552A3 /* MicrophoneEditor.cpp in Sources */,
+				1B6545271D0448A9002B8753 /* FileDropComponent.cpp in Sources */,
 				74BB6EFF0961426249B29E36 /* ModelObject.cpp in Sources */,
 				6A5EAB6E8EE2076BEA47D64E /* ModelRenderer.cpp in Sources */,
 				DD7C4978499D75C30DBEA863 /* ModelRendererComponent.cpp in Sources */,

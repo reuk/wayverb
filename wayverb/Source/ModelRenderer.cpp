@@ -208,12 +208,6 @@ public:
         auto max = glm::length(aabb.dimensions());
         scale = max > 0 ? 20 / max : 1;
         translation = -glm::vec3(m.x, m.y, m.z);
-
-        glEnable(GL_DEPTH_TEST);
-        glEnable(GL_PROGRAM_POINT_SIZE);
-
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     }
 
     void set_viewport(const glm::ivec2 &v) {
@@ -264,6 +258,12 @@ public:
         auto c = 0.0;
         glClearColor(c, c, c, 1);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        glEnable(GL_DEPTH_TEST);
+        glEnable(GL_PROGRAM_POINT_SIZE);
+
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
         auto config_shader = [this](const auto &shader) {
             auto s_shader = shader.get_scoped();

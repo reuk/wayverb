@@ -1,5 +1,6 @@
 #pragma once
 
+#include "FileDropComponent.hpp"
 #include "FullModel.hpp"
 #include "MainComponent.hpp"
 #include "StoredSettings.hpp"
@@ -35,7 +36,7 @@ public:
     void open_project(const File& file);
     void open_project_from_dialog();
 
-    void close_main_window();
+    void attempt_close_window();
 
     class MainMenuBarModel : public MenuBarModel {
     public:
@@ -46,6 +47,19 @@ public:
                                   const String& menu_name) override;
         void menuItemSelected(int menu_item_id,
                               int top_level_menu_index) override;
+    };
+
+    static std::string get_valid_file_formats();
+
+    class LoadWindow final : public DocumentWindow {
+    public:
+        LoadWindow(String name);
+        virtual ~LoadWindow() noexcept;
+
+        void closeButtonPressed() override;
+
+    private:
+        FileDropComponent content_component;
     };
 
     class MainWindow final : public DocumentWindow,
@@ -61,8 +75,7 @@ public:
         //  if the file is a .way, load a project, else just load like a 3d
         //  model
         MainWindow(String name, const File& f);
-
-        ~MainWindow() noexcept;
+        virtual ~MainWindow() noexcept;
 
         void closeButtonPressed() override;
 
@@ -123,7 +136,7 @@ private:
     std::unique_ptr<ApplicationCommandManager> command_manager;
     std::unique_ptr<MainMenuBarModel> main_menu_bar_model;
 
-    std::unique_ptr<MainWindow> main_window;
+    std::unique_ptr<DocumentWindow> window;
 
     class AsyncQuitRetrier : private Timer {
     public:
