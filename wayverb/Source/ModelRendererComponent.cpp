@@ -121,9 +121,11 @@ void ModelRendererComponent::changeListenerCallback(ChangeBroadcaster *u) {
 
 void ModelRendererComponent::source_dragged(SceneRenderer *,
                                             const glm::vec3 &v) {
-    app.source.set(v);
+    app.source.set(
+        glm::clamp(v, model.get_aabb().get_c0(), model.get_aabb().get_c1()));
 }
 void ModelRendererComponent::receiver_dragged(SceneRenderer *,
                                               const glm::vec3 &v) {
-    app.receiver.set(v);
+    app.receiver.set(
+        glm::clamp(v, model.get_aabb().get_c0(), model.get_aabb().get_c1()));
 }

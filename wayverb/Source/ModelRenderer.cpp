@@ -230,6 +230,7 @@ public:
 
     void set_rendering(bool b) {
         drawable_scene.set_rendering(b);
+        set_allow_move_mode(!b);
     }
 
     void set_receiver(const glm::vec3 &u) {
@@ -283,18 +284,14 @@ public:
         drawable_scene.set_receiver_pointing(directions);
     }
 
-    //  matrices:
-    //  projection * view * model
-
-    struct Ray {
-        glm::vec3 origin;
-        glm::vec3 direction;
-    };
+    void set_allow_move_mode(bool b) {
+        allow_move_mode = b;
+    }
 
     void mouse_down(const glm::vec2 &pos) {
         auto hovered = get_currently_hovered(pos);
         mousing =
-            hovered
+            hovered && allow_move_mode
                 ? std::unique_ptr<Mousing>(
                       std::make_unique<Move>(hovered, hovered->get_position()))
                 : std::unique_ptr<Mousing>(std::make_unique<Rotate>(azel, pos));
@@ -446,6 +443,8 @@ private:
     Orientable::AzEl azel;
     float scale;
     glm::vec3 translation;
+
+    bool allow_move_mode{true};
 
     struct Mousing {
         virtual ~Mousing() noexcept = default;
