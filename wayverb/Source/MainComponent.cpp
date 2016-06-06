@@ -58,6 +58,28 @@ void MainContentComponent::quit_render_thread() {
     }
 }
 
+float max_reflectivity(const VolumeType& vt) {
+    return *proc::max_element(vt.s);
+}
+
+float max_reflectivity(const Surface& surface) {
+    return std::max(max_reflectivity(surface.diffuse),
+                    max_reflectivity(surface.specular));
+}
+
+float max_reflectivity(const SceneData::Material& material) {
+    return max_reflectivity(material.surface);
+}
+
+float max_reflectivity(const std::vector<SceneData::Material>& materials) {
+    return std::accumulate(materials.begin() + 1,
+                           materials.end(),
+                           max_reflectivity(materials.front()),
+                           [](const auto& i, const auto& j) {
+                               return std::max(i, max_reflectivity(j));
+                           });
+}
+
 void MainContentComponent::receive_broadcast(model::Broadcaster* cb) {
     if (cb == &wrapper.render_state.is_rendering) {
         if (wrapper.render_state.is_rendering) {
@@ -82,6 +104,13 @@ void MainContentComponent::receive_broadcast(model::Broadcaster* cb) {
                     //  refresh the scene with current materials
                     scene_data.set_surfaces(wrapper.persistent.materials);
 
+                    //  compute ideal number of impulses
+                    auto impulses = compute_optimum_reflection_number(
+                        Decibels::decibelsToGain(-48.0),
+                        max_reflectivity(wrapper.persistent.materials));
+                    std::cerr << "impulses estimated: " << impulses
+                              << std::endl;
+
                     //  init the engine
                     callback(engine::State::initialising, 1.0);
                     Engine engine(compute_context,
@@ -91,7 +120,7 @@ void MainContentComponent::receive_broadcast(model::Broadcaster* cb) {
                                   wrapper.persistent.app.get()
                                       .get_waveguide_sample_rate(),
                                   wrapper.persistent.app.rays,
-                                  wrapper.persistent.app.impulses,
+                                  impulses,
                                   //    TODO get samplerate from dialog?
                                   44100);
 

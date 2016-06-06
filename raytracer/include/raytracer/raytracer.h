@@ -90,6 +90,9 @@ inline void fix_predelay(T& ret) {
     fixPredelay(ret, predelay);
 }
 
+/// Get the number of necessary reflections for a given min amplitude.
+int compute_optimum_reflection_number(float min_amp, float max_reflectivity);
+
 /// Raytraces are calculated in relation to a specific microphone position.
 /// This is a struct to keep the impulses and mic position together, because
 /// you'll probably never need one without the other.

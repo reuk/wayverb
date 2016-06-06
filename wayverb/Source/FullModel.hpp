@@ -110,14 +110,13 @@ public:
 };
 
 template <>
-class ValueWrapper<App> : public StructWrapper<App, 7> {
+class ValueWrapper<App> : public StructWrapper<App, 6> {
 public:
     using struct_wrapper::StructWrapper;
     member_array get_members() override {
         return {{&filter_frequency,
                  &oversample_ratio,
                  &rays,
-                 &impulses,
                  &source,
                  &receiver,
                  &receiver_settings}};
@@ -125,7 +124,6 @@ public:
     MODEL_FIELD_DEFINITION(filter_frequency);
     MODEL_FIELD_DEFINITION(oversample_ratio);
     MODEL_FIELD_DEFINITION(rays);
-    MODEL_FIELD_DEFINITION(impulses);
     MODEL_FIELD_DEFINITION(source);
     MODEL_FIELD_DEFINITION(receiver);
     MODEL_FIELD_DEFINITION(receiver_settings);

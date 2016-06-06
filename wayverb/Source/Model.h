@@ -72,7 +72,6 @@ struct App {
         archive(cereal::make_nvp("filter_frequency", filter_frequency),
                 cereal::make_nvp("oversample_ratio", oversample_ratio),
                 cereal::make_nvp("rays", rays),
-                cereal::make_nvp("impulses", impulses),
                 cereal::make_nvp("source", source),
                 cereal::make_nvp("receiver", receiver),
                 cereal::make_nvp("receiver_settings", receiver_settings));
@@ -80,8 +79,7 @@ struct App {
 
     float filter_frequency{500};
     float oversample_ratio{2};
-    int rays{50000};
-    int impulses{100};
+    int rays{100000};
     glm::vec3 source{0};
     glm::vec3 receiver{0};
     ReceiverSettings receiver_settings;

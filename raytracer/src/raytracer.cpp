@@ -35,6 +35,10 @@ constexpr static const VolumeType AIR_COEFFICIENT{{
     volume_factor * -60.0f,
 }};
 
+int compute_optimum_reflection_number(float min_amp, float max_reflectivity) {
+    return std::log(min_amp) / std::log(max_reflectivity);
+}
+
 std::vector<std::vector<std::vector<float>>> flatten_impulses(
     const std::vector<std::vector<AttenuatedImpulse>>& attenuated,
     float samplerate) {

@@ -11,7 +11,7 @@ VolumeComponent::VolumeSlider::VolumeSlider(model::ValueWrapper<float>& value)
     set_slider_style(Slider::SliderStyle::LinearVertical);
     set_text_box_style(Slider::TextEntryBoxPosition::NoTextBox, true, 0, 0);
     set_popup_display_enabled(true, nullptr);
-    set_range(0.01, 1, 0);
+    set_range(0.01, 0.99, 0);
 }
 
 // float VolumeComponent::VolumeSlider::slider_to_value(float t) {

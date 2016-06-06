@@ -15,7 +15,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "2492ECA7300EB9236A5E17C2"
-               BuildableName = "wayverb.app"
+               BuildableName = "visualiser.app"
                BlueprintName = "wayverb (App)"
                ReferencedContainer = "container:wayverb.xcodeproj">
             </BuildableReference>
@@ -33,7 +33,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "2492ECA7300EB9236A5E17C2"
-            BuildableName = "wayverb.app"
+            BuildableName = "visualiser.app"
             BlueprintName = "wayverb (App)"
             ReferencedContainer = "container:wayverb.xcodeproj">
          </BuildableReference>
@@ -56,7 +56,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "2492ECA7300EB9236A5E17C2"
-            BuildableName = "wayverb.app"
+            BuildableName = "visualiser.app"
             BlueprintName = "wayverb (App)"
             ReferencedContainer = "container:wayverb.xcodeproj">
          </BuildableReference>
@@ -75,7 +75,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "2492ECA7300EB9236A5E17C2"
-            BuildableName = "wayverb.app"
+            BuildableName = "visualiser.app"
             BlueprintName = "wayverb (App)"
             ReferencedContainer = "container:wayverb.xcodeproj">
          </BuildableReference>

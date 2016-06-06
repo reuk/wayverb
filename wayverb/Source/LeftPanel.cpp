@@ -206,6 +206,73 @@ private:
 
 //----------------------------------------------------------------------------//
 
+class RayNumberPicker : public Component,
+                        public ComboBox::Listener,
+                        public model::BroadcastListener {
+public:
+    RayNumberPicker(model::ValueWrapper<int>& value)
+            : value(value) {
+        combo_box.addItem("few (1000)", 1000);
+        combo_box.addItem("some (10 000)", 10000);
+        combo_box.addItem("lots (100 000)", 100000);
+        combo_box.addItem("insane (1 000 000)", 1000000);
+
+        value_connector.trigger();
+        addAndMakeVisible(combo_box);
+    }
+
+    virtual ~RayNumberPicker() noexcept {
+        PopupMenu::dismissAllActiveMenus();
+    }
+
+    void comboBoxChanged(ComboBox* cb) override {
+        if (cb == &combo_box) {
+            value.set(combo_box.getSelectedId());
+        }
+    }
+
+    void receive_broadcast(model::Broadcaster* cb) override {
+        if (cb == &value) {
+            auto id =
+                std::pow(10, std::floor(std::log10(static_cast<float>(value))));
+            combo_box.setSelectedId(id, dontSendNotification);
+        }
+    }
+
+    void resized() override {
+        combo_box.setBounds(getLocalBounds());
+    }
+
+private:
+    model::ValueWrapper<int>& value;
+    model::BroadcastConnector value_connector{&value, this};
+
+    ComboBox combo_box;
+    model::Connector<ComboBox> combo_box_connector{&combo_box, this};
+};
+
+class RayNumberPickerProperty : public PropertyComponent,
+                                public SettableHelpPanelClient {
+public:
+    RayNumberPickerProperty(model::ValueWrapper<int>& value)
+            : PropertyComponent("rays")
+            , picker(value) {
+        set_help("ray number picker",
+                 "Choose the number of rays that should be used for the "
+                 "simulation. More rays will sound better but take longer to "
+                 "simulate.");
+        addAndMakeVisible(picker);
+    }
+
+    void refresh() override {
+    }
+
+private:
+    RayNumberPicker picker;
+};
+
+//----------------------------------------------------------------------------//
+
 class HrtfModelComponent : public Component, public SettableHelpPanelClient {
 public:
     HrtfModelComponent(model::ValueWrapper<model::Pointer>& hrtf,
@@ -326,10 +393,7 @@ LeftPanel::LeftPanel(model::ValueWrapper<model::FullModel>& model,
     {
         property_panel.addSection(
             "raytracer",
-            {new NumberProperty<int>(
-                 "rays", model.persistent.app.rays, 1000, 1000000),
-             new NumberProperty<int>(
-                 "reflections", model.persistent.app.impulses, 20, 200)});
+            {new RayNumberPickerProperty(model.persistent.app.rays)});
     }
 
     property_panel.setOpaque(false);
