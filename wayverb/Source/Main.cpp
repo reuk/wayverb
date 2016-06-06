@@ -177,15 +177,16 @@ VisualiserApplication::MainWindow::MainWindow(String name,
     wrapper.needs_save.set(false);
 }
 
-static model::FullModel construct_full_model(
-    const model::Persistent& persistent) {
+namespace {
+model::FullModel construct_full_model(const model::Persistent& persistent) {
     return model::FullModel{
         persistent, model::get_presets(), model::RenderState{}};
 }
 
-static File get_sub_path(const File& way, const std::string& name) {
+File get_sub_path(const File& way, const std::string& name) {
     return way.getChildFile(name.c_str());
 }
+}  // namespace
 
 File VisualiserApplication::MainWindow::get_model_path(const File& way) {
     return get_sub_path(way, "model.model");

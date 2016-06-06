@@ -123,7 +123,8 @@ Array<PropertyComponent*> make_material_buttons(
 
 //----------------------------------------------------------------------------//
 
-static constexpr auto to_id(model::ReceiverSettings::Mode m) {
+namespace {
+constexpr auto to_id(model::ReceiverSettings::Mode m) {
     switch (m) {
         case model::ReceiverSettings::Mode::hrtf:
             return 1;
@@ -132,7 +133,7 @@ static constexpr auto to_id(model::ReceiverSettings::Mode m) {
     }
 }
 
-static constexpr auto to_enum(int i) {
+constexpr auto to_enum(int i) {
     switch (i) {
         case 1:
             return model::ReceiverSettings::Mode::hrtf;
@@ -141,6 +142,7 @@ static constexpr auto to_enum(int i) {
     }
     return model::ReceiverSettings::Mode::hrtf;
 }
+}  // namespace
 
 class ReceiverPicker : public Component,
                        public ComboBox::Listener,

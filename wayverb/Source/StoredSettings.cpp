@@ -37,10 +37,12 @@ PropertiesFile& StoredSettings::get_global_properties() {
     return *property_files.getUnchecked(0);
 }
 
-static PropertiesFile* create_props_file(const std::string& fname) {
+namespace {
+PropertiesFile* create_props_file(const std::string& fname) {
     return new PropertiesFile(
         VisualiserApplication::get_property_file_options_for(fname));
 }
+}  // namespace
 
 PropertiesFile& StoredSettings::get_project_properties(const std::string& uid) {
     auto fname = std::string("wayverb_") + uid;

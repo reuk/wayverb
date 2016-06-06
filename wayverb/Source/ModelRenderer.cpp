@@ -12,35 +12,23 @@
 
 #include "combined/config_serialize.h"
 
-//  message thread
-//  on mouse drag
-//  locks scene renderer
-//  tries to push mouse-down command for gl thread to do later
-//  gl thread
-// on draw
-//  locks gl command queue
-//  pops mouse-drag command
-//  tries to tell scene renderer to broadcast new info
-
+namespace {
 template <class T, class Compare>
-static constexpr const T &clamp(const T &v,
-                                const T &lo,
-                                const T &hi,
-                                Compare comp) {
+constexpr const T &clamp(const T &v, const T &lo, const T &hi, Compare comp) {
     return comp(v, hi) ? std::max(v, lo, comp) : std::min(v, hi, comp);
 }
 
 template <class T>
-static constexpr const T &clamp(const T &v, const T &lo, const T &hi) {
+constexpr const T &clamp(const T &v, const T &lo, const T &hi) {
     return clamp(v, lo, hi, std::less<>());
 }
 
-static void push_triangle_indices(std::vector<GLuint> &ret,
-                                  const Triangle &tri) {
+void push_triangle_indices(std::vector<GLuint> &ret, const Triangle &tri) {
     ret.push_back(tri.v0);
     ret.push_back(tri.v1);
     ret.push_back(tri.v2);
 }
+}  // namespace
 
 std::vector<GLuint> MultiMaterialObject::SingleMaterialSection::get_indices(
     const CopyableSceneData &scene_data, int material_index) {

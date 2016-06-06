@@ -3,8 +3,8 @@
 #include <algorithm>
 #include <numeric>
 
-static std::vector<glm::vec3> compute_ring_points(int num,
-                                                  RingObject::Axis axis) {
+namespace {
+std::vector<glm::vec3> compute_ring_points(int num, RingObject::Axis axis) {
     std::vector<glm::vec3> ret(num);
     for (auto i = 0; i != num; ++i) {
         auto angle = M_PI * 2 * i / num;
@@ -23,7 +23,7 @@ static std::vector<glm::vec3> compute_ring_points(int num,
     return ret;
 }
 
-static glm::vec4 compute_ring_color(RingObject::Axis axis) {
+glm::vec4 compute_ring_color(RingObject::Axis axis) {
     switch (axis) {
         case RingObject::Axis::x:
             return glm::vec4(1, 0, 0, 1);
@@ -34,11 +34,12 @@ static glm::vec4 compute_ring_color(RingObject::Axis axis) {
     }
 }
 
-static std::vector<GLuint> compute_ring_indices(int num) {
+std::vector<GLuint> compute_ring_indices(int num) {
     std::vector<GLuint> ret(num + 1, 0);
     std::iota(ret.begin(), ret.end() - 1, 0);
     return ret;
 }
+}  // namespace
 
 RingObject::RingObject(const GenericShader& shader,
                        const glm::vec4& color,

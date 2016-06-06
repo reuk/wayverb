@@ -4,7 +4,9 @@
 
 #include "MoreConversions.hpp"
 
-static constexpr auto model_colour = 0.5;
+namespace {
+constexpr auto model_colour = 0.5;
+}  // namespace
 
 ModelObject::ModelObject(const GenericShader &shader,
                          const SceneData &scene_data)

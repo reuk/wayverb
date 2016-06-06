@@ -2,7 +2,9 @@
 
 #include "common/boundaries.h"
 
-static const auto eps = 10e-5;
+namespace {
+const auto eps = 10e-5;
+}  // namespace
 
 int sign3(const glm::vec3& v) {
     return (v.x < eps) ? 0x04

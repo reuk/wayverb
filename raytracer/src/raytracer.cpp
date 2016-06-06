@@ -23,8 +23,9 @@
 #include <sstream>
 #include <streambuf>
 
-constexpr static auto volume_factor = 0.001f;
-constexpr static const VolumeType AIR_COEFFICIENT{{
+namespace {
+constexpr auto volume_factor = 0.001f;
+constexpr const VolumeType AIR_COEFFICIENT{{
     volume_factor * -0.1f,
     volume_factor * -0.2f,
     volume_factor * -0.5f,
@@ -34,6 +35,7 @@ constexpr static const VolumeType AIR_COEFFICIENT{{
     volume_factor * -29.0f,
     volume_factor * -60.0f,
 }};
+}  // namespace
 
 int compute_optimum_reflection_number(float min_amp, float max_reflectivity) {
     return std::log(min_amp) / std::log(max_reflectivity);

@@ -4,7 +4,9 @@
 #include "common/string_builder.h"
 #include "common/triangle.h"
 
-static const auto EPSILON = 0.0001;
+namespace {
+const auto EPSILON = 0.0001;
+}  // namespace
 
 namespace geo {
 

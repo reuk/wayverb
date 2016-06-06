@@ -7,8 +7,8 @@
 #include <algorithm>
 #include <iostream>
 
-static std::array<CuboidBoundary, 8> next_boundaries(
-    const CuboidBoundary& parent) {
+namespace {
+std::array<CuboidBoundary, 8> next_boundaries(const CuboidBoundary& parent) {
     auto centre = parent.centre();
 
     auto x0 = parent.get_c0().x;
@@ -33,9 +33,9 @@ static std::array<CuboidBoundary, 8> next_boundaries(
     }};
 }
 
-static std::vector<int> get_triangles(const CopyableSceneData& sd,
-                                      const std::vector<int>& to_test,
-                                      const CuboidBoundary& aabb) {
+std::vector<int> get_triangles(const CopyableSceneData& sd,
+                               const std::vector<int>& to_test,
+                               const CuboidBoundary& aabb) {
     std::vector<int> ret(to_test.size());
     ret.resize(proc::copy_if(to_test,
                              ret.begin(),
@@ -47,7 +47,7 @@ static std::vector<int> get_triangles(const CopyableSceneData& sd,
     return ret;
 }
 
-static std::unique_ptr<std::array<Octree, 8>> get_nodes(
+std::unique_ptr<std::array<Octree, 8>> get_nodes(
     const CopyableSceneData& sd,
     int md,
     const std::vector<int>& to_test,
@@ -63,6 +63,7 @@ static std::unique_ptr<std::array<Octree, 8>> get_nodes(
     });
     return ret;
 }
+}  // namespace
 
 Octree::Octree(const CopyableSceneData& sd, int md, float padding)
         : Octree(sd,

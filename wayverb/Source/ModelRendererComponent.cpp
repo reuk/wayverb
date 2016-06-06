@@ -35,10 +35,30 @@ ModelRendererComponent::~ModelRendererComponent() noexcept {
     open_gl_context.detach();
 }
 
+namespace {
 template <typename T>
-static glm::vec2 to_glm_vec2(const T &t) {
+glm::vec2 to_glm_vec2(const T &t) {
     return glm::vec2{t.x, t.y};
 }
+auto get_receiver_directions(const model::ValueWrapper<model::App> &app) {
+    switch (app.receiver_settings.mode) {
+        case model::ReceiverSettings::Mode::microphones: {
+            std::vector<glm::vec3> directions(
+                app.receiver_settings.microphones.size());
+            proc::transform(app.receiver_settings.microphones.get(),
+                            directions.begin(),
+                            [&app](const auto &i) {
+                                return i.pointer.get_pointing(app.receiver);
+                            });
+            return directions;
+        }
+        case model::ReceiverSettings::Mode::hrtf: {
+            return std::vector<glm::vec3>{
+                app.receiver_settings.hrtf.get().get_pointing(app.receiver)};
+        }
+    }
+}
+}  // namespace
 
 void ModelRendererComponent::resized() {
     auto bounds = getLocalBounds();
@@ -60,26 +80,6 @@ void ModelRendererComponent::mouseUp(const juce::MouseEvent &e) {
 void ModelRendererComponent::mouseWheelMove(const MouseEvent &event,
                                             const MouseWheelDetails &wheel) {
     scene_renderer.mouse_wheel_move(wheel.deltaY);
-}
-
-static auto get_receiver_directions(
-    const model::ValueWrapper<model::App> &app) {
-    switch (app.receiver_settings.mode) {
-        case model::ReceiverSettings::Mode::microphones: {
-            std::vector<glm::vec3> directions(
-                app.receiver_settings.microphones.size());
-            proc::transform(app.receiver_settings.microphones.get(),
-                            directions.begin(),
-                            [&app](const auto &i) {
-                                return i.pointer.get_pointing(app.receiver);
-                            });
-            return directions;
-        }
-        case model::ReceiverSettings::Mode::hrtf: {
-            return std::vector<glm::vec3>{
-                app.receiver_settings.hrtf.get().get_pointing(app.receiver)};
-        }
-    }
 }
 
 void ModelRendererComponent::receive_broadcast(model::Broadcaster *cb) {
