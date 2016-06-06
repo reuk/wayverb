@@ -3,8 +3,9 @@
 #include "FullModel.hpp"
 #include "HelpWindow.hpp"
 #include "ModelRenderer.hpp"
+#include "RenderHelpers.hpp"
 
-class ModelRendererComponent : public Component,
+class ModelRendererComponent : public BaseRendererComponent<SceneRenderer>,
                                public model::BroadcastListener,
                                public SceneRenderer::Listener,
                                public ChangeListener,
@@ -15,9 +16,6 @@ public:
         model::ValueWrapper<int>& shown_surface,
         model::ValueWrapper<model::App>& app,
         model::ValueWrapper<model::RenderState>& render_state);
-    virtual ~ModelRendererComponent() noexcept;
-
-    void resized() override;
 
     void mouseDown(const MouseEvent& e) override;
     void mouseDrag(const MouseEvent& e) override;
@@ -51,8 +49,6 @@ private:
     model::BroadcastConnector facing_direction_connector{&app.receiver_settings,
                                                          this};
 
-    OpenGLContext open_gl_context;
-    SceneRenderer scene_renderer;
-    model::Connector<ChangeBroadcaster> scene_connector{&scene_renderer, this};
-    model::Connector<SceneRenderer> scene_drag_connector{&scene_renderer, this};
+    model::Connector<ChangeBroadcaster> scene_connector{&renderer, this};
+    model::Connector<SceneRenderer> scene_drag_connector{&renderer, this};
 };

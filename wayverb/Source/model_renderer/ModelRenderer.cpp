@@ -189,7 +189,7 @@ Node *DrawableScene::get_receiver() {
 
 //----------------------------------------------------------------------------//
 
-class SceneRenderer::ContextLifetime : public ::Drawable {
+class SceneRenderer::ContextLifetime : public BaseContextLifetime {
 public:
     ContextLifetime(SceneRenderer &owner, const CopyableSceneData &scene_data)
             : owner(owner)
@@ -202,10 +202,6 @@ public:
         auto max = glm::length(aabb.dimensions());
         scale = max > 0 ? 20 / max : 1;
         translation = -glm::vec3(m.x, m.y, m.z);
-    }
-
-    void set_viewport(const glm::ivec2 &v) {
-        viewport = v;
     }
 
     void set_scale(float u) {
@@ -348,10 +344,6 @@ private:
         scale = std::max(0.0f, u);
     }
 
-    auto get_aspect() const {
-        return viewport.x / static_cast<float>(viewport.y);
-    }
-
     glm::vec3 get_world_camera_position() const {
         return glm::inverse(get_view_matrix())[3];
     }
@@ -362,8 +354,10 @@ private:
     }
 
     glm::vec3 get_world_mouse_direction(const glm::vec2 &pos) const {
-        auto ray_clip = glm::vec4{
-            (2 * pos.x) / viewport.x - 1, 1 - (2 * pos.y) / viewport.y, -1, 1};
+        auto ray_clip = glm::vec4{(2 * pos.x) / get_viewport().x - 1,
+                                  1 - (2 * pos.y) / get_viewport().y,
+                                  -1,
+                                  1};
         auto ray_eye = glm::inverse(get_projection_matrix()) * ray_clip;
         ray_eye = glm::vec4{ray_eye.x, ray_eye.y, -1, 0};
         return glm::normalize(
@@ -433,7 +427,6 @@ private:
     DrawableScene drawable_scene;
     AxesObject axes;
 
-    glm::ivec2 viewport;
     Orientable::AzEl azel;
     float scale;
     glm::vec3 translation;
@@ -497,118 +490,100 @@ void SceneRenderer::newOpenGLContextCreated() {
         glm::vec3(VisualiserLookAndFeel::emphasis.getFloatRed(),
                   VisualiserLookAndFeel::emphasis.getFloatGreen(),
                   VisualiserLookAndFeel::emphasis.getFloatBlue()));
-    outgoing_work_queue.push([this] { sendChangeMessage(); });
-}
-
-void SceneRenderer::renderOpenGL() {
-    std::lock_guard<std::mutex> lck(mut);
-    while (!work_queue.empty()) {
-        auto method = work_queue.pop_one();
-        if (method) {
-            (*method)();
-        };
-    }
-    context_lifetime->draw();
+    BaseRenderer::newOpenGLContextCreated();
 }
 
 void SceneRenderer::openGLContextClosing() {
     std::lock_guard<std::mutex> lck(mut);
-    outgoing_work_queue.push([this] { sendChangeMessage(); });
     context_lifetime = nullptr;
-}
-
-void SceneRenderer::set_viewport(const glm::ivec2 &v) {
-    std::lock_guard<std::mutex> lck(mut);
-    work_queue.push([this, v] { context_lifetime->set_viewport(v); });
+    BaseRenderer::openGLContextClosing();
 }
 
 void SceneRenderer::set_scale(float u) {
     std::lock_guard<std::mutex> lck(mut);
-    work_queue.push([this, u] { context_lifetime->set_scale(u); });
+    push_incoming([this, u] { context_lifetime->set_scale(u); });
 }
 
 void SceneRenderer::set_rotation(const Orientable::AzEl &u) {
     std::lock_guard<std::mutex> lck(mut);
-    work_queue.push([this, u] { context_lifetime->set_rotation(u); });
+    push_incoming([this, u] { context_lifetime->set_rotation(u); });
 }
 
 void SceneRenderer::set_rendering(bool b) {
     std::lock_guard<std::mutex> lck(mut);
-    work_queue.push([this, b] { context_lifetime->set_rendering(b); });
+    push_incoming([this, b] { context_lifetime->set_rendering(b); });
 }
 
 void SceneRenderer::set_receiver(const glm::vec3 &u) {
     std::lock_guard<std::mutex> lck(mut);
-    work_queue.push([this, u] { context_lifetime->set_receiver(u); });
+    push_incoming([this, u] { context_lifetime->set_receiver(u); });
 }
 
 void SceneRenderer::set_source(const glm::vec3 &u) {
     std::lock_guard<std::mutex> lck(mut);
-    work_queue.push([this, u] { context_lifetime->set_source(u); });
+    push_incoming([this, u] { context_lifetime->set_source(u); });
 }
 
 void SceneRenderer::set_positions(const std::vector<cl_float3> &positions) {
     std::lock_guard<std::mutex> lck(mut);
-    work_queue.push(
+    push_incoming(
         [this, positions] { context_lifetime->set_positions(positions); });
 }
 
 void SceneRenderer::set_pressures(const std::vector<float> &pressures) {
     std::lock_guard<std::mutex> lck(mut);
-    work_queue.push(
+    push_incoming(
         [this, pressures] { context_lifetime->set_pressures(pressures); });
 }
 
 void SceneRenderer::set_highlighted(int u) {
     std::lock_guard<std::mutex> lck(mut);
-    work_queue.push([this, u] { context_lifetime->set_highlighted(u); });
+    push_incoming([this, u] { context_lifetime->set_highlighted(u); });
 }
 
 void SceneRenderer::set_emphasis(const glm::vec3 &u) {
     std::lock_guard<std::mutex> lck(mut);
-    work_queue.push([this, u] { context_lifetime->set_emphasis(u); });
+    push_incoming([this, u] { context_lifetime->set_emphasis(u); });
 }
 
 void SceneRenderer::set_receiver_pointing(
     const std::vector<glm::vec3> &directions) {
     std::lock_guard<std::mutex> lck(mut);
-    work_queue.push([this, directions] {
+    push_incoming([this, directions] {
         context_lifetime->set_receiver_pointing(directions);
     });
 }
 
 void SceneRenderer::mouse_down(const glm::vec2 &u) {
     std::lock_guard<std::mutex> lck(mut);
-    work_queue.push([this, u] { context_lifetime->mouse_down(u); });
+    push_incoming([this, u] { context_lifetime->mouse_down(u); });
 }
 
 void SceneRenderer::mouse_drag(const glm::vec2 &u) {
     std::lock_guard<std::mutex> lck(mut);
-    work_queue.push([this, u] { context_lifetime->mouse_drag(u); });
+    push_incoming([this, u] { context_lifetime->mouse_drag(u); });
 }
 
 void SceneRenderer::mouse_up(const glm::vec2 &u) {
     std::lock_guard<std::mutex> lck(mut);
-    work_queue.push([this, u] { context_lifetime->mouse_up(u); });
+    push_incoming([this, u] { context_lifetime->mouse_up(u); });
 }
 
 void SceneRenderer::mouse_wheel_move(float u) {
     std::lock_guard<std::mutex> lck(mut);
-    work_queue.push([this, u] { context_lifetime->mouse_wheel_move(u); });
+    push_incoming([this, u] { context_lifetime->mouse_wheel_move(u); });
 }
 
 void SceneRenderer::broadcast_receiver_position(const glm::vec3 &pos) {
-    outgoing_work_queue.push([this, pos] {
+    push_outgoing([this, pos] {
         listener_list.call(&Listener::receiver_dragged, this, pos);
     });
-    triggerAsyncUpdate();
 }
 
 void SceneRenderer::broadcast_source_position(const glm::vec3 &pos) {
-    outgoing_work_queue.push([this, pos] {
+    push_outgoing([this, pos] {
         listener_list.call(&Listener::source_dragged, this, pos);
     });
-    triggerAsyncUpdate();
 }
 
 void SceneRenderer::addListener(Listener *l) {
@@ -620,11 +595,6 @@ void SceneRenderer::removeListener(Listener *l) {
     listener_list.remove(l);
 }
 
-void SceneRenderer::handleAsyncUpdate() {
-    while (!outgoing_work_queue.empty()) {
-        auto method = outgoing_work_queue.pop_one();
-        if (method) {
-            (*method)();
-        };
-    }
+BaseContextLifetime *SceneRenderer::get_context_lifetime() {
+    return context_lifetime.get();
 }

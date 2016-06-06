@@ -1,5 +1,6 @@
 #pragma once
 
+#include "WorkQueue.hpp"
 #include "AxesObject.hpp"
 #include "BasicDrawableObject.hpp"
 #include "BoxObject.hpp"
@@ -8,6 +9,7 @@
 #include "ModelObject.hpp"
 #include "OctahedronObject.hpp"
 #include "PointObject.hpp"
+#include "RenderHelpers.hpp"
 
 #include "FullModel.hpp"
 
@@ -33,56 +35,6 @@
 #include <future>
 #include <mutex>
 #include <queue>
-
-class WorkQueue {
-public:
-    struct WorkItem {
-        virtual ~WorkItem() noexcept = default;
-        virtual void operator()() const = 0;
-    };
-
-    template <typename Method>
-    struct GenericWorkItem : public WorkItem {
-        GenericWorkItem(Method&& method)
-                : method(std::forward<Method>(method)) {
-        }
-        void operator()() const override {
-            method();
-        }
-        Method method;
-    };
-
-    template <typename Method>
-    void push(Method&& method) {
-        std::lock_guard<std::mutex> lck(mut);
-        work_items.push(std::make_unique<GenericWorkItem<Method>>(
-            std::forward<Method>(method)));
-    }
-
-    std::unique_ptr<WorkItem> pop_one() {
-        std::lock_guard<std::mutex> lck(mut);
-        if (work_items.empty()) {
-            return nullptr;
-        }
-        auto ret = std::move(work_items.front());
-        work_items.pop();
-        return ret;
-    }
-
-    auto size() const {
-        std::lock_guard<std::mutex> lck(mut);
-        return work_items.size();
-    }
-
-    auto empty() const {
-        std::lock_guard<std::mutex> lck(mut);
-        return work_items.empty();
-    }
-
-private:
-    std::queue<std::unique_ptr<WorkItem>> work_items;
-    mutable std::mutex mut;
-};
 
 class MultiMaterialObject : public ::Drawable {
 public:
@@ -166,9 +118,7 @@ private:
     bool rendering{false};
 };
 
-class SceneRenderer final : public OpenGLRenderer,
-                            public ChangeBroadcaster,
-                            public AsyncUpdater {
+class SceneRenderer final : public BaseRenderer {
 public:
     class Listener {
     public:
@@ -189,10 +139,8 @@ public:
     virtual ~SceneRenderer() noexcept;
 
     void newOpenGLContextCreated() override;
-    void renderOpenGL() override;
     void openGLContextClosing() override;
 
-    void set_viewport(const glm::ivec2& v);
     void set_scale(float u);
     void set_rotation(const Orientable::AzEl& u);
 
@@ -219,17 +167,11 @@ public:
     void mouse_wheel_move(float delta_y);
 
 private:
-    void handleAsyncUpdate() override;
+    BaseContextLifetime* get_context_lifetime() override;
 
     void broadcast_receiver_position(const glm::vec3& pos);
     void broadcast_source_position(const glm::vec3& pos);
 
-    //  gl state should be updated inside `update` methods
-    //  where we know that stuff is happening on the gl thread
-    //  if you (e.g.) delete a buffer on a different thread, your computer will
-    //  get mad and maybe freeze
-    WorkQueue work_queue;
-    WorkQueue outgoing_work_queue;
     CopyableSceneData model;
 
     class ContextLifetime;

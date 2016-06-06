@@ -16,23 +16,14 @@ ModelRendererComponent::ModelRendererComponent(
     model::ValueWrapper<int> &shown_surface,
     model::ValueWrapper<model::App> &app,
     model::ValueWrapper<model::RenderState> &render_state)
-        : model(model)
+        : BaseRendererComponent(model)
+        , model(model)
         , shown_surface(shown_surface)
         , app(app)
-        , render_state(render_state)
-        , scene_renderer(model) {
+        , render_state(render_state) {
     set_help("model viewport",
              "This area displays the currently loaded 3D model. Click and drag "
              "to rotate the model, or use the mouse wheel to zoom in and out.");
-
-    open_gl_context.setOpenGLVersionRequired(OpenGLContext::openGL3_2);
-    open_gl_context.setRenderer(&scene_renderer);
-    open_gl_context.setContinuousRepainting(true);
-    open_gl_context.attachTo(*this);
-}
-
-ModelRendererComponent::~ModelRendererComponent() noexcept {
-    open_gl_context.detach();
 }
 
 namespace {
@@ -60,55 +51,50 @@ auto get_receiver_directions(const model::ValueWrapper<model::App> &app) {
 }
 }  // namespace
 
-void ModelRendererComponent::resized() {
-    auto bounds = getLocalBounds();
-    scene_renderer.set_viewport(glm::vec2{getWidth(), getHeight()});
-}
-
 void ModelRendererComponent::mouseDown(const MouseEvent &e) {
-    scene_renderer.mouse_down(to_glm_vec2(e.getPosition()));
+    renderer.mouse_down(to_glm_vec2(e.getPosition()));
 }
 
 void ModelRendererComponent::mouseDrag(const MouseEvent &e) {
-    scene_renderer.mouse_drag(to_glm_vec2(e.getPosition()));
+    renderer.mouse_drag(to_glm_vec2(e.getPosition()));
 }
 
 void ModelRendererComponent::mouseUp(const juce::MouseEvent &e) {
-    scene_renderer.mouse_up(to_glm_vec2(e.getPosition()));
+    renderer.mouse_up(to_glm_vec2(e.getPosition()));
 }
 
 void ModelRendererComponent::mouseWheelMove(const MouseEvent &event,
                                             const MouseWheelDetails &wheel) {
-    scene_renderer.mouse_wheel_move(wheel.deltaY);
+    renderer.mouse_wheel_move(wheel.deltaY);
 }
 
 void ModelRendererComponent::receive_broadcast(model::Broadcaster *cb) {
     if (cb == &shown_surface) {
-        scene_renderer.set_highlighted(shown_surface);
+        renderer.set_highlighted(shown_surface);
     } else if (cb == &app.receiver) {
-        scene_renderer.set_receiver(app.receiver);
-        scene_renderer.set_receiver_pointing(get_receiver_directions(app));
+        renderer.set_receiver(app.receiver);
+        renderer.set_receiver_pointing(get_receiver_directions(app));
     } else if (cb == &app.source) {
-        scene_renderer.set_source(app.source);
+        renderer.set_source(app.source);
     } else if (cb == &render_state.is_rendering) {
-        scene_renderer.set_rendering(render_state.is_rendering);
+        renderer.set_rendering(render_state.is_rendering);
     } else if (cb == &app.receiver_settings) {
-        scene_renderer.set_receiver_pointing(get_receiver_directions(app));
+        renderer.set_receiver_pointing(get_receiver_directions(app));
     }
 }
 
 void ModelRendererComponent::set_positions(
     const std::vector<cl_float3> &positions) {
-    scene_renderer.set_positions(positions);
+    renderer.set_positions(positions);
 }
 
 void ModelRendererComponent::set_pressures(
     const std::vector<float> &pressures) {
-    scene_renderer.set_pressures(pressures);
+    renderer.set_pressures(pressures);
 }
 
 void ModelRendererComponent::changeListenerCallback(ChangeBroadcaster *u) {
-    if (u == &scene_renderer) {
+    if (u == &renderer) {
         for (auto i : {&shown_connector,
                        &receiver_connector,
                        &source_connector,
