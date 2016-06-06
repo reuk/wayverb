@@ -7,8 +7,49 @@
 #include "common/surface_serialize.h"
 
 #include "HelpWindow.hpp"
+#include "ImpulseViewer.hpp"
 
 #include <memory>
+
+namespace {
+template <typename Content>
+class GenericComponentWindow : public DocumentWindow {
+public:
+    GenericComponentWindow(String name, DocumentWindow::TitleBarButtons buttons)
+            : DocumentWindow(name, Colours::lightgrey, buttons) {
+        setUsingNativeTitleBar(true);
+        setContentNonOwned(&content_component, true);
+        centreWithSize(getWidth(), getHeight());
+        setVisible(true);
+        setResizable(false, false);
+        setVisible(true);
+
+        auto& command_manager = VisualiserApplication::get_command_manager();
+        command_manager.getKeyMappings()->resetToDefaultMappings();
+        addKeyListener(command_manager.getKeyMappings());
+        setWantsKeyboardFocus(false);
+    }
+    virtual ~GenericComponentWindow() noexcept = default;
+
+    void closeButtonPressed() override {
+        JUCEApplication::getInstance()->systemRequestedQuit();
+    }
+
+    const Content& get_content() const {
+        return content_component;
+    }
+
+    Content& get_content() {
+        return content_component;
+    }
+
+private:
+    Content content_component;
+};
+
+using LoadWindow = GenericComponentWindow<FileDropComponent>;
+using ImpulseViewerWindow = GenericComponentWindow<ImpulseViewer>;
+}  // namespace
 
 void register_recent_file(const std::string& file) {
     RecentlyOpenedFilesList::registerRecentFileNatively(File(file));
@@ -71,7 +112,10 @@ void VisualiserApplication::initialise(const String& commandLine) {
 
     MenuBarModel::setMacMainMenu(main_menu_bar_model.get(), nullptr);
 
-    window = std::make_unique<LoadWindow>(getApplicationName());
+    window = std::make_unique<LoadWindow>(getApplicationName(),
+                                          DocumentWindow::closeButton);
+    impulse_viewer_window = std::make_unique<ImpulseViewerWindow>(
+        "impulse viewer", DocumentWindow::closeButton);
 }
 
 void VisualiserApplication::attempt_close_window() {
@@ -123,30 +167,6 @@ void VisualiserApplication::systemRequestedQuit() {
 }
 
 void VisualiserApplication::anotherInstanceStarted(const String& commandLine) {
-}
-
-//----------------------------------------------------------------------------//
-
-VisualiserApplication::LoadWindow::LoadWindow(String name)
-        : DocumentWindow(
-              name, Colours::lightgrey, DocumentWindow::closeButton) {
-    setUsingNativeTitleBar(true);
-    setContentNonOwned(&content_component, true);
-    centreWithSize(getWidth(), getHeight());
-    setVisible(true);
-    setResizable(false, false);
-    setVisible(true);
-
-    auto& command_manager = VisualiserApplication::get_command_manager();
-    command_manager.getKeyMappings()->resetToDefaultMappings();
-    addKeyListener(command_manager.getKeyMappings());
-    setWantsKeyboardFocus(false);
-}
-
-VisualiserApplication::LoadWindow::~LoadWindow() noexcept = default;
-
-void VisualiserApplication::LoadWindow::closeButtonPressed() {
-    JUCEApplication::getInstance()->systemRequestedQuit();
 }
 
 //----------------------------------------------------------------------------//
@@ -262,6 +282,10 @@ VisualiserApplication::MainWindow::~MainWindow() noexcept {
         VisualiserApplication::get_command_manager().getKeyMappings());
 }
 
+void VisualiserApplication::MainWindow::closeButtonPressed() {
+    JUCEApplication::getInstance()->systemRequestedQuit();
+}
+
 void VisualiserApplication::MainWindow::receive_broadcast(
     model::Broadcaster* b) {
     if (b == &wrapper.persistent) {
@@ -351,10 +375,6 @@ bool VisualiserApplication::MainWindow::perform(const InvocationInfo& info) {
 ApplicationCommandTarget*
 VisualiserApplication::MainWindow::getNextCommandTarget() {
     return &get_app();
-}
-
-void VisualiserApplication::MainWindow::closeButtonPressed() {
-    JUCEApplication::getInstance()->systemRequestedQuit();
 }
 
 class AutoDeleteDocumentWindow : public DocumentWindow {

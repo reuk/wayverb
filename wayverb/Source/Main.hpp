@@ -51,17 +51,6 @@ public:
 
     static std::string get_valid_file_formats();
 
-    class LoadWindow final : public DocumentWindow {
-    public:
-        LoadWindow(String name);
-        virtual ~LoadWindow() noexcept;
-
-        void closeButtonPressed() override;
-
-    private:
-        FileDropComponent content_component;
-    };
-
     class MainWindow final : public DocumentWindow,
                              public ApplicationCommandTarget,
                              public model::BroadcastListener {
@@ -109,6 +98,7 @@ public:
         model::ValueWrapper<model::FullModel> wrapper{nullptr, model};
 
         File this_file;
+        MainContentComponent content_component;
 
         model::BroadcastConnector persistent_connector{&wrapper.persistent,
                                                        this};
@@ -117,11 +107,7 @@ public:
         model::BroadcastConnector visualising_connector{
             &wrapper.render_state.visualise, this};
 
-        MainContentComponent content_component;
-
         Component::SafePointer<DocumentWindow> help_window{nullptr};
-
-        JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(MainWindow)
     };
 
     std::unique_ptr<StoredSettings> stored_settings;
@@ -137,6 +123,9 @@ private:
     std::unique_ptr<MainMenuBarModel> main_menu_bar_model;
 
     std::unique_ptr<DocumentWindow> window;
+
+    //  TODO remove
+    std::unique_ptr<DocumentWindow> impulse_viewer_window;
 
     class AsyncQuitRetrier : private Timer {
     public:

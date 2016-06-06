@@ -246,14 +246,18 @@ public:
 
     void draw() const {
         auto c = 0.0;
-        glClearColor(c, c, c, 1);
+        glClearColor(c, c, c, 0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        glEnable(GL_DEPTH_TEST);
         glEnable(GL_PROGRAM_POINT_SIZE);
-
-        //        glEnable(GL_BLEND);
-        //        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        glEnable(GL_DEPTH_TEST);
+        /*
+        glEnable(GL_MULTISAMPLE);
+        glEnable(GL_LINE_SMOOTH);
+        glEnable(GL_POLYGON_SMOOTH);
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        */
 
         auto config_shader = [this](const auto &shader) {
             auto s_shader = shader.get_scoped();
