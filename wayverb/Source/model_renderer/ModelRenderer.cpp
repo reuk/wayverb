@@ -200,16 +200,17 @@ public:
         auto aabb = model.get_aabb();
         auto m = aabb.centre();
         auto max = glm::length(aabb.dimensions());
-        scale = max > 0 ? 20 / max : 1;
+        eye = eye_target = max > 0 ? 20 / max : 1;
         translation = -glm::vec3(m.x, m.y, m.z);
     }
 
-    void set_scale(float u) {
-        set_scale_impl(u);
+    void set_eye(float u) {
+        eye_target = std::max(0.0f, u);
     }
 
     void set_rotation(const Orientable::AzEl &u) {
-        set_rotation_impl(u);
+        azel_target = Orientable::AzEl{
+            std::fmod(u.azimuth, static_cast<float>(M_PI * 2)), u.elevation};
     }
 
     void set_rendering(bool b) {
@@ -244,7 +245,12 @@ public:
         drawable_scene.set_emphasis(c);
     }
 
-    void draw() const {
+    void update(float dt) override {
+        eye += (eye_target - eye) * 0.1;
+        azel += (azel_target - azel) * 0.1;
+    }
+
+    void draw() const override {
         auto c = 0.0;
         glClearColor(c, c, c, 0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -318,7 +324,7 @@ public:
             case Mousing::Mode::rotate: {
                 const auto &m = dynamic_cast<Rotate &>(*mousing);
                 auto diff = pos - m.position;
-                set_rotation_impl(Orientable::AzEl{
+                set_rotation(Orientable::AzEl{
                     m.orientation.azimuth + diff.x * Rotate::angle_scale,
                     clamp(
                         m.orientation.elevation + diff.y * Rotate::angle_scale,
@@ -335,19 +341,10 @@ public:
 
     void mouse_wheel_move(float delta_y) {
         //  TODO tween this
-        set_scale_impl(scale + delta_y);
+        set_eye(eye_target + delta_y);
     }
 
 private:
-    void set_rotation_impl(const Orientable::AzEl &u) {
-        azel = Orientable::AzEl{
-            std::fmod(u.azimuth, static_cast<float>(M_PI * 2)), u.elevation};
-    }
-
-    void set_scale_impl(float u) {
-        scale = std::max(0.0f, u);
-    }
-
     glm::vec3 get_world_camera_position() const {
         return glm::inverse(get_view_matrix())[3];
     }
@@ -405,21 +402,16 @@ private:
         return j * i;
     }
 
-    glm::mat4 get_scale_matrix() const {
-        return glm::scale(glm::vec3(scale));
-    }
-
     glm::mat4 get_translation_matrix() const {
         return glm::translate(translation);
     }
 
     glm::mat4 get_view_matrix() const {
-        auto rad = 20;
-        glm::vec3 eye(0, 0, rad);
+        glm::vec3 from(0, 0, eye);
         glm::vec3 target(0, 0, 0);
         glm::vec3 up(0, 1, 0);
-        return glm::lookAt(eye, target, up) * get_rotation_matrix() *
-               get_scale_matrix() * get_translation_matrix();
+        return glm::lookAt(from, target, up) * get_rotation_matrix() *
+               get_translation_matrix();
     }
 
     SceneRenderer &owner;
@@ -432,7 +424,9 @@ private:
     AxesObject axes;
 
     Orientable::AzEl azel;
-    float scale;
+    Orientable::AzEl azel_target;
+    float eye;
+    float eye_target;
     glm::vec3 translation;
 
     bool allow_move_mode{true};
@@ -501,16 +495,6 @@ void SceneRenderer::openGLContextClosing() {
     std::lock_guard<std::mutex> lck(mut);
     context_lifetime = nullptr;
     BaseRenderer::openGLContextClosing();
-}
-
-void SceneRenderer::set_scale(float u) {
-    std::lock_guard<std::mutex> lck(mut);
-    push_incoming([this, u] { context_lifetime->set_scale(u); });
-}
-
-void SceneRenderer::set_rotation(const Orientable::AzEl &u) {
-    std::lock_guard<std::mutex> lck(mut);
-    push_incoming([this, u] { context_lifetime->set_rotation(u); });
 }
 
 void SceneRenderer::set_rendering(bool b) {

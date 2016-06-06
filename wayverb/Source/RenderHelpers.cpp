@@ -32,6 +32,7 @@ void BaseRenderer::renderOpenGL() {
             (*method)();
         }
     }
+    get_context_lifetime()->update(0);
     get_context_lifetime()->draw();
 }
 

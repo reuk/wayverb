@@ -141,9 +141,6 @@ public:
     void newOpenGLContextCreated() override;
     void openGLContextClosing() override;
 
-    void set_scale(float u);
-    void set_rotation(const Orientable::AzEl& u);
-
     void set_rendering(bool b);
 
     void set_receiver(const glm::vec3& u);

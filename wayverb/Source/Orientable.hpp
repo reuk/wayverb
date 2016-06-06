@@ -15,6 +15,15 @@ public:
     struct AzEl {
         float azimuth{0};
         float elevation{0};
+
+        AzEl operator+(const AzEl& rhs) const;
+        AzEl operator-(const AzEl& rhs) const;
+        AzEl operator*(float rhs) const;
+        AzEl operator/(float rhs) const;
+        AzEl& operator+=(const AzEl& rhs);
+        AzEl& operator-=(const AzEl& rhs);
+        AzEl& operator*=(float rhs);
+        AzEl& operator/=(float rhs);
     };
 
     static float compute_azimuth(const glm::vec3& pointing);

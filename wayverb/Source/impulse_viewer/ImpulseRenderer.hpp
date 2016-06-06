@@ -5,11 +5,15 @@
 
 class ImpulseRenderer : public BaseRenderer {
 public:
+    enum class Mode { waveform, waterfall };
+
     ImpulseRenderer();
     virtual ~ImpulseRenderer() noexcept;
 
     void newOpenGLContextCreated() override;
     void openGLContextClosing() override;
+
+    void set_mode(Mode mode);
 
 private:
     virtual BaseContextLifetime* get_context_lifetime() override;
@@ -26,5 +30,5 @@ class ImpulseRendererComponent : public BaseRendererComponent<ImpulseRenderer> {
 public:
     ImpulseRendererComponent();
 
-private:
+    void set_mode(ImpulseRenderer::Mode mode);
 };

@@ -2,6 +2,40 @@
 
 #include "glm/gtx/transform.hpp"
 
+Orientable::AzEl Orientable::AzEl::operator+(const AzEl& rhs) const {
+    return AzEl{azimuth + rhs.azimuth, elevation + rhs.elevation};
+}
+
+Orientable::AzEl Orientable::AzEl::operator-(const AzEl& rhs) const {
+    return AzEl{azimuth - rhs.azimuth, elevation - rhs.elevation};
+}
+
+Orientable::AzEl Orientable::AzEl::operator*(float rhs) const {
+    return AzEl{azimuth * rhs, elevation * rhs};
+}
+
+Orientable::AzEl Orientable::AzEl::operator/(float rhs) const {
+    return AzEl{azimuth / rhs, elevation / rhs};
+}
+
+Orientable::AzEl& Orientable::AzEl::operator+=(const AzEl& rhs) {
+    return *this = *this + rhs;
+}
+
+Orientable::AzEl& Orientable::AzEl::operator-=(const AzEl& rhs) {
+    return *this = *this - rhs;
+}
+
+Orientable::AzEl& Orientable::AzEl::operator*=(float rhs) {
+    return *this = *this * rhs;
+}
+
+Orientable::AzEl& Orientable::AzEl::operator/=(float rhs) {
+    return *this = *this / rhs;
+}
+
+//----------------------------------------------------------------------------//
+
 float Orientable::compute_azimuth(const glm::vec3& pointing) {
     return std::atan2(pointing.x, pointing.z);
 }

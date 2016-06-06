@@ -3,12 +3,13 @@
 #include "WorkQueue.hpp"
 
 #include "modern_gl_utils/drawable.h"
+#include "modern_gl_utils/updatable.h"
 
 #include "glm/glm.hpp"
 
 #include "../JuceLibraryCode/JuceHeader.h"
 
-class BaseContextLifetime : public ::Drawable {
+class BaseContextLifetime : public ::Drawable, public ::Updatable {
 public:
     void set_viewport(const glm::vec2& v);
     glm::vec2 get_viewport() const;
@@ -76,6 +77,14 @@ public:
 
     void resized() override {
         renderer.set_viewport(glm::vec2{getWidth(), getHeight()});
+    }
+
+    const Renderer& get_renderer() const {
+        return renderer;
+    }
+
+    Renderer& get_renderer() {
+        return renderer;
     }
 
 protected:
