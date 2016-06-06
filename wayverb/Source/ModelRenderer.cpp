@@ -147,6 +147,11 @@ void DrawableScene::set_source(const glm::vec3 &u) {
 
 void DrawableScene::set_rendering(bool b) {
     rendering = b;
+    if (!b) {
+        if (mesh_object) {
+            mesh_object->zero_pressures();
+        }
+    }
 }
 
 void DrawableScene::set_positions(const std::vector<glm::vec3> &p) {
@@ -154,6 +159,7 @@ void DrawableScene::set_positions(const std::vector<glm::vec3> &p) {
 }
 
 void DrawableScene::set_pressures(const std::vector<float> &p) {
+    assert(mesh_object);
     mesh_object->set_pressures(p);
 }
 

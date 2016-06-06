@@ -24,6 +24,7 @@
 		1B692CC11D05909400A761C7 /* libglog.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B692C8E1D058FEB00A761C7 /* libglog.a */; };
 		1B692CC21D0590B200A761C7 /* libfftw3f.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B692CBD1D05904500A761C7 /* libfftw3f.a */; };
 		1B692CC31D0590CA00A761C7 /* libsamplerate.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B692CBF1D05905F00A761C7 /* libsamplerate.a */; };
+		1B692CC51D05A0EC00A761C7 /* MeshObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1B692CC41D05A0EC00A761C7 /* MeshObject.cpp */; };
 		1D0C4CE425FD7D455AC10C32 /* juce_audio_basics.mm in Sources */ = {isa = PBXBuildFile; fileRef = BFBA6DD240E8E2C1D9EEFE1C /* juce_audio_basics.mm */; };
 		1E09DBF6A82901B168B1DE8F /* MainComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7D2C7F4DDD285709BDAA80DC /* MainComponent.cpp */; };
 		22A1A2FEBBF078F0D165D702 /* PropertyComponentLAF.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D427A44648B46DF12F248F18 /* PropertyComponentLAF.cpp */; };
@@ -412,6 +413,7 @@
 		1B692CBB1D05902000A761C7 /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
 		1B692CBD1D05904500A761C7 /* libfftw3f.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libfftw3f.a; path = ../../../../../../../usr/local/Cellar/fftw/3.3.4_1/lib/libfftw3f.a; sourceTree = "<group>"; };
 		1B692CBF1D05905F00A761C7 /* libsamplerate.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libsamplerate.a; path = ../../../../../../../usr/local/Cellar/libsamplerate/0.1.8/lib/libsamplerate.a; sourceTree = "<group>"; };
+		1B692CC41D05A0EC00A761C7 /* MeshObject.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = MeshObject.cpp; path = ../../Source/MeshObject.cpp; sourceTree = "<group>"; };
 		1BAF74BB3A7DDB036AACF878 /* infback.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = infback.c; path = ../../JuceLibraryCode/modules/juce_core/zip/zlib/infback.c; sourceTree = SOURCE_ROOT; };
 		1BE99A23F9968165DCF0C571 /* format.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = format.c; path = ../../JuceLibraryCode/modules/juce_audio_formats/codecs/flac/libFLAC/format.c; sourceTree = SOURCE_ROOT; };
 		1BED9283EEEC4F00C846E13B /* juce_MarkerList.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = juce_MarkerList.h; path = ../../JuceLibraryCode/modules/juce_gui_basics/positioning/juce_MarkerList.h; sourceTree = SOURCE_ROOT; };
@@ -2592,6 +2594,7 @@
 				7D2C7F4DDD285709BDAA80DC /* MainComponent.cpp */,
 				C2153EA28EC827B12F372AE6 /* MainComponent.hpp */,
 				91CF5B80CCF79D7E9EBF8FCC /* MeshObject.hpp */,
+				1B692CC41D05A0EC00A761C7 /* MeshObject.cpp */,
 				2C84B3BD1EA86487726CCE64 /* MeshShader.cpp */,
 				74C251560B96119212621161 /* MeshShader.hpp */,
 				41B077B3B66F85F2D69BBCFB /* MicrophoneEditor.cpp */,
@@ -4104,6 +4107,7 @@
 				F210D7F2CFEEB91ED9513DDD /* juce_audio_formats.mm in Sources */,
 				127F610F5B79495C0D092DF7 /* juce_audio_processors.mm in Sources */,
 				D4D94F2D95EF2A6BAB982FEA /* juce_core.mm in Sources */,
+				1B692CC51D05A0EC00A761C7 /* MeshObject.cpp in Sources */,
 				F33311A7088B136BB9CEF1D2 /* juce_cryptography.mm in Sources */,
 				88C5C1C03717251681E1D566 /* juce_data_structures.mm in Sources */,
 				DC19C8DE75E7E58886E9FE2B /* juce_events.mm in Sources */,
