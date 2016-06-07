@@ -16,4 +16,7 @@ wayverb/Builds/MacOSX/Build
 
 *.swp
 
+*.wav
+*.aiff
+
 compile_commands.json
