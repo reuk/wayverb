@@ -38,6 +38,7 @@
 		1B692CEE1D05A63B00A761C7 /* WorkQueue.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1B692CEC1D05A63B00A761C7 /* WorkQueue.cpp */; };
 		1B692CF11D05A9CA00A761C7 /* RenderHelpers.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1B692CEF1D05A9CA00A761C7 /* RenderHelpers.cpp */; };
 		1B692CF41D05CB9100A761C7 /* ImpulseViewer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1B692CF21D05CB9100A761C7 /* ImpulseViewer.cpp */; };
+		1B8E2A411D073B5D00AD6729 /* FadeShader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1B8E2A3F1D073B5D00AD6729 /* FadeShader.cpp */; };
 		1D0C4CE425FD7D455AC10C32 /* juce_audio_basics.mm in Sources */ = {isa = PBXBuildFile; fileRef = BFBA6DD240E8E2C1D9EEFE1C /* juce_audio_basics.mm */; };
 		1E09DBF6A82901B168B1DE8F /* MainComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7D2C7F4DDD285709BDAA80DC /* MainComponent.cpp */; };
 		22A1A2FEBBF078F0D165D702 /* PropertyComponentLAF.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D427A44648B46DF12F248F18 /* PropertyComponentLAF.cpp */; };
@@ -445,6 +446,8 @@
 		1B692CF01D05A9CA00A761C7 /* RenderHelpers.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = RenderHelpers.hpp; path = ../../Source/RenderHelpers.hpp; sourceTree = "<group>"; };
 		1B692CF21D05CB9100A761C7 /* ImpulseViewer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ImpulseViewer.cpp; path = ../../Source/impulse_viewer/ImpulseViewer.cpp; sourceTree = "<group>"; };
 		1B692CF31D05CB9100A761C7 /* ImpulseViewer.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = ImpulseViewer.hpp; path = ../../Source/impulse_viewer/ImpulseViewer.hpp; sourceTree = "<group>"; };
+		1B8E2A3F1D073B5D00AD6729 /* FadeShader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FadeShader.cpp; path = ../../Source/FadeShader.cpp; sourceTree = "<group>"; };
+		1B8E2A401D073B5D00AD6729 /* FadeShader.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = FadeShader.hpp; path = ../../Source/FadeShader.hpp; sourceTree = "<group>"; };
 		1BAF74BB3A7DDB036AACF878 /* infback.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = infback.c; path = ../../JuceLibraryCode/modules/juce_core/zip/zlib/infback.c; sourceTree = SOURCE_ROOT; };
 		1BE99A23F9968165DCF0C571 /* format.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = format.c; path = ../../JuceLibraryCode/modules/juce_audio_formats/codecs/flac/libFLAC/format.c; sourceTree = SOURCE_ROOT; };
 		1BED9283EEEC4F00C846E13B /* juce_MarkerList.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = juce_MarkerList.h; path = ../../JuceLibraryCode/modules/juce_gui_basics/positioning/juce_MarkerList.h; sourceTree = SOURCE_ROOT; };
@@ -1798,6 +1801,8 @@
 		1B692CC91D05A3DE00A761C7 /* impulse_viewer */ = {
 			isa = PBXGroup;
 			children = (
+				1B8E2A3F1D073B5D00AD6729 /* FadeShader.cpp */,
+				1B8E2A401D073B5D00AD6729 /* FadeShader.hpp */,
 				1B692CCA1D05A42E00A761C7 /* ImpulseRenderer.cpp */,
 				1B692CCB1D05A42E00A761C7 /* ImpulseRenderer.hpp */,
 				1B692CF21D05CB9100A761C7 /* ImpulseViewer.cpp */,
@@ -4131,6 +4136,7 @@
 				F79D701F0DA0E5019CCEDCCD /* ProgressButton.cpp in Sources */,
 				22A1A2FEBBF078F0D165D702 /* PropertyComponentLAF.cpp in Sources */,
 				6912D25230D406FD52ED580E /* StoredSettings.cpp in Sources */,
+				1B8E2A411D073B5D00AD6729 /* FadeShader.cpp in Sources */,
 				1B692CE71D05A4E700A761C7 /* MeshShader.cpp in Sources */,
 				1B692CE51D05A4E700A761C7 /* LitSceneShader.cpp in Sources */,
 				A20B35A79906E00FDC864165 /* SurfaceModel.cpp in Sources */,

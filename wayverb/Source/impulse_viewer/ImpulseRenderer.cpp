@@ -1,4 +1,5 @@
 #include "BasicDrawableObject.hpp"
+#include "FadeShader.hpp"
 #include "ImpulseRenderer.hpp"
 
 #include "common/fftwf_helpers.h"
@@ -187,7 +188,7 @@ private:
 
 class Waterfall : public ::Drawable {
 public:
-    Waterfall(const GenericShader& shader, const std::vector<float>& signal)
+    Waterfall(const FadeShader& shader, const std::vector<float>& signal)
             : Waterfall(shader,
                         Spectrogram(window, hop).compute(signal),
                         spacing,
@@ -196,7 +197,7 @@ public:
 
     void draw() const override {
         auto s_shader = shader.get_scoped();
-        shader.set_model_matrix(glm::translate(glm::vec3{0, 0, 0}));
+        shader.set_model_matrix(glm::translate(position));
         for (const auto& i : strips) {
             i.draw();
         }
@@ -212,8 +213,12 @@ public:
         }
     };
 
+    void set_position(const glm::vec3& p) {
+        position = p;
+    }
+
 private:
-    Waterfall(const GenericShader& shader,
+    Waterfall(const FadeShader& shader,
               const std::vector<std::vector<float>>& heights,
               float x_spacing,
               float z_width)
@@ -227,7 +232,7 @@ private:
 
     class HeightMapStrip : public ::Drawable {
     public:
-        HeightMapStrip(const GenericShader& shader,
+        HeightMapStrip(const FadeShader& shader,
                        const std::vector<float>& left,
                        const std::vector<float>& right,
                        Mode mode,
@@ -334,7 +339,7 @@ private:
             return ret;
         }
 
-        const GenericShader& shader;
+        const FadeShader& shader;
 
         VAO vao;
         StaticVBO geometry;
@@ -344,7 +349,7 @@ private:
     };
 
     static std::vector<HeightMapStrip> compute_strips(
-        const GenericShader& generic_shader,
+        const FadeShader& generic_shader,
         const std::vector<std::vector<float>>& input,
         Mode mode,
         float x_spacing,
@@ -371,7 +376,7 @@ private:
     static const int hop{1024};
     static const float spacing;
 
-    const GenericShader& shader;
+    const FadeShader& shader;
 
     Mode mode{Mode::log};
 
@@ -379,6 +384,8 @@ private:
 
     float x_spacing;
     float z_width;
+
+    glm::vec3 position{0};
 
     std::vector<HeightMapStrip> strips;
 };
@@ -398,12 +405,13 @@ public:
 
     ContextLifetime(const std::vector<std::vector<float>>& audio)
             : waveform(generic_shader, audio.front())
-            , waterfall(generic_shader, audio.front()) {
-        waveform.set_position(glm::vec3{0, 0, 2});
+            , waterfall(fade_shader, audio.front()) {
     }
 
     void update(float dt) override {
-        current_azel += (target_azel - current_azel) * 0.1;
+        current_params.update(target_params);
+        waveform.set_position(glm::vec3{0, 0, current_params.waveform_z});
+        waterfall.set_position(glm::vec3{0, 0, current_params.waveform_z - 2.1});
     }
 
     void draw() const override {
@@ -428,6 +436,10 @@ public:
         };
 
         config_shader(generic_shader);
+        config_shader(fade_shader);
+
+        auto s_shader = fade_shader.get_scoped();
+        fade_shader.set_fade(current_params.fade);
 
         waveform.draw();
         waterfall.draw();
@@ -438,16 +450,16 @@ public:
 
         switch (mode) {
             case Mode::waveform:
-                target_azel = waveform_azel;
+                target_params = waveform_params;
                 break;
             case Mode::waterfall:
-                target_azel = waterfall_azel;
+                target_params = waterfall_params;
                 break;
         }
     }
 
     void mouse_down(const glm::vec2& pos) override {
-        mousing = std::make_unique<Rotate>(target_azel, pos);
+        mousing = std::make_unique<Rotate>(target_params.azel, pos);
     }
 
     void mouse_drag(const glm::vec2& pos) override {
@@ -455,7 +467,7 @@ public:
 
         const auto& m = dynamic_cast<Rotate&>(*mousing);
         auto diff = pos - m.position;
-        target_azel = Orientable::AzEl{
+        target_params.azel = Orientable::AzEl{
             m.orientation.azimuth + diff.x * Rotate::angle_scale,
             glm::clamp(m.orientation.elevation + diff.y * Rotate::angle_scale,
                        static_cast<float>(-M_PI / 2),
@@ -475,8 +487,8 @@ private:
     }
 
     glm::mat4 get_rotation_matrix() const {
-        auto i = glm::rotate(current_azel.azimuth, glm::vec3(0, 1, 0));
-        auto j = glm::rotate(current_azel.elevation, glm::vec3(1, 0, 0));
+        auto i = glm::rotate(current_params.azel.azimuth, glm::vec3(0, 1, 0));
+        auto j = glm::rotate(current_params.azel.elevation, glm::vec3(1, 0, 0));
         return j * i;
     }
 
@@ -507,13 +519,27 @@ private:
     };
 
     GenericShader generic_shader;
+    FadeShader fade_shader;
 
-    static const Orientable::AzEl waveform_azel;
-    static const Orientable::AzEl waterfall_azel;
+    struct ModeParams {
+        Orientable::AzEl azel{0, 0};
+        float fade{0};
+        float waveform_z{0};
+
+        void update(const ModeParams& target) {
+            azel += (target.azel - azel) * 0.1;
+            fade += (target.fade - fade) * 0.1;
+            waveform_z += (target.waveform_z - waveform_z) * 0.1;
+        }
+    };
+
+    static const ModeParams waveform_params;
+    static const ModeParams waterfall_params;
+    ModeParams current_params;
+    ModeParams target_params;
+
     static const float angle_scale;
 
-    Orientable::AzEl current_azel{0, 0};
-    Orientable::AzEl target_azel{0, 0};
     float eye{4};
 
     Mode mode;
@@ -523,9 +549,12 @@ private:
     std::unique_ptr<Mousing> mousing;
 };
 
-const Orientable::AzEl ImpulseRenderer::ContextLifetime::waveform_azel{0, 0};
-const Orientable::AzEl ImpulseRenderer::ContextLifetime::waterfall_azel{-0.7,
-                                                                        0.2};
+const ImpulseRenderer::ContextLifetime::ModeParams
+    ImpulseRenderer::ContextLifetime::waveform_params{
+        Orientable::AzEl{0, 0}, 0, 0};
+const ImpulseRenderer::ContextLifetime::ModeParams
+    ImpulseRenderer::ContextLifetime::waterfall_params{
+        Orientable::AzEl{-0.7, 0.2}, 1, 2};
 
 const float ImpulseRenderer::ContextLifetime::Rotate::angle_scale{0.01};
 

@@ -5,23 +5,17 @@ LitSceneShader::LitSceneShader()
 }
 
 void LitSceneShader::set_model_matrix(const glm::mat4& mat) const {
-    set_matrix("v_model", mat);
+    set("v_model", mat);
 }
 void LitSceneShader::set_view_matrix(const glm::mat4& mat) const {
-    set_matrix("v_view", mat);
+    set("v_view", mat);
 }
 void LitSceneShader::set_projection_matrix(const glm::mat4& mat) const {
-    set_matrix("v_projection", mat);
-}
-
-void LitSceneShader::set_matrix(const std::string& s,
-                                const glm::mat4& mat) const {
-    glUniformMatrix4fv(
-        get_uniform_location(s), 1, GL_FALSE, glm::value_ptr(mat));
+    set("v_projection", mat);
 }
 
 void LitSceneShader::set_colour(const glm::vec3& c) const {
-    glUniform3f(get_uniform_location("f_solid_color"), c.r, c.g, c.b);
+    set("f_solid_color", c);
 }
 
 const std::string LitSceneShader::vertex_shader(R"(
