@@ -11,12 +11,18 @@
 
 namespace {
 
+const char* test_files[] = {
+    "/Users/reuben/dev/waveguide/demo/assets/sweep.wav",
+    "/Users/reuben/dev/waveguide/demo/assets/noise.wav",
+    "/Users/reuben/dev/pyverb/impulse.aiff",
+};
+
 //  might need an async solution if this is really slow...
 auto load_test_file() {
     AudioFormatManager m;
     m.registerBasicFormats();
-    std::unique_ptr<AudioFormatReader> reader(m.createReaderFor(
-        File("/Users/reuben/dev/waveguide/demo/assets/sweep.wav")));
+    std::unique_ptr<AudioFormatReader> reader(
+        m.createReaderFor(File(test_files[2])));
 
     AudioSampleBuffer buffer(reader->numChannels, reader->lengthInSamples);
     reader->read(&buffer, 0, reader->lengthInSamples, 0, true, true);
@@ -179,36 +185,58 @@ private:
 
 //----------------------------------------------------------------------------//
 
-class HeightMap : public ::Drawable {
+class Waterfall : public ::Drawable {
 public:
-    HeightMap(const GenericShader& generic_shader,
-              const std::vector<std::vector<float>>& heights,
-              float x_spacing,
-              float z_spacing)
-            : generic_shader(generic_shader)
-            , x_spacing(x_spacing)
-            , z_spacing(z_spacing)
-            , strips(compute_strips(generic_shader, heights)) {
+    Waterfall(const GenericShader& shader, const std::vector<float>& signal)
+            : Waterfall(shader,
+                        Spectrogram(window, hop).compute(signal),
+                        spacing,
+                        2.0) {
     }
 
     void draw() const override {
+        auto s_shader = shader.get_scoped();
+        shader.set_model_matrix(glm::translate(glm::vec3{0, 0, 0}));
         for (const auto& i : strips) {
             i.draw();
         }
     }
 
+    enum class Mode { linear, log };
+
+    void set_mode(Mode u) {
+        if (u != mode) {
+            mode = u;
+            strips =
+                compute_strips(shader, spectrogram, mode, x_spacing, z_width);
+        }
+    };
+
 private:
+    Waterfall(const GenericShader& shader,
+              const std::vector<std::vector<float>>& heights,
+              float x_spacing,
+              float z_width)
+            : shader(shader)
+            , spectrogram(heights)
+            , x_spacing(x_spacing)
+            , z_width(z_width)
+            , strips(compute_strips(
+                  shader, spectrogram, mode, x_spacing, z_width)) {
+    }
+
     class HeightMapStrip : public ::Drawable {
     public:
         HeightMapStrip(const GenericShader& shader,
                        const std::vector<float>& left,
                        const std::vector<float>& right,
+                       Mode mode,
                        float x,
                        float x_spacing,
-                       float z_spacing)
+                       float z_width)
                 : shader(shader)
                 , size(left.size() * 2) {
-            auto g = compute_geometry(left, right, x, x_spacing, z_spacing);
+            auto g = compute_geometry(left, right, mode, x, x_spacing, z_width);
             assert(g.size() == size);
 
             geometry.data(g);
@@ -239,17 +267,40 @@ private:
         static std::vector<glm::vec3> compute_geometry(
             const std::vector<float>& left,
             const std::vector<float>& right,
+            Mode mode,
             float x,
             float x_spacing,
-            float z_spacing) {
+            float z_width) {
             assert(left.size() == right.size());
-
             auto count = left.size();
 
             std::vector<glm::vec3> ret(count * 2);
-            for (auto i = 0u, j = 0u; i != count; ++i, j += 2) {
-                ret[j + 0] = glm::vec3{x, left[i], z_spacing * i};
-                ret[j + 1] = glm::vec3{x + x_spacing, right[i], z_spacing * i};
+
+            switch (mode) {
+                case Mode::linear: {
+                    auto z_spacing = z_width / count;
+                    for (auto i = 0u, j = 0u; i != count; ++i, j += 2) {
+                        ret[j + 0] = glm::vec3{x, left[i], z_spacing * i};
+                        ret[j + 1] =
+                            glm::vec3{x + x_spacing, right[i], z_spacing * i};
+                    }
+                    break;
+                }
+                case Mode::log: {
+                    auto min_frequency = 0.001;
+                    auto min_log = std::log(min_frequency);
+                    for (auto i = 0u, j = 0u; i != count; ++i, j += 2) {
+                        auto bin_frequency = i / static_cast<float>(count);
+                        auto z_pos =
+                            bin_frequency < min_frequency
+                                ? 0
+                                : -(std::log(bin_frequency) - min_log) *
+                                      z_width / min_log;
+                        ret[j + 0] = glm::vec3{x, left[i], z_pos};
+                        ret[j + 1] = glm::vec3{x + x_spacing, right[i], z_pos};
+                    }
+                    break;
+                }
             }
             return ret;
         }
@@ -292,9 +343,12 @@ private:
         GLuint size;
     };
 
-    std::vector<HeightMapStrip> compute_strips(
+    static std::vector<HeightMapStrip> compute_strips(
         const GenericShader& generic_shader,
-        const std::vector<std::vector<float>>& input) {
+        const std::vector<std::vector<float>>& input,
+        Mode mode,
+        float x_spacing,
+        float z_width) {
         std::vector<HeightMapStrip> ret;
         auto x = 0.0;
         std::transform(
@@ -302,39 +356,14 @@ private:
             input.end() - 1,
             input.begin() + 1,
             std::back_inserter(ret),
-            [this, &generic_shader, &x](const auto& i, const auto& j) {
+            [&generic_shader, &x, mode, x_spacing, z_width](const auto& i,
+                                                            const auto& j) {
                 HeightMapStrip ret(
-                    generic_shader, i, j, x, x_spacing, z_spacing);
+                    generic_shader, i, j, mode, x, x_spacing, z_width);
                 x += x_spacing;
                 return ret;
             });
         return ret;
-    }
-
-    const GenericShader& generic_shader;
-
-    float x_spacing;
-    float z_spacing;
-
-    std::vector<HeightMapStrip> strips;
-};
-
-//----------------------------------------------------------------------------//
-
-class Waterfall : public HeightMap {
-public:
-    Waterfall(const GenericShader& shader, const std::vector<float>& signal)
-            : HeightMap(shader,
-                        Spectrogram(window, hop).compute(signal),
-                        spacing,
-                        2.0 / (window / 2 + 1))
-            , shader(shader) {
-    }
-
-    void draw() const override {
-        auto s_shader = shader.get_scoped();
-        shader.set_model_matrix(glm::translate(glm::vec3{0, 0, 0}));
-        HeightMap::draw();
     }
 
 private:
@@ -343,6 +372,15 @@ private:
     static const float spacing;
 
     const GenericShader& shader;
+
+    Mode mode{Mode::log};
+
+    std::vector<std::vector<float>> spectrogram;
+
+    float x_spacing;
+    float z_width;
+
+    std::vector<HeightMapStrip> strips;
 };
 
 const float Waterfall::spacing{hop / samples_per_unit};
