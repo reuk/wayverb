@@ -13,16 +13,6 @@
 #include "combined/config_serialize.h"
 
 namespace {
-template <class T, class Compare>
-constexpr const T &clamp(const T &v, const T &lo, const T &hi, Compare comp) {
-    return comp(v, hi) ? std::max(v, lo, comp) : std::min(v, hi, comp);
-}
-
-template <class T>
-constexpr const T &clamp(const T &v, const T &lo, const T &hi) {
-    return clamp(v, lo, hi, std::less<>());
-}
-
 void push_triangle_indices(std::vector<GLuint> &ret, const Triangle &tri) {
     ret.push_back(tri.v0);
     ret.push_back(tri.v1);
@@ -209,8 +199,12 @@ public:
     }
 
     void set_rotation(const Orientable::AzEl &u) {
-        azel_target = Orientable::AzEl{
-            std::fmod(u.azimuth, static_cast<float>(M_PI * 2)), u.elevation};
+                azel_target = Orientable::AzEl{
+                    u.azimuth,
+                    glm::clamp(
+                        u.elevation,
+                        static_cast<float>(-M_PI / 2),
+                        static_cast<float>(M_PI / 2))};
     }
 
     void set_rendering(bool b) {
@@ -295,7 +289,7 @@ public:
             hovered && allow_move_mode
                 ? std::unique_ptr<Mousing>(
                       std::make_unique<Move>(hovered, hovered->get_position()))
-                : std::unique_ptr<Mousing>(std::make_unique<Rotate>(azel, pos));
+                : std::unique_ptr<Mousing>(std::make_unique<Rotate>(azel_target, pos));
     }
 
     void mouse_drag(const glm::vec2 &pos) override {
@@ -327,10 +321,7 @@ public:
                 auto diff = pos - m.position;
                 set_rotation(Orientable::AzEl{
                     m.orientation.azimuth + diff.x * Rotate::angle_scale,
-                    clamp(
-                        m.orientation.elevation + diff.y * Rotate::angle_scale,
-                        static_cast<float>(-M_PI / 2),
-                        static_cast<float>(M_PI / 2))});
+                    m.orientation.elevation + diff.y * Rotate::angle_scale});
                 break;
             }
         }

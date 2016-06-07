@@ -1,4 +1,3 @@
-#include "AxesObject.hpp"
 #include "BasicDrawableObject.hpp"
 #include "ImpulseRenderer.hpp"
 
@@ -8,14 +7,16 @@
 
 #include "modern_gl_utils/generic_shader.h"
 
+#include <array>
+
 namespace {
 
 //  might need an async solution if this is really slow...
 auto load_test_file() {
     AudioFormatManager m;
     m.registerBasicFormats();
-    std::unique_ptr<AudioFormatReader> reader(
-        m.createReaderFor(File("/Users/reuben/dev/pyverb/impulse.aiff")));
+    std::unique_ptr<AudioFormatReader> reader(m.createReaderFor(
+        File("/Users/reuben/dev/waveguide/demo/assets/sweep.wav")));
 
     AudioSampleBuffer buffer(reader->numChannels, reader->lengthInSamples);
     reader->read(&buffer, 0, reader->lengthInSamples, 0, true, true);
@@ -119,7 +120,7 @@ public:
             , complex_length(window_length / 2 + 1)
             , hop_size(hop_size)
             , window(blackman(window_length))
-            , normalisation_factor(compute_normalization_factor(window) * 0.10)
+            , normalisation_factor(compute_normalization_factor(window))
             , i(fftwf_alloc_real(window_length))
             , o(fftwf_alloc_complex(complex_length))
             , r2c(fftwf_plan_dft_r2c_1d(
@@ -148,7 +149,13 @@ private:
         std::vector<float> ret(complex_length);
         std::transform(
             o.get(), o.get() + complex_length, ret.begin(), [this](auto a) {
-                return ((a[0] * a[0]) + (a[1] * a[1])) / normalisation_factor;
+                auto ret =
+                    ((a[0] * a[0]) + (a[1] * a[1])) / normalisation_factor;
+                //  get decibel value
+                ret = Decibels::gainToDecibels(ret);
+                //  to take the value back into the 0-1 range
+                ret = (ret + 100) / 100;
+                return ret;
             });
         return ret;
     }
@@ -176,15 +183,15 @@ class HeightMap : public ::Drawable {
 public:
     HeightMap(const GenericShader& generic_shader,
               const std::vector<std::vector<float>>& heights,
-              float x_spacing, float z_spacing)
+              float x_spacing,
+              float z_spacing)
             : generic_shader(generic_shader)
-            , x_spacing(x_spacing), z_spacing(z_spacing)
+            , x_spacing(x_spacing)
+            , z_spacing(z_spacing)
             , strips(compute_strips(generic_shader, heights)) {
     }
 
     void draw() const override {
-        auto s_shader = generic_shader.get_scoped();
-        //  set model matrix or whatever
         for (const auto& i : strips) {
             i.draw();
         }
@@ -247,12 +254,31 @@ private:
             return ret;
         }
 
+        static glm::vec3 compute_mapped_colour(float r) {
+            auto min = 0.2;
+            auto max = 1;
+            std::array<glm::vec3, 4> colours{glm::vec3{min, min, min},
+                                             glm::vec3{min, max, min},
+                                             glm::vec3{min, max, max},
+                                             glm::vec3{max, max, max}};
+            const auto d = 1.0 / (colours.size() - 1);
+            for (auto i = 0u; i != colours.size() - 1; ++i, r -= d) {
+                if (r < d) {
+                    return glm::mix(colours[i], colours[i + 1], r / d);
+                }
+            }
+            return colours[0];
+        }
+
         static std::vector<glm::vec4> compute_colors(
             const std::vector<glm::vec3>& g) {
+            auto x = std::fmod(g.front().x, 1);
+            auto c = compute_mapped_colour(x);
             std::vector<glm::vec4> ret(g.size());
-            proc::transform(g, ret.begin(), [](const auto& i) {
-                return glm::mix(
-                    glm::vec4{0.0, 0.0, 0.0, 1}, glm::vec4{1, 1, 1, 1}, i.y * 10);
+            proc::transform(g, ret.begin(), [c](const auto& i) {
+                return glm::mix(glm::vec4{0.0, 0.0, 0.0, 1},
+                                glm::vec4{c, 1},
+                                std::pow(i.y, 0.1));
             });
             return ret;
         }
@@ -271,16 +297,17 @@ private:
         const std::vector<std::vector<float>>& input) {
         std::vector<HeightMapStrip> ret;
         auto x = 0.0;
-        std::transform(input.begin(),
-                       input.end() - 1,
-                       input.begin() + 1,
-                       std::back_inserter(ret),
-                       [this, &generic_shader, &x](const auto& i, const auto& j) {
-                           HeightMapStrip ret(
-                               generic_shader, i, j, x, x_spacing, z_spacing);
-                           x += x_spacing;
-                           return ret;
-                       });
+        std::transform(
+            input.begin(),
+            input.end() - 1,
+            input.begin() + 1,
+            std::back_inserter(ret),
+            [this, &generic_shader, &x](const auto& i, const auto& j) {
+                HeightMapStrip ret(
+                    generic_shader, i, j, x, x_spacing, z_spacing);
+                x += x_spacing;
+                return ret;
+            });
         return ret;
     }
 
@@ -297,13 +324,25 @@ private:
 class Waterfall : public HeightMap {
 public:
     Waterfall(const GenericShader& shader, const std::vector<float>& signal)
-            : HeightMap(shader, Spectrogram(window, hop).compute(signal), spacing, 0.002) {
+            : HeightMap(shader,
+                        Spectrogram(window, hop).compute(signal),
+                        spacing,
+                        2.0 / (window / 2 + 1))
+            , shader(shader) {
+    }
+
+    void draw() const override {
+        auto s_shader = shader.get_scoped();
+        shader.set_model_matrix(glm::translate(glm::vec3{0, 0, 0}));
+        HeightMap::draw();
     }
 
 private:
     static const int window{1024};
     static const int hop{1024};
     static const float spacing;
+
+    const GenericShader& shader;
 };
 
 const float Waterfall::spacing{hop / samples_per_unit};
@@ -320,10 +359,9 @@ public:
     }
 
     ContextLifetime(const std::vector<std::vector<float>>& audio)
-            : axes(generic_shader)
-            , waveform(generic_shader, audio.front())
+            : waveform(generic_shader, audio.front())
             , waterfall(generic_shader, audio.front()) {
-        waveform.set_position(glm::vec3{0, 0, 1});
+        waveform.set_position(glm::vec3{0, 0, 2});
     }
 
     void update(float dt) override {
@@ -353,7 +391,6 @@ public:
 
         config_shader(generic_shader);
 
-        axes.draw();
         waveform.draw();
         waterfall.draw();
     }
@@ -372,19 +409,26 @@ public:
     }
 
     void mouse_down(const glm::vec2& pos) override {
-
+        mousing = std::make_unique<Rotate>(target_azel, pos);
     }
 
     void mouse_drag(const glm::vec2& pos) override {
+        assert(mousing);
 
+        const auto& m = dynamic_cast<Rotate&>(*mousing);
+        auto diff = pos - m.position;
+        target_azel = Orientable::AzEl{
+            m.orientation.azimuth + diff.x * Rotate::angle_scale,
+            glm::clamp(m.orientation.elevation + diff.y * Rotate::angle_scale,
+                       static_cast<float>(-M_PI / 2),
+                       static_cast<float>(M_PI / 2))};
     }
 
     void mouse_up(const glm::vec2& pos) override {
-
+        mousing = nullptr;
     }
 
     void mouse_wheel_move(float delta_y) override {
-
     }
 
 private:
@@ -403,11 +447,32 @@ private:
                    glm::vec3{0, 0, eye}, glm::vec3{0}, glm::vec3{0, 1, 0}) *
                get_rotation_matrix();
     }
+
+    struct Mousing {
+        virtual ~Mousing() noexcept = default;
+        enum class Mode { rotate, move };
+        virtual Mode get_mode() const = 0;
+    };
+
+    struct Rotate : public Mousing {
+        Rotate(const Orientable::AzEl& azel, const glm::vec2& position)
+                : orientation(azel)
+                , position(position) {
+        }
+        Mode get_mode() const {
+            return Mode::rotate;
+        }
+
+        static const float angle_scale;
+        Orientable::AzEl orientation;
+        glm::vec2 position;
+    };
+
     GenericShader generic_shader;
-    AxesObject axes;
 
     static const Orientable::AzEl waveform_azel;
     static const Orientable::AzEl waterfall_azel;
+    static const float angle_scale;
 
     Orientable::AzEl current_azel{0, 0};
     Orientable::AzEl target_azel{0, 0};
@@ -416,11 +481,15 @@ private:
     Mode mode;
     Waveform waveform;
     Waterfall waterfall;
+
+    std::unique_ptr<Mousing> mousing;
 };
 
 const Orientable::AzEl ImpulseRenderer::ContextLifetime::waveform_azel{0, 0};
-const Orientable::AzEl ImpulseRenderer::ContextLifetime::waterfall_azel{-0.5,
-                                                                        0.4};
+const Orientable::AzEl ImpulseRenderer::ContextLifetime::waterfall_azel{-0.7,
+                                                                        0.2};
+
+const float ImpulseRenderer::ContextLifetime::Rotate::angle_scale{0.01};
 
 //----------------------------------------------------------------------------//
 
