@@ -2,6 +2,8 @@
 #include "BasicDrawableObject.hpp"
 #include "ImpulseRenderer.hpp"
 
+#include "common/fftwf_helpers.h"
+#include "common/sinc.h"
 #include "common/stl_wrappers.h"
 
 #include "modern_gl_utils/generic_shader.h"
@@ -34,14 +36,46 @@ std::vector<GLuint> compute_indices(GLuint num) {
     return ret;
 }
 
+const float samples_per_unit{88200};
+
+//----------------------------------------------------------------------------//
+
 class Waveform : public BasicDrawableObject {
 public:
+    Waveform(const GenericShader& shader, const std::vector<float>& signal)
+            : Waveform(shader, compute_downsampled_waveform(signal)) {
+    }
+
+private:
+    static const int waveform_steps = 256;
+    static const float spacing;
+
+    static std::vector<std::pair<float, float>> compute_downsampled_waveform(
+        const std::vector<float>& i) {
+        std::vector<std::pair<float, float>> ret(i.size() / waveform_steps);
+        for (auto a = 0u, b = 0u; a < i.size() - waveform_steps;
+             a += waveform_steps, ++b) {
+            auto mm = std::minmax_element(i.begin() + a,
+                                          i.begin() + a + waveform_steps);
+            ret[b] = std::make_pair(*mm.first, *mm.second);
+        }
+        return ret;
+    }
+
+    static std::vector<std::vector<std::pair<float, float>>>
+    compute_downsampled_waveform(const std::vector<std::vector<float>>& in) {
+        std::vector<std::vector<std::pair<float, float>>> ret(in.size());
+        proc::transform(in, ret.begin(), [](const auto& i) {
+            return compute_downsampled_waveform(i);
+        });
+        return ret;
+    }
+
     Waveform(const GenericShader& shader,
              const std::vector<std::pair<float, float>>& data)
             : Waveform(shader, compute_geometry(data)) {
     }
 
-private:
     Waveform(const GenericShader& shader, const std::vector<glm::vec3>& g)
             : BasicDrawableObject(shader,
                                   g,
@@ -64,20 +98,97 @@ private:
     static std::vector<glm::vec3> compute_geometry(
         const std::vector<std::pair<float, float>>& data) {
         std::vector<glm::vec3> ret;
-        auto step = 0.01;
         auto x = 0.0;
         for (const auto& i : data) {
             ret.push_back(glm::vec3{x, i.first, 0});
             ret.push_back(glm::vec3{x, i.second, 0});
-            x += step;
+            x += spacing;
         }
         return ret;
     }
 };
 
+const float Waveform::spacing{waveform_steps / samples_per_unit};
+
+//----------------------------------------------------------------------------//
+
+class Spectrogram {
+public:
+    Spectrogram(int window_length, int hop_size)
+            : window_length(window_length)
+            , complex_length(window_length / 2 + 1)
+            , hop_size(hop_size)
+            , window(blackman(window_length))
+            , normalisation_factor(compute_normalization_factor(window) * 0.10)
+            , i(fftwf_alloc_real(window_length))
+            , o(fftwf_alloc_complex(complex_length))
+            , r2c(fftwf_plan_dft_r2c_1d(
+                  window_length, i.get(), o.get(), FFTW_ESTIMATE)) {
+    }
+    virtual ~Spectrogram() noexcept = default;
+
+    std::vector<std::vector<float>> compute(const std::vector<float>& input) {
+        std::vector<std::vector<float>> ret;
+        auto lim = input.size() - window_length;
+        for (auto a = 0u; a < lim; a += hop_size) {
+            ret.push_back(compute_slice(input.begin() + a,
+                                        input.begin() + a + window_length));
+        }
+        return ret;
+    }
+
+private:
+    template <typename It>
+    std::vector<float> compute_slice(It begin, It end) {
+        assert(std::distance(begin, end) == window_length);
+        std::transform(begin, end, window.begin(), i.get(), [](auto a, auto b) {
+            return a * b;
+        });
+        fftwf_execute(r2c);
+        std::vector<float> ret(complex_length);
+        std::transform(
+            o.get(), o.get() + complex_length, ret.begin(), [this](auto a) {
+                return ((a[0] * a[0]) + (a[1] * a[1])) / normalisation_factor;
+            });
+        return ret;
+    }
+
+    static float compute_normalization_factor(
+        const std::vector<float>& window) {
+        return proc::accumulate(window, 0.0);
+    }
+
+    int window_length;
+    int complex_length;
+    int hop_size;
+
+    std::vector<float> window;
+    float normalisation_factor;
+
+    fftwf_r i;
+    fftwf_c o;
+    FftwfPlan r2c;
+};
+
+//----------------------------------------------------------------------------//
+
 class HeightMap : public ::Drawable {
 public:
-    HeightMap(const std::vector<std::vector<float>>& heights);
+    HeightMap(const GenericShader& generic_shader,
+              const std::vector<std::vector<float>>& heights,
+              float x_spacing, float z_spacing)
+            : generic_shader(generic_shader)
+            , x_spacing(x_spacing), z_spacing(z_spacing)
+            , strips(compute_strips(generic_shader, heights)) {
+    }
+
+    void draw() const override {
+        auto s_shader = generic_shader.get_scoped();
+        //  set model matrix or whatever
+        for (const auto& i : strips) {
+            i.draw();
+        }
+    }
 
 private:
     class HeightMapStrip : public ::Drawable {
@@ -88,8 +199,11 @@ private:
                        float x,
                        float x_spacing,
                        float z_spacing)
-                : shader(shader) {
+                : shader(shader)
+                , size(left.size() * 2) {
             auto g = compute_geometry(left, right, x, x_spacing, z_spacing);
+            assert(g.size() == size);
+
             geometry.data(g);
             colors.data(compute_colors(g));
             ibo.data(compute_indices(g.size()));
@@ -138,7 +252,7 @@ private:
             std::vector<glm::vec4> ret(g.size());
             proc::transform(g, ret.begin(), [](const auto& i) {
                 return glm::mix(
-                    glm::vec4{0.4, 0.4, 0.4, 1}, glm::vec4{1, 1, 1, 1}, i.y);
+                    glm::vec4{0.0, 0.0, 0.0, 1}, glm::vec4{1, 1, 1, 1}, i.y * 10);
             });
             return ret;
         }
@@ -151,21 +265,64 @@ private:
         StaticIBO ibo;
         GLuint size;
     };
+
+    std::vector<HeightMapStrip> compute_strips(
+        const GenericShader& generic_shader,
+        const std::vector<std::vector<float>>& input) {
+        std::vector<HeightMapStrip> ret;
+        auto x = 0.0;
+        std::transform(input.begin(),
+                       input.end() - 1,
+                       input.begin() + 1,
+                       std::back_inserter(ret),
+                       [this, &generic_shader, &x](const auto& i, const auto& j) {
+                           HeightMapStrip ret(
+                               generic_shader, i, j, x, x_spacing, z_spacing);
+                           x += x_spacing;
+                           return ret;
+                       });
+        return ret;
+    }
+
+    const GenericShader& generic_shader;
+
+    float x_spacing;
+    float z_spacing;
+
+    std::vector<HeightMapStrip> strips;
 };
 
-class Waterfall : public BasicDrawableObject {
+//----------------------------------------------------------------------------//
+
+class Waterfall : public HeightMap {
 public:
+    Waterfall(const GenericShader& shader, const std::vector<float>& signal)
+            : HeightMap(shader, Spectrogram(window, hop).compute(signal), spacing, 0.002) {
+    }
+
 private:
+    static const int window{1024};
+    static const int hop{1024};
+    static const float spacing;
 };
+
+const float Waterfall::spacing{hop / samples_per_unit};
 
 }  // namespace
 
+//----------------------------------------------------------------------------//
+
 class ImpulseRenderer::ContextLifetime : public BaseContextLifetime {
 public:
+    //  TODO remove
     ContextLifetime()
+            : ContextLifetime(load_test_file()) {
+    }
+
+    ContextLifetime(const std::vector<std::vector<float>>& audio)
             : axes(generic_shader)
-            , waveform(generic_shader,
-                       compute_downsampled_waveform(load_test_file()).front()) {
+            , waveform(generic_shader, audio.front())
+            , waterfall(generic_shader, audio.front()) {
         waveform.set_position(glm::vec3{0, 0, 1});
     }
 
@@ -179,10 +336,10 @@ public:
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         glEnable(GL_DEPTH_TEST);
-        /*
         glEnable(GL_MULTISAMPLE);
         glEnable(GL_LINE_SMOOTH);
         glEnable(GL_POLYGON_SMOOTH);
+        /*
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         */
@@ -198,6 +355,7 @@ public:
 
         axes.draw();
         waveform.draw();
+        waterfall.draw();
     }
 
     void set_mode(Mode u) {
@@ -213,22 +371,20 @@ public:
         }
     }
 
-    static const int waveform_steps = 256;
+    void mouse_down(const glm::vec2& pos) override {
 
-    static std::vector<std::vector<std::pair<float, float>>>
-    compute_downsampled_waveform(const std::vector<std::vector<float>>& in) {
-        std::vector<std::vector<std::pair<float, float>>> ret(in.size());
-        proc::transform(in, ret.begin(), [](const auto& i) {
-            std::vector<std::pair<float, float>> ret(i.size() / waveform_steps);
-            for (auto a = 0u, b = 0u; a < i.size() - waveform_steps;
-                 a += waveform_steps, ++b) {
-                auto mm = std::minmax_element(i.begin() + a,
-                                              i.begin() + a + waveform_steps);
-                ret[b] = std::make_pair(*mm.first, *mm.second);
-            }
-            return ret;
-        });
-        return ret;
+    }
+
+    void mouse_drag(const glm::vec2& pos) override {
+
+    }
+
+    void mouse_up(const glm::vec2& pos) override {
+
+    }
+
+    void mouse_wheel_move(float delta_y) override {
+
     }
 
 private:
@@ -259,6 +415,7 @@ private:
 
     Mode mode;
     Waveform waveform;
+    Waterfall waterfall;
 };
 
 const Orientable::AzEl ImpulseRenderer::ContextLifetime::waveform_azel{0, 0};

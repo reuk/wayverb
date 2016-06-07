@@ -137,16 +137,6 @@ void LinkwitzRileyBandpass::filter(std::vector<float> &data) {
     hipass.filter(data);
 }
 
-SelfDestructPlan::SelfDestructPlan(const fftwf_plan &plan)
-        : plan(plan) {
-}
-SelfDestructPlan::~SelfDestructPlan() noexcept {
-    fftwf_destroy_plan(plan);
-}
-SelfDestructPlan::operator const fftwf_plan &() const {
-    return plan;
-}
-
 FastConvolution::FastConvolution(int FFT_LENGTH)
         : FFT_LENGTH(FFT_LENGTH)
         , CPLX_LENGTH(FFT_LENGTH / 2 + 1)

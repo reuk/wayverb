@@ -257,10 +257,11 @@ public:
 
         glEnable(GL_PROGRAM_POINT_SIZE);
         glEnable(GL_DEPTH_TEST);
-        /*
+
         glEnable(GL_MULTISAMPLE);
         glEnable(GL_LINE_SMOOTH);
         glEnable(GL_POLYGON_SMOOTH);
+        /*
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         */
@@ -288,7 +289,7 @@ public:
         allow_move_mode = b;
     }
 
-    void mouse_down(const glm::vec2 &pos) {
+    void mouse_down(const glm::vec2 &pos) override {
         auto hovered = get_currently_hovered(pos);
         mousing =
             hovered && allow_move_mode
@@ -297,7 +298,7 @@ public:
                 : std::unique_ptr<Mousing>(std::make_unique<Rotate>(azel, pos));
     }
 
-    void mouse_drag(const glm::vec2 &pos) {
+    void mouse_drag(const glm::vec2 &pos) override {
         assert(mousing);
         switch (mousing->get_mode()) {
             case Mousing::Mode::move: {
@@ -335,11 +336,11 @@ public:
         }
     }
 
-    void mouse_up(const glm::vec2 &pos) {
+    void mouse_up(const glm::vec2 &pos) override {
         mousing = nullptr;
     }
 
-    void mouse_wheel_move(float delta_y) {
+    void mouse_wheel_move(float delta_y) override {
         //  TODO tween this
         set_eye(eye_target + delta_y);
     }
@@ -540,26 +541,6 @@ void SceneRenderer::set_receiver_pointing(
     push_incoming([this, directions] {
         context_lifetime->set_receiver_pointing(directions);
     });
-}
-
-void SceneRenderer::mouse_down(const glm::vec2 &u) {
-    std::lock_guard<std::mutex> lck(mut);
-    push_incoming([this, u] { context_lifetime->mouse_down(u); });
-}
-
-void SceneRenderer::mouse_drag(const glm::vec2 &u) {
-    std::lock_guard<std::mutex> lck(mut);
-    push_incoming([this, u] { context_lifetime->mouse_drag(u); });
-}
-
-void SceneRenderer::mouse_up(const glm::vec2 &u) {
-    std::lock_guard<std::mutex> lck(mut);
-    push_incoming([this, u] { context_lifetime->mouse_up(u); });
-}
-
-void SceneRenderer::mouse_wheel_move(float u) {
-    std::lock_guard<std::mutex> lck(mut);
-    push_incoming([this, u] { context_lifetime->mouse_wheel_move(u); });
 }
 
 void SceneRenderer::broadcast_receiver_position(const glm::vec3 &pos) {

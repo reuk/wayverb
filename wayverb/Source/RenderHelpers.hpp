@@ -15,6 +15,11 @@ public:
     glm::vec2 get_viewport() const;
     float get_aspect() const;
 
+    virtual void mouse_down(const glm::vec2& pos) = 0;
+    virtual void mouse_drag(const glm::vec2& pos) = 0;
+    virtual void mouse_up(const glm::vec2& pos) = 0;
+    virtual void mouse_wheel_move(float delta_y) = 0;
+
 private:
     glm::vec2 viewport;
 };
@@ -40,6 +45,11 @@ public:
     void newOpenGLContextCreated() override;
     void renderOpenGL() override;
     void openGLContextClosing() override;
+
+    void mouse_down(const glm::vec2& pos);
+    void mouse_drag(const glm::vec2& pos);
+    void mouse_up(const glm::vec2& pos);
+    void mouse_wheel_move(float delta_y);
 
 protected:
     virtual BaseContextLifetime* get_context_lifetime() = 0;
@@ -68,6 +78,7 @@ public:
         open_gl_context.setOpenGLVersionRequired(OpenGLContext::openGL3_2);
         open_gl_context.setRenderer(&renderer);
         open_gl_context.setContinuousRepainting(true);
+        open_gl_context.setMultisamplingEnabled(true);
         open_gl_context.attachTo(*this);
     }
 
@@ -87,7 +98,30 @@ public:
         return renderer;
     }
 
+    void mouseDown(const MouseEvent& e) override {
+        renderer.mouse_down(to_glm_vec2(e.getPosition()));
+    }
+
+    void mouseDrag(const MouseEvent& e) override {
+        renderer.mouse_drag(to_glm_vec2(e.getPosition()));
+    }
+
+    void mouseUp(const MouseEvent& e) override {
+        renderer.mouse_up(to_glm_vec2(e.getPosition()));
+    }
+
+    void mouseWheelMove(const MouseEvent& event,
+                        const MouseWheelDetails& wheel) override {
+        renderer.mouse_wheel_move(wheel.deltaY);
+    }
+
 protected:
     OpenGLContext open_gl_context;
     Renderer renderer;
+
+private:
+    template <typename T>
+    static glm::vec2 to_glm_vec2(const T& t) {
+        return glm::vec2{t.x, t.y};
+    }
 };

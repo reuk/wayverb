@@ -1,6 +1,6 @@
 #pragma once
 
-#include "fftw3.h"
+#include "fftwf_helpers.h"
 
 #include "stl_wrappers.h"
 
@@ -47,28 +47,6 @@ public:
     float lo, hi, sr;
 };
 
-// In this episode:
-// How to work with FFTW in not a dumb way in C++
-
-struct SelfDestructPlan {
-    explicit SelfDestructPlan(const fftwf_plan &plan);
-    virtual ~SelfDestructPlan() noexcept;
-    operator const fftwf_plan &() const;
-
-private:
-    fftwf_plan plan;
-};
-
-struct fftwf_ptr_destructor {
-    template <typename T>
-    void operator()(T t) const noexcept {
-        fftwf_free(t);
-    }
-};
-
-using fftwf_r = std::unique_ptr<float, fftwf_ptr_destructor>;
-using fftwf_c = std::unique_ptr<fftwf_complex, fftwf_ptr_destructor>;
-
 class FastConvolution {
 public:
     /// An fftconvolover has a constant length.
@@ -108,7 +86,7 @@ public:
 
 private:
     template <typename T>
-    void forward_fft(const SelfDestructPlan &plan,
+    void forward_fft(const FftwfPlan &plan,
                      const T &data,
                      const fftwf_r &i,
                      const fftwf_c &o,
@@ -129,8 +107,8 @@ private:
     fftwf_c acplx;
     fftwf_c bcplx;
 
-    SelfDestructPlan r2c;
-    SelfDestructPlan c2r;
+    FftwfPlan r2c;
+    FftwfPlan c2r;
 };
 
 class LopassWindowedSinc : public Lopass, public FastConvolution {

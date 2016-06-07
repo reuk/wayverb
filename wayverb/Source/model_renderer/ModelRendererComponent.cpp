@@ -27,10 +27,6 @@ ModelRendererComponent::ModelRendererComponent(
 }
 
 namespace {
-template <typename T>
-glm::vec2 to_glm_vec2(const T &t) {
-    return glm::vec2{t.x, t.y};
-}
 auto get_receiver_directions(const model::ValueWrapper<model::App> &app) {
     switch (app.receiver_settings.mode) {
         case model::ReceiverSettings::Mode::microphones: {
@@ -50,23 +46,6 @@ auto get_receiver_directions(const model::ValueWrapper<model::App> &app) {
     }
 }
 }  // namespace
-
-void ModelRendererComponent::mouseDown(const MouseEvent &e) {
-    renderer.mouse_down(to_glm_vec2(e.getPosition()));
-}
-
-void ModelRendererComponent::mouseDrag(const MouseEvent &e) {
-    renderer.mouse_drag(to_glm_vec2(e.getPosition()));
-}
-
-void ModelRendererComponent::mouseUp(const juce::MouseEvent &e) {
-    renderer.mouse_up(to_glm_vec2(e.getPosition()));
-}
-
-void ModelRendererComponent::mouseWheelMove(const MouseEvent &event,
-                                            const MouseWheelDetails &wheel) {
-    renderer.mouse_wheel_move(wheel.deltaY);
-}
 
 void ModelRendererComponent::receive_broadcast(model::Broadcaster *cb) {
     if (cb == &shown_surface) {

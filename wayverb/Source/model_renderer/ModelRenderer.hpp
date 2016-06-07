@@ -158,11 +158,6 @@ public:
     void addListener(Listener*);
     void removeListener(Listener*);
 
-    void mouse_down(const glm::vec2& pos);
-    void mouse_drag(const glm::vec2& pos);
-    void mouse_up(const glm::vec2& pos);
-    void mouse_wheel_move(float delta_y);
-
 private:
     BaseContextLifetime* get_context_lifetime() override;
 

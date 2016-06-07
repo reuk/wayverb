@@ -17,12 +17,6 @@ public:
         model::ValueWrapper<model::App>& app,
         model::ValueWrapper<model::RenderState>& render_state);
 
-    void mouseDown(const MouseEvent& e) override;
-    void mouseDrag(const MouseEvent& e) override;
-    void mouseUp(const MouseEvent& e) override;
-    void mouseWheelMove(const MouseEvent& event,
-                        const MouseWheelDetails& wheel) override;
-
     void receive_broadcast(model::Broadcaster* b) override;
 
     void set_positions(const std::vector<cl_float3>& positions);
