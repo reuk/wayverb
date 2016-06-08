@@ -2,6 +2,7 @@
 
 #include "FileDropComponent.hpp"
 #include "FullModel.hpp"
+#include "ImpulseViewer.hpp"
 #include "MainComponent.hpp"
 #include "StoredSettings.hpp"
 #include "VisualiserLookAndFeel.hpp"
@@ -20,7 +21,9 @@ public:
 
     static VisualiserApplication& get_app();
     static ApplicationCommandManager& get_command_manager();
-
+    static std::string get_valid_file_formats();
+    static PropertiesFile::Options get_property_file_options_for(
+        const std::string& name);
     static constexpr auto recent_projects_base_id = 100;
 
     void create_file_menu(PopupMenu& menu);
@@ -36,7 +39,9 @@ public:
     void open_project(const File& file);
     void open_project_from_dialog();
 
-    void attempt_close_window();
+    void show_hide_load_window();
+
+    void attempt_close_all();
 
     class MainMenuBarModel : public MenuBarModel {
     public:
@@ -48,8 +53,6 @@ public:
         void menuItemSelected(int menu_item_id,
                               int top_level_menu_index) override;
     };
-
-    static std::string get_valid_file_formats();
 
     class MainWindow final : public DocumentWindow,
                              public ApplicationCommandTarget,
@@ -110,10 +113,26 @@ public:
         Component::SafePointer<DocumentWindow> help_window{nullptr};
     };
 
-    std::unique_ptr<StoredSettings> stored_settings;
+    class ImpulseViewerWindow : public DocumentWindow,
+                                public ApplicationCommandTarget {
+    public:
+        ImpulseViewerWindow(String name, const File& file);
+        virtual ~ImpulseViewerWindow() noexcept = default;
 
-    static PropertiesFile::Options get_property_file_options_for(
-        const std::string& name);
+        void closeButtonPressed() override;
+
+        void getAllCommands(Array<CommandID>& commands) override;
+        void getCommandInfo(CommandID command_id,
+                            ApplicationCommandInfo& result) override;
+        bool perform(const InvocationInfo& info) override;
+        ApplicationCommandTarget* getNextCommandTarget() override;
+
+    private:
+        File this_file;
+        ImpulseViewer content_component;
+    };
+
+    std::unique_ptr<StoredSettings> stored_settings;
 
 private:
     VisualiserLookAndFeel look_and_feel;
@@ -122,10 +141,9 @@ private:
     std::unique_ptr<ApplicationCommandManager> command_manager;
     std::unique_ptr<MainMenuBarModel> main_menu_bar_model;
 
-    std::unique_ptr<DocumentWindow> window;
-
-    //  TODO remove
-    std::unique_ptr<DocumentWindow> impulse_viewer_window;
+    std::unique_ptr<DocumentWindow> load_window;
+    std::unordered_set<std::unique_ptr<MainWindow>> main_windows;
+    std::unordered_set<std::unique_ptr<ImpulseViewerWindow>> impulse_windows;
 
     class AsyncQuitRetrier : private Timer {
     public:

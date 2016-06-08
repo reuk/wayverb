@@ -62,16 +62,6 @@ void ModelRendererComponent::receive_broadcast(model::Broadcaster *cb) {
     }
 }
 
-void ModelRendererComponent::set_positions(
-    const std::vector<cl_float3> &positions) {
-    renderer.set_positions(positions);
-}
-
-void ModelRendererComponent::set_pressures(
-    const std::vector<float> &pressures) {
-    renderer.set_pressures(pressures);
-}
-
 void ModelRendererComponent::changeListenerCallback(ChangeBroadcaster *u) {
     if (u == &renderer) {
         for (auto i : {&shown_connector,

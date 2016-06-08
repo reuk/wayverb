@@ -13,21 +13,6 @@
 
 #include <string>
 
-TEST(cereal, materials) {
-    std::string base_path("/Users/reuben/dev/waveguide/demo/assets/materials");
-
-    for (auto i : {
-             "bright.json",
-             "brighter.json",
-             "damped.json",
-             "mat.json",
-             "vault.json",
-         }) {
-        SurfaceConfig surface_loader(base_path + "/" + i);
-        LOG(INFO) << "loaded " << i << " successfully";
-    }
-}
-
 #if 0
 TEST(cereal, write_configs) {
     std::string base_path ("/Users/reuben/dev/waveguide/demo/assets/configs");

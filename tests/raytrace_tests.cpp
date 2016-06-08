@@ -15,10 +15,6 @@
 #define OBJ_PATH ""
 #endif
 
-#ifndef MAT_PATH
-#define MAT_PATH ""
-#endif
-
 #ifndef SCRATCH_PATH
 #define SCRATCH_PATH ""
 #endif
@@ -101,7 +97,7 @@ TEST(raytrace, new) {
     ComputeContext context;
     auto raytrace_program = get_program<RaytracerProgram>(context);
 
-    SceneData scene_data(OBJ_PATH, MAT_PATH);
+    SceneData scene_data(OBJ_PATH);
 
     auto directions = get_random_directions(bench_rays);
 

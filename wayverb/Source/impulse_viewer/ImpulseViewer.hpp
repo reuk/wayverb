@@ -5,7 +5,7 @@
 
 class ImpulseViewer : public Component , public ChangeListener {
 public:
-    ImpulseViewer();
+    ImpulseViewer(const File& file);
 
     void resized() override;
 

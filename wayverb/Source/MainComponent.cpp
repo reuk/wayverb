@@ -151,12 +151,11 @@ void MainContentComponent::receive_broadcast(model::Broadcaster* cb) {
                     };
 
                     auto run_visualised = [this, &engine, &callback] {
-                        right_panel.set_positions(engine.get_node_positions());
-                        //  TODO this is not great, but I know WHY it's not
-                        //  great so it's only 50% unforgivable
+                        right_panel.get_renderer().set_positions(
+                            engine.get_node_positions());
                         return engine.run_visualised(
                             keep_going, callback, [this](const auto& i) {
-                                right_panel.set_pressures(i);
+                                right_panel.get_renderer().set_pressures(i);
                             });
                     };
                     auto intermediate = wrapper.render_state.visualise
@@ -164,6 +163,8 @@ void MainContentComponent::receive_broadcast(model::Broadcaster* cb) {
                                             : run();
                     engine.attenuate(intermediate, callback);
                     //  TODO write out
+
+                    //  Launch viewer window or whatever
 
                     //  if anything goes wrong, flag it up on stdout and quit
                     //  the thread

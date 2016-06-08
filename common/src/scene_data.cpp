@@ -19,42 +19,6 @@
 #include <stdexcept>
 #include <vector>
 
-SurfaceConfig::SurfaceConfig(const std::map<std::string, Surface>& surfaces)
-        : surfaces(surfaces) {
-}
-
-SurfaceConfig::SurfaceConfig(std::istream& stream) {
-    load(stream);
-}
-
-SurfaceConfig::SurfaceConfig(const std::string& path) {
-    load(path);
-}
-
-void SurfaceConfig::load(const std::string& fpath) {
-    std::ifstream stream(fpath);
-    load(stream);
-}
-
-void SurfaceConfig::load(std::istream& stream) {
-    cereal::JSONInputArchive archive(stream);
-    serialize(archive);
-}
-
-void SurfaceConfig::save(const std::string& fpath) {
-    std::ofstream stream(fpath);
-    save(stream);
-}
-
-void SurfaceConfig::save(std::ostream& stream) {
-    cereal::JSONOutputArchive archive(stream);
-    serialize(archive);
-}
-
-const std::map<std::string, Surface>& SurfaceConfig::get_surfaces() const {
-    return surfaces;
-}
-
 //----------------------------------------------------------------------------//
 
 CopyableSceneData::CopyableSceneData(const std::vector<Triangle>& triangles,
@@ -115,10 +79,6 @@ void CopyableSceneData::set_surfaces(
     }
 }
 
-void CopyableSceneData::set_surfaces(const SurfaceConfig& surfaces) {
-    set_surfaces(surfaces.get_surfaces());
-}
-
 void CopyableSceneData::set_surface(const Material& material) {
     auto it = proc::find_if(contents.materials, [&material](const auto& i) {
         return i.name == material.name;
@@ -154,13 +114,6 @@ SceneData::SceneData(CopyableSceneData&& rhs, std::unique_ptr<Impl>&& pimpl)
 
 SceneData::SceneData(std::tuple<CopyableSceneData, std::unique_ptr<Impl>>&& rhs)
         : SceneData(std::move(std::get<0>(rhs)), std::move(std::get<1>(rhs))) {
-}
-
-SceneData::SceneData(const std::string& fpath,
-                     const std::string& mat,
-                     float scale)
-        : SceneData(fpath, scale) {
-    set_surfaces(SurfaceConfig(mat));
 }
 
 std::tuple<CopyableSceneData, std::unique_ptr<SceneData::Impl>> SceneData::load(

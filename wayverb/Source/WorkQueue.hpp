@@ -7,7 +7,7 @@ class WorkQueue {
 public:
     struct WorkItem {
         virtual ~WorkItem() noexcept = default;
-        virtual void operator()() const = 0;
+        virtual void operator()() = 0;
     };
 
     template <typename Method>
@@ -28,7 +28,7 @@ private:
         GenericWorkItem(Method&& method)
                 : method(std::forward<Method>(method)) {
         }
-        void operator()() const override {
+        void operator()() override {
             method();
         }
         Method method;

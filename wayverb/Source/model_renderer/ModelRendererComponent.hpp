@@ -19,9 +19,6 @@ public:
 
     void receive_broadcast(model::Broadcaster* b) override;
 
-    void set_positions(const std::vector<cl_float3>& positions);
-    void set_pressures(const std::vector<float>& pressures);
-
     void source_dragged(SceneRenderer*, const glm::vec3& v) override;
     void receiver_dragged(SceneRenderer*, const glm::vec3& v) override;
 

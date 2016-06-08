@@ -7,7 +7,6 @@
 #include "common/surface_serialize.h"
 
 #include "HelpWindow.hpp"
-#include "ImpulseViewer.hpp"
 
 #include <memory>
 
@@ -48,8 +47,70 @@ private:
 };
 
 using LoadWindow = GenericComponentWindow<FileDropComponent>;
-using ImpulseViewerWindow = GenericComponentWindow<ImpulseViewer>;
 }  // namespace
+
+//----------------------------------------------------------------------------//
+
+VisualiserApplication::ImpulseViewerWindow::ImpulseViewerWindow(
+    String name, const File& file)
+        : DocumentWindow(name, Colours::lightgrey, allButtons)
+        , this_file(file)
+        , content_component(file) {
+    setUsingNativeTitleBar(true);
+    setContentNonOwned(&content_component, true);
+    centreWithSize(getWidth(), getHeight());
+    setVisible(true);
+    setResizable(false, false);
+    setVisible(true);
+
+    auto& command_manager = VisualiserApplication::get_command_manager();
+    command_manager.getKeyMappings()->resetToDefaultMappings();
+    addKeyListener(command_manager.getKeyMappings());
+    setWantsKeyboardFocus(false);
+}
+
+void VisualiserApplication::ImpulseViewerWindow::closeButtonPressed() {
+    auto& impulse_windows = VisualiserApplication::get_app().impulse_windows;
+    auto it = proc::find_if(impulse_windows,
+                            [this](const auto& i) { return i.get() == this; });
+    if (it != impulse_windows.end()) {
+        impulse_windows.erase(it);
+    }
+}
+
+void VisualiserApplication::ImpulseViewerWindow::getAllCommands(
+    Array<CommandID>& commands) {
+    commands.addArray({CommandIDs::idCloseProject});
+}
+void VisualiserApplication::ImpulseViewerWindow::getCommandInfo(
+    CommandID command_id, ApplicationCommandInfo& result) {
+    switch (command_id) {
+        case CommandIDs::idCloseProject:
+            result.setInfo("Close", "Close the current project", "General", 0);
+            result.defaultKeypresses.add(
+                KeyPress('w', ModifierKeys::commandModifier, 0));
+            break;
+        default:
+            break;
+    }
+}
+bool VisualiserApplication::ImpulseViewerWindow::perform(
+    const InvocationInfo& info) {
+    switch (info.commandID) {
+        case CommandIDs::idCloseProject:
+            closeButtonPressed();
+            return true;
+
+        default:
+            return false;
+    }
+}
+ApplicationCommandTarget*
+VisualiserApplication::ImpulseViewerWindow::getNextCommandTarget() {
+    return &get_app();
+}
+
+//----------------------------------------------------------------------------//
 
 void register_recent_file(const std::string& file) {
     RecentlyOpenedFilesList::registerRecentFileNatively(File(file));
@@ -100,6 +161,14 @@ bool VisualiserApplication::moreThanOneInstanceAllowed() {
     return false;
 }
 
+namespace {
+const char* test_files[] = {
+    "/Users/reuben/dev/waveguide/demo/assets/sweep.wav",
+    "/Users/reuben/dev/waveguide/demo/assets/noise.wav",
+    "/Users/reuben/dev/pyverb/impulse.aiff",
+};
+}  // namespace
+
 void VisualiserApplication::initialise(const String& commandLine) {
     LookAndFeel::setDefaultLookAndFeel(&look_and_feel);
 
@@ -112,40 +181,15 @@ void VisualiserApplication::initialise(const String& commandLine) {
 
     MenuBarModel::setMacMainMenu(main_menu_bar_model.get(), nullptr);
 
-    window = std::make_unique<LoadWindow>(getApplicationName(),
-                                          DocumentWindow::closeButton);
-    impulse_viewer_window = std::make_unique<ImpulseViewerWindow>(
-        "impulse viewer", DocumentWindow::closeButton);
-}
+    show_hide_load_window();
 
-void VisualiserApplication::attempt_close_window() {
-    if (auto main_window = dynamic_cast<MainWindow*>(window.get())) {
-        if (main_window->needs_save()) {
-            switch (NativeMessageBox::showYesNoCancelBox(
-                AlertWindow::AlertIconType::WarningIcon,
-                "save?",
-                "There are unsaved changes. Do you wish to save?")) {
-                case 0:  // cancel
-                    return;
-                case 1:  // yes
-                    if (main_window->save_project()) {
-                        window = nullptr;
-                    }
-                    break;
-                case 2:  // no
-                    window = nullptr;
-                    break;
-            }
-        } else {
-            window = nullptr;
-        }
-    } else if (dynamic_cast<LoadWindow*>(window.get())) {
-        window = nullptr;
-    }
+    //  TODO remove
+    impulse_windows.insert(std::make_unique<ImpulseViewerWindow>(
+        "impulse viewer", File(test_files[0])));
 }
 
 void VisualiserApplication::shutdown() {
-    window = nullptr;
+    main_windows.clear();
 
     MenuBarModel::setMacMainMenu(nullptr);
 
@@ -159,14 +203,32 @@ void VisualiserApplication::systemRequestedQuit() {
     if (ModalComponentManager::getInstance()->cancelAllModalComponents()) {
         new ::AsyncQuitRetrier();
     } else {
-        attempt_close_window();
-        if (!window) {
+        attempt_close_all();
+        if (main_windows.empty()) {
             quit();
         }
     }
 }
 
+void VisualiserApplication::attempt_close_all() {
+    while (!main_windows.empty()) {
+        auto size = main_windows.size();
+        (*main_windows.begin())->closeButtonPressed();
+        if (main_windows.size() >= size) {
+            //  failed to remove the window
+            return;
+        }
+    }
+}
+
 void VisualiserApplication::anotherInstanceStarted(const String& commandLine) {
+}
+
+void VisualiserApplication::show_hide_load_window() {
+    load_window = main_windows.empty()
+                      ? std::make_unique<LoadWindow>(
+                            getApplicationName(), DocumentWindow::closeButton)
+                      : nullptr;
 }
 
 //----------------------------------------------------------------------------//
@@ -283,7 +345,31 @@ VisualiserApplication::MainWindow::~MainWindow() noexcept {
 }
 
 void VisualiserApplication::MainWindow::closeButtonPressed() {
-    JUCEApplication::getInstance()->systemRequestedQuit();
+    if (needs_save()) {
+        switch (NativeMessageBox::showYesNoCancelBox(
+            AlertWindow::AlertIconType::WarningIcon,
+            "save?",
+            "There are unsaved changes. Do you wish to save?")) {
+            case 0:  // cancel
+                return;
+            case 1:  // yes
+                if (!save_project()) {
+                    return;
+                }
+                break;
+            case 2:  // no
+                break;
+        }
+    }
+
+    auto& main_windows = VisualiserApplication::get_app().main_windows;
+    auto it = proc::find_if(main_windows,
+                            [this](const auto& i) { return i.get() == this; });
+    if (it != main_windows.end()) {
+        main_windows.erase(it);
+    }
+
+    VisualiserApplication::get_app().show_hide_load_window();
 }
 
 void VisualiserApplication::MainWindow::receive_broadcast(
@@ -377,6 +463,7 @@ VisualiserApplication::MainWindow::getNextCommandTarget() {
     return &get_app();
 }
 
+namespace {
 class AutoDeleteDocumentWindow : public DocumentWindow {
 public:
     using DocumentWindow::DocumentWindow;
@@ -384,6 +471,7 @@ public:
         delete this;
     }
 };
+}  // namespace
 
 void VisualiserApplication::MainWindow::show_help() {
     if (!help_window) {
@@ -530,11 +618,10 @@ bool VisualiserApplication::perform(const InvocationInfo& info) {
 
 void VisualiserApplication::open_project(const File& file) {
     try {
-        attempt_close_window();
-        if (!window) {
-            window = std::make_unique<MainWindow>(getApplicationName(), file);
-            register_recent_file(file.getFullPathName().toStdString());
-        }
+        main_windows.insert(
+            std::make_unique<MainWindow>(getApplicationName(), file));
+        register_recent_file(file.getFullPathName().toStdString());
+        show_hide_load_window();
     } catch (const std::exception& e) {
         NativeMessageBox::showMessageBox(
             AlertWindow::WarningIcon,

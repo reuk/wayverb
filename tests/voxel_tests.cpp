@@ -9,12 +9,8 @@
 #define OBJ_PATH ""
 #endif
 
-#ifndef MAT_PATH
-#define MAT_PATH ""
-#endif
-
 TEST(voxel, construct) {
-    SceneData scene_data(OBJ_PATH, MAT_PATH);
+    SceneData scene_data(OBJ_PATH);
     Octree octree(scene_data, 2);
     VoxelCollection voxel(octree);
 }
@@ -38,7 +34,7 @@ private:
 };
 
 TEST(voxel, walk) {
-    SceneData scene_data(OBJ_PATH, MAT_PATH);
+    SceneData scene_data(OBJ_PATH);
     Octree octree(scene_data, 4, 0.1);
     VoxelCollection voxel(octree);
 
@@ -55,7 +51,7 @@ TEST(voxel, walk) {
 static constexpr auto bench_rays = 1 << 14;
 
 TEST(voxel, old) {
-    SceneData scene_data(OBJ_PATH, MAT_PATH);
+    SceneData scene_data(OBJ_PATH);
 
     auto v = scene_data.get_converted_vertices();
     std::vector<int> ind(scene_data.get_triangles().size());
@@ -70,7 +66,7 @@ TEST(voxel, old) {
 }
 
 TEST(voxel, new) {
-    SceneData scene_data(OBJ_PATH, MAT_PATH);
+    SceneData scene_data(OBJ_PATH);
     Octree octree(scene_data, 4, 0.1);
     VoxelCollection voxel(octree);
 
@@ -84,7 +80,7 @@ TEST(voxel, new) {
 }
 
 TEST(voxel, intersect) {
-    SceneData scene_data(OBJ_PATH, MAT_PATH);
+    SceneData scene_data(OBJ_PATH);
     Octree octree(scene_data, 4, 0.1);
     VoxelCollection voxel(octree);
 
@@ -108,7 +104,7 @@ TEST(voxel, intersect) {
 }
 
 TEST(voxel, flatten) {
-    SceneData scene_data(OBJ_PATH, MAT_PATH);
+    SceneData scene_data(OBJ_PATH);
     Octree octree(scene_data, 5, 0.1);
     VoxelCollection voxel(octree);
 

@@ -9,35 +9,17 @@
 #include "modern_gl_utils/generic_shader.h"
 
 #include <array>
+#include <thread>
+
+//  what's the deal?
+
+//  need to load audio file from disk and visualise it
+
+//      each visualiser should open the file individually
+//      fire of a worker thread of some sort to read the file in blocks
+//      when each block finishes, updae the render
 
 namespace {
-
-const char* test_files[] = {
-    "/Users/reuben/dev/waveguide/demo/assets/sweep.wav",
-    "/Users/reuben/dev/waveguide/demo/assets/noise.wav",
-    "/Users/reuben/dev/pyverb/impulse.aiff",
-};
-
-//  might need an async solution if this is really slow...
-auto load_test_file() {
-    AudioFormatManager m;
-    m.registerBasicFormats();
-    std::unique_ptr<AudioFormatReader> reader(
-        m.createReaderFor(File(test_files[2])));
-
-    AudioSampleBuffer buffer(reader->numChannels, reader->lengthInSamples);
-    reader->read(&buffer, 0, reader->lengthInSamples, 0, true, true);
-
-    std::vector<std::vector<float>> ret(
-        reader->numChannels, std::vector<float>(reader->lengthInSamples));
-    for (auto i = 0; i != reader->numChannels; ++i) {
-        std::copy(buffer.getReadPointer(i),
-                  buffer.getReadPointer(i) + reader->lengthInSamples,
-                  ret[i].begin());
-    }
-    return ret;
-}
-
 std::vector<GLuint> compute_indices(GLuint num) {
     std::vector<GLuint> ret(num);
     proc::iota(ret, 0);
@@ -48,49 +30,136 @@ const float samples_per_unit{88200};
 
 //----------------------------------------------------------------------------//
 
-class Waveform : public BasicDrawableObject {
+class LoadContext {
 public:
-    Waveform(const GenericShader& shader, const std::vector<float>& signal)
-            : Waveform(shader, compute_downsampled_waveform(signal)) {
+    LoadContext(GLAudioThumbnailBase& o,
+                std::unique_ptr<AudioFormatReader>&& m,
+                int buffer_size = 4096)
+            : owner(o)
+            , audio_format_reader(std::move(m))
+            , channels(audio_format_reader->numChannels)
+            , length_in_samples(audio_format_reader->lengthInSamples)
+            , sample_rate(audio_format_reader->sampleRate)
+            , thread([this, buffer_size] {
+                AudioSampleBuffer buffer(channels, buffer_size);
+                for (; !is_fully_loaded() && keep_reading;
+                     samples_read += buffer_size) {
+                    audio_format_reader->read(
+                        &buffer, 0, buffer_size, samples_read, true, true);
+                    owner.addBlock(samples_read, buffer, 0, buffer_size);
+                }
+            }) {
+    }
+
+    bool is_fully_loaded() const {
+        return samples_read >= length_in_samples;
+    }
+
+    virtual ~LoadContext() noexcept {
+        keep_reading = false;
+        thread.join();
+    }
+
+private:
+    GLAudioThumbnailBase& owner;
+    std::unique_ptr<AudioFormatReader> audio_format_reader;
+    int samples_read{0};
+
+public:
+    const int channels;
+    const int length_in_samples;
+    const double sample_rate;
+
+private:
+    std::atomic_bool keep_reading{true};
+    std::thread thread;
+};
+
+//----------------------------------------------------------------------------//
+
+class Waveform : public ::Drawable, public GLAudioThumbnailBase {
+public:
+    /*
+        Waveform(const GenericShader& shader, const std::vector<float>& signal)
+                : Waveform(shader, compute_downsampled_waveform(signal)) {
+        }
+    */
+
+    Waveform(const GenericShader& shader)
+            : shader(shader) {
+    }
+
+    void set_position(const glm::vec3& p) {
+        position = p;
+    }
+
+    void draw() const override {
+    }
+
+    //  inherited from GLAudioThumbnailBase
+    void clear() override {
+    }
+    void load_from(AudioFormatManager& manager, const File& file) override {
+        load_from(
+            std::unique_ptr<AudioFormatReader>(manager.createReaderFor(file)));
+    }
+    void reset(int num_channels,
+               double sample_rate,
+               int64 total_samples) override {
+    }
+    void addBlock(int64 sample_number_in_source,
+                  const AudioSampleBuffer& new_data,
+                  int start_offset,
+                  int num_samples) override {
+    }
+
+    void load_from(std::unique_ptr<AudioFormatReader>&& reader) {
+        load_context = std::make_unique<LoadContext>(*this, std::move(reader));
     }
 
 private:
     static const int waveform_steps = 256;
     static const float spacing;
 
-    static std::vector<std::pair<float, float>> compute_downsampled_waveform(
-        const std::vector<float>& i) {
-        std::vector<std::pair<float, float>> ret(i.size() / waveform_steps);
-        for (auto a = 0u, b = 0u; a < i.size() - waveform_steps;
-             a += waveform_steps, ++b) {
-            auto mm = std::minmax_element(i.begin() + a,
-                                          i.begin() + a + waveform_steps);
-            ret[b] = std::make_pair(*mm.first, *mm.second);
+    /*
+        static std::vector<std::pair<float, float>>
+       compute_downsampled_waveform(
+            const std::vector<float>& i) {
+            std::vector<std::pair<float, float>> ret(i.size() / waveform_steps);
+            for (auto a = 0u, b = 0u; a < i.size() - waveform_steps;
+                 a += waveform_steps, ++b) {
+                auto mm = std::minmax_element(i.begin() + a,
+                                              i.begin() + a + waveform_steps);
+                ret[b] = std::make_pair(*mm.first, *mm.second);
+            }
+            return ret;
         }
-        return ret;
-    }
 
-    static std::vector<std::vector<std::pair<float, float>>>
-    compute_downsampled_waveform(const std::vector<std::vector<float>>& in) {
-        std::vector<std::vector<std::pair<float, float>>> ret(in.size());
-        proc::transform(in, ret.begin(), [](const auto& i) {
-            return compute_downsampled_waveform(i);
-        });
-        return ret;
-    }
+        static std::vector<std::vector<std::pair<float, float>>>
+        compute_downsampled_waveform(const std::vector<std::vector<float>>& in)
+       {
+            std::vector<std::vector<std::pair<float, float>>> ret(in.size());
+            proc::transform(in, ret.begin(), [](const auto& i) {
+                return compute_downsampled_waveform(i);
+            });
+            return ret;
+        }
+    */
 
-    Waveform(const GenericShader& shader,
-             const std::vector<std::pair<float, float>>& data)
-            : Waveform(shader, compute_geometry(data)) {
-    }
+    /*
+        Waveform(const GenericShader& shader,
+                 const std::vector<std::pair<float, float>>& data)
+                : Waveform(shader, compute_geometry(data)) {
+        }
 
-    Waveform(const GenericShader& shader, const std::vector<glm::vec3>& g)
-            : BasicDrawableObject(shader,
-                                  g,
-                                  compute_colours(g),
-                                  compute_indices(g.size()),
-                                  GL_TRIANGLE_STRIP) {
-    }
+        Waveform(const GenericShader& shader, const std::vector<glm::vec3>& g)
+                : BasicDrawableObject(shader,
+                                      g,
+                                      compute_colours(g),
+                                      compute_indices(g.size()),
+                                      GL_TRIANGLE_STRIP) {
+        }
+    */
 
     static std::vector<glm::vec4> compute_colours(
         const std::vector<glm::vec3>& g) {
@@ -114,6 +183,12 @@ private:
         }
         return ret;
     }
+
+    const GenericShader& shader;
+
+    std::unique_ptr<LoadContext> load_context;
+
+    glm::vec3 position{0};
 };
 
 const float Waveform::spacing{waveform_steps / samples_per_unit};
@@ -186,14 +261,20 @@ private:
 
 //----------------------------------------------------------------------------//
 
-class Waterfall : public ::Drawable {
+class Waterfall : public ::Drawable, public GLAudioThumbnailBase {
 public:
-    Waterfall(const FadeShader& shader, const std::vector<float>& signal)
-            : Waterfall(shader,
-                        Spectrogram(window, hop).compute(signal),
-                        spacing,
-                        2.0) {
+    Waterfall(const FadeShader& shader)
+            : shader(shader) {
     }
+
+    /*
+        Waterfall(const FadeShader& shader, const std::vector<float>& signal)
+                : Waterfall(shader,
+                            Spectrogram(window, hop).compute(signal),
+                            spacing,
+                            2.0) {
+        }
+    */
 
     void draw() const override {
         auto s_shader = shader.get_scoped();
@@ -217,18 +298,40 @@ public:
         position = p;
     }
 
-private:
-    Waterfall(const FadeShader& shader,
-              const std::vector<std::vector<float>>& heights,
-              float x_spacing,
-              float z_width)
-            : shader(shader)
-            , spectrogram(heights)
-            , x_spacing(x_spacing)
-            , z_width(z_width)
-            , strips(compute_strips(
-                  shader, spectrogram, mode, x_spacing, z_width)) {
+    void clear() override {
     }
+    void load_from(AudioFormatManager& manager, const File& file) override {
+        load_from(
+            std::unique_ptr<AudioFormatReader>(manager.createReaderFor(file)));
+    }
+    void reset(int num_channels,
+               double sample_rate,
+               int64 total_samples) override {
+    }
+    void addBlock(int64 sample_number_in_source,
+                  const AudioSampleBuffer& new_data,
+                  int start_offset,
+                  int num_samples) override {
+    }
+
+    void load_from(std::unique_ptr<AudioFormatReader>&& reader) {
+        load_context = std::make_unique<LoadContext>(*this, std::move(reader));
+    }
+
+private:
+    /*
+        Waterfall(const FadeShader& shader,
+                  const std::vector<std::vector<float>>& heights,
+                  float x_spacing,
+                  float z_width)
+                : shader(shader)
+                , spectrogram(heights)
+                , x_spacing(x_spacing)
+                , z_width(z_width)
+                , strips(compute_strips(
+                      shader, spectrogram, mode, x_spacing, z_width)) {
+        }
+    */
 
     class HeightMapStrip : public ::Drawable {
     public:
@@ -387,6 +490,8 @@ private:
 
     glm::vec3 position{0};
 
+    std::unique_ptr<LoadContext> load_context;
+
     std::vector<HeightMapStrip> strips;
 };
 
@@ -396,22 +501,19 @@ const float Waterfall::spacing{hop / samples_per_unit};
 
 //----------------------------------------------------------------------------//
 
-class ImpulseRenderer::ContextLifetime : public BaseContextLifetime {
+class ImpulseRenderer::ContextLifetime : public BaseContextLifetime,
+                                         public GLAudioThumbnailBase {
 public:
-    //  TODO remove
     ContextLifetime()
-            : ContextLifetime(load_test_file()) {
-    }
-
-    ContextLifetime(const std::vector<std::vector<float>>& audio)
-            : waveform(generic_shader, audio.front())
-            , waterfall(fade_shader, audio.front()) {
+            : waveform(generic_shader)
+            , waterfall(fade_shader) {
     }
 
     void update(float dt) override {
         current_params.update(target_params);
         waveform.set_position(glm::vec3{0, 0, current_params.waveform_z});
-        waterfall.set_position(glm::vec3{0, 0, current_params.waveform_z - 2.1});
+        waterfall.set_position(
+            glm::vec3{0, 0, current_params.waveform_z - 2.1});
     }
 
     void draw() const override {
@@ -481,6 +583,34 @@ public:
     void mouse_wheel_move(float delta_y) override {
     }
 
+    //  inherited audio thumbnail stuff
+    void clear() override {
+        for (auto i : get_thumbnails()) {
+            i->clear();
+        }
+    }
+    void load_from(AudioFormatManager& manager, const File& file) override {
+        for (auto i : get_thumbnails()) {
+            i->load_from(manager, file);
+        }
+    }
+    void reset(int num_channels,
+               double sample_rate,
+               int64 total_samples) override {
+        for (auto i : get_thumbnails()) {
+            i->reset(num_channels, sample_rate, total_samples);
+        }
+    }
+    void addBlock(int64 sample_number_in_source,
+                  const AudioSampleBuffer& new_data,
+                  int start_offset,
+                  int num_samples) override {
+        for (auto i : get_thumbnails()) {
+            i->addBlock(
+                sample_number_in_source, new_data, start_offset, num_samples);
+        }
+    }
+
 private:
     glm::mat4 get_projection_matrix() const {
         return glm::perspective(45.0f, get_aspect(), 0.05f, 1000.0f);
@@ -496,6 +626,10 @@ private:
         return glm::lookAt(
                    glm::vec3{0, 0, eye}, glm::vec3{0}, glm::vec3{0, 1, 0}) *
                get_rotation_matrix();
+    }
+
+    std::array<GLAudioThumbnailBase*, 2> get_thumbnails() {
+        return {&waveform, &waterfall};
     }
 
     struct Mousing {
@@ -586,11 +720,31 @@ void ImpulseRenderer::set_mode(Mode mode) {
     push_incoming([this, mode] { context_lifetime->set_mode(mode); });
 }
 
-//----------------------------------------------------------------------------//
-
-ImpulseRendererComponent::ImpulseRendererComponent() {
+void ImpulseRenderer::clear() {
+    std::lock_guard<std::mutex> lck(mut);
+    push_incoming([this] { context_lifetime->clear(); });
 }
-
-void ImpulseRendererComponent::set_mode(ImpulseRenderer::Mode mode) {
-    get_renderer().set_mode(mode);
+void ImpulseRenderer::load_from(AudioFormatManager& manager, const File& file) {
+    std::lock_guard<std::mutex> lck(mut);
+    push_incoming(
+        [this, &manager, file] { context_lifetime->load_from(manager, file); });
+}
+void ImpulseRenderer::reset(int num_channels,
+                            double sample_rate,
+                            int64 total_samples) {
+    std::lock_guard<std::mutex> lck(mut);
+    push_incoming([this, num_channels, sample_rate, total_samples] {
+        context_lifetime->reset(num_channels, sample_rate, total_samples);
+    });
+}
+void ImpulseRenderer::addBlock(int64 sample_number_in_source,
+                               const AudioSampleBuffer& new_data,
+                               int start_offset,
+                               int num_samples) {
+    std::lock_guard<std::mutex> lck(mut);
+    push_incoming(
+        [this, sample_number_in_source, new_data, start_offset, num_samples] {
+            context_lifetime->addBlock(
+                sample_number_in_source, new_data, start_offset, num_samples);
+        });
 }

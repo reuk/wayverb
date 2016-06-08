@@ -20,28 +20,6 @@ class CuboidBoundary;
 class MeshBoundary;
 struct Triangle;
 
-class SurfaceConfig final {
-public:
-    SurfaceConfig() = default;
-    explicit SurfaceConfig(const std::string& fpath);
-    explicit SurfaceConfig(std::istream& stream);
-    explicit SurfaceConfig(const std::map<std::string, Surface>& surfaces);
-
-    void load(const std::string& fpath);
-    void load(std::istream& stream);
-
-    void save(const std::string& fpath);
-    void save(std::ostream& stream);
-
-    const std::map<std::string, Surface>& get_surfaces() const;
-
-    template <typename Archive>
-    void serialize(Archive& archive);
-
-private:
-    std::map<std::string, Surface> surfaces;
-};
-
 //----------------------------------------------------------------------------//
 
 class CopyableSceneData {
@@ -72,7 +50,6 @@ public:
     std::vector<Surface> get_surfaces() const;
     void set_surfaces(const std::vector<Material>& materials);
     void set_surfaces(const std::map<std::string, Surface>& surfaces);
-    void set_surfaces(const SurfaceConfig& surfaces);
     void set_surface(const Material& material);
 
     void set_surfaces(const Surface& surface);
@@ -97,9 +74,6 @@ class SceneData final : public CopyableSceneData {
 
 public:
     //  this class adds the ability to load/save from file
-    SceneData(const std::string& fpath,
-              const std::string& mat,
-              float scale = 1);
     SceneData(const std::string& fpath, float scale = 1);
     void save(const std::string& f) const;
 

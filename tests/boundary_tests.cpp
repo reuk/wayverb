@@ -11,16 +11,8 @@
 #define OBJ_PATH_TUNNEL ""
 #endif
 
-#ifndef MAT_PATH_TUNNEL
-#define MAT_PATH_TUNNEL ""
-#endif
-
 #ifndef OBJ_PATH_BEDROOM
 #define OBJ_PATH_BEDROOM ""
-#endif
-
-#ifndef MAT_PATH_BEDROOM
-#define MAT_PATH_BEDROOM ""
 #endif
 
 /*
@@ -60,7 +52,7 @@ TEST(boundary, naive) {
 */
 
 TEST(boundary, tunnel) {
-    SceneData scene_data(OBJ_PATH_TUNNEL, MAT_PATH_TUNNEL);
+    SceneData scene_data(OBJ_PATH_TUNNEL);
     MeshBoundary boundary(scene_data);
 
     auto centre = boundary.get_aabb().centre();
@@ -88,7 +80,7 @@ TEST(boundary, tunnel) {
 }
 
 TEST(boundary, bedroom) {
-    SceneData scene_data(OBJ_PATH_BEDROOM, MAT_PATH_BEDROOM);
+    SceneData scene_data(OBJ_PATH_BEDROOM);
     MeshBoundary boundary(scene_data);
 
     auto centre = boundary.get_aabb().centre();
