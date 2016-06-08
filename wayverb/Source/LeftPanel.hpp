@@ -21,15 +21,15 @@ private:
 
     int waveguide_sampling_rate{0};
     model::ValueWrapper<int> waveguide_sampling_rate_wrapper{
-        nullptr, waveguide_sampling_rate};
+            nullptr, waveguide_sampling_rate};
 
     model::BroadcastConnector filter_frequency_connector{
-        &model.persistent.app.filter_frequency, this};
+            &model.persistent.app.filter_frequency, this};
     model::BroadcastConnector oversample_ratio_connector{
-        &model.persistent.app.oversample_ratio, this};
+            &model.persistent.app.oversample_ratio, this};
 
     model::BroadcastConnector is_rendering_connector{
-        &model.render_state.is_rendering, this};
+            &model.render_state.is_rendering, this};
 
     PropertyPanel property_panel;
     BottomPanel bottom_panel;

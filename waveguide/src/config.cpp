@@ -37,14 +37,14 @@ std::vector<float> adjust_sampling_rate(std::vector<float>& w_results,
                                   cc.get_waveguide_sample_rate());
 
     SRC_DATA sample_rate_info{
-        w_results.data(),
-        out_signal.data(),
-        long(w_results.size()),
-        long(out_signal.size()),
-        0,
-        0,
-        0,
-        cc.sample_rate / double(cc.get_waveguide_sample_rate())};
+            w_results.data(),
+            out_signal.data(),
+            long(w_results.size()),
+            long(out_signal.size()),
+            0,
+            0,
+            0,
+            cc.sample_rate / double(cc.get_waveguide_sample_rate())};
 
     src_simple(&sample_rate_info, SRC_SINC_BEST_QUALITY, 1);
     return out_signal;

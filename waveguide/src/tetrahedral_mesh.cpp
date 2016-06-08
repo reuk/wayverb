@@ -16,18 +16,18 @@ TetrahedralLocator::TetrahedralLocator(const glm::ivec3& pos, int mod_ind)
 std::array<glm::vec3, TetrahedralMesh::CUBE_NODES>
 TetrahedralMesh::compute_scaled_cube(float scale) {
     const std::array<glm::vec3, CUBE_NODES> basic_cube{{
-        glm::vec3(0.00, 0.00, 0.00),
-        glm::vec3(0.50, 0.00, 0.50),
-        glm::vec3(0.25, 0.25, 0.25),
-        glm::vec3(0.75, 0.25, 0.75),
-        glm::vec3(0.00, 0.50, 0.50),
-        glm::vec3(0.50, 0.50, 0.00),
-        glm::vec3(0.25, 0.75, 0.75),
-        glm::vec3(0.75, 0.75, 0.25),
+            glm::vec3(0.00, 0.00, 0.00),
+            glm::vec3(0.50, 0.00, 0.50),
+            glm::vec3(0.25, 0.25, 0.25),
+            glm::vec3(0.75, 0.25, 0.75),
+            glm::vec3(0.00, 0.50, 0.50),
+            glm::vec3(0.50, 0.50, 0.00),
+            glm::vec3(0.25, 0.75, 0.75),
+            glm::vec3(0.75, 0.75, 0.25),
     }};
     std::array<glm::vec3, CUBE_NODES> ret;
     proc::transform(
-        basic_cube, ret.begin(), [scale](auto i) { return i * scale; });
+            basic_cube, ret.begin(), [scale](auto i) { return i * scale; });
     return ret;
 }
 
@@ -36,7 +36,7 @@ const TetrahedralMesh::Collection& TetrahedralMesh::get_nodes() const {
 }
 
 std::vector<TetrahedralMesh::Node> TetrahedralMesh::compute_nodes(
-    const Boundary& boundary) const {
+        const Boundary& boundary) const {
     const auto dim = get_dim();
     auto total_nodes = dim.x * dim.y * dim.z * scaled_cube.size();
     std::vector<Node> ret(total_nodes);
@@ -83,7 +83,7 @@ TetrahedralMesh::TetrahedralMesh(const Boundary& b,
                                  float spacing,
                                  const glm::vec3& anchor)
         : TetrahedralMesh(
-              b, spacing, anchor, cube_side_from_node_spacing(spacing)) {
+                  b, spacing, anchor, cube_side_from_node_spacing(spacing)) {
 }
 
 TetrahedralMesh::TetrahedralMesh(const Boundary& b,
@@ -98,7 +98,7 @@ TetrahedralMesh::TetrahedralMesh(const Boundary& b,
 }
 
 TetrahedralMesh::size_type TetrahedralMesh::compute_index(
-    const Locator& loc) const {
+        const Locator& loc) const {
     auto n = scaled_cube.size();
     auto dim = get_dim();
     return (loc.mod_ind) + (loc.pos.x * n) + (loc.pos.y * dim.x * n) +
@@ -106,7 +106,7 @@ TetrahedralMesh::size_type TetrahedralMesh::compute_index(
 }
 
 TetrahedralMesh::Locator TetrahedralMesh::compute_locator(
-    size_type index) const {
+        size_type index) const {
     auto mod_ind = div((int)index, (int)scaled_cube.size());
     auto dim = get_dim();
     auto x = div(mod_ind.quot, dim.x);
@@ -116,7 +116,7 @@ TetrahedralMesh::Locator TetrahedralMesh::compute_locator(
 }
 
 TetrahedralMesh::Locator TetrahedralMesh::compute_locator(
-    const glm::vec3& v) const {
+        const glm::vec3& v) const {
     auto transformed = v - get_aabb().get_c0();
     glm::ivec3 cube_pos = transformed / get_cube_side();
 
@@ -161,40 +161,40 @@ using Locator = TetrahedralMesh::Locator;
 //  TODO any way to test this?
 const std::array<std::array<Locator, TetrahedralMesh::PORTS>,
                  TetrahedralMesh::CUBE_NODES>
-    TetrahedralMesh::offset_table{{
-        {{Locator(glm::ivec3(0, 0, 0), 2),
-          Locator(glm::ivec3(-1, 0, -1), 3),
-          Locator(glm::ivec3(0, -1, -1), 6),
-          Locator(glm::ivec3(-1, -1, 0), 7)}},
-        {{Locator(glm::ivec3(0, 0, 0), 2),
-          Locator(glm::ivec3(0, 0, 0), 3),
-          Locator(glm::ivec3(0, -1, 0), 6),
-          Locator(glm::ivec3(0, -1, 0), 7)}},
-        {{Locator(glm::ivec3(0, 0, 0), 0),
-          Locator(glm::ivec3(0, 0, 0), 1),
-          Locator(glm::ivec3(0, 0, 0), 4),
-          Locator(glm::ivec3(0, 0, 0), 5)}},
-        {{Locator(glm::ivec3(1, 0, 1), 0),
-          Locator(glm::ivec3(0, 0, 0), 1),
-          Locator(glm::ivec3(1, 0, 0), 4),
-          Locator(glm::ivec3(0, 0, 1), 5)}},
-        {{Locator(glm::ivec3(0, 0, 0), 2),
-          Locator(glm::ivec3(-1, 0, 0), 3),
-          Locator(glm::ivec3(0, 0, 0), 6),
-          Locator(glm::ivec3(-1, 0, 0), 7)}},
-        {{Locator(glm::ivec3(0, 0, 0), 2),
-          Locator(glm::ivec3(0, 0, -1), 3),
-          Locator(glm::ivec3(0, 0, -1), 6),
-          Locator(glm::ivec3(0, 0, 0), 7)}},
-        {{Locator(glm::ivec3(0, 1, 1), 0),
-          Locator(glm::ivec3(0, 1, 0), 1),
-          Locator(glm::ivec3(0, 0, 0), 4),
-          Locator(glm::ivec3(0, 0, 1), 5)}},
-        {{Locator(glm::ivec3(1, 1, 0), 0),
-          Locator(glm::ivec3(0, 1, 0), 1),
-          Locator(glm::ivec3(1, 0, 0), 4),
-          Locator(glm::ivec3(0, 0, 0), 5)}},
-    }};
+        TetrahedralMesh::offset_table{{
+                {{Locator(glm::ivec3(0, 0, 0), 2),
+                  Locator(glm::ivec3(-1, 0, -1), 3),
+                  Locator(glm::ivec3(0, -1, -1), 6),
+                  Locator(glm::ivec3(-1, -1, 0), 7)}},
+                {{Locator(glm::ivec3(0, 0, 0), 2),
+                  Locator(glm::ivec3(0, 0, 0), 3),
+                  Locator(glm::ivec3(0, -1, 0), 6),
+                  Locator(glm::ivec3(0, -1, 0), 7)}},
+                {{Locator(glm::ivec3(0, 0, 0), 0),
+                  Locator(glm::ivec3(0, 0, 0), 1),
+                  Locator(glm::ivec3(0, 0, 0), 4),
+                  Locator(glm::ivec3(0, 0, 0), 5)}},
+                {{Locator(glm::ivec3(1, 0, 1), 0),
+                  Locator(glm::ivec3(0, 0, 0), 1),
+                  Locator(glm::ivec3(1, 0, 0), 4),
+                  Locator(glm::ivec3(0, 0, 1), 5)}},
+                {{Locator(glm::ivec3(0, 0, 0), 2),
+                  Locator(glm::ivec3(-1, 0, 0), 3),
+                  Locator(glm::ivec3(0, 0, 0), 6),
+                  Locator(glm::ivec3(-1, 0, 0), 7)}},
+                {{Locator(glm::ivec3(0, 0, 0), 2),
+                  Locator(glm::ivec3(0, 0, -1), 3),
+                  Locator(glm::ivec3(0, 0, -1), 6),
+                  Locator(glm::ivec3(0, 0, 0), 7)}},
+                {{Locator(glm::ivec3(0, 1, 1), 0),
+                  Locator(glm::ivec3(0, 1, 0), 1),
+                  Locator(glm::ivec3(0, 0, 0), 4),
+                  Locator(glm::ivec3(0, 0, 1), 5)}},
+                {{Locator(glm::ivec3(1, 1, 0), 0),
+                  Locator(glm::ivec3(0, 1, 0), 1),
+                  Locator(glm::ivec3(1, 0, 0), 4),
+                  Locator(glm::ivec3(0, 0, 0), 5)}},
+        }};
 
 void TetrahedralMesh::compute_neighbors(size_type index,
                                         cl_uint* output) const {
@@ -203,10 +203,11 @@ void TetrahedralMesh::compute_neighbors(size_type index,
         auto relative = offset_table[locator.mod_ind][i];
         auto summed = locator.pos + relative.pos;
         auto is_neighbor =
-            glm::all(glm::lessThanEqual(glm::ivec3(0), summed)) &&
-            glm::all(glm::lessThan(summed, get_dim()));
-        output[i] =
-            is_neighbor ? compute_index(Locator(summed, relative.mod_ind)) : -1;
+                glm::all(glm::lessThanEqual(glm::ivec3(0), summed)) &&
+                glm::all(glm::lessThan(summed, get_dim()));
+        output[i] = is_neighbor
+                            ? compute_index(Locator(summed, relative.mod_ind))
+                            : -1;
     }
 }
 

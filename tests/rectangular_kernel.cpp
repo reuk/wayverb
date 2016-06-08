@@ -20,7 +20,7 @@ public:
 class NoiseGenerator : public InputGenerator {
 public:
     virtual std::vector<std::vector<cl_float>> compute_input(
-        int size) override {
+            int size) override {
         static auto ret = generate(size);
         return ret;
     }
@@ -28,7 +28,7 @@ public:
 private:
     static std::vector<std::vector<cl_float>> generate(int size) {
         auto ret = std::vector<std::vector<cl_float>>{
-            10000, std::vector<cl_float>(size, 0)};
+                10000, std::vector<cl_float>(size, 0)};
         for (auto& i : ret)
             std::generate(i.begin(), i.end(), [] { return range(engine); });
         return ret;
@@ -45,7 +45,7 @@ std::uniform_real_distribution<cl_float> NoiseGenerator::range{-r, r};
 class QuietNoiseGenerator : public InputGenerator {
 public:
     virtual std::vector<std::vector<cl_float>> compute_input(
-        int size) override {
+            int size) override {
         static auto ret = generate(size);
         return ret;
     }
@@ -53,7 +53,7 @@ public:
 private:
     static std::vector<std::vector<cl_float>> generate(int size) {
         auto ret = std::vector<std::vector<cl_float>>{
-            40000, std::vector<cl_float>(size, 0)};
+                40000, std::vector<cl_float>(size, 0)};
         for (auto& i : ret)
             proc::generate(i, [] { return range(engine); });
         return ret;
@@ -71,9 +71,9 @@ template <size_t SAMPLES>
 class ImpulseGenerator : public InputGenerator {
 public:
     virtual std::vector<std::vector<cl_float>> compute_input(
-        int size) override {
+            int size) override {
         auto ret = std::vector<std::vector<cl_float>>{
-            SAMPLES, std::vector<cl_float>(size, 0)};
+                SAMPLES, std::vector<cl_float>(size, 0)};
         for (auto& i : ret.front())
             i = 0.25;
         return ret;
@@ -129,16 +129,16 @@ std::array<Surface, parallel_size> compute_surfaces() {
 static const auto surfaces = compute_surfaces();
 
 std::array<
-    std::array<RectangularProgram::FilterDescriptor,
-               RectangularProgram::BiquadCoefficientsArray::BIQUAD_SECTIONS>,
-    parallel_size>
-compute_descriptors() {
-    std::array<
         std::array<
-            RectangularProgram::FilterDescriptor,
-            RectangularProgram::BiquadCoefficientsArray::BIQUAD_SECTIONS>,
+                RectangularProgram::FilterDescriptor,
+                RectangularProgram::BiquadCoefficientsArray::BIQUAD_SECTIONS>,
         parallel_size>
-        ret;
+compute_descriptors() {
+    std::array<std::array<RectangularProgram::FilterDescriptor,
+                          RectangularProgram::BiquadCoefficientsArray::
+                                  BIQUAD_SECTIONS>,
+               parallel_size>
+            ret;
     proc::transform(surfaces, ret.begin(), [](auto i) {
         return RectangularProgram::to_filter_descriptors(i);
     });
@@ -164,15 +164,15 @@ struct CoefficientTypeTrait<FilterType::biquad_cascade> {
 template <>
 struct CoefficientTypeTrait<FilterType::single_reflectance> {
     using type = RectangularProgram::FilterCoefficients<
-        RectangularProgram::BiquadCoefficientsArray::BIQUAD_SECTIONS *
-        RectangularProgram::BiquadCoefficients::ORDER>;
+            RectangularProgram::BiquadCoefficientsArray::BIQUAD_SECTIONS *
+            RectangularProgram::BiquadCoefficients::ORDER>;
 };
 
 template <>
 struct CoefficientTypeTrait<FilterType::single_impedance> {
     using type = RectangularProgram::FilterCoefficients<
-        RectangularProgram::BiquadCoefficientsArray::BIQUAD_SECTIONS *
-        RectangularProgram::BiquadCoefficients::ORDER>;
+            RectangularProgram::BiquadCoefficientsArray::BIQUAD_SECTIONS *
+            RectangularProgram::BiquadCoefficients::ORDER>;
 };
 
 template <FilterType FT>
@@ -195,12 +195,12 @@ std::array<typename CoefficientTypeTrait<FilterType::single_reflectance>::type,
            parallel_size>
 compute_coeffs<FilterType::single_reflectance>() {
     std::array<
-        typename CoefficientTypeTrait<FilterType::single_reflectance>::type,
-        parallel_size>
-        ret;
+            typename CoefficientTypeTrait<FilterType::single_reflectance>::type,
+            parallel_size>
+            ret;
     proc::transform(descriptors, ret.begin(), [](const auto& n) {
         return RectangularProgram::convolve(
-            RectangularProgram::get_peak_biquads_array(n, sr));
+                RectangularProgram::get_peak_biquads_array(n, sr));
     });
     return ret;
 }
@@ -210,13 +210,13 @@ std::array<typename CoefficientTypeTrait<FilterType::single_impedance>::type,
            parallel_size>
 compute_coeffs<FilterType::single_impedance>() {
     std::array<
-        typename CoefficientTypeTrait<FilterType::single_reflectance>::type,
-        parallel_size>
-        ret;
+            typename CoefficientTypeTrait<FilterType::single_reflectance>::type,
+            parallel_size>
+            ret;
     proc::transform(descriptors, ret.begin(), [](const auto& n) {
         return RectangularProgram::to_impedance_coefficients(
-            RectangularProgram::convolve(
-                RectangularProgram::get_peak_biquads_array(n, sr)));
+                RectangularProgram::convolve(
+                        RectangularProgram::get_peak_biquads_array(n, sr)));
     });
     return ret;
 }
@@ -254,25 +254,25 @@ public:
         }
         auto buf = std::vector<cl_float>(output.size());
         proc::transform(
-            output, buf.begin(), [](const auto& i) { return i.front(); });
+                output, buf.begin(), [](const auto& i) { return i.front(); });
         return buf;
     }
 
     ComputeContext compute_context;
     RectangularProgram program{get_program<RectangularProgram>(
-        compute_context.context, compute_context.device)};
+            compute_context.context, compute_context.device)};
     std::vector<Memory> memory{testing::parallel_size, Memory{}};
     std::array<typename testing::CoefficientTypeTrait<FT>::type,
                testing::parallel_size>
-        coeffs{testing::compute_coeffs<FT>()};
+            coeffs{testing::compute_coeffs<FT>()};
     cl::Buffer cl_memory{
-        compute_context.context, memory.begin(), memory.end(), false};
+            compute_context.context, memory.begin(), memory.end(), false};
     cl::Buffer cl_coeffs{
-        compute_context.context, coeffs.begin(), coeffs.end(), false};
+            compute_context.context, coeffs.begin(), coeffs.end(), false};
     std::vector<std::vector<cl_float>> input{
-        Generator::compute_input(testing::parallel_size)};
+            Generator::compute_input(testing::parallel_size)};
     std::vector<std::vector<cl_float>> output{
-        input.size(), std::vector<cl_float>(testing::parallel_size, 0)};
+            input.size(), std::vector<cl_float>(testing::parallel_size, 0)};
     cl::Buffer cl_input{compute_context.context,
                         CL_MEM_READ_WRITE,
                         testing::parallel_size * sizeof(cl_float)};
@@ -367,7 +367,7 @@ TEST(compare_filters, compare_filters) {
 
         auto buf_1 = biquad.run_kernel(biquad.program.get_filter_test_kernel());
         auto buf_2 =
-            filter.run_kernel(filter.program.get_filter_test_2_kernel());
+                filter.run_kernel(filter.program.get_filter_test_2_kernel());
 
         auto diff = buf_1;
         proc::transform(buf_1, buf_2.begin(), diff.begin(), [](auto i, auto j) {

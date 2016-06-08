@@ -33,7 +33,7 @@ private:
     model::ValueWrapper<model::FullModel>& wrapper;
 
     model::BroadcastConnector is_rendering_connector{
-        &wrapper.render_state.is_rendering, this};
+            &wrapper.render_state.is_rendering, this};
 
     StretchableLayoutManager layout_manager;
 

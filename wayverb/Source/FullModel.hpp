@@ -51,7 +51,7 @@ public:
 
 template <>
 class ValueWrapper<SceneData::Material>
-    : public StructWrapper<SceneData::Material, 2> {
+        : public StructWrapper<SceneData::Material, 2> {
 public:
     using struct_wrapper::StructWrapper;
     member_array get_members() override {
@@ -63,7 +63,7 @@ public:
 
 template <>
 class ValueWrapper<Orientable::AzEl>
-    : public StructWrapper<Orientable::AzEl, 2> {
+        : public StructWrapper<Orientable::AzEl, 2> {
 public:
     using struct_wrapper::StructWrapper;
     member_array get_members() override {
@@ -98,7 +98,7 @@ public:
 
 template <>
 class ValueWrapper<ReceiverSettings>
-    : public StructWrapper<ReceiverSettings, 3> {
+        : public StructWrapper<ReceiverSettings, 3> {
 public:
     using struct_wrapper::StructWrapper;
     member_array get_members() override {

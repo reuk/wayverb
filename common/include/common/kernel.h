@@ -24,7 +24,7 @@ std::vector<T> waveguide_kernel(double sampling_frequency) {
     std::vector<T> ret(l);
     for (auto i = 0; i != l; ++i) {
         ret[i] = sin_modulated_gaussian(
-            i / sampling_frequency, time_offset, o, upper * 0.5);
+                i / sampling_frequency, time_offset, o, upper * 0.5);
     }
     return ret;
 }

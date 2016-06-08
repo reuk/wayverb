@@ -44,7 +44,7 @@ public:
 
     auto get_attenuate_kernel() const {
         return cl::make_kernel<cl_float3, cl::Buffer, cl::Buffer, Speaker>(
-            *this, "attenuate");
+                *this, "attenuate");
     }
 
     auto get_hrtf_kernel() const {

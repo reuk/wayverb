@@ -24,7 +24,7 @@ struct NumElementsTrait<cl_float8> : public std::integral_constant<size_t, 8> {
 };
 template <>
 struct NumElementsTrait<cl_float16>
-    : public std::integral_constant<size_t, 16> {};
+        : public std::integral_constant<size_t, 16> {};
 
 template <>
 struct NumElementsTrait<cl_int2> : public std::integral_constant<size_t, 2> {};
@@ -110,7 +110,7 @@ struct VectorTypeTrait<int, 16> {
 
 template <typename T, size_t ELEMENTS, size_t... Ix>
 constexpr typename VectorTypeTrait<T, ELEMENTS>::type convert(
-    std::index_sequence<Ix...>, const std::array<T, ELEMENTS>& t) {
+        std::index_sequence<Ix...>, const std::array<T, ELEMENTS>& t) {
     return typename VectorTypeTrait<T, ELEMENTS>::type{{t[Ix]...}};
 }
 
@@ -128,7 +128,7 @@ template <typename T, typename... U, size_t... Ix>
 constexpr auto zip(std::index_sequence<Ix...>, const T& t, U&&... u) {
     constexpr auto num_elements = NumElementsTrait<T>::value;
     return std::array<decltype(zip_row<0>(t, u...)), num_elements>{
-        {zip_row<Ix>(t, std::forward<U>(u)...)...}};
+            {zip_row<Ix>(t, std::forward<U>(u)...)...}};
 }
 
 }  // namespace detail
@@ -137,7 +137,7 @@ template <typename T, typename... U>
 constexpr auto zip(const T& t, U&&... u) {
     constexpr auto num_elements = detail::NumElementsTrait<T>::value;
     return detail::zip(
-        std::make_index_sequence<num_elements>(), t, std::forward<U>(u)...);
+            std::make_index_sequence<num_elements>(), t, std::forward<U>(u)...);
 }
 
 template <typename Func, typename T, typename... U>
@@ -147,13 +147,13 @@ constexpr auto apply(const Func& func, const T& t, U&&... u) {
 
 }  // namespace cl_math
 
-#define CL_VEC_OP(sym, functor)                                        \
-    template <typename T>                                              \
-    constexpr auto operator sym(const T& a, const T& b) {              \
-        using functor_type = typename std::functor<                    \
-            typename cl_math::detail::ElementTypeTrait<T>::type>;      \
-        return cl_math::detail::convert(cl_math::apply(                \
-            proc::InvokeFunctor<functor_type>(functor_type()), a, b)); \
+#define CL_VEC_OP(sym, functor)                                            \
+    template <typename T>                                                  \
+    constexpr auto operator sym(const T& a, const T& b) {                  \
+        using functor_type = typename std::functor<                        \
+                typename cl_math::detail::ElementTypeTrait<T>::type>;      \
+        return cl_math::detail::convert(cl_math::apply(                    \
+                proc::InvokeFunctor<functor_type>(functor_type()), a, b)); \
     }
 
 CL_VEC_OP(+, plus);
@@ -165,7 +165,7 @@ CL_VEC_OP(%, modulus);
 template <typename T>
 constexpr bool operator==(const T& a, const T& b) {
     using functor_type =
-        std::equal_to<typename cl_math::detail::ElementTypeTrait<T>::type>;
+            std::equal_to<typename cl_math::detail::ElementTypeTrait<T>::type>;
     return all(cl_math::apply(
-        proc::InvokeFunctor<functor_type>(functor_type()), a, b));
+            proc::InvokeFunctor<functor_type>(functor_type()), a, b));
 }

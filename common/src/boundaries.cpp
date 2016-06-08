@@ -47,31 +47,31 @@ CuboidBoundary CuboidBoundary::get_aabb() const {
 
 CopyableSceneData CuboidBoundary::get_scene_data() const {
     std::vector<cl_float3> vertices{
-        {{get_c0().x, get_c0().y, get_c0().z}},
-        {{get_c1().x, get_c0().y, get_c0().z}},
-        {{get_c0().x, get_c1().y, get_c0().z}},
-        {{get_c1().x, get_c1().y, get_c0().z}},
-        {{get_c0().x, get_c0().y, get_c1().z}},
-        {{get_c1().x, get_c0().y, get_c1().z}},
-        {{get_c0().x, get_c1().y, get_c1().z}},
-        {{get_c1().x, get_c1().y, get_c1().z}},
+            {{get_c0().x, get_c0().y, get_c0().z}},
+            {{get_c1().x, get_c0().y, get_c0().z}},
+            {{get_c0().x, get_c1().y, get_c0().z}},
+            {{get_c1().x, get_c1().y, get_c0().z}},
+            {{get_c0().x, get_c0().y, get_c1().z}},
+            {{get_c1().x, get_c0().y, get_c1().z}},
+            {{get_c0().x, get_c1().y, get_c1().z}},
+            {{get_c1().x, get_c1().y, get_c1().z}},
     };
     std::vector<Triangle> triangles{
-        {0, 0, 1, 5},
-        {0, 0, 4, 5},
-        {0, 0, 1, 3},
-        {0, 0, 2, 3},
-        {0, 0, 2, 6},
-        {0, 0, 4, 6},
-        {0, 1, 5, 7},
-        {0, 1, 3, 7},
-        {0, 2, 3, 7},
-        {0, 2, 6, 7},
-        {0, 4, 5, 7},
-        {0, 4, 6, 7},
+            {0, 0, 1, 5},
+            {0, 0, 4, 5},
+            {0, 0, 1, 3},
+            {0, 0, 2, 3},
+            {0, 0, 2, 6},
+            {0, 0, 4, 6},
+            {0, 1, 5, 7},
+            {0, 1, 3, 7},
+            {0, 2, 3, 7},
+            {0, 2, 6, 7},
+            {0, 4, 5, 7},
+            {0, 4, 6, 7},
     };
     std::vector<CopyableSceneData::Material> materials{
-        {"default", Surface{}},
+            {"default", Surface{}},
     };
 
     return CopyableSceneData(triangles, vertices, materials);
@@ -141,7 +141,7 @@ MeshBoundary::hash_table MeshBoundary::compute_triangle_references() const {
     for (auto i = 0u; i != triangles.size(); ++i) {
         const auto& t = triangles[i];
         const auto bounding_box = min_max(std::array<glm::vec3, 3>{
-            {vertices[t.v0], vertices[t.v1], vertices[t.v2]}});
+                {vertices[t.v0], vertices[t.v1], vertices[t.v2]}});
         const auto min_indices = hash_point(bounding_box.get_c0());
         const auto max_indices = hash_point(bounding_box.get_c1()) + 1;
 
@@ -174,7 +174,7 @@ MeshBoundary::MeshBoundary(const CopyableSceneData& sd)
 }
 
 const MeshBoundary::reference_store& MeshBoundary::get_references(
-    const glm::ivec3& i) const {
+        const glm::ivec3& i) const {
     return get_references(i.x, i.y);
 }
 
@@ -197,15 +197,17 @@ bool MeshBoundary::inside(const glm::vec3& v) const {
     return count_if(references.begin(),
                     references.end(),
                     [this, &ray, &distances](const auto& i) {
-                        auto intersection =
-                            triangle_intersection(triangles[i], vertices, ray);
+                        auto intersection = triangle_intersection(
+                                triangles[i], vertices, ray);
                         if (intersection.intersects) {
                             auto already_in =
-                                proc::find_if(
-                                    distances, [&intersection](auto i) {
-                                        return almost_equal(
-                                            i, intersection.distance, 10);
-                                    }) != distances.end();
+                                    proc::find_if(
+                                            distances, [&intersection](auto i) {
+                                                return almost_equal(
+                                                        i,
+                                                        intersection.distance,
+                                                        10);
+                                            }) != distances.end();
                             distances.push_back(intersection.distance);
                             if (already_in) {
                                 return false;

@@ -52,7 +52,7 @@ using LoadWindow = GenericComponentWindow<FileDropComponent>;
 //----------------------------------------------------------------------------//
 
 VisualiserApplication::ImpulseViewerWindow::ImpulseViewerWindow(
-    String name, const File& file)
+        String name, const File& file)
         : DocumentWindow(name, Colours::lightgrey, allButtons)
         , this_file(file)
         , content_component(file) {
@@ -84,23 +84,23 @@ void VisualiserApplication::ImpulseViewerWindow::closeButtonPressed() {
 }
 
 void VisualiserApplication::ImpulseViewerWindow::getAllCommands(
-    Array<CommandID>& commands) {
+        Array<CommandID>& commands) {
     commands.addArray({CommandIDs::idCloseProject});
 }
 void VisualiserApplication::ImpulseViewerWindow::getCommandInfo(
-    CommandID command_id, ApplicationCommandInfo& result) {
+        CommandID command_id, ApplicationCommandInfo& result) {
     switch (command_id) {
         case CommandIDs::idCloseProject:
             result.setInfo("Close", "Close the current project", "General", 0);
             result.defaultKeypresses.add(
-                KeyPress('w', ModifierKeys::commandModifier, 0));
+                    KeyPress('w', ModifierKeys::commandModifier, 0));
             break;
         default:
             break;
     }
 }
 bool VisualiserApplication::ImpulseViewerWindow::perform(
-    const InvocationInfo& info) {
+        const InvocationInfo& info) {
     switch (info.commandID) {
         case CommandIDs::idCloseProject:
             closeButtonPressed();
@@ -143,7 +143,7 @@ struct AsyncQuitRetrier : private Timer {
 };
 
 PropertiesFile::Options VisualiserApplication::get_property_file_options_for(
-    const std::string& name) {
+        const std::string& name) {
     PropertiesFile::Options options;
     options.applicationName = name;
     options.filenameSuffix = "settings";
@@ -168,9 +168,9 @@ bool VisualiserApplication::moreThanOneInstanceAllowed() {
 
 namespace {
 const char* test_files[] = {
-    "/Users/reuben/dev/waveguide/demo/assets/sweep.wav",
-    "/Users/reuben/dev/waveguide/demo/assets/noise.wav",
-    "/Users/reuben/dev/pyverb/impulse.aiff",
+        "/Users/reuben/dev/waveguide/demo/assets/sweep.wav",
+        "/Users/reuben/dev/waveguide/demo/assets/noise.wav",
+        "/Users/reuben/dev/pyverb/impulse.aiff",
 };
 }  // namespace
 
@@ -190,7 +190,7 @@ void VisualiserApplication::initialise(const String& commandLine) {
 
     //  TODO remove
     impulse_windows.insert(std::make_unique<ImpulseViewerWindow>(
-        "impulse viewer", File(test_files[1])));
+            "impulse viewer", File(test_files[1])));
 }
 
 void VisualiserApplication::shutdown() {
@@ -230,10 +230,10 @@ void VisualiserApplication::anotherInstanceStarted(const String& commandLine) {
 }
 
 void VisualiserApplication::show_hide_load_window() {
-    load_window = main_windows.empty()
-                      ? std::make_unique<LoadWindow>(
-                            getApplicationName(), DocumentWindow::closeButton)
-                      : nullptr;
+    load_window = main_windows.empty() ? std::make_unique<LoadWindow>(
+                                                 getApplicationName(),
+                                                 DocumentWindow::closeButton)
+                                       : nullptr;
 }
 
 //----------------------------------------------------------------------------//
@@ -267,7 +267,7 @@ VisualiserApplication::MainWindow::MainWindow(String name,
 namespace {
 model::FullModel construct_full_model(const model::Persistent& persistent) {
     return model::FullModel{
-        persistent, model::get_presets(), model::RenderState{}};
+            persistent, model::get_presets(), model::RenderState{}};
 }
 
 File get_sub_path(const File& way, const std::string& name) {
@@ -313,17 +313,18 @@ VisualiserApplication::MainWindow::scene_and_model_from_file(const File& f) {
 
         //  return the pair
         return std::make_tuple(
-            std::move(scene_data), construct_full_model(config), f);
+                std::move(scene_data), construct_full_model(config), f);
     };
 
     auto is_not_way = [&f] {
         //  try to load the model
         SceneData scene_data(f.getFullPathName().toStdString());
         //  return the pair
-        return std::make_tuple(std::move(scene_data),
-                               construct_full_model(model::Persistent{
-                                   model::App{}, scene_data.get_materials()}),
-                               File());
+        return std::make_tuple(
+                std::move(scene_data),
+                construct_full_model(model::Persistent{
+                        model::App{}, scene_data.get_materials()}),
+                File());
     };
 
     return f.getFileExtension() == ".way" ? is_way() : is_not_way();
@@ -336,7 +337,7 @@ VisualiserApplication::MainWindow::MainWindow(String name, const File& f)
 }
 
 VisualiserApplication::MainWindow::MainWindow(
-    String name, std::tuple<SceneData, model::FullModel, File>&& p)
+        String name, std::tuple<SceneData, model::FullModel, File>&& p)
         : MainWindow(name,
                      std::move(std::get<0>(p)),
                      std::move(std::get<1>(p)),
@@ -346,15 +347,15 @@ VisualiserApplication::MainWindow::MainWindow(
 VisualiserApplication::MainWindow::~MainWindow() noexcept {
     delete help_window;
     removeKeyListener(
-        VisualiserApplication::get_command_manager().getKeyMappings());
+            VisualiserApplication::get_command_manager().getKeyMappings());
 }
 
 void VisualiserApplication::MainWindow::closeButtonPressed() {
     if (needs_save()) {
         switch (NativeMessageBox::showYesNoCancelBox(
-            AlertWindow::AlertIconType::WarningIcon,
-            "save?",
-            "There are unsaved changes. Do you wish to save?")) {
+                AlertWindow::AlertIconType::WarningIcon,
+                "save?",
+                "There are unsaved changes. Do you wish to save?")) {
             case 0:  // cancel
                 return;
             case 1:  // yes
@@ -378,7 +379,7 @@ void VisualiserApplication::MainWindow::closeButtonPressed() {
 }
 
 void VisualiserApplication::MainWindow::receive_broadcast(
-    model::Broadcaster* b) {
+        model::Broadcaster* b) {
     if (b == &wrapper.persistent) {
         wrapper.needs_save.set(true);
     } else if (b == &wrapper.render_state.is_rendering) {
@@ -389,34 +390,34 @@ void VisualiserApplication::MainWindow::receive_broadcast(
 }
 
 void VisualiserApplication::MainWindow::getAllCommands(
-    Array<CommandID>& commands) {
+        Array<CommandID>& commands) {
     commands.addArray({
-        CommandIDs::idSaveProject,
-        CommandIDs::idSaveAsProject,
-        CommandIDs::idCloseProject,
-        CommandIDs::idVisualise,
-        CommandIDs::idShowHelp,
+            CommandIDs::idSaveProject,
+            CommandIDs::idSaveAsProject,
+            CommandIDs::idCloseProject,
+            CommandIDs::idVisualise,
+            CommandIDs::idShowHelp,
     });
 }
 void VisualiserApplication::MainWindow::getCommandInfo(
-    CommandID command_id, ApplicationCommandInfo& result) {
+        CommandID command_id, ApplicationCommandInfo& result) {
     switch (command_id) {
         case CommandIDs::idSaveProject:
             result.setInfo("Save...", "Save", "General", 0);
             result.defaultKeypresses.add(
-                KeyPress('s', ModifierKeys::commandModifier, 0));
+                    KeyPress('s', ModifierKeys::commandModifier, 0));
             break;
         case CommandIDs::idSaveAsProject:
             result.setInfo("Save As...", "Save as", "General", 0);
             result.defaultKeypresses.add(KeyPress(
-                's',
-                ModifierKeys::commandModifier | ModifierKeys::shiftModifier,
-                0));
+                    's',
+                    ModifierKeys::commandModifier | ModifierKeys::shiftModifier,
+                    0));
             break;
         case CommandIDs::idCloseProject:
             result.setInfo("Close", "Close the current project", "General", 0);
             result.defaultKeypresses.add(
-                KeyPress('w', ModifierKeys::commandModifier, 0));
+                    KeyPress('w', ModifierKeys::commandModifier, 0));
             break;
         case CommandIDs::idVisualise:
             result.setInfo("Visualise",
@@ -481,7 +482,7 @@ public:
 void VisualiserApplication::MainWindow::show_help() {
     if (!help_window) {
         help_window = new AutoDeleteDocumentWindow(
-            "help viewer", Colours::darkgrey, closeButton);
+                "help viewer", Colours::darkgrey, closeButton);
         auto panel = new HelpPanel;
         panel->setSize(200, 300);
 
@@ -490,9 +491,9 @@ void VisualiserApplication::MainWindow::show_help() {
                                      RectanglePlacement::doNotResize);
         auto result = placement.appliedTo(area,
                                           Desktop::getInstance()
-                                              .getDisplays()
-                                              .getMainDisplay()
-                                              .userArea.reduced(20));
+                                                  .getDisplays()
+                                                  .getMainDisplay()
+                                                  .userArea.reduced(20));
 
         help_window->setBounds(result);
         help_window->setContentOwned(panel, true);
@@ -543,8 +544,8 @@ void VisualiserApplication::MainWindow::save_to(const File& f) {
 }
 
 VisualiserApplication& VisualiserApplication::get_app() {
-    auto i =
-        dynamic_cast<VisualiserApplication*>(JUCEApplication::getInstance());
+    auto i = dynamic_cast<VisualiserApplication*>(
+            JUCEApplication::getInstance());
     jassert(i != nullptr);
     return *i;
 }
@@ -560,7 +561,7 @@ void VisualiserApplication::create_file_menu(PopupMenu& menu) {
 
     PopupMenu recent;
     stored_settings->recent_files.createPopupMenuItems(
-        recent, recent_projects_base_id, true, true);
+            recent, recent_projects_base_id, true, true);
     menu.addSubMenu("Open Recent", recent);
 
     menu.addSeparator();
@@ -585,24 +586,26 @@ void VisualiserApplication::create_view_menu(PopupMenu& menu) {
 void VisualiserApplication::handle_main_menu_command(int menu_item_id) {
     if (menu_item_id >= recent_projects_base_id) {
         open_project(stored_settings->recent_files.getFile(
-            menu_item_id - recent_projects_base_id));
+                menu_item_id - recent_projects_base_id));
     }
 }
 
 void VisualiserApplication::getAllCommands(Array<CommandID>& commands) {
     JUCEApplication::getAllCommands(commands);
     commands.addArray({
-        CommandIDs::idOpenProject,
+            CommandIDs::idOpenProject,
     });
 }
 void VisualiserApplication::getCommandInfo(CommandID command_id,
                                            ApplicationCommandInfo& result) {
     switch (command_id) {
         case CommandIDs::idOpenProject:
-            result.setInfo(
-                "Open Project...", "Open an existing project", "General", 0);
+            result.setInfo("Open Project...",
+                           "Open an existing project",
+                           "General",
+                           0);
             result.defaultKeypresses.add(
-                KeyPress('o', ModifierKeys::commandModifier, 0));
+                    KeyPress('o', ModifierKeys::commandModifier, 0));
             break;
         default:
             JUCEApplication::getCommandInfo(command_id, result);
@@ -624,19 +627,19 @@ bool VisualiserApplication::perform(const InvocationInfo& info) {
 void VisualiserApplication::open_project(const File& file) {
     try {
         main_windows.insert(
-            std::make_unique<MainWindow>(getApplicationName(), file));
+                std::make_unique<MainWindow>(getApplicationName(), file));
         register_recent_file(file.getFullPathName().toStdString());
         show_hide_load_window();
     } catch (const std::exception& e) {
         NativeMessageBox::showMessageBox(
-            AlertWindow::WarningIcon,
-            "exception...",
-            std::string("Encountered an exception: ") + e.what());
+                AlertWindow::WarningIcon,
+                "exception...",
+                std::string("Encountered an exception: ") + e.what());
     } catch (...) {
         NativeMessageBox::showMessageBox(
-            AlertWindow::WarningIcon,
-            "exception...",
-            std::string("Encountered an unknown exception."));
+                AlertWindow::WarningIcon,
+                "exception...",
+                std::string("Encountered an unknown exception."));
     }
 }
 
@@ -660,7 +663,7 @@ StringArray VisualiserApplication::MainMenuBarModel::getMenuBarNames() {
 }
 
 PopupMenu VisualiserApplication::MainMenuBarModel::getMenuForIndex(
-    int top_level_menu_index, const String& menu_name) {
+        int top_level_menu_index, const String& menu_name) {
     PopupMenu menu;
     if (menu_name == "File") {
         get_app().create_file_menu(menu);
@@ -673,7 +676,7 @@ PopupMenu VisualiserApplication::MainMenuBarModel::getMenuForIndex(
 }
 
 void VisualiserApplication::MainMenuBarModel::menuItemSelected(
-    int menu_item_id, int top_level_menu_index) {
+        int menu_item_id, int top_level_menu_index) {
     get_app().handle_main_menu_command(menu_item_id);
 }
 

@@ -38,7 +38,7 @@ CuboidBoundary CopyableSceneData::get_aabb() const {
 std::vector<glm::vec3> CopyableSceneData::get_converted_vertices() const {
     std::vector<glm::vec3> vec(get_vertices().size());
     proc::transform(
-        get_vertices(), vec.begin(), [](auto i) { return to_vec3f(i); });
+            get_vertices(), vec.begin(), [](auto i) { return to_vec3f(i); });
     return vec;
 }
 
@@ -55,14 +55,15 @@ const std::vector<cl_float3>& CopyableSceneData::get_vertices() const {
     return contents.vertices;
 }
 const std::vector<SceneData::Material>& CopyableSceneData::get_materials()
-    const {
+        const {
     return contents.materials;
 }
 
 std::vector<Surface> CopyableSceneData::get_surfaces() const {
     std::vector<Surface> ret(get_materials().size());
-    proc::transform(
-        get_materials(), ret.begin(), [](const auto& i) { return i.surface; });
+    proc::transform(get_materials(), ret.begin(), [](const auto& i) {
+        return i.surface;
+    });
     return ret;
 }
 
@@ -73,7 +74,7 @@ void CopyableSceneData::set_surfaces(const std::vector<Material>& materials) {
 }
 
 void CopyableSceneData::set_surfaces(
-    const std::map<std::string, Surface>& surfaces) {
+        const std::map<std::string, Surface>& surfaces) {
     for (auto& i : surfaces) {
         set_surface(Material{i.first, i.second});
     }
@@ -117,12 +118,12 @@ SceneData::SceneData(std::tuple<CopyableSceneData, std::unique_ptr<Impl>>&& rhs)
 }
 
 std::tuple<CopyableSceneData, std::unique_ptr<SceneData::Impl>> SceneData::load(
-    const std::string& scene_file, float scale) {
+        const std::string& scene_file, float scale) {
     auto impl = std::make_unique<Impl>();
     auto scene = impl->importer.ReadFile(
-        scene_file,
-        (aiProcess_Triangulate | aiProcess_GenSmoothNormals |
-         aiProcess_FlipUVs));
+            scene_file,
+            (aiProcess_Triangulate | aiProcess_GenSmoothNormals |
+             aiProcess_FlipUVs));
 
     if (!scene) {
         throw std::runtime_error("scene pointer is null");
@@ -154,21 +155,22 @@ std::tuple<CopyableSceneData, std::unique_ptr<SceneData::Impl>> SceneData::load(
                        triangles.begin(),
                        [&mesh, &contents](auto i) {
                            return Triangle{
-                               mesh->mMaterialIndex,
-                               i.mIndices[0] + contents.vertices.size(),
-                               i.mIndices[1] + contents.vertices.size(),
-                               i.mIndices[2] + contents.vertices.size()};
+                                   mesh->mMaterialIndex,
+                                   i.mIndices[0] + contents.vertices.size(),
+                                   i.mIndices[1] + contents.vertices.size(),
+                                   i.mIndices[2] + contents.vertices.size()};
                        });
 
         contents.vertices.insert(
-            contents.vertices.end(), vertices.begin(), vertices.end());
+                contents.vertices.end(), vertices.begin(), vertices.end());
         contents.triangles.insert(
-            contents.triangles.end(), triangles.begin(), triangles.end());
+                contents.triangles.end(), triangles.begin(), triangles.end());
     }
 
     proc::for_each(contents.vertices, [scale](auto& i) {
-        std::for_each(
-            std::begin(i.s), std::end(i.s), [scale](auto& i) { i *= scale; });
+        std::for_each(std::begin(i.s), std::end(i.s), [scale](auto& i) {
+            i *= scale;
+        });
     });
 
     return std::make_tuple(CopyableSceneData(std::move(contents)),

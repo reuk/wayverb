@@ -6,7 +6,7 @@ namespace detail {
 
 BufferTypeTrait<BufferType::gl>::storage_array_type
 BufferTypeTrait<BufferType::gl>::create_waveguide_storage(
-    const cl::Context& context, size_t nodes) {
+        const cl::Context& context, size_t nodes) {
     storage_array_type ret;
     for (auto& i : ret) {
         glGenBuffers(1, &i.second);

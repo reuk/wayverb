@@ -55,10 +55,10 @@ public:
         TraversalCallback& operator=(TraversalCallback&&) noexcept = default;
         TraversalCallback(const TraversalCallback&) noexcept = default;
         TraversalCallback& operator=(const TraversalCallback&) noexcept =
-            default;
+                default;
 
         virtual geo::Intersection operator()(
-            const geo::Ray& ray, const std::vector<int>& triangles) = 0;
+                const geo::Ray& ray, const std::vector<int>& triangles) = 0;
     };
 
     /// This callback is used to check for intersections with the contents of
@@ -70,7 +70,8 @@ public:
     public:
         TriangleTraversalCallback(const CopyableSceneData& scene_data);
         geo::Intersection operator()(
-            const geo::Ray& ray, const std::vector<int>& triangles) override;
+                const geo::Ray& ray,
+                const std::vector<int>& triangles) override;
 
     private:
         std::vector<Triangle> tri;

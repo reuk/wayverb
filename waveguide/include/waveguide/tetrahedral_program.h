@@ -38,12 +38,12 @@ private:
 template <int PORTS>
 const std::string BasicDWMProgram<PORTS>::source{
 #ifdef DIAGNOSTIC
-    "#define DIAGNOSTIC\n"
+        "#define DIAGNOSTIC\n"
 #endif
-    "#define PORTS (" +
-    std::to_string(PORTS) +
-    ")\n"
-    R"(
+        "#define PORTS (" +
+        std::to_string(PORTS) +
+        ")\n"
+        R"(
 #define NO_NEIGHBOR (~(uint)0)
 
 typedef struct {

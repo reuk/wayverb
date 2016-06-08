@@ -52,7 +52,7 @@ TEST(dc_blocker, moving_average) {
 
 TEST(dc_blocker, two_moving_average) {
     std::array<filter::MovingAverage, 2> ma{
-        {filter::MovingAverage(4), filter::MovingAverage(4)}};
+            {filter::MovingAverage(4), filter::MovingAverage(4)}};
 
     auto apply = [&ma](double x) {
         for (auto& i : ma) {

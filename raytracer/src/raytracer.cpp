@@ -26,14 +26,14 @@
 namespace {
 constexpr auto volume_factor = 0.001f;
 constexpr const VolumeType AIR_COEFFICIENT{{
-    volume_factor * -0.1f,
-    volume_factor * -0.2f,
-    volume_factor * -0.5f,
-    volume_factor * -1.1f,
-    volume_factor * -2.7f,
-    volume_factor * -9.4f,
-    volume_factor * -29.0f,
-    volume_factor * -60.0f,
+        volume_factor * -0.1f,
+        volume_factor * -0.2f,
+        volume_factor * -0.5f,
+        volume_factor * -1.1f,
+        volume_factor * -2.7f,
+        volume_factor * -9.4f,
+        volume_factor * -29.0f,
+        volume_factor * -60.0f,
 }};
 }  // namespace
 
@@ -42,8 +42,8 @@ int compute_optimum_reflection_number(float min_amp, float max_reflectivity) {
 }
 
 std::vector<std::vector<std::vector<float>>> flatten_impulses(
-    const std::vector<std::vector<AttenuatedImpulse>>& attenuated,
-    float samplerate) {
+        const std::vector<std::vector<AttenuatedImpulse>>& attenuated,
+        float samplerate) {
     std::vector<std::vector<std::vector<float>>> flattened(attenuated.size());
     proc::transform(attenuated, begin(flattened), [samplerate](const auto& i) {
         return flatten_impulses(i, samplerate);
@@ -62,7 +62,7 @@ double intensity_to_pressure(double intensity, double Z = 400) {
 /// Turn a collection of AttenuatedImpulses into a vector of 8 vectors, where
 /// each of the 8 vectors represent sample values in a different frequency band.
 std::vector<std::vector<float>> flatten_impulses(
-    const std::vector<AttenuatedImpulse>& impulse, float samplerate) {
+        const std::vector<AttenuatedImpulse>& impulse, float samplerate) {
     const auto MAX_TIME_LIMIT = 20.0f;
     // Find the index of the final sample based on time and samplerate
     float maxtime = 0;
@@ -73,7 +73,8 @@ std::vector<std::vector<float>> flatten_impulses(
 
     //  Create somewhere to store the results.
     std::vector<std::vector<float>> flattened(
-        sizeof(VolumeType) / sizeof(float), std::vector<float>(MAX_SAMPLE, 0));
+            sizeof(VolumeType) / sizeof(float),
+            std::vector<float>(MAX_SAMPLE, 0));
 
     //  For each impulse, calculate its index, then add the impulse's volumes
     //  to the volumes already in the output array.
@@ -105,7 +106,7 @@ std::vector<float> mixdown(const std::vector<std::vector<float>>& data) {
 }
 
 std::vector<std::vector<float>> mixdown(
-    const std::vector<std::vector<std::vector<float>>>& data) {
+        const std::vector<std::vector<std::vector<float>>>& data) {
     std::vector<std::vector<float>> ret(data.size());
     proc::transform(data, ret.begin(), [](auto i) { return mixdown(i); });
     return ret;
@@ -114,26 +115,27 @@ std::vector<std::vector<float>> mixdown(
 /// Find the index of the last sample with an amplitude of minVol or higher,
 /// then resize the vectors down to this length.
 void trimTail(std::vector<std::vector<float>>& audioChannels, float minVol) {
-    using index_type =
-        std::common_type_t<std::iterator_traits<std::vector<
-                               float>::reverse_iterator>::difference_type,
-                           int>;
+    using index_type = std::common_type_t<
+            std::iterator_traits<
+                    std::vector<float>::reverse_iterator>::difference_type,
+            int>;
 
     // Find last index of required amplitude or greater.
     auto len = proc::accumulate(
-        audioChannels, 0, [minVol](auto current, const auto& i) {
-            return std::max(
-                index_type{current},
-                index_type{distance(i.begin(),
-                                    std::find_if(i.rbegin(),
-                                                 i.rend(),
-                                                 [minVol](auto j) {
-                                                     return std::abs(j) >=
-                                                            minVol;
-                                                 })
-                                        .base()) -
-                           1});
-        });
+            audioChannels, 0, [minVol](auto current, const auto& i) {
+                return std::max(
+                        index_type{current},
+                        index_type{
+                                distance(i.begin(),
+                                         std::find_if(i.rbegin(),
+                                                      i.rend(),
+                                                      [minVol](auto j) {
+                                                          return std::abs(j) >=
+                                                                 minVol;
+                                                      })
+                                                 .base()) -
+                                1});
+            });
 
     // Resize.
     for (auto&& i : audioChannels)
@@ -142,13 +144,13 @@ void trimTail(std::vector<std::vector<float>>& audioChannels, float minVol) {
 
 /// Collects together all the post-processing steps.
 std::vector<std::vector<float>> process(
-    filter::FilterType filtertype,
-    std::vector<std::vector<std::vector<float>>>& data,
-    float sr,
-    bool do_normalize,
-    float lo_cutoff,
-    bool do_trim_tail,
-    float volume_scale) {
+        filter::FilterType filtertype,
+        std::vector<std::vector<std::vector<float>>>& data,
+        float sr,
+        bool do_normalize,
+        float lo_cutoff,
+        bool do_trim_tail,
+        float volume_scale) {
     filter::run(filtertype, data, sr, lo_cutoff);
     auto ret = mixdown(data);
 
@@ -285,9 +287,9 @@ void add_direct_impulse(const glm::vec3& micpos,
         auto init_diff = source - micpos;
         auto init_dist = glm::length(init_diff);
         results.image_source[{0}] = Impulse{
-            attenuation_for_distance(init_dist),
-            to_cl_float3(micpos + init_diff),
-            init_dist / SPEED_OF_SOUND,
+                attenuation_for_distance(init_dist),
+                to_cl_float3(micpos + init_diff),
+                init_dist / SPEED_OF_SOUND,
         };
     }
 }
@@ -304,46 +306,48 @@ Results Raytracer::run(const CopyableSceneData& scene_data,
 
     auto rays = directions.size();
     cl::Buffer cl_ray_info(
-        get_context(), CL_MEM_READ_WRITE, rays * sizeof(RayInfo));
+            get_context(), CL_MEM_READ_WRITE, rays * sizeof(RayInfo));
 
     std::vector<RayInfo> ray_info(directions.size());
     proc::transform(
-        directions, ray_info.begin(), [micpos, source](const auto& i) {
-            RayInfo ret;
-            ret.ray.direction = i;
-            ret.ray.position = to_cl_float3(source);
-            ret.distance = 0;
-            ret.volume = VolumeType{{1, 1, 1, 1, 1, 1, 1, 1}};
-            ret.cont = 1;
+            directions, ray_info.begin(), [micpos, source](const auto& i) {
+                RayInfo ret;
+                ret.ray.direction = i;
+                ret.ray.position = to_cl_float3(source);
+                ret.distance = 0;
+                ret.volume = VolumeType{{1, 1, 1, 1, 1, 1, 1, 1}};
+                ret.cont = 1;
 
-            ret.mic_reflection = to_cl_float3(micpos);
-            return ret;
-        });
+                ret.mic_reflection = to_cl_float3(micpos);
+                return ret;
+            });
 
     cl::copy(get_queue(), begin(ray_info), end(ray_info), cl_ray_info);
 
     cl::Buffer cl_triangles(
-        get_context(),
-        begin(const_cast<std::vector<Triangle>&>(scene_data.get_triangles())),
-        end(const_cast<std::vector<Triangle>&>(scene_data.get_triangles())),
-        false);
+            get_context(),
+            begin(const_cast<std::vector<Triangle>&>(
+                    scene_data.get_triangles())),
+            end(const_cast<std::vector<Triangle>&>(scene_data.get_triangles())),
+            false);
     cl::Buffer cl_vertices(
-        get_context(),
-        begin(const_cast<std::vector<cl_float3>&>(scene_data.get_vertices())),
-        end(const_cast<std::vector<cl_float3>&>(scene_data.get_vertices())),
-        false);
+            get_context(),
+            begin(const_cast<std::vector<cl_float3>&>(
+                    scene_data.get_vertices())),
+            end(const_cast<std::vector<cl_float3>&>(scene_data.get_vertices())),
+            false);
     auto surfaces = scene_data.get_surfaces();
     cl::Buffer cl_surfaces(
-        get_context(), surfaces.begin(), surfaces.end(), false);
+            get_context(), surfaces.begin(), surfaces.end(), false);
     cl::Buffer cl_impulses(
-        get_context(), CL_MEM_READ_WRITE, rays * sizeof(Impulse));
+            get_context(), CL_MEM_READ_WRITE, rays * sizeof(Impulse));
     cl::Buffer cl_image_source(
-        get_context(), CL_MEM_READ_WRITE, rays * sizeof(Impulse));
+            get_context(), CL_MEM_READ_WRITE, rays * sizeof(Impulse));
     cl::Buffer cl_image_source_index(
-        get_context(), CL_MEM_READ_WRITE, rays * sizeof(cl_ulong));
+            get_context(), CL_MEM_READ_WRITE, rays * sizeof(cl_ulong));
 
     cl::Buffer cl_voxel_index(
-        get_context(), begin(flattened_vox), end(flattened_vox), false);
+            get_context(), begin(flattened_vox), end(flattened_vox), false);
 
     Results results;
     results.mic = micpos;
@@ -356,8 +360,8 @@ Results Raytracer::run(const CopyableSceneData& scene_data,
 
     std::vector<cl_ulong> image_source_index(rays * NUM_IMAGE_SOURCE, 0);
     std::vector<Impulse> image_source(
-        rays * NUM_IMAGE_SOURCE,
-        Impulse{{{0, 0, 0, 0, 0, 0, 0, 0}}, {{0, 0, 0}}, 0});
+            rays * NUM_IMAGE_SOURCE,
+            Impulse{{{0, 0, 0, 0, 0, 0, 0, 0}}, {{0, 0, 0}}, 0});
 
     AABB global_aabb{to_cl_float3(vox.get_aabb().get_c0()),
                      to_cl_float3(vox.get_aabb().get_c1())};
@@ -437,33 +441,33 @@ Hrtf::Hrtf(const RaytracerProgram& program, cl::CommandQueue& queue)
 }
 
 std::vector<std::vector<AttenuatedImpulse>> Hrtf::attenuate(
-    const RaytracerResults& results, const Config& config) {
+        const RaytracerResults& results, const Config& config) {
     return attenuate(results, config.facing, config.up);
 }
 
 std::vector<std::vector<AttenuatedImpulse>> Hrtf::attenuate(
-    const RaytracerResults& results,
-    const glm::vec3& facing,
-    const glm::vec3& up) {
+        const RaytracerResults& results,
+        const glm::vec3& facing,
+        const glm::vec3& up) {
     auto channels = {0, 1};
     std::vector<std::vector<AttenuatedImpulse>> attenuated(channels.size());
     proc::transform(
-        channels, begin(attenuated), [this, &results, facing, up](auto i) {
-            return this->attenuate(to_cl_float3(results.mic),
-                                   i,
-                                   to_cl_float3(facing),
-                                   to_cl_float3(up),
-                                   results.impulses);
-        });
+            channels, begin(attenuated), [this, &results, facing, up](auto i) {
+                return this->attenuate(to_cl_float3(results.mic),
+                                       i,
+                                       to_cl_float3(facing),
+                                       to_cl_float3(up),
+                                       results.impulses);
+            });
     return attenuated;
 }
 
 std::vector<AttenuatedImpulse> Hrtf::attenuate(
-    const cl_float3& mic_pos,
-    int channel,
-    const cl_float3& facing,
-    const cl_float3& up,
-    const std::vector<Impulse>& impulses) {
+        const cl_float3& mic_pos,
+        int channel,
+        const cl_float3& facing,
+        const cl_float3& up,
+        const std::vector<Impulse>& impulses) {
     //  muck around with the table format
     std::vector<VolumeType> hrtf_channel_data(360 * 180);
     auto offset = 0;
@@ -477,7 +481,7 @@ std::vector<AttenuatedImpulse> Hrtf::attenuate(
 
     //  set up buffers
     cl_in = cl::Buffer(
-        context, CL_MEM_READ_WRITE, impulses.size() * sizeof(Impulse));
+            context, CL_MEM_READ_WRITE, impulses.size() * sizeof(Impulse));
     cl_out = cl::Buffer(context,
                         CL_MEM_READ_WRITE,
                         impulses.size() * sizeof(AttenuatedImpulse));
@@ -516,28 +520,28 @@ Attenuate::Attenuate(const RaytracerProgram& program, cl::CommandQueue& queue)
 }
 
 std::vector<std::vector<AttenuatedImpulse>> Attenuate::attenuate(
-    const RaytracerResults& results, const std::vector<Speaker>& speakers) {
+        const RaytracerResults& results, const std::vector<Speaker>& speakers) {
     std::vector<std::vector<AttenuatedImpulse>> attenuated(speakers.size());
     proc::transform(
-        speakers, begin(attenuated), [this, &results](const auto& i) {
-            return this->attenuate(results.mic, i, results.impulses);
-        });
+            speakers, begin(attenuated), [this, &results](const auto& i) {
+                return this->attenuate(results.mic, i, results.impulses);
+            });
     return attenuated;
 }
 
 std::vector<AttenuatedImpulse> Attenuate::attenuate(
-    const glm::vec3& mic_pos,
-    const Speaker& speaker,
-    const std::vector<Impulse>& impulses) {
+        const glm::vec3& mic_pos,
+        const Speaker& speaker,
+        const std::vector<Impulse>& impulses) {
     //  init buffers
     cl_in = cl::Buffer(
-        context, CL_MEM_READ_WRITE, impulses.size() * sizeof(Impulse));
+            context, CL_MEM_READ_WRITE, impulses.size() * sizeof(Impulse));
 
     cl_out = cl::Buffer(context,
                         CL_MEM_READ_WRITE,
                         impulses.size() * sizeof(AttenuatedImpulse));
     std::vector<AttenuatedImpulse> zero(
-        impulses.size(), AttenuatedImpulse{{{0, 0, 0, 0, 0, 0, 0, 0}}, 0});
+            impulses.size(), AttenuatedImpulse{{{0, 0, 0, 0, 0, 0, 0, 0}}, 0});
     cl::copy(queue, zero.begin(), zero.end(), cl_out);
 
     //  copy input data to buffer

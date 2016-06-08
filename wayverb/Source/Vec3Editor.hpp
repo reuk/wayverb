@@ -66,7 +66,7 @@ public:
         mouse_start_pos = mouse_pos_when_last_dragged = e.position;
         if (isEnabled()) {
             value_on_mouse_down = value_on_prev_frame =
-                value_when_last_dragged = 0;
+                    value_when_last_dragged = 0;
             mouseDrag(e);
         }
     }
@@ -76,7 +76,7 @@ public:
 
         constexpr auto pixels_for_single_increment = 50;
         value_when_last_dragged =
-            increment * mouse_diff / pixels_for_single_increment;
+                increment * mouse_diff / pixels_for_single_increment;
 
         auto since_last = e.position.x - mouse_pos_when_last_dragged.x;
 

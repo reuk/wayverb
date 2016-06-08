@@ -50,7 +50,7 @@ void RectangularMesh::set_node_inside(const Boundary& boundary,
 }
 
 constexpr RectangularMesh::Locator boundary_type_to_locator(
-    RectangularProgram::BoundaryType b) {
+        RectangularProgram::BoundaryType b) {
     switch (b) {
         case RectangularProgram::id_nx:
             return RectangularMesh::Locator{-1, 0, 0};
@@ -75,14 +75,14 @@ constexpr std::pair<RectangularMesh::Locator, cl_int> make_locator_pair() {
 
 template <typename... Ts>
 constexpr std::pair<RectangularMesh::Locator, cl_int> make_locator_pair(
-    RectangularProgram::BoundaryType b, Ts... ts) {
+        RectangularProgram::BoundaryType b, Ts... ts) {
     auto next = make_locator_pair(ts...);
     return std::make_pair(boundary_type_to_locator(b) + next.first,
                           b | next.second);
 }
 
 cl_int RectangularMesh::compute_boundary_type(
-    const Locator& loc, const std::vector<Node>& ret) const {
+        const Locator& loc, const std::vector<Node>& ret) const {
     //  look at all nearby nodes
 
     using RectangularProgram::BoundaryType::id_nx;
@@ -95,59 +95,59 @@ cl_int RectangularMesh::compute_boundary_type(
     using RectangularProgram::BoundaryType::id_reentrant;
 
     auto try_directions = [this, loc, &ret](
-        const std::initializer_list<std::pair<Locator, cl_int>>& directions)
-        -> cl_int {
-            std::vector<std::pair<Locator, cl_int>> nearby;
-            for (const auto& relative : directions) {
-                auto adjacent = loc + relative.first;
-                auto index = compute_index(adjacent);
-                if (index < ret.size() && ret[index].inside)
-                    nearby.push_back(relative);
-            }
-            if (nearby.size() == 1)
-                return nearby.front().second;
-            if (nearby.size() > 1)
-                return id_reentrant;
-            return id_none;
-        };
+            const std::initializer_list<std::pair<Locator, cl_int>>& directions)
+            -> cl_int {
+                std::vector<std::pair<Locator, cl_int>> nearby;
+                for (const auto& relative : directions) {
+                    auto adjacent = loc + relative.first;
+                    auto index = compute_index(adjacent);
+                    if (index < ret.size() && ret[index].inside)
+                        nearby.push_back(relative);
+                }
+                if (nearby.size() == 1)
+                    return nearby.front().second;
+                if (nearby.size() > 1)
+                    return id_reentrant;
+                return id_none;
+            };
 
     auto d1 = try_directions({
-        make_locator_pair(id_nx),
-        make_locator_pair(id_px),
-        make_locator_pair(id_ny),
-        make_locator_pair(id_py),
-        make_locator_pair(id_nz),
-        make_locator_pair(id_pz),
+            make_locator_pair(id_nx),
+            make_locator_pair(id_px),
+            make_locator_pair(id_ny),
+            make_locator_pair(id_py),
+            make_locator_pair(id_nz),
+            make_locator_pair(id_pz),
     });
     if (d1 != id_none)
         return d1;
 
     auto d2 = try_directions({
-        make_locator_pair(id_nx, id_ny),
-        make_locator_pair(id_px, id_ny),
-        make_locator_pair(id_nx, id_py),
-        make_locator_pair(id_px, id_py),
-        make_locator_pair(id_nx, id_nz),
-        make_locator_pair(id_px, id_nz),
-        make_locator_pair(id_nx, id_pz),
-        make_locator_pair(id_px, id_pz),
-        make_locator_pair(id_ny, id_nz),
-        make_locator_pair(id_py, id_nz),
-        make_locator_pair(id_ny, id_pz),
-        make_locator_pair(id_py, id_pz),
+            make_locator_pair(id_nx, id_ny),
+            make_locator_pair(id_px, id_ny),
+            make_locator_pair(id_nx, id_py),
+            make_locator_pair(id_px, id_py),
+            make_locator_pair(id_nx, id_nz),
+            make_locator_pair(id_px, id_nz),
+            make_locator_pair(id_nx, id_pz),
+            make_locator_pair(id_px, id_pz),
+            make_locator_pair(id_ny, id_nz),
+            make_locator_pair(id_py, id_nz),
+            make_locator_pair(id_ny, id_pz),
+            make_locator_pair(id_py, id_pz),
     });
     if (d2 != id_none)
         return d2;
 
     auto d3 = try_directions({
-        make_locator_pair(id_nx, id_ny, id_nz),
-        make_locator_pair(id_px, id_ny, id_nz),
-        make_locator_pair(id_nx, id_py, id_nz),
-        make_locator_pair(id_px, id_py, id_nz),
-        make_locator_pair(id_nx, id_ny, id_pz),
-        make_locator_pair(id_px, id_ny, id_pz),
-        make_locator_pair(id_nx, id_py, id_pz),
-        make_locator_pair(id_px, id_py, id_pz),
+            make_locator_pair(id_nx, id_ny, id_nz),
+            make_locator_pair(id_px, id_ny, id_nz),
+            make_locator_pair(id_nx, id_py, id_nz),
+            make_locator_pair(id_px, id_py, id_nz),
+            make_locator_pair(id_nx, id_ny, id_pz),
+            make_locator_pair(id_px, id_ny, id_pz),
+            make_locator_pair(id_nx, id_py, id_pz),
+            make_locator_pair(id_px, id_py, id_pz),
     });
     if (d3 != id_none)
         return d3;
@@ -177,17 +177,17 @@ RectangularMesh::size_type RectangularMesh::compute_num_reentrant() const {
 }
 
 RectangularMesh::size_type RectangularMesh::compute_index(
-    const Locator& pos) const {
+        const Locator& pos) const {
     return pos.x + pos.y * get_dim().x + pos.z * get_dim().x * get_dim().y;
 }
 RectangularMesh::Locator RectangularMesh::compute_locator(
-    const size_type index) const {
+        const size_type index) const {
     auto x = div(index, dim.x);
     auto y = div(x.quot, dim.y);
     return Locator(x.rem, y.rem, y.quot % dim.z);
 }
 RectangularMesh::Locator RectangularMesh::compute_locator(
-    const glm::vec3& v) const {
+        const glm::vec3& v) const {
     auto transformed = v - get_aabb().get_c0();
     glm::ivec3 cube_pos = transformed / get_spacing();
 
@@ -223,12 +223,12 @@ void RectangularMesh::compute_neighbors(size_type index,
                                         cl_uint* output) const {
     auto loc = compute_locator(index);
     const std::array<Locator, RectangularMesh::PORTS> n_loc{{
-        Locator(loc.x - 1, loc.y, loc.z),
-        Locator(loc.x + 1, loc.y, loc.z),
-        Locator(loc.x, loc.y - 1, loc.z),
-        Locator(loc.x, loc.y + 1, loc.z),
-        Locator(loc.x, loc.y, loc.z - 1),
-        Locator(loc.x, loc.y, loc.z + 1),
+            Locator(loc.x - 1, loc.y, loc.z),
+            Locator(loc.x + 1, loc.y, loc.z),
+            Locator(loc.x, loc.y - 1, loc.z),
+            Locator(loc.x, loc.y + 1, loc.z),
+            Locator(loc.x, loc.y, loc.z - 1),
+            Locator(loc.x, loc.y, loc.z + 1),
     }};
 
     proc::transform(n_loc, output, [this](const auto& i) {
@@ -262,22 +262,22 @@ glm::ivec3 RectangularMesh::get_dim() const {
 }
 
 cl_uint RectangularMesh::coefficient_index_for_node(
-    const Boundary& b, const RectangularMesh::Node& node) {
+        const Boundary& b, const RectangularMesh::Node& node) {
     return 0;
 }
 
 cl_uint RectangularMesh::coefficient_index_for_node(
-    const MeshBoundary& b, const RectangularMesh::Node& node) {
+        const MeshBoundary& b, const RectangularMesh::Node& node) {
     const auto& triangles = b.get_triangles();
     const auto& vertices = b.get_vertices();
     auto min = proc::min_element(
-        triangles, [&node, &vertices](const auto& i, const auto& j) {
-            auto get_dist = [&node, &vertices](const auto& i) {
-                return geo::point_triangle_distance_squared(
-                    i, vertices, to_vec3f(node.position));
-            };
-            return get_dist(i) < get_dist(j);
-        });
+            triangles, [&node, &vertices](const auto& i, const auto& j) {
+                auto get_dist = [&node, &vertices](const auto& i) {
+                    return geo::point_triangle_distance_squared(
+                            i, vertices, to_vec3f(node.position));
+                };
+                return get_dist(i) < get_dist(j);
+            });
     //  set boundary data coefficient to triangle surface index
     return min->surface;
 }

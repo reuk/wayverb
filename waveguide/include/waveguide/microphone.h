@@ -14,7 +14,7 @@ public:
         return (1 - shape) + shape * glm::dot(facing, glm::normalize(incident));
     }
     std::vector<float> process(
-        const std::vector<RunStepResult>& input) const override;
+            const std::vector<RunStepResult>& input) const override;
 
     static const Microphone omni;
 };

@@ -28,9 +28,9 @@ inline T pinv(const T& a,
                      svd.singularValues().array().abs()(0);
     return svd.matrixV() *
            (svd.singularValues().array().abs() > tolerance)
-               .select(svd.singularValues().array().inverse(), 0)
-               .matrix()
-               .asDiagonal() *
+                   .select(svd.singularValues().array().inverse(), 0)
+                   .matrix()
+                   .asDiagonal() *
            svd.matrixU().adjoint();
 }
 
@@ -76,7 +76,7 @@ struct BufferTypeTrait<BufferType::cl> {
     using storage_array_type = std::array<type, 2>;
 
     static storage_array_type create_waveguide_storage(
-        const cl::Context& context, size_t nodes);
+            const cl::Context& context, size_t nodes);
 
     static cl::Buffer* index_storage_array(storage_array_type& u, size_t i) {
         return &(u[i]);
@@ -89,7 +89,7 @@ struct BufferTypeTrait<BufferType::gl> {
     using storage_array_type = std::array<std::pair<type, unsigned int>, 2>;
 
     static storage_array_type create_waveguide_storage(
-        const cl::Context& context, size_t nodes);
+            const cl::Context& context, size_t nodes);
 
     static cl::Buffer* index_storage_array(storage_array_type& u, size_t i) {
         return &(u[i].first);
@@ -115,7 +115,7 @@ public:
             , kernel(program.get_kernel())
             , nodes(nodes)
             , storage(trait::create_waveguide_storage(
-                  program.template getInfo<CL_PROGRAM_CONTEXT>(), nodes))
+                      program.template getInfo<CL_PROGRAM_CONTEXT>(), nodes))
             , previous(trait::index_storage_array(storage, 0))
             , current(trait::index_storage_array(storage, 1))
             , output(program.template getInfo<CL_PROGRAM_CONTEXT>(),
@@ -160,7 +160,7 @@ public:
     }
 
     std::pair<RunStepResult, std::vector<cl_float>> run_step_visualised(
-        size_t o) {
+            size_t o) {
         auto ret = run_step(o);
         std::vector<cl_float> pressures(nodes, 0);
         cl::copy(queue, *current, pressures.begin(), pressures.end());
@@ -194,7 +194,7 @@ public:
         cl::copy(queue, n.begin(), n.end(), *current);
 
         run_info = std::make_unique<RunInfo>(
-            get_index_for_coordinate(e), std::move(input_sig), o);
+                get_index_for_coordinate(e), std::move(input_sig), o);
     }
 
     template <typename Callback = DoNothingCallback>
@@ -211,28 +211,28 @@ public:
     template <typename SCallback = DoNothingCallback,
               typename VCallback = GenericArgumentsCallback<std::vector<float>>>
     std::vector<RunStepResult> run_visualised(
-        size_t steps,
-        std::atomic_bool& keep_going,
-        const SCallback& callback = SCallback(),
-        const VCallback& visual_callback = VCallback()) {
+            size_t steps,
+            std::atomic_bool& keep_going,
+            const SCallback& callback = SCallback(),
+            const VCallback& visual_callback = VCallback()) {
         return run_basic(
-            steps, keep_going, [this, &callback, &visual_callback] {
-                auto ret =
-                    this->run_step_visualised(run_info->get_output_index());
-                callback();
-                visual_callback(std::move(ret.second));
-                return ret.first;
-            });
+                steps, keep_going, [this, &callback, &visual_callback] {
+                    auto ret = this->run_step_visualised(
+                            run_info->get_output_index());
+                    callback();
+                    visual_callback(std::move(ret.second));
+                    return ret.first;
+                });
     }
 
     template <typename Callback = DoNothingCallback>
     std::vector<RunStepResult> init_and_run(
-        const glm::vec3& e,
-        std::vector<float>&& input,
-        size_t o,
-        size_t steps,
-        std::atomic_bool& keep_going,
-        const Callback& callback = Callback()) {
+            const glm::vec3& e,
+            std::vector<float>&& input,
+            size_t o,
+            size_t steps,
+            std::atomic_bool& keep_going,
+            const Callback& callback = Callback()) {
         init(e, std::move(input), o);
         return run(steps, keep_going, callback);
     }
@@ -240,16 +240,16 @@ public:
     template <typename SCallback = DoNothingCallback,
               typename VCallback = GenericArgumentsCallback<std::vector<float>>>
     std::vector<RunStepResult> init_and_run_visualised(
-        const glm::vec3& e,
-        std::vector<float>&& input,
-        size_t o,
-        size_t steps,
-        std::atomic_bool& keep_going,
-        const SCallback& callback = SCallback(),
-        const VCallback& visual_callback = VCallback()) {
+            const glm::vec3& e,
+            std::vector<float>&& input,
+            size_t o,
+            size_t steps,
+            std::atomic_bool& keep_going,
+            const SCallback& callback = SCallback(),
+            const VCallback& visual_callback = VCallback()) {
         init(e, std::move(input), o);
         return this->run_visualised(
-            steps, keep_going, callback, visual_callback);
+                steps, keep_going, callback, visual_callback);
     }
 
     cl::CommandQueue& get_queue() const {
@@ -266,8 +266,9 @@ public:
 
     std::array<unsigned int, 2> get_gl_indices() const {
         std::array<unsigned int, 2> ret;
-        proc::transform(
-            this->storage, ret.begin(), [](const auto& i) { return i.second; });
+        proc::transform(this->storage, ret.begin(), [](const auto& i) {
+            return i.second;
+        });
         return ret;
     }
 
@@ -278,7 +279,7 @@ private:
                                          const Callback& callback) {
         if (!run_info) {
             throw std::runtime_error(
-                "must call init before running waveguide!");
+                    "must call init before running waveguide!");
         }
 
         std::vector<RunStepResult> ret(steps);
@@ -379,22 +380,23 @@ private:
     static constexpr auto PORTS = MeshType::PORTS;
     static constexpr auto TRANSFORM_MATRIX_ELEMENTS = PORTS * 3;
 
+    RectangularWaveguide(const typename Base::ProgramType& program,
+                         cl::CommandQueue& queue,
+                         const RectangularMesh& mesh,
+                         float sample_rate,
+                         std::vector<RectangularProgram::CanonicalCoefficients>
+                                 coefficients);
     RectangularWaveguide(
-        const typename Base::ProgramType& program,
-        cl::CommandQueue& queue,
-        const RectangularMesh& mesh,
-        float sample_rate,
-        std::vector<RectangularProgram::CanonicalCoefficients> coefficients);
-    RectangularWaveguide(
-        const typename Base::ProgramType& program,
-        cl::CommandQueue& queue,
-        const RectangularMesh& mesh,
-        float sample_rate,
-        std::vector<RectangularMesh::CondensedNode> nodes,
-        std::vector<RectangularProgram::BoundaryDataArray1> boundary_data_1,
-        std::vector<RectangularProgram::BoundaryDataArray2> boundary_data_2,
-        std::vector<RectangularProgram::BoundaryDataArray3> boundary_data_3,
-        std::vector<RectangularProgram::CanonicalCoefficients> coefficients);
+            const typename Base::ProgramType& program,
+            cl::CommandQueue& queue,
+            const RectangularMesh& mesh,
+            float sample_rate,
+            std::vector<RectangularMesh::CondensedNode> nodes,
+            std::vector<RectangularProgram::BoundaryDataArray1> boundary_data_1,
+            std::vector<RectangularProgram::BoundaryDataArray2> boundary_data_2,
+            std::vector<RectangularProgram::BoundaryDataArray3> boundary_data_3,
+            std::vector<RectangularProgram::CanonicalCoefficients>
+                    coefficients);
 
     MeshType mesh;
     const cl::Buffer node_buffer;  //  const, set in constructor
@@ -408,8 +410,8 @@ private:
     size_t num_boundary_3;
     cl::Buffer boundary_data_3_buffer;  //  set in setup
     const cl::Buffer
-        boundary_coefficients_buffer;  //  const, set in constructor
-    cl::Buffer error_flag_buffer;      //  set each iteration
+            boundary_coefficients_buffer;  //  const, set in constructor
+    cl::Buffer error_flag_buffer;          //  set each iteration
 };
 
 template <typename Fun, typename T>
@@ -457,13 +459,13 @@ auto log_find_any(const T& t,
 template <typename T>
 auto log_nan(const T& t, const std::string& identifier) {
     return log_find_any(
-        t, identifier, "nan", [](auto i) { return std::isnan(i); });
+            t, identifier, "nan", [](auto i) { return std::isnan(i); });
 }
 
 template <typename T>
 auto log_inf(const T& t, const std::string& identifier) {
     return log_find_any(
-        t, identifier, "inf", [](auto i) { return std::isinf(i); });
+            t, identifier, "inf", [](auto i) { return std::isinf(i); });
 }
 
 template <typename T>

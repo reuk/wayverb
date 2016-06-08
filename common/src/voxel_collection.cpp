@@ -62,7 +62,7 @@ const VoxelCollection::XAxis& VoxelCollection::get_data() const {
 }
 
 glm::ivec3 VoxelCollection::get_starting_index(
-    const glm::vec3& position) const {
+        const glm::vec3& position) const {
     return glm::floor((position - get_aabb().get_c0()) /
                       get_voxel_aabb().dimensions());
 }
@@ -72,7 +72,7 @@ glm::ivec3 VoxelCollection::get_step(const glm::vec3& d) {
 }
 
 const VoxelCollection::Voxel& VoxelCollection::get_voxel(
-    const glm::ivec3& i) const {
+        const glm::ivec3& i) const {
     return data[i.x][i.y][i.z];
 }
 
@@ -87,8 +87,8 @@ geo::Intersection VoxelCollection::traverse(const geo::Ray& ray,
     glm::vec3 boundary;
     for (auto i = 0; i != 3; ++i) {
         just_out[i] = 0 < step[i] ? data.size() : -1;
-        boundary[i] =
-            step[i] < 0 ? voxel_bounds.get_c0()[i] : voxel_bounds.get_c1()[i];
+        boundary[i] = step[i] < 0 ? voxel_bounds.get_c0()[i]
+                                  : voxel_bounds.get_c1()[i];
     }
 
     auto t_max = glm::abs((boundary - ray.position) / ray.direction);
@@ -120,13 +120,13 @@ geo::Intersection VoxelCollection::traverse(const geo::Ray& ray,
 }
 
 VoxelCollection::TriangleTraversalCallback::TriangleTraversalCallback(
-    const CopyableSceneData& scene_data)
+        const CopyableSceneData& scene_data)
         : tri(scene_data.get_triangles())
         , vertices(scene_data.get_converted_vertices()) {
 }
 
 geo::Intersection VoxelCollection::TriangleTraversalCallback::operator()(
-    const geo::Ray& ray, const std::vector<int>& triangles) {
+        const geo::Ray& ray, const std::vector<int>& triangles) {
     return geo::ray_triangle_intersection(ray, triangles, tri, vertices);
 }
 

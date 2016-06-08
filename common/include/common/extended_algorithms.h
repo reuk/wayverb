@@ -14,13 +14,13 @@ struct min_tuple_size;
 template <typename T>
 struct min_tuple_size<T> {
     constexpr static auto value =
-        std::tuple_size<typename std::decay<T>::type>::value;
+            std::tuple_size<typename std::decay<T>::type>::value;
 };
 
 template <typename T, typename... Ts>
 struct min_tuple_size<T, Ts...> {
     constexpr static auto value =
-        std::min(min_tuple_size<T>::value, min_tuple_size<Ts...>::value);
+            std::min(min_tuple_size<T>::value, min_tuple_size<Ts...>::value);
 };
 
 template <typename... Ts>
@@ -41,21 +41,21 @@ constexpr auto zip_to_tuple(std::index_sequence<Ix...>, Ts&&... ts) {
 template <typename... Ts>
 constexpr auto zip_to_tuple(Ts&&... ts) {
     return zip_to_tuple(
-        std::make_index_sequence<min_tuple_size<Ts...>::value>(), ts...);
+            std::make_index_sequence<min_tuple_size<Ts...>::value>(), ts...);
 }
 
 template <size_t... Ix, typename T, typename... Ts>
 constexpr auto tuple_to_array(std::index_sequence<Ix...>,
                               const std::tuple<T, Ts...>& ts) {
     return std::array<T, std::index_sequence<Ix...>::size()>{
-        {std::get<Ix>(ts)...}};
+            {std::get<Ix>(ts)...}};
 }
 
 template <typename... Ts>
 constexpr auto tuple_to_array(const std::tuple<Ts...>& t) {
-    return tuple_to_array(
-        std::make_index_sequence<std::tuple_size<std::tuple<Ts...>>::value>(),
-        t);
+    return tuple_to_array(std::make_index_sequence<
+                                  std::tuple_size<std::tuple<Ts...>>::value>(),
+                          t);
 }
 
 template <typename... Ts>
@@ -94,7 +94,7 @@ struct zipped_type_impl<std::tuple<T, Ts...>> {
 template <typename... Ts>
 struct zipped_type {
     using apply = std::tuple<
-        typename zipped_type_impl<typename std::decay<Ts>::type>::apply...>;
+            typename zipped_type_impl<typename std::decay<Ts>::type>::apply...>;
 };
 
 template <typename... Ts>
@@ -138,10 +138,10 @@ constexpr static auto invoke(Fun&& fun,
 template <typename Fun, typename Tup>
 constexpr static auto invoke(Fun&& fun, Tup&& tup) {
     return invoke(
-        std::forward<Fun>(fun),
-        std::forward<Tup>(tup),
-        std::make_index_sequence<
-            std::tuple_size<typename std::decay<Tup>::type>::value>());
+            std::forward<Fun>(fun),
+            std::forward<Tup>(tup),
+            std::make_index_sequence<
+                    std::tuple_size<typename std::decay<Tup>::type>::value>());
 }
 
 //  this might not behave properly regarding forwarding
@@ -163,12 +163,12 @@ constexpr auto map(std::index_sequence<Ix...>,
                    const Callback& callback) {
     return std::array<decltype(callback(std::get<0>(t))),
                       std::tuple_size<T>::value>{
-        {callback(std::get<Ix>(t))...}};
+            {callback(std::get<Ix>(t))...}};
 }
 
 template <typename T, typename Callback>
 constexpr auto map(const T& t, const Callback& callback) {
     return map(
-        std::make_index_sequence<std::tuple_size<T>::value>(), t, callback);
+            std::make_index_sequence<std::tuple_size<T>::value>(), t, callback);
 }
 }  // namespace proc

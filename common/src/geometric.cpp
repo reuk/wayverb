@@ -98,7 +98,7 @@ Intersection ray_triangle_intersection(const Ray& ray,
     std::vector<int> triangle_indices(triangles.size());
     proc::iota(triangle_indices, 0);
     return ray_triangle_intersection(
-        ray, triangle_indices, triangles, vertices);
+            ray, triangle_indices, triangles, vertices);
 }
 
 bool point_intersection(const glm::vec3& begin,

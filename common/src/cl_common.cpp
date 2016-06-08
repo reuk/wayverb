@@ -17,9 +17,9 @@ cl::Context get_context() {
     cl::Platform::get(&platform);
 
     cl_context_properties cps[] = {
-        CL_CONTEXT_PLATFORM,
-        reinterpret_cast<cl_context_properties>((platform.front())()),
-        0,
+            CL_CONTEXT_PLATFORM,
+            reinterpret_cast<cl_context_properties>((platform.front())()),
+            0,
     };
 
     return cl::Context(CL_DEVICE_TYPE_GPU, cps);
@@ -39,7 +39,7 @@ cl::Device get_device(const cl::Context& context) {
     // auto device = devices.front();
 
     auto preferred_double_width =
-        device.getInfo<CL_DEVICE_PREFERRED_VECTOR_WIDTH_DOUBLE>();
+            device.getInfo<CL_DEVICE_PREFERRED_VECTOR_WIDTH_DOUBLE>();
     CHECK(preferred_double_width) << "device must support double precision";
 
     LOG(INFO) << "## used device:";

@@ -5,7 +5,7 @@
 #include "../JuceLibraryCode/JuceHeader.h"
 
 class GLAudioThumbnailBase
-    : public AudioFormatWriter::ThreadedWriter::IncomingDataReceiver {
+        : public AudioFormatWriter::ThreadedWriter::IncomingDataReceiver {
 public:
     GLAudioThumbnailBase() = default;
     virtual ~GLAudioThumbnailBase() noexcept = default;

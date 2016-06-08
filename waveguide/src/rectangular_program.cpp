@@ -11,13 +11,14 @@ RectangularProgram::RectangularProgram(const cl::Context& context,
 }
 
 RectangularProgram::CondensedNodeStruct RectangularProgram::condense(
-    const NodeStruct& n) {
+        const NodeStruct& n) {
     return CondensedNodeStruct{
-        n.boundary_type | (n.inside ? id_inside : id_none), n.boundary_index};
+            n.boundary_type | (n.inside ? id_inside : id_none),
+            n.boundary_index};
 }
 
 RectangularProgram::CanonicalCoefficients RectangularProgram::convolve(
-    const BiquadCoefficientsArray& a) {
+        const BiquadCoefficientsArray& a) {
     std::array<BiquadCoefficients, BiquadCoefficientsArray::BIQUAD_SECTIONS> t;
     proc::copy(a.array, t.begin());
     return reduce(t,
@@ -30,13 +31,13 @@ RectangularProgram::CanonicalCoefficients
 RectangularProgram::to_impedance_coefficients(const CanonicalCoefficients& c) {
     CanonicalCoefficients ret;
     proc::transform(
-        c.a, std::begin(c.b), std::begin(ret.b), [](auto a, auto b) {
-            return a + b;
-        });
+            c.a, std::begin(c.b), std::begin(ret.b), [](auto a, auto b) {
+                return a + b;
+            });
     proc::transform(
-        c.a, std::begin(c.b), std::begin(ret.a), [](auto a, auto b) {
-            return a - b;
-        });
+            c.a, std::begin(c.b), std::begin(ret.a), [](auto a, auto b) {
+                return a - b;
+            });
 
     if (ret.a[0] != 0) {
         auto norm = 1.0 / ret.a[0];
@@ -63,15 +64,16 @@ RectangularProgram::to_filter_coefficients(std::vector<Surface> surfaces,
 //----------------------------------------------------------------------------//
 
 const std::string RectangularProgram::source{
-    "#define PORTS " + std::to_string(PORTS) + "\n" +
-    "#define BIQUAD_SECTIONS " + std::to_string(BIQUAD_SECTIONS) + "\n" +
-    "#define BIQUAD_ORDER " + std::to_string(2) + "\n" +
-    "#define CANONICAL_FILTER_ORDER " + std::to_string(BIQUAD_SECTIONS * 2) +
-    "\n"
+        "#define PORTS " + std::to_string(PORTS) + "\n" +
+        "#define BIQUAD_SECTIONS " + std::to_string(BIQUAD_SECTIONS) + "\n" +
+        "#define BIQUAD_ORDER " + std::to_string(2) + "\n" +
+        "#define CANONICAL_FILTER_ORDER " +
+        std::to_string(BIQUAD_SECTIONS * 2) +
+        "\n"
 #ifdef DIAGNOSTIC
-    "#define DIAGNOSTIC\n"
+        "#define DIAGNOSTIC\n"
 #endif
-    R"(
+        R"(
 #define COURANT (1.0f / sqrt(3.0f))
 #define COURANT_SQ (1.0f / 3.0f)
 

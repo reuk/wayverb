@@ -29,7 +29,7 @@ public:
     RectangularMesh(const B& boundary, float spacing, const glm::vec3& anchor)
             : BaseMesh(spacing,
                        compute_adjusted_boundary(
-                           boundary.get_aabb(), anchor, spacing))
+                               boundary.get_aabb(), anchor, spacing))
             , dim(get_aabb().dimensions() / spacing)
             , nodes(compute_nodes(boundary))
             , boundary_data_1(compute_boundary_data<1>(boundary))
@@ -39,10 +39,10 @@ public:
 
     template <int I, typename B>
     std::vector<RectangularProgram::BoundaryDataArray<I>> compute_boundary_data(
-        const B& b) const {
+            const B& b) const {
         ConnectedFinder cf;
         std::vector<RectangularProgram::BoundaryDataArray<I>> ret(
-            compute_num_boundary<I>());
+                compute_num_boundary<I>());
 
         for (auto i = 0u; i != get_nodes().size(); ++i) {
             const auto& node = get_nodes()[i];
@@ -51,16 +51,16 @@ public:
                 auto count = 0;
                 for (auto j = 0; j != PORTS; ++j) {
                     auto bits =
-                        RectangularProgram::port_index_to_boundary_type(j);
+                            RectangularProgram::port_index_to_boundary_type(j);
                     if (node.boundary_type & bits) {
                         auto connected = cf.look_for_connected_memoized(
-                            b, i, get_nodes(), bits);
+                                b, i, get_nodes(), bits);
                         assert(connected.type == bits ||
                                connected.type ==
-                                   RectangularProgram::id_reentrant);
+                                       RectangularProgram::id_reentrant);
                         ret[node.boundary_index]
-                            .array[count++]
-                            .coefficient_index = connected.index;
+                                .array[count++]
+                                .coefficient_index = connected.index;
                     }
                 }
             }
@@ -91,10 +91,11 @@ public:
     template <int BITS>
     size_type compute_num_boundary() const {
         return std::count_if(
-            get_nodes().begin(), get_nodes().end(), [](const auto& i) {
-                return i.boundary_type != RectangularProgram::id_reentrant &&
-                       popcount(i.boundary_type) == BITS;
-            });
+                get_nodes().begin(), get_nodes().end(), [](const auto& i) {
+                    return i.boundary_type !=
+                                   RectangularProgram::id_reentrant &&
+                           popcount(i.boundary_type) == BITS;
+                });
     }
 
     size_type compute_num_reentrant() const;
@@ -114,10 +115,10 @@ public:
 
         template <typename B>
         Connected look_for_connected_memoized(
-            const B& b,
-            std::vector<Node>::size_type node_index,
-            const std::vector<Node>& ret,
-            RectangularProgram::BoundaryType bt) {
+                const B& b,
+                std::vector<Node>::size_type node_index,
+                const std::vector<Node>& ret,
+                RectangularProgram::BoundaryType bt) {
             auto key = MemoizeKey{node_index, bt};
             auto found = memoize_data.find(key);
             if (found != memoize_data.end()) {
@@ -167,7 +168,7 @@ public:
                     //  if the node is in the mesh
                     if (adjacent_index != RectangularProgram::NO_NEIGHBOR) {
                         nearby.push_back(look_for_connected_memoized(
-                            b, adjacent_index, ret, bt));
+                                b, adjacent_index, ret, bt));
                     }
                 }
             }

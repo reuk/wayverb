@@ -11,6 +11,6 @@ TimedScope::~TimedScope() noexcept {
     LOG(INFO) << "scope \"" << name << "\" completed in: "
               << std::chrono::duration_cast<std::chrono::milliseconds>(tock -
                                                                        tick)
-                     .count()
+                         .count()
               << " ms";
 }

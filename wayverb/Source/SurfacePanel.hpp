@@ -85,9 +85,9 @@ class PresetComponent : public Component,
                         public model::BroadcastListener,
                         public SettableHelpPanelClient {
 public:
-    PresetComponent(
-        model::ValueWrapper<Surface>& linked,
-        model::ValueWrapper<std::vector<SceneData::Material>>& preset_model);
+    PresetComponent(model::ValueWrapper<Surface>& linked,
+                    model::ValueWrapper<std::vector<SceneData::Material>>&
+                            preset_model);
     virtual ~PresetComponent() noexcept;
     void resized() override;
 
@@ -123,9 +123,9 @@ private:
 
 class PresetProperty : public PropertyComponent {
 public:
-    PresetProperty(
-        model::ValueWrapper<Surface>& linked,
-        model::ValueWrapper<std::vector<SceneData::Material>>& preset_model);
+    PresetProperty(model::ValueWrapper<Surface>& linked,
+                   model::ValueWrapper<std::vector<SceneData::Material>>&
+                           preset_model);
     void refresh() override;
 
 private:
@@ -136,9 +136,9 @@ private:
 
 class SurfaceComponent : public Component {
 public:
-    SurfaceComponent(
-        model::ValueWrapper<Surface>& value,
-        model::ValueWrapper<std::vector<SceneData::Material>>& preset_model);
+    SurfaceComponent(model::ValueWrapper<Surface>& value,
+                     model::ValueWrapper<std::vector<SceneData::Material>>&
+                             preset_model);
     void resized() override;
 
 private:
@@ -151,8 +151,9 @@ class SurfaceComponentWithTitle : public Component,
                                   public SettableHelpPanelClient {
 public:
     SurfaceComponentWithTitle(
-        model::ValueWrapper<SceneData::Material>& value,
-        model::ValueWrapper<std::vector<SceneData::Material>>& preset_model);
+            model::ValueWrapper<SceneData::Material>& value,
+            model::ValueWrapper<std::vector<SceneData::Material>>&
+                    preset_model);
     void resized() override;
 
     static constexpr auto title_height = 25;

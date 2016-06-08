@@ -39,6 +39,10 @@
 		1B692CF11D05A9CA00A761C7 /* RenderHelpers.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1B692CEF1D05A9CA00A761C7 /* RenderHelpers.cpp */; };
 		1B692CF41D05CB9100A761C7 /* ImpulseViewer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1B692CF21D05CB9100A761C7 /* ImpulseViewer.cpp */; };
 		1B8E2A411D073B5D00AD6729 /* FadeShader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1B8E2A3F1D073B5D00AD6729 /* FadeShader.cpp */; };
+		1B8E2A891D08A58600AD6729 /* Waveform.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1B8E2A871D08A58600AD6729 /* Waveform.cpp */; };
+		1B8E2A8C1D08A61100AD6729 /* LoadContext.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1B8E2A8A1D08A61100AD6729 /* LoadContext.cpp */; };
+		1B8E2A8F1D08A79F00AD6729 /* ComputeIndices.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1B8E2A8D1D08A79F00AD6729 /* ComputeIndices.cpp */; };
+		1B8E2A921D08A8E700AD6729 /* Waterfall.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1B8E2A901D08A8E700AD6729 /* Waterfall.cpp */; };
 		1D0C4CE425FD7D455AC10C32 /* juce_audio_basics.mm in Sources */ = {isa = PBXBuildFile; fileRef = BFBA6DD240E8E2C1D9EEFE1C /* juce_audio_basics.mm */; };
 		1E09DBF6A82901B168B1DE8F /* MainComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7D2C7F4DDD285709BDAA80DC /* MainComponent.cpp */; };
 		22A1A2FEBBF078F0D165D702 /* PropertyComponentLAF.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D427A44648B46DF12F248F18 /* PropertyComponentLAF.cpp */; };
@@ -449,6 +453,14 @@
 		1B8E2A3F1D073B5D00AD6729 /* FadeShader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FadeShader.cpp; path = ../../Source/FadeShader.cpp; sourceTree = "<group>"; };
 		1B8E2A401D073B5D00AD6729 /* FadeShader.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = FadeShader.hpp; path = ../../Source/FadeShader.hpp; sourceTree = "<group>"; };
 		1B8E2A661D08404B00AD6729 /* GLAudioThumbnail.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = GLAudioThumbnail.h; path = ../../Source/GLAudioThumbnail.h; sourceTree = "<group>"; };
+		1B8E2A871D08A58600AD6729 /* Waveform.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Waveform.cpp; path = ../../Source/Waveform.cpp; sourceTree = "<group>"; };
+		1B8E2A881D08A58600AD6729 /* Waveform.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = Waveform.hpp; path = ../../Source/Waveform.hpp; sourceTree = "<group>"; };
+		1B8E2A8A1D08A61100AD6729 /* LoadContext.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = LoadContext.cpp; path = ../../Source/LoadContext.cpp; sourceTree = "<group>"; };
+		1B8E2A8B1D08A61100AD6729 /* LoadContext.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = LoadContext.hpp; path = ../../Source/LoadContext.hpp; sourceTree = "<group>"; };
+		1B8E2A8D1D08A79F00AD6729 /* ComputeIndices.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ComputeIndices.cpp; path = ../../Source/ComputeIndices.cpp; sourceTree = "<group>"; };
+		1B8E2A8E1D08A79F00AD6729 /* ComputeIndices.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = ComputeIndices.hpp; path = ../../Source/ComputeIndices.hpp; sourceTree = "<group>"; };
+		1B8E2A901D08A8E700AD6729 /* Waterfall.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Waterfall.cpp; path = ../../Source/Waterfall.cpp; sourceTree = "<group>"; };
+		1B8E2A911D08A8E700AD6729 /* Waterfall.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = Waterfall.hpp; path = ../../Source/Waterfall.hpp; sourceTree = "<group>"; };
 		1BAF74BB3A7DDB036AACF878 /* infback.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = infback.c; path = ../../JuceLibraryCode/modules/juce_core/zip/zlib/infback.c; sourceTree = SOURCE_ROOT; };
 		1BE99A23F9968165DCF0C571 /* format.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = format.c; path = ../../JuceLibraryCode/modules/juce_audio_formats/codecs/flac/libFLAC/format.c; sourceTree = SOURCE_ROOT; };
 		1BED9283EEEC4F00C846E13B /* juce_MarkerList.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = juce_MarkerList.h; path = ../../JuceLibraryCode/modules/juce_gui_basics/positioning/juce_MarkerList.h; sourceTree = SOURCE_ROOT; };
@@ -1805,6 +1817,14 @@
 				1B8E2A661D08404B00AD6729 /* GLAudioThumbnail.h */,
 				1B8E2A3F1D073B5D00AD6729 /* FadeShader.cpp */,
 				1B8E2A401D073B5D00AD6729 /* FadeShader.hpp */,
+				1B8E2A8A1D08A61100AD6729 /* LoadContext.cpp */,
+				1B8E2A8B1D08A61100AD6729 /* LoadContext.hpp */,
+				1B8E2A871D08A58600AD6729 /* Waveform.cpp */,
+				1B8E2A881D08A58600AD6729 /* Waveform.hpp */,
+				1B8E2A901D08A8E700AD6729 /* Waterfall.cpp */,
+				1B8E2A911D08A8E700AD6729 /* Waterfall.hpp */,
+				1B8E2A8D1D08A79F00AD6729 /* ComputeIndices.cpp */,
+				1B8E2A8E1D08A79F00AD6729 /* ComputeIndices.hpp */,
 				1B692CCA1D05A42E00A761C7 /* ImpulseRenderer.cpp */,
 				1B692CCB1D05A42E00A761C7 /* ImpulseRenderer.hpp */,
 				1B692CF21D05CB9100A761C7 /* ImpulseViewer.cpp */,
@@ -4144,16 +4164,20 @@
 				A20B35A79906E00FDC864165 /* SurfaceModel.cpp in Sources */,
 				399B6218C74684147C6DA668 /* SurfacePanel.cpp in Sources */,
 				26433C4B7A988C0797DC3B71 /* Vec3Editor.cpp in Sources */,
+				1B8E2A921D08A8E700AD6729 /* Waterfall.cpp in Sources */,
 				A6CDA0FFE950E5423AA985DE /* VisualiserLookAndFeel.cpp in Sources */,
 				F5BC3F40F3AC2878D2BE07E9 /* BinaryData.cpp in Sources */,
 				1D0C4CE425FD7D455AC10C32 /* juce_audio_basics.mm in Sources */,
+				1B8E2A8F1D08A79F00AD6729 /* ComputeIndices.cpp in Sources */,
 				2A725BEA57789D2477C5B1CC /* juce_audio_devices.mm in Sources */,
 				F210D7F2CFEEB91ED9513DDD /* juce_audio_formats.mm in Sources */,
 				127F610F5B79495C0D092DF7 /* juce_audio_processors.mm in Sources */,
 				D4D94F2D95EF2A6BAB982FEA /* juce_core.mm in Sources */,
+				1B8E2A8C1D08A61100AD6729 /* LoadContext.cpp in Sources */,
 				1B692CEA1D05A4E700A761C7 /* ModelRendererComponent.cpp in Sources */,
 				F33311A7088B136BB9CEF1D2 /* juce_cryptography.mm in Sources */,
 				88C5C1C03717251681E1D566 /* juce_data_structures.mm in Sources */,
+				1B8E2A891D08A58600AD6729 /* Waveform.cpp in Sources */,
 				DC19C8DE75E7E58886E9FE2B /* juce_events.mm in Sources */,
 				AC7B74B7116496DA564EB0D6 /* juce_graphics.mm in Sources */,
 				34956789481077DD97F29B09 /* juce_gui_basics.mm in Sources */,

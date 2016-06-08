@@ -12,17 +12,19 @@
     (((A).x < 0) ? 4 : 0 | ((A).y < 0) ? 2 : 0 | ((A).z < 0) ? 1 : 0)
 #else
 #define EPS 10e-5
-#define SIGN3(A)                                   \
-    (((A).x < EPS)                                 \
-         ? 4                                       \
-         : 0 | ((A).x > -EPS)                      \
-               ? 32                                \
-               : 0 | ((A).y < EPS)                 \
-                     ? 2                           \
-                     : 0 | ((A).y > -EPS)          \
-                           ? 16                    \
-                           : 0 | ((A).z < EPS) ? 1 \
-                                               : 0 | ((A).z > -EPS) ? 8 : 0)
+#define SIGN3(A)                                                              \
+    (((A).x < EPS)                                                            \
+             ? 4                                                              \
+             : 0 | ((A).x > -EPS)                                             \
+                       ? 32                                                   \
+                       : 0 | ((A).y < EPS)                                    \
+                                 ? 2                                          \
+                                 : 0 | ((A).y > -EPS)                         \
+                                           ? 16                               \
+                                           : 0 | ((A).z < EPS)                \
+                                                     ? 1                      \
+                                                     : 0 | ((A).z > -EPS) ? 8 \
+                                                                          : 0)
 #endif
 
 #define CROSS(A, B, C)                          \
@@ -221,8 +223,8 @@ long point_triangle_intersection(Point3 p, Triangle3 t) {
     SUB(t.v1, t.v2, vect12)
     SUB(t.v1, p, vect1h);
     CROSS(vect12, vect1h, cross12_1p)
-    sign12 =
-        SIGN3(cross12_1p); /* Extract X,Y,Z signs as 0..7 or 0...63 integer */
+    sign12 = SIGN3(
+            cross12_1p); /* Extract X,Y,Z signs as 0..7 or 0...63 integer */
 
     SUB(t.v2, t.v3, vect23)
     SUB(t.v2, p, vect2h);

@@ -23,7 +23,7 @@ public:
     static ApplicationCommandManager& get_command_manager();
     static std::string get_valid_file_formats();
     static PropertiesFile::Options get_property_file_options_for(
-        const std::string& name);
+            const std::string& name);
     static constexpr auto recent_projects_base_id = 100;
 
     void create_file_menu(PopupMenu& menu);
@@ -106,9 +106,9 @@ public:
         model::BroadcastConnector persistent_connector{&wrapper.persistent,
                                                        this};
         model::BroadcastConnector is_rendering_connector{
-            &wrapper.render_state.is_rendering, this};
+                &wrapper.render_state.is_rendering, this};
         model::BroadcastConnector visualising_connector{
-            &wrapper.render_state.visualise, this};
+                &wrapper.render_state.visualise, this};
 
         Component::SafePointer<DocumentWindow> help_window{nullptr};
     };

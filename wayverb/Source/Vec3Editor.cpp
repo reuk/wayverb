@@ -4,9 +4,9 @@ Vec3Editor::Vec3Editor(model::ValueWrapper<glm::vec3>& value,
                        const glm::vec3& min,
                        const glm::vec3& max) {
     property_panel.addProperties(
-        {new NumberProperty<float>("x", value.x, min.x, max.x),
-         new NumberProperty<float>("y", value.y, min.y, max.y),
-         new NumberProperty<float>("z", value.z, min.z, max.z)});
+            {new NumberProperty<float>("x", value.x, min.x, max.x),
+             new NumberProperty<float>("y", value.y, min.y, max.y),
+             new NumberProperty<float>("z", value.z, min.z, max.z)});
 
     property_panel.setOpaque(false);
 

@@ -22,12 +22,12 @@ public:
     };
 
     MicrophoneListBox(
-        model::ValueWrapper<std::vector<model::Microphone>>& microphones);
+            model::ValueWrapper<std::vector<model::Microphone>>& microphones);
 
     int getNumRows() override;
 
     void paintListBoxItem(
-        int row, Graphics& g, int w, int h, bool selected) override;
+            int row, Graphics& g, int w, int h, bool selected) override;
 
     Component* refreshComponentForRow(int row,
                                       bool selected,
@@ -68,7 +68,7 @@ public:
     };
 
     MicrophoneEditableListBox(
-        model::ValueWrapper<std::vector<model::Microphone>>& microphones);
+            model::ValueWrapper<std::vector<model::Microphone>>& microphones);
 
     void buttonClicked(Button* b) override;
 
@@ -90,7 +90,7 @@ private:
 
     MicrophoneListBox microphone_list_box;
     model::Connector<MicrophoneListBox> microphone_list_box_connector{
-        &microphone_list_box, this};
+            &microphone_list_box, this};
 
     TextButton add_button{"+"};
     model::Connector<TextButton> add_button_connector{&add_button, this};
@@ -106,7 +106,7 @@ private:
 class SingleMicrophoneComponent : public Component {
 public:
     SingleMicrophoneComponent(
-        model::ValueWrapper<model::Microphone>& microphone);
+            model::ValueWrapper<model::Microphone>& microphone);
 
     void resized() override;
 
@@ -123,7 +123,7 @@ class MicrophoneEditorPanel : public Component,
                               public SettableHelpPanelClient {
 public:
     MicrophoneEditorPanel(
-        model::ValueWrapper<std::vector<model::Microphone>>& microphones);
+            model::ValueWrapper<std::vector<model::Microphone>>& microphones);
 
     void resized() override;
 
@@ -134,7 +134,7 @@ private:
 
     MicrophoneEditableListBox microphone_list_box;
     model::Connector<MicrophoneEditableListBox> microphone_list_box_connector{
-        &microphone_list_box, this};
+            &microphone_list_box, this};
 
     std::unique_ptr<SingleMicrophoneComponent> single_microphone;
 };

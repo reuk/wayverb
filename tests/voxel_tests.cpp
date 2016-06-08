@@ -61,7 +61,7 @@ TEST(voxel, old) {
         geo::Ray ray(glm::vec3(0, 1, 0), to_vec3f(i));
 
         auto inter_0 = geo::ray_triangle_intersection(
-            ray, ind, scene_data.get_triangles(), v);
+                ray, ind, scene_data.get_triangles(), v);
     }
 }
 
@@ -94,7 +94,7 @@ TEST(voxel, intersect) {
         geo::Ray ray(glm::vec3(0, 1, 0), to_vec3f(i));
 
         auto inter_0 = geo::ray_triangle_intersection(
-            ray, ind, scene_data.get_triangles(), v);
+                ray, ind, scene_data.get_triangles(), v);
         auto inter_1 = voxel.traverse(ray, t);
 
         ASSERT_EQ(inter_0.intersects, inter_1.intersects);

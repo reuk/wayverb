@@ -10,5 +10,5 @@ TriangleVec3 get_triangle_verts(const Triangle& t,
 TriangleVec3 get_triangle_verts(const Triangle& t,
                                 const std::vector<cl_float3>& v) {
     return TriangleVec3{
-        {to_vec3f(v[t.v0]), to_vec3f(v[t.v1]), to_vec3f(v[t.v2])}};
+            {to_vec3f(v[t.v0]), to_vec3f(v[t.v1]), to_vec3f(v[t.v2])}};
 }

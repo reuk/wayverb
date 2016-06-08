@@ -79,18 +79,18 @@ auto run_waveguide(ComputeContext& context_info,
 
     //  get opencl program
     auto waveguide_program = get_program<RectangularProgram>(
-        context_info.context, context_info.device);
+            context_info.context, context_info.device);
 
     auto scene_data = boundary.get_scene_data();
     scene_data.set_surfaces(surface);
 
     //  get a waveguide
     RectangularWaveguide<BufferType::cl> waveguide(
-        waveguide_program,
-        context_info.queue,
-        MeshBoundary(scene_data),
-        config.mic,
-        config.get_waveguide_sample_rate());
+            waveguide_program,
+            context_info.queue,
+            MeshBoundary(scene_data),
+            config.mic,
+            config.get_waveguide_sample_rate());
 
     auto source_index = waveguide.get_index_for_coordinate(config.source);
     auto receiver_index = waveguide.get_index_for_coordinate(config.mic);
@@ -118,7 +118,7 @@ auto run_waveguide(ComputeContext& context_info,
 
     auto output = std::vector<float>(results.size());
     proc::transform(
-        results, output.begin(), [](const auto& i) { return i.pressure; });
+            results, output.begin(), [](const auto& i) { return i.pressure; });
 
     //  correct for filter time offset
     output.erase(output.begin(),
@@ -156,8 +156,8 @@ int main(int argc, char** argv) {
 
     ComputeContext context_info;
 
-    auto waveguide_output =
-        run_waveguide(context_info, boundary, config, output_folder, surface);
+    auto waveguide_output = run_waveguide(
+            context_info, boundary, config, output_folder, surface);
 
     // filter::ZeroPhaseDCBlocker(32).filter(waveguide_output);
 
@@ -197,19 +197,23 @@ int main(int argc, char** argv) {
     Attenuate attenuator(raytrace_program, context_info.queue);
     Speaker speaker{};
     auto output =
-        attenuator.attenuate(results.get_image_source(false), {speaker})
-            .front();
+            attenuator.attenuate(results.get_image_source(false), {speaker})
+                    .front();
     // auto output =
     //    attenuator.attenuate(results.get_all(false), {speaker}).front();
 
     std::vector<std::vector<std::vector<float>>> flattened = {
-        flatten_impulses(output, config.sample_rate)};
+            flatten_impulses(output, config.sample_rate)};
 
-    write_file(
-        config, output_folder, "raytrace_no_processing", mixdown(flattened));
+    write_file(config,
+               output_folder,
+               "raytrace_no_processing",
+               mixdown(flattened));
 
-    filter::run(
-        filter::FilterType::linkwitz_riley, flattened, config.sample_rate, 1);
+    filter::run(filter::FilterType::linkwitz_riley,
+                flattened,
+                config.sample_rate,
+                1);
     auto raytracer_output = mixdown(flattened).front();
 
     auto write_normalized = [&config, &output_folder](auto i, auto name) {
@@ -221,7 +225,7 @@ int main(int argc, char** argv) {
     write_normalized(raytracer_output, "raytracer_normalized");
 
     auto calibration_factor = rectilinear_calibration_factor(
-        distance_for_unit_intensity(1), config.get_waveguide_sample_rate());
+            distance_for_unit_intensity(1), config.get_waveguide_sample_rate());
     LOG(INFO) << "calibration factor: " << calibration_factor;
 
     mul(waveguide_adjusted, calibration_factor);
@@ -247,9 +251,9 @@ int main(int argc, char** argv) {
     elementwise_multiply(raytracer_output, window);
 
     write_file(
-        config, output_folder, "waveguide_processed", {waveguide_adjusted});
+            config, output_folder, "waveguide_processed", {waveguide_adjusted});
     write_file(
-        config, output_folder, "raytracer_processed", {raytracer_output});
+            config, output_folder, "raytracer_processed", {raytracer_output});
 
     filter::HipassWindowedSinc hipass(raytracer_output.size());
     hipass.set_params(config.filter_frequency, config.sample_rate);

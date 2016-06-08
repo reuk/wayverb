@@ -5,7 +5,7 @@
 #include <iostream>
 
 std::vector<float> Microphone::process(
-    const std::vector<RunStepResult>& input) const {
+        const std::vector<RunStepResult>& input) const {
     std::vector<float> ret(input.size());
     proc::transform(input, ret.begin(), [this](auto i) {
         //  TODO DEFINITELY CHECK THIS

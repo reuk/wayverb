@@ -54,8 +54,8 @@ public:
                     auto ll = mesh.compute_locator(j);
                     auto pp = mesh.compute_position(ll);
                     ASSERT_NEAR(
-                        mesh.get_spacing(), glm::distance(pos, pp), 0.0001)
-                        << i << ", " << j;
+                            mesh.get_spacing(), glm::distance(pos, pp), 0.0001)
+                            << i << ", " << j;
                 }
             }
         }
@@ -83,7 +83,7 @@ private:
     cl::Device device{get_device(context)};
     cl::CommandQueue queue{context, device};
     RectangularProgram program{
-        get_program<RectangularProgram>(context, device)};
+            get_program<RectangularProgram>(context, device)};
 };
 
 TEST_F(MeshTest, locator_index_tetra) {

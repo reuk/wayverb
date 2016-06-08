@@ -7,16 +7,19 @@ const auto eps = 10e-5;
 }  // namespace
 
 int sign3(const glm::vec3& v) {
-    return (v.x < eps) ? 0x04
-                       : 0 | (v.x > -eps)
+    return (v.x < eps)
+                   ? 0x04
+                   : 0 | (v.x > -eps)
                              ? 0x20
                              : 0 | (v.y < eps)
-                                   ? 0x02
-                                   : 0 | (v.y > -eps)
-                                         ? 0x10
-                                         : 0 | (v.z < eps)
-                                               ? 0x01
-                                               : 0 | (v.z > -eps) ? 0x08 : 0;
+                                       ? 0x02
+                                       : 0 | (v.y > -eps)
+                                                 ? 0x10
+                                                 : 0 | (v.z < eps)
+                                                           ? 0x01
+                                                           : 0 | (v.z > -eps)
+                                                                     ? 0x08
+                                                                     : 0;
 }
 
 int face_plane(const glm::vec3& p) {
@@ -267,20 +270,20 @@ Rel t_c_intersection(const TriangleVerts & t) {
 //  http://fileadmin.cs.lth.se/cs/Personal/Tomas_Akenine-Moller/code/tribox_tam.pdf
 Rel t_c_intersection(const TriangleVec3& t) {
     std::array<glm::vec3, 3> v{{
-        t[0], t[1], t[2],
+            t[0], t[1], t[2],
     }};
     std::array<glm::vec3, 3> f{{v[1] - v[0], v[2] - v[1], v[0] - v[2]}};
 
     for (const auto& a : {
-             glm::vec3(0, -f[0].z, f[0].y),
-             glm::vec3(0, -f[1].z, f[1].y),
-             glm::vec3(0, -f[2].z, f[2].y),
-             glm::vec3(f[0].z, 0, -f[0].x),
-             glm::vec3(f[1].z, 0, -f[1].x),
-             glm::vec3(f[2].z, 0, -f[2].x),
-             glm::vec3(-f[0].y, f[0].x, 0),
-             glm::vec3(-f[1].y, f[1].x, 0),
-             glm::vec3(-f[2].y, f[2].x, 0),
+                 glm::vec3(0, -f[0].z, f[0].y),
+                 glm::vec3(0, -f[1].z, f[1].y),
+                 glm::vec3(0, -f[2].z, f[2].y),
+                 glm::vec3(f[0].z, 0, -f[0].x),
+                 glm::vec3(f[1].z, 0, -f[1].x),
+                 glm::vec3(f[2].z, 0, -f[2].x),
+                 glm::vec3(-f[0].y, f[0].x, 0),
+                 glm::vec3(-f[1].y, f[1].x, 0),
+                 glm::vec3(-f[2].y, f[2].x, 0),
          }) {
         auto coll = {glm::dot(a, v[0]), glm::dot(a, v[1]), glm::dot(a, v[2])};
         auto r = glm::dot(glm::abs(a), glm::vec3(0.5));

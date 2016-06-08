@@ -15,7 +15,7 @@ struct TetrahedralLocator final {
 };
 
 class TetrahedralMesh
-    : public BaseMesh<BasicDWMProgram<4>, TetrahedralLocator> {
+        : public BaseMesh<BasicDWMProgram<4>, TetrahedralLocator> {
 public:
     static const int CUBE_NODES = 8;
 
@@ -46,7 +46,7 @@ private:
     static float cube_side_from_node_spacing(float spacing);
     static std::array<glm::vec3, CUBE_NODES> compute_scaled_cube(float scale);
     static const std::array<std::array<Locator, PORTS>, CUBE_NODES>
-        offset_table;
+            offset_table;
 
     //  data members
     std::array<glm::vec3, CUBE_NODES> scaled_cube;

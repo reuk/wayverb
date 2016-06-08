@@ -14,7 +14,7 @@ public:
     void push(Method&& method) {
         std::lock_guard<std::mutex> lck(mut);
         work_items.push(std::make_unique<GenericWorkItem<Method>>(
-            std::forward<Method>(method)));
+                std::forward<Method>(method)));
     }
 
     std::unique_ptr<WorkItem> pop();

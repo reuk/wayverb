@@ -8,7 +8,7 @@
 template <typename T>
 inline float sum(const T& t) {
     return proc::accumulate(
-        t, 0.0f, [](const auto& a, const auto& b) { return a + sum(b); });
+            t, 0.0f, [](const auto& a, const auto& b) { return a + sum(b); });
 }
 
 template <>
@@ -19,7 +19,7 @@ inline float sum(const float& t) {
 template <typename T>
 inline auto count(const T& t) {
     return proc::accumulate(
-        t, 0u, [](const auto& a, const auto& b) { return a + count(b); });
+            t, 0u, [](const auto& a, const auto& b) { return a + count(b); });
 }
 
 template <typename T>
@@ -35,7 +35,7 @@ inline auto mean(const T& t) {
 template <typename T>
 inline float max_mag(const T& t) {
     return proc::accumulate(
-        t, 0.0f, [](auto a, auto b) { return std::max(a, max_mag(b)); });
+            t, 0.0f, [](auto a, auto b) { return std::max(a, max_mag(b)); });
 }
 
 template <>
@@ -119,8 +119,9 @@ std::vector<T> sinc_kernel(double cutoff, int length) {
 
 template <typename T, typename U>
 void elementwise_multiply(T& a, const U& b) {
-    proc::transform(
-        a, std::begin(b), std::begin(a), [](auto i, auto j) { return i * j; });
+    proc::transform(a, std::begin(b), std::begin(a), [](auto i, auto j) {
+        return i * j;
+    });
 }
 
 /// Generate a blackman window of a specific length.
@@ -133,8 +134,8 @@ std::vector<T> blackman(int length) {
     std::vector<T> ret(length);
     for (auto i = 0u; i != length; ++i) {
         const auto offset = i / (length - 1.0);
-        ret[i] =
-            (a0 - a1 * cos(2 * M_PI * offset) + a2 * cos(4 * M_PI * offset));
+        ret[i] = (a0 - a1 * cos(2 * M_PI * offset) +
+                  a2 * cos(4 * M_PI * offset));
     }
     return ret;
 }

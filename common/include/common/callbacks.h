@@ -32,7 +32,7 @@ private:
 
 template <typename Callback>
 struct GenericCallbackAdapter<Callback, void>
-    : public GenericArgumentsCallback<void> {
+        : public GenericArgumentsCallback<void> {
     explicit GenericCallbackAdapter(const Callback& c = Callback())
             : c(c) {
     }

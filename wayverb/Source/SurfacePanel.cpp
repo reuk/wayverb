@@ -127,13 +127,13 @@ void FrequencyLabelProperty::refresh() {
 //----------------------------------------------------------------------------//
 
 SurfaceComponent::SurfaceComponent(
-    model::ValueWrapper<Surface>& value,
-    model::ValueWrapper<std::vector<SceneData::Material>>& preset_model) {
+        model::ValueWrapper<Surface>& value,
+        model::ValueWrapper<std::vector<SceneData::Material>>& preset_model) {
     property_panel.addProperties(
-        {new FrequencyLabelProperty("frequencies / KHz")});
+            {new FrequencyLabelProperty("frequencies / KHz")});
     property_panel.addProperties(
-        {new VolumeProperty("diffuse gain", value.diffuse),
-         new VolumeProperty("specular gain", value.specular)});
+            {new VolumeProperty("diffuse gain", value.diffuse),
+             new VolumeProperty("specular gain", value.specular)});
     property_panel.addProperties({new PresetProperty(value, preset_model)});
 
     property_panel.setOpaque(false);
@@ -150,8 +150,8 @@ void SurfaceComponent::resized() {
 //----------------------------------------------------------------------------//
 
 SurfaceComponentWithTitle::SurfaceComponentWithTitle(
-    model::ValueWrapper<SceneData::Material>& value,
-    model::ValueWrapper<std::vector<SceneData::Material>>& preset_model)
+        model::ValueWrapper<SceneData::Material>& value,
+        model::ValueWrapper<std::vector<SceneData::Material>>& preset_model)
         : title("", value.name.get() + " settings")
         , surface_component(value.surface, preset_model) {
     set_help("surface configurator",
@@ -175,8 +175,8 @@ void SurfaceComponentWithTitle::resized() {
 //----------------------------------------------------------------------------//
 
 PresetComponent::PresetComponent(
-    model::ValueWrapper<Surface>& linked,
-    model::ValueWrapper<std::vector<SceneData::Material>>& preset_model)
+        model::ValueWrapper<Surface>& linked,
+        model::ValueWrapper<std::vector<SceneData::Material>>& preset_model)
         : linked(linked)
         , preset_model(preset_model) {
     set_help("preset selector",
@@ -203,16 +203,16 @@ PresetComponent::~PresetComponent() noexcept {
 void PresetComponent::resized() {
     auto bottom = getLocalBounds();
     auto combo_bounds =
-        bottom.withHeight(bottom.getHeight() / 2).withTrimmedBottom(1);
+            bottom.withHeight(bottom.getHeight() / 2).withTrimmedBottom(1);
     combo_box.setBounds(combo_bounds.reduced(1, 0));
     text_editor.setBounds(combo_bounds.reduced(1, 0));
 
     auto button_bounds = combo_bounds.withY(combo_bounds.getBottom() + 2);
-    save_button.setBounds(
-        button_bounds.withWidth(button_bounds.getWidth() / 2).reduced(1, 0));
+    save_button.setBounds(button_bounds.withWidth(button_bounds.getWidth() / 2)
+                                  .reduced(1, 0));
     delete_button.setBounds(
-        button_bounds.withTrimmedLeft(button_bounds.getWidth() / 2)
-            .reduced(1, 0));
+            button_bounds.withTrimmedLeft(button_bounds.getWidth() / 2)
+                    .reduced(1, 0));
 }
 
 void PresetComponent::comboBoxChanged(ComboBox* cb) {
@@ -232,7 +232,7 @@ void PresetComponent::textEditorReturnKeyPressed(TextEditor& e) {
     if (e.getText().isNotEmpty()) {
         //  create new entry in model using current material settings
         preset_model.push_back(
-            SceneData::Material{e.getText().toStdString(), linked});
+                SceneData::Material{e.getText().toStdString(), linked});
 
         //  update combobox view
         combo_box.setSelectedItemIndex(preset_model.size() - 1,
@@ -284,8 +284,8 @@ void PresetComponent::receive_broadcast(model::Broadcaster* cb) {
 //----------------------------------------------------------------------------//
 
 PresetProperty::PresetProperty(
-    model::ValueWrapper<Surface>& linked,
-    model::ValueWrapper<std::vector<SceneData::Material>>& preset_model)
+        model::ValueWrapper<Surface>& linked,
+        model::ValueWrapper<std::vector<SceneData::Material>>& preset_model)
         : PropertyComponent("presets", 52)
         , preset_component(linked, preset_model) {
     addAndMakeVisible(preset_component);

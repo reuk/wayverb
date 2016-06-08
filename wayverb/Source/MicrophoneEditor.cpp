@@ -6,7 +6,7 @@
 #include "Vec3Editor.hpp"
 
 MicrophoneListBox::MicrophoneListBox(
-    model::ValueWrapper<std::vector<model::Microphone>>& microphones)
+        model::ValueWrapper<std::vector<model::Microphone>>& microphones)
         : microphones(microphones) {
     //  don't use this with an empy list plz
     assert(!microphones.empty());
@@ -18,7 +18,7 @@ int MicrophoneListBox::getNumRows() {
 }
 
 void MicrophoneListBox::paintListBoxItem(
-    int row, Graphics& g, int w, int h, bool selected) {
+        int row, Graphics& g, int w, int h, bool selected) {
 }
 
 Component* MicrophoneListBox::refreshComponentForRow(int row,
@@ -41,8 +41,8 @@ Component* MicrophoneListBox::refreshComponentForRow(int row,
         label.setColour(Label::ColourIds::textColourId,
                         selected ? Colours::lightgrey : Colours::black);
         label.setColour(
-            Label::ColourIds::backgroundColourId,
-            selected ? Colours::darkgrey : Colours::transparentWhite);
+                Label::ColourIds::backgroundColourId,
+                selected ? Colours::darkgrey : Colours::transparentWhite);
 
         label.setInterceptsMouseClicks(false, false);
     }
@@ -69,7 +69,7 @@ void MicrophoneListBox::removeListener(Listener* l) {
 //----------------------------------------------------------------------------//
 
 MicrophoneEditableListBox::MicrophoneEditableListBox(
-    model::ValueWrapper<std::vector<model::Microphone>>& microphones)
+        model::ValueWrapper<std::vector<model::Microphone>>& microphones)
         : microphones(microphones)
         , microphone_list_box(microphones) {
     addAndMakeVisible(microphone_list_box);
@@ -152,10 +152,10 @@ private:
 };
 
 SingleMicrophoneComponent::SingleMicrophoneComponent(
-    model::ValueWrapper<model::Microphone>& microphone) {
+        model::ValueWrapper<model::Microphone>& microphone) {
     property_panel.addProperties({new DirectionProperty(microphone.pointer)});
     property_panel.addProperties(
-        {new NumberProperty<float>("shape", microphone.shape, 0, 1)});
+            {new NumberProperty<float>("shape", microphone.shape, 0, 1)});
     property_panel.addProperties({new PolarPatternProperty(microphone.shape)});
 
     addAndMakeVisible(property_panel);
@@ -172,7 +172,7 @@ void SingleMicrophoneComponent::resized() {
 //----------------------------------------------------------------------------//
 
 MicrophoneEditorPanel::MicrophoneEditorPanel(
-    model::ValueWrapper<std::vector<model::Microphone>>& microphones)
+        model::ValueWrapper<std::vector<model::Microphone>>& microphones)
         : microphones(microphones)
         , microphone_list_box(microphones) {
     set_help("microphones configurator",
@@ -205,7 +205,7 @@ void MicrophoneEditorPanel::selectedRowsChanged(MicrophoneEditableListBox* lb,
     assert(last < static_cast<int>(microphones.size()));
     if (0 <= last) {
         single_microphone =
-            std::make_unique<SingleMicrophoneComponent>(microphones[last]);
+                std::make_unique<SingleMicrophoneComponent>(microphones[last]);
         addAndMakeVisible(*single_microphone);
         resized();
     } else {

@@ -52,7 +52,7 @@ float Orientable::compute_elevation(const glm::vec3& pointing) {
     return glm::asin(pointing.y);
 }
 Orientable::AzEl Orientable::compute_azimuth_elevation(
-    const glm::vec3& pointing) {
+        const glm::vec3& pointing) {
     return AzEl{compute_azimuth(pointing), compute_elevation(pointing)};
 }
 glm::vec3 Orientable::compute_pointing(const AzEl& azel) {

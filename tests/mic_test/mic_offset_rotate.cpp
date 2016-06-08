@@ -49,9 +49,9 @@ int main(int argc, char** argv) {
     std::string polar_string = argv[2];
 
     std::map<std::string, PolarPattern> polar_pattern_map = {
-        {"omni", PolarPattern::omni},
-        {"cardioid", PolarPattern::cardioid},
-        {"bidirectional", PolarPattern::bidirectional},
+            {"omni", PolarPattern::omni},
+            {"cardioid", PolarPattern::cardioid},
+            {"bidirectional", PolarPattern::bidirectional},
     };
 
     PolarPattern polar_pattern = polar_pattern_map[polar_string];
@@ -89,13 +89,13 @@ int main(int argc, char** argv) {
         CuboidBoundary boundary(glm::vec3(-2.05, -2.5, -1.05),
                                 glm::vec3(2.05, 2.5, 1.05));
         auto waveguide_program =
-            get_program<RectangularProgram>(compute_context);
+                get_program<RectangularProgram>(compute_context);
         RectangularWaveguide<BufferType::cl> waveguide(
-            waveguide_program,
-            compute_context.queue,
-            MeshBoundary(boundary.get_scene_data()),
-            to_vec3f(mic),
-            conf.get_waveguide_sample_rate());
+                waveguide_program,
+                compute_context.queue,
+                MeshBoundary(boundary.get_scene_data()),
+                to_vec3f(mic),
+                conf.get_waveguide_sample_rate());
 
         auto amp_factor = 4e3;
 
@@ -110,12 +110,12 @@ int main(int argc, char** argv) {
             std::atomic_bool keep_going{true};
             ProgressBar pb(std::cout, steps);
             auto w_results = waveguide.init_and_run(
-                to_vec3f(source),
-                waveguide_kernel(conf.get_waveguide_sample_rate()),
-                mic_index,
-                steps,
-                keep_going,
-                [&pb] { pb += 1; });
+                    to_vec3f(source),
+                    waveguide_kernel(conf.get_waveguide_sample_rate()),
+                    mic_index,
+                    steps,
+                    keep_going,
+                    [&pb] { pb += 1; });
 
             auto w_pressures = microphone.process(w_results);
 
@@ -123,14 +123,14 @@ int main(int argc, char** argv) {
                                           conf.get_waveguide_sample_rate());
 
             SRC_DATA sample_rate_info{
-                w_pressures.data(),
-                out_signal.data(),
-                long(w_results.size()),
-                long(out_signal.size()),
-                0,
-                0,
-                0,
-                conf.sample_rate / conf.get_waveguide_sample_rate()};
+                    w_pressures.data(),
+                    out_signal.data(),
+                    long(w_results.size()),
+                    long(out_signal.size()),
+                    0,
+                    0,
+                    0,
+                    conf.sample_rate / conf.get_waveguide_sample_rate()};
 
             src_simple(&sample_rate_info, SRC_SINC_BEST_QUALITY, 1);
 
@@ -145,7 +145,7 @@ int main(int argc, char** argv) {
 
             auto print_energy = [&ofile](const auto& sig, auto band) {
                 auto band_energy = proc::accumulate(
-                    sig, 0.0, [](auto a, auto b) { return a + b * b; });
+                        sig, 0.0, [](auto a, auto b) { return a + b * b; });
 
                 auto max_val = proc::accumulate(sig, 0.0, [](auto a, auto b) {
                     return std::max(a, fabs(b));
@@ -187,7 +187,7 @@ int main(int argc, char** argv) {
             }
 
             write_sndfile(
-                output_file, {out_signal}, conf.sample_rate, depth, format);
+                    output_file, {out_signal}, conf.sample_rate, depth, format);
         }
 
     } catch (const cl::Error& e) {

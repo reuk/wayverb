@@ -6,8 +6,8 @@
 #include <iomanip>
 
 MainContentComponent::MainContentComponent(
-    const CopyableSceneData& scene_data,
-    model::ValueWrapper<model::FullModel>& wrapper)
+        const CopyableSceneData& scene_data,
+        model::ValueWrapper<model::FullModel>& wrapper)
         : scene_data(scene_data)
         , wrapper(wrapper)
         , left_panel(wrapper, scene_data.get_aabb())
@@ -19,7 +19,7 @@ MainContentComponent::MainContentComponent(
     set_help("wayverb", "This is the main wayverb app window.");
     auto left_panel_width = 300;
     layout_manager.setItemLayout(
-        0, left_panel_width, left_panel_width, left_panel_width);
+            0, left_panel_width, left_panel_width, left_panel_width);
     auto bar_width = 0;
     layout_manager.setItemLayout(1, bar_width, bar_width, bar_width);
     layout_manager.setItemLayout(2, 300, 10000, 400);
@@ -42,7 +42,7 @@ void MainContentComponent::paint(Graphics& g) {
 void MainContentComponent::resized() {
     Component* component[]{&left_panel, &resizer_bar, &right_panel};
     layout_manager.layOutComponents(
-        component, 3, 0, 0, getWidth(), getHeight(), false, true);
+            component, 3, 0, 0, getWidth(), getHeight(), false, true);
 }
 
 void MainContentComponent::handleAsyncUpdate() {
@@ -84,7 +84,7 @@ void MainContentComponent::receive_broadcast(model::Broadcaster* cb) {
     if (cb == &wrapper.render_state.is_rendering) {
         if (wrapper.render_state.is_rendering) {
             FileChooser fc(
-                "save output", File::nonexistent, "*.wav,*.aif,*.aiff");
+                    "save output", File::nonexistent, "*.wav,*.aif,*.aiff");
             if (!fc.browseForFileToSave(true)) {
                 wrapper.render_state.stop();
                 return;
@@ -106,8 +106,8 @@ void MainContentComponent::receive_broadcast(model::Broadcaster* cb) {
 
                     //  compute ideal number of impulses
                     auto impulses = compute_optimum_reflection_number(
-                        Decibels::decibelsToGain(-48.0),
-                        max_reflectivity(wrapper.persistent.materials));
+                            Decibels::decibelsToGain(-48.0),
+                            max_reflectivity(wrapper.persistent.materials));
                     std::cerr << "impulses estimated: " << impulses
                               << std::endl;
 
@@ -118,7 +118,7 @@ void MainContentComponent::receive_broadcast(model::Broadcaster* cb) {
                                   wrapper.persistent.app.source,
                                   wrapper.persistent.app.receiver,
                                   wrapper.persistent.app.get()
-                                      .get_waveguide_sample_rate(),
+                                          .get_waveguide_sample_rate(),
                                   wrapper.persistent.app.rays,
                                   impulses,
                                   //    TODO get samplerate from dialog?
@@ -129,13 +129,15 @@ void MainContentComponent::receive_broadcast(model::Broadcaster* cb) {
                                              const std::string& str) {
                         if (!valid) {
                             NativeMessageBox::showMessageBoxAsync(
-                                AlertWindow::AlertIconType::WarningIcon,
-                                str + " position is invalid",
-                                "It looks like that " + str +
-                                    " position is outside the waveguide mesh. "
-                                    "Make sure the 3D model is completely "
-                                    "closed, and the " +
-                                    str + " is inside.");
+                                    AlertWindow::AlertIconType::WarningIcon,
+                                    str + " position is invalid",
+                                    "It looks like that " + str +
+                                            " position is outside the "
+                                            "waveguide mesh. "
+                                            "Make sure the 3D model is "
+                                            "completely "
+                                            "closed, and the " +
+                                            str + " is inside.");
                             throw std::runtime_error(str + " is outside mesh");
                         }
                     };
@@ -152,15 +154,15 @@ void MainContentComponent::receive_broadcast(model::Broadcaster* cb) {
 
                     auto run_visualised = [this, &engine, &callback] {
                         right_panel.get_renderer().set_positions(
-                            engine.get_node_positions());
+                                engine.get_node_positions());
                         return engine.run_visualised(
-                            keep_going, callback, [this](const auto& i) {
-                                right_panel.get_renderer().set_pressures(i);
-                            });
+                                keep_going, callback, [this](const auto& i) {
+                                    right_panel.get_renderer().set_pressures(i);
+                                });
                     };
                     auto intermediate = wrapper.render_state.visualise
-                                            ? run_visualised()
-                                            : run();
+                                                ? run_visualised()
+                                                : run();
                     engine.attenuate(intermediate, callback);
                     //  TODO write out
 

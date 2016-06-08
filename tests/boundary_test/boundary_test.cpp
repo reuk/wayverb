@@ -68,11 +68,11 @@ std::vector<float> run_simulation(const cl::Context& context,
     scene_data.set_surfaces(surface);
 
     RectangularWaveguide<BufferType::cl> waveguide(
-        waveguide_program,
-        queue,
-        MeshBoundary(scene_data),
-        receiver,
-        conf.get_waveguide_sample_rate());
+            waveguide_program,
+            queue,
+            MeshBoundary(scene_data),
+            receiver,
+            conf.get_waveguide_sample_rate());
 
     auto receiver_index = waveguide.get_index_for_coordinate(receiver);
     auto source_index = waveguide.get_index_for_coordinate(source);
@@ -105,7 +105,7 @@ std::vector<float> run_simulation(const cl::Context& context,
 #else
     auto output = std::vector<float>(results.size());
     proc::transform(
-        results, output.begin(), [](const auto& i) { return i.pressure; });
+            results, output.begin(), [](const auto& i) { return i.pressure; });
 #endif
 
     filter::LinkwitzRileyLopass lopass;
@@ -137,7 +137,7 @@ std::vector<float> get_free_field_results(const cl::Context& context,
     //  set room size based on desired number of nodes
     auto desired_nodes = glm::ivec3(dim);
     auto total_desired_nodes =
-        desired_nodes.x * desired_nodes.y * desired_nodes.z;
+            desired_nodes.x * desired_nodes.y * desired_nodes.z;
 
     auto total_possible_nodes = 1 << 30;
     if (total_desired_nodes >= total_possible_nodes) {
@@ -160,7 +160,7 @@ std::vector<float> get_free_field_results(const cl::Context& context,
     auto wall_centre = no_wall.centre();
 
     auto log_incorrect_distance = [&source_dist, &wall_centre](
-        auto str, const auto& pos) {
+            auto str, const auto& pos) {
         LOG(INFO) << str << " position: " << pos;
         auto dist = glm::distance(wall_centre, pos);
         if (!almost_equal(dist, source_dist, 5)) {
@@ -171,7 +171,7 @@ std::vector<float> get_free_field_results(const cl::Context& context,
     };
 
     auto source_offset =
-        point_on_sphere(azimuth + M_PI, elevation) * source_dist;
+            point_on_sphere(azimuth + M_PI, elevation) * source_dist;
 
     auto source_position = wall_centre + source_offset;
     log_incorrect_distance("source", source_position);
@@ -233,7 +233,7 @@ FullTestResults run_full_test(const std::string& test_name,
     //  set room size based on desired number of nodes
     auto desired_nodes = glm::ivec3(dim);
     auto total_desired_nodes =
-        desired_nodes.x * desired_nodes.y * desired_nodes.z;
+            desired_nodes.x * desired_nodes.y * desired_nodes.z;
 
     auto total_possible_nodes = 1 << 30;
     if (total_desired_nodes >= total_possible_nodes) {
@@ -259,7 +259,7 @@ FullTestResults run_full_test(const std::string& test_name,
     auto wall_centre = no_wall.centre();
 
     auto log_incorrect_distance = [&source_dist, &wall_centre](
-        auto str, const auto& pos) {
+            auto str, const auto& pos) {
         LOG(INFO) << str << " position: " << pos;
         auto dist = glm::distance(wall_centre, pos);
         if (!almost_equal(dist, source_dist, 5)) {
@@ -270,7 +270,7 @@ FullTestResults run_full_test(const std::string& test_name,
     };
 
     auto source_offset =
-        point_on_sphere(azimuth + M_PI, elevation) * source_dist;
+            point_on_sphere(azimuth + M_PI, elevation) * source_dist;
 
     auto source_position = wall_centre + source_offset;
     log_incorrect_distance("source", source_position);
@@ -344,13 +344,13 @@ FullTestResults run_full_test(const std::string& test_name,
     auto windowed_subbed = right_hanning(subbed.size());
     elementwise_multiply(windowed_subbed, subbed);
 
-    auto norm_factor =
-        1.0 / std::max(max_mag(windowed_free_field), max_mag(windowed_subbed));
+    auto norm_factor = 1.0 / std::max(max_mag(windowed_free_field),
+                                      max_mag(windowed_subbed));
     mul(windowed_subbed, norm_factor);
     mul(windowed_free_field, norm_factor);
 
-    auto param_string =
-        build_string(std::setprecision(4), "_az_", azimuth, "_el_", elevation);
+    auto param_string = build_string(
+            std::setprecision(4), "_az_", azimuth, "_el_", elevation);
 
     write_file(conf,
                output_folder,
@@ -414,47 +414,47 @@ int main(int argc, char** argv) {
         auto steps = dim * 1.4;
 
         auto windowed_free_field =
-            get_free_field_results(context,
-                                   device,
-                                   queue,
-                                   output_folder,
-                                   conf,
-                                   azimuth_elevation.first,
-                                   azimuth_elevation.second,
-                                   dim,
-                                   steps);
+                get_free_field_results(context,
+                                       device,
+                                       queue,
+                                       output_folder,
+                                       conf,
+                                       azimuth_elevation.first,
+                                       azimuth_elevation.second,
+                                       dim,
+                                       steps);
 
         cl_float lo = 0.01;
         cl_float hi = 0.9;
 
         auto surface_set = {
-            SurfacePackage{"anechoic",
-                           Surface{{{lo, lo, lo, lo, lo, lo, lo, lo}},
-                                   {{lo, lo, lo, lo, lo, lo, lo, lo}}}},
-            SurfacePackage{"filtered_1",
-                           Surface{{{hi, lo, lo, lo, lo, lo, lo, lo}},
-                                   {{hi, lo, lo, lo, lo, lo, lo, lo}}}},
-            SurfacePackage{"filtered_2",
-                           Surface{{{lo, hi, lo, lo, lo, lo, lo, lo}},
-                                   {{lo, hi, lo, lo, lo, lo, lo, lo}}}},
-            SurfacePackage{"filtered_3",
-                           Surface{{{lo, lo, hi, lo, lo, lo, lo, lo}},
-                                   {{lo, lo, hi, lo, lo, lo, lo, lo}}}},
-            SurfacePackage{"filtered_4",
-                           Surface{{{0.4, 0.3, 0.5, 0.8, hi, hi, hi, hi}},
-                                   {{0.4, 0.3, 0.5, 0.8, hi, hi, hi, hi}}}},
-            SurfacePackage{"filtered_5",
-                           Surface{{{lo, hi, hi, hi, hi, hi, hi, hi}},
-                                   {{lo, hi, hi, hi, hi, hi, hi, hi}}}},
-            SurfacePackage{"filtered_6",
-                           Surface{{{hi, lo, hi, hi, hi, hi, hi, hi}},
-                                   {{hi, lo, hi, hi, hi, hi, hi, hi}}}},
-            SurfacePackage{"filtered_7",
-                           Surface{{{hi, hi, lo, hi, hi, hi, hi, hi}},
-                                   {{hi, hi, lo, hi, hi, hi, hi, hi}}}},
-            SurfacePackage{"flat",
-                           Surface{{{hi, hi, hi, hi, hi, hi, hi, hi}},
-                                   {{hi, hi, hi, hi, hi, hi, hi, hi}}}},
+                SurfacePackage{"anechoic",
+                               Surface{{{lo, lo, lo, lo, lo, lo, lo, lo}},
+                                       {{lo, lo, lo, lo, lo, lo, lo, lo}}}},
+                SurfacePackage{"filtered_1",
+                               Surface{{{hi, lo, lo, lo, lo, lo, lo, lo}},
+                                       {{hi, lo, lo, lo, lo, lo, lo, lo}}}},
+                SurfacePackage{"filtered_2",
+                               Surface{{{lo, hi, lo, lo, lo, lo, lo, lo}},
+                                       {{lo, hi, lo, lo, lo, lo, lo, lo}}}},
+                SurfacePackage{"filtered_3",
+                               Surface{{{lo, lo, hi, lo, lo, lo, lo, lo}},
+                                       {{lo, lo, hi, lo, lo, lo, lo, lo}}}},
+                SurfacePackage{"filtered_4",
+                               Surface{{{0.4, 0.3, 0.5, 0.8, hi, hi, hi, hi}},
+                                       {{0.4, 0.3, 0.5, 0.8, hi, hi, hi, hi}}}},
+                SurfacePackage{"filtered_5",
+                               Surface{{{lo, hi, hi, hi, hi, hi, hi, hi}},
+                                       {{lo, hi, hi, hi, hi, hi, hi, hi}}}},
+                SurfacePackage{"filtered_6",
+                               Surface{{{hi, lo, hi, hi, hi, hi, hi, hi}},
+                                       {{hi, lo, hi, hi, hi, hi, hi, hi}}}},
+                SurfacePackage{"filtered_7",
+                               Surface{{{hi, hi, lo, hi, hi, hi, hi, hi}},
+                                       {{hi, hi, lo, hi, hi, hi, hi, hi}}}},
+                SurfacePackage{"flat",
+                               Surface{{{hi, hi, hi, hi, hi, hi, hi, hi}},
+                                       {{hi, hi, hi, hi, hi, hi, hi, hi}}}},
         };
 
         std::vector<FullTestResults> all_test_results(surface_set.size());

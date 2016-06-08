@@ -24,27 +24,28 @@ static_assert(zip_row<3>(a, b, c) == std::make_tuple(4, 8, 12), "zip_row");
 
 static_assert(proc::c_eq(zip(a, b),
                          std::array<std::tuple<float, float>, 4>{{
-                             std::make_tuple(1, 2),
-                             std::make_tuple(2, 4),
-                             std::make_tuple(3, 6),
-                             std::make_tuple(4, 8),
+                                 std::make_tuple(1, 2),
+                                 std::make_tuple(2, 4),
+                                 std::make_tuple(3, 6),
+                                 std::make_tuple(4, 8),
                          }}),
               "zip");
 
 static_assert(proc::c_eq(zip(a, b, c),
                          std::array<std::tuple<float, float, float>, 4>{{
-                             std::make_tuple(1, 2, 3),
-                             std::make_tuple(2, 4, 6),
-                             std::make_tuple(3, 6, 9),
-                             std::make_tuple(4, 8, 12),
+                                 std::make_tuple(1, 2, 3),
+                                 std::make_tuple(2, 4, 6),
+                                 std::make_tuple(3, 6, 9),
+                                 std::make_tuple(4, 8, 12),
                          }}),
               "zip");
 
-static_assert(
-    proc::c_eq(
-        apply(proc::InvokeFunctor<std::plus<float>>(std::plus<float>()), a, b),
-        std::array<float, 4>{{3, 6, 9, 12}}),
-    "apply");
+static_assert(proc::c_eq(apply(proc::InvokeFunctor<std::plus<float>>(
+                                       std::plus<float>()),
+                               a,
+                               b),
+                         std::array<float, 4>{{3, 6, 9, 12}}),
+              "apply");
 
 }  // namespace cl_math
 

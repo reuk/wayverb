@@ -17,9 +17,9 @@ TEST(peak_filter_coefficients, peak_filter_coefficients) {
     static std::uniform_real_distribution<cl_float> range{0, samplerate / 2};
     for (auto i = 0; i != 10; ++i) {
         auto descriptor =
-            RectangularProgram::FilterDescriptor{0, range(engine), 1.414};
-        auto coefficients =
-            RectangularProgram::get_peak_coefficients(descriptor, samplerate);
+                RectangularProgram::FilterDescriptor{0, range(engine), 1.414};
+        auto coefficients = RectangularProgram::get_peak_coefficients(
+                descriptor, samplerate);
 
         ASSERT_TRUE(proc::equal(coefficients.b, std::begin(coefficients.a)));
     }
@@ -32,7 +32,7 @@ TEST(run_waveguide, run_waveguide) {
 
     //  get opencl program
     auto waveguide_program = get_program<RectangularProgram>(
-        context_info.context, context_info.device);
+            context_info.context, context_info.device);
 
     Box box(glm::vec3(0, 0, 0), glm::vec3(4, 3, 6));
     constexpr glm::vec3 source(1, 1, 1);
@@ -55,11 +55,11 @@ TEST(run_waveguide, run_waveguide) {
 
     //  get a waveguide
     RectangularWaveguide<BufferType::cl> waveguide(
-        waveguide_program,
-        context_info.queue,
-        MeshBoundary(scene_data),
-        config.mic,
-        config.get_waveguide_sample_rate());
+            waveguide_program,
+            context_info.queue,
+            MeshBoundary(scene_data),
+            config.mic,
+            config.get_waveguide_sample_rate());
 
     auto source_index = waveguide.get_index_for_coordinate(config.source);
     auto receiver_index = waveguide.get_index_for_coordinate(config.mic);
@@ -80,7 +80,7 @@ TEST(run_waveguide, run_waveguide) {
 
     auto output = std::vector<float>(results.size());
     proc::transform(
-        results, output.begin(), [](const auto& i) { return i.pressure; });
+            results, output.begin(), [](const auto& i) { return i.pressure; });
 
     auto max_amp = max_mag(output);
     std::cout << "max_mag: " << max_amp << std::endl;

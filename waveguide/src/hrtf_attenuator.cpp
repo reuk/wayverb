@@ -53,7 +53,7 @@ glm::vec3 HrtfAttenuator::get_up() const {
 }
 
 std::vector<float> HrtfAttenuator::process(
-    const std::vector<RunStepResult>& input) const {
+        const std::vector<RunStepResult>& input) const {
     std::vector<float> ret(input.size(), 0);
     filter::LinkwitzRileyBandpass bandpass;
     for (auto band = 0u; band != sizeof(VolumeType) / sizeof(float); ++band) {
@@ -70,13 +70,13 @@ std::vector<float> HrtfAttenuator::process(
             });
 
             bandpass.set_params(
-                HrtfData::EDGES[band], HrtfData::EDGES[band + 1], sr);
+                    HrtfData::EDGES[band], HrtfData::EDGES[band + 1], sr);
             bandpass.filter(this_band);
 
             proc::transform(
-                this_band, ret.begin(), ret.begin(), [](auto a, auto b) {
-                    return a + b;
-                });
+                    this_band, ret.begin(), ret.begin(), [](auto a, auto b) {
+                        return a + b;
+                    });
         }
     }
 

@@ -50,11 +50,11 @@ void HelpPanel::timerCallback() {
     auto now = Time::getApproximateMillisecondCounter();
 
     auto new_comp = mouse_source.isMouse()
-                        ? mouse_source.getComponentUnderMouse()
-                        : nullptr;
+                            ? mouse_source.getComponentUnderMouse()
+                            : nullptr;
     auto new_tip = get_help_for(new_comp);
     auto tip_changed =
-        (new_tip != last || new_comp != last_component_under_mouse);
+            (new_tip != last || new_comp != last_component_under_mouse);
     last_component_under_mouse = new_comp;
     last = new_tip;
 
@@ -85,7 +85,7 @@ HelpPanel::PanelContents HelpPanel::get_help_for(Component* c) {
         }
     }
     return HelpPanel::PanelContents{
-        "no object hovered", "hover over a control for more information"};
+            "no object hovered", "hover over a control for more information"};
 }
 
 //----------------------------------------------------------------------------//

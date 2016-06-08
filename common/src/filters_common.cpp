@@ -75,7 +75,7 @@ void Biquad::filter(std::vector<float> &data) {
 }
 
 void Biquad::set_params(
-    double _b0, double _b1, double _b2, double _a1, double _a2) {
+        double _b0, double _b1, double _b2, double _a1, double _a2) {
     b0 = _b0;
     b1 = _b1;
     b2 = _b2;
@@ -96,8 +96,11 @@ void BandpassBiquad::set_params(float lo, float hi, float sr) {
     const double a0 = 1 + alpha;
     const double nrm = 1 / a0;
 
-    Biquad::set_params(
-        nrm * alpha, nrm * 0, nrm * -alpha, nrm * (-2 * cs), nrm * (1 - alpha));
+    Biquad::set_params(nrm * alpha,
+                       nrm * 0,
+                       nrm * -alpha,
+                       nrm * (-2 * cs),
+                       nrm * (1 - alpha));
 }
 
 double getC(double co, double sr) {
@@ -147,9 +150,9 @@ FastConvolution::FastConvolution(int FFT_LENGTH)
         , acplx(fftwf_alloc_complex(CPLX_LENGTH))
         , bcplx(fftwf_alloc_complex(CPLX_LENGTH))
         , r2c(fftwf_plan_dft_r2c_1d(
-              FFT_LENGTH, r2c_i.get(), r2c_o.get(), FFTW_ESTIMATE))
+                  FFT_LENGTH, r2c_i.get(), r2c_o.get(), FFTW_ESTIMATE))
         , c2r(fftwf_plan_dft_c2r_1d(
-              FFT_LENGTH, c2r_i.get(), c2r_o.get(), FFTW_ESTIMATE)) {
+                  FFT_LENGTH, c2r_i.get(), c2r_o.get(), FFTW_ESTIMATE)) {
 }
 
 DCBlocker::DCBlocker() {

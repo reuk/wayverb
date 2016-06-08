@@ -18,7 +18,7 @@ void run(FilterType ft,
     switch (ft) {
         case FilterType::windowed_sinc:
             bp = std::make_unique<BandpassWindowedSinc>(
-                data.front().front().size());
+                    data.front().front().size());
             break;
         case FilterType::biquad_onepass:
             bp = std::make_unique<BandpassBiquad>();

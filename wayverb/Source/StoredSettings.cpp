@@ -40,7 +40,7 @@ PropertiesFile& StoredSettings::get_global_properties() {
 namespace {
 PropertiesFile* create_props_file(const std::string& fname) {
     return new PropertiesFile(
-        VisualiserApplication::get_property_file_options_for(fname));
+            VisualiserApplication::get_property_file_options_for(fname));
 }
 }  // namespace
 
@@ -77,13 +77,13 @@ void StoredSettings::reload() {
     property_files.add(create_props_file("wayverb"));
 
     ScopedPointer<XmlElement> projectDefaultsXml(
-        property_files.getFirst()->getXmlValue("PROJECT_DEFAULT_SETTINGS"));
+            property_files.getFirst()->getXmlValue("PROJECT_DEFAULT_SETTINGS"));
 
     if (projectDefaultsXml != nullptr)
         project_defaults = ValueTree::fromXml(*projectDefaultsXml);
 
     recent_files.restoreFromString(
-        get_global_properties().getValue("recentFiles"));
+            get_global_properties().getValue("recentFiles"));
     recent_files.removeNonExistentFiles();
 }
 

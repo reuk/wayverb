@@ -7,15 +7,15 @@ RaytracerProgram::RaytracerProgram(const cl::Context& context,
 
 const std::string RaytracerProgram::source(
 #ifdef TESTING
-    "#define TESTING\n"
+        "#define TESTING\n"
 #endif
-    "#define NUM_IMAGE_SOURCE " +
-    std::to_string(NUM_IMAGE_SOURCE) +
-    "\n"
-    "#define SPEED_OF_SOUND " +
-    std::to_string(SPEED_OF_SOUND) +
-    "\n"
-    R"(
+        "#define NUM_IMAGE_SOURCE " +
+        std::to_string(NUM_IMAGE_SOURCE) +
+        "\n"
+        "#define SPEED_OF_SOUND " +
+        std::to_string(SPEED_OF_SOUND) +
+        "\n"
+        R"(
 
 #define EPSILON (0.0001f)
 #define NULL (0)

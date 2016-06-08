@@ -125,7 +125,7 @@ public:
 
     struct __attribute__((aligned(8))) BiquadCoefficientsArray final {
         static constexpr int BIQUAD_SECTIONS =
-            BiquadMemoryArray::BIQUAD_SECTIONS;
+                BiquadMemoryArray::BIQUAD_SECTIONS;
         BiquadCoefficients array[BIQUAD_SECTIONS]{};
 
         template <typename Archive>
@@ -134,11 +134,11 @@ public:
         }
     };
 
-    using CanonicalMemory =
-        FilterMemory<BiquadMemory::ORDER * BiquadMemoryArray::BIQUAD_SECTIONS>;
+    using CanonicalMemory = FilterMemory<BiquadMemory::ORDER *
+                                         BiquadMemoryArray::BIQUAD_SECTIONS>;
     using CanonicalCoefficients =
-        FilterCoefficients<BiquadCoefficients::ORDER *
-                           BiquadCoefficientsArray::BIQUAD_SECTIONS>;
+            FilterCoefficients<BiquadCoefficients::ORDER *
+                               BiquadCoefficientsArray::BIQUAD_SECTIONS>;
 
     struct BoundaryData final {
         CanonicalMemory filter_memory{};
@@ -172,7 +172,7 @@ public:
     using BoundaryDataArray3 = BoundaryDataArray<3>;
 
     static CanonicalCoefficients to_impedance_coefficients(
-        const CanonicalCoefficients& c);
+            const CanonicalCoefficients& c);
 
     static constexpr int PORTS = NodeStruct::PORTS;
 
@@ -181,34 +181,34 @@ public:
 
     auto get_kernel() const {
         int error;
-        auto ret =
-            cl::make_kernel<InputInfo,
-                            cl::Buffer,
-                            cl::Buffer,
-                            cl::Buffer,
-                            cl_int3,
-                            cl::Buffer,
-                            cl::Buffer,
-                            cl::Buffer,
-                            cl::Buffer,
-                            cl::Buffer,
-                            cl::Buffer,
-                            cl_float,
-                            cl_float,
-                            cl_ulong,
-                            cl::Buffer,
-                            cl::Buffer>(*this, "condensed_waveguide", &error);
+        auto ret = cl::make_kernel<InputInfo,
+                                   cl::Buffer,
+                                   cl::Buffer,
+                                   cl::Buffer,
+                                   cl_int3,
+                                   cl::Buffer,
+                                   cl::Buffer,
+                                   cl::Buffer,
+                                   cl::Buffer,
+                                   cl::Buffer,
+                                   cl::Buffer,
+                                   cl_float,
+                                   cl_float,
+                                   cl_ulong,
+                                   cl::Buffer,
+                                   cl::Buffer>(
+                *this, "condensed_waveguide", &error);
         return ret;
     }
 
     auto get_filter_test_kernel() const {
         return cl::make_kernel<cl::Buffer, cl::Buffer, cl::Buffer, cl::Buffer>(
-            *this, "filter_test");
+                *this, "filter_test");
     }
 
     auto get_filter_test_2_kernel() const {
         return cl::make_kernel<cl::Buffer, cl::Buffer, cl::Buffer, cl::Buffer>(
-            *this, "filter_test_2");
+                *this, "filter_test_2");
     }
 
     static CondensedNodeStruct condense(const NodeStruct& n);
@@ -225,7 +225,7 @@ public:
     };
 
     using coefficient_generator =
-        BiquadCoefficients (*)(const FilterDescriptor& n, double sr);
+            BiquadCoefficients (*)(const FilterDescriptor& n, double sr);
 
     static BiquadCoefficients get_peak_coefficients(const FilterDescriptor& n,
                                                     double sr) {
@@ -236,38 +236,38 @@ public:
         auto alpha = sw0 / 2.0 * n.Q;
         auto a0 = 1 + alpha / A;
         return RectangularProgram::BiquadCoefficients{
-            {(1 + (alpha * A)) / a0, (-2 * cw0) / a0, (1 - alpha * A) / a0},
-            {1, (-2 * cw0) / a0, (1 - alpha / A) / a0}};
+                {(1 + (alpha * A)) / a0, (-2 * cw0) / a0, (1 - alpha * A) / a0},
+                {1, (-2 * cw0) / a0, (1 - alpha / A) / a0}};
     }
 
     template <size_t... Ix>
     constexpr static BiquadCoefficientsArray get_biquads_array(
-        std::index_sequence<Ix...>,
-        const std::array<FilterDescriptor,
-                         BiquadCoefficientsArray::BIQUAD_SECTIONS>& n,
-        double sr,
-        coefficient_generator callback) {
+            std::index_sequence<Ix...>,
+            const std::array<FilterDescriptor,
+                             BiquadCoefficientsArray::BIQUAD_SECTIONS>& n,
+            double sr,
+            coefficient_generator callback) {
         RectangularProgram::BiquadCoefficientsArray ret{
-            {callback(std::get<Ix>(n), sr)...}};
+                {callback(std::get<Ix>(n), sr)...}};
         return ret;
     }
     constexpr static BiquadCoefficientsArray get_biquads_array(
-        const std::array<FilterDescriptor,
-                         BiquadCoefficientsArray::BIQUAD_SECTIONS>& n,
-        double sr,
-        coefficient_generator callback) {
+            const std::array<FilterDescriptor,
+                             BiquadCoefficientsArray::BIQUAD_SECTIONS>& n,
+            double sr,
+            coefficient_generator callback) {
         return get_biquads_array(
-            std::make_index_sequence<
-                BiquadCoefficientsArray::BIQUAD_SECTIONS>(),
-            n,
-            sr,
-            callback);
+                std::make_index_sequence<
+                        BiquadCoefficientsArray::BIQUAD_SECTIONS>(),
+                n,
+                sr,
+                callback);
     }
 
     constexpr static BiquadCoefficientsArray get_peak_biquads_array(
-        const std::array<FilterDescriptor,
-                         BiquadCoefficientsArray::BIQUAD_SECTIONS>& n,
-        double sr) {
+            const std::array<FilterDescriptor,
+                             BiquadCoefficientsArray::BIQUAD_SECTIONS>& n,
+            double sr) {
         return get_biquads_array(n, sr, get_peak_coefficients);
     }
 
@@ -310,8 +310,8 @@ public:
 
     template <size_t I>
     static FilterDescriptor compute_filter_descriptor(const Surface& surface) {
-        auto gain =
-            decibels::a2db((surface.specular.s[I] + surface.diffuse.s[I]) / 2);
+        auto gain = decibels::a2db(
+                (surface.specular.s[I] + surface.diffuse.s[I]) / 2);
         auto centre = (HrtfData::EDGES[I + 0] + HrtfData::EDGES[I + 1]) / 2;
         //  produce a filter descriptor struct for this filter
         return FilterDescriptor{gain, centre, 1.414};
@@ -328,9 +328,9 @@ public:
                                 BiquadCoefficientsArray::BIQUAD_SECTIONS>
     to_filter_descriptors(const Surface& surface) {
         return to_filter_descriptors(
-            std::make_index_sequence<
-                BiquadCoefficientsArray::BIQUAD_SECTIONS>(),
-            surface);
+                std::make_index_sequence<
+                        BiquadCoefficientsArray::BIQUAD_SECTIONS>(),
+                surface);
     }
 
     static CanonicalCoefficients to_filter_coefficients(const Surface& surface,
@@ -348,7 +348,7 @@ public:
     }
 
     static std::vector<CanonicalCoefficients> to_filter_coefficients(
-        std::vector<Surface> surfaces, float sr);
+            std::vector<Surface> surfaces, float sr);
 
 private:
     static constexpr int BIQUAD_SECTIONS = BiquadMemoryArray::BIQUAD_SECTIONS;

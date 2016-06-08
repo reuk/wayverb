@@ -33,7 +33,7 @@ struct Microphone {
 struct MicrophoneModel : public AttenuationModel {
     std::unique_ptr<AttenuationModel> clone() const override {
         return std::unique_ptr<AttenuationModel>(
-            std::make_unique<MicrophoneModel>(*this));
+                std::make_unique<MicrophoneModel>(*this));
     }
 
     Mode get_mode() const override {
@@ -50,7 +50,7 @@ struct HrtfModel : public AttenuationModel {
 
     std::unique_ptr<AttenuationModel> clone() const override {
         return std::unique_ptr<AttenuationModel>(
-            std::make_unique<HrtfModel>(*this));
+                std::make_unique<HrtfModel>(*this));
     }
 
     glm::vec3 facing{0, 0, 1};

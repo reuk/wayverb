@@ -13,7 +13,7 @@ public:
 
     float attenuation(const glm::vec3& incident, int band) const;
     std::vector<float> process(
-        const std::vector<RunStepResult>& input) const override;
+            const std::vector<RunStepResult>& input) const override;
 
     glm::vec3 get_direction() const;
     glm::vec3 get_up() const;

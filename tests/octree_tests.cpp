@@ -36,14 +36,14 @@ TEST(octree, surrounding) {
     SceneData scene_data(OBJ_PATH);
 
     auto a = {
-        glm::vec3(-1, -1, -1),
-        glm::vec3(-1, -1, 1),
-        glm::vec3(-1, 1, -1),
-        glm::vec3(-1, 1, 1),
-        glm::vec3(1, -1, -1),
-        glm::vec3(1, -1, 1),
-        glm::vec3(1, 1, -1),
-        glm::vec3(1, 1, 1),
+            glm::vec3(-1, -1, -1),
+            glm::vec3(-1, -1, 1),
+            glm::vec3(-1, 1, -1),
+            glm::vec3(-1, 1, 1),
+            glm::vec3(1, -1, -1),
+            glm::vec3(1, -1, 1),
+            glm::vec3(1, 1, -1),
+            glm::vec3(1, 1, 1),
     };
 
     {
@@ -53,7 +53,7 @@ TEST(octree, surrounding) {
         for (const auto& i : a) {
             auto pt = c + i;
             ASSERT_TRUE(octree.get_surrounding_leaf(pt).get_aabb().inside(pt))
-                << i;
+                    << i;
         }
     }
 
@@ -64,7 +64,7 @@ TEST(octree, surrounding) {
         for (const auto& i : a) {
             auto pt = c + i;
             ASSERT_TRUE(octree.get_surrounding_leaf(pt).get_aabb().inside(pt))
-                << i;
+                    << i;
         }
     }
 }

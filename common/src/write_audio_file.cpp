@@ -22,9 +22,9 @@ void write_sndfile(const std::string& fname,
 
 int get_file_format(const std::string& fname) {
     std::unordered_map<std::string, decltype(SF_FORMAT_AIFF)> ftypeTable{
-        {"aif", SF_FORMAT_AIFF},
-        {"aiff", SF_FORMAT_AIFF},
-        {"wav", SF_FORMAT_WAV}};
+            {"aif", SF_FORMAT_AIFF},
+            {"aiff", SF_FORMAT_AIFF},
+            {"wav", SF_FORMAT_WAV}};
 
     auto extension = fname.substr(fname.find_last_of(".") + 1);
     auto ftypeIt = ftypeTable.find(extension);
@@ -41,7 +41,7 @@ int get_file_format(const std::string& fname) {
 
 int get_file_depth(int bitDepth) {
     std::unordered_map<int, decltype(SF_FORMAT_PCM_16)> depthTable{
-        {16, SF_FORMAT_PCM_16}, {24, SF_FORMAT_PCM_24}};
+            {16, SF_FORMAT_PCM_16}, {24, SF_FORMAT_PCM_24}};
 
     auto depthIt = depthTable.find(bitDepth);
     if (depthIt == depthTable.end()) {

@@ -22,14 +22,14 @@ std::array<CuboidBoundary, 8> next_boundaries(const CuboidBoundary& parent) {
     auto z1 = parent.get_c1().z;
 
     return std::array<CuboidBoundary, 8>{{
-        CuboidBoundary(glm::vec3(x0, y0, z0), glm::vec3(xc, yc, zc)),
-        CuboidBoundary(glm::vec3(xc, y0, z0), glm::vec3(x1, yc, zc)),
-        CuboidBoundary(glm::vec3(x0, yc, z0), glm::vec3(xc, y1, zc)),
-        CuboidBoundary(glm::vec3(xc, yc, z0), glm::vec3(x1, y1, zc)),
-        CuboidBoundary(glm::vec3(x0, y0, zc), glm::vec3(xc, yc, z1)),
-        CuboidBoundary(glm::vec3(xc, y0, zc), glm::vec3(x1, yc, z1)),
-        CuboidBoundary(glm::vec3(x0, yc, zc), glm::vec3(xc, y1, z1)),
-        CuboidBoundary(glm::vec3(xc, yc, zc), glm::vec3(x1, y1, z1)),
+            CuboidBoundary(glm::vec3(x0, y0, z0), glm::vec3(xc, yc, zc)),
+            CuboidBoundary(glm::vec3(xc, y0, z0), glm::vec3(x1, yc, zc)),
+            CuboidBoundary(glm::vec3(x0, yc, z0), glm::vec3(xc, y1, zc)),
+            CuboidBoundary(glm::vec3(xc, yc, z0), glm::vec3(x1, y1, zc)),
+            CuboidBoundary(glm::vec3(x0, y0, zc), glm::vec3(xc, yc, z1)),
+            CuboidBoundary(glm::vec3(xc, y0, zc), glm::vec3(x1, yc, z1)),
+            CuboidBoundary(glm::vec3(x0, yc, zc), glm::vec3(xc, y1, z1)),
+            CuboidBoundary(glm::vec3(xc, yc, zc), glm::vec3(x1, y1, z1)),
     }};
 }
 
@@ -41,17 +41,18 @@ std::vector<int> get_triangles(const CopyableSceneData& sd,
                              ret.begin(),
                              [&sd, &aabb](auto i) {
                                  return aabb.overlaps(get_triangle_verts(
-                                     sd.get_triangles()[i], sd.get_vertices()));
+                                         sd.get_triangles()[i],
+                                         sd.get_vertices()));
                              }) -
                ret.begin());
     return ret;
 }
 
 std::unique_ptr<std::array<Octree, 8>> get_nodes(
-    const CopyableSceneData& sd,
-    int md,
-    const std::vector<int>& to_test,
-    const CuboidBoundary& ab) {
+        const CopyableSceneData& sd,
+        int md,
+        const std::vector<int>& to_test,
+        const CuboidBoundary& ab) {
     if (md == 0) {
         return nullptr;
     }
@@ -125,7 +126,7 @@ void Octree::fill_flattened(std::vector<FloatUInt>& ret) const {
         ret.push_back(to_fui(0u));  //  no triangles
 
         ret.push_back(
-            to_fui(static_cast<cl_uint>(nodes.size())));  //  some nodes
+                to_fui(static_cast<cl_uint>(nodes.size())));  //  some nodes
         auto node_table_start = ret.size();
         proc::for_each(nodes,
                        [&ret](const auto&) { ret.push_back(to_fui(0u)); });

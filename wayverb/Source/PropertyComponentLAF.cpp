@@ -5,9 +5,11 @@ PropertyComponentLAF::PropertyComponentLAF(int label_width)
 }
 
 Rectangle<int> PropertyComponentLAF::getPropertyComponentContentPosition(
-    PropertyComponent& component) {
+        PropertyComponent& component) {
     const int textW =
-        jmin(label_width, static_cast<int>(component.getWidth() * 0.9));
-    return Rectangle<int>(
-        textW, 1, component.getWidth() - textW - 1, component.getHeight() - 3);
+            jmin(label_width, static_cast<int>(component.getWidth() * 0.9));
+    return Rectangle<int>(textW,
+                          1,
+                          component.getWidth() - textW - 1,
+                          component.getHeight() - 3);
 }

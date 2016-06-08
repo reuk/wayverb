@@ -101,8 +101,11 @@ TEST(raytrace, new) {
 
     auto directions = get_random_directions(bench_rays);
 
-    auto results_1 = get_results<Raytracer>(
-        context, raytrace_program, scene_data, directions, bench_reflections);
+    auto results_1 = get_results<Raytracer>(context,
+                                            raytrace_program,
+                                            scene_data,
+                                            directions,
+                                            bench_reflections);
 }
 
 constexpr int width_for_shell(int shell) {
@@ -116,7 +119,7 @@ constexpr int num_images(int shell) {
 
 template <int SHELL>
 std::array<glm::vec3, num_images(SHELL)> images_for_shell(
-    const Box& box, const glm::vec3& source) {
+        const Box& box, const glm::vec3& source) {
     std::array<glm::vec3, num_images(SHELL)> ret;
 
     auto image = source;
@@ -125,20 +128,22 @@ std::array<glm::vec3, num_images(SHELL)> images_for_shell(
     for (int i = 0; i != L; ++i) {
         auto x = i - SHELL;
         auto reflected_x =
-            x % 2 ? box.mirror_inside(image, Box::Direction::x) : image;
+                x % 2 ? box.mirror_inside(image, Box::Direction::x) : image;
         for (int j = 0; j != L; ++j) {
             auto y = j - SHELL;
             auto reflected_y =
-                y % 2 ? box.mirror_inside(reflected_x, Box::Direction::y)
-                      : reflected_x;
+                    y % 2 ? box.mirror_inside(reflected_x, Box::Direction::y)
+                          : reflected_x;
             for (int k = 0; k != L; ++k) {
                 auto z = k - SHELL;
                 auto reflected_z =
-                    z % 2 ? box.mirror_inside(reflected_y, Box::Direction::z)
-                          : reflected_y;
+                        z % 2
+                                ? box.mirror_inside(reflected_y,
+                                                    Box::Direction::z)
+                                : reflected_y;
 
                 ret[i + j * L + k * L * L] =
-                    reflected_z + glm::vec3(x, y, z) * box.dimensions();
+                        reflected_z + glm::vec3(x, y, z) * box.dimensions();
             }
         }
     }
@@ -199,7 +204,7 @@ TEST(raytrace, image_source) {
                         volume.s[band] *= base_vol;
 
                     proper_image_source_impulses.push_back(
-                        AttenuatedImpulse{volume, times[index]});
+                            AttenuatedImpulse{volume, times[index]});
                 }
             }
         }
@@ -238,28 +243,28 @@ TEST(raytrace, image_source) {
     Attenuate attenuator(raytrace_program, context.queue);
     Speaker speaker{};
     auto output =
-        attenuator.attenuate(results.get_image_source(false), {speaker})
-            .front();
+            attenuator.attenuate(results.get_image_source(false), {speaker})
+                    .front();
 
     sort_by_time(output);
 
     for (auto i : proper_image_source_impulses) {
         auto closest = std::accumulate(
-            output.begin() + 1,
-            output.end(),
-            output.front(),
-            [i](auto a, auto b) {
-                return std::abs(a.time - i.time) < std::abs(b.time - i.time)
-                           ? a
-                           : b;
-            });
+                output.begin() + 1,
+                output.end(),
+                output.front(),
+                [i](auto a, auto b) {
+                    return std::abs(a.time - i.time) < std::abs(b.time - i.time)
+                                   ? a
+                                   : b;
+                });
         ASSERT_TRUE(std::abs(i.time - closest.time) < 0.001) << i.time << " "
                                                              << closest.time;
     }
 
     auto postprocess = [&config](const auto& i, const std::string& name) {
         std::vector<std::vector<std::vector<float>>> flattened = {
-            flatten_impulses(i, config.sample_rate)};
+                flatten_impulses(i, config.sample_rate)};
         {
             auto mixed_down = mixdown(flattened);
             normalize(mixed_down);

@@ -27,10 +27,10 @@ class MaterialConfigureButtonComponent : public Component,
                                          public model::BroadcastListener {
 public:
     MaterialConfigureButtonComponent(
-        int this_surface,
-        model::ValueWrapper<int>& shown_surface,
-        model::ValueWrapper<SceneData::Material>& value,
-        model::ValueWrapper<std::vector<SceneData::Material>>& preset_model)
+            int this_surface,
+            model::ValueWrapper<int>& shown_surface,
+            model::ValueWrapper<SceneData::Material>& value,
+            model::ValueWrapper<std::vector<SceneData::Material>>& preset_model)
             : this_surface(this_surface)
             , shown_surface(shown_surface)
             , value(value)
@@ -55,7 +55,7 @@ public:
         } else if (b == &more_button) {
             auto panel = new SurfaceComponentWithTitle(value, preset_model);
             CallOutBox::launchAsynchronously(
-                panel, more_button.getScreenBounds(), nullptr);
+                    panel, more_button.getScreenBounds(), nullptr);
         }
     }
 
@@ -85,10 +85,10 @@ class MaterialConfigureButton : public PropertyComponent,
                                 public SettableHelpPanelClient {
 public:
     MaterialConfigureButton(
-        int this_surface,
-        model::ValueWrapper<int>& shown_surface,
-        model::ValueWrapper<SceneData::Material>& value,
-        model::ValueWrapper<std::vector<SceneData::Material>>& preset_model)
+            int this_surface,
+            model::ValueWrapper<int>& shown_surface,
+            model::ValueWrapper<SceneData::Material>& value,
+            model::ValueWrapper<std::vector<SceneData::Material>>& preset_model)
             : PropertyComponent(value.name.get())
             , contents(this_surface, shown_surface, value, preset_model) {
         set_help("surface material",
@@ -108,14 +108,14 @@ private:
 };
 
 Array<PropertyComponent*> make_material_buttons(
-    model::ValueWrapper<int>& shown_surface,
-    const model::ValueWrapper<std::vector<SceneData::Material>>& model,
-    model::ValueWrapper<std::vector<SceneData::Material>>& preset) {
+        model::ValueWrapper<int>& shown_surface,
+        const model::ValueWrapper<std::vector<SceneData::Material>>& model,
+        model::ValueWrapper<std::vector<SceneData::Material>>& preset) {
     Array<PropertyComponent*> ret;
     auto count = 0;
     for (const auto& i : model) {
         auto to_add =
-            new MaterialConfigureButton(count++, shown_surface, *i, preset);
+                new MaterialConfigureButton(count++, shown_surface, *i, preset);
         ret.add(to_add);
     }
     return ret;
@@ -190,7 +190,7 @@ class ReceiverPickerProperty : public PropertyComponent,
                                public SettableHelpPanelClient {
 public:
     ReceiverPickerProperty(
-        model::ValueWrapper<model::ReceiverSettings::Mode>& value)
+            model::ValueWrapper<model::ReceiverSettings::Mode>& value)
             : PropertyComponent("receiver type")
             , receiver_picker(value) {
         set_help("receiver type picker",
@@ -235,8 +235,8 @@ public:
 
     void receive_broadcast(model::Broadcaster* cb) override {
         if (cb == &value) {
-            auto id =
-                std::pow(10, std::floor(std::log10(static_cast<float>(value))));
+            auto id = std::pow(
+                    10, std::floor(std::log10(static_cast<float>(value))));
             combo_box.setSelectedId(id, dontSendNotification);
         }
     }
@@ -301,9 +301,9 @@ private:
 class ReceiverConfigureButton : public ConfigureButton {
 public:
     ReceiverConfigureButton(
-        model::ValueWrapper<model::ReceiverSettings>& receiver_settings,
-        model::ValueWrapper<glm::vec3>& mic_position,
-        model::ValueWrapper<glm::vec3>& source_position)
+            model::ValueWrapper<model::ReceiverSettings>& receiver_settings,
+            model::ValueWrapper<glm::vec3>& mic_position,
+            model::ValueWrapper<glm::vec3>& source_position)
             : ConfigureButton("configure")
             , receiver_settings(receiver_settings)
             , mic_position(mic_position)
@@ -315,7 +315,7 @@ public:
         switch (receiver_settings.mode) {
             case model::ReceiverSettings::Mode::hrtf:
                 c = new HrtfModelComponent(
-                    receiver_settings.hrtf, mic_position, source_position);
+                        receiver_settings.hrtf, mic_position, source_position);
                 break;
             case model::ReceiverSettings::Mode::microphones:
                 c = new MicrophoneEditorPanel(receiver_settings.microphones);
@@ -355,47 +355,53 @@ LeftPanel::LeftPanel(model::ValueWrapper<model::FullModel>& model,
                                              aabb.get_c1());
 
         source_property->set_help(
-            "source position",
-            "Allows you to move the source position in each "
-            "of the axial directions.");
+                "source position",
+                "Allows you to move the source position in each "
+                "of the axial directions.");
         mic_property->set_help(
-            "receiver position",
-            "Allows you to move the receiver position in each "
-            "of the axial directions.");
+                "receiver position",
+                "Allows you to move the receiver position in each "
+                "of the axial directions.");
 
         Array<PropertyComponent*> general{source_property, mic_property};
         general.add(new ReceiverPickerProperty(
-            model.persistent.app.receiver_settings.mode));
-        general.add(
-            new ReceiverConfigureButton(model.persistent.app.receiver_settings,
-                                        model.persistent.app.receiver,
-                                        model.persistent.app.source));
+                model.persistent.app.receiver_settings.mode));
+        general.add(new ReceiverConfigureButton(
+                model.persistent.app.receiver_settings,
+                model.persistent.app.receiver,
+                model.persistent.app.source));
         property_panel.addSection("general", general);
     }
 
     {
         Array<PropertyComponent*> materials;
-        materials.addArray(make_material_buttons(
-            model.shown_surface, model.persistent.materials, model.presets));
+        materials.addArray(make_material_buttons(model.shown_surface,
+                                                 model.persistent.materials,
+                                                 model.presets));
         property_panel.addSection("materials", materials);
     }
 
     {
         Array<PropertyComponent*> waveguide;
-        waveguide.addArray(
-            {new NumberProperty<float>(
-                 "cutoff", model.persistent.app.filter_frequency, 20, 20000),
-             new NumberProperty<float>(
-                 "oversample", model.persistent.app.oversample_ratio, 1, 4)});
+        waveguide.addArray({new NumberProperty<float>(
+                                    "cutoff",
+                                    model.persistent.app.filter_frequency,
+                                    20,
+                                    20000),
+                            new NumberProperty<float>(
+                                    "oversample",
+                                    model.persistent.app.oversample_ratio,
+                                    1,
+                                    4)});
         waveguide.add(new TextDisplayProperty<int>(
-            "waveguide sr / Hz", 20, waveguide_sampling_rate_wrapper));
+                "waveguide sr / Hz", 20, waveguide_sampling_rate_wrapper));
         property_panel.addSection("waveguide", waveguide);
     }
 
     {
         property_panel.addSection(
-            "raytracer",
-            {new RayNumberPickerProperty(model.persistent.app.rays)});
+                "raytracer",
+                {new RayNumberPickerProperty(model.persistent.app.rays)});
     }
 
     property_panel.setOpaque(false);
@@ -416,6 +422,6 @@ void LeftPanel::receive_broadcast(model::Broadcaster* cb) {
     } else if (cb == &model.persistent.app.filter_frequency ||
                cb == &model.persistent.app.oversample_ratio) {
         waveguide_sampling_rate_wrapper.set(
-            model.persistent.app.get().get_waveguide_sample_rate());
+                model.persistent.app.get().get_waveguide_sample_rate());
     }
 }

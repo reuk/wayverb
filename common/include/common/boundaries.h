@@ -156,10 +156,10 @@ public:
 
 class SphereBoundary : public Boundary {
 public:
-    explicit SphereBoundary(
-        const glm::vec3& c = glm::vec3(),
-        float radius = 0,
-        const std::vector<Surface>& surfaces = std::vector<Surface>{Surface{}});
+    explicit SphereBoundary(const glm::vec3& c = glm::vec3(),
+                            float radius = 0,
+                            const std::vector<Surface>& surfaces =
+                                    std::vector<Surface>{Surface{}});
     bool inside(const glm::vec3& v) const override;
     CuboidBoundary get_aabb() const override;
 
@@ -172,7 +172,7 @@ private:
 template <typename T>
 inline bool almost_equal(T x, T y, int ups) {
     return std::abs(x - y) <= std::numeric_limits<T>::epsilon() *
-                                  std::max(std::abs(x), std::abs(y)) * ups;
+                                      std::max(std::abs(x), std::abs(y)) * ups;
 }
 
 class MeshBoundary : public Boundary {

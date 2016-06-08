@@ -12,8 +12,11 @@ void FileDropComponent::paint(Graphics& g) {
 
     auto indent = 30;
     Path p;
-    p.addRoundedRectangle(
-        indent, indent, getWidth() - indent * 2, getHeight() - indent * 2, 30);
+    p.addRoundedRectangle(indent,
+                          indent,
+                          getWidth() - indent * 2,
+                          getHeight() - indent * 2,
+                          30);
     Path d;
     PathStrokeType pathStrokeType(8);
     float dashLengths[] = {8, 8};
