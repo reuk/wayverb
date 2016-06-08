@@ -7,8 +7,7 @@
 class LoadContext {
 public:
     LoadContext(GLAudioThumbnailBase& o,
-                std::unique_ptr<AudioFormatReader>&& m,
-                int buffer_size = 4096);
+                std::unique_ptr<AudioFormatReader>&& m);
     virtual ~LoadContext() noexcept;
 
     bool is_fully_loaded() const;
@@ -16,7 +15,7 @@ public:
 private:
     GLAudioThumbnailBase& owner;
     std::unique_ptr<AudioFormatReader> audio_format_reader;
-    int samples_read{0};
+    int samples_read;
 
 public:
     const int channels;
@@ -24,6 +23,6 @@ public:
     const double sample_rate;
 
 private:
-    std::atomic_bool keep_reading{true};
+    std::atomic_bool keep_reading;
     std::thread thread;
 };

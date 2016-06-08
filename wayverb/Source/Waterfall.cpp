@@ -161,7 +161,8 @@ void Waterfall::addBlock(int64 sample_number_in_source,
     auto ptr = new_data.getReadPointer(0);
 
     auto s = Spectrogram(l, l).compute(ptr, ptr + num_samples);
-    spectrum.insert(spectrum.end(), s.begin(), s.end());
+    incoming_work_queue.push(
+            [this, s] { spectrum.insert(spectrum.end(), s.begin(), s.end()); });
 }
 
 void Waterfall::load_from(std::unique_ptr<AudioFormatReader>&& reader) {

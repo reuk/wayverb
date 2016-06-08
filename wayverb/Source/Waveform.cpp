@@ -87,7 +87,10 @@ void Waveform::addBlock(int64 sample_number_in_source,
                 new_data.getReadPointer(0) + b + waveform_steps);
         ret[a] = std::make_pair(*mm.first, *mm.second);
     }
-    downsampled.insert(downsampled.end(), ret.begin(), ret.end());
+
+    incoming_work_queue.push([this, ret] {
+        downsampled.insert(downsampled.end(), ret.begin(), ret.end());
+    });
 }
 
 void Waveform::load_from(std::unique_ptr<AudioFormatReader>&& reader) {

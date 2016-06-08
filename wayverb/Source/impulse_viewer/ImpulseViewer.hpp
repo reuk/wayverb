@@ -11,8 +11,10 @@ public:
 
     void changeListenerCallback(ChangeBroadcaster* cb) override;
 
-    ImpulseRendererComponent renderer;
+    void load_from(AudioFormatManager& afm, const File& f);
+
 private:
+    ImpulseRendererComponent renderer;
     TabbedButtonBar tabs;
 
     model::Connector<ChangeBroadcaster> tabs_connector{&tabs, this};

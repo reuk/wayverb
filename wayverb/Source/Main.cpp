@@ -70,8 +70,7 @@ VisualiserApplication::ImpulseViewerWindow::ImpulseViewerWindow(
     setWantsKeyboardFocus(false);
 
     audio_format_manager.registerBasicFormats();
-    content_component.renderer.get_renderer().load_from(audio_format_manager,
-                                                        this_file);
+    content_component.load_from(audio_format_manager, this_file);
 }
 
 void VisualiserApplication::ImpulseViewerWindow::closeButtonPressed() {
@@ -190,7 +189,7 @@ void VisualiserApplication::initialise(const String& commandLine) {
 
     //  TODO remove
     impulse_windows.insert(std::make_unique<ImpulseViewerWindow>(
-            "impulse viewer", File(test_files[1])));
+            "impulse viewer", File(test_files[2])));
 }
 
 void VisualiserApplication::shutdown() {

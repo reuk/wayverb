@@ -234,16 +234,23 @@ BaseContextLifetime* ImpulseRenderer::get_context_lifetime() {
 
 void ImpulseRenderer::set_mode(Mode mode) {
     std::lock_guard<std::mutex> lck(mut);
-    push_incoming([this, mode] { context_lifetime->set_mode(mode); });
+    push_incoming([this, mode] {
+        assert(context_lifetime);
+        context_lifetime->set_mode(mode);
+    });
 }
 
 void ImpulseRenderer::clear() {
     std::lock_guard<std::mutex> lck(mut);
-    push_incoming([this] { context_lifetime->clear(); });
+    push_incoming([this] {
+        assert(context_lifetime);
+        context_lifetime->clear();
+    });
 }
 void ImpulseRenderer::load_from(AudioFormatManager& manager, const File& file) {
     std::lock_guard<std::mutex> lck(mut);
     push_incoming([this, &manager, file] {
+        assert(context_lifetime);
         context_lifetime->load_from(manager, file);
     });
 }
@@ -252,6 +259,7 @@ void ImpulseRenderer::reset(int num_channels,
                             int64 total_samples) {
     std::lock_guard<std::mutex> lck(mut);
     push_incoming([this, num_channels, sample_rate, total_samples] {
+        assert(context_lifetime);
         context_lifetime->reset(num_channels, sample_rate, total_samples);
     });
 }
@@ -265,6 +273,7 @@ void ImpulseRenderer::addBlock(int64 sample_number_in_source,
                    new_data,
                    start_offset,
                    num_samples] {
+        assert(context_lifetime);
         context_lifetime->addBlock(
                 sample_number_in_source, new_data, start_offset, num_samples);
     });
