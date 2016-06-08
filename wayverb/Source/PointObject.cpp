@@ -41,9 +41,7 @@ std::vector<GLuint> compute_ring_indices(int num) {
 }
 }  // namespace
 
-RingObject::RingObject(const GenericShader& shader,
-                       const glm::vec4& color,
-                       Axis axis)
+RingObject::RingObject(GenericShader& shader, const glm::vec4& color, Axis axis)
         : BasicDrawableObject(shader,
                               compute_ring_points(pts, axis),
                               std::vector<glm::vec4>(pts, color),
@@ -54,7 +52,7 @@ RingObject::RingObject(const GenericShader& shader,
 
 //----------------------------------------------------------------------------//
 
-LineObject::LineObject(const GenericShader& shader, const glm::vec4& color)
+LineObject::LineObject(GenericShader& shader, const glm::vec4& color)
         : BasicDrawableObject(shader,
                               {{0, 0, 0}, {0, 0, 1}},
                               std::vector<glm::vec4>(2, color),
@@ -65,8 +63,8 @@ LineObject::LineObject(const GenericShader& shader, const glm::vec4& color)
 
 //----------------------------------------------------------------------------//
 
-PointObject::PointObject(const GenericShader& shader, const glm::vec4& color)
-        : shader(shader)
+PointObject::PointObject(GenericShader& shader, const glm::vec4& color)
+        : shader(&shader)
         , color(color)
         , x_ring(shader, color, RingObject::Axis::x)
         , y_ring(shader, color, RingObject::Axis::y)
@@ -80,8 +78,8 @@ void PointObject::set_highlight(float amount) {
 }
 
 void PointObject::draw() const {
-    auto s_shader = shader.get_scoped();
-    shader.set_model_matrix(get_matrix());
+    auto s_shader = shader->get_scoped();
+    shader->set_model_matrix(get_matrix());
     x_ring.draw();
     y_ring.draw();
     z_ring.draw();
@@ -106,7 +104,7 @@ void PointObject::set_pointing(const std::vector<glm::vec3>& directions) {
     }
     for (auto i = 0u; i != directions.size(); ++i) {
         if (lines.size() <= i) {
-            lines.emplace_back(shader, color);
+            lines.emplace_back(*shader, color);
         }
         lines[i].set_position(get_position());
         lines[i].set_pointing(directions[i]);

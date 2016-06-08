@@ -1,6 +1,5 @@
 #pragma once
 
-#include "WorkQueue.hpp"
 #include "AxesObject.hpp"
 #include "BasicDrawableObject.hpp"
 #include "BoxObject.hpp"
@@ -10,6 +9,7 @@
 #include "OctahedronObject.hpp"
 #include "PointObject.hpp"
 #include "RenderHelpers.hpp"
+#include "WorkQueue.hpp"
 
 #include "FullModel.hpp"
 
@@ -38,8 +38,8 @@
 
 class MultiMaterialObject : public ::Drawable {
 public:
-    MultiMaterialObject(const GenericShader& generic_shader,
-                        const LitSceneShader& lit_scene_shader,
+    MultiMaterialObject(GenericShader& generic_shader,
+                        LitSceneShader& lit_scene_shader,
                         const CopyableSceneData& scene_data);
 
     void draw() const override;
@@ -62,8 +62,8 @@ public:
     void set_colour(const glm::vec3& c);
 
 private:
-    const GenericShader& generic_shader;
-    const LitSceneShader& lit_scene_shader;
+    GenericShader* generic_shader;
+    LitSceneShader* lit_scene_shader;
 
     VAO wire_vao;
     VAO fill_vao;
@@ -77,9 +77,9 @@ private:
 
 class DrawableScene final : public ::Drawable {
 public:
-    DrawableScene(const GenericShader& generic_shader,
-                  const MeshShader& mesh_shader,
-                  const LitSceneShader& lit_scene_shader,
+    DrawableScene(GenericShader& generic_shader,
+                  MeshShader& mesh_shader,
+                  LitSceneShader& lit_scene_shader,
                   const CopyableSceneData& scene_data);
 
     void draw() const override;
@@ -105,9 +105,9 @@ public:
     Node* get_receiver();
 
 private:
-    const GenericShader& generic_shader;
-    const MeshShader& mesh_shader;
-    const LitSceneShader& lit_scene_shader;
+    GenericShader* generic_shader;
+    MeshShader* mesh_shader;
+    LitSceneShader* lit_scene_shader;
 
     MultiMaterialObject model_object;
     PointObject source_object;

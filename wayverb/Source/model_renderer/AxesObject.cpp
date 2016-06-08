@@ -1,6 +1,6 @@
 #include "AxesObject.hpp"
 
-AxesObject::AxesObject(const GenericShader& shader)
+AxesObject::AxesObject(GenericShader& shader)
         : BasicDrawableObject(shader,
                               {
                                   {0, 0, 0},

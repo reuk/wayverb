@@ -4,5 +4,5 @@
 
 class BoxObject final : public BasicDrawableObject {
 public:
-    BoxObject(const GenericShader& shader);
+    BoxObject(GenericShader& shader);
 };

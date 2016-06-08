@@ -4,5 +4,5 @@
 
 class AxesObject final : public BasicDrawableObject {
 public:
-    AxesObject(const GenericShader& shader);
+    AxesObject(GenericShader& shader);
 };

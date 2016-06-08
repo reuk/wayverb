@@ -2,6 +2,16 @@
 
 #include "common/stl_wrappers.h"
 
+//Node::Node(Node&& rhs) noexcept : position(rhs.position), scale(rhs.scale) {
+//}
+//Node& Node::operator=(Node&& rhs) noexcept {
+//    std::tie(position, scale) = std::tie(rhs.position, rhs.scale);
+//    return *this;
+//}
+
+Node::Node(Node&&) noexcept = default;
+Node& Node::operator=(Node&&) noexcept = default;
+
 glm::vec3 Node::get_position() const {
     return position;
 }
@@ -25,14 +35,13 @@ glm::mat4 Node::get_matrix() const {
 
 //----------------------------------------------------------------------------//
 
-BasicDrawableObject::BasicDrawableObject(const GenericShader& shader,
+BasicDrawableObject::BasicDrawableObject(GenericShader& shader,
                                          const std::vector<glm::vec3>& g,
                                          const std::vector<glm::vec4>& c,
                                          const std::vector<GLuint>& i,
                                          GLuint mode)
-        : shader(shader)
+        : shader(&shader)
         , color_vector(c)
-        , size(i.size())
         , mode(mode) {
     geometry.data(g);
     set_highlight(0);
@@ -53,20 +62,25 @@ BasicDrawableObject::BasicDrawableObject(const GenericShader& shader,
     ibo.bind();
 }
 
+BasicDrawableObject::BasicDrawableObject(BasicDrawableObject&&) noexcept =
+    default;
+BasicDrawableObject& BasicDrawableObject::operator=(
+    BasicDrawableObject&&) noexcept = default;
+
 void BasicDrawableObject::set_highlight(float amount) {
     std::vector<glm::vec4> highlighted(color_vector.size());
-    proc::transform(color_vector, highlighted.begin(), [amount](const auto& i) {
-        return i + amount;
-    });
+    proc::transform(color_vector,
+                    highlighted.begin(),
+                    [amount](const auto& i) { return i + amount; });
     colors.data(highlighted);
 }
 
 void BasicDrawableObject::draw() const {
-    auto s_shader = shader.get_scoped();
-    shader.set_model_matrix(get_matrix());
+    auto s_shader = shader->get_scoped();
+    shader->set_model_matrix(get_matrix());
 
     auto s_vao = vao.get_scoped();
-    glDrawElements(mode, size, GL_UNSIGNED_INT, nullptr);
+    glDrawElements(mode, ibo.size(), GL_UNSIGNED_INT, nullptr);
 }
 
 GLuint BasicDrawableObject::get_mode() const {
@@ -77,5 +91,5 @@ void BasicDrawableObject::set_mode(GLuint u) {
 }
 
 const GenericShader& BasicDrawableObject::get_shader() const {
-    return shader;
+    return *shader;
 }

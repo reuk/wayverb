@@ -5,10 +5,10 @@
 class Orientable {
 public:
     Orientable() = default;
-    Orientable(const Orientable&) = default;
-    Orientable& operator=(const Orientable&) = default;
-    Orientable(Orientable&&) noexcept = default;
-    Orientable& operator=(Orientable&&) noexcept = default;
+    Orientable(const Orientable&) = delete;
+    Orientable& operator=(const Orientable&) = delete;
+    Orientable(Orientable&&) noexcept;
+    Orientable& operator=(Orientable&&) noexcept;
     virtual ~Orientable() noexcept = default;
 
     //  relative to global axes I guess

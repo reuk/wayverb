@@ -14,7 +14,9 @@
 
 class Node : public Orientable {
 public:
-    using Orientable::Orientable;
+    Node() = default;
+    Node(Node&&) noexcept;
+    Node& operator=(Node&&) noexcept;
 
     glm::vec3 get_position() const;
     void set_position(const glm::vec3& v);
@@ -33,11 +35,14 @@ private:
 
 class BasicDrawableObject : public ::Drawable, public Node {
 public:
-    BasicDrawableObject(const GenericShader& shader,
+    BasicDrawableObject(GenericShader& shader,
                         const std::vector<glm::vec3>& g,
                         const std::vector<glm::vec4>& c,
                         const std::vector<GLuint>& i,
                         GLuint mode);
+
+    BasicDrawableObject(BasicDrawableObject&&) noexcept;
+    BasicDrawableObject& operator=(BasicDrawableObject&&) noexcept;
 
     void draw() const override;
 
@@ -49,7 +54,7 @@ public:
     void set_highlight(float amount) override;
 
 private:
-    const GenericShader& shader;
+    GenericShader* shader;
 
     std::vector<glm::vec4> color_vector;
 
@@ -57,7 +62,6 @@ private:
     StaticVBO geometry;
     StaticVBO colors;
     StaticIBO ibo;
-    GLuint size;
 
     GLuint mode{GL_LINES};
 };

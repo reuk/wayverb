@@ -11,8 +11,8 @@ public:
 
     void changeListenerCallback(ChangeBroadcaster* cb) override;
 
-private:
     ImpulseRendererComponent renderer;
+private:
     TabbedButtonBar tabs;
 
     model::Connector<ChangeBroadcaster> tabs_connector{&tabs, this};

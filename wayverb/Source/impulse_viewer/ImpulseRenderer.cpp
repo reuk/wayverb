@@ -42,10 +42,17 @@ public:
             , sample_rate(audio_format_reader->sampleRate)
             , thread([this, buffer_size] {
                 AudioSampleBuffer buffer(channels, buffer_size);
+                owner.reset(channels, sample_rate, length_in_samples);
                 for (; !is_fully_loaded() && keep_reading;
                      samples_read += buffer_size) {
+                    buffer.clear();
                     audio_format_reader->read(
-                        &buffer, 0, buffer_size, samples_read, true, true);
+                        &buffer,
+                        0,
+                        std::min(buffer_size, length_in_samples - samples_read),
+                        samples_read,
+                        true,
+                        true);
                     owner.addBlock(samples_read, buffer, 0, buffer_size);
                 }
             }) {
@@ -77,89 +84,107 @@ private:
 
 //----------------------------------------------------------------------------//
 
-class Waveform : public ::Drawable, public GLAudioThumbnailBase {
+class Waveform : public ::Updatable,
+                 public ::Drawable,
+                 public GLAudioThumbnailBase {
 public:
-    /*
-        Waveform(const GenericShader& shader, const std::vector<float>& signal)
-                : Waveform(shader, compute_downsampled_waveform(signal)) {
-        }
-    */
-
     Waveform(const GenericShader& shader)
             : shader(shader) {
+        auto s_vao = vao.get_scoped();
+
+        geometry.bind();
+        auto v_pos = shader.get_attrib_location("v_position");
+        glEnableVertexAttribArray(v_pos);
+        glVertexAttribPointer(v_pos, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+
+        colors.bind();
+        auto c_pos = shader.get_attrib_location("v_color");
+        glEnableVertexAttribArray(c_pos);
+        glVertexAttribPointer(c_pos, 4, GL_FLOAT, GL_FALSE, 0, nullptr);
+
+        ibo.bind();
     }
 
     void set_position(const glm::vec3& p) {
+        std::lock_guard<std::mutex> lck(mut);
         position = p;
     }
 
+    void update(float dt) override {
+        std::lock_guard<std::mutex> lck(mut);
+        while (!incoming_work_queue.empty()) {
+            auto item = incoming_work_queue.pop();
+            if (item) {
+                (*item)();
+            }
+        }
+
+        if (downsampled.size() > previous_size) {
+            previous_size = downsampled.size();
+            auto g = compute_geometry(downsampled);
+            geometry.data(g);
+            colors.data(compute_colours(g));
+            ibo.data(compute_indices(g.size()));
+        }
+    }
+
     void draw() const override {
+        std::lock_guard<std::mutex> lck(mut);
+        auto s_shader = shader.get_scoped();
+        shader.set_model_matrix(glm::translate(position));
+
+        auto s_vao = vao.get_scoped();
+        glDrawElements(GL_TRIANGLE_STRIP, ibo.size(), GL_UNSIGNED_INT, nullptr);
     }
 
     //  inherited from GLAudioThumbnailBase
     void clear() override {
+        std::lock_guard<std::mutex> lck(mut);
+        clear_impl();
     }
     void load_from(AudioFormatManager& manager, const File& file) override {
+        std::lock_guard<std::mutex> lck(mut);
         load_from(
             std::unique_ptr<AudioFormatReader>(manager.createReaderFor(file)));
     }
+
+    //  these two will be called from a thread *other* than the gl thread
     void reset(int num_channels,
                double sample_rate,
                int64 total_samples) override {
+        std::lock_guard<std::mutex> lck(mut);
+        incoming_work_queue.push([this] { clear_impl(); });
     }
     void addBlock(int64 sample_number_in_source,
                   const AudioSampleBuffer& new_data,
                   int start_offset,
                   int num_samples) override {
+        std::lock_guard<std::mutex> lck(mut);
+        auto waveform_steps = num_samples / per_buffer;
+        spacing = waveform_steps / load_context->sample_rate;
+        std::vector<std::pair<float, float>> ret(per_buffer);
+        for (auto a = 0u, b = 0u; a != per_buffer; ++a, b += waveform_steps) {
+            auto mm = std::minmax_element(
+                new_data.getReadPointer(0) + b,
+                new_data.getReadPointer(0) + b + waveform_steps);
+            ret[a] = std::make_pair(*mm.first, *mm.second);
+        }
+        downsampled.insert(downsampled.end(), ret.begin(), ret.end());
     }
 
+private:
+    static const int per_buffer = 16;
     void load_from(std::unique_ptr<AudioFormatReader>&& reader) {
         load_context = std::make_unique<LoadContext>(*this, std::move(reader));
     }
 
-private:
-    static const int waveform_steps = 256;
-    static const float spacing;
-
-    /*
-        static std::vector<std::pair<float, float>>
-       compute_downsampled_waveform(
-            const std::vector<float>& i) {
-            std::vector<std::pair<float, float>> ret(i.size() / waveform_steps);
-            for (auto a = 0u, b = 0u; a < i.size() - waveform_steps;
-                 a += waveform_steps, ++b) {
-                auto mm = std::minmax_element(i.begin() + a,
-                                              i.begin() + a + waveform_steps);
-                ret[b] = std::make_pair(*mm.first, *mm.second);
-            }
-            return ret;
-        }
-
-        static std::vector<std::vector<std::pair<float, float>>>
-        compute_downsampled_waveform(const std::vector<std::vector<float>>& in)
-       {
-            std::vector<std::vector<std::pair<float, float>>> ret(in.size());
-            proc::transform(in, ret.begin(), [](const auto& i) {
-                return compute_downsampled_waveform(i);
-            });
-            return ret;
-        }
-    */
-
-    /*
-        Waveform(const GenericShader& shader,
-                 const std::vector<std::pair<float, float>>& data)
-                : Waveform(shader, compute_geometry(data)) {
-        }
-
-        Waveform(const GenericShader& shader, const std::vector<glm::vec3>& g)
-                : BasicDrawableObject(shader,
-                                      g,
-                                      compute_colours(g),
-                                      compute_indices(g.size()),
-                                      GL_TRIANGLE_STRIP) {
-        }
-    */
+    void clear_impl() {
+        previous_size = 0;
+        downsampled.clear();
+        geometry.clear();
+        colors.clear();
+        ibo.clear();
+    }
 
     static std::vector<glm::vec4> compute_colours(
         const std::vector<glm::vec3>& g) {
@@ -172,7 +197,7 @@ private:
         return ret;
     }
 
-    static std::vector<glm::vec3> compute_geometry(
+    std::vector<glm::vec3> compute_geometry(
         const std::vector<std::pair<float, float>>& data) {
         std::vector<glm::vec3> ret;
         auto x = 0.0;
@@ -186,12 +211,23 @@ private:
 
     const GenericShader& shader;
 
+    VAO vao;
+    DynamicVBO geometry;
+    DynamicVBO colors;
+    DynamicIBO ibo;
+
+    size_t previous_size{0};
+    std::vector<std::pair<float, float>> downsampled;
+
     std::unique_ptr<LoadContext> load_context;
+    float spacing;
 
     glm::vec3 position{0};
-};
 
-const float Waveform::spacing{waveform_steps / samples_per_unit};
+    WorkQueue incoming_work_queue;
+
+    mutable std::mutex mut;
+};
 
 //----------------------------------------------------------------------------//
 
@@ -514,6 +550,9 @@ public:
         waveform.set_position(glm::vec3{0, 0, current_params.waveform_z});
         waterfall.set_position(
             glm::vec3{0, 0, current_params.waveform_z - 2.1});
+
+        waveform.update(dt);
+        //        waterfall.update(dt);
     }
 
     void draw() const override {

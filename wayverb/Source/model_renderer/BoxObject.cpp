@@ -1,6 +1,6 @@
 #include "BoxObject.hpp"
 
-BoxObject::BoxObject(const GenericShader &shader)
+BoxObject::BoxObject(GenericShader &shader)
         : BasicDrawableObject(
               shader,
               {

@@ -43,11 +43,11 @@ void MultiMaterialObject::SingleMaterialSection::draw() const {
     glDrawElements(GL_TRIANGLES, size, GL_UNSIGNED_INT, nullptr);
 }
 
-MultiMaterialObject::MultiMaterialObject(const GenericShader &generic_shader,
-                                         const LitSceneShader &lit_scene_shader,
+MultiMaterialObject::MultiMaterialObject(GenericShader &generic_shader,
+                                         LitSceneShader &lit_scene_shader,
                                          const CopyableSceneData &scene_data)
-        : generic_shader(generic_shader)
-        , lit_scene_shader(lit_scene_shader) {
+        : generic_shader(&generic_shader)
+        , lit_scene_shader(&lit_scene_shader) {
     for (auto i = 0; i != scene_data.get_surfaces().size(); ++i) {
         sections.emplace_back(scene_data, i);
     }
@@ -77,12 +77,12 @@ MultiMaterialObject::MultiMaterialObject(const GenericShader &generic_shader,
 void MultiMaterialObject::draw() const {
     for (auto i = 0u; i != sections.size(); ++i) {
         if (i == highlighted) {
-            auto s_shader = lit_scene_shader.get_scoped();
+            auto s_shader = lit_scene_shader->get_scoped();
             auto s_vao = fill_vao.get_scoped();
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
             sections[i].draw();
         } else {
-            auto s_shader = generic_shader.get_scoped();
+            auto s_shader = generic_shader->get_scoped();
             auto s_vao = wire_vao.get_scoped();
             glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
             sections[i].draw();
@@ -95,19 +95,19 @@ void MultiMaterialObject::set_highlighted(int material) {
 }
 
 void MultiMaterialObject::set_colour(const glm::vec3 &c) {
-    auto s = lit_scene_shader.get_scoped();
-    lit_scene_shader.set_colour(c);
+    auto s = lit_scene_shader->get_scoped();
+    lit_scene_shader->set_colour(c);
 }
 
 //----------------------------------------------------------------------------//
 
-DrawableScene::DrawableScene(const GenericShader &generic_shader,
-                             const MeshShader &mesh_shader,
-                             const LitSceneShader &lit_scene_shader,
+DrawableScene::DrawableScene(GenericShader &generic_shader,
+                             MeshShader &mesh_shader,
+                             LitSceneShader &lit_scene_shader,
                              const CopyableSceneData &scene_data)
-        : generic_shader(generic_shader)
-        , mesh_shader(mesh_shader)
-        , lit_scene_shader(lit_scene_shader)
+        : generic_shader(&generic_shader)
+        , mesh_shader(&mesh_shader)
+        , lit_scene_shader(&lit_scene_shader)
         , model_object(generic_shader, lit_scene_shader, scene_data)
         , source_object(generic_shader, glm::vec4(0.7, 0, 0, 1))
         , receiver_object(generic_shader, glm::vec4(0, 0.7, 0.7, 1)) {
@@ -145,7 +145,7 @@ void DrawableScene::set_rendering(bool b) {
 }
 
 void DrawableScene::set_positions(const std::vector<glm::vec3> &p) {
-    mesh_object = std::make_unique<MeshObject>(mesh_shader, p);
+    mesh_object = std::make_unique<MeshObject>(*mesh_shader, p);
 }
 
 void DrawableScene::set_pressures(const std::vector<float> &p) {
@@ -199,12 +199,11 @@ public:
     }
 
     void set_rotation(const Orientable::AzEl &u) {
-                azel_target = Orientable::AzEl{
-                    u.azimuth,
-                    glm::clamp(
-                        u.elevation,
-                        static_cast<float>(-M_PI / 2),
-                        static_cast<float>(M_PI / 2))};
+        azel_target =
+            Orientable::AzEl{u.azimuth,
+                             glm::clamp(u.elevation,
+                                        static_cast<float>(-M_PI / 2),
+                                        static_cast<float>(M_PI / 2))};
     }
 
     void set_rendering(bool b) {
@@ -285,11 +284,11 @@ public:
 
     void mouse_down(const glm::vec2 &pos) override {
         auto hovered = get_currently_hovered(pos);
-        mousing =
-            hovered && allow_move_mode
-                ? std::unique_ptr<Mousing>(
-                      std::make_unique<Move>(hovered, hovered->get_position()))
-                : std::unique_ptr<Mousing>(std::make_unique<Rotate>(azel_target, pos));
+        mousing = hovered && allow_move_mode
+                      ? std::unique_ptr<Mousing>(std::make_unique<Move>(
+                            hovered, hovered->get_position()))
+                      : std::unique_ptr<Mousing>(
+                            std::make_unique<Rotate>(azel_target, pos));
     }
 
     void mouse_drag(const glm::vec2 &pos) override {

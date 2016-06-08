@@ -64,9 +64,14 @@ VisualiserApplication::ImpulseViewerWindow::ImpulseViewerWindow(
     setVisible(true);
 
     auto& command_manager = VisualiserApplication::get_command_manager();
+    command_manager.registerAllCommandsForTarget(this);
     command_manager.getKeyMappings()->resetToDefaultMappings();
     addKeyListener(command_manager.getKeyMappings());
     setWantsKeyboardFocus(false);
+
+    audio_format_manager.registerBasicFormats();
+    content_component.renderer.get_renderer().load_from(audio_format_manager,
+                                                        this_file);
 }
 
 void VisualiserApplication::ImpulseViewerWindow::closeButtonPressed() {
@@ -185,7 +190,7 @@ void VisualiserApplication::initialise(const String& commandLine) {
 
     //  TODO remove
     impulse_windows.insert(std::make_unique<ImpulseViewerWindow>(
-        "impulse viewer", File(test_files[0])));
+        "impulse viewer", File(test_files[1])));
 }
 
 void VisualiserApplication::shutdown() {

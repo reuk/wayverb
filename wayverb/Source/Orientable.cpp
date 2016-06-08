@@ -36,6 +36,15 @@ Orientable::AzEl& Orientable::AzEl::operator/=(float rhs) {
 
 //----------------------------------------------------------------------------//
 
+Orientable::Orientable(Orientable&& rhs) noexcept
+        : pointing(rhs.pointing) {
+}
+
+Orientable& Orientable::operator=(Orientable&& rhs) noexcept {
+    pointing = rhs.pointing;
+    return *this;
+}
+
 float Orientable::compute_azimuth(const glm::vec3& pointing) {
     return std::atan2(pointing.x, pointing.z);
 }
