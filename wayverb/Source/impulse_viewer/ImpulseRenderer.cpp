@@ -140,8 +140,9 @@ private:
     }
 
     glm::mat4 get_view_matrix() const {
-        return glm::lookAt(
-                       glm::vec3{0, 0, eye}, glm::vec3{0}, glm::vec3{0, 1, 0}) *
+        return glm::lookAt(glm::vec3{0, 0, current_params.eye},
+                           glm::vec3{0},
+                           glm::vec3{0, 1, 0}) *
                get_rotation_matrix();
     }
 
@@ -176,11 +177,13 @@ private:
         Orientable::AzEl azel{0, 0};
         float fade{0};
         float waveform_z{0};
+        float eye{4};
 
         void update(const ModeParams& target) {
             azel += (target.azel - azel) * 0.1;
             fade += (target.fade - fade) * 0.1;
             waveform_z += (target.waveform_z - waveform_z) * 0.1;
+            eye += (target.eye - eye) * 0.1;
         }
     };
 
@@ -191,8 +194,6 @@ private:
 
     static const float angle_scale;
 
-    float eye{4};
-
     Mode mode;
     Waveform waveform;
     Waterfall waterfall;
@@ -202,10 +203,10 @@ private:
 
 const ImpulseRenderer::ContextLifetime::ModeParams
         ImpulseRenderer::ContextLifetime::waveform_params{
-                Orientable::AzEl{0, 0}, 0, 0};
+                Orientable::AzEl{0, 0}, 0, 0, 2};
 const ImpulseRenderer::ContextLifetime::ModeParams
         ImpulseRenderer::ContextLifetime::waterfall_params{
-                Orientable::AzEl{-0.7, 0.2}, 1, 2};
+                Orientable::AzEl{-0.8, 0.2}, 1, 2, 4};
 
 const float ImpulseRenderer::ContextLifetime::Rotate::angle_scale{0.01};
 

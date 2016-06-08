@@ -43,6 +43,7 @@
 		1B8E2A8C1D08A61100AD6729 /* LoadContext.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1B8E2A8A1D08A61100AD6729 /* LoadContext.cpp */; };
 		1B8E2A8F1D08A79F00AD6729 /* ComputeIndices.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1B8E2A8D1D08A79F00AD6729 /* ComputeIndices.cpp */; };
 		1B8E2A921D08A8E700AD6729 /* Waterfall.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1B8E2A901D08A8E700AD6729 /* Waterfall.cpp */; };
+		1B8E2A951D08C05100AD6729 /* FrequencyAxis.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1B8E2A931D08C05100AD6729 /* FrequencyAxis.cpp */; };
 		1D0C4CE425FD7D455AC10C32 /* juce_audio_basics.mm in Sources */ = {isa = PBXBuildFile; fileRef = BFBA6DD240E8E2C1D9EEFE1C /* juce_audio_basics.mm */; };
 		1E09DBF6A82901B168B1DE8F /* MainComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7D2C7F4DDD285709BDAA80DC /* MainComponent.cpp */; };
 		22A1A2FEBBF078F0D165D702 /* PropertyComponentLAF.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D427A44648B46DF12F248F18 /* PropertyComponentLAF.cpp */; };
@@ -461,6 +462,8 @@
 		1B8E2A8E1D08A79F00AD6729 /* ComputeIndices.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = ComputeIndices.hpp; path = ../../Source/ComputeIndices.hpp; sourceTree = "<group>"; };
 		1B8E2A901D08A8E700AD6729 /* Waterfall.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Waterfall.cpp; path = ../../Source/Waterfall.cpp; sourceTree = "<group>"; };
 		1B8E2A911D08A8E700AD6729 /* Waterfall.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = Waterfall.hpp; path = ../../Source/Waterfall.hpp; sourceTree = "<group>"; };
+		1B8E2A931D08C05100AD6729 /* FrequencyAxis.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FrequencyAxis.cpp; path = ../../Source/FrequencyAxis.cpp; sourceTree = "<group>"; };
+		1B8E2A941D08C05100AD6729 /* FrequencyAxis.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = FrequencyAxis.hpp; path = ../../Source/FrequencyAxis.hpp; sourceTree = "<group>"; };
 		1BAF74BB3A7DDB036AACF878 /* infback.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = infback.c; path = ../../JuceLibraryCode/modules/juce_core/zip/zlib/infback.c; sourceTree = SOURCE_ROOT; };
 		1BE99A23F9968165DCF0C571 /* format.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = format.c; path = ../../JuceLibraryCode/modules/juce_audio_formats/codecs/flac/libFLAC/format.c; sourceTree = SOURCE_ROOT; };
 		1BED9283EEEC4F00C846E13B /* juce_MarkerList.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = juce_MarkerList.h; path = ../../JuceLibraryCode/modules/juce_gui_basics/positioning/juce_MarkerList.h; sourceTree = SOURCE_ROOT; };
@@ -1815,6 +1818,8 @@
 			isa = PBXGroup;
 			children = (
 				1B8E2A661D08404B00AD6729 /* GLAudioThumbnail.h */,
+				1B8E2A931D08C05100AD6729 /* FrequencyAxis.cpp */,
+				1B8E2A941D08C05100AD6729 /* FrequencyAxis.hpp */,
 				1B8E2A3F1D073B5D00AD6729 /* FadeShader.cpp */,
 				1B8E2A401D073B5D00AD6729 /* FadeShader.hpp */,
 				1B8E2A8A1D08A61100AD6729 /* LoadContext.cpp */,
@@ -4147,6 +4152,7 @@
 				1B692CE31D05A4E700A761C7 /* BasicDrawableObject.cpp in Sources */,
 				1B692CF41D05CB9100A761C7 /* ImpulseViewer.cpp in Sources */,
 				1E09DBF6A82901B168B1DE8F /* MainComponent.cpp in Sources */,
+				1B8E2A951D08C05100AD6729 /* FrequencyAxis.cpp in Sources */,
 				4FEC4A8CD851289B103552A3 /* MicrophoneEditor.cpp in Sources */,
 				1B692CEB1D05A4E700A761C7 /* OctahedronObject.cpp in Sources */,
 				673689FD41D91E3BD9F099E0 /* Orientable.cpp in Sources */,

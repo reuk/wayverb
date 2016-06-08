@@ -369,7 +369,7 @@ private:
         for (auto i : drawable_scene.get_selectable_objects()) {
             auto diff = origin - i->get_position();
             auto b = glm::dot(direction, diff);
-            auto c = glm::dot(diff, diff) - glm::pow(i->get_scale() * 0.4, 2);
+            auto c = glm::dot(diff, diff) - glm::pow(i->get_scale().x * 0.4, 2);
             auto det = glm::pow(b, 2) - c;
             if (0 <= det) {
                 auto sq_det = std::sqrt(det);

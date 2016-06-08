@@ -1,6 +1,7 @@
 #pragma once
 
 #include "FadeShader.hpp"
+#include "FrequencyAxis.hpp"
 #include "LoadContext.hpp"
 #include "WorkQueue.hpp"
 
@@ -15,16 +16,7 @@ class Waterfall : public ::Updatable,
 public:
     enum class Mode { linear, log };
 
-    Waterfall(const FadeShader& shader);
-
-    /*
-        Waterfall(const FadeShader& shader, const std::vector<float>& signal)
-                : Waterfall(shader,
-                            Spectrogram(window, hop).compute(signal),
-                            spacing,
-                            2.0) {
-        }
-    */
+    Waterfall(FadeShader& shader);
 
     void update(float dt) override;
     void draw() const override;
@@ -43,33 +35,28 @@ public:
                   int start_offset,
                   int num_samples) override;
 
+    float z_to_frequency(float z);
+    float frequency_to_z(float frequency);
+
+    static float z_to_frequency(Mode mode, float z_width, float z);
+    static float frequency_to_z(Mode mode, float z_width, float frequency);
+
 private:
     void load_from(std::unique_ptr<AudioFormatReader>&& reader);
     void clear_impl();
 
-    /*
-        Waterfall(const FadeShader& shader,
-                  const std::vector<std::vector<float>>& heights,
-                  float x_spacing,
-                  float z_width)
-                : shader(shader)
-                , spectrogram(heights)
-                , x_spacing(x_spacing)
-                , z_width(z_width)
-                , strips(compute_strips(
-                      shader, spectrogram, mode, x_spacing, z_width)) {
-        }
-    */
-
     class HeightMapStrip : public ::Drawable {
     public:
-        HeightMapStrip(const FadeShader& shader,
+        HeightMapStrip(FadeShader& shader,
                        const std::vector<float>& left,
                        const std::vector<float>& right,
                        Mode mode,
                        float x,
                        float x_spacing,
-                       float z_width);
+                       float z_width,
+                       float min_frequency,
+                       float max_frequency,
+                       float sample_rate);
 
         void draw() const override;
 
@@ -80,14 +67,17 @@ private:
                 Mode mode,
                 float x,
                 float x_spacing,
-                float z_width);
+                float z_width,
+                float min_frequency,
+                float max_frequency,
+                float sample_rate);
 
         static glm::vec3 compute_mapped_colour(float r);
 
         static std::vector<glm::vec4> compute_colors(
                 const std::vector<glm::vec3>& g);
 
-        const FadeShader& shader;
+        FadeShader* shader;
 
         VAO vao;
         StaticVBO geometry;
@@ -97,15 +87,19 @@ private:
     };
 
     static std::vector<HeightMapStrip> compute_strips(
-            const FadeShader& shader,
+            FadeShader& shader,
             const std::vector<std::vector<float>>& input,
             Mode mode,
             float x_spacing,
-            float z_width);
+            float z_width,
+            float sample_rate);
 
     static const int per_buffer{4};
 
-    const FadeShader& shader;
+    static const float min_frequency;
+    static const float max_frequency;
+
+    FadeShader* shader;
 
     Mode mode{Mode::log};
 
@@ -120,6 +114,8 @@ private:
     float z_width{2};
 
     WorkQueue incoming_work_queue;
+
+    int axes{6};
 
     mutable std::mutex mut;
 };

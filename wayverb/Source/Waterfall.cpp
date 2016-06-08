@@ -17,11 +17,14 @@ public:
             , complex_length(window_length / 2 + 1)
             , hop_size(hop_size)
             , window(blackman(window_length))
-            , normalisation_factor(compute_normalization_factor(window))
             , i(fftwf_alloc_real(window_length))
             , o(fftwf_alloc_complex(complex_length))
             , r2c(fftwf_plan_dft_r2c_1d(
                       window_length, i.get(), o.get(), FFTW_ESTIMATE)) {
+        std::vector<float> ones(window_length, 1);
+        normalisation_factor = 1;
+        normalisation_factor = Decibels::decibelsToGain(
+                compute_slice(ones.begin(), ones.end()).front());
     }
     virtual ~Spectrogram() noexcept = default;
 
@@ -54,16 +57,9 @@ private:
                                normalisation_factor;
                     //  get decibel value
                     ret = Decibels::gainToDecibels(ret);
-                    //  to take the value back into the 0-1 range
-                    ret = (ret + 100) / 100;
                     return ret;
                 });
         return ret;
-    }
-
-    static float compute_normalization_factor(
-            const std::vector<float>& window) {
-        return proc::accumulate(window, 0.0);
     }
 
     int window_length;
@@ -82,8 +78,8 @@ private:
 
 //----------------------------------------------------------------------------//
 
-Waterfall::Waterfall(const FadeShader& shader)
-        : shader(shader) {
+Waterfall::Waterfall(FadeShader& shader)
+        : shader(&shader) {
 }
 
 void Waterfall::set_position(const glm::vec3& p) {
@@ -104,22 +100,34 @@ void Waterfall::update(float dt) {
     while (strips.size() + 1 < spectrum.size() &&
            (std::chrono::system_clock::now() - begin) <
                    std::chrono::duration<double>(1 / 200.0)) {
-        strips.emplace_back(shader,
+        strips.emplace_back(*shader,
                             spectrum[strips.size()],
                             spectrum[strips.size() + 1],
                             mode,
                             x_spacing * strips.size(),
                             x_spacing,
-                            z_width);
+                            z_width,
+                            min_frequency,
+                            max_frequency,
+                            load_context->sample_rate);
     }
 }
 
 void Waterfall::draw() const {
     std::lock_guard<std::mutex> lck(mut);
-    auto s_shader = shader.get_scoped();
-    shader.set_model_matrix(glm::translate(position));
+    auto s_shader = shader->get_scoped();
+    shader->set_model_matrix(glm::translate(position));
     for (const auto& i : strips) {
         i.draw();
+    }
+
+    FrequencyAxisObject axis(*shader);
+    auto scale = load_context->length_in_samples / load_context->sample_rate;
+    axis.set_scale(glm::vec3{scale, 1, 1});
+    for (auto i = 0; i != axes; ++i) {
+        axis.set_position(position +
+                          glm::vec3{0, 0.01, i * z_width / (axes - 1)});
+        axis.draw();
     }
 }
 
@@ -127,7 +135,12 @@ void Waterfall::set_mode(Mode u) {
     std::lock_guard<std::mutex> lck(mut);
     if (u != mode) {
         mode = u;
-        strips = compute_strips(shader, spectrum, mode, x_spacing, z_width);
+        strips = compute_strips(*shader,
+                                spectrum,
+                                mode,
+                                x_spacing,
+                                z_width,
+                                load_context->sample_rate);
     }
 }
 
@@ -159,8 +172,14 @@ void Waterfall::addBlock(int64 sample_number_in_source,
     x_spacing = l / load_context->sample_rate;
 
     auto ptr = new_data.getReadPointer(0);
-
-    auto s = Spectrogram(l, l).compute(ptr, ptr + num_samples);
+    Spectrogram spec(l, l);
+    auto s = spec.compute(ptr, ptr + num_samples);
+    for (auto& i : s) {
+        for (auto& j : i) {
+            //  to take the value back into the 0-1 range
+            j = (j + 100) / 100;
+        }
+    }
     incoming_work_queue.push(
             [this, s] { spectrum.insert(spectrum.end(), s.begin(), s.end()); });
 }
@@ -175,40 +194,98 @@ void Waterfall::clear_impl() {
 }
 
 std::vector<Waterfall::HeightMapStrip> Waterfall::compute_strips(
-        const FadeShader& shader,
+        FadeShader& shader,
         const std::vector<std::vector<float>>& input,
         Mode mode,
         float x_spacing,
-        float z_width) {
+        float z_width,
+        float sample_rate) {
     std::vector<HeightMapStrip> ret;
     auto x = 0.0;
     std::transform(input.begin(),
                    input.end() - 1,
                    input.begin() + 1,
                    std::back_inserter(ret),
-                   [&shader, &x, mode, x_spacing, z_width](const auto& i,
-                                                           const auto& j) {
-                       HeightMapStrip ret(
-                               shader, i, j, mode, x, x_spacing, z_width);
+                   [&shader, &x, mode, x_spacing, z_width, sample_rate](
+                           const auto& i, const auto& j) {
+                       HeightMapStrip ret(shader,
+                                          i,
+                                          j,
+                                          mode,
+                                          x,
+                                          x_spacing,
+                                          z_width,
+                                          min_frequency,
+                                          max_frequency,
+                                          sample_rate);
                        x += x_spacing;
                        return ret;
                    });
     return ret;
 }
 
+float Waterfall::z_to_frequency(float z) {
+    std::lock_guard<std::mutex> lck(mut);
+    return z_to_frequency(mode, z_width, z);
+}
+
+float Waterfall::frequency_to_z(float frequency) {
+    std::lock_guard<std::mutex> lck(mut);
+    return frequency_to_z(mode, z_width, frequency);
+}
+
+float Waterfall::z_to_frequency(Mode mode, float z_width, float z) {
+    switch (mode) {
+        case Mode::linear: {
+            return z * (max_frequency - min_frequency) / z_width +
+                   min_frequency;
+        }
+        case Mode::log: {
+            auto min_log = std::log10(min_frequency);
+            auto max_log = std::log10(max_frequency);
+            return std::pow(10, z * (max_log - min_log) / z_width + min_log);
+        }
+    }
+}
+
+float Waterfall::frequency_to_z(Mode mode, float z_width, float frequency) {
+    switch (mode) {
+        case Mode::linear: {
+            return (frequency - min_frequency) * z_width /
+                   (max_frequency - min_frequency);
+        }
+        case Mode::log: {
+            auto min_log = std::log10(min_frequency);
+            auto max_log = std::log10(max_frequency);
+            auto bin_log = std::log10(frequency);
+            return (bin_log - min_log) * z_width / (max_log - min_log);
+        }
+    }
+}
+
 //----------------------------------------------------------------------------//
 
-Waterfall::HeightMapStrip::HeightMapStrip(const FadeShader& shader,
+Waterfall::HeightMapStrip::HeightMapStrip(FadeShader& shader,
                                           const std::vector<float>& left,
                                           const std::vector<float>& right,
                                           Mode mode,
                                           float x,
                                           float x_spacing,
-                                          float z_width)
-        : shader(shader)
+                                          float z_width,
+                                          float min_frequency,
+                                          float max_frequency,
+                                          float sample_rate)
+        : shader(&shader)
         , size(left.size() * 2) {
-    auto g = compute_geometry(left, right, mode, x, x_spacing, z_width);
-    assert(g.size() == size);
+    auto g = compute_geometry(left,
+                              right,
+                              mode,
+                              x,
+                              x_spacing,
+                              z_width,
+                              min_frequency,
+                              max_frequency,
+                              sample_rate);
 
     geometry.data(g);
     colors.data(compute_colors(g));
@@ -231,7 +308,7 @@ Waterfall::HeightMapStrip::HeightMapStrip(const FadeShader& shader,
 
 void Waterfall::HeightMapStrip::draw() const {
     auto s_vao = vao.get_scoped();
-    glDrawElements(GL_TRIANGLE_STRIP, size, GL_UNSIGNED_INT, nullptr);
+    glDrawElements(GL_TRIANGLE_STRIP, ibo.size(), GL_UNSIGNED_INT, nullptr);
 }
 
 std::vector<glm::vec3> Waterfall::HeightMapStrip::compute_geometry(
@@ -240,36 +317,25 @@ std::vector<glm::vec3> Waterfall::HeightMapStrip::compute_geometry(
         Mode mode,
         float x,
         float x_spacing,
-        float z_width) {
+        float z_width,
+        float min_frequency,
+        float max_frequency,
+        float sample_rate) {
     assert(left.size() == right.size());
     auto count = left.size();
 
-    std::vector<glm::vec3> ret(count * 2);
+    int min_bin = std::ceil(count * min_frequency / (sample_rate * 0.5));
+    int max_bin = std::floor(count * max_frequency / (sample_rate * 0.5));
 
-    switch (mode) {
-        case Mode::linear: {
-            auto z_spacing = z_width / count;
-            for (auto i = 0u, j = 0u; i != count; ++i, j += 2) {
-                ret[j + 0] = glm::vec3{x, left[i], z_spacing * i};
-                ret[j + 1] = glm::vec3{x + x_spacing, right[i], z_spacing * i};
-            }
-            break;
-        }
-        case Mode::log: {
-            auto min_frequency = 0.001;
-            auto min_log = std::log(min_frequency);
-            for (auto i = 0u, j = 0u; i != count; ++i, j += 2) {
-                auto bin_frequency = i / static_cast<float>(count);
-                auto z_pos = bin_frequency < min_frequency
-                                     ? 0
-                                     : -(std::log(bin_frequency) - min_log) *
-                                               z_width / min_log;
-                ret[j + 0] = glm::vec3{x, left[i], z_pos};
-                ret[j + 1] = glm::vec3{x + x_spacing, right[i], z_pos};
-            }
-            break;
-        }
+    std::vector<glm::vec3> ret((max_bin - min_bin) * 2);
+
+    for (auto i = min_bin, j = 0; i != max_bin; ++i, j += 2) {
+        auto bin_frequency = i * sample_rate * 0.5 / count;
+        auto z_pos = frequency_to_z(mode, z_width, bin_frequency);
+        ret[j + 0] = glm::vec3{x, left[i], z_pos};
+        ret[j + 1] = glm::vec3{x + x_spacing, right[i], z_pos};
     }
+
     return ret;
 }
 
@@ -301,3 +367,6 @@ std::vector<glm::vec4> Waterfall::HeightMapStrip::compute_colors(
     });
     return ret;
 }
+
+const float Waterfall::min_frequency{20};
+const float Waterfall::max_frequency{20000};
