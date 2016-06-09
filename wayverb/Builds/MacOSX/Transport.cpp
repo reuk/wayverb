@@ -1,5 +1,8 @@
 #include "Transport.hpp"
 
+#include "CommandIDs.h"
+#include "Main.hpp"
+
 Transport::Transport(AudioTransportSource& transportSource)
         : transportSource(transportSource)
         , transportDisplay(transportSource)
@@ -89,13 +92,14 @@ void Transport::resized() {
 }
 
 void Transport::buttonClicked(Button* b) {
+    auto& command_manager = VisualiserApplication::get_command_manager();
     if (b == &rewindButton) {
-        transportSource.setPosition(0);
+        command_manager.invokeDirectly(CommandIDs::idReturnToBeginning, false);
     } else if (b == &playButton) {
         if (b->getToggleState()) {
-            transportSource.start();
+            command_manager.invokeDirectly(CommandIDs::idPlay, false);
         } else {
-            transportSource.stop();
+            command_manager.invokeDirectly(CommandIDs::idPause, false);
         }
     }
 }
@@ -104,7 +108,7 @@ void Transport::changeListenerCallback(ChangeBroadcaster* source) {
     if (source == &transportSource) {
         playButton.setToggleState(transportSource.isPlaying(),
                                   dontSendNotification);
-        if (transportSource.hasStreamFinished())
-            transportSource.setPosition(0);
+        auto& command_manager = VisualiserApplication::get_command_manager();
+        command_manager.invokeDirectly(CommandIDs::idReturnToBeginning, false);
     }
 }

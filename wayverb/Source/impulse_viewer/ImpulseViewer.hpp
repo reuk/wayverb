@@ -4,7 +4,9 @@
 #include "ImpulseRenderer.hpp"
 #include "Transport.hpp"
 
-class ImpulseViewer : public Component, public ChangeListener {
+class ImpulseViewer : public Component,
+                      public ChangeListener,
+                      public ApplicationCommandTarget {
 public:
     ImpulseViewer(const File& file);
     virtual ~ImpulseViewer() noexcept;
@@ -14,6 +16,12 @@ public:
     void changeListenerCallback(ChangeBroadcaster* cb) override;
 
     void load_from(const File& f);
+
+    void getAllCommands(Array<CommandID>& commands) override;
+    void getCommandInfo(CommandID command_id,
+                        ApplicationCommandInfo& result) override;
+    bool perform(const InvocationInfo& info) override;
+    ApplicationCommandTarget* getNextCommandTarget() override;
 
 private:
     class DefaultAudioFormatManager : public AudioFormatManager {

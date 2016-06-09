@@ -18,7 +18,7 @@ public:
     void changeListenerCallback(ChangeBroadcaster* source) override;
 
 private:
-    AudioTransportSource& transportSource;
+    const AudioTransportSource& transportSource;
 
     TransportDisplay transportDisplay;
     DrawableButton rewindButton;

@@ -24,9 +24,7 @@ public:
         setVisible(true);
 
         auto& command_manager = VisualiserApplication::get_command_manager();
-        command_manager.getKeyMappings()->resetToDefaultMappings();
         addKeyListener(command_manager.getKeyMappings());
-        setWantsKeyboardFocus(false);
     }
     virtual ~GenericComponentWindow() noexcept = default;
 
@@ -53,7 +51,7 @@ using LoadWindow = GenericComponentWindow<FileDropComponent>;
 
 VisualiserApplication::ImpulseViewerWindow::ImpulseViewerWindow(
         String name, const File& file)
-        : DocumentWindow(name, Colours::lightgrey, allButtons)
+        : DocumentWindow(name, Colours::darkgrey, allButtons)
         , this_file(file)
         , content_component(file) {
     setUsingNativeTitleBar(true);
@@ -65,9 +63,7 @@ VisualiserApplication::ImpulseViewerWindow::ImpulseViewerWindow(
 
     auto& command_manager = VisualiserApplication::get_command_manager();
     command_manager.registerAllCommandsForTarget(this);
-    command_manager.getKeyMappings()->resetToDefaultMappings();
     addKeyListener(command_manager.getKeyMappings());
-    setWantsKeyboardFocus(false);
 }
 
 void VisualiserApplication::ImpulseViewerWindow::closeButtonPressed() {
@@ -177,6 +173,7 @@ void VisualiserApplication::initialise(const String& commandLine) {
 
     command_manager = std::make_unique<ApplicationCommandManager>();
     command_manager->registerAllCommandsForTarget(this);
+    command_manager->getKeyMappings()->resetToDefaultMappings();
 
     main_menu_bar_model = std::make_unique<MainMenuBarModel>();
 
@@ -253,9 +250,7 @@ VisualiserApplication::MainWindow::MainWindow(String name,
 
     auto& command_manager = VisualiserApplication::get_command_manager();
     command_manager.registerAllCommandsForTarget(this);
-    command_manager.getKeyMappings()->resetToDefaultMappings();
     addKeyListener(command_manager.getKeyMappings());
-    setWantsKeyboardFocus(false);
 
     wrapper.needs_save.set(false);
 }

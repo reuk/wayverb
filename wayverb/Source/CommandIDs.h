@@ -10,6 +10,11 @@ enum {
     idRender,
     idVisualise,
     idShowHelp,
+
+    //  playback
+    idPlay,
+    idPause,
+    idReturnToBeginning,
 };
 
 }  // namespace CommandIDs
