@@ -64,6 +64,10 @@ Transport::Transport(AudioTransportSource& transportSource)
     playButton.setImages(&playDI, nullptr, nullptr, nullptr, &pauseDI);
 
     playButton.setClickingTogglesState(true);
+    playButton.setColour(DrawableButton::backgroundColourId,
+                         Colours::transparentBlack);
+    playButton.setColour(DrawableButton::backgroundOnColourId,
+                         Colours::transparentBlack);
 
     rewindButton.addListener(this);
     playButton.addListener(this);
@@ -108,7 +112,11 @@ void Transport::changeListenerCallback(ChangeBroadcaster* source) {
     if (source == &transportSource) {
         playButton.setToggleState(transportSource.isPlaying(),
                                   dontSendNotification);
-        auto& command_manager = VisualiserApplication::get_command_manager();
-        command_manager.invokeDirectly(CommandIDs::idReturnToBeginning, false);
+        if (transportSource.hasStreamFinished()) {
+            auto& command_manager =
+                    VisualiserApplication::get_command_manager();
+            command_manager.invokeDirectly(CommandIDs::idReturnToBeginning,
+                                           false);
+        }
     }
 }
