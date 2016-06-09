@@ -12,12 +12,33 @@
 #include <array>
 #include <thread>
 
+namespace {
+class Playhead : public BasicDrawableObject {
+public:
+    Playhead(GenericShader& shader)
+            : BasicDrawableObject(shader,
+                                  std::vector<glm::vec3>{{0, -1, 0},
+                                                         {0, -1, -2.2},
+                                                         {0, 1, -2.2},
+                                                         {0, 1, 0}},
+                                  std::vector<glm::vec4>{{1, 0, 0, 1},
+                                                         {1, 0, 0, 1},
+                                                         {1, 0, 0, 1},
+                                                         {1, 0, 0, 1}},
+                                  std::vector<GLuint>{0, 1, 2, 3, 0},
+                                  GL_LINE_STRIP) {
+    }
+};
+}  // namespace
+
 class ImpulseRenderer::ContextLifetime : public BaseContextLifetime,
                                          public GLAudioThumbnailBase {
 public:
-    ContextLifetime()
-            : waveform(generic_shader)
-            , waterfall(fade_shader, quad_shader) {
+    ContextLifetime(const AudioTransportSource& audio_transport_source)
+            : audio_transport_source(audio_transport_source)
+            , waveform(generic_shader)
+            , waterfall(fade_shader, quad_shader)
+            , playhead(generic_shader) {
     }
 
     void update(float dt) override {
@@ -25,6 +46,11 @@ public:
         waveform.set_position(glm::vec3{0, 0, current_params.waveform_z});
         waterfall.set_position(
                 glm::vec3{0, 0, current_params.waveform_z - 2.1});
+
+        playhead.set_position(
+                glm::vec3{audio_transport_source.getCurrentPosition(),
+                          0,
+                          current_params.waveform_z + 0.1});
 
         waveform.update(dt);
         waterfall.update(dt);
@@ -70,6 +96,7 @@ public:
 
         waveform.draw();
         waterfall.draw();
+        playhead.draw();
     }
 
     void set_mode(Mode u) {
@@ -181,6 +208,8 @@ private:
         glm::vec2 position;
     };
 
+    const AudioTransportSource& audio_transport_source;
+
     GenericShader generic_shader;
     FadeShader fade_shader;
     TexturedQuadShader quad_shader;
@@ -209,6 +238,7 @@ private:
     Mode mode;
     Waveform waveform;
     Waterfall waterfall;
+    Playhead playhead;
 
     std::unique_ptr<Mousing> mousing;
 };
@@ -224,14 +254,17 @@ const float ImpulseRenderer::ContextLifetime::Rotate::angle_scale{0.01};
 
 //----------------------------------------------------------------------------//
 
-ImpulseRenderer::ImpulseRenderer() {
+ImpulseRenderer::ImpulseRenderer(
+        const AudioTransportSource& audio_transport_source)
+        : audio_transport_source(audio_transport_source) {
 }
 
 ImpulseRenderer::~ImpulseRenderer() noexcept = default;
 
 void ImpulseRenderer::newOpenGLContextCreated() {
     std::lock_guard<std::mutex> lck(mut);
-    context_lifetime = std::make_unique<ContextLifetime>();
+    context_lifetime =
+            std::make_unique<ContextLifetime>(audio_transport_source);
     BaseRenderer::newOpenGLContextCreated();
 }
 

@@ -8,7 +8,7 @@ class ImpulseRenderer : public BaseRenderer, public GLAudioThumbnailBase {
 public:
     enum class Mode { waveform, waterfall };
 
-    ImpulseRenderer();
+    ImpulseRenderer(const AudioTransportSource& audio_transport_source);
     virtual ~ImpulseRenderer() noexcept;
 
     void newOpenGLContextCreated() override;
@@ -29,6 +29,8 @@ public:
 
 private:
     virtual BaseContextLifetime* get_context_lifetime() override;
+
+    const AudioTransportSource& audio_transport_source;
 
     class ContextLifetime;
     std::unique_ptr<ContextLifetime> context_lifetime;

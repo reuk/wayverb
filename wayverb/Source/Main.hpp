@@ -128,7 +128,6 @@ public:
         ApplicationCommandTarget* getNextCommandTarget() override;
 
     private:
-        AudioFormatManager audio_format_manager;
         File this_file;
         ImpulseViewer content_component;
     };

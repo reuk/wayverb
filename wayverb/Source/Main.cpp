@@ -68,9 +68,6 @@ VisualiserApplication::ImpulseViewerWindow::ImpulseViewerWindow(
     command_manager.getKeyMappings()->resetToDefaultMappings();
     addKeyListener(command_manager.getKeyMappings());
     setWantsKeyboardFocus(false);
-
-    audio_format_manager.registerBasicFormats();
-    content_component.load_from(audio_format_manager, this_file);
 }
 
 void VisualiserApplication::ImpulseViewerWindow::closeButtonPressed() {
