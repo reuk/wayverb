@@ -3,10 +3,12 @@
 #include "FullModel.hpp"
 #include "ImpulseRenderer.hpp"
 #include "Transport.hpp"
+#include "Ruler.hpp"
 
 class ImpulseViewer : public Component,
                       public ChangeListener,
-                      public ApplicationCommandTarget {
+                      public ApplicationCommandTarget,
+                      public Ruler::Listener {
 public:
     ImpulseViewer(const File& file);
     virtual ~ImpulseViewer() noexcept;
@@ -22,6 +24,11 @@ public:
                         ApplicationCommandInfo& result) override;
     bool perform(const InvocationInfo& info) override;
     ApplicationCommandTarget* getNextCommandTarget() override;
+
+    void rulerMouseDown(Ruler* ruler, const MouseEvent& e, float time) override;
+    void rulerMouseUp(Ruler* ruler, const MouseEvent& e) override;
+    void rulerDragged(Ruler* ruler, const MouseEvent& e) override;
+    void rulerDoubleClicked(Ruler* ruler, const MouseEvent& e) override;
 
 private:
     class DefaultAudioFormatManager : public AudioFormatManager {
@@ -41,8 +48,10 @@ private:
     AudioSourcePlayer audio_source_player;
 
     ImpulseRendererComponent renderer;
+    Ruler ruler;
     TabbedButtonBar tabs;
     Transport transport;
 
     model::Connector<ChangeBroadcaster> tabs_connector{&tabs, this};
+    model::Connector<Ruler> ruler_connector{&ruler, this};
 };

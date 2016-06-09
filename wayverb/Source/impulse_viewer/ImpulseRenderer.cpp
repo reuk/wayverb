@@ -178,8 +178,24 @@ public:
     }
 
 private:
-    glm::mat4 get_projection_matrix() const {
+    auto get_waveform_projection() const {
+        return glm::ortho(get_viewport().x * -0.5 * 0.01,
+                          get_viewport().x * +0.5 * 0.01,
+                          get_viewport().y * -0.5 * 0.01,
+                          get_viewport().y * +0.5 * 0.01,
+                          0.0,
+                          100.0);
+    }
+
+   auto get_waterfall_projection() const {
         return glm::perspective(45.0f, get_aspect(), 0.05f, 1000.0f);
+   }
+
+    glm::mat4 get_projection_matrix() const {
+        switch(mode) {
+            case Mode::waterfall: return get_waterfall_projection();
+            case Mode::waveform: return get_waveform_projection();
+        }
     }
 
     glm::mat4 get_rotation_matrix() const {
