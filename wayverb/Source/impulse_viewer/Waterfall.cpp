@@ -78,9 +78,9 @@ private:
 
 //----------------------------------------------------------------------------//
 
-Waterfall::Waterfall(FadeShader& fade_shader, TextShader& text_shader)
+Waterfall::Waterfall(FadeShader& fade_shader, TexturedQuadShader& quad_shader)
         : fade_shader(&fade_shader)
-        , text_shader(&text_shader) {
+        , quad_shader(&quad_shader) {
 }
 
 void Waterfall::set_position(const glm::vec3& p) {
@@ -122,7 +122,7 @@ void Waterfall::draw() const {
         i.draw();
     }
 
-    FrequencyAxisObject axis(*fade_shader, *text_shader);
+    FrequencyAxisObject axis(*fade_shader, *quad_shader);
     auto scale = load_context->length_in_samples / load_context->sample_rate;
     axis.set_scale(glm::vec3{scale, 1, 1});
     for (auto i = 0; i != axes; ++i) {

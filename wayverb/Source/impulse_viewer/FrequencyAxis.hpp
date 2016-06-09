@@ -1,17 +1,42 @@
 #pragma once
 
 #include "BasicDrawableObject.hpp"
-#include "TextHandler.hpp"
+
+#include "../JuceLibraryCode/JuceHeader.h"
+
+class TexturedQuadShader : public ShaderProgram {
+public:
+    TexturedQuadShader();
+
+    void set_model_matrix(const glm::mat4& m) const;
+    void set_view_matrix(const glm::mat4& m) const;
+    void set_projection_matrix(const glm::mat4& m) const;
+
+    void set_tex(GLint i) const;
+
+private:
+    static const std::string vert;
+    static const std::string frag;
+};
+
+class TextImage {
+public:
+    void set_text(const std::string& text, int height);
+    const Image& get_image() const;
+
+private:
+    Image image;
+};
 
 class FrequencyAxisObject final : public BasicDrawableObject {
 public:
-    FrequencyAxisObject(ShaderProgram& shader, TextShader& text_shader);
+    FrequencyAxisObject(ShaderProgram& shader, TexturedQuadShader& quad_shader);
 
     void set_label(const std::string& t);
 
     void draw() const override;
 
 private:
-    TextHandler text_handler;
-    std::string label{"text goes here"};
+    TexturedQuadShader* quad_shader;
+    OpenGLTexture texture;
 };

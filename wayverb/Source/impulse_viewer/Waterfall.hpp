@@ -16,7 +16,7 @@ class Waterfall : public ::Updatable,
 public:
     enum class Mode { linear, log };
 
-    Waterfall(FadeShader& fade_shader, TextShader& text_shader);
+    Waterfall(FadeShader& fade_shader, TexturedQuadShader& quad_shader);
 
     void update(float dt) override;
     void draw() const override;
@@ -100,7 +100,7 @@ private:
     static const float max_frequency;
 
     FadeShader* fade_shader;
-    TextShader* text_shader;
+    TexturedQuadShader* quad_shader;
 
     Mode mode{Mode::log};
 

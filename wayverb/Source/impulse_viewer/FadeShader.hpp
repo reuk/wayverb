@@ -7,11 +7,11 @@ class FadeShader final : public ShaderProgram {
 public:
     FadeShader();
 
-    void set_fade(float f);
+    void set_fade(float f) const;
 
-    void set_model_matrix(const glm::mat4& mat);
-    void set_view_matrix(const glm::mat4& mat);
-    void set_projection_matrix(const glm::mat4& mat);
+    void set_model_matrix(const glm::mat4& mat) const;
+    void set_view_matrix(const glm::mat4& mat) const;
+    void set_projection_matrix(const glm::mat4& mat) const;
 
 private:
     static const std::string vertex_shader;

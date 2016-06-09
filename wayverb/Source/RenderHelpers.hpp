@@ -77,6 +77,7 @@ public:
             : renderer(std::forward<Ts>(ts)...) {
         open_gl_context.setOpenGLVersionRequired(OpenGLContext::openGL3_2);
         open_gl_context.setRenderer(&renderer);
+        open_gl_context.setComponentPaintingEnabled(false);
         open_gl_context.setContinuousRepainting(true);
         open_gl_context.setMultisamplingEnabled(true);
         open_gl_context.attachTo(*this);
