@@ -31,6 +31,8 @@ public:
     }
 
     void draw() const override {
+        assert(glGetError() == GL_NO_ERROR);
+
         auto c = 0.0;
         glClearColor(c, c, c, 0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -39,10 +41,10 @@ public:
         glEnable(GL_MULTISAMPLE);
         glEnable(GL_LINE_SMOOTH);
         glEnable(GL_POLYGON_SMOOTH);
-        /*
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        */
+
+        assert(glGetError() == GL_NO_ERROR);
 
         auto config_shader = [this](auto& shader) {
             auto s_shader = shader.get_scoped();
@@ -55,8 +57,16 @@ public:
         config_shader(fade_shader);
         config_shader(quad_shader);
 
-        auto s_shader = fade_shader.get_scoped();
-        fade_shader.set_fade(current_params.fade);
+        {
+            auto s_shader = fade_shader.get_scoped();
+            fade_shader.set_fade(current_params.fade);
+        }
+
+        {
+            auto s_shader = quad_shader.get_scoped();
+            quad_shader.set_screen_size(get_viewport());
+            quad_shader.set_fade(current_params.fade);
+        }
 
         waveform.draw();
         waterfall.draw();

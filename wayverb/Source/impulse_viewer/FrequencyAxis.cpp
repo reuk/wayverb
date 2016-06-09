@@ -34,6 +34,10 @@ public:
                 GL_TRIANGLE_STRIP, ibo.size(), GL_UNSIGNED_SHORT, nullptr);
     }
 
+    void set_position(const glm::vec3& p) {
+        position = p;
+    }
+
 private:
     TexturedQuadShader* shader;
 
@@ -41,6 +45,8 @@ private:
     StaticVBO geometry;
     StaticVBO uv;
     StaticIBO ibo;
+
+    glm::vec3 position;
 };
 
 }  // namespace
@@ -49,6 +55,16 @@ private:
 
 TexturedQuadShader::TexturedQuadShader()
         : ShaderProgram(vert, frag) {
+}
+
+void TexturedQuadShader::set_billboard(const glm::vec3& m) const {
+    set("v_billboard", m);
+}
+void TexturedQuadShader::set_billboard_size(const glm::vec2& m) const {
+    set("v_billboard_size", m);
+}
+void TexturedQuadShader::set_screen_size(const glm::vec2& m) const {
+    set("v_screen_size", m);
 }
 
 void TexturedQuadShader::set_model_matrix(const glm::mat4& m) const {
@@ -65,17 +81,27 @@ void TexturedQuadShader::set_tex(GLint i) const {
     set("f_tex", i);
 }
 
+void TexturedQuadShader::set_fade(float f) const {
+    set("f_fade", f);
+}
+
 const std::string TexturedQuadShader::vert{R"(
 #version 150
 in vec3 v_position;
 in vec2 v_uv;
 out vec2 f_uv;
+uniform vec2 v_screen_size;
+uniform vec2 v_billboard_size;
 uniform vec3 v_billboard;
 uniform mat4 v_model;
 uniform mat4 v_view;
 uniform mat4 v_projection;
 void main() {
-    gl_Position = v_projection * v_view * v_model * vec4(v_position, 1.0);
+    //  thanks http://www.opengl-tutorial.org/intermediate-tutorials/billboards-particles/billboards/
+
+    gl_Position = v_projection * v_view * v_model * vec4(v_billboard, 1.0);
+    gl_Position /= gl_Position.w;
+    gl_Position.xy += (v_position.xy * v_billboard_size) / v_screen_size;
     f_uv = v_uv;
 }
 )"};
@@ -85,8 +111,9 @@ const std::string TexturedQuadShader::frag{R"(
 in vec2 f_uv;
 out vec4 frag_color;
 uniform sampler2D f_tex;
+uniform float f_fade;
 void main() {
-    frag_color = texture(f_tex, f_uv);
+    frag_color = texture(f_tex, f_uv) * f_fade;;
 }
 )"};
 
@@ -99,14 +126,12 @@ void TextImage::set_text(const std::string& text, int height) {
     auto p_width = std::pow(2, std::ceil(std::log2(width)));
     auto p_height = std::pow(2, std::ceil(std::log2(height)));
 
-    auto p_dim = std::max(p_width, p_height);
-
-    image = Image(Image::ARGB, p_dim, p_dim, true);
+    image = Image(Image::ARGB, p_width, p_height, true);
     {
         Graphics g(image);
         g.setFont(font);
         g.setColour(Colours::white);
-        g.drawText(text, 0, 0, p_dim, p_dim, Justification::centred);
+        g.drawText(text, 0, 0, p_width, p_height, Justification::centred);
     }
 }
 
@@ -116,8 +141,7 @@ const Image& TextImage::get_image() const {
 
 //----------------------------------------------------------------------------//
 
-FrequencyAxisObject::FrequencyAxisObject(ShaderProgram& shader,
-                                         TexturedQuadShader& quad_shader)
+AxisObject::AxisObject(ShaderProgram& shader, TexturedQuadShader& quad_shader)
         : BasicDrawableObject(
                   shader,
                   {{0, 0, 0}, {1, 0, 0}, {0, 0, 0}, {0, 1, 0}},
@@ -125,28 +149,29 @@ FrequencyAxisObject::FrequencyAxisObject(ShaderProgram& shader,
                   {0, 1, 2, 3},
                   GL_LINES)
         , quad_shader(&quad_shader) {
-    set_label("text or whatever");
 }
 
-void FrequencyAxisObject::set_label(const std::string& t) {
+void AxisObject::set_label(const std::string& t) {
     TextImage text_image;
     text_image.set_text(t, 32);
     texture.loadImage(text_image.get_image());
+
+    auto s = quad_shader->get_scoped();
+    quad_shader->set_billboard_size(
+            glm::vec2{texture.getWidth(), texture.getHeight()});
 }
 
-void FrequencyAxisObject::draw() const {
+void AxisObject::draw() const {
     BasicDrawableObject::draw();
 
     glActiveTexture(GL_TEXTURE0);
-    glEnable(GL_TEXTURE_2D);
     texture.bind();
 
     TexturedQuad quad(*quad_shader);
 
     auto s = quad_shader->get_scoped();
     quad_shader->set_tex(0);
+    quad_shader->set_billboard(get_position() + glm::vec3(0, 1.2, 0));
 
     quad.draw();
-
-    glDisable(GL_TEXTURE_2D);
 }

@@ -35,8 +35,8 @@ public:
                   int start_offset,
                   int num_samples) override;
 
-    float z_to_frequency(float z);
-    float frequency_to_z(float frequency);
+    float z_to_frequency(float z) const;
+    float frequency_to_z(float frequency) const;
 
     static float z_to_frequency(Mode mode, float z_width, float z);
     static float frequency_to_z(Mode mode, float z_width, float frequency);
@@ -103,6 +103,8 @@ private:
     TexturedQuadShader* quad_shader;
 
     Mode mode{Mode::log};
+
+    glm::vec2 viewport;
 
     std::vector<std::vector<float>> spectrum;
 

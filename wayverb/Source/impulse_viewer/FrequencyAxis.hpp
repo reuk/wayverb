@@ -8,9 +8,15 @@ class TexturedQuadShader : public ShaderProgram {
 public:
     TexturedQuadShader();
 
+    void set_billboard(const glm::vec3& m) const;
+    void set_billboard_size(const glm::vec2& m) const;
+    void set_screen_size(const glm::vec2& m) const;
+
     void set_model_matrix(const glm::mat4& m) const;
     void set_view_matrix(const glm::mat4& m) const;
     void set_projection_matrix(const glm::mat4& m) const;
+
+    void set_fade(float f) const;
 
     void set_tex(GLint i) const;
 
@@ -28,9 +34,9 @@ private:
     Image image;
 };
 
-class FrequencyAxisObject final : public BasicDrawableObject {
+class AxisObject final : public BasicDrawableObject {
 public:
-    FrequencyAxisObject(ShaderProgram& shader, TexturedQuadShader& quad_shader);
+    AxisObject(ShaderProgram& shader, TexturedQuadShader& quad_shader);
 
     void set_label(const std::string& t);
 

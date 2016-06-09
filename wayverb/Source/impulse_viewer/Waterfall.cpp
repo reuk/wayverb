@@ -8,6 +8,8 @@
 #include "glm/gtx/transform.hpp"
 
 #include <array>
+#include <iomanip>
+#include <sstream>
 
 namespace {
 class Spectrogram {
@@ -116,19 +118,50 @@ void Waterfall::update(float dt) {
 
 void Waterfall::draw() const {
     std::lock_guard<std::mutex> lck(mut);
-    auto s_shader = fade_shader->get_scoped();
+
+    assert(glGetError() == GL_NO_ERROR);
+
+    auto s = fade_shader->get_scoped();
     fade_shader->set_model_matrix(glm::translate(position));
     for (const auto& i : strips) {
         i.draw();
     }
 
-    FrequencyAxisObject axis(*fade_shader, *quad_shader);
-    auto scale = load_context->length_in_samples / load_context->sample_rate;
-    axis.set_scale(glm::vec3{scale, 1, 1});
-    for (auto i = 0; i != axes; ++i) {
-        axis.set_position(position +
-                          glm::vec3{0, 0.01, i * z_width / (axes - 1)});
-        axis.draw();
+    AxisObject axis(*fade_shader, *quad_shader);
+
+    auto seconds = load_context->length_in_samples / load_context->sample_rate;
+
+    {
+        // frequency marks
+
+        auto scale = seconds;
+        axis.set_scale(glm::vec3{scale, 1, 1});
+        for (auto i = 0; i != axes; ++i) {
+            auto z = i * z_width / (axes - 1);
+            std::stringstream ss;
+            ss << std::setprecision(2)
+               << z_to_frequency(mode, z_width, z) / 1000;
+            axis.set_label(ss.str());
+            axis.set_position(position + glm::vec3{0, 0.01, z});
+            axis.draw();
+        }
+    }
+
+    {
+        //  time marks
+
+        auto scale = 2;
+        axis.set_scale(glm::vec3{scale, 1, 1});
+        axis.set_azimuth(-M_PI / 2);
+
+        for (auto i = 1; i <= std::floor(seconds) ; ++i) {
+            auto time = i;
+            std::stringstream ss;
+            ss << time;
+            axis.set_label(ss.str());
+            axis.set_position(position + glm::vec3{i, 0.01, 0});
+            axis.draw();
+        }
     }
 }
 
@@ -225,12 +258,12 @@ std::vector<Waterfall::HeightMapStrip> Waterfall::compute_strips(
     return ret;
 }
 
-float Waterfall::z_to_frequency(float z) {
+float Waterfall::z_to_frequency(float z) const {
     std::lock_guard<std::mutex> lck(mut);
     return z_to_frequency(mode, z_width, z);
 }
 
-float Waterfall::frequency_to_z(float frequency) {
+float Waterfall::frequency_to_z(float frequency) const {
     std::lock_guard<std::mutex> lck(mut);
     return frequency_to_z(mode, z_width, frequency);
 }
