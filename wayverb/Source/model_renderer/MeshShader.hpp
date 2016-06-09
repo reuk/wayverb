@@ -13,8 +13,6 @@ public:
     void set_projection_matrix(const glm::mat4& mat) const;
 
 private:
-    void set_matrix(const std::string& s, const glm::mat4& mat) const;
-
     static const std::string vertex_shader;
     static const std::string fragment_shader;
 };

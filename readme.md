@@ -45,10 +45,10 @@ Updating the JUCE project
     * libassimp.a
     * libcombined.a
     * libcommon.a
+    * libglog.a
     * libmodern_gl_utils.a
     * libraytracer.a
     * libwaveguide.a
-    * libglog.a
 6. Also add the following libraries from outside the project:
     * OpenCL.framework
     * libz.tbd

@@ -4,17 +4,17 @@ FadeShader::FadeShader()
         : ShaderProgram(vertex_shader, fragment_shader) {
 }
 
-void FadeShader::set_fade(float f) const {
+void FadeShader::set_fade(float f) {
     set("v_fade", f);
 }
 
-void FadeShader::set_model_matrix(const glm::mat4& mat) const {
+void FadeShader::set_model_matrix(const glm::mat4& mat) {
     set("v_model", mat);
 }
-void FadeShader::set_view_matrix(const glm::mat4& mat) const {
+void FadeShader::set_view_matrix(const glm::mat4& mat) {
     set("v_view", mat);
 }
-void FadeShader::set_projection_matrix(const glm::mat4& mat) const {
+void FadeShader::set_projection_matrix(const glm::mat4& mat) {
     set("v_projection", mat);
 }
 

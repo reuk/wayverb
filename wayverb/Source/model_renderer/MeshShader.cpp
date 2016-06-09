@@ -5,18 +5,13 @@ MeshShader::MeshShader()
 }
 
 void MeshShader::set_model_matrix(const glm::mat4& mat) const {
-    set_matrix("v_model", mat);
+    set("v_model", mat);
 }
 void MeshShader::set_view_matrix(const glm::mat4& mat) const {
-    set_matrix("v_view", mat);
+    set("v_view", mat);
 }
 void MeshShader::set_projection_matrix(const glm::mat4& mat) const {
-    set_matrix("v_projection", mat);
-}
-
-void MeshShader::set_matrix(const std::string& s, const glm::mat4& mat) const {
-    glUniformMatrix4fv(
-        get_uniform_location(s), 1, GL_FALSE, glm::value_ptr(mat));
+    set("v_projection", mat);
 }
 
 const std::string MeshShader::vertex_shader(R"(

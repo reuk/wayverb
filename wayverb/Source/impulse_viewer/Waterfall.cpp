@@ -78,8 +78,9 @@ private:
 
 //----------------------------------------------------------------------------//
 
-Waterfall::Waterfall(FadeShader& shader)
-        : shader(&shader) {
+Waterfall::Waterfall(FadeShader& fade_shader, TextShader& text_shader)
+        : fade_shader(&fade_shader)
+        , text_shader(&text_shader) {
 }
 
 void Waterfall::set_position(const glm::vec3& p) {
@@ -100,7 +101,7 @@ void Waterfall::update(float dt) {
     while (strips.size() + 1 < spectrum.size() &&
            (std::chrono::system_clock::now() - begin) <
                    std::chrono::duration<double>(1 / 200.0)) {
-        strips.emplace_back(*shader,
+        strips.emplace_back(*fade_shader,
                             spectrum[strips.size()],
                             spectrum[strips.size() + 1],
                             mode,
@@ -115,13 +116,13 @@ void Waterfall::update(float dt) {
 
 void Waterfall::draw() const {
     std::lock_guard<std::mutex> lck(mut);
-    auto s_shader = shader->get_scoped();
-    shader->set_model_matrix(glm::translate(position));
+    auto s_shader = fade_shader->get_scoped();
+    fade_shader->set_model_matrix(glm::translate(position));
     for (const auto& i : strips) {
         i.draw();
     }
 
-    FrequencyAxisObject axis(*shader);
+    FrequencyAxisObject axis(*fade_shader, *text_shader);
     auto scale = load_context->length_in_samples / load_context->sample_rate;
     axis.set_scale(glm::vec3{scale, 1, 1});
     for (auto i = 0; i != axes; ++i) {
@@ -135,7 +136,7 @@ void Waterfall::set_mode(Mode u) {
     std::lock_guard<std::mutex> lck(mut);
     if (u != mode) {
         mode = u;
-        strips = compute_strips(*shader,
+        strips = compute_strips(*fade_shader,
                                 spectrum,
                                 mode,
                                 x_spacing,

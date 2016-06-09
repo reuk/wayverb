@@ -17,7 +17,7 @@ class ImpulseRenderer::ContextLifetime : public BaseContextLifetime,
 public:
     ContextLifetime()
             : waveform(generic_shader)
-            , waterfall(fade_shader) {
+            , waterfall(fade_shader, text_shader) {
     }
 
     void update(float dt) override {
@@ -28,6 +28,19 @@ public:
 
         waveform.update(dt);
         waterfall.update(dt);
+
+        auto config_shader = [this](auto& shader) {
+            auto s_shader = shader.get_scoped();
+            shader.set_model_matrix(glm::mat4());
+            shader.set_view_matrix(get_view_matrix());
+            shader.set_projection_matrix(get_projection_matrix());
+        };
+
+        config_shader(generic_shader);
+        config_shader(fade_shader);
+
+        auto s_shader = fade_shader.get_scoped();
+        fade_shader.set_fade(current_params.fade);
     }
 
     void draw() const override {
@@ -43,19 +56,6 @@ public:
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         */
-
-        auto config_shader = [this](const auto& shader) {
-            auto s_shader = shader.get_scoped();
-            shader.set_model_matrix(glm::mat4());
-            shader.set_view_matrix(get_view_matrix());
-            shader.set_projection_matrix(get_projection_matrix());
-        };
-
-        config_shader(generic_shader);
-        config_shader(fade_shader);
-
-        auto s_shader = fade_shader.get_scoped();
-        fade_shader.set_fade(current_params.fade);
 
         waveform.draw();
         waterfall.draw();
@@ -172,6 +172,7 @@ private:
 
     GenericShader generic_shader;
     FadeShader fade_shader;
+    TextShader text_shader;
 
     struct ModeParams {
         Orientable::AzEl azel{0, 0};
