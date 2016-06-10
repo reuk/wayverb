@@ -8,6 +8,20 @@ public:
                                      bool has_keyboard_focus,
                                      bool is_mouse_over,
                                      bool is_button_down) noexcept;
+    static void matte_background_box(Graphics& g,
+                                     Rectangle<int> bounds,
+                                     bool vertical,
+                                     const Colour& colour);
+    static void matte_foreground_box(Graphics& g,
+                                     int x,
+                                     int y,
+                                     int width,
+                                     int height,
+                                     const Colour& colour);
+    static void matte_box(Graphics& g,
+                          const Rectangle<int>& bounds,
+                          bool vertical,
+                          const Colour& colour);
     VisualiserLookAndFeel();
 
     void drawProgressBar(Graphics& g,

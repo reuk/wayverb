@@ -136,10 +136,10 @@ void matte_inner(Graphics& g,
     }
 }
 
-void matte_background_box(Graphics& g,
-                          Rectangle<int> bounds,
-                          bool vertical,
-                          const Colour& colour) {
+void VisualiserLookAndFeel::matte_background_box(Graphics& g,
+                                                 Rectangle<int> bounds,
+                                                 bool vertical,
+                                                 const Colour& colour) {
     bounds = matte_outer(g, bounds, vertical);
     if (vertical) {
         g.setGradientFill(ColourGradient(colour,
@@ -164,12 +164,12 @@ void matte_background_box(Graphics& g,
                bounds.getHeight());
 }
 
-void matte_foreground_box(Graphics& g,
-                          int x,
-                          int y,
-                          int width,
-                          int height,
-                          const Colour& colour) {
+void VisualiserLookAndFeel::matte_foreground_box(Graphics& g,
+                                                 int x,
+                                                 int y,
+                                                 int width,
+                                                 int height,
+                                                 const Colour& colour) {
     Rectangle<int> bounds(x, y, width, height);
 
     g.setColour(Colours::black.withAlpha(0.9f));
@@ -184,10 +184,10 @@ void matte_foreground_box(Graphics& g,
     matte_inner(g, bounds, false, colour);
 }
 
-void matte_box(Graphics& g,
-               const Rectangle<int>& bounds,
-               bool vertical,
-               const Colour& colour) {
+void VisualiserLookAndFeel::matte_box(Graphics& g,
+                                      const Rectangle<int>& bounds,
+                                      bool vertical,
+                                      const Colour& colour) {
     matte_inner(g, matte_outer(g, bounds, vertical), vertical, colour);
 }
 

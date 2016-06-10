@@ -34,13 +34,16 @@ public:
     void set_time_scale(float f) override;
     float get_length_in_seconds() const ;
 
+    void set_visible_range(const Range<float>& range) override;
+
 private:
     static const int per_buffer = 16;
 
     void load_from(std::unique_ptr<AudioFormatReader>&& reader);
     void clear_impl();
 
-    glm::mat4 get_scale_matrix() const;
+    glm::vec3 get_scale() const;
+    glm::vec3 get_position() const;
 
     static std::vector<glm::vec4> compute_colours(
             const std::vector<glm::vec3>& g);
@@ -65,6 +68,7 @@ private:
 
     float amplitude_scale{1};
     float time_scale{1};
+    Range<float> visible_range;
 
     WorkQueue incoming_work_queue;
     mutable std::mutex mut;

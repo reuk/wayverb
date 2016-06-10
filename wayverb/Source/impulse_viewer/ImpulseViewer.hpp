@@ -2,20 +2,17 @@
 
 #include "FullModel.hpp"
 #include "ImpulseRenderer.hpp"
-#include "Transport.hpp"
 #include "Ruler.hpp"
+#include "Transport.hpp"
 
 class ImpulseViewer : public Component,
-                      public ChangeListener,
                       public ApplicationCommandTarget,
-                      public Ruler::Listener {
+                      public Button::Listener {
 public:
     ImpulseViewer(const File& file);
     virtual ~ImpulseViewer() noexcept;
 
     void resized() override;
-
-    void changeListenerCallback(ChangeBroadcaster* cb) override;
 
     void load_from(const File& f);
 
@@ -25,10 +22,7 @@ public:
     bool perform(const InvocationInfo& info) override;
     ApplicationCommandTarget* getNextCommandTarget() override;
 
-    void rulerMouseDown(Ruler* ruler, const MouseEvent& e, float time) override;
-    void rulerMouseUp(Ruler* ruler, const MouseEvent& e) override;
-    void rulerDragged(Ruler* ruler, const MouseEvent& e) override;
-    void rulerDoubleClicked(Ruler* ruler, const MouseEvent& e) override;
+    void buttonClicked(Button* b) override;
 
 private:
     class DefaultAudioFormatManager : public AudioFormatManager {
@@ -49,9 +43,15 @@ private:
 
     ImpulseRendererComponent renderer;
     Ruler ruler;
-    TabbedButtonBar tabs;
+
+    TextButton waterfall_button;
+    TextButton waveform_button;
+
     Transport transport;
 
-    model::Connector<ChangeBroadcaster> tabs_connector{&tabs, this};
-    model::Connector<Ruler> ruler_connector{&ruler, this};
+    model::Connector<TextButton> waterfall_button_connector{&waterfall_button,
+                                                            this};
+    model::Connector<TextButton> waveform_button_connector{&waveform_button,
+                                                           this};
+    model::Connector<Ruler> ruler_connector{&ruler, &renderer.get_renderer()};
 };

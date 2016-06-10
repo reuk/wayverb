@@ -480,6 +480,7 @@
 		1B6108181CA032ADF5CE83F6 /* juce_FileTreeComponent.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = juce_FileTreeComponent.h; path = ../../JuceLibraryCode/modules/juce_gui_basics/filebrowser/juce_FileTreeComponent.h; sourceTree = SOURCE_ROOT; };
 		1BA222251D0AF16B00AD3702 /* WaterfallShader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = WaterfallShader.cpp; path = ../../Source/WaterfallShader.cpp; sourceTree = "<group>"; };
 		1BA222261D0AF16B00AD3702 /* WaterfallShader.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = WaterfallShader.hpp; path = ../../Source/WaterfallShader.hpp; sourceTree = "<group>"; };
+		1BA222411D0B0C1400AD3702 /* lerp.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = lerp.h; path = ../../Source/lerp.h; sourceTree = "<group>"; };
 		1BAF74BB3A7DDB036AACF878 /* infback.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = infback.c; path = ../../JuceLibraryCode/modules/juce_core/zip/zlib/infback.c; sourceTree = SOURCE_ROOT; };
 		1BD23C351D099B7800B2CD2C /* WAYVERB.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = WAYVERB.xcodeproj; path = ../../../xcproj/WAYVERB.xcodeproj; sourceTree = "<group>"; };
 		1BD23C931D099BAB00B2CD2C /* OpenCL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenCL.framework; path = System/Library/Frameworks/OpenCL.framework; sourceTree = SDKROOT; };
@@ -1853,6 +1854,7 @@
 				1E8EE9D763496DE4C56345C2 /* model_renderer */,
 				8EC991E2A8DBE96759A51D2A /* BottomPanel.cpp */,
 				55D77B12C43677F8ADD9715A /* BottomPanel.hpp */,
+				1BA222411D0B0C1400AD3702 /* lerp.h */,
 				47693DBE27BB132FAA7ED4E1 /* CommandIDs.h */,
 				3EA61E6642837BD860CBF1D8 /* DirectionEditor.cpp */,
 				86F82A45FA8F3FB67F8E2021 /* DirectionEditor.hpp */,

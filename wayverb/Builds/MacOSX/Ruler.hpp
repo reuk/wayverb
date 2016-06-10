@@ -7,21 +7,20 @@ public:
     class Listener {
     public:
         virtual ~Listener() noexcept = default;
-        virtual void rulerMouseDown(Ruler* ruler,
-                                    const MouseEvent& e,
-                                    float time) = 0;
-        virtual void rulerMouseUp(Ruler* ruler, const MouseEvent& e) = 0;
-        virtual void rulerDragged(Ruler* ruler, const MouseEvent& e) = 0;
-        virtual void rulerDoubleClicked(Ruler* ruler, const MouseEvent& e) = 0;
+
+        virtual void ruler_visible_range_changed(Ruler* r,
+                                                 const Range<float>& range) = 0;
     };
 
     Ruler();
-    virtual ~Ruler() noexcept = default;
+    virtual ~Ruler() noexcept;
 
-    void setMaximumRange(double max);
+    void set_max_range(const Range<float>& r);
+    void set_visible_range(const Range<float>& r, bool notify);
+
+    float get_time(float x) const;
 
     void paint(Graphics& g) override;
-    void resized() override;
 
     void mouseEnter(const MouseEvent& event) override;
     void mouseExit(const MouseEvent& event) override;
@@ -34,6 +33,10 @@ public:
     void removeListener(Listener* listener);
 
 private:
-    double max{0};
-    ListenerList<Listener> listenerList;
+    Range<float> max_range;
+    Range<float> visible_range;
+    ListenerList<Listener> listener_list;
+
+    struct RulerState;
+    std::unique_ptr<RulerState> ruler_state;
 };

@@ -4,7 +4,11 @@
 #include "RenderHelpers.hpp"
 #include "WorkQueue.hpp"
 
-class ImpulseRenderer : public BaseRenderer, public GLAudioThumbnailBase {
+#include "Ruler.hpp"
+
+class ImpulseRenderer : public BaseRenderer,
+                        public GLAudioThumbnailBase,
+                        public Ruler::Listener {
 public:
     enum class Mode { waveform, waterfall };
 
@@ -15,6 +19,9 @@ public:
     void openGLContextClosing() override;
 
     void set_mode(Mode mode);
+
+    void ruler_visible_range_changed(Ruler* r,
+                                     const Range<float>& range) override;
 
     //  inherited
     void clear() override;
@@ -30,7 +37,11 @@ public:
     void set_amplitude_scale(float f) override;
     void set_time_scale(float f) override;
 
+    void set_visible_range(const Range<float>& range) override;
+
 private:
+    void set_visible_range_impl(const Range<float>& range);
+
     virtual BaseContextLifetime* get_context_lifetime() override;
 
     const AudioTransportSource& audio_transport_source;

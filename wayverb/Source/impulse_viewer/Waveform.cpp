@@ -46,14 +46,20 @@ void Waveform::update(float dt) {
     }
 }
 
-glm::mat4 Waveform::get_scale_matrix() const {
-    return glm::scale(glm::vec3{time_scale, amplitude_scale, 1});
+glm::vec3 Waveform::get_scale() const {
+    auto length = load_context->length_in_samples / load_context->sample_rate;
+    auto x = length / visible_range.getLength();
+    return glm::vec3{time_scale * x, amplitude_scale, 1};
+}
+glm::vec3 Waveform::get_position() const {
+    return position + glm::vec3{-visible_range.getStart() * get_scale().x, 0, 0};
 }
 
 void Waveform::draw() const {
     std::lock_guard<std::mutex> lck(mut);
     auto s_shader = shader->get_scoped();
-    shader->set_model_matrix(glm::translate(position) * get_scale_matrix());
+    shader->set_model_matrix(glm::translate(get_position()) *
+                             glm::scale(get_scale()));
 
     auto s_vao = vao.get_scoped();
     glDrawElements(GL_TRIANGLE_STRIP, ibo.size(), GL_UNSIGNED_INT, nullptr);
@@ -68,6 +74,11 @@ void Waveform::load_from(AudioFormatManager& manager, const File& file) {
     std::lock_guard<std::mutex> lck(mut);
     load_from(
             std::unique_ptr<AudioFormatReader>(manager.createReaderFor(file)));
+}
+
+void Waveform::set_visible_range(const Range<float>& range) {
+    std::lock_guard<std::mutex> lck(mut);
+    visible_range = range;
 }
 
 //  these two will be called from a thread *other* than the gl thread

@@ -57,6 +57,19 @@ public:
         return waveform.get_length_in_seconds();
     }
 
+    /*
+    glm::vec3 Waveform::get_scale() const {
+        auto length = load_context->length_in_samples /
+    load_context->sample_rate;
+        auto x = length / visible_range.getLength();
+        return glm::vec3{time_scale * x, amplitude_scale, 0};
+    }
+    glm::vec3 Waveform::get_position() const {
+        return position + glm::vec3{-visible_range.getStart() * get_scale().x,
+    0, 0};
+    }
+    */
+
     void update(float dt) override {
         waveform_max_view =
                 ScaleFactor{get_viewport().x, get_viewport().y * 0.5f};
@@ -84,15 +97,25 @@ public:
         waveform.set_position(base_position);
         waterfall.set_position(base_position +
                                glm::vec3{0, 0, -Waterfall::width - 0.1});
+
+        auto scale_x = waveform.get_length_in_seconds() / visible_range.getLength();
         playhead.set_position(
                 base_position +
-                glm::vec3{audio_transport_source.getCurrentPosition() *
-                                  scale.time,
+                glm::vec3{(audio_transport_source.getCurrentPosition() -
+                           visible_range.getStart()) *
+                                  scale.time * scale_x,
                           0,
                           0.1});
 
         waveform.update(dt);
         waterfall.update(dt);
+    }
+
+    void set_visible_range(const Range<float>& range) override {
+        for (auto i : get_thumbnails()) {
+            i->set_visible_range(range);
+        }
+        visible_range = range;
     }
 
     void draw() const override {
@@ -326,6 +349,7 @@ private:
     ScaleFactor waveform_max_view;
 
     ScaleFactor current_scale_factor;
+    Range<float> visible_range;
 
     static const float waterfall_max_x;
 
@@ -439,5 +463,23 @@ void ImpulseRenderer::set_time_scale(float f) {
     push_incoming([this, f] {
         assert(context_lifetime);
         context_lifetime->set_time_scale(f);
+    });
+}
+
+void ImpulseRenderer::ruler_visible_range_changed(Ruler* r,
+                                                  const Range<float>& range) {
+    std::lock_guard<std::mutex> lck(mut);
+    set_visible_range_impl(range);
+}
+
+void ImpulseRenderer::set_visible_range(const Range<float>& range) {
+    std::lock_guard<std::mutex> lck(mut);
+    set_visible_range_impl(range);
+}
+
+void ImpulseRenderer::set_visible_range_impl(const Range<float>& range) {
+    push_incoming([this, range] {
+        assert(context_lifetime);
+        context_lifetime->set_visible_range(range);
     });
 }

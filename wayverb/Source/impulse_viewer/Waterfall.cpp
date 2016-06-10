@@ -118,8 +118,13 @@ void Waterfall::update(float dt) {
     }
 }
 
-glm::mat4 Waterfall::get_scale_matrix() const {
-    return glm::scale(glm::vec3{time_scale, amplitude_scale, width});
+glm::vec3 Waterfall::get_scale() const {
+    auto length = load_context->length_in_samples / load_context->sample_rate;
+    auto x = length / visible_range.getLength();
+    return glm::vec3{time_scale * x, amplitude_scale, width};
+}
+glm::vec3 Waterfall::get_position() const {
+    return position + glm::vec3{-visible_range.getStart() * get_scale().x, 0, 0};
 }
 
 void Waterfall::draw() const {
@@ -127,8 +132,9 @@ void Waterfall::draw() const {
 
     assert(glGetError() == GL_NO_ERROR);
 
-    auto matrix =glm::translate(position) *
-                                  get_scale_matrix();
+    auto position = get_position();
+    auto scale = get_scale();
+    auto matrix = glm::translate(position) * glm::scale(scale);
 
     {
         auto s = waterfall_shader->get_scoped();
@@ -146,14 +152,13 @@ void Waterfall::draw() const {
     {
         // frequency marks
 
-        auto scale = seconds;
-        axis.set_scale(glm::vec3{scale * time_scale, amplitude_scale, 1});
+        axis.set_scale(glm::vec3{scale.x * seconds, scale.y, 1});
         for (auto i = 0; i != axes; ++i) {
             auto z = i / (axes - 1.0);
             std::stringstream ss;
             ss << std::setprecision(2) << z_to_frequency(mode, z) / 1000;
             axis.set_label(ss.str());
-            axis.set_position(position + glm::vec3{0, 0.01, z * width});
+            axis.set_position(position + glm::vec3{0, 0.01, z * scale.z});
             axis.draw();
         }
     }
@@ -161,8 +166,7 @@ void Waterfall::draw() const {
     {
         //  time marks
 
-        auto scale = width;
-        axis.set_scale(glm::vec3{scale, amplitude_scale, 1});
+        axis.set_scale(glm::vec3{scale.z, scale.y, 1});
         axis.set_azimuth(-M_PI / 2);
 
         for (auto i = 1; i <= std::floor(seconds); ++i) {
@@ -170,7 +174,7 @@ void Waterfall::draw() const {
             std::stringstream ss;
             ss << time;
             axis.set_label(ss.str());
-            axis.set_position(position + glm::vec3{i * time_scale, 0.01, 0});
+            axis.set_position(position + glm::vec3{i * scale.x, 0.01, 0});
             axis.draw();
         }
     }
@@ -197,6 +201,11 @@ void Waterfall::load_from(AudioFormatManager& manager, const File& file) {
     std::lock_guard<std::mutex> lck(mut);
     load_from(
             std::unique_ptr<AudioFormatReader>(manager.createReaderFor(file)));
+}
+
+void Waterfall::set_visible_range(const Range<float>& range) {
+    std::lock_guard<std::mutex> lck(mut);
+    visible_range = range;
 }
 
 //  these two will be called from a thread *other* than the gl thread

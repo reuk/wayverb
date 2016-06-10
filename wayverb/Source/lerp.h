@@ -1,13 +1,13 @@
-//
-//  lerp.h
-//  wayverb
-//
-//  Created by Reuben Thomas on 10/06/2016.
-//
-//
+#pragma once
 
-#ifndef lerp_h
-#define lerp_h
+#include "../JuceLibraryCode/JuceHeader.h"
 
+template <typename T>
+T lerp(T i, T in_lo, T in_hi, T out_lo, T out_hi) {
+    return ((i - in_lo) * (out_hi - out_lo)) / (in_hi - in_lo) + out_lo;
+}
 
-#endif /* lerp_h */
+template <typename T>
+T lerp(T i, Range<T> in, Range<T> out) {
+    return lerp(i, in.getStart(), in.getEnd(), out.getStart(), out.getEnd());
+}

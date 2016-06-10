@@ -14,7 +14,8 @@ ImpulseViewer::ImpulseViewer(const File& file)
         : audio_format_reader_source(audio_format_manager.createReaderFor(file),
                                      true)
         , renderer(audio_transport_source)
-        , tabs(TabbedButtonBar::Orientation::TabsAtTop)
+        , waterfall_button("waterfall")
+        , waveform_button("waveform")
         , transport(audio_transport_source) {
     audio_transport_source.setSource(&audio_format_reader_source);
     audio_source_player.setSource(&audio_transport_source);
@@ -23,13 +24,22 @@ ImpulseViewer::ImpulseViewer(const File& file)
     auto& command_manager = VisualiserApplication::get_command_manager();
     command_manager.registerAllCommandsForTarget(this);
 
-    tabs.addTab("waveform", Colours::darkgrey, -1);
-    tabs.addTab("waterfall", Colours::darkgrey, -1);
+    auto r =
+            Range<float>(0, audio_transport_source.getLengthInSeconds());
+    ruler.set_max_range(r);
+    ruler.set_visible_range(r, true);
 
-    ruler.setMaximumRange(audio_transport_source.getLengthInSeconds());
+    for (auto i : {&waterfall_button, &waveform_button}) {
+        i->setRadioGroupId(0xf);
+        i->setClickingTogglesState(true);
+        i->setWantsKeyboardFocus(false);
+    }
+
+    waveform_button.setToggleState(true, sendNotification);
 
     addAndMakeVisible(renderer);
-    addAndMakeVisible(tabs);
+    addAndMakeVisible(waterfall_button);
+    addAndMakeVisible(waveform_button);
     addAndMakeVisible(transport);
     addAndMakeVisible(ruler);
     setSize(800, 500);
@@ -44,26 +54,15 @@ ImpulseViewer::~ImpulseViewer() noexcept {
 void ImpulseViewer::resized() {
     auto bounds = getLocalBounds();
     auto top = bounds.removeFromTop(40);
+    top.reduce(2, 2);
     ruler.setBounds(bounds.removeFromTop(20));
     renderer.setBounds(bounds);
 
     transport.setBounds(top.removeFromLeft(200));
-    tabs.setBounds(top);
-}
 
-void ImpulseViewer::changeListenerCallback(ChangeBroadcaster* cb) {
-    if (cb == &tabs) {
-        switch (tabs.getCurrentTabIndex()) {
-            case 0:
-                renderer.get_renderer().set_mode(
-                        ImpulseRenderer::Mode::waveform);
-                break;
-            case 1:
-                renderer.get_renderer().set_mode(
-                        ImpulseRenderer::Mode::waterfall);
-                break;
-        }
-    }
+    waveform_button.setBounds(top.removeFromLeft(100));
+    top.removeFromLeft(2);
+    waterfall_button.setBounds(top.removeFromLeft(100));
 }
 
 void ImpulseViewer::load_from(const File& file) {
@@ -128,31 +127,30 @@ ApplicationCommandTarget* ImpulseViewer::getNextCommandTarget() {
     return findFirstTargetParentComponent();
 }
 
-void ImpulseViewer::rulerMouseDown(Ruler* ruler,
-                                   const MouseEvent& e,
-                                   float time) {
-                                   /*
-    startWidth = getWidth();
-    mouseDownTime = time;
-    mouseDownX = e.getEventRelativeTo(getParentComponent()).getMouseDownX();
-    */
+void ImpulseViewer::buttonClicked(Button* b) {
+    if (b == &waterfall_button) {
+        renderer.get_renderer().set_mode(ImpulseRenderer::Mode::waterfall);
+    } else if (b == &waveform_button) {
+        renderer.get_renderer().set_mode(ImpulseRenderer::Mode::waveform);
+    }
 }
 
-void ImpulseViewer::rulerMouseUp(Ruler* ruler, const MouseEvent& e) {
-}
-
-void ImpulseViewer::rulerDragged(Ruler* ruler, const MouseEvent& e) {
 /*
+void ImpulseViewer::rulerDragged(Ruler* ruler, const MouseEvent& e) {
+    assert(ruler_state);
+
     auto dy = e.getDistanceFromDragStartY();
 
     auto doubleDist = 100.0;
     auto scale = pow(2.0, dy / doubleDist);
 
     auto w = static_cast<int>(startWidth * scale);
-    int64 clamped = std::max(getParentWidth(), w);
+    auto clamped = std::max(getParentWidth(), w);
 
-    if (audioTransportSource.getTotalLength() - 1 > getParentWidth())
-        clamped = std::min(clamped, audioTransportSource.getTotalLength() - 1);
+    if (audio_transport_source.getTotalLength() - 1 > getParentWidth()) {
+        clamped =
+                std::min(clamped, audio_transport_source.getTotalLength() - 1);
+    }
 
     setSize(clamped, getHeight());
 
@@ -160,8 +158,5 @@ void ImpulseViewer::rulerDragged(Ruler* ruler, const MouseEvent& e) {
     auto timePos = mouseDownTime * getWidth() /
                    audioTransportSource.getLengthInSeconds();
     setTopLeftPosition(dx + mouseDownX - timePos, 0);
-    */
 }
-
-void ImpulseViewer::rulerDoubleClicked(Ruler* ruler, const MouseEvent& e) {
-}
+*/
