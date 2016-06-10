@@ -16,6 +16,7 @@
 		0F3F3BF0CF31990B8A36D2C6 /* BottomPanel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8EC991E2A8DBE96759A51D2A /* BottomPanel.cpp */; };
 		127F610F5B79495C0D092DF7 /* juce_audio_processors.mm in Sources */ = {isa = PBXBuildFile; fileRef = 1F4341A2DEBD8ABD625FA0A5 /* juce_audio_processors.mm */; };
 		17BFF294246BE35E2334DF9F /* QTKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AED820E5E9613936B4CCA98A /* QTKit.framework */; };
+		1BA222271D0AF16B00AD3702 /* WaterfallShader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1BA222251D0AF16B00AD3702 /* WaterfallShader.cpp */; };
 		1BD23C941D099BAB00B2CD2C /* OpenCL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1BD23C931D099BAB00B2CD2C /* OpenCL.framework */; };
 		1BD23C961D099BB100B2CD2C /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 1BD23C951D099BB100B2CD2C /* libz.tbd */; };
 		1BD23C9A1D099BD500B2CD2C /* libfftw3f.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1BD23C971D099BD500B2CD2C /* libfftw3f.a */; };
@@ -477,6 +478,8 @@
 		1B0009F4B06C6DB0FBC35C69 /* FullModel.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = FullModel.hpp; path = ../../Source/FullModel.hpp; sourceTree = SOURCE_ROOT; };
 		1B3DE3698539A30ABBE4F207 /* jcprepct.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = jcprepct.c; path = ../../JuceLibraryCode/modules/juce_graphics/image_formats/jpglib/jcprepct.c; sourceTree = SOURCE_ROOT; };
 		1B6108181CA032ADF5CE83F6 /* juce_FileTreeComponent.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = juce_FileTreeComponent.h; path = ../../JuceLibraryCode/modules/juce_gui_basics/filebrowser/juce_FileTreeComponent.h; sourceTree = SOURCE_ROOT; };
+		1BA222251D0AF16B00AD3702 /* WaterfallShader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = WaterfallShader.cpp; path = ../../Source/WaterfallShader.cpp; sourceTree = "<group>"; };
+		1BA222261D0AF16B00AD3702 /* WaterfallShader.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = WaterfallShader.hpp; path = ../../Source/WaterfallShader.hpp; sourceTree = "<group>"; };
 		1BAF74BB3A7DDB036AACF878 /* infback.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = infback.c; path = ../../JuceLibraryCode/modules/juce_core/zip/zlib/infback.c; sourceTree = SOURCE_ROOT; };
 		1BD23C351D099B7800B2CD2C /* WAYVERB.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = WAYVERB.xcodeproj; path = ../../../xcproj/WAYVERB.xcodeproj; sourceTree = "<group>"; };
 		1BD23C931D099BAB00B2CD2C /* OpenCL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenCL.framework; path = System/Library/Frameworks/OpenCL.framework; sourceTree = SDKROOT; };
@@ -2364,6 +2367,8 @@
 				B23F917D32552917792775DD /* ImpulseRenderer.hpp */,
 				F192AC6BEB4B4BF51ED18F3D /* Waterfall.cpp */,
 				BE4F7830B6A6308567748D8B /* Waterfall.hpp */,
+				1BA222251D0AF16B00AD3702 /* WaterfallShader.cpp */,
+				1BA222261D0AF16B00AD3702 /* WaterfallShader.hpp */,
 				1F78EC9ACB5CD1478D90C91B /* Waveform.cpp */,
 				C78187F95C3D7F1E415D8FD5 /* Waveform.hpp */,
 			);
@@ -4248,6 +4253,7 @@
 				673689FD41D91E3BD9F099E0 /* Orientable.cpp in Sources */,
 				5AFAF06C552292EBE098B8BB /* PolarPatternDisplay.cpp in Sources */,
 				B9E739426F79C61E61ED73ED /* Presets.cpp in Sources */,
+				1BA222271D0AF16B00AD3702 /* WaterfallShader.cpp in Sources */,
 				F79D701F0DA0E5019CCEDCCD /* ProgressButton.cpp in Sources */,
 				22A1A2FEBBF078F0D165D702 /* PropertyComponentLAF.cpp in Sources */,
 				C5084D6C4D7593EB2BAA9095 /* RenderHelpers.cpp in Sources */,

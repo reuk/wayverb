@@ -80,8 +80,11 @@ private:
 
 //----------------------------------------------------------------------------//
 
-Waterfall::Waterfall(FadeShader& fade_shader, TexturedQuadShader& quad_shader)
-        : fade_shader(&fade_shader)
+Waterfall::Waterfall(WaterfallShader& waterfall_shader,
+                     FadeShader& fade_shader,
+                     TexturedQuadShader& quad_shader)
+        : waterfall_shader(&waterfall_shader)
+        , fade_shader(&fade_shader)
         , quad_shader(&quad_shader) {
 }
 
@@ -103,7 +106,7 @@ void Waterfall::update(float dt) {
     while (strips.size() + 1 < spectrum.size() &&
            (std::chrono::system_clock::now() - begin) <
                    std::chrono::duration<double>(1 / 200.0)) {
-        strips.emplace_back(*fade_shader,
+        strips.emplace_back(*waterfall_shader,
                             spectrum[strips.size()],
                             spectrum[strips.size() + 1],
                             mode,
@@ -124,15 +127,20 @@ void Waterfall::draw() const {
 
     assert(glGetError() == GL_NO_ERROR);
 
-    auto s = fade_shader->get_scoped();
-    fade_shader->set_model_matrix(glm::translate(position) *
-                                  get_scale_matrix());
-    for (const auto& i : strips) {
-        i.draw();
+    auto matrix =glm::translate(position) *
+                                  get_scale_matrix();
+
+    {
+        auto s = waterfall_shader->get_scoped();
+        waterfall_shader->set_model_matrix(matrix);
+        for (const auto& i : strips) {
+            i.draw();
+        }
     }
 
+    auto s = fade_shader->get_scoped();
+    fade_shader->set_model_matrix(matrix);
     AxisObject axis(*fade_shader, *quad_shader);
-
     auto seconds = load_context->length_in_samples / load_context->sample_rate;
 
     {
@@ -172,7 +180,7 @@ void Waterfall::set_mode(Mode u) {
     std::lock_guard<std::mutex> lck(mut);
     if (u != mode) {
         mode = u;
-        strips = compute_strips(*fade_shader,
+        strips = compute_strips(*waterfall_shader,
                                 spectrum,
                                 mode,
                                 x_spacing,
@@ -230,7 +238,7 @@ void Waterfall::clear_impl() {
 }
 
 std::vector<Waterfall::HeightMapStrip> Waterfall::compute_strips(
-        FadeShader& shader,
+        WaterfallShader& shader,
         const std::vector<std::vector<float>>& input,
         Mode mode,
         float x_spacing,
@@ -306,7 +314,7 @@ float Waterfall::get_length_in_seconds() const {
 
 //----------------------------------------------------------------------------//
 
-Waterfall::HeightMapStrip::HeightMapStrip(FadeShader& shader,
+Waterfall::HeightMapStrip::HeightMapStrip(WaterfallShader& shader,
                                           const std::vector<float>& left,
                                           const std::vector<float>& right,
                                           Mode mode,
@@ -327,7 +335,6 @@ Waterfall::HeightMapStrip::HeightMapStrip(FadeShader& shader,
                               sample_rate);
 
     geometry.data(g);
-    colors.data(compute_colors(g));
     ibo.data(compute_indices(g.size()));
 
     auto s = vao.get_scoped();
@@ -336,11 +343,6 @@ Waterfall::HeightMapStrip::HeightMapStrip(FadeShader& shader,
     auto v_pos = shader.get_attrib_location("v_position");
     glEnableVertexAttribArray(v_pos);
     glVertexAttribPointer(v_pos, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
-
-    colors.bind();
-    auto c_pos = shader.get_attrib_location("v_color");
-    glEnableVertexAttribArray(c_pos);
-    glVertexAttribPointer(c_pos, 4, GL_FLOAT, GL_FALSE, 0, nullptr);
 
     ibo.bind();
 }
@@ -374,35 +376,6 @@ std::vector<glm::vec3> Waterfall::HeightMapStrip::compute_geometry(
         ret[j + 1] = glm::vec3{x + x_spacing, right[i], z_pos};
     }
 
-    return ret;
-}
-
-glm::vec3 Waterfall::HeightMapStrip::compute_mapped_colour(float r) {
-    auto min = 0.2;
-    auto max = 1;
-    std::array<glm::vec3, 4> colours{glm::vec3{min, min, min},
-                                     glm::vec3{min, max, min},
-                                     glm::vec3{min, max, max},
-                                     glm::vec3{max, max, max}};
-    const auto d = 1.0 / (colours.size() - 1);
-    for (auto i = 0u; i != colours.size() - 1; ++i, r -= d) {
-        if (r < d) {
-            return glm::mix(colours[i], colours[i + 1], r / d);
-        }
-    }
-    return colours[0];
-}
-
-std::vector<glm::vec4> Waterfall::HeightMapStrip::compute_colors(
-        const std::vector<glm::vec3>& g) {
-    auto x = std::fmod(g.front().x, 1);
-    auto c = compute_mapped_colour(x);
-    std::vector<glm::vec4> ret(g.size());
-    proc::transform(g, ret.begin(), [c](const auto& i) {
-        return glm::mix(glm::vec4{0.0, 0.0, 0.0, 1},
-                        glm::vec4{c, 1},
-                        std::pow(i.y, 0.1));
-    });
     return ret;
 }
 

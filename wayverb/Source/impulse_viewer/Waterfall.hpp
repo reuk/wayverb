@@ -3,6 +3,7 @@
 #include "FadeShader.hpp"
 #include "FrequencyAxis.hpp"
 #include "LoadContext.hpp"
+#include "WaterfallShader.hpp"
 #include "WorkQueue.hpp"
 
 #include "modern_gl_utils/buffer_object.h"
@@ -16,7 +17,9 @@ class Waterfall : public ::Updatable,
 public:
     enum class Mode { linear, log };
 
-    Waterfall(FadeShader& fade_shader, TexturedQuadShader& quad_shader);
+    Waterfall(WaterfallShader& waterfall_shader,
+              FadeShader& fade_shader,
+              TexturedQuadShader& quad_shader);
 
     void update(float dt) override;
     void draw() const override;
@@ -40,7 +43,7 @@ public:
 
     void set_amplitude_scale(float f) override;
     void set_time_scale(float f) override;
-    float get_length_in_seconds() const ;
+    float get_length_in_seconds() const;
 
     static const float width;
 
@@ -52,7 +55,7 @@ private:
 
     class HeightMapStrip : public ::Drawable {
     public:
-        HeightMapStrip(FadeShader& shader,
+        HeightMapStrip(WaterfallShader& shader,
                        const std::vector<float>& left,
                        const std::vector<float>& right,
                        Mode mode,
@@ -75,22 +78,16 @@ private:
                 float max_frequency,
                 float sample_rate);
 
-        static glm::vec3 compute_mapped_colour(float r);
-
-        static std::vector<glm::vec4> compute_colors(
-                const std::vector<glm::vec3>& g);
-
-        FadeShader* shader;
+        WaterfallShader* shader;
 
         VAO vao;
         StaticVBO geometry;
-        StaticVBO colors;
         StaticIBO ibo;
         GLuint size;
     };
 
     static std::vector<HeightMapStrip> compute_strips(
-            FadeShader& shader,
+            WaterfallShader& shader,
             const std::vector<std::vector<float>>& input,
             Mode mode,
             float x_spacing,
@@ -102,6 +99,7 @@ private:
     static const float min_frequency;
     static const float max_frequency;
 
+    WaterfallShader* waterfall_shader;
     FadeShader* fade_shader;
     TexturedQuadShader* quad_shader;
 

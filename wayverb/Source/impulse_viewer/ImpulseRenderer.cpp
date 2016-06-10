@@ -49,7 +49,7 @@ public:
     ContextLifetime(const AudioTransportSource& audio_transport_source)
             : audio_transport_source(audio_transport_source)
             , waveform(generic_shader)
-            , waterfall(fade_shader, quad_shader)
+            , waterfall(waterfall_shader, fade_shader, quad_shader)
             , playhead(generic_shader) {
     }
 
@@ -120,6 +120,7 @@ public:
 
         config_shader(generic_shader);
         config_shader(fade_shader);
+        config_shader(waterfall_shader);
         config_shader(quad_shader);
 
         {
@@ -131,6 +132,10 @@ public:
             auto s_shader = quad_shader.get_scoped();
             quad_shader.set_screen_size(get_viewport());
             quad_shader.set_fade(current_params.fade);
+        }
+        {
+            auto s_shader = waterfall_shader.get_scoped();
+            waterfall_shader.set_fade(current_params.fade);
         }
 
         waveform.draw();
@@ -292,6 +297,7 @@ private:
     GenericShader generic_shader;
     FadeShader fade_shader;
     TexturedQuadShader quad_shader;
+    WaterfallShader waterfall_shader;
 
     struct WaterfallParams {
         Orientable::AzEl azel{0, 0};

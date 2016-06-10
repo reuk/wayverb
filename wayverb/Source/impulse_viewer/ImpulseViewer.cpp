@@ -32,7 +32,6 @@ ImpulseViewer::ImpulseViewer(const File& file)
     addAndMakeVisible(tabs);
     addAndMakeVisible(transport);
     addAndMakeVisible(ruler);
-
     setSize(800, 500);
 
     load_from(file);
