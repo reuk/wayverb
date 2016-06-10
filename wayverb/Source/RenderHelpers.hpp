@@ -11,7 +11,7 @@
 
 class BaseContextLifetime : public ::Drawable, public ::Updatable {
 public:
-    void set_viewport(const glm::vec2& v);
+    virtual void set_viewport(const glm::vec2& v);
     glm::vec2 get_viewport() const;
     float get_aspect() const;
 

@@ -19,14 +19,15 @@ public:
     Playhead(GenericShader& shader)
             : BasicDrawableObject(
                       shader,
-                      std::vector<glm::vec3>{{-width, -1, 0},
-                                             {width, -1, 0},
-                                             {-width, -1, -2.2},
-                                             {width, -1, -2.2},
-                                             {-width, 1, -2.2},
-                                             {width, 1, -2.2},
-                                             {-width, 1, 0},
-                                             {width, 1, 0}},
+                      std::vector<glm::vec3>{
+                              {-width, -1, 0},
+                              {width, -1, 0},
+                              {-width, -1, -Waterfall::width - 0.2},
+                              {width, -1, -Waterfall::width - 0.2},
+                              {-width, 1, -Waterfall::width - 0.2},
+                              {width, 1, -Waterfall::width - 0.2},
+                              {-width, 1, 0},
+                              {width, 1, 0}},
                       std::vector<glm::vec4>{{1, 0, 0, 1},
                                              {1, 0, 0, 1},
                                              {1, 0, 0, 1},
@@ -52,16 +53,43 @@ public:
             , playhead(generic_shader) {
     }
 
-    void update(float dt) override {
-        current_params.update(target_params);
-        waveform.set_position(glm::vec3{0, 0, current_params.waveform_z});
-        waterfall.set_position(
-                glm::vec3{0, 0, current_params.waveform_z - 2.1});
+    float get_length_in_seconds() const {
+        return waveform.get_length_in_seconds();
+    }
 
+    void update(float dt) override {
+        waveform_max_view =
+                ScaleFactor{get_viewport().x, get_viewport().y * 0.5f};
+        current_params.update(target_params);
+
+        auto max_view =
+                mode == Mode::waveform ? waveform_max_view : waterfall_max_view;
+
+        auto scale = current_scale_factor * max_view;
+        scale.time /= waveform.get_length_in_seconds();
+
+        for (auto i : get_thumbnails()) {
+            i->set_time_scale(scale.time);
+            i->set_amplitude_scale(scale.amplitude);
+        }
+
+        playhead.set_scale(glm::vec3{
+                mode == Mode::waveform ? 100 : 1, scale.amplitude, 1});
+
+        auto base_position =
+                mode == Mode::waveform
+                        ? glm::vec3{0, get_viewport().y * 0.5, 0.0}
+                        : glm::vec3{0, 0, current_params.waveform_z};
+
+        waveform.set_position(base_position);
+        waterfall.set_position(base_position +
+                               glm::vec3{0, 0, -Waterfall::width - 0.1});
         playhead.set_position(
-                glm::vec3{audio_transport_source.getCurrentPosition(),
+                base_position +
+                glm::vec3{audio_transport_source.getCurrentPosition() *
+                                  scale.time,
                           0,
-                          current_params.waveform_z + 0.1});
+                          0.1});
 
         waveform.update(dt);
         waterfall.update(dt);
@@ -106,7 +134,9 @@ public:
         }
 
         waveform.draw();
-        waterfall.draw();
+        if (mode == Mode::waterfall) {
+            waterfall.draw();
+        }
         playhead.draw();
     }
 
@@ -124,20 +154,22 @@ public:
     }
 
     void mouse_down(const glm::vec2& pos) override {
-        mousing = std::make_unique<Rotate>(target_params.azel, pos);
+        if (mode == Mode::waterfall) {
+            mousing = std::make_unique<Rotate>(target_params.azel, pos);
+        }
     }
 
     void mouse_drag(const glm::vec2& pos) override {
-        assert(mousing);
-
-        const auto& m = dynamic_cast<Rotate&>(*mousing);
-        auto diff = pos - m.position;
-        target_params.azel = Orientable::AzEl{
-                m.orientation.azimuth + diff.x * Rotate::angle_scale,
-                glm::clamp(
-                        m.orientation.elevation + diff.y * Rotate::angle_scale,
-                        static_cast<float>(-M_PI / 2),
-                        static_cast<float>(M_PI / 2))};
+        if (mousing) {
+            const auto& m = dynamic_cast<Rotate&>(*mousing);
+            auto diff = pos - m.position;
+            target_params.azel = Orientable::AzEl{
+                    m.orientation.azimuth + diff.x * Rotate::angle_scale,
+                    glm::clamp(m.orientation.elevation +
+                                       diff.y * Rotate::angle_scale,
+                               static_cast<float>(-M_PI / 2),
+                               static_cast<float>(M_PI / 2))};
+        }
     }
 
     void mouse_up(const glm::vec2& pos) override {
@@ -177,38 +209,58 @@ public:
         }
     }
 
-private:
-    auto get_waveform_projection() const {
-        return glm::ortho(get_viewport().x * -0.5 * 0.01,
-                          get_viewport().x * +0.5 * 0.01,
-                          get_viewport().y * -0.5 * 0.01,
-                          get_viewport().y * +0.5 * 0.01,
-                          0.0,
-                          100.0);
+    void set_amplitude_scale(float f) override {
+        for (auto i : get_thumbnails()) {
+            i->set_amplitude_scale(f);
+        }
     }
 
-   auto get_waterfall_projection() const {
-        return glm::perspective(45.0f, get_aspect(), 0.05f, 1000.0f);
-   }
+    void set_time_scale(float f) override {
+        for (auto i : get_thumbnails()) {
+            i->set_time_scale(f);
+        }
+    }
 
+private:
     glm::mat4 get_projection_matrix() const {
-        switch(mode) {
-            case Mode::waterfall: return get_waterfall_projection();
-            case Mode::waveform: return get_waveform_projection();
+        switch (mode) {
+            case Mode::waterfall:
+                return glm::perspective(45.0f, get_aspect(), 0.05f, 1000.0f);
+            case Mode::waveform:
+                return glm::ortho(0.0f,
+                                  get_viewport().x,
+                                  0.0f,
+                                  get_viewport().y,
+                                  -10.0f,
+                                  100.0f);
         }
     }
 
     glm::mat4 get_rotation_matrix() const {
-        auto i = glm::rotate(current_params.azel.azimuth, glm::vec3(0, 1, 0));
-        auto j = glm::rotate(current_params.azel.elevation, glm::vec3(1, 0, 0));
-        return j * i;
+        switch (mode) {
+            case Mode::waterfall: {
+                auto i = glm::rotate(current_params.azel.azimuth,
+                                     glm::vec3(0, 1, 0));
+                auto j = glm::rotate(current_params.azel.elevation,
+                                     glm::vec3(1, 0, 0));
+                return j * i;
+            }
+
+            case Mode::waveform:
+                return glm::mat4{};
+        }
     }
 
     glm::mat4 get_view_matrix() const {
-        return glm::lookAt(glm::vec3{0, 0, current_params.eye},
-                           glm::vec3{0},
-                           glm::vec3{0, 1, 0}) *
-               get_rotation_matrix();
+        switch (mode) {
+            case Mode::waterfall:
+                return glm::lookAt(glm::vec3{0, 0, current_params.eye},
+                                   glm::vec3{0},
+                                   glm::vec3{0, 1, 0}) *
+                       get_rotation_matrix();
+            case Mode::waveform:
+                return glm::mat4{};
+        }
     }
 
     std::array<GLAudioThumbnailBase*, 2> get_thumbnails() {
@@ -241,13 +293,13 @@ private:
     FadeShader fade_shader;
     TexturedQuadShader quad_shader;
 
-    struct ModeParams {
+    struct WaterfallParams {
         Orientable::AzEl azel{0, 0};
         float fade{0};
         float waveform_z{0};
         float eye{4};
 
-        void update(const ModeParams& target) {
+        void update(const WaterfallParams& target) {
             azel += (target.azel - azel) * 0.1;
             fade += (target.fade - fade) * 0.1;
             waveform_z += (target.waveform_z - waveform_z) * 0.1;
@@ -255,10 +307,26 @@ private:
         }
     };
 
-    static const ModeParams waveform_params;
-    static const ModeParams waterfall_params;
-    ModeParams current_params;
-    ModeParams target_params;
+    struct ScaleFactor {
+        float time{1};
+        float amplitude{1};
+
+        ScaleFactor operator*(const ScaleFactor& s) const {
+            return ScaleFactor{time * s.time, amplitude * s.amplitude};
+        }
+    };
+
+    ScaleFactor waterfall_max_view{3, 1};
+    ScaleFactor waveform_max_view;
+
+    ScaleFactor current_scale_factor;
+
+    static const float waterfall_max_x;
+
+    static const WaterfallParams waveform_params;
+    static const WaterfallParams waterfall_params;
+    WaterfallParams current_params;
+    WaterfallParams target_params;
 
     static const float angle_scale;
 
@@ -270,14 +338,15 @@ private:
     std::unique_ptr<Mousing> mousing;
 };
 
-const ImpulseRenderer::ContextLifetime::ModeParams
+const ImpulseRenderer::ContextLifetime::WaterfallParams
         ImpulseRenderer::ContextLifetime::waveform_params{
-                Orientable::AzEl{0, 0}, 0, 0, 2};
-const ImpulseRenderer::ContextLifetime::ModeParams
+                Orientable::AzEl{0, 0}, 0, 0, 3};
+const ImpulseRenderer::ContextLifetime::WaterfallParams
         ImpulseRenderer::ContextLifetime::waterfall_params{
                 Orientable::AzEl{-0.8, 0.2}, 1, 2, 4};
 
 const float ImpulseRenderer::ContextLifetime::Rotate::angle_scale{0.01};
+const float ImpulseRenderer::ContextLifetime::waterfall_max_x{3};
 
 //----------------------------------------------------------------------------//
 
@@ -349,5 +418,20 @@ void ImpulseRenderer::addBlock(int64 sample_number_in_source,
         assert(context_lifetime);
         context_lifetime->addBlock(
                 sample_number_in_source, new_data, start_offset, num_samples);
+    });
+}
+
+void ImpulseRenderer::set_amplitude_scale(float f) {
+    std::lock_guard<std::mutex> lck(mut);
+    push_incoming([this, f] {
+        assert(context_lifetime);
+        context_lifetime->set_amplitude_scale(f);
+    });
+}
+void ImpulseRenderer::set_time_scale(float f) {
+    std::lock_guard<std::mutex> lck(mut);
+    push_incoming([this, f] {
+        assert(context_lifetime);
+        context_lifetime->set_time_scale(f);
     });
 }

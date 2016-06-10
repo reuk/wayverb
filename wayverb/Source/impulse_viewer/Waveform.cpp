@@ -6,8 +6,8 @@
 
 #include "glm/gtx/transform.hpp"
 
-Waveform::Waveform(const GenericShader& shader)
-        : shader(shader) {
+Waveform::Waveform(GenericShader& shader)
+        : shader(&shader) {
     auto s_vao = vao.get_scoped();
 
     geometry.bind();
@@ -46,10 +46,14 @@ void Waveform::update(float dt) {
     }
 }
 
+glm::mat4 Waveform::get_scale_matrix() const {
+    return glm::scale(glm::vec3{time_scale, amplitude_scale, 1});
+}
+
 void Waveform::draw() const {
     std::lock_guard<std::mutex> lck(mut);
-    auto s_shader = shader.get_scoped();
-    shader.set_model_matrix(glm::translate(position));
+    auto s_shader = shader->get_scoped();
+    shader->set_model_matrix(glm::translate(position) * get_scale_matrix());
 
     auto s_vao = vao.get_scoped();
     glDrawElements(GL_TRIANGLE_STRIP, ibo.size(), GL_UNSIGNED_INT, nullptr);
@@ -79,7 +83,7 @@ void Waveform::addBlock(int64 sample_number_in_source,
                         int num_samples) {
     std::lock_guard<std::mutex> lck(mut);
     auto waveform_steps = num_samples / per_buffer;
-    spacing = waveform_steps / load_context->sample_rate;
+    x_spacing = waveform_steps / load_context->sample_rate;
     std::vector<std::pair<float, float>> ret(per_buffer);
     for (auto a = 0u, b = 0u; a != per_buffer; ++a, b += waveform_steps) {
         auto mm = std::minmax_element(
@@ -91,6 +95,24 @@ void Waveform::addBlock(int64 sample_number_in_source,
     incoming_work_queue.push([this, ret] {
         downsampled.insert(downsampled.end(), ret.begin(), ret.end());
     });
+}
+
+void Waveform::set_amplitude_scale(float f) {
+    std::lock_guard<std::mutex> lck(mut);
+    amplitude_scale = f;
+}
+
+void Waveform::set_time_scale(float f) {
+    std::lock_guard<std::mutex> lck(mut);
+    time_scale = f;
+}
+
+float Waveform::get_length_in_seconds() const {
+    std::lock_guard<std::mutex> lck(mut);
+    if (load_context) {
+        return load_context->length_in_samples / load_context->sample_rate;
+    }
+    return 0;
 }
 
 void Waveform::load_from(std::unique_ptr<AudioFormatReader>&& reader) {
@@ -123,7 +145,7 @@ std::vector<glm::vec3> Waveform::compute_geometry(
     for (const auto& i : data) {
         ret.push_back(glm::vec3{x, i.first, 0});
         ret.push_back(glm::vec3{x, i.second, 0});
-        x += spacing;
+        x += x_spacing;
     }
     return ret;
 }

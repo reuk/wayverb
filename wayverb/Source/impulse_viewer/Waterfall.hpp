@@ -35,15 +35,20 @@ public:
                   int start_offset,
                   int num_samples) override;
 
-    float z_to_frequency(float z) const;
-    float frequency_to_z(float frequency) const;
+    static float z_to_frequency(Mode mode, float z);
+    static float frequency_to_z(Mode mode, float frequency);
 
-    static float z_to_frequency(Mode mode, float z_width, float z);
-    static float frequency_to_z(Mode mode, float z_width, float frequency);
+    void set_amplitude_scale(float f) override;
+    void set_time_scale(float f) override;
+    float get_length_in_seconds() const ;
+
+    static const float width;
 
 private:
     void load_from(std::unique_ptr<AudioFormatReader>&& reader);
     void clear_impl();
+
+    glm::mat4 get_scale_matrix() const;
 
     class HeightMapStrip : public ::Drawable {
     public:
@@ -53,7 +58,6 @@ private:
                        Mode mode,
                        float x,
                        float x_spacing,
-                       float z_width,
                        float min_frequency,
                        float max_frequency,
                        float sample_rate);
@@ -67,7 +71,6 @@ private:
                 Mode mode,
                 float x,
                 float x_spacing,
-                float z_width,
                 float min_frequency,
                 float max_frequency,
                 float sample_rate);
@@ -91,10 +94,10 @@ private:
             const std::vector<std::vector<float>>& input,
             Mode mode,
             float x_spacing,
-            float z_width,
             float sample_rate);
 
     static const int per_buffer{4};
+    static const int axes{6};
 
     static const float min_frequency;
     static const float max_frequency;
@@ -102,23 +105,19 @@ private:
     FadeShader* fade_shader;
     TexturedQuadShader* quad_shader;
 
-    Mode mode{Mode::log};
-
     glm::vec2 viewport;
-
-    std::vector<std::vector<float>> spectrum;
-
     glm::vec3 position{0};
 
+    Mode mode{Mode::log};
+    std::vector<std::vector<float>> spectrum;
     std::vector<HeightMapStrip> strips;
 
     std::unique_ptr<LoadContext> load_context;
     float x_spacing;
-    float z_width{2};
+
+    float amplitude_scale{1};
+    float time_scale{1};
 
     WorkQueue incoming_work_queue;
-
-    int axes{6};
-
     mutable std::mutex mut;
 };

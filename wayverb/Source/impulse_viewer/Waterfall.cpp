@@ -109,11 +109,14 @@ void Waterfall::update(float dt) {
                             mode,
                             x_spacing * strips.size(),
                             x_spacing,
-                            z_width,
                             min_frequency,
                             max_frequency,
                             load_context->sample_rate);
     }
+}
+
+glm::mat4 Waterfall::get_scale_matrix() const {
+    return glm::scale(glm::vec3{time_scale, amplitude_scale, width});
 }
 
 void Waterfall::draw() const {
@@ -122,7 +125,8 @@ void Waterfall::draw() const {
     assert(glGetError() == GL_NO_ERROR);
 
     auto s = fade_shader->get_scoped();
-    fade_shader->set_model_matrix(glm::translate(position));
+    fade_shader->set_model_matrix(glm::translate(position) *
+                                  get_scale_matrix());
     for (const auto& i : strips) {
         i.draw();
     }
@@ -135,14 +139,13 @@ void Waterfall::draw() const {
         // frequency marks
 
         auto scale = seconds;
-        axis.set_scale(glm::vec3{scale, 1, 1});
+        axis.set_scale(glm::vec3{scale * time_scale, amplitude_scale, 1});
         for (auto i = 0; i != axes; ++i) {
-            auto z = i * z_width / (axes - 1);
+            auto z = i / (axes - 1.0);
             std::stringstream ss;
-            ss << std::setprecision(2)
-               << z_to_frequency(mode, z_width, z) / 1000;
+            ss << std::setprecision(2) << z_to_frequency(mode, z) / 1000;
             axis.set_label(ss.str());
-            axis.set_position(position + glm::vec3{0, 0.01, z});
+            axis.set_position(position + glm::vec3{0, 0.01, z * width});
             axis.draw();
         }
     }
@@ -150,16 +153,16 @@ void Waterfall::draw() const {
     {
         //  time marks
 
-        auto scale = 2;
-        axis.set_scale(glm::vec3{scale, 1, 1});
+        auto scale = width;
+        axis.set_scale(glm::vec3{scale, amplitude_scale, 1});
         axis.set_azimuth(-M_PI / 2);
 
-        for (auto i = 1; i <= std::floor(seconds) ; ++i) {
+        for (auto i = 1; i <= std::floor(seconds); ++i) {
             auto time = i;
             std::stringstream ss;
             ss << time;
             axis.set_label(ss.str());
-            axis.set_position(position + glm::vec3{i, 0.01, 0});
+            axis.set_position(position + glm::vec3{i * time_scale, 0.01, 0});
             axis.draw();
         }
     }
@@ -173,7 +176,6 @@ void Waterfall::set_mode(Mode u) {
                                 spectrum,
                                 mode,
                                 x_spacing,
-                                z_width,
                                 load_context->sample_rate);
     }
 }
@@ -232,7 +234,6 @@ std::vector<Waterfall::HeightMapStrip> Waterfall::compute_strips(
         const std::vector<std::vector<float>>& input,
         Mode mode,
         float x_spacing,
-        float z_width,
         float sample_rate) {
     std::vector<HeightMapStrip> ret;
     auto x = 0.0;
@@ -240,15 +241,14 @@ std::vector<Waterfall::HeightMapStrip> Waterfall::compute_strips(
                    input.end() - 1,
                    input.begin() + 1,
                    std::back_inserter(ret),
-                   [&shader, &x, mode, x_spacing, z_width, sample_rate](
-                           const auto& i, const auto& j) {
+                   [&shader, &x, mode, x_spacing, sample_rate](const auto& i,
+                                                               const auto& j) {
                        HeightMapStrip ret(shader,
                                           i,
                                           j,
                                           mode,
                                           x,
                                           x_spacing,
-                                          z_width,
                                           min_frequency,
                                           max_frequency,
                                           sample_rate);
@@ -258,43 +258,50 @@ std::vector<Waterfall::HeightMapStrip> Waterfall::compute_strips(
     return ret;
 }
 
-float Waterfall::z_to_frequency(float z) const {
-    std::lock_guard<std::mutex> lck(mut);
-    return z_to_frequency(mode, z_width, z);
-}
-
-float Waterfall::frequency_to_z(float frequency) const {
-    std::lock_guard<std::mutex> lck(mut);
-    return frequency_to_z(mode, z_width, frequency);
-}
-
-float Waterfall::z_to_frequency(Mode mode, float z_width, float z) {
+float Waterfall::z_to_frequency(Mode mode, float z) {
     switch (mode) {
         case Mode::linear: {
-            return z * (max_frequency - min_frequency) / z_width +
-                   min_frequency;
+            return z * (max_frequency - min_frequency) + min_frequency;
         }
         case Mode::log: {
             auto min_log = std::log10(min_frequency);
             auto max_log = std::log10(max_frequency);
-            return std::pow(10, z * (max_log - min_log) / z_width + min_log);
+            return std::pow(10, z * (max_log - min_log) + min_log);
         }
     }
 }
 
-float Waterfall::frequency_to_z(Mode mode, float z_width, float frequency) {
+float Waterfall::frequency_to_z(Mode mode, float frequency) {
     switch (mode) {
         case Mode::linear: {
-            return (frequency - min_frequency) * z_width /
+            return (frequency - min_frequency) /
                    (max_frequency - min_frequency);
         }
         case Mode::log: {
             auto min_log = std::log10(min_frequency);
             auto max_log = std::log10(max_frequency);
             auto bin_log = std::log10(frequency);
-            return (bin_log - min_log) * z_width / (max_log - min_log);
+            return (bin_log - min_log) / (max_log - min_log);
         }
     }
+}
+
+void Waterfall::set_amplitude_scale(float f) {
+    std::lock_guard<std::mutex> lck(mut);
+    amplitude_scale = f;
+}
+
+void Waterfall::set_time_scale(float f) {
+    std::lock_guard<std::mutex> lck(mut);
+    time_scale = f;
+}
+
+float Waterfall::get_length_in_seconds() const {
+    std::lock_guard<std::mutex> lck(mut);
+    if (load_context) {
+        return load_context->length_in_samples / load_context->sample_rate;
+    }
+    return 0;
 }
 
 //----------------------------------------------------------------------------//
@@ -305,7 +312,6 @@ Waterfall::HeightMapStrip::HeightMapStrip(FadeShader& shader,
                                           Mode mode,
                                           float x,
                                           float x_spacing,
-                                          float z_width,
                                           float min_frequency,
                                           float max_frequency,
                                           float sample_rate)
@@ -316,7 +322,6 @@ Waterfall::HeightMapStrip::HeightMapStrip(FadeShader& shader,
                               mode,
                               x,
                               x_spacing,
-                              z_width,
                               min_frequency,
                               max_frequency,
                               sample_rate);
@@ -351,7 +356,6 @@ std::vector<glm::vec3> Waterfall::HeightMapStrip::compute_geometry(
         Mode mode,
         float x,
         float x_spacing,
-        float z_width,
         float min_frequency,
         float max_frequency,
         float sample_rate) {
@@ -365,7 +369,7 @@ std::vector<glm::vec3> Waterfall::HeightMapStrip::compute_geometry(
 
     for (auto i = min_bin, j = 0; i != max_bin; ++i, j += 2) {
         auto bin_frequency = i * sample_rate * 0.5 / count;
-        auto z_pos = frequency_to_z(mode, z_width, bin_frequency);
+        auto z_pos = frequency_to_z(mode, bin_frequency);
         ret[j + 0] = glm::vec3{x, left[i], z_pos};
         ret[j + 1] = glm::vec3{x + x_spacing, right[i], z_pos};
     }
@@ -404,3 +408,5 @@ std::vector<glm::vec4> Waterfall::HeightMapStrip::compute_colors(
 
 const float Waterfall::min_frequency{20};
 const float Waterfall::max_frequency{20000};
+
+const float Waterfall::width{3};

@@ -58,7 +58,7 @@ VisualiserApplication::ImpulseViewerWindow::ImpulseViewerWindow(
     setContentNonOwned(&content_component, true);
     centreWithSize(getWidth(), getHeight());
     setVisible(true);
-    setResizable(false, false);
+    setResizable(true, false);
     setVisible(true);
 
     auto& command_manager = VisualiserApplication::get_command_manager();

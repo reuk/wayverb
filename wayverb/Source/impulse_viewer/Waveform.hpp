@@ -13,7 +13,7 @@ class Waveform : public ::Updatable,
                  public ::Drawable,
                  public GLAudioThumbnailBase {
 public:
-    Waveform(const GenericShader& shader);
+    Waveform(GenericShader& shader);
     void set_position(const glm::vec3& p);
 
     void update(float dt) override;
@@ -30,11 +30,17 @@ public:
                   int start_offset,
                   int num_samples) override;
 
+    void set_amplitude_scale(float f) override;
+    void set_time_scale(float f) override;
+    float get_length_in_seconds() const ;
+
 private:
     static const int per_buffer = 16;
 
     void load_from(std::unique_ptr<AudioFormatReader>&& reader);
     void clear_impl();
+
+    glm::mat4 get_scale_matrix() const;
 
     static std::vector<glm::vec4> compute_colours(
             const std::vector<glm::vec3>& g);
@@ -42,22 +48,24 @@ private:
     std::vector<glm::vec3> compute_geometry(
             const std::vector<std::pair<float, float>>& data);
 
-    const GenericShader& shader;
+    GenericShader* shader;
 
     VAO vao;
     DynamicVBO geometry;
     DynamicVBO colors;
     DynamicIBO ibo;
 
-    size_t previous_size{0};
+    glm::vec3 position{0};
+
+    int previous_size{0};
     std::vector<std::pair<float, float>> downsampled;
 
     std::unique_ptr<LoadContext> load_context;
-    float spacing;
+    float x_spacing;
 
-    glm::vec3 position{0};
+    float amplitude_scale{1};
+    float time_scale{1};
 
     WorkQueue incoming_work_queue;
-
     mutable std::mutex mut;
 };
