@@ -141,8 +141,11 @@ const Image& TextImage::get_image() const {
 
 //----------------------------------------------------------------------------//
 
-AxisObject::AxisObject(ShaderProgram& shader, TexturedQuadShader& quad_shader)
+AxisObject::AxisObject(const MatrixTreeNode* parent,
+                       ShaderProgram& shader,
+                       TexturedQuadShader& quad_shader)
         : BasicDrawableObject(
+                  parent,
                   shader,
                   {{0, 0, 0}, {1, 0, 0}, {0, 0, 0}, {0, 1, 0}},
                   {{1, 1, 1, 1}, {1, 1, 1, 1}, {1, 1, 1, 1}, {1, 1, 1, 1}},
@@ -170,8 +173,9 @@ void AxisObject::draw() const {
     TexturedQuad quad(*quad_shader);
 
     auto s = quad_shader->get_scoped();
+    quad_shader->set_model_matrix(get_modelview_matrix());
     quad_shader->set_tex(0);
-    quad_shader->set_billboard(get_position() + glm::vec3(0, 1.2, 0));
+    quad_shader->set_billboard(glm::vec3(0, 1.2, 0));
 
     quad.draw();
 }

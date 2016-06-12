@@ -13,11 +13,12 @@
 
 class Waterfall : public ::Updatable,
                   public ::Drawable,
+                  public ::MatrixTreeNode,
                   public GLAudioThumbnailBase {
 public:
     enum class Mode { linear, log };
 
-    Waterfall(WaterfallShader& waterfall_shader,
+    Waterfall(MatrixTreeNode* parent, WaterfallShader& waterfall_shader,
               FadeShader& fade_shader,
               TexturedQuadShader& quad_shader);
 
@@ -41,24 +42,19 @@ public:
     static float z_to_frequency(Mode mode, float z);
     static float frequency_to_z(Mode mode, float frequency);
 
-    void set_amplitude_scale(float f) override;
-    void set_time_scale(float f) override;
-    float get_length_in_seconds() const;
-
-    void set_visible_range(const Range<float>& range) override;
-
     static const float width;
 
 private:
+    glm::mat4 get_local_modelview_matrix() const override;
+
     void load_from(std::unique_ptr<AudioFormatReader>&& reader);
     void clear_impl();
 
     glm::vec3 get_scale() const;
-    glm::vec3 get_position() const;
 
-    class HeightMapStrip : public ::Drawable {
+    class HeightMapStrip : public ::Drawable , public MatrixTreeNode {
     public:
-        HeightMapStrip(WaterfallShader& shader,
+        HeightMapStrip(MatrixTreeNode* parent, WaterfallShader& shader,
                        const std::vector<float>& left,
                        const std::vector<float>& right,
                        Mode mode,
@@ -69,6 +65,8 @@ private:
                        float sample_rate);
 
         void draw() const override;
+
+        glm::mat4 get_local_modelview_matrix() const override;
 
     private:
         static std::vector<glm::vec3> compute_geometry(
@@ -89,13 +87,6 @@ private:
         GLuint size;
     };
 
-    static std::vector<HeightMapStrip> compute_strips(
-            WaterfallShader& shader,
-            const std::vector<std::vector<float>>& input,
-            Mode mode,
-            float x_spacing,
-            float sample_rate);
-
     static const int per_buffer{4};
     static const int axes{6};
 
@@ -106,7 +97,6 @@ private:
     FadeShader* fade_shader;
     TexturedQuadShader* quad_shader;
 
-    glm::vec2 viewport;
     glm::vec3 position{0};
 
     Mode mode{Mode::log};
@@ -115,10 +105,6 @@ private:
 
     std::unique_ptr<LoadContext> load_context;
     float x_spacing;
-
-    float amplitude_scale{1};
-    float time_scale{1};
-    Range<float> visible_range;
 
     WorkQueue incoming_work_queue;
     mutable std::mutex mut;

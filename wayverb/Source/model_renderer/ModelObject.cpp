@@ -8,21 +8,24 @@ namespace {
 constexpr auto model_colour = 0.5;
 }  // namespace
 
-ModelObject::ModelObject(GenericShader &shader,
+ModelObject::ModelObject(MatrixTreeNode *parent,
+                         GenericShader &shader,
                          const SceneData &scene_data)
         : BasicDrawableObject(
-              shader,
-              scene_data.get_converted_vertices(),
-              std::vector<glm::vec4>(
-                  scene_data.get_vertices().size(),
-                  glm::vec4(
-                      model_colour, model_colour, model_colour, model_colour)),
-              get_indices(scene_data),
-              GL_TRIANGLES) {
+                  parent,
+                  shader,
+                  scene_data.get_converted_vertices(),
+                  std::vector<glm::vec4>(scene_data.get_vertices().size(),
+                                         glm::vec4(model_colour,
+                                                   model_colour,
+                                                   model_colour,
+                                                   model_colour)),
+                  get_indices(scene_data),
+                  GL_TRIANGLES) {
 }
 
 std::vector<GLuint> ModelObject::get_indices(
-    const SceneData &scene_data) const {
+        const SceneData &scene_data) const {
     std::vector<GLuint> ret(scene_data.get_triangles().size() * 3);
     auto count = 0u;
     for (const auto &tri : scene_data.get_triangles()) {

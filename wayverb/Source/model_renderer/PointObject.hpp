@@ -6,19 +6,26 @@ class RingObject : public BasicDrawableObject {
 public:
     enum class Axis { x, y, z };
     static constexpr auto pts = 24;
-    RingObject(GenericShader& shader, const glm::vec4& color, Axis axis);
+    RingObject(MatrixTreeNode* parent,
+               GenericShader& shader,
+               const glm::vec4& color,
+               Axis axis);
 };
 
 class LineObject : public BasicDrawableObject {
 public:
-    LineObject(GenericShader& shader, const glm::vec4& color);
+    LineObject(MatrixTreeNode* parent,
+               GenericShader& shader,
+               const glm::vec4& color);
     LineObject(LineObject&&) noexcept = default;
     LineObject& operator=(LineObject&&) noexcept = default;
 };
 
 class PointObject : public ::Drawable, public Node {
 public:
-    PointObject(GenericShader& shader, const glm::vec4& color);
+    PointObject(MatrixTreeNode* parent,
+                GenericShader& shader,
+                const glm::vec4& color);
 
     void draw() const override;
 

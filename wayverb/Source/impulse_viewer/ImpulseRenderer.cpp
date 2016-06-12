@@ -16,8 +16,9 @@ namespace {
 class Playhead : public BasicDrawableObject {
 public:
     static const float width;
-    Playhead(GenericShader& shader)
+    Playhead(MatrixTreeNode* parent, GenericShader& shader)
             : BasicDrawableObject(
+                      parent,
                       shader,
                       std::vector<glm::vec3>{
                               {-width, -1, 0},
@@ -44,77 +45,59 @@ const float Playhead::width{0.01};
 }  // namespace
 
 class ImpulseRenderer::ContextLifetime : public BaseContextLifetime,
-                                         public GLAudioThumbnailBase {
+                                         public GLAudioThumbnailBase,
+                                         public MatrixTreeNode {
+    struct ScaleFactor {
+        float time{1};
+        float amplitude{1};
+
+        ScaleFactor operator*(const ScaleFactor& s) const {
+            return ScaleFactor{time * s.time, amplitude * s.amplitude};
+        }
+    };
+
 public:
     ContextLifetime(const AudioTransportSource& audio_transport_source)
-            : audio_transport_source(audio_transport_source)
-            , waveform(generic_shader)
-            , waterfall(waterfall_shader, fade_shader, quad_shader)
-            , playhead(generic_shader) {
+            : MatrixTreeNode(nullptr)
+            , audio_transport_source(audio_transport_source)
+            , waveform(this, generic_shader)
+            , waterfall(this, waterfall_shader, fade_shader, quad_shader)
+            , playhead(this, generic_shader) {
+        waterfall.set_position(glm::vec3{0, 0, -Waterfall::width - 0.1});
     }
-
-    float get_length_in_seconds() const {
-        return waveform.get_length_in_seconds();
-    }
-
-    /*
-    glm::vec3 Waveform::get_scale() const {
-        auto length = load_context->length_in_samples /
-    load_context->sample_rate;
-        auto x = length / visible_range.getLength();
-        return glm::vec3{time_scale * x, amplitude_scale, 0};
-    }
-    glm::vec3 Waveform::get_position() const {
-        return position + glm::vec3{-visible_range.getStart() * get_scale().x,
-    0, 0};
-    }
-    */
 
     void update(float dt) override {
-        waveform_max_view =
-                ScaleFactor{get_viewport().x, get_viewport().y * 0.5f};
         current_params.update(target_params);
 
-        auto max_view =
-                mode == Mode::waveform ? waveform_max_view : waterfall_max_view;
+        //        playhead.set_scale(glm::vec3{
+        //                mode == Mode::waveform ? 100 : 1, scale.amplitude,
+        //                1});
 
-        auto scale = current_scale_factor * max_view;
-        scale.time /= waveform.get_length_in_seconds();
+        //        waveform.set_position(base_position);
+        //        waterfall.set_position(base_position +
+        //                               glm::vec3{0, 0, -Waterfall::width -
+        //                               0.1});
 
-        for (auto i : get_thumbnails()) {
-            i->set_time_scale(scale.time);
-            i->set_amplitude_scale(scale.amplitude);
-        }
+        //        auto scale_x =
+        //                waveform.get_length_in_seconds() /
+        //                visible_range.getLength();
+        //        playhead.set_position(
+        //                base_position +
+        //                glm::vec3{(audio_transport_source.getCurrentPosition()
+        //                -
+        //                           visible_range.getStart()) *
+        //                                  scale.time * scale_x,
+        //                          0,
+        //                          0.1});
 
-        playhead.set_scale(glm::vec3{
-                mode == Mode::waveform ? 100 : 1, scale.amplitude, 1});
-
-        auto base_position =
-                mode == Mode::waveform
-                        ? glm::vec3{0, get_viewport().y * 0.5, 0.0}
-                        : glm::vec3{0, 0, current_params.waveform_z};
-
-        waveform.set_position(base_position);
-        waterfall.set_position(base_position +
-                               glm::vec3{0, 0, -Waterfall::width - 0.1});
-
-        auto scale_x = waveform.get_length_in_seconds() / visible_range.getLength();
         playhead.set_position(
-                base_position +
-                glm::vec3{(audio_transport_source.getCurrentPosition() -
-                           visible_range.getStart()) *
-                                  scale.time * scale_x,
-                          0,
-                          0.1});
+                glm::vec3{audio_transport_source.getCurrentPosition(), 0, 0.1});
 
         waveform.update(dt);
         waterfall.update(dt);
     }
 
-    void set_visible_range(const Range<float>& range) override {
-        for (auto i : get_thumbnails()) {
-            i->set_visible_range(range);
-        }
+    void set_visible_range(const Range<float>& range) {
         visible_range = range;
     }
 
@@ -150,7 +133,6 @@ public:
             auto s_shader = fade_shader.get_scoped();
             fade_shader.set_fade(current_params.fade);
         }
-
         {
             auto s_shader = quad_shader.get_scoped();
             quad_shader.set_screen_size(get_viewport());
@@ -237,19 +219,38 @@ public:
         }
     }
 
-    void set_amplitude_scale(float f) override {
-        for (auto i : get_thumbnails()) {
-            i->set_amplitude_scale(f);
-        }
+    void set_amplitude_scale(float f) {
+        current_scale_factor.amplitude = f;
     }
 
-    void set_time_scale(float f) override {
-        for (auto i : get_thumbnails()) {
-            i->set_time_scale(f);
-        }
+    void set_time_scale(float f) {
+        current_scale_factor.time = f;
+    }
+
+    void set_scale(ScaleFactor sf) {
+        current_scale_factor = sf;
     }
 
 private:
+    glm::mat4 get_local_modelview_matrix() const override {
+        auto max_view =
+                mode == Mode::waveform
+                        ? ScaleFactor{get_viewport().x, get_viewport().y * 0.5f}
+                        : waterfall_max_view;
+
+        auto scale_factor = current_scale_factor * max_view;
+        scale_factor.time /= audio_transport_source.getLengthInSeconds();
+
+        glm::vec3 scale{scale_factor.time, scale_factor.amplitude, 1};
+
+        auto base_position =
+                mode == Mode::waveform
+                        ? glm::vec3{0, get_viewport().y * 0.5, 0.0}
+                        : glm::vec3{0, 0, current_params.waveform_z};
+
+        return glm::translate(base_position) * glm::scale(scale);
+    }
+
     glm::mat4 get_projection_matrix() const {
         switch (mode) {
             case Mode::waterfall:
@@ -336,17 +337,7 @@ private:
         }
     };
 
-    struct ScaleFactor {
-        float time{1};
-        float amplitude{1};
-
-        ScaleFactor operator*(const ScaleFactor& s) const {
-            return ScaleFactor{time * s.time, amplitude * s.amplitude};
-        }
-    };
-
     ScaleFactor waterfall_max_view{3, 1};
-    ScaleFactor waveform_max_view;
 
     ScaleFactor current_scale_factor;
     Range<float> visible_range;

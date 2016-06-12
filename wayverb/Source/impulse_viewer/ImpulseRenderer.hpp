@@ -34,10 +34,9 @@ public:
                   int start_offset,
                   int num_samples) override;
 
-    void set_amplitude_scale(float f) override;
-    void set_time_scale(float f) override;
-
-    void set_visible_range(const Range<float>& range) override;
+    void set_amplitude_scale(float f);
+    void set_time_scale(float f);
+    void set_visible_range(const Range<float>& range);
 
 private:
     void set_visible_range_impl(const Range<float>& range);

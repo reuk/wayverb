@@ -4,5 +4,5 @@
 
 class AxesObject final : public BasicDrawableObject {
 public:
-    AxesObject(GenericShader& shader);
+    AxesObject(MatrixTreeNode* parent, GenericShader& shader);
 };

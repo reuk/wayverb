@@ -109,8 +109,8 @@ DrawableScene::DrawableScene(GenericShader &generic_shader,
         , mesh_shader(&mesh_shader)
         , lit_scene_shader(&lit_scene_shader)
         , model_object(generic_shader, lit_scene_shader, scene_data)
-        , source_object(generic_shader, glm::vec4(0.7, 0, 0, 1))
-        , receiver_object(generic_shader, glm::vec4(0, 0.7, 0.7, 1)) {
+        , source_object(nullptr, generic_shader, glm::vec4(0.7, 0, 0, 1))
+        , receiver_object(nullptr, generic_shader, glm::vec4(0, 0.7, 0.7, 1)) {
     //  TODO init raytrace object
 }
 
@@ -186,7 +186,7 @@ public:
             , model(scene_data)
             , drawable_scene(
                   generic_shader, mesh_shader, lit_scene_shader, model)
-            , axes(generic_shader) {
+            , axes(nullptr, generic_shader) {
         auto aabb = model.get_aabb();
         auto m = aabb.centre();
         auto max = glm::length(aabb.dimensions());

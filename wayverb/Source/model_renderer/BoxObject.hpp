@@ -4,5 +4,5 @@
 
 class BoxObject final : public BasicDrawableObject {
 public:
-    BoxObject(GenericShader& shader);
+    BoxObject(MatrixTreeNode* parent, GenericShader& shader);
 };

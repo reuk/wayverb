@@ -12,9 +12,10 @@
 #include "modern_gl_utils/updatable.h"
 #include "modern_gl_utils/vao.h"
 
-class Node : public Orientable {
+class Node : public Orientable, public MatrixTreeNode {
 public:
-    Node() = default;
+    using MatrixTreeNode::MatrixTreeNode;
+
     Node(Node&&) noexcept;
     Node& operator=(Node&&) noexcept;
 
@@ -26,6 +27,7 @@ public:
     void set_scale(const glm::vec3& s);
 
     glm::mat4 get_matrix() const override;
+    glm::mat4 get_local_modelview_matrix() const override;
 
     virtual void set_highlight(float amount) = 0;
 
@@ -36,7 +38,8 @@ private:
 
 class BasicDrawableObject : public ::Drawable, public Node {
 public:
-    BasicDrawableObject(ShaderProgram& shader,
+    BasicDrawableObject(const MatrixTreeNode* parent,
+                        ShaderProgram& shader,
                         const std::vector<glm::vec3>& g,
                         const std::vector<glm::vec4>& c,
                         const std::vector<GLuint>& i,

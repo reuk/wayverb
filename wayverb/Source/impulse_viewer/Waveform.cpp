@@ -6,8 +6,9 @@
 
 #include "glm/gtx/transform.hpp"
 
-Waveform::Waveform(GenericShader& shader)
-        : shader(&shader) {
+Waveform::Waveform(MatrixTreeNode* parent, GenericShader& shader)
+        : MatrixTreeNode(parent)
+        , shader(&shader) {
     auto s_vao = vao.get_scoped();
 
     geometry.bind();
@@ -46,20 +47,10 @@ void Waveform::update(float dt) {
     }
 }
 
-glm::vec3 Waveform::get_scale() const {
-    auto length = load_context->length_in_samples / load_context->sample_rate;
-    auto x = length / visible_range.getLength();
-    return glm::vec3{time_scale * x, amplitude_scale, 1};
-}
-glm::vec3 Waveform::get_position() const {
-    return position + glm::vec3{-visible_range.getStart() * get_scale().x, 0, 0};
-}
-
 void Waveform::draw() const {
     std::lock_guard<std::mutex> lck(mut);
     auto s_shader = shader->get_scoped();
-    shader->set_model_matrix(glm::translate(get_position()) *
-                             glm::scale(get_scale()));
+    shader->set_model_matrix(get_modelview_matrix());
 
     auto s_vao = vao.get_scoped();
     glDrawElements(GL_TRIANGLE_STRIP, ibo.size(), GL_UNSIGNED_INT, nullptr);
@@ -74,11 +65,6 @@ void Waveform::load_from(AudioFormatManager& manager, const File& file) {
     std::lock_guard<std::mutex> lck(mut);
     load_from(
             std::unique_ptr<AudioFormatReader>(manager.createReaderFor(file)));
-}
-
-void Waveform::set_visible_range(const Range<float>& range) {
-    std::lock_guard<std::mutex> lck(mut);
-    visible_range = range;
 }
 
 //  these two will be called from a thread *other* than the gl thread
@@ -106,24 +92,6 @@ void Waveform::addBlock(int64 sample_number_in_source,
     incoming_work_queue.push([this, ret] {
         downsampled.insert(downsampled.end(), ret.begin(), ret.end());
     });
-}
-
-void Waveform::set_amplitude_scale(float f) {
-    std::lock_guard<std::mutex> lck(mut);
-    amplitude_scale = f;
-}
-
-void Waveform::set_time_scale(float f) {
-    std::lock_guard<std::mutex> lck(mut);
-    time_scale = f;
-}
-
-float Waveform::get_length_in_seconds() const {
-    std::lock_guard<std::mutex> lck(mut);
-    if (load_context) {
-        return load_context->length_in_samples / load_context->sample_rate;
-    }
-    return 0;
 }
 
 void Waveform::load_from(std::unique_ptr<AudioFormatReader>&& reader) {
@@ -159,4 +127,8 @@ std::vector<glm::vec3> Waveform::compute_geometry(
         x += x_spacing;
     }
     return ret;
+}
+
+glm::mat4 Waveform::get_local_modelview_matrix() const {
+    return glm::translate(position);
 }

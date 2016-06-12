@@ -36,7 +36,9 @@ private:
 
 class AxisObject final : public BasicDrawableObject {
 public:
-    AxisObject(ShaderProgram& shader, TexturedQuadShader& quad_shader);
+    AxisObject(const MatrixTreeNode* parent,
+               ShaderProgram& shader,
+               TexturedQuadShader& quad_shader);
 
     void set_label(const std::string& t);
 
