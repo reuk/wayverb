@@ -16,18 +16,27 @@ ImpulseViewer::ImpulseViewer(const File& file)
         , renderer(audio_transport_source)
         , waterfall_button("waterfall")
         , waveform_button("waveform")
+        , follow_playback_button("follow playback")
+        , scroll_bar(false)
         , transport(audio_transport_source) {
-    audio_transport_source.setSource(&audio_format_reader_source);
+    audio_transport_source.setSource(
+            &audio_format_reader_source,
+            0,
+            nullptr,
+            audio_format_reader_source.getAudioFormatReader()->sampleRate);
     audio_source_player.setSource(&audio_transport_source);
     audio_device_manager.addAudioCallback(&audio_source_player);
 
     auto& command_manager = VisualiserApplication::get_command_manager();
     command_manager.registerAllCommandsForTarget(this);
 
-    auto r =
-            Range<float>(0, audio_transport_source.getLengthInSeconds());
+    auto r = Range<double>(0, audio_transport_source.getLengthInSeconds());
     ruler.set_max_range(r);
     ruler.set_visible_range(r, true);
+
+    scroll_bar.setRangeLimits(r);
+    scroll_bar.setCurrentRange(r);
+    scroll_bar.setAutoHide(false);
 
     for (auto i : {&waterfall_button, &waveform_button}) {
         i->setRadioGroupId(0xf);
@@ -37,9 +46,14 @@ ImpulseViewer::ImpulseViewer(const File& file)
 
     waveform_button.setToggleState(true, sendNotification);
 
+    follow_playback_button.setWantsKeyboardFocus(false);
+    follow_playback_button.setToggleState(true, true);
+
     addAndMakeVisible(renderer);
     addAndMakeVisible(waterfall_button);
     addAndMakeVisible(waveform_button);
+    addAndMakeVisible(follow_playback_button);
+    addAndMakeVisible(scroll_bar);
     addAndMakeVisible(transport);
     addAndMakeVisible(ruler);
     setSize(800, 500);
@@ -51,8 +65,28 @@ ImpulseViewer::~ImpulseViewer() noexcept {
     audio_device_manager.removeAudioCallback(&audio_source_player);
 }
 
+void ImpulseViewer::ruler_visible_range_changed(Ruler* r,
+                                                const Range<double>& range) {
+    if (r == &ruler) {
+        scroll_bar.setCurrentRange(range, dontSendNotification);
+    }
+}
+
+void ImpulseViewer::scrollBarMoved(ScrollBar* s, double new_range_start) {
+    if (s == &scroll_bar) {
+        ruler.set_visible_range(scroll_bar.getCurrentRange(), true);
+    }
+}
+
+void ImpulseViewer::timerCallback() {
+    ruler.set_current_time(audio_transport_source.getCurrentPosition());
+}
+
 void ImpulseViewer::resized() {
     auto bounds = getLocalBounds();
+
+    scroll_bar.setBounds(bounds.removeFromBottom(20));
+
     auto top = bounds.removeFromTop(40);
     top.reduce(2, 2);
     ruler.setBounds(bounds.removeFromTop(20));
@@ -63,6 +97,8 @@ void ImpulseViewer::resized() {
     waveform_button.setBounds(top.removeFromLeft(100));
     top.removeFromLeft(2);
     waterfall_button.setBounds(top.removeFromLeft(100));
+
+    follow_playback_button.setBounds(top.removeFromRight(100));
 }
 
 void ImpulseViewer::load_from(const File& file) {
@@ -108,15 +144,19 @@ bool ImpulseViewer::perform(const InvocationInfo& info) {
         case CommandIDs::idPlay:
             audio_transport_source.start();
             VisualiserApplication::get_command_manager().commandStatusChanged();
+            startTimer(25);
             return true;
 
         case CommandIDs::idPause:
             audio_transport_source.stop();
             VisualiserApplication::get_command_manager().commandStatusChanged();
+            stopTimer();
+            timerCallback();
             return true;
 
         case CommandIDs::idReturnToBeginning:
             audio_transport_source.setPosition(0);
+            timerCallback();
             return true;
 
         default:
@@ -132,31 +172,7 @@ void ImpulseViewer::buttonClicked(Button* b) {
         renderer.get_renderer().set_mode(ImpulseRenderer::Mode::waterfall);
     } else if (b == &waveform_button) {
         renderer.get_renderer().set_mode(ImpulseRenderer::Mode::waveform);
+    } else if (b == &follow_playback_button) {
+        ruler.set_follow_playback(follow_playback_button.getToggleState());
     }
 }
-
-/*
-void ImpulseViewer::rulerDragged(Ruler* ruler, const MouseEvent& e) {
-    assert(ruler_state);
-
-    auto dy = e.getDistanceFromDragStartY();
-
-    auto doubleDist = 100.0;
-    auto scale = pow(2.0, dy / doubleDist);
-
-    auto w = static_cast<int>(startWidth * scale);
-    auto clamped = std::max(getParentWidth(), w);
-
-    if (audio_transport_source.getTotalLength() - 1 > getParentWidth()) {
-        clamped =
-                std::min(clamped, audio_transport_source.getTotalLength() - 1);
-    }
-
-    setSize(clamped, getHeight());
-
-    auto dx = e.getDistanceFromDragStartX();
-    auto timePos = mouseDownTime * getWidth() /
-                   audioTransportSource.getLengthInSeconds();
-    setTopLeftPosition(dx + mouseDownX - timePos, 0);
-}
-*/

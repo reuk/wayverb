@@ -21,7 +21,7 @@ public:
     void set_mode(Mode mode);
 
     void ruler_visible_range_changed(Ruler* r,
-                                     const Range<float>& range) override;
+                                     const Range<double>& range) override;
 
     //  inherited
     void clear() override;
@@ -36,10 +36,10 @@ public:
 
     void set_amplitude_scale(float f);
     void set_time_scale(float f);
-    void set_visible_range(const Range<float>& range);
+    void set_visible_range(const Range<double>& range);
 
 private:
-    void set_visible_range_impl(const Range<float>& range);
+    void set_visible_range_impl(const Range<double>& range);
 
     virtual BaseContextLifetime* get_context_lifetime() override;
 

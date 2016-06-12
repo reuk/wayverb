@@ -69,26 +69,7 @@ public:
     void update(float dt) override {
         current_params.update(target_params);
 
-        //        playhead.set_scale(glm::vec3{
-        //                mode == Mode::waveform ? 100 : 1, scale.amplitude,
-        //                1});
-
-        //        waveform.set_position(base_position);
-        //        waterfall.set_position(base_position +
-        //                               glm::vec3{0, 0, -Waterfall::width -
-        //                               0.1});
-
-        //        auto scale_x =
-        //                waveform.get_length_in_seconds() /
-        //                visible_range.getLength();
-        //        playhead.set_position(
-        //                base_position +
-        //                glm::vec3{(audio_transport_source.getCurrentPosition()
-        //                -
-        //                           visible_range.getStart()) *
-        //                                  scale.time * scale_x,
-        //                          0,
-        //                          0.1});
+        playhead.set_scale(glm::vec3{visible_range.getLength() * 0.2, 1, 1});
 
         playhead.set_position(
                 glm::vec3{audio_transport_source.getCurrentPosition(), 0, 0.1});
@@ -97,7 +78,7 @@ public:
         waterfall.update(dt);
     }
 
-    void set_visible_range(const Range<float>& range) {
+    void set_visible_range(const Range<double>& range) {
         visible_range = range;
     }
 
@@ -239,14 +220,16 @@ private:
                         : waterfall_max_view;
 
         auto scale_factor = current_scale_factor * max_view;
-        scale_factor.time /= audio_transport_source.getLengthInSeconds();
-
-        glm::vec3 scale{scale_factor.time, scale_factor.amplitude, 1};
+        glm::vec3 scale{scale_factor.time / visible_range.getLength(),
+                        scale_factor.amplitude,
+                        1};
 
         auto base_position =
                 mode == Mode::waveform
                         ? glm::vec3{0, get_viewport().y * 0.5, 0.0}
                         : glm::vec3{0, 0, current_params.waveform_z};
+
+        base_position.x -= visible_range.getStart() * scale.x;
 
         return glm::translate(base_position) * glm::scale(scale);
     }
@@ -340,7 +323,7 @@ private:
     ScaleFactor waterfall_max_view{3, 1};
 
     ScaleFactor current_scale_factor;
-    Range<float> visible_range;
+    Range<double> visible_range;
 
     static const float waterfall_max_x;
 
@@ -458,17 +441,17 @@ void ImpulseRenderer::set_time_scale(float f) {
 }
 
 void ImpulseRenderer::ruler_visible_range_changed(Ruler* r,
-                                                  const Range<float>& range) {
+                                                  const Range<double>& range) {
     std::lock_guard<std::mutex> lck(mut);
     set_visible_range_impl(range);
 }
 
-void ImpulseRenderer::set_visible_range(const Range<float>& range) {
+void ImpulseRenderer::set_visible_range(const Range<double>& range) {
     std::lock_guard<std::mutex> lck(mut);
     set_visible_range_impl(range);
 }
 
-void ImpulseRenderer::set_visible_range_impl(const Range<float>& range) {
+void ImpulseRenderer::set_visible_range_impl(const Range<double>& range) {
     push_incoming([this, range] {
         assert(context_lifetime);
         context_lifetime->set_visible_range(range);

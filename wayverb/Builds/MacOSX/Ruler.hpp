@@ -8,17 +8,24 @@ public:
     public:
         virtual ~Listener() noexcept = default;
 
-        virtual void ruler_visible_range_changed(Ruler* r,
-                                                 const Range<float>& range) = 0;
+        virtual void ruler_visible_range_changed(
+                Ruler* r, const Range<double>& range) = 0;
     };
 
     Ruler();
     virtual ~Ruler() noexcept;
 
-    void set_max_range(const Range<float>& r);
-    void set_visible_range(const Range<float>& r, bool notify);
+    void set_max_range(const Range<double>& r);
+    void set_visible_range(const Range<double>& r, bool notify);
 
-    float get_time(float x) const;
+    void set_follow_playback(bool follow);
+    bool get_follow_playback() const;
+
+    void set_current_time(double t);
+    double get_current_time() const;
+
+    double get_time(double x) const;
+    double get_x(double time) const;
 
     void paint(Graphics& g) override;
 
@@ -33,8 +40,11 @@ public:
     void removeListener(Listener* listener);
 
 private:
-    Range<float> max_range;
-    Range<float> visible_range;
+    bool follow_playback{true};
+    double current_time{0};
+
+    Range<double> max_range;
+    Range<double> visible_range;
     ListenerList<Listener> listener_list;
 
     struct RulerState;
