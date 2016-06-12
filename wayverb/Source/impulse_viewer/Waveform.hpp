@@ -14,14 +14,14 @@ class Waveform : public ::Updatable,
                  public ::MatrixTreeNode,
                  public GLAudioThumbnailBase {
 public:
-    Waveform(MatrixTreeNode* parent, GenericShader& shader);
+    Waveform(MatrixTreeNode* parent,
+             GenericShader& shader,
+             AudioFormatManager& manager,
+             const File& file);
     void set_position(const glm::vec3& p);
 
     void update(float dt) override;
     void draw() const override;
-
-    void clear() override;
-    void load_from(AudioFormatManager& manager, const File& file) override;
 
     void reset(int num_channels,
                double sample_rate,
@@ -36,7 +36,6 @@ private:
 
     glm::mat4 get_local_modelview_matrix() const override;
 
-    void load_from(std::unique_ptr<AudioFormatReader>&& reader);
     void clear_impl();
 
     glm::vec3 get_position() const;
@@ -46,6 +45,8 @@ private:
 
     std::vector<glm::vec3> compute_geometry(
             const std::vector<std::pair<float, float>>& data);
+
+    mutable std::mutex mut;
 
     GenericShader* shader;
 
@@ -59,9 +60,8 @@ private:
     int previous_size{0};
     std::vector<std::pair<float, float>> downsampled;
 
+    WorkQueue incoming_work_queue;
+
     std::unique_ptr<LoadContext> load_context;
     float x_spacing;
-
-    WorkQueue incoming_work_queue;
-    mutable std::mutex mut;
 };

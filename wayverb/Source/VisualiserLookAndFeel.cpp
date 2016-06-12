@@ -81,7 +81,7 @@ auto matte_outer(Graphics& g,
         bounds.removeFromLeft(1);
     } else {
         horizontal_line(
-                g, bounds.getHeight() - 1, bounds.getX(), bounds.getRight());
+                g, bounds.getBottom() - 1, bounds.getX(), bounds.getRight());
         bounds.removeFromBottom(1);
     }
     g.setColour(c.withAlpha(0.9f));
@@ -143,19 +143,19 @@ void VisualiserLookAndFeel::matte_background_box(Graphics& g,
     bounds = matte_outer(g, bounds, vertical);
     if (vertical) {
         g.setGradientFill(ColourGradient(colour,
-                                         0,
+                                         bounds.getX(),
                                          0,
                                          Colours::black.withAlpha(0.5f),
-                                         bounds.getWidth(),
+                                         bounds.getRight(),
                                          0,
                                          false));
     } else {
         g.setGradientFill(ColourGradient(Colours::black.withAlpha(0.5f),
                                          0,
-                                         0,
+                                         bounds.getY(),
                                          colour,
                                          0,
-                                         bounds.getHeight(),
+                                         bounds.getBottom(),
                                          false));
     }
     g.fillRect(bounds.getX(),
@@ -165,13 +165,8 @@ void VisualiserLookAndFeel::matte_background_box(Graphics& g,
 }
 
 void VisualiserLookAndFeel::matte_foreground_box(Graphics& g,
-                                                 int x,
-                                                 int y,
-                                                 int width,
-                                                 int height,
+                                                 Rectangle<int> bounds,
                                                  const Colour& colour) {
-    Rectangle<int> bounds(x, y, width, height);
-
     g.setColour(Colours::black.withAlpha(0.9f));
     g.drawRect(bounds.getX(),
                bounds.getY(),
@@ -209,13 +204,14 @@ void VisualiserLookAndFeel::drawProgressBar(Graphics& g,
     //  now the bar
     if (0 <= progress && progress < 1) {
         //  solid bar
-        matte_foreground_box(
-                g,
-                0,
-                0,
-                jlimit(0.0, static_cast<double>(width), progress * width),
-                height - 1,
-                foreground);
+        matte_foreground_box(g,
+                             Rectangle<int>(0,
+                                            0,
+                                            jlimit(0.0,
+                                                   static_cast<double>(width),
+                                                   progress * width),
+                                            height - 1),
+                             foreground);
     } else {
         //  spinny bar
         g.setColour(foreground);
@@ -241,7 +237,8 @@ void VisualiserLookAndFeel::drawProgressBar(Graphics& g,
 
         {
             Graphics g2(im);
-            matte_foreground_box(g2, 0, 0, width, height - 1, foreground);
+            matte_foreground_box(
+                    g2, Rectangle<int>(0, 0, width, height - 1), foreground);
         }
 
         g.setTiledImageFill(im, 0, 0, 0.85f);
@@ -442,10 +439,10 @@ void VisualiserLookAndFeel::drawLinearSliderThumb(
 
         if (style == Slider::LinearVertical) {
             matte_foreground_box(g,
-                                 x + width * 0.5 - slider_radius,
-                                 slider_pos - slider_radius + 3,
-                                 slider_radius * 2,
-                                 slider_radius * 2 - 6,
+                                 Rectangle<int>(x + width * 0.5 - slider_radius,
+                                                slider_pos - slider_radius + 3,
+                                                slider_radius * 2,
+                                                slider_radius * 2 - 6),
                                  thumb_colour);
         } else {
             //            auto kx = slider_pos;
@@ -468,15 +465,13 @@ void VisualiserLookAndFeel::drawComboBox(Graphics& g,
     g.drawRect(0, 0, width, height);
     matte_outer(g, Rectangle<int>(0, 0, width, height), false);
 
-    matte_foreground_box(g,
-                         button_x,
-                         button_y,
-                         button_w,
-                         button_h - 1,
-                         create_base_colour(Colours::darkgrey,
-                                            cb.hasKeyboardFocus(true),
-                                            cb.isMouseOver(),
-                                            button_down));
+    matte_foreground_box(
+            g,
+            Rectangle<int>(button_x, button_y, button_w, button_h - 1),
+            create_base_colour(Colours::darkgrey,
+                               cb.hasKeyboardFocus(true),
+                               cb.isMouseOver(),
+                               button_down));
 
     const float arrowX = 0.3f;
     const float arrowH = 0.2f;
@@ -521,4 +516,30 @@ void VisualiserLookAndFeel::drawCallOutBoxBackground(CallOutBox& box,
 
     g.setColour(Colours::white.withAlpha(0.8f));
     g.strokePath(path, PathStrokeType(2.0f));
+}
+
+void VisualiserLookAndFeel::drawTickBox(Graphics& g,
+                                        Component& component,
+                                        float x,
+                                        float y,
+                                        float w,
+                                        float h,
+                                        const bool ticked,
+                                        const bool isEnabled,
+                                        const bool isMouseOverButton,
+                                        const bool isButtonDown) {
+    const float boxSize = w * 0.7f;
+
+    if (ticked) {
+        matte_box(g,
+                  Rectangle<int>(x, y + (h - boxSize) * 0.5f, boxSize, boxSize),
+                  false,
+                  emphasis);
+    } else {
+        matte_background_box(
+                g,
+                Rectangle<int>(x, y + (h - boxSize) * 0.5f, boxSize, boxSize),
+                false,
+                Colours::darkgrey);
+    }
 }

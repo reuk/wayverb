@@ -34,6 +34,6 @@ private:
         Method method;
     };
 
-    std::queue<std::unique_ptr<WorkItem>> work_items;
     mutable std::mutex mut;
+    std::queue<std::unique_ptr<WorkItem>> work_items;
 };

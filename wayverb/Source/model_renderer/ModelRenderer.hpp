@@ -164,12 +164,12 @@ private:
     void broadcast_receiver_position(const glm::vec3& pos);
     void broadcast_source_position(const glm::vec3& pos);
 
+    mutable std::mutex mut;
+
     CopyableSceneData model;
 
     class ContextLifetime;
     std::unique_ptr<ContextLifetime> context_lifetime;
 
     ListenerList<Listener> listener_list;
-
-    mutable std::mutex mut;
 };

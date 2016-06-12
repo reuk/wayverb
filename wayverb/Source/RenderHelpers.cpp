@@ -15,14 +15,20 @@ float BaseContextLifetime::get_aspect() const {
 //----------------------------------------------------------------------------//
 
 void BaseRenderer::set_viewport(const glm::vec2 &u) {
-    incoming_work_queue.push([this, u] {
+    viewport = u;
+    notify_viewport_impl();
+}
+
+void BaseRenderer::notify_viewport_impl() {
+    incoming_work_queue.push([this] {
         if (get_context_lifetime()) {
-            get_context_lifetime()->set_viewport(u);
+            get_context_lifetime()->set_viewport(viewport);
         }
     });
 }
 
 void BaseRenderer::newOpenGLContextCreated() {
+    notify_viewport_impl();
     push_outgoing_impl([this] { sendChangeMessage(); });
 }
 

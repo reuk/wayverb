@@ -2,21 +2,44 @@
 
 #include "DefaultAudio.hpp"
 #include "FullModel.hpp"
-#include "ImpulseRenderer.hpp"
 #include "Ruler.hpp"
 #include "Transport.hpp"
 
-class ImpulseViewer : public Component,
-                      public ApplicationCommandTarget,
-                      public Button::Listener,
-                      public Ruler::Listener,
-                      public ScrollBar::Listener,
-                      public Timer {
+class AudioThumbnailPane : public Component, public ChangeListener {
 public:
-    ImpulseViewer(AudioDeviceManager& audio_device_manager,
-                  AudioFormatManager& audio_format_manager,
-                  const File& file);
-    virtual ~ImpulseViewer() noexcept;
+    AudioThumbnailPane(AudioFormatManager& audio_format_manager);
+
+    void paint(Graphics& g) override;
+    void resized() override;
+
+    void changeListenerCallback(ChangeBroadcaster* cb) override;
+
+    void set_reader(AudioFormatReader* new_reader, int64 hash);
+
+    void set_visible_range(const Range<double>& range);
+
+private:
+    const AudioTransportSource& audio_transport_source;
+
+    AudioThumbnailCache audio_thumbnail_cache;
+    AudioThumbnail audio_thumbnail;
+
+    Range<double> visible_range;
+};
+
+//----------------------------------------------------------------------------//
+
+class ConvolutionViewer : public Component,
+                          public ApplicationCommandTarget,
+                          public Button::Listener,
+                          public Ruler::Listener,
+                          public ScrollBar::Listener,
+                          public Timer {
+public:
+    ConvolutionViewer(AudioDeviceManager& audio_device_manager,
+                      AudioFormatManager& audio_format_manager,
+                      const File& file);
+    virtual ~ConvolutionViewer() noexcept;
 
     void resized() override;
 
@@ -41,11 +64,8 @@ private:
     AudioTransportSource audio_transport_source;
     AudioSourcePlayer audio_source_player;
 
-    ImpulseRendererComponent renderer;
+    AudioThumbnailPane renderer;
     Ruler ruler;
-
-    TextButton waterfall_button;
-    TextButton waveform_button;
 
     ToggleButton follow_playback_button;
 
@@ -53,13 +73,8 @@ private:
 
     Transport transport;
 
-    model::Connector<TextButton> waterfall_button_connector{&waterfall_button,
-                                                            this};
-    model::Connector<TextButton> waveform_button_connector{&waveform_button,
-                                                           this};
     model::Connector<ToggleButton> follow_playback_connector{
             &follow_playback_button, this};
     model::Connector<Ruler> ruler_connector_0{&ruler, this};
-    model::Connector<Ruler> ruler_connector_1{&ruler, &renderer.get_renderer()};
     model::Connector<ScrollBar> scroll_bar_connector{&scroll_bar, this};
 };

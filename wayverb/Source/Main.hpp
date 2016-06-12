@@ -2,7 +2,7 @@
 
 #include "FileDropComponent.hpp"
 #include "FullModel.hpp"
-#include "ImpulseViewer.hpp"
+#include "ImpulseViewerTabs.hpp"
 #include "MainComponent.hpp"
 #include "StoredSettings.hpp"
 #include "VisualiserLookAndFeel.hpp"
@@ -129,7 +129,7 @@ public:
 
     private:
         File this_file;
-        ImpulseViewer content_component;
+        ImpulseViewerTabs content_component;
     };
 
     std::unique_ptr<StoredSettings> stored_settings;

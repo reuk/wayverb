@@ -83,11 +83,17 @@ private:
 Waterfall::Waterfall(MatrixTreeNode* parent,
                      WaterfallShader& waterfall_shader,
                      FadeShader& fade_shader,
-                     TexturedQuadShader& quad_shader)
+                     TexturedQuadShader& quad_shader,
+                     AudioFormatManager& manager,
+                     const File& file)
         : MatrixTreeNode(parent)
         , waterfall_shader(&waterfall_shader)
         , fade_shader(&fade_shader)
-        , quad_shader(&quad_shader) {
+        , quad_shader(&quad_shader)
+        , load_context(std::make_unique<LoadContext>(
+                  *this,
+                  std::unique_ptr<AudioFormatReader>(
+                          manager.createReaderFor(file)))) {
 }
 
 void Waterfall::set_position(const glm::vec3& p) {
@@ -201,17 +207,6 @@ void Waterfall::set_mode(Mode u) {
     }
 }
 
-//  inherited from GLAudioThumbnailBase
-void Waterfall::clear() {
-    std::lock_guard<std::mutex> lck(mut);
-    clear_impl();
-}
-void Waterfall::load_from(AudioFormatManager& manager, const File& file) {
-    std::lock_guard<std::mutex> lck(mut);
-    load_from(
-            std::unique_ptr<AudioFormatReader>(manager.createReaderFor(file)));
-}
-
 //  these two will be called from a thread *other* than the gl thread
 void Waterfall::reset(int num_channels,
                       double sample_rate,
@@ -239,10 +234,6 @@ void Waterfall::addBlock(int64 sample_number_in_source,
     }
     incoming_work_queue.push(
             [this, s] { spectrum.insert(spectrum.end(), s.begin(), s.end()); });
-}
-
-void Waterfall::load_from(std::unique_ptr<AudioFormatReader>&& reader) {
-    load_context = std::make_unique<LoadContext>(*this, std::move(reader));
 }
 
 void Waterfall::clear_impl() {

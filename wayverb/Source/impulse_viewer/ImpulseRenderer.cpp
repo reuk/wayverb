@@ -57,11 +57,18 @@ class ImpulseRenderer::ContextLifetime : public BaseContextLifetime,
     };
 
 public:
-    ContextLifetime(const AudioTransportSource& audio_transport_source)
+    ContextLifetime(const AudioTransportSource& audio_transport_source,
+                    AudioFormatManager& manager,
+                    const File& file)
             : MatrixTreeNode(nullptr)
             , audio_transport_source(audio_transport_source)
-            , waveform(this, generic_shader)
-            , waterfall(this, waterfall_shader, fade_shader, quad_shader)
+            , waveform(this, generic_shader, manager, file)
+            , waterfall(this,
+                        waterfall_shader,
+                        fade_shader,
+                        quad_shader,
+                        manager,
+                        file)
             , playhead(this, generic_shader) {
         waterfall.set_position(glm::vec3{0, 0, -Waterfall::width - 0.1});
     }
@@ -170,17 +177,6 @@ public:
     void mouse_wheel_move(float delta_y) override {
     }
 
-    //  inherited audio thumbnail stuff
-    void clear() override {
-        for (auto i : get_thumbnails()) {
-            i->clear();
-        }
-    }
-    void load_from(AudioFormatManager& manager, const File& file) override {
-        for (auto i : get_thumbnails()) {
-            i->load_from(manager, file);
-        }
-    }
     void reset(int num_channels,
                double sample_rate,
                int64 total_samples) override {
@@ -355,16 +351,22 @@ const float ImpulseRenderer::ContextLifetime::waterfall_max_x{3};
 //----------------------------------------------------------------------------//
 
 ImpulseRenderer::ImpulseRenderer(
-        const AudioTransportSource& audio_transport_source)
-        : audio_transport_source(audio_transport_source) {
+        const AudioTransportSource& audio_transport_source,
+        AudioFormatManager& audio_format_manager,
+        const File& file)
+        : audio_transport_source(audio_transport_source)
+        , audio_format_manager(audio_format_manager)
+        , file(file) {
 }
 
 ImpulseRenderer::~ImpulseRenderer() noexcept = default;
 
 void ImpulseRenderer::newOpenGLContextCreated() {
     std::lock_guard<std::mutex> lck(mut);
-    context_lifetime =
-            std::make_unique<ContextLifetime>(audio_transport_source);
+    context_lifetime = std::make_unique<ContextLifetime>(
+            audio_transport_source, audio_format_manager, file);
+    set_visible_range_impl(visible_range);
+    set_mode_impl(mode);
     BaseRenderer::newOpenGLContextCreated();
 }
 
@@ -380,26 +382,9 @@ BaseContextLifetime* ImpulseRenderer::get_context_lifetime() {
 
 void ImpulseRenderer::set_mode(Mode mode) {
     std::lock_guard<std::mutex> lck(mut);
-    push_incoming([this, mode] {
-        assert(context_lifetime);
-        context_lifetime->set_mode(mode);
-    });
+    set_mode_impl(mode);
 }
 
-void ImpulseRenderer::clear() {
-    std::lock_guard<std::mutex> lck(mut);
-    push_incoming([this] {
-        assert(context_lifetime);
-        context_lifetime->clear();
-    });
-}
-void ImpulseRenderer::load_from(AudioFormatManager& manager, const File& file) {
-    std::lock_guard<std::mutex> lck(mut);
-    push_incoming([this, &manager, file] {
-        assert(context_lifetime);
-        context_lifetime->load_from(manager, file);
-    });
-}
 void ImpulseRenderer::reset(int num_channels,
                             double sample_rate,
                             int64 total_samples) {
@@ -425,21 +410,6 @@ void ImpulseRenderer::addBlock(int64 sample_number_in_source,
     });
 }
 
-void ImpulseRenderer::set_amplitude_scale(float f) {
-    std::lock_guard<std::mutex> lck(mut);
-    push_incoming([this, f] {
-        assert(context_lifetime);
-        context_lifetime->set_amplitude_scale(f);
-    });
-}
-void ImpulseRenderer::set_time_scale(float f) {
-    std::lock_guard<std::mutex> lck(mut);
-    push_incoming([this, f] {
-        assert(context_lifetime);
-        context_lifetime->set_time_scale(f);
-    });
-}
-
 void ImpulseRenderer::ruler_visible_range_changed(Ruler* r,
                                                   const Range<double>& range) {
     std::lock_guard<std::mutex> lck(mut);
@@ -452,8 +422,17 @@ void ImpulseRenderer::set_visible_range(const Range<double>& range) {
 }
 
 void ImpulseRenderer::set_visible_range_impl(const Range<double>& range) {
-    push_incoming([this, range] {
+    visible_range = range;
+    push_incoming([this] {
         assert(context_lifetime);
-        context_lifetime->set_visible_range(range);
+        context_lifetime->set_visible_range(visible_range);
+    });
+}
+
+void ImpulseRenderer::set_mode_impl(Mode m) {
+    mode = m;
+    push_incoming([this] {
+        assert(context_lifetime);
+        context_lifetime->set_mode(mode);
     });
 }

@@ -6,9 +6,14 @@
 
 #include "glm/gtx/transform.hpp"
 
-Waveform::Waveform(MatrixTreeNode* parent, GenericShader& shader)
+Waveform::Waveform(MatrixTreeNode* parent, GenericShader& shader,
+AudioFormatManager& manager, const File& file)
         : MatrixTreeNode(parent)
-        , shader(&shader) {
+        , shader(&shader)
+        , load_context(std::make_unique<LoadContext>(
+                  *this,
+                  std::unique_ptr<AudioFormatReader>(
+                          manager.createReaderFor(file)))) {
     auto s_vao = vao.get_scoped();
 
     geometry.bind();
@@ -56,17 +61,6 @@ void Waveform::draw() const {
     glDrawElements(GL_TRIANGLE_STRIP, ibo.size(), GL_UNSIGNED_INT, nullptr);
 }
 
-//  inherited from GLAudioThumbnailBase
-void Waveform::clear() {
-    std::lock_guard<std::mutex> lck(mut);
-    clear_impl();
-}
-void Waveform::load_from(AudioFormatManager& manager, const File& file) {
-    std::lock_guard<std::mutex> lck(mut);
-    load_from(
-            std::unique_ptr<AudioFormatReader>(manager.createReaderFor(file)));
-}
-
 //  these two will be called from a thread *other* than the gl thread
 void Waveform::reset(int num_channels,
                      double sample_rate,
@@ -92,10 +86,6 @@ void Waveform::addBlock(int64 sample_number_in_source,
     incoming_work_queue.push([this, ret] {
         downsampled.insert(downsampled.end(), ret.begin(), ret.end());
     });
-}
-
-void Waveform::load_from(std::unique_ptr<AudioFormatReader>&& reader) {
-    load_context = std::make_unique<LoadContext>(*this, std::move(reader));
 }
 
 void Waveform::clear_impl() {

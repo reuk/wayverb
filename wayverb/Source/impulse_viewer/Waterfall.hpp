@@ -18,9 +18,12 @@ class Waterfall : public ::Updatable,
 public:
     enum class Mode { linear, log };
 
-    Waterfall(MatrixTreeNode* parent, WaterfallShader& waterfall_shader,
+    Waterfall(MatrixTreeNode* parent,
+              WaterfallShader& waterfall_shader,
               FadeShader& fade_shader,
-              TexturedQuadShader& quad_shader);
+              TexturedQuadShader& quad_shader,
+              AudioFormatManager& manager,
+              const File& file);
 
     void update(float dt) override;
     void draw() const override;
@@ -29,8 +32,6 @@ public:
 
     void set_position(const glm::vec3& p);
 
-    void clear() override;
-    void load_from(AudioFormatManager& manager, const File& file) override;
     void reset(int num_channels,
                double sample_rate,
                int64 total_samples) override;
@@ -47,14 +48,14 @@ public:
 private:
     glm::mat4 get_local_modelview_matrix() const override;
 
-    void load_from(std::unique_ptr<AudioFormatReader>&& reader);
     void clear_impl();
 
     glm::vec3 get_scale() const;
 
-    class HeightMapStrip : public ::Drawable , public MatrixTreeNode {
+    class HeightMapStrip : public ::Drawable, public MatrixTreeNode {
     public:
-        HeightMapStrip(MatrixTreeNode* parent, WaterfallShader& shader,
+        HeightMapStrip(MatrixTreeNode* parent,
+                       WaterfallShader& shader,
                        const std::vector<float>& left,
                        const std::vector<float>& right,
                        Mode mode,
@@ -93,6 +94,8 @@ private:
     static const float min_frequency;
     static const float max_frequency;
 
+    mutable std::mutex mut;
+
     WaterfallShader* waterfall_shader;
     FadeShader* fade_shader;
     TexturedQuadShader* quad_shader;
@@ -103,9 +106,8 @@ private:
     std::vector<std::vector<float>> spectrum;
     std::vector<HeightMapStrip> strips;
 
+    WorkQueue incoming_work_queue;
+
     std::unique_ptr<LoadContext> load_context;
     float x_spacing;
-
-    WorkQueue incoming_work_queue;
-    mutable std::mutex mut;
 };

@@ -13,10 +13,7 @@ public:
                                      bool vertical,
                                      const Colour& colour);
     static void matte_foreground_box(Graphics& g,
-                                     int x,
-                                     int y,
-                                     int width,
-                                     int height,
+                                     Rectangle<int> bounds,
                                      const Colour& colour);
     static void matte_box(Graphics& g,
                           const Rectangle<int>& bounds,
@@ -108,6 +105,17 @@ public:
                                   Graphics& g,
                                   const Path& path,
                                   Image& cachedImage) override;
+
+    void drawTickBox(Graphics& g,
+                     Component& component,
+                     float x,
+                     float y,
+                     float w,
+                     float h,
+                     const bool ticked,
+                     const bool isEnabled,
+                     const bool isMouseOverButton,
+                     const bool isButtonDown) override;
 
     static const Colour emphasis;
 };

@@ -90,16 +90,23 @@ const std::string TexturedQuadShader::vert{R"(
 in vec3 v_position;
 in vec2 v_uv;
 out vec2 f_uv;
+out float f_brightness;
 uniform vec2 v_screen_size;
 uniform vec2 v_billboard_size;
 uniform vec3 v_billboard;
 uniform mat4 v_model;
 uniform mat4 v_view;
 uniform mat4 v_projection;
+
+const float near = 5;
+const float far = 10;
+
 void main() {
     //  thanks http://www.opengl-tutorial.org/intermediate-tutorials/billboards-particles/billboards/
 
     gl_Position = v_projection * v_view * v_model * vec4(v_billboard, 1.0);
+    float scaled = 1.0f - ((gl_Position.z - near) / (far - near));
+    f_brightness = clamp(scaled, 0, 1);
     gl_Position /= gl_Position.w;
     gl_Position.xy += (v_position.xy * v_billboard_size) / v_screen_size;
     f_uv = v_uv;
@@ -109,11 +116,12 @@ void main() {
 const std::string TexturedQuadShader::frag{R"(
 #version 150
 in vec2 f_uv;
+in float f_brightness;
 out vec4 frag_color;
 uniform sampler2D f_tex;
 uniform float f_fade;
 void main() {
-    frag_color = texture(f_tex, f_uv) * f_fade;;
+    frag_color = texture(f_tex, f_uv) * f_fade * f_brightness;
 }
 )"};
 

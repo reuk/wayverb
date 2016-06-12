@@ -12,7 +12,8 @@ class ImpulseRenderer : public BaseRenderer,
 public:
     enum class Mode { waveform, waterfall };
 
-    ImpulseRenderer(const AudioTransportSource& audio_transport_source);
+    ImpulseRenderer(const AudioTransportSource& audio_transport_source,
+        AudioFormatManager& manager, const File& file);
     virtual ~ImpulseRenderer() noexcept;
 
     void newOpenGLContextCreated() override;
@@ -24,8 +25,6 @@ public:
                                      const Range<double>& range) override;
 
     //  inherited
-    void clear() override;
-    void load_from(AudioFormatManager&, const File& file) override;
     void reset(int num_channels,
                double sample_rate,
                int64 total_samples) override;
@@ -34,21 +33,25 @@ public:
                   int start_offset,
                   int num_samples) override;
 
-    void set_amplitude_scale(float f);
-    void set_time_scale(float f);
     void set_visible_range(const Range<double>& range);
 
 private:
     void set_visible_range_impl(const Range<double>& range);
+    void set_mode_impl(Mode m);
 
     virtual BaseContextLifetime* get_context_lifetime() override;
 
+    mutable std::mutex mut;
+
     const AudioTransportSource& audio_transport_source;
+    AudioFormatManager& audio_format_manager;
+    File file;
+
+    Range<double> visible_range;
+    Mode mode;
 
     class ContextLifetime;
     std::unique_ptr<ContextLifetime> context_lifetime;
-
-    mutable std::mutex mut;
 };
 
 //----------------------------------------------------------------------------//

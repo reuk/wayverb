@@ -51,7 +51,7 @@ using LoadWindow = GenericComponentWindow<FileDropComponent>;
 
 VisualiserApplication::ImpulseViewerWindow::ImpulseViewerWindow(
         String name, const File& file)
-        : DocumentWindow(name, Colours::darkgrey, allButtons)
+        : DocumentWindow(name, Colours::darkgrey.darker(), allButtons)
         , this_file(file)
         , content_component(file) {
     setUsingNativeTitleBar(true);

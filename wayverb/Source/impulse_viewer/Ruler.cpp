@@ -30,7 +30,9 @@ void Ruler::set_visible_range(const Range<double>& r, bool notify) {
 
 void Ruler::paint(Graphics& g) {
     VisualiserLookAndFeel::matte_foreground_box(
-            g, -2, 0, getWidth() + 4, getHeight(), Colours::darkgrey);
+            g,
+            Rectangle<int>(-2, 0, getWidth() + 4, getHeight()),
+            Colours::darkgrey);
 
     g.setFillType(FillType(ColourGradient(
             Colours::white, 0, 0, Colours::lightgrey, 0, getHeight(), false)));
