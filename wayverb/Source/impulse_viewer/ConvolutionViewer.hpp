@@ -9,10 +9,11 @@
 
 class AudioThumbnailPane : public Component,
                            public ChangeListener,
-                           public PlaybackViewManager::Listener {
+                           public PlaybackViewManager::Listener,
+                           public Playhead::Listener {
 public:
     AudioThumbnailPane(AudioFormatManager& audio_format_manager,
-                       PlaybackViewManager& playback_view_manager);
+                       TransportViewManager& playback_view_manager);
 
     void paint(Graphics& g) override;
     void resized() override;
@@ -27,14 +28,16 @@ public:
                                const Range<double>& range) override;
     void current_time_changed(PlaybackViewManager* r, double time) override;
 
+    void playhead_dragged(Playhead* p, const MouseEvent& e) override;
+
 private:
     double time_to_x(double t) const;
+    double x_to_time(double t) const;
     void position_playhead();
 
-    const AudioTransportSource& audio_transport_source;
-    PlaybackViewManager& playback_view_manager;
-    model::Connector<PlaybackViewManager> view_connector{&playback_view_manager,
-                                                         this};
+    TransportViewManager& playback_view_manager;
+    model::Connector<TransportViewManager> view_connector{
+            &playback_view_manager, this};
 
     AudioThumbnailCache audio_thumbnail_cache;
     AudioThumbnail audio_thumbnail;
@@ -42,6 +45,7 @@ private:
             &audio_thumbnail, this};
 
     Playhead playhead;
+    model::Connector<Playhead> playhead_connector{&playhead, this};
 };
 
 //----------------------------------------------------------------------------//
@@ -50,8 +54,7 @@ class ConvolutionViewer : public Component,
                           public ApplicationCommandTarget,
                           public Button::Listener,
                           public PlaybackViewManager::Listener,
-                          public ScrollBar::Listener,
-                          public Timer {
+                          public ScrollBar::Listener {
 public:
     ConvolutionViewer(AudioDeviceManager& audio_device_manager,
                       AudioFormatManager& audio_format_manager,
@@ -67,8 +70,6 @@ public:
     ApplicationCommandTarget* getNextCommandTarget() override;
 
     void buttonClicked(Button* b) override;
-
-    void timerCallback() override;
 
     void scrollBarMoved(ScrollBar* s, double new_range_start) override;
 
@@ -86,10 +87,8 @@ private:
     AudioFormatManager& audio_format_manager;
 
     AudioFormatReaderSource audio_format_reader_source;
-    AudioTransportSource audio_transport_source;
+    TransportViewManager playback_view_manager;
     AudioSourcePlayer audio_source_player;
-
-    PlaybackViewManager playback_view_manager;
 
     AudioThumbnailPane renderer;
     Ruler ruler;

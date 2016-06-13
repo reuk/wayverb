@@ -6,9 +6,8 @@
 
 AudioThumbnailPane::AudioThumbnailPane(
         AudioFormatManager& audio_format_manager,
-        PlaybackViewManager& playback_view_manager)
-        : audio_transport_source(audio_transport_source)
-        , playback_view_manager(playback_view_manager)
+        TransportViewManager& playback_view_manager)
+        : playback_view_manager(playback_view_manager)
         , audio_thumbnail_cache(16)
         , audio_thumbnail(256, audio_format_manager, audio_thumbnail_cache) {
     addAndMakeVisible(playhead);
@@ -59,9 +58,15 @@ double AudioThumbnailPane::time_to_x(double t) const {
                 Range<double>(0, getWidth()));
 }
 
+double AudioThumbnailPane::x_to_time(double t) const {
+    return lerp(t,
+                Range<double>(0, getWidth()),
+                playback_view_manager.get_visible_range());
+}
+
 void AudioThumbnailPane::position_playhead() {
     playhead.setTopLeftPosition(
-            time_to_x(playback_view_manager.get_current_time()), 0);
+            time_to_x(playback_view_manager.getCurrentPosition()), 0);
 }
 
 void AudioThumbnailPane::max_range_changed(PlaybackViewManager* r,
@@ -80,6 +85,14 @@ void AudioThumbnailPane::current_time_changed(PlaybackViewManager* r,
     repaint();
 }
 
+void AudioThumbnailPane::playhead_dragged(Playhead* p, const MouseEvent& e) {
+    if (p == &playhead && !playback_view_manager.isPlaying()) {
+        auto mouse_pos = e.getEventRelativeTo(this).getPosition().getX();
+        auto constrained = Range<int>(1, getWidth() - 1).clipValue(mouse_pos);
+        playback_view_manager.setPosition(x_to_time(constrained));
+    }
+}
+
 //----------------------------------------------------------------------------//
 
 ConvolutionViewer::ConvolutionViewer(AudioDeviceManager& audio_device_manager,
@@ -94,13 +107,13 @@ ConvolutionViewer::ConvolutionViewer(AudioDeviceManager& audio_device_manager,
         , load_different_button("load different file")
         , follow_playback_button("follow playback")
         , scroll_bar(false)
-        , transport(audio_transport_source) {
-    audio_transport_source.setSource(
+        , transport(playback_view_manager) {
+    playback_view_manager.setSource(
             &audio_format_reader_source,
             0,
             nullptr,
             audio_format_reader_source.getAudioFormatReader()->sampleRate);
-    audio_source_player.setSource(&audio_transport_source);
+    audio_source_player.setSource(&playback_view_manager);
     audio_device_manager.addAudioCallback(&audio_source_player);
 
     renderer.set_reader(audio_format_manager.createReaderFor(file), 0);
@@ -108,7 +121,7 @@ ConvolutionViewer::ConvolutionViewer(AudioDeviceManager& audio_device_manager,
     auto& command_manager = VisualiserApplication::get_command_manager();
     command_manager.registerAllCommandsForTarget(this);
 
-    auto r = Range<double>(0, audio_transport_source.getLengthInSeconds());
+    auto r = Range<double>(0, playback_view_manager.getLengthInSeconds());
     playback_view_manager.set_max_range(r, true);
     playback_view_manager.set_visible_range(r, true);
 
@@ -168,11 +181,6 @@ void ConvolutionViewer::scrollBarMoved(ScrollBar* s, double new_range_start) {
     }
 }
 
-void ConvolutionViewer::timerCallback() {
-    playback_view_manager.set_current_time(
-            audio_transport_source.getCurrentPosition(), true);
-}
-
 void ConvolutionViewer::getAllCommands(Array<CommandID>& commands) {
     commands.addArray({CommandIDs::idPlay,
                        CommandIDs::idPause,
@@ -185,14 +193,14 @@ void ConvolutionViewer::getCommandInfo(CommandID command_id,
             result.setInfo("Play", "Start playback", "General", 0);
             result.defaultKeypresses.add(
                     KeyPress(KeyPress::spaceKey, ModifierKeys::noModifiers, 0));
-            result.setActive(!audio_transport_source.isPlaying());
+            result.setActive(!playback_view_manager.isPlaying());
             break;
 
         case CommandIDs::idPause:
             result.setInfo("Pause", "Pause playback", "General", 0);
             result.defaultKeypresses.add(
                     KeyPress(KeyPress::spaceKey, ModifierKeys::noModifiers, 0));
-            result.setActive(audio_transport_source.isPlaying());
+            result.setActive(playback_view_manager.isPlaying());
             break;
 
         case CommandIDs::idReturnToBeginning:
@@ -210,21 +218,17 @@ void ConvolutionViewer::getCommandInfo(CommandID command_id,
 bool ConvolutionViewer::perform(const InvocationInfo& info) {
     switch (info.commandID) {
         case CommandIDs::idPlay:
-            audio_transport_source.start();
+            playback_view_manager.start();
             VisualiserApplication::get_command_manager().commandStatusChanged();
-            startTimer(15);
             return true;
 
         case CommandIDs::idPause:
-            audio_transport_source.stop();
+            playback_view_manager.stop();
             VisualiserApplication::get_command_manager().commandStatusChanged();
-            stopTimer();
-            timerCallback();
             return true;
 
         case CommandIDs::idReturnToBeginning:
-            audio_transport_source.setPosition(0);
-            timerCallback();
+            playback_view_manager.setPosition(0);
             return true;
 
         default:

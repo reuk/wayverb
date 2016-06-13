@@ -28,19 +28,13 @@ bool PlaybackViewManager::get_follow_playback() const {
     return follow_playback;
 }
 
-void PlaybackViewManager::set_current_time(double t, bool notify) {
-    current_time = max_range.clipValue(t);
-    if (notify) {
-        listener_list.call(
-                &Listener::current_time_changed, this, current_time);
-    }
+void PlaybackViewManager::set_current_time(double t) {
+    auto current_time = max_range.clipValue(t);
+    listener_list.call(&Listener::current_time_changed, this, current_time);
 
     if (follow_playback && !visible_range.contains(current_time)) {
         set_visible_range(visible_range.movedToStartAt(current_time), true);
     }
-}
-double PlaybackViewManager::get_current_time() const {
-    return current_time;
 }
 
 void PlaybackViewManager::addListener(Listener* l) {
@@ -49,4 +43,27 @@ void PlaybackViewManager::addListener(Listener* l) {
 
 void PlaybackViewManager::removeListener(Listener* l) {
     listener_list.remove(l);
+}
+
+//----------------------------------------------------------------------------//
+
+TransportViewManager::TransportViewManager() {}
+
+void TransportViewManager::timerCallback() {
+    set_current_time(getCurrentPosition());
+}
+
+void TransportViewManager::setPosition(double t) {
+    AudioTransportSource::setPosition(t);
+    timerCallback();
+}
+
+void TransportViewManager::start() {
+    startTimer(15);
+    AudioTransportSource::start();
+}
+
+void TransportViewManager::stop() {
+    stopTimer();
+    AudioTransportSource::stop();
 }

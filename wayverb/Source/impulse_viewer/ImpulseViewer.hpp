@@ -10,8 +10,7 @@ class ImpulseViewer : public Component,
                       public ApplicationCommandTarget,
                       public Button::Listener,
                       public PlaybackViewManager::Listener,
-                      public ScrollBar::Listener,
-                      public Timer {
+                      public ScrollBar::Listener {
 public:
     ImpulseViewer(AudioDeviceManager& audio_device_manager,
                   AudioFormatManager& audio_format_manager,
@@ -28,8 +27,6 @@ public:
 
     void buttonClicked(Button* b) override;
 
-    void timerCallback() override;
-
     void max_range_changed(PlaybackViewManager* r,
                            const Range<double>& range) override;
     void visible_range_changed(PlaybackViewManager* r,
@@ -42,10 +39,8 @@ private:
     AudioDeviceManager& audio_device_manager;
 
     AudioFormatReaderSource audio_format_reader_source;
-    AudioTransportSource audio_transport_source;
+    TransportViewManager playback_view_manager;
     AudioSourcePlayer audio_source_player;
-
-    PlaybackViewManager playback_view_manager;
 
     ImpulseRendererComponent renderer;
     Ruler ruler;
