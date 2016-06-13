@@ -104,8 +104,8 @@ SceneData::SceneData(SceneData&& rhs) noexcept = default;
 SceneData& SceneData::operator=(SceneData&& rhs) noexcept = default;
 SceneData::~SceneData() noexcept = default;
 
-SceneData::SceneData(const std::string& scene_file, float scale)
-        : SceneData(load(scene_file, scale)) {
+SceneData::SceneData(const std::string& scene_file)
+        : SceneData(load(scene_file)) {
 }
 
 SceneData::SceneData(CopyableSceneData&& rhs, std::unique_ptr<Impl>&& pimpl)
@@ -118,7 +118,7 @@ SceneData::SceneData(std::tuple<CopyableSceneData, std::unique_ptr<Impl>>&& rhs)
 }
 
 std::tuple<CopyableSceneData, std::unique_ptr<SceneData::Impl>> SceneData::load(
-        const std::string& scene_file, float scale) {
+        const std::string& scene_file) {
     auto impl = std::make_unique<Impl>();
     auto scene = impl->importer.ReadFile(
             scene_file,
@@ -167,11 +167,11 @@ std::tuple<CopyableSceneData, std::unique_ptr<SceneData::Impl>> SceneData::load(
                 contents.triangles.end(), triangles.begin(), triangles.end());
     }
 
-    proc::for_each(contents.vertices, [scale](auto& i) {
-        std::for_each(std::begin(i.s), std::end(i.s), [scale](auto& i) {
-            i *= scale;
-        });
-    });
+    // proc::for_each(contents.vertices, [](auto& i) {
+    //    std::for_each(std::begin(i.s), std::end(i.s), [scale](auto& i) {
+    //        i *= scale;
+    //    });
+    //});
 
     return std::make_tuple(CopyableSceneData(std::move(contents)),
                            std::move(impl));

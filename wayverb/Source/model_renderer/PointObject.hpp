@@ -29,7 +29,6 @@ public:
 
     void draw() const override;
 
-    void set_position(const glm::vec3& p);
     void set_pointing(const std::vector<glm::vec3>& directions);
 
     void set_highlight(float amount) override;

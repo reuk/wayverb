@@ -25,13 +25,9 @@ void Node::set_scale(const glm::vec3& s) {
     scale = s;
 }
 
-glm::mat4 Node::get_matrix() const {
+glm::mat4 Node::get_local_modelview_matrix() const {
     return glm::translate(get_position()) * Orientable::get_matrix() *
            glm::scale(get_scale());
-}
-
-glm::mat4 Node::get_local_modelview_matrix() const {
-    return get_matrix();
 }
 
 //----------------------------------------------------------------------------//

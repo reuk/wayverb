@@ -26,7 +26,6 @@ public:
     void set_scale(float s);
     void set_scale(const glm::vec3& s);
 
-    glm::mat4 get_matrix() const override;
     glm::mat4 get_local_modelview_matrix() const override;
 
     virtual void set_highlight(float amount) = 0;

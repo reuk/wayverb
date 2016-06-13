@@ -59,7 +59,8 @@ RingObject::RingObject(MatrixTreeNode* parent,
 LineObject::LineObject(MatrixTreeNode* parent,
                        GenericShader& shader,
                        const glm::vec4& color)
-        : BasicDrawableObject(parent, shader,
+        : BasicDrawableObject(parent,
+                              shader,
                               {{0, 0, 0}, {0, 0, 1}},
                               std::vector<glm::vec4>(2, color),
                               {0, 1},
@@ -69,8 +70,11 @@ LineObject::LineObject(MatrixTreeNode* parent,
 
 //----------------------------------------------------------------------------//
 
-PointObject::PointObject(MatrixTreeNode* parent, GenericShader& shader, const glm::vec4& color)
-        : Node(parent), shader(&shader)
+PointObject::PointObject(MatrixTreeNode* parent,
+                         GenericShader& shader,
+                         const glm::vec4& color)
+        : Node(parent)
+        , shader(&shader)
         , color(color)
         , x_ring(this, shader, color, RingObject::Axis::x)
         , y_ring(this, shader, color, RingObject::Axis::y)
@@ -84,24 +88,12 @@ void PointObject::set_highlight(float amount) {
 }
 
 void PointObject::draw() const {
-    auto s_shader = shader->get_scoped();
-    shader->set_model_matrix(get_matrix());
     x_ring.draw();
     y_ring.draw();
     z_ring.draw();
     for (auto& i : lines) {
         i.draw();
     }
-}
-
-void PointObject::set_position(const glm::vec3& p) {
-    x_ring.set_position(p);
-    y_ring.set_position(p);
-    z_ring.set_position(p);
-    for (auto& i : lines) {
-        i.set_position(p);
-    }
-    Node::set_position(p);
 }
 
 void PointObject::set_pointing(const std::vector<glm::vec3>& directions) {
@@ -112,7 +104,6 @@ void PointObject::set_pointing(const std::vector<glm::vec3>& directions) {
         if (lines.size() <= i) {
             lines.emplace_back(this, *shader, color);
         }
-        lines[i].set_position(get_position());
         lines[i].set_pointing(directions[i]);
     }
 }

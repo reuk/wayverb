@@ -74,7 +74,7 @@ class SceneData final : public CopyableSceneData {
 
 public:
     //  this class adds the ability to load/save from file
-    SceneData(const std::string& fpath, float scale = 1);
+    SceneData(const std::string& fpath);
     void save(const std::string& f) const;
 
     SceneData(const SceneData& rhs) = delete;
@@ -87,5 +87,5 @@ private:
     SceneData(CopyableSceneData&& rhs, std::unique_ptr<Impl>&& pimpl);
     SceneData(std::tuple<CopyableSceneData, std::unique_ptr<Impl>>&& rhs);
     static std::tuple<CopyableSceneData, std::unique_ptr<Impl>> load(
-            const std::string& scene_file, float scale = 1);
+            const std::string& scene_file);
 };

@@ -13,7 +13,6 @@
 
 #include "FullModel.hpp"
 
-#define GLM_FORCE_RADIANS
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtc/noise.hpp"
 #include "glm/gtc/type_ptr.hpp"
@@ -36,9 +35,10 @@
 #include <mutex>
 #include <queue>
 
-class MultiMaterialObject : public ::Drawable {
+class MultiMaterialObject : public ::Drawable, public MatrixTreeNode {
 public:
-    MultiMaterialObject(GenericShader& generic_shader,
+    MultiMaterialObject(MatrixTreeNode* parent,
+                        GenericShader& generic_shader,
                         LitSceneShader& lit_scene_shader,
                         const CopyableSceneData& scene_data);
 
@@ -53,13 +53,15 @@ public:
 
     private:
         static std::vector<GLuint> get_indices(
-            const CopyableSceneData& scene_data, int material_index);
+                const CopyableSceneData& scene_data, int material_index);
         StaticIBO ibo;
         GLuint size;
     };
 
     void set_highlighted(int material);
     void set_colour(const glm::vec3& c);
+
+    glm::mat4 get_local_modelview_matrix() const override;
 
 private:
     GenericShader* generic_shader;
@@ -73,49 +75,6 @@ private:
     int highlighted{-1};
 
     std::vector<SingleMaterialSection> sections;
-};
-
-class DrawableScene final : public ::Drawable {
-public:
-    DrawableScene(GenericShader& generic_shader,
-                  MeshShader& mesh_shader,
-                  LitSceneShader& lit_scene_shader,
-                  const CopyableSceneData& scene_data);
-
-    void draw() const override;
-
-    void set_receiver(const glm::vec3& u);
-    void set_source(const glm::vec3& u);
-
-    void set_rendering(bool b);
-
-    void set_positions(const std::vector<glm::vec3>& positions);
-    void set_pressures(const std::vector<float>& pressures);
-
-    void set_highlighted(int u);
-
-    void set_receiver_pointing(const std::vector<glm::vec3>& directions);
-
-    void set_emphasis(const glm::vec3& c);
-
-    /// Should return a list of Nodes which can be selected with the mouse.
-    std::vector<Node*> get_selectable_objects();
-
-    Node* get_source();
-    Node* get_receiver();
-
-private:
-    GenericShader* generic_shader;
-    MeshShader* mesh_shader;
-    LitSceneShader* lit_scene_shader;
-
-    MultiMaterialObject model_object;
-    PointObject source_object;
-    PointObject receiver_object;
-
-    std::unique_ptr<MeshObject> mesh_object;
-
-    bool rendering{false};
 };
 
 class SceneRenderer final : public BaseRenderer {
