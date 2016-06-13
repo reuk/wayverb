@@ -14,8 +14,7 @@ ImpulseViewerTabs::ImpulseViewerTabs(const File& impulse_file)
 
     addTab("auralisation",
            Colours::darkgrey,
-           new ConvolutionViewer(
-                   audio_device_manager, audio_format_manager, impulse_file),
+           new ConvolutionLoader(audio_device_manager, audio_format_manager),
            true);
 
     setWantsKeyboardFocus(false);

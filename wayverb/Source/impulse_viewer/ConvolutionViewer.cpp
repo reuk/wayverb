@@ -86,10 +86,12 @@ ConvolutionViewer::ConvolutionViewer(AudioDeviceManager& audio_device_manager,
                                      AudioFormatManager& audio_format_manager,
                                      const File& file)
         : audio_device_manager(audio_device_manager)
+        , audio_format_manager(audio_format_manager)
         , audio_format_reader_source(audio_format_manager.createReaderFor(file),
                                      true)
         , renderer(audio_format_manager, playback_view_manager)
         , ruler(playback_view_manager)
+        , load_different_button("load different file")
         , follow_playback_button("follow playback")
         , scroll_bar(false)
         , transport(audio_transport_source) {
@@ -120,6 +122,7 @@ ConvolutionViewer::ConvolutionViewer(AudioDeviceManager& audio_device_manager,
     addAndMakeVisible(scroll_bar);
     addAndMakeVisible(transport);
     addAndMakeVisible(ruler);
+    addAndMakeVisible(load_different_button);
 
     setWantsKeyboardFocus(true);
 }
@@ -140,6 +143,8 @@ void ConvolutionViewer::resized() {
 
     transport.setBounds(top.removeFromLeft(200));
     follow_playback_button.setBounds(top.removeFromRight(150));
+
+    load_different_button.setBounds(top.removeFromLeft(150));
 }
 
 void ConvolutionViewer::max_range_changed(PlaybackViewManager* r,
@@ -234,5 +239,62 @@ void ConvolutionViewer::buttonClicked(Button* b) {
     if (b == &follow_playback_button) {
         playback_view_manager.set_follow_playback(
                 follow_playback_button.getToggleState());
+    } else if (b == &load_different_button) {
+        FileChooser fc("open...",
+                       File::nonexistent,
+                       audio_format_manager.getWildcardForAllFormats());
+        if (fc.browseForFileToOpen()) {
+            listener_list.call(
+                    &FileDropListener::file_dropped, this, fc.getResult());
+        }
+    }
+}
+
+void ConvolutionViewer::addListener(FileDropListener* f) {
+    listener_list.add(f);
+}
+
+void ConvolutionViewer::removeListener(FileDropListener* f) {
+    listener_list.remove(f);
+}
+
+//----------------------------------------------------------------------------//
+
+ConvolutionLoader::ConvolutionLoader(AudioDeviceManager& audio_device_manager,
+                                     AudioFormatManager& audio_format_manager)
+        : audio_device_manager(audio_device_manager)
+        , audio_format_manager(audio_format_manager) {
+    set_file_loader();
+}
+
+void ConvolutionLoader::set_file_loader() {
+    auto c = std::make_unique<FileDropComponent>("drop an audio file here, or",
+                                                 "click to load");
+    c->set_valid_file_formats(
+            audio_format_manager.getWildcardForAllFormats().toStdString());
+    c->addListener(this);
+    set_content(std::move(c));
+}
+void ConvolutionLoader::set_convolver(const File& f) {
+    auto c = std::make_unique<ConvolutionViewer>(
+            audio_device_manager, audio_format_manager, f);
+    c->addListener(this);
+    set_content(std::move(c));
+}
+void ConvolutionLoader::set_content(std::unique_ptr<Component>&& c) {
+    content_component = std::move(c);
+    addAndMakeVisible(*content_component);
+    resized();
+}
+
+void ConvolutionLoader::resized() {
+    if (content_component) {
+        content_component->setBounds(getLocalBounds());
+    }
+}
+
+void ConvolutionLoader::file_dropped(Component* f, const File& file) {
+    if (f == content_component.get()) {
+        set_convolver(file);
     }
 }

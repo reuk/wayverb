@@ -94,11 +94,11 @@ void ImpulseViewer::resized() {
 
     transport.setBounds(top.removeFromLeft(200));
 
+    follow_playback_button.setBounds(top.removeFromRight(150));
+
     waveform_button.setBounds(top.removeFromLeft(100));
     top.removeFromLeft(2);
     waterfall_button.setBounds(top.removeFromLeft(100));
-
-    follow_playback_button.setBounds(top.removeFromRight(150));
 }
 
 void ImpulseViewer::getAllCommands(Array<CommandID>& commands) {

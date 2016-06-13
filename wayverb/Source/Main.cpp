@@ -11,11 +11,14 @@
 #include <memory>
 
 namespace {
-template <typename Content>
-class GenericComponentWindow : public DocumentWindow {
+class LoadWindow : public DocumentWindow, public FileDropComponent::Listener {
 public:
-    GenericComponentWindow(String name, DocumentWindow::TitleBarButtons buttons)
+    LoadWindow(String name, DocumentWindow::TitleBarButtons buttons)
             : DocumentWindow(name, Colours::lightgrey, buttons) {
+        content_component.setSize(600, 400);
+        content_component.set_valid_file_formats(
+                VisualiserApplication::get_valid_file_formats());
+
         setUsingNativeTitleBar(true);
         setContentNonOwned(&content_component, true);
         centreWithSize(getWidth(), getHeight());
@@ -26,25 +29,31 @@ public:
         auto& command_manager = VisualiserApplication::get_command_manager();
         addKeyListener(command_manager.getKeyMappings());
     }
-    virtual ~GenericComponentWindow() noexcept = default;
 
     void closeButtonPressed() override {
         JUCEApplication::getInstance()->systemRequestedQuit();
     }
 
-    const Content& get_content() const {
+    const FileDropComponent& get_content() const {
         return content_component;
     }
 
-    Content& get_content() {
+    FileDropComponent& get_content() {
         return content_component;
+    }
+
+    void file_dropped(Component* c, const File& f) override {
+        if (c == &content_component) {
+            VisualiserApplication::get_app().open_project(f);
+        }
     }
 
 private:
-    Content content_component;
+    FileDropComponent content_component{"drop a project file here, or",
+                                        "click to load"};
+    model::Connector<FileDropComponent> content_connector{&content_component,
+                                                          this};
 };
-
-using LoadWindow = GenericComponentWindow<FileDropComponent>;
 }  // namespace
 
 //----------------------------------------------------------------------------//

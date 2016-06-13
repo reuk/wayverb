@@ -1,6 +1,7 @@
 #pragma once
 
 #include "DefaultAudio.hpp"
+#include "FileDropComponent.hpp"
 #include "FullModel.hpp"
 #include "Playhead.hpp"
 #include "Ruler.hpp"
@@ -37,6 +38,9 @@ private:
 
     AudioThumbnailCache audio_thumbnail_cache;
     AudioThumbnail audio_thumbnail;
+    model::Connector<ChangeBroadcaster, ChangeListener> thumbnail_connector{
+            &audio_thumbnail, this};
+
     Playhead playhead;
 };
 
@@ -74,8 +78,12 @@ public:
                                const Range<double>& range) override;
     void current_time_changed(PlaybackViewManager* r, double time) override;
 
+    void addListener(FileDropListener* f);
+    void removeListener(FileDropListener* f);
+
 private:
     AudioDeviceManager& audio_device_manager;
+    AudioFormatManager& audio_format_manager;
 
     AudioFormatReaderSource audio_format_reader_source;
     AudioTransportSource audio_transport_source;
@@ -86,16 +94,45 @@ private:
     AudioThumbnailPane renderer;
     Ruler ruler;
 
+    TextButton load_different_button;
+
     ToggleButton follow_playback_button;
 
     ScrollBar scroll_bar;
 
     Transport transport;
 
+    model::Connector<TextButton> load_different_connector{
+            &load_different_button, this};
     model::Connector<ToggleButton> follow_playback_connector{
             &follow_playback_button, this};
     model::Connector<ScrollBar> scroll_bar_connector{&scroll_bar, this};
 
     model::Connector<PlaybackViewManager> pvm_connector_0{
             &playback_view_manager, this};
+
+    ListenerList<FileDropListener> listener_list;
+};
+
+//----------------------------------------------------------------------------//
+
+class ConvolutionLoader : public Component, public FileDropListener {
+public:
+    ConvolutionLoader(AudioDeviceManager& audio_device_manager,
+                      AudioFormatManager& audio_format_manager);
+
+    void resized() override;
+
+    void file_dropped(Component* f, const File& file) override;
+
+    void set_file_loader();
+    void set_convolver(const File& f);
+
+private:
+    void set_content(std::unique_ptr<Component>&& c);
+
+    AudioDeviceManager& audio_device_manager;
+    AudioFormatManager& audio_format_manager;
+
+    std::unique_ptr<Component> content_component;
 };

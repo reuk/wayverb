@@ -26,6 +26,7 @@ VisualiserLookAndFeel::VisualiserLookAndFeel() {
     setColour(TextButton::ColourIds::buttonOnColourId, emphasis);
     setColour(TextButton::ColourIds::textColourOnId, Colours::lightgrey);
     setColour(TextButton::ColourIds::textColourOffId, Colours::lightgrey);
+    setColour(ToggleButton::ColourIds::textColourId, Colours::lightgrey);
     setColour(Label::ColourIds::textColourId, Colours::lightgrey);
     setColour(GroupComponent::ColourIds::textColourId, Colours::lightgrey);
     setColour(PropertyComponent::ColourIds::backgroundColourId,
