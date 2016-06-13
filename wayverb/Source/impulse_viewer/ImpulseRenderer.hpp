@@ -7,13 +7,13 @@
 #include "Ruler.hpp"
 
 class ImpulseRenderer : public BaseRenderer,
-                        public GLAudioThumbnailBase,
-                        public Ruler::Listener {
+                        public GLAudioThumbnailBase {
 public:
     enum class Mode { waveform, waterfall };
 
     ImpulseRenderer(const AudioTransportSource& audio_transport_source,
-        AudioFormatManager& manager, const File& file);
+                    AudioFormatManager& manager,
+                    const File& file);
     virtual ~ImpulseRenderer() noexcept;
 
     void newOpenGLContextCreated() override;
@@ -21,8 +21,13 @@ public:
 
     void set_mode(Mode mode);
 
-    void ruler_visible_range_changed(Ruler* r,
-                                     const Range<double>& range) override;
+/*
+    void max_range_changed(PlaybackViewManager* r,
+                           const Range<double>& range) override;
+    void visible_range_changed(PlaybackViewManager* r,
+                               const Range<double>& range) override;
+    void current_time_changed(PlaybackViewManager* r, double t) override;
+*/
 
     //  inherited
     void reset(int num_channels,

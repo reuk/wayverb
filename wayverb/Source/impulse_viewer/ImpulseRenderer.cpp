@@ -13,10 +13,11 @@
 #include <thread>
 
 namespace {
-class Playhead : public BasicDrawableObject {
+
+class Playhead3D : public BasicDrawableObject {
 public:
     static const float width;
-    Playhead(MatrixTreeNode* parent, GenericShader& shader)
+    Playhead3D(MatrixTreeNode* parent, GenericShader& shader)
             : BasicDrawableObject(
                       parent,
                       shader,
@@ -41,7 +42,7 @@ public:
                       GL_TRIANGLE_STRIP) {
     }
 };
-const float Playhead::width{0.01};
+const float Playhead3D::width{0.01};
 }  // namespace
 
 class ImpulseRenderer::ContextLifetime : public BaseContextLifetime,
@@ -333,7 +334,7 @@ private:
     Mode mode;
     Waveform waveform;
     Waterfall waterfall;
-    Playhead playhead;
+    Playhead3D playhead;
 
     std::unique_ptr<Mousing> mousing;
 };
@@ -410,12 +411,6 @@ void ImpulseRenderer::addBlock(int64 sample_number_in_source,
     });
 }
 
-void ImpulseRenderer::ruler_visible_range_changed(Ruler* r,
-                                                  const Range<double>& range) {
-    std::lock_guard<std::mutex> lck(mut);
-    set_visible_range_impl(range);
-}
-
 void ImpulseRenderer::set_visible_range(const Range<double>& range) {
     std::lock_guard<std::mutex> lck(mut);
     set_visible_range_impl(range);
@@ -436,3 +431,16 @@ void ImpulseRenderer::set_mode_impl(Mode m) {
         context_lifetime->set_mode(mode);
     });
 }
+
+/*
+void ImpulseRenderer::max_range_changed(PlaybackViewManager* r,
+                                        const Range<double>& range) {
+}
+void ImpulseRenderer::visible_range_changed(PlaybackViewManager* r,
+                                            const Range<double>& range) {
+    std::lock_guard<std::mutex> lck(mut);
+    set_visible_range_impl(range);
+}
+void ImpulseRenderer::current_time_changed(PlaybackViewManager* r, double t) {
+}
+*/

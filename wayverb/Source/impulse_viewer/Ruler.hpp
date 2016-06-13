@@ -1,33 +1,25 @@
 #pragma once
 
-#include "../JuceLibraryCode/JuceHeader.h"
+#include "FullModel.hpp"
+#include "PlaybackViewManager.hpp"
+#include "Playhead.hpp"
 
-class Ruler : public Component {
+class Ruler : public Component, public PlaybackViewManager::Listener {
 public:
-    class Listener {
-    public:
-        virtual ~Listener() noexcept = default;
-
-        virtual void ruler_visible_range_changed(
-                Ruler* r, const Range<double>& range) = 0;
-    };
-
-    Ruler();
+    Ruler(PlaybackViewManager& m);
     virtual ~Ruler() noexcept;
 
-    void set_max_range(const Range<double>& r);
-    void set_visible_range(const Range<double>& r, bool notify);
-
-    void set_follow_playback(bool follow);
-    bool get_follow_playback() const;
-
-    void set_current_time(double t);
-    double get_current_time() const;
-
-    double get_time(double x) const;
-    double get_x(double time) const;
-
     void paint(Graphics& g) override;
+    void resized() override;
+
+    double x_to_time(double x) const;
+    double time_to_x(double time) const;
+
+    void max_range_changed(PlaybackViewManager* r,
+                           const Range<double>& range) override;
+    void visible_range_changed(PlaybackViewManager* r,
+                               const Range<double>& range) override;
+    void current_time_changed(PlaybackViewManager* r, double time) override;
 
     void mouseEnter(const MouseEvent& event) override;
     void mouseExit(const MouseEvent& event) override;
@@ -36,16 +28,10 @@ public:
     void mouseDrag(const MouseEvent& event) override;
     void mouseDoubleClick(const MouseEvent& event) override;
 
-    void addListener(Listener* listener);
-    void removeListener(Listener* listener);
-
 private:
-    bool follow_playback{true};
-    double current_time{0};
-
-    Range<double> max_range;
-    Range<double> visible_range;
-    ListenerList<Listener> listener_list;
+    PlaybackViewManager& playback_view_manager;
+    model::Connector<PlaybackViewManager> view_connector{&playback_view_manager,
+                                                         this};
 
     struct RulerState;
     std::unique_ptr<RulerState> ruler_state;

@@ -9,7 +9,7 @@
 class ImpulseViewer : public Component,
                       public ApplicationCommandTarget,
                       public Button::Listener,
-                      public Ruler::Listener,
+                      public PlaybackViewManager::Listener,
                       public ScrollBar::Listener,
                       public Timer {
 public:
@@ -30,8 +30,12 @@ public:
 
     void timerCallback() override;
 
-    void ruler_visible_range_changed(Ruler* r,
-                                     const Range<double>& range) override;
+    void max_range_changed(PlaybackViewManager* r,
+                           const Range<double>& range) override;
+    void visible_range_changed(PlaybackViewManager* r,
+                               const Range<double>& range) override;
+    void current_time_changed(PlaybackViewManager* r, double time) override;
+
     void scrollBarMoved(ScrollBar* s, double new_range_start) override;
 
 private:
@@ -40,6 +44,8 @@ private:
     AudioFormatReaderSource audio_format_reader_source;
     AudioTransportSource audio_transport_source;
     AudioSourcePlayer audio_source_player;
+
+    PlaybackViewManager playback_view_manager;
 
     ImpulseRendererComponent renderer;
     Ruler ruler;
@@ -59,7 +65,8 @@ private:
                                                            this};
     model::Connector<ToggleButton> follow_playback_connector{
             &follow_playback_button, this};
-    model::Connector<Ruler> ruler_connector_0{&ruler, this};
-    model::Connector<Ruler> ruler_connector_1{&ruler, &renderer.get_renderer()};
     model::Connector<ScrollBar> scroll_bar_connector{&scroll_bar, this};
+
+    model::Connector<PlaybackViewManager> pvm_connector_0{
+            &playback_view_manager, this};
 };

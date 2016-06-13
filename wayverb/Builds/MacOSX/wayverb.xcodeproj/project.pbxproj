@@ -17,6 +17,8 @@
 		0F3F3BF0CF31990B8A36D2C6 /* BottomPanel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8EC991E2A8DBE96759A51D2A /* BottomPanel.cpp */; };
 		127F610F5B79495C0D092DF7 /* juce_audio_processors.mm in Sources */ = {isa = PBXBuildFile; fileRef = 1F4341A2DEBD8ABD625FA0A5 /* juce_audio_processors.mm */; };
 		17BFF294246BE35E2334DF9F /* QTKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AED820E5E9613936B4CCA98A /* QTKit.framework */; };
+		1B88D09D1D0ECAB300E6AF67 /* Playhead.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1B88D09B1D0ECAB300E6AF67 /* Playhead.cpp */; };
+		1B88D0C01D0EDC1E00E6AF67 /* PlaybackViewManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1B88D0BE1D0EDC1E00E6AF67 /* PlaybackViewManager.cpp */; };
 		1BA0CED91D0DF85000915A77 /* libassimp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1BA0CEC21D0DF84300915A77 /* libassimp.a */; };
 		1BA0CEDA1D0DF85000915A77 /* libcombined.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1BA0CED01D0DF84300915A77 /* libcombined.a */; };
 		1BA0CEDB1D0DF85000915A77 /* libcommon.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1BA0CECA1D0DF84300915A77 /* libcommon.a */; };
@@ -438,6 +440,10 @@
 		1B3DE3698539A30ABBE4F207 /* jcprepct.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = jcprepct.c; path = ../../JuceLibraryCode/modules/juce_graphics/image_formats/jpglib/jcprepct.c; sourceTree = SOURCE_ROOT; };
 		1B57A9189CF4E7C129F5FB69 /* juce_MidiKeyboardComponent.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = juce_MidiKeyboardComponent.cpp; path = ../../JuceLibraryCode/modules/juce_audio_utils/gui/juce_MidiKeyboardComponent.cpp; sourceTree = SOURCE_ROOT; };
 		1B6108181CA032ADF5CE83F6 /* juce_FileTreeComponent.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = juce_FileTreeComponent.h; path = ../../JuceLibraryCode/modules/juce_gui_basics/filebrowser/juce_FileTreeComponent.h; sourceTree = SOURCE_ROOT; };
+		1B88D09B1D0ECAB300E6AF67 /* Playhead.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Playhead.cpp; path = ../../Source/impulse_viewer/Playhead.cpp; sourceTree = "<group>"; };
+		1B88D09C1D0ECAB300E6AF67 /* Playhead.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = Playhead.hpp; path = ../../Source/impulse_viewer/Playhead.hpp; sourceTree = "<group>"; };
+		1B88D0BE1D0EDC1E00E6AF67 /* PlaybackViewManager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = PlaybackViewManager.cpp; path = ../../Source/impulse_viewer/PlaybackViewManager.cpp; sourceTree = "<group>"; };
+		1B88D0BF1D0EDC1E00E6AF67 /* PlaybackViewManager.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = PlaybackViewManager.hpp; path = ../../Source/impulse_viewer/PlaybackViewManager.hpp; sourceTree = "<group>"; };
 		1BA0CE821D0DF84300915A77 /* WAYVERB.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = WAYVERB.xcodeproj; path = ../../../xcproj/WAYVERB.xcodeproj; sourceTree = "<group>"; };
 		1BA0CEE01D0DF85900915A77 /* OpenCL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenCL.framework; path = System/Library/Frameworks/OpenCL.framework; sourceTree = SDKROOT; };
 		1BA0CEE21D0DF86000915A77 /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
@@ -3504,6 +3510,8 @@
 		BF5F5B6D34C47BB39D341E19 /* impulse_viewer */ = {
 			isa = PBXGroup;
 			children = (
+				1B88D09B1D0ECAB300E6AF67 /* Playhead.cpp */,
+				1B88D09C1D0ECAB300E6AF67 /* Playhead.hpp */,
 				1BA0CEEB1D0DF8C700915A77 /* ConvolutionViewer.cpp */,
 				1BA0CEEC1D0DF8C700915A77 /* ConvolutionViewer.hpp */,
 				1BA0CEEE1D0E04EB00915A77 /* DefaultAudio.cpp */,
@@ -3521,6 +3529,8 @@
 				355E001026A9106733265953 /* ImpulseViewer.hpp */,
 				CF4E9ED165E186C314C4383E /* Ruler.cpp */,
 				E71B6A739E821BD3B99A0ECC /* Ruler.hpp */,
+				1B88D0BE1D0EDC1E00E6AF67 /* PlaybackViewManager.cpp */,
+				1B88D0BF1D0EDC1E00E6AF67 /* PlaybackViewManager.hpp */,
 				DB908C3EBBB88331E5702ED8 /* Transport.cpp */,
 				11642EE2DF37E3245E9DFF43 /* Transport.hpp */,
 				C09C92ED972C3CA0989E49BF /* TransportDisplay.cpp */,
@@ -4269,6 +4279,7 @@
 				26B76FEF847BA9CF6DF6857B /* ImpulseViewer.cpp in Sources */,
 				1BA0CEEA1D0DF8A800915A77 /* ImpulseViewerTabs.cpp in Sources */,
 				D5CE55E6E3F8A647AD7BD8D3 /* Ruler.cpp in Sources */,
+				1B88D0C01D0EDC1E00E6AF67 /* PlaybackViewManager.cpp in Sources */,
 				68148E4DEA4EFE2390F32948 /* Transport.cpp in Sources */,
 				317744158628A7C8A75059FF /* TransportDisplay.cpp in Sources */,
 				3258A79A2CDC1306C170E104 /* Waterfall.cpp in Sources */,
@@ -4302,6 +4313,7 @@
 				F79D701F0DA0E5019CCEDCCD /* ProgressButton.cpp in Sources */,
 				22A1A2FEBBF078F0D165D702 /* PropertyComponentLAF.cpp in Sources */,
 				C5084D6C4D7593EB2BAA9095 /* RenderHelpers.cpp in Sources */,
+				1B88D09D1D0ECAB300E6AF67 /* Playhead.cpp in Sources */,
 				6912D25230D406FD52ED580E /* StoredSettings.cpp in Sources */,
 				A20B35A79906E00FDC864165 /* SurfaceModel.cpp in Sources */,
 				399B6218C74684147C6DA668 /* SurfacePanel.cpp in Sources */,

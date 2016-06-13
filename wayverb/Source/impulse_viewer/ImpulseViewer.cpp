@@ -9,6 +9,7 @@ ImpulseViewer::ImpulseViewer(AudioDeviceManager& audio_device_manager,
         , audio_format_reader_source(audio_format_manager.createReaderFor(file),
                                      true)
         , renderer(audio_transport_source, audio_format_manager, file)
+        , ruler(playback_view_manager)
         , waterfall_button("waterfall")
         , waveform_button("waveform")
         , follow_playback_button("follow playback")
@@ -26,11 +27,9 @@ ImpulseViewer::ImpulseViewer(AudioDeviceManager& audio_device_manager,
     command_manager.registerAllCommandsForTarget(this);
 
     auto r = Range<double>(0, audio_transport_source.getLengthInSeconds());
-    ruler.set_max_range(r);
-    ruler.set_visible_range(r, true);
+    playback_view_manager.set_max_range(r, true);
+    playback_view_manager.set_visible_range(r, true);
 
-    scroll_bar.setRangeLimits(r);
-    scroll_bar.setCurrentRange(r);
     scroll_bar.setAutoHide(false);
 
     for (auto i : {&waterfall_button, &waveform_button}) {
@@ -59,21 +58,28 @@ ImpulseViewer::~ImpulseViewer() noexcept {
     audio_device_manager.removeAudioCallback(&audio_source_player);
 }
 
-void ImpulseViewer::ruler_visible_range_changed(Ruler* r,
-                                                const Range<double>& range) {
-    if (r == &ruler) {
-        scroll_bar.setCurrentRange(range, dontSendNotification);
-    }
+void ImpulseViewer::max_range_changed(PlaybackViewManager* r,
+                                      const Range<double>& range) {
+    scroll_bar.setRangeLimits(range);
+}
+void ImpulseViewer::visible_range_changed(PlaybackViewManager* r,
+                                          const Range<double>& range) {
+    scroll_bar.setCurrentRange(range, dontSendNotification);
+    renderer.get_renderer().set_visible_range(range);
+}
+void ImpulseViewer::current_time_changed(PlaybackViewManager* r, double time) {
 }
 
 void ImpulseViewer::scrollBarMoved(ScrollBar* s, double new_range_start) {
     if (s == &scroll_bar) {
-        ruler.set_visible_range(scroll_bar.getCurrentRange(), true);
+        playback_view_manager.set_visible_range(scroll_bar.getCurrentRange(),
+                                                true);
     }
 }
 
 void ImpulseViewer::timerCallback() {
-    ruler.set_current_time(audio_transport_source.getCurrentPosition());
+    playback_view_manager.set_current_time(
+            audio_transport_source.getCurrentPosition(), true);
 }
 
 void ImpulseViewer::resized() {
@@ -163,6 +169,7 @@ void ImpulseViewer::buttonClicked(Button* b) {
     } else if (b == &waveform_button) {
         renderer.get_renderer().set_mode(ImpulseRenderer::Mode::waveform);
     } else if (b == &follow_playback_button) {
-        ruler.set_follow_playback(follow_playback_button.getToggleState());
+        playback_view_manager.set_follow_playback(
+                follow_playback_button.getToggleState());
     }
 }

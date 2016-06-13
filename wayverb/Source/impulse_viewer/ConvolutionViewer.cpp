@@ -2,11 +2,16 @@
 
 #include "CommandIDs.h"
 #include "Main.hpp"
+#include "lerp.h"
 
-AudioThumbnailPane::AudioThumbnailPane(AudioFormatManager& audio_format_manager)
+AudioThumbnailPane::AudioThumbnailPane(
+        AudioFormatManager& audio_format_manager,
+        PlaybackViewManager& playback_view_manager)
         : audio_transport_source(audio_transport_source)
+        , playback_view_manager(playback_view_manager)
         , audio_thumbnail_cache(16)
         , audio_thumbnail(256, audio_format_manager, audio_thumbnail_cache) {
+    addAndMakeVisible(playhead);
 }
 
 void AudioThumbnailPane::paint(Graphics& g) {
@@ -26,18 +31,21 @@ void AudioThumbnailPane::paint(Graphics& g) {
                 g,
                 Rectangle<int>(
                         0, start, getWidth(), getHeight() / num_channels),
-                visible_range.getStart(),
-                visible_range.getEnd(),
+                playback_view_manager.get_visible_range().getStart(),
+                playback_view_manager.get_visible_range().getEnd(),
                 i,
                 1.0);
     }
 }
 
 void AudioThumbnailPane::resized() {
+    playhead.setSize(1, getHeight());
+    position_playhead();
     repaint();
 }
 
 void AudioThumbnailPane::changeListenerCallback(ChangeBroadcaster* cb) {
+    position_playhead();
     repaint();
 }
 
@@ -45,8 +53,30 @@ void AudioThumbnailPane::set_reader(AudioFormatReader* new_reader, int64 hash) {
     audio_thumbnail.setReader(new_reader, hash);
 }
 
-void AudioThumbnailPane::set_visible_range(const Range<double>& range) {
-    visible_range = range;
+double AudioThumbnailPane::time_to_x(double t) const {
+    return lerp(t,
+                playback_view_manager.get_visible_range(),
+                Range<double>(0, getWidth()));
+}
+
+void AudioThumbnailPane::position_playhead() {
+    playhead.setTopLeftPosition(
+            time_to_x(playback_view_manager.get_current_time()), 0);
+}
+
+void AudioThumbnailPane::max_range_changed(PlaybackViewManager* r,
+                                           const Range<double>& range) {
+    position_playhead();
+    repaint();
+}
+void AudioThumbnailPane::visible_range_changed(PlaybackViewManager* r,
+                                               const Range<double>& range) {
+    position_playhead();
+    repaint();
+}
+void AudioThumbnailPane::current_time_changed(PlaybackViewManager* r,
+                                              double time) {
+    position_playhead();
     repaint();
 }
 
@@ -58,7 +88,8 @@ ConvolutionViewer::ConvolutionViewer(AudioDeviceManager& audio_device_manager,
         : audio_device_manager(audio_device_manager)
         , audio_format_reader_source(audio_format_manager.createReaderFor(file),
                                      true)
-        , renderer(audio_format_manager)
+        , renderer(audio_format_manager, playback_view_manager)
+        , ruler(playback_view_manager)
         , follow_playback_button("follow playback")
         , scroll_bar(false)
         , transport(audio_transport_source) {
@@ -76,11 +107,9 @@ ConvolutionViewer::ConvolutionViewer(AudioDeviceManager& audio_device_manager,
     command_manager.registerAllCommandsForTarget(this);
 
     auto r = Range<double>(0, audio_transport_source.getLengthInSeconds());
-    ruler.set_max_range(r);
-    ruler.set_visible_range(r, true);
+    playback_view_manager.set_max_range(r, true);
+    playback_view_manager.set_visible_range(r, true);
 
-    scroll_bar.setRangeLimits(r);
-    scroll_bar.setCurrentRange(r);
     scroll_bar.setAutoHide(false);
 
     follow_playback_button.setWantsKeyboardFocus(false);
@@ -113,22 +142,30 @@ void ConvolutionViewer::resized() {
     follow_playback_button.setBounds(top.removeFromRight(150));
 }
 
-void ConvolutionViewer::ruler_visible_range_changed(
-        Ruler* r, const Range<double>& range) {
-    if (r == &ruler) {
-        scroll_bar.setCurrentRange(range, dontSendNotification);
-        renderer.set_visible_range(range);
-    }
+void ConvolutionViewer::max_range_changed(PlaybackViewManager* r,
+                                          const Range<double>& range) {
+    scroll_bar.setRangeLimits(range);
+}
+
+void ConvolutionViewer::visible_range_changed(PlaybackViewManager* r,
+                                              const Range<double>& range) {
+    scroll_bar.setCurrentRange(range, dontSendNotification);
+}
+
+void ConvolutionViewer::current_time_changed(PlaybackViewManager* r,
+                                             double time) {
 }
 
 void ConvolutionViewer::scrollBarMoved(ScrollBar* s, double new_range_start) {
     if (s == &scroll_bar) {
-        ruler.set_visible_range(scroll_bar.getCurrentRange(), true);
+        playback_view_manager.set_visible_range(scroll_bar.getCurrentRange(),
+                                                true);
     }
 }
 
 void ConvolutionViewer::timerCallback() {
-    ruler.set_current_time(audio_transport_source.getCurrentPosition());
+    playback_view_manager.set_current_time(
+            audio_transport_source.getCurrentPosition(), true);
 }
 
 void ConvolutionViewer::getAllCommands(Array<CommandID>& commands) {
@@ -170,7 +207,7 @@ bool ConvolutionViewer::perform(const InvocationInfo& info) {
         case CommandIDs::idPlay:
             audio_transport_source.start();
             VisualiserApplication::get_command_manager().commandStatusChanged();
-            startTimer(25);
+            startTimer(15);
             return true;
 
         case CommandIDs::idPause:
@@ -195,6 +232,7 @@ ApplicationCommandTarget* ConvolutionViewer::getNextCommandTarget() {
 
 void ConvolutionViewer::buttonClicked(Button* b) {
     if (b == &follow_playback_button) {
-        ruler.set_follow_playback(follow_playback_button.getToggleState());
+        playback_view_manager.set_follow_playback(
+                follow_playback_button.getToggleState());
     }
 }
