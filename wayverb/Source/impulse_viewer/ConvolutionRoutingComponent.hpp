@@ -45,7 +45,8 @@ class ImpulseRoutingComponent : public Component,
                                 public ComboBox::Listener,
                                 public model::BroadcastListener {
 public:
-    ImpulseRoutingComponent(model::ValueWrapper<ImpulseRouting>& routing);
+    ImpulseRoutingComponent(model::ValueWrapper<ImpulseRouting>& routing,
+                            int index);
 
     void paint(Graphics& g) override;
     void resized() override;
@@ -59,8 +60,11 @@ public:
     void itemDragExit(const SourceDetails& details) override;
     void itemDropped(const SourceDetails& details) override;
 
-private:
     model::ValueWrapper<ImpulseRouting>& routing;
+
+    int get_index() const;
+
+private:
     ComboBox channel_box;
 
     model::BroadcastConnector name_connector{&routing.name, this};
@@ -68,13 +72,15 @@ private:
     model::Connector<ComboBox> channel_box_connector{&channel_box, this};
 
     bool drag{false};
+    int index{0};
 };
 
 class CarrierRoutingComponent : public Component,
                                 public DragAndDropTarget,
                                 public model::BroadcastListener {
 public:
-    CarrierRoutingComponent(model::ValueWrapper<CarrierRouting>& routing);
+    CarrierRoutingComponent(model::ValueWrapper<CarrierRouting>& routing,
+                            int index);
 
     void paint(Graphics& g) override;
     void receive_broadcast(model::Broadcaster* b) override;
@@ -86,13 +92,16 @@ public:
     void itemDragExit(const SourceDetails& details) override;
     void itemDropped(const SourceDetails& details) override;
 
-private:
     model::ValueWrapper<CarrierRouting>& routing;
 
+    int get_index() const;
+
+private:
     model::BroadcastConnector name_connector{&routing.name, this};
     model::BroadcastConnector channel_connector{&routing.channel, this};
 
     bool drag{false};
+    int index{0};
 };
 
 //----------------------------------------------------------------------------//
@@ -125,31 +134,23 @@ public:
 //----------------------------------------------------------------------------//
 
 template <typename RoutingListBox>
-class RoutingPanel : public Component {
+class RoutingPanel : public RoutingListBox {
 public:
     RoutingPanel(std::string name,
                  typename RoutingListBox::model_type& model,
                  int row_height)
-            : label("", name)
-            , routing_list_box(model) {
-        label.setJustificationType(Justification::centred);
-        routing_list_box.setRowHeight(row_height);
-
-        addAndMakeVisible(label);
-        addAndMakeVisible(routing_list_box);
-    }
-
-    void resized() override {
-        auto bounds = getLocalBounds();
-        label.setBounds(bounds.removeFromTop(label_height));
-        routing_list_box.setBounds(bounds);
+            : RoutingListBox(model) {
+        auto header = new EmphasisLabel("", name);
+        header->setSize(100, 20);
+        header->setJustificationType(Justification::centred);
+        this->setHeaderComponent(header);
+        this->setRowHeight(row_height);
     }
 
     int get_desired_height() const {
-        return routing_list_box.get_full_content_height() + label_height;
+        return this->get_full_content_height() +
+               this->getHeaderComponent()->getHeight();
     }
-
-    static const int label_height{20};
 
 private:
     class EmphasisLabel : public Label {
@@ -161,32 +162,28 @@ private:
             Label::paint(g);
         }
     };
-    EmphasisLabel label;
-    RoutingListBox routing_list_box;
 };
 
-class ImpulseRoutingPanel : public RoutingPanel<ImpulseRoutingListBox> {
-public:
-    using RoutingPanel<ImpulseRoutingListBox>::RoutingPanel;
-};
-
-class CarrierRoutingPanel : public RoutingPanel<CarrierRoutingListBox> {
-public:
-    using RoutingPanel<CarrierRoutingListBox>::RoutingPanel;
-};
+using ImpulseRoutingPanel = RoutingPanel<ImpulseRoutingListBox>;
+using CarrierRoutingPanel = RoutingPanel<CarrierRoutingListBox>;
 
 //----------------------------------------------------------------------------//
 
 class ConvolutionRoutingComponent : public Component,
                                     public ChangeListener,
+                                    public model::BroadcastListener,
                                     public DragAndDropContainer {
 public:
     ConvolutionRoutingComponent(AudioDeviceManager& audio_device_manager,
                                 int carrier_channels);
+    virtual ~ConvolutionRoutingComponent() noexcept;
 
     void resized() override;
 
     void changeListenerCallback(ChangeBroadcaster* cb) override;
+    void receive_broadcast(model::Broadcaster* b) override;
+
+    void dragOperationStarted() override;
 
     int get_desired_height() const;
 
@@ -205,6 +202,11 @@ private:
     model::ValueWrapper<std::vector<ImpulseRouting>> hardware_model{
             nullptr, hardware_data};
 
+    model::BroadcastConnector carrier_connector{&carrier_model, this};
+
     CarrierRoutingPanel carrier_panel{"carrier", carrier_model, 30};
     ImpulseRoutingPanel hardware_panel{"hardware", hardware_model, 60};
+
+    class Connector;
+    std::vector<std::unique_ptr<Connector>> connectors;
 };

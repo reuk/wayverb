@@ -1,8 +1,9 @@
 #include "ConvolutionRoutingComponent.hpp"
 
 ImpulseRoutingComponent::ImpulseRoutingComponent(
-        model::ValueWrapper<ImpulseRouting>& routing)
-        : routing(routing) {
+        model::ValueWrapper<ImpulseRouting>& routing, int index)
+        : routing(routing)
+        , index(index) {
     addAndMakeVisible(channel_box);
 
     name_connector.trigger();
@@ -64,13 +65,27 @@ void ImpulseRoutingComponent::itemDragExit(const SourceDetails& details) {
 }
 
 void ImpulseRoutingComponent::itemDropped(const SourceDetails& details) {
+    auto dropped = dynamic_cast<CarrierRoutingComponent*>(
+            details.sourceComponent.get());
+
+    assert(dropped);
+    assert(0 <= index);
+    assert(index < dropped->routing.channel.size());
+
+    dropped->routing.channel[index].set(1);
+
     drag = false;
     repaint();
 }
 
+int ImpulseRoutingComponent::get_index() const {
+    return index;
+}
+
 CarrierRoutingComponent::CarrierRoutingComponent(
-        model::ValueWrapper<CarrierRouting>& routing)
-        : routing(routing) {
+        model::ValueWrapper<CarrierRouting>& routing, int index)
+        : routing(routing)
+        , index(index) {
     name_connector.trigger();
     channel_connector.trigger();
 }
@@ -118,8 +133,21 @@ void CarrierRoutingComponent::itemDragExit(const SourceDetails& details) {
 }
 
 void CarrierRoutingComponent::itemDropped(const SourceDetails& details) {
+    auto dropped = dynamic_cast<ImpulseRoutingComponent*>(
+            details.sourceComponent.get());
+
+    assert(dropped);
+    assert(0 <= dropped->get_index());
+    assert(dropped->get_index() < routing.channel.size());
+
+    routing.channel[dropped->get_index()].set(1);
+
     drag = false;
     repaint();
+}
+
+int CarrierRoutingComponent::get_index() const {
+    return index;
 }
 
 //----------------------------------------------------------------------------//
@@ -136,7 +164,7 @@ Component* ImpulseRoutingListBox::refreshComponentForRow(int row,
             existing = nullptr;
         }
         if (!existing) {
-            existing = new ImpulseRoutingComponent(model[row]);
+            existing = new ImpulseRoutingComponent(model[row], row);
         }
 
         auto& cmp = dynamic_cast<ImpulseRoutingComponent&>(*existing);
@@ -156,7 +184,7 @@ Component* CarrierRoutingListBox::refreshComponentForRow(int row,
             existing = nullptr;
         }
         if (!existing) {
-            existing = new CarrierRoutingComponent(model[row]);
+            existing = new CarrierRoutingComponent(model[row], row);
         }
 
         auto& cmp = dynamic_cast<CarrierRoutingComponent&>(*existing);
@@ -196,6 +224,65 @@ std::vector<ImpulseRouting> init_hardware_channels(
 
 }  // namespace
 
+class ConvolutionRoutingComponent::Connector : public Component {
+public:
+    Connector(const CarrierRoutingPanel& carrier_panel,
+              const ImpulseRoutingPanel& hardware_panel,
+              int from,
+              int to)
+            : carrier_panel(carrier_panel)
+            , hardware_panel(hardware_panel)
+            , from(from)
+            , to(to) {
+    }
+
+    void paint(Graphics& g) override {
+        g.setColour(isMouseOver() ? VisualiserLookAndFeel::emphasis
+                                  : Colours::lightgrey);
+        g.strokePath(path, PathStrokeType(4));
+    }
+
+    void resized() override {
+        path.clear();
+
+        auto begin = carrier_panel.getComponentForRowNumber(from);
+        auto begin_area = getLocalArea(begin, begin->getLocalBounds());
+        auto begin_point =
+                begin_area.getCentre().withX(begin_area.getRight()).toFloat();
+        auto end = hardware_panel.getComponentForRowNumber(to);
+        auto end_area = getLocalArea(end, end->getLocalBounds());
+        auto end_point = end_area.getCentre().withX(end_area.getX()).toFloat();
+
+        path.startNewSubPath(begin_point.toFloat());
+        auto mid_point = (begin_point.getX() + end_point.getX()) * 0.5;
+        path.cubicTo(Point<float>(mid_point, begin_point.getY()),
+                     Point<float>(mid_point, end_point.getY()),
+                     end_point);
+    }
+
+    bool hitTest(int x, int y) override {
+        Point<float> ret;
+        path.getNearestPoint(Point<float>(x, y), ret);
+        return ret.getDistanceFrom(Point<float>(x, y)) < 4;
+    }
+
+    void mouseEnter(const MouseEvent& e) {
+        repaint();
+    }
+
+    void mouseExit(const MouseEvent& e) {
+        repaint();
+    }
+
+private:
+    const CarrierRoutingPanel& carrier_panel;
+    const ImpulseRoutingPanel& hardware_panel;
+
+    int from, to;
+
+    Path path;
+};
+
 ConvolutionRoutingComponent::ConvolutionRoutingComponent(
         AudioDeviceManager& audio_device_manager, int carrier_channels)
         : audio_device_manager(audio_device_manager)
@@ -208,6 +295,7 @@ ConvolutionRoutingComponent::ConvolutionRoutingComponent(
     addAndMakeVisible(carrier_panel);
     addAndMakeVisible(hardware_panel);
 }
+ConvolutionRoutingComponent::~ConvolutionRoutingComponent() noexcept = default;
 
 void ConvolutionRoutingComponent::resized() {
     auto bounds = getLocalBounds().reduced(padding);
@@ -219,10 +307,45 @@ void ConvolutionRoutingComponent::resized() {
     hardware_panel.setBounds(
             bounds.removeFromRight(panel_width)
                     .withHeight(hardware_panel.get_desired_height()));
+
+    for (const auto& i : connectors) {
+        i->setBounds(getLocalBounds());
+    }
 }
 
 void ConvolutionRoutingComponent::changeListenerCallback(
         ChangeBroadcaster* cb) {
+}
+
+void ConvolutionRoutingComponent::receive_broadcast(model::Broadcaster* b) {
+    connectors.clear();
+
+    //  for each component in the carrier list
+    for (auto i = 0u; i != carrier_panel.getNumRows(); ++i) {
+        //  get a handle to the component
+        if (auto comp = dynamic_cast<CarrierRoutingComponent*>(
+                    carrier_panel.getComponentForRowNumber(i))) {
+            //  for each channel in the carrier
+            const auto& channel = comp->routing.channel;
+            for (auto j = 0u; j != channel.size(); ++j) {
+                //  if the channel is linked
+                if (channel[j]) {
+                    connectors.push_back(std::make_unique<Connector>(
+                            carrier_panel, hardware_panel, i, j));
+                }
+            }
+        }
+    }
+
+    for (const auto& i : connectors) {
+        addAndMakeVisible(*i);
+    }
+
+    resized();
+}
+
+void ConvolutionRoutingComponent::dragOperationStarted() {
+    //    setCurrentDragImage(Image());
 }
 
 int ConvolutionRoutingComponent::get_desired_height() const {
