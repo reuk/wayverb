@@ -5,22 +5,6 @@
 
 #include "Vec3Editor.hpp"
 
-MicrophoneListBox::MicrophoneListBox(
-        model::ValueWrapper<std::vector<model::Microphone>>& microphones)
-        : microphones(microphones) {
-    //  don't use this with an empy list plz
-    assert(!microphones.empty());
-    setModel(this);
-}
-
-int MicrophoneListBox::getNumRows() {
-    return microphones.size();
-}
-
-void MicrophoneListBox::paintListBoxItem(
-        int row, Graphics& g, int w, int h, bool selected) {
-}
-
 Component* MicrophoneListBox::refreshComponentForRow(int row,
                                                      bool selected,
                                                      Component* existing) {
@@ -47,23 +31,6 @@ Component* MicrophoneListBox::refreshComponentForRow(int row,
         label.setInterceptsMouseClicks(false, false);
     }
     return existing;
-}
-
-void MicrophoneListBox::receive_broadcast(model::Broadcaster* cb) {
-    if (cb == &microphones) {
-        updateContent();
-    }
-}
-
-void MicrophoneListBox::selectedRowsChanged(int last) {
-    listener_list.call(&Listener::selectedRowsChanged, this, last);
-}
-
-void MicrophoneListBox::addListener(Listener* l) {
-    listener_list.add(l);
-}
-void MicrophoneListBox::removeListener(Listener* l) {
-    listener_list.remove(l);
 }
 
 //----------------------------------------------------------------------------//
@@ -115,8 +82,8 @@ void MicrophoneEditableListBox::receive_broadcast(model::Broadcaster* cb) {
     }
 }
 
-void MicrophoneEditableListBox::selectedRowsChanged(MicrophoneListBox* lb,
-                                                    int last) {
+void MicrophoneEditableListBox::selectedRowsChanged(
+        ValueWrapperListBox<model::Microphone>* lb, int last) {
     listener_list.call(&Listener::selectedRowsChanged, this, last);
     update_sub_button_enablement();
 }

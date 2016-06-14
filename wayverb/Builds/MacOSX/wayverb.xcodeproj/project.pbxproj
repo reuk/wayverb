@@ -19,6 +19,9 @@
 		17BFF294246BE35E2334DF9F /* QTKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AED820E5E9613936B4CCA98A /* QTKit.framework */; };
 		1B88D09D1D0ECAB300E6AF67 /* Playhead.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1B88D09B1D0ECAB300E6AF67 /* Playhead.cpp */; };
 		1B88D0C01D0EDC1E00E6AF67 /* PlaybackViewManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1B88D0BE1D0EDC1E00E6AF67 /* PlaybackViewManager.cpp */; };
+		1B88D0C31D10169100E6AF67 /* ConvolutionRoutingComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1B88D0C11D10169100E6AF67 /* ConvolutionRoutingComponent.cpp */; };
+		1B88D0C61D101E7A00E6AF67 /* AudioThumbnailPane.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1B88D0C41D101E7A00E6AF67 /* AudioThumbnailPane.cpp */; };
+		1B88D0C91D101FB800E6AF67 /* PlaybackPane.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1B88D0C71D101FB800E6AF67 /* PlaybackPane.cpp */; };
 		1BA0CED91D0DF85000915A77 /* libassimp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1BA0CEC21D0DF84300915A77 /* libassimp.a */; };
 		1BA0CEDA1D0DF85000915A77 /* libcombined.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1BA0CED01D0DF84300915A77 /* libcombined.a */; };
 		1BA0CEDB1D0DF85000915A77 /* libcommon.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1BA0CECA1D0DF84300915A77 /* libcommon.a */; };
@@ -439,11 +442,18 @@
 		1B0009F4B06C6DB0FBC35C69 /* FullModel.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = FullModel.hpp; path = ../../Source/FullModel.hpp; sourceTree = SOURCE_ROOT; };
 		1B3DE3698539A30ABBE4F207 /* jcprepct.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = jcprepct.c; path = ../../JuceLibraryCode/modules/juce_graphics/image_formats/jpglib/jcprepct.c; sourceTree = SOURCE_ROOT; };
 		1B57A9189CF4E7C129F5FB69 /* juce_MidiKeyboardComponent.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = juce_MidiKeyboardComponent.cpp; path = ../../JuceLibraryCode/modules/juce_audio_utils/gui/juce_MidiKeyboardComponent.cpp; sourceTree = SOURCE_ROOT; };
+		1B5C13A51D1036A90014A8DD /* ValueWrapperListBox.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = ValueWrapperListBox.hpp; path = ../../Source/ValueWrapperListBox.hpp; sourceTree = "<group>"; };
 		1B6108181CA032ADF5CE83F6 /* juce_FileTreeComponent.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = juce_FileTreeComponent.h; path = ../../JuceLibraryCode/modules/juce_gui_basics/filebrowser/juce_FileTreeComponent.h; sourceTree = SOURCE_ROOT; };
 		1B88D09B1D0ECAB300E6AF67 /* Playhead.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Playhead.cpp; path = ../../Source/impulse_viewer/Playhead.cpp; sourceTree = "<group>"; };
 		1B88D09C1D0ECAB300E6AF67 /* Playhead.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = Playhead.hpp; path = ../../Source/impulse_viewer/Playhead.hpp; sourceTree = "<group>"; };
 		1B88D0BE1D0EDC1E00E6AF67 /* PlaybackViewManager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = PlaybackViewManager.cpp; path = ../../Source/impulse_viewer/PlaybackViewManager.cpp; sourceTree = "<group>"; };
 		1B88D0BF1D0EDC1E00E6AF67 /* PlaybackViewManager.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = PlaybackViewManager.hpp; path = ../../Source/impulse_viewer/PlaybackViewManager.hpp; sourceTree = "<group>"; };
+		1B88D0C11D10169100E6AF67 /* ConvolutionRoutingComponent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ConvolutionRoutingComponent.cpp; path = ../../Source/impulse_viewer/ConvolutionRoutingComponent.cpp; sourceTree = "<group>"; };
+		1B88D0C21D10169100E6AF67 /* ConvolutionRoutingComponent.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = ConvolutionRoutingComponent.hpp; path = ../../Source/impulse_viewer/ConvolutionRoutingComponent.hpp; sourceTree = "<group>"; };
+		1B88D0C41D101E7A00E6AF67 /* AudioThumbnailPane.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = AudioThumbnailPane.cpp; path = ../../Source/impulse_viewer/AudioThumbnailPane.cpp; sourceTree = "<group>"; };
+		1B88D0C51D101E7A00E6AF67 /* AudioThumbnailPane.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = AudioThumbnailPane.hpp; path = ../../Source/impulse_viewer/AudioThumbnailPane.hpp; sourceTree = "<group>"; };
+		1B88D0C71D101FB800E6AF67 /* PlaybackPane.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = PlaybackPane.cpp; path = ../../Source/impulse_viewer/PlaybackPane.cpp; sourceTree = "<group>"; };
+		1B88D0C81D101FB800E6AF67 /* PlaybackPane.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = PlaybackPane.hpp; path = ../../Source/impulse_viewer/PlaybackPane.hpp; sourceTree = "<group>"; };
 		1BA0CE821D0DF84300915A77 /* WAYVERB.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = WAYVERB.xcodeproj; path = ../../../xcproj/WAYVERB.xcodeproj; sourceTree = "<group>"; };
 		1BA0CEE01D0DF85900915A77 /* OpenCL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenCL.framework; path = System/Library/Frameworks/OpenCL.framework; sourceTree = SDKROOT; };
 		1BA0CEE21D0DF86000915A77 /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
@@ -1943,6 +1953,7 @@
 		1E8EE9D763496DE4C56345C2 /* model_renderer */ = {
 			isa = PBXGroup;
 			children = (
+				1B5C13A51D1036A90014A8DD /* ValueWrapperListBox.hpp */,
 				1854B9F33267247C20F116A2 /* AxesObject.cpp */,
 				99C2701C0697BA423AF6C530 /* AxesObject.hpp */,
 				25A651C92935B34093C08B13 /* BasicDrawableObject.cpp */,
@@ -3514,6 +3525,10 @@
 				1B88D09C1D0ECAB300E6AF67 /* Playhead.hpp */,
 				1BA0CEEB1D0DF8C700915A77 /* ConvolutionViewer.cpp */,
 				1BA0CEEC1D0DF8C700915A77 /* ConvolutionViewer.hpp */,
+				1B88D0C71D101FB800E6AF67 /* PlaybackPane.cpp */,
+				1B88D0C81D101FB800E6AF67 /* PlaybackPane.hpp */,
+				1B88D0C41D101E7A00E6AF67 /* AudioThumbnailPane.cpp */,
+				1B88D0C51D101E7A00E6AF67 /* AudioThumbnailPane.hpp */,
 				1BA0CEEE1D0E04EB00915A77 /* DefaultAudio.cpp */,
 				1BA0CEEF1D0E04EB00915A77 /* DefaultAudio.hpp */,
 				1BA0CEE81D0DF8A800915A77 /* ImpulseViewerTabs.cpp */,
@@ -3539,6 +3554,8 @@
 				BE4F7830B6A6308567748D8B /* Waterfall.hpp */,
 				1F78EC9ACB5CD1478D90C91B /* Waveform.cpp */,
 				C78187F95C3D7F1E415D8FD5 /* Waveform.hpp */,
+				1B88D0C11D10169100E6AF67 /* ConvolutionRoutingComponent.cpp */,
+				1B88D0C21D10169100E6AF67 /* ConvolutionRoutingComponent.hpp */,
 			);
 			name = impulse_viewer;
 			sourceTree = "<group>";
@@ -4284,6 +4301,7 @@
 				317744158628A7C8A75059FF /* TransportDisplay.cpp in Sources */,
 				3258A79A2CDC1306C170E104 /* Waterfall.cpp in Sources */,
 				A980D7E3F0AE1017B44A5D6F /* Waveform.cpp in Sources */,
+				1B88D0C31D10169100E6AF67 /* ConvolutionRoutingComponent.cpp in Sources */,
 				81F9EC180F96D1F2515CAEDF /* AxesObject.cpp in Sources */,
 				050A6B5091EEE8752BD282EB /* BasicDrawableObject.cpp in Sources */,
 				6FA6648B7A3777DA0F606D82 /* BoxObject.cpp in Sources */,
@@ -4328,12 +4346,14 @@
 				127F610F5B79495C0D092DF7 /* juce_audio_processors.mm in Sources */,
 				02037A6B831A7AE51667D1D1 /* juce_audio_utils.mm in Sources */,
 				D4D94F2D95EF2A6BAB982FEA /* juce_core.mm in Sources */,
+				1B88D0C91D101FB800E6AF67 /* PlaybackPane.cpp in Sources */,
 				F33311A7088B136BB9CEF1D2 /* juce_cryptography.mm in Sources */,
 				88C5C1C03717251681E1D566 /* juce_data_structures.mm in Sources */,
 				DC19C8DE75E7E58886E9FE2B /* juce_events.mm in Sources */,
 				AC7B74B7116496DA564EB0D6 /* juce_graphics.mm in Sources */,
 				34956789481077DD97F29B09 /* juce_gui_basics.mm in Sources */,
 				0A67B2882295EDE60A8C68B8 /* juce_gui_extra.mm in Sources */,
+				1B88D0C61D101E7A00E6AF67 /* AudioThumbnailPane.cpp in Sources */,
 				818A6807A6A72ADAAF25BA49 /* juce_opengl.mm in Sources */,
 				9BCFDFA05909B824025EA496 /* juce_video.mm in Sources */,
 			);

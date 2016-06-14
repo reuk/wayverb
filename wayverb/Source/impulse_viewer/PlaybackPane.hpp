@@ -1,21 +1,21 @@
 #pragma once
 
-#include "DefaultAudio.hpp"
-#include "ImpulseRenderer.hpp"
+#include "AudioThumbnailPane.hpp"
 #include "Ruler.hpp"
 #include "Transport.hpp"
-#include "connector.h"
+#include "FileDropComponent.hpp"
 
-class ImpulseViewer : public Component,
-                      public ApplicationCommandTarget,
-                      public Button::Listener,
-                      public PlaybackViewManager::Listener,
-                      public ScrollBar::Listener {
+class PlaybackPane : public Component,
+                     public ApplicationCommandTarget,
+                     public Button::Listener,
+                     public PlaybackViewManager::Listener,
+                     public ScrollBar::Listener {
 public:
-    ImpulseViewer(AudioDeviceManager& audio_device_manager,
-                  AudioFormatManager& audio_format_manager,
-                  const File& file);
-    virtual ~ImpulseViewer() noexcept;
+    PlaybackPane(AudioDeviceManager& audio_device_manager,
+                 AudioFormatManager& audio_format_manager,
+                 AudioFormatReaderSource& audio_format_reader_source,
+                 const File& file);
+    virtual ~PlaybackPane() noexcept;
 
     void resized() override;
 
@@ -27,26 +27,29 @@ public:
 
     void buttonClicked(Button* b) override;
 
+    void scrollBarMoved(ScrollBar* s, double new_range_start) override;
+
     void max_range_changed(PlaybackViewManager* r,
                            const Range<double>& range) override;
     void visible_range_changed(PlaybackViewManager* r,
                                const Range<double>& range) override;
     void current_time_changed(PlaybackViewManager* r, double time) override;
 
-    void scrollBarMoved(ScrollBar* s, double new_range_start) override;
+    void addListener(FileDropListener* f);
+    void removeListener(FileDropListener* f);
 
 private:
     AudioDeviceManager& audio_device_manager;
+    AudioFormatManager& audio_format_manager;
+    AudioFormatReaderSource& audio_format_reader_source;
 
-    AudioFormatReaderSource audio_format_reader_source;
     TransportViewManager playback_view_manager;
     AudioSourcePlayer audio_source_player;
 
-    ImpulseRendererComponent renderer;
+    AudioThumbnailPane renderer;
     Ruler ruler;
 
-    TextButton waterfall_button;
-    TextButton waveform_button;
+    TextButton load_different_button;
 
     ToggleButton follow_playback_button;
 
@@ -54,14 +57,14 @@ private:
 
     Transport transport;
 
-    model::Connector<TextButton> waterfall_button_connector{&waterfall_button,
-                                                            this};
-    model::Connector<TextButton> waveform_button_connector{&waveform_button,
-                                                           this};
+    model::Connector<TextButton> load_different_connector{
+            &load_different_button, this};
     model::Connector<ToggleButton> follow_playback_connector{
             &follow_playback_button, this};
     model::Connector<ScrollBar> scroll_bar_connector{&scroll_bar, this};
 
     model::Connector<PlaybackViewManager> pvm_connector_0{
             &playback_view_manager, this};
+
+    ListenerList<FileDropListener> listener_list;
 };

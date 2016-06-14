@@ -1,8 +1,8 @@
 #pragma once
 
-#include "FullModel.hpp"
 #include "PlaybackViewManager.hpp"
 #include "Playhead.hpp"
+#include "connector.h"
 
 class Ruler : public Component, public PlaybackViewManager::Listener {
 public:

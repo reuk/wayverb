@@ -1,6 +1,6 @@
 #pragma once
 
-#include "FullModel.hpp"
+#include "connector.h"
 
 class FileDropListener {
 public:

@@ -1,50 +1,14 @@
 #pragma once
 
-#include "FullModel.hpp"
 #include "HelpWindow.hpp"
+#include "ValueWrapperListBox.hpp"
 
-#include "../JuceLibraryCode/JuceHeader.h"
-
-class MicrophoneListBox : public ListBox,
-                          public ListBoxModel,
-                          public model::BroadcastListener {
+class MicrophoneListBox : public ValueWrapperListBox<model::Microphone> {
 public:
-    class Listener {
-    public:
-        Listener() = default;
-        Listener(const Listener& rhs) = default;
-        Listener& operator=(const Listener& rhs) = default;
-        Listener(Listener&& rhs) noexcept = default;
-        Listener& operator=(Listener&& rhs) noexcept = default;
-        virtual ~Listener() noexcept = default;
-
-        virtual void selectedRowsChanged(MicrophoneListBox* lb, int last) = 0;
-    };
-
-    MicrophoneListBox(
-            model::ValueWrapper<std::vector<model::Microphone>>& microphones);
-
-    int getNumRows() override;
-
-    void paintListBoxItem(
-            int row, Graphics& g, int w, int h, bool selected) override;
-
+    using ValueWrapperListBox<model::Microphone>::ValueWrapperListBox;
     Component* refreshComponentForRow(int row,
                                       bool selected,
                                       Component* existing) override;
-
-    void receive_broadcast(model::Broadcaster* b) override;
-
-    void selectedRowsChanged(int last) override;
-
-    void addListener(Listener* l);
-    void removeListener(Listener* l);
-
-private:
-    model::ValueWrapper<std::vector<model::Microphone>>& microphones;
-    model::BroadcastConnector microphones_connector{&microphones, this};
-
-    ListenerList<Listener> listener_list;
 };
 
 //----------------------------------------------------------------------------//
@@ -77,7 +41,8 @@ public:
     void receive_broadcast(model::Broadcaster* b) override;
 
     void selectRow(int row);
-    void selectedRowsChanged(MicrophoneListBox* lb, int last) override;
+    void selectedRowsChanged(ValueWrapperListBox<model::Microphone>* lb,
+                             int last) override;
 
     void addListener(Listener* l);
     void removeListener(Listener* l);
