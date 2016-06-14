@@ -24,6 +24,7 @@ public:
         centreWithSize(getWidth(), getHeight());
         setVisible(true);
         setResizable(false, false);
+        setResizeLimits(400, 300, 100000, 100000);
         setVisible(true);
 
         auto& command_manager = VisualiserApplication::get_command_manager();
@@ -68,6 +69,7 @@ VisualiserApplication::ImpulseViewerWindow::ImpulseViewerWindow(
     centreWithSize(getWidth(), getHeight());
     setVisible(true);
     setResizable(true, false);
+    setResizeLimits(400, 300, 100000, 100000);
     setVisible(true);
 
     auto& command_manager = VisualiserApplication::get_command_manager();
@@ -255,6 +257,7 @@ VisualiserApplication::MainWindow::MainWindow(String name,
     centreWithSize(getWidth(), getHeight());
     setVisible(true);
     setResizable(true, false);
+    setResizeLimits(400, 300, 100000, 100000);
     setVisible(true);
 
     auto& command_manager = VisualiserApplication::get_command_manager();
