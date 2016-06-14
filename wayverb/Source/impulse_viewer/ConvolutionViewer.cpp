@@ -16,24 +16,29 @@ public:
                             audio_format_manager,
                             audio_format_reader_source,
                             f)
+            , resizer_bar(&layout, 1, false)
             , convolution_routing(
                       audio_device_manager,
                       audio_format_reader_source.getAudioFormatReader()
                               ->numChannels) {
         addAndMakeVisible(playback_pane);
+        addAndMakeVisible(resizer_bar);
         addAndMakeVisible(viewport);
+
+        layout.setItemLayout(0, 200, 10000, 200);
+        layout.setItemLayout(1, 4, 4, 4);
+        layout.setItemLayout(2, 1, 10000, 200);
 
         viewport.setViewedComponent(&convolution_routing, false);
     }
 
     void resized() override {
-        auto bounds = getLocalBounds();
-        playback_pane.setBounds(bounds.removeFromTop(200));
-        viewport.setBounds(bounds);
+        std::vector<Component*> c{{&playback_pane, &resizer_bar, &viewport}};
+        layout.layOutComponents(
+                c.data(), c.size(), 0, 0, getWidth(), getHeight(), true, true);
 
         auto routing_height = std::max(convolution_routing.get_desired_height(),
                                        viewport.getHeight());
-
         convolution_routing.setSize(viewport.getWidth(), routing_height);
         convolution_routing.setSize(viewport.getMaximumVisibleWidth(),
                                     routing_height);
@@ -51,9 +56,11 @@ private:
     AudioFormatManager& audio_format_manager;
     AudioFormatReaderSource audio_format_reader_source;
 
+    StretchableLayoutManager layout;
     PlaybackPane playback_pane;
-    ConvolutionRoutingComponent convolution_routing;
+    StretchableLayoutResizerBar resizer_bar;
     Viewport viewport;
+    ConvolutionRoutingComponent convolution_routing;
 };
 
 //----------------------------------------------------------------------------//
