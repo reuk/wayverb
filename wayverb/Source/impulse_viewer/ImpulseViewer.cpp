@@ -30,8 +30,6 @@ ImpulseViewer::ImpulseViewer(AudioDeviceManager& audio_device_manager,
     playback_view_manager.set_max_range(r, true);
     playback_view_manager.set_visible_range(r, true);
 
-    scroll_bar.setAutoHide(false);
-
     for (auto i : {&waterfall_button, &waveform_button}) {
         i->setRadioGroupId(0xf);
         i->setClickingTogglesState(true);
@@ -61,11 +59,13 @@ ImpulseViewer::~ImpulseViewer() noexcept {
 void ImpulseViewer::max_range_changed(PlaybackViewManager* r,
                                       const Range<double>& range) {
     scroll_bar.setRangeLimits(range);
+    resized();
 }
 void ImpulseViewer::visible_range_changed(PlaybackViewManager* r,
                                           const Range<double>& range) {
     scroll_bar.setCurrentRange(range, dontSendNotification);
     renderer.get_renderer().set_visible_range(range);
+    resized();
 }
 void ImpulseViewer::current_time_changed(PlaybackViewManager* r, double time) {
 }
@@ -80,7 +80,9 @@ void ImpulseViewer::scrollBarMoved(ScrollBar* s, double new_range_start) {
 void ImpulseViewer::resized() {
     auto bounds = getLocalBounds();
 
-    scroll_bar.setBounds(bounds.removeFromBottom(20));
+    if (scroll_bar.isVisible()) {
+        scroll_bar.setBounds(bounds.removeFromBottom(20));
+    }
 
     auto top = bounds.removeFromTop(40);
     top.reduce(2, 2);

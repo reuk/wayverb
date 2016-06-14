@@ -33,8 +33,6 @@ PlaybackPane::PlaybackPane(AudioDeviceManager& audio_device_manager,
     playback_view_manager.set_max_range(r, true);
     playback_view_manager.set_visible_range(r, true);
 
-    scroll_bar.setAutoHide(false);
-
     follow_playback_button.setWantsKeyboardFocus(false);
     follow_playback_button.setToggleState(true, true);
 
@@ -55,7 +53,9 @@ PlaybackPane::~PlaybackPane() noexcept {
 void PlaybackPane::resized() {
     auto bounds = getLocalBounds();
 
-    scroll_bar.setBounds(bounds.removeFromBottom(20));
+    if (scroll_bar.isVisible()) {
+        scroll_bar.setBounds(bounds.removeFromBottom(20));
+    }
 
     auto top = bounds.removeFromTop(40);
     top.reduce(2, 2);
@@ -71,11 +71,13 @@ void PlaybackPane::resized() {
 void PlaybackPane::max_range_changed(PlaybackViewManager* r,
                                      const Range<double>& range) {
     scroll_bar.setRangeLimits(range);
+    resized();
 }
 
 void PlaybackPane::visible_range_changed(PlaybackViewManager* r,
                                          const Range<double>& range) {
     scroll_bar.setCurrentRange(range, dontSendNotification);
+    resized();
 }
 
 void PlaybackPane::current_time_changed(PlaybackViewManager* r, double time) {
