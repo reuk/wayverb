@@ -1,29 +1,34 @@
 #pragma once
 
 #include "AudioThumbnailPane.hpp"
+#include "FileDropComponent.hpp"
 #include "Ruler.hpp"
 #include "Transport.hpp"
-#include "FileDropComponent.hpp"
 
 class PlaybackPane : public Component,
-                     public ApplicationCommandTarget,
                      public Button::Listener,
                      public PlaybackViewManager::Listener,
                      public ScrollBar::Listener {
 public:
-    PlaybackPane(AudioDeviceManager& audio_device_manager,
-                 AudioFormatManager& audio_format_manager,
-                 AudioFormatReaderSource& audio_format_reader_source,
+    class Listener {
+    public:
+        Listener() = default;
+        Listener(const Listener&) = default;
+        Listener& operator=(const Listener&) = default;
+        Listener(Listener&&) noexcept = default;
+        Listener& operator=(Listener&&) noexcept = default;
+        virtual ~Listener() noexcept = default;
+
+        virtual void new_file_loaded(PlaybackPane*, const File& f) = 0;
+        virtual void bypass_state_changed(PlaybackPane* r, bool state) = 0;
+    };
+
+    PlaybackPane(AudioFormatManager& audio_format_manager,
+                 AudioTransportSource& audio_transport_source,
                  const File& file);
-    virtual ~PlaybackPane() noexcept;
+    void reset_view();
 
     void resized() override;
-
-    void getAllCommands(Array<CommandID>& commands) override;
-    void getCommandInfo(CommandID command_id,
-                        ApplicationCommandInfo& result) override;
-    bool perform(const InvocationInfo& info) override;
-    ApplicationCommandTarget* getNextCommandTarget() override;
 
     void buttonClicked(Button* b) override;
 
@@ -35,23 +40,19 @@ public:
                                const Range<double>& range) override;
     void current_time_changed(PlaybackViewManager* r, double time) override;
 
-    void addListener(FileDropListener* f);
-    void removeListener(FileDropListener* f);
+    void addListener(Listener* f);
+    void removeListener(Listener* f);
 
 private:
-    AudioDeviceManager& audio_device_manager;
     AudioFormatManager& audio_format_manager;
-    AudioFormatReaderSource& audio_format_reader_source;
-
-    TransportViewManager playback_view_manager;
-    AudioSourcePlayer audio_source_player;
-
+    TransportViewManager transport_view_manager;
     AudioThumbnailPane renderer;
     Ruler ruler;
 
     TextButton load_different_button;
 
     ToggleButton follow_playback_button;
+    ToggleButton bypass_button;
 
     ScrollBar scroll_bar;
 
@@ -61,10 +62,11 @@ private:
             &load_different_button, this};
     model::Connector<ToggleButton> follow_playback_connector{
             &follow_playback_button, this};
+    model::Connector<ToggleButton> bypass_connector{&bypass_button, this};
     model::Connector<ScrollBar> scroll_bar_connector{&scroll_bar, this};
 
     model::Connector<PlaybackViewManager> pvm_connector_0{
-            &playback_view_manager, this};
+            &transport_view_manager, this};
 
-    ListenerList<FileDropListener> listener_list;
+    ListenerList<Listener> listener_list;
 };

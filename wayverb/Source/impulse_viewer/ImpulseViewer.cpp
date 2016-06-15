@@ -8,27 +8,26 @@ ImpulseViewer::ImpulseViewer(AudioDeviceManager& audio_device_manager,
         : audio_device_manager(audio_device_manager)
         , audio_format_reader_source(audio_format_manager.createReaderFor(file),
                                      true)
-        , renderer(playback_view_manager, audio_format_manager, file)
-        , ruler(playback_view_manager)
+        , transport_view_manager(audio_transport_source)
+        , renderer(audio_transport_source, audio_format_manager, file)
+        , ruler(transport_view_manager)
         , waterfall_button("waterfall")
         , waveform_button("waveform")
         , follow_playback_button("follow playback")
         , scroll_bar(false)
-        , transport(playback_view_manager) {
-    playback_view_manager.setSource(
+        , transport(audio_transport_source) {
+    audio_transport_source.setSource(
             &audio_format_reader_source,
             0,
             nullptr,
             audio_format_reader_source.getAudioFormatReader()->sampleRate);
-    audio_source_player.setSource(&playback_view_manager);
+    transport_view_manager.reset_view();
+
+    audio_source_player.setSource(&audio_transport_source);
     audio_device_manager.addAudioCallback(&audio_source_player);
 
     auto& command_manager = VisualiserApplication::get_command_manager();
     command_manager.registerAllCommandsForTarget(this);
-
-    auto r = Range<double>(0, playback_view_manager.getLengthInSeconds());
-    playback_view_manager.set_max_range(r, true);
-    playback_view_manager.set_visible_range(r, true);
 
     for (auto i : {&waterfall_button, &waveform_button}) {
         i->setRadioGroupId(0xf);
@@ -50,6 +49,11 @@ ImpulseViewer::ImpulseViewer(AudioDeviceManager& audio_device_manager,
     addAndMakeVisible(ruler);
 
     setWantsKeyboardFocus(true);
+
+    max_range_changed(&transport_view_manager,
+                      transport_view_manager.get_max_range());
+    visible_range_changed(&transport_view_manager,
+                          transport_view_manager.get_visible_range());
 }
 
 ImpulseViewer::~ImpulseViewer() noexcept {
@@ -72,8 +76,8 @@ void ImpulseViewer::current_time_changed(PlaybackViewManager* r, double time) {
 
 void ImpulseViewer::scrollBarMoved(ScrollBar* s, double new_range_start) {
     if (s == &scroll_bar) {
-        playback_view_manager.set_visible_range(scroll_bar.getCurrentRange(),
-                                                true);
+        transport_view_manager.set_visible_range(scroll_bar.getCurrentRange(),
+                                                 true);
     }
 }
 
@@ -110,14 +114,14 @@ void ImpulseViewer::getCommandInfo(CommandID command_id,
             result.setInfo("Play", "Start playback", "General", 0);
             result.defaultKeypresses.add(
                     KeyPress(KeyPress::spaceKey, ModifierKeys::noModifiers, 0));
-            result.setActive(!playback_view_manager.isPlaying());
+            result.setActive(!audio_transport_source.isPlaying());
             break;
 
         case CommandIDs::idPause:
             result.setInfo("Pause", "Pause playback", "General", 0);
             result.defaultKeypresses.add(
                     KeyPress(KeyPress::spaceKey, ModifierKeys::noModifiers, 0));
-            result.setActive(playback_view_manager.isPlaying());
+            result.setActive(audio_transport_source.isPlaying());
             break;
 
         case CommandIDs::idReturnToBeginning:
@@ -135,17 +139,17 @@ void ImpulseViewer::getCommandInfo(CommandID command_id,
 bool ImpulseViewer::perform(const InvocationInfo& info) {
     switch (info.commandID) {
         case CommandIDs::idPlay:
-            playback_view_manager.start();
+            audio_transport_source.start();
             VisualiserApplication::get_command_manager().commandStatusChanged();
             return true;
 
         case CommandIDs::idPause:
-            playback_view_manager.stop();
+            audio_transport_source.stop();
             VisualiserApplication::get_command_manager().commandStatusChanged();
             return true;
 
         case CommandIDs::idReturnToBeginning:
-            playback_view_manager.setPosition(0);
+            audio_transport_source.setPosition(0);
             return true;
 
         default:
@@ -162,7 +166,7 @@ void ImpulseViewer::buttonClicked(Button* b) {
     } else if (b == &waveform_button) {
         renderer.get_renderer().set_mode(ImpulseRenderer::Mode::waveform);
     } else if (b == &follow_playback_button) {
-        playback_view_manager.set_follow_playback(
+        transport_view_manager.set_follow_playback(
                 follow_playback_button.getToggleState());
     }
 }

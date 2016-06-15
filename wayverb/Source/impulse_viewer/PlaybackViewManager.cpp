@@ -3,8 +3,11 @@
 void PlaybackViewManager::set_max_range(Range<double> r, bool notify) {
     max_range = r;
     if (notify) {
-        listener_list.call(&Listener::max_range_changed, this, max_range);
+        notify_max_range();
     }
+}
+void PlaybackViewManager::notify_max_range() {
+    listener_list.call(&Listener::max_range_changed, this, max_range);
 }
 Range<double> PlaybackViewManager::get_max_range() const {
     return max_range;
@@ -13,9 +16,11 @@ Range<double> PlaybackViewManager::get_max_range() const {
 void PlaybackViewManager::set_visible_range(Range<double> r, bool notify) {
     visible_range = max_range.constrainRange(r);
     if (notify) {
-        listener_list.call(
-                &Listener::visible_range_changed, this, visible_range);
+        notify_visible_range();
     }
+}
+void PlaybackViewManager::notify_visible_range() {
+    listener_list.call(&Listener::visible_range_changed, this, visible_range);
 }
 Range<double> PlaybackViewManager::get_visible_range() const {
     return visible_range;
@@ -47,23 +52,31 @@ void PlaybackViewManager::removeListener(Listener* l) {
 
 //----------------------------------------------------------------------------//
 
-TransportViewManager::TransportViewManager() {}
+TransportViewManager::TransportViewManager(
+        AudioTransportSource& audio_transport_source)
+        : audio_transport_source(audio_transport_source) {
+    auto r = Range<double>(0, audio_transport_source.getLengthInSeconds());
+    set_max_range(r, true);
+    set_visible_range(r, true);
+}
+
+void TransportViewManager::reset_view() {
+    auto r = Range<double>(0, audio_transport_source.getLengthInSeconds());
+    set_max_range(r, true);
+    set_visible_range(r, true);
+}
 
 void TransportViewManager::timerCallback() {
-    set_current_time(getCurrentPosition());
+    set_current_time(audio_transport_source.getCurrentPosition());
 }
 
-void TransportViewManager::setPosition(double t) {
-    AudioTransportSource::setPosition(t);
-    timerCallback();
-}
-
-void TransportViewManager::start() {
-    startTimer(15);
-    AudioTransportSource::start();
-}
-
-void TransportViewManager::stop() {
-    stopTimer();
-    AudioTransportSource::stop();
+void TransportViewManager::changeListenerCallback(ChangeBroadcaster* cb) {
+    if (cb == &audio_transport_source) {
+        if (audio_transport_source.isPlaying()) {
+            startTimer(15);
+        } else {
+            stopTimer();
+            timerCallback();
+        }
+    }
 }

@@ -6,7 +6,7 @@
 
 class ConvolutionAudioSource : public AudioSource {
 public:
-    ConvolutionAudioSource(std::unique_ptr<AudioSource>&& input);
+    ConvolutionAudioSource(AudioSource * source, bool handle_delete);
     virtual ~ConvolutionAudioSource() noexcept;
 
     void prepareToPlay(int samplesPerBlockExpected, double sampleRate) override;
@@ -16,13 +16,11 @@ public:
     void set_active(bool a);
     bool get_active() const;
 
-    /// Won't have any effect if audio has already started
-    /// TODO maybe that's a bad idea tho
     void set_ir(size_t in, size_t out, std::vector<float>&& t);
 
 private:
-    std::unique_ptr<AudioSource> input;
-    bool active{true};
+    OptionalScopedPointer<AudioSource> source;
+    std::atomic_bool active{true};
 
     /// Manages the mapping between inputs, outputs, and IRs
     class IrMap {

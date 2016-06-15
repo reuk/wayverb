@@ -2,14 +2,14 @@
 
 #include "FileDropComponent.hpp"
 
-class ConvolutionLoader : public Component, public FileDropListener {
+class ConvolutionLoader : public Component, public FileDropComponent::Listener {
 public:
     ConvolutionLoader(AudioDeviceManager& audio_device_manager,
                       AudioFormatManager& audio_format_manager);
 
     void resized() override;
 
-    void file_dropped(Component* f, const File& file) override;
+    void file_dropped(FileDropComponent* f, const File& file) override;
 
     void set_file_loader();
     void set_convolver(const File& f);

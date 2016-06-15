@@ -92,15 +92,15 @@ bool ConvolutionAudioSource::IrMap::ChannelPair::operator<(
 
 //----------------------------------------------------------------------------//
 
-ConvolutionAudioSource::ConvolutionAudioSource(
-        std::unique_ptr<AudioSource>&& input)
-        : input(std::move(input)) {
+ConvolutionAudioSource::ConvolutionAudioSource(AudioSource* source,
+                                               bool handle_delete)
+        : source(source, handle_delete) {
 }
-
 ConvolutionAudioSource::~ConvolutionAudioSource() noexcept = default;
 
 void ConvolutionAudioSource::prepareToPlay(int samplesPerBlockExpected,
                                            double sampleRate) {
+    source->prepareToPlay(samplesPerBlockExpected, sampleRate);
     auto ins = ir_map.get_num_inputs();
     auto outs = ir_map.get_num_outputs();
     //  construct a new engine
@@ -121,17 +121,19 @@ void ConvolutionAudioSource::releaseResources() {
 
 void ConvolutionAudioSource::getNextAudioBlock(
         const AudioSourceChannelInfo& buffer) {
-    buffer.clearActiveBufferRegion();
-
     if (active) {
         assert(pimpl);
         auto scratch = buffer;
-        input->getNextAudioBlock(scratch);
+        source->getNextAudioBlock(scratch);
+
+        buffer.clearActiveBufferRegion();
         pimpl->process(scratch.buffer->getArrayOfWritePointers(),
                        buffer.buffer->getArrayOfWritePointers(),
                        scratch.buffer->getNumChannels(),
                        buffer.buffer->getNumChannels(),
                        scratch.numSamples);
+    } else {
+        source->getNextAudioBlock(buffer);
     }
 }
 
@@ -142,6 +144,8 @@ bool ConvolutionAudioSource::get_active() const {
     return active;
 }
 
+/// Won't have any effect if audio has already started
+/// TODO maybe that's a bad idea tho
 void ConvolutionAudioSource::set_ir(size_t in,
                                     size_t out,
                                     std::vector<float>&& t) {

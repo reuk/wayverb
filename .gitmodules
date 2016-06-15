@@ -22,3 +22,6 @@
 [submodule "submodules/modern_gl_utils"]
 	path = submodules/modern_gl_utils
 	url = git@github.com:reuk/modern_gl_utils.git
+[submodule "submodules/hiss"]
+	path = submodules/hiss
+	url = git@github.com:HISSTools/HISSTools_Impulse_Response_Toolbox.git

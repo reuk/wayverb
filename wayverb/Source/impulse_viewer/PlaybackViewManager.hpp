@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../JuceLibraryCode/JuceHeader.h"
+#include "connector.h"
 
 class PlaybackViewManager {
 public:
@@ -26,9 +27,11 @@ public:
 
     void set_max_range(Range<double> r, bool notify);
     Range<double> get_max_range() const;
+    void notify_max_range();
 
     void set_visible_range(Range<double> r, bool notify);
     Range<double> get_visible_range() const;
+    void notify_visible_range();
 
     void set_follow_playback(bool b);
     bool get_follow_playback() const;
@@ -50,15 +53,19 @@ private:
 //----------------------------------------------------------------------------//
 
 class TransportViewManager : public PlaybackViewManager,
-                             public AudioTransportSource,
-                             public Timer {
+                             public Timer,
+                             public ChangeListener {
 public:
-    TransportViewManager();
+    TransportViewManager(AudioTransportSource& audio_transport_source);
 
-    void setPosition(double t);
+    void reset_view();
 
+    void changeListenerCallback(ChangeBroadcaster* cb) override;
     void timerCallback() override;
 
-    void start();
-    void stop();
+    void trigger();
+
+    AudioTransportSource& audio_transport_source;
+    model::Connector<ChangeBroadcaster, ChangeListener> source_connector{
+            &audio_transport_source, this};
 };

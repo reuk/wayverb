@@ -10,7 +10,7 @@ class AudioThumbnailPane : public Component,
                            public Playhead::Listener {
 public:
     AudioThumbnailPane(AudioFormatManager& audio_format_manager,
-                       TransportViewManager& playback_view_manager);
+                       TransportViewManager& transport_view_manager);
 
     void paint(Graphics& g) override;
     void resized() override;
@@ -32,9 +32,9 @@ private:
     double x_to_time(double t) const;
     void position_playhead();
 
-    TransportViewManager& playback_view_manager;
+    TransportViewManager& transport_view_manager;
     model::Connector<TransportViewManager> view_connector{
-            &playback_view_manager, this};
+            &transport_view_manager, this};
 
     AudioThumbnailCache audio_thumbnail_cache;
     AudioThumbnail audio_thumbnail;

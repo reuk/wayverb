@@ -43,7 +43,7 @@ public:
         return content_component;
     }
 
-    void file_dropped(Component* c, const File& f) override {
+    void file_dropped(FileDropComponent* c, const File& f) override {
         if (c == &content_component) {
             VisualiserApplication::get_app().open_project(f);
         }

@@ -2,23 +2,21 @@
 
 #include "connector.h"
 
-class FileDropListener {
-public:
-    FileDropListener() = default;
-    FileDropListener(const FileDropListener&) = default;
-    FileDropListener& operator=(const FileDropListener&) = default;
-    FileDropListener(FileDropListener&&) noexcept = default;
-    FileDropListener& operator=(FileDropListener&&) noexcept = default;
-    virtual ~FileDropListener() noexcept = default;
-
-    virtual void file_dropped(Component*, const File& f) = 0;
-};
-
 class FileDropComponent : public Component,
                           public FileDragAndDropTarget,
                           public Button::Listener {
 public:
-    using Listener = FileDropListener;
+    class Listener {
+    public:
+        Listener() = default;
+        Listener(const Listener&) = default;
+        Listener& operator=(const Listener&) = default;
+        Listener(Listener&&) noexcept = default;
+        Listener& operator=(Listener&&) noexcept = default;
+        virtual ~Listener() noexcept = default;
+
+        virtual void file_dropped(FileDropComponent*, const File& f) = 0;
+    };
 
     FileDropComponent(const std::string& back, const std::string& button);
 

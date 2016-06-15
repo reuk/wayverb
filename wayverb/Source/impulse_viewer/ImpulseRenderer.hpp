@@ -21,14 +21,6 @@ public:
 
     void set_mode(Mode mode);
 
-/*
-    void max_range_changed(PlaybackViewManager* r,
-                           const Range<double>& range) override;
-    void visible_range_changed(PlaybackViewManager* r,
-                               const Range<double>& range) override;
-    void current_time_changed(PlaybackViewManager* r, double t) override;
-*/
-
     //  inherited
     void reset(int num_channels,
                double sample_rate,

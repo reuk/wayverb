@@ -39,7 +39,8 @@ private:
     AudioDeviceManager& audio_device_manager;
 
     AudioFormatReaderSource audio_format_reader_source;
-    TransportViewManager playback_view_manager;
+    AudioTransportSource audio_transport_source;
+    TransportViewManager transport_view_manager;
     AudioSourcePlayer audio_source_player;
 
     ImpulseRendererComponent renderer;
@@ -63,5 +64,5 @@ private:
     model::Connector<ScrollBar> scroll_bar_connector{&scroll_bar, this};
 
     model::Connector<PlaybackViewManager> pvm_connector_0{
-            &playback_view_manager, this};
+            &transport_view_manager, this};
 };
