@@ -208,5 +208,5 @@ private:
     ImpulseRoutingPanel hardware_panel{"hardware", hardware_model, 60};
 
     class Connector;
-    std::vector<std::unique_ptr<Connector>> connectors;
+    std::set<std::unique_ptr<Connector>> connectors;
 };

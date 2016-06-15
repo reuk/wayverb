@@ -55,10 +55,17 @@ public:
         return getRowHeight() * model.size();
     }
 
-protected:
+    model_type& get_model() {
+        return model;
+    }
+
+    const model_type& get_model() const {
+        return model;
+    }
+
+private:
     model_type& model;
     model::BroadcastConnector model_connector{&model, this};
 
-private:
     ListenerList<Listener> listener_list;
 };

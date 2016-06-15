@@ -164,7 +164,7 @@ Component* ImpulseRoutingListBox::refreshComponentForRow(int row,
             existing = nullptr;
         }
         if (!existing) {
-            existing = new ImpulseRoutingComponent(model[row], row);
+            existing = new ImpulseRoutingComponent(get_model()[row], row);
         }
 
         auto& cmp = dynamic_cast<ImpulseRoutingComponent&>(*existing);
@@ -184,7 +184,7 @@ Component* CarrierRoutingListBox::refreshComponentForRow(int row,
             existing = nullptr;
         }
         if (!existing) {
-            existing = new CarrierRoutingComponent(model[row], row);
+            existing = new CarrierRoutingComponent(get_model()[row], row);
         }
 
         auto& cmp = dynamic_cast<CarrierRoutingComponent&>(*existing);
@@ -226,8 +226,8 @@ std::vector<ImpulseRouting> init_hardware_channels(
 
 class ConvolutionRoutingComponent::Connector : public Component {
 public:
-    Connector(const CarrierRoutingPanel& carrier_panel,
-              const ImpulseRoutingPanel& hardware_panel,
+    Connector(CarrierRoutingPanel& carrier_panel,
+              ImpulseRoutingPanel& hardware_panel,
               int from,
               int to)
             : carrier_panel(carrier_panel)
@@ -266,17 +266,34 @@ public:
         return ret.getDistanceFrom(Point<float>(x, y)) < 4;
     }
 
-    void mouseEnter(const MouseEvent& e) {
+    void mouseEnter(const MouseEvent& e) override {
+        //  draw with new colours
         repaint();
     }
 
-    void mouseExit(const MouseEvent& e) {
+    void mouseExit(const MouseEvent& e) override {
+        //  draw with new colours
         repaint();
+    }
+
+    void mouseDown(const MouseEvent& e) override {
+        //  if rmb
+        if (!e.mods.isPopupMenu()) {
+            //  remove the connector by editing the model
+            assert(0 <= from);
+            assert(0 <= to);
+
+            auto & model = carrier_panel.get_model();
+            assert(from < model.size());
+            auto& channel = model[from].channel;
+            assert(to < channel.size());
+            channel[to].set(0);
+        }
     }
 
 private:
-    const CarrierRoutingPanel& carrier_panel;
-    const ImpulseRoutingPanel& hardware_panel;
+    CarrierRoutingPanel& carrier_panel;
+    ImpulseRoutingPanel& hardware_panel;
 
     int from, to;
 
@@ -330,7 +347,7 @@ void ConvolutionRoutingComponent::receive_broadcast(model::Broadcaster* b) {
             for (auto j = 0u; j != channel.size(); ++j) {
                 //  if the channel is linked
                 if (channel[j]) {
-                    connectors.push_back(std::make_unique<Connector>(
+                    connectors.insert(std::make_unique<Connector>(
                             carrier_panel, hardware_panel, i, j));
                 }
             }
