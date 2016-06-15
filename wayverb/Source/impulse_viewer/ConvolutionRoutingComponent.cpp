@@ -205,6 +205,9 @@ std::vector<CarrierRouting> init_carrier_channels(int c, int output_channels) {
                 ss.str(),
                 std::vector<CarrierRouting::my_bool>(output_channels, 0)});
     }
+
+    //  by default, we'll just send the first channel to all outputs
+    proc::fill(ret.front().channel, 1);
     return ret;
 }
 
@@ -311,6 +314,8 @@ ConvolutionRoutingComponent::ConvolutionRoutingComponent(
         , hardware_data(init_hardware_channels(audio_device_manager)) {
     addAndMakeVisible(carrier_panel);
     addAndMakeVisible(hardware_panel);
+
+    carrier_connector.trigger();
 }
 ConvolutionRoutingComponent::~ConvolutionRoutingComponent() noexcept = default;
 
