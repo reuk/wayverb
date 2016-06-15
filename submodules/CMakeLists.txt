@@ -13,3 +13,5 @@ add_subdirectory(glm)
 
 set(GLM_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/glm CACHE PATH "path to glm")
 add_subdirectory(modern_gl_utils)
+
+add_subdirectory(hiss)

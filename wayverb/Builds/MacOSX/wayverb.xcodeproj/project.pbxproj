@@ -17,6 +17,8 @@
 		0F3F3BF0CF31990B8A36D2C6 /* BottomPanel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8EC991E2A8DBE96759A51D2A /* BottomPanel.cpp */; };
 		127F610F5B79495C0D092DF7 /* juce_audio_processors.mm in Sources */ = {isa = PBXBuildFile; fileRef = 1F4341A2DEBD8ABD625FA0A5 /* juce_audio_processors.mm */; };
 		17BFF294246BE35E2334DF9F /* QTKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AED820E5E9613936B4CCA98A /* QTKit.framework */; };
+		1B1CCB6C1D11746400A1BF38 /* ConvolutionAudioSource.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1B1CCB6A1D11746400A1BF38 /* ConvolutionAudioSource.cpp */; };
+		1B1CCB8D1D11979C00A1BF38 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 1BA0CEE21D0DF86000915A77 /* libz.tbd */; };
 		1B88D09D1D0ECAB300E6AF67 /* Playhead.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1B88D09B1D0ECAB300E6AF67 /* Playhead.cpp */; };
 		1B88D0C01D0EDC1E00E6AF67 /* PlaybackViewManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1B88D0BE1D0EDC1E00E6AF67 /* PlaybackViewManager.cpp */; };
 		1B88D0C31D10169100E6AF67 /* ConvolutionRoutingComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1B88D0C11D10169100E6AF67 /* ConvolutionRoutingComponent.cpp */; };
@@ -30,7 +32,6 @@
 		1BA0CEDE1D0DF85000915A77 /* libraytracer.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1BA0CECE1D0DF84300915A77 /* libraytracer.a */; };
 		1BA0CEDF1D0DF85000915A77 /* libwaveguide.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1BA0CECC1D0DF84300915A77 /* libwaveguide.a */; };
 		1BA0CEE11D0DF85900915A77 /* OpenCL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1BA0CEE01D0DF85900915A77 /* OpenCL.framework */; };
-		1BA0CEE31D0DF86000915A77 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 1BA0CEE21D0DF86000915A77 /* libz.tbd */; };
 		1BA0CEE61D0DF87D00915A77 /* libfftw3f.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1BA0CEE41D0DF87D00915A77 /* libfftw3f.a */; };
 		1BA0CEE71D0DF87D00915A77 /* libsamplerate.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1BA0CEE51D0DF87D00915A77 /* libsamplerate.a */; };
 		1BA0CEEA1D0DF8A800915A77 /* ImpulseViewerTabs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1BA0CEE81D0DF8A800915A77 /* ImpulseViewerTabs.cpp */; };
@@ -440,6 +441,8 @@
 		1A8B28337B463822E2DA1B86 /* juce_linux_BluetoothMidiDevicePairingDialogue.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = juce_linux_BluetoothMidiDevicePairingDialogue.cpp; path = ../../JuceLibraryCode/modules/juce_audio_utils/native/juce_linux_BluetoothMidiDevicePairingDialogue.cpp; sourceTree = SOURCE_ROOT; };
 		1A9009F186004527F5DC8900 /* ModelObject.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = ModelObject.cpp; path = ../../Source/model_renderer/ModelObject.cpp; sourceTree = SOURCE_ROOT; };
 		1B0009F4B06C6DB0FBC35C69 /* FullModel.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = FullModel.hpp; path = ../../Source/FullModel.hpp; sourceTree = SOURCE_ROOT; };
+		1B1CCB6A1D11746400A1BF38 /* ConvolutionAudioSource.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ConvolutionAudioSource.cpp; path = ../../Source/impulse_viewer/ConvolutionAudioSource.cpp; sourceTree = "<group>"; };
+		1B1CCB6B1D11746400A1BF38 /* ConvolutionAudioSource.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = ConvolutionAudioSource.hpp; path = ../../Source/impulse_viewer/ConvolutionAudioSource.hpp; sourceTree = "<group>"; };
 		1B3DE3698539A30ABBE4F207 /* jcprepct.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = jcprepct.c; path = ../../JuceLibraryCode/modules/juce_graphics/image_formats/jpglib/jcprepct.c; sourceTree = SOURCE_ROOT; };
 		1B57A9189CF4E7C129F5FB69 /* juce_MidiKeyboardComponent.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = juce_MidiKeyboardComponent.cpp; path = ../../JuceLibraryCode/modules/juce_audio_utils/gui/juce_MidiKeyboardComponent.cpp; sourceTree = SOURCE_ROOT; };
 		1B5C13A51D1036A90014A8DD /* ValueWrapperListBox.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = ValueWrapperListBox.hpp; path = ../../Source/ValueWrapperListBox.hpp; sourceTree = "<group>"; };
@@ -1617,9 +1620,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1B1CCB8D1D11979C00A1BF38 /* libz.tbd in Frameworks */,
 				1BA0CEE61D0DF87D00915A77 /* libfftw3f.a in Frameworks */,
 				1BA0CEE71D0DF87D00915A77 /* libsamplerate.a in Frameworks */,
-				1BA0CEE31D0DF86000915A77 /* libz.tbd in Frameworks */,
 				1BA0CEE11D0DF85900915A77 /* OpenCL.framework in Frameworks */,
 				1BA0CED91D0DF85000915A77 /* libassimp.a in Frameworks */,
 				1BA0CEDA1D0DF85000915A77 /* libcombined.a in Frameworks */,
@@ -3523,6 +3526,8 @@
 			children = (
 				1B88D09B1D0ECAB300E6AF67 /* Playhead.cpp */,
 				1B88D09C1D0ECAB300E6AF67 /* Playhead.hpp */,
+				1B1CCB6A1D11746400A1BF38 /* ConvolutionAudioSource.cpp */,
+				1B1CCB6B1D11746400A1BF38 /* ConvolutionAudioSource.hpp */,
 				1BA0CEEB1D0DF8C700915A77 /* ConvolutionViewer.cpp */,
 				1BA0CEEC1D0DF8C700915A77 /* ConvolutionViewer.hpp */,
 				1B88D0C71D101FB800E6AF67 /* PlaybackPane.cpp */,
@@ -4306,6 +4311,7 @@
 				050A6B5091EEE8752BD282EB /* BasicDrawableObject.cpp in Sources */,
 				6FA6648B7A3777DA0F606D82 /* BoxObject.cpp in Sources */,
 				659ABD309630C2FA1EDAE1A4 /* ComputeIndices.cpp in Sources */,
+				1B1CCB6C1D11746400A1BF38 /* ConvolutionAudioSource.cpp in Sources */,
 				9B6E74EFCF16FC36620A625D /* LitSceneShader.cpp in Sources */,
 				8326A5E63643B46F9B84084F /* MeshObject.cpp in Sources */,
 				7AF5C6C52242E9787FC89838 /* MeshShader.cpp in Sources */,
