@@ -72,6 +72,7 @@ void AudioThumbnailPane::playhead_dragged(Playhead* p, const MouseEvent& e) {
         auto constrained = Range<int>(1, getWidth() - 1).clipValue(mouse_pos);
         transport_view_manager.audio_transport_source.setPosition(
                 x_to_time(constrained));
+        transport_view_manager.timerCallback();
     }
 }
 
