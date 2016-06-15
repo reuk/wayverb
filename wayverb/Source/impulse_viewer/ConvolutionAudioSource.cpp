@@ -59,39 +59,6 @@ class ConvolutionAudioSource::Impl : public Convolver {
 
 //----------------------------------------------------------------------------//
 
-void ConvolutionAudioSource::IrMap::set_ir(size_t in,
-                                           size_t out,
-                                           std::vector<float>&& t) {
-    data[ChannelPair{in, out}] = std::forward<std::vector<float>>(t);
-}
-
-namespace {
-/// This is gonna be freakish slow, but I can change it if it's a problem
-template <typename T, typename F>
-auto get_unique(T&& data, F&& f) {
-    std::set<size_t> ret;
-    for (const auto& i : data) {
-        ret.insert(f(i));
-    }
-    return ret;
-}
-}  // namespace
-
-size_t ConvolutionAudioSource::IrMap::get_num_inputs() const {
-    return get_unique(data, [](const auto& i) { return i.first.in; }).size();
-}
-
-size_t ConvolutionAudioSource::IrMap::get_num_outputs() const {
-    return get_unique(data, [](const auto& i) { return i.first.out; }).size();
-}
-
-bool ConvolutionAudioSource::IrMap::ChannelPair::operator<(
-        const ChannelPair& rhs) const {
-    return std::tie(in, out) < std::tie(rhs.in, rhs.out);
-}
-
-//----------------------------------------------------------------------------//
-
 ConvolutionAudioSource::ConvolutionAudioSource(AudioSource* source,
                                                bool handle_delete)
         : source(source, handle_delete) {
@@ -101,17 +68,18 @@ ConvolutionAudioSource::~ConvolutionAudioSource() noexcept = default;
 void ConvolutionAudioSource::prepareToPlay(int samplesPerBlockExpected,
                                            double sampleRate) {
     source->prepareToPlay(samplesPerBlockExpected, sampleRate);
-    auto ins = ir_map.get_num_inputs();
-    auto outs = ir_map.get_num_outputs();
     //  construct a new engine
-    pimpl = std::make_unique<Impl>(ins, outs, Impl::kLatencyZero);
+    auto num_channels = impulses.size();
+    pimpl = std::make_unique<Impl>(
+            num_channels, num_channels, Impl::kLatencyZero);
     //  copy local IRs to engine
-    for (const auto& i : ir_map.data) {
-        pimpl->set(i.first.in,
-                   i.first.out,
-                   i.second.data(),
-                   i.second.size(),
-                   true);
+    set_engine_ir();
+}
+
+void ConvolutionAudioSource::set_engine_ir() {
+    assert(pimpl);
+    for (auto i = 0u; i != impulses.size(); ++i) {
+        pimpl->set(i, i, impulses[i].data(), impulses[i].size(), true);
     }
 }
 
@@ -121,19 +89,42 @@ void ConvolutionAudioSource::releaseResources() {
 
 void ConvolutionAudioSource::getNextAudioBlock(
         const AudioSourceChannelInfo& buffer) {
+    source->getNextAudioBlock(buffer);
+
+    AudioSampleBuffer scratch;
+    scratch.makeCopyOf(*buffer.buffer);
+    scratch.clear(buffer.startSample, buffer.numSamples);
+
+    //  for each carrier channel
+    auto carrier_channels = std::min(static_cast<int>(carrier_routing.size()),
+                                     buffer.buffer->getNumChannels());
+    for (auto i = 0u; i != carrier_channels; ++i) {
+        //  for each hardware channel
+        auto hardware_channels =
+                std::min(static_cast<int>(carrier_routing[i].channel.size()),
+                         scratch.getNumChannels());
+        for (auto j = 0u; j != hardware_channels; ++j) {
+            if (carrier_routing[i].channel[j]) {
+                scratch.addFrom(j,
+                                buffer.startSample,
+                                *buffer.buffer,
+                                i,
+                                buffer.startSample,
+                                buffer.numSamples);
+            }
+        }
+    }
+
     if (active) {
         assert(pimpl);
-        auto scratch = buffer;
-        source->getNextAudioBlock(scratch);
-
         buffer.clearActiveBufferRegion();
-        pimpl->process(scratch.buffer->getArrayOfWritePointers(),
+        pimpl->process(scratch.getArrayOfWritePointers(),
                        buffer.buffer->getArrayOfWritePointers(),
-                       scratch.buffer->getNumChannels(),
+                       scratch.getNumChannels(),
                        buffer.buffer->getNumChannels(),
-                       scratch.numSamples);
+                       buffer.numSamples);
     } else {
-        source->getNextAudioBlock(buffer);
+        *buffer.buffer = scratch;
     }
 }
 
@@ -146,8 +137,19 @@ bool ConvolutionAudioSource::get_active() const {
 
 /// Won't have any effect if audio has already started
 /// TODO maybe that's a bad idea tho
-void ConvolutionAudioSource::set_ir(size_t in,
-                                    size_t out,
-                                    std::vector<float>&& t) {
-    ir_map.set_ir(in, out, std::forward<std::vector<float>>(t));
+void ConvolutionAudioSource::set_ir(size_t output_channel,
+                                    const std::vector<float>& t) {
+    if (impulses.size() <= output_channel) {
+        impulses.resize(output_channel + 1);
+    }
+    impulses[output_channel] = t;
+
+    if (pimpl) {
+        set_engine_ir();
+    }
+}
+
+void ConvolutionAudioSource::set_carrier_routing(
+        const std::vector<CarrierRouting>& c) {
+    carrier_routing = c;
 }

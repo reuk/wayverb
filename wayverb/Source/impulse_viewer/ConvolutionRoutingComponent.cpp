@@ -286,7 +286,7 @@ public:
             assert(0 <= from);
             assert(0 <= to);
 
-            auto & model = carrier_panel.get_model();
+            auto& model = carrier_panel.get_model();
             assert(from < model.size());
             auto& channel = model[from].channel;
             assert(to < channel.size());
@@ -311,9 +311,9 @@ ConvolutionRoutingComponent::ConvolutionRoutingComponent(
                   audio_device_manager.getCurrentAudioDevice()
                           ->getActiveOutputChannels()
                           .countNumberOfSetBits()))
-        , hardware_data(init_hardware_channels(audio_device_manager)) {
+        , impulse_data(init_hardware_channels(audio_device_manager)) {
     addAndMakeVisible(carrier_panel);
-    addAndMakeVisible(hardware_panel);
+    addAndMakeVisible(impulse_panel);
 
     carrier_connector.trigger();
 }
@@ -326,9 +326,9 @@ void ConvolutionRoutingComponent::resized() {
     carrier_panel.setBounds(
             bounds.removeFromLeft(panel_width)
                     .withHeight(carrier_panel.get_desired_height()));
-    hardware_panel.setBounds(
+    impulse_panel.setBounds(
             bounds.removeFromRight(panel_width)
-                    .withHeight(hardware_panel.get_desired_height()));
+                    .withHeight(impulse_panel.get_desired_height()));
 
     for (const auto& i : connectors) {
         i->setBounds(getLocalBounds());
@@ -353,7 +353,7 @@ void ConvolutionRoutingComponent::receive_broadcast(model::Broadcaster* b) {
                 //  if the channel is linked
                 if (channel[j]) {
                     connectors.insert(std::make_unique<Connector>(
-                            carrier_panel, hardware_panel, i, j));
+                            carrier_panel, impulse_panel, i, j));
                 }
             }
         }
@@ -364,6 +364,8 @@ void ConvolutionRoutingComponent::receive_broadcast(model::Broadcaster* b) {
     }
 
     resized();
+
+    sendChangeMessage();
 }
 
 void ConvolutionRoutingComponent::dragOperationStarted() {
@@ -372,6 +374,15 @@ void ConvolutionRoutingComponent::dragOperationStarted() {
 
 int ConvolutionRoutingComponent::get_desired_height() const {
     return std::max(carrier_panel.get_desired_height(),
-                    hardware_panel.get_desired_height()) +
+                    impulse_panel.get_desired_height()) +
            2 * padding;
+}
+
+const std::vector<CarrierRouting>&
+ConvolutionRoutingComponent::get_carrier_routing() const {
+    return carrier_data;
+}
+const std::vector<ImpulseRouting>&
+ConvolutionRoutingComponent::get_impulse_routing() const {
+    return impulse_data;
 }

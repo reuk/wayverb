@@ -13,7 +13,8 @@
 
 class ConvolutionViewer : public Component,
                           public ApplicationCommandTarget,
-                          public PlaybackPane::Listener {
+                          public PlaybackPane::Listener,
+                          public ChangeListener {
 public:
     ConvolutionViewer(AudioDeviceManager& audio_device_manager,
                       AudioFormatManager& audio_format_manager,
@@ -53,6 +54,8 @@ public:
         layout.setItemLayout(2, 1, 10000, 200);
 
         viewport.setViewedComponent(&convolution_routing, false);
+
+        changeListenerCallback(&convolution_routing);
     }
 
     virtual ~ConvolutionViewer() noexcept {
@@ -150,6 +153,13 @@ public:
         listener_list.remove(l);
     }
 
+    void changeListenerCallback(ChangeBroadcaster* b) override {
+        if (b == &convolution_routing) {
+            convolution_audio_source.set_carrier_routing(
+                    convolution_routing.get_carrier_routing());
+        }
+    }
+
 private:
     AudioDeviceManager& audio_device_manager;
     AudioFormatManager& audio_format_manager;
@@ -170,6 +180,8 @@ private:
     ConvolutionRoutingComponent convolution_routing;
 
     model::Connector<PlaybackPane> playback_connector{&playback_pane, this};
+    model::Connector<ChangeBroadcaster, ChangeListener> convolution_connector{
+            &convolution_routing, this};
 
     ListenerList<FileDropComponent::Listener> listener_list;
 };
