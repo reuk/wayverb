@@ -18,9 +18,8 @@ public:
         content_component.setSize(600, 400);
         content_component.set_valid_file_formats(
                 VisualiserApplication::get_valid_file_formats());
-
-        setUsingNativeTitleBar(true);
         setContentNonOwned(&content_component, true);
+        setUsingNativeTitleBar(true);
         centreWithSize(getWidth(), getHeight());
         setVisible(true);
         setResizable(false, false);
@@ -64,8 +63,9 @@ VisualiserApplication::ImpulseViewerWindow::ImpulseViewerWindow(
         : DocumentWindow(name, Colours::darkgrey.darker(), allButtons)
         , this_file(file)
         , content_component(file) {
-    setUsingNativeTitleBar(true);
+    content_component.setSize(800, 500);
     setContentNonOwned(&content_component, true);
+    setUsingNativeTitleBar(true);
     centreWithSize(getWidth(), getHeight());
     setVisible(true);
     setResizable(true, false);
@@ -252,8 +252,9 @@ VisualiserApplication::MainWindow::MainWindow(String name,
         , model(std::move(model))
         , this_file(std::move(this_file))
         , content_component(this->scene_data, wrapper) {
-    setUsingNativeTitleBar(true);
+    content_component.setSize(800, 500);
     setContentNonOwned(&content_component, true);
+    setUsingNativeTitleBar(true);
     centreWithSize(getWidth(), getHeight());
     setVisible(true);
     setResizable(true, false);
@@ -394,13 +395,11 @@ void VisualiserApplication::MainWindow::receive_broadcast(
 
 void VisualiserApplication::MainWindow::getAllCommands(
         Array<CommandID>& commands) {
-    commands.addArray({
-            CommandIDs::idSaveProject,
-            CommandIDs::idSaveAsProject,
-            CommandIDs::idCloseProject,
-            CommandIDs::idVisualise,
-            CommandIDs::idShowHelp,
-    });
+    commands.addArray({CommandIDs::idSaveProject,
+                       CommandIDs::idSaveAsProject,
+                       CommandIDs::idCloseProject,
+                       CommandIDs::idVisualise,
+                       CommandIDs::idShowHelp});
 }
 void VisualiserApplication::MainWindow::getCommandInfo(
         CommandID command_id, ApplicationCommandInfo& result) {
@@ -410,6 +409,7 @@ void VisualiserApplication::MainWindow::getCommandInfo(
             result.defaultKeypresses.add(
                     KeyPress('s', ModifierKeys::commandModifier, 0));
             break;
+
         case CommandIDs::idSaveAsProject:
             result.setInfo("Save As...", "Save as", "General", 0);
             result.defaultKeypresses.add(KeyPress(
@@ -417,11 +417,13 @@ void VisualiserApplication::MainWindow::getCommandInfo(
                     ModifierKeys::commandModifier | ModifierKeys::shiftModifier,
                     0));
             break;
+
         case CommandIDs::idCloseProject:
             result.setInfo("Close", "Close the current project", "General", 0);
             result.defaultKeypresses.add(
                     KeyPress('w', ModifierKeys::commandModifier, 0));
             break;
+
         case CommandIDs::idVisualise:
             result.setInfo("Visualise",
                            "Toggle display of ray and wave information",
@@ -430,12 +432,14 @@ void VisualiserApplication::MainWindow::getCommandInfo(
             result.setTicked(wrapper.render_state.visualise);
             result.setActive(!wrapper.render_state.is_rendering);
             break;
+
         case CommandIDs::idShowHelp:
             result.setInfo("Show Help Pane",
                            "Toggle display of help window",
                            "General",
                            0);
             break;
+
         default:
             break;
     }
@@ -584,6 +588,8 @@ void VisualiserApplication::create_view_menu(PopupMenu& menu) {
     menu.addCommandItem(&get_command_manager(), CommandIDs::idVisualise);
     menu.addSeparator();
     menu.addCommandItem(&get_command_manager(), CommandIDs::idShowHelp);
+    menu.addCommandItem(&get_command_manager(),
+                        CommandIDs::idShowAudioPreferences);
 }
 
 void VisualiserApplication::handle_main_menu_command(int menu_item_id) {

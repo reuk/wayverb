@@ -132,6 +132,7 @@ void ImpulseViewer::getCommandInfo(CommandID command_id,
             result.defaultKeypresses.add(KeyPress(
                     KeyPress::returnKey, ModifierKeys::noModifiers, 0));
             break;
+
         default:
             break;
     }

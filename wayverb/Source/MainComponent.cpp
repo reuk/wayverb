@@ -27,8 +27,6 @@ MainContentComponent::MainContentComponent(
     addAndMakeVisible(left_panel);
     addAndMakeVisible(resizer_bar);
     addAndMakeVisible(right_panel);
-
-    setSize(800, 500);
 }
 
 MainContentComponent::~MainContentComponent() {
