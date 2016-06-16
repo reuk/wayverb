@@ -176,11 +176,8 @@ using CarrierRoutingPanel = RoutingPanel<CarrierRoutingListBox>;
 
 class ConvolutionRoutingComponent : public Component,
                                     public ChangeListener,
-                                    public ChangeBroadcaster,
-                                    public model::BroadcastListener,
-                                    public DragAndDropContainer {
+                                    public ChangeBroadcaster {
 public:
-
     ConvolutionRoutingComponent(AudioDeviceManager& audio_device_manager,
                                 int carrier_channels);
     virtual ~ConvolutionRoutingComponent() noexcept;
@@ -188,35 +185,18 @@ public:
     void resized() override;
 
     void changeListenerCallback(ChangeBroadcaster* cb) override;
-    void receive_broadcast(model::Broadcaster* b) override;
-
-    void dragOperationStarted() override;
 
     int get_desired_height() const;
 
     const std::vector<CarrierRouting>& get_carrier_routing() const;
     const std::vector<ImpulseRouting>& get_impulse_routing() const;
 
-    static const int padding{20};
-
 private:
     AudioDeviceManager& audio_device_manager;
+    int carrier_channels;
     model::Connector<ChangeBroadcaster, ChangeListener>
             audio_device_manager_connector{&audio_device_manager, this};
 
-    std::vector<CarrierRouting> carrier_data;
-    std::vector<ImpulseRouting> impulse_data;
-
-    model::ValueWrapper<std::vector<CarrierRouting>> carrier_model{
-            nullptr, carrier_data};
-    model::ValueWrapper<std::vector<ImpulseRouting>> impulse_model{
-            nullptr, impulse_data};
-
-    model::BroadcastConnector carrier_connector{&carrier_model, this};
-
-    CarrierRoutingPanel carrier_panel{"carrier", carrier_model, 30};
-    ImpulseRoutingPanel impulse_panel{"hardware", impulse_model, 60};
-
-    class Connector;
-    std::set<std::unique_ptr<Connector>> connectors;
+    class Impl;
+    std::unique_ptr<Impl> pimpl;
 };

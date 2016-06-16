@@ -180,7 +180,7 @@ Component* ImpulseRoutingListBox::refreshComponentForRow(int row,
             existing = new ImpulseRoutingComponent(get_model()[row], row);
         }
 
-        auto& cmp = dynamic_cast<ImpulseRoutingComponent&>(*existing);
+        //        auto& cmp = dynamic_cast<ImpulseRoutingComponent&>(*existing);
     }
     return existing;
 }
@@ -200,7 +200,7 @@ Component* CarrierRoutingListBox::refreshComponentForRow(int row,
             existing = new CarrierRoutingComponent(get_model()[row], row);
         }
 
-        auto& cmp = dynamic_cast<CarrierRoutingComponent&>(*existing);
+        //        auto& cmp = dynamic_cast<CarrierRoutingComponent&>(*existing);
     }
     return existing;
 }
@@ -240,162 +240,211 @@ std::vector<ImpulseRouting> init_hardware_channels(
 
 }  // namespace
 
-class ConvolutionRoutingComponent::Connector : public Component {
+class ConvolutionRoutingComponent::Impl : public Component,
+                                          public ChangeBroadcaster,
+                                          public model::BroadcastListener,
+                                          public DragAndDropContainer {
 public:
-    Connector(CarrierRoutingPanel& carrier_panel,
-              ImpulseRoutingPanel& hardware_panel,
-              int from,
-              int to)
-            : carrier_panel(carrier_panel)
-            , hardware_panel(hardware_panel)
-            , from(from)
-            , to(to) {
+    Impl(AudioDeviceManager& audio_device_manager, int carrier_channels)
+            : carrier_data(init_carrier_channels(
+                      carrier_channels,
+                      audio_device_manager.getCurrentAudioDevice()
+                              ->getActiveOutputChannels()
+                              .countNumberOfSetBits()))
+            , impulse_data(init_hardware_channels(audio_device_manager)) {
+        addAndMakeVisible(carrier_panel);
+        addAndMakeVisible(impulse_panel);
+
+        carrier_connector.trigger();
     }
 
-    void paint(Graphics& g) override {
-        g.setColour(isMouseOver() ? VisualiserLookAndFeel::emphasis
-                                  : Colours::lightgrey);
-        g.strokePath(path, PathStrokeType(4));
+    void receive_broadcast(model::Broadcaster* b) override {
+        connectors.clear();
+
+        //  for each component in the carrier list
+        for (auto i = 0u; i != carrier_panel.getNumRows(); ++i) {
+            //  get a handle to the component
+            if (auto comp = dynamic_cast<CarrierRoutingComponent*>(
+                        carrier_panel.getComponentForRowNumber(i))) {
+                //  for each channel in the carrier
+                const auto& channel = comp->routing.channel;
+                for (auto j = 0u; j != channel.size(); ++j) {
+                    //  if the channel is linked
+                    if (channel[j]) {
+                        connectors.push_back(std::make_unique<Connector>(
+                                carrier_panel, impulse_panel, i, j));
+                    }
+                }
+            }
+        }
+
+        for (const auto& i : connectors) {
+            addAndMakeVisible(*i);
+        }
+
+        resized();
+
+        sendChangeMessage();
     }
 
     void resized() override {
-        path.clear();
+        auto bounds = getLocalBounds().reduced(padding);
 
-        auto begin = carrier_panel.getComponentForRowNumber(from);
-        auto begin_area = getLocalArea(begin, begin->getLocalBounds());
-        auto begin_point =
-                begin_area.getCentre().withX(begin_area.getRight()).toFloat();
-        auto end = hardware_panel.getComponentForRowNumber(to);
-        auto end_area = getLocalArea(end, end->getLocalBounds());
-        auto end_point = end_area.getCentre().withX(end_area.getX()).toFloat();
+        auto panel_width = 200;
+        carrier_panel.setBounds(
+                bounds.removeFromLeft(panel_width)
+                        .withHeight(carrier_panel.get_desired_height()));
+        impulse_panel.setBounds(
+                bounds.removeFromRight(panel_width)
+                        .withHeight(impulse_panel.get_desired_height()));
 
-        path.startNewSubPath(begin_point.toFloat());
-        auto mid_point = (begin_point.getX() + end_point.getX()) * 0.5;
-        path.cubicTo(Point<float>(mid_point, begin_point.getY()),
-                     Point<float>(mid_point, end_point.getY()),
-                     end_point);
-    }
-
-    bool hitTest(int x, int y) override {
-        Point<float> ret;
-        path.getNearestPoint(Point<float>(x, y), ret);
-        return ret.getDistanceFrom(Point<float>(x, y)) < 4;
-    }
-
-    void mouseEnter(const MouseEvent& e) override {
-        //  draw with new colours
-        repaint();
-    }
-
-    void mouseExit(const MouseEvent& e) override {
-        //  draw with new colours
-        repaint();
-    }
-
-    void mouseDown(const MouseEvent& e) override {
-        //  if rmb
-        if (!e.mods.isPopupMenu()) {
-            //  remove the connector by editing the model
-            assert(0 <= from);
-            assert(0 <= to);
-
-            auto& model = carrier_panel.get_model();
-            assert(from < model.size());
-            auto& channel = model[from].channel;
-            assert(to < channel.size());
-            channel[to].set(0);
+        for (const auto& i : connectors) {
+            i->setBounds(getLocalBounds());
         }
     }
 
+    int get_desired_height() const {
+        return std::max(carrier_panel.get_desired_height(),
+                        impulse_panel.get_desired_height()) +
+               2 * padding;
+    }
+
+    const std::vector<CarrierRouting>& get_carrier_routing() const {
+        return carrier_data;
+    }
+    const std::vector<ImpulseRouting>& get_impulse_routing() const {
+        return impulse_data;
+    }
+
+    static const int padding{20};
+
 private:
-    CarrierRoutingPanel& carrier_panel;
-    ImpulseRoutingPanel& hardware_panel;
+    std::vector<CarrierRouting> carrier_data;
+    std::vector<ImpulseRouting> impulse_data;
 
-    int from, to;
+    model::ValueWrapper<std::vector<CarrierRouting>> carrier_model{
+            nullptr, carrier_data};
+    model::ValueWrapper<std::vector<ImpulseRouting>> impulse_model{
+            nullptr, impulse_data};
 
-    Path path;
+    model::BroadcastConnector carrier_connector{&carrier_model, this};
+
+    CarrierRoutingPanel carrier_panel{"carrier", carrier_model, 30};
+    ImpulseRoutingPanel impulse_panel{"hardware", impulse_model, 60};
+
+    class Connector : public Component {
+    public:
+        Connector(CarrierRoutingPanel& carrier_panel,
+                  ImpulseRoutingPanel& hardware_panel,
+                  int from,
+                  int to)
+                : carrier_panel(carrier_panel)
+                , hardware_panel(hardware_panel)
+                , from(from)
+                , to(to) {
+        }
+
+        void paint(Graphics& g) override {
+            g.setColour(isMouseOver() ? VisualiserLookAndFeel::emphasis
+                                      : Colours::lightgrey);
+            g.strokePath(path, PathStrokeType(4));
+        }
+
+        void resized() override {
+            path.clear();
+
+            auto begin = carrier_panel.getComponentForRowNumber(from);
+            auto begin_area = getLocalArea(begin, begin->getLocalBounds());
+            auto begin_point = begin_area.getCentre()
+                                       .withX(begin_area.getRight())
+                                       .toFloat();
+            auto end = hardware_panel.getComponentForRowNumber(to);
+            auto end_area = getLocalArea(end, end->getLocalBounds());
+            auto end_point =
+                    end_area.getCentre().withX(end_area.getX()).toFloat();
+
+            path.startNewSubPath(begin_point.toFloat());
+            auto mid_point = (begin_point.getX() + end_point.getX()) * 0.5;
+            path.cubicTo(Point<float>(mid_point, begin_point.getY()),
+                         Point<float>(mid_point, end_point.getY()),
+                         end_point);
+        }
+
+        bool hitTest(int x, int y) override {
+            Point<float> ret;
+            path.getNearestPoint(Point<float>(x, y), ret);
+            return ret.getDistanceFrom(Point<float>(x, y)) < 4;
+        }
+
+        void mouseEnter(const MouseEvent& e) override {
+            //  draw with new colours
+            repaint();
+        }
+
+        void mouseExit(const MouseEvent& e) override {
+            //  draw with new colours
+            repaint();
+        }
+
+        void mouseDown(const MouseEvent& e) override {
+            //  if rmb
+            if (!e.mods.isPopupMenu()) {
+                //  remove the connector by editing the model
+                assert(0 <= from);
+                assert(0 <= to);
+
+                auto& model = carrier_panel.get_model();
+                assert(from < model.size());
+                auto& channel = model[from].channel;
+                assert(to < channel.size());
+                channel[to].set(0);
+            }
+        }
+
+    private:
+        CarrierRoutingPanel& carrier_panel;
+        ImpulseRoutingPanel& hardware_panel;
+
+        int from, to;
+
+        Path path;
+    };
+
+    std::vector<std::unique_ptr<Connector>> connectors;
 };
+
+//----------------------------------------------------------------------------//
 
 ConvolutionRoutingComponent::ConvolutionRoutingComponent(
         AudioDeviceManager& audio_device_manager, int carrier_channels)
         : audio_device_manager(audio_device_manager)
-        , carrier_data(init_carrier_channels(
-                  carrier_channels,
-                  audio_device_manager.getCurrentAudioDevice()
-                          ->getActiveOutputChannels()
-                          .countNumberOfSetBits()))
-        , impulse_data(init_hardware_channels(audio_device_manager)) {
-    addAndMakeVisible(carrier_panel);
-    addAndMakeVisible(impulse_panel);
-
-    carrier_connector.trigger();
+        , carrier_channels(carrier_channels)
+        , pimpl(std::make_unique<Impl>(audio_device_manager,
+                                       carrier_channels)) {
+    addAndMakeVisible(*pimpl);
 }
 ConvolutionRoutingComponent::~ConvolutionRoutingComponent() noexcept = default;
 
 void ConvolutionRoutingComponent::resized() {
-    auto bounds = getLocalBounds().reduced(padding);
-
-    auto panel_width = 200;
-    carrier_panel.setBounds(
-            bounds.removeFromLeft(panel_width)
-                    .withHeight(carrier_panel.get_desired_height()));
-    impulse_panel.setBounds(
-            bounds.removeFromRight(panel_width)
-                    .withHeight(impulse_panel.get_desired_height()));
-
-    for (const auto& i : connectors) {
-        i->setBounds(getLocalBounds());
-    }
+    pimpl->setBounds(getLocalBounds());
 }
 
 void ConvolutionRoutingComponent::changeListenerCallback(
         ChangeBroadcaster* cb) {
-}
-
-void ConvolutionRoutingComponent::receive_broadcast(model::Broadcaster* b) {
-    connectors.clear();
-
-    //  for each component in the carrier list
-    for (auto i = 0u; i != carrier_panel.getNumRows(); ++i) {
-        //  get a handle to the component
-        if (auto comp = dynamic_cast<CarrierRoutingComponent*>(
-                    carrier_panel.getComponentForRowNumber(i))) {
-            //  for each channel in the carrier
-            const auto& channel = comp->routing.channel;
-            for (auto j = 0u; j != channel.size(); ++j) {
-                //  if the channel is linked
-                if (channel[j]) {
-                    connectors.insert(std::make_unique<Connector>(
-                            carrier_panel, impulse_panel, i, j));
-                }
-            }
-        }
-    }
-
-    for (const auto& i : connectors) {
-        addAndMakeVisible(*i);
-    }
-
+    pimpl = std::make_unique<Impl>(audio_device_manager, carrier_channels);
+    addAndMakeVisible(*pimpl);
     resized();
-
-    sendChangeMessage();
-}
-
-void ConvolutionRoutingComponent::dragOperationStarted() {
-    //    setCurrentDragImage(Image());
 }
 
 int ConvolutionRoutingComponent::get_desired_height() const {
-    return std::max(carrier_panel.get_desired_height(),
-                    impulse_panel.get_desired_height()) +
-           2 * padding;
+    return pimpl->get_desired_height();
 }
 
 const std::vector<CarrierRouting>&
 ConvolutionRoutingComponent::get_carrier_routing() const {
-    return carrier_data;
+    return pimpl->get_carrier_routing();
 }
 const std::vector<ImpulseRouting>&
 ConvolutionRoutingComponent::get_impulse_routing() const {
-    return impulse_data;
+    return pimpl->get_impulse_routing();
 }
