@@ -2,6 +2,7 @@
 
 #include "ValueWrapperListBox.hpp"
 #include "VisualiserLookAndFeel.hpp"
+#include "VUMeter.hpp"
 
 struct ImpulseRouting {
     std::string name{""};
@@ -65,6 +66,7 @@ public:
     int get_index() const;
 
 private:
+    VUMeter meter;
     ComboBox channel_box;
 
     model::BroadcastConnector name_connector{&routing.name, this};
@@ -83,6 +85,7 @@ public:
                             int index);
 
     void paint(Graphics& g) override;
+    void resized() override;
     void receive_broadcast(model::Broadcaster* b) override;
 
     void mouseDrag(const MouseEvent& e) override;
@@ -97,6 +100,8 @@ public:
     int get_index() const;
 
 private:
+    VUMeter meter;
+
     model::BroadcastConnector name_connector{&routing.name, this};
     model::BroadcastConnector channel_connector{&routing.channel, this};
 

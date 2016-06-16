@@ -3,7 +3,9 @@
 ImpulseRoutingComponent::ImpulseRoutingComponent(
         model::ValueWrapper<ImpulseRouting>& routing, int index)
         : routing(routing)
+        , meter(index)
         , index(index) {
+    addAndMakeVisible(meter);
     addAndMakeVisible(channel_box);
 
     name_connector.trigger();
@@ -13,9 +15,10 @@ ImpulseRoutingComponent::ImpulseRoutingComponent(
 void ImpulseRoutingComponent::paint(Graphics& g) {
     g.fillAll(Colours::darkgrey);
     auto bounds = getLocalBounds().reduced(2);
-    VisualiserLookAndFeel::matte_foreground_box(
+    VisualiserLookAndFeel::matte_box(
             g,
             bounds,
+            false,
             drag ? VisualiserLookAndFeel::emphasis : Colours::darkgrey);
     bounds.reduce(4, 4);
     g.setColour(Colours::lightgrey);
@@ -25,6 +28,7 @@ void ImpulseRoutingComponent::paint(Graphics& g) {
 void ImpulseRoutingComponent::resized() {
     auto bounds = getLocalBounds().reduced(4);
     bounds.removeFromTop(22);
+    meter.setBounds(bounds.removeFromBottom(2));
     channel_box.setBounds(bounds.removeFromTop(25));
 }
 
@@ -85,7 +89,10 @@ int ImpulseRoutingComponent::get_index() const {
 CarrierRoutingComponent::CarrierRoutingComponent(
         model::ValueWrapper<CarrierRouting>& routing, int index)
         : routing(routing)
+        , meter(index)
         , index(index) {
+    addAndMakeVisible(meter);
+
     name_connector.trigger();
     channel_connector.trigger();
 }
@@ -93,13 +100,19 @@ CarrierRoutingComponent::CarrierRoutingComponent(
 void CarrierRoutingComponent::paint(Graphics& g) {
     g.fillAll(Colours::darkgrey);
     auto bounds = getLocalBounds().reduced(2);
-    VisualiserLookAndFeel::matte_foreground_box(
+    VisualiserLookAndFeel::matte_box(
             g,
             bounds,
+            false,
             drag ? VisualiserLookAndFeel::emphasis : Colours::darkgrey);
     bounds.reduce(4, 4);
     g.setColour(Colours::lightgrey);
     g.drawText(routing.name.get(), bounds, Justification::topRight);
+}
+
+void CarrierRoutingComponent::resized() {
+    auto bounds = getLocalBounds().reduced(4);
+    meter.setBounds(bounds.removeFromBottom(2));
 }
 
 void CarrierRoutingComponent::receive_broadcast(model::Broadcaster* b) {
