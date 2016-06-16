@@ -4,29 +4,6 @@
 
 #include <map>
 
-class ConvolutionAudioProcessor : public AudioProcessor {
-public:
-    const String getName() const override;
-    void prepareToPlay(double sampleRate, int maxSamplesPerBlock) override;
-    void releaseResources() override;
-    void processBlock(AudioBuffer<float>& buffer,
-                      MidiBuffer& midiMessages) override;
-    double getTailLengthSeconds() const override;
-    bool acceptsMidi() const override;
-    bool producesMidi() const override;
-    AudioProcessorEditor* createEditor() override;
-    bool hasEditor() const override;
-    int getNumPrograms() override;
-    int getCurrentProgram() override;
-    void setCurrentProgram(int index) override;
-    const String getProgramName(int index) override;
-    void changeProgramName(int index, const String& name) override;
-    void getStateInformation(juce::MemoryBlock& destData) override;
-    void setStateInformation(const void* data, int sizeInBytes) override;
-
-private:
-};
-
 class ConvolutionAudioSource : public AudioSource {
 public:
     class Listener {
@@ -60,7 +37,7 @@ public:
 
     void set_ir(size_t output_channel, const std::vector<float>& t);
 
-    void set_carrier_routing(const std::vector<CarrierRouting>& c);
+    void set_carrier_routing(const std::vector<model::CarrierRouting>& c);
 
     void addListener(Listener* l);
     void removeListener(Listener* l);
@@ -72,7 +49,7 @@ private:
     std::atomic_bool active{true};
 
     std::vector<std::vector<float>> impulses;
-    std::vector<CarrierRouting> carrier_routing;
+    std::vector<model::CarrierRouting> carrier_routing;
 
     /// This will be initialised on prepareToPlay and destroyed on release
     class Impl;

@@ -20,6 +20,8 @@
 		1B1CCB6C1D11746400A1BF38 /* ConvolutionAudioSource.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1B1CCB6A1D11746400A1BF38 /* ConvolutionAudioSource.cpp */; };
 		1B1CCB8D1D11979C00A1BF38 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 1BA0CEE21D0DF86000915A77 /* libz.tbd */; };
 		1B1CCC071D13085400A1BF38 /* VUMeter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1B1CCC051D13085400A1BF38 /* VUMeter.cpp */; };
+		1B5FED281D135A5E004991C9 /* libhirt_convolution.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B5FED251D135A5E004991C9 /* libhirt_convolution.a */; };
+		1B5FED291D135A5E004991C9 /* libhiss_fft.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B5FED271D135A5E004991C9 /* libhiss_fft.a */; };
 		1B88D09D1D0ECAB300E6AF67 /* Playhead.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1B88D09B1D0ECAB300E6AF67 /* Playhead.cpp */; };
 		1B88D0C01D0EDC1E00E6AF67 /* PlaybackViewManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1B88D0BE1D0EDC1E00E6AF67 /* PlaybackViewManager.cpp */; };
 		1B88D0C31D10169100E6AF67 /* ConvolutionRoutingComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1B88D0C11D10169100E6AF67 /* ConvolutionRoutingComponent.cpp */; };
@@ -104,6 +106,20 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		1B5FED241D135A5E004991C9 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 1BA0CE821D0DF84300915A77 /* WAYVERB.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 4F080B1C9222497488C10546;
+			remoteInfo = hirt_convolution;
+		};
+		1B5FED261D135A5E004991C9 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 1BA0CE821D0DF84300915A77 /* WAYVERB.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 876DAC203F9C4A22AF5BA8DD;
+			remoteInfo = hiss_fft;
+		};
 		1BA0CEA51D0DF84300915A77 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 1BA0CE821D0DF84300915A77 /* WAYVERB.xcodeproj */;
@@ -1624,6 +1640,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1B5FED281D135A5E004991C9 /* libhirt_convolution.a in Frameworks */,
+				1B5FED291D135A5E004991C9 /* libhiss_fft.a in Frameworks */,
 				1B1CCB8D1D11979C00A1BF38 /* libz.tbd in Frameworks */,
 				1BA0CEE61D0DF87D00915A77 /* libfftw3f.a in Frameworks */,
 				1BA0CEE71D0DF87D00915A77 /* libsamplerate.a in Frameworks */,
@@ -1936,6 +1954,8 @@
 				1BA0CEC41D0DF84300915A77 /* assimp */,
 				1BA0CEC61D0DF84300915A77 /* glm_dummy */,
 				1BA0CEC81D0DF84300915A77 /* libmodern_gl_utils.a */,
+				1B5FED251D135A5E004991C9 /* libhirt_convolution.a */,
+				1B5FED271D135A5E004991C9 /* libhiss_fft.a */,
 				1BA0CECA1D0DF84300915A77 /* libcommon.a */,
 				1BA0CECC1D0DF84300915A77 /* libwaveguide.a */,
 				1BA0CECE1D0DF84300915A77 /* libraytracer.a */,
@@ -4101,6 +4121,20 @@
 /* End PBXProject section */
 
 /* Begin PBXReferenceProxy section */
+		1B5FED251D135A5E004991C9 /* libhirt_convolution.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libhirt_convolution.a;
+			remoteRef = 1B5FED241D135A5E004991C9 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		1B5FED271D135A5E004991C9 /* libhiss_fft.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libhiss_fft.a;
+			remoteRef = 1B5FED261D135A5E004991C9 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
 		1BA0CEA61D0DF84300915A77 /* libgflags_nothreads.a */ = {
 			isa = PBXReferenceProxy;
 			fileType = archive.ar;
@@ -4418,6 +4452,7 @@
 					"-I../../../submodules/cereal/include",
 					"-I../../../submodules/glm",
 					"-I../../../submodules/modern_gl_utils/include",
+					"-I../../../submodules/hiss",
 					"-std=c++14",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.yourcompany.wayverb;
@@ -4486,6 +4521,7 @@
 					"-I../../../submodules/cereal/include",
 					"-I../../../submodules/glm",
 					"-I../../../submodules/modern_gl_utils/include",
+					"-I../../../submodules/hiss",
 					"-std=c++14",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.yourcompany.wayverb;

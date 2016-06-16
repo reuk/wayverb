@@ -1,21 +1,24 @@
+#include "HIRT_Multichannel_Convolution/Convolver.h"
+
 #include "ConvolutionAudioSource.hpp"
+
 #include <set>
 
 namespace {
 
 /// Mock convolver to stand in for the hiss convolver
-class Convolver {
+class MockConvolver {
 public:
     enum LatencyMode { kLatencyZero, kLatencyShort, kLatencyMedium };
 
-    Convolver(uint32_t numIns, uint32_t numOuts, LatencyMode latency) {
+    MockConvolver(uint32_t numIns, uint32_t numOuts, LatencyMode latency) {
         std::cout << "construct convolver" << std::endl;
     }
-    Convolver(uint32_t numIO, LatencyMode latency) {
+    MockConvolver(uint32_t numIO, LatencyMode latency) {
         std::cout << "construct convolver" << std::endl;
     }
 
-    virtual ~Convolver() noexcept = default;
+    virtual ~MockConvolver() noexcept = default;
 
     void clear(bool resize) {
         std::cout << "clear" << std::endl;
@@ -43,7 +46,7 @@ public:
         std::cout << "set" << std::endl;
     }
 
-    void process(float** ins,
+    void process(const float* const* const ins,
                  float** outs,
                  uint32_t numIns,
                  uint32_t numOuts,
@@ -53,9 +56,11 @@ public:
 };
 }  // namespace
 
-class ConvolutionAudioSource::Impl : public Convolver {
-    using Convolver::Convolver;
+class ConvolutionAudioSource::Impl : public MockConvolver {
+    using MockConvolver::MockConvolver;
 };
+// class ConvolutionAudioSource::Impl : public HISSTools::DSP::Convolver { using
+// Convolver::Convolver; };
 
 //----------------------------------------------------------------------------//
 
@@ -123,7 +128,7 @@ void ConvolutionAudioSource::getNextAudioBlock(
     if (active) {
         assert(pimpl);
         buffer.clearActiveBufferRegion();
-        pimpl->process(scratch.getArrayOfWritePointers(),
+        pimpl->process(scratch.getArrayOfReadPointers(),
                        buffer.buffer->getArrayOfWritePointers(),
                        scratch.getNumChannels(),
                        buffer.buffer->getNumChannels(),
@@ -161,7 +166,7 @@ void ConvolutionAudioSource::set_ir(size_t output_channel,
 }
 
 void ConvolutionAudioSource::set_carrier_routing(
-        const std::vector<CarrierRouting>& c) {
+        const std::vector<model::CarrierRouting>& c) {
     carrier_routing = c;
 }
 

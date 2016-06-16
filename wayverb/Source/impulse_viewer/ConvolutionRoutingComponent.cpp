@@ -1,7 +1,7 @@
 #include "ConvolutionRoutingComponent.hpp"
 
 ImpulseRoutingComponent::ImpulseRoutingComponent(
-        model::ValueWrapper<ImpulseRouting>& routing, int index)
+        model::ValueWrapper<model::ImpulseRouting>& routing, int index)
         : routing(routing)
         , meter(index)
         , index(index) {
@@ -93,7 +93,7 @@ void ImpulseRoutingComponent::push_buffer(const float** input,
 }
 
 CarrierRoutingComponent::CarrierRoutingComponent(
-        model::ValueWrapper<CarrierRouting>& routing, int index)
+        model::ValueWrapper<model::CarrierRouting>& routing, int index)
         : routing(routing)
         , meter(index)
         , index(index) {
@@ -245,14 +245,15 @@ void CarrierRoutingListBox::push_buffer(const float** input,
 
 namespace {
 
-std::vector<CarrierRouting> init_carrier_channels(int c, int output_channels) {
-    std::vector<CarrierRouting> ret;
+std::vector<model::CarrierRouting> init_carrier_channels(int c,
+                                                         int output_channels) {
+    std::vector<model::CarrierRouting> ret;
     for (auto i = 0u; i != c; ++i) {
         std::stringstream ss;
         ss << "Carrier channel " << i + 1;
-        ret.emplace_back(CarrierRouting{
+        ret.emplace_back(model::CarrierRouting{
                 ss.str(),
-                std::vector<CarrierRouting::my_bool>(output_channels, 0)});
+                std::vector<model::CarrierRouting::my_bool>(output_channels, 0)});
     }
 
     //  by default, we'll just send the first channel to all outputs
@@ -260,15 +261,15 @@ std::vector<CarrierRouting> init_carrier_channels(int c, int output_channels) {
     return ret;
 }
 
-std::vector<ImpulseRouting> init_hardware_channels(
+std::vector<model::ImpulseRouting> init_hardware_channels(
         const AudioDeviceManager& m) {
     const auto active_channels =
             m.getCurrentAudioDevice()->getActiveOutputChannels();
     const auto names = m.getCurrentAudioDevice()->getOutputChannelNames();
-    std::vector<ImpulseRouting> ret;
+    std::vector<model::ImpulseRouting> ret;
     for (auto i = 0u; i != names.size(); ++i) {
         if (active_channels[i]) {
-            ret.emplace_back(ImpulseRouting{names[i].toStdString()});
+            ret.emplace_back(model::ImpulseRouting{names[i].toStdString()});
         }
     }
     return ret;
@@ -345,10 +346,10 @@ public:
                2 * padding;
     }
 
-    const std::vector<CarrierRouting>& get_carrier_routing() const {
+    const std::vector<model::CarrierRouting>& get_carrier_routing() const {
         return carrier_data;
     }
-    const std::vector<ImpulseRouting>& get_impulse_routing() const {
+    const std::vector<model::ImpulseRouting>& get_impulse_routing() const {
         return impulse_data;
     }
 
@@ -367,12 +368,12 @@ public:
     static const int padding{20};
 
 private:
-    std::vector<CarrierRouting> carrier_data;
-    std::vector<ImpulseRouting> impulse_data;
+    std::vector<model::CarrierRouting> carrier_data;
+    std::vector<model::ImpulseRouting> impulse_data;
 
-    model::ValueWrapper<std::vector<CarrierRouting>> carrier_model{
+    model::ValueWrapper<std::vector<model::CarrierRouting>> carrier_model{
             nullptr, carrier_data};
-    model::ValueWrapper<std::vector<ImpulseRouting>> impulse_model{
+    model::ValueWrapper<std::vector<model::ImpulseRouting>> impulse_model{
             nullptr, impulse_data};
 
     model::BroadcastConnector carrier_connector{&carrier_model, this};
@@ -507,11 +508,11 @@ void ConvolutionRoutingComponent::impulse_signal_in(ConvolutionAudioSource*,
     pimpl->push_impulse_buffer(input, num_channels, num_samples);
 }
 
-const std::vector<CarrierRouting>&
+const std::vector<model::CarrierRouting>&
 ConvolutionRoutingComponent::get_carrier_routing() const {
     return pimpl->get_carrier_routing();
 }
-const std::vector<ImpulseRouting>&
+const std::vector<model::ImpulseRouting>&
 ConvolutionRoutingComponent::get_impulse_routing() const {
     return pimpl->get_impulse_routing();
 }

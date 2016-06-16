@@ -12,7 +12,7 @@ class ImpulseRoutingComponent : public Component,
                                 public model::BroadcastListener,
                                 public BufferReader {
 public:
-    ImpulseRoutingComponent(model::ValueWrapper<ImpulseRouting>& routing,
+    ImpulseRoutingComponent(model::ValueWrapper<model::ImpulseRouting>& routing,
                             int index);
 
     void paint(Graphics& g) override;
@@ -27,7 +27,7 @@ public:
     void itemDragExit(const SourceDetails& details) override;
     void itemDropped(const SourceDetails& details) override;
 
-    model::ValueWrapper<ImpulseRouting>& routing;
+    model::ValueWrapper<model::ImpulseRouting>& routing;
 
     int get_index() const;
 
@@ -52,7 +52,7 @@ class CarrierRoutingComponent : public Component,
                                 public model::BroadcastListener,
                                 public BufferReader {
 public:
-    CarrierRoutingComponent(model::ValueWrapper<CarrierRouting>& routing,
+    CarrierRoutingComponent(model::ValueWrapper<model::CarrierRouting>& routing,
                             int index);
 
     void paint(Graphics& g) override;
@@ -66,7 +66,7 @@ public:
     void itemDragExit(const SourceDetails& details) override;
     void itemDropped(const SourceDetails& details) override;
 
-    model::ValueWrapper<CarrierRouting>& routing;
+    model::ValueWrapper<model::CarrierRouting>& routing;
 
     int get_index() const;
 
@@ -86,10 +86,10 @@ private:
 
 //----------------------------------------------------------------------------//
 
-class ImpulseRoutingListBox : public ValueWrapperListBox<ImpulseRouting>,
+class ImpulseRoutingListBox : public ValueWrapperListBox<model::ImpulseRouting>,
                               public BufferReader {
 public:
-    using ValueWrapperListBox<ImpulseRouting>::ValueWrapperListBox;
+    using ValueWrapperListBox<model::ImpulseRouting>::ValueWrapperListBox;
     Component* refreshComponentForRow(int row,
                                       bool selected,
                                       Component* existing) override;
@@ -108,10 +108,10 @@ private:
     std::vector<std::string> to;
 };
 
-class CarrierRoutingListBox : public ValueWrapperListBox<CarrierRouting>,
+class CarrierRoutingListBox : public ValueWrapperListBox<model::CarrierRouting>,
                               public BufferReader {
 public:
-    using ValueWrapperListBox<CarrierRouting>::ValueWrapperListBox;
+    using ValueWrapperListBox<model::CarrierRouting>::ValueWrapperListBox;
     Component* refreshComponentForRow(int row,
                                       bool selected,
                                       Component* existing) override;
@@ -174,8 +174,8 @@ public:
 
     int get_desired_height() const;
 
-    const std::vector<CarrierRouting>& get_carrier_routing() const;
-    const std::vector<ImpulseRouting>& get_impulse_routing() const;
+    const std::vector<model::CarrierRouting>& get_carrier_routing() const;
+    const std::vector<model::ImpulseRouting>& get_impulse_routing() const;
 
     void carrier_signal_in(ConvolutionAudioSource*,
                            const float** input,

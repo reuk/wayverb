@@ -1,6 +1,9 @@
 #pragma once
 
-#include "FullModel.hpp"
+#include "Model.h"
+#include "collection.h"
+
+namespace model {
 
 struct ImpulseRouting {
     std::string name{""};
@@ -36,3 +39,4 @@ public:
     MODEL_FIELD_DEFINITION(name);
     MODEL_FIELD_DEFINITION(channel);
 };
+}  // namespace model
