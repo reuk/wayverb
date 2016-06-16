@@ -183,6 +183,9 @@ private:
     model::Connector<ChangeBroadcaster, ChangeListener> convolution_connector{
             &convolution_routing, this};
 
+    model::Connector<ConvolutionAudioSource> meter_connector{
+            &convolution_audio_source, &convolution_routing};
+
     ListenerList<FileDropComponent::Listener> listener_list;
 };
 

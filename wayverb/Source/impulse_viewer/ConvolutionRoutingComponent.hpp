@@ -1,50 +1,16 @@
 #pragma once
 
+#include "ConvolutionAudioSource.hpp"
+#include "Routing.h"
+#include "VUMeter.hpp"
 #include "ValueWrapperListBox.hpp"
 #include "VisualiserLookAndFeel.hpp"
-#include "VUMeter.hpp"
-
-struct ImpulseRouting {
-    std::string name{""};
-    int channel{-1};  // -1 for none
-};
-
-template <>
-class model::ValueWrapper<ImpulseRouting>
-        : public StructWrapper<ImpulseRouting, 2> {
-public:
-    using struct_wrapper::StructWrapper;
-    member_array get_members() override {
-        return {{&name, &channel}};
-    }
-    MODEL_FIELD_DEFINITION(name);
-    MODEL_FIELD_DEFINITION(channel);
-};
-
-struct CarrierRouting {
-    using my_bool = int8_t;
-    std::string name{""};
-    std::vector<my_bool> channel;
-};
-
-template <>
-class model::ValueWrapper<CarrierRouting>
-        : public StructWrapper<CarrierRouting, 2> {
-public:
-    using struct_wrapper::StructWrapper;
-    member_array get_members() override {
-        return {{&name, &channel}};
-    }
-    MODEL_FIELD_DEFINITION(name);
-    MODEL_FIELD_DEFINITION(channel);
-};
-
-//----------------------------------------------------------------------------//
 
 class ImpulseRoutingComponent : public Component,
                                 public DragAndDropTarget,
                                 public ComboBox::Listener,
-                                public model::BroadcastListener {
+                                public model::BroadcastListener,
+                                public BufferReader {
 public:
     ImpulseRoutingComponent(model::ValueWrapper<ImpulseRouting>& routing,
                             int index);
@@ -65,6 +31,10 @@ public:
 
     int get_index() const;
 
+    void push_buffer(const float** input,
+                     int num_channels,
+                     int num_samples) override;
+
 private:
     VUMeter meter;
     ComboBox channel_box;
@@ -79,7 +49,8 @@ private:
 
 class CarrierRoutingComponent : public Component,
                                 public DragAndDropTarget,
-                                public model::BroadcastListener {
+                                public model::BroadcastListener,
+                                public BufferReader {
 public:
     CarrierRoutingComponent(model::ValueWrapper<CarrierRouting>& routing,
                             int index);
@@ -99,6 +70,10 @@ public:
 
     int get_index() const;
 
+    void push_buffer(const float** input,
+                     int num_channels,
+                     int num_samples) override;
+
 private:
     VUMeter meter;
 
@@ -111,7 +86,8 @@ private:
 
 //----------------------------------------------------------------------------//
 
-class ImpulseRoutingListBox : public ValueWrapperListBox<ImpulseRouting> {
+class ImpulseRoutingListBox : public ValueWrapperListBox<ImpulseRouting>,
+                              public BufferReader {
 public:
     using ValueWrapperListBox<ImpulseRouting>::ValueWrapperListBox;
     Component* refreshComponentForRow(int row,
@@ -124,16 +100,25 @@ public:
         updateContent();
     }
 
+    void push_buffer(const float** input,
+                     int num_channels,
+                     int num_samples) override;
+
 private:
     std::vector<std::string> to;
 };
 
-class CarrierRoutingListBox : public ValueWrapperListBox<CarrierRouting> {
+class CarrierRoutingListBox : public ValueWrapperListBox<CarrierRouting>,
+                              public BufferReader {
 public:
     using ValueWrapperListBox<CarrierRouting>::ValueWrapperListBox;
     Component* refreshComponentForRow(int row,
                                       bool selected,
                                       Component* existing) override;
+
+    void push_buffer(const float** input,
+                     int num_channels,
+                     int num_samples) override;
 };
 
 //----------------------------------------------------------------------------//
@@ -176,7 +161,8 @@ using CarrierRoutingPanel = RoutingPanel<CarrierRoutingListBox>;
 
 class ConvolutionRoutingComponent : public Component,
                                     public ChangeListener,
-                                    public ChangeBroadcaster {
+                                    public ChangeBroadcaster,
+                                    public ConvolutionAudioSource::Listener {
 public:
     ConvolutionRoutingComponent(AudioDeviceManager& audio_device_manager,
                                 int carrier_channels);
@@ -190,6 +176,15 @@ public:
 
     const std::vector<CarrierRouting>& get_carrier_routing() const;
     const std::vector<ImpulseRouting>& get_impulse_routing() const;
+
+    void carrier_signal_in(ConvolutionAudioSource*,
+                           const float** input,
+                           int num_channels,
+                           int num_samples) override;
+    void impulse_signal_in(ConvolutionAudioSource*,
+                           const float** input,
+                           int num_channels,
+                           int num_samples) override;
 
 private:
     AudioDeviceManager& audio_device_manager;

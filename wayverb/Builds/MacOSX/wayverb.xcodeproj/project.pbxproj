@@ -446,6 +446,7 @@
 		1B1CCB6B1D11746400A1BF38 /* ConvolutionAudioSource.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = ConvolutionAudioSource.hpp; path = ../../Source/impulse_viewer/ConvolutionAudioSource.hpp; sourceTree = "<group>"; };
 		1B1CCC051D13085400A1BF38 /* VUMeter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = VUMeter.cpp; path = ../../Source/impulse_viewer/VUMeter.cpp; sourceTree = "<group>"; };
 		1B1CCC061D13085400A1BF38 /* VUMeter.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = VUMeter.hpp; path = ../../Source/impulse_viewer/VUMeter.hpp; sourceTree = "<group>"; };
+		1B1CCC281D13471200A1BF38 /* Routing.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Routing.h; path = ../../Source/Routing.h; sourceTree = "<group>"; };
 		1B3DE3698539A30ABBE4F207 /* jcprepct.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = jcprepct.c; path = ../../JuceLibraryCode/modules/juce_graphics/image_formats/jpglib/jcprepct.c; sourceTree = SOURCE_ROOT; };
 		1B57A9189CF4E7C129F5FB69 /* juce_MidiKeyboardComponent.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = juce_MidiKeyboardComponent.cpp; path = ../../JuceLibraryCode/modules/juce_audio_utils/gui/juce_MidiKeyboardComponent.cpp; sourceTree = SOURCE_ROOT; };
 		1B5C13A51D1036A90014A8DD /* ValueWrapperListBox.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = ValueWrapperListBox.hpp; path = ../../Source/ValueWrapperListBox.hpp; sourceTree = "<group>"; };
@@ -3531,6 +3532,7 @@
 				1B88D09C1D0ECAB300E6AF67 /* Playhead.hpp */,
 				1B1CCB6A1D11746400A1BF38 /* ConvolutionAudioSource.cpp */,
 				1B1CCB6B1D11746400A1BF38 /* ConvolutionAudioSource.hpp */,
+				1B1CCC281D13471200A1BF38 /* Routing.h */,
 				1BA0CEEB1D0DF8C700915A77 /* ConvolutionViewer.cpp */,
 				1BA0CEEC1D0DF8C700915A77 /* ConvolutionViewer.hpp */,
 				1B88D0C71D101FB800E6AF67 /* PlaybackPane.cpp */,

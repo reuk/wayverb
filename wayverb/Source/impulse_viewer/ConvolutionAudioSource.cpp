@@ -90,6 +90,11 @@ void ConvolutionAudioSource::releaseResources() {
 void ConvolutionAudioSource::getNextAudioBlock(
         const AudioSourceChannelInfo& buffer) {
     source->getNextAudioBlock(buffer);
+    listener_list.call(&Listener::carrier_signal_in,
+                       this,
+                       buffer.buffer->getArrayOfReadPointers(),
+                       buffer.buffer->getNumChannels(),
+                       buffer.buffer->getNumSamples());
 
     AudioSampleBuffer scratch;
     scratch.makeCopyOf(*buffer.buffer);
@@ -126,6 +131,12 @@ void ConvolutionAudioSource::getNextAudioBlock(
     } else {
         *buffer.buffer = scratch;
     }
+
+    listener_list.call(&Listener::impulse_signal_in,
+                       this,
+                       buffer.buffer->getArrayOfReadPointers(),
+                       buffer.buffer->getNumChannels(),
+                       buffer.buffer->getNumSamples());
 }
 
 void ConvolutionAudioSource::set_active(bool a) {
@@ -152,4 +163,11 @@ void ConvolutionAudioSource::set_ir(size_t output_channel,
 void ConvolutionAudioSource::set_carrier_routing(
         const std::vector<CarrierRouting>& c) {
     carrier_routing = c;
+}
+
+void ConvolutionAudioSource::addListener(Listener* l) {
+    listener_list.add(l);
+}
+void ConvolutionAudioSource::removeListener(Listener* l) {
+    listener_list.remove(l);
 }

@@ -13,7 +13,7 @@ void BufferReader::push_buffer(const AudioSampleBuffer& buffer) {
 }
 
 void Meter::paint(Graphics& g) {
-    g.setColour(VisualiserLookAndFeel::emphasis);
+    g.setColour(colour);
     g.fillRect(getLocalBounds().withWidth(getWidth() * actual));
 }
 
@@ -66,7 +66,7 @@ VUMeter::VUMeter(int channel)
 }
 
 void VUMeter::paint(Graphics& g) {
-    g.fillAll(Colours::lightgrey);
+//    g.fillAll(Colours::lightgrey);
 }
 
 void VUMeter::resized() {

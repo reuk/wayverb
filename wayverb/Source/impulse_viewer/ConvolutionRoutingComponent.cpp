@@ -86,6 +86,12 @@ int ImpulseRoutingComponent::get_index() const {
     return index;
 }
 
+void ImpulseRoutingComponent::push_buffer(const float** input,
+                                          int num_channels,
+                                          int num_samples) {
+    meter.push_buffer(input, num_channels, num_samples);
+}
+
 CarrierRoutingComponent::CarrierRoutingComponent(
         model::ValueWrapper<CarrierRouting>& routing, int index)
         : routing(routing)
@@ -163,6 +169,12 @@ int CarrierRoutingComponent::get_index() const {
     return index;
 }
 
+void CarrierRoutingComponent::push_buffer(const float** input,
+                                          int num_channels,
+                                          int num_samples) {
+    meter.push_buffer(input, num_channels, num_samples);
+}
+
 //----------------------------------------------------------------------------//
 
 Component* ImpulseRoutingListBox::refreshComponentForRow(int row,
@@ -185,6 +197,18 @@ Component* ImpulseRoutingListBox::refreshComponentForRow(int row,
     return existing;
 }
 
+void ImpulseRoutingListBox::push_buffer(const float** input,
+                                        int num_channels,
+                                        int num_samples) {
+    for (auto i = 0u; i != getNumRows(); ++i) {
+        auto cmp = dynamic_cast<ImpulseRoutingComponent*>(
+                getComponentForRowNumber(i));
+        if (cmp) {
+            cmp->push_buffer(input, num_channels, num_samples);
+        }
+    }
+}
+
 Component* CarrierRoutingListBox::refreshComponentForRow(int row,
                                                          bool selected,
                                                          Component* existing) {
@@ -203,6 +227,18 @@ Component* CarrierRoutingListBox::refreshComponentForRow(int row,
         //        auto& cmp = dynamic_cast<CarrierRoutingComponent&>(*existing);
     }
     return existing;
+}
+
+void CarrierRoutingListBox::push_buffer(const float** input,
+                                        int num_channels,
+                                        int num_samples) {
+    for (auto i = 0u; i != getNumRows(); ++i) {
+        auto cmp = dynamic_cast<CarrierRoutingComponent*>(
+                getComponentForRowNumber(i));
+        if (cmp) {
+            cmp->push_buffer(input, num_channels, num_samples);
+        }
+    }
 }
 
 //----------------------------------------------------------------------------//
@@ -316,6 +352,18 @@ public:
         return impulse_data;
     }
 
+    void push_carrier_buffer(const float** input,
+                             int num_channels,
+                             int num_samples) {
+        carrier_panel.push_buffer(input, num_channels, num_samples);
+    }
+
+    void push_impulse_buffer(const float** input,
+                             int num_channels,
+                             int num_samples) {
+        impulse_panel.push_buffer(input, num_channels, num_samples);
+    }
+
     static const int padding{20};
 
 private:
@@ -421,6 +469,7 @@ ConvolutionRoutingComponent::ConvolutionRoutingComponent(
         , carrier_channels(carrier_channels)
         , pimpl(std::make_unique<Impl>(audio_device_manager,
                                        carrier_channels)) {
+    pimpl->addChangeListener(this);
     addAndMakeVisible(*pimpl);
 }
 ConvolutionRoutingComponent::~ConvolutionRoutingComponent() noexcept = default;
@@ -431,13 +480,31 @@ void ConvolutionRoutingComponent::resized() {
 
 void ConvolutionRoutingComponent::changeListenerCallback(
         ChangeBroadcaster* cb) {
-    pimpl = std::make_unique<Impl>(audio_device_manager, carrier_channels);
-    addAndMakeVisible(*pimpl);
-    resized();
+    if (cb == &audio_device_manager) {
+        pimpl = std::make_unique<Impl>(audio_device_manager, carrier_channels);
+        pimpl->addChangeListener(this);
+        addAndMakeVisible(*pimpl);
+        resized();
+    } else if (cb == pimpl.get()) {
+        sendChangeMessage();
+    }
 }
 
 int ConvolutionRoutingComponent::get_desired_height() const {
     return pimpl->get_desired_height();
+}
+
+void ConvolutionRoutingComponent::carrier_signal_in(ConvolutionAudioSource*,
+                                                    const float** input,
+                                                    int num_channels,
+                                                    int num_samples) {
+    pimpl->push_carrier_buffer(input, num_channels, num_samples);
+}
+void ConvolutionRoutingComponent::impulse_signal_in(ConvolutionAudioSource*,
+                                                    const float** input,
+                                                    int num_channels,
+                                                    int num_samples) {
+    pimpl->push_impulse_buffer(input, num_channels, num_samples);
 }
 
 const std::vector<CarrierRouting>&
