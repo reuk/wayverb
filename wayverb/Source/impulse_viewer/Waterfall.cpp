@@ -155,8 +155,13 @@ void Waterfall::draw() const {
         axis.set_scale(glm::vec3{seconds, 1, 1});
         for (auto i = 0; i != axes; ++i) {
             auto z = i / (axes - 1.0);
-            std::stringstream ss;
-            ss << std::setprecision(2) << z_to_frequency(mode, z) / 1000;
+            std::stringstream ss; ss << std::setprecision(3);
+            auto f = z_to_frequency(mode, z);
+            if (1000 <= f) {
+                ss << f / 1000 << "K";
+            } else {
+                ss << f;
+            }
             axis.set_label(ss.str());
             axis.set_position(glm::vec3{0, 0.01, z});
             axis.draw();
