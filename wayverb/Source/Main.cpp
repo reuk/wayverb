@@ -194,7 +194,7 @@ void VisualiserApplication::initialise(const String& commandLine) {
 
     //  TODO remove
     impulse_windows.insert(std::make_unique<ImpulseViewerWindow>(
-            "impulse viewer", File(test_files[2])));
+            "impulse viewer", File(test_files[0])));
 }
 
 void VisualiserApplication::shutdown() {

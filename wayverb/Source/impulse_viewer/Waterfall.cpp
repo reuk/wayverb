@@ -4,6 +4,7 @@
 
 #include "common/fftwf_helpers.h"
 #include "common/sinc.h"
+#include "lerp.h"
 
 #include "glm/gtx/transform.hpp"
 
@@ -12,6 +13,7 @@
 #include <sstream>
 
 namespace {
+
 class Spectrogram {
 public:
     Spectrogram(int window_length, int hop_size)
@@ -26,7 +28,7 @@ public:
         std::vector<float> ones(window_length, 1);
         normalisation_factor = 1;
         normalisation_factor = Decibels::decibelsToGain(
-                compute_slice(ones.begin(), ones.end()).front());
+                compute_slice(ones.begin(), ones.end()).front() * 2, -200.0f);
     }
     virtual ~Spectrogram() noexcept = default;
 
@@ -58,7 +60,7 @@ private:
                     auto ret = ((a[0] * a[0]) + (a[1] * a[1])) /
                                normalisation_factor;
                     //  get decibel value
-                    ret = Decibels::gainToDecibels(ret);
+                    ret = Decibels::gainToDecibels(ret, -200.0f) * 0.5;
                     return ret;
                 });
         return ret;
@@ -165,14 +167,16 @@ void Waterfall::draw() const {
         //  time marks
 
         axis.set_scale(glm::vec3{1, 1, 1});
-        axis.set_azimuth(-M_PI / 2);
+        axis.set_azimuth(M_PI / 2);
+
+        //  TODO better divisions/scaling
 
         for (auto i = 1; i <= std::floor(seconds); ++i) {
             auto time = i;
             std::stringstream ss;
             ss << time;
             axis.set_label(ss.str());
-            axis.set_position(glm::vec3{i, 0.01, 0});
+            axis.set_position(glm::vec3{i, 0.01, 1});
             axis.draw();
         }
     }
@@ -244,12 +248,15 @@ void Waterfall::clear_impl() {
 float Waterfall::z_to_frequency(Mode mode, float z) {
     switch (mode) {
         case Mode::linear: {
-            return z * (max_frequency - min_frequency) + min_frequency;
+            return lerp(z, 0.0f, 1.0f, max_frequency, min_frequency);
         }
         case Mode::log: {
-            auto min_log = std::log10(min_frequency);
-            auto max_log = std::log10(max_frequency);
-            return std::pow(10, z * (max_log - min_log) + min_log);
+            return std::pow(10,
+                            lerp(z,
+                                 0.0f,
+                                 1.0f,
+                                 std::log10(max_frequency),
+                                 std::log10(min_frequency)));
         }
     }
 }
@@ -257,14 +264,14 @@ float Waterfall::z_to_frequency(Mode mode, float z) {
 float Waterfall::frequency_to_z(Mode mode, float frequency) {
     switch (mode) {
         case Mode::linear: {
-            return (frequency - min_frequency) /
-                   (max_frequency - min_frequency);
+            return lerp(frequency, max_frequency, min_frequency, 0.0f, 1.0f);
         }
         case Mode::log: {
-            auto min_log = std::log10(min_frequency);
-            auto max_log = std::log10(max_frequency);
-            auto bin_log = std::log10(frequency);
-            return (bin_log - min_log) / (max_log - min_log);
+            return lerp(std::log10(frequency),
+                        std::log10(max_frequency),
+                        std::log10(min_frequency),
+                        0.0f,
+                        1.0f);
         }
     }
 }

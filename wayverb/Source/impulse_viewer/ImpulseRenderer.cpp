@@ -21,15 +21,14 @@ public:
             : BasicDrawableObject(
                       parent,
                       shader,
-                      std::vector<glm::vec3>{
-                              {-width, -1, 0},
-                              {width, -1, 0},
-                              {-width, -1, -Waterfall::width - 0.2},
-                              {width, -1, -Waterfall::width - 0.2},
-                              {-width, 1, -Waterfall::width - 0.2},
-                              {width, 1, -Waterfall::width - 0.2},
-                              {-width, 1, 0},
-                              {width, 1, 0}},
+                      std::vector<glm::vec3>{{-width, -1, 0},
+                                             {width, -1, 0},
+                                             {-width, -1, 1},
+                                             {width, -1, 1},
+                                             {-width, 1, 1},
+                                             {width, 1, 1},
+                                             {-width, 1, 0},
+                                             {width, 1, 0}},
                       std::vector<glm::vec4>{{1, 0, 0, 1},
                                              {1, 0, 0, 1},
                                              {1, 0, 0, 1},
@@ -71,16 +70,17 @@ public:
                         manager,
                         file)
             , playhead(this, generic_shader) {
-        waterfall.set_position(glm::vec3{0, 0, -Waterfall::width - 0.1});
+        waterfall.set_position(glm::vec3{0, 0, 0.1});
     }
 
     void update(float dt) override {
         current_params.update(target_params);
 
-        playhead.set_scale(glm::vec3{visible_range.getLength() * 0.2, 1, 1});
+        playhead.set_scale(glm::vec3{
+                visible_range.getLength() * 0.2, 1, Waterfall::width + 0.2});
 
-        playhead.set_position(
-                glm::vec3{audio_transport_source.getCurrentPosition(), 0, 0.1});
+        playhead.set_position(glm::vec3{
+                audio_transport_source.getCurrentPosition(), 0, -0.1});
 
         waveform.update(dt);
         waterfall.update(dt);
@@ -344,7 +344,7 @@ const ImpulseRenderer::ContextLifetime::WaterfallParams
                 Orientable::AzEl{0, 0}, 0, 0, 3};
 const ImpulseRenderer::ContextLifetime::WaterfallParams
         ImpulseRenderer::ContextLifetime::waterfall_params{
-                Orientable::AzEl{-0.8, 0.2}, 1, 2, 4};
+                Orientable::AzEl{-M_PI + 0.8, 0.2}, 1, -2, 4};
 
 const float ImpulseRenderer::ContextLifetime::Rotate::angle_scale{0.01};
 const float ImpulseRenderer::ContextLifetime::waterfall_max_x{3};
