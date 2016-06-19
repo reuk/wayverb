@@ -38,7 +38,7 @@ ImpulseViewer::ImpulseViewer(AudioDeviceManager& audio_device_manager,
     waveform_button.setToggleState(true, sendNotification);
 
     follow_playback_button.setWantsKeyboardFocus(false);
-    follow_playback_button.setToggleState(true, true);
+    follow_playback_button.triggerClick();
 
     addAndMakeVisible(renderer);
     addAndMakeVisible(waterfall_button);

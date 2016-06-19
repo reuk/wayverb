@@ -81,6 +81,10 @@ public:
 
     void set_visible_range(const Range<double>& range) {
         visible_range = range;
+        waterfall.set_visible_range(range);
+    }
+
+    void viewport_changed(const glm::vec2&) override {
     }
 
     void set_mode(Mode u) {
@@ -154,7 +158,7 @@ public:
     }
 
 private:
-    void do_draw(const glm::mat4& modelview_matrix) const {
+    void do_draw(const glm::mat4& modelview_matrix) const override {
         assert(glGetError() == GL_NO_ERROR);
 
         auto c = 0.0;

@@ -37,6 +37,8 @@ public:
                   int start_offset,
                   int num_samples) override;
 
+    void set_visible_range(const Range<double>& range);
+
     static float z_to_frequency(Mode mode, float z);
     static float frequency_to_z(Mode mode, float frequency);
 
@@ -101,6 +103,12 @@ private:
     Mode mode{Mode::log};
     std::vector<std::vector<float>> spectrum;
     std::vector<HeightMapStrip> strips;
+
+    std::vector<std::unique_ptr<AxisObject>> frequency_axis_objects;
+    std::vector<std::unique_ptr<AxisObject>> time_axis_objects;
+
+    Range<double> visible_range;
+    float time_axis_interval{1};
 
     WorkQueue incoming_work_queue;
 

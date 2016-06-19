@@ -94,6 +94,23 @@ Waterfall::Waterfall(WaterfallShader& waterfall_shader,
                   *this,
                   std::unique_ptr<AudioFormatReader>(
                           manager.createReaderFor(file)))) {
+    auto seconds = load_context->length_in_samples / load_context->sample_rate;
+    for (auto i = 0; i != axes; ++i) {
+        auto z = i / (axes - 1.0);
+        std::stringstream ss;
+        ss << std::setprecision(3);
+        auto f = z_to_frequency(mode, z);
+        if (1000 <= f) {
+            ss << f / 1000 << "K";
+        } else {
+            ss << f;
+        }
+        auto axis = std::make_unique<AxisObject>(
+                fade_shader, quad_shader, ss.str());
+        axis->set_scale(glm::vec3{seconds, 1, 1});
+        axis->set_position(glm::vec3{0, 0.01, z});
+        frequency_axis_objects.push_back(std::move(axis));
+    }
 }
 
 void Waterfall::set_position(const glm::vec3& p) {
@@ -124,6 +141,26 @@ void Waterfall::update(float dt) {
                             max_frequency,
                             load_context->sample_rate);
     }
+
+    auto seconds = load_context->length_in_samples / load_context->sample_rate;
+    auto padding = visible_range.getLength() * 2;
+    auto start = std::floor(std::max(0.0, visible_range.getStart() - padding) /
+                            time_axis_interval) *
+                         time_axis_interval +
+                 time_axis_interval;
+    time_axis_objects.clear();
+    for (auto i = start;
+         i <= std::min(seconds, visible_range.getEnd() + padding);
+         i += time_axis_interval) {
+        std::stringstream ss;
+        ss << i;
+        auto axis = std::make_unique<AxisObject>(
+                *fade_shader, *quad_shader, ss.str());
+        axis->set_position(glm::vec3{i, 0.01, 1});
+        axis->set_scale(glm::vec3{1, 1, 1});
+        axis->set_azimuth(M_PI / 2);
+        time_axis_objects.push_back(std::move(axis));
+    }
 }
 
 glm::vec3 Waterfall::get_scale() const {
@@ -135,53 +172,16 @@ void Waterfall::do_draw(const glm::mat4& modelview_matrix) const {
 
     assert(glGetError() == GL_NO_ERROR);
 
-    {
-        auto s = waterfall_shader->get_scoped();
-        waterfall_shader->set_model_matrix(modelview_matrix);
-        for (const auto& i : strips) {
-            i.draw(modelview_matrix);
-        }
+    for (const auto& i : strips) {
+        i.draw(modelview_matrix);
     }
 
-    AxisObject axis(*fade_shader, *quad_shader);
-    auto seconds = load_context->length_in_samples / load_context->sample_rate;
-
-    {
-        // frequency marks
-
-        axis.set_scale(glm::vec3{seconds, 1, 1});
-        for (auto i = 0; i != axes; ++i) {
-            auto z = i / (axes - 1.0);
-            std::stringstream ss;
-            ss << std::setprecision(3);
-            auto f = z_to_frequency(mode, z);
-            if (1000 <= f) {
-                ss << f / 1000 << "K";
-            } else {
-                ss << f;
-            }
-            axis.set_label(ss.str());
-            axis.set_position(glm::vec3{0, 0.01, z});
-            axis.draw(modelview_matrix);
-        }
+    for (const auto& i : frequency_axis_objects) {
+        i->draw(modelview_matrix);
     }
 
-    {
-        //  time marks
-
-        axis.set_scale(glm::vec3{1, 1, 1});
-        axis.set_azimuth(M_PI / 2);
-
-        //  TODO better divisions/scaling
-
-        for (auto i = 1; i <= std::floor(seconds); ++i) {
-            auto time = i;
-            std::stringstream ss;
-            ss << time;
-            axis.set_label(ss.str());
-            axis.set_position(glm::vec3{i, 0.01, 1});
-            axis.draw(modelview_matrix);
-        }
+    for (const auto& i : time_axis_objects) {
+        i->draw(modelview_matrix);
     }
 }
 
@@ -215,6 +215,13 @@ void Waterfall::set_mode(Mode u) {
                            return ret;
                        });
     }
+}
+
+void Waterfall::set_visible_range(const Range<double>& r) {
+    std::lock_guard<std::mutex> lck(mut);
+    visible_range = r;
+    time_axis_interval = std::pow(
+            10, std::ceil(std::log10(visible_range.getLength() * 0.2)));
 }
 
 //  these two will be called from a thread *other* than the gl thread

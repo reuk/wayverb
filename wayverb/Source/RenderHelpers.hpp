@@ -11,7 +11,7 @@
 
 class BaseContextLifetime : public mglu::Drawable, public mglu::Updatable {
 public:
-    virtual void set_viewport(const glm::vec2& v);
+    void set_viewport(const glm::vec2& v);
     glm::vec2 get_viewport() const;
     float get_aspect() const;
 
@@ -21,6 +21,8 @@ public:
     virtual void mouse_wheel_move(float delta_y) = 0;
 
 private:
+    virtual void viewport_changed(const glm::vec2& v);
+
     glm::vec2 viewport;
 };
 

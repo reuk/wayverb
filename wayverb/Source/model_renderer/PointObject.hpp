@@ -25,7 +25,7 @@ public:
     void set_highlight(float amount);
 
 private:
-    void do_draw(const glm::mat4& modelview_matrix) const;
+    void do_draw(const glm::mat4& modelview_matrix) const override;
     glm::mat4 get_local_modelview_matrix() const override;
 
     mglu::GenericShader* shader;

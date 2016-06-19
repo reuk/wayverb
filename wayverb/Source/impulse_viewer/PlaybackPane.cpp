@@ -19,7 +19,7 @@ PlaybackPane::PlaybackPane(AudioFormatManager& audio_format_manager,
 
     for (auto i : {&follow_playback_button, &bypass_button}) {
         i->setWantsKeyboardFocus(false);
-        i->setToggleState(true, true);
+        i->triggerClick();
     }
 
     addAndMakeVisible(renderer);

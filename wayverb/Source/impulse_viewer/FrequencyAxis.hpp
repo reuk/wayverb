@@ -36,9 +36,9 @@ private:
 
 class AxisObject : public mglu::Drawable, public Node {
 public:
-    AxisObject(mglu::ShaderProgram& shader, TexturedQuadShader& quad_shader);
-
-    void set_label(const std::string& t);
+    AxisObject(mglu::ShaderProgram& shader,
+               TexturedQuadShader& quad_shader,
+               const std::string& text);
 
 private:
     void do_draw(const glm::mat4& modelview_matrix) const override;

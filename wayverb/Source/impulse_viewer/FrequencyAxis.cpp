@@ -156,23 +156,17 @@ const Image& TextImage::get_image() const {
 //----------------------------------------------------------------------------//
 
 AxisObject::AxisObject(mglu::ShaderProgram& shader,
-                       TexturedQuadShader& quad_shader)
+                       TexturedQuadShader& quad_shader,
+                       const std::string& text)
         : axes(shader,
                {{0, 0, 0}, {1, 0, 0}, {0, 0, 0}, {0, 1, 0}},
                {{1, 1, 1, 1}, {1, 1, 1, 1}, {1, 1, 1, 1}, {1, 1, 1, 1}},
                {0, 1, 2, 3},
                GL_LINES)
         , quad_shader(&quad_shader) {
-}
-
-void AxisObject::set_label(const std::string& t) {
     TextImage text_image;
-    text_image.set_text(t, 32);
+    text_image.set_text(text, 32);
     texture.loadImage(text_image.get_image());
-
-    auto s = quad_shader->get_scoped();
-    quad_shader->set_billboard_size(
-            glm::vec2{texture.getWidth(), texture.getHeight()});
 }
 
 void AxisObject::do_draw(const glm::mat4& modelview_matrix) const {
@@ -186,6 +180,8 @@ void AxisObject::do_draw(const glm::mat4& modelview_matrix) const {
     auto s = quad_shader->get_scoped();
     quad_shader->set_tex(0);
     quad_shader->set_billboard(glm::vec3(0, 1.2, 0));
+    quad_shader->set_billboard_size(
+            glm::vec2{texture.getWidth(), texture.getHeight()});
 
     quad.draw(modelview_matrix);
 }
