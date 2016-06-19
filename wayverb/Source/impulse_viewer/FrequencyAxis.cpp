@@ -2,7 +2,7 @@
 
 namespace {
 
-class TexturedQuad : public ::Drawable {
+class TexturedQuad : public mglu::Drawable {
 public:
     TexturedQuad(TexturedQuadShader& shader)
             : shader(&shader)
@@ -27,24 +27,30 @@ public:
         ibo.bind();
     }
 
-    void draw() const override {
-        auto s_shader = shader->get_scoped();
-        auto s_vao = vao.get_scoped();
-        glDrawElements(
-                GL_TRIANGLE_STRIP, ibo.size(), GL_UNSIGNED_SHORT, nullptr);
-    }
-
     void set_position(const glm::vec3& p) {
         position = p;
     }
 
 private:
+    void do_draw(const glm::mat4& modelview_matrix) const override {
+        auto s_shader = shader->get_scoped();
+        shader->set_model_matrix(modelview_matrix);
+
+        auto s_vao = vao.get_scoped();
+        glDrawElements(
+                GL_TRIANGLE_STRIP, ibo.size(), GL_UNSIGNED_SHORT, nullptr);
+    }
+
+    glm::mat4 get_local_modelview_matrix() const override {
+        return glm::translate(position);
+    }
+
     TexturedQuadShader* shader;
 
-    VAO vao;
-    StaticVBO geometry;
-    StaticVBO uv;
-    StaticIBO ibo;
+    mglu::VAO vao;
+    mglu::StaticVBO geometry;
+    mglu::StaticVBO uv;
+    mglu::StaticIBO ibo;
 
     glm::vec3 position;
 };
@@ -149,16 +155,13 @@ const Image& TextImage::get_image() const {
 
 //----------------------------------------------------------------------------//
 
-AxisObject::AxisObject(const MatrixTreeNode* parent,
-                       ShaderProgram& shader,
+AxisObject::AxisObject(mglu::ShaderProgram& shader,
                        TexturedQuadShader& quad_shader)
-        : BasicDrawableObject(
-                  parent,
-                  shader,
-                  {{0, 0, 0}, {1, 0, 0}, {0, 0, 0}, {0, 1, 0}},
-                  {{1, 1, 1, 1}, {1, 1, 1, 1}, {1, 1, 1, 1}, {1, 1, 1, 1}},
-                  {0, 1, 2, 3},
-                  GL_LINES)
+        : axes(shader,
+               {{0, 0, 0}, {1, 0, 0}, {0, 0, 0}, {0, 1, 0}},
+               {{1, 1, 1, 1}, {1, 1, 1, 1}, {1, 1, 1, 1}, {1, 1, 1, 1}},
+               {0, 1, 2, 3},
+               GL_LINES)
         , quad_shader(&quad_shader) {
 }
 
@@ -172,8 +175,8 @@ void AxisObject::set_label(const std::string& t) {
             glm::vec2{texture.getWidth(), texture.getHeight()});
 }
 
-void AxisObject::draw() const {
-    BasicDrawableObject::draw();
+void AxisObject::do_draw(const glm::mat4& modelview_matrix) const {
+    axes.draw(modelview_matrix);
 
     glActiveTexture(GL_TEXTURE0);
     texture.bind();
@@ -181,9 +184,12 @@ void AxisObject::draw() const {
     TexturedQuad quad(*quad_shader);
 
     auto s = quad_shader->get_scoped();
-    quad_shader->set_model_matrix(get_modelview_matrix());
     quad_shader->set_tex(0);
     quad_shader->set_billboard(glm::vec3(0, 1.2, 0));
 
-    quad.draw();
+    quad.draw(modelview_matrix);
+}
+
+glm::mat4 AxisObject::get_local_modelview_matrix() const {
+    return get_matrix();
 }

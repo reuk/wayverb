@@ -25,11 +25,16 @@ MeshObject::MeshObject(const MeshShader& shader,
     ibo.bind();
 }
 
-void MeshObject::draw() const {
+void MeshObject::do_draw(const glm::mat4& modelview_matrix) const {
     auto s_shader = shader.get_scoped();
+    shader.set_model_matrix(modelview_matrix);
 
     auto s_vao = vao.get_scoped();
     glDrawElements(GL_POINTS, size, GL_UNSIGNED_INT, nullptr);
+}
+
+glm::mat4 MeshObject::get_local_modelview_matrix() const {
+    return glm::mat4{};
 }
 
 void MeshObject::set_pressures(const std::vector<float>& u) {

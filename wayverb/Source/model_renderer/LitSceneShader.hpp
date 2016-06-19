@@ -4,7 +4,7 @@
 
 #include "glm/gtc/type_ptr.hpp"
 
-class LitSceneShader final : public ShaderProgram {
+class LitSceneShader final : public mglu::ShaderProgram {
 public:
     LitSceneShader();
 

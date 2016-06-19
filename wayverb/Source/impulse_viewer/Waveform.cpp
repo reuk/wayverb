@@ -6,10 +6,10 @@
 
 #include "glm/gtx/transform.hpp"
 
-Waveform::Waveform(MatrixTreeNode* parent, GenericShader& shader,
-AudioFormatManager& manager, const File& file)
-        : MatrixTreeNode(parent)
-        , shader(&shader)
+Waveform::Waveform(mglu::GenericShader& shader,
+                   AudioFormatManager& manager,
+                   const File& file)
+        : shader(&shader)
         , load_context(std::make_unique<LoadContext>(
                   *this,
                   std::unique_ptr<AudioFormatReader>(
@@ -52,13 +52,17 @@ void Waveform::update(float dt) {
     }
 }
 
-void Waveform::draw() const {
+void Waveform::do_draw(const glm::mat4& modelview_matrix) const {
     std::lock_guard<std::mutex> lck(mut);
     auto s_shader = shader->get_scoped();
-    shader->set_model_matrix(get_modelview_matrix());
+    shader->set_model_matrix(modelview_matrix);
 
     auto s_vao = vao.get_scoped();
     glDrawElements(GL_TRIANGLE_STRIP, ibo.size(), GL_UNSIGNED_INT, nullptr);
+}
+
+glm::mat4 Waveform::get_local_modelview_matrix() const {
+    return glm::translate(position);
 }
 
 //  these two will be called from a thread *other* than the gl thread
@@ -117,8 +121,4 @@ std::vector<glm::vec3> Waveform::compute_geometry(
         x += x_spacing;
     }
     return ret;
-}
-
-glm::mat4 Waveform::get_local_modelview_matrix() const {
-    return glm::translate(position);
 }

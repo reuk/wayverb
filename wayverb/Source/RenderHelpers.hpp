@@ -9,7 +9,7 @@
 
 #include "../JuceLibraryCode/JuceHeader.h"
 
-class BaseContextLifetime : public ::Drawable, public ::Updatable {
+class BaseContextLifetime : public mglu::Drawable, public mglu::Updatable {
 public:
     virtual void set_viewport(const glm::vec2& v);
     glm::vec2 get_viewport() const;

@@ -9,19 +9,16 @@
 #include "modern_gl_utils/updatable.h"
 #include "modern_gl_utils/vao.h"
 
-class Waveform : public ::Updatable,
-                 public ::Drawable,
-                 public ::MatrixTreeNode,
+class Waveform : public mglu::Updatable,
+                 public mglu::Drawable,
                  public GLAudioThumbnailBase {
 public:
-    Waveform(MatrixTreeNode* parent,
-             GenericShader& shader,
+    Waveform(mglu::GenericShader& shader,
              AudioFormatManager& manager,
              const File& file);
     void set_position(const glm::vec3& p);
 
     void update(float dt) override;
-    void draw() const override;
 
     void reset(int num_channels,
                double sample_rate,
@@ -34,6 +31,7 @@ public:
 private:
     static const int per_buffer = 16;
 
+    void do_draw(const glm::mat4& modelview_matrix) const override;
     glm::mat4 get_local_modelview_matrix() const override;
 
     void clear_impl();
@@ -48,12 +46,12 @@ private:
 
     mutable std::mutex mut;
 
-    GenericShader* shader;
+    mglu::GenericShader* shader;
 
-    VAO vao;
-    DynamicVBO geometry;
-    DynamicVBO colors;
-    DynamicIBO ibo;
+    mglu::VAO vao;
+    mglu::DynamicVBO geometry;
+    mglu::DynamicVBO colors;
+    mglu::DynamicIBO ibo;
 
     glm::vec3 position{0};
 

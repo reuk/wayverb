@@ -41,12 +41,10 @@ std::vector<GLuint> compute_ring_indices(int num) {
 }
 }  // namespace
 
-RingObject::RingObject(MatrixTreeNode* parent,
-                       GenericShader& shader,
+RingObject::RingObject(mglu::GenericShader& shader,
                        const glm::vec4& color,
                        Axis axis)
-        : BasicDrawableObject(parent,
-                              shader,
+        : BasicDrawableObject(shader,
                               compute_ring_points(pts, axis),
                               std::vector<glm::vec4>(pts, color),
                               compute_ring_indices(pts),
@@ -56,11 +54,8 @@ RingObject::RingObject(MatrixTreeNode* parent,
 
 //----------------------------------------------------------------------------//
 
-LineObject::LineObject(MatrixTreeNode* parent,
-                       GenericShader& shader,
-                       const glm::vec4& color)
-        : BasicDrawableObject(parent,
-                              shader,
+LineObject::LineObject(mglu::GenericShader& shader, const glm::vec4& color)
+        : BasicDrawableObject(shader,
                               {{0, 0, 0}, {0, 0, 1}},
                               std::vector<glm::vec4>(2, color),
                               {0, 1},
@@ -70,15 +65,12 @@ LineObject::LineObject(MatrixTreeNode* parent,
 
 //----------------------------------------------------------------------------//
 
-PointObject::PointObject(MatrixTreeNode* parent,
-                         GenericShader& shader,
-                         const glm::vec4& color)
-        : Node(parent)
-        , shader(&shader)
+PointObject::PointObject(mglu::GenericShader& shader, const glm::vec4& color)
+        : shader(&shader)
         , color(color)
-        , x_ring(this, shader, color, RingObject::Axis::x)
-        , y_ring(this, shader, color, RingObject::Axis::y)
-        , z_ring(this, shader, color, RingObject::Axis::z) {
+        , x_ring(shader, color, RingObject::Axis::x)
+        , y_ring(shader, color, RingObject::Axis::y)
+        , z_ring(shader, color, RingObject::Axis::z) {
 }
 
 void PointObject::set_highlight(float amount) {
@@ -87,13 +79,17 @@ void PointObject::set_highlight(float amount) {
     z_ring.set_highlight(amount);
 }
 
-void PointObject::draw() const {
-    x_ring.draw();
-    y_ring.draw();
-    z_ring.draw();
+void PointObject::do_draw(const glm::mat4& modelview_matrix) const {
+    x_ring.draw(modelview_matrix);
+    y_ring.draw(modelview_matrix);
+    z_ring.draw(modelview_matrix);
     for (auto& i : lines) {
-        i.draw();
+        i.draw(modelview_matrix);
     }
+}
+
+glm::mat4 PointObject::get_local_modelview_matrix() const {
+    return get_matrix();
 }
 
 void PointObject::set_pointing(const std::vector<glm::vec3>& directions) {
@@ -102,7 +98,7 @@ void PointObject::set_pointing(const std::vector<glm::vec3>& directions) {
     }
     for (auto i = 0u; i != directions.size(); ++i) {
         if (lines.size() <= i) {
-            lines.emplace_back(this, *shader, color);
+            lines.emplace_back(*shader, color);
         }
         lines[i].set_pointing(directions[i]);
     }

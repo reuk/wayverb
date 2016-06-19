@@ -3,7 +3,7 @@
 #include "glm/glm.hpp"
 #include "modern_gl_utils/shader_program.h"
 
-class FadeShader final : public ShaderProgram {
+class FadeShader final : public mglu::ShaderProgram {
 public:
     FadeShader();
 

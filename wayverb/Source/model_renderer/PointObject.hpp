@@ -6,35 +6,29 @@ class RingObject : public BasicDrawableObject {
 public:
     enum class Axis { x, y, z };
     static constexpr auto pts = 24;
-    RingObject(MatrixTreeNode* parent,
-               GenericShader& shader,
-               const glm::vec4& color,
-               Axis axis);
+    RingObject(mglu::GenericShader& shader, const glm::vec4& color, Axis axis);
 };
 
 class LineObject : public BasicDrawableObject {
 public:
-    LineObject(MatrixTreeNode* parent,
-               GenericShader& shader,
-               const glm::vec4& color);
+    LineObject(mglu::GenericShader& shader, const glm::vec4& color);
     LineObject(LineObject&&) noexcept = default;
     LineObject& operator=(LineObject&&) noexcept = default;
 };
 
-class PointObject : public ::Drawable, public Node {
+class PointObject : public mglu::Drawable, public Node {
 public:
-    PointObject(MatrixTreeNode* parent,
-                GenericShader& shader,
-                const glm::vec4& color);
-
-    void draw() const override;
+    PointObject(mglu::GenericShader& shader, const glm::vec4& color);
 
     void set_pointing(const std::vector<glm::vec3>& directions);
 
-    void set_highlight(float amount) override;
+    void set_highlight(float amount);
 
 private:
-    GenericShader* shader;
+    void do_draw(const glm::mat4& modelview_matrix) const;
+    glm::mat4 get_local_modelview_matrix() const override;
+
+    mglu::GenericShader* shader;
     glm::vec4 color;
 
     RingObject x_ring;

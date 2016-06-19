@@ -6,7 +6,6 @@
 #include "LitSceneShader.hpp"
 #include "MeshObject.hpp"
 #include "ModelObject.hpp"
-#include "OctahedronObject.hpp"
 #include "PointObject.hpp"
 #include "RenderHelpers.hpp"
 #include "WorkQueue.hpp"
@@ -33,42 +32,41 @@
 #include <mutex>
 #include <queue>
 
-class MultiMaterialObject : public ::Drawable, public MatrixTreeNode {
+class MultiMaterialObject : public mglu::Drawable {
 public:
-    MultiMaterialObject(MatrixTreeNode* parent,
-                        GenericShader& generic_shader,
+    MultiMaterialObject(mglu::GenericShader& generic_shader,
                         LitSceneShader& lit_scene_shader,
                         const CopyableSceneData& scene_data);
 
-    void draw() const override;
-
-    class SingleMaterialSection : public ::Drawable {
+    class SingleMaterialSection : public mglu::Drawable {
     public:
         SingleMaterialSection(const CopyableSceneData& scene_data,
                               int material_index);
 
-        void draw() const override;
-
     private:
+        void do_draw(const glm::mat4& modelview_matrix) const override;
+        glm::mat4 get_local_modelview_matrix() const override;
+
         static std::vector<GLuint> get_indices(
                 const CopyableSceneData& scene_data, int material_index);
-        StaticIBO ibo;
+        mglu::StaticIBO ibo;
         GLuint size;
     };
 
     void set_highlighted(int material);
     void set_colour(const glm::vec3& c);
 
+private:
+    void do_draw(const glm::mat4& modelview_matrix) const override;
     glm::mat4 get_local_modelview_matrix() const override;
 
-private:
-    GenericShader* generic_shader;
+    mglu::GenericShader* generic_shader;
     LitSceneShader* lit_scene_shader;
 
-    VAO wire_vao;
-    VAO fill_vao;
-    StaticVBO geometry;
-    StaticVBO colors;
+    mglu::VAO wire_vao;
+    mglu::VAO fill_vao;
+    mglu::StaticVBO geometry;
+    mglu::StaticVBO colors;
 
     int highlighted{-1};
 

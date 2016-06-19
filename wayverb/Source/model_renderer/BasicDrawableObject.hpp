@@ -12,9 +12,9 @@
 #include "modern_gl_utils/updatable.h"
 #include "modern_gl_utils/vao.h"
 
-class Node : public Orientable, public MatrixTreeNode {
+class Node : public Orientable {
 public:
-    using MatrixTreeNode::MatrixTreeNode;
+    Node() = default;
 
     Node(Node&&) noexcept;
     Node& operator=(Node&&) noexcept;
@@ -26,19 +26,16 @@ public:
     void set_scale(float s);
     void set_scale(const glm::vec3& s);
 
-    glm::mat4 get_local_modelview_matrix() const override;
-
-    virtual void set_highlight(float amount) = 0;
+    glm::mat4 get_matrix() const;
 
 private:
     glm::vec3 position{0};
     glm::vec3 scale{1};
 };
 
-class BasicDrawableObject : public ::Drawable, public Node {
+class BasicDrawableObject : public mglu::Drawable, public Node {
 public:
-    BasicDrawableObject(const MatrixTreeNode* parent,
-                        ShaderProgram& shader,
+    BasicDrawableObject(mglu::ShaderProgram& shader,
                         const std::vector<glm::vec3>& g,
                         const std::vector<glm::vec4>& c,
                         const std::vector<GLuint>& i,
@@ -47,22 +44,23 @@ public:
     BasicDrawableObject(BasicDrawableObject&&) noexcept;
     BasicDrawableObject& operator=(BasicDrawableObject&&) noexcept;
 
-    void draw() const override;
-
     GLuint get_mode() const;
     void set_mode(GLuint mode);
 
-    void set_highlight(float amount) override;
+    void set_highlight(float amount);
 
 private:
-    ShaderProgram* shader;
+    void do_draw(const glm::mat4& modelview_matrix) const override;
+    glm::mat4 get_local_modelview_matrix() const override;
+
+    mglu::ShaderProgram* shader;
 
     std::vector<glm::vec4> color_vector;
 
-    VAO vao;
-    StaticVBO geometry;
-    StaticVBO colors;
-    StaticIBO ibo;
+    mglu::VAO vao;
+    mglu::StaticVBO geometry;
+    mglu::StaticVBO colors;
+    mglu::StaticIBO ibo;
 
     GLuint mode{GL_LINES};
 };

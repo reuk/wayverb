@@ -1,8 +1,7 @@
 #include "AxesObject.hpp"
 
-AxesObject::AxesObject(MatrixTreeNode* parent, GenericShader& shader)
-        : BasicDrawableObject(parent,
-                              shader,
+AxesObject::AxesObject(mglu::GenericShader& shader)
+        : BasicDrawableObject(shader,
                               {{0, 0, 0},
                                {1, 0, 0},
                                {0, 0, 0},

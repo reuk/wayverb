@@ -4,7 +4,7 @@
 
 #include "glm/gtc/type_ptr.hpp"
 
-class MeshShader final : public ShaderProgram {
+class MeshShader final : public mglu::ShaderProgram {
 public:
     MeshShader();
 

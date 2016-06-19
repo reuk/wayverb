@@ -1,8 +1,7 @@
 #include "BoxObject.hpp"
 
-BoxObject::BoxObject(MatrixTreeNode* parent, GenericShader& shader)
+BoxObject::BoxObject(mglu::GenericShader& shader)
         : BasicDrawableObject(
-                  parent,
                   shader,
                   {{-0.5, -0.5, -0.5},
                    {-0.5, -0.5, 0.5},

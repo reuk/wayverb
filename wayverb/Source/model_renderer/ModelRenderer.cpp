@@ -38,17 +38,21 @@ MultiMaterialObject::SingleMaterialSection::SingleMaterialSection(
     ibo.data(indices);
 }
 
-void MultiMaterialObject::SingleMaterialSection::draw() const {
+void MultiMaterialObject::SingleMaterialSection::do_draw(
+        const glm::mat4 &modelview_matrix) const {
     ibo.bind();
     glDrawElements(GL_TRIANGLES, size, GL_UNSIGNED_INT, nullptr);
 }
 
-MultiMaterialObject::MultiMaterialObject(MatrixTreeNode *parent,
-                                         GenericShader &generic_shader,
+glm::mat4
+MultiMaterialObject::SingleMaterialSection::get_local_modelview_matrix() const {
+    return glm::mat4{};
+}
+
+MultiMaterialObject::MultiMaterialObject(mglu::GenericShader &generic_shader,
                                          LitSceneShader &lit_scene_shader,
                                          const CopyableSceneData &scene_data)
-        : MatrixTreeNode(parent)
-        , generic_shader(&generic_shader)
+        : generic_shader(&generic_shader)
         , lit_scene_shader(&lit_scene_shader) {
     for (auto i = 0; i != scene_data.get_surfaces().size(); ++i) {
         sections.emplace_back(scene_data, i);
@@ -80,20 +84,20 @@ glm::mat4 MultiMaterialObject::get_local_modelview_matrix() const {
     return glm::mat4{};
 }
 
-void MultiMaterialObject::draw() const {
+void MultiMaterialObject::do_draw(const glm::mat4 &modelview_matrix) const {
     for (auto i = 0u; i != sections.size(); ++i) {
         if (i == highlighted) {
             auto s_shader = lit_scene_shader->get_scoped();
-            lit_scene_shader->set_model_matrix(get_modelview_matrix());
+            lit_scene_shader->set_model_matrix(modelview_matrix);
             auto s_vao = fill_vao.get_scoped();
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-            sections[i].draw();
+            sections[i].draw(modelview_matrix);
         } else {
             auto s_shader = generic_shader->get_scoped();
-            generic_shader->set_model_matrix(get_modelview_matrix());
+            generic_shader->set_model_matrix(modelview_matrix);
             auto s_vao = wire_vao.get_scoped();
             glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-            sections[i].draw();
+            sections[i].draw(modelview_matrix);
         }
     }
 }
@@ -114,10 +118,10 @@ public:
     ContextLifetime(SceneRenderer &owner, const CopyableSceneData &scene_data)
             : owner(owner)
             , model(scene_data)
-            , model_object(nullptr, generic_shader, lit_scene_shader, scene_data)
-            , source_object(nullptr, generic_shader, glm::vec4(0.7, 0, 0, 1))
-            , receiver_object(nullptr, generic_shader, glm::vec4(0, 0.7, 0.7, 1))
-            , axes(nullptr, generic_shader) {
+            , model_object(generic_shader, lit_scene_shader, scene_data)
+            , source_object(generic_shader, glm::vec4(0.7, 0, 0, 1))
+            , receiver_object(generic_shader, glm::vec4(0, 0.7, 0.7, 1))
+            , axes(generic_shader) {
         auto aabb = model.get_aabb();
         auto m = aabb.centre();
         auto max = glm::length(aabb.dimensions());
@@ -180,7 +184,7 @@ public:
         azel += (azel_target - azel) * 0.1;
     }
 
-    void draw() const override {
+    void do_draw(const glm::mat4 &modelview_matrix) const override {
         auto c = 0.0;
         glClearColor(c, c, c, 0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -191,8 +195,8 @@ public:
         glEnable(GL_MULTISAMPLE);
         glEnable(GL_LINE_SMOOTH);
         glEnable(GL_POLYGON_SMOOTH);
-//        glEnable(GL_BLEND);
-//        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        //        glEnable(GL_BLEND);
+        //        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
         auto config_shader = [this](const auto &shader) {
             auto s_shader = shader.get_scoped();
@@ -205,17 +209,21 @@ public:
         config_shader(mesh_shader);
         config_shader(lit_scene_shader);
 
-        model_object.draw();
+        model_object.draw(modelview_matrix);
 
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-        source_object.draw();
-        receiver_object.draw();
+        source_object.draw(modelview_matrix);
+        receiver_object.draw(modelview_matrix);
 
         if (rendering && mesh_object) {
-            mesh_object->draw();
+            mesh_object->draw(modelview_matrix);
         }
 
-        axes.draw();
+        axes.draw(modelview_matrix);
+    }
+
+    glm::mat4 get_local_modelview_matrix() const override {
+        return glm::mat4{};
     }
 
     void set_receiver_pointing(const std::vector<glm::vec3> &directions) {
@@ -300,12 +308,12 @@ private:
                 glm::vec3{glm::inverse(get_view_matrix()) * ray_eye});
     }
 
-    Node *get_currently_hovered(const glm::vec2 &pos) {
+    PointObject *get_currently_hovered(const glm::vec2 &pos) {
         auto origin = get_world_camera_position();
         auto direction = get_world_mouse_direction(pos);
 
         struct Intersection {
-            Node *ref;
+            PointObject *ref;
             double distance;
         };
 
@@ -344,7 +352,7 @@ private:
     SceneRenderer &owner;
     const CopyableSceneData &model;
 
-    GenericShader generic_shader;
+    mglu::GenericShader generic_shader;
     MeshShader mesh_shader;
     LitSceneShader lit_scene_shader;
 
@@ -387,7 +395,7 @@ private:
     };
 
     struct Move : public Mousing {
-        Move(Node *to_move, const glm::vec3 &v)
+        Move(PointObject *to_move, const glm::vec3 &v)
                 : to_move(to_move)
                 , original_position(v) {
             to_move->set_highlight(0.5);
@@ -398,7 +406,7 @@ private:
         Mode get_mode() const {
             return Mode::move;
         }
-        Node *to_move{nullptr};
+        PointObject *to_move{nullptr};
         glm::vec3 original_position;
     };
 

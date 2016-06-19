@@ -4,7 +4,7 @@
 
 #include "../JuceLibraryCode/JuceHeader.h"
 
-class TexturedQuadShader : public ShaderProgram {
+class TexturedQuadShader : public mglu::ShaderProgram {
 public:
     TexturedQuadShader();
 
@@ -34,17 +34,17 @@ private:
     Image image;
 };
 
-class AxisObject final : public BasicDrawableObject {
+class AxisObject : public mglu::Drawable, public Node {
 public:
-    AxisObject(const MatrixTreeNode* parent,
-               ShaderProgram& shader,
-               TexturedQuadShader& quad_shader);
+    AxisObject(mglu::ShaderProgram& shader, TexturedQuadShader& quad_shader);
 
     void set_label(const std::string& t);
 
-    void draw() const override;
-
 private:
+    void do_draw(const glm::mat4& modelview_matrix) const override;
+    glm::mat4 get_local_modelview_matrix() const override;
+
+    BasicDrawableObject axes;
     TexturedQuadShader* quad_shader;
     OpenGLTexture texture;
 };

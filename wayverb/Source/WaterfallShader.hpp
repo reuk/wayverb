@@ -3,7 +3,7 @@
 #include "glm/glm.hpp"
 #include "modern_gl_utils/shader_program.h"
 
-class WaterfallShader final : public ShaderProgram {
+class WaterfallShader final : public mglu::ShaderProgram {
 public:
     WaterfallShader();
 

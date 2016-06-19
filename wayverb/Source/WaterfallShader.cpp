@@ -51,7 +51,7 @@ void main() {
     gl_Position = v_projection * v_view * v_model * pos;
     f_color = mix(vec4(0.0, 0.0, 0.0, 1.0),
                   vec4(compute_mapped_color(fract(pos.x)), 1.0),
-                  pow(pos.y, 0.01));
+                  pow(pos.y, 0.01)) * v_fade;
 }
 )");
 

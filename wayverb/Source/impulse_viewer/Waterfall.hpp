@@ -11,22 +11,19 @@
 #include "modern_gl_utils/updatable.h"
 #include "modern_gl_utils/vao.h"
 
-class Waterfall : public ::Updatable,
-                  public ::Drawable,
-                  public ::MatrixTreeNode,
+class Waterfall : public mglu::Updatable,
+                  public mglu::Drawable,
                   public GLAudioThumbnailBase {
 public:
     enum class Mode { linear, log };
 
-    Waterfall(MatrixTreeNode* parent,
-              WaterfallShader& waterfall_shader,
+    Waterfall(WaterfallShader& waterfall_shader,
               FadeShader& fade_shader,
               TexturedQuadShader& quad_shader,
               AudioFormatManager& manager,
               const File& file);
 
     void update(float dt) override;
-    void draw() const override;
 
     void set_mode(Mode u);
 
@@ -46,16 +43,16 @@ public:
     static const float width;
 
 private:
+    void do_draw(const glm::mat4& modelview_matrix) const override;
     glm::mat4 get_local_modelview_matrix() const override;
 
     void clear_impl();
 
     glm::vec3 get_scale() const;
 
-    class HeightMapStrip : public ::Drawable, public MatrixTreeNode {
+    class HeightMapStrip : public mglu::Drawable {
     public:
-        HeightMapStrip(MatrixTreeNode* parent,
-                       WaterfallShader& shader,
+        HeightMapStrip(WaterfallShader& shader,
                        const std::vector<float>& left,
                        const std::vector<float>& right,
                        Mode mode,
@@ -65,11 +62,10 @@ private:
                        float max_frequency,
                        float sample_rate);
 
-        void draw() const override;
-
+    private:
+        void do_draw(const glm::mat4& modelview_matrix) const override;
         glm::mat4 get_local_modelview_matrix() const override;
 
-    private:
         static std::vector<glm::vec3> compute_geometry(
                 const std::vector<float>& left,
                 const std::vector<float>& right,
@@ -82,9 +78,9 @@ private:
 
         WaterfallShader* shader;
 
-        VAO vao;
-        StaticVBO geometry;
-        StaticIBO ibo;
+        mglu::VAO vao;
+        mglu::StaticVBO geometry;
+        mglu::StaticIBO ibo;
         GLuint size;
     };
 

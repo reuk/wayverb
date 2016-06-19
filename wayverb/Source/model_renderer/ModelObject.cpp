@@ -8,11 +8,9 @@ namespace {
 constexpr auto model_colour = 0.5;
 }  // namespace
 
-ModelObject::ModelObject(MatrixTreeNode *parent,
-                         GenericShader &shader,
+ModelObject::ModelObject(mglu::GenericShader &shader,
                          const SceneData &scene_data)
         : BasicDrawableObject(
-                  parent,
                   shader,
                   scene_data.get_converted_vertices(),
                   std::vector<glm::vec4>(scene_data.get_vertices().size(),

@@ -9,24 +9,25 @@
 #include "modern_gl_utils/drawable.h"
 #include "modern_gl_utils/vao.h"
 
-class MeshObject final : public ::Drawable {
+class MeshObject final : public mglu::Drawable {
 public:
     MeshObject(const MeshShader& shader,
                const std::vector<glm::vec3>& positions);
-
-    void draw() const override;
 
     void set_pressures(const std::vector<float>& u);
     void zero_pressures();
 
 private:
+    void do_draw(const glm::mat4& modelview_matrix) const override;
+    glm::mat4 get_local_modelview_matrix() const override;
+
     void set_positions(const std::vector<glm::vec3>& positions);
 
     const MeshShader& shader;
 
-    VAO vao;
-    StaticVBO geometry;
-    DynamicVBO pressures;
-    StaticIBO ibo;
+    mglu::VAO vao;
+    mglu::StaticVBO geometry;
+    mglu::DynamicVBO pressures;
+    mglu::StaticIBO ibo;
     GLuint size{0};
 };

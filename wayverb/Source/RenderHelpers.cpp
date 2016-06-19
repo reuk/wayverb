@@ -39,7 +39,7 @@ void BaseRenderer::renderOpenGL() {
         }
     }
     get_context_lifetime()->update(0);
-    get_context_lifetime()->draw();
+    get_context_lifetime()->draw(glm::mat4{});
 }
 
 void BaseRenderer::openGLContextClosing() {

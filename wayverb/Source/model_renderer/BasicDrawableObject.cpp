@@ -25,21 +25,19 @@ void Node::set_scale(const glm::vec3& s) {
     scale = s;
 }
 
-glm::mat4 Node::get_local_modelview_matrix() const {
+glm::mat4 Node::get_matrix() const {
     return glm::translate(get_position()) * Orientable::get_matrix() *
            glm::scale(get_scale());
 }
 
 //----------------------------------------------------------------------------//
 
-BasicDrawableObject::BasicDrawableObject(const MatrixTreeNode* parent,
-                                         ShaderProgram& shader,
+BasicDrawableObject::BasicDrawableObject(mglu::ShaderProgram& shader,
                                          const std::vector<glm::vec3>& g,
                                          const std::vector<glm::vec4>& c,
                                          const std::vector<GLuint>& i,
                                          GLuint mode)
-        : Node(parent)
-        , shader(&shader)
+        : shader(&shader)
         , color_vector(c)
         , mode(mode) {
     geometry.data(g);
@@ -74,12 +72,16 @@ void BasicDrawableObject::set_highlight(float amount) {
     colors.data(highlighted);
 }
 
-void BasicDrawableObject::draw() const {
+void BasicDrawableObject::do_draw(const glm::mat4& modelview_matrix) const {
     auto s_shader = shader->get_scoped();
-    shader->set("v_model", get_modelview_matrix());
+    shader->set("v_model", modelview_matrix);
 
     auto s_vao = vao.get_scoped();
     glDrawElements(mode, ibo.size(), GL_UNSIGNED_INT, nullptr);
+}
+
+glm::mat4 BasicDrawableObject::get_local_modelview_matrix() const {
+    return get_matrix();
 }
 
 GLuint BasicDrawableObject::get_mode() const {

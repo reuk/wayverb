@@ -82,14 +82,12 @@ private:
 
 //----------------------------------------------------------------------------//
 
-Waterfall::Waterfall(MatrixTreeNode* parent,
-                     WaterfallShader& waterfall_shader,
+Waterfall::Waterfall(WaterfallShader& waterfall_shader,
                      FadeShader& fade_shader,
                      TexturedQuadShader& quad_shader,
                      AudioFormatManager& manager,
                      const File& file)
-        : MatrixTreeNode(parent)
-        , waterfall_shader(&waterfall_shader)
+        : waterfall_shader(&waterfall_shader)
         , fade_shader(&fade_shader)
         , quad_shader(&quad_shader)
         , load_context(std::make_unique<LoadContext>(
@@ -116,8 +114,7 @@ void Waterfall::update(float dt) {
     while (strips.size() + 1 < spectrum.size() &&
            (std::chrono::system_clock::now() - begin) <
                    std::chrono::duration<double>(1 / 200.0)) {
-        strips.emplace_back(this,
-                            *waterfall_shader,
+        strips.emplace_back(*waterfall_shader,
                             spectrum[strips.size()],
                             spectrum[strips.size() + 1],
                             mode,
@@ -133,20 +130,20 @@ glm::vec3 Waterfall::get_scale() const {
     return glm::vec3{1, 1, width};
 }
 
-void Waterfall::draw() const {
+void Waterfall::do_draw(const glm::mat4& modelview_matrix) const {
     std::lock_guard<std::mutex> lck(mut);
 
     assert(glGetError() == GL_NO_ERROR);
 
     {
         auto s = waterfall_shader->get_scoped();
-        waterfall_shader->set_model_matrix(get_modelview_matrix());
+        waterfall_shader->set_model_matrix(modelview_matrix);
         for (const auto& i : strips) {
-            i.draw();
+            i.draw(modelview_matrix);
         }
     }
 
-    AxisObject axis(this, *fade_shader, *quad_shader);
+    AxisObject axis(*fade_shader, *quad_shader);
     auto seconds = load_context->length_in_samples / load_context->sample_rate;
 
     {
@@ -155,7 +152,8 @@ void Waterfall::draw() const {
         axis.set_scale(glm::vec3{seconds, 1, 1});
         for (auto i = 0; i != axes; ++i) {
             auto z = i / (axes - 1.0);
-            std::stringstream ss; ss << std::setprecision(3);
+            std::stringstream ss;
+            ss << std::setprecision(3);
             auto f = z_to_frequency(mode, z);
             if (1000 <= f) {
                 ss << f / 1000 << "K";
@@ -164,7 +162,7 @@ void Waterfall::draw() const {
             }
             axis.set_label(ss.str());
             axis.set_position(glm::vec3{0, 0.01, z});
-            axis.draw();
+            axis.draw(modelview_matrix);
         }
     }
 
@@ -182,9 +180,13 @@ void Waterfall::draw() const {
             ss << time;
             axis.set_label(ss.str());
             axis.set_position(glm::vec3{i, 0.01, 1});
-            axis.draw();
+            axis.draw(modelview_matrix);
         }
     }
+}
+
+glm::mat4 Waterfall::get_local_modelview_matrix() const {
+    return glm::translate(position) * glm::scale(get_scale());
 }
 
 void Waterfall::set_mode(Mode u) {
@@ -200,8 +202,7 @@ void Waterfall::set_mode(Mode u) {
                        spectrum.begin() + 1,
                        std::back_inserter(strips),
                        [this, &x](const auto& i, const auto& j) {
-                           HeightMapStrip ret(this,
-                                              *waterfall_shader,
+                           HeightMapStrip ret(*waterfall_shader,
                                               i,
                                               j,
                                               mode,
@@ -281,14 +282,9 @@ float Waterfall::frequency_to_z(Mode mode, float frequency) {
     }
 }
 
-glm::mat4 Waterfall::get_local_modelview_matrix() const {
-    return glm::translate(position) * glm::scale(get_scale());
-}
-
 //----------------------------------------------------------------------------//
 
-Waterfall::HeightMapStrip::HeightMapStrip(MatrixTreeNode* parent,
-                                          WaterfallShader& shader,
+Waterfall::HeightMapStrip::HeightMapStrip(WaterfallShader& shader,
                                           const std::vector<float>& left,
                                           const std::vector<float>& right,
                                           Mode mode,
@@ -297,8 +293,7 @@ Waterfall::HeightMapStrip::HeightMapStrip(MatrixTreeNode* parent,
                                           float min_frequency,
                                           float max_frequency,
                                           float sample_rate)
-        : MatrixTreeNode(parent)
-        , shader(&shader)
+        : shader(&shader)
         , size(left.size() * 2) {
     auto g = compute_geometry(left,
                               right,
@@ -322,16 +317,17 @@ Waterfall::HeightMapStrip::HeightMapStrip(MatrixTreeNode* parent,
     ibo.bind();
 }
 
-glm::mat4 Waterfall::HeightMapStrip::get_local_modelview_matrix() const {
-    return glm::mat4{};
-}
-
-void Waterfall::HeightMapStrip::draw() const {
+void Waterfall::HeightMapStrip::do_draw(
+        const glm::mat4& modelview_matrix) const {
     auto s_shader = shader->get_scoped();
-    shader->set_model_matrix(get_modelview_matrix());
+    shader->set_model_matrix(modelview_matrix);
 
     auto s_vao = vao.get_scoped();
     glDrawElements(GL_TRIANGLE_STRIP, ibo.size(), GL_UNSIGNED_INT, nullptr);
+}
+
+glm::mat4 Waterfall::HeightMapStrip::get_local_modelview_matrix() const {
+    return glm::mat4{};
 }
 
 std::vector<glm::vec3> Waterfall::HeightMapStrip::compute_geometry(

@@ -6,8 +6,7 @@
 
 class ModelObject final : public BasicDrawableObject {
 public:
-    ModelObject(MatrixTreeNode* parent,
-                GenericShader& shader,
+    ModelObject(mglu::GenericShader& shader,
                 const SceneData& scene_data);
 
 private:

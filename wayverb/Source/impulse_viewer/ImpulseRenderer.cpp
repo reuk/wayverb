@@ -17,9 +17,8 @@ namespace {
 class Playhead3D : public BasicDrawableObject {
 public:
     static const float width;
-    Playhead3D(MatrixTreeNode* parent, GenericShader& shader)
+    Playhead3D(mglu::GenericShader& shader)
             : BasicDrawableObject(
-                      parent,
                       shader,
                       std::vector<glm::vec3>{{-width, -1, 0},
                                              {width, -1, 0},
@@ -45,8 +44,7 @@ const float Playhead3D::width{0.01};
 }  // namespace
 
 class ImpulseRenderer::ContextLifetime : public BaseContextLifetime,
-                                         public GLAudioThumbnailBase,
-                                         public MatrixTreeNode {
+                                         public GLAudioThumbnailBase {
     struct ScaleFactor {
         float time{1};
         float amplitude{1};
@@ -60,16 +58,11 @@ public:
     ContextLifetime(const AudioTransportSource& audio_transport_source,
                     AudioFormatManager& manager,
                     const File& file)
-            : MatrixTreeNode(nullptr)
-            , audio_transport_source(audio_transport_source)
-            , waveform(this, generic_shader, manager, file)
-            , waterfall(this,
-                        waterfall_shader,
-                        fade_shader,
-                        quad_shader,
-                        manager,
-                        file)
-            , playhead(this, generic_shader) {
+            : audio_transport_source(audio_transport_source)
+            , waveform(generic_shader, manager, file)
+            , waterfall(
+                      waterfall_shader, fade_shader, quad_shader, manager, file)
+            , playhead(generic_shader) {
         waterfall.set_position(glm::vec3{0, 0, 0.1});
     }
 
@@ -88,55 +81,6 @@ public:
 
     void set_visible_range(const Range<double>& range) {
         visible_range = range;
-    }
-
-    void draw() const override {
-        assert(glGetError() == GL_NO_ERROR);
-
-        auto c = 0.0;
-        glClearColor(c, c, c, 0);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        glEnable(GL_DEPTH_TEST);
-        glEnable(GL_MULTISAMPLE);
-        glEnable(GL_LINE_SMOOTH);
-        glEnable(GL_POLYGON_SMOOTH);
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-        assert(glGetError() == GL_NO_ERROR);
-
-        auto config_shader = [this](auto& shader) {
-            auto s_shader = shader.get_scoped();
-            shader.set_model_matrix(glm::mat4());
-            shader.set_view_matrix(get_view_matrix());
-            shader.set_projection_matrix(get_projection_matrix());
-        };
-
-        config_shader(generic_shader);
-        config_shader(fade_shader);
-        config_shader(waterfall_shader);
-        config_shader(quad_shader);
-
-        {
-            auto s_shader = fade_shader.get_scoped();
-            fade_shader.set_fade(current_params.fade);
-        }
-        {
-            auto s_shader = quad_shader.get_scoped();
-            quad_shader.set_screen_size(get_viewport());
-            quad_shader.set_fade(current_params.fade);
-        }
-        {
-            auto s_shader = waterfall_shader.get_scoped();
-            waterfall_shader.set_fade(current_params.fade);
-        }
-
-        waveform.draw();
-        if (mode == Mode::waterfall) {
-            waterfall.draw();
-        }
-        playhead.draw();
     }
 
     void set_mode(Mode u) {
@@ -210,6 +154,55 @@ public:
     }
 
 private:
+    void do_draw(const glm::mat4& modelview_matrix) const {
+        assert(glGetError() == GL_NO_ERROR);
+
+        auto c = 0.0;
+        glClearColor(c, c, c, 0);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        glEnable(GL_DEPTH_TEST);
+        glEnable(GL_MULTISAMPLE);
+        glEnable(GL_LINE_SMOOTH);
+        glEnable(GL_POLYGON_SMOOTH);
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+        assert(glGetError() == GL_NO_ERROR);
+
+        auto config_shader = [this](auto& shader) {
+            auto s_shader = shader.get_scoped();
+            shader.set_model_matrix(glm::mat4());
+            shader.set_view_matrix(get_view_matrix());
+            shader.set_projection_matrix(get_projection_matrix());
+        };
+
+        config_shader(generic_shader);
+        config_shader(fade_shader);
+        config_shader(waterfall_shader);
+        config_shader(quad_shader);
+
+        {
+            auto s_shader = fade_shader.get_scoped();
+            fade_shader.set_fade(current_params.fade);
+        }
+        {
+            auto s_shader = quad_shader.get_scoped();
+            quad_shader.set_screen_size(get_viewport());
+            quad_shader.set_fade(current_params.fade);
+        }
+        {
+            auto s_shader = waterfall_shader.get_scoped();
+            waterfall_shader.set_fade(current_params.fade);
+        }
+
+        waveform.draw(modelview_matrix);
+        if (mode == Mode::waterfall) {
+            waterfall.draw(modelview_matrix);
+        }
+        playhead.draw(modelview_matrix);
+    }
+
     glm::mat4 get_local_modelview_matrix() const override {
         auto max_view =
                 mode == Mode::waveform
@@ -298,7 +291,7 @@ private:
 
     const AudioTransportSource& audio_transport_source;
 
-    GenericShader generic_shader;
+    mglu::GenericShader generic_shader;
     FadeShader fade_shader;
     TexturedQuadShader quad_shader;
     WaterfallShader waterfall_shader;
