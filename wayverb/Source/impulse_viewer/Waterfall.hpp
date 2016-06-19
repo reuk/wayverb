@@ -3,6 +3,7 @@
 #include "FadeShader.hpp"
 #include "FrequencyAxis.hpp"
 #include "LoadContext.hpp"
+#include "Spectrogram.hpp"
 #include "WaterfallShader.hpp"
 #include "WorkQueue.hpp"
 
@@ -86,7 +87,6 @@ private:
         GLuint size;
     };
 
-    static const int per_buffer{4};
     static const int axes{6};
 
     static const float min_frequency;
@@ -109,6 +109,8 @@ private:
 
     Range<double> visible_range;
     float time_axis_interval{1};
+
+    InputBufferedSpectrogram spectrogram;
 
     WorkQueue incoming_work_queue;
 

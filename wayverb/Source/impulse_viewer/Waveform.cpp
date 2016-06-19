@@ -10,10 +10,12 @@ Waveform::Waveform(mglu::GenericShader& shader,
                    AudioFormatManager& manager,
                    const File& file)
         : shader(&shader)
+        , input_buffer(1 << 13, 1 << 8, 1 << 8)
         , load_context(std::make_unique<LoadContext>(
                   *this,
                   std::unique_ptr<AudioFormatReader>(
-                          manager.createReaderFor(file)))) {
+                          manager.createReaderFor(file))))
+        , x_spacing(input_buffer.get_hop_size() / load_context->sample_rate) {
     auto s_vao = vao.get_scoped();
 
     geometry.bind();
@@ -36,11 +38,8 @@ void Waveform::set_position(const glm::vec3& p) {
 
 void Waveform::update(float dt) {
     std::lock_guard<std::mutex> lck(mut);
-    while (!incoming_work_queue.empty()) {
-        auto item = incoming_work_queue.pop();
-        if (item) {
-            (*item)();
-        }
+    while (auto item = incoming_work_queue.pop()) {
+        (*item)();
     }
 
     if (downsampled.size() > previous_size) {
@@ -77,14 +76,16 @@ void Waveform::addBlock(int64 sample_number_in_source,
                         int start_offset,
                         int num_samples) {
     std::lock_guard<std::mutex> lck(mut);
-    auto waveform_steps = num_samples / per_buffer;
-    x_spacing = waveform_steps / load_context->sample_rate;
-    std::vector<std::pair<float, float>> ret(per_buffer);
-    for (auto a = 0u, b = 0u; a != per_buffer; ++a, b += waveform_steps) {
-        auto mm = std::minmax_element(
-                new_data.getReadPointer(0) + b,
-                new_data.getReadPointer(0) + b + waveform_steps);
-        ret[a] = std::make_pair(*mm.first, *mm.second);
+    auto ptr = new_data.getReadPointer(0);
+    input_buffer.write(ptr, ptr + num_samples);
+
+    std::vector<std::pair<float, float>> ret;
+    while (input_buffer.has_waiting_frames()) {
+        std::vector<float> temporary_buffer(input_buffer.get_window_size());
+        input_buffer.read(temporary_buffer.begin(), temporary_buffer.end());
+        auto mm = std::minmax_element(temporary_buffer.begin(),
+                                      temporary_buffer.end());
+        ret.push_back(std::make_pair(*mm.first, *mm.second));
     }
 
     incoming_work_queue.push([this, ret] {

@@ -2,6 +2,7 @@
 
 #include "LoadContext.hpp"
 #include "WorkQueue.hpp"
+#include "ThumbnailBuffer.hpp"
 
 #include "modern_gl_utils/buffer_object.h"
 #include "modern_gl_utils/drawable.h"
@@ -29,8 +30,6 @@ public:
                   int num_samples) override;
 
 private:
-    static const int per_buffer = 16;
-
     void do_draw(const glm::mat4& modelview_matrix) const override;
     glm::mat4 get_local_modelview_matrix() const override;
 
@@ -57,6 +56,8 @@ private:
 
     int previous_size{0};
     std::vector<std::pair<float, float>> downsampled;
+
+    InputBufferedHopBuffer<float> input_buffer;
 
     WorkQueue incoming_work_queue;
 

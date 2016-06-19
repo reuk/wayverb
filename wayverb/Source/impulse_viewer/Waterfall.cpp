@@ -2,8 +2,6 @@
 
 #include "ComputeIndices.hpp"
 
-#include "common/fftwf_helpers.h"
-#include "common/sinc.h"
 #include "lerp.h"
 
 #include "glm/gtx/transform.hpp"
@@ -11,76 +9,6 @@
 #include <array>
 #include <iomanip>
 #include <sstream>
-
-namespace {
-
-class Spectrogram {
-public:
-    Spectrogram(int window_length, int hop_size)
-            : window_length(window_length)
-            , complex_length(window_length / 2 + 1)
-            , hop_size(hop_size)
-            , window(blackman(window_length))
-            , i(fftwf_alloc_real(window_length))
-            , o(fftwf_alloc_complex(complex_length))
-            , r2c(fftwf_plan_dft_r2c_1d(
-                      window_length, i.get(), o.get(), FFTW_ESTIMATE)) {
-        std::vector<float> ones(window_length, 1);
-        normalisation_factor = 1;
-        normalisation_factor = Decibels::decibelsToGain(
-                compute_slice(ones.begin(), ones.end()).front() * 2, -200.0f);
-    }
-    virtual ~Spectrogram() noexcept = default;
-
-    std::vector<std::vector<float>> compute(const std::vector<float>& input) {
-        return compute(input.begin(), input.end());
-    }
-
-    template <typename It>
-    std::vector<std::vector<float>> compute(It begin, It end) {
-        std::vector<std::vector<float>> ret;
-        auto lim = std::distance(begin, end) - window_length + 1;
-        for (auto a = 0u; a < lim; a += hop_size) {
-            ret.push_back(compute_slice(begin + a, begin + a + window_length));
-        }
-        return ret;
-    }
-
-private:
-    template <typename It>
-    std::vector<float> compute_slice(It begin, It end) {
-        assert(std::distance(begin, end) == window_length);
-        std::transform(begin, end, window.begin(), i.get(), [](auto a, auto b) {
-            return a * b;
-        });
-        fftwf_execute(r2c);
-        std::vector<float> ret(complex_length);
-        std::transform(
-                o.get(), o.get() + complex_length, ret.begin(), [this](auto a) {
-                    auto ret = ((a[0] * a[0]) + (a[1] * a[1])) /
-                               normalisation_factor;
-                    //  get decibel value
-                    ret = Decibels::gainToDecibels(ret, -200.0f) * 0.5;
-                    return ret;
-                });
-        return ret;
-    }
-
-    int window_length;
-    int complex_length;
-    int hop_size;
-
-    std::vector<float> window;
-    float normalisation_factor;
-
-    fftwf_r i;
-    fftwf_c o;
-    FftwfPlan r2c;
-};
-
-}  // namespace
-
-//----------------------------------------------------------------------------//
 
 Waterfall::Waterfall(WaterfallShader& waterfall_shader,
                      FadeShader& fade_shader,
@@ -90,10 +18,12 @@ Waterfall::Waterfall(WaterfallShader& waterfall_shader,
         : waterfall_shader(&waterfall_shader)
         , fade_shader(&fade_shader)
         , quad_shader(&quad_shader)
+        , spectrogram(1 << 13, 1 << 11, 1 << 10)
         , load_context(std::make_unique<LoadContext>(
                   *this,
                   std::unique_ptr<AudioFormatReader>(
-                          manager.createReaderFor(file)))) {
+                          manager.createReaderFor(file))))
+        , x_spacing(spectrogram.get_hop_size() / load_context->sample_rate) {
     auto seconds = load_context->length_in_samples / load_context->sample_rate;
     for (auto i = 0; i != axes; ++i) {
         auto z = i / (axes - 1.0);
@@ -120,11 +50,8 @@ void Waterfall::set_position(const glm::vec3& p) {
 
 void Waterfall::update(float dt) {
     std::lock_guard<std::mutex> lck(mut);
-    while (!incoming_work_queue.empty()) {
-        auto item = incoming_work_queue.pop();
-        if (item) {
-            (*item)();
-        }
+    while (auto item = incoming_work_queue.pop()) {
+        (*item)();
     }
 
     auto begin = std::chrono::system_clock::now();
@@ -236,21 +163,18 @@ void Waterfall::addBlock(int64 sample_number_in_source,
                          int start_offset,
                          int num_samples) {
     std::lock_guard<std::mutex> lck(mut);
-    auto l = num_samples / per_buffer;
-
-    x_spacing = l / load_context->sample_rate;
-
-    auto ptr = new_data.getReadPointer(0);
-    Spectrogram spec(l, l);
-    auto s = spec.compute(ptr, ptr + num_samples);
-    for (auto& i : s) {
-        for (auto& j : i) {
-            //  to take the value back into the 0-1 range
-            j = (j + 100) / 100;
+    const auto begin = new_data.getReadPointer(0);
+    const auto end = begin + num_samples;
+    spectrogram.write(begin, end);
+    while (spectrogram.has_waiting_frames()) {
+        auto frame = spectrogram.read_frame();
+        for (auto& i : frame) {
+            i = (i + 100) / 100;
         }
+        incoming_work_queue.push([ this, frame = std::move(frame) ] {
+            spectrum.push_back(std::move(frame));
+        });
     }
-    incoming_work_queue.push(
-            [this, s] { spectrum.insert(spectrum.end(), s.begin(), s.end()); });
 }
 
 void Waterfall::clear_impl() {

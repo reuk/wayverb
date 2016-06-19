@@ -20,6 +20,7 @@
 		1B1CCB6C1D11746400A1BF38 /* ConvolutionAudioSource.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1B1CCB6A1D11746400A1BF38 /* ConvolutionAudioSource.cpp */; };
 		1B1CCB8D1D11979C00A1BF38 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 1BA0CEE21D0DF86000915A77 /* libz.tbd */; };
 		1B1CCC071D13085400A1BF38 /* VUMeter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1B1CCC051D13085400A1BF38 /* VUMeter.cpp */; };
+		1B5903FA1D171650002F8D40 /* Spectrogram.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1B5903F91D171650002F8D40 /* Spectrogram.cpp */; };
 		1B5FED281D135A5E004991C9 /* libhirt_convolution.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B5FED251D135A5E004991C9 /* libhirt_convolution.a */; };
 		1B5FED291D135A5E004991C9 /* libhiss_fft.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B5FED271D135A5E004991C9 /* libhiss_fft.a */; };
 		1B88D09D1D0ECAB300E6AF67 /* Playhead.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1B88D09B1D0ECAB300E6AF67 /* Playhead.cpp */; };
@@ -464,6 +465,9 @@
 		1B1CCC281D13471200A1BF38 /* Routing.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Routing.h; path = ../../Source/Routing.h; sourceTree = "<group>"; };
 		1B3DE3698539A30ABBE4F207 /* jcprepct.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = jcprepct.c; path = ../../JuceLibraryCode/modules/juce_graphics/image_formats/jpglib/jcprepct.c; sourceTree = SOURCE_ROOT; };
 		1B57A9189CF4E7C129F5FB69 /* juce_MidiKeyboardComponent.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = juce_MidiKeyboardComponent.cpp; path = ../../JuceLibraryCode/modules/juce_audio_utils/gui/juce_MidiKeyboardComponent.cpp; sourceTree = SOURCE_ROOT; };
+		1B5903F61D170765002F8D40 /* ThumbnailBuffer.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = ThumbnailBuffer.hpp; path = ../../Source/impulse_viewer/ThumbnailBuffer.hpp; sourceTree = "<group>"; };
+		1B5903F81D17160F002F8D40 /* Spectrogram.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = Spectrogram.hpp; path = ../../Source/impulse_viewer/Spectrogram.hpp; sourceTree = "<group>"; };
+		1B5903F91D171650002F8D40 /* Spectrogram.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Spectrogram.cpp; path = ../../Source/impulse_viewer/Spectrogram.cpp; sourceTree = "<group>"; };
 		1B5C13A51D1036A90014A8DD /* ValueWrapperListBox.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = ValueWrapperListBox.hpp; path = ../../Source/ValueWrapperListBox.hpp; sourceTree = "<group>"; };
 		1B6108181CA032ADF5CE83F6 /* juce_FileTreeComponent.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = juce_FileTreeComponent.h; path = ../../JuceLibraryCode/modules/juce_gui_basics/filebrowser/juce_FileTreeComponent.h; sourceTree = SOURCE_ROOT; };
 		1B88D09B1D0ECAB300E6AF67 /* Playhead.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Playhead.cpp; path = ../../Source/impulse_viewer/Playhead.cpp; sourceTree = "<group>"; };
@@ -3577,6 +3581,9 @@
 				A761AE90AB05D88F3BD2A075 /* TransportDisplay.hpp */,
 				F192AC6BEB4B4BF51ED18F3D /* Waterfall.cpp */,
 				BE4F7830B6A6308567748D8B /* Waterfall.hpp */,
+				1B5903F81D17160F002F8D40 /* Spectrogram.hpp */,
+				1B5903F91D171650002F8D40 /* Spectrogram.cpp */,
+				1B5903F61D170765002F8D40 /* ThumbnailBuffer.hpp */,
 				1F78EC9ACB5CD1478D90C91B /* Waveform.cpp */,
 				C78187F95C3D7F1E415D8FD5 /* Waveform.hpp */,
 				1B88D0C11D10169100E6AF67 /* ConvolutionRoutingComponent.cpp */,
@@ -4346,6 +4353,7 @@
 				81F9EC180F96D1F2515CAEDF /* AxesObject.cpp in Sources */,
 				050A6B5091EEE8752BD282EB /* BasicDrawableObject.cpp in Sources */,
 				6FA6648B7A3777DA0F606D82 /* BoxObject.cpp in Sources */,
+				1B5903FA1D171650002F8D40 /* Spectrogram.cpp in Sources */,
 				659ABD309630C2FA1EDAE1A4 /* ComputeIndices.cpp in Sources */,
 				1B1CCB6C1D11746400A1BF38 /* ConvolutionAudioSource.cpp in Sources */,
 				9B6E74EFCF16FC36620A625D /* LitSceneShader.cpp in Sources */,

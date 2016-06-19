@@ -37,10 +37,8 @@ void BaseRenderer::newOpenGLContextCreated() {
 }
 
 void BaseRenderer::renderOpenGL() {
-    while (!incoming_work_queue.empty()) {
-        if (auto method = incoming_work_queue.pop()) {
-            (*method)();
-        }
+    while (auto method = incoming_work_queue.pop()) {
+        (*method)();
     }
     get_context_lifetime()->update(0);
     get_context_lifetime()->draw(glm::mat4{});
@@ -51,10 +49,8 @@ void BaseRenderer::openGLContextClosing() {
 }
 
 void BaseRenderer::handleAsyncUpdate() {
-    while (!outgoing_work_queue.empty()) {
-        if (auto method = outgoing_work_queue.pop()) {
-            (*method)();
-        };
+    while (auto method = outgoing_work_queue.pop()) {
+        (*method)();
     }
 }
 
