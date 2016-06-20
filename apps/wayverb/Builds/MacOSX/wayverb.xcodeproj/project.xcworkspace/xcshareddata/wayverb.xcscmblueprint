@@ -1,0 +1,72 @@
+{
+  "DVTSourceControlWorkspaceBlueprintPrimaryRemoteRepositoryKey" : "7C27BCE8EFD7BF6CA8CD9F295638A8F658E9620D",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyRepositoryLocationsKey" : {
+
+  },
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyStatesKey" : {
+    "11AE1E4E13FAF6ACC66937EDD7312A35B7BB525C" : 0,
+    "EAD47A9E6FE8E7BF5B1E97821E861BB133998A5F" : 0,
+    "AE3F0F79FA18959EE39DE06BF81D40ADA159F259" : 0,
+    "8E1F4636E1B36CD61D92BC96E57F8AEE37AA589D" : 0,
+    "DEBAC9C6799FD4E8074B3BAF720718E3C3499FA0" : 0,
+    "7C27BCE8EFD7BF6CA8CD9F295638A8F658E9620D" : 0,
+    "76A15575C5B740800EF8E92EA66B97A276AEF659" : 0,
+    "D6DF976AA6D14491C2314E8D1201C07F43E39CD1" : 0
+  },
+  "DVTSourceControlWorkspaceBlueprintIdentifierKey" : "DEC7155E-B4E4-4E41-AF6E-65420D7523E7",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyPathsKey" : {
+    "11AE1E4E13FAF6ACC66937EDD7312A35B7BB525C" : "waveguide\/submodules\/gflags\/",
+    "EAD47A9E6FE8E7BF5B1E97821E861BB133998A5F" : "waveguide\/submodules\/glog\/",
+    "AE3F0F79FA18959EE39DE06BF81D40ADA159F259" : "waveguide\/submodules\/assimp\/",
+    "8E1F4636E1B36CD61D92BC96E57F8AEE37AA589D" : "waveguide\/submodules\/modern_gl_utils\/",
+    "DEBAC9C6799FD4E8074B3BAF720718E3C3499FA0" : "JUCE\/",
+    "7C27BCE8EFD7BF6CA8CD9F295638A8F658E9620D" : "waveguide\/",
+    "76A15575C5B740800EF8E92EA66B97A276AEF659" : "waveguide\/submodules\/googletest\/",
+    "D6DF976AA6D14491C2314E8D1201C07F43E39CD1" : "waveguide\/submodules\/glm\/"
+  },
+  "DVTSourceControlWorkspaceBlueprintNameKey" : "wayverb",
+  "DVTSourceControlWorkspaceBlueprintVersion" : 204,
+  "DVTSourceControlWorkspaceBlueprintRelativePathToProjectKey" : "apps\/wayverb\/Builds\/MacOSX\/wayverb.xcodeproj",
+  "DVTSourceControlWorkspaceBlueprintRemoteRepositoriesKey" : [
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "github.com:gflags\/gflags.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "11AE1E4E13FAF6ACC66937EDD7312A35B7BB525C"
+    },
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "github.com:google\/googletest.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "76A15575C5B740800EF8E92EA66B97A276AEF659"
+    },
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/github.com\/reuk\/wayverb.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "7C27BCE8EFD7BF6CA8CD9F295638A8F658E9620D"
+    },
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "github.com:reuk\/modern_gl_utils.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "8E1F4636E1B36CD61D92BC96E57F8AEE37AA589D"
+    },
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "github.com:assimp\/assimp.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "AE3F0F79FA18959EE39DE06BF81D40ADA159F259"
+    },
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "github.com:g-truc\/glm.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "D6DF976AA6D14491C2314E8D1201C07F43E39CD1"
+    },
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/github.com\/julianstorer\/JUCE.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "DEBAC9C6799FD4E8074B3BAF720718E3C3499FA0"
+    },
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "github.com:google\/glog.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "EAD47A9E6FE8E7BF5B1E97821E861BB133998A5F"
+    }
+  ]
+}

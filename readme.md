@@ -49,10 +49,3 @@ Updating the JUCE project
     * libmodern_gl_utils.a
     * libraytracer.a
     * libwaveguide.a
-6. Also add the following libraries from outside the project:
-    * OpenCL.framework
-    * libz.tbd
-7. Also add the following non-standard libraries (you might need to build them
-   from source, or grab them from homebrew):
-    * libsamplerate.a
-    * libfftw3f.a
