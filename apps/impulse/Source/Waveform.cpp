@@ -13,7 +13,8 @@ Waveform::Waveform(mglu::GenericShader& shader,
                   *this,
                   std::unique_ptr<AudioFormatReader>(
                           manager.createReaderFor(file))))
-        , x_spacing(input_buffer.get_hop_size() / load_context->sample_rate) {
+        , x_spacing(input_buffer.get_hop_size() /
+                    load_context->get_sample_rate()) {
     auto s_vao = vao.get_scoped();
 
     geometry.bind();

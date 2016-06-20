@@ -1,12 +1,13 @@
 #pragma once
 
-#include "GLAudioThumbnail.h"
 #include "RenderHelpers.hpp"
 #include "WorkQueue.hpp"
 
 #include "Ruler.hpp"
 
-class ImpulseRenderer : public BaseRenderer, public GLAudioThumbnailBase {
+class ImpulseRenderer
+        : public BaseRenderer,
+          public AudioFormatWriter::ThreadedWriter::IncomingDataReceiver {
 public:
     enum class Mode { waveform, waterfall };
 

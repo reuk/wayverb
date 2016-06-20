@@ -61,21 +61,21 @@ public:
         forward_fft(r2c, a, r2c_i, r2c_o, acplx);
         forward_fft(r2c, b, r2c_i, r2c_o, bcplx);
 
-        memset(c2r_i.get(), 0, CPLX_LENGTH * sizeof(fftwf_complex));
-        std::fill(c2r_o.get(), c2r_o.get() + FFT_LENGTH, 0);
+        c2r_i.zero();
+        c2r_o.zero();
 
-        auto x = acplx.get();
-        auto y = bcplx.get();
-        auto z = c2r_i.get();
+        auto x = acplx.begin();
+        auto y = bcplx.begin();
+        auto z = c2r_i.begin();
 
-        for (; z != c2r_i.get() + CPLX_LENGTH; ++x, ++y, ++z) {
+        for (; z != c2r_i.end(); ++x, ++y, ++z) {
             (*z)[0] += (*x)[0] * (*y)[0] - (*x)[1] * (*y)[1];
             (*z)[1] += (*x)[0] * (*y)[1] + (*x)[1] * (*y)[0];
         }
 
         fftwf_execute(c2r);
 
-        std::vector<float> ret(c2r_o.get(), c2r_o.get() + FFT_LENGTH);
+        std::vector<float> ret(c2r_o.begin(), c2r_o.end());
 
         for (auto &i : ret) {
             i /= FFT_LENGTH;
@@ -88,13 +88,13 @@ private:
     template <typename T>
     void forward_fft(const FftwfPlan &plan,
                      const T &data,
-                     const fftwf_r &i,
-                     const fftwf_c &o,
-                     const fftwf_c &results) {
-        std::fill(i.get(), i.get() + FFT_LENGTH, 0);
-        proc::copy(data, i.get());
+                     fftwf_r &i,
+                     fftwf_c &o,
+                     fftwf_c &results) {
+        i.zero();
+        proc::copy(data, i.begin());
         fftwf_execute(plan);
-        memcpy(results.get(), o.get(), CPLX_LENGTH * sizeof(fftwf_complex));
+        results = o;
     }
 
     const int FFT_LENGTH;

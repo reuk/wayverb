@@ -9,6 +9,27 @@
 #include <iomanip>
 #include <sstream>
 
+/// Helper class to read an audio file asynchronously and compute its
+/// spectrogram
+class WaterfallLoader
+        : public AudioFormatWriter::ThreadedWriter::IncomingDataReceiver {
+public:
+    WaterfallLoader(std::unique_ptr<AudioFormatReader>&& reader)
+            : load_context(*this, std::move(reader))
+            , spectrogram(load_context.get_num_channels(),
+                          1 << 13,
+                          1 << 11,
+                          1 << 10)
+            , x_spacing(spectrogram.get_hop_size() /
+                        load_context.get_sample_rate()) {
+    }
+
+private:
+    LoadContext load_context;
+    MultichannelBufferedSpectrogram spectrogram;
+    float x_spacing;
+};
+
 Waterfall::Waterfall(WaterfallShader& waterfall_shader,
                      FadeShader& fade_shader,
                      TexturedQuadShader& quad_shader,
@@ -22,8 +43,10 @@ Waterfall::Waterfall(WaterfallShader& waterfall_shader,
                   *this,
                   std::unique_ptr<AudioFormatReader>(
                           manager.createReaderFor(file))))
-        , x_spacing(spectrogram.get_hop_size() / load_context->sample_rate) {
-    auto seconds = load_context->length_in_samples / load_context->sample_rate;
+        , x_spacing(spectrogram.get_hop_size() /
+                    load_context->get_sample_rate()) {
+    auto seconds = load_context->get_length_in_samples() /
+                   load_context->get_sample_rate();
     for (auto i = 0; i != axes; ++i) {
         auto z = i / (axes - 1.0);
         std::stringstream ss;
@@ -65,10 +88,11 @@ void Waterfall::update(float dt) {
                             x_spacing,
                             min_frequency,
                             max_frequency,
-                            load_context->sample_rate);
+                            load_context->get_sample_rate());
     }
 
-    auto seconds = load_context->length_in_samples / load_context->sample_rate;
+    auto seconds = load_context->get_length_in_samples() /
+                   load_context->get_sample_rate();
     auto padding = visible_range.getLength() * 2;
     auto start = std::floor(std::max(0.0, visible_range.getStart() - padding) /
                             time_axis_interval) *
@@ -136,7 +160,7 @@ void Waterfall::set_mode(Mode u) {
                                               x_spacing,
                                               min_frequency,
                                               max_frequency,
-                                              load_context->sample_rate);
+                                              load_context->get_sample_rate());
                            x += x_spacing;
                            return ret;
                        });

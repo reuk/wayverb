@@ -143,16 +143,16 @@ void LinkwitzRileyBandpass::filter(std::vector<float> &data) {
 FastConvolution::FastConvolution(int FFT_LENGTH)
         : FFT_LENGTH(FFT_LENGTH)
         , CPLX_LENGTH(FFT_LENGTH / 2 + 1)
-        , r2c_i(fftwf_alloc_real(FFT_LENGTH))
-        , r2c_o(fftwf_alloc_complex(CPLX_LENGTH))
-        , c2r_i(fftwf_alloc_complex(CPLX_LENGTH))
-        , c2r_o(fftwf_alloc_real(FFT_LENGTH))
-        , acplx(fftwf_alloc_complex(CPLX_LENGTH))
-        , bcplx(fftwf_alloc_complex(CPLX_LENGTH))
+        , r2c_i(FFT_LENGTH)
+        , r2c_o(CPLX_LENGTH)
+        , c2r_i(CPLX_LENGTH)
+        , c2r_o(FFT_LENGTH)
+        , acplx(CPLX_LENGTH)
+        , bcplx(CPLX_LENGTH)
         , r2c(fftwf_plan_dft_r2c_1d(
-                  FFT_LENGTH, r2c_i.get(), r2c_o.get(), FFTW_ESTIMATE))
+                  FFT_LENGTH, r2c_i.data(), r2c_o.data(), FFTW_ESTIMATE))
         , c2r(fftwf_plan_dft_c2r_1d(
-                  FFT_LENGTH, c2r_i.get(), c2r_o.get(), FFTW_ESTIMATE)) {
+                  FFT_LENGTH, c2r_i.data(), c2r_o.data(), FFTW_ESTIMATE)) {
 }
 
 DCBlocker::DCBlocker() {

@@ -11,3 +11,9 @@ FftwfPlan::~FftwfPlan() noexcept {
 FftwfPlan::operator const fftwf_plan&() const {
     return plan;
 }
+
+fftwf_type_trait<fftwf_data_type::real>::alloc_func_type&
+        fftwf_type_trait<fftwf_data_type::real>::alloc = fftwf_alloc_real;
+
+fftwf_type_trait<fftwf_data_type::cplx>::alloc_func_type&
+        fftwf_type_trait<fftwf_data_type::cplx>::alloc = fftwf_alloc_complex;

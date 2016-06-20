@@ -12,9 +12,10 @@
 #include "modern_gl_utils/updatable.h"
 #include "modern_gl_utils/vao.h"
 
-class Waterfall : public mglu::Updatable,
-                  public mglu::Drawable,
-                  public GLAudioThumbnailBase {
+class Waterfall
+        : public mglu::Updatable,
+          public mglu::Drawable,
+          public AudioFormatWriter::ThreadedWriter::IncomingDataReceiver {
 public:
     enum class Mode { linear, log };
 
@@ -110,7 +111,7 @@ private:
     Range<double> visible_range;
     float time_axis_interval{1};
 
-    InputBufferedSpectrogram spectrogram;
+    BufferedSpectrogram spectrogram;
 
     WorkQueue incoming_work_queue;
 

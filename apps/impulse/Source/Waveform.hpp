@@ -10,9 +10,10 @@
 #include "modern_gl_utils/updatable.h"
 #include "modern_gl_utils/vao.h"
 
-class Waveform : public mglu::Updatable,
-                 public mglu::Drawable,
-                 public GLAudioThumbnailBase {
+class Waveform
+        : public mglu::Updatable,
+          public mglu::Drawable,
+          public AudioFormatWriter::ThreadedWriter::IncomingDataReceiver {
 public:
     Waveform(mglu::GenericShader& shader,
              AudioFormatManager& manager,

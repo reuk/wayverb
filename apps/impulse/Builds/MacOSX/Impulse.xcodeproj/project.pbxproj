@@ -19,6 +19,7 @@
 		1B7A05371D18222800145340 /* libhirt_convolution.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B7A05221D18221500145340 /* libhirt_convolution.a */; };
 		1B7A05381D18222800145340 /* libhiss_fft.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B7A05241D18221500145340 /* libhiss_fft.a */; };
 		1B7A05391D18222800145340 /* libmodern_gl_utils.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B7A05201D18221500145340 /* libmodern_gl_utils.a */; };
+		1BFA3DB01D184ACD00A6A1D6 /* raii_thread.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1BFA3DAF1D184ACD00A6A1D6 /* raii_thread.cpp */; };
 		1D5617234CFAC0E0B2F90296 /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75D40C1E48F0D9B9CAF4615B /* IOKit.framework */; };
 		281E95BF690246A8939FEAA8 /* WaterfallShader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1F232A2FC341C5F43EBB92F8 /* WaterfallShader.cpp */; };
 		28FBC28FA1FCD5BF0D5E10A9 /* Waterfall.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6296AFACF4D40498EC32929F /* Waterfall.cpp */; };
@@ -405,6 +406,8 @@
 		1B8DD2CE789391FE0B9A01E2 /* juce_ThreadLocalValue.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = juce_ThreadLocalValue.h; path = ../../JuceLibraryCode/modules/juce_core/threads/juce_ThreadLocalValue.h; sourceTree = SOURCE_ROOT; };
 		1BB41F1714525E1DAB454F84 /* juce_LAMEEncoderAudioFormat.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = juce_LAMEEncoderAudioFormat.h; path = ../../JuceLibraryCode/modules/juce_audio_formats/codecs/juce_LAMEEncoderAudioFormat.h; sourceTree = SOURCE_ROOT; };
 		1BD03FDD48C63A1E9D9E9DA7 /* collection.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = collection.h; path = ../../../common/lib_model/collection.h; sourceTree = SOURCE_ROOT; };
+		1BFA3DAE1D1848D500A6A1D6 /* raii_thread.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = raii_thread.hpp; path = ../../../common/raii_thread.hpp; sourceTree = "<group>"; };
+		1BFA3DAF1D184ACD00A6A1D6 /* raii_thread.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = raii_thread.cpp; path = ../../../common/raii_thread.cpp; sourceTree = "<group>"; };
 		1BFA4FAB16704487E863EE43 /* juce_ChangeListener.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = juce_ChangeListener.h; path = ../../JuceLibraryCode/modules/juce_events/broadcasters/juce_ChangeListener.h; sourceTree = SOURCE_ROOT; };
 		1C4A528B682433A463A102CA /* juce_MenuBarComponent.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = juce_MenuBarComponent.h; path = ../../JuceLibraryCode/modules/juce_gui_basics/menus/juce_MenuBarComponent.h; sourceTree = SOURCE_ROOT; };
 		1CE1202E705007CA748B39DC /* juce_MPEInstrument.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = juce_MPEInstrument.cpp; path = ../../JuceLibraryCode/modules/juce_audio_basics/mpe/juce_MPEInstrument.cpp; sourceTree = SOURCE_ROOT; };
@@ -813,7 +816,6 @@
 		6E3832AED7AF2B4B37911884 /* residue_44.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = residue_44.h; path = "../../JuceLibraryCode/modules/juce_audio_formats/codecs/oggvorbis/libvorbis-1.3.2/lib/modes/residue_44.h"; sourceTree = SOURCE_ROOT; };
 		6E715F4C577BFB2D16E8D8B7 /* juce_PropertiesFile.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = juce_PropertiesFile.h; path = ../../JuceLibraryCode/modules/juce_data_structures/app_properties/juce_PropertiesFile.h; sourceTree = SOURCE_ROOT; };
 		6E9E4749E5045874C8C846F1 /* stream_encoder_framing.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = stream_encoder_framing.h; path = ../../JuceLibraryCode/modules/juce_audio_formats/codecs/flac/libFLAC/include/private/stream_encoder_framing.h; sourceTree = SOURCE_ROOT; };
-		6EBC64D038CB36D852D6F44E /* GLAudioThumbnail.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = GLAudioThumbnail.h; path = ../../Source/GLAudioThumbnail.h; sourceTree = SOURCE_ROOT; };
 		6EC24E813EDD5112754D0C2F /* config_types.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = config_types.h; path = ../../JuceLibraryCode/modules/juce_audio_formats/codecs/oggvorbis/config_types.h; sourceTree = SOURCE_ROOT; };
 		6ED288F5D49F9FAFF33E6C76 /* jdmaster.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = jdmaster.c; path = ../../JuceLibraryCode/modules/juce_graphics/image_formats/jpglib/jdmaster.c; sourceTree = SOURCE_ROOT; };
 		6ED96CB27807F00C786A0233 /* juce_android_OpenSL.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = juce_android_OpenSL.cpp; path = ../../JuceLibraryCode/modules/juce_audio_devices/native/juce_android_OpenSL.cpp; sourceTree = SOURCE_ROOT; };
@@ -1870,7 +1872,6 @@
 				7EC822E9832D9CF68C53D9F7 /* FadeShader.hpp */,
 				EF4AF15702C87C4CB70F2895 /* FrequencyAxis.cpp */,
 				8AA9EACBD934BCCD140D56B6 /* FrequencyAxis.hpp */,
-				6EBC64D038CB36D852D6F44E /* GLAudioThumbnail.h */,
 				38203DB40D132CA47E101015 /* impulse.png */,
 				61F1DE4CE524BAF5E74A742C /* ImpulseRenderer.cpp */,
 				4F8C82468925027DC4EFF145 /* ImpulseRenderer.hpp */,
@@ -3664,6 +3665,8 @@
 		F3095AE9C6E5FFC62CF98681 /* common */ = {
 			isa = PBXGroup;
 			children = (
+				1BFA3DAF1D184ACD00A6A1D6 /* raii_thread.cpp */,
+				1BFA3DAE1D1848D500A6A1D6 /* raii_thread.hpp */,
 				037E2F55415A77433D7E56A1 /* lib_model */,
 				D0129A020BA0563D80173D3F /* AngularLookAndFeel.cpp */,
 				F44D1B36533FBAE809520A2B /* AngularLookAndFeel.hpp */,
@@ -4237,6 +4240,7 @@
 				CB8F25A424750745732406A0 /* juce_events.mm in Sources */,
 				A714F5B9B7740F3F2728081B /* juce_graphics.mm in Sources */,
 				3D6438D1F80E47C7ED562685 /* juce_gui_basics.mm in Sources */,
+				1BFA3DB01D184ACD00A6A1D6 /* raii_thread.cpp in Sources */,
 				ACF74D74A3195BCAE3B24DDD /* juce_gui_extra.mm in Sources */,
 				9F82DC0BADA99B073EAF3567 /* juce_opengl.mm in Sources */,
 				10EB0D0B6B18A02D8DA0A58B /* juce_video.mm in Sources */,

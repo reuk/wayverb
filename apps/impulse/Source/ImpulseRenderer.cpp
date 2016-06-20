@@ -41,8 +41,9 @@ public:
 const float Playhead3D::width{0.01};
 }  // namespace
 
-class ImpulseRenderer::ContextLifetime : public BaseContextLifetime,
-                                         public GLAudioThumbnailBase {
+class ImpulseRenderer::ContextLifetime
+        : public BaseContextLifetime,
+          public AudioFormatWriter::ThreadedWriter::IncomingDataReceiver {
     struct ScaleFactor {
         float time{1};
         float amplitude{1};
@@ -267,7 +268,8 @@ private:
         }
     }
 
-    std::array<GLAudioThumbnailBase*, 2> get_thumbnails() {
+    std::array<AudioFormatWriter::ThreadedWriter::IncomingDataReceiver*, 2>
+    get_thumbnails() {
         return {&waveform, &waterfall};
     }
 
