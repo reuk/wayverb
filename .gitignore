@@ -12,7 +12,8 @@ docs
 
 config/travisci_rsa
 
-wayverb/Builds/MacOSX/Build
+apps/wayverb/Builds/MacOSX/Build
+apps/impulse/Builds/MacOSX/Build
 
 *.swp
 
