@@ -3,6 +3,7 @@
 #include "FadeShader.hpp"
 #include "FrequencyAxis.hpp"
 #include "LoadContext.hpp"
+#include "LoaderAdapter.hpp"
 #include "Spectrogram.hpp"
 #include "WaterfallShader.hpp"
 #include "WorkQueue.hpp"
@@ -12,10 +13,7 @@
 #include "modern_gl_utils/updatable.h"
 #include "modern_gl_utils/vao.h"
 
-class Waterfall
-        : public mglu::Updatable,
-          public mglu::Drawable,
-          public AudioFormatWriter::ThreadedWriter::IncomingDataReceiver {
+class Waterfall : public mglu::Updatable, public mglu::Drawable {
 public:
     enum class Mode { linear, log };
 
@@ -31,14 +29,6 @@ public:
 
     void set_position(const glm::vec3& p);
 
-    void reset(int num_channels,
-               double sample_rate,
-               int64 total_samples) override;
-    void addBlock(int64 sample_number_in_source,
-                  const AudioSampleBuffer& new_data,
-                  int start_offset,
-                  int num_samples) override;
-
     void set_visible_range(const Range<double>& range);
 
     static float z_to_frequency(Mode mode, float z);
@@ -50,10 +40,9 @@ private:
     void do_draw(const glm::mat4& modelview_matrix) const override;
     glm::mat4 get_local_modelview_matrix() const override;
 
-    void clear_impl();
-
     glm::vec3 get_scale() const;
 
+    /// Helper class to draw a 'strip' of the spectrogram/height-map.
     class HeightMapStrip : public mglu::Drawable {
     public:
         HeightMapStrip(WaterfallShader& shader,
@@ -99,10 +88,11 @@ private:
     FadeShader* fade_shader;
     TexturedQuadShader* quad_shader;
 
+    size_t channel;
+
     glm::vec3 position{0};
 
     Mode mode{Mode::log};
-    std::vector<std::vector<float>> spectrum;
     std::vector<HeightMapStrip> strips;
 
     std::vector<std::unique_ptr<AxisObject>> frequency_axis_objects;
@@ -111,10 +101,5 @@ private:
     Range<double> visible_range;
     float time_axis_interval{1};
 
-    BufferedSpectrogram spectrogram;
-
-    WorkQueue incoming_work_queue;
-
-    std::unique_ptr<LoadContext> load_context;
-    float x_spacing;
+    LoaderAdapter<BufferedSpectrogram> loader;
 };

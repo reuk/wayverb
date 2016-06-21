@@ -28,10 +28,9 @@ public:
     }
 
     template <typename It>
-    void write(It begin, It end) {
+    void write(It begin, size_t num) {
         int begin_1, size_1, begin_2, size_2;
-        fifo.prepareToWrite(
-                std::distance(begin, end), begin_1, size_1, begin_2, size_2);
+        fifo.prepareToWrite(num, begin_1, size_1, begin_2, size_2);
         assert(size_1 >= 0);
         assert(size_2 >= 0);
         std::copy(begin, begin + size_1, buffer.begin() + begin_1);
@@ -42,10 +41,9 @@ public:
     }
 
     template <typename It>
-    void read(It begin, It end) {
+    void read(It begin, size_t num) {
         int begin_1, size_1, begin_2, size_2;
-        fifo.prepareToRead(
-                std::distance(begin, end), begin_1, size_1, begin_2, size_2);
+        fifo.prepareToRead(num, begin_1, size_1, begin_2, size_2);
         assert(size_1 >= 0);
         assert(size_2 >= 0);
         std::copy(buffer.begin() + begin_1,
@@ -81,24 +79,23 @@ public:
     }
 
     template <typename In, typename Out>
-    void step(In begin_in, In end_in, Out begin_out, Out end_out) {
-        write(begin_in, end_in);
-        read(begin_out, end_out);
+    void step(In begin_in, Out begin_out) {
+        write(begin_in);
+        read(begin_out);
     }
 
 private:
     template <typename It>
-    void write(It begin, It end) {
-        assert(std::distance(begin, end) == hop_size);
+    void write(It begin) {
+        auto num = hop_size;
         auto diff = std::min(buffer.size() - read_ptr, hop_size);
         std::copy(begin, begin + diff, buffer.begin() + read_ptr);
-        std::copy(begin + diff, end, buffer.begin());
+        std::copy(begin + diff, begin + num, buffer.begin());
         read_ptr = (read_ptr + hop_size) % buffer.size();
     }
 
     template <typename It>
-    void read(It begin, It end) {
-        assert(std::distance(begin, end) == buffer.size());
+    void read(It begin) {
         auto diff = buffer.size() - read_ptr;
         std::copy(buffer.begin() + read_ptr, buffer.end(), begin);
         std::copy(buffer.begin(), buffer.begin() + read_ptr, begin + diff);
@@ -112,6 +109,8 @@ private:
 template <typename T>
 class InputBufferedHopBuffer {
 public:
+    using value_type = T;
+
     InputBufferedHopBuffer(size_t buffer_size,
                            size_t window_size,
                            size_t hop_size,
@@ -139,16 +138,15 @@ public:
     }
 
     template <typename It>
-    void write(It begin, It end) {
-        input_buffer.write(begin, end);
+    void write(It begin, size_t num) {
+        input_buffer.write(begin, num);
     }
 
     template <typename It>
-    void read(It begin, It end) {
+    void read(It begin, size_t num) {
         assert(has_waiting_frames());
-        input_buffer.read(temporary_buffer.begin(), temporary_buffer.end());
-        output_buffer.step(
-                temporary_buffer.begin(), temporary_buffer.end(), begin, end);
+        input_buffer.read(temporary_buffer.data(), temporary_buffer.size());
+        output_buffer.step(temporary_buffer.data(), begin);
     }
 
 private:

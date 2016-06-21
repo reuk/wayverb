@@ -8,13 +8,11 @@ Waveform::Waveform(mglu::GenericShader& shader,
                    AudioFormatManager& manager,
                    const File& file)
         : shader(&shader)
-        , input_buffer(1 << 13, 1 << 8, 1 << 8)
-        , load_context(std::make_unique<LoadContext>(
-                  *this,
-                  std::unique_ptr<AudioFormatReader>(
-                          manager.createReaderFor(file))))
-        , x_spacing(input_buffer.get_hop_size() /
-                    load_context->get_sample_rate()) {
+        , loader(std::unique_ptr<AudioFormatReader>(
+                         manager.createReaderFor(file)),
+                 1 << 13,
+                 1 << 8,
+                 1 << 8) {
     auto s_vao = vao.get_scoped();
 
     geometry.bind();
@@ -37,10 +35,7 @@ void Waveform::set_position(const glm::vec3& p) {
 
 void Waveform::update(float dt) {
     std::lock_guard<std::mutex> lck(mut);
-    while (auto item = incoming_work_queue.pop()) {
-        (*item)();
-    }
-
+    auto downsampled = loader.get_channel(channel);
     if (downsampled.size() > previous_size) {
         previous_size = downsampled.size();
         auto g = compute_geometry(downsampled);
@@ -63,43 +58,6 @@ glm::mat4 Waveform::get_local_modelview_matrix() const {
     return glm::translate(position);
 }
 
-//  these two will be called from a thread *other* than the gl thread
-void Waveform::reset(int num_channels,
-                     double sample_rate,
-                     int64 total_samples) {
-    std::lock_guard<std::mutex> lck(mut);
-    incoming_work_queue.push([this] { clear_impl(); });
-}
-void Waveform::addBlock(int64 sample_number_in_source,
-                        const AudioSampleBuffer& new_data,
-                        int start_offset,
-                        int num_samples) {
-    std::lock_guard<std::mutex> lck(mut);
-    auto ptr = new_data.getReadPointer(0);
-    input_buffer.write(ptr, ptr + num_samples);
-
-    std::vector<std::pair<float, float>> ret;
-    while (input_buffer.has_waiting_frames()) {
-        std::vector<float> temporary_buffer(input_buffer.get_window_size());
-        input_buffer.read(temporary_buffer.begin(), temporary_buffer.end());
-        auto mm = std::minmax_element(temporary_buffer.begin(),
-                                      temporary_buffer.end());
-        ret.push_back(std::make_pair(*mm.first, *mm.second));
-    }
-
-    incoming_work_queue.push([this, ret] {
-        downsampled.insert(downsampled.end(), ret.begin(), ret.end());
-    });
-}
-
-void Waveform::clear_impl() {
-    previous_size = 0;
-    downsampled.clear();
-    geometry.clear();
-    colors.clear();
-    ibo.clear();
-}
-
 std::vector<glm::vec4> Waveform::compute_colours(
         const std::vector<glm::vec3>& g) {
     std::vector<glm::vec4> ret(g.size());
@@ -118,7 +76,7 @@ std::vector<glm::vec3> Waveform::compute_geometry(
     for (const auto& i : data) {
         ret.push_back(glm::vec3{x, i.first, 0});
         ret.push_back(glm::vec3{x, i.second, 0});
-        x += x_spacing;
+        x += loader.get_x_spacing();
     }
     return ret;
 }

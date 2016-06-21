@@ -5,9 +5,7 @@
 
 #include "Ruler.hpp"
 
-class ImpulseRenderer
-        : public BaseRenderer,
-          public AudioFormatWriter::ThreadedWriter::IncomingDataReceiver {
+class ImpulseRenderer : public BaseRenderer {
 public:
     enum class Mode { waveform, waterfall };
 
@@ -20,15 +18,6 @@ public:
     void openGLContextClosing() override;
 
     void set_mode(Mode mode);
-
-    //  inherited
-    void reset(int num_channels,
-               double sample_rate,
-               int64 total_samples) override;
-    void addBlock(int64 sample_number_in_source,
-                  const AudioSampleBuffer& new_data,
-                  int start_offset,
-                  int num_samples) override;
 
     void set_visible_range(const Range<double>& range);
 

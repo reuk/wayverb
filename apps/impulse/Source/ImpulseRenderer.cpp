@@ -41,9 +41,7 @@ public:
 const float Playhead3D::width{0.01};
 }  // namespace
 
-class ImpulseRenderer::ContextLifetime
-        : public BaseContextLifetime,
-          public AudioFormatWriter::ThreadedWriter::IncomingDataReceiver {
+class ImpulseRenderer::ContextLifetime : public BaseContextLifetime {
     struct ScaleFactor {
         float time{1};
         float amplitude{1};
@@ -123,25 +121,6 @@ public:
     }
 
     void mouse_wheel_move(float delta_y) override {
-    }
-
-    void reset(int num_channels,
-               double sample_rate,
-               int64 total_samples) override {
-        for (auto i : get_thumbnails()) {
-            i->reset(num_channels, sample_rate, total_samples);
-        }
-    }
-    void addBlock(int64 sample_number_in_source,
-                  const AudioSampleBuffer& new_data,
-                  int start_offset,
-                  int num_samples) override {
-        for (auto i : get_thumbnails()) {
-            i->addBlock(sample_number_in_source,
-                        new_data,
-                        start_offset,
-                        num_samples);
-        }
     }
 
     void set_amplitude_scale(float f) {
@@ -268,11 +247,6 @@ private:
         }
     }
 
-    std::array<AudioFormatWriter::ThreadedWriter::IncomingDataReceiver*, 2>
-    get_thumbnails() {
-        return {&waveform, &waterfall};
-    }
-
     struct Mousing {
         virtual ~Mousing() noexcept = default;
         enum class Mode { rotate, move };
@@ -381,31 +355,6 @@ BaseContextLifetime* ImpulseRenderer::get_context_lifetime() {
 void ImpulseRenderer::set_mode(Mode mode) {
     std::lock_guard<std::mutex> lck(mut);
     set_mode_impl(mode);
-}
-
-void ImpulseRenderer::reset(int num_channels,
-                            double sample_rate,
-                            int64 total_samples) {
-    std::lock_guard<std::mutex> lck(mut);
-    push_incoming([this, num_channels, sample_rate, total_samples] {
-        assert(context_lifetime);
-        context_lifetime->reset(num_channels, sample_rate, total_samples);
-    });
-}
-void ImpulseRenderer::addBlock(int64 sample_number_in_source,
-                               const AudioSampleBuffer& new_data,
-                               int start_offset,
-                               int num_samples) {
-    std::lock_guard<std::mutex> lck(mut);
-    push_incoming([this,
-                   sample_number_in_source,
-                   new_data,
-                   start_offset,
-                   num_samples] {
-        assert(context_lifetime);
-        context_lifetime->addBlock(
-                sample_number_in_source, new_data, start_offset, num_samples);
-    });
 }
 
 void ImpulseRenderer::set_visible_range(const Range<double>& range) {

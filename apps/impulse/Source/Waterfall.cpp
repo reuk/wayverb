@@ -1,5 +1,6 @@
 #include "Waterfall.hpp"
 
+#include "for_each.h"
 #include "lerp.h"
 #include "modern_gl_utils/geometry_helpers.h"
 
@@ -9,27 +10,6 @@
 #include <iomanip>
 #include <sstream>
 
-/// Helper class to read an audio file asynchronously and compute its
-/// spectrogram
-class WaterfallLoader
-        : public AudioFormatWriter::ThreadedWriter::IncomingDataReceiver {
-public:
-    WaterfallLoader(std::unique_ptr<AudioFormatReader>&& reader)
-            : load_context(*this, std::move(reader))
-            , spectrogram(load_context.get_num_channels(),
-                          1 << 13,
-                          1 << 11,
-                          1 << 10)
-            , x_spacing(spectrogram.get_hop_size() /
-                        load_context.get_sample_rate()) {
-    }
-
-private:
-    LoadContext load_context;
-    MultichannelBufferedSpectrogram spectrogram;
-    float x_spacing;
-};
-
 Waterfall::Waterfall(WaterfallShader& waterfall_shader,
                      FadeShader& fade_shader,
                      TexturedQuadShader& quad_shader,
@@ -38,15 +18,13 @@ Waterfall::Waterfall(WaterfallShader& waterfall_shader,
         : waterfall_shader(&waterfall_shader)
         , fade_shader(&fade_shader)
         , quad_shader(&quad_shader)
-        , spectrogram(1 << 13, 1 << 11, 1 << 10)
-        , load_context(std::make_unique<LoadContext>(
-                  *this,
-                  std::unique_ptr<AudioFormatReader>(
-                          manager.createReaderFor(file))))
-        , x_spacing(spectrogram.get_hop_size() /
-                    load_context->get_sample_rate()) {
-    auto seconds = load_context->get_length_in_samples() /
-                   load_context->get_sample_rate();
+        , channel(0)
+        , loader(std::unique_ptr<AudioFormatReader>(
+                         manager.createReaderFor(file)),
+                 1 << 13,
+                 1 << 10,
+                 1 << 9) {
+    auto seconds = loader.get_length_in_seconds();
     for (auto i = 0; i != axes; ++i) {
         auto z = i / (axes - 1.0);
         std::stringstream ss;
@@ -72,11 +50,8 @@ void Waterfall::set_position(const glm::vec3& p) {
 
 void Waterfall::update(float dt) {
     std::lock_guard<std::mutex> lck(mut);
-    while (auto item = incoming_work_queue.pop()) {
-        (*item)();
-    }
-
     auto begin = std::chrono::system_clock::now();
+    auto spectrum = loader.get_channel(channel);
     while (strips.size() + 1 < spectrum.size() &&
            (std::chrono::system_clock::now() - begin) <
                    std::chrono::duration<double>(1 / 200.0)) {
@@ -84,15 +59,14 @@ void Waterfall::update(float dt) {
                             spectrum[strips.size()],
                             spectrum[strips.size() + 1],
                             mode,
-                            x_spacing * strips.size(),
-                            x_spacing,
+                            loader.get_x_spacing() * strips.size(),
+                            loader.get_x_spacing(),
                             min_frequency,
                             max_frequency,
-                            load_context->get_sample_rate());
+                            loader.get_sample_rate());
     }
 
-    auto seconds = load_context->get_length_in_samples() /
-                   load_context->get_sample_rate();
+    auto seconds = loader.get_length_in_seconds();
     auto padding = visible_range.getLength() * 2;
     auto start = std::floor(std::max(0.0, visible_range.getStart() - padding) /
                             time_axis_interval) *
@@ -145,6 +119,7 @@ void Waterfall::set_mode(Mode u) {
         mode = u;
 
         strips.clear();
+        auto spectrum = loader.get_channel(channel);
 
         auto x = 0.0;
         std::transform(spectrum.begin(),
@@ -157,11 +132,11 @@ void Waterfall::set_mode(Mode u) {
                                               j,
                                               mode,
                                               x,
-                                              x_spacing,
+                                              loader.get_x_spacing(),
                                               min_frequency,
                                               max_frequency,
-                                              load_context->get_sample_rate());
-                           x += x_spacing;
+                                              loader.get_sample_rate());
+                           x += loader.get_x_spacing();
                            return ret;
                        });
     }
@@ -172,37 +147,6 @@ void Waterfall::set_visible_range(const Range<double>& r) {
     visible_range = r;
     time_axis_interval = std::pow(
             10, std::ceil(std::log10(visible_range.getLength() * 0.2)));
-}
-
-//  these two will be called from a thread *other* than the gl thread
-void Waterfall::reset(int num_channels,
-                      double sample_rate,
-                      int64 total_samples) {
-    std::lock_guard<std::mutex> lck(mut);
-    incoming_work_queue.push([this] { clear_impl(); });
-}
-void Waterfall::addBlock(int64 sample_number_in_source,
-                         const AudioSampleBuffer& new_data,
-                         int start_offset,
-                         int num_samples) {
-    std::lock_guard<std::mutex> lck(mut);
-    const auto begin = new_data.getReadPointer(0);
-    const auto end = begin + num_samples;
-    spectrogram.write(begin, end);
-    while (spectrogram.has_waiting_frames()) {
-        auto frame = spectrogram.read_frame();
-        for (auto& i : frame) {
-            i = (i + 100) / 100;
-        }
-        incoming_work_queue.push([ this, frame = std::move(frame) ] {
-            spectrum.push_back(std::move(frame));
-        });
-    }
-}
-
-void Waterfall::clear_impl() {
-    strips.clear();
-    spectrum.clear();
 }
 
 float Waterfall::z_to_frequency(Mode mode, float z) {

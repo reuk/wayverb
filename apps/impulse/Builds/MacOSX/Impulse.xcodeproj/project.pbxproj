@@ -408,6 +408,9 @@
 		1BD03FDD48C63A1E9D9E9DA7 /* collection.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = collection.h; path = ../../../common/lib_model/collection.h; sourceTree = SOURCE_ROOT; };
 		1BFA3DAE1D1848D500A6A1D6 /* raii_thread.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = raii_thread.hpp; path = ../../../common/raii_thread.hpp; sourceTree = "<group>"; };
 		1BFA3DAF1D184ACD00A6A1D6 /* raii_thread.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = raii_thread.cpp; path = ../../../common/raii_thread.cpp; sourceTree = "<group>"; };
+		1BFA3DB11D195C7600A6A1D6 /* for_each.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = for_each.h; path = ../../../common/for_each.h; sourceTree = "<group>"; };
+		1BFA3DB21D19739C00A6A1D6 /* MultichannelAdapter.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = MultichannelAdapter.hpp; path = ../../Source/MultichannelAdapter.hpp; sourceTree = "<group>"; };
+		1BFA3DB31D1976D900A6A1D6 /* LoaderAdapter.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = LoaderAdapter.hpp; path = ../../Source/LoaderAdapter.hpp; sourceTree = "<group>"; };
 		1BFA4FAB16704487E863EE43 /* juce_ChangeListener.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = juce_ChangeListener.h; path = ../../JuceLibraryCode/modules/juce_events/broadcasters/juce_ChangeListener.h; sourceTree = SOURCE_ROOT; };
 		1C4A528B682433A463A102CA /* juce_MenuBarComponent.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = juce_MenuBarComponent.h; path = ../../JuceLibraryCode/modules/juce_gui_basics/menus/juce_MenuBarComponent.h; sourceTree = SOURCE_ROOT; };
 		1CE1202E705007CA748B39DC /* juce_MPEInstrument.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = juce_MPEInstrument.cpp; path = ../../JuceLibraryCode/modules/juce_audio_basics/mpe/juce_MPEInstrument.cpp; sourceTree = SOURCE_ROOT; };
@@ -1855,6 +1858,8 @@
 		1433A54A213BF62FD13D2148 /* Source */ = {
 			isa = PBXGroup;
 			children = (
+				1BFA3DB31D1976D900A6A1D6 /* LoaderAdapter.hpp */,
+				1BFA3DB21D19739C00A6A1D6 /* MultichannelAdapter.hpp */,
 				AD5729C867CF91C6D3BB2860 /* Application.cpp */,
 				E3AAE20662C8E93CC38BF184 /* Application.hpp */,
 				926D179A17F29DC27C710D2C /* AudioThumbnailPane.cpp */,
@@ -3665,6 +3670,7 @@
 		F3095AE9C6E5FFC62CF98681 /* common */ = {
 			isa = PBXGroup;
 			children = (
+				1BFA3DB11D195C7600A6A1D6 /* for_each.h */,
 				1BFA3DAF1D184ACD00A6A1D6 /* raii_thread.cpp */,
 				1BFA3DAE1D1848D500A6A1D6 /* raii_thread.hpp */,
 				037E2F55415A77433D7E56A1 /* lib_model */,
