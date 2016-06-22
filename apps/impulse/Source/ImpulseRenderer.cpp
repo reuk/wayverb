@@ -97,6 +97,11 @@ public:
         }
     }
 
+    void set_channel(size_t channel) {
+        waveform.set_channel(channel);
+        waterfall.set_channel(channel);
+    }
+
     void mouse_down(const glm::vec2& pos) override {
         if (mode == Mode::waterfall) {
             mousing = std::make_unique<Rotate>(target_params.azel, pos);
@@ -355,6 +360,14 @@ BaseContextLifetime* ImpulseRenderer::get_context_lifetime() {
 void ImpulseRenderer::set_mode(Mode mode) {
     std::lock_guard<std::mutex> lck(mut);
     set_mode_impl(mode);
+}
+
+void ImpulseRenderer::set_channel(size_t channel) {
+    std::lock_guard<std::mutex> lck(mut);
+    push_incoming([this, channel] {
+        assert(context_lifetime);
+        context_lifetime->set_channel(channel);
+    });
 }
 
 void ImpulseRenderer::set_visible_range(const Range<double>& range) {

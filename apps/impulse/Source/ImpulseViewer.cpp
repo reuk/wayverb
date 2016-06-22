@@ -2,6 +2,8 @@
 #include "Application.hpp"
 #include "CommandIDs.h"
 
+#include <sstream>
+
 ImpulseViewer::ImpulseViewer(AudioDeviceManager& audio_device_manager,
                              AudioFormatManager& audio_format_manager,
                              const File& file)
@@ -16,6 +18,9 @@ ImpulseViewer::ImpulseViewer(AudioDeviceManager& audio_device_manager,
         , follow_playback_button("follow playback")
         , scroll_bar(false)
         , transport(audio_transport_source) {
+    auto& command_manager = ImpulseApplication::get_command_manager();
+    command_manager.registerAllCommandsForTarget(this);
+
     audio_transport_source.setSource(
             &audio_format_reader_source,
             0,
@@ -25,9 +30,6 @@ ImpulseViewer::ImpulseViewer(AudioDeviceManager& audio_device_manager,
 
     audio_source_player.setSource(&audio_transport_source);
     audio_device_manager.addAudioCallback(&audio_source_player);
-
-    auto& command_manager = ImpulseApplication::get_command_manager();
-    command_manager.registerAllCommandsForTarget(this);
 
     for (auto i : {&waterfall_button, &waveform_button}) {
         i->setRadioGroupId(0xf);
@@ -40,13 +42,24 @@ ImpulseViewer::ImpulseViewer(AudioDeviceManager& audio_device_manager,
     follow_playback_button.setWantsKeyboardFocus(false);
     follow_playback_button.triggerClick();
 
+    auto num_channels =
+            audio_format_reader_source.getAudioFormatReader()->numChannels;
+    for (auto i = 0u; i != num_channels; ++i) {
+        auto channel = i + 1;
+        std::stringstream ss;
+        ss << "channel " << channel;
+        channel_combo_box.addItem(ss.str(), channel);
+    }
+    channel_combo_box.setSelectedItemIndex(0);
+
     addAndMakeVisible(renderer);
+    addAndMakeVisible(ruler);
+    addAndMakeVisible(channel_combo_box);
     addAndMakeVisible(waterfall_button);
     addAndMakeVisible(waveform_button);
     addAndMakeVisible(follow_playback_button);
     addAndMakeVisible(scroll_bar);
     addAndMakeVisible(transport);
-    addAndMakeVisible(ruler);
 
     setWantsKeyboardFocus(true);
 
@@ -100,6 +113,10 @@ void ImpulseViewer::resized() {
     waveform_button.setBounds(top.removeFromLeft(100));
     top.removeFromLeft(2);
     waterfall_button.setBounds(top.removeFromLeft(100));
+
+    top.reduce(2, 0);
+
+    channel_combo_box.setBounds(top);
 }
 
 void ImpulseViewer::getAllCommands(Array<CommandID>& commands) {
@@ -169,5 +186,12 @@ void ImpulseViewer::buttonClicked(Button* b) {
     } else if (b == &follow_playback_button) {
         transport_view_manager.set_follow_playback(
                 follow_playback_button.getToggleState());
+    }
+}
+
+void ImpulseViewer::comboBoxChanged(ComboBox* c) {
+    if (c == &channel_combo_box) {
+        renderer.get_renderer().set_channel(
+                channel_combo_box.getSelectedItemIndex());
     }
 }

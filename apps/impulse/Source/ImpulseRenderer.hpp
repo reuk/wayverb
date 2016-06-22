@@ -19,6 +19,8 @@ public:
 
     void set_mode(Mode mode);
 
+    void set_channel(size_t channel);
+
     void set_visible_range(const Range<double>& range);
 
 private:

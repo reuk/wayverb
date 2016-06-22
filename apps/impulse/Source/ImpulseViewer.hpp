@@ -10,7 +10,8 @@ class ImpulseViewer : public Component,
                       public ApplicationCommandTarget,
                       public Button::Listener,
                       public PlaybackViewManager::Listener,
-                      public ScrollBar::Listener {
+                      public ScrollBar::Listener,
+                      public ComboBox::Listener {
 public:
     ImpulseViewer(AudioDeviceManager& audio_device_manager,
                   AudioFormatManager& audio_format_manager,
@@ -35,6 +36,8 @@ public:
 
     void scrollBarMoved(ScrollBar* s, double new_range_start) override;
 
+    void comboBoxChanged(ComboBox* comboBoxThatHasChanged) override;
+
 private:
     AudioDeviceManager& audio_device_manager;
 
@@ -46,6 +49,8 @@ private:
     ImpulseRendererComponent renderer;
     Ruler ruler;
 
+    ComboBox channel_combo_box;
+
     TextButton waterfall_button;
     TextButton waveform_button;
 
@@ -55,6 +60,9 @@ private:
 
     Transport transport;
 
+    model::Connector<PlaybackViewManager> pvm_connector_0{
+            &transport_view_manager, this};
+    model::Connector<ComboBox> combo_box_connector{&channel_combo_box, this};
     model::Connector<TextButton> waterfall_button_connector{&waterfall_button,
                                                             this};
     model::Connector<TextButton> waveform_button_connector{&waveform_button,
@@ -62,7 +70,4 @@ private:
     model::Connector<ToggleButton> follow_playback_connector{
             &follow_playback_button, this};
     model::Connector<ScrollBar> scroll_bar_connector{&scroll_bar, this};
-
-    model::Connector<PlaybackViewManager> pvm_connector_0{
-            &transport_view_manager, this};
 };

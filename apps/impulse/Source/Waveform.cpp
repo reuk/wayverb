@@ -45,6 +45,12 @@ void Waveform::update(float dt) {
     }
 }
 
+void Waveform::set_channel(size_t c) {
+    std::lock_guard<std::mutex> lck(mut);
+    channel = c;
+    previous_size = 0;
+}
+
 void Waveform::do_draw(const glm::mat4& modelview_matrix) const {
     std::lock_guard<std::mutex> lck(mut);
     auto s_shader = shader->get_scoped();

@@ -25,6 +25,8 @@ public:
 
     void update(float dt) override;
 
+    void set_channel(size_t c);
+
     void set_mode(Mode u);
 
     void set_position(const glm::vec3& p);
@@ -88,7 +90,7 @@ private:
     FadeShader* fade_shader;
     TexturedQuadShader* quad_shader;
 
-    size_t channel;
+    size_t channel{0};
 
     glm::vec3 position{0};
 

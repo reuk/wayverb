@@ -129,7 +129,7 @@
     </GROUP>
   </MAINGROUP>
   <EXPORTFORMATS>
-    <XCODE_MAC targetFolder="Builds/MacOSX" extraCompilerFlags="-I/usr/local/include&#10;-I../../../../common/include&#10;-I../../../../submodules/glm&#10;-I../../../../submodules/modern_gl_utils/include&#10;-I../../../../submodules/hiss&#10;-std=c++14"
+    <XCODE_MAC targetFolder="Builds/MacOSX" extraCompilerFlags="-I/usr/local/include&#10;-I../../../../common/include&#10;-I../../../../submodules/glm&#10;-I../../../../submodules/modern_gl_utils/include&#10;-std=c++14"
                extraLinkerFlags="-L/usr/local/lib" externalLibraries="fftw3f"
                bigIcon="oZiSOf" smallIcon="oZiSOf">
       <CONFIGURATIONS>

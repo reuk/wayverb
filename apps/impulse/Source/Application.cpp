@@ -28,6 +28,8 @@ void ImpulseApplication::MainWindow::closeButtonPressed() {
     if (it != main_windows.end()) {
         main_windows.erase(it);
     }
+
+    ImpulseApplication::get_app().show_hide_load_window();
 }
 
 void ImpulseApplication::MainWindow::getAllCommands(

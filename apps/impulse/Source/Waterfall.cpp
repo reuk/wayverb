@@ -18,7 +18,6 @@ Waterfall::Waterfall(WaterfallShader& waterfall_shader,
         : waterfall_shader(&waterfall_shader)
         , fade_shader(&fade_shader)
         , quad_shader(&quad_shader)
-        , channel(0)
         , loader(std::unique_ptr<AudioFormatReader>(
                          manager.createReaderFor(file)),
                  1 << 13,
@@ -85,6 +84,12 @@ void Waterfall::update(float dt) {
         axis->set_azimuth(M_PI / 2);
         time_axis_objects.push_back(std::move(axis));
     }
+}
+
+void Waterfall::set_channel(size_t c) {
+    std::lock_guard<std::mutex> lck(mut);
+    channel = c;
+    strips.clear();
 }
 
 glm::vec3 Waterfall::get_scale() const {

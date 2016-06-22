@@ -22,6 +22,8 @@ public:
 
     void update(float dt) override;
 
+    void set_channel(size_t c);
+
 private:
     void do_draw(const glm::mat4& modelview_matrix) const override;
     glm::mat4 get_local_modelview_matrix() const override;
