@@ -1,7 +1,7 @@
 #include "DirectionEditor.hpp"
 #include "Vec3Editor.hpp"
 
-#include "OtherComponents/Orientable.hpp"
+#include "common/orientable.h"
 
 class SphericalEditor : public Component {
 public:

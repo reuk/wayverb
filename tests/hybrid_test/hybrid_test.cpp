@@ -1,7 +1,7 @@
-#include "combined/config.h"
-#include "combined/config_serialize.h"
+#include "combined/model.h"
 
 #include "waveguide/microphone.h"
+#include "waveguide/config.h"
 #include "waveguide/waveguide.h"
 
 #include "raytracer/raytracer.h"
@@ -57,7 +57,8 @@ constexpr double rectilinear_calibration_factor(double r, double sr) {
     return r / (x * 0.3405);
 }
 
-void write_file(const config::App& config,
+void write_file(size_t bit_depth,
+                double sample_rate,
                 const std::string& output_folder,
                 const std::string& fname,
                 const std::vector<std::vector<float>>& output) {
@@ -65,14 +66,14 @@ void write_file(const config::App& config,
     LOG(INFO) << "writing file: " << output_file;
 
     auto format = get_file_format(output_file);
-    auto depth = get_file_depth(config.bit_depth);
+    auto depth = get_file_depth(bit_depth);
 
-    write_sndfile(output_file, output, config.sample_rate, depth, format);
+    write_sndfile(output_file, output, sample_rate, depth, format);
 }
 
 auto run_waveguide(ComputeContext& context_info,
                    const CuboidBoundary& boundary,
-                   const config::Combined& config,
+                   const model::App& config,
                    const std::string& output_folder,
                    const Surface& surface) {
     auto steps = 16000;
@@ -89,11 +90,11 @@ auto run_waveguide(ComputeContext& context_info,
             waveguide_program,
             context_info.queue,
             MeshBoundary(scene_data),
-            config.mic,
+            config.receiver,
             config.get_waveguide_sample_rate());
 
     auto source_index = waveguide.get_index_for_coordinate(config.source);
-    auto receiver_index = waveguide.get_index_for_coordinate(config.mic);
+    auto receiver_index = waveguide.get_index_for_coordinate(config.receiver);
 
     CHECK(waveguide.inside(source_index)) << "source is outside of mesh!";
     CHECK(waveguide.inside(receiver_index)) << "receiver is outside of mesh!";
@@ -135,6 +136,7 @@ int main(int argc, char** argv) {
     constexpr glm::vec3 source(2.09, 2.12, 2.12);
     constexpr glm::vec3 receiver(2.09, 3.08, 0.96);
     constexpr auto samplerate = 96000;
+    constexpr auto bit_depth = 16;
     constexpr auto v = 0.9;
     constexpr Surface surface{{{v, v, v, v, v, v, v, v}},
                               {{v, v, v, v, v, v, v, v}}};
@@ -146,11 +148,7 @@ int main(int argc, char** argv) {
     //  init simulation parameters
     CuboidBoundary boundary(box.get_c0(), box.get_c1());
 
-    config::Combined config;
-    config.filter_frequency = 2000;
-    config.source = source;
-    config.mic = receiver;
-    config.sample_rate = samplerate;
+    const model::App config{2000, 2, 100000, source, receiver};
 
     json_read_write::write(output_folder + "/used_config.json", config);
 
@@ -161,10 +159,17 @@ int main(int argc, char** argv) {
 
     // filter::ZeroPhaseDCBlocker(32).filter(waveguide_output);
 
-    write_file(config, output_folder, "waveguide_raw", {waveguide_output});
+    write_file(bit_depth,
+               samplerate,
+               output_folder,
+               "waveguide_raw",
+               {waveguide_output});
 
     //  adjust sample rate
-    auto waveguide_adjusted = adjust_sampling_rate(waveguide_output, config);
+    auto waveguide_adjusted =
+            adjust_sampling_rate(std::move(waveguide_output),
+                                 config.get_waveguide_sample_rate(),
+                                 samplerate);
     LOG(INFO) << "waveguide adjusted mag: " << max_mag(waveguide_adjusted);
 
     //  get the valid region of the spectrum
@@ -185,12 +190,13 @@ int main(int argc, char** argv) {
     //            [                                        ]
     std::cout << "[ -- running raytracer ----------------- ]" << std::endl;
     std::atomic_bool keep_going{true};
-    ProgressBar pb(std::cout, config.impulses);
+    const auto impulses = 1000;
+    ProgressBar pb(std::cout, impulses);
     auto results = raytracer.run(boundary.get_scene_data(),
-                                 config.mic,
+                                 config.receiver,
                                  config.source,
                                  config.rays,
-                                 config.impulses,
+                                 impulses,
                                  keep_going,
                                  [&pb] { pb += 1; });
 
@@ -203,22 +209,24 @@ int main(int argc, char** argv) {
     //    attenuator.attenuate(results.get_all(false), {speaker}).front();
 
     std::vector<std::vector<std::vector<float>>> flattened = {
-            flatten_impulses(output, config.sample_rate)};
+            flatten_impulses(output, samplerate)};
 
-    write_file(config,
+    write_file(bit_depth,
+               samplerate,
                output_folder,
                "raytrace_no_processing",
                mixdown(flattened));
 
     filter::run(filter::FilterType::linkwitz_riley,
                 flattened,
-                config.sample_rate,
+                samplerate,
                 1);
     auto raytracer_output = mixdown(flattened).front();
 
-    auto write_normalized = [&config, &output_folder](auto i, auto name) {
+    auto write_normalized = [bit_depth, samplerate, &output_folder](auto i,
+                                                                    auto name) {
         normalize(i);
-        write_file(config, output_folder, name, {i});
+        write_file(bit_depth, samplerate, output_folder, name, {i});
     };
 
     write_normalized(waveguide_adjusted, "waveguide_normalized");
@@ -250,13 +258,19 @@ int main(int argc, char** argv) {
     elementwise_multiply(waveguide_adjusted, window);
     elementwise_multiply(raytracer_output, window);
 
-    write_file(
-            config, output_folder, "waveguide_processed", {waveguide_adjusted});
-    write_file(
-            config, output_folder, "raytracer_processed", {raytracer_output});
+    write_file(bit_depth,
+               samplerate,
+               output_folder,
+               "waveguide_processed",
+               {waveguide_adjusted});
+    write_file(bit_depth,
+               samplerate,
+               output_folder,
+               "raytracer_processed",
+               {raytracer_output});
 
     filter::HipassWindowedSinc hipass(raytracer_output.size());
-    hipass.set_params(config.filter_frequency, config.sample_rate);
+    hipass.set_params(config.filter_frequency, samplerate);
     hipass.filter(raytracer_output);
     LOG(INFO) << "max raytracer filtered: " << max_mag(raytracer_output);
 
@@ -266,5 +280,5 @@ int main(int argc, char** argv) {
                     mixed.begin(),
                     [](auto a, auto b) { return a + b; });
 
-    write_file(config, output_folder, "mixed", {mixed});
+    write_file(bit_depth, samplerate, output_folder, "mixed", {mixed});
 }

@@ -1,4 +1,4 @@
-#include "OtherComponents/Orientable.hpp"
+#include "common/orientable.h"
 
 #include "glm/gtx/transform.hpp"
 

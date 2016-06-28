@@ -1,5 +1,7 @@
 #include "waveguide/config.h"
 
+#include <cmath>
+
 #include "samplerate.h"
 
 #define DIM 3
@@ -18,23 +20,12 @@ double grid_spacing(double speed_of_sound, double time_step) {
     return speed_of_sound * time_step * std::sqrt(DIM);
 }
 
-float Waveguide::get_max_frequency() const {
-    return filter_frequency * oversample_ratio;
-}
+}  // namespace config
 
-float Waveguide::get_waveguide_sample_rate() const {
-    return get_max_frequency() * 4;
-}
-
-float Waveguide::get_divisions() const {
-    return grid_spacing(SPEED_OF_SOUND, 1 / get_waveguide_sample_rate());
-}
-}
-
-std::vector<float> adjust_sampling_rate(std::vector<float>& w_results,
-                                        const config::Waveguide& cc) {
-    std::vector<float> out_signal(cc.sample_rate * w_results.size() /
-                                  cc.get_waveguide_sample_rate());
+std::vector<float> adjust_sampling_rate(std::vector<float>&& w_results,
+                                        double in_sr,
+                                        double out_sr) {
+    std::vector<float> out_signal(out_sr * w_results.size() / in_sr);
 
     SRC_DATA sample_rate_info{
             w_results.data(),
@@ -44,7 +35,7 @@ std::vector<float> adjust_sampling_rate(std::vector<float>& w_results,
             0,
             0,
             0,
-            cc.sample_rate / double(cc.get_waveguide_sample_rate())};
+            out_sr / in_sr};
 
     src_simple(&sample_rate_info, SRC_SINC_BEST_QUALITY, 1);
     return out_signal;

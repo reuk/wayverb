@@ -27,7 +27,7 @@
 #include <numeric>
 #include <random>
 
-void write_file(const config::Waveguide& conf,
+void write_file(size_t bit_depth, double sample_rate,
                 const std::string& output_folder,
                 const std::string& fname,
                 const std::vector<float>& output) {
@@ -35,20 +35,9 @@ void write_file(const config::Waveguide& conf,
     LOG(INFO) << "writing file: " << output_file;
 
     auto format = get_file_format(output_file);
-    auto depth = get_file_depth(conf.bit_depth);
+    auto depth = get_file_depth(bit_depth);
 
-    write_sndfile(output_file, {output}, conf.sample_rate, depth, format);
-    //    auto normalized = output;
-    //    normalize(normalized);
-    //
-    //    auto norm_output_file =
-    //        build_string(output_folder, "/normalized.", fname, ".wav");
-    //    Logger::log_err("writing file: ", norm_output_file);
-    //    write_sndfile(norm_output_file,
-    //                  {normalized},
-    //                  conf.get_output_sample_rate(),
-    //                  depth,
-    //                  format);
+    write_sndfile(output_file, {output}, sample_rate, depth, format);
 }
 
 std::vector<float> run_simulation(const cl::Context& context,
@@ -56,7 +45,8 @@ std::vector<float> run_simulation(const cl::Context& context,
                                   cl::CommandQueue& queue,
                                   const CuboidBoundary& boundary,
                                   const Surface& surface,
-                                  const config::Waveguide& conf,
+                                  double filter_frequency,
+                                  double out_sr,
                                   const glm::vec3& source,
                                   const glm::vec3& receiver,
                                   const std::string& output_folder,
@@ -72,7 +62,7 @@ std::vector<float> run_simulation(const cl::Context& context,
             queue,
             MeshBoundary(scene_data),
             receiver,
-            conf.get_waveguide_sample_rate());
+            filter_frequency * 4);
 
     auto receiver_index = waveguide.get_index_for_coordinate(receiver);
     auto source_index = waveguide.get_index_for_coordinate(source);
@@ -109,7 +99,7 @@ std::vector<float> run_simulation(const cl::Context& context,
 #endif
 
     filter::LinkwitzRileyLopass lopass;
-    lopass.set_params(conf.filter_frequency, conf.sample_rate);
+    lopass.set_params(filter_frequency, out_sr);
     //    lopass.filter(output);
 
     return output;
@@ -129,7 +119,8 @@ std::vector<float> get_free_field_results(const cl::Context& context,
                                           cl::Device& device,
                                           cl::CommandQueue& queue,
                                           const std::string& output_folder,
-                                          const config::Waveguide& conf,
+                                          double filter_frequency,
+                                          double out_sr,
                                           float azimuth,
                                           float elevation,
                                           int dim,
@@ -146,16 +137,19 @@ std::vector<float> get_free_field_results(const cl::Context& context,
         throw std::runtime_error("too many nodes");
     }
 
+    const float divisions =
+            config::grid_spacing(SPEED_OF_SOUND, 1.0 / (filter_frequency * 4));
+
     //  generate two boundaries, one twice the size of the other
     auto wall = CuboidBoundary(glm::vec3(0, 0, 0),
-                               glm::vec3(desired_nodes) * conf.get_divisions());
+                               glm::vec3(desired_nodes) * divisions);
     auto far = wall.get_c1();
     auto new_dim = glm::vec3(far.x * 2, far.y, far.z);
     auto no_wall = CuboidBoundary(glm::vec3(0, 0, 0), new_dim);
 
     //  place source and image in rooms based on distance in nodes from the wall
     auto source_dist_nodes = glm::length(glm::vec3(desired_nodes)) / 8;
-    auto source_dist = source_dist_nodes * conf.get_divisions();
+    auto source_dist = source_dist_nodes * divisions;
 
     auto wall_centre = no_wall.centre();
 
@@ -205,7 +199,8 @@ std::vector<float> get_free_field_results(const cl::Context& context,
                                 queue,
                                 no_wall,
                                 Surface{},
-                                conf,
+                                filter_frequency,
+                                out_sr,
                                 source_position,
                                 image_position,
                                 output_folder,
@@ -223,7 +218,7 @@ FullTestResults run_full_test(const std::string& test_name,
                               cl::Device& device,
                               cl::CommandQueue& queue,
                               const std::string& output_folder,
-                              const config::Waveguide& conf,
+                              double filter_frequency, double out_sr,
                               float azimuth,
                               float elevation,
                               int dim,
@@ -242,9 +237,12 @@ FullTestResults run_full_test(const std::string& test_name,
         throw std::runtime_error("too many nodes");
     }
 
+    const float divisions =
+            config::grid_spacing(SPEED_OF_SOUND, 1.0 / (filter_frequency * 4));
+
     //  generate two boundaries, one twice the size of the other
     auto wall = CuboidBoundary(glm::vec3(0, 0, 0),
-                               glm::vec3(desired_nodes) * conf.get_divisions());
+                               glm::vec3(desired_nodes) * divisions);
 
     auto far = wall.get_c1();
     auto new_dim = glm::vec3(far.x * 2, far.y, far.z);
@@ -254,7 +252,7 @@ FullTestResults run_full_test(const std::string& test_name,
     //  place source and receiver in rooms based on distance in nodes from the
     //  wall
     auto source_dist_nodes = glm::length(glm::vec3(desired_nodes)) / 8;
-    auto source_dist = source_dist_nodes * conf.get_divisions();
+    auto source_dist = source_dist_nodes * divisions;
 
     auto wall_centre = no_wall.centre();
 
@@ -300,7 +298,8 @@ FullTestResults run_full_test(const std::string& test_name,
                                     queue,
                                     wall,
                                     surface,
-                                    conf,
+                                    filter_frequency,
+                                    out_sr,
                                     source_position,
                                     receiver_position,
                                     output_folder,
@@ -311,7 +310,8 @@ FullTestResults run_full_test(const std::string& test_name,
                                  queue,
                                  no_wall,
                                  surface,
-                                 conf,
+                                 filter_frequency,
+                                 out_sr,
                                  source_position,
                                  receiver_position,
                                  output_folder,
@@ -352,11 +352,15 @@ FullTestResults run_full_test(const std::string& test_name,
     auto param_string = build_string(
             std::setprecision(4), "_az_", azimuth, "_el_", elevation);
 
-    write_file(conf,
+    const auto bit_depth = 16;
+
+    write_file(bit_depth,
+               out_sr,
                output_folder,
                test_name + param_string + "_windowed_free_field",
                windowed_free_field);
-    write_file(conf,
+    write_file(bit_depth,
+               out_sr,
                output_folder,
                test_name + param_string + "_windowed_subbed",
                windowed_subbed);
@@ -385,13 +389,6 @@ int main(int argc, char** argv) {
     auto elevation = std::stod(argv[3]);
     auto azimuth_elevation = std::make_pair(azimuth, elevation);
 
-    config::Waveguide conf;
-    conf.filter_frequency = 2000;
-    conf.oversample_ratio = 1;
-
-    LOG(INFO) << "waveguide sampling rate: "
-              << conf.get_waveguide_sample_rate();
-
     auto context = get_context();
     auto device = get_device(context);
 
@@ -399,6 +396,9 @@ int main(int argc, char** argv) {
     if (!available) {
         LOG(INFO) << "opencl device is not available!";
     }
+
+    auto filter_frequency = 2000;
+    auto out_sr = 44100;
 
     auto queue = cl::CommandQueue(context, device);
 
@@ -418,7 +418,7 @@ int main(int argc, char** argv) {
                                        device,
                                        queue,
                                        output_folder,
-                                       conf,
+                                       filter_frequency, out_sr,
                                        azimuth_elevation.first,
                                        azimuth_elevation.second,
                                        dim,
@@ -464,7 +464,7 @@ int main(int argc, char** argv) {
                                  device,
                                  queue,
                                  output_folder,
-                                 conf,
+                                 filter_frequency, out_sr,
                                  azimuth_elevation.first,
                                  azimuth_elevation.second,
                                  dim,

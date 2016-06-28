@@ -1,4 +1,3 @@
-#include "raytracer/config.h"
 #include "raytracer/raytracer.h"
 
 #include "common/boundaries.h"
@@ -35,16 +34,17 @@ auto get_results(ComputeContext& context,
                         keep_going);
 }
 
-void write_file(const config::App& config,
+void write_file(size_t bit_depth,
+                double sample_rate,
                 const std::string& fname,
                 const std::vector<std::vector<float>>& output) {
     auto output_file = build_string(SCRATCH_PATH, "/", fname, ".wav");
     LOG(INFO) << "writing file: " << output_file;
 
     auto format = get_file_format(output_file);
-    auto depth = get_file_depth(config.bit_depth);
+    auto depth = get_file_depth(bit_depth);
 
-    write_sndfile(output_file, output, config.sample_rate, depth, format);
+    write_sndfile(output_file, output, sample_rate, depth, format);
 }
 
 #define USE_EPSILON
@@ -168,7 +168,6 @@ TEST(raytrace, image_source) {
     Box box(glm::vec3(0, 0, 0), glm::vec3(4, 3, 6));
     constexpr glm::vec3 source(1, 1, 1);
     constexpr glm::vec3 receiver(2, 1, 5);
-    constexpr auto samplerate = 44100;
     constexpr auto v = 0.9;
     constexpr Surface surface{{{v, v, v, v, v, v, v, v}},
                               {{v, v, v, v, v, v, v, v}}};
@@ -222,23 +221,14 @@ TEST(raytrace, image_source) {
 
     CuboidBoundary boundary(box.get_c0(), box.get_c1());
 
-    config::Raytracer config;
-    config.source = source;
-    config.mic = receiver;
-    config.sample_rate = samplerate;
-
     Raytracer raytracer(raytrace_program, context.queue);
 
     auto scene_data = boundary.get_scene_data();
     scene_data.set_surfaces(surface);
 
     std::atomic_bool keep_going{true};
-    auto results = raytracer.run(scene_data,
-                                 config.mic,
-                                 config.source,
-                                 config.rays,
-                                 config.impulses,
-                                 keep_going);
+    auto results = raytracer.run(
+            scene_data, receiver, source, 100000, 100, keep_going);
 
     Attenuate attenuator(raytrace_program, context.queue);
     Speaker speaker{};
@@ -262,24 +252,29 @@ TEST(raytrace, image_source) {
                                                              << closest.time;
     }
 
-    auto postprocess = [&config](const auto& i, const std::string& name) {
+    auto postprocess = [](const auto& i, const std::string& name) {
+        auto bit_depth = 16;
+        auto sample_rate = 44100.0;
         std::vector<std::vector<std::vector<float>>> flattened = {
-                flatten_impulses(i, config.sample_rate)};
+                flatten_impulses(i, sample_rate)};
         {
             auto mixed_down = mixdown(flattened);
             normalize(mixed_down);
-            write_file(config, name + "_no_processing", mixed_down);
+            write_file(bit_depth,
+                       sample_rate,
+                       name + "_no_processing",
+                       mixed_down);
         }
         {
             auto processed = process(filter::FilterType::linkwitz_riley,
                                      flattened,
-                                     config.sample_rate,
+                                     sample_rate,
                                      false,
                                      1,
                                      true,
                                      1);
             normalize(processed);
-            write_file(config, name + "_processed", processed);
+            write_file(bit_depth, sample_rate, name + "_processed", processed);
         }
     };
 

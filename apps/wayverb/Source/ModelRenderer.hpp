@@ -18,7 +18,7 @@
 #include "glm/gtc/type_ptr.hpp"
 #include "glm/gtx/rotate_vector.hpp"
 
-#include "combined/config.h"
+#include "combined/model.h"
 
 #include "common/octree.h"
 #include "common/scene_data.h"

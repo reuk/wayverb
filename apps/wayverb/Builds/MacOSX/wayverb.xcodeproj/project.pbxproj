@@ -1368,7 +1368,6 @@
 		EA5CCBA886DEBFA24DF3C34F /* juce_HashMap.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = juce_HashMap.h; path = ../../../../submodules/JUCE/modules/juce_core/containers/juce_HashMap.h; sourceTree = SOURCE_ROOT; };
 		EA66134EE3C0C87E2ADE121C /* juce_KeyPress.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = juce_KeyPress.cpp; path = ../../../../submodules/JUCE/modules/juce_gui_basics/keyboard/juce_KeyPress.cpp; sourceTree = SOURCE_ROOT; };
 		EB2AA39867D61AC5F82547C5 /* juce_SHA256.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = juce_SHA256.cpp; path = ../../../../submodules/JUCE/modules/juce_cryptography/hashing/juce_SHA256.cpp; sourceTree = SOURCE_ROOT; };
-		EB2EACAC3457AEBAE48EEAA6 /* Model.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Model.hpp; path = ../../Source/Model.hpp; sourceTree = SOURCE_ROOT; };
 		EBA7A30F6242D2F7E041BC7F /* juce_win32_FileChooser.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = juce_win32_FileChooser.cpp; path = ../../../../submodules/JUCE/modules/juce_gui_basics/native/juce_win32_FileChooser.cpp; sourceTree = SOURCE_ROOT; };
 		EBD29511BF3216FE06B3B1CB /* inflate.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = inflate.c; path = ../../../../submodules/JUCE/modules/juce_core/zip/zlib/inflate.c; sourceTree = SOURCE_ROOT; };
 		EBDD2F10E1285473985C458E /* juce_StringArray.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = juce_StringArray.h; path = ../../../../submodules/JUCE/modules/juce_core/text/juce_StringArray.h; sourceTree = SOURCE_ROOT; };
@@ -1707,7 +1706,6 @@
 				74C251560B96119212621161 /* MeshShader.hpp */,
 				41B077B3B66F85F2D69BBCFB /* MicrophoneEditor.cpp */,
 				A4B6504806D838E0EECB4E4E /* MicrophoneEditor.hpp */,
-				EB2EACAC3457AEBAE48EEAA6 /* Model.hpp */,
 				D2934F2C04F58784DFE7B92E /* ModelObject.cpp */,
 				2077D763B24CDDD87C7BCAA6 /* ModelObject.hpp */,
 				CBC3B00D40D84CA60386DFA8 /* ModelRenderer.cpp */,

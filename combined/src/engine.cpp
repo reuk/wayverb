@@ -1,6 +1,6 @@
-#include "combined/config.h"
 #include "combined/engine.h"
 
+#include "common/config.h"
 #include "common/kernel.h"
 
 #include <cmath>
@@ -66,44 +66,44 @@ template <BufferType buffer_type>
 void WayverbEngine<buffer_type>::check_source_mic_positions() const {
     if (!get_source_position_is_valid()) {
         throw std::runtime_error(
-            "invalid source position - probably outside mesh");
+                "invalid source position - probably outside mesh");
     }
     if (!get_mic_position_is_valid()) {
         throw std::runtime_error(
-            "invalid mic position - probably outside mesh");
+                "invalid mic position - probably outside mesh");
     }
 }
 
 template <BufferType buffer_type>
 typename WayverbEngine<buffer_type>::Intermediate
 WayverbEngine<buffer_type>::run_visualised(
-    std::atomic_bool& keep_going,
-    const WayverbEngine::StateCallback& callback,
-    const WayverbEngine::VisualiserCallback& visualiser_callback) {
+        std::atomic_bool& keep_going,
+        const WayverbEngine::StateCallback& callback,
+        const WayverbEngine::VisualiserCallback& visualiser_callback) {
     auto waveguide_step = 0;
-    return this->run_basic(keep_going,
-                           callback,
-                           [&waveguide_step, &visualiser_callback](
-                               RectangularWaveguide<buffer_type>& waveguide,
-                               const glm::vec3& corrected_source,
-                               std::vector<float>&& input,
-                               size_t mic_index,
-                               size_t steps,
-                               std::atomic_bool& keep_going,
-                               const StateCallback& callback) {
-                               return waveguide.init_and_run_visualised(
-                                   corrected_source,
-                                   std::move(input),
-                                   mic_index,
-                                   steps,
-                                   keep_going,
-                                   [&callback, &waveguide_step, steps] {
-                                       callback(
-                                           State::running_waveguide,
-                                           waveguide_step++ / (steps - 1.0));
-                                   },
-                                   visualiser_callback);
-                           });
+    return this->run_basic(
+            keep_going,
+            callback,
+            [&waveguide_step, &visualiser_callback](
+                    RectangularWaveguide<buffer_type>& waveguide,
+                    const glm::vec3& corrected_source,
+                    std::vector<float>&& input,
+                    size_t mic_index,
+                    size_t steps,
+                    std::atomic_bool& keep_going,
+                    const StateCallback& callback) {
+                return waveguide.init_and_run_visualised(
+                        corrected_source,
+                        std::move(input),
+                        mic_index,
+                        steps,
+                        keep_going,
+                        [&callback, &waveguide_step, steps] {
+                            callback(State::running_waveguide,
+                                     waveguide_step++ / (steps - 1.0));
+                        },
+                        visualiser_callback);
+            });
 }
 
 template <BufferType buffer_type>
@@ -112,26 +112,26 @@ WayverbEngine<buffer_type>::run(std::atomic_bool& keep_going,
                                 const WayverbEngine::StateCallback& callback) {
     auto waveguide_step = 0;
     return this->run_basic(
-        keep_going,
-        callback,
-        [&waveguide_step](RectangularWaveguide<buffer_type>& waveguide,
-                          const glm::vec3& corrected_source,
-                          std::vector<float>&& input,
-                          size_t mic_index,
-                          size_t steps,
-                          std::atomic_bool& keep_going,
-                          const StateCallback& callback) {
-            return waveguide.init_and_run(
-                corrected_source,
-                std::move(input),
-                mic_index,
-                steps,
-                keep_going,
-                [&callback, &waveguide_step, steps] {
-                    callback(State::running_waveguide,
-                             waveguide_step++ / (steps - 1.0));
-                });
-        });
+            keep_going,
+            callback,
+            [&waveguide_step](RectangularWaveguide<buffer_type>& waveguide,
+                              const glm::vec3& corrected_source,
+                              std::vector<float>&& input,
+                              size_t mic_index,
+                              size_t steps,
+                              std::atomic_bool& keep_going,
+                              const StateCallback& callback) {
+                return waveguide.init_and_run(
+                        corrected_source,
+                        std::move(input),
+                        mic_index,
+                        steps,
+                        keep_going,
+                        [&callback, &waveguide_step, steps] {
+                            callback(State::running_waveguide,
+                                     waveguide_step++ / (steps - 1.0));
+                        });
+            });
 }
 
 template <BufferType buffer_type>
@@ -139,31 +139,31 @@ template <typename Callback>
 auto WayverbEngine<buffer_type>::run_basic(std::atomic_bool& keep_going,
                                            const StateCallback& callback,
                                            const Callback& waveguide_callback) {
-    check_source_mic_positions();   //  will throw if the positions are invalid
+    check_source_mic_positions();  //  will throw if the positions are invalid
 
     //  RAYTRACER  -----------------------------------------------------------//
     callback(State::starting_raytracer, 1.0);
     auto raytracer_step = 0;
     auto raytracer_results =
-        raytracer.run(scene_data,
-                      mic,
-                      source,
-                      rays,
-                      impulses,
-                      keep_going,
-                      [this, &callback, &raytracer_step] {
-                          callback(State::running_raytracer,
-                                   raytracer_step++ / (impulses - 1.0));
-                      });
+            raytracer.run(scene_data,
+                          mic,
+                          source,
+                          rays,
+                          impulses,
+                          keep_going,
+                          [this, &callback, &raytracer_step] {
+                              callback(State::running_raytracer,
+                                       raytracer_step++ / (impulses - 1.0));
+                          });
     callback(State::finishing_raytracer, 1.0);
 
     auto impulses = raytracer_results.get_all(false).impulses;
 
     //  look for the max time of an impulse
     auto max_time =
-        proc::max_element(impulses, [](const auto& a, const auto& b) {
-            return a.time < b.time;
-        })->time;
+            proc::max_element(impulses, [](const auto& a, const auto& b) {
+                return a.time < b.time;
+            })->time;
 
     //  this is the number of steps to run the raytracer for
     //  TODO is there a less dumb way of doing this?
@@ -174,6 +174,7 @@ auto WayverbEngine<buffer_type>::run_basic(std::atomic_bool& keep_going,
     auto corrected_source = waveguide.get_coordinate_for_index(source_index);
 
     auto input = waveguide_kernel(waveguide_sample_rate);
+    auto correction_amount = std::ceil(input.size() / 2.0);
 
     //  If the max raytracer time is large this could take forever...
     auto waveguide_results = waveguide_callback(waveguide,
@@ -191,8 +192,7 @@ auto WayverbEngine<buffer_type>::run_basic(std::atomic_bool& keep_going,
     });
 
     //  correct for filter time offset
-    output.erase(output.begin(),
-                 output.begin() + std::ceil(input.size() / 2.0));
+    output.erase(output.begin(), output.begin() + correction_amount);
 
     Intermediate ret;
     return ret;
@@ -200,9 +200,9 @@ auto WayverbEngine<buffer_type>::run_basic(std::atomic_bool& keep_going,
 
 template <BufferType buffer_type>
 std::vector<std::vector<float>> WayverbEngine<buffer_type>::attenuate(
-    const Intermediate& i,
-    //  other args or whatever
-    const StateCallback& callback) {
+        const Intermediate& i,
+        //  other args or whatever
+        const StateCallback& callback) {
     callback(State::postprocessing, 1.0);
 
     //  TODO attenuate raytracer results

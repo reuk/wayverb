@@ -10,8 +10,6 @@
 #include "common/json_read_write.h"
 #include "common/kernel.h"
 
-#include "combined/config_serialize.h"
-
 namespace {
 void push_triangle_indices(std::vector<GLuint> &ret, const Triangle &tri) {
     ret.push_back(tri.v0);

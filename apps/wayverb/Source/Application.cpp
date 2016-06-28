@@ -4,7 +4,6 @@
 
 #include "UtilityComponents/LoadWindow.hpp"
 
-#include "combined/config_serialize.h"
 #include "common/surface_serialize.h"
 
 #include "HelpWindow.hpp"

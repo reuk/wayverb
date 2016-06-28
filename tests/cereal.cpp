@@ -2,8 +2,8 @@
 #include "common/scene_data.h"
 #include "common/surface_serialize.h"
 
-#include "combined/config.h"
-#include "combined/config_serialize.h"
+//#include "combined/config.h"
+//#include "combined/config_serialize.h"
 
 #include "gtest/gtest.h"
 

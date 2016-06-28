@@ -1,6 +1,5 @@
 #include "MainComponent.hpp"
 
-#include "combined/config_serialize.h"
 #include "common/surface_serialize.h"
 
 #include <iomanip>
@@ -84,12 +83,12 @@ void MainContentComponent::receive_broadcast(model::Broadcaster* cb) {
                 return;
             }
 
-            auto fpath = fc.getResult().getFullPathName().toStdString();
-
             auto persistent = wrapper.persistent.get();
             scene_data.set_surfaces(persistent.materials);
-            engine.start(
-                    persistent, scene_data, wrapper.render_state.visualise);
+            engine.start(fc.getResult().getFullPathName(),
+                         persistent,
+                         scene_data,
+                         wrapper.render_state.visualise);
         } else {
             engine.stop();
         }

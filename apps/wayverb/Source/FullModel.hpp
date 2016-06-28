@@ -1,11 +1,11 @@
 #pragma once
 
-#include "Model.hpp"
+#include "common/orientable.h"
 
 #include "OtherComponents/lib_model/collection.hpp"
-#include "OtherComponents/Orientable.hpp"
 
 #include "combined/engine.h"
+#include "combined/model.h"
 
 #include "cereal/types/vector.hpp"
 

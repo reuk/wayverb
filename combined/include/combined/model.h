@@ -1,6 +1,8 @@
 #pragma once
 
-#include "OtherComponents/Orientable.hpp"
+#include "common/orientable.h"
+#include "common/config.h"
+#include "common/vec_serialize.h"
 
 #include "cereal/cereal.hpp"
 

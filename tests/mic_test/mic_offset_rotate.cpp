@@ -58,9 +58,9 @@ int main(int argc, char** argv) {
     std::cout << "polar_pattern: " << polar_string << std::endl;
 
     //  global params
-    config::Waveguide conf;
-    conf.filter_frequency = 11025;
-    conf.oversample_ratio = 1;
+    const auto filter_frequency = 11025.0;
+    const auto oversample_ratio = 1.0;
+    const auto waveguide_sr = filter_frequency * oversample_ratio * 4;
 
     ComputeContext compute_context;
 
@@ -81,75 +81,65 @@ int main(int argc, char** argv) {
 
     Microphone microphone(glm::vec3(0, 0, 1), directionality);
     cl_float3 mic{{0, 0, 0}};
-    auto test_locations = 18;
+    const auto test_locations = 18;
 
     std::ofstream ofile(output_folder + "/" + polar_string + ".energies.txt");
 
     try {
         CuboidBoundary boundary(glm::vec3(-2.05, -2.5, -1.05),
                                 glm::vec3(2.05, 2.5, 1.05));
-        auto waveguide_program =
+        const auto waveguide_program =
                 get_program<RectangularProgram>(compute_context);
         RectangularWaveguide<BufferType::cl> waveguide(
                 waveguide_program,
                 compute_context.queue,
                 MeshBoundary(boundary.get_scene_data()),
                 to_vec3f(mic),
-                conf.get_waveguide_sample_rate());
+                waveguide_sr);
 
-        auto amp_factor = 4e3;
+        const auto amp_factor = 4e3;
 
         for (auto i = 0u; i != test_locations; ++i) {
             float angle = i * M_PI * 2 / test_locations + M_PI;
             cl_float3 source{{std::sin(angle), 0, std::cos(angle)}};
 
-            auto mic_index = waveguide.get_index_for_coordinate(to_vec3f(mic));
+            const auto mic_index =
+                    waveguide.get_index_for_coordinate(to_vec3f(mic));
 
-            auto steps = 200;
+            const auto steps = 200;
 
             std::atomic_bool keep_going{true};
             ProgressBar pb(std::cout, steps);
-            auto w_results = waveguide.init_and_run(
-                    to_vec3f(source),
-                    waveguide_kernel(conf.get_waveguide_sample_rate()),
-                    mic_index,
-                    steps,
-                    keep_going,
-                    [&pb] { pb += 1; });
+            const auto w_results =
+                    waveguide.init_and_run(to_vec3f(source),
+                                           waveguide_kernel(waveguide_sr),
+                                           mic_index,
+                                           steps,
+                                           keep_going,
+                                           [&pb] { pb += 1; });
 
-            auto w_pressures = microphone.process(w_results);
+            const auto out_sr = 44100.0;
 
-            std::vector<float> out_signal(conf.sample_rate * w_results.size() /
-                                          conf.get_waveguide_sample_rate());
-
-            SRC_DATA sample_rate_info{
-                    w_pressures.data(),
-                    out_signal.data(),
-                    long(w_results.size()),
-                    long(out_signal.size()),
-                    0,
-                    0,
-                    0,
-                    conf.sample_rate / conf.get_waveguide_sample_rate()};
-
-            src_simple(&sample_rate_info, SRC_SINC_BEST_QUALITY, 1);
+            auto out_signal = adjust_sampling_rate(
+                    microphone.process(w_results), waveguide_sr, out_sr);
 
             mul(out_signal, amp_factor);
 
             filter::LinkwitzRileyLopass lopass;
-            lopass.set_params(conf.filter_frequency, conf.sample_rate);
+            lopass.set_params(filter_frequency, out_sr);
             lopass.filter(out_signal);
 
-            auto bands = 7;
-            auto min_band = 80;
+            const auto bands = 7;
+            const auto min_band = 80;
 
-            auto print_energy = [&ofile](const auto& sig, auto band) {
-                auto band_energy = proc::accumulate(
+            const auto print_energy = [&ofile](const auto& sig, auto band) {
+                const auto band_energy = proc::accumulate(
                         sig, 0.0, [](auto a, auto b) { return a + b * b; });
 
-                auto max_val = proc::accumulate(sig, 0.0, [](auto a, auto b) {
-                    return std::max(a, fabs(b));
-                });
+                const auto max_val =
+                        proc::accumulate(sig, 0.0, [](auto a, auto b) {
+                            return std::max(a, fabs(b));
+                        });
 
                 ofile << " band: " << band << " energy: " << band_energy
                       << " max: " << max_val;
@@ -158,12 +148,11 @@ int main(int argc, char** argv) {
             ofile << "iteration: " << i;
 
             for (auto i = 0; i != bands; ++i) {
-                auto band = out_signal;
+                const auto band = out_signal;
 
                 filter::LinkwitzRileyBandpass bandpass;
-                bandpass.set_params(pow(2, i) * min_band,
-                                    pow(2, i + 1) * min_band,
-                                    conf.sample_rate);
+                bandpass.set_params(
+                        pow(2, i) * min_band, pow(2, i + 1) * min_band, out_sr);
                 bandpass.filter(out_signal);
 
                 print_energy(band, i);
@@ -174,20 +163,19 @@ int main(int argc, char** argv) {
             std::stringstream ss;
             ss << output_folder << "/" << i << ".waveguide.full.wav";
 
-            auto output_file = ss.str();
+            const auto output_file = ss.str();
 
             unsigned long format, depth;
 
             try {
                 format = get_file_format(output_file);
-                depth = get_file_depth(conf.bit_depth);
+                depth = get_file_depth(16);
             } catch (const std::runtime_error& e) {
                 LOG(INFO) << "critical runtime error: " << e.what();
                 return EXIT_FAILURE;
             }
 
-            write_sndfile(
-                    output_file, {out_signal}, conf.sample_rate, depth, format);
+            write_sndfile(output_file, {out_signal}, out_sr, depth, format);
         }
 
     } catch (const cl::Error& e) {

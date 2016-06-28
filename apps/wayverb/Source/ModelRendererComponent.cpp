@@ -8,7 +8,7 @@
 #include "glm/gtc/quaternion.hpp"
 #include "glm/gtc/type_ptr.hpp"
 
-#include "combined/config.h"
+#include "combined/model.h"
 
 #include "common/boundaries.h"
 

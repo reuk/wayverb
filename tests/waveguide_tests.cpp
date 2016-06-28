@@ -41,12 +41,6 @@ TEST(run_waveguide, run_waveguide) {
     constexpr Surface surface{{{v, v, v, v, v, v, v, v}},
                               {{v, v, v, v, v, v, v, v}}};
 
-    config::Waveguide config;
-    config.filter_frequency = 1000;
-    config.source = source;
-    config.mic = receiver;
-    config.sample_rate = samplerate;
-
     //  init simulation parameters
     CuboidBoundary boundary(box.get_c0(), box.get_c1());
 
@@ -58,11 +52,11 @@ TEST(run_waveguide, run_waveguide) {
             waveguide_program,
             context_info.queue,
             MeshBoundary(scene_data),
-            config.mic,
-            config.get_waveguide_sample_rate());
+            receiver,
+            4000);
 
-    auto source_index = waveguide.get_index_for_coordinate(config.source);
-    auto receiver_index = waveguide.get_index_for_coordinate(config.mic);
+    auto source_index = waveguide.get_index_for_coordinate(source);
+    auto receiver_index = waveguide.get_index_for_coordinate(receiver);
 
     CHECK(waveguide.inside(source_index)) << "source is outside of mesh!";
     CHECK(waveguide.inside(receiver_index)) << "receiver is outside of mesh!";

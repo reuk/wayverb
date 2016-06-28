@@ -2,9 +2,6 @@
 
 #include "FullModel.hpp"
 
-#include "UtilityComponents/RAIIThread.hpp"
-
-
 class AsyncEngine : private AsyncUpdater {
 public:
     class Listener {
@@ -29,7 +26,8 @@ public:
     AsyncEngine();
     virtual ~AsyncEngine() noexcept;
 
-    void start(const model::Persistent& wrapper,
+    void start(const File& file_name,
+               const model::Persistent& wrapper,
                const CopyableSceneData& scene_data,
                bool visualise);
     void stop();

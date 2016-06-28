@@ -25,4 +25,4 @@ target_include_directories(${name}
     ${JUCE_MODULES}
 )
 
-target_link_libraries(${name} glm modern_gl_utils)
+target_link_libraries(${name} glm modern_gl_utils common)

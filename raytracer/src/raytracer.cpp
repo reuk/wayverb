@@ -289,7 +289,7 @@ void add_direct_impulse(const glm::vec3& micpos,
         results.image_source[{0}] = Impulse{
                 attenuation_for_distance(init_dist),
                 to_cl_float3(micpos + init_diff),
-                init_dist / SPEED_OF_SOUND,
+                static_cast<cl_float>(init_dist / SPEED_OF_SOUND),
         };
     }
 }

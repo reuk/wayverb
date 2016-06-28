@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Orientable.hpp"
+#include "common/orientable.h"
 
 #include "modern_gl_utils/buffer_object.h"
 #include "modern_gl_utils/drawable.h"
