@@ -1,34 +1,35 @@
 #pragma once
 
+#include "EngineThread.hpp"
 #include "HelpWindow.hpp"
 #include "LeftPanel.hpp"
 #include "ModelRendererComponent.hpp"
 
-#include "combined/engine.h"
-
 class MainContentComponent final : public Component,
                                    public model::BroadcastListener,
                                    public SettableHelpPanelClient,
-                                   public AsyncUpdater {
+                                   public AsyncEngine::Listener {
 public:
     using Engine = engine::WayverbEngine<BufferType::cl>;
 
     MainContentComponent(const CopyableSceneData& scene_data,
                          model::ValueWrapper<model::FullModel>& wrapper);
 
-    virtual ~MainContentComponent();
-
     void paint(Graphics& g) override;
     void resized() override;
 
     void receive_broadcast(model::Broadcaster* b) override;
 
-    void quit_render_thread();
+    void engine_state_changed(AsyncEngine*,
+                              engine::State state,
+                              double progress) override;
+    void engine_nodes_changed(AsyncEngine*,
+                              const std::vector<cl_float3>& positions) override;
+    void engine_visuals_changed(AsyncEngine*,
+                                const std::vector<float>& pressures) override;
+    void engine_finished(AsyncEngine*) override;
 
 private:
-    //  will be called to quit the render thread
-    void handleAsyncUpdate() override;
-
     CopyableSceneData scene_data;
     model::ValueWrapper<model::FullModel>& wrapper;
 
@@ -41,6 +42,6 @@ private:
     StretchableLayoutResizerBar resizer_bar;
     ModelRendererComponent right_panel;
 
-    std::atomic_bool keep_going{true};
-    std::thread engine_thread;
+    AsyncEngine engine;
+    model::Connector<AsyncEngine> engine_connector{&engine, this};
 };
