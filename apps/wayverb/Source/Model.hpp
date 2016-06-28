@@ -1,7 +1,9 @@
 #pragma once
 
-#include "Orientable.hpp"
+#include "OtherComponents/Orientable.hpp"
+
 #include "cereal/cereal.hpp"
+
 #include <vector>
 
 template <typename Archive>

@@ -1,7 +1,8 @@
 #include "Waterfall.hpp"
 
-#include "for_each.h"
-#include "lerp.h"
+#include "UtilityComponents/ForEach.hpp"
+#include "UtilityComponents/Lerp.hpp"
+
 #include "modern_gl_utils/geometry_helpers.h"
 
 #include "glm/gtx/transform.hpp"

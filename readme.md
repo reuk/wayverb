@@ -41,11 +41,4 @@ Updating the JUCE project
    opened previously.
 4. In the wayverb xc project settings, go to `Build Phases` and click on
    `Link Binary With Libraries`.
-5. Add the following libraries from the engine xc project:
-    * libassimp.a
-    * libcombined.a
-    * libcommon.a
-    * libglog.a
-    * libmodern_gl_utils.a
-    * libraytracer.a
-    * libwaveguide.a
+5. Add all the libraries from the engine xc project.

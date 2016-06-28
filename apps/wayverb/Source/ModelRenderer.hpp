@@ -1,14 +1,17 @@
 #pragma once
 
-#include "AxesObject.hpp"
-#include "BasicDrawableObject.hpp"
+#include "../JuceLibraryCode/JuceHeader.h"
+
 #include "BoxObject.hpp"
 #include "LitSceneShader.hpp"
 #include "MeshObject.hpp"
 #include "ModelObject.hpp"
 #include "PointObject.hpp"
-#include "RenderHelpers.hpp"
-#include "WorkQueue.hpp"
+
+#include "OtherComponents/RenderHelpers.hpp"
+#include "OtherComponents/WorkQueue.hpp"
+#include "OtherComponents/AxesObject.hpp"
+#include "OtherComponents/BasicDrawableObject.hpp"
 
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtc/noise.hpp"
@@ -24,8 +27,6 @@
 #include "waveguide/waveguide.h"
 
 #include "raytracer/raytracer.h"
-
-#include "../JuceLibraryCode/JuceHeader.h"
 
 #include <cmath>
 #include <future>

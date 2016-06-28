@@ -1,5 +1,6 @@
 #include "ModelRendererComponent.hpp"
-#include "MoreConversions.hpp"
+
+#include "OtherComponents/MoreConversions.hpp"
 
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_inverse.hpp"

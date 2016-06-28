@@ -3,9 +3,10 @@
 #include "FullModel.hpp"
 #include "MainComponent.hpp"
 
-#include "AngularLookAndFeel.hpp"
-#include "FileDropComponent.hpp"
-#include "StoredSettings.hpp"
+#include "OtherComponents/AngularLookAndFeel.hpp"
+
+#include "UtilityComponents/FileDropComponent.hpp"
+#include "UtilityComponents/StoredSettings.hpp"
 
 #include <unordered_set>
 

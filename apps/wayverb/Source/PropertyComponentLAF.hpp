@@ -1,6 +1,8 @@
 #pragma once
 
-#include "AngularLookAndFeel.hpp"
+#include "../JuceLibraryCode/JuceHeader.h"
+
+#include "OtherComponents/AngularLookAndFeel.hpp"
 
 class PropertyComponentLAF : public AngularLookAndFeel {
 public:

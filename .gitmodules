@@ -22,3 +22,12 @@
 [submodule "submodules/modern_gl_utils"]
 	path = submodules/modern_gl_utils
 	url = git@github.com:reuk/modern_gl_utils.git
+[submodule "submodules/ConvolutionComponent"]
+	path = submodules/ConvolutionComponent
+	url = git@github.com:reuk/ConvolutionComponent.git
+[submodule "submodules/UtilityComponents"]
+	path = submodules/UtilityComponents
+	url = git@github.com:reuk/UtilityComponents.git
+[submodule "submodules/JUCE"]
+	path = submodules/JUCE
+	url = git@github.com:julianstorer/JUCE.git

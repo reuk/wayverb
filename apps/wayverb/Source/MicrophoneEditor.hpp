@@ -2,7 +2,8 @@
 
 #include "FullModel.hpp"
 #include "HelpWindow.hpp"
-#include "ValueWrapperListBox.hpp"
+
+#include "OtherComponents/ValueWrapperListBox.hpp"
 
 class MicrophoneListBox : public ValueWrapperListBox<model::Microphone> {
 public:

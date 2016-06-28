@@ -3,7 +3,8 @@
 #include "FullModel.hpp"
 #include "HelpWindow.hpp"
 #include "ModelRenderer.hpp"
-#include "RenderHelpers.hpp"
+
+#include "OtherComponents/RenderHelpers.hpp"
 
 class ModelRendererComponent : public BaseRendererComponent<SceneRenderer>,
                                public model::BroadcastListener,

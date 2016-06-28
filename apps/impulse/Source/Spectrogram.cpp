@@ -1,7 +1,8 @@
 #include "Spectrogram.hpp"
 
 #include "ThumbnailBuffer.hpp"
-#include "lerp.h"
+
+#include "UtilityComponents/Lerp.hpp"
 
 #include "common/fftwf_helpers.h"
 #include "common/sinc.h"

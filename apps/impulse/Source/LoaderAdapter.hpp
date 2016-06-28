@@ -1,7 +1,8 @@
 #pragma once
 
 #include "MultichannelAdapter.hpp"
-#include "for_each.h"
+
+#include "UtilityComponents/ForEach.hpp"
 
 template <typename T>
 class LoaderAdapter final

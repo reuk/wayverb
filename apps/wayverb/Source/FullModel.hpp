@@ -1,7 +1,9 @@
 #pragma once
 
-#include "Model.h"
-#include "collection.h"
+#include "Model.hpp"
+
+#include "OtherComponents/lib_model/collection.hpp"
+#include "OtherComponents/Orientable.hpp"
 
 #include "combined/engine.h"
 

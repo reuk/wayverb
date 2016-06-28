@@ -2,7 +2,7 @@
 
 #include "common/triangle.h"
 
-#include "MoreConversions.hpp"
+#include "OtherComponents/MoreConversions.hpp"
 
 namespace {
 constexpr auto model_colour = 0.5;

@@ -1,6 +1,6 @@
 #include "ImpulseViewer.hpp"
 #include "Application.hpp"
-#include "CommandIDs.h"
+#include "CommandIDs.hpp"
 
 #include <sstream>
 

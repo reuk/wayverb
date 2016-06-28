@@ -1,9 +1,11 @@
 #pragma once
 
-#include "RenderHelpers.hpp"
-#include "WorkQueue.hpp"
+#include "../JuceLibraryCode/JuceHeader.h"
 
-#include "Ruler.hpp"
+#include "OtherComponents/RenderHelpers.hpp"
+#include "OtherComponents/WorkQueue.hpp"
+
+#include "UtilityComponents/Ruler.hpp"
 
 class ImpulseRenderer : public BaseRenderer {
 public:

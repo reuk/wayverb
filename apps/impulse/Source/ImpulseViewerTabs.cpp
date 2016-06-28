@@ -1,9 +1,10 @@
 #include "ImpulseViewerTabs.hpp"
 
 #include "Application.hpp"
-#include "CommandIDs.h"
-#include "ConvolutionViewer.hpp"
+#include "CommandIDs.hpp"
 #include "ImpulseViewer.hpp"
+
+#include "ConvolutionComponent/ConvolutionLoader.hpp"
 
 ImpulseViewerTabs::ImpulseViewerTabs(const File& impulse_file)
         : TabbedComponent(TabbedButtonBar::TabsAtTop) {

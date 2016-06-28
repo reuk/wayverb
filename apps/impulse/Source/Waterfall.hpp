@@ -6,7 +6,8 @@
 #include "LoaderAdapter.hpp"
 #include "Spectrogram.hpp"
 #include "WaterfallShader.hpp"
-#include "WorkQueue.hpp"
+
+#include "OtherComponents/WorkQueue.hpp"
 
 #include "modern_gl_utils/buffer_object.h"
 #include "modern_gl_utils/drawable.h"

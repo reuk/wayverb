@@ -1,6 +1,6 @@
 #include "LoadContext.hpp"
 
-#include "raii_thread.hpp"
+#include "UtilityComponents/RAIIThread.hpp"
 
 class LoadContext::Impl final {
 public:
@@ -94,7 +94,7 @@ private:
         std::unique_ptr<AudioFormatReader> audio_format_reader;
         size_t samples_read{0};
         std::atomic_bool keep_reading{true};
-        raii_thread thread;
+        RAIIThread thread;
     };
     std::unique_ptr<Thread> thread;
 };

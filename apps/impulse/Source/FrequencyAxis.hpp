@@ -1,8 +1,8 @@
 #pragma once
 
-#include "BasicDrawableObject.hpp"
-
 #include "../JuceLibraryCode/JuceHeader.h"
+
+#include "OtherComponents/BasicDrawableObject.hpp"
 
 class TexturedQuadShader : public mglu::ShaderProgram {
 public:

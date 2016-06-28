@@ -1,7 +1,7 @@
 #include "ModelRenderer.hpp"
-#include "AngularLookAndFeel.hpp"
 
-#include "MoreConversions.hpp"
+#include "OtherComponents/AngularLookAndFeel.hpp"
+#include "OtherComponents/MoreConversions.hpp"
 
 #include "common/azimuth_elevation.h"
 #include "common/boundaries.h"

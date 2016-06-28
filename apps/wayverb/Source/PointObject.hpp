@@ -1,6 +1,6 @@
 #pragma once
 
-#include "BasicDrawableObject.hpp"
+#include "OtherComponents/BasicDrawableObject.hpp"
 
 class RingObject : public BasicDrawableObject {
 public:

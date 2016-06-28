@@ -1,6 +1,8 @@
 #pragma once
 
-#include "DefaultAudio.hpp"
+#include "../JuceLibraryCode/JuceHeader.h"
+
+#include "UtilityComponents/DefaultAudio.hpp"
 
 class ImpulseViewerTabs : public TabbedComponent,
                           public ApplicationCommandTarget {

@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.0)
 
+project(WAYVERB_SUBMODULES VERSION 0.1 LANGUAGES CXX)
+
 add_subdirectory(gflags)
 add_subdirectory(googletest)
 
@@ -14,4 +16,10 @@ add_subdirectory(glm)
 set(GLM_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/glm CACHE PATH "path to glm")
 add_subdirectory(modern_gl_utils)
 
-add_subdirectory(hiss)
+add_subdirectory(haart-core)
+
+set(JUCE_MODULES "${CMAKE_CURRENT_SOURCE_DIR}/JUCE/modules" CACHE PATH "")
+
+add_subdirectory(ConvolutionComponent)
+add_subdirectory(UtilityComponents)
+add_subdirectory(OtherComponents)

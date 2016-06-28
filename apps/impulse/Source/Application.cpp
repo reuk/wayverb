@@ -1,6 +1,7 @@
 #include "Application.hpp"
-#include "CommandIDs.h"
-#include "LoadWindow.hpp"
+#include "CommandIDs.hpp"
+
+#include "UtilityComponents/LoadWindow.hpp"
 
 ImpulseApplication::MainWindow::MainWindow(String name, const File& file)
         : DocumentWindow(name, Colours::darkgrey.darker(), allButtons)

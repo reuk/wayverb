@@ -1,10 +1,12 @@
 #pragma once
 
-#include "DefaultAudio.hpp"
 #include "ImpulseRenderer.hpp"
-#include "Ruler.hpp"
-#include "Transport.hpp"
-#include "connector.h"
+
+#include "OtherComponents/lib_model/connector.hpp"
+
+#include "UtilityComponents/DefaultAudio.hpp"
+#include "UtilityComponents/Ruler.hpp"
+#include "UtilityComponents/Transport.hpp"
 
 class ImpulseViewer : public Component,
                       public ApplicationCommandTarget,

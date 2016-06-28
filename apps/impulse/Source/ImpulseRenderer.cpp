@@ -1,7 +1,8 @@
 #include "ImpulseRenderer.hpp"
-#include "Orientable.hpp"
 #include "Waterfall.hpp"
 #include "Waveform.hpp"
+
+#include "OtherComponents/Orientable.hpp"
 
 #include "modern_gl_utils/generic_shader.h"
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "BasicDrawableObject.hpp"
+#include "OtherComponents/BasicDrawableObject.hpp"
 
 class BoxObject final : public BasicDrawableObject {
 public:
