@@ -7,8 +7,9 @@
 #include "common/boundaries.h"
 #include "common/cl_common.h"
 #include "common/conversions.h"
-#include "common/json_read_write.h"
 #include "common/kernel.h"
+
+#include "common/serialize/json_read_write.h"
 
 namespace {
 void push_triangle_indices(std::vector<GLuint> &ret, const Triangle &tri) {
@@ -111,78 +112,118 @@ void MultiMaterialObject::set_colour(const glm::vec3 &c) {
 
 //----------------------------------------------------------------------------//
 
-class SceneRenderer::ContextLifetime : public BaseContextLifetime {
+class SceneRenderer::ContextLifetime : public BaseContextLifetime,
+                                       public model::BroadcastListener {
 public:
-    ContextLifetime(SceneRenderer &owner, const CopyableSceneData &scene_data)
+    ContextLifetime(SceneRenderer &owner,
+                    const CopyableSceneData &scene_data,
+                    model::ValueWrapper<std::vector<glm::vec3>> &sources,
+                    model::ValueWrapper<std::vector<model::ReceiverSettings>>
+                            &receivers)
             : owner(owner)
             , model(scene_data)
             , model_object(generic_shader, lit_scene_shader, scene_data)
-            , source_object(generic_shader, glm::vec4(0.7, 0, 0, 1))
-            , receiver_object(generic_shader, glm::vec4(0, 0.7, 0.7, 1))
+            , sources(sources)
+            , receivers(receivers)
             , axes(generic_shader) {
         auto aabb = model.get_aabb();
         auto m = aabb.centre();
         auto max = glm::length(aabb.dimensions());
         eye = eye_target = max > 0 ? 20 / max : 1;
         translation = -glm::vec3(m.x, m.y, m.z);
+
+        sources_connector.trigger();
+        receivers_connector.trigger();
+    }
+
+    //  called from another thread probably
+    void receive_broadcast(model::Broadcaster *b) override {
+        if (b == &sources) {
+            incoming_work_queue.push([this] {
+                std::vector<std::unique_ptr<PointObject>> ret;
+                ret.reserve(sources.size());
+                for (auto &i : sources) {
+                    auto tmp = std::make_unique<PointObject>(
+                            generic_shader, glm::vec4{0.7, 0, 0, 1});
+                    tmp->set_position(*i);
+                    ret.push_back(std::move(tmp));
+                }
+                source_objects = std::move(ret);
+            });
+        } else if (b == &receivers) {
+            incoming_work_queue.push([this] {
+                std::vector<std::unique_ptr<PointObject>> ret;
+                ret.reserve(receivers.size());
+                for (auto &i : receivers) {
+                    auto tmp = std::make_unique<PointObject>(
+                            generic_shader, glm::vec4{0, 0.7, 0.7, 1});
+                    tmp->set_position(i->position);
+                    tmp->set_pointing(i->get().get_pointing());
+                    ret.push_back(std::move(tmp));
+                }
+                receiver_objects = std::move(ret);
+            });
+        }
     }
 
     void set_eye(float u) {
-        eye_target = std::max(0.0f, u);
+        std::lock_guard<std::mutex> lck(mut);
+        set_eye_impl(u);
     }
 
     void set_rotation(const Orientable::AzEl &u) {
-        azel_target =
-                Orientable::AzEl{u.azimuth,
-                                 glm::clamp(u.elevation,
-                                            static_cast<float>(-M_PI / 2),
-                                            static_cast<float>(M_PI / 2))};
+        std::lock_guard<std::mutex> lck(mut);
+        set_rotation_impl(u);
     }
 
     void set_rendering(bool b) {
+        std::lock_guard<std::mutex> lck(mut);
         rendering = b;
         if (!b) {
             if (mesh_object) {
                 mesh_object->zero_pressures();
             }
         }
-        set_allow_move_mode(!b);
-    }
-
-    void set_receiver(const glm::vec3 &u) {
-        receiver_object.set_position(u);
-    }
-
-    void set_source(const glm::vec3 &u) {
-        source_object.set_position(u);
+        allow_move_mode = !b;
     }
 
     void set_positions(const std::vector<cl_float3> &positions) {
+        std::lock_guard<std::mutex> lck(mut);
         std::vector<glm::vec3> ret(positions.size());
         proc::transform(positions, ret.begin(), [](const auto &i) {
             return to_glm_vec3(i);
         });
         mesh_object = std::make_unique<MeshObject>(mesh_shader, ret);
     }
+
     void set_pressures(const std::vector<float> &pressures) {
+        std::lock_guard<std::mutex> lck(mut);
         assert(mesh_object);
         mesh_object->set_pressures(pressures);
     }
 
     void set_highlighted(int u) {
+        std::lock_guard<std::mutex> lck(mut);
         model_object.set_highlighted(u);
     }
 
     void set_emphasis(const glm::vec3 &c) {
+        std::lock_guard<std::mutex> lck(mut);
         model_object.set_colour(c);
     }
 
     void update(float dt) override {
+        std::lock_guard<std::mutex> lck(mut);
+        while (auto i = incoming_work_queue.pop()) {
+            (*i)();
+        }
+
         eye += (eye_target - eye) * 0.1;
         azel += (azel_target - azel) * 0.1;
     }
 
     void do_draw(const glm::mat4 &modelview_matrix) const override {
+        std::lock_guard<std::mutex> lck(mut);
         auto c = 0.0;
         glClearColor(c, c, c, 0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -210,8 +251,14 @@ public:
         model_object.draw(modelview_matrix);
 
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-        source_object.draw(modelview_matrix);
-        receiver_object.draw(modelview_matrix);
+
+        for (const auto &i : source_objects) {
+            i->draw(modelview_matrix);
+        }
+
+        for (const auto &i : receiver_objects) {
+            i->draw(modelview_matrix);
+        }
 
         if (rendering && mesh_object) {
             mesh_object->draw(modelview_matrix);
@@ -221,27 +268,38 @@ public:
     }
 
     glm::mat4 get_local_modelview_matrix() const override {
+        std::lock_guard<std::mutex> lck(mut);
         return glm::mat4{};
     }
 
-    void set_receiver_pointing(const std::vector<glm::vec3> &directions) {
-        receiver_object.set_pointing(directions);
-    }
-
-    void set_allow_move_mode(bool b) {
-        allow_move_mode = b;
-    }
-
     void mouse_down(const glm::vec2 &pos) override {
+        std::lock_guard<std::mutex> lck(mut);
         auto hovered = get_currently_hovered(pos);
-        mousing = hovered && allow_move_mode
-                          ? std::unique_ptr<Mousing>(std::make_unique<Move>(
-                                    hovered, hovered->get_position()))
-                          : std::unique_ptr<Mousing>(
-                                    std::make_unique<Rotate>(azel_target, pos));
+        if (hovered && allow_move_mode) {
+            model::ValueWrapper<glm::vec3> *model = nullptr;
+            assert(sources.size() == source_objects.size());
+            for (auto i = 0u; i != sources.size() && !model; ++i) {
+                if (source_objects[i].get() == hovered) {
+                    model = &sources[i];
+                }
+            }
+            assert(receivers.size() == receiver_objects.size());
+            for (auto i = 0u; i != receivers.size() && !model; ++i) {
+                if (receiver_objects[i].get() == hovered) {
+                    model = &receivers[i].position;
+                }
+            }
+            assert(model);
+            mousing = std::unique_ptr<Mousing>(std::make_unique<Move>(
+                    model, hovered, hovered->get_position()));
+        } else {
+            mousing = std::unique_ptr<Mousing>(
+                    std::make_unique<Rotate>(azel_target, pos));
+        }
     }
 
     void mouse_drag(const glm::vec2 &pos) override {
+        std::lock_guard<std::mutex> lck(mut);
         assert(mousing);
         switch (mousing->get_mode()) {
             case Mousing::Mode::move: {
@@ -257,18 +315,14 @@ public:
                 auto dist = -d / glm::dot(normal, direction);
                 auto new_pos = camera_position + direction * dist;
 
-                if (m.to_move == &source_object) {
-                    owner.broadcast_source_position(new_pos);
-                } else if (m.to_move == &receiver_object) {
-                    owner.broadcast_receiver_position(new_pos);
-                }
+                m.model->set(new_pos);
 
                 break;
             }
             case Mousing::Mode::rotate: {
                 const auto &m = dynamic_cast<Rotate &>(*mousing);
                 auto diff = pos - m.position;
-                set_rotation(Orientable::AzEl{
+                set_rotation_impl(Orientable::AzEl{
                         m.orientation.azimuth + diff.x * Rotate::angle_scale,
                         m.orientation.elevation +
                                 diff.y * Rotate::angle_scale});
@@ -278,14 +332,28 @@ public:
     }
 
     void mouse_up(const glm::vec2 &pos) override {
+        std::lock_guard<std::mutex> lck(mut);
         mousing = nullptr;
     }
 
     void mouse_wheel_move(float delta_y) override {
-        set_eye(eye_target + delta_y);
+        std::lock_guard<std::mutex> lck(mut);
+        set_eye_impl(eye_target + delta_y);
     }
 
 private:
+    void set_eye_impl(float u) {
+        eye_target = std::max(0.0f, u);
+    }
+
+    void set_rotation_impl(const Orientable::AzEl &u) {
+        azel_target =
+                Orientable::AzEl{u.azimuth,
+                                 glm::clamp(u.elevation,
+                                            static_cast<float>(-M_PI / 2),
+                                            static_cast<float>(M_PI / 2))};
+    }
+
     glm::vec3 get_world_camera_position() const {
         return glm::inverse(get_view_matrix())[3];
     }
@@ -306,6 +374,18 @@ private:
                 glm::vec3{glm::inverse(get_view_matrix()) * ray_eye});
     }
 
+    std::vector<PointObject *> get_all_point_objects() {
+        std::vector<PointObject *> ret;
+        ret.reserve(source_objects.size() + receiver_objects.size());
+        for (auto &i : source_objects) {
+            ret.push_back(i.get());
+        }
+        for (auto &i : receiver_objects) {
+            ret.push_back(i.get());
+        }
+        return ret;
+    }
+
     PointObject *get_currently_hovered(const glm::vec2 &pos) {
         auto origin = get_world_camera_position();
         auto direction = get_world_mouse_direction(pos);
@@ -316,10 +396,10 @@ private:
         };
 
         Intersection intersection{nullptr, 0};
-        for (auto i : {&source_object, &receiver_object}) {
+        for (auto i : get_all_point_objects()) {
             auto diff = origin - i->get_position();
             auto b = glm::dot(direction, diff);
-            auto c = glm::dot(diff, diff) - glm::pow(i->get_scale().x * 0.4, 2);
+            auto c = glm::dot(diff, diff) - glm::pow(0.4, 2);
             auto det = glm::pow(b, 2) - c;
             if (0 <= det) {
                 auto sq_det = std::sqrt(det);
@@ -347,6 +427,8 @@ private:
                glm::translate(translation);
     }
 
+    mutable std::mutex mut;
+
     SceneRenderer &owner;
     const CopyableSceneData &model;
 
@@ -355,10 +437,17 @@ private:
     LitSceneShader lit_scene_shader;
 
     MultiMaterialObject model_object;
-    PointObject source_object;
-    PointObject receiver_object;
 
     std::unique_ptr<MeshObject> mesh_object;
+
+    model::ValueWrapper<std::vector<glm::vec3>> &sources;
+    model::ValueWrapper<std::vector<model::ReceiverSettings>> &receivers;
+
+    model::BroadcastConnector sources_connector{&sources, this};
+    model::BroadcastConnector receivers_connector{&receivers, this};
+
+    std::vector<std::unique_ptr<PointObject>> source_objects;
+    std::vector<std::unique_ptr<PointObject>> receiver_objects;
 
     bool rendering{false};
 
@@ -369,6 +458,8 @@ private:
     float eye;
     float eye_target;
     glm::vec3 translation;
+
+    WorkQueue incoming_work_queue;
 
     bool allow_move_mode{true};
 
@@ -393,8 +484,11 @@ private:
     };
 
     struct Move : public Mousing {
-        Move(PointObject *to_move, const glm::vec3 &v)
-                : to_move(to_move)
+        Move(model::ValueWrapper<glm::vec3> *model,
+             PointObject *to_move,
+             const glm::vec3 &v)
+                : model(model)
+                , to_move(to_move)
                 , original_position(v) {
             to_move->set_highlight(0.5);
         }
@@ -404,6 +498,8 @@ private:
         Mode get_mode() const {
             return Mode::move;
         }
+
+        model::ValueWrapper<glm::vec3> *model;
         PointObject *to_move{nullptr};
         glm::vec3 original_position;
     };
@@ -415,8 +511,13 @@ const float SceneRenderer::ContextLifetime::Rotate::angle_scale{0.01};
 
 //----------------------------------------------------------------------------//
 
-SceneRenderer::SceneRenderer(const CopyableSceneData &model)
-        : model(model) {
+SceneRenderer::SceneRenderer(
+        const CopyableSceneData &model,
+        model::ValueWrapper<std::vector<glm::vec3>> &sources,
+        model::ValueWrapper<std::vector<model::ReceiverSettings>> &receivers)
+        : model(model)
+        , sources(sources)
+        , receivers(receivers) {
 }
 
 //  defined here so that we can PIMPL the ContextLifetime
@@ -424,7 +525,8 @@ SceneRenderer::~SceneRenderer() noexcept = default;
 
 void SceneRenderer::newOpenGLContextCreated() {
     std::lock_guard<std::mutex> lck(mut);
-    context_lifetime = std::make_unique<ContextLifetime>(*this, model);
+    context_lifetime =
+            std::make_unique<ContextLifetime>(*this, model, sources, receivers);
     context_lifetime->set_emphasis(
             glm::vec3(AngularLookAndFeel::emphasis.getFloatRed(),
                       AngularLookAndFeel::emphasis.getFloatGreen(),
@@ -441,16 +543,6 @@ void SceneRenderer::openGLContextClosing() {
 void SceneRenderer::set_rendering(bool b) {
     std::lock_guard<std::mutex> lck(mut);
     push_incoming([this, b] { context_lifetime->set_rendering(b); });
-}
-
-void SceneRenderer::set_receiver(const glm::vec3 &u) {
-    std::lock_guard<std::mutex> lck(mut);
-    push_incoming([this, u] { context_lifetime->set_receiver(u); });
-}
-
-void SceneRenderer::set_source(const glm::vec3 &u) {
-    std::lock_guard<std::mutex> lck(mut);
-    push_incoming([this, u] { context_lifetime->set_source(u); });
 }
 
 void SceneRenderer::set_positions(const std::vector<cl_float3> &positions) {
@@ -475,21 +567,15 @@ void SceneRenderer::set_emphasis(const glm::vec3 &u) {
     push_incoming([this, u] { context_lifetime->set_emphasis(u); });
 }
 
-void SceneRenderer::set_receiver_pointing(
-        const std::vector<glm::vec3> &directions) {
-    std::lock_guard<std::mutex> lck(mut);
-    push_incoming([this, directions] {
-        context_lifetime->set_receiver_pointing(directions);
-    });
-}
-
-void SceneRenderer::broadcast_receiver_position(const glm::vec3 &pos) {
+void SceneRenderer::broadcast_receiver_positions(
+        const std::vector<glm::vec3> &pos) {
     push_outgoing([this, pos] {
         listener_list.call(&Listener::receiver_dragged, this, pos);
     });
 }
 
-void SceneRenderer::broadcast_source_position(const glm::vec3 &pos) {
+void SceneRenderer::broadcast_source_positions(
+        const std::vector<glm::vec3> &pos) {
     push_outgoing([this, pos] {
         listener_list.call(&Listener::source_dragged, this, pos);
     });

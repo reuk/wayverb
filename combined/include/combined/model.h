@@ -28,7 +28,7 @@ struct App {
     float oversample_ratio{2};
     size_t rays{100000};
     std::vector<glm::vec3> source{glm::vec3{0}};
-    std::vector<ReceiverSettings> receiver_settings;
+    std::vector<ReceiverSettings> receiver_settings{ReceiverSettings{}};
 };
 
 }  // namespace model

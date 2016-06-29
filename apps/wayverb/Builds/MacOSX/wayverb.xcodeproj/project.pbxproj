@@ -14,6 +14,7 @@
 		0F3F3BF0CF31990B8A36D2C6 /* BottomPanel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8EC991E2A8DBE96759A51D2A /* BottomPanel.cpp */; };
 		127F610F5B79495C0D092DF7 /* juce_audio_processors.mm in Sources */ = {isa = PBXBuildFile; fileRef = 1F4341A2DEBD8ABD625FA0A5 /* juce_audio_processors.mm */; };
 		17BFF294246BE35E2334DF9F /* QTKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AED820E5E9613936B4CCA98A /* QTKit.framework */; };
+		1B2C2D951D240C680013CBA2 /* SourcesEditor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1B2C2D931D240C680013CBA2 /* SourcesEditor.cpp */; };
 		1BB64A7B1D22C13E0060B364 /* libassimp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1BB64A5C1D22C12D0060B364 /* libassimp.a */; };
 		1BB64A7C1D22C13E0060B364 /* libcombined.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1BB64A721D22C12D0060B364 /* libcombined.a */; };
 		1BB64A7D1D22C13E0060B364 /* libcommon.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1BB64A6C1D22C12D0060B364 /* libcommon.a */; };
@@ -74,6 +75,13 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		1B2C2DBB1D240C690013CBA2 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 1BB64A181D22C12D0060B364 /* WAYVERB.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = EB86CA5426B14C3B82A93FB6;
+			remoteInfo = zlibstatic;
+		};
 		1BB64A3F1D22C12D0060B364 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 1BB64A181D22C12D0060B364 /* WAYVERB.xcodeproj */;
@@ -405,7 +413,11 @@
 		1A6E42ABDB3A862F4FE1FAC5 /* juce_GlowEffect.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = juce_GlowEffect.cpp; path = ../../../../submodules/JUCE/modules/juce_graphics/effects/juce_GlowEffect.cpp; sourceTree = SOURCE_ROOT; };
 		1AACD1871546D64021719DBC /* juce_mac_CoreGraphicsContext.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; name = juce_mac_CoreGraphicsContext.mm; path = ../../../../submodules/JUCE/modules/juce_graphics/native/juce_mac_CoreGraphicsContext.mm; sourceTree = SOURCE_ROOT; };
 		1B0009F4B06C6DB0FBC35C69 /* FullModel.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = FullModel.hpp; path = ../../Source/FullModel.hpp; sourceTree = SOURCE_ROOT; };
+		1B0790001D24208E00CE0FBA /* BasicPanel.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = BasicPanel.hpp; path = ../../Source/BasicPanel.hpp; sourceTree = "<group>"; };
 		1B23C7BB35F8CAF553D105D7 /* juce_AudioThumbnailCache.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = juce_AudioThumbnailCache.h; path = ../../../../submodules/JUCE/modules/juce_audio_utils/gui/juce_AudioThumbnailCache.h; sourceTree = SOURCE_ROOT; };
+		1B2C2D931D240C680013CBA2 /* SourcesEditor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SourcesEditor.cpp; path = ../../Source/SourcesEditor.cpp; sourceTree = "<group>"; };
+		1B2C2D941D240C680013CBA2 /* SourcesEditor.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = SourcesEditor.hpp; path = ../../Source/SourcesEditor.hpp; sourceTree = "<group>"; };
+		1B2C2DBD1D240F3F0013CBA2 /* ValueWrapperEditableListBox.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = ValueWrapperEditableListBox.hpp; path = ../../Source/ValueWrapperEditableListBox.hpp; sourceTree = "<group>"; };
 		1B352FFF6A99ADD286FDA0BB /* juce_MouseListener.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = juce_MouseListener.h; path = ../../../../submodules/JUCE/modules/juce_gui_basics/mouse/juce_MouseListener.h; sourceTree = SOURCE_ROOT; };
 		1B793B5E3A4C29CE2485146B /* juce_AudioAppComponent.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = juce_AudioAppComponent.cpp; path = ../../../../submodules/JUCE/modules/juce_audio_utils/gui/juce_AudioAppComponent.cpp; sourceTree = SOURCE_ROOT; };
 		1BB64A181D22C12D0060B364 /* WAYVERB.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = WAYVERB.xcodeproj; path = ../../../../xcproj/WAYVERB.xcodeproj; sourceTree = "<group>"; };
@@ -1706,6 +1718,10 @@
 				74C251560B96119212621161 /* MeshShader.hpp */,
 				41B077B3B66F85F2D69BBCFB /* MicrophoneEditor.cpp */,
 				A4B6504806D838E0EECB4E4E /* MicrophoneEditor.hpp */,
+				1B2C2DBD1D240F3F0013CBA2 /* ValueWrapperEditableListBox.hpp */,
+				1B2C2D931D240C680013CBA2 /* SourcesEditor.cpp */,
+				1B2C2D941D240C680013CBA2 /* SourcesEditor.hpp */,
+				1B0790001D24208E00CE0FBA /* BasicPanel.hpp */,
 				D2934F2C04F58784DFE7B92E /* ModelObject.cpp */,
 				2077D763B24CDDD87C7BCAA6 /* ModelObject.hpp */,
 				CBC3B00D40D84CA60386DFA8 /* ModelRenderer.cpp */,
@@ -1752,6 +1768,7 @@
 				1BB64A561D22C12D0060B364 /* stl_logging_unittest */,
 				1BB64A581D22C12D0060B364 /* symbolize_unittest */,
 				1BB64A5A1D22C12D0060B364 /* utilities_unittest */,
+				1B2C2DBC1D240C690013CBA2 /* libzlibstatic.a */,
 				1BB64A5C1D22C12D0060B364 /* libassimp.a */,
 				1BB64A5E1D22C12D0060B364 /* assimp */,
 				1BB64A601D22C12D0060B364 /* glm_dummy */,
@@ -3713,6 +3730,13 @@
 /* End PBXProject section */
 
 /* Begin PBXReferenceProxy section */
+		1B2C2DBC1D240C690013CBA2 /* libzlibstatic.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libzlibstatic.a;
+			remoteRef = 1B2C2DBB1D240C690013CBA2 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
 		1BB64A401D22C12D0060B364 /* libgflags_nothreads.a */ = {
 			isa = PBXReferenceProxy;
 			fileType = archive.ar;
@@ -3950,6 +3974,7 @@
 				092B0FC8A3930A7869B15C19 /* LeftPanel.cpp in Sources */,
 				3C7A65E9AF6303AB6BC4B53B /* LitSceneShader.cpp in Sources */,
 				1E09DBF6A82901B168B1DE8F /* MainComponent.cpp in Sources */,
+				1B2C2D951D240C680013CBA2 /* SourcesEditor.cpp in Sources */,
 				A6B659AB753F4C25759986E6 /* MeshObject.cpp in Sources */,
 				AF1307B2E862AD65942CE3DB /* MeshShader.cpp in Sources */,
 				4FEC4A8CD851289B103552A3 /* MicrophoneEditor.cpp in Sources */,

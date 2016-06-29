@@ -29,6 +29,8 @@ struct Microphone {
 struct ReceiverSettings {
     enum class Mode { microphones, hrtf };
 
+    std::vector<glm::vec3> get_pointing() const;
+
     glm::vec3 position{0, 0, 0};
     Mode mode{Mode::microphones};
     std::vector<Microphone> microphones{Microphone{}};

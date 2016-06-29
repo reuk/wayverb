@@ -20,6 +20,8 @@ public:
 
     void receive_broadcast(model::Broadcaster* b) override;
 
+    void engine_encountered_error(AsyncEngine*,
+                                  const std::string& str) override;
     void engine_state_changed(AsyncEngine*,
                               engine::State state,
                               double progress) override;

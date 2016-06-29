@@ -3,10 +3,12 @@
 #include "DirectionEditor.hpp"
 #include "MicrophoneEditor.hpp"
 #include "PropertyComponentLAF.hpp"
+#include "SourcesEditor.hpp"
 #include "SurfacePanel.hpp"
 #include "TextDisplayProperty.hpp"
 #include "Vec3Editor.hpp"
 
+namespace {
 class ConfigureButton : public ButtonPropertyComponent {
 public:
     ConfigureButton(const String& name)
@@ -123,7 +125,6 @@ Array<PropertyComponent*> make_material_buttons(
 
 //----------------------------------------------------------------------------//
 
-namespace {
 constexpr auto to_id(model::ReceiverSettings::Mode m) {
     switch (m) {
         case model::ReceiverSettings::Mode::hrtf:
@@ -142,69 +143,6 @@ constexpr auto to_enum(int i) {
     }
     return model::ReceiverSettings::Mode::hrtf;
 }
-}  // namespace
-
-class ReceiverPicker : public Component,
-                       public ComboBox::Listener,
-                       public model::BroadcastListener {
-public:
-    ReceiverPicker(model::ValueWrapper<model::ReceiverSettings::Mode>& value)
-            : value(value) {
-        combo_box.addItem("microphones",
-                          to_id(model::ReceiverSettings::Mode::microphones));
-        combo_box.addItem("HRTF", to_id(model::ReceiverSettings::Mode::hrtf));
-
-        value_connector.trigger();
-        addAndMakeVisible(combo_box);
-    }
-
-    virtual ~ReceiverPicker() noexcept {
-        PopupMenu::dismissAllActiveMenus();
-    }
-
-    void comboBoxChanged(ComboBox* cb) override {
-        if (cb == &combo_box) {
-            value.set(to_enum(combo_box.getSelectedId()));
-        }
-    }
-
-    void receive_broadcast(model::Broadcaster* cb) override {
-        if (cb == &value) {
-            combo_box.setSelectedId(to_id(value), dontSendNotification);
-        }
-    }
-
-    void resized() override {
-        combo_box.setBounds(getLocalBounds());
-    }
-
-private:
-    model::ValueWrapper<model::ReceiverSettings::Mode>& value;
-    model::BroadcastConnector value_connector{&value, this};
-
-    ComboBox combo_box;
-    model::Connector<ComboBox> combo_box_connector{&combo_box, this};
-};
-
-class ReceiverPickerProperty : public PropertyComponent,
-                               public SettableHelpPanelClient {
-public:
-    ReceiverPickerProperty(
-            model::ValueWrapper<model::ReceiverSettings::Mode>& value)
-            : PropertyComponent("receiver type")
-            , receiver_picker(value) {
-        set_help("receiver type picker",
-                 "Choose whether the simulation should use simulated "
-                 "microphones, or simulated ears (hrtf modelling).");
-        addAndMakeVisible(receiver_picker);
-    }
-
-    void refresh() override {
-    }
-
-private:
-    ReceiverPicker receiver_picker;
-};
 
 //----------------------------------------------------------------------------//
 
@@ -212,7 +150,7 @@ class RayNumberPicker : public Component,
                         public ComboBox::Listener,
                         public model::BroadcastListener {
 public:
-    RayNumberPicker(model::ValueWrapper<int>& value)
+    RayNumberPicker(model::ValueWrapper<size_t>& value)
             : value(value) {
         combo_box.addItem("few (1000)", 1000);
         combo_box.addItem("some (10 000)", 10000);
@@ -246,7 +184,7 @@ public:
     }
 
 private:
-    model::ValueWrapper<int>& value;
+    model::ValueWrapper<size_t>& value;
     model::BroadcastConnector value_connector{&value, this};
 
     ComboBox combo_box;
@@ -256,7 +194,7 @@ private:
 class RayNumberPickerProperty : public PropertyComponent,
                                 public SettableHelpPanelClient {
 public:
-    RayNumberPickerProperty(model::ValueWrapper<int>& value)
+    RayNumberPickerProperty(model::ValueWrapper<size_t>& value)
             : PropertyComponent("rays")
             , picker(value) {
         set_help("ray number picker",
@@ -275,60 +213,50 @@ private:
 
 //----------------------------------------------------------------------------//
 
-class HrtfModelComponent : public Component, public SettableHelpPanelClient {
+class SourcesConfigureButton : public ConfigureButton {
 public:
-    HrtfModelComponent(model::ValueWrapper<model::Pointer>& hrtf,
-                       model::ValueWrapper<glm::vec3>& mic_position,
-                       model::ValueWrapper<glm::vec3>& source_position) {
-        set_help("hrtf configurator",
-                 "There's only one option, which allows you to choose the "
-                 "direction that the virtual head should be facing.");
-        property_panel.addProperties({new DirectionProperty(hrtf)});
-
-        addAndMakeVisible(property_panel);
-
-        setSize(400, property_panel.getTotalContentHeight());
-    }
-
-    void resized() override {
-        property_panel.setBounds(getLocalBounds());
-    }
-
-private:
-    PropertyPanel property_panel;
-};
-
-class ReceiverConfigureButton : public ConfigureButton {
-public:
-    ReceiverConfigureButton(
-            model::ValueWrapper<model::ReceiverSettings>& receiver_settings,
-            model::ValueWrapper<glm::vec3>& mic_position,
-            model::ValueWrapper<glm::vec3>& source_position)
-            : ConfigureButton("configure")
-            , receiver_settings(receiver_settings)
-            , mic_position(mic_position)
-            , source_position(source_position) {
+    SourcesConfigureButton(model::ValueWrapper<std::vector<glm::vec3>>& model,
+                           const CuboidBoundary& aabb)
+            : ConfigureButton("sources")
+            , model(model)
+            , aabb(aabb) {
     }
 
     void buttonClicked() override {
-        Component* c = nullptr;
-        switch (receiver_settings.mode) {
-            case model::ReceiverSettings::Mode::hrtf:
-                c = new HrtfModelComponent(
-                        receiver_settings.hrtf, mic_position, source_position);
-                break;
-            case model::ReceiverSettings::Mode::microphones:
-                c = new MicrophoneEditorPanel(receiver_settings.microphones);
-                break;
-        }
-        CallOutBox::launchAsynchronously(c, getScreenBounds(), nullptr);
+        auto cmp = std::make_unique<SourcesEditorPanel>(model, aabb);
+        cmp->setSize(500, 200);
+        CallOutBox::launchAsynchronously(
+                cmp.release(), getScreenBounds(), nullptr);
     }
 
 private:
-    model::ValueWrapper<model::ReceiverSettings>& receiver_settings;
-    model::ValueWrapper<glm::vec3>& mic_position;
-    model::ValueWrapper<glm::vec3>& source_position;
+    model::ValueWrapper<std::vector<glm::vec3>>& model;
+    CuboidBoundary aabb;
 };
+
+class ReceiversConfigureButton : public ConfigureButton {
+public:
+    ReceiversConfigureButton(
+            model::ValueWrapper<std::vector<model::ReceiverSettings>>& model,
+            const CuboidBoundary& aabb)
+            : ConfigureButton("receivers")
+            , model(model)
+            , aabb(aabb) {
+    }
+
+    void buttonClicked() override {
+        auto cmp = std::make_unique<ReceiversEditorPanel>(model, aabb);
+        cmp->setSize(800, 400);
+        CallOutBox::launchAsynchronously(
+                cmp.release(), getScreenBounds(), nullptr);
+    }
+
+private:
+    model::ValueWrapper<std::vector<model::ReceiverSettings>>& model;
+    CuboidBoundary aabb;
+};
+
+}  // namespace
 
 //----------------------------------------------------------------------------//
 
@@ -345,32 +273,16 @@ LeftPanel::LeftPanel(model::ValueWrapper<model::FullModel>& model,
     }
 
     {
-        auto source_property = std::make_unique<Vec3Property>("source",
-                                                model.persistent.app.source,
-                                                aabb.get_c0(),
-                                                aabb.get_c1());
-        auto mic_property = std::make_unique<Vec3Property>("receiver",
-                                             model.persistent.app.receiver,
-                                             aabb.get_c0(),
-                                             aabb.get_c1());
+        auto sources_property = std::make_unique<SourcesConfigureButton>(
+                model.persistent.app.source, aabb);
+        auto receivers_property = std::make_unique<ReceiversConfigureButton>(
+                model.persistent.app.receiver_settings, aabb);
 
-        source_property->set_help(
-                "source position",
-                "Allows you to move the source position in each "
-                "of the axial directions.");
-        mic_property->set_help(
-                "receiver position",
-                "Allows you to move the receiver position in each "
-                "of the axial directions.");
-
-        Array<PropertyComponent*> general{source_property.release(), mic_property.release()};
-        general.add(new ReceiverPickerProperty(
-                model.persistent.app.receiver_settings.mode));
-        general.add(new ReceiverConfigureButton(
-                model.persistent.app.receiver_settings,
-                model.persistent.app.receiver,
-                model.persistent.app.source));
-        property_panel.addSection("general", general);
+        property_panel.addSection(
+                "general",
+                {static_cast<PropertyComponent*>(sources_property.release()),
+                 static_cast<PropertyComponent*>(
+                         receivers_property.release())});
     }
 
     {

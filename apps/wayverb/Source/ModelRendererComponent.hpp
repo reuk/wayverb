@@ -20,8 +20,10 @@ public:
 
     void receive_broadcast(model::Broadcaster* b) override;
 
-    void source_dragged(SceneRenderer*, const glm::vec3& v) override;
-    void receiver_dragged(SceneRenderer*, const glm::vec3& v) override;
+    void source_dragged(SceneRenderer*,
+                        const std::vector<glm::vec3>& v) override;
+    void receiver_dragged(SceneRenderer*,
+                          const std::vector<glm::vec3>& v) override;
 
     void changeListenerCallback(ChangeBroadcaster* cb) override;
 
@@ -33,7 +35,8 @@ private:
     model::ValueWrapper<model::App>& app;
     model::ValueWrapper<model::RenderState>& render_state;
 
-    model::BroadcastConnector receiver_connector{&app.receiver, this};
+    model::BroadcastConnector receiver_settings_connector{
+            &app.receiver_settings, this};
     model::BroadcastConnector source_connector{&app.source, this};
     model::BroadcastConnector is_rendering_connector{&render_state.is_rendering,
                                                      this};

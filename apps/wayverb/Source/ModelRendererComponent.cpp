@@ -17,7 +17,7 @@ ModelRendererComponent::ModelRendererComponent(
         model::ValueWrapper<int> &shown_surface,
         model::ValueWrapper<model::App> &app,
         model::ValueWrapper<model::RenderState> &render_state)
-        : BaseRendererComponent(model)
+        : BaseRendererComponent(model, app.source, app.receiver_settings)
         , model(model)
         , shown_surface(shown_surface)
         , app(app)
@@ -29,45 +29,21 @@ ModelRendererComponent::ModelRendererComponent(
 
 namespace {
 auto get_receiver_directions(const model::ValueWrapper<model::App> &app) {
-    switch (app.receiver_settings.mode) {
-        case model::ReceiverSettings::Mode::microphones: {
-            std::vector<glm::vec3> directions(
-                    app.receiver_settings.microphones.size());
-            proc::transform(app.receiver_settings.microphones.get(),
-                            directions.begin(),
-                            [&app](const auto &i) {
-                                return i.pointer.get_pointing(app.receiver);
-                            });
-            return directions;
-        }
-        case model::ReceiverSettings::Mode::hrtf: {
-            return std::vector<glm::vec3>{
-                    app.receiver_settings.hrtf.get().get_pointing(
-                            app.receiver)};
-        }
-    }
 }
 }  // namespace
 
 void ModelRendererComponent::receive_broadcast(model::Broadcaster *cb) {
     if (cb == &shown_surface) {
         renderer.set_highlighted(shown_surface);
-    } else if (cb == &app.receiver) {
-        renderer.set_receiver(app.receiver);
-        renderer.set_receiver_pointing(get_receiver_directions(app));
-    } else if (cb == &app.source) {
-        renderer.set_source(app.source);
     } else if (cb == &render_state.is_rendering) {
         renderer.set_rendering(render_state.is_rendering);
-    } else if (cb == &app.receiver_settings) {
-        renderer.set_receiver_pointing(get_receiver_directions(app));
     }
 }
 
 void ModelRendererComponent::changeListenerCallback(ChangeBroadcaster *u) {
     if (u == &renderer) {
         for (auto i : {&shown_connector,
-                       &receiver_connector,
+                       &receiver_settings_connector,
                        &source_connector,
                        &is_rendering_connector,
                        &facing_direction_connector}) {
@@ -77,12 +53,18 @@ void ModelRendererComponent::changeListenerCallback(ChangeBroadcaster *u) {
 }
 
 void ModelRendererComponent::source_dragged(SceneRenderer *,
-                                            const glm::vec3 &v) {
-    app.source.set(glm::clamp(
-            v, model.get_aabb().get_c0(), model.get_aabb().get_c1()));
+                                            const std::vector<glm::vec3> &v) {
+    assert(app.source.get().size() == v.size());
+    for (auto i = 0u; i != v.size(); ++i) {
+        app.source[i].set(glm::clamp(
+                v[i], model.get_aabb().get_c0(), model.get_aabb().get_c1()));
+    }
 }
 void ModelRendererComponent::receiver_dragged(SceneRenderer *,
-                                              const glm::vec3 &v) {
-    app.receiver.set(glm::clamp(
-            v, model.get_aabb().get_c0(), model.get_aabb().get_c1()));
+                                              const std::vector<glm::vec3> &v) {
+    assert(app.receiver_settings.get().size() == v.size());
+    for (auto i = 0u; i != v.size(); ++i) {
+        app.receiver_settings[i].position.set(glm::clamp(
+                v[i], model.get_aabb().get_c0(), model.get_aabb().get_c1()));
+    }
 }

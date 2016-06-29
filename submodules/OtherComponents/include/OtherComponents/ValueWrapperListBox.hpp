@@ -19,7 +19,8 @@ public:
         virtual void selectedRowsChanged(ValueWrapperListBox* lb, int last) = 0;
     };
 
-    using model_type = model::ValueWrapper<std::vector<T>>;
+    using value_type = T;
+    using model_type = model::ValueWrapper<std::vector<value_type>>;
 
     ValueWrapperListBox(model_type& model)
             : model(model) {
@@ -63,7 +64,34 @@ public:
         return model;
     }
 
+    Component* refreshComponentForRow(int row,
+                                      bool selected,
+                                      Component* existing) override {
+        if (existing) {
+            delete existing;
+            existing = nullptr;
+        }
+        if (row < getNumRows()) {
+            existing = new_component_for_row(row, selected).release();
+        }
+        return existing;
+    }
+
+protected:
+    static void configure_selectable_label(Label& label, bool selected) {
+        label.setColour(Label::ColourIds::textColourId, Colours::black);
+        label.setColour(Label::ColourIds::textColourId,
+                        selected ? Colours::lightgrey : Colours::black);
+        label.setColour(
+                Label::ColourIds::backgroundColourId,
+                selected ? Colours::darkgrey : Colours::transparentWhite);
+        label.setInterceptsMouseClicks(false, false);
+    }
+
 private:
+    virtual std::unique_ptr<Component> new_component_for_row(int row,
+                                                             bool selected) = 0;
+
     model_type& model;
     model::BroadcastConnector model_connector{&model, this};
 

@@ -100,19 +100,20 @@ public:
 
 template <>
 class ValueWrapper<ReceiverSettings>
-        : public StructWrapper<ReceiverSettings, 3> {
+        : public StructWrapper<ReceiverSettings, 4> {
 public:
     using struct_wrapper::StructWrapper;
     member_array get_members() override {
-        return {{&mode, &microphones, &hrtf}};
+        return {{&position, &mode, &microphones, &hrtf}};
     }
+    MODEL_FIELD_DEFINITION(position);
     MODEL_FIELD_DEFINITION(mode);
     MODEL_FIELD_DEFINITION(microphones);
     MODEL_FIELD_DEFINITION(hrtf);
 };
 
 template <>
-class ValueWrapper<App> : public StructWrapper<App, 6> {
+class ValueWrapper<SingleShot> : public StructWrapper<SingleShot, 5> {
 public:
     using struct_wrapper::StructWrapper;
     member_array get_members() override {
@@ -120,14 +121,30 @@ public:
                  &oversample_ratio,
                  &rays,
                  &source,
-                 &receiver,
                  &receiver_settings}};
     }
     MODEL_FIELD_DEFINITION(filter_frequency);
     MODEL_FIELD_DEFINITION(oversample_ratio);
     MODEL_FIELD_DEFINITION(rays);
     MODEL_FIELD_DEFINITION(source);
-    MODEL_FIELD_DEFINITION(receiver);
+    MODEL_FIELD_DEFINITION(receiver_settings);
+};
+
+template <>
+class ValueWrapper<App> : public StructWrapper<App, 5> {
+public:
+    using struct_wrapper::StructWrapper;
+    member_array get_members() override {
+        return {{&filter_frequency,
+                 &oversample_ratio,
+                 &rays,
+                 &source,
+                 &receiver_settings}};
+    }
+    MODEL_FIELD_DEFINITION(filter_frequency);
+    MODEL_FIELD_DEFINITION(oversample_ratio);
+    MODEL_FIELD_DEFINITION(rays);
+    MODEL_FIELD_DEFINITION(source);
     MODEL_FIELD_DEFINITION(receiver_settings);
 };
 

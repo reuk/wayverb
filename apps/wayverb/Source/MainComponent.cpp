@@ -1,6 +1,6 @@
 #include "MainComponent.hpp"
 
-#include "common/surface_serialize.h"
+#include "common/serialize/surface.h"
 
 #include <iomanip>
 
@@ -42,6 +42,14 @@ void MainContentComponent::resized() {
                                     getHeight(),
                                     false,
                                     true);
+}
+
+void MainContentComponent::engine_encountered_error(AsyncEngine* u,
+                                                    const std::string& str) {
+    if (u == &engine) {
+        //  TODO
+        //  report the error somehow
+    }
 }
 
 void MainContentComponent::engine_state_changed(AsyncEngine* u,

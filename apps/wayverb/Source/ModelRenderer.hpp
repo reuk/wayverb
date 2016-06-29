@@ -2,16 +2,18 @@
 
 #include "../JuceLibraryCode/JuceHeader.h"
 
+#include "FullModel.hpp"
+
 #include "BoxObject.hpp"
 #include "LitSceneShader.hpp"
 #include "MeshObject.hpp"
 #include "ModelObject.hpp"
 #include "PointObject.hpp"
 
-#include "OtherComponents/RenderHelpers.hpp"
-#include "OtherComponents/WorkQueue.hpp"
 #include "OtherComponents/AxesObject.hpp"
 #include "OtherComponents/BasicDrawableObject.hpp"
+#include "OtherComponents/RenderHelpers.hpp"
+#include "OtherComponents/WorkQueue.hpp"
 
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtc/noise.hpp"
@@ -86,21 +88,21 @@ public:
         virtual ~Listener() noexcept = default;
 
         virtual void source_dragged(SceneRenderer*,
-                                    const glm::vec3& new_pos) = 0;
-        virtual void receiver_dragged(SceneRenderer*,
-                                      const glm::vec3& new_pos) = 0;
+                                    const std::vector<glm::vec3>& new_pos) = 0;
+        virtual void receiver_dragged(
+                SceneRenderer*, const std::vector<glm::vec3>& new_pos) = 0;
     };
 
-    SceneRenderer(const CopyableSceneData& model);
+    SceneRenderer(const CopyableSceneData& model,
+                  model::ValueWrapper<std::vector<glm::vec3>>& sources,
+                  model::ValueWrapper<std::vector<model::ReceiverSettings>>&
+                          receivers);
     virtual ~SceneRenderer() noexcept;
 
     void newOpenGLContextCreated() override;
     void openGLContextClosing() override;
 
     void set_rendering(bool b);
-
-    void set_receiver(const glm::vec3& u);
-    void set_source(const glm::vec3& u);
 
     void set_positions(const std::vector<cl_float3>& positions);
     void set_pressures(const std::vector<float>& pressures);
@@ -109,20 +111,20 @@ public:
 
     void set_emphasis(const glm::vec3& c);
 
-    void set_receiver_pointing(const std::vector<glm::vec3>& directions);
-
     void addListener(Listener*);
     void removeListener(Listener*);
 
 private:
     BaseContextLifetime* get_context_lifetime() override;
 
-    void broadcast_receiver_position(const glm::vec3& pos);
-    void broadcast_source_position(const glm::vec3& pos);
+    void broadcast_receiver_positions(const std::vector<glm::vec3>& pos);
+    void broadcast_source_positions(const std::vector<glm::vec3>& pos);
 
     mutable std::mutex mut;
 
     CopyableSceneData model;
+    model::ValueWrapper<std::vector<glm::vec3>>& sources;
+    model::ValueWrapper<std::vector<model::ReceiverSettings>>& receivers;
 
     class ContextLifetime;
     std::unique_ptr<ContextLifetime> context_lifetime;
