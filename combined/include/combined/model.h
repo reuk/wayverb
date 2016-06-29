@@ -1,92 +1,34 @@
 #pragma once
 
-#include "common/orientable.h"
 #include "common/config.h"
-#include "common/vec_serialize.h"
-
-#include "cereal/cereal.hpp"
+#include "common/orientable.h"
+#include "common/receiver_settings.h"
 
 #include <vector>
 
-template <typename Archive>
-void serialize(Archive& archive, Orientable::AzEl& azel) {
-    archive(cereal::make_nvp("azimuth", azel.azimuth),
-            cereal::make_nvp("elevation", azel.elevation));
-}
-
 namespace model {
 
-struct Pointer {
-    enum class Mode { spherical, look_at };
+struct SingleShot {
+    float get_waveguide_sample_rate() const;
 
-    inline glm::vec3 get_pointing(const glm::vec3& position) const {
-        switch (mode) {
-            case Mode::spherical:
-                return Orientable::compute_pointing(spherical);
-            case Mode::look_at:
-                return glm::normalize(look_at - position);
-        }
-    }
-
-    template <typename Archive>
-    void serialize(Archive& archive) {
-        archive(cereal::make_nvp("mode", mode),
-                cereal::make_nvp("spherical", spherical),
-                cereal::make_nvp("look_at", look_at));
-    }
-
-    Mode mode{Mode::spherical};
-    Orientable::AzEl spherical{};
-    glm::vec3 look_at{0};
-};
-
-struct Microphone {
-    template <typename Archive>
-    void serialize(Archive& archive) {
-        archive(cereal::make_nvp("pointer", pointer),
-                cereal::make_nvp("shape", shape));
-    }
-
-    Pointer pointer{};
-    float shape{0};
-};
-
-struct ReceiverSettings {
-    enum class Mode { microphones, hrtf };
-
-    template <typename Archive>
-    void serialize(Archive& archive) {
-        archive(cereal::make_nvp("mode", mode),
-                cereal::make_nvp("microphones", microphones),
-                cereal::make_nvp("hrtf", hrtf));
-    }
-
-    Mode mode{Mode::microphones};
-    std::vector<Microphone> microphones{Microphone{}};
-    Pointer hrtf{};
+    float filter_frequency;
+    float oversample_ratio;
+    size_t rays;
+    glm::vec3 source;
+    ReceiverSettings receiver_settings;
 };
 
 struct App {
-    inline float get_waveguide_sample_rate() const {
-        return filter_frequency * oversample_ratio * 4;
-    }
+    float get_waveguide_sample_rate() const;
 
-    template <typename Archive>
-    void serialize(Archive& archive) {
-        archive(cereal::make_nvp("filter_frequency", filter_frequency),
-                cereal::make_nvp("oversample_ratio", oversample_ratio),
-                cereal::make_nvp("rays", rays),
-                cereal::make_nvp("source", source),
-                cereal::make_nvp("receiver", receiver),
-                cereal::make_nvp("receiver_settings", receiver_settings));
-    }
+    SingleShot get_single_shot(size_t input, size_t output) const;
+    std::vector<SingleShot> get_all_input_output_combinations() const;
 
     float filter_frequency{500};
     float oversample_ratio{2};
-    int rays{100000};
-    glm::vec3 source{0};
-    glm::vec3 receiver{0};
-    ReceiverSettings receiver_settings;
+    size_t rays{100000};
+    std::vector<glm::vec3> source{glm::vec3{0}};
+    std::vector<ReceiverSettings> receiver_settings;
 };
 
 }  // namespace model

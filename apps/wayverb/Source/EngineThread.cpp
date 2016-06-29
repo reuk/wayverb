@@ -37,9 +37,88 @@ float max_reflectivity(const std::vector<SceneData::Material>& materials) {
 /// Manages the lifetime of a single engine invocation.
 /// Construct to start, destruct to stop.
 class AsyncEngine::SingleShotEngineThread {
-public:
+    std::atomic_bool keep_going;
+    RAIIThread thread;
+
     using Engine = engine::WayverbEngine<BufferType::cl>;
 
+    auto single_pair(AsyncEngine& listener,
+                     const File& file_name,
+                     const model::SingleShot& single_shot,
+                     const CopyableSceneData& scene_data,
+                     bool visualise,
+                     ComputeContext& compute_context,
+                     size_t impulses) {
+        try {
+            auto state_callback = [this, &listener](auto state, auto progress) {
+                listener.engine_state_changed(state, progress);
+            };
+
+            // init the engine
+            state_callback(engine::State::initialising, 1.0);
+            Engine engine(compute_context,
+                          scene_data,
+                          single_shot.source,
+                          single_shot.receiver_settings.position,
+                          single_shot.get_waveguide_sample_rate(),
+                          single_shot.rays,
+                          impulses,
+                          //    TODO get samplerate from dialog?
+                          44100);
+
+            //  check that source and mic are inside model
+            auto check_position = [](auto valid, const std::string& str) {
+                if (!valid) {
+                    NativeMessageBox::showMessageBoxAsync(
+                            AlertWindow::AlertIconType::WarningIcon,
+                            str + " position is invalid",
+                            "It looks like that " + str +
+                                    " position is outside the waveguide mesh. "
+                                    "Make sure the 3D model is completely "
+                                    "closed, and the " +
+                                    str + " is inside.");
+                    throw std::runtime_error(str + " is outside mesh");
+                }
+            };
+
+            check_position(engine.get_mic_position_is_valid(), "microphone");
+            check_position(engine.get_source_position_is_valid(), "source");
+
+            //  now run the simulation proper
+            auto run = [this, &engine, &state_callback] {
+                return engine.run(keep_going, state_callback);
+            };
+
+            auto run_visualised = [this, &listener, &engine, &state_callback] {
+                listener.engine_nodes_changed(engine.get_node_positions());
+                return engine.run_visualised(
+                        keep_going,
+                        state_callback,
+                        [this, &listener](const auto& i) {
+                            listener.engine_visuals_changed(i);
+                        });
+            };
+            auto intermediate = visualise ? run_visualised() : run();
+            engine.attenuate(intermediate, state_callback);
+            //  TODO write out
+
+            //  Launch viewer window or whatever
+
+            //  if anything goes wrong, flag it up on stdout and
+            //  quit
+            //  the thread
+        } catch (...) {
+            //  if the error was caused by the keep_going flag being flipped
+            //  then just propagate the error
+            if (keep_going == false) {
+                throw;
+            }
+            //  otherwise trigger a warning
+            listener.engine_encountered_error("unknown processing error");
+        }
+    }
+
+public:
     SingleShotEngineThread(AsyncEngine& listener,
                            const File& file_name,
                            const model::Persistent& persistent,
@@ -54,11 +133,6 @@ public:
                       visualise]() mutable {
                 ComputeContext compute_context;
                 try {
-                    auto state_callback = [this, &listener](auto state,
-                                                            auto progress) {
-                        listener.engine_state_changed(state, progress);
-                    };
-
                     //  compute ideal number of impulses
                     auto impulses = compute_optimum_reflection_number(
                             Decibels::decibelsToGain(-48.0),
@@ -66,72 +140,22 @@ public:
                     std::cerr << "impulses estimated: " << impulses
                               << std::endl;
 
-                    //  init the engine
-                    state_callback(engine::State::initialising, 1.0);
-                    Engine engine(compute_context,
-                                  scene_data,
-                                  persistent.app.source,
-                                  persistent.app.receiver,
-                                  persistent.app.get_waveguide_sample_rate(),
-                                  persistent.app.rays,
-                                  impulses,
-                                  //    TODO get samplerate from dialog?
-                                  44100);
-
-                    //  check that source and mic are inside model
-                    auto check_position = [](auto valid,
-                                             const std::string& str) {
-                        if (!valid) {
-                            NativeMessageBox::showMessageBoxAsync(
-                                    AlertWindow::AlertIconType::WarningIcon,
-                                    str + " position is invalid",
-                                    "It looks like that " + str +
-                                            " position is outside the "
-                                            "waveguide "
-                                            "mesh. Make sure the 3D model is "
-                                            "completely closed, and the " +
-                                            str + " is inside.");
-                            throw std::runtime_error(str + " is outside mesh");
-                        }
-                    };
-
-                    check_position(engine.get_mic_position_is_valid(),
-                                   "microphone");
-                    check_position(engine.get_source_position_is_valid(),
-                                   "source");
-
-                    //  now run the simulation proper
-                    auto run = [this, &engine, &state_callback] {
-                        return engine.run(keep_going, state_callback);
-                    };
-
-                    auto run_visualised =
-                            [this, &listener, &engine, &state_callback] {
-                                listener.engine_nodes_changed(
-                                        engine.get_node_positions());
-                                return engine.run_visualised(
-                                        keep_going,
-                                        state_callback,
-                                        [this, &listener](const auto& i) {
-                                            listener.engine_visuals_changed(i);
-                                        });
-                            };
-                    auto intermediate = visualise ? run_visualised() : run();
-                    engine.attenuate(intermediate, state_callback);
-                    //  TODO write out
-
-                    //  Launch viewer window or whatever
-
-                    //  if anything goes wrong, flag it up on stdout and quit
-                    //  the thread
+                    //  for each source/receiver pair
+                    for (const auto& single_shot :
+                         persistent.app.get_all_input_output_combinations()) {
+                        //  run the simulation
+                        single_pair(listener,
+                                    file_name,
+                                    single_shot,
+                                    scene_data,
+                                    visualise,
+                                    compute_context,
+                                    impulses);
+                    }
                 } catch (const std::runtime_error& e) {
-                    std::cout << "wayverb thread error: " << e.what()
-                              << std::endl;
+                    listener.engine_encountered_error(e.what());
                 } catch (...) {
-                    std::cout << "something went pretty wrong so the render "
-                                 "thread "
-                                 "is qutting now"
-                              << std::endl;
+                    listener.engine_encountered_error("unknown error");
                 }
                 listener.engine_finished();
             }) {
@@ -140,10 +164,6 @@ public:
     virtual ~SingleShotEngineThread() noexcept {
         keep_going = false;
     }
-
-private:
-    std::atomic_bool keep_going;
-    RAIIThread thread;
 };
 
 //----------------------------------------------------------------------------//
@@ -168,6 +188,10 @@ void AsyncEngine::stop() {
 bool AsyncEngine::is_running() const {
     std::lock_guard<std::mutex> lck(mut);
     return thread != nullptr;
+}
+
+void AsyncEngine::engine_encountered_error(const std::string& str) {
+    listener_list.call(&Listener::engine_encountered_error, this, str);
 }
 
 void AsyncEngine::engine_state_changed(engine::State state, double progress) {

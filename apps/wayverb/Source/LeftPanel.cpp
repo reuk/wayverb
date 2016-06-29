@@ -345,11 +345,11 @@ LeftPanel::LeftPanel(model::ValueWrapper<model::FullModel>& model,
     }
 
     {
-        auto source_property = new Vec3Property("source",
+        auto source_property = std::make_unique<Vec3Property>("source",
                                                 model.persistent.app.source,
                                                 aabb.get_c0(),
                                                 aabb.get_c1());
-        auto mic_property = new Vec3Property("receiver",
+        auto mic_property = std::make_unique<Vec3Property>("receiver",
                                              model.persistent.app.receiver,
                                              aabb.get_c0(),
                                              aabb.get_c1());
@@ -363,7 +363,7 @@ LeftPanel::LeftPanel(model::ValueWrapper<model::FullModel>& model,
                 "Allows you to move the receiver position in each "
                 "of the axial directions.");
 
-        Array<PropertyComponent*> general{source_property, mic_property};
+        Array<PropertyComponent*> general{source_property.release(), mic_property.release()};
         general.add(new ReceiverPickerProperty(
                 model.persistent.app.receiver_settings.mode));
         general.add(new ReceiverConfigureButton(

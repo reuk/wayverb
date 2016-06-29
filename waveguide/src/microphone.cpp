@@ -4,6 +4,29 @@
 
 #include <iostream>
 
+Microphone::Microphone(const glm::vec3& pointing, float shape)
+        : pointing(pointing)
+        , shape(shape) {
+}
+
+void Microphone::set_pointing(const glm::vec3& p) {
+    pointing = p;
+}
+glm::vec3 Microphone::get_pointing() const {
+    return pointing;
+}
+
+void Microphone::set_shape(float f) {
+    shape = f;
+}
+float Microphone::get_shape() const {
+    return shape;
+}
+
+float Microphone::attenuation(const glm::vec3& incident) const {
+    return (1 - shape) + shape * glm::dot(pointing, glm::normalize(incident));
+}
+
 std::vector<float> Microphone::process(
         const std::vector<RunStepResult>& input) const {
     std::vector<float> ret(input.size());

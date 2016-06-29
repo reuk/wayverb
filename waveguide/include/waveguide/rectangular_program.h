@@ -3,11 +3,12 @@
 #include "common/cl_include.h"
 #include "common/decibels.h"
 #include "common/hrtf.h"
-#include "common/json_read_write.h"
 #include "common/reduce.h"
 #include "common/scene_data.h"
 #include "common/stl_wrappers.h"
 #include "common/string_builder.h"
+
+#include "common/serialize/json_read_write.h"
 
 #include <cassert>
 #include <cmath>

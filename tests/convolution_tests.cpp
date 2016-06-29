@@ -1,5 +1,6 @@
 #include "common/filters_common.h"
-#include "common/json_read_write.h"
+
+#include "common/serialize/json_read_write.h"
 
 #include "cereal/types/vector.hpp"
 

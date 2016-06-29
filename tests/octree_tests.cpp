@@ -1,4 +1,4 @@
-#include "common/boundaries_serialize.h"
+#include "common/serialize/boundaries.h"
 #include "common/octree.h"
 
 #include "gtest/gtest.h"

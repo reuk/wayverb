@@ -7,8 +7,8 @@
 #include "common/conversions.h"
 #include "common/scene_data.h"
 
-#include "common/boundaries_serialize.h"
-#include "common/surface_serialize.h"
+#include "common/serialize/boundaries.h"
+#include "common/serialize/surface.h"
 
 #include "common/filters_common.h"
 #include "common/sinc.h"

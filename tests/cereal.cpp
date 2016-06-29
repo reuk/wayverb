@@ -1,6 +1,6 @@
-#include "common/json_read_write.h"
 #include "common/scene_data.h"
-#include "common/surface_serialize.h"
+#include "common/serialize/json_read_write.h"
+#include "common/serialize/surface.h"
 
 //#include "combined/config.h"
 //#include "combined/config_serialize.h"

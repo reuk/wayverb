@@ -1,7 +1,7 @@
 #pragma once
 
-#include "boundaries.h"
-#include "vec_serialize.h"
+#include "common/boundaries.h"
+#include "common/serialize/vec.h"
 
 template <typename Archive>
 void serialize(Archive& archive, Box& m) {

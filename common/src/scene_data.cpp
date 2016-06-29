@@ -2,11 +2,11 @@
 
 #include "common/boundaries.h"
 #include "common/conversions.h"
-#include "common/json_read_write.h"
 #include "common/stl_wrappers.h"
 #include "common/string_builder.h"
-#include "common/surface_serialize.h"
 #include "common/triangle.h"
+
+#include "common/serialize/json_read_write.h"
 
 #include "assimp/Exporter.hpp"
 #include "assimp/Importer.hpp"

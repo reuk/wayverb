@@ -13,6 +13,8 @@ public:
         Listener& operator=(Listener&&) noexcept = default;
         virtual ~Listener() noexcept = default;
 
+        virtual void engine_encountered_error(AsyncEngine*,
+                                              const std::string& str) = 0;
         virtual void engine_state_changed(AsyncEngine*,
                                           engine::State state,
                                           double progress) = 0;
@@ -45,6 +47,7 @@ private:
     std::unique_ptr<SingleShotEngineThread> thread;
     ListenerList<Listener> listener_list;
 
+    void engine_encountered_error(const std::string& str);
     void engine_state_changed(engine::State state, double progress);
     void engine_nodes_changed(const std::vector<cl_float3>& positions);
     void engine_visuals_changed(const std::vector<float>& pressures);

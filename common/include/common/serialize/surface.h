@@ -1,8 +1,9 @@
 #pragma once
 
-#include "extended_algorithms.h"
-#include "json_read_write.h"
-#include "scene_data.h"
+#include "common/extended_algorithms.h"
+#include "common/scene_data.h"
+
+#include "common/serialize/json_read_write.h"
 
 #include <cereal/types/map.hpp>
 #include <cereal/types/vector.hpp>

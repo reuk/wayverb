@@ -1,4 +1,5 @@
 #include "combined/model.h"
+#include "combined/serialize/model.h"
 
 #include "waveguide/microphone.h"
 #include "waveguide/config.h"
@@ -7,18 +8,19 @@
 #include "raytracer/raytracer.h"
 
 #include "common/azimuth_elevation.h"
-#include "common/boundaries_serialize.h"
 #include "common/cl_common.h"
 #include "common/conversions.h"
 #include "common/dc_blocker.h"
 #include "common/filters_common.h"
-#include "common/json_read_write.h"
 #include "common/kernel.h"
 #include "common/scene_data.h"
 #include "common/sinc.h"
 #include "common/stl_wrappers.h"
-#include "common/surface_serialize.h"
 #include "common/write_audio_file.h"
+
+#include "common/serialize/boundaries.h"
+#include "common/serialize/json_read_write.h"
+#include "common/serialize/surface.h"
 
 #include "samplerate.h"
 #include "sndfile.hh"
@@ -73,7 +75,7 @@ void write_file(size_t bit_depth,
 
 auto run_waveguide(ComputeContext& context_info,
                    const CuboidBoundary& boundary,
-                   const model::App& config,
+                   const model::SingleShot& config,
                    const std::string& output_folder,
                    const Surface& surface) {
     auto steps = 16000;
@@ -90,11 +92,12 @@ auto run_waveguide(ComputeContext& context_info,
             waveguide_program,
             context_info.queue,
             MeshBoundary(scene_data),
-            config.receiver,
+            config.receiver_settings.position,
             config.get_waveguide_sample_rate());
 
     auto source_index = waveguide.get_index_for_coordinate(config.source);
-    auto receiver_index = waveguide.get_index_for_coordinate(config.receiver);
+    auto receiver_index = waveguide.get_index_for_coordinate(
+            config.receiver_settings.position);
 
     CHECK(waveguide.inside(source_index)) << "source is outside of mesh!";
     CHECK(waveguide.inside(receiver_index)) << "receiver is outside of mesh!";
@@ -148,7 +151,8 @@ int main(int argc, char** argv) {
     //  init simulation parameters
     CuboidBoundary boundary(box.get_c0(), box.get_c1());
 
-    const model::App config{2000, 2, 100000, source, receiver};
+    const model::SingleShot config{
+            2000, 2, 100000, source, model::ReceiverSettings{receiver}};
 
     json_read_write::write(output_folder + "/used_config.json", config);
 
@@ -193,7 +197,7 @@ int main(int argc, char** argv) {
     const auto impulses = 1000;
     ProgressBar pb(std::cout, impulses);
     auto results = raytracer.run(boundary.get_scene_data(),
-                                 config.receiver,
+                                 config.receiver_settings.position,
                                  config.source,
                                  config.rays,
                                  impulses,
