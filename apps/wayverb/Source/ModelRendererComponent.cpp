@@ -17,7 +17,7 @@ ModelRendererComponent::ModelRendererComponent(
         model::ValueWrapper<int> &shown_surface,
         model::ValueWrapper<model::App> &app,
         model::ValueWrapper<model::RenderState> &render_state)
-        : BaseRendererComponent(model, app)
+        : BaseRendererComponent(model)
         , model(model)
         , shown_surface(shown_surface)
         , app(app)
@@ -35,6 +35,10 @@ auto get_receiver_directions(const model::ValueWrapper<model::App> &app) {
 void ModelRendererComponent::receive_broadcast(model::Broadcaster *cb) {
     if (cb == &shown_surface) {
         renderer.set_highlighted(shown_surface);
+    } else if (cb == &app.source) {
+        renderer.set_sources(app.source);
+    } else if (cb == &app.receiver_settings) {
+        renderer.set_receivers(app.receiver_settings);
     } else if (cb == &render_state.is_rendering) {
         renderer.set_rendering(render_state.is_rendering);
     }

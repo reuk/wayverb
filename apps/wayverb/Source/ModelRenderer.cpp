@@ -112,203 +112,48 @@ void MultiMaterialObject::set_colour(const glm::vec3 &c) {
 
 //----------------------------------------------------------------------------//
 
-template <typename T>
-class AsyncModel : private AsyncUpdater, public model::BroadcastListener {
-public:
-    AsyncModel(model::ValueWrapper<T> &model)
-            : model(model) {
-    }
-
-    AsyncModel(const AsyncModel &) = default;
-    AsyncModel &operator=(const AsyncModel &) = default;
-    //    AsyncModel(AsyncModel &&) noexcept = default;
-    //    AsyncModel &operator=(AsyncModel &&) noexcept = default;
-    virtual ~AsyncModel() noexcept = default;
-
-    //  call from gl thread
-    void update() {
-        std::lock_guard<std::mutex> lck(mut);
-        while (auto i = incoming.pop()) {
-            (*i)();
-        }
-    }
-
-    //  from who-knows-where
-    void receive_broadcast(model::Broadcaster *b) override {
-        std::lock_guard<std::mutex> lck(mut);
-        if (b == &model) {
-            incoming.push([this] { respond_to_model_change(model); });
-        }
-    }
-
-    //  call from gl thread to update model later
-    template <typename U>
-    void push_model_update(U &&t) {
-        std::lock_guard<std::mutex> lck(mut);
-        outgoing.push(std::forward<U>(t));
-        triggerAsyncUpdate();
-    }
-
-private:
-    virtual void respond_to_model_change(model::ValueWrapper<T> &t) = 0;
-
-    //  on the main message thread
-    void handleAsyncUpdate() override {
-        while (auto i = outgoing.pop()) {
-            (*i)(model);
-        }
-    }
-
-    mutable std::mutex mut;
-    model::ValueWrapper<T> &model;
-    model::BroadcastConnector model_connector{&model, this};
-    WorkQueue<> incoming;
-    WorkQueue<model::ValueWrapper<T> &> outgoing;
-};
-
-//----------------------------------------------------------------------------//
-
-class Movable {
-public:
-    Movable() = default;
-    Movable(const Movable &) = default;
-    Movable &operator=(const Movable &) = default;
-    Movable(Movable &&) noexcept = default;
-    Movable &operator=(Movable &&) noexcept = default;
-    virtual ~Movable() noexcept = default;
-
-    virtual void draw(const glm::mat4 &matrix) const = 0;
-    virtual void set_position(const glm::vec3 &p) = 0;
-    virtual glm::vec3 get_position() const = 0;
-    virtual void set_highlight(float f) = 0;
-};
-
-class SourcePointObject : public Movable, private AsyncModel<glm::vec3> {
-public:
-    SourcePointObject(model::ValueWrapper<glm::vec3> &model,
-                      mglu::GenericShader &shader)
-            : AsyncModel(model)
-            , point_object(shader, glm::vec4{0.7, 0, 0, 1}) {
-        respond_to_model_change(model);
-    }
-
-    void update() {
-        AsyncModel::update();
-    }
-
-    void draw(const glm::mat4 &matrix) const override {
-        point_object.draw(matrix);
-    }
-
-    void set_position(const glm::vec3 &p) override {
-        push_model_update([p](auto &model) { model.set(p); });
-    }
-
-    glm::vec3 get_position() const override {
-        return point_object.get_position();
-    }
-
-    void set_highlight(float f) override {
-        point_object.set_highlight(f);
-    }
-
-private:
-    void respond_to_model_change(model::ValueWrapper<glm::vec3> &t) override {
-        point_object.set_position(t);
-    }
-
-    PointObject point_object;
-};
-
-class ReceiverPointObject : public Movable,
-                            private AsyncModel<model::ReceiverSettings> {
-public:
-    ReceiverPointObject(model::ValueWrapper<model::ReceiverSettings> &model,
-                        mglu::GenericShader &shader)
-            : AsyncModel(model)
-            , point_object(shader, glm::vec4{0, 0.7, 0.7, 1}) {
-        respond_to_model_change(model);
-    }
-
-    void update() {
-        AsyncModel::update();
-    }
-
-    void draw(const glm::mat4 &matrix) const override {
-        point_object.draw(matrix);
-    }
-
-    void set_position(const glm::vec3 &p) override {
-        push_model_update([p](auto &model) { model.position.set(p); });
-    }
-
-    glm::vec3 get_position() const override {
-        return point_object.get_position();
-    }
-
-    void set_highlight(float f) override {
-        point_object.set_highlight(f);
-    }
-
-private:
-    void respond_to_model_change(
-            model::ValueWrapper<model::ReceiverSettings> &s) override {
-        point_object.set_position(s.position);
-        point_object.set_pointing(s.get().get_pointing());
-    }
-
-    PointObject point_object;
-};
-
-class PointObjects : private AsyncModel<model::App> {
+class PointObjects final {
 public:
     PointObjects(mglu::GenericShader &shader)
-            : AsyncModel(model)
-            , shader(shader) {
-        respond_to_model_change(model);
+            : shader(shader) {
     }
 
-    void update() {
-        AsyncModel::update();
-        for (const auto &i : sources) {
-            i->update();
+    void set_sources(const std::vector<glm::vec3> &u) {
+        std::vector<PointObject> ret;
+        ret.reserve(u.size());
+        for (const auto &i : u) {
+            PointObject p(shader, glm::vec4{0.7, 0, 0, 1});
+            p.set_position(i);
+            ret.push_back(std::move(p));
         }
-        for (const auto &i : receivers) {
-            i->update();
+        sources = std::move(ret);
+    }
+
+    void set_receivers(const std::vector<model::ReceiverSettings> &u) {
+        std::vector<PointObject> ret;
+        ret.reserve(u.size());
+        for (const auto &i : u) {
+            PointObject p(shader, glm::vec4{0, 0.7, 0.7, 1});
+            p.set_position(i.position);
+            p.set_pointing(i.get_pointing());
+            ret.push_back(std::move(p));
         }
+        receivers = std::move(ret);
     }
 
     void draw(const glm::mat4 &matrix) const {
         for (const auto &i : sources) {
-            i->draw(matrix);
+            i.draw(matrix);
         }
         for (const auto &i : receivers) {
-            i->draw(matrix);
+            i.draw(matrix);
         }
     }
 
-    Movable *get_currently_hovered(const glm::vec3 &origin,
-                                   const glm::vec3 &direction) {
-        return get_currently_hovered_impl(origin, direction);
-    }
-
-private:
-    auto get_all_point_objects() {
-        std::vector<Movable *> ret;
-        ret.reserve(sources.size() + receivers.size());
-        for (const auto &i : sources) {
-            ret.push_back(i.get());
-        }
-        for (const auto &i : receivers) {
-            ret.push_back(i.get());
-        }
-        return ret;
-    }
-
-    Movable *get_currently_hovered_impl(const glm::vec3 &origin,
-                                        const glm::vec3 &direction) {
+    PointObject *get_currently_hovered(const glm::vec3 &origin,
+                                       const glm::vec3 &direction) {
         struct Intersection {
-            Movable *ref;
+            PointObject *ref;
             double distance;
         };
 
@@ -330,46 +175,30 @@ private:
         return intersection.ref;
     }
 
-    auto generate_sources(const model::ValueWrapper<model::App> &p) const {
-        std::vector<std::unique_ptr<SourcePointObject>> ret;
-        ret.reserve(p.source.size());
-        for (const auto &i : p.source) {
-            ret.push_back(std::make_unique<SourcePointObject>(*i, shader));
+private:
+    std::vector<PointObject *> get_all_point_objects() {
+        std::vector<PointObject *> ret;
+        ret.reserve(sources.size() + receivers.size());
+        for (auto &i : sources) {
+            ret.push_back(&i);
+        }
+        for (auto &i : receivers) {
+            ret.push_back(&i);
         }
         return ret;
-    }
-
-    auto generate_receivers(const model::ValueWrapper<model::App> &p) const {
-        std::vector<std::unique_ptr<ReceiverPointObject>> ret;
-        ret.reserve(p.source.size());
-        for (const auto &i : p.receiver_settings) {
-            ret.push_back(std::make_unique<ReceiverPointObject>(*i, shader));
-        }
-        return ret;
-    }
-
-    void respond_to_model_change(model::ValueWrapper<model::App> &s) override {
-        if (sources.size() != s.source.size()) {
-            sources = generate_sources(s);
-        }
-
-        if (receivers.size() != s.receiver_settings.size()) {
-            receivers = generate_receivers(s);
-        }
     }
 
     mglu::GenericShader &shader;
 
-    std::vector<std::unique_ptr<SourcePointObject>> sources;
-    std::vector<std::unique_ptr<ReceiverPointObject>> receivers;
+    std::vector<PointObject> sources;
+    std::vector<PointObject> receivers;
 };
 
 //----------------------------------------------------------------------------//
 
 class SceneRenderer::ContextLifetime : public BaseContextLifetime {
 public:
-    ContextLifetime(SceneRenderer &owner,
-                    const CopyableSceneData &scene_data)
+    ContextLifetime(SceneRenderer &owner, const CopyableSceneData &scene_data)
             : owner(owner)
             , model(scene_data)
             , model_object(generic_shader, lit_scene_shader, scene_data)
@@ -429,7 +258,6 @@ public:
     }
 
     void update(float dt) override {
-        point_objects.update();
         eye += (eye_target - eye) * 0.1;
         azel += (azel_target - azel) * 0.1;
     }
@@ -479,47 +307,38 @@ public:
 
     void mouse_down(const glm::vec2 &pos) override {
         std::lock_guard<std::mutex> lck(mut);
-        auto hovered = point_objects.get_currently_hovered(
-                get_world_camera_position(), get_world_mouse_direction(pos));
-        if (hovered && allow_move_mode) {
-            mousing = std::unique_ptr<Mousing>(
-                    std::make_unique<Move>(hovered, hovered->get_position()));
-        } else {
+//        auto hovered = point_objects.get_currently_hovered(
+//                get_world_camera_position(), get_world_mouse_direction(pos));
+//        if (hovered && allow_move_mode) {
+//            mousing = std::unique_ptr<Mousing>(
+//                    std::make_unique<Move>(hovered, hovered->get_position()));
+//        } else {
             mousing = std::unique_ptr<Mousing>(
                     std::make_unique<Rotate>(azel_target, pos));
-        }
+//        }
     }
 
     void mouse_drag(const glm::vec2 &pos) override {
         std::lock_guard<std::mutex> lck(mut);
         assert(mousing);
-        switch (mousing->get_mode()) {
-            case Mousing::Mode::move: {
-                auto camera_position = get_world_camera_position();
-                auto normal = get_world_camera_direction();
+        if (auto m = dynamic_cast<Rotate *>(mousing.get())) {
+            auto diff = pos - m->position;
+            set_rotation_impl(Orientable::AzEl{
+                    m->orientation.azimuth + diff.x * Rotate::angle_scale,
+                    m->orientation.elevation + diff.y * Rotate::angle_scale});
+        } else if (auto m = dynamic_cast<Move *>(mousing.get())) {
+            auto camera_position = get_world_camera_position();
+            auto normal = get_world_camera_direction();
 
-                const auto &m = dynamic_cast<Move &>(*mousing);
-                auto original = m.original_position;
+            auto original = m->original_position;
 
-                auto d = glm::dot(normal, camera_position - original);
+            auto d = glm::dot(normal, camera_position - original);
 
-                auto direction = get_world_mouse_direction(pos);
-                auto dist = -d / glm::dot(normal, direction);
-                auto new_pos = camera_position + direction * dist;
+            auto direction = get_world_mouse_direction(pos);
+            auto dist = -d / glm::dot(normal, direction);
+            auto new_pos = camera_position + direction * dist;
 
-                m.to_move->set_position(new_pos);
-
-                break;
-            }
-            case Mousing::Mode::rotate: {
-                const auto &m = dynamic_cast<Rotate &>(*mousing);
-                auto diff = pos - m.position;
-                set_rotation_impl(Orientable::AzEl{
-                        m.orientation.azimuth + diff.x * Rotate::angle_scale,
-                        m.orientation.elevation +
-                                diff.y * Rotate::angle_scale});
-                break;
-            }
+            m->to_move->set_position(new_pos);
         }
     }
 
@@ -531,6 +350,14 @@ public:
     void mouse_wheel_move(float delta_y) override {
         std::lock_guard<std::mutex> lck(mut);
         set_eye_impl(eye_target + delta_y);
+    }
+
+    void set_sources(const std::vector<glm::vec3> &u) {
+        point_objects.set_sources(u);
+    }
+
+    void set_receivers(const std::vector<model::ReceiverSettings> &u) {
+        point_objects.set_receivers(u);
     }
 
 private:
@@ -609,17 +436,12 @@ private:
 
     struct Mousing {
         virtual ~Mousing() noexcept = default;
-        enum class Mode { rotate, move };
-        virtual Mode get_mode() const = 0;
     };
 
     struct Rotate : public Mousing {
         Rotate(const Orientable::AzEl &azel, const glm::vec2 &position)
                 : orientation(azel)
                 , position(position) {
-        }
-        Mode get_mode() const {
-            return Mode::rotate;
         }
 
         static const float angle_scale;
@@ -628,7 +450,7 @@ private:
     };
 
     struct Move : public Mousing {
-        Move(Movable *to_move, const glm::vec3 &v)
+        Move(PointObject *to_move, const glm::vec3 &v)
                 : to_move(to_move)
                 , original_position(v) {
             to_move->set_highlight(0.5);
@@ -636,11 +458,8 @@ private:
         virtual ~Move() noexcept {
             to_move->set_highlight(0);
         }
-        Mode get_mode() const {
-            return Mode::move;
-        }
 
-        Movable *to_move{nullptr};
+        PointObject *to_move{nullptr};
         glm::vec3 original_position;
     };
 
