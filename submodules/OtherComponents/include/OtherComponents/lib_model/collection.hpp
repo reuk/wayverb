@@ -52,9 +52,11 @@ public:
     }
 
     bool empty() const {
+        assert(wrappers.empty() == this->t->empty());
         return wrappers.empty();
     }
     size_t size() const {
+        assert(wrappers.size() == this->t->size());
         return wrappers.size();
     }
 

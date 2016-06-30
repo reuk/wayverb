@@ -93,16 +93,16 @@ public:
                 SceneRenderer*, const std::vector<glm::vec3>& new_pos) = 0;
     };
 
-    SceneRenderer(const CopyableSceneData& model,
-                  model::ValueWrapper<std::vector<glm::vec3>>& sources,
-                  model::ValueWrapper<std::vector<model::ReceiverSettings>>&
-                          receivers);
+    SceneRenderer(const CopyableSceneData& model);
     virtual ~SceneRenderer() noexcept;
 
     void newOpenGLContextCreated() override;
     void openGLContextClosing() override;
 
     void set_rendering(bool b);
+
+    void set_sources(const std::vector<glm::vec3>& sources);
+    void set_receivers(const std::vector<model::ReceiverSettings>& receivers);
 
     void set_positions(const std::vector<cl_float3>& positions);
     void set_pressures(const std::vector<float>& pressures);
@@ -123,8 +123,6 @@ private:
     mutable std::mutex mut;
 
     CopyableSceneData model;
-    model::ValueWrapper<std::vector<glm::vec3>>& sources;
-    model::ValueWrapper<std::vector<model::ReceiverSettings>>& receivers;
 
     class ContextLifetime;
     std::unique_ptr<ContextLifetime> context_lifetime;

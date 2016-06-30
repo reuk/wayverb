@@ -17,7 +17,7 @@ ModelRendererComponent::ModelRendererComponent(
         model::ValueWrapper<int> &shown_surface,
         model::ValueWrapper<model::App> &app,
         model::ValueWrapper<model::RenderState> &render_state)
-        : BaseRendererComponent(model, app.source, app.receiver_settings)
+        : BaseRendererComponent(model, app)
         , model(model)
         , shown_surface(shown_surface)
         , app(app)

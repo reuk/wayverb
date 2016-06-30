@@ -112,58 +112,274 @@ void MultiMaterialObject::set_colour(const glm::vec3 &c) {
 
 //----------------------------------------------------------------------------//
 
-class SceneRenderer::ContextLifetime : public BaseContextLifetime,
-                                       public model::BroadcastListener {
+template <typename T>
+class AsyncModel : private AsyncUpdater, public model::BroadcastListener {
+public:
+    AsyncModel(model::ValueWrapper<T> &model)
+            : model(model) {
+    }
+
+    AsyncModel(const AsyncModel &) = default;
+    AsyncModel &operator=(const AsyncModel &) = default;
+    //    AsyncModel(AsyncModel &&) noexcept = default;
+    //    AsyncModel &operator=(AsyncModel &&) noexcept = default;
+    virtual ~AsyncModel() noexcept = default;
+
+    //  call from gl thread
+    void update() {
+        std::lock_guard<std::mutex> lck(mut);
+        while (auto i = incoming.pop()) {
+            (*i)();
+        }
+    }
+
+    //  from who-knows-where
+    void receive_broadcast(model::Broadcaster *b) override {
+        std::lock_guard<std::mutex> lck(mut);
+        if (b == &model) {
+            incoming.push([this] { respond_to_model_change(model); });
+        }
+    }
+
+    //  call from gl thread to update model later
+    template <typename U>
+    void push_model_update(U &&t) {
+        std::lock_guard<std::mutex> lck(mut);
+        outgoing.push(std::forward<U>(t));
+        triggerAsyncUpdate();
+    }
+
+private:
+    virtual void respond_to_model_change(model::ValueWrapper<T> &t) = 0;
+
+    //  on the main message thread
+    void handleAsyncUpdate() override {
+        while (auto i = outgoing.pop()) {
+            (*i)(model);
+        }
+    }
+
+    mutable std::mutex mut;
+    model::ValueWrapper<T> &model;
+    model::BroadcastConnector model_connector{&model, this};
+    WorkQueue<> incoming;
+    WorkQueue<model::ValueWrapper<T> &> outgoing;
+};
+
+//----------------------------------------------------------------------------//
+
+class Movable {
+public:
+    Movable() = default;
+    Movable(const Movable &) = default;
+    Movable &operator=(const Movable &) = default;
+    Movable(Movable &&) noexcept = default;
+    Movable &operator=(Movable &&) noexcept = default;
+    virtual ~Movable() noexcept = default;
+
+    virtual void draw(const glm::mat4 &matrix) const = 0;
+    virtual void set_position(const glm::vec3 &p) = 0;
+    virtual glm::vec3 get_position() const = 0;
+    virtual void set_highlight(float f) = 0;
+};
+
+class SourcePointObject : public Movable, private AsyncModel<glm::vec3> {
+public:
+    SourcePointObject(model::ValueWrapper<glm::vec3> &model,
+                      mglu::GenericShader &shader)
+            : AsyncModel(model)
+            , point_object(shader, glm::vec4{0.7, 0, 0, 1}) {
+        respond_to_model_change(model);
+    }
+
+    void update() {
+        AsyncModel::update();
+    }
+
+    void draw(const glm::mat4 &matrix) const override {
+        point_object.draw(matrix);
+    }
+
+    void set_position(const glm::vec3 &p) override {
+        push_model_update([p](auto &model) { model.set(p); });
+    }
+
+    glm::vec3 get_position() const override {
+        return point_object.get_position();
+    }
+
+    void set_highlight(float f) override {
+        point_object.set_highlight(f);
+    }
+
+private:
+    void respond_to_model_change(model::ValueWrapper<glm::vec3> &t) override {
+        point_object.set_position(t);
+    }
+
+    PointObject point_object;
+};
+
+class ReceiverPointObject : public Movable,
+                            private AsyncModel<model::ReceiverSettings> {
+public:
+    ReceiverPointObject(model::ValueWrapper<model::ReceiverSettings> &model,
+                        mglu::GenericShader &shader)
+            : AsyncModel(model)
+            , point_object(shader, glm::vec4{0, 0.7, 0.7, 1}) {
+        respond_to_model_change(model);
+    }
+
+    void update() {
+        AsyncModel::update();
+    }
+
+    void draw(const glm::mat4 &matrix) const override {
+        point_object.draw(matrix);
+    }
+
+    void set_position(const glm::vec3 &p) override {
+        push_model_update([p](auto &model) { model.position.set(p); });
+    }
+
+    glm::vec3 get_position() const override {
+        return point_object.get_position();
+    }
+
+    void set_highlight(float f) override {
+        point_object.set_highlight(f);
+    }
+
+private:
+    void respond_to_model_change(
+            model::ValueWrapper<model::ReceiverSettings> &s) override {
+        point_object.set_position(s.position);
+        point_object.set_pointing(s.get().get_pointing());
+    }
+
+    PointObject point_object;
+};
+
+class PointObjects : private AsyncModel<model::App> {
+public:
+    PointObjects(mglu::GenericShader &shader)
+            : AsyncModel(model)
+            , shader(shader) {
+        respond_to_model_change(model);
+    }
+
+    void update() {
+        AsyncModel::update();
+        for (const auto &i : sources) {
+            i->update();
+        }
+        for (const auto &i : receivers) {
+            i->update();
+        }
+    }
+
+    void draw(const glm::mat4 &matrix) const {
+        for (const auto &i : sources) {
+            i->draw(matrix);
+        }
+        for (const auto &i : receivers) {
+            i->draw(matrix);
+        }
+    }
+
+    Movable *get_currently_hovered(const glm::vec3 &origin,
+                                   const glm::vec3 &direction) {
+        return get_currently_hovered_impl(origin, direction);
+    }
+
+private:
+    auto get_all_point_objects() {
+        std::vector<Movable *> ret;
+        ret.reserve(sources.size() + receivers.size());
+        for (const auto &i : sources) {
+            ret.push_back(i.get());
+        }
+        for (const auto &i : receivers) {
+            ret.push_back(i.get());
+        }
+        return ret;
+    }
+
+    Movable *get_currently_hovered_impl(const glm::vec3 &origin,
+                                        const glm::vec3 &direction) {
+        struct Intersection {
+            Movable *ref;
+            double distance;
+        };
+
+        Intersection intersection{nullptr, 0};
+        for (auto i : get_all_point_objects()) {
+            auto diff = origin - i->get_position();
+            auto b = glm::dot(direction, diff);
+            auto c = glm::dot(diff, diff) - glm::pow(0.4, 2);
+            auto det = glm::pow(b, 2) - c;
+            if (0 <= det) {
+                auto sq_det = std::sqrt(det);
+                auto dist = std::min(-b + sq_det, -b - sq_det);
+                if (!intersection.ref || dist < intersection.distance) {
+                    intersection = Intersection{i, dist};
+                }
+            }
+        }
+
+        return intersection.ref;
+    }
+
+    auto generate_sources(const model::ValueWrapper<model::App> &p) const {
+        std::vector<std::unique_ptr<SourcePointObject>> ret;
+        ret.reserve(p.source.size());
+        for (const auto &i : p.source) {
+            ret.push_back(std::make_unique<SourcePointObject>(*i, shader));
+        }
+        return ret;
+    }
+
+    auto generate_receivers(const model::ValueWrapper<model::App> &p) const {
+        std::vector<std::unique_ptr<ReceiverPointObject>> ret;
+        ret.reserve(p.source.size());
+        for (const auto &i : p.receiver_settings) {
+            ret.push_back(std::make_unique<ReceiverPointObject>(*i, shader));
+        }
+        return ret;
+    }
+
+    void respond_to_model_change(model::ValueWrapper<model::App> &s) override {
+        if (sources.size() != s.source.size()) {
+            sources = generate_sources(s);
+        }
+
+        if (receivers.size() != s.receiver_settings.size()) {
+            receivers = generate_receivers(s);
+        }
+    }
+
+    mglu::GenericShader &shader;
+
+    std::vector<std::unique_ptr<SourcePointObject>> sources;
+    std::vector<std::unique_ptr<ReceiverPointObject>> receivers;
+};
+
+//----------------------------------------------------------------------------//
+
+class SceneRenderer::ContextLifetime : public BaseContextLifetime {
 public:
     ContextLifetime(SceneRenderer &owner,
-                    const CopyableSceneData &scene_data,
-                    model::ValueWrapper<std::vector<glm::vec3>> &sources,
-                    model::ValueWrapper<std::vector<model::ReceiverSettings>>
-                            &receivers)
+                    const CopyableSceneData &scene_data)
             : owner(owner)
             , model(scene_data)
             , model_object(generic_shader, lit_scene_shader, scene_data)
-            , sources(sources)
-            , receivers(receivers)
+            , point_objects(generic_shader)
             , axes(generic_shader) {
         auto aabb = model.get_aabb();
         auto m = aabb.centre();
         auto max = glm::length(aabb.dimensions());
         eye = eye_target = max > 0 ? 20 / max : 1;
         translation = -glm::vec3(m.x, m.y, m.z);
-
-        sources_connector.trigger();
-        receivers_connector.trigger();
-    }
-
-    //  called from another thread probably
-    void receive_broadcast(model::Broadcaster *b) override {
-        if (b == &sources) {
-            incoming_work_queue.push([this] {
-                std::vector<std::unique_ptr<PointObject>> ret;
-                ret.reserve(sources.size());
-                for (auto &i : sources) {
-                    auto tmp = std::make_unique<PointObject>(
-                            generic_shader, glm::vec4{0.7, 0, 0, 1});
-                    tmp->set_position(*i);
-                    ret.push_back(std::move(tmp));
-                }
-                source_objects = std::move(ret);
-            });
-        } else if (b == &receivers) {
-            incoming_work_queue.push([this] {
-                std::vector<std::unique_ptr<PointObject>> ret;
-                ret.reserve(receivers.size());
-                for (auto &i : receivers) {
-                    auto tmp = std::make_unique<PointObject>(
-                            generic_shader, glm::vec4{0, 0.7, 0.7, 1});
-                    tmp->set_position(i->position);
-                    tmp->set_pointing(i->get().get_pointing());
-                    ret.push_back(std::move(tmp));
-                }
-                receiver_objects = std::move(ret);
-            });
-        }
     }
 
     void set_eye(float u) {
@@ -213,11 +429,7 @@ public:
     }
 
     void update(float dt) override {
-        std::lock_guard<std::mutex> lck(mut);
-        while (auto i = incoming_work_queue.pop()) {
-            (*i)();
-        }
-
+        point_objects.update();
         eye += (eye_target - eye) * 0.1;
         azel += (azel_target - azel) * 0.1;
     }
@@ -249,16 +461,9 @@ public:
         config_shader(lit_scene_shader);
 
         model_object.draw(modelview_matrix);
+        point_objects.draw(modelview_matrix);
 
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
-        for (const auto &i : source_objects) {
-            i->draw(modelview_matrix);
-        }
-
-        for (const auto &i : receiver_objects) {
-            i->draw(modelview_matrix);
-        }
 
         if (rendering && mesh_object) {
             mesh_object->draw(modelview_matrix);
@@ -274,24 +479,11 @@ public:
 
     void mouse_down(const glm::vec2 &pos) override {
         std::lock_guard<std::mutex> lck(mut);
-        auto hovered = get_currently_hovered(pos);
+        auto hovered = point_objects.get_currently_hovered(
+                get_world_camera_position(), get_world_mouse_direction(pos));
         if (hovered && allow_move_mode) {
-            model::ValueWrapper<glm::vec3> *model = nullptr;
-            assert(sources.size() == source_objects.size());
-            for (auto i = 0u; i != sources.size() && !model; ++i) {
-                if (source_objects[i].get() == hovered) {
-                    model = &sources[i];
-                }
-            }
-            assert(receivers.size() == receiver_objects.size());
-            for (auto i = 0u; i != receivers.size() && !model; ++i) {
-                if (receiver_objects[i].get() == hovered) {
-                    model = &receivers[i].position;
-                }
-            }
-            assert(model);
-            mousing = std::unique_ptr<Mousing>(std::make_unique<Move>(
-                    model, hovered, hovered->get_position()));
+            mousing = std::unique_ptr<Mousing>(
+                    std::make_unique<Move>(hovered, hovered->get_position()));
         } else {
             mousing = std::unique_ptr<Mousing>(
                     std::make_unique<Rotate>(azel_target, pos));
@@ -315,7 +507,7 @@ public:
                 auto dist = -d / glm::dot(normal, direction);
                 auto new_pos = camera_position + direction * dist;
 
-                m.model->set(new_pos);
+                m.to_move->set_position(new_pos);
 
                 break;
             }
@@ -374,45 +566,6 @@ private:
                 glm::vec3{glm::inverse(get_view_matrix()) * ray_eye});
     }
 
-    std::vector<PointObject *> get_all_point_objects() {
-        std::vector<PointObject *> ret;
-        ret.reserve(source_objects.size() + receiver_objects.size());
-        for (auto &i : source_objects) {
-            ret.push_back(i.get());
-        }
-        for (auto &i : receiver_objects) {
-            ret.push_back(i.get());
-        }
-        return ret;
-    }
-
-    PointObject *get_currently_hovered(const glm::vec2 &pos) {
-        auto origin = get_world_camera_position();
-        auto direction = get_world_mouse_direction(pos);
-
-        struct Intersection {
-            PointObject *ref;
-            double distance;
-        };
-
-        Intersection intersection{nullptr, 0};
-        for (auto i : get_all_point_objects()) {
-            auto diff = origin - i->get_position();
-            auto b = glm::dot(direction, diff);
-            auto c = glm::dot(diff, diff) - glm::pow(0.4, 2);
-            auto det = glm::pow(b, 2) - c;
-            if (0 <= det) {
-                auto sq_det = std::sqrt(det);
-                auto dist = std::min(-b + sq_det, -b - sq_det);
-                if (!intersection.ref || dist < intersection.distance) {
-                    intersection = Intersection{i, dist};
-                }
-            }
-        }
-
-        return intersection.ref;
-    }
-
     glm::mat4 get_projection_matrix() const {
         return glm::perspective(45.0f, get_aspect(), 0.05f, 1000.0f);
     }
@@ -440,16 +593,9 @@ private:
 
     std::unique_ptr<MeshObject> mesh_object;
 
-    model::ValueWrapper<std::vector<glm::vec3>> &sources;
-    model::ValueWrapper<std::vector<model::ReceiverSettings>> &receivers;
-
-    model::BroadcastConnector sources_connector{&sources, this};
-    model::BroadcastConnector receivers_connector{&receivers, this};
-
-    std::vector<std::unique_ptr<PointObject>> source_objects;
-    std::vector<std::unique_ptr<PointObject>> receiver_objects;
-
     bool rendering{false};
+
+    PointObjects point_objects;
 
     AxesObject axes;
 
@@ -458,8 +604,6 @@ private:
     float eye;
     float eye_target;
     glm::vec3 translation;
-
-    WorkQueue incoming_work_queue;
 
     bool allow_move_mode{true};
 
@@ -484,11 +628,8 @@ private:
     };
 
     struct Move : public Mousing {
-        Move(model::ValueWrapper<glm::vec3> *model,
-             PointObject *to_move,
-             const glm::vec3 &v)
-                : model(model)
-                , to_move(to_move)
+        Move(Movable *to_move, const glm::vec3 &v)
+                : to_move(to_move)
                 , original_position(v) {
             to_move->set_highlight(0.5);
         }
@@ -499,8 +640,7 @@ private:
             return Mode::move;
         }
 
-        model::ValueWrapper<glm::vec3> *model;
-        PointObject *to_move{nullptr};
+        Movable *to_move{nullptr};
         glm::vec3 original_position;
     };
 
@@ -511,13 +651,8 @@ const float SceneRenderer::ContextLifetime::Rotate::angle_scale{0.01};
 
 //----------------------------------------------------------------------------//
 
-SceneRenderer::SceneRenderer(
-        const CopyableSceneData &model,
-        model::ValueWrapper<std::vector<glm::vec3>> &sources,
-        model::ValueWrapper<std::vector<model::ReceiverSettings>> &receivers)
-        : model(model)
-        , sources(sources)
-        , receivers(receivers) {
+SceneRenderer::SceneRenderer(const CopyableSceneData &model)
+        : model(model) {
 }
 
 //  defined here so that we can PIMPL the ContextLifetime
@@ -525,8 +660,7 @@ SceneRenderer::~SceneRenderer() noexcept = default;
 
 void SceneRenderer::newOpenGLContextCreated() {
     std::lock_guard<std::mutex> lck(mut);
-    context_lifetime =
-            std::make_unique<ContextLifetime>(*this, model, sources, receivers);
+    context_lifetime = std::make_unique<ContextLifetime>(*this, model);
     context_lifetime->set_emphasis(
             glm::vec3(AngularLookAndFeel::emphasis.getFloatRed(),
                       AngularLookAndFeel::emphasis.getFloatGreen(),
@@ -543,6 +677,18 @@ void SceneRenderer::openGLContextClosing() {
 void SceneRenderer::set_rendering(bool b) {
     std::lock_guard<std::mutex> lck(mut);
     push_incoming([this, b] { context_lifetime->set_rendering(b); });
+}
+
+void SceneRenderer::set_sources(const std::vector<glm::vec3> &sources) {
+    std::lock_guard<std::mutex> lck(mut);
+    push_incoming([this, sources] { context_lifetime->set_sources(sources); });
+}
+
+void SceneRenderer::set_receivers(
+        const std::vector<model::ReceiverSettings> &receivers) {
+    std::lock_guard<std::mutex> lck(mut);
+    push_incoming(
+            [this, receivers] { context_lifetime->set_receivers(receivers); });
 }
 
 void SceneRenderer::set_positions(const std::vector<cl_float3> &positions) {

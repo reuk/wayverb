@@ -69,8 +69,8 @@ private:
 
     glm::vec2 viewport;
 
-    WorkQueue incoming_work_queue;
-    WorkQueue outgoing_work_queue;
+    WorkQueue<> incoming_work_queue;
+    WorkQueue<> outgoing_work_queue;
 };
 
 //----------------------------------------------------------------------------//
