@@ -221,7 +221,7 @@ void PresetComponent::comboBoxChanged(ComboBox* cb) {
         if (0 <= selected) {
             assert(preset_model[selected].name.get() ==
                    combo_box.getItemText(selected).toStdString());
-            linked.set(preset_model[selected].surface);
+            linked.set(preset_model[selected].surface.get());
             combo_box.setSelectedItemIndex(selected, dontSendNotification);
             delete_button.setEnabled(true);
         }
@@ -232,7 +232,7 @@ void PresetComponent::textEditorReturnKeyPressed(TextEditor& e) {
     if (e.getText().isNotEmpty()) {
         //  create new entry in model using current material settings
         preset_model.push_back(
-                SceneData::Material{e.getText().toStdString(), linked});
+                SceneData::Material{e.getText().toStdString(), linked.get()});
 
         //  update combobox view
         combo_box.setSelectedItemIndex(preset_model.size() - 1,

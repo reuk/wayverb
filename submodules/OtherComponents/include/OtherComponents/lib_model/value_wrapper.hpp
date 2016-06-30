@@ -9,17 +9,17 @@ namespace model {
 template <typename T>
 class NestedValueWrapper : public ModelValue<T> {
 public:
-    NestedValueWrapper(ModelMember *owner, T &t)
+    NestedValueWrapper(ModelMember *owner, const T &t)
             : ModelValue<T>(owner)
-            , t(&t) {
+            , t(t) {
     }
 
     T get() const override {
-        return *t;
+        return t;
     }
 
 protected:
-    T *t;
+    T t;
 };
 
 template <typename T>
@@ -27,34 +27,11 @@ class ValueWrapper : public NestedValueWrapper<T> {
 public:
     using NestedValueWrapper<T>::NestedValueWrapper;
 
-    void reseat(T &u) override {
-        this->t = &u;
-    }
     void set(const T &u, bool do_notify = true) override {
-        *(this->t) = u;
+        this->t = u;
         if (do_notify) {
             this->broadcast();
         }
-    }
-};
-
-template <>
-class ValueWrapper<bool> : public NestedValueWrapper<bool> {
-public:
-    using NestedValueWrapper<bool>::NestedValueWrapper;
-
-    void reseat(bool &u) override {
-        this->t = &u;
-    }
-    void set(const bool &u, bool do_notify = true) override {
-        *(this->t) = u;
-        if (do_notify) {
-            this->broadcast();
-        }
-    }
-
-    void toggle(bool do_notify = true) {
-        set(!(*(this->t)), do_notify);
     }
 };
 
@@ -68,34 +45,27 @@ public:
     StructAccessor &operator=(StructAccessor &&) noexcept = default;
     virtual ~StructAccessor() noexcept = default;
 
-    virtual void reseat_from_struct(Struct &s) = 0;
     virtual void set_from_struct(const Struct &s, bool do_notify) = 0;
 };
 
+/*
 template <typename Struct, typename Field>
 class NestedValueAccessor : public StructAccessor<Struct>,
                             public ValueWrapper<Field> {
 public:
-    using Accessor = std::function<Field &(Struct &)>;
     using ConstAccessor = std::function<const Field &(const Struct &)>;
     NestedValueAccessor(ModelMember *owner,
-                        Struct &s,
-                        Accessor accessor,
+                        const Struct &s,
                         ConstAccessor const_accessor)
-            : ValueWrapper<Field>(owner, accessor(s))
-            , accessor(accessor)
+            : ValueWrapper<Field>(owner, const_accessor(s))
             , const_accessor(const_accessor) {
     }
 
-    void reseat_from_struct(Struct &s) override {
-        this->reseat(accessor(s));
-    }
     void set_from_struct(const Struct &s, bool do_notify = true) override {
         this->set(const_accessor(s), do_notify);
     }
 
 private:
-    Accessor accessor;
     ConstAccessor const_accessor;
 };
 
@@ -104,8 +74,7 @@ private:
             wrapped,                                                       \
             std::decay_t<decltype(std::declval<wrapped>().member)>>        \
             name{this,                                                     \
-                 *t,                                                       \
-                 [](auto &i) -> decltype(i.member) & { return i.member; }, \
+                 t,                                                        \
                  [](const auto &i) -> const decltype(i.member) & {         \
                      return i.member;                                      \
                  }};
@@ -113,18 +82,19 @@ private:
 #define MODEL_FIELD_DEFINITION(name) RENAMED_FIELD_DEFINITION(name, name)
 
 template <typename T, size_t members>
-class StructWrapper : public NestedValueWrapper<T> {
+class StructWrapper : public ModelValue<T> {
 public:
     using struct_wrapper = StructWrapper;
     using wrapped = T;
     using member_array = std::array<StructAccessor<T> *, members>;
-    using NestedValueWrapper<T>::NestedValueWrapper;
 
-    void reseat(T &u) override {
-        for (auto &i : this->get_members()) {
-            i->reseat_from_struct(u);
+    StructWrapper(ModelMember* owner, const T& t)
+            : ModelValue<T>(owner) {
+        for (auto i : get_members()) {
+            i->
         }
     }
+
     void set(const T &u, bool do_notify = true) override {
         for (auto &i : this->get_members()) {
             i->set_from_struct(u, do_notify);
@@ -133,5 +103,6 @@ public:
 
     virtual member_array get_members() = 0;
 };
+*/
 
 }  // namespace model

@@ -15,7 +15,8 @@ void PolarPatternDisplay::paint(Graphics& g) {
     auto segments = 50;
     for (auto i = 0; i != segments; ++i) {
         auto angle = i * M_PI * 2 / (segments - 1);
-        auto rad = std::abs(base_rad * ((1 - shape) + shape * std::cos(angle)));
+        auto rad = std::abs(
+                base_rad * ((1 - shape.get()) + shape.get() * std::cos(angle)));
 
         if (i == 0) {
             p.startNewSubPath(o.x + rad * std::sin(angle),

@@ -37,7 +37,7 @@ public:
 
     void receive_broadcast(model::Broadcaster* cb) override {
         if (cb == &value) {
-            slider.setValue(value_to_slider(value), dontSendNotification);
+            slider.setValue(value_to_slider(value.get()), dontSendNotification);
         }
     }
 

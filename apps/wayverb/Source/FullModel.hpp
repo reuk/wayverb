@@ -12,140 +12,288 @@
 namespace model {
 
 template <>
-class ValueWrapper<glm::vec3> : public StructWrapper<glm::vec3, 3> {
+class ValueWrapper<glm::vec3> : public ModelValue<glm::vec3> {
 public:
-    using struct_wrapper::StructWrapper;
-    member_array get_members() override {
-        return {{&x, &y, &z}};
+    ValueWrapper(ModelMember* owner, const glm::vec3& u)
+            : ModelValue<glm::vec3>(owner)
+            , x(this, u.x)
+            , y(this, u.y)
+            , z(this, u.z) {
     }
-    MODEL_FIELD_DEFINITION(x);
-    MODEL_FIELD_DEFINITION(y);
-    MODEL_FIELD_DEFINITION(z);
+
+    glm::vec3 get() const override {
+        return glm::vec3{x.get(), y.get(), z.get()};
+    }
+
+    void set(const glm::vec3& u, bool do_notify = true) override {
+        x.set(u.x, do_notify);
+        y.set(u.y, do_notify);
+        z.set(u.z, do_notify);
+    }
+
+    ValueWrapper<float> x;
+    ValueWrapper<float> y;
+    ValueWrapper<float> z;
 };
 
 template <>
-class ValueWrapper<VolumeType> : public StructWrapper<VolumeType, 8> {
+class ValueWrapper<VolumeType> : public ModelValue<VolumeType> {
 public:
-    using struct_wrapper::StructWrapper;
-    member_array get_members() override {
-        return {{&s0, &s1, &s2, &s3, &s4, &s5, &s6, &s7}};
+    ValueWrapper(ModelMember* owner, const VolumeType& u)
+            : ModelValue<VolumeType>(owner)
+            , s0(this, u.s[0])
+            , s1(this, u.s[1])
+            , s2(this, u.s[2])
+            , s3(this, u.s[3])
+            , s4(this, u.s[4])
+            , s5(this, u.s[5])
+            , s6(this, u.s[6])
+            , s7(this, u.s[7]) {
     }
-    RENAMED_FIELD_DEFINITION(s[0], s0);
-    RENAMED_FIELD_DEFINITION(s[1], s1);
-    RENAMED_FIELD_DEFINITION(s[2], s2);
-    RENAMED_FIELD_DEFINITION(s[3], s3);
-    RENAMED_FIELD_DEFINITION(s[4], s4);
-    RENAMED_FIELD_DEFINITION(s[5], s5);
-    RENAMED_FIELD_DEFINITION(s[6], s6);
-    RENAMED_FIELD_DEFINITION(s[7], s7);
+
+    VolumeType get() const override {
+        return VolumeType{s0.get(),
+                          s1.get(),
+                          s2.get(),
+                          s3.get(),
+                          s4.get(),
+                          s5.get(),
+                          s6.get(),
+                          s7.get()};
+    }
+
+    void set(const VolumeType& u, bool do_notify = true) override {
+        s0.set(u.s[0], do_notify);
+        s1.set(u.s[1], do_notify);
+        s2.set(u.s[2], do_notify);
+        s3.set(u.s[3], do_notify);
+        s4.set(u.s[4], do_notify);
+        s5.set(u.s[5], do_notify);
+        s6.set(u.s[6], do_notify);
+        s7.set(u.s[7], do_notify);
+    }
+
+    ValueWrapper<float> s0;
+    ValueWrapper<float> s1;
+    ValueWrapper<float> s2;
+    ValueWrapper<float> s3;
+    ValueWrapper<float> s4;
+    ValueWrapper<float> s5;
+    ValueWrapper<float> s6;
+    ValueWrapper<float> s7;
 };
 
 template <>
-class ValueWrapper<Surface> : public StructWrapper<Surface, 2> {
+class ValueWrapper<Surface> : public ModelValue<Surface> {
 public:
-    using struct_wrapper::StructWrapper;
-    member_array get_members() override {
-        return {{&specular, &diffuse}};
+    ValueWrapper(ModelMember* owner, const Surface& u)
+            : ModelValue<Surface>(owner)
+            , specular(this, u.specular)
+            , diffuse(this, u.diffuse) {
     }
-    MODEL_FIELD_DEFINITION(specular);
-    MODEL_FIELD_DEFINITION(diffuse);
+
+    Surface get() const override {
+        return Surface{specular.get(), diffuse.get()};
+    }
+
+    void set(const Surface& u, bool do_notify = true) override {
+        specular.set(u.specular, do_notify);
+        diffuse.set(u.diffuse, do_notify);
+    }
+
+    ValueWrapper<VolumeType> specular;
+    ValueWrapper<VolumeType> diffuse;
 };
 
 template <>
 class ValueWrapper<SceneData::Material>
-        : public StructWrapper<SceneData::Material, 2> {
+        : public ModelValue<SceneData::Material> {
 public:
-    using struct_wrapper::StructWrapper;
-    member_array get_members() override {
-        return {{&name, &surface}};
+    ValueWrapper(ModelMember* owner, const SceneData::Material& u)
+            : ModelValue<SceneData::Material>(owner)
+            , name(this, u.name)
+            , surface(this, u.surface) {
     }
-    MODEL_FIELD_DEFINITION(name);
-    MODEL_FIELD_DEFINITION(surface);
+
+    SceneData::Material get() const override {
+        return SceneData::Material{name.get(), surface.get()};
+    }
+
+    void set(const SceneData::Material& u, bool do_notify = true) override {
+        name.set(u.name, do_notify);
+        surface.set(u.surface, do_notify);
+    }
+
+    ValueWrapper<std::string> name;
+    ValueWrapper<Surface> surface;
 };
 
 template <>
-class ValueWrapper<Orientable::AzEl>
-        : public StructWrapper<Orientable::AzEl, 2> {
+class ValueWrapper<Orientable::AzEl> : public ModelValue<Orientable::AzEl> {
 public:
-    using struct_wrapper::StructWrapper;
-    member_array get_members() override {
-        return {{&azimuth, &elevation}};
+    ValueWrapper(ModelMember* owner, const Orientable::AzEl& u)
+            : ModelValue<Orientable::AzEl>(owner)
+            , azimuth(this, u.azimuth)
+            , elevation(this, u.elevation) {
     }
-    MODEL_FIELD_DEFINITION(azimuth);
-    MODEL_FIELD_DEFINITION(elevation);
+
+    Orientable::AzEl get() const override {
+        return Orientable::AzEl{azimuth.get(), elevation.get()};
+    }
+
+    void set(const Orientable::AzEl& u, bool do_notify = true) override {
+        azimuth.set(u.azimuth, do_notify);
+        elevation.set(u.elevation, do_notify);
+    }
+
+    ValueWrapper<float> azimuth;
+    ValueWrapper<float> elevation;
 };
 
 template <>
-class ValueWrapper<Pointer> : public StructWrapper<Pointer, 3> {
+class ValueWrapper<Pointer> : public ModelValue<Pointer> {
 public:
-    using struct_wrapper::StructWrapper;
-    member_array get_members() override {
-        return {{&mode, &spherical, &look_at}};
+    ValueWrapper(ModelMember* owner, const Pointer& u)
+            : ModelValue<Pointer>(owner)
+            , mode(this, u.mode)
+            , spherical(this, u.spherical)
+            , look_at(this, u.look_at) {
     }
-    MODEL_FIELD_DEFINITION(mode);
-    MODEL_FIELD_DEFINITION(spherical);
-    MODEL_FIELD_DEFINITION(look_at);
+
+    Pointer get() const override {
+        return Pointer{mode.get(), spherical.get(), look_at.get()};
+    }
+
+    void set(const Pointer& u, bool do_notify = true) override {
+        mode.set(u.mode, do_notify);
+        spherical.set(u.spherical, do_notify);
+        look_at.set(u.look_at, do_notify);
+    }
+
+    ValueWrapper<Pointer::Mode> mode;
+    ValueWrapper<Orientable::AzEl> spherical;
+    ValueWrapper<glm::vec3> look_at;
 };
 
 template <>
-class ValueWrapper<Microphone> : public StructWrapper<Microphone, 2> {
+class ValueWrapper<Microphone> : public ModelValue<Microphone> {
 public:
-    using struct_wrapper::StructWrapper;
-    member_array get_members() override {
-        return {{&pointer, &shape}};
+    ValueWrapper(ModelMember* owner, const Microphone& u)
+            : ModelValue<Microphone>(owner)
+            , pointer(this, u.pointer)
+            , shape(this, u.shape) {
     }
-    MODEL_FIELD_DEFINITION(pointer);
-    MODEL_FIELD_DEFINITION(shape);
+
+    Microphone get() const override {
+        return Microphone{pointer.get(), shape.get()};
+    }
+
+    void set(const Microphone& u, bool do_notify = true) override {
+        pointer.set(u.pointer, do_notify);
+        shape.set(u.shape, do_notify);
+    }
+
+    ValueWrapper<Pointer> pointer;
+    ValueWrapper<float> shape;
 };
 
 template <>
-class ValueWrapper<ReceiverSettings>
-        : public StructWrapper<ReceiverSettings, 4> {
+class ValueWrapper<ReceiverSettings> : public ModelValue<ReceiverSettings> {
 public:
-    using struct_wrapper::StructWrapper;
-    member_array get_members() override {
-        return {{&position, &mode, &microphones, &hrtf}};
+    ValueWrapper(ModelMember* owner, const ReceiverSettings& u)
+            : ModelValue<ReceiverSettings>(owner)
+            , position(this, u.position)
+            , mode(this, u.mode)
+            , microphones(this, u.microphones)
+            , hrtf(this, u.hrtf) {
     }
-    MODEL_FIELD_DEFINITION(position);
-    MODEL_FIELD_DEFINITION(mode);
-    MODEL_FIELD_DEFINITION(microphones);
-    MODEL_FIELD_DEFINITION(hrtf);
+
+    ReceiverSettings get() const override {
+        return ReceiverSettings{
+                position.get(), mode.get(), microphones.get(), hrtf.get()};
+    }
+
+    void set(const ReceiverSettings& u, bool do_notify = true) override {
+        position.set(u.position, do_notify);
+        mode.set(u.mode, do_notify);
+        microphones.set(u.microphones, do_notify);
+        hrtf.set(u.hrtf, do_notify);
+    }
+
+    ValueWrapper<glm::vec3> position;
+    ValueWrapper<ReceiverSettings::Mode> mode;
+    ValueWrapper<std::vector<Microphone>> microphones;
+    ValueWrapper<Pointer> hrtf;
 };
 
 template <>
-class ValueWrapper<SingleShot> : public StructWrapper<SingleShot, 5> {
+class ValueWrapper<SingleShot> : public ModelValue<SingleShot> {
 public:
-    using struct_wrapper::StructWrapper;
-    member_array get_members() override {
-        return {{&filter_frequency,
-                 &oversample_ratio,
-                 &rays,
-                 &source,
-                 &receiver_settings}};
+    ValueWrapper(ModelMember* owner, const SingleShot& u)
+            : ModelValue<SingleShot>(owner)
+            , filter_frequency(this, u.filter_frequency)
+            , oversample_ratio(this, u.oversample_ratio)
+            , rays(this, u.rays)
+            , source(this, u.source)
+            , receiver_settings(this, u.receiver_settings) {
     }
-    MODEL_FIELD_DEFINITION(filter_frequency);
-    MODEL_FIELD_DEFINITION(oversample_ratio);
-    MODEL_FIELD_DEFINITION(rays);
-    MODEL_FIELD_DEFINITION(source);
-    MODEL_FIELD_DEFINITION(receiver_settings);
+
+    SingleShot get() const override {
+        return SingleShot{filter_frequency.get(),
+                          oversample_ratio.get(),
+                          rays.get(),
+                          source.get(),
+                          receiver_settings.get()};
+    }
+
+    void set(const SingleShot& u, bool do_notify = true) override {
+        filter_frequency.set(u.filter_frequency, do_notify);
+        oversample_ratio.set(u.oversample_ratio, do_notify);
+        rays.set(u.rays, do_notify);
+        source.set(u.source, do_notify);
+        receiver_settings.set(u.receiver_settings, do_notify);
+    }
+
+    ValueWrapper<float> filter_frequency;
+    ValueWrapper<float> oversample_ratio;
+    ValueWrapper<size_t> rays;
+    ValueWrapper<glm::vec3> source;
+    ValueWrapper<ReceiverSettings> receiver_settings;
 };
 
 template <>
-class ValueWrapper<App> : public StructWrapper<App, 5> {
+class ValueWrapper<App> : public ModelValue<App> {
 public:
-    using struct_wrapper::StructWrapper;
-    member_array get_members() override {
-        return {{&filter_frequency,
-                 &oversample_ratio,
-                 &rays,
-                 &source,
-                 &receiver_settings}};
+    ValueWrapper(ModelMember* owner, const App& u)
+            : ModelValue<App>(owner)
+            , filter_frequency(this, u.filter_frequency)
+            , oversample_ratio(this, u.oversample_ratio)
+            , rays(this, u.rays)
+            , source(this, u.source)
+            , receiver_settings(this, u.receiver_settings) {
     }
-    MODEL_FIELD_DEFINITION(filter_frequency);
-    MODEL_FIELD_DEFINITION(oversample_ratio);
-    MODEL_FIELD_DEFINITION(rays);
-    MODEL_FIELD_DEFINITION(source);
-    MODEL_FIELD_DEFINITION(receiver_settings);
+
+    App get() const override {
+        return App{filter_frequency.get(),
+                   oversample_ratio.get(),
+                   rays.get(),
+                   source.get(),
+                   receiver_settings.get()};
+    }
+
+    void set(const App& u, bool do_notify = true) override {
+        filter_frequency.set(u.filter_frequency, do_notify);
+        oversample_ratio.set(u.oversample_ratio, do_notify);
+        rays.set(u.rays, do_notify);
+        source.set(u.source, do_notify);
+        receiver_settings.set(u.receiver_settings, do_notify);
+    }
+
+    ValueWrapper<float> filter_frequency;
+    ValueWrapper<float> oversample_ratio;
+    ValueWrapper<size_t> rays;
+    ValueWrapper<std::vector<glm::vec3>> source;
+    ValueWrapper<std::vector<ReceiverSettings>> receiver_settings;
 };
 
 class RenderState {
@@ -157,11 +305,28 @@ public:
 };
 
 template <>
-class ValueWrapper<RenderState> : public StructWrapper<RenderState, 6> {
+class ValueWrapper<RenderState> : public ModelValue<RenderState> {
 public:
-    using struct_wrapper::StructWrapper;
-    member_array get_members() override {
-        return {{&is_rendering, &state, &progress, &visualise}};
+    ValueWrapper(ModelMember* owner, const RenderState& u)
+            : ModelValue<RenderState>(owner)
+            , is_rendering(this, u.is_rendering)
+            , state(this, u.state)
+            , progress(this, u.progress)
+            , visualise(this, u.visualise) {
+    }
+
+    RenderState get() const override {
+        return RenderState{is_rendering.get(),
+                           state.get(),
+                           progress.get(),
+                           visualise.get()};
+    }
+
+    void set(const RenderState& u, bool do_notify = true) override {
+        is_rendering.set(u.is_rendering, do_notify);
+        state.set(u.state, do_notify);
+        progress.set(u.progress, do_notify);
+        visualise.set(u.visualise, do_notify);
     }
 
     void start() {
@@ -174,10 +339,10 @@ public:
         progress.set(0);
     }
 
-    MODEL_FIELD_DEFINITION(is_rendering);
-    MODEL_FIELD_DEFINITION(state);
-    MODEL_FIELD_DEFINITION(progress);
-    MODEL_FIELD_DEFINITION(visualise);
+    ValueWrapper<bool> is_rendering;
+    ValueWrapper<engine::State> state;
+    ValueWrapper<double> progress;
+    ValueWrapper<bool> visualise;
 };
 
 class Persistent {
@@ -193,14 +358,25 @@ public:
 };
 
 template <>
-class ValueWrapper<Persistent> : public StructWrapper<Persistent, 2> {
+class ValueWrapper<Persistent> : public ModelValue<Persistent> {
 public:
-    using struct_wrapper::StructWrapper;
-    member_array get_members() override {
-        return {{&app, &materials}};
+    ValueWrapper(ModelMember* owner, const Persistent& u)
+            : ModelValue<Persistent>(owner)
+            , app(this, u.app)
+            , materials(this, u.materials) {
     }
-    MODEL_FIELD_DEFINITION(app);
-    MODEL_FIELD_DEFINITION(materials);
+
+    Persistent get() const override {
+        return Persistent{app.get(), materials.get()};
+    }
+
+    void set(const Persistent& u, bool do_notify = true) override {
+        app.set(u.app, do_notify);
+        materials.set(u.materials, do_notify);
+    }
+
+    ValueWrapper<App> app;
+    ValueWrapper<std::vector<SceneData::Material>> materials;
 };
 
 class FullModel {
@@ -213,21 +389,38 @@ public:
 };
 
 template <>
-class ValueWrapper<FullModel> : public StructWrapper<FullModel, 5> {
+class ValueWrapper<FullModel> : public ModelValue<FullModel> {
 public:
-    using struct_wrapper::StructWrapper;
-    member_array get_members() override {
-        return {{&persistent,
-                 &presets,
-                 &render_state,
-                 &shown_surface,
-                 &needs_save}};
+    ValueWrapper(ModelMember* owner, const FullModel& u)
+            : ModelValue<FullModel>(owner)
+            , persistent(this, u.persistent)
+            , presets(this, u.presets)
+            , render_state(this, u.render_state)
+            , shown_surface(this, u.shown_surface)
+            , needs_save(this, u.needs_save) {
     }
-    MODEL_FIELD_DEFINITION(persistent);
-    MODEL_FIELD_DEFINITION(presets);
-    MODEL_FIELD_DEFINITION(render_state);
-    MODEL_FIELD_DEFINITION(shown_surface);
-    MODEL_FIELD_DEFINITION(needs_save);
+
+    FullModel get() const override {
+        return FullModel{persistent.get(),
+                         presets.get(),
+                         render_state.get(),
+                         shown_surface.get(),
+                         needs_save.get()};
+    }
+
+    void set(const FullModel& u, bool do_notify = true) override {
+        persistent.set(u.persistent, do_notify);
+        presets.set(u.presets, do_notify);
+        render_state.set(u.render_state, do_notify);
+        shown_surface.set(u.shown_surface, do_notify);
+        needs_save.set(u.needs_save, do_notify);
+    }
+
+    ValueWrapper<Persistent> persistent;
+    ValueWrapper<std::vector<SceneData::Material>> presets;
+    ValueWrapper<RenderState> render_state;
+    ValueWrapper<int> shown_surface;
+    ValueWrapper<bool> needs_save;
 };
 
 }  // namespace model

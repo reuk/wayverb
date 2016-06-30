@@ -101,8 +101,7 @@ public:
         scene_and_model_from_file(const File& f);
 
         SceneData scene_data;
-        model::FullModel model;
-        model::ValueWrapper<model::FullModel> wrapper{nullptr, model};
+        model::ValueWrapper<model::FullModel> wrapper;
 
         File this_file;
         MainContentComponent content_component;

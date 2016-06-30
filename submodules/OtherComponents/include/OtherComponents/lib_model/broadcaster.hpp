@@ -18,21 +18,24 @@ public:
     virtual void receive_broadcast(Broadcaster* broadcaster) = 0;
 };
 
-class Broadcaster : ListenerList<BroadcastListener> {
+class Broadcaster {
 public:
     using Listener = BroadcastListener;
 
     inline void broadcast() {
-        call(&Listener::receive_broadcast, this);
+        listener_list.call(&Listener::receive_broadcast, this);
     }
 
     inline void addListener(Listener* l) {
-        add(l);
+        listener_list.add(l);
     }
 
     inline void removeListener(Listener* l) {
-        remove(l);
+        listener_list.remove(l);
     }
+
+private:
+    ListenerList<BroadcastListener> listener_list;
 };
 
 }  // namespace model

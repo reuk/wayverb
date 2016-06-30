@@ -83,7 +83,7 @@ void MainContentComponent::engine_finished(AsyncEngine* u) {
 
 void MainContentComponent::receive_broadcast(model::Broadcaster* cb) {
     if (cb == &wrapper.render_state.is_rendering) {
-        if (wrapper.render_state.is_rendering) {
+        if (wrapper.render_state.is_rendering.get()) {
             FileChooser fc(
                     "save output", File::nonexistent, "*.wav,*.aif,*.aiff");
             if (!fc.browseForFileToSave(true)) {
@@ -96,7 +96,7 @@ void MainContentComponent::receive_broadcast(model::Broadcaster* cb) {
             engine.start(fc.getResult().getFullPathName(),
                          persistent,
                          scene_data,
-                         wrapper.render_state.visualise);
+                         wrapper.render_state.visualise.get());
         } else {
             engine.stop();
         }

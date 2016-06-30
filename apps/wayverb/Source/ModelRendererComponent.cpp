@@ -34,13 +34,13 @@ auto get_receiver_directions(const model::ValueWrapper<model::App> &app) {
 
 void ModelRendererComponent::receive_broadcast(model::Broadcaster *cb) {
     if (cb == &shown_surface) {
-        renderer.set_highlighted(shown_surface);
+        renderer.set_highlighted(shown_surface.get());
     } else if (cb == &app.source) {
-        renderer.set_sources(app.source);
+        renderer.set_sources(app.source.get());
     } else if (cb == &app.receiver_settings) {
-        renderer.set_receivers(app.receiver_settings);
+        renderer.set_receivers(app.receiver_settings.get());
     } else if (cb == &render_state.is_rendering) {
-        renderer.set_rendering(render_state.is_rendering);
+        renderer.set_rendering(render_state.is_rendering.get());
     }
 }
 

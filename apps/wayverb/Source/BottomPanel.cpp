@@ -26,7 +26,7 @@ void BottomPanel::resized() {
 
 void BottomPanel::buttonClicked(Button* b) {
     if (b == &button) {
-        if (render_state.is_rendering) {
+        if (render_state.is_rendering.get()) {
             render_state.stop();
         } else {
             render_state.start();
@@ -36,10 +36,11 @@ void BottomPanel::buttonClicked(Button* b) {
 
 void BottomPanel::receive_broadcast(model::Broadcaster* cb) {
     if (cb == &render_state.is_rendering) {
-        button.setButtonText(render_state.is_rendering ? "cancel" : "render");
+        button.setButtonText(render_state.is_rendering.get() ? "cancel"
+                                                             : "render");
     } else if (cb == &render_state.state) {
-        bar.setTextToDisplay(engine::to_string(render_state.state));
+        bar.setTextToDisplay(engine::to_string(render_state.state.get()));
     } else if (cb == &render_state.progress) {
-        progress = render_state.progress;
+        progress = render_state.progress.get();
     }
 }

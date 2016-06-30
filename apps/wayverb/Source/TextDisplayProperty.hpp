@@ -21,7 +21,7 @@ public:
     void receive_broadcast(model::Broadcaster* b) override {
         if (b == &value) {
             std::stringstream ss;
-            ss << value;
+            ss << value.get();
             label.setText(ss.str(), dontSendNotification);
         }
     }

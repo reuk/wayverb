@@ -19,9 +19,7 @@ public:
 private:
     model::ValueWrapper<model::FullModel>& model;
 
-    int waveguide_sampling_rate{0};
-    model::ValueWrapper<int> waveguide_sampling_rate_wrapper{
-            nullptr, waveguide_sampling_rate};
+    model::ValueWrapper<int> waveguide_sampling_rate_wrapper{nullptr, 0};
 
     model::BroadcastConnector filter_frequency_connector{
             &model.persistent.app.filter_frequency, this};

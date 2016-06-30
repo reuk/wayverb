@@ -52,8 +52,8 @@ public:
 
     void buttonClicked(Button* b) override {
         if (b == &show_button) {
-            shown_surface.set(shown_surface == this_surface ? -1
-                                                            : this_surface);
+            shown_surface.set(
+                    shown_surface.get() == this_surface ? -1 : this_surface);
         } else if (b == &more_button) {
             auto panel = new SurfaceComponentWithTitle(value, preset_model);
             CallOutBox::launchAsynchronously(
@@ -63,7 +63,7 @@ public:
 
     void receive_broadcast(model::Broadcaster* b) override {
         if (b == &shown_surface) {
-            show_button.setToggleState(shown_surface == this_surface,
+            show_button.setToggleState(shown_surface.get() == this_surface,
                                        dontSendNotification);
         }
     }
@@ -116,8 +116,8 @@ Array<PropertyComponent*> make_material_buttons(
     Array<PropertyComponent*> ret;
     auto count = 0;
     for (const auto& i : model) {
-        auto to_add =
-                new MaterialConfigureButton(count++, shown_surface, *i, preset);
+        auto to_add = new MaterialConfigureButton(
+                count++, shown_surface, *i, preset);
         ret.add(to_add);
     }
     return ret;
@@ -174,7 +174,8 @@ public:
     void receive_broadcast(model::Broadcaster* cb) override {
         if (cb == &value) {
             auto id = std::pow(
-                    10, std::floor(std::log10(static_cast<float>(value))));
+                    10,
+                    std::floor(std::log10(static_cast<float>(value.get()))));
             combo_box.setSelectedId(id, dontSendNotification);
         }
     }
@@ -330,7 +331,7 @@ void LeftPanel::resized() {
 
 void LeftPanel::receive_broadcast(model::Broadcaster* cb) {
     if (cb == &model.render_state.is_rendering) {
-        property_panel.setEnabled(!model.render_state.is_rendering);
+        property_panel.setEnabled(!model.render_state.is_rendering.get());
     } else if (cb == &model.persistent.app.filter_frequency ||
                cb == &model.persistent.app.oversample_ratio) {
         waveguide_sampling_rate_wrapper.set(

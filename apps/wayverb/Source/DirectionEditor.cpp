@@ -43,7 +43,7 @@ public:
 
     void receive_broadcast(model::Broadcaster* b) override {
         if (b == &value) {
-            button.setToggleState(value, dontSendNotification);
+            button.setToggleState(value.get(), dontSendNotification);
         }
     }
 
@@ -111,7 +111,8 @@ void DirectionEditor::currentTabChanged(int new_tab, const String& name) {
 void DirectionEditor::receive_broadcast(model::Broadcaster* b) {
     if (b == &pointer.mode) {
         setCurrentTabIndex(
-                pointer.mode == model::Pointer::Mode::spherical ? 0 : 1, false);
+                pointer.mode.get() == model::Pointer::Mode::spherical ? 0 : 1,
+                false);
     }
 }
 

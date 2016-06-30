@@ -38,7 +38,7 @@ public:
 
     void receive_broadcast(model::Broadcaster* cb) override {
         if (cb == &value) {
-            editor.set_value(value, false);
+            editor.set_value(value.get(), false);
         }
     }
 

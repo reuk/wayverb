@@ -34,11 +34,6 @@ class ModelValue : public ModelMember {
 public:
     using ModelMember::ModelMember;
 
-    operator T() const {
-        return get();
-    }
-
-    virtual void reseat(T &u) = 0;
     virtual T get() const = 0;
     virtual void set(const T &u, bool do_notify = true) = 0;
 };

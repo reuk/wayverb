@@ -4,8 +4,8 @@
 
 #include "UtilityComponents/LoadWindow.hpp"
 
-#include "common/serialize/surface.h"
 #include "combined/serialize/model.h"
+#include "common/serialize/surface.h"
 
 #include "HelpWindow.hpp"
 
@@ -143,7 +143,7 @@ WayverbApplication::MainWindow::MainWindow(String name,
                                            File&& this_file)
         : DocumentWindow(name, Colours::lightgrey, DocumentWindow::allButtons)
         , scene_data(std::move(scene_data))
-        , model(std::move(model))
+        , wrapper(nullptr, model)
         , this_file(std::move(this_file))
         , content_component(this->scene_data, wrapper) {
     content_component.setSize(800, 500);
@@ -323,8 +323,8 @@ void WayverbApplication::MainWindow::getCommandInfo(
                            "Toggle display of ray and wave information",
                            "General",
                            0);
-            result.setTicked(wrapper.render_state.visualise);
-            result.setActive(!wrapper.render_state.is_rendering);
+            result.setTicked(wrapper.render_state.visualise.get());
+            result.setActive(!wrapper.render_state.is_rendering.get());
             break;
 
         case CommandIDs::idShowHelp:
@@ -353,7 +353,8 @@ bool WayverbApplication::MainWindow::perform(const InvocationInfo& info) {
             return true;
 
         case CommandIDs::idVisualise:
-            wrapper.render_state.visualise.toggle();
+            wrapper.render_state.visualise.set(
+                    !wrapper.render_state.visualise.get());
             return true;
 
         case CommandIDs::idShowHelp:
@@ -406,7 +407,7 @@ void WayverbApplication::MainWindow::show_help() {
 }
 
 bool WayverbApplication::MainWindow::needs_save() const {
-    return wrapper.needs_save;
+    return wrapper.needs_save.get();
 }
 
 bool WayverbApplication::MainWindow::save_project() {
@@ -439,7 +440,7 @@ void WayverbApplication::MainWindow::save_to(const File& f) {
     //  write config with all current materials to file
     std::ofstream stream(get_config_path(f).getFullPathName().toStdString());
     cereal::JSONOutputArchive archive(stream);
-    archive(cereal::make_nvp("persistent", model.persistent));
+    archive(cereal::make_nvp("persistent", wrapper.persistent.get()));
 
     register_recent_file(f.getFullPathName().toStdString());
 }
