@@ -31,3 +31,6 @@
 [submodule "submodules/JUCE"]
 	path = submodules/JUCE
 	url = git@github.com:julianstorer/JUCE.git
+[submodule "submodules/DataBinding"]
+	path = submodules/DataBinding
+	url = git@github.com:reuk/DataBinding.git
