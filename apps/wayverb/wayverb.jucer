@@ -5,84 +5,94 @@
               jucerVersion="4.2.1">
   <MAINGROUP id="aLrqtw" name="wayverb">
     <GROUP id="{99297383-F68C-02A8-A8E3-BC9E43EF7E23}" name="Source">
-      <FILE id="bH9Afj" name="Application.cpp" compile="1" resource="0" file="Source/Application.cpp"/>
-      <FILE id="MKYZzb" name="Application.hpp" compile="0" resource="0" file="Source/Application.hpp"/>
-      <FILE id="TEbu1x" name="BottomPanel.cpp" compile="1" resource="0" file="Source/BottomPanel.cpp"/>
-      <FILE id="nV2WI4" name="BottomPanel.hpp" compile="0" resource="0" file="Source/BottomPanel.hpp"/>
-      <FILE id="fEwGPn" name="BoxObject.cpp" compile="1" resource="0" file="Source/BoxObject.cpp"/>
-      <FILE id="ZZYkc0" name="BoxObject.hpp" compile="0" resource="0" file="Source/BoxObject.hpp"/>
-      <FILE id="UsH9ZU" name="CommandIDs.hpp" compile="0" resource="0" file="Source/CommandIDs.hpp"/>
-      <FILE id="Yg2ydb" name="DirectionEditor.cpp" compile="1" resource="0"
+      <FILE id="oiyh2z" name="Application.cpp" compile="1" resource="0" file="Source/Application.cpp"/>
+      <FILE id="Qxtz8X" name="Application.hpp" compile="0" resource="0" file="Source/Application.hpp"/>
+      <FILE id="I2RfCm" name="BasicPanel.hpp" compile="0" resource="0" file="Source/BasicPanel.hpp"/>
+      <FILE id="n90Co5" name="BottomPanel.cpp" compile="1" resource="0" file="Source/BottomPanel.cpp"/>
+      <FILE id="YqoJHl" name="BottomPanel.hpp" compile="0" resource="0" file="Source/BottomPanel.hpp"/>
+      <FILE id="DeTLQ3" name="BoxObject.cpp" compile="1" resource="0" file="Source/BoxObject.cpp"/>
+      <FILE id="UhrDRv" name="BoxObject.hpp" compile="0" resource="0" file="Source/BoxObject.hpp"/>
+      <FILE id="nkHho0" name="CommandIDs.hpp" compile="0" resource="0" file="Source/CommandIDs.hpp"/>
+      <FILE id="wZNJ5L" name="DirectionEditor.cpp" compile="1" resource="0"
             file="Source/DirectionEditor.cpp"/>
-      <FILE id="Ck7203" name="DirectionEditor.hpp" compile="0" resource="0"
+      <FILE id="MFkysV" name="DirectionEditor.hpp" compile="0" resource="0"
             file="Source/DirectionEditor.hpp"/>
-      <FILE id="qy8Q4z" name="FullModel.hpp" compile="0" resource="0" file="Source/FullModel.hpp"/>
-      <FILE id="nspKMm" name="HelpWindow.cpp" compile="1" resource="0" file="Source/HelpWindow.cpp"/>
-      <FILE id="FqnMEV" name="HelpWindow.hpp" compile="0" resource="0" file="Source/HelpWindow.hpp"/>
-      <FILE id="YI0Lgp" name="LeftPanel.cpp" compile="1" resource="0" file="Source/LeftPanel.cpp"/>
-      <FILE id="tZFU8B" name="LeftPanel.hpp" compile="0" resource="0" file="Source/LeftPanel.hpp"/>
-      <FILE id="NJFQsU" name="LitSceneShader.cpp" compile="1" resource="0"
+      <FILE id="I9JQPO" name="EngineThread.cpp" compile="1" resource="0"
+            file="Source/EngineThread.cpp"/>
+      <FILE id="VR6ZGP" name="EngineThread.hpp" compile="0" resource="0"
+            file="Source/EngineThread.hpp"/>
+      <FILE id="qtMR2y" name="FullModel.hpp" compile="0" resource="0" file="Source/FullModel.hpp"/>
+      <FILE id="Sb1kiF" name="HelpWindow.cpp" compile="1" resource="0" file="Source/HelpWindow.cpp"/>
+      <FILE id="dN19FI" name="HelpWindow.hpp" compile="0" resource="0" file="Source/HelpWindow.hpp"/>
+      <FILE id="d3xamu" name="LeftPanel.cpp" compile="1" resource="0" file="Source/LeftPanel.cpp"/>
+      <FILE id="cxzUdc" name="LeftPanel.hpp" compile="0" resource="0" file="Source/LeftPanel.hpp"/>
+      <FILE id="dCpZEE" name="LitSceneShader.cpp" compile="1" resource="0"
             file="Source/LitSceneShader.cpp"/>
-      <FILE id="lCkMgC" name="LitSceneShader.hpp" compile="0" resource="0"
+      <FILE id="v69Zmb" name="LitSceneShader.hpp" compile="0" resource="0"
             file="Source/LitSceneShader.hpp"/>
-      <FILE id="ooE3LA" name="MainComponent.cpp" compile="1" resource="0"
+      <FILE id="rYAinF" name="MainComponent.cpp" compile="1" resource="0"
             file="Source/MainComponent.cpp"/>
-      <FILE id="b2twog" name="MainComponent.hpp" compile="0" resource="0"
+      <FILE id="OSCr5a" name="MainComponent.hpp" compile="0" resource="0"
             file="Source/MainComponent.hpp"/>
-      <FILE id="Igr9Ob" name="MeshObject.cpp" compile="1" resource="0" file="Source/MeshObject.cpp"/>
-      <FILE id="FPzOD8" name="MeshObject.hpp" compile="0" resource="0" file="Source/MeshObject.hpp"/>
-      <FILE id="qN6lBe" name="MeshShader.cpp" compile="1" resource="0" file="Source/MeshShader.cpp"/>
-      <FILE id="e43TRU" name="MeshShader.hpp" compile="0" resource="0" file="Source/MeshShader.hpp"/>
-      <FILE id="kU1Hak" name="MicrophoneEditor.cpp" compile="1" resource="0"
+      <FILE id="TgFPtv" name="MeshObject.cpp" compile="1" resource="0" file="Source/MeshObject.cpp"/>
+      <FILE id="STt5Gl" name="MeshObject.hpp" compile="0" resource="0" file="Source/MeshObject.hpp"/>
+      <FILE id="teFbfS" name="MeshShader.cpp" compile="1" resource="0" file="Source/MeshShader.cpp"/>
+      <FILE id="ejhT8E" name="MeshShader.hpp" compile="0" resource="0" file="Source/MeshShader.hpp"/>
+      <FILE id="EcSwSq" name="MicrophoneEditor.cpp" compile="1" resource="0"
             file="Source/MicrophoneEditor.cpp"/>
-      <FILE id="jgp5Ox" name="MicrophoneEditor.hpp" compile="0" resource="0"
+      <FILE id="KEjiFK" name="MicrophoneEditor.hpp" compile="0" resource="0"
             file="Source/MicrophoneEditor.hpp"/>
-      <FILE id="u4fpZX" name="Model.hpp" compile="0" resource="0" file="Source/Model.hpp"/>
-      <FILE id="vciq7O" name="ModelObject.cpp" compile="1" resource="0" file="Source/ModelObject.cpp"/>
-      <FILE id="QVc2MR" name="ModelObject.hpp" compile="0" resource="0" file="Source/ModelObject.hpp"/>
-      <FILE id="H7FW8v" name="ModelRenderer.cpp" compile="1" resource="0"
+      <FILE id="jOL1xg" name="ModelObject.cpp" compile="1" resource="0" file="Source/ModelObject.cpp"/>
+      <FILE id="cmysXq" name="ModelObject.hpp" compile="0" resource="0" file="Source/ModelObject.hpp"/>
+      <FILE id="no0csM" name="ModelRenderer.cpp" compile="1" resource="0"
             file="Source/ModelRenderer.cpp"/>
-      <FILE id="J6B9vw" name="ModelRenderer.hpp" compile="0" resource="0"
+      <FILE id="Xz2Jip" name="ModelRenderer.hpp" compile="0" resource="0"
             file="Source/ModelRenderer.hpp"/>
-      <FILE id="hKQcfd" name="ModelRendererComponent.cpp" compile="1" resource="0"
+      <FILE id="b2qykX" name="ModelRendererComponent.cpp" compile="1" resource="0"
             file="Source/ModelRendererComponent.cpp"/>
-      <FILE id="XxUG38" name="ModelRendererComponent.hpp" compile="0" resource="0"
+      <FILE id="rIHttp" name="ModelRendererComponent.hpp" compile="0" resource="0"
             file="Source/ModelRendererComponent.hpp"/>
-      <FILE id="qfcPaU" name="PointObject.cpp" compile="1" resource="0" file="Source/PointObject.cpp"/>
-      <FILE id="iG5cje" name="PointObject.hpp" compile="0" resource="0" file="Source/PointObject.hpp"/>
-      <FILE id="VtsCfk" name="PolarPatternDisplay.cpp" compile="1" resource="0"
+      <FILE id="hNGamI" name="PointObject.cpp" compile="1" resource="0" file="Source/PointObject.cpp"/>
+      <FILE id="JnwGxk" name="PointObject.hpp" compile="0" resource="0" file="Source/PointObject.hpp"/>
+      <FILE id="vK5vht" name="PolarPatternDisplay.cpp" compile="1" resource="0"
             file="Source/PolarPatternDisplay.cpp"/>
-      <FILE id="BnHAS4" name="PolarPatternDisplay.hpp" compile="0" resource="0"
+      <FILE id="NVoF0Z" name="PolarPatternDisplay.hpp" compile="0" resource="0"
             file="Source/PolarPatternDisplay.hpp"/>
-      <FILE id="KXhOVn" name="Presets.cpp" compile="1" resource="0" file="Source/Presets.cpp"/>
-      <FILE id="OXqQCA" name="Presets.hpp" compile="0" resource="0" file="Source/Presets.hpp"/>
-      <FILE id="kOHdFz" name="ProgressButton.cpp" compile="1" resource="0"
+      <FILE id="TLBqwz" name="Presets.cpp" compile="1" resource="0" file="Source/Presets.cpp"/>
+      <FILE id="ctgVWK" name="Presets.hpp" compile="0" resource="0" file="Source/Presets.hpp"/>
+      <FILE id="NnzsiB" name="ProgressButton.cpp" compile="1" resource="0"
             file="Source/ProgressButton.cpp"/>
-      <FILE id="c68lMM" name="ProgressButton.hpp" compile="0" resource="0"
+      <FILE id="n18Gmk" name="ProgressButton.hpp" compile="0" resource="0"
             file="Source/ProgressButton.hpp"/>
-      <FILE id="M3ymwR" name="PropertyComponentLAF.cpp" compile="1" resource="0"
+      <FILE id="hSW57d" name="PropertyComponentLAF.cpp" compile="1" resource="0"
             file="Source/PropertyComponentLAF.cpp"/>
-      <FILE id="ioA0PU" name="PropertyComponentLAF.hpp" compile="0" resource="0"
+      <FILE id="EHsusG" name="PropertyComponentLAF.hpp" compile="0" resource="0"
             file="Source/PropertyComponentLAF.hpp"/>
-      <FILE id="UnPaIw" name="SurfaceModel.cpp" compile="1" resource="0"
+      <FILE id="ukvpmN" name="SourcesEditor.cpp" compile="1" resource="0"
+            file="Source/SourcesEditor.cpp"/>
+      <FILE id="hmP6jP" name="SourcesEditor.hpp" compile="0" resource="0"
+            file="Source/SourcesEditor.hpp"/>
+      <FILE id="OLuLeM" name="SurfaceModel.cpp" compile="1" resource="0"
             file="Source/SurfaceModel.cpp"/>
-      <FILE id="QRV3sq" name="SurfaceModel.hpp" compile="0" resource="0"
+      <FILE id="ejbMdP" name="SurfaceModel.hpp" compile="0" resource="0"
             file="Source/SurfaceModel.hpp"/>
-      <FILE id="TdPSct" name="SurfacePanel.cpp" compile="1" resource="0"
+      <FILE id="P5H1gY" name="SurfacePanel.cpp" compile="1" resource="0"
             file="Source/SurfacePanel.cpp"/>
-      <FILE id="bHLGDL" name="SurfacePanel.hpp" compile="0" resource="0"
+      <FILE id="mFQXSr" name="SurfacePanel.hpp" compile="0" resource="0"
             file="Source/SurfacePanel.hpp"/>
-      <FILE id="NVglwV" name="TextDisplayProperty.hpp" compile="0" resource="0"
+      <FILE id="IvrS2J" name="TextDisplayProperty.hpp" compile="0" resource="0"
             file="Source/TextDisplayProperty.hpp"/>
-      <FILE id="ilMYn8" name="ValueWrapperSlider.hpp" compile="0" resource="0"
+      <FILE id="VwllIn" name="ValueWrapperEditableListBox.hpp" compile="0"
+            resource="0" file="Source/ValueWrapperEditableListBox.hpp"/>
+      <FILE id="UjY3ZG" name="ValueWrapperSlider.hpp" compile="0" resource="0"
             file="Source/ValueWrapperSlider.hpp"/>
-      <FILE id="hBevyp" name="Vec3Editor.cpp" compile="1" resource="0" file="Source/Vec3Editor.cpp"/>
-      <FILE id="j0iPj6" name="Vec3Editor.hpp" compile="0" resource="0" file="Source/Vec3Editor.hpp"/>
-      <FILE id="SdKQkT" name="wayverb.png" compile="0" resource="1" file="Source/wayverb.png"/>
+      <FILE id="bbMFT3" name="Vec3Editor.cpp" compile="1" resource="0" file="Source/Vec3Editor.cpp"/>
+      <FILE id="Hg9wVP" name="Vec3Editor.hpp" compile="0" resource="0" file="Source/Vec3Editor.hpp"/>
+      <FILE id="snfOEV" name="wayverb.png" compile="0" resource="1" file="Source/wayverb.png"/>
     </GROUP>
   </MAINGROUP>
   <EXPORTFORMATS>
-    <XCODE_MAC targetFolder="Builds/MacOSX" extraDefs="" extraCompilerFlags="-I/usr/local/include&#10;-I../../../../common/include&#10;-I../../../../waveguide/include&#10;-I../../../../raytracer/include&#10;-I../../../../combined/include&#10;-I../../../../include&#10;-I../../../../submodules/cereal/include&#10;-I../../../../submodules/glm&#10;-I../../../../submodules/modern_gl_utils/include&#10;-I../../../../submodules/UtilityComponents/include&#10;-I../../../../submodules/OtherComponents/include&#10;-std=c++14"
+    <XCODE_MAC targetFolder="Builds/MacOSX" extraDefs="" extraCompilerFlags="-I/usr/local/include&#10;-I../../../../common/include&#10;-I../../../../waveguide/include&#10;-I../../../../raytracer/include&#10;-I../../../../combined/include&#10;-I../../../../include&#10;-I../../../../submodules/cereal/include&#10;-I../../../../submodules/glm&#10;-I../../../../submodules/modern_gl_utils/include&#10;-I../../../../submodules/UtilityComponents/include&#10;-I../../../../submodules/OtherComponents/include&#10;-I../../../../submodules/DataBinding/include&#10;-std=c++14"
                smallIcon="SdKQkT" bigIcon="SdKQkT" documentExtensions="way"
                externalLibraries="fftw3f&#10;samplerate&#10;z" extraLinkerFlags="-L/usr/local/lib"
                extraFrameworks="OpenCL">

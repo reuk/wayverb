@@ -1,6 +1,6 @@
 #pragma once
 
-#include "OtherComponents/lib_model/collection.hpp"
+#include "DataBinding/collection.hpp"
 
 template <typename T>
 class ValueWrapperListBox : public ListBox,
