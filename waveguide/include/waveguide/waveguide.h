@@ -12,6 +12,8 @@
 #include "common/hrtf.h"
 #include "common/progress.h"
 
+#include "glm/glm.hpp"
+
 #include <eigen3/Eigen/LU>
 #include <eigen3/Eigen/SVD>
 
@@ -20,7 +22,7 @@
 #include <type_traits>
 
 template <typename T>
-inline T pinv(const T& a,
+inline auto pinv(const T& a,
               float epsilon = std::numeric_limits<float>::epsilon()) {
     //  taken from http://eigen.tuxfamily.org/bz/show_bug.cgi?id=257
     Eigen::JacobiSVD<T> svd(a, Eigen::ComputeThinU | Eigen::ComputeThinV);
@@ -32,20 +34,6 @@ inline T pinv(const T& a,
                    .matrix()
                    .asDiagonal() *
            svd.matrixU().adjoint();
-}
-
-template <typename T>
-inline Eigen::MatrixXf get_transform_matrix(int ports, int o, const T& nodes) {
-    Eigen::MatrixXf ret(ports, 3);
-    auto count = 0u;
-    auto basis = to_vec3f(nodes[o].position);
-    for (const auto& i : nodes[o].ports) {
-        if (i != RectangularProgram::NO_NEIGHBOR) {
-            auto pos = glm::normalize(to_vec3f(nodes[i].position) - basis);
-            ret.row(count++) << pos.x, pos.y, pos.z;
-        }
-    }
-    return pinv(ret);
 }
 
 //----------------------------------------------------------------------------//
@@ -60,10 +48,7 @@ struct RunStepResult {
     glm::vec3 intensity;
 };
 
-enum class BufferType {
-    cl,
-    gl,
-};
+enum class BufferType { cl, gl };
 
 namespace detail {
 
@@ -378,7 +363,21 @@ public:
 private:
     using MeshType = RectangularMesh;
     static constexpr auto PORTS = MeshType::PORTS;
-    static constexpr auto TRANSFORM_MATRIX_ELEMENTS = PORTS * 3;
+
+    template <typename T>
+    static inline auto get_transform_matrix(
+            int o, const T& nodes) {
+        Eigen::MatrixXf ret;
+        auto count = 0u;
+        auto basis = to_vec3f(nodes[o].position);
+        for (const auto& i : nodes[o].ports) {
+            if (i != RectangularProgram::NO_NEIGHBOR) {
+                auto pos = glm::normalize(to_vec3f(nodes[i].position) - basis);
+                ret.row(count++) << pos.x, pos.y, pos.z;
+            }
+        }
+        return pinv(ret);
+    }
 
     RectangularWaveguide(const typename Base::ProgramType& program,
                          cl::CommandQueue& queue,
@@ -398,20 +397,32 @@ private:
             std::vector<RectangularProgram::CanonicalCoefficients>
                     coefficients);
 
+    struct InvocationInfo {
+        template <typename T>
+        InvocationInfo(int o, const T& nodes)
+                : transform_matrix(get_transform_matrix(o, nodes))
+                , velocity(0, 0, 0) {
+        }
+
+        Eigen::Matrix<float, PORTS, 3> transform_matrix;
+        glm::vec3 velocity;
+    };
+
+    std::unique_ptr<InvocationInfo> invocation;
+
     MeshType mesh;
     const cl::Buffer node_buffer;  //  const, set in constructor
-    cl::Buffer transform_buffer;   //  set in setup
-    cl::Buffer velocity_buffer;    //  set in setup
-
     size_t num_boundary_1;
-    cl::Buffer boundary_data_1_buffer;  //  set in setup
+    cl::Buffer boundary_data_1_buffer;
     size_t num_boundary_2;
-    cl::Buffer boundary_data_2_buffer;  //  set in setup
+    cl::Buffer boundary_data_2_buffer;
     size_t num_boundary_3;
-    cl::Buffer boundary_data_3_buffer;  //  set in setup
+    cl::Buffer boundary_data_3_buffer;
     const cl::Buffer
             boundary_coefficients_buffer;  //  const, set in constructor
-    cl::Buffer error_flag_buffer;          //  set each iteration
+    cl::Buffer surrounding_buffer;
+    std::vector<float> surrounding;
+    cl::Buffer error_flag_buffer;
 };
 
 template <typename Fun, typename T>

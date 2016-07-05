@@ -771,12 +771,9 @@ kernel void condensed_waveguide(const InputInfo input_info,
                                 const global CAT(FilterCoefficients,
                                                  CANONICAL_FILTER_ORDER) *
                                     boundary_coefficients,
-                                const global float* transform_matrix,
-                                global float3* velocity_buffer,
-                                float spatial_sampling_period,
-                                float T,
                                 ulong read,
                                 global float* output,
+                                global float* surrounding,
                                 global int* error_flag) {
     size_t index = get_global_id(0);
     CondensedNode node = nodes[index];
@@ -806,43 +803,16 @@ kernel void condensed_waveguide(const InputInfo input_info,
 
     previous[index] = next_pressure;
 
+    barrier(CLK_GLOBAL_MEM_FENCE);
+
     if (index == read) {
         *output = previous[index];
-
-        //
-        //  instantaneous intensity for mic modelling
-        //
-
-        //  TODO (maybe) move as much of this as possible outside kernel
-        //  there's a small chance I'll read previous[port_index] before it
-        //  is updated by the appropriate thread but whatever
-        float differences[PORTS] = {0};
         for (int i = 0; i != PORTS; ++i) {
             uint port_index = neighbor_index(locator, dimensions, i);
             if (port_index != NO_NEIGHBOR &&
                 nodes[port_index].boundary_type & id_inside)
-                differences[i] = (previous[port_index] - previous[index]) /
-                                 spatial_sampling_period;
+                surrounding[i] = previous[port_index];
         }
-
-        //  the default for Eigen is column-major matrices
-        //  so we'll assume that transform_matrix is column-major
-
-        //  multiply differences by transformation matrix
-        float3 multiplied = (float3)(0);
-        for (int i = 0; i != PORTS; ++i) {
-            multiplied += (float3)(transform_matrix[0 + i * 3],
-                                   transform_matrix[1 + i * 3],
-                                   transform_matrix[2 + i * 3]) *
-                          differences[i];
-        }
-
-        //  muliply by -1/ambient_density
-        float ambient_density = 1.225f;
-        multiplied /= -ambient_density;
-
-        //  numerical integration
-        *velocity_buffer += T * multiplied;
     }
 }
 

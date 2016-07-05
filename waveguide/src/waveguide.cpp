@@ -79,32 +79,33 @@ RectangularWaveguide<buffer_type>::RectangularWaveguide(
                       nodes.begin(),
                       nodes.end(),
                       false)
-        , transform_buffer(program.template get_info<CL_PROGRAM_CONTEXT>(),
-                           CL_MEM_READ_WRITE,
-                           sizeof(cl_float) * TRANSFORM_MATRIX_ELEMENTS)
-        , velocity_buffer(program.template get_info<CL_PROGRAM_CONTEXT>(),
-                          CL_MEM_READ_WRITE,
-                          sizeof(cl_float3) * 1)
         , num_boundary_1(boundary_data_1.size())
-        , boundary_data_1_buffer(program.template get_info<CL_PROGRAM_CONTEXT>(),
-                                 boundary_data_1.begin(),
-                                 boundary_data_1.end(),
-                                 false)
+        , boundary_data_1_buffer(
+                  program.template get_info<CL_PROGRAM_CONTEXT>(),
+                  boundary_data_1.begin(),
+                  boundary_data_1.end(),
+                  false)
         , num_boundary_2(boundary_data_2.size())
-        , boundary_data_2_buffer(program.template get_info<CL_PROGRAM_CONTEXT>(),
-                                 boundary_data_2.begin(),
-                                 boundary_data_2.end(),
-                                 false)
+        , boundary_data_2_buffer(
+                  program.template get_info<CL_PROGRAM_CONTEXT>(),
+                  boundary_data_2.begin(),
+                  boundary_data_2.end(),
+                  false)
         , num_boundary_3(boundary_data_3.size())
-        , boundary_data_3_buffer(program.template get_info<CL_PROGRAM_CONTEXT>(),
-                                 boundary_data_3.begin(),
-                                 boundary_data_3.end(),
-                                 false)
+        , boundary_data_3_buffer(
+                  program.template get_info<CL_PROGRAM_CONTEXT>(),
+                  boundary_data_3.begin(),
+                  boundary_data_3.end(),
+                  false)
         , boundary_coefficients_buffer(
                   program.template get_info<CL_PROGRAM_CONTEXT>(),
                   coefficients.begin(),
                   coefficients.end(),
                   false)
+        , surrounding_buffer(program.template get_info<CL_PROGRAM_CONTEXT>(),
+                             CL_MEM_READ_WRITE,
+                             sizeof(cl_float) * PORTS)
+        , surrounding(PORTS)
         , error_flag_buffer(program.template get_info<CL_PROGRAM_CONTEXT>(),
                             CL_MEM_READ_WRITE,
                             sizeof(cl_int)) {
@@ -118,17 +119,7 @@ RectangularWaveguide<buffer_type>::RectangularWaveguide(
 template <BufferType buffer_type>
 void RectangularWaveguide<buffer_type>::setup(cl::CommandQueue& queue,
                                               size_t o) {
-    auto transform_matrix = get_transform_matrix(PORTS, o, mesh.get_nodes());
-    cl::copy(queue,
-             transform_matrix.data(),
-             transform_matrix.data() + TRANSFORM_MATRIX_ELEMENTS,
-             transform_buffer);
-
-    std::vector<cl_float3> starting_velocity{{{0, 0, 0, 0}}};
-    cl::copy(queue,
-             starting_velocity.begin(),
-             starting_velocity.end(),
-             velocity_buffer);
+    invocation = std::make_unique<InvocationInfo>(o, mesh.get_nodes());
 }
 
 template <BufferType buffer_type>
@@ -141,7 +132,6 @@ RunStepResult RectangularWaveguide<buffer_type>::run_step(
         cl::Buffer& previous,
         cl::Buffer& current,
         cl::Buffer& output) {
-    std::vector<cl_float> out(1);
     std::vector<cl_float3> current_velocity(1);
 
     auto flag = RectangularProgram::id_success;
@@ -160,12 +150,9 @@ RunStepResult RectangularWaveguide<buffer_type>::run_step(
            boundary_data_2_buffer,
            boundary_data_3_buffer,
            boundary_coefficients_buffer,
-           transform_buffer,
-           velocity_buffer,
-           mesh.get_spacing(),
-           this->get_period(),
            o,
            output,
+           surrounding_buffer,
            error_flag_buffer);
 
     cl::copy(queue, error_flag_buffer, (&flag) + 0, (&flag) + 1);
@@ -187,16 +174,33 @@ RunStepResult RectangularWaveguide<buffer_type>::run_step(
     if (flag & RectangularProgram::id_suspicious_boundary_error)
         throw std::runtime_error("suspicious boundary read");
 
-    cl::copy(queue, output, out.begin(), out.end());
+    //  TODO THIS NEEDS TESTING LIKE PROPERLY YO
+
+    cl_float out;
+    cl::copy(queue, output, &out, &out + 1);
     cl::copy(queue,
-             velocity_buffer,
-             current_velocity.begin(),
-             current_velocity.end());
+             surrounding_buffer,
+             surrounding.begin(),
+             surrounding.end());
 
-    auto velocity = to_vec3f(current_velocity.front());
-    auto intensity = velocity * out.front();
+    for (auto& i : surrounding) {
+        i -= out / mesh.get_spacing();
+    }
 
-    return RunStepResult(out.front(), intensity);
+    Eigen::VectorXf surrounding_vec;
+    surrounding_vec << surrounding[0], surrounding[1], surrounding[2],
+            surrounding[3], surrounding[4], surrounding[5];
+
+    auto multiplied = invocation->transform_matrix * surrounding_vec;
+    assert(multiplied.size() == 3);
+    static constexpr auto ambient_density = 1.225f;
+    invocation->velocity +=
+            this->get_period() *
+            (glm::vec3(multiplied[0], multiplied[1], multiplied[2]) /
+             -ambient_density);
+    auto intensity = invocation->velocity * out;
+
+    return RunStepResult(out, intensity);
 }
 
 template <BufferType buffer_type>
