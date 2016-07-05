@@ -1,4 +1,4 @@
-#include "waveguide/waveguide.h"
+#include "waveguide/rectangular_waveguide.h"
 
 #include <OpenGL/gl3.h>
 

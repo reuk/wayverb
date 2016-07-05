@@ -1,6 +1,6 @@
 #include "waveguide/config.h"
 #include "waveguide/microphone.h"
-#include "waveguide/waveguide.h"
+#include "waveguide/rectangular_waveguide.h"
 
 #include "common/cl_common.h"
 #include "common/conversions.h"

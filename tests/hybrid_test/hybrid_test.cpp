@@ -3,7 +3,7 @@
 
 #include "waveguide/microphone.h"
 #include "waveguide/config.h"
-#include "waveguide/waveguide.h"
+#include "waveguide/rectangular_waveguide.h"
 
 #include "raytracer/raytracer.h"
 

@@ -21,8 +21,24 @@
 #include <array>
 #include <type_traits>
 
+struct RunStepResult {
+    explicit RunStepResult(float pressure = 0,
+                           const glm::vec3& intensity = glm::vec3())
+            : pressure(pressure)
+            , intensity(intensity) {
+    }
+    float pressure;
+    glm::vec3 intensity;
+};
+
+enum class BufferType { cl, gl };
+
+//----------------------------------------------------------------------------//
+
+namespace detail {
+
 template <typename T>
-inline auto pinv(const T& a,
+inline T pinv(const T& a,
               float epsilon = std::numeric_limits<float>::epsilon()) {
     //  taken from http://eigen.tuxfamily.org/bz/show_bug.cgi?id=257
     Eigen::JacobiSVD<T> svd(a, Eigen::ComputeThinU | Eigen::ComputeThinV);
@@ -36,22 +52,19 @@ inline auto pinv(const T& a,
            svd.matrixU().adjoint();
 }
 
-//----------------------------------------------------------------------------//
-
-struct RunStepResult {
-    explicit RunStepResult(float pressure = 0,
-                           const glm::vec3& intensity = glm::vec3())
-            : pressure(pressure)
-            , intensity(intensity) {
+template <typename T>
+inline Eigen::MatrixXf get_transform_matrix(int ports, int o, const T& nodes) {
+    Eigen::MatrixXf ret(ports, 3);
+    auto count = 0u;
+    auto basis = to_vec3f(nodes[o].position);
+    for (const auto& i : nodes[o].ports) {
+        if (i != RectangularProgram::NO_NEIGHBOR) {
+            auto pos = glm::normalize(to_vec3f(nodes[i].position) - basis);
+            ret.row(count++) << pos.x, pos.y, pos.z;
+        }
     }
-    float pressure;
-    glm::vec3 intensity;
-};
-
-enum class BufferType { cl, gl };
-
-namespace detail {
-
+    return pinv(ret);
+}
 template <BufferType buffer_type>
 struct BufferTypeTrait;
 
@@ -331,167 +344,3 @@ private:
 
     float sample_rate;
 };
-
-template <BufferType buffer_type>
-class RectangularWaveguide : public Waveguide<RectangularProgram, buffer_type> {
-public:
-    using Base = Waveguide<RectangularProgram, buffer_type>;
-
-    RectangularWaveguide(const RectangularProgram& program,
-                         cl::CommandQueue& queue,
-                         const MeshBoundary& boundary,
-                         const glm::vec3& anchor,
-                         float sr);
-
-    void setup(cl::CommandQueue& queue, size_t o) override;
-
-    RunStepResult run_step(const typename Base::WriteInfo& write_info,
-                           size_t o,
-                           cl::CommandQueue& queue,
-                           typename Base::kernel_type& kernel,
-                           size_t nodes,
-                           cl::Buffer& previous,
-                           cl::Buffer& current,
-                           cl::Buffer& output) override;
-
-    size_t get_index_for_coordinate(const glm::vec3& v) const override;
-    glm::vec3 get_coordinate_for_index(size_t index) const override;
-
-    const RectangularMesh& get_mesh() const;
-    bool inside(size_t index) const override;
-
-private:
-    using MeshType = RectangularMesh;
-    static constexpr auto PORTS = MeshType::PORTS;
-
-    template <typename T>
-    static inline auto get_transform_matrix(
-            int o, const T& nodes) {
-        Eigen::MatrixXf ret;
-        auto count = 0u;
-        auto basis = to_vec3f(nodes[o].position);
-        for (const auto& i : nodes[o].ports) {
-            if (i != RectangularProgram::NO_NEIGHBOR) {
-                auto pos = glm::normalize(to_vec3f(nodes[i].position) - basis);
-                ret.row(count++) << pos.x, pos.y, pos.z;
-            }
-        }
-        return pinv(ret);
-    }
-
-    RectangularWaveguide(const typename Base::ProgramType& program,
-                         cl::CommandQueue& queue,
-                         const RectangularMesh& mesh,
-                         float sample_rate,
-                         std::vector<RectangularProgram::CanonicalCoefficients>
-                                 coefficients);
-    RectangularWaveguide(
-            const typename Base::ProgramType& program,
-            cl::CommandQueue& queue,
-            const RectangularMesh& mesh,
-            float sample_rate,
-            std::vector<RectangularMesh::CondensedNode> nodes,
-            std::vector<RectangularProgram::BoundaryDataArray1> boundary_data_1,
-            std::vector<RectangularProgram::BoundaryDataArray2> boundary_data_2,
-            std::vector<RectangularProgram::BoundaryDataArray3> boundary_data_3,
-            std::vector<RectangularProgram::CanonicalCoefficients>
-                    coefficients);
-
-    struct InvocationInfo {
-        template <typename T>
-        InvocationInfo(int o, const T& nodes)
-                : transform_matrix(get_transform_matrix(o, nodes))
-                , velocity(0, 0, 0) {
-        }
-
-        Eigen::Matrix<float, PORTS, 3> transform_matrix;
-        glm::vec3 velocity;
-    };
-
-    std::unique_ptr<InvocationInfo> invocation;
-
-    MeshType mesh;
-    const cl::Buffer node_buffer;  //  const, set in constructor
-    size_t num_boundary_1;
-    cl::Buffer boundary_data_1_buffer;
-    size_t num_boundary_2;
-    cl::Buffer boundary_data_2_buffer;
-    size_t num_boundary_3;
-    cl::Buffer boundary_data_3_buffer;
-    const cl::Buffer
-            boundary_coefficients_buffer;  //  const, set in constructor
-    cl::Buffer surrounding_buffer;
-    std::vector<float> surrounding;
-    cl::Buffer error_flag_buffer;
-};
-
-template <typename Fun, typename T>
-bool is_any(const T& t, const Fun& fun = Fun()) {
-    return fun(t);
-}
-
-template <typename Fun, typename T>
-bool is_any(const std::vector<T>& t, const Fun& fun = Fun()) {
-    return proc::any_of(t, [&fun](const auto& i) { return is_any(i, fun); });
-}
-
-template <typename Fun, int I>
-bool is_any(const RectangularProgram::BoundaryDataArray<I>& t,
-            const Fun& fun = Fun()) {
-    return proc::any_of(t.array,
-                        [&fun](const auto& i) { return is_any(i, fun); });
-}
-
-template <typename Fun>
-bool is_any(const RectangularProgram::BoundaryData& t, const Fun& fun = Fun()) {
-    return proc::any_of(t.filter_memory.array,
-                        [&fun](const auto& i) { return is_any(i, fun); });
-}
-
-template <typename Fun, typename T>
-auto find_any(const T& t, const Fun& fun = Fun()) {
-    return proc::find_if(t, [&fun](const auto& i) { return is_any(i, fun); });
-}
-
-template <typename Fun, typename T>
-auto log_find_any(const T& t,
-                  const std::string& identifier,
-                  const std::string& func,
-                  const Fun& fun = Fun()) {
-    auto it = find_any(t, fun);
-    if (it != std::end(t)) {
-        std::cerr << identifier << " " << func
-                  << " index: " << it - std::begin(t) << ", value: " << *it
-                  << std::endl;
-    }
-    return it;
-}
-
-template <typename T>
-auto log_nan(const T& t, const std::string& identifier) {
-    return log_find_any(
-            t, identifier, "nan", [](auto i) { return std::isnan(i); });
-}
-
-template <typename T>
-auto log_inf(const T& t, const std::string& identifier) {
-    return log_find_any(
-            t, identifier, "inf", [](auto i) { return std::isinf(i); });
-}
-
-template <typename T>
-auto log_nonzero(const T& t, const std::string& identifier) {
-    return log_find_any(t, identifier, "nonzero", [](auto i) { return i; });
-}
-
-template <typename T>
-bool log_nan_or_nonzero_or_inf(const T& t, const std::string& identifier) {
-    if (log_nan(t, identifier) != std::end(t)) {
-        return true;
-    }
-    if (log_inf(t, identifier) != std::end(t)) {
-        return true;
-    }
-    log_nonzero(t, identifier);
-    return false;
-}

@@ -1,3 +1,6 @@
+from subprocess import call
+from os.path import join
+from os import environ
 import numpy as np
 import matplotlib
 render = True
@@ -7,7 +10,26 @@ import matplotlib.pyplot as plt
 from string import split
 import math
 
-def main():
+project_path = "/Users/reuben/development/waveguide"
+
+environ["GLOG_logtostderr"] = "1"
+
+def run():
+    exe = join(project_path, "build/tests/mic_test/mic_offset_rotate")
+    out_dir = join(project_path, "tests/mic_test/output")
+
+    for pattern in [
+            "omni", "cardioid", "bidirectional"
+    ]:
+        o_dir = join(out_dir, pattern)
+        cmd_1 = ["mkdir", "-p", o_dir]
+        cmd_2 = [exe, o_dir, pattern]
+        print cmd_1
+        call(cmd_1)
+        print cmd_2
+        call(cmd_2)
+
+def graph():
     pgf_with_rc_fonts = {
         'font.family': 'serif',
         'font.serif': [],
@@ -17,7 +39,7 @@ def main():
 
     matplotlib.rcParams.update(pgf_with_rc_fonts)
 
-    base_folder = "/Users/reuben/dev/waveguide/tests/mic_test/output"
+    base_folder = join(project_path, "tests/mic_test/output")
 
     bands = 7
 
@@ -62,6 +84,11 @@ def main():
         plt.show()
         if render:
             plt.savefig(this_file + ".plot.pdf", bbox_inches="tight")
+
+
+def main():
+    run()
+    graph()
 
 if __name__ == "__main__":
     main()
