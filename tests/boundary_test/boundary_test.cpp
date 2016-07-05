@@ -27,19 +27,6 @@
 #include <numeric>
 #include <random>
 
-void write_file(size_t bit_depth, double sample_rate,
-                const std::string& output_folder,
-                const std::string& fname,
-                const std::vector<float>& output) {
-    auto output_file = build_string(output_folder, "/", fname, ".wav");
-    LOG(INFO) << "writing file: " << output_file;
-
-    auto format = get_file_format(output_file);
-    auto depth = get_file_depth(bit_depth);
-
-    write_sndfile(output_file, {output}, sample_rate, depth, format);
-}
-
 std::vector<float> run_simulation(const cl::Context& context,
                                   cl::Device& device,
                                   cl::CommandQueue& queue,
@@ -354,16 +341,22 @@ FullTestResults run_full_test(const std::string& test_name,
 
     const auto bit_depth = 16;
 
-    write_file(bit_depth,
+    snd::write(build_string(output_folder,
+                            "/",
+                            test_name,
+                            param_string,
+                            "_windowed_free_field.wav"),
+               {windowed_free_field},
                out_sr,
-               output_folder,
-               test_name + param_string + "_windowed_free_field",
-               windowed_free_field);
-    write_file(bit_depth,
+               bit_depth);
+    snd::write(build_string(output_folder,
+                            "/",
+                            test_name,
+                            param_string,
+                            "_windowed_subbed.wav"),
+               {windowed_subbed},
                out_sr,
-               output_folder,
-               test_name + param_string + "_windowed_subbed",
-               windowed_subbed);
+               bit_depth);
 
     return FullTestResults{windowed_free_field, windowed_subbed};
 }

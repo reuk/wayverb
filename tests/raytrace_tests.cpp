@@ -34,19 +34,6 @@ auto get_results(ComputeContext& context,
                         keep_going);
 }
 
-void write_file(size_t bit_depth,
-                double sample_rate,
-                const std::string& fname,
-                const std::vector<std::vector<float>>& output) {
-    auto output_file = build_string(SCRATCH_PATH, "/", fname, ".wav");
-    LOG(INFO) << "writing file: " << output_file;
-
-    auto format = get_file_format(output_file);
-    auto depth = get_file_depth(bit_depth);
-
-    write_sndfile(output_file, output, sample_rate, depth, format);
-}
-
 #define USE_EPSILON
 
 #ifdef USE_EPSILON
@@ -260,10 +247,11 @@ TEST(raytrace, image_source) {
         {
             auto mixed_down = mixdown(flattened);
             normalize(mixed_down);
-            write_file(bit_depth,
-                       sample_rate,
-                       name + "_no_processing",
-                       mixed_down);
+            snd::write(
+                    build_string(SCRATCH_PATH, "/", name, "_no_processing.wav"),
+                    mixed_down,
+                    sample_rate,
+                    bit_depth);
         }
         {
             auto processed = process(filter::FilterType::linkwitz_riley,
@@ -274,7 +262,11 @@ TEST(raytrace, image_source) {
                                      true,
                                      1);
             normalize(processed);
-            write_file(bit_depth, sample_rate, name + "_processed", processed);
+            snd::write(
+                    build_string(SCRATCH_PATH, "/", name, "processed.wav"),
+                    processed,
+                    sample_rate,
+                    bit_depth);
         }
     };
 

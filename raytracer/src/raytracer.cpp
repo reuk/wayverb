@@ -232,7 +232,7 @@ void remove_duplicates(const std::vector<cl_ulong>& path,
 
 Raytracer::Raytracer(const RaytracerProgram& program, cl::CommandQueue& queue)
         : queue(queue)
-        , context(program.getInfo<CL_PROGRAM_CONTEXT>())
+        , context(program.get_info<CL_PROGRAM_CONTEXT>())
         , kernel(program.get_improved_raytrace_kernel()) {
 }
 
@@ -436,7 +436,7 @@ Results Raytracer::run(const CopyableSceneData& scene_data,
 Hrtf::Hrtf(const RaytracerProgram& program, cl::CommandQueue& queue)
         : queue(queue)
         , kernel(program.get_hrtf_kernel())
-        , context(program.getInfo<CL_PROGRAM_CONTEXT>())
+        , context(program.get_info<CL_PROGRAM_CONTEXT>())
         , cl_hrtf(context, CL_MEM_READ_WRITE, sizeof(VolumeType) * 360 * 180) {
 }
 
@@ -516,7 +516,7 @@ Hrtf::get_hrtf_data() const {
 Attenuate::Attenuate(const RaytracerProgram& program, cl::CommandQueue& queue)
         : queue(queue)
         , kernel(program.get_attenuate_kernel())
-        , context(program.getInfo<CL_PROGRAM_CONTEXT>()) {
+        , context(program.get_info<CL_PROGRAM_CONTEXT>()) {
 }
 
 std::vector<std::vector<AttenuatedImpulse>> Attenuate::attenuate(

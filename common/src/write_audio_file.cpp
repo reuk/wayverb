@@ -3,11 +3,11 @@
 #include <sstream>
 #include <unordered_map>
 
-void write_sndfile(const std::string& fname,
-                   const std::vector<std::vector<float>>& outdata,
-                   float sr,
-                   int bd,
-                   int ftype) {
+void snd::write(const std::string& fname,
+                const std::vector<std::vector<float>>& outdata,
+                float sr,
+                int bd,
+                int ftype) {
     std::vector<float> interleaved(outdata.size() * outdata[0].size());
 
     for (auto i = 0u; i != outdata.size(); ++i) {
@@ -16,11 +16,29 @@ void write_sndfile(const std::string& fname,
         }
     }
 
-    SndfileHandle outfile(fname, SFM_WRITE, ftype | bd, outdata.size(), sr);
-    outfile.write(interleaved.data(), interleaved.size());
+    auto fmt = ftype | bd;
+    if (! SndfileHandle::formatCheck(fmt, outdata.size(), sr)) {
+        throw std::runtime_error(
+                "looks like libsndfile can't write with those parameters");
+    }
+
+    SndfileHandle outfile(fname, SFM_WRITE, fmt, outdata.size(), sr);
+    auto written = outfile.write(interleaved.data(), interleaved.size());
+    if (!written) {
+        throw std::runtime_error("failed to write audio file");
+    }
 }
 
-int get_file_format(const std::string& fname) {
+void snd::write(const std::string& fname,
+                const std::vector<std::vector<float>>& signal,
+                double sample_rate,
+                size_t bit_depth) {
+    auto format = get_file_format(fname);
+    auto depth = get_file_depth(bit_depth);
+    write(fname, signal, sample_rate, depth, format);
+}
+
+int snd::get_file_format(const std::string& fname) {
     std::unordered_map<std::string, decltype(SF_FORMAT_AIFF)> ftypeTable{
             {"aif", SF_FORMAT_AIFF},
             {"aiff", SF_FORMAT_AIFF},
@@ -39,9 +57,11 @@ int get_file_format(const std::string& fname) {
     return ftypeIt->second;
 }
 
-int get_file_depth(int bitDepth) {
+int snd::get_file_depth(int bitDepth) {
     std::unordered_map<int, decltype(SF_FORMAT_PCM_16)> depthTable{
-            {16, SF_FORMAT_PCM_16}, {24, SF_FORMAT_PCM_24}};
+            {16, SF_FORMAT_PCM_16},
+            {24, SF_FORMAT_PCM_24},
+            {32, SF_FORMAT_PCM_32}};
 
     auto depthIt = depthTable.find(bitDepth);
     if (depthIt == depthTable.end()) {

@@ -1,4 +1,4 @@
--Icommon
+-Iinclude/
 -Iwaveguide/include
 -Iraytracer/include
 -Icommon/include
@@ -14,3 +14,4 @@
 -Wall
 -Werror
 -ferror-limit=100
+-fconstexpr-steps=4194304

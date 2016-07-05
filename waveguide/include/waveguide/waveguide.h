@@ -115,10 +115,10 @@ public:
             , kernel(program.get_kernel())
             , nodes(nodes)
             , storage(trait::create_waveguide_storage(
-                      program.template getInfo<CL_PROGRAM_CONTEXT>(), nodes))
+                      program.template get_info<CL_PROGRAM_CONTEXT>(), nodes))
             , previous(trait::index_storage_array(storage, 0))
             , current(trait::index_storage_array(storage, 1))
-            , output(program.template getInfo<CL_PROGRAM_CONTEXT>(),
+            , output(program.template get_info<CL_PROGRAM_CONTEXT>(),
                      CL_MEM_READ_WRITE,
                      sizeof(cl_float))
             , sample_rate(sample_rate) {

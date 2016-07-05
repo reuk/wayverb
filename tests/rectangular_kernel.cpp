@@ -304,21 +304,13 @@ class testing_rk_filter : public rk_filter<NoiseGenerator>,
 TEST_F(testing_rk_biquad, filtering) {
     auto results = run_kernel(program.get_filter_test_kernel());
     ASSERT_TRUE(log_nan(results, "filter 1 results") == results.end());
-    write_sndfile("./filtered_noise.wav",
-                  {results},
-                  testing::sr,
-                  SF_FORMAT_PCM_16,
-                  SF_FORMAT_WAV);
+    snd::write("./filtered_noise.wav", {results}, testing::sr, 16);
 }
 
 TEST_F(testing_rk_filter, filtering_2) {
     auto results = run_kernel(program.get_filter_test_2_kernel());
     ASSERT_TRUE(log_nan(results, "filter 2 results") == results.end());
-    write_sndfile("./filtered_noise_2.wav",
-                  {results},
-                  testing::sr,
-                  SF_FORMAT_PCM_16,
-                  SF_FORMAT_WAV);
+    snd::write("./filtered_noise_2.wav", {results}, testing::sr, 16);
 }
 
 class testing_rk_biquad_quiet : public rk_biquad<QuietNoiseGenerator>,
@@ -329,21 +321,13 @@ class testing_rk_filter_quiet : public rk_filter<QuietNoiseGenerator>,
 TEST_F(testing_rk_biquad_quiet, filtering) {
     auto results = run_kernel(program.get_filter_test_kernel());
     ASSERT_TRUE(log_nan(results, "filter 1 quiet results") == results.end());
-    write_sndfile("./filtered_noise_quiet.wav",
-                  {results},
-                  testing::sr,
-                  SF_FORMAT_PCM_16,
-                  SF_FORMAT_WAV);
+    snd::write("./filtered_noise_quiet.wav", {results}, testing::sr, 16);
 }
 
 TEST_F(testing_rk_filter_quiet, filtering_2) {
     auto results = run_kernel(program.get_filter_test_2_kernel());
     ASSERT_TRUE(log_nan(results, "filter 2 quiet results") == results.end());
-    write_sndfile("./filtered_noise_2_quiet.wav",
-                  {results},
-                  testing::sr,
-                  SF_FORMAT_PCM_16,
-                  SF_FORMAT_WAV);
+    snd::write("./filtered_noise_2_quiet.wav", {results}, testing::sr, 16);
 }
 
 TEST(compare_filters, compare_filters) {
@@ -401,17 +385,8 @@ TEST(compare_filters, compare_filters) {
         Logger::log_err("max div / dB: ", max_div);
         */
 
-        write_sndfile("./buf_1.wav",
-                      {buf_1},
-                      testing::sr,
-                      SF_FORMAT_PCM_16,
-                      SF_FORMAT_WAV);
-
-        write_sndfile("./buf_2.wav",
-                      {buf_2},
-                      testing::sr,
-                      SF_FORMAT_PCM_16,
-                      SF_FORMAT_WAV);
+        snd::write("./buf_1.wav", {buf_1}, testing::sr, 16);
+        snd::write("./buf_2.wav", {buf_2}, testing::sr, 16);
     };
 
     using Imp = ImpulseGenerator<200>;

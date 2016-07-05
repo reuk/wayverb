@@ -1,26 +1,19 @@
 #pragma once
 
 #include "common/cl_include.h"
+#include "common/custom_program_base.h"
 #include "common/decibels.h"
 #include "common/hrtf.h"
 #include "common/reduce.h"
 #include "common/scene_data.h"
+#include "common/serialize/cl.h"
 #include "common/stl_wrappers.h"
 #include "common/string_builder.h"
-
-#include "common/serialize/json_read_write.h"
 
 #include <cassert>
 #include <cmath>
 
-template <typename Archive>
-void serialize(Archive& archive, cl_float3& m) {
-    archive(cereal::make_nvp("x", m.s[0]),
-            cereal::make_nvp("y", m.s[1]),
-            cereal::make_nvp("z", m.s[2]));
-}
-
-class RectangularProgram : public cl::Program {
+class RectangularProgram final : public custom_program_base {
 public:
     typedef enum : cl_int {
         id_none = 0,
@@ -177,39 +170,38 @@ public:
 
     static constexpr int PORTS = NodeStruct::PORTS;
 
-    explicit RectangularProgram(const cl::Context& context,
-                                bool build_immediate = false);
+    explicit RectangularProgram(const cl::Context& context);
 
     auto get_kernel() const {
-        int error;
-        auto ret = cl::make_kernel<InputInfo,
-                                   cl::Buffer,
-                                   cl::Buffer,
-                                   cl::Buffer,
-                                   cl_int3,
-                                   cl::Buffer,
-                                   cl::Buffer,
-                                   cl::Buffer,
-                                   cl::Buffer,
-                                   cl::Buffer,
-                                   cl::Buffer,
-                                   cl_float,
-                                   cl_float,
-                                   cl_ulong,
-                                   cl::Buffer,
-                                   cl::Buffer>(
-                *this, "condensed_waveguide", &error);
-        return ret;
+        return custom_program_base::get_kernel<InputInfo,
+                                               cl::Buffer,
+                                               cl::Buffer,
+                                               cl::Buffer,
+                                               cl_int3,
+                                               cl::Buffer,
+                                               cl::Buffer,
+                                               cl::Buffer,
+                                               cl::Buffer,
+                                               cl::Buffer,
+                                               cl::Buffer,
+                                               cl_float,
+                                               cl_float,
+                                               cl_ulong,
+                                               cl::Buffer,
+                                               cl::Buffer>(
+                "condensed_waveguide");
     }
 
     auto get_filter_test_kernel() const {
-        return cl::make_kernel<cl::Buffer, cl::Buffer, cl::Buffer, cl::Buffer>(
-                *this, "filter_test");
+        return custom_program_base::
+                get_kernel<cl::Buffer, cl::Buffer, cl::Buffer, cl::Buffer>(
+                        "filter_test");
     }
 
     auto get_filter_test_2_kernel() const {
-        return cl::make_kernel<cl::Buffer, cl::Buffer, cl::Buffer, cl::Buffer>(
-                *this, "filter_test_2");
+        return custom_program_base::
+                get_kernel<cl::Buffer, cl::Buffer, cl::Buffer, cl::Buffer>(
+                        "filter_test_2");
     }
 
     static CondensedNodeStruct condense(const NodeStruct& n);

@@ -1,8 +1,7 @@
 #include "raytracer/raytracer_program.h"
 
-RaytracerProgram::RaytracerProgram(const cl::Context& context,
-                                   bool build_immediate)
-        : Program(context, source, build_immediate) {
+RaytracerProgram::RaytracerProgram(const cl::Context& context)
+        : custom_program_base(context, source) {
 }
 
 const std::string RaytracerProgram::source(

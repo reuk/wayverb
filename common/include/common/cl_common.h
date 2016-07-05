@@ -24,14 +24,7 @@ struct ComputeContext {
 template <typename T>
 T get_program(const cl::Context& context, const cl::Device& device) {
     T program(context);
-    try {
-        program.build({device}, "-Werror");
-    } catch (const cl::Error& e) {
-        std::cerr << program.template getBuildInfo<CL_PROGRAM_BUILD_LOG>(device)
-                  << std::endl;
-        std::cerr << e.what() << std::endl;
-        throw;
-    }
+    program.build(device);
     return program;
 }
 

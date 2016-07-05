@@ -2,15 +2,14 @@
 
 #include "cl_structs.h"
 
-#include "common/cl_include.h"
+#include "common/custom_program_base.h"
 
-class RaytracerProgram : public cl::Program {
+class RaytracerProgram : public custom_program_base {
 public:
-    explicit RaytracerProgram(const cl::Context& context,
-                              bool build_immediate = false);
+    explicit RaytracerProgram(const cl::Context& context);
 
     auto get_raytrace_kernel() const {
-        return cl::make_kernel<cl::Buffer,
+        return get_kernel<cl::Buffer,
                                cl_float3,
                                cl::Buffer,
                                cl_ulong,
@@ -21,11 +20,11 @@ public:
                                cl::Buffer,
                                cl::Buffer,
                                cl_ulong,
-                               VolumeType>(*this, "raytrace");
+                               VolumeType>("raytrace");
     }
 
     auto get_improved_raytrace_kernel() const {
-        return cl::make_kernel<cl::Buffer,
+        return get_kernel<cl::Buffer,
                                cl::Buffer,
                                AABB,
                                cl_int,
@@ -39,22 +38,22 @@ public:
                                cl::Buffer,
                                cl::Buffer,
                                VolumeType,
-                               cl_ulong>(*this, "raytrace_improved");
+                               cl_ulong>("raytrace_improved");
     }
 
     auto get_attenuate_kernel() const {
-        return cl::make_kernel<cl_float3, cl::Buffer, cl::Buffer, Speaker>(
-                *this, "attenuate");
+        return get_kernel<cl_float3, cl::Buffer, cl::Buffer, Speaker>(
+                "attenuate");
     }
 
     auto get_hrtf_kernel() const {
-        return cl::make_kernel<cl_float3,
+        return get_kernel<cl_float3,
                                cl::Buffer,
                                cl::Buffer,
                                cl::Buffer,
                                cl_float3,
                                cl_float3,
-                               cl_ulong>(*this, "hrtf");
+                               cl_ulong>("hrtf");
     }
 
 private:

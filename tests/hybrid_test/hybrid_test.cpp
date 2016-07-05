@@ -59,20 +59,6 @@ constexpr double rectilinear_calibration_factor(double r, double sr) {
     return r / (x * 0.3405);
 }
 
-void write_file(size_t bit_depth,
-                double sample_rate,
-                const std::string& output_folder,
-                const std::string& fname,
-                const std::vector<std::vector<float>>& output) {
-    auto output_file = build_string(output_folder, "/", fname, ".wav");
-    LOG(INFO) << "writing file: " << output_file;
-
-    auto format = get_file_format(output_file);
-    auto depth = get_file_depth(bit_depth);
-
-    write_sndfile(output_file, output, sample_rate, depth, format);
-}
-
 auto run_waveguide(ComputeContext& context_info,
                    const CuboidBoundary& boundary,
                    const model::SingleShot& config,
@@ -163,11 +149,8 @@ int main(int argc, char** argv) {
 
     // filter::ZeroPhaseDCBlocker(32).filter(waveguide_output);
 
-    write_file(bit_depth,
-               samplerate,
-               output_folder,
-               "waveguide_raw",
-               {waveguide_output});
+    snd::write(build_string(output_folder, "/waveguide_raw.wav"),
+               {waveguide_output}, samplerate, bit_depth);
 
     //  adjust sample rate
     auto waveguide_adjusted =
@@ -215,11 +198,10 @@ int main(int argc, char** argv) {
     std::vector<std::vector<std::vector<float>>> flattened = {
             flatten_impulses(output, samplerate)};
 
-    write_file(bit_depth,
+    snd::write(build_string(output_folder, "raytrace_no_processing.wav"),
+               mixdown(flattened),
                samplerate,
-               output_folder,
-               "raytrace_no_processing",
-               mixdown(flattened));
+               bit_depth);
 
     filter::run(filter::FilterType::linkwitz_riley,
                 flattened,
@@ -230,7 +212,7 @@ int main(int argc, char** argv) {
     auto write_normalized = [bit_depth, samplerate, &output_folder](auto i,
                                                                     auto name) {
         normalize(i);
-        write_file(bit_depth, samplerate, output_folder, name, {i});
+        snd::write(build_string(output_folder, "/", name, ".wav"), {i}, samplerate, bit_depth);
     };
 
     write_normalized(waveguide_adjusted, "waveguide_normalized");
@@ -262,16 +244,12 @@ int main(int argc, char** argv) {
     elementwise_multiply(waveguide_adjusted, window);
     elementwise_multiply(raytracer_output, window);
 
-    write_file(bit_depth,
-               samplerate,
-               output_folder,
-               "waveguide_processed",
-               {waveguide_adjusted});
-    write_file(bit_depth,
-               samplerate,
-               output_folder,
-               "raytracer_processed",
-               {raytracer_output});
+    snd::write(build_string(output_folder, "/waveguide_processed.wav"),
+            {waveguide_adjusted},
+            samplerate, bit_depth);
+    snd::write(build_string(output_folder, "/raytracer_processed.wav"),
+            {raytracer_output},
+            samplerate, bit_depth);
 
     filter::HipassWindowedSinc hipass(raytracer_output.size());
     hipass.set_params(config.filter_frequency, samplerate);
@@ -284,5 +262,5 @@ int main(int argc, char** argv) {
                     mixed.begin(),
                     [](auto a, auto b) { return a + b; });
 
-    write_file(bit_depth, samplerate, output_folder, "mixed", {mixed});
+    snd::write(build_string(output_folder, "/mixed.wav"), {mixed}, samplerate, bit_depth);
 }

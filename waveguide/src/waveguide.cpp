@@ -75,37 +75,37 @@ RectangularWaveguide<buffer_type>::RectangularWaveguide(
         : Waveguide<RectangularProgram, buffer_type>(
                   program, queue, mesh.get_nodes().size(), sample_rate)
         , mesh(mesh)
-        , node_buffer(program.template getInfo<CL_PROGRAM_CONTEXT>(),
+        , node_buffer(program.template get_info<CL_PROGRAM_CONTEXT>(),
                       nodes.begin(),
                       nodes.end(),
                       false)
-        , transform_buffer(program.template getInfo<CL_PROGRAM_CONTEXT>(),
+        , transform_buffer(program.template get_info<CL_PROGRAM_CONTEXT>(),
                            CL_MEM_READ_WRITE,
                            sizeof(cl_float) * TRANSFORM_MATRIX_ELEMENTS)
-        , velocity_buffer(program.template getInfo<CL_PROGRAM_CONTEXT>(),
+        , velocity_buffer(program.template get_info<CL_PROGRAM_CONTEXT>(),
                           CL_MEM_READ_WRITE,
                           sizeof(cl_float3) * 1)
         , num_boundary_1(boundary_data_1.size())
-        , boundary_data_1_buffer(program.template getInfo<CL_PROGRAM_CONTEXT>(),
+        , boundary_data_1_buffer(program.template get_info<CL_PROGRAM_CONTEXT>(),
                                  boundary_data_1.begin(),
                                  boundary_data_1.end(),
                                  false)
         , num_boundary_2(boundary_data_2.size())
-        , boundary_data_2_buffer(program.template getInfo<CL_PROGRAM_CONTEXT>(),
+        , boundary_data_2_buffer(program.template get_info<CL_PROGRAM_CONTEXT>(),
                                  boundary_data_2.begin(),
                                  boundary_data_2.end(),
                                  false)
         , num_boundary_3(boundary_data_3.size())
-        , boundary_data_3_buffer(program.template getInfo<CL_PROGRAM_CONTEXT>(),
+        , boundary_data_3_buffer(program.template get_info<CL_PROGRAM_CONTEXT>(),
                                  boundary_data_3.begin(),
                                  boundary_data_3.end(),
                                  false)
         , boundary_coefficients_buffer(
-                  program.template getInfo<CL_PROGRAM_CONTEXT>(),
+                  program.template get_info<CL_PROGRAM_CONTEXT>(),
                   coefficients.begin(),
                   coefficients.end(),
                   false)
-        , error_flag_buffer(program.template getInfo<CL_PROGRAM_CONTEXT>(),
+        , error_flag_buffer(program.template get_info<CL_PROGRAM_CONTEXT>(),
                             CL_MEM_READ_WRITE,
                             sizeof(cl_int)) {
     LOG(INFO) << "main memory node storage: "

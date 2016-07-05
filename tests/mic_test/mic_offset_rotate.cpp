@@ -160,22 +160,11 @@ int main(int argc, char** argv) {
 
             ofile << std::endl;
 
-            std::stringstream ss;
-            ss << output_folder << "/" << i << ".waveguide.full.wav";
-
-            const auto output_file = ss.str();
-
-            unsigned long format, depth;
-
-            try {
-                format = get_file_format(output_file);
-                depth = get_file_depth(16);
-            } catch (const std::runtime_error& e) {
-                LOG(INFO) << "critical runtime error: " << e.what();
-                return EXIT_FAILURE;
-            }
-
-            write_sndfile(output_file, {out_signal}, out_sr, depth, format);
+            snd::write(
+                    build_string(output_folder, "/", i, ".waveguide.full.wav"),
+                    {out_signal},
+                    out_sr,
+                    16);
         }
 
     } catch (const cl::Error& e) {
