@@ -1,4 +1,5 @@
 #include "waveguide/config.h"
+#include "waveguide/make_transparent.h"
 #include "waveguide/microphone.h"
 #include "waveguide/rectangular_waveguide.h"
 
@@ -85,6 +86,7 @@ int main(int argc, char** argv) {
     google::InitGoogleLogging(argv[0]);
     gflags::ParseCommandLineFlags(&argc, &argv, true);
     try {
+        auto transparent = make_transparent(std::vector<float>{1, 2, 3, 4, 5});
     } catch (const cl::Error& e) {
         LOG(INFO) << "critical cl error: " << e.what();
         return EXIT_FAILURE;

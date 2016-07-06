@@ -2,6 +2,7 @@
 -Iwaveguide/include
 -Iraytracer/include
 -Icommon/include
+-Idata
 -Icombined/include
 -Ibuild/submodules/glog
 -Isubmodules/glog/src

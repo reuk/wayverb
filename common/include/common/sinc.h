@@ -4,6 +4,7 @@
 
 #include <numeric>
 #include <vector>
+#include <cmath>
 
 template <typename T>
 inline float sum(const T& t) {
