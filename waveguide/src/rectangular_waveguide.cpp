@@ -78,7 +78,7 @@ RectangularWaveguide<buffer_type>::RectangularWaveguide(
         , surrounding_buffer(program.template get_info<CL_PROGRAM_CONTEXT>(),
                              CL_MEM_READ_WRITE,
                              sizeof(cl_float) * PORTS)
-        , surrounding(PORTS)
+        , surrounding(PORTS, 0)
         , error_flag_buffer(program.template get_info<CL_PROGRAM_CONTEXT>(),
                             CL_MEM_READ_WRITE,
                             sizeof(cl_int)) {
@@ -110,8 +110,6 @@ RunStepResult RectangularWaveguide<buffer_type>::run_step(
         cl::Buffer& previous,
         cl::Buffer& current,
         cl::Buffer& output) {
-    std::vector<cl_float3> current_velocity(1);
-
     auto flag = RectangularProgram::id_success;
     cl::copy(queue, (&flag) + 0, (&flag) + 1, error_flag_buffer);
 
@@ -152,10 +150,8 @@ RunStepResult RectangularWaveguide<buffer_type>::run_step(
     if (flag & RectangularProgram::id_suspicious_boundary_error)
         throw std::runtime_error("suspicious boundary read");
 
-    //  TODO THIS NEEDS TESTING LIKE PROPERLY YO
-
     cl_float out;
-    cl::copy(queue, output, &out, &out + 1);
+    cl::copy(queue, output, (&out), (&out) + 1);
     cl::copy(queue, surrounding_buffer, surrounding.begin(), surrounding.end());
 
     for (auto& i : surrounding) {

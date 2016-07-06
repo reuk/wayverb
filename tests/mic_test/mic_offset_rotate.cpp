@@ -80,7 +80,7 @@ int main(int argc, char** argv) {
     std::cout << "directionality: " << directionality << std::endl;
 
     Microphone microphone(glm::vec3(0, 0, 1), directionality);
-    cl_float3 mic{{0, 0, 0}};
+    glm::vec3 mic{0, 0, 0};
     const auto test_locations = 18;
 
     std::ofstream ofile(output_folder + "/" + polar_string + ".energies.txt");
@@ -93,29 +93,27 @@ int main(int argc, char** argv) {
         RectangularWaveguide<BufferType::cl> waveguide(
                 waveguide_program,
                 MeshBoundary(boundary.get_scene_data()),
-                to_vec3f(mic),
+                mic,
                 waveguide_sr);
 
         const auto amp_factor = 4e3;
 
         for (auto i = 0u; i != test_locations; ++i) {
             float angle = i * M_PI * 2 / test_locations + M_PI;
-            cl_float3 source{{std::sin(angle), 0, std::cos(angle)}};
 
-            const auto mic_index =
-                    waveguide.get_index_for_coordinate(to_vec3f(mic));
+            const auto mic_index = waveguide.get_index_for_coordinate(mic);
 
             const auto steps = 200;
 
             std::atomic_bool keep_going{true};
             ProgressBar pb(std::cout, steps);
-            const auto w_results =
-                    waveguide.init_and_run(to_vec3f(source),
-                                           waveguide_kernel(waveguide_sr),
-                                           mic_index,
-                                           steps,
-                                           keep_going,
-                                           [&pb] { pb += 1; });
+            const auto w_results = waveguide.init_and_run(
+                    glm::vec3{std::sin(angle), 0, std::cos(angle)},
+                    waveguide_kernel(waveguide_sr),
+                    mic_index,
+                    steps,
+                    keep_going,
+                    [&pb] { pb += 1; });
 
             const auto out_sr = 44100.0;
 

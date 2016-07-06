@@ -135,7 +135,7 @@ public:
 
     RunStepResult run_step(size_t o) {
         auto ret = run_step(run_info->get_write_info(),
-                            0,
+                            o,
                             queue,
                             kernel,
                             nodes,
