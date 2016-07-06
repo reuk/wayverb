@@ -1,5 +1,5 @@
-#include "DirectionEditor.hpp"
 #include "MicrophoneEditor.hpp"
+#include "DirectionEditor.hpp"
 
 #include "PolarPatternDisplay.hpp"
 

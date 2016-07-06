@@ -105,11 +105,9 @@ public:
     using trait = detail::BufferTypeTrait<buffer_type>;
     using storage_array_type = typename trait::storage_array_type;
 
-    Waveguide(const ProgramType& program,
-              cl::CommandQueue& queue,
-              size_t nodes,
-              float sample_rate)
-            : queue(queue)
+    Waveguide(const ProgramType& program, size_t nodes, float sample_rate)
+            : queue(program.template get_info<CL_PROGRAM_CONTEXT>(),
+                    program.get_device())
             , kernel(program.get_kernel())
             , nodes(nodes)
             , storage(trait::create_waveguide_storage(
@@ -135,15 +133,6 @@ public:
         bool is_on;
     };
 
-    virtual RunStepResult run_step(const WriteInfo& write_info,
-                                   size_t o,
-                                   cl::CommandQueue& queue,
-                                   kernel_type& kernel,
-                                   size_t nodes,
-                                   cl::Buffer& previous,
-                                   cl::Buffer& current,
-                                   cl::Buffer& output) = 0;
-
     RunStepResult run_step(size_t o) {
         auto ret = run_step(run_info->get_write_info(),
                             0,
@@ -166,20 +155,12 @@ public:
         ;
     }
 
-    virtual size_t get_index_for_coordinate(const glm::vec3& v) const = 0;
-    virtual glm::vec3 get_coordinate_for_index(size_t index) const = 0;
-
     glm::vec3 get_corrected_coordinate(const glm::vec3& v) const {
         return get_coordinate_for_index(get_index_for_coordinate(v));
     }
 
     size_t get_nodes() const {
         return nodes;
-    }
-
-    virtual bool inside(size_t index) const = 0;
-
-    virtual void setup(cl::CommandQueue& queue, size_t o) {
     }
 
     void init(const glm::vec3& e, std::vector<float>&& input_sig, size_t o) {
@@ -250,9 +231,11 @@ public:
                 steps, keep_going, callback, visual_callback);
     }
 
+    /*
     cl::CommandQueue& get_queue() const {
         return queue;
     }
+    */
 
     float get_sample_rate() const {
         return sample_rate;
@@ -271,6 +254,19 @@ public:
     }
 
 private:
+    virtual RunStepResult run_step(const WriteInfo& write_info,
+                                   size_t o,
+                                   cl::CommandQueue& queue,
+                                   kernel_type& kernel,
+                                   size_t nodes,
+                                   cl::Buffer& previous,
+                                   cl::Buffer& current,
+                                   cl::Buffer& output) = 0;
+    virtual size_t get_index_for_coordinate(const glm::vec3& v) const = 0;
+    virtual glm::vec3 get_coordinate_for_index(size_t index) const = 0;
+    virtual bool inside(size_t index) const = 0;
+    virtual void setup(cl::CommandQueue& queue, size_t o) = 0;
+
     template <typename Callback>
     std::vector<RunStepResult> run_basic(size_t steps,
                                          std::atomic_bool& keep_going,
@@ -329,7 +325,7 @@ private:
         size_t counter{0};
     };
 
-    cl::CommandQueue& queue;
+    cl::CommandQueue queue;
     kernel_type kernel;
     const size_t nodes;
 

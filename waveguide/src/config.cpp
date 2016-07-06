@@ -27,15 +27,14 @@ std::vector<float> adjust_sampling_rate(std::vector<float>&& w_results,
                                         double out_sr) {
     std::vector<float> out_signal(out_sr * w_results.size() / in_sr);
 
-    SRC_DATA sample_rate_info{
-            w_results.data(),
-            out_signal.data(),
-            long(w_results.size()),
-            long(out_signal.size()),
-            0,
-            0,
-            0,
-            out_sr / in_sr};
+    SRC_DATA sample_rate_info{w_results.data(),
+                              out_signal.data(),
+                              long(w_results.size()),
+                              long(out_signal.size()),
+                              0,
+                              0,
+                              0,
+                              out_sr / in_sr};
 
     src_simple(&sample_rate_info, SRC_SINC_BEST_QUALITY, 1);
     return out_signal;

@@ -170,7 +170,8 @@ public:
 
     static constexpr int PORTS = NodeStruct::PORTS;
 
-    explicit RectangularProgram(const cl::Context& context);
+    explicit RectangularProgram(const cl::Context& context,
+                                const cl::Device& device);
 
     auto get_kernel() const {
         return custom_program_base::get_kernel<InputInfo,

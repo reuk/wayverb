@@ -79,11 +79,10 @@ public:
     }
 
 private:
-    cl::Context context{get_context()};
-    cl::Device device{get_device(context)};
-    cl::CommandQueue queue{context, device};
-    RectangularProgram program{
-            get_program<RectangularProgram>(context, device)};
+    ComputeContext compute_context;
+    cl::CommandQueue queue{compute_context.context, compute_context.device};
+    RectangularProgram program{RectangularProgram(compute_context.context,
+                                                  compute_context.device)};
 };
 
 TEST_F(MeshTest, locator_index_tetra) {

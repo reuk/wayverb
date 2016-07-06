@@ -5,8 +5,9 @@
 #include <cmath>
 #include <iostream>
 
-RectangularProgram::RectangularProgram(const cl::Context& context)
-        : custom_program_base(context, source) {
+RectangularProgram::RectangularProgram(const cl::Context& context,
+                                       const cl::Device& device)
+        : custom_program_base(context, device, source) {
 }
 
 RectangularProgram::CondensedNodeStruct RectangularProgram::condense(

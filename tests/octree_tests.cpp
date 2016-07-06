@@ -1,5 +1,5 @@
-#include "common/serialize/boundaries.h"
 #include "common/octree.h"
+#include "common/serialize/boundaries.h"
 
 #include "gtest/gtest.h"
 

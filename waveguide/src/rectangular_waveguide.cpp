@@ -1,18 +1,16 @@
-#include "waveguide/log_nan.h"
 #include "waveguide/rectangular_waveguide.h"
+#include "waveguide/log_nan.h"
 
 #include "glog/logging.h"
 
 template <BufferType buffer_type>
 RectangularWaveguide<buffer_type>::RectangularWaveguide(
         const RectangularProgram& program,
-        cl::CommandQueue& queue,
         const MeshBoundary& boundary,
         const glm::vec3& anchor,
         float sr)
         : RectangularWaveguide(
                   program,
-                  queue,
                   RectangularMesh(boundary,
                                   config::grid_spacing(SPEED_OF_SOUND, 1 / sr),
                                   anchor),
@@ -24,13 +22,10 @@ RectangularWaveguide<buffer_type>::RectangularWaveguide(
 template <BufferType buffer_type>
 RectangularWaveguide<buffer_type>::RectangularWaveguide(
         const typename Base::ProgramType& program,
-        cl::CommandQueue& queue,
         const RectangularMesh& mesh,
         float sample_rate,
-        std::vector<RectangularProgram::CanonicalCoefficients>
-                coefficients)
+        std::vector<RectangularProgram::CanonicalCoefficients> coefficients)
         : RectangularWaveguide(program,
-                               queue,
                                mesh,
                                sample_rate,
                                mesh.get_condensed_nodes(),
@@ -43,21 +38,15 @@ RectangularWaveguide<buffer_type>::RectangularWaveguide(
 template <BufferType buffer_type>
 RectangularWaveguide<buffer_type>::RectangularWaveguide(
         const typename Base::ProgramType& program,
-        cl::CommandQueue& queue,
         const RectangularMesh& mesh,
         float sample_rate,
-        std::vector<RectangularMesh::CondensedNode>
-                nodes,
-        std::vector<RectangularProgram::BoundaryDataArray1>
-                boundary_data_1,
-        std::vector<RectangularProgram::BoundaryDataArray2>
-                boundary_data_2,
-        std::vector<RectangularProgram::BoundaryDataArray3>
-                boundary_data_3,
-        std::vector<RectangularProgram::CanonicalCoefficients>
-                coefficients)
+        std::vector<RectangularMesh::CondensedNode> nodes,
+        std::vector<RectangularProgram::BoundaryDataArray1> boundary_data_1,
+        std::vector<RectangularProgram::BoundaryDataArray2> boundary_data_2,
+        std::vector<RectangularProgram::BoundaryDataArray3> boundary_data_3,
+        std::vector<RectangularProgram::CanonicalCoefficients> coefficients)
         : Waveguide<RectangularProgram, buffer_type>(
-                  program, queue, mesh.get_nodes().size(), sample_rate)
+                  program, mesh.get_nodes().size(), sample_rate)
         , mesh(mesh)
         , node_buffer(program.template get_info<CL_PROGRAM_CONTEXT>(),
                       nodes.begin(),

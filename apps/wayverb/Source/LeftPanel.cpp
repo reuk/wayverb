@@ -116,8 +116,8 @@ Array<PropertyComponent*> make_material_buttons(
     Array<PropertyComponent*> ret;
     auto count = 0;
     for (const auto& i : model) {
-        auto to_add = new MaterialConfigureButton(
-                count++, shown_surface, *i, preset);
+        auto to_add =
+                new MaterialConfigureButton(count++, shown_surface, *i, preset);
         ret.add(to_add);
     }
     return ret;

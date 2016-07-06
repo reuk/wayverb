@@ -1,8 +1,8 @@
 #include "combined/model.h"
 #include "combined/serialize/model.h"
 
-#include "waveguide/microphone.h"
 #include "waveguide/config.h"
+#include "waveguide/microphone.h"
 #include "waveguide/rectangular_waveguide.h"
 
 #include "raytracer/raytracer.h"
@@ -67,8 +67,8 @@ auto run_waveguide(ComputeContext& context_info,
     auto steps = 16000;
 
     //  get opencl program
-    auto waveguide_program = get_program<RectangularProgram>(
-            context_info.context, context_info.device);
+    RectangularProgram waveguide_program(context_info.context,
+                                         context_info.device);
 
     auto scene_data = boundary.get_scene_data();
     scene_data.set_surfaces(surface);
@@ -76,7 +76,6 @@ auto run_waveguide(ComputeContext& context_info,
     //  get a waveguide
     RectangularWaveguide<BufferType::cl> waveguide(
             waveguide_program,
-            context_info.queue,
             MeshBoundary(scene_data),
             config.receiver_settings.position,
             config.get_waveguide_sample_rate());
@@ -150,7 +149,9 @@ int main(int argc, char** argv) {
     // filter::ZeroPhaseDCBlocker(32).filter(waveguide_output);
 
     snd::write(build_string(output_folder, "/waveguide_raw.wav"),
-               {waveguide_output}, samplerate, bit_depth);
+               {waveguide_output},
+               samplerate,
+               bit_depth);
 
     //  adjust sample rate
     auto waveguide_adjusted =
@@ -170,10 +171,10 @@ int main(int argc, char** argv) {
     //        config, output_folder, "waveguide_adjusted",
     //        {waveguide_adjusted});
     //
-    auto raytrace_program = get_program<RaytracerProgram>(context_info.context,
-                                                          context_info.device);
+    RaytracerProgram raytrace_program(context_info.context,
+                                      context_info.device);
 
-    Raytracer raytracer(raytrace_program, context_info.queue);
+    Raytracer raytracer(raytrace_program);
     //            [                                        ]
     std::cout << "[ -- running raytracer ----------------- ]" << std::endl;
     std::atomic_bool keep_going{true};
@@ -187,7 +188,7 @@ int main(int argc, char** argv) {
                                  keep_going,
                                  [&pb] { pb += 1; });
 
-    Attenuate attenuator(raytrace_program, context_info.queue);
+    Attenuate attenuator(raytrace_program);
     Speaker speaker{};
     auto output =
             attenuator.attenuate(results.get_image_source(false), {speaker})
@@ -203,16 +204,16 @@ int main(int argc, char** argv) {
                samplerate,
                bit_depth);
 
-    filter::run(filter::FilterType::linkwitz_riley,
-                flattened,
-                samplerate,
-                1);
+    filter::run(filter::FilterType::linkwitz_riley, flattened, samplerate, 1);
     auto raytracer_output = mixdown(flattened).front();
 
     auto write_normalized = [bit_depth, samplerate, &output_folder](auto i,
                                                                     auto name) {
         normalize(i);
-        snd::write(build_string(output_folder, "/", name, ".wav"), {i}, samplerate, bit_depth);
+        snd::write(build_string(output_folder, "/", name, ".wav"),
+                   {i},
+                   samplerate,
+                   bit_depth);
     };
 
     write_normalized(waveguide_adjusted, "waveguide_normalized");
@@ -245,11 +246,13 @@ int main(int argc, char** argv) {
     elementwise_multiply(raytracer_output, window);
 
     snd::write(build_string(output_folder, "/waveguide_processed.wav"),
-            {waveguide_adjusted},
-            samplerate, bit_depth);
+               {waveguide_adjusted},
+               samplerate,
+               bit_depth);
     snd::write(build_string(output_folder, "/raytracer_processed.wav"),
-            {raytracer_output},
-            samplerate, bit_depth);
+               {raytracer_output},
+               samplerate,
+               bit_depth);
 
     filter::HipassWindowedSinc hipass(raytracer_output.size());
     hipass.set_params(config.filter_frequency, samplerate);
@@ -262,5 +265,8 @@ int main(int argc, char** argv) {
                     mixed.begin(),
                     [](auto a, auto b) { return a + b; });
 
-    snd::write(build_string(output_folder, "/mixed.wav"), {mixed}, samplerate, bit_depth);
+    snd::write(build_string(output_folder, "/mixed.wav"),
+               {mixed},
+               samplerate,
+               bit_depth);
 }

@@ -3,6 +3,7 @@
 #include "common/boundaries.h"
 #include "common/cl_common.h"
 #include "common/progress.h"
+#include "common/string_builder.h"
 #include "common/write_audio_file.h"
 
 #include "glog/logging.h"
@@ -25,7 +26,7 @@ auto get_results(ComputeContext& context,
                  const std::vector<cl_float3>& directions,
                  int reflections) {
     std::atomic_bool keep_going{true};
-    T raytrace(prog, context.queue);
+    T raytrace(prog);
     return raytrace.run(scene_data,
                         glm::vec3(0, 1.75, 0),
                         glm::vec3(0, 1.75, 3),
@@ -82,7 +83,7 @@ static constexpr auto bench_rays = 1 << 15;
 
 TEST(raytrace, new) {
     ComputeContext context;
-    auto raytrace_program = get_program<RaytracerProgram>(context);
+    auto raytrace_program = RaytracerProgram(context.context, context.device);
 
     SceneData scene_data(OBJ_PATH);
 
@@ -204,11 +205,11 @@ TEST(raytrace, image_source) {
 
     //  raytracing method
     ComputeContext context;
-    auto raytrace_program = get_program<RaytracerProgram>(context);
+    auto raytrace_program = RaytracerProgram(context.context, context.device);
 
     CuboidBoundary boundary(box.get_c0(), box.get_c1());
 
-    Raytracer raytracer(raytrace_program, context.queue);
+    Raytracer raytracer(raytrace_program);
 
     auto scene_data = boundary.get_scene_data();
     scene_data.set_surfaces(surface);
@@ -217,7 +218,7 @@ TEST(raytrace, image_source) {
     auto results = raytracer.run(
             scene_data, receiver, source, 100000, 100, keep_going);
 
-    Attenuate attenuator(raytrace_program, context.queue);
+    Attenuate attenuator(raytrace_program);
     Speaker speaker{};
     auto output =
             attenuator.attenuate(results.get_image_source(false), {speaker})
@@ -262,11 +263,10 @@ TEST(raytrace, image_source) {
                                      true,
                                      1);
             normalize(processed);
-            snd::write(
-                    build_string(SCRATCH_PATH, "/", name, "processed.wav"),
-                    processed,
-                    sample_rate,
-                    bit_depth);
+            snd::write(build_string(SCRATCH_PATH, "/", name, "processed.wav"),
+                       processed,
+                       sample_rate,
+                       bit_depth);
         }
     };
 

@@ -307,15 +307,17 @@ public:
 
     void mouse_down(const glm::vec2 &pos) override {
         std::lock_guard<std::mutex> lck(mut);
-//        auto hovered = point_objects.get_currently_hovered(
-//                get_world_camera_position(), get_world_mouse_direction(pos));
-//        if (hovered && allow_move_mode) {
-//            mousing = std::unique_ptr<Mousing>(
-//                    std::make_unique<Move>(hovered, hovered->get_position()));
-//        } else {
-            mousing = std::unique_ptr<Mousing>(
-                    std::make_unique<Rotate>(azel_target, pos));
-//        }
+        //        auto hovered = point_objects.get_currently_hovered(
+        //                get_world_camera_position(),
+        //                get_world_mouse_direction(pos));
+        //        if (hovered && allow_move_mode) {
+        //            mousing = std::unique_ptr<Mousing>(
+        //                    std::make_unique<Move>(hovered,
+        //                    hovered->get_position()));
+        //        } else {
+        mousing = std::unique_ptr<Mousing>(
+                std::make_unique<Rotate>(azel_target, pos));
+        //        }
     }
 
     void mouse_drag(const glm::vec2 &pos) override {

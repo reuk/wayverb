@@ -88,11 +88,10 @@ int main(int argc, char** argv) {
     try {
         CuboidBoundary boundary(glm::vec3(-2.05, -2.5, -1.05),
                                 glm::vec3(2.05, 2.5, 1.05));
-        const auto waveguide_program =
-                get_program<RectangularProgram>(compute_context);
+        const RectangularProgram waveguide_program(compute_context.context,
+                                                   compute_context.device);
         RectangularWaveguide<BufferType::cl> waveguide(
                 waveguide_program,
-                compute_context.queue,
                 MeshBoundary(boundary.get_scene_data()),
                 to_vec3f(mic),
                 waveguide_sr);

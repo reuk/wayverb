@@ -28,11 +28,10 @@
 #include <random>
 
 //  write_file:
-//  snd::write(build_string(output_folder, "/", fname, ".wav"), {signal}, sample_rate, bit_depth);
+//  snd::write(build_string(output_folder, "/", fname, ".wav"), {signal},
+//  sample_rate, bit_depth);
 
-std::vector<float> run_simulation(const cl::Context& context,
-                                  cl::Device& device,
-                                  cl::CommandQueue& queue,
+std::vector<float> run_simulation(const ComputeContext& compute_context,
                                   const CuboidBoundary& boundary,
                                   const Surface& surface,
                                   double filter_frequency,
@@ -42,17 +41,16 @@ std::vector<float> run_simulation(const cl::Context& context,
                                   const std::string& output_folder,
                                   const std::string& fname,
                                   int steps) {
-    auto waveguide_program = get_program<RectangularProgram>(context, device);
+    RectangularProgram waveguide_program(compute_context.context,
+                                         compute_context.device);
 
     auto scene_data = boundary.get_scene_data();
     scene_data.set_surfaces(surface);
 
-    RectangularWaveguide<BufferType::cl> waveguide(
-            waveguide_program,
-            queue,
-            MeshBoundary(scene_data),
-            receiver,
-            filter_frequency * 4);
+    RectangularWaveguide<BufferType::cl> waveguide(waveguide_program,
+                                                   MeshBoundary(scene_data),
+                                                   receiver,
+                                                   filter_frequency * 4);
 
     auto receiver_index = waveguide.get_index_for_coordinate(receiver);
     auto source_index = waveguide.get_index_for_coordinate(source);

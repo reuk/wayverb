@@ -1,14 +1,18 @@
 #pragma once
 
-#include "common/cl_include.h"
+#include "common/cl_common.h"
 
 class custom_program_base {
 public:
-    custom_program_base(const cl::Context& context, const std::string& source);
     custom_program_base(const cl::Context& context,
+                        const cl::Device& device,
+                        const std::string& source);
+    custom_program_base(const cl::Context& context,
+                        const cl::Device& device,
                         const std::pair<const char*, size_t>& source);
     custom_program_base(
             const cl::Context& context,
+            const cl::Device& device,
             const std::vector<std::pair<const char*, size_t>>& sources);
 
     custom_program_base(const custom_program_base&) = default;
@@ -17,12 +21,12 @@ public:
     custom_program_base& operator=(custom_program_base&&) noexcept = delete;
     virtual ~custom_program_base() noexcept = default;
 
-    void build(const cl::Device& device) const;
-
-    template<cl_program_info T>
+    template <cl_program_info T>
     auto get_info() const {
         return program.getInfo<T>();
     }
+
+    cl::Device get_device() const;
 
 protected:
     template <typename... Ts>
@@ -32,5 +36,8 @@ protected:
     }
 
 private:
+    void build(const cl::Device& device) const;
+
+    cl::Device device;
     cl::Program program;
 };

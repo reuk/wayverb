@@ -31,8 +31,8 @@ TEST(run_waveguide, run_waveguide) {
     ComputeContext context_info;
 
     //  get opencl program
-    auto waveguide_program = get_program<RectangularProgram>(
-            context_info.context, context_info.device);
+    RectangularProgram waveguide_program(context_info.context,
+                                         context_info.device);
 
     Box box(glm::vec3(0, 0, 0), glm::vec3(4, 3, 6));
     constexpr glm::vec3 source(1, 1, 1);
@@ -49,11 +49,7 @@ TEST(run_waveguide, run_waveguide) {
 
     //  get a waveguide
     RectangularWaveguide<BufferType::cl> waveguide(
-            waveguide_program,
-            context_info.queue,
-            MeshBoundary(scene_data),
-            receiver,
-            4000);
+            waveguide_program, MeshBoundary(scene_data), receiver, 4000);
 
     auto source_index = waveguide.get_index_for_coordinate(source);
     auto receiver_index = waveguide.get_index_for_coordinate(receiver);

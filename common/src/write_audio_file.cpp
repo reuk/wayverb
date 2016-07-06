@@ -17,7 +17,7 @@ void snd::write(const std::string& fname,
     }
 
     auto fmt = ftype | bd;
-    if (! SndfileHandle::formatCheck(fmt, outdata.size(), sr)) {
+    if (!SndfileHandle::formatCheck(fmt, outdata.size(), sr)) {
         throw std::runtime_error(
                 "looks like libsndfile can't write with those parameters");
     }

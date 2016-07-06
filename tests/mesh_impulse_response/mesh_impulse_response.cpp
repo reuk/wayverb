@@ -1,6 +1,6 @@
-#include "common/write_audio_file.h"
-#include "common/custom_program_base.h"
 #include "common/cl_common.h"
+#include "common/custom_program_base.h"
+#include "common/write_audio_file.h"
 
 #include <algorithm>
 #include <array>
@@ -39,18 +39,18 @@ constexpr locator to_locator(size_t ind) {
     return locator{x, y, z};
 }
 
-static_assert(to_locator(0) == locator{0, 0, 0},  "to_locator");
+static_assert(to_locator(0) == locator{0, 0, 0}, "to_locator");
 
-static_assert(to_locator(1) == locator{1, 0, 0},  "to_locator");
-static_assert(to_locator(2) == locator{1, 0, 1},  "to_locator");
-static_assert(to_locator(3) == locator{1, 1, 0},  "to_locator");
-static_assert(to_locator(4) == locator{1, 1, 1},  "to_locator");
+static_assert(to_locator(1) == locator{1, 0, 0}, "to_locator");
+static_assert(to_locator(2) == locator{1, 0, 1}, "to_locator");
+static_assert(to_locator(3) == locator{1, 1, 0}, "to_locator");
+static_assert(to_locator(4) == locator{1, 1, 1}, "to_locator");
 
-static_assert(to_locator(5) == locator{2, 0, 0},  "to_locator");
-static_assert(to_locator(6) == locator{2, 0, 1},  "to_locator");
-static_assert(to_locator(7) == locator{2, 0, 2},  "to_locator");
-static_assert(to_locator(8) == locator{2, 1, 0},  "to_locator");
-static_assert(to_locator(9) == locator{2, 1, 1},  "to_locator");
+static_assert(to_locator(5) == locator{2, 0, 0}, "to_locator");
+static_assert(to_locator(6) == locator{2, 0, 1}, "to_locator");
+static_assert(to_locator(7) == locator{2, 0, 2}, "to_locator");
+static_assert(to_locator(8) == locator{2, 1, 0}, "to_locator");
+static_assert(to_locator(9) == locator{2, 1, 1}, "to_locator");
 static_assert(to_locator(10) == locator{2, 1, 2}, "to_locator");
 static_assert(to_locator(11) == locator{2, 2, 0}, "to_locator");
 static_assert(to_locator(12) == locator{2, 2, 1}, "to_locator");
@@ -64,18 +64,18 @@ constexpr size_t to_index(const locator& l) {
     return pyramid(l.x) + (l.y * (l.x + 1)) + l.z;
 }
 
-static_assert(0  == to_index(locator{0, 0, 0}), "to_index");
+static_assert(0 == to_index(locator{0, 0, 0}), "to_index");
 
-static_assert(1  == to_index(locator{1, 0, 0}), "to_index");
-static_assert(2  == to_index(locator{1, 0, 1}), "to_index");
-static_assert(3  == to_index(locator{1, 1, 0}), "to_index");
-static_assert(4  == to_index(locator{1, 1, 1}), "to_index");
+static_assert(1 == to_index(locator{1, 0, 0}), "to_index");
+static_assert(2 == to_index(locator{1, 0, 1}), "to_index");
+static_assert(3 == to_index(locator{1, 1, 0}), "to_index");
+static_assert(4 == to_index(locator{1, 1, 1}), "to_index");
 
-static_assert(5  == to_index(locator{2, 0, 0}), "to_index");
-static_assert(6  == to_index(locator{2, 0, 1}), "to_index");
-static_assert(7  == to_index(locator{2, 0, 2}), "to_index");
-static_assert(8  == to_index(locator{2, 1, 0}), "to_index");
-static_assert(9  == to_index(locator{2, 1, 1}), "to_index");
+static_assert(5 == to_index(locator{2, 0, 0}), "to_index");
+static_assert(6 == to_index(locator{2, 0, 1}), "to_index");
+static_assert(7 == to_index(locator{2, 0, 2}), "to_index");
+static_assert(8 == to_index(locator{2, 1, 0}), "to_index");
+static_assert(9 == to_index(locator{2, 1, 1}), "to_index");
 static_assert(10 == to_index(locator{2, 1, 2}), "to_index");
 static_assert(11 == to_index(locator{2, 2, 0}), "to_index");
 static_assert(12 == to_index(locator{2, 2, 1}), "to_index");
@@ -85,8 +85,8 @@ class compressed_rectangular_waveguide_program final
         : public custom_program_base {
 public:
     explicit compressed_rectangular_waveguide_program(
-            const cl::Context& context)
-            : custom_program_base(context, source) {
+            const cl::Context& context, const cl::Device& device)
+            : custom_program_base(context, device, source) {
     }
 
     auto get_kernel() const {
@@ -106,9 +106,9 @@ public:
                              .get_kernel());
     compressed_rectangular_waveguide(
             const compressed_rectangular_waveguide_program& program,
-            cl::CommandQueue& queue,
             size_t dimension)
-            : queue(queue)
+            : queue(program.get_info<CL_PROGRAM_CONTEXT>(),
+                    program.get_device())
             , kernel(program.get_kernel())
             , dimension(dimension)
             , storage({{cl::Buffer(
@@ -156,7 +156,7 @@ private:
         return out;
     }
 
-    cl::CommandQueue& queue;
+    cl::CommandQueue queue;
     kernel_type kernel;
     const size_t dimension;
 
@@ -167,7 +167,7 @@ private:
     cl::Buffer output;
 };
 
-const std::string compressed_rectangular_waveguide_program::source {R"(
+const std::string compressed_rectangular_waveguide_program::source{R"(
 
 int3 to_locator(size_t index);
 int3 to_locator(size_t index) {
@@ -340,8 +340,8 @@ auto run_waveguide(size_t dimension) {
 
 int main() {
     ComputeContext c;
-    auto program = get_program<compressed_rectangular_waveguide_program>(c);
-    compressed_rectangular_waveguide waveguide(program, c.queue, 100);
+    compressed_rectangular_waveguide_program program(c.context, c.device);
+    compressed_rectangular_waveguide waveguide(program, 800);
     auto output = waveguide.run();
 
     std::cout << std::endl;

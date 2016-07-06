@@ -233,24 +233,20 @@ public:
         auto kernel = std::move(k);
 
         {
+            cl::CommandQueue queue(compute_context.context,
+                                   compute_context.device);
             TimedScope timer("filtering");
             for (auto i = 0u; i != input.size(); ++i) {
-                cl::copy(compute_context.queue,
-                         input[i].begin(),
-                         input[i].end(),
-                         cl_input);
+                cl::copy(queue, input[i].begin(), input[i].end(), cl_input);
 
-                kernel(cl::EnqueueArgs(compute_context.queue,
+                kernel(cl::EnqueueArgs(queue,
                                        cl::NDRange(testing::parallel_size)),
                        cl_input,
                        cl_output,
                        cl_memory,
                        cl_coeffs);
 
-                cl::copy(compute_context.queue,
-                         cl_output,
-                         output[i].begin(),
-                         output[i].end());
+                cl::copy(queue, cl_output, output[i].begin(), output[i].end());
             }
         }
         auto buf = std::vector<cl_float>(output.size());
@@ -260,8 +256,7 @@ public:
     }
 
     ComputeContext compute_context;
-    RectangularProgram program{get_program<RectangularProgram>(
-            compute_context.context, compute_context.device)};
+    RectangularProgram program{compute_context.context, compute_context.device};
     std::vector<Memory> memory{testing::parallel_size, Memory{}};
     std::array<typename testing::CoefficientTypeTrait<FT>::type,
                testing::parallel_size>
@@ -412,7 +407,7 @@ TEST(eigen_matrix, eigen_matrix) {
         ret.row(count++) << pos.x, pos.y, pos.z;
     }
 
-//    auto inv = detail::pinv(ret);
+    //    auto inv = detail::pinv(ret);
 }
 
 /*

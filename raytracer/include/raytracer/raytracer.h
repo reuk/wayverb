@@ -138,7 +138,7 @@ public:
     using kernel_type = decltype(
             std::declval<RaytracerProgram>().get_improved_raytrace_kernel());
 
-    Raytracer(const RaytracerProgram& program, cl::CommandQueue& queue);
+    Raytracer(const RaytracerProgram& program);
 
     template <typename Callback = DoNothingCallback>
     Results run(const CopyableSceneData& scene_data,
@@ -174,9 +174,6 @@ public:
                    c);
     }
 
-    const cl::Context& get_context() const;
-    cl::CommandQueue& get_queue();
-
 private:
     Results run(const CopyableSceneData& scene_data,
                 const glm::vec3& micpos,
@@ -186,7 +183,7 @@ private:
                 std::atomic_bool& keep_going,
                 const DoNothingCallback& c);
 
-    cl::CommandQueue& queue;
+    cl::CommandQueue queue;
     cl::Context context;
     kernel_type kernel;
 };
@@ -203,7 +200,7 @@ public:
         glm::vec3 up;
     };
 
-    Hrtf(const RaytracerProgram& program, cl::CommandQueue& queue);
+    Hrtf(const RaytracerProgram& program);
     virtual ~Hrtf() noexcept = default;
 
     /// Attenuate some raytrace results.
@@ -220,7 +217,7 @@ public:
     get_hrtf_data() const;
 
 private:
-    cl::CommandQueue& queue;
+    cl::CommandQueue queue;
     kernel_type kernel;
     const cl::Context context;
 
@@ -243,7 +240,7 @@ public:
     using kernel_type =
             decltype(std::declval<RaytracerProgram>().get_attenuate_kernel());
 
-    Attenuate(const RaytracerProgram& program, cl::CommandQueue& queue);
+    Attenuate(const RaytracerProgram& program);
     virtual ~Attenuate() noexcept = default;
 
     /// Attenuate some raytrace results.
@@ -258,7 +255,7 @@ private:
             const glm::vec3& mic_pos,
             const Speaker& speaker,
             const std::vector<Impulse>& impulses);
-    cl::CommandQueue& queue;
+    cl::CommandQueue queue;
     kernel_type kernel;
     const cl::Context context;
 

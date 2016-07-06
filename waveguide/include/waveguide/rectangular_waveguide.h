@@ -8,7 +8,6 @@ public:
     using Base = Waveguide<RectangularProgram, buffer_type>;
 
     RectangularWaveguide(const RectangularProgram& program,
-                         cl::CommandQueue& queue,
                          const MeshBoundary& boundary,
                          const glm::vec3& anchor,
                          float sr);
@@ -35,25 +34,20 @@ private:
     static constexpr auto PORTS = MeshType::PORTS;
 
     RectangularWaveguide(const typename Base::ProgramType& program,
-                         cl::CommandQueue& queue,
                          const RectangularMesh& mesh,
                          float sample_rate,
                          std::vector<RectangularProgram::CanonicalCoefficients>
                                  coefficients);
-    RectangularWaveguide(const typename Base::ProgramType& program,
-                         cl::CommandQueue& queue,
-                         const RectangularMesh& mesh,
-                         float sample_rate,
-                         std::vector<RectangularMesh::CondensedNode>
-                                 nodes,
-                         std::vector<RectangularProgram::BoundaryDataArray1>
-                                 boundary_data_1,
-                         std::vector<RectangularProgram::BoundaryDataArray2>
-                                 boundary_data_2,
-                         std::vector<RectangularProgram::BoundaryDataArray3>
-                                 boundary_data_3,
-                         std::vector<RectangularProgram::CanonicalCoefficients>
-                                 coefficients);
+    RectangularWaveguide(
+            const typename Base::ProgramType& program,
+            const RectangularMesh& mesh,
+            float sample_rate,
+            std::vector<RectangularMesh::CondensedNode> nodes,
+            std::vector<RectangularProgram::BoundaryDataArray1> boundary_data_1,
+            std::vector<RectangularProgram::BoundaryDataArray2> boundary_data_2,
+            std::vector<RectangularProgram::BoundaryDataArray3> boundary_data_3,
+            std::vector<RectangularProgram::CanonicalCoefficients>
+                    coefficients);
 
     struct InvocationInfo {
         template <typename T>

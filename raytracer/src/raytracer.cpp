@@ -230,18 +230,10 @@ void remove_duplicates(const std::vector<cl_ulong>& path,
     }
 }
 
-Raytracer::Raytracer(const RaytracerProgram& program, cl::CommandQueue& queue)
-        : queue(queue)
+Raytracer::Raytracer(const RaytracerProgram& program)
+        : queue(program.get_info<CL_PROGRAM_CONTEXT>(), program.get_device())
         , context(program.get_info<CL_PROGRAM_CONTEXT>())
         , kernel(program.get_improved_raytrace_kernel()) {
-}
-
-const cl::Context& Raytracer::get_context() const {
-    return context;
-}
-
-cl::CommandQueue& Raytracer::get_queue() {
-    return queue;
 }
 
 template <typename T>
@@ -305,8 +297,7 @@ Results Raytracer::run(const CopyableSceneData& scene_data,
     auto flattened_vox = vox.get_flattened();
 
     auto rays = directions.size();
-    cl::Buffer cl_ray_info(
-            get_context(), CL_MEM_READ_WRITE, rays * sizeof(RayInfo));
+    cl::Buffer cl_ray_info(context, CL_MEM_READ_WRITE, rays * sizeof(RayInfo));
 
     std::vector<RayInfo> ray_info(directions.size());
     proc::transform(
@@ -322,32 +313,30 @@ Results Raytracer::run(const CopyableSceneData& scene_data,
                 return ret;
             });
 
-    cl::copy(get_queue(), begin(ray_info), end(ray_info), cl_ray_info);
+    cl::copy(queue, begin(ray_info), end(ray_info), cl_ray_info);
 
     cl::Buffer cl_triangles(
-            get_context(),
+            context,
             begin(const_cast<std::vector<Triangle>&>(
                     scene_data.get_triangles())),
             end(const_cast<std::vector<Triangle>&>(scene_data.get_triangles())),
             false);
     cl::Buffer cl_vertices(
-            get_context(),
+            context,
             begin(const_cast<std::vector<cl_float3>&>(
                     scene_data.get_vertices())),
             end(const_cast<std::vector<cl_float3>&>(scene_data.get_vertices())),
             false);
     auto surfaces = scene_data.get_surfaces();
-    cl::Buffer cl_surfaces(
-            get_context(), surfaces.begin(), surfaces.end(), false);
-    cl::Buffer cl_impulses(
-            get_context(), CL_MEM_READ_WRITE, rays * sizeof(Impulse));
+    cl::Buffer cl_surfaces(context, surfaces.begin(), surfaces.end(), false);
+    cl::Buffer cl_impulses(context, CL_MEM_READ_WRITE, rays * sizeof(Impulse));
     cl::Buffer cl_image_source(
-            get_context(), CL_MEM_READ_WRITE, rays * sizeof(Impulse));
+            context, CL_MEM_READ_WRITE, rays * sizeof(Impulse));
     cl::Buffer cl_image_source_index(
-            get_context(), CL_MEM_READ_WRITE, rays * sizeof(cl_ulong));
+            context, CL_MEM_READ_WRITE, rays * sizeof(cl_ulong));
 
     cl::Buffer cl_voxel_index(
-            get_context(), begin(flattened_vox), end(flattened_vox), false);
+            context, begin(flattened_vox), end(flattened_vox), false);
 
     Results results;
     results.mic = micpos;
@@ -375,17 +364,17 @@ Results Raytracer::run(const CopyableSceneData& scene_data,
         auto e = (i + 1) * rays;
 
         if (i < NUM_IMAGE_SOURCE) {
-            cl::copy(get_queue(),
+            cl::copy(queue,
                      image_source_index.begin() + b,
                      image_source_index.begin() + e,
                      cl_image_source_index);
-            cl::copy(get_queue(),
+            cl::copy(queue,
                      image_source.begin() + b,
                      image_source.begin() + e,
                      cl_image_source);
         }
 
-        kernel(cl::EnqueueArgs(get_queue(), cl::NDRange(rays)),
+        kernel(cl::EnqueueArgs(queue, cl::NDRange(rays)),
                cl_ray_info,
                cl_voxel_index,
                global_aabb,
@@ -402,17 +391,17 @@ Results Raytracer::run(const CopyableSceneData& scene_data,
                AIR_COEFFICIENT,
                i);
 
-        cl::copy(get_queue(),
+        cl::copy(queue,
                  cl_impulses,
                  results.diffuse.begin() + b,
                  results.diffuse.begin() + e);
 
         if (i < NUM_IMAGE_SOURCE) {
-            cl::copy(get_queue(),
+            cl::copy(queue,
                      cl_image_source_index,
                      image_source_index.begin() + b,
                      image_source_index.begin() + e);
-            cl::copy(get_queue(),
+            cl::copy(queue,
                      cl_image_source,
                      image_source.begin() + b,
                      image_source.begin() + e);
@@ -433,8 +422,8 @@ Results Raytracer::run(const CopyableSceneData& scene_data,
 
 //----------------------------------------------------------------------------//
 
-Hrtf::Hrtf(const RaytracerProgram& program, cl::CommandQueue& queue)
-        : queue(queue)
+Hrtf::Hrtf(const RaytracerProgram& program)
+        : queue(program.get_info<CL_PROGRAM_CONTEXT>(), program.get_device())
         , kernel(program.get_hrtf_kernel())
         , context(program.get_info<CL_PROGRAM_CONTEXT>())
         , cl_hrtf(context, CL_MEM_READ_WRITE, sizeof(VolumeType) * 360 * 180) {
@@ -513,8 +502,8 @@ Hrtf::get_hrtf_data() const {
     return HrtfData::HRTF_DATA;
 }
 
-Attenuate::Attenuate(const RaytracerProgram& program, cl::CommandQueue& queue)
-        : queue(queue)
+Attenuate::Attenuate(const RaytracerProgram& program)
+        : queue(program.get_info<CL_PROGRAM_CONTEXT>(), program.get_device())
         , kernel(program.get_attenuate_kernel())
         , context(program.get_info<CL_PROGRAM_CONTEXT>()) {
 }

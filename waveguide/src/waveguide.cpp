@@ -24,4 +24,3 @@ BufferTypeTrait<BufferType::cl>::create_waveguide_storage(
 }  // namespace detail
 
 //----------------------------------------------------------------------------//
-

@@ -34,12 +34,10 @@ WayverbEngine<buffer_type>::WayverbEngine(ComputeContext& compute_context,
                                           int impulses,
                                           float output_sample_rate)
         : scene_data(scene_data)
-        , raytracer(get_program<RaytracerProgram>(compute_context.context,
-                                                  compute_context.device),
-                    compute_context.queue)
-        , waveguide(get_program<RectangularProgram>(compute_context.context,
-                                                    compute_context.device),
-                    compute_context.queue,
+        , raytracer(RaytracerProgram(compute_context.context,
+                                     compute_context.device))
+        , waveguide(RectangularProgram(compute_context.context,
+                                       compute_context.device),
                     MeshBoundary(scene_data),
                     mic,
                     waveguide_sample_rate)

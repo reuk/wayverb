@@ -1,16 +1,16 @@
 #include "common/cl_common.h"
+#include "common/string_builder.h"
 
 #include "glog/logging.h"
 
 #include <vector>
 
+namespace {
+
 void print_device_info(const cl::Device& i) {
     LOG(INFO) << i.getInfo<CL_DEVICE_NAME>();
     LOG(INFO) << "available: " << i.getInfo<CL_DEVICE_AVAILABLE>();
-};
-
-template <typename T>
-struct PrintType;
+}
 
 cl::Context get_context() {
     std::vector<cl::Platform> platform;
@@ -38,6 +38,9 @@ cl::Device get_device(const cl::Context& context) {
     auto device = devices.back();
     // auto device = devices.front();
 
+    auto available = device.getInfo<CL_DEVICE_AVAILABLE>();
+    CHECK(available) << "device must be available";
+
     auto preferred_double_width =
             device.getInfo<CL_DEVICE_PREFERRED_VECTOR_WIDTH_DOUBLE>();
     CHECK(preferred_double_width) << "device must support double precision";
@@ -48,8 +51,9 @@ cl::Device get_device(const cl::Context& context) {
     return device;
 }
 
+}  // namespace
+
 ComputeContext::ComputeContext()
         : context(get_context())
-        , device(get_device(context))
-        , queue(context, device) {
+        , device(get_device(context)) {
 }

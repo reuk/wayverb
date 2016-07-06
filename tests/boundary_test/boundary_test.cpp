@@ -27,9 +27,7 @@
 #include <numeric>
 #include <random>
 
-std::vector<float> run_simulation(const cl::Context& context,
-                                  cl::Device& device,
-                                  cl::CommandQueue& queue,
+std::vector<float> run_simulation(const ComputeContext& compute_context,
                                   const CuboidBoundary& boundary,
                                   const Surface& surface,
                                   double filter_frequency,
@@ -39,17 +37,16 @@ std::vector<float> run_simulation(const cl::Context& context,
                                   const std::string& output_folder,
                                   const std::string& fname,
                                   int steps) {
-    auto waveguide_program = get_program<RectangularProgram>(context, device);
+    RectangularProgram waveguide_program(compute_context.context,
+                                         compute_context.device);
 
     auto scene_data = boundary.get_scene_data();
     scene_data.set_surfaces(surface);
 
-    RectangularWaveguide<BufferType::cl> waveguide(
-            waveguide_program,
-            queue,
-            MeshBoundary(scene_data),
-            receiver,
-            filter_frequency * 4);
+    RectangularWaveguide<BufferType::cl> waveguide(waveguide_program,
+                                                   MeshBoundary(scene_data),
+                                                   receiver,
+                                                   filter_frequency * 4);
 
     auto receiver_index = waveguide.get_index_for_coordinate(receiver);
     auto source_index = waveguide.get_index_for_coordinate(source);
@@ -102,9 +99,7 @@ struct FullTestResults {
     }
 };
 
-std::vector<float> get_free_field_results(const cl::Context& context,
-                                          cl::Device& device,
-                                          cl::CommandQueue& queue,
+std::vector<float> get_free_field_results(const ComputeContext& compute_context,
                                           const std::string& output_folder,
                                           double filter_frequency,
                                           double out_sr,
@@ -181,9 +176,7 @@ std::vector<float> get_free_field_results(const cl::Context& context,
 
     LOG(INFO) << "running for " << steps << " steps";
 
-    auto image = run_simulation(context,
-                                device,
-                                queue,
+    auto image = run_simulation(compute_context,
                                 no_wall,
                                 Surface{},
                                 filter_frequency,
@@ -201,11 +194,10 @@ std::vector<float> get_free_field_results(const cl::Context& context,
 }
 
 FullTestResults run_full_test(const std::string& test_name,
-                              const cl::Context& context,
-                              cl::Device& device,
-                              cl::CommandQueue& queue,
+                              const ComputeContext& compute_context,
                               const std::string& output_folder,
-                              double filter_frequency, double out_sr,
+                              double filter_frequency,
+                              double out_sr,
                               float azimuth,
                               float elevation,
                               int dim,
@@ -280,9 +272,7 @@ FullTestResults run_full_test(const std::string& test_name,
 
     LOG(INFO) << "running for " << steps << " steps";
 
-    auto reflected = run_simulation(context,
-                                    device,
-                                    queue,
+    auto reflected = run_simulation(compute_context,
                                     wall,
                                     surface,
                                     filter_frequency,
@@ -292,9 +282,7 @@ FullTestResults run_full_test(const std::string& test_name,
                                     output_folder,
                                     "reflected",
                                     steps);
-    auto direct = run_simulation(context,
-                                 device,
-                                 queue,
+    auto direct = run_simulation(compute_context,
                                  no_wall,
                                  surface,
                                  filter_frequency,
@@ -382,18 +370,9 @@ int main(int argc, char** argv) {
     auto elevation = std::stod(argv[3]);
     auto azimuth_elevation = std::make_pair(azimuth, elevation);
 
-    auto context = get_context();
-    auto device = get_device(context);
-
-    auto available = device.getInfo<CL_DEVICE_AVAILABLE>();
-    if (!available) {
-        LOG(INFO) << "opencl device is not available!";
-    }
-
+    ComputeContext compute_context;
     auto filter_frequency = 2000;
     auto out_sr = 44100;
-
-    auto queue = cl::CommandQueue(context, device);
 
     //  set room size based on desired number of nodes
     auto dim = 300;
@@ -407,11 +386,10 @@ int main(int argc, char** argv) {
         auto steps = dim * 1.4;
 
         auto windowed_free_field =
-                get_free_field_results(context,
-                                       device,
-                                       queue,
+                get_free_field_results(compute_context,
                                        output_folder,
-                                       filter_frequency, out_sr,
+                                       filter_frequency,
+                                       out_sr,
                                        azimuth_elevation.first,
                                        azimuth_elevation.second,
                                        dim,
@@ -453,11 +431,10 @@ int main(int argc, char** argv) {
         std::vector<FullTestResults> all_test_results(surface_set.size());
         proc::transform(surface_set, all_test_results.begin(), [&](auto i) {
             return run_full_test(i.name,
-                                 context,
-                                 device,
-                                 queue,
+                                 compute_context,
                                  output_folder,
-                                 filter_frequency, out_sr,
+                                 filter_frequency,
+                                 out_sr,
                                  azimuth_elevation.first,
                                  azimuth_elevation.second,
                                  dim,
