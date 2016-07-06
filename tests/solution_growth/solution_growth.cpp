@@ -27,10 +27,6 @@
 #include <numeric>
 #include <random>
 
-//  write_file:
-//  snd::write(build_string(output_folder, "/", fname, ".wav"), {signal},
-//  sample_rate, bit_depth);
-
 std::vector<float> run_simulation(const ComputeContext& compute_context,
                                   const CuboidBoundary& boundary,
                                   const Surface& surface,
@@ -78,17 +74,9 @@ std::vector<float> run_simulation(const ComputeContext& compute_context,
                                           keep_going,
                                           [&pb] { pb += 1; });
 
-#if 0
-    auto output = Microphone::omni.process(results);
-#else
     auto output = std::vector<float>(results.size());
     proc::transform(
             results, output.begin(), [](const auto& i) { return i.pressure; });
-#endif
-
-    filter::LinkwitzRileyLopass lopass;
-    lopass.set_params(filter_frequency, out_sr);
-    //    lopass.filter(output);
 
     return output;
 }
