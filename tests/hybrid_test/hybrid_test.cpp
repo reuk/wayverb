@@ -89,7 +89,8 @@ auto run_waveguide(ComputeContext& context_info,
 
     auto corrected_source = waveguide.get_coordinate_for_index(source_index);
 
-    auto input = waveguide_kernel(config.get_waveguide_sample_rate());
+    auto input = kernels::sin_modulated_gaussian_kernel(
+            config.get_waveguide_sample_rate());
 
     LOG(INFO) << input;
 

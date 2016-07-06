@@ -109,7 +109,7 @@ int main(int argc, char** argv) {
             ProgressBar pb(std::cout, steps);
             const auto w_results = waveguide.init_and_run(
                     glm::vec3{std::sin(angle), 0, std::cos(angle)},
-                    waveguide_kernel(waveguide_sr),
+                    kernels::sin_modulated_gaussian_kernel(waveguide_sr),
                     mic_index,
                     steps,
                     keep_going,

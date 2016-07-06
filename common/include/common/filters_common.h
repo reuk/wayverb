@@ -1,9 +1,7 @@
 #pragma once
 
+#include "fast_convolver.h"
 #include "stl_wrappers.h"
-#include "fast_convolution.h"
-
-#include "glog/logging.h"
 
 #include <array>
 #include <cmath>
@@ -46,7 +44,7 @@ public:
     float lo, hi, sr;
 };
 
-class LopassWindowedSinc : public Lopass, public FastConvolution {
+class LopassWindowedSinc : public Lopass, public FastConvolver {
 public:
     explicit LopassWindowedSinc(int inputLength);
 
@@ -60,7 +58,7 @@ private:
 };
 
 /// An interesting windowed-sinc hipass filter.
-class HipassWindowedSinc : public Hipass, public FastConvolution {
+class HipassWindowedSinc : public Hipass, public FastConvolver {
 public:
     explicit HipassWindowedSinc(int inputLength);
 
@@ -74,7 +72,7 @@ private:
 };
 
 /// An interesting windowed-sinc bandpass filter.
-class BandpassWindowedSinc : public Bandpass, public FastConvolution {
+class BandpassWindowedSinc : public Bandpass, public FastConvolver {
 public:
     explicit BandpassWindowedSinc(int inputLength);
 

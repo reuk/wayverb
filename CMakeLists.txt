@@ -37,6 +37,7 @@ else(ONLY_BUILD_DOCS)
     add_subdirectory(raytracer)
     add_subdirectory(combined)
     add_subdirectory(tests)
+    add_subdirectory(data)
 
     include(CPack)
 endif(ONLY_BUILD_DOCS)

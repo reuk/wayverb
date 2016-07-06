@@ -171,7 +171,7 @@ auto WayverbEngine<buffer_type>::run_basic(std::atomic_bool& keep_going,
     callback(State::starting_waveguide, 1.0);
     auto corrected_source = waveguide.get_coordinate_for_index(source_index);
 
-    auto input = waveguide_kernel(waveguide_sample_rate);
+    auto input = kernels::sin_modulated_gaussian_kernel(waveguide_sample_rate);
     auto correction_amount = std::ceil(input.size() / 2.0);
 
     //  If the max raytracer time is large this could take forever...

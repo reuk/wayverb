@@ -1,22 +1,27 @@
 #pragma once
 
 #include "fftwf_helpers.h"
+#include "stl_wrappers.h"
+
+#include "glog/logging.h"
+
+#include <vector>
 
 /// A pretty speedy fixed-size offline convolver.
-class FastConvolution {
+class FastConvolver {
 public:
     /// An fftconvolover has a constant length.
     /// This means you can reuse it for lots of different convolutions
     /// without reallocating memory, as long as they're all the same size.
     /// FFT_LENGTH should be equal to the sum of lengths - 1 of the
     /// signals to be convolved.
-    explicit FastConvolution(size_t FFT_LENGTH);
+    explicit FastConvolver(size_t FFT_LENGTH);
 
-    FastConvolution(const FastConvolution&) = default;
-    FastConvolution& operator=(const FastConvolution&) = default;
-    FastConvolution(FastConvolution&&) noexcept = default;
-    FastConvolution& operator=(FastConvolution&&) noexcept = default;
-    virtual ~FastConvolution() noexcept = default;
+    FastConvolver(const FastConvolver &) = default;
+    FastConvolver &operator=(const FastConvolver &) = default;
+    FastConvolver(FastConvolver &&) noexcept = default;
+    FastConvolver &operator=(FastConvolver &&) noexcept = default;
+    virtual ~FastConvolver() noexcept = default;
 
     /// Collect the gems Bentley Bear.
     template <typename T, typename U>

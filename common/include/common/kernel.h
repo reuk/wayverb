@@ -7,7 +7,7 @@
 namespace kernels {
 
 inline double gaussian(double t, double bandwidth) {
-    return std::pow(M_E, -std::pow(t, 2.0) / std::pow(bandwidth, 2.0);
+    return std::pow(M_E, -std::pow(t, 2.0) / std::pow(bandwidth, 2.0));
 }
 
 inline double sin_modulated_gaussian(double t,
@@ -33,13 +33,14 @@ std::vector<T> sin_modulated_gaussian_kernel(double sampling_frequency) {
 /// t = time
 /// f = peak frequency
 inline double ricker(double t, double f) {
-    //  see http://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.ricker.html
+    //  see
+    //  http://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.ricker.html
     //  and http://wiki.seg.org/wiki/Dictionary:Ricker_wavelet
     const auto u = M_PI * M_PI * f * f * t * t;
     return (1.0 - 2.0 * u) * std::exp(-u);
 }
 
-template<typename T = float>
+template <typename T = float>
 std::vector<T> ricker_kernel(double sampling_frequency) {
     //  TODO find optimum kernel length
     const auto upper = sampling_frequency / 4;
@@ -52,7 +53,5 @@ std::vector<T> ricker_kernel(double sampling_frequency) {
     }
     return ret;
 }
-
-
 
 }  // namespace kernels

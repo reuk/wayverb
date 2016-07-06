@@ -24,7 +24,7 @@ void Bandpass::set_params(float l, float h, float s) {
 }
 
 LopassWindowedSinc::LopassWindowedSinc(int inputLength)
-        : FastConvolution(KERNEL_LENGTH + inputLength - 1) {
+        : FastConvolver(KERNEL_LENGTH + inputLength - 1) {
 }
 
 void LopassWindowedSinc::filter(std::vector<float> &data) {
@@ -37,7 +37,7 @@ void LopassWindowedSinc::set_params(float co, float s) {
 }
 
 HipassWindowedSinc::HipassWindowedSinc(int inputLength)
-        : FastConvolution(KERNEL_LENGTH + inputLength - 1) {
+        : FastConvolver(KERNEL_LENGTH + inputLength - 1) {
 }
 
 void HipassWindowedSinc::filter(std::vector<float> &data) {
@@ -50,7 +50,7 @@ void HipassWindowedSinc::set_params(float co, float s) {
 }
 
 BandpassWindowedSinc::BandpassWindowedSinc(int inputLength)
-        : FastConvolution(KERNEL_LENGTH + inputLength - 1) {
+        : FastConvolver(KERNEL_LENGTH + inputLength - 1) {
 }
 
 void BandpassWindowedSinc::filter(std::vector<float> &data) {

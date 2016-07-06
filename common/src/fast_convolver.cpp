@@ -1,6 +1,6 @@
-#include "fast_convolution.h"
+#include "common/fast_convolver.h"
 
-FastConvolution::FastConvolution(size_t FFT_LENGTH)
+FastConvolver::FastConvolver(size_t FFT_LENGTH)
         : FFT_LENGTH(FFT_LENGTH)
         , CPLX_LENGTH(FFT_LENGTH / 2 + 1)
         , r2c_i(FFT_LENGTH)
@@ -14,4 +14,3 @@ FastConvolution::FastConvolution(size_t FFT_LENGTH)
         , c2r(fftwf_plan_dft_c2r_1d(
                   FFT_LENGTH, c2r_i.data(), c2r_o.data(), FFTW_ESTIMATE)) {
 }
-

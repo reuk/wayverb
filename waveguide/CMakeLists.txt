@@ -36,4 +36,4 @@ endif()
 
 find_library(fftw_library fftw3f)
 find_library(samplerate_lib samplerate)
-target_link_libraries(${name} assimp ${samplerate_lib} ${fftw_library} glog z common)
+target_link_libraries(${name} assimp wayverb-data ${samplerate_lib} ${fftw_library} glog z common)
