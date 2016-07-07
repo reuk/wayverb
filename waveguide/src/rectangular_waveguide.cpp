@@ -1,5 +1,5 @@
-#include "waveguide/rectangular_waveguide.h"
 #include "waveguide/log_nan.h"
+#include "waveguide/rectangular_waveguide.h"
 
 #include "glog/logging.h"
 
@@ -24,7 +24,8 @@ RectangularWaveguide<buffer_type>::RectangularWaveguide(
         const typename Base::ProgramType& program,
         const RectangularMesh& mesh,
         float sample_rate,
-        std::vector<RectangularProgram::CanonicalCoefficients> coefficients)
+        std::vector<RectangularProgram::CanonicalCoefficients>
+                coefficients)
         : RectangularWaveguide(program,
                                mesh,
                                sample_rate,
@@ -37,8 +38,10 @@ RectangularWaveguide<buffer_type>::RectangularWaveguide(
         const typename Base::ProgramType& program,
         const RectangularMesh& mesh,
         float sample_rate,
-        std::vector<RectangularMesh::CondensedNode> nodes,
-        std::vector<RectangularProgram::CanonicalCoefficients> coefficients)
+        std::vector<RectangularMesh::CondensedNode>
+                nodes,
+        std::vector<RectangularProgram::CanonicalCoefficients>
+                coefficients)
         : Waveguide<RectangularProgram, buffer_type>(
                   program, mesh.get_nodes().size(), sample_rate)
         , mesh(mesh)
@@ -73,11 +76,11 @@ void RectangularWaveguide<buffer_type>::setup(cl::CommandQueue& queue,
                 this->get_program().template get_info<CL_PROGRAM_CONTEXT>();
         invocation =
                 std::make_unique<invocation_info>(o,
-                                                 mesh.get_nodes(),
-                                                 context,
-                                                 mesh.get_boundary_data<1>(),
-                                                 mesh.get_boundary_data<2>(),
-                                                 mesh.get_boundary_data<3>());
+                                                  mesh.get_nodes(),
+                                                  context,
+                                                  mesh.get_boundary_data<1>(),
+                                                  mesh.get_boundary_data<2>(),
+                                                  mesh.get_boundary_data<3>());
     } catch (const std::exception& e) {
         std::cerr << e.what() << std::endl;
         throw;
@@ -117,22 +120,27 @@ RunStepResult RectangularWaveguide<buffer_type>::run_step(
 
     cl::copy(queue, error_flag_buffer, (&flag) + 0, (&flag) + 1);
 
-    if (flag & RectangularProgram::id_outside_range_error)
-        throw std::runtime_error("pressure value is outside valid range");
+//        if (flag & RectangularProgram::id_outside_range_error) {
+//            throw std::runtime_error("pressure value is outside valid range");
+//        }
 
-    if (flag & RectangularProgram::id_inf_error)
+    if (flag & RectangularProgram::id_inf_error) {
         throw std::runtime_error(
                 "pressure value is inf, check filter coefficients");
+    }
 
-    if (flag & RectangularProgram::id_nan_error)
+    if (flag & RectangularProgram::id_nan_error) {
         throw std::runtime_error(
                 "pressure value is nan, check filter coefficients");
+    }
 
-    if (flag & RectangularProgram::id_outside_mesh_error)
+    if (flag & RectangularProgram::id_outside_mesh_error) {
         throw std::runtime_error("tried to read non-existant node");
+    }
 
-    if (flag & RectangularProgram::id_suspicious_boundary_error)
+    if (flag & RectangularProgram::id_suspicious_boundary_error) {
         throw std::runtime_error("suspicious boundary read");
+    }
 
     cl_float out;
     cl::copy(queue, output, (&out), (&out) + 1);

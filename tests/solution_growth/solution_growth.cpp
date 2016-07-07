@@ -58,26 +58,23 @@ int main(int argc, char** argv) {
 
         auto corrected_source =
                 waveguide.get_coordinate_for_index(source_index);
-        //  auto corrected_mic =
-        //  waveguide.get_coordinate_for_index(receiver_index);
 
         std::vector<std::vector<float>> signals{
                 std::vector<float>{1.0},
                 kernels::gaussian_kernel(sampling_frequency),
                 kernels::sin_modulated_gaussian_kernel(sampling_frequency),
                 kernels::ricker_kernel(sampling_frequency),
+                hipass_sinc_kernel(sampling_frequency, 100, 401),
         };
 
         auto counter = 0u;
         for (const auto& i : signals) {
-            auto transparent = make_transparent(i);
-
             auto steps = 10000;
 
             std::atomic_bool keep_going{true};
             ProgressBar pb(std::cout, steps);
             auto results = waveguide.init_and_run(corrected_source,
-                                                  std::vector<float>{1},
+                                                  make_transparent(i),
                                                   receiver_index,
                                                   steps,
                                                   keep_going,
