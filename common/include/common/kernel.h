@@ -10,6 +10,20 @@ inline double gaussian(double t, double bandwidth) {
     return std::pow(M_E, -std::pow(t, 2.0) / std::pow(bandwidth, 2.0));
 }
 
+template <typename T = float>
+std::vector<T> gaussian_kernel(double sampling_frequency) {
+    const auto upper = sampling_frequency / 4;
+    const auto o = 2 / (M_PI * upper);
+    const auto l = std::ceil(8 * o * sampling_frequency) * 2;
+    const auto time_offset = l / (2 * sampling_frequency);
+    std::vector<T> ret(l);
+    for (auto i = 0u; i != l; ++i) {
+        ret[i] = gaussian(
+                (i / sampling_frequency) - time_offset, o);
+    }
+    return ret;
+}
+
 inline double sin_modulated_gaussian(double t,
                                      double bandwidth,
                                      double frequency) {
