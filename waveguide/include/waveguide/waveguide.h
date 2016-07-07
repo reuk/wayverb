@@ -106,7 +106,8 @@ public:
     using storage_array_type = typename trait::storage_array_type;
 
     Waveguide(const ProgramType& program, size_t nodes, float sample_rate)
-            : queue(program.template get_info<CL_PROGRAM_CONTEXT>(),
+            : program(program)
+            , queue(program.template get_info<CL_PROGRAM_CONTEXT>(),
                     program.get_device())
             , kernel(program.get_kernel())
             , nodes(nodes)
@@ -253,6 +254,12 @@ public:
         return ret;
     }
 
+    ProgramType get_program() const {return program;}
+
+    virtual size_t get_index_for_coordinate(const glm::vec3& v) const = 0;
+    virtual glm::vec3 get_coordinate_for_index(size_t index) const = 0;
+    virtual bool inside(size_t index) const = 0;
+
 private:
     virtual RunStepResult run_step(const WriteInfo& write_info,
                                    size_t o,
@@ -262,9 +269,6 @@ private:
                                    cl::Buffer& previous,
                                    cl::Buffer& current,
                                    cl::Buffer& output) = 0;
-    virtual size_t get_index_for_coordinate(const glm::vec3& v) const = 0;
-    virtual glm::vec3 get_coordinate_for_index(size_t index) const = 0;
-    virtual bool inside(size_t index) const = 0;
     virtual void setup(cl::CommandQueue& queue, size_t o) = 0;
 
     template <typename Callback>
@@ -325,6 +329,7 @@ private:
         size_t counter{0};
     };
 
+    ProgramType program;
     cl::CommandQueue queue;
     kernel_type kernel;
     const size_t nodes;

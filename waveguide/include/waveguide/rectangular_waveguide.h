@@ -11,8 +11,15 @@ public:
                          const MeshBoundary& boundary,
                          const glm::vec3& anchor,
                          float sr);
+    const RectangularMesh& get_mesh() const;
 
-    void setup(cl::CommandQueue& queue, size_t o) override;
+    size_t get_index_for_coordinate(const glm::vec3& v) const override;
+    glm::vec3 get_coordinate_for_index(size_t index) const override;
+    bool inside(size_t index) const override;
+
+private:
+    using MeshType = RectangularMesh;
+    static constexpr auto PORTS = MeshType::PORTS;
 
     RunStepResult run_step(const typename Base::WriteInfo& write_info,
                            size_t o,
@@ -22,16 +29,7 @@ public:
                            cl::Buffer& previous,
                            cl::Buffer& current,
                            cl::Buffer& output) override;
-
-    size_t get_index_for_coordinate(const glm::vec3& v) const override;
-    glm::vec3 get_coordinate_for_index(size_t index) const override;
-
-    const RectangularMesh& get_mesh() const;
-    bool inside(size_t index) const override;
-
-private:
-    using MeshType = RectangularMesh;
-    static constexpr auto PORTS = MeshType::PORTS;
+    void setup(cl::CommandQueue& queue, size_t o) override;
 
     RectangularWaveguide(const typename Base::ProgramType& program,
                          const RectangularMesh& mesh,
@@ -43,39 +41,53 @@ private:
             const RectangularMesh& mesh,
             float sample_rate,
             std::vector<RectangularMesh::CondensedNode> nodes,
-            std::vector<RectangularProgram::BoundaryDataArray1> boundary_data_1,
-            std::vector<RectangularProgram::BoundaryDataArray2> boundary_data_2,
-            std::vector<RectangularProgram::BoundaryDataArray3> boundary_data_3,
             std::vector<RectangularProgram::CanonicalCoefficients>
                     coefficients);
 
-    struct InvocationInfo {
+    struct invocation_info {
+        struct buffer_size_pair {
+            template <typename T>
+            buffer_size_pair(const cl::Context& context, std::vector<T> u)
+                    : size(u.size())
+                    , buffer(context, u.begin(), u.end(), false) {
+            }
+
+            const size_t size;
+            cl::Buffer buffer;
+        };
+
         template <typename T>
-        InvocationInfo(int o, const T& nodes)
+        invocation_info(
+                int o,
+                const T& nodes,
+                const cl::Context& context,
+                const std::vector<RectangularProgram::BoundaryDataArray1>& bd1,
+                const std::vector<RectangularProgram::BoundaryDataArray2>& bd2,
+                const std::vector<RectangularProgram::BoundaryDataArray3>& bd3)
                 : transform_matrix(
                           detail::get_transform_matrix(PORTS, o, nodes))
-                , velocity(0, 0, 0) {
+                , velocity(0, 0, 0)
+                , boundary_1(context, bd1)
+                , boundary_2(context, bd2)
+                , boundary_3(context, bd3)
+        {
         }
 
         using original_matrix_type = Eigen::MatrixXf;
         using transform_matrix_type = Eigen::MatrixXf;
         transform_matrix_type transform_matrix;
         glm::vec3 velocity;
+        buffer_size_pair boundary_1;
+        buffer_size_pair boundary_2;
+        buffer_size_pair boundary_3;
     };
 
-    std::unique_ptr<InvocationInfo> invocation;
+    std::unique_ptr<invocation_info> invocation;
 
-    MeshType mesh;
-    const cl::Buffer node_buffer;  //  const, set in constructor
-    size_t num_boundary_1;
-    cl::Buffer boundary_data_1_buffer;
-    size_t num_boundary_2;
-    cl::Buffer boundary_data_2_buffer;
-    size_t num_boundary_3;
-    cl::Buffer boundary_data_3_buffer;
-    const cl::Buffer
-            boundary_coefficients_buffer;  //  const, set in constructor
-    cl::Buffer surrounding_buffer;
-    std::vector<float> surrounding;
-    cl::Buffer error_flag_buffer;
+    const MeshType mesh;
+    const cl::Buffer node_buffer;                   //  const
+    const cl::Buffer boundary_coefficients_buffer;  //  const
+    cl::Buffer surrounding_buffer;   //  overwritten every step, constant size
+    std::vector<float> surrounding;  //  overwritten every step, constant size
+    cl::Buffer error_flag_buffer;    //  overwritten every step, constant size
 };

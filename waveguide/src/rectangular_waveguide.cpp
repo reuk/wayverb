@@ -29,9 +29,6 @@ RectangularWaveguide<buffer_type>::RectangularWaveguide(
                                mesh,
                                sample_rate,
                                mesh.get_condensed_nodes(),
-                               mesh.get_boundary_data<1>(),
-                               mesh.get_boundary_data<2>(),
-                               mesh.get_boundary_data<3>(),
                                coefficients) {
 }
 
@@ -41,9 +38,6 @@ RectangularWaveguide<buffer_type>::RectangularWaveguide(
         const RectangularMesh& mesh,
         float sample_rate,
         std::vector<RectangularMesh::CondensedNode> nodes,
-        std::vector<RectangularProgram::BoundaryDataArray1> boundary_data_1,
-        std::vector<RectangularProgram::BoundaryDataArray2> boundary_data_2,
-        std::vector<RectangularProgram::BoundaryDataArray3> boundary_data_3,
         std::vector<RectangularProgram::CanonicalCoefficients> coefficients)
         : Waveguide<RectangularProgram, buffer_type>(
                   program, mesh.get_nodes().size(), sample_rate)
@@ -52,24 +46,6 @@ RectangularWaveguide<buffer_type>::RectangularWaveguide(
                       nodes.begin(),
                       nodes.end(),
                       false)
-        , num_boundary_1(boundary_data_1.size())
-        , boundary_data_1_buffer(
-                  program.template get_info<CL_PROGRAM_CONTEXT>(),
-                  boundary_data_1.begin(),
-                  boundary_data_1.end(),
-                  false)
-        , num_boundary_2(boundary_data_2.size())
-        , boundary_data_2_buffer(
-                  program.template get_info<CL_PROGRAM_CONTEXT>(),
-                  boundary_data_2.begin(),
-                  boundary_data_2.end(),
-                  false)
-        , num_boundary_3(boundary_data_3.size())
-        , boundary_data_3_buffer(
-                  program.template get_info<CL_PROGRAM_CONTEXT>(),
-                  boundary_data_3.begin(),
-                  boundary_data_3.end(),
-                  false)
         , boundary_coefficients_buffer(
                   program.template get_info<CL_PROGRAM_CONTEXT>(),
                   coefficients.begin(),
@@ -93,7 +69,15 @@ template <BufferType buffer_type>
 void RectangularWaveguide<buffer_type>::setup(cl::CommandQueue& queue,
                                               size_t o) {
     try {
-        invocation = std::make_unique<InvocationInfo>(o, mesh.get_nodes());
+        auto context =
+                this->get_program().template get_info<CL_PROGRAM_CONTEXT>();
+        invocation =
+                std::make_unique<invocation_info>(o,
+                                                 mesh.get_nodes(),
+                                                 context,
+                                                 mesh.get_boundary_data<1>(),
+                                                 mesh.get_boundary_data<2>(),
+                                                 mesh.get_boundary_data<3>());
     } catch (const std::exception& e) {
         std::cerr << e.what() << std::endl;
         throw;
@@ -122,9 +106,9 @@ RunStepResult RectangularWaveguide<buffer_type>::run_step(
            previous,
            node_buffer,
            to_cl_int3(get_mesh().get_dim()),
-           boundary_data_1_buffer,
-           boundary_data_2_buffer,
-           boundary_data_3_buffer,
+           invocation->boundary_1.buffer,
+           invocation->boundary_2.buffer,
+           invocation->boundary_3.buffer,
            boundary_coefficients_buffer,
            o,
            output,
