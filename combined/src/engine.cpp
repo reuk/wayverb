@@ -179,7 +179,7 @@ auto WayverbEngine<buffer_type>::run_basic(std::atomic_bool& keep_going,
                                                 corrected_source,
                                                 std::move(input),
                                                 mic_index,
-                                                steps,
+                                                steps + input.size(),
                                                 keep_going,
                                                 callback);
     callback(State::finishing_waveguide, 1.0);

@@ -5,8 +5,8 @@ include_directories(
     "/usr/local/include"
 )
 
-set(name mesh_impulse_response)
-add_executable(${name} ${name}.cpp)
+add_executable(write_compensation_signal write_compensation_signal.cpp compressed_waveguide.cpp)
+add_executable(verify_compensation_signal verify_compensation_signal.cpp compressed_waveguide.cpp)
 
 if(APPLE)
     set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
@@ -25,4 +25,5 @@ find_library(vorbis_lib vorbis)
 find_library(vorbisenc_lib vorbisenc)
 find_library(samplerate_lib samplerate)
 
-target_link_libraries(${name} waveguide common ${sndfile_lib} ${samplerate_lib} ${frameworks} gflags ${flac_lib} ${ogg_lib} ${vorbis_lib} ${vorbisenc_lib})
+target_link_libraries(write_compensation_signal waveguide common ${sndfile_lib} ${samplerate_lib} ${frameworks} ${flac_lib} ${ogg_lib} ${vorbis_lib} ${vorbisenc_lib})
+target_link_libraries(verify_compensation_signal waveguide common ${sndfile_lib} ${samplerate_lib} ${frameworks} ${flac_lib} ${ogg_lib} ${vorbis_lib} ${vorbisenc_lib})

@@ -14,11 +14,18 @@ std::vector<float> make_transparent(const std::vector<float> &kernel) {
 
     //  window ir
     auto window = right_hanning(ir.size());
-    elementwise_multiply(ir, window);
+//    elementwise_multiply(ir, window);
 
     //  create convolver
     FastConvolver fast_convolver(kernel.size() + ir.size() - 1);
 
-    //  return convolved signal
-    return fast_convolver.convolve(kernel, ir);
+    //  get convolved signal
+    auto convolved = fast_convolver.convolve(kernel, ir);
+
+    //  subtract from original kernel
+    for (auto i = 0u; i != convolved.size(); ++i) {
+        convolved[i] = (i < kernel.size() ? kernel[i] : 0) - convolved[i];
+    }
+
+    return convolved;
 }

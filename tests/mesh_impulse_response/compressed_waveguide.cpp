@@ -1,13 +1,6 @@
-#include "common/cl_common.h"
-#include "common/custom_program_base.h"
-#include "common/write_audio_file.h"
+#include "compressed_waveguide.h"
 
-#include <algorithm>
-#include <array>
-#include <cassert>
-#include <cmath>
-#include <iostream>
-#include <vector>
+#include "common/write_audio_file.h"
 
 namespace {
 // std::ostream& operator<<(std::ostream& os, const index& i) {
@@ -172,86 +165,106 @@ static_assert(17 == to_index(locator<size_t>{3, 3, 1}), "to_locator");
 static_assert(18 == to_index(locator<size_t>{3, 3, 2}), "to_locator");
 static_assert(19 == to_index(locator<size_t>{3, 3, 3}), "to_locator");
 
-class compressed_rectangular_waveguide_program final
-        : public custom_program_base {
-public:
-    explicit compressed_rectangular_waveguide_program(
-            const cl::Context& context, const cl::Device& device)
-            : custom_program_base(context, device, source) {
-    }
+}  // namespace
 
-    auto get_kernel() const {
-        return custom_program_base::get_kernel<cl::Buffer, cl::Buffer>(
-                "compressed_waveguide");
-    }
+compressed_rectangular_waveguide_program::
+        compressed_rectangular_waveguide_program(const cl::Context& context,
+                                                 const cl::Device& device)
+        : custom_program_base(context, device, source) {
+}
 
-private:
-    static const std::string source;
-};
+//----------------------------------------------------------------------------//
 
-class compressed_rectangular_waveguide final {
-public:
-    using kernel_type =
-            decltype(std::declval<compressed_rectangular_waveguide_program>()
-                             .get_kernel());
-    compressed_rectangular_waveguide(
-            const compressed_rectangular_waveguide_program& program,
-            size_t dimension)
-            : queue(program.get_info<CL_PROGRAM_CONTEXT>(),
-                    program.get_device())
-            , kernel(program.get_kernel())
-            , dimension(dimension)
-            , storage({{cl::Buffer(
-                                program.template get_info<CL_PROGRAM_CONTEXT>(),
-                                CL_MEM_READ_WRITE,
-                                sizeof(cl_float) * tetrahedron(dimension + 1)),
-                        cl::Buffer(
-                                program.template get_info<CL_PROGRAM_CONTEXT>(),
-                                CL_MEM_READ_WRITE,
-                                sizeof(cl_float) *
-                                        tetrahedron(dimension + 1))}})
-            , current(&storage[0])
-            , previous(&storage[1]) {
-    }
+compressed_rectangular_waveguide::compressed_rectangular_waveguide(
+        const compressed_rectangular_waveguide_program& program,
+        size_t dimension)
+        : queue(program.get_info<CL_PROGRAM_CONTEXT>(), program.get_device())
+        , kernel(program.get_kernel())
+        , dimension(dimension)
+        , storage({{cl::Buffer(program.template get_info<CL_PROGRAM_CONTEXT>(),
+                               CL_MEM_READ_WRITE,
+                               sizeof(cl_float) * tetrahedron(dimension + 1)),
+                    cl::Buffer(program.template get_info<CL_PROGRAM_CONTEXT>(),
+                               CL_MEM_READ_WRITE,
+                               sizeof(cl_float) * tetrahedron(dimension + 1))}})
+        , current(&storage[0])
+        , previous(&storage[1]) {
+}
 
-    std::vector<float> run() {
-        //  init buffers
+std::vector<float> compressed_rectangular_waveguide::run_hard_source(
+        std::vector<float>&& input) {
+    return run(std::move(input),
+               &compressed_rectangular_waveguide::run_hard_step);
+}
+
+std::vector<float> compressed_rectangular_waveguide::run_soft_source(
+        std::vector<float>&& input) {
+    return run(std::move(input),
+               &compressed_rectangular_waveguide::run_soft_step);
+}
+
+std::vector<float> compressed_rectangular_waveguide::run(
+        std::vector<float>&& input,
+        float (compressed_rectangular_waveguide::*step)(float)) {
+    //  set input size to maximum valid for this waveguide
+    input.resize(dimension * 2);
+
+    //  init buffers
+    {
+        //  don't want to keep this in scope for too long!
         std::vector<cl_float> n(tetrahedron(dimension + 1), 0);
         cl::copy(queue, n.begin(), n.end(), *previous);
-        n.front() = 1;
         cl::copy(queue, n.begin(), n.end(), *current);
-
-        std::vector<float> ret;
-        for (auto i = 0; i != dimension * 2; ++i) {
-            auto o = run_step();
-            ret.push_back(o);
-            std::cout << o << ", " << std::flush;
-        }
-        return ret;
     }
 
-private:
-    float run_step() {
-        kernel(cl::EnqueueArgs(queue, tetrahedron(dimension)),
-               *previous,
-               *current);
-
-        std::swap(previous, current);
-
-        cl_float out;
-        cl::copy(queue, *current, &out, &out + 1);
-
-        return out;
+    //  run waveguide for each sample of input
+    std::vector<float> ret;
+    for (auto i : input) {
+        //  run the step
+        auto o = (this->*step)(i);
+        ret.push_back(o);
+        std::cout << o << ", " << std::flush;
     }
+    return ret;
+}
 
-    cl::CommandQueue queue;
-    kernel_type kernel;
-    const size_t dimension;
+float compressed_rectangular_waveguide::run_hard_step(float i) {
+    cl::copy(queue, (&i), (&i) + 1, *current);
 
-    std::array<cl::Buffer, 2> storage;
-    cl::Buffer* current;
-    cl::Buffer* previous;
-};
+    //  run the kernel
+    kernel(cl::EnqueueArgs(queue, tetrahedron(dimension)), *previous, *current);
+
+    //  ping-pong the buffers
+    std::swap(previous, current);
+
+    //  get output value
+    cl_float out;
+    cl::copy(queue, *current, &out, &out + 1);
+
+    return out;
+}
+
+float compressed_rectangular_waveguide::run_soft_step(float i) {
+    //  get current mesh state
+    cl_float c;
+    cl::copy(queue, *current, (&c), (&c) + 1);
+
+    //  add current input value (soft source)
+    c += i;
+    cl::copy(queue, (&c), (&c) + 1, *current);
+
+    //  run the kernel
+    kernel(cl::EnqueueArgs(queue, tetrahedron(dimension)), *previous, *current);
+
+    //  ping-pong the buffers
+    std::swap(previous, current);
+
+    //  get output value
+    cl_float out;
+    cl::copy(queue, *previous, &out, &out + 1);
+
+    return out;
+}
 
 const std::string compressed_rectangular_waveguide_program::source{R"(
 int triangle(int i);
@@ -342,13 +355,3 @@ kernel void compressed_waveguide(global float* previous,
 }
 
 )"};
-
-}  // namespace
-
-int main() {
-    ComputeContext c;
-    compressed_rectangular_waveguide_program program(c.context, c.device);
-    compressed_rectangular_waveguide waveguide(program, 600);
-    auto output = waveguide.run();
-    snd::write("mesh_impulse_response.wav", {output}, 44100, 32);
-}
