@@ -23,7 +23,7 @@ else(ONLY_BUILD_DOCS)
     set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
     set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
 
-    set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
+    #set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
     #add_custom_target(compile_commands ALL
     #    COMMAND ${CMAKE_COMMAND} -E copy
     #        ${CMAKE_CURRENT_BINARY_DIR}/compile_commands.json
@@ -38,6 +38,7 @@ else(ONLY_BUILD_DOCS)
     add_subdirectory(combined)
     add_subdirectory(tests)
     add_subdirectory(data)
+    add_subdirectory(utils)
 
     include(CPack)
 endif(ONLY_BUILD_DOCS)

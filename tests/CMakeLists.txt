@@ -34,7 +34,7 @@ find_library(ogg_lib ogg)
 find_library(vorbis_lib vorbis)
 find_library(vorbisenc_lib vorbisenc)
 
-target_link_libraries(${name} combined raytracer waveguide common ${sndfile_lib} ${flac_lib} ${ogg_lib} ${vorbis_lib} ${vorbisenc_lib} glog gtest)
+target_link_libraries(${name} combined raytracer waveguide compressed-waveguide common ${sndfile_lib} ${flac_lib} ${ogg_lib} ${vorbis_lib} ${vorbisenc_lib} glog gtest)
 
 add_test(NAME tests COMMAND ${name})
 
@@ -42,4 +42,3 @@ add_subdirectory(mic_test)
 add_subdirectory(boundary_test)
 add_subdirectory(hybrid_test)
 add_subdirectory(solution_growth)
-add_subdirectory(mesh_impulse_response)

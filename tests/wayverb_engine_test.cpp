@@ -38,14 +38,16 @@ TEST(engine, engine) {
 
     struct Callback {
         void operator()(engine::State state, double progress) const {
-            std::cout << std::setw(30) << to_string(state) << std::setw(10)
-                      << progress << std::endl;
+            std::cout << '\r' << std::setw(30) << to_string(state)
+                      << std::setw(10) << progress << std::flush;
         }
     };
 
     std::atomic_bool keep_going{true};
     Callback callback;
     auto intermediate = engine.run(keep_going, callback);
+
+    std::cout << std::endl;
 
     std::cout << "finished engine run" << std::endl;
 

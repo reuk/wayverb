@@ -33,4 +33,4 @@ elseif(UNIX)
 endif()
 
 find_library(fftw3f_library fftw3f)
-target_link_libraries(raytracer assimp z ${fftw3f_library} ${frameworks} common)
+target_link_libraries(raytracer assimp ${fftw3f_library} ${frameworks} common)

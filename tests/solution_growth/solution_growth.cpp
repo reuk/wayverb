@@ -29,6 +29,11 @@
 #include <numeric>
 #include <random>
 
+auto uniform_surface(float r) {
+    return Surface{VolumeType{{r, r, r, r, r, r, r, r}},
+                   VolumeType{{r, r, r, r, r, r, r, r}}};
+}
+
 int main(int argc, char** argv) {
     google::InitGoogleLogging(argv[0]);
     gflags::ParseCommandLineFlags(&argc, &argv, true);
@@ -44,9 +49,7 @@ int main(int argc, char** argv) {
                                              compute_context.device);
 
         auto scene_data = cuboid_boundary.get_scene_data();
-        scene_data.set_surfaces(
-                Surface{VolumeType{{0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9}},
-                        VolumeType{{0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9}}});
+        scene_data.set_surfaces(uniform_surface(0.999));
 
         RectangularWaveguide<BufferType::cl> waveguide(waveguide_program,
                                                        MeshBoundary(scene_data),

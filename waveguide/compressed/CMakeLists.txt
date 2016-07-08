@@ -1,27 +1,19 @@
 cmake_minimum_required(VERSION 3.0)
 
-project(WAVEGUIDE VERSION 0.1 LANGUAGES CXX)
+file(GLOB_RECURSE sources "*.cpp")
+file(GLOB_RECURSE headers "*.h")
 
-set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} " -Wall -Werror -std=c++14 ")
-
-file(GLOB_RECURSE sources "src/*.cpp")
-file(GLOB_RECURSE headers "include/*.h")
-
-set(name waveguide)
+set(name compressed-waveguide)
 
 add_library(${name} STATIC ${sources} ${heeaders})
 
 target_include_directories(${name}
     PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
     $<INSTALL_INTERFACE:include>
     PRIVATE
-    src
-    ${WAYVERB_SOURCE_DIR}/include
-    ${WAYVERB_SOURCE_DIR}/submodules/glog/src
-    ${WAYVERB_BINARY_DIR}/submodules/glog
-    ${WAYVERB_SOURCE_DIR}/submodules/cereal/include
     "/usr/local/include/"
+    ${CMAKE_SOURCE_DIR}/include
 )
 
 if(APPLE)
@@ -36,6 +28,4 @@ endif()
 
 find_library(fftw_library fftw3f)
 find_library(samplerate_lib samplerate)
-target_link_libraries(${name} assimp wayverb-data ${samplerate_lib} ${fftw_library} glog common)
-
-add_subdirectory(compressed)
+target_link_libraries(${name} waveguide assimp ${samplerate_lib} ${fftw_library} glog common)
