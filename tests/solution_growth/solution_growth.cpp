@@ -29,10 +29,12 @@
 #include <numeric>
 #include <random>
 
+namespace {
 auto uniform_surface(float r) {
     return Surface{VolumeType{{r, r, r, r, r, r, r, r}},
                    VolumeType{{r, r, r, r, r, r, r, r}}};
 }
+}  // namespace
 
 int main(int argc, char** argv) {
     google::InitGoogleLogging(argv[0]);

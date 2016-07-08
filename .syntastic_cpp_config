@@ -1,5 +1,6 @@
 -Iinclude/
 -Iwaveguide/include
+-Iwaveguide/compressed
 -Iraytracer/include
 -Icommon/include
 -Idata

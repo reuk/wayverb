@@ -667,7 +667,6 @@ BOUNDARY_TEMPLATE(3);
 typedef struct {
     ulong write_location;
     float pressure;
-    bool is_on;
 } InputInfo;
 
 float next_waveguide_pressure(const CondensedNode node,
@@ -763,7 +762,7 @@ float next_waveguide_pressure(const CondensedNode node,
 
 kernel void condensed_waveguide(const InputInfo input_info,
                                 global float* previous,
-                                const global float* current,
+                                global float* current,
                                 const global CondensedNode* nodes,
                                 int3 dimensions,
                                 global BoundaryDataArray1* boundary_data_1,
@@ -777,23 +776,27 @@ kernel void condensed_waveguide(const InputInfo input_info,
                                 global float* surrounding,
                                 global int* error_flag) {
     size_t index = get_global_id(0);
+    if (index == input_info.write_location) {
+        current[index] += input_info.pressure;
+    }
+
+    barrier(CLK_GLOBAL_MEM_FENCE);
+
     CondensedNode node = nodes[index];
     int3 locator = to_locator(index, dimensions);
 
     float prev_pressure = previous[index];
-    float next_pressure = (input_info.is_on && index == input_info.write_location)
-        ? input_info.pressure
-        : next_waveguide_pressure(node,
-                                  nodes,
-                                  prev_pressure,
-                                  current,
-                                  dimensions,
-                                  locator,
-                                  boundary_data_1,
-                                  boundary_data_2,
-                                  boundary_data_3,
-                                  boundary_coefficients,
-                                  error_flag);
+    float next_pressure = next_waveguide_pressure(node,
+                                                  nodes,
+                                                  prev_pressure,
+                                                  current,
+                                                  dimensions,
+                                                  locator,
+                                                  boundary_data_1,
+                                                  boundary_data_2,
+                                                  boundary_data_3,
+                                                  boundary_coefficients,
+                                                  error_flag);
 
     if (next_pressure < -RANGE || RANGE < next_pressure)
         *error_flag |= id_outside_range_error;
@@ -807,12 +810,12 @@ kernel void condensed_waveguide(const InputInfo input_info,
     barrier(CLK_GLOBAL_MEM_FENCE);
 
     if (index == read) {
-        *output = previous[index];
+        *output = current[index];
         for (int i = 0; i != PORTS; ++i) {
             uint port_index = neighbor_index(locator, dimensions, i);
             if (port_index != NO_NEIGHBOR &&
                 nodes[port_index].boundary_type & id_inside)
-                surrounding[i] = previous[port_index];
+                surrounding[i] = current[port_index];
         }
     }
 }

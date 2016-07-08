@@ -284,7 +284,7 @@ private:
             const RunInfo& run_info, float input) {
         auto ret = run_step(run_info, input);
         std::vector<cl_float> pressures(nodes, 0);
-        cl::copy(queue, *current, pressures.begin(), pressures.end());
+        cl::copy(queue, *previous, pressures.begin(), pressures.end());
         return std::make_pair(ret, pressures);
         ;
     }
