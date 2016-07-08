@@ -3,6 +3,8 @@
 #include "common/config.h"
 #include "common/kernel.h"
 
+#include "waveguide/default_kernel.h"
+
 #include <cmath>
 
 /// courant number is 1 / sqrt(3) for a rectilinear mesh
@@ -171,17 +173,18 @@ auto WayverbEngine<buffer_type>::run_basic(std::atomic_bool& keep_going,
     callback(State::starting_waveguide, 1.0);
     auto corrected_source = waveguide.get_coordinate_for_index(source_index);
 
-    auto input = kernels::sin_modulated_gaussian_kernel(waveguide_sample_rate);
-    auto correction_amount = std::ceil(input.size() / 2.0);
+    auto input = default_kernel(waveguide_sample_rate);
+    auto kernel = input.kernel;
 
     //  If the max raytracer time is large this could take forever...
-    auto waveguide_results = waveguide_callback(waveguide,
-                                                corrected_source,
-                                                std::move(input),
-                                                mic_index,
-                                                steps + input.size(),
-                                                keep_going,
-                                                callback);
+    auto waveguide_results =
+            waveguide_callback(waveguide,
+                               corrected_source,
+                               std::move(kernel),
+                               mic_index,
+                               steps + input.opaque_kernel_size,
+                               keep_going,
+                               callback);
     callback(State::finishing_waveguide, 1.0);
 
     auto output = std::vector<float>(waveguide_results.size());
@@ -190,7 +193,8 @@ auto WayverbEngine<buffer_type>::run_basic(std::atomic_bool& keep_going,
     });
 
     //  correct for filter time offset
-    output.erase(output.begin(), output.begin() + correction_amount);
+    output.erase(output.begin(),
+                 output.begin() + input.correction_offset_in_samples);
 
     Intermediate ret;
     return ret;

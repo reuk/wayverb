@@ -156,9 +156,8 @@ public:
     };
 
     struct __attribute__((aligned(8))) InputInfo final {
-        cl_ulong write_location;
-        cl_float pressure;
-        cl_bool is_on;
+        const cl_ulong write_location;
+        const cl_float pressure;
     };
 
     using BoundaryDataArray1 = BoundaryDataArray<1>;

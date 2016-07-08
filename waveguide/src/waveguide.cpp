@@ -10,8 +10,6 @@
 #include <cstdlib>
 #include <iostream>
 
-//----------------------------------------------------------------------------//
-
 namespace detail {
 
 BufferTypeTrait<BufferType::cl>::storage_array_type
@@ -22,5 +20,3 @@ BufferTypeTrait<BufferType::cl>::create_waveguide_storage(
 }
 
 }  // namespace detail
-
-//----------------------------------------------------------------------------//

@@ -123,86 +123,12 @@ public:
 
     virtual ~Waveguide() noexcept = default;
 
-    struct WriteInfo {
-        WriteInfo(size_t index, float pressure, bool is_on)
-                : index(index)
-                , pressure(pressure)
-                , is_on(is_on) {
-        }
-        size_t index;
-        float pressure;
-        bool is_on;
-    };
-
-    RunStepResult run_step(size_t o) {
-        auto ret = run_step(run_info->get_write_info(),
-                            o,
-                            queue,
-                            kernel,
-                            nodes,
-                            *previous,
-                            *current,
-                            output);
-        std::swap(current, previous);
-        return ret;
-    }
-
-    std::pair<RunStepResult, std::vector<cl_float>> run_step_visualised(
-            size_t o) {
-        auto ret = run_step(o);
-        std::vector<cl_float> pressures(nodes, 0);
-        cl::copy(queue, *current, pressures.begin(), pressures.end());
-        return std::make_pair(ret, pressures);
-        ;
-    }
-
     glm::vec3 get_corrected_coordinate(const glm::vec3& v) const {
         return get_coordinate_for_index(get_index_for_coordinate(v));
     }
 
     size_t get_nodes() const {
         return nodes;
-    }
-
-    void init(const glm::vec3& e, std::vector<float>&& input_sig, size_t o) {
-        //  whatever unique setup is required
-        setup(queue, o);
-
-        //  zero out meshes
-        std::vector<cl_float> n(nodes, 0);
-        cl::copy(queue, n.begin(), n.end(), *previous);
-        cl::copy(queue, n.begin(), n.end(), *current);
-
-        run_info = std::make_unique<RunInfo>(
-                get_index_for_coordinate(e), std::move(input_sig), o);
-    }
-
-    template <typename Callback = DoNothingCallback>
-    std::vector<RunStepResult> run(size_t steps,
-                                   std::atomic_bool& keep_going,
-                                   const Callback& callback = Callback()) {
-        return run_basic(steps, keep_going, [this, &callback] {
-            auto ret = this->run_step(run_info->get_output_index());
-            callback();
-            return ret;
-        });
-    }
-
-    template <typename SCallback = DoNothingCallback,
-              typename VCallback = GenericArgumentsCallback<std::vector<float>>>
-    std::vector<RunStepResult> run_visualised(
-            size_t steps,
-            std::atomic_bool& keep_going,
-            const SCallback& callback = SCallback(),
-            const VCallback& visual_callback = VCallback()) {
-        return run_basic(
-                steps, keep_going, [this, &callback, &visual_callback] {
-                    auto ret = this->run_step_visualised(
-                            run_info->get_output_index());
-                    callback();
-                    visual_callback(std::move(ret.second));
-                    return ret.first;
-                });
     }
 
     template <typename Callback = DoNothingCallback>
@@ -213,8 +139,8 @@ public:
             size_t steps,
             std::atomic_bool& keep_going,
             const Callback& callback = Callback()) {
-        init(e, std::move(input), o);
-        return run(steps, keep_going, callback);
+        auto run_info = init(e, std::move(input), o, steps);
+        return this->run(run_info, keep_going, callback);
     }
 
     template <typename SCallback = DoNothingCallback,
@@ -227,9 +153,9 @@ public:
             std::atomic_bool& keep_going,
             const SCallback& callback = SCallback(),
             const VCallback& visual_callback = VCallback()) {
-        init(e, std::move(input), o);
+        auto run_info = init(e, std::move(input), o, steps);
         return this->run_visualised(
-                steps, keep_going, callback, visual_callback);
+                run_info, keep_going, callback, visual_callback);
     }
 
     /*
@@ -260,6 +186,16 @@ public:
     virtual glm::vec3 get_coordinate_for_index(size_t index) const = 0;
     virtual bool inside(size_t index) const = 0;
 
+protected:
+    struct WriteInfo {
+        WriteInfo(size_t index, float pressure)
+                : index(index)
+                , pressure(pressure) {
+        }
+        const size_t index;
+        const float pressure;
+    };
+
 private:
     virtual RunStepResult run_step(const WriteInfo& write_info,
                                    size_t o,
@@ -271,63 +207,115 @@ private:
                                    cl::Buffer& output) = 0;
     virtual void setup(cl::CommandQueue& queue, size_t o) = 0;
 
-    template <typename Callback>
-    std::vector<RunStepResult> run_basic(size_t steps,
-                                         std::atomic_bool& keep_going,
-                                         const Callback& callback) {
-        if (!run_info) {
-            throw std::runtime_error(
-                    "must call init before running waveguide!");
+    template <typename InIt, typename OutIt, typename Fun>
+    static void ordered_transform(InIt a, InIt b, OutIt x, Fun&& t) {
+        for (; a != b; ++a) {
+            *x = t(*a);
         }
-
-        std::vector<RunStepResult> ret(steps);
-        for (auto& i : ret) {
-            if (!keep_going) {
-                throw std::runtime_error("flag state false, stopping");
-            }
-            i = callback();
-        }
-
-        return ret;
     }
 
     struct RunInfo final {
         RunInfo(size_t input_index,
-                std::vector<float>&& input_signal,
+                std::vector<float>&& sig,
                 size_t output_index)
                 : input_index(input_index)
-                , input_signal(input_signal)
+                , input_signal(std::move(sig))
                 , output_index(output_index) {
         }
 
-        size_t get_input_index() const {
-            return input_index;
-        }
-        const std::vector<float>& get_input_signal() const {
-            return input_signal;
-        }
-        size_t get_output_index() const {
-            return output_index;
-        }
-
-        size_t increment_counter() {
-            return counter++;
-        }
-
-        WriteInfo get_write_info() {
-            auto counter = increment_counter();
-            auto is_on = counter < get_input_signal().size();
-            return WriteInfo(get_input_index(),
-                             is_on ? get_input_signal()[counter] : 0,
-                             is_on);
-        }
-
-    private:
-        size_t input_index;
-        std::vector<float> input_signal;
-        size_t output_index;
-        size_t counter{0};
+        const size_t input_index;
+        const std::vector<float> input_signal;
+        const size_t output_index;
     };
+
+    template <typename Callback>
+    std::vector<RunStepResult> run_basic(const RunInfo& run_info,
+                                         std::atomic_bool& keep_going,
+                                         const Callback& callback) {
+        std::vector<RunStepResult> ret;
+        ret.reserve(run_info.input_signal.size());
+
+        //  I would use std::transform here but I need to guarantee order
+        ordered_transform(
+                run_info.input_signal.begin(),
+                run_info.input_signal.end(),
+                std::back_inserter(ret),
+                [&callback, &keep_going](auto i) {
+                    if (!keep_going) {
+                        throw std::runtime_error("flag state false, stopping");
+                    }
+                    return callback(i);
+                });
+
+        return ret;
+    }
+
+    RunInfo init(const glm::vec3& e,
+                 std::vector<float>&& input_sig,
+                 size_t o,
+                 size_t steps) {
+        //  whatever unique setup is required
+        setup(queue, o);
+
+        //  zero out meshes
+        std::vector<cl_float> n(nodes, 0);
+        cl::copy(queue, n.begin(), n.end(), *previous);
+        cl::copy(queue, n.begin(), n.end(), *current);
+
+        input_sig.resize(steps, 0);
+
+        return RunInfo(get_index_for_coordinate(e), std::move(input_sig), o);
+    }
+
+    RunStepResult run_step(const RunInfo& run_info, float input) {
+        auto ret = run_step(WriteInfo(run_info.input_index, input),
+                            run_info.output_index,
+                            queue,
+                            kernel,
+                            nodes,
+                            *previous,
+                            *current,
+                            output);
+        std::swap(current, previous);
+        return ret;
+    }
+
+    std::pair<RunStepResult, std::vector<cl_float>> run_step_visualised(
+            const RunInfo& run_info, float input) {
+        auto ret = run_step(run_info, input);
+        std::vector<cl_float> pressures(nodes, 0);
+        cl::copy(queue, *current, pressures.begin(), pressures.end());
+        return std::make_pair(ret, pressures);
+        ;
+    }
+
+    template <typename Callback = DoNothingCallback>
+    std::vector<RunStepResult> run(const RunInfo& ri,
+                                   std::atomic_bool& keep_going,
+                                   const Callback& callback = Callback()) {
+        return run_basic(ri, keep_going, [this, &ri, &callback](auto i) {
+            auto ret = this->run_step(ri, i);
+            callback();
+            return ret;
+        });
+    }
+
+    template <typename SCallback = DoNothingCallback,
+              typename VCallback = GenericArgumentsCallback<std::vector<float>>>
+    std::vector<RunStepResult> run_visualised(
+            const RunInfo& ri,
+            std::atomic_bool& keep_going,
+            const SCallback& callback = SCallback(),
+            const VCallback& visual_callback = VCallback()) {
+        return run_basic(ri,
+                         keep_going,
+                         [this, &ri, &callback, &visual_callback](auto i) {
+                             auto ret = this->run_step_visualised(ri, i);
+                             callback();
+                             visual_callback(std::move(ret.second));
+                             return ret.first;
+                         });
+    }
 
     ProgramType program;
     cl::CommandQueue queue;
@@ -340,8 +328,6 @@ private:
     cl::Buffer* current;
 
     cl::Buffer output;
-
-    std::unique_ptr<RunInfo> run_info;
 
     float sample_rate;
 };

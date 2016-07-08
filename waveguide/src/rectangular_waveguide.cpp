@@ -100,8 +100,8 @@ RunStepResult RectangularWaveguide<buffer_type>::run_step(
     auto flag = RectangularProgram::id_success;
     cl::copy(queue, (&flag) + 0, (&flag) + 1, error_flag_buffer);
 
-    RectangularProgram::InputInfo input_info{
-            write_info.index, write_info.pressure, write_info.is_on};
+    RectangularProgram::InputInfo input_info{write_info.index,
+                                             write_info.pressure};
 
     kernel(cl::EnqueueArgs(queue, cl::NDRange(nodes)),
            input_info,
