@@ -56,7 +56,6 @@ inline double ricker(double t, double f) {
 
 template <typename T = float>
 std::vector<T> ricker_kernel(double sampling_frequency) {
-    //  TODO find optimum kernel length
     const auto upper = sampling_frequency / 4;
     const auto o = 2 / (M_PI * upper);
     const auto l = std::ceil(8 * o * sampling_frequency) * 2;

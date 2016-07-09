@@ -49,7 +49,7 @@
     </GROUP>
   </MAINGROUP>
   <EXPORTFORMATS>
-    <XCODE_MAC targetFolder="Builds/MacOSX" extraCompilerFlags="-I/usr/local/include&#10;-I../../../../common/include&#10;-I../../../../submodules/glm&#10;-I../../../../submodules/modern_gl_utils/include&#10;-I../../../../submodules/UtilityComponents/include&#10;-I../../../../submodules/ConvolutionComponent/include&#10;-I../../../../submodules/OtherComponents/include&#10;-I../../../../submodules/haart-core/haart-core&#10;-std=c++14"
+    <XCODE_MAC targetFolder="Builds/MacOSX" extraCompilerFlags="-I/usr/local/include&#10;-I../../../../common/include&#10;-I../../../../submodules/glm&#10;-I../../../../submodules/modern_gl_utils/include&#10;-I../../../../submodules/UtilityComponents/include&#10;-I../../../../submodules/ConvolutionComponent/include&#10;-I../../../../submodules/OtherComponents/include&#10;-I../../../../submodules/DataBinding/include&#10;-I../../../../submodules/haart-core/haart-core&#10;-std=c++14"
                extraLinkerFlags="-L/usr/local/lib" externalLibraries="fftw3f"
                bigIcon="Hu2yEW" smallIcon="Hu2yEW">
       <CONFIGURATIONS>

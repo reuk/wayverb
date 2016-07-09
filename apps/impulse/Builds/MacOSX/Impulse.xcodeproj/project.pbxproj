@@ -11,23 +11,26 @@
 		10EB0D0B6B18A02D8DA0A58B /* juce_video.mm in Sources */ = {isa = PBXBuildFile; fileRef = 14353DC2C5CA31C0B83339D1 /* juce_video.mm */; };
 		1336DD30B50897D1947DF758 /* RecentFilesMenuTemplate.nib in Resources */ = {isa = PBXBuildFile; fileRef = 2A2F562696F6B51C95308083 /* RecentFilesMenuTemplate.nib */; };
 		166DABA83BF37C3EC34F6321 /* FrequencyAxis.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EF4AF15702C87C4CB70F2895 /* FrequencyAxis.cpp */; };
-		1B4311EA1D22C556001692DA /* libassimp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B4311CB1D22C541001692DA /* libassimp.a */; };
-		1B4311EB1D22C556001692DA /* libcombined.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B4311E11D22C541001692DA /* libcombined.a */; };
-		1B4311EC1D22C556001692DA /* libcommon.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B4311DB1D22C541001692DA /* libcommon.a */; };
-		1B4311ED1D22C556001692DA /* libconvolution-component.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B4311D51D22C541001692DA /* libconvolution-component.a */; };
-		1B4311EE1D22C556001692DA /* libgflags_nothreads.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B4311AF1D22C541001692DA /* libgflags_nothreads.a */; };
-		1B4311EF1D22C556001692DA /* libgflags.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B4311B11D22C541001692DA /* libgflags.a */; };
-		1B4311F01D22C556001692DA /* libglog.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B4311BD1D22C541001692DA /* libglog.a */; };
-		1B4311F11D22C556001692DA /* libgmock_main.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B4311B51D22C541001692DA /* libgmock_main.a */; };
-		1B4311F21D22C556001692DA /* libgmock.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B4311B31D22C541001692DA /* libgmock.a */; };
-		1B4311F31D22C556001692DA /* libgtest_main.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B4311B91D22C541001692DA /* libgtest_main.a */; };
-		1B4311F41D22C556001692DA /* libgtest.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B4311B71D22C541001692DA /* libgtest.a */; };
-		1B4311F51D22C556001692DA /* libhaart-core.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B4311D31D22C541001692DA /* libhaart-core.a */; };
-		1B4311F61D22C556001692DA /* libmodern_gl_utils.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B4311D11D22C541001692DA /* libmodern_gl_utils.a */; };
-		1B4311F71D22C556001692DA /* libother-components.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B4311D91D22C541001692DA /* libother-components.a */; };
-		1B4311F81D22C556001692DA /* libraytracer.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B4311DF1D22C541001692DA /* libraytracer.a */; };
-		1B4311F91D22C556001692DA /* libutility-components.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B4311D71D22C541001692DA /* libutility-components.a */; };
-		1B4311FA1D22C556001692DA /* libwaveguide.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B4311DD1D22C541001692DA /* libwaveguide.a */; };
+		1B5B9BE91D3169ED00BCC1E2 /* libassimp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B5B9BC01D3169E100BCC1E2 /* libassimp.a */; };
+		1B5B9BEA1D3169ED00BCC1E2 /* libcombined.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B5B9BD81D3169E100BCC1E2 /* libcombined.a */; };
+		1B5B9BEB1D3169ED00BCC1E2 /* libcommon.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B5B9BD01D3169E100BCC1E2 /* libcommon.a */; };
+		1B5B9BEC1D3169ED00BCC1E2 /* libcompressed-waveguide.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B5B9BD41D3169E100BCC1E2 /* libcompressed-waveguide.a */; };
+		1B5B9BED1D3169ED00BCC1E2 /* libconvolution-component.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B5B9BCA1D3169E100BCC1E2 /* libconvolution-component.a */; };
+		1B5B9BEE1D3169ED00BCC1E2 /* libgflags_nothreads.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B5B9BA21D3169E100BCC1E2 /* libgflags_nothreads.a */; };
+		1B5B9BEF1D3169ED00BCC1E2 /* libgflags.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B5B9BA41D3169E100BCC1E2 /* libgflags.a */; };
+		1B5B9BF01D3169ED00BCC1E2 /* libglog.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B5B9BB01D3169E100BCC1E2 /* libglog.a */; };
+		1B5B9BF11D3169ED00BCC1E2 /* libgmock_main.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B5B9BA81D3169E100BCC1E2 /* libgmock_main.a */; };
+		1B5B9BF21D3169ED00BCC1E2 /* libgmock.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B5B9BA61D3169E100BCC1E2 /* libgmock.a */; };
+		1B5B9BF31D3169ED00BCC1E2 /* libgtest_main.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B5B9BAC1D3169E100BCC1E2 /* libgtest_main.a */; };
+		1B5B9BF41D3169ED00BCC1E2 /* libgtest.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B5B9BAA1D3169E100BCC1E2 /* libgtest.a */; };
+		1B5B9BF51D3169ED00BCC1E2 /* libhaart-core.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B5B9BC81D3169E100BCC1E2 /* libhaart-core.a */; };
+		1B5B9BF61D3169ED00BCC1E2 /* libmodern_gl_utils.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B5B9BC61D3169E100BCC1E2 /* libmodern_gl_utils.a */; };
+		1B5B9BF71D3169ED00BCC1E2 /* libother-components.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B5B9BCE1D3169E100BCC1E2 /* libother-components.a */; };
+		1B5B9BF81D3169ED00BCC1E2 /* libraytracer.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B5B9BD61D3169E100BCC1E2 /* libraytracer.a */; };
+		1B5B9BF91D3169ED00BCC1E2 /* libutility-components.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B5B9BCC1D3169E100BCC1E2 /* libutility-components.a */; };
+		1B5B9BFA1D3169ED00BCC1E2 /* libwaveguide.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B5B9BD21D3169E100BCC1E2 /* libwaveguide.a */; };
+		1B5B9BFB1D3169ED00BCC1E2 /* libwayverb-data.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B5B9BE61D3169E100BCC1E2 /* libwayverb-data.a */; };
+		1B5B9BFC1D3169ED00BCC1E2 /* libzlibstatic.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B5B9BBE1D3169E100BCC1E2 /* libzlibstatic.a */; };
 		1D5617234CFAC0E0B2F90296 /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 75D40C1E48F0D9B9CAF4615B /* IOKit.framework */; };
 		281E95BF690246A8939FEAA8 /* WaterfallShader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1F232A2FC341C5F43EBB92F8 /* WaterfallShader.cpp */; };
 		28FBC28FA1FCD5BF0D5E10A9 /* Waterfall.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6296AFACF4D40498EC32929F /* Waterfall.cpp */; };
@@ -68,215 +71,257 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		1B4311AE1D22C541001692DA /* PBXContainerItemProxy */ = {
+		1B5B9BA11D3169E100BCC1E2 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = 1B4311871D22C541001692DA /* WAYVERB.xcodeproj */;
+			containerPortal = 1B5B9B741D3169E000BCC1E2 /* WAYVERB.xcodeproj */;
 			proxyType = 2;
-			remoteGlobalIDString = 8D7973500A7947BDA1AF823E;
+			remoteGlobalIDString = 7B671FEA5F1640E3B1ABF09B;
 			remoteInfo = gflags_nothreads_static;
 		};
-		1B4311B01D22C541001692DA /* PBXContainerItemProxy */ = {
+		1B5B9BA31D3169E100BCC1E2 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = 1B4311871D22C541001692DA /* WAYVERB.xcodeproj */;
+			containerPortal = 1B5B9B741D3169E000BCC1E2 /* WAYVERB.xcodeproj */;
 			proxyType = 2;
-			remoteGlobalIDString = 07FEF28277B14EFB9CA73E96;
+			remoteGlobalIDString = 9AF46561C37B4508B861494F;
 			remoteInfo = gflags_static;
 		};
-		1B4311B21D22C541001692DA /* PBXContainerItemProxy */ = {
+		1B5B9BA51D3169E100BCC1E2 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = 1B4311871D22C541001692DA /* WAYVERB.xcodeproj */;
+			containerPortal = 1B5B9B741D3169E000BCC1E2 /* WAYVERB.xcodeproj */;
 			proxyType = 2;
-			remoteGlobalIDString = 0FC5C8E678A144A7A5C2CF9B;
+			remoteGlobalIDString = EA2C677EA6A64738B4D35070;
 			remoteInfo = gmock;
 		};
-		1B4311B41D22C541001692DA /* PBXContainerItemProxy */ = {
+		1B5B9BA71D3169E100BCC1E2 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = 1B4311871D22C541001692DA /* WAYVERB.xcodeproj */;
+			containerPortal = 1B5B9B741D3169E000BCC1E2 /* WAYVERB.xcodeproj */;
 			proxyType = 2;
-			remoteGlobalIDString = 9C2AB9916FE04D0FBA0EA533;
+			remoteGlobalIDString = 1EA8FFF2FDE24959A08C1AAB;
 			remoteInfo = gmock_main;
 		};
-		1B4311B61D22C541001692DA /* PBXContainerItemProxy */ = {
+		1B5B9BA91D3169E100BCC1E2 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = 1B4311871D22C541001692DA /* WAYVERB.xcodeproj */;
+			containerPortal = 1B5B9B741D3169E000BCC1E2 /* WAYVERB.xcodeproj */;
 			proxyType = 2;
-			remoteGlobalIDString = 213803C7379B438688B1B1E1;
+			remoteGlobalIDString = B7B06FD59F38477CA5C44405;
 			remoteInfo = gtest;
 		};
-		1B4311B81D22C541001692DA /* PBXContainerItemProxy */ = {
+		1B5B9BAB1D3169E100BCC1E2 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = 1B4311871D22C541001692DA /* WAYVERB.xcodeproj */;
+			containerPortal = 1B5B9B741D3169E000BCC1E2 /* WAYVERB.xcodeproj */;
 			proxyType = 2;
-			remoteGlobalIDString = B251442DB62D4DF684154BA2;
+			remoteGlobalIDString = CBA03B8E244246B7B1B1C26B;
 			remoteInfo = gtest_main;
 		};
-		1B4311BA1D22C541001692DA /* PBXContainerItemProxy */ = {
+		1B5B9BAD1D3169E100BCC1E2 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = 1B4311871D22C541001692DA /* WAYVERB.xcodeproj */;
+			containerPortal = 1B5B9B741D3169E000BCC1E2 /* WAYVERB.xcodeproj */;
 			proxyType = 2;
-			remoteGlobalIDString = B4AD2897913948FAB9C20189;
+			remoteGlobalIDString = 77D36BF73F464C34986044E8;
 			remoteInfo = demangle_unittest;
 		};
-		1B4311BC1D22C541001692DA /* PBXContainerItemProxy */ = {
+		1B5B9BAF1D3169E100BCC1E2 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = 1B4311871D22C541001692DA /* WAYVERB.xcodeproj */;
+			containerPortal = 1B5B9B741D3169E000BCC1E2 /* WAYVERB.xcodeproj */;
 			proxyType = 2;
-			remoteGlobalIDString = 3A18DB70FC9A416C98689AB0;
+			remoteGlobalIDString = C0802BA93ACA47459CD9C752;
 			remoteInfo = glog;
 		};
-		1B4311BE1D22C541001692DA /* PBXContainerItemProxy */ = {
+		1B5B9BB11D3169E100BCC1E2 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = 1B4311871D22C541001692DA /* WAYVERB.xcodeproj */;
+			containerPortal = 1B5B9B741D3169E000BCC1E2 /* WAYVERB.xcodeproj */;
 			proxyType = 2;
-			remoteGlobalIDString = 78646E9F39084347A493B134;
+			remoteGlobalIDString = 3BACC523C2164EE58DCEA970;
 			remoteInfo = logging_unittest;
 		};
-		1B4311C01D22C541001692DA /* PBXContainerItemProxy */ = {
+		1B5B9BB31D3169E100BCC1E2 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = 1B4311871D22C541001692DA /* WAYVERB.xcodeproj */;
+			containerPortal = 1B5B9B741D3169E000BCC1E2 /* WAYVERB.xcodeproj */;
 			proxyType = 2;
-			remoteGlobalIDString = 02DC5E0E819A45BDBD30D0DD;
+			remoteGlobalIDString = B0D9495DD4FF403896E9FE78;
 			remoteInfo = signalhandler_unittest;
 		};
-		1B4311C21D22C541001692DA /* PBXContainerItemProxy */ = {
+		1B5B9BB51D3169E100BCC1E2 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = 1B4311871D22C541001692DA /* WAYVERB.xcodeproj */;
+			containerPortal = 1B5B9B741D3169E000BCC1E2 /* WAYVERB.xcodeproj */;
 			proxyType = 2;
-			remoteGlobalIDString = BB75A94E5365481AA1BC8C79;
+			remoteGlobalIDString = F10F704E4A24471595971A4E;
 			remoteInfo = stacktrace_unittest;
 		};
-		1B4311C41D22C541001692DA /* PBXContainerItemProxy */ = {
+		1B5B9BB71D3169E100BCC1E2 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = 1B4311871D22C541001692DA /* WAYVERB.xcodeproj */;
+			containerPortal = 1B5B9B741D3169E000BCC1E2 /* WAYVERB.xcodeproj */;
 			proxyType = 2;
-			remoteGlobalIDString = 8F84AFAAEC814A5FB2295674;
+			remoteGlobalIDString = C1BF21A0A56B4DF4AD4E66F7;
 			remoteInfo = stl_logging_unittest;
 		};
-		1B4311C61D22C541001692DA /* PBXContainerItemProxy */ = {
+		1B5B9BB91D3169E100BCC1E2 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = 1B4311871D22C541001692DA /* WAYVERB.xcodeproj */;
+			containerPortal = 1B5B9B741D3169E000BCC1E2 /* WAYVERB.xcodeproj */;
 			proxyType = 2;
-			remoteGlobalIDString = 4D3CDE09E779470DB58AA583;
+			remoteGlobalIDString = C9413B22EE6B4888825CFB5A;
 			remoteInfo = symbolize_unittest;
 		};
-		1B4311C81D22C541001692DA /* PBXContainerItemProxy */ = {
+		1B5B9BBB1D3169E100BCC1E2 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = 1B4311871D22C541001692DA /* WAYVERB.xcodeproj */;
+			containerPortal = 1B5B9B741D3169E000BCC1E2 /* WAYVERB.xcodeproj */;
 			proxyType = 2;
-			remoteGlobalIDString = 7CB4A194CA0D4DA597EBD6C8;
+			remoteGlobalIDString = 07416C6E3DBA4EB9B5C0E6C0;
 			remoteInfo = utilities_unittest;
 		};
-		1B4311CA1D22C541001692DA /* PBXContainerItemProxy */ = {
+		1B5B9BBD1D3169E100BCC1E2 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = 1B4311871D22C541001692DA /* WAYVERB.xcodeproj */;
+			containerPortal = 1B5B9B741D3169E000BCC1E2 /* WAYVERB.xcodeproj */;
 			proxyType = 2;
-			remoteGlobalIDString = 4C7D4E1BE09E4A4399E3E3C2;
+			remoteGlobalIDString = 801B62764F2941F080835D3C;
+			remoteInfo = zlibstatic;
+		};
+		1B5B9BBF1D3169E100BCC1E2 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 1B5B9B741D3169E000BCC1E2 /* WAYVERB.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 51EAA4929882435281FEEA14;
 			remoteInfo = assimp;
 		};
-		1B4311CC1D22C541001692DA /* PBXContainerItemProxy */ = {
+		1B5B9BC11D3169E100BCC1E2 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = 1B4311871D22C541001692DA /* WAYVERB.xcodeproj */;
+			containerPortal = 1B5B9B741D3169E000BCC1E2 /* WAYVERB.xcodeproj */;
 			proxyType = 2;
-			remoteGlobalIDString = 4B5A6F625F11413B8DEFD831;
+			remoteGlobalIDString = 3BEC17DFF4034133B6C7CC60;
 			remoteInfo = assimp_cmd;
 		};
-		1B4311CE1D22C541001692DA /* PBXContainerItemProxy */ = {
+		1B5B9BC31D3169E100BCC1E2 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = 1B4311871D22C541001692DA /* WAYVERB.xcodeproj */;
+			containerPortal = 1B5B9B741D3169E000BCC1E2 /* WAYVERB.xcodeproj */;
 			proxyType = 2;
-			remoteGlobalIDString = 4C3108707CB7468AB80A3C3F;
+			remoteGlobalIDString = B53F5710B3DC442180F36C2B;
 			remoteInfo = glm_dummy;
 		};
-		1B4311D01D22C541001692DA /* PBXContainerItemProxy */ = {
+		1B5B9BC51D3169E100BCC1E2 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = 1B4311871D22C541001692DA /* WAYVERB.xcodeproj */;
+			containerPortal = 1B5B9B741D3169E000BCC1E2 /* WAYVERB.xcodeproj */;
 			proxyType = 2;
-			remoteGlobalIDString = 344E747E22EB4C0284C79838;
+			remoteGlobalIDString = DC70B73CA6DD40DFA5797B4F;
 			remoteInfo = modern_gl_utils;
 		};
-		1B4311D21D22C541001692DA /* PBXContainerItemProxy */ = {
+		1B5B9BC71D3169E100BCC1E2 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = 1B4311871D22C541001692DA /* WAYVERB.xcodeproj */;
+			containerPortal = 1B5B9B741D3169E000BCC1E2 /* WAYVERB.xcodeproj */;
 			proxyType = 2;
-			remoteGlobalIDString = 1C6B63B4D9B34C10A4EA19B8;
+			remoteGlobalIDString = F80C53D6B86D4CD9BE2DE181;
 			remoteInfo = "haart-core";
 		};
-		1B4311D41D22C541001692DA /* PBXContainerItemProxy */ = {
+		1B5B9BC91D3169E100BCC1E2 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = 1B4311871D22C541001692DA /* WAYVERB.xcodeproj */;
+			containerPortal = 1B5B9B741D3169E000BCC1E2 /* WAYVERB.xcodeproj */;
 			proxyType = 2;
-			remoteGlobalIDString = 17CBDC2BA2054BA79CE59F7E;
+			remoteGlobalIDString = E8DB541A11EA4813AB909905;
 			remoteInfo = "convolution-component";
 		};
-		1B4311D61D22C541001692DA /* PBXContainerItemProxy */ = {
+		1B5B9BCB1D3169E100BCC1E2 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = 1B4311871D22C541001692DA /* WAYVERB.xcodeproj */;
+			containerPortal = 1B5B9B741D3169E000BCC1E2 /* WAYVERB.xcodeproj */;
 			proxyType = 2;
-			remoteGlobalIDString = 4BB90EB5C388408691812BA0;
+			remoteGlobalIDString = AF851E1EE7CA4BFD86B4573D;
 			remoteInfo = "utility-components";
 		};
-		1B4311D81D22C541001692DA /* PBXContainerItemProxy */ = {
+		1B5B9BCD1D3169E100BCC1E2 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = 1B4311871D22C541001692DA /* WAYVERB.xcodeproj */;
+			containerPortal = 1B5B9B741D3169E000BCC1E2 /* WAYVERB.xcodeproj */;
 			proxyType = 2;
-			remoteGlobalIDString = 94386255A0324AC89645152E;
+			remoteGlobalIDString = BD574F2CAE104904A40010ED;
 			remoteInfo = "other-components";
 		};
-		1B4311DA1D22C541001692DA /* PBXContainerItemProxy */ = {
+		1B5B9BCF1D3169E100BCC1E2 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = 1B4311871D22C541001692DA /* WAYVERB.xcodeproj */;
+			containerPortal = 1B5B9B741D3169E000BCC1E2 /* WAYVERB.xcodeproj */;
 			proxyType = 2;
-			remoteGlobalIDString = B0D9B54BA91E4C98B9227C61;
+			remoteGlobalIDString = CABF1F700AA94CFD843F8436;
 			remoteInfo = common;
 		};
-		1B4311DC1D22C541001692DA /* PBXContainerItemProxy */ = {
+		1B5B9BD11D3169E100BCC1E2 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = 1B4311871D22C541001692DA /* WAYVERB.xcodeproj */;
+			containerPortal = 1B5B9B741D3169E000BCC1E2 /* WAYVERB.xcodeproj */;
 			proxyType = 2;
-			remoteGlobalIDString = 07AAD0D668184A63B3A266B4;
+			remoteGlobalIDString = 1EF7B6D9902D4A09A1CE7226;
 			remoteInfo = waveguide;
 		};
-		1B4311DE1D22C541001692DA /* PBXContainerItemProxy */ = {
+		1B5B9BD31D3169E100BCC1E2 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = 1B4311871D22C541001692DA /* WAYVERB.xcodeproj */;
+			containerPortal = 1B5B9B741D3169E000BCC1E2 /* WAYVERB.xcodeproj */;
 			proxyType = 2;
-			remoteGlobalIDString = 27ADF5D22D9A47039F39FBD4;
+			remoteGlobalIDString = 287F56AD389E4529BA988C59;
+			remoteInfo = "compressed-waveguide";
+		};
+		1B5B9BD51D3169E100BCC1E2 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 1B5B9B741D3169E000BCC1E2 /* WAYVERB.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 706A8DB4E6A5433A8D4A5948;
 			remoteInfo = raytracer;
 		};
-		1B4311E01D22C541001692DA /* PBXContainerItemProxy */ = {
+		1B5B9BD71D3169E100BCC1E2 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = 1B4311871D22C541001692DA /* WAYVERB.xcodeproj */;
+			containerPortal = 1B5B9B741D3169E000BCC1E2 /* WAYVERB.xcodeproj */;
 			proxyType = 2;
-			remoteGlobalIDString = 43A970C2FC2D48E6841BA178;
+			remoteGlobalIDString = F2607728C88F4EF88A861A3A;
 			remoteInfo = combined;
 		};
-		1B4311E21D22C541001692DA /* PBXContainerItemProxy */ = {
+		1B5B9BD91D3169E100BCC1E2 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = 1B4311871D22C541001692DA /* WAYVERB.xcodeproj */;
+			containerPortal = 1B5B9B741D3169E000BCC1E2 /* WAYVERB.xcodeproj */;
 			proxyType = 2;
-			remoteGlobalIDString = CEFC6684194A46BE847E2964;
+			remoteGlobalIDString = 51634F15225248E59E412E03;
 			remoteInfo = tests;
 		};
-		1B4311E41D22C541001692DA /* PBXContainerItemProxy */ = {
+		1B5B9BDB1D3169E100BCC1E2 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = 1B4311871D22C541001692DA /* WAYVERB.xcodeproj */;
+			containerPortal = 1B5B9B741D3169E000BCC1E2 /* WAYVERB.xcodeproj */;
 			proxyType = 2;
-			remoteGlobalIDString = CF5D290F7BAE42D1AAB25817;
+			remoteGlobalIDString = E5FCFB71E5D14ABB978B72EC;
 			remoteInfo = mic_offset_rotate;
 		};
-		1B4311E61D22C541001692DA /* PBXContainerItemProxy */ = {
+		1B5B9BDD1D3169E100BCC1E2 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = 1B4311871D22C541001692DA /* WAYVERB.xcodeproj */;
+			containerPortal = 1B5B9B741D3169E000BCC1E2 /* WAYVERB.xcodeproj */;
 			proxyType = 2;
-			remoteGlobalIDString = 12650527B1184CB2839C1B1B;
+			remoteGlobalIDString = 164C7C809A9F4380806EA002;
 			remoteInfo = boundary_test;
 		};
-		1B4311E81D22C541001692DA /* PBXContainerItemProxy */ = {
+		1B5B9BDF1D3169E100BCC1E2 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = 1B4311871D22C541001692DA /* WAYVERB.xcodeproj */;
+			containerPortal = 1B5B9B741D3169E000BCC1E2 /* WAYVERB.xcodeproj */;
 			proxyType = 2;
-			remoteGlobalIDString = 2E90D06D94D84F75B1F398B8;
+			remoteGlobalIDString = 160AA428FC9C4550A6123DA6;
 			remoteInfo = hybrid_test;
+		};
+		1B5B9BE11D3169E100BCC1E2 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 1B5B9B741D3169E000BCC1E2 /* WAYVERB.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = DF76C2794ABC4154B892BDCA;
+			remoteInfo = solution_growth;
+		};
+		1B5B9BE31D3169E100BCC1E2 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 1B5B9B741D3169E000BCC1E2 /* WAYVERB.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = E2661BAFC1C34E5CAE6C9AB6;
+			remoteInfo = "data-convert";
+		};
+		1B5B9BE51D3169E100BCC1E2 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 1B5B9B741D3169E000BCC1E2 /* WAYVERB.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = E1AB9E1F198447D98A8531F8;
+			remoteInfo = "wayverb-data";
+		};
+		1B5B9BE71D3169E100BCC1E2 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 1B5B9B741D3169E000BCC1E2 /* WAYVERB.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 933529C9235E478E82DD4184;
+			remoteInfo = write_compensation_signal;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -392,7 +437,7 @@
 		1AC3D83CED77CF08F6E75DE5 /* res_books_stereo.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = res_books_stereo.h; path = "../../../../submodules/JUCE/modules/juce_audio_formats/codecs/oggvorbis/libvorbis-1.3.2/lib/books/coupled/res_books_stereo.h"; sourceTree = SOURCE_ROOT; };
 		1ADBBE01A4A09011CFF1592C /* juce_Variant.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = juce_Variant.cpp; path = ../../../../submodules/JUCE/modules/juce_core/containers/juce_Variant.cpp; sourceTree = SOURCE_ROOT; };
 		1B1975E65120BC820294F0ED /* juce_StretchableLayoutResizerBar.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = juce_StretchableLayoutResizerBar.h; path = ../../../../submodules/JUCE/modules/juce_gui_basics/layout/juce_StretchableLayoutResizerBar.h; sourceTree = SOURCE_ROOT; };
-		1B4311871D22C541001692DA /* WAYVERB.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = WAYVERB.xcodeproj; path = ../../../../xcproj/WAYVERB.xcodeproj; sourceTree = "<group>"; };
+		1B5B9B741D3169E000BCC1E2 /* WAYVERB.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = WAYVERB.xcodeproj; path = ../../../../xcproj/WAYVERB.xcodeproj; sourceTree = "<group>"; };
 		1B8949524B32DFAEA3BF7BE8 /* juce_PropertyPanel.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = juce_PropertyPanel.cpp; path = ../../../../submodules/JUCE/modules/juce_gui_basics/properties/juce_PropertyPanel.cpp; sourceTree = SOURCE_ROOT; };
 		1B92E7E791926E346498E16C /* pnginfo.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = pnginfo.h; path = ../../../../submodules/JUCE/modules/juce_graphics/image_formats/pnglib/pnginfo.h; sourceTree = SOURCE_ROOT; };
 		1BECD8ECE043FCEDE1296750 /* juce_OpenGL_osx.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = juce_OpenGL_osx.h; path = ../../../../submodules/JUCE/modules/juce_opengl/native/juce_OpenGL_osx.h; sourceTree = SOURCE_ROOT; };
@@ -1437,23 +1482,26 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				1B4311EA1D22C556001692DA /* libassimp.a in Frameworks */,
-				1B4311EB1D22C556001692DA /* libcombined.a in Frameworks */,
-				1B4311EC1D22C556001692DA /* libcommon.a in Frameworks */,
-				1B4311ED1D22C556001692DA /* libconvolution-component.a in Frameworks */,
-				1B4311EE1D22C556001692DA /* libgflags_nothreads.a in Frameworks */,
-				1B4311EF1D22C556001692DA /* libgflags.a in Frameworks */,
-				1B4311F01D22C556001692DA /* libglog.a in Frameworks */,
-				1B4311F11D22C556001692DA /* libgmock_main.a in Frameworks */,
-				1B4311F21D22C556001692DA /* libgmock.a in Frameworks */,
-				1B4311F31D22C556001692DA /* libgtest_main.a in Frameworks */,
-				1B4311F41D22C556001692DA /* libgtest.a in Frameworks */,
-				1B4311F51D22C556001692DA /* libhaart-core.a in Frameworks */,
-				1B4311F61D22C556001692DA /* libmodern_gl_utils.a in Frameworks */,
-				1B4311F71D22C556001692DA /* libother-components.a in Frameworks */,
-				1B4311F81D22C556001692DA /* libraytracer.a in Frameworks */,
-				1B4311F91D22C556001692DA /* libutility-components.a in Frameworks */,
-				1B4311FA1D22C556001692DA /* libwaveguide.a in Frameworks */,
+				1B5B9BE91D3169ED00BCC1E2 /* libassimp.a in Frameworks */,
+				1B5B9BEA1D3169ED00BCC1E2 /* libcombined.a in Frameworks */,
+				1B5B9BEB1D3169ED00BCC1E2 /* libcommon.a in Frameworks */,
+				1B5B9BEC1D3169ED00BCC1E2 /* libcompressed-waveguide.a in Frameworks */,
+				1B5B9BED1D3169ED00BCC1E2 /* libconvolution-component.a in Frameworks */,
+				1B5B9BEE1D3169ED00BCC1E2 /* libgflags_nothreads.a in Frameworks */,
+				1B5B9BEF1D3169ED00BCC1E2 /* libgflags.a in Frameworks */,
+				1B5B9BF01D3169ED00BCC1E2 /* libglog.a in Frameworks */,
+				1B5B9BF11D3169ED00BCC1E2 /* libgmock_main.a in Frameworks */,
+				1B5B9BF21D3169ED00BCC1E2 /* libgmock.a in Frameworks */,
+				1B5B9BF31D3169ED00BCC1E2 /* libgtest_main.a in Frameworks */,
+				1B5B9BF41D3169ED00BCC1E2 /* libgtest.a in Frameworks */,
+				1B5B9BF51D3169ED00BCC1E2 /* libhaart-core.a in Frameworks */,
+				1B5B9BF61D3169ED00BCC1E2 /* libmodern_gl_utils.a in Frameworks */,
+				1B5B9BF71D3169ED00BCC1E2 /* libother-components.a in Frameworks */,
+				1B5B9BF81D3169ED00BCC1E2 /* libraytracer.a in Frameworks */,
+				1B5B9BF91D3169ED00BCC1E2 /* libutility-components.a in Frameworks */,
+				1B5B9BFA1D3169ED00BCC1E2 /* libwaveguide.a in Frameworks */,
+				1B5B9BFB1D3169ED00BCC1E2 /* libwayverb-data.a in Frameworks */,
+				1B5B9BFC1D3169ED00BCC1E2 /* libzlibstatic.a in Frameworks */,
 				9855AEAB3A225C0845780D8E /* Accelerate.framework in Frameworks */,
 				054194AFD92BE08C7AB1C97B /* AudioToolbox.framework in Frameworks */,
 				E7B58F9172E7E0E0011FECEC /* Carbon.framework in Frameworks */,
@@ -1826,39 +1874,45 @@
 			name = impulse;
 			sourceTree = "<group>";
 		};
-		1B4311881D22C541001692DA /* Products */ = {
+		1B5B9B751D3169E000BCC1E2 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				1B4311AF1D22C541001692DA /* libgflags_nothreads.a */,
-				1B4311B11D22C541001692DA /* libgflags.a */,
-				1B4311B31D22C541001692DA /* libgmock.a */,
-				1B4311B51D22C541001692DA /* libgmock_main.a */,
-				1B4311B71D22C541001692DA /* libgtest.a */,
-				1B4311B91D22C541001692DA /* libgtest_main.a */,
-				1B4311BB1D22C541001692DA /* demangle_unittest */,
-				1B4311BD1D22C541001692DA /* libglog.a */,
-				1B4311BF1D22C541001692DA /* logging_unittest */,
-				1B4311C11D22C541001692DA /* signalhandler_unittest */,
-				1B4311C31D22C541001692DA /* stacktrace_unittest */,
-				1B4311C51D22C541001692DA /* stl_logging_unittest */,
-				1B4311C71D22C541001692DA /* symbolize_unittest */,
-				1B4311C91D22C541001692DA /* utilities_unittest */,
-				1B4311CB1D22C541001692DA /* libassimp.a */,
-				1B4311CD1D22C541001692DA /* assimp */,
-				1B4311CF1D22C541001692DA /* glm_dummy */,
-				1B4311D11D22C541001692DA /* libmodern_gl_utils.a */,
-				1B4311D31D22C541001692DA /* libhaart-core.a */,
-				1B4311D51D22C541001692DA /* libconvolution-component.a */,
-				1B4311D71D22C541001692DA /* libutility-components.a */,
-				1B4311D91D22C541001692DA /* libother-components.a */,
-				1B4311DB1D22C541001692DA /* libcommon.a */,
-				1B4311DD1D22C541001692DA /* libwaveguide.a */,
-				1B4311DF1D22C541001692DA /* libraytracer.a */,
-				1B4311E11D22C541001692DA /* libcombined.a */,
-				1B4311E31D22C541001692DA /* tests */,
-				1B4311E51D22C541001692DA /* mic_offset_rotate */,
-				1B4311E71D22C541001692DA /* boundary_test */,
-				1B4311E91D22C541001692DA /* hybrid_test */,
+				1B5B9BA21D3169E100BCC1E2 /* libgflags_nothreads.a */,
+				1B5B9BA41D3169E100BCC1E2 /* libgflags.a */,
+				1B5B9BA61D3169E100BCC1E2 /* libgmock.a */,
+				1B5B9BA81D3169E100BCC1E2 /* libgmock_main.a */,
+				1B5B9BAA1D3169E100BCC1E2 /* libgtest.a */,
+				1B5B9BAC1D3169E100BCC1E2 /* libgtest_main.a */,
+				1B5B9BAE1D3169E100BCC1E2 /* demangle_unittest */,
+				1B5B9BB01D3169E100BCC1E2 /* libglog.a */,
+				1B5B9BB21D3169E100BCC1E2 /* logging_unittest */,
+				1B5B9BB41D3169E100BCC1E2 /* signalhandler_unittest */,
+				1B5B9BB61D3169E100BCC1E2 /* stacktrace_unittest */,
+				1B5B9BB81D3169E100BCC1E2 /* stl_logging_unittest */,
+				1B5B9BBA1D3169E100BCC1E2 /* symbolize_unittest */,
+				1B5B9BBC1D3169E100BCC1E2 /* utilities_unittest */,
+				1B5B9BBE1D3169E100BCC1E2 /* libzlibstatic.a */,
+				1B5B9BC01D3169E100BCC1E2 /* libassimp.a */,
+				1B5B9BC21D3169E100BCC1E2 /* assimp */,
+				1B5B9BC41D3169E100BCC1E2 /* glm_dummy */,
+				1B5B9BC61D3169E100BCC1E2 /* libmodern_gl_utils.a */,
+				1B5B9BC81D3169E100BCC1E2 /* libhaart-core.a */,
+				1B5B9BCA1D3169E100BCC1E2 /* libconvolution-component.a */,
+				1B5B9BCC1D3169E100BCC1E2 /* libutility-components.a */,
+				1B5B9BCE1D3169E100BCC1E2 /* libother-components.a */,
+				1B5B9BD01D3169E100BCC1E2 /* libcommon.a */,
+				1B5B9BD21D3169E100BCC1E2 /* libwaveguide.a */,
+				1B5B9BD41D3169E100BCC1E2 /* libcompressed-waveguide.a */,
+				1B5B9BD61D3169E100BCC1E2 /* libraytracer.a */,
+				1B5B9BD81D3169E100BCC1E2 /* libcombined.a */,
+				1B5B9BDA1D3169E100BCC1E2 /* tests */,
+				1B5B9BDC1D3169E100BCC1E2 /* mic_offset_rotate */,
+				1B5B9BDE1D3169E100BCC1E2 /* boundary_test */,
+				1B5B9BE01D3169E100BCC1E2 /* hybrid_test */,
+				1B5B9BE21D3169E100BCC1E2 /* solution_growth */,
+				1B5B9BE41D3169E100BCC1E2 /* data-convert */,
+				1B5B9BE61D3169E100BCC1E2 /* libwayverb-data.a */,
+				1B5B9BE81D3169E100BCC1E2 /* write_compensation_signal */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -2424,7 +2478,7 @@
 		63B2B92BD2066BBABF8C1176 /* Source */ = {
 			isa = PBXGroup;
 			children = (
-				1B4311871D22C541001692DA /* WAYVERB.xcodeproj */,
+				1B5B9B741D3169E000BCC1E2 /* WAYVERB.xcodeproj */,
 				19061BC99B9D1CC81F5E6266 /* impulse */,
 				125ADB12ACC9CDB53D4466CB /* Juce Modules */,
 				3587DA203B9B7A17A8147BDB /* Juce Library Code */,
@@ -3653,8 +3707,8 @@
 			projectDirPath = "";
 			projectReferences = (
 				{
-					ProductGroup = 1B4311881D22C541001692DA /* Products */;
-					ProjectRef = 1B4311871D22C541001692DA /* WAYVERB.xcodeproj */;
+					ProductGroup = 1B5B9B751D3169E000BCC1E2 /* Products */;
+					ProjectRef = 1B5B9B741D3169E000BCC1E2 /* WAYVERB.xcodeproj */;
 				},
 			);
 			projectRoot = "";
@@ -3665,214 +3719,256 @@
 /* End PBXProject section */
 
 /* Begin PBXReferenceProxy section */
-		1B4311AF1D22C541001692DA /* libgflags_nothreads.a */ = {
+		1B5B9BA21D3169E100BCC1E2 /* libgflags_nothreads.a */ = {
 			isa = PBXReferenceProxy;
 			fileType = archive.ar;
 			path = libgflags_nothreads.a;
-			remoteRef = 1B4311AE1D22C541001692DA /* PBXContainerItemProxy */;
+			remoteRef = 1B5B9BA11D3169E100BCC1E2 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		1B4311B11D22C541001692DA /* libgflags.a */ = {
+		1B5B9BA41D3169E100BCC1E2 /* libgflags.a */ = {
 			isa = PBXReferenceProxy;
 			fileType = archive.ar;
 			path = libgflags.a;
-			remoteRef = 1B4311B01D22C541001692DA /* PBXContainerItemProxy */;
+			remoteRef = 1B5B9BA31D3169E100BCC1E2 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		1B4311B31D22C541001692DA /* libgmock.a */ = {
+		1B5B9BA61D3169E100BCC1E2 /* libgmock.a */ = {
 			isa = PBXReferenceProxy;
 			fileType = archive.ar;
 			path = libgmock.a;
-			remoteRef = 1B4311B21D22C541001692DA /* PBXContainerItemProxy */;
+			remoteRef = 1B5B9BA51D3169E100BCC1E2 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		1B4311B51D22C541001692DA /* libgmock_main.a */ = {
+		1B5B9BA81D3169E100BCC1E2 /* libgmock_main.a */ = {
 			isa = PBXReferenceProxy;
 			fileType = archive.ar;
 			path = libgmock_main.a;
-			remoteRef = 1B4311B41D22C541001692DA /* PBXContainerItemProxy */;
+			remoteRef = 1B5B9BA71D3169E100BCC1E2 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		1B4311B71D22C541001692DA /* libgtest.a */ = {
+		1B5B9BAA1D3169E100BCC1E2 /* libgtest.a */ = {
 			isa = PBXReferenceProxy;
 			fileType = archive.ar;
 			path = libgtest.a;
-			remoteRef = 1B4311B61D22C541001692DA /* PBXContainerItemProxy */;
+			remoteRef = 1B5B9BA91D3169E100BCC1E2 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		1B4311B91D22C541001692DA /* libgtest_main.a */ = {
+		1B5B9BAC1D3169E100BCC1E2 /* libgtest_main.a */ = {
 			isa = PBXReferenceProxy;
 			fileType = archive.ar;
 			path = libgtest_main.a;
-			remoteRef = 1B4311B81D22C541001692DA /* PBXContainerItemProxy */;
+			remoteRef = 1B5B9BAB1D3169E100BCC1E2 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		1B4311BB1D22C541001692DA /* demangle_unittest */ = {
+		1B5B9BAE1D3169E100BCC1E2 /* demangle_unittest */ = {
 			isa = PBXReferenceProxy;
 			fileType = "compiled.mach-o.executable";
 			path = demangle_unittest;
-			remoteRef = 1B4311BA1D22C541001692DA /* PBXContainerItemProxy */;
+			remoteRef = 1B5B9BAD1D3169E100BCC1E2 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		1B4311BD1D22C541001692DA /* libglog.a */ = {
+		1B5B9BB01D3169E100BCC1E2 /* libglog.a */ = {
 			isa = PBXReferenceProxy;
 			fileType = archive.ar;
 			path = libglog.a;
-			remoteRef = 1B4311BC1D22C541001692DA /* PBXContainerItemProxy */;
+			remoteRef = 1B5B9BAF1D3169E100BCC1E2 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		1B4311BF1D22C541001692DA /* logging_unittest */ = {
+		1B5B9BB21D3169E100BCC1E2 /* logging_unittest */ = {
 			isa = PBXReferenceProxy;
 			fileType = "compiled.mach-o.executable";
 			path = logging_unittest;
-			remoteRef = 1B4311BE1D22C541001692DA /* PBXContainerItemProxy */;
+			remoteRef = 1B5B9BB11D3169E100BCC1E2 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		1B4311C11D22C541001692DA /* signalhandler_unittest */ = {
+		1B5B9BB41D3169E100BCC1E2 /* signalhandler_unittest */ = {
 			isa = PBXReferenceProxy;
 			fileType = "compiled.mach-o.executable";
 			path = signalhandler_unittest;
-			remoteRef = 1B4311C01D22C541001692DA /* PBXContainerItemProxy */;
+			remoteRef = 1B5B9BB31D3169E100BCC1E2 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		1B4311C31D22C541001692DA /* stacktrace_unittest */ = {
+		1B5B9BB61D3169E100BCC1E2 /* stacktrace_unittest */ = {
 			isa = PBXReferenceProxy;
 			fileType = "compiled.mach-o.executable";
 			path = stacktrace_unittest;
-			remoteRef = 1B4311C21D22C541001692DA /* PBXContainerItemProxy */;
+			remoteRef = 1B5B9BB51D3169E100BCC1E2 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		1B4311C51D22C541001692DA /* stl_logging_unittest */ = {
+		1B5B9BB81D3169E100BCC1E2 /* stl_logging_unittest */ = {
 			isa = PBXReferenceProxy;
 			fileType = "compiled.mach-o.executable";
 			path = stl_logging_unittest;
-			remoteRef = 1B4311C41D22C541001692DA /* PBXContainerItemProxy */;
+			remoteRef = 1B5B9BB71D3169E100BCC1E2 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		1B4311C71D22C541001692DA /* symbolize_unittest */ = {
+		1B5B9BBA1D3169E100BCC1E2 /* symbolize_unittest */ = {
 			isa = PBXReferenceProxy;
 			fileType = "compiled.mach-o.executable";
 			path = symbolize_unittest;
-			remoteRef = 1B4311C61D22C541001692DA /* PBXContainerItemProxy */;
+			remoteRef = 1B5B9BB91D3169E100BCC1E2 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		1B4311C91D22C541001692DA /* utilities_unittest */ = {
+		1B5B9BBC1D3169E100BCC1E2 /* utilities_unittest */ = {
 			isa = PBXReferenceProxy;
 			fileType = "compiled.mach-o.executable";
 			path = utilities_unittest;
-			remoteRef = 1B4311C81D22C541001692DA /* PBXContainerItemProxy */;
+			remoteRef = 1B5B9BBB1D3169E100BCC1E2 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		1B4311CB1D22C541001692DA /* libassimp.a */ = {
+		1B5B9BBE1D3169E100BCC1E2 /* libzlibstatic.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libzlibstatic.a;
+			remoteRef = 1B5B9BBD1D3169E100BCC1E2 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		1B5B9BC01D3169E100BCC1E2 /* libassimp.a */ = {
 			isa = PBXReferenceProxy;
 			fileType = archive.ar;
 			path = libassimp.a;
-			remoteRef = 1B4311CA1D22C541001692DA /* PBXContainerItemProxy */;
+			remoteRef = 1B5B9BBF1D3169E100BCC1E2 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		1B4311CD1D22C541001692DA /* assimp */ = {
+		1B5B9BC21D3169E100BCC1E2 /* assimp */ = {
 			isa = PBXReferenceProxy;
 			fileType = "compiled.mach-o.executable";
 			path = assimp;
-			remoteRef = 1B4311CC1D22C541001692DA /* PBXContainerItemProxy */;
+			remoteRef = 1B5B9BC11D3169E100BCC1E2 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		1B4311CF1D22C541001692DA /* glm_dummy */ = {
+		1B5B9BC41D3169E100BCC1E2 /* glm_dummy */ = {
 			isa = PBXReferenceProxy;
 			fileType = "compiled.mach-o.executable";
 			path = glm_dummy;
-			remoteRef = 1B4311CE1D22C541001692DA /* PBXContainerItemProxy */;
+			remoteRef = 1B5B9BC31D3169E100BCC1E2 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		1B4311D11D22C541001692DA /* libmodern_gl_utils.a */ = {
+		1B5B9BC61D3169E100BCC1E2 /* libmodern_gl_utils.a */ = {
 			isa = PBXReferenceProxy;
 			fileType = archive.ar;
 			path = libmodern_gl_utils.a;
-			remoteRef = 1B4311D01D22C541001692DA /* PBXContainerItemProxy */;
+			remoteRef = 1B5B9BC51D3169E100BCC1E2 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		1B4311D31D22C541001692DA /* libhaart-core.a */ = {
+		1B5B9BC81D3169E100BCC1E2 /* libhaart-core.a */ = {
 			isa = PBXReferenceProxy;
 			fileType = archive.ar;
 			path = "libhaart-core.a";
-			remoteRef = 1B4311D21D22C541001692DA /* PBXContainerItemProxy */;
+			remoteRef = 1B5B9BC71D3169E100BCC1E2 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		1B4311D51D22C541001692DA /* libconvolution-component.a */ = {
+		1B5B9BCA1D3169E100BCC1E2 /* libconvolution-component.a */ = {
 			isa = PBXReferenceProxy;
 			fileType = archive.ar;
 			path = "libconvolution-component.a";
-			remoteRef = 1B4311D41D22C541001692DA /* PBXContainerItemProxy */;
+			remoteRef = 1B5B9BC91D3169E100BCC1E2 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		1B4311D71D22C541001692DA /* libutility-components.a */ = {
+		1B5B9BCC1D3169E100BCC1E2 /* libutility-components.a */ = {
 			isa = PBXReferenceProxy;
 			fileType = archive.ar;
 			path = "libutility-components.a";
-			remoteRef = 1B4311D61D22C541001692DA /* PBXContainerItemProxy */;
+			remoteRef = 1B5B9BCB1D3169E100BCC1E2 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		1B4311D91D22C541001692DA /* libother-components.a */ = {
+		1B5B9BCE1D3169E100BCC1E2 /* libother-components.a */ = {
 			isa = PBXReferenceProxy;
 			fileType = archive.ar;
 			path = "libother-components.a";
-			remoteRef = 1B4311D81D22C541001692DA /* PBXContainerItemProxy */;
+			remoteRef = 1B5B9BCD1D3169E100BCC1E2 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		1B4311DB1D22C541001692DA /* libcommon.a */ = {
+		1B5B9BD01D3169E100BCC1E2 /* libcommon.a */ = {
 			isa = PBXReferenceProxy;
 			fileType = archive.ar;
 			path = libcommon.a;
-			remoteRef = 1B4311DA1D22C541001692DA /* PBXContainerItemProxy */;
+			remoteRef = 1B5B9BCF1D3169E100BCC1E2 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		1B4311DD1D22C541001692DA /* libwaveguide.a */ = {
+		1B5B9BD21D3169E100BCC1E2 /* libwaveguide.a */ = {
 			isa = PBXReferenceProxy;
 			fileType = archive.ar;
 			path = libwaveguide.a;
-			remoteRef = 1B4311DC1D22C541001692DA /* PBXContainerItemProxy */;
+			remoteRef = 1B5B9BD11D3169E100BCC1E2 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		1B4311DF1D22C541001692DA /* libraytracer.a */ = {
+		1B5B9BD41D3169E100BCC1E2 /* libcompressed-waveguide.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = "libcompressed-waveguide.a";
+			remoteRef = 1B5B9BD31D3169E100BCC1E2 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		1B5B9BD61D3169E100BCC1E2 /* libraytracer.a */ = {
 			isa = PBXReferenceProxy;
 			fileType = archive.ar;
 			path = libraytracer.a;
-			remoteRef = 1B4311DE1D22C541001692DA /* PBXContainerItemProxy */;
+			remoteRef = 1B5B9BD51D3169E100BCC1E2 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		1B4311E11D22C541001692DA /* libcombined.a */ = {
+		1B5B9BD81D3169E100BCC1E2 /* libcombined.a */ = {
 			isa = PBXReferenceProxy;
 			fileType = archive.ar;
 			path = libcombined.a;
-			remoteRef = 1B4311E01D22C541001692DA /* PBXContainerItemProxy */;
+			remoteRef = 1B5B9BD71D3169E100BCC1E2 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		1B4311E31D22C541001692DA /* tests */ = {
+		1B5B9BDA1D3169E100BCC1E2 /* tests */ = {
 			isa = PBXReferenceProxy;
 			fileType = "compiled.mach-o.executable";
 			path = tests;
-			remoteRef = 1B4311E21D22C541001692DA /* PBXContainerItemProxy */;
+			remoteRef = 1B5B9BD91D3169E100BCC1E2 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		1B4311E51D22C541001692DA /* mic_offset_rotate */ = {
+		1B5B9BDC1D3169E100BCC1E2 /* mic_offset_rotate */ = {
 			isa = PBXReferenceProxy;
 			fileType = "compiled.mach-o.executable";
 			path = mic_offset_rotate;
-			remoteRef = 1B4311E41D22C541001692DA /* PBXContainerItemProxy */;
+			remoteRef = 1B5B9BDB1D3169E100BCC1E2 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		1B4311E71D22C541001692DA /* boundary_test */ = {
+		1B5B9BDE1D3169E100BCC1E2 /* boundary_test */ = {
 			isa = PBXReferenceProxy;
 			fileType = "compiled.mach-o.executable";
 			path = boundary_test;
-			remoteRef = 1B4311E61D22C541001692DA /* PBXContainerItemProxy */;
+			remoteRef = 1B5B9BDD1D3169E100BCC1E2 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		1B4311E91D22C541001692DA /* hybrid_test */ = {
+		1B5B9BE01D3169E100BCC1E2 /* hybrid_test */ = {
 			isa = PBXReferenceProxy;
 			fileType = "compiled.mach-o.executable";
 			path = hybrid_test;
-			remoteRef = 1B4311E81D22C541001692DA /* PBXContainerItemProxy */;
+			remoteRef = 1B5B9BDF1D3169E100BCC1E2 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		1B5B9BE21D3169E100BCC1E2 /* solution_growth */ = {
+			isa = PBXReferenceProxy;
+			fileType = "compiled.mach-o.executable";
+			path = solution_growth;
+			remoteRef = 1B5B9BE11D3169E100BCC1E2 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		1B5B9BE41D3169E100BCC1E2 /* data-convert */ = {
+			isa = PBXReferenceProxy;
+			fileType = "compiled.mach-o.executable";
+			path = "data-convert";
+			remoteRef = 1B5B9BE31D3169E100BCC1E2 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		1B5B9BE61D3169E100BCC1E2 /* libwayverb-data.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = "libwayverb-data.a";
+			remoteRef = 1B5B9BE51D3169E100BCC1E2 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		1B5B9BE81D3169E100BCC1E2 /* write_compensation_signal */ = {
+			isa = PBXReferenceProxy;
+			fileType = "compiled.mach-o.executable";
+			path = write_compensation_signal;
+			remoteRef = 1B5B9BE71D3169E100BCC1E2 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 /* End PBXReferenceProxy section */
@@ -4002,6 +4098,7 @@
 					"-I../../../../submodules/UtilityComponents/include",
 					"-I../../../../submodules/ConvolutionComponent/include",
 					"-I../../../../submodules/OtherComponents/include",
+					"-I../../../../submodules/DataBinding/include",
 					"-I../../../../submodules/haart-core/haart-core",
 					"-std=c++14",
 				);
@@ -4049,6 +4146,7 @@
 					"-I../../../../submodules/UtilityComponents/include",
 					"-I../../../../submodules/ConvolutionComponent/include",
 					"-I../../../../submodules/OtherComponents/include",
+					"-I../../../../submodules/DataBinding/include",
 					"-I../../../../submodules/haart-core/haart-core",
 					"-std=c++14",
 				);

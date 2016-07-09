@@ -63,8 +63,6 @@ ImpulseViewer::ImpulseViewer(AudioDeviceManager& audio_device_manager,
 
     setWantsKeyboardFocus(true);
 
-    max_range_changed(&transport_view_manager,
-                      transport_view_manager.get_max_range());
     visible_range_changed(&transport_view_manager,
                           transport_view_manager.get_visible_range());
 }
@@ -73,19 +71,13 @@ ImpulseViewer::~ImpulseViewer() noexcept {
     audio_device_manager.removeAudioCallback(&audio_source_player);
 }
 
-void ImpulseViewer::max_range_changed(PlaybackViewManager* r,
-                                      const Range<double>& range) {
-    scroll_bar.setRangeLimits(range);
-    resized();
-}
-void ImpulseViewer::visible_range_changed(PlaybackViewManager* r,
-                                          const Range<double>& range) {
+void ImpulseViewer::visible_range_changed(TransportViewManager* r, const juce::Range<double>& range) {
+    scroll_bar.setRangeLimits(0, transport_view_manager.get_max_length());
     scroll_bar.setCurrentRange(range, dontSendNotification);
     renderer.get_renderer().set_visible_range(range);
-    resized();
 }
-void ImpulseViewer::current_time_changed(PlaybackViewManager* r, double time) {
-}
+
+void ImpulseViewer::playhead_time_changed(TransportViewManager* r, double t) {}
 
 void ImpulseViewer::scrollBarMoved(ScrollBar* s, double new_range_start) {
     if (s == &scroll_bar) {
@@ -95,12 +87,9 @@ void ImpulseViewer::scrollBarMoved(ScrollBar* s, double new_range_start) {
 }
 
 void ImpulseViewer::resized() {
+    scroll_bar.setBounds(getLocalBounds().removeFromBottom(20));
+
     auto bounds = getLocalBounds();
-
-    if (scroll_bar.isVisible()) {
-        scroll_bar.setBounds(bounds.removeFromBottom(20));
-    }
-
     auto top = bounds.removeFromTop(40);
     top.reduce(2, 2);
     ruler.setBounds(bounds.removeFromTop(20));
@@ -184,7 +173,7 @@ void ImpulseViewer::buttonClicked(Button* b) {
     } else if (b == &waveform_button) {
         renderer.get_renderer().set_mode(ImpulseRenderer::Mode::waveform);
     } else if (b == &follow_playback_button) {
-        transport_view_manager.set_follow_playback(
+        transport_view_manager.set_follow_playhead(
                 follow_playback_button.getToggleState());
     }
 }

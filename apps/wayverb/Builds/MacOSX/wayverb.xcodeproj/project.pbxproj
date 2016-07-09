@@ -14,6 +14,8 @@
 		0F3F3BF0CF31990B8A36D2C6 /* BottomPanel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8EC991E2A8DBE96759A51D2A /* BottomPanel.cpp */; };
 		127F610F5B79495C0D092DF7 /* juce_audio_processors.mm in Sources */ = {isa = PBXBuildFile; fileRef = 1F4341A2DEBD8ABD625FA0A5 /* juce_audio_processors.mm */; };
 		17BFF294246BE35E2334DF9F /* QTKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AED820E5E9613936B4CCA98A /* QTKit.framework */; };
+		1B18B57A1D301340001B930D /* libcompressed-waveguide.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B18B5711D301340001B930D /* libcompressed-waveguide.a */; };
+		1B18B57B1D301340001B930D /* libwayverb-data.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B18B5771D301340001B930D /* libwayverb-data.a */; };
 		1B2F86BA1D28110B007EDF27 /* libassimp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B2F869B1D2810FF007EDF27 /* libassimp.a */; };
 		1B2F86BB1D28110B007EDF27 /* libcombined.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B2F86B11D2810FF007EDF27 /* libcombined.a */; };
 		1B2F86BC1D28110B007EDF27 /* libcommon.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B2F86AB1D2810FF007EDF27 /* libcommon.a */; };
@@ -82,6 +84,41 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		1B18B5701D301340001B930D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 1B2F86541D2810FE007EDF27 /* WAYVERB.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 287F56AD389E4529BA988C59;
+			remoteInfo = "compressed-waveguide";
+		};
+		1B18B5721D301340001B930D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 1B2F86541D2810FE007EDF27 /* WAYVERB.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = DF76C2794ABC4154B892BDCA;
+			remoteInfo = solution_growth;
+		};
+		1B18B5741D301340001B930D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 1B2F86541D2810FE007EDF27 /* WAYVERB.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = E2661BAFC1C34E5CAE6C9AB6;
+			remoteInfo = "data-convert";
+		};
+		1B18B5761D301340001B930D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 1B2F86541D2810FE007EDF27 /* WAYVERB.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = E1AB9E1F198447D98A8531F8;
+			remoteInfo = "wayverb-data";
+		};
+		1B18B5781D301340001B930D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 1B2F86541D2810FE007EDF27 /* WAYVERB.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 933529C9235E478E82DD4184;
+			remoteInfo = write_compensation_signal;
+		};
 		1B2F867C1D2810FF007EDF27 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 1B2F86541D2810FE007EDF27 /* WAYVERB.xcodeproj */;
@@ -1485,6 +1522,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1B18B57A1D301340001B930D /* libcompressed-waveguide.a in Frameworks */,
+				1B18B57B1D301340001B930D /* libwayverb-data.a in Frameworks */,
 				1B2F86BA1D28110B007EDF27 /* libassimp.a in Frameworks */,
 				1B2F86BB1D28110B007EDF27 /* libcombined.a in Frameworks */,
 				1B2F86BC1D28110B007EDF27 /* libcommon.a in Frameworks */,
@@ -1793,12 +1832,17 @@
 				1B2F86A91D2810FF007EDF27 /* libother-components.a */,
 				1B2F86AB1D2810FF007EDF27 /* libcommon.a */,
 				1B2F86AD1D2810FF007EDF27 /* libwaveguide.a */,
+				1B18B5711D301340001B930D /* libcompressed-waveguide.a */,
 				1B2F86AF1D2810FF007EDF27 /* libraytracer.a */,
 				1B2F86B11D2810FF007EDF27 /* libcombined.a */,
 				1B2F86B31D2810FF007EDF27 /* tests */,
 				1B2F86B51D2810FF007EDF27 /* mic_offset_rotate */,
 				1B2F86B71D2810FF007EDF27 /* boundary_test */,
 				1B2F86B91D2810FF007EDF27 /* hybrid_test */,
+				1B18B5731D301340001B930D /* solution_growth */,
+				1B18B5751D301340001B930D /* data-convert */,
+				1B18B5771D301340001B930D /* libwayverb-data.a */,
+				1B18B5791D301340001B930D /* write_compensation_signal */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -3743,6 +3787,41 @@
 /* End PBXProject section */
 
 /* Begin PBXReferenceProxy section */
+		1B18B5711D301340001B930D /* libcompressed-waveguide.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = "libcompressed-waveguide.a";
+			remoteRef = 1B18B5701D301340001B930D /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		1B18B5731D301340001B930D /* solution_growth */ = {
+			isa = PBXReferenceProxy;
+			fileType = "compiled.mach-o.executable";
+			path = solution_growth;
+			remoteRef = 1B18B5721D301340001B930D /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		1B18B5751D301340001B930D /* data-convert */ = {
+			isa = PBXReferenceProxy;
+			fileType = "compiled.mach-o.executable";
+			path = "data-convert";
+			remoteRef = 1B18B5741D301340001B930D /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		1B18B5771D301340001B930D /* libwayverb-data.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = "libwayverb-data.a";
+			remoteRef = 1B18B5761D301340001B930D /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		1B18B5791D301340001B930D /* write_compensation_signal */ = {
+			isa = PBXReferenceProxy;
+			fileType = "compiled.mach-o.executable";
+			path = write_compensation_signal;
+			remoteRef = 1B18B5781D301340001B930D /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
 		1B2F867D1D2810FF007EDF27 /* libgflags_nothreads.a */ = {
 			isa = PBXReferenceProxy;
 			fileType = archive.ar;

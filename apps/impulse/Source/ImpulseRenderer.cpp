@@ -2,7 +2,7 @@
 #include "Waterfall.hpp"
 #include "Waveform.hpp"
 
-#include "OtherComponents/Orientable.hpp"
+#include "common/orientable.h"
 
 #include "modern_gl_utils/generic_shader.h"
 

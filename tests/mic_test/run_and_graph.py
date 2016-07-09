@@ -14,13 +14,17 @@ project_path = "/Users/reuben/development/waveguide"
 
 environ["GLOG_logtostderr"] = "1"
 
+PATTERNS = [
+    ("omni", 0),
+    ("cardioid", 0.5),
+    ("bidirectional", 1),
+]
+
 def run():
     exe = join(project_path, "build/tests/mic_test/mic_offset_rotate")
     out_dir = join(project_path, "tests/mic_test/output")
 
-    for pattern in [
-            "omni", "cardioid", "bidirectional"
-    ]:
+    for pattern, _ in PATTERNS:
         o_dir = join(out_dir, pattern)
         cmd_1 = ["mkdir", "-p", o_dir]
         cmd_2 = [exe, o_dir, pattern]
@@ -41,10 +45,9 @@ def graph():
 
     base_folder = join(project_path, "tests/mic_test/output")
 
-    bands = 7
+    bands = 8
 
-    for this_file, shape in [("omni", 0), ("cardioid", 0.5), ("bidirectional", 1)]:
-
+    for this_file, shape in PATTERNS:
         this_file = base_folder + "/" + this_file + "/" + this_file + ".energies.txt"
 
         plt.figure(figsize=(12, 6), dpi=100)

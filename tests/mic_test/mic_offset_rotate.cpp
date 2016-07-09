@@ -1,4 +1,5 @@
 #include "waveguide/config.h"
+#include "waveguide/default_kernel.h"
 #include "waveguide/microphone.h"
 #include "waveguide/rectangular_waveguide.h"
 
@@ -81,7 +82,7 @@ int main(int argc, char** argv) {
 
     Microphone microphone(glm::vec3(0, 0, 1), directionality);
     glm::vec3 mic{0, 0, 0};
-    const auto test_locations = 18;
+    const auto test_locations = 24;
 
     std::ofstream ofile(output_folder + "/" + polar_string + ".energies.txt");
 
@@ -96,38 +97,43 @@ int main(int argc, char** argv) {
                 mic,
                 waveguide_sr);
 
-        const auto amp_factor = 4e3;
+        const auto amp_factor = 1 << 17;
 
         for (auto i = 0u; i != test_locations; ++i) {
             float angle = i * M_PI * 2 / test_locations + M_PI;
 
             const auto mic_index = waveguide.get_index_for_coordinate(mic);
 
-            const auto steps = 200;
+            const auto kernel_info = default_kernel(waveguide_sr);
+            auto kernel = kernel_info.kernel;
+
+            glm::vec3 source{std::sin(angle), 0, std::cos(angle)};
+            const auto dist = glm::distance(source, mic);
+            const auto time_between_source_receiver = dist / SPEED_OF_SOUND;
+            const auto required_steps =
+                    time_between_source_receiver * waveguide_sr;
+            const auto steps =
+                    required_steps + kernel_info.opaque_kernel_size;
 
             std::atomic_bool keep_going{true};
             ProgressBar pb(std::cout, steps);
             const auto w_results = waveguide.init_and_run(
-                    glm::vec3{std::sin(angle), 0, std::cos(angle)},
-                    kernels::sin_modulated_gaussian_kernel(waveguide_sr),
+                    source,
+                    std::move(kernel),
                     mic_index,
                     steps,
                     keep_going,
                     [&pb] { pb += 1; });
 
-            const auto out_sr = 44100.0;
-
-            auto out_signal = adjust_sampling_rate(
-                    microphone.process(w_results), waveguide_sr, out_sr);
+            auto out_signal = microphone.process(w_results);
 
             mul(out_signal, amp_factor);
 
-            filter::LinkwitzRileyLopass lopass;
-            lopass.set_params(filter_frequency, out_sr);
-            lopass.filter(out_signal);
-
-            const auto bands = 7;
+            const auto bands = 8;
             const auto min_band = 80;
+            const auto max_band = filter_frequency;
+
+            const auto factor = pow((max_band / min_band), 1.0 / bands);
 
             const auto print_energy = [&ofile](const auto& sig, auto band) {
                 const auto band_energy = proc::accumulate(
@@ -144,12 +150,23 @@ int main(int argc, char** argv) {
 
             ofile << "iteration: " << i;
 
+//            std::cout << "//  BANDS" << std::endl;
+
             for (auto i = 0; i != bands; ++i) {
                 const auto band = out_signal;
 
+                auto get_band_edge = [min_band, factor](auto i) {
+                    return min_band * std::pow(factor, i);
+                };
+
+                auto lower = get_band_edge(i + 0);
+                auto upper = get_band_edge(i + 1);
+
+//                std::cout << i + 1 << " : " << lower << " - " << upper
+//                          << std::endl;
+
                 filter::LinkwitzRileyBandpass bandpass;
-                bandpass.set_params(
-                        pow(2, i) * min_band, pow(2, i + 1) * min_band, out_sr);
+                bandpass.set_params(lower, upper, waveguide_sr);
                 bandpass.filter(out_signal);
 
                 print_energy(band, i);
@@ -160,7 +177,7 @@ int main(int argc, char** argv) {
             snd::write(
                     build_string(output_folder, "/", i, ".waveguide.full.wav"),
                     {out_signal},
-                    out_sr,
+                    waveguide_sr,
                     16);
         }
 
