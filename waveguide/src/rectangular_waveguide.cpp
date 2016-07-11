@@ -3,6 +3,78 @@
 
 #include "glog/logging.h"
 
+namespace detail {
+
+#define CONCAT_IMPL(x, y) x##y
+#define CONCAT(x, y) CONCAT_IMPL(x, y)
+template <typename>
+struct Type;
+#define PRINT_TYPE(T) Type<T> CONCAT(t, __COUNTER__)
+#define PRINT_TYPE_OF(T) PRINT_TYPE(decltype(T))
+
+}  // namespace detail
+
+template <int PORTS>
+struct rectangular_waveguide_run_info {
+    struct buffer_size_pair {
+        template <typename T>
+        //  yes, I do mean to pass by value here
+        //  cl buffer constructors take modifying iterators for mystifying
+        //  reasons
+        buffer_size_pair(const cl::Context& context, std::vector<T> u)
+                : size(u.size())
+                , buffer(context, u.begin(), u.end(), false) {
+        }
+
+        const size_t size;
+        cl::Buffer buffer;
+    };
+
+private:
+    template <typename T>
+    static Eigen::Matrix<double, 3, PORTS> get_transform_matrix(
+            int o, const T& nodes) {
+        Eigen::Matrix<double, PORTS, 3> ret;
+        auto count = 0u;
+        const auto& this_node = nodes[o];
+        auto basis = to_vec3f(this_node.position);
+        for (auto i = 0u; i != PORTS; ++i) {
+            auto port = this_node.ports[i];
+            if (port != RectangularProgram::NO_NEIGHBOR) {
+                auto pos =
+                        glm::normalize(to_vec3f(nodes[port].position) - basis);
+                ret.row(count++) << pos.x, pos.y, pos.z;
+            }
+        }
+        return pinv(ret);
+    }
+
+public:
+    template <typename T>
+    rectangular_waveguide_run_info(
+            int o,
+            const T& nodes,
+            const cl::Context& context,
+            const std::vector<RectangularProgram::BoundaryDataArray1>& bd1,
+            const std::vector<RectangularProgram::BoundaryDataArray2>& bd2,
+            const std::vector<RectangularProgram::BoundaryDataArray3>& bd3)
+            : transform_matrix(get_transform_matrix(o, nodes))
+            , velocity(0, 0, 0)
+            , boundary_1(context, bd1)
+            , boundary_2(context, bd2)
+            , boundary_3(context, bd3) {
+    }
+
+    Eigen::Matrix<double, 3, PORTS> transform_matrix;
+    glm::dvec3 velocity;
+    buffer_size_pair boundary_1;
+    buffer_size_pair boundary_2;
+    buffer_size_pair boundary_3;
+};
+
+template <BufferType buffer_type>
+RectangularWaveguide<buffer_type>::~RectangularWaveguide() noexcept = default;
+
 template <BufferType buffer_type>
 RectangularWaveguide<buffer_type>::RectangularWaveguide(
         const RectangularProgram& program,
@@ -74,13 +146,13 @@ void RectangularWaveguide<buffer_type>::setup(cl::CommandQueue& queue,
     try {
         auto context =
                 this->get_program().template get_info<CL_PROGRAM_CONTEXT>();
-        invocation =
-                std::make_unique<invocation_info>(o,
-                                                  mesh.get_nodes(),
-                                                  context,
-                                                  mesh.get_boundary_data<1>(),
-                                                  mesh.get_boundary_data<2>(),
-                                                  mesh.get_boundary_data<3>());
+        invocation = std::make_unique<rectangular_waveguide_run_info<PORTS>>(
+                o,
+                mesh.get_nodes(),
+                context,
+                mesh.get_boundary_data<1>(),
+                mesh.get_boundary_data<2>(),
+                mesh.get_boundary_data<3>());
     } catch (const std::exception& e) {
         std::cerr << e.what() << std::endl;
         throw;
@@ -120,9 +192,10 @@ RunStepResult RectangularWaveguide<buffer_type>::run_step(
 
     cl::copy(queue, error_flag_buffer, (&flag) + 0, (&flag) + 1);
 
-//        if (flag & RectangularProgram::id_outside_range_error) {
-//            throw std::runtime_error("pressure value is outside valid range");
-//        }
+    //        if (flag & RectangularProgram::id_outside_range_error) {
+    //            throw std::runtime_error("pressure value is outside valid
+    //            range");
+    //        }
 
     if (flag & RectangularProgram::id_inf_error) {
         throw std::runtime_error(
@@ -142,26 +215,35 @@ RunStepResult RectangularWaveguide<buffer_type>::run_step(
         throw std::runtime_error("suspicious boundary read");
     }
 
+    //  pressure difference vector is obtained by subtracting
+    //  the central junction pressure from
     cl_float out;
     cl::copy(queue, output, (&out), (&out) + 1);
+
+    //  the pressure values of neighboring junctions
     cl::copy(queue, surrounding_buffer, surrounding.begin(), surrounding.end());
 
     for (auto& i : surrounding) {
-        i -= out / mesh.get_spacing();
+        i -= out;
+        //  and dividing these terms by the spatial sampling period
+        i /= mesh.get_spacing();
     }
 
-    Eigen::Matrix<float, PORTS, 1> surrounding_vec;
-    surrounding_vec << surrounding[0], surrounding[1], surrounding[2],
-            surrounding[3], surrounding[4], surrounding[5];
+    //  the approximation of the pressure gradient is obtained by multiplying
+    //  the difference vector by the inverse projection matrix
+    glm::dvec3 m{surrounding[0] * -0.5 + surrounding[1] * 0.5,
+                 surrounding[2] * -0.5 + surrounding[3] * 0.5,
+                 surrounding[4] * -0.5 + surrounding[5] * 0.5};
 
-    auto multiplied = invocation->transform_matrix * surrounding_vec;
-    float x = multiplied[0];
-    float y = multiplied[1];
-    float z = multiplied[2];
-    glm::vec3 m(x, y, z);
-    static constexpr auto ambient_density = 1.225f;
-    invocation->velocity += this->get_period() * (m / -ambient_density);
-    auto intensity = invocation->velocity * out;
+    //  the result is scaled by the negative inverse of the ambient density
+    static constexpr auto ambient_density = 1.225;
+    auto dv = m / -ambient_density;
+    //  and integrated using a discrete-time integrator
+    invocation->velocity += this->get_period() * dv;
+
+    //  the instantaneous intensity is obtained by multiplying the velocity and
+    //  the pressure
+    auto intensity = invocation->velocity * static_cast<double>(out);
 
     return RunStepResult{out, intensity};
 }

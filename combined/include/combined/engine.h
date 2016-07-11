@@ -1,7 +1,6 @@
 #pragma once
 
 #include "common/boundaries.h"
-#include "common/callbacks.h"
 #include "common/cl_common.h"
 
 #include "raytracer/raytracer.h"
@@ -62,59 +61,24 @@ public:
 
     struct Intermediate {};
 
-    using StateCallback = GenericArgumentsCallback<State, double>;
-    using VisualiserCallback = GenericArgumentsCallback<std::vector<float>>;
+    using StateCallback = std::function<void(State, double)>;
+    using VisualiserCallback = std::function<void(std::vector<float>)>;
 
     Intermediate run(std::atomic_bool& keep_going,
-                     const StateCallback& callback);
+                     const StateCallback& callback = StateCallback());
 
-    Intermediate run_visualised(std::atomic_bool& keep_going,
-                                const StateCallback& state_callback,
-                                const VisualiserCallback& visualiser_callback);
+    Intermediate run_visualised(
+            std::atomic_bool& keep_going,
+            const StateCallback& state_callback = StateCallback(),
+            const VisualiserCallback& visualiser_callback =
+                    VisualiserCallback());
 
-    std::vector<std::vector<float>> attenuate(const Intermediate& i,
-                                              //  other args or whatever
-                                              const StateCallback& callback);
-
-    template <typename Callback = StateCallback>
-    auto run(std::atomic_bool& keep_going,
-             const Callback& callback = Callback()) {
-        return run(
-            keep_going,
-            static_cast<const StateCallback&>(make_state_adapter(callback)));
-    }
-
-    template <typename SCallback = StateCallback,
-              typename VCallback = VisualiserCallback>
-    auto run_visualised(std::atomic_bool& keep_going,
-                        const SCallback& state_callback = SCallback(),
-                        const VCallback& visualiser_callback = VCallback()) {
-        return run_visualised(
-            keep_going,
-            static_cast<const StateCallback&>(
-                make_state_adapter(state_callback)),
-            static_cast<const VisualiserCallback&>(
-                make_visualiser_adapter(visualiser_callback)));
-    }
-
-    template <typename Callback = StateCallback>
-    auto attenuate(const Intermediate& i,
-                   //  other args or whatever
-                   const Callback& callback = Callback()) {
-        return attenuate(
-            i,
+    std::vector<std::vector<float>> attenuate(
+            const Intermediate& i,
             //  other args or whatever
-            static_cast<const StateCallback&>(make_state_adapter(callback)));
-    }
+            const StateCallback& callback = StateCallback());
 
-    std::vector<cl_float3> get_node_positions() const {
-        const auto& nodes = waveguide.get_mesh().get_nodes();
-        std::vector<cl_float3> ret(nodes.size());
-        proc::transform(nodes, ret.begin(), [] (const auto& i) {
-            return i.position;
-        });
-        return ret;
-    }
+    std::vector<cl_float3> get_node_positions() const;
 
 private:
     void check_source_mic_positions() const;
@@ -123,16 +87,6 @@ private:
     auto run_basic(std::atomic_bool& keep_going,
                    const StateCallback& state_callback,
                    const Callback& waveguide_callback);
-
-    template <typename Callback>
-    auto make_state_adapter(const Callback& callback) {
-        return GenericCallbackAdapter<Callback, State, double>(callback);
-    }
-
-    template <typename Callback>
-    auto make_visualiser_adapter(const Callback& callback) {
-        return GenericCallbackAdapter<Callback, std::vector<float>>(callback);
-    }
 
     CopyableSceneData scene_data;
     Raytracer raytracer;

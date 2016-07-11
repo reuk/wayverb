@@ -5,7 +5,7 @@
 #include <iostream>
 
 Microphone::Microphone(const glm::vec3& pointing, float shape)
-        : pointing(pointing)
+        : pointing(glm::normalize(pointing))
         , shape(shape) {
 }
 
@@ -29,14 +29,16 @@ float Microphone::attenuation(const glm::vec3& incident) const {
 
 std::vector<float> Microphone::process(
         const std::vector<RunStepResult>& input) const {
-    std::vector<float> ret(input.size());
-    proc::transform(input, ret.begin(), [this](auto i) {
+    std::vector<float> ret;
+    ret.reserve(input.size());
+    proc::transform(input, std::back_inserter(ret), [this](auto i) {
         //  TODO DEFINITELY CHECK THIS
         //  RUN TESTS YEAH
         auto mag = glm::length(i.intensity);
-        if (mag == 0)
+        if (mag == 0) {
             return 0.0f;
-        mag = sqrt(mag * pow(attenuation(i.intensity), 2));
+        }
+        mag = std::sqrt(mag * std::pow(attenuation(i.intensity), 2.0f));
         return std::copysign(mag, i.pressure);
     });
 

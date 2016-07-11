@@ -9,6 +9,9 @@
 
 #include "gtest/gtest.h"
 
+#include <eigen3/Eigen/LU>
+#include <eigen3/Eigen/SVD>
+
 #include <array>
 #include <random>
 #include <type_traits>

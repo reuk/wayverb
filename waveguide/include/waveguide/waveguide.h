@@ -6,16 +6,12 @@
 #include "tetrahedral_mesh.h"
 #include "tetrahedral_program.h"
 
-#include "common/callbacks.h"
 #include "common/conversions.h"
 #include "common/extended_algorithms.h"
 #include "common/hrtf.h"
 #include "common/progress.h"
 
 #include "glm/glm.hpp"
-
-#include <eigen3/Eigen/LU>
-#include <eigen3/Eigen/SVD>
 
 #include <algorithm>
 #include <array>
@@ -37,34 +33,6 @@ enum class BufferType { cl, gl };
 
 namespace detail {
 
-template <typename T>
-inline T pinv(const T& a,
-              float epsilon = std::numeric_limits<float>::epsilon()) {
-    //  taken from http://eigen.tuxfamily.org/bz/show_bug.cgi?id=257
-    Eigen::JacobiSVD<T> svd(a, Eigen::ComputeThinU | Eigen::ComputeThinV);
-    auto tolerance = epsilon * std::max(a.cols(), a.rows()) *
-                     svd.singularValues().array().abs()(0);
-    return svd.matrixV() *
-           (svd.singularValues().array().abs() > tolerance)
-                   .select(svd.singularValues().array().inverse(), 0)
-                   .matrix()
-                   .asDiagonal() *
-           svd.matrixU().adjoint();
-}
-
-template <typename T>
-inline Eigen::MatrixXf get_transform_matrix(int ports, int o, const T& nodes) {
-    Eigen::MatrixXf ret(ports, 3);
-    auto count = 0u;
-    auto basis = to_vec3f(nodes[o].position);
-    for (const auto& i : nodes[o].ports) {
-        if (i != RectangularProgram::NO_NEIGHBOR) {
-            auto pos = glm::normalize(to_vec3f(nodes[i].position) - basis);
-            ret.row(count++) << pos.x, pos.y, pos.z;
-        }
-    }
-    return pinv(ret);
-}
 template <BufferType buffer_type>
 struct BufferTypeTrait;
 
@@ -105,7 +73,7 @@ public:
     using trait = detail::BufferTypeTrait<buffer_type>;
     using storage_array_type = typename trait::storage_array_type;
 
-    Waveguide(const ProgramType& program, size_t nodes, float sample_rate)
+    Waveguide(const ProgramType& program, size_t nodes, double sample_rate)
             : program(program)
             , queue(program.template get_info<CL_PROGRAM_CONTEXT>(),
                     program.get_device())
@@ -131,29 +99,29 @@ public:
         return nodes;
     }
 
-    template <typename Callback = DoNothingCallback>
+    using PerStepCallback = std::function<void()>;
+    using VisualiserCallback = std::function<void(std::vector<float>)>;
+
     std::vector<RunStepResult> init_and_run(
             const glm::vec3& e,
-            std::vector<float>&& input,
+            const std::vector<float>& input,
             size_t o,
             size_t steps,
             std::atomic_bool& keep_going,
-            const Callback& callback = Callback()) {
-        auto run_info = init(e, std::move(input), o, steps);
+            const PerStepCallback& callback = PerStepCallback()) {
+        auto run_info = init(e, input, o, steps);
         return this->run(run_info, keep_going, callback);
     }
 
-    template <typename SCallback = DoNothingCallback,
-              typename VCallback = GenericArgumentsCallback<std::vector<float>>>
     std::vector<RunStepResult> init_and_run_visualised(
             const glm::vec3& e,
-            std::vector<float>&& input,
+            const std::vector<float>& input,
             size_t o,
             size_t steps,
             std::atomic_bool& keep_going,
-            const SCallback& callback = SCallback(),
-            const VCallback& visual_callback = VCallback()) {
-        auto run_info = init(e, std::move(input), o, steps);
+            const PerStepCallback& callback = PerStepCallback(),
+            const VisualiserCallback& visual_callback = VisualiserCallback()) {
+        auto run_info = init(e, input, o, steps);
         return this->run_visualised(
                 run_info, keep_going, callback, visual_callback);
     }
@@ -164,12 +132,12 @@ public:
     }
     */
 
-    float get_sample_rate() const {
+    double get_sample_rate() const {
         return sample_rate;
     }
 
-    float get_period() const {
-        return 1 / sample_rate;
+    double get_period() const {
+        return 1.0 / sample_rate;
     }
 
     std::array<unsigned int, 2> get_gl_indices() const {
@@ -216,10 +184,10 @@ private:
 
     struct RunInfo final {
         RunInfo(size_t input_index,
-                std::vector<float>&& sig,
+                const std::vector<float>& sig,
                 size_t output_index)
                 : input_index(input_index)
-                , input_signal(std::move(sig))
+                , input_signal(sig)
                 , output_index(output_index) {
         }
 
@@ -228,10 +196,12 @@ private:
         const size_t output_index;
     };
 
-    template <typename Callback>
-    std::vector<RunStepResult> run_basic(const RunInfo& run_info,
-                                         std::atomic_bool& keep_going,
-                                         const Callback& callback) {
+    using InputCallback = std::function<RunStepResult(float)>;
+
+    std::vector<RunStepResult> run_basic(
+            const RunInfo& run_info,
+            std::atomic_bool& keep_going,
+            const InputCallback& callback = InputCallback()) {
         std::vector<RunStepResult> ret;
         ret.reserve(run_info.input_signal.size());
 
@@ -251,7 +221,7 @@ private:
     }
 
     RunInfo init(const glm::vec3& e,
-                 std::vector<float>&& input_sig,
+                 const std::vector<float>& input_sig,
                  size_t o,
                  size_t steps) {
         //  whatever unique setup is required
@@ -262,9 +232,9 @@ private:
         cl::copy(queue, n.begin(), n.end(), *previous);
         cl::copy(queue, n.begin(), n.end(), *current);
 
-        input_sig.resize(steps, 0);
-
-        return RunInfo(get_index_for_coordinate(e), std::move(input_sig), o);
+        auto t = input_sig;
+        t.resize(steps, 0);
+        return RunInfo(get_index_for_coordinate(e), t, o);
     }
 
     RunStepResult run_step(const RunInfo& run_info, float input) {
@@ -289,10 +259,10 @@ private:
         ;
     }
 
-    template <typename Callback = DoNothingCallback>
-    std::vector<RunStepResult> run(const RunInfo& ri,
-                                   std::atomic_bool& keep_going,
-                                   const Callback& callback = Callback()) {
+    std::vector<RunStepResult> run(
+            const RunInfo& ri,
+            std::atomic_bool& keep_going,
+            const PerStepCallback& callback = PerStepCallback()) {
         return run_basic(ri, keep_going, [this, &ri, &callback](auto i) {
             auto ret = this->run_step(ri, i);
             callback();
@@ -300,19 +270,17 @@ private:
         });
     }
 
-    template <typename SCallback = DoNothingCallback,
-              typename VCallback = GenericArgumentsCallback<std::vector<float>>>
     std::vector<RunStepResult> run_visualised(
             const RunInfo& ri,
             std::atomic_bool& keep_going,
-            const SCallback& callback = SCallback(),
-            const VCallback& visual_callback = VCallback()) {
+            const PerStepCallback& callback = PerStepCallback(),
+            const VisualiserCallback& visual_callback = VisualiserCallback()) {
         return run_basic(ri,
                          keep_going,
                          [this, &ri, &callback, &visual_callback](auto i) {
                              auto ret = this->run_step_visualised(ri, i);
                              callback();
-                             visual_callback(std::move(ret.second));
+                             visual_callback(ret.second);
                              return ret.first;
                          });
     }
@@ -329,5 +297,5 @@ private:
 
     cl::Buffer output;
 
-    float sample_rate;
+    double sample_rate;
 };

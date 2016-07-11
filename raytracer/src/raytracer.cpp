@@ -289,10 +289,26 @@ void add_direct_impulse(const glm::vec3& micpos,
 Results Raytracer::run(const CopyableSceneData& scene_data,
                        const glm::vec3& micpos,
                        const glm::vec3& source,
+                       int rays,
+                       int reflections,
+                       std::atomic_bool& keep_going,
+                       const std::function<void()>& callback) {
+    return run(scene_data,
+               micpos,
+               source,
+               get_random_directions(rays),
+               reflections,
+               keep_going,
+               callback);
+}
+
+Results Raytracer::run(const CopyableSceneData& scene_data,
+                       const glm::vec3& micpos,
+                       const glm::vec3& source,
                        const std::vector<cl_float3>& directions,
                        int reflections,
                        std::atomic_bool& keep_going,
-                       const DoNothingCallback& callback) {
+                       const std::function<void()>& callback) {
     VoxelCollection vox(scene_data, 4, 0.1);
     auto flattened_vox = vox.get_flattened();
 

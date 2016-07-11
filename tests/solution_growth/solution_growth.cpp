@@ -74,27 +74,35 @@ int main(int argc, char** argv) {
 
         auto counter = 0u;
         for (const auto& i : signals) {
-            auto steps = 10000;
+            auto run = [&counter,
+                        &waveguide,
+                        corrected_source,
+                        receiver_index,
+                        sampling_frequency](const auto& i) {
+                auto steps = 10000;
 
-            std::atomic_bool keep_going{true};
-            ProgressBar pb(std::cout, steps);
-            auto results = waveguide.init_and_run(corrected_source,
-                                                  make_transparent(i),
-                                                  receiver_index,
-                                                  steps,
-                                                  keep_going,
-                                                  [&pb] { pb += 1; });
+                std::atomic_bool keep_going{true};
+                ProgressBar pb(std::cout, steps);
+                auto results = waveguide.init_and_run(corrected_source,
+                                                      i,
+                                                      receiver_index,
+                                                      steps,
+                                                      keep_going,
+                                                      [&pb] { pb += 1; });
 
-            auto output = std::vector<float>(results.size());
-            proc::transform(results, output.begin(), [](const auto& i) {
-                return i.pressure;
-            });
+                auto output = std::vector<float>(results.size());
+                proc::transform(results, output.begin(), [](const auto& i) {
+                    return i.pressure;
+                });
 
-            auto fname = build_string("solution_growth_", counter, ".wav");
+                auto fname = build_string("solution_growth_", counter, ".wav");
 
-            snd::write(fname, {output}, sampling_frequency, 16);
+                snd::write(fname, {output}, sampling_frequency, 16);
 
-            counter += 1;
+                counter += 1;
+            };
+            run(i);
+            run(make_transparent(i));
         }
     } catch (const cl::Error& e) {
         LOG(INFO) << "critical cl error: " << e.what();

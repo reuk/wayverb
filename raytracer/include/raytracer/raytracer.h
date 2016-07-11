@@ -4,7 +4,6 @@
 #include "filters.h"
 #include "raytracer_program.h"
 
-#include "common/callbacks.h"
 #include "common/cl_include.h"
 #include "common/scene_data.h"
 #include "common/sinc.h"
@@ -140,49 +139,25 @@ public:
 
     Raytracer(const RaytracerProgram& program);
 
-    template <typename Callback = DoNothingCallback>
-    Results run(const CopyableSceneData& scene_data,
-                const glm::vec3& micpos,
-                const glm::vec3& source,
-                const std::vector<cl_float3>& directions,
-                int reflections,
-                std::atomic_bool& keep_going,
-                const Callback& c = Callback()) {
-        return run(scene_data,
-                   micpos,
-                   source,
-                   directions,
-                   reflections,
-                   keep_going,
-                   static_cast<const DoNothingCallback&>(make_callback(c)));
-    }
+    using PerStepCallback = std::function<void()>;
 
-    template <typename Callback = DoNothingCallback>
     Results run(const CopyableSceneData& scene_data,
                 const glm::vec3& micpos,
                 const glm::vec3& source,
                 int rays,
                 int reflections,
                 std::atomic_bool& keep_going,
-                const Callback& c = Callback()) {
-        return run(scene_data,
-                   micpos,
-                   source,
-                   get_random_directions(rays),
-                   reflections,
-                   keep_going,
-                   c);
-    }
+                const PerStepCallback& callback = PerStepCallback());
 
-private:
     Results run(const CopyableSceneData& scene_data,
                 const glm::vec3& micpos,
                 const glm::vec3& source,
                 const std::vector<cl_float3>& directions,
                 int reflections,
                 std::atomic_bool& keep_going,
-                const DoNothingCallback& c);
+                const PerStepCallback& callback = PerStepCallback());
 
+private:
     cl::CommandQueue queue;
     cl::Context context;
     kernel_type kernel;

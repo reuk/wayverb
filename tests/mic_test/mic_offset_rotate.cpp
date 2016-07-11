@@ -82,22 +82,24 @@ int main(int argc, char** argv) {
 
     Microphone microphone(glm::vec3(0, 0, 1), directionality);
     glm::vec3 mic{0, 0, 0};
-    const auto test_locations = 24;
+    const auto test_locations = 12;
 
     std::ofstream ofile(output_folder + "/" + polar_string + ".energies.txt");
 
     try {
         CuboidBoundary boundary(glm::vec3(-2.05, -2.5, -1.05),
                                 glm::vec3(2.05, 2.5, 1.05));
+        auto scene_data = boundary.get_scene_data();
+        auto r = 0.9f;
+        scene_data.set_surfaces(Surface{VolumeType{{r, r, r, r, r, r, r, r}},
+                                        VolumeType{{r, r, r, r, r, r, r, r}}});
         const RectangularProgram waveguide_program(compute_context.context,
                                                    compute_context.device);
         RectangularWaveguide<BufferType::cl> waveguide(
                 waveguide_program,
-                MeshBoundary(boundary.get_scene_data()),
+                MeshBoundary(scene_data),
                 mic,
                 waveguide_sr);
-
-        const auto amp_factor = 1 << 17;
 
         for (auto i = 0u; i != test_locations; ++i) {
             float angle = i * M_PI * 2 / test_locations + M_PI;
@@ -106,14 +108,17 @@ int main(int argc, char** argv) {
 
             const auto kernel_info = default_kernel(waveguide_sr);
             auto kernel = kernel_info.kernel;
+            mul(kernel, 1<<5);
 
             glm::vec3 source{std::sin(angle), 0, std::cos(angle)};
             const auto dist = glm::distance(source, mic);
             const auto time_between_source_receiver = dist / SPEED_OF_SOUND;
-            const auto required_steps =
+            const size_t required_steps =
                     time_between_source_receiver * waveguide_sr;
             const auto steps =
                     required_steps + kernel_info.opaque_kernel_size;
+
+            std::cout << "running " << steps << " steps" << std::endl;
 
             std::atomic_bool keep_going{true};
             ProgressBar pb(std::cout, steps);
@@ -127,7 +132,7 @@ int main(int argc, char** argv) {
 
             auto out_signal = microphone.process(w_results);
 
-            mul(out_signal, amp_factor);
+            mul(out_signal, 1<<12);
 
             const auto bands = 8;
             const auto min_band = 80;
@@ -153,21 +158,21 @@ int main(int argc, char** argv) {
 //            std::cout << "//  BANDS" << std::endl;
 
             for (auto i = 0; i != bands; ++i) {
-                const auto band = out_signal;
+                auto band = out_signal;
 
                 auto get_band_edge = [min_band, factor](auto i) {
                     return min_band * std::pow(factor, i);
                 };
 
-                auto lower = get_band_edge(i + 0);
-                auto upper = get_band_edge(i + 1);
+                const auto lower = get_band_edge(i + 0);
+                const auto upper = get_band_edge(i + 1);
 
 //                std::cout << i + 1 << " : " << lower << " - " << upper
 //                          << std::endl;
 
                 filter::LinkwitzRileyBandpass bandpass;
                 bandpass.set_params(lower, upper, waveguide_sr);
-                bandpass.filter(out_signal);
+                bandpass.filter(band);
 
                 print_energy(band, i);
             }

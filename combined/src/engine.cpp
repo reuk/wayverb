@@ -217,6 +217,16 @@ std::vector<std::vector<float>> WayverbEngine<buffer_type>::attenuate(
     return ret;
 }
 
+template <BufferType buffer_type>
+std::vector<cl_float3> WayverbEngine<buffer_type>::get_node_positions() const {
+    const auto& nodes = waveguide.get_mesh().get_nodes();
+    std::vector<cl_float3> ret(nodes.size());
+    proc::transform(nodes, ret.begin(), [] (const auto& i) {
+        return i.position;
+    });
+    return ret;
+}
+
 //  instantiate
 template class WayverbEngine<BufferType::cl>;
 
