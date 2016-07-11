@@ -814,8 +814,9 @@ kernel void condensed_waveguide(const InputInfo input_info,
         for (int i = 0; i != PORTS; ++i) {
             uint port_index = neighbor_index(locator, dimensions, i);
             if (port_index != NO_NEIGHBOR &&
-                nodes[port_index].boundary_type & id_inside)
+                nodes[port_index].boundary_type & id_inside) {
                 surrounding[i] = current[port_index];
+            }
         }
     }
 }

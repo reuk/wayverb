@@ -45,7 +45,7 @@ def graph():
 
     base_folder = join(project_path, "tests/mic_test/output")
 
-    bands = 8
+    bands = 1
 
     for this_file, shape in PATTERNS:
         this_file = base_folder + "/" + this_file + "/" + this_file + ".energies.txt"
@@ -81,6 +81,8 @@ def graph():
 
             print i
             ax = plt.subplot(2, 4, 1 + i, projection='polar')
+            ax.set_xticklabels([])
+            ax.set_yticklabels([])
             ax.plot(theta, energies, color='r', linewidth=1)
             ax.plot(theta, desired, color='b', linewidth=1)
 

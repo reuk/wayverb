@@ -54,7 +54,7 @@ private:
     const MeshType mesh;
     const cl::Buffer node_buffer;                   //  const
     const cl::Buffer boundary_coefficients_buffer;  //  const
+    std::vector<float> surrounding;   //  overwritten every step, constant size
     cl::Buffer surrounding_buffer;    //  overwritten every step, constant size
-    std::vector<double> surrounding;  //  overwritten every step, constant size
     cl::Buffer error_flag_buffer;     //  overwritten every step, constant size
 };

@@ -30,26 +30,6 @@ struct rectangular_waveguide_run_info {
         cl::Buffer buffer;
     };
 
-private:
-    template <typename T>
-    static Eigen::Matrix<double, 3, PORTS> get_transform_matrix(
-            int o, const T& nodes) {
-        Eigen::Matrix<double, PORTS, 3> ret;
-        auto count = 0u;
-        const auto& this_node = nodes[o];
-        auto basis = to_vec3f(this_node.position);
-        for (auto i = 0u; i != PORTS; ++i) {
-            auto port = this_node.ports[i];
-            if (port != RectangularProgram::NO_NEIGHBOR) {
-                auto pos =
-                        glm::normalize(to_vec3f(nodes[port].position) - basis);
-                ret.row(count++) << pos.x, pos.y, pos.z;
-            }
-        }
-        return pinv(ret);
-    }
-
-public:
     template <typename T>
     rectangular_waveguide_run_info(
             int o,
@@ -58,14 +38,12 @@ public:
             const std::vector<RectangularProgram::BoundaryDataArray1>& bd1,
             const std::vector<RectangularProgram::BoundaryDataArray2>& bd2,
             const std::vector<RectangularProgram::BoundaryDataArray3>& bd3)
-            : transform_matrix(get_transform_matrix(o, nodes))
-            , velocity(0, 0, 0)
+            : velocity(0, 0, 0)
             , boundary_1(context, bd1)
             , boundary_2(context, bd2)
             , boundary_3(context, bd3) {
     }
 
-    Eigen::Matrix<double, 3, PORTS> transform_matrix;
     glm::dvec3 velocity;
     buffer_size_pair boundary_1;
     buffer_size_pair boundary_2;
@@ -126,10 +104,11 @@ RectangularWaveguide<buffer_type>::RectangularWaveguide(
                   coefficients.begin(),
                   coefficients.end(),
                   false)
-        , surrounding_buffer(program.template get_info<CL_PROGRAM_CONTEXT>(),
-                             CL_MEM_READ_WRITE,
-                             sizeof(cl_float) * PORTS)
         , surrounding(PORTS, 0)
+        , surrounding_buffer(program.template get_info<CL_PROGRAM_CONTEXT>(),
+                             surrounding.begin(),
+                             surrounding.end(),
+                             false)
         , error_flag_buffer(program.template get_info<CL_PROGRAM_CONTEXT>(),
                             CL_MEM_READ_WRITE,
                             sizeof(cl_int)) {
@@ -177,8 +156,8 @@ RunStepResult RectangularWaveguide<buffer_type>::run_step(
 
     kernel(cl::EnqueueArgs(queue, cl::NDRange(nodes)),
            input_info,
-           current,
            previous,
+           current,
            node_buffer,
            to_cl_int3(get_mesh().get_dim()),
            invocation->boundary_1.buffer,
@@ -231,6 +210,11 @@ RunStepResult RectangularWaveguide<buffer_type>::run_step(
 
     //  the approximation of the pressure gradient is obtained by multiplying
     //  the difference vector by the inverse projection matrix
+    //  matrix looks like
+    //      -0.5  0.5    0    0    0    0
+    //         0    0 -0.5  0.5    0    0
+    //         0    0    0    0 -0.5  0.5
+    //  so I think the product is like this:
     glm::dvec3 m{surrounding[0] * -0.5 + surrounding[1] * 0.5,
                  surrounding[2] * -0.5 + surrounding[3] * 0.5,
                  surrounding[4] * -0.5 + surrounding[5] * 0.5};
