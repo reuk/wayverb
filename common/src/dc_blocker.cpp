@@ -3,7 +3,8 @@
 namespace filter {
 
 DelayLine::DelayLine(int length)
-        : data(length, 0) {
+        : data(length, 0)
+        , index(0) {
 }
 
 double& DelayLine::operator[](size_t i) {
@@ -23,29 +24,27 @@ void DelayLine::push(double x) {
     data[index] = x;
 }
 
+void DelayLine::clear() {
+    std::fill(data.begin(), data.end(), 0);
+    index = 0;
+}
+
 MovingAverage::MovingAverage(int d)
         : d(d)
-        , delay_line(d + 2) {
+        , delay_line(d + 2)
+        , single_delay(0) {
 }
 
 double MovingAverage::operator()(double x) {
-    auto ret = x - delay_line[d - 1];
     delay_line.push(x);
-    ret += single_delay;
+    auto ret = x - delay_line[d] + single_delay;
     single_delay = ret;
     return ret / d;
 }
 
-LinearDCBlocker::LinearDCBlocker(int d)
-        : d(d)
-        , moving_average{{MovingAverage(d), MovingAverage(d)}} {
-}
-
-double LinearDCBlocker::operator()(double x) {
-    for (auto& m : moving_average) {
-        x = m(x);
-    }
-    return moving_average[0].delay_line[d - 1] - x;
+void MovingAverage::clear() {
+    delay_line.clear();
+    single_delay = 0;
 }
 
 }  // namespace filter

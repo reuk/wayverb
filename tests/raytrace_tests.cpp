@@ -32,7 +32,8 @@ auto get_results(ComputeContext& context,
                         glm::vec3(0, 1.75, 3),
                         directions,
                         reflections,
-                        keep_going);
+                        keep_going,
+                        [] {});
 }
 
 #define USE_EPSILON
@@ -216,7 +217,7 @@ TEST(raytrace, image_source) {
 
     std::atomic_bool keep_going{true};
     auto results = raytracer.run(
-            scene_data, receiver, source, 100000, 100, keep_going);
+            scene_data, receiver, source, 100000, 100, keep_going, [] {});
 
     Attenuate attenuator(raytrace_program);
     Speaker speaker{};

@@ -118,26 +118,27 @@ public:
         return ret;
     }
 
+    void clear() {}
+
     void set_params(double b0, double b1, double b2, double a1, double a2);
 
 private:
     double b0, b1, b2, a1, a2;
 };
 
-template <typename T>
-class TwopassFilterWrapper : public T {
-public:
-    template <typename... Ts>
-    TwopassFilterWrapper(Ts &&... ts)
-            : T(std::forward<Ts>(ts)...) {
-    }
+template <typename Filter, typename It>
+auto run_one_pass(Filter& filter, It begin, It end) {
+    filter.clear();
+    return filter.filter(begin, end);
+}
 
-    template<typename It>
-    std::vector<float> filter(It begin, It end) {
-        auto t = T::filter(begin, end);
-        return T::filter(std::rbegin(t), std::rend(t));
-    }
-};
+template<typename Filter, typename It>
+auto run_two_pass(Filter& filter, It begin, It end) {
+    auto t = run_one_pass(filter, begin, end);
+    auto u = run_one_pass(filter, std::crbegin(t), std::crend(t));
+    std::reverse(u.begin(), u.end());
+    return u;
+}
 
 /// Simple biquad bandpass filter.
 class BandpassBiquad : public Bandpass, public Biquad {
@@ -155,9 +156,6 @@ public:
     void set_params(float cutoff, float sr) override;
 };
 
-using LinkwitzRileyLopass = TwopassFilterWrapper<LinkwitzRileySingleLopass>;
-using LinkwitzRileyHipass = TwopassFilterWrapper<LinkwitzRileySingleHipass>;
-
 /// A linkwitz-riley filter is just a linear-phase lopass and hipass
 /// coupled together.
 class LinkwitzRileyBandpass : public Bandpass {
@@ -166,13 +164,13 @@ public:
 
     template <typename It>
     std::vector<float> filter(It begin, It end) {
-        auto t = lopass.filter(begin, end);
-        return hipass.filter(std::begin(t), std::end(t));
+        auto t = run_two_pass(lopass, begin, end);
+        return run_two_pass(hipass, t.begin(), t.end());
     }
 
 private:
-    TwopassFilterWrapper<LinkwitzRileyLopass> lopass;
-    TwopassFilterWrapper<LinkwitzRileyHipass> hipass;
+    LinkwitzRileySingleLopass lopass;
+    LinkwitzRileySingleHipass hipass;
 };
 
 class DCBlocker : public Biquad {

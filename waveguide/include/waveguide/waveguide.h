@@ -108,7 +108,7 @@ public:
             size_t o,
             size_t steps,
             std::atomic_bool& keep_going,
-            const PerStepCallback& callback = PerStepCallback()) {
+            const PerStepCallback& callback) {
         auto run_info = init(e, input, o, steps);
         return this->run(run_info, keep_going, callback);
     }
@@ -119,8 +119,8 @@ public:
             size_t o,
             size_t steps,
             std::atomic_bool& keep_going,
-            const PerStepCallback& callback = PerStepCallback(),
-            const VisualiserCallback& visual_callback = VisualiserCallback()) {
+            const PerStepCallback& callback,
+            const VisualiserCallback& visual_callback) {
         auto run_info = init(e, input, o, steps);
         return this->run_visualised(
                 run_info, keep_going, callback, visual_callback);
@@ -262,7 +262,7 @@ private:
     std::vector<RunStepResult> run(
             const RunInfo& ri,
             std::atomic_bool& keep_going,
-            const PerStepCallback& callback = PerStepCallback()) {
+            const PerStepCallback& callback) {
         return run_basic(ri, keep_going, [this, &ri, &callback](auto i) {
             auto ret = this->run_step(ri, i);
             callback();
@@ -273,8 +273,8 @@ private:
     std::vector<RunStepResult> run_visualised(
             const RunInfo& ri,
             std::atomic_bool& keep_going,
-            const PerStepCallback& callback = PerStepCallback(),
-            const VisualiserCallback& visual_callback = VisualiserCallback()) {
+            const PerStepCallback& callback,
+            const VisualiserCallback& visual_callback) {
         return run_basic(ri,
                          keep_going,
                          [this, &ri, &callback, &visual_callback](auto i) {

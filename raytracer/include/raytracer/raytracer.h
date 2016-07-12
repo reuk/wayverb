@@ -147,7 +147,7 @@ public:
                 int rays,
                 int reflections,
                 std::atomic_bool& keep_going,
-                const PerStepCallback& callback = PerStepCallback());
+                const PerStepCallback& callback);
 
     Results run(const CopyableSceneData& scene_data,
                 const glm::vec3& micpos,
@@ -155,7 +155,7 @@ public:
                 const std::vector<cl_float3>& directions,
                 int reflections,
                 std::atomic_bool& keep_going,
-                const PerStepCallback& callback = PerStepCallback());
+                const PerStepCallback& callback);
 
 private:
     cl::CommandQueue queue;

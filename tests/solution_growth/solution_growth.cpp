@@ -112,10 +112,11 @@ int main(int argc, char** argv) {
                 snd::write(fname, {output}, sampling_frequency, 16);
             }
 
-            filter::ZeroPhaseDCBlocker blocker(32);
-            auto dc_removed = blocker.filter(output.begin(), output.end());
-
             {
+                filter::ExtraLinearDCBlocker u;
+                auto dc_removed =
+                        filter::run_two_pass(u, output.begin(), output.end());
+
                 auto fname = build_string(
                         "solution_growth.", i.name, ".dc_blocked.wav");
                 snd::write(fname, {dc_removed}, sampling_frequency, 16);

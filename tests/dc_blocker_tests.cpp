@@ -1,6 +1,12 @@
 #include "common/dc_blocker.h"
+#include "common/write_audio_file.h"
+#include "common/string_builder.h"
+#include "common/dsp_vector_ops.h"
 
 #include "gtest/gtest.h"
+
+#include <random>
+#include <algorithm>
 
 TEST(dc_blocker, delay_line) {
     constexpr auto LENGTH = 4;
@@ -51,42 +57,32 @@ TEST(dc_blocker, moving_average) {
 }
 
 TEST(dc_blocker, two_moving_average) {
-    std::array<filter::MovingAverage, 2> ma{
-            {filter::MovingAverage(4), filter::MovingAverage(4)}};
+    filter::NMovingAverages<2> ma(4);
+    ASSERT_EQ(ma(0), 0);
+    ASSERT_EQ(ma(0), 0);
+    ASSERT_EQ(ma(0), 0);
+    ASSERT_EQ(ma(0), 0);
+    ASSERT_EQ(ma(0), 0);
+    ASSERT_EQ(ma(0), 0);
 
-    auto apply = [&ma](double x) {
-        for (auto& i : ma) {
-            x = i(x);
-        }
-        return x;
-    };
+    ASSERT_EQ(ma(1), 1 / 16.0);
+    ASSERT_EQ(ma(0), 2 / 16.0);
+    ASSERT_EQ(ma(0), 3 / 16.0);
+    ASSERT_EQ(ma(0), 4 / 16.0);
 
-    ASSERT_EQ(apply(0), 0);
-    ASSERT_EQ(apply(0), 0);
-    ASSERT_EQ(apply(0), 0);
-    ASSERT_EQ(apply(0), 0);
-    ASSERT_EQ(apply(0), 0);
-    ASSERT_EQ(apply(0), 0);
+    ASSERT_EQ(ma(0), 3 / 16.0);
+    ASSERT_EQ(ma(0), 2 / 16.0);
+    ASSERT_EQ(ma(0), 1 / 16.0);
+    ASSERT_EQ(ma(0), 0 / 16.0);
 
-    ASSERT_EQ(apply(1), 1 / 16.0);
-    ASSERT_EQ(apply(0), 2 / 16.0);
-    ASSERT_EQ(apply(0), 3 / 16.0);
-    ASSERT_EQ(apply(0), 4 / 16.0);
-
-    ASSERT_EQ(apply(0), 3 / 16.0);
-    ASSERT_EQ(apply(0), 2 / 16.0);
-    ASSERT_EQ(apply(0), 1 / 16.0);
-    ASSERT_EQ(apply(0), 0 / 16.0);
-
-    ASSERT_EQ(apply(0), 0);
-    ASSERT_EQ(apply(0), 0);
-    ASSERT_EQ(apply(0), 0);
-    ASSERT_EQ(apply(0), 0);
+    ASSERT_EQ(ma(0), 0);
+    ASSERT_EQ(ma(0), 0);
+    ASSERT_EQ(ma(0), 0);
+    ASSERT_EQ(ma(0), 0);
 }
 
 TEST(dc_blocker, dc_blocker) {
     filter::LinearDCBlocker dc(4);
-
     ASSERT_EQ(dc(0), 0);
     ASSERT_EQ(dc(0), 0);
     ASSERT_EQ(dc(0), 0);
@@ -112,11 +108,85 @@ TEST(dc_blocker, dc_blocker) {
 
 TEST(dc_blocker, big_offset) {
     filter::LinearDCBlocker dc(4);
-
     ASSERT_EQ(dc(2), -2 / 16.0);
     ASSERT_EQ(dc(2), -6 / 16.0);
     ASSERT_EQ(dc(2), -12 / 16.0);
     ASSERT_EQ(dc(2), 12 / 16.0);
     ASSERT_EQ(dc(2), 6 / 16.0);
     ASSERT_EQ(dc(2), 2 / 16.0);
+}
+
+std::vector<float> generate_noise(size_t samples) {
+    std::default_random_engine engine{std::random_device()()};
+    std::uniform_real_distribution<float> dist{-1, 1};
+    std::vector<float> ret(samples);
+    std::generate(ret.begin(), ret.end(), [&engine, &dist] {
+        return dist(engine);
+    });
+    return ret;
+}
+
+std::vector<float> generate_sweep(size_t samples) {
+    double phase {0};
+    std::vector<float> ret(samples);
+    for (auto i = 0u; i != samples; ++i) {
+        ret[i] = std::sin(phase * 2 * M_PI);
+        phase += (i * 0.5) / samples;
+        phase = std::fmod(phase, 1);
+    }
+    return ret;
+}
+
+std::vector<float> generate_impulse(size_t samples) {
+    std::vector<float> ret(samples, 0);
+    ret[ret.size() / 2] = 1;
+    return ret;
+}
+
+TEST(dc_blocker, io) {
+    struct signal {
+        std::string name;
+        std::vector<float> kernel;
+    };
+
+    constexpr auto samples = 1000000;
+
+    std::vector<signal> signals{
+            signal{"noise", generate_noise(samples)},
+            signal{"sweep", generate_sweep(samples)},
+            signal{"impulse", generate_impulse(samples)},
+    };
+
+    for (const auto& i: signals) {
+        snd::write(
+                build_string(
+                        "dc_test.input.", i.name, ".wav"),
+                {i.kernel},
+                44100,
+                16);
+
+        auto run = [&i](auto& filter, const auto& filter_name) {
+
+            auto output = filter::run_two_pass(
+                    filter, i.kernel.begin(), i.kernel.end());
+            normalize(output);
+            snd::write(build_string("dc_test.output.",
+                                    filter_name,
+                                    ".",
+                                    i.name,
+                                    ".wav"),
+                       {output},
+                       44100,
+                       16);
+        };
+
+        {
+            filter::LinearDCBlocker dc;
+            run(dc, "normal");
+        }
+        {
+            filter::ExtraLinearDCBlocker dc;
+            run(dc, "super");
+        }
+    }
 }
