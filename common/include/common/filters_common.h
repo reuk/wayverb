@@ -8,20 +8,13 @@
 #include <cstring>
 #include <memory>
 #include <vector>
+#include <algorithm>
 
 /// This namespace houses all of the machinery for multiband crossover
 /// filtering.
 namespace filter {
 
-/// Interface for the most generic boring filter.
-class Filter {
-public:
-    virtual ~Filter() noexcept = default;
-    /// Given a vector of data, return a bandpassed version of the data.
-    virtual void filter(std::vector<float> &data) = 0;
-};
-
-class Lopass : public virtual Filter {
+class Lopass {
 public:
     /// A hipass has mutable cutoff and samplerate.
     virtual void set_params(float co, float s);
@@ -29,7 +22,7 @@ public:
 };
 
 /// Interface for a plain boring hipass filter.
-class Hipass : public virtual Filter {
+class Hipass {
 public:
     /// A hipass has mutable cutoff and samplerate.
     virtual void set_params(float co, float s);
@@ -37,59 +30,93 @@ public:
 };
 
 /// Interface for a plain boring bandpass filter.
-class Bandpass : public virtual Filter {
+class Bandpass {
 public:
     /// A hipass has mutable lopass, hipass, and samplerate.
     virtual void set_params(float l, float h, float s);
     float lo, hi, sr;
 };
 
-class LopassWindowedSinc : public Lopass, public FastConvolver {
+class LopassWindowedSinc : public Lopass {
 public:
     explicit LopassWindowedSinc(int inputLength);
 
     /// Filter a vector of data.
-    void filter(std::vector<float> &data) override;
+    template<typename It>
+    std::vector<float> filter(It begin, It end) {
+        return convolver.convolve(
+                std::begin(kernel), std::end(kernel), begin, end);
+    }
+
     void set_params(float co, float s) override;
 
 private:
     static const auto KERNEL_LENGTH = 99;
+    FastConvolver convolver;
     std::array<float, KERNEL_LENGTH> kernel;
 };
 
 /// An interesting windowed-sinc hipass filter.
-class HipassWindowedSinc : public Hipass, public FastConvolver {
+class HipassWindowedSinc : public Hipass {
 public:
     explicit HipassWindowedSinc(int inputLength);
 
     /// Filter a vector of data.
-    void filter(std::vector<float> &data) override;
+    template<typename It>
+    std::vector<float> filter(It begin, It end) {
+        return convolver.convolve(
+                std::begin(kernel), std::end(kernel), begin, end);
+    }
+
     void set_params(float co, float s) override;
 
 private:
     static const auto KERNEL_LENGTH = 99;
+    FastConvolver convolver;
     std::array<float, KERNEL_LENGTH> kernel;
 };
 
 /// An interesting windowed-sinc bandpass filter.
-class BandpassWindowedSinc : public Bandpass, public FastConvolver {
+class BandpassWindowedSinc : public Bandpass {
 public:
     explicit BandpassWindowedSinc(int inputLength);
 
     /// Filter a vector of data.
-    void filter(std::vector<float> &data) override;
+    template<typename It>
+    std::vector<float> filter(It begin, It end) {
+        return convolver.convolve(
+                std::begin(kernel), std::end(kernel), begin, end);
+    }
+
     void set_params(float l, float h, float s) override;
 
 private:
     static const auto KERNEL_LENGTH = 99;
+    FastConvolver convolver;
     std::array<float, KERNEL_LENGTH> kernel;
 };
 
 /// A super-simple biquad filter.
-class Biquad : public virtual Filter {
+class Biquad {
 public:
     /// Run the filter foward over some data.
-    void filter(std::vector<float> &data) override;
+    template<typename It>
+    std::vector<float> filter(It begin, It end) {
+        std::vector<float> ret(begin, end);
+
+        double z1 = 0;
+        double z2 = 0;
+
+        std::for_each(
+                std::begin(ret), std::end(ret), [this, &z1, &z2](auto &i) {
+                    double out = i * b0 + z1;
+                    z1 = i * b1 + z2 - a1 * out;
+                    z2 = i * b2 - a2 * out;
+                    i = out;
+                });
+
+        return ret;
+    }
 
     void set_params(double b0, double b1, double b2, double a1, double a2);
 
@@ -105,11 +132,10 @@ public:
             : T(std::forward<Ts>(ts)...) {
     }
 
-    void filter(std::vector<float> &data) override {
-        T::filter(data);
-        proc::reverse(data);
-        T::filter(data);
-        proc::reverse(data);
+    template<typename It>
+    std::vector<float> filter(It begin, It end) {
+        auto t = T::filter(begin, end);
+        return T::filter(std::rbegin(t), std::rend(t));
     }
 };
 
@@ -137,7 +163,12 @@ using LinkwitzRileyHipass = TwopassFilterWrapper<LinkwitzRileySingleHipass>;
 class LinkwitzRileyBandpass : public Bandpass {
 public:
     void set_params(float l, float h, float s) override;
-    void filter(std::vector<float> &data) override;
+
+    template <typename It>
+    std::vector<float> filter(It begin, It end) {
+        auto t = lopass.filter(begin, end);
+        return hipass.filter(std::begin(t), std::end(t));
+    }
 
 private:
     TwopassFilterWrapper<LinkwitzRileyLopass> lopass;

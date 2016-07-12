@@ -9,33 +9,67 @@
 
 namespace filter {
 
+template<FilterType ft> struct get_filter_trait;
+
+template<> struct get_filter_trait<FilterType::windowed_sinc> {
+    using filter = BandpassWindowedSinc;
+    static filter construct(size_t signal_length) {
+        return filter(signal_length);
+    }
+};
+
+template<> struct get_filter_trait<FilterType::biquad_onepass> {
+    using filter = BandpassBiquad;
+    static filter construct(size_t signal_length) {
+        return filter();
+    }
+};
+
+template<> struct get_filter_trait<FilterType::biquad_twopass> {
+    using filter = TwopassFilterWrapper<BandpassBiquad>;
+    static filter construct(size_t signal_length) {
+        return filter();
+    }
+};
+
+template<> struct get_filter_trait<FilterType::linkwitz_riley> {
+    using filter = LinkwitzRileyBandpass;
+    static filter construct(size_t signal_length) {
+        return filter();
+    }
+};
+
+template<FilterType ft>
+void run_filter(std::vector<std::vector<std::vector<float>>>& data,
+                float sr,
+                float lo_cutoff) {
+    auto filter = get_filter_trait<ft>::construct(data.front().front().size());
+
+    for (auto& channel : data) {
+        for (auto i = 0u; i != channel.size(); ++i) {
+            filter.set_params(HrtfData::EDGES[i], HrtfData::EDGES[i + 1], sr);
+            channel[i] = filter.filter(channel[i].begin(), channel[i].end());
+        }
+    }
+}
+
 void run(FilterType ft,
          std::vector<std::vector<std::vector<float>>>& data,
          float sr,
          float lo_cutoff) {
-    std::unique_ptr<Bandpass> bp;
-
     switch (ft) {
         case FilterType::windowed_sinc:
-            bp = std::make_unique<BandpassWindowedSinc>(
-                    data.front().front().size());
+            run_filter<FilterType::windowed_sinc>(data, sr, lo_cutoff);
             break;
         case FilterType::biquad_onepass:
-            bp = std::make_unique<BandpassBiquad>();
+            run_filter<FilterType::biquad_onepass>(data, sr, lo_cutoff);
             break;
         case FilterType::biquad_twopass:
-            bp = std::make_unique<TwopassFilterWrapper<BandpassBiquad>>();
+            run_filter<FilterType::biquad_twopass>(data, sr, lo_cutoff);
             break;
         case FilterType::linkwitz_riley:
-            bp = std::make_unique<LinkwitzRileyBandpass>();
+            run_filter<FilterType::linkwitz_riley>(data, sr, lo_cutoff);
             break;
-    }
-
-    for (auto& channel : data) {
-        for (auto i = 0u; i != channel.size(); ++i) {
-            bp->set_params(HrtfData::EDGES[i], HrtfData::EDGES[i + 1], sr);
-            bp->filter(channel[i]);
-        }
     }
 }
 }  // namespace filter

@@ -26,9 +26,16 @@ public:
     /// Collect the gems Bentley Bear.
     template <typename T, typename U>
     std::vector<float> convolve(const T &a, const U &b) {
-        CHECK(a.size() + b.size() - 1 == FFT_LENGTH);
-        forward_fft(r2c, a, r2c_i, r2c_o, acplx);
-        forward_fft(r2c, b, r2c_i, r2c_o, bcplx);
+        return convolve(std::begin(a), std::end(a), std::begin(b), std::end(b));
+    }
+
+    template <typename It, typename Jt>
+    std::vector<float> convolve(It a_begin, It a_end, Jt b_begin, Jt b_end) {
+        const auto d0 = std::distance(a_begin, a_end);
+        const auto d1 = std::distance(b_begin, b_end);
+        CHECK(d0 + d1 - 1 == FFT_LENGTH);
+        forward_fft(r2c, a_begin, a_end, r2c_i, r2c_o, acplx);
+        forward_fft(r2c, b_begin, b_end, r2c_i, r2c_o, bcplx);
 
         c2r_i.zero();
         c2r_o.zero();
@@ -54,14 +61,15 @@ public:
     }
 
 private:
-    template <typename T>
+    template<typename It>
     void forward_fft(const FftwfPlan &plan,
-                     const T &data,
+                     It begin,
+                     It end,
                      fftwf_r &i,
                      fftwf_c &o,
                      fftwf_c &results) {
         i.zero();
-        proc::copy(data, i.begin());
+        std::copy(begin, end, i.begin());
         fftwf_execute(plan);
         results = o;
     }

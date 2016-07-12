@@ -71,7 +71,7 @@ std::vector<float> HrtfAttenuator::process(
 
             bandpass.set_params(
                     HrtfData::EDGES[band], HrtfData::EDGES[band + 1], sr);
-            bandpass.filter(this_band);
+            this_band = bandpass.filter(this_band.begin(), this_band.end());
 
             proc::transform(
                     this_band, ret.begin(), ret.begin(), [](auto a, auto b) {

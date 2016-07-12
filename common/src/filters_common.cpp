@@ -24,11 +24,7 @@ void Bandpass::set_params(float l, float h, float s) {
 }
 
 LopassWindowedSinc::LopassWindowedSinc(int inputLength)
-        : FastConvolver(KERNEL_LENGTH + inputLength - 1) {
-}
-
-void LopassWindowedSinc::filter(std::vector<float> &data) {
-    data = convolve(kernel, data);
+        : convolver(KERNEL_LENGTH + inputLength - 1) {
 }
 
 void LopassWindowedSinc::set_params(float co, float s) {
@@ -37,11 +33,7 @@ void LopassWindowedSinc::set_params(float co, float s) {
 }
 
 HipassWindowedSinc::HipassWindowedSinc(int inputLength)
-        : FastConvolver(KERNEL_LENGTH + inputLength - 1) {
-}
-
-void HipassWindowedSinc::filter(std::vector<float> &data) {
-    data = convolve(kernel, data);
+        : convolver(KERNEL_LENGTH + inputLength - 1) {
 }
 
 void HipassWindowedSinc::set_params(float co, float s) {
@@ -50,28 +42,12 @@ void HipassWindowedSinc::set_params(float co, float s) {
 }
 
 BandpassWindowedSinc::BandpassWindowedSinc(int inputLength)
-        : FastConvolver(KERNEL_LENGTH + inputLength - 1) {
-}
-
-void BandpassWindowedSinc::filter(std::vector<float> &data) {
-    data = convolve(kernel, data);
+        : convolver(KERNEL_LENGTH + inputLength - 1) {
 }
 
 void BandpassWindowedSinc::set_params(float l, float h, float s) {
     auto i = bandpass_sinc_kernel(s, l, h, KERNEL_LENGTH);
     proc::copy(i, kernel.begin());
-}
-
-void Biquad::filter(std::vector<float> &data) {
-    double z1 = 0;
-    double z2 = 0;
-
-    for (auto &&i : data) {
-        double out = i * b0 + z1;
-        z1 = i * b1 + z2 - a1 * out;
-        z2 = i * b2 - a2 * out;
-        i = out;
-    }
 }
 
 void Biquad::set_params(
@@ -133,11 +109,6 @@ void LinkwitzRileySingleHipass::set_params(float cutoff, float sr) {
 void LinkwitzRileyBandpass::set_params(float l, float h, float s) {
     lopass.set_params(h, s);
     hipass.set_params(l, s);
-}
-
-void LinkwitzRileyBandpass::filter(std::vector<float> &data) {
-    lopass.filter(data);
-    hipass.filter(data);
 }
 
 DCBlocker::DCBlocker() {

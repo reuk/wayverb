@@ -169,7 +169,7 @@ std::vector<T> windowed_sinc_kernel(double cutoff, int length) {
 template <typename T = float>
 std::vector<T> lopass_sinc_kernel(double sr, double cutoff, int length) {
     auto kernel = windowed_sinc_kernel<T>(cutoff / sr, length);
-    kernel_normalize(kernel);
+//    kernel_normalize(kernel);
     return kernel;
 }
 
@@ -180,7 +180,7 @@ std::vector<T> hipass_sinc_kernel(double sr, double cutoff, int length) {
     auto kernel = windowed_sinc_kernel<T>(cutoff / sr, length);
     proc::for_each(kernel, [](auto& i) { i *= -1; });
     kernel[(length - 1) / 2] += 1;
-    kernel_normalize(kernel);
+//    kernel_normalize(kernel);
     return kernel;
 }
 
@@ -194,6 +194,6 @@ std::vector<T> bandpass_sinc_kernel(double sr,
     proc::transform(kernel, lop.begin(), kernel.begin(), [](auto a, auto b) {
         return a - b;
     });
-    kernel_normalize(kernel);
+//    kernel_normalize(kernel);
     return kernel;
 }

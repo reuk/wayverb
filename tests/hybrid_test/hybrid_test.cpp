@@ -257,7 +257,8 @@ int main(int argc, char** argv) {
 
     filter::HipassWindowedSinc hipass(raytracer_output.size());
     hipass.set_params(config.filter_frequency, samplerate);
-    hipass.filter(raytracer_output);
+    raytracer_output =
+            hipass.filter(raytracer_output.begin(), raytracer_output.end());
     LOG(INFO) << "max raytracer filtered: " << max_mag(raytracer_output);
 
     std::vector<float> mixed(out_length);

@@ -8,6 +8,7 @@
 #include "common/conversions.h"
 #include "common/kernel.h"
 #include "common/scene_data.h"
+#include "common/dc_blocker.h"
 
 #include "common/serialize/boundaries.h"
 #include "common/serialize/surface.h"
@@ -64,45 +65,61 @@ int main(int argc, char** argv) {
         auto corrected_source =
                 waveguide.get_coordinate_for_index(source_index);
 
-        std::vector<std::vector<float>> signals{
-                std::vector<float>{1.0},
-                kernels::gaussian_kernel(sampling_frequency),
-                kernels::sin_modulated_gaussian_kernel(sampling_frequency),
-                kernels::ricker_kernel(sampling_frequency),
-                hipass_sinc_kernel(sampling_frequency, 100, 401),
+        struct signal {
+            std::string name;
+            std::vector<float> kernel;
         };
 
-        auto counter = 0u;
+        std::vector<signal> signals{
+                signal{"dirac", std::vector<float>{1.0}},
+                signal{"gauss", kernels::gaussian_kernel(sampling_frequency)},
+                signal{"sinmod_gauss",
+                       kernels::sin_modulated_gaussian_kernel(
+                               sampling_frequency)},
+                signal{"ricker", kernels::ricker_kernel(sampling_frequency)},
+                signal{"hi_sinc",
+                       hipass_sinc_kernel(sampling_frequency, 100, 401)},
+                signal{"band_sinc",
+                       bandpass_sinc_kernel(sampling_frequency,
+                                            100,
+                                            sampling_frequency * 0.25,
+                                            401)},
+        };
+
         for (const auto& i : signals) {
-            auto run = [&counter,
-                        &waveguide,
-                        corrected_source,
-                        receiver_index,
-                        sampling_frequency](const auto& i) {
-                auto steps = 10000;
+            auto steps = 10000;
 
-                std::atomic_bool keep_going{true};
-                ProgressBar pb(std::cout, steps);
-                auto results = waveguide.init_and_run(corrected_source,
-                                                      i,
-                                                      receiver_index,
-                                                      steps,
-                                                      keep_going,
-                                                      [&pb] { pb += 1; });
+            auto kernel = make_transparent(i.kernel);
 
-                auto output = std::vector<float>(results.size());
-                proc::transform(results, output.begin(), [](const auto& i) {
-                    return i.pressure;
-                });
+            std::atomic_bool keep_going{true};
+            ProgressBar pb(std::cout, steps);
+            auto results = waveguide.init_and_run(corrected_source,
+                                                  kernel,
+                                                  receiver_index,
+                                                  steps,
+                                                  keep_going,
+                                                  [&pb] { pb += 1; });
 
-                auto fname = build_string("solution_growth_", counter, ".wav");
+            auto output = std::vector<float>(results.size());
+            proc::transform(results, output.begin(), [](const auto& i) {
+                return i.pressure;
+            });
+
+            {
+                auto fname = build_string(
+                        "solution_growth.", i.name, ".transparent.wav");
 
                 snd::write(fname, {output}, sampling_frequency, 16);
+            }
 
-                counter += 1;
-            };
-            run(i);
-            run(make_transparent(i));
+            filter::ZeroPhaseDCBlocker blocker(32);
+            auto dc_removed = blocker.filter(output.begin(), output.end());
+
+            {
+                auto fname = build_string(
+                        "solution_growth.", i.name, ".dc_blocked.wav");
+                snd::write(fname, {dc_removed}, sampling_frequency, 16);
+            }
         }
     } catch (const cl::Error& e) {
         LOG(INFO) << "critical cl error: " << e.what();

@@ -29,13 +29,18 @@ struct MovingAverage {
     double single_delay{0};
 };
 
-struct LinearDCBlocker : public Filter {
+struct LinearDCBlocker {
     LinearDCBlocker(int d);
 
     double operator()(double x);
 
-    void filter(std::vector<float>& t) override {
-        proc::for_each(t, [this](auto& i) { i = this->operator()(i); });
+    template<typename It>
+    std::vector<float> filter(It begin, It end) {
+        std::vector<float> ret(begin, end);
+        std::for_each(std::begin(ret), std::end(ret), [this](auto& i) {
+            i = this->operator()(i);
+        });
+        return ret;
     }
 
     int d;
