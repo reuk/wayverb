@@ -1,26 +1,22 @@
 #pragma once
 
-#include "attenuator.h"
+#include "common/hrtf_utils.h"
 
 #include "glm/glm.hpp"
 
-class HrtfAttenuator : public Attenuator {
+#include <vector>
+
+struct RunStepResult;
+
+namespace waveguide {
+
+class HrtfAttenuator final {
 public:
-    HrtfAttenuator(const glm::vec3& direction,
-                   const glm::vec3& up,
-                   int channel,
-                   float sr);
-
-    float attenuation(const glm::vec3& incident, int band) const;
-    std::vector<float> process(
-            const std::vector<RunStepResult>& input) const override;
-
-    glm::vec3 get_direction() const;
-    glm::vec3 get_up() const;
-
-private:
-    glm::vec3 direction;
-    glm::vec3 up;
-    int channel;
-    float sr;
+    std::vector<std::vector<float>> process(
+            const std::vector<RunStepResult>& input,
+            const glm::vec3& direction,
+            const glm::vec3& up,
+            HrtfChannel channel) const;
 };
+
+}//namespace waveguide

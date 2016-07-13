@@ -1,14 +1,28 @@
 #pragma once
 
-#include "common/boundaries.h"
-#include "common/cl_common.h"
+#include "waveguide/buffer_type.h"
 
 #include "raytracer/raytracer.h"
-#include "waveguide/rectangular_waveguide.h"
+#include "waveguide/waveguide.h"
 
-namespace engine {
+#include "glm/fwd.hpp"
 
-enum class State {
+#include <functional>
+
+//  forward declarations  ----------------------------------------------------//
+
+namespace model {
+struct ReceiverSettings;
+}  // namespace model
+
+class ComputeContext;
+class CopyableSceneData;
+
+//  engine  ------------------------------------------------------------------//
+
+namespace wayverb {
+
+enum class state {
     idle,
     initialising,
     starting_raytracer,
@@ -20,87 +34,75 @@ enum class State {
     postprocessing,
 };
 
-inline constexpr auto to_string(State s) {
+inline constexpr auto to_string(state s) {
     switch (s) {
-        case State::idle:
+        case state::idle:
             return "idle";
-        case State::initialising:
+        case state::initialising:
             return "initialising";
-        case State::starting_raytracer:
+        case state::starting_raytracer:
             return "starting raytracer";
-        case State::running_raytracer:
+        case state::running_raytracer:
             return "running raytracer";
-        case State::finishing_raytracer:
+        case state::finishing_raytracer:
             return "finishing raytracer";
-        case State::starting_waveguide:
+        case state::starting_waveguide:
             return "starting waveguide";
-        case State::running_waveguide:
+        case state::running_waveguide:
             return "running waveguide";
-        case State::finishing_waveguide:
+        case state::finishing_waveguide:
             return "finishing waveguide";
-        case State::postprocessing:
+        case state::postprocessing:
             return "postprocessing";
     }
 }
 
-/// The Wayverb engine
 template <BufferType buffer_type>
-class WayverbEngine {
+class engine final {
 public:
-    WayverbEngine(ComputeContext& compute_context,
-                  const CopyableSceneData& scene_data,
-                  const glm::vec3& source,
-                  const glm::vec3& mic,
-                  float waveguide_sample_rate,
-                  int rays,
-                  int impulses,
-                  float output_sample_rate);
+    engine(const ComputeContext& compute_context,
+           const CopyableSceneData& scene_data,
+           const glm::vec3& source,
+           const glm::vec3& receiver,
+           float waveguide_sample_rate,
+           int rays,
+           int impulses,
+           float output_sample_rate);
+
+    ~engine() noexcept;
 
     bool get_source_position_is_valid() const;
-    bool get_mic_position_is_valid() const;
+    bool get_receiver_position_is_valid() const;
 
-    struct Intermediate {};
+    /// Stores intermediate state of the engine.
+    /// Allows the 'run' step to be run once, but the 'attenuate' step to be
+    /// run multiple times on the output.
+    struct intermediate {
+        raytracer::RaytracerResults raytracer_results;
+        std::vector<RunStepResult> waveguide_results;
+        double waveguide_sample_rate;
+    };
 
-    using StateCallback = std::function<void(State, double)>;
-    using VisualiserCallback = std::function<void(std::vector<float>)>;
+    using state_callback = std::function<void(state, double)>;
+    using visualiser_callback = std::function<void(std::vector<float>)>;
 
-    Intermediate run(std::atomic_bool& keep_going,
-                     const StateCallback& callback = StateCallback());
+    std::unique_ptr<intermediate> run(std::atomic_bool& keep_going,
+                                      const state_callback&);
 
-    Intermediate run_visualised(
-            std::atomic_bool& keep_going,
-            const StateCallback& state_callback = StateCallback(),
-            const VisualiserCallback& visualiser_callback =
-                    VisualiserCallback());
+    std::unique_ptr<intermediate> run_visualised(std::atomic_bool& keep_going,
+                                                 const state_callback&,
+                                                 const visualiser_callback&);
 
     std::vector<std::vector<float>> attenuate(
-            const Intermediate& i,
-            //  other args or whatever
-            const StateCallback& callback = StateCallback());
+            const intermediate& i,
+            const model::ReceiverSettings& receiver,
+            const state_callback&);
 
     std::vector<cl_float3> get_node_positions() const;
 
 private:
-    void check_source_mic_positions() const;
-
-    template <typename Callback>
-    auto run_basic(std::atomic_bool& keep_going,
-                   const StateCallback& state_callback,
-                   const Callback& waveguide_callback);
-
-    CopyableSceneData scene_data;
-    Raytracer raytracer;
-    RectangularWaveguide<buffer_type> waveguide;
-
-    glm::vec3 source;
-    glm::vec3 mic;
-    float waveguide_sample_rate;
-    int rays;
-    int impulses;
-    // float output_sample_rate;
-
-    size_t source_index;
-    size_t mic_index;
+    class impl;
+    std::unique_ptr<impl> pimpl;
 };
 
-}  // namespace engine
+}  // namespace wayverb

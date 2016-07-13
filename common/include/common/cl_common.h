@@ -7,7 +7,8 @@
 
 #include <iostream>
 
-struct ComputeContext {
+class ComputeContext final {
+public:
     ComputeContext();
 
     const cl::Context context;

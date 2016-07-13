@@ -1,5 +1,5 @@
 #include "waveguide/config.h"
-#include "waveguide/microphone.h"
+#include "waveguide/microphone_attenuator.h"
 #include "waveguide/rectangular_waveguide.h"
 
 #include "common/azimuth_elevation.h"
@@ -447,9 +447,6 @@ int main(int argc, char** argv) {
             LOG(INFO) << "somehow both test results are the same even though "
                          "they use different boundary coefficients";
         }
-    } catch (const cl::Error& e) {
-        LOG(INFO) << "critical cl error: " << e.what();
-        return EXIT_FAILURE;
     } catch (const std::runtime_error& e) {
         LOG(INFO) << "critical runtime error: " << e.what();
         return EXIT_FAILURE;

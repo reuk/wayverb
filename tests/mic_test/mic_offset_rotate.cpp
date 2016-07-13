@@ -1,6 +1,6 @@
 #include "waveguide/config.h"
 #include "waveguide/default_kernel.h"
-#include "waveguide/microphone.h"
+#include "waveguide/microphone_attenuator.h"
 #include "waveguide/rectangular_waveguide.h"
 
 #include "common/cl_common.h"
@@ -80,7 +80,7 @@ int main(int argc, char** argv) {
 
     std::cout << "directionality: " << directionality << std::endl;
 
-    Microphone microphone(glm::vec3(0, 0, 1), directionality);
+    waveguide::MicrophoneAttenuator microphone;
     glm::vec3 mic{0, 0, 0};
     const auto test_locations = 12;
 
@@ -123,7 +123,8 @@ int main(int argc, char** argv) {
                         pb += 1;
                     });
 
-            auto out_signal = microphone.process(w_results);
+            auto out_signal = microphone.process(
+                    w_results, glm::vec3(0, 0, 1), directionality);
 
             //const auto bands = 8;
             //const auto min_band = 80;
@@ -180,10 +181,6 @@ int main(int argc, char** argv) {
                     waveguide_sr,
                     16);
         }
-
-    } catch (const cl::Error& e) {
-        LOG(INFO) << "critical cl error: " << e.what();
-        return EXIT_FAILURE;
     } catch (const std::runtime_error& e) {
         LOG(INFO) << "critical runtime error: " << e.what();
         return EXIT_FAILURE;

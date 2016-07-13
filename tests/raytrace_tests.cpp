@@ -88,13 +88,13 @@ TEST(raytrace, new) {
 
     SceneData scene_data(OBJ_PATH);
 
-    auto directions = get_random_directions(bench_rays);
+    auto directions = raytracer::get_random_directions(bench_rays);
 
-    auto results_1 = get_results<Raytracer>(context,
-                                            raytrace_program,
-                                            scene_data,
-                                            directions,
-                                            bench_reflections);
+    auto results_1 = get_results<raytracer::Raytracer>(context,
+                                                       raytrace_program,
+                                                       scene_data,
+                                                       directions,
+                                                       bench_reflections);
 }
 
 constexpr int width_for_shell(int shell) {
@@ -171,7 +171,7 @@ TEST(raytrace, image_source) {
     proc::transform(distances, times.begin(), [](auto i) { return i / 340; });
     std::array<VolumeType, images.size()> volumes;
     proc::transform(distances, volumes.begin(), [](auto i) {
-        return attenuation_for_distance(i);
+        return raytracer::attenuation_for_distance(i);
     });
 
     std::vector<AttenuatedImpulse> proper_image_source_impulses;
@@ -210,7 +210,7 @@ TEST(raytrace, image_source) {
 
     CuboidBoundary boundary(box.get_c0(), box.get_c1());
 
-    Raytracer raytracer(raytrace_program);
+    raytracer::Raytracer raytracer(raytrace_program);
 
     auto scene_data = boundary.get_scene_data();
     scene_data.set_surfaces(surface);
@@ -219,11 +219,9 @@ TEST(raytrace, image_source) {
     auto results = raytracer.run(
             scene_data, receiver, source, 100000, 100, keep_going, [] {});
 
-    Attenuate attenuator(raytrace_program);
-    Speaker speaker{};
-    auto output =
-            attenuator.attenuate(results.get_image_source(false), {speaker})
-                    .front();
+    raytracer::MicrophoneAttenuator attenuator(raytrace_program);
+    auto output = attenuator.process(
+            results.get_image_source(false), glm::vec3(0, 0, 1), 0, receiver);
 
     sort_by_time(output);
 
@@ -245,7 +243,7 @@ TEST(raytrace, image_source) {
         auto bit_depth = 16;
         auto sample_rate = 44100.0;
         std::vector<std::vector<std::vector<float>>> flattened = {
-                flatten_impulses(i, sample_rate)};
+                raytracer::flatten_impulses(i, sample_rate)};
         {
             auto mixed_down = mixdown(flattened);
             normalize(mixed_down);
@@ -256,13 +254,8 @@ TEST(raytrace, image_source) {
                     bit_depth);
         }
         {
-            auto processed = process(filter::FilterType::linkwitz_riley,
-                                     flattened,
-                                     sample_rate,
-                                     false,
-                                     1,
-                                     true,
-                                     1);
+            auto processed = raytracer::process(
+                    flattened, sample_rate, false, 1, true, 1);
             normalize(processed);
             snd::write(build_string(SCRATCH_PATH, "/", name, "processed.wav"),
                        processed,

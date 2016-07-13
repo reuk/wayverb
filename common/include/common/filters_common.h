@@ -168,6 +168,11 @@ public:
         return run_two_pass(hipass, t.begin(), t.end());
     }
 
+    void clear() {
+        lopass.clear();
+        hipass.clear();
+    }
+
 private:
     LinkwitzRileySingleLopass lopass;
     LinkwitzRileySingleHipass hipass;

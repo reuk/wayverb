@@ -1,8 +1,12 @@
 #include "combined/engine.h"
 
+#include "common/boundaries.h"
+#include "common/cl_common.h"
+#include "common/receiver_settings.h"
+
 #include "gtest/gtest.h"
 
-using Engine = engine::WayverbEngine<BufferType::cl>;
+using engine = wayverb::engine<BufferType::cl>;
 
 TEST(engine, engine) {
     CuboidBoundary cuboid_boundary(glm::vec3(0, 0, 0),
@@ -25,33 +29,31 @@ TEST(engine, engine) {
 
     ComputeContext compute_context{};
 
-    Engine engine{compute_context,
-                  scene_data,
-                  source,
-                  mic,
-                  waveguide_sample_rate,
-                  rays,
-                  impulses,
-                  output_sample_rate};
+    engine e{compute_context,
+             scene_data,
+             source,
+             mic,
+             waveguide_sample_rate,
+             rays,
+             impulses,
+             output_sample_rate};
 
     std::cout << "finished engine init" << std::endl;
 
-    struct Callback {
-        void operator()(engine::State state, double progress) const {
-            std::cout << '\r' << std::setw(30) << to_string(state)
-                      << std::setw(10) << progress << std::flush;
-        }
+    auto callback = [](auto state, auto progress) {
+        std::cout << '\r' << std::setw(30) << to_string(state) << std::setw(10)
+                  << progress << std::flush;
     };
 
     std::atomic_bool keep_going{true};
-    Callback callback;
-    auto intermediate = engine.run(keep_going, callback);
+    auto intermediate = e.run(keep_going, callback);
 
     std::cout << std::endl;
 
     std::cout << "finished engine run" << std::endl;
 
-    auto result = engine.attenuate(intermediate, callback);
+    auto result =
+            e.attenuate(*intermediate, model::ReceiverSettings{}, callback);
 
     std::cout << "finished engine attenuate" << std::endl;
 }

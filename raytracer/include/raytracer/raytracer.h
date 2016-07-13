@@ -1,10 +1,10 @@
 #pragma once
 
 #include "cl_structs.h"
-#include "filters.h"
 #include "raytracer_program.h"
 
 #include "common/cl_include.h"
+#include "common/hrtf_utils.h"
 #include "common/scene_data.h"
 #include "common/sinc.h"
 
@@ -13,6 +13,8 @@
 #include <map>
 #include <numeric>
 #include <vector>
+
+namespace raytracer {
 
 /// Sum impulses ocurring at the same (sampled) time and return a vector in
 /// which each subsequent item refers to the next sample of an impulse
@@ -25,14 +27,9 @@ std::vector<std::vector<std::vector<float>>> flatten_impulses(
         const std::vector<std::vector<AttenuatedImpulse>>& impulse,
         float samplerate);
 
-std::vector<float> mixdown(const std::vector<std::vector<float>>& data);
-std::vector<std::vector<float>> mixdown(
-        const std::vector<std::vector<std::vector<float>>>& data);
-
 /// Filter and mix down each channel of the input data.
 /// Optionally, normalize all channels, trim the tail, and scale the amplitude.
 std::vector<std::vector<float>> process(
-        filter::FilterType filtertype,
         std::vector<std::vector<std::vector<float>>>& data,
         float sr,
         bool do_normalize,
@@ -164,44 +161,29 @@ private:
 };
 
 /// Class for parallel HRTF attenuation of raytrace results.
-class Hrtf {
+class HrtfAttenuator final {
 public:
     using kernel_type =
             decltype(std::declval<RaytracerProgram>().get_hrtf_kernel());
 
-    class Config final {
-    public:
-        glm::vec3 facing;
-        glm::vec3 up;
-    };
-
-    Hrtf(const RaytracerProgram& program);
-    virtual ~Hrtf() noexcept = default;
+    HrtfAttenuator(const RaytracerProgram& program);
 
     /// Attenuate some raytrace results.
     /// The outer vector corresponds to separate channels, the inner vector
     /// contains the impulses, each of which has a time and an 8-band volume.
-    std::vector<std::vector<AttenuatedImpulse>> attenuate(
-            const RaytracerResults& results, const Config& config);
-    std::vector<std::vector<AttenuatedImpulse>> attenuate(
-            const RaytracerResults& results,
-            const glm::vec3& facing,
-            const glm::vec3& up);
+    std::vector<AttenuatedImpulse> process(const RaytracerResults& results,
+                                           const glm::vec3& direction,
+                                           const glm::vec3& up,
+                                           const glm::vec3& position,
+                                           HrtfChannel channel);
 
-    virtual const std::array<std::array<std::array<cl_float8, 180>, 360>, 2>&
+    const std::array<std::array<std::array<cl_float8, 180>, 360>, 2>&
     get_hrtf_data() const;
 
 private:
     cl::CommandQueue queue;
     kernel_type kernel;
     const cl::Context context;
-
-    std::vector<AttenuatedImpulse> attenuate(
-            const cl_float3& mic_pos,
-            int channel,
-            const cl_float3& facing,
-            const cl_float3& up,
-            const std::vector<Impulse>& impulses);
 
     cl::Buffer cl_in;
     cl::Buffer cl_out;
@@ -210,26 +192,22 @@ private:
 };
 
 /// Class for parallel Speaker attenuation of raytrace results.
-class Attenuate {
+class MicrophoneAttenuator final {
 public:
     using kernel_type =
             decltype(std::declval<RaytracerProgram>().get_attenuate_kernel());
 
-    Attenuate(const RaytracerProgram& program);
-    virtual ~Attenuate() noexcept = default;
+    MicrophoneAttenuator(const RaytracerProgram& program);
 
     /// Attenuate some raytrace results.
     /// The outer vector corresponds to separate channels, the inner vector
     /// contains the impulses, each of which has a time and an 8-band volume.
-    std::vector<std::vector<AttenuatedImpulse>> attenuate(
-            const RaytracerResults& results,
-            const std::vector<Speaker>& speakers);
+    std::vector<AttenuatedImpulse> process(const RaytracerResults& results,
+                                           const glm::vec3& pointing,
+                                           float shape,
+                                           const glm::vec3& position);
 
 private:
-    std::vector<AttenuatedImpulse> attenuate(
-            const glm::vec3& mic_pos,
-            const Speaker& speaker,
-            const std::vector<Impulse>& impulses);
     cl::CommandQueue queue;
     kernel_type kernel;
     const cl::Context context;
@@ -237,3 +215,4 @@ private:
     cl::Buffer cl_in;
     cl::Buffer cl_out;
 };
+}  // namespace raytracer

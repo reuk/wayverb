@@ -1,19 +1,17 @@
 #include "waveguide/config.h"
 #include "waveguide/make_transparent.h"
-#include "waveguide/microphone.h"
+#include "waveguide/microphone_attenuator.h"
 #include "waveguide/rectangular_waveguide.h"
 
 #include "common/azimuth_elevation.h"
 #include "common/cl_common.h"
 #include "common/conversions.h"
+#include "common/dc_blocker.h"
+#include "common/filters_common.h"
 #include "common/kernel.h"
 #include "common/scene_data.h"
-#include "common/dc_blocker.h"
-
 #include "common/serialize/boundaries.h"
 #include "common/serialize/surface.h"
-
-#include "common/filters_common.h"
 #include "common/sinc.h"
 #include "common/write_audio_file.h"
 
@@ -122,9 +120,6 @@ int main(int argc, char** argv) {
                 snd::write(fname, {dc_removed}, sampling_frequency, 16);
             }
         }
-    } catch (const cl::Error& e) {
-        LOG(INFO) << "critical cl error: " << e.what();
-        return EXIT_FAILURE;
     } catch (const std::runtime_error& e) {
         LOG(INFO) << "critical runtime error: " << e.what();
         return EXIT_FAILURE;

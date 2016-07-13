@@ -1,18 +1,11 @@
 #include "waveguide/hrtf_attenuator.h"
+#include "waveguide/waveguide.h"
 
 #include "common/filters_common.h"
 #include "common/hrtf.h"
 #include "common/stl_wrappers.h"
 
-HrtfAttenuator::HrtfAttenuator(const glm::vec3& direction,
-                               const glm::vec3& up,
-                               int channel,
-                               float sr)
-        : direction(direction)
-        , up(up)
-        , channel(channel)
-        , sr(sr) {
-}
+namespace {
 
 glm::vec3 transform(const glm::vec3& pointing,
                     const glm::vec3& up,
@@ -35,52 +28,55 @@ float degrees(float radians) {
     return radians * 180 / M_PI;
 }
 
-float HrtfAttenuator::attenuation(const glm::vec3& incident, int band) const {
+float attenuation(const glm::vec3& direction,
+                  const glm::vec3& up,
+                  HrtfChannel channel,
+                  const glm::vec3& incident,
+                  int band) {
     auto transformed = transform(direction, up, incident);
     int a = degrees(azimuth(transformed)) + 180;
     a %= 360;
     int e = degrees(elevation(transformed));
     e = 90 - e;
-    return HrtfData::HRTF_DATA[channel][a][e].s[band];
+    return HrtfData::HRTF_DATA[channel == HrtfChannel::left ? 0 : 1][a][e]
+            .s[band];
 }
 
-glm::vec3 HrtfAttenuator::get_direction() const {
-    return direction;
-}
+}  // namespace
 
-glm::vec3 HrtfAttenuator::get_up() const {
-    return up;
-}
+namespace waveguide {
+std::vector<std::vector<float>> HrtfAttenuator::process(
+        const std::vector<RunStepResult>& input,
+        const glm::vec3& direction,
+        const glm::vec3& up,
+        HrtfChannel channel) const {
+    std::vector<std::vector<float>> ret;
+    for (auto band = 0u; band != HrtfData::EDGES.size(); ++band) {
+        std::vector<float> this_band;
+        this_band.reserve(input.size());
+        proc::transform(input,
+                        std::back_inserter(this_band),
+                        [direction, up, channel, band](auto i) {
+                            //  TODO DEFINITELY CHECK THIS
+                            //  RUN TESTS YEAH
+                            auto mag = glm::length(i.intensity);
+                            if (mag == 0)
+                                return 0.0f;
+                            mag = sqrt(mag * pow(attenuation(direction,
+                                                             up,
+                                                             channel,
+                                                             i.intensity,
+                                                             band),
+                                                 2));
+                            return std::copysign(mag, i.pressure);
+                        });
 
-std::vector<float> HrtfAttenuator::process(
-        const std::vector<RunStepResult>& input) const {
-    std::vector<float> ret(input.size(), 0);
-    filter::LinkwitzRileyBandpass bandpass;
-    for (auto band = 0u; band != sizeof(VolumeType) / sizeof(float); ++band) {
-        if (HrtfData::EDGES[band + 1] < sr / 2) {
-            std::vector<float> this_band(input.size());
-            proc::transform(input, this_band.begin(), [this, band](auto i) {
-                //  TODO DEFINITELY CHECK THIS
-                //  RUN TESTS YEAH
-                auto mag = glm::length(i.intensity);
-                if (mag == 0)
-                    return 0.0f;
-                mag = sqrt(mag * pow(attenuation(i.intensity, band), 2));
-                return std::copysign(mag, i.pressure);
-            });
-
-            bandpass.set_params(
-                    HrtfData::EDGES[band], HrtfData::EDGES[band + 1], sr);
-            this_band = bandpass.filter(this_band.begin(), this_band.end());
-
-            proc::transform(
-                    this_band, ret.begin(), ret.begin(), [](auto a, auto b) {
-                        return a + b;
-                    });
-        }
+        ret.push_back(std::move(this_band));
     }
 
     //  TODO filter with diffuse-field-response filter here
     //  make sure to use zero-phase filtering
     return ret;
 }
+
+}  // namespace waveguide

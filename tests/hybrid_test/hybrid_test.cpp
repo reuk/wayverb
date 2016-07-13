@@ -2,7 +2,7 @@
 #include "combined/serialize/model.h"
 
 #include "waveguide/config.h"
-#include "waveguide/microphone.h"
+#include "waveguide/microphone_attenuator.h"
 #include "waveguide/rectangular_waveguide.h"
 
 #include "raytracer/raytracer.h"
@@ -12,6 +12,7 @@
 #include "common/conversions.h"
 #include "common/dc_blocker.h"
 #include "common/filters_common.h"
+#include "common/hrtf_utils.h"
 #include "common/kernel.h"
 #include "common/scene_data.h"
 #include "common/sinc.h"
@@ -175,7 +176,7 @@ int main(int argc, char** argv) {
     RaytracerProgram raytrace_program(context_info.context,
                                       context_info.device);
 
-    Raytracer raytracer(raytrace_program);
+    raytracer::Raytracer raytracer(raytrace_program);
     //            [                                        ]
     std::cout << "[ -- running raytracer ----------------- ]" << std::endl;
     std::atomic_bool keep_going{true};
@@ -189,24 +190,21 @@ int main(int argc, char** argv) {
                                  keep_going,
                                  [&pb] { pb += 1; });
 
-    Attenuate attenuator(raytrace_program);
-    Speaker speaker{};
-    auto output =
-            attenuator.attenuate(results.get_image_source(false), {speaker})
-                    .front();
+    raytracer::MicrophoneAttenuator attenuator(raytrace_program);
+    auto output = attenuator.process(
+            results.get_image_source(false), glm::vec3(0, 0, 1), 0, receiver);
     // auto output =
     //    attenuator.attenuate(results.get_all(false), {speaker}).front();
 
-    std::vector<std::vector<std::vector<float>>> flattened = {
-            flatten_impulses(output, samplerate)};
+    std::vector<std::vector<float>> flattened =
+            raytracer::flatten_impulses(output, samplerate);
 
     snd::write(build_string(output_folder, "raytrace_no_processing.wav"),
-               mixdown(flattened),
+               {mixdown(flattened)},
                samplerate,
                bit_depth);
 
-    filter::run(filter::FilterType::linkwitz_riley, flattened, samplerate, 1);
-    auto raytracer_output = mixdown(flattened).front();
+    auto raytracer_output = multiband_filter_and_mixdown(flattened, samplerate);
 
     auto write_normalized = [bit_depth, samplerate, &output_folder](auto i,
                                                                     auto name) {
