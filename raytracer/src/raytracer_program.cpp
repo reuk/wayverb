@@ -23,8 +23,11 @@ const std::string raytracer_program::source("#define SPEED_OF_SOUND " +
 
 #define NULL (0)
 
-#define PRINT_INT3(var) printf("##var: %v3hld\n", var);
-#define PRINT_FLOAT3(var) printf("##var: %2.2v3hlf\n", var);
+#define PRINT_INT3(VAR) printf("%v3hld\n", (VAR));
+#define PRINT_FLOAT3(VAR) printf("%2.2v3hlf\n", (VAR));
+
+#define PRINT_ULONG(VAR) printf("%ld\n", (VAR));
+#define PRINT_FLOAT(VAR) printf("%2.2f\n", (VAR));
 
 constant float SECONDS_PER_METER = 1.0f / SPEED_OF_SOUND;
 
@@ -63,31 +66,6 @@ TriangleVerts mirror_verts(TriangleVerts in, TriangleVerts t) {
         mirror_point(in.v0, t), mirror_point(in.v1, t), mirror_point(in.v2, t)};
 }
 
-void add_image_improved(float3 mic_position,
-                        float3 mic_reflection,
-                        float3 source,
-                        global Impulse * image_source,
-                        global ulong * image_source_index,
-                        VolumeType volume,
-                        ulong object_index,
-                        VolumeType air_coefficient);
-void add_image_improved(float3 mic_position,
-                        float3 mic_reflection,
-                        float3 source,
-                        global Impulse * image_source,
-                        global ulong * image_source_index,
-                        VolumeType volume,
-                        ulong object_index,
-                        VolumeType air_coefficient) {
-    const float3 init_diff = source - mic_reflection;
-    const float init_dist = length(init_diff);
-    *image_source = (Impulse){
-        -volume * attenuation_for_distance(init_dist, air_coefficient),
-        mic_position + init_diff,
-        SECONDS_PER_METER * init_dist};
-    *image_source_index = object_index;
-}
-
 bool point_intersection(float3 begin,
                         float3 point,
                         const global Triangle * triangles,
@@ -108,6 +86,142 @@ bool point_intersection(float3 begin,
         ray_triangle_intersection(to_point, triangles, numtriangles, vertices);
 
     return (!inter.intersects) || inter.distance > mag;
+}
+
+void reflect_and_add_triangle_to_history(TriangleVerts current,
+                                         global TriangleVerts* history,
+                                         size_t iteration);
+void reflect_and_add_triangle_to_history(TriangleVerts current,
+                                         global TriangleVerts* history,
+                                         size_t iteration) {
+    //  repeatedly reflect the intersected triangle in
+    //  previously-intersected triangles
+    for (size_t k = 0; k != iteration; ++k) {
+        current = mirror_verts(current, history[k]);
+    }
+
+    //  add the reflected triangle to the prev_primitives array
+    history[iteration] = current;
+}
+
+
+void image_source_contributions(Intersection closest,
+                                VolumeType new_vol,
+
+                                global RayInfo * info,
+
+                                const global uint * voxel_index,
+                                AABB global_aabb,
+                                int side,
+
+                                const global Triangle * triangles,
+                                ulong numtriangles,
+                                const global float3 * vertices,
+                                const global Surface * surfaces,
+
+                                float3 source,
+                                float3 mic,
+                                VolumeType air_coefficient,
+                                ulong iteration,
+                                ulong num_image_source,
+
+                                global Impulse * image_source,
+                                global TriangleVerts * history,
+                                global ulong * image_source_index);
+void image_source_contributions(Intersection closest,
+                                VolumeType new_vol,
+
+                                global RayInfo * info,
+
+                                const global uint * voxel_index,
+                                AABB global_aabb,
+                                int side,
+
+                                const global Triangle * triangles,
+                                ulong numtriangles,
+                                const global float3 * vertices,
+                                const global Surface * surfaces,
+
+                                float3 source,
+                                float3 mic,
+                                VolumeType air_coefficient,
+                                ulong iteration,
+                                ulong num_image_source,
+
+                                global Impulse * image_source,
+                                global TriangleVerts * history,
+                                global ulong * image_source_index) {
+    Triangle triangle = triangles[closest.primitive];
+
+    //  if should check for image source contribution
+    if (iteration < num_image_source) {
+        //  get vertices of the intersected triangle
+        TriangleVerts current = {vertices[triangle.v0],
+                                 vertices[triangle.v1],
+                                 vertices[triangle.v2]};
+
+        reflect_and_add_triangle_to_history(current, history, iteration);
+
+        info->image = mirror_point(info->image, history[iteration]);
+
+        const Ray to_image = {source, get_direction(source, info->image)};
+        bool intersects = true;
+        float3 prev_intersection = source;
+        for (ulong k = 0; k != iteration + 1 && intersects; ++k) {
+            TriangleVerts to_test = history[k];
+            const float TO_INTERSECTION = triangle_vert_intersection(to_test, to_image);
+            if (TO_INTERSECTION <= EPSILON) {
+                intersects = false;
+            } else {
+                float3 intersection_point = source + to_image.direction * TO_INTERSECTION;
+                for (long l = k - 1; l != -1; --l) {
+                    intersection_point =
+                        mirror_point(intersection_point, history[l]);
+                }
+
+                Ray intermediate = {
+                    prev_intersection,
+                    get_direction(prev_intersection, intersection_point)};
+
+                Intersection inter = voxel_traversal(voxel_index,
+                                                     intermediate,
+                                                     global_aabb,
+                                                     side,
+                                                     triangles,
+                                                     vertices);
+
+                float3 new_intersection_point =
+                    (intermediate.position +
+                     intermediate.direction * inter.distance);
+                intersects =
+                    (inter.intersects &&
+                     all(new_intersection_point - EPSILON < intersection_point) &&
+                     all(intersection_point < new_intersection_point + EPSILON));
+
+                prev_intersection = intersection_point;
+            }
+        }
+
+        if (intersects) {
+            intersects = voxel_point_intersection(prev_intersection,
+                                                  mic,
+                                                  voxel_index,
+                                                  global_aabb,
+                                                  side,
+                                                  triangles,
+                                                  vertices);
+        }
+
+        if (intersects) {
+            const float3 init_diff = source - info->image;
+            const float init_dist = length(init_diff);
+            *image_source = (Impulse){
+                new_vol * attenuation_for_distance(init_dist, air_coefficient),
+                info->image + init_diff,
+                SECONDS_PER_METER * init_dist};
+            *image_source_index = closest.primitive + 1;
+        }
+    }
 }
 
 kernel void raytrace(global RayInfo * ray_info,         //  ray
@@ -135,6 +249,7 @@ kernel void raytrace(global RayInfo * ray_info,         //  ray
     //  zero stuff
     impulses[thread] = (Impulse){};
     image_source[thread] = (Impulse){};
+    image_source_index[thread] = 0;
 
     //  get info about this thread
     global RayInfo * info = ray_info + thread;
@@ -145,11 +260,9 @@ kernel void raytrace(global RayInfo * ray_info,         //  ray
 
     Ray ray = info->ray;
 
-    float3 voxel_dimensions = (global_aabb.c1 - global_aabb.c0) / side;
     Intersection closest = voxel_traversal(voxel_index,
                                            ray,
                                            global_aabb,
-                                           voxel_dimensions,
                                            side,
                                            triangles,
                                            vertices);
@@ -160,103 +273,40 @@ kernel void raytrace(global RayInfo * ray_info,         //  ray
     }
 
     const global Triangle * triangle = triangles + closest.primitive;
+    const VolumeType new_vol = -info->volume * surfaces[triangle->surface].specular;
 
-    VolumeType new_vol = -info->volume * surfaces[triangle->surface].specular;
-
-    if (iteration < num_image_source) {
-        TriangleVerts current = {vertices[triangle->v0],
-                                 vertices[triangle->v1],
-                                 vertices[triangle->v2]};
-
-        global TriangleVerts * prev_primitives_base =
-                 prev_primitives + (thread * num_image_source);
-
-        for (uint k = 0; k != iteration; ++k) {
-            current = mirror_verts(current, prev_primitives_base[k]);
-        }
-
-        prev_primitives_base[iteration] = current;
-        info->mic_reflection = mirror_point(info->mic_reflection, current);
-        const float3 DIR = get_direction(source, info->mic_reflection);
-
-        Ray to_mic = {source, DIR};
-        bool intersects = true;
-        float3 prev_intersection = source;
-        for (ulong k = 0; k != iteration + 1 && intersects; ++k) {
-            TriangleVerts to_test = prev_primitives_base[k];
-
-            float TO_INTERSECTION = triangle_vert_intersection(to_test, to_mic);
-            if (TO_INTERSECTION <= EPSILON) {
-                intersects = false;
-                break;
-            }
-
-            float3 intersection_point = source + DIR * TO_INTERSECTION;
-            for (long l = k - 1; l != -1; --l) {
-                intersection_point =
-                    mirror_point(intersection_point, prev_primitives_base[l]);
-            }
-
-            Ray intermediate = {
-                prev_intersection,
-                get_direction(prev_intersection, intersection_point)};
-
-            Intersection inter = voxel_traversal(voxel_index,
-                                                 intermediate,
-                                                 global_aabb,
-                                                 voxel_dimensions,
-                                                 side,
-                                                 triangles,
-                                                 vertices);
-
-            float3 new_intersection_point =
-                (intermediate.position +
-                 intermediate.direction * inter.distance);
-            intersects =
-                (inter.intersects &&
-                 all(new_intersection_point - EPSILON < intersection_point) &&
-                 all(intersection_point < new_intersection_point + EPSILON));
-
-            prev_intersection = intersection_point;
-        }
-
-        if (intersects) {
-            intersects = voxel_point_intersection(prev_intersection,
-                                                  mic,
-                                                  voxel_index,
-                                                  global_aabb,
-                                                  voxel_dimensions,
-                                                  side,
-                                                  triangles,
-                                                  vertices);
-        }
-
-        if (intersects) {
-            add_image_improved(mic,
-                               info->mic_reflection,
+    image_source_contributions(closest,
+                               new_vol,
+                               info,
+                               voxel_index,
+                               global_aabb,
+                               side,
+                               triangles,
+                               numtriangles,
+                               vertices,
+                               surfaces,
                                source,
+                               mic,
+                               air_coefficient,
+                               iteration,
+                               num_image_source,
                                image_source + thread,
-                               image_source_index + thread,
-                               -new_vol,
-                               closest.primitive + 1,
-                               air_coefficient);
-        }
-    }
+                               prev_primitives + (thread * num_image_source),
+                               image_source_index + thread);
 
-    float3 intersection = ray.position + ray.direction * closest.distance;
-    float new_dist = info->distance + closest.distance;
+    const float3 intersection = ray.position + ray.direction * closest.distance;
+    const float new_dist = info->distance + closest.distance;
 
     const bool is_intersection = voxel_point_intersection(intersection,
                                                           mic,
                                                           voxel_index,
                                                           global_aabb,
-                                                          voxel_dimensions,
                                                           side,
                                                           triangles,
                                                           vertices);
 
-    float dist = is_intersection ? new_dist + length(mic - intersection) : 0;
-    float diff = fabs(dot(triangle_normal(triangle, vertices), ray.direction));
+    const float dist = is_intersection ? new_dist + length(mic - intersection) : 0;
+    const float diff = fabs(dot(triangle_normal(triangle, vertices), ray.direction));
     impulses[thread] = (Impulse){
         (is_intersection
              ? (new_vol * attenuation_for_distance(dist, air_coefficient) *

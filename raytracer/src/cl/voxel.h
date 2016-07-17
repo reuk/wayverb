@@ -25,17 +25,17 @@ uint get_voxel_index(const global uint* voxel_index, int3 i, int side) {
 Intersection voxel_traversal(const global uint* voxel_index,
                              Ray ray,
                              AABB global_aabb,
-                             float3 voxel_dimensions,
                              int side,
                              const global Triangle* triangles,
                              const global float3* vertices);
 Intersection voxel_traversal(const global uint* voxel_index,
                              Ray ray,
                              AABB global_aabb,
-                             float3 voxel_dimensions,
                              int side,
                              const global Triangle* triangles,
                              const global float3* vertices) {
+    const float3 voxel_dimensions = (global_aabb.c1 - global_aabb.c0) / side;
+
     int3 ind = get_starting_index(ray.position, global_aabb, voxel_dimensions);
 
     float3 c0 = convert_float3(ind + (int3)(0)) * voxel_dimensions;
@@ -86,7 +86,6 @@ bool voxel_point_intersection(float3 begin,
                               float3 point,
                               const global uint* voxel_index,
                               AABB global_aabb,
-                              float3 voxel_dimensions,
                               int side,
                               const global Triangle* triangles,
                               const global float3* vertices);
@@ -94,7 +93,6 @@ bool voxel_point_intersection(float3 begin,
                               float3 point,
                               const global uint* voxel_index,
                               AABB global_aabb,
-                              float3 voxel_dimensions,
                               int side,
                               const global Triangle* triangles,
                               const global float3* vertices) {
@@ -107,7 +105,6 @@ bool voxel_point_intersection(float3 begin,
     Intersection inter = voxel_traversal(voxel_index,
                                          to_point,
                                          global_aabb,
-                                         voxel_dimensions,
                                          side,
                                          triangles,
                                          vertices);

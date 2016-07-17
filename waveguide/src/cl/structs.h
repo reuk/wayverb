@@ -13,7 +13,7 @@ inline std::string get_struct_definitions(size_t PORTS,
                        "#define CANONICAL_FILTER_ORDER " +
                        std::to_string(BIQUAD_SECTIONS * 2) + "\n" +
                        R"(
-#define BIQUAD_ORDER (2)
+#define BIQUAD_ORDER 2
 
 typedef double FilterReal;
 

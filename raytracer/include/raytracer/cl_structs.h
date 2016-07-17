@@ -16,6 +16,23 @@ struct alignas(1 << 5) Impulse final {
     cl_float time;
 };
 
+inline bool operator==(const cl_float3& a, const cl_float3& b) {
+    return cl_equal(a, b);
+}
+
+inline bool operator!=(const cl_float3& a, const cl_float3& b) {
+    return !(a == b);
+}
+
+constexpr bool operator==(const Impulse& a, const Impulse& b) {
+    return std::tie(a.volume, a.position, a.time) ==
+           std::tie(b.volume, b.position, b.time);
+}
+
+constexpr bool operator!=(const Impulse& a, const Impulse& b) {
+    return !(a == b);
+}
+
 struct alignas(1 << 5) AttenuatedImpulse final {
     VolumeType volume;
     cl_float time;
@@ -42,7 +59,7 @@ struct alignas(1 << 4) TriangleVerts final {
 struct alignas(1 << 5) RayInfo final {
     Ray ray;
     VolumeType volume;
-    cl_float3 mic_reflection;
+    cl_float3 image;
     cl_float distance;
     cl_bool keep_going;
 };

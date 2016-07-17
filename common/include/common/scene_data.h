@@ -9,7 +9,21 @@
 #include <map>
 #include <vector>
 
+template <typename T>
+bool cl_equal(const T& a, const T& b) {
+    return std::equal(
+            std::begin(a.s), std::end(a.s), std::begin(b.s), std::end(b.s));
+}
+
 using VolumeType = cl_float8;
+
+inline bool operator==(const VolumeType& a, const VolumeType& b) {
+    return cl_equal(a, b);
+}
+
+inline bool operator!=(const VolumeType& a, const VolumeType& b) {
+    return !(a == b);
+}
 
 struct alignas(1 << 5) Surface {
     VolumeType specular{{0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5}};
@@ -43,9 +57,9 @@ public:
 
     CopyableSceneData(const CopyableSceneData& rhs) = default;
     CopyableSceneData& operator=(const CopyableSceneData& rhs) = default;
-    CopyableSceneData(CopyableSceneData&& rhs) noexcept = default;
+    CopyableSceneData(CopyableSceneData&& rhs) noexcept        = default;
     CopyableSceneData& operator=(CopyableSceneData&& rhs) noexcept = default;
-    virtual ~CopyableSceneData() noexcept = default;
+    virtual ~CopyableSceneData() noexcept                          = default;
 
     std::vector<Surface> get_surfaces() const;
     void set_surfaces(const std::vector<Material>& materials);

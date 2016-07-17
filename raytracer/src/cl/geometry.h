@@ -139,6 +139,5 @@ float3 get_direction(float3 from, float3 to) {
     return normalize(to - from);
 }
 
-
 )");
 }  // namespace cl_sources

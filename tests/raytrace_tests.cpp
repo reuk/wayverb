@@ -19,24 +19,7 @@
 #define SCRATCH_PATH ""
 #endif
 
-template <typename T, typename Prog>
-auto get_results(ComputeContext& context,
-                 const Prog& prog,
-                 const SceneData& scene_data,
-                 const std::vector<cl_float3>& directions,
-                 int reflections) {
-    std::atomic_bool keep_going{true};
-    T raytrace(prog);
-    return raytrace.run(scene_data,
-                        glm::vec3(0, 1.75, 0),
-                        glm::vec3(0, 1.75, 3),
-                        directions,
-                        reflections,
-                        10,
-                        keep_going,
-                        [] {});
-}
-
+/*
 #define USE_EPSILON
 
 #ifdef USE_EPSILON
@@ -68,17 +51,7 @@ bool operator==(const VolumeType& a, const VolumeType& b) {
     }
     return true;
 }
-
-bool operator==(const Impulse& a, const Impulse& b) {
-    if (!(a.volume == b.volume))
-        return false;
-    if (!(a.position == b.position))
-        return false;
-    if (!(a.time == b.time))
-        return false;
-
-    return true;
-}
+*/
 
 static constexpr auto bench_reflections = 128;
 static constexpr auto bench_rays        = 1 << 15;
@@ -91,11 +64,16 @@ TEST(raytrace, new) {
 
     auto directions = raytracer::get_random_directions(bench_rays);
 
-    auto results_1 = get_results<raytracer::Raytracer>(context,
-                                                       raytracer_program,
-                                                       scene_data,
-                                                       directions,
-                                                       bench_reflections);
+    std::atomic_bool keep_going{true};
+    raytracer::Raytracer raytrace(raytracer_program);
+    raytrace.run(scene_data,
+                        glm::vec3(0, 1.75, 0),
+                        glm::vec3(0, 1.75, 3),
+                        directions,
+                        bench_reflections,
+                        10,
+                        keep_going,
+                        [] {});
 }
 
 constexpr int width_for_shell(int shell) {

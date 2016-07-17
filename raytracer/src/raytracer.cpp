@@ -226,7 +226,7 @@ auto remove_duplicates(const std::vector<std::vector<cl_ulong>>& path,
                                            path[j].begin() + k);
 
             if (k == 1 || surfaces.back() != 0) {
-                ret.insert(PathImpulsePair{image[j][k], surfaces});
+                ret.insert(PathImpulsePair{image[j][k - 1], surfaces});
             }
         }
     }
@@ -347,15 +347,6 @@ Results Raytracer::run(const CopyableSceneData& scene_data,
     auto cl_image_source_index = cl::Buffer(
             context, CL_MEM_READ_WRITE, directions.size() * sizeof(cl_ulong));
 
-    //  zero out the prev_primitives buffer
-    //  TODO find a quicker way of doing this
-    auto zero_buffer = [this](auto& buffer) {
-        std::vector<uint8_t> zeros(buffer.template getInfo<CL_MEM_SIZE>(), 0);
-        cl::copy(queue, zeros.begin(), zeros.end(), buffer);
-    };
-
-    zero_buffer(cl_prev_primitives);
-
     VoxelCollection vox(scene_data, 4, 0.1);
     auto cl_voxel_index = load_to_buffer(vox.get_flattened(), true);
 
@@ -374,9 +365,6 @@ Results Raytracer::run(const CopyableSceneData& scene_data,
         if (!keep_going) {
             throw std::runtime_error("flag state false, stopping");
         }
-
-        zero_buffer(cl_image_source_index);
-        zero_buffer(cl_image_source);
 
         kernel(cl::EnqueueArgs(queue, cl::NDRange(directions.size())),
                cl_ray_info,
@@ -406,8 +394,13 @@ Results Raytracer::run(const CopyableSceneData& scene_data,
 
         auto copy_out = [this, copy_out_unchecked, i](const auto& from,
                                                       auto& to) {
+            using vt =
+                    typename std::decay_t<decltype(to)>::value_type::value_type;
             if (i < to.size()) {
                 copy_out_unchecked(from, to);
+                assert(std::find_if(to[i].begin(), to[i].end(), [](auto i) {
+                           return i != vt{};
+                       }) != to[i].end());
             }
         };
 

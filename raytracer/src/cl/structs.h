@@ -23,7 +23,7 @@ typedef struct {
 typedef struct {
     Ray ray;
     VolumeType volume;
-    float3 mic_reflection;
+    float3 image;
     float distance;
     bool keep_going;
 } RayInfo;
