@@ -1,8 +1,10 @@
 #pragma once
 
+#include "attenuator_program.h"
 #include "cl_structs.h"
 #include "raytracer_program.h"
 
+#include "common/aligned_allocator.h"
 #include "common/cl_include.h"
 #include "common/hrtf_utils.h"
 #include "common/scene_data.h"
@@ -10,8 +12,8 @@
 
 #include <array>
 #include <cmath>
-#include <map>
 #include <numeric>
+#include <set>
 #include <vector>
 
 namespace raytracer {
@@ -93,12 +95,11 @@ int compute_optimum_reflection_number(float min_amp, float max_reflectivity);
 /// This is a struct to keep the impulses and mic position together, because
 /// you'll probably never need one without the other.
 struct RaytracerResults {
-    explicit RaytracerResults(
-            const std::vector<Impulse> impulses = std::vector<Impulse>(),
-            const glm::vec3& c = glm::vec3(),
-            const glm::vec3& s = glm::vec3(),
-            int rays = 0,
-            int reflections = 0)
+    RaytracerResults(const std::vector<Impulse> impulses,
+                     const glm::vec3& c,
+                     const glm::vec3& s,
+                     size_t rays,
+                     size_t reflections)
             : impulses{impulses}
             , mic{c}
             , source{s}
@@ -109,40 +110,51 @@ struct RaytracerResults {
     const std::vector<Impulse> impulses;
     const glm::vec3 mic;
     const glm::vec3 source;
-    const int rays;
-    const int reflections;
+    const size_t rays;
+    const size_t reflections;
 };
+
+struct PathImpulsePair {
+    Impulse impulse;
+    std::vector<cl_ulong> path;
+};
+
+inline bool operator<(const PathImpulsePair& a, const PathImpulsePair& b) {
+    return a.path < b.path;
+}
 
 class Results final {
 public:
-    std::map<std::vector<int>, Impulse> image_source;
-    std::vector<Impulse> diffuse;
-    glm::vec3 mic;
-    glm::vec3 source;
-    int rays;
-    int reflections;
+    using set_type =
+            std::set<PathImpulsePair,
+                     std::less<PathImpulsePair>,
+                     boost::alignment::aligned_allocator<PathImpulsePair>>;
+    const set_type image_source;
+    const std::vector<std::vector<Impulse>> diffuse;
+    const glm::vec3 mic;
+    const glm::vec3 source;
+    const size_t rays;
+    const size_t reflections;
 
     RaytracerResults get_diffuse() const;
     RaytracerResults get_image_source(bool remove_direct) const;
     RaytracerResults get_all(bool remove_direct) const;
 };
 
-std::vector<cl_float3> get_random_directions(int num);
+std::vector<cl_float3> get_random_directions(size_t num);
 
 class Raytracer final {
 public:
-    using kernel_type = decltype(
-            std::declval<RaytracerProgram>().get_improved_raytrace_kernel());
-
-    Raytracer(const RaytracerProgram& program);
+    Raytracer(const raytracer_program& program);
 
     using PerStepCallback = std::function<void()>;
 
     Results run(const CopyableSceneData& scene_data,
                 const glm::vec3& micpos,
                 const glm::vec3& source,
-                int rays,
-                int reflections,
+                size_t rays,
+                size_t reflections,
+                size_t num_image_source,
                 std::atomic_bool& keep_going,
                 const PerStepCallback& callback);
 
@@ -150,11 +162,15 @@ public:
                 const glm::vec3& micpos,
                 const glm::vec3& source,
                 const std::vector<cl_float3>& directions,
-                int reflections,
+                size_t reflections,
+                size_t num_image_source,
                 std::atomic_bool& keep_going,
                 const PerStepCallback& callback);
 
 private:
+    using kernel_type =
+            decltype(std::declval<raytracer_program>().get_raytrace_kernel());
+
     cl::CommandQueue queue;
     cl::Context context;
     kernel_type kernel;
@@ -163,10 +179,7 @@ private:
 /// Class for parallel HRTF attenuation of raytrace results.
 class HrtfAttenuator final {
 public:
-    using kernel_type =
-            decltype(std::declval<RaytracerProgram>().get_hrtf_kernel());
-
-    HrtfAttenuator(const RaytracerProgram& program);
+    HrtfAttenuator(const attenuator_program& program);
 
     /// Attenuate some raytrace results.
     /// The outer vector corresponds to separate channels, the inner vector
@@ -181,6 +194,9 @@ public:
     get_hrtf_data() const;
 
 private:
+    using kernel_type =
+            decltype(std::declval<attenuator_program>().get_hrtf_kernel());
+
     cl::CommandQueue queue;
     kernel_type kernel;
     const cl::Context context;
@@ -194,10 +210,7 @@ private:
 /// Class for parallel Speaker attenuation of raytrace results.
 class MicrophoneAttenuator final {
 public:
-    using kernel_type =
-            decltype(std::declval<RaytracerProgram>().get_attenuate_kernel());
-
-    MicrophoneAttenuator(const RaytracerProgram& program);
+    MicrophoneAttenuator(const attenuator_program& program);
 
     /// Attenuate some raytrace results.
     /// The outer vector corresponds to separate channels, the inner vector
@@ -208,6 +221,9 @@ public:
                                            const glm::vec3& position);
 
 private:
+    using kernel_type = decltype(
+            std::declval<attenuator_program>().get_microphone_kernel());
+
     cl::CommandQueue queue;
     kernel_type kernel;
     const cl::Context context;

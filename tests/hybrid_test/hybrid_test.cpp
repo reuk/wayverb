@@ -81,7 +81,7 @@ auto run_waveguide(ComputeContext& context_info,
             config.receiver_settings.position,
             config.get_waveguide_sample_rate());
 
-    auto source_index = waveguide.get_index_for_coordinate(config.source);
+    auto source_index   = waveguide.get_index_for_coordinate(config.source);
     auto receiver_index = waveguide.get_index_for_coordinate(
             config.receiver_settings.position);
 
@@ -126,8 +126,8 @@ int main(int argc, char** argv) {
     constexpr glm::vec3 source(2.09, 2.12, 2.12);
     constexpr glm::vec3 receiver(2.09, 3.08, 0.96);
     constexpr auto samplerate = 96000;
-    constexpr auto bit_depth = 16;
-    constexpr auto v = 0.9;
+    constexpr auto bit_depth  = 16;
+    constexpr auto v          = 0.9;
     constexpr Surface surface{{{v, v, v, v, v, v, v, v}},
                               {{v, v, v, v, v, v, v, v}}};
 
@@ -173,10 +173,10 @@ int main(int argc, char** argv) {
     //        config, output_folder, "waveguide_adjusted",
     //        {waveguide_adjusted});
     //
-    RaytracerProgram raytrace_program(context_info.context,
-                                      context_info.device);
+    raytracer_program raytracer_program(context_info.context,
+                                        context_info.device);
 
-    raytracer::Raytracer raytracer(raytrace_program);
+    raytracer::Raytracer raytracer(raytracer_program);
     //            [                                        ]
     std::cout << "[ -- running raytracer ----------------- ]" << std::endl;
     std::atomic_bool keep_going{true};
@@ -187,10 +187,13 @@ int main(int argc, char** argv) {
                                  config.source,
                                  config.rays,
                                  impulses,
+                                 10,
                                  keep_going,
                                  [&pb] { pb += 1; });
 
-    raytracer::MicrophoneAttenuator attenuator(raytrace_program);
+    attenuator_program attenuator_program(context_info.context,
+                                          context_info.device);
+    raytracer::MicrophoneAttenuator attenuator(attenuator_program);
     auto output = attenuator.process(
             results.get_image_source(false), glm::vec3(0, 0, 1), 0, receiver);
     // auto output =
@@ -226,14 +229,14 @@ int main(int argc, char** argv) {
 
     auto waveguide_length = waveguide_adjusted.size();
     auto raytracer_length = raytracer_output.size();
-    auto out_length = std::min(waveguide_length, raytracer_length);
+    auto out_length       = std::min(waveguide_length, raytracer_length);
 
     waveguide_adjusted.resize(out_length);
     raytracer_output.resize(out_length);
 
     auto max_waveguide = max_mag(waveguide_adjusted);
     auto max_raytracer = max_mag(raytracer_output);
-    auto max_both = std::max(max_waveguide, max_raytracer);
+    auto max_both      = std::max(max_waveguide, max_raytracer);
     LOG(INFO) << "max waveguide: " << max_waveguide;
     LOG(INFO) << "max raytracer: " << max_raytracer;
 

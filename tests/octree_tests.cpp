@@ -26,12 +26,6 @@ TEST(octree, constructor) {
     //    print_nodes(octree);
 }
 
-TEST(octree, flatten) {
-    SceneData scene_data(OBJ_PATH);
-    Octree octree(scene_data, 5);
-    auto flattened = octree.get_flattened();
-}
-
 TEST(octree, surrounding) {
     SceneData scene_data(OBJ_PATH);
 

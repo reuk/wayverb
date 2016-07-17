@@ -13,7 +13,7 @@
 #include <cassert>
 #include <cmath>
 
-class RectangularProgram final : public custom_program_base {
+class RectangularProgram final {
 public:
     typedef enum : cl_int {
         id_none = 0,
@@ -42,7 +42,7 @@ public:
 
     static constexpr cl_uint NO_NEIGHBOR{~cl_uint{0}};
 
-    struct __attribute__((aligned(8))) NodeStruct final {
+    struct alignas(1 << 4) NodeStruct final {
         static constexpr int PORTS{6};
         cl_uint ports[PORTS]{};
         cl_float3 position{};
@@ -61,7 +61,7 @@ public:
         }
     };
 
-    struct __attribute__((aligned(8))) CondensedNodeStruct final {
+    struct alignas(1 << 3) CondensedNodeStruct final {
         static constexpr int PORTS{6};
         cl_int boundary_type{};
         cl_uint boundary_index{};
@@ -74,7 +74,7 @@ public:
 
     using FilterReal = cl_double;
 
-    constexpr static auto BIQUAD_ORDER = 2;
+    static constexpr auto BIQUAD_ORDER = 2u;
 
     template <int O>
     struct FilterMemory final {
@@ -112,12 +112,14 @@ public:
 
     using BiquadCoefficients = FilterCoefficients<BIQUAD_ORDER>;
 
-    struct __attribute__((aligned(8))) BiquadMemoryArray final {
+    struct alignas(1 << 3) BiquadMemoryArray final {
         static constexpr int BIQUAD_SECTIONS{3};
         BiquadMemory array[BIQUAD_SECTIONS]{};
     };
 
-    struct __attribute__((aligned(8))) BiquadCoefficientsArray final {
+    static constexpr auto BIQUAD_SECTIONS = BiquadMemoryArray::BIQUAD_SECTIONS;
+
+    struct alignas(1 << 3) BiquadCoefficientsArray final {
         static constexpr int BIQUAD_SECTIONS =
                 BiquadMemoryArray::BIQUAD_SECTIONS;
         BiquadCoefficients array[BIQUAD_SECTIONS]{};
@@ -145,7 +147,7 @@ public:
     };
 
     template <int D>
-    struct __attribute__((aligned(8))) BoundaryDataArray final {
+    struct alignas(1 << 3) BoundaryDataArray final {
         static constexpr int DIMENSIONS{D};
         BoundaryData array[DIMENSIONS]{};
 
@@ -155,7 +157,7 @@ public:
         }
     };
 
-    struct __attribute__((aligned(8))) InputInfo final {
+    struct alignas(1 << 3) InputInfo final {
         const cl_ulong write_location;
         const cl_float pressure;
     };
@@ -173,31 +175,31 @@ public:
                                 const cl::Device& device);
 
     auto get_kernel() const {
-        return custom_program_base::get_kernel<InputInfo,
-                                               cl::Buffer,
-                                               cl::Buffer,
-                                               cl::Buffer,
-                                               cl_int3,
-                                               cl::Buffer,
-                                               cl::Buffer,
-                                               cl::Buffer,
-                                               cl::Buffer,
-                                               cl_ulong,
-                                               cl::Buffer,
-                                               cl::Buffer,
-                                               cl::Buffer>(
+        return custom_program_base.get_kernel<InputInfo,
+                                              cl::Buffer,
+                                              cl::Buffer,
+                                              cl::Buffer,
+                                              cl_int3,
+                                              cl::Buffer,
+                                              cl::Buffer,
+                                              cl::Buffer,
+                                              cl::Buffer,
+                                              cl_ulong,
+                                              cl::Buffer,
+                                              cl::Buffer,
+                                              cl::Buffer>(
                 "condensed_waveguide");
     }
 
     auto get_filter_test_kernel() const {
-        return custom_program_base::
-                get_kernel<cl::Buffer, cl::Buffer, cl::Buffer, cl::Buffer>(
+        return custom_program_base
+                .get_kernel<cl::Buffer, cl::Buffer, cl::Buffer, cl::Buffer>(
                         "filter_test");
     }
 
     auto get_filter_test_2_kernel() const {
-        return custom_program_base::
-                get_kernel<cl::Buffer, cl::Buffer, cl::Buffer, cl::Buffer>(
+        return custom_program_base
+                .get_kernel<cl::Buffer, cl::Buffer, cl::Buffer, cl::Buffer>(
                         "filter_test_2");
     }
 
@@ -340,9 +342,19 @@ public:
     static std::vector<CanonicalCoefficients> to_filter_coefficients(
             std::vector<Surface> surfaces, float sr);
 
+    template <cl_program_info T>
+    auto get_info() const {
+        return custom_program_base.template get_info<T>();
+    }
+
+    cl::Device get_device() const {
+        return custom_program_base.get_device();
+    }
+
 private:
-    static constexpr int BIQUAD_SECTIONS = BiquadMemoryArray::BIQUAD_SECTIONS;
     static const std::string source;
+
+    custom_program_base custom_program_base;
 };
 
 JSON_OSTREAM_OVERLOAD(RectangularProgram::NodeStruct);

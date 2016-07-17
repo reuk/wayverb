@@ -11,7 +11,7 @@
 
 using VolumeType = cl_float8;
 
-struct __attribute__((aligned(8))) Surface {
+struct alignas(1 << 5) Surface {
     VolumeType specular{{0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5}};
     VolumeType diffuse{{0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5}};
 };

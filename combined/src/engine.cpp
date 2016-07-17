@@ -40,7 +40,7 @@ constexpr double rectilinear_calibration_factor(double r, double sr) {
 
 */
 
-auto run_raytracer_attenuation(const RaytracerProgram& program,
+auto run_raytracer_attenuation(const attenuator_program& program,
                                const model::ReceiverSettings& receiver,
                                const raytracer::RaytracerResults& input) {
     switch (receiver.mode) {
@@ -127,6 +127,8 @@ public:
          float output_sample_rate)
             : scene_data(scene_data)
             , raytracer_program(compute_context.context, compute_context.device)
+            , attenuator_program(compute_context.context,
+                                 compute_context.device)
             , raytracer(raytracer_program)
             , waveguide(RectangularProgram(compute_context.context,
                                            compute_context.device),
@@ -213,7 +215,7 @@ public:
 
         //  attenuate raytracer results
         auto raytracer_output = run_raytracer_attenuation(
-                raytracer_program, receiver, i.raytracer_results);
+                attenuator_program, receiver, i.raytracer_results);
         //  attenuate waveguide results
         auto waveguide_output = run_waveguide_attenuation(
                 receiver, i.waveguide_results, i.waveguide_sample_rate);
@@ -273,6 +275,7 @@ private:
                               source,
                               rays,
                               impulses,
+                              5,
                               keep_going,
                               [this, &callback, &raytracer_step] {
                                   callback(state::running_raytracer,
@@ -315,11 +318,13 @@ private:
                 waveguide_results.begin(),
                 waveguide_results.begin() + input.correction_offset_in_samples);
 
-        return std::make_unique<intermediate>();
+//        return std::make_unique<intermediate>();
+        return nullptr;
     }
 
     CopyableSceneData scene_data;
-    RaytracerProgram raytracer_program;
+    raytracer_program raytracer_program;
+    attenuator_program attenuator_program;
     raytracer::Raytracer raytracer;
     RectangularWaveguide<buffer_type> waveguide;
 

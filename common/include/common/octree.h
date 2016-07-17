@@ -1,7 +1,6 @@
 #pragma once
 
 #include "boundaries.h"
-#include "float_uint.h"
 #include "geometric.h"
 #include "scene_data.h"
 
@@ -20,7 +19,6 @@ public:
     bool has_nodes() const;
     const std::array<Octree, 8>& get_nodes() const;
     const std::vector<int>& get_triangles() const;
-    std::vector<FloatUInt> get_flattened() const;
 
     int get_side() const;
 
@@ -28,8 +26,6 @@ public:
     const Octree& get_surrounding_leaf(const glm::vec3& v) const;
 
 private:
-    void fill_flattened(std::vector<FloatUInt>& ret) const;
-
     CuboidBoundary aabb;
     std::vector<int> triangles;
     std::unique_ptr<std::array<Octree, 8>> nodes;

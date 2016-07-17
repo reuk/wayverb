@@ -6,35 +6,73 @@
 
 namespace geo {
 
-class Ray {
+class Ray final {
 public:
-    explicit Ray(const glm::vec3& position = glm::vec3(),
-                 const glm::vec3& direction = glm::vec3());
+    constexpr explicit Ray(const glm::vec3& position = glm::vec3(),
+                           const glm::vec3& direction = glm::vec3())
+            : position(position)
+            , direction(direction) {
+    }
+
+    constexpr glm::vec3 get_position() const {
+        return position;
+    }
+    constexpr glm::vec3 get_direction() const {
+        return direction;
+    }
+
+private:
     glm::vec3 position;
     glm::vec3 direction;
 };
 
-class Intersects {
+class Intersects final {
 public:
-    Intersects() = default;
-    explicit Intersects(float distance);
+    constexpr Intersects()
+            : distance(0)
+            , intersects(false) {
+    }
+    constexpr explicit Intersects(float distance)
+            : distance(distance)
+            , intersects(true) {
+    }
 
-    virtual ~Intersects() noexcept = default;
-    Intersects(Intersects&&) noexcept = default;
-    Intersects& operator=(Intersects&&) noexcept = default;
-    Intersects(const Intersects&) noexcept = default;
-    Intersects& operator=(const Intersects&) noexcept = default;
+    constexpr float get_distance() const {
+        return distance;
+    }
+    constexpr bool get_intersects() const {
+        return intersects;
+    }
 
-    bool intersects{false};
-    float distance{0};
+private:
+    float distance;
+    bool intersects;
 };
 
-class Intersection : public Intersects {
+class Intersection final {
 public:
-    Intersection() = default;
-    Intersection(float distance, int index);
+    constexpr Intersection()
+            : intersects()
+            , index(0) {
+    }
+    constexpr Intersection(float distance, int index)
+            : intersects(distance)
+            , index(index) {
+    }
 
-    int index{0};
+    constexpr float get_distance() const {
+        return intersects.get_distance();
+    }
+    constexpr bool get_intersects() const {
+        return intersects.get_intersects();
+    }
+    constexpr size_t get_index() const {
+        return index;
+    }
+
+private:
+    Intersects intersects;
+    size_t index;
 };
 
 TriangleVec3 to_triangle_vec3f(const Triangle& tri,

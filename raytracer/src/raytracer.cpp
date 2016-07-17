@@ -23,7 +23,7 @@
 
 namespace {
 constexpr auto volume_factor = 0.001f;
-constexpr const VolumeType AIR_COEFFICIENT{{
+constexpr const VolumeType air_coefficient{{
         volume_factor * -0.1f,
         volume_factor * -0.2f,
         volume_factor * -0.5f,
@@ -65,10 +65,13 @@ std::vector<std::vector<float>> flatten_impulses(
         const std::vector<AttenuatedImpulse>& impulse, float samplerate) {
     const auto MAX_TIME_LIMIT = 20.0f;
     // Find the index of the final sample based on time and samplerate
-    float maxtime = 0;
-    for (const auto& i : impulse)
-        maxtime = std::max(maxtime, i.time);
-    maxtime = std::min(maxtime, MAX_TIME_LIMIT);
+    auto maxtime = std::min(
+            std::accumulate(impulse.begin(),
+                            impulse.end(),
+                            0.0f,
+                            [](auto i, auto j) { return std::max(i, j.time); }),
+            MAX_TIME_LIMIT);
+
     const auto MAX_SAMPLE = round(maxtime * samplerate) + 1;
 
     //  Create somewhere to store the results.
@@ -162,35 +165,47 @@ inline T elementwise(const T& a, const T& b, const U& u) {
     return ret;
 }
 
-std::vector<cl_float3> get_random_directions(int num) {
+std::vector<cl_float3> get_random_directions(size_t num) {
     std::vector<cl_float3> ret(num);
     std::uniform_real_distribution<float> z(-1, 1);
     std::uniform_real_distribution<float> theta(-M_PI, M_PI);
     auto seed = std::chrono::system_clock::now().time_since_epoch().count();
     std::default_random_engine engine(seed);
 
-    for (auto& i : ret)
+    for (auto& i : ret) {
         i = to_cl_float3(sphere_point(z(engine), theta(engine)));
+    }
 
     return ret;
 }
 
 RaytracerResults Results::get_diffuse() const {
-    return RaytracerResults(diffuse, mic, source, rays, reflections);
+    std::vector<Impulse> ret;
+    ret.reserve(diffuse.size() * diffuse.front().size());
+    for (const auto& i : diffuse) {
+        std::copy(i.begin(), i.end(), std::back_inserter(ret));
+    }
+    return RaytracerResults(ret, mic, source, rays, reflections);
 }
 
 RaytracerResults Results::get_image_source(bool remove_direct) const {
     auto temp = image_source;
-    if (remove_direct)
-        temp.erase(std::vector<int>{0});
+    if (remove_direct) {
+        auto it = std::find_if(temp.begin(), temp.end(), [](const auto& i) {
+            return i.path == std::vector<cl_ulong>{0};
+        });
+        if (it != temp.end()) {
+            temp.erase(it);
+        }
+    }
 
     std::vector<Impulse> ret(temp.size());
-    proc::transform(temp, begin(ret), [](const auto& i) { return i.second; });
+    proc::transform(temp, begin(ret), [](const auto& i) { return i.impulse; });
     return RaytracerResults(ret, mic, source, rays, reflections);
 }
 
 RaytracerResults Results::get_all(bool remove_direct) const {
-    auto diffuse = get_diffuse().impulses;
+    auto diffuse     = get_diffuse().impulses;
     const auto image = get_image_source(remove_direct).impulses;
     diffuse.insert(diffuse.end(), image.begin(), image.end());
     return RaytracerResults(diffuse, mic, source, rays, reflections);
@@ -198,47 +213,47 @@ RaytracerResults Results::get_all(bool remove_direct) const {
 
 //----------------------------------------------------------------------------//
 
-void remove_duplicates(const std::vector<cl_ulong>& path,
-                       const std::vector<Impulse>& image,
-                       const int RAY_GROUP_SIZE,
-                       Results& results) {
-    for (auto j = 0; j != RAY_GROUP_SIZE * NUM_IMAGE_SOURCE;
-         j += NUM_IMAGE_SOURCE) {
-        for (auto k = 1; k != NUM_IMAGE_SOURCE + 1; ++k) {
-            std::vector<int> surfaces(path.begin() + j, path.begin() + j + k);
+auto remove_duplicates(const std::vector<std::vector<cl_ulong>>& path,
+                       const std::vector<std::vector<Impulse>>& image,
+                       const Results::set_type& results) {
+    auto ret = results;
+
+    //  for each ray
+    for (auto j = 0; j != path.size(); ++j) {
+        //  get all ray path combinations
+        for (auto k = 1; k != path[j].size(); ++k) {
+            std::vector<cl_ulong> surfaces(path[j].begin(),
+                                           path[j].begin() + k);
 
             if (k == 1 || surfaces.back() != 0) {
-                auto it = results.image_source.find(surfaces);
-                if (it == results.image_source.end()) {
-                    results.image_source[surfaces] = image[j + k - 1];
-                }
+                ret.insert(PathImpulsePair{image[j][k], surfaces});
             }
         }
     }
+
+    return ret;
 }
 
-Raytracer::Raytracer(const RaytracerProgram& program)
+Raytracer::Raytracer(const raytracer_program& program)
         : queue(program.get_info<CL_PROGRAM_CONTEXT>(), program.get_device())
         , context(program.get_info<CL_PROGRAM_CONTEXT>())
-        , kernel(program.get_improved_raytrace_kernel()) {
+        , kernel(program.get_raytrace_kernel()) {
 }
 
 template <typename T>
-auto transpose(const T& t, int x, int y) {
-    assert(t.size() == x * y);
-
-    auto c = t;
-    for (auto i = 0u; i != x; ++i) {
-        for (auto j = 0u; j != y; ++j) {
-            c[j + i * y] = t[i + j * x];
+auto transpose(const std::vector<std::vector<T>>& t) {
+    std::vector<std::vector<T>> ret(t.front().size(), std::vector<T>(t.size()));
+    for (auto i = 0u; i != t.size(); ++i) {
+        for (auto j = 0u; j != t[i].size(); ++j) {
+            ret[j][i] = t[i][j];
         }
     }
-    return c;
+    return ret;
 }
 
 VolumeType air_attenuation_for_distance(float distance) {
     VolumeType ret;
-    proc::transform(AIR_COEFFICIENT.s, std::begin(ret.s), [distance](auto i) {
+    proc::transform(air_coefficient.s, std::begin(ret.s), [distance](auto i) {
         return pow(M_E, distance * i);
     });
     return ret;
@@ -249,35 +264,39 @@ float power_attenuation_for_distance(float distance) {
 }
 
 VolumeType attenuation_for_distance(float distance) {
-    auto ret = air_attenuation_for_distance(distance);
+    auto ret   = air_attenuation_for_distance(distance);
     auto power = power_attenuation_for_distance(distance);
     proc::for_each(ret.s, [power](auto& i) { i *= power; });
     return ret;
 }
 
-void add_direct_impulse(const glm::vec3& micpos,
+auto get_direct_impulse(const glm::vec3& micpos,
                         const glm::vec3& source,
-                        const CopyableSceneData& scene_data,
-                        Results& results) {
+                        const CopyableSceneData& scene_data) {
+    Results::set_type ret;
     if (geo::point_intersection(micpos,
                                 source,
                                 scene_data.get_triangles(),
                                 scene_data.get_converted_vertices())) {
         auto init_diff = source - micpos;
         auto init_dist = glm::length(init_diff);
-        results.image_source[{0}] = Impulse{
-                attenuation_for_distance(init_dist),
-                to_cl_float3(micpos + init_diff),
-                static_cast<cl_float>(init_dist / SPEED_OF_SOUND),
-        };
+        ret.insert(PathImpulsePair{
+                Impulse{
+                        attenuation_for_distance(init_dist),
+                        to_cl_float3(micpos + init_diff),
+                        static_cast<cl_float>(init_dist / SPEED_OF_SOUND),
+                },
+                {0}});
     }
+    return ret;
 }
 
 Results Raytracer::run(const CopyableSceneData& scene_data,
                        const glm::vec3& micpos,
                        const glm::vec3& source,
-                       int rays,
-                       int reflections,
+                       size_t rays,
+                       size_t reflections,
+                       size_t num_image_source,
                        std::atomic_bool& keep_going,
                        const std::function<void()>& callback) {
     return run(scene_data,
@@ -285,6 +304,7 @@ Results Raytracer::run(const CopyableSceneData& scene_data,
                source,
                get_random_directions(rays),
                reflections,
+               num_image_source,
                keep_going,
                callback);
 }
@@ -293,94 +313,76 @@ Results Raytracer::run(const CopyableSceneData& scene_data,
                        const glm::vec3& micpos,
                        const glm::vec3& source,
                        const std::vector<cl_float3>& directions,
-                       int reflections,
+                       size_t reflections,
+                       size_t num_image_source,
                        std::atomic_bool& keep_going,
                        const std::function<void()>& callback) {
+    std::vector<RayInfo> ray_info;
+    ray_info.reserve(directions.size());
+    for (const auto& i : directions) {
+        ray_info.push_back(RayInfo{Ray{to_cl_float3(source), i},
+                                   VolumeType{{1, 1, 1, 1, 1, 1, 1, 1}},
+                                   to_cl_float3(micpos),
+                                   0,
+                                   true});
+    }
+
+    auto load_to_buffer = [this](auto i, bool readonly) {
+        return cl::Buffer(context, i.begin(), i.end(), readonly);
+    };
+
+    auto cl_ray_info  = load_to_buffer(ray_info, false);
+    auto cl_triangles = load_to_buffer(scene_data.get_triangles(), true);
+    auto cl_vertices  = load_to_buffer(scene_data.get_vertices(), true);
+    auto cl_surfaces  = load_to_buffer(scene_data.get_surfaces(), true);
+
+    auto cl_impulses = cl::Buffer(
+            context, CL_MEM_READ_WRITE, directions.size() * sizeof(Impulse));
+    auto cl_image_source = cl::Buffer(
+            context, CL_MEM_READ_WRITE, directions.size() * sizeof(Impulse));
+    auto cl_prev_primitives = cl::Buffer(
+            context,
+            CL_MEM_READ_WRITE,
+            directions.size() * num_image_source * sizeof(TriangleVerts));
+    auto cl_image_source_index = cl::Buffer(
+            context, CL_MEM_READ_WRITE, directions.size() * sizeof(cl_ulong));
+
+    //  zero out the prev_primitives buffer
+    //  TODO find a quicker way of doing this
+    auto zero_buffer = [this](auto& buffer) {
+        std::vector<uint8_t> zeros(buffer.template getInfo<CL_MEM_SIZE>(), 0);
+        cl::copy(queue, zeros.begin(), zeros.end(), buffer);
+    };
+
+    zero_buffer(cl_prev_primitives);
+
     VoxelCollection vox(scene_data, 4, 0.1);
-    auto flattened_vox = vox.get_flattened();
+    auto cl_voxel_index = load_to_buffer(vox.get_flattened(), true);
 
-    auto rays = directions.size();
-    cl::Buffer cl_ray_info(context, CL_MEM_READ_WRITE, rays * sizeof(RayInfo));
+    std::vector<std::vector<cl_ulong>> image_source_index(
+            num_image_source, std::vector<cl_ulong>(directions.size()));
+    std::vector<std::vector<Impulse>> image_source(
+            num_image_source, std::vector<Impulse>(directions.size()));
 
-    std::vector<RayInfo> ray_info(directions.size());
-    proc::transform(
-            directions, ray_info.begin(), [micpos, source](const auto& i) {
-                RayInfo ret;
-                ret.ray.direction = i;
-                ret.ray.position = to_cl_float3(source);
-                ret.distance = 0;
-                ret.volume = VolumeType{{1, 1, 1, 1, 1, 1, 1, 1}};
-                ret.cont = 1;
+    Results::set_type result_image_source =
+            get_direct_impulse(micpos, source, scene_data);
 
-                ret.mic_reflection = to_cl_float3(micpos);
-                return ret;
-            });
-
-    cl::copy(queue, begin(ray_info), end(ray_info), cl_ray_info);
-
-    cl::Buffer cl_triangles(
-            context,
-            begin(const_cast<std::vector<Triangle>&>(
-                    scene_data.get_triangles())),
-            end(const_cast<std::vector<Triangle>&>(scene_data.get_triangles())),
-            false);
-    cl::Buffer cl_vertices(
-            context,
-            begin(const_cast<std::vector<cl_float3>&>(
-                    scene_data.get_vertices())),
-            end(const_cast<std::vector<cl_float3>&>(scene_data.get_vertices())),
-            false);
-    auto surfaces = scene_data.get_surfaces();
-    cl::Buffer cl_surfaces(context, surfaces.begin(), surfaces.end(), false);
-    cl::Buffer cl_impulses(context, CL_MEM_READ_WRITE, rays * sizeof(Impulse));
-    cl::Buffer cl_image_source(
-            context, CL_MEM_READ_WRITE, rays * sizeof(Impulse));
-    cl::Buffer cl_image_source_index(
-            context, CL_MEM_READ_WRITE, rays * sizeof(cl_ulong));
-
-    cl::Buffer cl_voxel_index(
-            context, begin(flattened_vox), end(flattened_vox), false);
-
-    Results results;
-    results.mic = micpos;
-    results.source = source;
-    results.rays = directions.size();
-    results.reflections = reflections;
-    results.diffuse.resize(rays * reflections);
-
-    add_direct_impulse(micpos, source, scene_data, results);
-
-    std::vector<cl_ulong> image_source_index(rays * NUM_IMAGE_SOURCE, 0);
-    std::vector<Impulse> image_source(
-            rays * NUM_IMAGE_SOURCE,
-            Impulse{{{0, 0, 0, 0, 0, 0, 0, 0}}, {{0, 0, 0}}, 0});
-
-    AABB global_aabb{to_cl_float3(vox.get_aabb().get_c0()),
-                     to_cl_float3(vox.get_aabb().get_c1())};
+    std::vector<std::vector<Impulse>> result_diffuse(
+            reflections, std::vector<Impulse>(directions.size()));
 
     for (auto i = 0u; i != reflections; ++i) {
         if (!keep_going) {
             throw std::runtime_error("flag state false, stopping");
         }
 
-        auto b = (i + 0) * rays;
-        auto e = (i + 1) * rays;
+        zero_buffer(cl_image_source_index);
+        zero_buffer(cl_image_source);
 
-        if (i < NUM_IMAGE_SOURCE) {
-            cl::copy(queue,
-                     image_source_index.begin() + b,
-                     image_source_index.begin() + e,
-                     cl_image_source_index);
-            cl::copy(queue,
-                     image_source.begin() + b,
-                     image_source.begin() + e,
-                     cl_image_source);
-        }
-
-        kernel(cl::EnqueueArgs(queue, cl::NDRange(rays)),
+        kernel(cl::EnqueueArgs(queue, cl::NDRange(directions.size())),
                cl_ray_info,
                cl_voxel_index,
-               global_aabb,
+               AABB{to_cl_float3(vox.get_aabb().get_c0()),
+                    to_cl_float3(vox.get_aabb().get_c1())},
                vox.get_side(),
                cl_triangles,
                scene_data.get_triangles().size(),
@@ -388,44 +390,50 @@ Results Raytracer::run(const CopyableSceneData& scene_data,
                cl_surfaces,
                to_cl_float3(source),
                to_cl_float3(micpos),
+               air_coefficient,
+               i,
+               num_image_source,
                cl_impulses,
                cl_image_source,
-               cl_image_source_index,
-               AIR_COEFFICIENT,
-               i);
+               cl_prev_primitives,
+               cl_image_source_index);
 
-        cl::copy(queue,
-                 cl_impulses,
-                 results.diffuse.begin() + b,
-                 results.diffuse.begin() + e);
+        auto copy_out_unchecked = [this, i](const auto& from, auto& to) {
+            cl::copy(queue, from, to[i].begin(), to[i].end());
+        };
 
-        if (i < NUM_IMAGE_SOURCE) {
-            cl::copy(queue,
-                     cl_image_source_index,
-                     image_source_index.begin() + b,
-                     image_source_index.begin() + e);
-            cl::copy(queue,
-                     cl_image_source,
-                     image_source.begin() + b,
-                     image_source.begin() + e);
-        }
+        copy_out_unchecked(cl_impulses, result_diffuse);
+
+        auto copy_out = [this, copy_out_unchecked, i](const auto& from,
+                                                      auto& to) {
+            if (i < to.size()) {
+                copy_out_unchecked(from, to);
+            }
+        };
+
+        copy_out(cl_image_source_index, image_source_index);
+        copy_out(cl_image_source, image_source);
 
         callback();
     }
 
-    results.diffuse = transpose(results.diffuse, rays, reflections);
+    result_diffuse     = transpose(result_diffuse);
+    image_source       = transpose(image_source);
+    image_source_index = transpose(image_source_index);
 
-    image_source = transpose(image_source, rays, NUM_IMAGE_SOURCE);
-    image_source_index = transpose(image_source_index, rays, NUM_IMAGE_SOURCE);
-
-    remove_duplicates(image_source_index, image_source, rays, results);
-
-    return results;
+    return Results{
+            remove_duplicates(
+                    image_source_index, image_source, result_image_source),
+            result_diffuse,
+            micpos,
+            source,
+            directions.size(),
+            reflections};
 }
 
 //----------------------------------------------------------------------------//
 
-HrtfAttenuator::HrtfAttenuator(const RaytracerProgram& program)
+HrtfAttenuator::HrtfAttenuator(const attenuator_program& program)
         : queue(program.get_info<CL_PROGRAM_CONTEXT>(), program.get_device())
         , kernel(program.get_hrtf_kernel())
         , context(program.get_info<CL_PROGRAM_CONTEXT>())
@@ -485,9 +493,9 @@ HrtfAttenuator::get_hrtf_data() const {
     return HrtfData::HRTF_DATA;
 }
 
-MicrophoneAttenuator::MicrophoneAttenuator(const RaytracerProgram& program)
+MicrophoneAttenuator::MicrophoneAttenuator(const attenuator_program& program)
         : queue(program.get_info<CL_PROGRAM_CONTEXT>(), program.get_device())
-        , kernel(program.get_attenuate_kernel())
+        , kernel(program.get_microphone_kernel())
         , context(program.get_info<CL_PROGRAM_CONTEXT>()) {
 }
 

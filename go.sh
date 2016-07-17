@@ -24,7 +24,7 @@ callraytrace () {
 }
 
 export GLOG_logtostderr=1
-export GTEST_FILTER="*dc_blocker*"
+export GTEST_FILTER="*raytrace*"
 
 #cmake .. && make && ctest -V
 #cmake .. && make && make doc && ctest -V

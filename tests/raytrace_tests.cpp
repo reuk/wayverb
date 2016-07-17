@@ -32,6 +32,7 @@ auto get_results(ComputeContext& context,
                         glm::vec3(0, 1.75, 3),
                         directions,
                         reflections,
+                        10,
                         keep_going,
                         [] {});
 }
@@ -80,18 +81,18 @@ bool operator==(const Impulse& a, const Impulse& b) {
 }
 
 static constexpr auto bench_reflections = 128;
-static constexpr auto bench_rays = 1 << 15;
+static constexpr auto bench_rays        = 1 << 15;
 
 TEST(raytrace, new) {
     ComputeContext context;
-    auto raytrace_program = RaytracerProgram(context.context, context.device);
+    raytracer_program raytracer_program(context.context, context.device);
 
     SceneData scene_data(OBJ_PATH);
 
     auto directions = raytracer::get_random_directions(bench_rays);
 
     auto results_1 = get_results<raytracer::Raytracer>(context,
-                                                       raytrace_program,
+                                                       raytracer_program,
                                                        scene_data,
                                                        directions,
                                                        bench_reflections);
@@ -158,17 +159,19 @@ TEST(raytrace, image_source) {
     constexpr glm::vec3 source(1, 1, 1);
     constexpr glm::vec3 receiver(2, 1, 5);
     constexpr auto v = 0.9;
-    constexpr Surface surface{{{v, v, v, v, v, v, v, v}},
-                              {{v, v, v, v, v, v, v, v}}};
+    constexpr Surface surface{VolumeType{{v, v, v, v, v, v, v, v}},
+                              VolumeType{{v, v, v, v, v, v, v, v}}};
 
     constexpr auto shells = 2;
-    auto images = images_for_shell<shells>(box, source);
+    auto images           = images_for_shell<shells>(box, source);
     std::array<float, images.size()> distances;
     proc::transform(images, distances.begin(), [&receiver](auto i) {
         return glm::distance(receiver, i);
     });
     std::array<float, images.size()> times;
-    proc::transform(distances, times.begin(), [](auto i) { return i / 340; });
+    proc::transform(distances, times.begin(), [](auto i) {
+        return i / SPEED_OF_SOUND;
+    });
     std::array<VolumeType, images.size()> volumes;
     proc::transform(distances, volumes.begin(), [](auto i) {
         return raytracer::attenuation_for_distance(i);
@@ -185,8 +188,8 @@ TEST(raytrace, image_source) {
                                            std::abs(k - shells));
                 auto reflections = shell_dim.x + shell_dim.y + shell_dim.z;
                 if (reflections <= shells) {
-                    auto index = i + j * L + k * L * L;
-                    auto volume = volumes[index];
+                    auto index    = i + j * L + k * L * L;
+                    auto volume   = volumes[index];
                     auto base_vol = pow(-v, reflections);
                     for (auto band = 0; band != 8; ++band)
                         volume.s[band] *= base_vol;
@@ -206,20 +209,21 @@ TEST(raytrace, image_source) {
 
     //  raytracing method
     ComputeContext context;
-    auto raytrace_program = RaytracerProgram(context.context, context.device);
+    raytracer_program raytracer_program(context.context, context.device);
 
     CuboidBoundary boundary(box.get_c0(), box.get_c1());
 
-    raytracer::Raytracer raytracer(raytrace_program);
+    raytracer::Raytracer raytracer(raytracer_program);
 
     auto scene_data = boundary.get_scene_data();
     scene_data.set_surfaces(surface);
 
     std::atomic_bool keep_going{true};
     auto results = raytracer.run(
-            scene_data, receiver, source, 100000, 100, keep_going, [] {});
+            scene_data, receiver, source, 100000, 100, 10, keep_going, [] {});
 
-    raytracer::MicrophoneAttenuator attenuator(raytrace_program);
+    attenuator_program attenuator_program(context.context, context.device);
+    raytracer::MicrophoneAttenuator attenuator(attenuator_program);
     auto output = attenuator.process(
             results.get_image_source(false), glm::vec3(0, 0, 1), 0, receiver);
 
@@ -240,9 +244,9 @@ TEST(raytrace, image_source) {
     }
 
     auto postprocess = [](const auto& i, const std::string& name) {
-        auto bit_depth = 16;
+        auto bit_depth   = 16;
         auto sample_rate = 44100.0;
-        std::vector<std::vector<std::vector<float>>> flattened = {
+        std::vector<std::vector<std::vector<float>>> flattened{
                 raytracer::flatten_impulses(i, sample_rate)};
         {
             auto mixed_down = mixdown(flattened);

@@ -10,26 +10,11 @@ const auto EPSILON = 0.0001;
 
 namespace geo {
 
-Ray::Ray(const glm::vec3& position, const glm::vec3& direction)
-        : position(position)
-        , direction(direction) {
-}
-
-Intersects::Intersects(float distance)
-        : intersects(true)
-        , distance(distance) {
-}
-
-Intersection::Intersection(float distance, int index)
-        : Intersects(distance)
-        , index(index) {
-}
-
 Intersects triangle_intersection(const TriangleVec3& tri, const Ray& ray) {
     auto e0 = tri[1] - tri[0];
     auto e1 = tri[2] - tri[0];
 
-    auto pvec = glm::cross(ray.direction, e1);
+    auto pvec = glm::cross(ray.get_direction(), e1);
     auto det = glm::dot(e0, pvec);
 
     if (-EPSILON < det && det < EPSILON) {
@@ -37,7 +22,7 @@ Intersects triangle_intersection(const TriangleVec3& tri, const Ray& ray) {
     }
 
     auto invdet = 1 / det;
-    auto tvec = ray.position - tri[0];
+    auto tvec = ray.get_position() - tri[0];
     auto ucomp = invdet * glm::dot(tvec, pvec);
 
     if (ucomp < 0 || 1 < ucomp) {
@@ -45,7 +30,7 @@ Intersects triangle_intersection(const TriangleVec3& tri, const Ray& ray) {
     }
 
     auto qvec = glm::cross(tvec, e0);
-    auto vcomp = invdet * glm::dot(ray.direction, qvec);
+    auto vcomp = invdet * glm::dot(ray.get_direction(), qvec);
 
     if (vcomp < 0 || 1 < vcomp + ucomp) {
         return Intersects();
@@ -82,10 +67,11 @@ Intersection ray_triangle_intersection(const Ray& ray,
 
     for (const auto& i : triangle_indices) {
         auto inter = triangle_intersection(triangles[i], vertices, ray);
-        if (inter.intersects &&
-            ((!ret.intersects) ||
-             (ret.intersects && inter.distance < ret.distance))) {
-            ret = Intersection(inter.distance, i);
+        if (inter.get_intersects() &&
+            ((!ret.get_intersects()) ||
+             (ret.get_intersects() &&
+              inter.get_distance() < ret.get_distance()))) {
+            ret = Intersection(inter.get_distance(), i);
         }
     }
 
@@ -113,7 +99,7 @@ bool point_intersection(const glm::vec3& begin,
 
     auto inter = ray_triangle_intersection(to_point, triangles, vertices);
 
-    return (!inter.intersects) || inter.distance > mag;
+    return (!inter.get_intersects()) || inter.get_distance() > mag;
 }
 
 //  adapted from
@@ -122,15 +108,16 @@ float point_triangle_distance_squared(const TriangleVec3& triangle,
                                       const glm::vec3& point) {
     //  do I hate this? yes
     //  am I going to do anything about it? it works
-    auto diff = point - triangle[0];
-    auto e0 = triangle[1] - triangle[0];
-    auto e1 = triangle[2] - triangle[0];
-    auto a00 = glm::dot(e0, e0);
-    auto a01 = glm::dot(e0, e1);
-    auto a11 = glm::dot(e1, e1);
-    auto b0 = -glm::dot(diff, e0);
-    auto b1 = -glm::dot(diff, e1);
-    auto det = a00 * a11 - a01 * a01;
+    const auto diff = point - triangle[0];
+    const auto e0 = triangle[1] - triangle[0];
+    const auto e1 = triangle[2] - triangle[0];
+    const auto a00 = glm::dot(e0, e0);
+    const auto a01 = glm::dot(e0, e1);
+    const auto a11 = glm::dot(e1, e1);
+    const auto b0 = -glm::dot(diff, e0);
+    const auto b1 = -glm::dot(diff, e1);
+    const auto det = a00 * a11 - a01 * a01;
+
     auto t0 = a01 * b1 - a11 * b0;
     auto t1 = a01 * b0 - a00 * b1;
 
@@ -174,17 +161,17 @@ float point_triangle_distance_squared(const TriangleVec3& triangle,
                 t0 = -b0 / a00;
             }
         } else {
-            auto invDet = 1 / det;
+            const auto invDet = 1 / det;
             t0 *= invDet;
             t1 *= invDet;
         }
     } else {
         if (t0 < 0) {
-            auto tmp0 = a01 + b0;
-            auto tmp1 = a11 + b1;
+            const auto tmp0 = a01 + b0;
+            const auto tmp1 = a11 + b1;
             if (tmp0 < tmp1) {
-                auto numer = tmp1 - tmp0;
-                auto denom = a00 - 2 * a01 + a11;
+                const auto numer = tmp1 - tmp0;
+                const auto denom = a00 - 2 * a01 + a11;
                 if (denom <= numer) {
                     t0 = 1;
                     t1 = 0;
@@ -203,11 +190,11 @@ float point_triangle_distance_squared(const TriangleVec3& triangle,
                 }
             }
         } else if (t1 < 0) {
-            auto tmp0 = a01 + b1;
-            auto tmp1 = a00 + b0;
+            const auto tmp0 = a01 + b1;
+            const auto tmp1 = a00 + b0;
             if (tmp0 < tmp1) {
-                auto numer = tmp1 - tmp0;
-                auto denom = a00 - 2 * a01 + a11;
+                const auto numer = tmp1 - tmp0;
+                const auto denom = a00 - 2 * a01 + a11;
                 if (denom <= numer) {
                     t1 = 1;
                     t0 = 0;
@@ -226,12 +213,12 @@ float point_triangle_distance_squared(const TriangleVec3& triangle,
                 }
             }
         } else {
-            auto numer = a11 + b1 - a01 - b0;
+            const auto numer = a11 + b1 - a01 - b0;
             if (numer <= 0) {
                 t0 = 0;
                 t1 = 1;
             } else {
-                auto denom = a00 - 2 * a01 + a11;
+                const auto denom = a00 - 2 * a01 + a11;
                 if (denom <= numer) {
                     t0 = 1;
                     t1 = 0;
@@ -243,9 +230,9 @@ float point_triangle_distance_squared(const TriangleVec3& triangle,
         }
     }
 
-    auto closest = triangle[0] + e0 * t0 + e1 * t1;
-    diff = point - closest;
-    return glm::dot(diff, diff);
+    const auto closest = triangle[0] + e0 * t0 + e1 * t1;
+    const auto d = point - closest;
+    return glm::dot(d, d);
 }
 
 float point_triangle_distance_squared(const Triangle& tri,

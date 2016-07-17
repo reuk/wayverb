@@ -76,14 +76,14 @@ CopyableSceneData CuboidBoundary::get_scene_data() const {
 
 bool CuboidBoundary::intersects(const geo::Ray& ray, float t0, float t1) {
     //  from http://people.csail.mit.edu/amy/papers/box-jgt.pdf
-    auto inv = glm::vec3(1) / ray.direction;
+    auto inv = glm::vec3(1) / ray.get_direction();
     std::array<bool, 3> sign{{inv.x < 0, inv.y < 0, inv.z < 0}};
     auto get_bounds = [this](auto i) { return i ? get_c0() : get_c1(); };
 
-    auto tmin = (get_bounds(sign[0]).x - ray.position.x) * inv.x;
-    auto tmax = (get_bounds(!sign[0]).x - ray.position.x) * inv.x;
-    auto tymin = (get_bounds(sign[1]).y - ray.position.y) * inv.y;
-    auto tymax = (get_bounds(!sign[1]).y - ray.position.y) * inv.y;
+    auto tmin = (get_bounds(sign[0]).x   - ray.get_position().x) * inv.x;
+    auto tmax = (get_bounds(!sign[0]).x  - ray.get_position().x) * inv.x;
+    auto tymin = (get_bounds(sign[1]).y  - ray.get_position().y) * inv.y;
+    auto tymax = (get_bounds(!sign[1]).y - ray.get_position().y) * inv.y;
     if ((tmin > tymax) || (tymin > tmax)) {
         return false;
     }
@@ -93,8 +93,8 @@ bool CuboidBoundary::intersects(const geo::Ray& ray, float t0, float t1) {
     if (tymax < tmax) {
         tmax = tymax;
     }
-    auto tzmin = (get_bounds(sign[2]).z - ray.position.z) * inv.z;
-    auto tzmax = (get_bounds(!sign[2]).z - ray.position.z) * inv.z;
+    auto tzmin = (get_bounds(sign[2]).z  - ray.get_position().z) * inv.z;
+    auto tzmax = (get_bounds(!sign[2]).z - ray.get_position().z) * inv.z;
     if ((tmin > tzmax) || (tzmin > tmax)) {
         return false;
     }
@@ -196,21 +196,21 @@ bool MeshBoundary::inside(const glm::vec3& v) const {
                     [this, &ray, &distances](const auto& i) {
                         auto intersection = triangle_intersection(
                                 triangles[i], vertices, ray);
-                        if (intersection.intersects) {
+                        if (intersection.get_intersects()) {
                             auto already_in =
                                     proc::find_if(
                                             distances, [&intersection](auto i) {
                                                 return almost_equal(
                                                         i,
-                                                        intersection.distance,
+                                                        intersection.get_distance(),
                                                         10);
                                             }) != distances.end();
-                            distances.push_back(intersection.distance);
+                            distances.push_back(intersection.get_distance());
                             if (already_in) {
                                 return false;
                             }
                         }
-                        return intersection.intersects;
+                        return intersection.get_intersects();
                     }) %
            2;
 }

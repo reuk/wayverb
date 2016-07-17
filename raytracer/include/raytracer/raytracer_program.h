@@ -4,59 +4,42 @@
 
 #include "common/custom_program_base.h"
 
-class RaytracerProgram : public custom_program_base {
+class raytracer_program final {
 public:
-    explicit RaytracerProgram(const cl::Context& context,
-                              const cl::Device& device);
+    raytracer_program(const cl::Context& context, const cl::Device& device);
 
     auto get_raytrace_kernel() const {
-        return get_kernel<cl::Buffer,
-                          cl_float3,
-                          cl::Buffer,
-                          cl_ulong,
-                          cl::Buffer,
-                          cl_float3,
-                          cl::Buffer,
-                          cl::Buffer,
-                          cl::Buffer,
-                          cl::Buffer,
-                          cl_ulong,
-                          VolumeType>("raytrace");
+        return custom_program_base.get_kernel<cl::Buffer,  //  ray_info
+                                              cl::Buffer,  //  voxel_index
+                                              AABB,        //  global_aabb
+                                              cl_int,      //  side
+                                              cl::Buffer,  //  triangles
+                                              cl_ulong,    //  numtriangles
+                                              cl::Buffer,  //  vertices
+                                              cl::Buffer,  //  surfaces
+                                              cl_float3,   //  source
+                                              cl_float3,   //  mic
+                                              VolumeType,  //  air_coefficient
+                                              cl_ulong,    //  iteration
+                                              cl_ulong,    //  num_image_source
+                                              cl::Buffer,  //  impulses
+                                              cl::Buffer,  //  image_source
+                                              cl::Buffer,  //  prev_primitives
+                                              cl::Buffer  //  image_source_index
+                                              >("raytrace");
     }
 
-    auto get_improved_raytrace_kernel() const {
-        return get_kernel<cl::Buffer,
-                          cl::Buffer,
-                          AABB,
-                          cl_int,
-                          cl::Buffer,
-                          cl_ulong,
-                          cl::Buffer,
-                          cl::Buffer,
-                          cl_float3,
-                          cl_float3,
-                          cl::Buffer,
-                          cl::Buffer,
-                          cl::Buffer,
-                          VolumeType,
-                          cl_ulong>("raytrace_improved");
+    template <cl_program_info T>
+    auto get_info() const {
+        return custom_program_base.template get_info<T>();
     }
 
-    auto get_attenuate_kernel() const {
-        return get_kernel<cl_float3, cl::Buffer, cl::Buffer, Speaker>(
-                "attenuate");
-    }
-
-    auto get_hrtf_kernel() const {
-        return get_kernel<cl_float3,
-                          cl::Buffer,
-                          cl::Buffer,
-                          cl::Buffer,
-                          cl_float3,
-                          cl_float3,
-                          cl_ulong>("hrtf");
+    cl::Device get_device() const {
+        return custom_program_base.get_device();
     }
 
 private:
     static const std::string source;
+
+    custom_program_base custom_program_base;
 };

@@ -59,9 +59,7 @@ TEST(voxel, old) {
 
     for (const auto& i : raytracer::get_random_directions(bench_rays)) {
         geo::Ray ray(glm::vec3(0, 1, 0), to_vec3f(i));
-
-        auto inter_0 = geo::ray_triangle_intersection(
-                ray, ind, scene_data.get_triangles(), v);
+        geo::ray_triangle_intersection(ray, ind, scene_data.get_triangles(), v);
     }
 }
 
@@ -75,7 +73,7 @@ TEST(voxel, new) {
     for (const auto& i : raytracer::get_random_directions(bench_rays)) {
         geo::Ray ray(glm::vec3(0, 1, 0), to_vec3f(i));
 
-        auto inter_1 = voxel.traverse(ray, t);
+        voxel.traverse(ray, t);
     }
 }
 
@@ -97,9 +95,9 @@ TEST(voxel, intersect) {
                 ray, ind, scene_data.get_triangles(), v);
         auto inter_1 = voxel.traverse(ray, t);
 
-        ASSERT_EQ(inter_0.intersects, inter_1.intersects);
-        ASSERT_EQ(inter_0.index, inter_1.index);
-        ASSERT_FLOAT_EQ(inter_0.distance, inter_1.distance);
+        ASSERT_EQ(inter_0.get_intersects(), inter_1.get_intersects());
+        ASSERT_EQ(inter_0.get_index(), inter_1.get_index());
+        ASSERT_FLOAT_EQ(inter_0.get_distance(), inter_1.get_distance());
     }
 }
 

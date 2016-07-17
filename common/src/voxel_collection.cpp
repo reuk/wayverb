@@ -79,9 +79,9 @@ const VoxelCollection::Voxel& VoxelCollection::get_voxel(
 geo::Intersection VoxelCollection::traverse(const geo::Ray& ray,
                                             TraversalCallback& fun) {
     //  from http://www.cse.chalmers.se/edu/year/2010/course/TDA361/grid.pdf
-    auto ind = get_starting_index(ray.position);
+    auto ind = get_starting_index(ray.get_position());
     const auto voxel_bounds = get_voxel(ind).get_aabb();
-    const auto step = get_step(ray.direction);
+    const auto step = get_step(ray.get_direction());
 
     glm::ivec3 just_out;
     glm::vec3 boundary;
@@ -91,8 +91,10 @@ geo::Intersection VoxelCollection::traverse(const geo::Ray& ray,
                                   : voxel_bounds.get_c1()[i];
     }
 
-    auto t_max = glm::abs((boundary - ray.position) / ray.direction);
-    auto t_delta = glm::abs(get_voxel_aabb().dimensions() / ray.direction);
+    auto t_max =
+            glm::abs((boundary - ray.get_position()) / ray.get_direction());
+    auto t_delta =
+            glm::abs(get_voxel_aabb().dimensions() / ray.get_direction());
 
     for (;;) {
         auto min_i = 0;
@@ -106,7 +108,7 @@ geo::Intersection VoxelCollection::traverse(const geo::Ray& ray,
         if (!tri.empty()) {
             auto ret = fun(ray, tri);
 
-            if (ret.intersects && ret.distance < t_max[min_i]) {
+            if (ret.get_intersects() && ret.get_distance() < t_max[min_i]) {
                 return ret;
             }
         }

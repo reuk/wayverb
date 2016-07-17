@@ -23,6 +23,20 @@ custom_program_base::custom_program_base(
 custom_program_base::custom_program_base(
         const cl::Context& context,
         const cl::Device& device,
+        const std::vector<std::string>& sources)
+        : custom_program_base(context, device, [&sources] {
+            std::vector<std::pair<const char*, size_t>> ret;
+            ret.reserve(sources.size());
+            for (const auto& source : sources) {
+                ret.push_back(std::make_pair(source.data(), source.size()));
+            }
+            return ret;
+        }()) {
+}
+
+custom_program_base::custom_program_base(
+        const cl::Context& context,
+        const cl::Device& device,
         const std::vector<std::pair<const char*, size_t>>& sources)
         : device(device)
         , program(context, sources) {

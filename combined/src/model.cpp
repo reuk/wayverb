@@ -3,7 +3,7 @@
 namespace {
 template <typename T>
 float get_waveguide_sample_rate(T filter_frequency, T oversample_ratio) {
-    return filter_frequency * oversample_ratio * 4;
+    return filter_frequency * oversample_ratio * (1 / 0.196);
 }
 }  // namespace
 

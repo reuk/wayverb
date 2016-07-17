@@ -98,55 +98,8 @@ const std::vector<int>& Octree::get_triangles() const {
     return triangles;
 }
 
-void Octree::fill_flattened(std::vector<FloatUInt>& ret) const {
-    //  float[6]    aabb
-    //  int         n triangles
-    //  int[]       triangle indices
-    //  int         n nodes
-    //  int[]       node offsets
-
-    const auto& triangles = get_triangles();
-
-    ret.push_back(to_fui(get_aabb().get_c0().x));
-    ret.push_back(to_fui(get_aabb().get_c0().y));
-    ret.push_back(to_fui(get_aabb().get_c0().z));
-    ret.push_back(to_fui(get_aabb().get_c1().x));
-    ret.push_back(to_fui(get_aabb().get_c1().y));
-    ret.push_back(to_fui(get_aabb().get_c1().z));
-
-    if (!has_nodes()) {
-        std::vector<FloatUInt> t(triangles.size() + 1);
-        t[0].i = triangles.size();
-        for (auto i = 0u; i != triangles.size(); ++i) {
-            t[i + 1].i = triangles[i];
-        }
-        ret.insert(ret.end(), t.begin(), t.end());
-    } else {
-        const auto& nodes = get_nodes();
-        ret.push_back(to_fui(0u));  //  no triangles
-
-        ret.push_back(
-                to_fui(static_cast<cl_uint>(nodes.size())));  //  some nodes
-        auto node_table_start = ret.size();
-        proc::for_each(nodes,
-                       [&ret](const auto&) { ret.push_back(to_fui(0u)); });
-
-        auto counter = node_table_start;
-        proc::for_each(nodes, [&ret, &counter](const auto& i) {
-            ret[counter++].i = ret.size();
-            i.fill_flattened(ret);
-        });
-    }
-}
-
-std::vector<FloatUInt> Octree::get_flattened() const {
-    std::vector<FloatUInt> ret;
-    fill_flattened(ret);
-    return ret;
-}
-
 std::vector<const Octree*> Octree::intersect(const geo::Ray& ray) const {
-    auto& starting_node = get_surrounding_leaf(ray.position);
+    auto& starting_node = get_surrounding_leaf(ray.get_position());
     std::vector<const Octree*> ret = {&starting_node};
     return ret;
 }

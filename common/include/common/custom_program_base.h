@@ -13,6 +13,10 @@ public:
     custom_program_base(
             const cl::Context& context,
             const cl::Device& device,
+            const std::vector<std::string>& sources);
+    custom_program_base(
+            const cl::Context& context,
+            const cl::Device& device,
             const std::vector<std::pair<const char*, size_t>>& sources);
 
     custom_program_base(const custom_program_base&) = default;
@@ -28,7 +32,6 @@ public:
 
     cl::Device get_device() const;
 
-protected:
     template <typename... Ts>
     auto get_kernel(const char* kernel_name) const {
         int error;
