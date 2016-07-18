@@ -201,9 +201,6 @@ private:
     kernel_type kernel;
     const cl::Context context;
 
-    cl::Buffer cl_in;
-    cl::Buffer cl_out;
-
     cl::Buffer cl_hrtf;
 };
 
@@ -227,8 +224,5 @@ private:
     cl::CommandQueue queue;
     kernel_type kernel;
     const cl::Context context;
-
-    cl::Buffer cl_in;
-    cl::Buffer cl_out;
 };
 }  // namespace raytracer

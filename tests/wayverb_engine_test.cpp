@@ -52,6 +52,10 @@ TEST(engine, engine) {
 
     std::cout << "finished engine run" << std::endl;
 
+    if (! intermediate) {
+        throw std::runtime_error("failed to generate intermediate results");
+    }
+
     auto result =
             e.attenuate(*intermediate, model::ReceiverSettings{}, callback);
 

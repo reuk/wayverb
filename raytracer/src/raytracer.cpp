@@ -394,13 +394,16 @@ Results Raytracer::run(const CopyableSceneData& scene_data,
 
         auto copy_out = [this, copy_out_unchecked, i](const auto& from,
                                                       auto& to) {
-            using vt =
-                    typename std::decay_t<decltype(to)>::value_type::value_type;
             if (i < to.size()) {
                 copy_out_unchecked(from, to);
+
+#ifndef NDEBUG
+                using vt = typename std::decay_t<decltype(
+                        to)>::value_type::value_type;
                 assert(std::find_if(to[i].begin(), to[i].end(), [](auto i) {
                            return i != vt{};
                        }) != to[i].end());
+#endif
             }
         };
 
@@ -452,12 +455,12 @@ std::vector<AttenuatedImpulse> HrtfAttenuator::process(
     cl::copy(queue, begin(hrtf_channel_data), end(hrtf_channel_data), cl_hrtf);
 
     //  set up buffers
-    cl_in = cl::Buffer(context,
-                       CL_MEM_READ_WRITE,
-                       results.impulses.size() * sizeof(Impulse));
-    cl_out = cl::Buffer(context,
-                        CL_MEM_READ_WRITE,
-                        results.impulses.size() * sizeof(AttenuatedImpulse));
+    cl::Buffer cl_in(context,
+                     CL_MEM_READ_WRITE,
+                     results.impulses.size() * sizeof(Impulse));
+    cl::Buffer cl_out(context,
+                      CL_MEM_READ_WRITE,
+                      results.impulses.size() * sizeof(AttenuatedImpulse));
 
     //  copy input to buffer
     cl::copy(queue, results.impulses.begin(), results.impulses.end(), cl_in);
@@ -498,13 +501,13 @@ std::vector<AttenuatedImpulse> MicrophoneAttenuator::process(
         float shape,
         const glm::vec3& position) {
     //  init buffers
-    cl_in = cl::Buffer(context,
-                       CL_MEM_READ_WRITE,
-                       results.impulses.size() * sizeof(Impulse));
+    cl::Buffer cl_in(context,
+                     CL_MEM_READ_WRITE,
+                     results.impulses.size() * sizeof(Impulse));
 
-    cl_out = cl::Buffer(context,
-                        CL_MEM_READ_WRITE,
-                        results.impulses.size() * sizeof(AttenuatedImpulse));
+    cl::Buffer cl_out(context,
+                      CL_MEM_READ_WRITE,
+                      results.impulses.size() * sizeof(AttenuatedImpulse));
     std::vector<AttenuatedImpulse> zero(
             results.impulses.size(),
             AttenuatedImpulse{{{0, 0, 0, 0, 0, 0, 0, 0}}, 0});

@@ -61,7 +61,7 @@ int main(int argc, char** argv) {
     //  global params
     const auto filter_frequency = 11025.0;
     const auto oversample_ratio = 1.0;
-    const auto waveguide_sr = filter_frequency * oversample_ratio * 4;
+    const auto waveguide_sr = filter_frequency * oversample_ratio * (1 / 0.196);
 
     ComputeContext compute_context;
 

@@ -32,8 +32,8 @@ export GTEST_FILTER="*raytrace*"
 #cmake .. && make && ./tests/hybrid_test/hybrid_test ../tests/hybrid_test/output
 #cmake .. && make && ./impulse_gen/impulse_gen
 
-#cmake .. && make && cd ../tests/mic_test && python run_and_graph.py
+cmake .. && make && cd ../tests/mic_test && python run_and_graph.py
 
 #cmake .. && make && ./tests/mesh_impulse_response/write_compensation_signal
 
-cmake .. && make && ctest -V && ./tests/solution_growth/solution_growth
+#cmake .. && make && ctest -V && ./tests/solution_growth/solution_growth
