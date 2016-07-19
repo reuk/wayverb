@@ -179,16 +179,27 @@ std::vector<cl_float3> get_random_directions(size_t num) {
     return ret;
 }
 
-RaytracerResults Results::get_diffuse() const {
+Results::Results(const set_type& image_source,
+                 const std::vector<std::vector<Impulse>>& diffuse,
+                 const glm::vec3& receiver,
+                 const glm::vec3& source)
+        : image_source(image_source)
+        , diffuse(diffuse)
+        , receiver(receiver)
+        , source(source) {
+}
+
+std::vector<Impulse> Results::get_diffuse_impulses() const {
     std::vector<Impulse> ret;
     ret.reserve(diffuse.size() * diffuse.front().size());
     for (const auto& i : diffuse) {
         std::copy(i.begin(), i.end(), std::back_inserter(ret));
     }
-    return RaytracerResults(ret, mic, source, rays, reflections);
+    return ret;
 }
 
-RaytracerResults Results::get_image_source(bool remove_direct) const {
+std::vector<Impulse> Results::get_image_source_impulses(
+        bool remove_direct) const {
     auto temp = image_source;
     if (remove_direct) {
         auto it = std::find_if(temp.begin(), temp.end(), [](const auto& i) {
@@ -201,14 +212,40 @@ RaytracerResults Results::get_image_source(bool remove_direct) const {
 
     std::vector<Impulse> ret(temp.size());
     proc::transform(temp, begin(ret), [](const auto& i) { return i.impulse; });
-    return RaytracerResults(ret, mic, source, rays, reflections);
+    return ret;
 }
 
-RaytracerResults Results::get_all(bool remove_direct) const {
-    auto diffuse     = get_diffuse().impulses;
-    const auto image = get_image_source(remove_direct).impulses;
+Results::Selected Results::get_diffuse() const {
+    return Selected(get_diffuse_impulses(), receiver, source);
+}
+
+Results::Selected Results::get_image_source(bool remove_direct) const {
+    return Selected(get_image_source_impulses(remove_direct), receiver, source);
+}
+
+Results::Selected Results::get_all(bool remove_direct) const {
+    auto diffuse     = get_diffuse_impulses();
+    const auto image = get_image_source_impulses(remove_direct);
     diffuse.insert(diffuse.end(), image.begin(), image.end());
-    return RaytracerResults(diffuse, mic, source, rays, reflections);
+    return Selected(diffuse, receiver, source);
+}
+
+Results::Selected::Selected(const std::vector<Impulse>& impulses,
+                            const glm::vec3& receiver,
+                            const glm::vec3& source)
+        : impulses(impulses)
+        , receiver(receiver)
+        , source(source) {
+}
+
+std::vector<Impulse> Results::Selected::get_impulses() const {
+    return impulses;
+}
+glm::vec3 Results::Selected::get_receiver() const {
+    return receiver;
+}
+glm::vec3 Results::Selected::get_source() const {
+    return source;
 }
 
 //----------------------------------------------------------------------------//
@@ -422,9 +459,7 @@ Results Raytracer::run(const CopyableSceneData& scene_data,
                     image_source_index, image_source, result_image_source),
             result_diffuse,
             micpos,
-            source,
-            directions.size(),
-            reflections};
+            source};
 }
 
 //----------------------------------------------------------------------------//
@@ -437,7 +472,7 @@ HrtfAttenuator::HrtfAttenuator(const attenuator_program& program)
 }
 
 std::vector<AttenuatedImpulse> HrtfAttenuator::process(
-        const RaytracerResults& results,
+        const Results::Selected& results,
         const glm::vec3& direction,
         const glm::vec3& up,
         const glm::vec3& position,
@@ -454,19 +489,21 @@ std::vector<AttenuatedImpulse> HrtfAttenuator::process(
     //  copy hrtf table to buffer
     cl::copy(queue, begin(hrtf_channel_data), end(hrtf_channel_data), cl_hrtf);
 
+    auto impulses = results.get_impulses();
+
     //  set up buffers
     cl::Buffer cl_in(context,
                      CL_MEM_READ_WRITE,
-                     results.impulses.size() * sizeof(Impulse));
+                     impulses.size() * sizeof(Impulse));
     cl::Buffer cl_out(context,
                       CL_MEM_READ_WRITE,
-                      results.impulses.size() * sizeof(AttenuatedImpulse));
+                      impulses.size() * sizeof(AttenuatedImpulse));
 
     //  copy input to buffer
-    cl::copy(queue, results.impulses.begin(), results.impulses.end(), cl_in);
+    cl::copy(queue, impulses.begin(), impulses.end(), cl_in);
 
     //  run kernel
-    kernel(cl::EnqueueArgs(queue, cl::NDRange(results.impulses.size())),
+    kernel(cl::EnqueueArgs(queue, cl::NDRange(impulses.size())),
            to_cl_float3(position),
            cl_in,
            cl_out,
@@ -476,7 +513,7 @@ std::vector<AttenuatedImpulse> HrtfAttenuator::process(
            channel_index);
 
     //  create output storage
-    std::vector<AttenuatedImpulse> ret(results.impulses.size());
+    std::vector<AttenuatedImpulse> ret(impulses.size());
 
     //  copy to output
     cl::copy(queue, cl_out, ret.begin(), ret.end());
@@ -496,35 +533,36 @@ MicrophoneAttenuator::MicrophoneAttenuator(const attenuator_program& program)
 }
 
 std::vector<AttenuatedImpulse> MicrophoneAttenuator::process(
-        const RaytracerResults& results,
+        const Results::Selected& results,
         const glm::vec3& pointing,
         float shape,
         const glm::vec3& position) {
+    auto impulses = results.get_impulses();
     //  init buffers
     cl::Buffer cl_in(context,
                      CL_MEM_READ_WRITE,
-                     results.impulses.size() * sizeof(Impulse));
+                     impulses.size() * sizeof(Impulse));
 
     cl::Buffer cl_out(context,
                       CL_MEM_READ_WRITE,
-                      results.impulses.size() * sizeof(AttenuatedImpulse));
+                      impulses.size() * sizeof(AttenuatedImpulse));
     std::vector<AttenuatedImpulse> zero(
-            results.impulses.size(),
+            impulses.size(),
             AttenuatedImpulse{{{0, 0, 0, 0, 0, 0, 0, 0}}, 0});
     cl::copy(queue, zero.begin(), zero.end(), cl_out);
 
     //  copy input data to buffer
-    cl::copy(queue, results.impulses.begin(), results.impulses.end(), cl_in);
+    cl::copy(queue, impulses.begin(), impulses.end(), cl_in);
 
     //  run kernel
-    kernel(cl::EnqueueArgs(queue, cl::NDRange(results.impulses.size())),
+    kernel(cl::EnqueueArgs(queue, cl::NDRange(impulses.size())),
            to_cl_float3(position),
            cl_in,
            cl_out,
            Speaker{to_cl_float3(pointing), shape});
 
     //  create output location
-    std::vector<AttenuatedImpulse> ret(results.impulses.size());
+    std::vector<AttenuatedImpulse> ret(impulses.size());
 
     //  copy from buffer to output
     cl::copy(queue, cl_out, ret.begin(), ret.end());

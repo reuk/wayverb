@@ -42,7 +42,7 @@ constexpr double rectilinear_calibration_factor(double r, double sr) {
 
 auto run_raytracer_attenuation(const attenuator_program& program,
                                const model::ReceiverSettings& receiver,
-                               const raytracer::RaytracerResults& input) {
+                               const raytracer::Results::Selected& input) {
     switch (receiver.mode) {
         case model::ReceiverSettings::Mode::microphones: {
             raytracer::MicrophoneAttenuator attenuator(program);
@@ -110,25 +110,77 @@ auto run_waveguide_attenuation(const model::ReceiverSettings& receiver,
         }
     }
 }
+
+class intermediate_impl : public wayverb::intermediate {
+public:
+    intermediate_impl(const ComputeContext& compute_context,
+                      const glm::vec3& source,
+                      const glm::vec3& receiver,
+                      double waveguide_sample_rate,
+                      raytracer::Results&& raytracer_results,
+                      std::vector<RunStepResult>&& waveguide_results)
+            : attenuator_program(compute_context.context,
+                                 compute_context.device)
+            , source(source)
+            , receiver(receiver)
+            , waveguide_sample_rate(waveguide_sample_rate)
+            , raytracer_results(std::move(raytracer_results))
+            , waveguide_results(std::move(waveguide_results)) {
+    }
+
+    std::vector<std::vector<float>> attenuate(
+            const model::ReceiverSettings& receiver,
+            double output_sample_rate,
+            const state_callback& callback) const override {
+        callback(wayverb::state::postprocessing, 1.0);
+
+        //  attenuate raytracer results
+        auto raytracer_output = run_raytracer_attenuation(
+                attenuator_program, receiver, raytracer_results.get_all(false));
+        //  attenuate waveguide results
+        auto waveguide_output = run_waveguide_attenuation(
+                receiver, waveguide_results, waveguide_sample_rate);
+
+        //  correct waveguide results for dc
+        filter::ExtraLinearDCBlocker blocker;
+        for (auto& i : waveguide_output) {
+            i = filter::run_two_pass(blocker, i.begin(), i.end());
+        }
+        //  TODO scale waveguide output to match raytracer level
+        //  TODO crossover filtering
+        //  TODO mixdown
+
+        std::vector<std::vector<float>> ret;
+        return ret;
+    }
+
+private:
+    attenuator_program attenuator_program;
+
+    glm::vec3 source;
+    glm::vec3 receiver;
+    double waveguide_sample_rate;
+
+    raytracer::Results raytracer_results;
+    std::vector<RunStepResult> waveguide_results;
+};
+
 }  // namespace
 
 namespace wayverb {
 
-template <BufferType buffer_type>
-class engine<buffer_type>::impl final {
+class engine::impl final {
 public:
     impl(const ComputeContext& compute_context,
          const CopyableSceneData& scene_data,
          const glm::vec3& source,
          const glm::vec3& receiver,
-         float waveguide_sample_rate,
-         int rays,
-         int impulses,
-         float output_sample_rate)
-            : scene_data(scene_data)
+         double waveguide_sample_rate,
+         size_t rays,
+         size_t impulses)
+            : compute_context(compute_context)
             , raytracer_program(compute_context.context, compute_context.device)
-            , attenuator_program(compute_context.context,
-                                 compute_context.device)
+            , scene_data(scene_data)
             , raytracer(raytracer_program)
             , waveguide(RectangularProgram(compute_context.context,
                                            compute_context.device),
@@ -142,17 +194,18 @@ public:
             , impulses(impulses)
             , source_index(waveguide.get_index_for_coordinate(source))
             , receiver_index(waveguide.get_index_for_coordinate(receiver)) {
-    }
-
-    bool get_source_position_is_valid() const {
-        return waveguide.inside(source_index);
-    }
-    bool get_receiver_position_is_valid() const {
-        return waveguide.inside(receiver_index);
+        if (!waveguide.inside(source_index)) {
+            throw std::runtime_error(
+                    "invalid source position - probably outside mesh");
+        }
+        if (!waveguide.inside(receiver_index)) {
+            throw std::runtime_error(
+                    "invalid receiver position - probably outside mesh");
+        }
     }
 
     std::unique_ptr<intermediate> run(std::atomic_bool& keep_going,
-                                      const state_callback& callback) {
+                     const state_callback& callback) {
         auto waveguide_step = 0;
         return this->run_basic(
                 keep_going,
@@ -177,10 +230,9 @@ public:
                 });
     }
 
-    std::unique_ptr<intermediate> run_visualised(
-            std::atomic_bool& keep_going,
-            const state_callback& s_callback,
-            const visualiser_callback& v_callback) {
+    std::unique_ptr<intermediate> run_visualised(std::atomic_bool& keep_going,
+                                const state_callback& s_callback,
+                                const visualiser_callback& v_callback) {
         auto waveguide_step = 0;
         return this->run_basic(
                 keep_going,
@@ -207,32 +259,6 @@ public:
                 });
     }
 
-    std::vector<std::vector<float>> attenuate(
-            const intermediate& i,
-            const model::ReceiverSettings& receiver,
-            const state_callback& callback) {
-        callback(state::postprocessing, 1.0);
-
-        //  attenuate raytracer results
-        auto raytracer_output = run_raytracer_attenuation(
-                attenuator_program, receiver, i.raytracer_results);
-        //  attenuate waveguide results
-        auto waveguide_output = run_waveguide_attenuation(
-                receiver, i.waveguide_results, i.waveguide_sample_rate);
-
-        //  correct waveguide results for dc
-        filter::ExtraLinearDCBlocker blocker;
-        for (auto& i : waveguide_output) {
-            i = filter::run_two_pass(blocker, i.begin(), i.end());
-        }
-        //  TODO scale waveguide output to match raytracer level
-        //  TODO crossover filtering
-        //  TODO mixdown
-
-        std::vector<std::vector<float>> ret;
-        return ret;
-    }
-
     std::vector<cl_float3> get_node_positions() const {
         const auto& nodes = waveguide.get_mesh().get_nodes();
         std::vector<cl_float3> ret(nodes.size());
@@ -242,18 +268,7 @@ public:
     }
 
 private:
-    void check_source_receiver_positions() const {
-        if (!get_source_position_is_valid()) {
-            throw std::runtime_error(
-                    "invalid source position - probably outside mesh");
-        }
-        if (!get_receiver_position_is_valid()) {
-            throw std::runtime_error(
-                    "invalid receiver position - probably outside mesh");
-        }
-    }
-
-    auto run_basic(std::atomic_bool& keep_going,
+    std::unique_ptr<intermediate> run_basic(std::atomic_bool& keep_going,
                    const state_callback& callback,
                    const std::function<std::vector<RunStepResult>(
                            RectangularWaveguide<buffer_type>&,
@@ -263,9 +278,6 @@ private:
                            size_t,
                            std::atomic_bool&,
                            const state_callback&)>& waveguide_callback) {
-        check_source_receiver_positions();  //  will throw if the positions are
-                                            //  invalid
-
         //  RAYTRACER  -------------------------------------------------------//
         callback(state::starting_raytracer, 1.0);
         auto raytracer_step = 0;
@@ -283,7 +295,7 @@ private:
                               });
         callback(state::finishing_raytracer, 1.0);
 
-        auto impulses = raytracer_results.get_all(false).impulses;
+        auto impulses = raytracer_results.get_all(false).get_impulses();
 
         //  look for the max time of an impulse
         auto max_time =
@@ -318,89 +330,70 @@ private:
                 waveguide_results.begin(),
                 waveguide_results.begin() + input.correction_offset_in_samples);
 
-//        return std::make_unique<intermediate>();
-        return nullptr;
+        return std::make_unique<intermediate_impl>(
+                compute_context,
+                source,
+                receiver,
+                waveguide_sample_rate,
+                std::move(raytracer_results),
+                std::move(waveguide_results));
     }
 
-    CopyableSceneData scene_data;
+    ComputeContext compute_context;
     raytracer_program raytracer_program;
-    attenuator_program attenuator_program;
+    CopyableSceneData scene_data;
     raytracer::Raytracer raytracer;
     RectangularWaveguide<buffer_type> waveguide;
 
     glm::vec3 source;
     glm::vec3 receiver;
-    float waveguide_sample_rate;
-    int rays;
-    int impulses;
-    // float output_sample_rate;
+    double waveguide_sample_rate;
+    size_t rays;
+    size_t impulses;
 
     size_t source_index;
     size_t receiver_index;
 };
 
-template <BufferType buffer_type>
-engine<buffer_type>::engine(const ComputeContext& compute_context,
+engine::engine(const ComputeContext& compute_context,
                             const CopyableSceneData& scene_data,
                             const glm::vec3& source,
                             const glm::vec3& receiver,
-                            float waveguide_sample_rate,
-                            int rays,
-                            int impulses,
-                            float output_sample_rate)
+                            double waveguide_sample_rate,
+                            size_t rays,
+                            size_t impulses)
         : pimpl(std::make_unique<impl>(compute_context,
                                        scene_data,
                                        source,
                                        receiver,
                                        waveguide_sample_rate,
                                        rays,
-                                       impulses,
-                                       output_sample_rate)) {
+                                       impulses)) {
 }
 
-template <BufferType buffer_type>
-engine<buffer_type>::~engine() noexcept = default;
+engine::~engine() noexcept = default;
 
-template <BufferType buffer_type>
-bool engine<buffer_type>::get_source_position_is_valid() const {
-    return pimpl->get_source_position_is_valid();
-}
-
-template <BufferType buffer_type>
-bool engine<buffer_type>::get_receiver_position_is_valid() const {
-    return pimpl->get_receiver_position_is_valid();
-}
-
-template <BufferType buffer_type>
-std::unique_ptr<typename engine<buffer_type>::intermediate>
-engine<buffer_type>::run_visualised(
+std::unique_ptr<intermediate>
+engine::run_visualised(
         std::atomic_bool& keep_going,
         const engine::state_callback& callback,
         const engine::visualiser_callback& visualiser_callback) {
     return pimpl->run_visualised(keep_going, callback, visualiser_callback);
 }
 
-template <BufferType buffer_type>
-std::unique_ptr<typename engine<buffer_type>::intermediate>
-engine<buffer_type>::run(std::atomic_bool& keep_going,
+std::unique_ptr<intermediate>
+engine::run(std::atomic_bool& keep_going,
                          const engine::state_callback& callback) {
     return pimpl->run(keep_going, callback);
 }
 
-template <BufferType buffer_type>
-std::vector<std::vector<float>> engine<buffer_type>::attenuate(
-        const intermediate& i,
-        const model::ReceiverSettings& receiver,
-        const state_callback& callback) {
-    return pimpl->attenuate(i, receiver, callback);
-}
-
-template <BufferType buffer_type>
-std::vector<cl_float3> engine<buffer_type>::get_node_positions() const {
+std::vector<cl_float3> engine::get_node_positions() const {
     return pimpl->get_node_positions();
 }
 
-//  instantiate
-template class engine<BufferType::cl>;
+void swap(engine& a, engine& b) {
+    using std::swap;
+    swap(a.pimpl, b.pimpl);
+}
 
 }  // namespace wayverb

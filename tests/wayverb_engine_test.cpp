@@ -6,8 +6,6 @@
 
 #include "gtest/gtest.h"
 
-using engine = wayverb::engine<BufferType::cl>;
-
 TEST(engine, engine) {
     CuboidBoundary cuboid_boundary(glm::vec3(0, 0, 0),
                                    glm::vec3(5.56, 3.97, 2.81));
@@ -29,14 +27,13 @@ TEST(engine, engine) {
 
     ComputeContext compute_context{};
 
-    engine e{compute_context,
-             scene_data,
-             source,
-             mic,
-             waveguide_sample_rate,
-             rays,
-             impulses,
-             output_sample_rate};
+    wayverb::engine e(compute_context,
+                      scene_data,
+                      source,
+                      mic,
+                      waveguide_sample_rate,
+                      rays,
+                      impulses);
 
     std::cout << "finished engine init" << std::endl;
 
@@ -56,8 +53,8 @@ TEST(engine, engine) {
         throw std::runtime_error("failed to generate intermediate results");
     }
 
-    auto result =
-            e.attenuate(*intermediate, model::ReceiverSettings{}, callback);
+    auto result = intermediate->attenuate(
+            model::ReceiverSettings{}, output_sample_rate, callback);
 
     std::cout << "finished engine attenuate" << std::endl;
 }

@@ -57,33 +57,44 @@ inline constexpr auto to_string(state s) {
     }
 }
 
-template <BufferType buffer_type>
+class intermediate {
+public:
+    using state_callback = std::function<void(state, double)>;
+
+    intermediate()                                   = default;
+    intermediate(const intermediate&)                = default;
+    intermediate& operator=(const intermediate&)     = default;
+    intermediate(intermediate&&) noexcept            = default;
+    intermediate& operator=(intermediate&&) noexcept = default;
+    virtual ~intermediate() noexcept                 = default;
+
+    virtual std::vector<std::vector<float>> attenuate(
+            const model::ReceiverSettings& receiver,
+            double output_sample_rate,
+            const state_callback&) const = 0;
+};
+
 class engine final {
 public:
+    static constexpr auto buffer_type = BufferType::cl;
+
     engine(const ComputeContext& compute_context,
            const CopyableSceneData& scene_data,
            const glm::vec3& source,
            const glm::vec3& receiver,
-           float waveguide_sample_rate,
-           int rays,
-           int impulses,
-           float output_sample_rate);
+           double waveguide_sample_rate,
+           size_t rays,
+           size_t impulses);
+
+    engine(const engine& rhs)            = delete;
+    engine& operator=(const engine& rhs) = delete;
+
+    engine(engine&& rhs) noexcept            = default;
+    engine& operator=(engine&& rhs) noexcept = default;
 
     ~engine() noexcept;
 
-    bool get_source_position_is_valid() const;
-    bool get_receiver_position_is_valid() const;
-
-    /// Stores intermediate state of the engine.
-    /// Allows the 'run' step to be run once, but the 'attenuate' step to be
-    /// run multiple times on the output.
-    struct intermediate {
-        raytracer::RaytracerResults raytracer_results;
-        std::vector<RunStepResult> waveguide_results;
-        double waveguide_sample_rate;
-    };
-
-    using state_callback = std::function<void(state, double)>;
+    using state_callback      = std::function<void(state, double)>;
     using visualiser_callback = std::function<void(std::vector<float>)>;
 
     std::unique_ptr<intermediate> run(std::atomic_bool& keep_going,
@@ -93,16 +104,15 @@ public:
                                                  const state_callback&,
                                                  const visualiser_callback&);
 
-    std::vector<std::vector<float>> attenuate(
-            const intermediate& i,
-            const model::ReceiverSettings& receiver,
-            const state_callback&);
-
     std::vector<cl_float3> get_node_positions() const;
 
 private:
+    friend void swap(engine&, engine&);
+
     class impl;
     std::unique_ptr<impl> pimpl;
 };
+
+void swap(engine&, engine&);
 
 }  // namespace wayverb

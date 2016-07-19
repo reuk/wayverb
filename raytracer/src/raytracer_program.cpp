@@ -168,7 +168,7 @@ void image_source_contributions(Intersection closest,
         bool intersects = true;
         float3 prev_intersection = source;
         for (ulong k = 0; k != iteration + 1 && intersects; ++k) {
-            TriangleVerts to_test = history[k];
+            TriangleVerts to_test = history[k];  //  IMPORTANT DON'T REMOVE THIS LINE
             const float TO_INTERSECTION = triangle_vert_intersection(to_test, to_image);
             if (TO_INTERSECTION <= EPSILON) {
                 intersects = false;
