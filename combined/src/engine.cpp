@@ -205,12 +205,12 @@ public:
     }
 
     std::unique_ptr<intermediate> run(std::atomic_bool& keep_going,
-                     const state_callback& callback) {
+                                      const state_callback& callback) {
         auto waveguide_step = 0;
         return this->run_basic(
                 keep_going,
                 callback,
-                [&waveguide_step](RectangularWaveguide<buffer_type>& waveguide,
+                [&waveguide_step](RectangularWaveguide& waveguide,
                                   const glm::vec3& corrected_source,
                                   const std::vector<float>& input,
                                   size_t mic_index,
@@ -230,15 +230,16 @@ public:
                 });
     }
 
-    std::unique_ptr<intermediate> run_visualised(std::atomic_bool& keep_going,
-                                const state_callback& s_callback,
-                                const visualiser_callback& v_callback) {
+    std::unique_ptr<intermediate> run_visualised(
+            std::atomic_bool& keep_going,
+            const state_callback& s_callback,
+            const visualiser_callback& v_callback) {
         auto waveguide_step = 0;
         return this->run_basic(
                 keep_going,
                 s_callback,
                 [&waveguide_step, &v_callback](
-                        RectangularWaveguide<buffer_type>& waveguide,
+                        RectangularWaveguide& waveguide,
                         const glm::vec3& corrected_source,
                         const std::vector<float>& input,
                         size_t mic_index,
@@ -268,16 +269,17 @@ public:
     }
 
 private:
-    std::unique_ptr<intermediate> run_basic(std::atomic_bool& keep_going,
-                   const state_callback& callback,
-                   const std::function<std::vector<RunStepResult>(
-                           RectangularWaveguide<buffer_type>&,
-                           const glm::vec3&,
-                           const std::vector<float>&,
-                           size_t,
-                           size_t,
-                           std::atomic_bool&,
-                           const state_callback&)>& waveguide_callback) {
+    std::unique_ptr<intermediate> run_basic(
+            std::atomic_bool& keep_going,
+            const state_callback& callback,
+            const std::function<std::vector<RunStepResult>(
+                    RectangularWaveguide&,
+                    const glm::vec3&,
+                    const std::vector<float>&,
+                    size_t,
+                    size_t,
+                    std::atomic_bool&,
+                    const state_callback&)>& waveguide_callback) {
         //  RAYTRACER  -------------------------------------------------------//
         callback(state::starting_raytracer, 1.0);
         auto raytracer_step = 0;
@@ -343,7 +345,7 @@ private:
     raytracer_program raytracer_program;
     CopyableSceneData scene_data;
     raytracer::Raytracer raytracer;
-    RectangularWaveguide<buffer_type> waveguide;
+    RectangularWaveguide waveguide;
 
     glm::vec3 source;
     glm::vec3 receiver;
@@ -356,12 +358,12 @@ private:
 };
 
 engine::engine(const ComputeContext& compute_context,
-                            const CopyableSceneData& scene_data,
-                            const glm::vec3& source,
-                            const glm::vec3& receiver,
-                            double waveguide_sample_rate,
-                            size_t rays,
-                            size_t impulses)
+               const CopyableSceneData& scene_data,
+               const glm::vec3& source,
+               const glm::vec3& receiver,
+               double waveguide_sample_rate,
+               size_t rays,
+               size_t impulses)
         : pimpl(std::make_unique<impl>(compute_context,
                                        scene_data,
                                        source,
@@ -373,17 +375,15 @@ engine::engine(const ComputeContext& compute_context,
 
 engine::~engine() noexcept = default;
 
-std::unique_ptr<intermediate>
-engine::run_visualised(
+std::unique_ptr<intermediate> engine::run_visualised(
         std::atomic_bool& keep_going,
         const engine::state_callback& callback,
         const engine::visualiser_callback& visualiser_callback) {
     return pimpl->run_visualised(keep_going, callback, visualiser_callback);
 }
 
-std::unique_ptr<intermediate>
-engine::run(std::atomic_bool& keep_going,
-                         const engine::state_callback& callback) {
+std::unique_ptr<intermediate> engine::run(
+        std::atomic_bool& keep_going, const engine::state_callback& callback) {
     return pimpl->run(keep_going, callback);
 }
 

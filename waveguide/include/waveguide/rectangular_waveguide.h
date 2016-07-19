@@ -2,13 +2,11 @@
 
 #include "waveguide/waveguide.h"
 
-template <int PORTS>
 struct rectangular_waveguide_run_info;
 
-template <BufferType buffer_type>
-class RectangularWaveguide : public Waveguide<RectangularProgram, buffer_type> {
+class RectangularWaveguide : public Waveguide<RectangularProgram> {
 public:
-    using Base = Waveguide<RectangularProgram, buffer_type>;
+    using Base = Waveguide<RectangularProgram>;
 
     RectangularWaveguide(const RectangularProgram& program,
                          const MeshBoundary& boundary,
@@ -22,7 +20,7 @@ public:
     bool inside(size_t index) const override;
 
 private:
-    using MeshType = RectangularMesh;
+    using MeshType              = RectangularMesh;
     static constexpr auto PORTS = MeshType::PORTS;
 
     RunStepResult run_step(const typename Base::WriteInfo& write_info,
@@ -40,21 +38,26 @@ private:
                          float sample_rate,
                          std::vector<RectangularProgram::CanonicalCoefficients>
                                  coefficients);
-    RectangularWaveguide(
-            const typename Base::ProgramType& program,
-            const RectangularMesh& mesh,
-            float sample_rate,
-            std::vector<RectangularMesh::CondensedNode> nodes,
-            std::vector<RectangularProgram::CanonicalCoefficients>
-                    coefficients);
+    RectangularWaveguide(const typename Base::ProgramType& program,
+                         const RectangularMesh& mesh,
+                         float sample_rate,
+                         std::vector<RectangularMesh::CondensedNode>
+                                 nodes,
+                         std::vector<RectangularProgram::CanonicalCoefficients>
+                                 coefficients);
 
-
-    std::unique_ptr<rectangular_waveguide_run_info<PORTS>> invocation;
+    std::unique_ptr<rectangular_waveguide_run_info> invocation;
 
     const MeshType mesh;
     const cl::Buffer node_buffer;                   //  const
     const cl::Buffer boundary_coefficients_buffer;  //  const
-    std::vector<float> surrounding;   //  overwritten every step, constant size
-    cl::Buffer surrounding_buffer;    //  overwritten every step, constant size
-    cl::Buffer error_flag_buffer;     //  overwritten every step, constant size
+    std::vector<cl_float>
+            surrounding;            //  overwritten every step, constant size
+    cl::Buffer surrounding_buffer;  //  overwritten every step, constant size
+    cl::Buffer error_flag_buffer;   //  overwritten every step, constant size
+
+    friend bool operator==(const RectangularWaveguide& a,
+                           const RectangularWaveguide& b);
 };
+
+bool operator==(const RectangularWaveguide& a, const RectangularWaveguide& b);

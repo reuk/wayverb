@@ -2,18 +2,12 @@
 
 #include "triangle.h"
 
-#include "cl_include.h"
+#include "cl_common.h"
 
 #include "glm/glm.hpp"
 
 #include <map>
 #include <vector>
-
-template <typename T>
-bool cl_equal(const T& a, const T& b) {
-    return std::equal(
-            std::begin(a.s), std::end(a.s), std::begin(b.s), std::end(b.s));
-}
 
 using VolumeType = cl_float8;
 

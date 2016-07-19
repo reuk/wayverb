@@ -8,58 +8,59 @@
 #include <cassert>
 #include <cmath>
 
-template <typename T>
-void compare(const T& a, const T& b) {
-    const auto lim = std::min(a.size(), b.size());
-    for (auto i = 0u; i != lim; ++i) {
-        if (0.001 < std::abs((i < a.size() ? a[i] : 0.0) -
-                             (i < b.size() ? b[i] : 0.0))) {
-            FAIL();
-        }
-    }
-}
-
-TEST(verify_compensation_signal, verify_compensation_signal_compressed) {
-    ComputeContext c;
-    compressed_rectangular_waveguide_program program(c.context, c.device);
-    compressed_rectangular_waveguide waveguide(program, 100);
-
-    std::vector<float> input{1, 2, 3, 4, 5, 4, 3, 2, 1};
-    const auto output = waveguide.run_soft_source(make_transparent(input));
-
-    compare(input, output);
-}
-
 namespace {
 auto uniform_surface(float r) {
     return Surface{VolumeType{{r, r, r, r, r, r, r, r}},
                    VolumeType{{r, r, r, r, r, r, r, r}}};
 }
+
+template <typename T>
+void multitest(T&& run) {
+    const auto proper_output = run();
+    for (auto i = 0; i != 100; ++i) {
+        const auto output = run();
+        ASSERT_EQ(output, proper_output);
+    }
+}
 }  // namespace
 
-TEST(verify_compensation_signal, verify_compensation_signal_normal) {
+TEST(verify_compensation_signal, verify_compensation_signal_compressed) {
     const std::vector<float> input{1, 2, 3, 4, 5, 4, 3, 2, 1};
     const auto transparent = make_transparent(input);
 
-    for (auto i = 0; i != 100; ++i) {
-        ComputeContext compute_context;
-        CuboidBoundary cuboid_boundary(glm::vec3(-1), glm::vec3(1));
+    ComputeContext c;
+    compressed_rectangular_waveguide_program program(c.context, c.device);
+    compressed_rectangular_waveguide waveguide(program, 100);
 
-        RectangularProgram waveguide_program(compute_context.context,
-                                             compute_context.device);
+    multitest([&] {
+        auto t = transparent;
+        return waveguide.run_soft_source(std::move(t));
+    });
+}
 
-        auto scene_data = cuboid_boundary.get_scene_data();
-        scene_data.set_surfaces(uniform_surface(0.999));
+TEST(verify_compensation_signal, verify_compensation_signal_normal) {
+    const std::vector<float> input(20, 1);
+    const auto transparent = make_transparent(input);
 
-        constexpr glm::vec3 centre{0, 0, 0};
+    ComputeContext compute_context;
+    CuboidBoundary cuboid_boundary(glm::vec3(-1), glm::vec3(1));
 
-        RectangularWaveguide<BufferType::cl> waveguide(
-                waveguide_program, MeshBoundary(scene_data), centre, 20000);
+    RectangularProgram waveguide_program(compute_context.context,
+                                         compute_context.device);
 
-        auto receiver_index = waveguide.get_index_for_coordinate(centre);
+    auto scene_data = cuboid_boundary.get_scene_data();
+    scene_data.set_surfaces(uniform_surface(0.999));
 
-        std::atomic_bool keep_going{true};
+    constexpr glm::vec3 centre{0, 0, 0};
+
+    RectangularWaveguide waveguide(
+            waveguide_program, MeshBoundary(scene_data), centre, 20000);
+
+    auto receiver_index = waveguide.get_index_for_coordinate(centre);
+
+    multitest([&] {
         constexpr auto steps = 100;
+        std::atomic_bool keep_going{true};
         ProgressBar pb(std::cout, steps);
         const auto output = waveguide.init_and_run(
                 centre, transparent, receiver_index, steps, keep_going, [&pb] {
@@ -72,6 +73,6 @@ TEST(verify_compensation_signal, verify_compensation_signal_normal) {
             pressures.push_back(i.pressure);
         }
 
-        compare(input, pressures);
-    }
+        return pressures;
+    });
 }

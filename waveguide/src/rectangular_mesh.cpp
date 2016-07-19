@@ -100,7 +100,7 @@ cl_int RectangularMesh::compute_boundary_type(
                 std::vector<std::pair<Locator, cl_int>> nearby;
                 for (const auto& relative : directions) {
                     auto adjacent = loc + relative.first;
-                    auto index = compute_index(adjacent);
+                    auto index    = compute_index(adjacent);
                     if (index < ret.size() && ret[index].inside)
                         nearby.push_back(relative);
                 }
@@ -188,7 +188,7 @@ RectangularMesh::Locator RectangularMesh::compute_locator(
 }
 RectangularMesh::Locator RectangularMesh::compute_locator(
         const glm::vec3& v) const {
-    auto transformed = v - get_aabb().get_c0();
+    auto transformed    = v - get_aabb().get_c0();
     glm::ivec3 cube_pos = transformed / get_spacing();
 
     auto min = glm::max(cube_pos - 1, glm::ivec3(0));
@@ -199,7 +199,7 @@ RectangularMesh::Locator RectangularMesh::compute_locator(
     };
 
     Locator closest = min;
-    auto dist = get_dist(closest);
+    auto dist       = get_dist(closest);
     for (auto x = min.x; x != max.x; ++x) {
         for (auto y = min.y; y != max.y; ++y) {
             for (auto z = min.z; z != max.z; ++z) {
@@ -207,7 +207,7 @@ RectangularMesh::Locator RectangularMesh::compute_locator(
                 auto t_dist = get_dist(t);
                 if (t_dist < dist) {
                     closest = t;
-                    dist = t_dist;
+                    dist    = t_dist;
                 }
             }
         }
@@ -269,8 +269,8 @@ cl_uint RectangularMesh::coefficient_index_for_node(
 cl_uint RectangularMesh::coefficient_index_for_node(
         const MeshBoundary& b, const RectangularMesh::Node& node) {
     const auto& triangles = b.get_triangles();
-    const auto& vertices = b.get_vertices();
-    auto min = proc::min_element(
+    const auto& vertices  = b.get_vertices();
+    auto min              = proc::min_element(
             triangles, [&node, &vertices](const auto& i, const auto& j) {
                 auto get_dist = [&node, &vertices](const auto& i) {
                     return geo::point_triangle_distance_squared(
@@ -280,4 +280,16 @@ cl_uint RectangularMesh::coefficient_index_for_node(
             });
     //  set boundary data coefficient to triangle surface index
     return min->surface;
+}
+
+bool operator==(const RectangularMesh& a, const RectangularMesh& b) {
+    return std::tie(a.dim,
+                    a.nodes,
+                    a.boundary_data_1,
+                    a.boundary_data_2,
+                    a.boundary_data_3) == std::tie(b.dim,
+                                                   b.nodes,
+                                                   b.boundary_data_1,
+                                                   b.boundary_data_2,
+                                                   b.boundary_data_3);
 }

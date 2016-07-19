@@ -1,6 +1,5 @@
 #pragma once
 
-#include "buffer_type.h"
 #include "config.h"
 #include "rectangular_mesh.h"
 #include "rectangular_program.h"
@@ -19,7 +18,7 @@
 #include <type_traits>
 
 struct RunStepResult {
-    explicit RunStepResult(float pressure = 0,
+    explicit RunStepResult(float pressure             = 0,
                            const glm::vec3& intensity = glm::vec3())
             : pressure(pressure)
             , intensity(intensity) {
@@ -28,14 +27,11 @@ struct RunStepResult {
     glm::vec3 intensity;
 };
 
-template <typename T, BufferType buffer_type>
+template <typename T>
 class Waveguide {
 public:
     using ProgramType = T;
     using kernel_type = decltype(std::declval<ProgramType>().get_kernel());
-
-    using trait = detail::BufferTypeTrait<buffer_type>;
-    using storage_array_type = typename trait::storage_array_type;
 
     Waveguide(const ProgramType& program, size_t nodes, double sample_rate)
             : program(program)
@@ -43,10 +39,12 @@ public:
                     program.get_device())
             , kernel(program.get_kernel())
             , nodes(nodes)
-            , storage(trait::create_waveguide_storage(
-                      program.template get_info<CL_PROGRAM_CONTEXT>(), nodes))
-            , previous(trait::index_storage_array(storage, 0))
-            , current(trait::index_storage_array(storage, 1))
+            , previous(program.template get_info<CL_PROGRAM_CONTEXT>(),
+                       CL_MEM_READ_WRITE,
+                       nodes * sizeof(cl_float))
+            , current(program.template get_info<CL_PROGRAM_CONTEXT>(),
+                      CL_MEM_READ_WRITE,
+                      nodes * sizeof(cl_float))
             , output(program.template get_info<CL_PROGRAM_CONTEXT>(),
                      CL_MEM_READ_WRITE,
                      sizeof(cl_float))
@@ -63,16 +61,15 @@ public:
         return nodes;
     }
 
-    using PerStepCallback = std::function<void()>;
+    using PerStepCallback    = std::function<void()>;
     using VisualiserCallback = std::function<void(std::vector<float>)>;
 
-    std::vector<RunStepResult> init_and_run(
-            const glm::vec3& e,
-            const std::vector<float>& input,
-            size_t o,
-            size_t steps,
-            std::atomic_bool& keep_going,
-            const PerStepCallback& callback) {
+    std::vector<RunStepResult> init_and_run(const glm::vec3& e,
+                                            const std::vector<float>& input,
+                                            size_t o,
+                                            size_t steps,
+                                            std::atomic_bool& keep_going,
+                                            const PerStepCallback& callback) {
         auto run_info = init(e, input, o, steps);
         return this->run(run_info, keep_going, callback);
     }
@@ -112,11 +109,13 @@ public:
         return ret;
     }
 
-    ProgramType get_program() const {return program;}
+    ProgramType get_program() const {
+        return program;
+    }
 
     virtual size_t get_index_for_coordinate(const glm::vec3& v) const = 0;
-    virtual glm::vec3 get_coordinate_for_index(size_t index) const = 0;
-    virtual bool inside(size_t index) const = 0;
+    virtual glm::vec3 get_coordinate_for_index(size_t index) const    = 0;
+    virtual bool inside(size_t index) const                           = 0;
 
 protected:
     struct WriteInfo {
@@ -191,10 +190,12 @@ private:
         //  whatever unique setup is required
         setup(queue, o);
 
-        //  zero out meshes
-        std::vector<cl_float> n(nodes, 0);
-        cl::copy(queue, n.begin(), n.end(), *previous);
-        cl::copy(queue, n.begin(), n.end(), *current);
+        auto zero_mesh = [this](auto& buffer) {
+            std::vector<cl_uchar> n(buffer.template getInfo<CL_MEM_SIZE>(), 0);
+            cl::copy(queue, n.begin(), n.end(), buffer);
+        };
+        zero_mesh(previous);
+        zero_mesh(current);
 
         auto t = input_sig;
         t.resize(steps, 0);
@@ -207,8 +208,8 @@ private:
                             queue,
                             kernel,
                             nodes,
-                            *previous,
-                            *current,
+                            previous,
+                            current,
                             output);
         std::swap(current, previous);
         return ret;
@@ -218,15 +219,14 @@ private:
             const RunInfo& run_info, float input) {
         auto ret = run_step(run_info, input);
         std::vector<cl_float> pressures(nodes, 0);
-        cl::copy(queue, *previous, pressures.begin(), pressures.end());
+        cl::copy(queue, previous, pressures.begin(), pressures.end());
         return std::make_pair(ret, pressures);
         ;
     }
 
-    std::vector<RunStepResult> run(
-            const RunInfo& ri,
-            std::atomic_bool& keep_going,
-            const PerStepCallback& callback) {
+    std::vector<RunStepResult> run(const RunInfo& ri,
+                                   std::atomic_bool& keep_going,
+                                   const PerStepCallback& callback) {
         return run_basic(ri, keep_going, [this, &ri, &callback](auto i) {
             auto ret = this->run_step(ri, i);
             callback();
@@ -254,10 +254,8 @@ private:
     kernel_type kernel;
     const size_t nodes;
 
-    storage_array_type storage;
-
-    cl::Buffer* previous;
-    cl::Buffer* current;
+    cl::Buffer previous;
+    cl::Buffer current;
 
     cl::Buffer output;
 

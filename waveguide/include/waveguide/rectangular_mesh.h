@@ -246,6 +246,8 @@ private:
     std::vector<RectangularProgram::BoundaryDataArray1> boundary_data_1;
     std::vector<RectangularProgram::BoundaryDataArray2> boundary_data_2;
     std::vector<RectangularProgram::BoundaryDataArray3> boundary_data_3;
+
+    friend bool operator==(const RectangularMesh& a, const RectangularMesh& b);
 };
 
 template <>
@@ -265,3 +267,5 @@ inline const std::vector<RectangularProgram::BoundaryDataArray<3>>&
 RectangularMesh::get_boundary_data<3>() const {
     return boundary_data_3;
 }
+
+bool operator==(const RectangularMesh& a, const RectangularMesh& b);

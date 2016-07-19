@@ -1,6 +1,6 @@
 #pragma once
 
-#include "common/cl_include.h"
+#include "common/cl_common.h"
 #include "common/custom_program_base.h"
 #include "common/decibels.h"
 #include "common/hrtf.h"
@@ -10,20 +10,21 @@
 #include "common/stl_wrappers.h"
 #include "common/string_builder.h"
 
+#include <algorithm>
 #include <cassert>
 #include <cmath>
 
 class RectangularProgram final {
 public:
     typedef enum : cl_int {
-        id_none = 0,
-        id_inside = 1 << 0,
-        id_nx = 1 << 1,
-        id_px = 1 << 2,
-        id_ny = 1 << 3,
-        id_py = 1 << 4,
-        id_nz = 1 << 5,
-        id_pz = 1 << 6,
+        id_none      = 0,
+        id_inside    = 1 << 0,
+        id_nx        = 1 << 1,
+        id_px        = 1 << 2,
+        id_ny        = 1 << 3,
+        id_py        = 1 << 4,
+        id_nz        = 1 << 5,
+        id_pz        = 1 << 6,
         id_reentrant = 1 << 7,
     } BoundaryType;
 
@@ -32,18 +33,18 @@ public:
     }
 
     typedef enum : cl_int {
-        id_success = 0,
-        id_inf_error = 1 << 0,
-        id_nan_error = 1 << 1,
-        id_outside_range_error = 1 << 2,
-        id_outside_mesh_error = 1 << 3,
+        id_success                   = 0,
+        id_inf_error                 = 1 << 0,
+        id_nan_error                 = 1 << 1,
+        id_outside_range_error       = 1 << 2,
+        id_outside_mesh_error        = 1 << 3,
         id_suspicious_boundary_error = 1 << 4,
     } ErrorCode;
 
     static constexpr cl_uint NO_NEIGHBOR{~cl_uint{0}};
 
     struct alignas(1 << 4) NodeStruct final {
-        static constexpr int PORTS{6};
+        static constexpr size_t PORTS{6};
         cl_uint ports[PORTS]{};
         cl_float3 position{};
         cl_bool inside{};
@@ -62,7 +63,7 @@ public:
     };
 
     struct alignas(1 << 3) CondensedNodeStruct final {
-        static constexpr int PORTS{6};
+        static constexpr size_t PORTS{6};
         cl_int boundary_type{};
         cl_uint boundary_index{};
 
@@ -76,14 +77,10 @@ public:
 
     static constexpr auto BIQUAD_ORDER = 2u;
 
-    template <int O>
+    template <size_t O>
     struct FilterMemory final {
-        static constexpr int ORDER = O;
+        static constexpr size_t ORDER = O;
         FilterReal array[ORDER]{};
-
-        bool operator==(const FilterMemory& rhs) const {
-            return proc::equal(array, std::begin(rhs.array));
-        }
 
         template <typename Archive>
         void serialize(Archive& archive) {
@@ -93,16 +90,11 @@ public:
 
     using BiquadMemory = FilterMemory<BIQUAD_ORDER>;
 
-    template <int O>
+    template <size_t O>
     struct FilterCoefficients final {
-        static constexpr int ORDER = O;
+        static constexpr size_t ORDER = O;
         FilterReal b[ORDER + 1]{};
         FilterReal a[ORDER + 1]{};
-
-        bool operator==(const FilterCoefficients& rhs) const {
-            return proc::equal(b, std::begin(rhs.b)) &&
-                   proc::equal(a, std::begin(rhs.a));
-        }
 
         template <typename Archive>
         void serialize(Archive& archive) {
@@ -113,14 +105,14 @@ public:
     using BiquadCoefficients = FilterCoefficients<BIQUAD_ORDER>;
 
     struct alignas(1 << 3) BiquadMemoryArray final {
-        static constexpr int BIQUAD_SECTIONS{3};
+        static constexpr size_t BIQUAD_SECTIONS{3};
         BiquadMemory array[BIQUAD_SECTIONS]{};
     };
 
     static constexpr auto BIQUAD_SECTIONS = BiquadMemoryArray::BIQUAD_SECTIONS;
 
     struct alignas(1 << 3) BiquadCoefficientsArray final {
-        static constexpr int BIQUAD_SECTIONS =
+        static constexpr size_t BIQUAD_SECTIONS =
                 BiquadMemoryArray::BIQUAD_SECTIONS;
         BiquadCoefficients array[BIQUAD_SECTIONS]{};
 
@@ -146,9 +138,9 @@ public:
         }
     };
 
-    template <int D>
+    template <size_t D>
     struct alignas(1 << 3) BoundaryDataArray final {
-        static constexpr int DIMENSIONS{D};
+        static constexpr size_t DIMENSIONS{D};
         BoundaryData array[DIMENSIONS]{};
 
         template <typename Archive>
@@ -169,7 +161,7 @@ public:
     static CanonicalCoefficients to_impedance_coefficients(
             const CanonicalCoefficients& c);
 
-    static constexpr int PORTS = NodeStruct::PORTS;
+    static constexpr size_t PORTS = NodeStruct::PORTS;
 
     explicit RectangularProgram(const cl::Context& context,
                                 const cl::Device& device);
@@ -221,12 +213,12 @@ public:
 
     static BiquadCoefficients get_peak_coefficients(const FilterDescriptor& n,
                                                     double sr) {
-        auto A = decibels::db2a(n.gain / 2);
-        auto w0 = 2.0 * M_PI * n.centre / sr;
-        auto cw0 = cos(w0);
-        auto sw0 = sin(w0);
+        auto A     = decibels::db2a(n.gain / 2);
+        auto w0    = 2.0 * M_PI * n.centre / sr;
+        auto cw0   = cos(w0);
+        auto sw0   = sin(w0);
         auto alpha = sw0 / 2.0 * n.Q;
-        auto a0 = 1 + alpha / A;
+        auto a0    = 1 + alpha / A;
         return RectangularProgram::BiquadCoefficients{
                 {(1 + (alpha * A)) / a0, (-2 * cw0) / a0, (1 - alpha * A) / a0},
                 {1, (-2 * cw0) / a0, (1 - alpha / A) / a0}};
@@ -263,7 +255,7 @@ public:
         return get_biquads_array(n, sr, get_peak_coefficients);
     }
 
-    template <int A, int B>
+    template <size_t A, size_t B>
     static FilterCoefficients<A + B> convolve(const FilterCoefficients<A>& a,
                                               const FilterCoefficients<B>& b) {
         auto ret = FilterCoefficients<A + B>{};
@@ -293,7 +285,7 @@ public:
         return is_stable(next_array);
     }
 
-    template <int L>
+    template <size_t L>
     static constexpr bool is_stable(const FilterCoefficients<L>& coeffs) {
         std::array<double, L + 1> denom;
         proc::copy(coeffs.a, denom.begin());
@@ -357,18 +349,53 @@ private:
     custom_program_base custom_program_base;
 };
 
+inline bool operator==(const RectangularProgram::NodeStruct& a,
+                       const RectangularProgram::NodeStruct& b) {
+    return proc::equal(a.ports, std::begin(b.ports)) &&
+           std::tie(a.position, a.inside, a.boundary_type, a.boundary_index) ==
+                   std::tie(b.position,
+                            b.inside,
+                            b.boundary_type,
+                            b.boundary_index);
+}
+
+template <size_t D>
+bool operator==(const RectangularProgram::FilterMemory<D>& a,
+                const RectangularProgram::FilterMemory<D>& b) {
+    return proc::equal(a.array, std::begin(b.array));
+}
+
+template <size_t D>
+bool operator==(const RectangularProgram::FilterCoefficients<D>& a,
+                const RectangularProgram::FilterCoefficients<D>& b) {
+    return proc::equal(a.a, std::begin(b.a)) &&
+           proc::equal(a.b, std::begin(b.b));
+}
+
+inline bool operator==(const RectangularProgram::BoundaryData& a,
+                       const RectangularProgram::BoundaryData& b) {
+    return std::tie(a.filter_memory, a.coefficient_index) ==
+           std::tie(b.filter_memory, b.coefficient_index);
+}
+
+template <size_t D>
+bool operator==(const RectangularProgram::BoundaryDataArray<D>& a,
+                const RectangularProgram::BoundaryDataArray<D>& b) {
+    return proc::equal(a.array, std::begin(b.array));
+}
+
 JSON_OSTREAM_OVERLOAD(RectangularProgram::NodeStruct);
 
 JSON_OSTREAM_OVERLOAD(RectangularProgram::CondensedNodeStruct);
 
-template <int O>
+template <size_t O>
 JSON_OSTREAM_OVERLOAD(RectangularProgram::FilterCoefficients<O>);
 
 JSON_OSTREAM_OVERLOAD(RectangularProgram::BiquadCoefficientsArray);
 
 JSON_OSTREAM_OVERLOAD(RectangularProgram::BoundaryData);
 
-template <int D>
+template <size_t D>
 JSON_OSTREAM_OVERLOAD(RectangularProgram::BoundaryDataArray<D>);
 
 JSON_OSTREAM_OVERLOAD(RectangularProgram::FilterDescriptor);

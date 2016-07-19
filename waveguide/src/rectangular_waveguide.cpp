@@ -14,51 +14,33 @@ struct Type;
 
 }  // namespace detail
 
-template <int PORTS>
 struct rectangular_waveguide_run_info {
-    struct buffer_size_pair {
-        template <typename T>
-        //  yes, I do mean to pass by value here
-        //  cl buffer constructors take modifying iterators for mystifying
-        //  reasons
-        buffer_size_pair(const cl::Context& context, std::vector<T> u)
-                : size(u.size())
-                , buffer(context, u.begin(), u.end(), false) {
-        }
-
-        const size_t size;
-        cl::Buffer buffer;
-    };
-
-    template <typename T>
     rectangular_waveguide_run_info(
-            int o,
-            const T& nodes,
             const cl::Context& context,
-            const std::vector<RectangularProgram::BoundaryDataArray1>& bd1,
-            const std::vector<RectangularProgram::BoundaryDataArray2>& bd2,
-            const std::vector<RectangularProgram::BoundaryDataArray3>& bd3)
+            std::vector<RectangularProgram::BoundaryDataArray1>
+                    bd1,
+            std::vector<RectangularProgram::BoundaryDataArray2>
+                    bd2,
+            std::vector<RectangularProgram::BoundaryDataArray3>
+                    bd3)
             : velocity(0, 0, 0)
-            , boundary_1(context, bd1)
-            , boundary_2(context, bd2)
-            , boundary_3(context, bd3) {
+            , boundary_1(context, bd1.begin(), bd1.end(), false)
+            , boundary_2(context, bd2.begin(), bd2.end(), false)
+            , boundary_3(context, bd3.begin(), bd3.end(), false) {
     }
 
     glm::dvec3 velocity;
-    buffer_size_pair boundary_1;
-    buffer_size_pair boundary_2;
-    buffer_size_pair boundary_3;
+    cl::Buffer boundary_1;
+    cl::Buffer boundary_2;
+    cl::Buffer boundary_3;
 };
 
-template <BufferType buffer_type>
-RectangularWaveguide<buffer_type>::~RectangularWaveguide() noexcept = default;
+RectangularWaveguide::~RectangularWaveguide() noexcept = default;
 
-template <BufferType buffer_type>
-RectangularWaveguide<buffer_type>::RectangularWaveguide(
-        const RectangularProgram& program,
-        const MeshBoundary& boundary,
-        const glm::vec3& anchor,
-        float sr)
+RectangularWaveguide::RectangularWaveguide(const RectangularProgram& program,
+                                           const MeshBoundary& boundary,
+                                           const glm::vec3& anchor,
+                                           float sr)
         : RectangularWaveguide(
                   program,
                   RectangularMesh(boundary,
@@ -69,8 +51,7 @@ RectangularWaveguide<buffer_type>::RectangularWaveguide(
                           boundary.get_surfaces(), sr)) {
 }
 
-template <BufferType buffer_type>
-RectangularWaveguide<buffer_type>::RectangularWaveguide(
+RectangularWaveguide::RectangularWaveguide(
         const typename Base::ProgramType& program,
         const RectangularMesh& mesh,
         float sample_rate,
@@ -83,8 +64,7 @@ RectangularWaveguide<buffer_type>::RectangularWaveguide(
                                coefficients) {
 }
 
-template <BufferType buffer_type>
-RectangularWaveguide<buffer_type>::RectangularWaveguide(
+RectangularWaveguide::RectangularWaveguide(
         const typename Base::ProgramType& program,
         const RectangularMesh& mesh,
         float sample_rate,
@@ -92,7 +72,7 @@ RectangularWaveguide<buffer_type>::RectangularWaveguide(
                 nodes,
         std::vector<RectangularProgram::CanonicalCoefficients>
                 coefficients)
-        : Waveguide<RectangularProgram, buffer_type>(
+        : Waveguide<RectangularProgram>(
                   program, mesh.get_nodes().size(), sample_rate)
         , mesh(mesh)
         , node_buffer(program.template get_info<CL_PROGRAM_CONTEXT>(),
@@ -119,15 +99,11 @@ RectangularWaveguide<buffer_type>::RectangularWaveguide(
               << " MB";
 }
 
-template <BufferType buffer_type>
-void RectangularWaveguide<buffer_type>::setup(cl::CommandQueue& queue,
-                                              size_t o) {
+void RectangularWaveguide::setup(cl::CommandQueue& queue, size_t o) {
     try {
         auto context =
                 this->get_program().template get_info<CL_PROGRAM_CONTEXT>();
-        invocation = std::make_unique<rectangular_waveguide_run_info<PORTS>>(
-                o,
-                mesh.get_nodes(),
+        invocation = std::make_unique<rectangular_waveguide_run_info>(
                 context,
                 mesh.get_boundary_data<1>(),
                 mesh.get_boundary_data<2>(),
@@ -138,8 +114,7 @@ void RectangularWaveguide<buffer_type>::setup(cl::CommandQueue& queue,
     }
 }
 
-template <BufferType buffer_type>
-RunStepResult RectangularWaveguide<buffer_type>::run_step(
+RunStepResult RectangularWaveguide::run_step(
         const typename Base::WriteInfo& write_info,
         size_t o,
         cl::CommandQueue& queue,
@@ -160,9 +135,9 @@ RunStepResult RectangularWaveguide<buffer_type>::run_step(
            current,
            node_buffer,
            to_cl_int3(get_mesh().get_dim()),
-           invocation->boundary_1.buffer,
-           invocation->boundary_2.buffer,
-           invocation->boundary_3.buffer,
+           invocation->boundary_1,
+           invocation->boundary_2,
+           invocation->boundary_3,
            boundary_coefficients_buffer,
            o,
            output,
@@ -221,7 +196,7 @@ RunStepResult RectangularWaveguide<buffer_type>::run_step(
 
     //  the result is scaled by the negative inverse of the ambient density
     static constexpr auto ambient_density = 1.225;
-    auto dv = m / -ambient_density;
+    auto dv                               = m / -ambient_density;
     //  and integrated using a discrete-time integrator
     invocation->velocity += this->get_period() * dv;
 
@@ -232,31 +207,25 @@ RunStepResult RectangularWaveguide<buffer_type>::run_step(
     return RunStepResult{out, intensity};
 }
 
-template <BufferType buffer_type>
-size_t RectangularWaveguide<buffer_type>::get_index_for_coordinate(
+size_t RectangularWaveguide::get_index_for_coordinate(
         const glm::vec3& v) const {
     return mesh.compute_index(mesh.compute_locator(v));
 }
 
-template <BufferType buffer_type>
-glm::vec3 RectangularWaveguide<buffer_type>::get_coordinate_for_index(
-        size_t index) const {
+glm::vec3 RectangularWaveguide::get_coordinate_for_index(size_t index) const {
     return to_vec3f(mesh.get_nodes()[index].position);
 }
 
-template <BufferType buffer_type>
-const RectangularMesh& RectangularWaveguide<buffer_type>::get_mesh() const {
+const RectangularMesh& RectangularWaveguide::get_mesh() const {
     return mesh;
 }
 
-template <BufferType buffer_type>
-bool RectangularWaveguide<buffer_type>::inside(size_t index) const {
+bool RectangularWaveguide::inside(size_t index) const {
     return mesh.get_nodes()[index].inside;
 }
 
-//  instantiate - maybe special-case out the GL version if gl is not present?
+constexpr int RectangularWaveguide::PORTS;
 
-template class RectangularWaveguide<BufferType::cl>;
-
-template <BufferType bt>
-constexpr int RectangularWaveguide<bt>::PORTS;
+bool operator==(const RectangularWaveguide& a, const RectangularWaveguide& b) {
+    return a.mesh == b.mesh;
+}

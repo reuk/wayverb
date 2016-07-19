@@ -48,10 +48,10 @@ TEST(run_waveguide, run_waveguide) {
     scene_data.set_surfaces(surface);
 
     //  get a waveguide
-    RectangularWaveguide<BufferType::cl> waveguide(
+    RectangularWaveguide waveguide(
             waveguide_program, MeshBoundary(scene_data), receiver, 4000);
 
-    auto source_index = waveguide.get_index_for_coordinate(source);
+    auto source_index   = waveguide.get_index_for_coordinate(source);
     auto receiver_index = waveguide.get_index_for_coordinate(receiver);
 
     CHECK(waveguide.inside(source_index)) << "source is outside of mesh!";

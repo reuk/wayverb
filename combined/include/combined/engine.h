@@ -1,7 +1,5 @@
 #pragma once
 
-#include "waveguide/buffer_type.h"
-
 #include "raytracer/raytracer.h"
 #include "waveguide/waveguide.h"
 
@@ -76,8 +74,6 @@ public:
 
 class engine final {
 public:
-    static constexpr auto buffer_type = BufferType::cl;
-
     engine(const ComputeContext& compute_context,
            const CopyableSceneData& scene_data,
            const glm::vec3& source,
