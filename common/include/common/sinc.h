@@ -12,12 +12,12 @@ T sinc(T t) {
 /// Generate a convolution kernel for a lowpass sinc filter (NO WINDOWING!).
 //  TODO change centre value - 2 * cutoff?
 template <typename T = float>
-std::vector<T> sinc_kernel(double cutoff, int length) {
+aligned::vector<T> sinc_kernel(double cutoff, int length) {
     if (!(length % 2)) {
         throw std::runtime_error("Length of sinc filter kernel must be odd.");
     }
 
-    std::vector<T> ret(length);
+    aligned::vector<T> ret(length);
     for (auto i = 0u; i != length; ++i) {
         if (i == ((length - 1) / 2)) {
             ret[i] = 1;
@@ -38,15 +38,15 @@ void elementwise_multiply(T& a, const U& b) {
 
 /// Generate a blackman window of a specific length.
 template <typename T = float>
-std::vector<T> blackman(int length) {
+aligned::vector<T> blackman(int length) {
     const auto a0 = 7938.0 / 18608.0;
     const auto a1 = 9240.0 / 18608.0;
     const auto a2 = 1430.0 / 18608.0;
 
-    std::vector<T> ret(length);
+    aligned::vector<T> ret(length);
     for (auto i = 0u; i != length; ++i) {
         const auto offset = i / (length - 1.0);
-        ret[i] = (a0 - a1 * cos(2 * M_PI * offset) +
+        ret[i]            = (a0 - a1 * cos(2 * M_PI * offset) +
                   a2 * cos(4 * M_PI * offset));
     }
     return ret;
@@ -59,8 +59,8 @@ T hanning_point(double f) {
 
 /// Generate the right half of a hanning window
 template <typename T = float>
-std::vector<T> right_hanning(int length) {
-    std::vector<T> ret(length);
+aligned::vector<T> right_hanning(int length) {
+    aligned::vector<T> ret(length);
     for (auto i = 0; i != length; ++i) {
         ret[i] = hanning_point(0.5 + (i / (2 * (length - 1.0))));
     }
@@ -68,7 +68,7 @@ std::vector<T> right_hanning(int length) {
 }
 
 template <typename T = float>
-std::vector<T> windowed_sinc_kernel(double cutoff, int length) {
+aligned::vector<T> windowed_sinc_kernel(double cutoff, int length) {
     auto window = blackman<T>(length);
     auto kernel = sinc_kernel<T>(cutoff, length);
     elementwise_multiply(kernel, window);
@@ -78,33 +78,33 @@ std::vector<T> windowed_sinc_kernel(double cutoff, int length) {
 /// Generate a windowed, normalized low-pass sinc filter kernel of a specific
 /// length.
 template <typename T = float>
-std::vector<T> lopass_sinc_kernel(double sr, double cutoff, int length) {
+aligned::vector<T> lopass_sinc_kernel(double sr, double cutoff, int length) {
     auto kernel = windowed_sinc_kernel<T>(cutoff / sr, length);
-//    kernel_normalize(kernel);
+    //    kernel_normalize(kernel);
     return kernel;
 }
 
 /// Generate a windowed, normalized high-pass sinc filter kernel of a specific
 /// length.
 template <typename T = float>
-std::vector<T> hipass_sinc_kernel(double sr, double cutoff, int length) {
+aligned::vector<T> hipass_sinc_kernel(double sr, double cutoff, int length) {
     auto kernel = windowed_sinc_kernel<T>(cutoff / sr, length);
     proc::for_each(kernel, [](auto& i) { i *= -1; });
     kernel[(length - 1) / 2] += 1;
-//    kernel_normalize(kernel);
+    //    kernel_normalize(kernel);
     return kernel;
 }
 
 template <typename T = float>
-std::vector<T> bandpass_sinc_kernel(double sr,
-                                    double lo,
-                                    double hi,
-                                    int length) {
-    auto lop = lopass_sinc_kernel(sr, lo, length);
+aligned::vector<T> bandpass_sinc_kernel(double sr,
+                                        double lo,
+                                        double hi,
+                                        int length) {
+    auto lop    = lopass_sinc_kernel(sr, lo, length);
     auto kernel = lopass_sinc_kernel(sr, hi, length);
     proc::transform(kernel, lop.begin(), kernel.begin(), [](auto a, auto b) {
         return a - b;
     });
-//    kernel_normalize(kernel);
+    //    kernel_normalize(kernel);
     return kernel;
 }

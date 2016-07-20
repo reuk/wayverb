@@ -27,16 +27,16 @@
 #include <numeric>
 #include <random>
 
-std::vector<float> run_simulation(const compute_context& cc,
-                                  const CuboidBoundary& boundary,
-                                  const Surface& surface,
-                                  double filter_frequency,
-                                  double out_sr,
-                                  const glm::vec3& source,
-                                  const glm::vec3& receiver,
-                                  const std::string& output_folder,
-                                  const std::string& fname,
-                                  int steps) {
+aligned::vector<float> run_simulation(const compute_context& cc,
+                                      const CuboidBoundary& boundary,
+                                      const Surface& surface,
+                                      double filter_frequency,
+                                      double out_sr,
+                                      const glm::vec3& source,
+                                      const glm::vec3& receiver,
+                                      const std::string& output_folder,
+                                      const std::string& fname,
+                                      int steps) {
     auto scene_data = boundary.get_scene_data();
     scene_data.set_surfaces(surface);
 
@@ -47,7 +47,7 @@ std::vector<float> run_simulation(const compute_context& cc,
                                    filter_frequency * 4);
 
     auto receiver_index = waveguide.get_index_for_coordinate(receiver);
-    auto source_index = waveguide.get_index_for_coordinate(source);
+    auto source_index   = waveguide.get_index_for_coordinate(source);
 
     if (!waveguide.inside(receiver_index)) {
         throw std::runtime_error("receiver is outside of mesh!");
@@ -57,7 +57,7 @@ std::vector<float> run_simulation(const compute_context& cc,
     }
 
     auto corrected_source = waveguide.get_coordinate_for_index(source_index);
-    auto corrected_mic = waveguide.get_coordinate_for_index(receiver_index);
+    auto corrected_mic    = waveguide.get_coordinate_for_index(receiver_index);
 
     LOG(INFO) << "running simulation!";
     LOG(INFO) << "source pos: " << corrected_source;
@@ -66,7 +66,7 @@ std::vector<float> run_simulation(const compute_context& cc,
     std::atomic_bool keep_going{true};
     ProgressBar pb(std::cout, steps);
     auto results = waveguide.init_and_run(corrected_source,
-                                          std::vector<float>{1},
+                                          aligned::vector<float>{1},
                                           receiver_index,
                                           steps,
                                           keep_going,
@@ -75,21 +75,22 @@ std::vector<float> run_simulation(const compute_context& cc,
 #if 0
     auto output = Microphone::omni.process(results);
 #else
-    auto output = std::vector<float>(results.size());
-    proc::transform(
-            results, output.begin(), [](const auto& i) { return i.pressure; });
+    auto output = aligned::vector<float>(results.size());
+    proc::transform(results, output.begin(), [](const auto& i) {
+        return i.get_pressure();
+    });
 #endif
 
-    //filter::LinkwitzRileySingleLopass lopass;
-    //lopass.set_params(filter_frequency, out_sr);
-    //lopass.filter(output);
+    // filter::LinkwitzRileySingleLopass lopass;
+    // lopass.set_params(filter_frequency, out_sr);
+    // lopass.filter(output);
 
     return output;
 }
 
 struct FullTestResults {
-    std::vector<float> windowed_free_field_signal;
-    std::vector<float> windowed_reflection_signal;
+    aligned::vector<float> windowed_free_field_signal;
+    aligned::vector<float> windowed_reflection_signal;
 
     bool operator==(const FullTestResults& rhs) const {
         return windowed_free_field_signal == rhs.windowed_free_field_signal &&
@@ -97,14 +98,14 @@ struct FullTestResults {
     }
 };
 
-std::vector<float> get_free_field_results(const compute_context& cc,
-                                          const std::string& output_folder,
-                                          double filter_frequency,
-                                          double out_sr,
-                                          float azimuth,
-                                          float elevation,
-                                          int dim,
-                                          int steps) {
+aligned::vector<float> get_free_field_results(const compute_context& cc,
+                                              const std::string& output_folder,
+                                              double filter_frequency,
+                                              double out_sr,
+                                              float azimuth,
+                                              float elevation,
+                                              int dim,
+                                              int steps) {
     //  set room size based on desired number of nodes
     auto desired_nodes = glm::ivec3(dim);
     auto total_desired_nodes =
@@ -123,13 +124,13 @@ std::vector<float> get_free_field_results(const compute_context& cc,
     //  generate two boundaries, one twice the size of the other
     auto wall = CuboidBoundary(glm::vec3(0, 0, 0),
                                glm::vec3(desired_nodes) * divisions);
-    auto far = wall.get_c1();
+    auto far     = wall.get_c1();
     auto new_dim = glm::vec3(far.x * 2, far.y, far.z);
     auto no_wall = CuboidBoundary(glm::vec3(0, 0, 0), new_dim);
 
     //  place source and image in rooms based on distance in nodes from the wall
     auto source_dist_nodes = glm::length(glm::vec3(desired_nodes)) / 8;
-    auto source_dist = source_dist_nodes * divisions;
+    auto source_dist       = source_dist_nodes * divisions;
 
     auto wall_centre = no_wall.centre();
 
@@ -201,7 +202,8 @@ FullTestResults run_full_test(const std::string& test_name,
                               int dim,
                               int steps,
                               const Surface& surface,
-                              std::vector<float> windowed_free_field) {
+                              aligned::vector<float>
+                                      windowed_free_field) {
     //  set room size based on desired number of nodes
     auto desired_nodes = glm::ivec3(dim);
     auto total_desired_nodes =
@@ -221,7 +223,7 @@ FullTestResults run_full_test(const std::string& test_name,
     auto wall = CuboidBoundary(glm::vec3(0, 0, 0),
                                glm::vec3(desired_nodes) * divisions);
 
-    auto far = wall.get_c1();
+    auto far     = wall.get_c1();
     auto new_dim = glm::vec3(far.x * 2, far.y, far.z);
 
     auto no_wall = CuboidBoundary(glm::vec3(0, 0, 0), new_dim);
@@ -229,7 +231,7 @@ FullTestResults run_full_test(const std::string& test_name,
     //  place source and receiver in rooms based on distance in nodes from the
     //  wall
     auto source_dist_nodes = glm::length(glm::vec3(desired_nodes)) / 8;
-    auto source_dist = source_dist_nodes * divisions;
+    auto source_dist       = source_dist_nodes * divisions;
 
     auto wall_centre = no_wall.centre();
 
@@ -307,7 +309,7 @@ FullTestResults run_full_test(const std::string& test_name,
     };
 
     auto first_nonzero_reflected = first_nonzero(reflected);
-    auto first_nonzero_direct = first_nonzero(direct);
+    auto first_nonzero_direct    = first_nonzero(direct);
 
     if (first_nonzero_reflected != first_nonzero_direct) {
         LOG(INFO) << "WARNING: direct and reflected should receive signal at "
@@ -364,13 +366,13 @@ int main(int argc, char** argv) {
 
     auto output_folder = std::string(argv[1]);
 
-    auto azimuth = std::stod(argv[2]);
-    auto elevation = std::stod(argv[3]);
+    auto azimuth           = std::stod(argv[2]);
+    auto elevation         = std::stod(argv[3]);
     auto azimuth_elevation = std::make_pair(azimuth, elevation);
 
     compute_context cc;
     auto filter_frequency = 2000;
-    auto out_sr = 44100;
+    auto out_sr           = 44100;
 
     //  set room size based on desired number of nodes
     auto dim = 300;
@@ -426,7 +428,7 @@ int main(int argc, char** argv) {
                                        {{hi, hi, hi, hi, hi, hi, hi, hi}}}},
         };
 
-        std::vector<FullTestResults> all_test_results(surface_set.size());
+        aligned::vector<FullTestResults> all_test_results(surface_set.size());
         proc::transform(surface_set, all_test_results.begin(), [&](auto i) {
             return run_full_test(i.name,
                                  cc,

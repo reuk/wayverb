@@ -1,5 +1,7 @@
 #include "OtherComponents/BasicDrawableObject.hpp"
 
+#include "common/aligned/vector.h"
+
 #include <vector>
 
 Node::Node(Node&&) noexcept = default;
@@ -33,9 +35,9 @@ glm::mat4 Node::get_matrix() const {
 //----------------------------------------------------------------------------//
 
 BasicDrawableObject::BasicDrawableObject(mglu::ShaderProgram& shader,
-                                         const std::vector<glm::vec3>& g,
-                                         const std::vector<glm::vec4>& c,
-                                         const std::vector<GLuint>& i,
+                                         const aligned::vector<glm::vec3>& g,
+                                         const aligned::vector<glm::vec4>& c,
+                                         const aligned::vector<GLuint>& i,
                                          GLuint mode)
         : shader(&shader)
         , color_vector(c)
@@ -65,7 +67,7 @@ BasicDrawableObject& BasicDrawableObject::operator=(
         BasicDrawableObject&&) noexcept = default;
 
 void BasicDrawableObject::set_highlight(float amount) {
-    std::vector<glm::vec4> highlighted(color_vector.size());
+    aligned::vector<glm::vec4> highlighted(color_vector.size());
     std::transform(color_vector.begin(),
                    color_vector.end(),
                    highlighted.begin(),

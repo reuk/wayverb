@@ -3,6 +3,8 @@
 #include "fftwf_helpers.h"
 #include "stl_wrappers.h"
 
+#include "common/aligned/vector.h"
+
 #include "glog/logging.h"
 
 #include <vector>
@@ -19,18 +21,21 @@ public:
 
     FastConvolver(const FastConvolver &) = default;
     FastConvolver &operator=(const FastConvolver &) = default;
-    FastConvolver(FastConvolver &&) noexcept = default;
+    FastConvolver(FastConvolver &&) noexcept        = default;
     FastConvolver &operator=(FastConvolver &&) noexcept = default;
-    virtual ~FastConvolver() noexcept = default;
+    virtual ~FastConvolver() noexcept                   = default;
 
     /// Collect the gems Bentley Bear.
     template <typename T, typename U>
-    std::vector<float> convolve(const T &a, const U &b) {
+    aligned::vector<float> convolve(const T &a, const U &b) {
         return convolve(std::begin(a), std::end(a), std::begin(b), std::end(b));
     }
 
     template <typename It, typename Jt>
-    std::vector<float> convolve(It a_begin, It a_end, Jt b_begin, Jt b_end) {
+    aligned::vector<float> convolve(It a_begin,
+                                    It a_end,
+                                    Jt b_begin,
+                                    Jt b_end) {
         const auto d0 = std::distance(a_begin, a_end);
         const auto d1 = std::distance(b_begin, b_end);
         CHECK(d0 + d1 - 1 == FFT_LENGTH);
@@ -51,7 +56,7 @@ public:
 
         fftwf_execute(c2r);
 
-        std::vector<float> ret(c2r_o.begin(), c2r_o.end());
+        aligned::vector<float> ret(c2r_o.begin(), c2r_o.end());
 
         for (auto &i : ret) {
             i /= FFT_LENGTH;
@@ -61,7 +66,7 @@ public:
     }
 
 private:
-    template<typename It>
+    template <typename It>
     void forward_fft(const FftwfPlan &plan,
                      It begin,
                      It end,

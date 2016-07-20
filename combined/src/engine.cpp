@@ -40,7 +40,7 @@ constexpr double rectilinear_calibration_factor(double r, double sr) {
 
 */
 
-std::vector<std::vector<float>> run_raytracer_attenuation(
+aligned::vector<aligned::vector<float>> run_raytracer_attenuation(
         const compute_context& cc,
         const model::ReceiverSettings& receiver,
         const raytracer::Results::Selected& input,
@@ -87,9 +87,9 @@ std::vector<std::vector<float>> run_raytracer_attenuation(
     }
 }
 
-std::vector<std::vector<float>> run_waveguide_attenuation(
+aligned::vector<aligned::vector<float>> run_waveguide_attenuation(
         const model::ReceiverSettings& receiver,
-        const std::vector<RunStepResult>& input,
+        const aligned::vector<RunStepResult>& input,
         double waveguide_sample_rate) {
     switch (receiver.mode) {
         case model::ReceiverSettings::Mode::microphones: {
@@ -130,15 +130,14 @@ public:
                       const glm::vec3& receiver,
                       double waveguide_sample_rate,
                       raytracer::Results&& raytracer_results,
-                      std::vector<RunStepResult>&& waveguide_results)
+                      aligned::vector<RunStepResult>&& waveguide_results)
             : source(source)
             , receiver(receiver)
             , waveguide_sample_rate(waveguide_sample_rate)
             , raytracer_results(std::move(raytracer_results))
-            , waveguide_results(std::move(waveguide_results)) {
-    }
+            , waveguide_results(std::move(waveguide_results)) {}
 
-    std::vector<std::vector<float>> attenuate(
+    aligned::vector<aligned::vector<float>> attenuate(
             const compute_context& cc,
             const model::ReceiverSettings& receiver,
             double output_sample_rate,
@@ -182,7 +181,7 @@ public:
         auto& min = mm.first;
         auto& max = mm.second;
 
-        std::vector<std::vector<float>> ret;
+        aligned::vector<aligned::vector<float>> ret;
         ret.reserve(max.size());
         proc::transform(
                 max,
@@ -206,7 +205,7 @@ private:
     double waveguide_sample_rate;
 
     raytracer::Results raytracer_results;
-    std::vector<RunStepResult> waveguide_results;
+    aligned::vector<RunStepResult> waveguide_results;
 };
 
 }  // namespace
@@ -256,7 +255,7 @@ public:
                 callback,
                 [&waveguide_step](RectangularWaveguide& waveguide,
                                   const glm::vec3& corrected_source,
-                                  const std::vector<float>& input,
+                                  const aligned::vector<float>& input,
                                   size_t mic_index,
                                   size_t steps,
                                   std::atomic_bool& keep_going,
@@ -285,7 +284,7 @@ public:
                 [&waveguide_step, &v_callback](
                         RectangularWaveguide& waveguide,
                         const glm::vec3& corrected_source,
-                        const std::vector<float>& input,
+                        const aligned::vector<float>& input,
                         size_t mic_index,
                         size_t steps,
                         std::atomic_bool& keep_going,
@@ -304,9 +303,9 @@ public:
                 });
     }
 
-    std::vector<cl_float3> get_node_positions() const {
+    aligned::vector<cl_float3> get_node_positions() const {
         const auto& nodes = waveguide.get_mesh().get_nodes();
-        std::vector<cl_float3> ret(nodes.size());
+        aligned::vector<cl_float3> ret(nodes.size());
         proc::transform(
                 nodes, ret.begin(), [](const auto& i) { return i.position; });
         return ret;
@@ -316,10 +315,10 @@ private:
     std::unique_ptr<intermediate> run_basic(
             std::atomic_bool& keep_going,
             const state_callback& callback,
-            const std::function<std::vector<RunStepResult>(
+            const std::function<aligned::vector<RunStepResult>(
                     RectangularWaveguide&,
                     const glm::vec3&,
-                    const std::vector<float>&,
+                    const aligned::vector<float>&,
                     size_t,
                     size_t,
                     std::atomic_bool&,
@@ -422,8 +421,7 @@ engine::engine(const compute_context& compute_context,
                                        receiver,
                                        waveguide_sample_rate,
                                        rays,
-                                       impulses)) {
-}
+                                       impulses)) {}
 
 engine::~engine() noexcept = default;
 
@@ -439,7 +437,7 @@ std::unique_ptr<intermediate> engine::run(
     return pimpl->run(keep_going, callback);
 }
 
-std::vector<cl_float3> engine::get_node_positions() const {
+aligned::vector<cl_float3> engine::get_node_positions() const {
     return pimpl->get_node_positions();
 }
 

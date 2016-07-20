@@ -21,53 +21,52 @@
 
 //----------------------------------------------------------------------------//
 
-CopyableSceneData::CopyableSceneData(const std::vector<Triangle>& triangles,
-                                     const std::vector<cl_float3>& vertices,
-                                     const std::vector<Material>& materials)
-        : contents{triangles, vertices, materials} {
-}
+CopyableSceneData::CopyableSceneData(const aligned::vector<Triangle>& triangles,
+                                     const aligned::vector<cl_float3>& vertices,
+                                     const aligned::vector<Material>& materials)
+        : contents{triangles, vertices, materials} {}
 
 CopyableSceneData::CopyableSceneData(Contents&& rhs)
-        : contents(std::move(rhs)) {
-}
+        : contents(std::move(rhs)) {}
 
 CuboidBoundary CopyableSceneData::get_aabb() const {
     return CuboidBoundary(min_max(get_converted_vertices()));
 }
 
-std::vector<glm::vec3> CopyableSceneData::get_converted_vertices() const {
-    std::vector<glm::vec3> vec(get_vertices().size());
+aligned::vector<glm::vec3> CopyableSceneData::get_converted_vertices() const {
+    aligned::vector<glm::vec3> vec(get_vertices().size());
     proc::transform(
             get_vertices(), vec.begin(), [](auto i) { return to_vec3f(i); });
     return vec;
 }
 
-std::vector<int> CopyableSceneData::get_triangle_indices() const {
-    std::vector<int> ret(get_triangles().size());
+aligned::vector<int> CopyableSceneData::get_triangle_indices() const {
+    aligned::vector<int> ret(get_triangles().size());
     proc::iota(ret, 0);
     return ret;
 }
 
-const std::vector<Triangle>& CopyableSceneData::get_triangles() const {
+const aligned::vector<Triangle>& CopyableSceneData::get_triangles() const {
     return contents.triangles;
 }
-const std::vector<cl_float3>& CopyableSceneData::get_vertices() const {
+const aligned::vector<cl_float3>& CopyableSceneData::get_vertices() const {
     return contents.vertices;
 }
-const std::vector<SceneData::Material>& CopyableSceneData::get_materials()
+const aligned::vector<SceneData::Material>& CopyableSceneData::get_materials()
         const {
     return contents.materials;
 }
 
-std::vector<Surface> CopyableSceneData::get_surfaces() const {
-    std::vector<Surface> ret(get_materials().size());
+aligned::vector<Surface> CopyableSceneData::get_surfaces() const {
+    aligned::vector<Surface> ret(get_materials().size());
     proc::transform(get_materials(), ret.begin(), [](const auto& i) {
         return i.surface;
     });
     return ret;
 }
 
-void CopyableSceneData::set_surfaces(const std::vector<Material>& materials) {
+void CopyableSceneData::set_surfaces(
+        const aligned::vector<Material>& materials) {
     for (const auto& i : materials) {
         set_surface(i);
     }
@@ -102,24 +101,21 @@ struct SceneData::Impl {
 
 SceneData::SceneData(SceneData&& rhs) noexcept = default;
 SceneData& SceneData::operator=(SceneData&& rhs) noexcept = default;
-SceneData::~SceneData() noexcept = default;
+SceneData::~SceneData() noexcept                          = default;
 
 SceneData::SceneData(const std::string& scene_file)
-        : SceneData(load(scene_file)) {
-}
+        : SceneData(load(scene_file)) {}
 
 SceneData::SceneData(CopyableSceneData&& rhs, std::unique_ptr<Impl>&& pimpl)
         : CopyableSceneData(std::move(rhs))
-        , pimpl(std::move(pimpl)) {
-}
+        , pimpl(std::move(pimpl)) {}
 
 SceneData::SceneData(std::tuple<CopyableSceneData, std::unique_ptr<Impl>>&& rhs)
-        : SceneData(std::move(std::get<0>(rhs)), std::move(std::get<1>(rhs))) {
-}
+        : SceneData(std::move(std::get<0>(rhs)), std::move(std::get<1>(rhs))) {}
 
 std::tuple<CopyableSceneData, std::unique_ptr<SceneData::Impl>> SceneData::load(
         const std::string& scene_file) {
-    auto impl = std::make_unique<Impl>();
+    auto impl  = std::make_unique<Impl>();
     auto scene = impl->importer.ReadFile(
             scene_file,
             (aiProcess_Triangulate | aiProcess_GenSmoothNormals |
@@ -143,13 +139,13 @@ std::tuple<CopyableSceneData, std::unique_ptr<SceneData::Impl>> SceneData::load(
     for (auto i = 0u; i != scene->mNumMeshes; ++i) {
         auto mesh = scene->mMeshes[i];
 
-        std::vector<cl_float3> vertices(mesh->mNumVertices);
+        aligned::vector<cl_float3> vertices(mesh->mNumVertices);
         std::transform(mesh->mVertices,
                        mesh->mVertices + mesh->mNumVertices,
                        vertices.begin(),
                        [](auto i) { return to_cl_float3(i); });
 
-        std::vector<Triangle> triangles(mesh->mNumFaces);
+        aligned::vector<Triangle> triangles(mesh->mNumFaces);
         std::transform(mesh->mFaces,
                        mesh->mFaces + mesh->mNumFaces,
                        triangles.begin(),

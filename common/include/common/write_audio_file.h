@@ -1,5 +1,7 @@
 #pragma once
 
+#include "common/aligned/vector.h"
+
 #include "sndfile.hh"
 
 #include <string>
@@ -7,13 +9,13 @@
 
 struct snd {
     static void write(const std::string& fname,
-                      const std::vector<std::vector<float>>& signal,
+                      const aligned::vector<aligned::vector<float>>& signal,
                       double sample_rate,
                       size_t bit_depth);
 
 private:
     static void write(const std::string& fname,
-                      const std::vector<std::vector<float>>& outdata,
+                      const aligned::vector<aligned::vector<float>>& outdata,
                       float sr,
                       int bd,
                       int ftype);

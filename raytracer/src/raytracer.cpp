@@ -41,10 +41,11 @@ int compute_optimum_reflection_number(float min_amp, float max_reflectivity) {
     return std::log(min_amp) / std::log(max_reflectivity);
 }
 
-std::vector<std::vector<std::vector<float>>> flatten_impulses(
-        const std::vector<std::vector<AttenuatedImpulse>>& attenuated,
+aligned::vector<aligned::vector<aligned::vector<float>>> flatten_impulses(
+        const aligned::vector<aligned::vector<AttenuatedImpulse>>& attenuated,
         float samplerate) {
-    std::vector<std::vector<std::vector<float>>> flattened(attenuated.size());
+    aligned::vector<aligned::vector<aligned::vector<float>>> flattened(
+            attenuated.size());
     proc::transform(attenuated, begin(flattened), [samplerate](const auto& i) {
         return flatten_impulses(i, samplerate);
     });
@@ -61,8 +62,8 @@ double intensity_to_pressure(double intensity, double Z = 400) {
 
 /// Turn a collection of AttenuatedImpulses into a vector of 8 vectors, where
 /// each of the 8 vectors represent sample values in a different frequency band.
-std::vector<std::vector<float>> flatten_impulses(
-        const std::vector<AttenuatedImpulse>& impulse, float samplerate) {
+aligned::vector<aligned::vector<float>> flatten_impulses(
+        const aligned::vector<AttenuatedImpulse>& impulse, float samplerate) {
     const auto MAX_TIME_LIMIT = 20.0f;
     // Find the index of the final sample based on time and samplerate
     auto maxtime = std::min(
@@ -75,9 +76,9 @@ std::vector<std::vector<float>> flatten_impulses(
     const auto MAX_SAMPLE = round(maxtime * samplerate) + 1;
 
     //  Create somewhere to store the results.
-    std::vector<std::vector<float>> flattened(
+    aligned::vector<aligned::vector<float>> flattened(
             sizeof(VolumeType) / sizeof(float),
-            std::vector<float>(MAX_SAMPLE, 0));
+            aligned::vector<float>(MAX_SAMPLE, 0));
 
     //  For each impulse, calculate its index, then add the impulse's volumes
     //  to the volumes already in the output array.
@@ -102,10 +103,11 @@ std::vector<std::vector<float>> flatten_impulses(
 
 /// Find the index of the last sample with an amplitude of minVol or higher,
 /// then resize the vectors down to this length.
-void trimTail(std::vector<std::vector<float>>& audioChannels, float minVol) {
+void trimTail(aligned::vector<aligned::vector<float>>& audioChannels,
+              float minVol) {
     using index_type = std::common_type_t<
             std::iterator_traits<
-                    std::vector<float>::reverse_iterator>::difference_type,
+                    aligned::vector<float>::reverse_iterator>::difference_type,
             int>;
 
     // Find last index of required amplitude or greater.
@@ -131,14 +133,14 @@ void trimTail(std::vector<std::vector<float>>& audioChannels, float minVol) {
 }
 
 /// Collects together all the post-processing steps.
-std::vector<std::vector<float>> process(
-        std::vector<std::vector<std::vector<float>>>& data,
+aligned::vector<aligned::vector<float>> process(
+        aligned::vector<aligned::vector<aligned::vector<float>>>& data,
         float sr,
         bool do_normalize,
         float lo_cutoff,
         bool do_trim_tail,
         float volume_scale) {
-    std::vector<std::vector<float>> ret;
+    aligned::vector<aligned::vector<float>> ret;
     ret.reserve(data.size());
     for (const auto& i : data) {
         ret.push_back(multiband_filter_and_mixdown(i, sr));
@@ -165,8 +167,8 @@ inline T elementwise(const T& a, const T& b, const U& u) {
     return ret;
 }
 
-std::vector<cl_float3> get_random_directions(size_t num) {
-    std::vector<cl_float3> ret(num);
+aligned::vector<cl_float3> get_random_directions(size_t num) {
+    aligned::vector<cl_float3> ret(num);
     std::uniform_real_distribution<float> z(-1, 1);
     std::uniform_real_distribution<float> theta(-M_PI, M_PI);
     auto seed = std::chrono::system_clock::now().time_since_epoch().count();
@@ -179,18 +181,17 @@ std::vector<cl_float3> get_random_directions(size_t num) {
     return ret;
 }
 
-Results::Results(const set_type& image_source,
-                 const std::vector<std::vector<Impulse>>& diffuse,
+Results::Results(map_type&& image_source,
+                 aligned::vector<aligned::vector<Impulse>>&& diffuse,
                  const glm::vec3& receiver,
                  const glm::vec3& source)
-        : image_source(image_source)
-        , diffuse(diffuse)
+        : image_source(std::move(image_source))
+        , diffuse(std::move(diffuse))
         , receiver(receiver)
-        , source(source) {
-}
+        , source(source) {}
 
-std::vector<Impulse> Results::get_diffuse_impulses() const {
-    std::vector<Impulse> ret;
+aligned::vector<Impulse> Results::get_diffuse_impulses() const {
+    aligned::vector<Impulse> ret;
     ret.reserve(diffuse.size() * diffuse.front().size());
     for (const auto& i : diffuse) {
         std::copy(i.begin(), i.end(), std::back_inserter(ret));
@@ -198,20 +199,23 @@ std::vector<Impulse> Results::get_diffuse_impulses() const {
     return ret;
 }
 
-std::vector<Impulse> Results::get_image_source_impulses(
+aligned::vector<Impulse> Results::get_image_source_impulses(
         bool remove_direct) const {
     auto temp = image_source;
     if (remove_direct) {
         auto it = std::find_if(temp.begin(), temp.end(), [](const auto& i) {
-            return i.path == std::vector<cl_ulong>{0};
+            return i.first == aligned::vector<cl_ulong>{0};
         });
         if (it != temp.end()) {
             temp.erase(it);
         }
     }
 
-    std::vector<Impulse> ret(temp.size());
-    proc::transform(temp, begin(ret), [](const auto& i) { return i.impulse; });
+    aligned::vector<Impulse> ret;
+    ret.reserve(temp.size());
+    proc::transform(temp, std::back_inserter(ret), [](const auto& i) {
+        return i.second;
+    });
     return ret;
 }
 
@@ -230,40 +234,38 @@ Results::Selected Results::get_all(bool remove_direct) const {
     return Selected(diffuse, receiver, source);
 }
 
-Results::Selected::Selected(const std::vector<Impulse>& impulses,
+Results::Selected::Selected(const aligned::vector<Impulse>& impulses,
                             const glm::vec3& receiver,
                             const glm::vec3& source)
         : impulses(impulses)
         , receiver(receiver)
-        , source(source) {
-}
+        , source(source) {}
 
-std::vector<Impulse> Results::Selected::get_impulses() const {
+aligned::vector<Impulse> Results::Selected::get_impulses() const {
     return impulses;
 }
-glm::vec3 Results::Selected::get_receiver() const {
-    return receiver;
-}
-glm::vec3 Results::Selected::get_source() const {
-    return source;
-}
+glm::vec3 Results::Selected::get_receiver() const { return receiver; }
+glm::vec3 Results::Selected::get_source() const { return source; }
 
 //----------------------------------------------------------------------------//
 
-auto remove_duplicates(const std::vector<std::vector<cl_ulong>>& path,
-                       const std::vector<std::vector<Impulse>>& image,
-                       const Results::set_type& results) {
-    auto ret = results;
+auto remove_duplicates(const aligned::vector<aligned::vector<cl_ulong>>& path,
+                       const aligned::vector<aligned::vector<Impulse>>& image,
+                       Results::map_type&& results) {
+    auto ret = std::move(results);
 
     //  for each ray
     for (auto j = 0; j != path.size(); ++j) {
         //  get all ray path combinations
         for (auto k = 1; k != path[j].size(); ++k) {
-            std::vector<cl_ulong> surfaces(path[j].begin(),
-                                           path[j].begin() + k);
+            aligned::vector<cl_ulong> surfaces(path[j].begin(),
+                                               path[j].begin() + k);
 
             if (k == 1 || surfaces.back() != 0) {
-                ret.insert(PathImpulsePair{image[j][k - 1], surfaces});
+                auto it = ret.find(surfaces);
+                if (it == ret.end()) {
+                    ret[surfaces] = image[j][k - 1];
+                }
             }
         }
     }
@@ -273,12 +275,12 @@ auto remove_duplicates(const std::vector<std::vector<cl_ulong>>& path,
 
 Raytracer::Raytracer(const cl::Context& context, const cl::Device& device)
         : queue(context, device)
-        , kernel(raytracer_program(context, device).get_raytrace_kernel()) {
-}
+        , kernel(raytracer_program(context, device).get_raytrace_kernel()) {}
 
 template <typename T>
-auto transpose(const std::vector<std::vector<T>>& t) {
-    std::vector<std::vector<T>> ret(t.front().size(), std::vector<T>(t.size()));
+auto transpose(const aligned::vector<aligned::vector<T>>& t) {
+    aligned::vector<aligned::vector<T>> ret(t.front().size(),
+                                            aligned::vector<T>(t.size()));
     for (auto i = 0u; i != t.size(); ++i) {
         for (auto j = 0u; j != t[i].size(); ++j) {
             ret[j][i] = t[i][j];
@@ -309,20 +311,18 @@ VolumeType attenuation_for_distance(float distance) {
 auto get_direct_impulse(const glm::vec3& micpos,
                         const glm::vec3& source,
                         const CopyableSceneData& scene_data) {
-    Results::set_type ret;
+    Results::map_type ret;
     if (geo::point_intersection(micpos,
                                 source,
                                 scene_data.get_triangles(),
                                 scene_data.get_converted_vertices())) {
         auto init_diff = source - micpos;
         auto init_dist = glm::length(init_diff);
-        ret.insert(PathImpulsePair{
-                Impulse{
-                        attenuation_for_distance(init_dist),
-                        to_cl_float3(micpos + init_diff),
-                        static_cast<cl_float>(init_dist / SPEED_OF_SOUND),
-                },
-                {0}});
+        ret[{0}]       = Impulse{
+                attenuation_for_distance(init_dist),
+                to_cl_float3(micpos + init_diff),
+                static_cast<cl_float>(init_dist / SPEED_OF_SOUND),
+        };
     }
     return ret;
 }
@@ -348,12 +348,12 @@ Results Raytracer::run(const CopyableSceneData& scene_data,
 Results Raytracer::run(const CopyableSceneData& scene_data,
                        const glm::vec3& micpos,
                        const glm::vec3& source,
-                       const std::vector<cl_float3>& directions,
+                       const aligned::vector<cl_float3>& directions,
                        size_t reflections,
                        size_t num_image_source,
                        std::atomic_bool& keep_going,
                        const std::function<void()>& callback) {
-    std::vector<RayInfo> ray_info;
+    aligned::vector<RayInfo> ray_info;
     ray_info.reserve(directions.size());
     for (const auto& i : directions) {
         ray_info.push_back(RayInfo{Ray{to_cl_float3(source), i},
@@ -388,16 +388,15 @@ Results Raytracer::run(const CopyableSceneData& scene_data,
     VoxelCollection vox(scene_data, 4, 0.1);
     auto cl_voxel_index = load_to_buffer(vox.get_flattened(), true);
 
-    std::vector<std::vector<cl_ulong>> image_source_index(
-            num_image_source, std::vector<cl_ulong>(directions.size()));
-    std::vector<std::vector<Impulse>> image_source(
-            num_image_source, std::vector<Impulse>(directions.size()));
+    aligned::vector<aligned::vector<cl_ulong>> image_source_index(
+            num_image_source, aligned::vector<cl_ulong>(directions.size()));
+    aligned::vector<aligned::vector<Impulse>> image_source(
+            num_image_source, aligned::vector<Impulse>(directions.size()));
 
-    Results::set_type result_image_source =
-            get_direct_impulse(micpos, source, scene_data);
+    auto result_image_source = get_direct_impulse(micpos, source, scene_data);
 
-    std::vector<std::vector<Impulse>> result_diffuse(
-            reflections, std::vector<Impulse>(directions.size()));
+    aligned::vector<aligned::vector<Impulse>> result_diffuse(
+            reflections, aligned::vector<Impulse>(directions.size()));
 
     for (auto i = 0u; i != reflections; ++i) {
         if (!keep_going) {
@@ -455,12 +454,13 @@ Results Raytracer::run(const CopyableSceneData& scene_data,
     image_source       = transpose(image_source);
     image_source_index = transpose(image_source_index);
 
-    return Results{
-            remove_duplicates(
-                    image_source_index, image_source, result_image_source),
-            result_diffuse,
-            micpos,
-            source};
+    auto no_duplicates = remove_duplicates(
+            image_source_index, image_source, std::move(result_image_source));
+
+    return Results(std::move(no_duplicates),
+                   std::move(result_diffuse),
+                   micpos,
+                   source);
 }
 
 //----------------------------------------------------------------------------//
@@ -469,10 +469,9 @@ HrtfAttenuator::HrtfAttenuator(const cl::Context& context,
                                const cl::Device& device)
         : queue(context, device)
         , kernel(attenuator_program(context, device).get_hrtf_kernel())
-        , cl_hrtf(context, CL_MEM_READ_WRITE, sizeof(VolumeType) * 360 * 180) {
-}
+        , cl_hrtf(context, CL_MEM_READ_WRITE, sizeof(VolumeType) * 360 * 180) {}
 
-std::vector<AttenuatedImpulse> HrtfAttenuator::process(
+aligned::vector<AttenuatedImpulse> HrtfAttenuator::process(
         const Results::Selected& results,
         const glm::vec3& direction,
         const glm::vec3& up,
@@ -480,7 +479,7 @@ std::vector<AttenuatedImpulse> HrtfAttenuator::process(
         HrtfChannel channel) {
     auto channel_index = channel == HrtfChannel::left ? 0 : 1;
     //  muck around with the table format
-    std::vector<VolumeType> hrtf_channel_data(360 * 180);
+    aligned::vector<VolumeType> hrtf_channel_data(360 * 180);
     auto offset = 0;
     for (const auto& i : get_hrtf_data()[channel_index]) {
         proc::copy(i, hrtf_channel_data.begin() + offset);
@@ -494,9 +493,8 @@ std::vector<AttenuatedImpulse> HrtfAttenuator::process(
 
     //  set up buffers
     auto context = queue.getInfo<CL_QUEUE_CONTEXT>();
-    cl::Buffer cl_in(context,
-                     CL_MEM_READ_WRITE,
-                     impulses.size() * sizeof(Impulse));
+    cl::Buffer cl_in(
+            context, CL_MEM_READ_WRITE, impulses.size() * sizeof(Impulse));
     cl::Buffer cl_out(context,
                       CL_MEM_READ_WRITE,
                       impulses.size() * sizeof(AttenuatedImpulse));
@@ -515,7 +513,7 @@ std::vector<AttenuatedImpulse> HrtfAttenuator::process(
            channel_index);
 
     //  create output storage
-    std::vector<AttenuatedImpulse> ret(impulses.size());
+    aligned::vector<AttenuatedImpulse> ret(impulses.size());
 
     //  copy to output
     cl::copy(queue, cl_out, ret.begin(), ret.end());
@@ -531,10 +529,9 @@ HrtfAttenuator::get_hrtf_data() const {
 MicrophoneAttenuator::MicrophoneAttenuator(const cl::Context& context,
                                            const cl::Device& device)
         : queue(context, device)
-        , kernel(attenuator_program(context, device).get_microphone_kernel()) {
-}
+        , kernel(attenuator_program(context, device).get_microphone_kernel()) {}
 
-std::vector<AttenuatedImpulse> MicrophoneAttenuator::process(
+aligned::vector<AttenuatedImpulse> MicrophoneAttenuator::process(
         const Results::Selected& results,
         const glm::vec3& pointing,
         float shape,
@@ -542,16 +539,14 @@ std::vector<AttenuatedImpulse> MicrophoneAttenuator::process(
     auto impulses = results.get_impulses();
     //  init buffers
     auto context = queue.getInfo<CL_QUEUE_CONTEXT>();
-    cl::Buffer cl_in(context,
-                     CL_MEM_READ_WRITE,
-                     impulses.size() * sizeof(Impulse));
+    cl::Buffer cl_in(
+            context, CL_MEM_READ_WRITE, impulses.size() * sizeof(Impulse));
 
     cl::Buffer cl_out(context,
                       CL_MEM_READ_WRITE,
                       impulses.size() * sizeof(AttenuatedImpulse));
-    std::vector<AttenuatedImpulse> zero(
-            impulses.size(),
-            AttenuatedImpulse{{{0, 0, 0, 0, 0, 0, 0, 0}}, 0});
+    aligned::vector<AttenuatedImpulse> zero(
+            impulses.size(), AttenuatedImpulse{{{0, 0, 0, 0, 0, 0, 0, 0}}, 0});
     cl::copy(queue, zero.begin(), zero.end(), cl_out);
 
     //  copy input data to buffer
@@ -565,7 +560,7 @@ std::vector<AttenuatedImpulse> MicrophoneAttenuator::process(
            Speaker{to_cl_float3(pointing), shape});
 
     //  create output location
-    std::vector<AttenuatedImpulse> ret(impulses.size());
+    aligned::vector<AttenuatedImpulse> ret(impulses.size());
 
     //  copy from buffer to output
     cl::copy(queue, cl_out, ret.begin(), ret.end());

@@ -26,7 +26,7 @@ void write_compensation_signal(const std::string& fname, size_t n) {
             cc.get_context(), cc.get_device(), n);
 
     //  run the waveguide with an impulsive hard source
-    auto output = waveguide.run_hard_source(std::vector<float>{0, 1});
+    auto output = waveguide.run_hard_source(aligned::vector<float>{0, 1});
 
     //  write the file
     snd::write(fname, {output}, 44100, 32);

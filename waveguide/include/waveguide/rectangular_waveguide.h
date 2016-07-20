@@ -38,14 +38,14 @@ private:
                          const cl::Device&,
                          const RectangularMesh& mesh,
                          float sample_rate,
-                         std::vector<rectangular_program::CanonicalCoefficients>
+                         aligned::vector<rectangular_program::CanonicalCoefficients>
                                  coefficients);
     RectangularWaveguide(const cl::Context&,
                          const cl::Device&,
                          const RectangularMesh& mesh,
                          float sample_rate,
-                         std::vector<RectangularMesh::CondensedNode> nodes,
-                         std::vector<rectangular_program::CanonicalCoefficients>
+                         aligned::vector<RectangularMesh::CondensedNode> nodes,
+                         aligned::vector<rectangular_program::CanonicalCoefficients>
                                  coefficients);
 
     std::unique_ptr<rectangular_waveguide_run_info> invocation;
@@ -53,7 +53,7 @@ private:
     const MeshType mesh;
     const cl::Buffer node_buffer;                   //  const
     const cl::Buffer boundary_coefficients_buffer;  //  const
-    std::vector<cl_float>
+    aligned::vector<cl_float>
             surrounding;            //  overwritten every step, constant size
     cl::Buffer surrounding_buffer;  //  overwritten every step, constant size
     cl::Buffer error_flag_buffer;   //  overwritten every step, constant size

@@ -18,7 +18,7 @@
 /*
 bool naive_test(const MeshBoundary& boundary, const glm::vec3& vec) {
     geo::Ray ray(vec, glm::vec3(0, 0, 1));
-    std::vector<float> distances;
+    aligned::vector<float> distances;
     return
         std::count_if(
             boundary.get_triangles().begin(),

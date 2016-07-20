@@ -5,6 +5,6 @@ int main(int argc, char** argv) {
     google::InitGoogleLogging(argv[0]);
 
     ::testing::InitGoogleTest(&argc, argv);
-//    ::testing::GTEST_FLAG(filter) = "*engine*";
+    ::testing::GTEST_FLAG(filter) = "*image_source*";
     return RUN_ALL_TESTS();
 }

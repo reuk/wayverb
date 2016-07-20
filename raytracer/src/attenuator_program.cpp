@@ -1,8 +1,8 @@
 #include "raytracer/attenuator_program.h"
 
+#include "cl/geometry.h"
 #include "cl/structs.h"
 #include "cl/voxel.h"
-#include "cl/geometry.h"
 
 attenuator_program::attenuator_program(const cl::Context& context,
                                        const cl::Device& device)
@@ -11,8 +11,7 @@ attenuator_program::attenuator_program(const cl::Context& context,
                           std::vector<std::string>{cl_sources::structs,
                                                    cl_sources::geometry,
                                                    cl_sources::voxel,
-                                                   source}) {
-}
+                                                   source}) {}
 
 static_assert(SPEED_OF_SOUND != 0, "SPEED_OF_SOUND");
 

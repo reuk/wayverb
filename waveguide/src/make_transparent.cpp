@@ -6,9 +6,9 @@
 #include <algorithm>
 #include <cassert>
 
-std::vector<float> make_transparent(const std::vector<float> &kernel) {
+aligned::vector<float> make_transparent(const aligned::vector<float> &kernel) {
     //  get ir data
-    std::vector<float> ir(
+    aligned::vector<float> ir(
             mesh_impulse_response::data,
             mesh_impulse_response::data + mesh_impulse_response::size);
 

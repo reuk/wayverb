@@ -3,7 +3,7 @@
 #include "waveguide/rectangular_program.h"
 
 template <typename Fun, typename T>
-bool is_any(const std::vector<T>& t, const Fun& fun) {
+bool is_any(const aligned::vector<T>& t, const Fun& fun) {
     return proc::any_of(t, [&fun](const auto& i) { return is_any(i, fun); });
 }
 

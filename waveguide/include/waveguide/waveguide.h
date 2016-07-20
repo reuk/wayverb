@@ -7,7 +7,6 @@
 #include "tetrahedral_program.h"
 
 #include "common/conversions.h"
-#include "common/extended_algorithms.h"
 #include "common/hrtf.h"
 #include "common/progress.h"
 
@@ -17,12 +16,17 @@
 #include <array>
 #include <type_traits>
 
-struct RunStepResult {
+class RunStepResult {
+public:
     explicit RunStepResult(float pressure             = 0,
                            const glm::vec3& intensity = glm::vec3())
             : pressure(pressure)
-            , intensity(intensity) {
-    }
+            , intensity(intensity) {}
+
+    float get_pressure() const { return pressure; }
+    glm::vec3 get_intensity() const { return intensity; }
+
+private:
     float pressure;
     glm::vec3 intensity;
 };
@@ -51,8 +55,7 @@ public:
             , output(program.template get_info<CL_PROGRAM_CONTEXT>(),
                      CL_MEM_READ_WRITE,
                      sizeof(cl_float))
-            , sample_rate(sample_rate) {
-    }
+            , sample_rate(sample_rate) {}
 
     virtual ~Waveguide() noexcept = default;
 
@@ -60,26 +63,25 @@ public:
         return get_coordinate_for_index(get_index_for_coordinate(v));
     }
 
-    size_t get_nodes() const {
-        return nodes;
-    }
+    size_t get_nodes() const { return nodes; }
 
     using PerStepCallback    = std::function<void()>;
-    using VisualiserCallback = std::function<void(std::vector<float>)>;
+    using VisualiserCallback = std::function<void(aligned::vector<float>)>;
 
-    std::vector<RunStepResult> init_and_run(const glm::vec3& e,
-                                            const std::vector<float>& input,
-                                            size_t o,
-                                            size_t steps,
-                                            std::atomic_bool& keep_going,
-                                            const PerStepCallback& callback) {
+    aligned::vector<RunStepResult> init_and_run(
+            const glm::vec3& e,
+            const aligned::vector<float>& input,
+            size_t o,
+            size_t steps,
+            std::atomic_bool& keep_going,
+            const PerStepCallback& callback) {
         auto run_info = init(e, input, o, steps);
         return this->run(run_info, keep_going, callback);
     }
 
-    std::vector<RunStepResult> init_and_run_visualised(
+    aligned::vector<RunStepResult> init_and_run_visualised(
             const glm::vec3& e,
-            const std::vector<float>& input,
+            const aligned::vector<float>& input,
             size_t o,
             size_t steps,
             std::atomic_bool& keep_going,
@@ -96,13 +98,9 @@ public:
     }
     */
 
-    double get_sample_rate() const {
-        return sample_rate;
-    }
+    double get_sample_rate() const { return sample_rate; }
 
-    double get_period() const {
-        return 1.0 / sample_rate;
-    }
+    double get_period() const { return 1.0 / sample_rate; }
 
     std::array<unsigned int, 2> get_gl_indices() const {
         std::array<unsigned int, 2> ret;
@@ -112,9 +110,7 @@ public:
         return ret;
     }
 
-    ProgramType get_program() const {
-        return program;
-    }
+    ProgramType get_program() const { return program; }
 
     virtual size_t get_index_for_coordinate(const glm::vec3& v) const = 0;
     virtual glm::vec3 get_coordinate_for_index(size_t index) const    = 0;
@@ -124,8 +120,7 @@ protected:
     struct WriteInfo {
         WriteInfo(size_t index, float pressure)
                 : index(index)
-                , pressure(pressure) {
-        }
+                , pressure(pressure) {}
         const size_t index;
         const float pressure;
     };
@@ -150,25 +145,24 @@ private:
 
     struct RunInfo final {
         RunInfo(size_t input_index,
-                const std::vector<float>& sig,
+                const aligned::vector<float>& sig,
                 size_t output_index)
                 : input_index(input_index)
                 , input_signal(sig)
-                , output_index(output_index) {
-        }
+                , output_index(output_index) {}
 
         const size_t input_index;
-        const std::vector<float> input_signal;
+        const aligned::vector<float> input_signal;
         const size_t output_index;
     };
 
     using InputCallback = std::function<RunStepResult(float)>;
 
-    std::vector<RunStepResult> run_basic(
+    aligned::vector<RunStepResult> run_basic(
             const RunInfo& run_info,
             std::atomic_bool& keep_going,
             const InputCallback& callback = InputCallback()) {
-        std::vector<RunStepResult> ret;
+        aligned::vector<RunStepResult> ret;
         ret.reserve(run_info.input_signal.size());
 
         //  I would use std::transform here but I need to guarantee order
@@ -187,14 +181,15 @@ private:
     }
 
     RunInfo init(const glm::vec3& e,
-                 const std::vector<float>& input_sig,
+                 const aligned::vector<float>& input_sig,
                  size_t o,
                  size_t steps) {
         //  whatever unique setup is required
         setup(queue, o);
 
         auto zero_mesh = [this](auto& buffer) {
-            std::vector<cl_uchar> n(buffer.template getInfo<CL_MEM_SIZE>(), 0);
+            aligned::vector<cl_uchar> n(buffer.template getInfo<CL_MEM_SIZE>(),
+                                        0);
             cl::copy(queue, n.begin(), n.end(), buffer);
         };
         zero_mesh(previous);
@@ -218,18 +213,18 @@ private:
         return ret;
     }
 
-    std::pair<RunStepResult, std::vector<cl_float>> run_step_visualised(
+    std::pair<RunStepResult, aligned::vector<cl_float>> run_step_visualised(
             const RunInfo& run_info, float input) {
         auto ret = run_step(run_info, input);
-        std::vector<cl_float> pressures(nodes, 0);
+        aligned::vector<cl_float> pressures(nodes, 0);
         cl::copy(queue, previous, pressures.begin(), pressures.end());
         return std::make_pair(ret, pressures);
         ;
     }
 
-    std::vector<RunStepResult> run(const RunInfo& ri,
-                                   std::atomic_bool& keep_going,
-                                   const PerStepCallback& callback) {
+    aligned::vector<RunStepResult> run(const RunInfo& ri,
+                                       std::atomic_bool& keep_going,
+                                       const PerStepCallback& callback) {
         return run_basic(ri, keep_going, [this, &ri, &callback](auto i) {
             auto ret = this->run_step(ri, i);
             callback();
@@ -237,7 +232,7 @@ private:
         });
     }
 
-    std::vector<RunStepResult> run_visualised(
+    aligned::vector<RunStepResult> run_visualised(
             const RunInfo& ri,
             std::atomic_bool& keep_going,
             const PerStepCallback& callback,

@@ -64,15 +64,16 @@ TEST(run_waveguide, run_waveguide) {
     std::atomic_bool keep_going{true};
     ProgressBar pb(std::cout, steps);
     auto results = waveguide.init_and_run(corrected_source,
-                                          std::vector<float>{1},
+                                          aligned::vector<float>{1},
                                           receiver_index,
                                           steps,
                                           keep_going,
                                           [&pb] { pb += 1; });
 
-    auto output = std::vector<float>(results.size());
-    proc::transform(
-            results, output.begin(), [](const auto& i) { return i.pressure; });
+    auto output = aligned::vector<float>(results.size());
+    proc::transform(results, output.begin(), [](const auto& i) {
+        return i.get_pressure();
+    });
 
     auto max_amp = max_mag(output);
     std::cout << "max_mag: " << max_amp << std::endl;

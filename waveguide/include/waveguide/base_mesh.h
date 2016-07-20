@@ -11,7 +11,7 @@ public:
 
     using Locator = LocatorType;
     using Node = typename Program::NodeStruct;
-    using Collection = std::vector<Node>;
+    using Collection = aligned::vector<Node>;
     using size_type = typename Collection::size_type;
 
     BaseMesh(float spacing, const CuboidBoundary& aabb)

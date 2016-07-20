@@ -1,5 +1,6 @@
 #pragma once
 
+#include "common/aligned/vector.h"
 #include "common/config.h"
 #include "common/orientable.h"
 
@@ -29,11 +30,11 @@ struct Microphone {
 struct ReceiverSettings {
     enum class Mode { microphones, hrtf };
 
-    std::vector<glm::vec3> get_pointing() const;
+    aligned::vector<glm::vec3> get_pointing() const;
 
     glm::vec3 position{0, 0, 0};
     Mode mode{Mode::microphones};
-    std::vector<Microphone> microphones{Microphone{}};
+    aligned::vector<Microphone> microphones{Microphone{}};
     Pointer hrtf{};
 };
 

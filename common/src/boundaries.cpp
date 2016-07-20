@@ -1,5 +1,6 @@
 #include "common/boundaries.h"
 
+#include "common/aligned/vector.h"
 #include "common/conversions.h"
 #include "common/geometric.h"
 #include "common/scene_data.h"
@@ -43,7 +44,7 @@ CuboidBoundary CuboidBoundary::get_aabb() const {
 }
 
 CopyableSceneData CuboidBoundary::get_scene_data() const {
-    std::vector<cl_float3> vertices{
+    aligned::vector<cl_float3> vertices{
             {{get_c0().x, get_c0().y, get_c0().z}},
             {{get_c1().x, get_c0().y, get_c0().z}},
             {{get_c0().x, get_c1().y, get_c0().z}},
@@ -53,7 +54,7 @@ CopyableSceneData CuboidBoundary::get_scene_data() const {
             {{get_c0().x, get_c1().y, get_c1().z}},
             {{get_c1().x, get_c1().y, get_c1().z}},
     };
-    std::vector<Triangle> triangles{
+    aligned::vector<Triangle> triangles{
             {0, 0, 1, 5},
             {0, 0, 4, 5},
             {0, 0, 1, 3},
@@ -67,7 +68,7 @@ CopyableSceneData CuboidBoundary::get_scene_data() const {
             {0, 4, 5, 7},
             {0, 4, 6, 7},
     };
-    std::vector<CopyableSceneData::Material> materials{
+    aligned::vector<CopyableSceneData::Material> materials{
             {"default", Surface{}},
     };
 
@@ -109,7 +110,7 @@ bool CuboidBoundary::intersects(const geo::Ray& ray, float t0, float t1) {
 
 SphereBoundary::SphereBoundary(const glm::vec3& c,
                                float radius,
-                               const std::vector<Surface>& surfaces)
+                               const aligned::vector<Surface>& surfaces)
         : c(c)
         , radius(radius)
         , boundary(glm::vec3(-radius), glm::vec3(radius)) {
@@ -128,7 +129,7 @@ glm::ivec3 MeshBoundary::hash_point(const glm::vec3& v) const {
 }
 
 MeshBoundary::hash_table MeshBoundary::compute_triangle_references() const {
-    hash_table ret(DIVISIONS, std::vector<reference_store>(DIVISIONS));
+    hash_table ret(DIVISIONS, aligned::vector<reference_store>(DIVISIONS));
     for (auto& i : ret) {
         for (auto& j : i) {
             j.reserve(8);
@@ -153,9 +154,9 @@ MeshBoundary::hash_table MeshBoundary::compute_triangle_references() const {
     return ret;
 }
 
-MeshBoundary::MeshBoundary(const std::vector<Triangle>& triangles,
-                           const std::vector<glm::vec3>& vertices,
-                           const std::vector<Surface>& surfaces)
+MeshBoundary::MeshBoundary(const aligned::vector<Triangle>& triangles,
+                           const aligned::vector<glm::vec3>& vertices,
+                           const aligned::vector<Surface>& surfaces)
         : triangles(triangles)
         , vertices(vertices)
         , surfaces(surfaces)
@@ -190,7 +191,7 @@ bool MeshBoundary::inside(const glm::vec3& v) const {
     //  if intersection number is even, point is outside, else it's inside
     const auto references = get_references(hash_point(v));
     geo::Ray ray(v, glm::vec3(0, 0, 1));
-    auto distances = std::vector<float>();
+    auto distances = aligned::vector<float>();
     return count_if(references.begin(),
                     references.end(),
                     [this, &ray, &distances](const auto& i) {
@@ -219,17 +220,17 @@ CuboidBoundary MeshBoundary::get_aabb() const {
     return boundary;
 }
 
-std::vector<int> MeshBoundary::get_triangle_indices() const {
-    std::vector<int> ret(triangles.size());
+aligned::vector<int> MeshBoundary::get_triangle_indices() const {
+    aligned::vector<int> ret(triangles.size());
     proc::iota(ret, 0);
     return ret;
 }
 
-const std::vector<Triangle>& MeshBoundary::get_triangles() const {
+const aligned::vector<Triangle>& MeshBoundary::get_triangles() const {
     return triangles;
 }
 
-const std::vector<glm::vec3>& MeshBoundary::get_vertices() const {
+const aligned::vector<glm::vec3>& MeshBoundary::get_vertices() const {
     return vertices;
 }
 
@@ -237,7 +238,7 @@ const CuboidBoundary& MeshBoundary::get_boundary() const {
     return boundary;
 }
 
-const std::vector<Surface>& MeshBoundary::get_surfaces() const {
+const aligned::vector<Surface>& MeshBoundary::get_surfaces() const {
     return surfaces;
 }
 

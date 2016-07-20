@@ -3,8 +3,6 @@
 
 #include "glog/logging.h"
 
-#include <vector>
-
 namespace {
 
 void print_device_info(const cl::Device& i) {

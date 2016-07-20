@@ -10,20 +10,20 @@ class VoxelCollection final {
 public:
     class Voxel final {
     public:
-        Voxel(const CuboidBoundary& aabb = CuboidBoundary(),
-              const std::vector<int>& triangles = std::vector<int>());
+        Voxel(const CuboidBoundary& aabb            = CuboidBoundary(),
+              const aligned::vector<int>& triangles = aligned::vector<int>());
         Voxel(const Octree& o);
         CuboidBoundary get_aabb() const;
-        const std::vector<int>& get_triangles() const;
+        const aligned::vector<int>& get_triangles() const;
 
     private:
         CuboidBoundary aabb;
-        std::vector<int> triangles;
+        aligned::vector<int> triangles;
     };
 
-    using ZAxis = std::vector<Voxel>;
-    using YAxis = std::vector<ZAxis>;
-    using XAxis = std::vector<YAxis>;
+    using ZAxis = aligned::vector<Voxel>;
+    using YAxis = aligned::vector<ZAxis>;
+    using XAxis = aligned::vector<YAxis>;
 
     /// Construct from scene data. Uses an octree as an acceleration structure.
     VoxelCollection(const CopyableSceneData& scene_data,
@@ -45,20 +45,20 @@ public:
 
     /// Returns a flat array-representation of the collection.
     /// TODO document the array format
-    std::vector<cl_uint> get_flattened() const;
+    aligned::vector<cl_uint> get_flattened() const;
 
     class TraversalCallback {
     public:
-        TraversalCallback() noexcept = default;
-        virtual ~TraversalCallback() noexcept = default;
+        TraversalCallback() noexcept                    = default;
+        virtual ~TraversalCallback() noexcept           = default;
         TraversalCallback(TraversalCallback&&) noexcept = default;
         TraversalCallback& operator=(TraversalCallback&&) noexcept = default;
-        TraversalCallback(const TraversalCallback&) noexcept = default;
+        TraversalCallback(const TraversalCallback&) noexcept       = default;
         TraversalCallback& operator=(const TraversalCallback&) noexcept =
                 default;
 
         virtual geo::Intersection operator()(
-                const geo::Ray& ray, const std::vector<int>& triangles) = 0;
+                const geo::Ray& ray, const aligned::vector<int>& triangles) = 0;
     };
 
     /// This callback is used to check for intersections with the contents of
@@ -71,11 +71,11 @@ public:
         TriangleTraversalCallback(const CopyableSceneData& scene_data);
         geo::Intersection operator()(
                 const geo::Ray& ray,
-                const std::vector<int>& triangles) override;
+                const aligned::vector<int>& triangles) override;
 
     private:
-        std::vector<Triangle> tri;
-        std::vector<glm::vec3> vertices;
+        aligned::vector<Triangle> tri;
+        aligned::vector<glm::vec3> vertices;
     };
 
     /// Find the closest object along a ray.

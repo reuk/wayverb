@@ -9,7 +9,7 @@ file(GLOB_RECURSE headers "include/*.h")
 
 set(name waveguide)
 
-add_library(${name} STATIC ${sources} ${heeaders})
+add_library(${name} STATIC ${sources} ${headers})
 
 target_include_directories(${name}
     PUBLIC

@@ -3,12 +3,12 @@
 #include "fast_convolver.h"
 #include "stl_wrappers.h"
 
+#include <algorithm>
 #include <array>
 #include <cmath>
 #include <cstring>
 #include <memory>
 #include <vector>
-#include <algorithm>
 
 /// This namespace houses all of the machinery for multiband crossover
 /// filtering.
@@ -42,8 +42,8 @@ public:
     explicit LopassWindowedSinc(int inputLength);
 
     /// Filter a vector of data.
-    template<typename It>
-    std::vector<float> filter(It begin, It end) {
+    template <typename It>
+    aligned::vector<float> filter(It begin, It end) {
         return convolver.convolve(
                 std::begin(kernel), std::end(kernel), begin, end);
     }
@@ -62,8 +62,8 @@ public:
     explicit HipassWindowedSinc(int inputLength);
 
     /// Filter a vector of data.
-    template<typename It>
-    std::vector<float> filter(It begin, It end) {
+    template <typename It>
+    aligned::vector<float> filter(It begin, It end) {
         return convolver.convolve(
                 std::begin(kernel), std::end(kernel), begin, end);
     }
@@ -82,8 +82,8 @@ public:
     explicit BandpassWindowedSinc(int inputLength);
 
     /// Filter a vector of data.
-    template<typename It>
-    std::vector<float> filter(It begin, It end) {
+    template <typename It>
+    aligned::vector<float> filter(It begin, It end) {
         return convolver.convolve(
                 std::begin(kernel), std::end(kernel), begin, end);
     }
@@ -100,19 +100,19 @@ private:
 class Biquad {
 public:
     /// Run the filter foward over some data.
-    template<typename It>
-    std::vector<float> filter(It begin, It end) {
-        std::vector<float> ret(begin, end);
+    template <typename It>
+    aligned::vector<float> filter(It begin, It end) {
+        aligned::vector<float> ret(begin, end);
 
         double z1 = 0;
         double z2 = 0;
 
         std::for_each(
-                std::begin(ret), std::end(ret), [this, &z1, &z2](auto &i) {
+                std::begin(ret), std::end(ret), [this, &z1, &z2](auto& i) {
                     double out = i * b0 + z1;
-                    z1 = i * b1 + z2 - a1 * out;
-                    z2 = i * b2 - a2 * out;
-                    i = out;
+                    z1         = i * b1 + z2 - a1 * out;
+                    z2         = i * b2 - a2 * out;
+                    i          = out;
                 });
 
         return ret;
@@ -132,7 +132,7 @@ auto run_one_pass(Filter& filter, It begin, It end) {
     return filter.filter(begin, end);
 }
 
-template<typename Filter, typename It>
+template <typename Filter, typename It>
 auto run_two_pass(Filter& filter, It begin, It end) {
     auto t = run_one_pass(filter, begin, end);
     auto u = run_one_pass(filter, std::crbegin(t), std::crend(t));
@@ -163,7 +163,7 @@ public:
     void set_params(float l, float h, float s) override;
 
     template <typename It>
-    std::vector<float> filter(It begin, It end) {
+    aligned::vector<float> filter(It begin, It end) {
         auto t = run_two_pass(lopass, begin, end);
         return run_two_pass(hipass, t.begin(), t.end());
     }

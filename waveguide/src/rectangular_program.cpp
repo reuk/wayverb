@@ -8,14 +8,13 @@
 #include <iostream>
 
 rectangular_program::rectangular_program(const cl::Context& context,
-                                       const cl::Device& device)
+                                         const cl::Device& device)
         : program_wrapper(
                   context,
                   device,
                   std::vector<std::string>{cl_sources::get_struct_definitions(
                                                    PORTS, BIQUAD_SECTIONS),
-                                           source}) {
-}
+                                           source}) {}
 
 rectangular_program::CondensedNodeStruct rectangular_program::condense(
         const NodeStruct& n) {
@@ -47,7 +46,7 @@ rectangular_program::to_impedance_coefficients(const CanonicalCoefficients& c) {
             });
 
     if (ret.a[0] != 0) {
-        auto norm = 1.0 / ret.a[0];
+        auto norm         = 1.0 / ret.a[0];
         auto do_normalize = [norm](auto& i) {
             proc::for_each(i, [norm](auto& i) { i *= norm; });
         };
@@ -58,10 +57,10 @@ rectangular_program::to_impedance_coefficients(const CanonicalCoefficients& c) {
     return ret;
 }
 
-std::vector<rectangular_program::CanonicalCoefficients>
-rectangular_program::to_filter_coefficients(std::vector<Surface> surfaces,
-                                           float sr) {
-    std::vector<CanonicalCoefficients> ret(surfaces.size());
+aligned::vector<rectangular_program::CanonicalCoefficients>
+rectangular_program::to_filter_coefficients(aligned::vector<Surface> surfaces,
+                                            float sr) {
+    aligned::vector<CanonicalCoefficients> ret(surfaces.size());
     proc::transform(surfaces, ret.begin(), [sr](auto i) {
         return to_filter_coefficients(i, sr);
     });

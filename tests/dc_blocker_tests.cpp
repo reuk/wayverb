@@ -116,19 +116,19 @@ TEST(dc_blocker, big_offset) {
     ASSERT_EQ(dc(2), 2 / 16.0);
 }
 
-std::vector<float> generate_noise(size_t samples) {
+aligned::vector<float> generate_noise(size_t samples) {
     std::default_random_engine engine{std::random_device()()};
     std::uniform_real_distribution<float> dist{-1, 1};
-    std::vector<float> ret(samples);
+    aligned::vector<float> ret(samples);
     std::generate(ret.begin(), ret.end(), [&engine, &dist] {
         return dist(engine);
     });
     return ret;
 }
 
-std::vector<float> generate_sweep(size_t samples) {
+aligned::vector<float> generate_sweep(size_t samples) {
     double phase {0};
-    std::vector<float> ret(samples);
+    aligned::vector<float> ret(samples);
     for (auto i = 0u; i != samples; ++i) {
         ret[i] = std::sin(phase * 2 * M_PI);
         phase += (i * 0.5) / samples;
@@ -137,8 +137,8 @@ std::vector<float> generate_sweep(size_t samples) {
     return ret;
 }
 
-std::vector<float> generate_impulse(size_t samples) {
-    std::vector<float> ret(samples, 0);
+aligned::vector<float> generate_impulse(size_t samples) {
+    aligned::vector<float> ret(samples, 0);
     ret[ret.size() / 2] = 1;
     return ret;
 }
@@ -146,12 +146,12 @@ std::vector<float> generate_impulse(size_t samples) {
 TEST(dc_blocker, io) {
     struct signal {
         std::string name;
-        std::vector<float> kernel;
+        aligned::vector<float> kernel;
     };
 
     constexpr auto samples = 1000000;
 
-    std::vector<signal> signals{
+    aligned::vector<signal> signals{
             signal{"noise", generate_noise(samples)},
             signal{"sweep", generate_sweep(samples)},
             signal{"impulse", generate_impulse(samples)},

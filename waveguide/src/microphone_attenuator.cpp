@@ -17,23 +17,23 @@ float attenuation(const glm::vec3& incident,
 
 namespace waveguide {
 
-std::vector<float> MicrophoneAttenuator::process(
-        const std::vector<RunStepResult>& input,
+aligned::vector<float> MicrophoneAttenuator::process(
+        const aligned::vector<RunStepResult>& input,
         const glm::vec3& pointing,
         float shape) const {
-    std::vector<float> ret;
+    aligned::vector<float> ret;
     ret.reserve(input.size());
     proc::transform(input, std::back_inserter(ret), [pointing, shape](auto i) {
         //  TODO DEFINITELY CHECK THIS
         //  RUN TESTS YEAH
-        auto mag = glm::length(i.intensity);
+        auto mag = glm::length(i.get_intensity());
         if (mag == 0) {
             return 0.0f;
         }
         mag = std::sqrt(
-                mag *
-                std::pow(attenuation(i.intensity, pointing, shape), 2.0f));
-        return std::copysign(mag, i.pressure);
+                mag * std::pow(attenuation(i.get_intensity(), pointing, shape),
+                               2.0f));
+        return std::copysign(mag, i.get_pressure());
     });
 
     //  TODO filter with diffuse-field-response filter here

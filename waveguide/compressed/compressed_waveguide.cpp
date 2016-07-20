@@ -17,9 +17,7 @@ constexpr bool operator==(const locator<T>& a, const locator<T>& b) {
     return std::make_tuple(a.x, a.y, a.z) == std::make_tuple(b.x, b.y, b.z);
 }
 
-constexpr size_t triangle(size_t i) {
-    return (i * (i + 1)) / 2;
-}
+constexpr size_t triangle(size_t i) { return (i * (i + 1)) / 2; }
 
 static_assert(triangle(0) == 0, "triangle");
 static_assert(triangle(1) == 1, "triangle");
@@ -28,9 +26,7 @@ static_assert(triangle(3) == 6, "triangle");
 static_assert(triangle(4) == 10, "triangle");
 static_assert(triangle(5) == 15, "triangle");
 
-constexpr size_t tetrahedron(size_t i) {
-    return (i * (i + 1) * (i + 2)) / 6;
-}
+constexpr size_t tetrahedron(size_t i) { return (i * (i + 1) * (i + 2)) / 6; }
 
 static_assert(tetrahedron(0) == 0, "tetrahdedron");
 static_assert(tetrahedron(1) == 1, "tetrahdedron");
@@ -88,21 +84,19 @@ static_assert(to_locator(17) == locator<size_t>{3, 3, 1}, "to_locator");
 static_assert(to_locator(18) == locator<size_t>{3, 3, 2}, "to_locator");
 static_assert(to_locator(19) == locator<size_t>{3, 3, 3}, "to_locator");
 
-constexpr size_t abs(int i) {
-    return std::max(i, -i);
-}
+constexpr size_t abs(int i) { return std::max(i, -i); }
 
 template <typename T>
 constexpr void swap(T& a, T& b) {
     T t = a;
-    a = b;
-    b = t;
+    a   = b;
+    b   = t;
 }
 
 constexpr locator<size_t> fold_locator(const locator<int>& i) {
-    size_t x = abs(i.x);
-    size_t y = abs(i.y);
-    size_t z = abs(i.z);
+    size_t x     = abs(i.x);
+    size_t y     = abs(i.y);
+    size_t z     = abs(i.z);
     size_t plane = x + 1;
     if (plane <= y) {
         swap(x, y);
@@ -170,8 +164,7 @@ static_assert(19 == to_index(locator<size_t>{3, 3, 3}), "to_locator");
 compressed_rectangular_waveguide_program::
         compressed_rectangular_waveguide_program(const cl::Context& context,
                                                  const cl::Device& device)
-        : program_wrapper(context, device, source) {
-}
+        : program_wrapper(context, device, source) {}
 
 //----------------------------------------------------------------------------//
 
@@ -188,23 +181,22 @@ compressed_rectangular_waveguide::compressed_rectangular_waveguide(
                                CL_MEM_READ_WRITE,
                                sizeof(cl_float) * tetrahedron(dimension + 1))}})
         , current(&storage[0])
-        , previous(&storage[1]) {
-}
+        , previous(&storage[1]) {}
 
-std::vector<float> compressed_rectangular_waveguide::run_hard_source(
-        std::vector<float>&& input) {
+aligned::vector<float> compressed_rectangular_waveguide::run_hard_source(
+        aligned::vector<float>&& input) {
     return run(std::move(input),
                &compressed_rectangular_waveguide::run_hard_step);
 }
 
-std::vector<float> compressed_rectangular_waveguide::run_soft_source(
-        std::vector<float>&& input) {
+aligned::vector<float> compressed_rectangular_waveguide::run_soft_source(
+        aligned::vector<float>&& input) {
     return run(std::move(input),
                &compressed_rectangular_waveguide::run_soft_step);
 }
 
-std::vector<float> compressed_rectangular_waveguide::run(
-        std::vector<float>&& input,
+aligned::vector<float> compressed_rectangular_waveguide::run(
+        aligned::vector<float>&& input,
         float (compressed_rectangular_waveguide::*step)(float)) {
     //  set input size to maximum valid for this waveguide
     input.resize(dimension * 2);
@@ -212,13 +204,13 @@ std::vector<float> compressed_rectangular_waveguide::run(
     //  init buffers
     {
         //  don't want to keep this in scope for too long!
-        std::vector<cl_float> n(tetrahedron(dimension + 1), 0);
+        aligned::vector<cl_float> n(tetrahedron(dimension + 1), 0);
         cl::copy(queue, n.begin(), n.end(), *previous);
         cl::copy(queue, n.begin(), n.end(), *current);
     }
 
     //  run waveguide for each sample of input
-    std::vector<float> ret;
+    aligned::vector<float> ret;
     for (auto i : input) {
         //  run the step
         auto o = (this->*step)(i);

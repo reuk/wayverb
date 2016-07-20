@@ -1,5 +1,6 @@
 #pragma once
 
+#include "common/aligned/vector.h"
 #include "common/cl_common.h"
 #include "common/program_wrapper.h"
 
@@ -20,9 +21,7 @@ public:
         return program_wrapper.get_info<T>();
     }
 
-    cl::Device get_device() const {
-        return program_wrapper.get_device();
-    }
+    cl::Device get_device() const { return program_wrapper.get_device(); }
 
 private:
     static const std::string source;
@@ -37,12 +36,12 @@ public:
     compressed_rectangular_waveguide(const cl::Context& context,
                                      const cl::Device& device,
                                      size_t dimension);
-    std::vector<float> run_hard_source(std::vector<float>&& input);
-    std::vector<float> run_soft_source(std::vector<float>&& input);
+    aligned::vector<float> run_hard_source(aligned::vector<float>&& input);
+    aligned::vector<float> run_soft_source(aligned::vector<float>&& input);
 
 private:
-    std::vector<float> run(
-            std::vector<float>&& input,
+    aligned::vector<float> run(
+            aligned::vector<float>&& input,
             float (compressed_rectangular_waveguide::*step)(float));
     float run_hard_step(float i);
     float run_soft_step(float i);
@@ -55,4 +54,3 @@ private:
     cl::Buffer* current;
     cl::Buffer* previous;
 };
-

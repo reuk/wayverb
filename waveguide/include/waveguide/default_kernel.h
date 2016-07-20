@@ -1,6 +1,6 @@
 #pragma once
 
-#include <vector>
+#include "common/aligned/vector.h"
 
 /// Create a transparent source for use with a soft-source waveguide.
 /// Source is a ricker wavelet with upper frequency at approximately
@@ -11,7 +11,7 @@ public:
     default_kernel(double sampling_frequency);
 
     /// The waveguide kernel.
-    const std::vector<float> kernel;
+    const aligned::vector<float> kernel;
 
     /// The length of the kernel before being made transparent.
     const size_t opaque_kernel_size;
@@ -21,5 +21,5 @@ public:
     const size_t correction_offset_in_samples;
 
 private:
-    default_kernel(std::vector<float>&& opaque);
+    default_kernel(aligned::vector<float>&& opaque);
 };

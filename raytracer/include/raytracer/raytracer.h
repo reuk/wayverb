@@ -4,6 +4,7 @@
 #include "cl_structs.h"
 #include "raytracer_program.h"
 
+#include "common/aligned/map.h"
 #include "common/cl_include.h"
 #include "common/hrtf_utils.h"
 #include "common/scene_data.h"
@@ -20,18 +21,18 @@ namespace raytracer {
 /// Sum impulses ocurring at the same (sampled) time and return a vector in
 /// which each subsequent item refers to the next sample of an impulse
 /// response.
-std::vector<std::vector<float>> flatten_impulses(
-        const std::vector<AttenuatedImpulse>& impulse, float samplerate);
+aligned::vector<aligned::vector<float>> flatten_impulses(
+        const aligned::vector<AttenuatedImpulse>& impulse, float samplerate);
 
 /// Maps flattenImpulses over a vector of input vectors.
-std::vector<std::vector<std::vector<float>>> flatten_impulses(
-        const std::vector<std::vector<AttenuatedImpulse>>& impulse,
+aligned::vector<aligned::vector<aligned::vector<float>>> flatten_impulses(
+        const aligned::vector<aligned::vector<AttenuatedImpulse>>& impulse,
         float samplerate);
 
 /// Filter and mix down each channel of the input data.
 /// Optionally, normalize all channels, trim the tail, and scale the amplitude.
-std::vector<std::vector<float>> process(
-        std::vector<std::vector<std::vector<float>>>& data,
+aligned::vector<aligned::vector<float>> process(
+        aligned::vector<aligned::vector<aligned::vector<float>>>& data,
         float sr,
         bool do_normalize,
         float lo_cutoff,
@@ -90,21 +91,12 @@ inline void fix_predelay(T& ret) {
 /// Get the number of necessary reflections for a given min amplitude.
 int compute_optimum_reflection_number(float min_amp, float max_reflectivity);
 
-struct PathImpulsePair {
-    Impulse impulse;
-    std::vector<cl_ulong> path;
-};
-
-inline bool operator<(const PathImpulsePair& a, const PathImpulsePair& b) {
-    return a.path < b.path;
-}
-
 class Results final {
 public:
-    using set_type = std::set<PathImpulsePair>;
+    using map_type = aligned::map<aligned::vector<cl_ulong>, Impulse>;
 
-    Results(const set_type& image_source,
-            const std::vector<std::vector<Impulse>>& diffuse,
+    Results(map_type&& image_source,
+            aligned::vector<aligned::vector<Impulse>>&& diffuse,
             const glm::vec3& receiver,
             const glm::vec3& source);
     /// Raytraces are calculated in relation to a specific microphone position.
@@ -112,16 +104,16 @@ public:
     /// you'll probably never need one without the other.
     class Selected {
     public:
-        Selected(const std::vector<Impulse>& impulses,
+        Selected(const aligned::vector<Impulse>& impulses,
                  const glm::vec3& receiver,
                  const glm::vec3& source);
 
-        std::vector<Impulse> get_impulses() const;
+        aligned::vector<Impulse> get_impulses() const;
         glm::vec3 get_receiver() const;
         glm::vec3 get_source() const;
 
     private:
-        std::vector<Impulse> impulses;
+        aligned::vector<Impulse> impulses;
         glm::vec3 receiver;
         glm::vec3 source;
     };
@@ -131,16 +123,17 @@ public:
     Selected get_all(bool remove_direct) const;
 
 private:
-    std::vector<Impulse> get_diffuse_impulses() const;
-    std::vector<Impulse> get_image_source_impulses(bool remove_direct) const;
+    aligned::vector<Impulse> get_diffuse_impulses() const;
+    aligned::vector<Impulse> get_image_source_impulses(
+            bool remove_direct) const;
 
-    set_type image_source;
-    std::vector<std::vector<Impulse>> diffuse;
+    map_type image_source;
+    aligned::vector<aligned::vector<Impulse>> diffuse;
     glm::vec3 receiver;
     glm::vec3 source;
 };
 
-std::vector<cl_float3> get_random_directions(size_t num);
+aligned::vector<cl_float3> get_random_directions(size_t num);
 
 class Raytracer final {
 public:
@@ -160,7 +153,7 @@ public:
     Results run(const CopyableSceneData& scene_data,
                 const glm::vec3& micpos,
                 const glm::vec3& source,
-                const std::vector<cl_float3>& directions,
+                const aligned::vector<cl_float3>& directions,
                 size_t reflections,
                 size_t num_image_source,
                 std::atomic_bool& keep_going,
@@ -182,11 +175,11 @@ public:
     /// Attenuate some raytrace results.
     /// The outer vector corresponds to separate channels, the inner vector
     /// contains the impulses, each of which has a time and an 8-band volume.
-    std::vector<AttenuatedImpulse> process(const Results::Selected& results,
-                                           const glm::vec3& direction,
-                                           const glm::vec3& up,
-                                           const glm::vec3& position,
-                                           HrtfChannel channel);
+    aligned::vector<AttenuatedImpulse> process(const Results::Selected& results,
+                                               const glm::vec3& direction,
+                                               const glm::vec3& up,
+                                               const glm::vec3& position,
+                                               HrtfChannel channel);
 
     const std::array<std::array<std::array<cl_float8, 180>, 360>, 2>&
     get_hrtf_data() const;
@@ -209,10 +202,10 @@ public:
     /// Attenuate some raytrace results.
     /// The outer vector corresponds to separate channels, the inner vector
     /// contains the impulses, each of which has a time and an 8-band volume.
-    std::vector<AttenuatedImpulse> process(const Results::Selected& results,
-                                           const glm::vec3& pointing,
-                                           float shape,
-                                           const glm::vec3& position);
+    aligned::vector<AttenuatedImpulse> process(const Results::Selected& results,
+                                               const glm::vec3& pointing,
+                                               float shape,
+                                               const glm::vec3& position);
 
 private:
     using kernel_type = decltype(

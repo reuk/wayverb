@@ -35,11 +35,11 @@ const TetrahedralMesh::Collection& TetrahedralMesh::get_nodes() const {
     return nodes;
 }
 
-std::vector<TetrahedralMesh::Node> TetrahedralMesh::compute_nodes(
+aligned::vector<TetrahedralMesh::Node> TetrahedralMesh::compute_nodes(
         const Boundary& boundary) const {
     const auto dim = get_dim();
     auto total_nodes = dim.x * dim.y * dim.z * scaled_cube.size();
-    std::vector<Node> ret(total_nodes);
+    aligned::vector<Node> ret(total_nodes);
     auto counter = 0u;
     proc::generate(ret, [this, &counter, &boundary] {
         Node ret;
@@ -50,7 +50,7 @@ std::vector<TetrahedralMesh::Node> TetrahedralMesh::compute_nodes(
         return ret;
     });
 
-    std::vector<bool> inside(ret.size());
+    aligned::vector<bool> inside(ret.size());
     proc::transform(ret, inside.begin(), [&boundary](const auto& i) {
         return boundary.inside(to_vec3f(i.position));
     });
@@ -123,7 +123,7 @@ TetrahedralMesh::Locator TetrahedralMesh::compute_locator(
     auto min = glm::max(cube_pos - 1, glm::ivec3(0));
     auto max = glm::min(cube_pos + 2, get_dim());
 
-    std::vector<int> indices(scaled_cube.size());
+    aligned::vector<int> indices(scaled_cube.size());
     iota(indices.begin(), indices.end(), 0);
 
     auto get_dist = [this, v](auto loc) {

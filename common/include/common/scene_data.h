@@ -1,5 +1,6 @@
 #pragma once
 
+#include "common/aligned/vector.h"
 #include "triangle.h"
 
 #include "cl_common.h"
@@ -32,21 +33,21 @@ struct Triangle;
 
 class CopyableSceneData {
 public:
-    struct Material {
+    struct Material final {
         std::string name;
         Surface surface;
     };
 
-    struct Contents {
-        std::vector<Triangle> triangles;
-        std::vector<cl_float3> vertices;
-        std::vector<Material> materials;
+    struct Contents final {
+        aligned::vector<Triangle> triangles;
+        aligned::vector<cl_float3> vertices;
+        aligned::vector<Material> materials;
     };
 
     CopyableSceneData() = default;
-    CopyableSceneData(const std::vector<Triangle>& triangles,
-                      const std::vector<cl_float3>& vertices,
-                      const std::vector<Material>& materials);
+    CopyableSceneData(const aligned::vector<Triangle>& triangles,
+                      const aligned::vector<cl_float3>& vertices,
+                      const aligned::vector<Material>& materials);
     CopyableSceneData(Contents&& rhs);
 
     CopyableSceneData(const CopyableSceneData& rhs) = default;
@@ -55,20 +56,20 @@ public:
     CopyableSceneData& operator=(CopyableSceneData&& rhs) noexcept = default;
     virtual ~CopyableSceneData() noexcept                          = default;
 
-    std::vector<Surface> get_surfaces() const;
-    void set_surfaces(const std::vector<Material>& materials);
+    aligned::vector<Surface> get_surfaces() const;
+    void set_surfaces(const aligned::vector<Material>& materials);
     void set_surfaces(const std::map<std::string, Surface>& surfaces);
     void set_surface(const Material& material);
 
     void set_surfaces(const Surface& surface);
 
     CuboidBoundary get_aabb() const;
-    std::vector<glm::vec3> get_converted_vertices() const;
-    std::vector<int> get_triangle_indices() const;
+    aligned::vector<glm::vec3> get_converted_vertices() const;
+    aligned::vector<int> get_triangle_indices() const;
 
-    const std::vector<Triangle>& get_triangles() const;
-    const std::vector<cl_float3>& get_vertices() const;
-    const std::vector<Material>& get_materials() const;
+    const aligned::vector<Triangle>& get_triangles() const;
+    const aligned::vector<cl_float3>& get_vertices() const;
+    const aligned::vector<Material>& get_materials() const;
 
 private:
     Contents contents;

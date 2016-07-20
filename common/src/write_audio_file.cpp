@@ -4,11 +4,11 @@
 #include <unordered_map>
 
 void snd::write(const std::string& fname,
-                const std::vector<std::vector<float>>& outdata,
+                const aligned::vector<aligned::vector<float>>& outdata,
                 float sr,
                 int bd,
                 int ftype) {
-    std::vector<float> interleaved(outdata.size() * outdata[0].size());
+    aligned::vector<float> interleaved(outdata.size() * outdata[0].size());
 
     for (auto i = 0u; i != outdata.size(); ++i) {
         for (auto j = 0u; j != outdata[i].size(); ++j) {
@@ -30,11 +30,11 @@ void snd::write(const std::string& fname,
 }
 
 void snd::write(const std::string& fname,
-                const std::vector<std::vector<float>>& signal,
+                const aligned::vector<aligned::vector<float>>& signal,
                 double sample_rate,
                 size_t bit_depth) {
     auto format = get_file_format(fname);
-    auto depth = get_file_depth(bit_depth);
+    auto depth  = get_file_depth(bit_depth);
     write(fname, signal, sample_rate, depth, format);
 }
 
@@ -45,7 +45,7 @@ int snd::get_file_format(const std::string& fname) {
             {"wav", SF_FORMAT_WAV}};
 
     auto extension = fname.substr(fname.find_last_of(".") + 1);
-    auto ftypeIt = ftypeTable.find(extension);
+    auto ftypeIt   = ftypeTable.find(extension);
     if (ftypeIt == ftypeTable.end()) {
         std::stringstream ss;
         ss << "Invalid output file extension - valid extensions are: ";

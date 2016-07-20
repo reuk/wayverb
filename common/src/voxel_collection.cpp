@@ -6,19 +6,16 @@
 #include <iostream>
 
 VoxelCollection::Voxel::Voxel(const CuboidBoundary& aabb,
-                              const std::vector<int>& triangles)
+                              const aligned::vector<int>& triangles)
         : aabb(aabb)
-        , triangles(triangles) {
-}
+        , triangles(triangles) {}
 
 VoxelCollection::Voxel::Voxel(const Octree& o)
-        : Voxel(o.get_aabb(), o.get_triangles()) {
-}
+        : Voxel(o.get_aabb(), o.get_triangles()) {}
 
-CuboidBoundary VoxelCollection::Voxel::get_aabb() const {
-    return aabb;
-}
-const std::vector<int>& VoxelCollection::Voxel::Voxel::get_triangles() const {
+CuboidBoundary VoxelCollection::Voxel::get_aabb() const { return aabb; }
+const aligned::vector<int>& VoxelCollection::Voxel::Voxel::get_triangles()
+        const {
     return triangles;
 }
 
@@ -31,8 +28,7 @@ VoxelCollection::VoxelCollection(const Octree& o)
 VoxelCollection::VoxelCollection(const CopyableSceneData& scene_data,
                                  int depth,
                                  float padding)
-        : VoxelCollection(Octree(scene_data, depth, padding)) {
-}
+        : VoxelCollection(Octree(scene_data, depth, padding)) {}
 
 void VoxelCollection::init(const Octree& o, const glm::ivec3& d) {
     if (!o.has_nodes()) {
@@ -49,17 +45,13 @@ void VoxelCollection::init(const Octree& o, const glm::ivec3& d) {
     }
 }
 
-CuboidBoundary VoxelCollection::get_aabb() const {
-    return aabb;
-}
+CuboidBoundary VoxelCollection::get_aabb() const { return aabb; }
 
 CuboidBoundary VoxelCollection::get_voxel_aabb() const {
     return data.front().front().front().get_aabb();
 }
 
-const VoxelCollection::XAxis& VoxelCollection::get_data() const {
-    return data;
-}
+const VoxelCollection::XAxis& VoxelCollection::get_data() const { return data; }
 
 glm::ivec3 VoxelCollection::get_starting_index(
         const glm::vec3& position) const {
@@ -79,9 +71,9 @@ const VoxelCollection::Voxel& VoxelCollection::get_voxel(
 geo::Intersection VoxelCollection::traverse(const geo::Ray& ray,
                                             TraversalCallback& fun) {
     //  from http://www.cse.chalmers.se/edu/year/2010/course/TDA361/grid.pdf
-    auto ind = get_starting_index(ray.get_position());
+    auto ind                = get_starting_index(ray.get_position());
     const auto voxel_bounds = get_voxel(ind).get_aabb();
-    const auto step = get_step(ray.get_direction());
+    const auto step         = get_step(ray.get_direction());
 
     glm::ivec3 just_out;
     glm::vec3 boundary;
@@ -124,19 +116,18 @@ geo::Intersection VoxelCollection::traverse(const geo::Ray& ray,
 VoxelCollection::TriangleTraversalCallback::TriangleTraversalCallback(
         const CopyableSceneData& scene_data)
         : tri(scene_data.get_triangles())
-        , vertices(scene_data.get_converted_vertices()) {
-}
+        , vertices(scene_data.get_converted_vertices()) {}
 
 geo::Intersection VoxelCollection::TriangleTraversalCallback::operator()(
-        const geo::Ray& ray, const std::vector<int>& triangles) {
+        const geo::Ray& ray, const aligned::vector<int>& triangles) {
     return geo::ray_triangle_intersection(ray, triangles, tri, vertices);
 }
 
-std::vector<cl_uint> VoxelCollection::get_flattened() const {
+aligned::vector<cl_uint> VoxelCollection::get_flattened() const {
     auto side = get_data().size();
-    auto dim = pow(side, 3);
+    auto dim  = pow(side, 3);
 
-    std::vector<cl_uint> ret(dim);
+    aligned::vector<cl_uint> ret(dim);
 
     auto to_flat = [side](auto i) {
         return i.x * side * side + i.y * side + i.z;
@@ -147,7 +138,7 @@ std::vector<cl_uint> VoxelCollection::get_flattened() const {
             for (auto z = 0u; z != side; ++z) {
                 glm::ivec3 ind(x, y, z);
                 ret[to_flat(ind)] = ret.size();
-                const auto& v = get_voxel(ind);
+                const auto& v     = get_voxel(ind);
                 ret.push_back(v.get_triangles().size());
                 for (const auto& i : v.get_triangles()) {
                     ret.push_back(i);
@@ -159,6 +150,4 @@ std::vector<cl_uint> VoxelCollection::get_flattened() const {
     return ret;
 }
 
-int VoxelCollection::get_side() const {
-    return get_data().size();
-}
+int VoxelCollection::get_side() const { return get_data().size(); }

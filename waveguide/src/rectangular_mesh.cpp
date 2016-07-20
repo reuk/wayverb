@@ -9,7 +9,7 @@
 #include <algorithm>
 #include <numeric>
 
-void RectangularMesh::set_node_positions(std::vector<Node>& ret) const {
+void RectangularMesh::set_node_positions(aligned::vector<Node>& ret) const {
     auto counter = 0u;
     proc::for_each(ret, [this, &counter](auto& node) {
         auto p = this->compute_position(this->compute_locator(counter));
@@ -21,8 +21,8 @@ void RectangularMesh::set_node_positions(std::vector<Node>& ret) const {
 }
 
 void RectangularMesh::set_node_inside(const Boundary& boundary,
-                                      std::vector<Node>& ret) const {
-    std::vector<bool> inside(ret.size());
+                                      aligned::vector<Node>& ret) const {
+    aligned::vector<bool> inside(ret.size());
     proc::transform(ret, inside.begin(), [&boundary](const auto& i) {
         return boundary.inside(to_vec3f(i.position));
     });
@@ -82,7 +82,7 @@ constexpr std::pair<RectangularMesh::Locator, cl_int> make_locator_pair(
 }
 
 cl_int RectangularMesh::compute_boundary_type(
-        const Locator& loc, const std::vector<Node>& ret) const {
+        const Locator& loc, const aligned::vector<Node>& ret) const {
     //  look at all nearby nodes
 
     using rectangular_program::BoundaryType::id_nx;
@@ -97,7 +97,7 @@ cl_int RectangularMesh::compute_boundary_type(
     auto try_directions = [this, loc, &ret](
             const std::initializer_list<std::pair<Locator, cl_int>>& directions)
             -> cl_int {
-                std::vector<std::pair<Locator, cl_int>> nearby;
+                aligned::vector<std::pair<Locator, cl_int>> nearby;
                 for (const auto& relative : directions) {
                     auto adjacent = loc + relative.first;
                     auto index    = compute_index(adjacent);
@@ -155,7 +155,7 @@ cl_int RectangularMesh::compute_boundary_type(
     return id_none;
 }
 
-void RectangularMesh::set_node_boundary_type(std::vector<Node>& ret) const {
+void RectangularMesh::set_node_boundary_type(aligned::vector<Node>& ret) const {
     for (auto i = 0u; i != ret.size(); ++i) {
         auto& node = ret[i];
         if (!node.inside) {
@@ -164,7 +164,7 @@ void RectangularMesh::set_node_boundary_type(std::vector<Node>& ret) const {
     }
 }
 
-void RectangularMesh::set_node_boundary_index(std::vector<Node>& ret) const {
+void RectangularMesh::set_node_boundary_index(aligned::vector<Node>& ret) const {
     set_node_boundary_index<1>(ret);
     set_node_boundary_index<2>(ret);
     set_node_boundary_index<3>(ret);
@@ -238,9 +238,9 @@ void RectangularMesh::compute_neighbors(size_type index,
     });
 }
 
-std::vector<RectangularMesh::CondensedNode>
+aligned::vector<RectangularMesh::CondensedNode>
 RectangularMesh::get_condensed_nodes() const {
-    std::vector<RectangularMesh::CondensedNode> ret(get_nodes().size());
+    aligned::vector<RectangularMesh::CondensedNode> ret(get_nodes().size());
     proc::transform(get_nodes(), ret.begin(), [](const auto& i) {
         return rectangular_program::condense(i);
     });

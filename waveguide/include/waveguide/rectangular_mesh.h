@@ -34,14 +34,13 @@ public:
             , nodes(compute_nodes(boundary))
             , boundary_data_1(compute_boundary_data<1>(boundary))
             , boundary_data_2(compute_boundary_data<2>(boundary))
-            , boundary_data_3(compute_boundary_data<3>(boundary)) {
-    }
+            , boundary_data_3(compute_boundary_data<3>(boundary)) {}
 
     template <int I, typename B>
-    std::vector<rectangular_program::BoundaryDataArray<I>> compute_boundary_data(
-            const B& b) const {
+    aligned::vector<rectangular_program::BoundaryDataArray<I>>
+    compute_boundary_data(const B& b) const {
         ConnectedFinder cf;
-        std::vector<rectangular_program::BoundaryDataArray<I>> ret(
+        aligned::vector<rectangular_program::BoundaryDataArray<I>> ret(
                 compute_num_boundary<I>());
 
         for (auto i = 0u; i != get_nodes().size(); ++i) {
@@ -79,12 +78,12 @@ public:
     const Collection& get_nodes() const override;
 
     template <int I>
-    const std::vector<rectangular_program::BoundaryDataArray<I>>&
+    const aligned::vector<rectangular_program::BoundaryDataArray<I>>&
     get_boundary_data() const;
 
     void compute_neighbors(size_type index, cl_uint* output) const override;
 
-    std::vector<CondensedNode> get_condensed_nodes() const;
+    aligned::vector<CondensedNode> get_condensed_nodes() const;
 
     glm::ivec3 get_dim() const;
 
@@ -101,7 +100,7 @@ public:
     size_type compute_num_reentrant() const;
 
     cl_int compute_boundary_type(const Locator& loc,
-                                 const std::vector<Node>& ret) const;
+                                 const aligned::vector<Node>& ret) const;
 
     class ConnectedFinder {
     public:
@@ -110,31 +109,32 @@ public:
             cl_int type;
         };
 
-        using MemoizeKey = std::pair<std::vector<Node>::size_type,
+        using MemoizeKey = std::pair<aligned::vector<Node>::size_type,
                                      rectangular_program::BoundaryType>;
 
         template <typename B>
         Connected look_for_connected_memoized(
                 const B& b,
-                std::vector<Node>::size_type node_index,
-                const std::vector<Node>& ret,
+                aligned::vector<Node>::size_type node_index,
+                const aligned::vector<Node>& ret,
                 rectangular_program::BoundaryType bt) {
-            auto key = MemoizeKey{node_index, bt};
+            auto key   = MemoizeKey{node_index, bt};
             auto found = memoize_data.find(key);
             if (found != memoize_data.end()) {
                 return found->second;
             }
 
-            auto connected = look_for_connected(b, node_index, ret, bt);
+            auto connected    = look_for_connected(b, node_index, ret, bt);
             memoize_data[key] = connected;
             return connected;
         }
 
         template <typename B>
-        Connected look_for_connected(const B& b,
-                                     std::vector<Node>::size_type node_index,
-                                     const std::vector<Node>& ret,
-                                     rectangular_program::BoundaryType bt) {
+        Connected look_for_connected(
+                const B& b,
+                aligned::vector<Node>::size_type node_index,
+                const aligned::vector<Node>& ret,
+                rectangular_program::BoundaryType bt) {
             const auto& node = ret[node_index];
             assert(node.boundary_type != rectangular_program::id_none);
 
@@ -158,7 +158,7 @@ public:
             //  it's a higher order boundary
 
             //  check each adjacent node
-            std::vector<Connected> nearby;
+            aligned::vector<Connected> nearby;
             for (auto i = 0; i != PORTS; ++i) {
                 //  if there is (supposedly) a lower-order boundary node in this
                 //  direction
@@ -199,7 +199,7 @@ public:
 private:
     template <typename B>
     Collection compute_nodes(const B& boundary) const {
-        const auto dim = get_dim();
+        const auto dim   = get_dim();
         auto total_nodes = dim.x * dim.y * dim.z;
         //        auto bytes = total_nodes *
         //        sizeof(RectangularMesh::CondensedNode);
@@ -207,7 +207,7 @@ private:
         // storage!";
 
         //  we will return this eventually
-        auto ret = std::vector<Node>(total_nodes, Node{});
+        auto ret = aligned::vector<Node>(total_nodes, Node{});
 
         set_node_positions(ret);
         set_node_inside(boundary, ret);
@@ -222,13 +222,13 @@ private:
     static cl_uint coefficient_index_for_node(const MeshBoundary& b,
                                               const Node& node);
 
-    void set_node_positions(std::vector<Node>& ret) const;
+    void set_node_positions(aligned::vector<Node>& ret) const;
     void set_node_inside(const Boundary& boundary,
-                         std::vector<Node>& ret) const;
-    void set_node_boundary_type(std::vector<Node>& ret) const;
+                         aligned::vector<Node>& ret) const;
+    void set_node_boundary_type(aligned::vector<Node>& ret) const;
 
     template <int I>
-    void set_node_boundary_index(std::vector<Node>& ret) const {
+    void set_node_boundary_index(aligned::vector<Node>& ret) const {
         auto num_boundary = 0;
         for (auto& i : ret) {
             if (i.boundary_type != rectangular_program::id_reentrant &&
@@ -238,32 +238,32 @@ private:
         }
     }
 
-    void set_node_boundary_index(std::vector<Node>& ret) const;
+    void set_node_boundary_index(aligned::vector<Node>& ret) const;
 
     glm::ivec3 dim;
 
     Collection nodes;
-    std::vector<rectangular_program::BoundaryDataArray1> boundary_data_1;
-    std::vector<rectangular_program::BoundaryDataArray2> boundary_data_2;
-    std::vector<rectangular_program::BoundaryDataArray3> boundary_data_3;
+    aligned::vector<rectangular_program::BoundaryDataArray1> boundary_data_1;
+    aligned::vector<rectangular_program::BoundaryDataArray2> boundary_data_2;
+    aligned::vector<rectangular_program::BoundaryDataArray3> boundary_data_3;
 
     friend bool operator==(const RectangularMesh& a, const RectangularMesh& b);
 };
 
 template <>
-inline const std::vector<rectangular_program::BoundaryDataArray<1>>&
+inline const aligned::vector<rectangular_program::BoundaryDataArray<1>>&
 RectangularMesh::get_boundary_data<1>() const {
     return boundary_data_1;
 }
 
 template <>
-inline const std::vector<rectangular_program::BoundaryDataArray<2>>&
+inline const aligned::vector<rectangular_program::BoundaryDataArray<2>>&
 RectangularMesh::get_boundary_data<2>() const {
     return boundary_data_2;
 }
 
 template <>
-inline const std::vector<rectangular_program::BoundaryDataArray<3>>&
+inline const aligned::vector<rectangular_program::BoundaryDataArray<3>>&
 RectangularMesh::get_boundary_data<3>() const {
     return boundary_data_3;
 }

@@ -6,14 +6,12 @@
 
 #include "gtest/gtest.h"
 
-namespace std {
 template <typename T>
-JSON_OSTREAM_OVERLOAD(vector<T>);
-}  // namespace std
+JSON_OSTREAM_OVERLOAD(aligned::vector<T>);
 
 TEST(convolution, convolution) {
-    std::vector<float> a = {1, 0, 0, 0, 0};
-    std::vector<float> b = {1, 2, 3, 4, 3, 2, 1, 0, 0};
+    aligned::vector<float> a = {1, 0, 0, 0, 0};
+    aligned::vector<float> b = {1, 2, 3, 4, 3, 2, 1, 0, 0};
 
     FastConvolver fc(a.size() + b.size() - 1);
     auto convolved = fc.convolve(a, b);

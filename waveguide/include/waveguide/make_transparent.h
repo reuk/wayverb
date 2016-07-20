@@ -2,4 +2,4 @@
 
 #include <vector>
 
-std::vector<float> make_transparent(const std::vector<float>& kernel);
+aligned::vector<float> make_transparent(const aligned::vector<float>& kernel);

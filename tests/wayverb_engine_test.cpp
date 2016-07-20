@@ -42,7 +42,7 @@ TEST(engine, engine) {
 
     std::cout << "\nfinished engine run" << std::endl;
 
-    if (!intermediate) {
+    if (intermediate == nullptr) {
         throw std::runtime_error("failed to generate intermediate results");
     }
 

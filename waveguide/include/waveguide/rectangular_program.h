@@ -330,8 +330,8 @@ public:
         return to_impedance_coefficients(ret);
     }
 
-    static std::vector<CanonicalCoefficients> to_filter_coefficients(
-            std::vector<Surface> surfaces, float sr);
+    static aligned::vector<CanonicalCoefficients> to_filter_coefficients(
+            aligned::vector<Surface> surfaces, float sr);
 
     template <cl_program_info T>
     auto get_info() const {

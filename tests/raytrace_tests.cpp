@@ -67,18 +67,16 @@ TEST(raytrace, new) {
     std::atomic_bool keep_going{true};
     raytracer::Raytracer raytrace(cc.get_context(), cc.get_device());
     raytrace.run(scene_data,
-                        glm::vec3(0, 1.75, 0),
-                        glm::vec3(0, 1.75, 3),
-                        directions,
-                        bench_reflections,
-                        10,
-                        keep_going,
-                        [] {});
+                 glm::vec3(0, 1.75, 0),
+                 glm::vec3(0, 1.75, 3),
+                 directions,
+                 bench_reflections,
+                 10,
+                 keep_going,
+                 [] {});
 }
 
-constexpr int width_for_shell(int shell) {
-    return shell * 2 + 1;
-}
+constexpr int width_for_shell(int shell) { return shell * 2 + 1; }
 
 constexpr int num_images(int shell) {
     auto w = width_for_shell(shell);
@@ -155,7 +153,7 @@ TEST(raytrace, image_source) {
         return raytracer::attenuation_for_distance(i);
     });
 
-    std::vector<AttenuatedImpulse> proper_image_source_impulses;
+    aligned::vector<AttenuatedImpulse> proper_image_source_impulses;
 
     constexpr auto L = width_for_shell(shells);
     for (int i = 0; i != L; ++i) {
@@ -223,7 +221,7 @@ TEST(raytrace, image_source) {
     auto postprocess = [](const auto& i, const std::string& name) {
         auto bit_depth   = 16;
         auto sample_rate = 44100.0;
-        std::vector<std::vector<std::vector<float>>> flattened{
+        aligned::vector<aligned::vector<aligned::vector<float>>> flattened{
                 raytracer::flatten_impulses(i, sample_rate)};
         {
             auto mixed_down = mixdown(flattened);

@@ -25,7 +25,7 @@ void multitest(T&& run) {
 }  // namespace
 
 TEST(verify_compensation_signal, verify_compensation_signal_compressed) {
-    const std::vector<float> input{1, 2, 3, 4, 5, 4, 3, 2, 1};
+    const aligned::vector<float> input{1, 2, 3, 4, 5, 4, 3, 2, 1};
     const auto transparent = make_transparent(input);
 
     compute_context c;
@@ -39,7 +39,7 @@ TEST(verify_compensation_signal, verify_compensation_signal_compressed) {
 }
 
 TEST(verify_compensation_signal, verify_compensation_signal_normal) {
-    const std::vector<float> input(20, 1);
+    const aligned::vector<float> input(20, 1);
     const auto transparent = make_transparent(input);
 
     compute_context cc;
@@ -69,10 +69,10 @@ TEST(verify_compensation_signal, verify_compensation_signal_normal) {
                     pb += 1;
                 });
 
-        std::vector<float> pressures;
+        aligned::vector<float> pressures;
         pressures.reserve(output.size());
         for (const auto& i : output) {
-            pressures.push_back(i.pressure);
+            pressures.push_back(i.get_pressure());
         }
 
         return pressures;

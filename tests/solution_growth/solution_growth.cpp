@@ -56,18 +56,18 @@ int main(int argc, char** argv) {
                                        sampling_frequency);
 
         auto receiver_index = waveguide.get_index_for_coordinate(receiver);
-        auto source_index = waveguide.get_index_for_coordinate(source);
+        auto source_index   = waveguide.get_index_for_coordinate(source);
 
         auto corrected_source =
                 waveguide.get_coordinate_for_index(source_index);
 
         struct signal {
             std::string name;
-            std::vector<float> kernel;
+            aligned::vector<float> kernel;
         };
 
-        std::vector<signal> signals{
-                signal{"dirac", std::vector<float>{1.0}},
+        aligned::vector<signal> signals{
+                signal{"dirac", aligned::vector<float>{1.0}},
                 signal{"gauss", kernels::gaussian_kernel(sampling_frequency)},
                 signal{"sinmod_gauss",
                        kernels::sin_modulated_gaussian_kernel(
@@ -96,9 +96,9 @@ int main(int argc, char** argv) {
                                                   keep_going,
                                                   [&pb] { pb += 1; });
 
-            auto output = std::vector<float>(results.size());
+            auto output = aligned::vector<float>(results.size());
             proc::transform(results, output.begin(), [](const auto& i) {
-                return i.pressure;
+                return i.get_pressure();
             });
 
             {

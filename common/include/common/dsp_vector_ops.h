@@ -23,8 +23,8 @@ inline auto count(const T& t) {
             t, 0u, [](const auto& a, const auto& b) { return a + count(b); });
 }
 
-template <typename T>
-inline auto count(const std::vector<T>& coll) {
+template <typename T, typename Allocator>
+inline auto count(const std::vector<T, Allocator>& coll) {
     return coll.size();
 }
 

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "common/aligned/vector.h"
 #include "common/orientable.h"
 
 #include "modern_gl_utils/buffer_object.h"
@@ -36,9 +37,9 @@ private:
 class BasicDrawableObject : public mglu::Drawable, public Node {
 public:
     BasicDrawableObject(mglu::ShaderProgram& shader,
-                        const std::vector<glm::vec3>& g,
-                        const std::vector<glm::vec4>& c,
-                        const std::vector<GLuint>& i,
+                        const aligned::vector<glm::vec3>& g,
+                        const aligned::vector<glm::vec4>& c,
+                        const aligned::vector<GLuint>& i,
                         GLuint mode);
 
     BasicDrawableObject(BasicDrawableObject&&) noexcept;
@@ -55,7 +56,7 @@ private:
 
     mglu::ShaderProgram* shader;
 
-    std::vector<glm::vec4> color_vector;
+    aligned::vector<glm::vec4> color_vector;
 
     mglu::VAO vao;
     mglu::StaticVBO geometry;

@@ -89,8 +89,6 @@ auto run_waveguide(const compute_context& cc,
     auto input = kernels::sin_modulated_gaussian_kernel(
             config.get_waveguide_sample_rate());
 
-    LOG(INFO) << input;
-
     //  run the waveguide
     //            [                                        ]
     std::cout << "[ -- running waveguide ----------------- ]" << std::endl;
@@ -103,9 +101,10 @@ auto run_waveguide(const compute_context& cc,
                                           keep_going,
                                           [&pb] { pb += 1; });
 
-    auto output = std::vector<float>(results.size());
-    proc::transform(
-            results, output.begin(), [](const auto& i) { return i.pressure; });
+    auto output = aligned::vector<float>(results.size());
+    proc::transform(results, output.begin(), [](const auto& i) {
+        return i.get_pressure();
+    });
 
     //  correct for filter time offset
     output.erase(output.begin(),
@@ -191,7 +190,7 @@ int main(int argc, char** argv) {
     // auto output =
     //    attenuator.attenuate(results.get_all(false), {speaker}).front();
 
-    std::vector<std::vector<float>> flattened =
+    aligned::vector<aligned::vector<float>> flattened =
             raytracer::flatten_impulses(output, samplerate);
 
     snd::write(build_string(output_folder, "raytrace_no_processing.wav"),
@@ -254,7 +253,7 @@ int main(int argc, char** argv) {
             hipass.filter(raytracer_output.begin(), raytracer_output.end());
     LOG(INFO) << "max raytracer filtered: " << max_mag(raytracer_output);
 
-    std::vector<float> mixed(out_length);
+    aligned::vector<float> mixed(out_length);
     proc::transform(waveguide_adjusted,
                     raytracer_output.begin(),
                     mixed.begin(),

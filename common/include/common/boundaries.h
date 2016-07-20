@@ -5,6 +5,8 @@
 #include "triangle.h"
 #include "triangle_vec.h"
 
+#include "common/aligned/vector.h"
+
 #include "glm/glm.hpp"
 
 namespace geo {
@@ -31,27 +33,21 @@ struct Box {
 
     Box(const glm::vec3& c0, const glm::vec3& c1)
             : c0(glm::min(c0, c1))
-            , c1(glm::max(c0, c1)) {
-    }
+            , c1(glm::max(c0, c1)) {}
 
     bool inside(const glm::vec3& v) const {
         return glm::all(glm::lessThan(c0, v)) && glm::all(glm::lessThan(v, c1));
     }
 
-    glm::vec3 centre() const {
-        return glm::vec3((c0 + c1) * 0.5f);
-    }
+    glm::vec3 centre() const { return glm::vec3((c0 + c1) * 0.5f); }
 
     glm::vec3 mirror_on_axis(const glm::vec3& v,
                              const glm::vec3& pt,
                              Direction d) const {
         switch (d) {
-            case Direction::x:
-                return glm::vec3(2 * pt.x - v.x, v.y, v.z);
-            case Direction::y:
-                return glm::vec3(v.x, 2 * pt.y - v.y, v.z);
-            case Direction::z:
-                return glm::vec3(v.x, v.y, 2 * pt.z - v.z);
+            case Direction::x: return glm::vec3(2 * pt.x - v.x, v.y, v.z);
+            case Direction::y: return glm::vec3(v.x, 2 * pt.y - v.y, v.z);
+            case Direction::z: return glm::vec3(v.x, v.y, 2 * pt.z - v.z);
         }
     }
 
@@ -61,47 +57,29 @@ struct Box {
 
     glm::vec3 mirror(const glm::vec3& v, Wall w) const {
         switch (w) {
-            case Wall::nx:
-                return mirror_on_axis(v, c0, Direction::x);
-            case Wall::px:
-                return mirror_on_axis(v, c1, Direction::x);
-            case Wall::ny:
-                return mirror_on_axis(v, c0, Direction::y);
-            case Wall::py:
-                return mirror_on_axis(v, c1, Direction::y);
-            case Wall::nz:
-                return mirror_on_axis(v, c0, Direction::z);
-            case Wall::pz:
-                return mirror_on_axis(v, c1, Direction::z);
+            case Wall::nx: return mirror_on_axis(v, c0, Direction::x);
+            case Wall::px: return mirror_on_axis(v, c1, Direction::x);
+            case Wall::ny: return mirror_on_axis(v, c0, Direction::y);
+            case Wall::py: return mirror_on_axis(v, c1, Direction::y);
+            case Wall::nz: return mirror_on_axis(v, c0, Direction::z);
+            case Wall::pz: return mirror_on_axis(v, c1, Direction::z);
         }
     }
 
-    Box mirror(Wall w) const {
-        return Box(mirror(c0, w), mirror(c1, w));
-    }
+    Box mirror(Wall w) const { return Box(mirror(c0, w), mirror(c1, w)); }
 
     bool operator==(const Box& b) const {
         return glm::all(glm::equal(c0, b.c0)) && glm::all(glm::equal(c1, b.c1));
     }
 
-    Box operator+(const glm::vec3& v) const {
-        return Box(c0 + v, c1 + v);
-    }
+    Box operator+(const glm::vec3& v) const { return Box(c0 + v, c1 + v); }
 
-    Box operator-(const glm::vec3& v) const {
-        return Box(c0 - v, c1 - v);
-    }
+    Box operator-(const glm::vec3& v) const { return Box(c0 - v, c1 - v); }
 
-    glm::vec3 dimensions() const {
-        return c1 - c0;
-    }
+    glm::vec3 dimensions() const { return c1 - c0; }
 
-    glm::vec3 get_c0() const {
-        return c0;
-    }
-    glm::vec3 get_c1() const {
-        return c1;
-    }
+    glm::vec3 get_c0() const { return c0; }
+    glm::vec3 get_c1() const { return c1; }
 
     template <typename Archive>
     friend void serialize(Archive& archive, Box& m);
@@ -114,14 +92,14 @@ class CuboidBoundary;
 
 class Boundary {
 public:
-    Boundary() = default;
-    virtual ~Boundary() noexcept = default;
+    Boundary()                    = default;
+    virtual ~Boundary() noexcept  = default;
     Boundary(Boundary&&) noexcept = default;
     Boundary& operator=(Boundary&&) noexcept = default;
-    Boundary(const Boundary&) = default;
-    Boundary& operator=(const Boundary&) = default;
+    Boundary(const Boundary&)                = default;
+    Boundary& operator=(const Boundary&)          = default;
     virtual bool inside(const glm::vec3& v) const = 0;
-    virtual CuboidBoundary get_aabb() const = 0;
+    virtual CuboidBoundary get_aabb() const       = 0;
 
     template <typename Archive>
     friend void serialize(Archive& archive, Boundary& m);
@@ -157,9 +135,9 @@ public:
 class SphereBoundary : public Boundary {
 public:
     explicit SphereBoundary(const glm::vec3& c = glm::vec3(),
-                            float radius = 0,
-                            const std::vector<Surface>& surfaces =
-                                    std::vector<Surface>{Surface{}});
+                            float radius       = 0,
+                            const aligned::vector<Surface>& surfaces =
+                                    aligned::vector<Surface>{Surface{}});
     bool inside(const glm::vec3& v) const override;
     CuboidBoundary get_aabb() const override;
 
@@ -177,16 +155,16 @@ inline bool almost_equal(T x, T y, int ups) {
 
 class MeshBoundary : public Boundary {
 public:
-    MeshBoundary(const std::vector<Triangle>& triangles,
-                 const std::vector<glm::vec3>& vertices,
-                 const std::vector<Surface>& surfaces);
+    MeshBoundary(const aligned::vector<Triangle>& triangles,
+                 const aligned::vector<glm::vec3>& vertices,
+                 const aligned::vector<Surface>& surfaces);
     explicit MeshBoundary(const CopyableSceneData& sd);
     bool inside(const glm::vec3& v) const override;
     CuboidBoundary get_aabb() const override;
 
-    std::vector<int> get_triangle_indices() const;
+    aligned::vector<int> get_triangle_indices() const;
 
-    using reference_store = std::vector<uint32_t>;
+    using reference_store = aligned::vector<uint32_t>;
 
     glm::ivec3 hash_point(const glm::vec3& v) const;
     const reference_store& get_references(int x, int y) const;
@@ -194,20 +172,20 @@ public:
 
     static constexpr int DIVISIONS = 1024;
 
-    const std::vector<Triangle>& get_triangles() const;
-    const std::vector<glm::vec3>& get_vertices() const;
+    const aligned::vector<Triangle>& get_triangles() const;
+    const aligned::vector<glm::vec3>& get_vertices() const;
     const CuboidBoundary& get_boundary() const;
-    const std::vector<Surface>& get_surfaces() const;
+    const aligned::vector<Surface>& get_surfaces() const;
     glm::vec3 get_cell_size() const;
 
 private:
-    using hash_table = std::vector<std::vector<reference_store>>;
+    using hash_table = aligned::vector<aligned::vector<reference_store>>;
 
     hash_table compute_triangle_references() const;
 
-    std::vector<Triangle> triangles;
-    std::vector<glm::vec3> vertices;
-    std::vector<Surface> surfaces;
+    aligned::vector<Triangle> triangles;
+    aligned::vector<glm::vec3> vertices;
+    aligned::vector<Surface> surfaces;
     CuboidBoundary boundary;
     glm::vec3 cell_size;
     hash_table triangle_references;

@@ -1,5 +1,7 @@
 #include "combined/model.h"
 
+#include "common/aligned/vector.h"
+
 namespace {
 template <typename T>
 float get_waveguide_sample_rate(T filter_frequency, T oversample_ratio) {
@@ -25,8 +27,8 @@ SingleShot App::get_single_shot(size_t input, size_t output) const {
                       receiver_settings[output]};
 }
 
-std::vector<SingleShot> App::get_all_input_output_combinations() const {
-    std::vector<SingleShot> ret;
+aligned::vector<SingleShot> App::get_all_input_output_combinations() const {
+    aligned::vector<SingleShot> ret;
     ret.reserve(source.size() * receiver_settings.size());
     for (const auto& i : source) {
         for (const auto& j : receiver_settings) {

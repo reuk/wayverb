@@ -1,10 +1,8 @@
 #pragma once
 
+#include "common/aligned/vector.h"
 #include "common/filters_common.h"
 #include "common/stl_wrappers.h"
-
-#include <array>
-#include <vector>
 
 namespace filter {
 
@@ -19,7 +17,7 @@ public:
 
     void clear();
 
-    std::vector<double> data;
+    aligned::vector<double> data;
     size_t index;
 };
 
@@ -65,8 +63,7 @@ class LinearDCBlocker {
 public:
     explicit LinearDCBlocker(int d = 128)
             : d(d)
-            , moving_averages(d) {
-    }
+            , moving_averages(d) {}
 
     double operator()(double x) {
         x = moving_averages(x);
@@ -74,17 +71,15 @@ public:
     }
 
     template <typename It>
-    std::vector<float> filter(It begin, It end) {
-        std::vector<float> ret(begin, end);
+    aligned::vector<float> filter(It begin, It end) {
+        aligned::vector<float> ret(begin, end);
         std::for_each(std::begin(ret), std::end(ret), [this](auto& i) {
             i = this->operator()(i);
         });
         return ret;
     }
 
-    void clear() {
-        moving_averages.clear();
-    }
+    void clear() { moving_averages.clear(); }
 
     int d;
     NMovingAverages<2> moving_averages;
@@ -95,8 +90,7 @@ public:
     explicit ExtraLinearDCBlocker(int d = 128)
             : d(d)
             , delay_line(d + 2)
-            , moving_averages(d) {
-    }
+            , moving_averages(d) {}
 
     double operator()(double x) {
         x = moving_averages(x);
@@ -105,8 +99,8 @@ public:
     }
 
     template <typename It>
-    std::vector<float> filter(It begin, It end) {
-        std::vector<float> ret(begin, end);
+    aligned::vector<float> filter(It begin, It end) {
+        aligned::vector<float> ret(begin, end);
         std::for_each(std::begin(ret), std::end(ret), [this](auto& i) {
             i = this->operator()(i);
         });

@@ -17,11 +17,11 @@ struct Type;
 struct rectangular_waveguide_run_info {
     rectangular_waveguide_run_info(
             const cl::Context& context,
-            std::vector<rectangular_program::BoundaryDataArray1>
+            aligned::vector<rectangular_program::BoundaryDataArray1>
                     bd1,
-            std::vector<rectangular_program::BoundaryDataArray2>
+            aligned::vector<rectangular_program::BoundaryDataArray2>
                     bd2,
-            std::vector<rectangular_program::BoundaryDataArray3>
+            aligned::vector<rectangular_program::BoundaryDataArray3>
                     bd3)
             : velocity(0, 0, 0)
             , boundary_1(context, bd1.begin(), bd1.end(), false)
@@ -58,7 +58,7 @@ RectangularWaveguide::RectangularWaveguide(
         const cl::Device& device,
         const RectangularMesh& mesh,
         float sample_rate,
-        std::vector<rectangular_program::CanonicalCoefficients> coefficients)
+        aligned::vector<rectangular_program::CanonicalCoefficients> coefficients)
         : RectangularWaveguide(context,
                                device,
                                mesh,
@@ -72,8 +72,8 @@ RectangularWaveguide::RectangularWaveguide(
         const cl::Device& device,
         const RectangularMesh& mesh,
         float sample_rate,
-        std::vector<RectangularMesh::CondensedNode> nodes,
-        std::vector<rectangular_program::CanonicalCoefficients> coefficients)
+        aligned::vector<RectangularMesh::CondensedNode> nodes,
+        aligned::vector<rectangular_program::CanonicalCoefficients> coefficients)
         : Waveguide<rectangular_program>(
                   context, device, mesh.get_nodes().size(), sample_rate)
         , mesh(mesh)

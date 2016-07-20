@@ -17,17 +17,16 @@ TEST(voxel, construct) {
 
 class T : public VoxelCollection::TraversalCallback {
 public:
-    geo::Intersection operator()(const geo::Ray& ray,
-                                 const std::vector<int>& triangles) override {
+    geo::Intersection operator()(
+            const geo::Ray& ray,
+            const aligned::vector<int>& triangles) override {
         if (!triangles.empty()) {
             b = true;
         }
         return geo::Intersection(0, 0);
     }
 
-    bool get_has_triangles() const {
-        return b;
-    }
+    bool get_has_triangles() const { return b; }
 
 private:
     bool b{false};
@@ -38,7 +37,7 @@ TEST(voxel, walk) {
     Octree octree(scene_data, 4, 0.1);
     VoxelCollection voxel(octree);
 
-    auto rays = 100;
+    auto rays       = 100;
     auto directions = raytracer::get_random_directions(rays);
     for (const auto& i : directions) {
         T t;
@@ -54,7 +53,7 @@ TEST(voxel, old) {
     SceneData scene_data(OBJ_PATH);
 
     auto v = scene_data.get_converted_vertices();
-    std::vector<int> ind(scene_data.get_triangles().size());
+    aligned::vector<int> ind(scene_data.get_triangles().size());
     std::iota(ind.begin(), ind.end(), 0);
 
     for (const auto& i : raytracer::get_random_directions(bench_rays)) {
@@ -85,7 +84,7 @@ TEST(voxel, intersect) {
     VoxelCollection::TriangleTraversalCallback t(scene_data);
 
     auto v = scene_data.get_converted_vertices();
-    std::vector<int> ind(scene_data.get_triangles().size());
+    aligned::vector<int> ind(scene_data.get_triangles().size());
     std::iota(ind.begin(), ind.end(), 0);
 
     for (const auto& i : raytracer::get_random_directions(bench_rays)) {
