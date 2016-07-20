@@ -17,15 +17,13 @@
 
 void write_compensation_signal(const std::string& fname, size_t n) {
     //  get a cl context and device
-    ComputeContext c;
-
-    //  get the compressed waveguide program
-    compressed_rectangular_waveguide_program program(c.context, c.device);
+    compute_context cc;
 
     //  Creates a compressed waveguide with the specified centre-to-edge
     //  distance. For a distance n, this can be used to generate a mesh ir with
     //  length 2n.
-    compressed_rectangular_waveguide waveguide(program, n);
+    compressed_rectangular_waveguide waveguide(
+            cc.get_context(), cc.get_device(), n);
 
     //  run the waveguide with an impulsive hard source
     auto output = waveguide.run_hard_source(std::vector<float>{0, 1});

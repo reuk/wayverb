@@ -8,13 +8,13 @@ bool is_any(const std::vector<T>& t, const Fun& fun) {
 }
 
 template <typename Fun, int I>
-bool is_any(const RectangularProgram::BoundaryDataArray<I>& t, const Fun& fun) {
+bool is_any(const rectangular_program::BoundaryDataArray<I>& t, const Fun& fun) {
     return proc::any_of(t.array,
                         [&fun](const auto& i) { return is_any(i, fun); });
 }
 
 template <typename Fun>
-bool is_any(const RectangularProgram::BoundaryData& t, const Fun& fun) {
+bool is_any(const rectangular_program::BoundaryData& t, const Fun& fun) {
     return proc::any_of(t.filter_memory.array,
                         [&fun](const auto& i) { return is_any(i, fun); });
 }

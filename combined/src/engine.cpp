@@ -41,13 +41,14 @@ constexpr double rectilinear_calibration_factor(double r, double sr) {
 */
 
 std::vector<std::vector<float>> run_raytracer_attenuation(
-        const attenuator_program& program,
+        const compute_context& cc,
         const model::ReceiverSettings& receiver,
         const raytracer::Results::Selected& input,
         double output_sample_rate) {
     switch (receiver.mode) {
         case model::ReceiverSettings::Mode::microphones: {
-            raytracer::MicrophoneAttenuator attenuator(program);
+            raytracer::MicrophoneAttenuator attenuator(cc.get_context(),
+                                                       cc.get_device());
             return run_attenuation(
                     receiver.microphones.begin(),
                     receiver.microphones.end(),
@@ -65,7 +66,8 @@ std::vector<std::vector<float>> run_raytracer_attenuation(
                     });
         }
         case model::ReceiverSettings::Mode::hrtf: {
-            raytracer::HrtfAttenuator attenuator(program);
+            raytracer::HrtfAttenuator attenuator(cc.get_context(),
+                                                 cc.get_device());
             auto channels = {HrtfChannel::left, HrtfChannel::right};
             return run_attenuation(
                     channels.begin(), channels.end(), [&](const auto& i) {
@@ -124,14 +126,13 @@ std::vector<std::vector<float>> run_waveguide_attenuation(
 
 class intermediate_impl : public wayverb::intermediate {
 public:
-    intermediate_impl(const ComputeContext& compute_context,
+    intermediate_impl(const compute_context& cc,
                       const glm::vec3& source,
                       const glm::vec3& receiver,
                       double waveguide_sample_rate,
                       raytracer::Results&& raytracer_results,
                       std::vector<RunStepResult>&& waveguide_results)
-            : attenuator_program(compute_context.context,
-                                 compute_context.device)
+            : compute_context(cc)
             , source(source)
             , receiver(receiver)
             , waveguide_sample_rate(waveguide_sample_rate)
@@ -147,7 +148,7 @@ public:
 
         //  attenuate raytracer results
         auto raytracer_output =
-                run_raytracer_attenuation(attenuator_program,
+                run_raytracer_attenuation(compute_context,
                                           receiver,
                                           raytracer_results.get_all(false),
                                           output_sample_rate);
@@ -200,8 +201,7 @@ public:
     }
 
 private:
-    attenuator_program attenuator_program;
-
+    compute_context compute_context;
     glm::vec3 source;
     glm::vec3 receiver;
     double waveguide_sample_rate;
@@ -216,19 +216,19 @@ namespace wayverb {
 
 class engine::impl final {
 public:
-    impl(const ComputeContext& compute_context,
+    impl(const compute_context& cc,
          const CopyableSceneData& scene_data,
          const glm::vec3& source,
          const glm::vec3& receiver,
          double waveguide_sample_rate,
          size_t rays,
          size_t impulses)
-            : compute_context(compute_context)
-            , raytracer_program(compute_context.context, compute_context.device)
+            : compute_context(cc)
+            , raytracer_program(cc.get_context(), cc.get_device())
             , scene_data(scene_data)
-            , raytracer(raytracer_program)
-            , waveguide(RectangularProgram(compute_context.context,
-                                           compute_context.device),
+            , raytracer(cc.get_context(), cc.get_device())
+            , waveguide(cc.get_context(),
+                        cc.get_device(),
                         MeshBoundary(scene_data),
                         receiver,
                         waveguide_sample_rate)
@@ -373,9 +373,12 @@ private:
         callback(state::finishing_waveguide, 1.0);
 
         //  correct for filter time offset
+        LOG(INFO) << "got here";
+        LOG(INFO) << "correction offset: " << input.correction_offset_in_samples;
         waveguide_results.erase(
                 waveguide_results.begin(),
                 waveguide_results.begin() + input.correction_offset_in_samples);
+        LOG(INFO) << "got here";
 
         return std::make_unique<intermediate_impl>(
                 compute_context,
@@ -386,7 +389,7 @@ private:
                 std::move(waveguide_results));
     }
 
-    ComputeContext compute_context;
+    compute_context compute_context;
     raytracer_program raytracer_program;
     CopyableSceneData scene_data;
     raytracer::Raytracer raytracer;
@@ -402,7 +405,7 @@ private:
     size_t receiver_index;
 };
 
-engine::engine(const ComputeContext& compute_context,
+engine::engine(const compute_context& compute_context,
                const CopyableSceneData& scene_data,
                const glm::vec3& source,
                const glm::vec3& receiver,

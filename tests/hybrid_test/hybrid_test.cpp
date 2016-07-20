@@ -60,22 +60,19 @@ constexpr double rectilinear_calibration_factor(double r, double sr) {
     return r / (x * 0.3405);
 }
 
-auto run_waveguide(ComputeContext& context_info,
+auto run_waveguide(const compute_context& cc,
                    const CuboidBoundary& boundary,
                    const model::SingleShot& config,
                    const std::string& output_folder,
                    const Surface& surface) {
     auto steps = 16000;
 
-    //  get opencl program
-    RectangularProgram waveguide_program(context_info.context,
-                                         context_info.device);
-
     auto scene_data = boundary.get_scene_data();
     scene_data.set_surfaces(surface);
 
     //  get a waveguide
-    RectangularWaveguide waveguide(waveguide_program,
+    RectangularWaveguide waveguide(cc.get_context(),
+                                   cc.get_device(),
                                    MeshBoundary(scene_data),
                                    config.receiver_settings.position,
                                    config.get_waveguide_sample_rate());
@@ -142,10 +139,10 @@ int main(int argc, char** argv) {
 
     json_read_write::write(output_folder + "/used_config.json", config);
 
-    ComputeContext context_info;
+    compute_context cc;
 
-    auto waveguide_output = run_waveguide(
-            context_info, boundary, config, output_folder, surface);
+    auto waveguide_output =
+            run_waveguide(cc, boundary, config, output_folder, surface);
 
     // filter::ZeroPhaseDCBlocker(32).filter(waveguide_output);
 
@@ -172,10 +169,7 @@ int main(int argc, char** argv) {
     //        config, output_folder, "waveguide_adjusted",
     //        {waveguide_adjusted});
     //
-    raytracer_program raytracer_program(context_info.context,
-                                        context_info.device);
-
-    raytracer::Raytracer raytracer(raytracer_program);
+    raytracer::Raytracer raytracer(cc.get_context(), cc.get_device());
     //            [                                        ]
     std::cout << "[ -- running raytracer ----------------- ]" << std::endl;
     std::atomic_bool keep_going{true};
@@ -190,9 +184,8 @@ int main(int argc, char** argv) {
                                  keep_going,
                                  [&pb] { pb += 1; });
 
-    attenuator_program attenuator_program(context_info.context,
-                                          context_info.device);
-    raytracer::MicrophoneAttenuator attenuator(attenuator_program);
+    raytracer::MicrophoneAttenuator attenuator(cc.get_context(),
+                                               cc.get_device());
     auto output = attenuator.process(
             results.get_image_source(false), glm::vec3(0, 0, 1), 0, receiver);
     // auto output =

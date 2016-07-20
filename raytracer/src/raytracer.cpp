@@ -271,10 +271,9 @@ auto remove_duplicates(const std::vector<std::vector<cl_ulong>>& path,
     return ret;
 }
 
-Raytracer::Raytracer(const raytracer_program& program)
-        : queue(program.get_info<CL_PROGRAM_CONTEXT>(), program.get_device())
-        , context(program.get_info<CL_PROGRAM_CONTEXT>())
-        , kernel(program.get_raytrace_kernel()) {
+Raytracer::Raytracer(const cl::Context& context, const cl::Device& device)
+        : queue(context, device)
+        , kernel(raytracer_program(context, device).get_raytrace_kernel()) {
 }
 
 template <typename T>
@@ -364,7 +363,9 @@ Results Raytracer::run(const CopyableSceneData& scene_data,
                                    true});
     }
 
-    auto load_to_buffer = [this](auto i, bool readonly) {
+    auto context = queue.getInfo<CL_QUEUE_CONTEXT>();
+
+    auto load_to_buffer = [this, context](auto i, bool readonly) {
         return cl::Buffer(context, i.begin(), i.end(), readonly);
     };
 
@@ -464,10 +465,10 @@ Results Raytracer::run(const CopyableSceneData& scene_data,
 
 //----------------------------------------------------------------------------//
 
-HrtfAttenuator::HrtfAttenuator(const attenuator_program& program)
-        : queue(program.get_info<CL_PROGRAM_CONTEXT>(), program.get_device())
-        , kernel(program.get_hrtf_kernel())
-        , context(program.get_info<CL_PROGRAM_CONTEXT>())
+HrtfAttenuator::HrtfAttenuator(const cl::Context& context,
+                               const cl::Device& device)
+        : queue(context, device)
+        , kernel(attenuator_program(context, device).get_hrtf_kernel())
         , cl_hrtf(context, CL_MEM_READ_WRITE, sizeof(VolumeType) * 360 * 180) {
 }
 
@@ -492,6 +493,7 @@ std::vector<AttenuatedImpulse> HrtfAttenuator::process(
     auto impulses = results.get_impulses();
 
     //  set up buffers
+    auto context = queue.getInfo<CL_QUEUE_CONTEXT>();
     cl::Buffer cl_in(context,
                      CL_MEM_READ_WRITE,
                      impulses.size() * sizeof(Impulse));
@@ -526,10 +528,10 @@ HrtfAttenuator::get_hrtf_data() const {
     return HrtfData::HRTF_DATA;
 }
 
-MicrophoneAttenuator::MicrophoneAttenuator(const attenuator_program& program)
-        : queue(program.get_info<CL_PROGRAM_CONTEXT>(), program.get_device())
-        , kernel(program.get_microphone_kernel())
-        , context(program.get_info<CL_PROGRAM_CONTEXT>()) {
+MicrophoneAttenuator::MicrophoneAttenuator(const cl::Context& context,
+                                           const cl::Device& device)
+        : queue(context, device)
+        , kernel(attenuator_program(context, device).get_microphone_kernel()) {
 }
 
 std::vector<AttenuatedImpulse> MicrophoneAttenuator::process(
@@ -539,6 +541,7 @@ std::vector<AttenuatedImpulse> MicrophoneAttenuator::process(
         const glm::vec3& position) {
     auto impulses = results.get_impulses();
     //  init buffers
+    auto context = queue.getInfo<CL_QUEUE_CONTEXT>();
     cl::Buffer cl_in(context,
                      CL_MEM_READ_WRITE,
                      impulses.size() * sizeof(Impulse));

@@ -17,11 +17,11 @@ struct Type;
 struct rectangular_waveguide_run_info {
     rectangular_waveguide_run_info(
             const cl::Context& context,
-            std::vector<RectangularProgram::BoundaryDataArray1>
+            std::vector<rectangular_program::BoundaryDataArray1>
                     bd1,
-            std::vector<RectangularProgram::BoundaryDataArray2>
+            std::vector<rectangular_program::BoundaryDataArray2>
                     bd2,
-            std::vector<RectangularProgram::BoundaryDataArray3>
+            std::vector<rectangular_program::BoundaryDataArray3>
                     bd3)
             : velocity(0, 0, 0)
             , boundary_1(context, bd1.begin(), bd1.end(), false)
@@ -37,27 +37,30 @@ struct rectangular_waveguide_run_info {
 
 RectangularWaveguide::~RectangularWaveguide() noexcept = default;
 
-RectangularWaveguide::RectangularWaveguide(const RectangularProgram& program,
+RectangularWaveguide::RectangularWaveguide(const cl::Context& context,
+                                           const cl::Device& device,
                                            const MeshBoundary& boundary,
                                            const glm::vec3& anchor,
                                            float sr)
         : RectangularWaveguide(
-                  program,
+                  context,
+                  device,
                   RectangularMesh(boundary,
                                   config::grid_spacing(SPEED_OF_SOUND, 1 / sr),
                                   anchor),
                   sr,
-                  RectangularProgram::to_filter_coefficients(
+                  rectangular_program::to_filter_coefficients(
                           boundary.get_surfaces(), sr)) {
 }
 
 RectangularWaveguide::RectangularWaveguide(
-        const typename Base::ProgramType& program,
+        const cl::Context& context,
+        const cl::Device& device,
         const RectangularMesh& mesh,
         float sample_rate,
-        std::vector<RectangularProgram::CanonicalCoefficients>
-                coefficients)
-        : RectangularWaveguide(program,
+        std::vector<rectangular_program::CanonicalCoefficients> coefficients)
+        : RectangularWaveguide(context,
+                               device,
                                mesh,
                                sample_rate,
                                mesh.get_condensed_nodes(),
@@ -65,35 +68,24 @@ RectangularWaveguide::RectangularWaveguide(
 }
 
 RectangularWaveguide::RectangularWaveguide(
-        const typename Base::ProgramType& program,
+        const cl::Context& context,
+        const cl::Device& device,
         const RectangularMesh& mesh,
         float sample_rate,
-        std::vector<RectangularMesh::CondensedNode>
-                nodes,
-        std::vector<RectangularProgram::CanonicalCoefficients>
-                coefficients)
-        : Waveguide<RectangularProgram>(
-                  program, mesh.get_nodes().size(), sample_rate)
+        std::vector<RectangularMesh::CondensedNode> nodes,
+        std::vector<rectangular_program::CanonicalCoefficients> coefficients)
+        : Waveguide<rectangular_program>(
+                  context, device, mesh.get_nodes().size(), sample_rate)
         , mesh(mesh)
-        , node_buffer(program.template get_info<CL_PROGRAM_CONTEXT>(),
-                      nodes.begin(),
-                      nodes.end(),
-                      false)
+        , node_buffer(context, nodes.begin(), nodes.end(), false)
         , boundary_coefficients_buffer(
-                  program.template get_info<CL_PROGRAM_CONTEXT>(),
-                  coefficients.begin(),
-                  coefficients.end(),
-                  false)
+                  context, coefficients.begin(), coefficients.end(), false)
         , surrounding(PORTS, 0)
-        , surrounding_buffer(program.template get_info<CL_PROGRAM_CONTEXT>(),
-                             surrounding.begin(),
-                             surrounding.end(),
-                             false)
-        , error_flag_buffer(program.template get_info<CL_PROGRAM_CONTEXT>(),
-                            CL_MEM_READ_WRITE,
-                            sizeof(cl_int)) {
+        , surrounding_buffer(
+                  context, surrounding.begin(), surrounding.end(), false)
+        , error_flag_buffer(context, CL_MEM_READ_WRITE, sizeof(cl_int)) {
     LOG(INFO) << "main memory node storage: "
-              << (sizeof(RectangularProgram::NodeStruct) *
+              << (sizeof(rectangular_program::NodeStruct) *
                           mesh.get_nodes().size() >>
                   20)
               << " MB";
@@ -123,10 +115,10 @@ RunStepResult RectangularWaveguide::run_step(
         cl::Buffer& previous,
         cl::Buffer& current,
         cl::Buffer& output) {
-    auto flag = RectangularProgram::id_success;
+    auto flag = rectangular_program::id_success;
     cl::copy(queue, (&flag) + 0, (&flag) + 1, error_flag_buffer);
 
-    RectangularProgram::InputInfo input_info{write_info.index,
+    rectangular_program::InputInfo input_info{write_info.index,
                                              write_info.pressure};
 
     kernel(cl::EnqueueArgs(queue, cl::NDRange(nodes)),
@@ -146,26 +138,26 @@ RunStepResult RectangularWaveguide::run_step(
 
     cl::copy(queue, error_flag_buffer, (&flag) + 0, (&flag) + 1);
 
-    //        if (flag & RectangularProgram::id_outside_range_error) {
+    //        if (flag & rectangular_program::id_outside_range_error) {
     //            throw std::runtime_error("pressure value is outside valid
     //            range");
     //        }
 
-    if (flag & RectangularProgram::id_inf_error) {
+    if (flag & rectangular_program::id_inf_error) {
         throw std::runtime_error(
                 "pressure value is inf, check filter coefficients");
     }
 
-    if (flag & RectangularProgram::id_nan_error) {
+    if (flag & rectangular_program::id_nan_error) {
         throw std::runtime_error(
                 "pressure value is nan, check filter coefficients");
     }
 
-    if (flag & RectangularProgram::id_outside_mesh_error) {
+    if (flag & rectangular_program::id_outside_mesh_error) {
         throw std::runtime_error("tried to read non-existant node");
     }
 
-    if (flag & RectangularProgram::id_suspicious_boundary_error) {
+    if (flag & rectangular_program::id_suspicious_boundary_error) {
         throw std::runtime_error("suspicious boundary read");
     }
 

@@ -170,21 +170,21 @@ static_assert(19 == to_index(locator<size_t>{3, 3, 3}), "to_locator");
 compressed_rectangular_waveguide_program::
         compressed_rectangular_waveguide_program(const cl::Context& context,
                                                  const cl::Device& device)
-        : custom_program_base(context, device, source) {
+        : program_wrapper(context, device, source) {
 }
 
 //----------------------------------------------------------------------------//
 
 compressed_rectangular_waveguide::compressed_rectangular_waveguide(
-        const compressed_rectangular_waveguide_program& program,
-        size_t dimension)
-        : queue(program.get_info<CL_PROGRAM_CONTEXT>(), program.get_device())
-        , kernel(program.get_kernel())
+        const cl::Context& context, const cl::Device& device, size_t dimension)
+        : queue(context, device)
+        , kernel(compressed_rectangular_waveguide_program(context, device)
+                         .get_kernel())
         , dimension(dimension)
-        , storage({{cl::Buffer(program.template get_info<CL_PROGRAM_CONTEXT>(),
+        , storage({{cl::Buffer(context,
                                CL_MEM_READ_WRITE,
                                sizeof(cl_float) * tetrahedron(dimension + 1)),
-                    cl::Buffer(program.template get_info<CL_PROGRAM_CONTEXT>(),
+                    cl::Buffer(context,
                                CL_MEM_READ_WRITE,
                                sizeof(cl_float) * tetrahedron(dimension + 1))}})
         , current(&storage[0])

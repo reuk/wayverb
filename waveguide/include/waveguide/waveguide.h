@@ -33,8 +33,11 @@ public:
     using ProgramType = T;
     using kernel_type = decltype(std::declval<ProgramType>().get_kernel());
 
-    Waveguide(const ProgramType& program, size_t nodes, double sample_rate)
-            : program(program)
+    Waveguide(const cl::Context& context,
+              const cl::Device& device,
+              size_t nodes,
+              double sample_rate)
+            : program(context, device)
             , queue(program.template get_info<CL_PROGRAM_CONTEXT>(),
                     program.get_device())
             , kernel(program.get_kernel())

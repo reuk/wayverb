@@ -28,9 +28,9 @@ TEST(verify_compensation_signal, verify_compensation_signal_compressed) {
     const std::vector<float> input{1, 2, 3, 4, 5, 4, 3, 2, 1};
     const auto transparent = make_transparent(input);
 
-    ComputeContext c;
-    compressed_rectangular_waveguide_program program(c.context, c.device);
-    compressed_rectangular_waveguide waveguide(program, 100);
+    compute_context c;
+    compressed_rectangular_waveguide waveguide(
+            c.get_context(), c.get_device(), 100);
 
     multitest([&] {
         auto t = transparent;
@@ -42,19 +42,21 @@ TEST(verify_compensation_signal, verify_compensation_signal_normal) {
     const std::vector<float> input(20, 1);
     const auto transparent = make_transparent(input);
 
-    ComputeContext compute_context;
+    compute_context cc;
     CuboidBoundary cuboid_boundary(glm::vec3(-1), glm::vec3(1));
 
-    RectangularProgram waveguide_program(compute_context.context,
-                                         compute_context.device);
+    rectangular_program waveguide_program(cc.get_context(), cc.get_device());
 
     auto scene_data = cuboid_boundary.get_scene_data();
     scene_data.set_surfaces(uniform_surface(0.999));
 
     constexpr glm::vec3 centre{0, 0, 0};
 
-    RectangularWaveguide waveguide(
-            waveguide_program, MeshBoundary(scene_data), centre, 20000);
+    RectangularWaveguide waveguide(cc.get_context(),
+                                   cc.get_device(),
+                                   MeshBoundary(scene_data),
+                                   centre,
+                                   20000);
 
     auto receiver_index = waveguide.get_index_for_coordinate(centre);
 

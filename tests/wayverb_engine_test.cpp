@@ -25,15 +25,10 @@ TEST(engine, engine) {
     constexpr auto rays = 1024 * 32;
     constexpr auto impulses = 128;
 
-    ComputeContext compute_context{};
+    compute_context cc;
 
-    wayverb::engine e(compute_context,
-                      scene_data,
-                      source,
-                      mic,
-                      waveguide_sample_rate,
-                      rays,
-                      impulses);
+    wayverb::engine e(
+            cc, scene_data, source, mic, waveguide_sample_rate, rays, impulses);
 
     std::cout << "finished engine init" << std::endl;
 
@@ -45,9 +40,7 @@ TEST(engine, engine) {
     std::atomic_bool keep_going{true};
     auto intermediate = e.run(keep_going, callback);
 
-    std::cout << std::endl;
-
-    std::cout << "finished engine run" << std::endl;
+    std::cout << "\nfinished engine run" << std::endl;
 
     if (! intermediate) {
         throw std::runtime_error("failed to generate intermediate results");
@@ -56,5 +49,5 @@ TEST(engine, engine) {
     auto result = intermediate->attenuate(
             model::ReceiverSettings{}, output_sample_rate, callback);
 
-    std::cout << "finished engine attenuate" << std::endl;
+    std::cout << "\nfinished engine attenuate" << std::endl;
 }

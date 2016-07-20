@@ -1,23 +1,32 @@
 #pragma once
 
 #include "common/cl_common.h"
-#include "common/custom_program_base.h"
+#include "common/program_wrapper.h"
 
 #include <array>
 
-class compressed_rectangular_waveguide_program final
-        : public custom_program_base {
+class compressed_rectangular_waveguide_program final {
 public:
-    explicit compressed_rectangular_waveguide_program(
-            const cl::Context& context, const cl::Device& device);
+    compressed_rectangular_waveguide_program(const cl::Context& context,
+                                             const cl::Device& device);
 
     auto get_kernel() const {
-        return custom_program_base::get_kernel<cl::Buffer, cl::Buffer>(
+        return program_wrapper.get_kernel<cl::Buffer, cl::Buffer>(
                 "compressed_waveguide");
+    }
+
+    template <cl_program_info T>
+    auto get_info() const {
+        return program_wrapper.get_info<T>();
+    }
+
+    cl::Device get_device() const {
+        return program_wrapper.get_device();
     }
 
 private:
     static const std::string source;
+    program_wrapper program_wrapper;
 };
 
 class compressed_rectangular_waveguide final {
@@ -25,9 +34,9 @@ public:
     using kernel_type =
             decltype(std::declval<compressed_rectangular_waveguide_program>()
                              .get_kernel());
-    compressed_rectangular_waveguide(
-            const compressed_rectangular_waveguide_program& program,
-            size_t dimension);
+    compressed_rectangular_waveguide(const cl::Context& context,
+                                     const cl::Device& device,
+                                     size_t dimension);
     std::vector<float> run_hard_source(std::vector<float>&& input);
     std::vector<float> run_soft_source(std::vector<float>&& input);
 

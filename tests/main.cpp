@@ -5,6 +5,6 @@ int main(int argc, char** argv) {
     google::InitGoogleLogging(argv[0]);
 
     ::testing::InitGoogleTest(&argc, argv);
-    ::testing::GTEST_FLAG(filter) = "*verify_compensation_signal_normal*";
+    ::testing::GTEST_FLAG(filter) = "*engine*";
     return RUN_ALL_TESTS();
 }

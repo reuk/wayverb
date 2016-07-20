@@ -13,7 +13,7 @@ namespace model {
 struct ReceiverSettings;
 }  // namespace model
 
-class ComputeContext;
+class compute_context;
 class CopyableSceneData;
 
 //  engine  ------------------------------------------------------------------//
@@ -74,7 +74,7 @@ public:
 
 class engine final {
 public:
-    engine(const ComputeContext& compute_context,
+    engine(const compute_context& compute_context,
            const CopyableSceneData& scene_data,
            const glm::vec3& source,
            const glm::vec3& receiver,

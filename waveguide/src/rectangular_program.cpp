@@ -7,9 +7,9 @@
 #include <cmath>
 #include <iostream>
 
-RectangularProgram::RectangularProgram(const cl::Context& context,
+rectangular_program::rectangular_program(const cl::Context& context,
                                        const cl::Device& device)
-        : custom_program_base(
+        : program_wrapper(
                   context,
                   device,
                   std::vector<std::string>{cl_sources::get_struct_definitions(
@@ -17,14 +17,14 @@ RectangularProgram::RectangularProgram(const cl::Context& context,
                                            source}) {
 }
 
-RectangularProgram::CondensedNodeStruct RectangularProgram::condense(
+rectangular_program::CondensedNodeStruct rectangular_program::condense(
         const NodeStruct& n) {
     return CondensedNodeStruct{
             n.boundary_type | (n.inside ? id_inside : id_none),
             n.boundary_index};
 }
 
-RectangularProgram::CanonicalCoefficients RectangularProgram::convolve(
+rectangular_program::CanonicalCoefficients rectangular_program::convolve(
         const BiquadCoefficientsArray& a) {
     std::array<BiquadCoefficients, BiquadCoefficientsArray::BIQUAD_SECTIONS> t;
     proc::copy(a.array, t.begin());
@@ -34,8 +34,8 @@ RectangularProgram::CanonicalCoefficients RectangularProgram::convolve(
 
 /// Given a set of canonical coefficients describing a reflectance filter,
 /// produce an impedance filter which describes the reflective surface
-RectangularProgram::CanonicalCoefficients
-RectangularProgram::to_impedance_coefficients(const CanonicalCoefficients& c) {
+rectangular_program::CanonicalCoefficients
+rectangular_program::to_impedance_coefficients(const CanonicalCoefficients& c) {
     CanonicalCoefficients ret;
     proc::transform(
             c.a, std::begin(c.b), std::begin(ret.b), [](auto a, auto b) {
@@ -58,8 +58,8 @@ RectangularProgram::to_impedance_coefficients(const CanonicalCoefficients& c) {
     return ret;
 }
 
-std::vector<RectangularProgram::CanonicalCoefficients>
-RectangularProgram::to_filter_coefficients(std::vector<Surface> surfaces,
+std::vector<rectangular_program::CanonicalCoefficients>
+rectangular_program::to_filter_coefficients(std::vector<Surface> surfaces,
                                            float sr) {
     std::vector<CanonicalCoefficients> ret(surfaces.size());
     proc::transform(surfaces, ret.begin(), [sr](auto i) {
@@ -70,7 +70,7 @@ RectangularProgram::to_filter_coefficients(std::vector<Surface> surfaces,
 
 //----------------------------------------------------------------------------//
 
-const std::string RectangularProgram::source{
+const std::string rectangular_program::source{
 #ifdef DIAGNOSTIC
         "#define DIAGNOSTIC\n"
 #endif

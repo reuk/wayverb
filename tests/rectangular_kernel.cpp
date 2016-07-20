@@ -101,13 +101,13 @@ TEST(stability, filters) {
          }) {
         auto descriptors = RectangularWaveguide::to_filter_descriptors(s);
         auto individual_coeffs =
-            RectangularProgram::get_peak_biquads_array(descriptors, sr);
+            rectangular_program::get_peak_biquads_array(descriptors, sr);
         std::cout << individual_coeffs << std::endl;
-        auto reflectance = RectangularProgram::convolve(individual_coeffs);
-        //        ASSERT_TRUE(RectangularProgram::is_stable(reflectance)) << s;
+        auto reflectance = rectangular_program::convolve(individual_coeffs);
+        //        ASSERT_TRUE(rectangular_program::is_stable(reflectance)) << s;
         auto impedance =
-            RectangularProgram::to_impedance_coefficients(reflectance);
-        ASSERT_TRUE(RectangularProgram::is_stable(impedance)) << s;
+            rectangular_program::to_impedance_coefficients(reflectance);
+        ASSERT_TRUE(rectangular_program::is_stable(impedance)) << s;
     }
 }
 #endif
@@ -134,17 +134,17 @@ static const auto surfaces = compute_surfaces();
 
 std::array<
         std::array<
-                RectangularProgram::FilterDescriptor,
-                RectangularProgram::BiquadCoefficientsArray::BIQUAD_SECTIONS>,
+                rectangular_program::FilterDescriptor,
+                rectangular_program::BiquadCoefficientsArray::BIQUAD_SECTIONS>,
         parallel_size>
 compute_descriptors() {
-    std::array<std::array<RectangularProgram::FilterDescriptor,
-                          RectangularProgram::BiquadCoefficientsArray::
+    std::array<std::array<rectangular_program::FilterDescriptor,
+                          rectangular_program::BiquadCoefficientsArray::
                                   BIQUAD_SECTIONS>,
                parallel_size>
             ret;
     proc::transform(surfaces, ret.begin(), [](auto i) {
-        return RectangularProgram::to_filter_descriptors(i);
+        return rectangular_program::to_filter_descriptors(i);
     });
     return ret;
 }
@@ -162,21 +162,21 @@ struct CoefficientTypeTrait;
 
 template <>
 struct CoefficientTypeTrait<FilterType::biquad_cascade> {
-    using type = RectangularProgram::BiquadCoefficientsArray;
+    using type = rectangular_program::BiquadCoefficientsArray;
 };
 
 template <>
 struct CoefficientTypeTrait<FilterType::single_reflectance> {
-    using type = RectangularProgram::FilterCoefficients<
-            RectangularProgram::BiquadCoefficientsArray::BIQUAD_SECTIONS *
-            RectangularProgram::BiquadCoefficients::ORDER>;
+    using type = rectangular_program::FilterCoefficients<
+            rectangular_program::BiquadCoefficientsArray::BIQUAD_SECTIONS *
+            rectangular_program::BiquadCoefficients::ORDER>;
 };
 
 template <>
 struct CoefficientTypeTrait<FilterType::single_impedance> {
-    using type = RectangularProgram::FilterCoefficients<
-            RectangularProgram::BiquadCoefficientsArray::BIQUAD_SECTIONS *
-            RectangularProgram::BiquadCoefficients::ORDER>;
+    using type = rectangular_program::FilterCoefficients<
+            rectangular_program::BiquadCoefficientsArray::BIQUAD_SECTIONS *
+            rectangular_program::BiquadCoefficients::ORDER>;
 };
 
 template <FilterType FT>
@@ -187,9 +187,9 @@ template <>
 std::array<typename CoefficientTypeTrait<FilterType::biquad_cascade>::type,
            parallel_size>
 compute_coeffs<FilterType::biquad_cascade>() {
-    std::array<RectangularProgram::BiquadCoefficientsArray, parallel_size> ret;
+    std::array<rectangular_program::BiquadCoefficientsArray, parallel_size> ret;
     proc::transform(descriptors, ret.begin(), [](const auto& n) {
-        return RectangularProgram::get_peak_biquads_array(n, sr);
+        return rectangular_program::get_peak_biquads_array(n, sr);
     });
     return ret;
 }
@@ -203,8 +203,8 @@ compute_coeffs<FilterType::single_reflectance>() {
             parallel_size>
             ret;
     proc::transform(descriptors, ret.begin(), [](const auto& n) {
-        return RectangularProgram::convolve(
-                RectangularProgram::get_peak_biquads_array(n, sr));
+        return rectangular_program::convolve(
+                rectangular_program::get_peak_biquads_array(n, sr));
     });
     return ret;
 }
@@ -218,9 +218,9 @@ compute_coeffs<FilterType::single_impedance>() {
             parallel_size>
             ret;
     proc::transform(descriptors, ret.begin(), [](const auto& n) {
-        return RectangularProgram::to_impedance_coefficients(
-                RectangularProgram::convolve(
-                        RectangularProgram::get_peak_biquads_array(n, sr)));
+        return rectangular_program::to_impedance_coefficients(
+                rectangular_program::convolve(
+                        rectangular_program::get_peak_biquads_array(n, sr)));
     });
     return ret;
 }
@@ -236,8 +236,7 @@ public:
         auto kernel = std::move(k);
 
         {
-            cl::CommandQueue queue(compute_context.context,
-                                   compute_context.device);
+            cl::CommandQueue queue(cc.get_context(), cc.get_device());
             TimedScope timer("filtering");
             for (auto i = 0u; i != input.size(); ++i) {
                 cl::copy(queue, input[i].begin(), input[i].end(), cl_input);
@@ -258,40 +257,38 @@ public:
         return buf;
     }
 
-    ComputeContext compute_context;
-    RectangularProgram program{compute_context.context, compute_context.device};
+    compute_context cc;
+    rectangular_program program{cc.get_context(), cc.get_device()};
     std::vector<Memory> memory{testing::parallel_size, Memory{}};
     std::array<typename testing::CoefficientTypeTrait<FT>::type,
                testing::parallel_size>
             coeffs{testing::compute_coeffs<FT>()};
-    cl::Buffer cl_memory{
-            compute_context.context, memory.begin(), memory.end(), false};
-    cl::Buffer cl_coeffs{
-            compute_context.context, coeffs.begin(), coeffs.end(), false};
+    cl::Buffer cl_memory{cc.get_context(), memory.begin(), memory.end(), false};
+    cl::Buffer cl_coeffs{cc.get_context(), coeffs.begin(), coeffs.end(), false};
     std::vector<std::vector<cl_float>> input{
             Generator::compute_input(testing::parallel_size)};
     std::vector<std::vector<cl_float>> output{
             input.size(), std::vector<cl_float>(testing::parallel_size, 0)};
-    cl::Buffer cl_input{compute_context.context,
+    cl::Buffer cl_input{cc.get_context(),
                         CL_MEM_READ_WRITE,
                         testing::parallel_size * sizeof(cl_float)};
-    cl::Buffer cl_output{compute_context.context,
+    cl::Buffer cl_output{cc.get_context(),
                          CL_MEM_READ_WRITE,
                          testing::parallel_size * sizeof(cl_float)};
 };
 
 template <typename Generator>
-using rk_biquad = rectangular_kernel<RectangularProgram::BiquadMemoryArray,
+using rk_biquad = rectangular_kernel<rectangular_program::BiquadMemoryArray,
                                      testing::FilterType::biquad_cascade,
                                      Generator>;
 
 template <typename Generator>
-using rk_filter = rectangular_kernel<RectangularProgram::CanonicalMemory,
+using rk_filter = rectangular_kernel<rectangular_program::CanonicalMemory,
                                      testing::FilterType::single_reflectance,
                                      Generator>;
 
 template <typename Generator>
-using rk_impedance = rectangular_kernel<RectangularProgram::CanonicalMemory,
+using rk_impedance = rectangular_kernel<rectangular_program::CanonicalMemory,
                                         testing::FilterType::single_impedance,
                                         Generator>;
 
@@ -425,7 +422,7 @@ TEST(filter_stability, filter_stability) {
                       poly.end(),
                       [&engine, &range] { return range(engine); });
 
-        auto stable = RectangularProgram::is_stable(poly);
+        auto stable = rectangular_program::is_stable(poly);
     }
 }
 */
@@ -451,7 +448,7 @@ TEST(impulse_response, filters) {
         proc::for_each(
             testing::compute_coeffs<testing::FilterType::single_reflectance>(),
             [](const auto& i) {
-                ASSERT_TRUE(RectangularProgram::is_stable(i));
+                ASSERT_TRUE(rectangular_program::is_stable(i));
             });
         //  test that the reflectance filters are stable(ish)
         rk_filter<ImpulseGenerator<10000>> filter;
@@ -475,7 +472,7 @@ TEST(impulse_response, filters) {
         proc::for_each(
             testing::compute_coeffs<testing::FilterType::single_impedance>(),
             [](const auto& i) {
-                ASSERT_TRUE(RectangularProgram::is_stable(i));
+                ASSERT_TRUE(rectangular_program::is_stable(i));
             });
         //  TODO need a reliable way of making impedance filters stable if they
         //  are not already
@@ -498,7 +495,7 @@ TEST(impulse_response, filters) {
 
 // TEST(ghost_point, filters) {
 //    ComputeContext compute_context;
-//    RectangularProgram program{get_program<RectangularProgram>(
+//    rectangular_program program{get_program<rectangular_program>(
 //        compute_context.context, compute_context.device)};
 //
 //    constexpr auto v = 0.9;
@@ -510,10 +507,10 @@ TEST(impulse_response, filters) {
 //
 //    LOG(INFO) << c;
 //
-//    std::array<RectangularProgram::CanonicalCoefficients,
+//    std::array<rectangular_program::CanonicalCoefficients,
 //               testing::parallel_size>
 //#if 0
-//        coefficients{{RectangularProgram::CanonicalCoefficients{
+//        coefficients{{rectangular_program::CanonicalCoefficients{
 //            {2, 0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0, 0}}}};
 //
 //#else
@@ -524,7 +521,7 @@ TEST(impulse_response, filters) {
 //                                   coefficients.begin(),
 //                                   coefficients.end(),
 //                                   false};
-//    std::array<RectangularProgram::BoundaryData, testing::parallel_size>
+//    std::array<rectangular_program::BoundaryData, testing::parallel_size>
 //        boundary_data{};
 //    cl::Buffer cl_boundary_data{compute_context.context,
 //                                boundary_data.begin(),

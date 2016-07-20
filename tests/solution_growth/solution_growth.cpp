@@ -43,16 +43,14 @@ int main(int argc, char** argv) {
         glm::vec3 receiver{0.5, 0, 0};
         auto sampling_frequency = 20000.0;
 
-        ComputeContext compute_context;
+        compute_context cc;
         CuboidBoundary cuboid_boundary(glm::vec3(-1), glm::vec3(1));
-
-        RectangularProgram waveguide_program(compute_context.context,
-                                             compute_context.device);
 
         auto scene_data = cuboid_boundary.get_scene_data();
         scene_data.set_surfaces(uniform_surface(0.999));
 
-        RectangularWaveguide waveguide(waveguide_program,
+        RectangularWaveguide waveguide(cc.get_context(),
+                                       cc.get_device(),
                                        MeshBoundary(scene_data),
                                        receiver,
                                        sampling_frequency);

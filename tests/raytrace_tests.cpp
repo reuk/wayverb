@@ -57,15 +57,15 @@ static constexpr auto bench_reflections = 128;
 static constexpr auto bench_rays        = 1 << 15;
 
 TEST(raytrace, new) {
-    ComputeContext context;
-    raytracer_program raytracer_program(context.context, context.device);
+    compute_context cc;
+    raytracer_program raytracer_program(cc.get_context(), cc.get_device());
 
     SceneData scene_data(OBJ_PATH);
 
     auto directions = raytracer::get_random_directions(bench_rays);
 
     std::atomic_bool keep_going{true};
-    raytracer::Raytracer raytrace(raytracer_program);
+    raytracer::Raytracer raytrace(cc.get_context(), cc.get_device());
     raytrace.run(scene_data,
                         glm::vec3(0, 1.75, 0),
                         glm::vec3(0, 1.75, 3),
@@ -186,12 +186,11 @@ TEST(raytrace, image_source) {
     sort_by_time(proper_image_source_impulses);
 
     //  raytracing method
-    ComputeContext context;
-    raytracer_program raytracer_program(context.context, context.device);
+    compute_context cc;
 
     CuboidBoundary boundary(box.get_c0(), box.get_c1());
 
-    raytracer::Raytracer raytracer(raytracer_program);
+    raytracer::Raytracer raytracer(cc.get_context(), cc.get_device());
 
     auto scene_data = boundary.get_scene_data();
     scene_data.set_surfaces(surface);
@@ -200,8 +199,8 @@ TEST(raytrace, image_source) {
     auto results = raytracer.run(
             scene_data, receiver, source, 100000, 100, 10, keep_going, [] {});
 
-    attenuator_program attenuator_program(context.context, context.device);
-    raytracer::MicrophoneAttenuator attenuator(attenuator_program);
+    raytracer::MicrophoneAttenuator attenuator(cc.get_context(),
+                                               cc.get_device());
     auto output = attenuator.process(
             results.get_image_source(false), glm::vec3(0, 0, 1), 0, receiver);
 

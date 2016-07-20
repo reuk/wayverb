@@ -6,12 +6,12 @@
 
 attenuator_program::attenuator_program(const cl::Context& context,
                                        const cl::Device& device)
-        : custom_program_base(context,
-                              device,
-                              std::vector<std::string>{cl_sources::structs,
-                                                       cl_sources::geometry,
-                                                       cl_sources::voxel,
-                                                       source}) {
+        : program_wrapper(context,
+                          device,
+                          std::vector<std::string>{cl_sources::structs,
+                                                   cl_sources::geometry,
+                                                   cl_sources::voxel,
+                                                   source}) {
 }
 
 static_assert(SPEED_OF_SOUND != 0, "SPEED_OF_SOUND");

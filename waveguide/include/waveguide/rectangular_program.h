@@ -1,9 +1,9 @@
 #pragma once
 
 #include "common/cl_common.h"
-#include "common/custom_program_base.h"
 #include "common/decibels.h"
 #include "common/hrtf.h"
+#include "common/program_wrapper.h"
 #include "common/reduce.h"
 #include "common/scene_data.h"
 #include "common/serialize/cl.h"
@@ -14,7 +14,7 @@
 #include <cassert>
 #include <cmath>
 
-class RectangularProgram final {
+class rectangular_program final {
 public:
     typedef enum : cl_int {
         id_none      = 0,
@@ -163,34 +163,33 @@ public:
 
     static constexpr size_t PORTS = NodeStruct::PORTS;
 
-    explicit RectangularProgram(const cl::Context& context,
-                                const cl::Device& device);
+    explicit rectangular_program(const cl::Context& context,
+                                 const cl::Device& device);
 
     auto get_kernel() const {
-        return custom_program_base.get_kernel<InputInfo,
-                                              cl::Buffer,
-                                              cl::Buffer,
-                                              cl::Buffer,
-                                              cl_int3,
-                                              cl::Buffer,
-                                              cl::Buffer,
-                                              cl::Buffer,
-                                              cl::Buffer,
-                                              cl_ulong,
-                                              cl::Buffer,
-                                              cl::Buffer,
-                                              cl::Buffer>(
-                "condensed_waveguide");
+        return program_wrapper.get_kernel<InputInfo,
+                                          cl::Buffer,
+                                          cl::Buffer,
+                                          cl::Buffer,
+                                          cl_int3,
+                                          cl::Buffer,
+                                          cl::Buffer,
+                                          cl::Buffer,
+                                          cl::Buffer,
+                                          cl_ulong,
+                                          cl::Buffer,
+                                          cl::Buffer,
+                                          cl::Buffer>("condensed_waveguide");
     }
 
     auto get_filter_test_kernel() const {
-        return custom_program_base
+        return program_wrapper
                 .get_kernel<cl::Buffer, cl::Buffer, cl::Buffer, cl::Buffer>(
                         "filter_test");
     }
 
     auto get_filter_test_2_kernel() const {
-        return custom_program_base
+        return program_wrapper
                 .get_kernel<cl::Buffer, cl::Buffer, cl::Buffer, cl::Buffer>(
                         "filter_test_2");
     }
@@ -219,7 +218,7 @@ public:
         auto sw0   = sin(w0);
         auto alpha = sw0 / 2.0 * n.Q;
         auto a0    = 1 + alpha / A;
-        return RectangularProgram::BiquadCoefficients{
+        return rectangular_program::BiquadCoefficients{
                 {(1 + (alpha * A)) / a0, (-2 * cw0) / a0, (1 - alpha * A) / a0},
                 {1, (-2 * cw0) / a0, (1 - alpha / A) / a0}};
     }
@@ -231,7 +230,7 @@ public:
                              BiquadCoefficientsArray::BIQUAD_SECTIONS>& n,
             double sr,
             coefficient_generator callback) {
-        RectangularProgram::BiquadCoefficientsArray ret{
+        rectangular_program::BiquadCoefficientsArray ret{
                 {callback(std::get<Ix>(n), sr)...}};
         return ret;
     }
@@ -336,21 +335,21 @@ public:
 
     template <cl_program_info T>
     auto get_info() const {
-        return custom_program_base.template get_info<T>();
+        return program_wrapper.template get_info<T>();
     }
 
     cl::Device get_device() const {
-        return custom_program_base.get_device();
+        return program_wrapper.get_device();
     }
 
 private:
     static const std::string source;
 
-    custom_program_base custom_program_base;
+    program_wrapper program_wrapper;
 };
 
-inline bool operator==(const RectangularProgram::NodeStruct& a,
-                       const RectangularProgram::NodeStruct& b) {
+inline bool operator==(const rectangular_program::NodeStruct& a,
+                       const rectangular_program::NodeStruct& b) {
     return proc::equal(a.ports, std::begin(b.ports)) &&
            std::tie(a.position, a.inside, a.boundary_type, a.boundary_index) ==
                    std::tie(b.position,
@@ -360,49 +359,49 @@ inline bool operator==(const RectangularProgram::NodeStruct& a,
 }
 
 template <size_t D>
-bool operator==(const RectangularProgram::FilterMemory<D>& a,
-                const RectangularProgram::FilterMemory<D>& b) {
+bool operator==(const rectangular_program::FilterMemory<D>& a,
+                const rectangular_program::FilterMemory<D>& b) {
     return proc::equal(a.array, std::begin(b.array));
 }
 
 template <size_t D>
-bool operator==(const RectangularProgram::FilterCoefficients<D>& a,
-                const RectangularProgram::FilterCoefficients<D>& b) {
+bool operator==(const rectangular_program::FilterCoefficients<D>& a,
+                const rectangular_program::FilterCoefficients<D>& b) {
     return proc::equal(a.a, std::begin(b.a)) &&
            proc::equal(a.b, std::begin(b.b));
 }
 
-inline bool operator==(const RectangularProgram::BoundaryData& a,
-                       const RectangularProgram::BoundaryData& b) {
+inline bool operator==(const rectangular_program::BoundaryData& a,
+                       const rectangular_program::BoundaryData& b) {
     return std::tie(a.filter_memory, a.coefficient_index) ==
            std::tie(b.filter_memory, b.coefficient_index);
 }
 
 template <size_t D>
-bool operator==(const RectangularProgram::BoundaryDataArray<D>& a,
-                const RectangularProgram::BoundaryDataArray<D>& b) {
+bool operator==(const rectangular_program::BoundaryDataArray<D>& a,
+                const rectangular_program::BoundaryDataArray<D>& b) {
     return proc::equal(a.array, std::begin(b.array));
 }
 
-JSON_OSTREAM_OVERLOAD(RectangularProgram::NodeStruct);
+JSON_OSTREAM_OVERLOAD(rectangular_program::NodeStruct);
 
-JSON_OSTREAM_OVERLOAD(RectangularProgram::CondensedNodeStruct);
+JSON_OSTREAM_OVERLOAD(rectangular_program::CondensedNodeStruct);
 
 template <size_t O>
-JSON_OSTREAM_OVERLOAD(RectangularProgram::FilterCoefficients<O>);
+JSON_OSTREAM_OVERLOAD(rectangular_program::FilterCoefficients<O>);
 
-JSON_OSTREAM_OVERLOAD(RectangularProgram::BiquadCoefficientsArray);
+JSON_OSTREAM_OVERLOAD(rectangular_program::BiquadCoefficientsArray);
 
-JSON_OSTREAM_OVERLOAD(RectangularProgram::BoundaryData);
+JSON_OSTREAM_OVERLOAD(rectangular_program::BoundaryData);
 
 template <size_t D>
-JSON_OSTREAM_OVERLOAD(RectangularProgram::BoundaryDataArray<D>);
+JSON_OSTREAM_OVERLOAD(rectangular_program::BoundaryDataArray<D>);
 
-JSON_OSTREAM_OVERLOAD(RectangularProgram::FilterDescriptor);
+JSON_OSTREAM_OVERLOAD(rectangular_program::FilterDescriptor);
 
 //----------------------------------------------------------------------------//
 
 template <>
-constexpr bool RectangularProgram::is_stable(const std::array<double, 1>& a) {
+constexpr bool rectangular_program::is_stable(const std::array<double, 1>& a) {
     return true;
 }

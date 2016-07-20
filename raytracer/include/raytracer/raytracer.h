@@ -144,7 +144,7 @@ std::vector<cl_float3> get_random_directions(size_t num);
 
 class Raytracer final {
 public:
-    Raytracer(const raytracer_program& program);
+    Raytracer(const cl::Context&, const cl::Device&);
 
     using PerStepCallback = std::function<void()>;
 
@@ -171,14 +171,13 @@ private:
             decltype(std::declval<raytracer_program>().get_raytrace_kernel());
 
     cl::CommandQueue queue;
-    cl::Context context;
     kernel_type kernel;
 };
 
 /// Class for parallel HRTF attenuation of raytrace results.
 class HrtfAttenuator final {
 public:
-    HrtfAttenuator(const attenuator_program& program);
+    HrtfAttenuator(const cl::Context&, const cl::Device&);
 
     /// Attenuate some raytrace results.
     /// The outer vector corresponds to separate channels, the inner vector
@@ -198,7 +197,6 @@ private:
 
     cl::CommandQueue queue;
     kernel_type kernel;
-    const cl::Context context;
 
     cl::Buffer cl_hrtf;
 };
@@ -206,7 +204,7 @@ private:
 /// Class for parallel Speaker attenuation of raytrace results.
 class MicrophoneAttenuator final {
 public:
-    MicrophoneAttenuator(const attenuator_program& program);
+    MicrophoneAttenuator(const cl::Context&, const cl::Device&);
 
     /// Attenuate some raytrace results.
     /// The outer vector corresponds to separate channels, the inner vector
@@ -222,6 +220,5 @@ private:
 
     cl::CommandQueue queue;
     kernel_type kernel;
-    const cl::Context context;
 };
 }  // namespace raytracer

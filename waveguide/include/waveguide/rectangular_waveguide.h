@@ -4,11 +4,12 @@
 
 struct rectangular_waveguide_run_info;
 
-class RectangularWaveguide : public Waveguide<RectangularProgram> {
+class RectangularWaveguide : public Waveguide<rectangular_program> {
 public:
-    using Base = Waveguide<RectangularProgram>;
+    using Base = Waveguide<rectangular_program>;
 
-    RectangularWaveguide(const RectangularProgram& program,
+    RectangularWaveguide(const cl::Context&,
+                         const cl::Device&,
                          const MeshBoundary& boundary,
                          const glm::vec3& anchor,
                          float sr);
@@ -33,17 +34,18 @@ private:
                            cl::Buffer& output) override;
     void setup(cl::CommandQueue& queue, size_t o) override;
 
-    RectangularWaveguide(const typename Base::ProgramType& program,
+    RectangularWaveguide(const cl::Context&,
+                         const cl::Device&,
                          const RectangularMesh& mesh,
                          float sample_rate,
-                         std::vector<RectangularProgram::CanonicalCoefficients>
+                         std::vector<rectangular_program::CanonicalCoefficients>
                                  coefficients);
-    RectangularWaveguide(const typename Base::ProgramType& program,
+    RectangularWaveguide(const cl::Context&,
+                         const cl::Device&,
                          const RectangularMesh& mesh,
                          float sample_rate,
-                         std::vector<RectangularMesh::CondensedNode>
-                                 nodes,
-                         std::vector<RectangularProgram::CanonicalCoefficients>
+                         std::vector<RectangularMesh::CondensedNode> nodes,
+                         std::vector<rectangular_program::CanonicalCoefficients>
                                  coefficients);
 
     std::unique_ptr<rectangular_waveguide_run_info> invocation;

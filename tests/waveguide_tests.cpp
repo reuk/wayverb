@@ -17,8 +17,8 @@ TEST(peak_filter_coefficients, peak_filter_coefficients) {
     static std::uniform_real_distribution<cl_float> range{0, samplerate / 2};
     for (auto i = 0; i != 10; ++i) {
         auto descriptor =
-                RectangularProgram::FilterDescriptor{0, range(engine), 1.414};
-        auto coefficients = RectangularProgram::get_peak_coefficients(
+                rectangular_program::FilterDescriptor{0, range(engine), 1.414};
+        auto coefficients = rectangular_program::get_peak_coefficients(
                 descriptor, samplerate);
 
         ASSERT_TRUE(proc::equal(coefficients.b, std::begin(coefficients.a)));
@@ -28,11 +28,10 @@ TEST(peak_filter_coefficients, peak_filter_coefficients) {
 TEST(run_waveguide, run_waveguide) {
     auto steps = 64000;
 
-    ComputeContext context_info;
+    compute_context cc;
 
     //  get opencl program
-    RectangularProgram waveguide_program(context_info.context,
-                                         context_info.device);
+    rectangular_program waveguide_program(cc.get_context(), cc.get_device());
 
     Box box(glm::vec3(0, 0, 0), glm::vec3(4, 3, 6));
     constexpr glm::vec3 source(1, 1, 1);
@@ -48,8 +47,11 @@ TEST(run_waveguide, run_waveguide) {
     scene_data.set_surfaces(surface);
 
     //  get a waveguide
-    RectangularWaveguide waveguide(
-            waveguide_program, MeshBoundary(scene_data), receiver, 4000);
+    RectangularWaveguide waveguide(cc.get_context(),
+                                   cc.get_device(),
+                                   MeshBoundary(scene_data),
+                                   receiver,
+                                   4000);
 
     auto source_index   = waveguide.get_index_for_coordinate(source);
     auto receiver_index = waveguide.get_index_for_coordinate(receiver);

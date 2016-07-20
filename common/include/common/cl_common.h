@@ -9,12 +9,16 @@
 
 #include <iostream>
 
-class ComputeContext final {
+class compute_context final {
 public:
-    ComputeContext();
+    compute_context();
 
-    const cl::Context context;
-    const cl::Device device;
+    cl::Context get_context() const;
+    cl::Device get_device() const;
+
+private:
+    cl::Context context;
+    cl::Device device;
 };
 
 template <typename T>

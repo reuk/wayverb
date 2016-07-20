@@ -50,19 +50,19 @@ void RectangularMesh::set_node_inside(const Boundary& boundary,
 }
 
 constexpr RectangularMesh::Locator boundary_type_to_locator(
-        RectangularProgram::BoundaryType b) {
+        rectangular_program::BoundaryType b) {
     switch (b) {
-        case RectangularProgram::id_nx:
+        case rectangular_program::id_nx:
             return RectangularMesh::Locator{-1, 0, 0};
-        case RectangularProgram::id_px:
+        case rectangular_program::id_px:
             return RectangularMesh::Locator{1, 0, 0};
-        case RectangularProgram::id_ny:
+        case rectangular_program::id_ny:
             return RectangularMesh::Locator{0, -1, 0};
-        case RectangularProgram::id_py:
+        case rectangular_program::id_py:
             return RectangularMesh::Locator{0, 1, 0};
-        case RectangularProgram::id_nz:
+        case rectangular_program::id_nz:
             return RectangularMesh::Locator{0, 0, -1};
-        case RectangularProgram::id_pz:
+        case rectangular_program::id_pz:
             return RectangularMesh::Locator{0, 0, 1};
         default:
             return RectangularMesh::Locator{0, 0, 0};
@@ -75,7 +75,7 @@ constexpr std::pair<RectangularMesh::Locator, cl_int> make_locator_pair() {
 
 template <typename... Ts>
 constexpr std::pair<RectangularMesh::Locator, cl_int> make_locator_pair(
-        RectangularProgram::BoundaryType b, Ts... ts) {
+        rectangular_program::BoundaryType b, Ts... ts) {
     auto next = make_locator_pair(ts...);
     return std::make_pair(boundary_type_to_locator(b) + next.first,
                           b | next.second);
@@ -85,14 +85,14 @@ cl_int RectangularMesh::compute_boundary_type(
         const Locator& loc, const std::vector<Node>& ret) const {
     //  look at all nearby nodes
 
-    using RectangularProgram::BoundaryType::id_nx;
-    using RectangularProgram::BoundaryType::id_px;
-    using RectangularProgram::BoundaryType::id_ny;
-    using RectangularProgram::BoundaryType::id_py;
-    using RectangularProgram::BoundaryType::id_nz;
-    using RectangularProgram::BoundaryType::id_pz;
-    using RectangularProgram::BoundaryType::id_none;
-    using RectangularProgram::BoundaryType::id_reentrant;
+    using rectangular_program::BoundaryType::id_nx;
+    using rectangular_program::BoundaryType::id_px;
+    using rectangular_program::BoundaryType::id_ny;
+    using rectangular_program::BoundaryType::id_py;
+    using rectangular_program::BoundaryType::id_nz;
+    using rectangular_program::BoundaryType::id_pz;
+    using rectangular_program::BoundaryType::id_none;
+    using rectangular_program::BoundaryType::id_reentrant;
 
     auto try_directions = [this, loc, &ret](
             const std::initializer_list<std::pair<Locator, cl_int>>& directions)
@@ -172,7 +172,7 @@ void RectangularMesh::set_node_boundary_index(std::vector<Node>& ret) const {
 
 RectangularMesh::size_type RectangularMesh::compute_num_reentrant() const {
     return proc::count_if(get_nodes(), [](const auto& i) {
-        return i.boundary_type == RectangularProgram::id_reentrant;
+        return i.boundary_type == rectangular_program::id_reentrant;
     });
 }
 
@@ -234,7 +234,7 @@ void RectangularMesh::compute_neighbors(size_type index,
     proc::transform(n_loc, output, [this](const auto& i) {
         auto inside = glm::all(glm::lessThanEqual(glm::ivec3(0), i)) &&
                       glm::all(glm::lessThan(i, dim));
-        return inside ? compute_index(i) : RectangularProgram::NO_NEIGHBOR;
+        return inside ? compute_index(i) : rectangular_program::NO_NEIGHBOR;
     });
 }
 
@@ -242,10 +242,10 @@ std::vector<RectangularMesh::CondensedNode>
 RectangularMesh::get_condensed_nodes() const {
     std::vector<RectangularMesh::CondensedNode> ret(get_nodes().size());
     proc::transform(get_nodes(), ret.begin(), [](const auto& i) {
-        return RectangularProgram::condense(i);
+        return rectangular_program::condense(i);
     });
     proc::for_each(ret, [](const auto& i) {
-        if ((i.boundary_type & RectangularProgram::id_inside) &&
+        if ((i.boundary_type & rectangular_program::id_inside) &&
             popcount(i.boundary_type) > 1) {
             LOG(INFO) << "too many bits set?";
         }

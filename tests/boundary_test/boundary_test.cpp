@@ -27,7 +27,7 @@
 #include <numeric>
 #include <random>
 
-std::vector<float> run_simulation(const ComputeContext& compute_context,
+std::vector<float> run_simulation(const compute_context& cc,
                                   const CuboidBoundary& boundary,
                                   const Surface& surface,
                                   double filter_frequency,
@@ -37,13 +37,11 @@ std::vector<float> run_simulation(const ComputeContext& compute_context,
                                   const std::string& output_folder,
                                   const std::string& fname,
                                   int steps) {
-    RectangularProgram waveguide_program(compute_context.context,
-                                         compute_context.device);
-
     auto scene_data = boundary.get_scene_data();
     scene_data.set_surfaces(surface);
 
-    RectangularWaveguide waveguide(waveguide_program,
+    RectangularWaveguide waveguide(cc.get_context(),
+                                   cc.get_device(),
                                    MeshBoundary(scene_data),
                                    receiver,
                                    filter_frequency * 4);
@@ -99,7 +97,7 @@ struct FullTestResults {
     }
 };
 
-std::vector<float> get_free_field_results(const ComputeContext& compute_context,
+std::vector<float> get_free_field_results(const compute_context& cc,
                                           const std::string& output_folder,
                                           double filter_frequency,
                                           double out_sr,
@@ -176,7 +174,7 @@ std::vector<float> get_free_field_results(const ComputeContext& compute_context,
 
     LOG(INFO) << "running for " << steps << " steps";
 
-    auto image = run_simulation(compute_context,
+    auto image = run_simulation(cc,
                                 no_wall,
                                 Surface{},
                                 filter_frequency,
@@ -194,7 +192,7 @@ std::vector<float> get_free_field_results(const ComputeContext& compute_context,
 }
 
 FullTestResults run_full_test(const std::string& test_name,
-                              const ComputeContext& compute_context,
+                              const compute_context& cc,
                               const std::string& output_folder,
                               double filter_frequency,
                               double out_sr,
@@ -272,7 +270,7 @@ FullTestResults run_full_test(const std::string& test_name,
 
     LOG(INFO) << "running for " << steps << " steps";
 
-    auto reflected = run_simulation(compute_context,
+    auto reflected = run_simulation(cc,
                                     wall,
                                     surface,
                                     filter_frequency,
@@ -282,7 +280,7 @@ FullTestResults run_full_test(const std::string& test_name,
                                     output_folder,
                                     "reflected",
                                     steps);
-    auto direct = run_simulation(compute_context,
+    auto direct = run_simulation(cc,
                                  no_wall,
                                  surface,
                                  filter_frequency,
@@ -370,7 +368,7 @@ int main(int argc, char** argv) {
     auto elevation = std::stod(argv[3]);
     auto azimuth_elevation = std::make_pair(azimuth, elevation);
 
-    ComputeContext compute_context;
+    compute_context cc;
     auto filter_frequency = 2000;
     auto out_sr = 44100;
 
@@ -386,7 +384,7 @@ int main(int argc, char** argv) {
         auto steps = dim * 1.4;
 
         auto windowed_free_field =
-                get_free_field_results(compute_context,
+                get_free_field_results(cc,
                                        output_folder,
                                        filter_frequency,
                                        out_sr,
@@ -431,7 +429,7 @@ int main(int argc, char** argv) {
         std::vector<FullTestResults> all_test_results(surface_set.size());
         proc::transform(surface_set, all_test_results.begin(), [&](auto i) {
             return run_full_test(i.name,
-                                 compute_context,
+                                 cc,
                                  output_folder,
                                  filter_frequency,
                                  out_sr,

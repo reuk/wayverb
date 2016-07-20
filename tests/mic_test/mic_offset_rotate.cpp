@@ -63,7 +63,7 @@ int main(int argc, char** argv) {
     const auto oversample_ratio = 1.0;
     const auto waveguide_sr = filter_frequency * oversample_ratio * (1 / 0.196);
 
-    ComputeContext compute_context;
+    compute_context cc;
 
     auto directionality = 0.0;
     switch (polar_pattern) {
@@ -93,10 +93,11 @@ int main(int argc, char** argv) {
         auto r = 0.9f;
         scene_data.set_surfaces(Surface{VolumeType{{r, r, r, r, r, r, r, r}},
                                         VolumeType{{r, r, r, r, r, r, r, r}}});
-        const RectangularProgram waveguide_program(compute_context.context,
-                                                   compute_context.device);
-        RectangularWaveguide waveguide(
-                waveguide_program, MeshBoundary(scene_data), mic, waveguide_sr);
+        RectangularWaveguide waveguide(cc.get_context(),
+                                       cc.get_device(),
+                                       MeshBoundary(scene_data),
+                                       mic,
+                                       waveguide_sr);
 
         for (auto i = 0u; i != test_locations; ++i) {
             float angle = i * M_PI * 2 / test_locations + M_PI;
