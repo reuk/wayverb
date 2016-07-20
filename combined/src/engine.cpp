@@ -126,14 +126,12 @@ std::vector<std::vector<float>> run_waveguide_attenuation(
 
 class intermediate_impl : public wayverb::intermediate {
 public:
-    intermediate_impl(const compute_context& cc,
-                      const glm::vec3& source,
+    intermediate_impl(const glm::vec3& source,
                       const glm::vec3& receiver,
                       double waveguide_sample_rate,
                       raytracer::Results&& raytracer_results,
                       std::vector<RunStepResult>&& waveguide_results)
-            : compute_context(cc)
-            , source(source)
+            : source(source)
             , receiver(receiver)
             , waveguide_sample_rate(waveguide_sample_rate)
             , raytracer_results(std::move(raytracer_results))
@@ -141,14 +139,16 @@ public:
     }
 
     std::vector<std::vector<float>> attenuate(
+            const compute_context& cc,
             const model::ReceiverSettings& receiver,
             double output_sample_rate,
             const state_callback& callback) const override {
+        LOG(INFO) << "starting attenuation";
         callback(wayverb::state::postprocessing, 1.0);
 
         //  attenuate raytracer results
         auto raytracer_output =
-                run_raytracer_attenuation(compute_context,
+                run_raytracer_attenuation(cc,
                                           receiver,
                                           raytracer_results.get_all(false),
                                           output_sample_rate);
@@ -201,7 +201,6 @@ public:
     }
 
 private:
-    compute_context compute_context;
     glm::vec3 source;
     glm::vec3 receiver;
     double waveguide_sample_rate;
@@ -356,10 +355,10 @@ private:
 
         //  WAVEGUIDE  -------------------------------------------------------//
         callback(state::starting_waveguide, 1.0);
-        auto corrected_source =
-                waveguide.get_coordinate_for_index(source_index);
 
-        auto input = default_kernel(waveguide_sample_rate);
+        const auto corrected_source =
+                waveguide.get_coordinate_for_index(source_index);
+        const auto input = default_kernel(waveguide_sample_rate);
 
         //  If the max raytracer time is large this could take forever...
         auto waveguide_results =
@@ -373,20 +372,25 @@ private:
         callback(state::finishing_waveguide, 1.0);
 
         //  correct for filter time offset
-        LOG(INFO) << "got here";
-        LOG(INFO) << "correction offset: " << input.correction_offset_in_samples;
+        assert(input.correction_offset_in_samples < waveguide_results.size());
+
+        LOG(INFO) << "correcting waveguide for kernel time offset";
         waveguide_results.erase(
                 waveguide_results.begin(),
                 waveguide_results.begin() + input.correction_offset_in_samples);
-        LOG(INFO) << "got here";
 
-        return std::make_unique<intermediate_impl>(
-                compute_context,
+        LOG(INFO) << "creating ret";
+
+        std::unique_ptr<intermediate> ret = std::make_unique<intermediate_impl>(
                 source,
                 receiver,
                 waveguide_sample_rate,
                 std::move(raytracer_results),
                 std::move(waveguide_results));
+
+        LOG(INFO) << "about to return from run_basic";
+
+        return ret;
     }
 
     compute_context compute_context;

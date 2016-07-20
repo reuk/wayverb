@@ -67,6 +67,7 @@ public:
     virtual ~intermediate() noexcept                 = default;
 
     virtual std::vector<std::vector<float>> attenuate(
+            const compute_context& cc,
             const model::ReceiverSettings& receiver,
             double output_sample_rate,
             const state_callback&) const = 0;

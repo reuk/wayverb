@@ -12,7 +12,7 @@ TEST(engine, engine) {
     constexpr glm::vec3 source(2.09, 2.12, 2.12);
     constexpr glm::vec3 mic(2.09, 3.08, 0.96);
     constexpr auto output_sample_rate = 96000;
-    constexpr auto v = 0.9;
+    constexpr auto v                  = 0.9;
     constexpr Surface surface{{{v, v, v, v, v, v, v, v}},
                               {{v, v, v, v, v, v, v, v}}};
 
@@ -22,7 +22,7 @@ TEST(engine, engine) {
     constexpr auto waveguide_sample_rate = 8000;
     //    constexpr auto waveguide_filter_frequency = 4000;
 
-    constexpr auto rays = 1024 * 32;
+    constexpr auto rays     = 1024 * 32;
     constexpr auto impulses = 128;
 
     compute_context cc;
@@ -42,12 +42,12 @@ TEST(engine, engine) {
 
     std::cout << "\nfinished engine run" << std::endl;
 
-    if (! intermediate) {
+    if (!intermediate) {
         throw std::runtime_error("failed to generate intermediate results");
     }
 
     auto result = intermediate->attenuate(
-            model::ReceiverSettings{}, output_sample_rate, callback);
+            cc, model::ReceiverSettings{}, output_sample_rate, callback);
 
     std::cout << "\nfinished engine attenuate" << std::endl;
 }

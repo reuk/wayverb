@@ -24,7 +24,7 @@ callraytrace () {
 }
 
 export GLOG_logtostderr=1
-#export GTEST_FILTER="*verify*"
+export GTEST_FILTER="*align*"
 
 cmake .. && make && ctest -V
 #cmake .. && make && make doc && ctest -V

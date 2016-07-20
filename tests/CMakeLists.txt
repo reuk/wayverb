@@ -27,6 +27,7 @@ add_definitions(-DOBJ_PATH_BAD_BOX="${CMAKE_SOURCE_DIR}/demo/assets/test_models/
 add_definitions(-DMAT_PATH_BAD_BOX="${CMAKE_SOURCE_DIR}/demo/assets/materials/damped.json")
 
 add_executable(${name} ${sources})
+add_executable(valgrindable valgrindable/valgrindable.cpp)
 
 find_library(sndfile_lib sndfile)
 find_library(flac_lib flac)
@@ -35,6 +36,7 @@ find_library(vorbis_lib vorbis)
 find_library(vorbisenc_lib vorbisenc)
 
 target_link_libraries(${name} combined raytracer waveguide compressed-waveguide common ${sndfile_lib} ${flac_lib} ${ogg_lib} ${vorbis_lib} ${vorbisenc_lib} glog gtest)
+target_link_libraries(valgrindable combined raytracer waveguide compressed-waveguide common ${sndfile_lib} ${flac_lib} ${ogg_lib} ${vorbis_lib} ${vorbisenc_lib} glog gtest)
 
 add_test(NAME tests COMMAND ${name})
 
