@@ -40,44 +40,55 @@ constexpr double rectilinear_calibration_factor(double r, double sr) {
 
 */
 
-auto run_raytracer_attenuation(const attenuator_program& program,
-                               const model::ReceiverSettings& receiver,
-                               const raytracer::Results::Selected& input) {
+std::vector<std::vector<float>> run_raytracer_attenuation(
+        const attenuator_program& program,
+        const model::ReceiverSettings& receiver,
+        const raytracer::Results::Selected& input,
+        double output_sample_rate) {
     switch (receiver.mode) {
         case model::ReceiverSettings::Mode::microphones: {
             raytracer::MicrophoneAttenuator attenuator(program);
             return run_attenuation(
                     receiver.microphones.begin(),
                     receiver.microphones.end(),
-                    [&receiver, &input, &attenuator](const auto& i) {
-                        return attenuator.process(
-                                input,
-                                i.pointer.get_pointing(receiver.position),
-                                i.shape,
-                                receiver.position);
+                    [&](const auto& i) {
+                        return multiband_filter_and_mixdown(
+                                raytracer::flatten_impulses(
+                                        attenuator.process(
+                                                input,
+                                                i.pointer.get_pointing(
+                                                        receiver.position),
+                                                i.shape,
+                                                receiver.position),
+                                        output_sample_rate),
+                                output_sample_rate);
                     });
         }
         case model::ReceiverSettings::Mode::hrtf: {
             raytracer::HrtfAttenuator attenuator(program);
             auto channels = {HrtfChannel::left, HrtfChannel::right};
             return run_attenuation(
-                    channels.begin(),
-                    channels.end(),
-                    [&receiver, &input, &attenuator](const auto& i) {
-                        return attenuator.process(
-                                input,
-                                receiver.hrtf.get_pointing(receiver.position),
-                                glm::vec3(0, 1, 0),
-                                receiver.position,
-                                i);
+                    channels.begin(), channels.end(), [&](const auto& i) {
+                        return multiband_filter_and_mixdown(
+                                raytracer::flatten_impulses(
+                                        attenuator.process(
+                                                input,
+                                                receiver.hrtf.get_pointing(
+                                                        receiver.position),
+                                                glm::vec3(0, 1, 0),
+                                                receiver.position,
+                                                i),
+                                        output_sample_rate),
+                                output_sample_rate);
                     });
         }
     }
 }
 
-auto run_waveguide_attenuation(const model::ReceiverSettings& receiver,
-                               const std::vector<RunStepResult>& input,
-                               double waveguide_sample_rate) {
+std::vector<std::vector<float>> run_waveguide_attenuation(
+        const model::ReceiverSettings& receiver,
+        const std::vector<RunStepResult>& input,
+        double waveguide_sample_rate) {
     switch (receiver.mode) {
         case model::ReceiverSettings::Mode::microphones: {
             waveguide::MicrophoneAttenuator attenuator;
@@ -135,8 +146,11 @@ public:
         callback(wayverb::state::postprocessing, 1.0);
 
         //  attenuate raytracer results
-        auto raytracer_output = run_raytracer_attenuation(
-                attenuator_program, receiver, raytracer_results.get_all(false));
+        auto raytracer_output =
+                run_raytracer_attenuation(attenuator_program,
+                                          receiver,
+                                          raytracer_results.get_all(false),
+                                          output_sample_rate);
         //  attenuate waveguide results
         auto waveguide_output = run_waveguide_attenuation(
                 receiver, waveguide_results, waveguide_sample_rate);
@@ -146,12 +160,43 @@ public:
         for (auto& i : waveguide_output) {
             i = filter::run_two_pass(blocker, i.begin(), i.end());
         }
+
+        //  correct waveguide sampling rate
+        for (auto& i : waveguide_output) {
+            i = adjust_sampling_rate(
+                    std::move(i), waveguide_sample_rate, output_sample_rate);
+        }
+
         //  TODO scale waveguide output to match raytracer level
         //  TODO crossover filtering
-        //  TODO mixdown
+
+        //  mixdown
+        assert(raytracer_output.size() == waveguide_output.size());
+        auto mm = std::minmax(raytracer_output,
+                              waveguide_output,
+                              [](const auto& a, const auto& b) {
+                                  return a.front().size() < b.front().size();
+                              });
+
+        auto& min = mm.first;
+        auto& max = mm.second;
 
         std::vector<std::vector<float>> ret;
-        return ret;
+        ret.reserve(max.size());
+        proc::transform(
+                max,
+                min.begin(),
+                std::back_inserter(ret),
+                [](const auto& a, const auto& b) {
+                    auto ret = a;
+                    proc::transform(
+                            b, a.begin(), ret.begin(), [](auto a, auto b) {
+                                return a + b;
+                            });
+                    return ret;
+                });
+
+        return max;
     }
 
 private:

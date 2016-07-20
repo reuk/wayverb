@@ -43,10 +43,10 @@ std::vector<float> run_simulation(const ComputeContext& compute_context,
     auto scene_data = boundary.get_scene_data();
     scene_data.set_surfaces(surface);
 
-    RectangularWaveguide<BufferType::cl> waveguide(waveguide_program,
-                                                   MeshBoundary(scene_data),
-                                                   receiver,
-                                                   filter_frequency * 4);
+    RectangularWaveguide waveguide(waveguide_program,
+                                   MeshBoundary(scene_data),
+                                   receiver,
+                                   filter_frequency * 4);
 
     auto receiver_index = waveguide.get_index_for_coordinate(receiver);
     auto source_index = waveguide.get_index_for_coordinate(source);

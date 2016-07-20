@@ -52,10 +52,10 @@ int main(int argc, char** argv) {
         auto scene_data = cuboid_boundary.get_scene_data();
         scene_data.set_surfaces(uniform_surface(0.999));
 
-        RectangularWaveguide<BufferType::cl> waveguide(waveguide_program,
-                                                       MeshBoundary(scene_data),
-                                                       receiver,
-                                                       sampling_frequency);
+        RectangularWaveguide waveguide(waveguide_program,
+                                       MeshBoundary(scene_data),
+                                       receiver,
+                                       sampling_frequency);
 
         auto receiver_index = waveguide.get_index_for_coordinate(receiver);
         auto source_index = waveguide.get_index_for_coordinate(source);

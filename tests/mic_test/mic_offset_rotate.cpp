@@ -95,7 +95,7 @@ int main(int argc, char** argv) {
                                         VolumeType{{r, r, r, r, r, r, r, r}}});
         const RectangularProgram waveguide_program(compute_context.context,
                                                    compute_context.device);
-        RectangularWaveguide<BufferType::cl> waveguide(
+        RectangularWaveguide waveguide(
                 waveguide_program, MeshBoundary(scene_data), mic, waveguide_sr);
 
         for (auto i = 0u; i != test_locations; ++i) {

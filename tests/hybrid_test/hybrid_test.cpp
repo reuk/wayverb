@@ -75,11 +75,10 @@ auto run_waveguide(ComputeContext& context_info,
     scene_data.set_surfaces(surface);
 
     //  get a waveguide
-    RectangularWaveguide<BufferType::cl> waveguide(
-            waveguide_program,
-            MeshBoundary(scene_data),
-            config.receiver_settings.position,
-            config.get_waveguide_sample_rate());
+    RectangularWaveguide waveguide(waveguide_program,
+                                   MeshBoundary(scene_data),
+                                   config.receiver_settings.position,
+                                   config.get_waveguide_sample_rate());
 
     auto source_index   = waveguide.get_index_for_coordinate(config.source);
     auto receiver_index = waveguide.get_index_for_coordinate(
