@@ -128,7 +128,7 @@ public:
             FilterCoefficients<BiquadCoefficients::ORDER *
                                BiquadCoefficientsArray::BIQUAD_SECTIONS>;
 
-    struct BoundaryData final {
+    struct alignas(1 << 3) BoundaryData final {
         CanonicalMemory filter_memory{};
         cl_int coefficient_index{};
 
@@ -148,6 +148,16 @@ public:
             archive(CEREAL_NVP(array));
         }
     };
+
+    template <size_t N>
+    static BoundaryDataArray<N> construct_boundary_data_array(
+            const std::array<cl_int, N>& arr) {
+        BoundaryDataArray<N> ret{};
+        for (auto i = 0u; i != N; ++i) {
+            ret.array[i].coefficient_index = arr[i];
+        }
+        return ret;
+    }
 
     struct alignas(1 << 3) InputInfo final {
         const cl_ulong write_location;
@@ -338,9 +348,7 @@ public:
         return program_wrapper.template get_info<T>();
     }
 
-    cl::Device get_device() const {
-        return program_wrapper.get_device();
-    }
+    cl::Device get_device() const { return program_wrapper.get_device(); }
 
 private:
     static const std::string source;

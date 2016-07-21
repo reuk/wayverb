@@ -64,8 +64,7 @@ constexpr RectangularMesh::Locator boundary_type_to_locator(
             return RectangularMesh::Locator{0, 0, -1};
         case rectangular_program::id_pz:
             return RectangularMesh::Locator{0, 0, 1};
-        default:
-            return RectangularMesh::Locator{0, 0, 0};
+        default: return RectangularMesh::Locator{0, 0, 0};
     }
 }
 
@@ -164,7 +163,8 @@ void RectangularMesh::set_node_boundary_type(aligned::vector<Node>& ret) const {
     }
 }
 
-void RectangularMesh::set_node_boundary_index(aligned::vector<Node>& ret) const {
+void RectangularMesh::set_node_boundary_index(
+        aligned::vector<Node>& ret) const {
     set_node_boundary_index<1>(ret);
     set_node_boundary_index<2>(ret);
     set_node_boundary_index<3>(ret);
@@ -257,9 +257,7 @@ const RectangularMesh::Collection& RectangularMesh::get_nodes() const {
     return nodes;
 }
 
-glm::ivec3 RectangularMesh::get_dim() const {
-    return dim;
-}
+glm::ivec3 RectangularMesh::get_dim() const { return dim; }
 
 cl_uint RectangularMesh::coefficient_index_for_node(
         const Boundary& b, const RectangularMesh::Node& node) {
@@ -285,11 +283,12 @@ cl_uint RectangularMesh::coefficient_index_for_node(
 bool operator==(const RectangularMesh& a, const RectangularMesh& b) {
     return std::tie(a.dim,
                     a.nodes,
-                    a.boundary_data_1,
-                    a.boundary_data_2,
-                    a.boundary_data_3) == std::tie(b.dim,
-                                                   b.nodes,
-                                                   b.boundary_data_1,
-                                                   b.boundary_data_2,
-                                                   b.boundary_data_3);
+                    a.boundary_coefficients_1,
+                    a.boundary_coefficients_2,
+                    a.boundary_coefficients_3) ==
+           std::tie(b.dim,
+                    b.nodes,
+                    b.boundary_coefficients_1,
+                    b.boundary_coefficients_2,
+                    b.boundary_coefficients_3);
 }

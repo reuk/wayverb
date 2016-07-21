@@ -1,7 +1,9 @@
-#include "waveguide/log_nan.h"
 #include "waveguide/rectangular_waveguide.h"
+#include "waveguide/log_nan.h"
 
 #include "glog/logging.h"
+
+#include <cassert>
 
 namespace detail {
 
@@ -17,16 +19,26 @@ struct Type;
 struct rectangular_waveguide_run_info {
     rectangular_waveguide_run_info(
             const cl::Context& context,
-            aligned::vector<rectangular_program::BoundaryDataArray1>
-                    bd1,
-            aligned::vector<rectangular_program::BoundaryDataArray2>
-                    bd2,
-            aligned::vector<rectangular_program::BoundaryDataArray3>
-                    bd3)
+            aligned::vector<rectangular_program::BoundaryDataArray1>&& bd1,
+            aligned::vector<rectangular_program::BoundaryDataArray2>&& bd2,
+            aligned::vector<rectangular_program::BoundaryDataArray3>&& bd3)
             : velocity(0, 0, 0)
             , boundary_1(context, bd1.begin(), bd1.end(), false)
             , boundary_2(context, bd2.begin(), bd2.end(), false)
             , boundary_3(context, bd3.begin(), bd3.end(), false) {
+#ifndef NDEBUG
+        auto zeroed = [](const auto& arr) {
+            return proc::all_of(arr, [](const auto& i) {
+                return proc::all_of(i.array, [](const auto& i) {
+                    return proc::all_of(i.filter_memory.array,
+                                        [](const auto& i) { return !i; });
+                });
+            });
+        };
+        assert(zeroed(bd1));
+        assert(zeroed(bd2));
+        assert(zeroed(bd3));
+#endif
     }
 
     glm::dvec3 velocity;
@@ -50,22 +62,21 @@ RectangularWaveguide::RectangularWaveguide(const cl::Context& context,
                                   anchor),
                   sr,
                   rectangular_program::to_filter_coefficients(
-                          boundary.get_surfaces(), sr)) {
-}
+                          boundary.get_surfaces(), sr)) {}
 
 RectangularWaveguide::RectangularWaveguide(
         const cl::Context& context,
         const cl::Device& device,
         const RectangularMesh& mesh,
         float sample_rate,
-        aligned::vector<rectangular_program::CanonicalCoefficients> coefficients)
+        aligned::vector<rectangular_program::CanonicalCoefficients>
+                coefficients)
         : RectangularWaveguide(context,
                                device,
                                mesh,
                                sample_rate,
                                mesh.get_condensed_nodes(),
-                               coefficients) {
-}
+                               coefficients) {}
 
 RectangularWaveguide::RectangularWaveguide(
         const cl::Context& context,
@@ -73,13 +84,14 @@ RectangularWaveguide::RectangularWaveguide(
         const RectangularMesh& mesh,
         float sample_rate,
         aligned::vector<RectangularMesh::CondensedNode> nodes,
-        aligned::vector<rectangular_program::CanonicalCoefficients> coefficients)
+        aligned::vector<rectangular_program::CanonicalCoefficients>
+                coefficients)
         : Waveguide<rectangular_program>(
                   context, device, mesh.get_nodes().size(), sample_rate)
         , mesh(mesh)
-        , node_buffer(context, nodes.begin(), nodes.end(), false)
+        , node_buffer(context, nodes.begin(), nodes.end(), true)
         , boundary_coefficients_buffer(
-                  context, coefficients.begin(), coefficients.end(), false)
+                  context, coefficients.begin(), coefficients.end(), true)
         , surrounding(PORTS, 0)
         , surrounding_buffer(
                   context, surrounding.begin(), surrounding.end(), false)
@@ -100,6 +112,12 @@ void RectangularWaveguide::setup(cl::CommandQueue& queue, size_t o) {
                 mesh.get_boundary_data<1>(),
                 mesh.get_boundary_data<2>(),
                 mesh.get_boundary_data<3>());
+
+        proc::fill(surrounding, 0);
+        cl::copy(queue,
+                 surrounding.begin(),
+                 surrounding.end(),
+                 surrounding_buffer);
     } catch (const std::exception& e) {
         std::cerr << e.what() << std::endl;
         throw;
@@ -119,7 +137,7 @@ RunStepResult RectangularWaveguide::run_step(
     cl::copy(queue, (&flag) + 0, (&flag) + 1, error_flag_buffer);
 
     rectangular_program::InputInfo input_info{write_info.index,
-                                             write_info.pressure};
+                                              write_info.pressure};
 
     kernel(cl::EnqueueArgs(queue, cl::NDRange(nodes)),
            input_info,
@@ -208,9 +226,7 @@ glm::vec3 RectangularWaveguide::get_coordinate_for_index(size_t index) const {
     return to_vec3f(mesh.get_nodes()[index].position);
 }
 
-const RectangularMesh& RectangularWaveguide::get_mesh() const {
-    return mesh;
-}
+const RectangularMesh& RectangularWaveguide::get_mesh() const { return mesh; }
 
 bool RectangularWaveguide::inside(size_t index) const {
     return mesh.get_nodes()[index].inside;

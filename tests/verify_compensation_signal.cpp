@@ -17,7 +17,7 @@ auto uniform_surface(float r) {
 template <typename T>
 void multitest(T&& run) {
     const auto proper_output = run();
-    for (auto i = 0; i != 100; ++i) {
+    for (auto i = 0; i != 1000; ++i) {
         const auto output = run();
         ASSERT_EQ(output, proper_output);
     }
@@ -39,14 +39,14 @@ TEST(verify_compensation_signal, verify_compensation_signal_compressed) {
 }
 
 TEST(verify_compensation_signal, verify_compensation_signal_normal) {
-    const aligned::vector<float> input(20, 1);
+    const aligned::vector<float> input{1, 2, 3, 4, 5, 6, 5, 4, 3, 2, 1};
     const auto transparent = make_transparent(input);
 
     compute_context cc;
     CuboidBoundary cuboid_boundary(glm::vec3(-1), glm::vec3(1));
 
     auto scene_data = cuboid_boundary.get_scene_data();
-    scene_data.set_surfaces(uniform_surface(0.999));
+    scene_data.set_surfaces(uniform_surface(0.5));
     MeshBoundary boundary(scene_data);
 
     constexpr glm::vec3 centre{0, 0, 0};

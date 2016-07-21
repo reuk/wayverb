@@ -32,21 +32,23 @@ public:
                                boundary.get_aabb(), anchor, spacing))
             , dim(get_aabb().dimensions() / spacing)
             , nodes(compute_nodes(boundary))
-            , boundary_data_1(compute_boundary_data<1>(boundary))
-            , boundary_data_2(compute_boundary_data<2>(boundary))
-            , boundary_data_3(compute_boundary_data<3>(boundary)) {}
+            , boundary_coefficients_1(
+                      compute_boundary_coefficients<1>(boundary))
+            , boundary_coefficients_2(
+                      compute_boundary_coefficients<2>(boundary))
+            , boundary_coefficients_3(
+                      compute_boundary_coefficients<3>(boundary)) {}
 
-    template <int I, typename B>
-    aligned::vector<rectangular_program::BoundaryDataArray<I>>
-    compute_boundary_data(const B& b) const {
+    template <size_t N, typename B>
+    aligned::vector<std::array<cl_int, N>> compute_boundary_coefficients(
+            const B& b) const {
         ConnectedFinder cf;
-        aligned::vector<rectangular_program::BoundaryDataArray<I>> ret(
-                compute_num_boundary<I>());
+        aligned::vector<std::array<cl_int, N>> ret(compute_num_boundary<N>());
 
         for (auto i = 0u; i != get_nodes().size(); ++i) {
             const auto& node = get_nodes()[i];
             if (node.boundary_type != rectangular_program::id_reentrant &&
-                popcount(node.boundary_type) == I) {
+                popcount(node.boundary_type) == N) {
                 auto count = 0;
                 for (auto j = 0; j != PORTS; ++j) {
                     auto bits =
@@ -57,9 +59,9 @@ public:
                         assert(connected.type == bits ||
                                connected.type ==
                                        rectangular_program::id_reentrant);
-                        ret[node.boundary_index]
-                                .array[count++]
-                                .coefficient_index = connected.index;
+                        ret[node.boundary_index][count] = connected.index;
+
+                        count += 1;
                     }
                 }
             }
@@ -77,9 +79,18 @@ public:
 
     const Collection& get_nodes() const override;
 
-    template <int I>
-    const aligned::vector<rectangular_program::BoundaryDataArray<I>>&
-    get_boundary_data() const;
+    template <size_t N>
+    aligned::vector<rectangular_program::BoundaryDataArray<N>>
+    get_boundary_data() const {
+        aligned::vector<rectangular_program::BoundaryDataArray<N>> ret;
+        const auto& data_collection = get_boundary_coefficients<N>();
+        ret.reserve(data_collection.size());
+        for (const auto& i : data_collection) {
+            ret.push_back(
+                    rectangular_program::construct_boundary_data_array(i));
+        }
+        return ret;
+    }
 
     void compute_neighbors(size_type index, cl_uint* output) const override;
 
@@ -87,7 +98,7 @@ public:
 
     glm::ivec3 get_dim() const;
 
-    template <int BITS>
+    template <size_t BITS>
     size_type compute_num_boundary() const {
         return std::count_if(
                 get_nodes().begin(), get_nodes().end(), [](const auto& i) {
@@ -240,32 +251,34 @@ private:
 
     void set_node_boundary_index(aligned::vector<Node>& ret) const;
 
+    template <size_t N>
+    const aligned::vector<std::array<cl_int, N>>& get_boundary_coefficients()
+            const;
+
     glm::ivec3 dim;
 
     Collection nodes;
-    aligned::vector<rectangular_program::BoundaryDataArray1> boundary_data_1;
-    aligned::vector<rectangular_program::BoundaryDataArray2> boundary_data_2;
-    aligned::vector<rectangular_program::BoundaryDataArray3> boundary_data_3;
+    aligned::vector<std::array<cl_int, 1>> boundary_coefficients_1;
+    aligned::vector<std::array<cl_int, 2>> boundary_coefficients_2;
+    aligned::vector<std::array<cl_int, 3>> boundary_coefficients_3;
 
     friend bool operator==(const RectangularMesh& a, const RectangularMesh& b);
 };
 
 template <>
-inline const aligned::vector<rectangular_program::BoundaryDataArray<1>>&
-RectangularMesh::get_boundary_data<1>() const {
-    return boundary_data_1;
+inline const aligned::vector<std::array<cl_int, 1>>&
+RectangularMesh::get_boundary_coefficients() const {
+    return boundary_coefficients_1;
 }
-
 template <>
-inline const aligned::vector<rectangular_program::BoundaryDataArray<2>>&
-RectangularMesh::get_boundary_data<2>() const {
-    return boundary_data_2;
+inline const aligned::vector<std::array<cl_int, 2>>&
+RectangularMesh::get_boundary_coefficients() const {
+    return boundary_coefficients_2;
 }
-
 template <>
-inline const aligned::vector<rectangular_program::BoundaryDataArray<3>>&
-RectangularMesh::get_boundary_data<3>() const {
-    return boundary_data_3;
+inline const aligned::vector<std::array<cl_int, 3>>&
+RectangularMesh::get_boundary_coefficients() const {
+    return boundary_coefficients_3;
 }
 
 bool operator==(const RectangularMesh& a, const RectangularMesh& b);

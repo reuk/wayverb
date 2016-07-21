@@ -50,9 +50,9 @@ private:
 
     std::unique_ptr<rectangular_waveguide_run_info> invocation;
 
-    const MeshType mesh;
-    const cl::Buffer node_buffer;                   //  const
-    const cl::Buffer boundary_coefficients_buffer;  //  const
+    MeshType mesh;
+    cl::Buffer node_buffer;                   //  const
+    cl::Buffer boundary_coefficients_buffer;  //  const
     aligned::vector<cl_float>
             surrounding;            //  overwritten every step, constant size
     cl::Buffer surrounding_buffer;  //  overwritten every step, constant size
