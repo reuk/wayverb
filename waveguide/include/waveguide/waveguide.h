@@ -3,8 +3,6 @@
 #include "config.h"
 #include "rectangular_mesh.h"
 #include "rectangular_program.h"
-#include "tetrahedral_mesh.h"
-#include "tetrahedral_program.h"
 
 #include "common/conversions.h"
 #include "common/hrtf.h"

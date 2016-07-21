@@ -1,5 +1,4 @@
 #include "waveguide/rectangular_mesh.h"
-#include "waveguide/tetrahedral_mesh.h"
 
 #include "common/cl_common.h"
 #include "common/scene_data.h"
@@ -84,29 +83,12 @@ private:
     rectangular_program program{cc.get_context(), cc.get_device()};
 };
 
-TEST_F(MeshTest, locator_index_tetra) {
-    locator_index_test<TetrahedralMesh>();
-}
-
 TEST_F(MeshTest, locator_index_rect) {
     locator_index_test<RectangularMesh>();
 }
 
-bool operator==(const TetrahedralMesh::Locator& a,
-                const TetrahedralMesh::Locator& b) {
-    return std::tie(a.pos, a.mod_ind) == std::tie(b.pos, b.mod_ind);
-}
-
-TEST_F(MeshTest, position_index_tetra) {
-    test_position_index<TetrahedralMesh>();
-}
-
 TEST_F(MeshTest, position_index_rect) {
     test_position_index<RectangularMesh>();
-}
-
-TEST_F(MeshTest, neighbor_tetra) {
-    test_neighbor<TetrahedralMesh>();
 }
 
 TEST_F(MeshTest, neighbor_rect) {
