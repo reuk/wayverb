@@ -5,7 +5,6 @@
 #include "common/conversions.h"
 #include "common/geometric.h"
 #include "common/hrtf.h"
-#include "common/progress.h"
 #include "common/triangle.h"
 #include "common/voxel_collection.h"
 

@@ -1,7 +1,6 @@
 #pragma once
 
-#include "raytracer/raytracer.h"
-#include "waveguide/waveguide.h"
+#include "waveguide/rectangular_waveguide.h"
 
 #include "glm/fwd.hpp"
 

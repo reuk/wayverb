@@ -1,5 +1,4 @@
 #include "waveguide/microphone_attenuator.h"
-#include "waveguide/waveguide.h"
 
 #include "common/stl_wrappers.h"
 
@@ -18,7 +17,7 @@ float attenuation(const glm::vec3& incident,
 namespace waveguide {
 
 aligned::vector<float> MicrophoneAttenuator::process(
-        const aligned::vector<RunStepResult>& input,
+        const aligned::vector<rectangular_waveguide::run_step_output>& input,
         const glm::vec3& pointing,
         float shape) const {
     aligned::vector<float> ret;

@@ -9,7 +9,8 @@
 #include <algorithm>
 #include <numeric>
 
-void RectangularMesh::set_node_positions(aligned::vector<Node>& ret) const {
+void rectangular_mesh::set_node_positions(
+        aligned::vector<rectangular_program::NodeStruct>& ret) const {
     auto counter = 0u;
     proc::for_each(ret, [this, &counter](auto& node) {
         auto p = this->compute_position(this->compute_locator(counter));
@@ -20,8 +21,9 @@ void RectangularMesh::set_node_positions(aligned::vector<Node>& ret) const {
     });
 }
 
-void RectangularMesh::set_node_inside(const Boundary& boundary,
-                                      aligned::vector<Node>& ret) const {
+void rectangular_mesh::set_node_inside(
+        const Boundary& boundary,
+        aligned::vector<rectangular_program::NodeStruct>& ret) const {
     aligned::vector<bool> inside(ret.size());
     proc::transform(ret, inside.begin(), [&boundary](const auto& i) {
         return boundary.inside(to_vec3f(i.position));
@@ -49,39 +51,40 @@ void RectangularMesh::set_node_inside(const Boundary& boundary,
     });
 }
 
-constexpr RectangularMesh::Locator boundary_type_to_locator(
+constexpr rectangular_mesh::locator boundary_type_to_locator(
         rectangular_program::BoundaryType b) {
     switch (b) {
         case rectangular_program::id_nx:
-            return RectangularMesh::Locator{-1, 0, 0};
+            return rectangular_mesh::locator{-1, 0, 0};
         case rectangular_program::id_px:
-            return RectangularMesh::Locator{1, 0, 0};
+            return rectangular_mesh::locator{1, 0, 0};
         case rectangular_program::id_ny:
-            return RectangularMesh::Locator{0, -1, 0};
+            return rectangular_mesh::locator{0, -1, 0};
         case rectangular_program::id_py:
-            return RectangularMesh::Locator{0, 1, 0};
+            return rectangular_mesh::locator{0, 1, 0};
         case rectangular_program::id_nz:
-            return RectangularMesh::Locator{0, 0, -1};
+            return rectangular_mesh::locator{0, 0, -1};
         case rectangular_program::id_pz:
-            return RectangularMesh::Locator{0, 0, 1};
-        default: return RectangularMesh::Locator{0, 0, 0};
+            return rectangular_mesh::locator{0, 0, 1};
+        default: return rectangular_mesh::locator{0, 0, 0};
     }
 }
 
-constexpr std::pair<RectangularMesh::Locator, cl_int> make_locator_pair() {
-    return std::make_pair(RectangularMesh::Locator{0, 0, 0}, 0);
+constexpr std::pair<rectangular_mesh::locator, cl_int> make_locator_pair() {
+    return std::make_pair(rectangular_mesh::locator{0, 0, 0}, 0);
 }
 
 template <typename... Ts>
-constexpr std::pair<RectangularMesh::Locator, cl_int> make_locator_pair(
+constexpr std::pair<rectangular_mesh::locator, cl_int> make_locator_pair(
         rectangular_program::BoundaryType b, Ts... ts) {
     auto next = make_locator_pair(ts...);
     return std::make_pair(boundary_type_to_locator(b) + next.first,
                           b | next.second);
 }
 
-cl_int RectangularMesh::compute_boundary_type(
-        const Locator& loc, const aligned::vector<Node>& ret) const {
+cl_int rectangular_mesh::compute_boundary_type(
+        const locator& loc,
+        const aligned::vector<rectangular_program::NodeStruct>& ret) const {
     //  look at all nearby nodes
 
     using rectangular_program::BoundaryType::id_nx;
@@ -94,21 +97,21 @@ cl_int RectangularMesh::compute_boundary_type(
     using rectangular_program::BoundaryType::id_reentrant;
 
     auto try_directions = [this, loc, &ret](
-            const std::initializer_list<std::pair<Locator, cl_int>>& directions)
+            const std::initializer_list<std::pair<locator, cl_int>>& directions)
             -> cl_int {
-                aligned::vector<std::pair<Locator, cl_int>> nearby;
-                for (const auto& relative : directions) {
-                    auto adjacent = loc + relative.first;
-                    auto index    = compute_index(adjacent);
-                    if (index < ret.size() && ret[index].inside)
-                        nearby.push_back(relative);
-                }
-                if (nearby.size() == 1)
-                    return nearby.front().second;
-                if (nearby.size() > 1)
-                    return id_reentrant;
-                return id_none;
-            };
+        aligned::vector<std::pair<locator, cl_int>> nearby;
+        for (const auto& relative : directions) {
+            auto adjacent = loc + relative.first;
+            auto index    = compute_index(adjacent);
+            if (index < ret.size() && ret[index].inside)
+                nearby.push_back(relative);
+        }
+        if (nearby.size() == 1)
+            return nearby.front().second;
+        if (nearby.size() > 1)
+            return id_reentrant;
+        return id_none;
+    };
 
     auto d1 = try_directions({
             make_locator_pair(id_nx),
@@ -154,39 +157,39 @@ cl_int RectangularMesh::compute_boundary_type(
     return id_none;
 }
 
-void RectangularMesh::set_node_boundary_type(aligned::vector<Node>& ret) const {
+void rectangular_mesh::set_node_boundary_type(
+        aligned::vector<rectangular_program::NodeStruct>& ret) const {
     for (auto i = 0u; i != ret.size(); ++i) {
         auto& node = ret[i];
         if (!node.inside) {
-            node.boundary_type = compute_boundary_type(compute_locator(i), ret);
+            node.condensed.boundary_type = compute_boundary_type(compute_locator(i), ret);
         }
     }
 }
 
-void RectangularMesh::set_node_boundary_index(
-        aligned::vector<Node>& ret) const {
+void rectangular_mesh::set_node_boundary_index(
+        aligned::vector<rectangular_program::NodeStruct>& ret) const {
     set_node_boundary_index<1>(ret);
     set_node_boundary_index<2>(ret);
     set_node_boundary_index<3>(ret);
 }
 
-RectangularMesh::size_type RectangularMesh::compute_num_reentrant() const {
+size_t rectangular_mesh::compute_num_reentrant() const {
     return proc::count_if(get_nodes(), [](const auto& i) {
-        return i.boundary_type == rectangular_program::id_reentrant;
+        return i.condensed.boundary_type == rectangular_program::id_reentrant;
     });
 }
 
-RectangularMesh::size_type RectangularMesh::compute_index(
-        const Locator& pos) const {
+size_t rectangular_mesh::compute_index(const locator& pos) const {
     return pos.x + pos.y * get_dim().x + pos.z * get_dim().x * get_dim().y;
 }
-RectangularMesh::Locator RectangularMesh::compute_locator(
-        const size_type index) const {
+rectangular_mesh::locator rectangular_mesh::compute_locator(
+        size_t index) const {
     auto x = div(index, dim.x);
     auto y = div(x.quot, dim.y);
-    return Locator(x.rem, y.rem, y.quot % dim.z);
+    return locator(x.rem, y.rem, y.quot % dim.z);
 }
-RectangularMesh::Locator RectangularMesh::compute_locator(
+rectangular_mesh::locator rectangular_mesh::compute_locator(
         const glm::vec3& v) const {
     auto transformed    = v - get_aabb().get_c0();
     glm::ivec3 cube_pos = transformed / get_spacing();
@@ -198,12 +201,12 @@ RectangularMesh::Locator RectangularMesh::compute_locator(
         return std::pow(glm::length(v - compute_position(loc)), 2);
     };
 
-    Locator closest = min;
+    locator closest = min;
     auto dist       = get_dist(closest);
     for (auto x = min.x; x != max.x; ++x) {
         for (auto y = min.y; y != max.y; ++y) {
             for (auto z = min.z; z != max.z; ++z) {
-                Locator t(x, y, z);
+                locator t(x, y, z);
                 auto t_dist = get_dist(t);
                 if (t_dist < dist) {
                     closest = t;
@@ -215,20 +218,19 @@ RectangularMesh::Locator RectangularMesh::compute_locator(
 
     return closest;
 }
-glm::vec3 RectangularMesh::compute_position(const Locator& locator) const {
+glm::vec3 rectangular_mesh::compute_position(const locator& locator) const {
     return glm::vec3(locator) * get_spacing() + get_aabb().get_c0();
 }
 
-void RectangularMesh::compute_neighbors(size_type index,
-                                        cl_uint* output) const {
+void rectangular_mesh::compute_neighbors(size_t index, cl_uint* output) const {
     auto loc = compute_locator(index);
-    const std::array<Locator, RectangularMesh::PORTS> n_loc{{
-            Locator(loc.x - 1, loc.y, loc.z),
-            Locator(loc.x + 1, loc.y, loc.z),
-            Locator(loc.x, loc.y - 1, loc.z),
-            Locator(loc.x, loc.y + 1, loc.z),
-            Locator(loc.x, loc.y, loc.z - 1),
-            Locator(loc.x, loc.y, loc.z + 1),
+    const std::array<locator, num_ports> n_loc{{
+            locator(loc.x - 1, loc.y, loc.z),
+            locator(loc.x + 1, loc.y, loc.z),
+            locator(loc.x, loc.y - 1, loc.z),
+            locator(loc.x, loc.y + 1, loc.z),
+            locator(loc.x, loc.y, loc.z - 1),
+            locator(loc.x, loc.y, loc.z + 1),
     }};
 
     proc::transform(n_loc, output, [this](const auto& i) {
@@ -238,9 +240,17 @@ void RectangularMesh::compute_neighbors(size_type index,
     });
 }
 
-aligned::vector<RectangularMesh::CondensedNode>
-RectangularMesh::get_condensed_nodes() const {
-    aligned::vector<RectangularMesh::CondensedNode> ret(get_nodes().size());
+std::array<cl_uint, rectangular_mesh::num_ports>
+rectangular_mesh::compute_neighbors(size_t index) const {
+    std::array<cl_uint, rectangular_mesh::num_ports> ret;
+    compute_neighbors(index, ret.data());
+    return ret;
+}
+
+aligned::vector<rectangular_program::CondensedNodeStruct>
+rectangular_mesh::get_condensed_nodes() const {
+    aligned::vector<rectangular_program::CondensedNodeStruct> ret(
+            get_nodes().size());
     proc::transform(get_nodes(), ret.begin(), [](const auto& i) {
         return rectangular_program::condense(i);
     });
@@ -253,19 +263,20 @@ RectangularMesh::get_condensed_nodes() const {
     return ret;
 }
 
-const RectangularMesh::Collection& RectangularMesh::get_nodes() const {
+const aligned::vector<rectangular_program::NodeStruct>&
+rectangular_mesh::get_nodes() const {
     return nodes;
 }
 
-glm::ivec3 RectangularMesh::get_dim() const { return dim; }
+glm::ivec3 rectangular_mesh::get_dim() const { return dim; }
 
-cl_uint RectangularMesh::coefficient_index_for_node(
-        const Boundary& b, const RectangularMesh::Node& node) {
+cl_uint rectangular_mesh::coefficient_index_for_node(
+        const Boundary& b, const rectangular_program::NodeStruct& node) {
     return 0;
 }
 
-cl_uint RectangularMesh::coefficient_index_for_node(
-        const MeshBoundary& b, const RectangularMesh::Node& node) {
+cl_uint rectangular_mesh::coefficient_index_for_node(
+        const MeshBoundary& b, const rectangular_program::NodeStruct& node) {
     const auto& triangles = b.get_triangles();
     const auto& vertices  = b.get_vertices();
     auto min              = proc::min_element(
@@ -280,7 +291,11 @@ cl_uint RectangularMesh::coefficient_index_for_node(
     return min->surface;
 }
 
-bool operator==(const RectangularMesh& a, const RectangularMesh& b) {
+float rectangular_mesh::get_spacing() const { return spacing; }
+
+CuboidBoundary rectangular_mesh::get_aabb() const { return aabb; }
+
+bool operator==(const rectangular_mesh& a, const rectangular_mesh& b) {
     return std::tie(a.dim,
                     a.nodes,
                     a.boundary_coefficients_1,

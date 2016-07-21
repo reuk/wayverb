@@ -9,6 +9,7 @@
 #include "common/dc_blocker.h"
 #include "common/filters_common.h"
 #include "common/kernel.h"
+#include "common/progress_bar.h"
 #include "common/scene_data.h"
 #include "common/serialize/boundaries.h"
 #include "common/serialize/surface.h"
@@ -49,11 +50,11 @@ int main(int argc, char** argv) {
         auto scene_data = cuboid_boundary.get_scene_data();
         scene_data.set_surfaces(uniform_surface(0.999));
 
-        RectangularWaveguide waveguide(cc.get_context(),
-                                       cc.get_device(),
-                                       MeshBoundary(scene_data),
-                                       receiver,
-                                       sampling_frequency);
+        rectangular_waveguide waveguide(cc.get_context(),
+                                        cc.get_device(),
+                                        MeshBoundary(scene_data),
+                                        receiver,
+                                        sampling_frequency);
 
         auto receiver_index = waveguide.get_index_for_coordinate(receiver);
         auto source_index   = waveguide.get_index_for_coordinate(source);
@@ -88,7 +89,7 @@ int main(int argc, char** argv) {
             auto kernel = make_transparent(i.kernel);
 
             std::atomic_bool keep_going{true};
-            ProgressBar pb(std::cout, steps);
+            progress_bar pb(std::cout, steps);
             auto results = waveguide.init_and_run(corrected_source,
                                                   kernel,
                                                   receiver_index,

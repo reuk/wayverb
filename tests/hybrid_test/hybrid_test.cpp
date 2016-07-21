@@ -14,6 +14,7 @@
 #include "common/filters_common.h"
 #include "common/hrtf_utils.h"
 #include "common/kernel.h"
+#include "common/progress_bar.h"
 #include "common/scene_data.h"
 #include "common/sinc.h"
 #include "common/stl_wrappers.h"
@@ -71,11 +72,11 @@ auto run_waveguide(const compute_context& cc,
     scene_data.set_surfaces(surface);
 
     //  get a waveguide
-    RectangularWaveguide waveguide(cc.get_context(),
-                                   cc.get_device(),
-                                   MeshBoundary(scene_data),
-                                   config.receiver_settings.position,
-                                   config.get_waveguide_sample_rate());
+    rectangular_waveguide waveguide(cc.get_context(),
+                                    cc.get_device(),
+                                    MeshBoundary(scene_data),
+                                    config.receiver_settings.position,
+                                    config.get_waveguide_sample_rate());
 
     auto source_index   = waveguide.get_index_for_coordinate(config.source);
     auto receiver_index = waveguide.get_index_for_coordinate(
@@ -93,7 +94,7 @@ auto run_waveguide(const compute_context& cc,
     //            [                                        ]
     std::cout << "[ -- running waveguide ----------------- ]" << std::endl;
     std::atomic_bool keep_going{true};
-    ProgressBar pb(std::cout, steps);
+    progress_bar pb(std::cout, steps);
     auto results = waveguide.init_and_run(corrected_source,
                                           std::move(input),
                                           receiver_index,
@@ -173,7 +174,7 @@ int main(int argc, char** argv) {
     std::cout << "[ -- running raytracer ----------------- ]" << std::endl;
     std::atomic_bool keep_going{true};
     const auto impulses = 1000;
-    ProgressBar pb(std::cout, impulses);
+    progress_bar pb(std::cout, impulses);
     auto results = raytracer.run(boundary.get_scene_data(),
                                  config.receiver_settings.position,
                                  config.source,

@@ -39,14 +39,6 @@ typedef enum {
 } ErrorCode;
 
 typedef struct {
-    uint ports[PORTS];
-    float3 position;
-    bool inside;
-    int boundary_type;
-    uint boundary_index;
-} Node;
-
-typedef struct {
     int boundary_type;
     uint boundary_index;
 } CondensedNode;

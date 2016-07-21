@@ -4,6 +4,7 @@
 #include "waveguide/rectangular_waveguide.h"
 
 #include "common/cl_common.h"
+#include "common/progress_bar.h"
 #include "common/conversions.h"
 #include "common/kernel.h"
 #include "common/scene_data.h"
@@ -93,11 +94,11 @@ int main(int argc, char** argv) {
         auto r = 0.9f;
         scene_data.set_surfaces(Surface{VolumeType{{r, r, r, r, r, r, r, r}},
                                         VolumeType{{r, r, r, r, r, r, r, r}}});
-        RectangularWaveguide waveguide(cc.get_context(),
-                                       cc.get_device(),
-                                       MeshBoundary(scene_data),
-                                       mic,
-                                       waveguide_sr);
+        rectangular_waveguide waveguide(cc.get_context(),
+                                        cc.get_device(),
+                                        MeshBoundary(scene_data),
+                                        mic,
+                                        waveguide_sr);
 
         for (auto i = 0u; i != test_locations; ++i) {
             float angle = i * M_PI * 2 / test_locations + M_PI;
@@ -118,7 +119,7 @@ int main(int argc, char** argv) {
             std::cout << "running " << steps << " steps" << std::endl;
 
             std::atomic_bool keep_going{true};
-            ProgressBar pb(std::cout, steps);
+            progress_bar pb(std::cout, steps);
             const auto w_results = waveguide.init_and_run(
                     source, kernel, mic_index, steps, keep_going, [&pb] {
                         pb += 1;

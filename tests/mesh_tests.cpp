@@ -48,7 +48,7 @@ public:
         for (auto i = 0u; i != mesh.get_nodes().size(); ++i) {
             auto loc = mesh.compute_locator(i);
             auto pos = mesh.compute_position(loc);
-            for (auto j : mesh.BaseMesh::compute_neighbors(i)) {
+            for (auto j : mesh.compute_neighbors(i)) {
                 if (j != -1) {
                     auto ll = mesh.compute_locator(j);
                     auto pp = mesh.compute_position(ll);
@@ -79,18 +79,14 @@ public:
 
 private:
     compute_context cc;
-    cl::CommandQueue queue     {cc.get_context(), cc.get_device()};
+    cl::CommandQueue queue{cc.get_context(), cc.get_device()};
     rectangular_program program{cc.get_context(), cc.get_device()};
 };
 
-TEST_F(MeshTest, locator_index_rect) {
-    locator_index_test<RectangularMesh>();
-}
+TEST_F(MeshTest, locator_index_rect) { locator_index_test<rectangular_mesh>(); }
 
 TEST_F(MeshTest, position_index_rect) {
-    test_position_index<RectangularMesh>();
+    test_position_index<rectangular_mesh>();
 }
 
-TEST_F(MeshTest, neighbor_rect) {
-    test_neighbor<RectangularMesh>();
-}
+TEST_F(MeshTest, neighbor_rect) { test_neighbor<rectangular_mesh>(); }

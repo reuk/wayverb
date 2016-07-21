@@ -1,5 +1,6 @@
 #include "waveguide/make_transparent.h"
 #include "waveguide/rectangular_waveguide.h"
+#include "common/progress_bar.h"
 
 #include "gtest/gtest.h"
 
@@ -26,9 +27,9 @@ TEST(waveguide_init, waveguide_init) {
     const aligned::vector<float> input(20, 1);
     const auto transparent = make_transparent(input);
 
-    RectangularWaveguide a(
+    rectangular_waveguide a(
             cc.get_context(), cc.get_device(), boundary, centre, 20000);
-    RectangularWaveguide b(
+    rectangular_waveguide b(
             cc.get_context(), cc.get_device(), boundary, centre, 20000);
 
     ASSERT_TRUE(a == b);
@@ -37,7 +38,7 @@ TEST(waveguide_init, waveguide_init) {
         auto receiver_index = waveguide.get_index_for_coordinate(centre);
         constexpr auto steps = 100;
         std::atomic_bool keep_going{true};
-        ProgressBar pb(std::cout, steps);
+        progress_bar pb(std::cout, steps);
         const auto output = a.init_and_run(
                 centre, transparent, receiver_index, steps, keep_going, [&pb] {
                     pb += 1;

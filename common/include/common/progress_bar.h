@@ -1,16 +1,15 @@
 #pragma once
 
-#include <sstream>
+#include <iosfwd>
 
-class ProgressBar final {
+class progress_bar final {
 public:
-    ProgressBar(std::ostream& os, int expected);
+    progress_bar(std::ostream& os, int expected);
 
     int get_expected() const;
     int get_count() const;
 
     int operator+=(int i);
-    int operator++();
 
 private:
     /// from 0-1

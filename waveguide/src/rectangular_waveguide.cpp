@@ -16,7 +16,7 @@ struct Type;
 
 }  // namespace detail
 
-struct rectangular_waveguide_run_info {
+struct rectangular_waveguide::rectangular_waveguide_run_info {
     rectangular_waveguide_run_info(
             const cl::Context& context,
             aligned::vector<rectangular_program::BoundaryDataArray1>&& bd1,
@@ -47,52 +47,64 @@ struct rectangular_waveguide_run_info {
     cl::Buffer boundary_3;
 };
 
-RectangularWaveguide::~RectangularWaveguide() noexcept = default;
+rectangular_waveguide::~rectangular_waveguide() noexcept = default;
 
-RectangularWaveguide::RectangularWaveguide(const cl::Context& context,
-                                           const cl::Device& device,
-                                           const MeshBoundary& boundary,
-                                           const glm::vec3& anchor,
-                                           float sr)
-        : RectangularWaveguide(
+rectangular_waveguide::rectangular_waveguide(const cl::Context& context,
+                                             const cl::Device& device,
+                                             const MeshBoundary& boundary,
+                                             const glm::vec3& anchor,
+                                             double sr)
+        : rectangular_waveguide(
                   context,
                   device,
-                  RectangularMesh(boundary,
-                                  config::grid_spacing(SPEED_OF_SOUND, 1 / sr),
-                                  anchor),
+                  rectangular_mesh(boundary,
+                                   config::grid_spacing(SPEED_OF_SOUND, 1 / sr),
+                                   anchor),
                   sr,
                   rectangular_program::to_filter_coefficients(
                           boundary.get_surfaces(), sr)) {}
 
-RectangularWaveguide::RectangularWaveguide(
+rectangular_waveguide::rectangular_waveguide(
         const cl::Context& context,
         const cl::Device& device,
-        const RectangularMesh& mesh,
-        float sample_rate,
+        const rectangular_mesh& mesh,
+        double sample_rate,
         aligned::vector<rectangular_program::CanonicalCoefficients>
                 coefficients)
-        : RectangularWaveguide(context,
-                               device,
-                               mesh,
-                               sample_rate,
-                               mesh.get_condensed_nodes(),
-                               coefficients) {}
+        : rectangular_waveguide(context,
+                                device,
+                                mesh,
+                                sample_rate,
+                                mesh.get_condensed_nodes(),
+                                coefficients) {}
 
-RectangularWaveguide::RectangularWaveguide(
+rectangular_waveguide::rectangular_waveguide(
         const cl::Context& context,
         const cl::Device& device,
-        const RectangularMesh& mesh,
-        float sample_rate,
-        aligned::vector<RectangularMesh::CondensedNode> nodes,
+        const rectangular_mesh& mesh,
+        double sample_rate,
+        aligned::vector<rectangular_program::CondensedNodeStruct> nodes,
         aligned::vector<rectangular_program::CanonicalCoefficients>
                 coefficients)
-        : Waveguide<rectangular_program>(
-                  context, device, mesh.get_nodes().size(), sample_rate)
+        : queue(context, device)
+        , program(context, device)
+        , kernel(program.get_kernel())
         , mesh(mesh)
+        , nodes(nodes.size())
+        , previous(program.template get_info<CL_PROGRAM_CONTEXT>(),
+                   CL_MEM_READ_WRITE,
+                   nodes.size() * sizeof(cl_float))
+        , current(program.template get_info<CL_PROGRAM_CONTEXT>(),
+                  CL_MEM_READ_WRITE,
+                  nodes.size() * sizeof(cl_float))
+        , output(program.template get_info<CL_PROGRAM_CONTEXT>(),
+                 CL_MEM_READ_WRITE,
+                 sizeof(cl_float))
+        , sample_rate(sample_rate)
         , node_buffer(context, nodes.begin(), nodes.end(), true)
         , boundary_coefficients_buffer(
                   context, coefficients.begin(), coefficients.end(), true)
-        , surrounding(PORTS, 0)
+        , surrounding(num_ports, 0)
         , surrounding_buffer(
                   context, surrounding.begin(), surrounding.end(), false)
         , error_flag_buffer(context, CL_MEM_READ_WRITE, sizeof(cl_int)) {
@@ -103,32 +115,11 @@ RectangularWaveguide::RectangularWaveguide(
               << " MB";
 }
 
-void RectangularWaveguide::setup(cl::CommandQueue& queue, size_t o) {
-    try {
-        auto context =
-                this->get_program().template get_info<CL_PROGRAM_CONTEXT>();
-        invocation = std::make_unique<rectangular_waveguide_run_info>(
-                context,
-                mesh.get_boundary_data<1>(),
-                mesh.get_boundary_data<2>(),
-                mesh.get_boundary_data<3>());
-
-        proc::fill(surrounding, 0);
-        cl::copy(queue,
-                 surrounding.begin(),
-                 surrounding.end(),
-                 surrounding_buffer);
-    } catch (const std::exception& e) {
-        std::cerr << e.what() << std::endl;
-        throw;
-    }
-}
-
-RunStepResult RectangularWaveguide::run_step(
-        const typename Base::WriteInfo& write_info,
+rectangular_waveguide::run_step_output rectangular_waveguide::run_step(
+        const run_step_input& write_info,
         size_t o,
         cl::CommandQueue& queue,
-        typename Base::kernel_type& kernel,
+        kernel_type& kernel,
         size_t nodes,
         cl::Buffer& previous,
         cl::Buffer& current,
@@ -136,8 +127,8 @@ RunStepResult RectangularWaveguide::run_step(
     auto flag = rectangular_program::id_success;
     cl::copy(queue, (&flag) + 0, (&flag) + 1, error_flag_buffer);
 
-    rectangular_program::InputInfo input_info{write_info.index,
-                                              write_info.pressure};
+    rectangular_program::InputInfo input_info{write_info.get_index(),
+                                              write_info.get_pressure()};
 
     kernel(cl::EnqueueArgs(queue, cl::NDRange(nodes)),
            input_info,
@@ -208,32 +199,152 @@ RunStepResult RectangularWaveguide::run_step(
     static constexpr auto ambient_density = 1.225;
     auto dv                               = m / -ambient_density;
     //  and integrated using a discrete-time integrator
-    invocation->velocity += this->get_period() * dv;
+    invocation->velocity += (1.0 / sample_rate) * dv;
 
     //  the instantaneous intensity is obtained by multiplying the velocity and
     //  the pressure
     auto intensity = invocation->velocity * static_cast<double>(out);
 
-    return RunStepResult{out, intensity};
+    return run_step_output(out, intensity);
 }
 
-size_t RectangularWaveguide::get_index_for_coordinate(
+size_t rectangular_waveguide::get_index_for_coordinate(
         const glm::vec3& v) const {
     return mesh.compute_index(mesh.compute_locator(v));
 }
 
-glm::vec3 RectangularWaveguide::get_coordinate_for_index(size_t index) const {
+glm::vec3 rectangular_waveguide::get_coordinate_for_index(size_t index) const {
     return to_vec3f(mesh.get_nodes()[index].position);
 }
 
-const RectangularMesh& RectangularWaveguide::get_mesh() const { return mesh; }
+const rectangular_mesh& rectangular_waveguide::get_mesh() const { return mesh; }
 
-bool RectangularWaveguide::inside(size_t index) const {
+bool rectangular_waveguide::inside(size_t index) const {
     return mesh.get_nodes()[index].inside;
 }
 
-constexpr int RectangularWaveguide::PORTS;
+aligned::vector<rectangular_waveguide::run_step_output>
+rectangular_waveguide::init_and_run(const glm::vec3& e,
+                                    const aligned::vector<float>& input,
+                                    size_t o,
+                                    size_t steps,
+                                    std::atomic_bool& keep_going,
+                                    const per_step_callback& callback) {
+    auto run_info = init(e, input, o, steps);
+    return run_basic(run_info,
+                     keep_going,
+                     [this, &callback](const auto& run_info, auto i) {
+                         auto ret = this->run_step(run_info, i);
+                         callback();
+                         return ret;
+                     });
+}
 
-bool operator==(const RectangularWaveguide& a, const RectangularWaveguide& b) {
+aligned::vector<rectangular_waveguide::run_step_output>
+rectangular_waveguide::init_and_run_visualised(
+        const glm::vec3& e,
+        const aligned::vector<float>& input,
+        size_t o,
+        size_t steps,
+        std::atomic_bool& keep_going,
+        const per_step_callback& callback,
+        const visualiser_callback& visual_callback) {
+    auto run_info = init(e, input, o, steps);
+    return run_basic(
+            run_info,
+            keep_going,
+            [this, &callback, &visual_callback](const auto& run_info, auto i) {
+                auto ret = this->run_step_visualised(run_info, i);
+                callback();
+                visual_callback(ret.second);
+                return ret.first;
+            });
+}
+
+namespace {
+template <typename InIt, typename OutIt, typename Fun>
+void ordered_transform(InIt a, InIt b, OutIt x, Fun&& t) {
+    for (; a != b; ++a) {
+        *x = t(*a);
+    }
+}
+}  // namespace
+
+aligned::vector<rectangular_waveguide::run_step_output>
+rectangular_waveguide::run_basic(const run_info& run_info,
+                                 std::atomic_bool& keep_going,
+                                 const input_callback& callback) {
+    aligned::vector<run_step_output> ret;
+    ret.reserve(run_info.get_signal().size());
+
+    //  I would use std::transform here but I need to guarantee order
+    ordered_transform(
+            run_info.get_signal().begin(),
+            run_info.get_signal().end(),
+            std::back_inserter(ret),
+            [&](auto i) {
+                if (!keep_going) {
+                    throw std::runtime_error("flag state false, stopping");
+                }
+                return callback(run_info, i);
+            });
+
+    return ret;
+}
+
+rectangular_waveguide::run_info rectangular_waveguide::init(
+        const glm::vec3& e,
+        const aligned::vector<float>& input_sig,
+        size_t o,
+        size_t steps) {
+    auto context = program.get_info<CL_PROGRAM_CONTEXT>();
+    invocation   = std::make_unique<rectangular_waveguide_run_info>(
+            context,
+            mesh.get_boundary_data<1>(),
+            mesh.get_boundary_data<2>(),
+            mesh.get_boundary_data<3>());
+
+    proc::fill(surrounding, 0);
+    cl::copy(queue, surrounding.begin(), surrounding.end(), surrounding_buffer);
+
+    auto zero_mesh = [this](auto& buffer) {
+        aligned::vector<cl_uchar> n(buffer.template getInfo<CL_MEM_SIZE>(), 0);
+        cl::copy(queue, n.begin(), n.end(), buffer);
+    };
+    zero_mesh(previous);
+    zero_mesh(current);
+
+    auto t = input_sig;
+    t.resize(steps, 0);
+    return run_info(get_index_for_coordinate(e), t, o);
+}
+
+rectangular_waveguide::run_step_output rectangular_waveguide::run_step(
+        const run_info& run_info, float input) {
+    auto ret = run_step(run_step_input(run_info.get_input_index(), input),
+                        run_info.get_output_index(),
+                        queue,
+                        kernel,
+                        nodes,
+                        previous,
+                        current,
+                        output);
+    std::swap(current, previous);
+    return ret;
+}
+
+std::pair<rectangular_waveguide::run_step_output, aligned::vector<cl_float>>
+rectangular_waveguide::run_step_visualised(const run_info& run_info,
+                                           float input) {
+    auto ret = run_step(run_info, input);
+    aligned::vector<cl_float> pressures(nodes, 0);
+    cl::copy(queue, previous, pressures.begin(), pressures.end());
+    return std::make_pair(ret, pressures);
+}
+
+constexpr size_t rectangular_waveguide::num_ports;
+
+bool operator==(const rectangular_waveguide& a,
+                const rectangular_waveguide& b) {
     return a.mesh == b.mesh;
 }

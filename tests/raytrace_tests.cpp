@@ -2,7 +2,6 @@
 
 #include "common/boundaries.h"
 #include "common/cl_common.h"
-#include "common/progress.h"
 #include "common/string_builder.h"
 #include "common/write_audio_file.h"
 

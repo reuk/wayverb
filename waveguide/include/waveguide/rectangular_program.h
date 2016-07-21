@@ -43,13 +43,22 @@ public:
 
     static constexpr cl_uint NO_NEIGHBOR{~cl_uint{0}};
 
-    struct alignas(1 << 4) NodeStruct final {
-        static constexpr size_t PORTS{6};
-        cl_uint ports[PORTS]{};
-        cl_float3 position{};
-        cl_bool inside{};
+    struct alignas(1 << 3) CondensedNodeStruct final {
+        static constexpr size_t num_ports{6};
         cl_int boundary_type{};
         cl_uint boundary_index{};
+
+        template <typename Archive>
+        void serialize(Archive& archive) {
+            archive(CEREAL_NVP(boundary_type), CEREAL_NVP(boundary_index));
+        }
+    };
+
+    struct NodeStruct final {
+        cl_uint ports[CondensedNodeStruct::num_ports]{};
+        cl_float3 position{};
+        cl_bool inside{};
+        CondensedNodeStruct condensed;
 
         template <typename Archive>
         void serialize(Archive& archive) {
@@ -57,19 +66,7 @@ public:
                     CEREAL_NVP(position),
                     CEREAL_NVP(position),
                     CEREAL_NVP(inside),
-                    CEREAL_NVP(boundary_type),
-                    CEREAL_NVP(boundary_index));
-        }
-    };
-
-    struct alignas(1 << 3) CondensedNodeStruct final {
-        static constexpr size_t PORTS{6};
-        cl_int boundary_type{};
-        cl_uint boundary_index{};
-
-        template <typename Archive>
-        void serialize(Archive& archive) {
-            archive(CEREAL_NVP(boundary_type), CEREAL_NVP(boundary_index));
+                    CEREAL_NVP(condensed));
         }
     };
 
@@ -171,7 +168,7 @@ public:
     static CanonicalCoefficients to_impedance_coefficients(
             const CanonicalCoefficients& c);
 
-    static constexpr size_t PORTS = NodeStruct::PORTS;
+    static constexpr auto num_ports{CondensedNodeStruct::num_ports};
 
     explicit rectangular_program(const cl::Context& context,
                                  const cl::Device& device);
@@ -356,14 +353,17 @@ private:
     program_wrapper program_wrapper;
 };
 
+inline bool operator==(const rectangular_program::CondensedNodeStruct& a,
+                       const rectangular_program::CondensedNodeStruct& b) {
+    return std::tie(a.boundary_type, a.boundary_index) ==
+           std::tie(b.boundary_type, b.boundary_index);
+}
+
 inline bool operator==(const rectangular_program::NodeStruct& a,
                        const rectangular_program::NodeStruct& b) {
     return proc::equal(a.ports, std::begin(b.ports)) &&
-           std::tie(a.position, a.inside, a.boundary_type, a.boundary_index) ==
-                   std::tie(b.position,
-                            b.inside,
-                            b.boundary_type,
-                            b.boundary_index);
+           std::tie(a.position, a.inside, a.condensed) ==
+                   std::tie(b.position, b.inside, b.condensed);
 }
 
 template <size_t D>

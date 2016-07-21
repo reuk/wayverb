@@ -13,14 +13,14 @@ rectangular_program::rectangular_program(const cl::Context& context,
                   context,
                   device,
                   std::vector<std::string>{cl_sources::get_struct_definitions(
-                                                   PORTS, BIQUAD_SECTIONS),
+                                                   num_ports, BIQUAD_SECTIONS),
                                            source}) {}
 
 rectangular_program::CondensedNodeStruct rectangular_program::condense(
         const NodeStruct& n) {
     return CondensedNodeStruct{
-            n.boundary_type | (n.inside ? id_inside : id_none),
-            n.boundary_index};
+            n.condensed.boundary_type | (n.inside ? id_inside : id_none),
+            n.condensed.boundary_index};
 }
 
 rectangular_program::CanonicalCoefficients rectangular_program::convolve(

@@ -3,6 +3,7 @@
 #include "waveguide/rectangular_waveguide.h"
 
 #include "common/cl_common.h"
+#include "common/progress_bar.h"
 #include "common/sinc.h"
 
 #include "glog/logging.h"
@@ -47,7 +48,7 @@ TEST(run_waveguide, run_waveguide) {
     scene_data.set_surfaces(surface);
 
     //  get a waveguide
-    RectangularWaveguide waveguide(cc.get_context(),
+    rectangular_waveguide waveguide(cc.get_context(),
                                    cc.get_device(),
                                    MeshBoundary(scene_data),
                                    receiver,
@@ -62,7 +63,7 @@ TEST(run_waveguide, run_waveguide) {
     auto corrected_source = waveguide.get_coordinate_for_index(source_index);
 
     std::atomic_bool keep_going{true};
-    ProgressBar pb(std::cout, steps);
+    progress_bar pb(std::cout, steps);
     auto results = waveguide.init_and_run(corrected_source,
                                           aligned::vector<float>{1},
                                           receiver_index,

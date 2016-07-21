@@ -1,5 +1,5 @@
 #include "waveguide/hrtf_attenuator.h"
-#include "waveguide/waveguide.h"
+#include "waveguide/rectangular_waveguide.h"
 
 #include "common/filters_common.h"
 #include "common/hrtf.h"
@@ -42,7 +42,7 @@ float attenuation(const glm::vec3& direction,
 
 namespace waveguide {
 aligned::vector<aligned::vector<float>> HrtfAttenuator::process(
-        const aligned::vector<RunStepResult>& input,
+        const aligned::vector<rectangular_waveguide::run_step_output>& input,
         const glm::vec3& direction,
         const glm::vec3& up,
         HrtfChannel channel) const {

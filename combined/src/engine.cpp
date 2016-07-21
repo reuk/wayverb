@@ -89,7 +89,7 @@ aligned::vector<aligned::vector<float>> run_raytracer_attenuation(
 
 aligned::vector<aligned::vector<float>> run_waveguide_attenuation(
         const model::ReceiverSettings& receiver,
-        const aligned::vector<RunStepResult>& input,
+        const aligned::vector<rectangular_waveguide::run_step_output>& input,
         double waveguide_sample_rate) {
     switch (receiver.mode) {
         case model::ReceiverSettings::Mode::microphones: {
@@ -130,7 +130,8 @@ public:
                       const glm::vec3& receiver,
                       double waveguide_sample_rate,
                       raytracer::Results&& raytracer_results,
-                      aligned::vector<RunStepResult>&& waveguide_results)
+                      aligned::vector<rectangular_waveguide::run_step_output>&&
+                              waveguide_results)
             : source(source)
             , receiver(receiver)
             , waveguide_sample_rate(waveguide_sample_rate)
@@ -205,7 +206,7 @@ private:
     double waveguide_sample_rate;
 
     raytracer::Results raytracer_results;
-    aligned::vector<RunStepResult> waveguide_results;
+    aligned::vector<rectangular_waveguide::run_step_output> waveguide_results;
 };
 
 }  // namespace
@@ -249,11 +250,11 @@ public:
 
     std::unique_ptr<intermediate> run(std::atomic_bool& keep_going,
                                       const state_callback& callback) {
-        auto waveguide_step = 0;
+        auto waveguide_step = 0u;
         return this->run_basic(
                 keep_going,
                 callback,
-                [&waveguide_step](RectangularWaveguide& waveguide,
+                [&waveguide_step](rectangular_waveguide& waveguide,
                                   const glm::vec3& corrected_source,
                                   const aligned::vector<float>& input,
                                   size_t mic_index,
@@ -277,12 +278,12 @@ public:
             std::atomic_bool& keep_going,
             const state_callback& s_callback,
             const visualiser_callback& v_callback) {
-        auto waveguide_step = 0;
+        auto waveguide_step = 0u;
         return this->run_basic(
                 keep_going,
                 s_callback,
                 [&waveguide_step, &v_callback](
-                        RectangularWaveguide& waveguide,
+                        rectangular_waveguide& waveguide,
                         const glm::vec3& corrected_source,
                         const aligned::vector<float>& input,
                         size_t mic_index,
@@ -312,17 +313,20 @@ public:
     }
 
 private:
-    std::unique_ptr<intermediate> run_basic(
-            std::atomic_bool& keep_going,
-            const state_callback& callback,
-            const std::function<aligned::vector<RunStepResult>(
-                    RectangularWaveguide&,
+    using waveguide_callback = std::function<
+            aligned::vector<rectangular_waveguide::run_step_output>(
+                    rectangular_waveguide&,
                     const glm::vec3&,
                     const aligned::vector<float>&,
                     size_t,
                     size_t,
                     std::atomic_bool&,
-                    const state_callback&)>& waveguide_callback) {
+                    const state_callback&)>;
+
+    std::unique_ptr<intermediate> run_basic(
+            std::atomic_bool& keep_going,
+            const state_callback& callback,
+            const waveguide_callback& waveguide_callback) {
         //  RAYTRACER  -------------------------------------------------------//
         callback(state::starting_raytracer, 1.0);
         auto raytracer_step = 0;
@@ -396,7 +400,7 @@ private:
     raytracer_program raytracer_program;
     CopyableSceneData scene_data;
     raytracer::Raytracer raytracer;
-    RectangularWaveguide waveguide;
+    rectangular_waveguide waveguide;
 
     glm::vec3 source;
     glm::vec3 receiver;

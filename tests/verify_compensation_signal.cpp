@@ -1,5 +1,7 @@
 #include "compressed_waveguide.h"
 
+#include "common/progress_bar.h"
+
 #include "waveguide/make_transparent.h"
 #include "waveguide/rectangular_waveguide.h"
 
@@ -51,7 +53,7 @@ TEST(verify_compensation_signal, verify_compensation_signal_normal) {
 
     constexpr glm::vec3 centre{0, 0, 0};
 
-    RectangularWaveguide waveguide(
+    rectangular_waveguide waveguide(
             cc.get_context(), cc.get_device(), boundary, centre, 20000);
 
     auto receiver_index = waveguide.get_index_for_coordinate(centre);
@@ -59,7 +61,7 @@ TEST(verify_compensation_signal, verify_compensation_signal_normal) {
     multitest([&] {
         constexpr auto steps = 100;
         std::atomic_bool keep_going{true};
-        ProgressBar pb(std::cout, steps);
+        progress_bar pb(std::cout, steps);
         const auto output = waveguide.init_and_run(
                 centre, transparent, receiver_index, steps, keep_going, [&pb] {
                     pb += 1;

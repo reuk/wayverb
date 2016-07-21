@@ -1,65 +1,185 @@
 #pragma once
 
-#include "waveguide/waveguide.h"
+#include "config.h"
+#include "rectangular_mesh.h"
+#include "rectangular_program.h"
 
-struct rectangular_waveguide_run_info;
+#include "glm/glm.hpp"
 
-class RectangularWaveguide : public Waveguide<rectangular_program> {
+#include <algorithm>
+#include <array>
+#include <type_traits>
+
+class rectangular_waveguide final {
 public:
-    using Base = Waveguide<rectangular_program>;
+    rectangular_waveguide(const cl::Context&,
+                          const cl::Device&,
+                          const MeshBoundary& boundary,
+                          const glm::vec3& anchor,
+                          double sr);
+    rectangular_waveguide(const rectangular_waveguide&) = delete;
+    rectangular_waveguide& operator=(const rectangular_waveguide&) = delete;
+    rectangular_waveguide(rectangular_waveguide&&) noexcept        = delete;
+    rectangular_waveguide& operator=(rectangular_waveguide&&) noexcept = delete;
+    ~rectangular_waveguide() noexcept;
 
-    RectangularWaveguide(const cl::Context&,
-                         const cl::Device&,
-                         const MeshBoundary& boundary,
-                         const glm::vec3& anchor,
-                         float sr);
-    virtual ~RectangularWaveguide() noexcept;
-    const RectangularMesh& get_mesh() const;
+    const rectangular_mesh& get_mesh() const;
 
-    size_t get_index_for_coordinate(const glm::vec3& v) const override;
-    glm::vec3 get_coordinate_for_index(size_t index) const override;
-    bool inside(size_t index) const override;
+    size_t get_index_for_coordinate(const glm::vec3& v) const;
+    glm::vec3 get_coordinate_for_index(size_t index) const;
+    bool inside(size_t index) const;
+
+    class run_step_output final {
+    public:
+        explicit run_step_output(float pressure             = 0,
+                                 const glm::vec3& intensity = glm::vec3())
+                : pressure(pressure)
+                , intensity(intensity) {}
+
+        float get_pressure() const { return pressure; }
+        glm::vec3 get_intensity() const { return intensity; }
+
+    private:
+        float pressure;
+        glm::vec3 intensity;
+    };
+
+    using per_step_callback   = std::function<void()>;
+    using visualiser_callback = std::function<void(aligned::vector<float>)>;
+
+    aligned::vector<run_step_output> init_and_run(
+            const glm::vec3& e,
+            const aligned::vector<float>& input,
+            size_t o,
+            size_t steps,
+            std::atomic_bool& keep_going,
+            const per_step_callback& callback);
+
+    aligned::vector<run_step_output> init_and_run_visualised(
+            const glm::vec3& e,
+            const aligned::vector<float>& input,
+            size_t o,
+            size_t steps,
+            std::atomic_bool& keep_going,
+            const per_step_callback& callback,
+            const visualiser_callback& visual_callback);
 
 private:
-    using MeshType              = RectangularMesh;
-    static constexpr auto PORTS = MeshType::PORTS;
+    using kernel_type =
+            decltype(std::declval<rectangular_program>().get_kernel());
+    static constexpr auto num_ports{rectangular_mesh::num_ports};
 
-    RunStepResult run_step(const typename Base::WriteInfo& write_info,
-                           size_t o,
-                           cl::CommandQueue& queue,
-                           typename Base::kernel_type& kernel,
-                           size_t nodes,
-                           cl::Buffer& previous,
-                           cl::Buffer& current,
-                           cl::Buffer& output) override;
-    void setup(cl::CommandQueue& queue, size_t o) override;
+    class run_info final {
+    public:
+        run_info(size_t input_index,
+                 const aligned::vector<float>& signal,
+                 size_t output_index)
+                : input_index(input_index)
+                , signal(signal)
+                , output_index(output_index) {}
 
-    RectangularWaveguide(const cl::Context&,
-                         const cl::Device&,
-                         const RectangularMesh& mesh,
-                         float sample_rate,
-                         aligned::vector<rectangular_program::CanonicalCoefficients>
-                                 coefficients);
-    RectangularWaveguide(const cl::Context&,
-                         const cl::Device&,
-                         const RectangularMesh& mesh,
-                         float sample_rate,
-                         aligned::vector<RectangularMesh::CondensedNode> nodes,
-                         aligned::vector<rectangular_program::CanonicalCoefficients>
-                                 coefficients);
+        size_t get_input_index() const { return input_index; }
+        const aligned::vector<float>& get_signal() const { return signal; }
+        size_t get_output_index() const { return output_index; }
 
+    private:
+        size_t input_index;
+        aligned::vector<float> signal;
+        size_t output_index;
+    };
+
+    class run_step_input final {
+    public:
+        explicit run_step_input(size_t index = 0, float pressure = 0)
+                : index(index)
+                , pressure(pressure) {}
+
+        size_t get_index() const { return index; }
+        float get_pressure() const { return pressure; }
+
+    private:
+        size_t index;
+        float pressure;
+    };
+
+    aligned::vector<run_step_output> run(const run_info& ri,
+                                         std::atomic_bool& keep_going,
+                                         const per_step_callback& callback);
+
+    aligned::vector<run_step_output> run_visualised(
+            const run_info& ri,
+            std::atomic_bool& keep_going,
+            const per_step_callback& callback,
+            const visualiser_callback& visual_callback);
+
+    using input_callback =
+            std::function<run_step_output(const run_info&, float)>;
+
+    aligned::vector<run_step_output> run_basic(const run_info& run_info,
+                                               std::atomic_bool& keep_going,
+                                               const input_callback& callback);
+
+    run_info init(const glm::vec3& e,
+                  const aligned::vector<float>& input_sig,
+                  size_t o,
+                  size_t steps);
+
+    run_step_output run_step(const run_info& run_info, float input);
+
+    std::pair<run_step_output, aligned::vector<cl_float>> run_step_visualised(
+            const run_info& run_info, float input);
+
+    run_step_output run_step(const run_step_input& run_step_input,
+                             size_t o,
+                             cl::CommandQueue& queue,
+                             kernel_type& kernel,
+                             size_t nodes,
+                             cl::Buffer& previous,
+                             cl::Buffer& current,
+                             cl::Buffer& output);
+
+    rectangular_waveguide(
+            const cl::Context&,
+            const cl::Device&,
+            const rectangular_mesh& mesh,
+            double sample_rate,
+            aligned::vector<rectangular_program::CanonicalCoefficients>
+                    coefficients);
+    rectangular_waveguide(
+            const cl::Context&,
+            const cl::Device&,
+            const rectangular_mesh& mesh,
+            double sample_rate,
+            aligned::vector<rectangular_program::CondensedNodeStruct> nodes,
+            aligned::vector<rectangular_program::CanonicalCoefficients>
+                    coefficients);
+
+    struct rectangular_waveguide_run_info;
     std::unique_ptr<rectangular_waveguide_run_info> invocation;
 
-    MeshType mesh;
-    cl::Buffer node_buffer;                   //  const
-    cl::Buffer boundary_coefficients_buffer;  //  const
+    cl::CommandQueue queue;
+    const rectangular_program program;
+    kernel_type kernel;
+
+    const rectangular_mesh mesh;
+    const size_t nodes;
+
+    cl::Buffer previous;
+    cl::Buffer current;
+
+    cl::Buffer output;
+
+    const double sample_rate;
+
+    const cl::Buffer node_buffer;
+    const cl::Buffer boundary_coefficients_buffer;
     aligned::vector<cl_float>
             surrounding;            //  overwritten every step, constant size
     cl::Buffer surrounding_buffer;  //  overwritten every step, constant size
     cl::Buffer error_flag_buffer;   //  overwritten every step, constant size
 
-    friend bool operator==(const RectangularWaveguide& a,
-                           const RectangularWaveguide& b);
+    friend bool operator==(const rectangular_waveguide& a,
+                           const rectangular_waveguide& b);
 };
 
-bool operator==(const RectangularWaveguide& a, const RectangularWaveguide& b);
+bool operator==(const rectangular_waveguide& a, const rectangular_waveguide& b);

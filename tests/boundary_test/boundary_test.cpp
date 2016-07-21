@@ -5,6 +5,7 @@
 #include "common/azimuth_elevation.h"
 #include "common/cl_common.h"
 #include "common/conversions.h"
+#include "common/progress_bar.h"
 #include "common/scene_data.h"
 
 #include "common/serialize/boundaries.h"
@@ -40,11 +41,11 @@ aligned::vector<float> run_simulation(const compute_context& cc,
     auto scene_data = boundary.get_scene_data();
     scene_data.set_surfaces(surface);
 
-    RectangularWaveguide waveguide(cc.get_context(),
-                                   cc.get_device(),
-                                   MeshBoundary(scene_data),
-                                   receiver,
-                                   filter_frequency * 4);
+    rectangular_waveguide waveguide(cc.get_context(),
+                                    cc.get_device(),
+                                    MeshBoundary(scene_data),
+                                    receiver,
+                                    filter_frequency * 4);
 
     auto receiver_index = waveguide.get_index_for_coordinate(receiver);
     auto source_index   = waveguide.get_index_for_coordinate(source);
@@ -64,7 +65,7 @@ aligned::vector<float> run_simulation(const compute_context& cc,
     LOG(INFO) << "mic pos: " << corrected_mic;
 
     std::atomic_bool keep_going{true};
-    ProgressBar pb(std::cout, steps);
+    progress_bar pb(std::cout, steps);
     auto results = waveguide.init_and_run(corrected_source,
                                           aligned::vector<float>{1},
                                           receiver_index,
@@ -202,8 +203,7 @@ FullTestResults run_full_test(const std::string& test_name,
                               int dim,
                               int steps,
                               const Surface& surface,
-                              aligned::vector<float>
-                                      windowed_free_field) {
+                              aligned::vector<float> windowed_free_field) {
     //  set room size based on desired number of nodes
     auto desired_nodes = glm::ivec3(dim);
     auto total_desired_nodes =
