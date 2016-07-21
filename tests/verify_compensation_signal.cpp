@@ -45,18 +45,14 @@ TEST(verify_compensation_signal, verify_compensation_signal_normal) {
     compute_context cc;
     CuboidBoundary cuboid_boundary(glm::vec3(-1), glm::vec3(1));
 
-    rectangular_program waveguide_program(cc.get_context(), cc.get_device());
-
     auto scene_data = cuboid_boundary.get_scene_data();
     scene_data.set_surfaces(uniform_surface(0.999));
+    MeshBoundary boundary(scene_data);
 
     constexpr glm::vec3 centre{0, 0, 0};
 
-    RectangularWaveguide waveguide(cc.get_context(),
-                                   cc.get_device(),
-                                   MeshBoundary(scene_data),
-                                   centre,
-                                   20000);
+    RectangularWaveguide waveguide(
+            cc.get_context(), cc.get_device(), boundary, centre, 20000);
 
     auto receiver_index = waveguide.get_index_for_coordinate(centre);
 
