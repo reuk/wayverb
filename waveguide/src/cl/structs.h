@@ -100,11 +100,6 @@ typedef struct { PortDirection array[3]; } InnerNodeDirections3;
 typedef struct { PortDirection array[NUM_SURROUNDING_PORTS_1]; } SurroundingPorts1;
 typedef struct { PortDirection array[NUM_SURROUNDING_PORTS_2]; } SurroundingPorts2;
 
-typedef struct {
-    ulong write_location;
-    float pressure;
-} InputInfo;
-
 )");
 }
 }  // namespace cl_sources

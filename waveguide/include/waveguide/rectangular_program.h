@@ -158,11 +158,6 @@ public:
         return ret;
     }
 
-    struct alignas(1 << 3) InputInfo final {
-        const cl_ulong write_location;
-        const cl_float pressure;
-    };
-
     using BoundaryDataArray1 = BoundaryDataArray<1>;
     using BoundaryDataArray2 = BoundaryDataArray<2>;
     using BoundaryDataArray3 = BoundaryDataArray<3>;
@@ -176,16 +171,12 @@ public:
                                  const cl::Device& device);
 
     auto get_kernel() const {
-        return program_wrapper.get_kernel<InputInfo,
-                                          cl::Buffer,
+        return program_wrapper.get_kernel<cl::Buffer,
                                           cl::Buffer,
                                           cl::Buffer,
                                           cl_int3,
                                           cl::Buffer,
                                           cl::Buffer,
-                                          cl::Buffer,
-                                          cl::Buffer,
-                                          cl_ulong,
                                           cl::Buffer,
                                           cl::Buffer,
                                           cl::Buffer>("condensed_waveguide");

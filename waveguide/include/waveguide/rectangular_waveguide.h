@@ -154,6 +154,20 @@ private:
             aligned::vector<rectangular_program::CanonicalCoefficients>
                     coefficients);
 
+    template <typename T>
+    void write_single_value(cl::Buffer& buffer, size_t index, T val) {
+        queue.enqueueWriteBuffer(
+                buffer, CL_TRUE, sizeof(T) * index, sizeof(T), &val);
+    }
+
+    template <typename T>
+    T read_single_value(const cl::Buffer& buffer, size_t index) {
+        T ret;
+        queue.enqueueReadBuffer(
+                buffer, CL_TRUE, sizeof(T) * index, sizeof(T), &ret);
+        return ret;
+    }
+
     struct rectangular_waveguide_run_info;
     std::unique_ptr<rectangular_waveguide_run_info> invocation;
 
@@ -173,10 +187,7 @@ private:
 
     const cl::Buffer node_buffer;
     const cl::Buffer boundary_coefficients_buffer;
-    aligned::vector<cl_float>
-            surrounding;            //  overwritten every step, constant size
-    cl::Buffer surrounding_buffer;  //  overwritten every step, constant size
-    cl::Buffer error_flag_buffer;   //  overwritten every step, constant size
+    cl::Buffer error_flag_buffer;
 
     friend bool operator==(const rectangular_waveguide& a,
                            const rectangular_waveguide& b);

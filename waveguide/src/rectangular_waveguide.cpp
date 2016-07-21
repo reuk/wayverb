@@ -21,11 +21,13 @@ struct rectangular_waveguide::rectangular_waveguide_run_info {
             const cl::Context& context,
             aligned::vector<rectangular_program::BoundaryDataArray1>&& bd1,
             aligned::vector<rectangular_program::BoundaryDataArray2>&& bd2,
-            aligned::vector<rectangular_program::BoundaryDataArray3>&& bd3)
+            aligned::vector<rectangular_program::BoundaryDataArray3>&& bd3,
+            std::array<cl_uint, num_ports>&& surrounding_port_indices)
             : velocity(0, 0, 0)
             , boundary_1(context, bd1.begin(), bd1.end(), false)
             , boundary_2(context, bd2.begin(), bd2.end(), false)
-            , boundary_3(context, bd3.begin(), bd3.end(), false) {
+            , boundary_3(context, bd3.begin(), bd3.end(), false)
+            , surrounding_port_indices(surrounding_port_indices) {
 #ifndef NDEBUG
         auto zeroed = [](const auto& arr) {
             return proc::all_of(arr, [](const auto& i) {
@@ -45,6 +47,7 @@ struct rectangular_waveguide::rectangular_waveguide_run_info {
     cl::Buffer boundary_1;
     cl::Buffer boundary_2;
     cl::Buffer boundary_3;
+    std::array<cl_uint, num_ports> surrounding_port_indices;
 };
 
 rectangular_waveguide::~rectangular_waveguide() noexcept = default;
@@ -104,9 +107,6 @@ rectangular_waveguide::rectangular_waveguide(
         , node_buffer(context, nodes.begin(), nodes.end(), true)
         , boundary_coefficients_buffer(
                   context, coefficients.begin(), coefficients.end(), true)
-        , surrounding(num_ports, 0)
-        , surrounding_buffer(
-                  context, surrounding.begin(), surrounding.end(), false)
         , error_flag_buffer(context, CL_MEM_READ_WRITE, sizeof(cl_int)) {
     LOG(INFO) << "main memory node storage: "
               << (sizeof(rectangular_program::NodeStruct) *
@@ -124,14 +124,16 @@ rectangular_waveguide::run_step_output rectangular_waveguide::run_step(
         cl::Buffer& previous,
         cl::Buffer& current,
         cl::Buffer& output) {
-    auto flag = rectangular_program::id_success;
-    cl::copy(queue, (&flag) + 0, (&flag) + 1, error_flag_buffer);
+    //  set flag state to 'successful'
+    write_single_value(error_flag_buffer, 0, rectangular_program::id_success);
 
-    rectangular_program::InputInfo input_info{write_info.get_index(),
-                                              write_info.get_pressure()};
+    //  add input pressure to current pressure at input node
+    const auto current_pressure = read_single_value<cl_float>(current, 0);
+    const auto new_pressure     = current_pressure + write_info.get_pressure();
+    write_single_value(current, write_info.get_index(), new_pressure);
 
+    //  run kernel
     kernel(cl::EnqueueArgs(queue, cl::NDRange(nodes)),
-           input_info,
            previous,
            current,
            node_buffer,
@@ -140,18 +142,11 @@ rectangular_waveguide::run_step_output rectangular_waveguide::run_step(
            invocation->boundary_2,
            invocation->boundary_3,
            boundary_coefficients_buffer,
-           o,
-           output,
-           surrounding_buffer,
            error_flag_buffer);
 
-    cl::copy(queue, error_flag_buffer, (&flag) + 0, (&flag) + 1);
-
-    //        if (flag & rectangular_program::id_outside_range_error) {
-    //            throw std::runtime_error("pressure value is outside valid
-    //            range");
-    //        }
-
+    //  read out flag value
+    auto flag = read_single_value<rectangular_program::ErrorCode>(
+            error_flag_buffer, 0);
     if (flag & rectangular_program::id_inf_error) {
         throw std::runtime_error(
                 "pressure value is inf, check filter coefficients");
@@ -170,14 +165,19 @@ rectangular_waveguide::run_step_output rectangular_waveguide::run_step(
         throw std::runtime_error("suspicious boundary read");
     }
 
+    //  copy out node pressure
+    const auto out = read_single_value<cl_float>(current, o);
+
+    //  copy out surrounding pressures
+    aligned::vector<cl_float> surrounding;
+    surrounding.reserve(num_ports);
+    for (auto i : invocation->surrounding_port_indices) {
+        surrounding.push_back(read_single_value<cl_float>(current, i));
+    }
+
     //  pressure difference vector is obtained by subtracting
     //  the central junction pressure from
-    cl_float out;
-    cl::copy(queue, output, (&out), (&out) + 1);
-
     //  the pressure values of neighboring junctions
-    cl::copy(queue, surrounding_buffer, surrounding.begin(), surrounding.end());
-
     for (auto& i : surrounding) {
         i -= out;
         //  and dividing these terms by the spatial sampling period
@@ -297,15 +297,14 @@ rectangular_waveguide::run_info rectangular_waveguide::init(
         const aligned::vector<float>& input_sig,
         size_t o,
         size_t steps) {
+
     auto context = program.get_info<CL_PROGRAM_CONTEXT>();
     invocation   = std::make_unique<rectangular_waveguide_run_info>(
             context,
             mesh.get_boundary_data<1>(),
             mesh.get_boundary_data<2>(),
-            mesh.get_boundary_data<3>());
-
-    proc::fill(surrounding, 0);
-    cl::copy(queue, surrounding.begin(), surrounding.end(), surrounding_buffer);
+            mesh.get_boundary_data<3>(),
+            mesh.compute_neighbors(o));
 
     auto zero_mesh = [this](auto& buffer) {
         aligned::vector<cl_uchar> n(buffer.template getInfo<CL_MEM_SIZE>(), 0);

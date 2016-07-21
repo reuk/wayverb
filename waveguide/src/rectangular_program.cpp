@@ -659,9 +659,8 @@ float next_waveguide_pressure(const CondensedNode node,
     }
 }
 
-kernel void condensed_waveguide(const InputInfo input_info,
-                                global float* previous,
-                                global float* current,
+kernel void condensed_waveguide(global float* previous,
+                                const global float* current,
                                 const global CondensedNode* nodes,
                                 int3 dimensions,
                                 global BoundaryDataArray1* boundary_data_1,
@@ -670,16 +669,8 @@ kernel void condensed_waveguide(const InputInfo input_info,
                                 const global CAT(FilterCoefficients,
                                                  CANONICAL_FILTER_ORDER) *
                                         boundary_coefficients,
-                                ulong read,
-                                global float* output,
-                                global float* surrounding,
                                 global int* error_flag) {
     size_t index = get_global_id(0);
-    if (index == input_info.write_location) {
-        current[index] += input_info.pressure;
-    }
-
-    barrier(CLK_GLOBAL_MEM_FENCE);
 
     CondensedNode node = nodes[index];
     int3 locator       = to_locator(index, dimensions);
@@ -697,27 +688,17 @@ kernel void condensed_waveguide(const InputInfo input_info,
                                                   boundary_coefficients,
                                                   error_flag);
 
-    if (next_pressure < -RANGE || RANGE < next_pressure)
-        *error_flag |= id_outside_range_error;
-    if (isinf(next_pressure))
-        *error_flag |= id_inf_error;
-    if (isnan(next_pressure))
-        *error_flag |= id_nan_error;
+    if (next_pressure < -RANGE || RANGE < next_pressure) {
+        atomic_or(error_flag, id_outside_range_error);
+    }
+    if (isinf(next_pressure)) {
+        atomic_or(error_flag, id_inf_error);
+    }
+    if (isnan(next_pressure)) {
+        atomic_or(error_flag, id_nan_error);
+    }
 
     previous[index] = next_pressure;
-
-    barrier(CLK_GLOBAL_MEM_FENCE);
-
-    if (index == read) {
-        *output = current[index];
-        for (int i = 0; i != PORTS; ++i) {
-            uint port_index = neighbor_index(locator, dimensions, i);
-            if (port_index != NO_NEIGHBOR &&
-                nodes[port_index].boundary_type & id_inside) {
-                surrounding[i] = current[port_index];
-            }
-        }
-    }
 }
 
 )"};
