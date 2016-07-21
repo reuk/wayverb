@@ -249,10 +249,10 @@ rectangular_mesh::compute_neighbors(size_t index) const {
 
 aligned::vector<rectangular_program::CondensedNodeStruct>
 rectangular_mesh::get_condensed_nodes() const {
-    aligned::vector<rectangular_program::CondensedNodeStruct> ret(
-            get_nodes().size());
-    proc::transform(get_nodes(), ret.begin(), [](const auto& i) {
-        return rectangular_program::condense(i);
+    aligned::vector<rectangular_program::CondensedNodeStruct> ret;
+    ret.reserve(get_nodes().size());
+    proc::transform(get_nodes(), std::back_inserter(ret), [](const auto& i) {
+        return i.get_condensed();
     });
     proc::for_each(ret, [](const auto& i) {
         if ((i.boundary_type & rectangular_program::id_inside) &&

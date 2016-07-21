@@ -18,8 +18,9 @@ auto uniform_surface(float r) {
 
 template <typename T>
 void multitest(T&& run) {
+    constexpr auto iterations = 100;
     const auto proper_output = run();
-    for (auto i = 0; i != 1000; ++i) {
+    for (auto i = 0; i != iterations; ++i) {
         const auto output = run();
         ASSERT_EQ(output, proper_output);
     }

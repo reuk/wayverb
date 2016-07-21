@@ -68,6 +68,8 @@ public:
                     CEREAL_NVP(inside),
                     CEREAL_NVP(condensed));
         }
+
+        CondensedNodeStruct get_condensed() const;
     };
 
     using FilterReal = cl_double;
@@ -200,8 +202,6 @@ public:
                 .get_kernel<cl::Buffer, cl::Buffer, cl::Buffer, cl::Buffer>(
                         "filter_test_2");
     }
-
-    static CondensedNodeStruct condense(const NodeStruct& n);
 
     struct FilterDescriptor {
         double gain{0};

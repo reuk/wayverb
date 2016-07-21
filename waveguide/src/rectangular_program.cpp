@@ -16,11 +16,11 @@ rectangular_program::rectangular_program(const cl::Context& context,
                                                    num_ports, BIQUAD_SECTIONS),
                                            source}) {}
 
-rectangular_program::CondensedNodeStruct rectangular_program::condense(
-        const NodeStruct& n) {
+rectangular_program::CondensedNodeStruct
+rectangular_program::NodeStruct::get_condensed() const {
     return CondensedNodeStruct{
-            n.condensed.boundary_type | (n.inside ? id_inside : id_none),
-            n.condensed.boundary_index};
+            condensed.boundary_type | (inside ? id_inside : id_none),
+            condensed.boundary_index};
 }
 
 rectangular_program::CanonicalCoefficients rectangular_program::convolve(
