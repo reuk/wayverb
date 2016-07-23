@@ -310,18 +310,32 @@ kernel void raytrace(global RayInfo * ray_info,         //  ray
     //  find the distance to the receiver from the secondary source
     const float dist = is_intersection ? new_dist + length(mic - intersection) : 0;
 
+    //  get the triangle normal
+    float3 tnorm = triangle_normal(triangle, vertices);
+
+    //  calculate the new specular direction from the secondary source
+    float3 specular = reflect(tnorm, ray.direction);
+
+    //  find the scattering
+    //  TODO load from surface
+    float d = 0.5;
+    //  TODO pass random-ass values to the kernel
+    float3 scattering = lambert_scattering(specular, tnorm, unit_vector(theta, z), d);
+
+    //  find the next ray to trace
+    Ray new_ray = {intersection, scattering};
+
     //  find the diffuse contribution
-    const float diff = fabs(dot(triangle_normal(triangle, vertices), ray.direction));
+    //  TODO diffuse contribution =
+    //      current (specular) volume * brdf value depending on diffuse coeff
+    //  TODO should depend on surface.diffuse
+    const float brdf_value = fabs(dot(tnorm, ray.direction));
     impulses[thread] = (Impulse){
         (is_intersection
-             ? (new_vol * attenuation_for_distance(dist, air_coefficient) *
-                surfaces[triangle->surface].diffuse * diff)
+             ? (new_vol * attenuation_for_distance(dist, air_coefficient) * brdf_value)
              : 0),
         intersection,
         SECONDS_PER_METER * dist};
-
-    //  calculate the new specular ray from the secondary source
-    Ray new_ray = triangle_reflectAt(triangle, vertices, ray, intersection);
 
     info->ray = new_ray;
     info->volume = new_vol;

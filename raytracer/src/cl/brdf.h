@@ -7,6 +7,11 @@
 namespace cl_sources {
 const std::string brdf(R"(
 
+typedef struct {
+    float3 direction;
+    float magnitude;
+} BRDFOutput;
+
 //  theta range: -pi to pi
 //  z range: -1 to 1
 float3 unit_vector(float theta, float z);

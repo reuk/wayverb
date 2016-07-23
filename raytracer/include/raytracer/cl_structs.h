@@ -60,9 +60,3 @@ struct alignas(1 << 4) AABB final {
     cl_float3 c0;
     cl_float3 c1;
 };
-
-//  TODO this struct is twice as big as it needs to be...
-struct alignas(1 << 4) BRDFOutput final {
-    cl_float3 direction;
-    float magnitude;
-};
