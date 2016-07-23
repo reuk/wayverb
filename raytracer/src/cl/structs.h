@@ -67,5 +67,10 @@ typedef struct {
     float3 c1;
 } AABB;
 
+typedef struct {
+    float3 direction;
+    float magnitude;
+} BRDFOutput;
+
 )");
 }  // namespace cl_sources

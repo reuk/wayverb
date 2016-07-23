@@ -3,6 +3,7 @@
 #include "cl/geometry.h"
 #include "cl/structs.h"
 #include "cl/voxel.h"
+#include "cl/brdf.h"
 
 raytracer_program::raytracer_program(const cl::Context& context,
                                      const cl::Device& device)
@@ -11,6 +12,7 @@ raytracer_program::raytracer_program(const cl::Context& context,
                           std::vector<std::string>{cl_sources::structs,
                                                    cl_sources::geometry,
                                                    cl_sources::voxel,
+                                                   cl_sources::brdf,
                                                    source}) {}
 
 static_assert(SPEED_OF_SOUND != 0, "SPEED_OF_SOUND");
@@ -296,6 +298,7 @@ kernel void raytrace(global RayInfo * ray_info,         //  ray
     const float3 intersection = ray.position + ray.direction * closest.distance;
     const float new_dist = info->distance + closest.distance;
 
+    //  find if there is line-of-sight from the secondary source to the receiver
     const bool is_intersection = voxel_point_intersection(intersection,
                                                           mic,
                                                           voxel_index,
@@ -304,7 +307,10 @@ kernel void raytrace(global RayInfo * ray_info,         //  ray
                                                           triangles,
                                                           vertices);
 
+    //  find the distance to the receiver from the secondary source
     const float dist = is_intersection ? new_dist + length(mic - intersection) : 0;
+
+    //  find the diffuse contribution
     const float diff = fabs(dot(triangle_normal(triangle, vertices), ray.direction));
     impulses[thread] = (Impulse){
         (is_intersection
@@ -314,6 +320,7 @@ kernel void raytrace(global RayInfo * ray_info,         //  ray
         intersection,
         SECONDS_PER_METER * dist};
 
+    //  calculate the new specular ray from the secondary source
     Ray new_ray = triangle_reflectAt(triangle, vertices, ray, intersection);
 
     info->ray = new_ray;
