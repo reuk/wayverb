@@ -17,6 +17,7 @@ public:
                                           cl_ulong,    //  numtriangles
                                           cl::Buffer,  //  vertices
                                           cl::Buffer,  //  surfaces
+                                          cl::Buffer,  //  rng
                                           cl_float3,   //  source
                                           cl_float3,   //  mic
                                           VolumeType,  //  air_coefficient

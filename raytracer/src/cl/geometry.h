@@ -73,14 +73,14 @@ Ray ray_reflect(Ray ray, float3 normal, float3 intersection) {
     return (Ray){intersection, reflect(normal, ray.direction)};
 }
 
-Ray triangle_reflectAt(const global Triangle * triangle,
-                       const global float3 * vertices,
-                       Ray ray,
-                       float3 intersection);
-Ray triangle_reflectAt(const global Triangle * triangle,
-                       const global float3 * vertices,
-                       Ray ray,
-                       float3 intersection) {
+Ray triangle_reflect_at(const global Triangle * triangle,
+                        const global float3 * vertices,
+                        Ray ray,
+                        float3 intersection);
+Ray triangle_reflect_at(const global Triangle * triangle,
+                        const global float3 * vertices,
+                        Ray ray,
+                        float3 intersection) {
     return ray_reflect(ray, triangle_normal(triangle, vertices), intersection);
 }
 

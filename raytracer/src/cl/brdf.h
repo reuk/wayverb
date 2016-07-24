@@ -12,10 +12,10 @@ typedef struct {
     float magnitude;
 } BRDFOutput;
 
-//  theta range: -pi to pi
 //  z range: -1 to 1
-float3 unit_vector(float theta, float z);
-float3 unit_vector(float theta, float z) {
+//  theta range: -pi to pi
+float3 sphere_point(float z, float theta);
+float3 sphere_point(float z, float theta) {
     float t = sqrt(1 - z * z);
     return (float3)(t * cos(theta), z, t * sin(theta));
 }
@@ -80,17 +80,22 @@ float brdf_mag_for_outgoing(float3 specular, float3 outgoing, float d) {
     return brdf_mag(y, d);
 }
 
-//  specular: the specular reflection direction (unit vector)
-//  surface_normal: the direction of the surface normal (unit vector)
-//  random: a random vector (unit vector)
-//  d: the directionality coefficient of the surface
-BRDFOutput brdf(float3 specular, float3 surface_normal, float3 random, float d);
-BRDFOutput brdf(float3 specular, float3 surface_normal, float3 random, float d) {
-    float3 outgoing = lambert_scattering(specular, surface_normal, random, d);
+VolumeType brdf_mags_for_outgoing(float3 specular, float3 outgoing, VolumeType d);
+VolumeType brdf_mags_for_outgoing(float3 specular, float3 outgoing, VolumeType d) {
+    return (VolumeType)(
+        brdf_mag_for_outgoing(specular, outgoing, d.s0),
+        brdf_mag_for_outgoing(specular, outgoing, d.s1),
+        brdf_mag_for_outgoing(specular, outgoing, d.s2),
+        brdf_mag_for_outgoing(specular, outgoing, d.s3),
+        brdf_mag_for_outgoing(specular, outgoing, d.s4),
+        brdf_mag_for_outgoing(specular, outgoing, d.s5),
+        brdf_mag_for_outgoing(specular, outgoing, d.s6),
+        brdf_mag_for_outgoing(specular, outgoing, d.s7));
+}
 
-    //  get the magnitude of the 'diffuse' reflection
-    float p = brdf_mag_for_outgoing(specular, outgoing, d);
-    return (BRDFOutput){outgoing, p};
+float mean(VolumeType v);
+float mean(VolumeType v) {
+    return (v.s0 + v.s1 + v.s2 + v.s3 + v.s4 + v.s5 + v.s6 + v.s7) / 8;
 }
 
 //----------------------------------------------------------------------------//

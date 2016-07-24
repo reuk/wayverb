@@ -236,6 +236,8 @@ kernel void raytrace(global RayInfo * ray_info,         //  ray
                      const global float3 * vertices,
                      const global Surface * surfaces,
 
+                     const global float * rng,          //  random numbers
+
                      float3 source,                     //  misc
                      float3 mic,
                      VolumeType air_coefficient,
@@ -274,7 +276,8 @@ kernel void raytrace(global RayInfo * ray_info,         //  ray
     }
 
     const global Triangle * triangle = triangles + closest.primitive;
-    const VolumeType new_vol = -info->volume * surfaces[triangle->surface].specular;
+    const Surface surface = surfaces[triangle->surface];
+    const VolumeType new_vol = -info->volume * surface.specular;
 
     image_source_contributions(closest,
                                new_vol,
@@ -317,28 +320,28 @@ kernel void raytrace(global RayInfo * ray_info,         //  ray
     float3 specular = reflect(tnorm, ray.direction);
 
     //  find the scattering
-    //  TODO load from surface
-    float d = 0.5;
-    //  TODO pass random-ass values to the kernel
-    float3 scattering = lambert_scattering(specular, tnorm, unit_vector(theta, z), d);
+    //  get random values to influence direction of reflected ray
+    const float z           = rng[2 * thread + 0];
+    const float theta       = rng[2 * thread + 1];
+    //  scattering coefficient is the average of the diffuse coefficients
+    const float scatter     = mean(surface.diffuse);
+    const float3 scattering = lambert_scattering(specular, tnorm, sphere_point(z, theta), scatter);
 
     //  find the next ray to trace
     Ray new_ray = {intersection, scattering};
 
     //  find the diffuse contribution
-    //  TODO diffuse contribution =
-    //      current (specular) volume * brdf value depending on diffuse coeff
-    //  TODO should depend on surface.diffuse
-    const float brdf_value = fabs(dot(tnorm, ray.direction));
+    const VolumeType brdf_values = brdf_mags_for_outgoing(specular, ray.direction, surface.diffuse);
     impulses[thread] = (Impulse){
         (is_intersection
-             ? (new_vol * attenuation_for_distance(dist, air_coefficient) * brdf_value)
+             ? (new_vol * brdf_values * attenuation_for_distance(dist, air_coefficient))
              : 0),
         intersection,
         SECONDS_PER_METER * dist};
 
     info->ray = new_ray;
-    info->volume = new_vol;
+//    info->volume = new_vol;
+    info->volume = new_vol - brdf_values;
     info->distance = new_dist;
 }
 
