@@ -13,7 +13,7 @@ hrtf::hrtf(const cl::Context& context,
         , cl_hrtf(context, CL_MEM_READ_WRITE, sizeof(VolumeType) * 360 * 180) {}
 
 aligned::vector<AttenuatedImpulse> hrtf::process(
-        const results::selected& results,
+        const aligned::vector<Impulse>& impulses,
         const glm::vec3& direction,
         const glm::vec3& up,
         const glm::vec3& position,
@@ -29,8 +29,6 @@ aligned::vector<AttenuatedImpulse> hrtf::process(
 
     //  copy hrtf table to buffer
     cl::copy(queue, begin(hrtf_channel_data), end(hrtf_channel_data), cl_hrtf);
-
-    auto impulses = results.get_impulses();
 
     //  set up buffers
     auto context = queue.getInfo<CL_QUEUE_CONTEXT>();
@@ -73,11 +71,10 @@ microphone::microphone(const cl::Context& context,
         , kernel(attenuator_program(context, device).get_microphone_kernel()) {}
 
 aligned::vector<AttenuatedImpulse> microphone::process(
-        const results::selected& results,
+        const aligned::vector<Impulse>& impulses,
         const glm::vec3& pointing,
         float shape,
         const glm::vec3& position) {
-    auto impulses = results.get_impulses();
     //  init buffers
     auto context = queue.getInfo<CL_QUEUE_CONTEXT>();
     cl::Buffer cl_in(

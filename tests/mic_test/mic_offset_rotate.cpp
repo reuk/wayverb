@@ -126,7 +126,7 @@ int main(int argc, char** argv) {
                     });
 
             auto out_signal = microphone.process(
-                    w_results, glm::vec3(0, 0, 1), directionality);
+                    *w_results, glm::vec3(0, 0, 1), directionality);
 
             //const auto bands = 8;
             //const auto min_band = 80;

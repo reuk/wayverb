@@ -68,9 +68,11 @@ TEST(verify_compensation_signal, verify_compensation_signal_normal) {
                     pb += 1;
                 });
 
+        assert(output);
+
         aligned::vector<float> pressures;
-        pressures.reserve(output.size());
-        for (const auto& i : output) {
+        pressures.reserve(output->size());
+        for (const auto& i : *output) {
             pressures.push_back(i.get_pressure());
         }
 

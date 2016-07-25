@@ -2,70 +2,47 @@
 
 namespace raytracer {
 
-results::results(map_type&& image_source,
-                 aligned::vector<aligned::vector<Impulse>>&& diffuse,
-                 const glm::vec3& receiver,
-                 const glm::vec3& source)
-        : image_source(std::move(image_source))
-        , diffuse(std::move(diffuse))
-        , receiver(receiver)
-        , source(source) {}
+results::results(const std::experimental::optional<Impulse>& direct,
+                 const aligned::vector<Impulse>& image_source,
+                 const aligned::vector<aligned::vector<Impulse>>& diffuse,
+                 const glm::vec3& receiver)
+        : direct(direct)
+        , image_source(image_source)
+        , diffuse(diffuse)
+        , receiver(receiver) {}
 
-aligned::vector<Impulse> results::get_diffuse_impulses() const {
+aligned::vector<Impulse> results::get_impulses(bool use_direct,
+                                               bool use_image_source,
+                                               bool use_diffuse) const {
+    const size_t direct_size       = use_direct ? 1 : 0;
+    const size_t image_source_size = use_image_source ? image_source.size() : 0;
+    const size_t diffuse_size =
+            use_diffuse ? diffuse.size() * diffuse.front().size() : 0;
+
     aligned::vector<Impulse> ret;
-    ret.reserve(diffuse.size() * diffuse.front().size());
-    for (const auto& i : diffuse) {
-        std::copy(i.begin(), i.end(), std::back_inserter(ret));
-    }
-    return ret;
-}
+    ret.reserve(direct_size + image_source_size + diffuse_size);
 
-aligned::vector<Impulse> results::get_image_source_impulses(
-        bool remove_direct) const {
-    auto temp = image_source;
-    if (remove_direct) {
-        auto it = std::find_if(temp.begin(), temp.end(), [](const auto& i) {
-            return i.first == aligned::vector<cl_ulong>{0};
-        });
-        if (it != temp.end()) {
-            temp.erase(it);
+    if (use_direct && direct) {
+        ret.push_back(*direct);
+    }
+
+    if (use_image_source) {
+        for (const auto& i : image_source) {
+            ret.push_back(i);
         }
     }
 
-    aligned::vector<Impulse> ret;
-    ret.reserve(temp.size());
-    proc::transform(temp, std::back_inserter(ret), [](const auto& i) {
-        return i.second;
-    });
+    if (use_diffuse) {
+        for (const auto& i : diffuse) {
+            for (const auto& j : i) {
+                ret.push_back(j);
+            }
+        }
+    }
+
     return ret;
 }
 
-results::selected results::get_diffuse() const {
-    return selected(get_diffuse_impulses(), receiver, source);
-}
-
-results::selected results::get_image_source(bool remove_direct) const {
-    return selected(get_image_source_impulses(remove_direct), receiver, source);
-}
-
-results::selected results::get_all(bool remove_direct) const {
-    auto diffuse     = get_diffuse_impulses();
-    const auto image = get_image_source_impulses(remove_direct);
-    diffuse.insert(diffuse.end(), image.begin(), image.end());
-    return selected(diffuse, receiver, source);
-}
-
-results::selected::selected(const aligned::vector<Impulse>& impulses,
-                            const glm::vec3& receiver,
-                            const glm::vec3& source)
-        : impulses(impulses)
-        , receiver(receiver)
-        , source(source) {}
-
-aligned::vector<Impulse> results::selected::get_impulses() const {
-    return impulses;
-}
-glm::vec3 results::selected::get_receiver() const { return receiver; }
-glm::vec3 results::selected::get_source() const { return source; }
+glm::vec3 results::get_receiver() const { return receiver; }
 
 }  // namespace raytracer

@@ -18,6 +18,8 @@
 #include <vector>
 #include <random>
 
+#include <experimental/optional>
+
 namespace raytracer {
 
 /// Sum impulses ocurring at the same (sampled) time and return a vector in
@@ -126,5 +128,26 @@ private:
     kernel_type kernel;
 };
 */
+
+class raytracer final {
+public:
+    raytracer(const cl::Context&, const cl::Device&);
+
+    using PerStepCallback = std::function<void()>;
+
+    std::experimental::optional<results> run(
+            const CopyableSceneData& scene_data,
+            const glm::vec3& source,
+            const glm::vec3& receiver,
+            size_t rays,
+            size_t reflections,
+            size_t image_source,
+            std::atomic_bool& keep_going,
+            const PerStepCallback& callback);
+
+private:
+    cl::Context context;
+    cl::Device device;
+};
 
 }  // namespace raytracer

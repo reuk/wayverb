@@ -103,8 +103,8 @@ auto run_waveguide(const compute_context& cc,
                                           keep_going,
                                           [&pb] { pb += 1; });
 
-    auto output = aligned::vector<float>(results.size());
-    proc::transform(results, output.begin(), [](const auto& i) {
+    auto output = aligned::vector<float>(results->size());
+    proc::transform(*results, output.begin(), [](const auto& i) {
         return i.get_pressure();
     });
 
@@ -170,15 +170,15 @@ int main(int argc, char** argv) {
     //        config, output_folder, "waveguide_adjusted",
     //        {waveguide_adjusted});
     //
-    raytracer::Raytracer raytracer(cc.get_context(), cc.get_device());
+    raytracer::raytracer raytracer(cc.get_context(), cc.get_device());
     //            [                                        ]
     std::cout << "[ -- running raytracer ----------------- ]" << std::endl;
     std::atomic_bool keep_going{true};
     const auto impulses = 1000;
     progress_bar pb(std::cout, impulses);
     auto results = raytracer.run(boundary.get_scene_data(),
-                                 config.receiver_settings.position,
                                  config.source,
+                                 config.receiver_settings.position,
                                  config.rays,
                                  impulses,
                                  10,
@@ -187,8 +187,10 @@ int main(int argc, char** argv) {
 
     raytracer::attenuator::microphone attenuator(cc.get_context(),
                                                  cc.get_device());
-    auto output = attenuator.process(
-            results.get_image_source(false), glm::vec3(0, 0, 1), 0, receiver);
+    auto output = attenuator.process(results->get_impulses(true, true, false),
+                                     glm::vec3(0, 0, 1),
+                                     0,
+                                     receiver);
     // auto output =
     //    attenuator.attenuate(results.get_all(false), {speaker}).front();
 

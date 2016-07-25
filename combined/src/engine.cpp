@@ -44,7 +44,7 @@ constexpr double rectilinear_calibration_factor(double r, double sr) {
 aligned::vector<aligned::vector<float>> run_raytracer_attenuation(
         const compute_context& cc,
         const model::ReceiverSettings& receiver,
-        const raytracer::results::selected& input,
+        const raytracer::results& input,
         double output_sample_rate) {
     switch (receiver.mode) {
         case model::ReceiverSettings::Mode::microphones: {
@@ -57,7 +57,7 @@ aligned::vector<aligned::vector<float>> run_raytracer_attenuation(
                         return multiband_filter_and_mixdown(
                                 raytracer::flatten_impulses(
                                         attenuator.process(
-                                                input,
+                                                input.get_impulses(),
                                                 i.pointer.get_pointing(
                                                         receiver.position),
                                                 i.shape,
@@ -75,7 +75,7 @@ aligned::vector<aligned::vector<float>> run_raytracer_attenuation(
                         return multiband_filter_and_mixdown(
                                 raytracer::flatten_impulses(
                                         attenuator.process(
-                                                input,
+                                                input.get_impulses(),
                                                 receiver.hrtf.get_pointing(
                                                         receiver.position),
                                                 glm::vec3(0, 1, 0),
@@ -148,11 +148,8 @@ public:
         callback(wayverb::state::postprocessing, 1.0);
 
         //  attenuate raytracer results
-        auto raytracer_output =
-                run_raytracer_attenuation(cc,
-                                          receiver,
-                                          raytracer_results.get_all(false),
-                                          output_sample_rate);
+        auto raytracer_output = run_raytracer_attenuation(
+                cc, receiver, raytracer_results, output_sample_rate);
         //  attenuate waveguide results
         auto waveguide_output = run_waveguide_attenuation(
                 receiver, waveguide_results, waveguide_sample_rate);
@@ -352,15 +349,15 @@ public:
     }
 
 private:
-    using waveguide_callback = std::function<
-            aligned::vector<rectangular_waveguide::run_step_output>(
-                    rectangular_waveguide&,
-                    const glm::vec3&,
-                    const aligned::vector<float>&,
-                    size_t,
-                    size_t,
-                    std::atomic_bool&,
-                    const state_callback&)>;
+    using waveguide_callback = std::function<std::experimental::optional<
+            aligned::vector<rectangular_waveguide::run_step_output>>(
+            rectangular_waveguide&,
+            const glm::vec3&,
+            const aligned::vector<float>&,
+            size_t,
+            size_t,
+            std::atomic_bool&,
+            const state_callback&)>;
 
     std::unique_ptr<intermediate> run_basic(
             std::atomic_bool& keep_going,
@@ -371,19 +368,24 @@ private:
         auto raytracer_step = 0;
         auto raytracer_results =
                 raytracer.run(scene_data,
-                              receiver,
                               source,
+                              receiver,
                               rays,
                               impulses,
-                              5,
+                              10,
                               keep_going,
                               [this, &callback, &raytracer_step] {
                                   callback(state::running_raytracer,
                                            raytracer_step++ / (impulses - 1.0));
                               });
+
+        if (!(keep_going && raytracer_results)) {
+            return nullptr;
+        }
+
         callback(state::finishing_raytracer, 1.0);
 
-        auto impulses = raytracer_results.get_all(false).get_impulses();
+        auto impulses = raytracer_results->get_impulses();
 
         //  look for the max time of an impulse
         auto max_time =
@@ -411,15 +413,20 @@ private:
                                    steps + input.opaque_kernel_size,
                                    keep_going,
                                    callback);
+
+        if (!(keep_going && waveguide_results)) {
+            return nullptr;
+        }
+
         callback(state::finishing_waveguide, 1.0);
 
         //  correct for filter time offset
-        assert(input.correction_offset_in_samples < waveguide_results.size());
+        assert(input.correction_offset_in_samples < waveguide_results->size());
 
         LOG(INFO) << "correcting waveguide for kernel time offset";
-        waveguide_results.erase(
-                waveguide_results.begin(),
-                waveguide_results.begin() + input.correction_offset_in_samples);
+        waveguide_results->erase(waveguide_results->begin(),
+                                 waveguide_results->begin() +
+                                         input.correction_offset_in_samples);
 
         LOG(INFO) << "creating ret";
 
@@ -427,8 +434,8 @@ private:
                 source,
                 receiver,
                 waveguide_sample_rate,
-                std::move(raytracer_results),
-                std::move(waveguide_results));
+                std::move(*raytracer_results),
+                std::move(*waveguide_results));
 
         LOG(INFO) << "about to return from run_basic";
 

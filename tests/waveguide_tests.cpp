@@ -71,8 +71,10 @@ TEST(run_waveguide, run_waveguide) {
                                           keep_going,
                                           [&pb] { pb += 1; });
 
-    auto output = aligned::vector<float>(results.size());
-    proc::transform(results, output.begin(), [](const auto& i) {
+    ASSERT_TRUE(results);
+
+    auto output = aligned::vector<float>(results->size());
+    proc::transform(*results, output.begin(), [](const auto& i) {
         return i.get_pressure();
     });
 

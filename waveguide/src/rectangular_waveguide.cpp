@@ -223,7 +223,8 @@ bool rectangular_waveguide::inside(size_t index) const {
     return mesh.get_nodes()[index].inside;
 }
 
-aligned::vector<rectangular_waveguide::run_step_output>
+std::experimental::optional<
+        aligned::vector<rectangular_waveguide::run_step_output>>
 rectangular_waveguide::init_and_run(const glm::vec3& e,
                                     const aligned::vector<float>& input,
                                     size_t o,
@@ -240,7 +241,8 @@ rectangular_waveguide::init_and_run(const glm::vec3& e,
                      });
 }
 
-aligned::vector<rectangular_waveguide::run_step_output>
+std::experimental::optional<
+        aligned::vector<rectangular_waveguide::run_step_output>>
 rectangular_waveguide::init_and_run_visualised(
         const glm::vec3& e,
         const aligned::vector<float>& input,
@@ -261,33 +263,21 @@ rectangular_waveguide::init_and_run_visualised(
             });
 }
 
-namespace {
-template <typename InIt, typename OutIt, typename Fun>
-void ordered_transform(InIt a, InIt b, OutIt x, Fun&& t) {
-    for (; a != b; ++a) {
-        *x = t(*a);
-    }
-}
-}  // namespace
-
-aligned::vector<rectangular_waveguide::run_step_output>
+std::experimental::optional<
+        aligned::vector<rectangular_waveguide::run_step_output>>
 rectangular_waveguide::run_basic(const run_info& run_info,
                                  std::atomic_bool& keep_going,
                                  const input_callback& callback) {
     aligned::vector<run_step_output> ret;
     ret.reserve(run_info.get_signal().size());
 
-    //  I would use std::transform here but I need to guarantee order
-    ordered_transform(
-            run_info.get_signal().begin(),
-            run_info.get_signal().end(),
-            std::back_inserter(ret),
-            [&](auto i) {
-                if (!keep_going) {
-                    throw std::runtime_error("flag state false, stopping");
-                }
-                return callback(run_info, i);
-            });
+    for (const auto & i : run_info.get_signal()) {
+        if (! keep_going) {
+            return std::experimental::optional<
+                    aligned::vector<rectangular_waveguide::run_step_output>>{};
+        }
+        ret.push_back(callback(run_info, i));
+    }
 
     return ret;
 }

@@ -76,8 +76,8 @@ aligned::vector<float> run_simulation(const compute_context& cc,
 #if 0
     auto output = Microphone::omni.process(results);
 #else
-    auto output = aligned::vector<float>(results.size());
-    proc::transform(results, output.begin(), [](const auto& i) {
+    auto output = aligned::vector<float>(results->size());
+    proc::transform(*results, output.begin(), [](const auto& i) {
         return i.get_pressure();
     });
 #endif

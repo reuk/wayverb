@@ -258,13 +258,13 @@ kernel void reflections(global Ray* ray,                   //  ray
     }
 
     //  find where the ray intersects with the scene geometry
-    const float3 intersection = ray.position + ray.direction * closest.distance;
+    const float3 intersection = this_ray.position + this_ray.direction * closest.distance;
 
     //  get the normal at the intersection
-    const float3 tnorm = triangle_normal(triangle, vertices);
+    const float3 tnorm = triangle_normal(triangles + closest.primitive, vertices);
 
     //  calculate the new specular direction from this point
-    const float3 specular = reflect(tnorm, ray.direction);
+    const float3 specular = reflect(tnorm, this_ray.direction);
 
     //  now we can populate the output
     reflection[thread] = (Reflection) {intersection,
@@ -278,6 +278,7 @@ kernel void reflections(global Ray* ray,                   //  ray
     const float z           = rng[2 * thread + 0];
     const float theta       = rng[2 * thread + 1];
     //  scattering coefficient is the average of the diffuse coefficients
+    const Surface surface   = surfaces[triangles[closest.primitive].surface];
     const float scatter     = mean(surface.diffuse);
     const float3 scattering = lambert_scattering(specular, tnorm, sphere_point(z, theta), scatter);
 

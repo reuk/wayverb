@@ -15,7 +15,7 @@ aligned::vector<cl_float> get_direction_rng(size_t num) {
     std::default_random_engine engine{std::random_device()()};
 
     for (auto i = 0u; i != num; ++i) {
-        const direction_rng rng(engine);
+        const raytracer::direction_rng rng(engine);
         ret.push_back(rng.get_z());
         ret.push_back(rng.get_theta());
     }
@@ -31,7 +31,7 @@ aligned::vector<Ray> get_random_rays(size_t num, const glm::vec3& source) {
     auto src = to_cl_float3(source);
 
     for (auto i = 0u; i != num; ++i) {
-        const direction_rng rng(engine);
+        const raytracer::direction_rng rng(engine);
         ret.push_back(Ray{
                 src, to_cl_float3(sphere_point(rng.get_z(), rng.get_theta()))});
     }

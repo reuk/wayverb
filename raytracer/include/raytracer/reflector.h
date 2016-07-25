@@ -20,6 +20,7 @@ public:
 
     ~reflector() noexcept;
 
+    /// call init once, then run_step until you have enough reflections
     void init(const glm::vec3& source);
     aligned::vector<Reflection> run_step(scene_buffers& buffers);
 

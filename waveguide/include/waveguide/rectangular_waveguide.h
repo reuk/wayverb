@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <array>
 #include <type_traits>
+#include <experimental/optional>
 
 class rectangular_waveguide final {
 public:
@@ -47,7 +48,7 @@ public:
     using per_step_callback   = std::function<void()>;
     using visualiser_callback = std::function<void(aligned::vector<float>)>;
 
-    aligned::vector<run_step_output> init_and_run(
+    std::experimental::optional<aligned::vector<run_step_output>> init_and_run(
             const glm::vec3& e,
             const aligned::vector<float>& input,
             size_t o,
@@ -55,14 +56,14 @@ public:
             std::atomic_bool& keep_going,
             const per_step_callback& callback);
 
-    aligned::vector<run_step_output> init_and_run_visualised(
-            const glm::vec3& e,
-            const aligned::vector<float>& input,
-            size_t o,
-            size_t steps,
-            std::atomic_bool& keep_going,
-            const per_step_callback& callback,
-            const visualiser_callback& visual_callback);
+    std::experimental::optional<aligned::vector<run_step_output>>
+    init_and_run_visualised(const glm::vec3& e,
+                            const aligned::vector<float>& input,
+                            size_t o,
+                            size_t steps,
+                            std::atomic_bool& keep_going,
+                            const per_step_callback& callback,
+                            const visualiser_callback& visual_callback);
 
 private:
     using kernel_type =
@@ -102,22 +103,24 @@ private:
         float pressure;
     };
 
-    aligned::vector<run_step_output> run(const run_info& ri,
-                                         std::atomic_bool& keep_going,
-                                         const per_step_callback& callback);
-
-    aligned::vector<run_step_output> run_visualised(
+    std::experimental::optional<aligned::vector<run_step_output>> run(
             const run_info& ri,
             std::atomic_bool& keep_going,
-            const per_step_callback& callback,
-            const visualiser_callback& visual_callback);
+            const per_step_callback& callback);
+
+    std::experimental::optional<aligned::vector<run_step_output>>
+    run_visualised(const run_info& ri,
+                   std::atomic_bool& keep_going,
+                   const per_step_callback& callback,
+                   const visualiser_callback& visual_callback);
 
     using input_callback =
             std::function<run_step_output(const run_info&, float)>;
 
-    aligned::vector<run_step_output> run_basic(const run_info& run_info,
-                                               std::atomic_bool& keep_going,
-                                               const input_callback& callback);
+    std::experimental::optional<aligned::vector<run_step_output>> run_basic(
+            const run_info& run_info,
+            std::atomic_bool& keep_going,
+            const input_callback& callback);
 
     run_info init(const glm::vec3& e,
                   const aligned::vector<float>& input_sig,

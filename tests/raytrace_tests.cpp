@@ -62,18 +62,18 @@ TEST(raytrace, new) {
 
     SceneData scene_data(OBJ_PATH);
 
-    auto directions = raytracer::get_random_directions(bench_rays);
-
     std::atomic_bool keep_going{true};
-    raytracer::Raytracer raytrace(cc.get_context(), cc.get_device());
-    raytrace.run(scene_data,
-                 glm::vec3(0, 1.75, 0),
-                 glm::vec3(0, 1.75, 3),
-                 directions,
-                 bench_reflections,
-                 10,
-                 keep_going,
-                 [] {});
+    raytracer::raytracer raytrace(cc.get_context(), cc.get_device());
+    auto results = raytrace.run(scene_data,
+                                glm::vec3(0, 1.75, 3),
+                                glm::vec3(0, 1.75, 0),
+                                bench_rays,
+                                bench_reflections,
+                                10,
+                                keep_going,
+                                [] {});
+
+    ASSERT_TRUE(results);
 }
 
 constexpr int width_for_shell(int shell) { return shell * 2 + 1; }
@@ -188,19 +188,23 @@ TEST(raytrace, image_source) {
 
     CuboidBoundary boundary(box.get_c0(), box.get_c1());
 
-    raytracer::Raytracer raytracer(cc.get_context(), cc.get_device());
+    raytracer::raytracer raytracer(cc.get_context(), cc.get_device());
 
     auto scene_data = boundary.get_scene_data();
     scene_data.set_surfaces(surface);
 
     std::atomic_bool keep_going{true};
     auto results = raytracer.run(
-            scene_data, receiver, source, 100000, 100, 10, keep_going, [] {});
+            scene_data, source, receiver, 100000, 100, 10, keep_going, [] {});
+
+    ASSERT_TRUE(results);
 
     raytracer::attenuator::microphone attenuator(cc.get_context(),
                                                  cc.get_device());
-    auto output = attenuator.process(
-            results.get_image_source(false), glm::vec3(0, 0, 1), 0, receiver);
+    auto output = attenuator.process(results->get_impulses(true, true, false),
+                                     glm::vec3(0, 0, 1),
+                                     0,
+                                     receiver);
 
     sort_by_time(output);
 

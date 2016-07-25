@@ -97,8 +97,8 @@ int main(int argc, char** argv) {
                                                   keep_going,
                                                   [&pb] { pb += 1; });
 
-            auto output = aligned::vector<float>(results.size());
-            proc::transform(results, output.begin(), [](const auto& i) {
+            auto output = aligned::vector<float>(results->size());
+            proc::transform(*results, output.begin(), [](const auto& i) {
                 return i.get_pressure();
             });
 
