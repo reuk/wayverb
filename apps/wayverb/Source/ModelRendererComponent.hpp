@@ -8,7 +8,6 @@
 
 class ModelRendererComponent : public BaseRendererComponent<SceneRenderer>,
                                public model::BroadcastListener,
-                               public SceneRenderer::Listener,
                                public ChangeListener,
                                public SettableHelpPanelClient {
 public:
@@ -19,11 +18,6 @@ public:
             model::ValueWrapper<model::RenderState>& render_state);
 
     void receive_broadcast(model::Broadcaster* b) override;
-
-    void source_dragged(SceneRenderer*,
-                        const std::vector<glm::vec3>& v) override;
-    void receiver_dragged(SceneRenderer*,
-                          const std::vector<glm::vec3>& v) override;
 
     void changeListenerCallback(ChangeBroadcaster* cb) override;
 
@@ -45,5 +39,5 @@ private:
                                                          this};
 
     model::Connector<ChangeBroadcaster> scene_connector{&renderer, this};
-    model::Connector<SceneRenderer> scene_drag_connector{&renderer, this};
+//    model::Connector<SceneRenderer> scene_drag_connector{&renderer, this};
 };

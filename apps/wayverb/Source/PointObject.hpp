@@ -20,7 +20,7 @@ class PointObject : public mglu::Drawable, public Node {
 public:
     PointObject(mglu::GenericShader& shader, const glm::vec4& color);
 
-    void set_pointing(const std::vector<glm::vec3>& directions);
+    void set_pointing(const aligned::vector<glm::vec3>& directions);
 
     void set_highlight(float amount);
 
@@ -35,5 +35,5 @@ private:
     RingObject y_ring;
     RingObject z_ring;
 
-    std::vector<LineObject> lines;
+    aligned::vector<LineObject> lines;
 };

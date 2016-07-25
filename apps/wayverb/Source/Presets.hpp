@@ -4,6 +4,6 @@
 
 namespace model {
 
-std::vector<SceneData::Material> get_presets();
+aligned::vector<SceneData::Material> get_presets();
 
 }  // namespace model

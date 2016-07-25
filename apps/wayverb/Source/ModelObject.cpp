@@ -6,25 +6,10 @@
 
 namespace {
 constexpr auto model_colour = 0.5;
-}  // namespace
 
-ModelObject::ModelObject(mglu::GenericShader &shader,
-                         const SceneData &scene_data)
-        : BasicDrawableObject(
-                  shader,
-                  scene_data.get_converted_vertices(),
-                  std::vector<glm::vec4>(scene_data.get_vertices().size(),
-                                         glm::vec4(model_colour,
-                                                   model_colour,
-                                                   model_colour,
-                                                   model_colour)),
-                  get_indices(scene_data),
-                  GL_TRIANGLES) {
-}
-
-std::vector<GLuint> ModelObject::get_indices(
-        const SceneData &scene_data) const {
-    std::vector<GLuint> ret(scene_data.get_triangles().size() * 3);
+aligned::vector<GLuint> get_indices(
+        const SceneData &scene_data) {
+    aligned::vector<GLuint> ret(scene_data.get_triangles().size() * 3);
     auto count = 0u;
     for (const auto &tri : scene_data.get_triangles()) {
         ret[count + 0] = tri.v0;
@@ -34,3 +19,18 @@ std::vector<GLuint> ModelObject::get_indices(
     }
     return ret;
 }
+}  // namespace
+
+ModelObject::ModelObject(mglu::GenericShader &shader,
+                         const SceneData &scene_data)
+        : BasicDrawableObject(
+                  shader,
+                  scene_data.get_converted_vertices(),
+                  aligned::vector<glm::vec4>(scene_data.get_vertices().size(),
+                                             glm::vec4(model_colour,
+                                                       model_colour,
+                                                       model_colour,
+                                                       model_colour)),
+                  get_indices(scene_data),
+                  GL_TRIANGLES) {}
+

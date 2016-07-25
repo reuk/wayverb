@@ -33,7 +33,7 @@ class MicrophoneEditorPanel : public ListEditorPanel<MicrophoneEditableListBox>,
                               public SettableHelpPanelClient {
 public:
     MicrophoneEditorPanel(
-            model::ValueWrapper<std::vector<model::Microphone>>& microphones);
+            model::ValueWrapper<aligned::vector<model::Microphone>>& microphones);
 
 private:
     std::unique_ptr<Component> new_editor(

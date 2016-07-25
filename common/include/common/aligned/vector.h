@@ -8,5 +8,4 @@ namespace aligned {
 
 template <typename T>
 using vector = std::vector<T, allocator<T>>;
-
 }  // namespace aligned

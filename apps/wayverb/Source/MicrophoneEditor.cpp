@@ -48,7 +48,7 @@ SingleMicrophoneComponent::SingleMicrophoneComponent(
 //----------------------------------------------------------------------------//
 
 MicrophoneEditorPanel::MicrophoneEditorPanel(
-        model::ValueWrapper<std::vector<model::Microphone>>& model)
+        model::ValueWrapper<aligned::vector<model::Microphone>>& model)
         : ListEditorPanel<MicrophoneEditableListBox>(model) {
     set_help("microphones configurator",
              "Simulated microphones behave like a collection of superimposed "

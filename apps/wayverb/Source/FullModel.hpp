@@ -222,7 +222,7 @@ public:
 
     ValueWrapper<glm::vec3> position;
     ValueWrapper<ReceiverSettings::Mode> mode;
-    ValueWrapper<std::vector<Microphone>> microphones;
+    ValueWrapper<aligned::vector<Microphone>> microphones;
     ValueWrapper<Pointer> hrtf;
 };
 
@@ -292,14 +292,14 @@ public:
     ValueWrapper<float> filter_frequency;
     ValueWrapper<float> oversample_ratio;
     ValueWrapper<size_t> rays;
-    ValueWrapper<std::vector<glm::vec3>> source;
-    ValueWrapper<std::vector<ReceiverSettings>> receiver_settings;
+    ValueWrapper<aligned::vector<glm::vec3>> source;
+    ValueWrapper<aligned::vector<ReceiverSettings>> receiver_settings;
 };
 
 class RenderState {
 public:
     bool is_rendering{false};
-    engine::State state{engine::State::idle};
+    wayverb::state state{wayverb::state::idle};
     double progress{0};
     bool visualise{true};
 };
@@ -335,12 +335,12 @@ public:
 
     void stop() {
         is_rendering.set(false);
-        state.set(engine::State::idle);
+        state.set(wayverb::state::idle);
         progress.set(0);
     }
 
     ValueWrapper<bool> is_rendering;
-    ValueWrapper<engine::State> state;
+    ValueWrapper<wayverb::state> state;
     ValueWrapper<double> progress;
     ValueWrapper<bool> visualise;
 };
@@ -348,7 +348,7 @@ public:
 class Persistent {
 public:
     App app;
-    std::vector<SceneData::Material> materials;
+    aligned::vector<SceneData::Material> materials;
 
     template <typename Archive>
     void serialize(Archive& archive) {
@@ -376,13 +376,13 @@ public:
     }
 
     ValueWrapper<App> app;
-    ValueWrapper<std::vector<SceneData::Material>> materials;
+    ValueWrapper<aligned::vector<SceneData::Material>> materials;
 };
 
 class FullModel {
 public:
     Persistent persistent;
-    std::vector<SceneData::Material> presets;
+    aligned::vector<SceneData::Material> presets;
     RenderState render_state;
     int shown_surface{-1};
     bool needs_save{false};
@@ -417,7 +417,7 @@ public:
     }
 
     ValueWrapper<Persistent> persistent;
-    ValueWrapper<std::vector<SceneData::Material>> presets;
+    ValueWrapper<aligned::vector<SceneData::Material>> presets;
     ValueWrapper<RenderState> render_state;
     ValueWrapper<int> shown_surface;
     ValueWrapper<bool> needs_save;

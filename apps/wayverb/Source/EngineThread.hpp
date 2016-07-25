@@ -6,22 +6,22 @@ class AsyncEngine : private AsyncUpdater {
 public:
     class Listener {
     public:
-        Listener() = default;
+        Listener()                = default;
         Listener(const Listener&) = default;
         Listener& operator=(const Listener&) = default;
-        Listener(Listener&&) noexcept = default;
+        Listener(Listener&&) noexcept        = default;
         Listener& operator=(Listener&&) noexcept = default;
-        virtual ~Listener() noexcept = default;
+        virtual ~Listener() noexcept             = default;
 
         virtual void engine_encountered_error(AsyncEngine*,
                                               const std::string& str) = 0;
         virtual void engine_state_changed(AsyncEngine*,
-                                          engine::State state,
+                                          wayverb::state state,
                                           double progress) = 0;
         virtual void engine_nodes_changed(
-                AsyncEngine*, const std::vector<cl_float3>& positions) = 0;
+                AsyncEngine*, const aligned::vector<cl_float3>& positions) = 0;
         virtual void engine_visuals_changed(
-                AsyncEngine*, const std::vector<float>& pressures) = 0;
+                AsyncEngine*, const aligned::vector<float>& pressures) = 0;
         virtual void engine_finished(AsyncEngine*) = 0;
     };
 
@@ -48,8 +48,8 @@ private:
     ListenerList<Listener> listener_list;
 
     void engine_encountered_error(const std::string& str);
-    void engine_state_changed(engine::State state, double progress);
-    void engine_nodes_changed(const std::vector<cl_float3>& positions);
-    void engine_visuals_changed(const std::vector<float>& pressures);
+    void engine_state_changed(wayverb::state state, double progress);
+    void engine_nodes_changed(const aligned::vector<cl_float3>& positions);
+    void engine_visuals_changed(const aligned::vector<float>& pressures);
     void engine_finished();
 };

@@ -20,7 +20,7 @@ public:
     };
 
     using value_type = T;
-    using model_type = model::ValueWrapper<std::vector<value_type>>;
+    using model_type = model::ValueWrapper<aligned::vector<value_type>>;
 
     ValueWrapperListBox(model_type& model)
             : model(model) {

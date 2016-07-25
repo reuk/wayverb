@@ -86,7 +86,7 @@ class PresetComponent : public Component,
                         public SettableHelpPanelClient {
 public:
     PresetComponent(model::ValueWrapper<Surface>& linked,
-                    model::ValueWrapper<std::vector<SceneData::Material>>&
+                    model::ValueWrapper<aligned::vector<SceneData::Material>>&
                             preset_model);
     virtual ~PresetComponent() noexcept;
     void resized() override;
@@ -103,7 +103,7 @@ private:
     model::ValueWrapper<Surface>& linked;
     model::BroadcastConnector linked_connector{&linked, this};
 
-    model::ValueWrapper<std::vector<SceneData::Material>>& preset_model;
+    model::ValueWrapper<aligned::vector<SceneData::Material>>& preset_model;
     model::BroadcastConnector preset_connector{&preset_model, this};
 
     ComboBox combo_box;
@@ -124,7 +124,7 @@ private:
 class PresetProperty : public PropertyComponent {
 public:
     PresetProperty(model::ValueWrapper<Surface>& linked,
-                   model::ValueWrapper<std::vector<SceneData::Material>>&
+                   model::ValueWrapper<aligned::vector<SceneData::Material>>&
                            preset_model);
     void refresh() override;
 
@@ -137,7 +137,7 @@ private:
 class SurfaceComponent : public Component {
 public:
     SurfaceComponent(model::ValueWrapper<Surface>& value,
-                     model::ValueWrapper<std::vector<SceneData::Material>>&
+                     model::ValueWrapper<aligned::vector<SceneData::Material>>&
                              preset_model);
     void resized() override;
 
@@ -152,7 +152,7 @@ class SurfaceComponentWithTitle : public Component,
 public:
     SurfaceComponentWithTitle(
             model::ValueWrapper<SceneData::Material>& value,
-            model::ValueWrapper<std::vector<SceneData::Material>>&
+            model::ValueWrapper<aligned::vector<SceneData::Material>>&
                     preset_model);
     void resized() override;
 

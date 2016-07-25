@@ -12,16 +12,16 @@
 #include "common/serialize/json_read_write.h"
 
 namespace {
-void push_triangle_indices(std::vector<GLuint> &ret, const Triangle &tri) {
+void push_triangle_indices(aligned::vector<GLuint> &ret, const Triangle &tri) {
     ret.push_back(tri.v0);
     ret.push_back(tri.v1);
     ret.push_back(tri.v2);
 }
 }  // namespace
 
-std::vector<GLuint> MultiMaterialObject::SingleMaterialSection::get_indices(
+aligned::vector<GLuint> MultiMaterialObject::SingleMaterialSection::get_indices(
         const CopyableSceneData &scene_data, int material_index) {
-    std::vector<GLuint> ret;
+    aligned::vector<GLuint> ret;
     for (const auto &i : scene_data.get_triangles()) {
         if (i.surface == material_index) {
             push_triangle_indices(ret, i);
@@ -33,7 +33,7 @@ std::vector<GLuint> MultiMaterialObject::SingleMaterialSection::get_indices(
 MultiMaterialObject::SingleMaterialSection::SingleMaterialSection(
         const CopyableSceneData &scene_data, int material_index) {
     auto indices = get_indices(scene_data, material_index);
-    size = indices.size();
+    size         = indices.size();
     ibo.data(indices);
 }
 
@@ -58,8 +58,8 @@ MultiMaterialObject::MultiMaterialObject(mglu::GenericShader &generic_shader,
     }
 
     geometry.data(scene_data.get_converted_vertices());
-    colors.data(std::vector<glm::vec4>(scene_data.get_vertices().size(),
-                                       glm::vec4(0.5, 0.5, 0.5, 1.0)));
+    colors.data(aligned::vector<glm::vec4>(scene_data.get_vertices().size(),
+                                           glm::vec4(0.5, 0.5, 0.5, 1.0)));
 
     auto configure_vao = [this](const auto &vao, const auto &shader) {
         auto s_vao = vao.get_scoped();
@@ -115,11 +115,10 @@ void MultiMaterialObject::set_colour(const glm::vec3 &c) {
 class PointObjects final {
 public:
     PointObjects(mglu::GenericShader &shader)
-            : shader(shader) {
-    }
+            : shader(shader) {}
 
-    void set_sources(const std::vector<glm::vec3> &u) {
-        std::vector<PointObject> ret;
+    void set_sources(const aligned::vector<glm::vec3> &u) {
+        aligned::vector<PointObject> ret;
         ret.reserve(u.size());
         for (const auto &i : u) {
             PointObject p(shader, glm::vec4{0.7, 0, 0, 1});
@@ -129,8 +128,8 @@ public:
         sources = std::move(ret);
     }
 
-    void set_receivers(const std::vector<model::ReceiverSettings> &u) {
-        std::vector<PointObject> ret;
+    void set_receivers(const aligned::vector<model::ReceiverSettings> &u) {
+        aligned::vector<PointObject> ret;
         ret.reserve(u.size());
         for (const auto &i : u) {
             PointObject p(shader, glm::vec4{0, 0.7, 0.7, 1});
@@ -160,12 +159,12 @@ public:
         Intersection intersection{nullptr, 0};
         for (auto i : get_all_point_objects()) {
             auto diff = origin - i->get_position();
-            auto b = glm::dot(direction, diff);
-            auto c = glm::dot(diff, diff) - glm::pow(0.4, 2);
-            auto det = glm::pow(b, 2) - c;
+            auto b    = glm::dot(direction, diff);
+            auto c    = glm::dot(diff, diff) - glm::pow(0.4, 2);
+            auto det  = glm::pow(b, 2) - c;
             if (0 <= det) {
                 auto sq_det = std::sqrt(det);
-                auto dist = std::min(-b + sq_det, -b - sq_det);
+                auto dist   = std::min(-b + sq_det, -b - sq_det);
                 if (!intersection.ref || dist < intersection.distance) {
                     intersection = Intersection{i, dist};
                 }
@@ -176,8 +175,8 @@ public:
     }
 
 private:
-    std::vector<PointObject *> get_all_point_objects() {
-        std::vector<PointObject *> ret;
+    aligned::vector<PointObject *> get_all_point_objects() {
+        aligned::vector<PointObject *> ret;
         ret.reserve(sources.size() + receivers.size());
         for (auto &i : sources) {
             ret.push_back(&i);
@@ -190,8 +189,8 @@ private:
 
     mglu::GenericShader &shader;
 
-    std::vector<PointObject> sources;
-    std::vector<PointObject> receivers;
+    aligned::vector<PointObject> sources;
+    aligned::vector<PointObject> receivers;
 };
 
 //----------------------------------------------------------------------------//
@@ -205,10 +204,10 @@ public:
             , point_objects(generic_shader)
             , axes(generic_shader) {
         auto aabb = model.get_aabb();
-        auto m = aabb.centre();
-        auto max = glm::length(aabb.dimensions());
+        auto m    = aabb.centre();
+        auto max  = glm::length(aabb.dimensions());
         eye = eye_target = max > 0 ? 20 / max : 1;
-        translation = -glm::vec3(m.x, m.y, m.z);
+        translation      = -glm::vec3(m.x, m.y, m.z);
     }
 
     void set_eye(float u) {
@@ -232,16 +231,16 @@ public:
         allow_move_mode = !b;
     }
 
-    void set_positions(const std::vector<cl_float3> &positions) {
+    void set_positions(const aligned::vector<cl_float3> &positions) {
         std::lock_guard<std::mutex> lck(mut);
-        std::vector<glm::vec3> ret(positions.size());
+        aligned::vector<glm::vec3> ret(positions.size());
         proc::transform(positions, ret.begin(), [](const auto &i) {
             return to_glm_vec3(i);
         });
         mesh_object = std::make_unique<MeshObject>(mesh_shader, ret);
     }
 
-    void set_pressures(const std::vector<float> &pressures) {
+    void set_pressures(const aligned::vector<float> &pressures) {
         std::lock_guard<std::mutex> lck(mut);
         assert(mesh_object);
         mesh_object->set_pressures(pressures);
@@ -330,15 +329,15 @@ public:
                     m->orientation.elevation + diff.y * Rotate::angle_scale});
         } else if (auto m = dynamic_cast<Move *>(mousing.get())) {
             auto camera_position = get_world_camera_position();
-            auto normal = get_world_camera_direction();
+            auto normal          = get_world_camera_direction();
 
             auto original = m->original_position;
 
             auto d = glm::dot(normal, camera_position - original);
 
             auto direction = get_world_mouse_direction(pos);
-            auto dist = -d / glm::dot(normal, direction);
-            auto new_pos = camera_position + direction * dist;
+            auto dist      = -d / glm::dot(normal, direction);
+            auto new_pos   = camera_position + direction * dist;
 
             m->to_move->set_position(new_pos);
         }
@@ -354,18 +353,16 @@ public:
         set_eye_impl(eye_target + delta_y);
     }
 
-    void set_sources(const std::vector<glm::vec3> &u) {
+    void set_sources(const aligned::vector<glm::vec3> &u) {
         point_objects.set_sources(u);
     }
 
-    void set_receivers(const std::vector<model::ReceiverSettings> &u) {
+    void set_receivers(const aligned::vector<model::ReceiverSettings> &u) {
         point_objects.set_receivers(u);
     }
 
 private:
-    void set_eye_impl(float u) {
-        eye_target = std::max(0.0f, u);
-    }
+    void set_eye_impl(float u) { eye_target = std::max(0.0f, u); }
 
     void set_rotation_impl(const Orientable::AzEl &u) {
         azel_target =
@@ -390,7 +387,7 @@ private:
                                   -1,
                                   1};
         auto ray_eye = glm::inverse(get_projection_matrix()) * ray_clip;
-        ray_eye = glm::vec4{ray_eye.x, ray_eye.y, -1, 0};
+        ray_eye      = glm::vec4{ray_eye.x, ray_eye.y, -1, 0};
         return glm::normalize(
                 glm::vec3{glm::inverse(get_view_matrix()) * ray_eye});
     }
@@ -443,8 +440,7 @@ private:
     struct Rotate : public Mousing {
         Rotate(const Orientable::AzEl &azel, const glm::vec2 &position)
                 : orientation(azel)
-                , position(position) {
-        }
+                , position(position) {}
 
         static const float angle_scale;
         Orientable::AzEl orientation;
@@ -457,9 +453,7 @@ private:
                 , original_position(v) {
             to_move->set_highlight(0.5);
         }
-        virtual ~Move() noexcept {
-            to_move->set_highlight(0);
-        }
+        virtual ~Move() noexcept { to_move->set_highlight(0); }
 
         PointObject *to_move{nullptr};
         glm::vec3 original_position;
@@ -473,8 +467,7 @@ const float SceneRenderer::ContextLifetime::Rotate::angle_scale{0.01};
 //----------------------------------------------------------------------------//
 
 SceneRenderer::SceneRenderer(const CopyableSceneData &model)
-        : model(model) {
-}
+        : model(model) {}
 
 //  defined here so that we can PIMPL the ContextLifetime
 SceneRenderer::~SceneRenderer() noexcept = default;
@@ -500,25 +493,25 @@ void SceneRenderer::set_rendering(bool b) {
     push_incoming([this, b] { context_lifetime->set_rendering(b); });
 }
 
-void SceneRenderer::set_sources(const std::vector<glm::vec3> &sources) {
+void SceneRenderer::set_sources(const aligned::vector<glm::vec3> &sources) {
     std::lock_guard<std::mutex> lck(mut);
     push_incoming([this, sources] { context_lifetime->set_sources(sources); });
 }
 
 void SceneRenderer::set_receivers(
-        const std::vector<model::ReceiverSettings> &receivers) {
+        const aligned::vector<model::ReceiverSettings> &receivers) {
     std::lock_guard<std::mutex> lck(mut);
     push_incoming(
             [this, receivers] { context_lifetime->set_receivers(receivers); });
 }
 
-void SceneRenderer::set_positions(const std::vector<cl_float3> &positions) {
+void SceneRenderer::set_positions(const aligned::vector<cl_float3> &positions) {
     std::lock_guard<std::mutex> lck(mut);
     push_incoming(
             [this, positions] { context_lifetime->set_positions(positions); });
 }
 
-void SceneRenderer::set_pressures(const std::vector<float> &pressures) {
+void SceneRenderer::set_pressures(const aligned::vector<float> &pressures) {
     std::lock_guard<std::mutex> lck(mut);
     push_incoming(
             [this, pressures] { context_lifetime->set_pressures(pressures); });
@@ -535,14 +528,14 @@ void SceneRenderer::set_emphasis(const glm::vec3 &u) {
 }
 
 void SceneRenderer::broadcast_receiver_positions(
-        const std::vector<glm::vec3> &pos) {
+        const aligned::vector<glm::vec3> &pos) {
     push_outgoing([this, pos] {
         listener_list.call(&Listener::receiver_dragged, this, pos);
     });
 }
 
 void SceneRenderer::broadcast_source_positions(
-        const std::vector<glm::vec3> &pos) {
+        const aligned::vector<glm::vec3> &pos) {
     push_outgoing([this, pos] {
         listener_list.call(&Listener::source_dragged, this, pos);
     });

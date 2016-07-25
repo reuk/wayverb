@@ -39,7 +39,7 @@ void BottomPanel::receive_broadcast(model::Broadcaster* cb) {
         button.setButtonText(render_state.is_rendering.get() ? "cancel"
                                                              : "render");
     } else if (cb == &render_state.state) {
-        bar.setTextToDisplay(engine::to_string(render_state.state.get()));
+        bar.setTextToDisplay(wayverb::to_string(render_state.state.get()));
     } else if (cb == &render_state.progress) {
         progress = render_state.progress.get();
     }

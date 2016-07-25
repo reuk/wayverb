@@ -10,8 +10,6 @@ class MainContentComponent final : public Component,
                                    public SettableHelpPanelClient,
                                    public AsyncEngine::Listener {
 public:
-    using Engine = engine::WayverbEngine<BufferType::cl>;
-
     MainContentComponent(const CopyableSceneData& scene_data,
                          model::ValueWrapper<model::FullModel>& wrapper);
 
@@ -23,12 +21,12 @@ public:
     void engine_encountered_error(AsyncEngine*,
                                   const std::string& str) override;
     void engine_state_changed(AsyncEngine*,
-                              engine::State state,
+                              wayverb::state state,
                               double progress) override;
-    void engine_nodes_changed(AsyncEngine*,
-                              const std::vector<cl_float3>& positions) override;
-    void engine_visuals_changed(AsyncEngine*,
-                                const std::vector<float>& pressures) override;
+    void engine_nodes_changed(
+            AsyncEngine*, const aligned::vector<cl_float3>& positions) override;
+    void engine_visuals_changed(
+            AsyncEngine*, const aligned::vector<float>& pressures) override;
     void engine_finished(AsyncEngine*) override;
 
 private:

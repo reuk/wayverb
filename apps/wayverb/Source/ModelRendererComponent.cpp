@@ -28,8 +28,7 @@ ModelRendererComponent::ModelRendererComponent(
 }
 
 namespace {
-auto get_receiver_directions(const model::ValueWrapper<model::App> &app) {
-}
+auto get_receiver_directions(const model::ValueWrapper<model::App> &app) {}
 }  // namespace
 
 void ModelRendererComponent::receive_broadcast(model::Broadcaster *cb) {
@@ -56,19 +55,21 @@ void ModelRendererComponent::changeListenerCallback(ChangeBroadcaster *u) {
     }
 }
 
-void ModelRendererComponent::source_dragged(SceneRenderer *,
-                                            const std::vector<glm::vec3> &v) {
+/*
+void ModelRendererComponent::source_dragged(
+        SceneRenderer *, const aligned::vector<glm::vec3> &v) {
     assert(app.source.get().size() == v.size());
     for (auto i = 0u; i != v.size(); ++i) {
         app.source[i].set(glm::clamp(
                 v[i], model.get_aabb().get_c0(), model.get_aabb().get_c1()));
     }
 }
-void ModelRendererComponent::receiver_dragged(SceneRenderer *,
-                                              const std::vector<glm::vec3> &v) {
+void ModelRendererComponent::receiver_dragged(
+        SceneRenderer *, const aligned::vector<glm::vec3> &v) {
     assert(app.receiver_settings.get().size() == v.size());
     for (auto i = 0u; i != v.size(); ++i) {
         app.receiver_settings[i].position.set(glm::clamp(
                 v[i], model.get_aabb().get_c0(), model.get_aabb().get_c1()));
     }
 }
+*/

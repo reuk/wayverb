@@ -73,6 +73,13 @@ public:
            size_t rays,
            size_t impulses);
 
+    engine(const compute_context& compute_context,
+           const CopyableSceneData& scene_data,
+           const glm::vec3& source,
+           const glm::vec3& receiver,
+           double waveguide_sample_rate,
+           size_t rays);
+
     engine(const engine& rhs) = delete;
     engine& operator=(const engine& rhs) = delete;
 

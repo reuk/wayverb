@@ -128,7 +128,7 @@ void FrequencyLabelProperty::refresh() {
 
 SurfaceComponent::SurfaceComponent(
         model::ValueWrapper<Surface>& value,
-        model::ValueWrapper<std::vector<SceneData::Material>>& preset_model) {
+        model::ValueWrapper<aligned::vector<SceneData::Material>>& preset_model) {
     property_panel.addProperties(
             {new FrequencyLabelProperty("frequencies / KHz")});
     property_panel.addProperties(
@@ -151,7 +151,7 @@ void SurfaceComponent::resized() {
 
 SurfaceComponentWithTitle::SurfaceComponentWithTitle(
         model::ValueWrapper<SceneData::Material>& value,
-        model::ValueWrapper<std::vector<SceneData::Material>>& preset_model)
+        model::ValueWrapper<aligned::vector<SceneData::Material>>& preset_model)
         : title("", value.name.get() + " settings")
         , surface_component(value.surface, preset_model) {
     set_help("surface configurator",
@@ -176,7 +176,7 @@ void SurfaceComponentWithTitle::resized() {
 
 PresetComponent::PresetComponent(
         model::ValueWrapper<Surface>& linked,
-        model::ValueWrapper<std::vector<SceneData::Material>>& preset_model)
+        model::ValueWrapper<aligned::vector<SceneData::Material>>& preset_model)
         : linked(linked)
         , preset_model(preset_model) {
     set_help("preset selector",
@@ -285,7 +285,7 @@ void PresetComponent::receive_broadcast(model::Broadcaster* cb) {
 
 PresetProperty::PresetProperty(
         model::ValueWrapper<Surface>& linked,
-        model::ValueWrapper<std::vector<SceneData::Material>>& preset_model)
+        model::ValueWrapper<aligned::vector<SceneData::Material>>& preset_model)
         : PropertyComponent("presets", 52)
         , preset_component(linked, preset_model) {
     addAndMakeVisible(preset_component);

@@ -1,11 +1,9 @@
 #include "Presets.hpp"
 
-#include "common/extended_algorithms.h"
-
 namespace model {
 
-std::vector<SceneData::Material> get_presets() {
-    std::vector<SceneData::Material> ret{
+aligned::vector<SceneData::Material> get_presets() {
+    aligned::vector<SceneData::Material> ret{
             SceneData::Material{
                     "concrete_floor",
                     Surface{{0.99, 0.97, 0.95, 0.98, 0.98, 0.98, 0.98, 0.98},

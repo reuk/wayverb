@@ -26,7 +26,7 @@
 #include "common/scene_data.h"
 #include "common/voxel_collection.h"
 
-#include "waveguide/waveguide.h"
+#include "waveguide/rectangular_waveguide.h"
 
 #include "raytracer/raytracer.h"
 
@@ -50,7 +50,7 @@ public:
         void do_draw(const glm::mat4& modelview_matrix) const override;
         glm::mat4 get_local_modelview_matrix() const override;
 
-        static std::vector<GLuint> get_indices(
+        static aligned::vector<GLuint> get_indices(
                 const CopyableSceneData& scene_data, int material_index);
         mglu::StaticIBO ibo;
         GLuint size;
@@ -73,24 +73,24 @@ private:
 
     int highlighted{-1};
 
-    std::vector<SingleMaterialSection> sections;
+    aligned::vector<SingleMaterialSection> sections;
 };
 
 class SceneRenderer final : public BaseRenderer {
 public:
     class Listener {
     public:
-        Listener() = default;
+        Listener()                = default;
         Listener(const Listener&) = default;
         Listener& operator=(const Listener&) = default;
-        Listener(Listener&&) noexcept = default;
+        Listener(Listener&&) noexcept        = default;
         Listener& operator=(Listener&&) noexcept = default;
-        virtual ~Listener() noexcept = default;
+        virtual ~Listener() noexcept             = default;
 
-        virtual void source_dragged(SceneRenderer*,
-                                    const std::vector<glm::vec3>& new_pos) = 0;
+        virtual void source_dragged(
+                SceneRenderer*, const aligned::vector<glm::vec3>& new_pos) = 0;
         virtual void receiver_dragged(
-                SceneRenderer*, const std::vector<glm::vec3>& new_pos) = 0;
+                SceneRenderer*, const aligned::vector<glm::vec3>& new_pos) = 0;
     };
 
     SceneRenderer(const CopyableSceneData& model);
@@ -101,11 +101,12 @@ public:
 
     void set_rendering(bool b);
 
-    void set_sources(const std::vector<glm::vec3>& sources);
-    void set_receivers(const std::vector<model::ReceiverSettings>& receivers);
+    void set_sources(const aligned::vector<glm::vec3>& sources);
+    void set_receivers(
+            const aligned::vector<model::ReceiverSettings>& receivers);
 
-    void set_positions(const std::vector<cl_float3>& positions);
-    void set_pressures(const std::vector<float>& pressures);
+    void set_positions(const aligned::vector<cl_float3>& positions);
+    void set_pressures(const aligned::vector<float>& pressures);
 
     void set_highlighted(int u);
 
@@ -117,8 +118,8 @@ public:
 private:
     BaseContextLifetime* get_context_lifetime() override;
 
-    void broadcast_receiver_positions(const std::vector<glm::vec3>& pos);
-    void broadcast_source_positions(const std::vector<glm::vec3>& pos);
+    void broadcast_receiver_positions(const aligned::vector<glm::vec3>& pos);
+    void broadcast_source_positions(const aligned::vector<glm::vec3>& pos);
 
     mutable std::mutex mut;
 

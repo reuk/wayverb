@@ -16,9 +16,7 @@ public:
         setLookAndFeel(&pclaf);
     }
 
-    String getButtonText() const override {
-        return "...";
-    }
+    String getButtonText() const override { return "..."; }
 
 private:
     PropertyComponentLAF pclaf{200};
@@ -32,7 +30,8 @@ public:
             int this_surface,
             model::ValueWrapper<int>& shown_surface,
             model::ValueWrapper<SceneData::Material>& value,
-            model::ValueWrapper<std::vector<SceneData::Material>>& preset_model)
+            model::ValueWrapper<aligned::vector<SceneData::Material>>&
+                    preset_model)
             : this_surface(this_surface)
             , shown_surface(shown_surface)
             , value(value)
@@ -74,7 +73,7 @@ private:
     model::BroadcastConnector surface_connector{&shown_surface, this};
 
     model::ValueWrapper<SceneData::Material>& value;
-    model::ValueWrapper<std::vector<SceneData::Material>>& preset_model;
+    model::ValueWrapper<aligned::vector<SceneData::Material>>& preset_model;
 
     TextButton show_button{"show"};
     model::Connector<TextButton> show_connector{&show_button, this};
@@ -90,7 +89,8 @@ public:
             int this_surface,
             model::ValueWrapper<int>& shown_surface,
             model::ValueWrapper<SceneData::Material>& value,
-            model::ValueWrapper<std::vector<SceneData::Material>>& preset_model)
+            model::ValueWrapper<aligned::vector<SceneData::Material>>&
+                    preset_model)
             : PropertyComponent(value.name.get())
             , contents(this_surface, shown_surface, value, preset_model) {
         set_help("surface material",
@@ -101,8 +101,7 @@ public:
         addAndMakeVisible(contents);
     }
 
-    void refresh() override {
-    }
+    void refresh() override {}
 
 private:
     MaterialConfigureButtonComponent contents;
@@ -111,8 +110,8 @@ private:
 
 Array<PropertyComponent*> make_material_buttons(
         model::ValueWrapper<int>& shown_surface,
-        const model::ValueWrapper<std::vector<SceneData::Material>>& model,
-        model::ValueWrapper<std::vector<SceneData::Material>>& preset) {
+        const model::ValueWrapper<aligned::vector<SceneData::Material>>& model,
+        model::ValueWrapper<aligned::vector<SceneData::Material>>& preset) {
     Array<PropertyComponent*> ret;
     auto count = 0;
     for (const auto& i : model) {
@@ -127,19 +126,15 @@ Array<PropertyComponent*> make_material_buttons(
 
 constexpr auto to_id(model::ReceiverSettings::Mode m) {
     switch (m) {
-        case model::ReceiverSettings::Mode::hrtf:
-            return 1;
-        case model::ReceiverSettings::Mode::microphones:
-            return 2;
+        case model::ReceiverSettings::Mode::hrtf: return 1;
+        case model::ReceiverSettings::Mode::microphones: return 2;
     }
 }
 
 constexpr auto to_enum(int i) {
     switch (i) {
-        case 1:
-            return model::ReceiverSettings::Mode::hrtf;
-        case 2:
-            return model::ReceiverSettings::Mode::microphones;
+        case 1: return model::ReceiverSettings::Mode::hrtf;
+        case 2: return model::ReceiverSettings::Mode::microphones;
     }
     return model::ReceiverSettings::Mode::hrtf;
 }
@@ -161,9 +156,7 @@ public:
         addAndMakeVisible(combo_box);
     }
 
-    virtual ~RayNumberPicker() noexcept {
-        PopupMenu::dismissAllActiveMenus();
-    }
+    virtual ~RayNumberPicker() noexcept { PopupMenu::dismissAllActiveMenus(); }
 
     void comboBoxChanged(ComboBox* cb) override {
         if (cb == &combo_box) {
@@ -180,9 +173,7 @@ public:
         }
     }
 
-    void resized() override {
-        combo_box.setBounds(getLocalBounds());
-    }
+    void resized() override { combo_box.setBounds(getLocalBounds()); }
 
 private:
     model::ValueWrapper<size_t>& value;
@@ -205,8 +196,7 @@ public:
         addAndMakeVisible(picker);
     }
 
-    void refresh() override {
-    }
+    void refresh() override {}
 
 private:
     RayNumberPicker picker;
@@ -216,12 +206,12 @@ private:
 
 class SourcesConfigureButton : public ConfigureButton {
 public:
-    SourcesConfigureButton(model::ValueWrapper<std::vector<glm::vec3>>& model,
-                           const CuboidBoundary& aabb)
+    SourcesConfigureButton(
+            model::ValueWrapper<aligned::vector<glm::vec3>>& model,
+            const CuboidBoundary& aabb)
             : ConfigureButton("sources")
             , model(model)
-            , aabb(aabb) {
-    }
+            , aabb(aabb) {}
 
     void buttonClicked() override {
         auto cmp = std::make_unique<SourcesEditorPanel>(model, aabb);
@@ -231,19 +221,19 @@ public:
     }
 
 private:
-    model::ValueWrapper<std::vector<glm::vec3>>& model;
+    model::ValueWrapper<aligned::vector<glm::vec3>>& model;
     CuboidBoundary aabb;
 };
 
 class ReceiversConfigureButton : public ConfigureButton {
 public:
     ReceiversConfigureButton(
-            model::ValueWrapper<std::vector<model::ReceiverSettings>>& model,
+            model::ValueWrapper<aligned::vector<model::ReceiverSettings>>&
+                    model,
             const CuboidBoundary& aabb)
             : ConfigureButton("receivers")
             , model(model)
-            , aabb(aabb) {
-    }
+            , aabb(aabb) {}
 
     void buttonClicked() override {
         auto cmp = std::make_unique<ReceiversEditorPanel>(model, aabb);
@@ -253,7 +243,7 @@ public:
     }
 
 private:
-    model::ValueWrapper<std::vector<model::ReceiverSettings>>& model;
+    model::ValueWrapper<aligned::vector<model::ReceiverSettings>>& model;
     CuboidBoundary aabb;
 };
 

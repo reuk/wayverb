@@ -53,7 +53,7 @@ void MainContentComponent::engine_encountered_error(AsyncEngine* u,
 }
 
 void MainContentComponent::engine_state_changed(AsyncEngine* u,
-                                                engine::State state,
+                                                wayverb::state state,
                                                 double progress) {
     if (u == &engine) {
         wrapper.render_state.state.set(state);
@@ -62,14 +62,14 @@ void MainContentComponent::engine_state_changed(AsyncEngine* u,
 }
 
 void MainContentComponent::engine_nodes_changed(
-        AsyncEngine* u, const std::vector<cl_float3>& positions) {
+        AsyncEngine* u, const aligned::vector<cl_float3>& positions) {
     if (u == &engine) {
         right_panel.get_renderer().set_positions(positions);
     }
 }
 
 void MainContentComponent::engine_visuals_changed(
-        AsyncEngine* u, const std::vector<float>& pressures) {
+        AsyncEngine* u, const aligned::vector<float>& pressures) {
     if (u == &engine) {
         right_panel.get_renderer().set_pressures(pressures);
     }

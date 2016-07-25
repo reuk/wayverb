@@ -1,6 +1,7 @@
 #pragma once
 
 #include "common/dsp_vector_ops.h"
+#include "common/aligned/vector.h"
 
 /// sinc t = sin (pi . t) / pi . t
 template <typename T>
