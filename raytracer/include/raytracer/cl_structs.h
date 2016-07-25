@@ -16,6 +16,12 @@ struct alignas(1 << 5) Impulse final {
     cl_float time;
 };
 
+struct alignas(1 << 4) Reflection final {
+    cl_float3 position;     //  intersection location
+    cl_float3 direction;    //  specular direction
+    cl_ulong triangle;      //  the intersected triangle
+};
+
 constexpr bool operator==(const Impulse& a, const Impulse& b) {
     return std::tie(a.volume, a.position, a.time) ==
            std::tie(b.volume, b.position, b.time);

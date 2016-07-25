@@ -438,7 +438,7 @@ private:
     compute_context compute_context;
     raytracer_program raytracer_program;
     CopyableSceneData scene_data;
-    raytracer::Raytracer raytracer;
+    raytracer::raytracer raytracer;
     rectangular_waveguide waveguide;
 
     glm::vec3 source;

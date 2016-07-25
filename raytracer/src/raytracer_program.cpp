@@ -225,6 +225,67 @@ void image_source_contributions(Intersection closest,
     }
 }
 
+kernel void reflections(global Ray* ray,                   //  ray
+
+                        const global uint * voxel_index,   //  voxel
+                        AABB global_aabb,
+                        uint side,
+
+                        const global Triangle * triangles, //  scene
+                        const global float3 * vertices,
+                        const global Surface * surfaces,
+
+                        const global float * rng,          //  random numbers
+
+                        global Reflection * reflection) {  //  output
+    //  get thread index
+    const size_t thread = get_global_id(0);
+
+    //  find the ray to intersect
+    const Ray this_ray = ray[thread];
+
+    //  find the intersection between scene geometry and this ray
+    const Intersection closest = voxel_traversal(voxel_index,
+                                                 this_ray,
+                                                 global_aabb,
+                                                 side,
+                                                 triangles,
+                                                 vertices);
+
+    if (!closest.intersects) {
+        //  error
+        return;
+    }
+
+    //  find where the ray intersects with the scene geometry
+    const float3 intersection = ray.position + ray.direction * closest.distance;
+
+    //  get the normal at the intersection
+    const float3 tnorm = triangle_normal(triangle, vertices);
+
+    //  calculate the new specular direction from this point
+    const float3 specular = reflect(tnorm, ray.direction);
+
+    //  now we can populate the output
+    reflection[thread] = (Reflection) {intersection,
+                                       specular,
+                                       closest.primitive};
+
+    //  we also need to find the next ray to trace
+
+    //  find the scattering
+    //  get random values to influence direction of reflected ray
+    const float z           = rng[2 * thread + 0];
+    const float theta       = rng[2 * thread + 1];
+    //  scattering coefficient is the average of the diffuse coefficients
+    const float scatter     = mean(surface.diffuse);
+    const float3 scattering = lambert_scattering(specular, tnorm, sphere_point(z, theta), scatter);
+
+    //  find the next ray to trace
+    ray[thread] = (Ray){intersection, scattering};
+}
+
+/*
 kernel void raytrace(global RayInfo * ray_info,         //  ray
 
                      const global uint * voxel_index,   //  voxel
@@ -344,5 +405,6 @@ kernel void raytrace(global RayInfo * ray_info,         //  ray
     info->volume = new_vol - brdf_values;
     info->distance = new_dist;
 }
+*/
 
 )");

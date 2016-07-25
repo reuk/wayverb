@@ -1,6 +1,7 @@
 #pragma once
 
 #include "raytracer/cl_structs.h"
+#include "raytracer/random_directions.h"
 #include "raytracer/raytracer_program.h"
 #include "raytracer/results.h"
 
@@ -15,6 +16,7 @@
 #include <numeric>
 #include <set>
 #include <vector>
+#include <random>
 
 namespace raytracer {
 
@@ -91,11 +93,10 @@ inline void fix_predelay(T& ret) {
 /// Get the number of necessary reflections for a given min amplitude.
 int compute_optimum_reflection_number(float min_amp, float max_reflectivity);
 
-aligned::vector<cl_float3> get_random_directions(size_t num);
-
-class Raytracer final {
+/*
+class raytracer final {
 public:
-    Raytracer(const cl::Context&, const cl::Device&);
+    raytracer(const cl::Context&, const cl::Device&);
 
     using PerStepCallback = std::function<void()>;
 
@@ -124,4 +125,6 @@ private:
     cl::CommandQueue queue;
     kernel_type kernel;
 };
+*/
+
 }  // namespace raytracer

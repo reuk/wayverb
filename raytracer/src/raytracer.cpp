@@ -16,7 +16,6 @@
 #include <fstream>
 #include <iomanip>
 #include <numeric>
-#include <random>
 #include <sstream>
 #include <streambuf>
 
@@ -166,48 +165,6 @@ inline T elementwise(const T& a, const T& b, const U& u) {
     return ret;
 }
 
-class direction_rng {
-public:
-    template <typename T>
-    direction_rng(T& engine)
-            : z(std::uniform_real_distribution<float>(-1, 1)(engine))
-            , theta(std::uniform_real_distribution<float>(-M_PI,
-                                                          M_PI)(engine)) {}
-
-    float get_z() const { return z; }
-    float get_theta() const { return theta; }
-
-private:
-    float z;      //  -1    to 1
-    float theta;  //  -M_PI to M_PI
-};
-
-aligned::vector<cl_float3> get_random_directions(size_t num) {
-    aligned::vector<cl_float3> ret(num);
-    std::default_random_engine engine{std::random_device()()};
-
-    for (auto& i : ret) {
-        const direction_rng rng(engine);
-        i = to_cl_float3(sphere_point(rng.get_z(), rng.get_theta()));
-    }
-
-    return ret;
-}
-
-aligned::vector<cl_float> get_direction_rng(size_t num) {
-    aligned::vector<cl_float> ret;
-    ret.reserve(2 * num);
-    std::default_random_engine engine{std::random_device()()};
-
-    for (auto i = 0u; i != num; ++i) {
-        const direction_rng rng(engine);
-        ret.push_back(rng.get_z());
-        ret.push_back(rng.get_theta());
-    }
-
-    return ret;
-}
-
 //----------------------------------------------------------------------------//
 
 auto remove_duplicates(const aligned::vector<aligned::vector<cl_ulong>>& path,
@@ -233,10 +190,6 @@ auto remove_duplicates(const aligned::vector<aligned::vector<cl_ulong>>& path,
 
     return ret;
 }
-
-Raytracer::Raytracer(const cl::Context& context, const cl::Device& device)
-        : queue(context, device)
-        , kernel(raytracer_program(context, device).get_raytrace_kernel()) {}
 
 template <typename T>
 auto transpose(const aligned::vector<aligned::vector<T>>& t) {
@@ -288,7 +241,12 @@ auto get_direct_impulse(const glm::vec3& micpos,
     return ret;
 }
 
-results Raytracer::run(const CopyableSceneData& scene_data,
+/*
+raytracer::raytracer(const cl::Context& context, const cl::Device& device)
+        : queue(context, device)
+        , kernel(raytracer_program(context, device).get_raytrace_kernel()) {}
+
+results raytracer::run(const CopyableSceneData& scene_data,
                        const glm::vec3& micpos,
                        const glm::vec3& source,
                        size_t rays,
@@ -306,7 +264,7 @@ results Raytracer::run(const CopyableSceneData& scene_data,
                callback);
 }
 
-results Raytracer::run(const CopyableSceneData& scene_data,
+results raytracer::run(const CopyableSceneData& scene_data,
                        const glm::vec3& micpos,
                        const glm::vec3& source,
                        const aligned::vector<cl_float3>& directions,
@@ -428,5 +386,6 @@ results Raytracer::run(const CopyableSceneData& scene_data,
                    micpos,
                    source);
 }
+*/
 
 }  // namespace raytracer

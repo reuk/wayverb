@@ -16,8 +16,8 @@ int3 get_starting_index(float3 position,
     return convert_int3(floor((position - global_aabb.c0) / voxel_dimensions));
 }
 
-uint get_voxel_index(const global uint* voxel_index, int3 i, int side);
-uint get_voxel_index(const global uint* voxel_index, int3 i, int side) {
+uint get_voxel_index(const global uint* voxel_index, int3 i, ulong side);
+uint get_voxel_index(const global uint* voxel_index, int3 i, ulong side) {
     size_t offset = i.x * side * side + i.y * side + i.z;
     return voxel_index[offset];
 }
@@ -25,13 +25,13 @@ uint get_voxel_index(const global uint* voxel_index, int3 i, int side) {
 Intersection voxel_traversal(const global uint* voxel_index,
                              Ray ray,
                              AABB global_aabb,
-                             int side,
+                             ulong side,
                              const global Triangle* triangles,
                              const global float3* vertices);
 Intersection voxel_traversal(const global uint* voxel_index,
                              Ray ray,
                              AABB global_aabb,
-                             int side,
+                             ulong side,
                              const global Triangle* triangles,
                              const global float3* vertices) {
     const float3 voxel_dimensions = (global_aabb.c1 - global_aabb.c0) / side;
@@ -86,14 +86,14 @@ bool voxel_point_intersection(float3 begin,
                               float3 point,
                               const global uint* voxel_index,
                               AABB global_aabb,
-                              int side,
+                              ulong side,
                               const global Triangle* triangles,
                               const global float3* vertices);
 bool voxel_point_intersection(float3 begin,
                               float3 point,
                               const global uint* voxel_index,
                               AABB global_aabb,
-                              int side,
+                              ulong side,
                               const global Triangle* triangles,
                               const global float3* vertices) {
     const float3 begin_to_point = point - begin;

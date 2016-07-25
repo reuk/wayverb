@@ -15,6 +15,12 @@ typedef struct {
 } Ray;
 
 typedef struct {
+    float3 position;
+    float3 direction;
+    ulong triangle;
+} Reflection;
+
+typedef struct {
     float3 v0;
     float3 v1;
     float3 v2;

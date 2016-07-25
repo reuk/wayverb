@@ -5,11 +5,12 @@
 
 namespace proc {
 
-#define BOTH_STL_WRAPPER(name)                                            \
-    template <typename Coll, typename... Args>                            \
-    auto name(Coll&& c, Args&&... args) {                                 \
-        return std::name(                                                 \
-                std::begin(c), std::end(c), std::forward<Args>(args)...); \
+#define BOTH_STL_WRAPPER(name)                                           \
+    template <typename Coll, typename... Args>                           \
+    auto name(Coll&& c, Args&&... args) {                                \
+        using std::begin;                                                \
+        using std::end;                                                  \
+        return std::name(begin(c), end(c), std::forward<Args>(args)...); \
     }
 
 BOTH_STL_WRAPPER(all_of)

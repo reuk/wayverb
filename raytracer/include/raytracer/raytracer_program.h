@@ -8,6 +8,7 @@ class raytracer_program final {
 public:
     raytracer_program(const cl::Context& context, const cl::Device& device);
 
+#if 0
     auto get_raytrace_kernel() const {
         return program_wrapper.get_kernel<cl::Buffer,  //  ray_info
                                           cl::Buffer,  //  voxel_index
@@ -29,15 +30,27 @@ public:
                                           cl::Buffer   //  image_source_index
                                           >("raytrace");
     }
+#endif
+
+    auto get_reflections_kernel() const {
+        return program_wrapper.get_kernel<cl::Buffer,  //  ray
+                                          cl::Buffer,  //  voxel_index
+                                          AABB,        //  global_aabb
+                                          cl_ulong,    //  side
+                                          cl::Buffer,  //  triangles
+                                          cl::Buffer,  //  vertices
+                                          cl::Buffer,  //  surfaces
+                                          cl::Buffer,  //  rng
+                                          cl::Buffer   //  reflection
+                                          >("reflections");
+    }
 
     template <cl_program_info T>
     auto get_info() const {
         return program_wrapper.template get_info<T>();
     }
 
-    cl::Device get_device() const {
-        return program_wrapper.get_device();
-    }
+    cl::Device get_device() const { return program_wrapper.get_device(); }
 
 private:
     static const std::string source;
