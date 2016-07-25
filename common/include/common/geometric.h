@@ -6,6 +6,8 @@
 
 #include "glm/glm.hpp"
 
+#include <experimental/optional>
+
 namespace geo {
 
 class Ray final {
@@ -23,42 +25,18 @@ private:
     glm::vec3 direction;
 };
 
-class Intersects final {
-public:
-    constexpr Intersects()
-            : distance(0)
-            , intersects(false) {}
-    constexpr explicit Intersects(float distance)
-            : distance(distance)
-            , intersects(true) {}
+using Intersects = std::experimental::optional<float>;
 
-    constexpr float get_distance() const { return distance; }
-    constexpr bool get_intersects() const { return intersects; }
-
-private:
+struct Inter {
     float distance;
-    bool intersects;
-};
-
-class Intersection final {
-public:
-    constexpr Intersection()
-            : intersects()
-            , index(0) {}
-    constexpr Intersection(float distance, int index)
-            : intersects(distance)
-            , index(index) {}
-
-    constexpr float get_distance() const { return intersects.get_distance(); }
-    constexpr bool get_intersects() const {
-        return intersects.get_intersects();
-    }
-    constexpr size_t get_index() const { return index; }
-
-private:
-    Intersects intersects;
     size_t index;
 };
+
+constexpr bool operator==(const Inter& a, const Inter& b) {
+    return std::tie(a.distance, a.index) == std::tie(b.distance, b.index);
+}
+
+using Intersection = std::experimental::optional<Inter>;
 
 TriangleVec3 to_triangle_vec3f(const Triangle& tri,
                                const aligned::vector<glm::vec3>& vertices);
@@ -71,7 +49,7 @@ Intersects triangle_intersection(const Triangle& tri,
 
 Intersection ray_triangle_intersection(
         const Ray& ray,
-        const aligned::vector<int>& triangle_indices,
+        const aligned::vector<size_t>& triangle_indices,
         const aligned::vector<Triangle>& triangles,
         const aligned::vector<glm::vec3>& vertices);
 

@@ -66,7 +66,7 @@ public:
 
     CuboidBoundary get_aabb() const;
     aligned::vector<glm::vec3> get_converted_vertices() const;
-    aligned::vector<int> get_triangle_indices() const;
+    aligned::vector<size_t> get_triangle_indices() const;
 
     const aligned::vector<Triangle>& get_triangles() const;
     const aligned::vector<cl_float3>& get_vertices() const;

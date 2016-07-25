@@ -40,8 +40,8 @@ aligned::vector<glm::vec3> CopyableSceneData::get_converted_vertices() const {
     return vec;
 }
 
-aligned::vector<int> CopyableSceneData::get_triangle_indices() const {
-    aligned::vector<int> ret(get_triangles().size());
+aligned::vector<size_t> CopyableSceneData::get_triangle_indices() const {
+    aligned::vector<size_t> ret(get_triangles().size());
     proc::iota(ret, 0);
     return ret;
 }

@@ -10,15 +10,16 @@ class VoxelCollection final {
 public:
     class Voxel final {
     public:
-        Voxel(const CuboidBoundary& aabb            = CuboidBoundary(),
-              const aligned::vector<int>& triangles = aligned::vector<int>());
+        Voxel(const CuboidBoundary& aabb = CuboidBoundary(),
+              const aligned::vector<size_t>& triangles =
+                      aligned::vector<size_t>());
         Voxel(const Octree& o);
         CuboidBoundary get_aabb() const;
-        const aligned::vector<int>& get_triangles() const;
+        const aligned::vector<size_t>& get_triangles() const;
 
     private:
         CuboidBoundary aabb;
-        aligned::vector<int> triangles;
+        aligned::vector<size_t> triangles;
     };
 
     using ZAxis = aligned::vector<Voxel>;
@@ -58,7 +59,8 @@ public:
                 default;
 
         virtual geo::Intersection operator()(
-                const geo::Ray& ray, const aligned::vector<int>& triangles) = 0;
+                const geo::Ray& ray,
+                const aligned::vector<size_t>& triangles) = 0;
     };
 
     /// This callback is used to check for intersections with the contents of
@@ -71,7 +73,7 @@ public:
         TriangleTraversalCallback(const CopyableSceneData& scene_data);
         geo::Intersection operator()(
                 const geo::Ray& ray,
-                const aligned::vector<int>& triangles) override;
+                const aligned::vector<size_t>& triangles) override;
 
     private:
         aligned::vector<Triangle> tri;
@@ -79,7 +81,8 @@ public:
     };
 
     /// Find the closest object along a ray.
-    geo::Intersection traverse(const geo::Ray& ray, TraversalCallback& fun);
+    geo::Intersection traverse(const geo::Ray& ray,
+                               TraversalCallback& fun) const;
 
 private:
     void init(const Octree& o, const glm::ivec3& offset = glm::ivec3(0));

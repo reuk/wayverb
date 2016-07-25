@@ -6,7 +6,7 @@
 #include <iostream>
 
 VoxelCollection::Voxel::Voxel(const CuboidBoundary& aabb,
-                              const aligned::vector<int>& triangles)
+                              const aligned::vector<size_t>& triangles)
         : aabb(aabb)
         , triangles(triangles) {}
 
@@ -14,7 +14,7 @@ VoxelCollection::Voxel::Voxel(const Octree& o)
         : Voxel(o.get_aabb(), o.get_triangles()) {}
 
 CuboidBoundary VoxelCollection::Voxel::get_aabb() const { return aabb; }
-const aligned::vector<int>& VoxelCollection::Voxel::Voxel::get_triangles()
+const aligned::vector<size_t>& VoxelCollection::Voxel::Voxel::get_triangles()
         const {
     return triangles;
 }
@@ -39,7 +39,8 @@ void VoxelCollection::init(const Octree& o, const glm::ivec3& d) {
             auto x = (count & 1u) ? 1u : 0u;
             auto y = (count & 2u) ? 1u : 0u;
             auto z = (count & 4u) ? 1u : 0u;
-            init(i, d + glm::ivec3(x, y, z) * o.get_side() / 2);
+            init(i,
+                 d + glm::ivec3(x, y, z) * static_cast<int>(o.get_side()) / 2);
             count += 1;
         }
     }
@@ -69,7 +70,7 @@ const VoxelCollection::Voxel& VoxelCollection::get_voxel(
 }
 
 geo::Intersection VoxelCollection::traverse(const geo::Ray& ray,
-                                            TraversalCallback& fun) {
+                                            TraversalCallback& fun) const {
     //  from http://www.cse.chalmers.se/edu/year/2010/course/TDA361/grid.pdf
     auto ind                = get_starting_index(ray.get_position());
     const auto voxel_bounds = get_voxel(ind).get_aabb();
@@ -100,7 +101,7 @@ geo::Intersection VoxelCollection::traverse(const geo::Ray& ray,
         if (!tri.empty()) {
             auto ret = fun(ray, tri);
 
-            if (ret.get_intersects() && ret.get_distance() < t_max[min_i]) {
+            if (ret && ret->distance < t_max[min_i]) {
                 return ret;
             }
         }
@@ -119,7 +120,7 @@ VoxelCollection::TriangleTraversalCallback::TriangleTraversalCallback(
         , vertices(scene_data.get_converted_vertices()) {}
 
 geo::Intersection VoxelCollection::TriangleTraversalCallback::operator()(
-        const geo::Ray& ray, const aligned::vector<int>& triangles) {
+        const geo::Ray& ray, const aligned::vector<size_t>& triangles) {
     return geo::ray_triangle_intersection(ray, triangles, tri, vertices);
 }
 

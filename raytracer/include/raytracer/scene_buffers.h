@@ -16,6 +16,10 @@ public:
     scene_buffers(const cl::Context&,
                   const cl::Device&,
                   const CopyableSceneData& scene_data);
+    scene_buffers(const cl::Context&,
+                  const cl::Device&,
+                  const CopyableSceneData& scene_data,
+                  const VoxelCollection& voxel_collection);
 
     const cl::Buffer& get_voxel_index_buffer() const;
     AABB get_global_aabb() const;
@@ -29,10 +33,6 @@ public:
     const cl::CommandQueue& get_queue() const;
 
 private:
-    scene_buffers(const cl::Context&,
-                  const cl::Device&,
-                  const CopyableSceneData& scene_data,
-                  const VoxelCollection& voxel_collection);
     cl::CommandQueue queue;
 
     const cl::Buffer voxel_index_buffer;

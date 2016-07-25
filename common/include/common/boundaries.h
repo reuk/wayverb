@@ -162,7 +162,7 @@ public:
     bool inside(const glm::vec3& v) const override;
     CuboidBoundary get_aabb() const override;
 
-    aligned::vector<int> get_triangle_indices() const;
+    aligned::vector<size_t> get_triangle_indices() const;
 
     using reference_store = aligned::vector<uint32_t>;
 

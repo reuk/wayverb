@@ -33,10 +33,10 @@ std::array<CuboidBoundary, 8> next_boundaries(const CuboidBoundary& parent) {
     }};
 }
 
-aligned::vector<int> get_triangles(const CopyableSceneData& sd,
-                                   const aligned::vector<int>& to_test,
-                                   const CuboidBoundary& aabb) {
-    aligned::vector<int> ret(to_test.size());
+aligned::vector<size_t> get_triangles(const CopyableSceneData& sd,
+                                      const aligned::vector<size_t>& to_test,
+                                      const CuboidBoundary& aabb) {
+    aligned::vector<size_t> ret(to_test.size());
     ret.resize(proc::copy_if(to_test,
                              ret.begin(),
                              [&sd, &aabb](auto i) {
@@ -51,7 +51,7 @@ aligned::vector<int> get_triangles(const CopyableSceneData& sd,
 std::unique_ptr<std::array<Octree, 8>> get_nodes(
         const CopyableSceneData& sd,
         int md,
-        const aligned::vector<int>& to_test,
+        const aligned::vector<size_t>& to_test,
         const CuboidBoundary& ab) {
     if (md == 0) {
         return nullptr;
@@ -66,15 +66,15 @@ std::unique_ptr<std::array<Octree, 8>> get_nodes(
 }
 }  // namespace
 
-Octree::Octree(const CopyableSceneData& sd, int md, float padding)
+Octree::Octree(const CopyableSceneData& sd, size_t md, float padding)
         : Octree(sd,
                  md,
                  sd.get_triangle_indices(),
                  sd.get_aabb().get_padded(padding)) {}
 
 Octree::Octree(const CopyableSceneData& sd,
-               int md,
-               const aligned::vector<int>& to_test,
+               size_t md,
+               const aligned::vector<size_t>& to_test,
                const CuboidBoundary& ab)
         : aabb(ab)
         , triangles(::get_triangles(sd, to_test, ab))
@@ -86,7 +86,9 @@ bool Octree::has_nodes() const { return nodes != nullptr; }
 
 const std::array<Octree, 8>& Octree::get_nodes() const { return *nodes; }
 
-const aligned::vector<int>& Octree::get_triangles() const { return triangles; }
+const aligned::vector<size_t>& Octree::get_triangles() const {
+    return triangles;
+}
 
 aligned::vector<const Octree*> Octree::intersect(const geo::Ray& ray) const {
     auto& starting_node = get_surrounding_leaf(ray.get_position());
@@ -106,7 +108,7 @@ const Octree& Octree::get_surrounding_leaf(const glm::vec3& v) const {
     return get_nodes().at(x | y | z).get_surrounding_leaf(v);
 }
 
-int Octree::get_side() const {
+size_t Octree::get_side() const {
     if (!has_nodes()) {
         return 1;
     }

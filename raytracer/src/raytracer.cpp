@@ -193,17 +193,23 @@ VolumeType attenuation_for_distance(float distance) {
 std::experimental::optional<Impulse> get_direct_impulse(
         const glm::vec3& source,
         const glm::vec3& receiver,
-        const CopyableSceneData& scene_data) {
-    if (geo::point_intersection(receiver,
-                                source,
-                                scene_data.get_triangles(),
-                                scene_data.get_converted_vertices())) {
-        auto init_diff = source - receiver;
-        auto init_dist = glm::length(init_diff);
+        const CopyableSceneData& scene_data,
+        const VoxelCollection& vox) {
+    VoxelCollection::TriangleTraversalCallback callback(scene_data);
+
+    const auto receiver_to_source = source - receiver;
+    const auto direction          = glm::normalize(receiver_to_source);
+    const geo::Ray to_receiver(source, direction);
+
+    const auto intersection = vox.traverse(to_receiver, callback);
+
+    if (intersection) {
+        auto init_dist = glm::length(receiver_to_source);
         return Impulse{attenuation_for_distance(init_dist),
-                       to_cl_float3(receiver + init_diff),
+                       to_cl_float3(source),
                        static_cast<cl_float>(init_dist / SPEED_OF_SOUND)};
     }
+
     return std::experimental::optional<Impulse>();
 }
 
@@ -369,8 +375,11 @@ std::experimental::optional<results> raytracer::run(
         const PerStepCallback& callback) {
     //  set up all the rendering context stuff
 
+    //  create acceleration structure for raytracing
+    VoxelCollection vox(scene_data, 4, 0.1);
+
     //  load the scene into device memory
-    scene_buffers scene_buffers(context, device, scene_data);
+    scene_buffers scene_buffers(context, device, scene_data, vox);
 
     //  this is the object that generates first-pass reflections
     reflector reflector(context, device, rays);
@@ -410,7 +419,7 @@ std::experimental::optional<results> raytracer::run(
         }
     }
 
-    return results(get_direct_impulse(source, receiver, scene_data),
+    return results(get_direct_impulse(source, receiver, scene_data, vox),
                    image_source_finder.get_results(),
                    diffuse.get_results(),
                    receiver);

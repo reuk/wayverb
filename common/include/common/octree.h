@@ -10,25 +10,25 @@ class Octree final {
 public:
     Octree() = default;
     Octree(const CopyableSceneData& mesh_boundary,
-           int max_depth,
+           size_t max_depth,
            float padding = 0);
     Octree(const CopyableSceneData& mesh_boundary,
-           int max_depth,
-           const aligned::vector<int>& to_test,
+           size_t max_depth,
+           const aligned::vector<size_t>& to_test,
            const CuboidBoundary& aabb);
 
     CuboidBoundary get_aabb() const;
     bool has_nodes() const;
     const std::array<Octree, 8>& get_nodes() const;
-    const aligned::vector<int>& get_triangles() const;
+    const aligned::vector<size_t>& get_triangles() const;
 
-    int get_side() const;
+    size_t get_side() const;
 
     aligned::vector<const Octree*> intersect(const geo::Ray& ray) const;
     const Octree& get_surrounding_leaf(const glm::vec3& v) const;
 
 private:
     CuboidBoundary aabb;
-    aligned::vector<int> triangles;
+    aligned::vector<size_t> triangles;
     std::unique_ptr<std::array<Octree, 8>> nodes;
 };

@@ -19,11 +19,11 @@ class T : public VoxelCollection::TraversalCallback {
 public:
     geo::Intersection operator()(
             const geo::Ray& ray,
-            const aligned::vector<int>& triangles) override {
+            const aligned::vector<size_t>& triangles) override {
         if (!triangles.empty()) {
             b = true;
         }
-        return geo::Intersection(0, 0);
+        return geo::Intersection();
     }
 
     bool get_has_triangles() const { return b; }
@@ -53,7 +53,7 @@ TEST(voxel, old) {
     SceneData scene_data(OBJ_PATH);
 
     auto v = scene_data.get_converted_vertices();
-    aligned::vector<int> ind(scene_data.get_triangles().size());
+    aligned::vector<size_t> ind(scene_data.get_triangles().size());
     std::iota(ind.begin(), ind.end(), 0);
 
     for (const auto& i : raytracer::get_random_directions(bench_rays)) {
@@ -84,7 +84,7 @@ TEST(voxel, intersect) {
     VoxelCollection::TriangleTraversalCallback t(scene_data);
 
     auto v = scene_data.get_converted_vertices();
-    aligned::vector<int> ind(scene_data.get_triangles().size());
+    aligned::vector<size_t> ind(scene_data.get_triangles().size());
     std::iota(ind.begin(), ind.end(), 0);
 
     for (const auto& i : raytracer::get_random_directions(bench_rays)) {
@@ -94,9 +94,7 @@ TEST(voxel, intersect) {
                 ray, ind, scene_data.get_triangles(), v);
         auto inter_1 = voxel.traverse(ray, t);
 
-        ASSERT_EQ(inter_0.get_intersects(), inter_1.get_intersects());
-        ASSERT_EQ(inter_0.get_index(), inter_1.get_index());
-        ASSERT_FLOAT_EQ(inter_0.get_distance(), inter_1.get_distance());
+        ASSERT_EQ(inter_0, inter_1);
     }
 }
 

@@ -62,18 +62,15 @@ Intersects triangle_intersection(const Triangle& tri,
 
 Intersection ray_triangle_intersection(
         const Ray& ray,
-        const aligned::vector<int>& triangle_indices,
+        const aligned::vector<size_t>& triangle_indices,
         const aligned::vector<Triangle>& triangles,
         const aligned::vector<glm::vec3>& vertices) {
     Intersection ret;
 
     for (const auto& i : triangle_indices) {
         auto inter = triangle_intersection(triangles[i], vertices, ray);
-        if (inter.get_intersects() &&
-            ((!ret.get_intersects()) ||
-             (ret.get_intersects() &&
-              inter.get_distance() < ret.get_distance()))) {
-            ret = Intersection(inter.get_distance(), i);
+        if (inter && (!ret || (ret && *inter < ret->distance))) {
+            ret = Intersection(Inter{*inter, i});
         }
     }
 
@@ -84,7 +81,7 @@ Intersection ray_triangle_intersection(
         const Ray& ray,
         const aligned::vector<Triangle>& triangles,
         const aligned::vector<glm::vec3>& vertices) {
-    aligned::vector<int> triangle_indices(triangles.size());
+    aligned::vector<size_t> triangle_indices(triangles.size());
     proc::iota(triangle_indices, 0);
     return ray_triangle_intersection(
             ray, triangle_indices, triangles, vertices);
@@ -102,7 +99,7 @@ bool point_intersection(const glm::vec3& begin,
 
     auto inter = ray_triangle_intersection(to_point, triangles, vertices);
 
-    return (!inter.get_intersects()) || inter.get_distance() > mag;
+    return !inter || inter->distance > mag;
 }
 
 //  adapted from

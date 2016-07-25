@@ -16,16 +16,12 @@
 #include <unordered_set>
 
 CuboidBoundary::CuboidBoundary(const Box& b)
-        : Box(b) {
-}
+        : Box(b) {}
 
 CuboidBoundary::CuboidBoundary(const glm::vec3& c0, const glm::vec3& c1)
-        : CuboidBoundary(Box(c0, c1)) {
-}
+        : CuboidBoundary(Box(c0, c1)) {}
 
-bool CuboidBoundary::inside(const glm::vec3& v) const {
-    return Box::inside(v);
-}
+bool CuboidBoundary::inside(const glm::vec3& v) const { return Box::inside(v); }
 
 bool CuboidBoundary::overlaps(const TriangleVec3& t) const {
     auto coll = t;
@@ -39,9 +35,7 @@ CuboidBoundary CuboidBoundary::get_padded(float padding) const {
     return CuboidBoundary(get_c0() - padding, get_c1() + padding);
 }
 
-CuboidBoundary CuboidBoundary::get_aabb() const {
-    return *this;
-}
+CuboidBoundary CuboidBoundary::get_aabb() const { return *this; }
 
 CopyableSceneData CuboidBoundary::get_scene_data() const {
     aligned::vector<cl_float3> vertices{
@@ -81,9 +75,9 @@ bool CuboidBoundary::intersects(const geo::Ray& ray, float t0, float t1) {
     std::array<bool, 3> sign{{inv.x < 0, inv.y < 0, inv.z < 0}};
     auto get_bounds = [this](auto i) { return i ? get_c0() : get_c1(); };
 
-    auto tmin = (get_bounds(sign[0]).x   - ray.get_position().x) * inv.x;
-    auto tmax = (get_bounds(!sign[0]).x  - ray.get_position().x) * inv.x;
-    auto tymin = (get_bounds(sign[1]).y  - ray.get_position().y) * inv.y;
+    auto tmin  = (get_bounds(sign[0]).x - ray.get_position().x) * inv.x;
+    auto tmax  = (get_bounds(!sign[0]).x - ray.get_position().x) * inv.x;
+    auto tymin = (get_bounds(sign[1]).y - ray.get_position().y) * inv.y;
     auto tymax = (get_bounds(!sign[1]).y - ray.get_position().y) * inv.y;
     if ((tmin > tymax) || (tymin > tmax)) {
         return false;
@@ -94,7 +88,7 @@ bool CuboidBoundary::intersects(const geo::Ray& ray, float t0, float t1) {
     if (tymax < tmax) {
         tmax = tymax;
     }
-    auto tzmin = (get_bounds(sign[2]).z  - ray.get_position().z) * inv.z;
+    auto tzmin = (get_bounds(sign[2]).z - ray.get_position().z) * inv.z;
     auto tzmax = (get_bounds(!sign[2]).z - ray.get_position().z) * inv.z;
     if ((tmin > tzmax) || (tzmin > tmax)) {
         return false;
@@ -113,16 +107,13 @@ SphereBoundary::SphereBoundary(const glm::vec3& c,
                                const aligned::vector<Surface>& surfaces)
         : c(c)
         , radius(radius)
-        , boundary(glm::vec3(-radius), glm::vec3(radius)) {
-}
+        , boundary(glm::vec3(-radius), glm::vec3(radius)) {}
 
 bool SphereBoundary::inside(const glm::vec3& v) const {
     return glm::distance(v, c) < radius;
 }
 
-CuboidBoundary SphereBoundary::get_aabb() const {
-    return boundary;
-}
+CuboidBoundary SphereBoundary::get_aabb() const { return boundary; }
 
 glm::ivec3 MeshBoundary::hash_point(const glm::vec3& v) const {
     return (v - boundary.get_c0()) / cell_size;
@@ -137,7 +128,7 @@ MeshBoundary::hash_table MeshBoundary::compute_triangle_references() const {
     }
 
     for (auto i = 0u; i != triangles.size(); ++i) {
-        const auto& t = triangles[i];
+        const auto& t           = triangles[i];
         const auto bounding_box = min_max(std::array<glm::vec3, 3>{
                 {vertices[t.v0], vertices[t.v1], vertices[t.v2]}});
         const auto min_indices = hash_point(bounding_box.get_c0());
@@ -162,14 +153,12 @@ MeshBoundary::MeshBoundary(const aligned::vector<Triangle>& triangles,
         , surfaces(surfaces)
         , boundary(min_max(vertices))
         , cell_size(boundary.dimensions() / static_cast<float>(DIVISIONS))
-        , triangle_references(compute_triangle_references()) {
-}
+        , triangle_references(compute_triangle_references()) {}
 
 MeshBoundary::MeshBoundary(const CopyableSceneData& sd)
         : MeshBoundary(sd.get_triangles(),
                        sd.get_converted_vertices(),
-                       sd.get_surfaces()) {
-}
+                       sd.get_surfaces()) {}
 
 const MeshBoundary::reference_store& MeshBoundary::get_references(
         const glm::ivec3& i) const {
@@ -197,31 +186,27 @@ bool MeshBoundary::inside(const glm::vec3& v) const {
                     [this, &ray, &distances](const auto& i) {
                         auto intersection = triangle_intersection(
                                 triangles[i], vertices, ray);
-                        if (intersection.get_intersects()) {
+                        if (intersection) {
                             auto already_in =
                                     proc::find_if(
                                             distances, [&intersection](auto i) {
                                                 return almost_equal(
-                                                        i,
-                                                        intersection.get_distance(),
-                                                        10);
+                                                        i, *intersection, 10);
                                             }) != distances.end();
-                            distances.push_back(intersection.get_distance());
+                            distances.push_back(*intersection);
                             if (already_in) {
                                 return false;
                             }
                         }
-                        return intersection.get_intersects();
+                        return static_cast<bool>(intersection);
                     }) %
            2;
 }
 
-CuboidBoundary MeshBoundary::get_aabb() const {
-    return boundary;
-}
+CuboidBoundary MeshBoundary::get_aabb() const { return boundary; }
 
-aligned::vector<int> MeshBoundary::get_triangle_indices() const {
-    aligned::vector<int> ret(triangles.size());
+aligned::vector<size_t> MeshBoundary::get_triangle_indices() const {
+    aligned::vector<size_t> ret(triangles.size());
     proc::iota(ret, 0);
     return ret;
 }
@@ -234,17 +219,13 @@ const aligned::vector<glm::vec3>& MeshBoundary::get_vertices() const {
     return vertices;
 }
 
-const CuboidBoundary& MeshBoundary::get_boundary() const {
-    return boundary;
-}
+const CuboidBoundary& MeshBoundary::get_boundary() const { return boundary; }
 
 const aligned::vector<Surface>& MeshBoundary::get_surfaces() const {
     return surfaces;
 }
 
-glm::vec3 MeshBoundary::get_cell_size() const {
-    return cell_size;
-}
+glm::vec3 MeshBoundary::get_cell_size() const { return cell_size; }
 
 constexpr int MeshBoundary::DIVISIONS;
 
