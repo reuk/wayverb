@@ -1,6 +1,11 @@
 cmake_minimum_required(VERSION 3.0)
 
-set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} " -Wall -Werror -std=c++14 ")
+project(WRITE_COMPENSATION_SIGNAL VERSION 0.1 LANGUAGES CXX)
+
+set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} " -std=c++14 ")
+if(CMAKE_BUILD_TYPE MATCHES DEBUG)
+    set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} " -Wall -Werror ")
+endif()
 
 include_directories(
     ${CMAKE_SOURCE_DIR}/include
