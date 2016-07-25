@@ -15,8 +15,9 @@ float attenuation(const glm::vec3& incident,
 }  // namespace
 
 namespace waveguide {
+namespace attenuator {
 
-aligned::vector<float> MicrophoneAttenuator::process(
+aligned::vector<float> microphone::process(
         const aligned::vector<rectangular_waveguide::run_step_output>& input,
         const glm::vec3& pointing,
         float shape) const {
@@ -40,4 +41,5 @@ aligned::vector<float> MicrophoneAttenuator::process(
     return ret;
 }
 
+}  // namespace attenuator
 }  // namespace waveguide

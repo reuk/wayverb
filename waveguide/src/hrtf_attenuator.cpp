@@ -41,7 +41,9 @@ float attenuation(const glm::vec3& direction,
 }  // namespace
 
 namespace waveguide {
-aligned::vector<aligned::vector<float>> HrtfAttenuator::process(
+namespace attenuator {
+
+aligned::vector<aligned::vector<float>> hrtf::process(
         const aligned::vector<rectangular_waveguide::run_step_output>& input,
         const glm::vec3& direction,
         const glm::vec3& up,
@@ -75,4 +77,5 @@ aligned::vector<aligned::vector<float>> HrtfAttenuator::process(
     return ret;
 }
 
+}  // namespace attenuator
 }  // namespace waveguide

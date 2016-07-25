@@ -1,8 +1,8 @@
 #pragma once
 
-#include "attenuator_program.h"
-#include "cl_structs.h"
-#include "raytracer_program.h"
+#include "raytracer/cl_structs.h"
+#include "raytracer/raytracer_program.h"
+#include "raytracer/results.h"
 
 #include "common/aligned/map.h"
 #include "common/cl_include.h"
@@ -91,48 +91,6 @@ inline void fix_predelay(T& ret) {
 /// Get the number of necessary reflections for a given min amplitude.
 int compute_optimum_reflection_number(float min_amp, float max_reflectivity);
 
-class Results final {
-public:
-    using map_type = aligned::map<aligned::vector<cl_ulong>, Impulse>;
-
-    Results(map_type&& image_source,
-            aligned::vector<aligned::vector<Impulse>>&& diffuse,
-            const glm::vec3& receiver,
-            const glm::vec3& source);
-    /// Raytraces are calculated in relation to a specific microphone position.
-    /// This is a struct to keep the impulses and mic position together, because
-    /// you'll probably never need one without the other.
-    class Selected {
-    public:
-        Selected(const aligned::vector<Impulse>& impulses,
-                 const glm::vec3& receiver,
-                 const glm::vec3& source);
-
-        aligned::vector<Impulse> get_impulses() const;
-        glm::vec3 get_receiver() const;
-        glm::vec3 get_source() const;
-
-    private:
-        aligned::vector<Impulse> impulses;
-        glm::vec3 receiver;
-        glm::vec3 source;
-    };
-
-    Selected get_diffuse() const;
-    Selected get_image_source(bool remove_direct) const;
-    Selected get_all(bool remove_direct) const;
-
-private:
-    aligned::vector<Impulse> get_diffuse_impulses() const;
-    aligned::vector<Impulse> get_image_source_impulses(
-            bool remove_direct) const;
-
-    map_type image_source;
-    aligned::vector<aligned::vector<Impulse>> diffuse;
-    glm::vec3 receiver;
-    glm::vec3 source;
-};
-
 aligned::vector<cl_float3> get_random_directions(size_t num);
 
 class Raytracer final {
@@ -141,7 +99,7 @@ public:
 
     using PerStepCallback = std::function<void()>;
 
-    Results run(const CopyableSceneData& scene_data,
+    results run(const CopyableSceneData& scene_data,
                 const glm::vec3& micpos,
                 const glm::vec3& source,
                 size_t rays,
@@ -150,7 +108,7 @@ public:
                 std::atomic_bool& keep_going,
                 const PerStepCallback& callback);
 
-    Results run(const CopyableSceneData& scene_data,
+    results run(const CopyableSceneData& scene_data,
                 const glm::vec3& micpos,
                 const glm::vec3& source,
                 const aligned::vector<cl_float3>& directions,
@@ -162,54 +120,6 @@ public:
 private:
     using kernel_type =
             decltype(std::declval<raytracer_program>().get_raytrace_kernel());
-
-    cl::CommandQueue queue;
-    kernel_type kernel;
-};
-
-/// Class for parallel HRTF attenuation of raytrace results.
-class HrtfAttenuator final {
-public:
-    HrtfAttenuator(const cl::Context&, const cl::Device&);
-
-    /// Attenuate some raytrace results.
-    /// The outer vector corresponds to separate channels, the inner vector
-    /// contains the impulses, each of which has a time and an 8-band volume.
-    aligned::vector<AttenuatedImpulse> process(const Results::Selected& results,
-                                               const glm::vec3& direction,
-                                               const glm::vec3& up,
-                                               const glm::vec3& position,
-                                               HrtfChannel channel);
-
-    const std::array<std::array<std::array<cl_float8, 180>, 360>, 2>&
-    get_hrtf_data() const;
-
-private:
-    using kernel_type =
-            decltype(std::declval<attenuator_program>().get_hrtf_kernel());
-
-    cl::CommandQueue queue;
-    kernel_type kernel;
-
-    cl::Buffer cl_hrtf;
-};
-
-/// Class for parallel Speaker attenuation of raytrace results.
-class MicrophoneAttenuator final {
-public:
-    MicrophoneAttenuator(const cl::Context&, const cl::Device&);
-
-    /// Attenuate some raytrace results.
-    /// The outer vector corresponds to separate channels, the inner vector
-    /// contains the impulses, each of which has a time and an 8-band volume.
-    aligned::vector<AttenuatedImpulse> process(const Results::Selected& results,
-                                               const glm::vec3& pointing,
-                                               float shape,
-                                               const glm::vec3& position);
-
-private:
-    using kernel_type = decltype(
-            std::declval<attenuator_program>().get_microphone_kernel());
 
     cl::CommandQueue queue;
     kernel_type kernel;

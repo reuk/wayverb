@@ -1,6 +1,7 @@
 #include "combined/engine.h"
 
 #include "raytracer/raytracer.h"
+#include "raytracer/attenuator.h"
 
 #include "common/boundaries.h"
 #include "common/cl_common.h"
@@ -43,12 +44,12 @@ constexpr double rectilinear_calibration_factor(double r, double sr) {
 aligned::vector<aligned::vector<float>> run_raytracer_attenuation(
         const compute_context& cc,
         const model::ReceiverSettings& receiver,
-        const raytracer::Results::Selected& input,
+        const raytracer::results::selected& input,
         double output_sample_rate) {
     switch (receiver.mode) {
         case model::ReceiverSettings::Mode::microphones: {
-            raytracer::MicrophoneAttenuator attenuator(cc.get_context(),
-                                                       cc.get_device());
+            raytracer::attenuator::microphone attenuator(cc.get_context(),
+                                                         cc.get_device());
             return run_attenuation(
                     receiver.microphones.begin(),
                     receiver.microphones.end(),
@@ -66,8 +67,8 @@ aligned::vector<aligned::vector<float>> run_raytracer_attenuation(
                     });
         }
         case model::ReceiverSettings::Mode::hrtf: {
-            raytracer::HrtfAttenuator attenuator(cc.get_context(),
-                                                 cc.get_device());
+            raytracer::attenuator::hrtf attenuator(cc.get_context(),
+                                                   cc.get_device());
             auto channels = {HrtfChannel::left, HrtfChannel::right};
             return run_attenuation(
                     channels.begin(), channels.end(), [&](const auto& i) {
@@ -93,7 +94,7 @@ aligned::vector<aligned::vector<float>> run_waveguide_attenuation(
         double waveguide_sample_rate) {
     switch (receiver.mode) {
         case model::ReceiverSettings::Mode::microphones: {
-            waveguide::MicrophoneAttenuator attenuator;
+            waveguide::attenuator::microphone attenuator;
             return run_attenuation(
                     receiver.microphones.begin(),
                     receiver.microphones.end(),
@@ -105,7 +106,7 @@ aligned::vector<aligned::vector<float>> run_waveguide_attenuation(
                     });
         }
         case model::ReceiverSettings::Mode::hrtf: {
-            waveguide::HrtfAttenuator attenuator;
+            waveguide::attenuator::hrtf attenuator;
             auto channels = {HrtfChannel::left, HrtfChannel::right};
             return run_attenuation(
                     channels.begin(),
@@ -129,7 +130,7 @@ public:
     intermediate_impl(const glm::vec3& source,
                       const glm::vec3& receiver,
                       double waveguide_sample_rate,
-                      raytracer::Results&& raytracer_results,
+                      raytracer::results&& raytracer_results,
                       aligned::vector<rectangular_waveguide::run_step_output>&&
                               waveguide_results)
             : source(source)
@@ -205,7 +206,7 @@ private:
     glm::vec3 receiver;
     double waveguide_sample_rate;
 
-    raytracer::Results raytracer_results;
+    raytracer::results raytracer_results;
     aligned::vector<rectangular_waveguide::run_step_output> waveguide_results;
 };
 

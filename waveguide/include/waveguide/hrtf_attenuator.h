@@ -7,8 +7,9 @@
 #include "glm/glm.hpp"
 
 namespace waveguide {
+namespace attenuator {
 
-class HrtfAttenuator final {
+class hrtf final {
 public:
     aligned::vector<aligned::vector<float>> process(
             const aligned::vector<rectangular_waveguide::run_step_output>&
@@ -18,4 +19,5 @@ public:
             HrtfChannel channel) const;
 };
 
+}  // namespace attenuator
 }  // namespace waveguide

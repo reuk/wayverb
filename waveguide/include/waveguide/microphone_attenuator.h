@@ -6,8 +6,9 @@
 #include "glm/fwd.hpp"
 
 namespace waveguide {
+namespace attenuator {
 
-class MicrophoneAttenuator final {
+class microphone final {
 public:
     aligned::vector<float> process(
             const aligned::vector<rectangular_waveguide::run_step_output>&
@@ -16,4 +17,5 @@ public:
             float shape) const;
 };
 
+}  // namespace attenuator
 }  // namespace waveguide

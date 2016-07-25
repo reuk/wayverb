@@ -6,6 +6,7 @@
 #include "waveguide/rectangular_waveguide.h"
 
 #include "raytracer/raytracer.h"
+#include "raytracer/attenuator.h"
 
 #include "common/azimuth_elevation.h"
 #include "common/cl_common.h"
@@ -184,8 +185,8 @@ int main(int argc, char** argv) {
                                  keep_going,
                                  [&pb] { pb += 1; });
 
-    raytracer::MicrophoneAttenuator attenuator(cc.get_context(),
-                                               cc.get_device());
+    raytracer::attenuator::microphone attenuator(cc.get_context(),
+                                                 cc.get_device());
     auto output = attenuator.process(
             results.get_image_source(false), glm::vec3(0, 0, 1), 0, receiver);
     // auto output =

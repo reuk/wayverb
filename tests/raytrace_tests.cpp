@@ -1,3 +1,4 @@
+#include "raytracer/attenuator.h"
 #include "raytracer/raytracer.h"
 
 #include "common/boundaries.h"
@@ -196,8 +197,8 @@ TEST(raytrace, image_source) {
     auto results = raytracer.run(
             scene_data, receiver, source, 100000, 100, 10, keep_going, [] {});
 
-    raytracer::MicrophoneAttenuator attenuator(cc.get_context(),
-                                               cc.get_device());
+    raytracer::attenuator::microphone attenuator(cc.get_context(),
+                                                 cc.get_device());
     auto output = attenuator.process(
             results.get_image_source(false), glm::vec3(0, 0, 1), 0, receiver);
 

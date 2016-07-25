@@ -81,7 +81,7 @@ int main(int argc, char** argv) {
 
     std::cout << "directionality: " << directionality << std::endl;
 
-    waveguide::MicrophoneAttenuator microphone;
+    waveguide::attenuator::microphone microphone;
     glm::vec3 mic{0, 0, 0};
     const auto test_locations = 12;
 
