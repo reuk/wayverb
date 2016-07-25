@@ -33,7 +33,7 @@ void MainContentComponent::paint(Graphics& g) {
 }
 
 void MainContentComponent::resized() {
-    std::vector<Component*> components{&left_panel, &resizer_bar, &right_panel};
+    aligned::vector<Component*> components{&left_panel, &resizer_bar, &right_panel};
     layout_manager.layOutComponents(components.data(),
                                     components.size(),
                                     0,

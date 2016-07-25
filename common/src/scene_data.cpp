@@ -73,7 +73,7 @@ void CopyableSceneData::set_surfaces(
 }
 
 void CopyableSceneData::set_surfaces(
-        const std::map<std::string, Surface>& surfaces) {
+        const aligned::map<std::string, Surface>& surfaces) {
     for (auto& i : surfaces) {
         set_surface(Material{i.first, i.second});
     }

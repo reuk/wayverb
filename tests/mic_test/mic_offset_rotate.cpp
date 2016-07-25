@@ -50,7 +50,7 @@ int main(int argc, char** argv) {
     std::string output_folder = argv[1];
     std::string polar_string = argv[2];
 
-    std::map<std::string, PolarPattern> polar_pattern_map = {
+    aligned::map<std::string, PolarPattern> polar_pattern_map = {
             {"omni", PolarPattern::omni},
             {"cardioid", PolarPattern::cardioid},
             {"bidirectional", PolarPattern::bidirectional},

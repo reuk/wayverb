@@ -1,5 +1,6 @@
 #pragma once
 
+#include "common/aligned/map.h"
 #include "common/aligned/vector.h"
 #include "triangle.h"
 
@@ -58,7 +59,7 @@ public:
 
     aligned::vector<Surface> get_surfaces() const;
     void set_surfaces(const aligned::vector<Material>& materials);
-    void set_surfaces(const std::map<std::string, Surface>& surfaces);
+    void set_surfaces(const aligned::map<std::string, Surface>& surfaces);
     void set_surface(const Material& material);
 
     void set_surfaces(const Surface& surface);
