@@ -10,7 +10,7 @@ public:
 
     auto get_microphone_kernel() const {
         return program_wrapper
-                .get_kernel<cl_float3, cl::Buffer, cl::Buffer, Speaker>(
+                .get_kernel<cl_float3, cl::Buffer, cl::Buffer, Microphone>(
                         "microphone");
     }
 
@@ -29,9 +29,7 @@ public:
         return program_wrapper.template get_info<T>();
     }
 
-    cl::Device get_device() const {
-        return program_wrapper.get_device();
-    }
+    cl::Device get_device() const { return program_wrapper.get_device(); }
 
 private:
     static const std::string source;

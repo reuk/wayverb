@@ -1,8 +1,9 @@
-#include "raytracer/raytracer.h"
+#include "raytracer/construct_impulse.h"
+#include "raytracer/diffuse.h"
 #include "raytracer/image_source.h"
+#include "raytracer/raytracer.h"
 #include "raytracer/reflector.h"
 #include "raytracer/scene_buffers.h"
-#include "raytracer/diffuse.h"
 
 #include "common/azimuth_elevation.h"
 #include "common/boundaries.h"
@@ -22,20 +23,6 @@
 #include <numeric>
 #include <sstream>
 #include <streambuf>
-
-namespace {
-constexpr auto volume_factor = 0.001f;
-constexpr VolumeType air_coefficient{{
-        volume_factor * -0.1f,
-        volume_factor * -0.2f,
-        volume_factor * -0.5f,
-        volume_factor * -1.1f,
-        volume_factor * -2.7f,
-        volume_factor * -9.4f,
-        volume_factor * -29.0f,
-        volume_factor * -60.0f,
-}};
-}  // namespace
 
 namespace raytracer {
 
@@ -160,35 +147,7 @@ aligned::vector<aligned::vector<float>> process(
     return ret;
 }
 
-/// Call binary operation u on pairs of elements from a and b, where a and b are
-/// cl_floatx types.
-template <typename T, typename U>
-inline T elementwise(const T& a, const T& b, const U& u) {
-    T ret;
-    proc::transform(a.s, std::begin(b.s), std::begin(ret.s), u);
-    return ret;
-}
-
 //----------------------------------------------------------------------------//
-
-VolumeType air_attenuation_for_distance(float distance) {
-    VolumeType ret;
-    proc::transform(air_coefficient.s, std::begin(ret.s), [distance](auto i) {
-        return pow(M_E, distance * i);
-    });
-    return ret;
-}
-
-float power_attenuation_for_distance(float distance) {
-    return 1 / (4 * M_PI * distance * distance);
-}
-
-VolumeType attenuation_for_distance(float distance) {
-    auto ret   = air_attenuation_for_distance(distance);
-    auto power = power_attenuation_for_distance(distance);
-    proc::for_each(ret.s, [power](auto& i) { i *= power; });
-    return ret;
-}
 
 std::experimental::optional<Impulse> get_direct_impulse(
         const glm::vec3& source,
@@ -204,13 +163,12 @@ std::experimental::optional<Impulse> get_direct_impulse(
     const auto intersection = vox.traverse(to_receiver, callback);
 
     if (intersection) {
-        auto init_dist = glm::length(receiver_to_source);
-        return Impulse{attenuation_for_distance(init_dist),
-                       to_cl_float3(source),
-                       static_cast<cl_float>(init_dist / SPEED_OF_SOUND)};
+        return construct_impulse(VolumeType{{1, 1, 1, 1, 1, 1, 1, 1}},
+                                 source,
+                                 glm::length(receiver_to_source));
     }
 
-    return std::experimental::optional<Impulse>();
+    return std::experimental::nullopt;
 }
 
 /*
@@ -369,10 +327,12 @@ std::experimental::optional<results> raytracer::run(
         const glm::vec3& source,
         const glm::vec3& receiver,
         size_t rays,
-        size_t reflections,
-        size_t image_source,
+        size_t reflection_depth,
+        size_t image_source_depth,
         std::atomic_bool& keep_going,
         const PerStepCallback& callback) {
+    assert(image_source_depth < reflection_depth);
+
     //  set up all the rendering context stuff
 
     //  create acceleration structure for raytracing
@@ -387,42 +347,32 @@ std::experimental::optional<results> raytracer::run(
 
     //  this will collect the first reflections, to a specified depth,
     //  and use them to find unique image-source paths
-    image_source_finder image_source_finder(rays, image_source);
+    image_source_finder image_source_finder(rays, image_source_depth);
 
     //  this will incrementally process diffuse responses
-    diffuse diffuse(context, device, rays, reflections);
+    diffuse_finder diffuse_finder(context, device, rays, reflection_depth);
 
     //  run the simulation proper
 
     //  up until the max reflection depth
-    for (auto i = 0u; i != reflections; ++i) {
+    for (auto i = 0u; i != reflection_depth; ++i) {
         //  if the user cancelled, return an empty result
         if (!keep_going) {
-            return std::experimental::optional<results>{};
+            return std::experimental::nullopt;
         }
 
         //  get a single step of the reflections
         auto reflections = reflector.run_step(scene_buffers);
 
         //  find diffuse impulses for these reflections
-        diffuse.push(reflections);
-
-        {
-            //  extract intersected surfaces and add to the path builder
-            aligned::vector<cl_ulong> triangles;
-            triangles.reserve(rays);
-            for (const auto& i : reflections) {
-                triangles.push_back(i.triangle);
-            }
-
-            image_source_finder.push(triangles);
-        }
+        diffuse_finder.push(reflections);
+        image_source_finder.push(reflections);
     }
 
     return results(
             get_direct_impulse(source, receiver, scene_data, vox),
             image_source_finder.get_results(source, receiver, scene_data, vox),
-            diffuse.get_results(),
+            std::move(diffuse_finder.get_results()),
             receiver);
 }
 

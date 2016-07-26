@@ -12,9 +12,9 @@ namespace raytracer {
 
 class results final {
 public:
-    results(const std::experimental::optional<Impulse>& direct,
-            const aligned::vector<Impulse>& image_source,
-            const aligned::vector<aligned::vector<Impulse>>& diffuse,
+    results(std::experimental::optional<Impulse>&& direct,
+            aligned::vector<Impulse>&& image_source,
+            aligned::vector<aligned::vector<Impulse>>&& diffuse,
             const glm::vec3& receiver);
 
     aligned::vector<Impulse> get_impulses(bool direct       = true,

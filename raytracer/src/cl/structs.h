@@ -18,6 +18,7 @@ typedef struct {
     float3 position;
     float3 direction;
     ulong triangle;
+    char valid;
 } Reflection;
 
 typedef struct {
@@ -31,7 +32,7 @@ typedef struct {
     VolumeType volume;
     float3 image;
     float distance;
-    bool keep_going;
+    char keep_going;
 } RayInfo;
 
 typedef struct {
@@ -49,7 +50,7 @@ typedef struct {
 typedef struct {
     ulong primitive;
     float distance;
-    bool intersects;
+    char intersects;
 } Intersection;
 
 typedef struct {

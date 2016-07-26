@@ -8,12 +8,16 @@
 
 namespace raytracer {
 
-class diffuse final {
+class diffuse_finder final {
 public:
-    diffuse(const cl::Context&, const cl::Device&, size_t rays, size_t depth);
+    diffuse_finder(const cl::Context&,
+                   const cl::Device&,
+                   size_t rays,
+                   size_t depth);
 
     void push(const aligned::vector<Reflection>& reflections);
     const aligned::vector<aligned::vector<Impulse>>& get_results() const;
+    aligned::vector<aligned::vector<Impulse>>& get_results();
 
 private:
     cl::Context context;

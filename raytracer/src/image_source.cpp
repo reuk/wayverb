@@ -1,8 +1,10 @@
+#include "raytracer/construct_impulse.h"
 #include "raytracer/image_source.h"
 
 #include "common/aligned/set.h"
 #include "common/conversions.h"
 #include "common/geometric.h"
+#include "common/progress_bar.h"
 #include "common/voxel_collection.h"
 
 #include <experimental/optional>
@@ -20,7 +22,7 @@ aligned::set<aligned::vector<T>> compute_unique_paths(
     //  for each ray
     for (auto j = 0; j != path.size(); ++j) {
         //  get all ray path combinations
-        for (auto k = 1; k != path[j].size(); ++k) {
+        for (auto k = 1; k < path[j].size(); ++k) {
             aligned::vector<T> surfaces(path[j].begin(), path[j].begin() + k);
 
             //  add the path to the return set
@@ -88,7 +90,7 @@ compute_intersection_distances(const aligned::vector<TriangleVec3>& mirrored,
     for (const auto& i : mirrored) {
         auto intersection = geo::triangle_intersection(i, ray);
         if (!intersection) {
-            return std::experimental::optional<aligned::vector<float>>{};
+            return std::experimental::nullopt;
         }
         ret.push_back(*intersection);
     }
@@ -141,6 +143,31 @@ glm::vec3 compute_mirrored_point(const aligned::vector<TriangleVec3>& mirrored,
     return ret;
 }
 
+Impulse compute_ray_path_impulse(const glm::vec3& receiver,
+                                 const CopyableSceneData& scene_data,
+                                 const aligned::vector<cl_ulong>& triangles,
+                                 const aligned::vector<glm::vec3>& unmirrored) {
+    VolumeType volume{{1, 1, 1, 1, 1, 1, 1, 1}};
+    float distance{0};
+    glm::vec3 prev_point = unmirrored.front();
+
+    for (auto i     = 0u; i != triangles.size();
+         prev_point = unmirrored[i + 1], ++i) {
+        const auto triangle_index = triangles[i];
+        const auto scene_triangle = scene_data.get_triangles()[triangle_index];
+        const auto surface = scene_data.get_surfaces()[scene_triangle.surface];
+
+        volume = elementwise(volume, surface.specular, [](auto a, auto b) {
+            return a * -b;
+        });
+        distance += glm::distance(prev_point, unmirrored[i + 1]);
+    }
+
+    distance += glm::distance(receiver, unmirrored.back());
+
+    return construct_impulse(volume, unmirrored.back(), distance);
+}
+
 std::experimental::optional<Impulse> follow_ray_path(
         const aligned::vector<cl_ulong>& triangles,
         const glm::vec3& source,
@@ -162,7 +189,7 @@ std::experimental::optional<Impulse> follow_ray_path(
     const auto ray       = construct_ray(source, receiver_image);
     const auto distances = compute_intersection_distances(mirrored, ray);
     if (!distances) {
-        return std::experimental::optional<Impulse>{};
+        return std::experimental::nullopt;
     }
 
     //  if we can, find the intersection points with the mirrored surfaces
@@ -177,9 +204,13 @@ std::experimental::optional<Impulse> follow_ray_path(
     for (auto a = unmirrored.begin(), b = unmirrored.begin() + 1;
          b != unmirrored.end();
          ++a, ++b, ++tri_it) {
+        if (*a == *b) {
+            //  the point lies on two joined triangles
+            continue;
+        }
         auto intersects = vox.traverse(construct_ray(*a, *b), callback);
         if (!(intersects && intersects->index == *tri_it)) {
-            return std::experimental::optional<Impulse>{};
+            return std::experimental::nullopt;
         }
     }
 
@@ -189,34 +220,12 @@ std::experimental::optional<Impulse> follow_ray_path(
         auto intersects = vox.traverse(
                 construct_ray(receiver, unmirrored.back()), callback);
         if (!(intersects && intersects->index == triangles.back())) {
-            return std::experimental::optional<Impulse>{};
+            return std::experimental::nullopt;
         }
     }
 
-    //  compute impulse
-    VolumeType volume{{1, 1, 1, 1, 1, 1, 1, 1}};
-    float distance{0};
-    glm::vec3 prev_point = source;
-
-    for (auto i = 0u; i != triangles.size(); prev_point = unmirrored[i], ++i) {
-        const auto triangle_index = triangles[i];
-        const auto scene_triangle = scene_data.get_triangles()[triangle_index];
-        const auto surface = scene_data.get_surfaces()[scene_triangle.surface];
-
-        distance += glm::distance(prev_point, unmirrored[i]);
-
-        for (auto j = 0u; j != 8; ++j) {
-            volume.s[j] *= -surface.specular.s[j];
-        }
-    }
-
-    distance += glm::distance(receiver, unmirrored.back());
-
-    //  TODO air attenuation
-
-    return Impulse{volume,
-                   to_cl_float3(unmirrored.back()),
-                   static_cast<cl_float>(distance / SPEED_OF_SOUND)};
+    return compute_ray_path_impulse(
+            receiver, scene_data, triangles, unmirrored);
 }
 
 }  // namespace
@@ -226,8 +235,11 @@ std::experimental::optional<Impulse> follow_ray_path(
 image_source_finder::image_source_finder(size_t rays, size_t depth)
         : reflection_path_builder(rays, depth) {}
 
-void image_source_finder::push(const aligned::vector<cl_ulong>& triangles) {
-    reflection_path_builder.push(triangles);
+void image_source_finder::push(const aligned::vector<Reflection>& reflections) {
+    reflection_path_builder.push(reflections, [](const Reflection& i) {
+        return i.valid ? std::experimental::make_optional(i.triangle)
+                       : std::experimental::nullopt;
+    });
 }
 
 aligned::vector<Impulse> image_source_finder::get_results(
@@ -244,8 +256,16 @@ aligned::vector<Impulse> image_source_finder::get_results(
         if (auto impulse = follow_ray_path(
                     i, source, receiver, scene_data, vox, callback)) {
             ret.push_back(*impulse);
+
+            std::cerr << "time: " << impulse->time << '\n';
+            for (auto j : i) {
+                std::cerr << j << " ";
+            }
+            std::cerr << '\n';
         }
     }
+
+    std::cerr << std::endl;
 
     return ret;
 }

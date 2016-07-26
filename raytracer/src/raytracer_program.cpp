@@ -225,11 +225,12 @@ void image_source_contributions(Intersection closest,
     }
 }
 
-kernel void reflections(global Ray* ray,                   //  ray
+kernel void reflections(global Ray * ray,                  //  ray
+                        global char * keep_going,
 
                         const global uint * voxel_index,   //  voxel
                         AABB global_aabb,
-                        uint side,
+                        ulong side,
 
                         const global Triangle * triangles, //  scene
                         const global float3 * vertices,
@@ -241,35 +242,43 @@ kernel void reflections(global Ray* ray,                   //  ray
     //  get thread index
     const size_t thread = get_global_id(0);
 
+    //  zero out result reflection
+    reflection[thread] = (Reflection) {};
+
+    //  if this thread should stop, then stop
+    if (! keep_going[thread]) {
+        return;
+    }
+
     //  find the ray to intersect
     const Ray this_ray = ray[thread];
 
     //  find the intersection between scene geometry and this ray
-    const Intersection closest = voxel_traversal(voxel_index,
-                                                 this_ray,
-                                                 global_aabb,
-                                                 side,
-                                                 triangles,
-                                                 vertices);
+    const Intersection closest = voxel_traversal(
+            voxel_index, this_ray, global_aabb, side, triangles, vertices);
 
+    //  didn't find an intersection, should halt this thread
     if (!closest.intersects) {
-        //  error
+        keep_going[thread] = false;
         return;
     }
 
     //  find where the ray intersects with the scene geometry
-    const float3 intersection = this_ray.position + this_ray.direction * closest.distance;
+    const float3 intersection =
+            this_ray.position + this_ray.direction * closest.distance;
 
     //  get the normal at the intersection
-    const float3 tnorm = triangle_normal(triangles + closest.primitive, vertices);
+    float3 tnorm = triangle_normal(triangles + closest.primitive, vertices);
 
     //  calculate the new specular direction from this point
     const float3 specular = reflect(tnorm, this_ray.direction);
 
+    //  make sure the normal faces the right direction
+    tnorm *= signbit(dot(tnorm, specular));
+
     //  now we can populate the output
-    reflection[thread] = (Reflection) {intersection,
-                                       specular,
-                                       closest.primitive};
+    reflection[thread] =
+            (Reflection) {intersection, specular, closest.primitive, true};
 
     //  we also need to find the next ray to trace
 
@@ -280,7 +289,8 @@ kernel void reflections(global Ray* ray,                   //  ray
     //  scattering coefficient is the average of the diffuse coefficients
     const Surface surface   = surfaces[triangles[closest.primitive].surface];
     const float scatter     = mean(surface.diffuse);
-    const float3 scattering = lambert_scattering(specular, tnorm, sphere_point(z, theta), scatter);
+    const float3 scattering = lambert_scattering(
+            specular, tnorm, sphere_point(z, theta), scatter);
 
     //  find the next ray to trace
     ray[thread] = (Ray){intersection, scattering};

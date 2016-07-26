@@ -1,5 +1,6 @@
 #include "raytracer/attenuator.h"
 #include "raytracer/raytracer.h"
+#include "raytracer/construct_impulse.h"
 
 #include "common/boundaries.h"
 #include "common/cl_common.h"
@@ -132,13 +133,13 @@ TEST(raytrace, image_source) {
 
     //  proper method
     Box box(glm::vec3(0, 0, 0), glm::vec3(4, 3, 6));
-    constexpr glm::vec3 source(1, 1, 1);
+    constexpr glm::vec3 source(1, 2, 1);
     constexpr glm::vec3 receiver(2, 1, 5);
     constexpr auto v = 0.9;
     constexpr Surface surface{VolumeType{{v, v, v, v, v, v, v, v}},
                               VolumeType{{v, v, v, v, v, v, v, v}}};
 
-    constexpr auto shells = 2;
+    constexpr auto shells = 1;
     auto images           = images_for_shell<shells>(box, source);
     std::array<float, images.size()> distances;
     proc::transform(images, distances.begin(), [&receiver](auto i) {
@@ -150,7 +151,7 @@ TEST(raytrace, image_source) {
     });
     std::array<VolumeType, images.size()> volumes;
     proc::transform(distances, volumes.begin(), [](auto i) {
-        return raytracer::attenuation_for_distance(i);
+        return attenuation_for_distance(i);
     });
 
     aligned::vector<AttenuatedImpulse> proper_image_source_impulses;
@@ -218,8 +219,7 @@ TEST(raytrace, image_source) {
                                    ? a
                                    : b;
                 });
-        ASSERT_TRUE(std::abs(i.time - closest.time) < 0.001) << i.time << " "
-                                                             << closest.time;
+        ASSERT_NEAR(i.time, closest.time, 0.001);
     }
 
     auto postprocess = [](const auto& i, const std::string& name) {
@@ -240,7 +240,7 @@ TEST(raytrace, image_source) {
             auto processed = raytracer::process(
                     flattened, sample_rate, false, 1, true, 1);
             normalize(processed);
-            snd::write(build_string(SCRATCH_PATH, "/", name, "processed.wav"),
+            snd::write(build_string(SCRATCH_PATH, "/", name, "_processed.wav"),
                        processed,
                        sample_rate,
                        bit_depth);

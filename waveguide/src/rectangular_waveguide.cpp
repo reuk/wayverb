@@ -273,8 +273,7 @@ rectangular_waveguide::run_basic(const run_info& run_info,
 
     for (const auto & i : run_info.get_signal()) {
         if (! keep_going) {
-            return std::experimental::optional<
-                    aligned::vector<rectangular_waveguide::run_step_output>>{};
+            return std::experimental::nullopt;
         }
         ret.push_back(callback(run_info, i));
     }

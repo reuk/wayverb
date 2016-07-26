@@ -7,6 +7,8 @@
 #include "common/aligned/vector.h"
 #include "common/cl_include.h"
 
+#include <experimental/optional>
+
 class VoxelCollection;
 
 namespace raytracer {
@@ -15,7 +17,7 @@ class image_source_finder final {
 public:
     image_source_finder(size_t rays, size_t depth);
 
-    void push(const aligned::vector<cl_ulong>& triangles);
+    void push(const aligned::vector<Reflection>&);
     aligned::vector<Impulse> get_results(const glm::vec3& source,
                                          const glm::vec3& receiver,
                                          const CopyableSceneData& scene_data,

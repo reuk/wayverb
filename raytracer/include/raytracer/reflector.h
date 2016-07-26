@@ -11,9 +11,7 @@ class scene_buffers;
 
 class reflector final {
 public:
-    reflector(const cl::Context&,
-              const cl::Device&,
-              size_t rays);
+    reflector(const cl::Context&, const cl::Device&, size_t rays);
 
     reflector(reflector&&);
     reflector& operator=(reflector&&);

@@ -57,7 +57,7 @@ public:
     struct NodeStruct final {
         cl_uint ports[CondensedNodeStruct::num_ports]{};
         cl_float3 position{};
-        cl_bool inside{};
+        cl_char inside{};
         CondensedNodeStruct condensed;
 
         template <typename Archive>

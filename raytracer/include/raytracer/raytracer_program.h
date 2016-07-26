@@ -8,32 +8,9 @@ class raytracer_program final {
 public:
     raytracer_program(const cl::Context& context, const cl::Device& device);
 
-#if 0
-    auto get_raytrace_kernel() const {
-        return program_wrapper.get_kernel<cl::Buffer,  //  ray_info
-                                          cl::Buffer,  //  voxel_index
-                                          AABB,        //  global_aabb
-                                          cl_int,      //  side
-                                          cl::Buffer,  //  triangles
-                                          cl_ulong,    //  numtriangles
-                                          cl::Buffer,  //  vertices
-                                          cl::Buffer,  //  surfaces
-                                          cl::Buffer,  //  rng
-                                          cl_float3,   //  source
-                                          cl_float3,   //  mic
-                                          VolumeType,  //  air_coefficient
-                                          cl_ulong,    //  iteration
-                                          cl_ulong,    //  num_image_source
-                                          cl::Buffer,  //  impulses
-                                          cl::Buffer,  //  image_source
-                                          cl::Buffer,  //  prev_primitives
-                                          cl::Buffer   //  image_source_index
-                                          >("raytrace");
-    }
-#endif
-
     auto get_reflections_kernel() const {
         return program_wrapper.get_kernel<cl::Buffer,  //  ray
+                                          cl::Buffer,  //  keep_going
                                           cl::Buffer,  //  voxel_index
                                           AABB,        //  global_aabb
                                           cl_ulong,    //  side

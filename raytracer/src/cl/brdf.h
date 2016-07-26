@@ -34,9 +34,7 @@ float3 lambert_vector(float3 surface_normal, float3 random) {
 
 float3 lambert_scattering(float3 specular, float3 surface_normal, float3 random, float d);
 float3 lambert_scattering(float3 specular, float3 surface_normal, float3 random, float d) {
-    //  TODO what if the surface normal is inverted?
     float3 l = lambert_vector(surface_normal, random);
-
     return normalize((l * d) + (specular * (1 - d)));
 }
 
@@ -74,9 +72,6 @@ float brdf_mag_for_outgoing(float3 specular, float3 outgoing, float d) {
     float y = dot(specular, outgoing);
 
     //  get the magnitude of the 'diffuse' reflection
-    //
-    //  TODO we might need to adjust the magnitude to correct for not-radiating-
-    //  in-all-directions
     return brdf_mag(y, d);
 }
 

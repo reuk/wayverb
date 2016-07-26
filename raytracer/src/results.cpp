@@ -2,13 +2,13 @@
 
 namespace raytracer {
 
-results::results(const std::experimental::optional<Impulse>& direct,
-                 const aligned::vector<Impulse>& image_source,
-                 const aligned::vector<aligned::vector<Impulse>>& diffuse,
+results::results(std::experimental::optional<Impulse>&& direct,
+                 aligned::vector<Impulse>&& image_source,
+                 aligned::vector<aligned::vector<Impulse>>&& diffuse,
                  const glm::vec3& receiver)
-        : direct(direct)
-        , image_source(image_source)
-        , diffuse(diffuse)
+        : direct(std::move(direct))
+        , image_source(std::move(image_source))
+        , diffuse(std::move(diffuse))
         , receiver(receiver) {}
 
 aligned::vector<Impulse> results::get_impulses(bool use_direct,

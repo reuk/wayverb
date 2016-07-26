@@ -1,13 +1,12 @@
 #include "raytracer/attenuator.h"
 
-#include "common/hrtf.h"
 #include "common/conversions.h"
+#include "common/hrtf.h"
 
 namespace raytracer {
 namespace attenuator {
 
-hrtf::hrtf(const cl::Context& context,
-                               const cl::Device& device)
+hrtf::hrtf(const cl::Context& context, const cl::Device& device)
         : queue(context, device)
         , kernel(attenuator_program(context, device).get_hrtf_kernel())
         , cl_hrtf(context, CL_MEM_READ_WRITE, sizeof(VolumeType) * 360 * 180) {}
@@ -65,8 +64,7 @@ hrtf::get_hrtf_data() const {
     return HrtfData::HRTF_DATA;
 }
 
-microphone::microphone(const cl::Context& context,
-                                           const cl::Device& device)
+microphone::microphone(const cl::Context& context, const cl::Device& device)
         : queue(context, device)
         , kernel(attenuator_program(context, device).get_microphone_kernel()) {}
 
@@ -95,7 +93,7 @@ aligned::vector<AttenuatedImpulse> microphone::process(
            to_cl_float3(position),
            cl_in,
            cl_out,
-           Speaker{to_cl_float3(pointing), shape});
+           Microphone{to_cl_float3(pointing), shape});
 
     //  create output location
     aligned::vector<AttenuatedImpulse> ret(impulses.size());

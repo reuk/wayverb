@@ -17,9 +17,10 @@ struct alignas(1 << 5) Impulse final {
 };
 
 struct alignas(1 << 4) Reflection final {
-    cl_float3 position;     //  intersection location
-    cl_float3 direction;    //  specular direction
-    cl_ulong triangle;      //  the intersected triangle
+    cl_float3 position;   //  intersection location
+    cl_float3 direction;  //  specular direction
+    cl_ulong triangle;    //  the intersected triangle
+    cl_char valid;        //  whether or not the reflection should be used
 };
 
 constexpr bool operator==(const Impulse& a, const Impulse& b) {
@@ -38,7 +39,7 @@ struct alignas(1 << 5) AttenuatedImpulse final {
 
 /// Each speaker has a (normalized-unit) direction, and a coefficient in the
 /// range 0-1 which describes its polar pattern from omni to bidirectional.
-struct alignas(1 << 4) Speaker final {
+struct alignas(1 << 4) Microphone final {
     cl_float3 direction;
     cl_float coefficient;
 };
@@ -54,15 +55,15 @@ struct alignas(1 << 4) TriangleVerts final {
     cl_float3 v1;
     cl_float3 v2;
 };
-*/
 
 struct alignas(1 << 5) RayInfo final {
     Ray ray;
     VolumeType volume;
     cl_float3 image;
     cl_float distance;
-    cl_bool keep_going;
+    cl_char keep_going;
 };
+*/
 
 struct alignas(1 << 4) AABB final {
     cl_float3 c0;
