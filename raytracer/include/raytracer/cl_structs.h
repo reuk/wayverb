@@ -48,11 +48,13 @@ struct alignas(1 << 4) Ray final {
     cl_float3 direction;
 };
 
+/*
 struct alignas(1 << 4) TriangleVerts final {
     cl_float3 v0;
     cl_float3 v1;
     cl_float3 v2;
 };
+*/
 
 struct alignas(1 << 5) RayInfo final {
     Ray ray;

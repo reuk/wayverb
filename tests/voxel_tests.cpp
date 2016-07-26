@@ -19,7 +19,7 @@ class T : public VoxelCollection::TraversalCallback {
 public:
     geo::Intersection operator()(
             const geo::Ray& ray,
-            const aligned::vector<size_t>& triangles) override {
+            const aligned::vector<size_t>& triangles) const override {
         if (!triangles.empty()) {
             b = true;
         }
@@ -29,7 +29,7 @@ public:
     bool get_has_triangles() const { return b; }
 
 private:
-    bool b{false};
+    mutable bool b{false};
 };
 
 TEST(voxel, walk) {

@@ -419,10 +419,11 @@ std::experimental::optional<results> raytracer::run(
         }
     }
 
-    return results(get_direct_impulse(source, receiver, scene_data, vox),
-                   image_source_finder.get_results(),
-                   diffuse.get_results(),
-                   receiver);
+    return results(
+            get_direct_impulse(source, receiver, scene_data, vox),
+            image_source_finder.get_results(source, receiver, scene_data, vox),
+            diffuse.get_results(),
+            receiver);
 }
 
 }  // namespace raytracer

@@ -60,7 +60,7 @@ public:
 
         virtual geo::Intersection operator()(
                 const geo::Ray& ray,
-                const aligned::vector<size_t>& triangles) = 0;
+                const aligned::vector<size_t>& triangles) const = 0;
     };
 
     /// This callback is used to check for intersections with the contents of
@@ -73,7 +73,7 @@ public:
         TriangleTraversalCallback(const CopyableSceneData& scene_data);
         geo::Intersection operator()(
                 const geo::Ray& ray,
-                const aligned::vector<size_t>& triangles) override;
+                const aligned::vector<size_t>& triangles) const override;
 
     private:
         aligned::vector<Triangle> tri;
@@ -82,7 +82,7 @@ public:
 
     /// Find the closest object along a ray.
     geo::Intersection traverse(const geo::Ray& ray,
-                               TraversalCallback& fun) const;
+                               const TraversalCallback& fun) const;
 
 private:
     void init(const Octree& o, const glm::ivec3& offset = glm::ivec3(0));

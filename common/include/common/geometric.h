@@ -27,7 +27,7 @@ private:
 
 using Intersects = std::experimental::optional<float>;
 
-struct Inter {
+struct Inter final {
     float distance;
     size_t index;
 };
@@ -37,9 +37,6 @@ constexpr bool operator==(const Inter& a, const Inter& b) {
 }
 
 using Intersection = std::experimental::optional<Inter>;
-
-TriangleVec3 to_triangle_vec3f(const Triangle& tri,
-                               const aligned::vector<glm::vec3>& vertices);
 
 Intersects triangle_intersection(const TriangleVec3& tri, const Ray& ray);
 

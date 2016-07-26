@@ -69,8 +69,8 @@ const VoxelCollection::Voxel& VoxelCollection::get_voxel(
     return data[i.x][i.y][i.z];
 }
 
-geo::Intersection VoxelCollection::traverse(const geo::Ray& ray,
-                                            TraversalCallback& fun) const {
+geo::Intersection VoxelCollection::traverse(
+        const geo::Ray& ray, const TraversalCallback& fun) const {
     //  from http://www.cse.chalmers.se/edu/year/2010/course/TDA361/grid.pdf
     auto ind                = get_starting_index(ray.get_position());
     const auto voxel_bounds = get_voxel(ind).get_aabb();
@@ -120,7 +120,7 @@ VoxelCollection::TriangleTraversalCallback::TriangleTraversalCallback(
         , vertices(scene_data.get_converted_vertices()) {}
 
 geo::Intersection VoxelCollection::TriangleTraversalCallback::operator()(
-        const geo::Ray& ray, const aligned::vector<size_t>& triangles) {
+        const geo::Ray& ray, const aligned::vector<size_t>& triangles) const {
     return geo::ray_triangle_intersection(ray, triangles, tri, vertices);
 }
 
