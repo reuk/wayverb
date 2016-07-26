@@ -256,16 +256,8 @@ aligned::vector<Impulse> image_source_finder::get_results(
         if (auto impulse = follow_ray_path(
                     i, source, receiver, scene_data, vox, callback)) {
             ret.push_back(*impulse);
-
-            std::cerr << "time: " << impulse->time << '\n';
-            for (auto j : i) {
-                std::cerr << j << " ";
-            }
-            std::cerr << '\n';
         }
     }
-
-    std::cerr << std::endl;
 
     return ret;
 }
