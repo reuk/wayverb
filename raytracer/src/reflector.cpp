@@ -1,5 +1,5 @@
-#include "raytracer/random_directions.h"
 #include "raytracer/reflector.h"
+#include "raytracer/random_directions.h"
 #include "raytracer/scene_buffers.h"
 
 #include "common/conversions.h"
@@ -46,33 +46,46 @@ namespace raytracer {
 
 class reflector::invocation {
 public:
-    invocation(const cl::Context& context, size_t rays, const glm::vec3& source)
+    invocation(const cl::Context& context,
+               size_t rays,
+               const glm::vec3& source,
+               const glm::vec3& receiver)
             : invocation(context,
                          get_random_rays(rays, source),
-                         aligned::vector<cl_char>(rays, true)) {}
+                         to_cl_float3(receiver),
+                         aligned::vector<Reflection>(
+                                 rays,
+                                 Reflection{cl_float3{{0, 0, 0}},
+                                            cl_float3{{0, 0, 0}},
+                                            cl_ulong{0},
+                                            cl_char{true},
+                                            cl_char{false}})) {}
 
     cl::Buffer& get_ray_buffer() { return ray_buffer; }
     const cl::Buffer& get_ray_buffer() const { return ray_buffer; }
 
-    cl::Buffer& get_keep_going_buffer() { return keep_going_buffer; }
-    const cl::Buffer& get_keep_going_buffer() const {
-        return keep_going_buffer;
+    cl_float3 get_receiver() const { return receiver; }
+
+    cl::Buffer& get_reflection_buffer() { return reflection_buffer; }
+    const cl::Buffer& get_reflection_buffer() const {
+        return reflection_buffer;
     }
 
 private:
     invocation(const cl::Context& context,
-               aligned::vector<Ray>
-                       rays,
-               aligned::vector<cl_char>
-                       keep_going)
+               aligned::vector<Ray> rays,
+               const cl_float3& receiver,
+               aligned::vector<Reflection> reflection)
             : ray_buffer(context, std::begin(rays), std::end(rays), false)
-            , keep_going_buffer(context,
-                                std::begin(keep_going),
-                                std::end(keep_going),
+            , receiver(receiver)
+            , reflection_buffer(context,
+                                std::begin(reflection),
+                                std::end(reflection),
                                 false) {}
 
     cl::Buffer ray_buffer;
-    cl::Buffer keep_going_buffer;
+    cl_float3 receiver;
+    cl::Buffer reflection_buffer;
 };
 
 //----------------------------------------------------------------------------//
@@ -91,9 +104,9 @@ reflector::reflector(reflector&&) = default;
 reflector& reflector::operator=(reflector&&) = default;
 reflector::~reflector() noexcept             = default;
 
-void reflector::init(const glm::vec3& source) {
+void reflector::init(const glm::vec3& source, const glm::vec3& receiver) {
     //  set the ray directions randomly
-    inv = std::make_unique<invocation>(context, rays, source);
+    inv = std::make_unique<invocation>(context, rays, source, receiver);
 }
 
 aligned::vector<Reflection> reflector::run_step(scene_buffers& buffers) {
@@ -111,7 +124,7 @@ aligned::vector<Reflection> reflector::run_step(scene_buffers& buffers) {
     auto kernel = raytracer_program(context, device).get_reflections_kernel();
     kernel(cl::EnqueueArgs(buffers.get_queue(), cl::NDRange(rays)),
            inv->get_ray_buffer(),
-           inv->get_keep_going_buffer(),
+           inv->get_receiver(),
            buffers.get_voxel_index_buffer(),
            buffers.get_global_aabb(),
            buffers.get_side(),

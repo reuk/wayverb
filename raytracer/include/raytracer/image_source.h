@@ -21,10 +21,15 @@ public:
     aligned::vector<Impulse> get_results(const glm::vec3& source,
                                          const glm::vec3& receiver,
                                          const CopyableSceneData& scene_data,
-                                         const VoxelCollection& vox) const;
+                                         const VoxelCollection& vox);
 
 private:
-    iterative_builder<cl_ulong> reflection_path_builder;
+    struct item final {
+        cl_ulong index;
+        bool visible;
+    };
+
+    iterative_builder<item> reflection_path_builder;
 };
 
 }  // namespace raytracer

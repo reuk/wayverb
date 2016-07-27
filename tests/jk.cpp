@@ -196,7 +196,7 @@ TEST(raytrace, image_source) {
 
     std::atomic_bool keep_going{true};
     auto results = raytracer.run(
-            scene_data, source, receiver, 100000, 100, 12, keep_going, [] {});
+            scene_data, source, receiver, 100000, 100, 10, keep_going, [] {});
 
     ASSERT_TRUE(results);
 

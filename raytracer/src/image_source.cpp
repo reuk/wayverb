@@ -15,18 +15,24 @@ namespace {
 
 //  ray paths should be ordered by [ray][depth]
 template <typename T>
-aligned::set<aligned::vector<T>> compute_unique_paths(
-        const aligned::vector<aligned::vector<T>>& path) {
-    aligned::set<aligned::vector<T>> ret;
+aligned::set<aligned::vector<cl_ulong>> compute_unique_paths(
+        aligned::vector<aligned::vector<T>>&& path) {
+    aligned::set<aligned::vector<cl_ulong>> ret;
 
     //  for each ray
     for (auto j = 0; j != path.size(); ++j) {
         //  get all ray path combinations
-        for (auto k = 1; k < path[j].size(); ++k) {
-            aligned::vector<T> surfaces(path[j].begin(), path[j].begin() + k);
-
-            //  add the path to the return set
-            ret.insert(surfaces);
+        for (auto k = 0; k < path[j].size(); ++k) {
+            if (path[j][k].visible) {
+                aligned::vector<cl_ulong> surfaces;
+                surfaces.reserve(k);
+                std::transform(path[j].begin(),
+                               path[j].begin() + k + 1,
+                               std::back_inserter(surfaces),
+                               [](const auto& i) { return i.index; });
+                //  add the path to the return set
+                ret.insert(surfaces);
+            }
         }
     }
 
@@ -168,6 +174,11 @@ Impulse compute_ray_path_impulse(const glm::vec3& receiver,
     return construct_impulse(volume, unmirrored.back(), distance);
 }
 
+template <typename T>
+bool is_near(T a, T b, double tolerance) {
+    return std::abs(a - b) < tolerance;
+}
+
 std::experimental::optional<Impulse> follow_ray_path(
         const aligned::vector<cl_ulong>& triangles,
         const glm::vec3& source,
@@ -199,29 +210,28 @@ std::experimental::optional<Impulse> follow_ray_path(
     auto unmirrored = compute_unmirrored_points(points, original);
     unmirrored.insert(unmirrored.begin(), source);
 
+    auto intersects = [&](auto a, auto b) {
+        auto i = vox.traverse(construct_ray(a, b), callback);
+        return !(i && is_near(i->distance, glm::distance(a, b), 0.0001));
+    };
+
     //  attempt to join the dots back in scene space
-    auto tri_it = triangles.begin();
     for (auto a = unmirrored.begin(), b = unmirrored.begin() + 1;
          b != unmirrored.end();
-         ++a, ++b, ++tri_it) {
+         ++a, ++b) {
         if (*a == *b) {
             //  the point lies on two joined triangles
             continue;
         }
-        auto intersects = vox.traverse(construct_ray(*a, *b), callback);
-        if (!(intersects && intersects->index == *tri_it)) {
+        if (!intersects(*a, *b)) {
             return std::experimental::nullopt;
         }
     }
 
     //  check whether there's line-of-sight from the receiver to the final
     //  intersection point
-    {
-        auto intersects = vox.traverse(
-                construct_ray(receiver, unmirrored.back()), callback);
-        if (!(intersects && intersects->index == triangles.back())) {
-            return std::experimental::nullopt;
-        }
+    if (!intersects(receiver, unmirrored.back())) {
+        return std::experimental::nullopt;
     }
 
     return compute_ray_path_impulse(
@@ -237,8 +247,10 @@ image_source_finder::image_source_finder(size_t rays, size_t depth)
 
 void image_source_finder::push(const aligned::vector<Reflection>& reflections) {
     reflection_path_builder.push(reflections, [](const Reflection& i) {
-        return i.valid ? std::experimental::make_optional(i.triangle)
-                       : std::experimental::nullopt;
+        return i.keep_going ? std::experimental::make_optional(item{
+                                      i.triangle,
+                                      static_cast<bool>(i.receiver_visible)})
+                            : std::experimental::nullopt;
     });
 }
 
@@ -246,9 +258,9 @@ aligned::vector<Impulse> image_source_finder::get_results(
         const glm::vec3& source,
         const glm::vec3& receiver,
         const CopyableSceneData& scene_data,
-        const VoxelCollection& vox) const {
+        const VoxelCollection& vox) {
     auto unique_paths =
-            compute_unique_paths(reflection_path_builder.get_data());
+            compute_unique_paths(std::move(reflection_path_builder.get_data()));
     aligned::vector<Impulse> ret;
 
     const VoxelCollection::TriangleTraversalCallback callback(scene_data);

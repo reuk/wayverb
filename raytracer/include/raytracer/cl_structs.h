@@ -17,10 +17,11 @@ struct alignas(1 << 5) Impulse final {
 };
 
 struct alignas(1 << 4) Reflection final {
-    cl_float3 position;   //  intersection location
-    cl_float3 direction;  //  specular direction
-    cl_ulong triangle;    //  the intersected triangle
-    cl_char valid;        //  whether or not the reflection should be used
+    cl_float3 position;
+    cl_float3 direction;
+    cl_ulong triangle;
+    cl_char keep_going;
+    cl_char receiver_visible;
 };
 
 constexpr bool operator==(const Impulse& a, const Impulse& b) {
@@ -48,22 +49,6 @@ struct alignas(1 << 4) Ray final {
     cl_float3 position;
     cl_float3 direction;
 };
-
-/*
-struct alignas(1 << 4) TriangleVerts final {
-    cl_float3 v0;
-    cl_float3 v1;
-    cl_float3 v2;
-};
-
-struct alignas(1 << 5) RayInfo final {
-    Ray ray;
-    VolumeType volume;
-    cl_float3 image;
-    cl_float distance;
-    cl_char keep_going;
-};
-*/
 
 struct alignas(1 << 4) AABB final {
     cl_float3 c0;

@@ -105,7 +105,7 @@ void reflect_and_add_triangle_to_history(TriangleVerts current,
     history[iteration] = current;
 }
 
-
+/*
 void image_source_contributions(Intersection closest,
                                 VolumeType new_vol,
 
@@ -224,9 +224,11 @@ void image_source_contributions(Intersection closest,
         }
     }
 }
+*/
 
 kernel void reflections(global Ray * ray,                  //  ray
-                        global char * keep_going,
+
+                        float3 receiver,                   //  receiver
 
                         const global uint * voxel_index,   //  voxel
                         AABB global_aabb,
@@ -242,11 +244,13 @@ kernel void reflections(global Ray * ray,                  //  ray
     //  get thread index
     const size_t thread = get_global_id(0);
 
+    const bool keep_going = reflection[thread].keep_going;
+
     //  zero out result reflection
     reflection[thread] = (Reflection) {};
 
     //  if this thread should stop, then stop
-    if (! keep_going[thread]) {
+    if (! keep_going) {
         return;
     }
 
@@ -258,8 +262,7 @@ kernel void reflections(global Ray * ray,                  //  ray
             voxel_index, this_ray, global_aabb, side, triangles, vertices);
 
     //  didn't find an intersection, should halt this thread
-    if (!closest.intersects) {
-        keep_going[thread] = false;
+    if (! closest.intersects) {
         return;
     }
 
@@ -276,9 +279,21 @@ kernel void reflections(global Ray * ray,                  //  ray
     //  make sure the normal faces the right direction
     tnorm *= signbit(dot(tnorm, specular));
 
+    //  see whether the receiver is visible from this point
+    const bool is_intersection = voxel_point_intersection(intersection,
+                                                          receiver,
+                                                          voxel_index,
+                                                          global_aabb,
+                                                          side,
+                                                          triangles,
+                                                          vertices);
+
     //  now we can populate the output
-    reflection[thread] =
-            (Reflection) {intersection, specular, closest.primitive, true};
+    reflection[thread] = (Reflection) {intersection,
+                                       specular,
+                                       closest.primitive,
+                                       true,
+                                       is_intersection};
 
     //  we also need to find the next ray to trace
 

@@ -24,8 +24,8 @@ const std::string attenuator_program::source("#define SPEED_OF_SOUND " +
 
 constant float SECONDS_PER_METER = 1.0f / SPEED_OF_SOUND;
 
-float speaker_attenuation(Speaker * speaker, float3 direction);
-float speaker_attenuation(Speaker * speaker, float3 direction) {
+float microphone_attenuation(Microphone * speaker, float3 direction);
+float microphone_attenuation(Microphone * speaker, float3 direction) {
     return ((1 - speaker->coefficient) +
             speaker->coefficient *
                 dot(normalize(direction), normalize(speaker->direction)));
@@ -34,11 +34,11 @@ float speaker_attenuation(Speaker * speaker, float3 direction) {
 kernel void microphone(float3 mic_pos,
                        global Impulse * impulsesIn,
                        global AttenuatedImpulse * impulsesOut,
-                       Speaker speaker) {
+                       Microphone speaker) {
     size_t i = get_global_id(0);
     global Impulse * thisImpulse = impulsesIn + i;
     if (any(thisImpulse->volume != 0)) {
-        const float ATTENUATION = speaker_attenuation(
+        const float ATTENUATION = microphone_attenuation(
             &speaker, get_direction(mic_pos, thisImpulse->position));
         impulsesOut[i] = (AttenuatedImpulse){thisImpulse->volume * ATTENUATION,
                                              thisImpulse->time};

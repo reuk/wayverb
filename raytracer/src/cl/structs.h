@@ -18,7 +18,8 @@ typedef struct {
     float3 position;
     float3 direction;
     ulong triangle;
-    char valid;
+    char keep_going;
+    char receiver_visible;
 } Reflection;
 
 typedef struct {
@@ -26,14 +27,6 @@ typedef struct {
     float3 v1;
     float3 v2;
 } TriangleVerts;
-
-typedef struct {
-    Ray ray;
-    VolumeType volume;
-    float3 image;
-    float distance;
-    char keep_going;
-} RayInfo;
 
 typedef struct {
     VolumeType specular;
@@ -67,7 +60,7 @@ typedef struct {
 typedef struct {
     float3 direction;
     float coefficient;
-} Speaker;
+} Microphone;
 
 typedef struct {
     float3 c0;

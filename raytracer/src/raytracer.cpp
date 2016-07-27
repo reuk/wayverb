@@ -343,7 +343,7 @@ std::experimental::optional<results> raytracer::run(
 
     //  this is the object that generates first-pass reflections
     reflector reflector(context, device, rays);
-    reflector.init(source);
+    reflector.init(source, receiver);
 
     //  this will collect the first reflections, to a specified depth,
     //  and use them to find unique image-source paths

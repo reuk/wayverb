@@ -10,7 +10,7 @@ public:
 
     auto get_reflections_kernel() const {
         return program_wrapper.get_kernel<cl::Buffer,  //  ray
-                                          cl::Buffer,  //  keep_going
+                                          cl_float3,   //  receiver
                                           cl::Buffer,  //  voxel_index
                                           AABB,        //  global_aabb
                                           cl_ulong,    //  side
