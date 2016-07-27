@@ -149,29 +149,36 @@ glm::vec3 compute_mirrored_point(const aligned::vector<TriangleVec3>& mirrored,
     return ret;
 }
 
-Impulse compute_ray_path_impulse(const glm::vec3& receiver,
-                                 const CopyableSceneData& scene_data,
-                                 const aligned::vector<cl_ulong>& triangles,
-                                 const aligned::vector<glm::vec3>& unmirrored) {
-    VolumeType volume{{1, 1, 1, 1, 1, 1, 1, 1}};
-    float distance{0};
-    glm::vec3 prev_point = unmirrored.front();
+float compute_distance(const aligned::vector<glm::vec3>& unmirrored) {
+    return std::inner_product(
+            unmirrored.begin(),
+            unmirrored.end() - 1,
+            unmirrored.begin() + 1,
+            0.0f,
+            [](auto a, auto b) { return a + b; },
+            [](auto a, auto b) { return glm::distance(a, b); });
+}
 
-    for (auto i     = 0u; i != triangles.size();
-         prev_point = unmirrored[i + 1], ++i) {
-        const auto triangle_index = triangles[i];
-        const auto scene_triangle = scene_data.get_triangles()[triangle_index];
+VolumeType compute_volume(const CopyableSceneData& scene_data,
+                          const aligned::vector<cl_ulong>& triangles) {
+    VolumeType volume{{1, 1, 1, 1, 1, 1, 1, 1}};
+    for (auto i : triangles) {
+        const auto scene_triangle = scene_data.get_triangles()[i];
         const auto surface = scene_data.get_surfaces()[scene_triangle.surface];
 
         volume = elementwise(volume, surface.specular, [](auto a, auto b) {
             return a * -b;
         });
-        distance += glm::distance(prev_point, unmirrored[i + 1]);
     }
+    return volume;
+}
 
-    distance += glm::distance(receiver, unmirrored.back());
-
-    return construct_impulse(volume, unmirrored.back(), distance);
+Impulse compute_ray_path_impulse(const CopyableSceneData& scene_data,
+                                 const aligned::vector<cl_ulong>& triangles,
+                                 const aligned::vector<glm::vec3>& unmirrored) {
+    return construct_impulse(compute_volume(scene_data, triangles),
+                             unmirrored[unmirrored.size() - 2],
+                             compute_distance(unmirrored));
 }
 
 template <typename T>
@@ -211,8 +218,12 @@ std::experimental::optional<Impulse> follow_ray_path(
     unmirrored.insert(unmirrored.begin(), source);
 
     auto intersects = [&](auto a, auto b) {
-        auto i = vox.traverse(construct_ray(a, b), callback);
-        return !(i && is_near(i->distance, glm::distance(a, b), 0.0001));
+        const auto dir = glm::normalize(b - a);
+        const auto epsilon = 0.0001f;
+        const auto from = a + dir * epsilon;
+        const auto to = b;
+        const auto i = vox.traverse(geo::Ray(from, dir), callback);
+        return i && is_near(i->distance, glm::distance(from, to), epsilon);
     };
 
     //  attempt to join the dots back in scene space
@@ -228,14 +239,13 @@ std::experimental::optional<Impulse> follow_ray_path(
         }
     }
 
-    //  check whether there's line-of-sight from the receiver to the final
-    //  intersection point
     if (!intersects(receiver, unmirrored.back())) {
         return std::experimental::nullopt;
     }
 
-    return compute_ray_path_impulse(
-            receiver, scene_data, triangles, unmirrored);
+    unmirrored.insert(unmirrored.end(), receiver);
+
+    return compute_ray_path_impulse(scene_data, triangles, unmirrored);
 }
 
 }  // namespace

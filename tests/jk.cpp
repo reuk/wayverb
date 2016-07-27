@@ -219,7 +219,7 @@ TEST(raytrace, image_source) {
                                    ? a
                                    : b;
                 });
-//        ASSERT_NEAR(i.time, closest.time, 0.001);
+        ASSERT_NEAR(i.time, closest.time, 0.001);
     }
 
     auto postprocess = [](const auto& i, const std::string& name) {
