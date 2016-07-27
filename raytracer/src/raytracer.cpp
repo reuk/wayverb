@@ -342,8 +342,7 @@ std::experimental::optional<results> raytracer::run(
     scene_buffers scene_buffers(context, device, scene_data, vox);
 
     //  this is the object that generates first-pass reflections
-    reflector reflector(context, device, rays);
-    reflector.init(source, receiver);
+    reflector reflector(context, device, source, receiver, rays);
 
     //  this will collect the first reflections, to a specified depth,
     //  and use them to find unique image-source paths
@@ -362,11 +361,14 @@ std::experimental::optional<results> raytracer::run(
         }
 
         //  get a single step of the reflections
-        auto reflections = reflector.run_step(scene_buffers);
+        const auto reflections = reflector.run_step(scene_buffers);
 
         //  find diffuse impulses for these reflections
         diffuse_finder.push(reflections);
         image_source_finder.push(reflections);
+
+        //  we did a step!
+        callback();
     }
 
     return results(

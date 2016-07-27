@@ -11,15 +11,17 @@ class scene_buffers;
 
 class reflector final {
 public:
-    reflector(const cl::Context&, const cl::Device&, size_t rays);
+    reflector(const cl::Context&,
+              const cl::Device&,
+              const glm::vec3& source,
+              const glm::vec3& receiver,
+              size_t rays);
 
     reflector(reflector&&);
     reflector& operator=(reflector&&);
 
     ~reflector() noexcept;
 
-    /// call init once, then run_step until you have enough reflections
-    void init(const glm::vec3& source, const glm::vec3& receiver);
     aligned::vector<Reflection> run_step(scene_buffers& buffers);
 
 private:
@@ -27,11 +29,11 @@ private:
     cl::Device device;
     size_t rays;
 
-    class invocation;
-    std::unique_ptr<invocation> inv;
+    cl::Buffer ray_buffer;
+    cl_float3 receiver;
+    cl::Buffer reflection_buffer;
 
     cl::Buffer rng_buffer;
-    cl::Buffer reflection_buffer;
 };
 
 }  // namespace raytracer

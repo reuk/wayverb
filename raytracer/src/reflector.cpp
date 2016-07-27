@@ -38,84 +38,44 @@ aligned::vector<Ray> get_random_rays(size_t num, const glm::vec3& source) {
     return ret;
 }
 
+template <typename T>
+cl::Buffer load_to_buffer(const cl::Context& context, T t, bool read_only) {
+    return cl::Buffer(context, std::begin(t), std::end(t), read_only);
+}
+
 }  // namespace
 
 //----------------------------------------------------------------------------//
 
 namespace raytracer {
 
-class reflector::invocation {
-public:
-    invocation(const cl::Context& context,
-               size_t rays,
-               const glm::vec3& source,
-               const glm::vec3& receiver)
-            : invocation(context,
-                         get_random_rays(rays, source),
-                         to_cl_float3(receiver),
-                         aligned::vector<Reflection>(
-                                 rays,
-                                 Reflection{cl_float3{{0, 0, 0}},
-                                            cl_float3{{0, 0, 0}},
-                                            cl_ulong{0},
-                                            cl_char{true},
-                                            cl_char{false}})) {}
-
-    cl::Buffer& get_ray_buffer() { return ray_buffer; }
-    const cl::Buffer& get_ray_buffer() const { return ray_buffer; }
-
-    cl_float3 get_receiver() const { return receiver; }
-
-    cl::Buffer& get_reflection_buffer() { return reflection_buffer; }
-    const cl::Buffer& get_reflection_buffer() const {
-        return reflection_buffer;
-    }
-
-private:
-    invocation(const cl::Context& context,
-               aligned::vector<Ray> rays,
-               const cl_float3& receiver,
-               aligned::vector<Reflection> reflection)
-            : ray_buffer(context, std::begin(rays), std::end(rays), false)
-            , receiver(receiver)
-            , reflection_buffer(context,
-                                std::begin(reflection),
-                                std::end(reflection),
-                                false) {}
-
-    cl::Buffer ray_buffer;
-    cl_float3 receiver;
-    cl::Buffer reflection_buffer;
-};
-
-//----------------------------------------------------------------------------//
-
 reflector::reflector(const cl::Context& context,
                      const cl::Device& device,
+                     const glm::vec3& source,
+                     const glm::vec3& receiver,
                      size_t rays)
         : context(context)
         , device(device)
         , rays(rays)
-        , rng_buffer(context, CL_MEM_READ_WRITE, rays * 2 * sizeof(cl_float))
-        , reflection_buffer(
-                  context, CL_MEM_READ_WRITE, rays * sizeof(Reflection)) {}
+        , ray_buffer(
+                  load_to_buffer(context, get_random_rays(rays, source), false))
+        , receiver(to_cl_float3(receiver))
+        , reflection_buffer(load_to_buffer(
+                  context,
+                  aligned::vector<Reflection>(rays,
+                                              Reflection{cl_float3{},
+                                                         cl_float3{},
+                                                         cl_ulong{},
+                                                         cl_char{true},
+                                                         cl_char{}}),
+                  false))
+        , rng_buffer(context, CL_MEM_READ_WRITE, rays * 2 * sizeof(cl_float)) {}
 
 reflector::reflector(reflector&&) = default;
 reflector& reflector::operator=(reflector&&) = default;
 reflector::~reflector() noexcept             = default;
 
-void reflector::init(const glm::vec3& source, const glm::vec3& receiver) {
-    //  set the ray directions randomly
-    inv = std::make_unique<invocation>(context, rays, source, receiver);
-}
-
 aligned::vector<Reflection> reflector::run_step(scene_buffers& buffers) {
-    //  make sure there's a valid ray buffer somewhere
-    if (!inv) {
-        throw std::runtime_error(
-                "must call 'init' before 'run_step' on reflector");
-    }
-
     //  get some new rng and copy it to device memory
     auto rng = get_direction_rng(rays);
     cl::copy(buffers.get_queue(), std::begin(rng), std::end(rng), rng_buffer);
@@ -123,8 +83,8 @@ aligned::vector<Reflection> reflector::run_step(scene_buffers& buffers) {
     //  get the kernel and run it
     auto kernel = raytracer_program(context, device).get_reflections_kernel();
     kernel(cl::EnqueueArgs(buffers.get_queue(), cl::NDRange(rays)),
-           inv->get_ray_buffer(),
-           inv->get_receiver(),
+           ray_buffer,
+           receiver,
            buffers.get_voxel_index_buffer(),
            buffers.get_global_aabb(),
            buffers.get_side(),
