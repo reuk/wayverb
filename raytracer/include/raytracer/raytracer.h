@@ -43,8 +43,6 @@ aligned::vector<aligned::vector<float>> process(
         bool do_trim_tail,
         float volumme_scale);
 
-VolumeType attenuation_for_distance(float distance);
-
 /// Recursively check a collection of Impulses for the earliest non-zero time of
 /// an impulse.
 template <typename T>

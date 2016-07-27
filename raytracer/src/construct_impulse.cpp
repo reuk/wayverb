@@ -39,7 +39,7 @@ Impulse construct_impulse(const VolumeType& volume,
                           const glm::vec3& source,
                           float distance) {
     return Impulse{elementwise(volume,
-                               air_attenuation_for_distance(distance),
+                               attenuation_for_distance(distance),
                                [](auto a, auto b) { return a * b; }),
                    to_cl_float3(source),
                    static_cast<cl_float>(distance / SPEED_OF_SOUND)};
