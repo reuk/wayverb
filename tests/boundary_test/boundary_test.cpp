@@ -7,6 +7,7 @@
 #include "common/conversions.h"
 #include "common/progress_bar.h"
 #include "common/scene_data.h"
+#include "common/map.h"
 
 #include "common/serialize/boundaries.h"
 #include "common/serialize/surface.h"
@@ -76,10 +77,8 @@ aligned::vector<float> run_simulation(const compute_context& cc,
 #if 0
     auto output = Microphone::omni.process(results);
 #else
-    auto output = aligned::vector<float>(results->size());
-    proc::transform(*results, output.begin(), [](const auto& i) {
-        return i.get_pressure();
-    });
+    auto output = map_to_vector(*results,
+                                [](const auto& i) { return i.get_pressure(); });
 #endif
 
     // filter::LinkwitzRileySingleLopass lopass;
@@ -227,7 +226,7 @@ FullTestResults run_full_test(const std::string& test_name,
     //  generate two boundaries, one twice the size of the other
     const box wall(glm::vec3(0, 0, 0), glm::vec3(desired_nodes) * divisions);
 
-    const auto far     = wall.get_c1();
+    const auto far = wall.get_c1();
     const glm::vec3 new_dim(far.x * 2, far.y, far.z);
 
     const box no_wall(glm::vec3(0, 0, 0), new_dim);
@@ -432,8 +431,7 @@ int main(int argc, char** argv) {
                                        {{hi, hi, hi, hi, hi, hi, hi, hi}}}},
         };
 
-        aligned::vector<FullTestResults> all_test_results(surface_set.size());
-        proc::transform(surface_set, all_test_results.begin(), [&](auto i) {
+        const auto all_test_results = map_to_vector(surface_set, [&](auto i) {
             return run_full_test(i.name,
                                  cc,
                                  output_folder,

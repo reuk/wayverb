@@ -7,11 +7,6 @@
 namespace cl_sources {
 const std::string brdf(R"(
 
-typedef struct {
-    float3 direction;
-    float magnitude;
-} BRDFOutput;
-
 //  z range: -1 to 1
 //  theta range: -pi to pi
 float3 sphere_point(float z, float theta);

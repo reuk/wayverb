@@ -1,9 +1,11 @@
 #include "raytracer/attenuator.h"
-#include "raytracer/raytracer.h"
 #include "raytracer/construct_impulse.h"
+#include "raytracer/postprocess.h"
+#include "raytracer/raytracer.h"
 
 #include "common/boundaries.h"
 #include "common/cl_common.h"
+#include "common/map.h"
 #include "common/string_builder.h"
 #include "common/write_audio_file.h"
 
@@ -19,40 +21,6 @@
 #ifndef SCRATCH_PATH
 #define SCRATCH_PATH ""
 #endif
-
-/*
-#define USE_EPSILON
-
-#ifdef USE_EPSILON
-const auto EPSILON = 0.00001;
-#endif
-
-bool operator==(const cl_float3& a, const cl_float3& b) {
-    for (auto i = 0u; i != 3; ++i) {
-#ifdef USE_EPSILON
-        if (fabs(a.s[i] - b.s[i]) > EPSILON)
-            return false;
-#else
-        if (a.s[i] != b.s[i])
-            return false;
-#endif
-    }
-    return true;
-}
-
-bool operator==(const VolumeType& a, const VolumeType& b) {
-    for (auto i = 0u; i != sizeof(a) / sizeof(a.s[0]); ++i) {
-#ifdef USE_EPSILON
-        if (fabs(a.s[i] - b.s[i]) > EPSILON)
-            return false;
-#else
-        if (a.s[i] != b.s[i])
-            return false;
-#endif
-    }
-    return true;
-}
-*/
 
 static constexpr auto bench_reflections = 128;
 static constexpr auto bench_rays        = 1 << 15;
@@ -184,13 +152,13 @@ TEST(raytrace, image_source) {
 
     ASSERT_TRUE(results);
 
-    raytracer::attenuator::microphone attenuator(cc.get_context(),
-                                                 cc.get_device());
-    auto output = attenuator.process(results->get_impulses(true, true, false),
-                                     glm::vec3(0, 0, 1),
-                                     0,
-                                     receiver);
+    const auto convert = [](const auto& input) {
+        return map_to_vector(input, [](const auto& i) {
+            return AttenuatedImpulse{i.volume, i.time};
+        });
+    };
 
+    auto output = convert(results->get_impulses(true, true, false));
     sort_by_time(output);
 
     for (auto i : proper_image_source_impulses) {
@@ -207,25 +175,24 @@ TEST(raytrace, image_source) {
     }
 
     auto postprocess = [](const auto& i, const std::string& name) {
-        auto bit_depth   = 16;
-        auto sample_rate = 44100.0;
-        aligned::vector<aligned::vector<aligned::vector<float>>> flattened{
-                raytracer::flatten_impulses(i, sample_rate)};
+        const auto bit_depth   = 16;
+        const auto sample_rate = 44100.0;
         {
-            auto mixed_down = mixdown(flattened);
+            auto mixed_down =
+                    mixdown(raytracer::flatten_impulses(i, sample_rate));
             normalize(mixed_down);
             snd::write(
                     build_string(SCRATCH_PATH, "/", name, "_no_processing.wav"),
-                    mixed_down,
+                    {mixed_down},
                     sample_rate,
                     bit_depth);
         }
         {
-            auto processed = raytracer::process(
-                    flattened, sample_rate, false, 1, true, 1);
+            auto processed =
+                    raytracer::flatten_filter_and_mixdown(i, sample_rate);
             normalize(processed);
             snd::write(build_string(SCRATCH_PATH, "/", name, "_processed.wav"),
-                       processed,
+                       {processed},
                        sample_rate,
                        bit_depth);
         }
@@ -233,4 +200,5 @@ TEST(raytrace, image_source) {
 
     postprocess(output, "raytraced");
     postprocess(proper_image_source_impulses, "image_src");
+    postprocess(convert(results->get_impulses()), "diffuse");
 }

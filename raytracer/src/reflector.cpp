@@ -51,6 +51,7 @@ reflector::reflector(const cl::Context& context,
                      size_t rays)
         : context(context)
         , device(device)
+        , kernel(raytracer_program(context, device).get_reflections_kernel())
         , receiver(to_cl_float3(receiver))
         , rays(rays)
         , ray_buffer(
@@ -72,7 +73,6 @@ aligned::vector<Reflection> reflector::run_step(scene_buffers& buffers) {
     cl::copy(buffers.get_queue(), std::begin(rng), std::end(rng), rng_buffer);
 
     //  get the kernel and run it
-    auto kernel = raytracer_program(context, device).get_reflections_kernel();
     kernel(cl::EnqueueArgs(buffers.get_queue(), cl::NDRange(rays)),
            ray_buffer,
            receiver,

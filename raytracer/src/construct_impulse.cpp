@@ -2,20 +2,6 @@
 
 #include "common/conversions.h"
 
-namespace {
-constexpr auto volume_factor = 0.001f;
-constexpr VolumeType air_coefficient{{
-        volume_factor * -0.1f,
-        volume_factor * -0.2f,
-        volume_factor * -0.5f,
-        volume_factor * -1.1f,
-        volume_factor * -2.7f,
-        volume_factor * -9.4f,
-        volume_factor * -29.0f,
-        volume_factor * -60.0f,
-}};
-}  // namespace
-
 VolumeType air_attenuation_for_distance(float distance) {
     VolumeType ret;
     proc::transform(air_coefficient.s, std::begin(ret.s), [distance](auto i) {

@@ -15,6 +15,7 @@ public:
     diffuse_finder(const cl::Context&,
                    const cl::Device&,
                    const glm::vec3& receiver,
+                   const VolumeType& air_coefficient,
                    size_t rays,
                    size_t depth);
 
@@ -24,12 +25,17 @@ public:
     aligned::vector<aligned::vector<Impulse>>& get_results();
 
 private:
+    using kernel_t =
+            decltype(std::declval<raytracer_program>().get_diffuse_kernel());
+
     cl::Context context;
     cl::Device device;
+    kernel_t kernel;
     cl_float3 receiver;
-//    size_t rays;
+    VolumeType air_coefficient;
+    size_t rays;
 
-    cl::Buffer reflection_buffer;
+    cl::Buffer reflections_buffer;
     cl::Buffer diffuse_path_buffer;
     cl::Buffer impulse_buffer;
 

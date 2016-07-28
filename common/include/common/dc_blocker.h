@@ -6,7 +6,7 @@
 
 namespace filter {
 
-class DelayLine {
+class DelayLine final {
 public:
     DelayLine() = default;
     DelayLine(int length);
@@ -17,11 +17,12 @@ public:
 
     void clear();
 
+private:
     aligned::vector<double> data;
     size_t index;
 };
 
-class MovingAverage {
+class MovingAverage final {
 public:
     MovingAverage() = default;
     MovingAverage(int d);
@@ -30,13 +31,16 @@ public:
 
     void clear();
 
+    double get_index(size_t i) const;
+
+private:
     int d;
     DelayLine delay_line;
     double single_delay;
 };
 
 template <int modules>
-class NMovingAverages {
+class NMovingAverages final {
 public:
     NMovingAverages() = default;
     NMovingAverages(int d) {
@@ -56,19 +60,19 @@ public:
         }
     }
 
+    const MovingAverage& get_averager() const {
+        return averages.front();
+    }
+
+private:
     std::array<MovingAverage, modules> averages;
 };
 
-class LinearDCBlocker {
+class LinearDCBlocker final {
 public:
-    explicit LinearDCBlocker(int d = 128)
-            : d(d)
-            , moving_averages(d) {}
+    explicit LinearDCBlocker(int d = 128);
 
-    double operator()(double x) {
-        x = moving_averages(x);
-        return moving_averages.averages[0].delay_line[d - 1] - x;
-    }
+    double operator()(double x);
 
     template <typename It>
     aligned::vector<float> filter(It begin, It end) {
@@ -79,24 +83,18 @@ public:
         return ret;
     }
 
-    void clear() { moving_averages.clear(); }
+    void clear();
 
+private:
     int d;
     NMovingAverages<2> moving_averages;
 };
 
-class ExtraLinearDCBlocker {
+class ExtraLinearDCBlocker final {
 public:
-    explicit ExtraLinearDCBlocker(int d = 128)
-            : d(d)
-            , delay_line(d + 2)
-            , moving_averages(d) {}
+    explicit ExtraLinearDCBlocker(int d = 128);
 
-    double operator()(double x) {
-        x = moving_averages(x);
-        delay_line.push(moving_averages.averages[0].delay_line[d - 1]);
-        return delay_line[d - 1] - x;
-    }
+    double operator()(double x);
 
     template <typename It>
     aligned::vector<float> filter(It begin, It end) {
@@ -107,11 +105,9 @@ public:
         return ret;
     }
 
-    void clear() {
-        delay_line.clear();
-        moving_averages.clear();
-    }
+    void clear();
 
+private:
     int d;
     DelayLine delay_line;
     NMovingAverages<4> moving_averages;

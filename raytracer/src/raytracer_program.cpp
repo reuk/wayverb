@@ -190,126 +190,63 @@ kernel void reflections(global Ray * ray,                  //  ray
     ray[thread] = (Ray){intersection, scattering};
 }
 
-/*
-kernel void raytrace(global RayInfo * ray_info,         //  ray
+kernel void diffuse(const global Reflection* reflections,  //  input
+                    float3 receiver,
+                    VolumeType air_coefficient,
 
-                     const global uint * voxel_index,   //  voxel
-                     AABB global_aabb,
-                     int side,
+                    const global Triangle* triangles,  //  scene
+                    const global float3* vertices,
+                    const global Surface* surfaces,
 
-                     const global Triangle * triangles, //  scene
-                     ulong numtriangles,
-                     const global float3 * vertices,
-                     const global Surface * surfaces,
+                    global DiffusePathInfo* diffuse_path_info,  //  accumulator
 
-                     const global float * rng,          //  random numbers
+                    global Impulse* diffuse_output) {  //  output
+    const size_t thread = get_global_id(0);
 
-                     float3 source,                     //  misc
-                     float3 mic,
-                     VolumeType air_coefficient,
-                     ulong iteration,
-                     ulong num_image_source,
+    //  zero out output
+    diffuse_output[thread] = (Impulse){};
 
-                     global Impulse * impulses,         //  output
-                     global Impulse * image_source,
-                     global TriangleVerts * prev_primitives,
-                     global ulong * image_source_index) {
-    size_t thread = get_global_id(0);
-    //  zero stuff
-    impulses[thread] = (Impulse){};
-    image_source[thread] = (Impulse){};
-    image_source_index[thread] = 0;
-
-    //  get info about this thread
-    global RayInfo * info = ray_info + thread;
-
-    if (!info->keep_going) {
+    //  if this thread doesn't have anything to do, stop now
+    if (!reflections[thread].keep_going) {
         return;
     }
 
-    Ray ray = info->ray;
+    //  find the new volume
+    //  TODO change specular output depending on angle
+    //  TODO remove diffuse energy from ongoing specular energy
+    const Surface surface =
+            surfaces[triangles[reflections[thread].triangle].surface];
+    const VolumeType new_volume =
+            -diffuse_path_info[thread].volume * surface.specular;
 
-    Intersection closest = voxel_traversal(voxel_index,
-                                           ray,
-                                           global_aabb,
-                                           side,
-                                           triangles,
-                                           vertices);
+    //  find the new total distance
+    const float new_distance = diffuse_path_info[thread].distance +
+                               distance(diffuse_path_info[thread].position,
+                                        reflections[thread].position);
 
-    if (!closest.intersects) {
-        info->keep_going = false;
-        return;
-    }
+    //  set accumulator
+    diffuse_path_info[thread] = (DiffusePathInfo){
+            new_volume, reflections[thread].position, new_distance};
 
-    const global Triangle * triangle = triangles + closest.primitive;
-    const Surface surface = surfaces[triangle->surface];
-    const VolumeType new_vol = -info->volume * surface.specular;
+    //  compute output
 
-    image_source_contributions(closest,
-                               new_vol,
-                               info,
-                               voxel_index,
-                               global_aabb,
-                               side,
-                               triangles,
-                               numtriangles,
-                               vertices,
-                               surfaces,
-                               source,
-                               mic,
-                               air_coefficient,
-                               iteration,
-                               num_image_source,
-                               image_source + thread,
-                               prev_primitives + (thread * num_image_source),
-                               image_source_index + thread);
+    //  find output volume
+    const float3 to_receiver =
+            normalize(receiver - reflections[thread].position);
+    const VolumeType diffuse_brdf = brdf_mags_for_outgoing(
+            reflections[thread].direction, to_receiver, surface.diffuse);
+    const VolumeType output_volume =
+            reflections[thread].receiver_visible
+                    ? new_volume * diffuse_brdf *
+                              attenuation_for_distance(new_distance,
+                                                       air_coefficient)
+                    : (VolumeType)(0);
 
-    const float3 intersection = ray.position + ray.direction * closest.distance;
-    const float new_dist = info->distance + closest.distance;
+    //  find output time
+    const float output_time = new_distance / SPEED_OF_SOUND;
 
-    //  find if there is line-of-sight from the secondary source to the receiver
-    const bool is_intersection = voxel_point_intersection(intersection,
-                                                          mic,
-                                                          voxel_index,
-                                                          global_aabb,
-                                                          side,
-                                                          triangles,
-                                                          vertices);
-
-    //  find the distance to the receiver from the secondary source
-    const float dist = is_intersection ? new_dist + length(mic - intersection) : 0;
-
-    //  get the triangle normal
-    float3 tnorm = triangle_normal(triangle, vertices);
-
-    //  calculate the new specular direction from the secondary source
-    float3 specular = reflect(tnorm, ray.direction);
-
-    //  find the scattering
-    //  get random values to influence direction of reflected ray
-    const float z           = rng[2 * thread + 0];
-    const float theta       = rng[2 * thread + 1];
-    //  scattering coefficient is the average of the diffuse coefficients
-    const float scatter     = mean(surface.diffuse);
-    const float3 scattering = lambert_scattering(specular, tnorm, sphere_point(z, theta), scatter);
-
-    //  find the next ray to trace
-    Ray new_ray = {intersection, scattering};
-
-    //  find the diffuse contribution
-    const VolumeType brdf_values = brdf_mags_for_outgoing(specular, ray.direction, surface.diffuse);
-    impulses[thread] = (Impulse){
-        (is_intersection
-             ? (new_vol * brdf_values * attenuation_for_distance(dist, air_coefficient))
-             : 0),
-        intersection,
-        SECONDS_PER_METER * dist};
-
-    info->ray = new_ray;
-//    info->volume = new_vol;
-    info->volume = new_vol - brdf_values;
-    info->distance = new_dist;
+    //  set output
+    diffuse_output[thread] =
+            (Impulse){output_volume, reflections[thread].position, output_time};
 }
-*/
-
 )");

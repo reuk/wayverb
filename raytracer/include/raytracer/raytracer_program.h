@@ -22,6 +22,18 @@ public:
                                           >("reflections");
     }
 
+    auto get_diffuse_kernel() const {
+        return program_wrapper.get_kernel<cl::Buffer,  // reflections
+                                          cl_float3,   // receiver
+                                          VolumeType,  // air_coefficient
+                                          cl::Buffer,  // triangles
+                                          cl::Buffer,  // vertices
+                                          cl::Buffer,  // surfaces
+                                          cl::Buffer,  // diffuse_path_info
+                                          cl::Buffer   // diffuse_output
+                                          >("diffuse");
+    }
+
     template <cl_program_info T>
     auto get_info() const {
         return program_wrapper.template get_info<T>();

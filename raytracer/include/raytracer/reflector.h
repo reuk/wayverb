@@ -1,6 +1,6 @@
 #pragma once
 
-#include "raytracer/cl_structs.h"
+#include "raytracer/raytracer_program.h"
 
 #include "common/aligned/vector.h"
 #include "common/cl_include.h"
@@ -20,8 +20,12 @@ public:
     aligned::vector<Reflection> run_step(scene_buffers& buffers);
 
 private:
+    using kernel_t = decltype(
+            std::declval<raytracer_program>().get_reflections_kernel());
+
     cl::Context context;
     cl::Device device;
+    kernel_t kernel;
     cl_float3 receiver;
     size_t rays;
 

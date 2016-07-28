@@ -90,4 +90,3 @@ inline void kernel_normalize(T& ret) {
         mul(ret, 1.0 / std::abs(sum));
     }
 }
-

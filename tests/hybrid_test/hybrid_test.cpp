@@ -7,6 +7,7 @@
 
 #include "raytracer/raytracer.h"
 #include "raytracer/attenuator.h"
+#include "raytracer/postprocess.h"
 
 #include "common/azimuth_elevation.h"
 #include "common/cl_common.h"

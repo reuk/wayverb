@@ -1,8 +1,5 @@
 #include "combined/engine.h"
 
-#include "raytracer/raytracer.h"
-#include "raytracer/attenuator.h"
-
 #include "common/boundaries.h"
 #include "common/cl_common.h"
 #include "common/config.h"
@@ -11,9 +8,14 @@
 #include "common/kernel.h"
 #include "common/receiver_settings.h"
 
+#include "raytracer/attenuator.h"
+#include "raytracer/postprocess.h"
+#include "raytracer/raytracer.h"
+
 #include "waveguide/default_kernel.h"
 #include "waveguide/hrtf_attenuator.h"
 #include "waveguide/microphone_attenuator.h"
+#include "waveguide/postprocess.h"
 #include "waveguide/rectangular_waveguide.h"
 
 #include <cmath>
@@ -41,90 +43,6 @@ constexpr double rectilinear_calibration_factor(double r, double sr) {
 
 */
 
-aligned::vector<aligned::vector<float>> run_raytracer_attenuation(
-        const compute_context& cc,
-        const model::ReceiverSettings& receiver,
-        const raytracer::results& input,
-        double output_sample_rate) {
-    switch (receiver.mode) {
-        case model::ReceiverSettings::Mode::microphones: {
-            raytracer::attenuator::microphone attenuator(cc.get_context(),
-                                                         cc.get_device());
-            return run_attenuation(
-                    receiver.microphones.begin(),
-                    receiver.microphones.end(),
-                    [&](const auto& i) {
-                        return multiband_filter_and_mixdown(
-                                raytracer::flatten_impulses(
-                                        attenuator.process(
-                                                input.get_impulses(),
-                                                i.pointer.get_pointing(
-                                                        receiver.position),
-                                                i.shape,
-                                                receiver.position),
-                                        output_sample_rate),
-                                output_sample_rate);
-                    });
-        }
-        case model::ReceiverSettings::Mode::hrtf: {
-            raytracer::attenuator::hrtf attenuator(cc.get_context(),
-                                                   cc.get_device());
-            auto channels = {HrtfChannel::left, HrtfChannel::right};
-            return run_attenuation(
-                    channels.begin(), channels.end(), [&](const auto& i) {
-                        return multiband_filter_and_mixdown(
-                                raytracer::flatten_impulses(
-                                        attenuator.process(
-                                                input.get_impulses(),
-                                                receiver.hrtf.get_pointing(
-                                                        receiver.position),
-                                                glm::vec3(0, 1, 0),
-                                                receiver.position,
-                                                i),
-                                        output_sample_rate),
-                                output_sample_rate);
-                    });
-        }
-    }
-}
-
-aligned::vector<aligned::vector<float>> run_waveguide_attenuation(
-        const model::ReceiverSettings& receiver,
-        const aligned::vector<rectangular_waveguide::run_step_output>& input,
-        double waveguide_sample_rate) {
-    switch (receiver.mode) {
-        case model::ReceiverSettings::Mode::microphones: {
-            waveguide::attenuator::microphone attenuator;
-            return run_attenuation(
-                    receiver.microphones.begin(),
-                    receiver.microphones.end(),
-                    [&receiver, &input, &attenuator](const auto& i) {
-                        return attenuator.process(
-                                input,
-                                i.pointer.get_pointing(receiver.position),
-                                i.shape);
-                    });
-        }
-        case model::ReceiverSettings::Mode::hrtf: {
-            waveguide::attenuator::hrtf attenuator;
-            auto channels = {HrtfChannel::left, HrtfChannel::right};
-            return run_attenuation(
-                    channels.begin(),
-                    channels.end(),
-                    [&receiver, &input, &attenuator, waveguide_sample_rate](
-                            const auto& i) {
-                        auto ret = attenuator.process(
-                                input,
-                                receiver.hrtf.get_pointing(receiver.position),
-                                glm::vec3(0, 1, 0),
-                                i);
-                        return multiband_filter_and_mixdown(
-                                ret, waveguide_sample_rate);
-                    });
-        }
-    }
-}
-
 class intermediate_impl : public wayverb::intermediate {
 public:
     intermediate_impl(const glm::vec3& source,
@@ -148,14 +66,19 @@ public:
         callback(wayverb::state::postprocessing, 1.0);
 
         //  attenuate raytracer results
-        auto raytracer_output = run_raytracer_attenuation(
+        auto raytracer_output = raytracer::run_attenuation(
                 cc, receiver, raytracer_results, output_sample_rate);
         //  attenuate waveguide results
-        auto waveguide_output = run_waveguide_attenuation(
+        auto waveguide_output = waveguide::run_attenuation(
                 receiver, waveguide_results, waveguide_sample_rate);
 
-        //  correct waveguide results for dc
+        //  correct raytracer results for dc
         filter::ExtraLinearDCBlocker blocker;
+        for (auto& i : raytracer_output) {
+            i = filter::run_two_pass(blocker, i.begin(), i.end());
+        }
+
+        //  correct waveguide results for dc
         for (auto& i : waveguide_output) {
             i = filter::run_two_pass(blocker, i.begin(), i.end());
         }

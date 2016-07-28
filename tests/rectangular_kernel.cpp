@@ -8,9 +8,6 @@
 
 #include "gtest/gtest.h"
 
-#include <eigen3/Eigen/LU>
-#include <eigen3/Eigen/SVD>
-
 #include <array>
 #include <random>
 #include <type_traits>
@@ -389,25 +386,6 @@ TEST(compare_filters, compare_filters) {
 
     test(rk_biquad<Imp>{}, rk_filter<Imp>{});
     test(rk_biquad<NoiseGenerator>{}, rk_filter<NoiseGenerator>{});
-}
-
-TEST(eigen_matrix, eigen_matrix) {
-    Eigen::Matrix<float, 6, 3> ret;
-    auto count = 0u;
-    auto basis = glm::vec3(0, 0, 0);
-    for (const auto& i : {
-                 glm::vec3(1, 0, 0),
-                 glm::vec3(-1, 0, 0),
-                 glm::vec3(0, 1, 0),
-                 glm::vec3(0, -1, 0),
-                 glm::vec3(0, 0, 1),
-                 glm::vec3(0, 0, -1),
-         }) {
-        auto pos = glm::normalize(i - basis);
-        ret.row(count++) << pos.x, pos.y, pos.z;
-    }
-
-    //    auto inv = detail::pinv(ret);
 }
 
 /*
