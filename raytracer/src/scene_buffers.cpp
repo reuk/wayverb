@@ -2,13 +2,6 @@
 
 #include "common/conversions.h"
 
-namespace {
-template <typename T>
-cl::Buffer load_to_buffer(const cl::Context& context, T t, bool readonly) {
-    return cl::Buffer(context, std::begin(t), std::end(t), readonly);
-};
-}  // namespace
-
 namespace raytracer {
 
 scene_buffers::scene_buffers(const cl::Context& context,

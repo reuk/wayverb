@@ -86,7 +86,7 @@ constexpr int num_images(int shell) {
 
 template <int SHELL>
 std::array<glm::vec3, num_images(SHELL)> images_for_shell(
-        const Box& box, const glm::vec3& source) {
+        const box& box, const glm::vec3& source) {
     std::array<glm::vec3, num_images(SHELL)> ret;
 
     auto image = source;
@@ -95,22 +95,20 @@ std::array<glm::vec3, num_images(SHELL)> images_for_shell(
     for (int i = 0; i != L; ++i) {
         auto x = i - SHELL;
         auto reflected_x =
-                x % 2 ? box.mirror_inside(image, Box::Direction::x) : image;
+                x % 2 ? mirror_inside(box, image, direction::x) : image;
         for (int j = 0; j != L; ++j) {
             auto y = j - SHELL;
             auto reflected_y =
-                    y % 2 ? box.mirror_inside(reflected_x, Box::Direction::y)
+                    y % 2 ? mirror_inside(box, reflected_x, direction::y)
                           : reflected_x;
             for (int k = 0; k != L; ++k) {
                 auto z = k - SHELL;
                 auto reflected_z =
-                        z % 2
-                                ? box.mirror_inside(reflected_y,
-                                                    Box::Direction::z)
-                                : reflected_y;
+                        z % 2 ? mirror_inside(box, reflected_y, direction::z)
+                              : reflected_y;
 
                 ret[i + j * L + k * L * L] =
-                        reflected_z + glm::vec3(x, y, z) * box.dimensions();
+                        reflected_z + glm::vec3(x, y, z) * dimensions(box);
             }
         }
     }
@@ -120,7 +118,7 @@ std::array<glm::vec3, num_images(SHELL)> images_for_shell(
 
 TEST(raytrace, image_source) {
     //  proper method
-    Box box(glm::vec3(0, 0, 0), glm::vec3(4, 3, 6));
+    box box(glm::vec3(0, 0, 0), glm::vec3(4, 3, 6));
     constexpr glm::vec3 source(1, 2, 1);
     constexpr glm::vec3 receiver(2, 1, 5);
     constexpr auto v = 0.9;
@@ -175,11 +173,9 @@ TEST(raytrace, image_source) {
     //  raytracing method
     compute_context cc;
 
-    CuboidBoundary boundary(box.get_c0(), box.get_c1());
-
     raytracer::raytracer raytracer(cc.get_context(), cc.get_device());
 
-    auto scene_data = boundary.get_scene_data();
+    auto scene_data = get_scene_data(box);
     scene_data.set_surfaces(surface);
 
     std::atomic_bool keep_going{true};

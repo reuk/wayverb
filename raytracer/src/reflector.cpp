@@ -38,11 +38,6 @@ aligned::vector<Ray> get_random_rays(size_t num, const glm::vec3& source) {
     return ret;
 }
 
-template <typename T>
-cl::Buffer load_to_buffer(const cl::Context& context, T t, bool read_only) {
-    return cl::Buffer(context, std::begin(t), std::end(t), read_only);
-}
-
 }  // namespace
 
 //----------------------------------------------------------------------------//
@@ -56,10 +51,10 @@ reflector::reflector(const cl::Context& context,
                      size_t rays)
         : context(context)
         , device(device)
+        , receiver(to_cl_float3(receiver))
         , rays(rays)
         , ray_buffer(
                   load_to_buffer(context, get_random_rays(rays, source), false))
-        , receiver(to_cl_float3(receiver))
         , reflection_buffer(load_to_buffer(
                   context,
                   aligned::vector<Reflection>(rays,
@@ -70,10 +65,6 @@ reflector::reflector(const cl::Context& context,
                                                          cl_char{}}),
                   false))
         , rng_buffer(context, CL_MEM_READ_WRITE, rays * 2 * sizeof(cl_float)) {}
-
-reflector::reflector(reflector&&) = default;
-reflector& reflector::operator=(reflector&&) = default;
-reflector::~reflector() noexcept             = default;
 
 aligned::vector<Reflection> reflector::run_step(scene_buffers& buffers) {
     //  get some new rng and copy it to device memory

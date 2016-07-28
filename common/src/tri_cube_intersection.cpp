@@ -163,7 +163,8 @@ Rel point_triangle_intersection(const glm::vec3& p, const TriangleVec3& t) {
     auto v1 = t[1];
     auto v2 = t[2];
 
-    const auto mm = min_max(std::array<glm::vec3, 3>{{v0, v1, v2}});
+    const std::array<glm::vec3, 3> coll{{v0, v1, v2}};
+    const auto mm = min_max(std::begin(coll), std::end(coll));
 
     if (glm::any(glm::lessThan(mm.get_c1(), p))) {
         return Rel::idOutside;
@@ -269,30 +270,26 @@ Rel t_c_intersection(const TriangleVerts & t) {
 //  from
 //  http://fileadmin.cs.lth.se/cs/Personal/Tomas_Akenine-Moller/code/tribox_tam.pdf
 Rel t_c_intersection(const TriangleVec3& t) {
-    std::array<glm::vec3, 3> v{{
-            t[0], t[1], t[2],
-    }};
+    std::array<glm::vec3, 3> v{{t[0], t[1], t[2]}};
     std::array<glm::vec3, 3> f{{v[1] - v[0], v[2] - v[1], v[0] - v[2]}};
 
-    for (const auto& a : {
-                 glm::vec3(0, -f[0].z, f[0].y),
-                 glm::vec3(0, -f[1].z, f[1].y),
-                 glm::vec3(0, -f[2].z, f[2].y),
-                 glm::vec3(f[0].z, 0, -f[0].x),
-                 glm::vec3(f[1].z, 0, -f[1].x),
-                 glm::vec3(f[2].z, 0, -f[2].x),
-                 glm::vec3(-f[0].y, f[0].x, 0),
-                 glm::vec3(-f[1].y, f[1].x, 0),
-                 glm::vec3(-f[2].y, f[2].x, 0),
-         }) {
+    for (const auto& a : {glm::vec3(0, -f[0].z, f[0].y),
+                          glm::vec3(0, -f[1].z, f[1].y),
+                          glm::vec3(0, -f[2].z, f[2].y),
+                          glm::vec3(f[0].z, 0, -f[0].x),
+                          glm::vec3(f[1].z, 0, -f[1].x),
+                          glm::vec3(f[2].z, 0, -f[2].x),
+                          glm::vec3(-f[0].y, f[0].x, 0),
+                          glm::vec3(-f[1].y, f[1].x, 0),
+                          glm::vec3(-f[2].y, f[2].x, 0)}) {
         auto coll = {glm::dot(a, v[0]), glm::dot(a, v[1]), glm::dot(a, v[2])};
-        auto r = glm::dot(glm::abs(a), glm::vec3(0.5));
+        auto r    = glm::dot(glm::abs(a), glm::vec3(0.5));
         if (std::max(-std::max(coll), std::min(coll)) > r) {
             return Rel::idOutside;
         }
     }
 
-    const auto mm = min_max(v);
+    const auto mm = min_max(std::begin(v), std::end(v));
 
     if (glm::any(glm::lessThan(mm.get_c1(), glm::vec3(-0.5)))) {
         return Rel::idOutside;
@@ -302,7 +299,7 @@ Rel t_c_intersection(const TriangleVec3& t) {
     }
 
     auto normal = glm::normalize(glm::cross(f[0], f[2]));
-    auto dist = glm::dot(normal, v[0]);
+    auto dist   = glm::dot(normal, v[0]);
 
     auto r = glm::dot(glm::abs(normal), glm::vec3(0.5));
     return fabs(dist) <= r ? Rel::idInside : Rel::idOutside;

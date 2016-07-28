@@ -33,3 +33,8 @@ inline bool operator==(const cl_float3& a, const cl_float3& b) {
 inline bool operator!=(const cl_float3& a, const cl_float3& b) {
         return !(a == b);
 }
+
+template <typename T>
+cl::Buffer load_to_buffer(const cl::Context& context, T t, bool read_only) {
+    return cl::Buffer(context, std::begin(t), std::end(t), read_only);
+}

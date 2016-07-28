@@ -17,20 +17,15 @@ public:
               const glm::vec3& receiver,
               size_t rays);
 
-    reflector(reflector&&);
-    reflector& operator=(reflector&&);
-
-    ~reflector() noexcept;
-
     aligned::vector<Reflection> run_step(scene_buffers& buffers);
 
 private:
     cl::Context context;
     cl::Device device;
+    cl_float3 receiver;
     size_t rays;
 
     cl::Buffer ray_buffer;
-    cl_float3 receiver;
     cl::Buffer reflection_buffer;
 
     cl::Buffer rng_buffer;

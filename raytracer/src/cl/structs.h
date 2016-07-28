@@ -23,6 +23,11 @@ typedef struct {
 } Reflection;
 
 typedef struct {
+    VolumeType specular;
+    float distance;
+} DiffusePathInfo;
+
+typedef struct {
     float3 v0;
     float3 v1;
     float3 v2;

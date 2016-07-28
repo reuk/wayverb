@@ -32,7 +32,7 @@ public:
             : aabb(compute_adjusted_boundary(
                       boundary.get_aabb(), anchor, spacing))
             , spacing(spacing)
-            , dim(get_aabb().dimensions() / spacing)
+            , dim(dimensions(get_aabb()) / spacing)
             , nodes(compute_nodes(boundary))
             , boundary_coefficients_1(
                       compute_boundary_coefficients<1>(boundary))
@@ -214,7 +214,7 @@ public:
     };
 
     float get_spacing() const;
-    CuboidBoundary get_aabb() const;
+    box get_aabb() const;
 
 private:
     template <typename B>
@@ -265,7 +265,7 @@ private:
     const aligned::vector<std::array<cl_int, N>>& get_boundary_coefficients()
             const;
 
-    CuboidBoundary aabb;
+    box aabb;
     float spacing;
 
     glm::ivec3 dim;

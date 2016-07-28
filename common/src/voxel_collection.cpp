@@ -5,7 +5,7 @@
 #include <cmath>
 #include <iostream>
 
-VoxelCollection::Voxel::Voxel(const CuboidBoundary& aabb,
+VoxelCollection::Voxel::Voxel(const box& aabb,
                               const aligned::vector<size_t>& triangles)
         : aabb(aabb)
         , triangles(triangles) {}
@@ -13,7 +13,7 @@ VoxelCollection::Voxel::Voxel(const CuboidBoundary& aabb,
 VoxelCollection::Voxel::Voxel(const Octree& o)
         : Voxel(o.get_aabb(), o.get_triangles()) {}
 
-CuboidBoundary VoxelCollection::Voxel::get_aabb() const { return aabb; }
+box VoxelCollection::Voxel::get_aabb() const { return aabb; }
 const aligned::vector<size_t>& VoxelCollection::Voxel::Voxel::get_triangles()
         const {
     return triangles;
@@ -46,9 +46,9 @@ void VoxelCollection::init(const Octree& o, const glm::ivec3& d) {
     }
 }
 
-CuboidBoundary VoxelCollection::get_aabb() const { return aabb; }
+box VoxelCollection::get_aabb() const { return aabb; }
 
-CuboidBoundary VoxelCollection::get_voxel_aabb() const {
+box VoxelCollection::get_voxel_aabb() const {
     return data.front().front().front().get_aabb();
 }
 
@@ -57,7 +57,7 @@ const VoxelCollection::XAxis& VoxelCollection::get_data() const { return data; }
 glm::ivec3 VoxelCollection::get_starting_index(
         const glm::vec3& position) const {
     return glm::floor((position - get_aabb().get_c0()) /
-                      get_voxel_aabb().dimensions());
+                      dimensions(get_voxel_aabb()));
 }
 
 glm::ivec3 VoxelCollection::get_step(const glm::vec3& d) {
@@ -86,8 +86,7 @@ geo::Intersection VoxelCollection::traverse(
 
     auto t_max =
             glm::abs((boundary - ray.get_position()) / ray.get_direction());
-    auto t_delta =
-            glm::abs(get_voxel_aabb().dimensions() / ray.get_direction());
+    auto t_delta = glm::abs(dimensions(get_voxel_aabb()) / ray.get_direction());
 
     for (;;) {
         auto min_i = 0;

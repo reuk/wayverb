@@ -10,15 +10,15 @@ class VoxelCollection final {
 public:
     class Voxel final {
     public:
-        Voxel(const CuboidBoundary& aabb = CuboidBoundary(),
-              const aligned::vector<size_t>& triangles =
-                      aligned::vector<size_t>());
+        explicit Voxel(const box& aabb = box(),
+                       const aligned::vector<size_t>& triangles =
+                               aligned::vector<size_t>());
         Voxel(const Octree& o);
-        CuboidBoundary get_aabb() const;
+        box get_aabb() const;
         const aligned::vector<size_t>& get_triangles() const;
 
     private:
-        CuboidBoundary aabb;
+        box aabb;
         aligned::vector<size_t> triangles;
     };
 
@@ -33,8 +33,8 @@ public:
     /// Construct directly from an existing octree.
     VoxelCollection(const Octree& o);
 
-    CuboidBoundary get_aabb() const;
-    CuboidBoundary get_voxel_aabb() const;
+    box get_aabb() const;
+    box get_voxel_aabb() const;
     const XAxis& get_data() const;
 
     int get_side() const;
@@ -87,6 +87,6 @@ public:
 private:
     void init(const Octree& o, const glm::ivec3& offset = glm::ivec3(0));
 
-    CuboidBoundary aabb;
+    box aabb;
     XAxis data;
 };

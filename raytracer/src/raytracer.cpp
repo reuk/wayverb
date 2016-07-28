@@ -349,7 +349,8 @@ std::experimental::optional<results> raytracer::run(
     image_source_finder image_source_finder(rays, image_source_depth);
 
     //  this will incrementally process diffuse responses
-    diffuse_finder diffuse_finder(context, device, rays, reflection_depth);
+    diffuse_finder diffuse_finder(
+            context, device, receiver, rays, reflection_depth);
 
     //  run the simulation proper
 
@@ -364,7 +365,7 @@ std::experimental::optional<results> raytracer::run(
         const auto reflections = reflector.run_step(scene_buffers);
 
         //  find diffuse impulses for these reflections
-        diffuse_finder.push(reflections);
+        diffuse_finder.push(reflections, scene_buffers);
         image_source_finder.push(reflections);
 
         //  we did a step!

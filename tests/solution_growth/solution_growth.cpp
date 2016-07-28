@@ -45,9 +45,9 @@ int main(int argc, char** argv) {
         auto sampling_frequency = 20000.0;
 
         compute_context cc;
-        CuboidBoundary cuboid_boundary(glm::vec3(-1), glm::vec3(1));
+        const box boundary(glm::vec3(-1), glm::vec3(1));
 
-        auto scene_data = cuboid_boundary.get_scene_data();
+        auto scene_data = get_scene_data(boundary);
         scene_data.set_surfaces(uniform_surface(0.999));
 
         rectangular_waveguide waveguide(cc.get_context(),

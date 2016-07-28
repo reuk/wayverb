@@ -26,7 +26,7 @@ struct alignas(1 << 5) Surface {
     VolumeType diffuse{{0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5}};
 };
 
-class CuboidBoundary;
+class box;
 class MeshBoundary;
 struct Triangle;
 
@@ -64,7 +64,7 @@ public:
 
     void set_surfaces(const Surface& surface);
 
-    CuboidBoundary get_aabb() const;
+    box get_aabb() const;
     aligned::vector<glm::vec3> get_converted_vertices() const;
     aligned::vector<size_t> get_triangle_indices() const;
 

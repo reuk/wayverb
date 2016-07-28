@@ -2,6 +2,6 @@
 
 #include "common/boundaries.h"
 
-CuboidBoundary compute_adjusted_boundary(const CuboidBoundary& min_boundary,
-                                         const glm::vec3& anchor,
-                                         float cube_side);
+box compute_adjusted_boundary(const box& min_boundary,
+                              const glm::vec3& anchor,
+                              float cube_side);

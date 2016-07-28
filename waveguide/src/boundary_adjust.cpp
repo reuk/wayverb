@@ -2,9 +2,9 @@
 
 #include <cassert>
 
-CuboidBoundary compute_adjusted_boundary(const CuboidBoundary& min_boundary,
-                                         const glm::vec3& anchor,
-                                         float cube_side) {
+box compute_adjusted_boundary(const box& min_boundary,
+                              const glm::vec3& anchor,
+                              float cube_side) {
     auto dif = anchor - min_boundary.get_c0();
     glm::ivec3 ceiled(glm::ceil(dif / cube_side));
     auto extra = 1;
@@ -14,5 +14,5 @@ CuboidBoundary compute_adjusted_boundary(const CuboidBoundary& min_boundary,
                extra + 1;
     auto c1 = c0 + glm::vec3(dim) * cube_side;
     assert(glm::all(glm::lessThan(min_boundary.get_c1() + cube_side, c1)));
-    return CuboidBoundary(c0, c1);
+    return box(c0, c1);
 }

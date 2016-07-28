@@ -293,7 +293,7 @@ cl_uint rectangular_mesh::coefficient_index_for_node(
 
 float rectangular_mesh::get_spacing() const { return spacing; }
 
-CuboidBoundary rectangular_mesh::get_aabb() const { return aabb; }
+box rectangular_mesh::get_aabb() const { return aabb; }
 
 bool operator==(const rectangular_mesh& a, const rectangular_mesh& b) {
     return std::tie(a.dim,

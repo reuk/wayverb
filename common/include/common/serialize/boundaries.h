@@ -4,13 +4,13 @@
 #include "common/serialize/vec.h"
 
 template <typename Archive>
-void serialize(Archive& archive, Box& m) {
-    archive(cereal::make_nvp("c0", m.c0), cereal::make_nvp("c1", m.c1));
+void box::serialize(Archive& archive) {
+    archive(cereal::make_nvp("c0", c0), cereal::make_nvp("c1", c1));
 }
-JSON_OSTREAM_OVERLOAD(Box);
+JSON_OSTREAM_OVERLOAD(box);
 
 template <typename Archive>
-void serialize(Archive& archive, CuboidBoundary& m) {
-    archive(cereal::make_nvp("box", cereal::base_class<Box>(&m)));
+void CuboidBoundary::serialize(Archive& archive) {
+    archive(cereal::make_nvp("box", boundary));
 }
 JSON_OSTREAM_OVERLOAD(CuboidBoundary);

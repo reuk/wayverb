@@ -42,22 +42,22 @@ TEST(octree, surrounding) {
 
     {
         Octree octree(scene_data, 1);
-        auto c = octree.get_aabb().centre();
+        auto c = ::centre(octree.get_aabb());
 
         for (const auto& i : a) {
             auto pt = c + i;
-            ASSERT_TRUE(octree.get_surrounding_leaf(pt).get_aabb().inside(pt))
+            ASSERT_TRUE(inside(octree.get_surrounding_leaf(pt).get_aabb(), pt))
                     << i;
         }
     }
 
     {
         Octree octree(scene_data, 4);
-        auto c = octree.get_aabb().centre();
+        auto c = ::centre(octree.get_aabb());
 
         for (const auto& i : a) {
             auto pt = c + i;
-            ASSERT_TRUE(octree.get_surrounding_leaf(pt).get_aabb().inside(pt))
+            ASSERT_TRUE(inside(octree.get_surrounding_leaf(pt).get_aabb(), pt))
                     << i;
         }
     }

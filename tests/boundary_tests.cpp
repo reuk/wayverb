@@ -55,7 +55,7 @@ TEST(boundary, tunnel) {
     SceneData scene_data(OBJ_PATH_TUNNEL);
     MeshBoundary boundary(scene_data);
 
-    auto centre = boundary.get_aabb().centre();
+    auto centre = ::centre(boundary.get_aabb());
     ASSERT_TRUE(boundary.inside(centre));
 
     auto dist = 100;
@@ -74,7 +74,7 @@ TEST(boundary, tunnel) {
                  glm::vec3(0.679999828, -1.18999958, -52.1900024),
                  glm::vec3(-0.680000067, 1.19000006, -52.1900024),
          }) {
-        ASSERT_FALSE(boundary.get_aabb().inside(i));
+        ASSERT_FALSE(inside(boundary.get_aabb(), i));
         ASSERT_FALSE(boundary.inside(i));
     }
 }
@@ -83,7 +83,7 @@ TEST(boundary, bedroom) {
     SceneData scene_data(OBJ_PATH_BEDROOM);
     MeshBoundary boundary(scene_data);
 
-    auto centre = boundary.get_aabb().centre();
+    auto centre = ::centre(boundary.get_aabb());
     ASSERT_TRUE(boundary.inside(centre));
 
     auto dist = 100;
@@ -114,7 +114,7 @@ TEST(boundary, bedroom) {
                  glm::vec3(-1.70000005, 0, -3.77999997),
                  glm::vec3(-1.70000005, 0.680000067, -3.77999997),
          }) {
-        ASSERT_FALSE(boundary.get_aabb().inside(i));
+        ASSERT_FALSE(inside(boundary.get_aabb(), i));
         ASSERT_FALSE(boundary.inside(i));
     }
 }

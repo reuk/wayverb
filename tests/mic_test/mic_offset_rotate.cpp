@@ -4,9 +4,9 @@
 #include "waveguide/rectangular_waveguide.h"
 
 #include "common/cl_common.h"
-#include "common/progress_bar.h"
 #include "common/conversions.h"
 #include "common/kernel.h"
+#include "common/progress_bar.h"
 #include "common/scene_data.h"
 
 #include "common/filters_common.h"
@@ -48,7 +48,7 @@ int main(int argc, char** argv) {
     }
 
     std::string output_folder = argv[1];
-    std::string polar_string = argv[2];
+    std::string polar_string  = argv[2];
 
     aligned::map<std::string, PolarPattern> polar_pattern_map = {
             {"omni", PolarPattern::omni},
@@ -68,15 +68,9 @@ int main(int argc, char** argv) {
 
     auto directionality = 0.0;
     switch (polar_pattern) {
-        case PolarPattern::omni:
-            directionality = 0;
-            break;
-        case PolarPattern::cardioid:
-            directionality = 0.5;
-            break;
-        case PolarPattern::bidirectional:
-            directionality = 1;
-            break;
+        case PolarPattern::omni: directionality          = 0; break;
+        case PolarPattern::cardioid: directionality      = 0.5; break;
+        case PolarPattern::bidirectional: directionality = 1; break;
     }
 
     std::cout << "directionality: " << directionality << std::endl;
@@ -88,10 +82,10 @@ int main(int argc, char** argv) {
     std::ofstream ofile(output_folder + "/" + polar_string + ".energies.txt");
 
     try {
-        auto s = 1.5;
-        CuboidBoundary boundary(glm::vec3(-s), glm::vec3(s));
-        auto scene_data = boundary.get_scene_data();
-        auto r = 0.9f;
+        const auto s = 1.5;
+        box box(glm::vec3(-s), glm::vec3(s));
+        auto scene_data = get_scene_data(box);
+        const auto r    = 0.9f;
         scene_data.set_surfaces(Surface{VolumeType{{r, r, r, r, r, r, r, r}},
                                         VolumeType{{r, r, r, r, r, r, r, r}}});
         rectangular_waveguide waveguide(cc.get_context(),
@@ -106,14 +100,15 @@ int main(int argc, char** argv) {
             const auto mic_index = waveguide.get_index_for_coordinate(mic);
 
             const auto kernel_info = default_kernel(waveguide_sr);
-            auto kernel = kernel_info.kernel;
+            auto kernel            = kernel_info.kernel;
 
             glm::vec3 source{std::sin(angle), 0, std::cos(angle)};
             const auto dist = glm::distance(source, mic);
             const auto time_between_source_receiver = dist / SPEED_OF_SOUND;
             const size_t required_steps =
                     time_between_source_receiver * waveguide_sr;
-            //const auto steps = required_steps + kernel_info.opaque_kernel_size;
+            // const auto steps = required_steps +
+            // kernel_info.opaque_kernel_size;
             const auto steps = 2 * required_steps;
 
             std::cout << "running " << steps << " steps" << std::endl;
@@ -128,11 +123,11 @@ int main(int argc, char** argv) {
             auto out_signal = microphone.process(
                     *w_results, glm::vec3(0, 0, 1), directionality);
 
-            //const auto bands = 8;
-            //const auto min_band = 80;
-            //const auto max_band = filter_frequency;
+            // const auto bands = 8;
+            // const auto min_band = 80;
+            // const auto max_band = filter_frequency;
 
-            //const auto factor = pow((max_band / min_band), 1.0 / bands);
+            // const auto factor = pow((max_band / min_band), 1.0 / bands);
 
             const auto print_energy = [&ofile](const auto& sig, auto band) {
                 const auto band_energy = proc::accumulate(

@@ -400,42 +400,41 @@ TEST(specific, specific) {
                                               glm::vec3(-outside, 5, 10)}})));
 
     {
-        TriangleVec3 triangle_verts_0(
+        const TriangleVec3 triangle_verts_0(
                 {{glm::vec3(-1.5, 3.0999999, -7.5999999),
                   glm::vec3(0, 3.0999999, -9.10000038),
                   glm::vec3(
                           0.00000000000000144381996, 3.5999999, -7.5999999)}});
 
-        CuboidBoundary b0(glm::vec3(-1.78125, 3.14999986, -8.55000019),
-                          glm::vec3(-1.1875, 3.26249981, -8.0749998));
-        CuboidBoundary b1(glm::vec3(-1.78125, 3.14999986, -8.0749998),
-                          glm::vec3(-1.1875, 3.26249981, -7.5999999));
+        const box b0(glm::vec3(-1.78125, 3.14999986, -8.55000019),
+                     glm::vec3(-1.1875, 3.26249981, -8.0749998));
+        const box b1(glm::vec3(-1.78125, 3.14999986, -8.0749998),
+                     glm::vec3(-1.1875, 3.26249981, -7.5999999));
 
-        CuboidBoundary b2(
-                glm::vec3(-9.5, -0.0000000000000021191102, -7.5999999),
-                glm::vec3(-7.125, 0.449999988, -5.69999981));
-        auto centre = b2.centre();
-        auto x0 = b2.get_c0().x;
+        const box b2(glm::vec3(-9.5, -0.0000000000000021191102, -7.5999999),
+                     glm::vec3(-7.125, 0.449999988, -5.69999981));
+        const auto centre = ::centre(b2);
+        const auto x0     = b2.get_c0().x;
         //      auto y0 = b2.get_c0().y;
-        auto z0 = b2.get_c0().z;
-        auto xc = centre.x;
-        auto yc = centre.y;
-        auto zc = centre.z;
+        const auto z0 = b2.get_c0().z;
+        const auto xc = centre.x;
+        const auto yc = centre.y;
+        const auto zc = centre.z;
         //      auto x1 = b2.get_c1().x;
-        auto y1 = b2.get_c1().y;
+        const auto y1 = b2.get_c1().y;
         //      auto z1 = b2.get_c1().z;
-        CuboidBoundary b3(glm::vec3(x0, yc, z0), glm::vec3(xc, y1, zc));
+        const box b3(glm::vec3(x0, yc, z0), glm::vec3(xc, y1, zc));
 
-        TriangleVec3 triangle_verts_1(
+        const TriangleVec3 triangle_verts_1(
                 {{glm::vec3(-9.5, 1.10000002, -6.0999999),
                   glm::vec3(-9.5, 0.100000001, -6.0999999),
                   glm::vec3(-9.5, 0.100000001, -9)}});
 
-        ASSERT_EQ(false, b0.overlaps(triangle_verts_0));
-        ASSERT_EQ(true, b1.overlaps(triangle_verts_0));
+        ASSERT_EQ(false, overlaps(b0, triangle_verts_0));
+        ASSERT_EQ(true, overlaps(b1, triangle_verts_0));
 
-        ASSERT_EQ(true, b2.overlaps(triangle_verts_1));
-        ASSERT_EQ(true, b3.overlaps(triangle_verts_1));
+        ASSERT_EQ(true, overlaps(b2, triangle_verts_1));
+        ASSERT_EQ(true, overlaps(b3, triangle_verts_1));
     }
 
     {
@@ -445,29 +444,29 @@ TEST(specific, specific) {
         //            Point3{0.833333611, 0.184210628, 4.60390043},
         //            Point3{0.833333611, 0.184210628, -3.29220581}}));
 
-        CuboidBoundary aabb(glm::vec3(-4.20000029, -0.040625006, -5.02812529),
-                            glm::vec3(-3.9000001, 0.0187499933, -4.78750038));
+        const box aabb(glm::vec3(-4.20000029, -0.040625006, -5.02812529),
+                       glm::vec3(-3.9000001, 0.0187499933, -4.78750038));
 
-        TriangleVec3 verts{{glm::vec3(-5.69999981, 0, -3.79999995),
-                            glm::vec3(-3.79999995, 0, -3.79999995),
-                            glm::vec3(-3.79999995, 0, -5.69999981)}};
+        const TriangleVec3 verts{{glm::vec3(-5.69999981, 0, -3.79999995),
+                                  glm::vec3(-3.79999995, 0, -3.79999995),
+                                  glm::vec3(-3.79999995, 0, -5.69999981)}};
 
-        ASSERT_EQ(true, aabb.overlaps(verts));
+        ASSERT_EQ(true, overlaps(aabb, verts));
     }
 
     {
-        CuboidBoundary aabb(glm::vec3(-7.80000019, 3.46249986, -8.63750076),
-                            glm::vec3(-7.20000029, 3.58124971, -8.15625));
+        const box aabb(glm::vec3(-7.80000019, 3.46249986, -8.63750076),
+                       glm::vec3(-7.20000029, 3.58124971, -8.15625));
 
-        TriangleVec3 v0{{glm::vec3(-7.5999999, 3.5999999, -7.5999999),
-                         glm::vec3(-7.5999999, 3.0999999, -9.10000038),
-                         glm::vec3(-6.0999999, 3.0999999, -7.5999999)}};
+        const TriangleVec3 v0{{glm::vec3(-7.5999999, 3.5999999, -7.5999999),
+                               glm::vec3(-7.5999999, 3.0999999, -9.10000038),
+                               glm::vec3(-6.0999999, 3.0999999, -7.5999999)}};
 
-        TriangleVec3 v1{{glm::vec3(-9.10000038, 3.0999999, -7.5999999),
-                         glm::vec3(-7.5999999, 3.0999999, -9.10000038),
-                         glm::vec3(-7.5999999, 3.5999999, -7.5999999)}};
+        const TriangleVec3 v1{{glm::vec3(-9.10000038, 3.0999999, -7.5999999),
+                               glm::vec3(-7.5999999, 3.0999999, -9.10000038),
+                               glm::vec3(-7.5999999, 3.5999999, -7.5999999)}};
 
-        ASSERT_EQ(false, aabb.overlaps(v0));
-        ASSERT_EQ(false, aabb.overlaps(v1));
+        ASSERT_EQ(false, overlaps(aabb, v0));
+        ASSERT_EQ(false, overlaps(aabb, v1));
     }
 }

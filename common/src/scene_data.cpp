@@ -29,8 +29,9 @@ CopyableSceneData::CopyableSceneData(const aligned::vector<Triangle>& triangles,
 CopyableSceneData::CopyableSceneData(Contents&& rhs)
         : contents(std::move(rhs)) {}
 
-CuboidBoundary CopyableSceneData::get_aabb() const {
-    return CuboidBoundary(min_max(get_converted_vertices()));
+box CopyableSceneData::get_aabb() const {
+    const auto v = get_converted_vertices();
+    return min_max(std::begin(v), std::end(v));
 }
 
 aligned::vector<glm::vec3> CopyableSceneData::get_converted_vertices() const {

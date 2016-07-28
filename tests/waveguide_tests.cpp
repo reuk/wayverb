@@ -34,7 +34,7 @@ TEST(run_waveguide, run_waveguide) {
     //  get opencl program
     rectangular_program waveguide_program(cc.get_context(), cc.get_device());
 
-    Box box(glm::vec3(0, 0, 0), glm::vec3(4, 3, 6));
+    box box(glm::vec3(0, 0, 0), glm::vec3(4, 3, 6));
     constexpr glm::vec3 source(1, 1, 1);
     constexpr glm::vec3 receiver(2, 1, 5);
     constexpr auto v = 0.5;
@@ -42,9 +42,8 @@ TEST(run_waveguide, run_waveguide) {
                               {{v, v, v, v, v, v, v, v}}};
 
     //  init simulation parameters
-    CuboidBoundary boundary(box.get_c0(), box.get_c1());
 
-    auto scene_data = boundary.get_scene_data();
+    auto scene_data = get_scene_data(box);
     scene_data.set_surfaces(surface);
 
     //  get a waveguide

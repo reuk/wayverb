@@ -29,7 +29,7 @@
 #include <random>
 
 aligned::vector<float> run_simulation(const compute_context& cc,
-                                      const CuboidBoundary& boundary,
+                                      const box& boundary,
                                       const Surface& surface,
                                       double filter_frequency,
                                       double out_sr,
@@ -38,7 +38,7 @@ aligned::vector<float> run_simulation(const compute_context& cc,
                                       const std::string& output_folder,
                                       const std::string& fname,
                                       int steps) {
-    auto scene_data = boundary.get_scene_data();
+    auto scene_data = get_scene_data(boundary);
     scene_data.set_surfaces(surface);
 
     rectangular_waveguide waveguide(cc.get_context(),
@@ -89,15 +89,20 @@ aligned::vector<float> run_simulation(const compute_context& cc,
     return output;
 }
 
-struct FullTestResults {
+struct FullTestResults final {
     aligned::vector<float> windowed_free_field_signal;
     aligned::vector<float> windowed_reflection_signal;
-
-    bool operator==(const FullTestResults& rhs) const {
-        return windowed_free_field_signal == rhs.windowed_free_field_signal &&
-               windowed_reflection_signal == rhs.windowed_reflection_signal;
-    }
 };
+
+bool operator==(const FullTestResults& a, const FullTestResults& b) {
+    return std::tie(a.windowed_free_field_signal,
+                    a.windowed_reflection_signal) ==
+           std::tie(b.windowed_free_field_signal, b.windowed_reflection_signal);
+}
+
+bool operator!=(const FullTestResults& a, const FullTestResults& b) {
+    return !(a == b);
+}
 
 aligned::vector<float> get_free_field_results(const compute_context& cc,
                                               const std::string& output_folder,
@@ -123,17 +128,16 @@ aligned::vector<float> get_free_field_results(const compute_context& cc,
             config::grid_spacing(SPEED_OF_SOUND, 1.0 / (filter_frequency * 4));
 
     //  generate two boundaries, one twice the size of the other
-    auto wall = CuboidBoundary(glm::vec3(0, 0, 0),
-                               glm::vec3(desired_nodes) * divisions);
-    auto far     = wall.get_c1();
-    auto new_dim = glm::vec3(far.x * 2, far.y, far.z);
-    auto no_wall = CuboidBoundary(glm::vec3(0, 0, 0), new_dim);
+    const box wall(glm::vec3(0, 0, 0), glm::vec3(desired_nodes) * divisions);
+    const auto far     = wall.get_c1();
+    const auto new_dim = glm::vec3(far.x * 2, far.y, far.z);
+    const box no_wall(glm::vec3(0, 0, 0), new_dim);
 
     //  place source and image in rooms based on distance in nodes from the wall
     auto source_dist_nodes = glm::length(glm::vec3(desired_nodes)) / 8;
     auto source_dist       = source_dist_nodes * divisions;
 
-    auto wall_centre = no_wall.centre();
+    const auto wall_centre = ::centre(no_wall);
 
     auto log_incorrect_distance = [&source_dist, &wall_centre](
             auto str, const auto& pos) {
@@ -157,7 +161,7 @@ aligned::vector<float> get_free_field_results(const compute_context& cc,
 
     auto wrong_position = [source_dist, &no_wall](auto pos, auto c) {
         return std::abs(glm::distance(pos, c) - source_dist) > 1 ||
-               !no_wall.inside(pos);
+               !inside(no_wall, pos);
     };
 
     if (wrong_position(source_position, wall_centre)) {
@@ -203,7 +207,8 @@ FullTestResults run_full_test(const std::string& test_name,
                               int dim,
                               int steps,
                               const Surface& surface,
-                              aligned::vector<float> windowed_free_field) {
+                              aligned::vector<float>
+                                      windowed_free_field) {
     //  set room size based on desired number of nodes
     auto desired_nodes = glm::ivec3(dim);
     auto total_desired_nodes =
@@ -220,20 +225,19 @@ FullTestResults run_full_test(const std::string& test_name,
             config::grid_spacing(SPEED_OF_SOUND, 1.0 / (filter_frequency * 4));
 
     //  generate two boundaries, one twice the size of the other
-    auto wall = CuboidBoundary(glm::vec3(0, 0, 0),
-                               glm::vec3(desired_nodes) * divisions);
+    const box wall(glm::vec3(0, 0, 0), glm::vec3(desired_nodes) * divisions);
 
-    auto far     = wall.get_c1();
-    auto new_dim = glm::vec3(far.x * 2, far.y, far.z);
+    const auto far     = wall.get_c1();
+    const glm::vec3 new_dim(far.x * 2, far.y, far.z);
 
-    auto no_wall = CuboidBoundary(glm::vec3(0, 0, 0), new_dim);
+    const box no_wall(glm::vec3(0, 0, 0), new_dim);
 
     //  place source and receiver in rooms based on distance in nodes from the
     //  wall
     auto source_dist_nodes = glm::length(glm::vec3(desired_nodes)) / 8;
     auto source_dist       = source_dist_nodes * divisions;
 
-    auto wall_centre = no_wall.centre();
+    const auto wall_centre = ::centre(no_wall);
 
     auto log_incorrect_distance = [&source_dist, &wall_centre](
             auto str, const auto& pos) {
@@ -257,7 +261,7 @@ FullTestResults run_full_test(const std::string& test_name,
 
     auto wrong_position = [source_dist, &no_wall](auto pos, auto c) {
         return std::abs(glm::distance(pos, c) - source_dist) > 1 ||
-               !no_wall.inside(pos);
+               !::inside(no_wall, pos);
     };
 
     if (wrong_position(source_position, wall_centre)) {

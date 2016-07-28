@@ -63,13 +63,13 @@ constexpr double rectilinear_calibration_factor(double r, double sr) {
 }
 
 auto run_waveguide(const compute_context& cc,
-                   const CuboidBoundary& boundary,
+                   const box& boundary,
                    const model::SingleShot& config,
                    const std::string& output_folder,
                    const Surface& surface) {
-    auto steps = 16000;
+    const auto steps = 16000;
 
-    auto scene_data = boundary.get_scene_data();
+    auto scene_data = get_scene_data(boundary);
     scene_data.set_surfaces(surface);
 
     //  get a waveguide
@@ -119,7 +119,7 @@ int main(int argc, char** argv) {
     google::InitGoogleLogging(argv[0]);
     gflags::ParseCommandLineFlags(&argc, &argv, true);
 
-    Box box(glm::vec3(0, 0, 0), glm::vec3(5.56, 3.97, 2.81));
+    box box(glm::vec3(0, 0, 0), glm::vec3(5.56, 3.97, 2.81));
     constexpr glm::vec3 source(2.09, 2.12, 2.12);
     constexpr glm::vec3 receiver(2.09, 3.08, 0.96);
     constexpr auto samplerate = 96000;
@@ -133,7 +133,6 @@ int main(int argc, char** argv) {
     std::string output_folder = argv[1];
 
     //  init simulation parameters
-    CuboidBoundary boundary(box.get_c0(), box.get_c1());
 
     const model::SingleShot config{
             2000, 2, 100000, source, model::ReceiverSettings{receiver}};
@@ -143,7 +142,7 @@ int main(int argc, char** argv) {
     compute_context cc;
 
     auto waveguide_output =
-            run_waveguide(cc, boundary, config, output_folder, surface);
+            run_waveguide(cc, box, config, output_folder, surface);
 
     // filter::ZeroPhaseDCBlocker(32).filter(waveguide_output);
 
@@ -176,14 +175,14 @@ int main(int argc, char** argv) {
     std::atomic_bool keep_going{true};
     const auto impulses = 1000;
     progress_bar pb(std::cout, impulses);
-    auto results = raytracer.run(boundary.get_scene_data(),
-                                 config.source,
-                                 config.receiver_settings.position,
-                                 config.rays,
-                                 impulses,
-                                 10,
-                                 keep_going,
-                                 [&pb] { pb += 1; });
+    const auto results = raytracer.run(get_scene_data(box),
+                                       config.source,
+                                       config.receiver_settings.position,
+                                       config.rays,
+                                       impulses,
+                                       10,
+                                       keep_going,
+                                       [&pb] { pb += 1; });
 
     raytracer::attenuator::microphone attenuator(cc.get_context(),
                                                  cc.get_device());
