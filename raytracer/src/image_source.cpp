@@ -8,6 +8,7 @@
 #include "common/voxel_collection.h"
 
 #include <experimental/optional>
+#include <numeric>
 
 namespace raytracer {
 
@@ -166,9 +167,7 @@ VolumeType compute_volume(const CopyableSceneData& scene_data,
         const auto scene_triangle = scene_data.get_triangles()[i];
         const auto surface = scene_data.get_surfaces()[scene_triangle.surface];
 
-        volume = elementwise(volume, surface.specular, [](auto a, auto b) {
-            return a * -b;
-        });
+        volume *= -surface.specular;
     }
     return volume;
 }

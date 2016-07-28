@@ -57,6 +57,7 @@ void diffuse_finder::push(const aligned::vector<Reflection>& reflections,
            diffuse_path_buffer,
            impulse_buffer);
 
+    //  copy impulses out
     aligned::vector<Impulse> ret(rays);
     cl::copy(buffers.get_queue(), impulse_buffer, ret.begin(), ret.end());
     impulse_builder.push(std::move(ret));

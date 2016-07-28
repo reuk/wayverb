@@ -2,6 +2,7 @@
 
 #include "common/conversions.h"
 #include "common/hrtf.h"
+#include "common/stl_wrappers.h"
 
 namespace raytracer {
 namespace attenuator {

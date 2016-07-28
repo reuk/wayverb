@@ -2,6 +2,8 @@
 
 #include "common/write_audio_file.h"
 
+#include <iostream>
+
 namespace {
 // std::ostream& operator<<(std::ostream& os, const index& i) {
 //    return os << "[" << i.x << ", " << i.y << ", " << i.z << "]";

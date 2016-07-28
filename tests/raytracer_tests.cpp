@@ -89,9 +89,10 @@ TEST(raytrace, image_source) {
     box box(glm::vec3(0, 0, 0), glm::vec3(4, 3, 6));
     constexpr glm::vec3 source(1, 2, 1);
     constexpr glm::vec3 receiver(2, 1, 5);
-    constexpr auto v = 0.9;
-    constexpr Surface surface{VolumeType{{v, v, v, v, v, v, v, v}},
-                              VolumeType{{v, v, v, v, v, v, v, v}}};
+    constexpr auto s = 0.9;
+    constexpr auto d = 0.1;
+    constexpr Surface surface{VolumeType{{s, s, s, s, s, s, s, s}},
+                              VolumeType{{d, d, d, d, d, d, d, d}}};
 
     constexpr auto shells = 3;
     auto images           = images_for_shell<shells>(box, source);
@@ -121,7 +122,7 @@ TEST(raytrace, image_source) {
                 if (reflections <= shells) {
                     auto index    = i + j * L + k * L * L;
                     auto volume   = volumes[index];
-                    auto base_vol = pow(-v, reflections);
+                    auto base_vol = pow(-s, reflections);
                     for (auto band = 0; band != 8; ++band)
                         volume.s[band] *= base_vol;
 
