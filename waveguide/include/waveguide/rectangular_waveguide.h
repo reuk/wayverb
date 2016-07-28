@@ -8,8 +8,8 @@
 
 #include <algorithm>
 #include <array>
-#include <type_traits>
 #include <experimental/optional>
+#include <type_traits>
 
 class rectangular_waveguide final {
 public:
@@ -153,7 +153,8 @@ private:
             const cl::Device&,
             const rectangular_mesh& mesh,
             double sample_rate,
-            aligned::vector<rectangular_program::CondensedNodeStruct> nodes,
+            aligned::vector<rectangular_program::CondensedNodeStruct>
+                    nodes,
             aligned::vector<rectangular_program::CanonicalCoefficients>
                     coefficients);
 
@@ -194,6 +195,9 @@ private:
 
     friend bool operator==(const rectangular_waveguide& a,
                            const rectangular_waveguide& b);
+    friend bool operator!=(const rectangular_waveguide& a,
+                           const rectangular_waveguide& b);
 };
 
-bool operator==(const rectangular_waveguide& a, const rectangular_waveguide& b);
+// bool operator==(const rectangular_waveguide& a, const rectangular_waveguide&
+// b);

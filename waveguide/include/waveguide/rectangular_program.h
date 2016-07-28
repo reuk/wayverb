@@ -350,11 +350,21 @@ inline bool operator==(const rectangular_program::CondensedNodeStruct& a,
            std::tie(b.boundary_type, b.boundary_index);
 }
 
+inline bool operator!=(const rectangular_program::CondensedNodeStruct& a,
+                       const rectangular_program::CondensedNodeStruct& b) {
+    return !(a == b);
+}
+
 inline bool operator==(const rectangular_program::NodeStruct& a,
                        const rectangular_program::NodeStruct& b) {
     return proc::equal(a.ports, std::begin(b.ports)) &&
            std::tie(a.position, a.inside, a.condensed) ==
                    std::tie(b.position, b.inside, b.condensed);
+}
+
+inline bool operator!=(const rectangular_program::NodeStruct& a,
+                       const rectangular_program::NodeStruct& b) {
+    return !(a == b);
 }
 
 template <size_t D>
@@ -364,10 +374,22 @@ bool operator==(const rectangular_program::FilterMemory<D>& a,
 }
 
 template <size_t D>
+bool operator!=(const rectangular_program::FilterMemory<D>& a,
+                const rectangular_program::FilterMemory<D>& b) {
+    return !(a == b);
+}
+
+template <size_t D>
 bool operator==(const rectangular_program::FilterCoefficients<D>& a,
                 const rectangular_program::FilterCoefficients<D>& b) {
     return proc::equal(a.a, std::begin(b.a)) &&
            proc::equal(a.b, std::begin(b.b));
+}
+
+template <size_t D>
+bool operator!=(const rectangular_program::FilterCoefficients<D>& a,
+                const rectangular_program::FilterCoefficients<D>& b) {
+    return !(a == b);
 }
 
 inline bool operator==(const rectangular_program::BoundaryData& a,
@@ -376,10 +398,21 @@ inline bool operator==(const rectangular_program::BoundaryData& a,
            std::tie(b.filter_memory, b.coefficient_index);
 }
 
+inline bool operator!=(const rectangular_program::BoundaryData& a,
+                       const rectangular_program::BoundaryData& b) {
+    return !(a == b);
+}
+
 template <size_t D>
 bool operator==(const rectangular_program::BoundaryDataArray<D>& a,
                 const rectangular_program::BoundaryDataArray<D>& b) {
     return proc::equal(a.array, std::begin(b.array));
+}
+
+template <size_t D>
+bool operator!=(const rectangular_program::BoundaryDataArray<D>& a,
+                const rectangular_program::BoundaryDataArray<D>& b) {
+    return !(a == b);
 }
 
 JSON_OSTREAM_OVERLOAD(rectangular_program::NodeStruct);

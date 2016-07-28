@@ -13,14 +13,6 @@
 
 using VolumeType = cl_float8;
 
-inline bool operator==(const VolumeType& a, const VolumeType& b) {
-    return cl_equal(a, b);
-}
-
-inline bool operator!=(const VolumeType& a, const VolumeType& b) {
-    return !(a == b);
-}
-
 struct alignas(1 << 5) Surface {
     VolumeType specular{{0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5}};
     VolumeType diffuse{{0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5}};

@@ -17,6 +17,11 @@ constexpr bool operator==(const locator<T>& a, const locator<T>& b) {
     return std::make_tuple(a.x, a.y, a.z) == std::make_tuple(b.x, b.y, b.z);
 }
 
+template <typename T>
+constexpr bool operator!=(const locator<T>& a, const locator<T>& b) {
+    return !(a == b);
+}
+
 constexpr size_t triangle(size_t i) { return (i * (i + 1)) / 2; }
 
 static_assert(triangle(0) == 0, "triangle");

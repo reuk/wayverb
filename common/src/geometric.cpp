@@ -70,7 +70,7 @@ Intersection ray_triangle_intersection(
     for (const auto& i : triangle_indices) {
         auto inter = triangle_intersection(triangles[i], vertices, ray);
         if (inter && (!ret || (ret && *inter < ret->distance))) {
-            ret = Intersection(Inter{*inter, i});
+            ret = make_intersection(*inter, i);
         }
     }
 

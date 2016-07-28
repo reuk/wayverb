@@ -277,6 +277,8 @@ private:
 
     friend bool operator==(const rectangular_mesh& a,
                            const rectangular_mesh& b);
+    friend bool operator!=(const rectangular_mesh& a,
+                           const rectangular_mesh& b);
 };
 
 template <>
@@ -295,4 +297,4 @@ rectangular_mesh::get_boundary_coefficients() const {
     return boundary_coefficients_3;
 }
 
-bool operator==(const rectangular_mesh& a, const rectangular_mesh& b);
+//bool operator==(const rectangular_mesh& a, const rectangular_mesh& b);

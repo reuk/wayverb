@@ -307,3 +307,7 @@ bool operator==(const rectangular_mesh& a, const rectangular_mesh& b) {
                     b.boundary_coefficients_2,
                     b.boundary_coefficients_3);
 }
+
+bool operator!=(const rectangular_mesh& a, const rectangular_mesh& b) {
+    return !(a == b);
+}

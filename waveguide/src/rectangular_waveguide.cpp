@@ -1,5 +1,5 @@
-#include "waveguide/rectangular_waveguide.h"
 #include "waveguide/log_nan.h"
+#include "waveguide/rectangular_waveguide.h"
 
 #include "glog/logging.h"
 
@@ -86,7 +86,8 @@ rectangular_waveguide::rectangular_waveguide(
         const cl::Device& device,
         const rectangular_mesh& mesh,
         double sample_rate,
-        aligned::vector<rectangular_program::CondensedNodeStruct> nodes,
+        aligned::vector<rectangular_program::CondensedNodeStruct>
+                nodes,
         aligned::vector<rectangular_program::CanonicalCoefficients>
                 coefficients)
         : queue(context, device)
@@ -271,8 +272,8 @@ rectangular_waveguide::run_basic(const run_info& run_info,
     aligned::vector<run_step_output> ret;
     ret.reserve(run_info.get_signal().size());
 
-    for (const auto & i : run_info.get_signal()) {
-        if (! keep_going) {
+    for (const auto& i : run_info.get_signal()) {
+        if (!keep_going) {
             return std::experimental::nullopt;
         }
         ret.push_back(callback(run_info, i));
@@ -286,7 +287,6 @@ rectangular_waveguide::run_info rectangular_waveguide::init(
         const aligned::vector<float>& input_sig,
         size_t o,
         size_t steps) {
-
     auto context = program.get_info<CL_PROGRAM_CONTEXT>();
     invocation   = std::make_unique<rectangular_waveguide_run_info>(
             context,
@@ -335,4 +335,9 @@ constexpr size_t rectangular_waveguide::num_ports;
 bool operator==(const rectangular_waveguide& a,
                 const rectangular_waveguide& b) {
     return a.mesh == b.mesh;
+}
+
+bool operator!=(const rectangular_waveguide& a,
+                const rectangular_waveguide& b) {
+    return !(a == b);
 }

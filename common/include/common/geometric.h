@@ -27,16 +27,24 @@ private:
 
 using Intersects = std::experimental::optional<float>;
 
-struct Inter final {
+namespace detail {
+struct inter final {
     float distance;
     size_t index;
 };
 
-constexpr bool operator==(const Inter& a, const Inter& b) {
+constexpr bool operator==(const inter& a, const inter& b) {
     return std::tie(a.distance, a.index) == std::tie(b.distance, b.index);
 }
 
-using Intersection = std::experimental::optional<Inter>;
+constexpr bool operator!=(const inter& a, const inter& b) { return !(a == b); }
+}//namespace detail
+
+using Intersection = std::experimental::optional<detail::inter>;
+
+inline auto make_intersection(float distance, size_t index) {
+    return Intersection(detail::inter{distance, index});
+}
 
 Intersects triangle_intersection(const TriangleVec3& tri, const Ray& ray);
 
