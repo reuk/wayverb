@@ -45,7 +45,7 @@ aligned::vector<aligned::vector<float>> flatten_impulses(
 
     //  Create somewhere to store the results.
     aligned::vector<aligned::vector<float>> flattened(
-            sizeof(VolumeType) / sizeof(float),
+            detail::components_v<VolumeType>,
             aligned::vector<float>(MAX_SAMPLE, 0));
 
     //  For each impulse, calculate its index, then add the impulse's volumes

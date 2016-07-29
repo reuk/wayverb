@@ -1,6 +1,7 @@
 #pragma once
 
 #include "common/scene_data.h"
+#include "common/stl_wrappers.h"
 
 #include "common/serialize/json_read_write.h"
 

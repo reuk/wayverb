@@ -123,8 +123,7 @@ TEST(raytrace, image_source) {
                     auto index    = i + j * L + k * L * L;
                     auto volume   = volumes[index];
                     auto base_vol = pow(-s, reflections);
-                    for (auto band = 0; band != 8; ++band)
-                        volume.s[band] *= base_vol;
+                    volume *= base_vol;
 
                     proper_image_source_impulses.push_back(
                             AttenuatedImpulse{volume, times[index]});

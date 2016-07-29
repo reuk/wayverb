@@ -5,10 +5,10 @@
 #include "common/stl_wrappers.h"
 
 VolumeType air_attenuation_for_distance(float distance) {
-    VolumeType ret;
-    proc::transform(air_coefficient.s, std::begin(ret.s), [distance](auto i) {
-        return pow(M_E, distance * i);
-    });
+    auto ret = air_coefficient * distance;
+    for (auto& i : ret.s) {
+        i = std::pow(M_E, i);
+    }
     return ret;
 }
 
@@ -17,10 +17,9 @@ float power_attenuation_for_distance(float distance) {
 }
 
 VolumeType attenuation_for_distance(float distance) {
-    auto ret         = air_attenuation_for_distance(distance);
+    const auto air   = air_attenuation_for_distance(distance);
     const auto power = power_attenuation_for_distance(distance);
-    proc::for_each(ret.s, [power](auto& i) { i *= power; });
-    return ret;
+    return air * power;
 }
 
 Impulse construct_impulse(const VolumeType& volume,
