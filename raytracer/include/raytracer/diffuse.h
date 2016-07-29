@@ -14,6 +14,7 @@ class diffuse_finder final {
 public:
     diffuse_finder(const cl::Context&,
                    const cl::Device&,
+                   const glm::vec3& source,
                    const glm::vec3& receiver,
                    const VolumeType& air_coefficient,
                    size_t rays,

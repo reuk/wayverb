@@ -1,5 +1,7 @@
 #include "raytracer/diffuse.h"
 
+#include "common/stl_wrappers.h"
+
 namespace raytracer {
 
 //  each reflection contains
@@ -15,6 +17,7 @@ namespace raytracer {
 
 diffuse_finder::diffuse_finder(const cl::Context& context,
                                const cl::Device& device,
+                               const glm::vec3& source,
                                const glm::vec3& receiver,
                                const VolumeType& air_coefficient,
                                size_t rays,
@@ -32,7 +35,7 @@ diffuse_finder::diffuse_finder(const cl::Context& context,
                   aligned::vector<DiffusePathInfo>(
                           rays,
                           DiffusePathInfo{VolumeType{{1, 1, 1, 1, 1, 1, 1, 1}},
-                                          to_cl_float3(receiver),
+                                          to_cl_float3(source),
                                           0}),
                   false))
         , impulse_buffer(context, CL_MEM_READ_WRITE, sizeof(Impulse) * rays)
@@ -40,6 +43,10 @@ diffuse_finder::diffuse_finder(const cl::Context& context,
 
 void diffuse_finder::push(const aligned::vector<Reflection>& reflections,
                           scene_buffers& buffers) {
+    auto is_cl_nan = [](auto i) {
+        return proc::any_of(i.s, [](auto i) { return std::isnan(i); });
+    };
+
     //  copy the current batch of reflections to the device
     cl::copy(buffers.get_queue(),
              reflections.begin(),
@@ -60,6 +67,13 @@ void diffuse_finder::push(const aligned::vector<Reflection>& reflections,
     //  copy impulses out
     aligned::vector<Impulse> ret(rays);
     cl::copy(buffers.get_queue(), impulse_buffer, ret.begin(), ret.end());
+
+    for (const auto& i : ret) {
+        if (is_cl_nan(i.volume)) {
+            throw std::runtime_error("nan in diffuse raytracer output");
+        }
+    }
+
     impulse_builder.push(std::move(ret));
 }
 

@@ -230,20 +230,20 @@ kernel void diffuse(const global Reflection* reflections,  //  input
 
     //  compute output
 
+    const float total_distance = new_distance + distance(reflections[thread].position, receiver);
+
     //  find output volume
-    const float3 to_receiver =
-            normalize(receiver - reflections[thread].position);
-    const VolumeType diffuse_brdf = brdf_mags_for_outgoing(
-            reflections[thread].direction, to_receiver, surface.diffuse);
-    const VolumeType output_volume =
-            reflections[thread].receiver_visible
-                    ? new_volume * diffuse_brdf *
-                              attenuation_for_distance(new_distance,
-                                                       air_coefficient)
-                    : (VolumeType)(0);
+    VolumeType output_volume = (VolumeType)(0, 0, 0, 0, 0, 0, 0, 0);
+    if (reflections[thread].receiver_visible) {
+        const float3 to_receiver =
+                normalize(receiver - reflections[thread].position);
+        const VolumeType diffuse_brdf = brdf_mags_for_outgoing(
+                reflections[thread].direction, to_receiver, surface.diffuse);
+        output_volume = new_volume * diffuse_brdf * attenuation_for_distance(total_distance, air_coefficient);
+    }
 
     //  find output time
-    const float output_time = new_distance / SPEED_OF_SOUND;
+    const float output_time = total_distance / SPEED_OF_SOUND;
 
     //  set output
     diffuse_output[thread] =

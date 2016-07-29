@@ -60,8 +60,13 @@ std::experimental::optional<results> raytracer::run(
     image_source_finder image_source_finder(rays, image_source_depth);
 
     //  this will incrementally process diffuse responses
-    diffuse_finder diffuse_finder(
-            context, device, receiver, air_coefficient, rays, reflection_depth);
+    diffuse_finder diffuse_finder(context,
+                                  device,
+                                  source,
+                                  receiver,
+                                  air_coefficient,
+                                  rays,
+                                  reflection_depth);
 
     //  run the simulation proper
 

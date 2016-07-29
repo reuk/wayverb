@@ -152,13 +152,7 @@ TEST(raytrace, image_source) {
 
     ASSERT_TRUE(results);
 
-    const auto convert = [](const auto& input) {
-        return map_to_vector(input, [](const auto& i) {
-            return AttenuatedImpulse{i.volume, i.time};
-        });
-    };
-
-    auto output = convert(results->get_impulses(true, true, false));
+    auto output = results->get_impulses(true, true, false);
     sort_by_time(output);
 
     for (auto i : proper_image_source_impulses) {
@@ -200,5 +194,6 @@ TEST(raytrace, image_source) {
 
     postprocess(output, "raytraced");
     postprocess(proper_image_source_impulses, "image_src");
-    postprocess(convert(results->get_impulses()), "diffuse");
+    postprocess(results->get_impulses(false, false, true), "diffuse");
+    postprocess(results->get_impulses(), "full");
 }

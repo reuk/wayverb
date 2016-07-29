@@ -47,15 +47,20 @@ float3 lambert_scattering(float3 specular, float3 surface_normal, float3 random,
 //  all-directions
 float brdf_mag(float y, float d);
 float brdf_mag(float y, float d) {
-    float common = pow(1 - d, 2) * pow(y, 2) + 2 * d - 1;
-    float numerator = 2 * common;
+    //  check that this direction is attainable
+    if (y * y < (1 - 2 * d) / pow(1 - d, 2)) {
+        return 0;
+    }
+
+    const float a = pow(1 - d, 2) * pow(y, 2);
+    const float b = (2 * d) - 1;
+    const float numerator = (2 * a) + b;
+    const float denominator = 2 * M_PI * d * sqrt(a + b);
     if (d < 0.5) {
-        float denominator = 2 * M_PI_F * d * sqrt(common);
         return numerator / denominator;
     }
-    float denominator = 4 * M_PI_F * d * sqrt(common);
-    float extra = ((1 - d) * y) / (2 * M_PI_F * d);
-    return (numerator / denominator) + extra;
+    const float extra = ((1 - d) * y) / (2 * M_PI * d);
+    return (numerator / (2 * denominator)) + extra;
 }
 
 //  specular: the specular reflection direction (unit vector)
@@ -63,11 +68,7 @@ float brdf_mag(float y, float d) {
 //  d: the directionality coefficient of the surface
 float brdf_mag_for_outgoing(float3 specular, float3 outgoing, float d);
 float brdf_mag_for_outgoing(float3 specular, float3 outgoing, float d) {
-    //  find angle between specular and outgoing vectors
-    float y = dot(specular, outgoing);
-
-    //  get the magnitude of the 'diffuse' reflection
-    return brdf_mag(y, d);
+    return brdf_mag(dot(specular, outgoing), d);
 }
 
 VolumeType brdf_mags_for_outgoing(float3 specular, float3 outgoing, VolumeType d);

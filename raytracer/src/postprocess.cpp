@@ -3,7 +3,6 @@
 #include "raytracer/attenuator.h"
 
 #include "common/dsp_vector_ops.h"
-#include "common/hrtf_utils.h"
 #include "common/map.h"
 
 namespace raytracer {
@@ -12,61 +11,12 @@ int compute_optimum_reflection_number(float min_amp, float max_reflectivity) {
     return std::log(min_amp) / std::log(max_reflectivity);
 }
 
-aligned::vector<aligned::vector<aligned::vector<float>>> flatten_impulses(
-        const aligned::vector<aligned::vector<AttenuatedImpulse>>& attenuated,
-        float samplerate) {
-    return map_to_vector(attenuated, [samplerate](const auto& i) {
-        return flatten_impulses(i, samplerate);
-    });
-}
-
-double pressure_to_intensity(double pressure, double Z = 400) {
+double pressure_to_intensity(double pressure, double Z) {
     return pressure * pressure / Z;
 }
 
-double intensity_to_pressure(double intensity, double Z = 400) {
-    return std::sqrt(intensity * Z);
-}
-
-/// Turn a collection of AttenuatedImpulses into a vector of 8 vectors, where
-/// each of the 8 vectors represent sample values in a different frequency band.
-aligned::vector<aligned::vector<float>> flatten_impulses(
-        const aligned::vector<AttenuatedImpulse>& impulse, float samplerate) {
-    const auto MAX_TIME_LIMIT = 20.0f;
-    // Find the index of the final sample based on time and samplerate
-    auto maxtime = std::min(
-            std::accumulate(impulse.begin(),
-                            impulse.end(),
-                            0.0f,
-                            [](auto i, auto j) { return std::max(i, j.time); }),
-            MAX_TIME_LIMIT);
-
-    const auto MAX_SAMPLE = round(maxtime * samplerate) + 1;
-
-    //  Create somewhere to store the results.
-    aligned::vector<aligned::vector<float>> flattened(
-            detail::components_v<VolumeType>,
-            aligned::vector<float>(MAX_SAMPLE, 0));
-
-    //  For each impulse, calculate its index, then add the impulse's volumes
-    //  to the volumes already in the output array.
-    for (const auto& i : impulse) {
-        const auto SAMPLE = round(i.time * samplerate);
-        if (SAMPLE < MAX_SAMPLE) {
-            for (auto j = 0u; j != flattened.size(); ++j) {
-                flattened[j][SAMPLE] += i.volume.s[j];
-            }
-        }
-    }
-
-    //  impulses are intensity levels, now we need to convert to pressure
-    proc::for_each(flattened, [](auto& i) {
-        proc::for_each(i, [](auto& j) {
-            j = std::copysign(intensity_to_pressure(std::abs(j)), j);
-        });
-    });
-
-    return flattened;
+double intensity_to_pressure(double intensity, double Z) {
+    return std::copysign(std::sqrt(std::abs(intensity) * Z), intensity);
 }
 
 /// Find the index of the last sample with an amplitude of minVol or higher,
@@ -98,14 +48,6 @@ void trimTail(aligned::vector<aligned::vector<float>>& audioChannels,
     // Resize.
     for (auto&& i : audioChannels)
         i.resize(len);
-}
-
-aligned::vector<float> flatten_filter_and_mixdown(
-        const aligned::vector<AttenuatedImpulse>& input,
-        double output_sample_rate) {
-    return multiband_filter_and_mixdown(
-            raytracer::flatten_impulses(input, output_sample_rate),
-            output_sample_rate);
 }
 
 aligned::vector<aligned::vector<float>> run_attenuation(
