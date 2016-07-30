@@ -9,7 +9,7 @@
 #include "modern_gl_utils/drawable.h"
 #include "modern_gl_utils/vao.h"
 
-class MeshObject final : public mglu::Drawable {
+class MeshObject final : public mglu::drawable {
 public:
     MeshObject(const MeshShader& shader,
                const aligned::vector<glm::vec3>& positions);
@@ -25,9 +25,9 @@ private:
 
     const MeshShader& shader;
 
-    mglu::VAO vao;
-    mglu::StaticVBO geometry;
-    mglu::DynamicVBO pressures;
-    mglu::StaticIBO ibo;
+    mglu::vao vao;
+    mglu::static_vbo geometry;
+    mglu::dynamic_vbo pressures;
+    mglu::static_ibo ibo;
     GLuint size{0};
 };

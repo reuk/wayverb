@@ -1,5 +1,8 @@
 #include "SurfaceModel.hpp"
 
+#include "common/map.h"
+#include "common/stl_wrappers.h"
+
 namespace model {
 
 SceneData::Material to_material(const std::pair<std::string, Surface>& i) {
@@ -8,10 +11,7 @@ SceneData::Material to_material(const std::pair<std::string, Surface>& i) {
 
 aligned::vector<SceneData::Material> to_material_vector(
         const aligned::map<std::string, Surface>& i) {
-    aligned::vector<SceneData::Material> ret;
-    ret.reserve(i.size());
-    proc::transform(i, std::back_inserter(ret), to_material);
-    return ret;
+    return map_to_vector(i, to_material);
 }
 
 }  // namespace model

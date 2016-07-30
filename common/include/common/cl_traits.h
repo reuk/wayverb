@@ -369,3 +369,20 @@ template <typename T, typename detail::enable_if_is_vector_t<T, int> = 0>
 constexpr auto operator-(const T& a) {
     return detail::map(a, std::negate<>());
 }
+
+//  other --------------------------------------------------------------------//
+
+template <typename T, typename detail::enable_if_is_vector_t<T, int> = 0>
+constexpr auto sum(const T& t) {
+    return detail::accumulate(t, 0, std::plus<>());
+}
+
+template <typename T, typename detail::enable_if_is_vector_t<T, int> = 0>
+constexpr auto product(const T& t) {
+    return detail::accumulate(t, 1, std::multiplies<>());
+}
+
+template <typename T, typename detail::enable_if_is_vector_t<T, int> = 0>
+constexpr auto mean(const T& t) {
+    return sum(t) / detail::components_v<T>;
+}

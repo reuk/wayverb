@@ -35,13 +35,13 @@
 #include <mutex>
 #include <queue>
 
-class MultiMaterialObject : public mglu::Drawable {
+class MultiMaterialObject : public mglu::drawable {
 public:
-    MultiMaterialObject(mglu::GenericShader& generic_shader,
+    MultiMaterialObject(mglu::generic_shader& generic_shader,
                         LitSceneShader& lit_scene_shader,
                         const CopyableSceneData& scene_data);
 
-    class SingleMaterialSection : public mglu::Drawable {
+    class SingleMaterialSection : public mglu::drawable {
     public:
         SingleMaterialSection(const CopyableSceneData& scene_data,
                               int material_index);
@@ -52,7 +52,7 @@ public:
 
         static aligned::vector<GLuint> get_indices(
                 const CopyableSceneData& scene_data, int material_index);
-        mglu::StaticIBO ibo;
+        mglu::static_ibo ibo;
         GLuint size;
     };
 
@@ -63,13 +63,13 @@ private:
     void do_draw(const glm::mat4& modelview_matrix) const override;
     glm::mat4 get_local_modelview_matrix() const override;
 
-    mglu::GenericShader* generic_shader;
+    mglu::generic_shader* generic_shader;
     LitSceneShader* lit_scene_shader;
 
-    mglu::VAO wire_vao;
-    mglu::VAO fill_vao;
-    mglu::StaticVBO geometry;
-    mglu::StaticVBO colors;
+    mglu::vao wire_vao;
+    mglu::vao fill_vao;
+    mglu::static_vbo geometry;
+    mglu::static_vbo colors;
 
     int highlighted{-1};
 

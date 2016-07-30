@@ -1,5 +1,7 @@
 #include "Presets.hpp"
 
+#include "common/stl_wrappers.h"
+
 namespace model {
 
 aligned::vector<SceneData::Material> get_presets() {

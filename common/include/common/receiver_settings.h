@@ -14,7 +14,7 @@ struct Pointer {
     glm::vec3 get_pointing(const glm::vec3& position) const;
 
     Mode mode{Mode::spherical};
-    Orientable::AzEl spherical{};
+    AzEl spherical{};
     glm::vec3 look_at{0};
 };
 

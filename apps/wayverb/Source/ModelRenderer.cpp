@@ -48,7 +48,7 @@ MultiMaterialObject::SingleMaterialSection::get_local_modelview_matrix() const {
     return glm::mat4{};
 }
 
-MultiMaterialObject::MultiMaterialObject(mglu::GenericShader &generic_shader,
+MultiMaterialObject::MultiMaterialObject(mglu::generic_shader &generic_shader,
                                          LitSceneShader &lit_scene_shader,
                                          const CopyableSceneData &scene_data)
         : generic_shader(&generic_shader)
@@ -65,12 +65,12 @@ MultiMaterialObject::MultiMaterialObject(mglu::GenericShader &generic_shader,
         auto s_vao = vao.get_scoped();
 
         geometry.bind();
-        auto v_pos = shader.get_attrib_location("v_position");
+        auto v_pos = shader.get_attrib_location_v_position();
         glEnableVertexAttribArray(v_pos);
         glVertexAttribPointer(v_pos, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
 
         colors.bind();
-        auto c_pos = shader.get_attrib_location("v_color");
+        auto c_pos = shader.get_attrib_location_v_color();
         glEnableVertexAttribArray(c_pos);
         glVertexAttribPointer(c_pos, 4, GL_FLOAT, GL_FALSE, 0, nullptr);
     };
@@ -86,13 +86,13 @@ glm::mat4 MultiMaterialObject::get_local_modelview_matrix() const {
 void MultiMaterialObject::do_draw(const glm::mat4 &modelview_matrix) const {
     for (auto i = 0u; i != sections.size(); ++i) {
         if (i == highlighted) {
-            auto s_shader = lit_scene_shader->get_scoped();
+            auto s_shader = mglu::get_scoped(*lit_scene_shader);
             lit_scene_shader->set_model_matrix(modelview_matrix);
             auto s_vao = fill_vao.get_scoped();
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
             sections[i].draw(modelview_matrix);
         } else {
-            auto s_shader = generic_shader->get_scoped();
+            auto s_shader = mglu::get_scoped(*generic_shader);
             generic_shader->set_model_matrix(modelview_matrix);
             auto s_vao = wire_vao.get_scoped();
             glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -106,7 +106,7 @@ void MultiMaterialObject::set_highlighted(int material) {
 }
 
 void MultiMaterialObject::set_colour(const glm::vec3 &c) {
-    auto s = lit_scene_shader->get_scoped();
+    auto s_shader = mglu::get_scoped(*lit_scene_shader);
     lit_scene_shader->set_colour(c);
 }
 
@@ -114,7 +114,7 @@ void MultiMaterialObject::set_colour(const glm::vec3 &c) {
 
 class PointObjects final {
 public:
-    PointObjects(mglu::GenericShader &shader)
+    PointObjects(mglu::generic_shader &shader)
             : shader(shader) {}
 
     void set_sources(const aligned::vector<glm::vec3> &u) {
@@ -187,7 +187,7 @@ private:
         return ret;
     }
 
-    mglu::GenericShader &shader;
+    mglu::generic_shader &shader;
 
     aligned::vector<PointObject> sources;
     aligned::vector<PointObject> receivers;
@@ -204,8 +204,8 @@ public:
             , point_objects(generic_shader)
             , axes(generic_shader) {
         auto aabb = model.get_aabb();
-        auto m    = aabb.centre();
-        auto max  = glm::length(aabb.dimensions());
+        auto m    = centre(aabb);
+        auto max  = glm::length(dimensions(aabb));
         eye = eye_target = max > 0 ? 20 / max : 1;
         translation      = -glm::vec3(m.x, m.y, m.z);
     }
@@ -215,7 +215,7 @@ public:
         set_eye_impl(u);
     }
 
-    void set_rotation(const Orientable::AzEl &u) {
+    void set_rotation(const AzEl &u) {
         std::lock_guard<std::mutex> lck(mut);
         set_rotation_impl(u);
     }
@@ -324,7 +324,7 @@ public:
         assert(mousing);
         if (auto m = dynamic_cast<Rotate *>(mousing.get())) {
             auto diff = pos - m->position;
-            set_rotation_impl(Orientable::AzEl{
+            set_rotation_impl(AzEl{
                     m->orientation.azimuth + diff.x * Rotate::angle_scale,
                     m->orientation.elevation + diff.y * Rotate::angle_scale});
         } else if (auto m = dynamic_cast<Move *>(mousing.get())) {
@@ -364,12 +364,11 @@ public:
 private:
     void set_eye_impl(float u) { eye_target = std::max(0.0f, u); }
 
-    void set_rotation_impl(const Orientable::AzEl &u) {
-        azel_target =
-                Orientable::AzEl{u.azimuth,
-                                 glm::clamp(u.elevation,
-                                            static_cast<float>(-M_PI / 2),
-                                            static_cast<float>(M_PI / 2))};
+    void set_rotation_impl(const AzEl &u) {
+        azel_target = AzEl{u.azimuth,
+                           glm::clamp(u.elevation,
+                                      static_cast<float>(-M_PI / 2),
+                                      static_cast<float>(M_PI / 2))};
     }
 
     glm::vec3 get_world_camera_position() const {
@@ -411,7 +410,7 @@ private:
     SceneRenderer &owner;
     const CopyableSceneData &model;
 
-    mglu::GenericShader generic_shader;
+    mglu::generic_shader generic_shader;
     MeshShader mesh_shader;
     LitSceneShader lit_scene_shader;
 
@@ -425,8 +424,8 @@ private:
 
     AxesObject axes;
 
-    Orientable::AzEl azel;
-    Orientable::AzEl azel_target;
+    AzEl azel;
+    AzEl azel_target;
     float eye;
     float eye_target;
     glm::vec3 translation;
@@ -438,12 +437,12 @@ private:
     };
 
     struct Rotate : public Mousing {
-        Rotate(const Orientable::AzEl &azel, const glm::vec2 &position)
+        Rotate(const AzEl &azel, const glm::vec2 &position)
                 : orientation(azel)
                 , position(position) {}
 
         static const float angle_scale;
-        Orientable::AzEl orientation;
+        AzEl orientation;
         glm::vec2 position;
     };
 

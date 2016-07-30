@@ -1,24 +1,24 @@
 #include "LitSceneShader.hpp"
 
 LitSceneShader::LitSceneShader()
-        : ShaderProgram(vertex_shader, fragment_shader) {
+        : program(mglu::program::from_sources(vertex_shader, fragment_shader)) {
 }
 
 void LitSceneShader::set_model_matrix(const glm::mat4& mat) const {
-    set("v_model", mat);
+    program.set("v_model", mat);
 }
 void LitSceneShader::set_view_matrix(const glm::mat4& mat) const {
-    set("v_view", mat);
+    program.set("v_view", mat);
 }
 void LitSceneShader::set_projection_matrix(const glm::mat4& mat) const {
-    set("v_projection", mat);
+    program.set("v_projection", mat);
 }
 
 void LitSceneShader::set_colour(const glm::vec3& c) const {
-    set("f_solid_color", c);
+    program.set("f_solid_color", c);
 }
 
-const std::string LitSceneShader::vertex_shader(R"(
+const char* LitSceneShader::vertex_shader(R"(
 #version 150
 in vec3 v_position;
 in vec4 v_color;
@@ -36,7 +36,7 @@ void main() {
 }
 )");
 
-const std::string LitSceneShader::fragment_shader(R"(
+const char* LitSceneShader::fragment_shader(R"(
 #version 150
 in vec4 f_color;
 in vec3 f_modelview;

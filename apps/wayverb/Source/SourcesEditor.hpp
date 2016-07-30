@@ -22,13 +22,13 @@ using SourcesEditableListBox = ValueWrapperEditableListBox<SourcesListBox>;
 
 class SourcesEditorPanel : public ListEditorPanel<SourcesEditableListBox> {
 public:
-    SourcesEditorPanel(model_type& model, const CuboidBoundary& aabb);
+    SourcesEditorPanel(model_type& model, const box& aabb);
 
 private:
     std::unique_ptr<Component> new_editor(
             model::ValueWrapper<value_type>& v) override;
 
-    CuboidBoundary aabb;
+    box aabb;
 };
 
 //----------------------------------------------------------------------------//
@@ -50,11 +50,11 @@ using ReceiversEditableListBox = ValueWrapperEditableListBox<ReceiversListBox>;
 
 class ReceiversEditorPanel : public ListEditorPanel<ReceiversEditableListBox> {
 public:
-    ReceiversEditorPanel(model_type& model, const CuboidBoundary& aabb);
+    ReceiversEditorPanel(model_type& model, const box& aabb);
 
 private:
     std::unique_ptr<Component> new_editor(
             model::ValueWrapper<value_type>& v) override;
 
-    CuboidBoundary aabb;
+    box aabb;
 };

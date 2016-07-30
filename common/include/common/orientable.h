@@ -2,36 +2,56 @@
 
 #include "glm/glm.hpp"
 
+struct AzEl final {
+    float azimuth{0};
+    float elevation{0};
+};
+
+AzEl& operator+=(AzEl& a, const AzEl& b);
+AzEl& operator-=(AzEl& a, const AzEl& b);
+AzEl& operator*=(AzEl& a, const AzEl& b);
+AzEl& operator/=(AzEl& a, const AzEl& b);
+
+AzEl& operator+=(AzEl& a, float b);
+AzEl& operator-=(AzEl& a, float b);
+AzEl& operator*=(AzEl& a, float b);
+AzEl& operator/=(AzEl& a, float b);
+
+AzEl operator+(const AzEl& a, const AzEl& b);
+AzEl operator-(const AzEl& a, const AzEl& b);
+AzEl operator*(const AzEl& a, const AzEl& b);
+AzEl operator/(const AzEl& a, const AzEl& b);
+
+AzEl operator+(const AzEl& a, float b);
+AzEl operator-(const AzEl& a, float b);
+AzEl operator*(const AzEl& a, float b);
+AzEl operator/(const AzEl& a, float b);
+
+AzEl operator+(float a, const AzEl& b);
+AzEl operator-(float a, const AzEl& b);
+AzEl operator*(float a, const AzEl& b);
+AzEl operator/(float a, const AzEl& b);
+
+float compute_azimuth(const glm::vec3& pointing);
+float compute_elevation(const glm::vec3& pointing);
+AzEl compute_azimuth_elevation(const glm::vec3& pointing);
+
+glm::vec3 compute_pointing(const AzEl& azel);
+
+//----------------------------------------------------------------------------//
+
 class Orientable {
 public:
-    Orientable() = default;
-    Orientable(const Orientable&) = delete;
-    Orientable& operator=(const Orientable&) = delete;
-    Orientable(Orientable&&) noexcept;
-    Orientable& operator=(Orientable&&) noexcept;
-    virtual ~Orientable() noexcept = default;
+    Orientable()                  = default;
+    Orientable(const Orientable&) = default;
+    Orientable& operator=(const Orientable&) = default;
+    Orientable(Orientable&&) noexcept        = default;
+    Orientable& operator=(Orientable&&) noexcept = default;
 
-    //  relative to global axes I guess
-    struct AzEl {
-        float azimuth{0};
-        float elevation{0};
+protected:
+    ~Orientable() noexcept = default;
 
-        AzEl operator+(const AzEl& rhs) const;
-        AzEl operator-(const AzEl& rhs) const;
-        AzEl operator*(float rhs) const;
-        AzEl operator/(float rhs) const;
-        AzEl& operator+=(const AzEl& rhs);
-        AzEl& operator-=(const AzEl& rhs);
-        AzEl& operator*=(float rhs);
-        AzEl& operator/=(float rhs);
-    };
-
-    static float compute_azimuth(const glm::vec3& pointing);
-    static float compute_elevation(const glm::vec3& pointing);
-    static AzEl compute_azimuth_elevation(const glm::vec3& pointing);
-
-    static glm::vec3 compute_pointing(const AzEl& azel);
-
+public:
     glm::vec3 get_pointing() const;
     void set_pointing(const glm::vec3& u);
 
@@ -43,7 +63,7 @@ public:
     void set_elevation(float u);
     void set_azimuth_elevation(const AzEl& azel);
 
-    virtual glm::mat4 get_matrix() const;
+    glm::mat4 get_matrix() const;
 
 private:
     glm::vec3 pointing{0, 0, 1};

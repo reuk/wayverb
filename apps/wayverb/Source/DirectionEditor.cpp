@@ -5,7 +5,7 @@
 
 class SphericalEditor : public Component {
 public:
-    SphericalEditor(model::ValueWrapper<Orientable::AzEl>& azel) {
+    SphericalEditor(model::ValueWrapper<AzEl>& azel) {
         property_panel.addProperties(
                 {new NumberProperty<float>(
                          "azimuth", azel.azimuth, -M_PI, M_PI),
@@ -17,9 +17,7 @@ public:
         addAndMakeVisible(property_panel);
     }
 
-    void resized() override {
-        property_panel.setBounds(getLocalBounds());
-    }
+    void resized() override { property_panel.setBounds(getLocalBounds()); }
 
 private:
     PropertyPanel property_panel;
@@ -38,8 +36,7 @@ public:
         addAndMakeVisible(button);
     }
 
-    void refresh() override {
-    }
+    void refresh() override {}
 
     void receive_broadcast(model::Broadcaster* b) override {
         if (b == &value) {
@@ -70,9 +67,7 @@ public:
         addAndMakeVisible(property_panel);
     }
 
-    void resized() override {
-        property_panel.setBounds(getLocalBounds());
-    }
+    void resized() override { property_panel.setBounds(getLocalBounds()); }
 
 private:
     PropertyPanel property_panel;
@@ -125,5 +120,4 @@ DirectionProperty::DirectionProperty(
     addAndMakeVisible(direction_editor);
 }
 
-void DirectionProperty::refresh() {
-}
+void DirectionProperty::refresh() {}

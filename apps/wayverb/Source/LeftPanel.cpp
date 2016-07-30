@@ -208,7 +208,7 @@ class SourcesConfigureButton : public ConfigureButton {
 public:
     SourcesConfigureButton(
             model::ValueWrapper<aligned::vector<glm::vec3>>& model,
-            const CuboidBoundary& aabb)
+            const box& aabb)
             : ConfigureButton("sources")
             , model(model)
             , aabb(aabb) {}
@@ -222,7 +222,7 @@ public:
 
 private:
     model::ValueWrapper<aligned::vector<glm::vec3>>& model;
-    CuboidBoundary aabb;
+    box aabb;
 };
 
 class ReceiversConfigureButton : public ConfigureButton {
@@ -230,7 +230,7 @@ public:
     ReceiversConfigureButton(
             model::ValueWrapper<aligned::vector<model::ReceiverSettings>>&
                     model,
-            const CuboidBoundary& aabb)
+            const box& aabb)
             : ConfigureButton("receivers")
             , model(model)
             , aabb(aabb) {}
@@ -244,7 +244,7 @@ public:
 
 private:
     model::ValueWrapper<aligned::vector<model::ReceiverSettings>>& model;
-    CuboidBoundary aabb;
+    box aabb;
 };
 
 }  // namespace
@@ -252,7 +252,7 @@ private:
 //----------------------------------------------------------------------------//
 
 LeftPanel::LeftPanel(model::ValueWrapper<model::FullModel>& model,
-                     const CuboidBoundary& aabb)
+                     const box& aabb)
         : model(model)
         , bottom_panel(model.render_state) {
     set_help("configuration panel",

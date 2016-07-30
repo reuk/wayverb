@@ -6,7 +6,7 @@
 #include "cereal/types/vector.hpp"
 
 template <typename Archive>
-void serialize(Archive& archive, Orientable::AzEl& azel) {
+void serialize(Archive& archive, AzEl& azel) {
     archive(cereal::make_nvp("azimuth", azel.azimuth),
             cereal::make_nvp("elevation", azel.elevation));
 }

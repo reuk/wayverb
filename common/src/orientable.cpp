@@ -2,80 +2,94 @@
 
 #include "glm/gtx/transform.hpp"
 
-Orientable::AzEl Orientable::AzEl::operator+(const AzEl& rhs) const {
-    return AzEl{azimuth + rhs.azimuth, elevation + rhs.elevation};
+#include <functional>
+
+namespace {
+
+template <typename Op>
+AzEl& inplace_zip(AzEl& a, const AzEl& b, Op op) {
+    a.azimuth   = op(a.azimuth, b.azimuth);
+    a.elevation = op(a.elevation, b.elevation);
+    return a;
 }
 
-Orientable::AzEl Orientable::AzEl::operator-(const AzEl& rhs) const {
-    return AzEl{azimuth - rhs.azimuth, elevation - rhs.elevation};
+template <typename Op>
+AzEl zip(const AzEl& a, const AzEl& b, Op op) {
+    auto ret = a;
+    return inplace_zip(ret, b, op);
 }
 
-Orientable::AzEl Orientable::AzEl::operator*(float rhs) const {
-    return AzEl{azimuth * rhs, elevation * rhs};
+}  // namespace
+
+AzEl& operator+=(AzEl& a, const AzEl& b) {
+    return inplace_zip(a, b, std::plus<>());
+}
+AzEl& operator-=(AzEl& a, const AzEl& b) {
+    return inplace_zip(a, b, std::minus<>());
+}
+AzEl& operator*=(AzEl& a, const AzEl& b) {
+    return inplace_zip(a, b, std::multiplies<>());
+}
+AzEl& operator/=(AzEl& a, const AzEl& b) {
+    return inplace_zip(a, b, std::divides<>());
 }
 
-Orientable::AzEl Orientable::AzEl::operator/(float rhs) const {
-    return AzEl{azimuth / rhs, elevation / rhs};
+AzEl& operator+=(AzEl& a, float b) { return a += AzEl{b, b}; }
+AzEl& operator-=(AzEl& a, float b) { return a -= AzEl{b, b}; }
+AzEl& operator*=(AzEl& a, float b) { return a *= AzEl{b, b}; }
+AzEl& operator/=(AzEl& a, float b) { return a /= AzEl{b, b}; }
+
+AzEl operator+(const AzEl& a, const AzEl& b) {
+    return zip(a, b, std::plus<>());
+}
+AzEl operator-(const AzEl& a, const AzEl& b) {
+    return zip(a, b, std::minus<>());
+}
+AzEl operator*(const AzEl& a, const AzEl& b) {
+    return zip(a, b, std::multiplies<>());
+}
+AzEl operator/(const AzEl& a, const AzEl& b) {
+    return zip(a, b, std::divides<>());
 }
 
-Orientable::AzEl& Orientable::AzEl::operator+=(const AzEl& rhs) {
-    return *this = *this + rhs;
-}
+AzEl operator+(const AzEl& a, float b) { return a + AzEl{b, b}; }
+AzEl operator-(const AzEl& a, float b) { return a - AzEl{b, b}; }
+AzEl operator*(const AzEl& a, float b) { return a * AzEl{b, b}; }
+AzEl operator/(const AzEl& a, float b) { return a / AzEl{b, b}; }
 
-Orientable::AzEl& Orientable::AzEl::operator-=(const AzEl& rhs) {
-    return *this = *this - rhs;
-}
-
-Orientable::AzEl& Orientable::AzEl::operator*=(float rhs) {
-    return *this = *this * rhs;
-}
-
-Orientable::AzEl& Orientable::AzEl::operator/=(float rhs) {
-    return *this = *this / rhs;
-}
+AzEl operator+(float a, const AzEl& b) { return AzEl{a, a} + b; }
+AzEl operator-(float a, const AzEl& b) { return AzEl{a, a} - b; }
+AzEl operator*(float a, const AzEl& b) { return AzEl{a, a} * b; }
+AzEl operator/(float a, const AzEl& b) { return AzEl{a, a} / b; }
 
 //----------------------------------------------------------------------------//
 
-Orientable::Orientable(Orientable&& rhs) noexcept
-        : pointing(rhs.pointing) {
-}
-
-Orientable& Orientable::operator=(Orientable&& rhs) noexcept {
-    pointing = rhs.pointing;
-    return *this;
-}
-
-float Orientable::compute_azimuth(const glm::vec3& pointing) {
+float compute_azimuth(const glm::vec3& pointing) {
     return std::atan2(pointing.x, pointing.z);
 }
-float Orientable::compute_elevation(const glm::vec3& pointing) {
+float compute_elevation(const glm::vec3& pointing) {
     return glm::asin(pointing.y);
 }
-Orientable::AzEl Orientable::compute_azimuth_elevation(
-        const glm::vec3& pointing) {
+AzEl compute_azimuth_elevation(const glm::vec3& pointing) {
     return AzEl{compute_azimuth(pointing), compute_elevation(pointing)};
 }
-glm::vec3 Orientable::compute_pointing(const AzEl& azel) {
+glm::vec3 compute_pointing(const AzEl& azel) {
     return glm::vec3(glm::sin(azel.azimuth) * glm::cos(azel.elevation),
                      glm::sin(azel.elevation),
                      glm::cos(azel.azimuth) * glm::cos(azel.elevation));
 }
 
-glm::vec3 Orientable::get_pointing() const {
-    return pointing;
-}
+//----------------------------------------------------------------------------//
+
+glm::vec3 Orientable::get_pointing() const { return pointing; }
 
 void Orientable::set_pointing(const glm::vec3& u) {
     pointing = glm::normalize(u);
 }
 
-float Orientable::get_azimuth() const {
-    return compute_azimuth(pointing);
-}
-float Orientable::get_elevation() const {
-    return compute_elevation(pointing);
-}
-Orientable::AzEl Orientable::get_azimuth_elevation() const {
+float Orientable::get_azimuth() const { return compute_azimuth(pointing); }
+float Orientable::get_elevation() const { return compute_elevation(pointing); }
+AzEl Orientable::get_azimuth_elevation() const {
     return compute_azimuth_elevation(pointing);
 }
 

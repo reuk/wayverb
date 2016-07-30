@@ -1,20 +1,20 @@
 #include "MeshShader.hpp"
 
 MeshShader::MeshShader()
-        : ShaderProgram(vertex_shader, fragment_shader) {
+        : program(mglu::program::from_sources(vertex_shader, fragment_shader)) {
 }
 
 void MeshShader::set_model_matrix(const glm::mat4& mat) const {
-    set("v_model", mat);
+    program.set("v_model", mat);
 }
 void MeshShader::set_view_matrix(const glm::mat4& mat) const {
-    set("v_view", mat);
+    program.set("v_view", mat);
 }
 void MeshShader::set_projection_matrix(const glm::mat4& mat) const {
-    set("v_projection", mat);
+    program.set("v_projection", mat);
 }
 
-const std::string MeshShader::vertex_shader(R"(
+const char* MeshShader::vertex_shader(R"(
 #version 150
 in vec3 v_position;
 in float v_pressure;
@@ -45,7 +45,7 @@ void main() {
 }
 )");
 
-const std::string MeshShader::fragment_shader(R"(
+const char* MeshShader::fragment_shader(R"(
 #version 150
 in vec4 f_color;
 out vec4 frag_color;

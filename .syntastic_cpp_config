@@ -13,6 +13,7 @@
 -Isubmodules/assimp/include
 -Isubmodules/modern_gl_utils/include
 -Isubmodules/glm/
+-Isubmodules/hana/include
 -Wall
 -Werror
 -ferror-limit=100

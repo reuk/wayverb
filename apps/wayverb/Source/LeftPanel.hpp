@@ -9,8 +9,7 @@ class LeftPanel : public Component,
                   public model::BroadcastListener,
                   public SettableHelpPanelClient {
 public:
-    LeftPanel(model::ValueWrapper<model::FullModel>& model,
-              const CuboidBoundary& aabb);
+    LeftPanel(model::ValueWrapper<model::FullModel>& model, const box& aabb);
 
     void resized() override;
 

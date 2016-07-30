@@ -6,21 +6,18 @@ MeshObject::MeshObject(const MeshShader& shader,
     set_positions(positions);
 
     //  init vao
-    auto s_vao = vao.get_scoped();
+    const auto s_vao = vao.get_scoped();
 
-    {
-        geometry.bind();
-        auto pos = shader.get_attrib_location("v_position");
+    const auto bind_buffer = [this](
+            auto& buffer, auto pos, GLint size, GLenum type) {
+        buffer.bind();
         glEnableVertexAttribArray(pos);
-        glVertexAttribPointer(pos, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
-    }
+        glVertexAttribPointer(pos, size, type, GL_FALSE, 0, nullptr);
+    };
 
-    {
-        pressures.bind();
-        auto pos = shader.get_attrib_location("v_pressure");
-        glEnableVertexAttribArray(pos);
-        glVertexAttribPointer(pos, 1, GL_FLOAT, GL_FALSE, 0, nullptr);
-    }
+    bind_buffer(geometry, shader.get_attrib_location_v_position(), 3, GL_FLOAT);
+    bind_buffer(
+            pressures, shader.get_attrib_location_v_pressure(), 1, GL_FLOAT);
 
     ibo.bind();
 }

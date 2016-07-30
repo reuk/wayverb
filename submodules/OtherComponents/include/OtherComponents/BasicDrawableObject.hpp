@@ -34,13 +34,35 @@ private:
     glm::vec3 scale{1};
 };
 
-class BasicDrawableObject : public mglu::Drawable, public Node {
+class BasicDrawableObject : public mglu::drawable, public Node {
 public:
-    BasicDrawableObject(mglu::ShaderProgram& shader,
+    template <typename T>
+    BasicDrawableObject(T& shader,
                         const aligned::vector<glm::vec3>& g,
                         const aligned::vector<glm::vec4>& c,
                         const aligned::vector<GLuint>& i,
-                        GLuint mode);
+                        GLuint mode)
+            : shader(std::make_unique<shader_temp<T>>(shader))
+            , color_vector(c)
+            , mode(mode) {
+        geometry.data(g);
+        set_highlight(0);
+        ibo.data(i);
+
+        auto s_vao = get_scoped(vao);
+
+        geometry.bind();
+        auto v_pos = this->shader->get_attrib_location_v_position();
+        glEnableVertexAttribArray(v_pos);
+        glVertexAttribPointer(v_pos, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+
+        colors.bind();
+        auto c_pos = this->shader->get_attrib_location_v_color();
+        glEnableVertexAttribArray(c_pos);
+        glVertexAttribPointer(c_pos, 4, GL_FLOAT, GL_FALSE, 0, nullptr);
+
+        ibo.bind();
+    }
 
     BasicDrawableObject(BasicDrawableObject&&) noexcept;
     BasicDrawableObject& operator=(BasicDrawableObject&&) noexcept;
@@ -51,17 +73,48 @@ public:
     void set_highlight(float amount);
 
 private:
+    class shader_base {
+    public:
+        virtual ~shader_base() noexcept                       = default;
+        virtual GLuint get_attrib_location_v_position() const = 0;
+        virtual GLuint get_attrib_location_v_color() const    = 0;
+        virtual void set_model_matrix(const glm::mat4&) const = 0;
+        virtual mglu::usable::scoped get_scoped() const       = 0;
+    };
+
+    template <typename T>
+    class shader_temp final : public shader_base {
+    public:
+        shader_temp(T& t)
+                : t(&t) {}
+        GLuint get_attrib_location_v_position() const override {
+            return t->get_attrib_location_v_position();
+        }
+        GLuint get_attrib_location_v_color() const override {
+            return t->get_attrib_location_v_color();
+        }
+        void set_model_matrix(const glm::mat4& m) const override {
+            t->set_model_matrix(m);
+        }
+        mglu::usable::scoped get_scoped() const override {
+            return mglu::get_scoped(*t);
+        }
+
+    private:
+        T* t;
+    };
+
     void do_draw(const glm::mat4& modelview_matrix) const override;
     glm::mat4 get_local_modelview_matrix() const override;
 
-    mglu::ShaderProgram* shader;
+    std::unique_ptr<shader_base> shader;
 
     aligned::vector<glm::vec4> color_vector;
 
-    mglu::VAO vao;
-    mglu::StaticVBO geometry;
-    mglu::StaticVBO colors;
-    mglu::StaticIBO ibo;
+    mglu::vao vao;
+    mglu::static_vbo geometry;
+    mglu::static_vbo colors;
+    mglu::static_ibo ibo;
 
     GLuint mode{GL_LINES};
 };

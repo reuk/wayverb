@@ -41,7 +41,7 @@ aligned::vector<GLuint> compute_ring_indices(int num) {
 }
 }  // namespace
 
-RingObject::RingObject(mglu::GenericShader& shader,
+RingObject::RingObject(mglu::generic_shader& shader,
                        const glm::vec4& color,
                        Axis axis)
         : BasicDrawableObject(shader,
@@ -54,7 +54,7 @@ RingObject::RingObject(mglu::GenericShader& shader,
 
 //----------------------------------------------------------------------------//
 
-LineObject::LineObject(mglu::GenericShader& shader, const glm::vec4& color)
+LineObject::LineObject(mglu::generic_shader& shader, const glm::vec4& color)
         : BasicDrawableObject(shader,
                               {{0, 0, 0}, {0, 0, 1}},
                               aligned::vector<glm::vec4>(2, color),
@@ -65,7 +65,7 @@ LineObject::LineObject(mglu::GenericShader& shader, const glm::vec4& color)
 
 //----------------------------------------------------------------------------//
 
-PointObject::PointObject(mglu::GenericShader& shader, const glm::vec4& color)
+PointObject::PointObject(mglu::generic_shader& shader, const glm::vec4& color)
         : shader(&shader)
         , color(color)
         , x_ring(shader, color, RingObject::Axis::x)

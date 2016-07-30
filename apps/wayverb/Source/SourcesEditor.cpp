@@ -19,21 +19,18 @@ std::unique_ptr<Component> SourcesListBox::new_component_for_row(
 class SingleSourceComponent : public BasicPanel {
 public:
     SingleSourceComponent(model::ValueWrapper<glm::vec3>& source,
-                          const CuboidBoundary& aabb)
+                          const box& aabb)
             : BasicPanel([&source, &aabb](auto& panel) {
                 panel.addProperties({new Vec3Property("source position",
                                                       source,
                                                       aabb.get_c0(),
                                                       aabb.get_c1())});
-            }) {
-    }
+            }) {}
 };
 
-SourcesEditorPanel::SourcesEditorPanel(model_type& model,
-                                       const CuboidBoundary& aabb)
+SourcesEditorPanel::SourcesEditorPanel(model_type& model, const box& aabb)
         : ListEditorPanel<SourcesEditableListBox>(model)
-        , aabb(aabb) {
-}
+        , aabb(aabb) {}
 
 std::unique_ptr<Component> SourcesEditorPanel::new_editor(
         model::ValueWrapper<value_type>& v) {
@@ -97,8 +94,7 @@ public:
         addAndMakeVisible(cmp);
     }
 
-    void refresh() override {
-    }
+    void refresh() override {}
 
 private:
     ReceiverSettingsComponent cmp;
@@ -108,22 +104,19 @@ class SingleReceiverComponent : public BasicPanel {
 public:
     SingleReceiverComponent(
             model::ValueWrapper<model::ReceiverSettings>& receiver,
-            const CuboidBoundary& aabb)
+            const box& aabb)
             : BasicPanel([&receiver, &aabb](auto& panel) {
                 panel.addProperties({new Vec3Property("receiver position",
                                                       receiver.position,
                                                       aabb.get_c0(),
                                                       aabb.get_c1())});
                 panel.addProperties({new ReceiverSettingsProperty(receiver)});
-            }) {
-    }
+            }) {}
 };
 
-ReceiversEditorPanel::ReceiversEditorPanel(model_type& model,
-                                           const CuboidBoundary& aabb)
+ReceiversEditorPanel::ReceiversEditorPanel(model_type& model, const box& aabb)
         : ListEditorPanel<ReceiversEditableListBox>(model)
-        , aabb(aabb) {
-}
+        , aabb(aabb) {}
 
 std::unique_ptr<Component> ReceiversEditorPanel::new_editor(
         model::ValueWrapper<value_type>& v) {

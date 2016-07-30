@@ -9,7 +9,7 @@
 
 #include "juce_opengl/juce_opengl.h"
 
-class BaseContextLifetime : public mglu::Drawable, public mglu::Updatable {
+class BaseContextLifetime : public mglu::drawable, public mglu::updatable {
 public:
     void set_viewport(const glm::vec2& v);
     glm::vec2 get_viewport() const;

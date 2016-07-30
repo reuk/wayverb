@@ -18,8 +18,7 @@ public:
             : ModelValue<glm::vec3>(owner)
             , x(this, u.x)
             , y(this, u.y)
-            , z(this, u.z) {
-    }
+            , z(this, u.z) {}
 
     glm::vec3 get() const override {
         return glm::vec3{x.get(), y.get(), z.get()};
@@ -48,8 +47,7 @@ public:
             , s4(this, u.s[4])
             , s5(this, u.s[5])
             , s6(this, u.s[6])
-            , s7(this, u.s[7]) {
-    }
+            , s7(this, u.s[7]) {}
 
     VolumeType get() const override {
         return VolumeType{s0.get(),
@@ -89,8 +87,7 @@ public:
     ValueWrapper(ModelMember* owner, const Surface& u)
             : ModelValue<Surface>(owner)
             , specular(this, u.specular)
-            , diffuse(this, u.diffuse) {
-    }
+            , diffuse(this, u.diffuse) {}
 
     Surface get() const override {
         return Surface{specular.get(), diffuse.get()};
@@ -112,8 +109,7 @@ public:
     ValueWrapper(ModelMember* owner, const SceneData::Material& u)
             : ModelValue<SceneData::Material>(owner)
             , name(this, u.name)
-            , surface(this, u.surface) {
-    }
+            , surface(this, u.surface) {}
 
     SceneData::Material get() const override {
         return SceneData::Material{name.get(), surface.get()};
@@ -129,19 +125,16 @@ public:
 };
 
 template <>
-class ValueWrapper<Orientable::AzEl> : public ModelValue<Orientable::AzEl> {
+class ValueWrapper<AzEl> : public ModelValue<AzEl> {
 public:
-    ValueWrapper(ModelMember* owner, const Orientable::AzEl& u)
-            : ModelValue<Orientable::AzEl>(owner)
+    ValueWrapper(ModelMember* owner, const AzEl& u)
+            : ModelValue<AzEl>(owner)
             , azimuth(this, u.azimuth)
-            , elevation(this, u.elevation) {
-    }
+            , elevation(this, u.elevation) {}
 
-    Orientable::AzEl get() const override {
-        return Orientable::AzEl{azimuth.get(), elevation.get()};
-    }
+    AzEl get() const override { return AzEl{azimuth.get(), elevation.get()}; }
 
-    void set(const Orientable::AzEl& u, bool do_notify = true) override {
+    void set(const AzEl& u, bool do_notify = true) override {
         azimuth.set(u.azimuth, do_notify);
         elevation.set(u.elevation, do_notify);
     }
@@ -157,8 +150,7 @@ public:
             : ModelValue<Pointer>(owner)
             , mode(this, u.mode)
             , spherical(this, u.spherical)
-            , look_at(this, u.look_at) {
-    }
+            , look_at(this, u.look_at) {}
 
     Pointer get() const override {
         return Pointer{mode.get(), spherical.get(), look_at.get()};
@@ -171,7 +163,7 @@ public:
     }
 
     ValueWrapper<Pointer::Mode> mode;
-    ValueWrapper<Orientable::AzEl> spherical;
+    ValueWrapper<AzEl> spherical;
     ValueWrapper<glm::vec3> look_at;
 };
 
@@ -181,8 +173,7 @@ public:
     ValueWrapper(ModelMember* owner, const Microphone& u)
             : ModelValue<Microphone>(owner)
             , pointer(this, u.pointer)
-            , shape(this, u.shape) {
-    }
+            , shape(this, u.shape) {}
 
     Microphone get() const override {
         return Microphone{pointer.get(), shape.get()};
@@ -205,8 +196,7 @@ public:
             , position(this, u.position)
             , mode(this, u.mode)
             , microphones(this, u.microphones)
-            , hrtf(this, u.hrtf) {
-    }
+            , hrtf(this, u.hrtf) {}
 
     ReceiverSettings get() const override {
         return ReceiverSettings{
@@ -235,8 +225,7 @@ public:
             , oversample_ratio(this, u.oversample_ratio)
             , rays(this, u.rays)
             , source(this, u.source)
-            , receiver_settings(this, u.receiver_settings) {
-    }
+            , receiver_settings(this, u.receiver_settings) {}
 
     SingleShot get() const override {
         return SingleShot{filter_frequency.get(),
@@ -270,8 +259,7 @@ public:
             , oversample_ratio(this, u.oversample_ratio)
             , rays(this, u.rays)
             , source(this, u.source)
-            , receiver_settings(this, u.receiver_settings) {
-    }
+            , receiver_settings(this, u.receiver_settings) {}
 
     App get() const override {
         return App{filter_frequency.get(),
@@ -312,8 +300,7 @@ public:
             , is_rendering(this, u.is_rendering)
             , state(this, u.state)
             , progress(this, u.progress)
-            , visualise(this, u.visualise) {
-    }
+            , visualise(this, u.visualise) {}
 
     RenderState get() const override {
         return RenderState{is_rendering.get(),
@@ -329,9 +316,7 @@ public:
         visualise.set(u.visualise, do_notify);
     }
 
-    void start() {
-        is_rendering.set(true);
-    }
+    void start() { is_rendering.set(true); }
 
     void stop() {
         is_rendering.set(false);
@@ -363,8 +348,7 @@ public:
     ValueWrapper(ModelMember* owner, const Persistent& u)
             : ModelValue<Persistent>(owner)
             , app(this, u.app)
-            , materials(this, u.materials) {
-    }
+            , materials(this, u.materials) {}
 
     Persistent get() const override {
         return Persistent{app.get(), materials.get()};
@@ -397,8 +381,7 @@ public:
             , presets(this, u.presets)
             , render_state(this, u.render_state)
             , shown_surface(this, u.shown_surface)
-            , needs_save(this, u.needs_save) {
-    }
+            , needs_save(this, u.needs_save) {}
 
     FullModel get() const override {
         return FullModel{persistent.get(),

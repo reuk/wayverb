@@ -5,7 +5,7 @@ if(CMAKE_BUILD_TYPE MATCHES DEBUG)
     set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} " -Wall -Werror ")
 endif()
 
-project(tests)
+project(wayverb_tests)
 
 include_directories(
     ${CMAKE_SOURCE_DIR}/include
@@ -14,7 +14,7 @@ include_directories(
 )
 link_directories(/usr/local/lib)
 
-set(name tests)
+set(name wayverb_tests)
 file(GLOB sources "*.cpp")
 
 add_definitions(-DSCRATCH_PATH="${CMAKE_BINARY_DIR}")
@@ -41,7 +41,7 @@ find_library(vorbisenc_lib vorbisenc)
 target_link_libraries(${name} combined raytracer waveguide compressed-waveguide common ${sndfile_lib} ${flac_lib} ${ogg_lib} ${vorbis_lib} ${vorbisenc_lib} glog gtest)
 target_link_libraries(valgrindable combined raytracer waveguide compressed-waveguide common ${sndfile_lib} ${flac_lib} ${ogg_lib} ${vorbis_lib} ${vorbisenc_lib} glog gtest)
 
-add_test(NAME tests COMMAND ${name})
+add_test(NAME ${name} COMMAND ${name})
 
 add_subdirectory(mic_test)
 add_subdirectory(boundary_test)
