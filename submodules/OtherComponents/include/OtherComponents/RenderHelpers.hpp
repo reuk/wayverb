@@ -17,8 +17,8 @@ public:
 
     virtual void mouse_down(const glm::vec2& pos) = 0;
     virtual void mouse_drag(const glm::vec2& pos) = 0;
-    virtual void mouse_up(const glm::vec2& pos) = 0;
-    virtual void mouse_wheel_move(float delta_y) = 0;
+    virtual void mouse_up(const glm::vec2& pos)   = 0;
+    virtual void mouse_wheel_move(float delta_y)  = 0;
 
 private:
     virtual void viewport_changed(const glm::vec2& v);
@@ -53,10 +53,8 @@ public:
     void mouse_up(const glm::vec2& pos);
     void mouse_wheel_move(float delta_y);
 
-protected:
-    virtual BaseContextLifetime* get_context_lifetime() = 0;
-
 private:
+    virtual BaseContextLifetime* get_context_lifetime() = 0;
     void handleAsyncUpdate() override;
 
     template <typename T>
@@ -90,21 +88,15 @@ public:
         open_gl_context.attachTo(*this);
     }
 
-    virtual ~BaseRendererComponent() noexcept {
-        open_gl_context.detach();
-    }
+    virtual ~BaseRendererComponent() noexcept { open_gl_context.detach(); }
 
     void resized() override {
         renderer.set_viewport(glm::vec2{getWidth(), getHeight()});
     }
 
-    const Renderer& get_renderer() const {
-        return renderer;
-    }
+    const Renderer& get_renderer() const { return renderer; }
 
-    Renderer& get_renderer() {
-        return renderer;
-    }
+    Renderer& get_renderer() { return renderer; }
 
     void mouseDown(const juce::MouseEvent& e) override {
         renderer.mouse_down(to_glm_vec2(e.getPosition()));

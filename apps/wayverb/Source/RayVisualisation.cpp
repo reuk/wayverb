@@ -79,27 +79,25 @@ RayVisualisation::RayVisualisation(
         , pressures(extract_pressures(impulses))
         , ibo(compute_indices(impulses))
         , source(source) {
-    const auto s_vao = get_scoped(vao);
-
-    const auto bind_buffer = [this](
-            auto& buffer, auto pos, GLint size, GLenum type) {
-        buffer.bind();
-        glEnableVertexAttribArray(pos);
-        glVertexAttribPointer(pos, size, type, GL_FALSE, 0, nullptr);
-    };
-
-    bind_buffer(
-            positions, shader.get_attrib_location_v_position(), 3, GL_FLOAT);
-    bind_buffer(
-            pressures, shader.get_attrib_location_v_pressure(), 1, GL_FLOAT);
+    const auto s_vao = vao.get_scoped();
+    mglu::enable_and_bind_buffer(vao,
+                                 positions,
+                                 shader.get_attrib_location_v_position(),
+                                 3,
+                                 GL_FLOAT);
+    mglu::enable_and_bind_buffer(vao,
+                                 pressures,
+                                 shader.get_attrib_location_v_pressure(),
+                                 1,
+                                 GL_FLOAT);
     ibo.bind();
 }
 
 void RayVisualisation::do_draw(const glm::mat4& modelview_matrix) const {
-    auto s_shader = mglu::get_scoped(shader);
+    auto s_shader = shader.get_scoped();
     shader.set_model_matrix(modelview_matrix);
 
-    auto s_vao = get_scoped(vao);
+    auto s_vao = vao.get_scoped();
     glDrawElements(GL_LINES, ibo.size(), GL_UNSIGNED_INT, nullptr);
 }
 

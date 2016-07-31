@@ -3,6 +3,8 @@
 #include "OtherComponents/AngularLookAndFeel.hpp"
 #include "OtherComponents/MoreConversions.hpp"
 
+#include "modern_gl_utils/error_checker.h"
+
 #include "common/azimuth_elevation.h"
 #include "common/boundaries.h"
 #include "common/cl_common.h"
@@ -58,21 +60,23 @@ MultiMaterialObject::MultiMaterialObject(mglu::generic_shader &generic_shader,
     }
 
     geometry.data(scene_data.get_converted_vertices());
+    mglu::check_for_gl_error();
     colors.data(aligned::vector<glm::vec4>(scene_data.get_vertices().size(),
                                            glm::vec4(0.5, 0.5, 0.5, 1.0)));
+    mglu::check_for_gl_error();
 
     auto configure_vao = [this](const auto &vao, const auto &shader) {
         auto s_vao = vao.get_scoped();
-
-        geometry.bind();
-        auto v_pos = shader.get_attrib_location_v_position();
-        glEnableVertexAttribArray(v_pos);
-        glVertexAttribPointer(v_pos, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
-
-        colors.bind();
-        auto c_pos = shader.get_attrib_location_v_color();
-        glEnableVertexAttribArray(c_pos);
-        glVertexAttribPointer(c_pos, 4, GL_FLOAT, GL_FALSE, 0, nullptr);
+        mglu::check_for_gl_error();
+        mglu::enable_and_bind_buffer(vao,
+                                     geometry,
+                                     shader.get_attrib_location_v_position(),
+                                     3,
+                                     GL_FLOAT);
+        mglu::check_for_gl_error();
+        mglu::enable_and_bind_buffer(
+                vao, colors, shader.get_attrib_location_v_color(), 4, GL_FLOAT);
+        mglu::check_for_gl_error();
     };
 
     configure_vao(wire_vao, generic_shader);
@@ -86,13 +90,13 @@ glm::mat4 MultiMaterialObject::get_local_modelview_matrix() const {
 void MultiMaterialObject::do_draw(const glm::mat4 &modelview_matrix) const {
     for (auto i = 0u; i != sections.size(); ++i) {
         if (i == highlighted) {
-            auto s_shader = mglu::get_scoped(*lit_scene_shader);
+            auto s_shader = lit_scene_shader->get_scoped();
             lit_scene_shader->set_model_matrix(modelview_matrix);
             auto s_vao = fill_vao.get_scoped();
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
             sections[i].draw(modelview_matrix);
         } else {
-            auto s_shader = mglu::get_scoped(*generic_shader);
+            auto s_shader = generic_shader->get_scoped();
             generic_shader->set_model_matrix(modelview_matrix);
             auto s_vao = wire_vao.get_scoped();
             glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -106,7 +110,7 @@ void MultiMaterialObject::set_highlighted(int material) {
 }
 
 void MultiMaterialObject::set_colour(const glm::vec3 &c) {
-    auto s_shader = mglu::get_scoped(*lit_scene_shader);
+    auto s_shader = lit_scene_shader->get_scoped();
     lit_scene_shader->set_colour(c);
 }
 
@@ -257,6 +261,7 @@ public:
     }
 
     void update(float dt) override {
+        std::lock_guard<std::mutex> lck(mut);
         eye += (eye_target - eye) * 0.1;
         azel += (azel_target - azel) * 0.1;
     }
@@ -354,10 +359,12 @@ public:
     }
 
     void set_sources(const aligned::vector<glm::vec3> &u) {
+        std::lock_guard<std::mutex> lck(mut);
         point_objects.set_sources(u);
     }
 
     void set_receivers(const aligned::vector<model::ReceiverSettings> &u) {
+        std::lock_guard<std::mutex> lck(mut);
         point_objects.set_receivers(u);
     }
 
@@ -473,6 +480,7 @@ SceneRenderer::~SceneRenderer() noexcept = default;
 
 void SceneRenderer::newOpenGLContextCreated() {
     std::lock_guard<std::mutex> lck(mut);
+    mglu::check_for_gl_error();
     context_lifetime = std::make_unique<ContextLifetime>(*this, model);
     context_lifetime->set_emphasis(
             glm::vec3(AngularLookAndFeel::emphasis.getFloatRed(),

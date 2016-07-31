@@ -39,10 +39,10 @@ void BasicDrawableObject::set_highlight(float amount) {
 }
 
 void BasicDrawableObject::do_draw(const glm::mat4& modelview_matrix) const {
-    auto s_shader = mglu::get_scoped(*shader);
+    auto s_shader = shader->get_scoped();
     shader->set_model_matrix(modelview_matrix);
 
-    auto s_vao = get_scoped(vao);
+    auto s_vao = vao.get_scoped();
     glDrawElements(mode, ibo.size(), GL_UNSIGNED_INT, nullptr);
 }
 

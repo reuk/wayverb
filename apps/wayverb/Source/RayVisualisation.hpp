@@ -21,7 +21,7 @@ public:
         return program.get_attrib_location("v_pressure");
     }
 
-    auto get_scoped() const { return mglu::get_scoped(program); }
+    auto get_scoped() const { return program.get_scoped(); }
 
     void set_model_matrix(const glm::mat4& m) const {
         program.set("v_model", m);

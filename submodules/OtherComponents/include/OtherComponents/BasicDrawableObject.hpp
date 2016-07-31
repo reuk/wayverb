@@ -44,23 +44,19 @@ public:
                         GLuint mode)
             : shader(std::make_unique<shader_temp<T>>(shader))
             , color_vector(c)
+            , geometry(g)
+            , ibo(i)
             , mode(mode) {
-        geometry.data(g);
         set_highlight(0);
-        ibo.data(i);
 
-        auto s_vao = get_scoped(vao);
-
-        geometry.bind();
-        auto v_pos = this->shader->get_attrib_location_v_position();
-        glEnableVertexAttribArray(v_pos);
-        glVertexAttribPointer(v_pos, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
-
-        colors.bind();
-        auto c_pos = this->shader->get_attrib_location_v_color();
-        glEnableVertexAttribArray(c_pos);
-        glVertexAttribPointer(c_pos, 4, GL_FLOAT, GL_FALSE, 0, nullptr);
-
+        auto s_vao = vao.get_scoped();
+        mglu::enable_and_bind_buffer(vao,
+                                     geometry,
+                                     shader.get_attrib_location_v_position(),
+                                     3,
+                                     GL_FLOAT);
+        mglu::enable_and_bind_buffer(
+                vao, colors, shader.get_attrib_location_v_color(), 4, GL_FLOAT);
         ibo.bind();
     }
 
@@ -75,9 +71,8 @@ public:
 private:
     class shader_base {
     public:
-        virtual ~shader_base() noexcept                       = default;
-        virtual GLuint get_attrib_location_v_position() const = 0;
-        virtual GLuint get_attrib_location_v_color() const    = 0;
+        virtual ~shader_base() noexcept = default;
+
         virtual void set_model_matrix(const glm::mat4&) const = 0;
         virtual mglu::usable::scoped get_scoped() const       = 0;
     };
@@ -87,17 +82,11 @@ private:
     public:
         shader_temp(T& t)
                 : t(&t) {}
-        GLuint get_attrib_location_v_position() const override {
-            return t->get_attrib_location_v_position();
-        }
-        GLuint get_attrib_location_v_color() const override {
-            return t->get_attrib_location_v_color();
-        }
         void set_model_matrix(const glm::mat4& m) const override {
             t->set_model_matrix(m);
         }
         mglu::usable::scoped get_scoped() const override {
-            return mglu::get_scoped(*t);
+            return t->get_scoped();
         }
 
     private:
