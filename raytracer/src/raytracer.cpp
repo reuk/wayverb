@@ -42,7 +42,7 @@ std::experimental::optional<results> raytracer::run(
         size_t image_source_depth,
         std::atomic_bool& keep_going,
         const PerStepCallback& callback) {
-    assert(image_source_depth < reflection_depth);
+    assert(image_source_depth <= reflection_depth);
 
     //  set up all the rendering context stuff
 

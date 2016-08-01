@@ -74,7 +74,18 @@ void diffuse_finder::push(const aligned::vector<Reflection>& reflections,
         }
     }
 
-    impulse_builder.push(std::move(ret));
+    //  maybe a bit slow but w/e
+    //  we profile then we burn it down so that something beautiful can rise
+    //  from the weird ashes
+    aligned::vector<std::experimental::optional<Impulse>> no_invalid;
+    no_invalid.reserve(rays);
+    for (auto& i : ret) {
+        no_invalid.push_back(
+                i.time ? std::experimental::make_optional<Impulse>(std::move(i))
+                       : std::experimental::nullopt);
+    }
+
+    impulse_builder.push(std::move(no_invalid));
 }
 
 const aligned::vector<aligned::vector<Impulse>>& diffuse_finder::get_results()

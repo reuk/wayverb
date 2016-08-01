@@ -69,32 +69,70 @@ const VoxelCollection::Voxel& VoxelCollection::get_voxel(
     return data[i.x][i.y][i.z];
 }
 
+auto min_component(const glm::vec3& v) {
+    size_t ret{0};
+    for (auto i = 1u; i != 3; ++i) {
+        if (v[i] < v[ret]) {
+            ret = i;
+        }
+    }
+    return ret;
+}
+
+glm::ivec3 compute_just_out(const glm::ivec3& step, size_t box_size) {
+    glm::ivec3 ret;
+    for (auto i = 0u; i != 3; ++i) {
+        ret[i] = 0 < step[i] ? box_size : -1;
+    }
+    return ret;
+}
+
+glm::vec3 compute_boundary(const glm::ivec3& step, const box& voxel_bounds) {
+    glm::vec3 ret;
+    for (auto i = 0u; i != 3; ++i) {
+        ret[i] = step[i] < 0 ? voxel_bounds.get_c0()[i]
+                             : voxel_bounds.get_c1()[i];
+    }
+    return ret;
+}
+
+glm::vec3 compute_t_max(const glm::ivec3& step,
+                        const glm::vec3& boundary,
+                        const geo::Ray& ray) {
+    glm::vec3 ret;
+    for (auto i = 0u; i != 3; ++i) {
+        ret[i] = step[i] == 0 ? std::numeric_limits<float>::infinity()
+                              : std::abs((boundary[i] - ray.get_position()[i]) /
+                                         ray.get_direction()[i]);
+    }
+    return ret;
+}
+
+glm::vec3 compute_t_delta(const glm::ivec3& step,
+                          const glm::vec3& voxel_dimensions,
+                          const geo::Ray& ray) {
+    glm::vec3 ret;
+    for (auto i = 0u; i != 3; ++i) {
+        ret[i] = step[i] == 0 ? 0 : std::abs(voxel_dimensions[i] /
+                                             ray.get_direction()[i]);
+    }
+    return ret;
+}
+
 geo::Intersection VoxelCollection::traverse(
         const geo::Ray& ray, const TraversalCallback& fun) const {
     //  from http://www.cse.chalmers.se/edu/year/2010/course/TDA361/grid.pdf
     auto ind                = get_starting_index(ray.get_position());
-    const auto voxel_bounds = get_voxel(ind).get_aabb();
+    const auto voxel_bounds = get_voxel_aabb();
     const auto step         = get_step(ray.get_direction());
 
-    glm::ivec3 just_out;
-    glm::vec3 boundary;
-    for (auto i = 0; i != 3; ++i) {
-        just_out[i] = 0 < step[i] ? data.size() : -1;
-        boundary[i] = step[i] < 0 ? voxel_bounds.get_c0()[i]
-                                  : voxel_bounds.get_c1()[i];
-    }
-
-    auto t_max =
-            glm::abs((boundary - ray.get_position()) / ray.get_direction());
-    auto t_delta = glm::abs(dimensions(get_voxel_aabb()) / ray.get_direction());
+    const auto just_out = compute_just_out(step, data.size());
+    const auto boundary = compute_boundary(step, voxel_bounds);
+    auto t_max          = compute_t_max(step, boundary, ray);
+    const auto t_delta  = compute_t_delta(step, dimensions(voxel_bounds), ray);
 
     for (;;) {
-        auto min_i = 0;
-        for (auto i = 1u; i != 3; ++i) {
-            if (t_max[i] < t_max[min_i]) {
-                min_i = i;
-            }
-        }
+        const auto min_i = min_component(t_max);
 
         const auto& tri = get_voxel(ind).get_triangles();
         if (!tri.empty()) {

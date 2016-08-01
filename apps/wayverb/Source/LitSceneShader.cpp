@@ -18,7 +18,7 @@ void LitSceneShader::set_colour(const glm::vec3& c) const {
     program.set("f_solid_color", c);
 }
 
-const char* LitSceneShader::vertex_shader(R"(
+const char* LitSceneShader::vertex_shader{R"(
 #version 150
 in vec3 v_position;
 in vec4 v_color;
@@ -34,9 +34,9 @@ void main() {
     f_color = v_color;
     f_modelview = modelview.xyz;
 }
-)");
+)"};
 
-const char* LitSceneShader::fragment_shader(R"(
+const char* LitSceneShader::fragment_shader{R"(
 #version 150
 in vec4 f_color;
 in vec3 f_modelview;
@@ -51,4 +51,4 @@ void main() {
     float diffuse = max(0.0, dot(f_normal, -direction));
     frag_color = vec4(f_solid_color * diffuse + ambient, 1.0);
 }
-)");
+)"};

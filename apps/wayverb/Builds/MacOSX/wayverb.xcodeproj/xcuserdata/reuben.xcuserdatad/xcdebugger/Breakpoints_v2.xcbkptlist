@@ -68,7 +68,7 @@
                   moduleName = "visualiser"
                   usesParentBreakpointCondition = "Yes"
                   urlString = "file:///Users/reuben/development/waveguide/submodules/modern_gl_utils/include/modern_gl_utils/checking.h"
-                  timestampString = "491748541.667847"
+                  timestampString = "491763291.56"
                   startingColumnNumber = "9223372036854775807"
                   endingColumnNumber = "9223372036854775807"
                   startingLineNumber = "166"
@@ -83,7 +83,7 @@
                   moduleName = "visualiser"
                   usesParentBreakpointCondition = "Yes"
                   urlString = "file:///Users/reuben/development/waveguide/submodules/modern_gl_utils/include/modern_gl_utils/checking.h"
-                  timestampString = "491748541.668006"
+                  timestampString = "491763291.560248"
                   startingColumnNumber = "9223372036854775807"
                   endingColumnNumber = "9223372036854775807"
                   startingLineNumber = "166"
@@ -107,22 +107,6 @@
             endingLineNumber = "156"
             landmarkName = "shader_iv_throw_if_false(GLuint handle)"
             landmarkType = "7">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "Yes"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "../../../../submodules/modern_gl_utils/src/program.cpp"
-            timestampString = "491748141.526752"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "105"
-            endingLineNumber = "105"
-            landmarkName = "program::from_sources(const char* vs, const char* fs)"
-            landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
    </Breakpoints>

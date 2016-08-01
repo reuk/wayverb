@@ -21,6 +21,10 @@ public:
                                           bool image_source = true,
                                           bool diffuse      = true) const;
 
+    std::experimental::optional<Impulse> get_direct() const;
+    aligned::vector<Impulse> get_image_source() const;
+    aligned::vector<aligned::vector<Impulse>> get_diffuse() const;
+
     glm::vec3 get_receiver() const;
 
 private:

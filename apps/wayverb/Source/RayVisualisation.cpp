@@ -70,15 +70,63 @@ aligned::vector<GLuint> compute_indices(
 
 }  // namespace
 
+//----------------------------------------------------------------------------//
+
+RayShader::RayShader()
+        : program(mglu::program::from_sources(vert, frag)) {}
+
+void RayShader::set_model_matrix(const glm::mat4& m) const {
+    program.set("v_model", m);
+}
+
+const char* RayShader::vert{R"(
+#version 150
+in vec3 v_position;
+
+uniform mat4 v_model;
+uniform mat4 v_view;
+uniform mat4 v_projection;
+
+void main() {
+    vec4 modelview = v_view * v_model * vec4(v_position, 1.0);
+    gl_Position = v_projection * modelview;
+}
+)"};
+
+const char* RayShader::frag{R"(
+#version 150
+in float v_pressure;
+out vec4 frag_color;
+
+void main() {
+    frag_color = vec4(vec3(v_pressure), 1.0);
+}
+)"};
+
+//----------------------------------------------------------------------------//
+
+namespace {
+aligned::vector<aligned::vector<Impulse>> extract_impulses_to_visualise(
+        const raytracer::results& r, size_t rays) {
+    auto diffuse = r.get_diffuse();
+    diffuse.resize(std::min(rays, diffuse.size()));
+    return diffuse;
+}
+}  // namespace
+
+//----------------------------------------------------------------------------//
+
 RayVisualisation::RayVisualisation(
         const RayShader& shader,
         const aligned::vector<aligned::vector<Impulse>>& impulses,
-        const glm::vec3& source)
+        const glm::vec3& source,
+        const glm::vec3& receiver)
         : shader(shader)
         , positions(extract_positions(impulses, source))
         , pressures(extract_pressures(impulses))
         , ibo(compute_indices(impulses))
-        , source(source) {
+        , source(source)
+        , receiver(receiver) {
     const auto s_vao = vao.get_scoped();
     mglu::enable_and_bind_buffer(vao,
                                  positions,
@@ -91,6 +139,19 @@ RayVisualisation::RayVisualisation(
                                  1,
                                  GL_FLOAT);
     ibo.bind();
+}
+
+RayVisualisation::RayVisualisation(const RayShader& shader,
+                                   const raytracer::results& results,
+                                   size_t rays,
+                                   const glm::vec3& source)
+        : RayVisualisation(shader,
+                           extract_impulses_to_visualise(results, rays),
+                           source,
+                           results.get_receiver()) {}
+
+void RayVisualisation::set_time(float t) {
+    //  TODO update positions of virtual wavefront
 }
 
 void RayVisualisation::do_draw(const glm::mat4& modelview_matrix) const {

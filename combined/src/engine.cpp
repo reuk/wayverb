@@ -289,18 +289,19 @@ private:
         //  RAYTRACER  -------------------------------------------------------//
         callback(state::starting_raytracer, 1.0);
         auto raytracer_step = 0;
-        auto raytracer_results =
-                raytracer.run(scene_data,
-                              source,
-                              receiver,
-                              rays,
-                              impulses,
-                              10,
-                              keep_going,
-                              [this, &callback, &raytracer_step] {
-                                  callback(state::running_raytracer,
-                                           raytracer_step++ / (impulses - 1.0));
-                              });
+        auto raytracer_results = raytracer.run(
+                scene_data,
+                source,
+                receiver,
+                rays,
+                impulses,
+                std::min(size_t{10},
+                         impulses),  //  TODO set this more intelligently
+                keep_going,
+                [this, &callback, &raytracer_step] {
+                    callback(state::running_raytracer,
+                             raytracer_step++ / (impulses - 1.0));
+                });
 
         if (!(keep_going && raytracer_results)) {
             return nullptr;

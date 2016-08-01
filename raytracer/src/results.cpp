@@ -43,6 +43,18 @@ aligned::vector<Impulse> results::get_impulses(bool use_direct,
     return ret;
 }
 
+std::experimental::optional<Impulse> results::get_direct() const {
+    return direct;
+}
+
+aligned::vector<Impulse> results::get_image_source() const {
+    return image_source;
+}
+
+aligned::vector<aligned::vector<Impulse>> results::get_diffuse() const {
+    return diffuse;
+}
+
 glm::vec3 results::get_receiver() const { return receiver; }
 
 }  // namespace raytracer
