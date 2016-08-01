@@ -1,7 +1,7 @@
-#include "raytracer/raytracer.h"
 #include "raytracer/construct_impulse.h"
 #include "raytracer/diffuse.h"
 #include "raytracer/image_source.h"
+#include "raytracer/raytracer.h"
 #include "raytracer/reflector.h"
 #include "raytracer/scene_buffers.h"
 
@@ -14,16 +14,18 @@ std::experimental::optional<Impulse> get_direct_impulse(
         const VoxelCollection& vox) {
     VoxelCollection::TriangleTraversalCallback callback(scene_data);
 
-    const auto receiver_to_source = source - receiver;
-    const auto direction          = glm::normalize(receiver_to_source);
+    const auto source_to_receiver        = receiver - source;
+    const auto source_to_receiver_length = glm::length(source_to_receiver);
+    const auto direction                 = glm::normalize(source_to_receiver);
     const geo::Ray to_receiver(source, direction);
 
     const auto intersection = vox.traverse(to_receiver, callback);
 
-    if (intersection) {
+    if (!intersection ||
+        (intersection && intersection->distance > source_to_receiver_length)) {
         return construct_impulse(VolumeType{{1, 1, 1, 1, 1, 1, 1, 1}},
                                  source,
-                                 glm::length(receiver_to_source));
+                                 source_to_receiver_length);
     }
 
     return std::experimental::nullopt;

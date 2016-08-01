@@ -38,18 +38,20 @@ Intersection voxel_traversal(const global uint* voxel_index,
 
     int3 ind = get_starting_index(ray.position, global_aabb, voxel_dimensions);
 
-    float3 c0 = convert_float3(ind + (int3)(0)) * voxel_dimensions;
-    float3 c1 = convert_float3(ind + (int3)(1)) * voxel_dimensions;
+    const float3 c0 = convert_float3(ind + (int3)(0)) * voxel_dimensions;
+    const float3 c1 = convert_float3(ind + (int3)(1)) * voxel_dimensions;
 
-    AABB voxel_bounds = {global_aabb.c0 + c0, global_aabb.c0 + c1};
+    const AABB voxel_bounds = {global_aabb.c0 + c0, global_aabb.c0 + c1};
 
-    int3 gt         = signbit(ray.direction);
-    int3 s          = select((int3)(1), (int3)(-1), gt);
-    int3 just_out   = select((int3)(side), (int3)(-1), gt);
-    float3 boundary = select(voxel_bounds.c1, voxel_bounds.c0, gt);
+    const int3 gt         = signbit(ray.direction);
+    const int3 step       = select((int3)(1), (int3)(-1), gt);
+    const int3 just_out   = select((int3)(side), (int3)(-1), gt);
+    const float3 boundary = select(voxel_bounds.c1, voxel_bounds.c0, gt);
 
-    float3 t_max   = fabs((boundary - ray.position) / ray.direction);
-    float3 t_delta = fabs(voxel_dimensions / ray.direction);
+    const float3 t_max_temp = fabs((boundary - ray.position) / ray.direction);
+    const int3 is_nan = isnan(t_max_temp);
+    float3 t_max = select(t_max_temp, (float3)(INFINITY), is_nan);
+    const float3 t_delta = fabs(voxel_dimensions / ray.direction);
 
     for (;;) {
         int min_i = 0;
@@ -74,7 +76,7 @@ Intersection voxel_traversal(const global uint* voxel_index,
             return ret;
         }
 
-        ind[min_i] += s[min_i];
+        ind[min_i] += step[min_i];
         if (ind[min_i] == just_out[min_i])
             return (Intersection){};
         t_max[min_i] += t_delta[min_i];

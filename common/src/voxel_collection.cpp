@@ -60,8 +60,21 @@ glm::ivec3 VoxelCollection::get_starting_index(
                       dimensions(get_voxel_aabb()));
 }
 
-glm::ivec3 VoxelCollection::get_step(const glm::vec3& d) {
-    return glm::sign(d);
+glm::bvec3 nonnegative(const glm::vec3& t) {
+    glm::bvec3 ret;
+    for (auto i = 0u; i != t.length(); ++i) {
+        ret[i] = 0 <= t[i];
+    }
+    return ret;
+}
+
+template <typename T, typename U>
+T select(const T& a, const T& b, const U& selector) {
+    T ret;
+    for (auto i = 0u; i != selector.length(); ++i) {
+        ret[i] = selector[i] ? a[i] : b[i];
+    }
+    return ret;
 }
 
 const VoxelCollection::Voxel& VoxelCollection::get_voxel(
@@ -79,42 +92,10 @@ auto min_component(const glm::vec3& v) {
     return ret;
 }
 
-glm::ivec3 compute_just_out(const glm::ivec3& step, size_t box_size) {
-    glm::ivec3 ret;
-    for (auto i = 0u; i != 3; ++i) {
-        ret[i] = 0 < step[i] ? box_size : -1;
-    }
-    return ret;
-}
-
-glm::vec3 compute_boundary(const glm::ivec3& step, const box& voxel_bounds) {
-    glm::vec3 ret;
-    for (auto i = 0u; i != 3; ++i) {
-        ret[i] = step[i] < 0 ? voxel_bounds.get_c0()[i]
-                             : voxel_bounds.get_c1()[i];
-    }
-    return ret;
-}
-
-glm::vec3 compute_t_max(const glm::ivec3& step,
-                        const glm::vec3& boundary,
-                        const geo::Ray& ray) {
-    glm::vec3 ret;
-    for (auto i = 0u; i != 3; ++i) {
-        ret[i] = step[i] == 0 ? std::numeric_limits<float>::infinity()
-                              : std::abs((boundary[i] - ray.get_position()[i]) /
-                                         ray.get_direction()[i]);
-    }
-    return ret;
-}
-
-glm::vec3 compute_t_delta(const glm::ivec3& step,
-                          const glm::vec3& voxel_dimensions,
-                          const geo::Ray& ray) {
-    glm::vec3 ret;
-    for (auto i = 0u; i != 3; ++i) {
-        ret[i] = step[i] == 0 ? 0 : std::abs(voxel_dimensions[i] /
-                                             ray.get_direction()[i]);
+glm::bvec3 is_not_nan(const glm::vec3& v) {
+    glm::bvec3 ret;
+    for (auto i = 0u; i != v.length(); ++i) {
+        ret[i] = ! std::isnan(v[i]);
     }
     return ret;
 }
@@ -123,20 +104,28 @@ geo::Intersection VoxelCollection::traverse(
         const geo::Ray& ray, const TraversalCallback& fun) const {
     //  from http://www.cse.chalmers.se/edu/year/2010/course/TDA361/grid.pdf
     auto ind                = get_starting_index(ray.get_position());
-    const auto voxel_bounds = get_voxel_aabb();
-    const auto step         = get_step(ray.get_direction());
+    const auto voxel_bounds = get_voxel(ind).get_aabb();
 
-    const auto just_out = compute_just_out(step, data.size());
-    const auto boundary = compute_boundary(step, voxel_bounds);
-    auto t_max          = compute_t_max(step, boundary, ray);
-    const auto t_delta  = compute_t_delta(step, dimensions(voxel_bounds), ray);
+    const auto gt       = nonnegative(ray.get_direction());
+    const auto step     = select(glm::ivec3(1), glm::ivec3(-1), gt);
+    const auto just_out = select(glm::ivec3(data.size()), glm::ivec3(-1), gt);
+    const auto boundary =
+            select(voxel_bounds.get_c1(), voxel_bounds.get_c0(), gt);
+
+    const auto t_max_temp =
+            glm::abs((boundary - ray.get_position()) / ray.get_direction());
+    auto t_max = select(t_max_temp,
+                   glm::vec3(std::numeric_limits<float>::infinity()),
+                   is_not_nan(t_max_temp));
+    const auto t_delta =
+            glm::abs(dimensions(voxel_bounds) / ray.get_direction());
 
     for (;;) {
         const auto min_i = min_component(t_max);
 
         const auto& tri = get_voxel(ind).get_triangles();
         if (!tri.empty()) {
-            auto ret = fun(ray, tri);
+            const auto ret = fun(ray, tri);
 
             if (ret && ret->distance < t_max[min_i]) {
                 return ret;
