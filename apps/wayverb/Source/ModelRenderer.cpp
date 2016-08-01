@@ -3,7 +3,7 @@
 #include "OtherComponents/AngularLookAndFeel.hpp"
 #include "OtherComponents/MoreConversions.hpp"
 
-#include "modern_gl_utils/error_checker.h"
+#include "modern_gl_utils/exceptions.h"
 
 #include "common/azimuth_elevation.h"
 #include "common/boundaries.h"

@@ -1,7 +1,7 @@
 #pragma once
 
+#include "modern_gl_utils/exceptions.h"
 #include "modern_gl_utils/generic_shader.h"
-#include "modern_gl_utils/error_checker.h"
 
 #include "glm/gtc/type_ptr.hpp"
 
@@ -13,12 +13,10 @@ public:
 
     auto get_attrib_location_v_position() const {
         return program.get_attrib_location("v_position");
-        mglu::check_for_gl_error();
     }
 
     auto get_attrib_location_v_color() const {
         return program.get_attrib_location("v_color");
-        mglu::check_for_gl_error();
     }
 
     void set_model_matrix(const glm::mat4& mat) const;

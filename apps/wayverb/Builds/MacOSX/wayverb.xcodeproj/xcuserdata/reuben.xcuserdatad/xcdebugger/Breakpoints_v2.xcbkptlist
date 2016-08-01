@@ -36,11 +36,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "../../../../submodules/modern_gl_utils/src/error_checker.cpp"
-            timestampString = "491690627.697498"
+            timestampString = "491747840.710254"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "29"
-            endingLineNumber = "29"
+            startingLineNumber = "26"
+            endingLineNumber = "26"
             landmarkName = "throw_if_error(GLenum e)"
             landmarkType = "7">
          </BreakpointContent>
@@ -51,14 +51,46 @@
             shouldBeEnabled = "Yes"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "../../../../submodules/modern_gl_utils/src/vao.cpp"
-            timestampString = "491692090.868568"
+            filePath = "../../../../submodules/modern_gl_utils/include/modern_gl_utils/checking.h"
+            timestampString = "491748065.814063"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "22"
-            endingLineNumber = "22"
-            landmarkName = "vao::do_bind(GLuint index)"
-            landmarkType = "5">
+            startingLineNumber = "166"
+            endingLineNumber = "166"
+            landmarkName = "program_iv_throw_if_false(GLuint handle)"
+            landmarkType = "7">
+            <Locations>
+               <Location
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "void mglu::checking::program_iv_throw_if_false&lt;35714u&gt;(unsigned int)"
+                  moduleName = "visualiser"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/reuben/development/waveguide/submodules/modern_gl_utils/include/modern_gl_utils/checking.h"
+                  timestampString = "491748541.667847"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "166"
+                  endingLineNumber = "166"
+                  offsetFromSymbolStart = "1307">
+               </Location>
+               <Location
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "void mglu::checking::program_iv_throw_if_false&lt;35715u&gt;(unsigned int)"
+                  moduleName = "visualiser"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/reuben/development/waveguide/submodules/modern_gl_utils/include/modern_gl_utils/checking.h"
+                  timestampString = "491748541.668006"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "166"
+                  endingLineNumber = "166"
+                  offsetFromSymbolStart = "1307">
+               </Location>
+            </Locations>
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -67,46 +99,30 @@
             shouldBeEnabled = "Yes"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "../../Source/ModelRenderer.cpp"
-            timestampString = "491692138.651357"
+            filePath = "../../../../submodules/modern_gl_utils/include/modern_gl_utils/checking.h"
+            timestampString = "491748066.984197"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "73"
-            endingLineNumber = "73"
-            landmarkName = "MultiMaterialObject::MultiMaterialObject(mglu::generic_shader &amp;generic_shader, LitSceneShader &amp;lit_scene_shader, const CopyableSceneData &amp;scene_data)"
+            startingLineNumber = "156"
+            endingLineNumber = "156"
+            landmarkName = "shader_iv_throw_if_false(GLuint handle)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "../../../../submodules/modern_gl_utils/src/program.cpp"
+            timestampString = "491748141.526752"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "105"
+            endingLineNumber = "105"
+            landmarkName = "program::from_sources(const char* vs, const char* fs)"
             landmarkType = "5">
-            <Locations>
-               <Location
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "MultiMaterialObject::MultiMaterialObject(mglu::generic_shader&amp;, LitSceneShader&amp;, CopyableSceneData const&amp;)::$_0::operator()&lt;mglu::vao, mglu::generic_shader&gt;(auto, mglu::vao const&amp;, mglu::generic_shader const&amp;) const"
-                  moduleName = "visualiser"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/reuben/development/waveguide/apps/wayverb/Source/ModelRenderer.cpp"
-                  timestampString = "491692139.918862"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "73"
-                  endingLineNumber = "73"
-                  offsetFromSymbolStart = "68">
-               </Location>
-               <Location
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "MultiMaterialObject::MultiMaterialObject(mglu::generic_shader&amp;, LitSceneShader&amp;, CopyableSceneData const&amp;)::$_0::operator()&lt;mglu::vao, LitSceneShader&gt;(auto, mglu::vao const&amp;, LitSceneShader const&amp;) const"
-                  moduleName = "visualiser"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/reuben/development/waveguide/apps/wayverb/Source/ModelRenderer.cpp"
-                  timestampString = "491692139.918958"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "73"
-                  endingLineNumber = "73"
-                  offsetFromSymbolStart = "68">
-               </Location>
-            </Locations>
          </BreakpointContent>
       </BreakpointProxy>
    </Breakpoints>
