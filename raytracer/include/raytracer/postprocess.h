@@ -40,18 +40,11 @@ aligned::vector<aligned::vector<float>> flatten_impulses(
         if (SAMPLE < MAX_SAMPLE) {
             for (auto j = 0u; j != flattened.size(); ++j) {
                 const auto intensity = i.volume.s[j];
-                //const auto pressure = intensity_to_pressure(intensity);
-                flattened[j][SAMPLE] += intensity;
+                const auto pressure = intensity_to_pressure(intensity);
+                flattened[j][SAMPLE] += pressure;
             }
         }
     }
-
-    //  impulses are intensity levels, now we need to convert to pressure
-    proc::for_each(flattened, [](auto& i) {
-        proc::for_each(i, [](auto& j) {
-            j = intensity_to_pressure(j);
-        });
-    });
 
     return flattened;
 }

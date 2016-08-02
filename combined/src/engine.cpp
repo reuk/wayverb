@@ -428,9 +428,13 @@ aligned::vector<cl_float3> engine::get_node_positions() const {
     return pimpl->get_node_positions();
 }
 
-void swap(engine& a, engine& b) {
+void engine::swap(engine& rhs) noexcept {
     using std::swap;
-    swap(a.pimpl, b.pimpl);
+    swap(pimpl, rhs.pimpl);
+}
+
+void swap(engine& a, engine& b) noexcept {
+    a.swap(b);
 }
 
 }  // namespace wayverb
