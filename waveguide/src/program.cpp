@@ -1,14 +1,12 @@
-#include "waveguide/rectangular_program.h"
+#include "waveguide/program.h"
 
 #include "cl/structs.h"
 
 #include "common/stl_wrappers.h"
 
-#include <cmath>
-#include <iostream>
+namespace waveguide {
 
-rectangular_program::rectangular_program(const cl::Context& context,
-                                         const cl::Device& device)
+program::program(const cl::Context& context, const cl::Device& device)
         : program_wrapper(
                   context,
                   device,
@@ -16,14 +14,13 @@ rectangular_program::rectangular_program(const cl::Context& context,
                                                    num_ports, BIQUAD_SECTIONS),
                                            source}) {}
 
-rectangular_program::CondensedNodeStruct
-rectangular_program::NodeStruct::get_condensed() const {
+program::CondensedNodeStruct program::NodeStruct::get_condensed() const {
     return CondensedNodeStruct{
             condensed.boundary_type | (inside ? id_inside : id_none),
             condensed.boundary_index};
 }
 
-rectangular_program::CanonicalCoefficients rectangular_program::convolve(
+program::CanonicalCoefficients program::convolve(
         const BiquadCoefficientsArray& a) {
     std::array<BiquadCoefficients, BiquadCoefficientsArray::BIQUAD_SECTIONS> t;
     proc::copy(a.array, t.begin());
@@ -33,8 +30,8 @@ rectangular_program::CanonicalCoefficients rectangular_program::convolve(
 
 /// Given a set of canonical coefficients describing a reflectance filter,
 /// produce an impedance filter which describes the reflective surface
-rectangular_program::CanonicalCoefficients
-rectangular_program::to_impedance_coefficients(const CanonicalCoefficients& c) {
+program::CanonicalCoefficients program::to_impedance_coefficients(
+        const CanonicalCoefficients& c) {
     CanonicalCoefficients ret;
     proc::transform(
             c.a, std::begin(c.b), std::begin(ret.b), [](auto a, auto b) {
@@ -57,9 +54,8 @@ rectangular_program::to_impedance_coefficients(const CanonicalCoefficients& c) {
     return ret;
 }
 
-aligned::vector<rectangular_program::CanonicalCoefficients>
-rectangular_program::to_filter_coefficients(aligned::vector<Surface> surfaces,
-                                            float sr) {
+aligned::vector<program::CanonicalCoefficients> program::to_filter_coefficients(
+        aligned::vector<Surface> surfaces, float sr) {
     aligned::vector<CanonicalCoefficients> ret(surfaces.size());
     proc::transform(surfaces, ret.begin(), [sr](auto i) {
         return to_filter_coefficients(i, sr);
@@ -69,7 +65,7 @@ rectangular_program::to_filter_coefficients(aligned::vector<Surface> surfaces,
 
 //----------------------------------------------------------------------------//
 
-const std::string rectangular_program::source{
+const std::string program::source{
 #ifdef DIAGNOSTIC
         "#define DIAGNOSTIC\n"
 #endif
@@ -702,3 +698,5 @@ kernel void condensed_waveguide(global float* previous,
 }
 
 )"};
+
+}  // namespace waveguide

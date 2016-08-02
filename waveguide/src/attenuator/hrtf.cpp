@@ -1,5 +1,5 @@
-#include "waveguide/hrtf_attenuator.h"
-#include "waveguide/rectangular_waveguide.h"
+#include "waveguide/attenuator/hrtf.h"
+#include "waveguide/waveguide.h"
 
 #include "common/filters_common.h"
 #include "common/hrtf.h"
@@ -44,7 +44,7 @@ namespace waveguide {
 namespace attenuator {
 
 aligned::vector<aligned::vector<float>> hrtf::process(
-        const aligned::vector<rectangular_waveguide::run_step_output>& input,
+        const aligned::vector<run_step_output>& input,
         const glm::vec3& direction,
         const glm::vec3& up,
         HrtfChannel channel) const {
@@ -55,25 +55,22 @@ aligned::vector<aligned::vector<float>> hrtf::process(
         proc::transform(input,
                         std::back_inserter(this_band),
                         [direction, up, channel, band](auto i) {
-                            //  TODO DEFINITELY CHECK THIS
-                            //  RUN TESTS YEAH
-                            auto mag = glm::length(i.get_intensity());
-                            if (mag == 0)
+                            auto mag = glm::length(i.intensity);
+                            if (mag == 0) {
                                 return 0.0f;
+                            }
                             mag = sqrt(mag * pow(attenuation(direction,
                                                              up,
                                                              channel,
-                                                             i.get_intensity(),
+                                                             i.intensity,
                                                              band),
                                                  2));
-                            return std::copysign(mag, i.get_pressure());
+                            return std::copysign(mag, i.pressure);
                         });
 
         ret.push_back(std::move(this_band));
     }
 
-    //  TODO filter with diffuse-field-response filter here
-    //  make sure to use zero-phase filtering
     return ret;
 }
 

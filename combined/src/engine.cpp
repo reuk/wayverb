@@ -2,21 +2,23 @@
 
 #include "common/boundaries.h"
 #include "common/cl_common.h"
+#include "common/conversions.h"
 #include "common/config.h"
 #include "common/dc_blocker.h"
 #include "common/filters_common.h"
 #include "common/kernel.h"
 #include "common/receiver_settings.h"
+#include "common/map.h"
 
 #include "raytracer/attenuator.h"
 #include "raytracer/postprocess.h"
 #include "raytracer/raytracer.h"
 
+#include "waveguide/attenuator/hrtf.h"
+#include "waveguide/attenuator/microphone.h"
 #include "waveguide/default_kernel.h"
-#include "waveguide/hrtf_attenuator.h"
-#include "waveguide/microphone_attenuator.h"
 #include "waveguide/postprocess.h"
-#include "waveguide/rectangular_waveguide.h"
+#include "waveguide/waveguide.h"
 
 #include <cmath>
 
@@ -49,7 +51,7 @@ public:
                       const glm::vec3& receiver,
                       double waveguide_sample_rate,
                       raytracer::results&& raytracer_results,
-                      aligned::vector<rectangular_waveguide::run_step_output>&&
+                      aligned::vector<waveguide::run_step_output>&&
                               waveguide_results)
             : source(source)
             , receiver(receiver)
@@ -85,7 +87,7 @@ public:
 
         //  correct waveguide sampling rate
         for (auto& i : waveguide_output) {
-            i = adjust_sampling_rate(
+            i = waveguide::adjust_sampling_rate(
                     std::move(i), waveguide_sample_rate, output_sample_rate);
         }
 
@@ -127,7 +129,7 @@ private:
     double waveguide_sample_rate;
 
     raytracer::results raytracer_results;
-    aligned::vector<rectangular_waveguide::run_step_output> waveguide_results;
+    aligned::vector<waveguide::run_step_output> waveguide_results;
 };
 
 float max_reflectivity(const VolumeType& vt) {
@@ -182,7 +184,6 @@ public:
          size_t rays,
          size_t impulses)
             : compute_context(cc)
-            , raytracer_program(cc.get_context(), cc.get_device())
             , scene_data(scene_data)
             , raytracer(cc.get_context(), cc.get_device())
             , waveguide(cc.get_context(),
@@ -213,14 +214,15 @@ public:
         return this->run_basic(
                 keep_going,
                 callback,
-                [&waveguide_step](rectangular_waveguide& waveguide,
+                [&waveguide_step](waveguide::waveguide& waveguide,
                                   const glm::vec3& corrected_source,
                                   const aligned::vector<float>& input,
                                   size_t mic_index,
                                   size_t steps,
                                   std::atomic_bool& keep_going,
                                   const state_callback& callback) {
-                    return waveguide.init_and_run(
+                    return waveguide::init_and_run(
+                            waveguide,
                             corrected_source,
                             std::move(input),
                             mic_index,
@@ -242,14 +244,15 @@ public:
                 keep_going,
                 s_callback,
                 [&waveguide_step, &v_callback](
-                        rectangular_waveguide& waveguide,
+                        waveguide::waveguide& waveguide,
                         const glm::vec3& corrected_source,
                         const aligned::vector<float>& input,
                         size_t mic_index,
                         size_t steps,
                         std::atomic_bool& keep_going,
                         const state_callback& callback) {
-                    return waveguide.init_and_run_visualised(
+                    return waveguide::init_and_run(
+                            waveguide,
                             corrected_source,
                             std::move(input),
                             mic_index,
@@ -263,18 +266,15 @@ public:
                 });
     }
 
-    aligned::vector<cl_float3> get_node_positions() const {
-        const auto& nodes = waveguide.get_mesh().get_nodes();
-        aligned::vector<cl_float3> ret(nodes.size());
-        proc::transform(
-                nodes, ret.begin(), [](const auto& i) { return i.position; });
-        return ret;
+    aligned::vector<glm::vec3> get_node_positions() const {
+        return map_to_vector(waveguide.get_mesh().get_nodes(),
+                             [](const auto& i) { return to_vec3(i.position); });
     }
 
 private:
     using waveguide_callback = std::function<std::experimental::optional<
-            aligned::vector<rectangular_waveguide::run_step_output>>(
-            rectangular_waveguide&,
+            aligned::vector<waveguide::run_step_output>>(
+            waveguide::waveguide&,
             const glm::vec3&,
             const aligned::vector<float>&,
             size_t,
@@ -288,7 +288,7 @@ private:
             const waveguide_callback& waveguide_callback) {
         //  RAYTRACER  -------------------------------------------------------//
         callback(state::starting_raytracer, 1.0);
-        auto raytracer_step = 0;
+        auto raytracer_step    = 0;
         auto raytracer_results = raytracer.run(
                 scene_data,
                 source,
@@ -326,7 +326,7 @@ private:
 
         const auto corrected_source =
                 waveguide.get_coordinate_for_index(source_index);
-        const auto input = default_kernel(waveguide_sample_rate);
+        const auto input = waveguide::default_kernel(waveguide_sample_rate);
 
         //  If the max raytracer time is large this could take forever...
         auto waveguide_results =
@@ -367,10 +367,9 @@ private:
     }
 
     compute_context compute_context;
-    raytracer_program raytracer_program;
     CopyableSceneData scene_data;
     raytracer::raytracer raytracer;
-    rectangular_waveguide waveguide;
+    waveguide::waveguide waveguide;
 
     glm::vec3 source;
     glm::vec3 receiver;
@@ -424,7 +423,7 @@ std::unique_ptr<intermediate> engine::run(
     return pimpl->run(keep_going, callback);
 }
 
-aligned::vector<cl_float3> engine::get_node_positions() const {
+aligned::vector<glm::vec3> engine::get_node_positions() const {
     return pimpl->get_node_positions();
 }
 
@@ -433,8 +432,6 @@ void engine::swap(engine& rhs) noexcept {
     swap(pimpl, rhs.pimpl);
 }
 
-void swap(engine& a, engine& b) noexcept {
-    a.swap(b);
-}
+void swap(engine& a, engine& b) noexcept { a.swap(b); }
 
 }  // namespace wayverb

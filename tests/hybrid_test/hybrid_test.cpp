@@ -1,9 +1,9 @@
 #include "combined/model.h"
 #include "combined/serialize/model.h"
 
+#include "waveguide/attenuator/microphone.h"
 #include "waveguide/config.h"
-#include "waveguide/microphone_attenuator.h"
-#include "waveguide/rectangular_waveguide.h"
+#include "waveguide/waveguide.h"
 
 #include "raytracer/raytracer.h"
 #include "raytracer/attenuator.h"
@@ -74,11 +74,11 @@ auto run_waveguide(const compute_context& cc,
     scene_data.set_surfaces(surface);
 
     //  get a waveguide
-    rectangular_waveguide waveguide(cc.get_context(),
-                                    cc.get_device(),
-                                    MeshBoundary(scene_data),
-                                    config.receiver_settings.position,
-                                    config.get_waveguide_sample_rate());
+    waveguide::waveguide waveguide(cc.get_context(),
+                                   cc.get_device(),
+                                   MeshBoundary(scene_data),
+                                   config.receiver_settings.position,
+                                   config.get_waveguide_sample_rate());
 
     auto source_index   = waveguide.get_index_for_coordinate(config.source);
     auto receiver_index = waveguide.get_index_for_coordinate(
@@ -97,17 +97,17 @@ auto run_waveguide(const compute_context& cc,
     std::cout << "[ -- running waveguide ----------------- ]" << std::endl;
     std::atomic_bool keep_going{true};
     progress_bar pb(std::cout, steps);
-    auto results = waveguide.init_and_run(corrected_source,
-                                          std::move(input),
-                                          receiver_index,
-                                          steps,
-                                          keep_going,
-                                          [&pb] { pb += 1; });
+    auto results = waveguide::init_and_run(waveguide,
+                                           corrected_source,
+                                           std::move(input),
+                                           receiver_index,
+                                           steps,
+                                           keep_going,
+                                           [&pb] { pb += 1; });
 
     auto output = aligned::vector<float>(results->size());
-    proc::transform(*results, output.begin(), [](const auto& i) {
-        return i.get_pressure();
-    });
+    proc::transform(
+            *results, output.begin(), [](const auto& i) { return i.pressure; });
 
     //  correct for filter time offset
     output.erase(output.begin(),
@@ -154,9 +154,9 @@ int main(int argc, char** argv) {
 
     //  adjust sample rate
     auto waveguide_adjusted =
-            adjust_sampling_rate(std::move(waveguide_output),
-                                 config.get_waveguide_sample_rate(),
-                                 samplerate);
+            waveguide::adjust_sampling_rate(std::move(waveguide_output),
+                                            config.get_waveguide_sample_rate(),
+                                            samplerate);
     LOG(INFO) << "waveguide adjusted mag: " << max_mag(waveguide_adjusted);
 
     //  get the valid region of the spectrum

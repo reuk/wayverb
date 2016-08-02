@@ -37,7 +37,7 @@ box CopyableSceneData::get_aabb() const {
 aligned::vector<glm::vec3> CopyableSceneData::get_converted_vertices() const {
     aligned::vector<glm::vec3> vec(get_vertices().size());
     proc::transform(
-            get_vertices(), vec.begin(), [](auto i) { return to_vec3f(i); });
+            get_vertices(), vec.begin(), [](auto i) { return to_vec3(i); });
     return vec;
 }
 

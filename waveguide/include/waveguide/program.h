@@ -14,7 +14,9 @@
 #include <cassert>
 #include <cmath>
 
-class rectangular_program final {
+namespace waveguide {
+
+class program final {
 public:
     typedef enum : cl_int {
         id_none      = 0,
@@ -167,8 +169,7 @@ public:
 
     static constexpr auto num_ports{CondensedNodeStruct::num_ports};
 
-    explicit rectangular_program(const cl::Context& context,
-                                 const cl::Device& device);
+    explicit program(const cl::Context& context, const cl::Device& device);
 
     auto get_kernel() const {
         return program_wrapper.get_kernel<cl::Buffer,
@@ -216,7 +217,7 @@ public:
         auto sw0   = sin(w0);
         auto alpha = sw0 / 2.0 * n.Q;
         auto a0    = 1 + alpha / A;
-        return rectangular_program::BiquadCoefficients{
+        return program::BiquadCoefficients{
                 {(1 + (alpha * A)) / a0, (-2 * cw0) / a0, (1 - alpha * A) / a0},
                 {1, (-2 * cw0) / a0, (1 - alpha / A) / a0}};
     }
@@ -228,7 +229,7 @@ public:
                              BiquadCoefficientsArray::BIQUAD_SECTIONS>& n,
             double sr,
             coefficient_generator callback) {
-        rectangular_program::BiquadCoefficientsArray ret{
+        program::BiquadCoefficientsArray ret{
                 {callback(std::get<Ix>(n), sr)...}};
         return ret;
     }
@@ -344,96 +345,98 @@ private:
     program_wrapper program_wrapper;
 };
 
-inline bool operator==(const rectangular_program::CondensedNodeStruct& a,
-                       const rectangular_program::CondensedNodeStruct& b) {
+inline bool operator==(const program::CondensedNodeStruct& a,
+                       const program::CondensedNodeStruct& b) {
     return std::tie(a.boundary_type, a.boundary_index) ==
            std::tie(b.boundary_type, b.boundary_index);
 }
 
-inline bool operator!=(const rectangular_program::CondensedNodeStruct& a,
-                       const rectangular_program::CondensedNodeStruct& b) {
+inline bool operator!=(const program::CondensedNodeStruct& a,
+                       const program::CondensedNodeStruct& b) {
     return !(a == b);
 }
 
-inline bool operator==(const rectangular_program::NodeStruct& a,
-                       const rectangular_program::NodeStruct& b) {
+inline bool operator==(const program::NodeStruct& a,
+                       const program::NodeStruct& b) {
     return proc::equal(a.ports, std::begin(b.ports)) &&
            std::tie(a.position, a.inside, a.condensed) ==
                    std::tie(b.position, b.inside, b.condensed);
 }
 
-inline bool operator!=(const rectangular_program::NodeStruct& a,
-                       const rectangular_program::NodeStruct& b) {
+inline bool operator!=(const program::NodeStruct& a,
+                       const program::NodeStruct& b) {
     return !(a == b);
 }
 
 template <size_t D>
-bool operator==(const rectangular_program::FilterMemory<D>& a,
-                const rectangular_program::FilterMemory<D>& b) {
+bool operator==(const program::FilterMemory<D>& a,
+                const program::FilterMemory<D>& b) {
     return proc::equal(a.array, std::begin(b.array));
 }
 
 template <size_t D>
-bool operator!=(const rectangular_program::FilterMemory<D>& a,
-                const rectangular_program::FilterMemory<D>& b) {
+bool operator!=(const program::FilterMemory<D>& a,
+                const program::FilterMemory<D>& b) {
     return !(a == b);
 }
 
 template <size_t D>
-bool operator==(const rectangular_program::FilterCoefficients<D>& a,
-                const rectangular_program::FilterCoefficients<D>& b) {
+bool operator==(const program::FilterCoefficients<D>& a,
+                const program::FilterCoefficients<D>& b) {
     return proc::equal(a.a, std::begin(b.a)) &&
            proc::equal(a.b, std::begin(b.b));
 }
 
 template <size_t D>
-bool operator!=(const rectangular_program::FilterCoefficients<D>& a,
-                const rectangular_program::FilterCoefficients<D>& b) {
+bool operator!=(const program::FilterCoefficients<D>& a,
+                const program::FilterCoefficients<D>& b) {
     return !(a == b);
 }
 
-inline bool operator==(const rectangular_program::BoundaryData& a,
-                       const rectangular_program::BoundaryData& b) {
+inline bool operator==(const program::BoundaryData& a,
+                       const program::BoundaryData& b) {
     return std::tie(a.filter_memory, a.coefficient_index) ==
            std::tie(b.filter_memory, b.coefficient_index);
 }
 
-inline bool operator!=(const rectangular_program::BoundaryData& a,
-                       const rectangular_program::BoundaryData& b) {
+inline bool operator!=(const program::BoundaryData& a,
+                       const program::BoundaryData& b) {
     return !(a == b);
 }
 
 template <size_t D>
-bool operator==(const rectangular_program::BoundaryDataArray<D>& a,
-                const rectangular_program::BoundaryDataArray<D>& b) {
+bool operator==(const program::BoundaryDataArray<D>& a,
+                const program::BoundaryDataArray<D>& b) {
     return proc::equal(a.array, std::begin(b.array));
 }
 
 template <size_t D>
-bool operator!=(const rectangular_program::BoundaryDataArray<D>& a,
-                const rectangular_program::BoundaryDataArray<D>& b) {
+bool operator!=(const program::BoundaryDataArray<D>& a,
+                const program::BoundaryDataArray<D>& b) {
     return !(a == b);
 }
 
-JSON_OSTREAM_OVERLOAD(rectangular_program::NodeStruct);
+JSON_OSTREAM_OVERLOAD(program::NodeStruct);
 
-JSON_OSTREAM_OVERLOAD(rectangular_program::CondensedNodeStruct);
+JSON_OSTREAM_OVERLOAD(program::CondensedNodeStruct);
 
 template <size_t O>
-JSON_OSTREAM_OVERLOAD(rectangular_program::FilterCoefficients<O>);
+JSON_OSTREAM_OVERLOAD(program::FilterCoefficients<O>);
 
-JSON_OSTREAM_OVERLOAD(rectangular_program::BiquadCoefficientsArray);
+JSON_OSTREAM_OVERLOAD(program::BiquadCoefficientsArray);
 
-JSON_OSTREAM_OVERLOAD(rectangular_program::BoundaryData);
+JSON_OSTREAM_OVERLOAD(program::BoundaryData);
 
 template <size_t D>
-JSON_OSTREAM_OVERLOAD(rectangular_program::BoundaryDataArray<D>);
+JSON_OSTREAM_OVERLOAD(program::BoundaryDataArray<D>);
 
-JSON_OSTREAM_OVERLOAD(rectangular_program::FilterDescriptor);
+JSON_OSTREAM_OVERLOAD(program::FilterDescriptor);
 
 //----------------------------------------------------------------------------//
 
 template <>
-constexpr bool rectangular_program::is_stable(const std::array<double, 1>& a) {
+constexpr bool program::is_stable(const std::array<double, 1>& a) {
     return true;
 }
+
+}  // namespace waveguide

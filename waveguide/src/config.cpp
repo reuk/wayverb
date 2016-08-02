@@ -4,8 +4,11 @@
 
 #include "samplerate.h"
 
-#define DIM 3
+namespace {
+constexpr auto DIM{3};
+}  // namespace
 
+namespace waveguide {
 namespace config {
 
 double speed_of_sound(double time_step, double grid_spacing) {
@@ -39,3 +42,5 @@ aligned::vector<float> adjust_sampling_rate(aligned::vector<float>&& w_results,
     src_simple(&sample_rate_info, SRC_SINC_BEST_QUALITY, 1);
     return out_signal;
 }
+
+}  // namespace waveguide

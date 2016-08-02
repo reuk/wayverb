@@ -1,6 +1,8 @@
 #pragma once
 
-#include "waveguide/rectangular_program.h"
+#include "waveguide/program.h"
+
+namespace waveguide {
 
 template <typename Fun, typename T>
 bool is_any(const aligned::vector<T>& t, const Fun& fun) {
@@ -8,13 +10,13 @@ bool is_any(const aligned::vector<T>& t, const Fun& fun) {
 }
 
 template <typename Fun, int I>
-bool is_any(const rectangular_program::BoundaryDataArray<I>& t, const Fun& fun) {
+bool is_any(const program::BoundaryDataArray<I>& t, const Fun& fun) {
     return proc::any_of(t.array,
                         [&fun](const auto& i) { return is_any(i, fun); });
 }
 
 template <typename Fun>
-bool is_any(const rectangular_program::BoundaryData& t, const Fun& fun) {
+bool is_any(const program::BoundaryData& t, const Fun& fun) {
     return proc::any_of(t.filter_memory.array,
                         [&fun](const auto& i) { return is_any(i, fun); });
 }
@@ -71,3 +73,5 @@ bool log_nan_or_nonzero_or_inf(const T& t, const std::string& identifier) {
     log_nonzero(t, identifier);
     return false;
 }
+
+}  // namespace waveguide

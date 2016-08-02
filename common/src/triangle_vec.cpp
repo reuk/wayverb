@@ -9,6 +9,5 @@ TriangleVec3 get_triangle_verts(const Triangle& t,
 
 TriangleVec3 get_triangle_verts(const Triangle& t,
                                 const aligned::vector<cl_float3>& v) {
-    return TriangleVec3{
-            {to_vec3f(v[t.v0]), to_vec3f(v[t.v1]), to_vec3f(v[t.v2])}};
+    return TriangleVec3{{to_vec3(v[t.v0]), to_vec3(v[t.v1]), to_vec3(v[t.v2])}};
 }

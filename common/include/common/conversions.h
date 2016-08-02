@@ -15,11 +15,11 @@ inline cl_int3 to_cl_int3(const T& t) {
 }
 
 template <typename T>
-inline glm::vec3 to_vec3f(const T& t) {
+inline glm::vec3 to_vec3(const T& t) {
     return glm::vec3(t.x, t.y, t.z);
 }
 
 template <>
-inline glm::vec3 to_vec3f(const cl_float3& t) {
+inline glm::vec3 to_vec3(const cl_float3& t) {
     return glm::vec3(t.s[0], t.s[1], t.s[2]);
 }

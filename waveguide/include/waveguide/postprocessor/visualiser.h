@@ -1,18 +1,17 @@
 #pragma once
 
-#include "waveguide/rectangular_waveguide.h"
+#include "waveguide/waveguide.h"
 
-namespace postprocessors {
+namespace waveguide {
+namespace postprocessor {
 
-class visualiser_step_postprocessor
-        : public rectangular_waveguide::step_postprocessor {
+class visualiser : public waveguide::step_postprocessor {
 public:
     //  callback is passed a complete copy of the mesh state
     using output_callback =
             std::function<void(const aligned::vector<cl_float>&)>;
 
-    visualiser_step_postprocessor(size_t nodes,
-                                  const output_callback& callback);
+    visualiser(size_t nodes, const output_callback& callback);
 
     void process(cl::CommandQueue& queue, const cl::Buffer& buffer) override;
 
@@ -21,4 +20,5 @@ private:
     output_callback callback;
 };
 
-}  // namespace postprocessors
+}  // namespace postprocessor
+}  // namespace waveguide

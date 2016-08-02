@@ -3,7 +3,7 @@
 #include "common/progress_bar.h"
 
 #include "waveguide/make_transparent.h"
-#include "waveguide/rectangular_waveguide.h"
+#include "waveguide/waveguide.h"
 
 #include "gtest/gtest.h"
 
@@ -29,7 +29,7 @@ void multitest(T&& run) {
 
 TEST(verify_compensation_signal, verify_compensation_signal_compressed) {
     const aligned::vector<float> input{1, 2, 3, 4, 5, 4, 3, 2, 1};
-    const auto transparent = make_transparent(input);
+    const auto transparent = waveguide::make_transparent(input);
 
     compute_context c;
     compressed_rectangular_waveguide waveguide(
@@ -43,7 +43,7 @@ TEST(verify_compensation_signal, verify_compensation_signal_compressed) {
 
 TEST(verify_compensation_signal, verify_compensation_signal_normal) {
     const aligned::vector<float> input{1, 2, 3, 4, 5, 6, 5, 4, 3, 2, 1};
-    const auto transparent = make_transparent(input);
+    const auto transparent = waveguide::make_transparent(input);
 
     compute_context cc;
 
@@ -53,7 +53,7 @@ TEST(verify_compensation_signal, verify_compensation_signal_normal) {
 
     constexpr glm::vec3 centre{0, 0, 0};
 
-    rectangular_waveguide waveguide(
+    waveguide::waveguide waveguide(
             cc.get_context(), cc.get_device(), boundary, centre, 20000);
 
     auto receiver_index = waveguide.get_index_for_coordinate(centre);
@@ -62,17 +62,20 @@ TEST(verify_compensation_signal, verify_compensation_signal_normal) {
         constexpr auto steps = 100;
         std::atomic_bool keep_going{true};
         progress_bar pb(std::cout, steps);
-        const auto output = waveguide.init_and_run(
-                centre, transparent, receiver_index, steps, keep_going, [&pb] {
-                    pb += 1;
-                });
+        const auto output = waveguide::init_and_run(waveguide,
+                                                    centre,
+                                                    transparent,
+                                                    receiver_index,
+                                                    steps,
+                                                    keep_going,
+                                                    [&pb] { pb += 1; });
 
         assert(output);
 
         aligned::vector<float> pressures;
         pressures.reserve(output->size());
         for (const auto& i : *output) {
-            pressures.push_back(i.get_pressure());
+            pressures.push_back(i.pressure);
         }
 
         return pressures;

@@ -1,7 +1,7 @@
+#include "waveguide/attenuator/microphone.h"
 #include "waveguide/config.h"
 #include "waveguide/default_kernel.h"
-#include "waveguide/microphone_attenuator.h"
-#include "waveguide/rectangular_waveguide.h"
+#include "waveguide/waveguide.h"
 
 #include "common/cl_common.h"
 #include "common/conversions.h"
@@ -88,18 +88,18 @@ int main(int argc, char** argv) {
         const auto r    = 0.9f;
         scene_data.set_surfaces(Surface{VolumeType{{r, r, r, r, r, r, r, r}},
                                         VolumeType{{r, r, r, r, r, r, r, r}}});
-        rectangular_waveguide waveguide(cc.get_context(),
-                                        cc.get_device(),
-                                        MeshBoundary(scene_data),
-                                        mic,
-                                        waveguide_sr);
+        waveguide::waveguide waveguide(cc.get_context(),
+                                       cc.get_device(),
+                                       MeshBoundary(scene_data),
+                                       mic,
+                                       waveguide_sr);
 
         for (auto i = 0u; i != test_locations; ++i) {
             float angle = i * M_PI * 2 / test_locations + M_PI;
 
             const auto mic_index = waveguide.get_index_for_coordinate(mic);
 
-            const auto kernel_info = default_kernel(waveguide_sr);
+            const auto kernel_info = waveguide::default_kernel(waveguide_sr);
             auto kernel            = kernel_info.kernel;
 
             glm::vec3 source{std::sin(angle), 0, std::cos(angle)};
@@ -115,10 +115,13 @@ int main(int argc, char** argv) {
 
             std::atomic_bool keep_going{true};
             progress_bar pb(std::cout, steps);
-            const auto w_results = waveguide.init_and_run(
-                    source, kernel, mic_index, steps, keep_going, [&pb] {
-                        pb += 1;
-                    });
+            const auto w_results = waveguide::init_and_run(waveguide,
+                                                           source,
+                                                           kernel,
+                                                           mic_index,
+                                                           steps,
+                                                           keep_going,
+                                                           [&pb] { pb += 1; });
 
             auto out_signal = microphone.process(
                     *w_results, glm::vec3(0, 0, 1), directionality);

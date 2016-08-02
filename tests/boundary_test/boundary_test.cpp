@@ -1,13 +1,13 @@
+#include "waveguide/attenuator/microphone.h"
 #include "waveguide/config.h"
-#include "waveguide/microphone_attenuator.h"
-#include "waveguide/rectangular_waveguide.h"
+#include "waveguide/waveguide.h"
 
 #include "common/azimuth_elevation.h"
 #include "common/cl_common.h"
 #include "common/conversions.h"
+#include "common/map.h"
 #include "common/progress_bar.h"
 #include "common/scene_data.h"
-#include "common/map.h"
 
 #include "common/serialize/boundaries.h"
 #include "common/serialize/surface.h"
@@ -42,11 +42,11 @@ aligned::vector<float> run_simulation(const compute_context& cc,
     auto scene_data = get_scene_data(boundary);
     scene_data.set_surfaces(surface);
 
-    rectangular_waveguide waveguide(cc.get_context(),
-                                    cc.get_device(),
-                                    MeshBoundary(scene_data),
-                                    receiver,
-                                    filter_frequency * 4);
+    waveguide::waveguide waveguide(cc.get_context(),
+                                   cc.get_device(),
+                                   MeshBoundary(scene_data),
+                                   receiver,
+                                   filter_frequency * 4);
 
     auto receiver_index = waveguide.get_index_for_coordinate(receiver);
     auto source_index   = waveguide.get_index_for_coordinate(source);
@@ -67,18 +67,19 @@ aligned::vector<float> run_simulation(const compute_context& cc,
 
     std::atomic_bool keep_going{true};
     progress_bar pb(std::cout, steps);
-    auto results = waveguide.init_and_run(corrected_source,
-                                          aligned::vector<float>{1},
-                                          receiver_index,
-                                          steps,
-                                          keep_going,
-                                          [&pb] { pb += 1; });
+    auto results = waveguide::init_and_run(waveguide,
+                                           corrected_source,
+                                           aligned::vector<float>{1},
+                                           receiver_index,
+                                           steps,
+                                           keep_going,
+                                           [&pb] { pb += 1; });
 
 #if 0
     auto output = Microphone::omni.process(results);
 #else
-    auto output = map_to_vector(*results,
-                                [](const auto& i) { return i.get_pressure(); });
+    auto output =
+            map_to_vector(*results, [](const auto& i) { return i.pressure; });
 #endif
 
     // filter::LinkwitzRileySingleLopass lopass;
@@ -123,8 +124,8 @@ aligned::vector<float> get_free_field_results(const compute_context& cc,
         throw std::runtime_error("too many nodes");
     }
 
-    const float divisions =
-            config::grid_spacing(SPEED_OF_SOUND, 1.0 / (filter_frequency * 4));
+    const float divisions = waveguide::config::grid_spacing(
+            SPEED_OF_SOUND, 1.0 / (filter_frequency * 4));
 
     //  generate two boundaries, one twice the size of the other
     const box wall(glm::vec3(0, 0, 0), glm::vec3(desired_nodes) * divisions);
@@ -206,8 +207,7 @@ FullTestResults run_full_test(const std::string& test_name,
                               int dim,
                               int steps,
                               const Surface& surface,
-                              aligned::vector<float>
-                                      windowed_free_field) {
+                              aligned::vector<float> windowed_free_field) {
     //  set room size based on desired number of nodes
     auto desired_nodes = glm::ivec3(dim);
     auto total_desired_nodes =
@@ -220,8 +220,8 @@ FullTestResults run_full_test(const std::string& test_name,
         throw std::runtime_error("too many nodes");
     }
 
-    const float divisions =
-            config::grid_spacing(SPEED_OF_SOUND, 1.0 / (filter_frequency * 4));
+    const float divisions = waveguide::config::grid_spacing(
+            SPEED_OF_SOUND, 1.0 / (filter_frequency * 4));
 
     //  generate two boundaries, one twice the size of the other
     const box wall(glm::vec3(0, 0, 0), glm::vec3(desired_nodes) * divisions);

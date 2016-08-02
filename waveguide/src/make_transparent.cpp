@@ -3,8 +3,7 @@
 #include "common/sinc.h"
 #include "data.h"
 
-#include <algorithm>
-#include <cassert>
+namespace waveguide {
 
 aligned::vector<float> make_transparent(const aligned::vector<float> &kernel) {
     //  get ir data
@@ -14,7 +13,7 @@ aligned::vector<float> make_transparent(const aligned::vector<float> &kernel) {
 
     //  window ir
     auto window = right_hanning(ir.size());
-//    elementwise_multiply(ir, window);
+    elementwise_multiply(ir, window);
 
     //  create convolver
     FastConvolver fast_convolver(kernel.size() + ir.size() - 1);
@@ -29,3 +28,5 @@ aligned::vector<float> make_transparent(const aligned::vector<float> &kernel) {
 
     return convolved;
 }
+
+}  // namespace waveguide

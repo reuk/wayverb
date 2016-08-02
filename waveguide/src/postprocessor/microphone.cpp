@@ -1,20 +1,19 @@
-#include "waveguide/postprocessors/microphone.h"
+#include "waveguide/postprocessor/microphone.h"
 
-namespace postprocessors {
+namespace waveguide {
+namespace postprocessor {
 
-microphone_step_postprocessor::microphone_step_postprocessor(
-        const rectangular_mesh& mesh,
-        size_t output_node,
-        double sample_rate,
-        const output_callback& callback)
+microphone::microphone(const mesh& mesh,
+                       size_t output_node,
+                       double sample_rate,
+                       const output_callback& callback)
         : output_node(output_node)
         , surrounding_nodes(mesh.compute_neighbors(output_node))
         , mesh_spacing(mesh.get_spacing())
         , sample_rate(sample_rate)
         , callback(callback) {}
 
-void microphone_step_postprocessor::process(cl::CommandQueue& queue,
-                                            const cl::Buffer& buffer) {
+void microphone::process(cl::CommandQueue& queue, const cl::Buffer& buffer) {
     //  copy out node pressure
     const auto pressure =
             read_single_value<cl_float>(queue, buffer, output_node);
@@ -58,4 +57,5 @@ void microphone_step_postprocessor::process(cl::CommandQueue& queue,
     callback(pressure, intensity);
 }
 
-}  // namespace postprocessors
+}  // namespace postprocessor
+}  // namespace waveguide

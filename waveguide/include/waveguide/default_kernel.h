@@ -2,6 +2,8 @@
 
 #include "common/aligned/vector.h"
 
+namespace waveguide {
+
 /// Create a transparent source for use with a soft-source waveguide.
 /// Source is a ricker wavelet with upper frequency at approximately
 /// 1/4 the sampling frequency, and an appropriate length.
@@ -23,3 +25,5 @@ public:
 private:
     default_kernel(aligned::vector<float>&& opaque);
 };
+
+}  // namespace waveguide

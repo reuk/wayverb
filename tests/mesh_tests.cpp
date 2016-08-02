@@ -1,4 +1,4 @@
-#include "waveguide/rectangular_mesh.h"
+#include "waveguide/mesh.h"
 
 #include "common/cl_common.h"
 #include "common/scene_data.h"
@@ -80,13 +80,13 @@ public:
 private:
     compute_context cc;
     cl::CommandQueue queue{cc.get_context(), cc.get_device()};
-    rectangular_program program{cc.get_context(), cc.get_device()};
+    waveguide::program program{cc.get_context(), cc.get_device()};
 };
 
-TEST_F(MeshTest, locator_index_rect) { locator_index_test<rectangular_mesh>(); }
+TEST_F(MeshTest, locator_index_rect) { locator_index_test<waveguide::mesh>(); }
 
 TEST_F(MeshTest, position_index_rect) {
-    test_position_index<rectangular_mesh>();
+    test_position_index<waveguide::mesh>();
 }
 
-TEST_F(MeshTest, neighbor_rect) { test_neighbor<rectangular_mesh>(); }
+TEST_F(MeshTest, neighbor_rect) { test_neighbor<waveguide::mesh>(); }

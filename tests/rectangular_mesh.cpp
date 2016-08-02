@@ -1,4 +1,4 @@
-#include "waveguide/rectangular_mesh.h"
+#include "waveguide/mesh.h"
 
 #include "common/scene_data.h"
 
@@ -31,5 +31,5 @@
 TEST(mesh_classification, badbox) {
     SceneData scene_data(OBJ_PATH_BAD_BOX);
     MeshBoundary boundary(scene_data);
-    rectangular_mesh mesh(boundary, 0.05, glm::vec3());
+    waveguide::mesh mesh(boundary, 0.05, glm::vec3());
 }

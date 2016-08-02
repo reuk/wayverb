@@ -2,6 +2,8 @@
 
 #include <cassert>
 
+namespace waveguide {
+
 box compute_adjusted_boundary(const box& min_boundary,
                               const glm::vec3& anchor,
                               float cube_side) {
@@ -16,3 +18,5 @@ box compute_adjusted_boundary(const box& min_boundary,
     assert(glm::all(glm::lessThan(min_boundary.get_c1() + cube_side, c1)));
     return box(c0, c1);
 }
+
+}  // namespace waveguide

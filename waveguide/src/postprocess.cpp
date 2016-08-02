@@ -1,7 +1,6 @@
 #include "waveguide/postprocess.h"
-
-#include "waveguide/hrtf_attenuator.h"
-#include "waveguide/microphone_attenuator.h"
+#include "waveguide/attenuator/hrtf.h"
+#include "waveguide/attenuator/microphone.h"
 
 #include "common/map.h"
 
@@ -9,11 +8,11 @@ namespace waveguide {
 
 aligned::vector<aligned::vector<float>> run_attenuation(
         const model::ReceiverSettings& receiver,
-        const aligned::vector<rectangular_waveguide::run_step_output>& input,
+        const aligned::vector<run_step_output>& input,
         double waveguide_sample_rate) {
     switch (receiver.mode) {
         case model::ReceiverSettings::Mode::microphones: {
-            waveguide::attenuator::microphone attenuator;
+            attenuator::microphone attenuator;
             return map_to_vector(
                     receiver.microphones,
                     [&receiver, &input, &attenuator](const auto& i) {
@@ -24,7 +23,7 @@ aligned::vector<aligned::vector<float>> run_attenuation(
                     });
         }
         case model::ReceiverSettings::Mode::hrtf: {
-            waveguide::attenuator::hrtf attenuator;
+            attenuator::hrtf attenuator;
             auto channels = {HrtfChannel::left, HrtfChannel::right};
             return map_to_vector(
                     channels,

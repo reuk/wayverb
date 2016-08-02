@@ -1,6 +1,6 @@
 #include "waveguide/config.h"
-#include "waveguide/rectangular_program.h"
-#include "waveguide/rectangular_waveguide.h"
+#include "waveguide/program.h"
+#include "waveguide/waveguide.h"
 
 #include "common/cl_common.h"
 #include "common/progress_bar.h"
@@ -18,8 +18,8 @@ TEST(peak_filter_coefficients, peak_filter_coefficients) {
     static std::uniform_real_distribution<cl_float> range{0, samplerate / 2};
     for (auto i = 0; i != 10; ++i) {
         auto descriptor =
-                rectangular_program::FilterDescriptor{0, range(engine), 1.414};
-        auto coefficients = rectangular_program::get_peak_coefficients(
+                waveguide::program::FilterDescriptor{0, range(engine), 1.414};
+        auto coefficients = waveguide::program::get_peak_coefficients(
                 descriptor, samplerate);
 
         ASSERT_TRUE(proc::equal(coefficients.b, std::begin(coefficients.a)));
@@ -32,7 +32,7 @@ TEST(run_waveguide, run_waveguide) {
     compute_context cc;
 
     //  get opencl program
-    rectangular_program waveguide_program(cc.get_context(), cc.get_device());
+    waveguide::program waveguide_program(cc.get_context(), cc.get_device());
 
     box box(glm::vec3(0, 0, 0), glm::vec3(4, 3, 6));
     constexpr glm::vec3 source(1, 1, 1);
@@ -47,7 +47,7 @@ TEST(run_waveguide, run_waveguide) {
     scene_data.set_surfaces(surface);
 
     //  get a waveguide
-    rectangular_waveguide waveguide(cc.get_context(),
+    waveguide::waveguide waveguide(cc.get_context(),
                                    cc.get_device(),
                                    MeshBoundary(scene_data),
                                    receiver,
@@ -63,19 +63,19 @@ TEST(run_waveguide, run_waveguide) {
 
     std::atomic_bool keep_going{true};
     progress_bar pb(std::cout, steps);
-    auto results = waveguide.init_and_run(corrected_source,
-                                          aligned::vector<float>{1},
-                                          receiver_index,
-                                          steps,
-                                          keep_going,
-                                          [&pb] { pb += 1; });
+    auto results = waveguide::init_and_run(waveguide,
+                                           corrected_source,
+                                           aligned::vector<float>{1},
+                                           receiver_index,
+                                           steps,
+                                           keep_going,
+                                           [&pb] { pb += 1; });
 
     ASSERT_TRUE(results);
 
     auto output = aligned::vector<float>(results->size());
-    proc::transform(*results, output.begin(), [](const auto& i) {
-        return i.get_pressure();
-    });
+    proc::transform(
+            *results, output.begin(), [](const auto& i) { return i.pressure; });
 
     auto max_amp = max_mag(output);
     std::cout << "max_mag: " << max_amp << std::endl;
