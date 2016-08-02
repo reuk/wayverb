@@ -1,14 +1,15 @@
 #include "combined/engine.h"
 
+#include "common/aligned/set.h"
 #include "common/boundaries.h"
 #include "common/cl_common.h"
-#include "common/conversions.h"
 #include "common/config.h"
+#include "common/conversions.h"
 #include "common/dc_blocker.h"
 #include "common/filters_common.h"
 #include "common/kernel.h"
-#include "common/receiver_settings.h"
 #include "common/map.h"
+#include "common/receiver_settings.h"
 
 #include "raytracer/attenuator.h"
 #include "raytracer/postprocess.h"
@@ -18,6 +19,8 @@
 #include "waveguide/attenuator/microphone.h"
 #include "waveguide/default_kernel.h"
 #include "waveguide/postprocess.h"
+#include "waveguide/postprocessor/microphone.h"
+#include "waveguide/postprocessor/visualiser.h"
 #include "waveguide/waveguide.h"
 
 #include <cmath>
@@ -47,12 +50,12 @@ constexpr double rectilinear_calibration_factor(double r, double sr) {
 
 class intermediate_impl : public wayverb::intermediate {
 public:
-    intermediate_impl(const glm::vec3& source,
-                      const glm::vec3& receiver,
-                      double waveguide_sample_rate,
-                      raytracer::results&& raytracer_results,
-                      aligned::vector<waveguide::run_step_output>&&
-                              waveguide_results)
+    intermediate_impl(
+            const glm::vec3& source,
+            const glm::vec3& receiver,
+            double waveguide_sample_rate,
+            raytracer::results&& raytracer_results,
+            aligned::vector<waveguide::run_step_output>&& waveguide_results)
             : source(source)
             , receiver(receiver)
             , waveguide_sample_rate(waveguide_sample_rate)
@@ -210,82 +213,6 @@ public:
 
     std::unique_ptr<intermediate> run(std::atomic_bool& keep_going,
                                       const state_callback& callback) {
-        auto waveguide_step = 0u;
-        return this->run_basic(
-                keep_going,
-                callback,
-                [&waveguide_step](waveguide::waveguide& waveguide,
-                                  const glm::vec3& corrected_source,
-                                  const aligned::vector<float>& input,
-                                  size_t mic_index,
-                                  size_t steps,
-                                  std::atomic_bool& keep_going,
-                                  const state_callback& callback) {
-                    return waveguide::init_and_run(
-                            waveguide,
-                            corrected_source,
-                            std::move(input),
-                            mic_index,
-                            steps,
-                            keep_going,
-                            [&callback, &waveguide_step, steps] {
-                                callback(state::running_waveguide,
-                                         waveguide_step++ / (steps - 1.0));
-                            });
-                });
-    }
-
-    std::unique_ptr<intermediate> run_visualised(
-            std::atomic_bool& keep_going,
-            const state_callback& s_callback,
-            const visualiser_callback& v_callback) {
-        auto waveguide_step = 0u;
-        return this->run_basic(
-                keep_going,
-                s_callback,
-                [&waveguide_step, &v_callback](
-                        waveguide::waveguide& waveguide,
-                        const glm::vec3& corrected_source,
-                        const aligned::vector<float>& input,
-                        size_t mic_index,
-                        size_t steps,
-                        std::atomic_bool& keep_going,
-                        const state_callback& callback) {
-                    return waveguide::init_and_run(
-                            waveguide,
-                            corrected_source,
-                            std::move(input),
-                            mic_index,
-                            steps,
-                            keep_going,
-                            [&callback, &waveguide_step, steps] {
-                                callback(state::running_waveguide,
-                                         waveguide_step++ / (steps - 1.0));
-                            },
-                            v_callback);
-                });
-    }
-
-    aligned::vector<glm::vec3> get_node_positions() const {
-        return map_to_vector(waveguide.get_mesh().get_nodes(),
-                             [](const auto& i) { return to_vec3(i.position); });
-    }
-
-private:
-    using waveguide_callback = std::function<std::experimental::optional<
-            aligned::vector<waveguide::run_step_output>>(
-            waveguide::waveguide&,
-            const glm::vec3&,
-            const aligned::vector<float>&,
-            size_t,
-            size_t,
-            std::atomic_bool&,
-            const state_callback&)>;
-
-    std::unique_ptr<intermediate> run_basic(
-            std::atomic_bool& keep_going,
-            const state_callback& callback,
-            const waveguide_callback& waveguide_callback) {
         //  RAYTRACER  -------------------------------------------------------//
         callback(state::starting_raytracer, 1.0);
         auto raytracer_step    = 0;
@@ -298,7 +225,7 @@ private:
                 std::min(size_t{10},
                          impulses),  //  TODO set this more intelligently
                 keep_going,
-                [this, &callback, &raytracer_step] {
+                [&] {
                     callback(state::running_raytracer,
                              raytracer_step++ / (impulses - 1.0));
                 });
@@ -309,6 +236,10 @@ private:
 
         callback(state::finishing_raytracer, 1.0);
 
+        if (raytracer_visual_callback) {
+            raytracer_visual_callback(raytracer_results->get_diffuse());
+        }
+
         auto impulses = raytracer_results->get_impulses();
 
         //  look for the max time of an impulse
@@ -317,10 +248,6 @@ private:
                     return a.time < b.time;
                 })->time;
 
-        //  this is the number of steps to run the raytracer for
-        //  TODO is there a less dumb way of doing this?
-        auto steps = std::ceil(max_time * waveguide_sample_rate);
-
         //  WAVEGUIDE  -------------------------------------------------------//
         callback(state::starting_waveguide, 1.0);
 
@@ -328,29 +255,56 @@ private:
                 waveguide.get_coordinate_for_index(source_index);
         const auto input = waveguide::default_kernel(waveguide_sample_rate);
 
-        //  If the max raytracer time is large this could take forever...
-        auto waveguide_results =
-                waveguide_callback(waveguide,
-                                   corrected_source,
-                                   input.kernel,
-                                   receiver_index,
-                                   steps + input.opaque_kernel_size,
-                                   keep_going,
-                                   callback);
+        //  this is the number of steps to run the raytracer for
+        //  TODO is there a less dumb way of doing this?
+        const auto steps = std::ceil(max_time * waveguide_sample_rate) +
+                           input.opaque_kernel_size;
 
-        if (!(keep_going && waveguide_results)) {
+        //  If the max raytracer time is large this could take forever...
+        aligned::vector<waveguide::run_step_output> waveguide_results;
+        waveguide_results.reserve(steps);
+        aligned::vector<waveguide::waveguide::step_postprocessor>
+                postprocessors{waveguide::postprocessor::microphone(
+                        waveguide.get_mesh(),
+                        receiver_index,
+                        waveguide.get_sample_rate(),
+                        [&waveguide_results](const auto& i) {
+                            waveguide_results.push_back(i);
+                        })};
+
+        if (waveguide_visual_callback) {
+            postprocessors.push_back(waveguide_visual_callback);
+        }
+
+        auto waveguide_step     = 0u;
+        auto waveguide_finished = waveguide.init_and_run(
+                corrected_source,
+                input.kernel,
+                steps,
+                postprocessors,
+                [&] {
+                    callback(state::running_waveguide,
+                             waveguide_step / (steps - 1.0));
+                    waveguide_step += 1;
+                },
+                keep_going);
+
+        if (!waveguide_finished) {
             return nullptr;
         }
+
+        //  if we got here, we can assume waveguide_results is complete and
+        //  valid
 
         callback(state::finishing_waveguide, 1.0);
 
         //  correct for filter time offset
-        assert(input.correction_offset_in_samples < waveguide_results->size());
+        assert(input.correction_offset_in_samples < waveguide_results.size());
 
         LOG(INFO) << "correcting waveguide for kernel time offset";
-        waveguide_results->erase(waveguide_results->begin(),
-                                 waveguide_results->begin() +
-                                         input.correction_offset_in_samples);
+        waveguide_results.erase(
+                waveguide_results.begin(),
+                waveguide_results.begin() + input.correction_offset_in_samples);
 
         LOG(INFO) << "creating ret";
 
@@ -359,13 +313,38 @@ private:
                 receiver,
                 waveguide_sample_rate,
                 std::move(*raytracer_results),
-                std::move(*waveguide_results));
+                std::move(waveguide_results));
 
         LOG(INFO) << "about to return from run_basic";
 
         return ret;
     }
 
+    aligned::vector<glm::vec3> get_node_positions() const {
+        return map_to_vector(waveguide.get_mesh().get_nodes(),
+                             [](const auto& i) { return to_vec3(i.position); });
+    }
+
+    void register_waveguide_visual_callback(
+            waveguide_visual_callback_t callback) {
+        waveguide_visual_callback =
+                waveguide::postprocessor::visualiser(callback);
+    }
+
+    void unregister_waveguide_visual_callback() {
+        waveguide_visual_callback = waveguide::waveguide::step_postprocessor{};
+    }
+
+    void register_raytracer_visual_callback(
+            raytracer_visual_callback_t callback) {
+        raytracer_visual_callback = callback;
+    }
+
+    void unregister_raytracer_visual_callback() {
+        raytracer_visual_callback = raytracer_visual_callback_t{};
+    }
+
+private:
     compute_context compute_context;
     CopyableSceneData scene_data;
     raytracer::raytracer raytracer;
@@ -379,6 +358,9 @@ private:
 
     size_t source_index;
     size_t receiver_index;
+
+    waveguide::waveguide::step_postprocessor waveguide_visual_callback;
+    raytracer_visual_callback_t raytracer_visual_callback;
 };
 
 engine::engine(const compute_context& compute_context,
@@ -411,13 +393,6 @@ engine::engine(const compute_context& compute_context,
 
 engine::~engine() noexcept = default;
 
-std::unique_ptr<intermediate> engine::run_visualised(
-        std::atomic_bool& keep_going,
-        const engine::state_callback& callback,
-        const engine::visualiser_callback& visualiser_callback) {
-    return pimpl->run_visualised(keep_going, callback, visualiser_callback);
-}
-
 std::unique_ptr<intermediate> engine::run(
         std::atomic_bool& keep_going, const engine::state_callback& callback) {
     return pimpl->run(keep_going, callback);
@@ -425,6 +400,24 @@ std::unique_ptr<intermediate> engine::run(
 
 aligned::vector<glm::vec3> engine::get_node_positions() const {
     return pimpl->get_node_positions();
+}
+
+void engine::register_raytracer_visual_callback(
+        raytracer_visual_callback_t callback) {
+    pimpl->register_raytracer_visual_callback(std::move(callback));
+}
+
+void engine::unregister_raytracer_visual_callback() {
+    pimpl->unregister_raytracer_visual_callback();
+}
+
+void engine::register_waveguide_visual_callback(
+        waveguide_visual_callback_t callback) {
+    pimpl->register_waveguide_visual_callback(std::move(callback));
+}
+
+void engine::unregister_waveguide_visual_callback() {
+    pimpl->unregister_waveguide_visual_callback();
 }
 
 void engine::swap(engine& rhs) noexcept {

@@ -19,19 +19,6 @@ public:
     using visualiser_callback =
             std::function<void(const aligned::vector<cl_float>&)>;
 
-    class step_postprocessor {
-    public:
-        step_postprocessor()                          = default;
-        step_postprocessor(const step_postprocessor&) = default;
-        step_postprocessor& operator=(const step_postprocessor&) = default;
-        step_postprocessor(step_postprocessor&&) noexcept        = default;
-        step_postprocessor& operator=(step_postprocessor&&) noexcept = default;
-        virtual ~step_postprocessor() noexcept                       = default;
-
-        virtual void process(cl::CommandQueue& queue,
-                             const cl::Buffer& buffer) = 0;
-    };
-
     waveguide(const cl::Context&,
               const cl::Device&,
               const MeshBoundary& boundary,
@@ -50,15 +37,16 @@ public:
     glm::vec3 get_coordinate_for_index(size_t index) const;
     bool inside(size_t index) const;
 
-    //  number of steps defined by input length
+    using step_postprocessor =
+            std::function<void(cl::CommandQueue&, const cl::Buffer&)>;
+
     //  returns whether the run was successful
-    bool init_and_run(
-            const glm::vec3& excitation_location,
-            const aligned::vector<float>& input,
-            const aligned::vector<std::unique_ptr<step_postprocessor>>&
-                    postprocessors,
-            const per_step_callback& callback,
-            std::atomic_bool& keep_going);
+    bool init_and_run(const glm::vec3& excitation_location,
+                      aligned::vector<float> input,
+                      size_t steps,
+                      const aligned::vector<step_postprocessor>& postprocessors,
+                      const per_step_callback& callback,
+                      std::atomic_bool& keep_going);
 
 private:
     using kernel_type = decltype(std::declval<program>().get_kernel());

@@ -13,7 +13,7 @@ microphone::microphone(const mesh& mesh,
         , sample_rate(sample_rate)
         , callback(callback) {}
 
-void microphone::process(cl::CommandQueue& queue, const cl::Buffer& buffer) {
+void microphone::operator()(cl::CommandQueue& queue, const cl::Buffer& buffer) {
     //  copy out node pressure
     const auto pressure =
             read_single_value<cl_float>(queue, buffer, output_node);
@@ -54,7 +54,7 @@ void microphone::process(cl::CommandQueue& queue, const cl::Buffer& buffer) {
     //  and the pressure
     const auto intensity = velocity * static_cast<double>(pressure);
 
-    callback(pressure, intensity);
+    callback(run_step_output{intensity, pressure});
 }
 
 }  // namespace postprocessor

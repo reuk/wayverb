@@ -5,17 +5,17 @@
 namespace waveguide {
 namespace postprocessor {
 
-class microphone : public waveguide::step_postprocessor {
+class microphone final {
 public:
     //  node pressure and intensity are passed to the callback
-    using output_callback = std::function<void(float, const glm::vec3&)>;
+    using output_callback = std::function<void(run_step_output)>;
 
     microphone(const mesh& mesh,
                size_t output_node,
                double sample_rate,
                const output_callback& callback);
 
-    void process(cl::CommandQueue& queue, const cl::Buffer& buffer) override;
+    void operator()(cl::CommandQueue& queue, const cl::Buffer& buffer);
 
 private:
     size_t output_node;

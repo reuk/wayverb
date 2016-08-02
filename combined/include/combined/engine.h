@@ -2,6 +2,8 @@
 
 #include "combined/engine_state.h"
 
+#include "raytracer/cl_structs.h"
+
 #include "common/aligned/vector.h"
 
 #include "glm/glm.hpp"
@@ -64,15 +66,21 @@ public:
 
     ~engine() noexcept;
 
-    using state_callback      = std::function<void(state, double)>;
-    using visualiser_callback = std::function<void(aligned::vector<float>)>;
-
+    using state_callback = std::function<void(state, double)>;
     std::unique_ptr<intermediate> run(std::atomic_bool& keep_going,
                                       const state_callback&);
 
-    std::unique_ptr<intermediate> run_visualised(std::atomic_bool& keep_going,
-                                                 const state_callback&,
-                                                 const visualiser_callback&);
+    using raytracer_visual_callback_t =
+            std::function<void(aligned::vector<aligned::vector<Impulse>>)>;
+    void register_raytracer_visual_callback(
+            raytracer_visual_callback_t callback);
+    void unregister_raytracer_visual_callback();
+
+    using waveguide_visual_callback_t =
+            std::function<void(aligned::vector<cl_float>)>;
+    void register_waveguide_visual_callback(
+            waveguide_visual_callback_t callback);
+    void unregister_waveguide_visual_callback();
 
     aligned::vector<glm::vec3> get_node_positions() const;
 

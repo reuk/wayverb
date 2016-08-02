@@ -67,9 +67,9 @@ waveguide::waveguide(
 
 bool waveguide::init_and_run(
         const glm::vec3& excitation_location,
-        const aligned::vector<float>& input,
-        const aligned::vector<std::unique_ptr<step_postprocessor>>&
-                postprocessors,
+        aligned::vector<float> input,
+        size_t steps,
+        const aligned::vector<step_postprocessor>& postprocessors,
         const per_step_callback& callback,
         std::atomic_bool& keep_going) {
     //  init
@@ -90,6 +90,8 @@ bool waveguide::init_and_run(
     };
     zero_mesh(previous);
     zero_mesh(current);
+
+    input.resize(steps, 0);
 
     //  run
     for (auto pressure : input) {
@@ -138,8 +140,8 @@ bool waveguide::init_and_run(
             throw std::runtime_error("suspicious boundary read");
         }
 
-        for (const auto& i : postprocessors) {
-            i->process(queue, current);
+        for (auto& i : postprocessors) {
+            i(queue, current);
         }
 
         std::swap(previous, current);
@@ -173,59 +175,17 @@ std::experimental::optional<aligned::vector<run_step_output>> init_and_run(
         size_t steps,
         std::atomic_bool& keep_going,
         const waveguide::per_step_callback& callback) {
-    auto t = input;
-    t.resize(steps, 0);
-
     aligned::vector<run_step_output> ret;
     ret.reserve(steps);
-    aligned::vector<std::unique_ptr<waveguide::step_postprocessor>>
-            postprocessors;
-    postprocessors.push_back(
-            std::make_unique<postprocessor::microphone>(
+    aligned::vector<waveguide::step_postprocessor> postprocessors{
+            postprocessor::microphone(
                     waveguide.get_mesh(),
                     output_node,
                     waveguide.get_sample_rate(),
-                    [&ret](float pressure, const glm::vec3& intensity) {
-                        ret.push_back(run_step_output{intensity, pressure});
-                    }));
+                    [&ret](const auto& i) { ret.push_back(i); })};
 
-    if (waveguide.init_and_run(e, t, postprocessors, callback, keep_going)) {
-        return ret;
-    }
-
-    return std::experimental::nullopt;
-}
-
-std::experimental::optional<aligned::vector<run_step_output>> init_and_run(
-        waveguide& waveguide,
-        const glm::vec3& e,
-        const aligned::vector<float>& input,
-        size_t output_node,
-        size_t steps,
-        std::atomic_bool& keep_going,
-        const waveguide::per_step_callback& callback,
-        const waveguide::visualiser_callback& visual_callback) {
-    auto t = input;
-    t.resize(steps, 0);
-
-    aligned::vector<run_step_output> ret;
-    ret.reserve(steps);
-    aligned::vector<std::unique_ptr<waveguide::step_postprocessor>>
-            postprocessors;
-    postprocessors.push_back(
-            std::make_unique<postprocessor::microphone>(
-                    waveguide.get_mesh(),
-                    output_node,
-                    waveguide.get_sample_rate(),
-                    [&ret](float pressure, const glm::vec3& intensity) {
-                        ret.push_back(run_step_output{intensity, pressure});
-                    }));
-    postprocessors.push_back(
-            std::make_unique<postprocessor::visualiser>(
-                    waveguide.get_mesh().get_nodes().size(),
-                    [&visual_callback](const auto& i) { visual_callback(i); }));
-
-    if (waveguide.init_and_run(e, t, postprocessors, callback, keep_going)) {
+    if (waveguide.init_and_run(
+                e, input, steps, postprocessors, callback, keep_going)) {
         return ret;
     }
 
