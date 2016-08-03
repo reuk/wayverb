@@ -1,6 +1,7 @@
 #include "OtherComponents/BasicDrawableObject.hpp"
 
 #include "common/aligned/vector.h"
+#include "common/map.h"
 
 #include <vector>
 
@@ -30,12 +31,8 @@ BasicDrawableObject& BasicDrawableObject::operator=(
         BasicDrawableObject&&) noexcept           = default;
 
 void BasicDrawableObject::set_highlight(float amount) {
-    aligned::vector<glm::vec4> highlighted(color_vector.size());
-    std::transform(color_vector.begin(),
-                   color_vector.end(),
-                   highlighted.begin(),
-                   [amount](const auto& i) { return i + amount; });
-    colors.data(highlighted);
+    colors.data(map_to_vector(color_vector,
+                              [&](const auto& i) { return i + amount; }));
 }
 
 void BasicDrawableObject::do_draw(const glm::mat4& modelview_matrix) const {

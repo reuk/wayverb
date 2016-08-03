@@ -3,6 +3,7 @@
 
 #include "common/filters_common.h"
 #include "common/hrtf.h"
+#include "common/map.h"
 #include "common/stl_wrappers.h"
 
 namespace {
@@ -50,25 +51,17 @@ aligned::vector<aligned::vector<float>> hrtf::process(
         HrtfChannel channel) const {
     aligned::vector<aligned::vector<float>> ret;
     for (auto band = 0u; band != HrtfData::EDGES.size(); ++band) {
-        aligned::vector<float> this_band;
-        this_band.reserve(input.size());
-        proc::transform(input,
-                        std::back_inserter(this_band),
-                        [direction, up, channel, band](auto i) {
-                            auto mag = glm::length(i.intensity);
-                            if (mag == 0) {
-                                return 0.0f;
-                            }
-                            mag = sqrt(mag * pow(attenuation(direction,
-                                                             up,
-                                                             channel,
-                                                             i.intensity,
-                                                             band),
-                                                 2));
-                            return std::copysign(mag, i.pressure);
-                        });
-
-        ret.push_back(std::move(this_band));
+        ret.push_back(map_to_vector(input, [=](auto i) {
+            auto mag = glm::length(i.intensity);
+            if (mag == 0) {
+                return 0.0f;
+            }
+            mag = sqrt(
+                    mag *
+                    pow(attenuation(direction, up, channel, i.intensity, band),
+                        2));
+            return std::copysign(mag, i.pressure);
+        }));
     }
 
     return ret;
