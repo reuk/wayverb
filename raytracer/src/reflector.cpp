@@ -23,9 +23,9 @@ aligned::vector<cl_float> get_direction_rng(size_t num) {
     return ret;
 }
 
-aligned::vector<raytracer::Ray> get_random_rays(size_t num,
+aligned::vector<raytracer::ray> get_random_rays(size_t num,
                                                 const glm::vec3& source) {
-    aligned::vector<raytracer::Ray> ret;
+    aligned::vector<raytracer::ray> ret;
     ret.reserve(num);
     std::default_random_engine engine{std::random_device()()};
 
@@ -33,7 +33,7 @@ aligned::vector<raytracer::Ray> get_random_rays(size_t num,
 
     for (auto i = 0u; i != num; ++i) {
         const raytracer::direction_rng rng(engine);
-        ret.push_back(raytracer::Ray{
+        ret.push_back(raytracer::ray{
                 src, to_cl_float3(sphere_point(rng.get_z(), rng.get_theta()))});
     }
     return ret;
@@ -59,8 +59,8 @@ reflector::reflector(const cl::Context& context,
                   load_to_buffer(context, get_random_rays(rays, source), false))
         , reflection_buffer(load_to_buffer(
                   context,
-                  aligned::vector<Reflection>(rays,
-                                              Reflection{cl_float3{},
+                  aligned::vector<reflection>(rays,
+                                              reflection{cl_float3{},
                                                          cl_float3{},
                                                          cl_ulong{},
                                                          cl_char{true},
@@ -68,7 +68,7 @@ reflector::reflector(const cl::Context& context,
                   false))
         , rng_buffer(context, CL_MEM_READ_WRITE, rays * 2 * sizeof(cl_float)) {}
 
-aligned::vector<Reflection> reflector::run_step(scene_buffers& buffers) {
+aligned::vector<reflection> reflector::run_step(scene_buffers& buffers) {
     //  get some new rng and copy it to device memory
     auto rng = get_direction_rng(rays);
     cl::copy(buffers.get_queue(), std::begin(rng), std::end(rng), rng_buffer);
@@ -86,7 +86,7 @@ aligned::vector<Reflection> reflector::run_step(scene_buffers& buffers) {
            rng_buffer,
            reflection_buffer);
 
-    aligned::vector<Reflection> ret(rays);
+    aligned::vector<reflection> ret(rays);
     cl::copy(buffers.get_queue(),
              reflection_buffer,
              std::begin(ret),

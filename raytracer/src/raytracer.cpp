@@ -8,12 +8,12 @@
 
 namespace raytracer {
 
-std::experimental::optional<Impulse> get_direct_impulse(
+std::experimental::optional<impulse> get_direct_impulse(
         const glm::vec3& source,
         const glm::vec3& receiver,
-        const CopyableSceneData& scene_data,
-        const VoxelCollection& vox) {
-    VoxelCollection::TriangleTraversalCallback callback(scene_data);
+        const copyable_scene_data& scene_data,
+        const voxel_collection& vox) {
+    voxel_collection::TriangleTraversalCallback callback(scene_data);
 
     const auto source_to_receiver        = receiver - source;
     const auto source_to_receiver_length = glm::length(source_to_receiver);
@@ -24,7 +24,7 @@ std::experimental::optional<Impulse> get_direct_impulse(
 
     if (!intersection ||
         (intersection && intersection->distance > source_to_receiver_length)) {
-        return construct_impulse(VolumeType{{1, 1, 1, 1, 1, 1, 1, 1}},
+        return construct_impulse(volume_type{{1, 1, 1, 1, 1, 1, 1, 1}},
                                  source,
                                  source_to_receiver_length);
     }
@@ -37,7 +37,7 @@ raytracer::raytracer(const cl::Context& context, const cl::Device& device)
         , device(device) {}
 
 std::experimental::optional<results> raytracer::run(
-        const CopyableSceneData& scene_data,
+        const copyable_scene_data& scene_data,
         const glm::vec3& source,
         const glm::vec3& receiver,
         size_t rays,
@@ -50,7 +50,7 @@ std::experimental::optional<results> raytracer::run(
     //  set up all the rendering context stuff
 
     //  create acceleration structure for raytracing
-    VoxelCollection vox(scene_data, 4, 0.1);
+    voxel_collection vox(scene_data, 4, 0.1);
 
     //  load the scene into device memory
     scene_buffers scene_buffers(context, device, scene_data, vox);

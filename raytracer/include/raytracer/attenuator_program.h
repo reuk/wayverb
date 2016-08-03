@@ -12,7 +12,7 @@ public:
 
     auto get_microphone_kernel() const {
         return program_wrapper
-                .get_kernel<cl_float3, cl::Buffer, cl::Buffer, Microphone>(
+                .get_kernel<cl_float3, cl::Buffer, cl::Buffer, microphone>(
                         "microphone");
     }
 

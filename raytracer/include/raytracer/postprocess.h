@@ -15,9 +15,9 @@ double intensity_to_pressure(double intensity, double Z = 400);
 /// Sum impulses ocurring at the same (sampled) time and return a vector in
 /// which each subsequent item refers to the next sample of an impulse
 /// response.
-template <typename Impulse>  //  an Impulse has a .volume and a .time
+template <typename im>  //  an impulse has a .volume and a .time
 aligned::vector<aligned::vector<float>> flatten_impulses(
-        const aligned::vector<Impulse>& impulse, double samplerate) {
+        const aligned::vector<im>& impulse, double samplerate) {
     const auto MAX_TIME_LIMIT = 20.0f;
     // Find the index of the final sample based on time and samplerate
     const auto maxtime = std::min(
@@ -30,7 +30,7 @@ aligned::vector<aligned::vector<float>> flatten_impulses(
 
     //  Create somewhere to store the results.
     aligned::vector<aligned::vector<float>> flattened(
-            detail::components_v<VolumeType>,
+            detail::components_v<volume_type>,
             aligned::vector<float>(MAX_SAMPLE, 0));
 
     //  For each impulse, calculate its index, then add the impulse's volumes
@@ -49,17 +49,17 @@ aligned::vector<aligned::vector<float>> flatten_impulses(
     return flattened;
 }
 
-/// Maps flattenImpulses over a vector of input vectors.
-template <typename Impulse>
+/// Maps flattenimpulses over a vector of input vectors.
+template <typename im>
 aligned::vector<aligned::vector<aligned::vector<float>>> flatten_impulses(
-        const aligned::vector<aligned::vector<Impulse>>& impulse,
+        const aligned::vector<aligned::vector<im>>& impulse,
         double samplerate) {
     return map_to_vector(impulse, [samplerate](const auto& i) {
         return flatten_impulses(i, samplerate);
     });
 }
 
-/// Recursively check a collection of Impulses for the earliest non-zero time of
+/// Recursively check a collection of impulses for the earliest non-zero time of
 /// an impulse.
 template <typename T>
 inline auto find_predelay(const T& ret) {
@@ -85,17 +85,17 @@ inline auto find_predelay_base(const T& t) {
 }
 
 template <>
-inline auto find_predelay(const AttenuatedImpulse& i) {
+inline auto find_predelay(const attenuated_impulse& i) {
     return find_predelay_base(i);
 }
 
 template <>
-inline auto find_predelay(const Impulse& i) {
+inline auto find_predelay(const impulse& i) {
     return find_predelay_base(i);
 }
 
 /// Recursively subtract a time value from the time fields of a collection of
-/// Impulses.
+/// impulses.
 template <typename T>
 inline void fix_predelay(T& ret, float seconds) {
     for (auto& i : ret) {
@@ -110,12 +110,12 @@ inline void fix_predelay_base(T& ret, float seconds) {
 
 /// The base case of the fixPredelay recursion.
 template <>
-inline void fix_predelay(AttenuatedImpulse& ret, float seconds) {
+inline void fix_predelay(attenuated_impulse& ret, float seconds) {
     fix_predelay_base(ret, seconds);
 }
 
 template <>
-inline void fix_predelay(Impulse& ret, float seconds) {
+inline void fix_predelay(impulse& ret, float seconds) {
     fix_predelay_base(ret, seconds);
 }
 
@@ -126,9 +126,9 @@ inline void fix_predelay(T& ret) {
     fixPredelay(ret, predelay);
 }
 
-template <typename Impulse>
+template <typename im>
 aligned::vector<float> flatten_filter_and_mixdown(
-        const aligned::vector<Impulse>& input, double output_sample_rate) {
+        const aligned::vector<im>& input, double output_sample_rate) {
     return multiband_filter_and_mixdown(
             flatten_impulses(input, output_sample_rate), output_sample_rate);
 }
@@ -142,7 +142,7 @@ aligned::vector<aligned::vector<float>> run_attenuation(
 aligned::vector<aligned::vector<float>> run_attenuation(
         const compute_context& cc,
         const model::ReceiverSettings& receiver,
-        const aligned::vector<Impulse>& input,
+        const aligned::vector<impulse>& input,
         double output_sample_rate);
 
 }  // namespace raytracer

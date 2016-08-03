@@ -62,7 +62,7 @@ aligned::vector<aligned::vector<float>> run_attenuation(
 aligned::vector<aligned::vector<float>> run_attenuation(
         const compute_context& cc,
         const model::ReceiverSettings& receiver,
-        const aligned::vector<Impulse>& input,
+        const aligned::vector<impulse>& input,
         double output_sample_rate) {
     switch (receiver.mode) {
         case model::ReceiverSettings::Mode::microphones: {
@@ -81,7 +81,7 @@ aligned::vector<aligned::vector<float>> run_attenuation(
         case model::ReceiverSettings::Mode::hrtf: {
             raytracer::attenuator::hrtf attenuator(cc.get_context(),
                                                    cc.get_device());
-            const auto channels = {HrtfChannel::left, HrtfChannel::right};
+            const auto channels = {hrtf_channel::left, hrtf_channel::right};
             return map_to_vector(channels, [&](const auto& i) {
                 return flatten_filter_and_mixdown(
                         attenuator.process(

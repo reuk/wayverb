@@ -11,50 +11,51 @@
 #include <map>
 #include <vector>
 
-using VolumeType = cl_float8;
+using volume_type = cl_float8;
 
-struct alignas(1 << 5) Surface {
-    VolumeType specular{{0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5}};
-    VolumeType diffuse{{0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5}};
+struct alignas(1 << 5) surface {
+    volume_type specular{{0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5}};
+    volume_type diffuse{{0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5}};
 };
 
 class box;
-class MeshBoundary;
-struct Triangle;
+class mesh_boundary;
+struct triangle;
 
 //----------------------------------------------------------------------------//
 
-class CopyableSceneData {
+class copyable_scene_data {
 public:
-    struct Material final {
+    struct material final {
         std::string name;
-        Surface surface;
+        surface surface;
     };
 
-    struct Contents final {
+    struct contents final {
         aligned::vector<Triangle> triangles;
         aligned::vector<cl_float3> vertices;
-        aligned::vector<Material> materials;
+        aligned::vector<material> materials;
     };
 
-    CopyableSceneData() = default;
-    CopyableSceneData(const aligned::vector<Triangle>& triangles,
-                      const aligned::vector<cl_float3>& vertices,
-                      const aligned::vector<Material>& materials);
-    CopyableSceneData(Contents&& rhs);
+    copyable_scene_data() = default;
+    copyable_scene_data(const aligned::vector<Triangle>& triangles,
+                        const aligned::vector<cl_float3>& vertices,
+                        const aligned::vector<material>& materials);
+    copyable_scene_data(contents&& rhs);
 
-    CopyableSceneData(const CopyableSceneData& rhs) = default;
-    CopyableSceneData& operator=(const CopyableSceneData& rhs) = default;
-    CopyableSceneData(CopyableSceneData&& rhs) noexcept        = default;
-    CopyableSceneData& operator=(CopyableSceneData&& rhs) noexcept = default;
-    virtual ~CopyableSceneData() noexcept                          = default;
+    copyable_scene_data(const copyable_scene_data& rhs) = default;
+    copyable_scene_data& operator=(const copyable_scene_data& rhs) = default;
+    copyable_scene_data(copyable_scene_data&& rhs) noexcept        = default;
+    copyable_scene_data& operator=(copyable_scene_data&& rhs) noexcept =
+            default;
+    virtual ~copyable_scene_data() noexcept = default;
 
-    aligned::vector<Surface> get_surfaces() const;
-    void set_surfaces(const aligned::vector<Material>& materials);
-    void set_surfaces(const aligned::map<std::string, Surface>& surfaces);
-    void set_surface(const Material& material);
+    aligned::vector<surface> get_surfaces() const;
+    void set_surfaces(const aligned::vector<material>& materials);
+    void set_surfaces(const aligned::map<std::string, surface>& surfaces);
+    void set_surface(const material& material);
 
-    void set_surfaces(const Surface& surface);
+    void set_surfaces(const surface& surface);
 
     box get_aabb() const;
     aligned::vector<glm::vec3> get_converted_vertices() const;
@@ -62,32 +63,32 @@ public:
 
     const aligned::vector<Triangle>& get_triangles() const;
     const aligned::vector<cl_float3>& get_vertices() const;
-    const aligned::vector<Material>& get_materials() const;
+    const aligned::vector<material>& get_materials() const;
 
 private:
-    Contents contents;
+    contents contents;
 };
 
 //----------------------------------------------------------------------------//
 
-class SceneData final : public CopyableSceneData {
+class scene_data final : public copyable_scene_data {
     struct Impl;
     std::unique_ptr<Impl> pimpl;
 
 public:
     //  this class adds the ability to load/save from file
-    SceneData(const std::string& fpath);
+    scene_data(const std::string& fpath);
     void save(const std::string& f) const;
 
-    SceneData(const SceneData& rhs) = delete;
-    SceneData& operator=(const SceneData& rhs) = delete;
-    SceneData(SceneData&& rhs) noexcept;
-    SceneData& operator=(SceneData&& rhs) noexcept;
-    ~SceneData() noexcept;
+    scene_data(const scene_data& rhs) = delete;
+    scene_data& operator=(const scene_data& rhs) = delete;
+    scene_data(scene_data&& rhs) noexcept;
+    scene_data& operator=(scene_data&& rhs) noexcept;
+    ~scene_data() noexcept;
 
 private:
-    SceneData(CopyableSceneData&& rhs, std::unique_ptr<Impl>&& pimpl);
-    SceneData(std::tuple<CopyableSceneData, std::unique_ptr<Impl>>&& rhs);
-    static std::tuple<CopyableSceneData, std::unique_ptr<Impl>> load(
+    scene_data(copyable_scene_data&& rhs, std::unique_ptr<Impl>&& pimpl);
+    scene_data(std::tuple<copyable_scene_data, std::unique_ptr<Impl>>&& rhs);
+    static std::tuple<copyable_scene_data, std::unique_ptr<Impl>> load(
             const std::string& scene_file);
 };

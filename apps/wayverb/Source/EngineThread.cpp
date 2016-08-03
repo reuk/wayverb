@@ -37,19 +37,17 @@ class AsyncEngine::SingleShotEngineThread {
                                    single_shot.get_waveguide_sample_rate(),
                                    single_shot.rays);
 
-            engine.register_waveguide_visual_callback(
-                    [&](const auto& i) { listener.engine_visuals_changed(i); });
+            //  register a visuliser callback if we want to render the waveguide
+            //  state
+            if (visualise) {
+                listener.engine_nodes_changed(engine.get_node_positions());
+                engine.register_waveguide_visual_callback([&](const auto& i) {
+                    listener.engine_visuals_changed(i);
+                });
+            }
 
             //  now run the simulation proper
-            auto run = [this, &engine, &state_callback] {
-                return engine.run(keep_going, state_callback);
-            };
-
-            auto run_visualised = [this, &listener, &engine, &state_callback] {
-                listener.engine_nodes_changed(engine.get_node_positions());
-                return engine.run(keep_going, state_callback);
-            };
-            auto intermediate = visualise ? run_visualised() : run();
+            auto intermediate = engine.run(keep_going, state_callback);
             //  TODO get output sr from dialog
             intermediate->attenuate(compute_context,
                                     single_shot.receiver_settings,

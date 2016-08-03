@@ -52,8 +52,8 @@ TEST(boundary, naive) {
 */
 
 TEST(boundary, tunnel) {
-    SceneData scene_data(OBJ_PATH_TUNNEL);
-    MeshBoundary boundary(scene_data);
+    scene_data scene_data(OBJ_PATH_TUNNEL);
+    mesh_boundary boundary(scene_data);
 
     auto centre = ::centre(boundary.get_aabb());
     ASSERT_TRUE(boundary.inside(centre));
@@ -80,8 +80,8 @@ TEST(boundary, tunnel) {
 }
 
 TEST(boundary, bedroom) {
-    SceneData scene_data(OBJ_PATH_BEDROOM);
-    MeshBoundary boundary(scene_data);
+    scene_data scene_data(OBJ_PATH_BEDROOM);
+    mesh_boundary boundary(scene_data);
 
     auto centre = ::centre(boundary.get_aabb());
     ASSERT_TRUE(boundary.inside(centre));

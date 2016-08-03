@@ -22,7 +22,7 @@ void mesh::set_node_positions(aligned::vector<program::NodeStruct>& ret) const {
     });
 }
 
-void mesh::set_node_inside(const Boundary& boundary,
+void mesh::set_node_inside(const boundary& boundary,
                            aligned::vector<program::NodeStruct>& ret) const {
     aligned::vector<bool> inside(ret.size());
     proc::transform(ret, inside.begin(), [&boundary](const auto& i) {
@@ -261,12 +261,12 @@ const aligned::vector<program::NodeStruct>& mesh::get_nodes() const {
 
 glm::ivec3 mesh::get_dim() const { return dim; }
 
-cl_uint mesh::coefficient_index_for_node(const Boundary& b,
+cl_uint mesh::coefficient_index_for_node(const boundary& b,
                                          const program::NodeStruct& node) {
     return 0;
 }
 
-cl_uint mesh::coefficient_index_for_node(const MeshBoundary& b,
+cl_uint mesh::coefficient_index_for_node(const mesh_boundary& b,
                                          const program::NodeStruct& node) {
     const auto& triangles = b.get_triangles();
     const auto& vertices  = b.get_vertices();

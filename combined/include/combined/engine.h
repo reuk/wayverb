@@ -17,7 +17,7 @@ struct ReceiverSettings;
 }  // namespace model
 
 class compute_context;
-class CopyableSceneData;
+class copyable_scene_data;
 
 //  engine  ------------------------------------------------------------------//
 
@@ -44,7 +44,7 @@ public:
 class engine final {
 public:
     engine(const compute_context& compute_context,
-           const CopyableSceneData& scene_data,
+           const copyable_scene_data& scene_data,
            const glm::vec3& source,
            const glm::vec3& receiver,
            double waveguide_sample_rate,
@@ -52,7 +52,7 @@ public:
            size_t impulses);
 
     engine(const compute_context& compute_context,
-           const CopyableSceneData& scene_data,
+           const copyable_scene_data& scene_data,
            const glm::vec3& source,
            const glm::vec3& receiver,
            double waveguide_sample_rate,
@@ -71,7 +71,7 @@ public:
                                       const state_callback&);
 
     using raytracer_visual_callback_t = std::function<void(
-            aligned::vector<aligned::vector<raytracer::Impulse>>)>;
+            aligned::vector<aligned::vector<raytracer::impulse>>)>;
     void register_raytracer_visual_callback(
             raytracer_visual_callback_t callback);
     void unregister_raytracer_visual_callback();

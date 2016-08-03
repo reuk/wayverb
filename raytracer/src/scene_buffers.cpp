@@ -6,19 +6,19 @@ namespace raytracer {
 
 scene_buffers::scene_buffers(const cl::Context& context,
                              const cl::Device& device,
-                             const CopyableSceneData& scene_data)
+                             const copyable_scene_data& scene_data)
         : scene_buffers(context,
                         device,
                         scene_data,
-                        VoxelCollection(scene_data, 4, 0.1)) {}
+                        voxel_collection(scene_data, 4, 0.1)) {}
 
 scene_buffers::scene_buffers(const cl::Context& context,
                              const cl::Device& device,
-                             const CopyableSceneData& scene_data,
-                             const VoxelCollection& vox)
+                             const copyable_scene_data& scene_data,
+                             const voxel_collection& vox)
         : queue(context, device)
         , voxel_index_buffer(load_to_buffer(context, vox.get_flattened(), true))
-        , global_aabb(AABB{to_cl_float3(vox.get_aabb().get_c0()),
+        , global_aabb(aabb{to_cl_float3(vox.get_aabb().get_c0()),
                            to_cl_float3(vox.get_aabb().get_c1())})
         , side(vox.get_side())
         , triangles_buffer(
@@ -32,7 +32,7 @@ const cl::Buffer& scene_buffers::get_voxel_index_buffer() const {
     return voxel_index_buffer;
 }
 
-AABB scene_buffers::get_global_aabb() const { return global_aabb; }
+aabb scene_buffers::get_global_aabb() const { return global_aabb; }
 
 cl_ulong scene_buffers::get_side() const { return side; }
 

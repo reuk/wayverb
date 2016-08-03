@@ -291,10 +291,10 @@ public:
     }
 
     template <size_t I>
-    static FilterDescriptor compute_filter_descriptor(const Surface& surface) {
+    static FilterDescriptor compute_filter_descriptor(const surface& surface) {
         auto gain = decibels::a2db(
                 (surface.specular.s[I] + surface.diffuse.s[I]) / 2);
-        auto centre = (HrtfData::EDGES[I + 0] + HrtfData::EDGES[I + 1]) / 2;
+        auto centre = (hrtf_data::edges[I + 0] + hrtf_data::edges[I + 1]) / 2;
         //  produce a filter descriptor struct for this filter
         return FilterDescriptor{gain, centre, 1.414};
     }
@@ -302,20 +302,20 @@ public:
     template <size_t... Ix>
     constexpr static std::array<FilterDescriptor,
                                 BiquadCoefficientsArray::BIQUAD_SECTIONS>
-    to_filter_descriptors(std::index_sequence<Ix...>, const Surface& surface) {
+    to_filter_descriptors(std::index_sequence<Ix...>, const surface& surface) {
         return {{compute_filter_descriptor<Ix>(surface)...}};
     }
 
     constexpr static std::array<FilterDescriptor,
                                 BiquadCoefficientsArray::BIQUAD_SECTIONS>
-    to_filter_descriptors(const Surface& surface) {
+    to_filter_descriptors(const surface& surface) {
         return to_filter_descriptors(
                 std::make_index_sequence<
                         BiquadCoefficientsArray::BIQUAD_SECTIONS>(),
                 surface);
     }
 
-    static CanonicalCoefficients to_filter_coefficients(const Surface& surface,
+    static CanonicalCoefficients to_filter_coefficients(const surface& surface,
                                                         float sr) {
         auto descriptors = to_filter_descriptors(surface);
         //  transform filter parameters into a set of biquad coefficients
@@ -330,7 +330,7 @@ public:
     }
 
     static aligned::vector<CanonicalCoefficients> to_filter_coefficients(
-            aligned::vector<Surface> surfaces, float sr);
+            aligned::vector<surface> surfaces, float sr);
 
     template <cl_program_info T>
     auto get_info() const {

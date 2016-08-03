@@ -11,17 +11,17 @@
 #include "glm/glm.hpp"
 
 namespace geo {
-class Ray;
+class ray;
 }  // namespace geo
 
-class Boundary {
+class boundary {
 public:
-    Boundary()                    = default;
-    virtual ~Boundary() noexcept  = default;
-    Boundary(Boundary&&) noexcept = default;
-    Boundary& operator=(Boundary&&) noexcept = default;
-    Boundary(const Boundary&)                = default;
-    Boundary& operator=(const Boundary&) = default;
+    boundary()                    = default;
+    virtual ~boundary() noexcept  = default;
+    boundary(boundary&&) noexcept = default;
+    boundary& operator=(boundary&&) noexcept = default;
+    boundary(const boundary&)                = default;
+    boundary& operator=(const boundary&) = default;
 
     virtual bool inside(const glm::vec3& v) const = 0;
     virtual box get_aabb() const                  = 0;
@@ -30,10 +30,10 @@ public:
     void serialize(Archive& archive);
 };
 
-class CuboidBoundary : public Boundary {
+class cuboid_boundary : public boundary {
 public:
-    CuboidBoundary() = default;
-    CuboidBoundary(const glm::vec3& c0, const glm::vec3& c1);
+    cuboid_boundary() = default;
+    cuboid_boundary(const glm::vec3& c0, const glm::vec3& c1);
 
     bool inside(const glm::vec3& v) const override;
     box get_aabb() const override;
@@ -45,12 +45,12 @@ private:
     box boundary;
 };
 
-class SphereBoundary : public Boundary {
+class sphere_boundary : public boundary {
 public:
-    explicit SphereBoundary(const glm::vec3& c = glm::vec3(),
-                            float radius       = 0,
-                            const aligned::vector<Surface>& surfaces =
-                                    aligned::vector<Surface>{Surface{}});
+    explicit sphere_boundary(const glm::vec3& c = glm::vec3(),
+                             float radius       = 0,
+                             const aligned::vector<surface>& surfaces =
+                                     aligned::vector<surface>{surface{}});
     bool inside(const glm::vec3& v) const override;
     box get_aabb() const override;
 
@@ -66,12 +66,12 @@ inline bool almost_equal(T x, T y, int ups) {
                                       std::max(std::abs(x), std::abs(y)) * ups;
 }
 
-class MeshBoundary : public Boundary {
+class mesh_boundary : public boundary {
 public:
-    MeshBoundary(const aligned::vector<Triangle>& triangles,
-                 const aligned::vector<glm::vec3>& vertices,
-                 const aligned::vector<Surface>& surfaces);
-    explicit MeshBoundary(const CopyableSceneData& sd);
+    mesh_boundary(const aligned::vector<Triangle>& triangles,
+                  const aligned::vector<glm::vec3>& vertices,
+                  const aligned::vector<surface>& surfaces);
+    explicit mesh_boundary(const copyable_scene_data& sd);
     bool inside(const glm::vec3& v) const override;
     box get_aabb() const override;
 
@@ -87,7 +87,7 @@ public:
 
     const aligned::vector<Triangle>& get_triangles() const;
     const aligned::vector<glm::vec3>& get_vertices() const;
-    const aligned::vector<Surface>& get_surfaces() const;
+    const aligned::vector<surface>& get_surfaces() const;
     glm::vec3 get_cell_size() const;
 
 private:
@@ -97,7 +97,7 @@ private:
 
     aligned::vector<Triangle> triangles;
     aligned::vector<glm::vec3> vertices;
-    aligned::vector<Surface> surfaces;
+    aligned::vector<surface> surfaces;
     box boundary;
     glm::vec3 cell_size;
     hash_table triangle_references;

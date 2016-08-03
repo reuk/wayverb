@@ -5,34 +5,34 @@
 #include <cmath>
 #include <iostream>
 
-VoxelCollection::Voxel::Voxel(const box& aabb,
-                              const aligned::vector<size_t>& triangles)
+voxel_collection::voxel::voxel(const box& aabb,
+                               const aligned::vector<size_t>& triangles)
         : aabb(aabb)
         , triangles(triangles) {}
 
-VoxelCollection::Voxel::Voxel(const Octree& o)
-        : Voxel(o.get_aabb(), o.get_triangles()) {}
+voxel_collection::voxel::voxel(const octree& o)
+        : voxel(o.get_aabb(), o.get_triangles()) {}
 
-box VoxelCollection::Voxel::get_aabb() const { return aabb; }
-const aligned::vector<size_t>& VoxelCollection::Voxel::Voxel::get_triangles()
+box voxel_collection::voxel::get_aabb() const { return aabb; }
+const aligned::vector<size_t>& voxel_collection::voxel::voxel::get_triangles()
         const {
     return triangles;
 }
 
-VoxelCollection::VoxelCollection(const Octree& o)
+voxel_collection::voxel_collection(const octree& o)
         : aabb(o.get_aabb())
-        , data(o.get_side(), YAxis(o.get_side(), ZAxis(o.get_side()))) {
+        , data(o.get_side(), y_axis(o.get_side(), z_axis(o.get_side()))) {
     init(o);
 }
 
-VoxelCollection::VoxelCollection(const CopyableSceneData& scene_data,
-                                 int depth,
-                                 float padding)
-        : VoxelCollection(Octree(scene_data, depth, padding)) {}
+voxel_collection::voxel_collection(const copyable_scene_data& scene_data,
+                                   int depth,
+                                   float padding)
+        : voxel_collection(octree(scene_data, depth, padding)) {}
 
-void VoxelCollection::init(const Octree& o, const glm::ivec3& d) {
+void voxel_collection::init(const octree& o, const glm::ivec3& d) {
     if (!o.has_nodes()) {
-        data[d.x][d.y][d.z] = Voxel(o);
+        data[d.x][d.y][d.z] = voxel(o);
     } else {
         auto count = 0u;
         for (const auto& i : o.get_nodes()) {
@@ -46,15 +46,17 @@ void VoxelCollection::init(const Octree& o, const glm::ivec3& d) {
     }
 }
 
-box VoxelCollection::get_aabb() const { return aabb; }
+box voxel_collection::get_aabb() const { return aabb; }
 
-box VoxelCollection::get_voxel_aabb() const {
+box voxel_collection::get_voxel_aabb() const {
     return data.front().front().front().get_aabb();
 }
 
-const VoxelCollection::XAxis& VoxelCollection::get_data() const { return data; }
+const voxel_collection::x_axis& voxel_collection::get_data() const {
+    return data;
+}
 
-glm::ivec3 VoxelCollection::get_starting_index(
+glm::ivec3 voxel_collection::get_starting_index(
         const glm::vec3& position) const {
     return glm::floor((position - get_aabb().get_c0()) /
                       dimensions(get_voxel_aabb()));
@@ -77,7 +79,7 @@ T select(const T& a, const T& b, const U& selector) {
     return ret;
 }
 
-const VoxelCollection::Voxel& VoxelCollection::get_voxel(
+const voxel_collection::voxel& voxel_collection::get_voxel(
         const glm::ivec3& i) const {
     return data[i.x][i.y][i.z];
 }
@@ -95,12 +97,12 @@ auto min_component(const glm::vec3& v) {
 glm::bvec3 is_not_nan(const glm::vec3& v) {
     glm::bvec3 ret;
     for (auto i = 0u; i != v.length(); ++i) {
-        ret[i] = ! std::isnan(v[i]);
+        ret[i] = !std::isnan(v[i]);
     }
     return ret;
 }
 
-geo::Intersection VoxelCollection::traverse(
+geo::Intersection voxel_collection::traverse(
         const geo::Ray& ray, const TraversalCallback& fun) const {
     //  from http://www.cse.chalmers.se/edu/year/2010/course/TDA361/grid.pdf
     auto ind                = get_starting_index(ray.get_position());
@@ -115,8 +117,8 @@ geo::Intersection VoxelCollection::traverse(
     const auto t_max_temp =
             glm::abs((boundary - ray.get_position()) / ray.get_direction());
     auto t_max = select(t_max_temp,
-                   glm::vec3(std::numeric_limits<float>::infinity()),
-                   is_not_nan(t_max_temp));
+                        glm::vec3(std::numeric_limits<float>::infinity()),
+                        is_not_nan(t_max_temp));
     const auto t_delta =
             glm::abs(dimensions(voxel_bounds) / ray.get_direction());
 
@@ -140,17 +142,17 @@ geo::Intersection VoxelCollection::traverse(
     }
 }
 
-VoxelCollection::TriangleTraversalCallback::TriangleTraversalCallback(
-        const CopyableSceneData& scene_data)
+voxel_collection::TriangleTraversalCallback::TriangleTraversalCallback(
+        const copyable_scene_data& scene_data)
         : tri(scene_data.get_triangles())
         , vertices(scene_data.get_converted_vertices()) {}
 
-geo::Intersection VoxelCollection::TriangleTraversalCallback::operator()(
+geo::Intersection voxel_collection::TriangleTraversalCallback::operator()(
         const geo::Ray& ray, const aligned::vector<size_t>& triangles) const {
     return geo::ray_triangle_intersection(ray, triangles, tri, vertices);
 }
 
-aligned::vector<cl_uint> VoxelCollection::get_flattened() const {
+aligned::vector<cl_uint> voxel_collection::get_flattened() const {
     auto side = get_data().size();
     auto dim  = pow(side, 3);
 
@@ -177,4 +179,4 @@ aligned::vector<cl_uint> VoxelCollection::get_flattened() const {
     return ret;
 }
 
-int VoxelCollection::get_side() const { return get_data().size(); }
+int voxel_collection::get_side() const { return get_data().size(); }

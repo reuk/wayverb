@@ -86,11 +86,11 @@ int main(int argc, char** argv) {
         box box(glm::vec3(-s), glm::vec3(s));
         auto scene_data = get_scene_data(box);
         const auto r    = 0.9f;
-        scene_data.set_surfaces(Surface{VolumeType{{r, r, r, r, r, r, r, r}},
-                                        VolumeType{{r, r, r, r, r, r, r, r}}});
+        scene_data.set_surfaces(surface{volume_type{{r, r, r, r, r, r, r, r}},
+                                        volume_type{{r, r, r, r, r, r, r, r}}});
         waveguide::waveguide waveguide(cc.get_context(),
                                        cc.get_device(),
-                                       MeshBoundary(scene_data),
+                                       mesh_boundary(scene_data),
                                        mic,
                                        waveguide_sr);
 

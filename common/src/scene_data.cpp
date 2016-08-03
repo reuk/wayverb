@@ -21,66 +21,67 @@
 
 //----------------------------------------------------------------------------//
 
-CopyableSceneData::CopyableSceneData(const aligned::vector<Triangle>& triangles,
-                                     const aligned::vector<cl_float3>& vertices,
-                                     const aligned::vector<Material>& materials)
+copyable_scene_data::copyable_scene_data(
+        const aligned::vector<Triangle>& triangles,
+        const aligned::vector<cl_float3>& vertices,
+        const aligned::vector<material>& materials)
         : contents{triangles, vertices, materials} {}
 
-CopyableSceneData::CopyableSceneData(Contents&& rhs)
+copyable_scene_data::copyable_scene_data(struct contents&& rhs)
         : contents(std::move(rhs)) {}
 
-box CopyableSceneData::get_aabb() const {
+box copyable_scene_data::get_aabb() const {
     const auto v = get_converted_vertices();
     return min_max(std::begin(v), std::end(v));
 }
 
-aligned::vector<glm::vec3> CopyableSceneData::get_converted_vertices() const {
+aligned::vector<glm::vec3> copyable_scene_data::get_converted_vertices() const {
     aligned::vector<glm::vec3> vec(get_vertices().size());
     proc::transform(
             get_vertices(), vec.begin(), [](auto i) { return to_vec3(i); });
     return vec;
 }
 
-aligned::vector<size_t> CopyableSceneData::get_triangle_indices() const {
+aligned::vector<size_t> copyable_scene_data::get_triangle_indices() const {
     aligned::vector<size_t> ret(get_triangles().size());
     proc::iota(ret, 0);
     return ret;
 }
 
-const aligned::vector<Triangle>& CopyableSceneData::get_triangles() const {
+const aligned::vector<Triangle>& copyable_scene_data::get_triangles() const {
     return contents.triangles;
 }
-const aligned::vector<cl_float3>& CopyableSceneData::get_vertices() const {
+const aligned::vector<cl_float3>& copyable_scene_data::get_vertices() const {
     return contents.vertices;
 }
-const aligned::vector<SceneData::Material>& CopyableSceneData::get_materials()
-        const {
+const aligned::vector<scene_data::material>&
+copyable_scene_data::get_materials() const {
     return contents.materials;
 }
 
-aligned::vector<Surface> CopyableSceneData::get_surfaces() const {
-    aligned::vector<Surface> ret(get_materials().size());
+aligned::vector<surface> copyable_scene_data::get_surfaces() const {
+    aligned::vector<surface> ret(get_materials().size());
     proc::transform(get_materials(), ret.begin(), [](const auto& i) {
         return i.surface;
     });
     return ret;
 }
 
-void CopyableSceneData::set_surfaces(
-        const aligned::vector<Material>& materials) {
+void copyable_scene_data::set_surfaces(
+        const aligned::vector<material>& materials) {
     for (const auto& i : materials) {
         set_surface(i);
     }
 }
 
-void CopyableSceneData::set_surfaces(
-        const aligned::map<std::string, Surface>& surfaces) {
+void copyable_scene_data::set_surfaces(
+        const aligned::map<std::string, surface>& surfaces) {
     for (auto& i : surfaces) {
-        set_surface(Material{i.first, i.second});
+        set_surface(material{i.first, i.second});
     }
 }
 
-void CopyableSceneData::set_surface(const Material& material) {
+void copyable_scene_data::set_surface(const material& material) {
     auto it = proc::find_if(contents.materials, [&material](const auto& i) {
         return i.name == material.name;
     });
@@ -89,33 +90,35 @@ void CopyableSceneData::set_surface(const Material& material) {
     }
 }
 
-void CopyableSceneData::set_surfaces(const Surface& surface) {
+void copyable_scene_data::set_surfaces(const surface& surface) {
     proc::for_each(contents.materials,
                    [surface](auto& i) { i.surface = surface; });
 }
 
 //----------------------------------------------------------------------------//
 
-struct SceneData::Impl {
+struct scene_data::Impl {
     Assimp::Importer importer;
 };
 
-SceneData::SceneData(SceneData&& rhs) noexcept = default;
-SceneData& SceneData::operator=(SceneData&& rhs) noexcept = default;
-SceneData::~SceneData() noexcept                          = default;
+scene_data::scene_data(scene_data&& rhs) noexcept = default;
+scene_data& scene_data::operator=(scene_data&& rhs) noexcept = default;
+scene_data::~scene_data() noexcept                           = default;
 
-SceneData::SceneData(const std::string& scene_file)
-        : SceneData(load(scene_file)) {}
+scene_data::scene_data(const std::string& scene_file)
+        : scene_data(load(scene_file)) {}
 
-SceneData::SceneData(CopyableSceneData&& rhs, std::unique_ptr<Impl>&& pimpl)
-        : CopyableSceneData(std::move(rhs))
+scene_data::scene_data(copyable_scene_data&& rhs, std::unique_ptr<Impl>&& pimpl)
+        : copyable_scene_data(std::move(rhs))
         , pimpl(std::move(pimpl)) {}
 
-SceneData::SceneData(std::tuple<CopyableSceneData, std::unique_ptr<Impl>>&& rhs)
-        : SceneData(std::move(std::get<0>(rhs)), std::move(std::get<1>(rhs))) {}
+scene_data::scene_data(
+        std::tuple<copyable_scene_data, std::unique_ptr<Impl>>&& rhs)
+        : scene_data(std::move(std::get<0>(rhs)), std::move(std::get<1>(rhs))) {
+}
 
-std::tuple<CopyableSceneData, std::unique_ptr<SceneData::Impl>> SceneData::load(
-        const std::string& scene_file) {
+std::tuple<copyable_scene_data, std::unique_ptr<scene_data::Impl>>
+scene_data::load(const std::string& scene_file) {
     auto impl  = std::make_unique<Impl>();
     auto scene = impl->importer.ReadFile(
             scene_file,
@@ -126,7 +129,7 @@ std::tuple<CopyableSceneData, std::unique_ptr<SceneData::Impl>> SceneData::load(
         throw std::runtime_error("scene pointer is null");
     }
 
-    CopyableSceneData::Contents contents;
+    struct copyable_scene_data::contents contents;
     contents.materials.resize(scene->mNumMaterials);
     std::transform(scene->mMaterials,
                    scene->mMaterials + scene->mNumMaterials,
@@ -134,7 +137,7 @@ std::tuple<CopyableSceneData, std::unique_ptr<SceneData::Impl>> SceneData::load(
                    [](auto i) {
                        aiString material_name;
                        i->Get(AI_MATKEY_NAME, material_name);
-                       return Material{material_name.C_Str(), Surface{}};
+                       return material{material_name.C_Str(), surface{}};
                    });
 
     for (auto i = 0u; i != scene->mNumMeshes; ++i) {
@@ -170,10 +173,10 @@ std::tuple<CopyableSceneData, std::unique_ptr<SceneData::Impl>> SceneData::load(
     //    });
     //});
 
-    return std::make_tuple(CopyableSceneData(std::move(contents)),
+    return std::make_tuple(copyable_scene_data(std::move(contents)),
                            std::move(impl));
 }
 
-void SceneData::save(const std::string& f) const {
+void scene_data::save(const std::string& f) const {
     Assimp::Exporter().Export(pimpl->importer.GetScene(), "obj", f);
 }

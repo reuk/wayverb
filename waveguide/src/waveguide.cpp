@@ -14,7 +14,7 @@ waveguide::~waveguide() noexcept = default;
 
 waveguide::waveguide(const cl::Context& context,
                      const cl::Device& device,
-                     const MeshBoundary& boundary,
+                     const mesh_boundary& boundary,
                      const glm::vec3& anchor,
                      double sample_rate)
         : waveguide(context,

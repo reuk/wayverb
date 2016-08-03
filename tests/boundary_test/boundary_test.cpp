@@ -31,7 +31,7 @@
 
 aligned::vector<float> run_simulation(const compute_context& cc,
                                       const box& boundary,
-                                      const Surface& surface,
+                                      const surface& surface,
                                       double filter_frequency,
                                       double out_sr,
                                       const glm::vec3& source,
@@ -44,7 +44,7 @@ aligned::vector<float> run_simulation(const compute_context& cc,
 
     waveguide::waveguide waveguide(cc.get_context(),
                                    cc.get_device(),
-                                   MeshBoundary(scene_data),
+                                   mesh_boundary(scene_data),
                                    receiver,
                                    filter_frequency * 4);
 
@@ -182,7 +182,7 @@ aligned::vector<float> get_free_field_results(const compute_context& cc,
 
     auto image = run_simulation(cc,
                                 no_wall,
-                                Surface{},
+                                surface{},
                                 filter_frequency,
                                 out_sr,
                                 source_position,
@@ -206,7 +206,7 @@ FullTestResults run_full_test(const std::string& test_name,
                               float elevation,
                               int dim,
                               int steps,
-                              const Surface& surface,
+                              const surface& surface,
                               aligned::vector<float> windowed_free_field) {
     //  set room size based on desired number of nodes
     auto desired_nodes = glm::ivec3(dim);
@@ -381,9 +381,9 @@ int main(int argc, char** argv) {
     auto dim = 300;
 
     try {
-        struct SurfacePackage {
+        struct surface_package {
             std::string name;
-            Surface surface;
+            surface surface;
         };
 
         auto steps = dim * 1.4;
@@ -402,33 +402,34 @@ int main(int argc, char** argv) {
         cl_float hi = 0.9;
 
         auto surface_set = {
-                SurfacePackage{"anechoic",
-                               Surface{{{lo, lo, lo, lo, lo, lo, lo, lo}},
-                                       {{lo, lo, lo, lo, lo, lo, lo, lo}}}},
-                SurfacePackage{"filtered_1",
-                               Surface{{{hi, lo, lo, lo, lo, lo, lo, lo}},
-                                       {{hi, lo, lo, lo, lo, lo, lo, lo}}}},
-                SurfacePackage{"filtered_2",
-                               Surface{{{lo, hi, lo, lo, lo, lo, lo, lo}},
-                                       {{lo, hi, lo, lo, lo, lo, lo, lo}}}},
-                SurfacePackage{"filtered_3",
-                               Surface{{{lo, lo, hi, lo, lo, lo, lo, lo}},
-                                       {{lo, lo, hi, lo, lo, lo, lo, lo}}}},
-                SurfacePackage{"filtered_4",
-                               Surface{{{0.4, 0.3, 0.5, 0.8, hi, hi, hi, hi}},
-                                       {{0.4, 0.3, 0.5, 0.8, hi, hi, hi, hi}}}},
-                SurfacePackage{"filtered_5",
-                               Surface{{{lo, hi, hi, hi, hi, hi, hi, hi}},
-                                       {{lo, hi, hi, hi, hi, hi, hi, hi}}}},
-                SurfacePackage{"filtered_6",
-                               Surface{{{hi, lo, hi, hi, hi, hi, hi, hi}},
-                                       {{hi, lo, hi, hi, hi, hi, hi, hi}}}},
-                SurfacePackage{"filtered_7",
-                               Surface{{{hi, hi, lo, hi, hi, hi, hi, hi}},
-                                       {{hi, hi, lo, hi, hi, hi, hi, hi}}}},
-                SurfacePackage{"flat",
-                               Surface{{{hi, hi, hi, hi, hi, hi, hi, hi}},
-                                       {{hi, hi, hi, hi, hi, hi, hi, hi}}}},
+                surface_package{"anechoic",
+                                surface{{{lo, lo, lo, lo, lo, lo, lo, lo}},
+                                        {{lo, lo, lo, lo, lo, lo, lo, lo}}}},
+                surface_package{"filtered_1",
+                                surface{{{hi, lo, lo, lo, lo, lo, lo, lo}},
+                                        {{hi, lo, lo, lo, lo, lo, lo, lo}}}},
+                surface_package{"filtered_2",
+                                surface{{{lo, hi, lo, lo, lo, lo, lo, lo}},
+                                        {{lo, hi, lo, lo, lo, lo, lo, lo}}}},
+                surface_package{"filtered_3",
+                                surface{{{lo, lo, hi, lo, lo, lo, lo, lo}},
+                                        {{lo, lo, hi, lo, lo, lo, lo, lo}}}},
+                surface_package{
+                        "filtered_4",
+                        surface{{{0.4, 0.3, 0.5, 0.8, hi, hi, hi, hi}},
+                                {{0.4, 0.3, 0.5, 0.8, hi, hi, hi, hi}}}},
+                surface_package{"filtered_5",
+                                surface{{{lo, hi, hi, hi, hi, hi, hi, hi}},
+                                        {{lo, hi, hi, hi, hi, hi, hi, hi}}}},
+                surface_package{"filtered_6",
+                                surface{{{hi, lo, hi, hi, hi, hi, hi, hi}},
+                                        {{hi, lo, hi, hi, hi, hi, hi, hi}}}},
+                surface_package{"filtered_7",
+                                surface{{{hi, hi, lo, hi, hi, hi, hi, hi}},
+                                        {{hi, hi, lo, hi, hi, hi, hi, hi}}}},
+                surface_package{"flat",
+                                surface{{{hi, hi, hi, hi, hi, hi, hi, hi}},
+                                        {{hi, hi, hi, hi, hi, hi, hi, hi}}}},
         };
 
         const auto all_test_results = map_to_vector(surface_set, [&](auto i) {

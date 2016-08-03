@@ -75,7 +75,7 @@ bool intersects(const box& b, const geo::Ray& ray, float t0, float t1) {
     return ((t0 < tmax) && (tmin < t1));
 }
 
-CopyableSceneData get_scene_data(const box& b) {
+copyable_scene_data get_scene_data(const box& b) {
     aligned::vector<cl_float3> vertices{
             {{b.get_c0().x, b.get_c0().y, b.get_c0().z}},
             {{b.get_c1().x, b.get_c0().y, b.get_c0().z}},
@@ -84,27 +84,23 @@ CopyableSceneData get_scene_data(const box& b) {
             {{b.get_c0().x, b.get_c0().y, b.get_c1().z}},
             {{b.get_c1().x, b.get_c0().y, b.get_c1().z}},
             {{b.get_c0().x, b.get_c1().y, b.get_c1().z}},
-            {{b.get_c1().x, b.get_c1().y, b.get_c1().z}},
-    };
-    aligned::vector<Triangle> triangles{
-            {0, 0, 1, 5},
-            {0, 0, 4, 5},
-            {0, 0, 1, 3},
-            {0, 0, 2, 3},
-            {0, 0, 2, 6},
-            {0, 0, 4, 6},
-            {0, 1, 5, 7},
-            {0, 1, 3, 7},
-            {0, 2, 3, 7},
-            {0, 2, 6, 7},
-            {0, 4, 5, 7},
-            {0, 4, 6, 7},
-    };
-    aligned::vector<CopyableSceneData::Material> materials{
-            {"default", Surface{}},
-    };
+            {{b.get_c1().x, b.get_c1().y, b.get_c1().z}}};
+    aligned::vector<Triangle> triangles{{0, 0, 1, 5},
+                                        {0, 0, 4, 5},
+                                        {0, 0, 1, 3},
+                                        {0, 0, 2, 3},
+                                        {0, 0, 2, 6},
+                                        {0, 0, 4, 6},
+                                        {0, 1, 5, 7},
+                                        {0, 1, 3, 7},
+                                        {0, 2, 3, 7},
+                                        {0, 2, 6, 7},
+                                        {0, 4, 5, 7},
+                                        {0, 4, 6, 7}};
+    aligned::vector<copyable_scene_data::material> materials{
+            {"default", surface{}}};
 
-    return CopyableSceneData(triangles, vertices, materials);
+    return copyable_scene_data(triangles, vertices, materials);
 }
 
 //----------------------------------------------------------------------------//

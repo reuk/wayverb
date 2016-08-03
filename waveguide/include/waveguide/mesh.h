@@ -225,13 +225,13 @@ private:
         return ret;
     }
 
-    static cl_uint coefficient_index_for_node(const Boundary& b,
+    static cl_uint coefficient_index_for_node(const boundary& b,
                                               const program::NodeStruct& node);
-    static cl_uint coefficient_index_for_node(const MeshBoundary& b,
+    static cl_uint coefficient_index_for_node(const mesh_boundary& b,
                                               const program::NodeStruct& node);
 
     void set_node_positions(aligned::vector<program::NodeStruct>& ret) const;
-    void set_node_inside(const Boundary& boundary,
+    void set_node_inside(const boundary& boundary,
                          aligned::vector<program::NodeStruct>& ret) const;
     void set_node_boundary_type(
             aligned::vector<program::NodeStruct>& ret) const;

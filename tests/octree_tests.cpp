@@ -7,7 +7,7 @@
 #define OBJ_PATH ""
 #endif
 
-void print_nodes(const Octree& o, int level = 0) {
+void print_nodes(const octree& o, int level = 0) {
     if (o.get_nodes().empty()) {
         std::cout << "** octree node **" << std::endl;
         for (const auto& i : o.get_triangles()) {
@@ -21,13 +21,13 @@ void print_nodes(const Octree& o, int level = 0) {
 }
 
 TEST(octree, constructor) {
-    SceneData scene_data(OBJ_PATH);
-    Octree octree(scene_data, 5);
+    scene_data scene_data(OBJ_PATH);
+    octree octree(scene_data, 5);
     //    print_nodes(octree);
 }
 
 TEST(octree, surrounding) {
-    SceneData scene_data(OBJ_PATH);
+    scene_data scene_data(OBJ_PATH);
 
     auto a = {
             glm::vec3(-1, -1, -1),
@@ -41,7 +41,7 @@ TEST(octree, surrounding) {
     };
 
     {
-        Octree octree(scene_data, 1);
+        octree octree(scene_data, 1);
         auto c = ::centre(octree.get_aabb());
 
         for (const auto& i : a) {
@@ -52,7 +52,7 @@ TEST(octree, surrounding) {
     }
 
     {
-        Octree octree(scene_data, 4);
+        octree octree(scene_data, 4);
         auto c = ::centre(octree.get_aabb());
 
         for (const auto& i : a) {

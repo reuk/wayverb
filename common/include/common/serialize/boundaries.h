@@ -10,7 +10,7 @@ void box::serialize(Archive& archive) {
 JSON_OSTREAM_OVERLOAD(box);
 
 template <typename Archive>
-void CuboidBoundary::serialize(Archive& archive) {
+void cuboid_boundary::serialize(Archive& archive) {
     archive(cereal::make_nvp("box", boundary));
 }
-JSON_OSTREAM_OVERLOAD(CuboidBoundary);
+JSON_OSTREAM_OVERLOAD(cuboid_boundary);

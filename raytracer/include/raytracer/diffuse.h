@@ -17,14 +17,14 @@ public:
                    const cl::Device&,
                    const glm::vec3& source,
                    const glm::vec3& receiver,
-                   const VolumeType& air_coefficient,
+                   const volume_type& air_coefficient,
                    size_t rays,
                    size_t depth);
 
-    void push(const aligned::vector<Reflection>& reflections,
+    void push(const aligned::vector<reflection>& reflections,
               scene_buffers& scene_buffers);
-    const aligned::vector<aligned::vector<Impulse>>& get_results() const;
-    aligned::vector<aligned::vector<Impulse>>& get_results();
+    const aligned::vector<aligned::vector<impulse>>& get_results() const;
+    aligned::vector<aligned::vector<impulse>>& get_results();
 
 private:
     using kernel_t = decltype(std::declval<program>().get_diffuse_kernel());
@@ -33,14 +33,14 @@ private:
     cl::Device device;
     kernel_t kernel;
     cl_float3 receiver;
-    VolumeType air_coefficient;
+    volume_type air_coefficient;
     size_t rays;
 
     cl::Buffer reflections_buffer;
     cl::Buffer diffuse_path_buffer;
     cl::Buffer impulse_buffer;
 
-    iterative_builder<Impulse> impulse_builder;
+    iterative_builder<impulse> impulse_builder;
 };
 
 }  // namespace raytracer

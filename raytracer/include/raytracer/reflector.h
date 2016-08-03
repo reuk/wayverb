@@ -17,7 +17,7 @@ public:
               const glm::vec3& receiver,
               size_t rays);
 
-    aligned::vector<Reflection> run_step(scene_buffers& buffers);
+    aligned::vector<reflection> run_step(scene_buffers& buffers);
 
 private:
     using kernel_t = decltype(

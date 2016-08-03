@@ -12,25 +12,25 @@ namespace raytracer {
 
 class results final {
 public:
-    results(std::experimental::optional<Impulse>&& direct,
-            aligned::vector<Impulse>&& image_source,
-            aligned::vector<aligned::vector<Impulse>>&& diffuse,
+    results(std::experimental::optional<impulse>&& direct,
+            aligned::vector<impulse>&& image_source,
+            aligned::vector<aligned::vector<impulse>>&& diffuse,
             const glm::vec3& receiver);
 
-    aligned::vector<Impulse> get_impulses(bool direct       = true,
+    aligned::vector<impulse> get_impulses(bool direct       = true,
                                           bool image_source = true,
                                           bool diffuse      = true) const;
 
-    std::experimental::optional<Impulse> get_direct() const;
-    aligned::vector<Impulse> get_image_source() const;
-    aligned::vector<aligned::vector<Impulse>> get_diffuse() const;
+    std::experimental::optional<impulse> get_direct() const;
+    aligned::vector<impulse> get_image_source() const;
+    aligned::vector<aligned::vector<impulse>> get_diffuse() const;
 
     glm::vec3 get_receiver() const;
 
 private:
-    std::experimental::optional<Impulse> direct;
-    aligned::vector<Impulse> image_source;
-    aligned::vector<aligned::vector<Impulse>> diffuse;
+    std::experimental::optional<impulse> direct;
+    aligned::vector<impulse> image_source;
+    aligned::vector<aligned::vector<impulse>> diffuse;
 
     glm::vec3 receiver;
 };

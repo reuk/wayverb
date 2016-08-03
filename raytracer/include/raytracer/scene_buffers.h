@@ -6,7 +6,7 @@
 #include "common/cl_common.h"
 #include "common/voxel_collection.h"
 
-class CopyableSceneData;
+class copyable_scene_data;
 
 namespace raytracer {
 
@@ -14,14 +14,14 @@ class scene_buffers final {
 public:
     scene_buffers(const cl::Context&,
                   const cl::Device&,
-                  const CopyableSceneData& scene_data);
+                  const copyable_scene_data& scene_data);
     scene_buffers(const cl::Context&,
                   const cl::Device&,
-                  const CopyableSceneData& scene_data,
-                  const VoxelCollection& voxel_collection);
+                  const copyable_scene_data& scene_data,
+                  const voxel_collection& voxel_collection);
 
     const cl::Buffer& get_voxel_index_buffer() const;
-    AABB get_global_aabb() const;
+    aabb get_global_aabb() const;
     cl_ulong get_side() const;
 
     const cl::Buffer& get_triangles_buffer() const;
@@ -35,7 +35,7 @@ private:
     cl::CommandQueue queue;
 
     const cl::Buffer voxel_index_buffer;
-    const AABB global_aabb;
+    const aabb global_aabb;
     const cl_ulong side;
 
     const cl::Buffer triangles_buffer;

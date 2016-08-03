@@ -2,16 +2,16 @@
 
 namespace raytracer {
 
-results::results(std::experimental::optional<Impulse>&& direct,
-                 aligned::vector<Impulse>&& image_source,
-                 aligned::vector<aligned::vector<Impulse>>&& diffuse,
+results::results(std::experimental::optional<impulse>&& direct,
+                 aligned::vector<impulse>&& image_source,
+                 aligned::vector<aligned::vector<impulse>>&& diffuse,
                  const glm::vec3& receiver)
         : direct(std::move(direct))
         , image_source(std::move(image_source))
         , diffuse(std::move(diffuse))
         , receiver(receiver) {}
 
-aligned::vector<Impulse> results::get_impulses(bool use_direct,
+aligned::vector<impulse> results::get_impulses(bool use_direct,
                                                bool use_image_source,
                                                bool use_diffuse) const {
     const size_t direct_size       = use_direct ? 1 : 0;
@@ -19,7 +19,7 @@ aligned::vector<Impulse> results::get_impulses(bool use_direct,
     const size_t diffuse_size =
             use_diffuse ? diffuse.size() * diffuse.front().size() : 0;
 
-    aligned::vector<Impulse> ret;
+    aligned::vector<impulse> ret;
     ret.reserve(direct_size + image_source_size + diffuse_size);
 
     if (use_direct && direct) {
@@ -43,15 +43,15 @@ aligned::vector<Impulse> results::get_impulses(bool use_direct,
     return ret;
 }
 
-std::experimental::optional<Impulse> results::get_direct() const {
+std::experimental::optional<impulse> results::get_direct() const {
     return direct;
 }
 
-aligned::vector<Impulse> results::get_image_source() const {
+aligned::vector<impulse> results::get_image_source() const {
     return image_source;
 }
 
-aligned::vector<aligned::vector<Impulse>> results::get_diffuse() const {
+aligned::vector<aligned::vector<impulse>> results::get_diffuse() const {
     return diffuse;
 }
 

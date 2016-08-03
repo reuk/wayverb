@@ -14,7 +14,7 @@ public:
         return program_wrapper.get_kernel<cl::Buffer,  //  ray
                                           cl_float3,   //  receiver
                                           cl::Buffer,  //  voxel_index
-                                          AABB,        //  global_aabb
+                                          aabb,        //  global_aabb
                                           cl_ulong,    //  side
                                           cl::Buffer,  //  triangles
                                           cl::Buffer,  //  vertices
@@ -25,14 +25,14 @@ public:
     }
 
     auto get_diffuse_kernel() const {
-        return program_wrapper.get_kernel<cl::Buffer,  // reflections
-                                          cl_float3,   // receiver
-                                          VolumeType,  // air_coefficient
-                                          cl::Buffer,  // triangles
-                                          cl::Buffer,  // vertices
-                                          cl::Buffer,  // surfaces
-                                          cl::Buffer,  // diffuse_path_info
-                                          cl::Buffer   // diffuse_output
+        return program_wrapper.get_kernel<cl::Buffer,   // reflections
+                                          cl_float3,    // receiver
+                                          volume_type,  // air_coefficient
+                                          cl::Buffer,   // triangles
+                                          cl::Buffer,   // vertices
+                                          cl::Buffer,   // surfaces
+                                          cl::Buffer,   // diffuse_path_info
+                                          cl::Buffer    // diffuse_output
                                           >("diffuse");
     }
 

@@ -10,12 +10,12 @@
 #endif
 
 TEST(voxel, construct) {
-    SceneData scene_data(OBJ_PATH);
-    Octree octree(scene_data, 2);
-    VoxelCollection voxel(octree);
+    scene_data scene_data(OBJ_PATH);
+    octree octree(scene_data, 2);
+    voxel_collection voxel(octree);
 }
 
-class T : public VoxelCollection::TraversalCallback {
+class T : public voxel_collection::TraversalCallback {
 public:
     geo::Intersection operator()(
             const geo::Ray& ray,
@@ -33,9 +33,9 @@ private:
 };
 
 TEST(voxel, walk) {
-    SceneData scene_data(OBJ_PATH);
-    Octree octree(scene_data, 4, 0.1);
-    VoxelCollection voxel(octree);
+    scene_data scene_data(OBJ_PATH);
+    octree octree(scene_data, 4, 0.1);
+    voxel_collection voxel(octree);
 
     auto rays       = 100;
     auto directions = raytracer::get_random_directions(rays);
@@ -50,7 +50,7 @@ TEST(voxel, walk) {
 static constexpr auto bench_rays = 1 << 14;
 
 TEST(voxel, old) {
-    SceneData scene_data(OBJ_PATH);
+    scene_data scene_data(OBJ_PATH);
 
     auto v = scene_data.get_converted_vertices();
     aligned::vector<size_t> ind(scene_data.get_triangles().size());
@@ -63,11 +63,11 @@ TEST(voxel, old) {
 }
 
 TEST(voxel, new) {
-    SceneData scene_data(OBJ_PATH);
-    Octree octree(scene_data, 4, 0.1);
-    VoxelCollection voxel(octree);
+    scene_data scene_data(OBJ_PATH);
+    octree octree(scene_data, 4, 0.1);
+    voxel_collection voxel(octree);
 
-    VoxelCollection::TriangleTraversalCallback t(scene_data);
+    voxel_collection::TriangleTraversalCallback t(scene_data);
 
     for (const auto& i : raytracer::get_random_directions(bench_rays)) {
         geo::Ray ray(glm::vec3(0, 1, 0), to_vec3(i));
@@ -77,11 +77,11 @@ TEST(voxel, new) {
 }
 
 TEST(voxel, intersect) {
-    SceneData scene_data(OBJ_PATH);
-    Octree octree(scene_data, 4, 0.1);
-    VoxelCollection voxel(octree);
+    scene_data scene_data(OBJ_PATH);
+    octree octree(scene_data, 4, 0.1);
+    voxel_collection voxel(octree);
 
-    VoxelCollection::TriangleTraversalCallback t(scene_data);
+    voxel_collection::TriangleTraversalCallback t(scene_data);
 
     auto v = scene_data.get_converted_vertices();
     aligned::vector<size_t> ind(scene_data.get_triangles().size());
@@ -99,9 +99,9 @@ TEST(voxel, intersect) {
 }
 
 TEST(voxel, flatten) {
-    SceneData scene_data(OBJ_PATH);
-    Octree octree(scene_data, 5, 0.1);
-    VoxelCollection voxel(octree);
+    scene_data scene_data(OBJ_PATH);
+    octree octree(scene_data, 5, 0.1);
+    voxel_collection voxel(octree);
 
     auto f = voxel.get_flattened();
 }

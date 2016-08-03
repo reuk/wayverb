@@ -12,8 +12,8 @@
 
 namespace {
 auto uniform_surface(float r) {
-    return Surface{VolumeType{{r, r, r, r, r, r, r, r}},
-                   VolumeType{{r, r, r, r, r, r, r, r}}};
+    return surface{volume_type{{r, r, r, r, r, r, r, r}},
+                   volume_type{{r, r, r, r, r, r, r, r}}};
 }
 
 template <typename T>
@@ -49,7 +49,7 @@ TEST(verify_compensation_signal, verify_compensation_signal_normal) {
 
     auto scene_data = get_scene_data(box(glm::vec3(-1), glm::vec3(1)));
     scene_data.set_surfaces(uniform_surface(0.5));
-    MeshBoundary boundary(scene_data);
+    mesh_boundary boundary(scene_data);
 
     constexpr glm::vec3 centre{0, 0, 0};
 

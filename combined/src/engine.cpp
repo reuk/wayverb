@@ -136,20 +136,21 @@ private:
     aligned::vector<waveguide::run_step_output> waveguide_results;
 };
 
-float max_reflectivity(const VolumeType& vt) {
+float max_reflectivity(const volume_type& vt) {
     return *proc::max_element(vt.s);
 }
 
-float max_reflectivity(const Surface& surface) {
+float max_reflectivity(const surface& surface) {
     return std::max(max_reflectivity(surface.diffuse),
                     max_reflectivity(surface.specular));
 }
 
-float max_reflectivity(const SceneData::Material& material) {
+float max_reflectivity(const copyable_scene_data::material& material) {
     return max_reflectivity(material.surface);
 }
 
-float max_reflectivity(const aligned::vector<SceneData::Material>& materials) {
+float max_reflectivity(
+        const aligned::vector<copyable_scene_data::material>& materials) {
     return std::accumulate(materials.begin() + 1,
                            materials.end(),
                            max_reflectivity(materials.front()),
@@ -165,7 +166,7 @@ namespace wayverb {
 class engine::impl final {
 public:
     impl(const compute_context& cc,
-         const CopyableSceneData& scene_data,
+         const copyable_scene_data& scene_data,
          const glm::vec3& source,
          const glm::vec3& receiver,
          double waveguide_sample_rate,
@@ -181,7 +182,7 @@ public:
                            max_reflectivity(scene_data.get_materials()))) {}
 
     impl(const compute_context& cc,
-         const CopyableSceneData& scene_data,
+         const copyable_scene_data& scene_data,
          const glm::vec3& source,
          const glm::vec3& receiver,
          double waveguide_sample_rate,
@@ -192,7 +193,7 @@ public:
             , raytracer(cc.get_context(), cc.get_device())
             , waveguide(cc.get_context(),
                         cc.get_device(),
-                        MeshBoundary(scene_data),
+                        mesh_boundary(scene_data),
                         receiver,
                         waveguide_sample_rate)
             , source(source)
@@ -342,7 +343,7 @@ public:
 
 private:
     compute_context compute_context;
-    CopyableSceneData scene_data;
+    copyable_scene_data scene_data;
     raytracer::raytracer raytracer;
     waveguide::waveguide waveguide;
 
@@ -360,7 +361,7 @@ private:
 };
 
 engine::engine(const compute_context& compute_context,
-               const CopyableSceneData& scene_data,
+               const copyable_scene_data& scene_data,
                const glm::vec3& source,
                const glm::vec3& receiver,
                double waveguide_sample_rate,
@@ -375,7 +376,7 @@ engine::engine(const compute_context& compute_context,
                                        impulses)) {}
 
 engine::engine(const compute_context& compute_context,
-               const CopyableSceneData& scene_data,
+               const copyable_scene_data& scene_data,
                const glm::vec3& source,
                const glm::vec3& receiver,
                double waveguide_sample_rate,

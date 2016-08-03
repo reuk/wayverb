@@ -53,7 +53,7 @@ aligned::set<index_path> compute_unique_paths(
 
 aligned::vector<TriangleVec3> compute_original_triangles(
         const aligned::vector<cl_ulong>& triangles,
-        const CopyableSceneData& scene_data);
+        const copyable_scene_data& scene_data);
 
 aligned::vector<TriangleVec3> compute_mirrored_triangles(
         const aligned::vector<TriangleVec3>& original);
@@ -76,19 +76,19 @@ glm::vec3 compute_mirrored_point(const aligned::vector<TriangleVec3>& mirrored,
 
 float compute_distance(const aligned::vector<glm::vec3>& unmirrored);
 
-VolumeType compute_volume(const CopyableSceneData& scene_data,
-                          const aligned::vector<cl_ulong>& triangles);
+volume_type compute_volume(const copyable_scene_data& scene_data,
+                           const aligned::vector<cl_ulong>& triangles);
 
-Impulse compute_ray_path_impulse(const CopyableSceneData& scene_data,
+impulse compute_ray_path_impulse(const copyable_scene_data& scene_data,
                                  const aligned::vector<cl_ulong>& triangles,
                                  const aligned::vector<glm::vec3>& unmirrored);
 
-std::experimental::optional<Impulse> follow_ray_path(
+std::experimental::optional<impulse> follow_ray_path(
         const aligned::vector<cl_ulong>& triangles,
         const glm::vec3& source,
         const glm::vec3& receiver,
-        const CopyableSceneData& scene_data,
-        const VoxelCollection& vox,
-        const VoxelCollection::TriangleTraversalCallback& callback);
+        const copyable_scene_data& scene_data,
+        const voxel_collection& vox,
+        const voxel_collection::TriangleTraversalCallback& callback);
 
 }  // namespace raytracer

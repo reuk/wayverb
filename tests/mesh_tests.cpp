@@ -18,14 +18,14 @@
 class MeshTest : public ::testing::Test {
 public:
     template <typename MeshType>
-    auto get_mesh(const SceneData& sd) {
-        return MeshType(MeshBoundary(sd), 0.1, glm::vec3(0));
+    auto get_mesh(const copyable_scene_data& sd) {
+        return MeshType(mesh_boundary(sd), 0.1, glm::vec3(0));
     }
 
     template <typename MeshType>
     void locator_index_test() {
-        SceneData sd(OBJ_PATH_BEDROOM);
-        auto mesh = get_mesh<MeshType>(SceneData(OBJ_PATH_BEDROOM));
+        scene_data sd(OBJ_PATH_BEDROOM);
+        auto mesh = get_mesh<MeshType>(scene_data(OBJ_PATH_BEDROOM));
         for (auto i = 0u; i != mesh.get_nodes().size(); ++i) {
             auto loc = mesh.compute_locator(i);
             ASSERT_EQ(i, mesh.compute_index(loc));
@@ -34,7 +34,7 @@ public:
 
     template <typename MeshType>
     void test_position_index() {
-        auto mesh = get_mesh<MeshType>(SceneData(OBJ_PATH_BEDROOM));
+        auto mesh = get_mesh<MeshType>(scene_data(OBJ_PATH_BEDROOM));
         for (auto i = 0u; i != mesh.get_nodes().size(); ++i) {
             auto loc = mesh.compute_locator(i);
             auto pos = mesh.compute_position(loc);
@@ -44,7 +44,7 @@ public:
 
     template <typename MeshType>
     void test_neighbor() {
-        auto mesh = get_mesh<MeshType>(SceneData(OBJ_PATH_BEDROOM));
+        auto mesh = get_mesh<MeshType>(scene_data(OBJ_PATH_BEDROOM));
         for (auto i = 0u; i != mesh.get_nodes().size(); ++i) {
             auto loc = mesh.compute_locator(i);
             auto pos = mesh.compute_position(loc);

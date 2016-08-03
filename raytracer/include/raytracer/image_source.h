@@ -9,7 +9,7 @@
 
 #include <experimental/optional>
 
-class VoxelCollection;
+class voxel_collection;
 
 namespace raytracer {
 
@@ -17,11 +17,11 @@ class image_source_finder final {
 public:
     image_source_finder(size_t rays, size_t depth);
 
-    void push(const aligned::vector<Reflection>&);
-    aligned::vector<Impulse> get_results(const glm::vec3& source,
+    void push(const aligned::vector<reflection>&);
+    aligned::vector<impulse> get_results(const glm::vec3& source,
                                          const glm::vec3& receiver,
-                                         const CopyableSceneData& scene_data,
-                                         const VoxelCollection& vox);
+                                         const copyable_scene_data& scene_data,
+                                         const voxel_collection& vox);
 
 private:
     struct item final {

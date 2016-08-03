@@ -21,7 +21,7 @@ public:
 
     waveguide(const cl::Context&,
               const cl::Device&,
-              const MeshBoundary& boundary,
+              const mesh_boundary& boundary,
               const glm::vec3& anchor,
               double sample_rate);
     waveguide(const waveguide&) = delete;

@@ -32,8 +32,8 @@
 
 namespace {
 auto uniform_surface(float r) {
-    return Surface{VolumeType{{r, r, r, r, r, r, r, r}},
-                   VolumeType{{r, r, r, r, r, r, r, r}}};
+    return surface{volume_type{{r, r, r, r, r, r, r, r}},
+                   volume_type{{r, r, r, r, r, r, r, r}}};
 }
 }  // namespace
 
@@ -53,7 +53,7 @@ int main(int argc, char** argv) {
 
         waveguide::waveguide waveguide(cc.get_context(),
                                        cc.get_device(),
-                                       MeshBoundary(scene_data),
+                                       mesh_boundary(scene_data),
                                        receiver,
                                        sampling_frequency);
 

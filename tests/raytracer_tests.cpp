@@ -28,7 +28,7 @@ static constexpr auto bench_rays        = 1 << 15;
 TEST(raytrace, new) {
     compute_context cc;
 
-    SceneData scene_data(OBJ_PATH);
+    scene_data scene_data(OBJ_PATH);
 
     std::atomic_bool keep_going{true};
     raytracer::raytracer raytrace(cc.get_context(), cc.get_device());
@@ -89,8 +89,8 @@ TEST(raytrace, same_location) {
     auto receiver = source;
     constexpr auto s = 0.9;
     constexpr auto d = 0.1;
-    constexpr Surface surface{VolumeType{{s, s, s, s, s, s, s, s}},
-                              VolumeType{{d, d, d, d, d, d, d, d}}};
+    constexpr surface surface{volume_type{{s, s, s, s, s, s, s, s}},
+                              volume_type{{d, d, d, d, d, d, d, d}}};
 
     auto scene_data = get_scene_data(box);
     scene_data.set_surfaces(surface);
@@ -121,8 +121,8 @@ TEST(raytrace, image_source) {
     constexpr glm::vec3 receiver(2, 1, 5);
     constexpr auto s = 0.9;
     constexpr auto d = 0.1;
-    constexpr Surface surface{VolumeType{{s, s, s, s, s, s, s, s}},
-                              VolumeType{{d, d, d, d, d, d, d, d}}};
+    constexpr surface surface{volume_type{{s, s, s, s, s, s, s, s}},
+                              volume_type{{d, d, d, d, d, d, d, d}}};
 
     constexpr auto shells = 3;
     auto images           = images_for_shell<shells>(box, source);
@@ -134,12 +134,12 @@ TEST(raytrace, image_source) {
     proc::transform(distances, times.begin(), [](auto i) {
         return i / SPEED_OF_SOUND;
     });
-    std::array<VolumeType, images.size()> volumes;
+    std::array<volume_type, images.size()> volumes;
     proc::transform(distances, volumes.begin(), [](auto i) {
         return raytracer::attenuation_for_distance(i);
     });
 
-    aligned::vector<raytracer::AttenuatedImpulse> proper_image_source_impulses;
+    aligned::vector<raytracer::attenuated_impulse> proper_image_source_impulses;
 
     constexpr auto L = width_for_shell(shells);
     for (int i = 0; i != L; ++i) {
@@ -156,7 +156,7 @@ TEST(raytrace, image_source) {
                     volume *= base_vol;
 
                     proper_image_source_impulses.push_back(
-                            raytracer::AttenuatedImpulse{volume, times[index]});
+                            raytracer::attenuated_impulse{volume, times[index]});
                 }
             }
         }

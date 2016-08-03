@@ -8,7 +8,7 @@ namespace raytracer {
 
 aligned::vector<TriangleVec3> compute_original_triangles(
         const aligned::vector<cl_ulong>& triangles,
-        const CopyableSceneData& scene_data) {
+        const copyable_scene_data& scene_data) {
     return map_to_vector(triangles, [&](const auto i) {
         return get_triangle_verts(scene_data.get_triangles()[i],
                                   scene_data.get_vertices());
@@ -103,11 +103,11 @@ float compute_distance(const aligned::vector<glm::vec3>& unmirrored) {
             [](const auto& a, const auto& b) { return glm::distance(a, b); });
 }
 
-VolumeType compute_volume(const CopyableSceneData& scene_data,
+volume_type compute_volume(const copyable_scene_data& scene_data,
                           const aligned::vector<cl_ulong>& triangles) {
     return proc::accumulate(
             triangles,
-            VolumeType{{1, 1, 1, 1, 1, 1, 1, 1}},
+            volume_type{{1, 1, 1, 1, 1, 1, 1, 1}},
             [&](const auto& volume, const auto& i) {
                 const auto scene_triangle = scene_data.get_triangles()[i];
                 const auto surface =
@@ -117,7 +117,7 @@ VolumeType compute_volume(const CopyableSceneData& scene_data,
             });
 }
 
-Impulse compute_ray_path_impulse(const CopyableSceneData& scene_data,
+impulse compute_ray_path_impulse(const copyable_scene_data& scene_data,
                                  const aligned::vector<cl_ulong>& triangles,
                                  const aligned::vector<glm::vec3>& unmirrored) {
     return construct_impulse(compute_volume(scene_data, triangles),
@@ -132,13 +132,13 @@ bool is_near(T a, T b, double tolerance) {
 }
 }  // namespace
 
-std::experimental::optional<Impulse> follow_ray_path(
+std::experimental::optional<impulse> follow_ray_path(
         const aligned::vector<cl_ulong>& triangles,
         const glm::vec3& source,
         const glm::vec3& receiver,
-        const CopyableSceneData& scene_data,
-        const VoxelCollection& vox,
-        const VoxelCollection::TriangleTraversalCallback& callback) {
+        const copyable_scene_data& scene_data,
+        const voxel_collection& vox,
+        const voxel_collection::TriangleTraversalCallback& callback) {
     //  extract triangles from the scene
     const auto original = compute_original_triangles(triangles, scene_data);
 

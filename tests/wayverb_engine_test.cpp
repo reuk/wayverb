@@ -12,8 +12,8 @@ TEST(engine, engine) {
     constexpr glm::vec3 mic(2.09, 3.08, 0.96);
     constexpr auto output_sample_rate = 96000;
     constexpr auto v                  = 0.9;
-    constexpr Surface surface{{{v, v, v, v, v, v, v, v}},
-                              {{v, v, v, v, v, v, v, v}}};
+    constexpr surface surface{volume_type{{v, v, v, v, v, v, v, v}},
+                              volume_type{{v, v, v, v, v, v, v, v}}};
 
     auto scene_data = get_scene_data(box);
     scene_data.set_surfaces(surface);

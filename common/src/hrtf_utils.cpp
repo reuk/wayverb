@@ -1,6 +1,6 @@
+#include "common/hrtf_utils.h"
 #include "common/filters_common.h"
 #include "common/hrtf.h"
-#include "common/hrtf_utils.h"
 
 /// Sum a collection of vectors of the same length into a single vector
 aligned::vector<float> mixdown(
@@ -25,12 +25,12 @@ aligned::vector<aligned::vector<float>> multiband_filter(
     aligned::vector<aligned::vector<float>> ret;
     ret.reserve(bands.size());
     filter::LinkwitzRileyBandpass bandpass;
-    for (auto i = 0u; i != bands.size() && i != HrtfData::EDGES.size() - 1 &&
-                      HrtfData::EDGES[i] < sample_rate * 0.5;
+    for (auto i = 0u; i != bands.size() && i != hrtf_data::edges.size() - 1 &&
+                      hrtf_data::edges[i] < sample_rate * 0.5;
          ++i) {
         //  set bandpass parameters
         bandpass.set_params(
-                HrtfData::EDGES[i], HrtfData::EDGES[i + 1], sample_rate);
+                hrtf_data::edges[i], hrtf_data::edges[i + 1], sample_rate);
 
         //  filter the band
         ret.push_back(filter::run_one_pass(
@@ -44,7 +44,7 @@ aligned::vector<float> multiband_filter_and_mixdown(
         double sample_rate) {
     return mixdown(
             multiband_filter(bands,
-                             aligned::vector<double>(HrtfData::EDGES.begin(),
-                                                     HrtfData::EDGES.end()),
+                             aligned::vector<double>(hrtf_data::edges.begin(),
+                                                     hrtf_data::edges.end()),
                              sample_rate));
 }

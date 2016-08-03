@@ -53,7 +53,7 @@ box padded(const box& b, float padding);
 
 bool intersects(const box& b, const geo::Ray& ray, float t0, float t1);
 
-CopyableSceneData get_scene_data(const box& b);
+copyable_scene_data get_scene_data(const box& b);
 
 constexpr glm::vec3 mirror_on_axis(const glm::vec3& v,
                                    const glm::vec3& pt,

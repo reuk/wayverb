@@ -114,15 +114,15 @@ constexpr auto parallel_size{1 << 8};
 std::default_random_engine engine{std::random_device()()};
 std::uniform_real_distribution<float> range{min_v, max_v};
 
-Surface random_surface() {
-    Surface ret;
+surface random_surface() {
+    surface ret;
     proc::generate(ret.specular.s, [] { return range(engine); });
     proc::generate(ret.diffuse.s, [] { return range(engine); });
     return ret;
 };
 
-std::array<Surface, parallel_size> compute_surfaces() {
-    std::array<Surface, parallel_size> ret;
+std::array<surface, parallel_size> compute_surfaces() {
+    std::array<surface, parallel_size> ret;
     proc::generate(ret, [] { return random_surface(); });
     return ret;
 }

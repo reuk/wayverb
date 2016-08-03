@@ -6,14 +6,14 @@
 /// and indices of triangles that overlap that boundary.
 /// Can be 'flattened' - converts the collection into a memory-efficient
 /// array representation, which can be passed to the GPU.
-class VoxelCollection final {
+class voxel_collection final {
 public:
-    class Voxel final {
+    class voxel final {
     public:
-        explicit Voxel(const box& aabb = box(),
+        explicit voxel(const box& aabb = box(),
                        const aligned::vector<size_t>& triangles =
                                aligned::vector<size_t>());
-        Voxel(const Octree& o);
+        voxel(const octree& o);
         box get_aabb() const;
         const aligned::vector<size_t>& get_triangles() const;
 
@@ -22,24 +22,24 @@ public:
         aligned::vector<size_t> triangles;
     };
 
-    using ZAxis = aligned::vector<Voxel>;
-    using YAxis = aligned::vector<ZAxis>;
-    using XAxis = aligned::vector<YAxis>;
+    using z_axis = aligned::vector<voxel>;
+    using y_axis = aligned::vector<z_axis>;
+    using x_axis = aligned::vector<y_axis>;
 
     /// Construct from scene data. Uses an octree as an acceleration structure.
-    VoxelCollection(const CopyableSceneData& scene_data,
-                    int depth,
-                    float padding = 0.0f);
+    voxel_collection(const copyable_scene_data& scene_data,
+                     int depth,
+                     float padding = 0.0f);
     /// Construct directly from an existing octree.
-    VoxelCollection(const Octree& o);
+    voxel_collection(const octree& o);
 
     box get_aabb() const;
     box get_voxel_aabb() const;
-    const XAxis& get_data() const;
+    const x_axis& get_data() const;
 
     int get_side() const;
 
-    const Voxel& get_voxel(const glm::ivec3& i) const;
+    const voxel& get_voxel(const glm::ivec3& i) const;
 
     glm::ivec3 get_starting_index(const glm::vec3& position) const;
     static glm::ivec3 get_step(const glm::vec3& direction);
@@ -70,7 +70,7 @@ public:
     /// SceneData object which contains the triangle information.
     class TriangleTraversalCallback final : public TraversalCallback {
     public:
-        TriangleTraversalCallback(const CopyableSceneData& scene_data);
+        TriangleTraversalCallback(const copyable_scene_data& scene_data);
         geo::Intersection operator()(
                 const geo::Ray& ray,
                 const aligned::vector<size_t>& triangles) const override;
@@ -85,8 +85,8 @@ public:
                                const TraversalCallback& fun) const;
 
 private:
-    void init(const Octree& o, const glm::ivec3& offset = glm::ivec3(0));
+    void init(const octree& o, const glm::ivec3& offset = glm::ivec3(0));
 
     box aabb;
-    XAxis data;
+    x_axis data;
 };

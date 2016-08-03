@@ -18,12 +18,12 @@ public:
     /// Attenuate some raytrace results.
     /// The outer vector corresponds to separate channels, the inner vector
     /// contains the impulses, each of which has a time and an 8-band volume.
-    aligned::vector<AttenuatedImpulse> process(
-            const aligned::vector<Impulse>& results,
+    aligned::vector<attenuated_impulse> process(
+            const aligned::vector<impulse>& results,
             const glm::vec3& direction,
             const glm::vec3& up,
             const glm::vec3& position,
-            HrtfChannel channel);
+            hrtf_channel channel);
 
     const std::array<std::array<std::array<cl_float8, 180>, 360>, 2>&
     get_hrtf_data() const;
@@ -46,8 +46,8 @@ public:
     /// Attenuate some raytrace results.
     /// The outer vector corresponds to separate channels, the inner vector
     /// contains the impulses, each of which has a time and an 8-band volume.
-    aligned::vector<AttenuatedImpulse> process(
-            const aligned::vector<Impulse>& results,
+    aligned::vector<attenuated_impulse> process(
+            const aligned::vector<impulse>& results,
             const glm::vec3& pointing,
             float shape,
             const glm::vec3& position);

@@ -24,7 +24,7 @@ aligned::vector<aligned::vector<float>> run_attenuation(
         }
         case model::ReceiverSettings::Mode::hrtf: {
             attenuator::hrtf attenuator;
-            auto channels = {HrtfChannel::left, HrtfChannel::right};
+            const auto channels = {hrtf_channel::left, hrtf_channel::right};
             return map_to_vector(
                     channels,
                     [&receiver, &input, &attenuator, waveguide_sample_rate](

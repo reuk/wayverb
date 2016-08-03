@@ -2,7 +2,7 @@
 
 #include "common/aligned/vector.h"
 
-enum class HrtfChannel { left, right };
+enum class hrtf_channel { left, right };
 
 /// Given a vector of frequency band signals, a vector of band edges, and
 /// a sampling rate, filter the bands and sum them down.

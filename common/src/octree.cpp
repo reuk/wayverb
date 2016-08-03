@@ -33,7 +33,7 @@ std::array<box, 8> next_boundaries(const box& parent) {
     }};
 }
 
-aligned::vector<size_t> get_triangles(const CopyableSceneData& sd,
+aligned::vector<size_t> get_triangles(const copyable_scene_data& sd,
                                       const aligned::vector<size_t>& to_test,
                                       const box& aabb) {
     aligned::vector<size_t> ret(to_test.size());
@@ -49,8 +49,8 @@ aligned::vector<size_t> get_triangles(const CopyableSceneData& sd,
     return ret;
 }
 
-std::unique_ptr<std::array<Octree, 8>> get_nodes(
-        const CopyableSceneData& sd,
+std::unique_ptr<std::array<octree, 8>> get_nodes(
+        const copyable_scene_data& sd,
         int md,
         const aligned::vector<size_t>& to_test,
         const box& ab) {
@@ -59,21 +59,21 @@ std::unique_ptr<std::array<Octree, 8>> get_nodes(
     }
 
     const auto next = next_boundaries(ab);
-    auto ret        = std::make_unique<std::array<Octree, 8>>();
+    auto ret        = std::make_unique<std::array<octree, 8>>();
     proc::transform(next, ret->begin(), [&sd, md, &to_test](const auto& i) {
-        return Octree(sd, md - 1, to_test, i);
+        return octree(sd, md - 1, to_test, i);
     });
     return ret;
 }
 }  // namespace
 
-Octree::Octree(const CopyableSceneData& sd, size_t md, float padding)
-        : Octree(sd,
+octree::octree(const copyable_scene_data& sd, size_t md, float padding)
+        : octree(sd,
                  md,
                  sd.get_triangle_indices(),
                  padded(sd.get_aabb(), padding)) {}
 
-Octree::Octree(const CopyableSceneData& sd,
+octree::octree(const copyable_scene_data& sd,
                size_t md,
                const aligned::vector<size_t>& to_test,
                const box& ab)
@@ -81,23 +81,23 @@ Octree::Octree(const CopyableSceneData& sd,
         , triangles(::get_triangles(sd, to_test, ab))
         , nodes(::get_nodes(sd, md, triangles, ab)) {}
 
-box Octree::get_aabb() const { return aabb; }
+box octree::get_aabb() const { return aabb; }
 
-bool Octree::has_nodes() const { return nodes != nullptr; }
+bool octree::has_nodes() const { return nodes != nullptr; }
 
-const std::array<Octree, 8>& Octree::get_nodes() const { return *nodes; }
+const std::array<octree, 8>& octree::get_nodes() const { return *nodes; }
 
-const aligned::vector<size_t>& Octree::get_triangles() const {
+const aligned::vector<size_t>& octree::get_triangles() const {
     return triangles;
 }
 
-aligned::vector<const Octree*> Octree::intersect(const geo::Ray& ray) const {
+aligned::vector<const octree*> octree::intersect(const geo::Ray& ray) const {
     const auto& starting_node = get_surrounding_leaf(ray.get_position());
-    aligned::vector<const Octree*> ret = {&starting_node};
+    aligned::vector<const octree*> ret = {&starting_node};
     return ret;
 }
 
-const Octree& Octree::get_surrounding_leaf(const glm::vec3& v) const {
+const octree& octree::get_surrounding_leaf(const glm::vec3& v) const {
     if (!has_nodes()) {
         return *this;
     }
@@ -109,7 +109,7 @@ const Octree& Octree::get_surrounding_leaf(const glm::vec3& v) const {
     return get_nodes().at(x | y | z).get_surrounding_leaf(v);
 }
 
-size_t Octree::get_side() const {
+size_t octree::get_side() const {
     if (!has_nodes()) {
         return 1;
     }

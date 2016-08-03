@@ -27,7 +27,7 @@ float degrees(float radians) { return radians * 180 / M_PI; }
 
 float attenuation(const glm::vec3& direction,
                   const glm::vec3& up,
-                  HrtfChannel channel,
+                  hrtf_channel channel,
                   const glm::vec3& incident,
                   int band) {
     auto transformed = transform(direction, up, incident);
@@ -35,7 +35,7 @@ float attenuation(const glm::vec3& direction,
     a %= 360;
     int e = degrees(elevation(transformed));
     e     = 90 - e;
-    return HrtfData::HRTF_DATA[channel == HrtfChannel::left ? 0 : 1][a][e]
+    return hrtf_data::data[channel == hrtf_channel::left ? 0 : 1][a][e]
             .s[band];
 }
 
@@ -48,9 +48,9 @@ aligned::vector<aligned::vector<float>> hrtf::process(
         const aligned::vector<run_step_output>& input,
         const glm::vec3& direction,
         const glm::vec3& up,
-        HrtfChannel channel) const {
+        hrtf_channel channel) const {
     aligned::vector<aligned::vector<float>> ret;
-    for (auto band = 0u; band != HrtfData::EDGES.size(); ++band) {
+    for (auto band = 0u; band != hrtf_data::edges.size(); ++band) {
         ret.push_back(map_to_vector(input, [=](auto i) {
             auto mag = glm::length(i.intensity);
             if (mag == 0) {

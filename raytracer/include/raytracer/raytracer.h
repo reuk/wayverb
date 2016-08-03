@@ -33,7 +33,7 @@ public:
     using per_step_callback = std::function<void(size_t)>;
 
     std::experimental::optional<results> run(
-            const CopyableSceneData& scene_data,
+            const copyable_scene_data& scene_data,
             const glm::vec3& source,
             const glm::vec3& receiver,
             size_t rays,

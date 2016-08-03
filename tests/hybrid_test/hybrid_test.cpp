@@ -67,7 +67,7 @@ auto run_waveguide(const compute_context& cc,
                    const box& boundary,
                    const model::SingleShot& config,
                    const std::string& output_folder,
-                   const Surface& surface) {
+                   const surface& surface) {
     const auto steps = 16000;
 
     auto scene_data = get_scene_data(boundary);
@@ -76,7 +76,7 @@ auto run_waveguide(const compute_context& cc,
     //  get a waveguide
     waveguide::waveguide waveguide(cc.get_context(),
                                    cc.get_device(),
-                                   MeshBoundary(scene_data),
+                                   mesh_boundary(scene_data),
                                    config.receiver_settings.position,
                                    config.get_waveguide_sample_rate());
 
@@ -126,8 +126,8 @@ int main(int argc, char** argv) {
     constexpr auto samplerate = 96000;
     constexpr auto bit_depth  = 16;
     constexpr auto v          = 0.9;
-    constexpr Surface surface{{{v, v, v, v, v, v, v, v}},
-                              {{v, v, v, v, v, v, v, v}}};
+    constexpr surface surface{volume_type{{v, v, v, v, v, v, v, v}},
+                              volume_type{{v, v, v, v, v, v, v, v}}};
 
     CHECK(argc == 2) << "expected an output folder";
 

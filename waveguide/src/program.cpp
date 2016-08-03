@@ -55,7 +55,7 @@ program::CanonicalCoefficients program::to_impedance_coefficients(
 }
 
 aligned::vector<program::CanonicalCoefficients> program::to_filter_coefficients(
-        aligned::vector<Surface> surfaces, float sr) {
+        aligned::vector<surface> surfaces, float sr) {
     aligned::vector<CanonicalCoefficients> ret(surfaces.size());
     proc::transform(surfaces, ret.begin(), [sr](auto i) {
         return to_filter_coefficients(i, sr);

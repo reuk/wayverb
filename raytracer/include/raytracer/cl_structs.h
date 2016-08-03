@@ -6,7 +6,7 @@
 
 namespace raytracer {
 
-constexpr VolumeType air_coefficient{{
+constexpr volume_type air_coefficient{{
         0.001f * -0.1f,
         0.001f * -0.2f,
         0.001f * -0.5f,
@@ -19,28 +19,28 @@ constexpr VolumeType air_coefficient{{
 
 /// An impulse contains a volume, a time in seconds, and the direction from
 /// which it came (useful for attenuation/hrtf stuff).
-struct alignas(1 << 5) Impulse final {
-    VolumeType volume;   //  actual per-band volume of the impulse
+struct alignas(1 << 5) impulse final {
+    volume_type volume;  //  actual per-band volume of the impulse
     cl_float3 position;  //  position of the secondary source (used for
                          //  attenuation)
     cl_float time;       //  time that the impulse is received
 };
 
-constexpr auto to_tuple(const Impulse& x) {
+constexpr auto to_tuple(const impulse& x) {
     return std::tie(x.volume, x.position, x.time);
 }
 
-constexpr bool operator==(const Impulse& a, const Impulse& b) {
+constexpr bool operator==(const impulse& a, const impulse& b) {
     return to_tuple(a) == to_tuple(b);
 }
 
-constexpr bool operator!=(const Impulse& a, const Impulse& b) {
+constexpr bool operator!=(const impulse& a, const impulse& b) {
     return !(a == b);
 }
 
 //----------------------------------------------------------------------------//
 
-struct alignas(1 << 4) Reflection final {
+struct alignas(1 << 4) reflection final {
     cl_float3 position;   //  position of the secondary source
     cl_float3 direction;  //  specular direction from the source
     cl_ulong triangle;    //  triangle which contains source
@@ -50,7 +50,7 @@ struct alignas(1 << 4) Reflection final {
                                //  this point
 };
 
-constexpr auto to_tuple(const Reflection& x) {
+constexpr auto to_tuple(const reflection& x) {
     return std::tie(x.position,
                     x.direction,
                     x.triangle,
@@ -58,53 +58,55 @@ constexpr auto to_tuple(const Reflection& x) {
                     x.receiver_visible);
 }
 
-constexpr bool operator==(const Reflection& a, const Reflection& b) {
+constexpr bool operator==(const reflection& a, const reflection& b) {
     return to_tuple(a) == to_tuple(b);
 }
 
-constexpr bool operator!=(const Reflection& a, const Reflection& b) {
+constexpr bool operator!=(const reflection& a, const reflection& b) {
     return !(a == b);
 }
 
 //----------------------------------------------------------------------------//
 
-struct alignas(1 << 5) DiffusePathInfo final {
-    VolumeType volume;    //  product of previous specular components
-    cl_float3 position;   //  because otherwise we won't be able to
-                          //  calculate a new distance
-    cl_float distance;    //  total distance travelled
+struct alignas(1 << 5) diffuse_path_info final {
+    volume_type volume;  //  product of previous specular components
+    cl_float3 position;  //  because otherwise we won't be able to
+                         //  calculate a new distance
+    cl_float distance;   //  total distance travelled
 };
 
-constexpr auto to_tuple(const DiffusePathInfo& x) {
+constexpr auto to_tuple(const diffuse_path_info& x) {
     return std::tie(x.volume, x.position, x.distance);
 }
 
-constexpr bool operator==(const DiffusePathInfo& a, const DiffusePathInfo& b) {
+constexpr bool operator==(const diffuse_path_info& a,
+                          const diffuse_path_info& b) {
     return to_tuple(a) == to_tuple(b);
 }
 
-constexpr bool operator!=(const DiffusePathInfo& a, const DiffusePathInfo& b) {
+constexpr bool operator!=(const diffuse_path_info& a,
+                          const diffuse_path_info& b) {
     return !(a == b);
 }
 
 //----------------------------------------------------------------------------//
 
-struct alignas(1 << 5) AttenuatedImpulse final {
-    VolumeType volume;
+struct alignas(1 << 5) attenuated_impulse final {
+    volume_type volume;
     cl_float time;
 };
 
-constexpr auto to_tuple(const AttenuatedImpulse& x) {
+constexpr auto to_tuple(const attenuated_impulse& x) {
     return std::tie(x.volume, x.time);
 }
 
-constexpr bool operator==(const AttenuatedImpulse& a,
-                          const AttenuatedImpulse& b) {
+constexpr bool operator==(const attenuated_impulse& a,
+                          const attenuated_impulse& b) {
     return to_tuple(a) == to_tuple(b);
 }
 
-constexpr bool operator!=(const AttenuatedImpulse& a,
-                          const AttenuatedImpulse& b) {
+constexpr bool operator!=(const attenuated_impulse& a,
+                          const attenuated_impulse& b) {
     return !(a == b);
 }
 
@@ -112,53 +114,53 @@ constexpr bool operator!=(const AttenuatedImpulse& a,
 
 /// Each speaker has a (normalized-unit) direction, and a coefficient in the
 /// range 0-1 which describes its polar pattern from omni to bidirectional.
-struct alignas(1 << 4) Microphone final {
+struct alignas(1 << 4) microphone final {
     cl_float3 direction;
     cl_float coefficient;
 };
 
-constexpr auto to_tuple(const Microphone& x) {
+constexpr auto to_tuple(const microphone& x) {
     return std::tie(x.direction, x.coefficient);
 }
 
-constexpr bool operator==(const Microphone& a, const Microphone& b) {
+constexpr bool operator==(const microphone& a, const microphone& b) {
     return to_tuple(a) == to_tuple(b);
 }
 
-constexpr bool operator!=(const Microphone& a, const Microphone& b) {
+constexpr bool operator!=(const microphone& a, const microphone& b) {
     return !(a == b);
 }
 
 //----------------------------------------------------------------------------//
 
-struct alignas(1 << 4) Ray final {
+struct alignas(1 << 4) ray final {
     cl_float3 position;
     cl_float3 direction;
 };
 
-constexpr auto to_tuple(const Ray& x) {
+constexpr auto to_tuple(const ray& x) {
     return std::tie(x.position, x.direction);
 }
 
-constexpr bool operator==(const Ray& a, const Ray& b) {
+constexpr bool operator==(const ray& a, const ray& b) {
     return to_tuple(a) == to_tuple(b);
 }
 
-constexpr bool operator!=(const Ray& a, const Ray& b) { return !(a == b); }
+constexpr bool operator!=(const ray& a, const ray& b) { return !(a == b); }
 
 //----------------------------------------------------------------------------//
 
-struct alignas(1 << 4) AABB final {
+struct alignas(1 << 4) aabb final {
     cl_float3 c0;
     cl_float3 c1;
 };
 
-constexpr auto to_tuple(const AABB& x) { return std::tie(x.c0, x.c1); }
+constexpr auto to_tuple(const aabb& x) { return std::tie(x.c0, x.c1); }
 
-constexpr bool operator==(const AABB& a, const AABB& b) {
+constexpr bool operator==(const aabb& a, const aabb& b) {
     return to_tuple(a) == to_tuple(b);
 }
 
-constexpr bool operator!=(const AABB& a, const AABB& b) { return !(a == b); }
+constexpr bool operator!=(const aabb& a, const aabb& b) { return !(a == b); }
 
-} //namespace raytracer
+}  // namespace raytracer

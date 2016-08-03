@@ -16,7 +16,7 @@ public:
             const aligned::vector<run_step_output>& input,
             const glm::vec3& direction,
             const glm::vec3& up,
-            HrtfChannel channel) const;
+            hrtf_channel channel) const;
 };
 
 }  // namespace attenuator

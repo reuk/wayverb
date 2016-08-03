@@ -6,29 +6,29 @@
 
 #include "common/aligned/vector.h"
 
-class Octree final {
+class octree final {
 public:
-    Octree() = default;
-    Octree(const CopyableSceneData& mesh_boundary,
+    octree() = default;
+    octree(const copyable_scene_data& mesh_boundary,
            size_t max_depth,
            float padding = 0);
-    Octree(const CopyableSceneData& mesh_boundary,
+    octree(const copyable_scene_data& mesh_boundary,
            size_t max_depth,
            const aligned::vector<size_t>& to_test,
            const box& aabb);
 
     box get_aabb() const;
     bool has_nodes() const;
-    const std::array<Octree, 8>& get_nodes() const;
+    const std::array<octree, 8>& get_nodes() const;
     const aligned::vector<size_t>& get_triangles() const;
 
     size_t get_side() const;
 
-    aligned::vector<const Octree*> intersect(const geo::Ray& ray) const;
-    const Octree& get_surrounding_leaf(const glm::vec3& v) const;
+    aligned::vector<const octree*> intersect(const geo::Ray& ray) const;
+    const octree& get_surrounding_leaf(const glm::vec3& v) const;
 
 private:
     box aabb;
     aligned::vector<size_t> triangles;
-    std::unique_ptr<std::array<Octree, 8>> nodes;
+    std::unique_ptr<std::array<octree, 8>> nodes;
 };

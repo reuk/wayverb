@@ -38,8 +38,8 @@ TEST(run_waveguide, run_waveguide) {
     constexpr glm::vec3 source(1, 1, 1);
     constexpr glm::vec3 receiver(2, 1, 5);
     constexpr auto v = 0.5;
-    constexpr Surface surface{{{v, v, v, v, v, v, v, v}},
-                              {{v, v, v, v, v, v, v, v}}};
+    constexpr surface surface{volume_type{{v, v, v, v, v, v, v, v}},
+                              volume_type{{v, v, v, v, v, v, v, v}}};
 
     //  init simulation parameters
 
@@ -49,7 +49,7 @@ TEST(run_waveguide, run_waveguide) {
     //  get a waveguide
     waveguide::waveguide waveguide(cc.get_context(),
                                    cc.get_device(),
-                                   MeshBoundary(scene_data),
+                                   mesh_boundary(scene_data),
                                    receiver,
                                    4000);
 
