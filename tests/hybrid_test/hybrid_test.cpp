@@ -103,7 +103,7 @@ auto run_waveguide(const compute_context& cc,
                                            receiver_index,
                                            steps,
                                            keep_going,
-                                           [&pb] { pb += 1; });
+                                           [&](auto) { pb += 1; });
 
     auto output = aligned::vector<float>(results->size());
     proc::transform(

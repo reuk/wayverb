@@ -42,7 +42,7 @@ TEST(waveguide_init, waveguide_init) {
                                                     receiver_index,
                                                     steps,
                                                     keep_going,
-                                                    [&pb] { pb += 1; });
+                                                    [&](auto) { pb += 1; });
     };
 
     run(a);

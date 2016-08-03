@@ -11,9 +11,13 @@ public:
     using output_callback =
             std::function<void(const aligned::vector<cl_float>&)>;
 
-    visualiser(const output_callback& callback);
+    template <typename T>
+    visualiser(T&& t)
+            : callback(std::forward<T>(t)) {}
 
-    void operator()(cl::CommandQueue& queue, const cl::Buffer& buffer);
+    void operator()(cl::CommandQueue& queue,
+                    const cl::Buffer& buffer,
+                    size_t step);
 
 private:
     output_callback callback;

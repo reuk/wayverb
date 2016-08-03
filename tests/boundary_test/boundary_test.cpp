@@ -73,7 +73,7 @@ aligned::vector<float> run_simulation(const compute_context& cc,
                                            receiver_index,
                                            steps,
                                            keep_going,
-                                           [&pb] { pb += 1; });
+                                           [&](auto) { pb += 1; });
 
 #if 0
     auto output = Microphone::omni.process(results);

@@ -69,7 +69,7 @@ TEST(run_waveguide, run_waveguide) {
                                            receiver_index,
                                            steps,
                                            keep_going,
-                                           [&pb] { pb += 1; });
+                                           [&](auto) { pb += 1; });
 
     ASSERT_TRUE(results);
 

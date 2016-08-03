@@ -92,13 +92,14 @@ int main(int argc, char** argv) {
 
             std::atomic_bool keep_going{true};
             progress_bar pb(std::cout, steps);
-            const auto results = waveguide::init_and_run(waveguide,
-                                                         corrected_source,
-                                                         kernel,
-                                                         receiver_index,
-                                                         steps,
-                                                         keep_going,
-                                                         [&pb] { pb += 1; });
+            const auto results =
+                    waveguide::init_and_run(waveguide,
+                                            corrected_source,
+                                            kernel,
+                                            receiver_index,
+                                            steps,
+                                            keep_going,
+                                            [&](auto) { pb += 1; });
 
             const auto output = map_to_vector(
                     *results, [](const auto& i) { return i.pressure; });

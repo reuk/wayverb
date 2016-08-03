@@ -2,6 +2,7 @@
 #include "waveguide/log_nan.h"
 #include "waveguide/postprocessor/microphone.h"
 #include "waveguide/postprocessor/visualiser.h"
+#include "waveguide/preprocessor/single_soft_source.h"
 
 #include "glog/logging.h"
 
@@ -65,10 +66,9 @@ waveguide::waveguide(
               << " MB";
 }
 
-bool waveguide::init_and_run(
-        const glm::vec3& excitation_location,
-        aligned::vector<float> input,
-        size_t steps,
+size_t waveguide::init_and_run(
+        size_t ideal_steps,
+        const step_preprocessor& preprocessor,
         const aligned::vector<step_postprocessor>& postprocessors,
         const per_step_callback& callback,
         std::atomic_bool& keep_going) {
@@ -82,8 +82,6 @@ bool waveguide::init_and_run(
     auto boundary_buffer_3 =
             load_to_buffer(context, lattice.get_boundary_data<3>(), false);
 
-    const auto input_node = get_index_for_coordinate(excitation_location);
-
     auto zero_mesh = [this](auto& buffer) {
         aligned::vector<cl_uchar> n(buffer.template getInfo<CL_MEM_SIZE>(), 0);
         cl::copy(queue, n.begin(), n.end(), buffer);
@@ -91,21 +89,15 @@ bool waveguide::init_and_run(
     zero_mesh(previous);
     zero_mesh(current);
 
-    input.resize(steps, 0);
-
     //  run
-    for (auto pressure : input) {
-        if (!keep_going) {
-            return false;
-        }
+    size_t step{0};
+    for (; step != ideal_steps && keep_going; ++step) {
 
+        //  set flag state to successful
         write_single_value(queue, error_flag_buffer, 0, program::id_success);
 
-        //  add input pressure to current pressure at input node
-        const auto current_pressure =
-                read_single_value<cl_float>(queue, current, 0);
-        const auto new_pressure = current_pressure + pressure;
-        write_single_value(queue, current, input_node, new_pressure);
+        //  update the mesh with new inputs
+        preprocessor(queue, current, step);
 
         //  run kernel
         kernel(cl::EnqueueArgs(queue, cl::NDRange(lattice.get_nodes().size())),
@@ -141,13 +133,12 @@ bool waveguide::init_and_run(
         }
 
         for (auto& i : postprocessors) {
-            i(queue, current);
+            i(queue, current, step);
         }
 
         std::swap(previous, current);
     }
-
-    return true;
+    return step;
 }
 
 size_t waveguide::get_index_for_coordinate(const glm::vec3& v) const {
@@ -175,6 +166,9 @@ std::experimental::optional<aligned::vector<run_step_output>> init_and_run(
         size_t steps,
         std::atomic_bool& keep_going,
         const waveguide::per_step_callback& callback) {
+    preprocessor::single_soft_source source(
+            waveguide.get_index_for_coordinate(e), input);
+
     aligned::vector<run_step_output> ret;
     ret.reserve(steps);
     aligned::vector<waveguide::step_postprocessor> postprocessors{
@@ -185,7 +179,7 @@ std::experimental::optional<aligned::vector<run_step_output>> init_and_run(
                     [&ret](const auto& i) { ret.push_back(i); })};
 
     if (waveguide.init_and_run(
-                e, input, steps, postprocessors, callback, keep_going)) {
+                steps, source, postprocessors, callback, keep_going) == steps) {
         return ret;
     }
 

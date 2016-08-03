@@ -15,7 +15,9 @@ public:
                double sample_rate,
                const output_callback& callback);
 
-    void operator()(cl::CommandQueue& queue, const cl::Buffer& buffer);
+    void operator()(cl::CommandQueue& queue,
+                    const cl::Buffer& buffer,
+                    size_t step);
 
 private:
     size_t output_node;

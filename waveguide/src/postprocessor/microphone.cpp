@@ -13,7 +13,9 @@ microphone::microphone(const mesh& mesh,
         , sample_rate(sample_rate)
         , callback(callback) {}
 
-void microphone::operator()(cl::CommandQueue& queue, const cl::Buffer& buffer) {
+void microphone::operator()(cl::CommandQueue& queue,
+                            const cl::Buffer& buffer,
+                            size_t) {
     //  copy out node pressure
     const auto pressure =
             read_single_value<cl_float>(queue, buffer, output_node);

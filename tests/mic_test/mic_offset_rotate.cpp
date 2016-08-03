@@ -115,13 +115,14 @@ int main(int argc, char** argv) {
 
             std::atomic_bool keep_going{true};
             progress_bar pb(std::cout, steps);
-            const auto w_results = waveguide::init_and_run(waveguide,
-                                                           source,
-                                                           kernel,
-                                                           mic_index,
-                                                           steps,
-                                                           keep_going,
-                                                           [&pb] { pb += 1; });
+            const auto w_results =
+                    waveguide::init_and_run(waveguide,
+                                            source,
+                                            kernel,
+                                            mic_index,
+                                            steps,
+                                            keep_going,
+                                            [&](auto) { pb += 1; });
 
             auto out_signal = microphone.process(
                     *w_results, glm::vec3(0, 0, 1), directionality);

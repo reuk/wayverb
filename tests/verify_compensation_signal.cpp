@@ -68,7 +68,7 @@ TEST(verify_compensation_signal, verify_compensation_signal_normal) {
                                                     receiver_index,
                                                     steps,
                                                     keep_going,
-                                                    [&pb] { pb += 1; });
+                                                    [&](auto) { pb += 1; });
 
         assert(output);
 

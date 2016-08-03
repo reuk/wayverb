@@ -21,6 +21,7 @@
 #include "waveguide/postprocess.h"
 #include "waveguide/postprocessor/microphone.h"
 #include "waveguide/postprocessor/visualiser.h"
+#include "waveguide/preprocessor/single_soft_source.h"
 #include "waveguide/waveguide.h"
 
 #include <cmath>
@@ -251,14 +252,15 @@ public:
         //  WAVEGUIDE  -------------------------------------------------------//
         callback(state::starting_waveguide, 1.0);
 
-        const auto corrected_source =
-                waveguide.get_coordinate_for_index(source_index);
         const auto input = waveguide::default_kernel(waveguide_sample_rate);
 
         //  this is the number of steps to run the raytracer for
         //  TODO is there a less dumb way of doing this?
         const auto steps = std::ceil(max_time * waveguide_sample_rate) +
                            input.opaque_kernel_size;
+
+        waveguide::preprocessor::single_soft_source preprocessor(source_index,
+                                                                 input.kernel);
 
         //  If the max raytracer time is large this could take forever...
         aligned::vector<waveguide::run_step_output> waveguide_results;
@@ -276,20 +278,16 @@ public:
             postprocessors.push_back(waveguide_visual_callback);
         }
 
-        auto waveguide_step     = 0u;
-        auto waveguide_finished = waveguide.init_and_run(
-                corrected_source,
-                input.kernel,
+        const auto waveguide_steps_completed = waveguide.init_and_run(
                 steps,
+                preprocessor,
                 postprocessors,
-                [&] {
-                    callback(state::running_waveguide,
-                             waveguide_step / (steps - 1.0));
-                    waveguide_step += 1;
+                [&](auto step) {
+                    callback(state::running_waveguide, step / (steps - 1.0));
                 },
                 keep_going);
 
-        if (!waveguide_finished) {
+        if (waveguide_steps_completed != steps) {
             return nullptr;
         }
 
