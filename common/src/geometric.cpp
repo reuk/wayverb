@@ -249,7 +249,8 @@ glm::vec3 normal(const TriangleVec3& t) {
 
 glm::vec3 mirror(const glm::vec3& p, const TriangleVec3& t) {
     const auto n = normal(t);
-    return p - n * glm::dot(n, p - t[0]) * 2.0f;
+    const auto ret = p - n * glm::dot(n, p - t[0]) * 2.0f;
+    return ret;
 }
 
 TriangleVec3 mirror(const TriangleVec3& in, const TriangleVec3& t) {
