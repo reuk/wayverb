@@ -4,6 +4,8 @@
 #include "common/config.h"
 #include "common/scene_data.h"
 
+namespace raytracer {
+
 constexpr VolumeType air_coefficient{{
         0.001f * -0.1f,
         0.001f * -0.2f,
@@ -158,3 +160,5 @@ constexpr bool operator==(const AABB& a, const AABB& b) {
 }
 
 constexpr bool operator!=(const AABB& a, const AABB& b) { return !(a == b); }
+
+} //namespace raytracer

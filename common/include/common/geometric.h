@@ -1,8 +1,7 @@
 #pragma once
 
 #include "common/aligned/vector.h"
-
-#include "triangle_vec.h"
+#include "common/triangle_vec.h"
 
 #include "glm/glm.hpp"
 
@@ -38,7 +37,7 @@ constexpr bool operator==(const inter& a, const inter& b) {
 }
 
 constexpr bool operator!=(const inter& a, const inter& b) { return !(a == b); }
-}//namespace detail
+}  // namespace detail
 
 using Intersection = std::experimental::optional<detail::inter>;
 
@@ -75,4 +74,10 @@ float point_triangle_distance_squared(
         const Triangle& tri,
         const aligned::vector<glm::vec3>& vertices,
         const glm::vec3& point);
+
+glm::vec3 normal(const TriangleVec3& t);
+
+glm::vec3 mirror(const glm::vec3& p, const TriangleVec3& t);
+TriangleVec3 mirror(const TriangleVec3& in, const TriangleVec3& t);
+
 }  // namespace geo

@@ -68,7 +68,7 @@
                   moduleName = "visualiser"
                   usesParentBreakpointCondition = "Yes"
                   urlString = "file:///Users/reuben/development/waveguide/submodules/modern_gl_utils/include/modern_gl_utils/checking.h"
-                  timestampString = "491922249.803606"
+                  timestampString = "491927842.726704"
                   startingColumnNumber = "9223372036854775807"
                   endingColumnNumber = "9223372036854775807"
                   startingLineNumber = "166"
@@ -83,7 +83,7 @@
                   moduleName = "visualiser"
                   usesParentBreakpointCondition = "Yes"
                   urlString = "file:///Users/reuben/development/waveguide/submodules/modern_gl_utils/include/modern_gl_utils/checking.h"
-                  timestampString = "491922249.80376"
+                  timestampString = "491927842.72689"
                   startingColumnNumber = "9223372036854775807"
                   endingColumnNumber = "9223372036854775807"
                   startingLineNumber = "166"
@@ -115,14 +115,12 @@
             shouldBeEnabled = "Yes"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "../../../../combined/src/engine.cpp"
-            timestampString = "491922248.003232"
+            filePath = "../../../../raytracer/src/image_source.cpp"
+            timestampString = "491927839.82703"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "236"
-            endingLineNumber = "236"
-            landmarkName = "run(std::atomic_bool&amp; keep_going, const state_callback&amp; callback)"
-            landmarkType = "7">
+            startingLineNumber = "196"
+            endingLineNumber = "196">
          </BreakpointContent>
       </BreakpointProxy>
    </Breakpoints>

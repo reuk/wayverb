@@ -1,12 +1,13 @@
-#include "raytracer/raytracer_program.h"
+#include "raytracer/program.h"
 
+#include "cl/brdf.h"
 #include "cl/geometry.h"
 #include "cl/structs.h"
 #include "cl/voxel.h"
-#include "cl/brdf.h"
 
-raytracer_program::raytracer_program(const cl::Context& context,
-                                     const cl::Device& device)
+namespace raytracer {
+
+program::program(const cl::Context& context, const cl::Device& device)
         : program_wrapper(context,
                           device,
                           std::vector<std::string>{cl_sources::structs,
@@ -17,10 +18,10 @@ raytracer_program::raytracer_program(const cl::Context& context,
 
 static_assert(SPEED_OF_SOUND != 0, "SPEED_OF_SOUND");
 
-const std::string raytracer_program::source("#define SPEED_OF_SOUND " +
-                                            std::to_string(SPEED_OF_SOUND) +
-                                            "\n"
-                                            R"(
+const std::string program::source("#define SPEED_OF_SOUND " +
+                                  std::to_string(SPEED_OF_SOUND) +
+                                  "\n"
+                                  R"(
 
 #define NULL (0)
 
@@ -250,3 +251,5 @@ kernel void diffuse(const global Reflection* reflections,  //  input
             (Impulse){output_volume, reflections[thread].position, output_time};
 }
 )");
+
+}  // namespace raytracer

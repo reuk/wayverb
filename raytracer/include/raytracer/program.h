@@ -4,9 +4,11 @@
 
 #include "common/program_wrapper.h"
 
-class raytracer_program final {
+namespace raytracer {
+
+class program final {
 public:
-    raytracer_program(const cl::Context& context, const cl::Device& device);
+    program(const cl::Context& context, const cl::Device& device);
 
     auto get_reflections_kernel() const {
         return program_wrapper.get_kernel<cl::Buffer,  //  ray
@@ -46,3 +48,5 @@ private:
 
     program_wrapper program_wrapper;
 };
+
+}  // namespace raytracer

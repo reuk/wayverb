@@ -1,7 +1,8 @@
+#include "raytracer/raytracer.h"
 #include "raytracer/construct_impulse.h"
 #include "raytracer/diffuse.h"
 #include "raytracer/image_source.h"
-#include "raytracer/raytracer.h"
+#include "raytracer/program.h"
 #include "raytracer/reflector.h"
 #include "raytracer/scene_buffers.h"
 

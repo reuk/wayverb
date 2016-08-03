@@ -242,4 +242,18 @@ float point_triangle_distance_squared(
     return point_triangle_distance_squared(to_triangle_vec3f(tri, vertices),
                                            point);
 }
+
+glm::vec3 normal(const TriangleVec3& t) {
+    return glm::normalize(glm::cross(t[1] - t[0], t[2] - t[0]));
+}
+
+glm::vec3 mirror(const glm::vec3& p, const TriangleVec3& t) {
+    const auto n = normal(t);
+    return p - n * glm::dot(n, p - t[0]) * 2.0f;
+}
+
+TriangleVec3 mirror(const TriangleVec3& in, const TriangleVec3& t) {
+    return TriangleVec3{{mirror(in[0], t), mirror(in[1], t), mirror(in[2], t)}};
+}
+
 }  // namespace geo

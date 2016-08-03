@@ -27,7 +27,6 @@ static constexpr auto bench_rays        = 1 << 15;
 
 TEST(raytrace, new) {
     compute_context cc;
-    raytracer_program raytracer_program(cc.get_context(), cc.get_device());
 
     SceneData scene_data(OBJ_PATH);
 
@@ -137,10 +136,10 @@ TEST(raytrace, image_source) {
     });
     std::array<VolumeType, images.size()> volumes;
     proc::transform(distances, volumes.begin(), [](auto i) {
-        return attenuation_for_distance(i);
+        return raytracer::attenuation_for_distance(i);
     });
 
-    aligned::vector<AttenuatedImpulse> proper_image_source_impulses;
+    aligned::vector<raytracer::AttenuatedImpulse> proper_image_source_impulses;
 
     constexpr auto L = width_for_shell(shells);
     for (int i = 0; i != L; ++i) {
@@ -157,7 +156,7 @@ TEST(raytrace, image_source) {
                     volume *= base_vol;
 
                     proper_image_source_impulses.push_back(
-                            AttenuatedImpulse{volume, times[index]});
+                            raytracer::AttenuatedImpulse{volume, times[index]});
                 }
             }
         }

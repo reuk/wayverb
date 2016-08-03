@@ -2,6 +2,8 @@
 
 #include "common/aligned/set.h"
 
+namespace raytracer {
+
 /// Super-basic set that holds unique_ptrs
 template <typename T, typename compare = std::less<T>>
 class unique_ptr_set final {
@@ -69,3 +71,5 @@ private:
 
     aligned::set<std::unique_ptr<T>, comparator> set;
 };
+
+}  // namespace raytracer

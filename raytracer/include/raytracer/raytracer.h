@@ -2,7 +2,6 @@
 
 #include "raytracer/cl_structs.h"
 #include "raytracer/random_directions.h"
-#include "raytracer/raytracer_program.h"
 #include "raytracer/results.h"
 
 #include "common/aligned/map.h"

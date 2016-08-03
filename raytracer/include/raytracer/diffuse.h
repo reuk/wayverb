@@ -2,6 +2,7 @@
 
 #include "raytracer/cl_structs.h"
 #include "raytracer/iterative_builder.h"
+#include "raytracer/program.h"
 #include "raytracer/scene_buffers.h"
 
 #include "common/aligned/vector.h"
@@ -26,8 +27,7 @@ public:
     aligned::vector<aligned::vector<Impulse>>& get_results();
 
 private:
-    using kernel_t =
-            decltype(std::declval<raytracer_program>().get_diffuse_kernel());
+    using kernel_t = decltype(std::declval<program>().get_diffuse_kernel());
 
     cl::Context context;
     cl::Device device;

@@ -4,6 +4,8 @@
 #include "common/conversions.h"
 #include "common/stl_wrappers.h"
 
+namespace raytracer {
+
 VolumeType air_attenuation_for_distance(float distance) {
     auto ret = air_coefficient * distance;
     for (auto& i : ret.s) {
@@ -29,3 +31,5 @@ Impulse construct_impulse(const VolumeType& volume,
                    to_cl_float3(source),
                    static_cast<cl_float>(distance / SPEED_OF_SOUND)};
 }
+
+}  // namespace raytracer

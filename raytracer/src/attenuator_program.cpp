@@ -4,6 +4,8 @@
 #include "cl/structs.h"
 #include "cl/voxel.h"
 
+namespace raytracer {
+
 attenuator_program::attenuator_program(const cl::Context& context,
                                        const cl::Device& device)
         : program_wrapper(context,
@@ -116,3 +118,5 @@ kernel void hrtf(float3 mic_pos,
 }
 
 )");
+
+}  // namespace raytracer

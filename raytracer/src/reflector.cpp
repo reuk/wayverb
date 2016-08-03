@@ -23,8 +23,9 @@ aligned::vector<cl_float> get_direction_rng(size_t num) {
     return ret;
 }
 
-aligned::vector<Ray> get_random_rays(size_t num, const glm::vec3& source) {
-    aligned::vector<Ray> ret;
+aligned::vector<raytracer::Ray> get_random_rays(size_t num,
+                                                const glm::vec3& source) {
+    aligned::vector<raytracer::Ray> ret;
     ret.reserve(num);
     std::default_random_engine engine{std::random_device()()};
 
@@ -32,7 +33,7 @@ aligned::vector<Ray> get_random_rays(size_t num, const glm::vec3& source) {
 
     for (auto i = 0u; i != num; ++i) {
         const raytracer::direction_rng rng(engine);
-        ret.push_back(Ray{
+        ret.push_back(raytracer::Ray{
                 src, to_cl_float3(sphere_point(rng.get_z(), rng.get_theta()))});
     }
     return ret;
@@ -51,7 +52,7 @@ reflector::reflector(const cl::Context& context,
                      size_t rays)
         : context(context)
         , device(device)
-        , kernel(raytracer_program(context, device).get_reflections_kernel())
+        , kernel(program(context, device).get_reflections_kernel())
         , receiver(to_cl_float3(receiver))
         , rays(rays)
         , ray_buffer(

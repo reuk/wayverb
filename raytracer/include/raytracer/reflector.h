@@ -1,6 +1,6 @@
 #pragma once
 
-#include "raytracer/raytracer_program.h"
+#include "raytracer/program.h"
 
 #include "common/aligned/vector.h"
 #include "common/cl_include.h"
@@ -21,7 +21,7 @@ public:
 
 private:
     using kernel_t = decltype(
-            std::declval<raytracer_program>().get_reflections_kernel());
+            std::declval<program>().get_reflections_kernel());
 
     cl::Context context;
     cl::Device device;

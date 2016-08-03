@@ -4,6 +4,8 @@
 
 #include "common/program_wrapper.h"
 
+namespace raytracer {
+
 class attenuator_program final {
 public:
     attenuator_program(const cl::Context& context, const cl::Device& device);
@@ -36,3 +38,5 @@ private:
 
     program_wrapper program_wrapper;
 };
+
+}  // namespace raytracer

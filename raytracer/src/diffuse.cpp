@@ -24,7 +24,7 @@ diffuse_finder::diffuse_finder(const cl::Context& context,
                                size_t depth)
         : context(context)
         , device(device)
-        , kernel(raytracer_program(context, device).get_diffuse_kernel())
+        , kernel(program(context, device).get_diffuse_kernel())
         , receiver(to_cl_float3(receiver))
         , air_coefficient(air_coefficient)
         , rays(rays)

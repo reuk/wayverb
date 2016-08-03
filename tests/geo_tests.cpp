@@ -2,7 +2,7 @@
 
 #include "gtest/gtest.h"
 
-TEST(point_tri_distance, point_tri_distance) {
+TEST(geo, point_tri_distance) {
     ASSERT_EQ(geo::point_triangle_distance_squared(
                       TriangleVec3{{glm::vec3(1, 0, 0),
                                     glm::vec3(100, 0, 0),
@@ -23,4 +23,60 @@ TEST(point_tri_distance, point_tri_distance) {
                                     glm::vec3(100, 100, 10)}},
                       glm::vec3(1, 0, 0)),
               100);
+}
+
+TEST(geo, normal) {
+    ASSERT_EQ(geo::normal(TriangleVec3{{glm::vec3(0, 0, 0),
+                                        glm::vec3(0, 1, 0),
+                                        glm::vec3(0, 0, 1)}}),
+              glm::vec3(1, 0, 0));
+
+    ASSERT_EQ(geo::normal(TriangleVec3{{glm::vec3(0, 0, 0),
+                                        glm::vec3(0, 0, 1),
+                                        glm::vec3(1, 0, 0)}}),
+              glm::vec3(0, 1, 0));
+
+    ASSERT_EQ(geo::normal(TriangleVec3{{glm::vec3(0, 0, 0),
+                                        glm::vec3(1, 0, 0),
+                                        glm::vec3(0, 1, 0)}}),
+              glm::vec3(0, 0, 1));
+
+    ASSERT_EQ(geo::normal(TriangleVec3{{glm::vec3(0, 0, 0),
+                                        glm::vec3(0, 0, 1),
+                                        glm::vec3(0, 1, 0)}}),
+              glm::vec3(-1, 0, 0));
+
+    ASSERT_EQ(geo::normal(TriangleVec3{{glm::vec3(0, 0, 0),
+                                        glm::vec3(1, 0, 0),
+                                        glm::vec3(0, 0, 1)}}),
+              glm::vec3(0, -1, 0));
+
+    ASSERT_EQ(geo::normal(TriangleVec3{{glm::vec3(0, 0, 0),
+                                        glm::vec3(0, 1, 0),
+                                        glm::vec3(1, 0, 0)}}),
+              glm::vec3(0, 0, -1));
+
+    ASSERT_EQ(geo::normal(TriangleVec3{{glm::vec3(-1, 0, 1),
+                                        glm::vec3(0, 1, 0),
+                                        glm::vec3(1, 0, -1)}}),
+              glm::normalize(glm::vec3(-1, 0, -1)));
+}
+
+TEST(geo, mirror) {
+    ASSERT_EQ(geo::mirror(glm::vec3(-100, 0, 0),
+                          TriangleVec3{{glm::vec3(0, 0, 0),
+                                        glm::vec3(0, 1, 0),
+                                        glm::vec3(0, 0, 1)}}),
+              glm::vec3(100, 0, 0));
+    ASSERT_EQ(geo::mirror(glm::vec3(-100, 0, 0),
+                          TriangleVec3{{glm::vec3(0, 0, 0),
+                                        glm::vec3(0, 0, 1),
+                                        glm::vec3(0, 1, 0)}}),
+              glm::vec3(100, 0, 0));
+
+    ASSERT_EQ(geo::mirror(glm::vec3(-1, 0, -1),
+                          TriangleVec3{{glm::vec3(-1, 0, 1),
+                                        glm::vec3(0, 1, 0),
+                                        glm::vec3(1, 0, -1)}}),
+              glm::vec3(1, 0, 1));
 }
