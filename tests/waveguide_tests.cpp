@@ -63,13 +63,17 @@ TEST(run_waveguide, run_waveguide) {
 
     std::atomic_bool keep_going{true};
     progress_bar pb(std::cout, steps);
+    auto callback_counter{0};
     auto results = waveguide::init_and_run(waveguide,
                                            corrected_source,
                                            aligned::vector<float>{1},
                                            receiver_index,
                                            steps,
                                            keep_going,
-                                           [&](auto) { pb += 1; });
+                                           [&](auto i) {
+                                               pb += 1;
+                                               ASSERT_EQ(i, callback_counter++);
+                                           });
 
     ASSERT_TRUE(results);
 

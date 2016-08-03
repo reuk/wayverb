@@ -68,7 +68,7 @@
                   moduleName = "visualiser"
                   usesParentBreakpointCondition = "Yes"
                   urlString = "file:///Users/reuben/development/waveguide/submodules/modern_gl_utils/include/modern_gl_utils/checking.h"
-                  timestampString = "491920556.260757"
+                  timestampString = "491922249.803606"
                   startingColumnNumber = "9223372036854775807"
                   endingColumnNumber = "9223372036854775807"
                   startingLineNumber = "166"
@@ -83,7 +83,7 @@
                   moduleName = "visualiser"
                   usesParentBreakpointCondition = "Yes"
                   urlString = "file:///Users/reuben/development/waveguide/submodules/modern_gl_utils/include/modern_gl_utils/checking.h"
-                  timestampString = "491920556.260947"
+                  timestampString = "491922249.80376"
                   startingColumnNumber = "9223372036854775807"
                   endingColumnNumber = "9223372036854775807"
                   startingLineNumber = "166"
@@ -115,62 +115,14 @@
             shouldBeEnabled = "Yes"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "../../Source/EngineThread.cpp"
-            timestampString = "491920549.704619"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "50"
-            endingLineNumber = "50"
-            landmarkName = "single_pair(AsyncEngine&amp; listener, const File&amp; file_name, const model::SingleShot&amp; single_shot, const CopyableSceneData&amp; scene_data, bool visualise, const compute_context&amp; compute_context)"
-            landmarkType = "7">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "Yes"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
             filePath = "../../../../combined/src/engine.cpp"
-            timestampString = "491920616.619509"
+            timestampString = "491922248.003232"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "286"
-            endingLineNumber = "286"
+            startingLineNumber = "236"
+            endingLineNumber = "236"
             landmarkName = "run(std::atomic_bool&amp; keep_going, const state_callback&amp; callback)"
             landmarkType = "7">
-            <Locations>
-               <Location
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "wayverb::engine::impl::run(std::__1::atomic&lt;bool&gt;&amp;, std::__1::function&lt;void (wayverb::state, double)&gt; const&amp;)"
-                  moduleName = "visualiser"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/reuben/development/waveguide/combined/src/engine.cpp"
-                  timestampString = "491920616.624325"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "286"
-                  endingLineNumber = "286"
-                  offsetFromSymbolStart = "4204">
-               </Location>
-               <Location
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "auto wayverb::engine::impl::run(std::__1::atomic&lt;bool&gt;&amp;, std::__1::function&lt;void (wayverb::state, double)&gt; const&amp;)::&apos;lambda&apos;(unsigned long)::operator()&lt;unsigned long&gt;(unsigned long) const"
-                  moduleName = "visualiser"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/reuben/development/waveguide/combined/src/engine.cpp"
-                  timestampString = "491920616.624496"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "286"
-                  endingLineNumber = "286"
-                  offsetFromSymbolStart = "33">
-               </Location>
-            </Locations>
          </BreakpointContent>
       </BreakpointProxy>
    </Breakpoints>

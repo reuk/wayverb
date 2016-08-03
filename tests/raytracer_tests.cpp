@@ -84,6 +84,37 @@ std::array<glm::vec3, num_images(SHELL)> images_for_shell(
     return ret;
 }
 
+TEST(raytrace, same_location) {
+    box box(glm::vec3(0, 0, 0), glm::vec3(4, 3, 6));
+    constexpr glm::vec3 source(1, 2, 1);
+    auto receiver = source;
+    constexpr auto s = 0.9;
+    constexpr auto d = 0.1;
+    constexpr Surface surface{VolumeType{{s, s, s, s, s, s, s, s}},
+                              VolumeType{{d, d, d, d, d, d, d, d}}};
+
+    auto scene_data = get_scene_data(box);
+    scene_data.set_surfaces(surface);
+
+    compute_context cc;
+
+    auto callback_count{0};
+
+    std::atomic_bool keep_going{true};
+    raytracer::raytracer raytrace(cc.get_context(), cc.get_device());
+    auto results =
+            raytrace.run(scene_data,
+                         source,
+                         receiver,
+                         bench_rays,
+                         bench_reflections,
+                         10,
+                         keep_going,
+                         [&](auto i) { ASSERT_EQ(i, callback_count++); });
+
+    ASSERT_TRUE(results);
+}
+
 TEST(raytrace, image_source) {
     //  proper method
     box box(glm::vec3(0, 0, 0), glm::vec3(4, 3, 6));
