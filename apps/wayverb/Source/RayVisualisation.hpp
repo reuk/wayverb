@@ -35,7 +35,8 @@ private:
 class RayVisualisation final : public mglu::drawable {
 public:
     RayVisualisation(const RayShader& shader,
-                     const aligned::vector<aligned::vector<Impulse>>& impulses,
+                     const aligned::vector<aligned::vector<raytracer::Impulse>>&
+                             impulses,
                      const glm::vec3& source,
                      const glm::vec3& receiver);
 

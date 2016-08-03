@@ -7,7 +7,7 @@
 namespace {
 
 aligned::vector<glm::vec3> extract_positions(
-        const aligned::vector<aligned::vector<Impulse>>& impulses,
+        const aligned::vector<aligned::vector<raytracer::Impulse>>& impulses,
         const glm::vec3& source) {
     aligned::vector<glm::vec3> ret;
     ret.reserve(impulses.size() * impulses.front().size() + 1);
@@ -26,7 +26,7 @@ aligned::vector<glm::vec3> extract_positions(
 }
 
 aligned::vector<float> extract_pressures(
-        const aligned::vector<aligned::vector<Impulse>>& impulses) {
+        const aligned::vector<aligned::vector<raytracer::Impulse>>& impulses) {
     aligned::vector<float> ret;
     ret.reserve(impulses.size() * impulses.front().size() + 1);
 
@@ -44,7 +44,7 @@ aligned::vector<float> extract_pressures(
 }
 
 aligned::vector<GLuint> compute_indices(
-        const aligned::vector<aligned::vector<Impulse>>& impulses) {
+        const aligned::vector<aligned::vector<raytracer::Impulse>>& impulses) {
     aligned::vector<GLuint> ret;
 
     //  impulses
@@ -106,8 +106,8 @@ void main() {
 //----------------------------------------------------------------------------//
 
 namespace {
-aligned::vector<aligned::vector<Impulse>> extract_impulses_to_visualise(
-        const raytracer::results& r, size_t rays) {
+aligned::vector<aligned::vector<raytracer::Impulse>>
+extract_impulses_to_visualise(const raytracer::results& r, size_t rays) {
     auto diffuse = r.get_diffuse();
     diffuse.resize(std::min(rays, diffuse.size()));
     return diffuse;
@@ -118,7 +118,7 @@ aligned::vector<aligned::vector<Impulse>> extract_impulses_to_visualise(
 
 RayVisualisation::RayVisualisation(
         const RayShader& shader,
-        const aligned::vector<aligned::vector<Impulse>>& impulses,
+        const aligned::vector<aligned::vector<raytracer::Impulse>>& impulses,
         const glm::vec3& source,
         const glm::vec3& receiver)
         : shader(shader)

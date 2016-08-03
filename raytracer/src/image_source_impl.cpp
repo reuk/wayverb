@@ -1,4 +1,5 @@
 #include "raytracer/image_source_impl.h"
+#include "common/stl_wrappers.h"
 #include "raytracer/construct_impulse.h"
 
 #include <numeric>
@@ -8,21 +9,14 @@ namespace raytracer {
 aligned::vector<TriangleVec3> compute_original_triangles(
         const aligned::vector<cl_ulong>& triangles,
         const CopyableSceneData& scene_data) {
-    aligned::vector<TriangleVec3> ret;
-    ret.reserve(triangles.size());
-
-    for (const auto& triangle_index : triangles) {
-        ret.push_back(
-                get_triangle_verts(scene_data.get_triangles()[triangle_index],
-                                   scene_data.get_vertices()));
-    }
-
-    return ret;
+    return map_to_vector(triangles, [&](const auto i) {
+        return get_triangle_verts(scene_data.get_triangles()[i],
+                                  scene_data.get_vertices());
+    });
 }
 
 aligned::vector<TriangleVec3> compute_mirrored_triangles(
-        const aligned::vector<TriangleVec3>& original,
-        const CopyableSceneData& scene_data) {
+        const aligned::vector<TriangleVec3>& original) {
     //  prepare output array
     aligned::vector<TriangleVec3> ret;
     ret.reserve(original.size());
@@ -47,7 +41,7 @@ compute_intersection_distances(const aligned::vector<TriangleVec3>& mirrored,
     ret.reserve(mirrored.size());
 
     for (const auto& i : mirrored) {
-        auto intersection = geo::triangle_intersection(i, ray);
+        const auto intersection = geo::triangle_intersection(i, ray);
         if (!intersection) {
             return std::experimental::nullopt;
         }
@@ -59,14 +53,9 @@ compute_intersection_distances(const aligned::vector<TriangleVec3>& mirrored,
 
 aligned::vector<glm::vec3> compute_intersection_points(
         const aligned::vector<float>& distances, const geo::Ray& ray) {
-    aligned::vector<glm::vec3> ret;
-    ret.reserve(distances.size());
-
-    for (const auto& i : distances) {
-        ret.push_back(ray.get_position() + ray.get_direction() * i);
-    }
-
-    return ret;
+    return map_to_vector(distances, [&](const auto i) {
+        return ray.get_position() + ray.get_direction() * i;
+    });
 }
 
 aligned::vector<glm::vec3> compute_unmirrored_points(
@@ -88,18 +77,20 @@ aligned::vector<glm::vec3> compute_unmirrored_points(
 }
 
 geo::Ray construct_ray(const glm::vec3& from, const glm::vec3& to) {
+    if (from == to) {
+        throw std::runtime_error(
+                "tried to construct a ray pointing towards its starting "
+                "location");
+    }
     return geo::Ray(from, glm::normalize(to - from));
 }
 
 glm::vec3 compute_mirrored_point(const aligned::vector<TriangleVec3>& mirrored,
                                  const glm::vec3& original) {
-    auto ret = original;
-
-    for (const auto& i : mirrored) {
-        ret = geo::mirror(ret, i);
-    }
-
-    return ret;
+    return proc::accumulate(
+            mirrored, original, [](const auto& ret, const auto& i) {
+                return geo::mirror(ret, i);
+            });
 }
 
 float compute_distance(const aligned::vector<glm::vec3>& unmirrored) {
@@ -108,20 +99,22 @@ float compute_distance(const aligned::vector<glm::vec3>& unmirrored) {
             unmirrored.end() - 1,
             unmirrored.begin() + 1,
             0.0f,
-            [](auto a, auto b) { return a + b; },
-            [](auto a, auto b) { return glm::distance(a, b); });
+            [](const auto& a, const auto& b) { return a + b; },
+            [](const auto& a, const auto& b) { return glm::distance(a, b); });
 }
 
 VolumeType compute_volume(const CopyableSceneData& scene_data,
                           const aligned::vector<cl_ulong>& triangles) {
-    VolumeType volume{{1, 1, 1, 1, 1, 1, 1, 1}};
-    for (auto i : triangles) {
-        const auto scene_triangle = scene_data.get_triangles()[i];
-        const auto surface = scene_data.get_surfaces()[scene_triangle.surface];
+    return proc::accumulate(
+            triangles,
+            VolumeType{{1, 1, 1, 1, 1, 1, 1, 1}},
+            [&](const auto& volume, const auto& i) {
+                const auto scene_triangle = scene_data.get_triangles()[i];
+                const auto surface =
+                        scene_data.get_surfaces()[scene_triangle.surface];
 
-        volume *= -surface.specular;
-    }
-    return volume;
+                return volume * -surface.specular;
+            });
 }
 
 Impulse compute_ray_path_impulse(const CopyableSceneData& scene_data,
@@ -150,10 +143,16 @@ std::experimental::optional<Impulse> follow_ray_path(
     const auto original = compute_original_triangles(triangles, scene_data);
 
     //  mirror them into image-source space
-    const auto mirrored = compute_mirrored_triangles(original, scene_data);
+    const auto mirrored = compute_mirrored_triangles(original);
 
     //  find mirrored receiver
     const auto receiver_image = compute_mirrored_point(mirrored, receiver);
+
+    //  if the receiver is somehow at the same point as the source (don't ask)
+    //  we bury our heads in the sand and return nullopt
+    if (source == receiver_image) {
+        return std::experimental::nullopt;
+    }
 
     //  check that we can cast a ray through all the mirrored triangles to the
     //  receiver
@@ -170,7 +169,7 @@ std::experimental::optional<Impulse> follow_ray_path(
     auto unmirrored = compute_unmirrored_points(points, original);
     unmirrored.insert(unmirrored.begin(), source);
 
-    auto intersects = [&](auto a, auto b) {
+    const auto intersects = [&](const auto& a, const auto& b) {
         const auto dir     = glm::normalize(b - a);
         const auto epsilon = 0.0001f;
         const auto from    = a + dir * epsilon;

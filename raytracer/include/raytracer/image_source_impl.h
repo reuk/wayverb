@@ -5,6 +5,7 @@
 #include "common/aligned/set.h"
 #include "common/aligned/vector.h"
 #include "common/geometric.h"
+#include "common/map.h"
 #include "common/scene_data.h"
 #include "common/triangle_vec.h"
 #include "common/voxel_collection.h"
@@ -15,25 +16,34 @@
 
 namespace raytracer {
 
-//  ray paths should be ordered by [ray][depth]
+/// A ray_path is an ordered collection of items which have a 'visible' field
+/// (denoting whether the intersection is visible from the receiver) and an
+/// 'index' field (denoting which primitive has been intersected).
 template <typename T>
-aligned::set<aligned::vector<cl_ulong>> compute_unique_paths(
-        aligned::vector<aligned::vector<T>>&& path) {
-    aligned::set<aligned::vector<cl_ulong>> ret;
+using ray_path = aligned::vector<T>;
+
+/// An index_path just contains the orders of intersected primitives along a ray
+/// path.
+using index_path = aligned::vector<cl_ulong>;
+
+/// Given the paths of several rays, find all unique index paths which might
+/// contribute an image-source impulse.
+/// Ray paths should be ordered by [ray][depth].
+template <typename T>
+aligned::set<index_path> compute_unique_paths(
+        aligned::vector<ray_path<T>>&& path) {
+    aligned::set<index_path> ret;
 
     //  for each ray
     for (auto j = 0; j != path.size(); ++j) {
         //  get all ray path combinations
         for (auto k = 0; k < path[j].size(); ++k) {
             if (path[j][k].visible) {
-                aligned::vector<cl_ulong> surfaces;
-                surfaces.reserve(k);
-                std::transform(path[j].begin(),
-                               path[j].begin() + k + 1,
-                               std::back_inserter(surfaces),
-                               [](const auto& i) { return i.index; });
                 //  add the path to the return set
-                ret.insert(surfaces);
+                ret.insert(
+                        map_to_vector(path[j].begin(),
+                                      path[j].begin() + k + 1,
+                                      [](const auto& i) { return i.index; }));
             }
         }
     }
@@ -46,8 +56,7 @@ aligned::vector<TriangleVec3> compute_original_triangles(
         const CopyableSceneData& scene_data);
 
 aligned::vector<TriangleVec3> compute_mirrored_triangles(
-        const aligned::vector<TriangleVec3>& original,
-        const CopyableSceneData& scene_data);
+        const aligned::vector<TriangleVec3>& original);
 
 std::experimental::optional<aligned::vector<float>>
 compute_intersection_distances(const aligned::vector<TriangleVec3>& mirrored,
@@ -82,4 +91,4 @@ std::experimental::optional<Impulse> follow_ray_path(
         const VoxelCollection& vox,
         const VoxelCollection::TriangleTraversalCallback& callback);
 
-} //namespace raytracer
+}  // namespace raytracer
