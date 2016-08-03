@@ -235,13 +235,9 @@ public:
         allow_move_mode = !b;
     }
 
-    void set_positions(const aligned::vector<cl_float3> &positions) {
+    void set_positions(const aligned::vector<glm::vec3> &positions) {
         std::lock_guard<std::mutex> lck(mut);
-        aligned::vector<glm::vec3> ret(positions.size());
-        proc::transform(positions, ret.begin(), [](const auto &i) {
-            return to_glm_vec3(i);
-        });
-        mesh_object = std::make_unique<MeshObject>(mesh_shader, ret);
+        mesh_object = std::make_unique<MeshObject>(mesh_shader, positions);
     }
 
     void set_pressures(const aligned::vector<float> &pressures) {
@@ -512,7 +508,7 @@ void SceneRenderer::set_receivers(
             [this, receivers] { context_lifetime->set_receivers(receivers); });
 }
 
-void SceneRenderer::set_positions(const aligned::vector<cl_float3> &positions) {
+void SceneRenderer::set_positions(const aligned::vector<glm::vec3> &positions) {
     std::lock_guard<std::mutex> lck(mut);
     push_incoming(
             [this, positions] { context_lifetime->set_positions(positions); });

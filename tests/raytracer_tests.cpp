@@ -40,7 +40,7 @@ TEST(raytrace, new) {
                                 bench_reflections,
                                 10,
                                 keep_going,
-                                [] {});
+                                [](auto) {});
 
     ASSERT_TRUE(results);
 }
@@ -147,8 +147,14 @@ TEST(raytrace, image_source) {
     scene_data.set_surfaces(surface);
 
     std::atomic_bool keep_going{true};
-    auto results = raytracer.run(
-            scene_data, source, receiver, 100000, 100, 10, keep_going, [] {});
+    auto results = raytracer.run(scene_data,
+                                 source,
+                                 receiver,
+                                 100000,
+                                 100,
+                                 10,
+                                 keep_going,
+                                 [](auto) {});
 
     ASSERT_TRUE(results);
 

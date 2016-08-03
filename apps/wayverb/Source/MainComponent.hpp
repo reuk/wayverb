@@ -24,7 +24,7 @@ public:
                               wayverb::state state,
                               double progress) override;
     void engine_nodes_changed(
-            AsyncEngine*, const aligned::vector<cl_float3>& positions) override;
+            AsyncEngine*, const aligned::vector<glm::vec3>& positions) override;
     void engine_visuals_changed(
             AsyncEngine*, const aligned::vector<float>& pressures) override;
     void engine_finished(AsyncEngine*) override;

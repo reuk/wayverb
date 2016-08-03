@@ -216,7 +216,6 @@ public:
                                       const state_callback& callback) {
         //  RAYTRACER  -------------------------------------------------------//
         callback(state::starting_raytracer, 1.0);
-        auto raytracer_step    = 0;
         auto raytracer_results = raytracer.run(
                 scene_data,
                 source,
@@ -226,9 +225,8 @@ public:
                 std::min(size_t{10},
                          impulses),  //  TODO set this more intelligently
                 keep_going,
-                [&] {
-                    callback(state::running_raytracer,
-                             raytracer_step++ / (impulses - 1.0));
+                [&](auto step) {
+                    callback(state::running_raytracer, step / (impulses - 1.0));
                 });
 
         if (!(keep_going && raytracer_results)) {

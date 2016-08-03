@@ -3,7 +3,6 @@
 #include "MeshShader.hpp"
 
 #include "common/sinc.h"
-#include "waveguide/rectangular_waveguide.h"
 
 #include "modern_gl_utils/buffer_object.h"
 #include "modern_gl_utils/drawable.h"

@@ -5,6 +5,8 @@
 #include "HelpWindow.hpp"
 #include "ValueWrapperEditableListBox.hpp"
 
+#include "common/box.h"
+
 class SourcesListBox : public ValueWrapperListBox<glm::vec3> {
 public:
     using ValueWrapperListBox<glm::vec3>::ValueWrapperListBox;

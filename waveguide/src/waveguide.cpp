@@ -137,6 +137,8 @@ size_t waveguide::init_and_run(
         }
 
         std::swap(previous, current);
+
+        callback(step);
     }
     return step;
 }

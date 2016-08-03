@@ -62,7 +62,7 @@ void MainContentComponent::engine_state_changed(AsyncEngine* u,
 }
 
 void MainContentComponent::engine_nodes_changed(
-        AsyncEngine* u, const aligned::vector<cl_float3>& positions) {
+        AsyncEngine* u, const aligned::vector<glm::vec3>& positions) {
     if (u == &engine) {
         right_panel.get_renderer().set_positions(positions);
     }

@@ -68,7 +68,6 @@ public:
             const per_step_callback& callback,
             std::atomic_bool& keep_going);
 
-
 private:
     using kernel_type = decltype(std::declval<program>().get_kernel());
 

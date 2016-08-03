@@ -22,13 +22,13 @@
 
 #include "combined/model.h"
 
+#include "waveguide/waveguide.h"
+
+#include "raytracer/raytracer.h"
+
 #include "common/octree.h"
 #include "common/scene_data.h"
 #include "common/voxel_collection.h"
-
-#include "waveguide/rectangular_waveguide.h"
-
-#include "raytracer/raytracer.h"
 
 #include <cmath>
 #include <future>
@@ -105,7 +105,7 @@ public:
     void set_receivers(
             const aligned::vector<model::ReceiverSettings>& receivers);
 
-    void set_positions(const aligned::vector<cl_float3>& positions);
+    void set_positions(const aligned::vector<glm::vec3>& positions);
     void set_pressures(const aligned::vector<float>& pressures);
 
     void set_highlighted(int u);

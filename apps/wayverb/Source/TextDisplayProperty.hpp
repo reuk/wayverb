@@ -2,6 +2,8 @@
 
 #include "FullModel.hpp"
 
+#include <sstream>
+
 template <typename T>
 class TextDisplayProperty : public PropertyComponent,
                             public model::BroadcastListener {

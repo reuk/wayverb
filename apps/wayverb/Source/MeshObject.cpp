@@ -1,5 +1,7 @@
 #include "MeshObject.hpp"
 
+#include "waveguide/waveguide.h"
+
 MeshObject::MeshObject(const MeshShader& shader,
                        const aligned::vector<glm::vec3>& positions)
         : shader(shader) {

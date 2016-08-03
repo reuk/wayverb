@@ -43,7 +43,7 @@ std::experimental::optional<results> raytracer::run(
         size_t reflection_depth,
         size_t image_source_depth,
         std::atomic_bool& keep_going,
-        const PerStepCallback& callback) {
+        const per_step_callback& callback) {
     assert(image_source_depth <= reflection_depth);
 
     //  set up all the rendering context stuff
@@ -87,7 +87,7 @@ std::experimental::optional<results> raytracer::run(
         image_source_finder.push(reflections);
 
         //  we did a step!
-        callback();
+        callback(i);
     }
 
     return results(

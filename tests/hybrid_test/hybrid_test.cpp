@@ -183,7 +183,7 @@ int main(int argc, char** argv) {
                                        impulses,
                                        10,
                                        keep_going,
-                                       [&pb] { pb += 1; });
+                                       [&](auto) { pb += 1; });
 
     raytracer::attenuator::microphone attenuator(cc.get_context(),
                                                  cc.get_device());

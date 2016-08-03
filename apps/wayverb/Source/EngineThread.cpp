@@ -37,6 +37,9 @@ class AsyncEngine::SingleShotEngineThread {
                                    single_shot.get_waveguide_sample_rate(),
                                    single_shot.rays);
 
+            engine.register_waveguide_visual_callback(
+                    [&](const auto& i) { listener.engine_visuals_changed(i); });
+
             //  now run the simulation proper
             auto run = [this, &engine, &state_callback] {
                 return engine.run(keep_going, state_callback);
@@ -44,12 +47,7 @@ class AsyncEngine::SingleShotEngineThread {
 
             auto run_visualised = [this, &listener, &engine, &state_callback] {
                 listener.engine_nodes_changed(engine.get_node_positions());
-                return engine.run_visualised(
-                        keep_going,
-                        state_callback,
-                        [this, &listener](const auto& i) {
-                            listener.engine_visuals_changed(i);
-                        });
+                return engine.run(keep_going, state_callback);
             };
             auto intermediate = visualise ? run_visualised() : run();
             //  TODO get output sr from dialog
@@ -62,8 +60,7 @@ class AsyncEngine::SingleShotEngineThread {
             //  Launch viewer window or whatever
 
             //  if anything goes wrong, flag it up on stdout and
-            //  quit
-            //  the thread
+            //  quit the thread
         } catch (const std::runtime_error& e) {
             if (keep_going == false) {
                 throw;
@@ -150,7 +147,7 @@ void AsyncEngine::engine_state_changed(wayverb::state state, double progress) {
 }
 
 void AsyncEngine::engine_nodes_changed(
-        const aligned::vector<cl_float3>& positions) {
+        const aligned::vector<glm::vec3>& positions) {
     listener_list.call(&Listener::engine_nodes_changed, this, positions);
 }
 

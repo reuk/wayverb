@@ -29,7 +29,9 @@ class raytracer final {
 public:
     raytracer(const cl::Context&, const cl::Device&);
 
-    using PerStepCallback = std::function<void()>;
+    /// arguments
+    ///     the step number
+    using per_step_callback = std::function<void(size_t)>;
 
     std::experimental::optional<results> run(
             const CopyableSceneData& scene_data,
@@ -39,7 +41,7 @@ public:
             size_t reflections,
             size_t image_source,
             std::atomic_bool& keep_going,
-            const PerStepCallback& callback);
+            const per_step_callback& callback);
 
 private:
     cl::Context context;
