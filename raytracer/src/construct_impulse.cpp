@@ -29,7 +29,7 @@ impulse construct_impulse(const volume_type& volume,
                           float distance) {
     return impulse{volume * attenuation_for_distance(distance),
                    to_cl_float3(source),
-                   static_cast<cl_float>(distance / SPEED_OF_SOUND)};
+                   static_cast<cl_float>(distance / speed_of_sound)};
 }
 
 }  // namespace raytracer

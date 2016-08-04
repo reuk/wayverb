@@ -112,7 +112,7 @@ int main(int argc, char** argv) {
             }
 
             {
-                filter::ExtraLinearDCBlocker u;
+                filter::extra_linear_dc_blocker u;
                 const auto dc_removed =
                         filter::run_two_pass(u, output.begin(), output.end());
 

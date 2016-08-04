@@ -6,10 +6,10 @@
 
 namespace filter {
 
-class DelayLine final {
+class delay_line final {
 public:
-    DelayLine() = default;
-    DelayLine(int length);
+    delay_line() = default;
+    delay_line(int length);
 
     double& operator[](size_t i);
     const double& operator[](size_t i) const;
@@ -22,10 +22,10 @@ private:
     size_t index;
 };
 
-class MovingAverage final {
+class moving_average final {
 public:
-    MovingAverage() = default;
-    MovingAverage(int d);
+    moving_average() = default;
+    moving_average(int d);
 
     double operator()(double x);
 
@@ -35,16 +35,16 @@ public:
 
 private:
     int d;
-    DelayLine delay_line;
+    delay_line delay_line;
     double single_delay;
 };
 
 template <int modules>
-class NMovingAverages final {
+class n_moving_averages final {
 public:
-    NMovingAverages() = default;
-    NMovingAverages(int d) {
-        std::fill(averages.begin(), averages.end(), MovingAverage(d));
+    n_moving_averages() = default;
+    n_moving_averages(int d) {
+        std::fill(averages.begin(), averages.end(), moving_average(d));
     }
 
     double operator()(double x) {
@@ -60,17 +60,17 @@ public:
         }
     }
 
-    const MovingAverage& get_averager() const {
+    const moving_average& get_averager() const {
         return averages.front();
     }
 
 private:
-    std::array<MovingAverage, modules> averages;
+    std::array<moving_average, modules> averages;
 };
 
-class LinearDCBlocker final {
+class linear_dc_blocker final {
 public:
-    explicit LinearDCBlocker(int d = 128);
+    explicit linear_dc_blocker(int d = 128);
 
     double operator()(double x);
 
@@ -87,12 +87,12 @@ public:
 
 private:
     int d;
-    NMovingAverages<2> moving_averages;
+    n_moving_averages<2> moving_averages;
 };
 
-class ExtraLinearDCBlocker final {
+class extra_linear_dc_blocker final {
 public:
-    explicit ExtraLinearDCBlocker(int d = 128);
+    explicit extra_linear_dc_blocker(int d = 128);
 
     double operator()(double x);
 
@@ -109,8 +109,8 @@ public:
 
 private:
     int d;
-    DelayLine delay_line;
-    NMovingAverages<4> moving_averages;
+    delay_line delay_line;
+    n_moving_averages<4> moving_averages;
 };
 
 }  // namespace filter

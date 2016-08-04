@@ -16,11 +16,11 @@ program::program(const cl::Context& context, const cl::Device& device)
                                                    cl_sources::brdf,
                                                    source}) {}
 
-static_assert(SPEED_OF_SOUND != 0, "SPEED_OF_SOUND");
+static_assert(speed_of_sound != 0, "SPEED_OF_SOUND");
 
-const std::string program::source("#define SPEED_OF_SOUND " +
-                                  std::to_string(SPEED_OF_SOUND) +
-                                  "\n"
+const std::string program::source("constant float SPEED_OF_SOUND = " +
+                                  std::to_string(speed_of_sound) +
+                                  ";\n"
                                   R"(
 
 #define NULL (0)

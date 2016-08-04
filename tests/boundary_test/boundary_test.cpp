@@ -125,7 +125,7 @@ aligned::vector<float> get_free_field_results(const compute_context& cc,
     }
 
     const float divisions = waveguide::config::grid_spacing(
-            SPEED_OF_SOUND, 1.0 / (filter_frequency * 4));
+            speed_of_sound, 1.0 / (filter_frequency * 4));
 
     //  generate two boundaries, one twice the size of the other
     const box wall(glm::vec3(0, 0, 0), glm::vec3(desired_nodes) * divisions);
@@ -221,7 +221,7 @@ FullTestResults run_full_test(const std::string& test_name,
     }
 
     const float divisions = waveguide::config::grid_spacing(
-            SPEED_OF_SOUND, 1.0 / (filter_frequency * 4));
+            speed_of_sound, 1.0 / (filter_frequency * 4));
 
     //  generate two boundaries, one twice the size of the other
     const box wall(glm::vec3(0, 0, 0), glm::vec3(desired_nodes) * divisions);

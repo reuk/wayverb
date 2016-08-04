@@ -23,7 +23,7 @@
 #endif
 
 static constexpr auto bench_reflections = 128;
-static constexpr auto bench_rays        = 1 << 15;
+static constexpr auto bench_rays = 1 << 15;
 
 TEST(raytrace, new) {
     compute_context cc;
@@ -125,14 +125,14 @@ TEST(raytrace, image_source) {
                               volume_type{{d, d, d, d, d, d, d, d}}};
 
     constexpr auto shells = 3;
-    auto images           = images_for_shell<shells>(box, source);
+    auto images = images_for_shell<shells>(box, source);
     std::array<float, images.size()> distances;
     proc::transform(images, distances.begin(), [&receiver](auto i) {
         return glm::distance(receiver, i);
     });
     std::array<float, images.size()> times;
     proc::transform(distances, times.begin(), [](auto i) {
-        return i / SPEED_OF_SOUND;
+        return i / speed_of_sound;
     });
     std::array<volume_type, images.size()> volumes;
     proc::transform(distances, volumes.begin(), [](auto i) {
@@ -150,13 +150,14 @@ TEST(raytrace, image_source) {
                                            std::abs(k - shells));
                 auto reflections = shell_dim.x + shell_dim.y + shell_dim.z;
                 if (reflections <= shells) {
-                    auto index    = i + j * L + k * L * L;
-                    auto volume   = volumes[index];
+                    auto index = i + j * L + k * L * L;
+                    auto volume = volumes[index];
                     auto base_vol = pow(-s, reflections);
                     volume *= base_vol;
 
                     proper_image_source_impulses.push_back(
-                            raytracer::attenuated_impulse{volume, times[index]});
+                            raytracer::attenuated_impulse{volume,
+                                                          times[index]});
                 }
             }
         }
@@ -205,7 +206,7 @@ TEST(raytrace, image_source) {
     }
 
     auto postprocess = [](const auto& i, const std::string& name) {
-        const auto bit_depth   = 16;
+        const auto bit_depth = 16;
         const auto sample_rate = 44100.0;
         {
             auto mixed_down =

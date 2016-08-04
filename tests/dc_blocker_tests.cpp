@@ -11,7 +11,7 @@
 TEST(dc_blocker, delay_line) {
     constexpr auto LENGTH = 4;
 
-    filter::DelayLine dl(LENGTH);
+    filter::delay_line dl(LENGTH);
 
     for (auto i = 0; i != LENGTH; ++i) {
         ASSERT_EQ(dl[i], 0);
@@ -39,7 +39,7 @@ TEST(dc_blocker, delay_line) {
 }
 
 TEST(dc_blocker, moving_average) {
-    filter::MovingAverage ma(4);
+    filter::moving_average ma(4);
     ASSERT_EQ(ma(0), 0);
     ASSERT_EQ(ma(0), 0);
     ASSERT_EQ(ma(0), 0);
@@ -57,7 +57,7 @@ TEST(dc_blocker, moving_average) {
 }
 
 TEST(dc_blocker, two_moving_average) {
-    filter::NMovingAverages<2> ma(4);
+    filter::n_moving_averages<2> ma(4);
     ASSERT_EQ(ma(0), 0);
     ASSERT_EQ(ma(0), 0);
     ASSERT_EQ(ma(0), 0);
@@ -82,7 +82,7 @@ TEST(dc_blocker, two_moving_average) {
 }
 
 TEST(dc_blocker, dc_blocker) {
-    filter::LinearDCBlocker dc(4);
+    filter::linear_dc_blocker dc(4);
     ASSERT_EQ(dc(0), 0);
     ASSERT_EQ(dc(0), 0);
     ASSERT_EQ(dc(0), 0);
@@ -107,7 +107,7 @@ TEST(dc_blocker, dc_blocker) {
 }
 
 TEST(dc_blocker, big_offset) {
-    filter::LinearDCBlocker dc(4);
+    filter::linear_dc_blocker dc(4);
     ASSERT_EQ(dc(2), -2 / 16.0);
     ASSERT_EQ(dc(2), -6 / 16.0);
     ASSERT_EQ(dc(2), -12 / 16.0);
@@ -181,11 +181,11 @@ TEST(dc_blocker, io) {
         };
 
         {
-            filter::LinearDCBlocker dc;
+            filter::linear_dc_blocker dc;
             run(dc, "normal");
         }
         {
-            filter::ExtraLinearDCBlocker dc;
+            filter::extra_linear_dc_blocker dc;
             run(dc, "super");
         }
     }

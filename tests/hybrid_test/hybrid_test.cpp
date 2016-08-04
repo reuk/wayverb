@@ -48,7 +48,7 @@ JSON_OSTREAM_OVERLOAD(vector<T>);
 
 /// courant number is 1 / sqrt(3) for a rectilinear mesh
 /// but sqrt isn't constexpr >:(
-constexpr auto COURANT = 0.577350269;
+constexpr auto courant = 0.577350269;
 
 /// given a source strength, calculate the distance at which the source produces
 /// intensity 1W/m^2
@@ -59,7 +59,7 @@ double distance_for_unit_intensity(double strength) {
 /// r = distance at which the geometric sound source has intensity 1W/m^2
 /// sr = waveguide mesh sampling rate
 constexpr double rectilinear_calibration_factor(double r, double sr) {
-    auto x = SPEED_OF_SOUND / (COURANT * sr);
+    const auto x = speed_of_sound / (courant * sr);
     return r / (x * 0.3405);
 }
 

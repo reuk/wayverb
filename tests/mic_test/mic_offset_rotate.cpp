@@ -104,7 +104,7 @@ int main(int argc, char** argv) {
 
             glm::vec3 source{std::sin(angle), 0, std::cos(angle)};
             const auto dist = glm::distance(source, mic);
-            const auto time_between_source_receiver = dist / SPEED_OF_SOUND;
+            const auto time_between_source_receiver = dist / speed_of_sound;
             const size_t required_steps =
                     time_between_source_receiver * waveguide_sr;
             // const auto steps = required_steps +

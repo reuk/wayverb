@@ -79,7 +79,7 @@ public:
                 receiver, waveguide_results, waveguide_sample_rate);
 
         //  correct raytracer results for dc
-        filter::ExtraLinearDCBlocker blocker;
+        filter::extra_linear_dc_blocker blocker;
         for (auto& i : raytracer_output) {
             i = filter::run_two_pass(blocker, i.begin(), i.end());
         }
