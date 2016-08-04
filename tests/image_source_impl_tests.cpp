@@ -65,85 +65,85 @@ TEST(image_source_impl, compute_unique_paths) {
 
 TEST(image_source_impl, compute_mirrored_triangles) {
     ASSERT_EQ(raytracer::compute_mirrored_triangles(
-                      aligned::vector<TriangleVec3>{}),
-              aligned::vector<TriangleVec3>{});
+                      aligned::vector<triangle_vec3>{}),
+              aligned::vector<triangle_vec3>{});
 
-    ASSERT_EQ(
-            raytracer::compute_mirrored_triangles(aligned::vector<TriangleVec3>{
-                    TriangleVec3{{glm::vec3(0, 0, 0),
-                                  glm::vec3(1, 0, 0),
-                                  glm::vec3(0, 0, 1)}}}),
-            (aligned::vector<TriangleVec3>{
-                    TriangleVec3{{glm::vec3(0, 0, 0),
-                                  glm::vec3(1, 0, 0),
-                                  glm::vec3(0, 0, 1)}}}));
+    ASSERT_EQ(raytracer::compute_mirrored_triangles(
+                      aligned::vector<triangle_vec3>{
+                              triangle_vec3{{glm::vec3(0, 0, 0),
+                                             glm::vec3(1, 0, 0),
+                                             glm::vec3(0, 0, 1)}}}),
+              (aligned::vector<triangle_vec3>{
+                      triangle_vec3{{glm::vec3(0, 0, 0),
+                                     glm::vec3(1, 0, 0),
+                                     glm::vec3(0, 0, 1)}}}));
 
-    ASSERT_EQ(
-            raytracer::compute_mirrored_triangles(aligned::vector<TriangleVec3>{
-                    TriangleVec3{{glm::vec3(0, 0, 0),
-                                  glm::vec3(1, 0, 0),
-                                  glm::vec3(0, 0, 1)}},
+    ASSERT_EQ(raytracer::compute_mirrored_triangles(
+                      aligned::vector<triangle_vec3>{
+                              triangle_vec3{{glm::vec3(0, 0, 0),
+                                             glm::vec3(1, 0, 0),
+                                             glm::vec3(0, 0, 1)}},
 
-                    TriangleVec3{{glm::vec3(0, 2, 0),
-                                  glm::vec3(1, 2, 0),
-                                  glm::vec3(0, 2, 1)}},
-            }),
-            (aligned::vector<TriangleVec3>{
-                    TriangleVec3{{glm::vec3(0, 0, 0),
-                                  glm::vec3(1, 0, 0),
-                                  glm::vec3(0, 0, 1)}},
+                              triangle_vec3{{glm::vec3(0, 2, 0),
+                                             glm::vec3(1, 2, 0),
+                                             glm::vec3(0, 2, 1)}},
+                      }),
+              (aligned::vector<triangle_vec3>{
+                      triangle_vec3{{glm::vec3(0, 0, 0),
+                                     glm::vec3(1, 0, 0),
+                                     glm::vec3(0, 0, 1)}},
 
-                    TriangleVec3{{glm::vec3(0, -2, 0),
-                                  glm::vec3(1, -2, 0),
-                                  glm::vec3(0, -2, 1)}},
-            }));
+                      triangle_vec3{{glm::vec3(0, -2, 0),
+                                     glm::vec3(1, -2, 0),
+                                     glm::vec3(0, -2, 1)}},
+              }));
 
-    ASSERT_EQ(
-            raytracer::compute_mirrored_triangles(aligned::vector<TriangleVec3>{
-                    TriangleVec3{{glm::vec3(0, 0, 0),
-                                  glm::vec3(1, 0, 0),
-                                  glm::vec3(0, 0, 1)}},
+    ASSERT_EQ(raytracer::compute_mirrored_triangles(
+                      aligned::vector<triangle_vec3>{
+                              triangle_vec3{{glm::vec3(0, 0, 0),
+                                             glm::vec3(1, 0, 0),
+                                             glm::vec3(0, 0, 1)}},
 
-                    TriangleVec3{{glm::vec3(0, 2, 0),
-                                  glm::vec3(1, 2, 0),
-                                  glm::vec3(0, 2, 1)}},
+                              triangle_vec3{{glm::vec3(0, 2, 0),
+                                             glm::vec3(1, 2, 0),
+                                             glm::vec3(0, 2, 1)}},
 
-                    TriangleVec3{{glm::vec3(0, 0, 0),
-                                  glm::vec3(1, 0, 0),
-                                  glm::vec3(0, 0, 1)}},
-            }),
-            (aligned::vector<TriangleVec3>{
-                    TriangleVec3{{glm::vec3(0, 0, 0),
-                                  glm::vec3(1, 0, 0),
-                                  glm::vec3(0, 0, 1)}},
+                              triangle_vec3{{glm::vec3(0, 0, 0),
+                                             glm::vec3(1, 0, 0),
+                                             glm::vec3(0, 0, 1)}},
+                      }),
+              (aligned::vector<triangle_vec3>{
+                      triangle_vec3{{glm::vec3(0, 0, 0),
+                                     glm::vec3(1, 0, 0),
+                                     glm::vec3(0, 0, 1)}},
 
-                    TriangleVec3{{glm::vec3(0, -2, 0),
-                                  glm::vec3(1, -2, 0),
-                                  glm::vec3(0, -2, 1)}},
+                      triangle_vec3{{glm::vec3(0, -2, 0),
+                                     glm::vec3(1, -2, 0),
+                                     glm::vec3(0, -2, 1)}},
 
-                    TriangleVec3{{glm::vec3(0, -4, 0),
-                                  glm::vec3(1, -4, 0),
-                                  glm::vec3(0, -4, 1)}},
-            }));
+                      triangle_vec3{{glm::vec3(0, -4, 0),
+                                     glm::vec3(1, -4, 0),
+                                     glm::vec3(0, -4, 1)}},
+              }));
 }
 
 TEST(image_source_impl, compute_intersection_distances) {
     ASSERT_EQ(*raytracer::compute_intersection_distances(
-                      aligned::vector<TriangleVec3>{},
-                      geo::Ray{glm::vec3(0, 1, 0), glm::vec3(0, -1, 0)}),
+                      aligned::vector<triangle_vec3>{},
+                      geo::ray{glm::vec3(0, 1, 0), glm::vec3(0, -1, 0)}),
               aligned::vector<float>{});
 
     ASSERT_EQ(*raytracer::compute_intersection_distances(
-                      aligned::vector<TriangleVec3>{
-                              TriangleVec3{{glm::vec3(0, 0, 0),
-                                            glm::vec3(1, 0, 0),
-                                            glm::vec3(0, 0, 1)}}},
-                      geo::Ray{glm::vec3(0, 1, 0), glm::vec3(0, -1, 0)}),
+                      aligned::vector<triangle_vec3>{
+                              triangle_vec3{{glm::vec3(0, 0, 0),
+                                             glm::vec3(1, 0, 0),
+                                             glm::vec3(0, 0, 1)}}},
+                      geo::ray{glm::vec3(0, 1, 0), glm::vec3(0, -1, 0)}),
               aligned::vector<float>{1});
 
     ASSERT_FALSE(raytracer::compute_intersection_distances(
-            aligned::vector<TriangleVec3>{TriangleVec3{{glm::vec3(0, 0, 0),
-                                                        glm::vec3(1, 0, 0),
-                                                        glm::vec3(0, 0, 1)}}},
-            geo::Ray{glm::vec3(0, 1, 0), glm::vec3(0, 1, 0)}));
+            aligned::vector<triangle_vec3>{triangle_vec3{{glm::vec3(0, 0, 0),
+                                                          glm::vec3(1, 0, 0),
+                                                          glm::vec3(0, 0, 1)}}},
+            geo::ray{glm::vec3(0, 1, 0), glm::vec3(0, 1, 0)}));
 }

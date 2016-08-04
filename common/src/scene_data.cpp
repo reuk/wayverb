@@ -22,7 +22,7 @@
 //----------------------------------------------------------------------------//
 
 copyable_scene_data::copyable_scene_data(
-        const aligned::vector<Triangle>& triangles,
+        const aligned::vector<triangle>& triangles,
         const aligned::vector<cl_float3>& vertices,
         const aligned::vector<material>& materials)
         : contents{triangles, vertices, materials} {}
@@ -48,7 +48,7 @@ aligned::vector<size_t> copyable_scene_data::get_triangle_indices() const {
     return ret;
 }
 
-const aligned::vector<Triangle>& copyable_scene_data::get_triangles() const {
+const aligned::vector<triangle>& copyable_scene_data::get_triangles() const {
     return contents.triangles;
 }
 const aligned::vector<cl_float3>& copyable_scene_data::get_vertices() const {
@@ -97,7 +97,7 @@ void copyable_scene_data::set_surfaces(const surface& surface) {
 
 //----------------------------------------------------------------------------//
 
-struct scene_data::Impl {
+struct scene_data::impl {
     Assimp::Importer importer;
 };
 
@@ -108,19 +108,19 @@ scene_data::~scene_data() noexcept                           = default;
 scene_data::scene_data(const std::string& scene_file)
         : scene_data(load(scene_file)) {}
 
-scene_data::scene_data(copyable_scene_data&& rhs, std::unique_ptr<Impl>&& pimpl)
+scene_data::scene_data(copyable_scene_data&& rhs, std::unique_ptr<impl>&& pimpl)
         : copyable_scene_data(std::move(rhs))
         , pimpl(std::move(pimpl)) {}
 
 scene_data::scene_data(
-        std::tuple<copyable_scene_data, std::unique_ptr<Impl>>&& rhs)
+        std::tuple<copyable_scene_data, std::unique_ptr<impl>>&& rhs)
         : scene_data(std::move(std::get<0>(rhs)), std::move(std::get<1>(rhs))) {
 }
 
-std::tuple<copyable_scene_data, std::unique_ptr<scene_data::Impl>>
+std::tuple<copyable_scene_data, std::unique_ptr<scene_data::impl>>
 scene_data::load(const std::string& scene_file) {
-    auto impl  = std::make_unique<Impl>();
-    auto scene = impl->importer.ReadFile(
+    auto pimpl = std::make_unique<impl>();
+    auto scene = pimpl->importer.ReadFile(
             scene_file,
             (aiProcess_Triangulate | aiProcess_GenSmoothNormals |
              aiProcess_FlipUVs));
@@ -149,12 +149,12 @@ scene_data::load(const std::string& scene_file) {
                        vertices.begin(),
                        [](auto i) { return to_cl_float3(i); });
 
-        aligned::vector<Triangle> triangles(mesh->mNumFaces);
+        aligned::vector<triangle> triangles(mesh->mNumFaces);
         std::transform(mesh->mFaces,
                        mesh->mFaces + mesh->mNumFaces,
                        triangles.begin(),
                        [&mesh, &contents](auto i) {
-                           return Triangle{
+                           return triangle{
                                    mesh->mMaterialIndex,
                                    i.mIndices[0] + contents.vertices.size(),
                                    i.mIndices[1] + contents.vertices.size(),
@@ -174,7 +174,7 @@ scene_data::load(const std::string& scene_file) {
     //});
 
     return std::make_tuple(copyable_scene_data(std::move(contents)),
-                           std::move(impl));
+                           std::move(pimpl));
 }
 
 void scene_data::save(const std::string& f) const {

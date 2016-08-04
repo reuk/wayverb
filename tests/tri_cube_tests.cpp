@@ -147,43 +147,43 @@ TEST(bevel_3d, bevel_3d) {
 }
 
 TEST(check_line, check_line) {
-    ASSERT_EQ(Rel::idInside,
+    ASSERT_EQ(where::inside,
               check_line(glm::vec3(-1, 0, 0), glm::vec3(1, 0, 0), 0x01));
-    ASSERT_EQ(Rel::idInside,
+    ASSERT_EQ(where::inside,
               check_line(glm::vec3(-1, 0, 0), glm::vec3(1, 0, 0), 0x02));
-    ASSERT_EQ(Rel::idOutside,
+    ASSERT_EQ(where::outside,
               check_line(glm::vec3(-1, 0, 0), glm::vec3(1, 0, 0), 0x04));
-    ASSERT_EQ(Rel::idOutside,
+    ASSERT_EQ(where::outside,
               check_line(glm::vec3(-1, 0, 0), glm::vec3(1, 0, 0), 0x08));
-    ASSERT_EQ(Rel::idOutside,
+    ASSERT_EQ(where::outside,
               check_line(glm::vec3(-1, 0, 0), glm::vec3(1, 0, 0), 0x10));
-    ASSERT_EQ(Rel::idOutside,
+    ASSERT_EQ(where::outside,
               check_line(glm::vec3(-1, 0, 0), glm::vec3(1, 0, 0), 0x20));
 
-    ASSERT_EQ(Rel::idOutside,
+    ASSERT_EQ(where::outside,
               check_line(glm::vec3(0, -1, 0), glm::vec3(0, 1, 0), 0x01));
-    ASSERT_EQ(Rel::idOutside,
+    ASSERT_EQ(where::outside,
               check_line(glm::vec3(0, -1, 0), glm::vec3(0, 1, 0), 0x02));
-    ASSERT_EQ(Rel::idInside,
+    ASSERT_EQ(where::inside,
               check_line(glm::vec3(0, -1, 0), glm::vec3(0, 1, 0), 0x04));
-    ASSERT_EQ(Rel::idInside,
+    ASSERT_EQ(where::inside,
               check_line(glm::vec3(0, -1, 0), glm::vec3(0, 1, 0), 0x08));
-    ASSERT_EQ(Rel::idOutside,
+    ASSERT_EQ(where::outside,
               check_line(glm::vec3(0, -1, 0), glm::vec3(0, 1, 0), 0x10));
-    ASSERT_EQ(Rel::idOutside,
+    ASSERT_EQ(where::outside,
               check_line(glm::vec3(0, -1, 0), glm::vec3(0, 1, 0), 0x20));
 
-    ASSERT_EQ(Rel::idOutside,
+    ASSERT_EQ(where::outside,
               check_line(glm::vec3(0, 0, -1), glm::vec3(0, 0, 1), 0x01));
-    ASSERT_EQ(Rel::idOutside,
+    ASSERT_EQ(where::outside,
               check_line(glm::vec3(0, 0, -1), glm::vec3(0, 0, 1), 0x02));
-    ASSERT_EQ(Rel::idOutside,
+    ASSERT_EQ(where::outside,
               check_line(glm::vec3(0, 0, -1), glm::vec3(0, 0, 1), 0x04));
-    ASSERT_EQ(Rel::idOutside,
+    ASSERT_EQ(where::outside,
               check_line(glm::vec3(0, 0, -1), glm::vec3(0, 0, 1), 0x08));
-    ASSERT_EQ(Rel::idInside,
+    ASSERT_EQ(where::inside,
               check_line(glm::vec3(0, 0, -1), glm::vec3(0, 0, 1), 0x10));
-    ASSERT_EQ(Rel::idInside,
+    ASSERT_EQ(where::inside,
               check_line(glm::vec3(0, 0, -1), glm::vec3(0, 0, 1), 0x20));
 
     std::default_random_engine engine{std::random_device()()};
@@ -198,7 +198,7 @@ TEST(check_line, check_line) {
         auto z1 = dist(engine);
         for (auto diff = 0u; diff != 0x100; ++diff)
             ASSERT_EQ(check_line(Point3{x0, y0, z0}, Point3{x1, y1, z1}, diff),
-                      Rel::idOutside == check_line(glm::vec3(x0, y0, z0),
+                      where::outside == check_line(glm::vec3(x0, y0, z0),
                                                    glm::vec3(x1, y1, z1),
                                                    diff));
     }
@@ -206,29 +206,29 @@ TEST(check_line, check_line) {
 
 TEST(point_triangle_intersection, point_triangle_intersection) {
     ASSERT_EQ(
-            Rel::idInside,
+            where::inside,
             point_triangle_intersection(glm::vec3(0, 0, 0),
-                                        TriangleVec3({{glm::vec3(-2, -1, 0),
-                                                       glm::vec3(1, -1, 0),
-                                                       glm::vec3(2, 1, 0)}})));
+                                        triangle_vec3({{glm::vec3(-2, -1, 0),
+                                                        glm::vec3(1, -1, 0),
+                                                        glm::vec3(2, 1, 0)}})));
 
     ASSERT_EQ(
-            Rel::idOutside,
+            where::outside,
             point_triangle_intersection(glm::vec3(4, 4, 4),
-                                        TriangleVec3({{glm::vec3(-2, -1, 0),
-                                                       glm::vec3(1, -1, 0),
-                                                       glm::vec3(2, 1, 0)}})));
+                                        triangle_vec3({{glm::vec3(-2, -1, 0),
+                                                        glm::vec3(1, -1, 0),
+                                                        glm::vec3(2, 1, 0)}})));
 
-    ASSERT_EQ(
-            point_triangle_intersection(Point3{0.25, 0.25, 0.25},
-                                        Triangle3{Point3{-0.25, -10, -5},
-                                                  Point3{-0.25, 5, -5},
-                                                  Point3{-0.25, 5, 10}}),
-            Rel::idOutside == point_triangle_intersection(
-                                      glm::vec3(0.25, 0.25, 0.25),
-                                      TriangleVec3{{glm::vec3(-0.25, -10, -5),
-                                                    glm::vec3(-0.25, 5, -5),
-                                                    glm::vec3(-0.25, 5, 10)}}));
+    ASSERT_EQ(point_triangle_intersection(Point3{0.25, 0.25, 0.25},
+                                          Triangle3{Point3{-0.25, -10, -5},
+                                                    Point3{-0.25, 5, -5},
+                                                    Point3{-0.25, 5, 10}}),
+              where::outside ==
+                      point_triangle_intersection(
+                              glm::vec3(0.25, 0.25, 0.25),
+                              triangle_vec3{{glm::vec3(-0.25, -10, -5),
+                                             glm::vec3(-0.25, 5, -5),
+                                             glm::vec3(-0.25, 5, 10)}}));
 
     std::default_random_engine engine{std::random_device()()};
     std::uniform_real_distribution<float> dist(-10.0f, 10.0f);
@@ -250,12 +250,12 @@ TEST(point_triangle_intersection, point_triangle_intersection) {
                                               Triangle3{Point3{x1, y1, z1},
                                                         Point3{x2, y2, z2},
                                                         Point3{x3, y3, z3}}),
-                  Rel::idOutside ==
+                  where::outside ==
                           point_triangle_intersection(
                                   glm::vec3(x0, y0, z0),
-                                  TriangleVec3{{glm::vec3(x1, y1, z1),
-                                                glm::vec3(x2, y2, z2),
-                                                glm::vec3(x3, y3, z3)}}));
+                                  triangle_vec3{{glm::vec3(x1, y1, z1),
+                                                 glm::vec3(x2, y2, z2),
+                                                 glm::vec3(x3, y3, z3)}}));
     }
 }
 
@@ -330,77 +330,77 @@ TEST(old, old) {
 
 TEST(specific, specific) {
     auto edge = 0.5;
-    ASSERT_EQ(Rel::idInside,
-              t_c_intersection(TriangleVec3({{glm::vec3(-10, -5, edge),
-                                              glm::vec3(5, -5, edge),
-                                              glm::vec3(5, 10, edge)}})));
-    ASSERT_EQ(Rel::idInside,
-              t_c_intersection(TriangleVec3({{glm::vec3(-10, -5, 0),
-                                              glm::vec3(5, -5, 0),
-                                              glm::vec3(5, 10, 0)}})));
-    ASSERT_EQ(Rel::idInside,
-              t_c_intersection(TriangleVec3({{glm::vec3(-10, -5, -edge),
-                                              glm::vec3(5, -5, -edge),
-                                              glm::vec3(5, 10, -edge)}})));
+    ASSERT_EQ(where::inside,
+              t_c_intersection(triangle_vec3({{glm::vec3(-10, -5, edge),
+                                               glm::vec3(5, -5, edge),
+                                               glm::vec3(5, 10, edge)}})));
+    ASSERT_EQ(where::inside,
+              t_c_intersection(triangle_vec3({{glm::vec3(-10, -5, 0),
+                                               glm::vec3(5, -5, 0),
+                                               glm::vec3(5, 10, 0)}})));
+    ASSERT_EQ(where::inside,
+              t_c_intersection(triangle_vec3({{glm::vec3(-10, -5, -edge),
+                                               glm::vec3(5, -5, -edge),
+                                               glm::vec3(5, 10, -edge)}})));
 
-    ASSERT_EQ(Rel::idInside,
-              t_c_intersection(TriangleVec3({{glm::vec3(-10, edge, -5),
-                                              glm::vec3(5, edge, -5),
-                                              glm::vec3(5, edge, 10)}})));
-    ASSERT_EQ(Rel::idInside,
-              t_c_intersection(TriangleVec3({{glm::vec3(-10, 0, -5),
-                                              glm::vec3(5, 0, -5),
-                                              glm::vec3(5, 0, 10)}})));
-    ASSERT_EQ(Rel::idInside,
-              t_c_intersection(TriangleVec3({{glm::vec3(-10, -edge, -5),
-                                              glm::vec3(5, -edge, -5),
-                                              glm::vec3(5, -edge, 10)}})));
+    ASSERT_EQ(where::inside,
+              t_c_intersection(triangle_vec3({{glm::vec3(-10, edge, -5),
+                                               glm::vec3(5, edge, -5),
+                                               glm::vec3(5, edge, 10)}})));
+    ASSERT_EQ(where::inside,
+              t_c_intersection(triangle_vec3({{glm::vec3(-10, 0, -5),
+                                               glm::vec3(5, 0, -5),
+                                               glm::vec3(5, 0, 10)}})));
+    ASSERT_EQ(where::inside,
+              t_c_intersection(triangle_vec3({{glm::vec3(-10, -edge, -5),
+                                               glm::vec3(5, -edge, -5),
+                                               glm::vec3(5, -edge, 10)}})));
 
-    ASSERT_EQ(Rel::idInside,
-              t_c_intersection(TriangleVec3({{glm::vec3(edge, -10, -5),
-                                              glm::vec3(edge, 5, -5),
-                                              glm::vec3(edge, 5, 10)}})));
-    ASSERT_EQ(Rel::idInside,
-              t_c_intersection(TriangleVec3({{glm::vec3(0, -10, -5),
-                                              glm::vec3(0, 5, -5),
-                                              glm::vec3(0, 5, 10)}})));
-    ASSERT_EQ(Rel::idInside,
-              t_c_intersection(TriangleVec3({{glm::vec3(-0.25, -10, -5),
-                                              glm::vec3(-0.25, 5, -5),
-                                              glm::vec3(-0.25, 5, 10)}})));
-    ASSERT_EQ(Rel::idInside,
-              t_c_intersection(TriangleVec3({{glm::vec3(-edge, -10, -5),
-                                              glm::vec3(-edge, 5, -5),
-                                              glm::vec3(-edge, 5, 10)}})));
+    ASSERT_EQ(where::inside,
+              t_c_intersection(triangle_vec3({{glm::vec3(edge, -10, -5),
+                                               glm::vec3(edge, 5, -5),
+                                               glm::vec3(edge, 5, 10)}})));
+    ASSERT_EQ(where::inside,
+              t_c_intersection(triangle_vec3({{glm::vec3(0, -10, -5),
+                                               glm::vec3(0, 5, -5),
+                                               glm::vec3(0, 5, 10)}})));
+    ASSERT_EQ(where::inside,
+              t_c_intersection(triangle_vec3({{glm::vec3(-0.25, -10, -5),
+                                               glm::vec3(-0.25, 5, -5),
+                                               glm::vec3(-0.25, 5, 10)}})));
+    ASSERT_EQ(where::inside,
+              t_c_intersection(triangle_vec3({{glm::vec3(-edge, -10, -5),
+                                               glm::vec3(-edge, 5, -5),
+                                               glm::vec3(-edge, 5, 10)}})));
 
     auto outside = 1;
-    ASSERT_EQ(Rel::idOutside,
-              t_c_intersection(TriangleVec3({{glm::vec3(-10, -5, outside),
-                                              glm::vec3(5, -5, outside),
-                                              glm::vec3(5, 10, outside)}})));
-    ASSERT_EQ(Rel::idOutside,
-              t_c_intersection(TriangleVec3({{glm::vec3(-10, -5, -outside),
-                                              glm::vec3(5, -5, -outside),
-                                              glm::vec3(5, 10, -outside)}})));
-    ASSERT_EQ(Rel::idOutside,
-              t_c_intersection(TriangleVec3({{glm::vec3(-10, outside, -5),
-                                              glm::vec3(5, outside, -5),
-                                              glm::vec3(5, outside, 10)}})));
-    ASSERT_EQ(Rel::idOutside,
-              t_c_intersection(TriangleVec3({{glm::vec3(-10, -outside, -5),
-                                              glm::vec3(5, -outside, -5),
-                                              glm::vec3(5, -outside, 10)}})));
-    ASSERT_EQ(Rel::idOutside,
-              t_c_intersection(TriangleVec3({{glm::vec3(outside, -10, -5),
-                                              glm::vec3(outside, 5, -5),
-                                              glm::vec3(outside, 5, 10)}})));
-    ASSERT_EQ(Rel::idOutside,
-              t_c_intersection(TriangleVec3({{glm::vec3(-outside, -10, -5),
-                                              glm::vec3(-outside, 5, -5),
-                                              glm::vec3(-outside, 5, 10)}})));
+    ASSERT_EQ(where::outside,
+              t_c_intersection(triangle_vec3({{glm::vec3(-10, -5, outside),
+                                               glm::vec3(5, -5, outside),
+                                               glm::vec3(5, 10, outside)}})));
+    ASSERT_EQ(where::outside,
+              t_c_intersection(triangle_vec3({{glm::vec3(-10, -5, -outside),
+                                               glm::vec3(5, -5, -outside),
+                                               glm::vec3(5, 10, -outside)}})));
+    ASSERT_EQ(where::outside,
+              t_c_intersection(triangle_vec3({{glm::vec3(-10, outside, -5),
+                                               glm::vec3(5, outside, -5),
+                                               glm::vec3(5, outside, 10)}})));
+    ASSERT_EQ(where::outside,
+              t_c_intersection(triangle_vec3({{glm::vec3(-10, -outside, -5),
+                                               glm::vec3(5, -outside, -5),
+                                               glm::vec3(5, -outside, 10)}})));
+    ASSERT_EQ(where::outside,
+              t_c_intersection(triangle_vec3({{glm::vec3(outside, -10, -5),
+                                               glm::vec3(outside, 5, -5),
+                                               glm::vec3(outside, 5, 10)}})));
+    ASSERT_EQ(where::outside,
+              t_c_intersection(triangle_vec3({{glm::vec3(-outside, -10, -5),
+                                               glm::vec3(-outside, 5, -5),
+                                               glm::vec3(-outside, 5, 10)}})));
 
     {
-        const TriangleVec3 triangle_verts_0(
+        const triangle_vec3 triangle_verts_0(
                 {{glm::vec3(-1.5, 3.0999999, -7.5999999),
                   glm::vec3(0, 3.0999999, -9.10000038),
                   glm::vec3(
@@ -414,7 +414,7 @@ TEST(specific, specific) {
         const box b2(glm::vec3(-9.5, -0.0000000000000021191102, -7.5999999),
                      glm::vec3(-7.125, 0.449999988, -5.69999981));
         const auto centre = ::centre(b2);
-        const auto x0     = b2.get_c0().x;
+        const auto x0 = b2.get_c0().x;
         //      auto y0 = b2.get_c0().y;
         const auto z0 = b2.get_c0().z;
         const auto xc = centre.x;
@@ -425,7 +425,7 @@ TEST(specific, specific) {
         //      auto z1 = b2.get_c1().z;
         const box b3(glm::vec3(x0, yc, z0), glm::vec3(xc, y1, zc));
 
-        const TriangleVec3 triangle_verts_1(
+        const triangle_vec3 triangle_verts_1(
                 {{glm::vec3(-9.5, 1.10000002, -6.0999999),
                   glm::vec3(-9.5, 0.100000001, -6.0999999),
                   glm::vec3(-9.5, 0.100000001, -9)}});
@@ -447,9 +447,9 @@ TEST(specific, specific) {
         const box aabb(glm::vec3(-4.20000029, -0.040625006, -5.02812529),
                        glm::vec3(-3.9000001, 0.0187499933, -4.78750038));
 
-        const TriangleVec3 verts{{glm::vec3(-5.69999981, 0, -3.79999995),
-                                  glm::vec3(-3.79999995, 0, -3.79999995),
-                                  glm::vec3(-3.79999995, 0, -5.69999981)}};
+        const triangle_vec3 verts{{glm::vec3(-5.69999981, 0, -3.79999995),
+                                   glm::vec3(-3.79999995, 0, -3.79999995),
+                                   glm::vec3(-3.79999995, 0, -5.69999981)}};
 
         ASSERT_EQ(true, overlaps(aabb, verts));
     }
@@ -458,13 +458,13 @@ TEST(specific, specific) {
         const box aabb(glm::vec3(-7.80000019, 3.46249986, -8.63750076),
                        glm::vec3(-7.20000029, 3.58124971, -8.15625));
 
-        const TriangleVec3 v0{{glm::vec3(-7.5999999, 3.5999999, -7.5999999),
-                               glm::vec3(-7.5999999, 3.0999999, -9.10000038),
-                               glm::vec3(-6.0999999, 3.0999999, -7.5999999)}};
+        const triangle_vec3 v0{{glm::vec3(-7.5999999, 3.5999999, -7.5999999),
+                                glm::vec3(-7.5999999, 3.0999999, -9.10000038),
+                                glm::vec3(-6.0999999, 3.0999999, -7.5999999)}};
 
-        const TriangleVec3 v1{{glm::vec3(-9.10000038, 3.0999999, -7.5999999),
-                               glm::vec3(-7.5999999, 3.0999999, -9.10000038),
-                               glm::vec3(-7.5999999, 3.5999999, -7.5999999)}};
+        const triangle_vec3 v1{{glm::vec3(-9.10000038, 3.0999999, -7.5999999),
+                                glm::vec3(-7.5999999, 3.0999999, -9.10000038),
+                                glm::vec3(-7.5999999, 3.5999999, -7.5999999)}};
 
         ASSERT_EQ(false, overlaps(aabb, v0));
         ASSERT_EQ(false, overlaps(aabb, v1));

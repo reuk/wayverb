@@ -47,11 +47,11 @@ glm::vec3 centre(const box& b);
 
 glm::vec3 dimensions(const box& b);
 
-bool overlaps(const box& b, const TriangleVec3& t);
+bool overlaps(const box& b, const triangle_vec3& t);
 
 box padded(const box& b, float padding);
 
-bool intersects(const box& b, const geo::Ray& ray, float t0, float t1);
+bool intersects(const box& b, const geo::ray& ray, float t0, float t1);
 
 copyable_scene_data get_scene_data(const box& b);
 

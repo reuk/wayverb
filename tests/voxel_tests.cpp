@@ -15,15 +15,15 @@ TEST(voxel, construct) {
     voxel_collection voxel(octree);
 }
 
-class T : public voxel_collection::TraversalCallback {
+class T : public voxel_collection::traversal_callback {
 public:
-    geo::Intersection operator()(
-            const geo::Ray& ray,
+    geo::intersection operator()(
+            const geo::ray& ray,
             const aligned::vector<size_t>& triangles) const override {
         if (!triangles.empty()) {
             b = true;
         }
-        return geo::Intersection();
+        return geo::intersection();
     }
 
     bool get_has_triangles() const { return b; }
@@ -41,7 +41,7 @@ TEST(voxel, walk) {
     auto directions = raytracer::get_random_directions(rays);
     for (const auto& i : directions) {
         T t;
-        geo::Ray ray(glm::vec3(0, 1, 0), to_vec3(i));
+        geo::ray ray(glm::vec3(0, 1, 0), to_vec3(i));
         voxel.traverse(ray, t);
         ASSERT_TRUE(t.get_has_triangles());
     }
@@ -57,7 +57,7 @@ TEST(voxel, old) {
     std::iota(ind.begin(), ind.end(), 0);
 
     for (const auto& i : raytracer::get_random_directions(bench_rays)) {
-        geo::Ray ray(glm::vec3(0, 1, 0), to_vec3(i));
+        geo::ray ray(glm::vec3(0, 1, 0), to_vec3(i));
         geo::ray_triangle_intersection(ray, ind, scene_data.get_triangles(), v);
     }
 }
@@ -67,10 +67,10 @@ TEST(voxel, new) {
     octree octree(scene_data, 4, 0.1);
     voxel_collection voxel(octree);
 
-    voxel_collection::TriangleTraversalCallback t(scene_data);
+    voxel_collection::triangle_traversal_callback t(scene_data);
 
     for (const auto& i : raytracer::get_random_directions(bench_rays)) {
-        geo::Ray ray(glm::vec3(0, 1, 0), to_vec3(i));
+        geo::ray ray(glm::vec3(0, 1, 0), to_vec3(i));
 
         voxel.traverse(ray, t);
     }
@@ -81,14 +81,14 @@ TEST(voxel, intersect) {
     octree octree(scene_data, 4, 0.1);
     voxel_collection voxel(octree);
 
-    voxel_collection::TriangleTraversalCallback t(scene_data);
+    voxel_collection::triangle_traversal_callback t(scene_data);
 
     auto v = scene_data.get_converted_vertices();
     aligned::vector<size_t> ind(scene_data.get_triangles().size());
     std::iota(ind.begin(), ind.end(), 0);
 
     for (const auto& i : raytracer::get_random_directions(bench_rays)) {
-        geo::Ray ray(glm::vec3(0, 1, 0), to_vec3(i));
+        geo::ray ray(glm::vec3(0, 1, 0), to_vec3(i));
 
         auto inter_0 = geo::ray_triangle_intersection(
                 ray, ind, scene_data.get_triangles(), v);

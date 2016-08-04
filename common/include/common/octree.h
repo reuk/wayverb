@@ -24,7 +24,7 @@ public:
 
     size_t get_side() const;
 
-    aligned::vector<const octree*> intersect(const geo::Ray& ray) const;
+    aligned::vector<const octree*> intersect(const geo::ray& ray) const;
     const octree& get_surrounding_leaf(const glm::vec3& v) const;
 
 private:

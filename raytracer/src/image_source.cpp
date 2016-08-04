@@ -34,7 +34,7 @@ aligned::vector<impulse> image_source_finder::get_results(
             compute_unique_paths(std::move(reflection_path_builder.get_data()));
     aligned::vector<impulse> ret;
 
-    const voxel_collection::TriangleTraversalCallback callback(scene_data);
+    const voxel_collection::triangle_traversal_callback callback(scene_data);
     for (const auto& i : unique_paths) {
         if (auto impulse = follow_ray_path(
                     i, source, receiver, scene_data, vox, callback)) {

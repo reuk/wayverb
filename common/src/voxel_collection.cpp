@@ -102,14 +102,14 @@ glm::bvec3 is_not_nan(const glm::vec3& v) {
     return ret;
 }
 
-geo::Intersection voxel_collection::traverse(
-        const geo::Ray& ray, const TraversalCallback& fun) const {
+geo::intersection voxel_collection::traverse(
+        const geo::ray& ray, const traversal_callback& fun) const {
     //  from http://www.cse.chalmers.se/edu/year/2010/course/TDA361/grid.pdf
-    auto ind                = get_starting_index(ray.get_position());
+    auto ind = get_starting_index(ray.get_position());
     const auto voxel_bounds = get_voxel(ind).get_aabb();
 
-    const auto gt       = nonnegative(ray.get_direction());
-    const auto step     = select(glm::ivec3(1), glm::ivec3(-1), gt);
+    const auto gt = nonnegative(ray.get_direction());
+    const auto step = select(glm::ivec3(1), glm::ivec3(-1), gt);
     const auto just_out = select(glm::ivec3(data.size()), glm::ivec3(-1), gt);
     const auto boundary =
             select(voxel_bounds.get_c1(), voxel_bounds.get_c0(), gt);
@@ -136,25 +136,25 @@ geo::Intersection voxel_collection::traverse(
 
         ind[min_i] += step[min_i];
         if (ind[min_i] == just_out[min_i]) {
-            return geo::Intersection();
+            return geo::intersection();
         }
         t_max[min_i] += t_delta[min_i];
     }
 }
 
-voxel_collection::TriangleTraversalCallback::TriangleTraversalCallback(
+voxel_collection::triangle_traversal_callback::triangle_traversal_callback(
         const copyable_scene_data& scene_data)
         : tri(scene_data.get_triangles())
         , vertices(scene_data.get_converted_vertices()) {}
 
-geo::Intersection voxel_collection::TriangleTraversalCallback::operator()(
-        const geo::Ray& ray, const aligned::vector<size_t>& triangles) const {
+geo::intersection voxel_collection::triangle_traversal_callback::operator()(
+        const geo::ray& ray, const aligned::vector<size_t>& triangles) const {
     return geo::ray_triangle_intersection(ray, triangles, tri, vertices);
 }
 
 aligned::vector<cl_uint> voxel_collection::get_flattened() const {
     auto side = get_data().size();
-    auto dim  = pow(side, 3);
+    auto dim = pow(side, 3);
 
     aligned::vector<cl_uint> ret(dim);
 
@@ -167,7 +167,7 @@ aligned::vector<cl_uint> voxel_collection::get_flattened() const {
             for (auto z = 0u; z != side; ++z) {
                 glm::ivec3 ind(x, y, z);
                 ret[to_flat(ind)] = ret.size();
-                const auto& v     = get_voxel(ind);
+                const auto& v = get_voxel(ind);
                 ret.push_back(v.get_triangles().size());
                 for (const auto& i : v.get_triangles()) {
                     ret.push_back(i);

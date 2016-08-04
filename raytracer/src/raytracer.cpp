@@ -13,12 +13,12 @@ std::experimental::optional<impulse> get_direct_impulse(
         const glm::vec3& receiver,
         const copyable_scene_data& scene_data,
         const voxel_collection& vox) {
-    voxel_collection::TriangleTraversalCallback callback(scene_data);
+    voxel_collection::triangle_traversal_callback callback(scene_data);
 
     const auto source_to_receiver        = receiver - source;
     const auto source_to_receiver_length = glm::length(source_to_receiver);
     const auto direction                 = glm::normalize(source_to_receiver);
-    const geo::Ray to_receiver(source, direction);
+    const geo::ray to_receiver(source, direction);
 
     const auto intersection = vox.traverse(to_receiver, callback);
 

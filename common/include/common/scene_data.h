@@ -32,20 +32,20 @@ public:
     };
 
     struct contents final {
-        aligned::vector<Triangle> triangles;
+        aligned::vector<triangle> triangles;
         aligned::vector<cl_float3> vertices;
         aligned::vector<material> materials;
     };
 
     copyable_scene_data() = default;
-    copyable_scene_data(const aligned::vector<Triangle>& triangles,
+    copyable_scene_data(const aligned::vector<triangle>& triangles,
                         const aligned::vector<cl_float3>& vertices,
                         const aligned::vector<material>& materials);
     copyable_scene_data(contents&& rhs);
 
     copyable_scene_data(const copyable_scene_data& rhs) = default;
     copyable_scene_data& operator=(const copyable_scene_data& rhs) = default;
-    copyable_scene_data(copyable_scene_data&& rhs) noexcept        = default;
+    copyable_scene_data(copyable_scene_data&& rhs) noexcept = default;
     copyable_scene_data& operator=(copyable_scene_data&& rhs) noexcept =
             default;
     virtual ~copyable_scene_data() noexcept = default;
@@ -61,7 +61,7 @@ public:
     aligned::vector<glm::vec3> get_converted_vertices() const;
     aligned::vector<size_t> get_triangle_indices() const;
 
-    const aligned::vector<Triangle>& get_triangles() const;
+    const aligned::vector<triangle>& get_triangles() const;
     const aligned::vector<cl_float3>& get_vertices() const;
     const aligned::vector<material>& get_materials() const;
 
@@ -72,8 +72,8 @@ private:
 //----------------------------------------------------------------------------//
 
 class scene_data final : public copyable_scene_data {
-    struct Impl;
-    std::unique_ptr<Impl> pimpl;
+    struct impl;
+    std::unique_ptr<impl> pimpl;
 
 public:
     //  this class adds the ability to load/save from file
@@ -87,8 +87,8 @@ public:
     ~scene_data() noexcept;
 
 private:
-    scene_data(copyable_scene_data&& rhs, std::unique_ptr<Impl>&& pimpl);
-    scene_data(std::tuple<copyable_scene_data, std::unique_ptr<Impl>>&& rhs);
-    static std::tuple<copyable_scene_data, std::unique_ptr<Impl>> load(
+    scene_data(copyable_scene_data&& rhs, std::unique_ptr<impl>&& pimpl);
+    scene_data(std::tuple<copyable_scene_data, std::unique_ptr<impl>>&& rhs);
+    static std::tuple<copyable_scene_data, std::unique_ptr<impl>> load(
             const std::string& scene_file);
 };

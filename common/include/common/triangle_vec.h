@@ -1,17 +1,17 @@
 #pragma once
 
 #include "common/aligned/vector.h"
-#include "triangle.h"
+#include "common/cl_include.h"
 
 #include "glm/glm.hpp"
 
 #include <array>
 
-struct Triangle;
+struct triangle;
 
-using TriangleVec3 = std::array<glm::vec3, 3>;
+using triangle_vec3 = std::array<glm::vec3, 3>;
 
-TriangleVec3 get_triangle_verts(const Triangle& t,
-                                const aligned::vector<glm::vec3>& v);
-TriangleVec3 get_triangle_verts(const Triangle& t,
-                                const aligned::vector<cl_float3>& v);
+triangle_vec3 get_triangle_verts(const triangle& t,
+                                 const aligned::vector<glm::vec3>& v);
+triangle_vec3 get_triangle_verts(const triangle& t,
+                                 const aligned::vector<cl_float3>& v);

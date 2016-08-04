@@ -91,7 +91,7 @@ const aligned::vector<size_t>& octree::get_triangles() const {
     return triangles;
 }
 
-aligned::vector<const octree*> octree::intersect(const geo::Ray& ray) const {
+aligned::vector<const octree*> octree::intersect(const geo::ray& ray) const {
     const auto& starting_node = get_surrounding_leaf(ray.get_position());
     aligned::vector<const octree*> ret = {&starting_node};
     return ret;

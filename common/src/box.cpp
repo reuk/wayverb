@@ -29,12 +29,12 @@ box mirror(const box& b, wall w) {
     return box(mirror(b, b.get_c0(), w), mirror(b, b.get_c1(), w));
 }
 
-bool overlaps(const box& b, const TriangleVec3& t) {
+bool overlaps(const box& b, const triangle_vec3& t) {
     auto coll = t;
     for (auto& i : coll) {
         i = (i - centre(b)) / dimensions(b);
     }
-    return t_c_intersection(coll) == Rel::idInside;
+    return t_c_intersection(coll) == where::inside;
 }
 
 box padded(const box& b, float padding) {
@@ -42,7 +42,7 @@ box padded(const box& b, float padding) {
     return ret.pad(padding);
 }
 
-bool intersects(const box& b, const geo::Ray& ray, float t0, float t1) {
+bool intersects(const box& b, const geo::ray& ray, float t0, float t1) {
     //  from http://people.csail.mit.edu/amy/papers/box-jgt.pdf
     auto inv = glm::vec3(1) / ray.get_direction();
     std::array<bool, 3> sign{{inv.x < 0, inv.y < 0, inv.z < 0}};
@@ -85,7 +85,7 @@ copyable_scene_data get_scene_data(const box& b) {
             {{b.get_c1().x, b.get_c0().y, b.get_c1().z}},
             {{b.get_c0().x, b.get_c1().y, b.get_c1().z}},
             {{b.get_c1().x, b.get_c1().y, b.get_c1().z}}};
-    aligned::vector<Triangle> triangles{{0, 0, 1, 5},
+    aligned::vector<triangle> triangles{{0, 0, 1, 5},
                                         {0, 0, 4, 5},
                                         {0, 0, 1, 3},
                                         {0, 0, 2, 3},

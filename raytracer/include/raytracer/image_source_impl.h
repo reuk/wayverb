@@ -51,27 +51,27 @@ aligned::set<index_path> compute_unique_paths(
     return ret;
 }
 
-aligned::vector<TriangleVec3> compute_original_triangles(
+aligned::vector<triangle_vec3> compute_original_triangles(
         const aligned::vector<cl_ulong>& triangles,
         const copyable_scene_data& scene_data);
 
-aligned::vector<TriangleVec3> compute_mirrored_triangles(
-        const aligned::vector<TriangleVec3>& original);
+aligned::vector<triangle_vec3> compute_mirrored_triangles(
+        const aligned::vector<triangle_vec3>& original);
 
 std::experimental::optional<aligned::vector<float>>
-compute_intersection_distances(const aligned::vector<TriangleVec3>& mirrored,
-                               const geo::Ray& ray);
+compute_intersection_distances(const aligned::vector<triangle_vec3>& mirrored,
+                               const geo::ray& ray);
 
 aligned::vector<glm::vec3> compute_intersection_points(
-        const aligned::vector<float>& distances, const geo::Ray& ray);
+        const aligned::vector<float>& distances, const geo::ray& ray);
 
 aligned::vector<glm::vec3> compute_unmirrored_points(
         const aligned::vector<glm::vec3>& points,
-        const aligned::vector<TriangleVec3>& original);
+        const aligned::vector<triangle_vec3>& original);
 
-geo::Ray construct_ray(const glm::vec3& from, const glm::vec3& to);
+geo::ray construct_ray(const glm::vec3& from, const glm::vec3& to);
 
-glm::vec3 compute_mirrored_point(const aligned::vector<TriangleVec3>& mirrored,
+glm::vec3 compute_mirrored_point(const aligned::vector<triangle_vec3>& mirrored,
                                  const glm::vec3& original);
 
 float compute_distance(const aligned::vector<glm::vec3>& unmirrored);
@@ -89,6 +89,6 @@ std::experimental::optional<impulse> follow_ray_path(
         const glm::vec3& receiver,
         const copyable_scene_data& scene_data,
         const voxel_collection& vox,
-        const voxel_collection::TriangleTraversalCallback& callback);
+        const voxel_collection::triangle_traversal_callback& callback);
 
 }  // namespace raytracer

@@ -1,6 +1,7 @@
 #include "common/boundaries.h"
 
 #include "common/aligned/vector.h"
+#include "common/almost_equal.h"
 #include "common/conversions.h"
 #include "common/geometric.h"
 #include "common/scene_data.h"
@@ -55,8 +56,8 @@ mesh_boundary::hash_table mesh_boundary::compute_triangle_references() const {
                 {vertices[t.v0], vertices[t.v1], vertices[t.v2]}};
 
         const auto bounding_box = min_max(std::begin(coll), std::end(coll));
-        const auto min_indices  = hash_point(bounding_box.get_c0());
-        const auto max_indices  = hash_point(bounding_box.get_c1()) + 1;
+        const auto min_indices = hash_point(bounding_box.get_c0());
+        const auto max_indices = hash_point(bounding_box.get_c1()) + 1;
 
         for (auto j = min_indices.x; j != max_indices.x && j != DIVISIONS;
              ++j) {
@@ -69,7 +70,7 @@ mesh_boundary::hash_table mesh_boundary::compute_triangle_references() const {
     return ret;
 }
 
-mesh_boundary::mesh_boundary(const aligned::vector<Triangle>& triangles,
+mesh_boundary::mesh_boundary(const aligned::vector<triangle>& triangles,
                              const aligned::vector<glm::vec3>& vertices,
                              const aligned::vector<surface>& surfaces)
         : triangles(triangles)
@@ -103,7 +104,7 @@ bool mesh_boundary::inside(const glm::vec3& v) const {
     //  on one side of the point
     //  if intersection number is even, point is outside, else it's inside
     const auto references = get_references(hash_point(v));
-    geo::Ray ray(v, glm::vec3(0, 0, 1));
+    geo::ray ray{v, glm::vec3(0, 0, 1)};
     auto distances = aligned::vector<float>();
     return count_if(references.begin(),
                     references.end(),
@@ -112,11 +113,13 @@ bool mesh_boundary::inside(const glm::vec3& v) const {
                                 triangles[i], vertices, ray);
                         if (intersection) {
                             auto already_in =
-                                    proc::find_if(
-                                            distances, [&intersection](auto i) {
-                                                return almost_equal(
-                                                        i, *intersection, 10);
-                                            }) != distances.end();
+                                    proc::find_if(distances,
+                                                  [&intersection](auto i) {
+                                                      return almost_equal(
+                                                              i,
+                                                              *intersection,
+                                                              size_t{10});
+                                                  }) != distances.end();
                             distances.push_back(*intersection);
                             if (already_in) {
                                 return false;
@@ -135,7 +138,7 @@ aligned::vector<size_t> mesh_boundary::get_triangle_indices() const {
     return ret;
 }
 
-const aligned::vector<Triangle>& mesh_boundary::get_triangles() const {
+const aligned::vector<triangle>& mesh_boundary::get_triangles() const {
     return triangles;
 }
 

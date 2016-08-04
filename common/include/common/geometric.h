@@ -1,6 +1,7 @@
 #pragma once
 
 #include "common/aligned/vector.h"
+#include "common/triangle.h"
 #include "common/triangle_vec.h"
 
 #include "glm/glm.hpp"
@@ -9,22 +10,21 @@
 
 namespace geo {
 
-class Ray final {
+/// I would do this with a struct, but rays have an invariant:
+//      the direction is a normalized vector
+class ray final {
 public:
-    constexpr explicit Ray(const glm::vec3& position  = glm::vec3(),
-                           const glm::vec3& direction = glm::vec3())
-            : position(position)
-            , direction(direction) {}
+    ray(const glm::vec3& position, const glm::vec3& direction);
 
-    constexpr glm::vec3 get_position() const { return position; }
-    constexpr glm::vec3 get_direction() const { return direction; }
+    glm::vec3 get_position() const;
+    glm::vec3 get_direction() const;
 
 private:
     glm::vec3 position;
     glm::vec3 direction;
 };
 
-using Intersects = std::experimental::optional<float>;
+using intersects = std::experimental::optional<float>;
 
 namespace detail {
 struct inter final {
@@ -39,45 +39,45 @@ constexpr bool operator==(const inter& a, const inter& b) {
 constexpr bool operator!=(const inter& a, const inter& b) { return !(a == b); }
 }  // namespace detail
 
-using Intersection = std::experimental::optional<detail::inter>;
+using intersection = std::experimental::optional<detail::inter>;
 
 inline auto make_intersection(float distance, size_t index) {
-    return Intersection(detail::inter{distance, index});
+    return intersection(detail::inter{distance, index});
 }
 
-Intersects triangle_intersection(const TriangleVec3& tri, const Ray& ray);
+intersects triangle_intersection(const triangle_vec3& tri, const ray& ray);
 
-Intersects triangle_intersection(const Triangle& tri,
+intersects triangle_intersection(const triangle& tri,
                                  const aligned::vector<glm::vec3>& vertices,
-                                 const Ray& ray);
+                                 const ray& ray);
 
-Intersection ray_triangle_intersection(
-        const Ray& ray,
+intersection ray_triangle_intersection(
+        const ray& ray,
         const aligned::vector<size_t>& triangle_indices,
-        const aligned::vector<Triangle>& triangles,
+        const aligned::vector<triangle>& triangles,
         const aligned::vector<glm::vec3>& vertices);
 
-Intersection ray_triangle_intersection(
-        const Ray& ray,
-        const aligned::vector<Triangle>& triangles,
+intersection ray_triangle_intersection(
+        const ray& ray,
+        const aligned::vector<triangle>& triangles,
         const aligned::vector<glm::vec3>& vertices);
 
 bool point_intersection(const glm::vec3& begin,
                         const glm::vec3& point,
-                        const aligned::vector<Triangle>& triangles,
+                        const aligned::vector<triangle>& triangles,
                         const aligned::vector<glm::vec3>& vertices);
 
-float point_triangle_distance_squared(const TriangleVec3& triangle,
+float point_triangle_distance_squared(const triangle_vec3& triangle,
                                       const glm::vec3& point);
 
 float point_triangle_distance_squared(
-        const Triangle& tri,
+        const triangle& tri,
         const aligned::vector<glm::vec3>& vertices,
         const glm::vec3& point);
 
-glm::vec3 normal(const TriangleVec3& t);
+glm::vec3 normal(const triangle_vec3& t);
 
-glm::vec3 mirror(const glm::vec3& p, const TriangleVec3& t);
-TriangleVec3 mirror(const TriangleVec3& in, const TriangleVec3& t);
+glm::vec3 mirror(const glm::vec3& p, const triangle_vec3& t);
+triangle_vec3 mirror(const triangle_vec3& in, const triangle_vec3& t);
 
 }  // namespace geo

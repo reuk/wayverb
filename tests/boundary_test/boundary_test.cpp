@@ -143,7 +143,7 @@ aligned::vector<float> get_free_field_results(const compute_context& cc,
             auto str, const auto& pos) {
         LOG(INFO) << str << " position: " << pos;
         auto dist = glm::distance(wall_centre, pos);
-        if (!almost_equal(dist, source_dist, 5)) {
+        if (!almost_equal(dist, source_dist, size_t{5})) {
             LOG(INFO) << "incorrect distance: " << str;
             LOG(INFO) << "distance: " << dist;
             LOG(INFO) << "desired distance: " << source_dist;
@@ -242,7 +242,7 @@ FullTestResults run_full_test(const std::string& test_name,
             auto str, const auto& pos) {
         LOG(INFO) << str << " position: " << pos;
         auto dist = glm::distance(wall_centre, pos);
-        if (!almost_equal(dist, source_dist, 5)) {
+        if (!almost_equal(dist, source_dist, size_t{5})) {
             LOG(INFO) << "incorrect distance: " << str;
             LOG(INFO) << "distance: " << dist;
             LOG(INFO) << "desired distance: " << source_dist;

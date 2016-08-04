@@ -5,6 +5,7 @@
 #include "scene_data.h"
 #include "triangle.h"
 #include "triangle_vec.h"
+#include "almost_equal.h"
 
 #include "common/aligned/vector.h"
 
@@ -16,15 +17,15 @@ class ray;
 
 class boundary {
 public:
-    boundary()                    = default;
-    virtual ~boundary() noexcept  = default;
+    boundary() = default;
+    virtual ~boundary() noexcept = default;
     boundary(boundary&&) noexcept = default;
     boundary& operator=(boundary&&) noexcept = default;
-    boundary(const boundary&)                = default;
+    boundary(const boundary&) = default;
     boundary& operator=(const boundary&) = default;
 
     virtual bool inside(const glm::vec3& v) const = 0;
-    virtual box get_aabb() const                  = 0;
+    virtual box get_aabb() const = 0;
 
     template <typename Archive>
     void serialize(Archive& archive);
@@ -48,7 +49,7 @@ private:
 class sphere_boundary : public boundary {
 public:
     explicit sphere_boundary(const glm::vec3& c = glm::vec3(),
-                             float radius       = 0,
+                             float radius = 0,
                              const aligned::vector<surface>& surfaces =
                                      aligned::vector<surface>{surface{}});
     bool inside(const glm::vec3& v) const override;
@@ -60,15 +61,9 @@ private:
     box boundary;
 };
 
-template <typename T>
-inline bool almost_equal(T x, T y, int ups) {
-    return std::abs(x - y) <= std::numeric_limits<T>::epsilon() *
-                                      std::max(std::abs(x), std::abs(y)) * ups;
-}
-
 class mesh_boundary : public boundary {
 public:
-    mesh_boundary(const aligned::vector<Triangle>& triangles,
+    mesh_boundary(const aligned::vector<triangle>& triangles,
                   const aligned::vector<glm::vec3>& vertices,
                   const aligned::vector<surface>& surfaces);
     explicit mesh_boundary(const copyable_scene_data& sd);
@@ -85,7 +80,7 @@ public:
 
     static constexpr int DIVISIONS = 1024;
 
-    const aligned::vector<Triangle>& get_triangles() const;
+    const aligned::vector<triangle>& get_triangles() const;
     const aligned::vector<glm::vec3>& get_vertices() const;
     const aligned::vector<surface>& get_surfaces() const;
     glm::vec3 get_cell_size() const;
@@ -95,7 +90,7 @@ private:
 
     hash_table compute_triangle_references() const;
 
-    aligned::vector<Triangle> triangles;
+    aligned::vector<triangle> triangles;
     aligned::vector<glm::vec3> vertices;
     aligned::vector<surface> surfaces;
     box boundary;

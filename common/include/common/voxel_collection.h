@@ -48,18 +48,18 @@ public:
     /// TODO document the array format
     aligned::vector<cl_uint> get_flattened() const;
 
-    class TraversalCallback {
+    class traversal_callback {
     public:
-        TraversalCallback() noexcept                    = default;
-        virtual ~TraversalCallback() noexcept           = default;
-        TraversalCallback(TraversalCallback&&) noexcept = default;
-        TraversalCallback& operator=(TraversalCallback&&) noexcept = default;
-        TraversalCallback(const TraversalCallback&) noexcept       = default;
-        TraversalCallback& operator=(const TraversalCallback&) noexcept =
+        traversal_callback() noexcept = default;
+        virtual ~traversal_callback() noexcept = default;
+        traversal_callback(traversal_callback&&) noexcept = default;
+        traversal_callback& operator=(traversal_callback&&) noexcept = default;
+        traversal_callback(const traversal_callback&) noexcept = default;
+        traversal_callback& operator=(const traversal_callback&) noexcept =
                 default;
 
-        virtual geo::Intersection operator()(
-                const geo::Ray& ray,
+        virtual geo::intersection operator()(
+                const geo::ray& ray,
                 const aligned::vector<size_t>& triangles) const = 0;
     };
 
@@ -68,21 +68,21 @@ public:
     /// The colleciton doesn't store any information about the triangles it
     /// contains, so this callback is constructed with a reference to a
     /// SceneData object which contains the triangle information.
-    class TriangleTraversalCallback final : public TraversalCallback {
+    class triangle_traversal_callback final : public traversal_callback {
     public:
-        TriangleTraversalCallback(const copyable_scene_data& scene_data);
-        geo::Intersection operator()(
-                const geo::Ray& ray,
+        triangle_traversal_callback(const copyable_scene_data& scene_data);
+        geo::intersection operator()(
+                const geo::ray& ray,
                 const aligned::vector<size_t>& triangles) const override;
 
     private:
-        aligned::vector<Triangle> tri;
+        aligned::vector<triangle> tri;
         aligned::vector<glm::vec3> vertices;
     };
 
     /// Find the closest object along a ray.
-    geo::Intersection traverse(const geo::Ray& ray,
-                               const TraversalCallback& fun) const;
+    geo::intersection traverse(const geo::ray& ray,
+                               const traversal_callback& fun) const;
 
 private:
     void init(const octree& o, const glm::ivec3& offset = glm::ivec3(0));
