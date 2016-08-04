@@ -18,7 +18,7 @@ program::program(const cl::Context& context, const cl::Device& device)
 
 static_assert(speed_of_sound != 0, "SPEED_OF_SOUND");
 
-const std::string program::source("constant float SPEED_OF_SOUND = " +
+const std::string program::source("constant const float SPEED_OF_SOUND = " +
                                   std::to_string(speed_of_sound) +
                                   ";\n"
                                   R"(
@@ -31,7 +31,7 @@ const std::string program::source("constant float SPEED_OF_SOUND = " +
 #define PRINT_ULONG(VAR) printf("%ld\n", (VAR));
 #define PRINT_FLOAT(VAR) printf("%2.2f\n", (VAR));
 
-constant float SECONDS_PER_METER = 1.0f / SPEED_OF_SOUND;
+constant const float SECONDS_PER_METER = 1.0f / SPEED_OF_SOUND;
 
 VolumeType air_attenuation_for_distance(float distance,
                                         VolumeType air_coefficient);
