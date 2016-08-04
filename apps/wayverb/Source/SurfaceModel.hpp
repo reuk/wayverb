@@ -4,9 +4,10 @@
 
 namespace model {
 
-SceneData::Material to_material(const std::pair<std::string, Surface>& i);
+copyable_scene_data::material to_material(
+        const std::pair<std::string, surface>& i);
 
-aligned::vector<SceneData::Material> to_material_vector(
-        const aligned::map<std::string, Surface>& i);
+aligned::vector<copyable_scene_data::material> to_material_vector(
+        const aligned::map<std::string, surface>& i);
 
 }  // namespace model

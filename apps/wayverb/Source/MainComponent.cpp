@@ -5,7 +5,7 @@
 #include <iomanip>
 
 MainContentComponent::MainContentComponent(
-        const CopyableSceneData& scene_data,
+        const copyable_scene_data& scene_data,
         model::ValueWrapper<model::FullModel>& wrapper)
         : scene_data(scene_data)
         , wrapper(wrapper)

@@ -14,7 +14,7 @@
 #include "common/serialize/json_read_write.h"
 
 namespace {
-void push_triangle_indices(aligned::vector<GLuint> &ret, const Triangle &tri) {
+void push_triangle_indices(aligned::vector<GLuint> &ret, const triangle &tri) {
     ret.push_back(tri.v0);
     ret.push_back(tri.v1);
     ret.push_back(tri.v2);
@@ -22,7 +22,7 @@ void push_triangle_indices(aligned::vector<GLuint> &ret, const Triangle &tri) {
 }  // namespace
 
 aligned::vector<GLuint> MultiMaterialObject::SingleMaterialSection::get_indices(
-        const CopyableSceneData &scene_data, int material_index) {
+        const copyable_scene_data &scene_data, int material_index) {
     aligned::vector<GLuint> ret;
     for (const auto &i : scene_data.get_triangles()) {
         if (i.surface == material_index) {
@@ -33,9 +33,9 @@ aligned::vector<GLuint> MultiMaterialObject::SingleMaterialSection::get_indices(
 }
 
 MultiMaterialObject::SingleMaterialSection::SingleMaterialSection(
-        const CopyableSceneData &scene_data, int material_index) {
+        const copyable_scene_data &scene_data, int material_index) {
     auto indices = get_indices(scene_data, material_index);
-    size         = indices.size();
+    size = indices.size();
     ibo.data(indices);
 }
 
@@ -52,7 +52,7 @@ MultiMaterialObject::SingleMaterialSection::get_local_modelview_matrix() const {
 
 MultiMaterialObject::MultiMaterialObject(mglu::generic_shader &generic_shader,
                                          LitSceneShader &lit_scene_shader,
-                                         const CopyableSceneData &scene_data)
+                                         const copyable_scene_data &scene_data)
         : generic_shader(&generic_shader)
         , lit_scene_shader(&lit_scene_shader) {
     for (auto i = 0; i != scene_data.get_surfaces().size(); ++i) {
@@ -163,12 +163,12 @@ public:
         Intersection intersection{nullptr, 0};
         for (auto i : get_all_point_objects()) {
             auto diff = origin - i->get_position();
-            auto b    = glm::dot(direction, diff);
-            auto c    = glm::dot(diff, diff) - glm::pow(0.4, 2);
-            auto det  = glm::pow(b, 2) - c;
+            auto b = glm::dot(direction, diff);
+            auto c = glm::dot(diff, diff) - glm::pow(0.4, 2);
+            auto det = glm::pow(b, 2) - c;
             if (0 <= det) {
                 auto sq_det = std::sqrt(det);
-                auto dist   = std::min(-b + sq_det, -b - sq_det);
+                auto dist = std::min(-b + sq_det, -b - sq_det);
                 if (!intersection.ref || dist < intersection.distance) {
                     intersection = Intersection{i, dist};
                 }
@@ -201,17 +201,17 @@ private:
 
 class SceneRenderer::ContextLifetime : public BaseContextLifetime {
 public:
-    ContextLifetime(SceneRenderer &owner, const CopyableSceneData &scene_data)
+    ContextLifetime(SceneRenderer &owner, const copyable_scene_data &scene_data)
             : owner(owner)
             , model(scene_data)
             , model_object(generic_shader, lit_scene_shader, scene_data)
             , point_objects(generic_shader)
             , axes(generic_shader) {
         auto aabb = model.get_aabb();
-        auto m    = centre(aabb);
-        auto max  = glm::length(dimensions(aabb));
+        auto m = centre(aabb);
+        auto max = glm::length(dimensions(aabb));
         eye = eye_target = max > 0 ? 20 / max : 1;
-        translation      = -glm::vec3(m.x, m.y, m.z);
+        translation = -glm::vec3(m.x, m.y, m.z);
     }
 
     void set_eye(float u) {
@@ -330,15 +330,15 @@ public:
                     m->orientation.elevation + diff.y * Rotate::angle_scale});
         } else if (auto m = dynamic_cast<Move *>(mousing.get())) {
             auto camera_position = get_world_camera_position();
-            auto normal          = get_world_camera_direction();
+            auto normal = get_world_camera_direction();
 
             auto original = m->original_position;
 
             auto d = glm::dot(normal, camera_position - original);
 
             auto direction = get_world_mouse_direction(pos);
-            auto dist      = -d / glm::dot(normal, direction);
-            auto new_pos   = camera_position + direction * dist;
+            auto dist = -d / glm::dot(normal, direction);
+            auto new_pos = camera_position + direction * dist;
 
             m->to_move->set_position(new_pos);
         }
@@ -389,7 +389,7 @@ private:
                                   -1,
                                   1};
         auto ray_eye = glm::inverse(get_projection_matrix()) * ray_clip;
-        ray_eye      = glm::vec4{ray_eye.x, ray_eye.y, -1, 0};
+        ray_eye = glm::vec4{ray_eye.x, ray_eye.y, -1, 0};
         return glm::normalize(
                 glm::vec3{glm::inverse(get_view_matrix()) * ray_eye});
     }
@@ -411,7 +411,7 @@ private:
     mutable std::mutex mut;
 
     SceneRenderer &owner;
-    const CopyableSceneData &model;
+    const copyable_scene_data &model;
 
     mglu::generic_shader generic_shader;
     MeshShader mesh_shader;
@@ -468,7 +468,7 @@ const float SceneRenderer::ContextLifetime::Rotate::angle_scale{0.01};
 
 //----------------------------------------------------------------------------//
 
-SceneRenderer::SceneRenderer(const CopyableSceneData &model)
+SceneRenderer::SceneRenderer(const copyable_scene_data &model)
         : model(model) {}
 
 //  defined here so that we can PIMPL the ContextLifetime

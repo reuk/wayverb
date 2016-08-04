@@ -6,12 +6,12 @@ class AsyncEngine : private AsyncUpdater {
 public:
     class Listener {
     public:
-        Listener()                = default;
+        Listener() = default;
         Listener(const Listener&) = default;
         Listener& operator=(const Listener&) = default;
-        Listener(Listener&&) noexcept        = default;
+        Listener(Listener&&) noexcept = default;
         Listener& operator=(Listener&&) noexcept = default;
-        virtual ~Listener() noexcept             = default;
+        virtual ~Listener() noexcept = default;
 
         virtual void engine_encountered_error(AsyncEngine*,
                                               const std::string& str) = 0;
@@ -30,7 +30,7 @@ public:
 
     void start(const File& file_name,
                const model::Persistent& wrapper,
-               const CopyableSceneData& scene_data,
+               const copyable_scene_data& scene_data,
                bool visualise);
     void stop();
 

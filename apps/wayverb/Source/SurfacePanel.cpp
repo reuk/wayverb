@@ -23,7 +23,7 @@ VolumeComponent::VolumeSlider::VolumeSlider(model::ValueWrapper<float>& value)
 
 //----------------------------------------------------------------------------//
 
-VolumeComponent::VolumeComponent(model::ValueWrapper<VolumeType>& value)
+VolumeComponent::VolumeComponent(model::ValueWrapper<volume_type>& value)
         : value(value)
         , s0(value.s0)
         , s1(value.s1)
@@ -62,23 +62,22 @@ VolumeComponent::get_slider_array() {
 //----------------------------------------------------------------------------//
 
 VolumeProperty::VolumeProperty(const String& name,
-                               model::ValueWrapper<VolumeType>& value)
+                               model::ValueWrapper<volume_type>& value)
         : PropertyComponent(name, 120)
         , editor(value) {
     addAndMakeVisible(editor);
 }
 
-void VolumeProperty::refresh() {
-}
+void VolumeProperty::refresh() {}
 
 //----------------------------------------------------------------------------//
 
 FrequencyLabelComponent::FrequencyLabelComponent() {
     std::array<std::string, 8> centres;
 
-    std::transform(HrtfData::EDGES.begin(),
-                   HrtfData::EDGES.end() - 1,
-                   HrtfData::EDGES.begin() + 1,
+    std::transform(hrtf_data::edges.begin(),
+                   hrtf_data::edges.end() - 1,
+                   hrtf_data::edges.begin() + 1,
                    centres.begin(),
                    [](auto i, auto j) {
                        std::stringstream ss;
@@ -121,14 +120,14 @@ FrequencyLabelProperty::FrequencyLabelProperty(const String& name)
     addAndMakeVisible(label);
 }
 
-void FrequencyLabelProperty::refresh() {
-}
+void FrequencyLabelProperty::refresh() {}
 
 //----------------------------------------------------------------------------//
 
 SurfaceComponent::SurfaceComponent(
-        model::ValueWrapper<Surface>& value,
-        model::ValueWrapper<aligned::vector<SceneData::Material>>& preset_model) {
+        model::ValueWrapper<surface>& value,
+        model::ValueWrapper<aligned::vector<copyable_scene_data::material>>&
+                preset_model) {
     property_panel.addProperties(
             {new FrequencyLabelProperty("frequencies / KHz")});
     property_panel.addProperties(
@@ -143,15 +142,14 @@ SurfaceComponent::SurfaceComponent(
     setSize(400, property_panel.getTotalContentHeight());
 }
 
-void SurfaceComponent::resized() {
-    property_panel.setBounds(getLocalBounds());
-}
+void SurfaceComponent::resized() { property_panel.setBounds(getLocalBounds()); }
 
 //----------------------------------------------------------------------------//
 
 SurfaceComponentWithTitle::SurfaceComponentWithTitle(
-        model::ValueWrapper<SceneData::Material>& value,
-        model::ValueWrapper<aligned::vector<SceneData::Material>>& preset_model)
+        model::ValueWrapper<copyable_scene_data::material>& value,
+        model::ValueWrapper<aligned::vector<copyable_scene_data::material>>&
+                preset_model)
         : title("", value.name.get() + " settings")
         , surface_component(value.surface, preset_model) {
     set_help("surface configurator",
@@ -175,8 +173,9 @@ void SurfaceComponentWithTitle::resized() {
 //----------------------------------------------------------------------------//
 
 PresetComponent::PresetComponent(
-        model::ValueWrapper<Surface>& linked,
-        model::ValueWrapper<aligned::vector<SceneData::Material>>& preset_model)
+        model::ValueWrapper<surface>& linked,
+        model::ValueWrapper<aligned::vector<copyable_scene_data::material>>&
+                preset_model)
         : linked(linked)
         , preset_model(preset_model) {
     set_help("preset selector",
@@ -231,8 +230,8 @@ void PresetComponent::comboBoxChanged(ComboBox* cb) {
 void PresetComponent::textEditorReturnKeyPressed(TextEditor& e) {
     if (e.getText().isNotEmpty()) {
         //  create new entry in model using current material settings
-        preset_model.push_back(
-                SceneData::Material{e.getText().toStdString(), linked.get()});
+        preset_model.push_back(copyable_scene_data::material{
+                e.getText().toStdString(), linked.get()});
 
         //  update combobox view
         combo_box.setSelectedItemIndex(preset_model.size() - 1,
@@ -284,11 +283,11 @@ void PresetComponent::receive_broadcast(model::Broadcaster* cb) {
 //----------------------------------------------------------------------------//
 
 PresetProperty::PresetProperty(
-        model::ValueWrapper<Surface>& linked,
-        model::ValueWrapper<aligned::vector<SceneData::Material>>& preset_model)
+        model::ValueWrapper<surface>& linked,
+        model::ValueWrapper<aligned::vector<copyable_scene_data::material>>&
+                preset_model)
         : PropertyComponent("presets", 52)
         , preset_component(linked, preset_model) {
     addAndMakeVisible(preset_component);
 }
-void PresetProperty::refresh() {
-}
+void PresetProperty::refresh() {}

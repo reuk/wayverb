@@ -12,7 +12,7 @@ class ModelRendererComponent : public BaseRendererComponent<SceneRenderer>,
                                public SettableHelpPanelClient {
 public:
     ModelRendererComponent(
-            const CopyableSceneData& model,
+            const copyable_scene_data& model,
             model::ValueWrapper<int>& shown_surface,
             model::ValueWrapper<model::App>& app,
             model::ValueWrapper<model::RenderState>& render_state);
@@ -22,7 +22,7 @@ public:
     void changeListenerCallback(ChangeBroadcaster* cb) override;
 
 private:
-    const CopyableSceneData& model;
+    const copyable_scene_data& model;
     model::ValueWrapper<int>& shown_surface;
     model::BroadcastConnector shown_connector{&shown_surface, this};
 

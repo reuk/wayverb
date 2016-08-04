@@ -19,7 +19,7 @@ class AsyncEngine::SingleShotEngineThread {
     auto single_pair(AsyncEngine& listener,
                      const File& file_name,
                      const model::SingleShot& single_shot,
-                     const CopyableSceneData& scene_data,
+                     const copyable_scene_data& scene_data,
                      bool visualise,
                      const compute_context& compute_context) {
         try {
@@ -79,7 +79,7 @@ public:
     SingleShotEngineThread(AsyncEngine& listener,
                            const File& file_name,
                            const model::Persistent& persistent,
-                           const CopyableSceneData& scene_data,
+                           const copyable_scene_data& scene_data,
                            bool visualise)
             : keep_going(true)
             , thread([this,
@@ -119,7 +119,7 @@ AsyncEngine::~AsyncEngine() noexcept = default;
 
 void AsyncEngine::start(const File& file_name,
                         const model::Persistent& wrapper,
-                        const CopyableSceneData& scene_data,
+                        const copyable_scene_data& scene_data,
                         bool visualise) {
     std::lock_guard<std::mutex> lck(mut);
     thread = std::make_unique<SingleShotEngineThread>(

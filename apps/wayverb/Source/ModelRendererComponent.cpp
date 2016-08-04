@@ -13,7 +13,7 @@
 #include "common/boundaries.h"
 
 ModelRendererComponent::ModelRendererComponent(
-        const CopyableSceneData &model,
+        const copyable_scene_data &model,
         model::ValueWrapper<int> &shown_surface,
         model::ValueWrapper<model::App> &app,
         model::ValueWrapper<model::RenderState> &render_state)

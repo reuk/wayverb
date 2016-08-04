@@ -15,12 +15,12 @@ public:
         //        float value_to_slider(float t) override;
     };
 
-    VolumeComponent(model::ValueWrapper<VolumeType>& value);
+    VolumeComponent(model::ValueWrapper<volume_type>& value);
 
     void resized() override;
 
 private:
-    model::ValueWrapper<VolumeType>& value;
+    model::ValueWrapper<volume_type>& value;
 
     VolumeSlider s0;
     VolumeSlider s1;
@@ -38,7 +38,7 @@ private:
 
 class VolumeProperty : public PropertyComponent {
 public:
-    VolumeProperty(const String& name, model::ValueWrapper<VolumeType>& value);
+    VolumeProperty(const String& name, model::ValueWrapper<volume_type>& value);
     void refresh() override;
 
 private:
@@ -85,9 +85,10 @@ class PresetComponent : public Component,
                         public model::BroadcastListener,
                         public SettableHelpPanelClient {
 public:
-    PresetComponent(model::ValueWrapper<Surface>& linked,
-                    model::ValueWrapper<aligned::vector<SceneData::Material>>&
-                            preset_model);
+    PresetComponent(
+            model::ValueWrapper<surface>& linked,
+            model::ValueWrapper<aligned::vector<copyable_scene_data::material>>&
+                    preset_model);
     virtual ~PresetComponent() noexcept;
     void resized() override;
 
@@ -100,10 +101,11 @@ public:
     void textEditorReturnKeyPressed(TextEditor& e) override;
 
 private:
-    model::ValueWrapper<Surface>& linked;
+    model::ValueWrapper<surface>& linked;
     model::BroadcastConnector linked_connector{&linked, this};
 
-    model::ValueWrapper<aligned::vector<SceneData::Material>>& preset_model;
+    model::ValueWrapper<aligned::vector<copyable_scene_data::material>>&
+            preset_model;
     model::BroadcastConnector preset_connector{&preset_model, this};
 
     ComboBox combo_box;
@@ -123,9 +125,10 @@ private:
 
 class PresetProperty : public PropertyComponent {
 public:
-    PresetProperty(model::ValueWrapper<Surface>& linked,
-                   model::ValueWrapper<aligned::vector<SceneData::Material>>&
-                           preset_model);
+    PresetProperty(
+            model::ValueWrapper<surface>& linked,
+            model::ValueWrapper<aligned::vector<copyable_scene_data::material>>&
+                    preset_model);
     void refresh() override;
 
 private:
@@ -136,9 +139,10 @@ private:
 
 class SurfaceComponent : public Component {
 public:
-    SurfaceComponent(model::ValueWrapper<Surface>& value,
-                     model::ValueWrapper<aligned::vector<SceneData::Material>>&
-                             preset_model);
+    SurfaceComponent(
+            model::ValueWrapper<surface>& value,
+            model::ValueWrapper<aligned::vector<copyable_scene_data::material>>&
+                    preset_model);
     void resized() override;
 
 private:
@@ -151,8 +155,8 @@ class SurfaceComponentWithTitle : public Component,
                                   public SettableHelpPanelClient {
 public:
     SurfaceComponentWithTitle(
-            model::ValueWrapper<SceneData::Material>& value,
-            model::ValueWrapper<aligned::vector<SceneData::Material>>&
+            model::ValueWrapper<copyable_scene_data::material>& value,
+            model::ValueWrapper<aligned::vector<copyable_scene_data::material>>&
                     preset_model);
     void resized() override;
 

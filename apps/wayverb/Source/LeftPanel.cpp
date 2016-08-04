@@ -29,8 +29,8 @@ public:
     MaterialConfigureButtonComponent(
             int this_surface,
             model::ValueWrapper<int>& shown_surface,
-            model::ValueWrapper<SceneData::Material>& value,
-            model::ValueWrapper<aligned::vector<SceneData::Material>>&
+            model::ValueWrapper<copyable_scene_data::material>& value,
+            model::ValueWrapper<aligned::vector<copyable_scene_data::material>>&
                     preset_model)
             : this_surface(this_surface)
             , shown_surface(shown_surface)
@@ -72,8 +72,9 @@ private:
     model::ValueWrapper<int>& shown_surface;
     model::BroadcastConnector surface_connector{&shown_surface, this};
 
-    model::ValueWrapper<SceneData::Material>& value;
-    model::ValueWrapper<aligned::vector<SceneData::Material>>& preset_model;
+    model::ValueWrapper<copyable_scene_data::material>& value;
+    model::ValueWrapper<aligned::vector<copyable_scene_data::material>>&
+            preset_model;
 
     TextButton show_button{"show"};
     model::Connector<TextButton> show_connector{&show_button, this};
@@ -88,8 +89,8 @@ public:
     MaterialConfigureButton(
             int this_surface,
             model::ValueWrapper<int>& shown_surface,
-            model::ValueWrapper<SceneData::Material>& value,
-            model::ValueWrapper<aligned::vector<SceneData::Material>>&
+            model::ValueWrapper<copyable_scene_data::material>& value,
+            model::ValueWrapper<aligned::vector<copyable_scene_data::material>>&
                     preset_model)
             : PropertyComponent(value.name.get())
             , contents(this_surface, shown_surface, value, preset_model) {
@@ -110,8 +111,10 @@ private:
 
 Array<PropertyComponent*> make_material_buttons(
         model::ValueWrapper<int>& shown_surface,
-        const model::ValueWrapper<aligned::vector<SceneData::Material>>& model,
-        model::ValueWrapper<aligned::vector<SceneData::Material>>& preset) {
+        const model::ValueWrapper<
+                aligned::vector<copyable_scene_data::material>>& model,
+        model::ValueWrapper<aligned::vector<copyable_scene_data::material>>&
+                preset) {
     Array<PropertyComponent*> ret;
     auto count = 0;
     for (const auto& i : model) {

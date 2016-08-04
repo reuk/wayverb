@@ -36,10 +36,10 @@ public:
 };
 
 template <>
-class ValueWrapper<VolumeType> : public ModelValue<VolumeType> {
+class ValueWrapper<volume_type> : public ModelValue<volume_type> {
 public:
-    ValueWrapper(ModelMember* owner, const VolumeType& u)
-            : ModelValue<VolumeType>(owner)
+    ValueWrapper(ModelMember* owner, const volume_type& u)
+            : ModelValue<volume_type>(owner)
             , s0(this, u.s[0])
             , s1(this, u.s[1])
             , s2(this, u.s[2])
@@ -49,18 +49,18 @@ public:
             , s6(this, u.s[6])
             , s7(this, u.s[7]) {}
 
-    VolumeType get() const override {
-        return VolumeType{s0.get(),
-                          s1.get(),
-                          s2.get(),
-                          s3.get(),
-                          s4.get(),
-                          s5.get(),
-                          s6.get(),
-                          s7.get()};
+    volume_type get() const override {
+        return volume_type{s0.get(),
+                           s1.get(),
+                           s2.get(),
+                           s3.get(),
+                           s4.get(),
+                           s5.get(),
+                           s6.get(),
+                           s7.get()};
     }
 
-    void set(const VolumeType& u, bool do_notify = true) override {
+    void set(const volume_type& u, bool do_notify = true) override {
         s0.set(u.s[0], do_notify);
         s1.set(u.s[1], do_notify);
         s2.set(u.s[2], do_notify);
@@ -82,46 +82,47 @@ public:
 };
 
 template <>
-class ValueWrapper<Surface> : public ModelValue<Surface> {
+class ValueWrapper<surface> : public ModelValue<surface> {
 public:
-    ValueWrapper(ModelMember* owner, const Surface& u)
-            : ModelValue<Surface>(owner)
+    ValueWrapper(ModelMember* owner, const surface& u)
+            : ModelValue<surface>(owner)
             , specular(this, u.specular)
             , diffuse(this, u.diffuse) {}
 
-    Surface get() const override {
-        return Surface{specular.get(), diffuse.get()};
+    surface get() const override {
+        return surface{specular.get(), diffuse.get()};
     }
 
-    void set(const Surface& u, bool do_notify = true) override {
+    void set(const surface& u, bool do_notify = true) override {
         specular.set(u.specular, do_notify);
         diffuse.set(u.diffuse, do_notify);
     }
 
-    ValueWrapper<VolumeType> specular;
-    ValueWrapper<VolumeType> diffuse;
+    ValueWrapper<volume_type> specular;
+    ValueWrapper<volume_type> diffuse;
 };
 
 template <>
-class ValueWrapper<SceneData::Material>
-        : public ModelValue<SceneData::Material> {
+class ValueWrapper<copyable_scene_data::material>
+        : public ModelValue<copyable_scene_data::material> {
 public:
-    ValueWrapper(ModelMember* owner, const SceneData::Material& u)
-            : ModelValue<SceneData::Material>(owner)
+    ValueWrapper(ModelMember* owner, const copyable_scene_data::material& u)
+            : ModelValue<copyable_scene_data::material>(owner)
             , name(this, u.name)
             , surface(this, u.surface) {}
 
-    SceneData::Material get() const override {
-        return SceneData::Material{name.get(), surface.get()};
+    copyable_scene_data::material get() const override {
+        return copyable_scene_data::material{name.get(), surface.get()};
     }
 
-    void set(const SceneData::Material& u, bool do_notify = true) override {
+    void set(const copyable_scene_data::material& u,
+             bool do_notify = true) override {
         name.set(u.name, do_notify);
         surface.set(u.surface, do_notify);
     }
 
     ValueWrapper<std::string> name;
-    ValueWrapper<Surface> surface;
+    ValueWrapper<surface> surface;
 };
 
 template <>
@@ -333,7 +334,7 @@ public:
 class Persistent {
 public:
     App app;
-    aligned::vector<SceneData::Material> materials;
+    aligned::vector<copyable_scene_data::material> materials;
 
     template <typename Archive>
     void serialize(Archive& archive) {
@@ -360,13 +361,13 @@ public:
     }
 
     ValueWrapper<App> app;
-    ValueWrapper<aligned::vector<SceneData::Material>> materials;
+    ValueWrapper<aligned::vector<copyable_scene_data::material>> materials;
 };
 
 class FullModel {
 public:
     Persistent persistent;
-    aligned::vector<SceneData::Material> presets;
+    aligned::vector<copyable_scene_data::material> presets;
     RenderState render_state;
     int shown_surface{-1};
     bool needs_save{false};
@@ -400,7 +401,7 @@ public:
     }
 
     ValueWrapper<Persistent> persistent;
-    ValueWrapper<aligned::vector<SceneData::Material>> presets;
+    ValueWrapper<aligned::vector<copyable_scene_data::material>> presets;
     ValueWrapper<RenderState> render_state;
     ValueWrapper<int> shown_surface;
     ValueWrapper<bool> needs_save;

@@ -10,7 +10,7 @@ class MainContentComponent final : public Component,
                                    public SettableHelpPanelClient,
                                    public AsyncEngine::Listener {
 public:
-    MainContentComponent(const CopyableSceneData& scene_data,
+    MainContentComponent(const copyable_scene_data& scene_data,
                          model::ValueWrapper<model::FullModel>& wrapper);
 
     void paint(Graphics& g) override;
@@ -30,7 +30,7 @@ public:
     void engine_finished(AsyncEngine*) override;
 
 private:
-    CopyableSceneData scene_data;
+    copyable_scene_data scene_data;
     model::ValueWrapper<model::FullModel>& wrapper;
 
     model::BroadcastConnector is_rendering_connector{

@@ -5,12 +5,13 @@
 
 namespace model {
 
-SceneData::Material to_material(const std::pair<std::string, Surface>& i) {
-    return SceneData::Material{i.first, i.second};
+copyable_scene_data::material to_material(
+        const std::pair<std::string, surface>& i) {
+    return copyable_scene_data::material{i.first, i.second};
 }
 
-aligned::vector<SceneData::Material> to_material_vector(
-        const aligned::map<std::string, Surface>& i) {
+aligned::vector<copyable_scene_data::material> to_material_vector(
+        const aligned::map<std::string, surface>& i) {
     return map_to_vector(i, to_material);
 }
 

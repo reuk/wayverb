@@ -30,9 +30,7 @@ void register_recent_file(const std::string& file) {
 //  taken from the Projucer
 //  no h8 plx
 struct AsyncQuitRetrier : private Timer {
-    AsyncQuitRetrier() {
-        startTimer(500);
-    }
+    AsyncQuitRetrier() { startTimer(500); }
 
     void timerCallback() override {
         stopTimer();
@@ -52,9 +50,7 @@ const String WayverbApplication::getApplicationName() {
 const String WayverbApplication::getApplicationVersion() {
     return ProjectInfo::versionString;
 }
-bool WayverbApplication::moreThanOneInstanceAllowed() {
-    return false;
-}
+bool WayverbApplication::moreThanOneInstanceAllowed() { return false; }
 
 void WayverbApplication::initialise(const String& commandLine) {
     LookAndFeel::setDefaultLookAndFeel(&look_and_feel);
@@ -115,8 +111,7 @@ void WayverbApplication::attempt_close_all() {
     }
 }
 
-void WayverbApplication::anotherInstanceStarted(const String& commandLine) {
-}
+void WayverbApplication::anotherInstanceStarted(const String& commandLine) {}
 
 void WayverbApplication::file_dropped(FileDropComponent*, const File& f) {
     open_project(f);
@@ -138,7 +133,7 @@ void WayverbApplication::show_hide_load_window() {
 
 //  init from as much outside info as possible
 WayverbApplication::MainWindow::MainWindow(String name,
-                                           SceneData&& scene_data,
+                                           class scene_data&& scene_data,
                                            model::FullModel&& model,
                                            File&& this_file)
         : DocumentWindow(name, Colours::lightgrey, DocumentWindow::allButtons)
@@ -181,7 +176,7 @@ File WayverbApplication::MainWindow::get_config_path(const File& way) {
     return get_sub_path(way, "config.json");
 }
 
-std::tuple<SceneData, model::FullModel, File>
+std::tuple<scene_data, model::FullModel, File>
 WayverbApplication::MainWindow::scene_and_model_from_file(const File& f) {
     auto is_way = [&f] {
         //  look inside for a model
@@ -191,7 +186,7 @@ WayverbApplication::MainWindow::scene_and_model_from_file(const File& f) {
         }
 
         //  load the model
-        SceneData scene_data(model_file.getFullPathName().toStdString());
+        class scene_data scene_data(model_file.getFullPathName().toStdString());
         //  look inside for a config
         auto config_file = get_config_path(f);
         if (!config_file.existsAsFile()) {
@@ -216,7 +211,7 @@ WayverbApplication::MainWindow::scene_and_model_from_file(const File& f) {
 
     auto is_not_way = [&f] {
         //  try to load the model
-        SceneData scene_data(f.getFullPathName().toStdString());
+        class scene_data scene_data(f.getFullPathName().toStdString());
         //  return the pair
         return std::make_tuple(
                 std::move(scene_data),
@@ -232,16 +227,14 @@ WayverbApplication::MainWindow::scene_and_model_from_file(const File& f) {
 //  init
 //  appropriately
 WayverbApplication::MainWindow::MainWindow(String name, const File& f)
-        : MainWindow(name, scene_and_model_from_file(f)) {
-}
+        : MainWindow(name, scene_and_model_from_file(f)) {}
 
 WayverbApplication::MainWindow::MainWindow(
-        String name, std::tuple<SceneData, model::FullModel, File>&& p)
+        String name, std::tuple<class scene_data, model::FullModel, File>&& p)
         : MainWindow(name,
                      std::move(std::get<0>(p)),
                      std::move(std::get<1>(p)),
-                     std::move(std::get<2>(p))) {
-}
+                     std::move(std::get<2>(p))) {}
 
 WayverbApplication::MainWindow::~MainWindow() noexcept {
     delete help_window;
@@ -334,35 +327,25 @@ void WayverbApplication::MainWindow::getCommandInfo(
                            0);
             break;
 
-        default:
-            break;
+        default: break;
     }
 }
 bool WayverbApplication::MainWindow::perform(const InvocationInfo& info) {
     switch (info.commandID) {
-        case CommandIDs::idSaveProject:
-            save_project();
-            return true;
+        case CommandIDs::idSaveProject: save_project(); return true;
 
-        case CommandIDs::idSaveAsProject:
-            save_as_project();
-            return true;
+        case CommandIDs::idSaveAsProject: save_as_project(); return true;
 
-        case CommandIDs::idCloseProject:
-            closeButtonPressed();
-            return true;
+        case CommandIDs::idCloseProject: closeButtonPressed(); return true;
 
         case CommandIDs::idVisualise:
             wrapper.render_state.visualise.set(
                     !wrapper.render_state.visualise.get());
             return true;
 
-        case CommandIDs::idShowHelp:
-            show_help();
-            return true;
+        case CommandIDs::idShowHelp: show_help(); return true;
 
-        default:
-            return false;
+        default: return false;
     }
 }
 
@@ -375,9 +358,7 @@ namespace {
 class AutoDeleteDocumentWindow : public DocumentWindow {
 public:
     using DocumentWindow::DocumentWindow;
-    void closeButtonPressed() override {
-        delete this;
-    }
+    void closeButtonPressed() override { delete this; }
 };
 }  // namespace
 
@@ -510,19 +491,14 @@ void WayverbApplication::getCommandInfo(CommandID command_id,
             result.defaultKeypresses.add(
                     KeyPress('o', ModifierKeys::commandModifier, 0));
             break;
-        default:
-            JUCEApplication::getCommandInfo(command_id, result);
-            break;
+        default: JUCEApplication::getCommandInfo(command_id, result); break;
     }
 }
 
 bool WayverbApplication::perform(const InvocationInfo& info) {
     switch (info.commandID) {
-        case CommandIDs::idOpenProject:
-            open_project_from_dialog();
-            return true;
-        default:
-            return JUCEApplication::perform(info);
+        case CommandIDs::idOpenProject: open_project_from_dialog(); return true;
+        default: return JUCEApplication::perform(info);
     }
     return true;
 }

@@ -39,11 +39,11 @@ class MultiMaterialObject : public mglu::drawable {
 public:
     MultiMaterialObject(mglu::generic_shader& generic_shader,
                         LitSceneShader& lit_scene_shader,
-                        const CopyableSceneData& scene_data);
+                        const copyable_scene_data& scene_data);
 
     class SingleMaterialSection : public mglu::drawable {
     public:
-        SingleMaterialSection(const CopyableSceneData& scene_data,
+        SingleMaterialSection(const copyable_scene_data& scene_data,
                               int material_index);
 
     private:
@@ -51,7 +51,7 @@ public:
         glm::mat4 get_local_modelview_matrix() const override;
 
         static aligned::vector<GLuint> get_indices(
-                const CopyableSceneData& scene_data, int material_index);
+                const copyable_scene_data& scene_data, int material_index);
         mglu::static_ibo ibo;
         GLuint size;
     };
@@ -80,12 +80,12 @@ class SceneRenderer final : public BaseRenderer {
 public:
     class Listener {
     public:
-        Listener()                = default;
+        Listener() = default;
         Listener(const Listener&) = default;
         Listener& operator=(const Listener&) = default;
-        Listener(Listener&&) noexcept        = default;
+        Listener(Listener&&) noexcept = default;
         Listener& operator=(Listener&&) noexcept = default;
-        virtual ~Listener() noexcept             = default;
+        virtual ~Listener() noexcept = default;
 
         virtual void source_dragged(
                 SceneRenderer*, const aligned::vector<glm::vec3>& new_pos) = 0;
@@ -93,7 +93,7 @@ public:
                 SceneRenderer*, const aligned::vector<glm::vec3>& new_pos) = 0;
     };
 
-    SceneRenderer(const CopyableSceneData& model);
+    SceneRenderer(const copyable_scene_data& model);
     virtual ~SceneRenderer() noexcept;
 
     void newOpenGLContextCreated() override;
@@ -123,7 +123,7 @@ private:
 
     mutable std::mutex mut;
 
-    CopyableSceneData model;
+    copyable_scene_data model;
 
     class ContextLifetime;
     std::unique_ptr<ContextLifetime> context_lifetime;
