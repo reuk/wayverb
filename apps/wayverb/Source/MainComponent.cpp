@@ -63,14 +63,14 @@ void MainContentComponent::engine_state_changed(AsyncEngine* u,
 void MainContentComponent::engine_nodes_changed(
         AsyncEngine* u, const aligned::vector<glm::vec3>& positions) {
     if (u == &engine) {
-        right_panel.get_renderer().set_positions(positions);
+        right_panel.set_positions(positions);
     }
 }
 
 void MainContentComponent::engine_waveguide_visuals_changed(
         AsyncEngine* u, const aligned::vector<float>& pressures) {
     if (u == &engine) {
-        right_panel.get_renderer().set_pressures(pressures);
+        right_panel.set_pressures(pressures);
     }
 }
 
@@ -78,7 +78,7 @@ void MainContentComponent::engine_raytracer_visuals_changed(
         AsyncEngine* u,
         const aligned::vector<aligned::vector<raytracer::impulse>>& impulses) {
     if (u == &engine) {
-        right_panel.get_renderer().set_impulses(impulses);
+        right_panel.set_impulses(impulses);
     }
 }
 

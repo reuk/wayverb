@@ -13,7 +13,6 @@
 #include "OtherComponents/AxesObject.hpp"
 #include "OtherComponents/BasicDrawableObject.hpp"
 #include "OtherComponents/RenderHelpers.hpp"
-#include "OtherComponents/WorkQueue.hpp"
 
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtc/noise.hpp"
@@ -29,6 +28,7 @@
 #include "common/octree.h"
 #include "common/scene_data.h"
 #include "common/voxel_collection.h"
+#include "common/single_thread_access_checker.h"
 
 #include <cmath>
 #include <future>
@@ -37,34 +37,34 @@
 
 class MultiMaterialObject : public mglu::drawable {
 public:
-    MultiMaterialObject(mglu::generic_shader& generic_shader,
-                        LitSceneShader& lit_scene_shader,
-                        const copyable_scene_data& scene_data);
+    MultiMaterialObject(mglu::generic_shader &generic_shader,
+                        LitSceneShader &lit_scene_shader,
+                        const copyable_scene_data &scene_data);
 
     class SingleMaterialSection : public mglu::drawable {
     public:
-        SingleMaterialSection(const copyable_scene_data& scene_data,
+        SingleMaterialSection(const copyable_scene_data &scene_data,
                               int material_index);
 
     private:
-        void do_draw(const glm::mat4& modelview_matrix) const override;
+        void do_draw(const glm::mat4 &modelview_matrix) const override;
         glm::mat4 get_local_modelview_matrix() const override;
 
         static aligned::vector<GLuint> get_indices(
-                const copyable_scene_data& scene_data, int material_index);
+                const copyable_scene_data &scene_data, int material_index);
         mglu::static_ibo ibo;
         GLuint size;
     };
 
     void set_highlighted(int material);
-    void set_colour(const glm::vec3& c);
+    void set_colour(const glm::vec3 &c);
 
 private:
-    void do_draw(const glm::mat4& modelview_matrix) const override;
+    void do_draw(const glm::mat4 &modelview_matrix) const override;
     glm::mat4 get_local_modelview_matrix() const override;
 
-    mglu::generic_shader* generic_shader;
-    LitSceneShader* lit_scene_shader;
+    mglu::generic_shader *generic_shader;
+    LitSceneShader *lit_scene_shader;
 
     mglu::vao wire_vao;
     mglu::vao fill_vao;
@@ -76,57 +76,116 @@ private:
     aligned::vector<SingleMaterialSection> sections;
 };
 
-class SceneRenderer final : public BaseRenderer {
+//----------------------------------------------------------------------------//
+
+class PointObjects final {
 public:
-    class Listener {
-    public:
-        Listener() = default;
-        Listener(const Listener&) = default;
-        Listener& operator=(const Listener&) = default;
-        Listener(Listener&&) noexcept = default;
-        Listener& operator=(Listener&&) noexcept = default;
-        virtual ~Listener() noexcept = default;
+    PointObjects(mglu::generic_shader &shader);
 
-        virtual void source_dragged(
-                SceneRenderer*, const aligned::vector<glm::vec3>& new_pos) = 0;
-        virtual void receiver_dragged(
-                SceneRenderer*, const aligned::vector<glm::vec3>& new_pos) = 0;
-    };
+    void set_sources(const aligned::vector<glm::vec3> &u);
+    void set_receivers(const aligned::vector<model::ReceiverSettings> &u);
 
-    SceneRenderer(const copyable_scene_data& model);
-    virtual ~SceneRenderer() noexcept;
+    void draw(const glm::mat4 &matrix) const;
 
-    void newOpenGLContextCreated() override;
-    void openGLContextClosing() override;
+    PointObject *get_currently_hovered(const glm::vec3 &origin,
+                                       const glm::vec3 &direction);
+
+private:
+    aligned::vector<PointObject *> get_all_point_objects();
+
+    mglu::generic_shader &shader;
+
+    aligned::vector<PointObject> sources;
+    aligned::vector<PointObject> receivers;
+};
+
+//----------------------------------------------------------------------------//
+
+class SceneRendererContextLifetime : public BaseContextLifetime {
+public:
+    SceneRendererContextLifetime(const copyable_scene_data &scene_data);
+
+    void set_eye(float u);
+    void set_rotation(const AzEl &u);
 
     void set_rendering(bool b);
 
-    void set_sources(const aligned::vector<glm::vec3>& sources);
-    void set_receivers(
-            const aligned::vector<model::ReceiverSettings>& receivers);
+    void set_positions(const aligned::vector<glm::vec3> &positions);
+    void set_pressures(const aligned::vector<float> &pressures);
 
-    void set_positions(const aligned::vector<glm::vec3>& positions);
-    void set_pressures(const aligned::vector<float>& pressures);
+    void set_impulses(const aligned::vector<aligned::vector<raytracer::impulse>>
+                              &impulses);
 
     void set_highlighted(int u);
+    void set_emphasis(const glm::vec3 &c);
 
-    void set_emphasis(const glm::vec3& c);
+    void update(float dt) override;
 
-    void addListener(Listener*);
-    void removeListener(Listener*);
+    void mouse_down(const glm::vec2 &pos);
+    void mouse_drag(const glm::vec2 &pos);
+    void mouse_up(const glm::vec2 &pos);
+    void mouse_wheel_move(float delta_y);
+
+    void set_sources(const aligned::vector<glm::vec3> &u);
+
+    void set_receivers(const aligned::vector<model::ReceiverSettings> &u);
 
 private:
-    BaseContextLifetime* get_context_lifetime() override;
+    void do_draw(const glm::mat4 &modelview_matrix) const override;
+    glm::mat4 get_local_modelview_matrix() const override;
 
-    void broadcast_receiver_positions(const aligned::vector<glm::vec3>& pos);
-    void broadcast_source_positions(const aligned::vector<glm::vec3>& pos);
+    void set_eye_impl(float u);
+    void set_rotation_impl(const AzEl &u);
+
+    glm::vec3 get_world_camera_position() const;
+    glm::vec3 get_world_camera_direction() const;
+
+    glm::vec3 get_world_mouse_direction(const glm::vec2 &pos) const;
+
+    glm::mat4 get_projection_matrix() const;
+    glm::mat4 get_view_matrix() const;
 
     mutable std::mutex mut;
 
-    copyable_scene_data model;
+    mglu::generic_shader generic_shader;
+    MeshShader mesh_shader;
+    LitSceneShader lit_scene_shader;
 
-    class ContextLifetime;
-    std::unique_ptr<ContextLifetime> context_lifetime;
+    MultiMaterialObject model_object;
+    std::unique_ptr<MeshObject> mesh_object;
+    bool rendering{false};
+    PointObjects point_objects;
+    AxesObject axes;
 
-    ListenerList<Listener> listener_list;
+    AzEl azel;
+    AzEl azel_target;
+    float eye;
+    float eye_target;
+    glm::vec3 translation;
+
+    bool allow_move_mode{true};
+
+    single_thread_access_checker stac;
+
+    struct Mousing {
+        virtual ~Mousing() noexcept = default;
+    };
+
+    struct Rotate final : public Mousing {
+        Rotate(const AzEl &azel, const glm::vec2 &position);
+
+        static const float angle_scale;
+        AzEl orientation;
+        glm::vec2 position;
+    };
+
+    struct Move final : public Mousing {
+        Move(PointObject *to_move, const glm::vec3 &v);
+        virtual ~Move() noexcept;
+
+        PointObject *to_move{nullptr};
+        glm::vec3 original_position;
+    };
+
+    std::unique_ptr<Mousing> mousing;
 };

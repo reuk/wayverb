@@ -116,443 +116,312 @@ void MultiMaterialObject::set_colour(const glm::vec3 &c) {
 
 //----------------------------------------------------------------------------//
 
-class PointObjects final {
-public:
-    PointObjects(mglu::generic_shader &shader)
-            : shader(shader) {}
+PointObjects::PointObjects(mglu::generic_shader &shader)
+        : shader(shader) {}
 
-    void set_sources(const aligned::vector<glm::vec3> &u) {
-        aligned::vector<PointObject> ret;
-        ret.reserve(u.size());
-        for (const auto &i : u) {
-            PointObject p(shader, glm::vec4{0.7, 0, 0, 1});
-            p.set_position(i);
-            ret.push_back(std::move(p));
-        }
-        sources = std::move(ret);
+void PointObjects::set_sources(const aligned::vector<glm::vec3> &u) {
+    aligned::vector<PointObject> ret;
+    ret.reserve(u.size());
+    for (const auto &i : u) {
+        PointObject p(shader, glm::vec4{0.7, 0, 0, 1});
+        p.set_position(i);
+        ret.push_back(std::move(p));
     }
+    sources = std::move(ret);
+}
 
-    void set_receivers(const aligned::vector<model::ReceiverSettings> &u) {
-        aligned::vector<PointObject> ret;
-        ret.reserve(u.size());
-        for (const auto &i : u) {
-            PointObject p(shader, glm::vec4{0, 0.7, 0.7, 1});
-            p.set_position(i.position);
-            p.set_pointing(i.get_pointing());
-            ret.push_back(std::move(p));
-        }
-        receivers = std::move(ret);
+void PointObjects::set_receivers(
+        const aligned::vector<model::ReceiverSettings> &u) {
+    aligned::vector<PointObject> ret;
+    ret.reserve(u.size());
+    for (const auto &i : u) {
+        PointObject p(shader, glm::vec4{0, 0.7, 0.7, 1});
+        p.set_position(i.position);
+        p.set_pointing(i.get_pointing());
+        ret.push_back(std::move(p));
     }
+    receivers = std::move(ret);
+}
 
-    void draw(const glm::mat4 &matrix) const {
-        for (const auto &i : sources) {
-            i.draw(matrix);
-        }
-        for (const auto &i : receivers) {
-            i.draw(matrix);
-        }
+void PointObjects::draw(const glm::mat4 &matrix) const {
+    for (const auto &i : sources) {
+        i.draw(matrix);
     }
+    for (const auto &i : receivers) {
+        i.draw(matrix);
+    }
+}
 
-    PointObject *get_currently_hovered(const glm::vec3 &origin,
-                                       const glm::vec3 &direction) {
-        struct Intersection {
-            PointObject *ref;
-            double distance;
-        };
+PointObject *PointObjects::get_currently_hovered(const glm::vec3 &origin,
+                                                 const glm::vec3 &direction) {
+    struct Intersection {
+        PointObject *ref;
+        double distance;
+    };
 
-        Intersection intersection{nullptr, 0};
-        for (auto i : get_all_point_objects()) {
-            auto diff = origin - i->get_position();
-            auto b = glm::dot(direction, diff);
-            auto c = glm::dot(diff, diff) - glm::pow(0.4, 2);
-            auto det = glm::pow(b, 2) - c;
-            if (0 <= det) {
-                auto sq_det = std::sqrt(det);
-                auto dist = std::min(-b + sq_det, -b - sq_det);
-                if (!intersection.ref || dist < intersection.distance) {
-                    intersection = Intersection{i, dist};
-                }
+    Intersection intersection{nullptr, 0};
+    for (auto i : get_all_point_objects()) {
+        auto diff = origin - i->get_position();
+        auto b = glm::dot(direction, diff);
+        auto c = glm::dot(diff, diff) - glm::pow(0.4, 2);
+        auto det = glm::pow(b, 2) - c;
+        if (0 <= det) {
+            auto sq_det = std::sqrt(det);
+            auto dist = std::min(-b + sq_det, -b - sq_det);
+            if (!intersection.ref || dist < intersection.distance) {
+                intersection = Intersection{i, dist};
             }
         }
-
-        return intersection.ref;
     }
 
-private:
-    aligned::vector<PointObject *> get_all_point_objects() {
-        aligned::vector<PointObject *> ret;
-        ret.reserve(sources.size() + receivers.size());
-        for (auto &i : sources) {
-            ret.push_back(&i);
-        }
-        for (auto &i : receivers) {
-            ret.push_back(&i);
-        }
-        return ret;
+    return intersection.ref;
+}
+
+aligned::vector<PointObject *> PointObjects::get_all_point_objects() {
+    aligned::vector<PointObject *> ret;
+    ret.reserve(sources.size() + receivers.size());
+    for (auto &i : sources) {
+        ret.push_back(&i);
     }
-
-    mglu::generic_shader &shader;
-
-    aligned::vector<PointObject> sources;
-    aligned::vector<PointObject> receivers;
-};
+    for (auto &i : receivers) {
+        ret.push_back(&i);
+    }
+    return ret;
+}
 
 //----------------------------------------------------------------------------//
 
-class SceneRenderer::ContextLifetime : public BaseContextLifetime {
-public:
-    ContextLifetime(SceneRenderer &owner, const copyable_scene_data &scene_data)
-            : owner(owner)
-            , model(scene_data)
-            , model_object(generic_shader, lit_scene_shader, scene_data)
-            , point_objects(generic_shader)
-            , axes(generic_shader) {
-        auto aabb = model.get_aabb();
-        auto m = centre(aabb);
-        auto max = glm::length(dimensions(aabb));
-        eye = eye_target = max > 0 ? 20 / max : 1;
-        translation = -glm::vec3(m.x, m.y, m.z);
-    }
+SceneRendererContextLifetime::SceneRendererContextLifetime(
+        const copyable_scene_data &scene_data)
+        : model_object(generic_shader, lit_scene_shader, scene_data)
+        , point_objects(generic_shader)
+        , axes(generic_shader) {
+    auto aabb = scene_data.get_aabb();
+    auto m = centre(aabb);
+    auto max = glm::length(dimensions(aabb));
+    eye = eye_target = max > 0 ? 20 / max : 1;
+    translation = -glm::vec3(m.x, m.y, m.z);
+}
 
-    void set_eye(float u) {
-        std::lock_guard<std::mutex> lck(mut);
-        set_eye_impl(u);
-    }
+void SceneRendererContextLifetime::set_eye(float u) {
+    std::lock_guard<std::mutex> lck(mut); stac();
+    set_eye_impl(u);
+}
 
-    void set_rotation(const AzEl &u) {
-        std::lock_guard<std::mutex> lck(mut);
-        set_rotation_impl(u);
-    }
+void SceneRendererContextLifetime::set_rotation(const AzEl &u) {
+    std::lock_guard<std::mutex> lck(mut); stac();
+    set_rotation_impl(u);
+}
 
-    void set_rendering(bool b) {
-        std::lock_guard<std::mutex> lck(mut);
-        rendering = b;
-        if (!b) {
-            if (mesh_object) {
-                mesh_object->zero_pressures();
-            }
-        }
-        allow_move_mode = !b;
-    }
-
-    void set_positions(const aligned::vector<glm::vec3> &positions) {
-        std::lock_guard<std::mutex> lck(mut);
-        mesh_object = std::make_unique<MeshObject>(mesh_shader, positions);
-    }
-
-    void set_pressures(const aligned::vector<float> &pressures) {
-        std::lock_guard<std::mutex> lck(mut);
-        assert(mesh_object);
-        mesh_object->set_pressures(pressures);
-    }
-
-    void set_highlighted(int u) {
-        std::lock_guard<std::mutex> lck(mut);
-        model_object.set_highlighted(u);
-    }
-
-    void set_emphasis(const glm::vec3 &c) {
-        std::lock_guard<std::mutex> lck(mut);
-        model_object.set_colour(c);
-    }
-
-    void update(float dt) override {
-        std::lock_guard<std::mutex> lck(mut);
-        eye += (eye_target - eye) * 0.1;
-        azel += (azel_target - azel) * 0.1;
-    }
-
-    void do_draw(const glm::mat4 &modelview_matrix) const override {
-        std::lock_guard<std::mutex> lck(mut);
-        auto c = 0.0;
-        glClearColor(c, c, c, 0);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        glEnable(GL_PROGRAM_POINT_SIZE);
-        glEnable(GL_DEPTH_TEST);
-
-        glEnable(GL_MULTISAMPLE);
-        glEnable(GL_LINE_SMOOTH);
-        glEnable(GL_POLYGON_SMOOTH);
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-        auto config_shader = [this](const auto &shader) {
-            auto s_shader = shader.get_scoped();
-            shader.set_model_matrix(glm::mat4());
-            shader.set_view_matrix(get_view_matrix());
-            shader.set_projection_matrix(get_projection_matrix());
-        };
-
-        config_shader(generic_shader);
-        config_shader(mesh_shader);
-        config_shader(lit_scene_shader);
-
-        model_object.draw(modelview_matrix);
-        point_objects.draw(modelview_matrix);
-
-        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
-        if (rendering && mesh_object) {
-            mesh_object->draw(modelview_matrix);
-        }
-
-        axes.draw(modelview_matrix);
-    }
-
-    glm::mat4 get_local_modelview_matrix() const override {
-        std::lock_guard<std::mutex> lck(mut);
-        return glm::mat4{};
-    }
-
-    void mouse_down(const glm::vec2 &pos) override {
-        std::lock_guard<std::mutex> lck(mut);
-        //        auto hovered = point_objects.get_currently_hovered(
-        //                get_world_camera_position(),
-        //                get_world_mouse_direction(pos));
-        //        if (hovered && allow_move_mode) {
-        //            mousing = std::unique_ptr<Mousing>(
-        //                    std::make_unique<Move>(hovered,
-        //                    hovered->get_position()));
-        //        } else {
-        mousing = std::unique_ptr<Mousing>(
-                std::make_unique<Rotate>(azel_target, pos));
-        //        }
-    }
-
-    void mouse_drag(const glm::vec2 &pos) override {
-        std::lock_guard<std::mutex> lck(mut);
-        assert(mousing);
-        if (auto m = dynamic_cast<Rotate *>(mousing.get())) {
-            auto diff = pos - m->position;
-            set_rotation_impl(AzEl{
-                    m->orientation.azimuth + diff.x * Rotate::angle_scale,
-                    m->orientation.elevation + diff.y * Rotate::angle_scale});
-        } else if (auto m = dynamic_cast<Move *>(mousing.get())) {
-            auto camera_position = get_world_camera_position();
-            auto normal = get_world_camera_direction();
-
-            auto original = m->original_position;
-
-            auto d = glm::dot(normal, camera_position - original);
-
-            auto direction = get_world_mouse_direction(pos);
-            auto dist = -d / glm::dot(normal, direction);
-            auto new_pos = camera_position + direction * dist;
-
-            m->to_move->set_position(new_pos);
+void SceneRendererContextLifetime::set_rendering(bool b) {
+    std::lock_guard<std::mutex> lck(mut); stac();
+    rendering = b;
+    if (!b) {
+        if (mesh_object) {
+            mesh_object->zero_pressures();
         }
     }
+    allow_move_mode = !b;
+}
 
-    void mouse_up(const glm::vec2 &pos) override {
-        std::lock_guard<std::mutex> lck(mut);
-        mousing = nullptr;
-    }
+void SceneRendererContextLifetime::set_positions(
+        const aligned::vector<glm::vec3> &positions) {
+    std::lock_guard<std::mutex> lck(mut); stac();
+    mesh_object = std::make_unique<MeshObject>(mesh_shader, positions);
+}
 
-    void mouse_wheel_move(float delta_y) override {
-        std::lock_guard<std::mutex> lck(mut);
-        set_eye_impl(eye_target + delta_y);
-    }
+void SceneRendererContextLifetime::set_pressures(
+        const aligned::vector<float> &pressures) {
+    std::lock_guard<std::mutex> lck(mut); stac();
+    assert(mesh_object);
+    mesh_object->set_pressures(pressures);
+}
 
-    void set_sources(const aligned::vector<glm::vec3> &u) {
-        std::lock_guard<std::mutex> lck(mut);
-        point_objects.set_sources(u);
-    }
+void SceneRendererContextLifetime::set_impulses(
+        const aligned::vector<aligned::vector<raytracer::impulse>> &impulses) {
+    std::lock_guard<std::mutex> lck(mut); stac();
+    //  TODO
+}
 
-    void set_receivers(const aligned::vector<model::ReceiverSettings> &u) {
-        std::lock_guard<std::mutex> lck(mut);
-        point_objects.set_receivers(u);
-    }
+void SceneRendererContextLifetime::set_highlighted(int u) {
+    std::lock_guard<std::mutex> lck(mut); stac();
+    model_object.set_highlighted(u);
+}
 
-private:
-    void set_eye_impl(float u) { eye_target = std::max(0.0f, u); }
+void SceneRendererContextLifetime::set_emphasis(const glm::vec3 &c) {
+    std::lock_guard<std::mutex> lck(mut); stac();
+    model_object.set_colour(c);
+}
 
-    void set_rotation_impl(const AzEl &u) {
-        azel_target = AzEl{u.azimuth,
-                           glm::clamp(u.elevation,
-                                      static_cast<float>(-M_PI / 2),
-                                      static_cast<float>(M_PI / 2))};
-    }
+void SceneRendererContextLifetime::update(float dt) {
+    std::lock_guard<std::mutex> lck(mut); stac();
+    eye += (eye_target - eye) * 0.1;
+    azel += (azel_target - azel) * 0.1;
+}
 
-    glm::vec3 get_world_camera_position() const {
-        return glm::inverse(get_view_matrix())[3];
-    }
+void SceneRendererContextLifetime::do_draw(
+        const glm::mat4 &modelview_matrix) const {
+    std::lock_guard<std::mutex> lck(mut); stac();
+    auto c = 0.0;
+    glClearColor(c, c, c, 0);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    glm::vec3 get_world_camera_direction() const {
-        return glm::normalize(glm::vec3{glm::inverse(get_view_matrix()) *
-                                        glm::vec4{0, 0, -1, 0}});
-    }
+    glEnable(GL_PROGRAM_POINT_SIZE);
+    glEnable(GL_DEPTH_TEST);
 
-    glm::vec3 get_world_mouse_direction(const glm::vec2 &pos) const {
-        auto ray_clip = glm::vec4{(2 * pos.x) / get_viewport().x - 1,
-                                  1 - (2 * pos.y) / get_viewport().y,
-                                  -1,
-                                  1};
-        auto ray_eye = glm::inverse(get_projection_matrix()) * ray_clip;
-        ray_eye = glm::vec4{ray_eye.x, ray_eye.y, -1, 0};
-        return glm::normalize(
-                glm::vec3{glm::inverse(get_view_matrix()) * ray_eye});
-    }
+    glEnable(GL_MULTISAMPLE);
+    glEnable(GL_LINE_SMOOTH);
+    glEnable(GL_POLYGON_SMOOTH);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    glm::mat4 get_projection_matrix() const {
-        return glm::perspective(45.0f, get_aspect(), 0.05f, 1000.0f);
-    }
-
-    glm::mat4 get_view_matrix() const {
-        glm::vec3 from(0, 0, eye);
-        glm::vec3 target(0, 0, 0);
-        glm::vec3 up(0, 1, 0);
-        return glm::lookAt(from, target, up) *
-               glm::rotate(azel.elevation, glm::vec3(1, 0, 0)) *
-               glm::rotate(azel.azimuth, glm::vec3(0, 1, 0)) *
-               glm::translate(translation);
-    }
-
-    mutable std::mutex mut;
-
-    SceneRenderer &owner;
-    const copyable_scene_data &model;
-
-    mglu::generic_shader generic_shader;
-    MeshShader mesh_shader;
-    LitSceneShader lit_scene_shader;
-
-    MultiMaterialObject model_object;
-
-    std::unique_ptr<MeshObject> mesh_object;
-
-    bool rendering{false};
-
-    PointObjects point_objects;
-
-    AxesObject axes;
-
-    AzEl azel;
-    AzEl azel_target;
-    float eye;
-    float eye_target;
-    glm::vec3 translation;
-
-    bool allow_move_mode{true};
-
-    struct Mousing {
-        virtual ~Mousing() noexcept = default;
+    auto config_shader = [this](const auto &shader) {
+        auto s_shader = shader.get_scoped();
+        shader.set_model_matrix(glm::mat4());
+        shader.set_view_matrix(get_view_matrix());
+        shader.set_projection_matrix(get_projection_matrix());
     };
 
-    struct Rotate : public Mousing {
-        Rotate(const AzEl &azel, const glm::vec2 &position)
-                : orientation(azel)
-                , position(position) {}
+    config_shader(generic_shader);
+    config_shader(mesh_shader);
+    config_shader(lit_scene_shader);
 
-        static const float angle_scale;
-        AzEl orientation;
-        glm::vec2 position;
-    };
+    model_object.draw(modelview_matrix);
+    point_objects.draw(modelview_matrix);
 
-    struct Move : public Mousing {
-        Move(PointObject *to_move, const glm::vec3 &v)
-                : to_move(to_move)
-                , original_position(v) {
-            to_move->set_highlight(0.5);
-        }
-        virtual ~Move() noexcept { to_move->set_highlight(0); }
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-        PointObject *to_move{nullptr};
-        glm::vec3 original_position;
-    };
+    if (rendering && mesh_object) {
+        mesh_object->draw(modelview_matrix);
+    }
 
-    std::unique_ptr<Mousing> mousing;
-};
-
-const float SceneRenderer::ContextLifetime::Rotate::angle_scale{0.01};
-
-//----------------------------------------------------------------------------//
-
-SceneRenderer::SceneRenderer(const copyable_scene_data &model)
-        : model(model) {}
-
-//  defined here so that we can PIMPL the ContextLifetime
-SceneRenderer::~SceneRenderer() noexcept = default;
-
-void SceneRenderer::newOpenGLContextCreated() {
-    std::lock_guard<std::mutex> lck(mut);
-    mglu::check_for_gl_error();
-    context_lifetime = std::make_unique<ContextLifetime>(*this, model);
-    context_lifetime->set_emphasis(
-            glm::vec3(AngularLookAndFeel::emphasis.getFloatRed(),
-                      AngularLookAndFeel::emphasis.getFloatGreen(),
-                      AngularLookAndFeel::emphasis.getFloatBlue()));
-    BaseRenderer::newOpenGLContextCreated();
+    axes.draw(modelview_matrix);
 }
 
-void SceneRenderer::openGLContextClosing() {
-    std::lock_guard<std::mutex> lck(mut);
-    context_lifetime = nullptr;
-    BaseRenderer::openGLContextClosing();
+glm::mat4 SceneRendererContextLifetime::get_local_modelview_matrix() const {
+    std::lock_guard<std::mutex> lck(mut); stac();
+    return glm::mat4{};
 }
 
-void SceneRenderer::set_rendering(bool b) {
-    std::lock_guard<std::mutex> lck(mut);
-    push_incoming([this, b] { context_lifetime->set_rendering(b); });
+void SceneRendererContextLifetime::mouse_down(const glm::vec2 &pos) {
+    std::lock_guard<std::mutex> lck(mut); stac();
+    //        auto hovered = point_objects.get_currently_hovered(
+    //                get_world_camera_position(),
+    //                get_world_mouse_direction(pos));
+    //        if (hovered && allow_move_mode) {
+    //            mousing = std::unique_ptr<Mousing>(
+    //                    std::make_unique<Move>(hovered,
+    //                    hovered->get_position()));
+    //        } else {
+    mousing = std::unique_ptr<Mousing>(
+            std::make_unique<Rotate>(azel_target, pos));
+    //        }
 }
 
-void SceneRenderer::set_sources(const aligned::vector<glm::vec3> &sources) {
-    std::lock_guard<std::mutex> lck(mut);
-    push_incoming([this, sources] { context_lifetime->set_sources(sources); });
+void SceneRendererContextLifetime::mouse_drag(const glm::vec2 &pos) {
+    std::lock_guard<std::mutex> lck(mut); stac();
+    assert(mousing);
+    if (auto m = dynamic_cast<Rotate *>(mousing.get())) {
+        auto diff = pos - m->position;
+        set_rotation_impl(
+                AzEl{m->orientation.azimuth + diff.x * Rotate::angle_scale,
+                     m->orientation.elevation + diff.y * Rotate::angle_scale});
+    } else if (auto m = dynamic_cast<Move *>(mousing.get())) {
+        auto camera_position = get_world_camera_position();
+        auto normal = get_world_camera_direction();
+
+        auto original = m->original_position;
+
+        auto d = glm::dot(normal, camera_position - original);
+
+        auto direction = get_world_mouse_direction(pos);
+        auto dist = -d / glm::dot(normal, direction);
+        auto new_pos = camera_position + direction * dist;
+
+        m->to_move->set_position(new_pos);
+    }
 }
 
-void SceneRenderer::set_receivers(
-        const aligned::vector<model::ReceiverSettings> &receivers) {
-    std::lock_guard<std::mutex> lck(mut);
-    push_incoming(
-            [this, receivers] { context_lifetime->set_receivers(receivers); });
+void SceneRendererContextLifetime::mouse_up(const glm::vec2 &pos) {
+    std::lock_guard<std::mutex> lck(mut); stac();
+    mousing = nullptr;
 }
 
-void SceneRenderer::set_positions(const aligned::vector<glm::vec3> &positions) {
-    std::lock_guard<std::mutex> lck(mut);
-    push_incoming(
-            [this, positions] { context_lifetime->set_positions(positions); });
+void SceneRendererContextLifetime::mouse_wheel_move(float delta_y) {
+    std::lock_guard<std::mutex> lck(mut); stac();
+    set_eye_impl(eye_target + delta_y);
 }
 
-void SceneRenderer::set_pressures(const aligned::vector<float> &pressures) {
-    std::lock_guard<std::mutex> lck(mut);
-    push_incoming(
-            [this, pressures] { context_lifetime->set_pressures(pressures); });
+void SceneRendererContextLifetime::set_sources(
+        const aligned::vector<glm::vec3> &u) {
+    std::lock_guard<std::mutex> lck(mut); stac();
+    point_objects.set_sources(u);
 }
 
-void SceneRenderer::set_highlighted(int u) {
-    std::lock_guard<std::mutex> lck(mut);
-    push_incoming([this, u] { context_lifetime->set_highlighted(u); });
+void SceneRendererContextLifetime::set_receivers(
+        const aligned::vector<model::ReceiverSettings> &u) {
+    std::lock_guard<std::mutex> lck(mut); stac();
+    point_objects.set_receivers(u);
 }
 
-void SceneRenderer::set_emphasis(const glm::vec3 &u) {
-    std::lock_guard<std::mutex> lck(mut);
-    push_incoming([this, u] { context_lifetime->set_emphasis(u); });
+void SceneRendererContextLifetime::set_eye_impl(float u) {
+    eye_target = std::max(0.0f, u);
 }
 
-void SceneRenderer::broadcast_receiver_positions(
-        const aligned::vector<glm::vec3> &pos) {
-    push_outgoing([this, pos] {
-        listener_list.call(&Listener::receiver_dragged, this, pos);
-    });
+void SceneRendererContextLifetime::set_rotation_impl(const AzEl &u) {
+    azel_target = AzEl{u.azimuth,
+                       glm::clamp(u.elevation,
+                                  static_cast<float>(-M_PI / 2),
+                                  static_cast<float>(M_PI / 2))};
 }
 
-void SceneRenderer::broadcast_source_positions(
-        const aligned::vector<glm::vec3> &pos) {
-    push_outgoing([this, pos] {
-        listener_list.call(&Listener::source_dragged, this, pos);
-    });
+glm::vec3 SceneRendererContextLifetime::get_world_camera_position() const {
+    return glm::inverse(get_view_matrix())[3];
 }
 
-void SceneRenderer::addListener(Listener *l) {
-    std::lock_guard<std::mutex> lck(mut);
-    listener_list.add(l);
-}
-void SceneRenderer::removeListener(Listener *l) {
-    std::lock_guard<std::mutex> lck(mut);
-    listener_list.remove(l);
+glm::vec3 SceneRendererContextLifetime::get_world_camera_direction() const {
+    return glm::normalize(glm::vec3{glm::inverse(get_view_matrix()) *
+                                    glm::vec4{0, 0, -1, 0}});
 }
 
-BaseContextLifetime *SceneRenderer::get_context_lifetime() {
-    return context_lifetime.get();
+glm::vec3 SceneRendererContextLifetime::get_world_mouse_direction(
+        const glm::vec2 &pos) const {
+    auto ray_clip = glm::vec4{(2 * pos.x) / get_viewport().x - 1,
+                              1 - (2 * pos.y) / get_viewport().y,
+                              -1,
+                              1};
+    auto ray_eye = glm::inverse(get_projection_matrix()) * ray_clip;
+    ray_eye = glm::vec4{ray_eye.x, ray_eye.y, -1, 0};
+    return glm::normalize(glm::vec3{glm::inverse(get_view_matrix()) * ray_eye});
 }
+
+glm::mat4 SceneRendererContextLifetime::get_projection_matrix() const {
+    return glm::perspective(45.0f, get_aspect(), 0.05f, 1000.0f);
+}
+
+glm::mat4 SceneRendererContextLifetime::get_view_matrix() const {
+    glm::vec3 from(0, 0, eye);
+    glm::vec3 target(0, 0, 0);
+    glm::vec3 up(0, 1, 0);
+    return glm::lookAt(from, target, up) *
+           glm::rotate(azel.elevation, glm::vec3(1, 0, 0)) *
+           glm::rotate(azel.azimuth, glm::vec3(0, 1, 0)) *
+           glm::translate(translation);
+}
+
+SceneRendererContextLifetime::Rotate::Rotate(const AzEl &azel,
+                                             const glm::vec2 &position)
+        : orientation(azel)
+        , position(position) {}
+
+SceneRendererContextLifetime::Move::Move(PointObject *to_move,
+                                         const glm::vec3 &v)
+        : to_move(to_move)
+        , original_position(v) {
+    to_move->set_highlight(0.5);
+}
+SceneRendererContextLifetime::Move::~Move() noexcept {
+    to_move->set_highlight(0);
+}
+
+const float SceneRendererContextLifetime::Rotate::angle_scale{0.01};

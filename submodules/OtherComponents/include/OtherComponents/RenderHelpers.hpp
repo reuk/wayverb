@@ -9,16 +9,13 @@
 
 #include "juce_opengl/juce_opengl.h"
 
+#include <thread>
+
 class BaseContextLifetime : public mglu::drawable, public mglu::updatable {
 public:
     void set_viewport(const glm::vec2& v);
     glm::vec2 get_viewport() const;
     float get_aspect() const;
-
-    virtual void mouse_down(const glm::vec2& pos) = 0;
-    virtual void mouse_drag(const glm::vec2& pos) = 0;
-    virtual void mouse_up(const glm::vec2& pos)   = 0;
-    virtual void mouse_wheel_move(float delta_y)  = 0;
 
 private:
     virtual void viewport_changed(const glm::vec2& v);
@@ -28,57 +25,45 @@ private:
 
 //----------------------------------------------------------------------------//
 
-class BaseRenderer : public juce::OpenGLRenderer,
-                     public juce::ChangeBroadcaster,
-                     public juce::AsyncUpdater {
+class AsyncWorkQueue final : private juce::AsyncUpdater {
 public:
-    void set_viewport(const glm::vec2& u);
-
     template <typename T>
-    void push_incoming(T&& t) {
-        incoming_work_queue.push(std::forward<T>(t));
-    }
-
-    template <typename T>
-    void push_outgoing(T&& t) {
-        push_outgoing_impl(std::forward<T>(t));
-    }
-
-    void newOpenGLContextCreated() override;
-    void renderOpenGL() override;
-    void openGLContextClosing() override;
-
-    void mouse_down(const glm::vec2& pos);
-    void mouse_drag(const glm::vec2& pos);
-    void mouse_up(const glm::vec2& pos);
-    void mouse_wheel_move(float delta_y);
-
-private:
-    virtual BaseContextLifetime* get_context_lifetime() = 0;
-    void handleAsyncUpdate() override;
-
-    template <typename T>
-    void push_outgoing_impl(T&& t) {
+    void push(T&& t) {
+        std::lock_guard<std::mutex> lck(mut);
         outgoing_work_queue.push(std::forward<T>(t));
         triggerAsyncUpdate();
     }
 
-    void notify_viewport_impl();
+private:
+    void handleAsyncUpdate() override;
 
-    glm::vec2 viewport;
-
-    WorkQueue<> incoming_work_queue;
+    mutable std::mutex mut;
     WorkQueue<> outgoing_work_queue;
 };
 
-//----------------------------------------------------------------------------//
-
-template <typename Renderer>
-class BaseRendererComponent : public juce::Component {
+template <typename ContextLifetime>
+class RendererComponent final : public juce::Component {
 public:
+    class Listener {
+    public:
+        Listener() = default;
+        Listener(const Listener&) = default;
+        Listener& operator=(const Listener&) = default;
+        Listener(Listener&&) noexcept = default;
+        Listener& operator=(Listener&&) noexcept = default;
+
+        virtual void renderer_open_gl_context_created(
+                const RendererComponent*) = 0;
+        virtual void renderer_open_gl_context_closing(
+                const RendererComponent*) = 0;
+
+    protected:
+        ~Listener() noexcept = default;
+    };
+
     template <typename... Ts>
-    BaseRendererComponent(Ts&&... ts)
-            : renderer(std::forward<Ts>(ts)...) {
+    RendererComponent(Ts&&... ts)
+            : renderer(*this, std::forward<Ts>(ts)...) {
         open_gl_context.setOpenGLVersionRequired(
                 juce::OpenGLContext::openGL3_2);
         open_gl_context.setRenderer(&renderer);
@@ -88,40 +73,137 @@ public:
         open_gl_context.attachTo(*this);
     }
 
-    virtual ~BaseRendererComponent() noexcept { open_gl_context.detach(); }
+    virtual ~RendererComponent() noexcept { open_gl_context.detach(); }
 
     void resized() override {
+        std::lock_guard<std::mutex> lck(mut);
         renderer.set_viewport(glm::vec2{getWidth(), getHeight()});
     }
 
-    const Renderer& get_renderer() const { return renderer; }
-
-    Renderer& get_renderer() { return renderer; }
-
     void mouseDown(const juce::MouseEvent& e) override {
+        std::lock_guard<std::mutex> lck(mut);
         renderer.mouse_down(to_glm_vec2(e.getPosition()));
     }
 
     void mouseDrag(const juce::MouseEvent& e) override {
+        std::lock_guard<std::mutex> lck(mut);
         renderer.mouse_drag(to_glm_vec2(e.getPosition()));
     }
 
     void mouseUp(const juce::MouseEvent& e) override {
+        std::lock_guard<std::mutex> lck(mut);
         renderer.mouse_up(to_glm_vec2(e.getPosition()));
     }
 
     void mouseWheelMove(const juce::MouseEvent& event,
                         const juce::MouseWheelDetails& wheel) override {
+        std::lock_guard<std::mutex> lck(mut);
         renderer.mouse_wheel_move(wheel.deltaY);
     }
 
-protected:
-    juce::OpenGLContext open_gl_context;
-    Renderer renderer;
+    template <typename T>
+    void context_command(T&& t) {
+        std::lock_guard<std::mutex> lck(mut);
+        renderer.context_command(std::forward<T>(t));
+    }
+
+    void addListener(Listener* l) {
+        std::lock_guard<std::mutex> lck(mut);
+        listener_list.add(l);
+    }
+
+    void removeListener(Listener* l) {
+        std::lock_guard<std::mutex> lck(mut);
+        listener_list.remove(l);
+    }
 
 private:
+    //  called by the renderer
+    void open_gl_context_created() {
+        listener_list.call(&Listener::renderer_open_gl_context_created, this);
+    }
+    void open_gl_context_closing() {
+        listener_list.call(&Listener::renderer_open_gl_context_closing, this);
+    }
+
+    class Renderer final : public juce::OpenGLRenderer {
+    public:
+        using ContextLifetimeConstructor =
+                std::function<std::unique_ptr<ContextLifetime>()>;
+
+        explicit Renderer(RendererComponent& listener,
+                          const ContextLifetimeConstructor& constructor)
+                : listener(listener)
+                , constructor(constructor) {}
+
+        void newOpenGLContextCreated() override {
+            context_lifetime = constructor();
+            outgoing_work_queue.push(
+                    [this] { listener.open_gl_context_created(); });
+        }
+
+        void renderOpenGL() override {
+            assert(context_lifetime);
+
+            if (context_lifetime) {
+                while (auto method = incoming_work_queue.pop()) {
+                    method(*context_lifetime);
+                }
+                context_lifetime->update(0);
+                context_lifetime->draw(glm::mat4{});
+            }
+        }
+
+        void openGLContextClosing() override {
+            outgoing_work_queue.push(
+                    [this] { listener.open_gl_context_closing(); });
+            context_lifetime = nullptr;
+        }
+
+        template <typename T>
+        void context_command(T&& t) {
+            incoming_work_queue.push(std::forward<T>(t));
+        }
+
+        void set_viewport(const glm::vec2& u) {
+            incoming_work_queue.push([u](auto& i) { i.set_viewport(u); });
+        }
+
+        void mouse_down(const glm::vec2& u) {
+            incoming_work_queue.push([u](auto& i) { i.mouse_down(u); });
+        }
+
+        void mouse_drag(const glm::vec2& u) {
+            incoming_work_queue.push([u](auto& i) { i.mouse_drag(u); });
+        }
+
+        void mouse_up(const glm::vec2& u) {
+            incoming_work_queue.push([u](auto& i) { i.mouse_up(u); });
+        }
+
+        void mouse_wheel_move(float u) {
+            incoming_work_queue.push([u](auto& i) { i.mouse_wheel_move(u); });
+        }
+
+    private:
+        WorkQueue<ContextLifetime&> incoming_work_queue;
+        AsyncWorkQueue outgoing_work_queue;
+
+        RendererComponent& listener;
+
+        ContextLifetimeConstructor constructor;
+        std::unique_ptr<ContextLifetime> context_lifetime;
+    };
+
     template <typename T>
     static glm::vec2 to_glm_vec2(const T& t) {
         return glm::vec2{t.x, t.y};
     }
+
+    mutable std::mutex mut;
+
+    juce::OpenGLContext open_gl_context;
+    Renderer renderer;
+
+    juce::ListenerList<Listener> listener_list;
 };

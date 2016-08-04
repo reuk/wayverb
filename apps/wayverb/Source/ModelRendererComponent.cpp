@@ -17,42 +17,87 @@ ModelRendererComponent::ModelRendererComponent(
         model::ValueWrapper<int> &shown_surface,
         model::ValueWrapper<model::App> &app,
         model::ValueWrapper<model::RenderState> &render_state)
-        : BaseRendererComponent(model)
-        , model(model)
+        : model(model)
         , shown_surface(shown_surface)
+        , renderer([model] {
+            return std::make_unique<SceneRendererContextLifetime>(model);
+        })
         , app(app)
         , render_state(render_state) {
     set_help("model viewport",
              "This area displays the currently loaded 3D model. Click and drag "
              "to rotate the model, or use the mouse wheel to zoom in and out.");
+    addAndMakeVisible(renderer);
 }
 
-namespace {
-auto get_receiver_directions(const model::ValueWrapper<model::App> &app) {}
-}  // namespace
+void ModelRendererComponent::resized() { renderer.setBounds(getLocalBounds()); }
+
+void ModelRendererComponent::set_positions(
+        const aligned::vector<glm::vec3> &positions) {
+    renderer.context_command(
+            [positions](auto &i) { i.set_positions(positions); });
+}
+
+void ModelRendererComponent::set_pressures(
+        const aligned::vector<float> &pressures) {
+    renderer.context_command(
+            [pressures](auto &i) { i.set_pressures(pressures); });
+}
+
+void ModelRendererComponent::set_impulses(
+        const aligned::vector<aligned::vector<raytracer::impulse>> &impulses) {
+    renderer.context_command([impulses](auto &i) { i.set_impulses(impulses); });
+}
 
 void ModelRendererComponent::receive_broadcast(model::Broadcaster *cb) {
     if (cb == &shown_surface) {
-        renderer.set_highlighted(shown_surface.get());
+        send_highlighted();
     } else if (cb == &app.source) {
-        renderer.set_sources(app.source.get());
+        send_sources();
     } else if (cb == &app.receiver_settings) {
-        renderer.set_receivers(app.receiver_settings.get());
+        send_receivers();
     } else if (cb == &render_state.is_rendering) {
-        renderer.set_rendering(render_state.is_rendering.get());
+        send_is_rendering();
     }
 }
 
-void ModelRendererComponent::changeListenerCallback(ChangeBroadcaster *u) {
-    if (u == &renderer) {
-        for (auto i : {&shown_connector,
-                       &receiver_settings_connector,
-                       &source_connector,
-                       &is_rendering_connector,
-                       &facing_direction_connector}) {
-            i->trigger();
-        }
+void ModelRendererComponent::send_highlighted() {
+    renderer.context_command([s = shown_surface.get()](auto &i) {
+        i.set_highlighted(s);
+    });
+}
+
+void ModelRendererComponent::send_sources() {
+    renderer.context_command([s = app.source.get()](auto &i) {
+        i.set_sources(s);
+    });
+}
+
+void ModelRendererComponent::send_receivers() {
+    renderer.context_command([s = app.receiver_settings.get()](auto &i) {
+        i.set_receivers(s);
+    });
+}
+
+void ModelRendererComponent::send_is_rendering() {
+    renderer.context_command([s = render_state.is_rendering.get()](auto &i) {
+        i.set_rendering(s);
+    });
+}
+
+void ModelRendererComponent::renderer_open_gl_context_created(
+        const Renderer *r) {
+    if (r == &renderer) {
+        send_highlighted();
+        send_sources();
+        send_receivers();
+        send_is_rendering();
     }
+}
+
+void ModelRendererComponent::renderer_open_gl_context_closing(
+        const Renderer *r) {
+    //  don't care
 }
 
 /*
