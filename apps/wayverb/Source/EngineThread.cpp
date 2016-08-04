@@ -42,7 +42,10 @@ class AsyncEngine::SingleShotEngineThread {
             if (visualise) {
                 listener.engine_nodes_changed(engine.get_node_positions());
                 engine.register_waveguide_visual_callback([&](const auto& i) {
-                    listener.engine_visuals_changed(i);
+                    listener.engine_waveguide_visuals_changed(i);
+                });
+                engine.register_raytracer_visual_callback([&](const auto& i) {
+                    listener.engine_raytracer_visuals_changed(i);
                 });
             }
 
@@ -114,7 +117,7 @@ public:
 
 //----------------------------------------------------------------------------//
 
-AsyncEngine::AsyncEngine()           = default;
+AsyncEngine::AsyncEngine() = default;
 AsyncEngine::~AsyncEngine() noexcept = default;
 
 void AsyncEngine::start(const File& file_name,
@@ -149,9 +152,16 @@ void AsyncEngine::engine_nodes_changed(
     listener_list.call(&Listener::engine_nodes_changed, this, positions);
 }
 
-void AsyncEngine::engine_visuals_changed(
+void AsyncEngine::engine_waveguide_visuals_changed(
         const aligned::vector<float>& pressures) {
-    listener_list.call(&Listener::engine_visuals_changed, this, pressures);
+    listener_list.call(
+            &Listener::engine_waveguide_visuals_changed, this, pressures);
+}
+
+void AsyncEngine::engine_raytracer_visuals_changed(
+        const aligned::vector<aligned::vector<raytracer::impulse>>& impulses) {
+    listener_list.call(
+            &Listener::engine_raytracer_visuals_changed, this, impulses);
 }
 
 void AsyncEngine::engine_finished() { triggerAsyncUpdate(); }

@@ -68,7 +68,7 @@
                   moduleName = "visualiser"
                   usesParentBreakpointCondition = "Yes"
                   urlString = "file:///Users/reuben/development/waveguide/submodules/modern_gl_utils/include/modern_gl_utils/checking.h"
-                  timestampString = "491947549.799469"
+                  timestampString = "492009535.365604"
                   startingColumnNumber = "9223372036854775807"
                   endingColumnNumber = "9223372036854775807"
                   startingLineNumber = "166"
@@ -83,7 +83,7 @@
                   moduleName = "visualiser"
                   usesParentBreakpointCondition = "Yes"
                   urlString = "file:///Users/reuben/development/waveguide/submodules/modern_gl_utils/include/modern_gl_utils/checking.h"
-                  timestampString = "491947549.799651"
+                  timestampString = "492009535.365812"
                   startingColumnNumber = "9223372036854775807"
                   endingColumnNumber = "9223372036854775807"
                   startingLineNumber = "166"
@@ -121,22 +121,6 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "196"
             endingLineNumber = "196">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "Yes"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "../../../../raytracer/src/image_source_impl.cpp"
-            timestampString = "491938311.937558"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "81"
-            endingLineNumber = "81"
-            landmarkName = "construct_ray(const glm::vec3&amp; from, const glm::vec3&amp; to)"
-            landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
    </Breakpoints>

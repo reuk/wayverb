@@ -25,8 +25,12 @@ public:
                               double progress) override;
     void engine_nodes_changed(
             AsyncEngine*, const aligned::vector<glm::vec3>& positions) override;
-    void engine_visuals_changed(
+    void engine_waveguide_visuals_changed(
             AsyncEngine*, const aligned::vector<float>& pressures) override;
+    void engine_raytracer_visuals_changed(
+            AsyncEngine*,
+            const aligned::vector<aligned::vector<raytracer::impulse>>&
+                    impulses) override;
     void engine_finished(AsyncEngine*) override;
 
 private:

@@ -20,8 +20,12 @@ public:
                                           double progress) = 0;
         virtual void engine_nodes_changed(
                 AsyncEngine*, const aligned::vector<glm::vec3>& positions) = 0;
-        virtual void engine_visuals_changed(
+        virtual void engine_waveguide_visuals_changed(
                 AsyncEngine*, const aligned::vector<float>& pressures) = 0;
+        virtual void engine_raytracer_visuals_changed(
+                AsyncEngine*,
+                const aligned::vector<aligned::vector<raytracer::impulse>>&
+                        impulses) = 0;
         virtual void engine_finished(AsyncEngine*) = 0;
     };
 
@@ -50,6 +54,10 @@ private:
     void engine_encountered_error(const std::string& str);
     void engine_state_changed(wayverb::state state, double progress);
     void engine_nodes_changed(const aligned::vector<glm::vec3>& positions);
-    void engine_visuals_changed(const aligned::vector<float>& pressures);
+    void engine_waveguide_visuals_changed(
+            const aligned::vector<float>& pressures);
+    void engine_raytracer_visuals_changed(
+            const aligned::vector<aligned::vector<raytracer::impulse>>&
+                    impulses);
     void engine_finished();
 };

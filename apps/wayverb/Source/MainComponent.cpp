@@ -28,12 +28,11 @@ MainContentComponent::MainContentComponent(
     addAndMakeVisible(right_panel);
 }
 
-void MainContentComponent::paint(Graphics& g) {
-    g.fillAll(Colours::darkgrey);
-}
+void MainContentComponent::paint(Graphics& g) { g.fillAll(Colours::darkgrey); }
 
 void MainContentComponent::resized() {
-    aligned::vector<Component*> components{&left_panel, &resizer_bar, &right_panel};
+    aligned::vector<Component*> components{
+            &left_panel, &resizer_bar, &right_panel};
     layout_manager.layOutComponents(components.data(),
                                     components.size(),
                                     0,
@@ -68,10 +67,18 @@ void MainContentComponent::engine_nodes_changed(
     }
 }
 
-void MainContentComponent::engine_visuals_changed(
+void MainContentComponent::engine_waveguide_visuals_changed(
         AsyncEngine* u, const aligned::vector<float>& pressures) {
     if (u == &engine) {
         right_panel.get_renderer().set_pressures(pressures);
+    }
+}
+
+void MainContentComponent::engine_raytracer_visuals_changed(
+        AsyncEngine* u,
+        const aligned::vector<aligned::vector<raytracer::impulse>>& impulses) {
+    if (u == &engine) {
+        right_panel.get_renderer().set_impulses(impulses);
     }
 }
 
