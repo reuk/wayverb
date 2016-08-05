@@ -1,8 +1,47 @@
 #pragma once
 
-#include "FullModel.hpp"
+#include "EngineFunctor.hpp"
 
-class AsyncEngine : private AsyncUpdater {
+#include "UtilityComponents/RAIIThread.hpp"
+
+#include "OtherComponents/WorkQueue.hpp"
+
+/// Runs the engine on another thread.
+class EngineThread final {
+public:
+    EngineThread(EngineFunctor::Listener& listener,
+                 std::atomic_bool& keep_going,
+                 const std::string& file_name,
+                 const model::Persistent& wrapper,
+                 const copyable_scene_data& scene_data,
+                 bool visualise);
+
+private:
+    RAIIThread thread;
+};
+
+//----------------------------------------------------------------------------//
+
+/// Runs the engine on another thread, will block and try to quit the thread
+/// early if destructed while still running.
+class ScopedEngineThread final {
+public:
+    ScopedEngineThread(EngineFunctor::Listener& listener,
+                       const std::string& file_name,
+                       const model::Persistent& wrapper,
+                       const copyable_scene_data& scene_data,
+                       bool visualise);
+
+    ~ScopedEngineThread() noexcept;
+
+private:
+    std::atomic_bool keep_going{true};
+    EngineThread thread;
+};
+
+//----------------------------------------------------------------------------//
+
+class AsyncEngine final : public EngineFunctor::Listener {
 public:
     class Listener {
     public:
@@ -29,9 +68,6 @@ public:
         virtual void engine_finished(AsyncEngine*) = 0;
     };
 
-    AsyncEngine();
-    virtual ~AsyncEngine() noexcept;
-
     void start(const File& file_name,
                const model::Persistent& wrapper,
                const copyable_scene_data& scene_data,
@@ -43,21 +79,27 @@ public:
     void addListener(Listener* l);
     void removeListener(Listener* l);
 
-private:
-    void handleAsyncUpdate() override;
-
-    mutable std::mutex mut;
-    class SingleShotEngineThread;
-    std::unique_ptr<SingleShotEngineThread> thread;
-    ListenerList<Listener> listener_list;
-
-    void engine_encountered_error(const std::string& str);
-    void engine_state_changed(wayverb::state state, double progress);
-    void engine_nodes_changed(const aligned::vector<glm::vec3>& positions);
+    void engine_encountered_error(const std::string& str) override;
+    void engine_state_changed(wayverb::state state, double progress) override;
+    void engine_nodes_changed(
+            const aligned::vector<glm::vec3>& positions) override;
     void engine_waveguide_visuals_changed(
-            const aligned::vector<float>& pressures);
+            const aligned::vector<float>& pressures) override;
     void engine_raytracer_visuals_changed(
             const aligned::vector<aligned::vector<raytracer::impulse>>&
-                    impulses);
-    void engine_finished();
+                    impulses) override;
+    void engine_finished() override;
+
+private:
+    mutable std::mutex mut;
+    ListenerList<Listener> listener_list;
+    AsyncWorkQueue work_queue;
+
+    //  IMPORTANT
+    //  The thread relies on the rest of this object. It communicates with the
+    //  outside world through the work_queue and listener_list.
+    //  It MUST be destroyed before these objects so that it doesn't try to use
+    //  them (it must be after them in the class declaration b/c object members
+    //  are destroyed in reverse-declaration order).
+    std::unique_ptr<ScopedEngineThread> thread;
 };

@@ -4,6 +4,7 @@
 
 single_thread_access_checker::single_thread_access_checker()
         : id_(std::this_thread::get_id()) {}
-void single_thread_access_checker::operator()() const {
-    assert(id_ == std::this_thread::get_id());
+
+bool single_thread_access_checker::is_same_thread() const {
+    return id_ == std::this_thread::get_id();
 }

@@ -10,7 +10,7 @@
 
 class MeshObject final : public mglu::drawable {
 public:
-    MeshObject(const MeshShader& shader,
+    MeshObject(const std::shared_ptr<MeshShader>& shader,
                const aligned::vector<glm::vec3>& positions);
 
     void set_pressures(const aligned::vector<float>& u);
@@ -22,7 +22,7 @@ private:
 
     void set_positions(const aligned::vector<glm::vec3>& positions);
 
-    const MeshShader& shader;
+    std::shared_ptr<MeshShader> shader;
 
     mglu::vao vao;
     mglu::static_vbo geometry;

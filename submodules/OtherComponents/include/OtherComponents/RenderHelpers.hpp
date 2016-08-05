@@ -2,6 +2,8 @@
 
 #include "WorkQueue.hpp"
 
+#include "common/single_thread_access_checker.h"
+
 #include "modern_gl_utils/drawable.h"
 #include "modern_gl_utils/updatable.h"
 
@@ -24,22 +26,6 @@ private:
 };
 
 //----------------------------------------------------------------------------//
-
-class AsyncWorkQueue final : private juce::AsyncUpdater {
-public:
-    template <typename T>
-    void push(T&& t) {
-        std::lock_guard<std::mutex> lck(mut);
-        outgoing_work_queue.push(std::forward<T>(t));
-        triggerAsyncUpdate();
-    }
-
-private:
-    void handleAsyncUpdate() override;
-
-    mutable std::mutex mut;
-    WorkQueue<> outgoing_work_queue;
-};
 
 template <typename ContextLifetime>
 class RendererComponent final : public juce::Component {
@@ -126,10 +112,12 @@ private:
         listener_list.call(&Listener::renderer_open_gl_context_closing, this);
     }
 
+    //  I could combine this into the RendererComponent class, but then the
+    //  created, render, closing methods would have to be public, which seems
+    //  bad + unnecessary. Better to hide them away here in a private class.
     class Renderer final : public juce::OpenGLRenderer {
     public:
-        using ContextLifetimeConstructor =
-                std::function<std::unique_ptr<ContextLifetime>()>;
+        using ContextLifetimeConstructor = std::function<ContextLifetime()>;
 
         explicit Renderer(RendererComponent& listener,
                           const ContextLifetimeConstructor& constructor)
@@ -137,21 +125,18 @@ private:
                 , constructor(constructor) {}
 
         void newOpenGLContextCreated() override {
-            context_lifetime = constructor();
+            context_lifetime = std::make_unique<lifetime_t>(constructor());
             outgoing_work_queue.push(
                     [this] { listener.open_gl_context_created(); });
         }
 
         void renderOpenGL() override {
             assert(context_lifetime);
-
-            if (context_lifetime) {
-                while (auto method = incoming_work_queue.pop()) {
-                    method(*context_lifetime);
-                }
-                context_lifetime->update(0);
-                context_lifetime->draw(glm::mat4{});
+            while (auto method = incoming_work_queue.pop()) {
+                method(*(*context_lifetime));
             }
+            (*context_lifetime)->update(0);
+            (*context_lifetime)->draw(glm::mat4{});
         }
 
         void openGLContextClosing() override {
@@ -192,7 +177,10 @@ private:
         RendererComponent& listener;
 
         ContextLifetimeConstructor constructor;
-        std::unique_ptr<ContextLifetime> context_lifetime;
+
+        using lifetime_t = single_thread_access_wrapper<ContextLifetime>;
+        using lifetime_ptr = std::unique_ptr<lifetime_t>;
+        lifetime_ptr context_lifetime;
     };
 
     template <typename T>

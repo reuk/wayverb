@@ -25,12 +25,9 @@ aligned::vector<glm::vec3> compute_ring_points(int num, RingObject::Axis axis) {
 
 glm::vec4 compute_ring_color(RingObject::Axis axis) {
     switch (axis) {
-        case RingObject::Axis::x:
-            return glm::vec4(1, 0, 0, 1);
-        case RingObject::Axis::y:
-            return glm::vec4(0, 1, 0, 1);
-        case RingObject::Axis::z:
-            return glm::vec4(0, 0, 1, 1);
+        case RingObject::Axis::x: return glm::vec4(1, 0, 0, 1);
+        case RingObject::Axis::y: return glm::vec4(0, 1, 0, 1);
+        case RingObject::Axis::z: return glm::vec4(0, 0, 1, 1);
     }
 }
 
@@ -41,7 +38,7 @@ aligned::vector<GLuint> compute_ring_indices(int num) {
 }
 }  // namespace
 
-RingObject::RingObject(mglu::generic_shader& shader,
+RingObject::RingObject(const std::shared_ptr<mglu::generic_shader>& shader,
                        const glm::vec4& color,
                        Axis axis)
         : BasicDrawableObject(shader,
@@ -54,7 +51,8 @@ RingObject::RingObject(mglu::generic_shader& shader,
 
 //----------------------------------------------------------------------------//
 
-LineObject::LineObject(mglu::generic_shader& shader, const glm::vec4& color)
+LineObject::LineObject(const std::shared_ptr<mglu::generic_shader>& shader,
+                       const glm::vec4& color)
         : BasicDrawableObject(shader,
                               {{0, 0, 0}, {0, 0, 1}},
                               aligned::vector<glm::vec4>(2, color),
@@ -65,13 +63,13 @@ LineObject::LineObject(mglu::generic_shader& shader, const glm::vec4& color)
 
 //----------------------------------------------------------------------------//
 
-PointObject::PointObject(mglu::generic_shader& shader, const glm::vec4& color)
-        : shader(&shader)
+PointObject::PointObject(const std::shared_ptr<mglu::generic_shader>& shader,
+                         const glm::vec4& color)
+        : shader(shader)
         , color(color)
         , x_ring(shader, color, RingObject::Axis::x)
         , y_ring(shader, color, RingObject::Axis::y)
-        , z_ring(shader, color, RingObject::Axis::z) {
-}
+        , z_ring(shader, color, RingObject::Axis::z) {}
 
 void PointObject::set_highlight(float amount) {
     x_ring.set_highlight(amount);
@@ -98,7 +96,7 @@ void PointObject::set_pointing(const aligned::vector<glm::vec3>& directions) {
     }
     for (auto i = 0u; i != directions.size(); ++i) {
         if (lines.size() <= i) {
-            lines.emplace_back(*shader, color);
+            lines.emplace_back(shader, color);
         }
         lines[i].set_pointing(directions[i]);
     }

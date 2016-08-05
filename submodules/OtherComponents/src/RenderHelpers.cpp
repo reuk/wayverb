@@ -13,11 +13,3 @@ float BaseContextLifetime::get_aspect() const {
 
 void BaseContextLifetime::viewport_changed(const glm::vec2 &v) {}
 
-//----------------------------------------------------------------------------//
-
-void AsyncWorkQueue::handleAsyncUpdate() {
-    std::lock_guard<std::mutex> lck(mut);
-    while (auto method = outgoing_work_queue.pop()) {
-        method();
-    }
-}

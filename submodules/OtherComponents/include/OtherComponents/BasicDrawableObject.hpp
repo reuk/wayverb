@@ -37,7 +37,7 @@ private:
 class BasicDrawableObject : public mglu::drawable, public Node {
 public:
     template <typename T>
-    BasicDrawableObject(T& shader,
+    BasicDrawableObject(const T& shader,
                         const aligned::vector<glm::vec3>& g,
                         const aligned::vector<glm::vec4>& c,
                         const aligned::vector<GLuint>& i,
@@ -52,11 +52,11 @@ public:
         auto s_vao = vao.get_scoped();
         mglu::enable_and_bind_buffer(vao,
                                      geometry,
-                                     shader.get_attrib_location_v_position(),
+                                     shader->get_attrib_location_v_position(),
                                      3,
                                      GL_FLOAT);
         mglu::enable_and_bind_buffer(
-                vao, colors, shader.get_attrib_location_v_color(), 4, GL_FLOAT);
+                vao, colors, shader->get_attrib_location_v_color(), 4, GL_FLOAT);
         ibo.bind();
     }
 
@@ -80,8 +80,7 @@ private:
     template <typename T>
     class shader_temp final : public shader_base {
     public:
-        shader_temp(T& t)
-                : t(&t) {}
+        shader_temp(const T& t) : t(t) {}
         void set_model_matrix(const glm::mat4& m) const override {
             t->set_model_matrix(m);
         }
@@ -90,7 +89,7 @@ private:
         }
 
     private:
-        T* t;
+        T t;
     };
 
     void do_draw(const glm::mat4& modelview_matrix) const override;

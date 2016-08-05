@@ -1,5 +1,7 @@
 #pragma once
 
+#include "juce_events/juce_events.h"
+
 #include <mutex>
 #include <queue>
 
@@ -35,4 +37,27 @@ public:
 private:
     mutable std::mutex mut;
     std::queue<std::function<void(Ts...)>> work_items;
+};
+
+//----------------------------------------------------------------------------//
+
+class AsyncWorkQueue final : private juce::AsyncUpdater {
+public:
+    template <typename T>
+    void push(T&& t) {
+        std::lock_guard<std::mutex> lck(mut);
+        outgoing_work_queue.push(std::forward<T>(t));
+        triggerAsyncUpdate();
+    }
+
+private:
+    inline void handleAsyncUpdate() override {
+        std::lock_guard<std::mutex> lck(mut);
+        while (auto method = outgoing_work_queue.pop()) {
+            method();
+        }
+    }
+
+    mutable std::mutex mut;
+    WorkQueue<> outgoing_work_queue;
 };

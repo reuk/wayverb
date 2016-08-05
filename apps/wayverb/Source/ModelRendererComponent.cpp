@@ -19,9 +19,7 @@ ModelRendererComponent::ModelRendererComponent(
         model::ValueWrapper<model::RenderState> &render_state)
         : model(model)
         , shown_surface(shown_surface)
-        , renderer([model] {
-            return std::make_unique<SceneRendererContextLifetime>(model);
-        })
+        , renderer([model] { return SceneRendererContextLifetime(model); })
         , app(app)
         , render_state(render_state) {
     set_help("model viewport",

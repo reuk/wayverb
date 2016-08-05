@@ -27,8 +27,8 @@
 
 #include "common/octree.h"
 #include "common/scene_data.h"
-#include "common/voxel_collection.h"
 #include "common/single_thread_access_checker.h"
+#include "common/voxel_collection.h"
 
 #include <cmath>
 #include <future>
@@ -37,9 +37,10 @@
 
 class MultiMaterialObject : public mglu::drawable {
 public:
-    MultiMaterialObject(mglu::generic_shader &generic_shader,
-                        LitSceneShader &lit_scene_shader,
-                        const copyable_scene_data &scene_data);
+    MultiMaterialObject(
+            const std::shared_ptr<mglu::generic_shader> &generic_shader,
+            const std::shared_ptr<LitSceneShader> &lit_scene_shader,
+            const copyable_scene_data &scene_data);
 
     class SingleMaterialSection : public mglu::drawable {
     public:
@@ -63,8 +64,8 @@ private:
     void do_draw(const glm::mat4 &modelview_matrix) const override;
     glm::mat4 get_local_modelview_matrix() const override;
 
-    mglu::generic_shader *generic_shader;
-    LitSceneShader *lit_scene_shader;
+    std::shared_ptr<mglu::generic_shader> generic_shader;
+    std::shared_ptr<LitSceneShader> lit_scene_shader;
 
     mglu::vao wire_vao;
     mglu::vao fill_vao;
@@ -80,20 +81,20 @@ private:
 
 class PointObjects final {
 public:
-    PointObjects(mglu::generic_shader &shader);
+    PointObjects(const std::shared_ptr<mglu::generic_shader> &shader);
 
     void set_sources(const aligned::vector<glm::vec3> &u);
     void set_receivers(const aligned::vector<model::ReceiverSettings> &u);
 
     void draw(const glm::mat4 &matrix) const;
 
-    PointObject *get_currently_hovered(const glm::vec3 &origin,
-                                       const glm::vec3 &direction);
+    //    PointObject *get_currently_hovered(const glm::vec3 &origin,
+    //                                       const glm::vec3 &direction);
 
 private:
-    aligned::vector<PointObject *> get_all_point_objects();
+    //    aligned::vector<PointObject *> get_all_point_objects();
 
-    mglu::generic_shader &shader;
+    std::shared_ptr<mglu::generic_shader> shader;
 
     aligned::vector<PointObject> sources;
     aligned::vector<PointObject> receivers;
@@ -101,9 +102,16 @@ private:
 
 //----------------------------------------------------------------------------//
 
-class SceneRendererContextLifetime : public BaseContextLifetime {
+class SceneRendererContextLifetime final : public BaseContextLifetime {
 public:
     SceneRendererContextLifetime(const copyable_scene_data &scene_data);
+
+    SceneRendererContextLifetime(const SceneRendererContextLifetime &) = delete;
+    SceneRendererContextLifetime &operator=(
+            const SceneRendererContextLifetime &) = delete;
+    SceneRendererContextLifetime(SceneRendererContextLifetime &&) = default;
+    SceneRendererContextLifetime &operator=(SceneRendererContextLifetime &&) =
+            default;
 
     void set_eye(float u);
     void set_rotation(const AzEl &u);
@@ -145,11 +153,11 @@ private:
     glm::mat4 get_projection_matrix() const;
     glm::mat4 get_view_matrix() const;
 
-    mutable std::mutex mut;
-
-    mglu::generic_shader generic_shader;
-    MeshShader mesh_shader;
-    LitSceneShader lit_scene_shader;
+    std::shared_ptr<mglu::generic_shader> generic_shader{
+            std::make_shared<mglu::generic_shader>()};
+    std::shared_ptr<MeshShader> mesh_shader{std::make_shared<MeshShader>()};
+    std::shared_ptr<LitSceneShader> lit_scene_shader{
+            std::make_shared<LitSceneShader>()};
 
     MultiMaterialObject model_object;
     std::unique_ptr<MeshObject> mesh_object;
@@ -164,8 +172,6 @@ private:
     glm::vec3 translation;
 
     bool allow_move_mode{true};
-
-    single_thread_access_checker stac;
 
     struct Mousing {
         virtual ~Mousing() noexcept = default;
