@@ -32,19 +32,21 @@ void ModelRendererComponent::resized() { renderer.setBounds(getLocalBounds()); }
 
 void ModelRendererComponent::set_positions(
         const aligned::vector<glm::vec3> &positions) {
-    renderer.context_command(
-            [positions](auto &i) { i.set_positions(positions); });
+    renderer.context_command([=](auto &i) { i.set_positions(positions); });
 }
 
 void ModelRendererComponent::set_pressures(
-        const aligned::vector<float> &pressures) {
+        const aligned::vector<float> &pressures, float current_time) {
     renderer.context_command(
-            [pressures](auto &i) { i.set_pressures(pressures); });
+            [=](auto &i) { i.set_pressures(pressures, current_time); });
 }
 
 void ModelRendererComponent::set_impulses(
-        const aligned::vector<aligned::vector<raytracer::impulse>> &impulses) {
-    renderer.context_command([impulses](auto &i) { i.set_impulses(impulses); });
+        const aligned::vector<aligned::vector<raytracer::impulse>> &impulses,
+        const glm::vec3 &source,
+        const glm::vec3 &receiver) {
+    renderer.context_command(
+            [=](auto &i) { i.set_impulses(impulses, source, receiver); });
 }
 
 void ModelRendererComponent::receive_broadcast(model::Broadcaster *cb) {

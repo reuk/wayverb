@@ -9,6 +9,7 @@
 #include "MeshObject.hpp"
 #include "ModelObject.hpp"
 #include "PointObject.hpp"
+#include "RayVisualisation.hpp"
 
 #include "OtherComponents/AxesObject.hpp"
 #include "OtherComponents/BasicDrawableObject.hpp"
@@ -119,10 +120,13 @@ public:
     void set_rendering(bool b);
 
     void set_positions(const aligned::vector<glm::vec3> &positions);
-    void set_pressures(const aligned::vector<float> &pressures);
+    void set_pressures(const aligned::vector<float> &pressures,
+                       float current_time);
 
     void set_impulses(const aligned::vector<aligned::vector<raytracer::impulse>>
-                              &impulses);
+                              &impulses,
+                      const glm::vec3 &sources,
+                      const glm::vec3 &receivers);
 
     void set_highlighted(int u);
     void set_emphasis(const glm::vec3 &c);
@@ -158,9 +162,11 @@ private:
     std::shared_ptr<MeshShader> mesh_shader{std::make_shared<MeshShader>()};
     std::shared_ptr<LitSceneShader> lit_scene_shader{
             std::make_shared<LitSceneShader>()};
+    std::shared_ptr<RayShader> ray_shader{std::make_shared<RayShader>()};
 
     MultiMaterialObject model_object;
     std::unique_ptr<MeshObject> mesh_object;
+    std::unique_ptr<RayVisualisation> ray_object;
     bool rendering{false};
     PointObjects point_objects;
     AxesObject axes;

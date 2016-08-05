@@ -237,7 +237,8 @@ public:
         callback(state::finishing_raytracer, 1.0);
 
         if (raytracer_visual_callback) {
-            raytracer_visual_callback(raytracer_results->get_diffuse());
+            raytracer_visual_callback(
+                    raytracer_results->get_diffuse(), source, receiver);
         }
 
         auto impulses = raytracer_results->get_impulses();
@@ -324,8 +325,12 @@ public:
 
     void register_waveguide_visual_callback(
             waveguide_visual_callback_t callback) {
-        waveguide_visual_callback =
-                waveguide::postprocessor::visualiser(callback);
+        //  visualiser returns current waveguide step, but we want the mesh time
+        waveguide_visual_callback = waveguide::postprocessor::visualiser(
+                [=](const auto& pressures, size_t step) {
+                    //  convert step to time
+                    callback(pressures, step / waveguide_sample_rate);
+                });
     }
 
     void unregister_waveguide_visual_callback() {

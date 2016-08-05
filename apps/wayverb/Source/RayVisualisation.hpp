@@ -34,13 +34,13 @@ private:
 
 class RayVisualisation final : public mglu::drawable {
 public:
-    RayVisualisation(const RayShader& shader,
+    RayVisualisation(const std::shared_ptr<RayShader>& shader,
                      const aligned::vector<aligned::vector<raytracer::impulse>>&
                              impulses,
                      const glm::vec3& source,
                      const glm::vec3& receiver);
 
-    RayVisualisation(const RayShader& shader,
+    RayVisualisation(const std::shared_ptr<RayShader>& shader,
                      const raytracer::results& results,
                      size_t rays,
                      const glm::vec3& source);
@@ -51,7 +51,8 @@ private:
     void do_draw(const glm::mat4& modelview_matrix) const override;
     glm::mat4 get_local_modelview_matrix() const override;
 
-    const RayShader& shader;
+    std::shared_ptr<RayShader> shader;
+
     mglu::vao vao;
     mglu::static_vbo positions;
     mglu::static_vbo pressures;

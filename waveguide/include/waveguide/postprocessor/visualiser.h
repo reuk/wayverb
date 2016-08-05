@@ -7,9 +7,9 @@ namespace postprocessor {
 
 class visualiser final {
 public:
-    //  callback is passed a complete copy of the mesh state
+    /// Callback is passed a complete copy of the mesh state, and the step
     using output_callback =
-            std::function<void(const aligned::vector<cl_float>&)>;
+            std::function<void(const aligned::vector<cl_float>&, size_t)>;
 
     template <typename T>
     visualiser(T&& t)

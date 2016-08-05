@@ -27,12 +27,12 @@ class intermediate {
 public:
     using state_callback = std::function<void(state, double)>;
 
-    intermediate()                    = default;
+    intermediate() = default;
     intermediate(const intermediate&) = default;
     intermediate& operator=(const intermediate&) = default;
-    intermediate(intermediate&&) noexcept        = default;
+    intermediate(intermediate&&) noexcept = default;
     intermediate& operator=(intermediate&&) noexcept = default;
-    virtual ~intermediate() noexcept                 = default;
+    virtual ~intermediate() noexcept = default;
 
     virtual aligned::vector<aligned::vector<float>> attenuate(
             const compute_context& cc,
@@ -71,13 +71,15 @@ public:
                                       const state_callback&);
 
     using raytracer_visual_callback_t = std::function<void(
-            aligned::vector<aligned::vector<raytracer::impulse>>)>;
+            const aligned::vector<aligned::vector<raytracer::impulse>>&,
+            const glm::vec3&,
+            const glm::vec3&)>;
     void register_raytracer_visual_callback(
             raytracer_visual_callback_t callback);
     void unregister_raytracer_visual_callback();
 
     using waveguide_visual_callback_t =
-            std::function<void(aligned::vector<cl_float>)>;
+            std::function<void(const aligned::vector<cl_float>&, double)>;
     void register_waveguide_visual_callback(
             waveguide_visual_callback_t callback);
     void unregister_waveguide_visual_callback();

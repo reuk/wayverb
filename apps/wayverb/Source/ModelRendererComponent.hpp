@@ -25,9 +25,12 @@ public:
     void receive_broadcast(model::Broadcaster* b) override;
 
     void set_positions(const aligned::vector<glm::vec3>& positions);
-    void set_pressures(const aligned::vector<float>& pressures);
+    void set_pressures(const aligned::vector<float>& pressures,
+                       float current_time);
     void set_impulses(const aligned::vector<
-                      aligned::vector<raytracer::impulse>>& impulses);
+                              aligned::vector<raytracer::impulse>>& impulses,
+                      const glm::vec3& source,
+                      const glm::vec3& receiver);
 
     void renderer_open_gl_context_created(const Renderer*) override;
     void renderer_open_gl_context_closing(const Renderer*) override;

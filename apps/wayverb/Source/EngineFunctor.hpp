@@ -25,10 +25,13 @@ public:
         virtual void engine_nodes_changed(
                 const aligned::vector<glm::vec3>& positions) = 0;
         virtual void engine_waveguide_visuals_changed(
-                const aligned::vector<float>& pressures) = 0;
+                const aligned::vector<float>& pressures,
+                double current_time) = 0;
         virtual void engine_raytracer_visuals_changed(
                 const aligned::vector<aligned::vector<raytracer::impulse>>&
-                        impulses) = 0;
+                        impulses,
+                const glm::vec3& source,
+                const glm::vec3& receiver) = 0;
         virtual void engine_finished() = 0;
 
     protected:

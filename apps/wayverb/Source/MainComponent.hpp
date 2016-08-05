@@ -26,11 +26,15 @@ public:
     void engine_nodes_changed(
             AsyncEngine*, const aligned::vector<glm::vec3>& positions) override;
     void engine_waveguide_visuals_changed(
-            AsyncEngine*, const aligned::vector<float>& pressures) override;
+            AsyncEngine*,
+            const aligned::vector<float>& pressures,
+            double current_time) override;
     void engine_raytracer_visuals_changed(
             AsyncEngine*,
             const aligned::vector<aligned::vector<raytracer::impulse>>&
-                    impulses) override;
+                    impulses,
+            const glm::vec3& sources,
+            const glm::vec3& receivers) override;
     void engine_finished(AsyncEngine*) override;
 
 private:

@@ -117,7 +117,7 @@ extract_impulses_to_visualise(const raytracer::results& r, size_t rays) {
 //----------------------------------------------------------------------------//
 
 RayVisualisation::RayVisualisation(
-        const RayShader& shader,
+        const std::shared_ptr<RayShader>& shader,
         const aligned::vector<aligned::vector<raytracer::impulse>>& impulses,
         const glm::vec3& source,
         const glm::vec3& receiver)
@@ -130,18 +130,18 @@ RayVisualisation::RayVisualisation(
     const auto s_vao = vao.get_scoped();
     mglu::enable_and_bind_buffer(vao,
                                  positions,
-                                 shader.get_attrib_location_v_position(),
+                                 shader->get_attrib_location_v_position(),
                                  3,
                                  GL_FLOAT);
     mglu::enable_and_bind_buffer(vao,
                                  pressures,
-                                 shader.get_attrib_location_v_pressure(),
+                                 shader->get_attrib_location_v_pressure(),
                                  1,
                                  GL_FLOAT);
     ibo.bind();
 }
 
-RayVisualisation::RayVisualisation(const RayShader& shader,
+RayVisualisation::RayVisualisation(const std::shared_ptr<RayShader>& shader,
                                    const raytracer::results& results,
                                    size_t rays,
                                    const glm::vec3& source)
@@ -155,8 +155,8 @@ void RayVisualisation::set_time(float t) {
 }
 
 void RayVisualisation::do_draw(const glm::mat4& modelview_matrix) const {
-    auto s_shader = shader.get_scoped();
-    shader.set_model_matrix(modelview_matrix);
+    auto s_shader = shader->get_scoped();
+    shader->set_model_matrix(modelview_matrix);
 
     auto s_vao = vao.get_scoped();
     glDrawElements(GL_LINES, ibo.size(), GL_UNSIGNED_INT, nullptr);

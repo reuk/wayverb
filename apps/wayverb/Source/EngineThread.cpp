@@ -78,20 +78,27 @@ void AsyncEngine::engine_nodes_changed(
 }
 
 void AsyncEngine::engine_waveguide_visuals_changed(
-        const aligned::vector<float>& pressures) {
+        const aligned::vector<float>& pressures, double current_time) {
     std::lock_guard<std::mutex> lck(mut);
     work_queue.push([=] {
-        listener_list.call(
-                &Listener::engine_waveguide_visuals_changed, this, pressures);
+        listener_list.call(&Listener::engine_waveguide_visuals_changed,
+                           this,
+                           pressures,
+                           current_time);
     });
 }
 
 void AsyncEngine::engine_raytracer_visuals_changed(
-        const aligned::vector<aligned::vector<raytracer::impulse>>& impulses) {
+        const aligned::vector<aligned::vector<raytracer::impulse>>& impulses,
+        const glm::vec3& sources,
+        const glm::vec3& receivers) {
     std::lock_guard<std::mutex> lck(mut);
     work_queue.push([=] {
-        listener_list.call(
-                &Listener::engine_raytracer_visuals_changed, this, impulses);
+        listener_list.call(&Listener::engine_raytracer_visuals_changed,
+                           this,
+                           impulses,
+                           sources,
+                           receivers);
     });
 }
 

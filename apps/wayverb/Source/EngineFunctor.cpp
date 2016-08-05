@@ -62,11 +62,15 @@ void EngineFunctor::single_pair(Listener& listener,
     //  state
     if (visualise) {
         listener.engine_nodes_changed(engine.get_node_positions());
-        engine.register_waveguide_visual_callback([&](const auto& i) {
-            listener.engine_waveguide_visuals_changed(i);
+        engine.register_waveguide_visual_callback([&](const auto& pressures,
+                                                      auto current_time) {
+            listener.engine_waveguide_visuals_changed(pressures, current_time);
         });
-        engine.register_raytracer_visual_callback([&](const auto& i) {
-            listener.engine_raytracer_visuals_changed(i);
+        engine.register_raytracer_visual_callback([&](const auto& impulses,
+                                                      const auto& source,
+                                                      const auto& receiver) {
+            listener.engine_raytracer_visuals_changed(
+                    impulses, source, receiver);
         });
     }
 
