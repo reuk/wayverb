@@ -1,21 +1,22 @@
 #include "waveguide/postprocessor/microphone.h"
 
+#include "common/map.h"
+
 namespace waveguide {
 namespace postprocessor {
 
-microphone::microphone(const mesh& mesh,
-                       size_t output_node,
-                       double sample_rate,
-                       const output_callback& callback)
+namespace detail {
+microphone_state::microphone_state(const mesh& mesh,
+                                   size_t output_node,
+                                   double sample_rate)
         : output_node(output_node)
         , surrounding_nodes(mesh.compute_neighbors(output_node))
         , mesh_spacing(mesh.get_spacing())
-        , sample_rate(sample_rate)
-        , callback(callback) {}
+        , sample_rate(sample_rate) {}
 
-void microphone::operator()(cl::CommandQueue& queue,
-                            const cl::Buffer& buffer,
-                            size_t) {
+run_step_output microphone_state::operator()(cl::CommandQueue& queue,
+                                             const cl::Buffer& buffer,
+                                             size_t) {
     //  copy out node pressure
     const auto pressure =
             read_single_value<cl_float>(queue, buffer, output_node);
@@ -48,7 +49,7 @@ void microphone::operator()(cl::CommandQueue& queue,
 
     //  the result is scaled by the negative inverse of the ambient density
     static constexpr auto ambient_density = 1.225;
-    const auto dv                         = m / -ambient_density;
+    const auto dv = m / -ambient_density;
     //  and integrated using a discrete-time integrator
     velocity += (1.0 / sample_rate) * dv;
 
@@ -56,7 +57,46 @@ void microphone::operator()(cl::CommandQueue& queue,
     //  and the pressure
     const auto intensity = velocity * static_cast<double>(pressure);
 
-    callback(run_step_output{intensity, pressure});
+    return run_step_output{intensity, pressure};
+}
+
+size_t microphone_state::get_output_node() const { return output_node; }
+}  // namespace detail
+
+microphone::microphone(const mesh& mesh,
+                       size_t output_node,
+                       double sample_rate,
+                       const output_callback& callback)
+        : microphone_state(mesh, output_node, sample_rate)
+        , callback(callback) {}
+
+void microphone::operator()(cl::CommandQueue& queue,
+                            const cl::Buffer& buffer,
+                            size_t step) {
+    callback(microphone_state(queue, buffer, step));
+}
+
+multi_microphone::multi_microphone(const mesh& mesh,
+                                   const aligned::vector<size_t>& output_node,
+                                   double sample_rate,
+                                   const output_callback& callback)
+        : state(map_to_vector(output_node,
+                              [&](auto i) {
+                                  return detail::microphone_state(
+                                          mesh, i, sample_rate);
+                              }))
+        , callback(callback) {}
+
+void multi_microphone::operator()(cl::CommandQueue& queue,
+                                  const cl::Buffer& buffer,
+                                  size_t step) {
+    aligned::vector<std::tuple<run_step_output, size_t>> ret;
+    ret.reserve(state.size());
+    for (auto& i : state) {
+        ret.push_back(
+                std::make_tuple(i(queue, buffer, step), i.get_output_node()));
+    }
+    callback(ret);
 }
 
 }  // namespace postprocessor

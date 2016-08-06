@@ -3,6 +3,9 @@
 namespace waveguide {
 namespace postprocessor {
 
+visualiser::visualiser(const output_callback& callback)
+        : callback(callback) {}
+
 void visualiser::operator()(cl::CommandQueue& queue,
                             const cl::Buffer& buffer,
                             size_t step) {
