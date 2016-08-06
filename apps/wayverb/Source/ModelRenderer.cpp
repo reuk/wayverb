@@ -13,6 +13,52 @@
 
 #include "common/serialize/json_read_write.h"
 
+class SceneRendererContextLifetime::RotateMouseAction final {
+public:
+    RotateMouseAction(const glm::vec2 &mouse_down_position,
+                      SceneRendererContextLifetime &scene)
+            : mouse_down_position(mouse_down_position)
+            , scene(scene)
+            , starting_azel(scene.azel_target) {}
+
+    void operator()(const glm::vec2 &position) {
+        const auto diff = position - mouse_down_position;
+        const auto angle_scale = 0.01;
+        scene.set_rotation(AzEl{static_cast<float>(diff.x * angle_scale +
+                                                   starting_azel.azimuth),
+                                static_cast<float>(diff.y * angle_scale +
+                                                   starting_azel.elevation)});
+    }
+
+private:
+    glm::vec2 mouse_down_position;
+    SceneRendererContextLifetime &scene;
+    AzEl starting_azel;
+};
+
+class SceneRendererContextLifetime::MoveMouseAction final {
+public:
+    MoveMouseAction(const glm::vec2 &mouse_down_position,
+                    SceneRendererContextLifetime &scene,
+                    PointObject *to_move)
+            : mouse_down_position(mouse_down_position)
+            , scene(scene)
+            , to_move(to_move)
+            , original_position(/* TODO get to_move's position */) {}
+
+    void operator()(const glm::vec2 &position) {}
+
+    ~MoveMouseAction() noexcept {}
+
+private:
+    glm::vec2 mouse_down_position;
+    SceneRendererContextLifetime &scene;
+    PointObject *to_move;
+    glm::vec3 original_position;
+};
+
+//----------------------------------------------------------------------------//
+
 namespace {
 void push_triangle_indices(aligned::vector<GLuint> &ret, const triangle &tri) {
     ret.push_back(tri.v0);
@@ -34,7 +80,7 @@ aligned::vector<GLuint> MultiMaterialObject::SingleMaterialSection::get_indices(
 
 MultiMaterialObject::SingleMaterialSection::SingleMaterialSection(
         const copyable_scene_data &scene_data, int material_index) {
-    auto indices = get_indices(scene_data, material_index);
+    const auto indices = get_indices(scene_data, material_index);
     size = indices.size();
     ibo.data(indices);
 }
@@ -66,8 +112,8 @@ MultiMaterialObject::MultiMaterialObject(
                                            glm::vec4(0.5, 0.5, 0.5, 1.0)));
     mglu::check_for_gl_error();
 
-    auto configure_vao = [this](const auto &vao, const auto &shader) {
-        auto s_vao = vao.get_scoped();
+    const auto configure_vao = [this](const auto &vao, const auto &shader) {
+        const auto s_vao = vao.get_scoped();
         mglu::check_for_gl_error();
         mglu::enable_and_bind_buffer(vao,
                                      geometry,
@@ -94,15 +140,15 @@ glm::mat4 MultiMaterialObject::get_local_modelview_matrix() const {
 void MultiMaterialObject::do_draw(const glm::mat4 &modelview_matrix) const {
     for (auto i = 0u; i != sections.size(); ++i) {
         if (i == highlighted) {
-            auto s_shader = lit_scene_shader->get_scoped();
+            const auto s_shader = lit_scene_shader->get_scoped();
             lit_scene_shader->set_model_matrix(modelview_matrix);
-            auto s_vao = fill_vao.get_scoped();
+            const auto s_vao = fill_vao.get_scoped();
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
             sections[i].draw(modelview_matrix);
         } else {
-            auto s_shader = generic_shader->get_scoped();
+            const auto s_shader = generic_shader->get_scoped();
             generic_shader->set_model_matrix(modelview_matrix);
-            auto s_vao = wire_vao.get_scoped();
+            const auto s_vao = wire_vao.get_scoped();
             glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
             sections[i].draw(modelview_matrix);
         }
@@ -114,7 +160,7 @@ void MultiMaterialObject::set_highlighted(int material) {
 }
 
 void MultiMaterialObject::set_colour(const glm::vec3 &c) {
-    auto s_shader = lit_scene_shader->get_scoped();
+    const auto s_shader = lit_scene_shader->get_scoped();
     lit_scene_shader->set_colour(c);
 }
 
@@ -156,7 +202,6 @@ void PointObjects::draw(const glm::mat4 &matrix) const {
     }
 }
 
-/*
 PointObject *PointObjects::get_currently_hovered(const glm::vec3 &origin,
                                                  const glm::vec3 &direction) {
     struct Intersection {
@@ -165,14 +210,14 @@ PointObject *PointObjects::get_currently_hovered(const glm::vec3 &origin,
     };
 
     Intersection intersection{nullptr, 0};
-    for (auto i : get_all_point_objects()) {
-        auto diff = origin - i->get_position();
-        auto b = glm::dot(direction, diff);
-        auto c = glm::dot(diff, diff) - glm::pow(0.4, 2);
-        auto det = glm::pow(b, 2) - c;
+    for (const auto i : get_all_point_objects()) {
+        const auto diff = origin - i->get_position();
+        const auto b = glm::dot(direction, diff);
+        const auto c = glm::dot(diff, diff) - glm::pow(0.4, 2);
+        const auto det = glm::pow(b, 2) - c;
         if (0 <= det) {
-            auto sq_det = std::sqrt(det);
-            auto dist = std::min(-b + sq_det, -b - sq_det);
+            const auto sq_det = std::sqrt(det);
+            const auto dist = std::min(-b + sq_det, -b - sq_det);
             if (!intersection.ref || dist < intersection.distance) {
                 intersection = Intersection{i, dist};
             }
@@ -193,7 +238,6 @@ aligned::vector<PointObject *> PointObjects::get_all_point_objects() {
     }
     return ret;
 }
-*/
 
 //----------------------------------------------------------------------------//
 
@@ -202,9 +246,9 @@ SceneRendererContextLifetime::SceneRendererContextLifetime(
         : model_object(generic_shader, lit_scene_shader, scene_data)
         , point_objects(generic_shader)
         , axes(generic_shader) {
-    auto aabb = scene_data.get_aabb();
-    auto m = centre(aabb);
-    auto max = glm::length(dimensions(aabb));
+    const auto aabb = scene_data.get_aabb();
+    const auto m = centre(aabb);
+    const auto max = glm::length(dimensions(aabb));
     eye = eye_target = max > 0 ? 20 / max : 1;
     translation = -glm::vec3(m.x, m.y, m.z);
 }
@@ -218,9 +262,8 @@ void SceneRendererContextLifetime::set_rotation(const AzEl &u) {
 void SceneRendererContextLifetime::set_rendering(bool b) {
     rendering = b;
     if (!b) {
-        if (mesh_object) {
-            mesh_object->zero_pressures();
-        }
+        mesh_object = nullptr;
+        ray_object = nullptr;
     }
     allow_move_mode = !b;
 }
@@ -240,7 +283,6 @@ void SceneRendererContextLifetime::set_impulses(
         const aligned::vector<aligned::vector<raytracer::impulse>> &impulses,
         const glm::vec3 &source,
         const glm::vec3 &receiver) {
-    //  TODO
     ray_object = std::make_unique<RayVisualisation>(
             ray_shader, impulses, source, receiver);
 }
@@ -260,7 +302,7 @@ void SceneRendererContextLifetime::update(float dt) {
 
 void SceneRendererContextLifetime::do_draw(
         const glm::mat4 &modelview_matrix) const {
-    auto c = 0.0;
+    const auto c = 0.0;
     glClearColor(c, c, c, 0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -273,8 +315,8 @@ void SceneRendererContextLifetime::do_draw(
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    auto config_shader = [this](const auto &shader) {
-        auto s_shader = shader->get_scoped();
+    const auto config_shader = [this](const auto &shader) {
+        const auto s_shader = shader->get_scoped();
         shader->set_model_matrix(glm::mat4());
         shader->set_view_matrix(get_view_matrix());
         shader->set_projection_matrix(get_projection_matrix());
@@ -283,14 +325,21 @@ void SceneRendererContextLifetime::do_draw(
     config_shader(generic_shader);
     config_shader(mesh_shader);
     config_shader(lit_scene_shader);
+    config_shader(ray_shader);
 
     model_object.draw(modelview_matrix);
     point_objects.draw(modelview_matrix);
 
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-    if (rendering && mesh_object) {
-        mesh_object->draw(modelview_matrix);
+    if (rendering) {
+        if (mesh_object) {
+            mesh_object->draw(modelview_matrix);
+        }
+
+        if (ray_object) {
+            ray_object->draw(modelview_matrix);
+        }
     }
 
     axes.draw(modelview_matrix);
@@ -301,44 +350,35 @@ glm::mat4 SceneRendererContextLifetime::get_local_modelview_matrix() const {
 }
 
 void SceneRendererContextLifetime::mouse_down(const glm::vec2 &pos) {
-    //        auto hovered = point_objects.get_currently_hovered(
-    //                get_world_camera_position(),
-    //                get_world_mouse_direction(pos));
-    //        if (hovered && allow_move_mode) {
-    //            mousing = std::unique_ptr<Mousing>(
-    //                    std::make_unique<Move>(hovered,
-    //                    hovered->get_position()));
-    //        } else {
-    mousing = std::unique_ptr<Mousing>(
-            std::make_unique<Rotate>(azel_target, pos));
-    //        }
+    // auto hovered = point_objects.get_currently_hovered(
+    //        get_world_camera_position(),
+    //        get_world_mouse_direction(pos));
+    // if (hovered && allow_move_mode) {
+    //    mousing = std::unique_ptr<Mousing>(
+    //            std::make_unique<Move>(hovered,
+    //            hovered->get_position()));
+    //}
+    mouse_action = RotateMouseAction(pos, *this);
 }
 
 void SceneRendererContextLifetime::mouse_drag(const glm::vec2 &pos) {
-    assert(mousing);
-    if (auto m = dynamic_cast<Rotate *>(mousing.get())) {
-        auto diff = pos - m->position;
-        set_rotation_impl(
-                AzEl{m->orientation.azimuth + diff.x * Rotate::angle_scale,
-                     m->orientation.elevation + diff.y * Rotate::angle_scale});
-    } else if (auto m = dynamic_cast<Move *>(mousing.get())) {
-        auto camera_position = get_world_camera_position();
-        auto normal = get_world_camera_direction();
+    assert(mouse_action);
+    mouse_action(pos);
 
-        auto original = m->original_position;
-
-        auto d = glm::dot(normal, camera_position - original);
-
-        auto direction = get_world_mouse_direction(pos);
-        auto dist = -d / glm::dot(normal, direction);
-        auto new_pos = camera_position + direction * dist;
-
-        m->to_move->set_position(new_pos);
-    }
+    // if (auto m = dynamic_cast<Move *>(mousing.get())) {
+    //    auto camera_position = get_world_camera_position();
+    //    auto normal = get_world_camera_direction();
+    //    auto original = m->original_position;
+    //    auto d = glm::dot(normal, camera_position - original);
+    //    auto direction = get_world_mouse_direction(pos);
+    //    auto dist = -d / glm::dot(normal, direction);
+    //    auto new_pos = camera_position + direction * dist;
+    //    m->to_move->set_position(new_pos);
+    //}
 }
 
 void SceneRendererContextLifetime::mouse_up(const glm::vec2 &pos) {
-    mousing = nullptr;
+    mouse_action = decltype(mouse_action)();
 }
 
 void SceneRendererContextLifetime::mouse_wheel_move(float delta_y) {
@@ -399,20 +439,3 @@ glm::mat4 SceneRendererContextLifetime::get_view_matrix() const {
            glm::rotate(azel.azimuth, glm::vec3(0, 1, 0)) *
            glm::translate(translation);
 }
-
-SceneRendererContextLifetime::Rotate::Rotate(const AzEl &azel,
-                                             const glm::vec2 &position)
-        : orientation(azel)
-        , position(position) {}
-
-SceneRendererContextLifetime::Move::Move(PointObject *to_move,
-                                         const glm::vec3 &v)
-        : to_move(to_move)
-        , original_position(v) {
-    to_move->set_highlight(0.5);
-}
-SceneRendererContextLifetime::Move::~Move() noexcept {
-    to_move->set_highlight(0);
-}
-
-const float SceneRendererContextLifetime::Rotate::angle_scale{0.01};

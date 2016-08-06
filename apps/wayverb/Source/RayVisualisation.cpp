@@ -78,10 +78,18 @@ RayShader::RayShader()
 void RayShader::set_model_matrix(const glm::mat4& m) const {
     program.set("v_model", m);
 }
+void RayShader::set_view_matrix(const glm::mat4& m) const {
+    program.set("v_view", m);
+}
+void RayShader::set_projection_matrix(const glm::mat4& m) const {
+    program.set("v_projection", m);
+}
 
 const char* RayShader::vert{R"(
 #version 150
 in vec3 v_position;
+in float v_pressure;
+out float f_pressure;
 
 uniform mat4 v_model;
 uniform mat4 v_view;
@@ -90,29 +98,21 @@ uniform mat4 v_projection;
 void main() {
     vec4 modelview = v_view * v_model * vec4(v_position, 1.0);
     gl_Position = v_projection * modelview;
+
+    f_pressure = v_pressure;
 }
 )"};
 
 const char* RayShader::frag{R"(
 #version 150
-in float v_pressure;
+in float f_pressure;
 out vec4 frag_color;
 
 void main() {
-    frag_color = vec4(vec3(v_pressure), 1.0);
+//    frag_color = vec4(vec3(f_pressure), 1.0);
+    frag_color = vec4(1.0);
 }
 )"};
-
-//----------------------------------------------------------------------------//
-
-namespace {
-aligned::vector<aligned::vector<raytracer::impulse>>
-extract_impulses_to_visualise(const raytracer::results& r, size_t rays) {
-    auto diffuse = r.get_diffuse();
-    diffuse.resize(std::min(rays, diffuse.size()));
-    return diffuse;
-}
-}  // namespace
 
 //----------------------------------------------------------------------------//
 
@@ -140,15 +140,6 @@ RayVisualisation::RayVisualisation(
                                  GL_FLOAT);
     ibo.bind();
 }
-
-RayVisualisation::RayVisualisation(const std::shared_ptr<RayShader>& shader,
-                                   const raytracer::results& results,
-                                   size_t rays,
-                                   const glm::vec3& source)
-        : RayVisualisation(shader,
-                           extract_impulses_to_visualise(results, rays),
-                           source,
-                           results.get_receiver()) {}
 
 void RayVisualisation::set_time(float t) {
     //  TODO update positions of virtual wavefront

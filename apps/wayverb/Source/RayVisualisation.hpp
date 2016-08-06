@@ -10,7 +10,7 @@
 
 #include "common/aligned/vector.h"
 
-class RayShader {
+class RayShader final {
 public:
     RayShader();
 
@@ -24,6 +24,8 @@ public:
     auto get_scoped() const { return program.get_scoped(); }
 
     void set_model_matrix(const glm::mat4& m) const;
+    void set_view_matrix(const glm::mat4& u) const;
+    void set_projection_matrix(const glm::mat4& u) const;
 
 private:
     static const char* vert;
@@ -39,11 +41,6 @@ public:
                              impulses,
                      const glm::vec3& source,
                      const glm::vec3& receiver);
-
-    RayVisualisation(const std::shared_ptr<RayShader>& shader,
-                     const raytracer::results& results,
-                     size_t rays,
-                     const glm::vec3& source);
 
     void set_time(float t);
 

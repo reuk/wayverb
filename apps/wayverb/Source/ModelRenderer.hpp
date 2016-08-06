@@ -89,11 +89,11 @@ public:
 
     void draw(const glm::mat4 &matrix) const;
 
-    //    PointObject *get_currently_hovered(const glm::vec3 &origin,
-    //                                       const glm::vec3 &direction);
+    PointObject *get_currently_hovered(const glm::vec3 &origin,
+                                       const glm::vec3 &direction);
 
 private:
-    //    aligned::vector<PointObject *> get_all_point_objects();
+    aligned::vector<PointObject *> get_all_point_objects();
 
     std::shared_ptr<mglu::generic_shader> shader;
 
@@ -179,25 +179,10 @@ private:
 
     bool allow_move_mode{true};
 
-    struct Mousing {
-        virtual ~Mousing() noexcept = default;
-    };
+    class RotateMouseAction;
+    class MoveMouseAction;
 
-    struct Rotate final : public Mousing {
-        Rotate(const AzEl &azel, const glm::vec2 &position);
-
-        static const float angle_scale;
-        AzEl orientation;
-        glm::vec2 position;
-    };
-
-    struct Move final : public Mousing {
-        Move(PointObject *to_move, const glm::vec3 &v);
-        virtual ~Move() noexcept;
-
-        PointObject *to_move{nullptr};
-        glm::vec3 original_position;
-    };
-
-    std::unique_ptr<Mousing> mousing;
+    /// Will be constructed on mouse down, called with the current mouse
+    /// position on mouse drag, destroyed on mouse up
+    std::function<void(const glm::vec2 &)> mouse_action;
 };
