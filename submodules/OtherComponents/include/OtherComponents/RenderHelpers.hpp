@@ -133,10 +133,10 @@ private:
         void renderOpenGL() override {
             assert(context_lifetime);
             while (auto method = incoming_work_queue.pop()) {
-                method(*(*context_lifetime));
+                method(*context_lifetime);
             }
-            (*context_lifetime)->update(0);
-            (*context_lifetime)->draw(glm::mat4{});
+            context_lifetime->update(0);
+            context_lifetime->draw(glm::mat4{});
         }
 
         void openGLContextClosing() override {
@@ -178,7 +178,7 @@ private:
 
         ContextLifetimeConstructor constructor;
 
-        using lifetime_t = single_thread_access_wrapper<ContextLifetime>;
+        using lifetime_t = ContextLifetime;
         using lifetime_ptr = std::unique_ptr<lifetime_t>;
         lifetime_ptr context_lifetime;
     };

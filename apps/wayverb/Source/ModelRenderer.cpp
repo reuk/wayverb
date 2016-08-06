@@ -270,13 +270,15 @@ void SceneRendererContextLifetime::set_rendering(bool b) {
 
 void SceneRendererContextLifetime::set_positions(
         const aligned::vector<glm::vec3> &positions) {
-    mesh_object = std::make_unique<MeshObject>(mesh_shader, positions);
+    //  TODO
+    //  mesh_object = std::make_unique<MeshObject>(mesh_shader, positions);
 }
 
 void SceneRendererContextLifetime::set_pressures(
         const aligned::vector<float> &pressures, float current_time) {
-    assert(mesh_object);
-    mesh_object->set_pressures(pressures);
+    if (mesh_object) {
+        mesh_object->set_pressures(pressures);
+    }
 }
 
 void SceneRendererContextLifetime::set_impulses(
@@ -284,7 +286,10 @@ void SceneRendererContextLifetime::set_impulses(
         const glm::vec3 &source,
         const glm::vec3 &receiver) {
     ray_object = std::make_unique<RayVisualisation>(
-            ray_shader, impulses, source, receiver);
+            ray_shader,
+            impulses,
+            source,
+            receiver);
 }
 
 void SceneRendererContextLifetime::set_highlighted(int u) {

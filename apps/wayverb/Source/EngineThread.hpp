@@ -41,7 +41,7 @@ private:
 
 //----------------------------------------------------------------------------//
 
-class AsyncEngine final : public EngineFunctor::Listener {
+class AsyncEngine final {
 public:
     class Listener {
     public:
@@ -83,30 +83,52 @@ public:
     void addListener(Listener* l);
     void removeListener(Listener* l);
 
-    void engine_encountered_error(const std::string& str) override;
-    void engine_state_changed(wayverb::state state, double progress) override;
-    void engine_nodes_changed(
-            const aligned::vector<glm::vec3>& positions) override;
-    void engine_waveguide_visuals_changed(
-            const aligned::vector<float>& pressures,
-            double current_time) override;
-    void engine_raytracer_visuals_changed(
-            const aligned::vector<aligned::vector<raytracer::impulse>>&
-                    impulses,
-            const glm::vec3& source,
-            const glm::vec3& receiver) override;
-    void engine_finished() override;
-
 private:
     mutable std::mutex mut;
-    ListenerList<Listener> listener_list;
-    AsyncWorkQueue work_queue;
 
-    //  IMPORTANT
-    //  The thread relies on the rest of this object. It communicates with the
-    //  outside world through the work_queue and listener_list.
-    //  It MUST be destroyed before these objects so that it doesn't try to use
-    //  them (it must be after them in the class declaration b/c object members
-    //  are destroyed in reverse-declaration order).
-    std::unique_ptr<ScopedEngineThread> thread;
+    /// Extra level of indirection yo
+    class ConcreteListener final : public EngineFunctor::Listener {
+    public:
+        ConcreteListener(AsyncEngine& engine);
+
+        void engine_encountered_error(const std::string& str) override;
+        void engine_state_changed(wayverb::state state,
+                                  double progress) override;
+        void engine_nodes_changed(
+                const aligned::vector<glm::vec3>& positions) override;
+        void engine_waveguide_visuals_changed(
+                const aligned::vector<float>& pressures,
+                double current_time) override;
+        void engine_raytracer_visuals_changed(
+                const aligned::vector<aligned::vector<raytracer::impulse>>&
+                        impulses,
+                const glm::vec3& source,
+                const glm::vec3& receiver) override;
+        void engine_finished() override;
+
+        void start(const File& file_name,
+                   const model::Persistent& wrapper,
+                   const copyable_scene_data& scene_data,
+                   bool visualise);
+        void stop();
+        bool is_running() const;
+
+        void addListener(AsyncEngine::Listener* l);
+        void removeListener(AsyncEngine::Listener* l);
+
+    private:
+        AsyncEngine& engine;
+        ListenerList<AsyncEngine::Listener> listener_list;
+        AsyncWorkQueue work_queue;
+
+        //  IMPORTANT
+        //  The thread relies on the rest of this object. It communicates with
+        //  the outside world through the work_queue and listener_list.
+        //  It MUST be destroyed before these objects so that it doesn't try to
+        //  use them (it must be after them in the class declaration b/c object
+        //  members are destroyed in reverse-declaration order).
+        std::unique_ptr<ScopedEngineThread> thread;
+    };
+
+    ConcreteListener concrete_listener{*this};
 };

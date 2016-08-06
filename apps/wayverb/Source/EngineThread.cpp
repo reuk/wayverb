@@ -36,6 +36,97 @@ void AsyncEngine::start(const File& file_name,
                         const copyable_scene_data& scene_data,
                         bool visualise) {
     std::lock_guard<std::mutex> lck(mut);
+    concrete_listener.start(file_name, wrapper, scene_data, visualise);
+}
+
+void AsyncEngine::stop() {
+    std::lock_guard<std::mutex> lck(mut);
+    concrete_listener.stop();
+}
+
+bool AsyncEngine::is_running() const {
+    std::lock_guard<std::mutex> lck(mut);
+    return concrete_listener.is_running();
+}
+
+void AsyncEngine::addListener(Listener* l) {
+    std::lock_guard<std::mutex> lck(mut);
+    concrete_listener.addListener(l);
+}
+
+void AsyncEngine::removeListener(Listener* l) {
+    std::lock_guard<std::mutex> lck(mut);
+    concrete_listener.removeListener(l);
+}
+
+//----------------------------------------------------------------------------//
+
+AsyncEngine::ConcreteListener::ConcreteListener(AsyncEngine& engine)
+        : engine(engine) {}
+
+void AsyncEngine::ConcreteListener::engine_encountered_error(
+        const std::string& str) {
+    work_queue.push([=] {
+        listener_list.call(
+                &AsyncEngine::Listener::engine_encountered_error, &engine, str);
+    });
+}
+
+void AsyncEngine::ConcreteListener::engine_state_changed(wayverb::state state,
+                                                         double progress) {
+    work_queue.push([=] {
+        listener_list.call(&AsyncEngine::Listener::engine_state_changed,
+                           &engine,
+                           state,
+                           progress);
+    });
+}
+
+void AsyncEngine::ConcreteListener::engine_nodes_changed(
+        const aligned::vector<glm::vec3>& positions) {
+    work_queue.push([=] {
+        listener_list.call(&AsyncEngine::Listener::engine_nodes_changed,
+                           &engine,
+                           positions);
+    });
+}
+
+void AsyncEngine::ConcreteListener::engine_waveguide_visuals_changed(
+        const aligned::vector<float>& pressures, double current_time) {
+    work_queue.push([=] {
+        listener_list.call(
+                &AsyncEngine::Listener::engine_waveguide_visuals_changed,
+                &engine,
+                pressures,
+                current_time);
+    });
+}
+
+void AsyncEngine::ConcreteListener::engine_raytracer_visuals_changed(
+        const aligned::vector<aligned::vector<raytracer::impulse>>& impulses,
+        const glm::vec3& source,
+        const glm::vec3& receiver) {
+    work_queue.push([=] {
+        listener_list.call(
+                &AsyncEngine::Listener::engine_raytracer_visuals_changed,
+                &engine,
+                impulses,
+                source,
+                receiver);
+    });
+}
+
+void AsyncEngine::ConcreteListener::engine_finished() {
+    work_queue.push([=] {
+        thread = nullptr;
+        listener_list.call(&AsyncEngine::Listener::engine_finished, &engine);
+    });
+}
+
+void AsyncEngine::ConcreteListener::start(const File& file_name,
+                                          const model::Persistent& wrapper,
+                                          const copyable_scene_data& scene_data,
+                                          bool visualise) {
     thread = std::make_unique<ScopedEngineThread>(
             *this,
             file_name.getFullPathName().toStdString(),
@@ -44,78 +135,16 @@ void AsyncEngine::start(const File& file_name,
             visualise);
 }
 
-void AsyncEngine::stop() {
-    std::lock_guard<std::mutex> lck(mut);
-    thread = nullptr;
-}
+void AsyncEngine::ConcreteListener::stop() { thread = nullptr; }
 
-bool AsyncEngine::is_running() const {
-    std::lock_guard<std::mutex> lck(mut);
+bool AsyncEngine::ConcreteListener::is_running() const {
     return thread != nullptr;
 }
 
-void AsyncEngine::engine_encountered_error(const std::string& str) {
-    std::lock_guard<std::mutex> lck(mut);
-    work_queue.push([=] {
-        listener_list.call(&Listener::engine_encountered_error, this, str);
-    });
-}
-
-void AsyncEngine::engine_state_changed(wayverb::state state, double progress) {
-    std::lock_guard<std::mutex> lck(mut);
-    work_queue.push([=] {
-        listener_list.call(
-                &Listener::engine_state_changed, this, state, progress);
-    });
-}
-
-void AsyncEngine::engine_nodes_changed(
-        const aligned::vector<glm::vec3>& positions) {
-    std::lock_guard<std::mutex> lck(mut);
-    work_queue.push([=] {
-        listener_list.call(&Listener::engine_nodes_changed, this, positions);
-    });
-}
-
-void AsyncEngine::engine_waveguide_visuals_changed(
-        const aligned::vector<float>& pressures, double current_time) {
-    std::lock_guard<std::mutex> lck(mut);
-    work_queue.push([=] {
-        listener_list.call(&Listener::engine_waveguide_visuals_changed,
-                           this,
-                           pressures,
-                           current_time);
-    });
-}
-
-void AsyncEngine::engine_raytracer_visuals_changed(
-        const aligned::vector<aligned::vector<raytracer::impulse>>& impulses,
-        const glm::vec3& sources,
-        const glm::vec3& receivers) {
-    std::lock_guard<std::mutex> lck(mut);
-    work_queue.push([=] {
-        listener_list.call(&Listener::engine_raytracer_visuals_changed,
-                           this,
-                           impulses,
-                           sources,
-                           receivers);
-    });
-}
-
-void AsyncEngine::engine_finished() {
-    std::lock_guard<std::mutex> lck(mut);
-    work_queue.push([=] {
-        thread = nullptr;
-        listener_list.call(&Listener::engine_finished, this);
-    });
-}
-
-void AsyncEngine::addListener(Listener* l) {
-    std::lock_guard<std::mutex> lck(mut);
+void AsyncEngine::ConcreteListener::addListener(AsyncEngine::Listener* l) {
     listener_list.add(l);
 }
 
-void AsyncEngine::removeListener(Listener* l) {
-    std::lock_guard<std::mutex> lck(mut);
+void AsyncEngine::ConcreteListener::removeListener(AsyncEngine::Listener* l) {
     listener_list.remove(l);
 }

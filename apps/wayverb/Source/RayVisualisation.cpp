@@ -36,7 +36,7 @@ aligned::vector<float> extract_pressures(
     //  impulses
     for (const auto& ray : impulses) {
         for (const auto& reflection : ray) {
-            ret.push_back(std::abs(mean(reflection.volume)));
+            ret.push_back(std::abs(mean(reflection.volume)) * (1 << 20));
         }
     }
 
@@ -109,8 +109,8 @@ in float f_pressure;
 out vec4 frag_color;
 
 void main() {
-//    frag_color = vec4(vec3(f_pressure), 1.0);
-    frag_color = vec4(1.0);
+    frag_color = vec4(vec3(f_pressure), 1.0);
+//    frag_color = vec4(1.0);
 }
 )"};
 

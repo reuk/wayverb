@@ -70,7 +70,12 @@ void EngineFunctor::single_pair(Listener& listener,
                                                       const auto& source,
                                                       const auto& receiver) {
             listener.engine_raytracer_visuals_changed(
-                    impulses, source, receiver);
+                    aligned::vector<aligned::vector<raytracer::impulse>>(
+                            impulses.begin(),
+                            impulses.begin() +
+                                    std::min(size_t{100}, impulses.size())),
+                    source,
+                    receiver);
         });
     }
 
