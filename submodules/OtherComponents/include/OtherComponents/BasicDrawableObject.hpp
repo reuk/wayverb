@@ -37,7 +37,7 @@ private:
 class BasicDrawableObject : public mglu::drawable, public Node {
 public:
     template <typename T>
-    BasicDrawableObject(const T& shader,
+    BasicDrawableObject(const std::shared_ptr<T>& shader,
                         const aligned::vector<glm::vec3>& g,
                         const aligned::vector<glm::vec4>& c,
                         const aligned::vector<GLuint>& i,
@@ -55,8 +55,11 @@ public:
                                      shader->get_attrib_location_v_position(),
                                      3,
                                      GL_FLOAT);
-        mglu::enable_and_bind_buffer(
-                vao, colors, shader->get_attrib_location_v_color(), 4, GL_FLOAT);
+        mglu::enable_and_bind_buffer(vao,
+                                     colors,
+                                     shader->get_attrib_location_v_color(),
+                                     4,
+                                     GL_FLOAT);
         ibo.bind();
     }
 
@@ -73,23 +76,24 @@ private:
     public:
         virtual ~shader_base() noexcept = default;
 
+        using scoped = decltype(std::declval<mglu::usable>().get_scoped());
+
         virtual void set_model_matrix(const glm::mat4&) const = 0;
-        virtual mglu::usable::scoped get_scoped() const       = 0;
+        virtual scoped get_scoped() const = 0;
     };
 
     template <typename T>
     class shader_temp final : public shader_base {
     public:
-        shader_temp(const T& t) : t(t) {}
+        shader_temp(const std::shared_ptr<T>& t)
+                : t(t) {}
         void set_model_matrix(const glm::mat4& m) const override {
             t->set_model_matrix(m);
         }
-        mglu::usable::scoped get_scoped() const override {
-            return t->get_scoped();
-        }
+        scoped get_scoped() const override { return t->get_scoped(); }
 
     private:
-        T t;
+        std::shared_ptr<T> t;
     };
 
     void do_draw(const glm::mat4& modelview_matrix) const override;

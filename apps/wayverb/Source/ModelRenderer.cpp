@@ -279,6 +279,10 @@ void SceneRendererContextLifetime::set_pressures(
     if (mesh_object) {
         mesh_object->set_pressures(pressures);
     }
+
+    if (ray_object) {
+        ray_object->set_time(current_time);
+    }
 }
 
 void SceneRendererContextLifetime::set_impulses(

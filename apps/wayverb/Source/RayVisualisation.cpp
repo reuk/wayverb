@@ -2,15 +2,80 @@
 
 #include "OtherComponents/MoreConversions.hpp"
 
+#include "common/aligned/vector.h"
 #include "common/cl_traits.h"
+#include "common/map.h"
+
+#include <numeric>
 
 namespace {
 
-aligned::vector<glm::vec3> extract_positions(
+class distance_accumulator final {
+public:
+    distance_accumulator(const glm::vec3& original_position)
+            : last_position(original_position) {}
+
+    float operator()(const glm::vec3& i) {
+        current_distance += glm::distance(last_position, i);
+        last_position = i;
+        return current_distance;
+    }
+
+private:
+    glm::vec3 last_position;
+    float current_distance{0};
+};
+
+template <typename T>
+size_t count(const T& t) {
+    return 1;
+}
+template <typename T>
+size_t count(const aligned::vector<T>& t) {
+    return std::accumulate(
+            t.begin(),
+            t.end(),
+            size_t{0},
+            [](const auto& i, const auto& j) { return i + count(j); });
+}
+
+}  // namespace
+
+aligned::vector<RayVisualisation::path_data>
+RayVisualisation::convert_to_path_data(
+        const aligned::vector<raytracer::impulse>& impulses,
+        const glm::vec3& source) {
+    aligned::vector<path_data> ret;
+    ret.reserve(impulses.size());
+
+    distance_accumulator d(source);
+    for (const auto& i : impulses) {
+        const auto pos = to_glm_vec3(i.position);
+        const auto dist = d(pos);
+        ret.push_back(
+                path_data{pos, dist, std::abs(mean(i.volume)) * (1 << 20)});
+    }
+    return ret;
+}
+
+aligned::vector<aligned::vector<RayVisualisation::path_data>>
+RayVisualisation::convert_to_path_data(
         const aligned::vector<aligned::vector<raytracer::impulse>>& impulses,
         const glm::vec3& source) {
+    aligned::vector<aligned::vector<path_data>> ret;
+    ret.reserve(impulses.size());
+
+    for (const auto& i : impulses) {
+        ret.push_back(convert_to_path_data(i, source));
+    }
+
+    return ret;
+}
+
+aligned::vector<glm::vec3> RayVisualisation::extract_positions(
+        const aligned::vector<aligned::vector<path_data>>& impulses,
+        const glm::vec3& source) {
     aligned::vector<glm::vec3> ret;
-    ret.reserve(impulses.size() * impulses.front().size() + 1);
 
     //  first in the buffer is the source position
     ret.push_back(source);
@@ -18,15 +83,21 @@ aligned::vector<glm::vec3> extract_positions(
     //  now add positions ray-by-ray from the input
     for (const auto& ray : impulses) {
         for (const auto& reflection : ray) {
-            ret.push_back(to_glm_vec3(reflection.position));
+            ret.push_back(reflection.position);
         }
+    }
+
+    //  the last impulses.size() points will be moved to represent the wavefront
+    const auto lim = impulses.size();
+    for (auto i = 0u; i != lim; ++i) {
+        ret.push_back(glm::vec3{});
     }
 
     return ret;
 }
 
-aligned::vector<float> extract_pressures(
-        const aligned::vector<aligned::vector<raytracer::impulse>>& impulses) {
+aligned::vector<float> RayVisualisation::extract_pressures(
+        const aligned::vector<aligned::vector<path_data>>& impulses) {
     aligned::vector<float> ret;
     ret.reserve(impulses.size() * impulses.front().size() + 1);
 
@@ -36,39 +107,80 @@ aligned::vector<float> extract_pressures(
     //  impulses
     for (const auto& ray : impulses) {
         for (const auto& reflection : ray) {
-            ret.push_back(std::abs(mean(reflection.volume)) * (1 << 20));
+            ret.push_back(reflection.pressure);
         }
+    }
+
+    //  the last impulses.size() points will be moved to represent the wavefront
+    const auto lim = impulses.size();
+    for (auto i = 0u; i != lim; ++i) {
+        ret.push_back(1);
     }
 
     return ret;
 }
 
-aligned::vector<GLuint> compute_indices(
-        const aligned::vector<aligned::vector<raytracer::impulse>>& impulses) {
+aligned::vector<GLuint> RayVisualisation::compute_indices(
+        const aligned::vector<aligned::vector<path_data>>& impulses,
+        float time,
+        size_t reflection_points) {
     aligned::vector<GLuint> ret;
 
-    //  impulses
-    auto counter = 1u;
-    for (const auto& ray : impulses) {
+    const auto distance = time * speed_of_sound;
+
+    //  this will hold the begin index of each ray in the vertex buffer
+    size_t counter = 1;
+    const auto rays = impulses.size();
+    for (size_t i = 0; i != rays; ++i, counter += impulses[i].size()) {
+        const auto& ray = impulses[i];
+
         if (!ray.empty()) {
             ret.push_back(0);  //  source
 
-            const auto lim = counter + ray.size() - 1;
-            for (; counter != lim; ++counter) {
-                for (auto i = 0; i != 2; ++i) {
-                    ret.push_back(counter);
-                }
+            size_t j = 0;
+            for (; (j != ray.size()) && (ray[j].distance < distance); ++j) {
+                const auto impulse_index = counter + j;
+                ret.push_back(impulse_index);
+                ret.push_back(impulse_index);
             }
 
-            ret.push_back(counter);
-            counter += 1;
+            ret.push_back(reflection_points + 1 + i);
         }
     }
 
     return ret;
 }
 
-}  // namespace
+glm::vec3 RayVisualisation::ray_wavefront_position(
+        const aligned::vector<path_data>& path,
+        float time,
+        const glm::vec3& source) {
+    const auto distance = time * speed_of_sound;
+    auto it = path.begin();
+    for (; it->distance < distance && it != path.end(); ++it) {
+        //  this line intentionally left blank
+    }
+
+    const auto far_node = *it;
+    const auto near_node =
+            it == path.begin() ? path_data{source, 0, 1} : *(it - 1);
+
+    return glm::mix(near_node.position,
+                    far_node.position,
+                    glm::clamp((distance - near_node.distance) /
+                                       (far_node.distance - near_node.distance),
+                               0.0,
+                               1.0));
+}
+
+aligned::vector<glm::vec3> RayVisualisation::ray_wavefront_position(
+        const aligned::vector<aligned::vector<path_data>>& paths,
+        float time,
+        const glm::vec3& source) {
+    return map_to_vector(paths, [&](const auto& i) {
+        return ray_wavefront_position(i, time, source);
+    });
+}
 
 //----------------------------------------------------------------------------//
 
@@ -110,7 +222,6 @@ out vec4 frag_color;
 
 void main() {
     frag_color = vec4(vec3(f_pressure), 1.0);
-//    frag_color = vec4(1.0);
 }
 )"};
 
@@ -121,12 +232,26 @@ RayVisualisation::RayVisualisation(
         const aligned::vector<aligned::vector<raytracer::impulse>>& impulses,
         const glm::vec3& source,
         const glm::vec3& receiver)
+        : RayVisualisation(shader,
+                           convert_to_path_data(impulses, source),
+                           source,
+                           receiver,
+                           count(impulses)) {}
+
+RayVisualisation::RayVisualisation(
+        const std::shared_ptr<RayShader>& shader,
+        const aligned::vector<aligned::vector<path_data>>& paths,
+        const glm::vec3& source,
+        const glm::vec3& receiver,
+        size_t reflection_points)
         : shader(shader)
-        , positions(extract_positions(impulses, source))
-        , pressures(extract_pressures(impulses))
-        , ibo(compute_indices(impulses))
+        , positions(extract_positions(paths, source))
+        , pressures(extract_pressures(paths))
+        , ibo(compute_indices(paths, 0, reflection_points))
         , source(source)
-        , receiver(receiver) {
+        , receiver(receiver)
+        , paths(paths)
+        , reflection_points(reflection_points) {
     const auto s_vao = vao.get_scoped();
     mglu::enable_and_bind_buffer(vao,
                                  positions,
@@ -142,7 +267,9 @@ RayVisualisation::RayVisualisation(
 }
 
 void RayVisualisation::set_time(float t) {
-    //  TODO update positions of virtual wavefront
+    ibo.data(compute_indices(paths, t, reflection_points));
+    positions.sub_data(1 + reflection_points,
+                       ray_wavefront_position(paths, t, source));
 }
 
 void RayVisualisation::do_draw(const glm::mat4& modelview_matrix) const {

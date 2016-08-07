@@ -45,15 +45,60 @@ public:
     void set_time(float t);
 
 private:
+    struct path_data final {
+        glm::vec3 position;
+        double distance;
+        double pressure;
+    };
+
+    static aligned::vector<path_data> convert_to_path_data(
+            const aligned::vector<raytracer::impulse>& impulses,
+            const glm::vec3& source);
+
+    static aligned::vector<aligned::vector<path_data>> convert_to_path_data(
+            const aligned::vector<aligned::vector<raytracer::impulse>>&
+                    impulses,
+            const glm::vec3& source);
+
+    static aligned::vector<glm::vec3> extract_positions(
+            const aligned::vector<aligned::vector<path_data>>& impulses,
+            const glm::vec3& source);
+
+    static aligned::vector<float> extract_pressures(
+            const aligned::vector<aligned::vector<path_data>>& impulses);
+
+    static aligned::vector<GLuint> compute_indices(
+            const aligned::vector<aligned::vector<path_data>>& impulses,
+            float time,
+            size_t reflection_points);
+
+    static glm::vec3 ray_wavefront_position(
+            const aligned::vector<path_data>& path,
+            float time, const glm::vec3& source);
+
+    static aligned::vector<glm::vec3> ray_wavefront_position(
+            const aligned::vector<aligned::vector<path_data>>& paths,
+            float time, const glm::vec3& source);
+
+    RayVisualisation(
+            const std::shared_ptr<RayShader>& shader,
+            const aligned::vector<aligned::vector<path_data>>& impulses,
+            const glm::vec3& source,
+            const glm::vec3& receiver,
+            size_t reflection_points);
+
     void do_draw(const glm::mat4& modelview_matrix) const override;
     glm::mat4 get_local_modelview_matrix() const override;
 
     std::shared_ptr<RayShader> shader;
 
     mglu::vao vao;
-    mglu::static_vbo positions;
+    mglu::dynamic_vbo positions;
     mglu::static_vbo pressures;
-    mglu::static_ibo ibo;
+    mglu::dynamic_ibo ibo;
     glm::vec3 source;
     glm::vec3 receiver;
+
+    aligned::vector<aligned::vector<path_data>> paths;
+    size_t reflection_points;
 };
