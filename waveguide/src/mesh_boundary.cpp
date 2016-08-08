@@ -1,68 +1,44 @@
 #include "waveguide/mesh_boundary.h"
 
 #include "common/almost_equal.h"
+#include "common/box.h"
 #include "common/overlaps_2d.h"
 #include "common/scene_data.h"
+#include "common/spatial_division.h"
 #include "common/stl_wrappers.h"
 
-glm::ivec3 mesh_boundary::hash_point(const glm::vec3& v) const {
-    return (v - boundary.get_c0()) / cell_size;
+glm::ivec2 mesh_boundary::hash_point(const glm::vec3& v) const {
+    return glm::vec2(v - boundary.get_c0()) / cell_size;
 }
-
-mesh_boundary::hash_table mesh_boundary::compute_triangle_references() const {
-    hash_table ret(DIVISIONS, aligned::vector<reference_store>(DIVISIONS));
-    for (auto& i : ret) {
-        for (auto& j : i) {
-            j.reserve(8);
-        }
-    }
-
-    for (auto i = 0u; i != triangles.size(); ++i) {
-        const auto& t = triangles[i];
-        const std::array<glm::vec3, 3> coll{
-                {vertices[t.v0], vertices[t.v1], vertices[t.v2]}};
-
-        const auto bounding_box = min_max<3>(std::begin(coll), std::end(coll));
-        const auto min_indices = hash_point(bounding_box.get_c0());
-        const auto max_indices = hash_point(bounding_box.get_c1()) + 1;
-
-        for (auto j = min_indices.x; j != max_indices.x && j != DIVISIONS;
-             ++j) {
-            for (auto k = min_indices.y; k != max_indices.y && k != DIVISIONS;
-                 ++k) {
-                ret[j][k].push_back(i);
-            }
-        }
-    }
-    return ret;
-}
-
-mesh_boundary::mesh_boundary(const aligned::vector<triangle>& triangles,
-                             const aligned::vector<glm::vec3>& vertices,
-                             const aligned::vector<surface>& surfaces)
-        : triangles(triangles)
-        , vertices(vertices)
-        , surfaces(surfaces)
-        , boundary(min_max<3>(std::begin(vertices), std::end(vertices)))
-        , cell_size(dimensions(boundary) / static_cast<float>(DIVISIONS))
-        , triangle_references(compute_triangle_references()) {}
 
 mesh_boundary::mesh_boundary(const copyable_scene_data& sd)
-        : mesh_boundary(sd.get_triangles(),
-                        sd.get_converted_vertices(),
-                        sd.get_surfaces()) {}
+        : triangles(sd.get_triangles())
+        , vertices(sd.get_converted_vertices())
+        , surfaces(sd.get_surfaces())
+        , boundary(sd.get_aabb())
+        , triangle_references(ndim_tree<2>(
+                  10,
+                  [&](auto item, const auto& aabb) {
+                      return ::overlaps(
+                              aabb,
+                              get_triangle_vec2(triangles[item], vertices));
+                  },
+                  sd.get_triangle_indices(),
+                  box<2>(sd.get_aabb().get_c0(), sd.get_aabb().get_c1())))
+        , cell_size(::dimensions(triangle_references.get_voxel_aabb())) {}
 
-const mesh_boundary::reference_store& mesh_boundary::get_references(
-        const glm::ivec3& i) const {
+const aligned::vector<size_t>& mesh_boundary::get_references(
+        const glm::ivec2& i) const {
     return get_references(i.x, i.y);
 }
 
-const mesh_boundary::reference_store& mesh_boundary::get_references(
-        int x, int y) const {
-    if (0 <= x && x < DIVISIONS && 0 <= y && y < DIVISIONS) {
-        return triangle_references[x][y];
+const aligned::vector<size_t>& mesh_boundary::get_references(int x,
+                                                             int y) const {
+    if (0 <= x && x < triangle_references.get_side() && 0 <= y &&
+        y < triangle_references.get_side()) {
+        return triangle_references.get_data()[x][y].get_items();
     }
-    return empty_reference_store;
+    return empty;
 }
 
 bool mesh_boundary::inside(const glm::vec3& v) const {
@@ -97,7 +73,8 @@ bool mesh_boundary::inside(const glm::vec3& v) const {
            2;
 }
 
-box<3> mesh_boundary::get_aabb() const { return boundary; }
+box<3> mesh_boundary::get_aabb() const {
+    return boundary; }
 
 aligned::vector<size_t> mesh_boundary::get_triangle_indices() const {
     aligned::vector<size_t> ret(triangles.size());
@@ -117,8 +94,4 @@ const aligned::vector<surface>& mesh_boundary::get_surfaces() const {
     return surfaces;
 }
 
-glm::vec3 mesh_boundary::get_cell_size() const { return cell_size; }
-
-constexpr int mesh_boundary::DIVISIONS;
-
-const mesh_boundary::reference_store mesh_boundary::empty_reference_store{};
+const aligned::vector<size_t> mesh_boundary::empty{};

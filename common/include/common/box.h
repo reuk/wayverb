@@ -98,8 +98,8 @@ bool overlaps(const box<3>& b, const triangle_vec3& t);
 
 template <size_t n>
 inline bool overlaps(const box<2>& b, const std::array<glm::vec2, n>& shape) {
-    return overlaps_2d(std::array<glm::vec2, 2>{{b.get_c0(), b.get_c1()}},
-                       shape);
+    return geo::overlaps_2d(std::array<glm::vec2, 2>{{b.get_c0(), b.get_c1()}},
+                            shape);
 }
 
 bool intersects(const box<3>& b, const geo::ray& ray, float t0, float t1);

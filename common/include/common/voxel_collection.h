@@ -40,25 +40,121 @@ private:
 };
 
 template <size_t>
-struct voxel_collection_data;
+class voxel_collection_data;
 
 template <>
-struct voxel_collection_data<2> final {
+class voxel_collection_data<2> {
+public:
     using type = aligned::vector<aligned::vector<voxel<2>>>;
+
+    voxel_collection_data(const ndim_tree<2>& tree)
+            : data(compute_data(tree)) {}
 
     static type get_blank(size_t side) {
         return type(side, aligned::vector<voxel<2>>(side));
     }
+
+    const detail::voxel<2>& get_voxel(const glm::ivec2& i) const {
+        return data[i.x][i.y];
+    }
+
+    box<2> get_voxel_aabb() const {
+        return data.front().front().get_aabb();
+    }
+
+    const type& get_data() const { return data; }
+
+protected:
+    ~voxel_collection_data() noexcept = default;
+
+private:
+    static void compute_data(type& ret,
+                             const ndim_tree<2>& tree,
+                             const glm::ivec2& d) {
+        if (!tree.has_nodes()) {
+            ret[d.x][d.y] = detail::voxel<2>(tree);
+        } else {
+            auto count = 0u;
+            for (const auto& i : tree.get_nodes()) {
+                const auto x = (count & 1u) ? 1u : 0u;
+                const auto y = (count & 2u) ? 1u : 0u;
+                compute_data(ret,
+                             i,
+                             d +
+                                     glm::ivec2(x, y) *
+                                             static_cast<int>(tree.get_side()) /
+                                             2);
+                count += 1;
+            }
+        }
+    }
+
+    static type compute_data(const ndim_tree<2>& tree) {
+        auto ret = detail::voxel_collection_data<2>::get_blank(tree.get_side());
+        compute_data(ret, tree, glm::ivec2(0));
+        return ret;
+    }
+
+    type data;
 };
+
 template <>
-struct voxel_collection_data<3> final {
+class voxel_collection_data<3> {
+public:
     using type = aligned::vector<aligned::vector<aligned::vector<voxel<3>>>>;
+
+    voxel_collection_data(const ndim_tree<3>& tree)
+            : data(compute_data(tree)) {}
 
     static type get_blank(size_t side) {
         return type(side,
                     aligned::vector<aligned::vector<voxel<3>>>(
                             side, aligned::vector<voxel<3>>(side)));
     }
+
+    box<3> get_voxel_aabb() const {
+        return data.front().front().front().get_aabb();
+    }
+
+    const detail::voxel<3>& get_voxel(const glm::ivec3& i) const {
+        return data[i.x][i.y][i.z];
+    }
+
+    const type& get_data() const { return data; }
+
+protected:
+    ~voxel_collection_data() noexcept = default;
+
+private:
+    static void compute_data(type& ret,
+                             const ndim_tree<3>& tree,
+                             const glm::ivec3& d) {
+        if (!tree.has_nodes()) {
+            ret[d.x][d.y][d.z] = detail::voxel<3>(tree);
+        } else {
+            auto count = 0u;
+            for (const auto& i : tree.get_nodes()) {
+                const auto x = (count & 1u) ? 1u : 0u;
+                const auto y = (count & 2u) ? 1u : 0u;
+                const auto z = (count & 4u) ? 1u : 0u;
+                compute_data(ret,
+                             i,
+                             d +
+                                     glm::ivec3(x, y, z) *
+                                             static_cast<int>(tree.get_side()) /
+                                             2);
+                count += 1;
+            }
+        }
+    }
+
+    static type compute_data(const ndim_tree<3>& tree) {
+        auto ret = detail::voxel_collection_data<3>::get_blank(tree.get_side());
+        compute_data(ret, tree, glm::ivec3(0));
+        return ret;
+    }
+
+    type data;
 };
 
 template <size_t n>
@@ -70,30 +166,23 @@ using voxel_collection_data_t = typename voxel_collection_data<n>::type;
 /// Can be 'flattened' - converts the collection into a memory-efficient
 /// array representation, which can be passed to the GPU.
 template <size_t dimensions>
-class voxel_collection final {
+class voxel_collection final
+        : public detail::voxel_collection_data<dimensions> {
 public:
     using data_type = detail::voxel_collection_data_t<dimensions>;
 
     /// Construct directly from an existing tree.
     voxel_collection(const ndim_tree<dimensions>& tree)
-            : aabb(tree.get_aabb())
-            , data(compute_data(tree)) {}
+            : detail::voxel_collection_data<dimensions>(tree)
+            , aabb(tree.get_aabb()) {}
 
-    box<3> get_aabb() const { return aabb; }
-    box<3> get_voxel_aabb() const {
-        return data.front().front().front().get_aabb();
-    }
-    const data_type& get_data() const { return data; }
+    box<dimensions> get_aabb() const { return aabb; }
 
-    size_t get_side() const { return data.size(); }
+    size_t get_side() const { return this->get_data().size(); }
 
-    const detail::voxel<dimensions>& get_voxel(const glm::ivec3& i) const {
-        return data[i.x][i.y][i.z];
-    }
-
-    glm::ivec3 get_starting_index(const glm::vec3& position) const {
+    auto get_starting_index(const glm::vec3& position) const {
         return glm::floor((position - get_aabb().get_c0()) /
-                          ::dimensions(get_voxel_aabb()));
+                          ::dimensions(this->get_voxel_aabb()));
     }
 
     /// Returns a flat array-representation of the collection.
@@ -107,12 +196,12 @@ public:
     geo::intersection traverse(const geo::ray& ray,
                                const traversal_callback& fun) const {
         auto ind = get_starting_index(ray.get_position());
-        const auto voxel_bounds = get_voxel(ind).get_aabb();
+        const auto voxel_bounds = this->get_voxel(ind).get_aabb();
 
         const auto gt = nonnegative(ray.get_direction());
         const auto step = select(glm::ivec3(1), glm::ivec3(-1), gt);
         const auto just_out =
-                select(glm::ivec3(data.size()), glm::ivec3(-1), gt);
+                select(glm::ivec3(this->get_data().size()), glm::ivec3(-1), gt);
         const auto boundary =
                 select(voxel_bounds.get_c1(), voxel_bounds.get_c0(), gt);
 
@@ -127,7 +216,7 @@ public:
         for (;;) {
             const auto min_i = min_component(t_max);
 
-            const auto& tri = get_voxel(ind).get_items();
+            const auto& tri = this->get_voxel(ind).get_items();
             if (!tri.empty()) {
                 const auto ret = fun(ray, tri);
 
@@ -145,8 +234,6 @@ public:
     }
 
 private:
-    static data_type compute_data(const ndim_tree<dimensions>& tree);
-
     static glm::bvec3 nonnegative(const glm::vec3& t) {
         glm::bvec3 ret;
         for (auto i = 0u; i != t.length(); ++i) {
@@ -182,6 +269,5 @@ private:
         return ret;
     }
 
-    box<3> aabb;
-    data_type data;
+    box<dimensions> aabb;
 };

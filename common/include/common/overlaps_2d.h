@@ -56,27 +56,27 @@ projection_2d project(It begin, It end, const glm::vec2& axis) {
     return ret;
 }
 
-constexpr bool overlap(const projection_2d& a, const projection_2d& b) {
+constexpr bool overlaps(const projection_2d& a, const projection_2d& b) {
     const auto min_max = std::minmax(a, b);
     return min_max.second.min <= min_max.first.max;
 }
 
 template <typename It, typename Jt>
-bool overlap(
+bool overlaps(
         It i_begin, It i_end, Jt j_begin, Jt j_end, const glm::vec2& axis) {
-    return overlap(project(i_begin, i_end, axis),
-                   project(j_begin, j_end, axis));
+    return overlaps(project(i_begin, i_end, axis),
+                    project(j_begin, j_end, axis));
 }
 
 template <typename It, typename Jt, typename Kt>
-bool overlap(It i_begin,
-             It i_end,
-             Jt j_begin,
-             Jt j_end,
-             Kt axes_begin,
-             Kt axes_end) {
+bool overlaps(It i_begin,
+              It i_end,
+              Jt j_begin,
+              Jt j_end,
+              Kt axes_begin,
+              Kt axes_end) {
     for (; axes_begin != axes_end; ++axes_begin) {
-        if (!overlap(i_begin, i_end, j_begin, j_end, *axes_begin)) {
+        if (!overlaps(i_begin, i_end, j_begin, j_end, *axes_begin)) {
             return false;
         }
     }
@@ -88,24 +88,24 @@ bool overlap(It i_begin,
 /// theorem.
 /// Shouldn't do any allocation, hopefully very fast as a result!
 template <size_t n, size_t m>
-bool overlap_2d(const std::array<glm::vec2, n>& a,
-                const std::array<glm::vec2, m>& b) {
+bool overlaps_2d(const std::array<glm::vec2, n>& a,
+                 const std::array<glm::vec2, m>& b) {
     std::array<glm::vec2, n> a_axes;
     detail::normals_2d(a.begin(), a.end(), a_axes.begin());
     std::array<glm::vec2, m> b_axes;
     detail::normals_2d(b.begin(), b.end(), b_axes.begin());
-    return detail::overlap(a.begin(),
-                           a.end(),
-                           b.begin(),
-                           b.end(),
-                           a_axes.begin(),
-                           a_axes.end()) &&
-           detail::overlap(a.begin(),
-                           a.end(),
-                           b.begin(),
-                           b.end(),
-                           b_axes.begin(),
-                           b_axes.end());
+    return detail::overlaps(a.begin(),
+                            a.end(),
+                            b.begin(),
+                            b.end(),
+                            a_axes.begin(),
+                            a_axes.end()) &&
+           detail::overlaps(a.begin(),
+                            a.end(),
+                            b.begin(),
+                            b.end(),
+                            b_axes.begin(),
+                            b_axes.end());
 }
 
 }  // namespace geo
