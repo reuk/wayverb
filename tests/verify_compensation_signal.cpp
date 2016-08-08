@@ -47,7 +47,7 @@ TEST(verify_compensation_signal, verify_compensation_signal_normal) {
 
     compute_context cc;
 
-    auto scene_data = get_scene_data(box(glm::vec3(-1), glm::vec3(1)));
+    auto scene_data = get_scene_data(box<3>(glm::vec3(-1), glm::vec3(1)));
     scene_data.set_surfaces(uniform_surface(0.5));
     mesh_boundary boundary(scene_data);
 

@@ -6,16 +6,8 @@ namespace raytracer {
 
 scene_buffers::scene_buffers(const cl::Context& context,
                              const cl::Device& device,
-                             const copyable_scene_data& scene_data)
-        : scene_buffers(context,
-                        device,
-                        scene_data,
-                        voxel_collection(scene_data, 4, 0.1)) {}
-
-scene_buffers::scene_buffers(const cl::Context& context,
-                             const cl::Device& device,
                              const copyable_scene_data& scene_data,
-                             const voxel_collection& vox)
+                             const voxel_collection<3>& vox)
         : queue(context, device)
         , voxel_index_buffer(load_to_buffer(context, vox.get_flattened(), true))
         , global_aabb(aabb{to_cl_float3(vox.get_aabb().get_c0()),

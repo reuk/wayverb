@@ -406,12 +406,12 @@ TEST(specific, specific) {
                   glm::vec3(
                           0.00000000000000144381996, 3.5999999, -7.5999999)}});
 
-        const box b0(glm::vec3(-1.78125, 3.14999986, -8.55000019),
+        const box<3> b0(glm::vec3(-1.78125, 3.14999986, -8.55000019),
                      glm::vec3(-1.1875, 3.26249981, -8.0749998));
-        const box b1(glm::vec3(-1.78125, 3.14999986, -8.0749998),
+        const box<3> b1(glm::vec3(-1.78125, 3.14999986, -8.0749998),
                      glm::vec3(-1.1875, 3.26249981, -7.5999999));
 
-        const box b2(glm::vec3(-9.5, -0.0000000000000021191102, -7.5999999),
+        const box<3> b2(glm::vec3(-9.5, -0.0000000000000021191102, -7.5999999),
                      glm::vec3(-7.125, 0.449999988, -5.69999981));
         const auto centre = ::centre(b2);
         const auto x0 = b2.get_c0().x;
@@ -423,7 +423,7 @@ TEST(specific, specific) {
         //      auto x1 = b2.get_c1().x;
         const auto y1 = b2.get_c1().y;
         //      auto z1 = b2.get_c1().z;
-        const box b3(glm::vec3(x0, yc, z0), glm::vec3(xc, y1, zc));
+        const box<3> b3(glm::vec3(x0, yc, z0), glm::vec3(xc, y1, zc));
 
         const triangle_vec3 triangle_verts_1(
                 {{glm::vec3(-9.5, 1.10000002, -6.0999999),
@@ -444,7 +444,7 @@ TEST(specific, specific) {
         //            Point3{0.833333611, 0.184210628, 4.60390043},
         //            Point3{0.833333611, 0.184210628, -3.29220581}}));
 
-        const box aabb(glm::vec3(-4.20000029, -0.040625006, -5.02812529),
+        const box<3> aabb(glm::vec3(-4.20000029, -0.040625006, -5.02812529),
                        glm::vec3(-3.9000001, 0.0187499933, -4.78750038));
 
         const triangle_vec3 verts{{glm::vec3(-5.69999981, 0, -3.79999995),
@@ -455,7 +455,7 @@ TEST(specific, specific) {
     }
 
     {
-        const box aabb(glm::vec3(-7.80000019, 3.46249986, -8.63750076),
+        const box<3> aabb(glm::vec3(-7.80000019, 3.46249986, -8.63750076),
                        glm::vec3(-7.20000029, 3.58124971, -8.15625));
 
         const triangle_vec3 v0{{glm::vec3(-7.5999999, 3.5999999, -7.5999999),

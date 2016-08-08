@@ -1,25 +1,53 @@
 #pragma once
 
 #include "common/geometric.h"
-#include "common/scene_data.h"
+#include "common/overlaps_2d.h"
 #include "common/triangle_vec.h"
+
 #include "glm/glm.hpp"
+
 #include <tuple>
+
+class copyable_scene_data;
 
 enum class wall { nx, px, ny, py, nz, pz };
 enum class direction { x, y, z };
 
+namespace detail {
+template <size_t>
+struct box_data_t_trait;
+
+template <>
+struct box_data_t_trait<2> final {
+    using type = glm::vec2;
+};
+
+template <>
+struct box_data_t_trait<3> final {
+    using type = glm::vec3;
+};
+
+}  // namespace detail
+
+template <size_t dimensions>
 class box final {
 public:
-    box();
-    box(const glm::vec3& c0, const glm::vec3& c1);
+    using data_t = typename detail::box_data_t_trait<dimensions>::type;
 
-    constexpr box& operator+=(const glm::vec3& v) {
+    box()
+            : c0(0)
+            , c1(0) {}
+
+    box(const data_t& c0, const data_t& c1)
+            : c0(glm::min(c0, c1))
+            , c1(glm::max(c0, c1)) {}
+
+    constexpr box& operator+=(const data_t& v) {
         c0 += v;
         c1 += v;
         return *this;
     }
-    constexpr box& operator-=(const glm::vec3& v) {
+    constexpr box& operator-=(const data_t& v) {
         c0 -= v;
         c1 -= v;
         return *this;
@@ -31,29 +59,52 @@ public:
         return *this;
     }
 
-    constexpr glm::vec3 get_c0() const { return c0; }
-    constexpr glm::vec3 get_c1() const { return c1; }
+    constexpr data_t get_c0() const { return c0; }
+    constexpr data_t get_c1() const { return c1; }
 
     template <typename Archive>
     void serialize(Archive& archive);
 
 private:
-    glm::vec3 c0, c1;
+    data_t c0, c1;
 };
 
-bool inside(const box& b, const glm::vec3& v);
+template <size_t n>
+using box_data_t = typename box<n>::data_t;
 
-glm::vec3 centre(const box& b);
+template <size_t dimensions>
+inline auto inside(const box<dimensions>& b, const box_data_t<dimensions>& v) {
+    return glm::all(glm::lessThan(b.get_c0(), v)) &&
+           glm::all(glm::lessThan(v, b.get_c1()));
+}
 
-glm::vec3 dimensions(const box& b);
+template <size_t dimensions>
+inline auto centre(const box<dimensions>& b) {
+    return (b.get_c0() + b.get_c1()) * 0.5f;
+}
 
-bool overlaps(const box& b, const triangle_vec3& t);
+template <size_t dimensions>
+inline auto dimensions(const box<dimensions>& b) {
+    return b.get_c1() - b.get_c0();
+}
 
-box padded(const box& b, float padding);
+template <size_t dimensions>
+inline box<dimensions> padded(const box<dimensions>& b, float padding) {
+    auto ret = b;
+    return ret.pad(padding);
+}
 
-bool intersects(const box& b, const geo::ray& ray, float t0, float t1);
+bool overlaps(const box<3>& b, const triangle_vec3& t);
 
-copyable_scene_data get_scene_data(const box& b);
+template <size_t n>
+inline bool overlaps(const box<2>& b, const std::array<glm::vec2, n>& shape) {
+    return overlaps_2d(std::array<glm::vec2, 2>{{b.get_c0(), b.get_c1()}},
+                       shape);
+}
+
+bool intersects(const box<3>& b, const geo::ray& ray, float t0, float t1);
+
+copyable_scene_data get_scene_data(const box<3>& b);
 
 constexpr glm::vec3 mirror_on_axis(const glm::vec3& v,
                                    const glm::vec3& pt,
@@ -65,7 +116,7 @@ constexpr glm::vec3 mirror_on_axis(const glm::vec3& v,
     }
 }
 
-constexpr glm::vec3 mirror(const box& b, const glm::vec3& v, wall w) {
+constexpr glm::vec3 mirror(const box<3>& b, const glm::vec3& v, wall w) {
     switch (w) {
         case wall::nx: return mirror_on_axis(v, b.get_c0(), direction::x);
         case wall::px: return mirror_on_axis(v, b.get_c1(), direction::x);
@@ -76,28 +127,40 @@ constexpr glm::vec3 mirror(const box& b, const glm::vec3& v, wall w) {
     }
 }
 
-glm::vec3 mirror_inside(const box& b, const glm::vec3& v, direction d);
+glm::vec3 mirror_inside(const box<3>& b, const glm::vec3& v, direction d);
+box<3> mirror(const box<3>& b, wall w);
 
-box mirror(const box& b, wall w);
-
-template <typename It>
-inline box min_max(It begin, It end) {
+template <size_t dimensions, typename It>
+inline box<dimensions> min_max(It begin, It end) {
     auto mini = *begin, maxi = *begin;
     for (auto i = begin + 1; i != end; ++i) {
         mini = glm::min(*i, mini);
         maxi = glm::max(*i, maxi);
     }
-    return box(mini, maxi);
+    return box<dimensions>(mini, maxi);
 }
 
 //----------------------------------------------------------------------------//
 
-constexpr bool operator==(const box& a, const box& b) {
+template <size_t n>
+constexpr bool operator==(const box<n>& a, const box<n>& b) {
     return std::make_tuple(a.get_c0(), a.get_c1()) ==
            std::make_tuple(b.get_c0(), b.get_c1());
 }
 
-constexpr bool operator!=(const box& a, const box& b) { return !(a == b); }
+template <size_t n>
+constexpr bool operator!=(const box<n>& a, const box<n>& b) {
+    return !(a == b);
+}
 
-box operator+(const box& a, const glm::vec3& b);
-box operator-(const box& a, const glm::vec3& b);
+template <size_t n>
+inline box<n> operator+(const box<n>& a, const box_data_t<n>& b) {
+    auto ret = a;
+    return ret += b;
+}
+
+template <size_t n>
+inline box<n> operator-(const box<n>& a, const box_data_t<n>& b) {
+    auto ret = a;
+    return ret -= b;
+}

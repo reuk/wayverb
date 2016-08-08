@@ -83,7 +83,7 @@ int main(int argc, char** argv) {
 
     try {
         const auto s = 1.5;
-        box box(glm::vec3(-s), glm::vec3(s));
+        box<3> box(glm::vec3(-s), glm::vec3(s));
         auto scene_data = get_scene_data(box);
         const auto r    = 0.9f;
         scene_data.set_surfaces(surface{volume_type{{r, r, r, r, r, r, r, r}},

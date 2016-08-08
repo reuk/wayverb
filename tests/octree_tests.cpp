@@ -1,4 +1,4 @@
-#include "common/octree.h"
+#include "common/spatial_division.h"
 #include "common/serialize/boundaries.h"
 
 #include "gtest/gtest.h"
@@ -7,10 +7,10 @@
 #define OBJ_PATH ""
 #endif
 
-void print_nodes(const octree& o, int level = 0) {
+void print_nodes(const ndim_tree<3>& o, int level = 0) {
     if (o.get_nodes().empty()) {
         std::cout << "** octree node **" << std::endl;
-        for (const auto& i : o.get_triangles()) {
+        for (const auto& i : o.get_items()) {
             std::cout << i << std::endl;
         }
     } else {
@@ -20,12 +20,15 @@ void print_nodes(const octree& o, int level = 0) {
     }
 }
 
+/*
 TEST(octree, constructor) {
     scene_data scene_data(OBJ_PATH);
-    octree octree(scene_data, 5);
+    ndim_tree<3> octree(scene_data, 5);
     //    print_nodes(octree);
 }
+*/
 
+/*
 TEST(octree, surrounding) {
     scene_data scene_data(OBJ_PATH);
 
@@ -62,3 +65,4 @@ TEST(octree, surrounding) {
         }
     }
 }
+*/

@@ -2,9 +2,9 @@
 
 #include "common/aligned/map.h"
 #include "common/aligned/vector.h"
-#include "triangle.h"
-
-#include "cl_common.h"
+#include "common/box.h"
+#include "common/triangle.h"
+#include "common/cl_common.h"
 
 #include "glm/glm.hpp"
 
@@ -18,7 +18,6 @@ struct alignas(1 << 5) surface {
     volume_type diffuse{{0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5}};
 };
 
-class box;
 class mesh_boundary;
 struct triangle;
 
@@ -57,7 +56,7 @@ public:
 
     void set_surfaces(const surface& surface);
 
-    box get_aabb() const;
+    box<3> get_aabb() const;
     aligned::vector<glm::vec3> get_converted_vertices() const;
     aligned::vector<size_t> get_triangle_indices() const;
 

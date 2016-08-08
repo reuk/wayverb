@@ -53,7 +53,7 @@ constexpr int num_images(int shell) {
 
 template <int SHELL>
 std::array<glm::vec3, num_images(SHELL)> images_for_shell(
-        const box& box, const glm::vec3& source) {
+        const box<3>& box, const glm::vec3& source) {
     std::array<glm::vec3, num_images(SHELL)> ret;
 
     auto image = source;
@@ -84,7 +84,7 @@ std::array<glm::vec3, num_images(SHELL)> images_for_shell(
 }
 
 TEST(raytrace, same_location) {
-    box box(glm::vec3(0, 0, 0), glm::vec3(4, 3, 6));
+    box<3> box(glm::vec3(0, 0, 0), glm::vec3(4, 3, 6));
     constexpr glm::vec3 source(1, 2, 1);
     auto receiver = source;
     constexpr auto s = 0.9;
@@ -116,7 +116,7 @@ TEST(raytrace, same_location) {
 
 TEST(raytrace, image_source) {
     //  proper method
-    box box(glm::vec3(0, 0, 0), glm::vec3(4, 3, 6));
+    box<3> box(glm::vec3(0, 0, 0), glm::vec3(4, 3, 6));
     constexpr glm::vec3 source(1, 2, 1);
     constexpr glm::vec3 receiver(2, 1, 5);
     constexpr auto s = 0.9;

@@ -1,4 +1,5 @@
 #include "waveguide/mesh.h"
+#include "waveguide/mesh_boundary.h"
 
 #include "common/cl_common.h"
 #include "common/scene_data.h"

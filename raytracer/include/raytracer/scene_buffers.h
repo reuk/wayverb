@@ -14,12 +14,8 @@ class scene_buffers final {
 public:
     scene_buffers(const cl::Context&,
                   const cl::Device&,
-                  const copyable_scene_data& scene_data);
-    scene_buffers(const cl::Context&,
-                  const cl::Device&,
                   const copyable_scene_data& scene_data,
-                  const voxel_collection& voxel_collection);
-
+                  const voxel_collection<3>& vox);
     const cl::Buffer& get_voxel_index_buffer() const;
     aabb get_global_aabb() const;
     cl_ulong get_side() const;

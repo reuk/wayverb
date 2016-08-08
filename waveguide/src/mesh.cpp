@@ -284,7 +284,7 @@ cl_uint mesh::coefficient_index_for_node(const mesh_boundary& b,
 
 float mesh::get_spacing() const { return spacing; }
 
-box mesh::get_aabb() const { return aabb; }
+box<3> mesh::get_aabb() const { return aabb; }
 
 bool operator==(const mesh& a, const mesh& b) {
     return std::tie(a.dim,

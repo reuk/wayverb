@@ -7,7 +7,7 @@
 #include "gtest/gtest.h"
 
 TEST(engine, engine) {
-    box box(glm::vec3(0, 0, 0), glm::vec3(5.56, 3.97, 2.81));
+    box<3> box(glm::vec3(0, 0, 0), glm::vec3(5.56, 3.97, 2.81));
     constexpr glm::vec3 source(2.09, 2.12, 2.12);
     constexpr glm::vec3 mic(2.09, 3.08, 0.96);
     constexpr auto output_sample_rate = 96000;

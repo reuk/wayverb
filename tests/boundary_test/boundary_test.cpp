@@ -3,6 +3,7 @@
 #include "waveguide/waveguide.h"
 
 #include "common/azimuth_elevation.h"
+#include "common/almost_equal.h"
 #include "common/cl_common.h"
 #include "common/conversions.h"
 #include "common/map.h"
@@ -30,7 +31,7 @@
 #include <random>
 
 aligned::vector<float> run_simulation(const compute_context& cc,
-                                      const box& boundary,
+                                      const box<3>& boundary,
                                       const surface& surface,
                                       double filter_frequency,
                                       double out_sr,
@@ -128,10 +129,10 @@ aligned::vector<float> get_free_field_results(const compute_context& cc,
             speed_of_sound, 1.0 / (filter_frequency * 4));
 
     //  generate two boundaries, one twice the size of the other
-    const box wall(glm::vec3(0, 0, 0), glm::vec3(desired_nodes) * divisions);
+    const box<3> wall(glm::vec3(0, 0, 0), glm::vec3(desired_nodes) * divisions);
     const auto far     = wall.get_c1();
     const auto new_dim = glm::vec3(far.x * 2, far.y, far.z);
-    const box no_wall(glm::vec3(0, 0, 0), new_dim);
+    const box<3> no_wall(glm::vec3(0, 0, 0), new_dim);
 
     //  place source and image in rooms based on distance in nodes from the wall
     auto source_dist_nodes = glm::length(glm::vec3(desired_nodes)) / 8;
@@ -224,12 +225,12 @@ FullTestResults run_full_test(const std::string& test_name,
             speed_of_sound, 1.0 / (filter_frequency * 4));
 
     //  generate two boundaries, one twice the size of the other
-    const box wall(glm::vec3(0, 0, 0), glm::vec3(desired_nodes) * divisions);
+    const box<3> wall(glm::vec3(0, 0, 0), glm::vec3(desired_nodes) * divisions);
 
     const auto far = wall.get_c1();
     const glm::vec3 new_dim(far.x * 2, far.y, far.z);
 
-    const box no_wall(glm::vec3(0, 0, 0), new_dim);
+    const box<3> no_wall(glm::vec3(0, 0, 0), new_dim);
 
     //  place source and receiver in rooms based on distance in nodes from the
     //  wall

@@ -6,10 +6,9 @@
 #include "common/aligned/set.h"
 #include "common/aligned/vector.h"
 #include "common/cl_include.h"
+#include "common/voxel_collection.h"
 
 #include <experimental/optional>
-
-class voxel_collection;
 
 namespace raytracer {
 
@@ -21,7 +20,7 @@ public:
     aligned::vector<impulse> get_results(const glm::vec3& source,
                                          const glm::vec3& receiver,
                                          const copyable_scene_data& scene_data,
-                                         const voxel_collection& vox);
+                                         const voxel_collection<3>& vox);
 
 private:
     struct item final {

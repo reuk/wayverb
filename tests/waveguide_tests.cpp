@@ -34,7 +34,7 @@ TEST(run_waveguide, run_waveguide) {
     //  get opencl program
     waveguide::program waveguide_program(cc.get_context(), cc.get_device());
 
-    box box(glm::vec3(0, 0, 0), glm::vec3(4, 3, 6));
+    box<3> box(glm::vec3(0, 0, 0), glm::vec3(4, 3, 6));
     constexpr glm::vec3 source(1, 1, 1);
     constexpr glm::vec3 receiver(2, 1, 5);
     constexpr auto v = 0.5;

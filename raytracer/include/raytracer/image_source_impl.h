@@ -88,7 +88,7 @@ std::experimental::optional<impulse> follow_ray_path(
         const glm::vec3& source,
         const glm::vec3& receiver,
         const copyable_scene_data& scene_data,
-        const voxel_collection& vox,
-        const voxel_collection::triangle_traversal_callback& callback);
+        const voxel_collection<3>& vox,
+        const triangle_traversal_callback& callback);
 
 }  // namespace raytracer

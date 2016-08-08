@@ -2,6 +2,7 @@
 
 #include "boundary_adjust.h"
 #include "program.h"
+#include "mesh_boundary.h"
 
 #include "common/boundaries.h"
 #include "common/conversions.h"
@@ -207,7 +208,7 @@ public:
     };
 
     float get_spacing() const;
-    box get_aabb() const;
+    box<3> get_aabb() const;
 
 private:
     template <typename B>
@@ -255,7 +256,7 @@ private:
     const aligned::vector<std::array<cl_int, N>>& get_boundary_coefficients()
             const;
 
-    box aabb;
+    box<3> aabb;
     float spacing;
 
     glm::ivec3 dim;

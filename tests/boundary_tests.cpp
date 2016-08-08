@@ -1,5 +1,7 @@
 #include "raytracer/raytracer.h"
 
+#include "waveguide/mesh_boundary.h"
+
 #include "common/boundaries.h"
 #include "common/conversions.h"
 

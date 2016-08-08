@@ -12,8 +12,8 @@ std::experimental::optional<impulse> get_direct_impulse(
         const glm::vec3& source,
         const glm::vec3& receiver,
         const copyable_scene_data& scene_data,
-        const voxel_collection& vox) {
-    voxel_collection::triangle_traversal_callback callback(scene_data);
+        const voxel_collection<3>& vox) {
+    const triangle_traversal_callback callback(scene_data);
 
     const auto source_to_receiver        = receiver - source;
     const auto source_to_receiver_length = glm::length(source_to_receiver);
@@ -50,7 +50,7 @@ std::experimental::optional<results> raytracer::run(
     //  set up all the rendering context stuff
 
     //  create acceleration structure for raytracing
-    voxel_collection vox(scene_data, 4, 0.1);
+    voxel_collection<3> vox(octree_from_scene_data(scene_data, 4, 0.1));
 
     //  load the scene into device memory
     scene_buffers scene_buffers(context, device, scene_data, vox);

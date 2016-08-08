@@ -11,8 +11,8 @@ aligned::vector<triangle_vec3> compute_original_triangles(
         const aligned::vector<cl_ulong>& triangles,
         const copyable_scene_data& scene_data) {
     return map_to_vector(triangles, [&](const auto i) {
-        return get_triangle_verts(scene_data.get_triangles()[i],
-                                  scene_data.get_vertices());
+        return get_triangle_vec3(scene_data.get_triangles()[i],
+                                 scene_data.get_vertices());
     });
 }
 
@@ -131,8 +131,8 @@ std::experimental::optional<impulse> follow_ray_path(
         const glm::vec3& source,
         const glm::vec3& receiver,
         const copyable_scene_data& scene_data,
-        const voxel_collection& vox,
-        const voxel_collection::triangle_traversal_callback& callback) {
+        const voxel_collection<3>& vox,
+        const triangle_traversal_callback& callback) {
     //  extract triangles from the scene
     const auto original = compute_original_triangles(triangles, scene_data);
 

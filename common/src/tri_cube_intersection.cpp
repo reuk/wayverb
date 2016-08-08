@@ -166,7 +166,7 @@ where point_triangle_intersection(const glm::vec3& p, const triangle_vec3& t) {
     auto v2 = t[2];
 
     const std::array<glm::vec3, 3> coll{{v0, v1, v2}};
-    const auto mm = min_max(std::begin(coll), std::end(coll));
+    const auto mm = min_max<3>(std::begin(coll), std::end(coll));
 
     if (glm::any(glm::lessThan(mm.get_c1(), p))) {
         return where::outside;
@@ -211,7 +211,7 @@ where t_c_intersection(const triangle_vec3& t) {
         }
     }
 
-    const auto mm = min_max(std::begin(v), std::end(v));
+    const auto mm = min_max<3>(std::begin(v), std::end(v));
 
     if (glm::any(glm::lessThan(mm.get_c1(), glm::vec3(-0.5)))) {
         return where::outside;

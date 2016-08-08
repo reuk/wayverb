@@ -1,35 +1,16 @@
 #include "common/box.h"
-
+#include "common/scene_data.h"
 #include "common/tri_cube_intersection.h"
 
-box::box()
-        : c0(0)
-        , c1(0) {}
-
-box::box(const glm::vec3& c0, const glm::vec3& c1)
-        : c0(glm::min(c0, c1))
-        , c1(glm::max(c0, c1)) {}
-
-//----------------------------------------------------------------------------//
-
-bool inside(const box& b, const glm::vec3& v) {
-    return glm::all(glm::lessThan(b.get_c0(), v)) &&
-           glm::all(glm::lessThan(v, b.get_c1()));
-}
-
-glm::vec3 centre(const box& b) { return (b.get_c0() + b.get_c1()) * 0.5f; }
-
-glm::vec3 dimensions(const box& b) { return b.get_c1() - b.get_c0(); }
-
-glm::vec3 mirror_inside(const box& b, const glm::vec3& v, direction d) {
+glm::vec3 mirror_inside(const box<3>& b, const glm::vec3& v, direction d) {
     return mirror_on_axis(v, centre(b), d);
 }
 
-box mirror(const box& b, wall w) {
-    return box(mirror(b, b.get_c0(), w), mirror(b, b.get_c1(), w));
+box<3> mirror(const box<3>& b, wall w) {
+    return box<3>(mirror(b, b.get_c0(), w), mirror(b, b.get_c1(), w));
 }
 
-bool overlaps(const box& b, const triangle_vec3& t) {
+bool overlaps(const box<3>& b, const triangle_vec3& t) {
     auto coll = t;
     for (auto& i : coll) {
         i = (i - centre(b)) / dimensions(b);
@@ -37,12 +18,7 @@ bool overlaps(const box& b, const triangle_vec3& t) {
     return t_c_intersection(coll) == where::inside;
 }
 
-box padded(const box& b, float padding) {
-    auto ret = b;
-    return ret.pad(padding);
-}
-
-bool intersects(const box& b, const geo::ray& ray, float t0, float t1) {
+bool intersects(const box<3>& b, const geo::ray& ray, float t0, float t1) {
     //  from http://people.csail.mit.edu/amy/papers/box-jgt.pdf
     auto inv = glm::vec3(1) / ray.get_direction();
     std::array<bool, 3> sign{{inv.x < 0, inv.y < 0, inv.z < 0}};
@@ -75,7 +51,7 @@ bool intersects(const box& b, const geo::ray& ray, float t0, float t1) {
     return ((t0 < tmax) && (tmin < t1));
 }
 
-copyable_scene_data get_scene_data(const box& b) {
+copyable_scene_data get_scene_data(const box<3>& b) {
     aligned::vector<cl_float3> vertices{
             {{b.get_c0().x, b.get_c0().y, b.get_c0().z}},
             {{b.get_c1().x, b.get_c0().y, b.get_c0().z}},
@@ -101,16 +77,4 @@ copyable_scene_data get_scene_data(const box& b) {
             {"default", surface{}}};
 
     return copyable_scene_data(triangles, vertices, materials);
-}
-
-//----------------------------------------------------------------------------//
-
-box operator+(const box& a, const glm::vec3& b) {
-    auto ret = a;
-    return ret += b;
-}
-
-box operator-(const box& a, const glm::vec3& b) {
-    auto ret = a;
-    return ret -= b;
 }
