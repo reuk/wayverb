@@ -1,5 +1,6 @@
-#include "common/spatial_division.h"
+#include "common/geo/rect.h"
 #include "common/serialize/boundaries.h"
+#include "common/spatial_division.h"
 
 #include "gtest/gtest.h"
 
@@ -20,49 +21,41 @@ void print_nodes(const ndim_tree<3>& o, int level = 0) {
     }
 }
 
-/*
-TEST(octree, constructor) {
-    scene_data scene_data(OBJ_PATH);
-    ndim_tree<3> octree(scene_data, 5);
-    //    print_nodes(octree);
+TEST(ndim_tree, constructor) {
+    const scene_data scene_data(OBJ_PATH);
+    const auto octree = octree_from_scene_data(scene_data, 4, 0.1);
+    print_nodes(octree);
 }
-*/
 
 /*
-TEST(octree, surrounding) {
-    scene_data scene_data(OBJ_PATH);
-
-    auto a = {
-            glm::vec3(-1, -1, -1),
-            glm::vec3(-1, -1, 1),
-            glm::vec3(-1, 1, -1),
-            glm::vec3(-1, 1, 1),
-            glm::vec3(1, -1, -1),
-            glm::vec3(1, -1, 1),
-            glm::vec3(1, 1, -1),
-            glm::vec3(1, 1, 1),
-    };
-
-    {
-        octree octree(scene_data, 1);
-        auto c = ::centre(octree.get_aabb());
-
-        for (const auto& i : a) {
-            auto pt = c + i;
-            ASSERT_TRUE(inside(octree.get_surrounding_leaf(pt).get_aabb(), pt))
-                    << i;
-        }
+template <typename T>
+bool all_nodes_have_items(const T& t) {
+    if (!t.has_nodes()) {
+        return !t.get_items().empty();
     }
 
-    {
-        octree octree(scene_data, 4);
-        auto c = ::centre(octree.get_aabb());
+    return proc::all_of(t.get_nodes(),
+                        [](const auto& t) { return all_nodes_have_items(t); });
+}
 
-        for (const auto& i : a) {
-            auto pt = c + i;
-            ASSERT_TRUE(inside(octree.get_surrounding_leaf(pt).get_aabb(), pt))
-                    << i;
-        }
+TEST(ndim_tree, quad) {
+    const scene_data scene_data(OBJ_PATH);
+
+    {
+        const auto quadtree = ndim_tree<2>(
+                4,
+                [&](auto item, const auto& aabb) {
+                    return geo::overlaps(
+                            aabb,
+                            geo::get_triangle_vec2(
+                                    scene_data.get_triangles()[item],
+                                    scene_data.get_vertices()));
+                },
+                scene_data.get_triangle_indices(),
+                geo::rect(scene_data.get_aabb().get_min(),
+                          scene_data.get_aabb().get_max()));
+
+        ASSERT_TRUE(all_nodes_have_items(quadtree));
     }
 }
 */

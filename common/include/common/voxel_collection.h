@@ -82,7 +82,8 @@ void voxelise(const ndim_tree<n>& tree,
         index<n>(ret, position) = tree.get_items();
     } else {
         for (size_t i = 0; i != tree.get_nodes().size(); ++i) {
-            const auto relative = relative_position<n>(i);
+            const auto relative = relative_position<n>(i) *
+                                  static_cast<int>(tree.get_side() / 2);
             voxelise(tree.get_nodes()[i], position + relative, ret);
         }
     }

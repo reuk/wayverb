@@ -133,12 +133,11 @@ private:
         }
 
         const auto next = detail::next_boundaries<n>(aabb);
-        std::array<ndim_tree, (1 << n)> ret;
-        proc::transform(next, ret.begin(), [&](const auto& i) {
+        auto ret = std::make_unique<std::array<ndim_tree, (1 << n)>>();
+        proc::transform(next, ret->begin(), [&](const auto& i) {
             return ndim_tree(depth - 1, callback, to_test, i);
         });
-        return std::make_unique<std::array<ndim_tree, (1 << n)>>(
-                std::move(ret));
+        return ret;
     }
 
     aabb_type aabb;                     //  the bounding box of the node

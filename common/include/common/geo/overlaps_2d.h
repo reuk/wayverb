@@ -1,7 +1,7 @@
 #pragma once
 
-#include "common/triangle.h"
 #include "common/geo/triangle_vec.h"
+#include "common/triangle.h"
 
 namespace geo {
 
@@ -25,6 +25,13 @@ void normals_2d(It begin, It end, Out o) {
     for (; begin != end; ++begin) {
         *o++ = normal_2d(*(begin - 1), *begin);
     }
+}
+
+template <size_t n>
+std::array<glm::vec2, n> normals_2d(const std::array<glm::vec2, n>& u) {
+    std::array<glm::vec2, n> ret;
+    detail::normals_2d(u.begin(), u.end(), ret.begin());
+    return ret;
 }
 
 struct projection_2d final {
@@ -75,12 +82,9 @@ bool overlaps(It i_begin,
               Jt j_end,
               Kt axes_begin,
               Kt axes_end) {
-    for (; axes_begin != axes_end; ++axes_begin) {
-        if (!overlaps(i_begin, i_end, j_begin, j_end, *axes_begin)) {
-            return false;
-        }
-    }
-    return true;
+    return std::all_of(axes_begin, axes_end, [=](const auto& i) {
+        return overlaps(i_begin, i_end, j_begin, j_end, i);
+    });
 }
 }  // namespace detail
 
@@ -90,10 +94,8 @@ bool overlaps(It i_begin,
 template <size_t n, size_t m>
 bool overlaps_2d(const std::array<glm::vec2, n>& a,
                  const std::array<glm::vec2, m>& b) {
-    std::array<glm::vec2, n> a_axes;
-    detail::normals_2d(a.begin(), a.end(), a_axes.begin());
-    std::array<glm::vec2, m> b_axes;
-    detail::normals_2d(b.begin(), b.end(), b_axes.begin());
+    const auto a_axes = detail::normals_2d(a);
+    const auto b_axes = detail::normals_2d(b);
     return detail::overlaps(a.begin(),
                             a.end(),
                             b.begin(),

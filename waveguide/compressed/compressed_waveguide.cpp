@@ -222,7 +222,6 @@ aligned::vector<float> compressed_rectangular_waveguide::run(
         //  run the step
         auto o = (this->*step)(i);
         ret.push_back(o);
-        std::cout << o << ", " << std::flush;
     }
     return ret;
 }

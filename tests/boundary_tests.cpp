@@ -54,8 +54,7 @@ TEST(boundary, naive) {
 */
 
 TEST(boundary, tunnel) {
-    scene_data scene_data(OBJ_PATH_TUNNEL);
-    mesh_boundary boundary(scene_data);
+    mesh_boundary boundary(scene_data(OBJ_PATH_TUNNEL));
 
     const auto centre = util::centre(boundary.get_aabb());
     ASSERT_TRUE(boundary.inside(centre));

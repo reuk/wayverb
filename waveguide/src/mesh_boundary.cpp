@@ -14,7 +14,7 @@ glm::ivec2 mesh_boundary::hash_point(const glm::vec2& v) const {
 mesh_boundary::mesh_boundary(const copyable_scene_data& sd)
         : scene_data(sd)
         , triangle_references(ndim_tree<2>(
-                  10,
+                  8,
                   [&](auto item, const auto& aabb) {
                       return geo::overlaps(
                               aabb,
@@ -22,7 +22,9 @@ mesh_boundary::mesh_boundary(const copyable_scene_data& sd)
                                                      sd.get_vertices()));
                   },
                   sd.get_triangle_indices(),
-                  geo::rect(sd.get_aabb().get_min(), sd.get_aabb().get_max())))
+                  padded(geo::rect(sd.get_aabb().get_min(),
+                                   sd.get_aabb().get_max()),
+                         glm::vec2(0.1))))
         , cell_size(voxel_dimensions(triangle_references)) {}
 
 const aligned::vector<size_t>& mesh_boundary::get_references(
