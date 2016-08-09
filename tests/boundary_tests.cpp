@@ -57,7 +57,7 @@ TEST(boundary, tunnel) {
     scene_data scene_data(OBJ_PATH_TUNNEL);
     mesh_boundary boundary(scene_data);
 
-    auto centre = ::centre(boundary.get_aabb());
+    const auto centre = util::centre(boundary.get_aabb());
     ASSERT_TRUE(boundary.inside(centre));
 
     auto dist = 100;
@@ -85,7 +85,7 @@ TEST(boundary, bedroom) {
     scene_data scene_data(OBJ_PATH_BEDROOM);
     mesh_boundary boundary(scene_data);
 
-    auto centre = ::centre(boundary.get_aabb());
+    const auto centre = util::centre(boundary.get_aabb());
     ASSERT_TRUE(boundary.inside(centre));
 
     auto dist = 100;

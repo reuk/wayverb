@@ -1,4 +1,4 @@
-#include "common/overlaps_2d.h"
+#include "common/geo/overlaps_2d.h"
 
 #include "gtest/gtest.h"
 

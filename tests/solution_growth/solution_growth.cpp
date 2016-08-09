@@ -46,9 +46,9 @@ int main(int argc, char** argv) {
         const auto sampling_frequency = 20000.0;
 
         compute_context cc;
-        const box<3> boundary(glm::vec3(-1), glm::vec3(1));
+        const geo::box boundary(glm::vec3(-1), glm::vec3(1));
 
-        auto scene_data = get_scene_data(boundary);
+        auto scene_data = geo::get_scene_data(boundary);
         scene_data.set_surfaces(uniform_surface(0.999));
 
         waveguide::waveguide waveguide(cc.get_context(),

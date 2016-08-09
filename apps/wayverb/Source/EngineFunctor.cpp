@@ -80,7 +80,7 @@ void EngineFunctor::single_pair(Listener& listener,
     }
 
     //  now run the simulation proper
-    auto intermediate = engine.run(keep_going, state_callback);
+    const auto intermediate = engine.run(keep_going, state_callback);
     if (!keep_going) {
         //  user asked to stop
         return;

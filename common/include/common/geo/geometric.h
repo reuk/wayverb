@@ -1,8 +1,8 @@
 #pragma once
 
 #include "common/aligned/vector.h"
+#include "common/geo/triangle_vec.h"
 #include "common/triangle.h"
-#include "common/triangle_vec.h"
 
 #include "glm/glm.hpp"
 
@@ -47,9 +47,12 @@ inline auto make_intersection(float distance, size_t index) {
 
 intersects triangle_intersection(const triangle_vec3& tri, const ray& ray);
 
+template <typename t>
 intersects triangle_intersection(const triangle& tri,
-                                 const aligned::vector<glm::vec3>& vertices,
-                                 const ray& ray);
+                                 const aligned::vector<t>& vertices,
+                                 const ray& ray) {
+    return triangle_intersection(get_triangle_vec3(tri, vertices), ray);
+}
 
 intersection ray_triangle_intersection(
         const ray& ray,
@@ -70,10 +73,13 @@ bool point_intersection(const glm::vec3& begin,
 float point_triangle_distance_squared(const triangle_vec3& triangle,
                                       const glm::vec3& point);
 
-float point_triangle_distance_squared(
-        const triangle& tri,
-        const aligned::vector<glm::vec3>& vertices,
-        const glm::vec3& point);
+template <typename t>
+float point_triangle_distance_squared(const triangle& tri,
+                                      const aligned::vector<t>& vertices,
+                                      const glm::vec3& point) {
+    return point_triangle_distance_squared(get_triangle_vec3(tri, vertices),
+                                           point);
+}
 
 glm::vec3 normal(const triangle_vec3& t);
 

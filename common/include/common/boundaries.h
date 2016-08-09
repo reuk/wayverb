@@ -1,7 +1,7 @@
 #pragma once
 
 #include "common/aligned/vector.h"
-#include "common/box.h"
+#include "common/geo/box.h"
 #include "common/scene_data.h"
 
 #include "glm/glm.hpp"
@@ -20,7 +20,7 @@ public:
     boundary& operator=(const boundary&) = default;
 
     virtual bool inside(const glm::vec3& v) const = 0;
-    virtual box<3> get_aabb() const = 0;
+    virtual geo::box get_aabb() const = 0;
 
     template <typename Archive>
     void serialize(Archive& archive);
@@ -32,13 +32,13 @@ public:
     cuboid_boundary(const glm::vec3& c0, const glm::vec3& c1);
 
     bool inside(const glm::vec3& v) const override;
-    box<3> get_aabb() const override;
+    geo::box get_aabb() const override;
 
     template <typename Archive>
     void serialize(Archive& archive);
 
 private:
-    box<3> boundary;
+    geo::box boundary;
 };
 
 class sphere_boundary : public boundary {
@@ -48,10 +48,10 @@ public:
                              const aligned::vector<surface>& surfaces =
                                      aligned::vector<surface>{surface{}});
     bool inside(const glm::vec3& v) const override;
-    box<3> get_aabb() const override;
+    geo::box get_aabb() const override;
 
 private:
     glm::vec3 c;
     float radius;
-    box<3> boundary;
+    geo::box boundary;
 };

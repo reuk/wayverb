@@ -1,7 +1,7 @@
 #pragma once
 
 #include "common/triangle.h"
-#include "common/triangle_vec.h"
+#include "common/geo/triangle_vec.h"
 
 namespace geo {
 

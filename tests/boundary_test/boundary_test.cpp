@@ -31,7 +31,7 @@
 #include <random>
 
 aligned::vector<float> run_simulation(const compute_context& cc,
-                                      const box<3>& boundary,
+                                      const geo::box& boundary,
                                       const surface& surface,
                                       double filter_frequency,
                                       double out_sr,
@@ -40,7 +40,7 @@ aligned::vector<float> run_simulation(const compute_context& cc,
                                       const std::string& output_folder,
                                       const std::string& fname,
                                       int steps) {
-    auto scene_data = get_scene_data(boundary);
+    auto scene_data = geo::get_scene_data(boundary);
     scene_data.set_surfaces(surface);
 
     waveguide::waveguide waveguide(cc.get_context(),
@@ -129,16 +129,16 @@ aligned::vector<float> get_free_field_results(const compute_context& cc,
             speed_of_sound, 1.0 / (filter_frequency * 4));
 
     //  generate two boundaries, one twice the size of the other
-    const box<3> wall(glm::vec3(0, 0, 0), glm::vec3(desired_nodes) * divisions);
-    const auto far     = wall.get_c1();
+    const geo::box wall(glm::vec3(0, 0, 0), glm::vec3(desired_nodes) * divisions);
+    const auto far     = wall.get_max();
     const auto new_dim = glm::vec3(far.x * 2, far.y, far.z);
-    const box<3> no_wall(glm::vec3(0, 0, 0), new_dim);
+    const geo::box no_wall(glm::vec3(0, 0, 0), new_dim);
 
     //  place source and image in rooms based on distance in nodes from the wall
     auto source_dist_nodes = glm::length(glm::vec3(desired_nodes)) / 8;
     auto source_dist       = source_dist_nodes * divisions;
 
-    const auto wall_centre = ::centre(no_wall);
+    const auto wall_centre = centre(no_wall);
 
     auto log_incorrect_distance = [&source_dist, &wall_centre](
             auto str, const auto& pos) {
@@ -225,19 +225,19 @@ FullTestResults run_full_test(const std::string& test_name,
             speed_of_sound, 1.0 / (filter_frequency * 4));
 
     //  generate two boundaries, one twice the size of the other
-    const box<3> wall(glm::vec3(0, 0, 0), glm::vec3(desired_nodes) * divisions);
+    const geo::box wall(glm::vec3(0, 0, 0), glm::vec3(desired_nodes) * divisions);
 
-    const auto far = wall.get_c1();
+    const auto far = wall.get_max();
     const glm::vec3 new_dim(far.x * 2, far.y, far.z);
 
-    const box<3> no_wall(glm::vec3(0, 0, 0), new_dim);
+    const geo::box no_wall(glm::vec3(0, 0, 0), new_dim);
 
     //  place source and receiver in rooms based on distance in nodes from the
     //  wall
     auto source_dist_nodes = glm::length(glm::vec3(desired_nodes)) / 8;
     auto source_dist       = source_dist_nodes * divisions;
 
-    const auto wall_centre = ::centre(no_wall);
+    const auto wall_centre = centre(no_wall);
 
     auto log_incorrect_distance = [&source_dist, &wall_centre](
             auto str, const auto& pos) {
@@ -261,7 +261,7 @@ FullTestResults run_full_test(const std::string& test_name,
 
     auto wrong_position = [source_dist, &no_wall](auto pos, auto c) {
         return std::abs(glm::distance(pos, c) - source_dist) > 1 ||
-               !::inside(no_wall, pos);
+               !inside(no_wall, pos);
     };
 
     if (wrong_position(source_position, wall_centre)) {

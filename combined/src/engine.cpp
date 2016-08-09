@@ -241,10 +241,10 @@ public:
                     raytracer_results->get_diffuse(), source, receiver);
         }
 
-        auto impulses = raytracer_results->get_impulses();
+        const auto impulses = raytracer_results->get_impulses();
 
         //  look for the max time of an impulse
-        auto max_time =
+        const auto max_time =
                 proc::max_element(impulses, [](const auto& a, const auto& b) {
                     return a.time < b.time;
                 })->time;

@@ -9,6 +9,8 @@
 
 struct triangle;
 
+namespace geo {
+
 using triangle_vec3 = std::array<glm::vec3, 3>;
 
 triangle_vec3 get_triangle_vec3(const triangle& t,
@@ -22,3 +24,5 @@ triangle_vec2 get_triangle_vec2(const triangle& t,
                                 const aligned::vector<glm::vec3>& v);
 triangle_vec2 get_triangle_vec2(const triangle& t,
                                 const aligned::vector<cl_float3>& v);
+
+}//namespace geo

@@ -9,7 +9,7 @@ class LeftPanel : public Component,
                   public model::BroadcastListener,
                   public SettableHelpPanelClient {
 public:
-    LeftPanel(model::ValueWrapper<model::FullModel>& model, const box& aabb);
+    LeftPanel(model::ValueWrapper<model::FullModel>& model, const box<3>& aabb);
 
     void resized() override;
 

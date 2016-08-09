@@ -23,7 +23,7 @@ TEST(voxel, walk) {
     for (const auto& i : directions) {
         geo::ray ray(glm::vec3(0, 1, 0), to_vec3(i));
         bool has_triangles{false};
-        voxel.traverse(ray, [&](const auto& ray, const auto& items) {
+        traverse(voxel, ray, [&](const auto& ray, const auto& items) {
             if (!items.empty()) {
                 has_triangles = true;
             }
@@ -56,7 +56,7 @@ TEST(voxel, new) {
     for (const auto& i : raytracer::get_random_directions(bench_rays)) {
         geo::ray ray(glm::vec3(0, 1, 0), to_vec3(i));
 
-        voxel.traverse(ray, t);
+        traverse(voxel, ray, t);
     }
 }
 
@@ -74,7 +74,7 @@ TEST(voxel, intersect) {
 
         auto inter_0 = geo::ray_triangle_intersection(
                 ray, ind, scene_data.get_triangles(), v);
-        auto inter_1 = voxel.traverse(ray, t);
+        auto inter_1 = traverse(voxel, ray, t);
 
         ASSERT_EQ(inter_0, inter_1);
     }
@@ -84,5 +84,5 @@ TEST(voxel, flatten) {
     scene_data scene_data(OBJ_PATH);
     voxel_collection<3> voxel(octree_from_scene_data(scene_data, 4, 0.1));
 
-    const auto f = voxel.get_flattened();
+    const auto f = get_flattened(voxel);
 }

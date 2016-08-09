@@ -23,8 +23,9 @@ waveguide::waveguide(const cl::Context& context,
                          config::grid_spacing(speed_of_sound, 1 / sample_rate),
                          anchor),
                     sample_rate,
-                    program::to_filter_coefficients(boundary.get_surfaces(),
-                                                    sample_rate)) {}
+                    program::to_filter_coefficients(
+                            boundary.get_scene_data().get_surfaces(),
+                            sample_rate)) {}
 
 waveguide::waveguide(
         const cl::Context& context,

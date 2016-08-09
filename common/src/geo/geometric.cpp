@@ -1,4 +1,4 @@
-#include "common/geometric.h"
+#include "common/geo/geometric.h"
 
 #include "common/aligned/vector.h"
 #include "common/stl_wrappers.h"
@@ -51,20 +51,6 @@ intersects triangle_intersection(const triangle_vec3& tri, const ray& ray) {
     }
 
     return intersects(dist);
-}
-
-triangle_vec3 to_triangle_vec3f(const triangle& tri,
-                               const aligned::vector<glm::vec3>& vertices) {
-    const auto v0 = vertices[tri.v0];
-    const auto v1 = vertices[tri.v1];
-    const auto v2 = vertices[tri.v2];
-    return triangle_vec3{{v0, v1, v2}};
-}
-
-intersects triangle_intersection(const triangle& tri,
-                                 const aligned::vector<glm::vec3>& vertices,
-                                 const ray& ray) {
-    return triangle_intersection(to_triangle_vec3f(tri, vertices), ray);
 }
 
 intersection ray_triangle_intersection(
@@ -240,14 +226,6 @@ float point_triangle_distance_squared(const triangle_vec3& triangle,
     const auto closest = triangle[0] + e0 * t0 + e1 * t1;
     const auto d = point - closest;
     return glm::dot(d, d);
-}
-
-float point_triangle_distance_squared(
-        const triangle& tri,
-        const aligned::vector<glm::vec3>& vertices,
-        const glm::vec3& point) {
-    return point_triangle_distance_squared(to_triangle_vec3f(tri, vertices),
-                                           point);
 }
 
 glm::vec3 normal(const triangle_vec3& t) {

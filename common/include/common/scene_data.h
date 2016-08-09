@@ -2,9 +2,9 @@
 
 #include "common/aligned/map.h"
 #include "common/aligned/vector.h"
-#include "common/box.h"
-#include "common/triangle.h"
 #include "common/cl_common.h"
+#include "common/geo/box.h"
+#include "common/triangle.h"
 
 #include "glm/glm.hpp"
 
@@ -56,7 +56,7 @@ public:
 
     void set_surfaces(const surface& surface);
 
-    box<3> get_aabb() const;
+    geo::box get_aabb() const;
     aligned::vector<glm::vec3> get_converted_vertices() const;
     aligned::vector<size_t> get_triangle_indices() const;
 

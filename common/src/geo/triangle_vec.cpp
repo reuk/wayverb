@@ -1,6 +1,8 @@
-#include "common/triangle_vec.h"
+#include "common/geo/triangle_vec.h"
 #include "common/conversions.h"
 #include "common/triangle.h"
+
+namespace geo {
 
 triangle_vec3 get_triangle_vec3(const triangle& t,
                                 const aligned::vector<glm::vec3>& v) {
@@ -23,3 +25,5 @@ triangle_vec2 get_triangle_vec2(const triangle& t,
     return triangle_vec2{
             {to_vec3(v[t.v0]), to_vec3(v[t.v1]), to_vec3(v[t.v2])}};
 }
+
+}  // namespace geo

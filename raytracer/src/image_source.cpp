@@ -4,7 +4,7 @@
 
 #include "common/aligned/set.h"
 #include "common/conversions.h"
-#include "common/geometric.h"
+#include "common/geo/geometric.h"
 #include "common/progress_bar.h"
 #include "common/voxel_collection.h"
 

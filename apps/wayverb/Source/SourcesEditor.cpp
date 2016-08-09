@@ -19,7 +19,7 @@ std::unique_ptr<Component> SourcesListBox::new_component_for_row(
 class SingleSourceComponent : public BasicPanel {
 public:
     SingleSourceComponent(model::ValueWrapper<glm::vec3>& source,
-                          const box& aabb)
+                          const box<3>& aabb)
             : BasicPanel([&source, &aabb](auto& panel) {
                 panel.addProperties({new Vec3Property("source position",
                                                       source,
@@ -28,7 +28,7 @@ public:
             }) {}
 };
 
-SourcesEditorPanel::SourcesEditorPanel(model_type& model, const box& aabb)
+SourcesEditorPanel::SourcesEditorPanel(model_type& model, const box<3>& aabb)
         : ListEditorPanel<SourcesEditableListBox>(model)
         , aabb(aabb) {}
 
@@ -104,7 +104,7 @@ class SingleReceiverComponent : public BasicPanel {
 public:
     SingleReceiverComponent(
             model::ValueWrapper<model::ReceiverSettings>& receiver,
-            const box& aabb)
+            const box<3>& aabb)
             : BasicPanel([&receiver, &aabb](auto& panel) {
                 panel.addProperties({new Vec3Property("receiver position",
                                                       receiver.position,
@@ -114,7 +114,8 @@ public:
             }) {}
 };
 
-ReceiversEditorPanel::ReceiversEditorPanel(model_type& model, const box& aabb)
+ReceiversEditorPanel::ReceiversEditorPanel(model_type& model,
+                                           const box<3>& aabb)
         : ListEditorPanel<ReceiversEditableListBox>(model)
         , aabb(aabb) {}
 

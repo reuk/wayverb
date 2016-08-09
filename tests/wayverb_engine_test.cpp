@@ -7,7 +7,7 @@
 #include "gtest/gtest.h"
 
 TEST(engine, engine) {
-    box<3> box(glm::vec3(0, 0, 0), glm::vec3(5.56, 3.97, 2.81));
+    geo::box box(glm::vec3(0, 0, 0), glm::vec3(5.56, 3.97, 2.81));
     constexpr glm::vec3 source(2.09, 2.12, 2.12);
     constexpr glm::vec3 mic(2.09, 3.08, 0.96);
     constexpr auto output_sample_rate = 96000;
@@ -15,7 +15,7 @@ TEST(engine, engine) {
     constexpr surface surface{volume_type{{v, v, v, v, v, v, v, v}},
                               volume_type{{v, v, v, v, v, v, v, v}}};
 
-    auto scene_data = get_scene_data(box);
+    auto scene_data = geo::get_scene_data(box);
     scene_data.set_surfaces(surface);
 
     constexpr auto waveguide_sample_rate = 8000;

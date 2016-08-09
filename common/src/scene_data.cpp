@@ -30,9 +30,9 @@ copyable_scene_data::copyable_scene_data(
 copyable_scene_data::copyable_scene_data(struct contents&& rhs)
         : contents(std::move(rhs)) {}
 
-box<3> copyable_scene_data::get_aabb() const {
+geo::box copyable_scene_data::get_aabb() const {
     const auto v = get_converted_vertices();
-    return min_max<3>(std::begin(v), std::end(v));
+    return util::min_max(std::begin(v), std::end(v));
 }
 
 aligned::vector<glm::vec3> copyable_scene_data::get_converted_vertices() const {

@@ -24,7 +24,7 @@ void mesh::set_node_positions(aligned::vector<program::NodeStruct>& ret) const {
 
 void mesh::set_node_inside(const boundary& boundary,
                            aligned::vector<program::NodeStruct>& ret) const {
-    aligned::vector<bool> inside(ret.size());
+    std::vector<bool> inside(ret.size());
     proc::transform(ret, inside.begin(), [&boundary](const auto& i) {
         return boundary.inside(to_vec3(i.position));
     });
@@ -95,7 +95,7 @@ cl_int mesh::compute_boundary_type(
         aligned::vector<std::pair<locator, cl_int>> nearby;
         for (const auto& relative : directions) {
             auto adjacent = loc + relative.first;
-            auto index    = compute_index(adjacent);
+            auto index = compute_index(adjacent);
             if (index < ret.size() && ret[index].inside)
                 nearby.push_back(relative);
         }
@@ -183,7 +183,7 @@ mesh::locator mesh::compute_locator(size_t index) const {
     return locator(x.rem, y.rem, y.quot % dim.z);
 }
 mesh::locator mesh::compute_locator(const glm::vec3& v) const {
-    auto transformed    = v - get_aabb().get_c0();
+    auto transformed = v - get_aabb().get_min();
     glm::ivec3 cube_pos = transformed / get_spacing();
 
     auto min = glm::max(cube_pos - 1, glm::ivec3(0));
@@ -194,7 +194,7 @@ mesh::locator mesh::compute_locator(const glm::vec3& v) const {
     };
 
     locator closest = min;
-    auto dist       = get_dist(closest);
+    auto dist = get_dist(closest);
     for (auto x = min.x; x != max.x; ++x) {
         for (auto y = min.y; y != max.y; ++y) {
             for (auto z = min.z; z != max.z; ++z) {
@@ -202,7 +202,7 @@ mesh::locator mesh::compute_locator(const glm::vec3& v) const {
                 auto t_dist = get_dist(t);
                 if (t_dist < dist) {
                     closest = t;
-                    dist    = t_dist;
+                    dist = t_dist;
                 }
             }
         }
@@ -211,7 +211,7 @@ mesh::locator mesh::compute_locator(const glm::vec3& v) const {
     return closest;
 }
 glm::vec3 mesh::compute_position(const locator& locator) const {
-    return glm::vec3(locator) * get_spacing() + get_aabb().get_c0();
+    return glm::vec3(locator) * get_spacing() + get_aabb().get_min();
 }
 
 void mesh::compute_neighbors(size_t index, cl_uint* output) const {
@@ -268,11 +268,11 @@ cl_uint mesh::coefficient_index_for_node(const boundary& b,
 
 cl_uint mesh::coefficient_index_for_node(const mesh_boundary& b,
                                          const program::NodeStruct& node) {
-    const auto& triangles = b.get_triangles();
-    const auto& vertices  = b.get_vertices();
-    auto min              = proc::min_element(
-            triangles, [&node, &vertices](const auto& i, const auto& j) {
-                auto get_dist = [&node, &vertices](const auto& i) {
+    const auto& triangles = b.get_scene_data().get_triangles();
+    const auto& vertices = b.get_scene_data().get_vertices();
+    const auto min =
+            proc::min_element(triangles, [&](const auto& i, const auto& j) {
+                const auto get_dist = [&](const auto& i) {
                     return geo::point_triangle_distance_squared(
                             i, vertices, to_vec3(node.position));
                 };
@@ -284,7 +284,7 @@ cl_uint mesh::coefficient_index_for_node(const mesh_boundary& b,
 
 float mesh::get_spacing() const { return spacing; }
 
-box<3> mesh::get_aabb() const { return aabb; }
+geo::box mesh::get_aabb() const { return aabb; }
 
 bool operator==(const mesh& a, const mesh& b) {
     return std::tie(a.dim,

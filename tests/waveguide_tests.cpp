@@ -34,7 +34,7 @@ TEST(run_waveguide, run_waveguide) {
     //  get opencl program
     waveguide::program waveguide_program(cc.get_context(), cc.get_device());
 
-    box<3> box(glm::vec3(0, 0, 0), glm::vec3(4, 3, 6));
+    const geo::box box(glm::vec3(0, 0, 0), glm::vec3(4, 3, 6));
     constexpr glm::vec3 source(1, 1, 1);
     constexpr glm::vec3 receiver(2, 1, 5);
     constexpr auto v = 0.5;
@@ -43,7 +43,7 @@ TEST(run_waveguide, run_waveguide) {
 
     //  init simulation parameters
 
-    auto scene_data = get_scene_data(box);
+    auto scene_data = geo::get_scene_data(box);
     scene_data.set_surfaces(surface);
 
     //  get a waveguide
@@ -53,27 +53,29 @@ TEST(run_waveguide, run_waveguide) {
                                    receiver,
                                    4000);
 
-    auto source_index   = waveguide.get_index_for_coordinate(source);
-    auto receiver_index = waveguide.get_index_for_coordinate(receiver);
+    const auto source_index = waveguide.get_index_for_coordinate(source);
+    const auto receiver_index = waveguide.get_index_for_coordinate(receiver);
 
     CHECK(waveguide.inside(source_index)) << "source is outside of mesh!";
     CHECK(waveguide.inside(receiver_index)) << "receiver is outside of mesh!";
 
-    auto corrected_source = waveguide.get_coordinate_for_index(source_index);
+    const auto corrected_source =
+            waveguide.get_coordinate_for_index(source_index);
 
     std::atomic_bool keep_going{true};
     progress_bar pb(std::cout, steps);
     auto callback_counter{0};
-    auto results = waveguide::init_and_run(waveguide,
-                                           corrected_source,
-                                           aligned::vector<float>{1},
-                                           receiver_index,
-                                           steps,
-                                           keep_going,
-                                           [&](auto i) {
-                                               pb += 1;
-                                               ASSERT_EQ(i, callback_counter++);
-                                           });
+    const auto results =
+            waveguide::init_and_run(waveguide,
+                                    corrected_source,
+                                    aligned::vector<float>{1},
+                                    receiver_index,
+                                    steps,
+                                    keep_going,
+                                    [&](auto i) {
+                                        pb += 1;
+                                        ASSERT_EQ(i, callback_counter++);
+                                    });
 
     ASSERT_TRUE(results);
 
@@ -81,6 +83,6 @@ TEST(run_waveguide, run_waveguide) {
     proc::transform(
             *results, output.begin(), [](const auto& i) { return i.pressure; });
 
-    auto max_amp = max_mag(output);
+    const auto max_amp = max_mag(output);
     std::cout << "max_mag: " << max_amp << std::endl;
 }

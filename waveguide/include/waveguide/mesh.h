@@ -6,7 +6,7 @@
 
 #include "common/boundaries.h"
 #include "common/conversions.h"
-#include "common/geometric.h"
+#include "common/geo/geometric.h"
 #include "common/popcount.h"
 
 #include <set>
@@ -208,7 +208,7 @@ public:
     };
 
     float get_spacing() const;
-    box<3> get_aabb() const;
+    geo::box get_aabb() const;
 
 private:
     template <typename B>
@@ -256,7 +256,7 @@ private:
     const aligned::vector<std::array<cl_int, N>>& get_boundary_coefficients()
             const;
 
-    box<3> aabb;
+    geo::box aabb;
     float spacing;
 
     glm::ivec3 dim;

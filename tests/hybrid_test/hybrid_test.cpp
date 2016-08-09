@@ -64,13 +64,13 @@ constexpr double rectilinear_calibration_factor(double r, double sr) {
 }
 
 auto run_waveguide(const compute_context& cc,
-                   const box<3>& boundary,
+                   const geo::box& boundary,
                    const model::SingleShot& config,
                    const std::string& output_folder,
                    const surface& surface) {
     const auto steps = 16000;
 
-    auto scene_data = get_scene_data(boundary);
+    auto scene_data = geo::get_scene_data(boundary);
     scene_data.set_surfaces(surface);
 
     //  get a waveguide
@@ -120,7 +120,7 @@ int main(int argc, char** argv) {
     google::InitGoogleLogging(argv[0]);
     gflags::ParseCommandLineFlags(&argc, &argv, true);
 
-    box<3> box(glm::vec3(0, 0, 0), glm::vec3(5.56, 3.97, 2.81));
+    geo::box box(glm::vec3(0, 0, 0), glm::vec3(5.56, 3.97, 2.81));
     constexpr glm::vec3 source(2.09, 2.12, 2.12);
     constexpr glm::vec3 receiver(2.09, 3.08, 0.96);
     constexpr auto samplerate = 96000;
@@ -176,7 +176,7 @@ int main(int argc, char** argv) {
     std::atomic_bool keep_going{true};
     const auto impulses = 1000;
     progress_bar pb(std::cout, impulses);
-    const auto results = raytracer.run(get_scene_data(box),
+    const auto results = raytracer.run(geo::get_scene_data(box),
                                        config.source,
                                        config.receiver_settings.position,
                                        config.rays,

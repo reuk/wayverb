@@ -26,7 +26,7 @@
 
 #include "raytracer/raytracer.h"
 
-#include "common/octree.h"
+#include "common/spatial_division.h"
 #include "common/scene_data.h"
 #include "common/single_thread_access_checker.h"
 #include "common/voxel_collection.h"

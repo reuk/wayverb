@@ -16,7 +16,8 @@ auto uniform_surface(float r) {
 TEST(waveguide_init, waveguide_init) {
     compute_context cc;
 
-    auto scene_data = get_scene_data(box<3>(glm::vec3(-1), glm::vec3(1)));
+    auto scene_data =
+            geo::get_scene_data(geo::box(glm::vec3(-1), glm::vec3(1)));
     scene_data.set_surfaces(uniform_surface(0.999));
 
     mesh_boundary boundary(scene_data);

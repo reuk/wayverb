@@ -20,7 +20,7 @@ std::experimental::optional<impulse> get_direct_impulse(
     const auto direction                 = glm::normalize(source_to_receiver);
     const geo::ray to_receiver(source, direction);
 
-    const auto intersection = vox.traverse(to_receiver, callback);
+    const auto intersection = traverse(vox, to_receiver, callback);
 
     if (!intersection ||
         (intersection && intersection->distance > source_to_receiver_length)) {
