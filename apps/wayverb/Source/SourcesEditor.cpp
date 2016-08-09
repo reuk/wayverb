@@ -19,16 +19,16 @@ std::unique_ptr<Component> SourcesListBox::new_component_for_row(
 class SingleSourceComponent : public BasicPanel {
 public:
     SingleSourceComponent(model::ValueWrapper<glm::vec3>& source,
-                          const box<3>& aabb)
+                          const geo::box& aabb)
             : BasicPanel([&source, &aabb](auto& panel) {
                 panel.addProperties({new Vec3Property("source position",
                                                       source,
-                                                      aabb.get_c0(),
-                                                      aabb.get_c1())});
+                                                      aabb.get_min(),
+                                                      aabb.get_max())});
             }) {}
 };
 
-SourcesEditorPanel::SourcesEditorPanel(model_type& model, const box<3>& aabb)
+SourcesEditorPanel::SourcesEditorPanel(model_type& model, const geo::box& aabb)
         : ListEditorPanel<SourcesEditableListBox>(model)
         , aabb(aabb) {}
 
@@ -104,18 +104,18 @@ class SingleReceiverComponent : public BasicPanel {
 public:
     SingleReceiverComponent(
             model::ValueWrapper<model::ReceiverSettings>& receiver,
-            const box<3>& aabb)
+            const geo::box& aabb)
             : BasicPanel([&receiver, &aabb](auto& panel) {
                 panel.addProperties({new Vec3Property("receiver position",
                                                       receiver.position,
-                                                      aabb.get_c0(),
-                                                      aabb.get_c1())});
+                                                      aabb.get_min(),
+                                                      aabb.get_max())});
                 panel.addProperties({new ReceiverSettingsProperty(receiver)});
             }) {}
 };
 
 ReceiversEditorPanel::ReceiversEditorPanel(model_type& model,
-                                           const box<3>& aabb)
+                                           const geo::box& aabb)
         : ListEditorPanel<ReceiversEditableListBox>(model)
         , aabb(aabb) {}
 

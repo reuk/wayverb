@@ -5,7 +5,7 @@
 #include "HelpWindow.hpp"
 #include "ValueWrapperEditableListBox.hpp"
 
-#include "common/box.h"
+#include "common/geo/box.h"
 
 class SourcesListBox : public ValueWrapperListBox<glm::vec3> {
 public:
@@ -24,13 +24,13 @@ using SourcesEditableListBox = ValueWrapperEditableListBox<SourcesListBox>;
 
 class SourcesEditorPanel : public ListEditorPanel<SourcesEditableListBox> {
 public:
-    SourcesEditorPanel(model_type& model, const box<3>& aabb);
+    SourcesEditorPanel(model_type& model, const geo::box& aabb);
 
 private:
     std::unique_ptr<Component> new_editor(
             model::ValueWrapper<value_type>& v) override;
 
-    box<3> aabb;
+    geo::box aabb;
 };
 
 //----------------------------------------------------------------------------//
@@ -52,11 +52,11 @@ using ReceiversEditableListBox = ValueWrapperEditableListBox<ReceiversListBox>;
 
 class ReceiversEditorPanel : public ListEditorPanel<ReceiversEditableListBox> {
 public:
-    ReceiversEditorPanel(model_type& model, const box<3>& aabb);
+    ReceiversEditorPanel(model_type& model, const geo::box& aabb);
 
 private:
     std::unique_ptr<Component> new_editor(
             model::ValueWrapper<value_type>& v) override;
 
-    box<3> aabb;
+    geo::box aabb;
 };

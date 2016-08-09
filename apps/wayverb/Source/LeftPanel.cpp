@@ -211,7 +211,7 @@ class SourcesConfigureButton : public ConfigureButton {
 public:
     SourcesConfigureButton(
             model::ValueWrapper<aligned::vector<glm::vec3>>& model,
-            const box<3>& aabb)
+            const geo::box& aabb)
             : ConfigureButton("sources")
             , model(model)
             , aabb(aabb) {}
@@ -225,7 +225,7 @@ public:
 
 private:
     model::ValueWrapper<aligned::vector<glm::vec3>>& model;
-    box<3> aabb;
+    geo::box aabb;
 };
 
 class ReceiversConfigureButton : public ConfigureButton {
@@ -233,7 +233,7 @@ public:
     ReceiversConfigureButton(
             model::ValueWrapper<aligned::vector<model::ReceiverSettings>>&
                     model,
-            const box<3>& aabb)
+            const geo::box& aabb)
             : ConfigureButton("receivers")
             , model(model)
             , aabb(aabb) {}
@@ -247,7 +247,7 @@ public:
 
 private:
     model::ValueWrapper<aligned::vector<model::ReceiverSettings>>& model;
-    box<3> aabb;
+    geo::box aabb;
 };
 
 }  // namespace
@@ -255,7 +255,7 @@ private:
 //----------------------------------------------------------------------------//
 
 LeftPanel::LeftPanel(model::ValueWrapper<model::FullModel>& model,
-                     const box<3>& aabb)
+                     const geo::box& aabb)
         : model(model)
         , bottom_panel(model.render_state) {
     set_help("configuration panel",

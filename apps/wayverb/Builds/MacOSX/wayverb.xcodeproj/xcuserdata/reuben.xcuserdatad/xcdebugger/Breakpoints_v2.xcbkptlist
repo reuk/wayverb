@@ -68,7 +68,7 @@
                   moduleName = "visualiser"
                   usesParentBreakpointCondition = "Yes"
                   urlString = "file:///Users/reuben/development/waveguide/submodules/modern_gl_utils/include/modern_gl_utils/checking.h"
-                  timestampString = "492434329.879941"
+                  timestampString = "492471629.509184"
                   startingColumnNumber = "9223372036854775807"
                   endingColumnNumber = "9223372036854775807"
                   startingLineNumber = "166"
@@ -83,7 +83,7 @@
                   moduleName = "visualiser"
                   usesParentBreakpointCondition = "Yes"
                   urlString = "file:///Users/reuben/development/waveguide/submodules/modern_gl_utils/include/modern_gl_utils/checking.h"
-                  timestampString = "492434329.880076"
+                  timestampString = "492471629.509421"
                   startingColumnNumber = "9223372036854775807"
                   endingColumnNumber = "9223372036854775807"
                   startingLineNumber = "166"
@@ -121,22 +121,6 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "196"
             endingLineNumber = "196">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "Yes"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "../../Source/EngineFunctor.cpp"
-            timestampString = "492434278.153152"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "83"
-            endingLineNumber = "83"
-            landmarkName = "EngineFunctor::single_pair(Listener&amp; listener, const std::string&amp; file_name, const model::SingleShot&amp; single_shot, const copyable_scene_data&amp; scene_data, bool visualise, const compute_context&amp; compute_context)"
-            landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
    </Breakpoints>
