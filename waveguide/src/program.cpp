@@ -1,236 +1,32 @@
 #include "waveguide/program.h"
 
 #include "cl/structs.h"
+#include "cl/utils.h"
+#include "cl/filters.h"
 
 #include "common/stl_wrappers.h"
 
 namespace waveguide {
 
 program::program(const cl::Context& context, const cl::Device& device)
-        : program_wrapper(context,
-                          device,
-                          std::vector<std::string>{
-                                  cl_sources::get_struct_definitions(
-                                          num_ports, filters::biquad_sections),
-                                  source}) {}
+        : program_wrapper(
+                  context,
+                  device,
+                  std::vector<std::string>{cl_sources::get_struct_definitions(
+                                                   filters::biquad_sections),
+                                           cl_sources::utils,
+                                           cl_sources::filters,
+                                           source}) {}
 
-program::condensed_node program::get_condensed(
-        const mesh_setup_program::node& n) {
-    return condensed_node{
-            n.boundary_type | (n.inside ? mesh_setup_program::id_inside
-                                        : mesh_setup_program::id_none),
-            n.boundary_index};
+program::condensed_node program::get_condensed(const mesh_setup::node& n) {
+    return condensed_node{n.boundary_type | (n.inside ? mesh_setup::id_inside
+                                                      : mesh_setup::id_none),
+                          n.boundary_index};
 }
 
 //----------------------------------------------------------------------------//
 
-const std::string program::source{
-#ifdef DIAGNOSTIC
-        "#define DIAGNOSTIC\n"
-#endif
-        R"(
-
-#define COURANT (1.0f / sqrt(3.0f))
-#define COURANT_SQ (1.0f / 3.0f)
-
-#define NO_NEIGHBOR (~(uint)0)
-
-#define FILTER_STEP(order)                                                 \
-    FilterReal CAT(filter_step_, order)(                                   \
-            FilterReal input,                                              \
-            global CAT(FilterMemory, order) * m,                           \
-            const global CAT(FilterCoefficients, order) * c);              \
-    FilterReal CAT(filter_step_, order)(                                   \
-            FilterReal input,                                              \
-            global CAT(FilterMemory, order) * m,                           \
-            const global CAT(FilterCoefficients, order) * c) {             \
-        FilterReal output = (input * c->b[0] + m->array[0]) / c->a[0];     \
-        for (int i = 0; i != order - 1; ++i) {                             \
-            FilterReal b = c->b[i + 1] == 0 ? 0 : c->b[i + 1] * input;     \
-            FilterReal a = c->a[i + 1] == 0 ? 0 : c->a[i + 1] * output;    \
-            m->array[i]  = b - a + m->array[i + 1];                        \
-        }                                                                  \
-        FilterReal b        = c->b[order] == 0 ? 0 : c->b[order] * input;  \
-        FilterReal a        = c->a[order] == 0 ? 0 : c->a[order] * output; \
-        m->array[order - 1] = b - a;                                       \
-        return output;                                                     \
-    }
-
-FILTER_STEP(BIQUAD_ORDER);
-FILTER_STEP(CANONICAL_FILTER_ORDER);
-
-#define filter_step_biquad CAT(filter_step_, BIQUAD_ORDER)
-#define filter_step_canonical CAT(filter_step_, CANONICAL_FILTER_ORDER)
-
-float biquad_cascade(FilterReal input,
-                     global BiquadMemoryArray* bm,
-                     const global BiquadCoefficientsArray* bc);
-float biquad_cascade(FilterReal input,
-                     global BiquadMemoryArray* bm,
-                     const global BiquadCoefficientsArray* bc) {
-    for (int i = 0; i != BIQUAD_SECTIONS; ++i) {
-        input = filter_step_biquad(input, bm->array + i, bc->array + i);
-    }
-    return input;
-}
-
-kernel void filter_test(
-        const global float* input,
-        global float* output,
-        global BiquadMemoryArray* biquad_memory,
-        const global BiquadCoefficientsArray* biquad_coefficients) {
-    size_t index  = get_global_id(0);
-    output[index] = biquad_cascade(
-            input[index], biquad_memory + index, biquad_coefficients + index);
-}
-
-kernel void filter_test_2(
-        const global float* input,
-        global float* output,
-        global FilterMemoryCanonical* canonical_memory,
-        const global FilterCoefficientsCanonical* canonical_coefficients) {
-    size_t index  = get_global_id(0);
-    output[index] = filter_step_canonical(input[index],
-                                          canonical_memory + index,
-                                          canonical_coefficients + index);
-}
-
-#define PRINT_SIZEOF(x) printf("gpu: sizeof(" #x "): %i\n", sizeof(x));
-
-bool locator_outside(int3 locator, int3 dimensions);
-bool locator_outside(int3 locator, int3 dimensions) {
-    return any(locator < (int3)(0)) || any(dimensions <= locator);
-}
-
-int3 to_locator(size_t index, int3 dim);
-int3 to_locator(size_t index, int3 dim) {
-    int xrem = index % dim.x, xquot = index / dim.x;
-    int yrem = xquot % dim.y, yquot = xquot / dim.y;
-    int zrem = yquot % dim.z;
-    return (int3)(xrem, yrem, zrem);
-}
-
-size_t to_index(int3 locator, int3 dim);
-size_t to_index(int3 locator, int3 dim) {
-    return locator.x + locator.y * dim.x + locator.z * dim.x * dim.y;
-}
-
-uint neighbor_index(int3 locator, int3 dimensions, PortDirection pd);
-uint neighbor_index(int3 locator, int3 dimensions, PortDirection pd) {
-    switch (pd) {
-        case id_port_nx: {
-            locator += (int3)(-1, 0, 0);
-            break;
-        }
-        case id_port_px: {
-            locator += (int3)(1, 0, 0);
-            break;
-        }
-        case id_port_ny: {
-            locator += (int3)(0, -1, 0);
-            break;
-        }
-        case id_port_py: {
-            locator += (int3)(0, 1, 0);
-            break;
-        }
-        case id_port_nz: {
-            locator += (int3)(0, 0, -1);
-            break;
-        }
-        case id_port_pz: {
-            locator += (int3)(0, 0, 1);
-            break;
-        }
-    }
-    if (locator_outside(locator, dimensions))
-        return NO_NEIGHBOR;
-    return to_index(locator, dimensions);
-}
-
-InnerNodeDirections1 get_inner_node_directions_1(BoundaryType boundary_type);
-InnerNodeDirections1 get_inner_node_directions_1(BoundaryType boundary_type) {
-    switch (boundary_type) {
-        case id_nx: return (InnerNodeDirections1){{id_port_nx}};
-        case id_px: return (InnerNodeDirections1){{id_port_px}};
-        case id_ny: return (InnerNodeDirections1){{id_port_ny}};
-        case id_py: return (InnerNodeDirections1){{id_port_py}};
-        case id_nz: return (InnerNodeDirections1){{id_port_nz}};
-        case id_pz: return (InnerNodeDirections1){{id_port_pz}};
-
-        default: return (InnerNodeDirections1){{-1}};
-    }
-}
-
-InnerNodeDirections2 get_inner_node_directions_2(int boundary_type);
-InnerNodeDirections2 get_inner_node_directions_2(int boundary_type) {
-    switch (boundary_type) {
-        case id_nx | id_ny:
-            return (InnerNodeDirections2){{id_port_nx, id_port_ny}};
-        case id_nx | id_py:
-            return (InnerNodeDirections2){{id_port_nx, id_port_py}};
-        case id_px | id_ny:
-            return (InnerNodeDirections2){{id_port_px, id_port_ny}};
-        case id_px | id_py:
-            return (InnerNodeDirections2){{id_port_px, id_port_py}};
-        case id_nx | id_nz:
-            return (InnerNodeDirections2){{id_port_nx, id_port_nz}};
-        case id_nx | id_pz:
-            return (InnerNodeDirections2){{id_port_nx, id_port_pz}};
-        case id_px | id_nz:
-            return (InnerNodeDirections2){{id_port_px, id_port_nz}};
-        case id_px | id_pz:
-            return (InnerNodeDirections2){{id_port_px, id_port_pz}};
-        case id_ny | id_nz:
-            return (InnerNodeDirections2){{id_port_ny, id_port_nz}};
-        case id_ny | id_pz:
-            return (InnerNodeDirections2){{id_port_ny, id_port_pz}};
-        case id_py | id_nz:
-            return (InnerNodeDirections2){{id_port_py, id_port_nz}};
-        case id_py | id_pz:
-            return (InnerNodeDirections2){{id_port_py, id_port_pz}};
-
-        default: return (InnerNodeDirections2){{-1, -1}};
-    }
-}
-
-InnerNodeDirections3 get_inner_node_directions_3(int boundary_type);
-InnerNodeDirections3 get_inner_node_directions_3(int boundary_type) {
-    switch (boundary_type) {
-        case id_nx | id_ny | id_nz:
-            return (InnerNodeDirections3){{id_port_nx, id_port_ny, id_port_nz}};
-        case id_nx | id_ny | id_pz:
-            return (InnerNodeDirections3){{id_port_nx, id_port_ny, id_port_pz}};
-        case id_nx | id_py | id_nz:
-            return (InnerNodeDirections3){{id_port_nx, id_port_py, id_port_nz}};
-        case id_nx | id_py | id_pz:
-            return (InnerNodeDirections3){{id_port_nx, id_port_py, id_port_pz}};
-        case id_px | id_ny | id_nz:
-            return (InnerNodeDirections3){{id_port_px, id_port_ny, id_port_nz}};
-        case id_px | id_ny | id_pz:
-            return (InnerNodeDirections3){{id_port_px, id_port_ny, id_port_pz}};
-        case id_px | id_py | id_nz:
-            return (InnerNodeDirections3){{id_port_px, id_port_py, id_port_nz}};
-        case id_px | id_py | id_pz:
-            return (InnerNodeDirections3){{id_port_px, id_port_py, id_port_pz}};
-
-        default: return (InnerNodeDirections3){{-1, -1, -1}};
-    }
-}
-
-PortDirection opposite(PortDirection pd);
-PortDirection opposite(PortDirection pd) {
-    switch (pd) {
-        case id_port_nx: return id_port_px;
-        case id_port_px: return id_port_nx;
-        case id_port_ny: return id_port_py;
-        case id_port_py: return id_port_ny;
-        case id_port_nz: return id_port_pz;
-        case id_port_pz: return id_port_nz;
-
-        default: return -1;
-    }
-}
+const std::string program::source{R"(
 
 SurroundingPorts1 on_boundary_1(InnerNodeDirections1 pd);
 SurroundingPorts1 on_boundary_1(InnerNodeDirections1 pd) {
@@ -286,7 +82,7 @@ void ghost_point_pressure_update(
     FilterReal b0         = boundary->b[0];
     FilterReal a0         = boundary->a[0];
 
-    FilterReal diff = (a0 * (prev_pressure - next_pressure)) / (b0 * COURANT) +
+    FilterReal diff = (a0 * (prev_pressure - next_pressure)) / (b0 * courant) +
                       (filt_state / b0);
 #if 0
     FilterReal ghost_pressure = inner_pressure + diff;
@@ -320,7 +116,7 @@ void ghost_point_pressure_update(
         on_boundary = CAT(on_boundary_, dimensions)(pd);                     \
         for (int i = 0; i != CAT(NUM_SURROUNDING_PORTS_, dimensions); ++i) { \
             uint index = neighbor_index(locator, dim, on_boundary.array[i]); \
-            if (index == NO_NEIGHBOR) {                                      \
+            if (index == no_neighbor) {                                      \
                 *error_flag |= id_outside_mesh_error;                        \
                 return 0;                                                    \
             }                                                                \
@@ -366,7 +162,7 @@ float get_inner_pressure(const global CondensedNode* nodes,
                          PortDirection bt,
                          global int* error_flag) {
     uint neighbor = neighbor_index(locator, dim, bt);
-    if (neighbor == NO_NEIGHBOR) {
+    if (neighbor == no_neighbor) {
         *error_flag |= id_outside_mesh_error;
         return 0;
     }
@@ -397,7 +193,7 @@ float get_inner_pressure(const global CondensedNode* nodes,
                                           ind.array[i],                        \
                                           error_flag);                         \
         }                                                                      \
-        return COURANT_SQ *                                                    \
+        return courant_sq *                                                    \
                (sum + CAT(get_summed_surrounding_, dimensions)(                \
                               nodes, ind, current, locator, dim, error_flag)); \
     }
@@ -422,7 +218,7 @@ GET_CURRENT_SURROUNDING_WEIGHTING_TEMPLATE(3);
             sum += filt_state /                                                \
                    boundary_coefficients[bd.coefficient_index].b[0];           \
         }                                                                      \
-        return COURANT_SQ * sum;                                               \
+        return courant_sq * sum;                                               \
     }
 
 GET_FILTER_WEIGHTING_TEMPLATE(1);
@@ -444,7 +240,7 @@ GET_FILTER_WEIGHTING_TEMPLATE(3);
                     boundary_coefficients + bda->array[i].coefficient_index;   \
             sum += boundary->a[0] / boundary->b[0];                            \
         }                                                                      \
-        return sum * COURANT;                                                  \
+        return sum * courant;                                                  \
     }
 
 GET_COEFF_WEIGHTING_TEMPLATE(1);
@@ -527,7 +323,7 @@ float normal_waveguide_update(float prev_pressure,
     float ret = 0;
     for (int i = 0; i != PORTS; ++i) {
         uint port_index = neighbor_index(locator, dimensions, i);
-        if (port_index != NO_NEIGHBOR) {
+        if (port_index != no_neighbor) {
             ret += current[port_index];
         }
     }

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "common/aligned/vector.h"
-#include "common/boundaries.h"
+#include "common/geo/box.h"
 #include "common/geo/triangle_vec.h"
 #include "common/triangle.h"
 #include "common/voxel_collection.h"
@@ -9,6 +9,8 @@
 #include "glm/glm.hpp"
 
 class copyable_scene_data;
+
+namespace waveguide {
 
 /// A boundary which allows for fast inside/outside testing.
 class mesh_boundary : public boundary {
@@ -30,3 +32,5 @@ private:
 
     static const aligned::vector<size_t> empty;
 };
+
+}  // namespace waveguide

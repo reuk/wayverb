@@ -20,7 +20,7 @@ class MeshTest : public ::testing::Test {
 public:
     template <typename MeshType>
     auto get_mesh(const copyable_scene_data& sd) {
-        return MeshType(mesh_boundary(sd), 0.1, glm::vec3(0));
+        return MeshType(waveguide::mesh_boundary(sd), 0.1, glm::vec3(0));
     }
 
     template <typename MeshType>

@@ -20,7 +20,7 @@ TEST(waveguide_init, waveguide_init) {
             geo::get_scene_data(geo::box(glm::vec3(-1), glm::vec3(1)));
     scene_data.set_surfaces(uniform_surface(0.999));
 
-    mesh_boundary boundary(scene_data);
+    waveguide::mesh_boundary boundary(scene_data);
 
     constexpr glm::vec3 centre{0, 0, 0};
 

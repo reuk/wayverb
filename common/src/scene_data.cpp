@@ -1,7 +1,7 @@
 #include "common/scene_data.h"
 
-#include "common/boundaries.h"
 #include "common/conversions.h"
+#include "common/range.h"
 #include "common/stl_wrappers.h"
 #include "common/string_builder.h"
 #include "common/triangle.h"

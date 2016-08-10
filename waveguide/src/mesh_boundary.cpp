@@ -7,6 +7,8 @@
 #include "common/spatial_division.h"
 #include "common/stl_wrappers.h"
 
+namespace waveguide {
+
 glm::ivec2 mesh_boundary::hash_point(const glm::vec2& v) const {
     return (v - triangle_references.get_aabb().get_min()) / cell_size;
 }
@@ -77,3 +79,5 @@ const copyable_scene_data& mesh_boundary::get_scene_data() const {
 }
 
 const aligned::vector<size_t> mesh_boundary::empty{};
+
+}  // namespace waveguide

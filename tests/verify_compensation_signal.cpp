@@ -50,7 +50,7 @@ TEST(verify_compensation_signal, verify_compensation_signal_normal) {
     auto scene_data =
             geo::get_scene_data(geo::box(glm::vec3(-1), glm::vec3(1)));
     scene_data.set_surfaces(uniform_surface(0.5));
-    mesh_boundary boundary(scene_data);
+    waveguide::mesh_boundary boundary(scene_data);
 
     constexpr glm::vec3 centre{0, 0, 0};
 

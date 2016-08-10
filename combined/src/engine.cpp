@@ -193,7 +193,7 @@ public:
             , raytracer(cc.get_context(), cc.get_device())
             , waveguide(cc.get_context(),
                         cc.get_device(),
-                        mesh_boundary(scene_data),
+                        waveguide::mesh_boundary(scene_data),
                         receiver,
                         waveguide_sample_rate)
             , source(source)

@@ -90,7 +90,7 @@ int main(int argc, char** argv) {
                                         volume_type{{r, r, r, r, r, r, r, r}}});
         waveguide::waveguide waveguide(cc.get_context(),
                                        cc.get_device(),
-                                       mesh_boundary(scene_data),
+                                       waveguide::mesh_boundary(scene_data),
                                        mic,
                                        waveguide_sr);
 

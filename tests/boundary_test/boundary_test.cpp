@@ -45,7 +45,7 @@ aligned::vector<float> run_simulation(const compute_context& cc,
 
     waveguide::waveguide waveguide(cc.get_context(),
                                    cc.get_device(),
-                                   mesh_boundary(scene_data),
+                                   waveguide::mesh_boundary(scene_data),
                                    receiver,
                                    filter_frequency * 4);
 

@@ -76,7 +76,7 @@ auto run_waveguide(const compute_context& cc,
     //  get a waveguide
     waveguide::waveguide waveguide(cc.get_context(),
                                    cc.get_device(),
-                                   mesh_boundary(scene_data),
+                                   waveguide::mesh_boundary(scene_data),
                                    config.receiver_settings.position,
                                    config.get_waveguide_sample_rate());
 

@@ -30,6 +30,6 @@
 
 TEST(mesh_classification, badbox) {
     scene_data scene_data(OBJ_PATH_BAD_BOX);
-    mesh_boundary boundary(scene_data);
+    waveguide::mesh_boundary boundary(scene_data);
     waveguide::mesh mesh(boundary, 0.05, glm::vec3());
 }

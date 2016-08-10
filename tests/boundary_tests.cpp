@@ -54,7 +54,7 @@ TEST(boundary, naive) {
 */
 
 TEST(boundary, tunnel) {
-    mesh_boundary boundary(scene_data(OBJ_PATH_TUNNEL));
+    waveguide::mesh_boundary boundary(scene_data(OBJ_PATH_TUNNEL));
 
     const auto centre = util::centre(boundary.get_aabb());
     ASSERT_TRUE(boundary.inside(centre));
@@ -82,7 +82,7 @@ TEST(boundary, tunnel) {
 
 TEST(boundary, bedroom) {
     scene_data scene_data(OBJ_PATH_BEDROOM);
-    mesh_boundary boundary(scene_data);
+    waveguide::mesh_boundary boundary(scene_data);
 
     const auto centre = util::centre(boundary.get_aabb());
     ASSERT_TRUE(boundary.inside(centre));

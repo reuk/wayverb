@@ -1,6 +1,5 @@
 #include "common/geo/tri_cube_intersection.h"
-
-#include "common/boundaries.h"
+#include "common/range.h"
 
 #include "glm/glm.hpp"
 

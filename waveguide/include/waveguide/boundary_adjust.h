@@ -1,6 +1,6 @@
 #pragma once
 
-#include "common/boundaries.h"
+#include "common/geo/box.h"
 
 namespace waveguide {
 

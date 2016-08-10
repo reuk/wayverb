@@ -34,7 +34,7 @@ public:
         cl_uint boundary_index{};
     };
 
-    static condensed_node get_condensed(const mesh_setup_program::node& n);
+    static condensed_node get_condensed(const mesh_setup::node& n);
 
     /// Stores filter coefficients for a single high-order filter, and an index
     /// into an array of filter parameters which describe the filter being

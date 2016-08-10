@@ -53,7 +53,7 @@ int main(int argc, char** argv) {
 
         waveguide::waveguide waveguide(cc.get_context(),
                                        cc.get_device(),
-                                       mesh_boundary(scene_data),
+                                       waveguide::mesh_boundary(scene_data),
                                        receiver,
                                        sampling_frequency);
 
