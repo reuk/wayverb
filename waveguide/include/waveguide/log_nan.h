@@ -2,6 +2,8 @@
 
 #include "waveguide/program.h"
 
+#include <iostream>
+
 namespace waveguide {
 
 template <typename Fun, typename T>
@@ -10,13 +12,13 @@ bool is_any(const aligned::vector<T>& t, const Fun& fun) {
 }
 
 template <typename Fun, int I>
-bool is_any(const program::BoundaryDataArray<I>& t, const Fun& fun) {
+bool is_any(const program::boundary_data_array<I>& t, const Fun& fun) {
     return proc::any_of(t.array,
                         [&fun](const auto& i) { return is_any(i, fun); });
 }
 
 template <typename Fun>
-bool is_any(const program::BoundaryData& t, const Fun& fun) {
+bool is_any(const program::boundary_data& t, const Fun& fun) {
     return proc::any_of(t.filter_memory.array,
                         [&fun](const auto& i) { return is_any(i, fun); });
 }

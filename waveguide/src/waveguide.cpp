@@ -3,6 +3,7 @@
 #include "waveguide/postprocessor/microphone.h"
 #include "waveguide/postprocessor/visualiser.h"
 #include "waveguide/preprocessor/single_soft_source.h"
+#include "waveguide/surface_filters.h"
 
 #include "glog/logging.h"
 
@@ -23,7 +24,7 @@ waveguide::waveguide(const cl::Context& context,
                          config::grid_spacing(speed_of_sound, 1 / sample_rate),
                          anchor),
                     sample_rate,
-                    program::to_filter_coefficients(
+                    filters::to_filter_coefficients(
                             boundary.get_scene_data().get_surfaces(),
                             sample_rate)) {}
 
@@ -32,7 +33,7 @@ waveguide::waveguide(
         const cl::Device& device,
         const mesh& mesh,
         double sample_rate,
-        aligned::vector<program::CanonicalCoefficients> coefficients)
+        aligned::vector<filters::canonical_coefficients> coefficients)
         : waveguide(context,
                     device,
                     mesh,
@@ -45,8 +46,8 @@ waveguide::waveguide(
         const cl::Device& device,
         const mesh& mesh,
         double sample_rate,
-        aligned::vector<program::CondensedNodeStruct> nodes,
-        aligned::vector<program::CanonicalCoefficients> coefficients)
+        aligned::vector<program::condensed_node> nodes,
+        aligned::vector<filters::canonical_coefficients> coefficients)
         : queue(context, device)
         , program(context, device)
         , kernel(program.get_kernel())
@@ -63,7 +64,8 @@ waveguide::waveguide(
                   context, coefficients.begin(), coefficients.end(), true)
         , error_flag_buffer(context, CL_MEM_READ_WRITE, sizeof(cl_int)) {
     LOG(INFO) << "main memory node storage: "
-              << (sizeof(program::NodeStruct) * mesh.get_nodes().size() >> 20)
+              << (sizeof(program::condensed_node) * mesh.get_nodes().size() >>
+                  20)
               << " MB";
 }
 

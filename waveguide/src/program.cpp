@@ -7,60 +7,19 @@
 namespace waveguide {
 
 program::program(const cl::Context& context, const cl::Device& device)
-        : program_wrapper(
-                  context,
-                  device,
-                  std::vector<std::string>{cl_sources::get_struct_definitions(
-                                                   num_ports, BIQUAD_SECTIONS),
-                                           source}) {}
+        : program_wrapper(context,
+                          device,
+                          std::vector<std::string>{
+                                  cl_sources::get_struct_definitions(
+                                          num_ports, filters::biquad_sections),
+                                  source}) {}
 
-program::CondensedNodeStruct program::NodeStruct::get_condensed() const {
-    return CondensedNodeStruct{
-            condensed.boundary_type | (inside ? id_inside : id_none),
-            condensed.boundary_index};
-}
-
-program::CanonicalCoefficients program::convolve(
-        const BiquadCoefficientsArray& a) {
-    std::array<BiquadCoefficients, BiquadCoefficientsArray::BIQUAD_SECTIONS> t;
-    proc::copy(a.array, t.begin());
-    return reduce(t,
-                  [](const auto& i, const auto& j) { return convolve(i, j); });
-}
-
-/// Given a set of canonical coefficients describing a reflectance filter,
-/// produce an impedance filter which describes the reflective surface
-program::CanonicalCoefficients program::to_impedance_coefficients(
-        const CanonicalCoefficients& c) {
-    CanonicalCoefficients ret;
-    proc::transform(
-            c.a, std::begin(c.b), std::begin(ret.b), [](auto a, auto b) {
-                return a + b;
-            });
-    proc::transform(
-            c.a, std::begin(c.b), std::begin(ret.a), [](auto a, auto b) {
-                return a - b;
-            });
-
-    if (ret.a[0] != 0) {
-        auto norm         = 1.0 / ret.a[0];
-        auto do_normalize = [norm](auto& i) {
-            proc::for_each(i, [norm](auto& i) { i *= norm; });
-        };
-        do_normalize(ret.b);
-        do_normalize(ret.a);
-    }
-
-    return ret;
-}
-
-aligned::vector<program::CanonicalCoefficients> program::to_filter_coefficients(
-        aligned::vector<surface> surfaces, float sr) {
-    aligned::vector<CanonicalCoefficients> ret(surfaces.size());
-    proc::transform(surfaces, ret.begin(), [sr](auto i) {
-        return to_filter_coefficients(i, sr);
-    });
-    return ret;
+program::condensed_node program::get_condensed(
+        const mesh_setup_program::node& n) {
+    return condensed_node{
+            n.boundary_type | (n.inside ? mesh_setup_program::id_inside
+                                        : mesh_setup_program::id_none),
+            n.boundary_index};
 }
 
 //----------------------------------------------------------------------------//

@@ -1,8 +1,8 @@
 #pragma once
 
 #include "boundary_adjust.h"
-#include "program.h"
 #include "mesh_boundary.h"
+#include "program.h"
 
 #include "common/boundaries.h"
 #include "common/conversions.h"
@@ -45,25 +45,26 @@ public:
                       compute_boundary_coefficients<3>(boundary)) {}
 
     template <size_t N, typename B>
-    aligned::vector<std::array<cl_int, N>> compute_boundary_coefficients(
+    aligned::vector<std::array<cl_uint, N>> compute_boundary_coefficients(
             const B& b) const {
         ConnectedFinder cf;
-        aligned::vector<std::array<cl_int, N>> ret(compute_num_boundary<N>());
+        aligned::vector<std::array<cl_uint, N>> ret(compute_num_boundary<N>());
 
         for (auto i = 0u; i != get_nodes().size(); ++i) {
             const auto& node = get_nodes()[i];
-            if (node.condensed.boundary_type != program::id_reentrant &&
-                popcount(node.condensed.boundary_type) == N) {
+            if (node.boundary_type != mesh_setup_program::id_reentrant &&
+                popcount(node.boundary_type) == N) {
                 auto count = 0;
                 for (auto j = 0; j != num_ports; ++j) {
-                    auto bits = program::port_index_to_boundary_type(j);
-                    if (node.condensed.boundary_type & bits) {
+                    auto bits =
+                            mesh_setup_program::port_index_to_boundary_type(j);
+                    if (node.boundary_type & bits) {
                         auto connected = cf.look_for_connected_memoized(
                                 b, i, get_nodes(), bits);
                         assert(connected.type == bits ||
-                               connected.type == program::id_reentrant);
-                        ret[node.condensed.boundary_index][count] =
-                                connected.index;
+                               connected.type ==
+                                       mesh_setup_program::id_reentrant);
+                        ret[node.boundary_index][count] = connected.index;
 
                         count += 1;
                     }
@@ -79,11 +80,11 @@ public:
     locator compute_locator(const glm::vec3& position) const;
     glm::vec3 compute_position(const locator& locator) const;
 
-    const aligned::vector<program::NodeStruct>& get_nodes() const;
+    const aligned::vector<mesh_setup_program::node>& get_nodes() const;
 
     template <size_t N>
-    aligned::vector<program::BoundaryDataArray<N>> get_boundary_data() const {
-        aligned::vector<program::BoundaryDataArray<N>> ret;
+    aligned::vector<program::boundary_data_array<N>> get_boundary_data() const {
+        aligned::vector<program::boundary_data_array<N>> ret;
         const auto& data_collection = get_boundary_coefficients<N>();
         ret.reserve(data_collection.size());
         for (const auto& i : data_collection) {
@@ -95,7 +96,7 @@ public:
     void compute_neighbors(size_t index, cl_uint* output) const;
     std::array<cl_uint, num_ports> compute_neighbors(size_t index) const;
 
-    aligned::vector<program::CondensedNodeStruct> get_condensed_nodes() const;
+    aligned::vector<program::condensed_node> get_condensed_nodes() const;
 
     glm::ivec3 get_dim() const;
 
@@ -103,8 +104,9 @@ public:
     size_t compute_num_boundary() const {
         return std::count_if(
                 get_nodes().begin(), get_nodes().end(), [](const auto& i) {
-                    return i.condensed.boundary_type != program::id_reentrant &&
-                           popcount(i.condensed.boundary_type) == BITS;
+                    return i.boundary_type !=
+                                   mesh_setup_program::id_reentrant &&
+                           popcount(i.boundary_type) == BITS;
                 });
     }
 
@@ -112,7 +114,7 @@ public:
 
     cl_int compute_boundary_type(
             const locator& loc,
-            const aligned::vector<program::NodeStruct>& ret) const;
+            const aligned::vector<mesh_setup_program::node>& ret) const;
 
     class ConnectedFinder final {
     public:
@@ -121,21 +123,21 @@ public:
             cl_int type;
         };
 
-        using MemoizeKey = std::pair<size_t, program::BoundaryType>;
+        using MemoizeKey = std::pair<size_t, mesh_setup_program::boundary_type>;
 
         template <typename B>
         Connected look_for_connected_memoized(
                 const B& b,
                 size_t node_index,
-                const aligned::vector<program::NodeStruct>& ret,
-                program::BoundaryType bt) {
-            auto key   = MemoizeKey{node_index, bt};
+                const aligned::vector<mesh_setup_program::node>& ret,
+                mesh_setup_program::boundary_type bt) {
+            auto key = MemoizeKey{node_index, bt};
             auto found = memoize_data.find(key);
             if (found != memoize_data.end()) {
                 return found->second;
             }
 
-            auto connected    = look_for_connected(b, node_index, ret, bt);
+            auto connected = look_for_connected(b, node_index, ret, bt);
             memoize_data[key] = connected;
             return connected;
         }
@@ -144,26 +146,26 @@ public:
         Connected look_for_connected(
                 const B& b,
                 size_t node_index,
-                const aligned::vector<program::NodeStruct>& ret,
-                program::BoundaryType bt) {
+                const aligned::vector<mesh_setup_program::node>& ret,
+                mesh_setup_program::boundary_type bt) {
             const auto& node = ret[node_index];
-            assert(node.condensed.boundary_type != program::id_none);
+            assert(node.boundary_type != mesh_setup_program::id_none);
 
             //  if this is a 1d boundary in the correct direction
-            if (node.condensed.boundary_type == bt) {
+            if (node.boundary_type == bt) {
                 //  return the coefficient index
                 return Connected{coefficient_index_for_node(b, node), bt};
             }
 
             //  if this is a reentrant node
-            if (node.condensed.boundary_type == program::id_reentrant) {
+            if (node.boundary_type == mesh_setup_program::id_reentrant) {
                 return Connected{coefficient_index_for_node(b, node),
-                                 program::id_reentrant};
+                                 mesh_setup_program::id_reentrant};
             }
 
             //  if this is a 1d boundary in the wrong direction
-            if (popcount(node.condensed.boundary_type) == 1) {
-                return Connected{0, program::id_none};
+            if (popcount(node.boundary_type) == 1) {
+                return Connected{0, mesh_setup_program::id_none};
             }
 
             //  it's a higher order boundary
@@ -173,18 +175,18 @@ public:
             for (auto i = 0; i != num_ports; ++i) {
                 //  if there is (supposedly) a lower-order boundary node in this
                 //  direction
-                auto bits = program::port_index_to_boundary_type(i);
-                if (node.condensed.boundary_type & bits) {
+                auto bits = mesh_setup_program::port_index_to_boundary_type(i);
+                if (node.boundary_type & bits) {
                     auto adjacent_index = node.ports[i];
                     //  if the node is in the mesh
-                    if (adjacent_index != program::NO_NEIGHBOR) {
+                    if (adjacent_index != mesh_setup_program::no_neighbor) {
                         nearby.push_back(look_for_connected_memoized(
                                 b, adjacent_index, ret, bt));
                     }
                 }
             }
 
-            assert(nearby.size() == popcount(node.condensed.boundary_type));
+            assert(nearby.size() == popcount(node.boundary_type));
 
             auto ideal_it = std::find_if(nearby.begin(),
                                          nearby.end(),
@@ -194,13 +196,13 @@ public:
             }
 
             auto ok_it = std::find_if(nearby.begin(), nearby.end(), [](auto i) {
-                return i.type == program::id_reentrant;
+                return i.type == mesh_setup_program::id_reentrant;
             });
             if (ok_it != nearby.end()) {
                 return *ok_it;
             }
 
-            return Connected{0, program::id_none};
+            return Connected{0, mesh_setup_program::id_none};
         }
 
     private:
@@ -212,12 +214,12 @@ public:
 
 private:
     template <typename B>
-    aligned::vector<program::NodeStruct> compute_nodes(
+    aligned::vector<mesh_setup_program::node> compute_nodes(
             const B& boundary) const {
-        const auto dim   = get_dim();
+        const auto dim = get_dim();
         auto total_nodes = dim.x * dim.y * dim.z;
-        auto ret         = aligned::vector<program::NodeStruct>(total_nodes,
-                                                        program::NodeStruct{});
+        auto ret = aligned::vector<mesh_setup_program::node>(
+                total_nodes, mesh_setup_program::node{});
         set_node_positions(ret);
         set_node_inside(boundary, ret);
         set_node_boundary_type(ret);
@@ -226,34 +228,35 @@ private:
         return ret;
     }
 
-    static cl_uint coefficient_index_for_node(const boundary& b,
-                                              const program::NodeStruct& node);
-    static cl_uint coefficient_index_for_node(const mesh_boundary& b,
-                                              const program::NodeStruct& node);
+    static cl_uint coefficient_index_for_node(
+            const boundary& b, const mesh_setup_program::node& node);
+    static cl_uint coefficient_index_for_node(
+            const mesh_boundary& b, const mesh_setup_program::node& node);
 
-    void set_node_positions(aligned::vector<program::NodeStruct>& ret) const;
+    void set_node_positions(
+            aligned::vector<mesh_setup_program::node>& ret) const;
     void set_node_inside(const boundary& boundary,
-                         aligned::vector<program::NodeStruct>& ret) const;
+                         aligned::vector<mesh_setup_program::node>& ret) const;
     void set_node_boundary_type(
-            aligned::vector<program::NodeStruct>& ret) const;
+            aligned::vector<mesh_setup_program::node>& ret) const;
 
     template <int I>
     void set_node_boundary_index(
-            aligned::vector<program::NodeStruct>& ret) const {
+            aligned::vector<mesh_setup_program::node>& ret) const {
         auto num_boundary = 0;
         for (auto& i : ret) {
-            if (i.condensed.boundary_type != program::id_reentrant &&
-                popcount(i.condensed.boundary_type) == I) {
-                i.condensed.boundary_index = num_boundary++;
+            if (i.boundary_type != mesh_setup_program::id_reentrant &&
+                popcount(i.boundary_type) == I) {
+                i.boundary_index = num_boundary++;
             }
         }
     }
 
     void set_node_boundary_index(
-            aligned::vector<program::NodeStruct>& ret) const;
+            aligned::vector<mesh_setup_program::node>& ret) const;
 
     template <size_t N>
-    const aligned::vector<std::array<cl_int, N>>& get_boundary_coefficients()
+    const aligned::vector<std::array<cl_uint, N>>& get_boundary_coefficients()
             const;
 
     geo::box aabb;
@@ -261,27 +264,27 @@ private:
 
     glm::ivec3 dim;
 
-    aligned::vector<program::NodeStruct> nodes;
-    aligned::vector<std::array<cl_int, 1>> boundary_coefficients_1;
-    aligned::vector<std::array<cl_int, 2>> boundary_coefficients_2;
-    aligned::vector<std::array<cl_int, 3>> boundary_coefficients_3;
+    aligned::vector<mesh_setup_program::node> nodes;
+    aligned::vector<std::array<cl_uint, 1>> boundary_coefficients_1;
+    aligned::vector<std::array<cl_uint, 2>> boundary_coefficients_2;
+    aligned::vector<std::array<cl_uint, 3>> boundary_coefficients_3;
 
     friend bool operator==(const mesh& a, const mesh& b);
     friend bool operator!=(const mesh& a, const mesh& b);
 };
 
 template <>
-inline const aligned::vector<std::array<cl_int, 1>>&
+inline const aligned::vector<std::array<cl_uint, 1>>&
 mesh::get_boundary_coefficients() const {
     return boundary_coefficients_1;
 }
 template <>
-inline const aligned::vector<std::array<cl_int, 2>>&
+inline const aligned::vector<std::array<cl_uint, 2>>&
 mesh::get_boundary_coefficients() const {
     return boundary_coefficients_2;
 }
 template <>
-inline const aligned::vector<std::array<cl_int, 3>>&
+inline const aligned::vector<std::array<cl_uint, 3>>&
 mesh::get_boundary_coefficients() const {
     return boundary_coefficients_3;
 }

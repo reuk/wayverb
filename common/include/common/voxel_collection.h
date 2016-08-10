@@ -50,25 +50,26 @@ using voxel_data_t = typename voxel_data_trait<n>::data_type;
 
 template <size_t n>
 inline const voxel& index(const typename voxel_data_trait<n>::data_type& data,
-                          ivec_t<n> i) {
-    return index<n - 1>(data[last<n>(i)], reduce<n>(i));
+                          indexing::index_t<n> i) {
+    return index<n - 1>(data[indexing::back<n>(i)], indexing::reduce<n>(i));
 }
 
 template <>
 inline const voxel& index<1>(
-        const typename voxel_data_trait<1>::data_type& data, ivec_t<1> i) {
+        const typename voxel_data_trait<1>::data_type& data,
+        indexing::index_t<1> i) {
     return data[i];
 }
 
 template <size_t n>
 inline voxel& index(typename voxel_data_trait<n>::data_type& data,
-                    ivec_t<n> i) {
-    return index<n - 1>(data[last<n>(i)], reduce<n>(i));
+                    indexing::index_t<n> i) {
+    return index<n - 1>(data[indexing::back<n>(i)], indexing::reduce<n>(i));
 }
 
 template <>
 inline voxel& index<1>(typename voxel_data_trait<1>::data_type& data,
-                       ivec_t<1> i) {
+                       indexing::index_t<1> i) {
     return data[i];
 }
 
@@ -76,14 +77,14 @@ inline voxel& index<1>(typename voxel_data_trait<1>::data_type& data,
 
 template <size_t n>
 void voxelise(const ndim_tree<n>& tree,
-              const ivec_t<n>& position,
+              const indexing::index_t<n>& position,
               voxel_data_t<n>& ret) {
     if (!tree.has_nodes()) {
         index<n>(ret, position) = tree.get_items();
     } else {
         for (size_t i = 0; i != tree.get_nodes().size(); ++i) {
-            const auto relative = relative_position<n>(i) *
-                                  static_cast<int>(tree.get_side() / 2);
+            const auto relative = indexing::relative_position<n>(i) *
+                                  static_cast<unsigned>(tree.get_side() / 2);
             voxelise(tree.get_nodes()[i], position + relative, ret);
         }
     }
@@ -92,7 +93,7 @@ void voxelise(const ndim_tree<n>& tree,
 template <size_t n>
 voxel_data_t<n> voxelise(const ndim_tree<n>& tree) {
     auto ret = voxel_data_trait<n>::get_blank(tree.get_side());
-    voxelise(tree, ivec_t<n>{0}, ret);
+    voxelise(tree, indexing::index_t<n>{0}, ret);
     return ret;
 }
 
@@ -117,10 +118,12 @@ public:
 
     aabb_type get_aabb() const { return aabb; }
     size_t get_side() const { return data.size(); }
-    const auto& get_voxel(detail::ivec_t<n> i) const {
+    const auto& get_voxel(indexing::index_t<n> i) const {
         return detail::index<n>(data, i);
     }
-    auto& get_voxel(detail::ivec_t<n> i) { return detail::index<n>(data, i); }
+    auto& get_voxel(indexing::index_t<n> i) {
+        return detail::index<n>(data, i);
+    }
 
 private:
     aabb_type aabb;

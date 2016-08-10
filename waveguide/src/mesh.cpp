@@ -11,7 +11,8 @@
 
 namespace waveguide {
 
-void mesh::set_node_positions(aligned::vector<program::NodeStruct>& ret) const {
+void mesh::set_node_positions(
+        aligned::vector<mesh_setup_program::node>& ret) const {
     auto counter = 0u;
     proc::for_each(ret, [this, &counter](auto& node) {
         auto p = this->compute_position(this->compute_locator(counter));
@@ -22,8 +23,9 @@ void mesh::set_node_positions(aligned::vector<program::NodeStruct>& ret) const {
     });
 }
 
-void mesh::set_node_inside(const boundary& boundary,
-                           aligned::vector<program::NodeStruct>& ret) const {
+void mesh::set_node_inside(
+        const boundary& boundary,
+        aligned::vector<mesh_setup_program::node>& ret) const {
     std::vector<bool> inside(ret.size());
     proc::transform(ret, inside.begin(), [&boundary](const auto& i) {
         return boundary.inside(to_vec3(i.position));
@@ -51,14 +53,15 @@ void mesh::set_node_inside(const boundary& boundary,
     });
 }
 
-constexpr mesh::locator boundary_type_to_locator(program::BoundaryType b) {
+constexpr mesh::locator boundary_type_to_locator(
+        mesh_setup_program::boundary_type b) {
     switch (b) {
-        case program::id_nx: return mesh::locator{-1, 0, 0};
-        case program::id_px: return mesh::locator{1, 0, 0};
-        case program::id_ny: return mesh::locator{0, -1, 0};
-        case program::id_py: return mesh::locator{0, 1, 0};
-        case program::id_nz: return mesh::locator{0, 0, -1};
-        case program::id_pz: return mesh::locator{0, 0, 1};
+        case mesh_setup_program::id_nx: return mesh::locator{-1, 0, 0};
+        case mesh_setup_program::id_px: return mesh::locator{1, 0, 0};
+        case mesh_setup_program::id_ny: return mesh::locator{0, -1, 0};
+        case mesh_setup_program::id_py: return mesh::locator{0, 1, 0};
+        case mesh_setup_program::id_nz: return mesh::locator{0, 0, -1};
+        case mesh_setup_program::id_pz: return mesh::locator{0, 0, 1};
         default: return mesh::locator{0, 0, 0};
     }
 }
@@ -69,7 +72,7 @@ constexpr std::pair<mesh::locator, cl_int> make_locator_pair() {
 
 template <typename... Ts>
 constexpr std::pair<mesh::locator, cl_int> make_locator_pair(
-        program::BoundaryType b, Ts... ts) {
+        mesh_setup_program::boundary_type b, Ts... ts) {
     auto next = make_locator_pair(ts...);
     return std::make_pair(boundary_type_to_locator(b) + next.first,
                           b | next.second);
@@ -77,17 +80,17 @@ constexpr std::pair<mesh::locator, cl_int> make_locator_pair(
 
 cl_int mesh::compute_boundary_type(
         const locator& loc,
-        const aligned::vector<program::NodeStruct>& ret) const {
+        const aligned::vector<mesh_setup_program::node>& ret) const {
     //  look at all nearby nodes
 
-    using program::BoundaryType::id_nx;
-    using program::BoundaryType::id_px;
-    using program::BoundaryType::id_ny;
-    using program::BoundaryType::id_py;
-    using program::BoundaryType::id_nz;
-    using program::BoundaryType::id_pz;
-    using program::BoundaryType::id_none;
-    using program::BoundaryType::id_reentrant;
+    using mesh_setup_program::boundary_type::id_nx;
+    using mesh_setup_program::boundary_type::id_px;
+    using mesh_setup_program::boundary_type::id_ny;
+    using mesh_setup_program::boundary_type::id_py;
+    using mesh_setup_program::boundary_type::id_nz;
+    using mesh_setup_program::boundary_type::id_pz;
+    using mesh_setup_program::boundary_type::id_none;
+    using mesh_setup_program::boundary_type::id_reentrant;
 
     auto try_directions = [this, loc, &ret](
             const std::initializer_list<std::pair<locator, cl_int>>& directions)
@@ -151,18 +154,17 @@ cl_int mesh::compute_boundary_type(
 }
 
 void mesh::set_node_boundary_type(
-        aligned::vector<program::NodeStruct>& ret) const {
+        aligned::vector<mesh_setup_program::node>& ret) const {
     for (auto i = 0u; i != ret.size(); ++i) {
         auto& node = ret[i];
         if (!node.inside) {
-            node.condensed.boundary_type =
-                    compute_boundary_type(compute_locator(i), ret);
+            node.boundary_type = compute_boundary_type(compute_locator(i), ret);
         }
     }
 }
 
 void mesh::set_node_boundary_index(
-        aligned::vector<program::NodeStruct>& ret) const {
+        aligned::vector<mesh_setup_program::node>& ret) const {
     set_node_boundary_index<1>(ret);
     set_node_boundary_index<2>(ret);
     set_node_boundary_index<3>(ret);
@@ -170,7 +172,7 @@ void mesh::set_node_boundary_index(
 
 size_t mesh::compute_num_reentrant() const {
     return proc::count_if(get_nodes(), [](const auto& i) {
-        return i.condensed.boundary_type == program::id_reentrant;
+        return i.boundary_type == mesh_setup_program::id_reentrant;
     });
 }
 
@@ -228,7 +230,7 @@ void mesh::compute_neighbors(size_t index, cl_uint* output) const {
     proc::transform(n_loc, output, [this](const auto& i) {
         auto inside = glm::all(glm::lessThanEqual(glm::ivec3(0), i)) &&
                       glm::all(glm::lessThan(i, dim));
-        return inside ? compute_index(i) : program::NO_NEIGHBOR;
+        return inside ? compute_index(i) : mesh_setup_program::no_neighbor;
     });
 }
 
@@ -239,15 +241,15 @@ std::array<cl_uint, mesh::num_ports> mesh::compute_neighbors(
     return ret;
 }
 
-aligned::vector<program::CondensedNodeStruct> mesh::get_condensed_nodes()
+aligned::vector<program::condensed_node> mesh::get_condensed_nodes()
         const {
-    aligned::vector<program::CondensedNodeStruct> ret;
+    aligned::vector<program::condensed_node> ret;
     ret.reserve(get_nodes().size());
     proc::transform(get_nodes(), std::back_inserter(ret), [](const auto& i) {
-        return i.get_condensed();
+        return program::get_condensed(i);
     });
     proc::for_each(ret, [](const auto& i) {
-        if ((i.boundary_type & program::id_inside) &&
+        if ((i.boundary_type & mesh_setup_program::id_inside) &&
             popcount(i.boundary_type) > 1) {
             LOG(INFO) << "too many bits set?";
         }
@@ -255,19 +257,19 @@ aligned::vector<program::CondensedNodeStruct> mesh::get_condensed_nodes()
     return ret;
 }
 
-const aligned::vector<program::NodeStruct>& mesh::get_nodes() const {
+const aligned::vector<mesh_setup_program::node>& mesh::get_nodes() const {
     return nodes;
 }
 
 glm::ivec3 mesh::get_dim() const { return dim; }
 
 cl_uint mesh::coefficient_index_for_node(const boundary& b,
-                                         const program::NodeStruct& node) {
+                                         const mesh_setup_program::node& node) {
     return 0;
 }
 
 cl_uint mesh::coefficient_index_for_node(const mesh_boundary& b,
-                                         const program::NodeStruct& node) {
+                                         const mesh_setup_program::node& node) {
     const auto& triangles = b.get_scene_data().get_triangles();
     const auto& vertices = b.get_scene_data().get_vertices();
     const auto min =

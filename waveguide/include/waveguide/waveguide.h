@@ -75,16 +75,13 @@ private:
               const cl::Device&,
               const mesh& mesh,
               double sample_rate,
-              aligned::vector<program::CanonicalCoefficients>
-                      coefficients);
+              aligned::vector<filters::canonical_coefficients> coefficients);
     waveguide(const cl::Context&,
               const cl::Device&,
               const mesh& mesh,
               double sample_rate,
-              aligned::vector<program::CondensedNodeStruct>
-                      nodes,
-              aligned::vector<program::CanonicalCoefficients>
-                      coefficients);
+              aligned::vector<program::condensed_node> nodes,
+              aligned::vector<filters::canonical_coefficients> coefficients);
 
     cl::CommandQueue queue;
     const program program;

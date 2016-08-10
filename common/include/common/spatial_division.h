@@ -2,60 +2,11 @@
 
 #include "common/geo/box.h"
 #include "common/stl_wrappers.h"
+#include "common/indexing.h"
 
 #include <memory>
 
 namespace detail {
-
-template <size_t dimensions>
-struct ivec;
-template <>
-struct ivec<1> {
-    using type = int;
-};
-template <>
-struct ivec<2> {
-    using type = glm::ivec2;
-};
-template <>
-struct ivec<3> {
-    using type = glm::ivec3;
-};
-
-template <size_t n>
-using ivec_t = typename ivec<n>::type;
-
-template <size_t n>
-ivec_t<n> relative_position(size_t i);
-template <>
-constexpr ivec_t<1> relative_position<1>(size_t i) {
-    return ivec_t<1>{i & (1 << 0) ? 1 : 0};
-}
-template <>
-constexpr ivec_t<2> relative_position<2>(size_t i) {
-    return ivec_t<2>{i & (1 << 0) ? 1 : 0, i & (1 << 1) ? 1 : 0};
-}
-template <>
-constexpr ivec_t<3> relative_position<3>(size_t i) {
-    return ivec_t<3>{
-            i & (1 << 0) ? 1 : 0, i & (1 << 1) ? 1 : 0, i & (1 << 2) ? 1 : 0};
-}
-
-template <size_t n>
-ivec_t<n - 1> reduce(ivec_t<n> i);
-template <>
-inline ivec_t<1> reduce<2>(ivec_t<2> i) {
-    return i[0];
-}
-template <>
-inline ivec_t<2> reduce<3>(ivec_t<3> i) {
-    return i;
-}
-
-template <size_t n>
-inline int last(ivec_t<n> i) {
-    return i[n - 1];
-}
 
 template <size_t n,
           typename aabb_type = util::detail::range_t<n>,
@@ -71,7 +22,7 @@ next_boundaries_type next_boundaries(const aabb_type& parent) {
     next_boundaries_type ret;
 
     for (size_t i = 0; i != ret.size(); ++i) {
-        const auto relative = detail::relative_position<n>(i);
+        const auto relative = indexing::relative_position<n>(i);
         ret[i] = root_aabb + d * vt{relative};
     }
 

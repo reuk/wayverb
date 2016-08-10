@@ -74,7 +74,7 @@ typedef struct {
 
 typedef struct {
     FilterMemoryCanonical filter_memory;
-    int coefficient_index;
+    uint coefficient_index;
 } BoundaryData;
 
 typedef struct { BoundaryData array[1]; } BoundaryDataArray1;
