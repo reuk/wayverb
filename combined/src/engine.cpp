@@ -71,7 +71,6 @@ public:
             const model::ReceiverSettings& receiver,
             double output_sample_rate,
             const state_callback& callback) const override {
-        LOG(INFO) << "starting attenuation";
         callback(wayverb::state::postprocessing, 1.0);
 
         //  attenuate raytracer results
@@ -315,12 +314,9 @@ public:
         //  correct for filter time offset
         assert(input.correction_offset_in_samples < waveguide_results.size());
 
-        LOG(INFO) << "correcting waveguide for kernel time offset";
         waveguide_results.erase(
                 waveguide_results.begin(),
                 waveguide_results.begin() + input.correction_offset_in_samples);
-
-        LOG(INFO) << "creating ret";
 
         std::unique_ptr<intermediate> ret = std::make_unique<intermediate_impl>(
                 source,
@@ -328,8 +324,6 @@ public:
                 waveguide_sample_rate,
                 std::move(*raytracer_results),
                 std::move(waveguide_results));
-
-        LOG(INFO) << "about to return from run_basic";
 
         return ret;
     }

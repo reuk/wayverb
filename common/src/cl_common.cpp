@@ -1,13 +1,13 @@
 #include "common/cl_common.h"
 #include "common/string_builder.h"
 
-#include "glog/logging.h"
+#include <iostream>
 
 namespace {
 
 void print_device_info(const cl::Device& i) {
-    LOG(INFO) << i.getInfo<CL_DEVICE_NAME>();
-    LOG(INFO) << "available: " << i.getInfo<CL_DEVICE_AVAILABLE>();
+    std::cerr << i.getInfo<CL_DEVICE_NAME>() << '\n';
+    std::cerr << "available: " << i.getInfo<CL_DEVICE_AVAILABLE>() << '\n';
 }
 
 cl::Context get_context() {
@@ -27,8 +27,6 @@ cl::Context get_context() {
 cl::Device get_device(const cl::Context& context) {
     auto devices = context.getInfo<CL_CONTEXT_DEVICES>();
 
-    LOG(INFO) << "## all devices:";
-
     for (auto& i : devices) {
         print_device_info(i);
     }
@@ -37,13 +35,16 @@ cl::Device get_device(const cl::Context& context) {
     // auto device = devices.front();
 
     auto available = device.getInfo<CL_DEVICE_AVAILABLE>();
-    CHECK(available) << "device must be available";
+    if (! available) {
+        throw std::runtime_error("device must be available");
+    }
 
     auto preferred_double_width =
             device.getInfo<CL_DEVICE_PREFERRED_VECTOR_WIDTH_DOUBLE>();
-    CHECK(preferred_double_width) << "device must support double precision";
+    if (! preferred_double_width) {
+        throw std::runtime_error("device must support double precision");
+    }
 
-    LOG(INFO) << "## used device:";
     print_device_info(device);
 
     return device;

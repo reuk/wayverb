@@ -6,6 +6,8 @@
 
 #include "gtest/gtest.h"
 
+#include <iostream>
+
 template <typename T>
 JSON_OSTREAM_OVERLOAD(aligned::vector<T>);
 
@@ -16,5 +18,5 @@ TEST(convolution, convolution) {
     FastConvolver fc(a.size() + b.size() - 1);
     auto convolved = fc.convolve(a, b);
 
-    LOG(INFO) << convolved;
+    std::cerr << convolved;
 }

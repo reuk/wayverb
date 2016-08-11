@@ -33,8 +33,6 @@
 
 #include "gflags/gflags.h"
 
-#include "glog/logging.h"
-
 #include <algorithm>
 #include <cmath>
 #include <iomanip>
@@ -117,7 +115,6 @@ auto run_waveguide(const compute_context& cc,
 }
 
 int main(int argc, char** argv) {
-    google::InitGoogleLogging(argv[0]);
     gflags::ParseCommandLineFlags(&argc, &argv, true);
 
     geo::box box(glm::vec3(0, 0, 0), glm::vec3(5.56, 3.97, 2.81));
@@ -144,7 +141,9 @@ int main(int argc, char** argv) {
             waveguide::compute_adjusted_boundary(
                     scene.get_aabb(), receiver, spacing));
 
-    CHECK(argc == 2) << "expected an output folder";
+    if (argc != 2) {
+        throw std::runtime_error("expected an output folder");
+    }
 
     std::string output_folder = argv[1];
 
@@ -169,7 +168,8 @@ int main(int argc, char** argv) {
             waveguide::adjust_sampling_rate(std::move(waveguide_output),
                                             config.get_waveguide_sample_rate(),
                                             samplerate);
-    LOG(INFO) << "waveguide adjusted mag: " << max_mag(waveguide_adjusted);
+    std::cerr << "waveguide adjusted mag: " << max_mag(waveguide_adjusted)
+              << '\n';
 
     //  get the valid region of the spectrum
     //    filter::LopassWindowedSinc lopass(waveguide_adjusted.size());
@@ -231,7 +231,7 @@ int main(int argc, char** argv) {
 
     auto calibration_factor = rectilinear_calibration_factor(
             distance_for_unit_intensity(1), config.get_waveguide_sample_rate());
-    LOG(INFO) << "calibration factor: " << calibration_factor;
+    std::cerr << "calibration factor: " << calibration_factor << '\n';
 
     mul(waveguide_adjusted, calibration_factor);
 
@@ -245,8 +245,8 @@ int main(int argc, char** argv) {
     auto max_waveguide = max_mag(waveguide_adjusted);
     auto max_raytracer = max_mag(raytracer_output);
     auto max_both = std::max(max_waveguide, max_raytracer);
-    LOG(INFO) << "max waveguide: " << max_waveguide;
-    LOG(INFO) << "max raytracer: " << max_raytracer;
+    std::cerr << "max waveguide: " << max_waveguide << '\n';
+    std::cerr << "max raytracer: " << max_raytracer << '\n';
 
     mul(waveguide_adjusted, 1 / max_both);
     mul(raytracer_output, 1 / max_both);
@@ -268,7 +268,8 @@ int main(int argc, char** argv) {
     hipass.set_params(config.filter_frequency, samplerate);
     raytracer_output =
             hipass.filter(raytracer_output.begin(), raytracer_output.end());
-    LOG(INFO) << "max raytracer filtered: " << max_mag(raytracer_output);
+    std::cerr << "max raytracer filtered: " << max_mag(raytracer_output)
+              << '\n';
 
     aligned::vector<float> mixed(out_length);
     proc::transform(waveguide_adjusted,

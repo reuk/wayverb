@@ -34,15 +34,13 @@ enum class PolarPattern {
 };
 
 int main(int argc, char** argv) {
-    google::InitGoogleLogging(argv[0]);
     gflags::ParseCommandLineFlags(&argc, &argv, true);
 
     if (argc != 3) {
-        LOG(INFO) << "expecting an output folder and a polar pattern";
-
-        LOG(INFO) << "actually found: ";
+        std::cerr << "expecting an output folder and a polar pattern\nactually "
+                     "found: ";
         for (auto i = 0u; i != argc; ++i) {
-            LOG(INFO) << "arg " << i << ": " << argv[i];
+            std::cerr << "arg " << i << ": " << argv[i];
         }
 
         return EXIT_FAILURE;
@@ -195,10 +193,10 @@ int main(int argc, char** argv) {
                     16);
         }
     } catch (const std::runtime_error& e) {
-        LOG(INFO) << "critical runtime error: " << e.what();
+        std::cerr << "critical runtime error: " << e.what() << "\n";
         return EXIT_FAILURE;
     } catch (...) {
-        LOG(INFO) << "unknown error";
+        std::cerr << "unknown error\n";
         return EXIT_FAILURE;
     }
 

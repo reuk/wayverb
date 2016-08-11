@@ -40,7 +40,6 @@ auto uniform_surface(float r) {
 }  // namespace
 
 int main(int argc, char** argv) {
-    google::InitGoogleLogging(argv[0]);
     gflags::ParseCommandLineFlags(&argc, &argv, true);
     try {
         glm::vec3 source{0, 0, 0};
@@ -137,10 +136,10 @@ int main(int argc, char** argv) {
             }
         }
     } catch (const std::runtime_error& e) {
-        LOG(INFO) << "critical runtime error: " << e.what();
+        std::cerr << "critical runtime error: " << e.what() << '\n';
         return EXIT_FAILURE;
     } catch (...) {
-        LOG(INFO) << "unknown error";
+        std::cerr << "unknown error\n";
         return EXIT_FAILURE;
     }
 

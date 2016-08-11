@@ -5,8 +5,6 @@
 
 #include "common/aligned/vector.h"
 
-#include "glog/logging.h"
-
 #include <vector>
 
 /// A pretty speedy fixed-size offline convolver.
@@ -38,7 +36,9 @@ public:
                                     Jt b_end) {
         const auto d0 = std::distance(a_begin, a_end);
         const auto d1 = std::distance(b_begin, b_end);
-        CHECK(d0 + d1 - 1 == FFT_LENGTH);
+        if (d0 + d1 - 1 != FFT_LENGTH) {
+            throw std::runtime_error("inputs must sum to FFT_LENGTH + 1");
+        }
         forward_fft(r2c, a_begin, a_end, r2c_i, r2c_o, acplx);
         forward_fft(r2c, b_begin, b_end, r2c_i, r2c_o, bcplx);
 

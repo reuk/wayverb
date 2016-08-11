@@ -125,8 +125,9 @@ aligned::vector<float> get_free_field_results(const compute_context& cc,
 
     auto total_possible_nodes = 1 << 30;
     if (total_desired_nodes >= total_possible_nodes) {
-        LOG(INFO) << "total desired nodes: " << total_desired_nodes;
-        LOG(INFO) << "however, total possible nodes: " << total_possible_nodes;
+        std::cerr << "total desired nodes: " << total_desired_nodes << '\n';
+        std::cerr << "however, total possible nodes: " << total_possible_nodes
+                  << '\n';
         throw std::runtime_error("too many nodes");
     }
 
@@ -150,9 +151,9 @@ aligned::vector<float> get_free_field_results(const compute_context& cc,
             auto str, const auto& pos) {
         auto dist = glm::distance(wall_centre, pos);
         if (!almost_equal(dist, source_dist, size_t{5})) {
-            LOG(INFO) << "incorrect distance: " << str;
-            LOG(INFO) << "distance: " << dist;
-            LOG(INFO) << "desired distance: " << source_dist;
+            std::cerr << "incorrect distance: " << str << '\n';
+            std::cerr << "distance: " << dist << '\n';
+            std::cerr << "desired distance: " << source_dist << '\n';
         }
     };
 
@@ -171,20 +172,17 @@ aligned::vector<float> get_free_field_results(const compute_context& cc,
     };
 
     if (wrong_position(source_position, wall_centre)) {
-        LOG(INFO) << "source is placed incorrectly";
         throw std::runtime_error("incorrect placement");
     }
     if (wrong_position(image_position, wall_centre)) {
-        LOG(INFO) << "image is placed incorrectly";
         throw std::runtime_error("incorrect placement");
     }
     if (std::abs(glm::distance(source_position, image_position) -
                  source_dist * 2) > 1) {
-        LOG(INFO) << "image is placed incorrectly";
         throw std::runtime_error("incorrect placement");
     }
 
-    LOG(INFO) << "running for " << steps << " steps";
+    std::cerr << "running for " << steps << " steps\n";
 
     auto image = run_simulation(cc,
                                 no_wall,
@@ -221,8 +219,9 @@ FullTestResults run_full_test(const std::string& test_name,
 
     auto total_possible_nodes = 1 << 30;
     if (total_desired_nodes >= total_possible_nodes) {
-        LOG(INFO) << "total desired nodes: " << total_desired_nodes;
-        LOG(INFO) << "however, total possible nodes: " << total_possible_nodes;
+        std::cerr << "total desired nodes: " << total_desired_nodes << '\n';
+        std::cerr << "however, total possible nodes: " << total_possible_nodes
+                  << '\n';
         throw std::runtime_error("too many nodes");
     }
 
@@ -249,9 +248,9 @@ FullTestResults run_full_test(const std::string& test_name,
             auto str, const auto& pos) {
         auto dist = glm::distance(wall_centre, pos);
         if (!almost_equal(dist, source_dist, size_t{5})) {
-            LOG(INFO) << "incorrect distance: " << str;
-            LOG(INFO) << "distance: " << dist;
-            LOG(INFO) << "desired distance: " << source_dist;
+            std::cerr << "incorrect distance: " << str << '\n';
+            std::cerr << "distance: " << dist << '\n';
+            std::cerr << "desired distance: " << source_dist << '\n';
         }
     };
 
@@ -270,16 +269,14 @@ FullTestResults run_full_test(const std::string& test_name,
     };
 
     if (wrong_position(source_position, wall_centre)) {
-        LOG(INFO) << "source is placed incorrectly";
         throw std::runtime_error("incorrect placement");
     }
 
     if (wrong_position(receiver_position, wall_centre)) {
-        LOG(INFO) << "receiver is placed incorrectly";
         throw std::runtime_error("incorrect placement");
     }
 
-    LOG(INFO) << "running for " << steps << " steps";
+    std::cerr << "running for " << steps << " steps\n";
 
     auto reflected = run_simulation(cc,
                                     wall,
@@ -307,13 +304,13 @@ FullTestResults run_full_test(const std::string& test_name,
                     direct.begin(),
                     subbed.begin(),
                     [](const auto& i, const auto& j) { return j - i; });
-    LOG(INFO) << "subbed max mag: " << max_mag(subbed);
+    std::cerr << "subbed max mag: " << max_mag(subbed) << '\n';
 
     auto first_nonzero = [](const auto& i) {
         auto it = proc::find_if(i, [](auto j) { return j; });
         if (it == i.end())
             throw std::runtime_error("no non-zero values found");
-        LOG(INFO) << "first nonzero value: " << *it;
+        std::cerr << "first nonzero value: " << *it << '\n';
         return it - i.begin();
     };
 
@@ -321,8 +318,8 @@ FullTestResults run_full_test(const std::string& test_name,
     auto first_nonzero_direct = first_nonzero(direct);
 
     if (first_nonzero_reflected != first_nonzero_direct) {
-        LOG(INFO) << "WARNING: direct and reflected should receive signal at "
-                     "same time";
+        std::cerr << "WARNING: direct and reflected should receive signal at "
+                     "same time\n";
     }
 
     auto windowed_subbed = right_hanning(subbed.size());
@@ -359,15 +356,14 @@ FullTestResults run_full_test(const std::string& test_name,
 }
 
 int main(int argc, char** argv) {
-    google::InitGoogleLogging(argv[0]);
     gflags::ParseCommandLineFlags(&argc, &argv, true);
 
     if (argc != 4) {
-        LOG(INFO) << "expecting an output folder, an azimuth, and an elevation";
-
-        LOG(INFO) << "actually found: ";
+        std::cerr
+                << "expecting an output folder, an azimuth, and an elevation\n";
+        std::cerr << "actually found: \n";
         for (auto i = 0u; i != argc; ++i) {
-            LOG(INFO) << "arg " << i << ": " << argv[i];
+            std::cerr << "arg " << i << ": " << argv[i] << '\n';
         }
 
         return EXIT_FAILURE;
@@ -453,14 +449,14 @@ int main(int argc, char** argv) {
         });
 
         if (all_test_results.front() == all_test_results.back()) {
-            LOG(INFO) << "somehow both test results are the same even though "
+            std::cerr << "somehow both test results are the same even though "
                          "they use different boundary coefficients";
         }
     } catch (const std::runtime_error& e) {
-        LOG(INFO) << "critical runtime error: " << e.what();
+        std::cerr << "critical runtime error: " << e.what();
         return EXIT_FAILURE;
     } catch (...) {
-        LOG(INFO) << "unknown error";
+        std::cerr << "unknown error";
         return EXIT_FAILURE;
     }
 

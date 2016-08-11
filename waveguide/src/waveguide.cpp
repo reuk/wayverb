@@ -7,8 +7,6 @@
 #include "waveguide/preprocessor/single_soft_source.h"
 #include "waveguide/surface_filters.h"
 
-#include "glog/logging.h"
-
 #include <cassert>
 
 namespace waveguide {

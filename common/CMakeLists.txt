@@ -19,8 +19,6 @@ target_include_directories(common
     PRIVATE
     src
     ${WAYVERB_SOURCE_DIR}/include
-    ${WAYVERB_SOURCE_DIR}/submodules/glog/src
-    ${WAYVERB_BINARY_DIR}/submodules/glog
     ${WAYVERB_SOURCE_DIR}/submodules/assimp/include
     ${WAYVERB_SOURCE_DIR}/submodules/cereal/include
     "/usr/local/include"

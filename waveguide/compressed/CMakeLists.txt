@@ -28,4 +28,4 @@ endif()
 
 find_library(fftw_library fftw3f)
 find_library(samplerate_lib samplerate)
-target_link_libraries(${name} waveguide assimp ${samplerate_lib} ${fftw_library} glog common)
+target_link_libraries(${name} waveguide assimp ${samplerate_lib} ${fftw_library} common)

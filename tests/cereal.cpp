@@ -9,8 +9,6 @@
 
 #include <cereal/types/map.hpp>
 
-#include <glog/logging.h>
-
 #include <string>
 
 #if 0

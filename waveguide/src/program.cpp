@@ -12,10 +12,10 @@ program::program(const cl::Context& context, const cl::Device& device)
         : program_wrapper(
                   context,
                   device,
-                  std::vector<std::string>{cl_sources::get_struct_definitions(
+                  std::vector<std::string>{cl_sources::get_filter_definitions(
                                                    filters::biquad_sections),
                                            cl_sources::utils,
-                                           cl_sources::filters,
+                                           cl_sources::structs,
                                            source}) {}
 
 //----------------------------------------------------------------------------//

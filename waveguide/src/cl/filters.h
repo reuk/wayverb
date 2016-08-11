@@ -4,8 +4,44 @@
 
 namespace cl_sources {
 
-const std::string filters{R"(
+inline std::string get_filter_definitions(size_t BIQUAD_SECTIONS) {
+    return std::string{"#define BIQUAD_SECTIONS " +
+                       std::to_string(BIQUAD_SECTIONS) + "\n" +
+                       "#define CANONICAL_FILTER_ORDER " +
+                       std::to_string(BIQUAD_SECTIONS * 2) + "\n" +
+                       R"(
+#define CAT(a, b) PRIMITIVE_CAT(a, b)
+#define PRIMITIVE_CAT(a, b) a##b
+
+#define BIQUAD_ORDER 2
+
 typedef double FilterReal;
+
+#define TEMPLATE_FILTER_MEMORY(order) \
+    typedef struct { FilterReal array[order]; } CAT(FilterMemory, order);
+
+TEMPLATE_FILTER_MEMORY(BIQUAD_ORDER);
+TEMPLATE_FILTER_MEMORY(CANONICAL_FILTER_ORDER);
+
+#define TEMPLATE_FILTER_COEFFICIENTS(order) \
+    typedef struct {                        \
+        FilterReal b[order + 1];            \
+        FilterReal a[order + 1];            \
+    } CAT(FilterCoefficients, order);
+
+TEMPLATE_FILTER_COEFFICIENTS(BIQUAD_ORDER);
+TEMPLATE_FILTER_COEFFICIENTS(CANONICAL_FILTER_ORDER);
+
+#define FilterMemoryBiquad CAT(FilterMemory, BIQUAD_ORDER)
+#define FilterMemoryCanonical CAT(FilterMemory, CANONICAL_FILTER_ORDER)
+#define FilterCoefficientsBiquad CAT(FilterCoefficients, BIQUAD_ORDER)
+#define FilterCoefficientsCanonical \
+    CAT(FilterCoefficients, CANONICAL_FILTER_ORDER)
+
+typedef struct { FilterMemoryBiquad array[BIQUAD_SECTIONS]; } BiquadMemoryArray;
+typedef struct {
+    FilterCoefficientsBiquad array[BIQUAD_SECTIONS];
+} BiquadCoefficientsArray;
 
 #define FILTER_STEP(order)                                                 \
     FilterReal CAT(filter_step_, order)(                                   \
@@ -67,5 +103,5 @@ kernel void filter_test_2(
                                           canonical_coefficients + index);
 }
 )"};
-
+}
 }  // namespace cl_sources

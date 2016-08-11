@@ -1,17 +1,16 @@
 #include "waveguide/config.h"
 #include "waveguide/mesh/model.h"
 #include "waveguide/mesh/setup.h"
-#include "waveguide/program.h"
-#include "waveguide/waveguide.h"
 #include "waveguide/postprocessor/microphone.h"
 #include "waveguide/preprocessor/single_soft_source.h"
+#include "waveguide/program.h"
+#include "waveguide/waveguide.h"
 
 #include "common/cl_common.h"
 #include "common/progress_bar.h"
 #include "common/sinc.h"
 #include "common/voxelised_scene_data.h"
 
-#include "glog/logging.h"
 #include "gtest/gtest.h"
 
 #include <random>
@@ -61,12 +60,14 @@ TEST(run_waveguide, run_waveguide) {
     const auto source_index = compute_index(model.get_descriptor(), source);
     const auto receiver_index = compute_index(model.get_descriptor(), receiver);
 
-    CHECK(waveguide::mesh::setup::is_inside(
-            model.get_structure().get_condensed_nodes()[source_index]))
-            << "source is outside of mesh!";
-    CHECK(waveguide::mesh::setup::is_inside(
-            model.get_structure().get_condensed_nodes()[receiver_index]))
-            << "receiver is outside of mesh!";
+    if (!waveguide::mesh::setup::is_inside(
+                model.get_structure().get_condensed_nodes()[source_index])) {
+        throw std::runtime_error("source is outside of mesh!");
+    }
+    if (!waveguide::mesh::setup::is_inside(
+                model.get_structure().get_condensed_nodes()[receiver_index])) {
+        throw std::runtime_error("receiver is outside of mesh!");
+    }
 
     std::atomic_bool keep_going{true};
     progress_bar pb(std::cout, steps);
@@ -88,7 +89,8 @@ TEST(run_waveguide, run_waveguide) {
 
     ASSERT_FALSE(results.empty());
 
-    const auto output = map_to_vector(results, [](auto i) {return i.pressure;});
+    const auto output =
+            map_to_vector(results, [](auto i) { return i.pressure; });
 
     const auto max_amp = max_mag(output);
     std::cout << "max_mag: " << max_amp << std::endl;

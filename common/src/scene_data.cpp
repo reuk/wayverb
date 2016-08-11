@@ -14,8 +14,6 @@
 #include "assimp/postprocess.h"
 #include "assimp/scene.h"
 
-#include <glog/logging.h>
-
 #include <fstream>
 #include <stdexcept>
 #include <vector>
