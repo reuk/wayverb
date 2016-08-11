@@ -7,9 +7,6 @@
 [submodule "submodules/googletest"]
 	path = submodules/googletest
 	url = git@github.com:google/googletest.git
-[submodule "submodules/glog"]
-	path = submodules/glog
-	url = git@github.com:google/glog.git
 [submodule "submodules/assimp"]
 	path = submodules/assimp
 	url = git@github.com:assimp/assimp.git
