@@ -6,7 +6,7 @@
 #include "common/conversions.h"
 #include "common/geo/geometric.h"
 #include "common/progress_bar.h"
-#include "common/voxel_collection.h"
+#include "common/voxelised_scene_data.h"
 
 #include <experimental/optional>
 #include <numeric>
@@ -28,16 +28,14 @@ void image_source_finder::push(const aligned::vector<reflection>& reflections) {
 aligned::vector<impulse> image_source_finder::get_results(
         const glm::vec3& source,
         const glm::vec3& receiver,
-        const copyable_scene_data& scene_data,
-        const voxel_collection<3>& vox) {
-    auto unique_paths =
+        const voxelised_scene_data& scene_data) {
+    const auto unique_paths =
             compute_unique_paths(std::move(reflection_path_builder.get_data()));
     aligned::vector<impulse> ret;
 
-    const triangle_traversal_callback callback(scene_data);
     for (const auto& i : unique_paths) {
-        if (auto impulse = follow_ray_path(
-                    i, source, receiver, scene_data, vox, callback)) {
+        if (const auto impulse =
+                    follow_ray_path(i, source, receiver, scene_data)) {
             ret.push_back(*impulse);
         }
     }

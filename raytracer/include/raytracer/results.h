@@ -2,7 +2,6 @@
 
 #include "raytracer/cl_structs.h"
 
-#include "common/aligned/map.h"
 #include "common/aligned/vector.h"
 #include "common/cl_include.h"
 

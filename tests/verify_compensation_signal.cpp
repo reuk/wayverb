@@ -1,8 +1,12 @@
 #include "compressed_waveguide.h"
 
 #include "common/progress_bar.h"
+#include "common/voxelised_scene_data.h"
 
 #include "waveguide/make_transparent.h"
+#include "waveguide/mesh/model.h"
+#include "waveguide/postprocessor/microphone.h"
+#include "waveguide/preprocessor/single_soft_source.h"
 #include "waveguide/waveguide.h"
 
 #include "gtest/gtest.h"
@@ -19,7 +23,7 @@ auto uniform_surface(float r) {
 template <typename T>
 void multitest(T&& run) {
     constexpr auto iterations = 100;
-    const auto proper_output  = run();
+    const auto proper_output = run();
     for (auto i = 0; i != iterations; ++i) {
         const auto output = run();
         ASSERT_EQ(output, proper_output);
@@ -50,35 +54,29 @@ TEST(verify_compensation_signal, verify_compensation_signal_normal) {
     auto scene_data =
             geo::get_scene_data(geo::box(glm::vec3(-1), glm::vec3(1)));
     scene_data.set_surfaces(uniform_surface(0.5));
-    waveguide::mesh_boundary boundary(scene_data);
+    const voxelised_scene_data voxelised(scene_data, 5, scene_data.get_aabb());
+
+    const auto model = waveguide::mesh::compute_model(
+            cc.get_context(), cc.get_device(), voxelised, 0.05);
 
     constexpr glm::vec3 centre{0, 0, 0};
-
-    waveguide::waveguide waveguide(
-            cc.get_context(), cc.get_device(), boundary, centre, 20000);
-
-    auto receiver_index = waveguide.get_index_for_coordinate(centre);
+    const auto receiver_index = compute_index(model.get_descriptor(), centre);
 
     multitest([&] {
         constexpr auto steps = 100;
         std::atomic_bool keep_going{true};
         progress_bar pb(std::cout, steps);
-        const auto output = waveguide::init_and_run(waveguide,
-                                                    centre,
-                                                    transparent,
-                                                    receiver_index,
-                                                    steps,
-                                                    keep_going,
-                                                    [&](auto) { pb += 1; });
 
-        assert(output);
+        const auto output = waveguide::run(cc.get_context(),
+                                           cc.get_device(),
+                                           model,
+                                           receiver_index,
+                                           input,
+                                           receiver_index,
+                                           [&](auto) { pb += 1; });
 
-        aligned::vector<float> pressures;
-        pressures.reserve(output->size());
-        for (const auto& i : *output) {
-            pressures.push_back(i.pressure);
-        }
+        assert(output.size() == steps);
 
-        return pressures;
+        return map_to_vector(output, [](const auto& i) { return i.pressure; });
     });
 }

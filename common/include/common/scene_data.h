@@ -57,8 +57,7 @@ public:
     void set_surfaces(const surface& surface);
 
     geo::box get_aabb() const;
-    aligned::vector<glm::vec3> get_converted_vertices() const;
-    aligned::vector<size_t> get_triangle_indices() const;
+    aligned::vector<size_t> compute_triangle_indices() const;
 
     const aligned::vector<triangle>& get_triangles() const;
     const aligned::vector<cl_float3>& get_vertices() const;
@@ -67,6 +66,8 @@ public:
 private:
     contents contents;
 };
+
+aligned::vector<glm::vec3> convert(const aligned::vector<cl_float3>& c);
 
 //----------------------------------------------------------------------------//
 

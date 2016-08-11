@@ -66,8 +66,7 @@ void diffuse_finder::push(const aligned::vector<reflection>& reflections,
            impulse_buffer);
 
     //  copy impulses out
-    aligned::vector<impulse> ret(rays);
-    cl::copy(buffers.get_queue(), impulse_buffer, ret.begin(), ret.end());
+    auto ret = read_from_buffer<impulse>(buffers.get_queue(), impulse_buffer);
 
     for (const auto& i : ret) {
         if (is_cl_nan(i.volume)) {

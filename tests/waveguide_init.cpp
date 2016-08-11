@@ -1,6 +1,10 @@
-#include "waveguide/make_transparent.h"
-#include "waveguide/waveguide.h"
 #include "common/progress_bar.h"
+#include "common/voxelised_scene_data.h"
+#include "waveguide/make_transparent.h"
+#include "waveguide/mesh/model.h"
+#include "waveguide/postprocessor/microphone.h"
+#include "waveguide/preprocessor/single_soft_source.h"
+#include "waveguide/waveguide.h"
 
 #include "gtest/gtest.h"
 
@@ -20,32 +24,35 @@ TEST(waveguide_init, waveguide_init) {
             geo::get_scene_data(geo::box(glm::vec3(-1), glm::vec3(1)));
     scene_data.set_surfaces(uniform_surface(0.999));
 
-    waveguide::mesh_boundary boundary(scene_data);
+    const voxelised_scene_data voxelised(scene_data, 5, scene_data.get_aabb());
 
     constexpr glm::vec3 centre{0, 0, 0};
 
     const aligned::vector<float> input(20, 1);
-    const auto transparent = waveguide::make_transparent(input);
+    auto transparent = waveguide::make_transparent(input);
 
-    waveguide::waveguide a(
-            cc.get_context(), cc.get_device(), boundary, centre, 20000);
-    waveguide::waveguide b(
-            cc.get_context(), cc.get_device(), boundary, centre, 20000);
+    constexpr auto steps = 100;
+    transparent.resize(steps, 0);
 
-    auto run = [&](auto& waveguide) {
-        auto receiver_index = waveguide.get_index_for_coordinate(centre);
-        constexpr auto steps = 100;
+    auto run = [&] {
+        const auto model = waveguide::mesh::compute_model(
+                cc.get_context(), cc.get_device(), voxelised, 0.04);
+        auto receiver_index = compute_index(model.get_descriptor(), centre);
+
         std::atomic_bool keep_going{true};
         progress_bar pb(std::cout, steps);
-        const auto output = waveguide::init_and_run(a,
-                                                    centre,
-                                                    transparent,
-                                                    receiver_index,
-                                                    steps,
-                                                    keep_going,
-                                                    [&](auto) { pb += 1; });
+
+        const auto output = waveguide::run(cc.get_context(),
+                                           cc.get_device(),
+                                           model,
+                                           receiver_index,
+                                           transparent,
+                                           receiver_index,
+                                           [&](auto) { pb += 1; });
+
+        ASSERT_EQ(input.size(), output.size());
     };
 
-    run(a);
-    run(b);
+    run();
+    run();
 }

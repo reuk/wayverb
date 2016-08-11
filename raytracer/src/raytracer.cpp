@@ -2,25 +2,23 @@
 #include "raytracer/construct_impulse.h"
 #include "raytracer/diffuse.h"
 #include "raytracer/image_source.h"
-#include "raytracer/program.h"
 #include "raytracer/reflector.h"
-#include "raytracer/scene_buffers.h"
+
+#include "common/scene_buffers.h"
+#include "common/voxelised_scene_data.h"
 
 namespace raytracer {
 
 std::experimental::optional<impulse> get_direct_impulse(
         const glm::vec3& source,
         const glm::vec3& receiver,
-        const copyable_scene_data& scene_data,
-        const voxel_collection<3>& vox) {
-    const triangle_traversal_callback callback(scene_data);
-
-    const auto source_to_receiver        = receiver - source;
+        const voxelised_scene_data& scene_data) {
+    const auto source_to_receiver = receiver - source;
     const auto source_to_receiver_length = glm::length(source_to_receiver);
-    const auto direction                 = glm::normalize(source_to_receiver);
+    const auto direction = glm::normalize(source_to_receiver);
     const geo::ray to_receiver(source, direction);
 
-    const auto intersection = traverse(vox, to_receiver, callback);
+    const auto intersection = intersects(scene_data, to_receiver);
 
     if (!intersection ||
         (intersection && intersection->distance > source_to_receiver_length)) {
@@ -32,28 +30,25 @@ std::experimental::optional<impulse> get_direct_impulse(
     return std::experimental::nullopt;
 }
 
-raytracer::raytracer(const cl::Context& context, const cl::Device& device)
-        : context(context)
-        , device(device) {}
-
-std::experimental::optional<results> raytracer::run(
-        const copyable_scene_data& scene_data,
-        const glm::vec3& source,
-        const glm::vec3& receiver,
-        size_t rays,
-        size_t reflection_depth,
-        size_t image_source_depth,
-        std::atomic_bool& keep_going,
-        const per_step_callback& callback) {
-    assert(image_source_depth <= reflection_depth);
+std::experimental::optional<results> run(const cl::Context& context,
+                                         const cl::Device& device,
+                                         const voxelised_scene_data& scene_data,
+                                         const glm::vec3& source,
+                                         const glm::vec3& receiver,
+                                         size_t rays,
+                                         size_t reflection_depth,
+                                         size_t image_source_depth,
+                                         std::atomic_bool& keep_going,
+                                         const per_step_callback& callback) {
+    if (reflection_depth < image_source_depth) {
+        throw std::runtime_error(
+                "can't do image-source deeper than the max reflection depth");
+    }
 
     //  set up all the rendering context stuff
 
-    //  create acceleration structure for raytracing
-    voxel_collection<3> vox(octree_from_scene_data(scene_data, 4, 0.1));
-
     //  load the scene into device memory
-    scene_buffers scene_buffers(context, device, scene_data, vox);
+    scene_buffers scene_buffers(context, device, scene_data);
 
     //  this is the object that generates first-pass reflections
     reflector reflector(context, device, source, receiver, rays);
@@ -92,8 +87,8 @@ std::experimental::optional<results> raytracer::run(
     }
 
     return results(
-            get_direct_impulse(source, receiver, scene_data, vox),
-            image_source_finder.get_results(source, receiver, scene_data, vox),
+            get_direct_impulse(source, receiver, scene_data),
+            image_source_finder.get_results(source, receiver, scene_data),
             std::move(diffuse_finder.get_results()),
             receiver);
 }

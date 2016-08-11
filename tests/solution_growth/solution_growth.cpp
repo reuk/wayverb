@@ -1,6 +1,8 @@
 #include "waveguide/attenuator/microphone.h"
 #include "waveguide/config.h"
 #include "waveguide/make_transparent.h"
+#include "waveguide/mesh/boundary_adjust.h"
+#include "waveguide/mesh/model.h"
 #include "waveguide/waveguide.h"
 
 #include "common/azimuth_elevation.h"
@@ -9,12 +11,12 @@
 #include "common/dc_blocker.h"
 #include "common/filters_common.h"
 #include "common/kernel.h"
-#include "common/map.h"
+#include "common/map_to_vector.h"
 #include "common/progress_bar.h"
 #include "common/scene_data.h"
-#include "common/serialize/boundaries.h"
 #include "common/serialize/surface.h"
 #include "common/sinc.h"
+#include "common/voxelised_scene_data.h"
 #include "common/write_audio_file.h"
 
 #include "samplerate.h"
@@ -51,18 +53,32 @@ int main(int argc, char** argv) {
         auto scene_data = geo::get_scene_data(boundary);
         scene_data.set_surfaces(uniform_surface(0.999));
 
-        waveguide::waveguide waveguide(cc.get_context(),
-                                       cc.get_device(),
-                                       waveguide::mesh_boundary(scene_data),
-                                       receiver,
-                                       sampling_frequency);
+        const auto spacing = waveguide::config::grid_spacing(
+                speed_of_sound, 1 / sampling_frequency);
+
+        const voxelised_scene_data voxelised(
+                scene_data,
+                5,
+                waveguide::compute_adjusted_boundary(
+                        scene_data.get_aabb(), receiver, spacing));
+
+        const auto model = waveguide::mesh::compute_model(
+                cc.get_context(), cc.get_device(), voxelised, spacing);
 
         const auto receiver_index =
-                waveguide.get_index_for_coordinate(receiver);
-        const auto source_index = waveguide.get_index_for_coordinate(source);
+                compute_index(model.get_descriptor(), receiver);
+        const auto source_index = compute_index(model.get_descriptor(), source);
 
-        const auto corrected_source =
-                waveguide.get_coordinate_for_index(source_index);
+        if (!waveguide::mesh::setup::is_inside(
+                    model.get_structure()
+                            .get_condensed_nodes()[receiver_index])) {
+            throw std::runtime_error("receiver is outside of mesh!");
+        }
+        if (!waveguide::mesh::setup::is_inside(
+                    model.get_structure()
+                            .get_condensed_nodes()[source_index])) {
+            throw std::runtime_error("source is outside of mesh!");
+        }
 
         struct signal {
             std::string name;
@@ -88,21 +104,20 @@ int main(int argc, char** argv) {
         for (const auto& i : signals) {
             const auto steps = 10000;
 
-            const auto kernel = waveguide::make_transparent(i.kernel);
+            auto kernel = waveguide::make_transparent(i.kernel);
+            kernel.resize(steps);
 
-            std::atomic_bool keep_going{true};
             progress_bar pb(std::cout, steps);
-            const auto results =
-                    waveguide::init_and_run(waveguide,
-                                            corrected_source,
-                                            kernel,
-                                            receiver_index,
-                                            steps,
-                                            keep_going,
-                                            [&](auto) { pb += 1; });
+            const auto results = waveguide::run(cc.get_context(),
+                                                cc.get_device(),
+                                                model,
+                                                source_index,
+                                                kernel,
+                                                receiver_index,
+                                                [&](auto) { pb += 1; });
 
             const auto output = map_to_vector(
-                    *results, [](const auto& i) { return i.pressure; });
+                    results, [](const auto& i) { return i.pressure; });
 
             {
                 const auto fname = build_string(

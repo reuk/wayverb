@@ -1,16 +1,6 @@
 #include "common/voxel_collection.h"
 #include "common/scene_data.h"
 
-triangle_traversal_callback::triangle_traversal_callback(
-        const copyable_scene_data& scene_data)
-        : tri(scene_data.get_triangles())
-        , vertices(scene_data.get_converted_vertices()) {}
-
-geo::intersection triangle_traversal_callback::operator()(
-        const geo::ray& ray, const aligned::vector<size_t>& triangles) const {
-    return geo::ray_triangle_intersection(ray, triangles, tri, vertices);
-}
-
 //  TODO there's a pattern here, but I'm not sure what it is. Find it.
 aligned::vector<cl_uint> get_flattened(const voxel_collection<2>& voxels) {
     const auto side = voxels.get_side();
@@ -107,9 +97,9 @@ glm::bvec3 is_not_nan(const glm::vec3& v) {
 }
 }  // namespace
 
-geo::intersection traverse(const voxel_collection<3>& voxels,
-                           const geo::ray& ray,
-                           const traversal_callback& fun) {
+void traverse(const voxel_collection<3>& voxels,
+              const geo::ray& ray,
+              const traversal_callback& fun) {
     const auto side = voxels.get_side();
 
     auto ind = get_starting_index(voxels, ray.get_position());
@@ -134,16 +124,15 @@ geo::intersection traverse(const voxel_collection<3>& voxels,
 
         const auto& tri = voxels.get_voxel(ind);
         if (!tri.empty()) {
-            const auto ret = fun(ray, tri);
-
-            if (ret && ret->distance < t_max[min_i]) {
-                return ret;
+            if (fun(ray, tri, t_max[min_i])) {  // callback has signalled that
+                                                // it should quit
+                return;
             }
         }
 
         ind[min_i] += step[min_i];
         if (ind[min_i] == just_out[min_i]) {
-            return geo::intersection();
+            return;
         }
         t_max[min_i] += t_delta[min_i];
     }

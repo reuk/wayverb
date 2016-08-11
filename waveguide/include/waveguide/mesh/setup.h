@@ -1,10 +1,14 @@
 #pragma once
 
+#include "waveguide/program.h"
+
 #include "common/aligned/vector.h"
 #include "common/cl_include.h"
+#include "common/map_to_vector.h"
 #include "common/program_wrapper.h"
 #include "common/stl_wrappers.h"
 #include "common/voxel_collection.h"
+#include "waveguide/mesh/descriptor.h"
 
 #include "glm/fwd.hpp"
 
@@ -14,7 +18,8 @@ namespace waveguide {
 
 class mesh_boundary;
 
-namespace mesh_setup {
+namespace mesh {
+namespace setup {
 
 typedef enum : cl_int {
     id_none = 0,
@@ -55,6 +60,8 @@ inline bool operator==(const node& a, const node& b) {
 
 inline bool operator!=(const node& a, const node& b) { return !(a == b); }
 
+//----------------------------------------------------------------------------//
+
 /// This program will set up a rectangular mesh, given a bunch of room geometry
 /// and the number of nodes.
 ///
@@ -67,9 +74,9 @@ inline bool operator!=(const node& a, const node& b) { return !(a == b); }
 ///     calculate what type of boundary the node represents
 ///     find the boundary node index for each node
 
-class program final {
+class setup_program final {
 public:
-    program(const cl::Context& context, const cl::Device& device);
+    setup_program(const cl::Context& context, const cl::Device& device);
 
     auto get_node_position_and_neighbors_kernel() const {
         return program_wrapper.get_kernel<cl::Buffer,  /// nodes
@@ -85,12 +92,66 @@ private:
     program_wrapper program_wrapper;
 };
 
-aligned::vector<node> do_mesh_setup(const cl::Context& context,
-                                    const cl::Device& device,
-                                    const copyable_scene_data& scene_data,
-                                    const voxel_collection<3>& octree,
-                                    float spacing,
-                                    const glm::vec3& anchor);
+//----------------------------------------------------------------------------//
 
-}  // namespace mesh_setup
+program::condensed_node get_condensed(const node& n);
+aligned::vector<program::condensed_node> get_condensed(
+        const aligned::vector<node>& n);
+
+constexpr bool is_inside(const program::condensed_node& c) {
+    return c.boundary_type && setup::id_inside;
+}
+
+//----------------------------------------------------------------------------//
+
+class vectors final {
+public:
+    vectors(const aligned::vector<node>& nodes,
+            const aligned::vector<filters::canonical_coefficients>&
+                    coefficients);
+
+    template <size_t n>
+    const aligned::vector<std::array<cl_uint, n>>& get_boundary_coefficients()
+            const;
+
+    const aligned::vector<program::condensed_node>& get_condensed_nodes() const;
+    const aligned::vector<filters::canonical_coefficients>& get_coefficients()
+            const;
+
+private:
+    aligned::vector<program::condensed_node> condensed_nodes;
+    aligned::vector<filters::canonical_coefficients> coefficients;
+    aligned::vector<std::array<cl_uint, 1>> boundary_coefficients_1;
+    aligned::vector<std::array<cl_uint, 2>> boundary_coefficients_2;
+    aligned::vector<std::array<cl_uint, 3>> boundary_coefficients_3;
+};
+
+template <>
+inline const aligned::vector<std::array<cl_uint, 1>>&
+vectors::get_boundary_coefficients() const {
+    return boundary_coefficients_1;
+}
+template <>
+inline const aligned::vector<std::array<cl_uint, 2>>&
+vectors::get_boundary_coefficients() const {
+    return boundary_coefficients_2;
+}
+template <>
+inline const aligned::vector<std::array<cl_uint, 3>>&
+vectors::get_boundary_coefficients() const {
+    return boundary_coefficients_3;
+}
+
+//----------------------------------------------------------------------------//
+
+template <size_t n>
+inline aligned::vector<program::boundary_data_array<n>> get_boundary_data(
+        const vectors& d) {
+    return map_to_vector(d.get_boundary_coefficients<n>(), [](const auto& i) {
+        return program::construct_boundary_data_array(i);
+    });
+}
+
+}  // namespace setup
+}  // namespace mesh
 }  // namespace waveguide

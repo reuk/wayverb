@@ -18,12 +18,6 @@ program::program(const cl::Context& context, const cl::Device& device)
                                            cl_sources::filters,
                                            source}) {}
 
-program::condensed_node program::get_condensed(const mesh_setup::node& n) {
-    return condensed_node{n.boundary_type | (n.inside ? mesh_setup::id_inside
-                                                      : mesh_setup::id_none),
-                          n.boundary_index};
-}
-
 //----------------------------------------------------------------------------//
 
 const std::string program::source{R"(

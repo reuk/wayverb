@@ -148,19 +148,4 @@ constexpr bool operator==(const ray& a, const ray& b) {
 
 constexpr bool operator!=(const ray& a, const ray& b) { return !(a == b); }
 
-//----------------------------------------------------------------------------//
-
-struct alignas(1 << 4) aabb final {
-    cl_float3 c0;
-    cl_float3 c1;
-};
-
-constexpr auto to_tuple(const aabb& x) { return std::tie(x.c0, x.c1); }
-
-constexpr bool operator==(const aabb& a, const aabb& b) {
-    return to_tuple(a) == to_tuple(b);
-}
-
-constexpr bool operator!=(const aabb& a, const aabb& b) { return !(a == b); }
-
 }  // namespace raytracer

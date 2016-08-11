@@ -3,22 +3,6 @@
 #include "common/geo/rect.h"
 #include "common/spatial_division.h"
 
-/// This callback is used to check for intersections with the contents of
-/// the collection.
-/// The colleciton doesn't store any information about the triangles it
-/// contains, so this callback is constructed with a reference to a
-/// SceneData object which contains the triangle information.
-class triangle_traversal_callback final {
-public:
-    triangle_traversal_callback(const copyable_scene_data& scene_data);
-    geo::intersection operator()(const geo::ray& ray,
-                                 const aligned::vector<size_t>& items) const;
-
-private:
-    aligned::vector<triangle> tri;
-    aligned::vector<glm::vec3> vertices;
-};
-
 namespace detail {
 
 //----------------------------------------------------------------------------//
@@ -150,10 +134,18 @@ auto voxel_aabb(const voxel_collection<n>& voxels, u i) {
 /// TODO document the array format
 aligned::vector<cl_uint> get_flattened(const voxel_collection<3>& voxels);
 
-using traversal_callback = std::function<geo::intersection(
-        const geo::ray&, const aligned::vector<size_t>&)>;
+/// arguments
+///     a ray and
+///     a set of indices to objects to test against some condition
+///     the maximum length along the ray that is still inside the current voxel
+/// Returns whether or not the traversal should quit.
+using traversal_callback = std::function<bool(
+        const geo::ray&, const aligned::vector<size_t>&, float)>;
 
-/// Find the closest object along a ray.
-geo::intersection traverse(const voxel_collection<3>& voxels,
-                           const geo::ray& ray,
-                           const traversal_callback& fun);
+/// Walk the voxels along a particular ray.
+/// Calls the callback with the contents of each voxel.
+/// The callback will probably store some internal state which can be pulled
+/// out later.
+void traverse(const voxel_collection<3>& voxels,
+              const geo::ray& ray,
+              const traversal_callback& fun);

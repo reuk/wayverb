@@ -2,7 +2,7 @@
 #include "waveguide/attenuator/hrtf.h"
 #include "waveguide/attenuator/microphone.h"
 
-#include "common/map.h"
+#include "common/map_to_vector.h"
 
 namespace waveguide {
 

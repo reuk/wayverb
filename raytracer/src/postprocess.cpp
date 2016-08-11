@@ -3,7 +3,7 @@
 #include "raytracer/attenuator.h"
 
 #include "common/dsp_vector_ops.h"
-#include "common/map.h"
+#include "common/map_to_vector.h"
 
 namespace raytracer {
 

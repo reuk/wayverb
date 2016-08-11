@@ -1,15 +1,15 @@
 #include "combined/engine.h"
 
 #include "common/aligned/set.h"
-#include "common/boundaries.h"
 #include "common/cl_common.h"
 #include "common/config.h"
 #include "common/conversions.h"
 #include "common/dc_blocker.h"
 #include "common/filters_common.h"
 #include "common/kernel.h"
-#include "common/map.h"
+#include "common/map_to_vector.h"
 #include "common/receiver_settings.h"
+#include "common/voxelised_scene_data.h"
 
 #include "raytracer/attenuator.h"
 #include "raytracer/postprocess.h"
@@ -18,6 +18,9 @@
 #include "waveguide/attenuator/hrtf.h"
 #include "waveguide/attenuator/microphone.h"
 #include "waveguide/default_kernel.h"
+#include "waveguide/mesh/boundary_adjust.h"
+#include "waveguide/mesh/model.h"
+#include "waveguide/mesh/setup.h"
 #include "waveguide/postprocess.h"
 #include "waveguide/postprocessor/microphone.h"
 #include "waveguide/postprocessor/visualiser.h"
@@ -189,25 +192,33 @@ public:
          size_t rays,
          size_t impulses)
             : compute_context(cc)
-            , scene_data(scene_data)
-            , raytracer(cc.get_context(), cc.get_device())
-            , waveguide(cc.get_context(),
-                        cc.get_device(),
-                        waveguide::mesh_boundary(scene_data),
-                        receiver,
-                        waveguide_sample_rate)
+            , mesh_spacing(waveguide::config::grid_spacing(
+                      speed_of_sound, 1 / waveguide_sample_rate))
+            , voxelised(scene_data,
+                        5,
+                        waveguide::compute_adjusted_boundary(
+                                scene_data.get_aabb(), receiver, mesh_spacing))
+            , model(waveguide::mesh::compute_model(cc.get_context(),
+                                                   cc.get_device(),
+                                                   voxelised,
+                                                   mesh_spacing))
             , source(source)
             , receiver(receiver)
             , waveguide_sample_rate(waveguide_sample_rate)
             , rays(rays)
             , impulses(impulses)
-            , source_index(waveguide.get_index_for_coordinate(source))
-            , receiver_index(waveguide.get_index_for_coordinate(receiver)) {
-        if (!waveguide.inside(source_index)) {
+            , source_index(compute_index(model.get_descriptor(), source))
+            , receiver_index(compute_index(model.get_descriptor(), receiver)) {
+        const auto is_index_inside = [&](auto index) {
+            return waveguide::mesh::setup::is_inside(
+                    model.get_structure().get_condensed_nodes()[index]);
+        };
+
+        if (!is_index_inside(source_index)) {
             throw std::runtime_error(
                     "invalid source position - probably outside mesh");
         }
-        if (!waveguide.inside(receiver_index)) {
+        if (!is_index_inside(receiver_index)) {
             throw std::runtime_error(
                     "invalid receiver position - probably outside mesh");
         }
@@ -217,8 +228,10 @@ public:
                                       const state_callback& callback) {
         //  RAYTRACER  -------------------------------------------------------//
         callback(state::starting_raytracer, 1.0);
-        auto raytracer_results = raytracer.run(
-                scene_data,
+        auto raytracer_results = raytracer::run(
+                compute_context.get_context(),
+                compute_context.get_device(),
+                voxelised,
                 source,
                 receiver,
                 rays,
@@ -265,11 +278,11 @@ public:
         //  If the max raytracer time is large this could take forever...
         aligned::vector<waveguide::run_step_output> waveguide_results;
         waveguide_results.reserve(steps);
-        aligned::vector<waveguide::waveguide::step_postprocessor>
-                postprocessors{waveguide::postprocessor::microphone(
-                        waveguide.get_mesh(),
+        aligned::vector<waveguide::step_postprocessor> postprocessors{
+                waveguide::postprocessor::microphone(
+                        model.get_descriptor(),
                         receiver_index,
-                        waveguide.get_sample_rate(),
+                        waveguide_sample_rate,
                         [&waveguide_results](const auto& i) {
                             waveguide_results.push_back(i);
                         })};
@@ -278,7 +291,10 @@ public:
             postprocessors.push_back(waveguide_visual_callback);
         }
 
-        const auto waveguide_steps_completed = waveguide.init_and_run(
+        const auto waveguide_steps_completed = waveguide::run(
+                compute_context.get_context(),
+                compute_context.get_device(),
+                model,
                 steps,
                 preprocessor,
                 postprocessors,
@@ -319,8 +335,7 @@ public:
     }
 
     aligned::vector<glm::vec3> get_node_positions() const {
-        return map_to_vector(waveguide.get_mesh().get_nodes(),
-                             [](const auto& i) { return to_vec3(i.position); });
+        return model.get_node_positions();
     }
 
     void register_waveguide_visual_callback(
@@ -334,7 +349,7 @@ public:
     }
 
     void unregister_waveguide_visual_callback() {
-        waveguide_visual_callback = waveguide::waveguide::step_postprocessor{};
+        waveguide_visual_callback = waveguide::step_postprocessor{};
     }
 
     void register_raytracer_visual_callback(
@@ -348,9 +363,11 @@ public:
 
 private:
     compute_context compute_context;
-    copyable_scene_data scene_data;
-    raytracer::raytracer raytracer;
-    waveguide::waveguide waveguide;
+
+    float mesh_spacing;
+
+    voxelised_scene_data voxelised;
+    waveguide::mesh::model model;
 
     glm::vec3 source;
     glm::vec3 receiver;
@@ -361,7 +378,7 @@ private:
     size_t source_index;
     size_t receiver_index;
 
-    waveguide::waveguide::step_postprocessor waveguide_visual_callback;
+    waveguide::step_postprocessor waveguide_visual_callback;
     raytracer_visual_callback_t raytracer_visual_callback;
 };
 

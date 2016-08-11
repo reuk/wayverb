@@ -1,17 +1,18 @@
 #include "waveguide/postprocessor/microphone.h"
+#include "waveguide/mesh/descriptor.h"
 
-#include "common/map.h"
+#include "common/map_to_vector.h"
 
 namespace waveguide {
 namespace postprocessor {
 
 namespace detail {
-microphone_state::microphone_state(const mesh& mesh,
+microphone_state::microphone_state(const mesh::descriptor& mesh_descriptor,
                                    size_t output_node,
                                    double sample_rate)
         : output_node(output_node)
-        , surrounding_nodes(mesh.compute_neighbors(output_node))
-        , mesh_spacing(mesh.get_spacing())
+        , surrounding_nodes(compute_neighbors(mesh_descriptor, output_node))
+        , mesh_spacing(mesh_descriptor.spacing)
         , sample_rate(sample_rate) {}
 
 run_step_output microphone_state::operator()(cl::CommandQueue& queue,
@@ -63,11 +64,11 @@ run_step_output microphone_state::operator()(cl::CommandQueue& queue,
 size_t microphone_state::get_output_node() const { return output_node; }
 }  // namespace detail
 
-microphone::microphone(const mesh& mesh,
+microphone::microphone(const mesh::descriptor& mesh_descriptor,
                        size_t output_node,
                        double sample_rate,
                        const output_callback& callback)
-        : microphone_state(mesh, output_node, sample_rate)
+        : microphone_state(mesh_descriptor, output_node, sample_rate)
         , callback(callback) {}
 
 void microphone::operator()(cl::CommandQueue& queue,
@@ -76,14 +77,14 @@ void microphone::operator()(cl::CommandQueue& queue,
     callback(microphone_state(queue, buffer, step));
 }
 
-multi_microphone::multi_microphone(const mesh& mesh,
+multi_microphone::multi_microphone(const mesh::descriptor& mesh_descriptor,
                                    const aligned::vector<size_t>& output_node,
                                    double sample_rate,
                                    const output_callback& callback)
         : state(map_to_vector(output_node,
                               [&](auto i) {
                                   return detail::microphone_state(
-                                          mesh, i, sample_rate);
+                                          mesh_descriptor, i, sample_rate);
                               }))
         , callback(callback) {}
 

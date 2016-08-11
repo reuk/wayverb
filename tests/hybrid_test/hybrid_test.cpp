@@ -3,11 +3,13 @@
 
 #include "waveguide/attenuator/microphone.h"
 #include "waveguide/config.h"
+#include "waveguide/mesh/boundary_adjust.h"
+#include "waveguide/mesh/model.h"
 #include "waveguide/waveguide.h"
 
-#include "raytracer/raytracer.h"
 #include "raytracer/attenuator.h"
 #include "raytracer/postprocess.h"
+#include "raytracer/raytracer.h"
 
 #include "common/azimuth_elevation.h"
 #include "common/cl_common.h"
@@ -20,9 +22,9 @@
 #include "common/scene_data.h"
 #include "common/sinc.h"
 #include "common/stl_wrappers.h"
+#include "common/voxelised_scene_data.h"
 #include "common/write_audio_file.h"
 
-#include "common/serialize/boundaries.h"
 #include "common/serialize/json_read_write.h"
 #include "common/serialize/surface.h"
 
@@ -64,50 +66,48 @@ constexpr double rectilinear_calibration_factor(double r, double sr) {
 }
 
 auto run_waveguide(const compute_context& cc,
-                   const geo::box& boundary,
+                   const voxelised_scene_data& boundary,
                    const model::SingleShot& config,
                    const std::string& output_folder,
-                   const surface& surface) {
+                   float spacing) {
     const auto steps = 16000;
 
-    auto scene_data = geo::get_scene_data(boundary);
-    scene_data.set_surfaces(surface);
-
     //  get a waveguide
-    waveguide::waveguide waveguide(cc.get_context(),
-                                   cc.get_device(),
-                                   waveguide::mesh_boundary(scene_data),
-                                   config.receiver_settings.position,
-                                   config.get_waveguide_sample_rate());
+    const auto receiver = config.receiver_settings.position;
 
-    auto source_index   = waveguide.get_index_for_coordinate(config.source);
-    auto receiver_index = waveguide.get_index_for_coordinate(
-            config.receiver_settings.position);
+    const auto model = waveguide::mesh::compute_model(
+            cc.get_context(), cc.get_device(), boundary, spacing);
 
-    CHECK(waveguide.inside(source_index)) << "source is outside of mesh!";
-    CHECK(waveguide.inside(receiver_index)) << "receiver is outside of mesh!";
+    const auto receiver_index = compute_index(model.get_descriptor(), receiver);
+    const auto source_index =
+            compute_index(model.get_descriptor(), config.source);
 
-    auto corrected_source = waveguide.get_coordinate_for_index(source_index);
+    if (!waveguide::mesh::setup::is_inside(
+                model.get_structure().get_condensed_nodes()[receiver_index])) {
+        throw std::runtime_error("receiver is outside of mesh!");
+    }
+    if (!waveguide::mesh::setup::is_inside(
+                model.get_structure().get_condensed_nodes()[source_index])) {
+        throw std::runtime_error("source is outside of mesh!");
+    }
 
     auto input = kernels::sin_modulated_gaussian_kernel(
             config.get_waveguide_sample_rate());
+    input.resize(steps);
 
     //  run the waveguide
     //            [                                        ]
     std::cout << "[ -- running waveguide ----------------- ]" << std::endl;
-    std::atomic_bool keep_going{true};
     progress_bar pb(std::cout, steps);
-    auto results = waveguide::init_and_run(waveguide,
-                                           corrected_source,
-                                           std::move(input),
-                                           receiver_index,
-                                           steps,
-                                           keep_going,
-                                           [&](auto) { pb += 1; });
+    const auto results = waveguide::run(cc.get_context(),
+                                        cc.get_device(),
+                                        model,
+                                        source_index,
+                                        input,
+                                        receiver_index,
+                                        [&](auto) { pb += 1; });
 
-    auto output = aligned::vector<float>(results->size());
-    proc::transform(
-            *results, output.begin(), [](const auto& i) { return i.pressure; });
+    auto output = map_to_vector(results, [](auto i) { return i.pressure; });
 
     //  correct for filter time offset
     output.erase(output.begin(),
@@ -124,10 +124,25 @@ int main(int argc, char** argv) {
     constexpr glm::vec3 source(2.09, 2.12, 2.12);
     constexpr glm::vec3 receiver(2.09, 3.08, 0.96);
     constexpr auto samplerate = 96000;
-    constexpr auto bit_depth  = 16;
-    constexpr auto v          = 0.9;
+    constexpr auto bit_depth = 16;
+    constexpr auto v = 0.9;
     constexpr surface surface{volume_type{{v, v, v, v, v, v, v, v}},
                               volume_type{{v, v, v, v, v, v, v, v}}};
+
+    auto scene = geo::get_scene_data(box);
+    scene.set_surfaces(surface);
+
+    const model::SingleShot config{
+            2000, 2, 100000, source, model::ReceiverSettings{receiver}};
+
+    const auto spacing = waveguide::config::grid_spacing(
+            speed_of_sound, 1 / config.get_waveguide_sample_rate());
+
+    const voxelised_scene_data voxelised(
+            scene,
+            5,
+            waveguide::compute_adjusted_boundary(
+                    scene.get_aabb(), receiver, spacing));
 
     CHECK(argc == 2) << "expected an output folder";
 
@@ -135,15 +150,12 @@ int main(int argc, char** argv) {
 
     //  init simulation parameters
 
-    const model::SingleShot config{
-            2000, 2, 100000, source, model::ReceiverSettings{receiver}};
-
     json_read_write::write(output_folder + "/used_config.json", config);
 
     compute_context cc;
 
     auto waveguide_output =
-            run_waveguide(cc, box, config, output_folder, surface);
+            run_waveguide(cc, voxelised, config, output_folder, spacing);
 
     // filter::ZeroPhaseDCBlocker(32).filter(waveguide_output);
 
@@ -170,20 +182,21 @@ int main(int argc, char** argv) {
     //        config, output_folder, "waveguide_adjusted",
     //        {waveguide_adjusted});
     //
-    raytracer::raytracer raytracer(cc.get_context(), cc.get_device());
     //            [                                        ]
     std::cout << "[ -- running raytracer ----------------- ]" << std::endl;
     std::atomic_bool keep_going{true};
     const auto impulses = 1000;
     progress_bar pb(std::cout, impulses);
-    const auto results = raytracer.run(geo::get_scene_data(box),
-                                       config.source,
-                                       config.receiver_settings.position,
-                                       config.rays,
-                                       impulses,
-                                       10,
-                                       keep_going,
-                                       [&](auto) { pb += 1; });
+    const auto results = raytracer::run(cc.get_context(),
+                                        cc.get_device(),
+                                        voxelised,
+                                        config.source,
+                                        config.receiver_settings.position,
+                                        config.rays,
+                                        impulses,
+                                        10,
+                                        keep_going,
+                                        [&](auto) { pb += 1; });
 
     raytracer::attenuator::microphone attenuator(cc.get_context(),
                                                  cc.get_device());
@@ -224,14 +237,14 @@ int main(int argc, char** argv) {
 
     auto waveguide_length = waveguide_adjusted.size();
     auto raytracer_length = raytracer_output.size();
-    auto out_length       = std::min(waveguide_length, raytracer_length);
+    auto out_length = std::min(waveguide_length, raytracer_length);
 
     waveguide_adjusted.resize(out_length);
     raytracer_output.resize(out_length);
 
     auto max_waveguide = max_mag(waveguide_adjusted);
     auto max_raytracer = max_mag(raytracer_output);
-    auto max_both      = std::max(max_waveguide, max_raytracer);
+    auto max_both = std::max(max_waveguide, max_raytracer);
     LOG(INFO) << "max waveguide: " << max_waveguide;
     LOG(INFO) << "max raytracer: " << max_raytracer;
 

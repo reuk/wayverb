@@ -5,9 +5,9 @@
 #include "common/aligned/vector.h"
 #include "common/cl_include.h"
 
-namespace raytracer {
-
 class scene_buffers;
+
+namespace raytracer {
 
 class reflector final {
 public:

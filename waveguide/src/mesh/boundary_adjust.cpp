@@ -1,4 +1,4 @@
-#include "waveguide/boundary_adjust.h"
+#include "waveguide/mesh/boundary_adjust.h"
 
 #include <cassert>
 

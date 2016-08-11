@@ -5,6 +5,7 @@
 #include "common/stl_wrappers.h"
 #include "common/string_builder.h"
 #include "common/triangle.h"
+#include "common/map_to_vector.h"
 
 #include "common/serialize/json_read_write.h"
 
@@ -19,6 +20,10 @@
 #include <stdexcept>
 #include <vector>
 
+aligned::vector<glm::vec3> convert(const aligned::vector<cl_float3>& c) {
+    return map_to_vector(c, [](const auto& i) { return to_vec3(i); });
+}
+
 //----------------------------------------------------------------------------//
 
 copyable_scene_data::copyable_scene_data(
@@ -31,18 +36,11 @@ copyable_scene_data::copyable_scene_data(struct contents&& rhs)
         : contents(std::move(rhs)) {}
 
 geo::box copyable_scene_data::get_aabb() const {
-    const auto v = get_converted_vertices();
+    const auto v = convert(get_vertices());
     return util::min_max(std::begin(v), std::end(v));
 }
 
-aligned::vector<glm::vec3> copyable_scene_data::get_converted_vertices() const {
-    aligned::vector<glm::vec3> vec(get_vertices().size());
-    proc::transform(
-            get_vertices(), vec.begin(), [](auto i) { return to_vec3(i); });
-    return vec;
-}
-
-aligned::vector<size_t> copyable_scene_data::get_triangle_indices() const {
+aligned::vector<size_t> copyable_scene_data::compute_triangle_indices() const {
     aligned::vector<size_t> ret(get_triangles().size());
     proc::iota(ret, 0);
     return ret;

@@ -1,7 +1,7 @@
 #include "OtherComponents/BasicDrawableObject.hpp"
 
 #include "common/aligned/vector.h"
-#include "common/map.h"
+#include "common/map_to_vector.h"
 
 #include <vector>
 

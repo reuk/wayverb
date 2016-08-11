@@ -1,4 +1,4 @@
-#include "common/boundaries.h"
+#include "common/geo/box.h"
 #include "common/geo/tri_cube_intersection.h"
 
 #include "helper.h"

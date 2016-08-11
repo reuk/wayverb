@@ -6,13 +6,15 @@
 #include "common/aligned/vector.h"
 #include "common/geo/geometric.h"
 #include "common/geo/triangle_vec.h"
-#include "common/map.h"
+#include "common/map_to_vector.h"
 #include "common/scene_data.h"
 #include "common/voxel_collection.h"
 
 #include "glm/glm.hpp"
 
 #include <experimental/optional>
+
+class voxelised_scene_data;
 
 namespace raytracer {
 
@@ -89,8 +91,6 @@ std::experimental::optional<impulse> follow_ray_path(
         const aligned::vector<cl_ulong>& triangles,
         const glm::vec3& source,
         const glm::vec3& receiver,
-        const copyable_scene_data& scene_data,
-        const voxel_collection<3>& vox,
-        const triangle_traversal_callback& callback);
+        const voxelised_scene_data& voxelised);
 
 }  // namespace raytracer

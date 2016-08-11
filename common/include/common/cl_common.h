@@ -1,6 +1,7 @@
 #pragma once
 
-#include "cl_traits.h"
+#include "common/cl_traits.h"
+#include "common/aligned/vector.h"
 
 class compute_context final {
 public:
@@ -17,6 +18,14 @@ private:
 template <typename T>
 cl::Buffer load_to_buffer(const cl::Context& context, T t, bool read_only) {
     return cl::Buffer(context, std::begin(t), std::end(t), read_only);
+}
+
+template <typename T>
+aligned::vector<T> read_from_buffer(const cl::CommandQueue& queue,
+                                    const cl::Buffer& buffer) {
+    aligned::vector<T> ret(buffer.getInfo<CL_MEM_SIZE>() / sizeof(T));
+    cl::copy(queue, buffer, ret.begin(), ret.end());
+    return ret;
 }
 
 template <typename T>

@@ -1,21 +1,30 @@
 #pragma once
 
-#include "raytracer/cl_structs.h"
+#include "common/cl_traits.h"
 
-#include "common/aligned/vector.h"
-#include "common/cl_common.h"
-#include "common/voxel_collection.h"
+class voxelised_scene_data;
 
-class copyable_scene_data;
+struct alignas(1 << 4) aabb final {
+    cl_float3 c0;
+    cl_float3 c1;
+};
 
-namespace raytracer {
+constexpr auto to_tuple(const aabb& x) { return std::tie(x.c0, x.c1); }
+
+constexpr bool operator==(const aabb& a, const aabb& b) {
+    return to_tuple(a) == to_tuple(b);
+}
+
+constexpr bool operator!=(const aabb& a, const aabb& b) { return !(a == b); }
+
+//----------------------------------------------------------------------------//
 
 class scene_buffers final {
 public:
     scene_buffers(const cl::Context&,
                   const cl::Device&,
-                  const copyable_scene_data& scene_data,
-                  const voxel_collection<3>& vox);
+                  const voxelised_scene_data& scene_data);
+
     const cl::Buffer& get_voxel_index_buffer() const;
     aabb get_global_aabb() const;
     cl_ulong get_side() const;
@@ -38,5 +47,3 @@ private:
     const cl::Buffer vertices_buffer;
     const cl::Buffer surfaces_buffer;
 };
-
-}  // namespace raytracer

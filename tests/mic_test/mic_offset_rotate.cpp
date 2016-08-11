@@ -1,14 +1,15 @@
 #include "waveguide/attenuator/microphone.h"
 #include "waveguide/config.h"
 #include "waveguide/default_kernel.h"
+#include "waveguide/mesh/boundary_adjust.h"
+#include "waveguide/mesh/model.h"
 #include "waveguide/waveguide.h"
 
 #include "common/cl_common.h"
 #include "common/conversions.h"
 #include "common/kernel.h"
 #include "common/progress_bar.h"
-#include "common/scene_data.h"
-
+#include "common/voxelised_scene_data.h"
 #include "common/filters_common.h"
 #include "common/sinc.h"
 #include "common/write_audio_file.h"
@@ -88,16 +89,22 @@ int main(int argc, char** argv) {
         const auto r    = 0.9f;
         scene_data.set_surfaces(surface{volume_type{{r, r, r, r, r, r, r, r}},
                                         volume_type{{r, r, r, r, r, r, r, r}}});
-        waveguide::waveguide waveguide(cc.get_context(),
-                                       cc.get_device(),
-                                       waveguide::mesh_boundary(scene_data),
-                                       mic,
-                                       waveguide_sr);
+
+        const auto spacing = waveguide::config::grid_spacing(speed_of_sound,
+                                                             1 / waveguide_sr);
+
+        const auto model = waveguide::mesh::compute_model(
+                cc.get_context(),
+                cc.get_device(),
+                voxelised_scene_data(
+                        scene_data,
+                        5,
+                        waveguide::compute_adjusted_boundary(
+                                scene_data.get_aabb(), mic, spacing)),
+                spacing);
 
         for (auto i = 0u; i != test_locations; ++i) {
             float angle = i * M_PI * 2 / test_locations + M_PI;
-
-            const auto mic_index = waveguide.get_index_for_coordinate(mic);
 
             const auto kernel_info = waveguide::default_kernel(waveguide_sr);
             auto kernel            = kernel_info.kernel;
@@ -107,25 +114,30 @@ int main(int argc, char** argv) {
             const auto time_between_source_receiver = dist / speed_of_sound;
             const size_t required_steps =
                     time_between_source_receiver * waveguide_sr;
+
+            const auto receiver_index =
+                    compute_index(model.get_descriptor(), mic);
+            const auto source_index =
+                    compute_index(model.get_descriptor(), source);
+
             // const auto steps = required_steps +
             // kernel_info.opaque_kernel_size;
             const auto steps = 2 * required_steps;
+            kernel.resize(steps);
 
             std::cout << "running " << steps << " steps" << std::endl;
 
-            std::atomic_bool keep_going{true};
             progress_bar pb(std::cout, steps);
-            const auto w_results =
-                    waveguide::init_and_run(waveguide,
-                                            source,
-                                            kernel,
-                                            mic_index,
-                                            steps,
-                                            keep_going,
-                                            [&](auto) { pb += 1; });
+            const auto w_results = waveguide::run(cc.get_context(),
+                                                  cc.get_device(),
+                                                  model,
+                                                  source_index,
+                                                  kernel,
+                                                  receiver_index,
+                                                  [&](auto) { pb += 1; });
 
             auto out_signal = microphone.process(
-                    *w_results, glm::vec3(0, 0, 1), directionality);
+                    w_results, glm::vec3(0, 0, 1), directionality);
 
             // const auto bands = 8;
             // const auto min_band = 80;

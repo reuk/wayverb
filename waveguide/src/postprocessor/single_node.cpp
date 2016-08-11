@@ -1,6 +1,6 @@
 #include "waveguide/postprocessor/single_node.h"
 
-#include "common/map.h"
+#include "common/map_to_vector.h"
 
 namespace waveguide {
 namespace postprocessor {

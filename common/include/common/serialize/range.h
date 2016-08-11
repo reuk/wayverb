@@ -1,6 +1,5 @@
 #pragma once
 
-#include "common/boundaries.h"
 #include "common/serialize/vec.h"
 
 template <typename t>

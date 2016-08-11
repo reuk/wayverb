@@ -1,9 +1,7 @@
 #include "raytracer/raytracer.h"
 
-#include "waveguide/mesh_boundary.h"
-
-#include "common/boundaries.h"
 #include "common/conversions.h"
+#include "common/voxelised_scene_data.h"
 
 #include "gtest/gtest.h"
 
@@ -54,18 +52,20 @@ TEST(boundary, naive) {
 */
 
 TEST(boundary, tunnel) {
-    waveguide::mesh_boundary boundary(scene_data(OBJ_PATH_TUNNEL));
+    const scene_data scene(OBJ_PATH_TUNNEL);
+    const voxelised_scene_data boundary(
+            scene, 5, util::padded(scene.get_aabb(), glm::vec3{0.1}));
 
-    const auto centre = util::centre(boundary.get_aabb());
-    ASSERT_TRUE(boundary.inside(centre));
+    const auto centre = util::centre(boundary.get_voxels().get_aabb());
+    ASSERT_TRUE(inside(boundary, centre));
 
-    auto dist = 100;
-    ASSERT_FALSE(boundary.inside(centre + glm::vec3(dist, 0, 0)));
-    ASSERT_FALSE(boundary.inside(centre + glm::vec3(-dist, 0, 0)));
-    ASSERT_FALSE(boundary.inside(centre + glm::vec3(0, dist, 0)));
-    ASSERT_FALSE(boundary.inside(centre + glm::vec3(0, -dist, 0)));
-    ASSERT_FALSE(boundary.inside(centre + glm::vec3(0, 0, dist)));
-    ASSERT_FALSE(boundary.inside(centre + glm::vec3(0, 0, -dist)));
+    const auto dist = 100;
+    ASSERT_FALSE(inside(boundary, centre + glm::vec3(dist, 0, 0)));
+    ASSERT_FALSE(inside(boundary, centre + glm::vec3(-dist, 0, 0)));
+    ASSERT_FALSE(inside(boundary, centre + glm::vec3(0, dist, 0)));
+    ASSERT_FALSE(inside(boundary, centre + glm::vec3(0, -dist, 0)));
+    ASSERT_FALSE(inside(boundary, centre + glm::vec3(0, 0, dist)));
+    ASSERT_FALSE(inside(boundary, centre + glm::vec3(0, 0, -dist)));
 
     for (const auto& i : {
                  glm::vec3(0.679999828, -1.18999958, -52.5300026),
@@ -75,25 +75,26 @@ TEST(boundary, tunnel) {
                  glm::vec3(0.679999828, -1.18999958, -52.1900024),
                  glm::vec3(-0.680000067, 1.19000006, -52.1900024),
          }) {
-        ASSERT_FALSE(inside(boundary.get_aabb(), i));
-        ASSERT_FALSE(boundary.inside(i));
+        ASSERT_FALSE(inside(boundary.get_voxels().get_aabb(), i));
+        ASSERT_FALSE(inside(boundary, i));
     }
 }
 
 TEST(boundary, bedroom) {
-    scene_data scene_data(OBJ_PATH_BEDROOM);
-    waveguide::mesh_boundary boundary(scene_data);
+    const scene_data scene(OBJ_PATH_BEDROOM);
+    const voxelised_scene_data boundary(
+            scene, 5, util::padded(scene.get_aabb(), glm::vec3{0.1}));
 
-    const auto centre = util::centre(boundary.get_aabb());
-    ASSERT_TRUE(boundary.inside(centre));
+    const auto centre = util::centre(boundary.get_voxels().get_aabb());
+    ASSERT_TRUE(inside(boundary, centre));
 
-    auto dist = 100;
-    ASSERT_FALSE(boundary.inside(centre + glm::vec3(dist, 0, 0)));
-    ASSERT_FALSE(boundary.inside(centre + glm::vec3(-dist, 0, 0)));
-    ASSERT_FALSE(boundary.inside(centre + glm::vec3(0, dist, 0)));
-    ASSERT_FALSE(boundary.inside(centre + glm::vec3(0, -dist, 0)));
-    ASSERT_FALSE(boundary.inside(centre + glm::vec3(0, 0, dist)));
-    ASSERT_FALSE(boundary.inside(centre + glm::vec3(0, 0, -dist)));
+    const auto dist = 100;
+    ASSERT_FALSE(inside(boundary, centre + glm::vec3(dist, 0, 0)));
+    ASSERT_FALSE(inside(boundary, centre + glm::vec3(-dist, 0, 0)));
+    ASSERT_FALSE(inside(boundary, centre + glm::vec3(0, dist, 0)));
+    ASSERT_FALSE(inside(boundary, centre + glm::vec3(0, -dist, 0)));
+    ASSERT_FALSE(inside(boundary, centre + glm::vec3(0, 0, dist)));
+    ASSERT_FALSE(inside(boundary, centre + glm::vec3(0, 0, -dist)));
 
     for (const auto& i : {
                  glm::vec3(1.70000005, -1.70000005, -4.11999989),
@@ -115,7 +116,7 @@ TEST(boundary, bedroom) {
                  glm::vec3(-1.70000005, 0, -3.77999997),
                  glm::vec3(-1.70000005, 0.680000067, -3.77999997),
          }) {
-        ASSERT_FALSE(inside(boundary.get_aabb(), i));
-        ASSERT_FALSE(boundary.inside(i));
+        ASSERT_FALSE(inside(boundary.get_voxels().get_aabb(), i));
+        ASSERT_FALSE(inside(boundary, i));
     }
 }

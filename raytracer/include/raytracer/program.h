@@ -1,7 +1,8 @@
 #pragma once
 
-#include "cl_structs.h"
+#include "raytracer/cl_structs.h"
 
+#include "common/scene_buffers.h"
 #include "common/program_wrapper.h"
 
 namespace raytracer {

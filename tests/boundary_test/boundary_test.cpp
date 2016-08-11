@@ -1,16 +1,18 @@
 #include "waveguide/attenuator/microphone.h"
 #include "waveguide/config.h"
+#include "waveguide/mesh/boundary_adjust.h"
+#include "waveguide/mesh/model.h"
 #include "waveguide/waveguide.h"
 
-#include "common/azimuth_elevation.h"
 #include "common/almost_equal.h"
+#include "common/azimuth_elevation.h"
 #include "common/cl_common.h"
 #include "common/conversions.h"
-#include "common/map.h"
+#include "common/map_to_vector.h"
 #include "common/progress_bar.h"
 #include "common/scene_data.h"
+#include "common/voxelised_scene_data.h"
 
-#include "common/serialize/boundaries.h"
 #include "common/serialize/surface.h"
 
 #include "common/filters_common.h"
@@ -43,44 +45,47 @@ aligned::vector<float> run_simulation(const compute_context& cc,
     auto scene_data = geo::get_scene_data(boundary);
     scene_data.set_surfaces(surface);
 
-    waveguide::waveguide waveguide(cc.get_context(),
-                                   cc.get_device(),
-                                   waveguide::mesh_boundary(scene_data),
-                                   receiver,
-                                   filter_frequency * 4);
+    const auto spacing = waveguide::config::grid_spacing(
+            speed_of_sound, 1 / (filter_frequency * 4));
 
-    auto receiver_index = waveguide.get_index_for_coordinate(receiver);
-    auto source_index   = waveguide.get_index_for_coordinate(source);
+    const auto model = waveguide::mesh::compute_model(
+            cc.get_context(),
+            cc.get_device(),
+            voxelised_scene_data(
+                    scene_data,
+                    5,
+                    waveguide::compute_adjusted_boundary(
+                            scene_data.get_aabb(), receiver, spacing)),
+            spacing);
 
-    if (!waveguide.inside(receiver_index)) {
+    const auto receiver_index = compute_index(model.get_descriptor(), receiver);
+    const auto source_index = compute_index(model.get_descriptor(), source);
+
+    if (!waveguide::mesh::setup::is_inside(
+                model.get_structure().get_condensed_nodes()[receiver_index])) {
         throw std::runtime_error("receiver is outside of mesh!");
     }
-    if (!waveguide.inside(source_index)) {
+    if (!waveguide::mesh::setup::is_inside(
+                model.get_structure().get_condensed_nodes()[source_index])) {
         throw std::runtime_error("source is outside of mesh!");
     }
+    aligned::vector<float> input{1};
+    input.resize(steps);
 
-    auto corrected_source = waveguide.get_coordinate_for_index(source_index);
-    auto corrected_mic    = waveguide.get_coordinate_for_index(receiver_index);
-
-    LOG(INFO) << "running simulation!";
-    LOG(INFO) << "source pos: " << corrected_source;
-    LOG(INFO) << "mic pos: " << corrected_mic;
-
-    std::atomic_bool keep_going{true};
     progress_bar pb(std::cout, steps);
-    auto results = waveguide::init_and_run(waveguide,
-                                           corrected_source,
-                                           aligned::vector<float>{1},
-                                           receiver_index,
-                                           steps,
-                                           keep_going,
-                                           [&](auto) { pb += 1; });
+    const auto results = waveguide::run(cc.get_context(),
+                                        cc.get_device(),
+                                        model,
+                                        source_index,
+                                        input,
+                                        receiver_index,
+                                        [&](auto) { pb += 1; });
 
 #if 0
     auto output = Microphone::omni.process(results);
 #else
     auto output =
-            map_to_vector(*results, [](const auto& i) { return i.pressure; });
+            map_to_vector(results, [](const auto& i) { return i.pressure; });
 #endif
 
     // filter::LinkwitzRileySingleLopass lopass;
@@ -129,20 +134,20 @@ aligned::vector<float> get_free_field_results(const compute_context& cc,
             speed_of_sound, 1.0 / (filter_frequency * 4));
 
     //  generate two boundaries, one twice the size of the other
-    const geo::box wall(glm::vec3(0, 0, 0), glm::vec3(desired_nodes) * divisions);
-    const auto far     = wall.get_max();
+    const geo::box wall(glm::vec3(0, 0, 0),
+                        glm::vec3(desired_nodes) * divisions);
+    const auto far = wall.get_max();
     const auto new_dim = glm::vec3(far.x * 2, far.y, far.z);
     const geo::box no_wall(glm::vec3(0, 0, 0), new_dim);
 
     //  place source and image in rooms based on distance in nodes from the wall
     auto source_dist_nodes = glm::length(glm::vec3(desired_nodes)) / 8;
-    auto source_dist       = source_dist_nodes * divisions;
+    auto source_dist = source_dist_nodes * divisions;
 
     const auto wall_centre = centre(no_wall);
 
     auto log_incorrect_distance = [&source_dist, &wall_centre](
             auto str, const auto& pos) {
-        LOG(INFO) << str << " position: " << pos;
         auto dist = glm::distance(wall_centre, pos);
         if (!almost_equal(dist, source_dist, size_t{5})) {
             LOG(INFO) << "incorrect distance: " << str;
@@ -225,7 +230,8 @@ FullTestResults run_full_test(const std::string& test_name,
             speed_of_sound, 1.0 / (filter_frequency * 4));
 
     //  generate two boundaries, one twice the size of the other
-    const geo::box wall(glm::vec3(0, 0, 0), glm::vec3(desired_nodes) * divisions);
+    const geo::box wall(glm::vec3(0, 0, 0),
+                        glm::vec3(desired_nodes) * divisions);
 
     const auto far = wall.get_max();
     const glm::vec3 new_dim(far.x * 2, far.y, far.z);
@@ -235,13 +241,12 @@ FullTestResults run_full_test(const std::string& test_name,
     //  place source and receiver in rooms based on distance in nodes from the
     //  wall
     auto source_dist_nodes = glm::length(glm::vec3(desired_nodes)) / 8;
-    auto source_dist       = source_dist_nodes * divisions;
+    auto source_dist = source_dist_nodes * divisions;
 
     const auto wall_centre = centre(no_wall);
 
     auto log_incorrect_distance = [&source_dist, &wall_centre](
             auto str, const auto& pos) {
-        LOG(INFO) << str << " position: " << pos;
         auto dist = glm::distance(wall_centre, pos);
         if (!almost_equal(dist, source_dist, size_t{5})) {
             LOG(INFO) << "incorrect distance: " << str;
@@ -313,7 +318,7 @@ FullTestResults run_full_test(const std::string& test_name,
     };
 
     auto first_nonzero_reflected = first_nonzero(reflected);
-    auto first_nonzero_direct    = first_nonzero(direct);
+    auto first_nonzero_direct = first_nonzero(direct);
 
     if (first_nonzero_reflected != first_nonzero_direct) {
         LOG(INFO) << "WARNING: direct and reflected should receive signal at "
@@ -370,13 +375,13 @@ int main(int argc, char** argv) {
 
     auto output_folder = std::string(argv[1]);
 
-    auto azimuth           = std::stod(argv[2]);
-    auto elevation         = std::stod(argv[3]);
+    auto azimuth = std::stod(argv[2]);
+    auto elevation = std::stod(argv[3]);
     auto azimuth_elevation = std::make_pair(azimuth, elevation);
 
     compute_context cc;
     auto filter_frequency = 2000;
-    auto out_sr           = 44100;
+    auto out_sr = 44100;
 
     //  set room size based on desired number of nodes
     auto dim = 300;

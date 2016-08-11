@@ -3,11 +3,11 @@
 #include "raytracer/cl_structs.h"
 #include "raytracer/iterative_builder.h"
 #include "raytracer/program.h"
-#include "raytracer/scene_buffers.h"
 
 #include "common/aligned/vector.h"
 #include "common/cl_common.h"
 #include "common/conversions.h"
+#include "common/scene_buffers.h"
 
 namespace raytracer {
 

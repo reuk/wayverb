@@ -1,6 +1,7 @@
 #include "raytracer/image_source_impl.h"
 #include "common/almost_equal.h"
 #include "common/stl_wrappers.h"
+#include "common/voxelised_scene_data.h"
 #include "raytracer/construct_impulse.h"
 
 #include <numeric>
@@ -132,11 +133,10 @@ std::experimental::optional<impulse> follow_ray_path(
         const aligned::vector<cl_ulong>& triangles,
         const glm::vec3& source,
         const glm::vec3& receiver,
-        const copyable_scene_data& scene_data,
-        const voxel_collection<3>& vox,
-        const triangle_traversal_callback& callback) {
+        const voxelised_scene_data& voxelised) {
     //  extract triangles from the scene
-    const auto original = compute_original_triangles(triangles, scene_data);
+    const auto original =
+            compute_original_triangles(triangles, voxelised.get_scene_data());
 
     //  mirror them into image-source space
     const auto mirrored = compute_mirrored_triangles(original);
@@ -165,12 +165,12 @@ std::experimental::optional<impulse> follow_ray_path(
     auto unmirrored = compute_unmirrored_points(points, original);
     unmirrored.insert(unmirrored.begin(), source);
 
-    const auto intersects = [&](const auto& a, const auto& b) {
+    const auto does_intersect = [&](const auto& a, const auto& b) {
         const auto dir = glm::normalize(b - a);
         const auto epsilon = 0.0001f;
         const auto from = a + dir * epsilon;
         const auto to = b;
-        const auto i = traverse(vox, geo::ray(from, dir), callback);
+        const auto i = intersects(voxelised, geo::ray(from, dir));
         return i && almost_equal(i->distance, glm::distance(from, to), epsilon);
     };
 
@@ -182,18 +182,19 @@ std::experimental::optional<impulse> follow_ray_path(
             //  the point lies on two joined triangles
             continue;
         }
-        if (!intersects(*a, *b)) {
+        if (!does_intersect(*a, *b)) {
             return std::experimental::nullopt;
         }
     }
 
-    if (!intersects(receiver, unmirrored.back())) {
+    if (!does_intersect(receiver, unmirrored.back())) {
         return std::experimental::nullopt;
     }
 
     unmirrored.insert(unmirrored.end(), receiver);
 
-    return compute_ray_path_impulse(scene_data, triangles, unmirrored);
+    return compute_ray_path_impulse(
+            voxelised.get_scene_data(), triangles, unmirrored);
 }
 
 }  // namespace raytracer

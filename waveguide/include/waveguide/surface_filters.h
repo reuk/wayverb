@@ -29,8 +29,8 @@ to_filter_descriptors(const surface& surface) {
             surface);
 }
 
-inline filters::canonical_coefficients to_filter_coefficients(
-        const surface& surface, float sr) {
+inline canonical_coefficients to_filter_coefficients(const surface& surface,
+                                                     float sr) {
     const auto descriptors = to_filter_descriptors(surface);
     //  transform filter parameters into a set of biquad coefficients
     const auto individual_coeffs = get_peak_biquads_array(descriptors, sr);
@@ -40,12 +40,12 @@ inline filters::canonical_coefficients to_filter_coefficients(
     const auto ret = convolve(individual_coeffs);
 
     //  transform from reflection filter to impedance filter
-    return filters::to_impedance_coefficients(ret);
+    return to_impedance_coefficients(ret);
 }
 
-inline aligned::vector<filters::canonical_coefficients> to_filter_coefficients(
+inline aligned::vector<canonical_coefficients> to_filter_coefficients(
         aligned::vector<surface> surfaces, float sr) {
-    aligned::vector<filters::canonical_coefficients> ret(surfaces.size());
+    aligned::vector<canonical_coefficients> ret(surfaces.size());
     proc::transform(surfaces, ret.begin(), [sr](auto i) {
         return to_filter_coefficients(i, sr);
     });

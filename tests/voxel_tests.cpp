@@ -1,7 +1,9 @@
 #include "raytracer/raytracer.h"
+#include "raytracer/random_directions.h"
 
 #include "common/conversions.h"
 #include "common/voxel_collection.h"
+#include "common/voxelised_scene_data.h"
 
 #include "gtest/gtest.h"
 
@@ -10,25 +12,27 @@
 #endif
 
 TEST(voxel, construct) {
-    scene_data scene_data(OBJ_PATH);
-    voxel_collection<3> voxel(octree_from_scene_data(scene_data, 4, 0.1));
+    const scene_data scene(OBJ_PATH);
+    const voxelised_scene_data voxelised(scene, 5, scene.get_aabb());
 }
 
 TEST(voxel, walk) {
-    scene_data scene_data(OBJ_PATH);
-    voxel_collection<3> voxel(octree_from_scene_data(scene_data, 4, 0.1));
+    const scene_data scene(OBJ_PATH);
+    const voxelised_scene_data voxelised(scene, 5, scene.get_aabb());
 
-    auto rays = 100;
-    auto directions = raytracer::get_random_directions(rays);
+    const auto rays = 100;
+    const auto directions = raytracer::get_random_directions(rays);
     for (const auto& i : directions) {
         geo::ray ray(glm::vec3(0, 1, 0), to_vec3(i));
         bool has_triangles{false};
-        traverse(voxel, ray, [&](const auto& ray, const auto& items) {
-            if (!items.empty()) {
-                has_triangles = true;
-            }
-            return geo::intersection();
-        });
+        traverse(voxelised.get_voxels(),
+                 ray,
+                 [&](const auto& ray, const auto& items, float) {
+                     if (!items.empty()) {
+                         has_triangles = true;
+                     }
+                     return false;
+                 });
         ASSERT_TRUE(has_triangles);
     }
 }
@@ -36,53 +40,48 @@ TEST(voxel, walk) {
 static constexpr auto bench_rays = 1 << 14;
 
 TEST(voxel, old) {
-    scene_data scene_data(OBJ_PATH);
+    const scene_data scene(OBJ_PATH);
 
-    const auto v = scene_data.get_converted_vertices();
-    const auto ind = scene_data.get_triangle_indices();
+    const auto v = scene.get_vertices();
+    const auto ind = scene.compute_triangle_indices();
 
     for (const auto& i : raytracer::get_random_directions(bench_rays)) {
         geo::ray ray(glm::vec3(0, 1, 0), to_vec3(i));
-        geo::ray_triangle_intersection(ray, ind, scene_data.get_triangles(), v);
+        geo::ray_triangle_intersection(ray, ind, scene.get_triangles(), v);
     }
 }
 
 TEST(voxel, new) {
-    scene_data scene_data(OBJ_PATH);
-    voxel_collection<3> voxel(octree_from_scene_data(scene_data, 4, 0.1));
-
-    triangle_traversal_callback t(scene_data);
+    const scene_data scene(OBJ_PATH);
+    const voxelised_scene_data voxelised(scene, 5, scene.get_aabb());
 
     for (const auto& i : raytracer::get_random_directions(bench_rays)) {
-        geo::ray ray(glm::vec3(0, 1, 0), to_vec3(i));
-
-        traverse(voxel, ray, t);
+        const geo::ray ray(glm::vec3(0, 1, 0), to_vec3(i));
+        intersects(voxelised, ray);
     }
 }
 
 TEST(voxel, intersect) {
-    scene_data scene_data(OBJ_PATH);
-    voxel_collection<3> voxel(octree_from_scene_data(scene_data, 4, 0.1));
+    const scene_data scene(OBJ_PATH);
+    const voxelised_scene_data voxelised(scene, 5, scene.get_aabb());
 
-    triangle_traversal_callback t(scene_data);
-
-    const auto v = scene_data.get_converted_vertices();
-    const auto ind = scene_data.get_triangle_indices();
+    const auto v = scene.get_vertices();
+    const auto ind = scene.compute_triangle_indices();
 
     for (const auto& i : raytracer::get_random_directions(bench_rays)) {
-        geo::ray ray(glm::vec3(0, 1, 0), to_vec3(i));
+        const geo::ray ray(glm::vec3(0, 1, 0), to_vec3(i));
 
-        auto inter_0 = geo::ray_triangle_intersection(
-                ray, ind, scene_data.get_triangles(), v);
-        auto inter_1 = traverse(voxel, ray, t);
+        const auto inter_0 = geo::ray_triangle_intersection(
+                ray, ind, scene.get_triangles(), v);
+        const auto inter_1 = intersects(voxelised, ray);
 
         ASSERT_EQ(inter_0, inter_1);
     }
 }
 
 TEST(voxel, flatten) {
-    scene_data scene_data(OBJ_PATH);
-    voxel_collection<3> voxel(octree_from_scene_data(scene_data, 4, 0.1));
+    const scene_data scene(OBJ_PATH);
+    const voxelised_scene_data voxelised(scene, 5, scene.get_aabb());
 
-    const auto f = get_flattened(voxel);
+    const auto f = get_flattened(voxelised.get_voxels());
 }

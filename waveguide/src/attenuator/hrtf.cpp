@@ -3,7 +3,7 @@
 
 #include "common/filters_common.h"
 #include "common/hrtf.h"
-#include "common/map.h"
+#include "common/map_to_vector.h"
 #include "common/stl_wrappers.h"
 
 namespace {

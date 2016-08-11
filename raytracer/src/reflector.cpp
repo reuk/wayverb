@@ -1,9 +1,8 @@
 #include "raytracer/reflector.h"
 #include "raytracer/random_directions.h"
-#include "raytracer/scene_buffers.h"
 
+#include "common/scene_buffers.h"
 #include "common/conversions.h"
-#include "common/scene_data.h"
 
 #include <random>
 

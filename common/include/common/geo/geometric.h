@@ -2,6 +2,7 @@
 
 #include "common/aligned/vector.h"
 #include "common/geo/triangle_vec.h"
+#include "common/stl_wrappers.h"
 #include "common/triangle.h"
 
 #include "glm/glm.hpp"
@@ -54,16 +55,34 @@ intersects triangle_intersection(const triangle& tri,
     return triangle_intersection(get_triangle_vec3(tri, vertices), ray);
 }
 
+template <typename t>
 intersection ray_triangle_intersection(
         const ray& ray,
         const aligned::vector<size_t>& triangle_indices,
         const aligned::vector<triangle>& triangles,
-        const aligned::vector<glm::vec3>& vertices);
+        const aligned::vector<t>& vertices) {
+    intersection ret;
 
+    for (const auto& i : triangle_indices) {
+        auto inter = triangle_intersection(triangles[i], vertices, ray);
+        if (inter && (!ret || (ret && *inter < ret->distance))) {
+            ret = make_intersection(*inter, i);
+        }
+    }
+
+    return ret;
+}
+
+template <typename t>
 intersection ray_triangle_intersection(
         const ray& ray,
         const aligned::vector<triangle>& triangles,
-        const aligned::vector<glm::vec3>& vertices);
+        const aligned::vector<t>& vertices) {
+    aligned::vector<size_t> triangle_indices(triangles.size());
+    proc::iota(triangle_indices, 0);
+    return ray_triangle_intersection(
+            ray, triangle_indices, triangles, vertices);
+}
 
 bool point_intersection(const glm::vec3& begin,
                         const glm::vec3& point,

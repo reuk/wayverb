@@ -9,7 +9,6 @@
 #include "common/string_builder.h"
 
 #include "waveguide/filters.h"
-#include "waveguide/mesh_setup.h"
 
 #include <algorithm>
 #include <cassert>
@@ -34,30 +33,28 @@ public:
         cl_uint boundary_index{};
     };
 
-    static condensed_node get_condensed(const mesh_setup::node& n);
-
     /// Stores filter coefficients for a single high-order filter, and an index
     /// into an array of filter parameters which describe the filter being
     /// modelled.
     struct alignas(1 << 3) boundary_data final {
-        filters::canonical_memory filter_memory{};
-        cl_uint coefficient_index{};
+            filters::canonical_memory filter_memory{};
+            cl_uint coefficient_index{};
     };
 
     template <size_t D>
     struct alignas(1 << 3) boundary_data_array final {
-        static constexpr size_t DIMENSIONS{D};
-        boundary_data array[DIMENSIONS]{};
+            static constexpr size_t DIMENSIONS{D};
+            boundary_data array[DIMENSIONS]{};
     };
 
     template <size_t N>
     static boundary_data_array<N> construct_boundary_data_array(
             const std::array<cl_uint, N>& arr) {
-        boundary_data_array<N> ret{};
-        for (auto i = 0u; i != N; ++i) {
-            ret.array[i].coefficient_index = arr[i];
-        }
-        return ret;
+            boundary_data_array<N> ret{};
+            for (auto i = 0u; i != N; ++i) {
+                ret.array[i].coefficient_index = arr[i];
+            }
+            return ret;
     }
 
     using boundary_data_array1 = boundary_data_array<1>;
@@ -69,74 +66,76 @@ public:
     explicit program(const cl::Context& context, const cl::Device& device);
 
     auto get_kernel() const {
-        return program_wrapper.get_kernel<cl::Buffer,
-                                          cl::Buffer,
-                                          cl::Buffer,
-                                          cl_int3,
-                                          cl::Buffer,
-                                          cl::Buffer,
-                                          cl::Buffer,
-                                          cl::Buffer,
-                                          cl::Buffer>("condensed_waveguide");
+            return program_wrapper.get_kernel<cl::Buffer,
+                                              cl::Buffer,
+                                              cl::Buffer,
+                                              cl_int3,
+                                              cl::Buffer,
+                                              cl::Buffer,
+                                              cl::Buffer,
+                                              cl::Buffer,
+                                              cl::Buffer>(
+                    "condensed_waveguide");
     }
 
     auto get_filter_test_kernel() const {
-        return program_wrapper
-                .get_kernel<cl::Buffer, cl::Buffer, cl::Buffer, cl::Buffer>(
-                        "filter_test");
+            return program_wrapper
+                    .get_kernel<cl::Buffer, cl::Buffer, cl::Buffer, cl::Buffer>(
+                            "filter_test");
     }
 
     auto get_filter_test_2_kernel() const {
-        return program_wrapper
-                .get_kernel<cl::Buffer, cl::Buffer, cl::Buffer, cl::Buffer>(
-                        "filter_test_2");
+            return program_wrapper
+                    .get_kernel<cl::Buffer, cl::Buffer, cl::Buffer, cl::Buffer>(
+                            "filter_test_2");
     }
 
     template <cl_program_info T>
     auto get_info() const {
-        return program_wrapper.template get_info<T>();
+            return program_wrapper.template get_info<T>();
     }
 
-    cl::Device get_device() const { return program_wrapper.get_device(); }
+    cl::Device get_device() const {
+            return program_wrapper.get_device(); }
 
 private:
     static const std::string source;
 
     program_wrapper program_wrapper;
-};
+    };
 
-inline bool operator==(const program::condensed_node& a,
-                       const program::condensed_node& b) {
-    return std::tie(a.boundary_type, a.boundary_index) ==
-           std::tie(b.boundary_type, b.boundary_index);
-}
+    inline bool operator==(const program::condensed_node& a,
+                           const program::condensed_node& b) {
+        return std::tie(a.boundary_type, a.boundary_index) ==
+               std::tie(b.boundary_type, b.boundary_index);
+    }
 
-inline bool operator!=(const program::condensed_node& a,
-                       const program::condensed_node& b) {
-    return !(a == b);
-}
+    inline bool operator!=(const program::condensed_node& a,
+                           const program::condensed_node& b) {
+        return !(a == b);
+    }
 
-inline bool operator==(const program::boundary_data& a,
-                       const program::boundary_data& b) {
-    return std::tie(a.filter_memory, a.coefficient_index) ==
-           std::tie(b.filter_memory, b.coefficient_index);
-}
+    inline bool operator==(const program::boundary_data& a,
+                           const program::boundary_data& b) {
+        return std::tie(a.filter_memory, a.coefficient_index) ==
+               std::tie(b.filter_memory, b.coefficient_index);
+    }
 
-inline bool operator!=(const program::boundary_data& a,
-                       const program::boundary_data& b) {
-    return !(a == b);
-}
+    inline bool operator!=(const program::boundary_data& a,
+                           const program::boundary_data& b) {
+        return !(a == b);
+    }
 
-template <size_t D>
-bool operator==(const program::boundary_data_array<D>& a,
-                const program::boundary_data_array<D>& b) {
-    return proc::equal(a.array, std::begin(b.array));
-}
+    template <size_t D>
+    bool operator==(const program::boundary_data_array<D>& a,
+                    const program::boundary_data_array<D>& b) {
+        return proc::equal(a.array, std::begin(b.array));
+    }
 
-template <size_t D>
-bool operator!=(const program::boundary_data_array<D>& a,
-                const program::boundary_data_array<D>& b) {
-    return !(a == b);
-}
+    template <size_t D>
+    bool operator!=(const program::boundary_data_array<D>& a,
+                    const program::boundary_data_array<D>& b) {
+        return !(a == b);
+    }
 
 }  // namespace waveguide

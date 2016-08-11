@@ -3,10 +3,11 @@
 #include "raytracer/postprocess.h"
 #include "raytracer/raytracer.h"
 
-#include "common/boundaries.h"
 #include "common/cl_common.h"
-#include "common/map.h"
+#include "common/dsp_vector_ops.h"
+#include "common/map_to_vector.h"
 #include "common/string_builder.h"
+#include "common/voxelised_scene_data.h"
 #include "common/write_audio_file.h"
 
 #include "glog/logging.h"
@@ -26,20 +27,22 @@ static constexpr auto bench_reflections = 128;
 static constexpr auto bench_rays = 1 << 15;
 
 TEST(raytrace, new) {
-    compute_context cc;
+    const compute_context cc;
 
-    scene_data scene_data(OBJ_PATH);
+    const scene_data scene(OBJ_PATH);
+    const voxelised_scene_data voxelised(scene, 5, scene.get_aabb());
 
     std::atomic_bool keep_going{true};
-    raytracer::raytracer raytrace(cc.get_context(), cc.get_device());
-    auto results = raytrace.run(scene_data,
-                                glm::vec3(0, 1.75, 3),
-                                glm::vec3(0, 1.75, 0),
-                                bench_rays,
-                                bench_reflections,
-                                10,
-                                keep_going,
-                                [](auto) {});
+    auto results = raytracer::run(cc.get_context(),
+                                  cc.get_device(),
+                                  voxelised,
+                                  glm::vec3(0, 1.75, 3),
+                                  glm::vec3(0, 1.75, 0),
+                                  bench_rays,
+                                  bench_reflections,
+                                  10,
+                                  keep_going,
+                                  [](auto) {});
 
     ASSERT_TRUE(results);
 }
@@ -95,22 +98,24 @@ TEST(raytrace, same_location) {
 
     auto scene_data = geo::get_scene_data(box);
     scene_data.set_surfaces(surface);
+    const voxelised_scene_data voxelised(scene_data, 5, scene_data.get_aabb());
 
     compute_context cc;
 
     auto callback_count{0};
 
     std::atomic_bool keep_going{true};
-    raytracer::raytracer raytrace(cc.get_context(), cc.get_device());
     auto results =
-            raytrace.run(scene_data,
-                         source,
-                         receiver,
-                         bench_rays,
-                         bench_reflections,
-                         10,
-                         keep_going,
-                         [&](auto i) { ASSERT_EQ(i, callback_count++); });
+            raytracer::run(cc.get_context(),
+                           cc.get_device(),
+                           voxelised,
+                           source,
+                           receiver,
+                           bench_rays,
+                           bench_reflections,
+                           10,
+                           keep_going,
+                           [&](auto i) { ASSERT_EQ(i, callback_count++); });
 
     ASSERT_TRUE(results);
 }
@@ -173,20 +178,21 @@ TEST(raytrace, image_source) {
     //  raytracing method
     compute_context cc;
 
-    raytracer::raytracer raytracer(cc.get_context(), cc.get_device());
-
     auto scene_data = geo::get_scene_data(box);
     scene_data.set_surfaces(surface);
+    const voxelised_scene_data voxelised(scene_data, 5, scene_data.get_aabb());
 
     std::atomic_bool keep_going{true};
-    auto results = raytracer.run(scene_data,
-                                 source,
-                                 receiver,
-                                 100000,
-                                 100,
-                                 10,
-                                 keep_going,
-                                 [](auto) {});
+    auto results = raytracer::run(cc.get_context(),
+                                  cc.get_device(),
+                                  voxelised,
+                                  source,
+                                  receiver,
+                                  100000,
+                                  100,
+                                  10,
+                                  keep_going,
+                                  [](auto) {});
 
     ASSERT_TRUE(results);
 

@@ -1,6 +1,5 @@
-#include "waveguide/mesh.h"
-
-#include "common/scene_data.h"
+#include "common/voxelised_scene_data.h"
+#include "waveguide/mesh/model.h"
 
 #include "gtest/gtest.h"
 
@@ -29,7 +28,9 @@
 #endif
 
 TEST(mesh_classification, badbox) {
-    scene_data scene_data(OBJ_PATH_BAD_BOX);
-    waveguide::mesh_boundary boundary(scene_data);
-    waveguide::mesh mesh(boundary, 0.05, glm::vec3());
+    const compute_context cc;
+    const scene_data scene_data(OBJ_PATH_BAD_BOX);
+    const voxelised_scene_data voxelised(scene_data, 5, scene_data.get_aabb());
+    const auto m = waveguide::mesh::compute_model(
+            cc.get_context(), cc.get_device(), voxelised, 0.05);
 }

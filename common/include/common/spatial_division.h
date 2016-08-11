@@ -95,11 +95,3 @@ private:
     aligned::vector<size_t> items;      //  indices of contained items
     std::unique_ptr<node_array> nodes;  //  contained nodes
 };
-
-using bintree = ndim_tree<1>;
-using quadtree = ndim_tree<2>;
-using octree = ndim_tree<3>;
-
-octree octree_from_scene_data(const copyable_scene_data& scene_data,
-                              size_t depth,
-                              float padding);

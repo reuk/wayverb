@@ -1,7 +1,6 @@
-#include "waveguide/mesh_boundary.h"
-#include "waveguide/mesh_setup.h"
+#include "waveguide/mesh/model.h"
 
-#include "common/scene_data.h"
+#include "common/voxelised_scene_data.h"
 
 #include "gtest/gtest.h"
 
@@ -10,9 +9,10 @@
 #endif
 
 TEST(mesh_setup, setup) {
-    compute_context cc;
-    waveguide::mesh_boundary boundary(scene_data(OBJ_PATH_BEDROOM));
+    const compute_context cc;
+    const scene_data scene(OBJ_PATH_BEDROOM);
+    const voxelised_scene_data boundary(scene, 5, scene.get_aabb());
 
-    const auto nodes = waveguide::mesh_setup::do_mesh_setup(
-            cc.get_context(), cc.get_device(), boundary, 0.1, glm::vec3{0});
+    const auto m = waveguide::mesh::compute_model(
+            cc.get_context(), cc.get_device(), boundary, 0.1);
 }
