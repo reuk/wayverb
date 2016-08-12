@@ -8,7 +8,7 @@
 #include "common/geo/triangle_vec.h"
 #include "common/map_to_vector.h"
 #include "common/scene_data.h"
-#include "common/voxel_collection.h"
+#include "common/spatial_division/voxel_collection.h"
 
 #include "glm/glm.hpp"
 

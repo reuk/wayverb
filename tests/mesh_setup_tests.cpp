@@ -1,6 +1,6 @@
 #include "waveguide/mesh/model.h"
 
-#include "common/voxelised_scene_data.h"
+#include "common/spatial_division/voxelised_scene_data.h"
 
 #include "gtest/gtest.h"
 

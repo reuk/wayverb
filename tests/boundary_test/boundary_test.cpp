@@ -11,7 +11,7 @@
 #include "common/map_to_vector.h"
 #include "common/progress_bar.h"
 #include "common/scene_data.h"
-#include "common/voxelised_scene_data.h"
+#include "common/spatial_division/voxelised_scene_data.h"
 
 #include "common/serialize/surface.h"
 
@@ -61,12 +61,10 @@ aligned::vector<float> run_simulation(const compute_context& cc,
     const auto receiver_index = compute_index(model.get_descriptor(), receiver);
     const auto source_index = compute_index(model.get_descriptor(), source);
 
-    if (!waveguide::mesh::setup::is_inside(
-                model.get_structure().get_condensed_nodes()[receiver_index])) {
+    if (!waveguide::mesh::is_inside(model, receiver_index)) {
         throw std::runtime_error("receiver is outside of mesh!");
     }
-    if (!waveguide::mesh::setup::is_inside(
-                model.get_structure().get_condensed_nodes()[source_index])) {
+    if (!waveguide::mesh::is_inside(model, source_index)) {
         throw std::runtime_error("source is outside of mesh!");
     }
     aligned::vector<float> input{1};

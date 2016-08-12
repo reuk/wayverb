@@ -9,7 +9,7 @@
 #include "common/kernel.h"
 #include "common/map_to_vector.h"
 #include "common/receiver_settings.h"
-#include "common/voxelised_scene_data.h"
+#include "common/spatial_division/voxelised_scene_data.h"
 
 #include "raytracer/attenuator.h"
 #include "raytracer/postprocess.h"
@@ -209,7 +209,7 @@ public:
             , source_index(compute_index(model.get_descriptor(), source))
             , receiver_index(compute_index(model.get_descriptor(), receiver)) {
         const auto is_index_inside = [&](auto index) {
-            return waveguide::mesh::setup::is_inside(
+            return waveguide::mesh::is_inside(
                     model.get_structure().get_condensed_nodes()[index]);
         };
 

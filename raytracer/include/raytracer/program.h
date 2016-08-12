@@ -2,8 +2,8 @@
 
 #include "raytracer/cl_structs.h"
 
-#include "common/scene_buffers.h"
 #include "common/program_wrapper.h"
+#include "common/spatial_division/scene_buffers.h"
 
 namespace raytracer {
 

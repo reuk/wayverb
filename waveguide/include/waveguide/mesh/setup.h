@@ -6,8 +6,9 @@
 #include "common/cl_include.h"
 #include "common/map_to_vector.h"
 #include "common/program_wrapper.h"
+#include "common/spatial_division/scene_buffers.h"
+#include "common/spatial_division/voxel_collection.h"
 #include "common/stl_wrappers.h"
-#include "common/voxel_collection.h"
 #include "waveguide/mesh/descriptor.h"
 
 #include "glm/fwd.hpp"
@@ -19,7 +20,6 @@ namespace waveguide {
 class mesh_boundary;
 
 namespace mesh {
-namespace setup {
 
 typedef enum : cl_int {
     id_none = 0,
@@ -86,6 +86,17 @@ public:
                                           >("set_node_position_and_neighbors");
     }
 
+    auto get_node_inside_kernel() const {
+        return program_wrapper.get_kernel<cl::Buffer,  /// nodes
+                                          cl::Buffer,  /// voxel_index
+                                          aabb,        /// global_aabb
+                                          cl_ulong,    /// side
+                                          cl::Buffer,  /// triangles
+                                          cl::Buffer,  /// vertices
+                                          cl::Buffer   /// surfaces
+                                          >("set_node_inside");
+    }
+
 private:
     static const std::string source;
 
@@ -99,7 +110,7 @@ aligned::vector<program::condensed_node> get_condensed(
         const aligned::vector<node>& n);
 
 constexpr bool is_inside(const program::condensed_node& c) {
-    return c.boundary_type && setup::id_inside;
+    return c.boundary_type && id_inside;
 }
 
 //----------------------------------------------------------------------------//
@@ -152,6 +163,5 @@ inline aligned::vector<program::boundary_data_array<n>> get_boundary_data(
     });
 }
 
-}  // namespace setup
 }  // namespace mesh
 }  // namespace waveguide

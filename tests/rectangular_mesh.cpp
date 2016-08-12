@@ -1,4 +1,4 @@
-#include "common/voxelised_scene_data.h"
+#include "common/spatial_division/voxelised_scene_data.h"
 #include "waveguide/mesh/model.h"
 
 #include "gtest/gtest.h"

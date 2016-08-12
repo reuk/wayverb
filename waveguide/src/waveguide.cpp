@@ -38,17 +38,11 @@ size_t run(const cl::Context& context,
     cl::Buffer error_flag_buffer(context, CL_MEM_READ_WRITE, sizeof(cl_int));
 
     auto boundary_buffer_1 = load_to_buffer(
-            context,
-            mesh::setup::get_boundary_data<1>(model.get_structure()),
-            false);
+            context, mesh::get_boundary_data<1>(model.get_structure()), false);
     auto boundary_buffer_2 = load_to_buffer(
-            context,
-            mesh::setup::get_boundary_data<2>(model.get_structure()),
-            false);
+            context, mesh::get_boundary_data<2>(model.get_structure()), false);
     auto boundary_buffer_3 = load_to_buffer(
-            context,
-            mesh::setup::get_boundary_data<3>(model.get_structure()),
-            false);
+            context, mesh::get_boundary_data<3>(model.get_structure()), false);
 
     cl::CommandQueue queue(context, device);
 
@@ -153,4 +147,4 @@ aligned::vector<run_step_output> run(const cl::Context& context,
     return ret;
 }
 
-} // namespace waveguide
+}  // namespace waveguide

@@ -1,31 +1,5 @@
-#include "common/voxel_collection.h"
+#include "common/spatial_division/voxel_collection.h"
 #include "common/scene_data.h"
-
-//  TODO there's a pattern here, but I'm not sure what it is. Find it.
-aligned::vector<cl_uint> get_flattened(const voxel_collection<2>& voxels) {
-    const auto side = voxels.get_side();
-    const auto dim = pow(side, 2);
-
-    aligned::vector<cl_uint> ret(dim);
-
-    const auto to_flat = [side](auto i) {
-        return i.x * side + i.y;
-    };
-
-    for (auto x = 0u; x != side; ++x) {
-        for (auto y = 0u; y != side; ++y) {
-            const glm::ivec2 ind(x, y);
-            ret[to_flat(ind)] = ret.size();
-            const auto& v = voxels.get_voxel(ind);
-            ret.push_back(v.size());
-            for (const auto& i : v) {
-                ret.push_back(i);
-            }
-        }
-    }
-
-    return ret;
-}
 
 aligned::vector<cl_uint> get_flattened(const voxel_collection<3>& voxels) {
     const auto side = voxels.get_side();

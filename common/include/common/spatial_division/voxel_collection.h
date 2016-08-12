@@ -1,7 +1,7 @@
 #pragma once
 
 #include "common/geo/rect.h"
-#include "common/spatial_division.h"
+#include "common/spatial_division/ndim_tree.h"
 
 namespace detail {
 

@@ -4,8 +4,8 @@
 #include "raytracer/image_source.h"
 #include "raytracer/reflector.h"
 
-#include "common/scene_buffers.h"
-#include "common/voxelised_scene_data.h"
+#include "common/spatial_division/scene_buffers.h"
+#include "common/spatial_division/voxelised_scene_data.h"
 
 namespace raytracer {
 
@@ -48,7 +48,7 @@ std::experimental::optional<results> run(const cl::Context& context,
     //  set up all the rendering context stuff
 
     //  load the scene into device memory
-    scene_buffers scene_buffers(context, device, scene_data);
+    scene_buffers scene_buffers(context, scene_data);
 
     //  this is the object that generates first-pass reflections
     reflector reflector(context, device, source, receiver, rays);

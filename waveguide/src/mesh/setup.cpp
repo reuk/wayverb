@@ -6,7 +6,6 @@
 
 namespace waveguide {
 namespace mesh {
-namespace setup {
 
 program::condensed_node get_condensed(const node& n) {
     const auto ret = program::condensed_node{
@@ -70,8 +69,20 @@ kernel void set_node_position_and_neighbors(global Node* nodes,
     }
 }
 
+kernel void set_node_inside(global Node* nodes,
+
+                            const global uint * voxel_index,   //  voxel
+                            AABB global_aabb,
+                            ulong side,
+
+                            const global Triangle * triangles, //  scene
+                            const global float3 * vertices,
+                            const global Surface * surfaces) {
+    const size_t thread = get_global_id(0);
+    const float3 position = nodes[thread].position;
+}
+
 )"};
 
-}  // namespace setup
 }  // namespace mesh
 }  // namespace waveguide

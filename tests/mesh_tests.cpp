@@ -1,7 +1,7 @@
 #include "waveguide/mesh/model.h"
 
 #include "common/cl_common.h"
-#include "common/voxelised_scene_data.h"
+#include "common/spatial_division/voxelised_scene_data.h"
 
 #include "gtest/gtest.h"
 
@@ -24,7 +24,7 @@ public:
     }
 
     void locator_index_test() {
-        aligned::vector<waveguide::mesh::setup::node> nodes;
+        aligned::vector<waveguide::mesh::node> nodes;
         waveguide::mesh::descriptor desc;
         std::tie(nodes, desc) = get_mesh(scene_data(OBJ_PATH_BEDROOM));
         const auto lim = nodes.size();
@@ -35,7 +35,7 @@ public:
     }
 
     void test_position_index() {
-        aligned::vector<waveguide::mesh::setup::node> nodes;
+        aligned::vector<waveguide::mesh::node> nodes;
         waveguide::mesh::descriptor desc;
         std::tie(nodes, desc) = get_mesh(scene_data(OBJ_PATH_BEDROOM));
         const auto lim = nodes.size();
@@ -47,7 +47,7 @@ public:
     }
 
     void test_neighbor() {
-        aligned::vector<waveguide::mesh::setup::node> nodes;
+        aligned::vector<waveguide::mesh::node> nodes;
         waveguide::mesh::descriptor desc;
         std::tie(nodes, desc) = get_mesh(scene_data(OBJ_PATH_BEDROOM));
         const auto lim = nodes.size();

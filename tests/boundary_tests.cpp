@@ -1,7 +1,7 @@
 #include "raytracer/raytracer.h"
 
 #include "common/conversions.h"
-#include "common/voxelised_scene_data.h"
+#include "common/spatial_division/voxelised_scene_data.h"
 
 #include "gtest/gtest.h"
 

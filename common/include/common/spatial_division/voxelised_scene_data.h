@@ -1,7 +1,7 @@
 #pragma once
 
 #include "common/scene_data.h"
-#include "common/voxel_collection.h"
+#include "common/spatial_division/voxel_collection.h"
 
 class voxelised_scene_data final {
 public:

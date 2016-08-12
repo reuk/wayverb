@@ -19,11 +19,11 @@ constexpr bool operator!=(const aabb& a, const aabb& b) { return !(a == b); }
 
 //----------------------------------------------------------------------------//
 
+/// Provides a simple utility for loading voxelised scene data to the gpu in
+/// one go.
 class scene_buffers final {
 public:
-    scene_buffers(const cl::Context&,
-                  const cl::Device&,
-                  const voxelised_scene_data& scene_data);
+    scene_buffers(const cl::Context&, const voxelised_scene_data& scene_data);
 
     const cl::Buffer& get_voxel_index_buffer() const;
     aabb get_global_aabb() const;
@@ -33,12 +33,7 @@ public:
     const cl::Buffer& get_vertices_buffer() const;
     const cl::Buffer& get_surfaces_buffer() const;
 
-    cl::CommandQueue& get_queue();
-    const cl::CommandQueue& get_queue() const;
-
 private:
-    cl::CommandQueue queue;
-
     const cl::Buffer voxel_index_buffer;
     const aabb global_aabb;
     const cl_ulong side;

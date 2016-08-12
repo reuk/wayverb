@@ -25,6 +25,7 @@ private:
 
     cl::Context context;
     cl::Device device;
+    cl::CommandQueue queue;
     kernel_t kernel;
     cl_float3 receiver;
     size_t rays;

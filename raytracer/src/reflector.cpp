@@ -1,8 +1,8 @@
 #include "raytracer/reflector.h"
 #include "raytracer/random_directions.h"
 
-#include "common/scene_buffers.h"
 #include "common/conversions.h"
+#include "common/spatial_division/scene_buffers.h"
 
 #include <random>
 
@@ -51,6 +51,7 @@ reflector::reflector(const cl::Context& context,
                      size_t rays)
         : context(context)
         , device(device)
+        , queue(context, device)
         , kernel(program(context, device).get_reflections_kernel())
         , receiver(to_cl_float3(receiver))
         , rays(rays)
@@ -70,10 +71,10 @@ reflector::reflector(const cl::Context& context,
 aligned::vector<reflection> reflector::run_step(scene_buffers& buffers) {
     //  get some new rng and copy it to device memory
     auto rng = get_direction_rng(rays);
-    cl::copy(buffers.get_queue(), std::begin(rng), std::end(rng), rng_buffer);
+    cl::copy(queue, std::begin(rng), std::end(rng), rng_buffer);
 
     //  get the kernel and run it
-    kernel(cl::EnqueueArgs(buffers.get_queue(), cl::NDRange(rays)),
+    kernel(cl::EnqueueArgs(queue, cl::NDRange(rays)),
            ray_buffer,
            receiver,
            buffers.get_voxel_index_buffer(),
@@ -86,10 +87,7 @@ aligned::vector<reflection> reflector::run_step(scene_buffers& buffers) {
            reflection_buffer);
 
     aligned::vector<reflection> ret(rays);
-    cl::copy(buffers.get_queue(),
-             reflection_buffer,
-             std::begin(ret),
-             std::end(ret));
+    cl::copy(queue, reflection_buffer, std::begin(ret), std::end(ret));
     return ret;
 }
 

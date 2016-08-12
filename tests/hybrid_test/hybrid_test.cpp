@@ -21,8 +21,8 @@
 #include "common/progress_bar.h"
 #include "common/scene_data.h"
 #include "common/sinc.h"
+#include "common/spatial_division/voxelised_scene_data.h"
 #include "common/stl_wrappers.h"
-#include "common/voxelised_scene_data.h"
 #include "common/write_audio_file.h"
 
 #include "common/serialize/json_read_write.h"
@@ -80,12 +80,10 @@ auto run_waveguide(const compute_context& cc,
     const auto source_index =
             compute_index(model.get_descriptor(), config.source);
 
-    if (!waveguide::mesh::setup::is_inside(
-                model.get_structure().get_condensed_nodes()[receiver_index])) {
+    if (!waveguide::mesh::is_inside(model, receiver_index)) {
         throw std::runtime_error("receiver is outside of mesh!");
     }
-    if (!waveguide::mesh::setup::is_inside(
-                model.get_structure().get_condensed_nodes()[source_index])) {
+    if (!waveguide::mesh::is_inside(model, source_index)) {
         throw std::runtime_error("source is outside of mesh!");
     }
 

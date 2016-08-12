@@ -24,6 +24,7 @@ diffuse_finder::diffuse_finder(const cl::Context& context,
                                size_t depth)
         : context(context)
         , device(device)
+        , queue(context, device)
         , kernel(program(context, device).get_diffuse_kernel())
         , receiver(to_cl_float3(receiver))
         , air_coefficient(air_coefficient)
@@ -49,13 +50,10 @@ void diffuse_finder::push(const aligned::vector<reflection>& reflections,
     };
 
     //  copy the current batch of reflections to the device
-    cl::copy(buffers.get_queue(),
-             reflections.begin(),
-             reflections.end(),
-             reflections_buffer);
+    cl::copy(queue, reflections.begin(), reflections.end(), reflections_buffer);
 
     //  get the kernel and run it
-    kernel(cl::EnqueueArgs(buffers.get_queue(), cl::NDRange(rays)),
+    kernel(cl::EnqueueArgs(queue, cl::NDRange(rays)),
            reflections_buffer,
            receiver,
            air_coefficient,
@@ -66,7 +64,7 @@ void diffuse_finder::push(const aligned::vector<reflection>& reflections,
            impulse_buffer);
 
     //  copy impulses out
-    auto ret = read_from_buffer<impulse>(buffers.get_queue(), impulse_buffer);
+    auto ret = read_from_buffer<impulse>(queue, impulse_buffer);
 
     for (const auto& i : ret) {
         if (is_cl_nan(i.volume)) {

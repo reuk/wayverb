@@ -1,12 +1,10 @@
-#include "common/scene_buffers.h"
+#include "common/spatial_division/scene_buffers.h"
 #include "common/conversions.h"
-#include "common/voxelised_scene_data.h"
+#include "common/spatial_division/voxelised_scene_data.h"
 
 scene_buffers::scene_buffers(const cl::Context& context,
-                             const cl::Device& device,
                              const voxelised_scene_data& scene_data)
-        : queue(context, device)
-        , voxel_index_buffer(load_to_buffer(
+        : voxel_index_buffer(load_to_buffer(
                   context, get_flattened(scene_data.get_voxels()), true))
         , global_aabb(aabb{
                   to_cl_float3(scene_data.get_voxels().get_aabb().get_min()),
@@ -38,6 +36,3 @@ const cl::Buffer& scene_buffers::get_vertices_buffer() const {
 const cl::Buffer& scene_buffers::get_surfaces_buffer() const {
     return surfaces_buffer;
 }
-
-cl::CommandQueue& scene_buffers::get_queue() { return queue; }
-const cl::CommandQueue& scene_buffers::get_queue() const { return queue; }

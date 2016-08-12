@@ -6,8 +6,8 @@
 #include "common/cl_common.h"
 #include "common/dsp_vector_ops.h"
 #include "common/map_to_vector.h"
+#include "common/spatial_division/voxelised_scene_data.h"
 #include "common/string_builder.h"
-#include "common/voxelised_scene_data.h"
 #include "common/write_audio_file.h"
 
 #include "gtest/gtest.h"

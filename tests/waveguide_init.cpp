@@ -1,5 +1,5 @@
 #include "common/progress_bar.h"
-#include "common/voxelised_scene_data.h"
+#include "common/spatial_division/voxelised_scene_data.h"
 #include "waveguide/make_transparent.h"
 #include "waveguide/mesh/model.h"
 #include "waveguide/postprocessor/microphone.h"

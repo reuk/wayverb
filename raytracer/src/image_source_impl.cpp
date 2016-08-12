@@ -1,7 +1,7 @@
 #include "raytracer/image_source_impl.h"
 #include "common/almost_equal.h"
+#include "common/spatial_division/voxelised_scene_data.h"
 #include "common/stl_wrappers.h"
-#include "common/voxelised_scene_data.h"
 #include "raytracer/construct_impulse.h"
 
 #include <numeric>

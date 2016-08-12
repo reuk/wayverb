@@ -7,7 +7,7 @@
 #include "common/aligned/vector.h"
 #include "common/cl_common.h"
 #include "common/conversions.h"
-#include "common/scene_buffers.h"
+#include "common/spatial_division/scene_buffers.h"
 
 namespace raytracer {
 
@@ -31,6 +31,7 @@ private:
 
     cl::Context context;
     cl::Device device;
+    cl::CommandQueue queue;
     kernel_t kernel;
     cl_float3 receiver;
     volume_type air_coefficient;
