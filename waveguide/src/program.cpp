@@ -1,8 +1,8 @@
 #include "waveguide/program.h"
 
-#include "cl/structs.h"
-#include "cl/utils.h"
-#include "cl/filters.h"
+#include "waveguide/cl/structs.h"
+#include "waveguide/cl/utils.h"
+#include "waveguide/cl/filters.h"
 
 #include "common/stl_wrappers.h"
 
@@ -12,8 +12,7 @@ program::program(const cl::Context& context, const cl::Device& device)
         : program_wrapper(
                   context,
                   device,
-                  std::vector<std::string>{cl_sources::get_filter_definitions(
-                                                   filters::biquad_sections),
+                  std::vector<std::string>{cl_sources::filters,
                                            cl_sources::utils,
                                            cl_sources::structs,
                                            source}) {}

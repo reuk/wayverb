@@ -1,15 +1,23 @@
 #pragma once
 
+#include "common/cl_include.h"
+#include "common/decibels.h"
+#include "common/stl_wrappers.h"
+
 #include <string>
+
+namespace waveguide {
+
+constexpr size_t biquad_order = 2;
+constexpr size_t biquad_sections = 3;
 
 namespace cl_sources {
 
-inline std::string get_filter_definitions(size_t BIQUAD_SECTIONS) {
-    return std::string{"#define BIQUAD_SECTIONS " +
-                       std::to_string(BIQUAD_SECTIONS) + "\n" +
-                       "#define CANONICAL_FILTER_ORDER " +
-                       std::to_string(BIQUAD_SECTIONS * 2) + "\n" +
-                       R"(
+const std::string filters{"#define BIQUAD_SECTIONS " +
+                          std::to_string(biquad_sections) + "\n" +
+                          "#define CANONICAL_FILTER_ORDER " +
+                          std::to_string(biquad_sections * 2) + "\n" +
+                          R"(
 #define CAT(a, b) PRIMITIVE_CAT(a, b)
 #define PRIMITIVE_CAT(a, b) a##b
 
@@ -103,5 +111,70 @@ kernel void filter_test_2(
                                           canonical_coefficients + index);
 }
 )"};
-}
 }  // namespace cl_sources
+
+using real = cl_double;
+
+/// Just an array of reals to use as a delay line.
+template <size_t o>
+struct alignas(1 << 3) filter_memory final {
+    static constexpr size_t order = o;
+    real array[order]{};
+};
+
+template <size_t D>
+inline bool operator==(const filter_memory<D>& a, const filter_memory<D>& b) {
+    return proc::equal(a.array, std::begin(b.array));
+}
+
+template <size_t D>
+inline bool operator!=(const filter_memory<D>& a, const filter_memory<D>& b) {
+    return !(a == b);
+}
+
+using biquad_memory = filter_memory<biquad_order>;
+
+//----------------------------------------------------------------------------//
+
+/// IIR filter coefficient storage.
+template <size_t o>
+struct alignas(1 << 3) coefficients final {
+    static constexpr size_t order = o;
+    real b[order + 1]{};
+    real a[order + 1]{};
+};
+
+template <size_t D>
+inline bool operator==(const coefficients<D>& a, const coefficients<D>& b) {
+    return proc::equal(a.a, std::begin(b.a)) &&
+           proc::equal(a.b, std::begin(b.b));
+}
+
+template <size_t D>
+inline bool operator!=(const coefficients<D>& a, const coefficients<D>& b) {
+    return !(a == b);
+}
+
+//----------------------------------------------------------------------------//
+
+using biquad_coefficients = coefficients<biquad_order>;
+
+/// Several biquad delay lines in a row.
+struct alignas(1 << 3) biquad_memory_array final {
+    biquad_memory array[biquad_sections]{};
+};
+
+//----------------------------------------------------------------------------//
+
+/// Several sets of biquad parameters.
+struct alignas(1 << 3) biquad_coefficients_array final {
+    biquad_coefficients array[biquad_sections]{};
+};
+
+//----------------------------------------------------------------------------//
+
+using canonical_memory = filter_memory<biquad_memory::order * biquad_sections>;
+using canonical_coefficients =
+        coefficients<biquad_coefficients::order * biquad_sections>;
+
+}  // namespace waveguide

@@ -4,7 +4,6 @@
 #include "waveguide/filters.h"
 
 namespace waveguide {
-namespace filters {
 
 template <size_t I>
 inline descriptor compute_filter_descriptor(const surface& surface) {
@@ -16,17 +15,15 @@ inline descriptor compute_filter_descriptor(const surface& surface) {
 }
 
 template <size_t... Ix>
-constexpr std::array<descriptor, biquad_coefficients_array::biquad_sections>
-to_filter_descriptors(std::index_sequence<Ix...>, const surface& surface) {
+constexpr std::array<descriptor, biquad_sections> to_filter_descriptors(
+        std::index_sequence<Ix...>, const surface& surface) {
     return {{compute_filter_descriptor<Ix>(surface)...}};
 }
 
-constexpr std::array<descriptor, biquad_coefficients_array::biquad_sections>
-to_filter_descriptors(const surface& surface) {
-    return to_filter_descriptors(
-            std::make_index_sequence<
-                    biquad_coefficients_array::biquad_sections>(),
-            surface);
+constexpr std::array<descriptor, biquad_sections> to_filter_descriptors(
+        const surface& surface) {
+    return to_filter_descriptors(std::make_index_sequence<biquad_sections>(),
+                                 surface);
 }
 
 inline canonical_coefficients to_filter_coefficients(const surface& surface,
@@ -53,4 +50,3 @@ inline aligned::vector<canonical_coefficients> to_filter_coefficients(
 }
 
 }  // namespace waveguide
-}  // namespace filters

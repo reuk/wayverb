@@ -1,11 +1,11 @@
 #include "common/scene_data.h"
 
+#include "common/cl/scene_structs.h"
 #include "common/conversions.h"
+#include "common/map_to_vector.h"
 #include "common/range.h"
 #include "common/stl_wrappers.h"
 #include "common/string_builder.h"
-#include "common/triangle.h"
-#include "common/map_to_vector.h"
 
 #include "common/serialize/json_read_write.h"
 

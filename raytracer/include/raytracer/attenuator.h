@@ -1,7 +1,6 @@
 #pragma once
 
 #include "raytracer/attenuator_program.h"
-#include "raytracer/cl_structs.h"
 #include "raytracer/results.h"
 
 #include "common/cl_include.h"

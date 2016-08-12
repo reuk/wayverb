@@ -1,6 +1,6 @@
 #pragma once
 
-#include "cl_structs.h"
+#include "cl/structs.h"
 
 #include "common/program_wrapper.h"
 

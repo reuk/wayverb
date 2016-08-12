@@ -1,6 +1,8 @@
 #pragma once
 
-#include "raytracer/cl_structs.h"
+#include "raytracer/cl/structs.h"
+
+#include "glm/fwd.hpp"
 
 namespace raytracer {
 

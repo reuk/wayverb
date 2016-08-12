@@ -3,6 +3,8 @@
 
 #include "common/conversions.h"
 #include "common/spatial_division/scene_buffers.h"
+#include "common/cl/geometry.h"
+#include "common/map_to_vector.h"
 
 #include <random>
 
@@ -22,17 +24,16 @@ aligned::vector<cl_float> get_direction_rng(size_t num) {
     return ret;
 }
 
-aligned::vector<raytracer::ray> get_random_rays(size_t num,
-                                                const glm::vec3& source) {
-    aligned::vector<raytracer::ray> ret;
+aligned::vector<ray> get_random_rays(size_t num, const glm::vec3& source) {
+    aligned::vector<ray> ret;
     ret.reserve(num);
     std::default_random_engine engine{std::random_device()()};
 
-    auto src = to_cl_float3(source);
+    const auto src = to_cl_float3(source);
 
     for (auto i = 0u; i != num; ++i) {
         const raytracer::direction_rng rng(engine);
-        ret.push_back(raytracer::ray{
+        ret.push_back(ray{
                 src, to_cl_float3(sphere_point(rng.get_z(), rng.get_theta()))});
     }
     return ret;

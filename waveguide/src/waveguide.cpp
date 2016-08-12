@@ -60,7 +60,7 @@ size_t run(const cl::Context& context,
     size_t step{0};
     for (; step != ideal_steps && keep_going; ++step) {
         //  set flag state to successful
-        write_single_value(queue, error_flag_buffer, 0, program::id_success);
+        write_single_value(queue, error_flag_buffer, 0, id_success);
 
         //  update the mesh with new inputs
         preprocessor(queue, current, step);
@@ -81,23 +81,22 @@ size_t run(const cl::Context& context,
                error_flag_buffer);
 
         //  read out flag value
-        auto flag = read_single_value<program::ErrorCode>(
-                queue, error_flag_buffer, 0);
-        if (flag & program::id_inf_error) {
+        auto flag = read_single_value<ErrorCode>(queue, error_flag_buffer, 0);
+        if (flag & id_inf_error) {
             throw std::runtime_error(
                     "pressure value is inf, check filter coefficients");
         }
 
-        if (flag & program::id_nan_error) {
+        if (flag & id_nan_error) {
             throw std::runtime_error(
                     "pressure value is nan, check filter coefficients");
         }
 
-        if (flag & program::id_outside_mesh_error) {
+        if (flag & id_outside_mesh_error) {
             throw std::runtime_error("tried to read non-existant node");
         }
 
-        if (flag & program::id_suspicious_boundary_error) {
+        if (flag & id_suspicious_boundary_error) {
             throw std::runtime_error("suspicious boundary read");
         }
 

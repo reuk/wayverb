@@ -1,6 +1,6 @@
 #pragma once
 
-#include "raytracer/cl_structs.h"
+#include "raytracer/cl/structs.h"
 
 #include "common/aligned/set.h"
 #include "common/aligned/vector.h"

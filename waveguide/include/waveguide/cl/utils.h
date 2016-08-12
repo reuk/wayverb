@@ -2,9 +2,10 @@
 
 #include <string>
 
+namespace waveguide {
 namespace cl_sources {
 
-const std::string utils{R"(
+constexpr const char* utils{R"(
 #define PORTS (6)
 #define courant      (1.0f / sqrt(3.0f))
 #define courant_sq   (1.0f / 3.0f)
@@ -30,15 +31,6 @@ typedef enum {
     id_port_nz = 4,
     id_port_pz = 5,
 } PortDirection;
-
-typedef enum {
-    id_success = 0,
-    id_inf_error = 1 << 0,
-    id_nan_error = 1 << 1,
-    id_outside_range_error = 1 << 2,
-    id_outside_mesh_error = 1 << 3,
-    id_suspicious_boundary_error = 1 << 4,
-} ErrorCode;
 
 typedef struct {
     uint ports[PORTS];      //  the indices of adjacent ports
@@ -188,5 +180,5 @@ PortDirection opposite(PortDirection pd) {
 }
 
 )"};
-
 }  // namespace cl_sources
+}  // namespace waveguide

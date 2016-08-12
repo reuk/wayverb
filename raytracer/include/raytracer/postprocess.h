@@ -1,8 +1,9 @@
 #pragma once
 
-#include "raytracer/cl_structs.h"
+#include "raytracer/cl/structs.h"
 #include "raytracer/results.h"
 
+#include "common/cl_common.h"
 #include "common/hrtf_utils.h"
 #include "common/receiver_settings.h"
 #include "common/stl_wrappers.h"

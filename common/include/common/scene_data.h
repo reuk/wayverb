@@ -2,21 +2,14 @@
 
 #include "common/aligned/map.h"
 #include "common/aligned/vector.h"
+#include "common/cl/scene_structs.h"
 #include "common/cl_common.h"
 #include "common/geo/box.h"
-#include "common/triangle.h"
 
 #include "glm/glm.hpp"
 
 #include <map>
 #include <vector>
-
-using volume_type = cl_float8;
-
-struct alignas(1 << 5) surface {
-    volume_type specular{{0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5}};
-    volume_type diffuse{{0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5}};
-};
 
 class mesh_boundary;
 struct triangle;

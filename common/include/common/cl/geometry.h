@@ -5,7 +5,21 @@
 #include <string>
 
 namespace cl_sources {
-const std::string geometry(R"(
+constexpr const char* geometry(R"(
+
+#ifndef GEOMETRY_HEADER__
+#define GEOMETRY_HEADER__
+
+typedef struct {
+    float3 position;
+    float3 direction;
+} Ray;
+
+typedef struct {
+    ulong primitive;
+    float distance;
+    char intersects;
+} Intersection;
 
 #define EPSILON (0.0001f)
 float triangle_vert_intersection(TriangleVerts v, Ray ray);
@@ -139,5 +153,24 @@ float3 get_direction(float3 from, float3 to) {
     return normalize(to - from);
 }
 
+#endif
+
 )");
 }  // namespace cl_sources
+
+//----------------------------------------------------------------------------//
+
+struct alignas(1 << 4) ray final {
+    cl_float3 position;
+    cl_float3 direction;
+};
+
+constexpr auto to_tuple(const ray& x) {
+    return std::tie(x.position, x.direction);
+}
+
+constexpr bool operator==(const ray& a, const ray& b) {
+    return to_tuple(a) == to_tuple(b);
+}
+
+constexpr bool operator!=(const ray& a, const ray& b) { return !(a == b); }

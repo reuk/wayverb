@@ -5,7 +5,7 @@
 #include <string>
 
 namespace cl_sources {
-const std::string brdf(R"(
+constexpr const char* brdf(R"(
 
 //  z range: -1 to 1
 //  theta range: -pi to pi

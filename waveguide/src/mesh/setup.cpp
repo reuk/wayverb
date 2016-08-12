@@ -1,16 +1,15 @@
 #include "waveguide/mesh/setup.h"
 #include "common/map_to_vector.h"
 #include "common/popcount.h"
-
-#include "../cl/utils.h"
+#include "waveguide/cl/utils.h"
 
 namespace waveguide {
 namespace mesh {
 
-program::condensed_node get_condensed(const node& n) {
-    const auto ret = program::condensed_node{
-            n.boundary_type | (n.inside ? id_inside : id_none),
-            n.boundary_index};
+condensed_node get_condensed(const node& n) {
+    const auto ret =
+            condensed_node{n.boundary_type | (n.inside ? id_inside : id_none),
+                           n.boundary_index};
 
     if ((ret.boundary_type & id_inside) && popcount(ret.boundary_type) > 1) {
         throw std::runtime_error(
@@ -20,26 +19,23 @@ program::condensed_node get_condensed(const node& n) {
     return ret;
 }
 
-aligned::vector<program::condensed_node> get_condensed(
-        const aligned::vector<node>& n) {
+aligned::vector<condensed_node> get_condensed(const aligned::vector<node>& n) {
     return map_to_vector(n, [](const auto& i) { return get_condensed(i); });
 }
 
 //----------------------------------------------------------------------------//
 
-vectors::vectors(
-        const aligned::vector<node>& nodes,
-        const aligned::vector<filters::canonical_coefficients>& coefficients)
+vectors::vectors(const aligned::vector<node>& nodes,
+                 const aligned::vector<canonical_coefficients>& coefficients)
         : condensed_nodes(get_condensed(nodes))
         , coefficients(coefficients) {}
 
-const aligned::vector<program::condensed_node>& vectors::get_condensed_nodes()
-        const {
+const aligned::vector<condensed_node>& vectors::get_condensed_nodes() const {
     return condensed_nodes;
 }
 
-const aligned::vector<filters::canonical_coefficients>&
-vectors::get_coefficients() const {
+const aligned::vector<canonical_coefficients>& vectors::get_coefficients()
+        const {
     return coefficients;
 }
 

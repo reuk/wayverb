@@ -1,6 +1,6 @@
 #pragma once
 
-#include "raytracer/cl_structs.h"
+#include "raytracer/cl/structs.h"
 #include "raytracer/iterative_builder.h"
 
 #include "common/aligned/vector.h"

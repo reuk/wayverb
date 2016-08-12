@@ -1,6 +1,7 @@
 #include "raytracer/construct_impulse.h"
 
 #include "common/cl_traits.h"
+#include "common/config.h"
 #include "common/conversions.h"
 #include "common/stl_wrappers.h"
 

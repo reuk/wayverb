@@ -7,6 +7,14 @@
 namespace cl_sources {
 const std::string voxel(R"(
 
+#ifndef VOXEL_HEADER__
+#define VOXEL_HEADER__
+
+typedef struct {
+    float3 c0;
+    float3 c1;
+} AABB;
+
 int3 get_starting_index(float3 position,
                         AABB global_aabb,
                         float3 voxel_dimensions);
@@ -113,6 +121,8 @@ bool voxel_point_intersection(float3 begin,
 
     return (!inter.intersects) || inter.distance > mag;
 }
+
+#endif
 
 )");
 }  // namespace cl_sources

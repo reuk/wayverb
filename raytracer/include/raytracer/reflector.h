@@ -5,6 +5,8 @@
 #include "common/aligned/vector.h"
 #include "common/cl_include.h"
 
+#include "glm/fwd.hpp"
+
 class scene_buffers;
 
 namespace raytracer {

@@ -2,7 +2,7 @@
 
 #include "combined/engine_state.h"
 
-#include "raytracer/cl_structs.h"
+#include "raytracer/cl/structs.h"
 
 #include "common/aligned/vector.h"
 

@@ -1,42 +1,60 @@
 #pragma once
 
-#include "common/cl_include.h"
-#include "common/config.h"
-#include "common/scene_data.h"
+#include "common/cl/scene_structs.h"
+#include "common/cl_traits.h"
 
 namespace raytracer {
+namespace cl_sources {
+constexpr const char* structs(R"(
 
-constexpr volume_type air_coefficient{{
-        0.001f * -0.1f,
-        0.001f * -0.2f,
-        0.001f * -0.5f,
-        0.001f * -1.1f,
-        0.001f * -2.7f,
-        0.001f * -9.4f,
-        0.001f * -29.0f,
-        0.001f * -60.0f,
-}};
+#ifndef STRUCTS_HEADER__
+#define STRUCTS_HEADER__
 
-/// An impulse contains a volume, a time in seconds, and the direction from
-/// which it came (useful for attenuation/hrtf stuff).
-struct alignas(1 << 5) impulse final {
-    volume_type volume;  //  actual per-band volume of the impulse
-    cl_float3 position;  //  position of the secondary source (used for
-                         //  attenuation)
-    cl_float time;       //  time that the impulse is received
-};
+typedef struct {
+    float3 position;
+    float3 direction;
+    ulong triangle;
+    char keep_going;
+    char receiver_visible;
+} Reflection;
 
-constexpr auto to_tuple(const impulse& x) {
-    return std::tie(x.volume, x.position, x.time);
-}
+typedef struct {
+    VolumeType volume;
+    float3 position;
+    float distance;
+} DiffusePathInfo;
 
-constexpr bool operator==(const impulse& a, const impulse& b) {
-    return to_tuple(a) == to_tuple(b);
-}
+typedef struct {
+    VolumeType volume;
+    float3 position;
+    float time;
+} Impulse;
 
-constexpr bool operator!=(const impulse& a, const impulse& b) {
-    return !(a == b);
-}
+typedef struct {
+    VolumeType volume;
+    float time;
+} AttenuatedImpulse;
+
+typedef struct {
+    float3 direction;
+    float coefficient;
+} Microphone;
+
+#endif
+
+)");
+}  // namespace cl_sources
+
+//----------------------------------------------------------------------------//
+
+constexpr volume_type air_coefficient{{0.001f * -0.1f,
+                                       0.001f * -0.2f,
+                                       0.001f * -0.5f,
+                                       0.001f * -1.1f,
+                                       0.001f * -2.7f,
+                                       0.001f * -9.4f,
+                                       0.001f * -29.0f,
+                                       0.001f * -60.0f}};
 
 //----------------------------------------------------------------------------//
 
@@ -91,6 +109,29 @@ constexpr bool operator!=(const diffuse_path_info& a,
 
 //----------------------------------------------------------------------------//
 
+/// An impulse contains a volume, a time in seconds, and the direction from
+/// which it came (useful for attenuation/hrtf stuff).
+struct alignas(1 << 5) impulse final {
+    volume_type volume;  //  actual per-band volume of the impulse
+    cl_float3 position;  //  position of the secondary source (used for
+                         //  attenuation)
+    cl_float time;       //  time that the impulse is received
+};
+
+constexpr auto to_tuple(const impulse& x) {
+    return std::tie(x.volume, x.position, x.time);
+}
+
+constexpr bool operator==(const impulse& a, const impulse& b) {
+    return to_tuple(a) == to_tuple(b);
+}
+
+constexpr bool operator!=(const impulse& a, const impulse& b) {
+    return !(a == b);
+}
+
+//----------------------------------------------------------------------------//
+
 struct alignas(1 << 5) attenuated_impulse final {
     volume_type volume;
     cl_float time;
@@ -130,22 +171,5 @@ constexpr bool operator==(const microphone& a, const microphone& b) {
 constexpr bool operator!=(const microphone& a, const microphone& b) {
     return !(a == b);
 }
-
-//----------------------------------------------------------------------------//
-
-struct alignas(1 << 4) ray final {
-    cl_float3 position;
-    cl_float3 direction;
-};
-
-constexpr auto to_tuple(const ray& x) {
-    return std::tie(x.position, x.direction);
-}
-
-constexpr bool operator==(const ray& a, const ray& b) {
-    return to_tuple(a) == to_tuple(b);
-}
-
-constexpr bool operator!=(const ray& a, const ray& b) { return !(a == b); }
 
 }  // namespace raytracer

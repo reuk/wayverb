@@ -1,7 +1,7 @@
 #include "waveguide/log_nan.h"
 #include "waveguide/program.h"
-#include "waveguide/waveguide.h"
 #include "waveguide/surface_filters.h"
+#include "waveguide/waveguide.h"
 
 #include "common/cl_common.h"
 #include "common/timed_scope.h"
@@ -130,19 +130,14 @@ std::array<surface, parallel_size> compute_surfaces() {
 
 static const auto surfaces = compute_surfaces();
 
-std::array<
-        std::array<
-                waveguide::filters::descriptor,
-                waveguide::filters::biquad_coefficients_array::biquad_sections>,
-        parallel_size>
+std::array<std::array<waveguide::descriptor, waveguide::biquad_sections>,
+           parallel_size>
 compute_descriptors() {
-    std::array<std::array<waveguide::filters::descriptor,
-                          waveguide::filters::biquad_coefficients_array::
-                                  biquad_sections>,
+    std::array<std::array<waveguide::descriptor, waveguide::biquad_sections>,
                parallel_size>
             ret;
     proc::transform(surfaces, ret.begin(), [](auto i) {
-        return waveguide::filters::to_filter_descriptors(i);
+        return waveguide::to_filter_descriptors(i);
     });
     return ret;
 }
@@ -160,21 +155,19 @@ struct CoefficientTypeTrait;
 
 template <>
 struct CoefficientTypeTrait<FilterType::biquad_cascade> {
-    using type = waveguide::filters::biquad_coefficients_array;
+    using type = waveguide::biquad_coefficients_array;
 };
 
 template <>
 struct CoefficientTypeTrait<FilterType::single_reflectance> {
-    using type = waveguide::filters::coefficients<
-            waveguide::filters::biquad_coefficients_array::biquad_sections *
-            waveguide::filters::biquad_coefficients::order>;
+    using type = waveguide::coefficients<waveguide::biquad_sections *
+                                         waveguide::biquad_coefficients::order>;
 };
 
 template <>
 struct CoefficientTypeTrait<FilterType::single_impedance> {
-    using type = waveguide::filters::coefficients<
-            waveguide::filters::biquad_coefficients_array::biquad_sections *
-            waveguide::filters::biquad_coefficients::order>;
+    using type = waveguide::coefficients<waveguide::biquad_sections *
+                                         waveguide::biquad_coefficients::order>;
 };
 
 template <FilterType FT>
@@ -185,9 +178,9 @@ template <>
 std::array<typename CoefficientTypeTrait<FilterType::biquad_cascade>::type,
            parallel_size>
 compute_coeffs<FilterType::biquad_cascade>() {
-    std::array<waveguide::filters::biquad_coefficients_array, parallel_size> ret;
+    std::array<waveguide::biquad_coefficients_array, parallel_size> ret;
     proc::transform(descriptors, ret.begin(), [](const auto& n) {
-        return waveguide::filters::get_peak_biquads_array(n, sr);
+        return waveguide::get_peak_biquads_array(n, sr);
     });
     return ret;
 }
@@ -201,8 +194,7 @@ compute_coeffs<FilterType::single_reflectance>() {
             parallel_size>
             ret;
     proc::transform(descriptors, ret.begin(), [](const auto& n) {
-        return waveguide::filters::convolve(
-                waveguide::filters::get_peak_biquads_array(n, sr));
+        return waveguide::convolve(waveguide::get_peak_biquads_array(n, sr));
     });
     return ret;
 }
@@ -216,9 +208,8 @@ compute_coeffs<FilterType::single_impedance>() {
             parallel_size>
             ret;
     proc::transform(descriptors, ret.begin(), [](const auto& n) {
-        return waveguide::filters::to_impedance_coefficients(
-                waveguide::filters::convolve(
-                        waveguide::filters::get_peak_biquads_array(n, sr)));
+        return waveguide::to_impedance_coefficients(
+                waveguide::convolve(waveguide::get_peak_biquads_array(n, sr)));
     });
     return ret;
 }
@@ -276,17 +267,17 @@ public:
 };
 
 template <typename Generator>
-using rk_biquad = kernel<waveguide::filters::biquad_memory_array,
+using rk_biquad = kernel<waveguide::biquad_memory_array,
                          testing::FilterType::biquad_cascade,
                          Generator>;
 
 template <typename Generator>
-using rk_filter = kernel<waveguide::filters::canonical_memory,
+using rk_filter = kernel<waveguide::canonical_memory,
                          testing::FilterType::single_reflectance,
                          Generator>;
 
 template <typename Generator>
-using rk_impedance = kernel<waveguide::filters::canonical_memory,
+using rk_impedance = kernel<waveguide::canonical_memory,
                             testing::FilterType::single_impedance,
                             Generator>;
 

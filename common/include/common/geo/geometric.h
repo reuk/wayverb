@@ -1,9 +1,9 @@
 #pragma once
 
 #include "common/aligned/vector.h"
+#include "common/cl/scene_structs.h"
 #include "common/geo/triangle_vec.h"
 #include "common/stl_wrappers.h"
-#include "common/triangle.h"
 
 #include "glm/glm.hpp"
 

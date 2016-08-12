@@ -92,8 +92,8 @@ model compute_model(const cl::Context& context,
 
     vectors vectors(
             nodes,
-            filters::to_filter_coefficients(
-                    voxelised.get_scene_data().get_surfaces(), sample_rate));
+            to_filter_coefficients(voxelised.get_scene_data().get_surfaces(),
+                                   sample_rate));
 
     return model(desc, vectors, node_positions);
 }

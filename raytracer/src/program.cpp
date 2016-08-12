@@ -1,9 +1,11 @@
 #include "raytracer/program.h"
 
-#include "cl/brdf.h"
-#include "cl/geometry.h"
-#include "cl/structs.h"
-#include "cl/voxel.h"
+#include "raytracer/cl/brdf.h"
+#include "raytracer/cl/structs.h"
+
+#include "common/cl/geometry.h"
+#include "common/cl/voxel.h"
+#include "common/config.h"
 
 namespace raytracer {
 
@@ -11,9 +13,9 @@ program::program(const cl::Context& context, const cl::Device& device)
         : program_wrapper(context,
                           device,
                           std::vector<std::string>{cl_sources::structs,
-                                                   cl_sources::geometry,
-                                                   cl_sources::voxel,
-                                                   cl_sources::brdf,
+                                                   ::cl_sources::geometry,
+                                                   ::cl_sources::voxel,
+                                                   ::cl_sources::brdf,
                                                    source}) {}
 
 static_assert(speed_of_sound != 0, "SPEED_OF_SOUND");

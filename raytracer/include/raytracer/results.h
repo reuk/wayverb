@@ -1,9 +1,10 @@
 #pragma once
 
-#include "raytracer/cl_structs.h"
+#include "raytracer/cl/structs.h"
 
 #include "common/aligned/vector.h"
-#include "common/cl_include.h"
+
+#include "glm/glm.hpp"
 
 #include <experimental/optional>
 

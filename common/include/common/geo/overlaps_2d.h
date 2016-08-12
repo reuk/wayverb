@@ -1,7 +1,7 @@
 #pragma once
 
+#include "common/cl/scene_structs.h"
 #include "common/geo/triangle_vec.h"
-#include "common/triangle.h"
 
 namespace geo {
 

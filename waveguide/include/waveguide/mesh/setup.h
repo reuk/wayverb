@@ -105,11 +105,10 @@ private:
 
 //----------------------------------------------------------------------------//
 
-program::condensed_node get_condensed(const node& n);
-aligned::vector<program::condensed_node> get_condensed(
-        const aligned::vector<node>& n);
+condensed_node get_condensed(const node& n);
+aligned::vector<condensed_node> get_condensed(const aligned::vector<node>& n);
 
-constexpr bool is_inside(const program::condensed_node& c) {
+constexpr bool is_inside(const condensed_node& c) {
     return c.boundary_type && id_inside;
 }
 
@@ -118,20 +117,18 @@ constexpr bool is_inside(const program::condensed_node& c) {
 class vectors final {
 public:
     vectors(const aligned::vector<node>& nodes,
-            const aligned::vector<filters::canonical_coefficients>&
-                    coefficients);
+            const aligned::vector<canonical_coefficients>& coefficients);
 
     template <size_t n>
     const aligned::vector<std::array<cl_uint, n>>& get_boundary_coefficients()
             const;
 
-    const aligned::vector<program::condensed_node>& get_condensed_nodes() const;
-    const aligned::vector<filters::canonical_coefficients>& get_coefficients()
-            const;
+    const aligned::vector<condensed_node>& get_condensed_nodes() const;
+    const aligned::vector<canonical_coefficients>& get_coefficients() const;
 
 private:
-    aligned::vector<program::condensed_node> condensed_nodes;
-    aligned::vector<filters::canonical_coefficients> coefficients;
+    aligned::vector<condensed_node> condensed_nodes;
+    aligned::vector<canonical_coefficients> coefficients;
     aligned::vector<std::array<cl_uint, 1>> boundary_coefficients_1;
     aligned::vector<std::array<cl_uint, 2>> boundary_coefficients_2;
     aligned::vector<std::array<cl_uint, 3>> boundary_coefficients_3;
@@ -155,11 +152,21 @@ vectors::get_boundary_coefficients() const {
 
 //----------------------------------------------------------------------------//
 
+template <size_t N>
+static boundary_data_array<N> construct_boundary_data_array(
+        const std::array<cl_uint, N>& arr) {
+    boundary_data_array<N> ret{};
+    for (auto i = 0u; i != N; ++i) {
+        ret.array[i].coefficient_index = arr[i];
+    }
+    return ret;
+}
+
 template <size_t n>
-inline aligned::vector<program::boundary_data_array<n>> get_boundary_data(
+inline aligned::vector<boundary_data_array<n>> get_boundary_data(
         const vectors& d) {
     return map_to_vector(d.get_boundary_coefficients<n>(), [](const auto& i) {
-        return program::construct_boundary_data_array(i);
+        return construct_boundary_data_array(i);
     });
 }
 

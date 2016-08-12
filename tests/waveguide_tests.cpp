@@ -1,4 +1,5 @@
 #include "waveguide/config.h"
+#include "waveguide/filters.h"
 #include "waveguide/mesh/model.h"
 #include "waveguide/mesh/setup.h"
 #include "waveguide/postprocessor/microphone.h"
@@ -21,10 +22,9 @@ TEST(peak_filter_coefficients, peak_filter_coefficients) {
     static std::default_random_engine engine{std::random_device()()};
     static std::uniform_real_distribution<cl_float> range{0, samplerate / 2};
     for (auto i = 0; i != 10; ++i) {
-        const auto descriptor =
-                waveguide::filters::descriptor{0, range(engine), 1.414};
-        const auto coefficients = waveguide::filters::get_peak_coefficients(
-                descriptor, samplerate);
+        const auto descriptor = waveguide::descriptor{0, range(engine), 1.414};
+        const auto coefficients =
+                waveguide::get_peak_coefficients(descriptor, samplerate);
 
         ASSERT_TRUE(proc::equal(coefficients.b, std::begin(coefficients.a)));
     }

@@ -3,7 +3,6 @@
 #include "common/aligned/vector.h"
 #include "common/stl_wrappers.h"
 #include "common/string_builder.h"
-#include "common/triangle.h"
 
 namespace {
 const auto EPSILON = 0.0001;
