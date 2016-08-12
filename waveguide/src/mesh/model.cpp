@@ -5,6 +5,7 @@
 #include "waveguide/surface_filters.h"
 
 #include "common/conversions.h"
+#include "common/spatial_division/scene_buffers.h"
 #include "common/spatial_division/voxelised_scene_data.h"
 
 namespace waveguide {
@@ -58,9 +59,20 @@ std::tuple<aligned::vector<node>, descriptor> compute_fat_nodes(
                desc.spacing);
     }
 
+    const scene_buffers buffers(context, voxelised);
+
     //  find whether each node is inside or outside the model
     {
-
+        /*
+        auto kernel = program.get_node_inside_kernel();
+        kernel(cl::EnqueueArgs(queue, cl::NDRange(num_nodes)),
+               node_buffer,
+               buffers.get_voxel_index_buffer(),
+               buffers.get_global_aabb(),
+               buffers.get_side(),
+               buffers.get_triangles_buffer(),
+               buffers.get_vertices_buffer());
+       */
     }
 
     //  find node boundary type

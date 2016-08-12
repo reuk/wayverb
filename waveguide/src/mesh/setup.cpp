@@ -1,4 +1,7 @@
 #include "waveguide/mesh/setup.h"
+#include "common/cl/geometry.h"
+#include "common/cl/scene_structs.h"
+#include "common/cl/voxel.h"
 #include "common/map_to_vector.h"
 #include "common/popcount.h"
 #include "waveguide/cl/utils.h"
@@ -10,7 +13,6 @@ condensed_node get_condensed(const node& n) {
     const auto ret =
             condensed_node{n.boundary_type | (n.inside ? id_inside : id_none),
                            n.boundary_index};
-
     if ((ret.boundary_type & id_inside) && popcount(ret.boundary_type) > 1) {
         throw std::runtime_error(
                 "probably too many bits set in condensed node boundary "
@@ -45,8 +47,11 @@ setup_program::setup_program(const cl::Context& context,
                              const cl::Device& device)
         : program_wrapper(context,
                           device,
-                          std::vector<std::string>{cl_sources::utils, source}) {
-}
+                          std::vector<std::string>{::cl_sources::scene_structs,
+                                                   ::cl_sources::geometry,
+                                                   ::cl_sources::voxel,
+                                                   cl_sources::utils,
+                                                   source}) {}
 
 const std::string setup_program::source{R"(
 
@@ -72,10 +77,15 @@ kernel void set_node_inside(global Node* nodes,
                             ulong side,
 
                             const global Triangle * triangles, //  scene
-                            const global float3 * vertices,
-                            const global Surface * surfaces) {
+                            const global float3 * vertices) {
     const size_t thread = get_global_id(0);
     const float3 position = nodes[thread].position;
+    nodes[thread].inside = voxel_inside(position,
+                                        voxel_index,
+                                        global_aabb,
+                                        side,
+                                        triangles,
+                                        vertices);
 }
 
 )"};

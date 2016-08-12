@@ -92,8 +92,7 @@ public:
                                           aabb,        /// global_aabb
                                           cl_ulong,    /// side
                                           cl::Buffer,  /// triangles
-                                          cl::Buffer,  /// vertices
-                                          cl::Buffer   /// surfaces
+                                          cl::Buffer   /// vertices
                                           >("set_node_inside");
     }
 

@@ -1,23 +1,8 @@
 #pragma once
 
-#include "common/cl_traits.h"
+#include "common/cl/voxel.h"
 
 class voxelised_scene_data;
-
-struct alignas(1 << 4) aabb final {
-    cl_float3 c0;
-    cl_float3 c1;
-};
-
-constexpr auto to_tuple(const aabb& x) { return std::tie(x.c0, x.c1); }
-
-constexpr bool operator==(const aabb& a, const aabb& b) {
-    return to_tuple(a) == to_tuple(b);
-}
-
-constexpr bool operator!=(const aabb& a, const aabb& b) { return !(a == b); }
-
-//----------------------------------------------------------------------------//
 
 /// Provides a simple utility for loading voxelised scene data to the gpu in
 /// one go.
