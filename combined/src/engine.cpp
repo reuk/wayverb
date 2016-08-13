@@ -14,6 +14,7 @@
 #include "raytracer/attenuator.h"
 #include "raytracer/postprocess.h"
 #include "raytracer/raytracer.h"
+#include "raytracer/reflector.h"
 
 #include "waveguide/attenuator/hrtf.h"
 #include "waveguide/attenuator/microphone.h"
@@ -233,7 +234,7 @@ public:
                 voxelised,
                 source,
                 receiver,
-                rays,
+                raytracer::get_random_directions(rays),
                 impulses,
                 std::min(size_t{10},
                          impulses),  //  TODO set this more intelligently

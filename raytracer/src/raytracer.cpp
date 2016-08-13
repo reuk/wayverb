@@ -30,16 +30,17 @@ std::experimental::optional<impulse> get_direct_impulse(
     return std::experimental::nullopt;
 }
 
-std::experimental::optional<results> run(const cl::Context& context,
-                                         const cl::Device& device,
-                                         const voxelised_scene_data& scene_data,
-                                         const glm::vec3& source,
-                                         const glm::vec3& receiver,
-                                         size_t rays,
-                                         size_t reflection_depth,
-                                         size_t image_source_depth,
-                                         std::atomic_bool& keep_going,
-                                         const per_step_callback& callback) {
+std::experimental::optional<results> run(
+        const cl::Context& context,
+        const cl::Device& device,
+        const voxelised_scene_data& scene_data,
+        const glm::vec3& source,
+        const glm::vec3& receiver,
+        const aligned::vector<glm::vec3>& directions,
+        size_t reflection_depth,
+        size_t image_source_depth,
+        std::atomic_bool& keep_going,
+        const per_step_callback& callback) {
     if (reflection_depth < image_source_depth) {
         throw std::runtime_error(
                 "can't do image-source deeper than the max reflection depth");
@@ -51,11 +52,12 @@ std::experimental::optional<results> run(const cl::Context& context,
     scene_buffers scene_buffers(context, scene_data);
 
     //  this is the object that generates first-pass reflections
-    reflector reflector(context, device, source, receiver, rays);
+    reflector reflector(context, device, source, receiver, directions);
 
     //  this will collect the first reflections, to a specified depth,
     //  and use them to find unique image-source paths
-    image_source_finder image_source_finder(rays, image_source_depth);
+    image_source_finder image_source_finder(directions.size(),
+                                            image_source_depth);
 
     //  this will incrementally process diffuse responses
     diffuse_finder diffuse_finder(context,
@@ -63,7 +65,7 @@ std::experimental::optional<results> run(const cl::Context& context,
                                   source,
                                   receiver,
                                   air_coefficient,
-                                  rays,
+                                  directions.size(),
                                   reflection_depth);
 
     //  run the simulation proper

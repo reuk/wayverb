@@ -100,10 +100,8 @@ Intersection voxel_traversal(Ray ray,
                              ulong side,
                              const global Triangle* triangles,
                              const global float3* vertices) {
-    Intersection state = {};
-
     VOXEL_TRAVERSAL_ALGORITHM({
-        state = ray_triangle_group_intersection(
+        const Intersection state = ray_triangle_group_intersection(
                 ray, triangles, voxel_begin, num_triangles, vertices);
         if (state.intersects && EPSILON < state.distance &&
             state.distance < max_dist_inside_voxel) {
@@ -111,7 +109,7 @@ Intersection voxel_traversal(Ray ray,
         }
     })
 
-    return state;
+    return (Intersection){};
 }
 
 bool voxel_inside_(Ray ray,

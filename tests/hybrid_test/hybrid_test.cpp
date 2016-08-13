@@ -10,6 +10,7 @@
 #include "raytracer/attenuator.h"
 #include "raytracer/postprocess.h"
 #include "raytracer/raytracer.h"
+#include "raytracer/reflector.h"
 
 #include "common/azimuth_elevation.h"
 #include "common/cl_common.h"
@@ -185,16 +186,17 @@ int main(int argc, char** argv) {
     std::atomic_bool keep_going{true};
     const auto impulses = 1000;
     progress_bar pb(std::cout, impulses);
-    const auto results = raytracer::run(cc.get_context(),
-                                        cc.get_device(),
-                                        voxelised,
-                                        config.source,
-                                        config.receiver_settings.position,
-                                        config.rays,
-                                        impulses,
-                                        10,
-                                        keep_going,
-                                        [&](auto) { pb += 1; });
+    const auto results =
+            raytracer::run(cc.get_context(),
+                           cc.get_device(),
+                           voxelised,
+                           config.source,
+                           config.receiver_settings.position,
+                           raytracer::get_random_directions(config.rays),
+                           impulses,
+                           10,
+                           keep_going,
+                           [&](auto) { pb += 1; });
 
     raytracer::attenuator::microphone attenuator(cc.get_context(),
                                                  cc.get_device());

@@ -2,8 +2,10 @@
 #include "raytracer/construct_impulse.h"
 #include "raytracer/postprocess.h"
 #include "raytracer/raytracer.h"
+#include "raytracer/reflector.h"
 
 #include "common/cl_common.h"
+#include "common/conversions.h"
 #include "common/dsp_vector_ops.h"
 #include "common/map_to_vector.h"
 #include "common/spatial_division/voxelised_scene_data.h"
@@ -25,6 +27,9 @@
 static constexpr auto bench_reflections = 128;
 static constexpr auto bench_rays = 1 << 15;
 
+const glm::vec3 source{1, 2, 1};
+const auto the_rays = raytracer::get_random_directions(bench_rays);
+
 TEST(raytrace, new) {
     const compute_context cc;
 
@@ -36,9 +41,9 @@ TEST(raytrace, new) {
     auto results = raytracer::run(cc.get_context(),
                                   cc.get_device(),
                                   voxelised,
-                                  glm::vec3(0, 1.75, 3),
+                                  source,
                                   glm::vec3(0, 1.75, 0),
-                                  bench_rays,
+                                  the_rays,
                                   bench_reflections,
                                   10,
                                   keep_going,
@@ -89,7 +94,6 @@ std::array<glm::vec3, num_images(SHELL)> images_for_shell(
 
 TEST(raytrace, same_location) {
     geo::box box(glm::vec3(0, 0, 0), glm::vec3(4, 3, 6));
-    constexpr glm::vec3 source(1, 2, 1);
     auto receiver = source;
     constexpr auto s = 0.9;
     constexpr auto d = 0.1;
@@ -106,25 +110,36 @@ TEST(raytrace, same_location) {
     auto callback_count{0};
 
     std::atomic_bool keep_going{true};
-    auto results =
+    const auto results =
             raytracer::run(cc.get_context(),
                            cc.get_device(),
                            voxelised,
                            source,
                            receiver,
-                           bench_rays,
+                           the_rays,
                            bench_reflections,
                            10,
                            keep_going,
                            [&](auto i) { ASSERT_EQ(i, callback_count++); });
 
     ASSERT_TRUE(results);
+
+    const auto diffuse = results->get_diffuse();
+
+    for (auto i = 0u; i != bench_rays; ++i) {
+        const auto intersection =
+                intersects(voxelised, geo::ray{source, the_rays[i]});
+        if (intersection) {
+            const auto position =
+                    source + (the_rays[i] * intersection->inter.t);
+            ASSERT_EQ(position, to_vec3(diffuse[i][0].position));
+        }
+    }
 }
 
 TEST(raytrace, image_source) {
     //  proper method
     geo::box box(glm::vec3(0, 0, 0), glm::vec3(4, 3, 6));
-    constexpr glm::vec3 source(1, 2, 1);
     constexpr glm::vec3 receiver(2, 1, 5);
     constexpr auto s = 0.9;
     constexpr auto d = 0.1;
@@ -190,7 +205,7 @@ TEST(raytrace, image_source) {
                                   voxelised,
                                   source,
                                   receiver,
-                                  100000,
+                                  the_rays,
                                   100,
                                   10,
                                   keep_going,

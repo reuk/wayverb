@@ -1,5 +1,5 @@
-#include "raytracer/random_directions.h"
 #include "raytracer/raytracer.h"
+#include "raytracer/reflector.h"
 
 #include "common/conversions.h"
 #include "common/spatial_division/voxel_collection.h"

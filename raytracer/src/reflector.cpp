@@ -1,10 +1,9 @@
 #include "raytracer/reflector.h"
-#include "raytracer/random_directions.h"
 
+#include "common/azimuth_elevation.h"
 #include "common/conversions.h"
-#include "common/spatial_division/scene_buffers.h"
-#include "common/cl/geometry.h"
 #include "common/map_to_vector.h"
+#include "common/spatial_division/scene_buffers.h"
 
 #include <random>
 
@@ -24,50 +23,61 @@ aligned::vector<cl_float> get_direction_rng(size_t num) {
     return ret;
 }
 
-aligned::vector<ray> get_random_rays(size_t num, const glm::vec3& source) {
-    aligned::vector<ray> ret;
+}  // namespace
+
+namespace raytracer {
+
+aligned::vector<glm::vec3> get_random_directions(size_t num) {
+    aligned::vector<glm::vec3> ret;
     ret.reserve(num);
     std::default_random_engine engine{std::random_device()()};
 
-    const auto src = to_cl_float3(source);
-
     for (auto i = 0u; i != num; ++i) {
         const direction_rng rng(engine);
-        ret.push_back(ray{
-                src, to_cl_float3(sphere_point(rng.get_z(), rng.get_theta()))});
+        ret.push_back(sphere_point(rng.get_z(), rng.get_theta()));
     }
     return ret;
 }
 
-}  // namespace
+aligned::vector<ray> get_random_rays(size_t num, const glm::vec3& source) {
+    return map_to_vector(get_random_directions(num), [&](const auto& i) {
+        return ray{to_cl_float3(source), to_cl_float3(i)};
+    });
+}
 
 //----------------------------------------------------------------------------//
-
-namespace raytracer {
 
 reflector::reflector(const cl::Context& context,
                      const cl::Device& device,
                      const glm::vec3& source,
                      const glm::vec3& receiver,
-                     size_t rays)
+                     const aligned::vector<glm::vec3>& directions)
         : context(context)
         , device(device)
         , queue(context, device)
         , kernel(program(context, device).get_reflections_kernel())
         , receiver(to_cl_float3(receiver))
-        , rays(rays)
-        , ray_buffer(
-                  load_to_buffer(context, get_random_rays(rays, source), false))
+        , rays(directions.size())
+        , ray_buffer(load_to_buffer(
+                  context,
+                  map_to_vector(
+                          directions,
+                          [&](const auto& i) {
+                              return ray{to_cl_float3(source), to_cl_float3(i)};
+                          }),
+                  false))
         , reflection_buffer(load_to_buffer(
                   context,
-                  aligned::vector<reflection>(rays,
+                  aligned::vector<reflection>(directions.size(),
                                               reflection{cl_float3{},
                                                          cl_float3{},
                                                          cl_ulong{},
                                                          cl_char{true},
                                                          cl_char{}}),
                   false))
-        , rng_buffer(context, CL_MEM_READ_WRITE, rays * 2 * sizeof(cl_float)) {}
+        , rng_buffer(context,
+                     CL_MEM_READ_WRITE,
+                     directions.size() * 2 * sizeof(cl_float)) {}
 
 aligned::vector<reflection> reflector::run_step(scene_buffers& buffers) {
     //  get some new rng and copy it to device memory
