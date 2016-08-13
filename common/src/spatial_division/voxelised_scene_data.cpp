@@ -20,7 +20,13 @@ voxelised_scene_data::voxelised_scene_data(
                                       scene_data.get_vertices()));
                   },
                   scene_data.compute_triangle_indices(),
-                  aabb)) {}
+                  aabb)) {
+        if (aabb == scene_data.get_aabb()) {
+            throw std::runtime_error(
+                    "remember to add some padding to the voxelisation "
+                    "boundary!");
+        }
+    }
 
 const copyable_scene_data& voxelised_scene_data::get_scene_data() const {
     return scene_data;

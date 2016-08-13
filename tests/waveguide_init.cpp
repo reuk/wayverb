@@ -24,7 +24,8 @@ TEST(waveguide_init, waveguide_init) {
             geo::get_scene_data(geo::box(glm::vec3(-1), glm::vec3(1)));
     scene_data.set_surfaces(uniform_surface(0.999));
 
-    const voxelised_scene_data voxelised(scene_data, 5, scene_data.get_aabb());
+    const voxelised_scene_data voxelised(
+            scene_data, 5, util::padded(scene_data.get_aabb(), glm::vec3{0.1}));
 
     constexpr glm::vec3 centre{0, 0, 0};
 

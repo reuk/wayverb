@@ -10,7 +10,8 @@
 
 TEST(mesh_setup, setup) {
     const scene_data scene(OBJ_PATH_BEDROOM);
-    const voxelised_scene_data boundary(scene, 5, scene.get_aabb());
+    const voxelised_scene_data boundary(
+            scene, 5, util::padded(scene.get_aabb(), glm::vec3{0.1}));
 
     const compute_context cc;
     const auto m = waveguide::mesh::compute_model(

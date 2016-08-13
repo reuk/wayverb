@@ -30,7 +30,8 @@
 TEST(mesh_classification, badbox) {
     const compute_context cc;
     const scene_data scene_data(OBJ_PATH_BAD_BOX);
-    const voxelised_scene_data voxelised(scene_data, 5, scene_data.get_aabb());
+    const voxelised_scene_data voxelised(
+            scene_data, 5, util::padded(scene_data.get_aabb(), glm::vec3{0.1}));
     const auto m = waveguide::mesh::compute_model(
             cc.get_context(), cc.get_device(), voxelised, 0.05);
 }

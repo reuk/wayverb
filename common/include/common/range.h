@@ -65,8 +65,8 @@ range<t> make_range(const t& a, const t& b) {
 
 template <typename t>
 constexpr bool operator==(const range<t>& a, const range<t>& b) {
-    return std::make_tuple(a.get_c0(), a.get_c1()) ==
-           std::make_tuple(b.get_c0(), b.get_c1());
+    return std::make_tuple(a.get_min(), a.get_max()) ==
+           std::make_tuple(b.get_min(), b.get_max());
 }
 
 template <typename t>

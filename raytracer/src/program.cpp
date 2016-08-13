@@ -3,6 +3,7 @@
 #include "raytracer/cl/brdf.h"
 #include "raytracer/cl/structs.h"
 
+#include "common/cl/scene_structs.h"
 #include "common/cl/geometry.h"
 #include "common/cl/voxel.h"
 #include "common/config.h"
@@ -12,7 +13,8 @@ namespace raytracer {
 program::program(const cl::Context& context, const cl::Device& device)
         : program_wrapper(context,
                           device,
-                          std::vector<std::string>{cl_sources::structs,
+                          std::vector<std::string>{::cl_sources::scene_structs,
+                                                   cl_sources::structs,
                                                    ::cl_sources::geometry,
                                                    ::cl_sources::voxel,
                                                    ::cl_sources::brdf,
@@ -141,7 +143,7 @@ kernel void reflections(global Ray * ray,                  //  ray
 
     //  find the intersection between scene geometry and this ray
     const Intersection closest = voxel_traversal(
-            voxel_index, this_ray, global_aabb, side, triangles, vertices);
+            this_ray, voxel_index, global_aabb, side, triangles, vertices);
 
     //  didn't find an intersection, should halt this thread
     if (! closest.intersects) {

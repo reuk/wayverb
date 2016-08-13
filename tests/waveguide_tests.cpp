@@ -50,7 +50,8 @@ TEST(run_waveguide, run_waveguide) {
     auto scene_data = geo::get_scene_data(box);
     scene_data.set_surfaces(surface);
 
-    const voxelised_scene_data voxelised(scene_data, 5, scene_data.get_aabb());
+    const voxelised_scene_data voxelised(
+            scene_data, 5, util::padded(scene_data.get_aabb(), glm::vec3{0.1}));
 
     const auto model = waveguide::mesh::compute_model(
             cc.get_context(), cc.get_device(), voxelised, 0.03);

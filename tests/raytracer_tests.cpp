@@ -29,7 +29,8 @@ TEST(raytrace, new) {
     const compute_context cc;
 
     const scene_data scene(OBJ_PATH);
-    const voxelised_scene_data voxelised(scene, 5, scene.get_aabb());
+    const voxelised_scene_data voxelised(
+            scene, 5, util::padded(scene.get_aabb(), glm::vec3{0.1}));
 
     std::atomic_bool keep_going{true};
     auto results = raytracer::run(cc.get_context(),
@@ -95,9 +96,10 @@ TEST(raytrace, same_location) {
     constexpr surface surface{volume_type{{s, s, s, s, s, s, s, s}},
                               volume_type{{d, d, d, d, d, d, d, d}}};
 
-    auto scene_data = geo::get_scene_data(box);
-    scene_data.set_surfaces(surface);
-    const voxelised_scene_data voxelised(scene_data, 5, scene_data.get_aabb());
+    auto scene = geo::get_scene_data(box);
+    scene.set_surfaces(surface);
+    const voxelised_scene_data voxelised(
+            scene, 5, util::padded(scene.get_aabb(), glm::vec3{0.1}));
 
     compute_context cc;
 
@@ -177,9 +179,10 @@ TEST(raytrace, image_source) {
     //  raytracing method
     compute_context cc;
 
-    auto scene_data = geo::get_scene_data(box);
-    scene_data.set_surfaces(surface);
-    const voxelised_scene_data voxelised(scene_data, 5, scene_data.get_aabb());
+    auto scene = geo::get_scene_data(box);
+    scene.set_surfaces(surface);
+    const voxelised_scene_data voxelised(
+            scene, 5, util::padded(scene.get_aabb(), glm::vec3{0.1}));
 
     std::atomic_bool keep_going{true};
     auto results = raytracer::run(cc.get_context(),

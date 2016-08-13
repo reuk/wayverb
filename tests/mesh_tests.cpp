@@ -18,7 +18,8 @@
 class MeshTest : public ::testing::Test {
 public:
     auto get_mesh(const copyable_scene_data& sd) {
-        const voxelised_scene_data voxelised(sd, 5, sd.get_aabb());
+        const voxelised_scene_data voxelised(
+                sd, 5, util::padded(sd.get_aabb(), glm::vec3{0.1}));
         return waveguide::mesh::compute_fat_nodes(
                 cc.get_context(), cc.get_device(), voxelised, 0.1);
     }

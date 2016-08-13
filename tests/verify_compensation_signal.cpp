@@ -54,7 +54,8 @@ TEST(verify_compensation_signal, verify_compensation_signal_normal) {
     auto scene_data =
             geo::get_scene_data(geo::box(glm::vec3(-1), glm::vec3(1)));
     scene_data.set_surfaces(uniform_surface(0.5));
-    const voxelised_scene_data voxelised(scene_data, 5, scene_data.get_aabb());
+    const voxelised_scene_data voxelised(
+            scene_data, 5, util::padded(scene_data.get_aabb(), glm::vec3{0.1}));
 
     const auto model = waveguide::mesh::compute_model(
             cc.get_context(), cc.get_device(), voxelised, 0.05);
