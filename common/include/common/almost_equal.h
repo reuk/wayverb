@@ -2,22 +2,20 @@
 
 #include "glm/glm.hpp"
 
-template<typename T, typename U>
+template <typename T, typename U>
 inline bool within_tolerance(T a, U tolerance) {
     return std::abs(a) <= tolerance;
 }
 
-template <typename T>
-inline bool almost_equal(T a, T b, double tolerance) {
-    return within_tolerance(a - b, tolerance);
-}
-
-template <typename T>
-inline bool almost_equal(T a, T b, size_t ups) {
-    return almost_equal(a,
-                        b,
-                        std::numeric_limits<T>::epsilon() *
-                                std::max(std::abs(a), std::abs(b)) * ups);
+template <
+        class T,
+        typename std::enable_if_t<!std::numeric_limits<T>::is_integer, int> = 0>
+constexpr bool almost_equal(T x, T y, size_t ulp) {
+    //	from cppreference.com on epsilon
+    const auto abs_diff = std::abs(x - y);
+    return abs_diff <
+                   std::numeric_limits<T>::epsilon() * std::abs(x + y) * ulp ||
+           abs_diff < std::numeric_limits<T>::min();
 }
 
 template <typename T>

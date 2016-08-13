@@ -1,12 +1,14 @@
-#include "waveguide/mesh/model.h"
 #include "waveguide/config.h"
 #include "waveguide/mesh/boundary_adjust.h"
+#include "waveguide/mesh/model.h"
 #include "waveguide/program.h"
 #include "waveguide/surface_filters.h"
 
 #include "common/conversions.h"
 #include "common/spatial_division/scene_buffers.h"
 #include "common/spatial_division/voxelised_scene_data.h"
+
+#include <iostream>
 
 namespace waveguide {
 namespace mesh {
@@ -63,7 +65,7 @@ std::tuple<aligned::vector<node>, descriptor> compute_fat_nodes(
 
     //  find whether each node is inside or outside the model
     {
-        /*
+#if 0
         auto kernel = program.get_node_inside_kernel();
         kernel(cl::EnqueueArgs(queue, cl::NDRange(num_nodes)),
                node_buffer,
@@ -72,7 +74,13 @@ std::tuple<aligned::vector<node>, descriptor> compute_fat_nodes(
                buffers.get_side(),
                buffers.get_triangles_buffer(),
                buffers.get_vertices_buffer());
-       */
+#else
+        auto nodes = read_from_buffer<node>(queue, node_buffer);
+        for (auto& i : nodes) {
+            i.inside = inside(voxelised, to_vec3(i.position));
+        }
+        cl::copy(queue, nodes.begin(), nodes.end(), node_buffer);
+#endif
     }
 
     //  find node boundary type

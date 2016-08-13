@@ -55,16 +55,15 @@ float triangle_intersection(const global Triangle * triangle,
 float triangle_intersection(const global Triangle * triangle,
                             const global float3 * vertices,
                             Ray ray) {
-    TriangleVerts v = {
+    const TriangleVerts v = {
         vertices[triangle->v0], vertices[triangle->v1], vertices[triangle->v2]};
     return triangle_vert_intersection(v, ray);
 }
 
 float3 triangle_verts_normal(TriangleVerts t);
 float3 triangle_verts_normal(TriangleVerts t) {
-    float3 e0 = t.v1 - t.v0;
-    float3 e1 = t.v2 - t.v0;
-
+    const float3 e0 = t.v1 - t.v0;
+    const float3 e1 = t.v2 - t.v0;
     return normalize(cross(e0, e1));
 }
 
@@ -72,7 +71,7 @@ float3 triangle_normal(const global Triangle * triangle,
                        const global float3 * vertices);
 float3 triangle_normal(const global Triangle * triangle,
                        const global float3 * vertices) {
-    TriangleVerts t = {
+    const TriangleVerts t = {
         vertices[triangle->v0], vertices[triangle->v1], vertices[triangle->v2]};
     return triangle_verts_normal(t);
 }

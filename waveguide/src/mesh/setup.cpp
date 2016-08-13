@@ -63,8 +63,12 @@ kernel void set_node_position_and_neighbors(global Node* nodes,
     //  the locator once
 
     const size_t thread = get_global_id(0);
+    nodes[thread] = (Node){};   //  zero it out to begin with
+
     const int3 locator = to_locator(thread, dim);
-    nodes[thread].position = min_corner + (locator * (float3)(spacing));
+
+    nodes[thread].position = min_corner + convert_float3(locator) * spacing;
+
     for (int i = 0; i != PORTS; ++i) {
         nodes[thread].ports[i] = neighbor_index(locator, dim, i);
     }

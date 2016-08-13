@@ -2,9 +2,6 @@
 
 namespace raytracer {
 
-float direction_rng::get_z() const { return z; }
-float direction_rng::get_theta() const { return theta; }
-
 aligned::vector<cl_float3> get_random_directions(size_t num) {
     aligned::vector<cl_float3> ret(num);
     std::default_random_engine engine{std::random_device()()};

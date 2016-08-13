@@ -48,7 +48,7 @@ compute_intersection_distances(
         if (!intersection) {
             return std::experimental::nullopt;
         }
-        ret.push_back(*intersection);
+        ret.push_back(intersection->t);
     }
 
     return ret;
@@ -171,7 +171,7 @@ std::experimental::optional<impulse> follow_ray_path(
         const auto from = a + dir * epsilon;
         const auto to = b;
         const auto i = intersects(voxelised, geo::ray(from, dir));
-        return i && almost_equal(i->distance, glm::distance(from, to), epsilon);
+        return i && almost_equal(i->inter.t, glm::distance(from, to), epsilon);
     };
 
     //  attempt to join the dots back in scene space

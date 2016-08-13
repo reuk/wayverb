@@ -1,6 +1,7 @@
 #pragma once
 
 #include "common/geo/rect.h"
+#include "common/indexing.h"
 #include "common/spatial_division/ndim_tree.h"
 
 namespace detail {
@@ -122,11 +123,11 @@ auto voxel_dimensions(const voxel_collection<n>& voxels) {
            static_cast<float>(voxels.get_side());
 }
 
-template <size_t n, typename u>
-auto voxel_aabb(const voxel_collection<n>& voxels, u i) {
+template <size_t n>
+auto voxel_aabb(const voxel_collection<n>& voxels, indexing::index_t<n> i) {
     using vt = util::detail::range_t<n>;
     const auto dim = voxel_dimensions(voxels);
-    const auto root = voxels.get_aabb().get_min() + (dim * i);
+    const auto root = voxels.get_aabb().get_min() + (dim * decltype(dim){i});
     return vt(root, root + dim);
 }
 
@@ -137,10 +138,11 @@ aligned::vector<cl_uint> get_flattened(const voxel_collection<3>& voxels);
 /// arguments
 ///     a ray and
 ///     a set of indices to objects to test against some condition
+///     the minimum length along the ray that is still inside the current voxel
 ///     the maximum length along the ray that is still inside the current voxel
 /// Returns whether or not the traversal should quit.
 using traversal_callback = std::function<bool(
-        const geo::ray&, const aligned::vector<size_t>&, float)>;
+        const geo::ray&, const aligned::vector<size_t>&, float, float)>;
 
 /// Walk the voxels along a particular ray.
 /// Calls the callback with the contents of each voxel.

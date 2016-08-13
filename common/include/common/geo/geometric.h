@@ -1,6 +1,7 @@
 #pragma once
 
 #include "common/aligned/vector.h"
+#include "common/almost_equal.h"
 #include "common/cl/scene_structs.h"
 #include "common/geo/triangle_vec.h"
 #include "common/stl_wrappers.h"
@@ -25,56 +26,72 @@ private:
     glm::vec3 direction;
 };
 
-using intersects = std::experimental::optional<float>;
+struct triangle_inter final {
+    float t;  //  the distance along the ray to the intersection
+    float u;  //  barycentric coordinate u
+    float v;  //  barycentric coordinate v
+};
 
-namespace detail {
-struct inter final {
-    float distance;
+constexpr bool is_degenerate(const triangle_inter& i) {
+    const auto ulp = 10;
+    return almost_equal(i.u, 0.0f, ulp) || almost_equal(i.v, 0.0f, ulp) ||
+           almost_equal(i.u + i.v, 1.0f, ulp);
+}
+
+constexpr bool operator==(const triangle_inter& a, const triangle_inter& b) {
+    return std::tie(a.t, a.u, a.v) == std::tie(b.t, b.u, b.v);
+}
+
+constexpr bool operator!=(const triangle_inter& a, const triangle_inter& b) {
+    return !(a == b);
+}
+
+struct scene_triangle_inter final {
+    triangle_inter inter;
     size_t index;
 };
 
-constexpr bool operator==(const inter& a, const inter& b) {
-    return std::tie(a.distance, a.index) == std::tie(b.distance, b.index);
+constexpr bool operator==(const scene_triangle_inter& a,
+                          const scene_triangle_inter& b) {
+    return std::tie(a.inter, a.index) == std::tie(b.inter, b.index);
 }
 
-constexpr bool operator!=(const inter& a, const inter& b) { return !(a == b); }
-}  // namespace detail
-
-using intersection = std::experimental::optional<detail::inter>;
-
-inline auto make_intersection(float distance, size_t index) {
-    return intersection(detail::inter{distance, index});
+constexpr bool operator!=(const scene_triangle_inter& a,
+                          const scene_triangle_inter& b) {
+    return !(a == b);
 }
 
-intersects triangle_intersection(const triangle_vec3& tri, const ray& ray);
+std::experimental::optional<triangle_inter> triangle_intersection(
+        const triangle_vec3& tri, const ray& ray, size_t ulp = 10);
 
 template <typename t>
-intersects triangle_intersection(const triangle& tri,
-                                 const aligned::vector<t>& vertices,
-                                 const ray& ray) {
+std::experimental::optional<triangle_inter> triangle_intersection(
+        const triangle& tri,
+        const aligned::vector<t>& vertices,
+        const ray& ray) {
     return triangle_intersection(get_triangle_vec3(tri, vertices), ray);
 }
 
 template <typename t>
-intersection ray_triangle_intersection(
+std::experimental::optional<scene_triangle_inter> ray_triangle_intersection(
         const ray& ray,
         const aligned::vector<size_t>& triangle_indices,
         const aligned::vector<triangle>& triangles,
         const aligned::vector<t>& vertices) {
-    intersection ret;
-
-    for (const auto& i : triangle_indices) {
-        auto inter = triangle_intersection(triangles[i], vertices, ray);
-        if (inter && (!ret || (ret && *inter < ret->distance))) {
-            ret = make_intersection(*inter, i);
-        }
-    }
-
-    return ret;
+    return proc::accumulate(
+            triangle_indices,
+            std::experimental::optional<scene_triangle_inter>{},
+            [&](const auto& i, const auto& j) {
+                const auto inter =
+                        triangle_intersection(triangles[j], vertices, ray);
+                return (inter && (!i || (i && inter->t < i->inter.t)))
+                               ? scene_triangle_inter{*inter, j}
+                               : i;
+            });
 }
 
 template <typename t>
-intersection ray_triangle_intersection(
+std::experimental::optional<scene_triangle_inter> ray_triangle_intersection(
         const ray& ray,
         const aligned::vector<triangle>& triangles,
         const aligned::vector<t>& vertices) {

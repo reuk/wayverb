@@ -27,7 +27,7 @@ TEST(voxel, walk) {
         bool has_triangles{false};
         traverse(voxelised.get_voxels(),
                  ray,
-                 [&](const auto& ray, const auto& items, float) {
+                 [&](const auto& ray, const auto& items, float, float) {
                      if (!items.empty()) {
                          has_triangles = true;
                      }

@@ -21,7 +21,7 @@ std::experimental::optional<impulse> get_direct_impulse(
     const auto intersection = intersects(scene_data, to_receiver);
 
     if (!intersection ||
-        (intersection && intersection->distance > source_to_receiver_length)) {
+        (intersection && intersection->inter.t > source_to_receiver_length)) {
         return construct_impulse(volume_type{{1, 1, 1, 1, 1, 1, 1, 1}},
                                  source,
                                  source_to_receiver_length);

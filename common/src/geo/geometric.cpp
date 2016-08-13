@@ -4,10 +4,6 @@
 #include "common/stl_wrappers.h"
 #include "common/string_builder.h"
 
-namespace {
-const auto EPSILON = 0.0001;
-}  // namespace
-
 namespace geo {
 
 ray::ray(const glm::vec3& position, const glm::vec3& direction)
@@ -17,54 +13,57 @@ ray::ray(const glm::vec3& position, const glm::vec3& direction)
 glm::vec3 ray::get_position() const { return position; }
 glm::vec3 ray::get_direction() const { return direction; }
 
-intersects triangle_intersection(const triangle_vec3& tri, const ray& ray) {
-    auto e0 = tri[1] - tri[0];
-    auto e1 = tri[2] - tri[0];
+std::experimental::optional<triangle_inter> triangle_intersection(
+        const triangle_vec3& tri, const ray& ray, size_t ulp) {
+    //  from Fast, Minimum Storage Ray/Triangle Intersection
+    //  by Moller and Trumbore
+    const auto e0 = tri[1] - tri[0];
+    const auto e1 = tri[2] - tri[0];
 
-    auto pvec = glm::cross(ray.get_direction(), e1);
-    auto det = glm::dot(e0, pvec);
+    const auto pvec = glm::cross(ray.get_direction(), e1);
+    const auto det = glm::dot(e0, pvec);
 
-    if (-EPSILON < det && det < EPSILON) {
-        return intersects();
+	if (almost_equal(det, 0.0f, ulp)) {
+        return std::experimental::nullopt;
     }
 
-    auto invdet = 1 / det;
-    auto tvec = ray.get_position() - tri[0];
-    auto ucomp = invdet * glm::dot(tvec, pvec);
+    const auto invdet = 1 / det;
+    const auto tvec = ray.get_position() - tri[0];
+    const auto u = invdet * glm::dot(tvec, pvec);
 
-    if (ucomp < 0 || 1 < ucomp) {
-        return intersects();
+    if (u < 0 || 1 < u) {
+        return std::experimental::nullopt;
     }
 
-    auto qvec = glm::cross(tvec, e0);
-    auto vcomp = invdet * glm::dot(ray.get_direction(), qvec);
+    const auto qvec = glm::cross(tvec, e0);
+    const auto v = invdet * glm::dot(ray.get_direction(), qvec);
 
-    if (vcomp < 0 || 1 < vcomp + ucomp) {
-        return intersects();
+    if (v < 0 || 1 < v + u) {
+        return std::experimental::nullopt;
     }
 
-    auto dist = invdet * glm::dot(e1, qvec);
+    const auto t = invdet * glm::dot(e1, qvec);
 
-    if (dist < 0) {
-        return intersects();
+    if (t < 0) {
+        return std::experimental::nullopt;
     }
 
-    return intersects(dist);
+    return triangle_inter{t, u, v};
 }
 
 bool point_intersection(const glm::vec3& begin,
                         const glm::vec3& point,
                         const aligned::vector<triangle>& triangles,
                         const aligned::vector<glm::vec3>& vertices) {
-    auto begin_to_point = point - begin;
-    auto mag = glm::length(begin_to_point);
-    auto direction = glm::normalize(begin_to_point);
+    const auto begin_to_point = point - begin;
+    const auto mag = glm::length(begin_to_point);
+    const auto direction = glm::normalize(begin_to_point);
 
-    ray to_point(begin, direction);
+    const ray to_point(begin, direction);
 
-    auto inter = ray_triangle_intersection(to_point, triangles, vertices);
+    const auto ret = ray_triangle_intersection(to_point, triangles, vertices);
 
-    return !inter || inter->distance > mag;
+    return !ret || mag < ret->inter.t;
 }
 
 //  adapted from

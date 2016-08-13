@@ -1,5 +1,5 @@
-#include "common/spatial_division/voxel_collection.h"
 #include "common/scene_data.h"
+#include "common/spatial_division/voxel_collection.h"
 
 aligned::vector<cl_uint> get_flattened(const voxel_collection<3>& voxels) {
     const auto side = voxels.get_side();
@@ -29,10 +29,11 @@ aligned::vector<cl_uint> get_flattened(const voxel_collection<3>& voxels) {
 }
 
 namespace {
-auto get_starting_index(const voxel_collection<3>& voxels,
-                        const glm::vec3& position) {
-    return glm::floor((position - voxels.get_aabb().get_min()) /
-                      voxel_dimensions(voxels));
+glm::ivec3 get_starting_index(const voxel_collection<3>& voxels,
+                              const glm::vec3& position) {
+    //    return glm::floor((position - voxels.get_aabb().get_min()) /
+    //                      voxel_dimensions(voxels));
+    return (position - voxels.get_aabb().get_min()) / voxel_dimensions(voxels);
 }
 
 glm::bvec3 nonnegative(const glm::vec3& t) {
@@ -77,6 +78,12 @@ void traverse(const voxel_collection<3>& voxels,
     const auto side = voxels.get_side();
 
     auto ind = get_starting_index(voxels, ray.get_position());
+
+    if (glm::any(glm::lessThan(ind, glm::ivec3{0})) ||
+        glm::any(glm::lessThanEqual(glm::ivec3(side), ind))) {
+        return;
+    }
+
     const auto voxel_bounds = voxel_aabb(voxels, ind);
 
     const auto gt = nonnegative(ray.get_direction());
@@ -93,13 +100,15 @@ void traverse(const voxel_collection<3>& voxels,
     const auto t_delta =
             glm::abs(dimensions(voxel_bounds) / ray.get_direction());
 
+    float prev_max = 0;
+
     for (;;) {
         const auto min_i = min_component(t_max);
 
         const auto& tri = voxels.get_voxel(ind);
         if (!tri.empty()) {
-            if (fun(ray, tri, t_max[min_i])) {  // callback has signalled that
-                                                // it should quit
+            if (fun(ray, tri, prev_max, t_max[min_i])) {
+                // callback has signalled that it should quit
                 return;
             }
         }
@@ -108,7 +117,7 @@ void traverse(const voxel_collection<3>& voxels,
         if (ind[min_i] == just_out[min_i]) {
             return;
         }
+        prev_max = t_max[min_i];
         t_max[min_i] += t_delta[min_i];
     }
 }
-
