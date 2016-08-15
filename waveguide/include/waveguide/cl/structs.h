@@ -2,47 +2,6 @@
 
 #include "waveguide/cl/filters.h"
 
-namespace waveguide {
-namespace cl_sources {
-constexpr const char* structs{R"(
-typedef enum {
-    id_success = 0,
-    id_inf_error = 1 << 0,
-    id_nan_error = 1 << 1,
-    id_outside_range_error = 1 << 2,
-    id_outside_mesh_error = 1 << 3,
-    id_suspicious_boundary_error = 1 << 4,
-} ErrorCode;
-
-typedef struct {
-    int boundary_type;
-    uint boundary_index;
-} CondensedNode;
-
-typedef struct {
-    FilterMemoryCanonical filter_memory;
-    uint coefficient_index;
-} BoundaryData;
-
-typedef struct { BoundaryData array[1]; } BoundaryDataArray1;
-typedef struct { BoundaryData array[2]; } BoundaryDataArray2;
-typedef struct { BoundaryData array[3]; } BoundaryDataArray3;
-
-#define NUM_SURROUNDING_PORTS_1 4
-typedef struct {
-    PortDirection array[NUM_SURROUNDING_PORTS_1];
-} SurroundingPorts1;
-
-#define NUM_SURROUNDING_PORTS_2 2
-typedef struct {
-    PortDirection array[NUM_SURROUNDING_PORTS_2];
-} SurroundingPorts2;
-
-)"};
-}  // namespace cl_sources
-
-//----------------------------------------------------------------------------//
-
 typedef enum : cl_int {
     id_success = 0,
     id_inf_error = 1 << 0,
@@ -50,14 +9,43 @@ typedef enum : cl_int {
     id_outside_range_error = 1 << 2,
     id_outside_mesh_error = 1 << 3,
     id_suspicious_boundary_error = 1 << 4,
-} ErrorCode;
+} error_code;
+
+template <>
+struct cl_representation<error_code> final {
+    static constexpr const char* value{R"(
+#ifndef ERROR_CODE_DEFINITION__
+#define ERROR_CODE_DEFINITION__
+typedef enum {
+    id_success = 0,
+    id_inf_error = 1 << 0,
+    id_nan_error = 1 << 1,
+    id_outside_range_error = 1 << 2,
+    id_outside_mesh_error = 1 << 3,
+    id_suspicious_boundary_error = 1 << 4,
+} error_code;
+#endif
+)"};
+};
 
 //----------------------------------------------------------------------------//
 
 struct alignas(1 << 3) condensed_node final {
-    static constexpr size_t num_ports{6};
     cl_int boundary_type{};
     cl_uint boundary_index{};
+};
+
+template <>
+struct cl_representation<condensed_node> final {
+    static constexpr const char* value{R"(
+#ifndef CONDENSED_NODE_DEFINITION__
+#define CONDENSED_NODE_DEFINITION__
+typedef struct {
+    int boundary_type;
+    uint boundary_index;
+} condensed_node;
+#endif
+)"};
 };
 
 inline bool operator==(const condensed_node& a, const condensed_node& b) {
@@ -77,6 +65,19 @@ inline bool operator!=(const condensed_node& a, const condensed_node& b) {
 struct alignas(1 << 3) boundary_data final {
     canonical_memory filter_memory{};
     cl_uint coefficient_index{};
+};
+
+template <>
+struct cl_representation<boundary_data> final {
+    static constexpr const char* value{R"(
+#ifndef BOUNDARY_DATA_DEFINITION__
+#define BOUNDARY_DATA_DEFINITION__
+typedef struct {
+    filter_memory_canonical filter_memory;
+    uint coefficient_index;
+} boundary_data;
+#endif
+)"};
 };
 
 inline bool operator==(const boundary_data& a, const boundary_data& b) {
@@ -108,8 +109,36 @@ bool operator!=(const boundary_data_array<D>& a,
     return !(a == b);
 }
 
-using boundary_data_array1 = boundary_data_array<1>;
-using boundary_data_array2 = boundary_data_array<2>;
-using boundary_data_array3 = boundary_data_array<3>;
+using boundary_data_array_1 = boundary_data_array<1>;
+using boundary_data_array_2 = boundary_data_array<2>;
+using boundary_data_array_3 = boundary_data_array<3>;
 
-}  // namespace waveguide
+template<>
+struct cl_representation<boundary_data_array_1> final {
+    static constexpr const char* value{R"(
+#ifndef BOUNDARY_DATA_ARRAY_1_DEFINITION__
+#define BOUNDARY_DATA_ARRAY_1_DEFINITION__
+typedef struct { boundary_data array[1]; } boundary_data_array_1;
+#endif
+)"};
+};
+
+template<>
+struct cl_representation<boundary_data_array_2> final {
+    static constexpr const char* value{R"(
+#ifndef BOUNDARY_DATA_ARRAY_2_DEFINITION__
+#define BOUNDARY_DATA_ARRAY_2_DEFINITION__
+typedef struct { boundary_data array[2]; } boundary_data_array_2;
+#endif
+)"};
+};
+
+template<>
+struct cl_representation<boundary_data_array_3> final {
+    static constexpr const char* value{R"(
+#ifndef BOUNDARY_DATA_ARRAY_3_DEFINITION__
+#define BOUNDARY_DATA_ARRAY_3_DEFINITION__
+typedef struct { boundary_data array[3]; } boundary_data_array_3;
+#endif
+)"};
+};

@@ -1,5 +1,5 @@
-#include "common/spatial_division/voxel_collection.h"
 #include "common/scene_data.h"
+#include "common/spatial_division/voxel_collection.h"
 
 aligned::vector<cl_uint> get_flattened(const voxel_collection<3>& voxels) {
     const auto side{voxels.get_side()};

@@ -2,8 +2,8 @@
 
 #include "common/aligned/vector.h"
 #include "common/almost_equal.h"
+#include "common/cl/geometry_structs.h"
 #include "common/conversions.h"
-#include "common/cl/geometry.h"
 #include "common/geo/triangle_vec.h"
 #include "common/stl_wrappers.h"
 
@@ -31,45 +31,6 @@ private:
 
 //----------------------------------------------------------------------------//
 
-struct triangle_inter final {
-    float t;  //  the distance along the ray to the intersection
-    float u;  //  barycentric coordinate u
-    float v;  //  barycentric coordinate v
-};
-
-constexpr bool operator==(const triangle_inter& a, const triangle_inter& b) {
-    return std::tie(a.t, a.u, a.v) == std::tie(b.t, b.u, b.v);
-}
-
-constexpr bool operator!=(const triangle_inter& a, const triangle_inter& b) {
-    return !(a == b);
-}
-
-constexpr bool is_degenerate(const triangle_inter& i) {
-    const auto ulp = 10;
-    return almost_equal(i.u, 0.0f, ulp) || almost_equal(i.v, 0.0f, ulp) ||
-           almost_equal(i.u + i.v, 1.0f, ulp);
-}
-
-//----------------------------------------------------------------------------//
-
-struct scene_triangle_inter final {
-    triangle_inter inter;
-    size_t index;
-};
-
-constexpr bool operator==(const scene_triangle_inter& a,
-                          const scene_triangle_inter& b) {
-    return std::tie(a.inter, a.index) == std::tie(b.inter, b.index);
-}
-
-constexpr bool operator!=(const scene_triangle_inter& a,
-                          const scene_triangle_inter& b) {
-    return !(a == b);
-}
-
-//----------------------------------------------------------------------------//
-
 std::experimental::optional<triangle_inter> triangle_intersection(
         const triangle_vec3& tri, const ray& ray, size_t ulp = 10);
 
@@ -84,27 +45,27 @@ std::experimental::optional<triangle_inter> triangle_intersection(
 //----------------------------------------------------------------------------//
 
 template <typename t>
-std::experimental::optional<scene_triangle_inter> intersection_accumulator(
+std::experimental::optional<intersection> intersection_accumulator(
         const ray& ray,
         size_t triangle_index,
         const aligned::vector<triangle>& triangles,
         const aligned::vector<t> vertices,
-        const std::experimental::optional<scene_triangle_inter>& current) {
-    const auto intersection{
+        const std::experimental::optional<intersection>& current) {
+    const auto i{
             triangle_intersection(triangles[triangle_index], vertices, ray)};
-    return (intersection && (!current || intersection->t < current->inter.t))
-                   ? scene_triangle_inter{*intersection, triangle_index}
+    return (i && (!current || i->t < current->inter.t))
+                   ? intersection{*i, triangle_index}
                    : current;
 }
 
 template <typename t>
-std::experimental::optional<scene_triangle_inter> ray_triangle_intersection(
+std::experimental::optional<intersection> ray_triangle_intersection(
         const ray& ray,
         const aligned::vector<size_t>& triangle_indices,
         const aligned::vector<triangle>& triangles,
         const aligned::vector<t>& vertices) {
     return proc::accumulate(triangle_indices,
-                            std::experimental::optional<scene_triangle_inter>{},
+                            std::experimental::optional<intersection>{},
                             [&](const auto& i, const auto& j) {
                                 return intersection_accumulator(
                                         ray, j, triangles, vertices, i);
@@ -112,11 +73,11 @@ std::experimental::optional<scene_triangle_inter> ray_triangle_intersection(
 }
 
 template <typename t>
-std::experimental::optional<scene_triangle_inter> ray_triangle_intersection(
+std::experimental::optional<intersection> ray_triangle_intersection(
         const ray& ray,
         const aligned::vector<triangle>& triangles,
         const aligned::vector<t>& vertices) {
-    std::experimental::optional<scene_triangle_inter> ret;
+    std::experimental::optional<intersection> ret;
     for (auto i{0u}; i != triangles.size(); ++i) {
         ret = intersection_accumulator(ray, i, triangles, vertices, ret);
     }

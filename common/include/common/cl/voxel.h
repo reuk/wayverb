@@ -2,20 +2,14 @@
 
 //  please only include in .cpp files
 
-#include "common/cl_traits.h"
+#include "common/cl/voxel_structs.h"
 
 #include <string>
 
 namespace cl_sources {
-const std::string voxel(R"(
-
+const std::string voxel(std::string{} + cl_representation_v<aabb> + R"(
 #ifndef VOXEL_HEADER__
 #define VOXEL_HEADER__
-
-typedef struct {
-    float3 c0;
-    float3 c1;
-} AABB;
 
 int3 get_starting_index(float3 position,
                         AABB global_aabb,
@@ -96,7 +90,7 @@ Intersection voxel_traversal(Ray ray,
     VOXEL_TRAVERSAL_ALGORITHM(
         const Intersection state = ray_triangle_group_intersection(
                 ray, triangles, voxel_begin, num_triangles, vertices);
-        if (state.intersects && state.distance < max_dist_inside_voxel) {
+        if (state.intersects && state.distance <= max_dist_inside_voxel) {
             return state;
         }
     )
@@ -104,7 +98,6 @@ Intersection voxel_traversal(Ray ray,
     return (Intersection){};
 }
 
-/*
 bool voxel_inside_(Ray ray,
                   const global uint* voxel_index,
                   AABB global_aabb,
@@ -124,7 +117,7 @@ bool voxel_inside_(Ray ray,
             uint triangle_to_test = voxel_begin[i];
             const float distance = triangle_intersection(
                     triangles[triangle_to_test], vertices, ray);
-            if (distance <= prev_max && distance < max_dist_inside_voxel) {
+            if (distance < prev_max && distance <= max_dist_inside_voxel) {
                 count += 1;
             }
         }
@@ -160,7 +153,6 @@ bool voxel_inside(float3 pt,
     }
     return (lim / 2) < count;
 }
-*/
 
 bool voxel_point_intersection(float3 begin,
                               float3 point,
@@ -187,23 +179,6 @@ bool voxel_point_intersection(float3 begin,
 
     return (!inter.intersects) || inter.distance > mag;
 }
-
 #endif
-
 )");
 }  // namespace cl_sources
-
-//----------------------------------------------------------------------------//
-
-struct alignas(1 << 4) aabb final {
-    cl_float3 c0;
-    cl_float3 c1;
-};
-
-constexpr auto to_tuple(const aabb& x) { return std::tie(x.c0, x.c1); }
-
-constexpr bool operator==(const aabb& a, const aabb& b) {
-    return to_tuple(a) == to_tuple(b);
-}
-
-constexpr bool operator!=(const aabb& a, const aabb& b) { return !(a == b); }

@@ -17,8 +17,6 @@ namespace waveguide {
 
 class program final {
 public:
-    static constexpr auto num_ports{condensed_node::num_ports};
-
     program(const cl::Context& context, const cl::Device& device);
 
     auto get_kernel() const {

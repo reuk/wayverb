@@ -2,6 +2,9 @@
 
 #include "waveguide/cl/filters.h"
 
+#include "common/decibels.h"
+
+#include <cmath>
 #include <functional>
 
 namespace waveguide {

@@ -81,7 +81,7 @@ size_t run(const cl::Context& context,
                error_flag_buffer);
 
         //  read out flag value
-        auto flag = read_single_value<ErrorCode>(queue, error_flag_buffer, 0);
+        auto flag = read_single_value<error_code>(queue, error_flag_buffer, 0);
         if (flag & id_inf_error) {
             throw std::runtime_error(
                     "pressure value is inf, check filter coefficients");

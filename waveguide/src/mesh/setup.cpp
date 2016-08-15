@@ -45,13 +45,16 @@ const aligned::vector<canonical_coefficients>& vectors::get_coefficients()
 
 setup_program::setup_program(const cl::Context& context,
                              const cl::Device& device)
-        : program_wrapper(context,
-                          device,
-                          std::vector<std::string>{::cl_sources::scene_structs,
-                                                   ::cl_sources::geometry,
-                                                   ::cl_sources::voxel,
-                                                   cl_sources::utils,
-                                                   source}) {}
+        : program_wrapper(
+                  context,
+                  device,
+                  std::vector<std::string>{cl_representation_v<real>,
+                                           cl_representation_v<surface>,
+                                           cl_representation_v<triangle>,
+                                           cl_representation_v<triangle_verts>,
+                                           ::cl_sources::geometry,
+                                           ::cl_sources::voxel,
+                                           source}) {}
 
 const std::string setup_program::source{R"(
 

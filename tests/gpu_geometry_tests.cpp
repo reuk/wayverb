@@ -19,9 +19,13 @@ public:
     program(const cl::Context& context, const cl::Device& device)
             : wrapper(context,
                       device,
-                      std::vector<std::string>{cl_sources::scene_structs,
-                                               cl_sources::geometry,
-                                               source}) {}
+                      std::vector<std::string>{
+                              cl_representation_v<volume_type>,
+                              cl_representation_v<surface>,
+                              cl_representation_v<triangle>,
+                              cl_representation_v<triangle_verts>,
+                              cl_sources::geometry,
+                              source}) {}
 
     auto get_triangle_vert_intersection_test_kernel() const {
         return wrapper.get_kernel<cl::Buffer, cl::Buffer, cl::Buffer>(
@@ -41,29 +45,31 @@ private:
     static constexpr const char* source{R"(
 
 kernel void triangle_vert_intersection_test(
-        const global TriangleVerts* triangle_verts,
-        const global Ray* rays,
-        global float* distances) {
+        const global triangle_verts* t,
+        const global ray* r,
+        global triangle_inter* ret) {
     const size_t thread = get_global_id(0);
-    distances[thread] = 0;
-    const TriangleVerts triangle_vert = triangle_verts[thread];
-    const Ray ray = rays[thread];
-    const float distance = triangle_vert_intersection(triangle_vert, ray);
-    distances[thread] = distance;
+    ret[thread] = (triangle_inter){};
+    const triangle_verts i = t[thread];
+    const ray j = r[thread];
+    const triangle_inter k = triangle_vert_intersection(i, j);
+    ret[thread] = k;
 }
 
 kernel void ray_triangle_intersection_test(
-        const global Triangle* triangles,
+        const global triangle* triangles,
         ulong num_triangles,
         const global float3* vertices,
-        const global Ray* rays,
-        global Intersection* intersections) {
+        const global ray* rays,
+        global intersection* ret) {
     const size_t thread = get_global_id(0);
-    intersections[thread] = (Intersection){};
-    const Ray ray = rays[thread];
-    const Intersection intersection =
-            ray_triangle_intersection(ray, triangles, num_triangles, vertices);
-    intersections[thread] = intersection;
+    ret[thread] = (intersection){};
+    const ray i = rays[thread];
+    const intersection j = ray_triangle_intersection(i,
+                                                     triangles,
+                                                     num_triangles,
+                                                     vertices);
+    ret[thread] = j;
 }
 
 )"};
@@ -129,24 +135,29 @@ TEST(gpu_geometry, triangle_vert_intersection) {
             map_to_vector(rays, [](const auto& i) { return convert(i); }),
             true)};
 
-    auto distances_buffer{cl::Buffer(
-            cc.get_context(), CL_MEM_READ_WRITE, sizeof(cl_float) * num_tests)};
+    auto triangle_inter_buffer{cl::Buffer(cc.get_context(),
+                                          CL_MEM_READ_WRITE,
+                                          sizeof(triangle_inter) * num_tests)};
 
     kernel(cl::EnqueueArgs(queue, cl::NDRange(num_tests)),
            triangle_verts_buffer,
            rays_buffer,
-           distances_buffer);
+           triangle_inter_buffer);
 
-    const auto gpu_distances{
-            read_from_buffer<cl_float>(queue, distances_buffer)};
+    const auto gpu_ret{
+            read_from_buffer<triangle_inter>(queue, triangle_inter_buffer)};
+
+    ASSERT_TRUE(proc::any_of(gpu_ret,
+                             [](const auto& i) { return i.t || i.u || i.v; }));
 
     for (auto i{0u}; i != num_tests; ++i) {
         const auto inter{
                 geo::triangle_intersection(triangle_verts[i], rays[i])};
 
         if (inter) {
-            ASSERT_TRUE(
-                    almost_equal(gpu_distances[i], inter ? inter->t : 0, 1));
+            ASSERT_TRUE(almost_equal(gpu_ret[i].t, inter ? inter->t : 0, 1));
+            ASSERT_TRUE(almost_equal(gpu_ret[i].u, inter ? inter->u : 0, 1));
+            ASSERT_TRUE(almost_equal(gpu_ret[i].v, inter ? inter->v : 0, 1));
         }
     }
 }
@@ -171,7 +182,7 @@ random_triangles(size_t num) {
 }
 
 TEST(gpu_geometry, ray_triangle_intersection) {
-    const auto num_tests{1000};
+    const auto num_tests{10000};
     const auto num_triangles{1000};
 
     const auto triangles{random_triangles(num_triangles)};
@@ -217,10 +228,13 @@ TEST(gpu_geometry, ray_triangle_intersection) {
         const auto inter{geo::ray_triangle_intersection(
                 rays[i], std::get<1>(triangles), std::get<0>(triangles))};
         if (inter) {
-            ASSERT_TRUE(gpu_intersections[i].intersects);
-            ASSERT_EQ(gpu_intersections[i].primitive, inter->index);
+            ASSERT_EQ(gpu_intersections[i].index, inter->index);
             ASSERT_TRUE(almost_equal(
-                    gpu_intersections[i].distance, inter->inter.t, 10));
+                    gpu_intersections[i].inter.t, inter->inter.t, 10));
+            ASSERT_TRUE(almost_equal(
+                    gpu_intersections[i].inter.u, inter->inter.u, 10));
+            ASSERT_TRUE(almost_equal(
+                    gpu_intersections[i].inter.v, inter->inter.v, 10));
         }
     }
 }

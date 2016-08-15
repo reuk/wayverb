@@ -19,7 +19,7 @@ private:
 
 //----------------------------------------------------------------------------//
 
-std::experimental::optional<geo::scene_triangle_inter> intersects(
+std::experimental::optional<intersection> intersects(
         const voxelised_scene_data& voxelised, const geo::ray& ray);
 
 std::experimental::optional<size_t> count_intersections(

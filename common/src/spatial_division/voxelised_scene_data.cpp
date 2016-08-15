@@ -14,19 +14,25 @@ voxelised_scene_data::voxelised_scene_data(
                   octree_depth,
                   [&](auto item, const auto& aabb) {
                       return geo::overlaps(
-                              aabb,
+                              util::padded(aabb,
+                                           glm::vec3{0.001}),  // this is a bit
+                                                               // greedy - we're
+                                                               // sacrificing a
+                                                               // some speed
+                                                               // for
+                                                               // correctness
                               geo::get_triangle_vec3(
                                       scene_data.get_triangles()[item],
                                       scene_data.get_vertices()));
                   },
                   scene_data.compute_triangle_indices(),
                   aabb)) {
-        if (aabb == scene_data.get_aabb()) {
-            throw std::runtime_error(
-                    "remember to add some padding to the voxelisation "
-                    "boundary!");
-        }
+    if (aabb == scene_data.get_aabb()) {
+        throw std::runtime_error(
+                "remember to add some padding to the voxelisation "
+                "boundary!");
     }
+}
 
 const copyable_scene_data& voxelised_scene_data::get_scene_data() const {
     return scene_data;
@@ -37,9 +43,9 @@ const voxel_collection<3>& voxelised_scene_data::get_voxels() const {
 
 //----------------------------------------------------------------------------//
 
-std::experimental::optional<geo::scene_triangle_inter> intersects(
+std::experimental::optional<intersection> intersects(
         const voxelised_scene_data& voxelised, const geo::ray& ray) {
-    std::experimental::optional<geo::scene_triangle_inter> state;
+    std::experimental::optional<intersection> state;
     traverse(voxelised.get_voxels(),
              ray,
              [&](const geo::ray& ray,
@@ -51,7 +57,7 @@ std::experimental::optional<geo::scene_triangle_inter> intersects(
                          to_test,
                          voxelised.get_scene_data().get_triangles(),
                          voxelised.get_scene_data().get_vertices());
-                 if (i && i->inter.t < max_dist_inside_voxel) {
+                 if (i && i->inter.t <= max_dist_inside_voxel) {
                      state = i;
                      return true;
                  }
@@ -88,7 +94,7 @@ std::experimental::optional<size_t> count_intersections(
                              count += 1;
                              return true;
                          }
-                         if (geo::is_degenerate(*intersection)) {
+                         if (is_degenerate(*intersection)) {
                              //  if the intersection is degenerate, set the
                              //  'degenerate' flag to true, and quit
                              //  traversal
@@ -96,8 +102,8 @@ std::experimental::optional<size_t> count_intersections(
                              return true;
                          }
                          //  if the intersection is inside the current voxel
-                         if (min_dist_inside_voxel <= intersection->t &&
-                             intersection->t < max_dist_inside_voxel) {
+                         if (min_dist_inside_voxel < intersection->t &&
+                             intersection->t <= max_dist_inside_voxel) {
                              //	 increment the intersection counter
                              count += 1;
                          }

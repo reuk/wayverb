@@ -11,13 +11,17 @@ namespace raytracer {
 
 attenuator_program::attenuator_program(const cl::Context& context,
                                        const cl::Device& device)
-        : program_wrapper(context,
-                          device,
-                          std::vector<std::string>{::cl_sources::scene_structs,
-                                                   cl_sources::structs,
-                                                   ::cl_sources::geometry,
-                                                   ::cl_sources::voxel,
-                                                   source}) {}
+        : program_wrapper(
+                  context,
+                  device,
+                  std::vector<std::string>{cl_representation_v<volume_type>,
+                                           cl_representation_v<surface>,
+                                           cl_representation_v<triangle>,
+                                           cl_representation_v<triangle_verts>,
+                                           cl_sources::structs,
+                                           ::cl_sources::geometry,
+                                           ::cl_sources::voxel,
+                                           source}) {}
 
 static_assert(speed_of_sound != 0, "SPEED_OF_SOUND");
 
