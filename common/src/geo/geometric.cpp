@@ -6,13 +6,6 @@
 
 namespace geo {
 
-ray::ray(const glm::vec3& position, const glm::vec3& direction)
-        : position(position)
-        , direction(glm::normalize(direction)) {}
-
-glm::vec3 ray::get_position() const { return position; }
-glm::vec3 ray::get_direction() const { return direction; }
-
 std::experimental::optional<triangle_inter> triangle_intersection(
         const triangle_vec3& tri, const ray& ray, size_t ulp) {
     //  from Fast, Minimum Storage Ray/Triangle Intersection

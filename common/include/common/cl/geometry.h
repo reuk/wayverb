@@ -2,6 +2,8 @@
 
 //  please only include in .cpp files
 
+#include "common/cl/scene_structs.h"
+
 #include <string>
 
 namespace cl_sources {
@@ -49,14 +51,14 @@ float triangle_vert_intersection(TriangleVerts v, Ray ray) {
     return invdet * dot(e1, qvec);
 }
 
-float triangle_intersection(const global Triangle * triangle,
+float triangle_intersection(Triangle triangle,
                             const global float3 * vertices,
                             Ray ray);
-float triangle_intersection(const global Triangle * triangle,
+float triangle_intersection(Triangle triangle,
                             const global float3 * vertices,
                             Ray ray) {
     const TriangleVerts v = {
-        vertices[triangle->v0], vertices[triangle->v1], vertices[triangle->v2]};
+        vertices[triangle.v0], vertices[triangle.v1], vertices[triangle.v2]};
     return triangle_vert_intersection(v, ray);
 }
 
@@ -67,12 +69,10 @@ float3 triangle_verts_normal(TriangleVerts t) {
     return normalize(cross(e0, e1));
 }
 
-float3 triangle_normal(const global Triangle * triangle,
-                       const global float3 * vertices);
-float3 triangle_normal(const global Triangle * triangle,
-                       const global float3 * vertices) {
+float3 triangle_normal(Triangle triangle, const global float3 * vertices);
+float3 triangle_normal(Triangle triangle, const global float3 * vertices) {
     const TriangleVerts t = {
-        vertices[triangle->v0], vertices[triangle->v1], vertices[triangle->v2]};
+        vertices[triangle.v0], vertices[triangle.v1], vertices[triangle.v2]};
     return triangle_verts_normal(t);
 }
 
@@ -86,16 +86,25 @@ Ray ray_reflect(Ray ray, float3 normal, float3 intersection) {
     return (Ray){intersection, reflect(normal, ray.direction)};
 }
 
-Ray triangle_reflect_at(const global Triangle * triangle,
+Ray triangle_reflect_at(Triangle triangle,
                         const global float3 * vertices,
                         Ray ray,
                         float3 intersection);
-Ray triangle_reflect_at(const global Triangle * triangle,
+Ray triangle_reflect_at(Triangle triangle,
                         const global float3 * vertices,
                         Ray ray,
                         float3 intersection) {
     return ray_reflect(ray, triangle_normal(triangle, vertices), intersection);
 }
+
+#define INTERSECTION_ACCUMULATOR                                               \
+    const Triangle tri = triangles[triangle_index]; /* keep on own line */     \
+    const float distance = triangle_intersection(tri, vertices, ray);          \
+    if (EPSILON < distance && (!ret.intersects || distance < ret.distance)) {  \
+        ret.primitive = triangle_index;                                        \
+        ret.distance = distance;                                               \
+        ret.intersects = true;                                                 \
+    }
 
 Intersection ray_triangle_intersection(Ray ray,
                                        const global Triangle * triangles,
@@ -106,17 +115,10 @@ Intersection ray_triangle_intersection(Ray ray,
                                        ulong numtriangles,
                                        const global float3 * vertices) {
     Intersection ret = {};
-
     for (ulong i = 0; i != numtriangles; ++i) {
-        float distance = triangle_intersection(triangles + i, vertices, ray);
-        if (distance > EPSILON &&
-            (!ret.intersects || (ret.intersects && distance < ret.distance))) {
-            ret.primitive = i;
-            ret.distance = distance;
-            ret.intersects = true;
-        }
+        const ulong triangle_index = i;
+        INTERSECTION_ACCUMULATOR
     }
-
     return ret;
 }
 
@@ -131,19 +133,10 @@ Intersection ray_triangle_group_intersection(Ray ray,
                                              ulong numindices,
                                              const global float3 * vertices) {
     Intersection ret = {};
-
     for (ulong i = 0; i != numindices; ++i) {
-        ulong index = indices[i];
-        float distance =
-            triangle_intersection(triangles + index, vertices, ray);
-        if (distance > EPSILON &&
-            (!ret.intersects || (ret.intersects && distance < ret.distance))) {
-            ret.primitive = index;
-            ret.distance = distance;
-            ret.intersects = true;
-        }
+        const uint triangle_index = indices[i];
+        INTERSECTION_ACCUMULATOR
     }
-
     return ret;
 }
 
@@ -173,3 +166,23 @@ constexpr bool operator==(const ray& a, const ray& b) {
 }
 
 constexpr bool operator!=(const ray& a, const ray& b) { return !(a == b); }
+
+//----------------------------------------------------------------------------//
+
+struct alignas(1 << 3) intersection final {
+    cl_ulong primitive;
+    cl_float distance;
+    cl_char intersects;
+};
+
+constexpr auto to_tuple(const intersection& x) {
+    return std::tie(x.primitive, x.distance, x.intersects);
+}
+
+constexpr bool operator==(const intersection& a, const intersection& b) {
+    return to_tuple(a) == to_tuple(b);
+}
+
+constexpr bool operator!=(const intersection& a, const intersection& b) {
+    return !(a == b);
+}

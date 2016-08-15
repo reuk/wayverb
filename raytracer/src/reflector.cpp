@@ -79,7 +79,7 @@ reflector::reflector(const cl::Context& context,
                      CL_MEM_READ_WRITE,
                      directions.size() * 2 * sizeof(cl_float)) {}
 
-aligned::vector<reflection> reflector::run_step(scene_buffers& buffers) {
+aligned::vector<reflection> reflector::run_step(const scene_buffers& buffers) {
     //  get some new rng and copy it to device memory
     auto rng = get_direction_rng(rays);
     cl::copy(queue, std::begin(rng), std::end(rng), rng_buffer);
@@ -97,9 +97,7 @@ aligned::vector<reflection> reflector::run_step(scene_buffers& buffers) {
            rng_buffer,
            reflection_buffer);
 
-    aligned::vector<reflection> ret(rays);
-    cl::copy(queue, reflection_buffer, std::begin(ret), std::end(ret));
-    return ret;
+    return read_from_buffer<reflection>(queue, reflection_buffer);
 }
 
 }  // namespace raytracer

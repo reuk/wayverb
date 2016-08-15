@@ -38,9 +38,7 @@ uint get_voxel_index(const global uint* voxel_index, int3 i, ulong side) {
     int3 ind =                                                                 \
             get_starting_index(ray.position, global_aabb, voxel_dimensions);   \
                                                                                \
-    /* Just quit early if the starting point is outside a voxel. */            \
     if (all((int3)(0) <= ind) && all(ind < (int3)(side))) {                    \
-                                                                               \
         const float3 c0 = convert_float3(ind + (int3)(0)) * voxel_dimensions;  \
         const float3 c1 = convert_float3(ind + (int3)(1)) * voxel_dimensions;  \
                                                                                \
@@ -53,13 +51,12 @@ uint get_voxel_index(const global uint* voxel_index, int3 i, ulong side) {
                                                                                \
         const float3 t_max_temp =                                              \
                 fabs((boundary - ray.position) / ray.direction);               \
-        const int3 is_nan = isnan(t_max_temp);                                 \
-        float3 t_max = select(t_max_temp, (float3)(INFINITY), is_nan);         \
+        float3 t_max =                                                         \
+                select(t_max_temp, (float3)(INFINITY), isnan(t_max_temp));     \
         const float3 t_delta = fabs(voxel_dimensions / ray.direction);         \
                                                                                \
         float prev_max = 0;                                                    \
                                                                                \
-        bool quit_early = false;                                               \
         for (;;) {                                                             \
             int min_i = 0;                                                     \
             for (int i = 1; i != 3; ++i) {                                     \
@@ -73,11 +70,7 @@ uint get_voxel_index(const global uint* voxel_index, int3 i, ulong side) {
             const global uint* voxel_begin = voxel_index + voxel_offset + 1;   \
             const float max_dist_inside_voxel = t_max[min_i];                  \
                                                                                \
-            { TO_INJECT }                                                      \
-                                                                               \
-            if (quit_early) {                                                  \
-                break;                                                         \
-            }                                                                  \
+            TO_INJECT                                                          \
                                                                                \
             ind[min_i] += step[min_i];                                         \
             if (ind[min_i] == just_out[min_i]) {                               \
@@ -100,18 +93,18 @@ Intersection voxel_traversal(Ray ray,
                              ulong side,
                              const global Triangle* triangles,
                              const global float3* vertices) {
-    VOXEL_TRAVERSAL_ALGORITHM({
+    VOXEL_TRAVERSAL_ALGORITHM(
         const Intersection state = ray_triangle_group_intersection(
                 ray, triangles, voxel_begin, num_triangles, vertices);
-        if (state.intersects && EPSILON < state.distance &&
-            state.distance < max_dist_inside_voxel) {
+        if (state.intersects && state.distance < max_dist_inside_voxel) {
             return state;
         }
-    })
+    )
 
     return (Intersection){};
 }
 
+/*
 bool voxel_inside_(Ray ray,
                   const global uint* voxel_index,
                   AABB global_aabb,
@@ -126,16 +119,16 @@ bool voxel_inside_(Ray ray,
                   const global float3* vertices) {
     uint count = 0;
 
-    VOXEL_TRAVERSAL_ALGORITHM({
+    VOXEL_TRAVERSAL_ALGORITHM(
         for (uint i = 0; i != num_triangles; ++i) {
             uint triangle_to_test = voxel_begin[i];
             const float distance = triangle_intersection(
-                    triangles + triangle_to_test, vertices, ray);
+                    triangles[triangle_to_test], vertices, ray);
             if (distance <= prev_max && distance < max_dist_inside_voxel) {
                 count += 1;
             }
         }
-    })
+    )
 
     return count % 2;
 }
@@ -167,6 +160,7 @@ bool voxel_inside(float3 pt,
     }
     return (lim / 2) < count;
 }
+*/
 
 bool voxel_point_intersection(float3 begin,
                               float3 point,

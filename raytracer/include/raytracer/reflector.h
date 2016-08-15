@@ -23,7 +23,7 @@ public:
               const glm::vec3& receiver,
               const aligned::vector<glm::vec3>& directions);
 
-    aligned::vector<reflection> run_step(scene_buffers& buffers);
+    aligned::vector<reflection> run_step(const scene_buffers& buffers);
 
 private:
     using kernel_t = decltype(

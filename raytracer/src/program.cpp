@@ -26,7 +26,6 @@ const std::string program::source("constant const float SPEED_OF_SOUND = " +
                                   std::to_string(speed_of_sound) +
                                   ";\n"
                                   R"(
-
 #define NULL (0)
 
 #define PRINT_INT3(VAR) printf("%v3hld\n", (VAR));
@@ -155,7 +154,7 @@ kernel void reflections(global Ray * ray,                  //  ray
             this_ray.position + this_ray.direction * closest.distance;
 
     //  get the normal at the intersection
-    float3 tnorm = triangle_normal(triangles + closest.primitive, vertices);
+    float3 tnorm = triangle_normal(triangles[closest.primitive], vertices);
 
     //  calculate the new specular direction from this point
     const float3 specular = reflect(tnorm, this_ray.direction);

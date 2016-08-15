@@ -2,11 +2,11 @@
 
 //  please only include in .cpp files
 
-#include "common/cl_include.h"
+#include "common/cl_traits.h"
 #include <string>
 
 namespace cl_sources {
-const std::string scene_structs(R"(
+constexpr const char* scene_structs(R"(
 
 #ifndef SCENE_STRUCTS_HEADER__
 #define SCENE_STRUCTS_HEADER__
@@ -43,9 +43,43 @@ struct alignas(1 << 5) surface {
     volume_type diffuse{{0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5}};
 };
 
+//----------------------------------------------------------------------------//
+
 struct alignas(1 << 3) triangle final {
     cl_ulong surface;
     cl_ulong v0;
     cl_ulong v1;
     cl_ulong v2;
 };
+
+constexpr auto to_tuple(const triangle& x) {
+    return std::tie(x.surface, x.v0, x.v1, x.v2);
+}
+
+constexpr bool operator==(const triangle& a, const triangle& b) {
+    return to_tuple(a) == to_tuple(b);
+}
+
+constexpr bool operator!=(const triangle& a, const triangle& b) {
+    return !(a == b);
+}
+
+//----------------------------------------------------------------------------//
+
+struct alignas(1 << 4) triangle_verts final {
+    cl_float3 v0;
+    cl_float3 v1;
+    cl_float3 v2;
+};
+
+constexpr auto to_tuple(const triangle_verts& x) {
+    return std::tie(x.v0, x.v1, x.v2);
+}
+
+constexpr bool operator==(const triangle_verts& a, const triangle_verts& b) {
+    return to_tuple(a) == to_tuple(b);
+}
+
+constexpr bool operator!=(const triangle_verts& a, const triangle_verts& b) {
+    return !(a == b);
+}
