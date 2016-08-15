@@ -48,17 +48,19 @@ setup_program::setup_program(const cl::Context& context,
         : program_wrapper(
                   context,
                   device,
-                  std::vector<std::string>{cl_representation_v<real>,
+                  std::vector<std::string>{cl_representation_v<volume_type>,
                                            cl_representation_v<surface>,
                                            cl_representation_v<triangle>,
                                            cl_representation_v<triangle_verts>,
+                                           cl_representation_v<node>,
                                            ::cl_sources::geometry,
                                            ::cl_sources::voxel,
+                                           ::cl_sources::utils,
                                            source}) {}
 
 const std::string setup_program::source{R"(
 
-kernel void set_node_position_and_neighbors(global Node* nodes,
+kernel void set_node_position_and_neighbors(global node* nodes,
                                             int3 dim,
                                             float3 min_corner,
                                             float spacing) {
@@ -66,7 +68,7 @@ kernel void set_node_position_and_neighbors(global Node* nodes,
     //  the locator once
 
     const size_t thread = get_global_id(0);
-    nodes[thread] = (Node){};   //  zero it out to begin with
+    nodes[thread] = (node){};   //  zero it out to begin with
 
     const int3 locator = to_locator(thread, dim);
 
@@ -77,13 +79,13 @@ kernel void set_node_position_and_neighbors(global Node* nodes,
     }
 }
 
-kernel void set_node_inside(global Node* nodes,
+kernel void set_node_inside(global node* nodes,
 
                             const global uint * voxel_index,   //  voxel
-                            AABB global_aabb,
+                            aabb global_aabb,
                             ulong side,
 
-                            const global Triangle * triangles, //  scene
+                            const global triangle * triangles, //  scene
                             const global float3 * vertices) {
     const size_t thread = get_global_id(0);
     const float3 position = nodes[thread].position;

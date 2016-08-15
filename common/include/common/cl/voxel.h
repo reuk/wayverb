@@ -12,10 +12,10 @@ const std::string voxel(std::string{} + cl_representation_v<aabb> + R"(
 #define VOXEL_HEADER__
 
 int3 get_starting_index(float3 position,
-                        AABB global_aabb,
+                        aabb global_aabb,
                         float3 voxel_dimensions);
 int3 get_starting_index(float3 position,
-                        AABB global_aabb,
+                        aabb global_aabb,
                         float3 voxel_dimensions) {
     return convert_int3(floor((position - global_aabb.c0) / voxel_dimensions));
 }
@@ -30,24 +30,24 @@ uint get_voxel_index(const global uint* voxel_index, int3 i, ulong side) {
     const float3 voxel_dimensions = (global_aabb.c1 - global_aabb.c0) / side;  \
                                                                                \
     int3 ind =                                                                 \
-            get_starting_index(ray.position, global_aabb, voxel_dimensions);   \
+            get_starting_index(r.position, global_aabb, voxel_dimensions);   \
                                                                                \
     if (all((int3)(0) <= ind) && all(ind < (int3)(side))) {                    \
         const float3 c0 = convert_float3(ind + (int3)(0)) * voxel_dimensions;  \
         const float3 c1 = convert_float3(ind + (int3)(1)) * voxel_dimensions;  \
                                                                                \
-        const AABB voxel_bounds = {global_aabb.c0 + c0, global_aabb.c0 + c1};  \
+        const aabb voxel_bounds = {global_aabb.c0 + c0, global_aabb.c0 + c1};  \
                                                                                \
-        const int3 gt = signbit(ray.direction);                                \
+        const int3 gt = signbit(r.direction);                                \
         const int3 step = select((int3)(1), (int3)(-1), gt);                   \
         const int3 just_out = select((int3)(side), (int3)(-1), gt);            \
         const float3 boundary = select(voxel_bounds.c1, voxel_bounds.c0, gt);  \
                                                                                \
         const float3 t_max_temp =                                              \
-                fabs((boundary - ray.position) / ray.direction);               \
+                fabs((boundary - r.position) / r.direction);               \
         float3 t_max =                                                         \
                 select(t_max_temp, (float3)(INFINITY), isnan(t_max_temp));     \
-        const float3 t_delta = fabs(voxel_dimensions / ray.direction);         \
+        const float3 t_delta = fabs(voxel_dimensions / r.direction);         \
                                                                                \
         float prev_max = 0;                                                    \
                                                                                \
@@ -75,49 +75,49 @@ uint get_voxel_index(const global uint* voxel_index, int3 i, ulong side) {
         }                                                                      \
     }
 
-Intersection voxel_traversal(Ray ray,
+intersection voxel_traversal(ray r,
                              const global uint* voxel_index,
-                             AABB global_aabb,
+                             aabb global_aabb,
                              ulong side,
-                             const global Triangle* triangles,
+                             const global triangle* triangles,
                              const global float3* vertices);
-Intersection voxel_traversal(Ray ray,
+intersection voxel_traversal(ray r,
                              const global uint* voxel_index,
-                             AABB global_aabb,
+                             aabb global_aabb,
                              ulong side,
-                             const global Triangle* triangles,
+                             const global triangle* triangles,
                              const global float3* vertices) {
     VOXEL_TRAVERSAL_ALGORITHM(
-        const Intersection state = ray_triangle_group_intersection(
-                ray, triangles, voxel_begin, num_triangles, vertices);
-        if (state.intersects && state.distance <= max_dist_inside_voxel) {
+        const intersection state = ray_triangle_group_intersection(
+                r, triangles, voxel_begin, num_triangles, vertices);
+        if (EPSILON < state.inter.t && state.inter.t <= max_dist_inside_voxel) {
             return state;
         }
     )
 
-    return (Intersection){};
+    return (intersection){};
 }
 
-bool voxel_inside_(Ray ray,
+bool voxel_inside_(ray r,
                   const global uint* voxel_index,
-                  AABB global_aabb,
+                  aabb global_aabb,
                   ulong side,
-                  const global Triangle* triangles,
+                  const global triangle* triangles,
                   const global float3* vertices);
-bool voxel_inside_(Ray ray,
+bool voxel_inside_(ray r,
                   const global uint* voxel_index,
-                  AABB global_aabb,
+                  aabb global_aabb,
                   ulong side,
-                  const global Triangle* triangles,
+                  const global triangle* triangles,
                   const global float3* vertices) {
     uint count = 0;
 
     VOXEL_TRAVERSAL_ALGORITHM(
         for (uint i = 0; i != num_triangles; ++i) {
             uint triangle_to_test = voxel_begin[i];
-            const float distance = triangle_intersection(
-                    triangles[triangle_to_test], vertices, ray);
-            if (distance < prev_max && distance <= max_dist_inside_voxel) {
+            const triangle_inter inter = triangle_intersection(
+                    triangles[triangle_to_test], vertices, r);
+            if (inter.t < prev_max && inter.t<= max_dist_inside_voxel) {
                 count += 1;
             }
         }
@@ -128,24 +128,24 @@ bool voxel_inside_(Ray ray,
 
 bool voxel_inside(float3 pt,
                   const global uint* voxel_index,
-                  AABB global_aabb,
+                  aabb global_aabb,
                   ulong side,
-                  const global Triangle* triangles,
+                  const global triangle* triangles,
                   const global float3* vertices);
 bool voxel_inside(float3 pt,
                   const global uint* voxel_index,
-                  AABB global_aabb,
+                  aabb global_aabb,
                   ulong side,
-                  const global Triangle* triangles,
+                  const global triangle* triangles,
                   const global float3* vertices) {
-    const Ray rays[] = {(Ray){pt, (float3)(-1, 0, 0)},
-                         (Ray){pt, (float3)(1, 0, 0)},
-                         (Ray){pt, (float3)(0, -1, 0)},
-                         (Ray){pt, (float3)(0, 1, 0)},
-                         (Ray){pt, (float3)(0, 0, -1)},
-                         (Ray){pt, (float3)(0, 0, 1)}};
+    const ray rays[] = {(ray){pt, (float3)(-1, 0, 0)},
+                         (ray){pt, (float3)(1, 0, 0)},
+                         (ray){pt, (float3)(0, -1, 0)},
+                         (ray){pt, (float3)(0, 1, 0)},
+                         (ray){pt, (float3)(0, 0, -1)},
+                         (ray){pt, (float3)(0, 0, 1)}};
     uint count = 0;
-    const size_t lim = sizeof(rays) / sizeof(Ray);
+    const size_t lim = sizeof(rays) / sizeof(ray);
     for (uint i = 0; i != lim; ++i) {
         if (voxel_inside_(rays[i], voxel_index, global_aabb, side, triangles, vertices)) {
             count += 1;
@@ -157,27 +157,27 @@ bool voxel_inside(float3 pt,
 bool voxel_point_intersection(float3 begin,
                               float3 point,
                               const global uint* voxel_index,
-                              AABB global_aabb,
+                              aabb global_aabb,
                               ulong side,
-                              const global Triangle* triangles,
+                              const global triangle* triangles,
                               const global float3* vertices);
 bool voxel_point_intersection(float3 begin,
                               float3 point,
                               const global uint* voxel_index,
-                              AABB global_aabb,
+                              aabb global_aabb,
                               ulong side,
-                              const global Triangle* triangles,
+                              const global triangle* triangles,
                               const global float3* vertices) {
     const float3 begin_to_point = point - begin;
     const float mag = length(begin_to_point);
     const float3 direction = normalize(begin_to_point);
 
-    Ray to_point = {begin, direction};
+    ray to_point = {begin, direction};
 
-    Intersection inter = voxel_traversal(
+    intersection inter = voxel_traversal(
             to_point, voxel_index, global_aabb, side, triangles, vertices);
 
-    return (!inter.intersects) || inter.distance > mag;
+    return inter.inter.t < EPSILON || mag < inter.inter.t;
 }
 #endif
 )");
