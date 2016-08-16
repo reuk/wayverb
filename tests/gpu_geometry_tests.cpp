@@ -68,7 +68,8 @@ kernel void ray_triangle_intersection_test(
     const intersection j = ray_triangle_intersection(i,
                                                      triangles,
                                                      num_triangles,
-                                                     vertices);
+                                                     vertices,
+                                                     ~(ulong)(0));
     ret[thread] = j;
 }
 

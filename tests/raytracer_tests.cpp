@@ -133,7 +133,7 @@ TEST(raytrace, same_location) {
             const auto cpu_position =
                     source + (the_rays[i] * intersection->inter.t);
             const auto gpu_position = to_vec3(diffuse[i][0].position);
-            if (! nearby(cpu_position, gpu_position, 0.0001)) {
+            if (!nearby(cpu_position, gpu_position, 0.0001)) {
                 ;
             }
         }
@@ -142,7 +142,7 @@ TEST(raytrace, same_location) {
 
 TEST(raytrace, image_source) {
     //  proper method
-    geo::box box(glm::vec3(0, 0, 0), glm::vec3(4, 3, 6));
+    const geo::box box(glm::vec3(0, 0, 0), glm::vec3(4, 3, 6));
     constexpr glm::vec3 receiver(2, 1, 5);
     constexpr auto s = 0.9;
     constexpr auto d = 0.1;
@@ -194,7 +194,7 @@ TEST(raytrace, image_source) {
     sort_by_time(proper_image_source_impulses);
 
     //  raytracing method
-    compute_context cc;
+    const auto cc{compute_context{}};
 
     auto scene = geo::get_scene_data(box);
     scene.set_surfaces(surface);
@@ -202,20 +202,23 @@ TEST(raytrace, image_source) {
             scene, 5, util::padded(scene.get_aabb(), glm::vec3{0.1}));
 
     std::atomic_bool keep_going{true};
-    auto results = raytracer::run(cc.get_context(),
-                                  cc.get_device(),
-                                  voxelised,
-                                  source,
-                                  receiver,
-                                  the_rays,
-                                  100,
-                                  10,
-                                  keep_going,
-                                  [](auto) {});
+    auto results{raytracer::run(cc.get_context(),
+                                cc.get_device(),
+                                voxelised,
+                                source,
+                                receiver,
+                                the_rays,
+                                100,
+                                10,
+                                keep_going,
+                                [](auto) {})};
 
     ASSERT_TRUE(results);
 
     auto output = results->get_impulses(true, true, false);
+
+    ASSERT_TRUE(output.size() > 1);
+
     sort_by_time(output);
 
     for (auto i : proper_image_source_impulses) {

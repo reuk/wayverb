@@ -44,7 +44,7 @@ diffuse_finder::diffuse_finder(const cl::Context& context,
         , impulse_builder(rays, depth) {}
 
 void diffuse_finder::push(const aligned::vector<reflection>& reflections,
-                          scene_buffers& buffers) {
+                          const scene_buffers& buffers) {
     auto is_cl_nan = [](auto i) {
         return proc::any_of(i.s, [](auto i) { return std::isnan(i); });
     };

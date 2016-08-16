@@ -49,27 +49,26 @@ std::experimental::optional<results> run(
     //  set up all the rendering context stuff
 
     //  load the scene into device memory
-    scene_buffers scene_buffers(context, scene_data);
+    const auto buffers{scene_buffers{context, scene_data}};
 
     //  this is the object that generates first-pass reflections
-    reflector reflector(context,
-                        device,
-                        receiver,
-                        get_rays_from_directions(source, directions));
+    auto ref{reflector{context,
+                       device,
+                       receiver,
+                       get_rays_from_directions(source, directions)}};
 
     //  this will collect the first reflections, to a specified depth,
     //  and use them to find unique image-source paths
-    image_source_finder image_source_finder(directions.size(),
-                                            image_source_depth);
+    auto img{image_source_finder{directions.size(), image_source_depth}};
 
     //  this will incrementally process diffuse responses
-    diffuse_finder diffuse_finder(context,
-                                  device,
-                                  source,
-                                  receiver,
-                                  air_coefficient,
-                                  directions.size(),
-                                  reflection_depth);
+    auto dif{diffuse_finder{context,
+                            device,
+                            source,
+                            receiver,
+                            air_coefficient,
+                            directions.size(),
+                            reflection_depth}};
 
     //  run the simulation proper
 
@@ -81,21 +80,20 @@ std::experimental::optional<results> run(
         }
 
         //  get a single step of the reflections
-        const auto reflections = reflector.run_step(scene_buffers);
+        const auto reflections{ref.run_step(buffers)};
 
         //  find diffuse impulses for these reflections
-        diffuse_finder.push(reflections, scene_buffers);
-        image_source_finder.push(reflections);
+        dif.push(reflections, buffers);
+        img.push(reflections);
 
         //  we did a step!
         callback(i);
     }
 
-    return results(
-            get_direct_impulse(source, receiver, scene_data),
-            image_source_finder.get_results(source, receiver, scene_data),
-            std::move(diffuse_finder.get_results()),
-            receiver);
+    return results(get_direct_impulse(source, receiver, scene_data),
+                   img.get_results(source, receiver, scene_data),
+                   std::move(dif.get_results()),
+                   receiver);
 }
 
 }  // namespace raytracer

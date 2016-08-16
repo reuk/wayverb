@@ -1,8 +1,8 @@
-#include "raytracer/image_source_impl.h"
 #include "common/almost_equal.h"
 #include "common/spatial_division/voxelised_scene_data.h"
 #include "common/stl_wrappers.h"
 #include "raytracer/construct_impulse.h"
+#include "raytracer/image_source_impl.h"
 
 #include <numeric>
 
@@ -97,14 +97,20 @@ glm::vec3 compute_mirrored_point(
             });
 }
 
-float compute_distance(const aligned::vector<glm::vec3>& unmirrored) {
-    return std::inner_product(
-            unmirrored.begin(),
-            unmirrored.end() - 1,
-            unmirrored.begin() + 1,
-            0.0f,
-            [](const auto& a, const auto& b) { return a + b; },
-            [](const auto& a, const auto& b) { return glm::distance(a, b); });
+float compute_distance(const glm::vec3& source,
+                       const aligned::vector<glm::vec3>& unmirrored,
+                       const glm::vec3& receiver) {
+    return glm::distance(source, unmirrored.front()) +
+           std::inner_product(
+                   unmirrored.begin(),
+                   unmirrored.end() - 1,
+                   unmirrored.begin() + 1,
+                   0.0f,
+                   [](const auto& a, const auto& b) { return a + b; },
+                   [](const auto& a, const auto& b) {
+                       return glm::distance(a, b);
+                   }) +
+           glm::distance(unmirrored.back(), receiver);
 }
 
 volume_type compute_volume(const copyable_scene_data& scene_data,
@@ -123,10 +129,12 @@ volume_type compute_volume(const copyable_scene_data& scene_data,
 
 impulse compute_ray_path_impulse(const copyable_scene_data& scene_data,
                                  const aligned::vector<cl_ulong>& triangles,
-                                 const aligned::vector<glm::vec3>& unmirrored) {
+                                 const glm::vec3& source,
+                                 const aligned::vector<glm::vec3>& unmirrored,
+                                 const glm::vec3& receiver) {
     return construct_impulse(compute_volume(scene_data, triangles),
-                             unmirrored[unmirrored.size() - 2],
-                             compute_distance(unmirrored));
+                             unmirrored.back(),
+                             compute_distance(source, unmirrored, receiver));
 }
 
 std::experimental::optional<impulse> follow_ray_path(
@@ -162,39 +170,43 @@ std::experimental::optional<impulse> follow_ray_path(
     const auto points = compute_intersection_points(*distances, ray);
 
     //  now mirror the intersection points back into scene space
-    auto unmirrored = compute_unmirrored_points(points, original);
-    unmirrored.insert(unmirrored.begin(), source);
+    const auto unmirrored{compute_unmirrored_points(points, original)};
 
-    const auto does_intersect = [&](const auto& a, const auto& b) {
-        const auto dir = glm::normalize(b - a);
-        const auto epsilon = 0.0001f;
-        const auto from = a + dir * epsilon;
-        const auto to = b;
-        const auto i = intersects(voxelised, geo::ray(from, dir));
-        return i && almost_equal(i->inter.t, glm::distance(from, to), epsilon);
+    const auto does_intersect = [&](
+            const auto& a, const auto& b, const auto& tri_to_ignore) {
+        if (a == b) {
+            return true;
+        }
+        const auto i{intersects(voxelised, geo::ray(a, b - a), tri_to_ignore)};
+        const auto dist{glm::distance(a, b)};
+        return i && almost_equal(i->inter.t, dist, 10);
     };
 
-    //  attempt to join the dots back in scene space
-    for (auto a = unmirrored.begin(), b = unmirrored.begin() + 1;
-         b != unmirrored.end();
-         ++a, ++b) {
-        if (*a == *b) {
-            //  the point lies on two joined triangles
-            continue;
-        }
-        if (!does_intersect(*a, *b)) {
-            return std::experimental::nullopt;
-        }
-    }
-
-    if (!does_intersect(receiver, unmirrored.back())) {
+    if (!does_intersect(source, unmirrored.front(), ~size_t{0})) {
         return std::experimental::nullopt;
     }
 
-    unmirrored.insert(unmirrored.end(), receiver);
+    //  attempt to join the dots back in scene space
+    {
+        auto a{unmirrored.begin()};
+        auto b{unmirrored.begin() + 1};
+        auto c{triangles.begin()};
+        for (; b != unmirrored.end(); ++a, ++b, ++c) {
+            if (!does_intersect(*a, *b, *c)) {
+                return std::experimental::nullopt;
+            }
+        }
+    }
 
-    return compute_ray_path_impulse(
-            voxelised.get_scene_data(), triangles, unmirrored);
+    if (!does_intersect(receiver, unmirrored.back(), ~size_t{0})) {
+        return std::experimental::nullopt;
+    }
+
+    return compute_ray_path_impulse(voxelised.get_scene_data(),
+                                    triangles,
+                                    source,
+                                    unmirrored,
+                                    receiver);
 }
 
 }  // namespace raytracer

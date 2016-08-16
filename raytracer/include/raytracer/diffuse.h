@@ -22,7 +22,7 @@ public:
                    size_t depth);
 
     void push(const aligned::vector<reflection>& reflections,
-              scene_buffers& scene_buffers);
+              const scene_buffers& scene_buffers);
     const aligned::vector<aligned::vector<impulse>>& get_results() const;
     aligned::vector<aligned::vector<impulse>>& get_results();
 
