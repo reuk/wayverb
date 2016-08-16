@@ -164,7 +164,7 @@ TEST(raytrace, image_source) {
         return raytracer::attenuation_for_distance(i);
     });
 
-    aligned::vector<raytracer::attenuated_impulse> proper_image_source_impulses;
+    aligned::vector<attenuated_impulse> proper_image_source_impulses;
 
     constexpr auto L = width_for_shell(shells);
     for (int i = 0; i != L; ++i) {
@@ -181,8 +181,7 @@ TEST(raytrace, image_source) {
                     volume *= base_vol;
 
                     proper_image_source_impulses.push_back(
-                            raytracer::attenuated_impulse{volume,
-                                                          times[index]});
+                            attenuated_impulse{volume, times[index]});
                 }
             }
         }

@@ -16,7 +16,7 @@ struct descriptor final {
 };
 
 using coefficient_generator =
-        std::function<biquad_coefficients(const descriptor&, double)>;
+        std::function<coefficients_biquad(const descriptor&, double)>;
 
 template <size_t... Ix>
 inline biquad_coefficients_array get_biquads_array(
@@ -34,7 +34,7 @@ inline biquad_coefficients_array get_biquads_array(
             std::make_index_sequence<biquad_sections>(), n, sr, callback);
 }
 
-biquad_coefficients get_peak_coefficients(const descriptor& n, double sr);
+coefficients_biquad get_peak_coefficients(const descriptor& n, double sr);
 
 biquad_coefficients_array get_peak_biquads_array(
         const std::array<descriptor, biquad_sections>& n, double sr);
@@ -52,7 +52,7 @@ constexpr coefficients<A + B> convolve(const coefficients<A>& a,
     return ret;
 }
 
-canonical_coefficients convolve(const biquad_coefficients_array& a);
+coefficients_canonical convolve(const biquad_coefficients_array& a);
 
 template <size_t L>
 constexpr bool is_stable(const std::array<double, L>& a) {
@@ -81,8 +81,8 @@ constexpr bool is_stable(const coefficients<L>& coeffs) {
     return is_stable(denom);
 }
 
-canonical_coefficients to_impedance_coefficients(
-        const canonical_coefficients& c);
+coefficients_canonical to_impedance_coefficients(
+        const coefficients_canonical& c);
 
 
 }//namespace waveguide

@@ -11,17 +11,20 @@ namespace raytracer {
 
 attenuator_program::attenuator_program(const cl::Context& context,
                                        const cl::Device& device)
-        : program_wrapper(
-                  context,
-                  device,
-                  std::vector<std::string>{cl_representation_v<volume_type>,
-                                           cl_representation_v<surface>,
-                                           cl_representation_v<triangle>,
-                                           cl_representation_v<triangle_verts>,
-                                           cl_sources::structs,
-                                           ::cl_sources::geometry,
-                                           ::cl_sources::voxel,
-                                           source}) {}
+        : program_wrapper(context,
+                          device,
+                          std::vector<std::string>{
+                                  cl_representation_v<volume_type>,
+                                  cl_representation_v<surface>,
+                                  cl_representation_v<triangle>,
+                                  cl_representation_v<triangle_verts>,
+                                  cl_representation_v<reflection>,
+                                  cl_representation_v<diffuse_path_info>,
+                                  cl_representation_v<impulse>,
+                                  cl_representation_v<microphone>,
+                                  ::cl_sources::geometry,
+                                  ::cl_sources::voxel,
+                                  source}) {}
 
 static_assert(speed_of_sound != 0, "SPEED_OF_SOUND");
 
@@ -75,11 +78,11 @@ float elevation(float3 d) {
     return atan2(d.y, length(d.xz));
 }
 
-VolumeType hrtf_attenuation(global VolumeType * hrtfData,
+volume_type hrtf_attenuation(global volume_type * hrtfData,
                             float3 pointing,
                             float3 up,
                             float3 impulseDirection);
-VolumeType hrtf_attenuation(global VolumeType * hrtfData,
+volume_type hrtf_attenuation(global volume_type * hrtfData,
                             float3 pointing,
                             float3 up,
                             float3 impulseDirection) {
@@ -96,7 +99,7 @@ VolumeType hrtf_attenuation(global VolumeType * hrtfData,
 kernel void hrtf(float3 mic_pos,
                  global Impulse * impulsesIn,
                  global AttenuatedImpulse * impulsesOut,
-                 global VolumeType * hrtfData,
+                 global volume_type * hrtfData,
                  float3 pointing,
                  float3 up,
                  ulong channel) {
@@ -110,7 +113,7 @@ kernel void hrtf(float3 mic_pos,
     global Impulse * thisImpulse = impulsesIn + i;
 
     if (any(thisImpulse->volume != 0)) {
-        const VolumeType ATTENUATION =
+        const volume_type ATTENUATION =
             hrtf_attenuation(hrtfData,
                              pointing,
                              up,

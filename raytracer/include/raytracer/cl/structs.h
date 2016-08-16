@@ -1,51 +1,8 @@
 #pragma once
 
+#include "common/cl/cl_representation.h"
 #include "common/cl/scene_structs.h"
 #include "common/cl_traits.h"
-
-namespace raytracer {
-namespace cl_sources {
-constexpr const char* structs(R"(
-
-#ifndef STRUCTS_HEADER__
-#define STRUCTS_HEADER__
-
-typedef struct {
-    float3 position;
-    float3 direction;
-    ulong triangle;
-    char keep_going;
-    char receiver_visible;
-} Reflection;
-
-typedef struct {
-    VolumeType volume;
-    float3 position;
-    float distance;
-} DiffusePathInfo;
-
-typedef struct {
-    VolumeType volume;
-    float3 position;
-    float time;
-} Impulse;
-
-typedef struct {
-    VolumeType volume;
-    float time;
-} AttenuatedImpulse;
-
-typedef struct {
-    float3 direction;
-    float coefficient;
-} Microphone;
-
-#endif
-
-)");
-}  // namespace cl_sources
-
-//----------------------------------------------------------------------------//
 
 constexpr volume_type air_coefficient{{0.001f * -0.1f,
                                        0.001f * -0.2f,
@@ -66,6 +23,22 @@ struct alignas(1 << 4) reflection final {
                           //  path (like a \0 in a char*)
     cl_char receiver_visible;  //  whether or not the receiver is visible from
                                //  this point
+};
+
+template<>
+struct cl_representation<reflection> final {
+    static constexpr const char* value{R"(
+#ifndef REFLECTION_DEFINITION__
+#define REFLECTION_DEFINITION__
+typedef struct {
+    float3 position;
+    float3 direction;
+    ulong triangle;
+    char keep_going;
+    char receiver_visible;
+} reflection;
+#endif
+)"};
 };
 
 constexpr auto to_tuple(const reflection& x) {
@@ -93,6 +66,20 @@ struct alignas(1 << 5) diffuse_path_info final {
     cl_float distance;   //  total distance travelled
 };
 
+template<>
+struct cl_representation<diffuse_path_info> final {
+    static constexpr const char* value{R"(
+#ifndef DIFFUSE_PATH_INFO_DEFINITION__
+#define DIFFUSE_PATH_INFO_DEFINITION__
+typedef struct {
+    volume_type volume;
+    float3 position;
+    float distance;
+} diffuse_path_info;
+#endif
+)"};
+};
+
 constexpr auto to_tuple(const diffuse_path_info& x) {
     return std::tie(x.volume, x.position, x.distance);
 }
@@ -118,6 +105,20 @@ struct alignas(1 << 5) impulse final {
     cl_float time;       //  time that the impulse is received
 };
 
+template<>
+struct cl_representation<impulse> final {
+    static constexpr const char* value{R"(
+#ifndef IMPULSE_DEFINITION__
+#define IMPULSE_DEFINITION__
+typedef struct {
+    volume_type volume;
+    float3 position;
+    float time;
+} impulse;
+#endif
+)"};
+};
+
 constexpr auto to_tuple(const impulse& x) {
     return std::tie(x.volume, x.position, x.time);
 }
@@ -135,6 +136,19 @@ constexpr bool operator!=(const impulse& a, const impulse& b) {
 struct alignas(1 << 5) attenuated_impulse final {
     volume_type volume;
     cl_float time;
+};
+
+template<>
+struct cl_representation<attenuated_impulse> final {
+    static constexpr const char* value{R"(
+#ifndef ATTENUATED_IMPULSE_DEFINITION__
+#define ATTENUATED_IMPULSE_DEFINITION__
+typedef struct {
+    volume_type volume;
+    float time;
+} attenuated_impulse;
+#endif
+)"};
 };
 
 constexpr auto to_tuple(const attenuated_impulse& x) {
@@ -160,6 +174,19 @@ struct alignas(1 << 4) microphone final {
     cl_float coefficient;
 };
 
+template<>
+struct cl_representation<microphone> final {
+    static constexpr const char* value{R"(
+#ifndef MICROPHONE_DEFINITION__
+#define MICROPHONE_DEFINITION__
+typedef struct {
+    float3 direction;
+    float coefficient;
+} microphone;
+#endif
+)"};
+};
+
 constexpr auto to_tuple(const microphone& x) {
     return std::tie(x.direction, x.coefficient);
 }
@@ -171,5 +198,3 @@ constexpr bool operator==(const microphone& a, const microphone& b) {
 constexpr bool operator!=(const microphone& a, const microphone& b) {
     return !(a == b);
 }
-
-}  // namespace raytracer

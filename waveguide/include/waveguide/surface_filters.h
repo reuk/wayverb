@@ -26,7 +26,7 @@ constexpr std::array<descriptor, biquad_sections> to_filter_descriptors(
                                  surface);
 }
 
-inline canonical_coefficients to_filter_coefficients(const surface& surface,
+inline coefficients_canonical to_filter_coefficients(const surface& surface,
                                                      float sr) {
     const auto descriptors = to_filter_descriptors(surface);
     //  transform filter parameters into a set of biquad coefficients
@@ -40,9 +40,9 @@ inline canonical_coefficients to_filter_coefficients(const surface& surface,
     return to_impedance_coefficients(ret);
 }
 
-inline aligned::vector<canonical_coefficients> to_filter_coefficients(
+inline aligned::vector<coefficients_canonical> to_filter_coefficients(
         aligned::vector<surface> surfaces, float sr) {
-    aligned::vector<canonical_coefficients> ret(surfaces.size());
+    aligned::vector<coefficients_canonical> ret(surfaces.size());
     proc::transform(surfaces, ret.begin(), [sr](auto i) {
         return to_filter_coefficients(i, sr);
     });

@@ -28,7 +28,7 @@ aligned::vector<condensed_node> get_condensed(const aligned::vector<node>& n) {
 //----------------------------------------------------------------------------//
 
 vectors::vectors(const aligned::vector<node>& nodes,
-                 const aligned::vector<canonical_coefficients>& coefficients)
+                 const aligned::vector<coefficients_canonical>& coefficients)
         : condensed_nodes(get_condensed(nodes))
         , coefficients(coefficients) {}
 
@@ -36,7 +36,7 @@ const aligned::vector<condensed_node>& vectors::get_condensed_nodes() const {
     return condensed_nodes;
 }
 
-const aligned::vector<canonical_coefficients>& vectors::get_coefficients()
+const aligned::vector<coefficients_canonical>& vectors::get_coefficients()
         const {
     return coefficients;
 }

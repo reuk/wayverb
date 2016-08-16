@@ -160,12 +160,12 @@ struct CoefficientTypeTrait<FilterType::biquad_cascade> {
 
 template <>
 struct CoefficientTypeTrait<FilterType::single_reflectance> {
-    using type = coefficients<biquad_sections * biquad_coefficients::order>;
+    using type = coefficients<biquad_sections * coefficients_biquad::order>;
 };
 
 template <>
 struct CoefficientTypeTrait<FilterType::single_impedance> {
-    using type = coefficients<biquad_sections * biquad_coefficients::order>;
+    using type = coefficients<biquad_sections * coefficients_biquad::order>;
 };
 
 template <FilterType FT>
@@ -270,12 +270,12 @@ using rk_biquad = kernel<biquad_memory_array,
                          Generator>;
 
 template <typename Generator>
-using rk_filter = kernel<canonical_memory,
+using rk_filter = kernel<memory_canonical,
                          testing::FilterType::single_reflectance,
                          Generator>;
 
 template <typename Generator>
-using rk_impedance = kernel<canonical_memory,
+using rk_impedance = kernel<memory_canonical,
                             testing::FilterType::single_impedance,
                             Generator>;
 

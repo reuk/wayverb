@@ -63,7 +63,7 @@ inline bool operator!=(const condensed_node& a, const condensed_node& b) {
 /// into an array of filter parameters which describe the filter being
 /// modelled.
 struct alignas(1 << 3) boundary_data final {
-    canonical_memory filter_memory{};
+    memory_canonical filter_memory{};
     cl_uint coefficient_index{};
 };
 
@@ -73,7 +73,7 @@ struct cl_representation<boundary_data> final {
 #ifndef BOUNDARY_DATA_DEFINITION__
 #define BOUNDARY_DATA_DEFINITION__
 typedef struct {
-    filter_memory_canonical filter_memory;
+    memory_canonical filter_memory;
     uint coefficient_index;
 } boundary_data;
 #endif

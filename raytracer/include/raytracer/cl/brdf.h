@@ -71,9 +71,9 @@ float brdf_mag_for_outgoing(float3 specular, float3 outgoing, float d) {
     return brdf_mag(dot(specular, outgoing), d);
 }
 
-VolumeType brdf_mags_for_outgoing(float3 specular, float3 outgoing, VolumeType d);
-VolumeType brdf_mags_for_outgoing(float3 specular, float3 outgoing, VolumeType d) {
-    return (VolumeType)(
+volume_type brdf_mags_for_outgoing(float3 specular, float3 outgoing, volume_type d);
+volume_type brdf_mags_for_outgoing(float3 specular, float3 outgoing, volume_type d) {
+    return (volume_type)(
         brdf_mag_for_outgoing(specular, outgoing, d.s0),
         brdf_mag_for_outgoing(specular, outgoing, d.s1),
         brdf_mag_for_outgoing(specular, outgoing, d.s2),
@@ -84,8 +84,8 @@ VolumeType brdf_mags_for_outgoing(float3 specular, float3 outgoing, VolumeType d
         brdf_mag_for_outgoing(specular, outgoing, d.s7));
 }
 
-float mean(VolumeType v);
-float mean(VolumeType v) {
+float mean(volume_type v);
+float mean(volume_type v) {
     return (v.s0 + v.s1 + v.s2 + v.s3 + v.s4 + v.s5 + v.s6 + v.s7) / 8;
 }
 

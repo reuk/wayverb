@@ -94,7 +94,7 @@ aligned::vector<attenuated_impulse> microphone::process(
            to_cl_float3(position),
            cl_in,
            cl_out,
-           raytracer::microphone{to_cl_float3(pointing), shape});
+           ::microphone{to_cl_float3(pointing), shape});
 
     //  create output location
     aligned::vector<attenuated_impulse> ret(impulses.size());

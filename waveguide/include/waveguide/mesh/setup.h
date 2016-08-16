@@ -78,18 +78,18 @@ constexpr bool is_inside(const condensed_node& c) {
 class vectors final {
 public:
     vectors(const aligned::vector<node>& nodes,
-            const aligned::vector<canonical_coefficients>& coefficients);
+            const aligned::vector<coefficients_canonical>& coefficients);
 
     template <size_t n>
     const aligned::vector<std::array<cl_uint, n>>& get_boundary_coefficients()
             const;
 
     const aligned::vector<condensed_node>& get_condensed_nodes() const;
-    const aligned::vector<canonical_coefficients>& get_coefficients() const;
+    const aligned::vector<coefficients_canonical>& get_coefficients() const;
 
 private:
     aligned::vector<condensed_node> condensed_nodes;
-    aligned::vector<canonical_coefficients> coefficients;
+    aligned::vector<coefficients_canonical> coefficients;
     aligned::vector<std::array<cl_uint, 1>> boundary_coefficients_1;
     aligned::vector<std::array<cl_uint, 2>> boundary_coefficients_2;
     aligned::vector<std::array<cl_uint, 3>> boundary_coefficients_3;

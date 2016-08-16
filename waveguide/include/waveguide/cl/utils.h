@@ -38,7 +38,8 @@ constexpr boundary_type port_index_to_boundary_type(unsigned int i) {
 
 //----------------------------------------------------------------------------//
 
-static constexpr size_t num_ports{6};
+constexpr auto no_neighbor{~cl_uint{0}};
+constexpr auto num_ports{size_t{6}};
 
 struct alignas(1 << 4) node final {
     cl_float3 position{};        /// spatial position
@@ -73,8 +74,6 @@ inline bool operator==(const node& a, const node& b) {
 inline bool operator!=(const node& a, const node& b) { return !(a == b); }
 
 //----------------------------------------------------------------------------//
-
-constexpr cl_uint no_neighbor{~cl_uint{0}};
 
 namespace cl_sources {
 
