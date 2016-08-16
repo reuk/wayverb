@@ -44,9 +44,9 @@ const std::string program::source("constant const float SPEED_OF_SOUND = " +
 constant const float SECONDS_PER_METER = 1.0f / SPEED_OF_SOUND;
 
 volume_type air_attenuation_for_distance(float distance,
-                                        volume_type air_coefficient);
+                                         volume_type air_coefficient);
 volume_type air_attenuation_for_distance(float distance,
-                                        volume_type air_coefficient) {
+                                         volume_type air_coefficient) {
     return pow(M_E, distance * air_coefficient);
 }
 
@@ -59,9 +59,10 @@ float power_attenuation_for_distance(float distance) {
 #endif
 }
 
-volume_type attenuation_for_distance(float distance, volume_type air_coefficient);
 volume_type attenuation_for_distance(float distance,
-                                    volume_type air_coefficient) {
+                                     volume_type air_coefficient);
+volume_type attenuation_for_distance(float distance,
+                                     volume_type air_coefficient) {
     return (air_attenuation_for_distance(distance, air_coefficient) *
             power_attenuation_for_distance(distance));
 }
@@ -74,8 +75,9 @@ float3 mirror_point(float3 p, triangle_verts t) {
 
 triangle_verts mirror_verts(triangle_verts in, triangle_verts t);
 triangle_verts mirror_verts(triangle_verts in, triangle_verts t) {
-    return (triangle_verts){
-        mirror_point(in.v0, t), mirror_point(in.v1, t), mirror_point(in.v2, t)};
+    return (triangle_verts){mirror_point(in.v0, t),
+                            mirror_point(in.v1, t),
+                            mirror_point(in.v2, t)};
 }
 
 void reflect_and_add_triangle_to_history(triangle_verts current,
@@ -94,31 +96,32 @@ void reflect_and_add_triangle_to_history(triangle_verts current,
     history[iteration] = current;
 }
 
-kernel void reflections(global ray * rays,                 //  ray
+kernel void reflections(global ray* rays,  //  ray
 
-                        float3 receiver,                   //  receiver
+                        float3 receiver,  //  receiver
 
-                        const global uint * voxel_index,   //  voxel
+                        const global uint* voxel_index,  //  voxel
                         aabb global_aabb,
                         ulong side,
 
-                        const global triangle * triangles, //  scene
-                        const global float3 * vertices,
-                        const global surface * surfaces,
+                        const global triangle* triangles,  //  scene
+                        const global float3* vertices,
+                        const global surface* surfaces,
 
-                        const global float * rng,          //  random numbers
+                        const global float* rng,  //  random numbers
 
-                        global reflection * reflections) {  //  output
+                        global reflection* reflections) {  //  output
     //  get thread index
     const size_t thread = get_global_id(0);
 
     const bool keep_going = reflections[thread].keep_going;
+    const ulong previous_triangle = reflections[thread].triangle;
 
     //  zero out result reflection
-    reflections[thread] = (reflection) {};
+    reflections[thread] = (reflection){};
 
     //  if this thread should stop, then stop
-    if (! keep_going) {
+    if (!keep_going) {
         return;
     }
 
@@ -126,20 +129,22 @@ kernel void reflections(global ray * rays,                 //  ray
     const ray this_ray = rays[thread];
 
     //  find the intersection between scene geometry and this ray
-    const intersection closest = voxel_traversal(
-            this_ray, voxel_index, global_aabb, side, triangles, vertices);
+    const intersection closest_intersection = voxel_traversal(
+            this_ray, voxel_index, global_aabb, side, triangles, vertices, previous_triangle);
 
     //  didn't find an intersection, should halt this thread
-    if (! closest.inter.t) {
+    if (!closest_intersection.inter.t) {
         return;
     }
 
     //  find where the ray intersects with the scene geometry
-    const float3 intersection =
-            this_ray.position + this_ray.direction * closest.inter.t;
+    const float3 intersection_pt =
+            this_ray.position +
+            this_ray.direction * closest_intersection.inter.t;
 
     //  get the normal at the intersection
-    float3 tnorm = triangle_normal(triangles[closest.index], vertices);
+    const triangle closest_triangle = triangles[closest_intersection.index];
+    float3 tnorm = triangle_normal(closest_triangle, vertices);
 
     //  calculate the new specular direction from this point
     const float3 specular = reflect(tnorm, this_ray.direction);
@@ -148,18 +153,19 @@ kernel void reflections(global ray * rays,                 //  ray
     tnorm *= signbit(dot(tnorm, specular));
 
     //  see whether the receiver is visible from this point
-    const bool is_intersection = voxel_point_intersection(intersection,
+    const bool is_intersection = voxel_point_intersection(intersection_pt,
                                                           receiver,
                                                           voxel_index,
                                                           global_aabb,
                                                           side,
                                                           triangles,
-                                                          vertices);
+                                                          vertices,
+                                                          closest_intersection.index);
 
     //  now we can populate the output
-    reflections[thread] = (reflection) {intersection,
+    reflections[thread] = (reflection){intersection_pt,
                                        specular,
-                                       closest.index,
+                                       closest_intersection.index,
                                        true,
                                        is_intersection};
 
@@ -167,16 +173,17 @@ kernel void reflections(global ray * rays,                 //  ray
 
     //  find the scattering
     //  get random values to influence direction of reflected ray
-    const float z           = rng[2 * thread + 0];
-    const float theta       = rng[2 * thread + 1];
+    const float z = rng[2 * thread + 0];
+    const float theta = rng[2 * thread + 1];
+    const float3 random_unit_vector = sphere_point(z, theta);
     //  scattering coefficient is the average of the diffuse coefficients
-    const surface s         = surfaces[triangles[closest.index].surface];
-    const float scatter     = mean(s.diffuse);
+    const surface s = surfaces[closest_triangle.surface];
+    const float scatter = mean(s.diffuse);
     const float3 scattering = lambert_scattering(
-            specular, tnorm, sphere_point(z, theta), scatter);
+            specular, tnorm, random_unit_vector, scatter);
 
     //  find the next ray to trace
-    rays[thread] = (ray){intersection, scattering};
+    rays[thread] = (ray){intersection_pt, scattering};
 }
 
 kernel void diffuse(const global reflection* reflections,  //  input
@@ -217,7 +224,8 @@ kernel void diffuse(const global reflection* reflections,  //  input
 
     //  compute output
 
-    const float total_distance = new_distance + distance(reflections[thread].position, receiver);
+    const float total_distance =
+            new_distance + distance(reflections[thread].position, receiver);
 
     //  find output volume
     volume_type output_volume = (volume_type)(0, 0, 0, 0, 0, 0, 0, 0);
@@ -226,7 +234,9 @@ kernel void diffuse(const global reflection* reflections,  //  input
                 normalize(receiver - reflections[thread].position);
         const volume_type diffuse_brdf = brdf_mags_for_outgoing(
                 reflections[thread].direction, to_receiver, s.diffuse);
-        output_volume = new_volume * diffuse_brdf * attenuation_for_distance(total_distance, air_coefficient);
+        output_volume =
+                new_volume * diffuse_brdf *
+                attenuation_for_distance(total_distance, air_coefficient);
     }
 
     //  find output time

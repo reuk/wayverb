@@ -80,21 +80,22 @@ intersection voxel_traversal(ray r,
                              aabb global_aabb,
                              ulong side,
                              const global triangle* triangles,
-                             const global float3* vertices);
+                             const global float3* vertices,
+                             ulong avoid_intersecting_with);
 intersection voxel_traversal(ray r,
                              const global uint* voxel_index,
                              aabb global_aabb,
                              ulong side,
                              const global triangle* triangles,
-                             const global float3* vertices) {
+                             const global float3* vertices,
+                             ulong avoid_intersecting_with) {
     VOXEL_TRAVERSAL_ALGORITHM(
         const intersection state = ray_triangle_group_intersection(
-                r, triangles, voxel_begin, num_triangles, vertices);
-        if (EPSILON < state.inter.t && state.inter.t <= max_dist_inside_voxel) {
+                r, triangles, voxel_begin, num_triangles, vertices, avoid_intersecting_with);
+        if (state.inter.t && state.inter.t <= max_dist_inside_voxel) {
             return state;
         }
     )
-
     return (intersection){};
 }
 
@@ -160,24 +161,26 @@ bool voxel_point_intersection(float3 begin,
                               aabb global_aabb,
                               ulong side,
                               const global triangle* triangles,
-                              const global float3* vertices);
+                              const global float3* vertices,
+                              ulong avoid_intersecting_with);
 bool voxel_point_intersection(float3 begin,
                               float3 point,
                               const global uint* voxel_index,
                               aabb global_aabb,
                               ulong side,
                               const global triangle* triangles,
-                              const global float3* vertices) {
+                              const global float3* vertices,
+                              ulong avoid_intersecting_with) {
     const float3 begin_to_point = point - begin;
     const float mag = length(begin_to_point);
     const float3 direction = normalize(begin_to_point);
 
-    ray to_point = {begin, direction};
+    const ray to_point = {begin, direction};
 
-    intersection inter = voxel_traversal(
-            to_point, voxel_index, global_aabb, side, triangles, vertices);
+    const intersection inter = voxel_traversal(
+            to_point, voxel_index, global_aabb, side, triangles, vertices, avoid_intersecting_with);
 
-    return inter.inter.t < EPSILON || mag < inter.inter.t;
+    return !inter.inter.t || mag < inter.inter.t;
 }
 #endif
 )");

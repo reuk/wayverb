@@ -15,6 +15,12 @@ constexpr volume_type air_coefficient{{0.001f * -0.1f,
 
 //----------------------------------------------------------------------------//
 
+/// Rays will not intersect with the same surface that was referenced by the
+/// previous reflection along a ray.
+/// Ensure that the `triangle` field of the initial reflection buffer is set
+/// to a number larger than the total number of triangles in the scene
+/// (like ~cl_ulong{0})
+
 struct alignas(1 << 4) reflection final {
     cl_float3 position;   //  position of the secondary source
     cl_float3 direction;  //  specular direction from the source

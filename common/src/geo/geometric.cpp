@@ -37,7 +37,7 @@ std::experimental::optional<triangle_inter> triangle_intersection(
 
     const auto t = invdet * glm::dot(e1, qvec);
 
-    if (t < 0) {
+    if (t < 0 || almost_equal(t, 0.0f, ulp)) {
         return std::experimental::nullopt;
     }
 

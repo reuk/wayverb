@@ -44,7 +44,9 @@ const voxel_collection<3>& voxelised_scene_data::get_voxels() const {
 //----------------------------------------------------------------------------//
 
 std::experimental::optional<intersection> intersects(
-        const voxelised_scene_data& voxelised, const geo::ray& ray) {
+        const voxelised_scene_data& voxelised,
+        const geo::ray& ray,
+        size_t to_ignore) {
     std::experimental::optional<intersection> state;
     traverse(voxelised.get_voxels(),
              ray,
@@ -56,7 +58,8 @@ std::experimental::optional<intersection> intersects(
                          ray,
                          to_test,
                          voxelised.get_scene_data().get_triangles(),
-                         voxelised.get_scene_data().get_vertices());
+                         voxelised.get_scene_data().get_vertices(),
+                         to_ignore);
                  if (i && i->inter.t <= max_dist_inside_voxel) {
                      state = i;
                      return true;

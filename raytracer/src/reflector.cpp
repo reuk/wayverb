@@ -39,45 +39,46 @@ aligned::vector<glm::vec3> get_random_directions(size_t num) {
     return ret;
 }
 
-aligned::vector<ray> get_random_rays(size_t num, const glm::vec3& source) {
-    return map_to_vector(get_random_directions(num), [&](const auto& i) {
-        return ray{to_cl_float3(source), to_cl_float3(i)};
+aligned::vector<geo::ray> get_rays_from_directions(
+        const glm::vec3& source, const aligned::vector<glm::vec3>& directions) {
+    return map_to_vector(directions, [&](const auto& i) {
+        return geo::ray{source, i};
     });
+}
+
+aligned::vector<geo::ray> get_random_rays(const glm::vec3& source, size_t num) {
+    return get_rays_from_directions(source, get_random_directions(num));
 }
 
 //----------------------------------------------------------------------------//
 
 reflector::reflector(const cl::Context& context,
                      const cl::Device& device,
-                     const glm::vec3& source,
                      const glm::vec3& receiver,
-                     const aligned::vector<glm::vec3>& directions)
+                     const aligned::vector<geo::ray>& rays)
         : context(context)
         , device(device)
         , queue(context, device)
         , kernel(program(context, device).get_reflections_kernel())
         , receiver(to_cl_float3(receiver))
-        , rays(directions.size())
+        , rays(rays.size())
         , ray_buffer(load_to_buffer(
                   context,
-                  map_to_vector(
-                          directions,
-                          [&](const auto& i) {
-                              return ray{to_cl_float3(source), to_cl_float3(i)};
-                          }),
+                  map_to_vector(rays,
+                                [&](const auto& i) { return convert(i); }),
                   false))
         , reflection_buffer(load_to_buffer(
                   context,
-                  aligned::vector<reflection>(directions.size(),
+                  aligned::vector<reflection>(rays.size(),
                                               reflection{cl_float3{},
                                                          cl_float3{},
-                                                         cl_ulong{},
+                                                         cl_ulong{~cl_ulong{0}},
                                                          cl_char{true},
                                                          cl_char{}}),
                   false))
         , rng_buffer(context,
                      CL_MEM_READ_WRITE,
-                     directions.size() * 2 * sizeof(cl_float)) {}
+                     rays.size() * 2 * sizeof(cl_float)) {}
 
 aligned::vector<reflection> reflector::run_step(const scene_buffers& buffers) {
     //  get some new rng and copy it to device memory
@@ -98,6 +99,18 @@ aligned::vector<reflection> reflector::run_step(const scene_buffers& buffers) {
            reflection_buffer);
 
     return read_from_buffer<reflection>(queue, reflection_buffer);
+}
+
+aligned::vector<ray> reflector::get_rays() const {
+    return read_from_buffer<ray>(queue, ray_buffer);
+}
+
+aligned::vector<reflection> reflector::get_reflections() const {
+    return read_from_buffer<reflection>(queue, reflection_buffer);
+}
+
+aligned::vector<cl_float> reflector::get_rng() const {
+    return read_from_buffer<cl_float>(queue, rng_buffer);
 }
 
 }  // namespace raytracer

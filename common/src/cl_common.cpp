@@ -1,14 +1,10 @@
 #include "common/cl_common.h"
 #include "common/string_builder.h"
+#include "common/stl_wrappers.h"
 
 #include <iostream>
 
 namespace {
-
-void print_device_info(const cl::Device& i) {
-    std::cerr << i.getInfo<CL_DEVICE_NAME>() << '\n';
-    std::cerr << "available: " << i.getInfo<CL_DEVICE_AVAILABLE>() << '\n';
-}
 
 cl::Context get_context() {
     std::vector<cl::Platform> platform;
@@ -25,27 +21,35 @@ cl::Context get_context() {
 }
 
 cl::Device get_device(const cl::Context& context) {
-    auto devices = context.getInfo<CL_CONTEXT_DEVICES>();
+    auto devices{context.getInfo<CL_CONTEXT_DEVICES>()};
 
-    for (auto& i : devices) {
-        print_device_info(i);
+    devices.erase(
+            proc::remove_if(
+                    devices,
+                    [](const cl::Device& i) {
+                        return !i.getInfo<
+                                CL_DEVICE_PREFERRED_VECTOR_WIDTH_DOUBLE>();
+                    }),
+            devices.end());
+
+    if (devices.empty()) {
+        throw std::runtime_error("no devices support double precision");
     }
 
-    const auto device = devices.back();
-    // const auto device = devices.front();
+    devices.erase(proc::remove_if(devices,
+                                  [](const cl::Device& i) {
+                                      return !i.getInfo<CL_DEVICE_AVAILABLE>();
+                                  }),
+                  devices.end());
 
-    auto available = device.getInfo<CL_DEVICE_AVAILABLE>();
-    if (! available) {
-        throw std::runtime_error("device must be available");
+    if (devices.empty()) {
+        throw std::runtime_error("no suitable devices available");
     }
 
-    auto preferred_double_width =
-            device.getInfo<CL_DEVICE_PREFERRED_VECTOR_WIDTH_DOUBLE>();
-    if (! preferred_double_width) {
-        throw std::runtime_error("device must support double precision");
-    }
+    const auto device{devices.front()};
 
-    print_device_info(device);
+    std::cerr << "device selected: " << device.getInfo<CL_DEVICE_NAME>()
+              << '\n';
 
     return device;
 }
@@ -54,13 +58,8 @@ cl::Device get_device(const cl::Context& context) {
 
 compute_context::compute_context()
         : context(::get_context())
-        , device(::get_device(context)) {
-}
+        , device(::get_device(context)) {}
 
-cl::Context compute_context::get_context() const {
-    return context;
-}
+cl::Context compute_context::get_context() const { return context; }
 
-cl::Device compute_context::get_device() const {
-    return device;
-}
+cl::Device compute_context::get_device() const { return device; }

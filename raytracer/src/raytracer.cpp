@@ -1,7 +1,7 @@
-#include "raytracer/raytracer.h"
 #include "raytracer/construct_impulse.h"
 #include "raytracer/diffuse.h"
 #include "raytracer/image_source.h"
+#include "raytracer/raytracer.h"
 #include "raytracer/reflector.h"
 
 #include "common/spatial_division/scene_buffers.h"
@@ -52,7 +52,10 @@ std::experimental::optional<results> run(
     scene_buffers scene_buffers(context, scene_data);
 
     //  this is the object that generates first-pass reflections
-    reflector reflector(context, device, source, receiver, directions);
+    reflector reflector(context,
+                        device,
+                        receiver,
+                        get_rays_from_directions(source, directions));
 
     //  this will collect the first reflections, to a specified depth,
     //  and use them to find unique image-source paths

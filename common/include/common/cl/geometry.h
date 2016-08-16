@@ -9,7 +9,13 @@ const std::string geometry(std::string{} + cl_representation_v<ray> +
 #ifndef GEOMETRY_HEADER__
 #define GEOMETRY_HEADER__
 
-#define EPSILON (0.0001f)
+bool almost_equal(float x, float y, size_t ulp);
+bool almost_equal(float x, float y, size_t ulp) {
+    const float abs_diff = fabs(x - y);
+    return abs_diff < FLT_EPSILON * fabs(x + y) * ulp || abs_diff < FLT_MIN;
+}
+
+#define ULP (10)
 
 triangle_inter triangle_vert_intersection(triangle_verts verts, ray r);
 triangle_inter triangle_vert_intersection(triangle_verts verts, ray r) {
@@ -19,7 +25,7 @@ triangle_inter triangle_vert_intersection(triangle_verts verts, ray r) {
     const float3 pvec = cross(r.direction, e1);
     const float det = dot(e0, pvec);
 
-    if (-EPSILON < det && det < EPSILON) {
+    if (almost_equal(det, 0, ULP)) {
         return (triangle_inter){};
     }
 
@@ -40,7 +46,7 @@ triangle_inter triangle_vert_intersection(triangle_verts verts, ray r) {
 
     const float t = invdet * dot(e1, qvec);
 
-    if (t < 0) {
+    if (t < 0 || almost_equal(t, 0, ULP)) {
         return (triangle_inter) {};
     }
 
@@ -94,21 +100,25 @@ ray triangle_reflect_at(triangle triangle,
 }
 
 #define INTERSECTION_ACCUMULATOR                                               \
+    if (triangle_index != avoid_intersecting_with) {            \
     const triangle tri = triangles[triangle_index]; /* keep on own line */     \
     const triangle_inter inter = triangle_intersection(tri, vertices, r);      \
-    if (EPSILON < inter.t && (! ret.inter.t || inter.t < ret.inter.t)) {       \
+    if (inter.t && (! ret.inter.t || inter.t < ret.inter.t)) {                 \
         ret.index = triangle_index;                                            \
         ret.inter = inter;                                                     \
+    } \
     }
 
 intersection ray_triangle_intersection(ray r,
                                        const global triangle * triangles,
                                        ulong numtriangles,
-                                       const global float3 * vertices);
+                                       const global float3 * vertices,
+                                       ulong avoid_intersecting_with);
 intersection ray_triangle_intersection(ray r,
                                        const global triangle * triangles,
                                        ulong numtriangles,
-                                       const global float3 * vertices) {
+                                       const global float3 * vertices,
+                                       ulong avoid_intersecting_with) {
     intersection ret = {};
     for (ulong i = 0; i != numtriangles; ++i) {
         const ulong triangle_index = i;
@@ -121,12 +131,14 @@ intersection ray_triangle_group_intersection(ray r,
                                              const global triangle * triangles,
                                              const global uint * indices,
                                              ulong numindices,
-                                             const global float3 * vertices);
+                                             const global float3 * vertices,
+                                             ulong avoid_intersecting_with);
 intersection ray_triangle_group_intersection(ray r,
                                              const global triangle * triangles,
                                              const global uint * indices,
                                              ulong numindices,
-                                             const global float3 * vertices) {
+                                             const global float3 * vertices,
+                                             ulong avoid_intersecting_with) {
     intersection ret = {};
     for (ulong i = 0; i != numindices; ++i) {
         const uint triangle_index = indices[i];

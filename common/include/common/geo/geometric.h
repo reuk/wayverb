@@ -50,7 +50,11 @@ std::experimental::optional<intersection> intersection_accumulator(
         size_t triangle_index,
         const aligned::vector<triangle>& triangles,
         const aligned::vector<t> vertices,
-        const std::experimental::optional<intersection>& current) {
+        const std::experimental::optional<intersection>& current,
+        size_t to_ignore = ~size_t{0}) {
+    if (triangle_index == to_ignore) {
+        return current;
+    }
     const auto i{
             triangle_intersection(triangles[triangle_index], vertices, ray)};
     return (i && (!current || i->t < current->inter.t))
@@ -63,23 +67,27 @@ std::experimental::optional<intersection> ray_triangle_intersection(
         const ray& ray,
         const aligned::vector<size_t>& triangle_indices,
         const aligned::vector<triangle>& triangles,
-        const aligned::vector<t>& vertices) {
-    return proc::accumulate(triangle_indices,
-                            std::experimental::optional<intersection>{},
-                            [&](const auto& i, const auto& j) {
-                                return intersection_accumulator(
-                                        ray, j, triangles, vertices, i);
-                            });
+        const aligned::vector<t>& vertices,
+        size_t to_ignore = ~size_t{0}) {
+    return proc::accumulate(
+            triangle_indices,
+            std::experimental::optional<intersection>{},
+            [&](const auto& i, const auto& j) {
+                return intersection_accumulator(
+                        ray, j, triangles, vertices, i, to_ignore);
+            });
 }
 
 template <typename t>
 std::experimental::optional<intersection> ray_triangle_intersection(
         const ray& ray,
         const aligned::vector<triangle>& triangles,
-        const aligned::vector<t>& vertices) {
+        const aligned::vector<t>& vertices,
+        size_t to_ignore = ~size_t{0}) {
     std::experimental::optional<intersection> ret;
     for (auto i{0u}; i != triangles.size(); ++i) {
-        ret = intersection_accumulator(ray, i, triangles, vertices, ret);
+        ret = intersection_accumulator(
+                ray, i, triangles, vertices, ret, to_ignore);
     }
     return ret;
 }

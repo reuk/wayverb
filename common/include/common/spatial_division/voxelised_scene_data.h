@@ -20,7 +20,9 @@ private:
 //----------------------------------------------------------------------------//
 
 std::experimental::optional<intersection> intersects(
-        const voxelised_scene_data& voxelised, const geo::ray& ray);
+        const voxelised_scene_data& voxelised,
+        const geo::ray& ray,
+        size_t to_ignore = ~size_t{0});
 
 std::experimental::optional<size_t> count_intersections(
         const voxelised_scene_data& voxelised, const geo::ray& ray);

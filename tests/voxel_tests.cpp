@@ -12,6 +12,7 @@
 #define OBJ_PATH ""
 #endif
 
+namespace {
 auto get_voxelised(const copyable_scene_data& scene) {
     return voxelised_scene_data{
             scene, 5, util::padded(scene.get_aabb(), glm::vec3{0.1})};
@@ -128,3 +129,4 @@ TEST(voxel, compare) {
         compare(scene);
     }
 }
+}  // namespace
