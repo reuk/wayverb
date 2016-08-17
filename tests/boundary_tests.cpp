@@ -15,42 +15,6 @@
 #define OBJ_PATH_BEDROOM ""
 #endif
 
-/*
-bool naive_test(const MeshBoundary& boundary, const glm::vec3& vec) {
-    geo::Ray ray(vec, glm::vec3(0, 0, 1));
-    aligned::vector<float> distances;
-    return
-        std::count_if(
-            boundary.get_triangles().begin(),
-            boundary.get_triangles().end(),
-            [&ray, &distances, &boundary](const auto& i) {
-                auto intersection =
-                    triangle_intersection(i, boundary.get_vertices(), ray);
-                if (intersection.intersects) {
-                    for (auto d : distances) {
-                        if (almost_equal(d, intersection.distance, 1)) {
-                            distances.push_back(intersection.distance);
-                            return false;
-                        }
-                    }
-                    distances.push_back(intersection.distance);
-                }
-                return intersection.intersects;
-            }) %
-        2;
-}
-
-TEST(boundary, naive) {
-    SceneData scene_data(OBJ_PATH_TUNNEL, MAT_PATH_TUNNEL);
-    MeshBoundary boundary(scene_data);
-
-    for (const auto & i : get_random_directions(1 << 20)) {
-        auto vec = to_vec3f(i);
-        ASSERT_EQ(naive_test(boundary, vec), boundary.inside(vec));
-    }
-}
-*/
-
 TEST(boundary, tunnel) {
     const scene_data scene(OBJ_PATH_TUNNEL);
     const voxelised_scene_data boundary(

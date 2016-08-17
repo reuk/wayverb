@@ -58,7 +58,7 @@ std::experimental::optional<intersection> intersection_accumulator(
     const auto i{
             triangle_intersection(triangles[triangle_index], vertices, ray)};
     return (i && (!current || i->t < current->inter.t))
-                   ? intersection{*i, triangle_index}
+                   ? intersection{*i, static_cast<cl_uint>(triangle_index)}
                    : current;
 }
 

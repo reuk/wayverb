@@ -4,12 +4,12 @@
 
 class progress_bar final {
 public:
-    progress_bar(std::ostream& os, int expected);
+    progress_bar(std::ostream& os, size_t expected);
 
-    int get_expected() const;
-    int get_count() const;
+    size_t get_expected() const;
+    size_t get_count() const;
 
-    int operator+=(int i);
+    size_t operator+=(size_t i);
 
 private:
     /// from 0-1
@@ -18,6 +18,6 @@ private:
     void draw_bar(double progress);
 
     std::ostream& os;
-    int expected;
-    int count{0};
+    size_t expected;
+    size_t count{0};
 };

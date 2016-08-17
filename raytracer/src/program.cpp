@@ -102,7 +102,7 @@ kernel void reflections(global ray* rays,  //  ray
 
                         const global uint* voxel_index,  //  voxel
                         aabb global_aabb,
-                        ulong side,
+                        uint side,
 
                         const global triangle* triangles,  //  scene
                         const global float3* vertices,
@@ -115,7 +115,7 @@ kernel void reflections(global ray* rays,  //  ray
     const size_t thread = get_global_id(0);
 
     const bool keep_going = reflections[thread].keep_going;
-    const ulong previous_triangle = reflections[thread].triangle;
+    const uint previous_triangle = reflections[thread].triangle;
 
     //  zero out result reflection
     reflections[thread] = (reflection){};

@@ -12,7 +12,7 @@ public:
 
     const cl::Buffer& get_voxel_index_buffer() const;
     aabb get_global_aabb() const;
-    cl_ulong get_side() const;
+    cl_uint get_side() const;
 
     const cl::Buffer& get_triangles_buffer() const;
     const cl::Buffer& get_vertices_buffer() const;
@@ -21,7 +21,7 @@ public:
 private:
     const cl::Buffer voxel_index_buffer;
     const aabb global_aabb;
-    const cl_ulong side;
+    const cl_uint side;
 
     const cl::Buffer triangles_buffer;
     const cl::Buffer vertices_buffer;

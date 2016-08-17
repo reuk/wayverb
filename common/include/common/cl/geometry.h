@@ -17,6 +17,11 @@ bool almost_equal(float x, float y, size_t ulp) {
 
 #define ULP (10)
 
+bool is_degenerate(triangle_inter i);
+bool is_degenerate(triangle_inter i) {
+    return almost_equal(i.u, 0, ULP) || almost_equal(i.v, 0, ULP) || almost_equal(i.u + i.v, 1, ULP);
+}
+
 triangle_inter triangle_vert_intersection(triangle_verts verts, ray r);
 triangle_inter triangle_vert_intersection(triangle_verts verts, ray r) {
     const float3 e0 = verts.v1 - verts.v0;
@@ -111,17 +116,17 @@ ray triangle_reflect_at(triangle triangle,
 
 intersection ray_triangle_intersection(ray r,
                                        const global triangle * triangles,
-                                       ulong numtriangles,
+                                       uint numtriangles,
                                        const global float3 * vertices,
-                                       ulong avoid_intersecting_with);
+                                       uint avoid_intersecting_with);
 intersection ray_triangle_intersection(ray r,
                                        const global triangle * triangles,
-                                       ulong numtriangles,
+                                       uint numtriangles,
                                        const global float3 * vertices,
-                                       ulong avoid_intersecting_with) {
+                                       uint avoid_intersecting_with) {
     intersection ret = {};
-    for (ulong i = 0; i != numtriangles; ++i) {
-        const ulong triangle_index = i;
+    for (uint i = 0; i != numtriangles; ++i) {
+        const uint triangle_index = i;
         INTERSECTION_ACCUMULATOR
     }
     return ret;
@@ -130,17 +135,17 @@ intersection ray_triangle_intersection(ray r,
 intersection ray_triangle_group_intersection(ray r,
                                              const global triangle * triangles,
                                              const global uint * indices,
-                                             ulong numindices,
+                                             uint numindices,
                                              const global float3 * vertices,
-                                             ulong avoid_intersecting_with);
+                                             uint avoid_intersecting_with);
 intersection ray_triangle_group_intersection(ray r,
                                              const global triangle * triangles,
                                              const global uint * indices,
-                                             ulong numindices,
+                                             uint numindices,
                                              const global float3 * vertices,
-                                             ulong avoid_intersecting_with) {
+                                             uint avoid_intersecting_with) {
     intersection ret = {};
-    for (ulong i = 0; i != numindices; ++i) {
+    for (uint i = 0; i != numindices; ++i) {
         const uint triangle_index = indices[i];
         INTERSECTION_ACCUMULATOR
     }

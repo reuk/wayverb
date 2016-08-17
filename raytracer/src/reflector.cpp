@@ -72,7 +72,7 @@ reflector::reflector(const cl::Context& context,
                   aligned::vector<reflection>(rays.size(),
                                               reflection{cl_float3{},
                                                          cl_float3{},
-                                                         cl_ulong{~cl_ulong{0}},
+                                                         ~cl_uint{0},
                                                          cl_char{true},
                                                          cl_char{}}),
                   false))

@@ -4,11 +4,9 @@
 #include "common/indexing.h"
 #include "common/spatial_division/ndim_tree.h"
 
-namespace detail {
-
-//----------------------------------------------------------------------------//
-
 using voxel = aligned::vector<size_t>;
+
+namespace detail {
 
 //----------------------------------------------------------------------------//
 
@@ -141,8 +139,8 @@ aligned::vector<cl_uint> get_flattened(const voxel_collection<3>& voxels);
 ///     the minimum length along the ray that is still inside the current voxel
 ///     the maximum length along the ray that is still inside the current voxel
 /// Returns whether or not the traversal should quit.
-using traversal_callback = std::function<bool(
-        const geo::ray&, const aligned::vector<size_t>&, float, float)>;
+using traversal_callback =
+        std::function<bool(const geo::ray&, const voxel&, float, float)>;
 
 /// Walk the voxels along a particular ray.
 /// Calls the callback with the contents of each voxel.

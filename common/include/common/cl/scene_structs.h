@@ -38,10 +38,10 @@ typedef struct {
 //----------------------------------------------------------------------------//
 
 struct alignas(1 << 3) triangle final {
-    cl_ulong surface;
-    cl_ulong v0;
-    cl_ulong v1;
-    cl_ulong v2;
+    cl_uint surface;
+    cl_uint v0;
+    cl_uint v1;
+    cl_uint v2;
 };
 
 template <>
@@ -50,10 +50,10 @@ struct cl_representation<triangle> final {
 #ifndef TRIANGLE_DEFINITION__
 #define TRIANGLE_DEFINITION__
 typedef struct {
-    ulong surface;
-    ulong v0;
-    ulong v1;
-    ulong v2;
+    uint surface;
+    uint v0;
+    uint v1;
+    uint v2;
 } triangle;
 #endif
 )"};

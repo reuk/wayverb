@@ -146,16 +146,20 @@ scene_data::load(const std::string& scene_file) {
                        [](auto i) { return to_cl_float3(i); });
 
         aligned::vector<triangle> triangles(mesh->mNumFaces);
-        std::transform(mesh->mFaces,
-                       mesh->mFaces + mesh->mNumFaces,
-                       triangles.begin(),
-                       [&mesh, &contents](auto i) {
-                           return triangle{
-                                   mesh->mMaterialIndex,
-                                   i.mIndices[0] + contents.vertices.size(),
-                                   i.mIndices[1] + contents.vertices.size(),
-                                   i.mIndices[2] + contents.vertices.size()};
-                       });
+        std::transform(
+                mesh->mFaces,
+                mesh->mFaces + mesh->mNumFaces,
+                triangles.begin(),
+                [&mesh, &contents](auto i) {
+                    return triangle{
+                            mesh->mMaterialIndex,
+                            static_cast<cl_uint>(i.mIndices[0] +
+                                                 contents.vertices.size()),
+                            static_cast<cl_uint>(i.mIndices[1] +
+                                                 contents.vertices.size()),
+                            static_cast<cl_uint>(i.mIndices[2] +
+                                                 contents.vertices.size())};
+                });
 
         contents.vertices.insert(
                 contents.vertices.end(), vertices.begin(), vertices.end());

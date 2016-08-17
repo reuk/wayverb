@@ -19,12 +19,12 @@ constexpr volume_type air_coefficient{{0.001f * -0.1f,
 /// previous reflection along a ray.
 /// Ensure that the `triangle` field of the initial reflection buffer is set
 /// to a number larger than the total number of triangles in the scene
-/// (like ~cl_ulong{0})
+/// (like ~uint{0})
 
 struct alignas(1 << 4) reflection final {
     cl_float3 position;   //  position of the secondary source
     cl_float3 direction;  //  specular direction from the source
-    cl_ulong triangle;    //  triangle which contains source
+    cl_uint triangle;     //  triangle which contains source
     cl_char keep_going;   //  whether or not this is the teriminator for this
                           //  path (like a \0 in a char*)
     cl_char receiver_visible;  //  whether or not the receiver is visible from
@@ -39,7 +39,7 @@ struct cl_representation<reflection> final {
 typedef struct {
     float3 position;
     float3 direction;
-    ulong triangle;
+    uint triangle;
     char keep_going;
     char receiver_visible;
 } reflection;

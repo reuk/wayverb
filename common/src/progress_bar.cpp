@@ -2,20 +2,20 @@
 
 #include <ostream>
 
-progress_bar::progress_bar(std::ostream& os, int expected)
+progress_bar::progress_bar(std::ostream& os, size_t expected)
         : os(os)
         , expected(expected) {
     draw(0);
 }
 
 void progress_bar::draw_percentage(double progress) {
-    os << int(progress * 100) << "%";
+    os << size_t(progress * 100) << "%";
 }
 
 void progress_bar::draw_bar(double progress) {
     constexpr auto width = 40;
-    int filled = progress * width;
-    int blank = width - filled;
+    const size_t filled = progress * width;
+    const auto blank{width - filled};
     os << '[';
     for (auto i = 0; i != filled; ++i) {
         os << '/';
@@ -35,7 +35,7 @@ void progress_bar::draw(double progress) {
     os << std::flush;
 }
 
-int progress_bar::operator+=(int i) {
+size_t progress_bar::operator+=(size_t i) {
     count += i;
     draw(count / (expected - 1.0));
     if (count >= expected) {

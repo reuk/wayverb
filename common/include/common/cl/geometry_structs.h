@@ -75,7 +75,7 @@ constexpr bool is_degenerate(const triangle_inter& i) {
 
 struct alignas(1 << 3) intersection final {
     triangle_inter inter;
-    cl_ulong index;
+    cl_uint index;
 };
 
 template <>
@@ -85,7 +85,7 @@ struct cl_representation<intersection> final {
 #define INTERSECTION_DEFINITION__
 typedef struct {
     triangle_inter inter;
-    ulong index;
+    uint index;
 } intersection;
 #endif
 )"};

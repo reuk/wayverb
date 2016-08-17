@@ -34,7 +34,7 @@ public:
 
     auto get_ray_triangle_intersection_test_kernel() const {
         return wrapper.get_kernel<cl::Buffer,
-                                  cl_ulong,
+                                  cl_uint,
                                   cl::Buffer,
                                   cl::Buffer,
                                   cl::Buffer>("ray_triangle_intersection_test");
@@ -58,7 +58,7 @@ kernel void triangle_vert_intersection_test(
 
 kernel void ray_triangle_intersection_test(
         const global triangle* triangles,
-        ulong num_triangles,
+        uint num_triangles,
         const global float3* vertices,
         const global ray* rays,
         global intersection* ret) {
@@ -69,7 +69,7 @@ kernel void ray_triangle_intersection_test(
                                                      triangles,
                                                      num_triangles,
                                                      vertices,
-                                                     ~(ulong)(0));
+                                                     ~(uint)(0));
     ret[thread] = j;
 }
 

@@ -3,6 +3,6 @@
 int main(int argc, char** argv) {
     ::testing::InitGoogleTest(&argc, argv);
     //::testing::GTEST_FLAG(filter) = "*mesh*:*boundary*";
-    ::testing::GTEST_FLAG(filter) = "*image_source*";
+    ::testing::GTEST_FLAG(filter) = "*mesh_fixture*";
     return RUN_ALL_TESTS();
 }

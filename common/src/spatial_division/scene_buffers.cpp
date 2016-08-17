@@ -23,7 +23,7 @@ const cl::Buffer& scene_buffers::get_voxel_index_buffer() const {
 
 aabb scene_buffers::get_global_aabb() const { return global_aabb; }
 
-cl_ulong scene_buffers::get_side() const { return side; }
+cl_uint scene_buffers::get_side() const { return side; }
 
 const cl::Buffer& scene_buffers::get_triangles_buffer() const {
     return triangles_buffer;

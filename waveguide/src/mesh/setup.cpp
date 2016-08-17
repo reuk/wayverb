@@ -83,18 +83,19 @@ kernel void set_node_inside(global node* nodes,
 
                             const global uint * voxel_index,   //  voxel
                             aabb global_aabb,
-                            ulong side,
+                            uint side,
 
                             const global triangle * triangles, //  scene
                             const global float3 * vertices) {
     const size_t thread = get_global_id(0);
     const float3 position = nodes[thread].position;
-    nodes[thread].inside = voxel_inside(position,
-                                        voxel_index,
-                                        global_aabb,
-                                        side,
-                                        triangles,
-                                        vertices);
+	const bool inside = voxel_inside(position,
+                                     voxel_index,
+                                     global_aabb,
+                                     side,
+                                     triangles,
+                                     vertices);
+    nodes[thread].inside = inside;
 }
 
 )"};

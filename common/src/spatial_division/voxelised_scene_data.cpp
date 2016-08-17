@@ -51,7 +51,7 @@ std::experimental::optional<intersection> intersects(
     traverse(voxelised.get_voxels(),
              ray,
              [&](const geo::ray& ray,
-                 const aligned::vector<size_t>& to_test,
+                 const voxel& to_test,
                  float min_dist_inside_voxel,
                  float max_dist_inside_voxel) {
                  const auto i = geo::ray_triangle_intersection(
@@ -79,7 +79,7 @@ std::experimental::optional<size_t> count_intersections(
     traverse(voxelised.get_voxels(),
              ray,
              [&](const geo::ray& ray,
-                 const aligned::vector<size_t>& to_test,
+                 const voxel& to_test,
                  float min_dist_inside_voxel,
                  float max_dist_inside_voxel) {
                  //	 for each triangle in the voxel
@@ -92,11 +92,6 @@ std::experimental::optional<size_t> count_intersections(
                              ray);
                      //  if there is an intersection
                      if (intersection) {
-                         if (almost_equal(intersection->t, 0.0f, 10)) {
-                             //  ray pos is on the boundary, so say it's inside
-                             count += 1;
-                             return true;
-                         }
                          if (is_degenerate(*intersection)) {
                              //  if the intersection is degenerate, set the
                              //  'degenerate' flag to true, and quit
