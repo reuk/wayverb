@@ -19,7 +19,7 @@
 #define OBJ_PATH_BEDROOM ""
 #endif
 
-#define OPT (1)
+#define OPT (0)
 #if OPT == 0
 #define THE_MODEL OBJ_PATH_TUNNEL
 #elif OPT == 1
@@ -129,9 +129,9 @@ TEST_F(mesh_fixture, inside) {
         if (nodes[i].inside == cpu_inside[i]) {
             same += 1;
         } else {
-            std::cerr << "mismatch at index " << i << '\n';
-            std::cerr << "    gpu: " << static_cast<bool>(nodes[i].inside)
-                      << ", cpu: " << cpu_inside[i] << '\n';
+            //std::cerr << "mismatch at index " << i << '\n';
+            //std::cerr << "    gpu: " << static_cast<bool>(nodes[i].inside)
+            //          << ", cpu: " << cpu_inside[i] << '\n';
         }
     }
 
