@@ -29,14 +29,14 @@ attenuator_program::attenuator_program(const cl::Context& context,
 static_assert(speed_of_sound != 0, "SPEED_OF_SOUND");
 
 const std::string attenuator_program::source(
-        "constant const float SPEED_OF_SOUND = " +
+        "constant float SPEED_OF_SOUND = " +
         std::to_string(speed_of_sound) +
         ";\n"
         R"(
 
 #define NULL (0)
 
-constant const float SECONDS_PER_METER = 1.0f / SPEED_OF_SOUND;
+constant float SECONDS_PER_METER = 1.0f / SPEED_OF_SOUND;
 
 float microphone_attenuation(Microphone * speaker, float3 direction);
 float microphone_attenuation(Microphone * speaker, float3 direction) {

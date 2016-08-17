@@ -52,6 +52,7 @@ setup_program::setup_program(const cl::Context& context,
                                            cl_representation_v<surface>,
                                            cl_representation_v<triangle>,
                                            cl_representation_v<triangle_verts>,
+                                           cl_representation_v<boundary_type>,
                                            cl_representation_v<node>,
                                            ::cl_sources::geometry,
                                            ::cl_sources::voxel,
@@ -79,6 +80,8 @@ kernel void set_node_position_and_neighbors(global node* nodes,
     }
 }
 
+//----------------------------------------------------------------------------//
+
 kernel void set_node_inside(global node* nodes,
 
                             const global uint * voxel_index,   //  voxel
@@ -97,6 +100,130 @@ kernel void set_node_inside(global node* nodes,
                                      vertices);
     nodes[thread].inside = inside;
 }
+
+//----------------------------------------------------------------------------//
+
+int3 relative_locator_single(boundary_type a);
+int3 relative_locator_single(boundary_type a) {
+    switch (a) {
+        case id_nx: return (int3)(-1,  0,  0);
+        case id_px: return (int3)( 1,  0,  0);
+        case id_ny: return (int3)( 0, -1,  0);
+        case id_py: return (int3)( 0,  1,  0);
+        case id_nz: return (int3)( 0,  0, -1);
+        case id_pz: return (int3)( 0,  0,  1);
+        default: return (int3)(0);
+    }
+}
+
+int3 relative_locator(int a);
+int3 relative_locator(int a) {
+    return relative_locator_single(a & id_nx) +
+           relative_locator_single(a & id_px) +
+           relative_locator_single(a & id_ny) +
+           relative_locator_single(a & id_py) +
+           relative_locator_single(a & id_nz) +
+           relative_locator_single(a & id_pz);
+}
+
+constant int directions_1d[] = {id_nx, id_px, id_ny, id_py, id_nz, id_pz};
+constant size_t num_directions_1d = sizeof(directions_1d) / sizeof(int);
+
+constant int directions_2d[] = {id_nx | id_ny, id_nx | id_py,
+                                id_px | id_ny, id_px | id_py,
+                                id_nx | id_nz, id_nx | id_pz,
+                                id_px | id_nz, id_px | id_pz,
+                                id_ny | id_nz, id_ny | id_pz,
+                                id_py | id_nz, id_py | id_pz};
+constant size_t num_directions_2d = sizeof(directions_2d) / sizeof(int);
+
+constant int directions_3d[] = {id_nx | id_ny | id_nz,
+                                id_nx | id_ny | id_pz,
+                                id_nx | id_py | id_nz,
+                                id_nx | id_py | id_pz,
+                                id_px | id_ny | id_nz,
+                                id_px | id_ny | id_pz,
+                                id_px | id_py | id_nz,
+                                id_px | id_py | id_pz};
+constant size_t num_directions_3d = sizeof(directions_3d) / sizeof(int);
+
+typedef struct {
+    constant int * array;
+    size_t size;
+} direction_array_data;
+
+int test_directions(int3 locator,
+                    int3 dim,
+                    direction_array_data data,
+                    global node* nodes,
+                    size_t num_nodes);
+int test_directions(int3 locator,
+                    int3 dim,
+                    direction_array_data data,
+                    global node* nodes,
+                    size_t num_nodes) {
+    int ret = id_none;
+
+    //  for each direction
+    for (size_t i = 0; i != data.size; ++i) {
+        const int this_direction = data.array[i];
+        const int3 relative = relative_locator(this_direction);
+        const int3 adjacent_locator = locator + relative;
+
+        if (locator_outside(adjacent_locator, dim)) {
+            continue;
+        }
+
+        const size_t adjacent_index = to_index(adjacent_locator, dim);
+
+        //  if the adjacent node in that direction is within the mesh
+        //  and if the node in that direction is inside the model
+        if (nodes[adjacent_index].inside) {
+            //  if more than one adjacent node is inside
+            if (ret != id_none) {
+                //  the node is reentrant
+                return id_reentrant;
+            }
+
+            //  otherwise, this is the only adjacent node inside
+            ret = this_direction;
+        }
+    }
+
+    return ret;
+}
+
+kernel void set_node_boundary_type(global node* nodes, int3 dim) {
+    const size_t thread = get_global_id(0);
+    const bool inside = nodes[thread].inside;
+    if (inside) {
+        return;
+    }
+
+    //  if we got here, the node is outside
+
+    const int3 this_locator = to_locator(thread, dim);
+    const size_t num_nodes = dim.x * dim.y * dim.z;
+
+    const direction_array_data data[] = {
+        (direction_array_data){directions_1d, num_directions_1d},
+        (direction_array_data){directions_2d, num_directions_2d},
+        (direction_array_data){directions_3d, num_directions_3d}};
+    const size_t num_data = sizeof(data) / sizeof(direction_array_data);
+
+    for (size_t i = 0; i != num_data; ++i) {
+        const direction_array_data this_data = data[i];
+        const int test = test_directions(this_locator, dim, this_data, nodes, num_nodes);
+        if (test != id_none) {
+            nodes[thread].boundary_type = test;
+            return;
+        }
+    }
+}
+
+//----------------------------------------------------------------------------//
+
+
 
 )"};
 

@@ -16,8 +16,8 @@ cl::Context get_context() {
             0,
     };
 
-    return cl::Context(CL_DEVICE_TYPE_GPU, cps);
-    //return cl::Context(CL_DEVICE_TYPE_CPU, cps);
+    //return cl::Context(CL_DEVICE_TYPE_GPU, cps);
+    return cl::Context(CL_DEVICE_TYPE_CPU, cps);
 }
 
 cl::Device get_device(const cl::Context& context) {

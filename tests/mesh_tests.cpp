@@ -29,7 +29,7 @@
 namespace {
 auto get_voxelised(const copyable_scene_data& sd) {
     return voxelised_scene_data{
-            sd, 5, util::padded(sd.get_aabb(), glm::vec3{0.1})};
+            sd, 5, util::padded(sd.get_aabb(), glm::vec3{0.3})};
 }
 
 struct mesh_fixture : public ::testing::Test {

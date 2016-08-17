@@ -37,24 +37,27 @@ std::tuple<aligned::vector<node>, descriptor> compute_fat_nodes(
         const cl::Device& device,
         const voxelised_scene_data& voxelised,
         float mesh_spacing) {
-    setup_program program(context, device);
-    cl::CommandQueue queue(context, device);
+    const auto program{setup_program{context, device}};
+    auto queue{cl::CommandQueue{context, device}};
 
-    const auto desc = [&] {
+    const auto desc{[&] {
         const auto aabb = voxelised.get_voxels().get_aabb();
         const glm::ivec3 dim = dimensions(aabb) / mesh_spacing;
         return descriptor{aabb.get_min(), dim, mesh_spacing};
-    }();
+    }()};
 
-    const auto num_nodes =
-            desc.dimensions.x * desc.dimensions.y * desc.dimensions.z;
-    cl::Buffer node_buffer(
-            context, CL_MEM_READ_WRITE, num_nodes * sizeof(node));
+    const auto num_nodes{desc.dimensions.x * desc.dimensions.y *
+                         desc.dimensions.z};
+    auto node_buffer{
+            cl::Buffer{context, CL_MEM_READ_WRITE, num_nodes * sizeof(node)}};
+
+    const auto enqueue{
+            [&] { return cl::EnqueueArgs(queue, cl::NDRange(num_nodes)); }};
 
     //  find where each node is, and where its neighbors are
     {
         auto kernel = program.get_node_position_and_neighbors_kernel();
-        kernel(cl::EnqueueArgs(queue, cl::NDRange(num_nodes)),
+        kernel(enqueue(),
                node_buffer,
                to_cl_int3(desc.dimensions),
                to_cl_float3(desc.min_corner),
@@ -66,7 +69,7 @@ std::tuple<aligned::vector<node>, descriptor> compute_fat_nodes(
     //  find whether each node is inside or outside the model
     {
         auto kernel = program.get_node_inside_kernel();
-        kernel(cl::EnqueueArgs(queue, cl::NDRange(num_nodes)),
+        kernel(enqueue(),
                node_buffer,
                buffers.get_voxel_index_buffer(),
                buffers.get_global_aabb(),
@@ -77,11 +80,14 @@ std::tuple<aligned::vector<node>, descriptor> compute_fat_nodes(
 
     //  find node boundary type
     {
-
+        auto kernel = program.get_node_boundary_type_kernel();
+        kernel(enqueue(), node_buffer, to_cl_int3(desc.dimensions));
     }
 
     //  find node boundary index
-    {}
+    {
+        //  TODO  //
+    }
 
     //  return results
     return std::make_tuple(read_from_buffer<node>(queue, node_buffer), desc);

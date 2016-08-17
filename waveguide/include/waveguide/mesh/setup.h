@@ -58,6 +58,12 @@ public:
                                           >("set_node_inside");
     }
 
+    auto get_node_boundary_type_kernel() const {
+        return program_wrapper.get_kernel<cl::Buffer,  /// nodes
+                                          cl_int3      /// dim
+                                          >("set_node_boundary_type");
+    }
+
 private:
     static const std::string source;
 
