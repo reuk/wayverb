@@ -1,6 +1,6 @@
 #pragma once
 
-#include "common/cl/voxel.h"
+#include "common/cl/voxel_structs.h"
 
 class voxelised_scene_data;
 
@@ -9,6 +9,8 @@ class voxelised_scene_data;
 class scene_buffers final {
 public:
     scene_buffers(const cl::Context&, const voxelised_scene_data& scene_data);
+
+    cl::Context get_context() const;
 
     const cl::Buffer& get_voxel_index_buffer() const;
     aabb get_global_aabb() const;
@@ -19,6 +21,8 @@ public:
     const cl::Buffer& get_surfaces_buffer() const;
 
 private:
+    const cl::Context context;
+
     const cl::Buffer voxel_index_buffer;
     const aabb global_aabb;
     const cl_uint side;

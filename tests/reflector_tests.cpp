@@ -9,10 +9,6 @@
 
 #include "gtest/gtest.h"
 
-#ifndef OBJ_PATH
-#define OBJ_PATH ""
-#endif
-
 namespace {
 const auto badly_behaved_directions{aligned::vector<glm::vec3>{
         glm::vec3{0.00200532563, -0.903969287, 0.427592695},
@@ -32,7 +28,9 @@ const auto badly_behaved_rays{aligned::vector<geo::ray>{
         geo::ray{glm::vec3{0, 0.000000596046448, 1.53889632},
                  glm::vec3{0.434765905, -0.869531512, 0.234293744}}}};
 
-auto get_voxelised(const copyable_scene_data& scene) {
+auto get_voxelised(copyable_scene_data scene) {
+    scene.set_surfaces(surface{volume_type{{1, 1, 1, 1, 1, 1, 1, 1}},
+                               volume_type{{0, 0, 0, 0, 0, 0, 0, 0}}});
     return voxelised_scene_data{
             scene, 5, util::padded(scene.get_aabb(), glm::vec3{0.1})};
 }
@@ -118,26 +116,27 @@ TEST_F(reflector_fixture, locations) {
 TEST_F(reflector_fixture, multi_layer_reflections) {
     for (auto i{0u}; i != 10; ++i) {
         const auto prev_reflections{reflector.get_reflections()};
+        const auto current_rays{reflector.get_rays()};
         const auto fast_intersections{get_fast_intersections()};
         const auto slow_intersections{get_slow_intersections()};
         for (auto i{0u}; i != fast_intersections.size(); ++i) {
             ASSERT_EQ(fast_intersections[i], slow_intersections[i]);
         }
-        const auto current_rays{reflector.get_rays()};
         const auto reflections{reflector.run_step(buffers)};
 
         for (auto j{0u}; j != current_rays.size(); ++j) {
+            ASSERT_TRUE(reflections[j].keep_going);
             ASSERT_TRUE(fast_intersections[j]);
-            ASSERT_TRUE(reflections[i].keep_going);
             const auto converted{convert(current_rays[j])};
             const auto cpu_position{converted.get_position() +
                                     (converted.get_direction() *
                                      fast_intersections[j]->inter.t)};
             const auto gpu_position{to_vec3(reflections[j].position)};
             const auto is_nearby{nearby(gpu_position, cpu_position, 0.00001)};
-            if (! is_nearby) {
+            if (!is_nearby) {
                 std::cout << j << '\n';
-                std::cout << reflections[j].triangle << ", " << prev_reflections[j].triangle << '\n';
+                std::cout << reflections[j].triangle << ", "
+                          << prev_reflections[j].triangle << '\n';
             }
             ASSERT_TRUE(is_nearby);
         }

@@ -21,40 +21,38 @@ attenuator_program::attenuator_program(const cl::Context& context,
                                   cl_representation_v<reflection>,
                                   cl_representation_v<diffuse_path_info>,
                                   cl_representation_v<impulse>,
+                                  cl_representation_v<attenuated_impulse>,
                                   cl_representation_v<microphone>,
-                                  ::cl_sources::geometry,
                                   ::cl_sources::voxel,
                                   source}) {}
 
 static_assert(speed_of_sound != 0, "SPEED_OF_SOUND");
 
 const std::string attenuator_program::source(
-        "constant float SPEED_OF_SOUND = " +
-        std::to_string(speed_of_sound) +
-        ";\n"
-        R"(
+        "const constant float SPEED_OF_SOUND = " +
+        std::to_string(speed_of_sound) + R"(;
 
 #define NULL (0)
 
 constant float SECONDS_PER_METER = 1.0f / SPEED_OF_SOUND;
 
-float microphone_attenuation(Microphone * speaker, float3 direction);
-float microphone_attenuation(Microphone * speaker, float3 direction) {
+float microphone_attenuation(microphone * speaker, float3 direction);
+float microphone_attenuation(microphone * speaker, float3 direction) {
     return ((1 - speaker->coefficient) +
             speaker->coefficient *
                 dot(normalize(direction), normalize(speaker->direction)));
 }
 
-kernel void microphone(float3 mic_pos,
-                       global Impulse * impulsesIn,
-                       global AttenuatedImpulse * impulsesOut,
-                       Microphone speaker) {
+kernel void microphone_kernel(float3 mic_pos,
+                       global impulse * impulsesIn,
+                       global attenuated_impulse * impulsesOut,
+                       microphone speaker) {
     size_t i = get_global_id(0);
-    global Impulse * thisImpulse = impulsesIn + i;
+    global impulse * thisImpulse = impulsesIn + i;
     if (any(thisImpulse->volume != 0)) {
         const float ATTENUATION = microphone_attenuation(
             &speaker, get_direction(mic_pos, thisImpulse->position));
-        impulsesOut[i] = (AttenuatedImpulse){thisImpulse->volume * ATTENUATION,
+        impulsesOut[i] = (attenuated_impulse){thisImpulse->volume * ATTENUATION,
                                              thisImpulse->time};
     }
 }
@@ -96,9 +94,9 @@ volume_type hrtf_attenuation(global volume_type * hrtfData,
     return hrtfData[a * 180 + e];
 }
 
-kernel void hrtf(float3 mic_pos,
-                 global Impulse * impulsesIn,
-                 global AttenuatedImpulse * impulsesOut,
+kernel void hrtf_kernel(float3 mic_pos,
+                 global impulse * impulsesIn,
+                 global attenuated_impulse * impulsesOut,
                  global volume_type * hrtfData,
                  float3 pointing,
                  float3 up,
@@ -110,7 +108,7 @@ kernel void hrtf(float3 mic_pos,
         transform(pointing, up, (float3){channel == 0 ? -WIDTH : WIDTH, 0, 0}) +
         mic_pos;
 
-    global Impulse * thisImpulse = impulsesIn + i;
+    global impulse * thisImpulse = impulsesIn + i;
 
     if (any(thisImpulse->volume != 0)) {
         const volume_type ATTENUATION =
@@ -124,7 +122,7 @@ kernel void hrtf(float3 mic_pos,
         const float diff = dist1 - dist0;
 
         impulsesOut[i] =
-            (AttenuatedImpulse){thisImpulse->volume * ATTENUATION,
+            (attenuated_impulse){thisImpulse->volume * ATTENUATION,
                                 thisImpulse->time + diff * SECONDS_PER_METER};
     }
 }

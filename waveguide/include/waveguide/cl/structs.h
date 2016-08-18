@@ -1,6 +1,6 @@
 #pragma once
 
-#include "waveguide/cl/filters.h"
+#include "waveguide/cl/filter_structs.h"
 
 typedef enum : cl_int {
     id_success = 0,

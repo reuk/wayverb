@@ -51,7 +51,11 @@ TEST(waveguide_init, waveguide_init) {
                                            receiver_index,
                                            [&](auto) { pb += 1; });
 
-        ASSERT_EQ(input.size(), output.size());
+        ASSERT_EQ(transparent.size(), output.size());
+
+        for (auto i = 0; i != input.size(); ++i) {
+            ASSERT_NEAR(output[i].pressure, input[i], 0.00001);
+        }
     };
 
     run();

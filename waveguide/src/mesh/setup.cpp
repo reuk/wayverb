@@ -27,10 +27,16 @@ aligned::vector<condensed_node> get_condensed(const aligned::vector<node>& n) {
 
 //----------------------------------------------------------------------------//
 
-vectors::vectors(const aligned::vector<node>& nodes,
-                 const aligned::vector<coefficients_canonical>& coefficients)
-        : condensed_nodes(get_condensed(nodes))
-        , coefficients(coefficients) {}
+vectors::vectors(aligned::vector<condensed_node>&& nodes,
+                 aligned::vector<coefficients_canonical>&& coefficients,
+                 aligned::vector<boundary_index_array_1>&& boundary_indices_1,
+                 aligned::vector<boundary_index_array_2>&& boundary_indices_2,
+                 aligned::vector<boundary_index_array_3>&& boundary_indices_3)
+        : condensed_nodes(std::move(nodes))
+        , coefficients(std::move(coefficients))
+        , boundary_indices_1(std::move(boundary_indices_1))
+        , boundary_indices_2(std::move(boundary_indices_2))
+        , boundary_indices_3(std::move(boundary_indices_3)) {}
 
 const aligned::vector<condensed_node>& vectors::get_condensed_nodes() const {
     return condensed_nodes;
@@ -54,7 +60,6 @@ setup_program::setup_program(const cl::Context& context,
                                            cl_representation_v<triangle_verts>,
                                            cl_representation_v<boundary_type>,
                                            cl_representation_v<node>,
-                                           ::cl_sources::geometry,
                                            ::cl_sources::voxel,
                                            ::cl_sources::utils,
                                            source}) {}
@@ -220,10 +225,6 @@ kernel void set_node_boundary_type(global node* nodes, int3 dim) {
         }
     }
 }
-
-//----------------------------------------------------------------------------//
-
-
 
 )"};
 

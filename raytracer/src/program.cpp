@@ -22,14 +22,13 @@ program::program(const cl::Context& context, const cl::Device& device)
                                   cl_representation_v<diffuse_path_info>,
                                   cl_representation_v<impulse>,
                                   cl_representation_v<microphone>,
-                                  ::cl_sources::geometry,
                                   ::cl_sources::voxel,
                                   ::cl_sources::brdf,
                                   source}) {}
 
 static_assert(speed_of_sound != 0, "SPEED_OF_SOUND");
 
-const std::string program::source("constant float SPEED_OF_SOUND = " +
+const std::string program::source("const constant float SPEED_OF_SOUND = " +
                                   std::to_string(speed_of_sound) +
                                   ";\n"
                                   R"(

@@ -236,7 +236,7 @@ private:
 
     template <int I>
     void set_node_boundary_index(aligned::vector<mesh_setup::node>& ret) const {
-        auto num_boundary = 0;
+        auto num_boundary{0u};
         for (auto& i : ret) {
             if (i.boundary_type != mesh_setup::id_reentrant &&
                 popcount(i.boundary_type) == I) {

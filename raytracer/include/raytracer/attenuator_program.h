@@ -13,7 +13,7 @@ public:
     auto get_microphone_kernel() const {
         return program_wrapper
                 .get_kernel<cl_float3, cl::Buffer, cl::Buffer, microphone>(
-                        "microphone");
+                        "microphone_kernel");
     }
 
     auto get_hrtf_kernel() const {
@@ -23,7 +23,7 @@ public:
                                           cl::Buffer,
                                           cl_float3,
                                           cl_float3,
-                                          cl_ulong>("hrtf");
+                                          cl_ulong>("hrtf_kernel");
     }
 
     template <cl_program_info T>

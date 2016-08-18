@@ -30,6 +30,7 @@ std::tuple<aligned::vector<node>, descriptor> compute_fat_nodes(
         const cl::Context&,
         const cl::Device&,
         const voxelised_scene_data& voxelised,
+        const scene_buffers& buffers,
         float mesh_spacing);
 
 model compute_model(const cl::Context& context,

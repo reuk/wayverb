@@ -4,7 +4,8 @@
 
 scene_buffers::scene_buffers(const cl::Context& context,
                              const voxelised_scene_data& scene_data)
-        : voxel_index_buffer(load_to_buffer(
+        : context(context)
+        , voxel_index_buffer(load_to_buffer(
                   context, get_flattened(scene_data.get_voxels()), true))
         , global_aabb(aabb{
                   to_cl_float3(scene_data.get_voxels().get_aabb().get_min()),
@@ -16,6 +17,8 @@ scene_buffers::scene_buffers(const cl::Context& context,
                   context, scene_data.get_scene_data().get_vertices(), true))
         , surfaces_buffer(load_to_buffer(
                   context, scene_data.get_scene_data().get_surfaces(), true)) {}
+
+cl::Context scene_buffers::get_context() const { return context; }
 
 const cl::Buffer& scene_buffers::get_voxel_index_buffer() const {
     return voxel_index_buffer;

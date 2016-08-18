@@ -244,8 +244,8 @@ public:
         return buf;
     }
 
-    compute_context cc;
-    waveguide::program program{cc.get_context(), cc.get_device()};
+    const compute_context cc;
+    const waveguide::program program{cc.get_context(), cc.get_device()};
     aligned::vector<Memory> memory{testing::parallel_size, Memory{}};
     std::array<typename testing::CoefficientTypeTrait<FT>::type,
                testing::parallel_size>
