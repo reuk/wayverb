@@ -26,10 +26,9 @@
 
 #include "raytracer/raytracer.h"
 
-#include "common/spatial_division.h"
 #include "common/scene_data.h"
 #include "common/single_thread_access_checker.h"
-#include "common/voxel_collection.h"
+#include "common/spatial_division/voxel_collection.h"
 
 #include <cmath>
 #include <future>
@@ -123,8 +122,7 @@ public:
     void set_pressures(const aligned::vector<float> &pressures,
                        float current_time);
 
-    void set_impulses(const aligned::vector<aligned::vector<raytracer::impulse>>
-                              &impulses,
+    void set_impulses(const aligned::vector<aligned::vector<impulse>> &impulses,
                       const glm::vec3 &sources,
                       const glm::vec3 &receivers);
 

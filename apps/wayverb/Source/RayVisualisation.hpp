@@ -5,7 +5,7 @@
 #include "modern_gl_utils/generic_shader.h"
 #include "modern_gl_utils/vao.h"
 
-#include "raytracer/cl_structs.h"
+#include "raytracer/cl/structs.h"
 #include "raytracer/results.h"
 
 #include "common/aligned/vector.h"
@@ -37,8 +37,7 @@ private:
 class RayVisualisation final : public mglu::drawable {
 public:
     RayVisualisation(const std::shared_ptr<RayShader>& shader,
-                     const aligned::vector<aligned::vector<raytracer::impulse>>&
-                             impulses,
+                     const aligned::vector<aligned::vector<impulse>>& impulses,
                      const glm::vec3& source,
                      const glm::vec3& receiver);
 
@@ -52,12 +51,10 @@ private:
     };
 
     static aligned::vector<path_data> convert_to_path_data(
-            const aligned::vector<raytracer::impulse>& impulses,
-            const glm::vec3& source);
+            const aligned::vector<impulse>& impulses, const glm::vec3& source);
 
     static aligned::vector<aligned::vector<path_data>> convert_to_path_data(
-            const aligned::vector<aligned::vector<raytracer::impulse>>&
-                    impulses,
+            const aligned::vector<aligned::vector<impulse>>& impulses,
             const glm::vec3& source);
 
     static aligned::vector<glm::vec3> extract_positions(
@@ -74,11 +71,13 @@ private:
 
     static glm::vec3 ray_wavefront_position(
             const aligned::vector<path_data>& path,
-            float time, const glm::vec3& source);
+            float time,
+            const glm::vec3& source);
 
     static aligned::vector<glm::vec3> ray_wavefront_position(
             const aligned::vector<aligned::vector<path_data>>& paths,
-            float time, const glm::vec3& source);
+            float time,
+            const glm::vec3& source);
 
     RayVisualisation(
             const std::shared_ptr<RayShader>& shader,

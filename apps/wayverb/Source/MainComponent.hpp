@@ -31,8 +31,7 @@ public:
             double current_time) override;
     void engine_raytracer_visuals_changed(
             AsyncEngine*,
-            const aligned::vector<aligned::vector<raytracer::impulse>>&
-                    impulses,
+            const aligned::vector<aligned::vector<impulse>>& impulses,
             const glm::vec3& sources,
             const glm::vec3& receivers) override;
     void engine_finished(AsyncEngine*) override;

@@ -4,7 +4,8 @@
 
 #include "common/aligned/vector.h"
 #include "common/cl_traits.h"
-#include "common/map.h"
+#include "common/config.h"
+#include "common/map_to_vector.h"
 
 #include <numeric>
 
@@ -42,9 +43,8 @@ size_t count(const aligned::vector<T>& t) {
 }  // namespace
 
 aligned::vector<RayVisualisation::path_data>
-RayVisualisation::convert_to_path_data(
-        const aligned::vector<raytracer::impulse>& impulses,
-        const glm::vec3& source) {
+RayVisualisation::convert_to_path_data(const aligned::vector<impulse>& impulses,
+                                       const glm::vec3& source) {
     aligned::vector<path_data> ret;
     ret.reserve(impulses.size());
 
@@ -60,7 +60,7 @@ RayVisualisation::convert_to_path_data(
 
 aligned::vector<aligned::vector<RayVisualisation::path_data>>
 RayVisualisation::convert_to_path_data(
-        const aligned::vector<aligned::vector<raytracer::impulse>>& impulses,
+        const aligned::vector<aligned::vector<impulse>>& impulses,
         const glm::vec3& source) {
     aligned::vector<aligned::vector<path_data>> ret;
     ret.reserve(impulses.size());
@@ -137,8 +137,7 @@ aligned::vector<GLuint> RayVisualisation::compute_indices(
         if (!ray.empty()) {
             ret.push_back(0);  //  source
 
-            size_t j = 0;
-            for (; (j != ray.size()) && (ray[j].distance < distance); ++j) {
+            for (auto j{0u}; (j != ray.size()) && (ray[j].distance < distance); ++j) {
                 const auto impulse_index = counter + j;
                 ret.push_back(impulse_index);
                 ret.push_back(impulse_index);
@@ -155,9 +154,13 @@ glm::vec3 RayVisualisation::ray_wavefront_position(
         const aligned::vector<path_data>& path,
         float time,
         const glm::vec3& source) {
+    if (path.empty()) {
+        return source;
+    }
+
     const auto distance = time * speed_of_sound;
     auto it = path.begin();
-    for (; it->distance < distance && it != path.end(); ++it) {
+    for (; it != path.end() && it->distance < distance; ++it) {
         //  this line intentionally left blank
     }
 
@@ -229,7 +232,7 @@ void main() {
 
 RayVisualisation::RayVisualisation(
         const std::shared_ptr<RayShader>& shader,
-        const aligned::vector<aligned::vector<raytracer::impulse>>& impulses,
+        const aligned::vector<aligned::vector<impulse>>& impulses,
         const glm::vec3& source,
         const glm::vec3& receiver)
         : RayVisualisation(shader,

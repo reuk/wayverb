@@ -28,7 +28,7 @@ public:
                 const aligned::vector<float>& pressures,
                 double current_time) = 0;
         virtual void engine_raytracer_visuals_changed(
-                const aligned::vector<aligned::vector<raytracer::impulse>>&
+                const aligned::vector<aligned::vector<impulse>>&
                         impulses,
                 const glm::vec3& source,
                 const glm::vec3& receiver) = 0;

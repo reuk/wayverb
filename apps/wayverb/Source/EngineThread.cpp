@@ -103,7 +103,7 @@ void AsyncEngine::ConcreteListener::engine_waveguide_visuals_changed(
 }
 
 void AsyncEngine::ConcreteListener::engine_raytracer_visuals_changed(
-        const aligned::vector<aligned::vector<raytracer::impulse>>& impulses,
+        const aligned::vector<aligned::vector<impulse>>& impulses,
         const glm::vec3& source,
         const glm::vec3& receiver) {
     work_queue.push([=] {

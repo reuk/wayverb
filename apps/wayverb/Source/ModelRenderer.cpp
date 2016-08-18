@@ -6,7 +6,6 @@
 #include "modern_gl_utils/exceptions.h"
 
 #include "common/azimuth_elevation.h"
-#include "common/boundaries.h"
 #include "common/cl_common.h"
 #include "common/conversions.h"
 #include "common/kernel.h"
@@ -106,7 +105,7 @@ MultiMaterialObject::MultiMaterialObject(
         sections.emplace_back(scene_data, i);
     }
 
-    geometry.data(scene_data.get_converted_vertices());
+    geometry.data(convert(scene_data.get_vertices()));
     mglu::check_for_gl_error();
     colors.data(aligned::vector<glm::vec4>(scene_data.get_vertices().size(),
                                            glm::vec4(0.5, 0.5, 0.5, 1.0)));
@@ -271,7 +270,7 @@ void SceneRendererContextLifetime::set_rendering(bool b) {
 void SceneRendererContextLifetime::set_positions(
         const aligned::vector<glm::vec3> &positions) {
     //  TODO
-    //  mesh_object = std::make_unique<MeshObject>(mesh_shader, positions);
+      mesh_object = std::make_unique<MeshObject>(mesh_shader, positions);
 }
 
 void SceneRendererContextLifetime::set_pressures(
@@ -286,14 +285,11 @@ void SceneRendererContextLifetime::set_pressures(
 }
 
 void SceneRendererContextLifetime::set_impulses(
-        const aligned::vector<aligned::vector<raytracer::impulse>> &impulses,
+        const aligned::vector<aligned::vector<impulse>> &impulses,
         const glm::vec3 &source,
         const glm::vec3 &receiver) {
     ray_object = std::make_unique<RayVisualisation>(
-            ray_shader,
-            impulses,
-            source,
-            receiver);
+            ray_shader, impulses, source, receiver);
 }
 
 void SceneRendererContextLifetime::set_highlighted(int u) {

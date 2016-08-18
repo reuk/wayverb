@@ -1,6 +1,7 @@
 #pragma once
 
 #include "common/orientable.h"
+#include "common/scene_data.h"
 
 #include "combined/engine.h"
 #include "combined/model.h"

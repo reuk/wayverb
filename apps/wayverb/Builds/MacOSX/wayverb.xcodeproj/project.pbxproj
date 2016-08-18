@@ -22,7 +22,6 @@
 		1B2F86BD1D28110B007EDF27 /* libconvolution-component.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B2F86A51D2810FF007EDF27 /* libconvolution-component.a */; };
 		1B2F86BE1D28110B007EDF27 /* libgflags_nothreads.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B2F867D1D2810FF007EDF27 /* libgflags_nothreads.a */; };
 		1B2F86BF1D28110B007EDF27 /* libgflags.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B2F867F1D2810FF007EDF27 /* libgflags.a */; };
-		1B2F86C01D28110B007EDF27 /* libglog.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B2F868B1D2810FF007EDF27 /* libglog.a */; };
 		1B2F86C11D28110B007EDF27 /* libgmock_main.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B2F86831D2810FF007EDF27 /* libgmock_main.a */; };
 		1B2F86C21D28110B007EDF27 /* libgmock.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B2F86811D2810FF007EDF27 /* libgmock.a */; };
 		1B2F86C31D28110B007EDF27 /* libgtest_main.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B2F86871D2810FF007EDF27 /* libgtest_main.a */; };
@@ -162,62 +161,6 @@
 			proxyType = 2;
 			remoteGlobalIDString = 35520AE162024124BA9B2348;
 			remoteInfo = gtest_main;
-		};
-		1B2F86881D2810FF007EDF27 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 1B2F86541D2810FE007EDF27 /* WAYVERB.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = A864449E6A024AD287C1A46D;
-			remoteInfo = demangle_unittest;
-		};
-		1B2F868A1D2810FF007EDF27 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 1B2F86541D2810FE007EDF27 /* WAYVERB.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = F1687AE3F5FA46DC8BCF02DD;
-			remoteInfo = glog;
-		};
-		1B2F868C1D2810FF007EDF27 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 1B2F86541D2810FE007EDF27 /* WAYVERB.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 43FEA2E656FE40509625D921;
-			remoteInfo = logging_unittest;
-		};
-		1B2F868E1D2810FF007EDF27 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 1B2F86541D2810FE007EDF27 /* WAYVERB.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 0B9853A4FB7F4E7890D5249F;
-			remoteInfo = signalhandler_unittest;
-		};
-		1B2F86901D2810FF007EDF27 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 1B2F86541D2810FE007EDF27 /* WAYVERB.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 0E8800030F93403CA4177DC3;
-			remoteInfo = stacktrace_unittest;
-		};
-		1B2F86921D2810FF007EDF27 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 1B2F86541D2810FE007EDF27 /* WAYVERB.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = EBA4F088C030437C923F65B5;
-			remoteInfo = stl_logging_unittest;
-		};
-		1B2F86941D2810FF007EDF27 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 1B2F86541D2810FE007EDF27 /* WAYVERB.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 97E2D5EF23F241E685D831ED;
-			remoteInfo = symbolize_unittest;
-		};
-		1B2F86961D2810FF007EDF27 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 1B2F86541D2810FE007EDF27 /* WAYVERB.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 477F5DB000494B0F902BC31B;
-			remoteInfo = utilities_unittest;
 		};
 		1B2F86981D2810FF007EDF27 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -1543,7 +1486,6 @@
 				1B2F86BD1D28110B007EDF27 /* libconvolution-component.a in Frameworks */,
 				1B2F86BE1D28110B007EDF27 /* libgflags_nothreads.a in Frameworks */,
 				1B2F86BF1D28110B007EDF27 /* libgflags.a in Frameworks */,
-				1B2F86C01D28110B007EDF27 /* libglog.a in Frameworks */,
 				1B2F86C11D28110B007EDF27 /* libgmock_main.a in Frameworks */,
 				1B2F86C21D28110B007EDF27 /* libgmock.a in Frameworks */,
 				1B2F86C31D28110B007EDF27 /* libgtest_main.a in Frameworks */,
@@ -1830,14 +1772,6 @@
 				1B2F86831D2810FF007EDF27 /* libgmock_main.a */,
 				1B2F86851D2810FF007EDF27 /* libgtest.a */,
 				1B2F86871D2810FF007EDF27 /* libgtest_main.a */,
-				1B2F86891D2810FF007EDF27 /* demangle_unittest */,
-				1B2F868B1D2810FF007EDF27 /* libglog.a */,
-				1B2F868D1D2810FF007EDF27 /* logging_unittest */,
-				1B2F868F1D2810FF007EDF27 /* signalhandler_unittest */,
-				1B2F86911D2810FF007EDF27 /* stacktrace_unittest */,
-				1B2F86931D2810FF007EDF27 /* stl_logging_unittest */,
-				1B2F86951D2810FF007EDF27 /* symbolize_unittest */,
-				1B2F86971D2810FF007EDF27 /* utilities_unittest */,
 				1B2F86991D2810FF007EDF27 /* libzlibstatic.a */,
 				1B2F869B1D2810FF007EDF27 /* libassimp.a */,
 				1B2F869D1D2810FF007EDF27 /* assimp */,
@@ -3880,62 +3814,6 @@
 			fileType = archive.ar;
 			path = libgtest_main.a;
 			remoteRef = 1B2F86861D2810FF007EDF27 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		1B2F86891D2810FF007EDF27 /* demangle_unittest */ = {
-			isa = PBXReferenceProxy;
-			fileType = "compiled.mach-o.executable";
-			path = demangle_unittest;
-			remoteRef = 1B2F86881D2810FF007EDF27 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		1B2F868B1D2810FF007EDF27 /* libglog.a */ = {
-			isa = PBXReferenceProxy;
-			fileType = archive.ar;
-			path = libglog.a;
-			remoteRef = 1B2F868A1D2810FF007EDF27 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		1B2F868D1D2810FF007EDF27 /* logging_unittest */ = {
-			isa = PBXReferenceProxy;
-			fileType = "compiled.mach-o.executable";
-			path = logging_unittest;
-			remoteRef = 1B2F868C1D2810FF007EDF27 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		1B2F868F1D2810FF007EDF27 /* signalhandler_unittest */ = {
-			isa = PBXReferenceProxy;
-			fileType = "compiled.mach-o.executable";
-			path = signalhandler_unittest;
-			remoteRef = 1B2F868E1D2810FF007EDF27 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		1B2F86911D2810FF007EDF27 /* stacktrace_unittest */ = {
-			isa = PBXReferenceProxy;
-			fileType = "compiled.mach-o.executable";
-			path = stacktrace_unittest;
-			remoteRef = 1B2F86901D2810FF007EDF27 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		1B2F86931D2810FF007EDF27 /* stl_logging_unittest */ = {
-			isa = PBXReferenceProxy;
-			fileType = "compiled.mach-o.executable";
-			path = stl_logging_unittest;
-			remoteRef = 1B2F86921D2810FF007EDF27 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		1B2F86951D2810FF007EDF27 /* symbolize_unittest */ = {
-			isa = PBXReferenceProxy;
-			fileType = "compiled.mach-o.executable";
-			path = symbolize_unittest;
-			remoteRef = 1B2F86941D2810FF007EDF27 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		1B2F86971D2810FF007EDF27 /* utilities_unittest */ = {
-			isa = PBXReferenceProxy;
-			fileType = "compiled.mach-o.executable";
-			path = utilities_unittest;
-			remoteRef = 1B2F86961D2810FF007EDF27 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 		1B2F86991D2810FF007EDF27 /* libzlibstatic.a */ = {

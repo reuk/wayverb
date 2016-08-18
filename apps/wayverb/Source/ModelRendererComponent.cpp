@@ -10,8 +10,6 @@
 
 #include "combined/model.h"
 
-#include "common/boundaries.h"
-
 ModelRendererComponent::ModelRendererComponent(
         const copyable_scene_data &model,
         model::ValueWrapper<int> &shown_surface,
@@ -42,7 +40,7 @@ void ModelRendererComponent::set_pressures(
 }
 
 void ModelRendererComponent::set_impulses(
-        const aligned::vector<aligned::vector<raytracer::impulse>> &impulses,
+        const aligned::vector<aligned::vector<impulse>> &impulses,
         const glm::vec3 &source,
         const glm::vec3 &receiver) {
     renderer.context_command(

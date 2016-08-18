@@ -1,6 +1,6 @@
 #include "SurfaceModel.hpp"
 
-#include "common/map.h"
+#include "common/map_to_vector.h"
 #include "common/stl_wrappers.h"
 
 namespace model {
