@@ -49,23 +49,7 @@ const aligned::vector<coefficients_canonical>& vectors::get_coefficients()
 
 //----------------------------------------------------------------------------//
 
-setup_program::setup_program(const cl::Context& context,
-                             const cl::Device& device)
-        : program_wrapper(
-                  context,
-                  device,
-                  std::vector<std::string>{cl_representation_v<volume_type>,
-                                           cl_representation_v<surface>,
-                                           cl_representation_v<triangle>,
-                                           cl_representation_v<triangle_verts>,
-                                           cl_representation_v<boundary_type>,
-                                           cl_representation_v<node>,
-                                           ::cl_sources::voxel,
-                                           ::cl_sources::utils,
-                                           source}) {}
-
-const std::string setup_program::source{R"(
-
+constexpr auto source{R"(
 kernel void set_node_position_and_neighbors(global node* nodes,
                                             int3 dim,
                                             float3 min_corner,
@@ -227,6 +211,26 @@ kernel void set_node_boundary_type(global node* nodes, int3 dim) {
 }
 
 )"};
+
+setup_program::setup_program(const cl::Context& context,
+                             const cl::Device& device)
+        : program_wrapper(
+                  context,
+                  device,
+                  std::vector<std::string>{cl_representation_v<volume_type>,
+                                           cl_representation_v<surface>,
+                                           cl_representation_v<triangle>,
+                                           cl_representation_v<triangle_verts>,
+                                           cl_representation_v<boundary_type>,
+                                           cl_representation_v<node>,
+                                           cl_representation_v<aabb>,
+                                           cl_representation_v<ray>,
+                                           cl_representation_v<triangle_inter>,
+                                           cl_representation_v<intersection>,
+                                           ::cl_sources::geometry,
+                                           ::cl_sources::voxel,
+                                           ::cl_sources::utils,
+                                           source}) {}
 
 }  // namespace mesh
 }  // namespace waveguide

@@ -8,22 +8,9 @@
 
 namespace waveguide {
 
-program::program(const cl::Context& context, const cl::Device& device)
-        : program_wrapper(context,
-                          device,
-                          std::vector<std::string>{::cl_sources::filters,
-                                                   source}) {}
-
 //----------------------------------------------------------------------------//
 
-const std::string program::source{std::string{} + cl_sources::utils +
-                                  cl_representation_v<error_code> +
-                                  cl_representation_v<condensed_node> +
-                                  cl_representation_v<boundary_data> +
-                                  cl_representation_v<boundary_data_array_1> +
-                                  cl_representation_v<boundary_data_array_2> +
-                                  cl_representation_v<boundary_data_array_3> +
-                                  cl_representation_v<boundary_type> + R"(
+constexpr auto source{R"(
 #define courant      (1.0f / sqrt(3.0f))
 #define courant_sq   (1.0f / 3.0f)
 
@@ -546,5 +533,29 @@ kernel void condensed_waveguide(global float* previous,
 }
 
 )"};
+
+program::program(const cl::Context& context, const cl::Device& device)
+        : program_wrapper(
+                  context,
+                  device,
+                  std::vector<std::string>{
+                          ::cl_sources::filter_constants,
+                          cl_representation_v<real>,
+                          cl_representation_v<memory_biquad>,
+                          cl_representation_v<coefficients_biquad>,
+                          cl_representation_v<memory_canonical>,
+                          cl_representation_v<coefficients_canonical>,
+                          cl_representation_v<biquad_memory_array>,
+                          cl_representation_v<biquad_coefficients_array>,
+                          cl_representation_v<error_code>,
+                          cl_representation_v<condensed_node>,
+                          cl_representation_v<boundary_data>,
+                          cl_representation_v<boundary_data_array_1>,
+                          cl_representation_v<boundary_data_array_2>,
+                          cl_representation_v<boundary_data_array_3>,
+                          cl_representation_v<boundary_type>,
+                          ::cl_sources::filters,
+                          cl_sources::utils,
+                          source}) {}
 
 }  // namespace waveguide

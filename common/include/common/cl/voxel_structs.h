@@ -10,14 +10,11 @@ struct alignas(1 << 4) aabb final {
 
 template <>
 struct cl_representation<aabb> final {
-    static constexpr const char* value{R"(
-#ifndef AABB_DEFINITION__
-#define AABB_DEFINITION__
+    static constexpr auto value{R"(
 typedef struct {
     float3 c0;
     float3 c1;
 } aabb;
-#endif
 )"};
 };
 

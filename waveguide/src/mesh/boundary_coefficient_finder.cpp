@@ -2,6 +2,7 @@
 #include "waveguide/cl/utils.h"
 #include "waveguide/mesh/model.h"
 
+#include "common/cl/geometry.h"
 #include "common/cl/voxel.h"
 #include "common/popcount.h"
 
@@ -147,23 +148,7 @@ boundary_index_data compute_boundary_index_data(const cl::Device& device,
 }
 
 //----------------------------------------------------------------------------//
-
-boundary_coefficient_program::boundary_coefficient_program(
-        const cl::Context& context, const cl::Device& device)
-        : wrapper(context,
-                  device,
-                  std::vector<std::string>{
-                          cl_representation_v<boundary_type>,
-                          cl_representation_v<node>,
-                          cl_representation_v<boundary_index_array_1>,
-                          cl_representation_v<boundary_index_array_2>,
-                          cl_representation_v<boundary_index_array_3>,
-                          cl_sources::utils,
-                          cl_sources::voxel,
-                          source}) {}
-
-const char* boundary_coefficient_program::source{R"(
-
+constexpr auto source{R"(
 //  adapted from
 //  http://www.geometrictools.com/GTEngine/Include/Mathematics/GteDistPointtriangleExact.h
 float point_triangle_distance_squared(triangle_verts triangle, float3 point);
@@ -612,6 +597,27 @@ kernel void boundary_coefficient_finder_3d(
     }
 }
 )"};
+
+boundary_coefficient_program::boundary_coefficient_program(
+        const cl::Context& context, const cl::Device& device)
+        : wrapper(context,
+                  device,
+                  std::vector<std::string>{
+                          cl_representation_v<boundary_type>,
+                          cl_representation_v<node>,
+                          cl_representation_v<boundary_index_array_1>,
+                          cl_representation_v<boundary_index_array_2>,
+                          cl_representation_v<boundary_index_array_3>,
+                          cl_sources::utils,
+                          cl_representation_v<aabb>,
+                          cl_representation_v<ray>,
+                          cl_representation_v<triangle_inter>,
+                          cl_representation_v<intersection>,
+                          cl_representation_v<triangle_verts>,
+                          cl_representation_v<triangle>,
+                          ::cl_sources::geometry,
+                          ::cl_sources::voxel,
+                          source}) {}
 
 }  // namespace mesh
 }  // namespace waveguide

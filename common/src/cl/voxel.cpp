@@ -1,15 +1,12 @@
 #include "common/cl/voxel.h"
 
-#include "common/cl/geometry.h"
-#include "common/cl/voxel_structs.h"
+/*
+cl_representation_v<aabb>,
+cl_sources::geometry,
+*/
 
 namespace cl_sources {
-
-const std::string voxel{std::string{} + cl_representation_v<aabb> +
-                        cl_sources::geometry + R"(
-#ifndef VOXEL_HEADER__
-#define VOXEL_HEADER__
-
+const char* voxel{R"(
 int3 get_starting_index(float3 position,
                         aabb global_aabb,
                         float3 voxel_dimensions);
@@ -262,7 +259,6 @@ bool voxel_point_intersection(float3 begin,
 
     return !inter.inter.t || mag < inter.inter.t;
 }
-#endif
 )"};
 
 }  // namespace cl_sources

@@ -4,8 +4,8 @@
 #include "common/cl_traits.h"
 #include "common/stl_wrappers.h"
 
-constexpr size_t biquad_order = 2;
-constexpr size_t biquad_sections = 3;
+constexpr size_t biquad_order{2};
+constexpr size_t biquad_sections{3};
 
 //----------------------------------------------------------------------------//
 
@@ -13,11 +13,8 @@ using real = cl_double;
 
 template <>
 struct cl_representation<real> final {
-    static constexpr const char* value{R"(
-#ifndef REAL_DEFINITION__
-#define REAL_DEFINITION__
+    static constexpr auto value{R"(
 typedef double real;
-#endif
 )"};
 };
 
@@ -45,7 +42,7 @@ inline bool operator!=(const memory<D>& a, const memory<D>& b) {
 /// IIR filter coefficient storage.
 template <size_t o>
 struct alignas(1 << 3) coefficients final {
-    static constexpr size_t order = o;
+    static constexpr auto order{o};
     real b[order + 1]{};
     real a[order + 1]{};
 };
@@ -101,13 +98,10 @@ struct alignas(1 << 3) biquad_memory_array final {
 
 template <>
 struct cl_representation<biquad_memory_array> final {
-    static constexpr const char* value{R"(
-#ifndef BIQUAD_MEMORY_ARRAY_DEFINITION__
-#define BIQUAD_MEMORY_ARRAY_DEFINITION__
+    static constexpr auto value{R"(
 typedef struct {
     memory_biquad array[BIQUAD_SECTIONS];
 } biquad_memory_array;
-#endif
 )"};
 };
 
@@ -120,12 +114,9 @@ struct alignas(1 << 3) biquad_coefficients_array final {
 
 template <>
 struct cl_representation<biquad_coefficients_array> final {
-    static constexpr const char* value{R"(
-#ifndef BIQUAD_COEFFICIENTS_ARRAY_DEFINITION__
-#define BIQUAD_COEFFICIENTS_ARRAY_DEFINITION__
+    static constexpr auto value{R"(
 typedef struct {
     coefficients_biquad array[BIQUAD_SECTIONS];
 } biquad_coefficients_array;
-#endif
 )"};
 };

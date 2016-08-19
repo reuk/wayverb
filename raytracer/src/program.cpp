@@ -3,35 +3,16 @@
 #include "raytracer/cl/brdf.h"
 #include "raytracer/cl/structs.h"
 
-#include "common/cl/scene_structs.h"
 #include "common/cl/geometry.h"
+#include "common/cl/geometry_structs.h"
+#include "common/cl/scene_structs.h"
 #include "common/cl/voxel.h"
+#include "common/cl/voxel_structs.h"
 #include "common/config.h"
 
 namespace raytracer {
 
-program::program(const cl::Context& context, const cl::Device& device)
-        : program_wrapper(context,
-                          device,
-                          std::vector<std::string>{
-                                  cl_representation_v<volume_type>,
-                                  cl_representation_v<surface>,
-                                  cl_representation_v<triangle>,
-                                  cl_representation_v<triangle_verts>,
-                                  cl_representation_v<reflection>,
-                                  cl_representation_v<diffuse_path_info>,
-                                  cl_representation_v<impulse>,
-                                  cl_representation_v<microphone>,
-                                  ::cl_sources::voxel,
-                                  ::cl_sources::brdf,
-                                  source}) {}
-
-static_assert(speed_of_sound != 0, "SPEED_OF_SOUND");
-
-const std::string program::source("const constant float SPEED_OF_SOUND = " +
-                                  std::to_string(speed_of_sound) +
-                                  ";\n"
-                                  R"(
+constexpr auto source{R"(
 #define NULL (0)
 
 #define PRINT_INT3(VAR) printf("%v3hld\n", (VAR));
@@ -39,8 +20,6 @@ const std::string program::source("const constant float SPEED_OF_SOUND = " +
 
 #define PRINT_ULONG(VAR) printf("%ld\n", (VAR));
 #define PRINT_FLOAT(VAR) printf("%2.2f\n", (VAR));
-
-constant float SECONDS_PER_METER = 1.0f / SPEED_OF_SOUND;
 
 volume_type air_attenuation_for_distance(float distance,
                                          volume_type air_coefficient);
@@ -245,6 +224,33 @@ kernel void diffuse(const global reflection* reflections,  //  input
     diffuse_output[thread] =
             (impulse){output_volume, reflections[thread].position, output_time};
 }
-)");
+)"};
+
+const auto speed_of_sound_declaration{
+        "const constant float SPEED_OF_SOUND = " +
+        std::to_string(speed_of_sound) + ";\n" +
+        "const constant float SECONDS_PER_METER = 1.0f / SPEED_OF_SOUND;\n"};
+
+program::program(const cl::Context& context, const cl::Device& device)
+        : program_wrapper(context,
+                          device,
+                          std::vector<std::string>{
+                                  cl_representation_v<volume_type>,
+                                  cl_representation_v<surface>,
+                                  cl_representation_v<triangle>,
+                                  cl_representation_v<triangle_verts>,
+                                  cl_representation_v<reflection>,
+                                  cl_representation_v<diffuse_path_info>,
+                                  cl_representation_v<impulse>,
+                                  cl_representation_v<microphone>,
+                                  cl_representation_v<aabb>,
+                                  cl_representation_v<ray>,
+                                  cl_representation_v<triangle_inter>,
+                                  cl_representation_v<intersection>,
+                                  ::cl_sources::geometry,
+                                  ::cl_sources::voxel,
+                                  ::cl_sources::brdf,
+                                  speed_of_sound_declaration,
+                                  source}) {}
 
 }  // namespace raytracer

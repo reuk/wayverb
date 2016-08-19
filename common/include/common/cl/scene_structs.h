@@ -7,11 +7,8 @@ using volume_type = cl_float8;
 
 template <>
 struct cl_representation<volume_type> final {
-    static constexpr const char* value{R"(
-#ifndef VOLUME_TYPE_DEFINITION__
-#define VOLUME_TYPE_DEFINITION__
+    static constexpr auto value{R"(
 typedef float8 volume_type;
-#endif
 )"};
 };
 
@@ -24,14 +21,11 @@ struct alignas(1 << 5) surface {
 
 template <>
 struct cl_representation<surface> final {
-    static constexpr const char* value{R"(
-#ifndef SURFACE_DEFINITION__
-#define SURFACE_DEFINITION__
+    static constexpr auto value{R"(
 typedef struct {
     volume_type specular;
     volume_type diffuse;
 } surface;
-#endif
 )"};
 };
 
@@ -46,16 +40,13 @@ struct alignas(1 << 3) triangle final {
 
 template <>
 struct cl_representation<triangle> final {
-    static constexpr const char* value{R"(
-#ifndef TRIANGLE_DEFINITION__
-#define TRIANGLE_DEFINITION__
+    static constexpr auto value{R"(
 typedef struct {
     uint surface;
     uint v0;
     uint v1;
     uint v2;
 } triangle;
-#endif
 )"};
 };
 
@@ -81,15 +72,12 @@ struct alignas(1 << 4) triangle_verts final {
 
 template <>
 struct cl_representation<triangle_verts> final {
-    static constexpr const char* value{R"(
-#ifndef TRIANGLE_VERTS_DEFINITION__
-#define TRIANGLE_VERTS_DEFINITION__
+    static constexpr auto value{R"(
 typedef struct {
     float3 v0;
     float3 v1;
     float3 v2;
 } triangle_verts;
-#endif
 )"};
 };
 

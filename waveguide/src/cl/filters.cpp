@@ -1,24 +1,15 @@
 #include "waveguide/cl/filters.h"
-
 #include "waveguide/cl/filter_structs.h"
 
 namespace cl_sources {
 
-const std::string filters{
-        std::string{} + R"(
-#ifndef FILTERS_HEADER__
-#define FILTERS_HEADER__
-)" + "\n#define BIQUAD_SECTIONS " +
-        std::to_string(biquad_sections) + "\n#define BIQUAD_ORDER " +
-        std::to_string(biquad_order) + "\n#define CANONICAL_FILTER_ORDER " +
-        std::to_string(biquad_sections * 2) + "\n" + cl_representation_v<real> +
-        cl_representation_v<memory_biquad> +
-        cl_representation_v<coefficients_biquad> +
-        cl_representation_v<memory_canonical> +
-        cl_representation_v<coefficients_canonical> +
-        cl_representation_v<biquad_memory_array> +
-        cl_representation_v<biquad_coefficients_array> +
-        R"(
+const std::string filter_constants{
+        "#define BIQUAD_SECTIONS " + std::to_string(biquad_sections) + "\n" +
+        "#define BIQUAD_ORDER " + std::to_string(biquad_order) + "\n" +
+        "#define CANONICAL_FILTER_ORDER " +
+        std::to_string(biquad_sections * 2)};
+
+const char* filters{R"(
 #define CAT(a, b) PRIMITIVE_CAT(a, b)
 #define PRIMITIVE_CAT(a, b) a##b
 
@@ -81,7 +72,6 @@ kernel void filter_test_2(
                                           canonical_coefficients + index);
 }
 
-#endif
 )"};
 
 }  // namespace cl_sources

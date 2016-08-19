@@ -20,7 +20,7 @@ typedef enum : cl_int {
 
 template <>
 struct cl_representation<boundary_type> final {
-    static constexpr const char* value{R"(
+    static constexpr auto value{R"(
 typedef enum {
     id_none = 0,
     id_inside = 1 << 0,
@@ -54,7 +54,7 @@ struct alignas(1 << 4) node final {
 
 template <>
 struct cl_representation<node> final {
-    static constexpr const char* value{R"(
+    static constexpr auto value{R"(
 typedef struct {
     float3 position;        //  spatial position
     uint ports[6];          //  the indices of adjacent ports
@@ -79,5 +79,5 @@ inline bool operator!=(const node& a, const node& b) { return !(a == b); }
 //----------------------------------------------------------------------------//
 
 namespace cl_sources {
-extern const std::string utils;
+extern const char* utils;
 }//namespace cl_sources

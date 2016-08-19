@@ -1,7 +1,5 @@
 #pragma once
 
-#include <string>
-
 namespace cl_sources {
-extern const std::string geometry;
+extern const char* geometry;
 }  // namespace cl_sources

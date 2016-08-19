@@ -3,38 +3,16 @@
 #include "raytracer/cl/structs.h"
 
 #include "common/cl/geometry.h"
+#include "common/cl/geometry_structs.h"
 #include "common/cl/scene_structs.h"
 #include "common/cl/voxel.h"
+#include "common/cl/voxel_structs.h"
 #include "common/config.h"
 
 namespace raytracer {
 
-attenuator_program::attenuator_program(const cl::Context& context,
-                                       const cl::Device& device)
-        : program_wrapper(context,
-                          device,
-                          std::vector<std::string>{
-                                  cl_representation_v<volume_type>,
-                                  cl_representation_v<surface>,
-                                  cl_representation_v<triangle>,
-                                  cl_representation_v<triangle_verts>,
-                                  cl_representation_v<reflection>,
-                                  cl_representation_v<diffuse_path_info>,
-                                  cl_representation_v<impulse>,
-                                  cl_representation_v<attenuated_impulse>,
-                                  cl_representation_v<microphone>,
-                                  ::cl_sources::voxel,
-                                  source}) {}
-
-static_assert(speed_of_sound != 0, "SPEED_OF_SOUND");
-
-const std::string attenuator_program::source(
-        "const constant float SPEED_OF_SOUND = " +
-        std::to_string(speed_of_sound) + R"(;
-
+constexpr auto source{R"(
 #define NULL (0)
-
-constant float SECONDS_PER_METER = 1.0f / SPEED_OF_SOUND;
 
 float microphone_attenuation(microphone * speaker, float3 direction);
 float microphone_attenuation(microphone * speaker, float3 direction) {
@@ -127,6 +105,37 @@ kernel void hrtf_kernel(float3 mic_pos,
     }
 }
 
-)");
+)"};
+
+const auto speed_of_sound_declaration{
+        "const constant float SPEED_OF_SOUND = " +
+        std::to_string(speed_of_sound) + ";\n" +
+        "const constant float SECONDS_PER_METER = 1.0f / SPEED_OF_SOUND;\n"};
+
+attenuator_program::attenuator_program(const cl::Context& context,
+                                       const cl::Device& device)
+        : program_wrapper(context,
+                          device,
+                          std::vector<std::string>{
+                                  cl_representation_v<volume_type>,
+                                  cl_representation_v<surface>,
+                                  cl_representation_v<triangle>,
+                                  cl_representation_v<triangle_verts>,
+                                  cl_representation_v<reflection>,
+                                  cl_representation_v<diffuse_path_info>,
+                                  cl_representation_v<impulse>,
+                                  cl_representation_v<attenuated_impulse>,
+                                  cl_representation_v<microphone>,
+                                  cl_representation_v<aabb>,
+                                  cl_representation_v<ray>,
+                                  cl_representation_v<triangle_inter>,
+                                  cl_representation_v<intersection>,
+                                  ::cl_sources::geometry,
+                                  ::cl_sources::voxel,
+                                  speed_of_sound_declaration,
+                                  source}) {}
+
+static_assert(speed_of_sound != 0, "SPEED_OF_SOUND");
+
 
 }  // namespace raytracer

@@ -13,9 +13,7 @@ typedef enum : cl_int {
 
 template <>
 struct cl_representation<error_code> final {
-    static constexpr const char* value{R"(
-#ifndef ERROR_CODE_DEFINITION__
-#define ERROR_CODE_DEFINITION__
+    static constexpr auto value{R"(
 typedef enum {
     id_success = 0,
     id_inf_error = 1 << 0,
@@ -24,7 +22,6 @@ typedef enum {
     id_outside_mesh_error = 1 << 3,
     id_suspicious_boundary_error = 1 << 4,
 } error_code;
-#endif
 )"};
 };
 
@@ -37,14 +34,11 @@ struct alignas(1 << 3) condensed_node final {
 
 template <>
 struct cl_representation<condensed_node> final {
-    static constexpr const char* value{R"(
-#ifndef CONDENSED_NODE_DEFINITION__
-#define CONDENSED_NODE_DEFINITION__
+    static constexpr auto value{R"(
 typedef struct {
     int boundary_type;
     uint boundary_index;
 } condensed_node;
-#endif
 )"};
 };
 
@@ -69,14 +63,11 @@ struct alignas(1 << 3) boundary_data final {
 
 template <>
 struct cl_representation<boundary_data> final {
-    static constexpr const char* value{R"(
-#ifndef BOUNDARY_DATA_DEFINITION__
-#define BOUNDARY_DATA_DEFINITION__
+    static constexpr auto value{R"(
 typedef struct {
     memory_canonical filter_memory;
     uint coefficient_index;
 } boundary_data;
-#endif
 )"};
 };
 
@@ -93,7 +84,7 @@ inline bool operator!=(const boundary_data& a, const boundary_data& b) {
 
 template <size_t D>
 struct alignas(1 << 3) boundary_data_array final {
-    static constexpr size_t DIMENSIONS{D};
+    static constexpr auto DIMENSIONS{D};
     boundary_data array[DIMENSIONS]{};
 };
 
@@ -115,30 +106,21 @@ using boundary_data_array_3 = boundary_data_array<3>;
 
 template<>
 struct cl_representation<boundary_data_array_1> final {
-    static constexpr const char* value{R"(
-#ifndef BOUNDARY_DATA_ARRAY_1_DEFINITION__
-#define BOUNDARY_DATA_ARRAY_1_DEFINITION__
+    static constexpr auto value{R"(
 typedef struct { boundary_data array[1]; } boundary_data_array_1;
-#endif
 )"};
 };
 
 template<>
 struct cl_representation<boundary_data_array_2> final {
-    static constexpr const char* value{R"(
-#ifndef BOUNDARY_DATA_ARRAY_2_DEFINITION__
-#define BOUNDARY_DATA_ARRAY_2_DEFINITION__
+    static constexpr auto value{R"(
 typedef struct { boundary_data array[2]; } boundary_data_array_2;
-#endif
 )"};
 };
 
 template<>
 struct cl_representation<boundary_data_array_3> final {
-    static constexpr const char* value{R"(
-#ifndef BOUNDARY_DATA_ARRAY_3_DEFINITION__
-#define BOUNDARY_DATA_ARRAY_3_DEFINITION__
+    static constexpr auto value{R"(
 typedef struct { boundary_data array[3]; } boundary_data_array_3;
-#endif
 )"};
 };

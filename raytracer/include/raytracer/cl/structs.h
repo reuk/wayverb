@@ -33,9 +33,7 @@ struct alignas(1 << 4) reflection final {
 
 template<>
 struct cl_representation<reflection> final {
-    static constexpr const char* value{R"(
-#ifndef REFLECTION_DEFINITION__
-#define REFLECTION_DEFINITION__
+    static constexpr auto value{R"(
 typedef struct {
     float3 position;
     float3 direction;
@@ -43,7 +41,6 @@ typedef struct {
     char keep_going;
     char receiver_visible;
 } reflection;
-#endif
 )"};
 };
 
@@ -74,15 +71,12 @@ struct alignas(1 << 5) diffuse_path_info final {
 
 template<>
 struct cl_representation<diffuse_path_info> final {
-    static constexpr const char* value{R"(
-#ifndef DIFFUSE_PATH_INFO_DEFINITION__
-#define DIFFUSE_PATH_INFO_DEFINITION__
+    static constexpr auto value{R"(
 typedef struct {
     volume_type volume;
     float3 position;
     float distance;
 } diffuse_path_info;
-#endif
 )"};
 };
 
@@ -113,15 +107,12 @@ struct alignas(1 << 5) impulse final {
 
 template<>
 struct cl_representation<impulse> final {
-    static constexpr const char* value{R"(
-#ifndef IMPULSE_DEFINITION__
-#define IMPULSE_DEFINITION__
+    static constexpr auto value{R"(
 typedef struct {
     volume_type volume;
     float3 position;
     float time;
 } impulse;
-#endif
 )"};
 };
 
@@ -146,14 +137,11 @@ struct alignas(1 << 5) attenuated_impulse final {
 
 template<>
 struct cl_representation<attenuated_impulse> final {
-    static constexpr const char* value{R"(
-#ifndef ATTENUATED_IMPULSE_DEFINITION__
-#define ATTENUATED_IMPULSE_DEFINITION__
+    static constexpr auto value{R"(
 typedef struct {
     volume_type volume;
     float time;
 } attenuated_impulse;
-#endif
 )"};
 };
 
@@ -182,14 +170,11 @@ struct alignas(1 << 4) microphone final {
 
 template<>
 struct cl_representation<microphone> final {
-    static constexpr const char* value{R"(
-#ifndef MICROPHONE_DEFINITION__
-#define MICROPHONE_DEFINITION__
+    static constexpr auto value{R"(
 typedef struct {
     float3 direction;
     float coefficient;
 } microphone;
-#endif
 )"};
 };
 

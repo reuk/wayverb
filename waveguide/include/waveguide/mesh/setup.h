@@ -54,8 +54,6 @@ public:
     }
 
 private:
-    static const std::string source;
-
     program_wrapper program_wrapper;
 };
 

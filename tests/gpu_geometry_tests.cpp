@@ -1,5 +1,6 @@
 #include "common/azimuth_elevation.h"
 #include "common/cl/geometry.h"
+#include "common/cl/geometry_structs.h"
 #include "common/conversions.h"
 #include "common/geo/geometric.h"
 #include "common/map_to_vector.h"
@@ -24,6 +25,9 @@ public:
                               cl_representation_v<surface>,
                               cl_representation_v<triangle>,
                               cl_representation_v<triangle_verts>,
+                              cl_representation_v<ray>,
+                              cl_representation_v<triangle_inter>,
+                              cl_representation_v<intersection>,
                               cl_sources::geometry,
                               source}) {}
 
@@ -42,7 +46,7 @@ public:
 
 private:
     program_wrapper wrapper;
-    static constexpr const char* source{R"(
+    static constexpr auto source{R"(
 
 kernel void triangle_vert_intersection_test(
         const global triangle_verts* t,

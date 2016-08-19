@@ -1,15 +1,15 @@
 #include "common/cl/geometry.h"
-#include "common/cl/geometry_structs.h"
+
+/*
+cl_representation_v<ray>,
+cl_representation_v<triangle_inter>,
+cl_representation_v<triangle_verts>,
+cl_representation_v<triangle>,
+cl_representation_v<intersection>,
+*/
 
 namespace cl_sources {
-const std::string geometry(std::string{} + cl_representation_v<ray> +
-                           cl_representation_v<triangle_inter> +
-                           cl_representation_v<triangle_verts> +
-                           cl_representation_v<triangle> +
-                           cl_representation_v<intersection> + R"(
-#ifndef GEOMETRY_HEADER__
-#define GEOMETRY_HEADER__
-
+const char* geometry{R"(
 bool almost_equal(float x, float y, size_t ulp);
 bool almost_equal(float x, float y, size_t ulp) {
     const float abs_diff = fabs(x - y);
@@ -157,8 +157,5 @@ float3 get_direction(float3 from, float3 to);
 float3 get_direction(float3 from, float3 to) {
     return normalize(to - from);
 }
-
-#endif
-
-)");
+)"};
 }  // namespace cl_sources

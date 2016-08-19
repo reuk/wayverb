@@ -2,7 +2,7 @@
 
 namespace cl_sources {
 
-const std::string utils{R"(
+const char* utils{R"(
 #ifndef UTILS_HEADER__
 #define UTILS_HEADER__
 

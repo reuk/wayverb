@@ -51,8 +51,6 @@ public:
     cl::Device get_device() const { return program_wrapper.get_device(); }
 
 private:
-    static const std::string source;
-
     program_wrapper program_wrapper;
 };
 

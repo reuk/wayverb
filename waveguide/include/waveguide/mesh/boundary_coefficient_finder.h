@@ -19,31 +19,22 @@ using boundary_index_array_3 = boundary_index_array<3>;
 
 template <>
 struct cl_representation<boundary_index_array_1> final {
-    static constexpr const char* value{R"(
-#ifndef BOUNDARY_INDEX_ARRAY_1_DEFINITION__
-#define BOUNDARY_INDEX_ARRAY_1_DEFINITION__
+    static constexpr auto value{R"(
 typedef struct { uint array[1]; } boundary_index_array_1;
-#endif
 )"};
 };
 
 template <>
 struct cl_representation<boundary_index_array_2> final {
-    static constexpr const char* value{R"(
-#ifndef BOUNDARY_INDEX_ARRAY_2_DEFINITION__
-#define BOUNDARY_INDEX_ARRAY_2_DEFINITION__
+    static constexpr auto value{R"(
 typedef struct { uint array[2]; } boundary_index_array_2;
-#endif
 )"};
 };
 
 template <>
 struct cl_representation<boundary_index_array_3> final {
-    static constexpr const char* value{R"(
-#ifndef BOUNDARY_INDEX_ARRAY_3_DEFINITION__
-#define BOUNDARY_INDEX_ARRAY_3_DEFINITION__
+    static constexpr auto value{R"(
 typedef struct { uint array[3]; } boundary_index_array_3;
-#endif
 )"};
 };
 
@@ -83,7 +74,6 @@ public:
     }
 
 private:
-    static const char* source;
     program_wrapper wrapper;
 };
 

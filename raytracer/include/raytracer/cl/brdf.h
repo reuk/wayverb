@@ -1,7 +1,5 @@
 #pragma once
 
-#include <string>
-
 namespace cl_sources {
-extern const std::string brdf;
+extern const char* brdf;
 }  // namespace cl_sources

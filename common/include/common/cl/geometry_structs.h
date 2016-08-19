@@ -14,14 +14,11 @@ struct alignas(1 << 4) ray final {
 
 template <>
 struct cl_representation<ray> final {
-    static constexpr const char* value{R"(
-#ifndef RAY_DEFINITION__
-#define RAY_DEFINITION__
+    static constexpr auto value{R"(
 typedef struct {
     float3 position;
     float3 direction;
 } ray;
-#endif
 )"};
 };
 
@@ -45,15 +42,12 @@ struct alignas(1 << 2) triangle_inter final {
 
 template <>
 struct cl_representation<triangle_inter> final {
-    static constexpr const char* value{R"(
-#ifndef TRIANGLE_INTER_DEFINITION__
-#define TRIANGLE_INTER_DEFINITION__
+    static constexpr auto value{R"(
 typedef struct {
     float t;
     float u;
     float v;
 } triangle_inter;
-#endif
 )"};
 };
 
@@ -80,14 +74,11 @@ struct alignas(1 << 3) intersection final {
 
 template <>
 struct cl_representation<intersection> final {
-    static constexpr const char* value{R"(
-#ifndef INTERSECTION_DEFINITION__
-#define INTERSECTION_DEFINITION__
+    static constexpr auto value{R"(
 typedef struct {
     triangle_inter inter;
     uint index;
 } intersection;
-#endif
 )"};
 };
 

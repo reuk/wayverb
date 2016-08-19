@@ -1,7 +1,7 @@
 #include "raytracer/cl/brdf.h"
 
 namespace cl_sources {
-const std::string brdf{R"(
+const char* brdf{R"(
 #ifndef BRDF_HEADER__
 #define BRDF_HEADER__
 
