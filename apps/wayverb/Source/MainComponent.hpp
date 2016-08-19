@@ -49,6 +49,8 @@ private:
     StretchableLayoutResizerBar resizer_bar;
     ModelRendererComponent right_panel;
 
+    model::Connector<LeftPanel> panel_connector{&left_panel, &right_panel};
+
     AsyncEngine engine;
     model::Connector<AsyncEngine> engine_connector{&engine, this};
 };

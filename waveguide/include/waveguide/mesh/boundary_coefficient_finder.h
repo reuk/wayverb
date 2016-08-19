@@ -53,6 +53,7 @@ public:
                                   aabb,        /// global_aabb
                                   cl_uint,     /// side
                                   cl::Buffer,  /// triangles
+                                  cl_uint,     /// num_triangles
                                   cl::Buffer   /// vertices
                                   >("boundary_coefficient_finder_1d");
     }

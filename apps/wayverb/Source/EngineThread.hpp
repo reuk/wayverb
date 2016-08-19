@@ -2,9 +2,8 @@
 
 #include "EngineFunctor.hpp"
 
-#include "UtilityComponents/RAIIThread.hpp"
-
 #include "OtherComponents/WorkQueue.hpp"
+#include "UtilityComponents/RAIIThread.hpp"
 
 /// Runs the engine on another thread.
 class EngineThread final {

@@ -97,6 +97,7 @@ boundary_index_data compute_boundary_index_data(const cl::Device& device,
                buffers.get_global_aabb(),
                buffers.get_side(),
                buffers.get_triangles_buffer(),
+               buffers.get_triangles_buffer().getInfo<CL_MEM_SIZE>() / sizeof(triangle),
                buffers.get_vertices_buffer());
         const auto out{read_from_buffer<boundary_index_array_1>(
                 queue, index_buffer_1)};
@@ -282,6 +283,14 @@ float point_triangle_distance_squared(triangle_verts triangle, float3 point) {
     return dot(d, d);
 }
 
+float point_triangle_dist_squared(triangle t, const global float3* vertices, float3 point);
+float point_triangle_dist_squared(triangle t, const global float3* vertices, float3 point) {
+    const triangle_verts this_triangle_verts = {vertices[t.v0],
+                                                vertices[t.v1],
+                                                vertices[t.v2]};
+    return point_triangle_distance_squared(this_triangle_verts, point);
+}
+
 float min_dist_to_cuboid_squared(float3 pt, aabb cuboid);
 float min_dist_to_cuboid_squared(float3 pt, aabb cuboid) {
     const float3 d = max((float3)(0), max(cuboid.c0 - pt, pt - cuboid.c1));
@@ -338,12 +347,7 @@ triangle_distance_pair closest_triangle_in_voxel(
             //  find squared distance to the triangle
             const uint this_index = *it;
             const triangle this_triangle = triangles[this_index];
-            const triangle_verts this_triangle_verts = {
-                    vertices[this_triangle.v0],
-                    vertices[this_triangle.v1],
-                    vertices[this_triangle.v2]};
-            const float d =
-                    point_triangle_distance_squared(this_triangle_verts, pt);
+            const float d = point_triangle_dist_squared(this_triangle, vertices, pt);
 
             if (d < ret.distance_squared && d <= distance_squared) {
                 ret.triangle = *it;
@@ -352,6 +356,27 @@ triangle_distance_pair closest_triangle_in_voxel(
         }
     }
 
+    return ret;
+}
+
+uint slow_closest_triangle(float3 pt,
+                           const global triangle* triangles,
+                           uint num_triangles,
+                           const global float3* vertices);
+uint slow_closest_triangle(float3 pt,
+                           const global triangle* triangles,
+                           uint num_triangles,
+                           const global float3* vertices) {
+    uint ret = 0;
+    float distance = INFINITY;
+    for (uint i = 0; i != num_triangles; ++i) {
+        const triangle this_triangle = triangles[i];
+        const float new_dist = point_triangle_dist_squared(this_triangle, vertices, pt);
+        if (new_dist < distance) {
+            ret = i;
+            distance = new_dist;
+        }
+    }
     return ret;
 }
 
@@ -431,6 +456,7 @@ kernel void boundary_coefficient_finder_1d(
         uint side,
 
         const global triangle* triangles,  //  scene
+        uint num_triangles,
         const global float3* vertices) {
     const size_t thread = get_global_id(0);
 
@@ -446,12 +472,13 @@ kernel void boundary_coefficient_finder_1d(
 
     //  find the closest triangle
     const float3 pt = nodes[thread].position;
-    const uint closest_triangle_index = closest_triangle(pt,
-                                                         voxel_index,
-                                                         global_aabb,
-                                                         side,
-                                                         triangles,
-                                                         vertices);
+//    const uint closest_triangle_index = closest_triangle(pt,
+//                                                         voxel_index,
+//                                                         global_aabb,
+//                                                         side,
+//                                                         triangles,
+//                                                         vertices);
+    const uint closest_triangle_index = slow_closest_triangle(pt, triangles, num_triangles, vertices);
     const uint s = triangles[closest_triangle_index].surface;
 
     //  now set the boundary to the triangle's surface

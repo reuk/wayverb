@@ -224,8 +224,7 @@ WayverbApplication::MainWindow::scene_and_model_from_file(const File& f) {
 }
 
 //  given just a file, work out whether it's a project or a 3d model, then
-//  init
-//  appropriately
+//  init appropriately
 WayverbApplication::MainWindow::MainWindow(String name, const File& f)
         : MainWindow(name, scene_and_model_from_file(f)) {}
 

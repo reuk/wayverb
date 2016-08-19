@@ -121,5 +121,22 @@ model compute_model(const cl::Context& context,
     return model{desc, v, node_positions};
 }
 
+std::tuple<voxelised_scene_data, model> compute_voxels_and_model(
+        const cl::Context& context,
+        const cl::Device& device,
+        const copyable_scene_data& scene,
+        const glm::vec3& anchor,
+        double sample_rate) {
+    const auto mesh_spacing{
+            waveguide::config::grid_spacing(speed_of_sound, 1 / sample_rate)};
+    auto voxelised{voxelised_scene_data{
+            scene,
+            5,
+            waveguide::compute_adjusted_boundary(
+                    scene.get_aabb(), anchor, mesh_spacing)}};
+    auto model{compute_model(context, device, voxelised, mesh_spacing)};
+    return std::make_tuple(std::move(voxelised), std::move(model));
+}
+
 }  // namespace mesh
 }  // namespace waveguide

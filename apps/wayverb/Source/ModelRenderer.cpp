@@ -263,14 +263,15 @@ void SceneRendererContextLifetime::set_rendering(bool b) {
     if (!b) {
         mesh_object = nullptr;
         ray_object = nullptr;
+    } else {
+        debug_mesh_object = nullptr;
     }
     allow_move_mode = !b;
 }
 
 void SceneRendererContextLifetime::set_positions(
         const aligned::vector<glm::vec3> &positions) {
-    //  TODO
-//      mesh_object = std::make_unique<MeshObject>(mesh_shader, positions);
+    mesh_object = std::make_unique<MeshObject>(mesh_shader, positions);
 }
 
 void SceneRendererContextLifetime::set_pressures(
@@ -347,6 +348,10 @@ void SceneRendererContextLifetime::do_draw(
         }
     }
 
+    if (debug_mesh_object) {
+        debug_mesh_object->draw(modelview_matrix);
+    }
+
     axes.draw(modelview_matrix);
 }
 
@@ -398,6 +403,22 @@ void SceneRendererContextLifetime::set_sources(
 void SceneRendererContextLifetime::set_receivers(
         const aligned::vector<model::ReceiverSettings> &u) {
     point_objects.set_receivers(u);
+}
+
+void SceneRendererContextLifetime::debug_show_closest_surfaces(
+        waveguide::mesh::model model) {
+    debug_mesh_object = std::make_unique<DebugMeshObject>(
+            generic_shader, model, DebugMeshObject::mode::closest_surface);
+}
+
+void SceneRendererContextLifetime::debug_show_boundary_types(
+        waveguide::mesh::model model) {
+    debug_mesh_object = std::make_unique<DebugMeshObject>(
+            generic_shader, model, DebugMeshObject::mode::boundary_type);
+}
+
+void SceneRendererContextLifetime::debug_hide_model() {
+    debug_mesh_object = nullptr;
 }
 
 void SceneRendererContextLifetime::set_eye_impl(float u) {

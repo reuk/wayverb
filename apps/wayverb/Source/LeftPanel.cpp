@@ -1,5 +1,7 @@
 #include "LeftPanel.hpp"
 
+#include "Application.hpp"
+#include "CommandIDs.hpp"
 #include "DirectionEditor.hpp"
 #include "MicrophoneEditor.hpp"
 #include "PropertyComponentLAF.hpp"
@@ -250,6 +252,28 @@ private:
     geo::box aabb;
 };
 
+//----------------------------------------------------------------------------//
+
+class DebugButton : public ButtonPropertyComponent {
+public:
+    DebugButton(const std::string& name, const std::function<void()>& f)
+            : ButtonPropertyComponent("dbg", true)
+            , button_text(name)
+            , on_press(f) {}
+
+private:
+    void buttonClicked() override {
+        if (on_press) {
+            on_press();
+        }
+    }
+
+    String getButtonText() const override { return button_text; }
+
+    std::string button_text;
+    std::function<void()> on_press;
+};
+
 }  // namespace
 
 //----------------------------------------------------------------------------//
@@ -310,6 +334,31 @@ LeftPanel::LeftPanel(model::ValueWrapper<model::FullModel>& model,
                 {new RayNumberPickerProperty(model.persistent.app.rays)});
     }
 
+    {
+        property_panel.addSection(
+                "debug",
+                {new DebugButton(
+                         "show closest surfaces",
+                         [&] {
+                             listener_list.call(
+                                     &Listener::
+                                             left_panel_debug_show_closest_surfaces,
+                                     this);
+                         }),
+                 new DebugButton(
+                         "show boundary types",
+                         [&] {
+                             listener_list.call(
+                                     &Listener::
+                                             left_panel_debug_show_boundary_types,
+                                     this);
+                         }),
+                 new DebugButton("hide", [&] {
+                     listener_list.call(
+                             &Listener::left_panel_debug_hide_debug_mesh, this);
+                 })});
+    }
+
     property_panel.setOpaque(false);
 
     addAndMakeVisible(property_panel);
@@ -331,3 +380,6 @@ void LeftPanel::receive_broadcast(model::Broadcaster* cb) {
                 model.persistent.app.get().get_waveguide_sample_rate());
     }
 }
+
+void LeftPanel::addListener(Listener* l) { listener_list.add(l); }
+void LeftPanel::removeListener(Listener* l) { listener_list.remove(l); }

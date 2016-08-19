@@ -35,6 +35,7 @@
 		1B2F86CB1D28110B007EDF27 /* libzlibstatic.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B2F86991D2810FF007EDF27 /* libzlibstatic.a */; };
 		1B5246951D54F2AA001B71AE /* EngineFunctor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1B5246931D54F2AA001B71AE /* EngineFunctor.cpp */; };
 		1B59F97A1D4CD57C00CD2816 /* RayVisualisation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1B59F9781D4CD57C00CD2816 /* RayVisualisation.cpp */; };
+		1B8FBB441D6757DE007E9457 /* MeshGeneratorFunctor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1B8FBB421D6757DE007E9457 /* MeshGeneratorFunctor.cpp */; };
 		1D0C4CE425FD7D455AC10C32 /* juce_audio_basics.mm in Sources */ = {isa = PBXBuildFile; fileRef = BFBA6DD240E8E2C1D9EEFE1C /* juce_audio_basics.mm */; };
 		1E09DBF6A82901B168B1DE8F /* MainComponent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7D2C7F4DDD285709BDAA80DC /* MainComponent.cpp */; };
 		22A1A2FEBBF078F0D165D702 /* PropertyComponentLAF.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D427A44648B46DF12F248F18 /* PropertyComponentLAF.cpp */; };
@@ -417,6 +418,8 @@
 		1B59F9781D4CD57C00CD2816 /* RayVisualisation.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = RayVisualisation.cpp; path = ../../Source/RayVisualisation.cpp; sourceTree = "<group>"; };
 		1B59F9791D4CD57C00CD2816 /* RayVisualisation.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = RayVisualisation.hpp; path = ../../Source/RayVisualisation.hpp; sourceTree = "<group>"; };
 		1B793B5E3A4C29CE2485146B /* juce_AudioAppComponent.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = juce_AudioAppComponent.cpp; path = ../../../../submodules/JUCE/modules/juce_audio_utils/gui/juce_AudioAppComponent.cpp; sourceTree = SOURCE_ROOT; };
+		1B8FBB421D6757DE007E9457 /* MeshGeneratorFunctor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = MeshGeneratorFunctor.cpp; path = ../../Source/MeshGeneratorFunctor.cpp; sourceTree = "<group>"; };
+		1B8FBB431D6757DE007E9457 /* MeshGeneratorFunctor.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = MeshGeneratorFunctor.hpp; path = ../../Source/MeshGeneratorFunctor.hpp; sourceTree = "<group>"; };
 		1BFB8130B21C10352D4B8E73 /* jdmarker.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = jdmarker.c; path = ../../../../submodules/JUCE/modules/juce_graphics/image_formats/jpglib/jdmarker.c; sourceTree = SOURCE_ROOT; };
 		1C535F5E6A09E2B1F4D01FA2 /* juce_OpenGL_ios.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = juce_OpenGL_ios.h; path = ../../../../submodules/JUCE/modules/juce_opengl/native/juce_OpenGL_ios.h; sourceTree = SOURCE_ROOT; };
 		1D005628CBFC98819EAFBCCE /* juce_linux_Windowing.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = juce_linux_Windowing.cpp; path = ../../../../submodules/JUCE/modules/juce_gui_basics/native/juce_linux_Windowing.cpp; sourceTree = SOURCE_ROOT; };
@@ -1702,6 +1705,8 @@
 			children = (
 				1B5246931D54F2AA001B71AE /* EngineFunctor.cpp */,
 				1B5246941D54F2AA001B71AE /* EngineFunctor.hpp */,
+				1B8FBB421D6757DE007E9457 /* MeshGeneratorFunctor.cpp */,
+				1B8FBB431D6757DE007E9457 /* MeshGeneratorFunctor.hpp */,
 				C167FEFD4CB3C3E8C91FF2D5 /* EngineThread.cpp */,
 				86A883E20C2CB2C89D6DD9D5 /* EngineThread.hpp */,
 				3A4E8C81EE4D320FFE833B81 /* Application.cpp */,
@@ -3962,6 +3967,7 @@
 			files = (
 				B25449A5DB5F02DDBBE9D53B /* Application.cpp in Sources */,
 				0F3F3BF0CF31990B8A36D2C6 /* BottomPanel.cpp in Sources */,
+				1B8FBB441D6757DE007E9457 /* MeshGeneratorFunctor.cpp in Sources */,
 				866629B62286C2E53E0B6B3B /* BoxObject.cpp in Sources */,
 				3E808799759A875C607B3C97 /* DirectionEditor.cpp in Sources */,
 				D4FBD439EC60B101A14A44CA /* EngineThread.cpp in Sources */,

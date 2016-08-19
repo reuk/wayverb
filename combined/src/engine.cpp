@@ -191,17 +191,29 @@ public:
          double waveguide_sample_rate,
          size_t rays,
          size_t impulses)
+            : impl(cc,
+                   waveguide::mesh::compute_voxels_and_model(
+                           cc.get_context(),
+                           cc.get_device(),
+                           scene_data,
+                           receiver,
+                           waveguide_sample_rate),
+                   source,
+                   receiver,
+                   waveguide_sample_rate,
+                   rays,
+                   impulses) {}
+
+    impl(const compute_context& cc,
+         std::tuple<voxelised_scene_data, waveguide::mesh::model>&& pair,
+         const glm::vec3& source,
+         const glm::vec3& receiver,
+         double waveguide_sample_rate,
+         size_t rays,
+         size_t impulses)
             : compute_context(cc)
-            , mesh_spacing(waveguide::config::grid_spacing(
-                      speed_of_sound, 1 / waveguide_sample_rate))
-            , voxelised(scene_data,
-                        5,
-                        waveguide::compute_adjusted_boundary(
-                                scene_data.get_aabb(), receiver, mesh_spacing))
-            , model(waveguide::mesh::compute_model(cc.get_context(),
-                                                   cc.get_device(),
-                                                   voxelised,
-                                                   mesh_spacing))
+            , voxelised(std::move(std::get<0>(pair)))
+            , model(std::move(std::get<1>(pair)))
             , source(source)
             , receiver(receiver)
             , waveguide_sample_rate(waveguide_sample_rate)
@@ -223,6 +235,7 @@ public:
                     "invalid receiver position - probably outside mesh");
         }
     }
+
 
     std::unique_ptr<intermediate> run(std::atomic_bool& keep_going,
                                       const state_callback& callback) {
@@ -358,8 +371,6 @@ public:
 
 private:
     compute_context compute_context;
-
-    float mesh_spacing;
 
     voxelised_scene_data voxelised;
     waveguide::mesh::model model;

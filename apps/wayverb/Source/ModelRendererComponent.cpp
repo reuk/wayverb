@@ -1,5 +1,7 @@
 #include "ModelRendererComponent.hpp"
 
+#include "Application.hpp"
+#include "CommandIDs.hpp"
 #include "OtherComponents/MoreConversions.hpp"
 
 #include "glm/glm.hpp"
@@ -116,3 +118,45 @@ void ModelRendererComponent::receiver_dragged(
     }
 }
 */
+
+void ModelRendererComponent::left_panel_debug_show_closest_surfaces(
+        const LeftPanel *) {
+    generator = std::make_unique<MeshGenerator>(
+            model, app.get().get_waveguide_sample_rate(), [this](auto model) {
+                renderer.context_command([m = std::move(model)](auto &i) {
+                    i.debug_show_closest_surfaces(std::move(m));
+                });
+            });
+}
+
+void ModelRendererComponent::left_panel_debug_show_boundary_types(
+        const LeftPanel *) {
+    generator = std::make_unique<MeshGenerator>(
+            model, app.get().get_waveguide_sample_rate(), [this](auto model) {
+                renderer.context_command([m = std::move(model)](auto &i) {
+                    i.debug_show_boundary_types(std::move(m));
+                });
+            });
+}
+
+void ModelRendererComponent::left_panel_debug_hide_debug_mesh(
+        const LeftPanel *) {
+    generator = nullptr;
+    renderer.context_command([](auto &i) { i.debug_hide_model(); });
+}
+
+//----------------------------------------------------------------------------//
+
+ModelRendererComponent::MeshGenerator::MeshGenerator(
+        const copyable_scene_data &scene,
+        double sample_rate,
+        std::function<void(waveguide::mesh::model)>
+                on_finished)
+        : on_finished(on_finished) {
+    generator.run(scene, sample_rate);
+}
+
+void ModelRendererComponent::MeshGenerator::async_mesh_generator_finished(
+        const AsyncMeshGenerator *, waveguide::mesh::model model) {
+    on_finished(std::move(model));
+}

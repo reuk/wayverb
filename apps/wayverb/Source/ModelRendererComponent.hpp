@@ -2,6 +2,9 @@
 
 #include "FullModel.hpp"
 #include "HelpWindow.hpp"
+#include "LeftPanel.hpp"
+#include "MeshGeneratorFunctor.hpp"
+#include "MeshObject.hpp"
 #include "ModelRenderer.hpp"
 
 #include "OtherComponents/RenderHelpers.hpp"
@@ -10,6 +13,7 @@ class ModelRendererComponent
         : public juce::Component,
           public model::BroadcastListener,
           public SettableHelpPanelClient,
+          public LeftPanel::Listener,
           public RendererComponent<SceneRendererContextLifetime>::Listener {
 public:
     using Renderer = RendererComponent<SceneRendererContextLifetime>;
@@ -34,6 +38,10 @@ public:
     void renderer_open_gl_context_created(const Renderer*) override;
     void renderer_open_gl_context_closing(const Renderer*) override;
 
+    void left_panel_debug_show_closest_surfaces(const LeftPanel*) override;
+    void left_panel_debug_show_boundary_types(const LeftPanel*) override;
+    void left_panel_debug_hide_debug_mesh(const LeftPanel*) override;
+
 private:
     void send_highlighted();
     void send_sources();
@@ -42,6 +50,24 @@ private:
 
     const copyable_scene_data& model;
     model::ValueWrapper<int>& shown_surface;
+
+    class MeshGenerator final : public AsyncMeshGenerator::Listener {
+    public:
+        MeshGenerator(const copyable_scene_data& scene,
+                      double sample_rate,
+                      std::function<void(waveguide::mesh::model)>
+                              on_finished);
+
+        void async_mesh_generator_finished(
+                const AsyncMeshGenerator*,
+                waveguide::mesh::model model) override;
+
+    private:
+        std::function<void(waveguide::mesh::model)> on_finished;
+        AsyncMeshGenerator generator;
+        model::Connector<AsyncMeshGenerator> generator_connector{&generator,
+                                                                 this};
+    };
 
     Renderer renderer;
     model::Connector<Renderer> renderer_connector{&renderer, this};
@@ -59,6 +85,8 @@ private:
 
     model::BroadcastConnector facing_direction_connector{&app.receiver_settings,
                                                          this};
+
+    std::unique_ptr<MeshGenerator> generator;
 
     //    model::Connector<SceneRenderer> scene_drag_connector{&renderer, this};
 };

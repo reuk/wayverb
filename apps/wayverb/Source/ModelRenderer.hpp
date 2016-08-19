@@ -140,6 +140,10 @@ public:
 
     void set_receivers(const aligned::vector<model::ReceiverSettings> &u);
 
+    void debug_show_closest_surfaces(waveguide::mesh::model model);
+    void debug_show_boundary_types(waveguide::mesh::model model);
+    void debug_hide_model();
+
 private:
     void do_draw(const glm::mat4 &modelview_matrix) const override;
     glm::mat4 get_local_modelview_matrix() const override;
@@ -164,6 +168,7 @@ private:
 
     MultiMaterialObject model_object;
     std::unique_ptr<MeshObject> mesh_object;
+    std::unique_ptr<DebugMeshObject> debug_mesh_object;
     std::unique_ptr<RayVisualisation> ray_object;
     bool rendering{false};
     PointObjects point_objects;
