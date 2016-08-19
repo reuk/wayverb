@@ -88,10 +88,7 @@ aligned::vector<glm::vec3> RayVisualisation::extract_positions(
     }
 
     //  the last impulses.size() points will be moved to represent the wavefront
-    const auto lim = impulses.size();
-    for (auto i = 0u; i != lim; ++i) {
-        ret.push_back(glm::vec3{});
-    }
+    ret.resize(ret.size() + impulses.size(), glm::vec3{});
 
     return ret;
 }
@@ -99,7 +96,6 @@ aligned::vector<glm::vec3> RayVisualisation::extract_positions(
 aligned::vector<float> RayVisualisation::extract_pressures(
         const aligned::vector<aligned::vector<path_data>>& impulses) {
     aligned::vector<float> ret;
-    ret.reserve(impulses.size() * impulses.front().size() + 1);
 
     //  source
     ret.push_back(1);
@@ -112,10 +108,7 @@ aligned::vector<float> RayVisualisation::extract_pressures(
     }
 
     //  the last impulses.size() points will be moved to represent the wavefront
-    const auto lim = impulses.size();
-    for (auto i = 0u; i != lim; ++i) {
-        ret.push_back(1);
-    }
+    ret.resize(ret.size() + impulses.size(), 1);
 
     return ret;
 }
@@ -137,7 +130,8 @@ aligned::vector<GLuint> RayVisualisation::compute_indices(
         if (!ray.empty()) {
             ret.push_back(0);  //  source
 
-            for (auto j{0u}; (j != ray.size()) && (ray[j].distance < distance); ++j) {
+            for (auto j{0u}; (j != ray.size() - 1) && (ray[j].distance < distance);
+                 ++j) {
                 const auto impulse_index = counter + j;
                 ret.push_back(impulse_index);
                 ret.push_back(impulse_index);
@@ -158,22 +152,24 @@ glm::vec3 RayVisualisation::ray_wavefront_position(
         return source;
     }
 
-    const auto distance = time * speed_of_sound;
-    auto it = path.begin();
-    for (; it != path.end() && it->distance < distance; ++it) {
+    const auto distance{time * speed_of_sound};
+    const auto lim{path.end() - 1};
+    auto it{path.begin()};
+    for (; it != lim && it->distance < distance; ++it) {
         //  this line intentionally left blank
     }
 
-    const auto far_node = *it;
-    const auto near_node =
-            it == path.begin() ? path_data{source, 0, 1} : *(it - 1);
+    const auto far_node{*it};
+    const auto near_node{it == path.begin() ? path_data{source, 0, 1}
+                                            : *(it - 1)};
 
-    return glm::mix(near_node.position,
-                    far_node.position,
-                    glm::clamp((distance - near_node.distance) /
-                                       (far_node.distance - near_node.distance),
-                               0.0,
-                               1.0));
+    const auto ratio{
+            glm::clamp((distance - near_node.distance) /
+                               (far_node.distance - near_node.distance),
+                       0.0,
+                       1.0)};
+
+    return glm::mix(near_node.position, far_node.position, ratio);
 }
 
 aligned::vector<glm::vec3> RayVisualisation::ray_wavefront_position(

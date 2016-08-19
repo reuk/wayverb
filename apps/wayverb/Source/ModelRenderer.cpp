@@ -270,7 +270,7 @@ void SceneRendererContextLifetime::set_rendering(bool b) {
 void SceneRendererContextLifetime::set_positions(
         const aligned::vector<glm::vec3> &positions) {
     //  TODO
-      mesh_object = std::make_unique<MeshObject>(mesh_shader, positions);
+//      mesh_object = std::make_unique<MeshObject>(mesh_shader, positions);
 }
 
 void SceneRendererContextLifetime::set_pressures(
