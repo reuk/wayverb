@@ -7,11 +7,9 @@
 #include "common/hrtf_utils.h"
 #include "common/receiver_settings.h"
 #include "common/stl_wrappers.h"
+#include "common/pressure_intensity.h"
 
 namespace raytracer {
-
-double pressure_to_intensity(double pressure, double Z = 400);
-double intensity_to_pressure(double intensity, double Z = 400);
 
 /// Sum impulses ocurring at the same (sampled) time and return a vector in
 /// which each subsequent item refers to the next sample of an impulse

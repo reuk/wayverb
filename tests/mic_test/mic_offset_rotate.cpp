@@ -144,8 +144,8 @@ int main(int argc, char** argv) {
             // const auto factor = pow((max_band / min_band), 1.0 / bands);
 
             const auto print_energy = [&ofile](const auto& sig, auto band) {
-                const auto band_energy = proc::accumulate(
-                        sig, 0.0, [](auto a, auto b) { return a + b * b; });
+                const auto band_energy = std::sqrt(proc::accumulate(
+                        sig, 0.0, [](auto a, auto b) { return a + b * b; }));
 
                 const auto max_val =
                         proc::accumulate(sig, 0.0, [](auto a, auto b) {

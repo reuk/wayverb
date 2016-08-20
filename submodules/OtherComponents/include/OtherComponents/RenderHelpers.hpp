@@ -2,8 +2,6 @@
 
 #include "WorkQueue.hpp"
 
-#include "common/single_thread_access_checker.h"
-
 #include "modern_gl_utils/drawable.h"
 #include "modern_gl_utils/updatable.h"
 

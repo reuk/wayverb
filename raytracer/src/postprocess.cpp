@@ -11,14 +11,6 @@ int compute_optimum_reflection_number(float min_amp, float max_reflectivity) {
     return std::log(min_amp) / std::log(max_reflectivity);
 }
 
-double pressure_to_intensity(double pressure, double Z) {
-    return pressure * pressure / Z;
-}
-
-double intensity_to_pressure(double intensity, double Z) {
-    return std::copysign(std::sqrt(std::abs(intensity) * Z), intensity);
-}
-
 /// Find the index of the last sample with an amplitude of minVol or higher,
 /// then resize the vectors down to this length.
 void trimTail(aligned::vector<aligned::vector<float>>& audioChannels,

@@ -64,7 +64,7 @@ def graph():
                     band_nrg.append(float(s[5 + i * 6]))
                     band_max.append(float(s[7 + i * 6]))
             band_nrg.append(band_nrg[0])
-            energies_.append(np.sqrt(band_nrg))
+            energies_.append(band_nrg)
             max_vals_.append(band_max)
 
         for energies, i in zip(energies_, range(bands)):

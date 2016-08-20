@@ -8,6 +8,7 @@
 #include "common/filters_common.h"
 #include "common/kernel.h"
 #include "common/map_to_vector.h"
+#include "common/pressure_intensity.h"
 #include "common/receiver_settings.h"
 #include "common/spatial_division/voxelised_scene_data.h"
 
@@ -96,6 +97,13 @@ public:
         for (auto& i : waveguide_output) {
             i = waveguide::adjust_sampling_rate(
                     std::move(i), waveguide_sample_rate, output_sample_rate);
+        }
+
+        //  convert waveguide output from intensity level back to pressure lvl
+        for (auto& i : waveguide_output) {
+            for (auto& j : i) {
+                j = intensity_to_pressure(j);
+            }
         }
 
         //  TODO scale waveguide output to match raytracer level
