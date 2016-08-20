@@ -119,6 +119,8 @@ aligned::vector<run_step_output> run(const cl::Context& context,
                                      size_t source_index,
                                      const aligned::vector<float>& input,
                                      size_t receiver_index,
+                                     double speed_of_sound,
+                                     double ambient_density,
                                      const per_step_callback& callback) {
     preprocessor::single_soft_source preprocessor(source_index, input);
 
@@ -128,7 +130,8 @@ aligned::vector<run_step_output> run(const cl::Context& context,
             postprocessor::microphone(
                     model.get_descriptor(),
                     receiver_index,
-                    compute_sample_rate(model.get_descriptor()),
+                    compute_sample_rate(model.get_descriptor(), speed_of_sound),
+                    ambient_density,
                     [&ret](const auto& i) { ret.push_back(i); })};
 
     std::atomic_bool keep_going{true};

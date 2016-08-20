@@ -23,7 +23,8 @@ public:
     reflector(const cl::Context&,
               const cl::Device&,
               const glm::vec3& receiver,
-              const aligned::vector<geo::ray>& rays);
+              const aligned::vector<geo::ray>& rays,
+              double speed_of_sound);
 
     aligned::vector<reflection> run_step(const scene_buffers& buffers);
 

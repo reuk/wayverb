@@ -20,6 +20,7 @@ std::experimental::optional<results> run(
         const cl::Context&,
         const cl::Device&,
         const voxelised_scene_data& scene_data,
+        double speed_of_sound,
         const glm::vec3& source,
         const glm::vec3& receiver,
         const aligned::vector<glm::vec3>& directions,

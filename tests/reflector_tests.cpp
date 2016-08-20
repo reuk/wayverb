@@ -45,6 +45,8 @@ struct reflector_fixture : public ::testing::Test {
     const glm::vec3 source{1, 2, 1};
     const glm::vec3 receiver{2, 1, 2};
 
+    static constexpr auto speed_of_sound{340};
+
 #define OPT (0)
 #if OPT == 0
     const aligned::vector<geo::ray> rays{
@@ -57,7 +59,7 @@ struct reflector_fixture : public ::testing::Test {
 #endif
 
     raytracer::reflector reflector{
-            cc.get_context(), cc.get_device(), receiver, rays};
+            cc.get_context(), cc.get_device(), receiver, rays, speed_of_sound};
 
     auto get_fast_intersections() const {
         const auto rays{reflector.get_rays()};

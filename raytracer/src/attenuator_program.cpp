@@ -1,6 +1,7 @@
 #include "raytracer/attenuator_program.h"
 
 #include "raytracer/cl/structs.h"
+#include "raytracer/cl/speed_of_sound_declaration.h"
 
 #include "common/cl/geometry.h"
 #include "common/cl/geometry_structs.h"
@@ -107,13 +108,9 @@ kernel void hrtf_kernel(float3 mic_pos,
 
 )"};
 
-const auto speed_of_sound_declaration{
-        "const constant float SPEED_OF_SOUND = " +
-        std::to_string(speed_of_sound) + ";\n" +
-        "const constant float SECONDS_PER_METER = 1.0f / SPEED_OF_SOUND;\n"};
-
 attenuator_program::attenuator_program(const cl::Context& context,
-                                       const cl::Device& device)
+                                       const cl::Device& device,
+                                       double speed_of_sound)
         : program_wrapper(context,
                           device,
                           std::vector<std::string>{
@@ -132,10 +129,10 @@ attenuator_program::attenuator_program(const cl::Context& context,
                                   cl_representation_v<intersection>,
                                   ::cl_sources::geometry,
                                   ::cl_sources::voxel,
-                                  speed_of_sound_declaration,
-                                  source}) {}
-
-static_assert(speed_of_sound != 0, "SPEED_OF_SOUND");
-
+                                  ::cl_sources::speed_of_sound_declaration(
+                                          speed_of_sound),
+                                  source}) {
+    assert(speed_of_sound);
+}
 
 }  // namespace raytracer

@@ -37,6 +37,8 @@ auto uniform_surface(float r) {
     return surface{volume_type{{r, r, r, r, r, r, r, r}},
                    volume_type{{r, r, r, r, r, r, r, r}}};
 }
+
+constexpr auto speed_of_sound{340.0};
 }  // namespace
 
 int main(int argc, char** argv) {
@@ -61,8 +63,11 @@ int main(int argc, char** argv) {
                 waveguide::compute_adjusted_boundary(
                         scene_data.get_aabb(), receiver, spacing));
 
-        const auto model = waveguide::mesh::compute_model(
-                cc.get_context(), cc.get_device(), voxelised, spacing);
+        const auto model{waveguide::mesh::compute_model(cc.get_context(),
+                                                        cc.get_device(),
+                                                        voxelised,
+                                                        spacing,
+                                                        speed_of_sound)};
 
         const auto receiver_index =
                 compute_index(model.get_descriptor(), receiver);
@@ -109,6 +114,8 @@ int main(int argc, char** argv) {
                                                 source_index,
                                                 kernel,
                                                 receiver_index,
+                                                speed_of_sound,
+                                                400,
                                                 [&](auto) { pb += 1; });
 
             const auto output = map_to_vector(

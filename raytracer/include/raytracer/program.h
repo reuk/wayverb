@@ -9,7 +9,9 @@ namespace raytracer {
 
 class program final {
 public:
-    program(const cl::Context& context, const cl::Device& device);
+    program(const cl::Context& context,
+            const cl::Device& device,
+            double speed_of_sound);
 
     auto get_reflections_kernel() const {
         return program_wrapper.get_kernel<cl::Buffer,  //  ray

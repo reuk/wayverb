@@ -5,9 +5,9 @@
 
 #include "common/cl_common.h"
 #include "common/hrtf_utils.h"
+#include "common/pressure_intensity.h"
 #include "common/receiver_settings.h"
 #include "common/stl_wrappers.h"
-#include "common/pressure_intensity.h"
 
 namespace raytracer {
 
@@ -16,7 +16,9 @@ namespace raytracer {
 /// response.
 template <typename im>  //  an impulse has a .volume and a .time
 aligned::vector<aligned::vector<float>> flatten_impulses(
-        const aligned::vector<im>& impulse, double samplerate) {
+        const aligned::vector<im>& impulse,
+        double samplerate,
+        double acoustic_impedance) {
     const auto MAX_TIME_LIMIT = 20.0f;
     // Find the index of the final sample based on time and samplerate
     const auto maxtime = std::min(
@@ -39,7 +41,8 @@ aligned::vector<aligned::vector<float>> flatten_impulses(
         if (SAMPLE < MAX_SAMPLE) {
             for (auto j = 0u; j != flattened.size(); ++j) {
                 const auto intensity = i.volume.s[j];
-                const auto pressure = intensity_to_pressure(intensity);
+                const auto pressure = intensity_to_pressure(
+                        intensity, static_cast<float>(acoustic_impedance));
                 flattened[j][SAMPLE] += pressure;
             }
         }
@@ -52,9 +55,10 @@ aligned::vector<aligned::vector<float>> flatten_impulses(
 template <typename im>
 aligned::vector<aligned::vector<aligned::vector<float>>> flatten_impulses(
         const aligned::vector<aligned::vector<im>>& impulse,
-        double samplerate) {
-    return map_to_vector(impulse, [samplerate](const auto& i) {
-        return flatten_impulses(i, samplerate);
+        double samplerate,
+        double acoustic_impedance) {
+    return map_to_vector(impulse, [=](const auto& i) {
+        return flatten_impulses(i, samplerate, acoustic_impedance);
     });
 }
 
@@ -127,21 +131,25 @@ inline void fix_predelay(T& ret) {
 
 template <typename im>
 aligned::vector<float> flatten_filter_and_mixdown(
-        const aligned::vector<im>& input, double output_sample_rate) {
+        const aligned::vector<im>& input,
+        double output_sample_rate,
+        double acoustic_impedance) {
     return multiband_filter_and_mixdown(
-            flatten_impulses(input, output_sample_rate), output_sample_rate);
+            flatten_impulses(input, output_sample_rate, acoustic_impedance),
+            output_sample_rate);
 }
 
 aligned::vector<aligned::vector<float>> run_attenuation(
         const compute_context& cc,
         const model::ReceiverSettings& receiver,
         const results& input,
-        double output_sample_rate);
+        double output_sample_rate, double acoustic_impedance);
 
 aligned::vector<aligned::vector<float>> run_attenuation(
         const compute_context& cc,
         const model::ReceiverSettings& receiver,
         const aligned::vector<impulse>& input,
-        double output_sample_rate);
+        double output_sample_rate,
+        double speed_of_sound, double acoustic_impedance);
 
 }  // namespace raytracer

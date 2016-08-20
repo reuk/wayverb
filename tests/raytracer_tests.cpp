@@ -24,8 +24,10 @@
 #define SCRATCH_PATH ""
 #endif
 
-static constexpr auto bench_reflections = 128;
-static constexpr auto bench_rays = 1 << 15;
+constexpr auto speed_of_sound{340.0};
+constexpr auto acoustic_impedance{400.0};
+constexpr auto bench_reflections{128};
+constexpr auto bench_rays{1 << 15};
 
 const glm::vec3 source{1, 2, 1};
 const auto the_rays = raytracer::get_random_directions(bench_rays);
@@ -41,6 +43,7 @@ TEST(raytrace, new) {
     auto results = raytracer::run(cc.get_context(),
                                   cc.get_device(),
                                   voxelised,
+                                  speed_of_sound,
                                   source,
                                   glm::vec3(0, 1.75, 0),
                                   the_rays,
@@ -114,6 +117,7 @@ TEST(raytrace, same_location) {
             raytracer::run(cc.get_context(),
                            cc.get_device(),
                            voxelised,
+                           speed_of_sound,
                            source,
                            receiver,
                            the_rays,
@@ -205,6 +209,7 @@ TEST(raytrace, image_source) {
     auto results{raytracer::run(cc.get_context(),
                                 cc.get_device(),
                                 voxelised,
+                                speed_of_sound,
                                 source,
                                 receiver,
                                 the_rays,
@@ -238,8 +243,8 @@ TEST(raytrace, image_source) {
         const auto bit_depth = 16;
         const auto sample_rate = 44100.0;
         {
-            auto mixed_down =
-                    mixdown(raytracer::flatten_impulses(i, sample_rate));
+            auto mixed_down = mixdown(raytracer::flatten_impulses(
+                    i, sample_rate, acoustic_impedance));
             normalize(mixed_down);
             snd::write(
                     build_string(SCRATCH_PATH, "/", name, "_no_processing.wav"),
@@ -248,8 +253,8 @@ TEST(raytrace, image_source) {
                     bit_depth);
         }
         {
-            auto processed =
-                    raytracer::flatten_filter_and_mixdown(i, sample_rate);
+            auto processed = raytracer::flatten_filter_and_mixdown(
+                    i, sample_rate, acoustic_impedance);
             normalize(processed);
             snd::write(build_string(SCRATCH_PATH, "/", name, "_processed.wav"),
                        {processed},

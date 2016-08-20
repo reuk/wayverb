@@ -18,6 +18,7 @@ public:
                    const glm::vec3& source,
                    const glm::vec3& receiver,
                    const volume_type& air_coefficient,
+                   double speed_of_sound,
                    size_t rays,
                    size_t depth);
 

@@ -131,17 +131,20 @@ impulse compute_ray_path_impulse(const copyable_scene_data& scene_data,
                                  const aligned::vector<cl_ulong>& triangles,
                                  const glm::vec3& source,
                                  const aligned::vector<glm::vec3>& unmirrored,
-                                 const glm::vec3& receiver) {
+                                 const glm::vec3& receiver,
+                                 double speed_of_sound) {
     return construct_impulse(compute_volume(scene_data, triangles),
                              unmirrored.back(),
-                             compute_distance(source, unmirrored, receiver));
+                             compute_distance(source, unmirrored, receiver),
+                             speed_of_sound);
 }
 
 std::experimental::optional<impulse> follow_ray_path(
         const aligned::vector<cl_ulong>& triangles,
         const glm::vec3& source,
         const glm::vec3& receiver,
-        const voxelised_scene_data& voxelised) {
+        const voxelised_scene_data& voxelised,
+        double speed_of_sound) {
     //  extract triangles from the scene
     const auto original =
             compute_original_triangles(triangles, voxelised.get_scene_data());
@@ -206,7 +209,8 @@ std::experimental::optional<impulse> follow_ray_path(
                                     triangles,
                                     source,
                                     unmirrored,
-                                    receiver);
+                                    receiver,
+                                    speed_of_sound);
 }
 
 }  // namespace raytracer

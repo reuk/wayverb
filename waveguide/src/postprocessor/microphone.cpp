@@ -9,11 +9,13 @@ namespace postprocessor {
 namespace detail {
 microphone_state::microphone_state(const mesh::descriptor& mesh_descriptor,
                                    size_t output_node,
-                                   double sample_rate)
+                                   double sample_rate,
+                                   double ambient_density)
         : output_node(output_node)
         , surrounding_nodes(compute_neighbors(mesh_descriptor, output_node))
         , mesh_spacing(mesh_descriptor.spacing)
-        , sample_rate(sample_rate) {}
+        , sample_rate(sample_rate)
+        , ambient_density(ambient_density) {}
 
 run_step_output microphone_state::operator()(cl::CommandQueue& queue,
                                              const cl::Buffer& buffer,
@@ -49,7 +51,6 @@ run_step_output microphone_state::operator()(cl::CommandQueue& queue,
                        surrounding[4] * -0.5 + surrounding[5] * 0.5};
 
     //  the result is scaled by the negative inverse of the ambient density
-    static constexpr auto ambient_density = 1.225;
     const auto dv = m / -ambient_density;
     //  and integrated using a discrete-time integrator
     velocity += (1.0 / sample_rate) * dv;
@@ -67,8 +68,10 @@ size_t microphone_state::get_output_node() const { return output_node; }
 microphone::microphone(const mesh::descriptor& mesh_descriptor,
                        size_t output_node,
                        double sample_rate,
+                       double ambient_density,
                        const output_callback& callback)
-        : microphone_state(mesh_descriptor, output_node, sample_rate)
+        : microphone_state(
+                  mesh_descriptor, output_node, sample_rate, ambient_density)
         , callback(callback) {}
 
 void microphone::operator()(cl::CommandQueue& queue,
@@ -80,12 +83,14 @@ void microphone::operator()(cl::CommandQueue& queue,
 multi_microphone::multi_microphone(const mesh::descriptor& mesh_descriptor,
                                    const aligned::vector<size_t>& output_node,
                                    double sample_rate,
+                                   double ambient_density,
                                    const output_callback& callback)
-        : state(map_to_vector(output_node,
-                              [&](auto i) {
-                                  return detail::microphone_state(
-                                          mesh_descriptor, i, sample_rate);
-                              }))
+        : state(map_to_vector(
+                  output_node,
+                  [&](auto i) {
+                      return detail::microphone_state(
+                              mesh_descriptor, i, sample_rate, ambient_density);
+                  }))
         , callback(callback) {}
 
 void multi_microphone::operator()(cl::CommandQueue& queue,

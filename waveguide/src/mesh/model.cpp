@@ -43,8 +43,8 @@ std::tuple<aligned::vector<node>, descriptor> compute_fat_nodes(
     auto queue{cl::CommandQueue{context, device}};
 
     const auto desc{[&] {
-        const auto aabb = voxelised.get_voxels().get_aabb();
-        const glm::ivec3 dim = dimensions(aabb) / mesh_spacing;
+        const auto aabb{voxelised.get_voxels().get_aabb()};
+        const auto dim{glm::ivec3{dimensions(aabb) / mesh_spacing}};
         return descriptor{aabb.get_min(), dim, mesh_spacing};
     }()};
 
@@ -91,7 +91,8 @@ std::tuple<aligned::vector<node>, descriptor> compute_fat_nodes(
 model compute_model(const cl::Context& context,
                     const cl::Device& device,
                     const voxelised_scene_data& voxelised,
-                    float mesh_spacing) {
+                    double mesh_spacing,
+                    double speed_of_sound) {
     const auto buffers{scene_buffers{context, voxelised}};
 
     aligned::vector<node> nodes;
@@ -126,7 +127,8 @@ std::tuple<voxelised_scene_data, model> compute_voxels_and_model(
         const cl::Device& device,
         const copyable_scene_data& scene,
         const glm::vec3& anchor,
-        double sample_rate) {
+        double sample_rate,
+        double speed_of_sound) {
     const auto mesh_spacing{
             waveguide::config::grid_spacing(speed_of_sound, 1 / sample_rate)};
     auto voxelised{voxelised_scene_data{
@@ -134,7 +136,8 @@ std::tuple<voxelised_scene_data, model> compute_voxels_and_model(
             5,
             waveguide::compute_adjusted_boundary(
                     scene.get_aabb(), anchor, mesh_spacing)}};
-    auto model{compute_model(context, device, voxelised, mesh_spacing)};
+    auto model{compute_model(
+            context, device, voxelised, mesh_spacing, speed_of_sound)};
     return std::make_tuple(std::move(voxelised), std::move(model));
 }
 

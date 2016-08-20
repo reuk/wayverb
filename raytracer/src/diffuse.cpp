@@ -20,12 +20,13 @@ diffuse_finder::diffuse_finder(const cl::Context& context,
                                const glm::vec3& source,
                                const glm::vec3& receiver,
                                const volume_type& air_coefficient,
+                               double speed_of_sound,
                                size_t rays,
                                size_t depth)
         : context(context)
         , device(device)
         , queue(context, device)
-        , kernel(program(context, device).get_diffuse_kernel())
+        , kernel(program(context, device, speed_of_sound).get_diffuse_kernel())
         , receiver(to_cl_float3(receiver))
         , air_coefficient(air_coefficient)
         , rays(rays)

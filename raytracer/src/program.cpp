@@ -1,6 +1,7 @@
 #include "raytracer/program.h"
 
 #include "raytracer/cl/brdf.h"
+#include "raytracer/cl/speed_of_sound_declaration.h"
 #include "raytracer/cl/structs.h"
 
 #include "common/cl/geometry.h"
@@ -226,12 +227,9 @@ kernel void diffuse(const global reflection* reflections,  //  input
 }
 )"};
 
-const auto speed_of_sound_declaration{
-        "const constant float SPEED_OF_SOUND = " +
-        std::to_string(speed_of_sound) + ";\n" +
-        "const constant float SECONDS_PER_METER = 1.0f / SPEED_OF_SOUND;\n"};
-
-program::program(const cl::Context& context, const cl::Device& device)
+program::program(const cl::Context& context,
+                 const cl::Device& device,
+                 double speed_of_sound)
         : program_wrapper(context,
                           device,
                           std::vector<std::string>{
@@ -250,7 +248,8 @@ program::program(const cl::Context& context, const cl::Device& device)
                                   ::cl_sources::geometry,
                                   ::cl_sources::voxel,
                                   ::cl_sources::brdf,
-                                  speed_of_sound_declaration,
+                                  ::cl_sources::speed_of_sound_declaration(
+                                          speed_of_sound),
                                   source}) {}
 
 }  // namespace raytracer

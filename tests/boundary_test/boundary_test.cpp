@@ -32,6 +32,8 @@
 #include <numeric>
 #include <random>
 
+constexpr auto speed_of_sound{340.0};
+
 aligned::vector<float> run_simulation(const compute_context& cc,
                                       const geo::box& boundary,
                                       const surface& surface,
@@ -56,7 +58,7 @@ aligned::vector<float> run_simulation(const compute_context& cc,
                     5,
                     waveguide::compute_adjusted_boundary(
                             scene_data.get_aabb(), receiver, spacing)),
-            spacing);
+            spacing, speed_of_sound);
 
     const auto receiver_index = compute_index(model.get_descriptor(), receiver);
     const auto source_index = compute_index(model.get_descriptor(), source);
@@ -77,6 +79,8 @@ aligned::vector<float> run_simulation(const compute_context& cc,
                                         source_index,
                                         input,
                                         receiver_index,
+                                        speed_of_sound,
+                                        400,
                                         [&](auto) { pb += 1; });
 
 #if 0

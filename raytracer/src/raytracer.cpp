@@ -12,7 +12,8 @@ namespace raytracer {
 std::experimental::optional<impulse> get_direct_impulse(
         const glm::vec3& source,
         const glm::vec3& receiver,
-        const voxelised_scene_data& scene_data) {
+        const voxelised_scene_data& scene_data,
+        double speed_of_sound) {
     const auto source_to_receiver = receiver - source;
     const auto source_to_receiver_length = glm::length(source_to_receiver);
     const auto direction = glm::normalize(source_to_receiver);
@@ -24,7 +25,8 @@ std::experimental::optional<impulse> get_direct_impulse(
         (intersection && intersection->inter.t > source_to_receiver_length)) {
         return construct_impulse(volume_type{{1, 1, 1, 1, 1, 1, 1, 1}},
                                  source,
-                                 source_to_receiver_length);
+                                 source_to_receiver_length,
+                                 speed_of_sound);
     }
 
     return std::experimental::nullopt;
@@ -34,6 +36,7 @@ std::experimental::optional<results> run(
         const cl::Context& context,
         const cl::Device& device,
         const voxelised_scene_data& scene_data,
+        double speed_of_sound,
         const glm::vec3& source,
         const glm::vec3& receiver,
         const aligned::vector<glm::vec3>& directions,
@@ -55,7 +58,8 @@ std::experimental::optional<results> run(
     auto ref{reflector{context,
                        device,
                        receiver,
-                       get_rays_from_directions(source, directions)}};
+                       get_rays_from_directions(source, directions),
+                       speed_of_sound}};
 
     //  this will collect the first reflections, to a specified depth,
     //  and use them to find unique image-source paths
@@ -67,6 +71,7 @@ std::experimental::optional<results> run(
                             source,
                             receiver,
                             air_coefficient,
+                            speed_of_sound,
                             directions.size(),
                             reflection_depth}};
 
@@ -90,10 +95,12 @@ std::experimental::optional<results> run(
         callback(i);
     }
 
-    return results(get_direct_impulse(source, receiver, scene_data),
-                   img.get_results(source, receiver, scene_data),
-                   std::move(dif.get_results()),
-                   receiver);
+    return results{
+            get_direct_impulse(source, receiver, scene_data, speed_of_sound),
+            img.get_results(source, receiver, scene_data, speed_of_sound),
+            std::move(dif.get_results()),
+            receiver,
+            speed_of_sound};
 }
 
 }  // namespace raytracer

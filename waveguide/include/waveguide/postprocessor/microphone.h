@@ -16,7 +16,8 @@ class microphone_state final {
 public:
     microphone_state(const mesh::descriptor& mesh_descriptor,
                      size_t output_node,
-                     double sample_rate);
+                     double sample_rate,
+                     double ambient_density);
 
     run_step_output operator()(cl::CommandQueue& queue,
                                const cl::Buffer& buffer,
@@ -29,6 +30,7 @@ private:
     std::array<cl_uint, 6> surrounding_nodes;
     float mesh_spacing;
     double sample_rate;
+    double ambient_density;
     glm::dvec3 velocity{0};
 };
 
@@ -42,6 +44,7 @@ public:
     microphone(const mesh::descriptor& mesh_descriptor,
                size_t output_node,
                double sample_rate,
+               double ambient_density,
                const output_callback& callback);
 
     void operator()(cl::CommandQueue& queue,
@@ -61,6 +64,7 @@ class multi_microphone final {
     multi_microphone(const mesh::descriptor& mesh,
                      const aligned::vector<size_t>& output_node,
                      double sample_rate,
+                     double ambient_density,
                      const output_callback& callback);
 
     void operator()(cl::CommandQueue& queue,

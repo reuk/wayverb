@@ -53,8 +53,14 @@ TEST(run_waveguide, run_waveguide) {
     const voxelised_scene_data voxelised(
             scene_data, 5, util::padded(scene_data.get_aabb(), glm::vec3{0.1}));
 
-    const auto model = waveguide::mesh::compute_model(
-            cc.get_context(), cc.get_device(), voxelised, 0.03);
+    constexpr auto speed_of_sound{340.0};
+    constexpr auto acoustic_impedance{400.0};
+
+    const auto model{waveguide::mesh::compute_model(cc.get_context(),
+                                                    cc.get_device(),
+                                                    voxelised,
+                                                    0.03,
+                                                    speed_of_sound)};
 
     //  get a waveguide
 
@@ -75,16 +81,18 @@ TEST(run_waveguide, run_waveguide) {
     aligned::vector<float> input(1000);
     input[0] = 1;
 
-    const auto results = waveguide::run(cc.get_context(),
-                                        cc.get_device(),
-                                        model,
-                                        source_index,
-                                        input,
-                                        receiver_index,
-                                        [&](auto i) {
-                                            pb += 1;
-                                            ASSERT_EQ(i, callback_counter++);
-                                        });
+    const auto results{waveguide::run(cc.get_context(),
+                                      cc.get_device(),
+                                      model,
+                                      source_index,
+                                      input,
+                                      receiver_index,
+                                      speed_of_sound,
+                                      acoustic_impedance,
+                                      [&](auto i) {
+                                          pb += 1;
+                                          ASSERT_EQ(i, callback_counter++);
+                                      })};
 
     ASSERT_FALSE(results.empty());
 

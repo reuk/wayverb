@@ -47,6 +47,9 @@ template <typename T>
 JSON_OSTREAM_OVERLOAD(vector<T>);
 }  // namespace std
 
+constexpr auto speed_of_sound{340.0};
+constexpr auto acoustic_impedance{400.0};
+
 /// courant number is 1 / sqrt(3) for a rectilinear mesh
 /// but sqrt isn't constexpr >:(
 constexpr auto courant = 0.577350269;
@@ -74,8 +77,11 @@ auto run_waveguide(const compute_context& cc,
     //  get a waveguide
     const auto receiver = config.receiver_settings.position;
 
-    const auto model = waveguide::mesh::compute_model(
-            cc.get_context(), cc.get_device(), boundary, spacing);
+    const auto model = waveguide::mesh::compute_model(cc.get_context(),
+                                                      cc.get_device(),
+                                                      boundary,
+                                                      spacing,
+                                                      speed_of_sound);
 
     const auto receiver_index = compute_index(model.get_descriptor(), receiver);
     const auto source_index =
@@ -102,6 +108,8 @@ auto run_waveguide(const compute_context& cc,
                                         source_index,
                                         input,
                                         receiver_index,
+                                        speed_of_sound,
+                                        acoustic_impedance,
                                         [&](auto) { pb += 1; });
 
     auto output = map_to_vector(results, [](auto i) { return i.pressure; });
@@ -190,6 +198,7 @@ int main(int argc, char** argv) {
             raytracer::run(cc.get_context(),
                            cc.get_device(),
                            voxelised,
+                           speed_of_sound,
                            config.source,
                            config.receiver_settings.position,
                            raytracer::get_random_directions(config.rays),
@@ -198,8 +207,8 @@ int main(int argc, char** argv) {
                            keep_going,
                            [&](auto) { pb += 1; });
 
-    raytracer::attenuator::microphone attenuator(cc.get_context(),
-                                                 cc.get_device());
+    raytracer::attenuator::microphone attenuator(
+            cc.get_context(), cc.get_device(), speed_of_sound);
     auto output = attenuator.process(results->get_impulses(true, true, false),
                                      glm::vec3(0, 0, 1),
                                      0,
@@ -208,7 +217,7 @@ int main(int argc, char** argv) {
     //    attenuator.attenuate(results.get_all(false), {speaker}).front();
 
     aligned::vector<aligned::vector<float>> flattened =
-            raytracer::flatten_impulses(output, samplerate);
+            raytracer::flatten_impulses(output, samplerate, acoustic_impedance);
 
     snd::write(build_string(output_folder, "raytrace_no_processing.wav"),
                {mixdown(flattened)},

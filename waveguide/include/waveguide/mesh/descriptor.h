@@ -11,7 +11,7 @@ namespace waveguide {
 namespace mesh {
 
 struct descriptor final {
-    static constexpr cl_uint no_neighbor = ~cl_uint{0};
+    static constexpr auto no_neighbor{~cl_uint{0}};
     using locator = glm::ivec3;
 
     glm::vec3 min_corner;
@@ -34,7 +34,7 @@ std::array<cl_uint, 6> compute_neighbors(const descriptor& d, size_t index);
 
 geo::box compute_aabb(const descriptor& d);
 
-double compute_sample_rate(const descriptor& d);
+double compute_sample_rate(const descriptor& d, double speed_of_sound);
 
 }  // namespace mesh
 }  // namespace waveguide

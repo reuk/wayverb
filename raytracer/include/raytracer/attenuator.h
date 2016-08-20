@@ -12,7 +12,7 @@ namespace attenuator {
 /// Class for parallel HRTF attenuation of raytrace results.
 class hrtf final {
 public:
-    hrtf(const cl::Context&, const cl::Device&);
+    hrtf(const cl::Context&, const cl::Device&, double speed_of_sound);
 
     /// Attenuate some raytrace results.
     /// The outer vector corresponds to separate channels, the inner vector
@@ -40,7 +40,7 @@ private:
 /// Class for parallel Speaker attenuation of raytrace results.
 class microphone final {
 public:
-    microphone(const cl::Context&, const cl::Device&);
+    microphone(const cl::Context&, const cl::Device&, double speed_of_sound);
 
     /// Attenuate some raytrace results.
     /// The outer vector corresponds to separate channels, the inner vector

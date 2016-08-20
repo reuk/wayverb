@@ -60,11 +60,13 @@ public:
             const glm::vec3& source,
             const glm::vec3& receiver,
             double waveguide_sample_rate,
+            double acoustic_impedance,
             raytracer::results&& raytracer_results,
             aligned::vector<waveguide::run_step_output>&& waveguide_results)
             : source(source)
             , receiver(receiver)
             , waveguide_sample_rate(waveguide_sample_rate)
+            , acoustic_impedance(acoustic_impedance)
             , raytracer_results(std::move(raytracer_results))
             , waveguide_results(std::move(waveguide_results)) {}
 
@@ -76,8 +78,11 @@ public:
         callback(wayverb::state::postprocessing, 1.0);
 
         //  attenuate raytracer results
-        auto raytracer_output = raytracer::run_attenuation(
-                cc, receiver, raytracer_results, output_sample_rate);
+        auto raytracer_output = raytracer::run_attenuation(cc,
+                                                           receiver,
+                                                           raytracer_results,
+                                                           output_sample_rate,
+                                                           acoustic_impedance);
         //  attenuate waveguide results
         auto waveguide_output = waveguide::run_attenuation(
                 receiver, waveguide_results, waveguide_sample_rate);
@@ -102,7 +107,8 @@ public:
         //  convert waveguide output from intensity level back to pressure lvl
         for (auto& i : waveguide_output) {
             for (auto& j : i) {
-                j = intensity_to_pressure(j);
+                j = intensity_to_pressure(
+                        j, static_cast<float>(acoustic_impedance));
             }
         }
 
@@ -142,6 +148,7 @@ private:
     glm::vec3 source;
     glm::vec3 receiver;
     double waveguide_sample_rate;
+    double acoustic_impedance;
 
     raytracer::results raytracer_results;
     aligned::vector<waveguide::run_step_output> waveguide_results;
@@ -181,7 +188,9 @@ public:
          const glm::vec3& source,
          const glm::vec3& receiver,
          double waveguide_sample_rate,
-         size_t rays)
+         size_t rays,
+         double speed_of_sound,
+         double acoustic_impedance)
             : impl(cc,
                    scene_data,
                    source,
@@ -190,7 +199,8 @@ public:
                    rays,
                    raytracer::compute_optimum_reflection_number(
                            decibels::db2a(-48.0),
-                           max_reflectivity(scene_data.get_materials()))) {}
+                           max_reflectivity(scene_data.get_materials())),
+                   speed_of_sound, acoustic_impedance) {}
 
     impl(const compute_context& cc,
          const copyable_scene_data& scene_data,
@@ -198,30 +208,39 @@ public:
          const glm::vec3& receiver,
          double waveguide_sample_rate,
          size_t rays,
-         size_t impulses)
+         size_t impulses,
+         double speed_of_sound,
+         double acoustic_impedance)
             : impl(cc,
                    waveguide::mesh::compute_voxels_and_model(
                            cc.get_context(),
                            cc.get_device(),
                            scene_data,
                            receiver,
-                           waveguide_sample_rate),
+                           waveguide_sample_rate,
+                           speed_of_sound),
                    source,
                    receiver,
                    waveguide_sample_rate,
                    rays,
-                   impulses) {}
+                   impulses,
+                   speed_of_sound, acoustic_impedance) {}
 
+private:
     impl(const compute_context& cc,
          std::tuple<voxelised_scene_data, waveguide::mesh::model>&& pair,
          const glm::vec3& source,
          const glm::vec3& receiver,
          double waveguide_sample_rate,
          size_t rays,
-         size_t impulses)
+         size_t impulses,
+         double speed_of_sound,
+         double acoustic_impedance)
             : compute_context(cc)
             , voxelised(std::move(std::get<0>(pair)))
             , model(std::move(std::get<1>(pair)))
+            , speed_of_sound(speed_of_sound)
+            , acoustic_impedance(acoustic_impedance)
             , source(source)
             , receiver(receiver)
             , waveguide_sample_rate(waveguide_sample_rate)
@@ -244,7 +263,7 @@ public:
         }
     }
 
-
+public:
     std::unique_ptr<intermediate> run(std::atomic_bool& keep_going,
                                       const state_callback& callback) {
         //  RAYTRACER  -------------------------------------------------------//
@@ -253,6 +272,7 @@ public:
                 compute_context.get_context(),
                 compute_context.get_device(),
                 voxelised,
+                speed_of_sound,
                 source,
                 receiver,
                 raytracer::get_random_directions(rays),
@@ -304,6 +324,7 @@ public:
                         model.get_descriptor(),
                         receiver_index,
                         waveguide_sample_rate,
+                        acoustic_impedance / speed_of_sound,
                         [&waveguide_results](const auto& i) {
                             waveguide_results.push_back(i);
                         })};
@@ -344,6 +365,7 @@ public:
                 source,
                 receiver,
                 waveguide_sample_rate,
+                acoustic_impedance,
                 std::move(*raytracer_results),
                 std::move(waveguide_results));
 
@@ -383,6 +405,9 @@ private:
     voxelised_scene_data voxelised;
     waveguide::mesh::model model;
 
+    double speed_of_sound;
+    double acoustic_impedance;
+
     glm::vec3 source;
     glm::vec3 receiver;
     double waveguide_sample_rate;
@@ -395,6 +420,9 @@ private:
     waveguide::step_postprocessor waveguide_visual_callback;
     raytracer_visual_callback_t raytracer_visual_callback;
 };
+
+constexpr auto speed_of_sound{340};
+constexpr auto acoustic_impedance{400};
 
 engine::engine(const compute_context& compute_context,
                const copyable_scene_data& scene_data,
@@ -409,7 +437,9 @@ engine::engine(const compute_context& compute_context,
                                        receiver,
                                        waveguide_sample_rate,
                                        rays,
-                                       impulses)) {}
+                                       impulses,
+                                       speed_of_sound,
+                                       acoustic_impedance)) {}
 
 engine::engine(const compute_context& compute_context,
                const copyable_scene_data& scene_data,
@@ -422,7 +452,9 @@ engine::engine(const compute_context& compute_context,
                                        source,
                                        receiver,
                                        waveguide_sample_rate,
-                                       rays)) {}
+                                       rays,
+                                       speed_of_sound,
+                                       acoustic_impedance)) {}
 
 engine::~engine() noexcept = default;
 

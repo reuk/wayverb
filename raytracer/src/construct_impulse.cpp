@@ -27,7 +27,8 @@ volume_type attenuation_for_distance(float distance) {
 
 impulse construct_impulse(const volume_type& volume,
                           const glm::vec3& source,
-                          float distance) {
+                          double distance,
+                          double speed_of_sound) {
     return impulse{volume * attenuation_for_distance(distance),
                    to_cl_float3(source),
                    static_cast<cl_float>(distance / speed_of_sound)};

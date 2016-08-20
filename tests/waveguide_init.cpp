@@ -32,12 +32,18 @@ TEST(waveguide_init, waveguide_init) {
     const aligned::vector<float> input(20, 1);
     auto transparent = waveguide::make_transparent(input);
 
-    constexpr auto steps = 100;
+    constexpr auto steps{100};
     transparent.resize(steps, 0);
 
+    constexpr auto speed_of_sound{340.0};
+    constexpr auto acoustic_impedance{400.0};
+
     auto run = [&] {
-        const auto model = waveguide::mesh::compute_model(
-                cc.get_context(), cc.get_device(), voxelised, 0.04);
+        const auto model = waveguide::mesh::compute_model(cc.get_context(),
+                                                          cc.get_device(),
+                                                          voxelised,
+                                                          0.04,
+                                                          speed_of_sound);
         auto receiver_index = compute_index(model.get_descriptor(), centre);
 
         std::atomic_bool keep_going{true};
@@ -49,6 +55,8 @@ TEST(waveguide_init, waveguide_init) {
                                            receiver_index,
                                            transparent,
                                            receiver_index,
+                                           speed_of_sound,
+                                           acoustic_impedance,
                                            [&](auto) { pb += 1; });
 
         ASSERT_EQ(transparent.size(), output.size());

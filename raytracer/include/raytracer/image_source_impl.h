@@ -83,14 +83,11 @@ float compute_distance(const aligned::vector<glm::vec3>& unmirrored);
 volume_type compute_volume(const copyable_scene_data& scene_data,
                            const aligned::vector<cl_ulong>& triangles);
 
-impulse compute_ray_path_impulse(const copyable_scene_data& scene_data,
-                                 const aligned::vector<cl_ulong>& triangles,
-                                 const aligned::vector<glm::vec3>& unmirrored);
-
 std::experimental::optional<impulse> follow_ray_path(
         const aligned::vector<cl_ulong>& triangles,
         const glm::vec3& source,
         const glm::vec3& receiver,
-        const voxelised_scene_data& voxelised);
+        const voxelised_scene_data& voxelised,
+        double speed_of_sound);
 
 }  // namespace raytracer

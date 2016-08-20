@@ -88,18 +88,17 @@ int main(int argc, char** argv) {
         scene_data.set_surfaces(surface{volume_type{{r, r, r, r, r, r, r, r}},
                                         volume_type{{r, r, r, r, r, r, r, r}}});
 
-        const auto spacing = waveguide::config::grid_spacing(speed_of_sound,
-                                                             1 / waveguide_sr);
+        constexpr auto speed_of_sound{340.0};
 
-        const auto model = waveguide::mesh::compute_model(
-                cc.get_context(),
-                cc.get_device(),
-                voxelised_scene_data(
-                        scene_data,
-                        5,
-                        waveguide::compute_adjusted_boundary(
-                                scene_data.get_aabb(), mic, spacing)),
-                spacing);
+        const auto voxels_and_model{
+                waveguide::mesh::compute_voxels_and_model(cc.get_context(),
+                                                          cc.get_device(),
+                                                          scene_data,
+                                                          mic,
+                                                          waveguide_sr,
+                                                          speed_of_sound)};
+
+        const auto& model{std::get<1>(voxels_and_model)};
 
         for (auto i = 0u; i != test_locations; ++i) {
             float angle = i * M_PI * 2 / test_locations + M_PI;
@@ -132,6 +131,8 @@ int main(int argc, char** argv) {
                                                   source_index,
                                                   kernel,
                                                   receiver_index,
+                                                  speed_of_sound,
+                                                  400,
                                                   [&](auto) { pb += 1; });
 
             auto out_signal = microphone.process(

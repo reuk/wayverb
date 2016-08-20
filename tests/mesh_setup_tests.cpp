@@ -19,7 +19,7 @@ TEST(mesh_setup, setup) {
     const auto boundary{get_voxelised(scene_data{OBJ_PATH_BEDROOM})};
     const auto cc{compute_context{}};
     const auto m{waveguide::mesh::compute_model(
-            cc.get_context(), cc.get_device(), boundary, 0.1)};
+            cc.get_context(), cc.get_device(), boundary, 0.1, 340)};
 }
 
 }  // namespace

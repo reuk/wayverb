@@ -14,6 +14,9 @@
 #include <cassert>
 #include <cmath>
 
+constexpr auto speed_of_sound{340.0};
+constexpr auto acoustic_impedance{400.0};
+
 namespace {
 auto uniform_surface(float r) {
     return surface{volume_type{{r, r, r, r, r, r, r, r}},
@@ -58,7 +61,7 @@ TEST(verify_compensation_signal, verify_compensation_signal_normal) {
             scene_data, 5, util::padded(scene_data.get_aabb(), glm::vec3{0.1}));
 
     const auto model = waveguide::mesh::compute_model(
-            cc.get_context(), cc.get_device(), voxelised, 0.05);
+            cc.get_context(), cc.get_device(), voxelised, 0.05, speed_of_sound);
 
     constexpr glm::vec3 centre{0, 0, 0};
     const auto receiver_index = compute_index(model.get_descriptor(), centre);
@@ -74,6 +77,8 @@ TEST(verify_compensation_signal, verify_compensation_signal_normal) {
                                            receiver_index,
                                            input,
                                            receiver_index,
+                                           speed_of_sound,
+                                           acoustic_impedance,
                                            [&](auto) { pb += 1; });
 
         assert(output.size() == steps);

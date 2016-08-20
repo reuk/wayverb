@@ -64,7 +64,7 @@ geo::box compute_aabb(const descriptor& d) {
                     d.min_corner + glm::vec3{d.dimensions} * d.spacing};
 }
 
-double compute_sample_rate(const descriptor& d) {
+double compute_sample_rate(const descriptor& d, double speed_of_sound) {
     return 1 / config::time_step(speed_of_sound, d.spacing);
 }
 
