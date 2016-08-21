@@ -1,6 +1,5 @@
 #pragma once
 
-#include "common/config.h"
 #include "common/orientable.h"
 #include "common/receiver_settings.h"
 

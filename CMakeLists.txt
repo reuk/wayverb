@@ -32,7 +32,7 @@ else()
     add_subdirectory(waveguide)
     add_subdirectory(raytracer)
     add_subdirectory(combined)
-    add_subdirectory(tests)
+    #add_subdirectory(tests)
     add_subdirectory(data)
     add_subdirectory(utils)
 

@@ -1,8 +1,8 @@
 #include "combined/engine.h"
 
 #include "common/aligned/set.h"
+#include "common/azimuth_elevation.h"
 #include "common/cl_common.h"
-#include "common/config.h"
 #include "common/conversions.h"
 #include "common/dc_blocker.h"
 #include "common/filters_common.h"
@@ -275,7 +275,7 @@ public:
                 speed_of_sound,
                 source,
                 receiver,
-                raytracer::get_random_directions(rays),
+                get_random_directions(rays),
                 impulses,
                 std::min(size_t{10},
                          impulses),  //  TODO set this more intelligently

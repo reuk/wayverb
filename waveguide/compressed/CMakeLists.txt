@@ -12,7 +12,6 @@ target_include_directories(${name}
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
     $<INSTALL_INTERFACE:include>
     PRIVATE
-    "/usr/local/include/"
     ${CMAKE_SOURCE_DIR}/include
 )
 

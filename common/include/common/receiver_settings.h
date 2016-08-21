@@ -1,7 +1,6 @@
 #pragma once
 
 #include "common/aligned/vector.h"
-#include "common/config.h"
 #include "common/orientable.h"
 
 #include <vector>

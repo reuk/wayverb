@@ -8,11 +8,12 @@ if(CMAKE_BUILD_TYPE MATCHES DEBUG)
 endif()
 
 file(GLOB_RECURSE sources "src/*.cpp")
-file(GLOB_RECURSE headers "include/*.h")
+file(GLOB_RECURSE public_headers "include/*.h")
+file(GLOB_RECURSE private_headers "src/*.h")
 
 set(name waveguide)
 
-add_library(${name} STATIC ${sources} ${headers})
+add_library(${name} STATIC ${sources} ${public_headers} ${private_headers})
 
 target_include_directories(${name}
     PUBLIC
@@ -22,7 +23,6 @@ target_include_directories(${name}
     src
     ${WAYVERB_SOURCE_DIR}/include
     ${WAYVERB_SOURCE_DIR}/submodules/cereal/include
-    "/usr/local/include/"
 )
 
 if(APPLE)
@@ -40,3 +40,4 @@ find_library(samplerate_lib samplerate)
 target_link_libraries(${name} assimp wayverb-data ${samplerate_lib} ${fftw_library} common)
 
 add_subdirectory(compressed)
+add_subdirectory(tests)

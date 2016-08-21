@@ -1,5 +1,7 @@
 #pragma once
 
+#include "common/aligned/vector.h"
+
 #include "glm/glm.hpp"
 
 #include <random>
@@ -28,3 +30,5 @@ glm::vec3 random_unit_vector(t& engine) {
     const auto rng{direction_rng{engine}};
     return sphere_point(rng.get_z(), rng.get_theta());
 }
+
+aligned::vector<glm::vec3> get_random_directions(size_t num);

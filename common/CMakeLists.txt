@@ -8,9 +8,10 @@ if(CMAKE_BUILD_TYPE MATCHES DEBUG)
 endif()
 
 file(GLOB_RECURSE sources "src/*.cpp")
-file(GLOB_RECURSE headers "include/*.h")
+file(GLOB_RECURSE public_headers "include/*.h")
+file(GLOB_RECURSE private_headers "src/*.h")
 
-add_library(common STATIC ${sources} ${headers})
+add_library(common STATIC ${sources} ${public_headers} ${private_headers})
 
 target_include_directories(common
     PUBLIC
@@ -35,4 +36,22 @@ elseif(UNIX)
 endif()
 
 find_library(fftw_library fftw3f)
-target_link_libraries(common assimp glm ${fftw_library} ${frameworks})
+find_library(sndfile_library sndfile)
+find_library(vorbis_library vorbis)
+find_library(vorbisenc_library vorbisenc)
+find_library(ogg_library ogg)
+find_library(flac_library flac)
+
+target_link_libraries(
+    common
+    assimp
+    glm
+    ${fftw_library}
+    ${sndfile_library}
+    ${vorbis_library}
+    ${vorbisenc_library}
+    ${ogg_library}
+    ${flac_library}
+    ${frameworks})
+
+add_subdirectory(tests)

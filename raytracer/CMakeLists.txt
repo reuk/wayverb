@@ -8,9 +8,10 @@ if(CMAKE_BUILD_TYPE MATCHES DEBUG)
 endif()
 
 file(GLOB_RECURSE sources "src/*.cpp")
-file(GLOB_RECURSE headers "include/*.h")
+file(GLOB_RECURSE public_headers "include/*.h")
+file(GLOB_RECURSE private_headers "src/*.h")
 
-add_library(raytracer STATIC ${sources} ${headers})
+add_library(raytracer STATIC ${sources} ${public_headers} ${private_headers})
 
 target_include_directories(raytracer
     PUBLIC
@@ -20,7 +21,6 @@ target_include_directories(raytracer
     src
     ${WAYVERB_SOURCE_DIR}/include
     ${WAYVERB_SOURCE_DIR}/submodules/assimp/include
-    "/usr/local/include"
 )
 
 if(APPLE)
@@ -35,3 +35,5 @@ endif()
 
 find_library(fftw3f_library fftw3f)
 target_link_libraries(raytracer assimp ${fftw3f_library} ${frameworks} common)
+
+add_subdirectory(tests)

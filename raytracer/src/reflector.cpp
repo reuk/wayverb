@@ -27,18 +27,6 @@ aligned::vector<cl_float> get_direction_rng(size_t num) {
 
 namespace raytracer {
 
-aligned::vector<glm::vec3> get_random_directions(size_t num) {
-    aligned::vector<glm::vec3> ret;
-    ret.reserve(num);
-    std::default_random_engine engine{std::random_device()()};
-
-    for (auto i = 0u; i != num; ++i) {
-        const direction_rng rng(engine);
-        ret.push_back(sphere_point(rng.get_z(), rng.get_theta()));
-    }
-    return ret;
-}
-
 aligned::vector<geo::ray> get_rays_from_directions(
         const glm::vec3& source, const aligned::vector<glm::vec3>& directions) {
     return map_to_vector(directions, [&](const auto& i) {

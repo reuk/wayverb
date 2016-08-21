@@ -8,9 +8,10 @@ if(CMAKE_BUILD_TYPE MATCHES DEBUG)
 endif()
 
 file(GLOB_RECURSE sources "src/*.cpp")
-file(GLOB_RECURSE headers "include/*.h")
+file(GLOB_RECURSE public_headers "include/*.h")
+file(GLOB_RECURSE private_headers "src/*.h")
 
-add_library(combined STATIC ${sources} ${headers})
+add_library(combined STATIC ${sources} ${public_headers} ${private_headers})
 
 target_include_directories(combined
     PUBLIC
@@ -20,7 +21,6 @@ target_include_directories(combined
     src
     ${WAYVERB_SOURCE_DIR}/include
     ${WAYVERB_SOURCE_DIR}/submodules/cereal/include
-    "/usr/local/include/"
 )
 
 if(APPLE)
@@ -34,3 +34,5 @@ elseif(UNIX)
 endif()
 
 target_link_libraries(combined waveguide raytracer common)
+
+add_subdirectory(tests)

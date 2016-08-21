@@ -9,7 +9,6 @@
 #include "common/cl/scene_structs.h"
 #include "common/cl/voxel.h"
 #include "common/cl/voxel_structs.h"
-#include "common/config.h"
 
 namespace raytracer {
 

@@ -13,7 +13,6 @@ class scene_buffers;
 
 namespace raytracer {
 
-aligned::vector<glm::vec3> get_random_directions(size_t num);
 aligned::vector<geo::ray> get_rays_from_directions(
         const glm::vec3& source, const aligned::vector<glm::vec3>& directions);
 aligned::vector<geo::ray> get_random_rays(const glm::vec3& source, size_t num);
