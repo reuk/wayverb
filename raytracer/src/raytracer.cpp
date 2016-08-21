@@ -42,7 +42,7 @@ std::experimental::optional<results> run(
         const aligned::vector<glm::vec3>& directions,
         size_t reflection_depth,
         size_t image_source_depth,
-        std::atomic_bool& keep_going,
+        const std::atomic_bool& keep_going,
         const per_step_callback& callback) {
     if (reflection_depth < image_source_depth) {
         throw std::runtime_error(

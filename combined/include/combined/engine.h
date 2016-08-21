@@ -67,7 +67,7 @@ public:
     ~engine() noexcept;
 
     using state_callback = std::function<void(state, double)>;
-    std::unique_ptr<intermediate> run(std::atomic_bool& keep_going,
+    std::unique_ptr<intermediate> run(const std::atomic_bool& keep_going,
                                       const state_callback&);
 
     using raytracer_visual_callback_t =

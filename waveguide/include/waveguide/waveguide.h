@@ -38,7 +38,7 @@ size_t run(const cl::Context& context,
            const step_preprocessor& preprocessor,
            const aligned::vector<step_postprocessor>& postprocessors,
            const per_step_callback& callback,
-           std::atomic_bool& keep_going);
+           const std::atomic_bool& keep_going);
 
 struct run_step_output final {
     glm::vec3 intensity;

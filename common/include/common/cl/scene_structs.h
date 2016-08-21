@@ -29,6 +29,11 @@ typedef struct {
 )"};
 };
 
+constexpr auto make_surface(float s, float d) {
+    return surface{volume_type{{s, s, s, s, s, s, s, s}},
+                   volume_type{{d, d, d, d, d, d, d, d}}};
+}
+
 //----------------------------------------------------------------------------//
 
 struct alignas(1 << 3) triangle final {

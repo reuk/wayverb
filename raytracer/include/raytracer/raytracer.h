@@ -26,7 +26,7 @@ std::experimental::optional<results> run(
         const aligned::vector<glm::vec3>& directions,
         size_t reflections,
         size_t image_source,
-        std::atomic_bool& keep_going,
+        const std::atomic_bool& keep_going,
         const per_step_callback& callback);
 
 }  // namespace raytracer

@@ -143,13 +143,15 @@ aligned::vector<aligned::vector<float>> run_attenuation(
         const compute_context& cc,
         const model::ReceiverSettings& receiver,
         const results& input,
-        double output_sample_rate, double acoustic_impedance);
+        double output_sample_rate,
+        double acoustic_impedance);
 
 aligned::vector<aligned::vector<float>> run_attenuation(
         const compute_context& cc,
         const model::ReceiverSettings& receiver,
         const aligned::vector<impulse>& input,
         double output_sample_rate,
-        double speed_of_sound, double acoustic_impedance);
+        double speed_of_sound,
+        double acoustic_impedance);
 
 }  // namespace raytracer

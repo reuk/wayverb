@@ -18,7 +18,7 @@ size_t run(const cl::Context& context,
            const step_preprocessor& preprocessor,
            const aligned::vector<step_postprocessor>& postprocessors,
            const per_step_callback& callback,
-           std::atomic_bool& keep_going) {
+           const std::atomic_bool& keep_going) {
     cl::Buffer previous(context,
                         CL_MEM_READ_WRITE,
                         model.get_structure().get_condensed_nodes().size() *

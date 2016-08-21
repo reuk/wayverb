@@ -78,14 +78,14 @@ public:
         callback(wayverb::state::postprocessing, 1.0);
 
         //  attenuate raytracer results
-        auto raytracer_output = raytracer::run_attenuation(cc,
-                                                           receiver,
-                                                           raytracer_results,
-                                                           output_sample_rate,
-                                                           acoustic_impedance);
+        auto raytracer_output{raytracer::run_attenuation(cc,
+                                                         receiver,
+                                                         raytracer_results,
+                                                         output_sample_rate,
+                                                         acoustic_impedance)};
         //  attenuate waveguide results
-        auto waveguide_output = waveguide::run_attenuation(
-                receiver, waveguide_results, waveguide_sample_rate);
+        auto waveguide_output{waveguide::run_attenuation(
+                receiver, waveguide_results, waveguide_sample_rate)};
 
         //  correct raytracer results for dc
         filter::extra_linear_dc_blocker blocker;
@@ -117,14 +117,14 @@ public:
 
         //  mixdown
         assert(raytracer_output.size() == waveguide_output.size());
-        auto mm = std::minmax(raytracer_output,
-                              waveguide_output,
-                              [](const auto& a, const auto& b) {
-                                  return a.front().size() < b.front().size();
-                              });
+        auto mm{std::minmax(raytracer_output,
+                            waveguide_output,
+                            [](const auto& a, const auto& b) {
+                                return a.front().size() < b.front().size();
+                            })};
 
-        auto& min = mm.first;
-        auto& max = mm.second;
+        auto& min{mm.first};
+        auto& max{mm.second};
 
         aligned::vector<aligned::vector<float>> ret;
         ret.reserve(max.size());
@@ -133,7 +133,7 @@ public:
                 min.begin(),
                 std::back_inserter(ret),
                 [](const auto& a, const auto& b) {
-                    auto ret = a;
+                    auto ret{a};
                     proc::transform(
                             b, a.begin(), ret.begin(), [](auto a, auto b) {
                                 return a + b;
@@ -248,10 +248,10 @@ private:
             , impulses(impulses)
             , source_index(compute_index(model.get_descriptor(), source))
             , receiver_index(compute_index(model.get_descriptor(), receiver)) {
-        const auto is_index_inside = [&](auto index) {
+        const auto is_index_inside{[&](auto index) {
             return waveguide::mesh::is_inside(
                     model.get_structure().get_condensed_nodes()[index]);
-        };
+        }};
 
         if (!is_index_inside(source_index)) {
             throw std::runtime_error(
@@ -264,11 +264,11 @@ private:
     }
 
 public:
-    std::unique_ptr<intermediate> run(std::atomic_bool& keep_going,
+    std::unique_ptr<intermediate> run(const std::atomic_bool& keep_going,
                                       const state_callback& callback) {
         //  RAYTRACER  -------------------------------------------------------//
         callback(state::starting_raytracer, 1.0);
-        auto raytracer_results = raytracer::run(
+        auto raytracer_results{raytracer::run(
                 compute_context.get_context(),
                 compute_context.get_device(),
                 voxelised,
@@ -282,7 +282,7 @@ public:
                 keep_going,
                 [&](auto step) {
                     callback(state::running_raytracer, step / (impulses - 1.0));
-                });
+                })};
 
         if (!(keep_going && raytracer_results)) {
             return nullptr;
@@ -295,23 +295,23 @@ public:
                     raytracer_results->get_diffuse(), source, receiver);
         }
 
-        const auto impulses = raytracer_results->get_impulses();
+        const auto impulses{raytracer_results->get_impulses()};
 
         //  look for the max time of an impulse
-        const auto max_time =
+        const auto max_time{
                 proc::max_element(impulses, [](const auto& a, const auto& b) {
                     return a.time < b.time;
-                })->time;
+                })->time};
 
         //  WAVEGUIDE  -------------------------------------------------------//
         callback(state::starting_waveguide, 1.0);
 
-        const auto input = waveguide::default_kernel(waveguide_sample_rate);
+        const auto input{waveguide::default_kernel(waveguide_sample_rate)};
 
         //  this is the number of steps to run the raytracer for
         //  TODO is there a less dumb way of doing this?
-        const auto steps = std::ceil(max_time * waveguide_sample_rate) +
-                           input.opaque_kernel_size;
+        const auto steps{std::ceil(max_time * waveguide_sample_rate) +
+                         input.opaque_kernel_size};
 
         waveguide::preprocessor::single_soft_source preprocessor(source_index,
                                                                  input.kernel);
@@ -333,7 +333,7 @@ public:
             postprocessors.push_back(waveguide_visual_callback);
         }
 
-        const auto waveguide_steps_completed = waveguide::run(
+        const auto waveguide_steps_completed{waveguide::run(
                 compute_context.get_context(),
                 compute_context.get_device(),
                 model,
@@ -343,7 +343,7 @@ public:
                 [&](auto step) {
                     callback(state::running_waveguide, step / (steps - 1.0));
                 },
-                keep_going);
+                keep_going)};
 
         if (waveguide_steps_completed != steps) {
             return nullptr;
@@ -459,7 +459,8 @@ engine::engine(const compute_context& compute_context,
 engine::~engine() noexcept = default;
 
 std::unique_ptr<intermediate> engine::run(
-        std::atomic_bool& keep_going, const engine::state_callback& callback) {
+        const std::atomic_bool& keep_going,
+        const engine::state_callback& callback) {
     return pimpl->run(keep_going, callback);
 }
 

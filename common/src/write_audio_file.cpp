@@ -3,11 +3,13 @@
 #include <sstream>
 #include <unordered_map>
 
-void snd::write(const std::string& fname,
-                const aligned::vector<aligned::vector<float>>& outdata,
-                float sr,
-                int bd,
-                int ftype) {
+namespace {
+
+void write(const std::string& fname,
+           const aligned::vector<aligned::vector<float>>& outdata,
+           float sr,
+           int bd,
+           int ftype) {
     aligned::vector<float> interleaved(outdata.size() * outdata[0].size());
 
     for (auto i = 0u; i != outdata.size(); ++i) {
@@ -29,23 +31,14 @@ void snd::write(const std::string& fname,
     }
 }
 
-void snd::write(const std::string& fname,
-                const aligned::vector<aligned::vector<float>>& signal,
-                double sample_rate,
-                size_t bit_depth) {
-    auto format = get_file_format(fname);
-    auto depth  = get_file_depth(bit_depth);
-    write(fname, signal, sample_rate, depth, format);
-}
-
-int snd::get_file_format(const std::string& fname) {
+int get_file_format(const std::string& fname) {
     std::unordered_map<std::string, decltype(SF_FORMAT_AIFF)> ftypeTable{
             {"aif", SF_FORMAT_AIFF},
             {"aiff", SF_FORMAT_AIFF},
             {"wav", SF_FORMAT_WAV}};
 
     auto extension = fname.substr(fname.find_last_of(".") + 1);
-    auto ftypeIt   = ftypeTable.find(extension);
+    auto ftypeIt = ftypeTable.find(extension);
     if (ftypeIt == ftypeTable.end()) {
         std::stringstream ss;
         ss << "Invalid output file extension - valid extensions are: ";
@@ -57,7 +50,7 @@ int snd::get_file_format(const std::string& fname) {
     return ftypeIt->second;
 }
 
-int snd::get_file_depth(int bitDepth) {
+int get_file_depth(int bitDepth) {
     std::unordered_map<int, decltype(SF_FORMAT_PCM_16)> depthTable{
             {16, SF_FORMAT_PCM_16},
             {24, SF_FORMAT_PCM_24},
@@ -74,3 +67,15 @@ int snd::get_file_depth(int bitDepth) {
     }
     return depthIt->second;
 }
+}  // namespace
+
+namespace snd {
+void write(const std::string& fname,
+           const aligned::vector<aligned::vector<float>>& signal,
+           double sample_rate,
+           size_t bit_depth) {
+    auto format = get_file_format(fname);
+    auto depth = get_file_depth(bit_depth);
+    ::write(fname, signal, sample_rate, depth, format);
+}
+}//namespace snd
