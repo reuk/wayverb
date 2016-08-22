@@ -1,5 +1,7 @@
 #include "common/write_audio_file.h"
 
+#include "sndfile.hh"
+
 #include <sstream>
 #include <unordered_map>
 

@@ -15,7 +15,7 @@ TEST(convolution, convolution) {
     aligned::vector<float> a = {1, 0, 0, 0, 0};
     aligned::vector<float> b = {1, 2, 3, 4, 3, 2, 1, 0, 0};
 
-    FastConvolver fc(a.size() + b.size() - 1);
+    fast_convolver fc(a.size() + b.size() - 1);
     auto convolved = fc.convolve(a, b);
 
     const auto desired{aligned::vector<float>{1, 2, 3, 4, 3, 2, 1}};

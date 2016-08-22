@@ -18,11 +18,11 @@ public:
     using propagate_on_container_move_assignment = std::true_type;
 
     //  ensure basic special class methods are enabled
-    allocator() noexcept                            = default;
-    allocator(const allocator&) noexcept            = default;
+    allocator() noexcept = default;
+    allocator(const allocator&) noexcept = default;
     allocator& operator=(const allocator&) noexcept = default;
-    allocator(allocator&&) noexcept                 = default;
-    allocator& operator=(allocator&&) noexcept      = default;
+    allocator(allocator&&) noexcept = default;
+    allocator& operator=(allocator&&) noexcept = default;
 
     //  allow construction from an allocator for another type
     //  (with the same alignment)

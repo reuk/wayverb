@@ -2,8 +2,8 @@
 
 #include "common/aligned/map.h"
 #include "common/aligned/vector.h"
+#include "common/cl/common.h"
 #include "common/cl/scene_structs.h"
-#include "common/cl_common.h"
 #include "common/geo/box.h"
 
 #include "glm/glm.hpp"

@@ -1,4 +1,4 @@
-#include "common/cl_traits.h"
+#include "common/cl/traits.h"
 
 //  vector types should know they're vector types
 static_assert(detail::is_vector_type_v<cl_float3>, "");

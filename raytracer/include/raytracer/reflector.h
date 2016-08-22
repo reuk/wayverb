@@ -4,7 +4,7 @@
 
 #include "common/aligned/vector.h"
 #include "common/cl/geometry.h"
-#include "common/cl_include.h"
+#include "common/cl/include.h"
 #include "common/geo/geometric.h"
 
 #include "glm/glm.hpp"
@@ -32,8 +32,7 @@ public:
     aligned::vector<cl_float> get_rng() const;
 
 private:
-    using kernel_t = decltype(
-            std::declval<program>().get_reflections_kernel());
+    using kernel_t = decltype(std::declval<program>().get_reflections_kernel());
 
     cl::Context context;
     cl::Device device;

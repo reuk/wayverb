@@ -1,7 +1,7 @@
 #pragma once
 
 #include "common/aligned/vector.h"
-#include "common/cl_common.h"
+#include "common/cl/common.h"
 #include "common/program_wrapper.h"
 
 #include <array>

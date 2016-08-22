@@ -1,6 +1,6 @@
 #pragma once
 
-#include "common/cl_common.h"
+#include "common/cl/common.h"
 
 class program_wrapper final {
 public:

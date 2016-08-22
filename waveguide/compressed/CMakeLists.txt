@@ -15,16 +15,4 @@ target_include_directories(${name}
     ${CMAKE_SOURCE_DIR}/include
 )
 
-if(APPLE)
-    find_library(opencl_library OpenCL)
-    mark_as_advanced(opencl_library)
-    set(frameworks ${opencl_library})
-    set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
-elseif(UNIX)
-    find_library(opencl_library OpenCL PATHS ENV LD_LIBRARY_PATH ENV OpenCL_LIBPATH)
-    set(frameworks ${opencl_library})
-endif()
-
-find_library(fftw_library fftw3f)
-find_library(samplerate_lib samplerate)
-target_link_libraries(${name} waveguide assimp ${samplerate_lib} ${fftw_library} common)
+target_link_libraries(${name} waveguide)

@@ -41,7 +41,7 @@ public:
                      const glm::vec3& source,
                      const glm::vec3& receiver);
 
-    void set_time(float t);
+    void set_distance(double t);
 
 private:
     struct path_data final {
@@ -66,17 +66,17 @@ private:
 
     static aligned::vector<GLuint> compute_indices(
             const aligned::vector<aligned::vector<path_data>>& impulses,
-            float time,
+            double distance,
             size_t reflection_points);
 
     static glm::vec3 ray_wavefront_position(
             const aligned::vector<path_data>& path,
-            float time,
+            double distance,
             const glm::vec3& source);
 
     static aligned::vector<glm::vec3> ray_wavefront_position(
             const aligned::vector<aligned::vector<path_data>>& paths,
-            float time,
+            double distance,
             const glm::vec3& source);
 
     RayVisualisation(

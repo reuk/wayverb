@@ -16,7 +16,7 @@ aligned::vector<float> make_transparent(const aligned::vector<float> &kernel) {
     elementwise_multiply(ir, window);
 
     //  create convolver
-    FastConvolver fast_convolver(kernel.size() + ir.size() - 1);
+    fast_convolver fast_convolver{kernel.size() + ir.size() - 1};
 
     //  get convolved signal
     auto convolved = fast_convolver.convolve(kernel, ir);

@@ -25,7 +25,8 @@ public:
 
     MeshGeneratorFunctor(Listener& listener,
                          const copyable_scene_data& scene_data,
-                         double sample_rate);
+                         double sample_rate,
+                         double speed_of_sound);
 
     void operator()() const;
 
@@ -35,6 +36,7 @@ private:
     model::Persistent persistent;
     copyable_scene_data scene_data;
     double sample_rate;
+    double speed_of_sound;
 };
 
 //----------------------------------------------------------------------------//
@@ -43,7 +45,8 @@ class MeshGeneratorThread final {
 public:
     MeshGeneratorThread(MeshGeneratorFunctor::Listener& listener,
                         const copyable_scene_data& scene_data,
-                        double sample_rate);
+                        double sample_rate,
+                        double speed_of_sound);
 
 private:
     RAIIThread thread;
@@ -68,7 +71,9 @@ public:
         ~Listener() noexcept = default;
     };
 
-    void run(const copyable_scene_data& scene_data, double sample_rate);
+    void run(const copyable_scene_data& scene_data,
+             double sample_rate,
+             double speed_of_sound);
 
     void addListener(Listener* l);
     void removeListener(Listener* l);
@@ -83,7 +88,9 @@ private:
 
         void mesh_generator_finished(waveguide::mesh::model model) override;
 
-        void run(const copyable_scene_data& scene_data, double sample_rate);
+        void run(const copyable_scene_data& scene_data,
+                 double sample_rate,
+                 double speed_of_sound);
 
         void addListener(AsyncMeshGenerator::Listener* l);
         void removeListener(AsyncMeshGenerator::Listener* l);

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "common/cl/cl_representation.h"
-#include "common/cl_traits.h"
+#include "common/cl/representation.h"
+#include "common/cl/traits.h"
 #include "common/stl_wrappers.h"
 
 constexpr size_t biquad_order{2};

@@ -12,6 +12,7 @@ include_directories(
 
 add_subdirectory(boundary_test)
 add_subdirectory(hybrid_test)
+add_subdirectory(image_source_comparison)
 add_subdirectory(mic_test)
 add_subdirectory(solution_growth)
 add_subdirectory(write_compensation_signal)

@@ -225,6 +225,7 @@ public:
             : ModelValue<SingleShot>(owner)
             , filter_frequency(this, u.filter_frequency)
             , oversample_ratio(this, u.oversample_ratio)
+            , speed_of_sound(this, u.speed_of_sound)
             , rays(this, u.rays)
             , source(this, u.source)
             , receiver_settings(this, u.receiver_settings) {}
@@ -232,6 +233,7 @@ public:
     SingleShot get() const override {
         return SingleShot{filter_frequency.get(),
                           oversample_ratio.get(),
+                          speed_of_sound.get(),
                           rays.get(),
                           source.get(),
                           receiver_settings.get()};
@@ -240,6 +242,7 @@ public:
     void set(const SingleShot& u, bool do_notify = true) override {
         filter_frequency.set(u.filter_frequency, do_notify);
         oversample_ratio.set(u.oversample_ratio, do_notify);
+        speed_of_sound.set(u.speed_of_sound, do_notify);
         rays.set(u.rays, do_notify);
         source.set(u.source, do_notify);
         receiver_settings.set(u.receiver_settings, do_notify);
@@ -247,6 +250,7 @@ public:
 
     ValueWrapper<float> filter_frequency;
     ValueWrapper<float> oversample_ratio;
+    ValueWrapper<float> speed_of_sound;
     ValueWrapper<size_t> rays;
     ValueWrapper<glm::vec3> source;
     ValueWrapper<ReceiverSettings> receiver_settings;
@@ -259,6 +263,7 @@ public:
             : ModelValue<App>(owner)
             , filter_frequency(this, u.filter_frequency)
             , oversample_ratio(this, u.oversample_ratio)
+            , speed_of_sound(this, u.speed_of_sound)
             , rays(this, u.rays)
             , source(this, u.source)
             , receiver_settings(this, u.receiver_settings) {}
@@ -266,6 +271,7 @@ public:
     App get() const override {
         return App{filter_frequency.get(),
                    oversample_ratio.get(),
+                   speed_of_sound.get(),
                    rays.get(),
                    source.get(),
                    receiver_settings.get()};
@@ -274,6 +280,7 @@ public:
     void set(const App& u, bool do_notify = true) override {
         filter_frequency.set(u.filter_frequency, do_notify);
         oversample_ratio.set(u.oversample_ratio, do_notify);
+        speed_of_sound.set(u.speed_of_sound, do_notify);
         rays.set(u.rays, do_notify);
         source.set(u.source, do_notify);
         receiver_settings.set(u.receiver_settings, do_notify);
@@ -281,6 +288,7 @@ public:
 
     ValueWrapper<float> filter_frequency;
     ValueWrapper<float> oversample_ratio;
+    ValueWrapper<float> speed_of_sound;
     ValueWrapper<size_t> rays;
     ValueWrapper<aligned::vector<glm::vec3>> source;
     ValueWrapper<aligned::vector<ReceiverSettings>> receiver_settings;

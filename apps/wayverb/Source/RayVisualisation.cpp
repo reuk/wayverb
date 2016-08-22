@@ -3,8 +3,7 @@
 #include "OtherComponents/MoreConversions.hpp"
 
 #include "common/aligned/vector.h"
-#include "common/cl_traits.h"
-#include "common/config.h"
+#include "common/cl/traits.h"
 #include "common/map_to_vector.h"
 
 #include <numeric>
@@ -115,11 +114,9 @@ aligned::vector<float> RayVisualisation::extract_pressures(
 
 aligned::vector<GLuint> RayVisualisation::compute_indices(
         const aligned::vector<aligned::vector<path_data>>& impulses,
-        float time,
+        double distance,
         size_t reflection_points) {
     aligned::vector<GLuint> ret;
-
-    const auto distance = time * speed_of_sound;
 
     //  this will hold the begin index of each ray in the vertex buffer
     size_t counter = 1;
@@ -130,7 +127,8 @@ aligned::vector<GLuint> RayVisualisation::compute_indices(
         if (!ray.empty()) {
             ret.push_back(0);  //  source
 
-            for (auto j{0u}; (j != ray.size() - 1) && (ray[j].distance < distance);
+            for (auto j{0u};
+                 (j != ray.size() - 1) && (ray[j].distance < distance);
                  ++j) {
                 const auto impulse_index = counter + j;
                 ret.push_back(impulse_index);
@@ -146,13 +144,12 @@ aligned::vector<GLuint> RayVisualisation::compute_indices(
 
 glm::vec3 RayVisualisation::ray_wavefront_position(
         const aligned::vector<path_data>& path,
-        float time,
+        double distance,
         const glm::vec3& source) {
     if (path.empty()) {
         return source;
     }
 
-    const auto distance{time * speed_of_sound};
     const auto lim{path.end() - 1};
     auto it{path.begin()};
     for (; it != lim && it->distance < distance; ++it) {
@@ -174,10 +171,10 @@ glm::vec3 RayVisualisation::ray_wavefront_position(
 
 aligned::vector<glm::vec3> RayVisualisation::ray_wavefront_position(
         const aligned::vector<aligned::vector<path_data>>& paths,
-        float time,
+        double distance,
         const glm::vec3& source) {
     return map_to_vector(paths, [&](const auto& i) {
-        return ray_wavefront_position(i, time, source);
+        return ray_wavefront_position(i, distance, source);
     });
 }
 
@@ -265,7 +262,7 @@ RayVisualisation::RayVisualisation(
     ibo.bind();
 }
 
-void RayVisualisation::set_time(float t) {
+void RayVisualisation::set_distance(double t) {
     ibo.data(compute_indices(paths, t, reflection_points));
     positions.sub_data(1 + reflection_points,
                        ray_wavefront_position(paths, t, source));

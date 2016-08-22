@@ -1,8 +1,8 @@
 #pragma once
 
-#include "common/cl/cl_representation.h"
+#include "common/cl/representation.h"
 #include "common/cl/scene_structs.h"
-#include "common/cl_traits.h"
+#include "common/cl/traits.h"
 
 constexpr volume_type air_coefficient{{0.001f * -0.1f,
                                        0.001f * -0.2f,
@@ -31,7 +31,7 @@ struct alignas(1 << 4) reflection final {
                                //  this point
 };
 
-template<>
+template <>
 struct cl_representation<reflection> final {
     static constexpr auto value{R"(
 typedef struct {
@@ -69,7 +69,7 @@ struct alignas(1 << 5) diffuse_path_info final {
     cl_float distance;   //  total distance travelled
 };
 
-template<>
+template <>
 struct cl_representation<diffuse_path_info> final {
     static constexpr auto value{R"(
 typedef struct {
@@ -105,7 +105,7 @@ struct alignas(1 << 5) impulse final {
     cl_float time;       //  time that the impulse is received
 };
 
-template<>
+template <>
 struct cl_representation<impulse> final {
     static constexpr auto value{R"(
 typedef struct {
@@ -135,7 +135,7 @@ struct alignas(1 << 5) attenuated_impulse final {
     cl_float time;
 };
 
-template<>
+template <>
 struct cl_representation<attenuated_impulse> final {
     static constexpr auto value{R"(
 typedef struct {
@@ -168,7 +168,7 @@ struct alignas(1 << 4) microphone final {
     cl_float coefficient;
 };
 
-template<>
+template <>
 struct cl_representation<microphone> final {
     static constexpr auto value{R"(
 typedef struct {

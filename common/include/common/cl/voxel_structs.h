@@ -1,7 +1,7 @@
 #pragma once
 
-#include "common/cl/cl_representation.h"
-#include "common/cl_traits.h"
+#include "common/cl/representation.h"
+#include "common/cl/traits.h"
 
 struct alignas(1 << 4) aabb final {
     cl_float3 c0;

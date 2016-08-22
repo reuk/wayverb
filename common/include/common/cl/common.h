@@ -1,7 +1,7 @@
 #pragma once
 
-#include "common/cl_traits.h"
 #include "common/aligned/vector.h"
+#include "common/cl/traits.h"
 
 class compute_context final {
 public:
@@ -46,4 +46,3 @@ void write_single_value(cl::CommandQueue& queue,
     queue.enqueueWriteBuffer(
             buffer, CL_TRUE, sizeof(T) * index, sizeof(T), &val);
 }
-

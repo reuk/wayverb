@@ -3,10 +3,14 @@
 
 #include "common/azimuth_elevation.h"
 #include "common/cl_common.h"
+#include "common/dsp_vector_ops.h"
+#include "common/progress_bar.h"
 #include "common/range.h"
 #include "common/spatial_division/voxelised_scene_data.h"
 #include "common/string_builder.h"
 #include "common/write_audio_file.h"
+
+#include <iostream>
 
 #ifndef OBJ_PATH
 #define OBJ_PATH ""
@@ -57,6 +61,8 @@ int main() {
             const voxelised_scene_data voxelised{
                     scene, 5, util::padded(scene.get_aabb(), glm::vec3{0.1})};
 
+            const auto reflections{100};
+            progress_bar pb{std::cout, reflections};
             const auto results{raytracer::run(cc.get_context(),
                                               cc.get_device(),
                                               voxelised,
@@ -64,10 +70,10 @@ int main() {
                                               source,
                                               receiver,
                                               get_random_directions(100000),
-                                              100,
+                                              reflections,
                                               10,
                                               keep_going,
-                                              [](auto) {})};
+                                              [&](auto) {pb += 1;})};
 
             const aligned::vector<
                     std::pair<std::string, aligned::vector<impulse>>>
@@ -79,8 +85,9 @@ int main() {
                                                     false, false, true))};
 
             for (const auto& imp : impulses) {
-                const auto sig{raytracer::flatten_filter_and_mixdown(
+                auto sig{raytracer::flatten_filter_and_mixdown(
                         std::get<1>(imp), sample_rate, acoustic_impedance)};
+                normalize(sig);
                 snd::write(build_string(std::get<0>(imp),
                                         "_",
                                         std::get<0>(surf),

@@ -52,7 +52,7 @@ public:
 
 private:
     static const auto KERNEL_LENGTH = 99;
-    FastConvolver convolver;
+    fast_convolver convolver;
     std::array<float, KERNEL_LENGTH> kernel;
 };
 
@@ -72,7 +72,7 @@ public:
 
 private:
     static const auto KERNEL_LENGTH = 99;
-    FastConvolver convolver;
+    fast_convolver convolver;
     std::array<float, KERNEL_LENGTH> kernel;
 };
 
@@ -92,7 +92,7 @@ public:
 
 private:
     static const auto KERNEL_LENGTH = 99;
-    FastConvolver convolver;
+    fast_convolver convolver;
     std::array<float, KERNEL_LENGTH> kernel;
 };
 

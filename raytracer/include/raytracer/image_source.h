@@ -4,7 +4,7 @@
 #include "raytracer/iterative_builder.h"
 
 #include "common/aligned/vector.h"
-#include "common/cl_include.h"
+#include "common/cl/include.h"
 
 #include <experimental/optional>
 

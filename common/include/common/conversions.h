@@ -1,6 +1,6 @@
 #pragma once
 
-#include "cl_include.h"
+#include "common/cl/include.h"
 
 #include "glm/glm.hpp"
 

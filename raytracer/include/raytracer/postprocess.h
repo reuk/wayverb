@@ -3,13 +3,16 @@
 #include "raytracer/cl/structs.h"
 #include "raytracer/results.h"
 
-#include "common/cl_common.h"
+#include "common/cl/common.h"
 #include "common/hrtf_utils.h"
 #include "common/pressure_intensity.h"
 #include "common/receiver_settings.h"
 #include "common/stl_wrappers.h"
 
 namespace raytracer {
+
+/// Get the number of necessary reflections for a given min amplitude.
+int compute_optimum_reflection_number(float min_amp, float max_reflectivity);
 
 /// Sum impulses ocurring at the same (sampled) time and return a vector in
 /// which each subsequent item refers to the next sample of an impulse

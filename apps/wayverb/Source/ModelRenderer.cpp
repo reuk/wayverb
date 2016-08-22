@@ -6,7 +6,7 @@
 #include "modern_gl_utils/exceptions.h"
 
 #include "common/azimuth_elevation.h"
-#include "common/cl_common.h"
+#include "common/cl/common.h"
 #include "common/conversions.h"
 #include "common/kernel.h"
 
@@ -241,10 +241,11 @@ aligned::vector<PointObject *> PointObjects::get_all_point_objects() {
 //----------------------------------------------------------------------------//
 
 SceneRendererContextLifetime::SceneRendererContextLifetime(
-        const copyable_scene_data &scene_data)
+        const copyable_scene_data &scene_data, double speed_of_sound)
         : model_object(generic_shader, lit_scene_shader, scene_data)
         , point_objects(generic_shader)
-        , axes(generic_shader) {
+        , axes(generic_shader)
+        , speed_of_sound(speed_of_sound) {
     const auto aabb = scene_data.get_aabb();
     const auto m = centre(aabb);
     const auto max = glm::length(dimensions(aabb));
@@ -281,7 +282,7 @@ void SceneRendererContextLifetime::set_pressures(
     }
 
     if (ray_object) {
-        ray_object->set_time(current_time);
+        ray_object->set_distance(current_time * speed_of_sound);
     }
 }
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "common/cl_include.h"
+#include "common/cl/include.h"
 #include "common/geo/box.h"
 
 #include "glm/glm.hpp"

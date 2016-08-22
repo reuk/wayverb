@@ -19,7 +19,9 @@ ModelRendererComponent::ModelRendererComponent(
         model::ValueWrapper<model::RenderState> &render_state)
         : model(model)
         , shown_surface(shown_surface)
-        , renderer([model] { return SceneRendererContextLifetime(model); })
+        , renderer([model, sos = app.speed_of_sound.get()] {
+            return SceneRendererContextLifetime{model, sos};
+        })
         , app(app)
         , render_state(render_state) {
     set_help("model viewport",
@@ -122,7 +124,10 @@ void ModelRendererComponent::receiver_dragged(
 void ModelRendererComponent::left_panel_debug_show_closest_surfaces(
         const LeftPanel *) {
     generator = std::make_unique<MeshGenerator>(
-            model, app.get().get_waveguide_sample_rate(), [this](auto model) {
+            model,
+            app.get().get_waveguide_sample_rate(),
+            app.speed_of_sound.get(),
+            [this](auto model) {
                 renderer.context_command([m = std::move(model)](auto &i) {
                     i.debug_show_closest_surfaces(std::move(m));
                 });
@@ -132,7 +137,10 @@ void ModelRendererComponent::left_panel_debug_show_closest_surfaces(
 void ModelRendererComponent::left_panel_debug_show_boundary_types(
         const LeftPanel *) {
     generator = std::make_unique<MeshGenerator>(
-            model, app.get().get_waveguide_sample_rate(), [this](auto model) {
+            model,
+            app.get().get_waveguide_sample_rate(),
+            app.speed_of_sound.get(),
+            [this](auto model) {
                 renderer.context_command([m = std::move(model)](auto &i) {
                     i.debug_show_boundary_types(std::move(m));
                 });
@@ -150,10 +158,11 @@ void ModelRendererComponent::left_panel_debug_hide_debug_mesh(
 ModelRendererComponent::MeshGenerator::MeshGenerator(
         const copyable_scene_data &scene,
         double sample_rate,
+        double speed_of_sound,
         std::function<void(waveguide::mesh::model)>
                 on_finished)
         : on_finished(on_finished) {
-    generator.run(scene, sample_rate);
+    generator.run(scene, sample_rate, speed_of_sound);
 }
 
 void ModelRendererComponent::MeshGenerator::async_mesh_generator_finished(

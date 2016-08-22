@@ -27,7 +27,6 @@
 #include "raytracer/raytracer.h"
 
 #include "common/scene_data.h"
-#include "common/single_thread_access_checker.h"
 #include "common/spatial_division/voxel_collection.h"
 
 #include <cmath>
@@ -104,7 +103,7 @@ private:
 
 class SceneRendererContextLifetime final : public BaseContextLifetime {
 public:
-    SceneRendererContextLifetime(const copyable_scene_data &scene_data);
+    SceneRendererContextLifetime(const copyable_scene_data &scene_data, double speed_of_sound);
 
     SceneRendererContextLifetime(const SceneRendererContextLifetime &) = delete;
     SceneRendererContextLifetime &operator=(
@@ -173,6 +172,8 @@ private:
     bool rendering{false};
     PointObjects point_objects;
     AxesObject axes;
+
+    float speed_of_sound;
 
     AzEl azel;
     AzEl azel_target;

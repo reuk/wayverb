@@ -27,7 +27,7 @@ MeshObject::MeshObject(const std::shared_ptr<MeshShader>& shader,
 }
 
 void MeshObject::do_draw(const glm::mat4& modelview_matrix) const {
-//    glBlendFunc(GL_ONE, GL_ONE);
+    //    glBlendFunc(GL_ONE, GL_ONE);
     glDepthMask(GL_FALSE);
     auto s_shader = shader->get_scoped();
     shader->set_model_matrix(modelview_matrix);
@@ -35,7 +35,7 @@ void MeshObject::do_draw(const glm::mat4& modelview_matrix) const {
     auto s_vao = vao.get_scoped();
     glDrawElements(GL_POINTS, ibo.size(), GL_UNSIGNED_INT, nullptr);
     glDepthMask(GL_TRUE);
-//    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    //    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
 glm::mat4 MeshObject::get_local_modelview_matrix() const { return glm::mat4{}; }
@@ -52,12 +52,30 @@ void MeshObject::set_positions(const aligned::vector<glm::vec3>& positions) {
     aligned::vector<GLuint> indices(positions.size());
     std::iota(indices.begin(), indices.end(), 0);
     ibo.data(indices);
-    
+
     geometry.data(positions);
     zero_pressures();
 }
 
 //----------------------------------------------------------------------------//
+namespace {
+auto get_direction_vector(int i) {
+    switch (i) {
+        case id_nx: return glm::vec3{-1, 0, 0};
+        case id_px: return glm::vec3{1, 0, 0};
+        case id_ny: return glm::vec3{0, -1, 0};
+        case id_py: return glm::vec3{0, 1, 0};
+        case id_nz: return glm::vec3{0, 0, -1};
+        case id_pz: return glm::vec3{0, 0, 1};
+        default: return glm::vec3{0};
+    }
+}
+auto get_summed_direction_vector(int i) {
+    return get_direction_vector(i & id_nx) + get_direction_vector(i & id_px) +
+           get_direction_vector(i & id_ny) + get_direction_vector(i & id_py) +
+           get_direction_vector(i & id_nz) + get_direction_vector(i & id_pz);
+}
+}  // namespace
 
 DebugMeshObject::DebugMeshObject(
         const std::shared_ptr<mglu::generic_shader>& shader,
@@ -98,25 +116,19 @@ DebugMeshObject::DebugMeshObject(
             break;
         }
         case mode::boundary_type: {
-            colours.data(
-                    map_to_vector(model.get_structure().get_condensed_nodes(),
-                                  [](const auto& i) {
-                                      switch (i.boundary_type) {
-                                          case id_none:
-                                          case id_inside:
-                                              return glm::vec4{0, 0, 0, 0};
-                                          case id_nx:
-                                          case id_px:
-                                              return glm::vec4{1, 0, 0, 1};
-                                          case id_ny:
-                                          case id_py:
-                                              return glm::vec4{0, 1, 0, 1};
-                                          case id_nz:
-                                          case id_pz:
-                                              return glm::vec4{0, 0, 1, 1};
-                                          default: return glm::vec4{1, 1, 1, 1};
-                                      }
-                                  }));
+            colours.data(map_to_vector(
+                    model.get_structure().get_condensed_nodes(),
+                    [](const auto& i) {
+                        switch (i.boundary_type) {
+                            case id_none:
+                            case id_inside: return glm::vec4{0, 0, 0, 0};
+                            default:
+                                return glm::vec4{
+                                        glm::abs(get_summed_direction_vector(
+                                                i.boundary_type)),
+                                        1.0};
+                        }
+                    }));
             break;
         }
     }

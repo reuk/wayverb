@@ -2,8 +2,6 @@
 
 #include "common/aligned/vector.h"
 
-#include "sndfile.hh"
-
 #include <string>
 #include <vector>
 

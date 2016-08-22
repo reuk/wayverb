@@ -4,7 +4,7 @@
 #include "waveguide/cl/utils.h"
 #include "waveguide/mesh/descriptor.h"
 
-#include "common/cl/cl_representation.h"
+#include "common/cl/representation.h"
 #include "common/program_wrapper.h"
 #include "common/spatial_division/scene_buffers.h"
 

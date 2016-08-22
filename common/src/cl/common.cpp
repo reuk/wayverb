@@ -1,6 +1,6 @@
-#include "common/cl_common.h"
-#include "common/string_builder.h"
+#include "common/cl/common.h"
 #include "common/stl_wrappers.h"
+#include "common/string_builder.h"
 
 #include <iostream>
 
@@ -17,7 +17,7 @@ cl::Context get_context() {
     };
 
     return cl::Context(CL_DEVICE_TYPE_GPU, cps);
-    //return cl::Context(CL_DEVICE_TYPE_CPU, cps);
+    // return cl::Context(CL_DEVICE_TYPE_CPU, cps);
 }
 
 cl::Device get_device(const cl::Context& context) {

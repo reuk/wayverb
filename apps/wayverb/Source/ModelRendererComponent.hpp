@@ -55,6 +55,7 @@ private:
     public:
         MeshGenerator(const copyable_scene_data& scene,
                       double sample_rate,
+                      double speed_of_sound,
                       std::function<void(waveguide::mesh::model)>
                               on_finished);
 

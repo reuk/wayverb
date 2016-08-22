@@ -9,9 +9,6 @@ class voxelised_scene_data;
 
 namespace raytracer {
 
-/// Get the number of necessary reflections for a given min amplitude.
-int compute_optimum_reflection_number(float min_amp, float max_reflectivity);
-
 /// arguments
 ///     the step number
 using per_step_callback = std::function<void(size_t)>;

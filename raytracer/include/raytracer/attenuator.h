@@ -3,7 +3,7 @@
 #include "raytracer/attenuator_program.h"
 #include "raytracer/results.h"
 
-#include "common/cl_include.h"
+#include "common/cl/include.h"
 #include "common/hrtf_utils.h"
 
 namespace raytracer {

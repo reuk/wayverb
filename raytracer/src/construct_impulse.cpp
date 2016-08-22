@@ -1,6 +1,6 @@
 #include "raytracer/construct_impulse.h"
 
-#include "common/cl_traits.h"
+#include "common/cl/traits.h"
 #include "common/conversions.h"
 #include "common/stl_wrappers.h"
 
@@ -19,7 +19,7 @@ float power_attenuation_for_distance(float distance) {
 }
 
 volume_type attenuation_for_distance(float distance) {
-    const auto air   = air_attenuation_for_distance(distance);
+    const auto air = air_attenuation_for_distance(distance);
     const auto power = power_attenuation_for_distance(distance);
     return air * power;
 }

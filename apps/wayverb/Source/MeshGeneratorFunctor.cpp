@@ -5,11 +5,13 @@
 MeshGeneratorFunctor::MeshGeneratorFunctor(
         Listener& listener,
         const copyable_scene_data& scene_data,
-        double sample_rate)
+        double sample_rate,
+        double speed_of_sound)
         : listener(listener)
         , persistent(persistent)
         , scene_data(scene_data)
-        , sample_rate(sample_rate) {}
+        , sample_rate(sample_rate)
+        , speed_of_sound(speed_of_sound) {}
 
 void MeshGeneratorFunctor::operator()() const {
     const auto cc{compute_context{}};
@@ -17,7 +19,8 @@ void MeshGeneratorFunctor::operator()() const {
                                                         cc.get_device(),
                                                         scene_data,
                                                         glm::vec3{},
-                                                        sample_rate)};
+                                                        sample_rate,
+                                                        speed_of_sound)};
     listener.mesh_generator_finished(std::move(std::get<1>(pair)));
 }
 
@@ -26,14 +29,17 @@ void MeshGeneratorFunctor::operator()() const {
 MeshGeneratorThread::MeshGeneratorThread(
         MeshGeneratorFunctor::Listener& listener,
         const copyable_scene_data& scene_data,
-        double sample_rate)
-        : thread(MeshGeneratorFunctor(listener, scene_data, sample_rate)) {}
+        double sample_rate,
+        double speed_of_sound)
+        : thread(MeshGeneratorFunctor(
+                  listener, scene_data, sample_rate, speed_of_sound)) {}
 
 //----------------------------------------------------------------------------//
 
 void AsyncMeshGenerator::run(const copyable_scene_data& scene_data,
-                             double sample_rate) {
-    concrete_listener.run(scene_data, sample_rate);
+                             double sample_rate,
+                             double speed_of_sound) {
+    concrete_listener.run(scene_data, sample_rate, speed_of_sound);
 }
 
 void AsyncMeshGenerator::addListener(Listener* l) {
@@ -62,9 +68,11 @@ void AsyncMeshGenerator::ConcreteListener::mesh_generator_finished(
 }
 
 void AsyncMeshGenerator::ConcreteListener::run(
-        const copyable_scene_data& scene_data, double sample_rate) {
+        const copyable_scene_data& scene_data,
+        double sample_rate,
+        double speed_of_sound) {
     thread = std::make_unique<MeshGeneratorThread>(
-            *this, scene_data, sample_rate);
+            *this, scene_data, sample_rate, speed_of_sound);
 }
 
 void AsyncMeshGenerator::ConcreteListener::addListener(

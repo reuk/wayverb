@@ -23,6 +23,7 @@ target_include_directories(${name}
     src
     ${WAYVERB_SOURCE_DIR}/include
     ${WAYVERB_SOURCE_DIR}/submodules/cereal/include
+    "/usr/local/include"
 )
 
 if(APPLE)

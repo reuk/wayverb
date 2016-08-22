@@ -22,6 +22,7 @@ float SingleShot::get_waveguide_sample_rate() const {
 SingleShot App::get_single_shot(size_t input, size_t output) const {
     return SingleShot{filter_frequency,
                       oversample_ratio,
+                      speed_of_sound,
                       rays,
                       source[input],
                       receiver_settings[output]};
@@ -32,8 +33,12 @@ aligned::vector<SingleShot> App::get_all_input_output_combinations() const {
     ret.reserve(source.size() * receiver_settings.size());
     for (const auto& i : source) {
         for (const auto& j : receiver_settings) {
-            ret.push_back(
-                    SingleShot{filter_frequency, oversample_ratio, rays, i, j});
+            ret.push_back(SingleShot{filter_frequency,
+                                     oversample_ratio,
+                                     speed_of_sound,
+                                     rays,
+                                     i,
+                                     j});
         }
     }
     return ret;

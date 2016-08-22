@@ -6,7 +6,7 @@
 #include "waveguide/program.h"
 
 #include "common/aligned/vector.h"
-#include "common/cl_include.h"
+#include "common/cl/include.h"
 #include "common/map_to_vector.h"
 #include "common/program_wrapper.h"
 #include "common/spatial_division/scene_buffers.h"

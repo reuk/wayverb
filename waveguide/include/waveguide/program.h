@@ -1,6 +1,6 @@
 #pragma once
 
-#include "common/cl_common.h"
+#include "common/cl/common.h"
 #include "common/decibels.h"
 #include "common/hrtf.h"
 #include "common/program_wrapper.h"

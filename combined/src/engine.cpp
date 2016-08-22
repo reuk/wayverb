@@ -2,7 +2,7 @@
 
 #include "common/aligned/set.h"
 #include "common/azimuth_elevation.h"
-#include "common/cl_common.h"
+#include "common/cl/common.h"
 #include "common/conversions.h"
 #include "common/dc_blocker.h"
 #include "common/filters_common.h"
@@ -198,9 +198,10 @@ public:
                    waveguide_sample_rate,
                    rays,
                    raytracer::compute_optimum_reflection_number(
-                           decibels::db2a(-48.0),
+                           decibels::db2a(-60.0),
                            max_reflectivity(scene_data.get_materials())),
-                   speed_of_sound, acoustic_impedance) {}
+                   speed_of_sound,
+                   acoustic_impedance) {}
 
     impl(const compute_context& cc,
          const copyable_scene_data& scene_data,
@@ -224,7 +225,8 @@ public:
                    waveguide_sample_rate,
                    rays,
                    impulses,
-                   speed_of_sound, acoustic_impedance) {}
+                   speed_of_sound,
+                   acoustic_impedance) {}
 
 private:
     impl(const compute_context& cc,

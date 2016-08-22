@@ -1,7 +1,7 @@
 #pragma once
 
 #include "common/aligned/vector.h"
-#include "common/cl_include.h"
+#include "common/cl/include.h"
 
 #include "glm/glm.hpp"
 
@@ -25,4 +25,4 @@ triangle_vec2 get_triangle_vec2(const triangle& t,
 triangle_vec2 get_triangle_vec2(const triangle& t,
                                 const aligned::vector<cl_float3>& v);
 
-}//namespace geo
+}  // namespace geo
