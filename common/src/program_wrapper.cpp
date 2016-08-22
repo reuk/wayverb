@@ -2,41 +2,31 @@
 
 #include <iostream>
 
-program_wrapper::program_wrapper(const cl::Context& context,
-                                 const cl::Device& device,
+program_wrapper::program_wrapper(const compute_context& cc,
                                  const std::string& source)
-        : program_wrapper(context,
-                          device,
-                          std::make_pair(source.data(), source.size())) {
-}
+        : program_wrapper(cc, std::make_pair(source.data(), source.size())) {}
 
-program_wrapper::program_wrapper(const cl::Context& context,
-                                 const cl::Device& device,
+program_wrapper::program_wrapper(const compute_context& cc,
                                  const std::pair<const char*, size_t>& source)
-        : program_wrapper(context,
-                          device,
-                          std::vector<std::pair<const char*, size_t>>{source}) {
-}
+        : program_wrapper(
+                  cc, std::vector<std::pair<const char*, size_t>>{source}) {}
 
-program_wrapper::program_wrapper(const cl::Context& context,
-                                 const cl::Device& device,
+program_wrapper::program_wrapper(const compute_context& cc,
                                  const std::vector<std::string>& sources)
-        : program_wrapper(context, device, [&sources] {
+        : program_wrapper(cc, [&sources] {
             std::vector<std::pair<const char*, size_t>> ret;
             ret.reserve(sources.size());
             for (const auto& source : sources) {
                 ret.push_back(std::make_pair(source.data(), source.size()));
             }
             return ret;
-        }()) {
-}
+        }()) {}
 
 program_wrapper::program_wrapper(
-        const cl::Context& context,
-        const cl::Device& device,
+        const compute_context& cc,
         const std::vector<std::pair<const char*, size_t>>& sources)
-        : device(device)
-        , program(context, sources) {
+        : device(cc.device)
+        , program(cc.context, sources) {
     build(device);
 }
 

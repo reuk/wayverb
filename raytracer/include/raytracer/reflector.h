@@ -19,8 +19,7 @@ aligned::vector<geo::ray> get_random_rays(const glm::vec3& source, size_t num);
 
 class reflector final {
 public:
-    reflector(const cl::Context&,
-              const cl::Device&,
+    reflector(const compute_context& cc,
               const glm::vec3& receiver,
               const aligned::vector<geo::ray>& rays,
               double speed_of_sound);
@@ -34,8 +33,7 @@ public:
 private:
     using kernel_t = decltype(std::declval<program>().get_reflections_kernel());
 
-    cl::Context context;
-    cl::Device device;
+    compute_context cc;
     cl::CommandQueue queue;
     kernel_t kernel;
     cl_float3 receiver;

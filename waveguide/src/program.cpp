@@ -534,10 +534,9 @@ kernel void condensed_waveguide(global float* previous,
 
 )"};
 
-program::program(const cl::Context& context, const cl::Device& device)
+program::program(const compute_context& cc)
         : program_wrapper(
-                  context,
-                  device,
+                  cc,
                   std::vector<std::string>{
                           ::cl_sources::filter_constants,
                           cl_representation_v<real>,

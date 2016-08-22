@@ -18,7 +18,7 @@ aligned::vector<aligned::vector<float>> run_attenuation(
                     [&receiver, &input, &attenuator](const auto& i) {
                         return attenuator.process(
                                 input,
-                                i.pointer.get_pointing(receiver.position),
+                                get_pointing(i.pointer, receiver.position),
                                 i.shape);
                     });
         }
@@ -31,7 +31,7 @@ aligned::vector<aligned::vector<float>> run_attenuation(
                             const auto& i) {
                         auto ret = attenuator.process(
                                 input,
-                                receiver.hrtf.get_pointing(receiver.position),
+                                get_pointing(receiver.hrtf, receiver.position),
                                 glm::vec3(0, 1, 0),
                                 i);
                         return multiband_filter_and_mixdown(

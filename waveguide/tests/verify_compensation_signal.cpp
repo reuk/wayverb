@@ -39,8 +39,7 @@ TEST(verify_compensation_signal, verify_compensation_signal_compressed) {
     const auto transparent = waveguide::make_transparent(input);
 
     compute_context c;
-    compressed_rectangular_waveguide waveguide(
-            c.get_context(), c.get_device(), 100);
+    compressed_rectangular_waveguide waveguide(c, 100);
 
     multitest([&] {
         auto t = transparent;
@@ -60,8 +59,8 @@ TEST(verify_compensation_signal, verify_compensation_signal_normal) {
     const voxelised_scene_data voxelised(
             scene_data, 5, util::padded(scene_data.get_aabb(), glm::vec3{0.1}));
 
-    const auto model = waveguide::mesh::compute_model(
-            cc.get_context(), cc.get_device(), voxelised, 0.05, speed_of_sound);
+    const auto model{waveguide::mesh::compute_model(
+            cc, voxelised, 0.05, speed_of_sound)};
 
     constexpr glm::vec3 centre{0, 0, 0};
     const auto receiver_index = compute_index(model.get_descriptor(), centre);
@@ -71,8 +70,7 @@ TEST(verify_compensation_signal, verify_compensation_signal_normal) {
         std::atomic_bool keep_going{true};
         progress_bar pb(std::cout, steps);
 
-        const auto output = waveguide::run(cc.get_context(),
-                                           cc.get_device(),
+        const auto output = waveguide::run(cc,
                                            model,
                                            receiver_index,
                                            input,

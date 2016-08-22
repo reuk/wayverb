@@ -32,13 +32,12 @@ auto get_voxelised(const copyable_scene_data& sd) {
 
 struct mesh_fixture : public ::testing::Test {
     auto get_mesh(const voxelised_scene_data& voxelised) {
-        const auto buffers{scene_buffers{cc.get_context(), voxelised}};
-        return waveguide::mesh::compute_fat_nodes(
-                cc.get_context(), cc.get_device(), voxelised, buffers, 0.1);
+        const scene_buffers buffers{cc.context, voxelised};
+        return waveguide::mesh::compute_fat_nodes(cc, voxelised, buffers, 0.1);
     }
 
     const compute_context cc;
-    cl::CommandQueue queue{cc.get_context(), cc.get_device()};
+    cl::CommandQueue queue{cc.context, cc.device};
     const voxelised_scene_data voxelised{
             get_voxelised(scene_data{THE_MODEL})};
 };

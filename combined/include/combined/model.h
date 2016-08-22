@@ -1,7 +1,7 @@
 #pragma once
 
+#include "common/model/receiver_settings.h"
 #include "common/orientable.h"
-#include "common/receiver_settings.h"
 
 #include <vector>
 

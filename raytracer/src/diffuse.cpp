@@ -15,32 +15,30 @@ namespace raytracer {
 //      specular energy of each ray
 //      distance travelled by each ray
 
-diffuse_finder::diffuse_finder(const cl::Context& context,
-                               const cl::Device& device,
+diffuse_finder::diffuse_finder(const compute_context& cc,
                                const glm::vec3& source,
                                const glm::vec3& receiver,
                                const volume_type& air_coefficient,
                                double speed_of_sound,
                                size_t rays,
                                size_t depth)
-        : context(context)
-        , device(device)
-        , queue(context, device)
-        , kernel(program(context, device, speed_of_sound).get_diffuse_kernel())
+        : cc(cc)
+        , queue(cc.context, cc.device)
+        , kernel(program{cc, speed_of_sound}.get_diffuse_kernel())
         , receiver(to_cl_float3(receiver))
         , air_coefficient(air_coefficient)
         , rays(rays)
         , reflections_buffer(
-                  context, CL_MEM_READ_WRITE, sizeof(reflection) * rays)
+                  cc.context, CL_MEM_READ_WRITE, sizeof(reflection) * rays)
         , diffuse_path_buffer(load_to_buffer(
-                  context,
+                  cc.context,
                   aligned::vector<diffuse_path_info>(
                           rays,
                           diffuse_path_info{make_volume_type(1.0 / rays),
                                             to_cl_float3(source),
                                             0}),
                   false))
-        , impulse_buffer(context, CL_MEM_READ_WRITE, sizeof(impulse) * rays)
+        , impulse_buffer(cc.context, CL_MEM_READ_WRITE, sizeof(impulse) * rays)
         , impulse_builder(rays, depth) {}
 
 void diffuse_finder::push(const aligned::vector<reflection>& reflections,

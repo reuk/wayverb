@@ -87,13 +87,8 @@ int main(int argc, char** argv) {
 
         constexpr auto speed_of_sound{340.0};
 
-        const auto voxels_and_model{
-                waveguide::mesh::compute_voxels_and_model(cc.get_context(),
-                                                          cc.get_device(),
-                                                          scene_data,
-                                                          mic,
-                                                          waveguide_sr,
-                                                          speed_of_sound)};
+        const auto voxels_and_model{waveguide::mesh::compute_voxels_and_model(
+                cc, scene_data, mic, waveguide_sr, speed_of_sound)};
 
         const auto& model{std::get<1>(voxels_and_model)};
 
@@ -122,15 +117,14 @@ int main(int argc, char** argv) {
             std::cout << "running " << steps << " steps" << std::endl;
 
             progress_bar pb(std::cout, steps);
-            const auto w_results = waveguide::run(cc.get_context(),
-                                                  cc.get_device(),
-                                                  model,
-                                                  source_index,
-                                                  kernel,
-                                                  receiver_index,
-                                                  speed_of_sound,
-                                                  400,
-                                                  [&](auto) { pb += 1; });
+            const auto w_results{waveguide::run(cc,
+                                                model,
+                                                source_index,
+                                                kernel,
+                                                receiver_index,
+                                                speed_of_sound,
+                                                400,
+                                                [&](auto) { pb += 1; })};
 
             auto out_signal = microphone.process(
                     w_results, glm::vec3(0, 0, 1), directionality);

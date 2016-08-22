@@ -34,13 +34,12 @@ bool is_inside(const model& m, size_t node_index) {
 //----------------------------------------------------------------------------//
 
 std::tuple<aligned::vector<node>, descriptor> compute_fat_nodes(
-        const cl::Context& context,
-        const cl::Device& device,
+        const compute_context& cc,
         const voxelised_scene_data& voxelised,
         const scene_buffers& buffers,
         float mesh_spacing) {
-    const auto program{setup_program{context, device}};
-    auto queue{cl::CommandQueue{context, device}};
+    const setup_program program{cc};
+    cl::CommandQueue queue{cc.context, cc.device};
 
     const auto desc{[&] {
         const auto aabb{voxelised.get_voxels().get_aabb()};
@@ -50,15 +49,15 @@ std::tuple<aligned::vector<node>, descriptor> compute_fat_nodes(
 
     const auto num_nodes{desc.dimensions.x * desc.dimensions.y *
                          desc.dimensions.z};
-    auto node_buffer{
-            cl::Buffer{context, CL_MEM_READ_WRITE, num_nodes * sizeof(node)}};
+    cl::Buffer node_buffer{
+            cc.context, CL_MEM_READ_WRITE, num_nodes * sizeof(node)};
 
     const auto enqueue{
             [&] { return cl::EnqueueArgs(queue, cl::NDRange(num_nodes)); }};
 
     //  find where each node is, and where its neighbors are
     {
-        auto kernel = program.get_node_position_and_neighbors_kernel();
+        auto kernel{program.get_node_position_and_neighbors_kernel()};
         kernel(enqueue(),
                node_buffer,
                to_cl_int3(desc.dimensions),
@@ -68,7 +67,7 @@ std::tuple<aligned::vector<node>, descriptor> compute_fat_nodes(
 
     //  find whether each node is inside or outside the model
     {
-        auto kernel = program.get_node_inside_kernel();
+        auto kernel{program.get_node_inside_kernel()};
         kernel(enqueue(),
                node_buffer,
                buffers.get_voxel_index_buffer(),
@@ -80,7 +79,7 @@ std::tuple<aligned::vector<node>, descriptor> compute_fat_nodes(
 
     //  find node boundary type
     {
-        auto kernel = program.get_node_boundary_type_kernel();
+        auto kernel{program.get_node_boundary_type_kernel()};
         kernel(enqueue(), node_buffer, to_cl_int3(desc.dimensions));
     }
 
@@ -88,17 +87,16 @@ std::tuple<aligned::vector<node>, descriptor> compute_fat_nodes(
     return std::make_tuple(read_from_buffer<node>(queue, node_buffer), desc);
 }
 
-model compute_model(const cl::Context& context,
-                    const cl::Device& device,
+model compute_model(const compute_context& cc,
                     const voxelised_scene_data& voxelised,
                     double mesh_spacing,
                     double speed_of_sound) {
-    const auto buffers{scene_buffers{context, voxelised}};
+    const scene_buffers buffers{cc.context, voxelised};
 
     aligned::vector<node> nodes;
     descriptor desc;
-    std::tie(nodes, desc) = compute_fat_nodes(
-            context, device, voxelised, buffers, mesh_spacing);
+    std::tie(nodes, desc) =
+            compute_fat_nodes(cc, voxelised, buffers, mesh_spacing);
 
     const auto node_positions{map_to_vector(
             nodes, [](const auto& i) { return to_vec3(i.position); })};
@@ -109,7 +107,7 @@ model compute_model(const cl::Context& context,
     aligned::vector<boundary_index_array_2> bia_2;
     aligned::vector<boundary_index_array_3> bia_3;
     std::tie(bia_1, bia_2, bia_3) =
-            compute_boundary_index_data(device, buffers, nodes, desc);
+            compute_boundary_index_data(cc.device, buffers, nodes, desc);
 
     const auto v{vectors{
             get_condensed(nodes),
@@ -123,8 +121,7 @@ model compute_model(const cl::Context& context,
 }
 
 std::tuple<voxelised_scene_data, model> compute_voxels_and_model(
-        const cl::Context& context,
-        const cl::Device& device,
+        const compute_context& cc,
         const copyable_scene_data& scene,
         const glm::vec3& anchor,
         double sample_rate,
@@ -136,8 +133,7 @@ std::tuple<voxelised_scene_data, model> compute_voxels_and_model(
             5,
             waveguide::compute_adjusted_boundary(
                     scene.get_aabb(), anchor, mesh_spacing)}};
-    auto model{compute_model(
-            context, device, voxelised, mesh_spacing, speed_of_sound)};
+    auto model{compute_model(cc, voxelised, mesh_spacing, speed_of_sound)};
     return std::make_tuple(std::move(voxelised), std::move(model));
 }
 

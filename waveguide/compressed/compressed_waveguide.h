@@ -8,8 +8,8 @@
 
 class compressed_rectangular_waveguide_program final {
 public:
-    compressed_rectangular_waveguide_program(const cl::Context& context,
-                                             const cl::Device& device);
+    explicit compressed_rectangular_waveguide_program(
+            const compute_context& cc);
 
     auto get_kernel() const {
         return program_wrapper.get_kernel<cl::Buffer, cl::Buffer>(
@@ -33,8 +33,7 @@ public:
     using kernel_type =
             decltype(std::declval<compressed_rectangular_waveguide_program>()
                              .get_kernel());
-    compressed_rectangular_waveguide(const cl::Context& context,
-                                     const cl::Device& device,
+    compressed_rectangular_waveguide(const compute_context& cc,
                                      size_t dimension);
     aligned::vector<float> run_hard_source(aligned::vector<float>&& input);
     aligned::vector<float> run_soft_source(aligned::vector<float>&& input);

@@ -8,9 +8,7 @@ namespace raytracer {
 
 class attenuator_program final {
 public:
-    attenuator_program(const cl::Context& context,
-                       const cl::Device& device,
-                       double speed_of_sound);
+    attenuator_program(const compute_context& cc, double speed_of_sound);
 
     auto get_microphone_kernel() const {
         return program_wrapper

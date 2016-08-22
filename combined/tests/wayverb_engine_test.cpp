@@ -1,8 +1,8 @@
 #include "combined/engine.h"
 
 #include "common/cl/common.h"
-#include "common/receiver_settings.h"
 #include "common/geo/box.h"
+#include "common/model/receiver_settings.h"
 #include "common/scene_data.h"
 
 #include "gtest/gtest.h"

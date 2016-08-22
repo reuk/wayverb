@@ -107,11 +107,9 @@ kernel void hrtf_kernel(float3 mic_pos,
 
 )"};
 
-attenuator_program::attenuator_program(const cl::Context& context,
-                                       const cl::Device& device,
+attenuator_program::attenuator_program(const compute_context& cc,
                                        double speed_of_sound)
-        : program_wrapper(context,
-                          device,
+        : program_wrapper(cc,
                           std::vector<std::string>{
                                   cl_representation_v<volume_type>,
                                   cl_representation_v<surface>,

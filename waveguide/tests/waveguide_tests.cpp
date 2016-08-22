@@ -31,12 +31,12 @@ TEST(peak_filter_coefficients, peak_filter_coefficients) {
 }
 
 TEST(run_waveguide, run_waveguide) {
-    auto steps = 64000;
+    const auto steps{64000};
 
-    compute_context cc;
+    const compute_context cc{};
 
     //  get opencl program
-    waveguide::program waveguide_program(cc.get_context(), cc.get_device());
+    waveguide::program waveguide_program{cc};
 
     const geo::box box(glm::vec3(0, 0, 0), glm::vec3(4, 3, 6));
     constexpr glm::vec3 source(1, 1, 1);
@@ -56,11 +56,8 @@ TEST(run_waveguide, run_waveguide) {
     constexpr auto speed_of_sound{340.0};
     constexpr auto acoustic_impedance{400.0};
 
-    const auto model{waveguide::mesh::compute_model(cc.get_context(),
-                                                    cc.get_device(),
-                                                    voxelised,
-                                                    0.03,
-                                                    speed_of_sound)};
+    const auto model{waveguide::mesh::compute_model(
+            cc, voxelised, 0.03, speed_of_sound)};
 
     //  get a waveguide
 
@@ -81,8 +78,7 @@ TEST(run_waveguide, run_waveguide) {
     aligned::vector<float> input(1000);
     input[0] = 1;
 
-    const auto results{waveguide::run(cc.get_context(),
-                                      cc.get_device(),
+    const auto results{waveguide::run(cc,
                                       model,
                                       source_index,
                                       input,

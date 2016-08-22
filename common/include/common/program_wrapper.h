@@ -4,17 +4,12 @@
 
 class program_wrapper final {
 public:
-    program_wrapper(const cl::Context& context,
-                    const cl::Device& device,
-                    const std::string& source);
-    program_wrapper(const cl::Context& context,
-                    const cl::Device& device,
+    program_wrapper(const compute_context& cc, const std::string& source);
+    program_wrapper(const compute_context& cc,
                     const std::pair<const char*, size_t>& source);
-    program_wrapper(const cl::Context& context,
-                    const cl::Device& device,
+    program_wrapper(const compute_context& cc,
                     const std::vector<std::string>& sources);
-    program_wrapper(const cl::Context& context,
-                    const cl::Device& device,
+    program_wrapper(const compute_context& cc,
                     const std::vector<std::pair<const char*, size_t>>& sources);
 
     program_wrapper(const program_wrapper&)                = default;

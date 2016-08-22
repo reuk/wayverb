@@ -3,14 +3,11 @@
 #include "common/aligned/vector.h"
 #include "common/cl/traits.h"
 
-class compute_context final {
-public:
+struct compute_context final {
     compute_context();
+    compute_context(const cl::Context& context);
+    compute_context(const cl::Context& context, const cl::Device& device);
 
-    cl::Context get_context() const;
-    cl::Device get_device() const;
-
-private:
     cl::Context context;
     cl::Device device;
 };

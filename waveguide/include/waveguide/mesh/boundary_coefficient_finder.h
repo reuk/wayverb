@@ -43,8 +43,7 @@ namespace mesh {
 
 class boundary_coefficient_program final {
 public:
-    boundary_coefficient_program(const cl::Context& context,
-                                 const cl::Device& device);
+    boundary_coefficient_program(const compute_context& cc);
 
     auto get_boundary_coefficient_finder_1d_kernel() const {
         return wrapper.get_kernel<cl::Buffer,  /// nodes

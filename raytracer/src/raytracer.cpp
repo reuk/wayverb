@@ -33,8 +33,7 @@ std::experimental::optional<impulse> get_direct_impulse(
 }
 
 std::experimental::optional<results> run(
-        const cl::Context& context,
-        const cl::Device& device,
+        const compute_context& cc,
         const voxelised_scene_data& scene_data,
         double speed_of_sound,
         const glm::vec3& source,
@@ -52,11 +51,10 @@ std::experimental::optional<results> run(
     //  set up all the rendering context stuff
 
     //  load the scene into device memory
-    const scene_buffers buffers{context, scene_data};
+    const scene_buffers buffers{cc.context, scene_data};
 
     //  this is the object that generates first-pass reflections
-    reflector ref{context,
-                  device,
+    reflector ref{cc,
                   receiver,
                   get_rays_from_directions(source, directions),
                   speed_of_sound};
@@ -66,8 +64,7 @@ std::experimental::optional<results> run(
     image_source_finder img{directions.size(), image_source_depth};
 
     //  this will incrementally process diffuse responses
-    diffuse_finder dif{context,
-                       device,
+    diffuse_finder dif{cc,
                        source,
                        receiver,
                        air_coefficient,

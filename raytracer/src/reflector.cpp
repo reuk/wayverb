@@ -40,25 +40,22 @@ aligned::vector<geo::ray> get_random_rays(const glm::vec3& source, size_t num) {
 
 //----------------------------------------------------------------------------//
 
-reflector::reflector(const cl::Context& context,
-                     const cl::Device& device,
+reflector::reflector(const compute_context& cc,
                      const glm::vec3& receiver,
                      const aligned::vector<geo::ray>& rays,
                      double speed_of_sound)
-        : context(context)
-        , device(device)
-        , queue(context, device)
-        , kernel(program(context, device, speed_of_sound)
-                         .get_reflections_kernel())
+        : cc(cc)
+        , queue(cc.context, cc.device)
+        , kernel(program{cc, speed_of_sound}.get_reflections_kernel())
         , receiver(to_cl_float3(receiver))
         , rays(rays.size())
         , ray_buffer(load_to_buffer(
-                  context,
+                  cc.context,
                   map_to_vector(rays,
                                 [&](const auto& i) { return convert(i); }),
                   false))
         , reflection_buffer(load_to_buffer(
-                  context,
+                  cc.context,
                   aligned::vector<reflection>(rays.size(),
                                               reflection{cl_float3{},
                                                          cl_float3{},
@@ -66,7 +63,7 @@ reflector::reflector(const cl::Context& context,
                                                          cl_char{true},
                                                          cl_char{}}),
                   false))
-        , rng_buffer(context,
+        , rng_buffer(cc.context,
                      CL_MEM_READ_WRITE,
                      rays.size() * 2 * sizeof(cl_float)) {}
 

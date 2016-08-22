@@ -63,10 +63,10 @@ TEST(voxel, flatten) {
 
 void compare(const copyable_scene_data& scene) {
     const auto voxelised{get_voxelised(scene)};
-    const auto cc{compute_context{}};
-    const auto buffers{scene_buffers{cc.get_context(), voxelised}};
+    const compute_context cc{};
+    const scene_buffers buffers{cc.context, voxelised};
 
-    const auto source{glm::vec3{1, 2, 1}};
+    const glm::vec3 source{1, 2, 1};
 
     const auto directions{get_random_directions(1000)};
 
@@ -93,8 +93,8 @@ void compare(const copyable_scene_data& scene) {
         ASSERT_TRUE(i);
     }
 
-    auto problem_directions{aligned::vector<glm::vec3>{}};
-    auto problem_surfaces{std::set<size_t>{}};
+    aligned::vector<glm::vec3> problem_directions{};
+    std::set<size_t> problem_surfaces{};
     for (auto i{0u}; i != directions.size(); ++i) {
         if (!static_cast<bool>(fast_intersections[i])) {
             problem_directions.push_back(directions[i]);

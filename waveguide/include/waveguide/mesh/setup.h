@@ -27,7 +27,7 @@ namespace mesh {
 
 class setup_program final {
 public:
-    setup_program(const cl::Context& context, const cl::Device& device);
+    setup_program(const compute_context& cc);
 
     auto get_node_position_and_neighbors_kernel() const {
         return program_wrapper.get_kernel<cl::Buffer,  /// nodes

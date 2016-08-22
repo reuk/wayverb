@@ -17,9 +17,8 @@
 
 class program final {
 public:
-    program(const cl::Context& context, const cl::Device& device)
-            : wrapper(context,
-                      device,
+    program(const compute_context& cc)
+            : wrapper(cc,
                       std::vector<std::string>{
                               cl_representation_v<volume_type>,
                               cl_representation_v<surface>,
@@ -122,27 +121,26 @@ TEST(gpu_geometry, triangle_vert_intersection) {
     const auto triangle_verts{random_triangle_vec3s(num_tests)};
     const auto rays{random_rays(num_tests)};
 
-    const auto cc{compute_context{}};
+    const compute_context cc{};
 
-    const auto prog{program{cc.get_context(), cc.get_device()}};
+    const program prog{cc};
     auto kernel{prog.get_triangle_vert_intersection_test_kernel()};
 
-    auto queue{cl::CommandQueue{cc.get_context(), cc.get_device()}};
+    cl::CommandQueue queue{cc.context, cc.device};
 
     const auto triangle_verts_buffer{load_to_buffer(
-            cc.get_context(),
+            cc.context,
             map_to_vector(triangle_verts,
                           [](const auto& i) { return convert(i); }),
             true)};
 
     const auto rays_buffer{load_to_buffer(
-            cc.get_context(),
+            cc.context,
             map_to_vector(rays, [](const auto& i) { return convert(i); }),
             true)};
 
-    auto triangle_inter_buffer{cl::Buffer(cc.get_context(),
-                                          CL_MEM_READ_WRITE,
-                                          sizeof(triangle_inter) * num_tests)};
+    cl::Buffer triangle_inter_buffer{
+            cc.context, CL_MEM_READ_WRITE, sizeof(triangle_inter) * num_tests};
 
     kernel(cl::EnqueueArgs(queue, cl::NDRange(num_tests)),
            triangle_verts_buffer,
@@ -169,7 +167,7 @@ TEST(gpu_geometry, triangle_vert_intersection) {
 
 std::tuple<aligned::vector<glm::vec3>, aligned::vector<triangle>>
 random_triangles(size_t num) {
-    auto engine{std::default_random_engine{std::random_device{}()}};
+    std::default_random_engine engine{std::random_device{}()};
 
     aligned::vector<glm::vec3> vertices;
     vertices.reserve(num * 3);
@@ -193,30 +191,29 @@ TEST(gpu_geometry, ray_triangle_intersection) {
     const auto triangles{random_triangles(num_triangles)};
     const auto rays{random_rays(num_tests)};
 
-    const auto cc{compute_context{}};
+    const compute_context cc{};
 
-    const auto prog{program{cc.get_context(), cc.get_device()}};
+    const program prog{cc};
     auto kernel{prog.get_ray_triangle_intersection_test_kernel()};
 
-    auto queue{cl::CommandQueue{cc.get_context(), cc.get_device()}};
+    cl::CommandQueue queue{cc.context, cc.device};
 
     const auto triangles_buffer{
-            load_to_buffer(cc.get_context(), std::get<1>(triangles), true)};
+            load_to_buffer(cc.context, std::get<1>(triangles), true)};
 
     const auto vertices_buffer{load_to_buffer(
-            cc.get_context(),
+            cc.context,
             map_to_vector(std::get<0>(triangles),
                           [](const auto& i) { return to_cl_float3(i); }),
             true)};
 
     const auto rays_buffer{load_to_buffer(
-            cc.get_context(),
+            cc.context,
             map_to_vector(rays, [](const auto& i) { return convert(i); }),
             true)};
 
-    auto intersections_buffer{cl::Buffer(cc.get_context(),
-                                         CL_MEM_READ_WRITE,
-                                         sizeof(intersection) * num_tests)};
+    cl::Buffer intersections_buffer{
+            cc.context, CL_MEM_READ_WRITE, sizeof(intersection) * num_tests};
 
     kernel(cl::EnqueueArgs(queue, cl::NDRange(num_tests)),
            triangles_buffer,

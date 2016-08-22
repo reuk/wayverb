@@ -77,11 +77,8 @@ auto run_waveguide(const compute_context& cc,
     //  get a waveguide
     const auto receiver = config.receiver_settings.position;
 
-    const auto model = waveguide::mesh::compute_model(cc.get_context(),
-                                                      cc.get_device(),
-                                                      boundary,
-                                                      spacing,
-                                                      speed_of_sound);
+    const auto model{waveguide::mesh::compute_model(
+            cc, boundary, spacing, speed_of_sound)};
 
     const auto receiver_index = compute_index(model.get_descriptor(), receiver);
     const auto source_index =
@@ -102,15 +99,14 @@ auto run_waveguide(const compute_context& cc,
     //            [                                        ]
     std::cout << "[ -- running waveguide ----------------- ]" << std::endl;
     progress_bar pb(std::cout, steps);
-    const auto results = waveguide::run(cc.get_context(),
-                                        cc.get_device(),
-                                        model,
-                                        source_index,
-                                        input,
-                                        receiver_index,
-                                        speed_of_sound,
-                                        acoustic_impedance,
-                                        [&](auto) { pb += 1; });
+    const auto results{waveguide::run(cc,
+                                      model,
+                                      source_index,
+                                      input,
+                                      receiver_index,
+                                      speed_of_sound,
+                                      acoustic_impedance,
+                                      [&](auto) { pb += 1; })};
 
     auto output = map_to_vector(results, [](auto i) { return i.pressure; });
 
@@ -194,8 +190,7 @@ int main(int argc, char** argv) {
     std::atomic_bool keep_going{true};
     const auto impulses = 1000;
     progress_bar pb(std::cout, impulses);
-    const auto results{raytracer::run(cc.get_context(),
-                                      cc.get_device(),
+    const auto results{raytracer::run(cc,
                                       voxelised,
                                       speed_of_sound,
                                       config.source,
@@ -206,12 +201,12 @@ int main(int argc, char** argv) {
                                       keep_going,
                                       [&](auto) { pb += 1; })};
 
-    raytracer::attenuator::microphone attenuator(
-            cc.get_context(), cc.get_device(), speed_of_sound);
-    auto output = attenuator.process(results->get_impulses(true, true, false),
-                                     glm::vec3(0, 0, 1),
-                                     0,
-                                     receiver);
+    raytracer::attenuator::microphone attenuator{cc, speed_of_sound};
+    const auto output{
+            attenuator.process(results->get_impulses(true, true, false),
+                               glm::vec3(0, 0, 1),
+                               0,
+                               receiver)};
     // auto output =
     //    attenuator.attenuate(results.get_all(false), {speaker}).front();
 

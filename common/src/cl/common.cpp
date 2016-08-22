@@ -57,9 +57,12 @@ cl::Device get_device(const cl::Context& context) {
 }  // namespace
 
 compute_context::compute_context()
-        : context(::get_context())
-        , device(::get_device(context)) {}
+        : compute_context(::get_context()) {}
 
-cl::Context compute_context::get_context() const { return context; }
+compute_context::compute_context(const cl::Context& context)
+        : compute_context(context, ::get_device(context)) {}
 
-cl::Device compute_context::get_device() const { return device; }
+compute_context::compute_context(const cl::Context& context,
+                                 const cl::Device& device)
+        : context(context)
+        , device(device) {}

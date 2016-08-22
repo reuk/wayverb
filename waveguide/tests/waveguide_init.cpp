@@ -11,19 +11,12 @@
 
 #include <algorithm>
 
-namespace {
-auto uniform_surface(float r) {
-    return surface{volume_type{{r, r, r, r, r, r, r, r}},
-                   volume_type{{r, r, r, r, r, r, r, r}}};
-}
-}  // namespace
-
 TEST(waveguide_init, waveguide_init) {
     compute_context cc;
 
     auto scene_data =
             geo::get_scene_data(geo::box(glm::vec3(-1), glm::vec3(1)));
-    scene_data.set_surfaces(uniform_surface(0.999));
+    scene_data.set_surfaces(make_surface(0.999, 0.999));
 
     const voxelised_scene_data voxelised(
             scene_data, 5, util::padded(scene_data.get_aabb(), glm::vec3{0.1}));
@@ -40,18 +33,14 @@ TEST(waveguide_init, waveguide_init) {
     constexpr auto acoustic_impedance{400.0};
 
     auto run = [&] {
-        const auto model = waveguide::mesh::compute_model(cc.get_context(),
-                                                          cc.get_device(),
-                                                          voxelised,
-                                                          0.04,
-                                                          speed_of_sound);
-        auto receiver_index = compute_index(model.get_descriptor(), centre);
+        const auto model{waveguide::mesh::compute_model(
+                cc, voxelised, 0.04, speed_of_sound)};
+        auto receiver_index{compute_index(model.get_descriptor(), centre)};
 
-        std::atomic_bool keep_going{true};
+        constexpr std::atomic_bool keep_going{true};
         progress_bar pb(std::cout, steps);
 
-        const auto output = waveguide::run(cc.get_context(),
-                                           cc.get_device(),
+        const auto output = waveguide::run(cc,
                                            model,
                                            receiver_index,
                                            transparent,

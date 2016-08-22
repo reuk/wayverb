@@ -7,13 +7,10 @@
 namespace raytracer {
 namespace attenuator {
 
-hrtf::hrtf(const cl::Context& context,
-           const cl::Device& device,
-           double speed_of_sound)
-        : queue(context, device)
-        , kernel(attenuator_program(context, device, speed_of_sound)
-                         .get_hrtf_kernel())
-        , cl_hrtf(context, CL_MEM_READ_WRITE, sizeof(volume_type) * 360 * 180) {
+hrtf::hrtf(const compute_context& cc, double speed_of_sound)
+        : queue(cc.context, cc.device)
+        , kernel(attenuator_program{cc, speed_of_sound}.get_hrtf_kernel())
+        , cl_hrtf(cc.context, CL_MEM_READ_WRITE, sizeof(volume_type) * 360 * 180) {
 }
 
 aligned::vector<attenuated_impulse> hrtf::process(
@@ -69,11 +66,9 @@ hrtf::get_hrtf_data() const {
     return hrtf_data::data;
 }
 
-microphone::microphone(const cl::Context& context,
-                       const cl::Device& device,
-                       double speed_of_sound)
-        : queue(context, device)
-        , kernel(attenuator_program(context, device, speed_of_sound)
+microphone::microphone(const compute_context& cc, double speed_of_sound)
+        : queue(cc.context, cc.device)
+        , kernel(attenuator_program{cc, speed_of_sound}
                          .get_microphone_kernel()) {}
 
 aligned::vector<attenuated_impulse> microphone::process(

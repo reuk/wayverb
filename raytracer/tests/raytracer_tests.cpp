@@ -41,8 +41,7 @@ TEST(raytrace, new) {
             scene, 5, util::padded(scene.get_aabb(), glm::vec3{0.1}));
 
     std::atomic_bool keep_going{true};
-    auto results = raytracer::run(cc.get_context(),
-                                  cc.get_device(),
+    auto results = raytracer::run(cc,
                                   voxelised,
                                   speed_of_sound,
                                   source,
@@ -115,8 +114,7 @@ TEST(raytrace, same_location) {
 
     std::atomic_bool keep_going{true};
     const auto results =
-            raytracer::run(cc.get_context(),
-                           cc.get_device(),
+            raytracer::run(cc,
                            voxelised,
                            speed_of_sound,
                            source,
@@ -207,8 +205,7 @@ TEST(raytrace, image_source) {
             scene, 5, util::padded(scene.get_aabb(), glm::vec3{0.1}));
 
     std::atomic_bool keep_going{true};
-    auto results{raytracer::run(cc.get_context(),
-                                cc.get_device(),
+    auto results{raytracer::run(cc,
                                 voxelised,
                                 speed_of_sound,
                                 source,

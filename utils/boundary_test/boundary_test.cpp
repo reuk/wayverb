@@ -50,15 +50,15 @@ aligned::vector<float> run_simulation(const compute_context& cc,
     const auto spacing = waveguide::config::grid_spacing(
             speed_of_sound, 1 / (filter_frequency * 4));
 
-    const auto model = waveguide::mesh::compute_model(
-            cc.get_context(),
-            cc.get_device(),
+    const auto model{waveguide::mesh::compute_model(
+            cc,
             voxelised_scene_data(
                     scene_data,
                     5,
                     waveguide::compute_adjusted_boundary(
                             scene_data.get_aabb(), receiver, spacing)),
-            spacing, speed_of_sound);
+            spacing,
+            speed_of_sound)};
 
     const auto receiver_index = compute_index(model.get_descriptor(), receiver);
     const auto source_index = compute_index(model.get_descriptor(), source);
@@ -73,15 +73,14 @@ aligned::vector<float> run_simulation(const compute_context& cc,
     input.resize(steps);
 
     progress_bar pb(std::cout, steps);
-    const auto results = waveguide::run(cc.get_context(),
-                                        cc.get_device(),
-                                        model,
-                                        source_index,
-                                        input,
-                                        receiver_index,
-                                        speed_of_sound,
-                                        400,
-                                        [&](auto) { pb += 1; });
+    const auto results{waveguide::run(cc,
+                                      model,
+                                      source_index,
+                                      input,
+                                      receiver_index,
+                                      speed_of_sound,
+                                      400,
+                                      [&](auto) { pb += 1; })};
 
 #if 0
     auto output = Microphone::omni.process(results);

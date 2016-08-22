@@ -11,40 +11,45 @@
 
 namespace waveguide {
 
-size_t run(const cl::Context& context,
-           const cl::Device& device,
+size_t run(const compute_context& cc,
            const mesh::model& model,
            size_t ideal_steps,
            const step_preprocessor& preprocessor,
            const aligned::vector<step_postprocessor>& postprocessors,
            const per_step_callback& callback,
            const std::atomic_bool& keep_going) {
-    cl::Buffer previous(context,
+    cl::Buffer previous(cc.context,
                         CL_MEM_READ_WRITE,
                         model.get_structure().get_condensed_nodes().size() *
                                 sizeof(cl_float));
 
-    cl::Buffer current(context,
+    cl::Buffer current(cc.context,
                        CL_MEM_READ_WRITE,
                        model.get_structure().get_condensed_nodes().size() *
                                sizeof(cl_float));
 
     const auto node_buffer = load_to_buffer(
-            context, model.get_structure().get_condensed_nodes(), true);
+            cc.context, model.get_structure().get_condensed_nodes(), true);
 
     const auto boundary_coefficients_buffer = load_to_buffer(
-            context, model.get_structure().get_coefficients(), true);
+            cc.context, model.get_structure().get_coefficients(), true);
 
-    cl::Buffer error_flag_buffer(context, CL_MEM_READ_WRITE, sizeof(cl_int));
+    cl::Buffer error_flag_buffer(cc.context, CL_MEM_READ_WRITE, sizeof(cl_int));
 
-    auto boundary_buffer_1 = load_to_buffer(
-            context, mesh::get_boundary_data<1>(model.get_structure()), false);
-    auto boundary_buffer_2 = load_to_buffer(
-            context, mesh::get_boundary_data<2>(model.get_structure()), false);
-    auto boundary_buffer_3 = load_to_buffer(
-            context, mesh::get_boundary_data<3>(model.get_structure()), false);
+    auto boundary_buffer_1 =
+            load_to_buffer(cc.context,
+                           mesh::get_boundary_data<1>(model.get_structure()),
+                           false);
+    auto boundary_buffer_2 =
+            load_to_buffer(cc.context,
+                           mesh::get_boundary_data<2>(model.get_structure()),
+                           false);
+    auto boundary_buffer_3 =
+            load_to_buffer(cc.context,
+                           mesh::get_boundary_data<3>(model.get_structure()),
+                           false);
 
-    cl::CommandQueue queue(context, device);
+    cl::CommandQueue queue(cc.context, cc.device);
 
     auto zero_mesh = [&](auto& buffer) {
         aligned::vector<cl_uchar> n(buffer.template getInfo<CL_MEM_SIZE>(), 0);
@@ -53,7 +58,7 @@ size_t run(const cl::Context& context,
     zero_mesh(previous);
     zero_mesh(current);
 
-    const program program(context, device);
+    const program program(cc);
     auto kernel(program.get_kernel());
 
     //  run
@@ -113,8 +118,7 @@ size_t run(const cl::Context& context,
 
 //----------------------------------------------------------------------------//
 
-aligned::vector<run_step_output> run(const cl::Context& context,
-                                     const cl::Device& device,
+aligned::vector<run_step_output> run(const compute_context& cc,
                                      const mesh::model& model,
                                      size_t source_index,
                                      const aligned::vector<float>& input,
@@ -135,14 +139,13 @@ aligned::vector<run_step_output> run(const cl::Context& context,
                     [&ret](const auto& i) { ret.push_back(i); })};
 
     std::atomic_bool keep_going{true};
-    const auto results = run(context,
-                             device,
-                             model,
-                             input.size(),
-                             preprocessor,
-                             postprocessors,
-                             callback,
-                             keep_going);
+    const auto results{run(cc,
+                           model,
+                           input.size(),
+                           preprocessor,
+                           postprocessors,
+                           callback,
+                           keep_going)};
 
     assert(results == input.size());
 

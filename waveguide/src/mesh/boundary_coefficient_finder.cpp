@@ -47,18 +47,15 @@ boundary_index_data compute_boundary_index_data(const cl::Device& device,
     const auto num_indices_3{count_boundary_type(nodes, ind_func_3)};
 
     //  load up index buffers of the right size
-    auto index_buffer_1{
-            cl::Buffer{buffers.get_context(),
-                       CL_MEM_READ_WRITE,
-                       sizeof(boundary_index_array_1) * num_indices_1}};
-    auto index_buffer_2{
-            cl::Buffer{buffers.get_context(),
-                       CL_MEM_READ_WRITE,
-                       sizeof(boundary_index_array_2) * num_indices_2}};
-    auto index_buffer_3{
-            cl::Buffer{buffers.get_context(),
-                       CL_MEM_READ_WRITE,
-                       sizeof(boundary_index_array_3) * num_indices_3}};
+    cl::Buffer index_buffer_1{buffers.get_context(),
+                              CL_MEM_READ_WRITE,
+                              sizeof(boundary_index_array_1) * num_indices_1};
+    cl::Buffer index_buffer_2{buffers.get_context(),
+                              CL_MEM_READ_WRITE,
+                              sizeof(boundary_index_array_2) * num_indices_2};
+    cl::Buffer index_buffer_3{buffers.get_context(),
+                              CL_MEM_READ_WRITE,
+                              sizeof(boundary_index_array_3) * num_indices_3};
 
     //  set up node boundary indices ready to go
     set_boundary_index(nodes, ind_func_1);
@@ -69,11 +66,11 @@ boundary_index_data compute_boundary_index_data(const cl::Device& device,
     const auto nodes_buffer{load_to_buffer(buffers.get_context(), nodes, true)};
 
     //  fire up the program
-    const auto program{
-            boundary_coefficient_program{buffers.get_context(), device}};
+    const boundary_coefficient_program program{
+            compute_context{buffers.get_context(), device}};
 
     //  create a queue to make sure the cl stuff gets ordered properly
-    auto queue{cl::CommandQueue{buffers.get_context(), device}};
+    cl::CommandQueue queue{buffers.get_context(), device};
 
     //  all our programs use the same size/queue, which can be set up here
     const auto enqueue{[&] {
@@ -89,7 +86,7 @@ boundary_index_data compute_boundary_index_data(const cl::Device& device,
 
     //  run the kernels to compute boundary indices
     {
-        auto kernel = program.get_boundary_coefficient_finder_1d_kernel();
+        auto kernel{program.get_boundary_coefficient_finder_1d_kernel()};
         kernel(enqueue(),
                nodes_buffer,
                index_buffer_1,
@@ -121,7 +118,7 @@ boundary_index_data compute_boundary_index_data(const cl::Device& device,
     }
 
     {
-        auto kernel = program.get_boundary_coefficient_finder_2d_kernel();
+        auto kernel{program.get_boundary_coefficient_finder_2d_kernel()};
         kernel(enqueue(),
                nodes_buffer,
                to_cl_int3(desc.dimensions),
@@ -131,7 +128,7 @@ boundary_index_data compute_boundary_index_data(const cl::Device& device,
     }
 
     {
-        auto kernel = program.get_boundary_coefficient_finder_3d_kernel();
+        auto kernel{program.get_boundary_coefficient_finder_3d_kernel()};
         kernel(enqueue(),
                nodes_buffer,
                to_cl_int3(desc.dimensions),
@@ -626,9 +623,8 @@ kernel void boundary_coefficient_finder_3d(
 )"};
 
 boundary_coefficient_program::boundary_coefficient_program(
-        const cl::Context& context, const cl::Device& device)
-        : wrapper(context,
-                  device,
+        const compute_context& cc)
+        : wrapper(cc,
                   std::vector<std::string>{
                           cl_representation_v<boundary_type>,
                           cl_representation_v<node>,

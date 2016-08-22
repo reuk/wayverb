@@ -40,7 +40,7 @@ struct reflector_fixture : public ::testing::Test {
     const voxelised_scene_data voxelised{
             get_voxelised(geo::get_scene_data(box))};
     const compute_context cc{};
-    const scene_buffers buffers{cc.get_context(), voxelised};
+    const scene_buffers buffers{cc.context, voxelised};
 
     const glm::vec3 source{1, 2, 1};
     const glm::vec3 receiver{2, 1, 2};
@@ -58,8 +58,7 @@ struct reflector_fixture : public ::testing::Test {
     const aligned::vector<geo::ray> rays{badly_behaved_rays};
 #endif
 
-    raytracer::reflector reflector{
-            cc.get_context(), cc.get_device(), receiver, rays, speed_of_sound};
+    raytracer::reflector reflector{cc, receiver, rays, speed_of_sound};
 
     auto get_fast_intersections() const {
         const auto rays{reflector.get_rays()};

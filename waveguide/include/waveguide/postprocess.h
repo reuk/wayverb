@@ -2,7 +2,7 @@
 
 #include "waveguide/waveguide.h"
 
-#include "common/receiver_settings.h"
+#include "common/model/receiver_settings.h"
 
 namespace waveguide {
 

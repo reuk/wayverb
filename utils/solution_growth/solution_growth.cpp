@@ -60,11 +60,8 @@ int main(int argc, char** argv) {
                 waveguide::compute_adjusted_boundary(
                         scene_data.get_aabb(), receiver, spacing));
 
-        const auto model{waveguide::mesh::compute_model(cc.get_context(),
-                                                        cc.get_device(),
-                                                        voxelised,
-                                                        spacing,
-                                                        speed_of_sound)};
+        const auto model{waveguide::mesh::compute_model(
+                cc, voxelised, spacing, speed_of_sound)};
 
         const auto receiver_index =
                 compute_index(model.get_descriptor(), receiver);
@@ -104,16 +101,15 @@ int main(int argc, char** argv) {
             auto kernel = waveguide::make_transparent(i.kernel);
             kernel.resize(steps);
 
-            progress_bar pb(std::cout, steps);
-            const auto results = waveguide::run(cc.get_context(),
-                                                cc.get_device(),
-                                                model,
-                                                source_index,
-                                                kernel,
-                                                receiver_index,
-                                                speed_of_sound,
-                                                400,
-                                                [&](auto) { pb += 1; });
+            progress_bar pb{std::cout, steps};
+            const auto results{waveguide::run(cc,
+                                              model,
+                                              source_index,
+                                              kernel,
+                                              receiver_index,
+                                              speed_of_sound,
+                                              400,
+                                              [&](auto) { pb += 1; })};
 
             const auto output = map_to_vector(
                     results, [](const auto& i) { return i.pressure; });

@@ -63,13 +63,12 @@ aligned::vector<aligned::vector<float>> run_attenuation(
         double acoustic_impedance) {
     switch (receiver.mode) {
         case model::ReceiverSettings::Mode::microphones: {
-            raytracer::attenuator::microphone attenuator(
-                    cc.get_context(), cc.get_device(), speed_of_sound);
+            raytracer::attenuator::microphone attenuator{cc, speed_of_sound};
             return map_to_vector(receiver.microphones, [&](const auto& i) {
                 return flatten_filter_and_mixdown(
                         attenuator.process(
                                 input,
-                                i.pointer.get_pointing(receiver.position),
+                                get_pointing(i.pointer, receiver.position),
                                 i.shape,
                                 receiver.position),
                         output_sample_rate,
@@ -77,14 +76,13 @@ aligned::vector<aligned::vector<float>> run_attenuation(
             });
         }
         case model::ReceiverSettings::Mode::hrtf: {
-            raytracer::attenuator::hrtf attenuator(
-                    cc.get_context(), cc.get_device(), speed_of_sound);
+            raytracer::attenuator::hrtf attenuator{cc, speed_of_sound};
             const auto channels = {hrtf_channel::left, hrtf_channel::right};
             return map_to_vector(channels, [&](const auto& i) {
                 return flatten_filter_and_mixdown(
                         attenuator.process(
                                 input,
-                                receiver.hrtf.get_pointing(receiver.position),
+                                get_pointing(receiver.hrtf, receiver.position),
                                 glm::vec3(0, 1, 0),
                                 receiver.position,
                                 i),

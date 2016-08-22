@@ -17,7 +17,7 @@ namespace waveguide {
 
 class program final {
 public:
-    program(const cl::Context& context, const cl::Device& device);
+    program(const compute_context& cc);
 
     auto get_kernel() const {
         return program_wrapper.get_kernel<cl::Buffer,

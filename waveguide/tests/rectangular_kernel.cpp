@@ -223,7 +223,7 @@ public:
         auto kernel = std::move(k);
 
         {
-            cl::CommandQueue queue(cc.get_context(), cc.get_device());
+            cl::CommandQueue queue{cc.context, cc.device};
             TimedScope timer("filtering");
             for (auto i = 0u; i != input.size(); ++i) {
                 cl::copy(queue, input[i].begin(), input[i].end(), cl_input);
@@ -245,21 +245,21 @@ public:
     }
 
     const compute_context cc;
-    const waveguide::program program{cc.get_context(), cc.get_device()};
+    const waveguide::program program{cc};
     aligned::vector<Memory> memory{testing::parallel_size, Memory{}};
     std::array<typename testing::CoefficientTypeTrait<FT>::type,
                testing::parallel_size>
             coeffs{testing::compute_coeffs<FT>()};
-    cl::Buffer cl_memory{cc.get_context(), memory.begin(), memory.end(), false};
-    cl::Buffer cl_coeffs{cc.get_context(), coeffs.begin(), coeffs.end(), false};
+    cl::Buffer cl_memory{cc.context, memory.begin(), memory.end(), false};
+    cl::Buffer cl_coeffs{cc.context, coeffs.begin(), coeffs.end(), false};
     aligned::vector<aligned::vector<cl_float>> input{
             Generator::compute_input(testing::parallel_size)};
     aligned::vector<aligned::vector<cl_float>> output{
             input.size(), aligned::vector<cl_float>(testing::parallel_size, 0)};
-    cl::Buffer cl_input{cc.get_context(),
+    cl::Buffer cl_input{cc.context,
                         CL_MEM_READ_WRITE,
                         testing::parallel_size * sizeof(cl_float)};
-    cl::Buffer cl_output{cc.get_context(),
+    cl::Buffer cl_output{cc.context,
                          CL_MEM_READ_WRITE,
                          testing::parallel_size * sizeof(cl_float)};
 };

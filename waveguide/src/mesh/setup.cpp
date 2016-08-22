@@ -212,11 +212,9 @@ kernel void set_node_boundary_type(global node* nodes, int3 dim) {
 
 )"};
 
-setup_program::setup_program(const cl::Context& context,
-                             const cl::Device& device)
+setup_program::setup_program(const compute_context& cc)
         : program_wrapper(
-                  context,
-                  device,
+                  cc,
                   std::vector<std::string>{cl_representation_v<volume_type>,
                                            cl_representation_v<surface>,
                                            cl_representation_v<triangle>,

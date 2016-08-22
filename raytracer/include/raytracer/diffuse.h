@@ -13,8 +13,7 @@ namespace raytracer {
 
 class diffuse_finder final {
 public:
-    diffuse_finder(const cl::Context&,
-                   const cl::Device&,
+    diffuse_finder(const compute_context& cc,
                    const glm::vec3& source,
                    const glm::vec3& receiver,
                    const volume_type& air_coefficient,
@@ -30,8 +29,7 @@ public:
 private:
     using kernel_t = decltype(std::declval<program>().get_diffuse_kernel());
 
-    cl::Context context;
-    cl::Device device;
+    compute_context cc;
     cl::CommandQueue queue;
     kernel_t kernel;
     cl_float3 receiver;

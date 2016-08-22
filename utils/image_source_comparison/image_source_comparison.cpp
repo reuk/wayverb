@@ -35,7 +35,8 @@ int main() {
     constexpr double acoustic_impedance{400.0};
     constexpr double sample_rate{44100.0};
     constexpr glm::vec3 source{0, 1, 0};
-    constexpr glm::vec3 receiver{0, 1, 1};
+
+    const model::ReceiverSettings receiver{glm::vec3{0, 1, 1}};
 
     constexpr std::atomic_bool keep_going{true};
 
@@ -63,41 +64,25 @@ int main() {
 
             const auto reflections{100};
             progress_bar pb{std::cout, reflections};
-            const auto results{raytracer::run(cc.get_context(),
-                                              cc.get_device(),
+            const auto results{raytracer::run(cc,
                                               voxelised,
                                               speed_of_sound,
                                               source,
-                                              receiver,
+                                              receiver.position,
                                               get_random_directions(100000),
                                               reflections,
                                               10,
                                               keep_going,
-                                              [&](auto) {pb += 1;})};
+                                              [&](auto) { pb += 1; })};
 
-            const aligned::vector<
-                    std::pair<std::string, aligned::vector<impulse>>>
-                    impulses{std::make_pair(
-                                     "img_src",
-                                     results->get_impulses(false, true, false)),
-                             std::make_pair("diffuse",
-                                            results->get_impulses(
-                                                    false, false, true))};
+            const auto sig{raytracer::run_attenuation(
+                    cc, receiver, *results, sample_rate, acoustic_impedance)};
 
-            for (const auto& imp : impulses) {
-                auto sig{raytracer::flatten_filter_and_mixdown(
-                        std::get<1>(imp), sample_rate, acoustic_impedance)};
-                normalize(sig);
-                snd::write(build_string(std::get<0>(imp),
-                                        "_",
-                                        std::get<0>(surf),
-                                        "_",
-                                        std::get<0>(i),
-                                        ".aiff"),
-                           {sig},
-                           sample_rate,
-                           16);
-            }
+            snd::write(build_string(
+                               std::get<0>(i), "_", std::get<0>(surf), ".wav"),
+                       {sig},
+                       sample_rate,
+                       16);
         }
     }
 }

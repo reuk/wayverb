@@ -226,11 +226,8 @@ kernel void diffuse(const global reflection* reflections,  //  input
 }
 )"};
 
-program::program(const cl::Context& context,
-                 const cl::Device& device,
-                 double speed_of_sound)
-        : program_wrapper(context,
-                          device,
+program::program(const compute_context& cc, double speed_of_sound)
+        : program_wrapper(cc,
                           std::vector<std::string>{
                                   cl_representation_v<volume_type>,
                                   cl_representation_v<surface>,

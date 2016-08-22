@@ -1,6 +1,8 @@
 #pragma once
 
 #include "raytracer/results.h"
+
+#include "common/cl/common.h"
 #include "common/cl/geometry.h"
 
 #include <experimental/optional>
@@ -14,8 +16,7 @@ namespace raytracer {
 using per_step_callback = std::function<void(size_t)>;
 
 std::experimental::optional<results> run(
-        const cl::Context&,
-        const cl::Device&,
+        const compute_context& cc,
         const voxelised_scene_data& scene_data,
         double speed_of_sound,
         const glm::vec3& source,

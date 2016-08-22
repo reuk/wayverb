@@ -5,8 +5,8 @@
 
 #include "common/cl/common.h"
 #include "common/hrtf_utils.h"
+#include "common/model/receiver_settings.h"
 #include "common/pressure_intensity.h"
-#include "common/receiver_settings.h"
 #include "common/stl_wrappers.h"
 
 namespace raytracer {

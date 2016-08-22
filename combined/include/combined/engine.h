@@ -16,7 +16,7 @@ namespace model {
 struct ReceiverSettings;
 }  // namespace model
 
-class compute_context;
+struct compute_context;
 class copyable_scene_data;
 
 //  engine  ------------------------------------------------------------------//

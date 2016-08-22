@@ -22,11 +22,10 @@ void write_compensation_signal(const std::string& fname, size_t n) {
     //  Creates a compressed waveguide with the specified centre-to-edge
     //  distance. For a distance n, this can be used to generate a mesh ir with
     //  length 2n.
-    compressed_rectangular_waveguide waveguide(
-            cc.get_context(), cc.get_device(), n);
+    compressed_rectangular_waveguide waveguide{cc, n};
 
     //  run the waveguide with an impulsive hard source
-    auto output = waveguide.run_hard_source(aligned::vector<float>{0, 1});
+    const auto output { waveguide.run_hard_source(aligned::vector<float>{0, 1})};
 
     //  write the file
     snd::write(fname, {output}, 44100, 32);

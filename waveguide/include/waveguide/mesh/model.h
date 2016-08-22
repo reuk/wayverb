@@ -27,15 +27,13 @@ private:
 bool is_inside(const model& m, size_t node_index);
 
 std::tuple<aligned::vector<node>, descriptor> compute_fat_nodes(
-        const cl::Context&,
-        const cl::Device&,
+        const compute_context& cc,
         const voxelised_scene_data& voxelised,
         const scene_buffers& buffers,
         float mesh_spacing);
 
 ///  use this if you already have a voxelised scene
-model compute_model(const cl::Context& context,
-                    const cl::Device& device,
+model compute_model(const compute_context& cc,
                     const voxelised_scene_data& voxelised,
                     double mesh_spacing,
                     double speed_of_sound);
@@ -43,8 +41,7 @@ model compute_model(const cl::Context& context,
 /// this one should be prefered - will set up a voxelised scene with the correct
 /// boundaries, and then will use it to create a mesh
 std::tuple<voxelised_scene_data, model> compute_voxels_and_model(
-        const cl::Context& context,
-        const cl::Device& device,
+        const compute_context& cc,
         const copyable_scene_data& scene,
         const glm::vec3& anchor,  //  probably the receiver if you want it to
                                   //  coincide with an actual node

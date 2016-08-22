@@ -8,8 +8,8 @@
 #include "common/filters_common.h"
 #include "common/kernel.h"
 #include "common/map_to_vector.h"
+#include "common/model/receiver_settings.h"
 #include "common/pressure_intensity.h"
-#include "common/receiver_settings.h"
 #include "common/spatial_division/voxelised_scene_data.h"
 
 #include "raytracer/attenuator.h"
@@ -214,8 +214,7 @@ public:
          double acoustic_impedance)
             : impl(cc,
                    waveguide::mesh::compute_voxels_and_model(
-                           cc.get_context(),
-                           cc.get_device(),
+                           cc,
                            scene_data,
                            receiver,
                            waveguide_sample_rate,
@@ -271,8 +270,7 @@ public:
         //  RAYTRACER  -------------------------------------------------------//
         callback(state::starting_raytracer, 1.0);
         auto raytracer_results{raytracer::run(
-                compute_context.get_context(),
-                compute_context.get_device(),
+                compute_context,
                 voxelised,
                 speed_of_sound,
                 source,
@@ -336,8 +334,7 @@ public:
         }
 
         const auto waveguide_steps_completed{waveguide::run(
-                compute_context.get_context(),
-                compute_context.get_device(),
+                compute_context,
                 model,
                 steps,
                 preprocessor,
