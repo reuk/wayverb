@@ -3,7 +3,7 @@
 #include "waveguide/surface_filters.h"
 #include "waveguide/waveguide.h"
 
-#include "common/cl_common.h"
+#include "common/cl/common.h"
 #include "common/timed_scope.h"
 #include "common/write_audio_file.h"
 

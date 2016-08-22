@@ -11,32 +11,32 @@ float get_waveguide_sample_rate(T filter_frequency, T oversample_ratio) {
 
 namespace model {
 
-float App::get_waveguide_sample_rate() const {
-    return ::get_waveguide_sample_rate(filter_frequency, oversample_ratio);
+float get_waveguide_sample_rate(const App& a) {
+    return ::get_waveguide_sample_rate(a.filter_frequency, a.oversample_ratio);
 }
 
-float SingleShot::get_waveguide_sample_rate() const {
-    return ::get_waveguide_sample_rate(filter_frequency, oversample_ratio);
+float get_waveguide_sample_rate(const SingleShot& a) {
+    return ::get_waveguide_sample_rate(a.filter_frequency, a.oversample_ratio);
 }
 
-SingleShot App::get_single_shot(size_t input, size_t output) const {
-    return SingleShot{filter_frequency,
-                      oversample_ratio,
-                      speed_of_sound,
-                      rays,
-                      source[input],
-                      receiver_settings[output]};
+SingleShot get_single_shot(const App& a, size_t input, size_t output) {
+    return SingleShot{a.filter_frequency,
+                      a.oversample_ratio,
+                      a.speed_of_sound,
+                      a.rays,
+                      a.source[input],
+                      a.receiver_settings[output]};
 }
 
-aligned::vector<SingleShot> App::get_all_input_output_combinations() const {
+aligned::vector<SingleShot> get_all_input_output_combinations(const App& a) {
     aligned::vector<SingleShot> ret;
-    ret.reserve(source.size() * receiver_settings.size());
-    for (const auto& i : source) {
-        for (const auto& j : receiver_settings) {
-            ret.push_back(SingleShot{filter_frequency,
-                                     oversample_ratio,
-                                     speed_of_sound,
-                                     rays,
+    ret.reserve(a.source.size() * a.receiver_settings.size());
+    for (const auto& i : a.source) {
+        for (const auto& j : a.receiver_settings) {
+            ret.push_back(SingleShot{a.filter_frequency,
+                                     a.oversample_ratio,
+                                     a.speed_of_sound,
+                                     a.rays,
                                      i,
                                      j});
         }

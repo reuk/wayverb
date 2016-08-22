@@ -7,7 +7,7 @@
 #include "waveguide/program.h"
 #include "waveguide/waveguide.h"
 
-#include "common/cl_common.h"
+#include "common/cl/common.h"
 #include "common/progress_bar.h"
 #include "common/sinc.h"
 #include "common/spatial_division/voxelised_scene_data.h"

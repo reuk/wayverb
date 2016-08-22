@@ -6,7 +6,7 @@
 
 #include "common/almost_equal.h"
 #include "common/azimuth_elevation.h"
-#include "common/cl_common.h"
+#include "common/cl/common.h"
 #include "common/conversions.h"
 #include "common/map_to_vector.h"
 #include "common/progress_bar.h"

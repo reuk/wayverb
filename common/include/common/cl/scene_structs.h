@@ -12,6 +12,10 @@ typedef float8 volume_type;
 )"};
 };
 
+constexpr auto make_volume_type(float f) {
+    return volume_type{{f, f, f, f, f, f, f, f}};
+}
+
 //----------------------------------------------------------------------------//
 
 struct alignas(1 << 5) surface {
@@ -30,8 +34,7 @@ typedef struct {
 };
 
 constexpr auto make_surface(float s, float d) {
-    return surface{volume_type{{s, s, s, s, s, s, s, s}},
-                   volume_type{{d, d, d, d, d, d, d, d}}};
+    return surface{make_volume_type(s), make_volume_type(d)};
 }
 
 //----------------------------------------------------------------------------//

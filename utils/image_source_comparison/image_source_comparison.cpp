@@ -2,7 +2,7 @@
 #include "raytracer/raytracer.h"
 
 #include "common/azimuth_elevation.h"
-#include "common/cl_common.h"
+#include "common/cl/common.h"
 #include "common/dsp_vector_ops.h"
 #include "common/progress_bar.h"
 #include "common/range.h"
@@ -29,7 +29,7 @@
 #endif
 
 int main() {
-    const auto cc{compute_context{}};
+    const compute_context cc{};
 
     constexpr double speed_of_sound{340.0};
     constexpr double acoustic_impedance{400.0};

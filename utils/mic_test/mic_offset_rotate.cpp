@@ -5,7 +5,7 @@
 #include "waveguide/mesh/model.h"
 #include "waveguide/waveguide.h"
 
-#include "common/cl_common.h"
+#include "common/cl/common.h"
 #include "common/conversions.h"
 #include "common/filters_common.h"
 #include "common/kernel.h"
@@ -13,9 +13,6 @@
 #include "common/sinc.h"
 #include "common/spatial_division/voxelised_scene_data.h"
 #include "common/write_audio_file.h"
-
-#include "samplerate.h"
-#include "sndfile.hh"
 
 #include <gflags/gflags.h>
 

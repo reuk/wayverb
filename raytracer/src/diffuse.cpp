@@ -36,10 +36,9 @@ diffuse_finder::diffuse_finder(const cl::Context& context,
                   context,
                   aligned::vector<diffuse_path_info>(
                           rays,
-                          diffuse_path_info{
-                                  volume_type{{1, 1, 1, 1, 1, 1, 1, 1}},
-                                  to_cl_float3(source),
-                                  0}),
+                          diffuse_path_info{make_volume_type(1.0 / rays),
+                                            to_cl_float3(source),
+                                            0}),
                   false))
         , impulse_buffer(context, CL_MEM_READ_WRITE, sizeof(impulse) * rays)
         , impulse_builder(rays, depth) {}

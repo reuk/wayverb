@@ -1,6 +1,6 @@
 #include "waveguide/mesh/model.h"
 
-#include "common/cl_common.h"
+#include "common/cl/common.h"
 #include "common/progress_bar.h"
 #include "common/spatial_division/voxelised_scene_data.h"
 #include "common/timed_scope.h"

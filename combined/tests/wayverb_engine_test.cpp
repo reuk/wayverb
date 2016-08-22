@@ -1,6 +1,6 @@
 #include "combined/engine.h"
 
-#include "common/cl_common.h"
+#include "common/cl/common.h"
 #include "common/receiver_settings.h"
 #include "common/geo/box.h"
 #include "common/scene_data.h"

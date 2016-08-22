@@ -13,7 +13,7 @@
 #include "raytracer/reflector.h"
 
 #include "common/azimuth_elevation.h"
-#include "common/cl_common.h"
+#include "common/cl/common.h"
 #include "common/conversions.h"
 #include "common/dc_blocker.h"
 #include "common/filters_common.h"
@@ -95,7 +95,7 @@ auto run_waveguide(const compute_context& cc,
     }
 
     auto input = kernels::sin_modulated_gaussian_kernel(
-            config.get_waveguide_sample_rate());
+            get_waveguide_sample_rate(config));
     input.resize(steps);
 
     //  run the waveguide
@@ -137,10 +137,10 @@ int main(int argc, char** argv) {
     scene.set_surfaces(surface);
 
     const model::SingleShot config{
-            2000, 2, 100000, source, model::ReceiverSettings{receiver}};
+            2000, 2, 340, 100000, source, model::ReceiverSettings{receiver}};
 
     const auto spacing = waveguide::config::grid_spacing(
-            speed_of_sound, 1 / config.get_waveguide_sample_rate());
+            speed_of_sound, 1 / get_waveguide_sample_rate(config));
 
     const voxelised_scene_data voxelised(
             scene,
@@ -173,7 +173,7 @@ int main(int argc, char** argv) {
     //  adjust sample rate
     auto waveguide_adjusted =
             waveguide::adjust_sampling_rate(std::move(waveguide_output),
-                                            config.get_waveguide_sample_rate(),
+                                            get_waveguide_sample_rate(config),
                                             samplerate);
     std::cerr << "waveguide adjusted mag: " << max_mag(waveguide_adjusted)
               << '\n';
@@ -238,7 +238,7 @@ int main(int argc, char** argv) {
     write_normalized(raytracer_output, "raytracer_normalized");
 
     auto calibration_factor = rectilinear_calibration_factor(
-            distance_for_unit_intensity(1), config.get_waveguide_sample_rate());
+            distance_for_unit_intensity(1), get_waveguide_sample_rate(config));
     std::cerr << "calibration factor: " << calibration_factor << '\n';
 
     mul(waveguide_adjusted, calibration_factor);
