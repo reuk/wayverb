@@ -111,8 +111,8 @@ int main(int argc, char** argv) {
                                               400,
                                               [&](auto) { pb += 1; })};
 
-            const auto output = map_to_vector(
-                    results, [](const auto& i) { return i.pressure; });
+            auto output{map_to_vector(
+                    results, [](const auto& i) { return i.pressure; })};
 
             {
                 const auto fname = build_string(
@@ -123,12 +123,11 @@ int main(int argc, char** argv) {
 
             {
                 filter::extra_linear_dc_blocker u;
-                const auto dc_removed =
-                        filter::run_two_pass(u, output.begin(), output.end());
+                filter::run_two_pass(u, output.begin(), output.end());
 
                 const auto fname = build_string(
                         "solution_growth.", i.name, ".dc_blocked.wav");
-                snd::write(fname, {dc_removed}, sampling_frequency, 16);
+                snd::write(fname, {output}, sampling_frequency, 16);
             }
         }
     } catch (const std::runtime_error& e) {

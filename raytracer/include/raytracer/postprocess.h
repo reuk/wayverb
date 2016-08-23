@@ -14,54 +14,39 @@ namespace raytracer {
 /// Get the number of necessary reflections for a given min amplitude.
 int compute_optimum_reflection_number(float min_amp, float max_reflectivity);
 
-/// Sum impulses ocurring at the same (sampled) time and return a vector in
-/// which each subsequent item refers to the next sample of an impulse
-/// response.
-template <typename im>  //  an impulse has a .volume and a .time
-aligned::vector<aligned::vector<float>> flatten_impulses(
+template <typename im>
+aligned::vector<volume_type> compute_multiband_signal(
         const aligned::vector<im>& impulse,
         double samplerate,
-        double acoustic_impedance) {
-    const auto MAX_TIME_LIMIT = 20.0f;
+        float acoustic_impedance) {
     // Find the index of the final sample based on time and samplerate
-    const auto maxtime = std::min(
+    const auto max_time{std::min(
             proc::max_element(impulse,
                               [](auto i, auto j) { return i.time < j.time; })
                     ->time,
-            MAX_TIME_LIMIT);
+            20.0f)};
 
-    const auto MAX_SAMPLE = round(maxtime * samplerate) + 1;
+    const auto max_sample = round(max_time * samplerate) + 1;
 
-    //  Create somewhere to store the results.
-    aligned::vector<aligned::vector<float>> flattened(
-            detail::components_v<volume_type>,
-            aligned::vector<float>(MAX_SAMPLE, 0));
-
-    //  For each impulse, calculate its index, then add the impulse's volumes
-    //  to the volumes already in the output array.
+    aligned::vector<volume_type> ret(max_sample, make_volume_type(0));
     for (const auto& i : impulse) {
-        const auto SAMPLE = round(i.time * samplerate);
-        if (SAMPLE < MAX_SAMPLE) {
-            for (auto j = 0u; j != flattened.size(); ++j) {
-                const auto intensity = i.volume.s[j];
-                const auto pressure = intensity_to_pressure(
-                        intensity, static_cast<float>(acoustic_impedance));
-                flattened[j][SAMPLE] += pressure;
-            }
+        const auto sample{round(i.time * samplerate)};
+        if (sample < ret.size()) {
+            const auto pressure{
+                    intensity_to_pressure(i.volume, acoustic_impedance)};
+            ret[sample] += pressure;
         }
     }
-
-    return flattened;
+    return ret;
 }
 
-/// Maps flattenimpulses over a vector of input vectors.
 template <typename im>
-aligned::vector<aligned::vector<aligned::vector<float>>> flatten_impulses(
+aligned::vector<aligned::vector<volume_type>> compute_multiband_signal(
         const aligned::vector<aligned::vector<im>>& impulse,
         double samplerate,
         double acoustic_impedance) {
     return map_to_vector(impulse, [=](const auto& i) {
-        return flatten_impulses(i, samplerate, acoustic_impedance);
+        return compute_multiband_signal(i, samplerate, acoustic_impedance);
     });
 }
 
@@ -138,7 +123,8 @@ aligned::vector<float> flatten_filter_and_mixdown(
         double output_sample_rate,
         double acoustic_impedance) {
     return multiband_filter_and_mixdown(
-            flatten_impulses(input, output_sample_rate, acoustic_impedance),
+            compute_multiband_signal(
+                    input, output_sample_rate, acoustic_impedance),
             output_sample_rate);
 }
 

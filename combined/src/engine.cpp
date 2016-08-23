@@ -90,12 +90,12 @@ public:
         //  correct raytracer results for dc
         filter::extra_linear_dc_blocker blocker;
         for (auto& i : raytracer_output) {
-            i = filter::run_two_pass(blocker, i.begin(), i.end());
+            filter::run_two_pass(blocker, i.begin(), i.end());
         }
 
         //  correct waveguide results for dc
         for (auto& i : waveguide_output) {
-            i = filter::run_two_pass(blocker, i.begin(), i.end());
+            filter::run_two_pass(blocker, i.begin(), i.end());
         }
 
         //  correct waveguide sampling rate

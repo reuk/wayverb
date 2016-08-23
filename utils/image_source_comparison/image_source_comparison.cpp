@@ -28,17 +28,51 @@
 #define OBJ_PATH_BAD_BOX ""
 #endif
 
+void run_single(const compute_context& cc,
+                double speed_of_sound,
+                double acoustic_impedance,
+                double sample_rate,
+                const glm::vec3& source,
+                const model::ReceiverSettings& receiver,
+                const std::pair<std::string, std::string>& stage,
+                const std::pair<std::string, surface>& surf) {
+    scene_data scene{std::get<1>(stage)};
+    scene.set_surfaces(std::get<1>(surf));
+    const voxelised_scene_data voxelised{
+            scene, 5, util::padded(scene.get_aabb(), glm::vec3{0.1})};
+
+    constexpr std::atomic_bool keep_going{true};
+
+    const auto reflections{100};
+    progress_bar pb{std::cout, reflections};
+    const auto results{raytracer::run(cc,
+                                      voxelised,
+                                      speed_of_sound,
+                                      source,
+                                      receiver.position,
+                                      get_random_directions(100000),
+                                      reflections,
+                                      10,
+                                      keep_going,
+                                      [&](auto) { pb += 1; })};
+
+    auto sig{raytracer::run_attenuation(
+            cc, receiver, *results, sample_rate, acoustic_impedance)};
+
+    normalize(sig);
+
+    snd::write(build_string(std::get<0>(stage), "_", std::get<0>(surf), ".wav"),
+               {sig},
+               sample_rate,
+               16);
+}
+
 int main() {
     const compute_context cc{};
 
-    constexpr double speed_of_sound{340.0};
-    constexpr double acoustic_impedance{400.0};
-    constexpr double sample_rate{44100.0};
     constexpr glm::vec3 source{0, 1, 0};
 
     const model::ReceiverSettings receiver{glm::vec3{0, 1, 1}};
-
-    constexpr std::atomic_bool keep_going{true};
 
     const aligned::vector<std::pair<std::string, surface>> surfaces{
             std::make_pair("0", make_surface(0.99, 0.01)),
@@ -55,34 +89,27 @@ int main() {
             std::make_pair("bedroom", OBJ_PATH_BEDROOM),
             std::make_pair("bad_box", OBJ_PATH_BAD_BOX)};
 
-    for (auto i : objects) {
+    /*
+    for (auto stage : objects) {
         for (auto surf : surfaces) {
-            scene_data scene{std::get<1>(i)};
-            scene.set_surfaces(std::get<1>(surf));
-            const voxelised_scene_data voxelised{
-                    scene, 5, util::padded(scene.get_aabb(), glm::vec3{0.1})};
-
-            const auto reflections{100};
-            progress_bar pb{std::cout, reflections};
-            const auto results{raytracer::run(cc,
-                                              voxelised,
-                                              speed_of_sound,
-                                              source,
-                                              receiver.position,
-                                              get_random_directions(100000),
-                                              reflections,
-                                              10,
-                                              keep_going,
-                                              [&](auto) { pb += 1; })};
-
-            const auto sig{raytracer::run_attenuation(
-                    cc, receiver, *results, sample_rate, acoustic_impedance)};
-
-            snd::write(build_string(
-                               std::get<0>(i), "_", std::get<0>(surf), ".wav"),
-                       {sig},
-                       sample_rate,
-                       16);
+            run_single(cc,
+                       340,
+                       400,
+                       44100,
+                       glm::vec3{0, 1, 0},
+                       model::ReceiverSettings{glm::vec3{0, 1, 1}},
+                       stage,
+                       surf);
         }
     }
+    */
+
+    run_single(cc,
+               340,
+               400,
+               44100,
+               glm::vec3{0, 1, 0},
+               model::ReceiverSettings{glm::vec3{0, 1, 1}},
+               objects[0],
+               surfaces[1]);
 }

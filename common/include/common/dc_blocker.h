@@ -22,13 +22,14 @@ private:
     size_t index;
 };
 
+//----------------------------------------------------------------------------//
+
 class moving_average final {
 public:
     moving_average() = default;
     moving_average(int d);
 
-    double operator()(double x);
-
+    double filter(double x);
     void clear();
 
     double get_index(size_t i) const;
@@ -39,6 +40,8 @@ private:
     double single_delay;
 };
 
+//----------------------------------------------------------------------------//
+
 template <int modules>
 class n_moving_averages final {
 public:
@@ -47,9 +50,9 @@ public:
         std::fill(averages.begin(), averages.end(), moving_average(d));
     }
 
-    double operator()(double x) {
+    double filter(double x) {
         for (auto& i : averages) {
-            x = i(x);
+            x = i.filter(x);
         }
         return x;
     }
@@ -60,25 +63,25 @@ public:
         }
     }
 
-    const moving_average& get_averager() const {
-        return averages.front();
-    }
+    const moving_average& get_averager() const { return averages.front(); }
 
 private:
     std::array<moving_average, modules> averages;
 };
 
+//----------------------------------------------------------------------------//
+
 class linear_dc_blocker final {
 public:
     explicit linear_dc_blocker(int d = 128);
 
-    double operator()(double x);
+    double filter(double x);
 
     template <typename It>
     aligned::vector<float> filter(It begin, It end) {
         aligned::vector<float> ret(begin, end);
         std::for_each(std::begin(ret), std::end(ret), [this](auto& i) {
-            i = this->operator()(i);
+            i = this->filter(i);
         });
         return ret;
     }
@@ -90,17 +93,19 @@ private:
     n_moving_averages<2> moving_averages;
 };
 
+//----------------------------------------------------------------------------//
+
 class extra_linear_dc_blocker final {
 public:
     explicit extra_linear_dc_blocker(int d = 128);
 
-    double operator()(double x);
+    double filter(double x);
 
     template <typename It>
     aligned::vector<float> filter(It begin, It end) {
         aligned::vector<float> ret(begin, end);
         std::for_each(std::begin(ret), std::end(ret), [this](auto& i) {
-            i = this->operator()(i);
+            i = this->filter(i);
         });
         return ret;
     }

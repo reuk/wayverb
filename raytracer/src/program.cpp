@@ -189,7 +189,7 @@ kernel void diffuse(const global reflection* reflections,  //  input
     //  TODO change specular output depending on angle
     //  TODO remove diffuse energy from ongoing specular energy
     const surface s = surfaces[triangles[reflections[thread].triangle].surface];
-    const volume_type new_volume = -diffuse_path[thread].volume * s.specular;
+    const volume_type new_volume = diffuse_path[thread].volume * s.specular;
 
     //  find the new total distance
     const float new_distance = diffuse_path[thread].distance +

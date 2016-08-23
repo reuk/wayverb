@@ -100,15 +100,14 @@ TEST(raytrace, same_location) {
     auto receiver = source;
     constexpr auto s = 0.9;
     constexpr auto d = 0.1;
-    constexpr surface surface{volume_type{{s, s, s, s, s, s, s, s}},
-                              volume_type{{d, d, d, d, d, d, d, d}}};
+    constexpr auto surface{make_surface(s, d)};
 
-    auto scene = geo::get_scene_data(box);
+    auto scene{geo::get_scene_data(box)};
     scene.set_surfaces(surface);
     const voxelised_scene_data voxelised(
             scene, 5, util::padded(scene.get_aabb(), glm::vec3{0.1}));
 
-    compute_context cc;
+    const compute_context cc;
 
     auto callback_count{0};
 
@@ -149,8 +148,7 @@ TEST(raytrace, image_source) {
     constexpr glm::vec3 receiver(2, 1, 5);
     constexpr auto s = 0.9;
     constexpr auto d = 0.1;
-    constexpr surface surface{volume_type{{s, s, s, s, s, s, s, s}},
-                              volume_type{{d, d, d, d, d, d, d, d}}};
+    constexpr auto surface{make_surface(s, d)};
 
     constexpr auto shells = 3;
     auto images = images_for_shell<shells>(box, source);
@@ -180,7 +178,7 @@ TEST(raytrace, image_source) {
                 if (reflections <= shells) {
                     auto index = i + j * L + k * L * L;
                     auto volume = volumes[index];
-                    auto base_vol = pow(-s, reflections);
+                    auto base_vol = pow(s, reflections);
                     volume *= base_vol;
 
                     proper_image_source_impulses.push_back(
@@ -241,7 +239,7 @@ TEST(raytrace, image_source) {
         const auto bit_depth = 16;
         const auto sample_rate = 44100.0;
         {
-            auto mixed_down = mixdown(raytracer::flatten_impulses(
+            auto mixed_down = mixdown(raytracer::compute_multiband_signal(
                     i, sample_rate, acoustic_impedance));
             normalize(mixed_down);
             snd::write(

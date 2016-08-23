@@ -12,7 +12,7 @@ namespace attenuator {
 
 class hrtf final {
 public:
-    aligned::vector<aligned::vector<float>> process(
+    aligned::vector<volume_type> process(
             const aligned::vector<run_step_output>& input,
             const glm::vec3& direction,
             const glm::vec3& up,

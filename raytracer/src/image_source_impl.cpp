@@ -123,7 +123,7 @@ volume_type compute_volume(const copyable_scene_data& scene_data,
                 const auto surface =
                         scene_data.get_surfaces()[scene_triangle.surface];
 
-                return volume * -surface.specular;
+                return volume * surface.specular;
             });
 }
 

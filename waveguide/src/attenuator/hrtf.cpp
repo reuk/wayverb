@@ -1,6 +1,8 @@
 #include "waveguide/attenuator/hrtf.h"
 #include "waveguide/waveguide.h"
 
+#include "common/cl/iterator.h"
+#include "common/cl/traits.h"
 #include "common/filters_common.h"
 #include "common/hrtf.h"
 #include "common/map_to_vector.h"
@@ -31,12 +33,11 @@ float attenuation(const glm::vec3& direction,
                   const glm::vec3& incident,
                   int band) {
     auto transformed = transform(direction, up, incident);
-    int a            = degrees(azimuth(transformed)) + 180;
+    int a = degrees(azimuth(transformed)) + 180;
     a %= 360;
     int e = degrees(elevation(transformed));
-    e     = 90 - e;
-    return hrtf_data::data[channel == hrtf_channel::left ? 0 : 1][a][e]
-            .s[band];
+    e = 90 - e;
+    return hrtf_data::data[channel == hrtf_channel::left ? 0 : 1][a][e].s[band];
 }
 
 }  // namespace
@@ -44,24 +45,28 @@ float attenuation(const glm::vec3& direction,
 namespace waveguide {
 namespace attenuator {
 
-aligned::vector<aligned::vector<float>> hrtf::process(
+aligned::vector<volume_type> hrtf::process(
         const aligned::vector<run_step_output>& input,
         const glm::vec3& direction,
         const glm::vec3& up,
         hrtf_channel channel) const {
-    aligned::vector<aligned::vector<float>> ret;
-    for (auto band = 0u; band != hrtf_data::edges.size(); ++band) {
-        ret.push_back(map_to_vector(input, [=](auto i) {
-            auto mag = glm::length(i.intensity);
-            if (mag == 0) {
-                return 0.0f;
-            }
-            mag = sqrt(
-                    mag *
-                    pow(attenuation(direction, up, channel, i.intensity, band),
-                        2));
-            return std::copysign(mag, i.pressure);
-        }));
+    aligned::vector<volume_type> ret(input.size());
+
+    for (auto band{0u}; band != detail::components_v<volume_type>; ++band) {
+        proc::transform(
+                input, make_cl_type_iterator(ret.begin(), band), [&](auto i) {
+                    auto mag{glm::length(i.intensity)};
+                    if (mag == 0) {
+                        return 0.0f;
+                    }
+                    mag = sqrt(mag * pow(attenuation(direction,
+                                                     up,
+                                                     channel,
+                                                     i.intensity,
+                                                     band),
+                                         2));
+                    return std::copysign(mag, i.pressure);
+                });
     }
 
     return ret;

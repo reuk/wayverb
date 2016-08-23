@@ -210,8 +210,8 @@ int main(int argc, char** argv) {
     // auto output =
     //    attenuator.attenuate(results.get_all(false), {speaker}).front();
 
-    aligned::vector<aligned::vector<float>> flattened =
-            raytracer::flatten_impulses(output, samplerate, acoustic_impedance);
+    auto flattened{raytracer::compute_multiband_signal(
+            output, samplerate, acoustic_impedance)};
 
     snd::write(build_string(output_folder, "raytrace_no_processing.wav"),
                {mixdown(flattened)},

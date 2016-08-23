@@ -33,9 +33,9 @@ moving_average::moving_average(int d)
         , delay_line(d + 2)
         , single_delay(0) {}
 
-double moving_average::operator()(double x) {
+double moving_average::filter(double x) {
     delay_line.push(x);
-    auto ret     = x - delay_line[d] + single_delay;
+    auto ret = x - delay_line[d] + single_delay;
     single_delay = ret;
     return ret / d;
 }
@@ -51,8 +51,8 @@ linear_dc_blocker::linear_dc_blocker(int d)
         : d(d)
         , moving_averages(d) {}
 
-double linear_dc_blocker::operator()(double x) {
-    x = moving_averages(x);
+double linear_dc_blocker::filter(double x) {
+    x = moving_averages.filter(x);
     return moving_averages.get_averager().get_index(d - 1) - x;
 }
 
@@ -63,8 +63,8 @@ extra_linear_dc_blocker::extra_linear_dc_blocker(int d)
         , delay_line(d + 2)
         , moving_averages(d) {}
 
-double extra_linear_dc_blocker::operator()(double x) {
-    x = moving_averages(x);
+double extra_linear_dc_blocker::filter(double x) {
+    x = moving_averages.filter(x);
     delay_line.push(moving_averages.get_averager().get_index(d - 1));
     return delay_line[d - 1] - x;
 }

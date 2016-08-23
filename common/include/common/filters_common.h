@@ -14,50 +14,26 @@
 /// filtering.
 namespace filter {
 
-class Lopass {
-public:
-    /// A hipass has mutable cutoff and samplerate.
-    virtual void set_params(float co, float s);
-    float cutoff, sr;
-};
-
-/// Interface for a plain boring hipass filter.
-class Hipass {
-public:
-    /// A hipass has mutable cutoff and samplerate.
-    virtual void set_params(float co, float s);
-    float cutoff, sr;
-};
-
-/// Interface for a plain boring bandpass filter.
-class Bandpass {
-public:
-    /// A hipass has mutable lopass, hipass, and samplerate.
-    virtual void set_params(float l, float h, float s);
-    float lo, hi, sr;
-};
-
-class LopassWindowedSinc : public Lopass {
+class LopassWindowedSinc final {
 public:
     explicit LopassWindowedSinc(int inputLength);
 
     /// Filter a vector of data.
     template <typename It>
-    aligned::vector<float> filter(It begin, It end) {
-        return convolver.convolve(
-                std::begin(kernel), std::end(kernel), begin, end);
+    aligned::vector<float> filter(It b, It e) {
+        return convolver.convolve(kernel.begin(), kernel.end(), b, e);
     }
 
-    void set_params(float co, float s) override;
+    void set_params(double co, double s);
 
 private:
-    static const auto KERNEL_LENGTH = 99;
+    static const auto KERNEL_LENGTH{99};
     fast_convolver convolver;
     std::array<float, KERNEL_LENGTH> kernel;
 };
 
 /// An interesting windowed-sinc hipass filter.
-class HipassWindowedSinc : public Hipass {
+class HipassWindowedSinc final {
 public:
     explicit HipassWindowedSinc(int inputLength);
 
@@ -68,119 +44,81 @@ public:
                 std::begin(kernel), std::end(kernel), begin, end);
     }
 
-    void set_params(float co, float s) override;
+    void set_params(double co, double s);
 
 private:
-    static const auto KERNEL_LENGTH = 99;
+    static const auto KERNEL_LENGTH{99};
     fast_convolver convolver;
     std::array<float, KERNEL_LENGTH> kernel;
 };
 
 /// An interesting windowed-sinc bandpass filter.
-class BandpassWindowedSinc : public Bandpass {
+class BandpassWindowedSinc final {
 public:
     explicit BandpassWindowedSinc(int inputLength);
 
     /// Filter a vector of data.
     template <typename It>
-    aligned::vector<float> filter(It begin, It end) {
-        return convolver.convolve(
-                std::begin(kernel), std::end(kernel), begin, end);
+    aligned::vector<float> filter(It b, It e) {
+        return convolver.convolve(kernel.begin(), kernel.end(), b, e);
     }
 
-    void set_params(float l, float h, float s) override;
+    void set_params(double l, double h, double s);
 
 private:
-    static const auto KERNEL_LENGTH = 99;
+    static const auto KERNEL_LENGTH{99};
     fast_convolver convolver;
     std::array<float, KERNEL_LENGTH> kernel;
 };
 
+//----------------------------------------------------------------------------//
+
 /// A super-simple biquad filter.
-class Biquad {
+/// Oh hey it's basically a functor
+class Biquad final {
 public:
-    /// Run the filter foward over some data.
-    template <typename It>
-    aligned::vector<float> filter(It begin, It end) {
-        aligned::vector<float> ret(begin, end);
-
-        double z1 = 0;
-        double z2 = 0;
-
-        std::for_each(
-                std::begin(ret), std::end(ret), [this, &z1, &z2](auto& i) {
-                    double out = i * b0 + z1;
-                    z1         = i * b1 + z2 - a1 * out;
-                    z2         = i * b2 - a2 * out;
-                    i          = out;
-                });
-
-        return ret;
-    }
-
-    void clear() {}
-
-    void set_params(double b0, double b1, double b2, double a1, double a2);
+    Biquad(double b0, double b1, double b2, double a1, double a2);
+    double filter(double i);
+    void clear();
 
 private:
-    double b0, b1, b2, a1, a2;
+    double b0{0}, b1{0}, b2{0}, a1{0}, a2{0};
+    double z1{0}, z2{0};
 };
 
+//----------------------------------------------------------------------------//
+
+Biquad make_bandpass_biquad(double lo, double hi, double sr);
+Biquad make_linkwitz_riley_lopass(double cutoff, double sr);
+Biquad make_linkwitz_riley_hipass(double cutoff, double sr);
+Biquad make_dc_blocker();
+
+//----------------------------------------------------------------------------//
+
 template <typename Filter, typename It>
-auto run_one_pass(Filter& filter, It begin, It end) {
+void run_one_pass(Filter& filter, It begin, It end) {
     filter.clear();
-    return filter.filter(begin, end);
+    for (; begin != end; ++begin) {
+        *begin = filter.filter(*begin);
+    }
 }
 
 template <typename Filter, typename It>
-auto run_two_pass(Filter& filter, It begin, It end) {
-    auto t = run_one_pass(filter, begin, end);
-    auto u = run_one_pass(filter, std::crbegin(t), std::crend(t));
-    std::reverse(u.begin(), u.end());
-    return u;
+void run_two_pass(Filter& filter, It begin, It end) {
+    run_one_pass(filter, begin, end);
+    run_one_pass(filter,
+                 std::make_reverse_iterator(end),
+                 std::make_reverse_iterator(begin));
 }
 
-/// Simple biquad bandpass filter.
-class BandpassBiquad : public Bandpass, public Biquad {
-public:
-    void set_params(float l, float h, float s) override;
-};
+//----------------------------------------------------------------------------//
 
-class LinkwitzRileySingleLopass : public Lopass, public Biquad {
-public:
-    void set_params(float cutoff, float sr) override;
-};
+template <typename It>
+void linkwitz_riley_bandpass(double lo, double hi, double s, It begin, It end) {
+    auto lopass{make_linkwitz_riley_lopass(hi, s)};
+    run_two_pass(lopass, begin, end);
+    auto hipass{make_linkwitz_riley_hipass(lo, s)};
+    run_two_pass(hipass, begin, end);
+}
 
-class LinkwitzRileySingleHipass : public Hipass, public Biquad {
-public:
-    void set_params(float cutoff, float sr) override;
-};
-
-/// A linkwitz-riley filter is just a linear-phase lopass and hipass
-/// coupled together.
-class LinkwitzRileyBandpass : public Bandpass {
-public:
-    void set_params(float l, float h, float s) override;
-
-    template <typename It>
-    aligned::vector<float> filter(It begin, It end) {
-        auto t = run_two_pass(lopass, begin, end);
-        return run_two_pass(hipass, t.begin(), t.end());
-    }
-
-    void clear() {
-        lopass.clear();
-        hipass.clear();
-    }
-
-private:
-    LinkwitzRileySingleLopass lopass;
-    LinkwitzRileySingleHipass hipass;
-};
-
-class DCBlocker : public Biquad {
-public:
-    DCBlocker();
-    constexpr static auto R = 0.995;
-};
 }  // namespace filter

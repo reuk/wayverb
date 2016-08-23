@@ -1,6 +1,9 @@
 #include "raytracer/diffuse.h"
 
+#include "common/map_to_vector.h"
 #include "common/stl_wrappers.h"
+
+#include <experimental/optional>
 
 namespace raytracer {
 
@@ -62,7 +65,7 @@ void diffuse_finder::push(const aligned::vector<reflection>& reflections,
            impulse_buffer);
 
     //  copy impulses out
-    auto ret = read_from_buffer<impulse>(queue, impulse_buffer);
+    auto ret{read_from_buffer<impulse>(queue, impulse_buffer)};
 
     for (const auto& i : ret) {
         if (is_cl_nan(i.volume)) {
@@ -81,7 +84,12 @@ void diffuse_finder::push(const aligned::vector<reflection>& reflections,
                        : std::experimental::nullopt);
     }
 
-    impulse_builder.push(std::move(no_invalid));
+    impulse_builder.push(map_to_vector(
+            ret, [](auto i) -> std::experimental::optional<impulse> {
+                return i.time ? std::experimental::make_optional<impulse>(
+                                        std::move(i))
+                              : std::experimental::nullopt;
+            }));
 }
 
 const aligned::vector<aligned::vector<impulse>>& diffuse_finder::get_results()
