@@ -1,9 +1,10 @@
-#include "raytracer/raytracer.h"
 #include "raytracer/construct_impulse.h"
 #include "raytracer/diffuse.h"
 #include "raytracer/image_source.h"
+#include "raytracer/raytracer.h"
 #include "raytracer/reflector.h"
 
+#include "common/nan_checking.h"
 #include "common/spatial_division/scene_buffers.h"
 #include "common/spatial_division/voxelised_scene_data.h"
 
@@ -14,6 +15,10 @@ std::experimental::optional<impulse> get_direct_impulse(
         const glm::vec3& receiver,
         const voxelised_scene_data& scene_data,
         double speed_of_sound) {
+    if (source == receiver) {
+        return std::experimental::nullopt;
+    }
+
     const auto source_to_receiver{receiver - source};
     const auto source_to_receiver_length{glm::length(source_to_receiver)};
     const auto direction{glm::normalize(source_to_receiver)};
@@ -83,6 +88,12 @@ std::experimental::optional<results> run(
 
         //  get a single step of the reflections
         const auto reflections{ref.run_step(buffers)};
+
+        //  check reflection kernel output
+        for (const auto& ref : reflections) {
+            throw_if_suspicious(ref.position);
+            throw_if_suspicious(ref.direction);
+        }
 
         //  find diffuse impulses for these reflections
         dif.push(reflections, buffers);

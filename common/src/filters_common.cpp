@@ -41,15 +41,13 @@ Biquad::Biquad(double b0, double b1, double b2, double a1, double a2)
         , a2(a2) {}
 
 double Biquad::filter(double i) {
-    double out = i * b0 + z1;
+    const auto out{i * b0 + z1};
     z1 = i * b1 + z2 - a1 * out;
     z2 = i * b2 - a2 * out;
     return out;
 }
 
-void Biquad::clear()  {
-    z1 = z2 = 0;
-}
+void Biquad::clear() { z1 = z2 = 0; }
 
 //----------------------------------------------------------------------------//
 

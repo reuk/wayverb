@@ -1,13 +1,12 @@
-#include "common/hrtf_utils.h"
 #include "common/cl/iterator.h"
 #include "common/filters_common.h"
 #include "common/hrtf.h"
+#include "common/hrtf_utils.h"
 #include "common/map_to_vector.h"
 
 /// Sum a collection of vectors of the same length into a single vector
 aligned::vector<float> mixdown(const aligned::vector<volume_type>& data) {
-    return map_to_vector(
-            data, [](const auto& i) { return proc::accumulate(i.s, 0.0f); });
+    return map_to_vector(data, [](const auto& i) { return sum(i); });
 }
 
 aligned::vector<aligned::vector<float>> mixdown(
@@ -16,15 +15,14 @@ aligned::vector<aligned::vector<float>> mixdown(
 }
 
 void multiband_filter(aligned::vector<volume_type>& bands, double sample_rate) {
-    for_each_band(sample_rate,
-                  [&](auto index, auto lo, auto hi) {
-                      filter::linkwitz_riley_bandpass(
-                              lo,
-                              hi,
-                              sample_rate,
-                              make_cl_type_iterator(bands.begin(), index),
-                              make_cl_type_iterator(bands.end(), index));
-                  });
+    for_each_band(sample_rate, [&](auto index, auto lo, auto hi) {
+        filter::linkwitz_riley_bandpass(
+                lo,
+                hi,
+                sample_rate,
+                make_cl_type_iterator(bands.begin(), index),
+                make_cl_type_iterator(bands.end(), index));
+    });
 }
 
 aligned::vector<float> multiband_filter_and_mixdown(

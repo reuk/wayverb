@@ -1,4 +1,3 @@
-#include "waveguide/log_nan.h"
 #include "waveguide/program.h"
 #include "waveguide/surface_filters.h"
 #include "waveguide/waveguide.h"
@@ -285,16 +284,16 @@ class testing_rk_filter : public rk_filter<NoiseGenerator>,
                           public ::testing::Test {};
 
 TEST_F(testing_rk_biquad, filtering) {
-    auto results = run_kernel(program.get_filter_test_kernel());
-    ASSERT_TRUE(waveguide::log_nan(results, "filter 1 results") ==
-                results.end());
+    auto results{run_kernel(program.get_filter_test_kernel())};
+    ASSERT_TRUE(proc::none_of(results, [](auto i) { return std::isnan(i); }));
+    ASSERT_TRUE(proc::none_of(results, [](auto i) { return std::isinf(i); }));
     snd::write("./filtered_noise.wav", {results}, testing::sr, 16);
 }
 
 TEST_F(testing_rk_filter, filtering_2) {
     auto results = run_kernel(program.get_filter_test_2_kernel());
-    ASSERT_TRUE(waveguide::log_nan(results, "filter 2 results") ==
-                results.end());
+    ASSERT_TRUE(proc::none_of(results, [](auto i) { return std::isnan(i); }));
+    ASSERT_TRUE(proc::none_of(results, [](auto i) { return std::isinf(i); }));
     snd::write("./filtered_noise_2.wav", {results}, testing::sr, 16);
 }
 
@@ -305,15 +304,15 @@ class testing_rk_filter_quiet : public rk_filter<QuietNoiseGenerator>,
 
 TEST_F(testing_rk_biquad_quiet, filtering) {
     auto results = run_kernel(program.get_filter_test_kernel());
-    ASSERT_TRUE(waveguide::log_nan(results, "filter 1 quiet results") ==
-                results.end());
+    ASSERT_TRUE(proc::none_of(results, [](auto i) { return std::isnan(i); }));
+    ASSERT_TRUE(proc::none_of(results, [](auto i) { return std::isinf(i); }));
     snd::write("./filtered_noise_quiet.wav", {results}, testing::sr, 16);
 }
 
 TEST_F(testing_rk_filter_quiet, filtering_2) {
     auto results = run_kernel(program.get_filter_test_2_kernel());
-    ASSERT_TRUE(waveguide::log_nan(results, "filter 2 quiet results") ==
-                results.end());
+    ASSERT_TRUE(proc::none_of(results, [](auto i) { return std::isnan(i); }));
+    ASSERT_TRUE(proc::none_of(results, [](auto i) { return std::isinf(i); }));
     snd::write("./filtered_noise_2_quiet.wav", {results}, testing::sr, 16);
 }
 

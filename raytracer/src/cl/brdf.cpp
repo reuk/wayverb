@@ -2,9 +2,6 @@
 
 namespace cl_sources {
 const char* brdf{R"(
-#ifndef BRDF_HEADER__
-#define BRDF_HEADER__
-
 //  z range: -1 to 1
 //  theta range: -pi to pi
 float3 sphere_point(float z, float theta);
@@ -46,7 +43,7 @@ float3 lambert_scattering(float3 specular, float3 surface_normal, float3 random,
 float brdf_mag(float y, float d);
 float brdf_mag(float y, float d) {
     //  check that this direction is attainable
-    if (y * y < (1 - 2 * d) / pow(1 - d, 2)) {
+    if (y * y <= (1 - 2 * d) / pow(1 - d, 2)) {
         return 0;
     }
 
@@ -86,7 +83,5 @@ float mean(volume_type v);
 float mean(volume_type v) {
     return (v.s0 + v.s1 + v.s2 + v.s3 + v.s4 + v.s5 + v.s6 + v.s7) / 8;
 }
-
-#endif
 )"};
 }  // namespace cl_sources

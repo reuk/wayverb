@@ -1,8 +1,10 @@
 #pragma once
 
 #include "common/cl/include.h"
+#include "common/stl_wrappers.h"
 
 #include <algorithm>
+#include <cmath>
 #include <functional>
 #include <type_traits>
 
@@ -31,8 +33,8 @@ namespace detail {
 template <typename T>
 struct cl_vector_type_trait final {
     static constexpr auto is_vector_type = false;
-    using value_type                     = T;
-    static constexpr size_t components   = 1;
+    using value_type = T;
+    static constexpr size_t components = 1;
 };
 
 #define DEFINE_CL_VECTOR_TYPE_TRAIT(cl_type)                                  \
@@ -370,7 +372,7 @@ constexpr auto operator-(const T& a) {
     return detail::map(a, std::negate<>());
 }
 
-//  other --------------------------------------------------------------------//
+//  other reductions ---------------------------------------------------------//
 
 template <typename T, typename detail::enable_if_is_vector_t<T, int> = 0>
 constexpr auto sum(const T& t) {
@@ -385,4 +387,55 @@ constexpr auto product(const T& t) {
 template <typename T, typename detail::enable_if_is_vector_t<T, int> = 0>
 constexpr auto mean(const T& t) {
     return sum(t) / detail::components_v<T>;
+}
+
+//  logical reductions -------------------------------------------------------//
+
+template <typename T, detail::enable_if_is_vector_t<T, int> = 0>
+constexpr bool all(const T& t) {
+    auto ret{true};
+    for (const auto i : t.s) {
+        ret = ret && i;
+    }
+    return ret;
+}
+
+template <typename T, detail::enable_if_is_vector_t<T, int> = 0>
+constexpr bool any(const T& t) {
+    auto ret{false};
+    for (const auto i : t.s) {
+        ret = ret || i;
+    }
+    return ret;
+}
+
+//  misc ---------------------------------------------------------------------//
+
+namespace detail {
+
+template <typename T,
+          typename Func,
+          size_t components = detail::components_v<T>,
+          detail::enable_if_is_vector_t<T, int> = 0>
+constexpr auto map_func_to_bool(const T& t, Func f) {
+    using Ret = detail::cl_vector_constructor_t<bool, components>;
+    Ret ret{};
+    proc::transform(t.s, ret.s, [&](auto i) { return f(i); });
+    return ret;
+}
+
+}  // namespace detail
+
+template <typename T,
+          size_t components = detail::components_v<T>,
+          detail::enable_if_is_vector_t<T, int> = 0>
+constexpr auto isnan(const T& t) {
+    return detail::map_func_to_bool(t, [](auto i) { return std::isnan(i); });
+}
+
+template <typename T,
+          size_t components = detail::components_v<T>,
+          detail::enable_if_is_vector_t<T, int> = 0>
+constexpr auto isinf(const T& t) {
+    return detail::map_func_to_bool(t, [](auto i) { return std::isinf(i); });
 }

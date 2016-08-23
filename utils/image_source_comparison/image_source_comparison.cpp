@@ -28,6 +28,17 @@
 #define OBJ_PATH_BAD_BOX ""
 #endif
 
+template <typename T>
+void check(const T& i) {
+    if (proc::any_of(i, [](auto j) {return std::isnan(j);})) {
+        throw std::runtime_error("don't want nans!");
+    }
+
+    if (proc::all_of(i, [](auto j) { return !j; })) {
+        throw std::runtime_error("all items zero!");
+    }
+}
+
 void run_single(const compute_context& cc,
                 double speed_of_sound,
                 double acoustic_impedance,
@@ -56,10 +67,15 @@ void run_single(const compute_context& cc,
                                       keep_going,
                                       [&](auto) { pb += 1; })};
 
-    auto sig{raytracer::run_attenuation(
-            cc, receiver, *results, sample_rate, acoustic_impedance)};
+    assert(results);
 
+    auto sig{raytracer::run_attenuation(
+                     cc, receiver, *results, sample_rate, acoustic_impedance)
+                     .front()};
+
+    check(sig);
     normalize(sig);
+    check(sig);
 
     snd::write(build_string(std::get<0>(stage), "_", std::get<0>(surf), ".wav"),
                {sig},
@@ -89,7 +105,6 @@ int main() {
             std::make_pair("bedroom", OBJ_PATH_BEDROOM),
             std::make_pair("bad_box", OBJ_PATH_BAD_BOX)};
 
-    /*
     for (auto stage : objects) {
         for (auto surf : surfaces) {
             run_single(cc,
@@ -102,14 +117,15 @@ int main() {
                        surf);
         }
     }
-    */
 
-    run_single(cc,
-               340,
-               400,
-               44100,
-               glm::vec3{0, 1, 0},
-               model::ReceiverSettings{glm::vec3{0, 1, 1}},
-               objects[0],
-               surfaces[1]);
+    /*
+        run_single(cc,
+                   340,
+                   400,
+                   44100,
+                   glm::vec3{0, 1, 0},
+                   model::ReceiverSettings{glm::vec3{0, 1, 1}},
+                   objects[0],
+                   surfaces[1]);
+    */
 }

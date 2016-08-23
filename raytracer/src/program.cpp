@@ -186,7 +186,6 @@ kernel void diffuse(const global reflection* reflections,  //  input
     }
 
     //  find the new volume
-    //  TODO change specular output depending on angle
     //  TODO remove diffuse energy from ongoing specular energy
     const surface s = surfaces[triangles[reflections[thread].triangle].surface];
     const volume_type new_volume = diffuse_path[thread].volume * s.specular;
@@ -207,7 +206,7 @@ kernel void diffuse(const global reflection* reflections,  //  input
 
     //  find output volume
     volume_type output_volume = (volume_type)(0, 0, 0, 0, 0, 0, 0, 0);
-    if (reflections[thread].receiver_visible) {
+    if (reflections[thread].receiver_visible && total_distance) {
         const float3 to_receiver =
                 normalize(receiver - reflections[thread].position);
         const volume_type diffuse_brdf = brdf_mags_for_outgoing(

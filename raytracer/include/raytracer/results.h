@@ -18,13 +18,19 @@ public:
             const glm::vec3& receiver,
             double speed_of_sound);
 
-    aligned::vector<impulse> get_impulses(bool direct       = true,
+    aligned::vector<impulse> get_impulses(bool direct = true,
                                           bool image_source = true,
-                                          bool diffuse      = true) const;
+                                          bool diffuse = true) const;
 
-    std::experimental::optional<impulse> get_direct() const;
-    aligned::vector<impulse> get_image_source() const;
-    aligned::vector<aligned::vector<impulse>> get_diffuse() const;
+    using impulse_callback = std::function<void(const impulse&)>;
+    void for_each_impulse(const impulse_callback& callback,
+                          bool direct = true,
+                          bool image_source = true,
+                          bool diffuse = true) const;
+
+    const std::experimental::optional<impulse>& get_direct() const;
+    const aligned::vector<impulse>& get_image_source() const;
+    const aligned::vector<aligned::vector<impulse>>& get_diffuse() const;
 
     glm::vec3 get_receiver() const;
     double get_speed_of_sound() const;

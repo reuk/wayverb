@@ -1,11 +1,11 @@
-#include "waveguide/waveguide.h"
 #include "common/conversions.h"
-#include "waveguide/log_nan.h"
+#include "common/exceptions.h"
 #include "waveguide/mesh/model.h"
 #include "waveguide/postprocessor/microphone.h"
 #include "waveguide/postprocessor/visualiser.h"
 #include "waveguide/preprocessor/single_soft_source.h"
 #include "waveguide/surface_filters.h"
+#include "waveguide/waveguide.h"
 
 #include <cassert>
 
@@ -88,12 +88,12 @@ size_t run(const compute_context& cc,
         //  read out flag value
         auto flag = read_single_value<error_code>(queue, error_flag_buffer, 0);
         if (flag & id_inf_error) {
-            throw std::runtime_error(
+            throw exceptions::value_is_inf(
                     "pressure value is inf, check filter coefficients");
         }
 
         if (flag & id_nan_error) {
-            throw std::runtime_error(
+            throw exceptions::value_is_nan(
                     "pressure value is nan, check filter coefficients");
         }
 
