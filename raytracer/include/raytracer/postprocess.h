@@ -28,15 +28,27 @@ aligned::vector<volume_type> compute_multiband_signal(
 
     const auto max_sample = round(max_time * samplerate) + 1;
 
+    //  kutruff2009 p. 52
+    //  With some assumptions (the wavefronts are incoherent), the total energy
+    //  at some point can be calculated just by adding the energies
+    //  (intensities) of the components.
     aligned::vector<volume_type> ret(max_sample, make_volume_type(0));
     for (const auto& i : impulse) {
         const auto sample{round(i.time * samplerate)};
         if (sample < ret.size()) {
-            const auto pressure{
-                    intensity_to_pressure(i.volume, acoustic_impedance)};
-            ret[sample] += pressure;
+            ret[sample] += i.volume;
         }
     }
+
+    //  However, we need to convert to pressures at some point, so we'll do it
+    //  here.
+
+    /*
+    for (auto& i : ret) {
+        i = intensity_to_pressure(i, acoustic_impedance);
+    }
+    */
+
     return ret;
 }
 

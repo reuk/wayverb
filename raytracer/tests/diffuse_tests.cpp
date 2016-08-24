@@ -1,13 +1,18 @@
 #include "raytracer/diffuse.h"
 
 #include "common/geo/box.h"
+#include "common/model/receiver_settings.h"
 #include "common/spatial_division/voxelised_scene_data.h"
 
 #include "gtest/gtest.h"
 
+#ifndef OBJ_PATH
+#define OBJ_PATH ""
+#endif
+
 constexpr auto speed_of_sound{340.0};
 
-TEST(diffuse, bad_reflections) {
+TEST(diffuse, bad_reflections_box) {
     const geo::box box(glm::vec3(0, 0, 0), glm::vec3(4, 3, 6));
     constexpr glm::vec3 source{1, 2, 1};
     constexpr glm::vec3 receiver{2, 1, 5};
@@ -45,6 +50,52 @@ TEST(diffuse, bad_reflections) {
     raytracer::diffuse_finder diff{cc,
                                    source,
                                    receiver,
+                                   air_coefficient,
+                                   speed_of_sound,
+                                   bad_reflections.size(),
+                                   1};
+
+    diff.push(bad_reflections, buffers);
+}
+
+TEST(diffuse, bad_reflections_vault) {
+    constexpr glm::vec3 source{0, 1, 0};
+    const model::ReceiverSettings receiver{glm::vec3{0, 1, 1}};
+
+    const compute_context cc{};
+    
+    const scene_data scene{OBJ_PATH};
+    const voxelised_scene_data voxelised(
+            scene, 5, util::padded(scene.get_aabb(), glm::vec3{0.1}));
+
+    const scene_buffers buffers{cc.context, voxelised};
+
+    const aligned::vector<reflection> bad_reflections{
+            reflection{cl_float3{{2.29054403, 1.00505638, -1.5}},
+                       cl_float3{{-0.682838321, 0.000305294991, 0.730569482}},
+                       2906,
+                       true,
+                       true},
+            reflection{cl_float3{{5.28400469, 3.0999999, -3.8193748}},
+                       cl_float3{{-0.715907454, -0.277387351, 0.640728354}},
+                       2671,
+                       true,
+                       true},
+            reflection{cl_float3{{5.29999971, 2.40043592, -2.991467}},
+                       cl_float3{{-0.778293132, -0.199705943, 0.595295966}},
+                       2808,
+                       true,
+                       true},
+            reflection{cl_float3{{-1.29793882, 2.44466829, 5.30000019}},
+                       cl_float3{{0.270797491, -0.315135896, -0.909592032}},
+                       1705,
+                       true,
+                       true},
+    };
+
+    raytracer::diffuse_finder diff{cc,
+                                   source,
+                                   receiver.position,
                                    air_coefficient,
                                    speed_of_sound,
                                    bad_reflections.size(),

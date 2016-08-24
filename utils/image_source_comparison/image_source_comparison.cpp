@@ -30,7 +30,7 @@
 
 template <typename T>
 void check(const T& i) {
-    if (proc::any_of(i, [](auto j) {return std::isnan(j);})) {
+    if (proc::any_of(i, [](auto j) { return std::isnan(j); })) {
         throw std::runtime_error("don't want nans!");
     }
 
@@ -87,7 +87,6 @@ int main() {
     const compute_context cc{};
 
     constexpr glm::vec3 source{0, 1, 0};
-
     const model::ReceiverSettings receiver{glm::vec3{0, 1, 1}};
 
     const aligned::vector<std::pair<std::string, surface>> surfaces{
@@ -107,14 +106,7 @@ int main() {
 
     for (auto stage : objects) {
         for (auto surf : surfaces) {
-            run_single(cc,
-                       340,
-                       400,
-                       44100,
-                       glm::vec3{0, 1, 0},
-                       model::ReceiverSettings{glm::vec3{0, 1, 1}},
-                       stage,
-                       surf);
+            run_single(cc, 340, 400, 44100, source, receiver, stage, surf);
         }
     }
 
@@ -123,8 +115,8 @@ int main() {
                    340,
                    400,
                    44100,
-                   glm::vec3{0, 1, 0},
-                   model::ReceiverSettings{glm::vec3{0, 1, 1}},
+                   source,
+                   receiver
                    objects[0],
                    surfaces[1]);
     */

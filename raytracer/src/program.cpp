@@ -30,11 +30,7 @@ volume_type air_attenuation_for_distance(float distance,
 
 float power_attenuation_for_distance(float distance);
 float power_attenuation_for_distance(float distance) {
-#if 1
     return 1 / (4 * M_PI * distance * distance);
-#else
-    return 1;
-#endif
 }
 
 volume_type attenuation_for_distance(float distance,

@@ -40,23 +40,32 @@ float3 lambert_scattering(float3 specular, float3 surface_normal, float3 random,
 //
 //  TODO we might need to adjust the magnitude to correct for not-radiating-in-
 //  all-directions
+float get_frac(float numerator, float denominator);
+float get_frac(float numerator, float denominator) {
+    return denominator == 0 || isnan(denominator) || isinf(denominator)
+                   ? 0
+                   : numerator / denominator;
+}
+
 float brdf_mag(float y, float d);
 float brdf_mag(float y, float d) {
     //  check that this direction is attainable
-    if (y * y <= (1 - 2 * d) / pow(1 - d, 2)) {
-        return 0;
+    const float y_sq = y * y;
+    const float one_minus_d_sq = pow(1 - d, 2);
+    const float numerator = 2 * one_minus_d_sq * y_sq + 2 * d - 1;
+
+    if (0.5 <= d) {
+        const float denominator =
+                4 * M_PI * d * sqrt(one_minus_d_sq * y_sq + 2 * d - 1);
+        const float extra = ((1 - d) * y) / (2 * M_PI * d);
+        return get_frac(numerator, denominator) + extra;
     }
 
-    const float a = pow(1 - d, 2) * pow(y, 2);
-    const float b = (2 * d) - 1;
-    const float numerator = (2 * a) + b;
-    const float denominator = 2 * M_PI * d * sqrt(a + b);
-    if (d < 0.5) {
-        return numerator / denominator;
-    }
-    const float extra = ((1 - d) * y) / (2 * M_PI * d);
-    return (numerator / (2 * denominator)) + extra;
+    const float denominator =
+            2 * M_PI * d * sqrt(one_minus_d_sq * y_sq + 2 * d - 1);
+    return get_frac(numerator, denominator);
 }
+
 
 //  specular: the specular reflection direction (unit vector)
 //  outgoing: the actual direction of the outgoing reflection (unit vector)

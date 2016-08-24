@@ -38,10 +38,9 @@ diffuse_finder::diffuse_finder(const compute_context& cc,
                   cc.context,
                   aligned::vector<diffuse_path_info>(
                           rays,
-                          diffuse_path_info{
-                                  make_volume_type(std::sqrt(1.0 / rays)),
-                                  to_cl_float3(source),
-                                  0}),
+                          diffuse_path_info{make_volume_type(1.0 / rays),
+                                            to_cl_float3(source),
+                                            0}),
                   false))
         , impulse_buffer(cc.context, CL_MEM_READ_WRITE, sizeof(impulse) * rays)
         , impulse_builder(rays, depth) {}
@@ -62,13 +61,27 @@ void diffuse_finder::push(const aligned::vector<reflection>& reflections,
            diffuse_path_buffer,
            impulse_buffer);
 
+#ifndef NDEBUG
+    const auto buf{
+            read_from_buffer<diffuse_path_info>(queue, diffuse_path_buffer)};
+    for (auto i{0u}; i != buf.size(); ++i) {
+        const auto r{reflections[i]};
+        const auto s{buf[i]};
+        throw_if_suspicious(s.volume);
+        throw_if_suspicious(s.position);
+        throw_if_suspicious(s.distance);
+    }
+#endif
+
     //  copy impulses out
     auto ret{read_from_buffer<impulse>(queue, impulse_buffer)};
 
     for (auto i{0u}; i != ret.size(); ++i) {
-        throw_if_suspicious(ret[i].volume);
-        throw_if_suspicious(ret[i].position);
-        throw_if_suspicious(ret[i].time);
+        const auto r{reflections[i]};
+        const auto s{ret[i]};
+        throw_if_suspicious(s.volume);
+        throw_if_suspicious(s.position);
+        throw_if_suspicious(s.time);
     }
 
     //  maybe a bit slow but w/e
