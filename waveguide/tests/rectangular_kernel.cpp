@@ -129,10 +129,10 @@ std::array<surface, parallel_size> compute_surfaces() {
 
 static const auto surfaces = compute_surfaces();
 
-std::array<std::array<waveguide::descriptor, biquad_sections>,
+std::array<std::array<waveguide::filter_descriptor, biquad_sections>,
            parallel_size>
 compute_descriptors() {
-    std::array<std::array<waveguide::descriptor, biquad_sections>,
+    std::array<std::array<waveguide::filter_descriptor, biquad_sections>,
                parallel_size>
             ret;
     proc::transform(surfaces, ret.begin(), [](auto i) {

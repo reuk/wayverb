@@ -8,7 +8,6 @@
 #include <array>
 
 namespace waveguide {
-namespace mesh {
 
 struct descriptor final {
     static constexpr auto no_neighbor{~cl_uint{0}};
@@ -36,5 +35,4 @@ geo::box compute_aabb(const descriptor& d);
 
 double compute_sample_rate(const descriptor& d, double speed_of_sound);
 
-}  // namespace mesh
 }  // namespace waveguide

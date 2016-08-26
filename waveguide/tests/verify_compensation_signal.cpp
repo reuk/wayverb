@@ -4,7 +4,7 @@
 #include "common/spatial_division/voxelised_scene_data.h"
 
 #include "waveguide/make_transparent.h"
-#include "waveguide/mesh/model.h"
+#include "waveguide/mesh.h"
 #include "waveguide/postprocessor/microphone.h"
 #include "waveguide/preprocessor/single_soft_source.h"
 #include "waveguide/waveguide.h"
@@ -59,8 +59,8 @@ TEST(verify_compensation_signal, verify_compensation_signal_normal) {
     const voxelised_scene_data voxelised(
             scene_data, 5, util::padded(scene_data.get_aabb(), glm::vec3{0.1}));
 
-    const auto model{waveguide::mesh::compute_model(
-            cc, voxelised, 0.05, speed_of_sound)};
+    const auto model{
+            waveguide::compute_mesh(cc, voxelised, 0.05, speed_of_sound)};
 
     constexpr glm::vec3 centre{0, 0, 0};
     const auto receiver_index = compute_index(model.get_descriptor(), centre);

@@ -1,16 +1,15 @@
 #pragma once
 
-#include "waveguide/mesh/descriptor.h"
-#include "waveguide/mesh/setup.h"
+#include "waveguide/descriptor.h"
+#include "waveguide/setup.h"
 
 class voxelised_scene_data;
 
 namespace waveguide {
-namespace mesh {
 
-class model final {
+class mesh final {
 public:
-    model(const struct descriptor& descriptor,
+    mesh(const struct descriptor& descriptor,
           const vectors& vectors,
           const aligned::vector<glm::vec3>& node_positions);
 
@@ -18,13 +17,15 @@ public:
     const vectors& get_structure() const;
     const aligned::vector<glm::vec3>& get_node_positions() const;
 
+    void set_coefficients(aligned::vector<coefficients_canonical> coefficients);
+
 private:
     struct descriptor descriptor;
     vectors vectors;
     aligned::vector<glm::vec3> node_positions;
 };
 
-bool is_inside(const model& m, size_t node_index);
+bool is_inside(const mesh& m, size_t node_index);
 
 std::tuple<aligned::vector<node>, descriptor> compute_fat_nodes(
         const compute_context& cc,
@@ -33,20 +34,19 @@ std::tuple<aligned::vector<node>, descriptor> compute_fat_nodes(
         float mesh_spacing);
 
 ///  use this if you already have a voxelised scene
-model compute_model(const compute_context& cc,
-                    const voxelised_scene_data& voxelised,
-                    double mesh_spacing,
-                    double speed_of_sound);
+mesh compute_mesh(const compute_context& cc,
+                  const voxelised_scene_data& voxelised,
+                  double mesh_spacing,
+                  double speed_of_sound);
 
 /// this one should be prefered - will set up a voxelised scene with the correct
 /// boundaries, and then will use it to create a mesh
-std::tuple<voxelised_scene_data, model> compute_voxels_and_model(
+std::tuple<voxelised_scene_data, mesh> compute_voxels_and_mesh(
         const compute_context& cc,
-        const copyable_scene_data& scene,
+        const scene_data& scene,
         const glm::vec3& anchor,  //  probably the receiver if you want it to
                                   //  coincide with an actual node
         double sample_rate,
         double speed_of_sound);
 
-}  // namespace mesh
 }  // namespace waveguide

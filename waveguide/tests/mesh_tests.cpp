@@ -1,7 +1,8 @@
-#include "waveguide/mesh/model.h"
+#include "waveguide/mesh.h"
 
 #include "common/cl/common.h"
 #include "common/progress_bar.h"
+#include "common/scene_data_loader.h"
 #include "common/spatial_division/voxelised_scene_data.h"
 #include "common/timed_scope.h"
 
@@ -25,7 +26,7 @@
 #endif
 
 namespace {
-auto get_voxelised(const copyable_scene_data& sd) {
+auto get_voxelised(const scene_data& sd) {
     return voxelised_scene_data{
             sd, 5, util::padded(sd.get_aabb(), glm::vec3{0.3})};
 }
@@ -33,18 +34,18 @@ auto get_voxelised(const copyable_scene_data& sd) {
 struct mesh_fixture : public ::testing::Test {
     auto get_mesh(const voxelised_scene_data& voxelised) {
         const scene_buffers buffers{cc.context, voxelised};
-        return waveguide::mesh::compute_fat_nodes(cc, voxelised, buffers, 0.1);
+        return waveguide::compute_fat_nodes(cc, voxelised, buffers, 0.1);
     }
 
     const compute_context cc;
     cl::CommandQueue queue{cc.context, cc.device};
     const voxelised_scene_data voxelised{
-            get_voxelised(scene_data{THE_MODEL})};
+            get_voxelised(scene_data_loader{THE_MODEL}.get_scene_data())};
 };
 
 TEST_F(mesh_fixture, locator_index) {
     aligned::vector<node> nodes;
-    waveguide::mesh::descriptor desc;
+    waveguide::descriptor desc;
     std::tie(nodes, desc) = get_mesh(voxelised);
     const auto lim = nodes.size();
     for (auto i = 0u; i != lim; ++i) {
@@ -55,7 +56,7 @@ TEST_F(mesh_fixture, locator_index) {
 
 TEST_F(mesh_fixture, position_index) {
     aligned::vector<node> nodes;
-    waveguide::mesh::descriptor desc;
+    waveguide::descriptor desc;
     std::tie(nodes, desc) = get_mesh(voxelised);
     const auto lim = nodes.size();
     for (auto i = 0u; i != lim; ++i) {
@@ -67,7 +68,7 @@ TEST_F(mesh_fixture, position_index) {
 
 TEST_F(mesh_fixture, neighbor) {
     aligned::vector<node> nodes;
-    waveguide::mesh::descriptor desc;
+    waveguide::descriptor desc;
     std::tie(nodes, desc) = get_mesh(voxelised);
     const auto lim = nodes.size();
     for (auto i = 0u; i != lim; ++i) {
@@ -103,7 +104,7 @@ TEST_F(mesh_fixture, neighbor) {
 
 TEST_F(mesh_fixture, inside) {
     aligned::vector<node> nodes;
-    waveguide::mesh::descriptor desc;
+    waveguide::descriptor desc;
     std::tie(nodes, desc) = get_mesh(voxelised);
 
 #if 0
@@ -126,8 +127,8 @@ TEST_F(mesh_fixture, inside) {
         if (nodes[i].inside == cpu_inside[i]) {
             same += 1;
         } else {
-            //std::cerr << "mismatch at index " << i << '\n';
-            //std::cerr << "    gpu: " << static_cast<bool>(nodes[i].inside)
+            // std::cerr << "mismatch at index " << i << '\n';
+            // std::cerr << "    gpu: " << static_cast<bool>(nodes[i].inside)
             //          << ", cpu: " << cpu_inside[i] << '\n';
         }
     }

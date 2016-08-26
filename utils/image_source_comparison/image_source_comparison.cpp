@@ -6,6 +6,7 @@
 #include "common/dsp_vector_ops.h"
 #include "common/progress_bar.h"
 #include "common/range.h"
+#include "common/scene_data_loader.h"
 #include "common/spatial_division/voxelised_scene_data.h"
 #include "common/string_builder.h"
 #include "common/write_audio_file.h"
@@ -47,7 +48,7 @@ void run_single(const compute_context& cc,
                 const model::ReceiverSettings& receiver,
                 const std::pair<std::string, std::string>& stage,
                 const std::pair<std::string, surface>& surf) {
-    scene_data scene{std::get<1>(stage)};
+    scene_data scene{scene_data_loader{std::get<1>(stage)}.get_scene_data()};
     scene.set_surfaces(std::get<1>(surf));
     const voxelised_scene_data voxelised{
             scene, 5, util::padded(scene.get_aabb(), glm::vec3{0.1})};
@@ -90,13 +91,9 @@ int main() {
     const model::ReceiverSettings receiver{glm::vec3{0, 1, 1}};
 
     const aligned::vector<std::pair<std::string, surface>> surfaces{
-            std::make_pair("0", make_surface(0.99, 0.01)),
-            std::make_pair("1", make_surface(0.8, 0.2)),
-            std::make_pair("2", make_surface(0.7, 0.3)),
-            std::make_pair("3", make_surface(0.5, 0.5)),
-            std::make_pair("4", make_surface(0.3, 0.7)),
-            std::make_pair("5", make_surface(0.2, 0.8)),
-            std::make_pair("6", make_surface(0.01, 0.99))};
+            std::make_pair("0", make_surface(0.999, 0.999)),
+            std::make_pair("1", make_surface(0.99, 0.9)),
+            std::make_pair("2", make_surface(0.9, 0.9))};
 
     const aligned::vector<std::pair<std::string, std::string>> objects{
             std::make_pair("vault", OBJ_PATH),

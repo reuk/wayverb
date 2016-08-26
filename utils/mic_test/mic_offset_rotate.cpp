@@ -1,8 +1,8 @@
 #include "waveguide/attenuator/microphone.h"
+#include "waveguide/boundary_adjust.h"
 #include "waveguide/config.h"
 #include "waveguide/default_kernel.h"
-#include "waveguide/mesh/boundary_adjust.h"
-#include "waveguide/mesh/model.h"
+#include "waveguide/mesh.h"
 #include "waveguide/waveguide.h"
 
 #include "common/cl/common.h"
@@ -87,7 +87,7 @@ int main(int argc, char** argv) {
 
         constexpr auto speed_of_sound{340.0};
 
-        const auto voxels_and_model{waveguide::mesh::compute_voxels_and_model(
+        const auto voxels_and_model{waveguide::compute_voxels_and_mesh(
                 cc, scene_data, mic, waveguide_sr, speed_of_sound)};
 
         const auto& model{std::get<1>(voxels_and_model)};

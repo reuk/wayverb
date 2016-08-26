@@ -1,5 +1,6 @@
 #include "common/conversions.h"
 #include "common/spatial_division/voxelised_scene_data.h"
+#include "common/scene_data_loader.h"
 
 #include "gtest/gtest.h"
 
@@ -14,7 +15,8 @@
 #endif
 
 TEST(boundary, tunnel) {
-    const scene_data scene(OBJ_PATH_TUNNEL);
+    const scene_data_loader scene_loader{OBJ_PATH_TUNNEL};
+    const scene_data scene{scene_loader.get_scene_data()};
     const voxelised_scene_data boundary(
             scene, 5, util::padded(scene.get_aabb(), glm::vec3{2}));
 
@@ -62,7 +64,8 @@ TEST(boundary, tunnel) {
 }
 
 TEST(boundary, bedroom) {
-    const scene_data scene(OBJ_PATH_BEDROOM);
+    const scene_data_loader scene_loader{OBJ_PATH_BEDROOM};
+    const scene_data scene{scene_loader.get_scene_data()};
     const voxelised_scene_data boundary(
             scene, 5, util::padded(scene.get_aabb(), glm::vec3{0.1}));
 

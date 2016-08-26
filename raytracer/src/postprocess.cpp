@@ -7,7 +7,7 @@
 
 namespace raytracer {
 
-int compute_optimum_reflection_number(float min_amp, float max_reflectivity) {
+size_t compute_optimum_reflection_number(float min_amp, float max_reflectivity) {
     return std::log(min_amp) / std::log(max_reflectivity);
 }
 
@@ -46,7 +46,8 @@ aligned::vector<aligned::vector<float>> run_attenuation(
         const compute_context& cc,
         const model::ReceiverSettings& receiver,
         const raytracer::results& input,
-        double output_sample_rate, double acoustic_impedance) {
+        double output_sample_rate,
+        double acoustic_impedance) {
     return run_attenuation(cc,
                            receiver,
                            input.get_impulses(),

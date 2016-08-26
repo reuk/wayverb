@@ -1,10 +1,10 @@
 #include "waveguide/config.h"
 #include "waveguide/filters.h"
-#include "waveguide/mesh/model.h"
-#include "waveguide/mesh/setup.h"
+#include "waveguide/mesh.h"
 #include "waveguide/postprocessor/microphone.h"
 #include "waveguide/preprocessor/single_soft_source.h"
 #include "waveguide/program.h"
+#include "waveguide/setup.h"
 #include "waveguide/waveguide.h"
 
 #include "common/cl/common.h"
@@ -22,7 +22,8 @@ TEST(peak_filter_coefficients, peak_filter_coefficients) {
     static std::default_random_engine engine{std::random_device()()};
     static std::uniform_real_distribution<cl_float> range{0, samplerate / 2};
     for (auto i = 0; i != 10; ++i) {
-        const auto descriptor = waveguide::descriptor{0, range(engine), 1.414};
+        const auto descriptor =
+                waveguide::filter_descriptor{0, range(engine), 1.414};
         const auto coefficients =
                 waveguide::get_peak_coefficients(descriptor, samplerate);
 
@@ -56,18 +57,18 @@ TEST(run_waveguide, run_waveguide) {
     constexpr auto speed_of_sound{340.0};
     constexpr auto acoustic_impedance{400.0};
 
-    const auto model{waveguide::mesh::compute_model(
-            cc, voxelised, 0.03, speed_of_sound)};
+    const auto model{
+            waveguide::compute_mesh(cc, voxelised, 0.03, speed_of_sound)};
 
     //  get a waveguide
 
     const auto source_index = compute_index(model.get_descriptor(), source);
     const auto receiver_index = compute_index(model.get_descriptor(), receiver);
 
-    if (!waveguide::mesh::is_inside(model, source_index)) {
+    if (!waveguide::is_inside(model, source_index)) {
         throw std::runtime_error("source is outside of mesh!");
     }
-    if (!waveguide::mesh::is_inside(model, receiver_index)) {
+    if (!waveguide::is_inside(model, receiver_index)) {
         throw std::runtime_error("receiver is outside of mesh!");
     }
 

@@ -9,35 +9,35 @@
 
 namespace waveguide {
 
-struct descriptor final {
+struct filter_descriptor final {
     double gain{0};
     double centre{0};
     double Q{0};
 };
 
 using coefficient_generator =
-        std::function<coefficients_biquad(const descriptor&, double)>;
+        std::function<coefficients_biquad(const filter_descriptor&, double)>;
 
 template <size_t... Ix>
 inline biquad_coefficients_array get_biquads_array(
         std::index_sequence<Ix...>,
-        const std::array<descriptor, biquad_sections>& n,
+        const std::array<filter_descriptor, biquad_sections>& n,
         double sr,
         const coefficient_generator& callback) {
     return biquad_coefficients_array{{callback(std::get<Ix>(n), sr)...}};
 }
 inline biquad_coefficients_array get_biquads_array(
-        const std::array<descriptor, biquad_sections>& n,
+        const std::array<filter_descriptor, biquad_sections>& n,
         double sr,
         const coefficient_generator& callback) {
     return get_biquads_array(
             std::make_index_sequence<biquad_sections>(), n, sr, callback);
 }
 
-coefficients_biquad get_peak_coefficients(const descriptor& n, double sr);
+coefficients_biquad get_peak_coefficients(const filter_descriptor& n, double sr);
 
 biquad_coefficients_array get_peak_biquads_array(
-        const std::array<descriptor, biquad_sections>& n, double sr);
+        const std::array<filter_descriptor, biquad_sections>& n, double sr);
 
 template <size_t A, size_t B>
 constexpr coefficients<A + B> convolve(const coefficients<A>& a,

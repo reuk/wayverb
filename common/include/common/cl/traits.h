@@ -409,6 +409,31 @@ constexpr bool any(const T& t) {
     return ret;
 }
 
+template <typename T, detail::enable_if_is_vector_t<T, int> = 0>
+constexpr auto min(const T& t) {
+    using value_type = detail::value_type_t<T>;
+    struct min final {
+        constexpr value_type operator()(value_type a, value_type b) const {
+            using std::min;
+            return min(a, b);
+        }
+    };
+    return detail::accumulate(t, std::numeric_limits<value_type>::max(), min{});
+}
+
+template <typename T, detail::enable_if_is_vector_t<T, int> = 0>
+constexpr auto max(const T& t) {
+    using value_type = detail::value_type_t<T>;
+    struct max final {
+        constexpr value_type operator()(value_type a, value_type b) const {
+            using std::max;
+            return max(a, b);
+        }
+    };
+    return detail::accumulate(
+            t, std::numeric_limits<value_type>::lowest(), max{});
+}
+
 //  misc ---------------------------------------------------------------------//
 
 namespace detail {

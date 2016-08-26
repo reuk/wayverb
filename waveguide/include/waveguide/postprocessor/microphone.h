@@ -4,9 +4,7 @@
 
 namespace waveguide {
 
-namespace mesh {
 struct descriptor;
-}  // namespace mesh
 
 namespace postprocessor {
 
@@ -14,7 +12,7 @@ namespace detail {
 
 class microphone_state final {
 public:
-    microphone_state(const mesh::descriptor& mesh_descriptor,
+    microphone_state(const descriptor& mesh_descriptor,
                      size_t output_node,
                      double sample_rate,
                      double ambient_density);
@@ -41,7 +39,7 @@ public:
     //  node pressure and intensity are passed to the callback
     using output_callback = std::function<void(run_step_output)>;
 
-    microphone(const mesh::descriptor& mesh_descriptor,
+    microphone(const descriptor& mesh_descriptor,
                size_t output_node,
                double sample_rate,
                double ambient_density,
@@ -61,7 +59,7 @@ class multi_microphone final {
     using output_callback = std::function<void(
             const aligned::vector<std::tuple<run_step_output, size_t>>&)>;
 
-    multi_microphone(const mesh::descriptor& mesh,
+    multi_microphone(const descriptor& mesh,
                      const aligned::vector<size_t>& output_node,
                      double sample_rate,
                      double ambient_density,

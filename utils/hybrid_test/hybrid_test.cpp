@@ -2,9 +2,9 @@
 #include "combined/serialize/model.h"
 
 #include "waveguide/attenuator/microphone.h"
+#include "waveguide/boundary_adjust.h"
 #include "waveguide/config.h"
-#include "waveguide/mesh/boundary_adjust.h"
-#include "waveguide/mesh/model.h"
+#include "waveguide/mesh.h"
 #include "waveguide/waveguide.h"
 
 #include "raytracer/attenuator.h"
@@ -77,17 +77,17 @@ auto run_waveguide(const compute_context& cc,
     //  get a waveguide
     const auto receiver = config.receiver_settings.position;
 
-    const auto model{waveguide::mesh::compute_model(
-            cc, boundary, spacing, speed_of_sound)};
+    const auto model{
+            waveguide::compute_mesh(cc, boundary, spacing, speed_of_sound)};
 
     const auto receiver_index = compute_index(model.get_descriptor(), receiver);
     const auto source_index =
             compute_index(model.get_descriptor(), config.source);
 
-    if (!waveguide::mesh::is_inside(model, receiver_index)) {
+    if (!waveguide::is_inside(model, receiver_index)) {
         throw std::runtime_error("receiver is outside of mesh!");
     }
-    if (!waveguide::mesh::is_inside(model, source_index)) {
+    if (!waveguide::is_inside(model, source_index)) {
         throw std::runtime_error("source is outside of mesh!");
     }
 

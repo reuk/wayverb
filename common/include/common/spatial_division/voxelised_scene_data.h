@@ -5,15 +5,24 @@
 
 class voxelised_scene_data final {
 public:
-    voxelised_scene_data(const copyable_scene_data& scene_data,
-                         size_t octree_depth,
-                         const geo::box& aabb);
+    //  invariant:
+    //  The 'voxels' structure holds references/indexes to valid triangles in
+    //  the 'scene_data' structure.
 
-    const copyable_scene_data& get_scene_data() const;
+    voxelised_scene_data(scene_data, size_t octree_depth, const geo::box& aabb);
+
+    const scene_data& get_scene_data() const;
     const voxel_collection<3>& get_voxels() const;
 
+    //  We can allow modifying surfaces without violating the invariant.
+    void set_surfaces(const aligned::vector<scene_data::material>& materials);
+    void set_surfaces(const aligned::map<std::string, surface>& surfaces);
+    void set_surface(const scene_data::material& material);
+
+    void set_surfaces(const surface& surface);
+
 private:
-    copyable_scene_data scene_data;
+    scene_data scene;
     voxel_collection<3> voxels;
 };
 

@@ -2,7 +2,7 @@
 
 #include "waveguide/cl/structs.h"
 #include "waveguide/cl/utils.h"
-#include "waveguide/mesh/descriptor.h"
+#include "waveguide/descriptor.h"
 
 #include "common/cl/representation.h"
 #include "common/program_wrapper.h"
@@ -39,7 +39,6 @@ typedef struct { uint array[3]; } boundary_index_array_3;
 };
 
 namespace waveguide {
-namespace mesh {
 
 class boundary_coefficient_program final {
 public:
@@ -87,5 +86,4 @@ boundary_index_data compute_boundary_index_data(const cl::Device& device,
                                                 aligned::vector<node>& nodes,
                                                 const descriptor& desc);
 
-}  // namespace mesh
 }  // namespace waveguide

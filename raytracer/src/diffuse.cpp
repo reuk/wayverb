@@ -65,7 +65,6 @@ void diffuse_finder::push(const aligned::vector<reflection>& reflections,
     const auto buf{
             read_from_buffer<diffuse_path_info>(queue, diffuse_path_buffer)};
     for (auto i{0u}; i != buf.size(); ++i) {
-        const auto r{reflections[i]};
         const auto s{buf[i]};
         throw_if_suspicious(s.volume);
         throw_if_suspicious(s.position);
@@ -76,13 +75,14 @@ void diffuse_finder::push(const aligned::vector<reflection>& reflections,
     //  copy impulses out
     auto ret{read_from_buffer<impulse>(queue, impulse_buffer)};
 
+#ifndef NDEBUG
     for (auto i{0u}; i != ret.size(); ++i) {
-        const auto r{reflections[i]};
         const auto s{ret[i]};
         throw_if_suspicious(s.volume);
         throw_if_suspicious(s.position);
         throw_if_suspicious(s.time);
     }
+#endif
 
     //  maybe a bit slow but w/e
     //  we profile then we burn it down so that something beautiful can rise

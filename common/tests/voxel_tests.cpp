@@ -1,6 +1,7 @@
 #include "common/azimuth_elevation.h"
 #include "common/conversions.h"
 #include "common/map_to_vector.h"
+#include "common/scene_data_loader.h"
 #include "common/spatial_division/scene_buffers.h"
 #include "common/spatial_division/voxel_collection.h"
 #include "common/spatial_division/voxelised_scene_data.h"
@@ -12,28 +13,24 @@
 #endif
 
 namespace {
-auto get_voxelised(const copyable_scene_data& scene) {
+auto get_voxelised(const scene_data& scene) {
     return voxelised_scene_data{
             scene, 5, util::padded(scene.get_aabb(), glm::vec3{0.1})};
 }
 
-auto get_scenes() {
-    return aligned::vector<copyable_scene_data>{
-            geo::get_scene_data(
-                    geo::box{glm::vec3(0, 0, 0), glm::vec3(4, 3, 6)}),
-            geo::get_scene_data(
-                    geo::box{glm::vec3(0, 0, 0), glm::vec3(3, 3, 3)}),
-            scene_data{OBJ_PATH}};
-}
+aligned::vector<scene_data> test_scenes{
+        geo::get_scene_data(geo::box{glm::vec3(0, 0, 0), glm::vec3(4, 3, 6)}),
+        geo::get_scene_data(geo::box{glm::vec3(0, 0, 0), glm::vec3(3, 3, 3)}),
+        scene_data_loader{OBJ_PATH}.get_scene_data()};
 
 TEST(voxel, construct) {
-    for (const auto& scene : get_scenes()) {
+    for (const auto& scene : test_scenes) {
         const auto voxelised{get_voxelised(scene)};
     }
 }
 
 TEST(voxel, walk) {
-    for (const auto& scene : get_scenes()) {
+    for (const auto& scene : test_scenes) {
         const auto voxelised{get_voxelised(scene)};
 
         const auto rays = 1000;
@@ -55,13 +52,13 @@ TEST(voxel, walk) {
 }
 
 TEST(voxel, flatten) {
-    for (const auto& scene : get_scenes()) {
+    for (const auto& scene : test_scenes) {
         const auto voxelised{get_voxelised(scene)};
         const auto f = get_flattened(voxelised.get_voxels());
     }
 }
 
-void compare(const copyable_scene_data& scene) {
+void compare(const scene_data& scene) {
     const auto voxelised{get_voxelised(scene)};
     const compute_context cc{};
     const scene_buffers buffers{cc.context, voxelised};
@@ -124,7 +121,7 @@ void compare(const copyable_scene_data& scene) {
 }
 
 TEST(voxel, compare) {
-    for (const auto& scene : get_scenes()) {
+    for (const auto& scene : test_scenes) {
         compare(scene);
     }
 }

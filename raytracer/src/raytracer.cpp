@@ -37,17 +37,16 @@ std::experimental::optional<impulse> get_direct_impulse(
     return std::experimental::nullopt;
 }
 
-std::experimental::optional<results> run(
-        const compute_context& cc,
-        const voxelised_scene_data& scene_data,
-        double speed_of_sound,
-        const glm::vec3& source,
-        const glm::vec3& receiver,
-        const aligned::vector<glm::vec3>& directions,
-        size_t reflection_depth,
-        size_t image_source_depth,
-        const std::atomic_bool& keep_going,
-        const per_step_callback& callback) {
+std::experimental::optional<results> run(const compute_context& cc,
+                                         const voxelised_scene_data& scene_data,
+                                         double speed_of_sound,
+                                         const glm::vec3& source,
+                                         const glm::vec3& receiver,
+                                         aligned::vector<glm::vec3> directions,
+                                         size_t reflection_depth,
+                                         size_t image_source_depth,
+                                         const std::atomic_bool& keep_going,
+                                         const per_step_callback& callback) {
     if (reflection_depth < image_source_depth) {
         throw std::runtime_error(
                 "can't do image-source deeper than the max reflection depth");

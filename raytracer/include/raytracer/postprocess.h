@@ -12,7 +12,7 @@
 namespace raytracer {
 
 /// Get the number of necessary reflections for a given min amplitude.
-int compute_optimum_reflection_number(float min_amp, float max_reflectivity);
+size_t compute_optimum_reflection_number(float min_amp, float max_reflectivity);
 
 template <typename im>
 aligned::vector<volume_type> compute_multiband_signal(
@@ -43,11 +43,10 @@ aligned::vector<volume_type> compute_multiband_signal(
     //  However, we need to convert to pressures at some point, so we'll do it
     //  here.
 
-    /*
-    for (auto& i : ret) {
-        i = intensity_to_pressure(i, acoustic_impedance);
-    }
-    */
+    //  TODO run tests on this
+    //  for (auto& i : ret) {
+    //      i = intensity_to_pressure(i, acoustic_impedance);
+    //  }
 
     return ret;
 }

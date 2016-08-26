@@ -1,8 +1,8 @@
+#include "raytracer/image_source_impl.h"
 #include "common/almost_equal.h"
 #include "common/spatial_division/voxelised_scene_data.h"
 #include "common/stl_wrappers.h"
 #include "raytracer/construct_impulse.h"
-#include "raytracer/image_source_impl.h"
 
 #include <numeric>
 
@@ -10,7 +10,7 @@ namespace raytracer {
 
 aligned::vector<geo::triangle_vec3> compute_original_triangles(
         const aligned::vector<cl_ulong>& triangles,
-        const copyable_scene_data& scene_data) {
+        const scene_data& scene_data) {
     return map_to_vector(triangles, [&](const auto i) {
         return geo::get_triangle_vec3(scene_data.get_triangles()[i],
                                       scene_data.get_vertices());
@@ -113,7 +113,7 @@ float compute_distance(const glm::vec3& source,
            glm::distance(unmirrored.back(), receiver);
 }
 
-volume_type compute_volume(const copyable_scene_data& scene_data,
+volume_type compute_volume(const scene_data& scene_data,
                            const aligned::vector<cl_ulong>& triangles) {
     return proc::accumulate(
             triangles,
@@ -127,7 +127,7 @@ volume_type compute_volume(const copyable_scene_data& scene_data,
             });
 }
 
-impulse compute_ray_path_impulse(const copyable_scene_data& scene_data,
+impulse compute_ray_path_impulse(const scene_data& scene_data,
                                  const aligned::vector<cl_ulong>& triangles,
                                  const glm::vec3& source,
                                  const aligned::vector<glm::vec3>& unmirrored,

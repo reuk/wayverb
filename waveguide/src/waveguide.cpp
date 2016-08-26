@@ -1,18 +1,18 @@
+#include "waveguide/waveguide.h"
 #include "common/conversions.h"
 #include "common/exceptions.h"
-#include "waveguide/mesh/model.h"
+#include "waveguide/mesh.h"
 #include "waveguide/postprocessor/microphone.h"
 #include "waveguide/postprocessor/visualiser.h"
 #include "waveguide/preprocessor/single_soft_source.h"
 #include "waveguide/surface_filters.h"
-#include "waveguide/waveguide.h"
 
 #include <cassert>
 
 namespace waveguide {
 
 size_t run(const compute_context& cc,
-           const mesh::model& model,
+           const mesh& mesh,
            size_t ideal_steps,
            const step_preprocessor& preprocessor,
            const aligned::vector<step_postprocessor>& postprocessors,
@@ -20,34 +20,28 @@ size_t run(const compute_context& cc,
            const std::atomic_bool& keep_going) {
     cl::Buffer previous(cc.context,
                         CL_MEM_READ_WRITE,
-                        model.get_structure().get_condensed_nodes().size() *
+                        mesh.get_structure().get_condensed_nodes().size() *
                                 sizeof(cl_float));
 
     cl::Buffer current(cc.context,
                        CL_MEM_READ_WRITE,
-                       model.get_structure().get_condensed_nodes().size() *
+                       mesh.get_structure().get_condensed_nodes().size() *
                                sizeof(cl_float));
 
     const auto node_buffer = load_to_buffer(
-            cc.context, model.get_structure().get_condensed_nodes(), true);
+            cc.context, mesh.get_structure().get_condensed_nodes(), true);
 
     const auto boundary_coefficients_buffer = load_to_buffer(
-            cc.context, model.get_structure().get_coefficients(), true);
+            cc.context, mesh.get_structure().get_coefficients(), true);
 
     cl::Buffer error_flag_buffer(cc.context, CL_MEM_READ_WRITE, sizeof(cl_int));
 
-    auto boundary_buffer_1 =
-            load_to_buffer(cc.context,
-                           mesh::get_boundary_data<1>(model.get_structure()),
-                           false);
-    auto boundary_buffer_2 =
-            load_to_buffer(cc.context,
-                           mesh::get_boundary_data<2>(model.get_structure()),
-                           false);
-    auto boundary_buffer_3 =
-            load_to_buffer(cc.context,
-                           mesh::get_boundary_data<3>(model.get_structure()),
-                           false);
+    auto boundary_buffer_1 = load_to_buffer(
+            cc.context, get_boundary_data<1>(mesh.get_structure()), false);
+    auto boundary_buffer_2 = load_to_buffer(
+            cc.context, get_boundary_data<2>(mesh.get_structure()), false);
+    auto boundary_buffer_3 = load_to_buffer(
+            cc.context, get_boundary_data<3>(mesh.get_structure()), false);
 
     cl::CommandQueue queue(cc.context, cc.device);
 
@@ -72,13 +66,13 @@ size_t run(const compute_context& cc,
 
         //  run kernel
         kernel(cl::EnqueueArgs(queue,
-                               cl::NDRange(model.get_structure()
+                               cl::NDRange(mesh.get_structure()
                                                    .get_condensed_nodes()
                                                    .size())),
                previous,
                current,
                node_buffer,
-               to_cl_int3(model.get_descriptor().dimensions),
+               to_cl_int3(mesh.get_descriptor().dimensions),
                boundary_buffer_1,
                boundary_buffer_2,
                boundary_buffer_3,
@@ -119,7 +113,7 @@ size_t run(const compute_context& cc,
 //----------------------------------------------------------------------------//
 
 aligned::vector<run_step_output> run(const compute_context& cc,
-                                     const mesh::model& model,
+                                     const mesh& mesh,
                                      size_t source_index,
                                      const aligned::vector<float>& input,
                                      size_t receiver_index,
@@ -132,15 +126,15 @@ aligned::vector<run_step_output> run(const compute_context& cc,
     ret.reserve(input.size());
     aligned::vector<step_postprocessor> postprocessors{
             postprocessor::microphone(
-                    model.get_descriptor(),
+                    mesh.get_descriptor(),
                     receiver_index,
-                    compute_sample_rate(model.get_descriptor(), speed_of_sound),
+                    compute_sample_rate(mesh.get_descriptor(), speed_of_sound),
                     ambient_density,
                     [&ret](const auto& i) { ret.push_back(i); })};
 
     std::atomic_bool keep_going{true};
     const auto results{run(cc,
-                           model,
+                           mesh,
                            input.size(),
                            preprocessor,
                            postprocessors,

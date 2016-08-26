@@ -1,15 +1,14 @@
+#include "common/spatial_division/voxelised_scene_data.h"
 #include "common/almost_equal.h"
 #include "common/azimuth_elevation.h"
 #include "common/geo/geometric.h"
-#include "common/spatial_division/voxelised_scene_data.h"
 
 #include <random>
 
-voxelised_scene_data::voxelised_scene_data(
-        const copyable_scene_data& scene_data,
-        size_t octree_depth,
-        const geo::box& aabb)
-        : scene_data(scene_data)
+voxelised_scene_data::voxelised_scene_data(scene_data sd,
+                                           size_t octree_depth,
+                                           const geo::box& aabb)
+        : scene(std::move(sd))
         , voxels(ndim_tree<3>(
                   octree_depth,
                   [&](auto item, const auto& aabb) {
@@ -22,23 +21,39 @@ voxelised_scene_data::voxelised_scene_data(
                                                                // for
                                                                // correctness
                               geo::get_triangle_vec3(
-                                      scene_data.get_triangles()[item],
-                                      scene_data.get_vertices()));
+                                      scene.get_triangles()[item],
+                                      scene.get_vertices()));
                   },
-                  scene_data.compute_triangle_indices(),
+                  scene.compute_triangle_indices(),
                   aabb)) {
-    if (aabb == scene_data.get_aabb()) {
+    if (aabb == scene.get_aabb()) {
         throw std::runtime_error(
                 "remember to add some padding to the voxelisation "
                 "boundary!");
     }
 }
 
-const copyable_scene_data& voxelised_scene_data::get_scene_data() const {
-    return scene_data;
-}
+const scene_data& voxelised_scene_data::get_scene_data() const { return scene; }
 const voxel_collection<3>& voxelised_scene_data::get_voxels() const {
     return voxels;
+}
+
+void voxelised_scene_data::set_surfaces(
+        const aligned::vector<scene_data::material>& materials) {
+    scene.set_surfaces(materials);
+}
+
+void voxelised_scene_data::set_surfaces(
+        const aligned::map<std::string, surface>& surfaces) {
+    scene.set_surfaces(surfaces);
+}
+
+void voxelised_scene_data::set_surface(const scene_data::material& material) {
+    scene.set_surface(material);
+}
+
+void voxelised_scene_data::set_surfaces(const surface& surface) {
+    scene.set_surfaces(surface);
 }
 
 //----------------------------------------------------------------------------//

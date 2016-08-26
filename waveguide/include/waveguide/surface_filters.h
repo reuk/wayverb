@@ -1,26 +1,27 @@
 #pragma once
 
 #include "common/scene_data.h"
+
 #include "waveguide/filters.h"
 
 namespace waveguide {
 
 template <size_t I>
-inline descriptor compute_filter_descriptor(const surface& surface) {
-    const auto gain =
-            decibels::a2db((surface.specular.s[I] + surface.diffuse.s[I]) / 2);
-    const auto centre = (hrtf_data::edges[I + 0] + hrtf_data::edges[I + 1]) / 2;
+inline filter_descriptor compute_filter_descriptor(const surface& surface) {
+    const auto gain{
+            decibels::a2db((surface.specular.s[I] + surface.diffuse.s[I]) / 2)};
+    const auto centre{(hrtf_data::edges[I + 0] + hrtf_data::edges[I + 1]) / 2};
     //  produce a filter descriptor struct for this filter
-    return descriptor{gain, centre, 1.414};
+    return {gain, centre, 1.414};
 }
 
 template <size_t... Ix>
-constexpr std::array<descriptor, biquad_sections> to_filter_descriptors(
+constexpr std::array<filter_descriptor, biquad_sections> to_filter_descriptors(
         std::index_sequence<Ix...>, const surface& surface) {
     return {{compute_filter_descriptor<Ix>(surface)...}};
 }
 
-constexpr std::array<descriptor, biquad_sections> to_filter_descriptors(
+constexpr std::array<filter_descriptor, biquad_sections> to_filter_descriptors(
         const surface& surface) {
     return to_filter_descriptors(std::make_index_sequence<biquad_sections>(),
                                  surface);

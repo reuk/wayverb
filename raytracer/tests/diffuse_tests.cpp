@@ -2,6 +2,7 @@
 
 #include "common/geo/box.h"
 #include "common/model/receiver_settings.h"
+#include "common/scene_data_loader.h"
 #include "common/spatial_division/voxelised_scene_data.h"
 
 #include "gtest/gtest.h"
@@ -21,7 +22,7 @@ TEST(diffuse, bad_reflections_box) {
     constexpr auto surface{make_surface(s, d)};
 
     const compute_context cc{};
-    
+
     auto scene = geo::get_scene_data(box);
     scene.set_surfaces(surface);
     const voxelised_scene_data voxelised(
@@ -63,8 +64,8 @@ TEST(diffuse, bad_reflections_vault) {
     const model::ReceiverSettings receiver{glm::vec3{0, 1, 1}};
 
     const compute_context cc{};
-    
-    const scene_data scene{OBJ_PATH};
+
+    const scene_data scene{scene_data_loader{OBJ_PATH}.get_scene_data()};
     const voxelised_scene_data voxelised(
             scene, 5, util::padded(scene.get_aabb(), glm::vec3{0.1}));
 

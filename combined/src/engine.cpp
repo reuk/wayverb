@@ -19,14 +19,14 @@
 
 #include "waveguide/attenuator/hrtf.h"
 #include "waveguide/attenuator/microphone.h"
+#include "waveguide/boundary_adjust.h"
 #include "waveguide/default_kernel.h"
-#include "waveguide/mesh/boundary_adjust.h"
-#include "waveguide/mesh/model.h"
-#include "waveguide/mesh/setup.h"
+#include "waveguide/mesh.h"
 #include "waveguide/postprocess.h"
 #include "waveguide/postprocessor/microphone.h"
 #include "waveguide/postprocessor/visualiser.h"
 #include "waveguide/preprocessor/single_soft_source.h"
+#include "waveguide/setup.h"
 #include "waveguide/waveguide.h"
 
 #include <cmath>
@@ -163,12 +163,11 @@ float max_reflectivity(const surface& surface) {
                     max_reflectivity(surface.specular));
 }
 
-float max_reflectivity(const copyable_scene_data::material& material) {
+float max_reflectivity(const scene_data::material& material) {
     return max_reflectivity(material.surface);
 }
 
-float max_reflectivity(
-        const aligned::vector<copyable_scene_data::material>& materials) {
+float max_reflectivity(const aligned::vector<scene_data::material>& materials) {
     return std::accumulate(materials.begin() + 1,
                            materials.end(),
                            max_reflectivity(materials.front()),
@@ -184,7 +183,7 @@ namespace wayverb {
 class engine::impl final {
 public:
     impl(const compute_context& cc,
-         const copyable_scene_data& scene_data,
+         const scene_data& scene_data,
          const glm::vec3& source,
          const glm::vec3& receiver,
          double waveguide_sample_rate,
@@ -204,7 +203,7 @@ public:
                    acoustic_impedance) {}
 
     impl(const compute_context& cc,
-         const copyable_scene_data& scene_data,
+         const scene_data& scene_data,
          const glm::vec3& source,
          const glm::vec3& receiver,
          double waveguide_sample_rate,
@@ -213,12 +212,11 @@ public:
          double speed_of_sound,
          double acoustic_impedance)
             : impl(cc,
-                   waveguide::mesh::compute_voxels_and_model(
-                           cc,
-                           scene_data,
-                           receiver,
-                           waveguide_sample_rate,
-                           speed_of_sound),
+                   waveguide::compute_voxels_and_mesh(cc,
+                                                      scene_data,
+                                                      receiver,
+                                                      waveguide_sample_rate,
+                                                      speed_of_sound),
                    source,
                    receiver,
                    waveguide_sample_rate,
@@ -229,7 +227,7 @@ public:
 
 private:
     impl(const compute_context& cc,
-         std::tuple<voxelised_scene_data, waveguide::mesh::model>&& pair,
+         std::tuple<voxelised_scene_data, waveguide::mesh>&& pair,
          const glm::vec3& source,
          const glm::vec3& receiver,
          double waveguide_sample_rate,
@@ -239,7 +237,7 @@ private:
          double acoustic_impedance)
             : compute_context(cc)
             , voxelised(std::move(std::get<0>(pair)))
-            , model(std::move(std::get<1>(pair)))
+            , mesh(std::move(std::get<1>(pair)))
             , speed_of_sound(speed_of_sound)
             , acoustic_impedance(acoustic_impedance)
             , source(source)
@@ -247,11 +245,11 @@ private:
             , waveguide_sample_rate(waveguide_sample_rate)
             , rays(rays)
             , impulses(impulses)
-            , source_index(compute_index(model.get_descriptor(), source))
-            , receiver_index(compute_index(model.get_descriptor(), receiver)) {
+            , source_index(compute_index(mesh.get_descriptor(), source))
+            , receiver_index(compute_index(mesh.get_descriptor(), receiver)) {
         const auto is_index_inside{[&](auto index) {
-            return waveguide::mesh::is_inside(
-                    model.get_structure().get_condensed_nodes()[index]);
+            return waveguide::is_inside(
+                    mesh.get_structure().get_condensed_nodes()[index]);
         }};
 
         if (!is_index_inside(source_index)) {
@@ -321,7 +319,7 @@ public:
         waveguide_results.reserve(steps);
         aligned::vector<waveguide::step_postprocessor> postprocessors{
                 waveguide::postprocessor::microphone(
-                        model.get_descriptor(),
+                        mesh.get_descriptor(),
                         receiver_index,
                         waveguide_sample_rate,
                         acoustic_impedance / speed_of_sound,
@@ -335,7 +333,7 @@ public:
 
         const auto waveguide_steps_completed{waveguide::run(
                 compute_context,
-                model,
+                mesh,
                 steps,
                 preprocessor,
                 postprocessors,
@@ -372,7 +370,7 @@ public:
     }
 
     aligned::vector<glm::vec3> get_node_positions() const {
-        return model.get_node_positions();
+        return mesh.get_node_positions();
     }
 
     void register_waveguide_visual_callback(
@@ -402,7 +400,7 @@ private:
     compute_context compute_context;
 
     voxelised_scene_data voxelised;
-    waveguide::mesh::model model;
+    waveguide::mesh mesh;
 
     double speed_of_sound;
     double acoustic_impedance;
@@ -424,7 +422,7 @@ constexpr auto speed_of_sound{340};
 constexpr auto acoustic_impedance{400};
 
 engine::engine(const compute_context& compute_context,
-               const copyable_scene_data& scene_data,
+               const scene_data& scene_data,
                const glm::vec3& source,
                const glm::vec3& receiver,
                double waveguide_sample_rate,
@@ -441,7 +439,7 @@ engine::engine(const compute_context& compute_context,
                                        acoustic_impedance)) {}
 
 engine::engine(const compute_context& compute_context,
-               const copyable_scene_data& scene_data,
+               const scene_data& scene_data,
                const glm::vec3& source,
                const glm::vec3& receiver,
                double waveguide_sample_rate,

@@ -17,7 +17,7 @@ struct ReceiverSettings;
 }  // namespace model
 
 struct compute_context;
-class copyable_scene_data;
+class scene_data;
 
 //  engine  ------------------------------------------------------------------//
 
@@ -44,7 +44,7 @@ public:
 class engine final {
 public:
     engine(const compute_context& compute_context,
-           const copyable_scene_data& scene_data,
+           const scene_data& scene_data,
            const glm::vec3& source,
            const glm::vec3& receiver,
            double waveguide_sample_rate,
@@ -52,7 +52,7 @@ public:
            size_t impulses);
 
     engine(const compute_context& compute_context,
-           const copyable_scene_data& scene_data,
+           const scene_data& scene_data,
            const glm::vec3& source,
            const glm::vec3& receiver,
            double waveguide_sample_rate,

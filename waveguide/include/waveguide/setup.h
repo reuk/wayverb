@@ -1,8 +1,8 @@
 #pragma once
 
+#include "waveguide/boundary_coefficient_finder.h"
 #include "waveguide/cl/utils.h"
-#include "waveguide/mesh/boundary_coefficient_finder.h"
-#include "waveguide/mesh/descriptor.h"
+#include "waveguide/descriptor.h"
 #include "waveguide/program.h"
 
 #include "common/aligned/vector.h"
@@ -20,8 +20,6 @@ class copyable_scene_data;
 namespace waveguide {
 
 class mesh_boundary;
-
-namespace mesh {
 
 //----------------------------------------------------------------------------//
 
@@ -70,11 +68,11 @@ constexpr bool is_inside(const condensed_node& c) {
 
 class vectors final {
 public:
-    vectors(aligned::vector<condensed_node>&& nodes,
-            aligned::vector<coefficients_canonical>&& coefficients,
-            aligned::vector<boundary_index_array_1>&& boundary_indices_1,
-            aligned::vector<boundary_index_array_2>&& boundary_indices_2,
-            aligned::vector<boundary_index_array_3>&& boundary_indices_3);
+    vectors(aligned::vector<condensed_node> nodes,
+            aligned::vector<coefficients_canonical> coefficients,
+            aligned::vector<boundary_index_array_1> boundary_indices_1,
+            aligned::vector<boundary_index_array_2> boundary_indices_2,
+            aligned::vector<boundary_index_array_3> boundary_indices_3);
 
     template <size_t n>
     const aligned::vector<boundary_index_array<n>>& get_boundary_indices()
@@ -82,6 +80,8 @@ public:
 
     const aligned::vector<condensed_node>& get_condensed_nodes() const;
     const aligned::vector<coefficients_canonical>& get_coefficients() const;
+
+    void set_coefficients(aligned::vector<coefficients_canonical> coefficients);
 
 private:
     aligned::vector<condensed_node> condensed_nodes;
@@ -127,5 +127,4 @@ inline aligned::vector<boundary_data_array<n>> get_boundary_data(
     });
 }
 
-}  // namespace mesh
 }  // namespace waveguide

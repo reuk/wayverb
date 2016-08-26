@@ -8,15 +8,10 @@
 
 #include "glm/glm.hpp"
 
-#include <map>
-#include <vector>
-
 class mesh_boundary;
 struct triangle;
 
-//----------------------------------------------------------------------------//
-
-class copyable_scene_data {
+class scene_data final {
 public:
     struct material final {
         std::string name;
@@ -29,18 +24,11 @@ public:
         aligned::vector<material> materials;
     };
 
-    copyable_scene_data() = default;
-    copyable_scene_data(const aligned::vector<triangle>& triangles,
-                        const aligned::vector<cl_float3>& vertices,
-                        const aligned::vector<material>& materials);
-    copyable_scene_data(contents&& rhs);
-
-    copyable_scene_data(const copyable_scene_data& rhs) = default;
-    copyable_scene_data& operator=(const copyable_scene_data& rhs) = default;
-    copyable_scene_data(copyable_scene_data&& rhs) noexcept = default;
-    copyable_scene_data& operator=(copyable_scene_data&& rhs) noexcept =
-            default;
-    virtual ~copyable_scene_data() noexcept = default;
+    scene_data() = default;
+    scene_data(aligned::vector<triangle> triangles,
+               aligned::vector<cl_float3> vertices,
+               aligned::vector<material> materials);
+    scene_data(contents rhs);
 
     aligned::vector<surface> get_surfaces() const;
     void set_surfaces(const aligned::vector<material>& materials);
@@ -56,32 +44,11 @@ public:
     const aligned::vector<cl_float3>& get_vertices() const;
     const aligned::vector<material>& get_materials() const;
 
+    //  pass by value because we need a copy anyway
+    void set_contents(contents c);
+
 private:
     contents contents;
 };
 
 aligned::vector<glm::vec3> convert(const aligned::vector<cl_float3>& c);
-
-//----------------------------------------------------------------------------//
-
-class scene_data final : public copyable_scene_data {
-    struct impl;
-    std::unique_ptr<impl> pimpl;
-
-public:
-    //  this class adds the ability to load/save from file
-    scene_data(const std::string& fpath);
-    void save(const std::string& f) const;
-
-    scene_data(const scene_data& rhs) = delete;
-    scene_data& operator=(const scene_data& rhs) = delete;
-    scene_data(scene_data&& rhs) noexcept;
-    scene_data& operator=(scene_data&& rhs) noexcept;
-    ~scene_data() noexcept;
-
-private:
-    scene_data(copyable_scene_data&& rhs, std::unique_ptr<impl>&& pimpl);
-    scene_data(std::tuple<copyable_scene_data, std::unique_ptr<impl>>&& rhs);
-    static std::tuple<copyable_scene_data, std::unique_ptr<impl>> load(
-            const std::string& scene_file);
-};

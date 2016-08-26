@@ -9,6 +9,7 @@
 #include "common/conversions.h"
 #include "common/dsp_vector_ops.h"
 #include "common/map_to_vector.h"
+#include "common/scene_data_loader.h"
 #include "common/spatial_division/voxelised_scene_data.h"
 #include "common/string_builder.h"
 #include "common/write_audio_file.h"
@@ -36,7 +37,7 @@ const auto the_rays = get_random_directions(bench_rays);
 TEST(raytrace, new) {
     const compute_context cc;
 
-    const scene_data scene(OBJ_PATH);
+    const scene_data scene{scene_data_loader{OBJ_PATH}.get_scene_data()};
     const voxelised_scene_data voxelised(
             scene, 5, util::padded(scene.get_aabb(), glm::vec3{0.1}));
 

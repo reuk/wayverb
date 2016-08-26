@@ -55,7 +55,7 @@ aligned::set<index_path> compute_unique_paths(
 
 aligned::vector<geo::triangle_vec3> compute_original_triangles(
         const aligned::vector<cl_ulong>& triangles,
-        const copyable_scene_data& scene_data);
+        const scene_data& scene_data);
 
 aligned::vector<geo::triangle_vec3> compute_mirrored_triangles(
         const aligned::vector<geo::triangle_vec3>& original);
@@ -80,7 +80,7 @@ glm::vec3 compute_mirrored_point(
 
 float compute_distance(const aligned::vector<glm::vec3>& unmirrored);
 
-volume_type compute_volume(const copyable_scene_data& scene_data,
+volume_type compute_volume(const scene_data& scene_data,
                            const aligned::vector<cl_ulong>& triangles);
 
 std::experimental::optional<impulse> follow_ray_path(

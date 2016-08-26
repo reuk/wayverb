@@ -27,8 +27,8 @@ void serialize(Archive& archive, surface& m) {
 JSON_OSTREAM_OVERLOAD(surface);
 
 template <typename Archive>
-void serialize(Archive& archive, copyable_scene_data::material& m) {
+void serialize(Archive& archive, scene_data::material& m) {
     archive(cereal::make_nvp("name", m.name),
             cereal::make_nvp("surface", m.surface));
 }
-JSON_OSTREAM_OVERLOAD(copyable_scene_data::material);
+JSON_OSTREAM_OVERLOAD(scene_data::material);

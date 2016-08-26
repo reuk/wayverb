@@ -1,8 +1,8 @@
 #include "waveguide/attenuator/microphone.h"
+#include "waveguide/boundary_adjust.h"
 #include "waveguide/config.h"
 #include "waveguide/make_transparent.h"
-#include "waveguide/mesh/boundary_adjust.h"
-#include "waveguide/mesh/model.h"
+#include "waveguide/mesh.h"
 #include "waveguide/waveguide.h"
 
 #include "common/azimuth_elevation.h"
@@ -60,17 +60,17 @@ int main(int argc, char** argv) {
                 waveguide::compute_adjusted_boundary(
                         scene_data.get_aabb(), receiver, spacing));
 
-        const auto model{waveguide::mesh::compute_model(
+        const auto model{waveguide::compute_mesh(
                 cc, voxelised, spacing, speed_of_sound)};
 
         const auto receiver_index =
                 compute_index(model.get_descriptor(), receiver);
         const auto source_index = compute_index(model.get_descriptor(), source);
 
-        if (!waveguide::mesh::is_inside(model, receiver_index)) {
+        if (!waveguide::is_inside(model, receiver_index)) {
             throw std::runtime_error("receiver is outside of mesh!");
         }
-        if (!waveguide::mesh::is_inside(model, source_index)) {
+        if (!waveguide::is_inside(model, source_index)) {
             throw std::runtime_error("source is outside of mesh!");
         }
 

@@ -1,9 +1,8 @@
-#include "waveguide/mesh/descriptor.h"
+#include "waveguide/descriptor.h"
 #include "common/stl_wrappers.h"
 #include "waveguide/config.h"
 
 namespace waveguide {
-namespace mesh {
 
 size_t compute_index(const descriptor& d, const descriptor::locator& pos) {
     return pos.x + pos.y * d.dimensions.x +
@@ -68,5 +67,4 @@ double compute_sample_rate(const descriptor& d, double speed_of_sound) {
     return 1 / config::time_step(speed_of_sound, d.spacing);
 }
 
-}  // namespace mesh
 }  // namespace waveguide

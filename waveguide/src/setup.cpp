@@ -1,4 +1,4 @@
-#include "waveguide/mesh/setup.h"
+#include "waveguide/setup.h"
 #include "common/cl/geometry.h"
 #include "common/cl/scene_structs.h"
 #include "common/cl/voxel.h"
@@ -7,7 +7,6 @@
 #include "waveguide/cl/utils.h"
 
 namespace waveguide {
-namespace mesh {
 
 condensed_node get_condensed(const node& n) {
     const auto ret =
@@ -27,11 +26,11 @@ aligned::vector<condensed_node> get_condensed(const aligned::vector<node>& n) {
 
 //----------------------------------------------------------------------------//
 
-vectors::vectors(aligned::vector<condensed_node>&& nodes,
-                 aligned::vector<coefficients_canonical>&& coefficients,
-                 aligned::vector<boundary_index_array_1>&& boundary_indices_1,
-                 aligned::vector<boundary_index_array_2>&& boundary_indices_2,
-                 aligned::vector<boundary_index_array_3>&& boundary_indices_3)
+vectors::vectors(aligned::vector<condensed_node> nodes,
+                 aligned::vector<coefficients_canonical> coefficients,
+                 aligned::vector<boundary_index_array_1> boundary_indices_1,
+                 aligned::vector<boundary_index_array_2> boundary_indices_2,
+                 aligned::vector<boundary_index_array_3> boundary_indices_3)
         : condensed_nodes(std::move(nodes))
         , coefficients(std::move(coefficients))
         , boundary_indices_1(std::move(boundary_indices_1))
@@ -45,6 +44,15 @@ const aligned::vector<condensed_node>& vectors::get_condensed_nodes() const {
 const aligned::vector<coefficients_canonical>& vectors::get_coefficients()
         const {
     return coefficients;
+}
+
+void vectors::set_coefficients(aligned::vector<coefficients_canonical> c) {
+    if (c.size() != coefficients.size()) {
+        throw std::runtime_error(
+                "size of new coefficients vector must be equal to the existing "
+                "one in order to maintain object invariants");
+    }
+    coefficients = std::move(c);
 }
 
 //----------------------------------------------------------------------------//
@@ -230,5 +238,4 @@ setup_program::setup_program(const compute_context& cc)
                                            ::cl_sources::utils,
                                            source}) {}
 
-}  // namespace mesh
 }  // namespace waveguide

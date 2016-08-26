@@ -182,7 +182,6 @@ kernel void diffuse(const global reflection* reflections,  //  input
     }
 
     //  find the new volume
-    //  TODO remove diffuse energy from ongoing specular energy
     const surface s = surfaces[triangles[reflections[thread].triangle].surface];
     const volume_type new_volume = diffuse_path[thread].volume * s.specular;
 

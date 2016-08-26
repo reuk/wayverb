@@ -1,7 +1,7 @@
 #include "waveguide/attenuator/microphone.h"
+#include "waveguide/boundary_adjust.h"
 #include "waveguide/config.h"
-#include "waveguide/mesh/boundary_adjust.h"
-#include "waveguide/mesh/model.h"
+#include "waveguide/mesh.h"
 #include "waveguide/waveguide.h"
 
 #include "common/almost_equal.h"
@@ -50,7 +50,7 @@ aligned::vector<float> run_simulation(const compute_context& cc,
     const auto spacing = waveguide::config::grid_spacing(
             speed_of_sound, 1 / (filter_frequency * 4));
 
-    const auto model{waveguide::mesh::compute_model(
+    const auto mesh{waveguide::compute_mesh(
             cc,
             voxelised_scene_data(
                     scene_data,
@@ -60,13 +60,13 @@ aligned::vector<float> run_simulation(const compute_context& cc,
             spacing,
             speed_of_sound)};
 
-    const auto receiver_index = compute_index(model.get_descriptor(), receiver);
-    const auto source_index = compute_index(model.get_descriptor(), source);
+    const auto receiver_index = compute_index(mesh.get_descriptor(), receiver);
+    const auto source_index = compute_index(mesh.get_descriptor(), source);
 
-    if (!waveguide::mesh::is_inside(model, receiver_index)) {
+    if (!waveguide::is_inside(mesh, receiver_index)) {
         throw std::runtime_error("receiver is outside of mesh!");
     }
-    if (!waveguide::mesh::is_inside(model, source_index)) {
+    if (!waveguide::is_inside(mesh, source_index)) {
         throw std::runtime_error("source is outside of mesh!");
     }
     aligned::vector<float> input{1};
@@ -74,7 +74,7 @@ aligned::vector<float> run_simulation(const compute_context& cc,
 
     progress_bar pb(std::cout, steps);
     const auto results{waveguide::run(cc,
-                                      model,
+                                      mesh,
                                       source_index,
                                       input,
                                       receiver_index,

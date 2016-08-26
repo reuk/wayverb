@@ -28,7 +28,7 @@ const auto badly_behaved_rays{aligned::vector<geo::ray>{
         geo::ray{glm::vec3{0, 0.000000596046448, 1.53889632},
                  glm::vec3{0.434765905, -0.869531512, 0.234293744}}}};
 
-auto get_voxelised(copyable_scene_data scene) {
+auto get_voxelised(scene_data scene) {
     scene.set_surfaces(surface{volume_type{{1, 1, 1, 1, 1, 1, 1, 1}},
                                volume_type{{0, 0, 0, 0, 0, 0, 0, 0}}});
     return voxelised_scene_data{

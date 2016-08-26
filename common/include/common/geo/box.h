@@ -6,7 +6,7 @@
 
 #include "glm/glm.hpp"
 
-class copyable_scene_data;
+class scene_data;
 
 namespace geo {
 
@@ -19,7 +19,7 @@ bool overlaps(const box& b, const triangle_vec3& t);
 
 bool does_intersect(const box& b, const geo::ray& ray, float t0, float t1);
 
-copyable_scene_data get_scene_data(const box& b);
+scene_data get_scene_data(const box& b);
 
 constexpr glm::vec3 mirror_on_axis(const glm::vec3& v,
                                    const glm::vec3& pt,

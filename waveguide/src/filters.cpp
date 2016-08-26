@@ -5,7 +5,8 @@
 
 namespace waveguide {
 
-coefficients_biquad get_peak_coefficients(const descriptor& n, double sr) {
+coefficients_biquad get_peak_coefficients(const filter_descriptor& n,
+                                          double sr) {
     const auto A = decibels::db2a(n.gain / 2);
     const auto w0 = 2.0 * M_PI * n.centre / sr;
     const auto cw0 = cos(w0);
@@ -18,7 +19,7 @@ coefficients_biquad get_peak_coefficients(const descriptor& n, double sr) {
 }
 
 biquad_coefficients_array get_peak_biquads_array(
-        const std::array<descriptor, biquad_sections>& n, double sr) {
+        const std::array<filter_descriptor, biquad_sections>& n, double sr) {
     return get_biquads_array(n, sr, get_peak_coefficients);
 }
 

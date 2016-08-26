@@ -1,13 +1,12 @@
-#include "waveguide/mesh/boundary_coefficient_finder.h"
+#include "waveguide/boundary_coefficient_finder.h"
 #include "waveguide/cl/utils.h"
-#include "waveguide/mesh/model.h"
+#include "waveguide/mesh.h"
 
 #include "common/cl/geometry.h"
 #include "common/cl/voxel.h"
 #include "common/popcount.h"
 
 namespace waveguide {
-namespace mesh {
 
 namespace {
 
@@ -642,5 +641,4 @@ boundary_coefficient_program::boundary_coefficient_program(
                           ::cl_sources::voxel,
                           source}) {}
 
-}  // namespace mesh
 }  // namespace waveguide

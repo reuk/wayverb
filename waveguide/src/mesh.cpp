@@ -1,34 +1,39 @@
-#include "waveguide/mesh/model.h"
+#include "waveguide/mesh.h"
+#include "waveguide/boundary_adjust.h"
 #include "waveguide/config.h"
-#include "waveguide/mesh/boundary_adjust.h"
 #include "waveguide/program.h"
 #include "waveguide/surface_filters.h"
 
 #include "common/conversions.h"
 #include "common/popcount.h"
+#include "common/scene_data_loader.h"
 #include "common/spatial_division/scene_buffers.h"
 #include "common/spatial_division/voxelised_scene_data.h"
 
 #include <iostream>
 
 namespace waveguide {
-namespace mesh {
 
-model::model(const struct descriptor& descriptor,
+mesh::mesh(const struct descriptor& descriptor,
              const class vectors& vectors,
              const aligned::vector<glm::vec3>& node_positions)
         : descriptor(descriptor)
         , vectors(vectors)
         , node_positions(node_positions) {}
 
-const descriptor& model::get_descriptor() const { return descriptor; }
-const vectors& model::get_structure() const { return vectors; }
-const aligned::vector<glm::vec3>& model::get_node_positions() const {
+const descriptor& mesh::get_descriptor() const { return descriptor; }
+const vectors& mesh::get_structure() const { return vectors; }
+const aligned::vector<glm::vec3>& mesh::get_node_positions() const {
     return node_positions;
 }
 
-bool is_inside(const model& m, size_t node_index) {
+bool is_inside(const mesh& m, size_t node_index) {
     return is_inside(m.get_structure().get_condensed_nodes()[node_index]);
+}
+
+void mesh::set_coefficients(
+        aligned::vector<coefficients_canonical> coefficients) {
+    vectors.set_coefficients(coefficients);
 }
 
 //----------------------------------------------------------------------------//
@@ -87,10 +92,10 @@ std::tuple<aligned::vector<node>, descriptor> compute_fat_nodes(
     return std::make_tuple(read_from_buffer<node>(queue, node_buffer), desc);
 }
 
-model compute_model(const compute_context& cc,
-                    const voxelised_scene_data& voxelised,
-                    double mesh_spacing,
-                    double speed_of_sound) {
+mesh compute_mesh(const compute_context& cc,
+                  const voxelised_scene_data& voxelised,
+                  double mesh_spacing,
+                  double speed_of_sound) {
     const scene_buffers buffers{cc.context, voxelised};
 
     aligned::vector<node> nodes;
@@ -117,12 +122,12 @@ model compute_model(const compute_context& cc,
             std::move(bia_2),
             std::move(bia_3)}};
 
-    return model{desc, v, node_positions};
+    return {desc, v, node_positions};
 }
 
-std::tuple<voxelised_scene_data, model> compute_voxels_and_model(
+std::tuple<voxelised_scene_data, mesh> compute_voxels_and_mesh(
         const compute_context& cc,
-        const copyable_scene_data& scene,
+        const scene_data& scene,
         const glm::vec3& anchor,
         double sample_rate,
         double speed_of_sound) {
@@ -133,9 +138,8 @@ std::tuple<voxelised_scene_data, model> compute_voxels_and_model(
             5,
             waveguide::compute_adjusted_boundary(
                     scene.get_aabb(), anchor, mesh_spacing)}};
-    auto model{compute_model(cc, voxelised, mesh_spacing, speed_of_sound)};
-    return std::make_tuple(std::move(voxelised), std::move(model));
+    auto mesh{compute_mesh(cc, voxelised, mesh_spacing, speed_of_sound)};
+    return std::make_tuple(std::move(voxelised), std::move(mesh));
 }
 
-}  // namespace mesh
 }  // namespace waveguide

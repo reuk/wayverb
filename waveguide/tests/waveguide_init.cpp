@@ -1,5 +1,5 @@
 #include "waveguide/make_transparent.h"
-#include "waveguide/mesh/model.h"
+#include "waveguide/mesh.h"
 #include "waveguide/postprocessor/microphone.h"
 #include "waveguide/preprocessor/single_soft_source.h"
 #include "waveguide/waveguide.h"
@@ -33,8 +33,8 @@ TEST(waveguide_init, waveguide_init) {
     constexpr auto acoustic_impedance{400.0};
 
     auto run = [&] {
-        const auto model{waveguide::mesh::compute_model(
-                cc, voxelised, 0.04, speed_of_sound)};
+        const auto model{
+                waveguide::compute_mesh(cc, voxelised, 0.04, speed_of_sound)};
         auto receiver_index{compute_index(model.get_descriptor(), centre)};
 
         constexpr std::atomic_bool keep_going{true};
