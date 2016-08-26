@@ -8,8 +8,7 @@ namespace waveguide {
 
 template <size_t I>
 inline filter_descriptor compute_filter_descriptor(const surface& surface) {
-    const auto gain{
-            decibels::a2db((surface.specular.s[I] + surface.diffuse.s[I]) / 2)};
+    const auto gain{decibels::a2db(surface.specular.s[I])};
     const auto centre{(hrtf_data::edges[I + 0] + hrtf_data::edges[I + 1]) / 2};
     //  produce a filter descriptor struct for this filter
     return {gain, centre, 1.414};
