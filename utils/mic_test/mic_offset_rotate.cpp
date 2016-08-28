@@ -62,7 +62,7 @@ int main(int argc, char** argv) {
 
     compute_context cc;
 
-    auto directionality = 0.0;
+    auto directionality{0.0f};
     switch (polar_pattern) {
         case PolarPattern::omni: directionality          = 0; break;
         case PolarPattern::cardioid: directionality      = 0.5; break;
@@ -71,7 +71,6 @@ int main(int argc, char** argv) {
 
     std::cout << "directionality: " << directionality << std::endl;
 
-    waveguide::attenuator::microphone microphone;
     glm::vec3 mic{0, 0, 0};
     const auto test_locations = 12;
 
@@ -126,8 +125,9 @@ int main(int argc, char** argv) {
                                                 400,
                                                 [&](auto) { pb += 1; })};
 
-            auto out_signal = microphone.process(
-                    w_results, glm::vec3(0, 0, 1), directionality);
+            auto out_signal{waveguide::attenuator::microphone{
+                    glm::vec3{0, 0, 1},
+                    directionality}.process(w_results)};
 
             // const auto bands = 8;
             // const auto min_band = 80;

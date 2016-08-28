@@ -318,14 +318,12 @@ public:
         aligned::vector<waveguide::run_step_output> waveguide_results;
         waveguide_results.reserve(steps);
         aligned::vector<waveguide::step_postprocessor> postprocessors{
-                waveguide::postprocessor::microphone(
+                waveguide::postprocessor::make_microphone(
                         mesh.get_descriptor(),
-                        receiver_index,
                         waveguide_sample_rate,
                         acoustic_impedance / speed_of_sound,
-                        [&waveguide_results](const auto& i) {
-                            waveguide_results.push_back(i);
-                        })};
+                        receiver_index,
+                        std::back_inserter(waveguide_results))};
 
         if (waveguide_visual_callback) {
             postprocessors.push_back(waveguide_visual_callback);

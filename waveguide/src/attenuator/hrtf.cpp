@@ -45,11 +45,15 @@ float attenuation(const glm::vec3& direction,
 namespace waveguide {
 namespace attenuator {
 
+hrtf::hrtf(const glm::vec3& direction,
+           const glm::vec3& up,
+           hrtf_channel channel)
+        : direction_(direction)
+        , up_(up)
+        , channel_(channel) {}
+
 aligned::vector<volume_type> hrtf::process(
-        const aligned::vector<run_step_output>& input,
-        const glm::vec3& direction,
-        const glm::vec3& up,
-        hrtf_channel channel) const {
+        const aligned::vector<run_step_output>& input) const {
     aligned::vector<volume_type> ret(input.size());
 
     for (auto band{0u}; band != detail::components_v<volume_type>; ++band) {
@@ -59,9 +63,9 @@ aligned::vector<volume_type> hrtf::process(
                     if (mag == 0) {
                         return 0.0f;
                     }
-                    mag = sqrt(mag * pow(attenuation(direction,
-                                                     up,
-                                                     channel,
+                    mag = sqrt(mag * pow(attenuation(direction_,
+                                                     up_,
+                                                     channel_,
                                                      i.intensity,
                                                      band),
                                          2));

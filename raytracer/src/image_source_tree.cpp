@@ -84,11 +84,11 @@ template <typename It>
 image_source_traversal_callback<It>::image_source_traversal_callback(
         const constants& constants,
         aligned::vector<state>& s,
-        It& output_iterator,
+        It output_iterator,
         const path_element& p)
         : constants_(constants)
         , state_(s)
-        , output_iterator_(output_iterator) {
+        , output_iterator_(std::move(output_iterator)) {
     const auto& scene{constants_.voxelised.get_scene_data()};
 
     //  find the scene-space position of this triangle
@@ -210,10 +210,10 @@ class initial_callback final {
 public:
     initial_callback(const constants& constants,
                      aligned::vector<state>& state,
-                     It& output_iterator)
+                     It output_iterator)
             : constants_(constants)
             , state_(state)
-            , output_iterator_(output_iterator) {}
+            , output_iterator_(std::move(output_iterator)) {}
 
     image_source_traversal_callback<It> operator()(
             const path_element& p) const {
@@ -224,7 +224,7 @@ public:
 private:
     const constants& constants_;
     aligned::vector<state>& state_;
-    It& output_iterator_;
+    It output_iterator_;
 };
 
 template <typename It>

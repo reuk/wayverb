@@ -137,7 +137,7 @@ class image_source_traversal_callback final {
 public:
     image_source_traversal_callback(const constants& constants,
                                     aligned::vector<state>& state,
-                                    It& output_iterator,
+                                    It output_iterator,
                                     const path_element& p);
 
     ~image_source_traversal_callback() noexcept;
@@ -149,7 +149,7 @@ private:
 
     const constants& constants_;
     aligned::vector<state>& state_;
-    It& output_iterator_;
+    It output_iterator_;
 };
 
 //----------------------------------------------------------------------------//

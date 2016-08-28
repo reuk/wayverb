@@ -49,7 +49,7 @@ aligned::vector<run_step_output> run(const compute_context& cc,
                                      const aligned::vector<float>& input,
                                      size_t output_node,
                                      double speed_of_sound,
-                                     double ambient_density,
+                                     double acoustic_impedance,
                                      const per_step_callback& callback);
 
 }  // namespace waveguide
