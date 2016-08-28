@@ -1,6 +1,7 @@
 #include "common/pressure_intensity.h"
 #include "common/interpolation.h"
 
+/*
 aligned::vector<float> energy_histogram_to_impulse_response(
         const aligned::vector<volume_type>& histogram,
         double period,
@@ -12,3 +13,4 @@ aligned::vector<float> energy_histogram_to_impulse_response(
         //  find appropriate minimum phase spectrum
     }
 }
+*/

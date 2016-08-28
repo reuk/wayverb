@@ -35,23 +35,22 @@ const glm::vec3 source{1, 2, 1};
 const auto the_rays = get_random_directions(bench_rays);
 
 TEST(raytrace, new) {
-    const compute_context cc;
+    const compute_context cc{};
 
     const scene_data scene{scene_data_loader{OBJ_PATH}.get_scene_data()};
-    const voxelised_scene_data voxelised(
-            scene, 5, util::padded(scene.get_aabb(), glm::vec3{0.1}));
+    const voxelised_scene_data voxelised{
+            scene, 5, util::padded(scene.get_aabb(), glm::vec3{0.1})};
 
-    std::atomic_bool keep_going{true};
-    auto results = raytracer::run(cc,
-                                  voxelised,
-                                  speed_of_sound,
-                                  source,
-                                  glm::vec3(0, 1.75, 0),
-                                  the_rays,
-                                  bench_reflections,
-                                  10,
-                                  keep_going,
-                                  [](auto) {});
+    auto results{raytracer::run(cc,
+                                voxelised,
+                                speed_of_sound,
+                                source,
+                                glm::vec3(0, 1.75, 0),
+                                the_rays,
+                                bench_reflections,
+                                10,
+                                true,
+                                [](auto) {})};
 
     ASSERT_TRUE(results);
 }

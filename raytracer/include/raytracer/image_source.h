@@ -6,7 +6,7 @@
 #include "common/aligned/vector.h"
 #include "common/cl/include.h"
 
-#include <experimental/optional>
+#include "glm/fwd.hpp"
 
 class voxelised_scene_data;
 
@@ -22,12 +22,12 @@ public:
                                          const voxelised_scene_data& scene_data,
                                          double speed_of_sound);
 
-private:
     struct item final {
         cl_ulong index;
         bool visible;
     };
 
+private:
     iterative_builder<item> reflection_path_builder;
 };
 

@@ -19,11 +19,11 @@ TEST(multitree, construct_image_source_tree_small) {
     const auto tree{raytracer::construct_image_source_tree(paths)};
 
     ASSERT_EQ(tree.size(), 1);
-    ASSERT_EQ(tree.begin()->item_.index, 0);
+    ASSERT_EQ(tree.begin()->item.index, 0);
 
-    ASSERT_EQ(tree.begin()->branches_.size(), 2);
-    ASSERT_EQ(tree.begin()->branches_.begin()->item_.index, 0);
-    ASSERT_EQ(std::next(tree.begin()->branches_.begin())->item_.index, 1);
+    ASSERT_EQ(tree.begin()->branches.size(), 2);
+    ASSERT_EQ(tree.begin()->branches.begin()->item.index, 0);
+    ASSERT_EQ(std::next(tree.begin()->branches.begin())->item.index, 1);
 }
 
 /*
