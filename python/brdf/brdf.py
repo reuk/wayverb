@@ -16,8 +16,7 @@ import math
 
 
 def get_frac(numerator, denominator):
-    return 0 if denominator == 0 or np.isnan(denominator) or np.isinf(
-        denominator) else numerator / denominator
+    return numerator / denominator if denominator else 0
 
 
 def brdf(y, d):
@@ -25,12 +24,14 @@ def brdf(y, d):
     one_minus_d_sq = pow(1 - d, 2)
     numerator = 2 * one_minus_d_sq * y_sq + 2 * d - 1
 
+    to_sqrt = max(one_minus_d_sq * y_sq + 2 * d - 1, 0)
+
     if 0.5 <= d:
-        denominator = 4 * np.pi * d * np.sqrt(one_minus_d_sq * y_sq + 2 * d - 1)
+        denominator = 4 * np.pi * d * np.sqrt(to_sqrt)
         extra = ((1 - d) * y) / (2 * np.pi * d)
         return get_frac(numerator, denominator) + extra
 
-    denominator = 4 * np.pi * d * np.sqrt(one_minus_d_sq * y_sq + 2 * d - 1)
+    denominator = 2 * np.pi * d * np.sqrt(to_sqrt)
     return get_frac(numerator, denominator)
 
 
@@ -48,8 +49,13 @@ def main():
 
     angles = np.linspace(0, np.pi / 2, 1000)
 
-    for i in np.linspace(0.1, 1, 10):
-        plt.plot(angles, brdf_v(np.cos(angles), i))
+    f, axarr = plt.subplots(2, sharex=True)
+
+    for i in np.linspace(0.0, 0.5, 5, False):
+        axarr[1].plot(angles, brdf_v(np.cos(angles), i))
+
+    for i in np.linspace(0.5, 1, 5, False):
+        axarr[0].plot(angles, brdf_v(np.cos(angles), i))
 
     plt.show()
 

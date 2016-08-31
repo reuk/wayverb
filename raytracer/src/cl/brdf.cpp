@@ -42,27 +42,24 @@ float3 lambert_scattering(float3 specular, float3 surface_normal, float3 random,
 //  all-directions
 float get_frac(float numerator, float denominator);
 float get_frac(float numerator, float denominator) {
-    return denominator == 0 || isnan(denominator) || isinf(denominator)
-                   ? 0
-                   : numerator / denominator;
+    return denominator ? numerator / denominator : 0;
 }
 
 float brdf_mag(float y, float d);
 float brdf_mag(float y, float d) {
-    //  check that this direction is attainable
     const float y_sq = y * y;
     const float one_minus_d_sq = pow(1 - d, 2);
     const float numerator = 2 * one_minus_d_sq * y_sq + 2 * d - 1;
 
+    const float to_sqrt = max(one_minus_d_sq * y_sq + 2 * d - 1, 0.0f);
+
     if (0.5 <= d) {
-        const float denominator =
-                4 * M_PI * d * sqrt(one_minus_d_sq * y_sq + 2 * d - 1);
+        const float denominator = 4 * M_PI * d * sqrt(to_sqrt);
         const float extra = ((1 - d) * y) / (2 * M_PI * d);
         return get_frac(numerator, denominator) + extra;
     }
 
-    const float denominator =
-            2 * M_PI * d * sqrt(one_minus_d_sq * y_sq + 2 * d - 1);
+    const float denominator = 2 * M_PI * d * sqrt(to_sqrt);
     return get_frac(numerator, denominator);
 }
 

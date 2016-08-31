@@ -142,7 +142,7 @@ public:
 
         const auto sample_rate{44100.0};
         const auto output{raytracer::run_attenuation(
-                compute_context_, receiver, *results, sample_rate, 400)};
+                compute_context_, receiver, *results, sample_rate, 400, 20)};
 
         if (output.size() != 1) {
             throw std::runtime_error("output should contain just one channel");

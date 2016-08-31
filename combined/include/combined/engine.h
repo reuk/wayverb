@@ -38,6 +38,7 @@ public:
             const compute_context& cc,
             const model::ReceiverSettings& receiver,
             double output_sample_rate,
+            double max_length_in_seconds,
             const state_callback&) const = 0;
 };
 

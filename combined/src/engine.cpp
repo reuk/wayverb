@@ -74,15 +74,18 @@ public:
             const compute_context& cc,
             const model::ReceiverSettings& receiver,
             double output_sample_rate,
+            double max_length_in_seconds,
             const state_callback& callback) const override {
         callback(wayverb::state::postprocessing, 1.0);
 
         //  attenuate raytracer results
-        auto raytracer_output{raytracer::run_attenuation(cc,
-                                                         receiver,
-                                                         raytracer_results,
-                                                         output_sample_rate,
-                                                         acoustic_impedance)};
+        auto raytracer_output{
+                raytracer::run_attenuation(cc,
+                                           receiver,
+                                           raytracer_results,
+                                           output_sample_rate,
+                                           acoustic_impedance,
+                                           max_length_in_seconds)};
         //  attenuate waveguide results
         auto waveguide_output{waveguide::run_attenuation(
                 receiver, waveguide_results, waveguide_sample_rate)};

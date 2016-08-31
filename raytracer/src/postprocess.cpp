@@ -7,7 +7,8 @@
 
 namespace raytracer {
 
-size_t compute_optimum_reflection_number(float min_amp, float max_reflectivity) {
+size_t compute_optimum_reflection_number(float min_amp,
+                                         float max_reflectivity) {
     return std::log(min_amp) / std::log(max_reflectivity);
 }
 
@@ -47,12 +48,79 @@ aligned::vector<aligned::vector<float>> run_attenuation(
         const model::ReceiverSettings& receiver,
         const raytracer::results& input,
         double output_sample_rate,
-        double acoustic_impedance) {
+        double acoustic_impedance,
+        double max_seconds) {
     return run_attenuation(cc,
                            receiver,
                            input.get_impulses(),
                            output_sample_rate,
-                           input.get_speed_of_sound(), acoustic_impedance);
+                           input.get_speed_of_sound(),
+                           acoustic_impedance,
+                           max_seconds);
+}
+
+//----------------------------------------------------------------------------//
+
+template <model::ReceiverSettings::Mode mode>
+aligned::vector<aligned::vector<float>> run_attenuation(
+        const compute_context& cc,
+        const model::ReceiverSettings& receiver,
+        const aligned::vector<impulse>& input,
+        double output_sample_rate,
+        double speed_of_sound,
+        double acoustic_impedance,
+        double max_seconds);
+
+template <>
+aligned::vector<aligned::vector<float>>
+run_attenuation<model::ReceiverSettings::Mode::microphones>(
+        const compute_context& cc,
+        const model::ReceiverSettings& receiver,
+        const aligned::vector<impulse>& input,
+        double output_sample_rate,
+        double speed_of_sound,
+        double acoustic_impedance,
+        double max_seconds) {
+    raytracer::attenuator::microphone attenuator{cc, speed_of_sound};
+    return map_to_vector(receiver.microphones, [&](const auto& i) {
+        const auto processed{
+                attenuator.process(input,
+                                   get_pointing(i.pointer, receiver.position),
+                                   i.shape,
+                                   receiver.position)};
+        return flatten_filter_and_mixdown(processed.begin(),
+                                          processed.end(),
+                                          output_sample_rate,
+                                          acoustic_impedance,
+                                          max_seconds);
+    });
+}
+
+template <>
+aligned::vector<aligned::vector<float>>
+run_attenuation<model::ReceiverSettings::Mode::hrtf>(
+        const compute_context& cc,
+        const model::ReceiverSettings& receiver,
+        const aligned::vector<impulse>& input,
+        double output_sample_rate,
+        double speed_of_sound,
+        double acoustic_impedance,
+        double max_seconds) {
+    raytracer::attenuator::hrtf attenuator{cc, speed_of_sound};
+    const auto channels = {hrtf_channel::left, hrtf_channel::right};
+    return map_to_vector(channels, [&](const auto& i) {
+        const auto processed{attenuator.process(
+                input,
+                get_pointing(receiver.hrtf, receiver.position),
+                glm::vec3(0, 1, 0),
+                receiver.position,
+                i)};
+        return flatten_filter_and_mixdown(processed.begin(),
+                                          processed.end(),
+                                          output_sample_rate,
+                                          acoustic_impedance,
+                                          max_seconds);
+    });
 }
 
 aligned::vector<aligned::vector<float>> run_attenuation(
@@ -61,36 +129,27 @@ aligned::vector<aligned::vector<float>> run_attenuation(
         const aligned::vector<impulse>& input,
         double output_sample_rate,
         double speed_of_sound,
-        double acoustic_impedance) {
+        double acoustic_impedance,
+        double max_seconds) {
     switch (receiver.mode) {
-        case model::ReceiverSettings::Mode::microphones: {
-            raytracer::attenuator::microphone attenuator{cc, speed_of_sound};
-            return map_to_vector(receiver.microphones, [&](const auto& i) {
-                return flatten_filter_and_mixdown(
-                        attenuator.process(
-                                input,
-                                get_pointing(i.pointer, receiver.position),
-                                i.shape,
-                                receiver.position),
-                        output_sample_rate,
-                        acoustic_impedance);
-            });
-        }
-        case model::ReceiverSettings::Mode::hrtf: {
-            raytracer::attenuator::hrtf attenuator{cc, speed_of_sound};
-            const auto channels = {hrtf_channel::left, hrtf_channel::right};
-            return map_to_vector(channels, [&](const auto& i) {
-                return flatten_filter_and_mixdown(
-                        attenuator.process(
-                                input,
-                                get_pointing(receiver.hrtf, receiver.position),
-                                glm::vec3(0, 1, 0),
-                                receiver.position,
-                                i),
-                        output_sample_rate,
-                        acoustic_impedance);
-            });
-        }
+        case model::ReceiverSettings::Mode::microphones:
+            return run_attenuation<model::ReceiverSettings::Mode::microphones>(
+                    cc,
+                    receiver,
+                    input,
+                    output_sample_rate,
+                    speed_of_sound,
+                    acoustic_impedance,
+                    max_seconds);
+        case model::ReceiverSettings::Mode::hrtf:
+            return run_attenuation<model::ReceiverSettings::Mode::hrtf>(
+                    cc,
+                    receiver,
+                    input,
+                    output_sample_rate,
+                    speed_of_sound,
+                    acoustic_impedance,
+                    max_seconds);
     }
 }
 

@@ -239,8 +239,8 @@ TEST(raytrace, image_source) {
         const auto bit_depth = 16;
         const auto sample_rate = 44100.0;
         {
-            auto mixed_down = mixdown(raytracer::compute_multiband_signal(
-                    i, sample_rate, acoustic_impedance));
+            auto mixed_down{mixdown(raytracer::convert_to_histogram(
+                    i.begin(), i.end(), sample_rate, acoustic_impedance, 20))};
             normalize(mixed_down);
             snd::write(
                     build_string(SCRATCH_PATH, "/", name, "_no_processing.wav"),
@@ -249,8 +249,8 @@ TEST(raytrace, image_source) {
                     bit_depth);
         }
         {
-            auto processed = raytracer::flatten_filter_and_mixdown(
-                    i, sample_rate, acoustic_impedance);
+            auto processed{raytracer::flatten_filter_and_mixdown(
+                    i.begin(), i.end(), sample_rate, acoustic_impedance, 20)};
             normalize(processed);
             snd::write(build_string(SCRATCH_PATH, "/", name, "_processed.wav"),
                        {processed},

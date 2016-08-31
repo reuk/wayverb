@@ -14,51 +14,31 @@ namespace raytracer {
 /// Get the number of necessary reflections for a given min amplitude.
 size_t compute_optimum_reflection_number(float min_amp, float max_reflectivity);
 
-template <typename im>
-aligned::vector<volume_type> compute_multiband_signal(
-        const aligned::vector<im>& impulse,
-        double samplerate,
-        float acoustic_impedance) {
-    // Find the index of the final sample based on time and samplerate
-    const auto max_time{std::min(
-            proc::max_element(impulse,
-                              [](auto i, auto j) { return i.time < j.time; })
-                    ->time,
-            20.0f)};
+template <typename It>
+aligned::vector<volume_type> convert_to_histogram(It begin,
+                                                  It end,
+                                                  float histogram_frequency,
+                                                  float acoustic_impedance,
+                                                  float max_seconds) {
+    const auto max_time_in_input{
+            std::max_element(begin, end, [](auto i, auto j) {
+                return i.time < j.time;
+            })->time};
+    const auto max_time{std::min(max_time_in_input, max_seconds)};
 
-    const auto max_sample = round(max_time * samplerate) + 1;
+    const size_t output_size = std::round(max_time * histogram_frequency) + 1;
 
-    //  kutruff2009 p. 52
-    //  With some assumptions (the wavefronts are incoherent), the total energy
-    //  at some point can be calculated just by adding the energies
-    //  (intensities) of the components.
-    aligned::vector<volume_type> ret(max_sample, make_volume_type(0));
-    for (const auto& i : impulse) {
-        const auto sample{round(i.time * samplerate)};
-        if (sample < ret.size()) {
-            ret[sample] += i.volume;
+    //  Build the histogram by looking up the time of each input, and
+    //  then adding its energy to the appropriate histogram bin.
+    aligned::vector<volume_type> ret{output_size, make_volume_type(0)};
+    for (auto i{begin}; i != end; ++i) {
+        const auto bin{std::round(i->time * histogram_frequency)};
+        if (bin < ret.size()) {
+            ret[bin] += i->volume;
         }
     }
 
-    //  However, we need to convert to pressures at some point, so we'll do it
-    //  here.
-
-    //  TODO run tests on this
-    //  for (auto& i : ret) {
-    //      i = intensity_to_pressure(i, acoustic_impedance);
-    //  }
-
     return ret;
-}
-
-template <typename im>
-aligned::vector<aligned::vector<volume_type>> compute_multiband_signal(
-        const aligned::vector<aligned::vector<im>>& impulse,
-        double samplerate,
-        double acoustic_impedance) {
-    return map_to_vector(impulse, [=](const auto& i) {
-        return compute_multiband_signal(i, samplerate, acoustic_impedance);
-    });
 }
 
 /// Recursively check a collection of impulses for the earliest non-zero time of
@@ -128,15 +108,18 @@ inline void fix_predelay(T& ret) {
     fixPredelay(ret, predelay);
 }
 
-template <typename im>
-aligned::vector<float> flatten_filter_and_mixdown(
-        const aligned::vector<im>& input,
-        double output_sample_rate,
-        double acoustic_impedance) {
-    return multiband_filter_and_mixdown(
-            compute_multiband_signal(
-                    input, output_sample_rate, acoustic_impedance),
-            output_sample_rate);
+template <typename It>  /// It is an iterator through impulse types
+aligned::vector<float> flatten_filter_and_mixdown(It begin,
+                                                  It end,
+                                                  float output_sample_rate,
+                                                  float acoustic_impedance,
+                                                  float max_seconds) {
+    return multiband_filter_and_mixdown(convert_to_histogram(begin,
+                                                             end,
+                                                             output_sample_rate,
+                                                             acoustic_impedance,
+                                                             max_seconds),
+                                        output_sample_rate);
 }
 
 aligned::vector<aligned::vector<float>> run_attenuation(
@@ -144,7 +127,8 @@ aligned::vector<aligned::vector<float>> run_attenuation(
         const model::ReceiverSettings& receiver,
         const results& input,
         double output_sample_rate,
-        double acoustic_impedance);
+        double acoustic_impedance,
+        double max_seconds);
 
 aligned::vector<aligned::vector<float>> run_attenuation(
         const compute_context& cc,
@@ -152,6 +136,7 @@ aligned::vector<aligned::vector<float>> run_attenuation(
         const aligned::vector<impulse>& input,
         double output_sample_rate,
         double speed_of_sound,
-        double acoustic_impedance);
+        double acoustic_impedance,
+        double max_seconds);
 
 }  // namespace raytracer

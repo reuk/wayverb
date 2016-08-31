@@ -182,10 +182,12 @@ kernel void diffuse(const global reflection* reflections,  //  input
     }
 
     //  find the new volume
-    const surface s = surfaces[triangles[reflections[thread].triangle].surface];
+    const size_t triangle_index = reflections[thread].triangle;
+    const size_t surface_index = triangles[triangle_index].surface;
+    const surface s = surfaces[surface_index];
     const volume_type new_volume = diffuse_path[thread].volume * s.specular;
 
-    //  find the new total distance
+    //  find the new distance to this reflection
     const float new_distance = diffuse_path[thread].distance +
                                distance(diffuse_path[thread].position,
                                         reflections[thread].position);
@@ -196,14 +198,13 @@ kernel void diffuse(const global reflection* reflections,  //  input
 
     //  compute output
 
-    const float total_distance =
-            new_distance + distance(reflections[thread].position, receiver);
+    const float3 to_receiver = receiver - reflections[thread].position;
+    const float to_receiver_distance = length(to_receiver);
+    const float total_distance = new_distance + to_receiver_distance;
 
     //  find output volume
     volume_type output_volume = (volume_type)(0, 0, 0, 0, 0, 0, 0, 0);
-    if (reflections[thread].receiver_visible && total_distance) {
-        const float3 to_receiver =
-                normalize(receiver - reflections[thread].position);
+    if (reflections[thread].receiver_visible) {
         const volume_type diffuse_brdf = brdf_mags_for_outgoing(
                 reflections[thread].direction, to_receiver, s.diffuse);
         output_volume =

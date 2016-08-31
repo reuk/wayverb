@@ -70,18 +70,32 @@ void run_single(const compute_context& cc,
 
     assert(results);
 
-    auto sig{raytracer::run_attenuation(
-                     cc, receiver, *results, sample_rate, acoustic_impedance)
-                     .front()};
+    auto write_out{[&](
+            bool direct, bool img_src, bool diffuse, std::string name) {
+        const auto impulses{results->get_impulses(direct, img_src, diffuse)};
+        auto sig{
+                mixdown(raytracer::convert_to_histogram(impulses.begin(),
+                                                        impulses.end(),
+                                                        sample_rate,
+                                                        acoustic_impedance,
+                                                        20))};
 
-    check(sig);
-    normalize(sig);
-    check(sig);
+        check(sig);
+        normalize(sig);
 
-    snd::write(build_string(std::get<0>(stage), "_", std::get<0>(surf), ".wav"),
-               {sig},
-               sample_rate,
-               16);
+        snd::write(build_string(std::get<0>(stage),
+                                "_",
+                                std::get<0>(surf),
+                                "_",
+                                name,
+                                ".wav"),
+                   {sig},
+                   sample_rate,
+                   32);
+    }};
+
+    write_out(true, true, false, "img_src");
+    write_out(true, false, true, "diffuse");
 }
 
 int main() {
@@ -91,9 +105,9 @@ int main() {
     const model::ReceiverSettings receiver{glm::vec3{0, 1, 1}};
 
     const aligned::vector<std::pair<std::string, surface>> surfaces{
-            std::make_pair("0", make_surface(0.999, 0.999)),
-            std::make_pair("1", make_surface(0.99, 0.9)),
-            std::make_pair("2", make_surface(0.9, 0.9))};
+            std::make_pair("0", make_surface(0.999, 0.001)),
+            std::make_pair("1", make_surface(0.99, 0.001)),
+            std::make_pair("2", make_surface(0.9, 0.001))};
 
     const aligned::vector<std::pair<std::string, std::string>> objects{
             std::make_pair("vault", OBJ_PATH),
@@ -101,9 +115,11 @@ int main() {
             std::make_pair("bedroom", OBJ_PATH_BEDROOM),
             std::make_pair("bad_box", OBJ_PATH_BAD_BOX)};
 
+    const auto sample_rate{44100};
+
     for (auto stage : objects) {
         for (auto surf : surfaces) {
-            run_single(cc, 340, 400, 44100, source, receiver, stage, surf);
+            run_single(cc, 340, 400, sample_rate, source, receiver, stage, surf);
         }
     }
 
