@@ -13,37 +13,15 @@
 namespace raytracer {
 
 constexpr auto source{R"(
-#define NULL (0)
-
 #define PRINT_INT3(VAR) printf("%v3hld\n", (VAR));
 #define PRINT_FLOAT3(VAR) printf("%2.2v3hlf\n", (VAR));
 
 #define PRINT_ULONG(VAR) printf("%ld\n", (VAR));
 #define PRINT_FLOAT(VAR) printf("%2.2f\n", (VAR));
 
-volume_type air_attenuation_for_distance(float distance,
-                                         volume_type air_coefficient);
-volume_type air_attenuation_for_distance(float distance,
-                                         volume_type air_coefficient) {
-    return pow(M_E, distance * air_coefficient);
-}
-
-float power_attenuation_for_distance(float distance);
-float power_attenuation_for_distance(float distance) {
-    return 1 / (4 * M_PI * distance * distance);
-}
-
-volume_type attenuation_for_distance(float distance,
-                                     volume_type air_coefficient);
-volume_type attenuation_for_distance(float distance,
-                                     volume_type air_coefficient) {
-    return (air_attenuation_for_distance(distance, air_coefficient) *
-            power_attenuation_for_distance(distance));
-}
-
 float3 mirror_point(float3 p, triangle_verts t);
 float3 mirror_point(float3 p, triangle_verts t) {
-    float3 n = triangle_verts_normal(t);
+    const float3 n = triangle_verts_normal(t);
     return p - n * dot(n, p - t.v0) * 2;
 }
 
@@ -160,65 +138,6 @@ kernel void reflections(global ray* rays,  //  ray
     rays[thread] = (ray){intersection_pt, scattering};
 }
 
-kernel void diffuse(const global reflection* reflections,  //  input
-                    float3 receiver,
-                    volume_type air_coefficient,
-
-                    const global triangle* triangles,  //  scene
-                    const global float3* vertices,
-                    const global surface* surfaces,
-
-                    global diffuse_path_info* diffuse_path,  //  accumulator
-
-                    global impulse* diffuse_output) {  //  output
-    const size_t thread = get_global_id(0);
-
-    //  zero out output
-    diffuse_output[thread] = (impulse){};
-
-    //  if this thread doesn't have anything to do, stop now
-    if (!reflections[thread].keep_going) {
-        return;
-    }
-
-    //  find the new volume
-    const size_t triangle_index = reflections[thread].triangle;
-    const size_t surface_index = triangles[triangle_index].surface;
-    const surface s = surfaces[surface_index];
-    const volume_type new_volume = diffuse_path[thread].volume * s.specular;
-
-    //  find the new distance to this reflection
-    const float new_distance = diffuse_path[thread].distance +
-                               distance(diffuse_path[thread].position,
-                                        reflections[thread].position);
-
-    //  set accumulator
-    diffuse_path[thread] = (diffuse_path_info){
-            new_volume, reflections[thread].position, new_distance};
-
-    //  compute output
-
-    const float3 to_receiver = receiver - reflections[thread].position;
-    const float to_receiver_distance = length(to_receiver);
-    const float total_distance = new_distance + to_receiver_distance;
-
-    //  find output volume
-    volume_type output_volume = (volume_type)(0, 0, 0, 0, 0, 0, 0, 0);
-    if (reflections[thread].receiver_visible) {
-        const volume_type diffuse_brdf = brdf_mags_for_outgoing(
-                reflections[thread].direction, to_receiver, s.diffuse);
-        output_volume =
-                new_volume * diffuse_brdf *
-                attenuation_for_distance(total_distance, air_coefficient);
-    }
-
-    //  find output time
-    const float output_time = total_distance / SPEED_OF_SOUND;
-
-    //  set output
-    diffuse_output[thread] =
-            (impulse){output_volume, reflections[thread].position, output_time};
-}
 )"};
 
 program::program(const compute_context& cc, double speed_of_sound)

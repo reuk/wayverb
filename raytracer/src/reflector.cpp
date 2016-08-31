@@ -46,7 +46,7 @@ reflector::reflector(const compute_context& cc,
                      double speed_of_sound)
         : cc(cc)
         , queue(cc.context, cc.device)
-        , kernel(program{cc, speed_of_sound}.get_reflections_kernel())
+        , kernel(program{cc, speed_of_sound}.get_kernel())
         , receiver(to_cl_float3(receiver))
         , rays(rays.size())
         , ray_buffer(load_to_buffer(

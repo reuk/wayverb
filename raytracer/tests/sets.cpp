@@ -1,4 +1,4 @@
-#include "raytracer/image_source_tree.h"
+#include "raytracer/image_source/tree.h"
 
 #include "gtest/gtest.h"
 

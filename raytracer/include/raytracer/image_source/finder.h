@@ -11,10 +11,11 @@
 class voxelised_scene_data;
 
 namespace raytracer {
+namespace image_source {
 
-class image_source_finder final {
+class finder final {
 public:
-    image_source_finder(size_t rays, size_t depth);
+    finder(size_t rays, size_t depth);
 
     void push(const aligned::vector<reflection>&);
     aligned::vector<impulse> get_results(const glm::vec3& source,
@@ -31,4 +32,5 @@ private:
     iterative_builder<item> reflection_path_builder;
 };
 
+}  // namespace image_source
 }  // namespace raytracer

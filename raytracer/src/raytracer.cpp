@@ -1,7 +1,7 @@
-#include "raytracer/construct_impulse.h"
-#include "raytracer/diffuse.h"
-#include "raytracer/image_source.h"
 #include "raytracer/raytracer.h"
+#include "raytracer/construct_impulse.h"
+#include "raytracer/diffuse/finder.h"
+#include "raytracer/image_source/finder.h"
 #include "raytracer/reflector.h"
 
 #include "common/nan_checking.h"
@@ -65,16 +65,15 @@ std::experimental::optional<results> run(const compute_context& cc,
 
     //  this will collect the first reflections, to a specified depth,
     //  and use them to find unique image-source paths
-    image_source_finder img{directions.size(), image_source_depth};
+    image_source::finder img{directions.size(), image_source_depth};
 
     //  this will incrementally process diffuse responses
-    diffuse_finder dif{cc,
-                       source,
-                       receiver,
-                       air_coefficient,
-                       speed_of_sound,
-                       directions.size(),
-                       reflection_depth};
+    diffuse::finder dif{cc,
+                        source,
+                        receiver,
+                        speed_of_sound,
+                        directions.size(),
+                        reflection_depth};
 
     //  run the simulation proper
 

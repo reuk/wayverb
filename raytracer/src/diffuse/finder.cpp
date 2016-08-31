@@ -1,4 +1,4 @@
-#include "raytracer/diffuse.h"
+#include "raytracer/diffuse/finder.h"
 
 #include "common/map_to_vector.h"
 #include "common/nan_checking.h"
@@ -7,6 +7,7 @@
 #include <experimental/optional>
 
 namespace raytracer {
+namespace diffuse {
 
 //  each reflection contains
 //      position
@@ -19,18 +20,16 @@ namespace raytracer {
 //      specular energy of each ray
 //      distance travelled by each ray
 
-diffuse_finder::diffuse_finder(const compute_context& cc,
-                               const glm::vec3& source,
-                               const glm::vec3& receiver,
-                               const volume_type& air_coefficient,
-                               double speed_of_sound,
-                               size_t rays,
-                               size_t depth)
+finder::finder(const compute_context& cc,
+               const glm::vec3& source,
+               const glm::vec3& receiver,
+               double speed_of_sound,
+               size_t rays,
+               size_t depth)
         : cc(cc)
         , queue(cc.context, cc.device)
-        , kernel(program{cc, speed_of_sound}.get_diffuse_kernel())
+        , kernel(program{cc, speed_of_sound}.get_kernel())
         , receiver(to_cl_float3(receiver))
-        , air_coefficient(air_coefficient)
         , rays(rays)
         , reflections_buffer(
                   cc.context, CL_MEM_READ_WRITE, sizeof(reflection) * rays)
@@ -45,8 +44,8 @@ diffuse_finder::diffuse_finder(const compute_context& cc,
         , impulse_buffer(cc.context, CL_MEM_READ_WRITE, sizeof(impulse) * rays)
         , impulse_builder(rays, depth) {}
 
-void diffuse_finder::push(const aligned::vector<reflection>& reflections,
-                          const scene_buffers& buffers) {
+void finder::push(const aligned::vector<reflection>& reflections,
+                  const scene_buffers& buffers) {
     //  copy the current batch of reflections to the device
     cl::copy(queue, reflections.begin(), reflections.end(), reflections_buffer);
 
@@ -54,7 +53,6 @@ void diffuse_finder::push(const aligned::vector<reflection>& reflections,
     kernel(cl::EnqueueArgs(queue, cl::NDRange(rays)),
            reflections_buffer,
            receiver,
-           air_coefficient,
            buffers.get_triangles_buffer(),
            buffers.get_vertices_buffer(),
            buffers.get_surfaces_buffer(),
@@ -103,13 +101,13 @@ void diffuse_finder::push(const aligned::vector<reflection>& reflections,
             }));
 }
 
-const aligned::vector<aligned::vector<impulse>>& diffuse_finder::get_results()
-        const {
+const aligned::vector<aligned::vector<impulse>>& finder::get_results() const {
     return impulse_builder.get_data();
 }
 
-aligned::vector<aligned::vector<impulse>>& diffuse_finder::get_results() {
+aligned::vector<aligned::vector<impulse>>& finder::get_results() {
     return impulse_builder.get_data();
 }
 
+}  // namespace diffuse
 }  // namespace raytracer

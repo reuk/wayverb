@@ -1,4 +1,4 @@
-#include "raytracer/diffuse.h"
+#include "raytracer/diffuse/finder.h"
 
 #include "common/geo/box.h"
 #include "common/model/receiver_settings.h"
@@ -48,13 +48,8 @@ TEST(diffuse, bad_reflections_box) {
                        true},
     };
 
-    raytracer::diffuse_finder diff{cc,
-                                   source,
-                                   receiver,
-                                   air_coefficient,
-                                   speed_of_sound,
-                                   bad_reflections.size(),
-                                   1};
+    raytracer::diffuse::finder diff{
+            cc, source, receiver, speed_of_sound, bad_reflections.size(), 1};
 
     diff.push(bad_reflections, buffers);
 }
@@ -94,13 +89,12 @@ TEST(diffuse, bad_reflections_vault) {
                        true},
     };
 
-    raytracer::diffuse_finder diff{cc,
-                                   source,
-                                   receiver.position,
-                                   air_coefficient,
-                                   speed_of_sound,
-                                   bad_reflections.size(),
-                                   1};
+    raytracer::diffuse::finder diff{cc,
+                                    source,
+                                    receiver.position,
+                                    speed_of_sound,
+                                    bad_reflections.size(),
+                                    1};
 
     diff.push(bad_reflections, buffers);
 }

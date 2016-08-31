@@ -1,7 +1,7 @@
 #pragma once
 
 #include "raytracer/construct_impulse.h"
-#include "raytracer/image_source.h"
+#include "raytracer/image_source/finder.h"
 #include "raytracer/multitree.h"
 
 #include "common/aligned/vector.h"
@@ -10,10 +10,11 @@
 #include "common/spatial_division/voxelised_scene_data.h"
 
 namespace raytracer {
+namespace image_source {
 
 /// Each item in the tree references an intersected triangle, which may or
 /// may not be visible from the receiver.
-using path_element = image_source_finder::item;
+using path_element = image_source::finder::item;
 
 /// Need this because we'll be storing path_elements in a set.
 constexpr bool operator<(const path_element& a, const path_element& b) {
@@ -161,4 +162,5 @@ aligned::vector<impulse> compute_impulses(
         const voxelised_scene_data& voxelised,
         double speed_of_sound);
 
+}//namespace image_source
 }  // namespace raytracer

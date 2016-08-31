@@ -6,29 +6,15 @@
 
 namespace raytracer {
 
-volume_type air_attenuation_for_distance(float distance) {
-    auto ret = air_coefficient * distance;
-    for (auto& i : ret.s) {
-        i = std::pow(M_E, i);
-    }
-    return ret;
-}
-
 float power_attenuation_for_distance(float distance) {
     return 1 / (4 * M_PI * distance * distance);
-}
-
-volume_type attenuation_for_distance(float distance) {
-    const auto air = air_attenuation_for_distance(distance);
-    const auto power = power_attenuation_for_distance(distance);
-    return air * power;
 }
 
 impulse construct_impulse(const volume_type& volume,
                           const glm::vec3& source,
                           double distance,
                           double speed_of_sound) {
-    return impulse{volume * attenuation_for_distance(distance),
+    return impulse{volume * power_attenuation_for_distance(distance),
                    to_cl_float3(source),
                    static_cast<cl_float>(distance / speed_of_sound)};
 }

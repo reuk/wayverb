@@ -1,9 +1,10 @@
-#include "raytracer/image_source_tree.h"
+#include "raytracer/image_source/tree.h"
 
 #include "common/map_to_vector.h"
 #include "common/mapping_iterator_adapter.h"
 
 namespace raytracer {
+namespace image_source {
 
 multitree<path_element>::branches_type construct_image_source_tree(
         const aligned::vector<aligned::vector<path_element>>& paths) {
@@ -265,4 +266,5 @@ aligned::vector<impulse> compute_impulses(
     return ret;
 }
 
+}  // namespace image_source
 }  // namespace raytracer

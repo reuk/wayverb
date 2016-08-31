@@ -1,4 +1,4 @@
-#include "raytracer/image_source_tree.h"
+#include "raytracer/image_source/tree.h"
 
 #include "gtest/gtest.h"
 
@@ -6,17 +6,19 @@
 #include <random>
 
 TEST(multitree, construct_image_source_tree_small) {
-    const aligned::vector<aligned::vector<raytracer::path_element>> paths{
-            aligned::vector<raytracer::path_element>{
-                    raytracer::path_element{0, true},
-                    raytracer::path_element{0, true},
-                    raytracer::path_element{0, true}},
-            aligned::vector<raytracer::path_element>{
-                    raytracer::path_element{0, true},
-                    raytracer::path_element{1, true},
-                    raytracer::path_element{0, true}}};
+    const aligned::vector<
+            aligned::vector<raytracer::image_source::path_element>>
+            paths{aligned::vector<raytracer::image_source::path_element>{
+                          raytracer::image_source::path_element{0, true},
+                          raytracer::image_source::path_element{0, true},
+                          raytracer::image_source::path_element{0, true}},
+                  aligned::vector<raytracer::image_source::path_element>{
+                          raytracer::image_source::path_element{0, true},
+                          raytracer::image_source::path_element{1, true},
+                          raytracer::image_source::path_element{0, true}}};
 
-    const auto tree{raytracer::construct_image_source_tree(paths)};
+    const auto tree{
+            raytracer::image_source::construct_image_source_tree(paths)};
 
     ASSERT_EQ(tree.size(), 1);
     ASSERT_EQ(tree.begin()->item.index, 0);

@@ -1,8 +1,9 @@
 #pragma once
 
+#include "program.h"
+
 #include "raytracer/cl/structs.h"
 #include "raytracer/iterative_builder.h"
-#include "raytracer/program.h"
 
 #include "common/aligned/vector.h"
 #include "common/cl/common.h"
@@ -10,16 +11,16 @@
 #include "common/spatial_division/scene_buffers.h"
 
 namespace raytracer {
+namespace diffuse {
 
-class diffuse_finder final {
+class finder final {
 public:
-    diffuse_finder(const compute_context& cc,
-                   const glm::vec3& source,
-                   const glm::vec3& receiver,
-                   const volume_type& air_coefficient,
-                   double speed_of_sound,
-                   size_t rays,
-                   size_t depth);
+    finder(const compute_context& cc,
+           const glm::vec3& source,
+           const glm::vec3& receiver,
+           double speed_of_sound,
+           size_t rays,
+           size_t depth);
 
     void push(const aligned::vector<reflection>& reflections,
               const scene_buffers& scene_buffers);
@@ -27,13 +28,12 @@ public:
     aligned::vector<aligned::vector<impulse>>& get_results();
 
 private:
-    using kernel_t = decltype(std::declval<program>().get_diffuse_kernel());
+    using kernel_t = decltype(std::declval<program>().get_kernel());
 
     compute_context cc;
     cl::CommandQueue queue;
     kernel_t kernel;
     cl_float3 receiver;
-    volume_type air_coefficient;
     size_t rays;
 
     cl::Buffer reflections_buffer;
@@ -43,4 +43,5 @@ private:
     iterative_builder<impulse> impulse_builder;
 };
 
+}  // namespace diffuse
 }  // namespace raytracer

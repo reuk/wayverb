@@ -31,7 +31,7 @@ public:
     aligned::vector<cl_float> get_rng() const;
 
 private:
-    using kernel_t = decltype(std::declval<program>().get_reflections_kernel());
+    using kernel_t = decltype(std::declval<program>().get_kernel());
 
     compute_context cc;
     cl::CommandQueue queue;

@@ -1,6 +1,6 @@
-#include "raytracer/image_source.h"
+#include "raytracer/image_source/finder.h"
 #include "raytracer/construct_impulse.h"
-#include "raytracer/image_source_tree.h"
+#include "raytracer/image_source/tree.h"
 
 #include "common/aligned/set.h"
 #include "common/conversions.h"
@@ -12,11 +12,12 @@
 #include <numeric>
 
 namespace raytracer {
+namespace image_source {
 
-image_source_finder::image_source_finder(size_t rays, size_t depth)
+finder::finder(size_t rays, size_t depth)
         : reflection_path_builder(rays, depth) {}
 
-void image_source_finder::push(const aligned::vector<reflection>& reflections) {
+void finder::push(const aligned::vector<reflection>& reflections) {
     reflection_path_builder.push(reflections, [](const reflection& i) {
         return i.keep_going ? std::experimental::make_optional(item{
                                       i.triangle,
@@ -25,7 +26,7 @@ void image_source_finder::push(const aligned::vector<reflection>& reflections) {
     });
 }
 
-aligned::vector<impulse> image_source_finder::get_results(
+aligned::vector<impulse> finder::get_results(
         const glm::vec3& source,
         const glm::vec3& receiver,
         const voxelised_scene_data& voxelised,
@@ -37,4 +38,5 @@ aligned::vector<impulse> image_source_finder::get_results(
                             speed_of_sound);
 }
 
+}  // namespace image_source
 }  // namespace raytracer

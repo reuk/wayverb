@@ -5,9 +5,7 @@ project(raytracer_tests)
 include_directories(
     ${CMAKE_SOURCE_DIR}/include
     ${CMAKE_SOURCE_DIR}/submodules/cereal/include
-    #"/usr/local/include/"
 )
-#link_directories(/usr/local/lib)
 
 set(name raytracer_tests)
 file(GLOB sources "*.cpp")

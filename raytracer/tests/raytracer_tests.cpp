@@ -160,9 +160,9 @@ TEST(raytrace, image_source) {
     proc::transform(distances, times.begin(), [](auto i) {
         return i / speed_of_sound;
     });
-    std::array<volume_type, images.size()> volumes;
+    std::array<float, images.size()> volumes;
     proc::transform(distances, volumes.begin(), [](auto i) {
-        return raytracer::attenuation_for_distance(i);
+        return raytracer::power_attenuation_for_distance(i);
     });
 
     aligned::vector<attenuated_impulse> proper_image_source_impulses;
@@ -181,8 +181,8 @@ TEST(raytrace, image_source) {
                     auto base_vol = pow(s, reflections);
                     volume *= base_vol;
 
-                    proper_image_source_impulses.push_back(
-                            attenuated_impulse{volume, times[index]});
+                    proper_image_source_impulses.push_back(attenuated_impulse{
+                            make_volume_type(volume), times[index]});
                 }
             }
         }

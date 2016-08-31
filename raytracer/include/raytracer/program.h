@@ -11,7 +11,7 @@ class program final {
 public:
     program(const compute_context& cc, double speed_of_sound);
 
-    auto get_reflections_kernel() const {
+    auto get_kernel() const {
         return program_wrapper.get_kernel<cl::Buffer,  //  ray
                                           cl_float3,   //  receiver
                                           cl::Buffer,  //  voxel_index
@@ -23,18 +23,6 @@ public:
                                           cl::Buffer,  //  rng
                                           cl::Buffer   //  reflection
                                           >("reflections");
-    }
-
-    auto get_diffuse_kernel() const {
-        return program_wrapper.get_kernel<cl::Buffer,   // reflections
-                                          cl_float3,    // receiver
-                                          volume_type,  // air_coefficient
-                                          cl::Buffer,   // triangles
-                                          cl::Buffer,   // vertices
-                                          cl::Buffer,   // surfaces
-                                          cl::Buffer,   // diffuse_path_info
-                                          cl::Buffer    // diffuse_output
-                                          >("diffuse");
     }
 
     template <cl_program_info T>
