@@ -24,7 +24,7 @@ public:
                                          double speed_of_sound);
 
     struct item final {
-        cl_ulong index;
+        cl_uint index;
         bool visible;
     };
 

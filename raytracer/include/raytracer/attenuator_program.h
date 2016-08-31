@@ -23,7 +23,7 @@ public:
                                           cl::Buffer,
                                           cl_float3,
                                           cl_float3,
-                                          cl_ulong>("hrtf_kernel");
+                                          cl_uint>("hrtf_kernel");
     }
 
     template <cl_program_info T>

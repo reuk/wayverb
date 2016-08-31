@@ -52,28 +52,6 @@ float compute_distance(const glm::vec3& source,
 //----------------------------------------------------------------------------//
 
 template <typename It>
-auto extract_mirrored_iterator(It it) {
-    struct extract_mirrored_triangle final {
-        constexpr auto& operator()(state& s) const {
-            return s.mirrored_triangle;
-        }
-    };
-    return make_mapping_iterator_adapter(std::move(it),
-                                         extract_mirrored_triangle{});
-}
-
-template <typename It>
-auto extract_original_iterator(It it) {
-    struct extract_original_triangle final {
-        constexpr auto& operator()(state& s) const {
-            return s.original_triangle;
-        }
-    };
-    return make_mapping_iterator_adapter(std::move(it),
-                                         extract_original_triangle{});
-}
-
-template <typename It>
 auto extract_index_iterator(It it) {
     struct extract_index final {
         constexpr auto& operator()(state& s) const { return s.index; }
@@ -92,25 +70,15 @@ image_source_traversal_callback<It>::image_source_traversal_callback(
         , output_iterator_(std::move(output_iterator)) {
     const auto& scene{constants_.voxelised.get_scene_data()};
 
-    //  find the scene-space position of this triangle
-    const auto original_triangle{geo::get_triangle_vec3(
-            scene.get_triangles()[p.index], scene.get_vertices())};
-
-    //  find its image-source-space position
-    const auto mirrored_triangle{
-            compute_mirrored_triangle(extract_mirrored_iterator(state_.begin()),
-                                      extract_mirrored_iterator(state_.end()),
-                                      original_triangle)};
-
-    //  find the receiver image position
-    const auto mirrored_receiver{
-            geo::mirror(state_.empty() ? constants_.receiver
-                                       : state_.back().mirrored_receiver,
-                        mirrored_triangle)};
+    //  find the image source position
+    //  i.e. the previous image source, reflected in the current triangle
+    const auto image_source{geo::mirror(
+            state_.empty() ? constants_.source : state_.back().image_source,
+            geo::get_triangle_vec3(scene.get_triangles()[p.index],
+                                   scene.get_vertices()))};
 
     //  append to state vector
-    state_.push_back(state{
-            p.index, original_triangle, mirrored_triangle, mirrored_receiver});
+    state_.push_back(state{p.index, image_source});
 
     //  finally, if there is an impulse here, add it to the output
     if (p.visible) {
@@ -124,71 +92,60 @@ template <typename It>
 std::experimental::optional<impulse>
 image_source_traversal_callback<It>::compute_impulse() const {
     //  now we have to compute the impulse to return
-
-    if (constants_.source == state_.back().mirrored_receiver) {
+    //
+    //  in weird scenarios the image source might end up getting plastered over
+    //  the receiver, which is bad, so we quit with null in that case
+    const auto final_image_source{state_.back().image_source};
+    if (constants_.receiver == final_image_source) {
         return std::experimental::nullopt;
     }
 
-    //  check that we can cast a ray through all the mirrored triangles to the
-    //  receiver
-    const auto ray{
-            construct_ray(constants_.source, state_.back().mirrored_receiver)};
-    const auto distances{compute_intersection_distances(
-            extract_mirrored_iterator(state_.begin()),
-            extract_mirrored_iterator(state_.end()),
-            ray)};
+    //  check that we can cast a ray to the receiver from all of the image
+    //  sources, through the correct triangles
+    auto prev_intersection{constants_.receiver};  //  trace from here
+    auto prev_surface{~cl_uint{0}};               //  ignore this triangle
+    for (auto i{state_.crbegin()}, end{state_.crend()}; i != end; ++i) {
+        //  find the ray from the receiver to the image source
+        const auto ray{construct_ray(prev_intersection, i->image_source)};
 
-    if (!distances) {
-        return std::experimental::nullopt;
-    }
+        //  now check for intersections with the scene
+        const auto intersection{
+                intersects(constants_.voxelised, ray, prev_surface)};
 
-    //  if we can, find the intersection points with the mirrored surfaces
-    const auto points{compute_intersection_points(*distances, ray)};
-
-    //  now mirror the intersection points back into scene space
-    const auto unmirrored{
-            compute_unmirrored_points(extract_original_iterator(state_.begin()),
-                                      extract_original_iterator(state_.end()),
-                                      points)};
-
-    const auto does_intersect{[&](
-            const auto& a, const auto& b, const auto& tri_to_ignore) {
-        if (a == b) {
-            return true;
+        //  if we didn't find an intersection
+        //  or if the intersected triangle isn't the correct one
+        if (! intersection || intersection->index != i->index) {
+            //  there's no valid path, return null
+            return std::experimental::nullopt;
         }
-        const auto i{intersects(
-                constants_.voxelised, geo::ray(a, b - a), tri_to_ignore)};
-        const auto dist{glm::distance(a, b)};
-        return i && almost_equal(i->inter.t, dist, 10);
-    }};
 
-    if (!does_intersect(constants_.source, unmirrored.front(), ~size_t{0})) {
-        return std::experimental::nullopt;
+        //  this path segment is valid, update accumulators
+        prev_intersection = ray.get_position() +
+                            ray.get_direction() * intersection->inter.t;
+        prev_surface = i->index;
     }
 
-    //  attempt to join the dots back in scene space
-    {
-        auto a{unmirrored.begin()};
-        auto b{unmirrored.begin() + 1};
-        auto c{extract_index_iterator(state_.begin())};
-        for (; b != unmirrored.end(); ++a, ++b, ++c) {
-            if (!does_intersect(*a, *b, *c)) {
-                return std::experimental::nullopt;
-            }
-        }
-    }
+    //  if we got here, the path is a valid image-source path
+    //  we compute the impulse and push it onto the output collection
+    const auto& scene_data{constants_.voxelised.get_scene_data()};
+    const auto volume{std::accumulate(
+            extract_index_iterator(state_.begin()),
+            extract_index_iterator(state_.end()),
+            make_volume_type(1),
+            [&](const auto& volume, const auto& i) {
+                const auto scene_triangle{scene_data.get_triangles()[i]};
+                const auto surface{
+                        scene_data.get_surfaces()[scene_triangle.surface]};
+                return volume * surface.specular;
+            })};
 
-    if (!does_intersect(constants_.receiver, unmirrored.back(), ~size_t{0})) {
-        return std::experimental::nullopt;
-    }
-
-    return compute_ray_path_impulse(extract_index_iterator(state_.begin()),
-                                    extract_index_iterator(state_.end()),
-                                    constants_.voxelised.get_scene_data(),
-                                    constants_.source,
-                                    unmirrored,
-                                    constants_.receiver,
-                                    constants_.speed_of_sound);
+    //  TODO this is wrong
+    //  return pressure rather than intensity
+    return construct_impulse(
+            volume,
+            final_image_source,
+            glm::distance(final_image_source, constants_.receiver),
+            constants_.speed_of_sound);
 }
 
 template <typename It>

@@ -78,7 +78,7 @@ kernel void hrtf_kernel(float3 mic_pos,
                  global volume_type * hrtfData,
                  float3 pointing,
                  float3 up,
-                 ulong channel) {
+                 uint channel) {
     size_t i = get_global_id(0);
     const float WIDTH = 0.1;
 

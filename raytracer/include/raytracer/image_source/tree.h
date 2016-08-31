@@ -39,82 +39,20 @@ void traverse_multitree(const multitree<T>& tree, const Callback& callback) {
 
 //----------------------------------------------------------------------------//
 
-template <typename It>
-geo::triangle_vec3 compute_mirrored_triangle(It begin,
-                                             It end,
-                                             geo::triangle_vec3 original) {
-    for (; begin != end; ++begin) {
-        original = geo::mirror(original, *begin);
-    }
-    return original;
-}
-
 geo::ray construct_ray(const glm::vec3& from, const glm::vec3& to);
-
-template <typename It>
-std::experimental::optional<aligned::vector<float>>
-compute_intersection_distances(It begin, It end, const geo::ray& ray) {
-    aligned::vector<float> ret{};
-
-    for (; begin != end; ++begin) {
-        const auto intersection{geo::triangle_intersection(*begin, ray)};
-        if (!intersection) {
-            return std::experimental::nullopt;
-        }
-        ret.push_back(intersection->t);
-    }
-
-    return ret;
-}
-
-aligned::vector<glm::vec3> compute_intersection_points(
-        const aligned::vector<float>& distances, const geo::ray& ray);
-
-template <typename It>
-aligned::vector<glm::vec3> compute_unmirrored_points(
-        It begin, It end, const aligned::vector<glm::vec3>& points) {
-    aligned::vector<glm::vec3> ret{points};
-
-    for (auto i{0u}; begin != end; ++i, ++begin) {
-        const auto triangle{*begin};
-        for (auto j{i + 1}; j != points.size(); ++j) {
-            ret[j] = geo::mirror(ret[j], triangle);
-        }
-    }
-
-    return ret;
-}
-
-float compute_distance(const glm::vec3& source,
-                       const aligned::vector<glm::vec3>& unmirrored,
-                       const glm::vec3& receiver);
 
 template <typename It>
 volume_type compute_volume(It begin, It end, const scene_data& scene_data) {
     return std::accumulate(
             begin,
             end,
-            volume_type{{1, 1, 1, 1, 1, 1, 1, 1}},
+            make_volume_type(1),
             [&](const auto& volume, const auto& i) {
                 const auto scene_triangle{scene_data.get_triangles()[i]};
                 const auto surface{
                         scene_data.get_surfaces()[scene_triangle.surface]};
                 return volume * surface.specular;
             });
-}
-
-template <typename It>
-impulse compute_ray_path_impulse(It begin,
-                                 It end,
-                                 const scene_data& scene_data,
-                                 const glm::vec3& source,
-                                 const aligned::vector<glm::vec3>& unmirrored,
-                                 const glm::vec3& receiver,
-                                 double speed_of_sound) {
-    return construct_impulse(compute_volume(begin, end, scene_data),
-                             unmirrored.back(),
-                             compute_distance(source, unmirrored, receiver),
-                             speed_of_sound);
 }
 
 //----------------------------------------------------------------------------//
@@ -127,10 +65,8 @@ struct constants final {
 };
 
 struct state final {
-    cl_ulong index;
-    geo::triangle_vec3 original_triangle;
-    geo::triangle_vec3 mirrored_triangle;
-    glm::vec3 mirrored_receiver;
+    cl_uint index;
+    glm::vec3 image_source;
 };
 
 template <typename It>

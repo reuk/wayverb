@@ -16,7 +16,7 @@ public:
                                           cl_float3,   //  receiver
                                           cl::Buffer,  //  voxel_index
                                           aabb,        //  global_aabb
-                                          cl_ulong,    //  side
+                                          cl_uint,     //  side
                                           cl::Buffer,  //  triangles
                                           cl::Buffer,  //  vertices
                                           cl::Buffer,  //  surfaces
