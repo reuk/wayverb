@@ -33,4 +33,8 @@ geo::box compute_aabb(const descriptor& d);
 
 double compute_sample_rate(const descriptor& d, double speed_of_sound);
 
+size_t compute_num_nodes(const descriptor& d);
+
+aligned::vector<glm::vec3> compute_node_positions(const descriptor& d);
+
 }  // namespace waveguide

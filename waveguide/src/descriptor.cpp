@@ -65,4 +65,18 @@ double compute_sample_rate(const descriptor& d, double speed_of_sound) {
     return 1 / config::time_step(speed_of_sound, d.spacing);
 }
 
+size_t compute_num_nodes(const descriptor& d) {
+    return d.dimensions.x * d.dimensions.y * d.dimensions.z;
+}
+
+aligned::vector<glm::vec3> compute_node_positions(const descriptor& d) {
+    aligned::vector<glm::vec3> ret;
+    const auto nodes{compute_num_nodes(d)};
+    ret.reserve(nodes);
+    for (auto i{0u}; i != nodes; ++i) {
+        ret.push_back(compute_position(d, i));
+    }
+    return ret;
+}
+
 }  // namespace waveguide

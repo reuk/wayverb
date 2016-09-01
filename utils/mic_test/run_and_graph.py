@@ -45,7 +45,7 @@ def graph():
 
     base_folder = join(project_path, "tests/mic_test/output")
 
-    bands = 1
+    bands = 8
 
     for this_file, shape in PATTERNS:
         this_file = base_folder + "/" + this_file + "/" + this_file + ".energies.txt"

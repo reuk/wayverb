@@ -1,6 +1,6 @@
-#include "waveguide/mesh.h"
 #include "waveguide/boundary_adjust.h"
 #include "waveguide/config.h"
+#include "waveguide/mesh.h"
 #include "waveguide/program.h"
 #include "waveguide/surface_filters.h"
 
@@ -14,18 +14,12 @@
 
 namespace waveguide {
 
-mesh::mesh(descriptor descriptor,
-           vectors vectors,
-           aligned::vector<glm::vec3> node_positions)
+mesh::mesh(descriptor descriptor, vectors vectors)
         : descriptor_(std::move(descriptor))
-        , vectors_(std::move(vectors))
-        , node_positions_(std::move(node_positions)) {}
+        , vectors_(std::move(vectors)) {}
 
 const descriptor& mesh::get_descriptor() const { return descriptor_; }
 const vectors& mesh::get_structure() const { return vectors_; }
-const aligned::vector<glm::vec3>& mesh::get_node_positions() const {
-    return node_positions_;
-}
 
 bool is_inside(const mesh& m, size_t node_index) {
     return is_inside(m.get_structure().get_condensed_nodes()[node_index]);
@@ -99,10 +93,6 @@ mesh compute_mesh(const compute_context& cc,
 
     auto fat_nodes{compute_fat_nodes(cc, voxelised, buffers, mesh_spacing)};
 
-    auto node_positions{map_to_vector(fat_nodes.nodes, [](const auto& i) {
-        return to_vec3(i.position);
-    })};
-
     const auto sample_rate{1 / config::time_step(speed_of_sound, mesh_spacing)};
 
     //  IMPORTANT
@@ -117,7 +107,7 @@ mesh compute_mesh(const compute_context& cc,
                                    sample_rate),
             std::move(boundary_data)}};
 
-    return {fat_nodes.descriptor, std::move(v), std::move(node_positions)};
+    return {fat_nodes.descriptor, std::move(v)};
 }
 
 std::tuple<voxelised_scene_data, mesh> compute_voxels_and_mesh(

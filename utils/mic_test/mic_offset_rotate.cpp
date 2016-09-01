@@ -4,7 +4,7 @@
 #include "waveguide/default_kernel.h"
 #include "waveguide/mesh.h"
 #include "waveguide/postprocessor/microphone.h"
-#include "waveguide/preprocessor/gaussian_source.h"
+#include "waveguide/preprocessor/gaussian.h"
 #include "waveguide/waveguide.h"
 
 #include "common/cl/common.h"
@@ -112,7 +112,7 @@ int main(int argc, char** argv) {
             //  hacıhabiboglu2010 the pulse had a variance of 4 spatial samples
             const auto variance{4 * model.get_descriptor().spacing};
             //  standard deviation is the sqrt of the variance
-            const waveguide::preprocessor::gaussian_source generator{
+            const waveguide::preprocessor::gaussian generator{
                     model.get_descriptor(), source, std::sqrt(variance)};
 
             aligned::vector<waveguide::run_step_output> results;

@@ -6,7 +6,7 @@
 
 namespace {
 
-cl::Context get_context() {
+cl::Context get_context(device_type type) {
     std::vector<cl::Platform> platform;
     cl::Platform::get(&platform);
 
@@ -16,8 +16,14 @@ cl::Context get_context() {
             0,
     };
 
-    return cl::Context(CL_DEVICE_TYPE_GPU, cps);
-    // return cl::Context(CL_DEVICE_TYPE_CPU, cps);
+    const auto convert_device_type{[](auto type) {
+        switch (type) {
+            case device_type::cpu: return CL_DEVICE_TYPE_CPU;
+            case device_type::gpu: return CL_DEVICE_TYPE_GPU;
+        }
+    }};
+
+    return cl::Context(convert_device_type(type), cps);
 }
 
 cl::Device get_device(const cl::Context& context) {
@@ -57,12 +63,16 @@ cl::Device get_device(const cl::Context& context) {
 }  // namespace
 
 compute_context::compute_context()
-        : compute_context(::get_context()) {}
+        : compute_context(device_type::gpu) {}
+
+compute_context::compute_context(device_type type)
+        : compute_context(::get_context(type)) {}
 
 compute_context::compute_context(const cl::Context& context)
         : compute_context(context, ::get_device(context)) {}
 
 compute_context::compute_context(const cl::Context& context,
                                  const cl::Device& device)
-        : context(context)
-        , device(device) {}
+    : context(context)
+    , device(device) {
+}

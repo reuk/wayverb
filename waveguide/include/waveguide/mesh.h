@@ -3,26 +3,22 @@
 #include "waveguide/descriptor.h"
 #include "waveguide/setup.h"
 
-class voxelised_scene_data;
+#include "common/spatial_division/voxelised_scene_data.h"
 
 namespace waveguide {
 
 class mesh final {
 public:
-    mesh(descriptor descriptor,
-         vectors vectors,
-         aligned::vector<glm::vec3> node_positions);
+    mesh(descriptor descriptor, vectors vectors);
 
     const descriptor& get_descriptor() const;
     const vectors& get_structure() const;
-    const aligned::vector<glm::vec3>& get_node_positions() const;
 
     void set_coefficients(aligned::vector<coefficients_canonical> coefficients);
 
 private:
     descriptor descriptor_;
     vectors vectors_;
-    aligned::vector<glm::vec3> node_positions_;
 };
 
 bool is_inside(const mesh& m, size_t node_index);

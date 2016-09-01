@@ -3,9 +3,14 @@
 #include "common/aligned/vector.h"
 #include "common/cl/traits.h"
 
-struct compute_context final {
+enum class device_type { cpu, gpu };
+
+/// invariant: device is a valid device for the context
+class compute_context final {
+public:
     compute_context();
-    compute_context(const cl::Context& context);
+    explicit compute_context(device_type type);
+    explicit compute_context(const cl::Context& context);
     compute_context(const cl::Context& context, const cl::Device& device);
 
     cl::Context context;

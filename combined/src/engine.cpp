@@ -372,7 +372,7 @@ public:
     }
 
     aligned::vector<glm::vec3> get_node_positions() const {
-        return mesh.get_node_positions();
+        return compute_node_positions(mesh.get_descriptor());
     }
 
     void register_waveguide_visual_callback(
