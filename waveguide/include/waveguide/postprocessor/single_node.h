@@ -21,28 +21,20 @@ private:
 };
 }  // namespace detail
 
-template <typename It>
 class node final {
 public:
-    node(size_t output_node, It output_iterator)
-            : node_state_(output_node)
-            , output_iterator_(std::move(output_iterator)) {}
+    using output_callback = std::function<void(float)>;
+
+    node(size_t output_node, output_callback callback);
 
     void operator()(cl::CommandQueue& queue,
                     const cl::Buffer& buffer,
-                    size_t step) {
-        *output_iterator_++ = node_state_(queue, buffer, step);
-    }
+                    size_t step);
 
 private:
     detail::node_state node_state_;
-    It output_iterator_;
+    output_callback callback_;
 };
-
-template <typename It>
-auto make_node(size_t output_node, It output_iterator) {
-    return node<It>{output_node, output_iterator};
-}
 
 }  // namespace postprocessor
 }  // namespace waveguide

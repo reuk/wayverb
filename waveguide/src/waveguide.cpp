@@ -126,12 +126,12 @@ aligned::vector<run_step_output> run(const compute_context& cc,
     aligned::vector<run_step_output> ret;
     ret.reserve(input.size());
     aligned::vector<step_postprocessor> postprocessors{
-            postprocessor::make_microphone(
+            postprocessor::microphone{
                     mesh.get_descriptor(),
                     compute_sample_rate(mesh.get_descriptor(), speed_of_sound),
                     acoustic_impedance / speed_of_sound,
                     receiver_index,
-                    std::back_inserter(ret))};
+                    make_output_iterator_callback(std::back_inserter(ret))}};
 
     const auto results{run(cc,
                            mesh,

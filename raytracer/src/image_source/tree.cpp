@@ -2,6 +2,7 @@
 
 #include "common/map_to_vector.h"
 #include "common/mapping_iterator_adapter.h"
+#include "common/output_iterator_callback.h"
 
 namespace raytracer {
 namespace image_source {
@@ -59,15 +60,14 @@ auto extract_index_iterator(It it) {
     return make_mapping_iterator_adapter(std::move(it), extract_index{});
 }
 
-template <typename It>
-image_source_traversal_callback<It>::image_source_traversal_callback(
+image_source_traversal_callback::image_source_traversal_callback(
         const constants& constants,
         aligned::vector<state>& s,
-        It output_iterator,
+        output_callback callback,
         const path_element& p)
         : constants_(constants)
         , state_(s)
-        , output_iterator_(std::move(output_iterator)) {
+        , callback_(std::move(callback)) {
     const auto& scene{constants_.voxelised.get_scene_data()};
 
     //  find the image source position
@@ -83,14 +83,13 @@ image_source_traversal_callback<It>::image_source_traversal_callback(
     //  finally, if there is an impulse here, add it to the output
     if (p.visible) {
         if (const auto impulse{compute_impulse()}) {
-            *output_iterator_++ = *impulse;
+            callback_(*impulse);
         }
     }
 }
 
-template <typename It>
 std::experimental::optional<impulse>
-image_source_traversal_callback<It>::compute_impulse() const {
+image_source_traversal_callback::compute_impulse() const {
     //  now we have to compute the impulse to return
     //
     //  in weird scenarios the image source might end up getting plastered over
@@ -125,8 +124,20 @@ image_source_traversal_callback<It>::compute_impulse() const {
         prev_surface = i->index;
     }
 
-    //  if we got here, the path is a valid image-source path
-    //  we compute the impulse and push it onto the output collection
+    //  We've checked the image sources, finally we need to check the source
+    //  itself.
+    {
+        //  Construct a ray from the source to the last intersection.
+        const auto ray{construct_ray(constants_.source, prev_intersection)};
+        const auto intersection{intersects(constants_.voxelised, ray)};
+        //  Check that the ray intersects with the correct surface.
+        if (!intersection || intersection->index != prev_surface) {
+            return std::experimental::nullopt;
+        }
+    }
+
+    //  If we got here, the path is a valid image-source path.
+    //  We compute the impulse and push it onto the output collection.
     const auto& scene_data{constants_.voxelised.get_scene_data()};
     const auto volume{std::accumulate(
             extract_index_iterator(state_.begin()),
@@ -148,49 +159,38 @@ image_source_traversal_callback<It>::compute_impulse() const {
             constants_.speed_of_sound);
 }
 
-template <typename It>
-image_source_traversal_callback<
-        It>::~image_source_traversal_callback() noexcept {
+image_source_traversal_callback::~image_source_traversal_callback() noexcept {
     state_.pop_back();
 }
 
-template <typename It>
-image_source_traversal_callback<It> image_source_traversal_callback<It>::
-operator()(const path_element& p) const {
-    return image_source_traversal_callback{
-            constants_, state_, output_iterator_, p};
+image_source_traversal_callback image_source_traversal_callback::operator()(
+        const path_element& p) const {
+    return image_source_traversal_callback{constants_, state_, callback_, p};
 }
 
 //----------------------------------------------------------------------------//
 
-template <typename It>
 class initial_callback final {
 public:
+    using output_callback = image_source_traversal_callback::output_callback;
+
     initial_callback(const constants& constants,
                      aligned::vector<state>& state,
-                     It output_iterator)
+                     output_callback callback)
             : constants_(constants)
             , state_(state)
-            , output_iterator_(std::move(output_iterator)) {}
+            , callback_(std::move(callback)) {}
 
-    image_source_traversal_callback<It> operator()(
-            const path_element& p) const {
-        return image_source_traversal_callback<It>{
-                constants_, state_, output_iterator_, p};
+    image_source_traversal_callback operator()(const path_element& p) const {
+        return image_source_traversal_callback{
+                constants_, state_, callback_, p};
     }
 
 private:
     const constants& constants_;
     aligned::vector<state>& state_;
-    It output_iterator_;
+    output_callback callback_;
 };
-
-template <typename It>
-auto make_initial_callback(const constants& constants,
-                           aligned::vector<state>& state,
-                           It& output_iterator) {
-    return initial_callback<It>{constants, state, output_iterator};
-}
 
 aligned::vector<impulse> compute_impulses(
         const aligned::vector<aligned::vector<path_element>>& paths,
@@ -211,10 +211,10 @@ aligned::vector<impulse> compute_impulses(
         aligned::vector<state> state{};
 
         //  set up the callback
-        const auto callback{make_initial_callback(
+        const auto callback{initial_callback(
                 constants{source, receiver, voxelised, speed_of_sound},
                 state,
-                output_iterator)};
+                make_output_iterator_callback(output_iterator))};
 
         //  traverse all paths on this branch
         traverse_multitree(branch, callback);

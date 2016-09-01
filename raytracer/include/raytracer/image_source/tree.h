@@ -69,12 +69,13 @@ struct state final {
     glm::vec3 image_source;
 };
 
-template <typename It>
 class image_source_traversal_callback final {
 public:
+    using output_callback = std::function<void(impulse)>;
+
     image_source_traversal_callback(const constants& constants,
                                     aligned::vector<state>& state,
-                                    It output_iterator,
+                                    output_callback callback,
                                     const path_element& p);
 
     ~image_source_traversal_callback() noexcept;
@@ -86,7 +87,7 @@ private:
 
     const constants& constants_;
     aligned::vector<state>& state_;
-    It output_iterator_;
+    output_callback callback_;
 };
 
 //----------------------------------------------------------------------------//

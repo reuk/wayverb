@@ -2,6 +2,8 @@
 
 #include "waveguide/waveguide.h"
 
+#include "common/output_iterator_callback.h"
+
 namespace waveguide {
 
 struct descriptor;
@@ -36,48 +38,24 @@ private:
 
 //----------------------------------------------------------------------------//
 
-template <typename It>
 class microphone final {
 public:
+    using output_callback = std::function<void(run_step_output)>;
+
     microphone(const descriptor& mesh_descriptor,
                double sample_rate,
                double ambient_density,
                size_t output_node,
-               It output_iterator)
-            : microphone_state_(mesh_descriptor,
-                                sample_rate,
-                                ambient_density,
-                                output_node)
-            , output_iterator_(std::move(output_iterator)) {
-        if (ambient_density < 0.5 || 10 < ambient_density) {
-            throw std::runtime_error{
-                    "ambient density value looks a bit suspicious"};
-        }
-    }
+               output_callback callback);
 
     void operator()(cl::CommandQueue& queue,
                     const cl::Buffer& buffer,
-                    size_t step) {
-        *output_iterator_++ = microphone_state_(queue, buffer, step);
-    }
+                    size_t step);
 
 private:
     detail::microphone_state microphone_state_;
-    It output_iterator_;
+    output_callback callback_;
 };
-
-template <typename It>
-auto make_microphone(const descriptor& mesh_descriptor,
-                     double sample_rate,
-                     double ambient_density,
-                     size_t output_node,
-                     It output_iterator) {
-    return microphone<It>{mesh_descriptor,
-                          sample_rate,
-                          ambient_density,
-                          output_node,
-                          output_iterator};
-}
 
 }  // namespace postprocessor
 }  // namespace waveguide
