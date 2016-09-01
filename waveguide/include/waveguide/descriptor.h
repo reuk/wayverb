@@ -11,21 +11,19 @@ namespace waveguide {
 
 struct descriptor final {
     static constexpr auto no_neighbor{~cl_uint{0}};
-    using locator = glm::ivec3;
 
     glm::vec3 min_corner;
     glm::ivec3 dimensions;
     float spacing;
 };
 
-size_t compute_index(const descriptor& d, const descriptor::locator& pos);
+size_t compute_index(const descriptor& d, const glm::ivec3& pos);
 size_t compute_index(const descriptor& d, const glm::vec3& pos);
 
-descriptor::locator compute_locator(const descriptor& d, size_t index);
-descriptor::locator compute_locator(const descriptor& d, const glm::vec3& v);
+glm::ivec3 compute_locator(const descriptor& d, size_t index);
+glm::ivec3 compute_locator(const descriptor& d, const glm::vec3& v);
 
-glm::vec3 compute_position(const descriptor& d,
-                           const descriptor::locator& locator);
+glm::vec3 compute_position(const descriptor& d, const glm::ivec3& locator);
 glm::vec3 compute_position(const descriptor& d, size_t index);
 
 void compute_neighbors(const descriptor& d, size_t index, cl_uint* output);

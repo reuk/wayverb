@@ -168,10 +168,6 @@ static_assert(19 == to_index(locator<size_t>{3, 3, 3}), "to_locator");
 
 }  // namespace
 
-compressed_rectangular_waveguide_program::
-        compressed_rectangular_waveguide_program(const compute_context& cc)
-        : program_wrapper(cc, source) {}
-
 //----------------------------------------------------------------------------//
 
 compressed_rectangular_waveguide::compressed_rectangular_waveguide(
@@ -262,7 +258,7 @@ float compressed_rectangular_waveguide::run_soft_step(float i) {
     return out;
 }
 
-const std::string compressed_rectangular_waveguide_program::source{R"(
+constexpr const char* source{R"(
 int triangle(int i);
 int triangle(int i) {
     return (i * (i + 1)) / 2;
@@ -351,3 +347,7 @@ kernel void compressed_waveguide(global float* previous,
 }
 
 )"};
+
+compressed_rectangular_waveguide_program::
+        compressed_rectangular_waveguide_program(const compute_context& cc)
+        : program_wrapper_(cc, source) {}

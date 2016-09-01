@@ -4,7 +4,7 @@
 
 namespace waveguide {
 
-size_t compute_index(const descriptor& d, const descriptor::locator& pos) {
+size_t compute_index(const descriptor& d, const glm::ivec3& pos) {
     return pos.x + pos.y * d.dimensions.x +
            pos.z * d.dimensions.x * d.dimensions.y;
 }
@@ -13,20 +13,18 @@ size_t compute_index(const descriptor& d, const glm::vec3& pos) {
     return compute_index(d, compute_locator(d, pos));
 }
 
-descriptor::locator compute_locator(const descriptor& d, size_t index) {
+glm::ivec3 compute_locator(const descriptor& d, size_t index) {
     auto x = div(index, d.dimensions.x);
     auto y = div(x.quot, d.dimensions.y);
-    return descriptor::locator{x.rem, y.rem, y.quot % d.dimensions.z};
+    return glm::ivec3{x.rem, y.rem, y.quot % d.dimensions.z};
 }
 
-descriptor::locator compute_locator(const descriptor& d,
-                                    const glm::vec3& v) {
-    const auto transformed = v - d.min_corner;
+glm::ivec3 compute_locator(const descriptor& d, const glm::vec3& v) {
+    const auto transformed{v - d.min_corner};
     return glm::round(transformed / d.spacing);
 }
 
-glm::vec3 compute_position(const descriptor& d,
-                           const descriptor::locator& locator) {
+glm::vec3 compute_position(const descriptor& d, const glm::ivec3& locator) {
     return d.min_corner + glm::vec3{locator} * d.spacing;
 }
 
@@ -36,13 +34,13 @@ glm::vec3 compute_position(const descriptor& d, size_t index) {
 
 void compute_neighbors(const descriptor& d, size_t index, cl_uint* output) {
     const auto loc = compute_locator(d, index);
-    const std::array<descriptor::locator, 6> n_loc{{
-            descriptor::locator(loc.x - 1, loc.y, loc.z),
-            descriptor::locator(loc.x + 1, loc.y, loc.z),
-            descriptor::locator(loc.x, loc.y - 1, loc.z),
-            descriptor::locator(loc.x, loc.y + 1, loc.z),
-            descriptor::locator(loc.x, loc.y, loc.z - 1),
-            descriptor::locator(loc.x, loc.y, loc.z + 1),
+    const std::array<glm::ivec3, 6> n_loc{{
+            glm::ivec3(loc.x - 1, loc.y, loc.z),
+            glm::ivec3(loc.x + 1, loc.y, loc.z),
+            glm::ivec3(loc.x, loc.y - 1, loc.z),
+            glm::ivec3(loc.x, loc.y + 1, loc.z),
+            glm::ivec3(loc.x, loc.y, loc.z - 1),
+            glm::ivec3(loc.x, loc.y, loc.z + 1),
     }};
 
     proc::transform(n_loc, output, [&](const auto& i) {

@@ -14,17 +14,17 @@
 
 namespace waveguide {
 
-mesh::mesh(const struct descriptor& descriptor,
-             const class vectors& vectors,
-             const aligned::vector<glm::vec3>& node_positions)
-        : descriptor(descriptor)
-        , vectors(vectors)
-        , node_positions(node_positions) {}
+mesh::mesh(descriptor descriptor,
+           vectors vectors,
+           aligned::vector<glm::vec3> node_positions)
+        : descriptor_(std::move(descriptor))
+        , vectors_(std::move(vectors))
+        , node_positions_(std::move(node_positions)) {}
 
-const descriptor& mesh::get_descriptor() const { return descriptor; }
-const vectors& mesh::get_structure() const { return vectors; }
+const descriptor& mesh::get_descriptor() const { return descriptor_; }
+const vectors& mesh::get_structure() const { return vectors_; }
 const aligned::vector<glm::vec3>& mesh::get_node_positions() const {
-    return node_positions;
+    return node_positions_;
 }
 
 bool is_inside(const mesh& m, size_t node_index) {
@@ -33,16 +33,15 @@ bool is_inside(const mesh& m, size_t node_index) {
 
 void mesh::set_coefficients(
         aligned::vector<coefficients_canonical> coefficients) {
-    vectors.set_coefficients(coefficients);
+    vectors_.set_coefficients(coefficients);
 }
 
 //----------------------------------------------------------------------------//
 
-std::tuple<aligned::vector<node>, descriptor> compute_fat_nodes(
-        const compute_context& cc,
-        const voxelised_scene_data& voxelised,
-        const scene_buffers& buffers,
-        float mesh_spacing) {
+fat_nodes compute_fat_nodes(const compute_context& cc,
+                            const voxelised_scene_data& voxelised,
+                            const scene_buffers& buffers,
+                            float mesh_spacing) {
     const setup_program program{cc};
     cl::CommandQueue queue{cc.context, cc.device};
 
@@ -89,7 +88,7 @@ std::tuple<aligned::vector<node>, descriptor> compute_fat_nodes(
     }
 
     //  return results
-    return std::make_tuple(read_from_buffer<node>(queue, node_buffer), desc);
+    return {desc, read_from_buffer<node>(queue, node_buffer)};
 }
 
 mesh compute_mesh(const compute_context& cc,
@@ -98,31 +97,27 @@ mesh compute_mesh(const compute_context& cc,
                   double speed_of_sound) {
     const scene_buffers buffers{cc.context, voxelised};
 
-    aligned::vector<node> nodes;
-    descriptor desc;
-    std::tie(nodes, desc) =
-            compute_fat_nodes(cc, voxelised, buffers, mesh_spacing);
+    auto fat_nodes{compute_fat_nodes(cc, voxelised, buffers, mesh_spacing)};
 
-    const auto node_positions{map_to_vector(
-            nodes, [](const auto& i) { return to_vec3(i.position); })};
+    auto node_positions{map_to_vector(fat_nodes.nodes, [](const auto& i) {
+        return to_vec3(i.position);
+    })};
 
     const auto sample_rate{1 / config::time_step(speed_of_sound, mesh_spacing)};
 
-    aligned::vector<boundary_index_array_1> bia_1;
-    aligned::vector<boundary_index_array_2> bia_2;
-    aligned::vector<boundary_index_array_3> bia_3;
-    std::tie(bia_1, bia_2, bia_3) =
-            compute_boundary_index_data(cc.device, buffers, nodes, desc);
+    //  IMPORTANT
+    //  compute_boundary_index_data mutates the nodes array, so it must
+    //  be run before condensing the nodes.
+    auto boundary_data{compute_boundary_index_data(
+            cc.device, buffers, fat_nodes.nodes, fat_nodes.descriptor)};
 
-    const auto v{vectors{
-            get_condensed(nodes),
+    auto v{vectors{
+            get_condensed(fat_nodes.nodes),
             to_filter_coefficients(voxelised.get_scene_data().get_surfaces(),
                                    sample_rate),
-            std::move(bia_1),
-            std::move(bia_2),
-            std::move(bia_3)}};
+            std::move(boundary_data)}};
 
-    return {desc, v, node_positions};
+    return {fat_nodes.descriptor, std::move(v), std::move(node_positions)};
 }
 
 std::tuple<voxelised_scene_data, mesh> compute_voxels_and_mesh(

@@ -44,68 +44,61 @@ struct mesh_fixture : public ::testing::Test {
 };
 
 TEST_F(mesh_fixture, locator_index) {
-    aligned::vector<node> nodes;
-    waveguide::descriptor desc;
-    std::tie(nodes, desc) = get_mesh(voxelised);
-    const auto lim = nodes.size();
-    for (auto i = 0u; i != lim; ++i) {
-        const auto loc = compute_locator(desc, i);
-        ASSERT_EQ(i, compute_index(desc, loc));
+    const auto mesh{get_mesh(voxelised)};
+    const auto lim{mesh.nodes.size()};
+    for (auto i{0u}; i != lim; ++i) {
+        const auto loc{compute_locator(mesh.descriptor, i)};
+        ASSERT_EQ(i, compute_index(mesh.descriptor, loc));
     }
 }
 
 TEST_F(mesh_fixture, position_index) {
-    aligned::vector<node> nodes;
-    waveguide::descriptor desc;
-    std::tie(nodes, desc) = get_mesh(voxelised);
-    const auto lim = nodes.size();
-    for (auto i = 0u; i != lim; ++i) {
-        const auto loc = compute_locator(desc, i);
-        const auto pos = compute_position(desc, loc);
-        ASSERT_TRUE(loc == compute_locator(desc, pos));
+    const auto mesh{get_mesh(voxelised)};
+    const auto lim{mesh.nodes.size()};
+    for (auto i{0u}; i != lim; ++i) {
+        const auto loc{compute_locator(mesh.descriptor, i)};
+        const auto pos{compute_position(mesh.descriptor, loc)};
+        ASSERT_TRUE(loc == compute_locator(mesh.descriptor, pos));
     }
 }
 
 TEST_F(mesh_fixture, neighbor) {
-    aligned::vector<node> nodes;
-    waveguide::descriptor desc;
-    std::tie(nodes, desc) = get_mesh(voxelised);
-    const auto lim = nodes.size();
-    for (auto i = 0u; i != lim; ++i) {
-        const auto loc = compute_locator(desc, i);
-        const auto pos = compute_position(desc, loc);
-        for (const auto j : compute_neighbors(desc, i)) {
+    const auto mesh{get_mesh(voxelised)};
+    const auto lim{mesh.nodes.size()};
+    for (auto i{0u}; i != lim; ++i) {
+        const auto loc{compute_locator(mesh.descriptor, i)};
+        const auto pos{compute_position(mesh.descriptor, loc)};
+        for (const auto j : compute_neighbors(mesh.descriptor, i)) {
             if (j != -1) {
-                const auto ll = compute_locator(desc, j);
-                const auto pp = compute_position(desc, ll);
-                ASSERT_NEAR(desc.spacing, glm::distance(pos, pp), 0.0001)
+                const auto ll{compute_locator(mesh.descriptor, j)};
+                const auto pp{compute_position(mesh.descriptor, ll)};
+                ASSERT_NEAR(
+                        mesh.descriptor.spacing, glm::distance(pos, pp), 0.0001)
                         << i << ", " << j;
             }
         }
     }
 
-    auto ports_contains = [](auto i, auto j) {
+    const auto ports_contains{[](auto i, auto j) {
         for (auto x : i.ports) {
             if (x == j)
                 return true;
         }
         return false;
-    };
+    }};
 
-    for (auto i = 0u; i != lim; ++i) {
-        const auto& root = nodes[i];
-        for (auto j = 0u; j != 6; ++j) {
-            auto ind = root.ports[j];
+    for (auto i{0u}; i != lim; ++i) {
+        const auto& root{mesh.nodes[i]};
+        for (auto j{0u}; j != 6; ++j) {
+            auto ind{root.ports[j]};
             if (ind != -1)
-                ASSERT_TRUE(ports_contains(nodes[ind], i));
+                ASSERT_TRUE(ports_contains(mesh.nodes[ind], i));
         }
     }
 }
 
 TEST_F(mesh_fixture, inside) {
-    aligned::vector<node> nodes;
-    waveguide::descriptor desc;
-    std::tie(nodes, desc) = get_mesh(voxelised);
+    const auto mesh{get_mesh(voxelised)};
 
 #if 0
     const auto directions{raytracer::get_random_directions(32)};
@@ -117,14 +110,14 @@ TEST_F(mesh_fixture, inside) {
     std::cout << "};\n";
 #endif
 
-    const auto cpu_inside{map_to_vector(nodes, [&](const auto& i) {
+    const auto cpu_inside{map_to_vector(mesh.nodes, [&](const auto& i) {
         return inside(voxelised, to_vec3(i.position));
     })};
 
-    auto pb{progress_bar{std::cout, nodes.size()}};
+    auto pb{progress_bar{std::cout, mesh.nodes.size()}};
     auto same{0u};
-    for (auto i{0u}; i != nodes.size(); ++i, pb += 1) {
-        if (nodes[i].inside == cpu_inside[i]) {
+    for (auto i{0u}; i != mesh.nodes.size(); ++i, pb += 1) {
+        if (mesh.nodes[i].inside == cpu_inside[i]) {
             same += 1;
         } else {
             // std::cerr << "mismatch at index " << i << '\n';
@@ -133,10 +126,10 @@ TEST_F(mesh_fixture, inside) {
         }
     }
 
-    const auto percentage_similar{(same * 100.0) / nodes.size()};
+    const auto percentage_similar{(same * 100.0) / mesh.nodes.size()};
 
-    if (same != nodes.size()) {
-        std::cerr << same << " nodes are the same out of " << nodes.size()
+    if (same != mesh.nodes.size()) {
+        std::cerr << same << " nodes are the same out of " << mesh.nodes.size()
                   << '\n';
         std::cerr << percentage_similar << "% match\n";
     }

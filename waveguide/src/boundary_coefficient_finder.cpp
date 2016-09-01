@@ -10,7 +10,7 @@ namespace waveguide {
 
 namespace {
 
-template<typename func>
+template <typename func>
 void set_boundary_index(aligned::vector<node>& ret, func f) {
     auto count{0u};
     for (auto& i : ret) {
@@ -20,7 +20,7 @@ void set_boundary_index(aligned::vector<node>& ret, func f) {
     }
 }
 
-template<typename func>
+template <typename func>
 size_t count_boundary_type(const aligned::vector<node>& ret, func f) {
     return proc::count_if(ret,
                           [&](const auto& i) { return f(i.boundary_type); });
@@ -93,7 +93,8 @@ boundary_index_data compute_boundary_index_data(const cl::Device& device,
                buffers.get_global_aabb(),
                buffers.get_side(),
                buffers.get_triangles_buffer(),
-               buffers.get_triangles_buffer().getInfo<CL_MEM_SIZE>() / sizeof(triangle),
+               buffers.get_triangles_buffer().getInfo<CL_MEM_SIZE>() /
+                       sizeof(triangle),
                buffers.get_vertices_buffer());
         const auto out{read_from_buffer<boundary_index_array_1>(
                 queue, index_buffer_1)};
@@ -140,8 +141,7 @@ boundary_index_data compute_boundary_index_data(const cl::Device& device,
     //  to boundaries and not to reentrant nodes
     set_boundary_index(nodes, surface_func_1);
 
-    return std::make_tuple(
-            std::move(ret_1), std::move(ret_2), std::move(ret_3));
+    return {std::move(ret_1), std::move(ret_2), std::move(ret_3)};
 }
 
 //----------------------------------------------------------------------------//

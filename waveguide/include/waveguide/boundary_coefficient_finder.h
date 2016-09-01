@@ -77,9 +77,11 @@ private:
 };
 
 //  or maybe keep the buffers on the gpu?
-using boundary_index_data = std::tuple<aligned::vector<boundary_index_array_1>,
-                                       aligned::vector<boundary_index_array_2>,
-                                       aligned::vector<boundary_index_array_3>>;
+struct boundary_index_data final {
+    aligned::vector<boundary_index_array_1> b1;
+    aligned::vector<boundary_index_array_2> b2;
+    aligned::vector<boundary_index_array_3> b3;
+};
 
 boundary_index_data compute_boundary_index_data(const cl::Device& device,
                                                 const scene_buffers& buffers,

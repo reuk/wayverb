@@ -9,9 +9,9 @@ namespace waveguide {
 
 class mesh final {
 public:
-    mesh(const struct descriptor& descriptor,
-          const vectors& vectors,
-          const aligned::vector<glm::vec3>& node_positions);
+    mesh(descriptor descriptor,
+         vectors vectors,
+         aligned::vector<glm::vec3> node_positions);
 
     const descriptor& get_descriptor() const;
     const vectors& get_structure() const;
@@ -20,18 +20,22 @@ public:
     void set_coefficients(aligned::vector<coefficients_canonical> coefficients);
 
 private:
-    struct descriptor descriptor;
-    vectors vectors;
-    aligned::vector<glm::vec3> node_positions;
+    descriptor descriptor_;
+    vectors vectors_;
+    aligned::vector<glm::vec3> node_positions_;
 };
 
 bool is_inside(const mesh& m, size_t node_index);
 
-std::tuple<aligned::vector<node>, descriptor> compute_fat_nodes(
-        const compute_context& cc,
-        const voxelised_scene_data& voxelised,
-        const scene_buffers& buffers,
-        float mesh_spacing);
+struct fat_nodes final {
+    descriptor descriptor;
+    aligned::vector<node> nodes;
+};
+
+fat_nodes compute_fat_nodes(const compute_context& cc,
+                            const voxelised_scene_data& voxelised,
+                            const scene_buffers& buffers,
+                            float mesh_spacing);
 
 ///  use this if you already have a voxelised scene
 mesh compute_mesh(const compute_context& cc,

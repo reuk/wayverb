@@ -21,8 +21,8 @@ PATTERNS = [
 ]
 
 def run():
-    exe = join(project_path, "build/tests/mic_test/mic_offset_rotate")
-    out_dir = join(project_path, "tests/mic_test/output")
+    exe = join(project_path, "build/utils/mic_test/mic_offset_rotate")
+    out_dir = join(project_path, "utils/mic_test/output")
 
     for pattern, _ in PATTERNS:
         o_dir = join(out_dir, pattern)

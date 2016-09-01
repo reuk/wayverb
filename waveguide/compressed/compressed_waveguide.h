@@ -12,20 +12,19 @@ public:
             const compute_context& cc);
 
     auto get_kernel() const {
-        return program_wrapper.get_kernel<cl::Buffer, cl::Buffer>(
+        return program_wrapper_.get_kernel<cl::Buffer, cl::Buffer>(
                 "compressed_waveguide");
     }
 
     template <cl_program_info T>
     auto get_info() const {
-        return program_wrapper.get_info<T>();
+        return program_wrapper_.get_info<T>();
     }
 
-    cl::Device get_device() const { return program_wrapper.get_device(); }
+    cl::Device get_device() const { return program_wrapper_.get_device(); }
 
 private:
-    static const std::string source;
-    program_wrapper program_wrapper;
+    program_wrapper program_wrapper_;
 };
 
 class compressed_rectangular_waveguide final {

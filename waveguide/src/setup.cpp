@@ -1,10 +1,13 @@
+#include "waveguide/cl/utils.h"
 #include "waveguide/setup.h"
+
 #include "common/cl/geometry.h"
 #include "common/cl/scene_structs.h"
 #include "common/cl/voxel.h"
 #include "common/map_to_vector.h"
 #include "common/popcount.h"
-#include "waveguide/cl/utils.h"
+
+#include <iostream>
 
 namespace waveguide {
 
@@ -27,32 +30,40 @@ aligned::vector<condensed_node> get_condensed(const aligned::vector<node>& n) {
 //----------------------------------------------------------------------------//
 
 vectors::vectors(aligned::vector<condensed_node> nodes,
-                 aligned::vector<coefficients_canonical> coefficients,
-                 aligned::vector<boundary_index_array_1> boundary_indices_1,
-                 aligned::vector<boundary_index_array_2> boundary_indices_2,
-                 aligned::vector<boundary_index_array_3> boundary_indices_3)
-        : condensed_nodes(std::move(nodes))
-        , coefficients(std::move(coefficients))
-        , boundary_indices_1(std::move(boundary_indices_1))
-        , boundary_indices_2(std::move(boundary_indices_2))
-        , boundary_indices_3(std::move(boundary_indices_3)) {}
+                 aligned::vector<coefficients_canonical>
+                         coefficients,
+                 boundary_index_data boundary_index_data)
+        : condensed_nodes_(std::move(nodes))
+        , coefficients_(std::move(coefficients))
+        , boundary_index_data_(std::move(boundary_index_data)) {
+#ifndef NDEBUG
+    const auto count{proc::count_if(condensed_nodes_, [](auto i) {
+        return i.boundary_type & id_inside;
+    })};
+    std::cout << build_string(
+            count, " of ", condensed_nodes_.size(), " nodes inside\n");
+    if (!count) {
+        throw std::runtime_error("no nodes inside");
+    }
+#endif
+}
 
 const aligned::vector<condensed_node>& vectors::get_condensed_nodes() const {
-    return condensed_nodes;
+    return condensed_nodes_;
 }
 
 const aligned::vector<coefficients_canonical>& vectors::get_coefficients()
         const {
-    return coefficients;
+    return coefficients_;
 }
 
 void vectors::set_coefficients(aligned::vector<coefficients_canonical> c) {
-    if (c.size() != coefficients.size()) {
+    if (c.size() != coefficients_.size()) {
         throw std::runtime_error(
                 "size of new coefficients vector must be equal to the existing "
                 "one in order to maintain object invariants");
     }
-    coefficients = std::move(c);
+    coefficients_ = std::move(c);
 }
 
 //----------------------------------------------------------------------------//

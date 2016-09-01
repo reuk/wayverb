@@ -69,10 +69,9 @@ constexpr bool is_inside(const condensed_node& c) {
 class vectors final {
 public:
     vectors(aligned::vector<condensed_node> nodes,
-            aligned::vector<coefficients_canonical> coefficients,
-            aligned::vector<boundary_index_array_1> boundary_indices_1,
-            aligned::vector<boundary_index_array_2> boundary_indices_2,
-            aligned::vector<boundary_index_array_3> boundary_indices_3);
+            aligned::vector<coefficients_canonical>
+                    coefficients,
+            boundary_index_data boundary_index_data);
 
     template <size_t n>
     const aligned::vector<boundary_index_array<n>>& get_boundary_indices()
@@ -84,27 +83,25 @@ public:
     void set_coefficients(aligned::vector<coefficients_canonical> coefficients);
 
 private:
-    aligned::vector<condensed_node> condensed_nodes;
-    aligned::vector<coefficients_canonical> coefficients;
-    aligned::vector<boundary_index_array_1> boundary_indices_1;
-    aligned::vector<boundary_index_array_2> boundary_indices_2;
-    aligned::vector<boundary_index_array_3> boundary_indices_3;
+    aligned::vector<condensed_node> condensed_nodes_;
+    aligned::vector<coefficients_canonical> coefficients_;
+    boundary_index_data boundary_index_data_;
 };
 
 template <>
 inline const aligned::vector<boundary_index_array<1>>&
 vectors::get_boundary_indices<1>() const {
-    return boundary_indices_1;
+    return boundary_index_data_.b1;
 }
 template <>
 inline const aligned::vector<boundary_index_array<2>>&
 vectors::get_boundary_indices<2>() const {
-    return boundary_indices_2;
+    return boundary_index_data_.b2;
 }
 template <>
 inline const aligned::vector<boundary_index_array<3>>&
 vectors::get_boundary_indices<3>() const {
-    return boundary_indices_3;
+    return boundary_index_data_.b3;
 }
 
 //----------------------------------------------------------------------------//
