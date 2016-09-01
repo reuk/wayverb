@@ -1,8 +1,9 @@
 #include "waveguide/program.h"
 
+#include "waveguide/cl/filters.h"
 #include "waveguide/cl/structs.h"
 #include "waveguide/cl/utils.h"
-#include "waveguide/cl/filters.h"
+#include "waveguide/mesh_descriptor.h"
 
 #include "common/stl_wrappers.h"
 
@@ -11,8 +12,8 @@ namespace waveguide {
 //----------------------------------------------------------------------------//
 
 constexpr auto source{R"(
-#define courant      (1.0f / sqrt(3.0f))
-#define courant_sq   (1.0f / 3.0f)
+#define courant (1.0f / sqrt(3.0f))
+#define courant_sq (1.0f / 3.0f)
 
 typedef struct { PortDirection array[1]; } InnerNodeDirections1;
 typedef struct { PortDirection array[2]; } InnerNodeDirections2;
@@ -149,12 +150,11 @@ SurroundingPorts2 on_boundary_2(InnerNodeDirections2 ind) {
 //
 //  we don't actually care about the pressure at the ghost point other than to
 //  calculate the boundary filter input
-void ghost_point_pressure_update(
-        float next_pressure,
-        float prev_pressure,
-        float inner_pressure,
-        global boundary_data* bd,
-        const global coefficients_canonical* boundary);
+void ghost_point_pressure_update(float next_pressure,
+                                 float prev_pressure,
+                                 float inner_pressure,
+                                 global boundary_data* bd,
+                                 const global coefficients_canonical* boundary);
 void ghost_point_pressure_update(
         float next_pressure,
         float prev_pressure,
@@ -162,8 +162,8 @@ void ghost_point_pressure_update(
         global boundary_data* bd,
         const global coefficients_canonical* boundary) {
     const real filt_state = bd->filter_memory.array[0];
-    const real b0         = boundary->b[0];
-    const real a0         = boundary->a[0];
+    const real b0 = boundary->b[0];
+    const real a0 = boundary->a[0];
 
     const real diff = (a0 * (prev_pressure - next_pressure)) / (b0 * courant) +
                       (filt_state / b0);
@@ -173,39 +173,38 @@ void ghost_point_pressure_update(
 #else
     const real filter_input = -diff;
 #endif
-    filter_step_canonical(
-            filter_input, &(bd->filter_memory), boundary);
+    filter_step_canonical(filter_input, &(bd->filter_memory), boundary);
 }
 
 //----------------------------------------------------------------------------//
 
 #define TEMPLATE_SUM_SURROUNDING_PORTS(dimensions)                           \
     float CAT(get_summed_surrounding_, dimensions)(                          \
-            const global condensed_node* nodes,                               \
+            const global condensed_node* nodes,                              \
             CAT(InnerNodeDirections, dimensions) pd,                         \
             const global float* current,                                     \
             int3 locator,                                                    \
             int3 dim,                                                        \
-            global int* error_flag);                                         \
+            volatile global int* error_flag);                                \
     float CAT(get_summed_surrounding_, dimensions)(                          \
-            const global condensed_node* nodes,                               \
+            const global condensed_node* nodes,                              \
             CAT(InnerNodeDirections, dimensions) pd,                         \
             const global float* current,                                     \
             int3 locator,                                                    \
             int3 dim,                                                        \
-            global int* error_flag) {                                        \
+            volatile global int* error_flag) {                               \
         float ret = 0;                                                       \
         CAT(SurroundingPorts, dimensions)                                    \
         on_boundary = CAT(on_boundary_, dimensions)(pd);                     \
         for (int i = 0; i != CAT(NUM_SURROUNDING_PORTS_, dimensions); ++i) { \
             uint index = neighbor_index(locator, dim, on_boundary.array[i]); \
             if (index == no_neighbor) {                                      \
-                *error_flag |= id_outside_mesh_error;                        \
+                atomic_or(error_flag, id_outside_mesh_error);                \
                 return 0;                                                    \
             }                                                                \
             int boundary_type = nodes[index].boundary_type;                  \
             if (boundary_type == id_none || boundary_type == id_inside) {    \
-                *error_flag |= id_suspicious_boundary_error;                 \
+                atomic_or(error_flag, id_suspicious_boundary_error);         \
             }                                                                \
             ret += current[index];                                           \
         }                                                                    \
@@ -220,13 +219,13 @@ float get_summed_surrounding_3(const global condensed_node* nodes,
                                const global float* current,
                                int3 locator,
                                int3 dimensions,
-                               global int* error_flag);
+                               volatile global int* error_flag);
 float get_summed_surrounding_3(const global condensed_node* nodes,
                                InnerNodeDirections3 i,
                                const global float* current,
                                int3 locator,
                                int3 dimensions,
-                               global int* error_flag) {
+                               volatile global int* error_flag) {
     return 0;
 }
 
@@ -237,16 +236,16 @@ float get_inner_pressure(const global condensed_node* nodes,
                          int3 locator,
                          int3 dim,
                          PortDirection bt,
-                         global int* error_flag);
+                         volatile global int* error_flag);
 float get_inner_pressure(const global condensed_node* nodes,
                          const global float* current,
                          int3 locator,
                          int3 dim,
                          PortDirection bt,
-                         global int* error_flag) {
+                         volatile global int* error_flag) {
     uint neighbor = neighbor_index(locator, dim, bt);
     if (neighbor == no_neighbor) {
-        *error_flag |= id_outside_mesh_error;
+        atomic_or(error_flag, id_outside_mesh_error);
         return 0;
     }
     return current[neighbor];
@@ -254,19 +253,19 @@ float get_inner_pressure(const global condensed_node* nodes,
 
 #define GET_CURRENT_SURROUNDING_WEIGHTING_TEMPLATE(dimensions)                 \
     float CAT(get_current_surrounding_weighting_, dimensions)(                 \
-            const global condensed_node* nodes,                                 \
+            const global condensed_node* nodes,                                \
             const global float* current,                                       \
             int3 locator,                                                      \
             int3 dim,                                                          \
             CAT(InnerNodeDirections, dimensions) ind,                          \
-            global int* error_flag);                                           \
+            volatile global int* error_flag);                                  \
     float CAT(get_current_surrounding_weighting_, dimensions)(                 \
-            const global condensed_node* nodes,                                 \
+            const global condensed_node* nodes,                                \
             const global float* current,                                       \
             int3 locator,                                                      \
             int3 dim,                                                          \
             CAT(InnerNodeDirections, dimensions) ind,                          \
-            global int* error_flag) {                                          \
+            volatile global int* error_flag) {                                 \
         float sum = 0;                                                         \
         for (int i = 0; i != dimensions; ++i) {                                \
             sum += 2 * get_inner_pressure(nodes,                               \
@@ -287,21 +286,21 @@ GET_CURRENT_SURROUNDING_WEIGHTING_TEMPLATE(3);
 
 //----------------------------------------------------------------------------//
 
-#define GET_FILTER_WEIGHTING_TEMPLATE(dimensions)                              \
-    float CAT(get_filter_weighting_, dimensions)(                              \
-            global CAT(boundary_data_array_, dimensions) * bda,                   \
+#define GET_FILTER_WEIGHTING_TEMPLATE(dimensions)                         \
+    float CAT(get_filter_weighting_, dimensions)(                         \
+            global CAT(boundary_data_array_, dimensions) * bda,           \
             const global coefficients_canonical* boundary_coefficients);  \
-    float CAT(get_filter_weighting_, dimensions)(                              \
-            global CAT(boundary_data_array_, dimensions) * bda,                   \
+    float CAT(get_filter_weighting_, dimensions)(                         \
+            global CAT(boundary_data_array_, dimensions) * bda,           \
             const global coefficients_canonical* boundary_coefficients) { \
-        float sum = 0;                                                         \
-        for (int i = 0; i != dimensions; ++i) {                                \
-            boundary_data bd       = bda->array[i];                             \
-            const real filt_state = bd.filter_memory.array[0];                 \
-            sum += filt_state /                                                \
-                   boundary_coefficients[bd.coefficient_index].b[0];           \
-        }                                                                      \
-        return courant_sq * sum;                                               \
+        float sum = 0;                                                    \
+        for (int i = 0; i != dimensions; ++i) {                           \
+            boundary_data bd = bda->array[i];                             \
+            const real filt_state = bd.filter_memory.array[0];            \
+            sum += filt_state /                                           \
+                   boundary_coefficients[bd.coefficient_index].b[0];      \
+        }                                                                 \
+        return courant_sq * sum;                                          \
     }
 
 GET_FILTER_WEIGHTING_TEMPLATE(1);
@@ -310,20 +309,20 @@ GET_FILTER_WEIGHTING_TEMPLATE(3);
 
 //----------------------------------------------------------------------------//
 
-#define GET_COEFF_WEIGHTING_TEMPLATE(dimensions)                               \
-    float CAT(get_coeff_weighting_, dimensions)(                               \
-            global CAT(boundary_data_array_, dimensions) * bda,                   \
-            const global coefficients_canonical* boundary_coefficients);  \
-    float CAT(get_coeff_weighting_, dimensions)(                               \
-            global CAT(boundary_data_array_, dimensions) * bda,                   \
-            const global coefficients_canonical* boundary_coefficients) { \
-        float sum = 0;                                                         \
-        for (int i = 0; i != dimensions; ++i) {                                \
-            const global coefficients_canonical* boundary =               \
-                    boundary_coefficients + bda->array[i].coefficient_index;   \
-            sum += boundary->a[0] / boundary->b[0];                            \
-        }                                                                      \
-        return sum * courant;                                                  \
+#define GET_COEFF_WEIGHTING_TEMPLATE(dimensions)                             \
+    float CAT(get_coeff_weighting_, dimensions)(                             \
+            global CAT(boundary_data_array_, dimensions) * bda,              \
+            const global coefficients_canonical* boundary_coefficients);     \
+    float CAT(get_coeff_weighting_, dimensions)(                             \
+            global CAT(boundary_data_array_, dimensions) * bda,              \
+            const global coefficients_canonical* boundary_coefficients) {    \
+        float sum = 0;                                                       \
+        for (int i = 0; i != dimensions; ++i) {                              \
+            const global coefficients_canonical* boundary =                  \
+                    boundary_coefficients + bda->array[i].coefficient_index; \
+            sum += boundary->a[0] / boundary->b[0];                          \
+        }                                                                    \
+        return sum * courant;                                                \
     }
 
 GET_COEFF_WEIGHTING_TEMPLATE(1);
@@ -336,30 +335,30 @@ GET_COEFF_WEIGHTING_TEMPLATE(3);
     float CAT(boundary_, dimensions)(                                          \
             const global float* current,                                       \
             float prev_pressure,                                               \
-            condensed_node node,                                                \
-            const global condensed_node* nodes,                                 \
+            condensed_node node,                                               \
+            const global condensed_node* nodes,                                \
             int3 locator,                                                      \
             int3 dim,                                                          \
-            global CAT(boundary_data_array_, dimensions) * bdat,         \
-            const global coefficients_canonical* boundary_coefficients,   \
-            global int* error_flag);                                           \
+            global CAT(boundary_data_array_, dimensions) * bdat,               \
+            const global coefficients_canonical* boundary_coefficients,        \
+            volatile global int* error_flag);                                  \
     float CAT(boundary_, dimensions)(                                          \
             const global float* current,                                       \
             float prev_pressure,                                               \
-            condensed_node node,                                                \
-            const global condensed_node* nodes,                                 \
+            condensed_node node,                                               \
+            const global condensed_node* nodes,                                \
             int3 locator,                                                      \
             int3 dim,                                                          \
-            global CAT(boundary_data_array_, dimensions) * bdat,         \
-            const global coefficients_canonical* boundary_coefficients,   \
-            global int* error_flag) {                                          \
+            global CAT(boundary_data_array_, dimensions) * bdat,               \
+            const global coefficients_canonical* boundary_coefficients,        \
+            volatile global int* error_flag) {                                 \
         CAT(InnerNodeDirections, dimensions)                                   \
         ind = CAT(get_inner_node_directions_, dimensions)(node.boundary_type); \
         float current_surrounding_weighting =                                  \
                 CAT(get_current_surrounding_weighting_, dimensions)(           \
                         nodes, current, locator, dim, ind, error_flag);        \
-        global CAT(boundary_data_array_, dimensions)* bda =                       \
-                bdat + node.boundary_index;                           \
+        global CAT(boundary_data_array_, dimensions)* bda =                    \
+                bdat + node.boundary_index;                                    \
         const float filter_weighting = CAT(get_filter_weighting_, dimensions)( \
                 bda, boundary_coefficients);                                   \
         const float coeff_weighting = CAT(get_coeff_weighting_, dimensions)(   \
@@ -369,8 +368,8 @@ GET_COEFF_WEIGHTING_TEMPLATE(3);
                            prev_weighting) /                                   \
                           (1 + coeff_weighting);                               \
         for (int i = 0; i != dimensions; ++i) {                                \
-            global boundary_data* bd = bda->array + i;                          \
-            const global coefficients_canonical* boundary =               \
+            global boundary_data* bd = bda->array + i;                         \
+            const global coefficients_canonical* boundary =                    \
                     boundary_coefficients + bd->coefficient_index;             \
             ghost_point_pressure_update(ret,                                   \
                                         prev_pressure,                         \
@@ -392,7 +391,6 @@ BOUNDARY_TEMPLATE(3);
 
 //----------------------------------------------------------------------------//
 
-#define RANGE (1)
 #define ENABLE_BOUNDARIES (1)
 
 float normal_waveguide_update(float prev_pressure,
@@ -416,30 +414,30 @@ float normal_waveguide_update(float prev_pressure,
     return ret;
 }
 
-float next_waveguide_pressure(const condensed_node node,
-                              const global condensed_node* nodes,
-                              float prev_pressure,
-                              const global float* current,
-                              int3 dimensions,
-                              int3 locator,
-                              global boundary_data_array_1* boundary_data_1,
-                              global boundary_data_array_2* boundary_data_2,
-                              global boundary_data_array_3* boundary_data_3,
-                              const global coefficients_canonical *
-                                      boundary_coefficients,
-                              global int* error_flag);
-float next_waveguide_pressure(const condensed_node node,
-                              const global condensed_node* nodes,
-                              float prev_pressure,
-                              const global float* current,
-                              int3 dimensions,
-                              int3 locator,
-                              global boundary_data_array_1* boundary_data_1,
-                              global boundary_data_array_2* boundary_data_2,
-                              global boundary_data_array_3* boundary_data_3,
-                              const global coefficients_canonical *
-                                      boundary_coefficients,
-                              global int* error_flag) {
+float next_waveguide_pressure(
+        const condensed_node node,
+        const global condensed_node* nodes,
+        float prev_pressure,
+        const global float* current,
+        int3 dimensions,
+        int3 locator,
+        global boundary_data_array_1* boundary_data_1,
+        global boundary_data_array_2* boundary_data_2,
+        global boundary_data_array_3* boundary_data_3,
+        const global coefficients_canonical* boundary_coefficients,
+        volatile global int* error_flag);
+float next_waveguide_pressure(
+        const condensed_node node,
+        const global condensed_node* nodes,
+        float prev_pressure,
+        const global float* current,
+        int3 dimensions,
+        int3 locator,
+        global boundary_data_array_1* boundary_data_1,
+        global boundary_data_array_2* boundary_data_2,
+        global boundary_data_array_3* boundary_data_3,
+        const global coefficients_canonical* boundary_coefficients,
+        volatile global int* error_flag) {
     //  find the next pressure at this node, assign it to next_pressure
     switch (popcount(node.boundary_type)) {
         //  this is inside or outside, not a boundary
@@ -491,20 +489,20 @@ float next_waveguide_pressure(const condensed_node node,
     }
 }
 
-kernel void condensed_waveguide(global float* previous,
-                                const global float* current,
-                                const global condensed_node* nodes,
-                                int3 dimensions,
-                                global boundary_data_array_1* boundary_data_1,
-                                global boundary_data_array_2* boundary_data_2,
-                                global boundary_data_array_3* boundary_data_3,
-                                const global coefficients_canonical *
-                                        boundary_coefficients,
-                                global int* error_flag) {
+kernel void condensed_waveguide(
+        global float* previous,
+        const global float* current,
+        const global condensed_node* nodes,
+        int3 dimensions,
+        global boundary_data_array_1* boundary_data_1,
+        global boundary_data_array_2* boundary_data_2,
+        global boundary_data_array_3* boundary_data_3,
+        const global coefficients_canonical* boundary_coefficients,
+        volatile global int* error_flag) {
     const size_t index = get_global_id(0);
 
     const condensed_node node = nodes[index];
-    const int3 locator        = to_locator(index, dimensions);
+    const int3 locator = to_locator(index, dimensions);
 
     const float prev_pressure = previous[index];
     const float next_pressure = next_waveguide_pressure(node,
@@ -519,9 +517,6 @@ kernel void condensed_waveguide(global float* previous,
                                                         boundary_coefficients,
                                                         error_flag);
 
-    if (next_pressure < -RANGE || RANGE < next_pressure) {
-        atomic_or(error_flag, id_outside_range_error);
-    }
     if (isinf(next_pressure)) {
         atomic_or(error_flag, id_inf_error);
     }
@@ -540,6 +535,7 @@ program::program(const compute_context& cc)
                   std::vector<std::string>{
                           ::cl_sources::filter_constants,
                           cl_representation_v<real>,
+                          cl_representation_v<mesh_descriptor>,
                           cl_representation_v<memory_biquad>,
                           cl_representation_v<coefficients_biquad>,
                           cl_representation_v<memory_canonical>,

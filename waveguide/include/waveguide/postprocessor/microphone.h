@@ -4,17 +4,16 @@
 
 #include "common/output_iterator_callback.h"
 
+struct mesh_descriptor;
+
 namespace waveguide {
-
-struct descriptor;
-
 namespace postprocessor {
 
 namespace detail {
 
 class microphone_state final {
 public:
-    microphone_state(const descriptor& mesh_descriptor,
+    microphone_state(const mesh_descriptor& mesh_descriptor,
                      double sample_rate,
                      double ambient_density,
                      size_t output_node);
@@ -42,7 +41,7 @@ class microphone final {
 public:
     using output_callback = std::function<void(run_step_output)>;
 
-    microphone(const descriptor& mesh_descriptor,
+    microphone(const mesh_descriptor& mesh_descriptor,
                double sample_rate,
                double ambient_density,
                size_t output_node,

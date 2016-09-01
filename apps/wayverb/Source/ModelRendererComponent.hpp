@@ -19,7 +19,7 @@ public:
     using Renderer = RendererComponent<SceneRendererContextLifetime>;
 
     ModelRendererComponent(
-            const copyable_scene_data& model,
+            const scene_data& model,
             model::ValueWrapper<int>& shown_surface,
             model::ValueWrapper<model::App>& app,
             model::ValueWrapper<model::RenderState>& render_state);
@@ -48,23 +48,22 @@ private:
     void send_receivers();
     void send_is_rendering();
 
-    const copyable_scene_data& model;
+    const scene_data& model;
     model::ValueWrapper<int>& shown_surface;
 
     class MeshGenerator final : public AsyncMeshGenerator::Listener {
     public:
-        MeshGenerator(const copyable_scene_data& scene,
+        MeshGenerator(const scene_data& scene,
                       double sample_rate,
                       double speed_of_sound,
-                      std::function<void(waveguide::mesh::model)>
+                      std::function<void(waveguide::mesh)>
                               on_finished);
 
-        void async_mesh_generator_finished(
-                const AsyncMeshGenerator*,
-                waveguide::mesh::model model) override;
+        void async_mesh_generator_finished(const AsyncMeshGenerator*,
+                                           waveguide::mesh model) override;
 
     private:
-        std::function<void(waveguide::mesh::model)> on_finished;
+        std::function<void(waveguide::mesh)> on_finished;
         AsyncMeshGenerator generator;
         model::Connector<AsyncMeshGenerator> generator_connector{&generator,
                                                                  this};

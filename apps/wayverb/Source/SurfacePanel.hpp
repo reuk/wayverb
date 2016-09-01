@@ -85,10 +85,9 @@ class PresetComponent : public Component,
                         public model::BroadcastListener,
                         public SettableHelpPanelClient {
 public:
-    PresetComponent(
-            model::ValueWrapper<surface>& linked,
-            model::ValueWrapper<aligned::vector<copyable_scene_data::material>>&
-                    preset_model);
+    PresetComponent(model::ValueWrapper<surface>& linked,
+                    model::ValueWrapper<aligned::vector<scene_data::material>>&
+                            preset_model);
     virtual ~PresetComponent() noexcept;
     void resized() override;
 
@@ -104,8 +103,7 @@ private:
     model::ValueWrapper<surface>& linked;
     model::BroadcastConnector linked_connector{&linked, this};
 
-    model::ValueWrapper<aligned::vector<copyable_scene_data::material>>&
-            preset_model;
+    model::ValueWrapper<aligned::vector<scene_data::material>>& preset_model;
     model::BroadcastConnector preset_connector{&preset_model, this};
 
     ComboBox combo_box;
@@ -125,10 +123,9 @@ private:
 
 class PresetProperty : public PropertyComponent {
 public:
-    PresetProperty(
-            model::ValueWrapper<surface>& linked,
-            model::ValueWrapper<aligned::vector<copyable_scene_data::material>>&
-                    preset_model);
+    PresetProperty(model::ValueWrapper<surface>& linked,
+                   model::ValueWrapper<aligned::vector<scene_data::material>>&
+                           preset_model);
     void refresh() override;
 
 private:
@@ -139,10 +136,9 @@ private:
 
 class SurfaceComponent : public Component {
 public:
-    SurfaceComponent(
-            model::ValueWrapper<surface>& value,
-            model::ValueWrapper<aligned::vector<copyable_scene_data::material>>&
-                    preset_model);
+    SurfaceComponent(model::ValueWrapper<surface>& value,
+                     model::ValueWrapper<aligned::vector<scene_data::material>>&
+                             preset_model);
     void resized() override;
 
 private:
@@ -155,8 +151,8 @@ class SurfaceComponentWithTitle : public Component,
                                   public SettableHelpPanelClient {
 public:
     SurfaceComponentWithTitle(
-            model::ValueWrapper<copyable_scene_data::material>& value,
-            model::ValueWrapper<aligned::vector<copyable_scene_data::material>>&
+            model::ValueWrapper<scene_data::material>& value,
+            model::ValueWrapper<aligned::vector<scene_data::material>>&
                     preset_model);
     void resized() override;
 

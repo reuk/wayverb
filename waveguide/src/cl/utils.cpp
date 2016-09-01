@@ -3,9 +3,6 @@
 namespace cl_sources {
 
 const char* utils{R"(
-#ifndef UTILS_HEADER__
-#define UTILS_HEADER__
-
 #define no_neighbor (~(uint)(0))
 #define PORTS (6)
 
@@ -69,7 +66,11 @@ uint neighbor_index(int3 locator, int3 dim, PortDirection pd) {
     return to_index(locator, dim);
 }
 
-#endif
+float3 compute_node_position(const mesh_descriptor descriptor, int3 locator);
+float3 compute_node_position(const mesh_descriptor descriptor, int3 locator) {
+    return descriptor.min_corner + convert_float3(locator) * descriptor.spacing;
+}
+
 )"};
 
 }//namespace cl_sources

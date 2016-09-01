@@ -67,7 +67,7 @@ void push_triangle_indices(aligned::vector<GLuint> &ret, const triangle &tri) {
 }  // namespace
 
 aligned::vector<GLuint> MultiMaterialObject::SingleMaterialSection::get_indices(
-        const copyable_scene_data &scene_data, int material_index) {
+        const scene_data &scene_data, int material_index) {
     aligned::vector<GLuint> ret;
     for (const auto &i : scene_data.get_triangles()) {
         if (i.surface == material_index) {
@@ -78,7 +78,7 @@ aligned::vector<GLuint> MultiMaterialObject::SingleMaterialSection::get_indices(
 }
 
 MultiMaterialObject::SingleMaterialSection::SingleMaterialSection(
-        const copyable_scene_data &scene_data, int material_index) {
+        const scene_data &scene_data, int material_index) {
     const auto indices = get_indices(scene_data, material_index);
     size = indices.size();
     ibo.data(indices);
@@ -98,7 +98,7 @@ MultiMaterialObject::SingleMaterialSection::get_local_modelview_matrix() const {
 MultiMaterialObject::MultiMaterialObject(
         const std::shared_ptr<mglu::generic_shader> &g,
         const std::shared_ptr<LitSceneShader> &l,
-        const copyable_scene_data &scene_data)
+        const scene_data &scene_data)
         : generic_shader(g)
         , lit_scene_shader(l) {
     for (auto i = 0; i != scene_data.get_surfaces().size(); ++i) {
@@ -186,7 +186,7 @@ void PointObjects::set_receivers(
     for (const auto &i : u) {
         PointObject p(shader, glm::vec4{0, 0.7, 0.7, 1});
         p.set_position(i.position);
-        p.set_pointing(i.get_pointing());
+        p.set_pointing(get_pointing(i));
         ret.push_back(std::move(p));
     }
     receivers = std::move(ret);
@@ -241,7 +241,7 @@ aligned::vector<PointObject *> PointObjects::get_all_point_objects() {
 //----------------------------------------------------------------------------//
 
 SceneRendererContextLifetime::SceneRendererContextLifetime(
-        const copyable_scene_data &scene_data, double speed_of_sound)
+        const scene_data &scene_data, double speed_of_sound)
         : model_object(generic_shader, lit_scene_shader, scene_data)
         , point_objects(generic_shader)
         , axes(generic_shader)
@@ -407,13 +407,13 @@ void SceneRendererContextLifetime::set_receivers(
 }
 
 void SceneRendererContextLifetime::debug_show_closest_surfaces(
-        waveguide::mesh::model model) {
+        waveguide::mesh model) {
     debug_mesh_object = std::make_unique<DebugMeshObject>(
             generic_shader, model, DebugMeshObject::mode::closest_surface);
 }
 
 void SceneRendererContextLifetime::debug_show_boundary_types(
-        waveguide::mesh::model model) {
+        waveguide::mesh model) {
     debug_mesh_object = std::make_unique<DebugMeshObject>(
             generic_shader, model, DebugMeshObject::mode::boundary_type);
 }

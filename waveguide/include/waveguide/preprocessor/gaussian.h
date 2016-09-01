@@ -1,6 +1,6 @@
 #pragma once
 
-#include "waveguide/descriptor.h"
+#include "waveguide/mesh_descriptor.h"
 
 #include "common/cl/common.h"
 
@@ -11,7 +11,7 @@ class gaussian final {
 public:
     static float compute(const glm::vec3& x, float sdev);
 
-    gaussian(const descriptor& descriptor,
+    gaussian(const mesh_descriptor& descriptor,
              const glm::vec3& centre_pos,
              float sdev);
 
@@ -20,7 +20,7 @@ public:
                     size_t step) const;
 
 private:
-    descriptor descriptor_;
+    mesh_descriptor descriptor_;
     glm::vec3 centre_pos_;
     float sdev_;
 };

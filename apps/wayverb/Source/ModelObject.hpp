@@ -8,7 +8,7 @@
 namespace detail {
 constexpr auto model_colour = 0.5;
 
-inline aligned::vector<GLuint> get_indices(const copyable_scene_data& scene_data) {
+inline aligned::vector<GLuint> get_indices(const scene_data& scene_data) {
     aligned::vector<GLuint> ret;
     ret.reserve(scene_data.get_triangles().size() * 3);
     auto count = 0u;
@@ -25,7 +25,7 @@ inline aligned::vector<GLuint> get_indices(const copyable_scene_data& scene_data
 class ModelObject final : public BasicDrawableObject {
 public:
     template <typename T>
-    ModelObject(T& shader, const copyable_scene_data& scene_data)
+    ModelObject(T& shader, const scene_data& scene_data)
             : BasicDrawableObject(shader,
                                   convert(scene_data.get_vertices()),
                                   aligned::vector<glm::vec4>(

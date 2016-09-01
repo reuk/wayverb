@@ -2,7 +2,7 @@
 
 #include "waveguide/boundary_coefficient_finder.h"
 #include "waveguide/cl/utils.h"
-#include "waveguide/descriptor.h"
+#include "waveguide/mesh_descriptor.h"
 #include "waveguide/program.h"
 
 #include "common/aligned/vector.h"
@@ -15,50 +15,7 @@
 
 #include "glm/fwd.hpp"
 
-class copyable_scene_data;
-
 namespace waveguide {
-
-class mesh_boundary;
-
-//----------------------------------------------------------------------------//
-
-class setup_program final {
-public:
-    setup_program(const compute_context& cc);
-
-    auto get_node_position_and_neighbors_kernel() const {
-        return program_wrapper.get_kernel<cl::Buffer,  /// nodes
-                                          cl_int3,     /// dim
-                                          cl_float3,   /// min_corner
-                                          cl_float     /// spacing
-                                          >("set_node_position_and_neighbors");
-    }
-
-    auto get_node_inside_kernel() const {
-        return program_wrapper.get_kernel<cl::Buffer,  /// nodes
-                                          cl::Buffer,  /// voxel_index
-                                          aabb,        /// global_aabb
-                                          cl_ulong,    /// side
-                                          cl::Buffer,  /// triangles
-                                          cl::Buffer   /// vertices
-                                          >("set_node_inside");
-    }
-
-    auto get_node_boundary_type_kernel() const {
-        return program_wrapper.get_kernel<cl::Buffer,  /// nodes
-                                          cl_int3      /// dim
-                                          >("set_node_boundary_type");
-    }
-
-private:
-    program_wrapper program_wrapper;
-};
-
-//----------------------------------------------------------------------------//
-
-condensed_node get_condensed(const node& n);
-aligned::vector<condensed_node> get_condensed(const aligned::vector<node>& n);
 
 constexpr bool is_inside(const condensed_node& c) {
     return c.boundary_type && id_inside;

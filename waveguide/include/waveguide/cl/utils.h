@@ -44,40 +44,6 @@ constexpr boundary_type port_index_to_boundary_type(unsigned int i) {
 constexpr auto no_neighbor{~cl_uint{0}};
 constexpr auto num_ports{size_t{6}};
 
-struct alignas(1 << 4) node final {
-    cl_float3 position{};        /// spatial position
-    cl_uint ports[num_ports]{};  /// the indices of adjacent ports
-    cl_int boundary_type{};      /// describes the boundary type
-    cl_uint boundary_index{};    /// an index into a boundary descriptor array
-    cl_char inside{};            /// is the node an air node?
-};
-
-template <>
-struct cl_representation<node> final {
-    static constexpr auto value{R"(
-typedef struct {
-    float3 position;        //  spatial position
-    uint ports[6];          //  the indices of adjacent ports
-    int boundary_type;      //  describes the boundary type
-    uint boundary_index;    //  an index into a boundary descriptor array
-    char inside;            //  is the node an air node?
-} node;
-)"};
-};
-
-inline bool operator==(const node& a, const node& b) {
-    return proc::equal(a.ports, std::begin(b.ports)) &&
-           std::tie(a.position, a.inside, a.boundary_type, a.boundary_index) ==
-                   std::tie(b.position,
-                            b.inside,
-                            b.boundary_type,
-                            b.boundary_index);
-}
-
-inline bool operator!=(const node& a, const node& b) { return !(a == b); }
-
-//----------------------------------------------------------------------------//
-
 namespace cl_sources {
 extern const char* utils;
 }//namespace cl_sources

@@ -12,7 +12,7 @@ TEST(nan_in_waveguide, nan_in_waveguide) {
     const auto oversample_ratio{1.0};
     const auto waveguide_sr{filter_frequency * oversample_ratio * (1 / 0.196)};
 
-    const compute_context cc{};
+    const compute_context cc{device_type::gpu};
 
     const glm::vec3 mic{0, 0, 0};
 

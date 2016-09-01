@@ -3,9 +3,9 @@
 #include "FullModel.hpp"
 
 #include "OtherComponents/WorkQueue.hpp"
-#include "UtilityComponents/RAIIThread.hpp"
+#include "UtilityComponents/scoped_thread.hpp"
 
-#include "waveguide/mesh/model.h"
+#include "waveguide/mesh.h"
 
 class MeshGeneratorFunctor final {
 public:
@@ -17,26 +17,25 @@ public:
         Listener(Listener&&) noexcept = default;
         Listener& operator=(Listener&&) noexcept = default;
 
-        virtual void mesh_generator_finished(waveguide::mesh::model model) = 0;
+        virtual void mesh_generator_finished(waveguide::mesh model) = 0;
 
     protected:
         ~Listener() noexcept = default;
     };
 
     MeshGeneratorFunctor(Listener& listener,
-                         const copyable_scene_data& scene_data,
+                         const scene_data& scene_data,
                          double sample_rate,
                          double speed_of_sound);
 
     void operator()() const;
 
 private:
-    Listener& listener;
+    Listener& listener_;
 
-    model::Persistent persistent;
-    copyable_scene_data scene_data;
-    double sample_rate;
-    double speed_of_sound;
+    scene_data scene_data_;
+    double sample_rate_;
+    double speed_of_sound_;
 };
 
 //----------------------------------------------------------------------------//
@@ -44,12 +43,12 @@ private:
 class MeshGeneratorThread final {
 public:
     MeshGeneratorThread(MeshGeneratorFunctor::Listener& listener,
-                        const copyable_scene_data& scene_data,
+                        const scene_data& scene_data,
                         double sample_rate,
                         double speed_of_sound);
 
 private:
-    RAIIThread thread;
+    scoped_thread thread;
 };
 
 //----------------------------------------------------------------------------//
@@ -64,14 +63,14 @@ public:
         Listener(Listener&&) noexcept = default;
         Listener& operator=(Listener&&) noexcept = default;
 
-        virtual void async_mesh_generator_finished(
-                const AsyncMeshGenerator*, waveguide::mesh::model model) = 0;
+        virtual void async_mesh_generator_finished(const AsyncMeshGenerator*,
+                                                   waveguide::mesh model) = 0;
 
     protected:
         ~Listener() noexcept = default;
     };
 
-    void run(const copyable_scene_data& scene_data,
+    void run(const scene_data& scene_data,
              double sample_rate,
              double speed_of_sound);
 
@@ -86,9 +85,9 @@ private:
     public:
         ConcreteListener(AsyncMeshGenerator& mesh_generator);
 
-        void mesh_generator_finished(waveguide::mesh::model model) override;
+        void mesh_generator_finished(waveguide::mesh model) override;
 
-        void run(const copyable_scene_data& scene_data,
+        void run(const scene_data& scene_data,
                  double sample_rate,
                  double speed_of_sound);
 

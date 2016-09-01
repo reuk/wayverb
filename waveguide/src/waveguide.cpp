@@ -8,6 +8,7 @@
 #include "waveguide/waveguide.h"
 
 #include <cassert>
+#include <iostream>
 
 namespace waveguide {
 
@@ -72,7 +73,7 @@ size_t run(const compute_context& cc,
                previous,
                current,
                node_buffer,
-               to_cl_int3(mesh.get_descriptor().dimensions),
+               mesh.get_descriptor().dimensions,
                boundary_buffer_1,
                boundary_buffer_2,
                boundary_buffer_3,
@@ -80,24 +81,41 @@ size_t run(const compute_context& cc,
                error_flag_buffer);
 
         //  read out flag value
-        const auto flag{
-                read_single_value<error_code>(queue, error_flag_buffer, 0)};
-        if (flag & id_inf_error) {
-            throw exceptions::value_is_inf(
-                    "pressure value is inf, check filter coefficients");
-        }
+        if (const auto error_flag{read_single_value<error_code>(
+                    queue, error_flag_buffer, 0)}) {
+            const auto pressures{read_from_buffer<cl_float>(queue, previous)};
+            const auto minmax{
+                    std::minmax_element(pressures.begin(), pressures.end())};
+            std::cout << "min: " << *minmax.first << '\n';
+            std::cout << "max: " << *minmax.second << '\n';
 
-        if (flag & id_nan_error) {
-            throw exceptions::value_is_nan(
-                    "pressure value is nan, check filter coefficients");
-        }
+            for (auto i : pressures) {
+                if (std::isnan(i)) {
+                    ;
+                }
 
-        if (flag & id_outside_mesh_error) {
-            throw std::runtime_error("tried to read non-existant node");
-        }
+                if (std::isinf(i)) {
+                    ;
+                }
+            }
 
-        if (flag & id_suspicious_boundary_error) {
-            throw std::runtime_error("suspicious boundary read");
+            if (error_flag & id_inf_error) {
+                throw exceptions::value_is_inf(
+                        "pressure value is inf, check filter coefficients");
+            }
+
+            if (error_flag & id_nan_error) {
+                throw exceptions::value_is_nan(
+                        "pressure value is nan, check filter coefficients");
+            }
+
+            if (error_flag & id_outside_mesh_error) {
+                throw std::runtime_error("tried to read non-existant node");
+            }
+
+            if (error_flag & id_suspicious_boundary_error) {
+                throw std::runtime_error("suspicious boundary read");
+            }
         }
 
         for (auto& i : postprocessors) {
@@ -141,7 +159,9 @@ aligned::vector<run_step_output> run(const compute_context& cc,
                            callback,
                            true)};
 
-    assert(results == input.size());
+    if (results != input.size()) {
+        throw std::runtime_error("failed to complete waveguide run");
+    }
 
     return ret;
 }

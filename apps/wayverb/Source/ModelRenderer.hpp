@@ -39,19 +39,18 @@ public:
     MultiMaterialObject(
             const std::shared_ptr<mglu::generic_shader> &generic_shader,
             const std::shared_ptr<LitSceneShader> &lit_scene_shader,
-            const copyable_scene_data &scene_data);
+            const scene_data &scene_data);
 
     class SingleMaterialSection : public mglu::drawable {
     public:
-        SingleMaterialSection(const copyable_scene_data &scene_data,
-                              int material_index);
+        SingleMaterialSection(const scene_data &scene_data, int material_index);
 
     private:
         void do_draw(const glm::mat4 &modelview_matrix) const override;
         glm::mat4 get_local_modelview_matrix() const override;
 
-        static aligned::vector<GLuint> get_indices(
-                const copyable_scene_data &scene_data, int material_index);
+        static aligned::vector<GLuint> get_indices(const scene_data &scene_data,
+                                                   int material_index);
         mglu::static_ibo ibo;
         GLuint size;
     };
@@ -103,7 +102,8 @@ private:
 
 class SceneRendererContextLifetime final : public BaseContextLifetime {
 public:
-    SceneRendererContextLifetime(const copyable_scene_data &scene_data, double speed_of_sound);
+    SceneRendererContextLifetime(const scene_data &scene_data,
+                                 double speed_of_sound);
 
     SceneRendererContextLifetime(const SceneRendererContextLifetime &) = delete;
     SceneRendererContextLifetime &operator=(
@@ -139,8 +139,8 @@ public:
 
     void set_receivers(const aligned::vector<model::ReceiverSettings> &u);
 
-    void debug_show_closest_surfaces(waveguide::mesh::model model);
-    void debug_show_boundary_types(waveguide::mesh::model model);
+    void debug_show_closest_surfaces(waveguide::mesh model);
+    void debug_show_boundary_types(waveguide::mesh model);
     void debug_hide_model();
 
 private:

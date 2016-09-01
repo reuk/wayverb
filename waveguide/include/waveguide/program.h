@@ -20,15 +20,16 @@ public:
     program(const compute_context& cc);
 
     auto get_kernel() const {
-        return program_wrapper.get_kernel<cl::Buffer,
-                                          cl::Buffer,
-                                          cl::Buffer,
-                                          cl_int3,
-                                          cl::Buffer,
-                                          cl::Buffer,
-                                          cl::Buffer,
-                                          cl::Buffer,
-                                          cl::Buffer>("condensed_waveguide");
+        return program_wrapper.get_kernel<cl::Buffer,  /// previous
+                                          cl::Buffer,  /// current
+                                          cl::Buffer,  /// nodes
+                                          cl_int3,     /// dimensions
+                                          cl::Buffer,  /// boundary_data_1
+                                          cl::Buffer,  /// boundary_data_2
+                                          cl::Buffer,  /// boundary_data_3
+                                          cl::Buffer,  /// boundary_coefficients
+                                          cl::Buffer   /// error_flag
+                                          >("condensed_waveguide");
     }
 
     auto get_filter_test_kernel() const {

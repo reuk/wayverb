@@ -1,80 +1,34 @@
 #pragma once
 
+#include "waveguide/cl/boundary_index_array.h"
 #include "waveguide/cl/structs.h"
-#include "waveguide/cl/utils.h"
-#include "waveguide/descriptor.h"
+#include "waveguide/mesh_descriptor.h"
 
 #include "common/cl/representation.h"
+#include "common/popcount.h"
 #include "common/program_wrapper.h"
 #include "common/spatial_division/scene_buffers.h"
 
-template <size_t n>
-struct alignas(1 << 2) boundary_index_array final {
-    cl_uint array[n];
-};
-
-using boundary_index_array_1 = boundary_index_array<1>;
-using boundary_index_array_2 = boundary_index_array<2>;
-using boundary_index_array_3 = boundary_index_array<3>;
-
-template <>
-struct cl_representation<boundary_index_array_1> final {
-    static constexpr auto value{R"(
-typedef struct { uint array[1]; } boundary_index_array_1;
-)"};
-};
-
-template <>
-struct cl_representation<boundary_index_array_2> final {
-    static constexpr auto value{R"(
-typedef struct { uint array[2]; } boundary_index_array_2;
-)"};
-};
-
-template <>
-struct cl_representation<boundary_index_array_3> final {
-    static constexpr auto value{R"(
-typedef struct { uint array[3]; } boundary_index_array_3;
-)"};
-};
-
 namespace waveguide {
 
-class boundary_coefficient_program final {
-public:
-    boundary_coefficient_program(const compute_context& cc);
+constexpr bool is_boundary(cl_int i) {
+    return !(i & id_reentrant || i & id_inside);
+}
 
-    auto get_boundary_coefficient_finder_1d_kernel() const {
-        return wrapper.get_kernel<cl::Buffer,  /// nodes
-                                  cl::Buffer,  /// 1d boundary index
-                                  cl::Buffer,  /// voxel_index
-                                  aabb,        /// global_aabb
-                                  cl_uint,     /// side
-                                  cl::Buffer,  /// triangles
-                                  cl_uint,     /// num_triangles
-                                  cl::Buffer   /// vertices
-                                  >("boundary_coefficient_finder_1d");
-    }
+template <size_t dim>
+constexpr bool is_boundary(cl_int i) {
+    return is_boundary(i) && popcount(i) == dim;
+}
 
-    auto get_boundary_coefficient_finder_2d_kernel() const {
-        return wrapper.get_kernel<cl::Buffer,  /// nodes
-                                  cl_int3,     /// dim
-                                  cl::Buffer,  /// 2d boundary index
-                                  cl::Buffer   /// 1d boundary index
-                                  >("boundary_coefficient_finder_2d");
-    }
+constexpr bool is_1d_boundary_or_reentrant(cl_int i) {
+    return i == id_reentrant || is_boundary<1>(i);
+}
 
-    auto get_boundary_coefficient_finder_3d_kernel() const {
-        return wrapper.get_kernel<cl::Buffer,  /// nodes
-                                  cl_int3,     /// dim
-                                  cl::Buffer,  /// 3d boundary index
-                                  cl::Buffer   /// 1d boundary index
-                                  >("boundary_coefficient_finder_3d");
-    }
-
-private:
-    program_wrapper wrapper;
-};
+template <typename It, typename Func>
+size_t count_boundary_type(It begin, It end, Func f) {
+    return std::count_if(
+            begin, end, [&](const auto& i) { return f(i.boundary_type); });
+}
 
 //  or maybe keep the buffers on the gpu?
 struct boundary_index_data final {
@@ -83,9 +37,10 @@ struct boundary_index_data final {
     aligned::vector<boundary_index_array_3> b3;
 };
 
-boundary_index_data compute_boundary_index_data(const cl::Device& device,
-                                                const scene_buffers& buffers,
-                                                aligned::vector<node>& nodes,
-                                                const descriptor& desc);
+boundary_index_data compute_boundary_index_data(
+        const cl::Device& device,
+        const scene_buffers& buffers,
+        const mesh_descriptor& descriptor,
+        aligned::vector<condensed_node>& nodes);
 
 }  // namespace waveguide

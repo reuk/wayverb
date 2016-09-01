@@ -126,7 +126,7 @@ void FrequencyLabelProperty::refresh() {}
 
 SurfaceComponent::SurfaceComponent(
         model::ValueWrapper<surface>& value,
-        model::ValueWrapper<aligned::vector<copyable_scene_data::material>>&
+        model::ValueWrapper<aligned::vector<scene_data::material>>&
                 preset_model) {
     property_panel.addProperties(
             {new FrequencyLabelProperty("frequencies / KHz")});
@@ -147,8 +147,8 @@ void SurfaceComponent::resized() { property_panel.setBounds(getLocalBounds()); }
 //----------------------------------------------------------------------------//
 
 SurfaceComponentWithTitle::SurfaceComponentWithTitle(
-        model::ValueWrapper<copyable_scene_data::material>& value,
-        model::ValueWrapper<aligned::vector<copyable_scene_data::material>>&
+        model::ValueWrapper<scene_data::material>& value,
+        model::ValueWrapper<aligned::vector<scene_data::material>>&
                 preset_model)
         : title("", value.name.get() + " settings")
         , surface_component(value.surface, preset_model) {
@@ -174,7 +174,7 @@ void SurfaceComponentWithTitle::resized() {
 
 PresetComponent::PresetComponent(
         model::ValueWrapper<surface>& linked,
-        model::ValueWrapper<aligned::vector<copyable_scene_data::material>>&
+        model::ValueWrapper<aligned::vector<scene_data::material>>&
                 preset_model)
         : linked(linked)
         , preset_model(preset_model) {
@@ -230,8 +230,8 @@ void PresetComponent::comboBoxChanged(ComboBox* cb) {
 void PresetComponent::textEditorReturnKeyPressed(TextEditor& e) {
     if (e.getText().isNotEmpty()) {
         //  create new entry in model using current material settings
-        preset_model.push_back(copyable_scene_data::material{
-                e.getText().toStdString(), linked.get()});
+        preset_model.push_back(
+                scene_data::material{e.getText().toStdString(), linked.get()});
 
         //  update combobox view
         combo_box.setSelectedItemIndex(preset_model.size() - 1,
@@ -284,7 +284,7 @@ void PresetComponent::receive_broadcast(model::Broadcaster* cb) {
 
 PresetProperty::PresetProperty(
         model::ValueWrapper<surface>& linked,
-        model::ValueWrapper<aligned::vector<copyable_scene_data::material>>&
+        model::ValueWrapper<aligned::vector<scene_data::material>>&
                 preset_model)
         : PropertyComponent("presets", 52)
         , preset_component(linked, preset_model) {

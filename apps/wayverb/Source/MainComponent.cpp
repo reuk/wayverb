@@ -5,9 +5,9 @@
 #include <iomanip>
 
 MainContentComponent::MainContentComponent(
-        const copyable_scene_data& scene_data,
+        const scene_data& scene_data,
         model::ValueWrapper<model::FullModel>& wrapper)
-        : scene_data(scene_data)
+        : scene(scene_data)
         , wrapper(wrapper)
         , left_panel(wrapper, scene_data.get_aabb())
         , resizer_bar(&layout_manager, 1, true)
@@ -103,10 +103,10 @@ void MainContentComponent::receive_broadcast(model::Broadcaster* cb) {
             }
 
             auto persistent = wrapper.persistent.get();
-            scene_data.set_surfaces(persistent.materials);
+            scene.set_surfaces(persistent.materials);
             engine.start(fc.getResult().getFullPathName(),
                          persistent,
-                         scene_data,
+                         scene,
                          wrapper.render_state.visualise.get());
         } else {
             engine.stop();

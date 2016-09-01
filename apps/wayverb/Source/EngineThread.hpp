@@ -3,7 +3,7 @@
 #include "EngineFunctor.hpp"
 
 #include "OtherComponents/WorkQueue.hpp"
-#include "UtilityComponents/RAIIThread.hpp"
+#include "UtilityComponents/scoped_thread.hpp"
 
 /// Runs the engine on another thread.
 class EngineThread final {
@@ -12,11 +12,11 @@ public:
                  std::atomic_bool& keep_going,
                  const std::string& file_name,
                  const model::Persistent& wrapper,
-                 const copyable_scene_data& scene_data,
+                 const scene_data& scene_data,
                  bool visualise);
 
 private:
-    RAIIThread thread;
+    scoped_thread thread;
 };
 
 //----------------------------------------------------------------------------//
@@ -28,7 +28,7 @@ public:
     ScopedEngineThread(EngineFunctor::Listener& listener,
                        const std::string& file_name,
                        const model::Persistent& wrapper,
-                       const copyable_scene_data& scene_data,
+                       const scene_data& scene_data,
                        bool visualise);
 
     ~ScopedEngineThread() noexcept;
@@ -72,7 +72,7 @@ public:
 
     void start(const File& file_name,
                const model::Persistent& wrapper,
-               const copyable_scene_data& scene_data,
+               const scene_data& scene_data,
                bool visualise);
     void stop();
 
@@ -105,7 +105,7 @@ private:
 
         void start(const File& file_name,
                    const model::Persistent& wrapper,
-                   const copyable_scene_data& scene_data,
+                   const scene_data& scene_data,
                    bool visualise);
         void stop();
         bool is_running() const;

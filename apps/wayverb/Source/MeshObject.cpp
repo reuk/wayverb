@@ -79,10 +79,10 @@ auto get_summed_direction_vector(int i) {
 
 DebugMeshObject::DebugMeshObject(
         const std::shared_ptr<mglu::generic_shader>& shader,
-        const waveguide::mesh::model& model,
+        const waveguide::mesh& model,
         mode m)
         : shader(shader) {
-    geometry.data(model.get_node_positions());
+    geometry.data(compute_node_positions(model.get_descriptor()));
 
     switch (m) {
         case mode::closest_surface: {

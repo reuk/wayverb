@@ -132,15 +132,16 @@ void WayverbApplication::show_hide_load_window() {
 //----------------------------------------------------------------------------//
 
 //  init from as much outside info as possible
-WayverbApplication::MainWindow::MainWindow(String name,
-                                           class scene_data&& scene_data,
-                                           model::FullModel&& model,
-                                           File&& this_file)
+WayverbApplication::MainWindow::MainWindow(
+        String name,
+        class scene_data_loader&& scene_loader,
+        model::FullModel&& model,
+        File&& this_file)
         : DocumentWindow(name, Colours::lightgrey, DocumentWindow::allButtons)
-        , scene_data(std::move(scene_data))
+        , scene_loader(std::move(scene_loader))
         , wrapper(nullptr, model)
         , this_file(std::move(this_file))
-        , content_component(this->scene_data, wrapper) {
+        , content_component(this->scene_loader.get_scene_data(), wrapper) {
     content_component.setSize(800, 500);
     setContentNonOwned(&content_component, true);
     setUsingNativeTitleBar(true);
@@ -176,7 +177,7 @@ File WayverbApplication::MainWindow::get_config_path(const File& way) {
     return get_sub_path(way, "config.json");
 }
 
-std::tuple<scene_data, model::FullModel, File>
+std::tuple<scene_data_loader, model::FullModel, File>
 WayverbApplication::MainWindow::scene_and_model_from_file(const File& f) {
     auto is_way = [&f] {
         //  look inside for a model
@@ -186,7 +187,8 @@ WayverbApplication::MainWindow::scene_and_model_from_file(const File& f) {
         }
 
         //  load the model
-        class scene_data scene_data(model_file.getFullPathName().toStdString());
+        scene_data_loader scene_loader{
+                model_file.getFullPathName().toStdString()};
         //  look inside for a config
         auto config_file = get_config_path(f);
         if (!config_file.existsAsFile()) {
@@ -198,25 +200,19 @@ WayverbApplication::MainWindow::scene_and_model_from_file(const File& f) {
         model::Persistent config;
         archive(cereal::make_nvp("persistent", config));
 
-        //  make sure the surfaces from the config match the surfaces in the
-        //  model - merge the config surfaces into the scene, and then
-        //  replace the config surfaces with the scene ones
-        scene_data.set_surfaces(config.materials);
-        config.materials = scene_data.get_materials();
-
         //  return the pair
         return std::make_tuple(
-                std::move(scene_data), construct_full_model(config), f);
+                std::move(scene_loader), construct_full_model(config), f);
     };
 
     auto is_not_way = [&f] {
         //  try to load the model
-        class scene_data scene_data(f.getFullPathName().toStdString());
+        scene_data_loader scene_loader{f.getFullPathName().toStdString()};
         //  return the pair
         return std::make_tuple(
-                std::move(scene_data),
+                std::move(scene_loader),
                 construct_full_model(model::Persistent{
-                        model::App{}, scene_data.get_materials()}),
+                        model::App{}, scene_loader.get_scene_data().get_materials()}),
                 File());
     };
 
@@ -229,7 +225,8 @@ WayverbApplication::MainWindow::MainWindow(String name, const File& f)
         : MainWindow(name, scene_and_model_from_file(f)) {}
 
 WayverbApplication::MainWindow::MainWindow(
-        String name, std::tuple<class scene_data, model::FullModel, File>&& p)
+        String name,
+        std::tuple<class scene_data_loader, model::FullModel, File>&& p)
         : MainWindow(name,
                      std::move(std::get<0>(p)),
                      std::move(std::get<1>(p)),
@@ -415,7 +412,7 @@ void WayverbApplication::MainWindow::save_to(const File& f) {
     f.createDirectory();
 
     //  write current geometry to file
-    scene_data.save(get_model_path(f).getFullPathName().toStdString());
+    scene_loader.save(get_model_path(f).getFullPathName().toStdString());
 
     //  write config with all current materials to file
     std::ofstream stream(get_config_path(f).getFullPathName().toStdString());

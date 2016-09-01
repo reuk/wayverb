@@ -4,6 +4,6 @@
 
 namespace model {
 
-aligned::vector<copyable_scene_data::material> get_presets();
+aligned::vector<scene_data::material> get_presets();
 
 }  // namespace model

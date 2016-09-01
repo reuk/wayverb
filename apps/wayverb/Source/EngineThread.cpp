@@ -4,21 +4,21 @@ EngineThread::EngineThread(EngineFunctor::Listener& listener,
                            std::atomic_bool& keep_going,
                            const std::string& file_name,
                            const model::Persistent& wrapper,
-                           const copyable_scene_data& scene_data,
+                           const scene_data& scene_data,
                            bool visualise)
-        : thread(EngineFunctor(listener,
-                               keep_going,
-                               file_name,
-                               wrapper,
-                               scene_data,
-                               visualise)) {}
+        : thread(std::thread{EngineFunctor{listener,
+                                           keep_going,
+                                           file_name,
+                                           wrapper,
+                                           scene_data,
+                                           visualise}}) {}
 
 //----------------------------------------------------------------------------//
 
 ScopedEngineThread::ScopedEngineThread(EngineFunctor::Listener& listener,
                                        const std::string& file_name,
                                        const model::Persistent& wrapper,
-                                       const copyable_scene_data& scene_data,
+                                       const scene_data& scene_data,
                                        bool visualise)
         : thread(listener,
                  keep_going,
@@ -33,7 +33,7 @@ ScopedEngineThread::~ScopedEngineThread() noexcept { keep_going = false; }
 
 void AsyncEngine::start(const File& file_name,
                         const model::Persistent& wrapper,
-                        const copyable_scene_data& scene_data,
+                        const scene_data& scene_data,
                         bool visualise) {
     std::lock_guard<std::mutex> lck(mut);
     concrete_listener.start(file_name, wrapper, scene_data, visualise);
@@ -125,7 +125,7 @@ void AsyncEngine::ConcreteListener::engine_finished() {
 
 void AsyncEngine::ConcreteListener::start(const File& file_name,
                                           const model::Persistent& wrapper,
-                                          const copyable_scene_data& scene_data,
+                                          const scene_data& scene_data,
                                           bool visualise) {
     thread = std::make_unique<ScopedEngineThread>(
             *this,

@@ -1,12 +1,12 @@
 #include "waveguide/postprocessor/microphone.h"
-#include "waveguide/descriptor.h"
+#include "waveguide/mesh_descriptor.h"
 
 #include "common/map_to_vector.h"
 
 namespace waveguide {
 namespace postprocessor {
 namespace detail {
-microphone_state::microphone_state(const descriptor& mesh_descriptor,
+microphone_state::microphone_state(const mesh_descriptor& mesh_descriptor,
                                    double sample_rate,
                                    double ambient_density,
                                    size_t output_node)
@@ -70,7 +70,7 @@ run_step_output microphone_state::operator()(cl::CommandQueue& queue,
 size_t microphone_state::get_output_node() const { return output_node_; }
 }  // namespace detail
 
-microphone::microphone(const descriptor& mesh_descriptor,
+microphone::microphone(const mesh_descriptor& mesh_descriptor,
                        double sample_rate,
                        double ambient_density,
                        size_t output_node,

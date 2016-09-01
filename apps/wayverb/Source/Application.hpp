@@ -8,6 +8,8 @@
 #include "UtilityComponents/FileDropComponent.hpp"
 #include "UtilityComponents/StoredSettings.hpp"
 
+#include "common/scene_data_loader.h"
+
 #include <unordered_set>
 
 class WayverbApplication final : public JUCEApplication,
@@ -64,7 +66,7 @@ public:
     public:
         //  load with a custom config too
         MainWindow(String name,
-                   scene_data&& scene_data,
+                   scene_data_loader&& scene_loader,
                    model::FullModel&& model,
                    File&& this_file);
 
@@ -91,16 +93,16 @@ public:
 
     private:
         MainWindow(String name,
-                   std::tuple<scene_data, model::FullModel, File>&& p);
+                   std::tuple<scene_data_loader, model::FullModel, File>&& p);
 
         void save_to(const File& f);
 
         static File get_model_path(const File& way);
         static File get_config_path(const File& way);
-        static std::tuple<scene_data, model::FullModel, File>
+        static std::tuple<scene_data_loader, model::FullModel, File>
         scene_and_model_from_file(const File& f);
 
-        scene_data scene_data;
+        scene_data_loader scene_loader;
         model::ValueWrapper<model::FullModel> wrapper;
 
         File this_file;

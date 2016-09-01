@@ -28,8 +28,7 @@ public:
                 const aligned::vector<float>& pressures,
                 double current_time) = 0;
         virtual void engine_raytracer_visuals_changed(
-                const aligned::vector<aligned::vector<impulse>>&
-                        impulses,
+                const aligned::vector<aligned::vector<impulse>>& impulses,
                 const glm::vec3& source,
                 const glm::vec3& receiver) = 0;
         virtual void engine_finished() = 0;
@@ -42,7 +41,7 @@ public:
                   std::atomic_bool& keep_going,
                   const std::string& file_name,
                   const model::Persistent& persistent,
-                  const copyable_scene_data& scene_data,
+                  const scene_data& scene_data,
                   bool visualise);
 
     /// Call this to start the simulation.
@@ -52,7 +51,7 @@ private:
     void single_pair(Listener& listener,
                      const std::string& file_name,
                      const model::SingleShot& single_shot,
-                     const copyable_scene_data& scene_data,
+                     const scene_data& scene_data,
                      bool visualise,
                      const compute_context& compute_context) const;
 
@@ -65,6 +64,6 @@ private:
     /// State.
     std::string file_name;
     model::Persistent persistent;
-    copyable_scene_data scene_data;
+    scene_data scene;
     bool visualise;
 };

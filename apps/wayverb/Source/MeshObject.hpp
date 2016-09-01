@@ -2,7 +2,7 @@
 
 #include "MeshShader.hpp"
 
-#include "waveguide/mesh/model.h"
+#include "waveguide/mesh.h"
 
 #include "modern_gl_utils/buffer_object.h"
 #include "modern_gl_utils/drawable.h"
@@ -38,7 +38,7 @@ public:
     enum class mode { closest_surface, boundary_type };
 
     DebugMeshObject(const std::shared_ptr<mglu::generic_shader>& shader,
-                    const waveguide::mesh::model& model,
+                    const waveguide::mesh& model,
                     mode m = mode::boundary_type);
 
 private:

@@ -4,13 +4,13 @@ EngineFunctor::EngineFunctor(Listener& listener,
                              std::atomic_bool& keep_going,
                              const std::string& file_name,
                              const model::Persistent& persistent,
-                             const copyable_scene_data& scene_data,
+                             const scene_data& scene_data,
                              bool visualise)
         : listener(listener)
         , keep_going(keep_going)
         , file_name(file_name)
         , persistent(persistent)
-        , scene_data(scene_data)
+        , scene(scene_data)
         , visualise(visualise) {}
 
 void EngineFunctor::operator()() const {
@@ -18,17 +18,13 @@ void EngineFunctor::operator()() const {
     try {
         //  for each source/receiver pair
         const auto combinations =
-                persistent.app.get_all_input_output_combinations();
+                get_all_input_output_combinations(persistent.app);
         for (auto i = combinations.cbegin();
              i != combinations.cend() && keep_going;
              ++i) {
             //  run the simulation
-            single_pair(listener,
-                        file_name,
-                        *i,
-                        scene_data,
-                        visualise,
-                        compute_context);
+            single_pair(
+                    listener, file_name, *i, scene, visualise, compute_context);
         }
     } catch (const std::runtime_error& e) {
         listener.engine_encountered_error(e.what());
@@ -41,7 +37,7 @@ void EngineFunctor::operator()() const {
 void EngineFunctor::single_pair(Listener& listener,
                                 const std::string& file_name,
                                 const model::SingleShot& single_shot,
-                                const copyable_scene_data& scene_data,
+                                const scene_data& scene_data,
                                 bool visualise,
                                 const compute_context& compute_context) const {
     auto state_callback = [this, &listener](auto state, auto progress) {
@@ -55,7 +51,7 @@ void EngineFunctor::single_pair(Listener& listener,
                            scene_data,
                            single_shot.source,
                            single_shot.receiver_settings.position,
-                           single_shot.get_waveguide_sample_rate(),
+                           get_waveguide_sample_rate(single_shot),
                            single_shot.rays);
 
     //  register a visuliser callback if we want to render the waveguide
@@ -95,6 +91,7 @@ void EngineFunctor::single_pair(Listener& listener,
     intermediate->attenuate(compute_context,
                             single_shot.receiver_settings,
                             44100,  //  TODO make this user-changeable
+                            20,     //  TODO and this
                             state_callback);
     //  TODO write out
 

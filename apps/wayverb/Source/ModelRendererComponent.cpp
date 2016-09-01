@@ -13,13 +13,13 @@
 #include "combined/model.h"
 
 ModelRendererComponent::ModelRendererComponent(
-        const copyable_scene_data &model,
+        const scene_data &model,
         model::ValueWrapper<int> &shown_surface,
         model::ValueWrapper<model::App> &app,
         model::ValueWrapper<model::RenderState> &render_state)
         : model(model)
         , shown_surface(shown_surface)
-        , renderer([model, sos = app.speed_of_sound.get()] {
+        , renderer([ model, sos = app.speed_of_sound.get() ] {
             return SceneRendererContextLifetime{model, sos};
         })
         , app(app)
@@ -125,7 +125,7 @@ void ModelRendererComponent::left_panel_debug_show_closest_surfaces(
         const LeftPanel *) {
     generator = std::make_unique<MeshGenerator>(
             model,
-            app.get().get_waveguide_sample_rate(),
+            get_waveguide_sample_rate(app.get()),
             app.speed_of_sound.get(),
             [this](auto model) {
                 renderer.context_command([m = std::move(model)](auto &i) {
@@ -138,7 +138,7 @@ void ModelRendererComponent::left_panel_debug_show_boundary_types(
         const LeftPanel *) {
     generator = std::make_unique<MeshGenerator>(
             model,
-            app.get().get_waveguide_sample_rate(),
+            get_waveguide_sample_rate(app.get()),
             app.speed_of_sound.get(),
             [this](auto model) {
                 renderer.context_command([m = std::move(model)](auto &i) {
@@ -156,16 +156,16 @@ void ModelRendererComponent::left_panel_debug_hide_debug_mesh(
 //----------------------------------------------------------------------------//
 
 ModelRendererComponent::MeshGenerator::MeshGenerator(
-        const copyable_scene_data &scene,
+        const scene_data &scene,
         double sample_rate,
         double speed_of_sound,
-        std::function<void(waveguide::mesh::model)>
+        std::function<void(waveguide::mesh)>
                 on_finished)
         : on_finished(on_finished) {
     generator.run(scene, sample_rate, speed_of_sound);
 }
 
 void ModelRendererComponent::MeshGenerator::async_mesh_generator_finished(
-        const AsyncMeshGenerator *, waveguide::mesh::model model) {
+        const AsyncMeshGenerator *, waveguide::mesh model) {
     on_finished(std::move(model));
 }

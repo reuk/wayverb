@@ -104,20 +104,19 @@ public:
 };
 
 template <>
-class ValueWrapper<copyable_scene_data::material>
-        : public ModelValue<copyable_scene_data::material> {
+class ValueWrapper<scene_data::material>
+        : public ModelValue<scene_data::material> {
 public:
-    ValueWrapper(ModelMember* owner, const copyable_scene_data::material& u)
-            : ModelValue<copyable_scene_data::material>(owner)
+    ValueWrapper(ModelMember* owner, const scene_data::material& u)
+            : ModelValue<scene_data::material>(owner)
             , name(this, u.name)
             , surface(this, u.surface) {}
 
-    copyable_scene_data::material get() const override {
-        return copyable_scene_data::material{name.get(), surface.get()};
+    scene_data::material get() const override {
+        return scene_data::material{name.get(), surface.get()};
     }
 
-    void set(const copyable_scene_data::material& u,
-             bool do_notify = true) override {
+    void set(const scene_data::material& u, bool do_notify = true) override {
         name.set(u.name, do_notify);
         surface.set(u.surface, do_notify);
     }
@@ -343,7 +342,7 @@ public:
 class Persistent {
 public:
     App app;
-    aligned::vector<copyable_scene_data::material> materials;
+    aligned::vector<scene_data::material> materials;
 
     template <typename Archive>
     void serialize(Archive& archive) {
@@ -370,13 +369,13 @@ public:
     }
 
     ValueWrapper<App> app;
-    ValueWrapper<aligned::vector<copyable_scene_data::material>> materials;
+    ValueWrapper<aligned::vector<scene_data::material>> materials;
 };
 
 class FullModel {
 public:
     Persistent persistent;
-    aligned::vector<copyable_scene_data::material> presets;
+    aligned::vector<scene_data::material> presets;
     RenderState render_state;
     int shown_surface{-1};
     bool needs_save{false};
@@ -410,7 +409,7 @@ public:
     }
 
     ValueWrapper<Persistent> persistent;
-    ValueWrapper<aligned::vector<copyable_scene_data::material>> presets;
+    ValueWrapper<aligned::vector<scene_data::material>> presets;
     ValueWrapper<RenderState> render_state;
     ValueWrapper<int> shown_surface;
     ValueWrapper<bool> needs_save;

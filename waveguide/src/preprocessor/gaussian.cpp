@@ -1,16 +1,19 @@
 #include "waveguide/preprocessor/gaussian.h"
 
 #include "common/nan_checking.h"
+#include "common/string_builder.h"
+
+#include <iostream>
 
 namespace waveguide {
 namespace preprocessor {
 
 float gaussian::compute(const glm::vec3& x, float sdev) {
-    return 1 / std::pow(sdev * std::sqrt(2 * M_PI), 3) *
-           std::exp(-std::pow(glm::length(x), 2) / (2 * std::pow(sdev, 2)));
+    return std::exp(-std::pow(glm::length(x), 2) / (2 * std::pow(sdev, 2))) /
+           std::pow(sdev * std::sqrt(2 * M_PI), 3);
 }
 
-gaussian::gaussian(const descriptor& descriptor,
+gaussian::gaussian(const mesh_descriptor& descriptor,
                    const glm::vec3& centre_pos,
                    float sdev)
         : descriptor_(descriptor)
@@ -30,8 +33,10 @@ void gaussian::operator()(cl::CommandQueue& queue,
         pressures.reserve(nodes);
         for (auto i{0u}; i != nodes; ++i) {
             const auto gauss{compute(
-                    centre_pos_ - compute_position(descriptor_, i), sdev_)};
+                    compute_position(descriptor_, i) - centre_pos_, sdev_)};
+#ifndef NDEBUG
             throw_if_suspicious(gauss);
+#endif
             pressures.push_back(gauss);
         }
 
