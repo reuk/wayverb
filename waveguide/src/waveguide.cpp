@@ -83,22 +83,6 @@ size_t run(const compute_context& cc,
         //  read out flag value
         if (const auto error_flag{read_single_value<error_code>(
                     queue, error_flag_buffer, 0)}) {
-            const auto pressures{read_from_buffer<cl_float>(queue, previous)};
-            const auto minmax{
-                    std::minmax_element(pressures.begin(), pressures.end())};
-            std::cout << "min: " << *minmax.first << '\n';
-            std::cout << "max: " << *minmax.second << '\n';
-
-            for (auto i : pressures) {
-                if (std::isnan(i)) {
-                    ;
-                }
-
-                if (std::isinf(i)) {
-                    ;
-                }
-            }
-
             if (error_flag & id_inf_error) {
                 throw exceptions::value_is_inf(
                         "pressure value is inf, check filter coefficients");

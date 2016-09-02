@@ -21,40 +21,35 @@ void set_boundary_index(it begin, it end, func f) {
 
 //----------------------------------------------------------------------------//
 
+template <typename T, typename It, typename Func>
+cl::Buffer init_buffer(It begin,
+                       It end,
+                       const cl::Context& context,
+                       Func func) {
+    const auto num_indices{count_boundary_type(begin, end, func)};
+    if (!num_indices) {
+        throw std::runtime_error("no boundaries");
+    }
+    set_boundary_index(begin, end, func);
+    return cl::Buffer{context, CL_MEM_READ_WRITE, sizeof(T) * num_indices};
+}
+
 //  mmmmmm beautiful
 boundary_index_data compute_boundary_index_data(
         const cl::Device& device,
         const scene_buffers& buffers,
         const mesh_descriptor& descriptor,
         aligned::vector<condensed_node>& nodes) {
-    //  find quantities of each node type
-    const auto num_indices_1{count_boundary_type(
-            nodes.begin(), nodes.end(), is_1d_boundary_or_reentrant)};
-
-    if (!num_indices_1) {
-        throw std::runtime_error("no 1d boundaries");
-    }
-
-    const auto num_indices_2{
-            count_boundary_type(nodes.begin(), nodes.end(), is_boundary<2>)};
-    const auto num_indices_3{
-            count_boundary_type(nodes.begin(), nodes.end(), is_boundary<3>)};
-
-    //  load up index buffers of the right size
-    cl::Buffer index_buffer_1{buffers.get_context(),
-                              CL_MEM_READ_WRITE,
-                              sizeof(boundary_index_array_1) * num_indices_1};
-    cl::Buffer index_buffer_2{buffers.get_context(),
-                              CL_MEM_READ_WRITE,
-                              sizeof(boundary_index_array_2) * num_indices_2};
-    cl::Buffer index_buffer_3{buffers.get_context(),
-                              CL_MEM_READ_WRITE,
-                              sizeof(boundary_index_array_3) * num_indices_3};
-
-    //  set up node boundary indices ready to go
-    set_boundary_index(nodes.begin(), nodes.end(), is_1d_boundary_or_reentrant);
-    set_boundary_index(nodes.begin(), nodes.end(), is_boundary<2>);
-    set_boundary_index(nodes.begin(), nodes.end(), is_boundary<3>);
+    //  load up buffers
+    auto index_buffer_1{
+            init_buffer<boundary_index_array_1>(nodes.begin(),
+                                                nodes.end(),
+                                                buffers.get_context(),
+                                                is_1d_boundary_or_reentrant)};
+    auto index_buffer_2{init_buffer<boundary_index_array_2>(
+            nodes.begin(), nodes.end(), buffers.get_context(), is_boundary<2>)};
+    auto index_buffer_3{init_buffer<boundary_index_array_3>(
+            nodes.begin(), nodes.end(), buffers.get_context(), is_boundary<3>)};
 
     //  load the nodes vector to a cl buffer
     const auto nodes_buffer{load_to_buffer(buffers.get_context(), nodes, true)};
