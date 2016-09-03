@@ -19,6 +19,18 @@ struct path_element final {
     bool visible;
 };
 
+constexpr auto to_tuple(const path_element& x) {
+    return std::tie(x.index, x.visible);
+}
+
+constexpr bool operator==(const path_element& a, const path_element& b) {
+    return to_tuple(a) == to_tuple(b);
+}
+
+constexpr bool operator!=(const path_element& a, const path_element& b) {
+    return !(a == b);
+}
+
 /// Need this because we'll be storing path_elements in a set.
 constexpr bool operator<(const path_element& a, const path_element& b) {
     return a.index < b.index;
@@ -102,5 +114,5 @@ aligned::vector<impulse> compute_impulses(
         const voxelised_scene_data& voxelised,
         double speed_of_sound);
 
-}//namespace image_source
+}  // namespace image_source
 }  // namespace raytracer
