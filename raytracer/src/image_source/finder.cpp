@@ -1,7 +1,10 @@
 #include "raytracer/image_source/finder.h"
 #include "raytracer/construct_impulse.h"
+#include "raytracer/image_source/postprocessors.h"
 #include "raytracer/image_source/tree.h"
 #include "raytracer/iterative_builder.h"
+
+#include "common/output_iterator_callback.h"
 
 #include <experimental/optional>
 #include <numeric>
@@ -28,11 +31,17 @@ public:
                                          const glm::vec3& receiver,
                                          const voxelised_scene_data& voxelised,
                                          float speed_of_sound) const {
-        return compute_impulses(reflection_path_builder_.get_data(),
-                                source,
-                                receiver,
-                                voxelised,
-                                speed_of_sound);
+        //  TODO replace with a better, pressure-based impulse finder
+        intensity_calculator calculator{receiver, voxelised, speed_of_sound};
+        aligned::vector<impulse> ret{};
+        image_source_tree{reflection_path_builder_.get_data()}.find_valid_paths(
+                source,
+                receiver,
+                voxelised,
+                [&](const auto& image_source, const auto& intersections) {
+                    ret.push_back(calculator(image_source, intersections));
+                });
+        return ret;
     }
 
 private:

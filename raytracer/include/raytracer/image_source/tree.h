@@ -38,23 +38,34 @@ constexpr bool operator<(const path_element& a, const path_element& b) {
 
 //----------------------------------------------------------------------------//
 
-multitree<path_element>::branches_type construct_image_source_tree(
-        const aligned::vector<aligned::vector<path_element>>& paths);
+class image_source_tree final {
+public:
+    image_source_tree(
+            const aligned::vector<aligned::vector<path_element>>& paths);
+
+    struct intersection final {
+        cl_uint surface;
+        float angle;
+    };
+
+    /// Callback will be called with the location of the image source,
+    /// and the series of surface/angle pairs along the image path.
+    using callback = std::function<void(const glm::vec3&,
+                                        const aligned::vector<intersection>&)>;
+
+    void find_valid_paths(const glm::vec3& source,
+                          const glm::vec3& receiver,
+                          const voxelised_scene_data& voxelised,
+                          callback callback) const;
+
+    const multitree<path_element>::branches_type& get_branches() const;
+
+private:
+    multitree<path_element>::branches_type branches_;
+
+};
 
 //----------------------------------------------------------------------------//
-
-/// The trick here is that the callback can be a stateful object...
-template <typename T, typename Callback>
-void traverse_multitree(const multitree<T>& tree, const Callback& callback) {
-    const auto next{callback(tree.item)};
-    for (const auto& i : tree.branches) {
-        traverse_multitree(i, next);
-    }
-}
-
-//----------------------------------------------------------------------------//
-
-geo::ray construct_ray(const glm::vec3& from, const glm::vec3& to);
 
 template <typename It>
 volume_type compute_volume(It begin, It end, const scene_data& scene_data) {
@@ -69,50 +80,6 @@ volume_type compute_volume(It begin, It end, const scene_data& scene_data) {
                 return volume * surface.specular;
             });
 }
-
-//----------------------------------------------------------------------------//
-
-struct constants final {
-    const glm::vec3& source;
-    const glm::vec3& receiver;
-    const voxelised_scene_data& voxelised;
-    const double speed_of_sound;
-};
-
-struct state final {
-    cl_uint index;
-    glm::vec3 image_source;
-};
-
-class image_source_traversal_callback final {
-public:
-    using output_callback = std::function<void(impulse)>;
-
-    image_source_traversal_callback(const constants& constants,
-                                    aligned::vector<state>& state,
-                                    output_callback callback,
-                                    const path_element& p);
-
-    ~image_source_traversal_callback() noexcept;
-
-    image_source_traversal_callback operator()(const path_element& p) const;
-
-private:
-    std::experimental::optional<impulse> compute_impulse() const;
-
-    const constants& constants_;
-    aligned::vector<state>& state_;
-    output_callback callback_;
-};
-
-//----------------------------------------------------------------------------//
-
-aligned::vector<impulse> compute_impulses(
-        const aligned::vector<aligned::vector<path_element>>& paths,
-        const glm::vec3& source,
-        const glm::vec3& receiver,
-        const voxelised_scene_data& voxelised,
-        double speed_of_sound);
 
 }  // namespace image_source
 }  // namespace raytracer

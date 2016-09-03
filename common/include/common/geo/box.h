@@ -17,7 +17,17 @@ enum class direction { x, y, z };
 
 bool overlaps(const box& b, const triangle_vec3& t);
 
-bool does_intersect(const box& b, const geo::ray& ray, float t0, float t1);
+std::experimental::optional<std::pair<float, float>> intersection_distances(
+        const box& b, const ray& ray);
+
+/// Returns the shortest positive distance to the box from the ray.
+/// If the ray is inside the box, returns the positive distance to the
+/// nearest wall.
+std::experimental::optional<float> intersects(const box& b, const ray& ray);
+
+/// Returns true if there is an intersection with the box within the interval
+/// (t0, t1) along the ray.
+bool intersects(const box& b, const ray& ray, float t0, float t1);
 
 scene_data get_scene_data(const box& b);
 

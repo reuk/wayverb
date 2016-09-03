@@ -2,6 +2,6 @@
 
 int main(int argc, char** argv) {
     ::testing::InitGoogleTest(&argc, argv);
-    //::testing::GTEST_FLAG(filter) = "*multitree*";
+    //::testing::GTEST_FLAG(filter) = "*new*";
     return RUN_ALL_TESTS();
 }

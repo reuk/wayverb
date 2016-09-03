@@ -40,4 +40,24 @@ void add_path(multitree<T>& tree, It begin, It end) {
     }
 }
 
-}//namespace raytracer
+namespace detail {
+
+/// The trick here is that the callback can be a stateful object...
+template <typename T, typename Callback>
+void traverse_multitree(const multitree<T>& tree, const Callback& callback) {
+    const auto next{callback(tree.item)};
+    for (const auto& i : tree.branches) {
+        detail::traverse_multitree(i, next);
+    }
+}
+
+}  // namespace detail
+
+template <typename T, typename Callback>
+void traverse_multitree(const multitree<T>& tree, const Callback& callback) {
+    for (const auto& i : tree.branches) {
+        detail::traverse_multitree(i, callback);
+    }
+}
+
+}  // namespace raytracer

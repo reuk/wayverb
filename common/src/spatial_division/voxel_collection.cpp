@@ -28,28 +28,30 @@ aligned::vector<cl_uint> get_flattened(const voxel_collection<3>& voxels) {
 }
 
 namespace {
-glm::ivec3 get_starting_index(const voxel_collection<3>& voxels,
-                              const glm::vec3& position) {
-    //    return glm::floor((position - voxels.get_aabb().get_min()) /
-    //                      voxel_dimensions(voxels));
-    return (position - voxels.get_aabb().get_min()) / voxel_dimensions(voxels);
-}
+std::experimental::optional<glm::ivec3> get_starting_index(
+        const voxel_collection<3>& voxels, const geo::ray& ray) {
+    const auto aabb{voxels.get_aabb()};
 
-glm::bvec3 nonnegative(const glm::vec3& t) {
-    glm::bvec3 ret;
-    for (auto i{0u}; i != t.length(); ++i) {
-        ret[i] = 0 <= t[i];
-    }
-    return ret;
-}
+    const auto to_index{[&](const auto& i) {
+        const glm::ivec3 ret{(i - aabb.get_min()) / voxel_dimensions(voxels)};
+        return glm::max(
+                glm::ivec3{0},
+                glm::min(glm::ivec3{static_cast<int>(voxels.get_side() - 1)},
+                         ret));
+    }};
 
-template <typename T, typename U>
-T select(const T& a, const T& b, const U& selector) {
-    T ret;
-    for (auto i{0u}; i != selector.length(); ++i) {
-        ret[i] = selector[i] ? a[i] : b[i];
+    //  If the ray starts inside the voxel collection there's no problem.
+    if (inside(aabb, ray.get_position())) {
+        return to_index(ray.get_position());
     }
-    return ret;
+
+    //  Otherwise, we need to check that the ray intersects with the collection.
+    if (const auto i{geo::intersects(aabb, ray)}) {
+        return to_index(ray.get_position() + ray.get_direction() * *i);
+    }
+
+    //  The ray never intersects with the voxel collection.
+    return std::experimental::nullopt;
 }
 
 auto min_component(const glm::vec3& v) {
@@ -66,28 +68,29 @@ auto min_component(const glm::vec3& v) {
 void traverse(const voxel_collection<3>& voxels,
               const geo::ray& ray,
               const traversal_callback& fun) {
+    /// From A Fast Voxel Traversal Algorithm for Ray Tracing by John Amanatides
+    /// and Andrew Woo.
     const auto side{voxels.get_side()};
 
-    auto ind{get_starting_index(voxels, ray.get_position())};
-
-    if (glm::any(glm::lessThan(ind, glm::ivec3{0})) ||
-        glm::any(glm::lessThanEqual(glm::ivec3(side), ind))) {
+    auto ind{get_starting_index(voxels, ray)};
+    if (!ind) {
         return;
     }
 
-    const auto voxel_bounds{voxel_aabb(voxels, ind)};
+    const auto voxel_bounds{voxel_aabb(voxels, *ind)};
 
-    const auto gt{nonnegative(ray.get_direction())};
-    const auto step{select(glm::ivec3(1), glm::ivec3(-1), gt)};
-    const auto just_out{select(glm::ivec3(side), glm::ivec3(-1), gt)};
+    const auto gt{glm::lessThanEqual(glm::vec3{0}, ray.get_direction())};
+    const auto step{glm::mix(glm::ivec3{-1}, glm::ivec3{1}, gt)};
+    const auto just_out{
+            glm::mix(glm::ivec3{-1}, glm::ivec3{static_cast<int>(side)}, gt)};
     const auto boundary{
-            select(voxel_bounds.get_max(), voxel_bounds.get_min(), gt)};
+            glm::mix(voxel_bounds.get_min(), voxel_bounds.get_max(), gt)};
 
     const auto t_max_temp{
             glm::abs((boundary - ray.get_position()) / ray.get_direction())};
-    auto t_max{select(glm::vec3(std::numeric_limits<float>::infinity()),
-                      t_max_temp,
-                      glm::isnan(t_max_temp))};
+    auto t_max{glm::mix(t_max_temp,
+                        glm::vec3(std::numeric_limits<float>::infinity()),
+                        glm::isnan(t_max_temp))};
     const auto t_delta{
             glm::abs(dimensions(voxel_bounds) / ray.get_direction())};
 
@@ -96,14 +99,14 @@ void traverse(const voxel_collection<3>& voxels,
     for (;;) {
         const auto min_i{min_component(t_max)};
 
-        const auto& tri{voxels.get_voxel(ind)};
+        const auto& tri{voxels.get_voxel(*ind)};
         if (fun(ray, tri, prev_max, t_max[min_i])) {
             // callback has signalled that it should quit
             return;
         }
 
-        ind[min_i] += step[min_i];
-        if (ind[min_i] == just_out[min_i]) {
+        (*ind)[min_i] += step[min_i];
+        if ((*ind)[min_i] == just_out[min_i]) {
             return;
         }
         prev_max = t_max[min_i];

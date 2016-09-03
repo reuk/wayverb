@@ -20,39 +20,50 @@ bool overlaps(const box& b, const triangle_vec3& t) {
     return t_c_intersection(coll) == where::inside;
 }
 
-bool does_intersect(const box& b, const geo::ray& ray, float t0, float t1) {
-    //  from http://people.csail.mit.edu/amy/papers/box-jgt.pdf
-    const auto inv = glm::vec3(1) / ray.get_direction();
-    const std::array<bool, 3> sign{{inv.x < 0, inv.y < 0, inv.z < 0}};
-    const auto get_bounds = [b](auto i) {
-        return i ? b.get_min() : b.get_max();
-    };
+std::experimental::optional<std::pair<float, float>> intersection_distances(
+        const box& b, const ray& ray) {
+    /// from http://people.csail.mit.edu/amy/papers/box-jgt.pdf
+    const auto inv{1.0f / ray.get_direction()};
+    const auto sign{glm::lessThan(inv, glm::vec3{0})};
+    const auto get_bounds{[&](auto ind) {
+        return sign[ind] ? glm::vec2{b.get_max()[ind], b.get_min()[ind]}
+                         : glm::vec2{b.get_min()[ind], b.get_max()[ind]};
+    }};
 
-    auto tmin = (get_bounds(sign[0]).x - ray.get_position().x) * inv.x;
-    auto tmax = (get_bounds(!sign[0]).x - ray.get_position().x) * inv.x;
-    const auto tymin = (get_bounds(sign[1]).y - ray.get_position().y) * inv.y;
-    const auto tymax = (get_bounds(!sign[1]).y - ray.get_position().y) * inv.y;
-    if ((tmin > tymax) || (tymin > tmax)) {
-        return false;
+    const auto xbounds{get_bounds(0)};
+    auto t{(xbounds - ray.get_position().x) * inv.x};
+    const auto ybounds{get_bounds(1)};
+    const auto ty{(ybounds - ray.get_position().y) * inv.y};
+    if (ty[1] < t[0] || t[1] < ty[0]) {
+        return std::experimental::nullopt;
     }
-    if (tymin > tmin) {
-        tmin = tymin;
+    t[0] = std::max(ty[0], t[0]);
+    t[1] = std::min(ty[1], t[1]);
+    const auto zbounds{get_bounds(2)};
+    const auto tz{(zbounds - ray.get_position().z) * inv.z};
+    if (tz[1] < t[0] || t[1] < tz[0]) {
+        return std::experimental::nullopt;
     }
-    if (tymax < tmax) {
-        tmax = tymax;
+    return std::make_pair(std::max(tz[0], t[0]), std::min(tz[1], t[1]));
+}
+
+std::experimental::optional<float> intersects(const box& b, const ray& ray) {
+    if (const auto i{intersection_distances(b, ray)}) {
+        if (0 < i->first) {
+            return i->first;
+        }
+        if (0 < i->second) {
+            return i->second;
+        }
     }
-    const auto tzmin = (get_bounds(sign[2]).z - ray.get_position().z) * inv.z;
-    const auto tzmax = (get_bounds(!sign[2]).z - ray.get_position().z) * inv.z;
-    if ((tmin > tzmax) || (tzmin > tmax)) {
-        return false;
+    return std::experimental::nullopt;
+}
+
+bool intersects(const box& b, const ray& ray, float t0, float t1) {
+    if (const auto i{intersection_distances(b, ray)}) {
+        return i->first < t1 && t0 < i->second;
     }
-    if (tzmin > tmin) {
-        tmin = tzmin;
-    }
-    if (tzmax < tmax) {
-        tmax = tzmax;
-    }
-    return ((t0 < tmax) && (tmin < t1));
+    return false;
 }
 
 scene_data get_scene_data(const box& b) {
