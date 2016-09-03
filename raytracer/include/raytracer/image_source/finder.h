@@ -1,10 +1,8 @@
 #pragma once
 
 #include "raytracer/cl/structs.h"
-#include "raytracer/iterative_builder.h"
 
 #include "common/aligned/vector.h"
-#include "common/cl/include.h"
 
 #include "glm/fwd.hpp"
 
@@ -16,20 +14,17 @@ namespace image_source {
 class finder final {
 public:
     finder(size_t rays, size_t depth);
+    ~finder() noexcept;
 
     void push(const aligned::vector<reflection>&);
     aligned::vector<impulse> get_results(const glm::vec3& source,
                                          const glm::vec3& receiver,
                                          const voxelised_scene_data& scene_data,
-                                         double speed_of_sound);
-
-    struct item final {
-        cl_uint index;
-        bool visible;
-    };
+                                         float speed_of_sound);
 
 private:
-    iterative_builder<item> reflection_path_builder;
+    class impl;
+    std::unique_ptr<impl> pimpl_;
 };
 
 }  // namespace image_source

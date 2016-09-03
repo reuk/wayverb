@@ -14,7 +14,10 @@ namespace image_source {
 
 /// Each item in the tree references an intersected triangle, which may or
 /// may not be visible from the receiver.
-using path_element = image_source::finder::item;
+struct path_element final {
+    cl_uint index;
+    bool visible;
+};
 
 /// Need this because we'll be storing path_elements in a set.
 constexpr bool operator<(const path_element& a, const path_element& b) {
