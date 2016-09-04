@@ -130,7 +130,7 @@ kernel void reflections(global ray* rays,  //  ray
     const float3 random_unit_vector = sphere_point(z, theta);
     //  scattering coefficient is the average of the diffuse coefficients
     const surface s = surfaces[closest_triangle.surface];
-    const float scatter = mean(s.diffuse);
+    const float scatter = mean(s.diffuse_coefficient);
     const float3 scattering = lambert_scattering(
             specular, tnorm, random_unit_vector, scatter);
 
