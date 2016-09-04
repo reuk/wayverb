@@ -16,7 +16,7 @@ namespace model {
 struct ReceiverSettings;
 }  // namespace model
 
-struct compute_context;
+class compute_context;
 class scene_data;
 
 //  engine  ------------------------------------------------------------------//

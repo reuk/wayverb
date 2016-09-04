@@ -1,6 +1,8 @@
 #include "raytracer/construct_impulse.h"
 #include "raytracer/image_source/postprocessors.h"
 
+#include "common/surfaces.h"
+
 namespace raytracer {
 namespace image_source {
 
@@ -22,7 +24,9 @@ impulse intensity_calculator::operator()(
                         voxelised_.get_scene_data().get_triangles()[j.index]};
                 const auto surface{voxelised_.get_scene_data()
                                            .get_surfaces()[triangle.surface]};
-                return i * surface.specular;
+                const auto reflectance{absorption_to_pressure_reflectance(
+                        surface.specular_absorption)};
+                return i * reflectance;
             })};
     return construct_impulse(
             surface_attenuation, image_source, receiver_, speed_of_sound_);

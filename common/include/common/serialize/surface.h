@@ -21,8 +21,8 @@ JSON_OSTREAM_OVERLOAD(volume_type);
 
 template <typename Archive>
 void serialize(Archive& archive, surface& m) {
-    archive(cereal::make_nvp("specular", m.specular),
-            cereal::make_nvp("diffuse", m.diffuse));
+    archive(cereal::make_nvp("specular_absorption", m.specular_absorption),
+            cereal::make_nvp("diffuse_coefficient", m.diffuse_coefficient));
 }
 JSON_OSTREAM_OVERLOAD(surface);
 

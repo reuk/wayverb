@@ -19,16 +19,16 @@ constexpr auto make_volume_type(float f) {
 //----------------------------------------------------------------------------//
 
 struct alignas(1 << 5) surface {
-    volume_type specular{{0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5}};
-    volume_type diffuse{{0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5}};
+    volume_type specular_absorption{{0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5}};
+    volume_type diffuse_coefficient{{0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5}};
 };
 
 template <>
 struct cl_representation<surface> final {
     static constexpr auto value{R"(
 typedef struct {
-    volume_type specular;
-    volume_type diffuse;
+    volume_type specular_absorption;
+    volume_type diffuse_coefficient;
 } surface;
 )"};
 };

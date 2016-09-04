@@ -116,8 +116,8 @@ std::uniform_real_distribution<float> range{min_v, max_v};
 
 surface random_surface() {
     surface ret;
-    proc::generate(ret.specular.s, [] { return range(engine); });
-    proc::generate(ret.diffuse.s, [] { return range(engine); });
+    proc::generate(ret.specular_absorption.s, [] { return range(engine); });
+    proc::generate(ret.diffuse_coefficient.s, [] { return range(engine); });
     return ret;
 };
 

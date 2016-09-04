@@ -121,7 +121,9 @@ public:
                      const glm::vec3& source,
                      const model::ReceiverSettings& receiver) {
         voxelised_.set_surfaces(surface);
-        const auto specular{max(surface.specular)};
+
+        const auto specular{max(absorption_to_pressure_reflectance(
+                surface.specular_absorption))};
         const auto reflections{raytracer::compute_optimum_reflection_number(
                 decibels::db2a(-60), specular)};
         progress_bar pb{std::cout, reflections};

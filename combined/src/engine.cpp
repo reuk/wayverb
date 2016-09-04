@@ -11,6 +11,7 @@
 #include "common/model/receiver_settings.h"
 #include "common/pressure_intensity.h"
 #include "common/spatial_division/voxelised_scene_data.h"
+#include "common/surfaces.h"
 
 #include "raytracer/attenuator.h"
 #include "raytracer/postprocess.h"
@@ -158,12 +159,11 @@ private:
 };
 
 float max_reflectivity(const volume_type& vt) {
-    return *proc::max_element(vt.s);
+    return max(absorption_to_pressure_reflectance(vt));
 }
 
 float max_reflectivity(const surface& surface) {
-    return std::max(max_reflectivity(surface.diffuse),
-                    max_reflectivity(surface.specular));
+    return max_reflectivity(surface.specular_absorption);
 }
 
 float max_reflectivity(const scene_data::material& material) {

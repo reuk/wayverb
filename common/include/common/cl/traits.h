@@ -248,8 +248,8 @@ constexpr auto map(const T& t, Op op) {
 
     using std::begin;
     using std::end;
-    auto i = begin(t.s);
-    auto j = begin(ret.s);
+    auto i{begin(t.s)};
+    auto j{begin(ret.s)};
     for (; i != end(t.s); ++i, ++j) {
         *j = op(*i);
     }
@@ -463,4 +463,12 @@ template <typename T,
           detail::enable_if_is_vector_t<T, int> = 0>
 constexpr auto isinf(const T& t) {
     return detail::map_func_to_bool(t, [](auto i) { return std::isinf(i); });
+}
+
+template <typename T, detail::enable_if_is_vector_t<T, int> = 0>
+inline auto sqrt(const T& t) {
+    return detail::map(t, [](auto i) {
+        using std::sqrt;
+        return sqrt(i);
+    });
 }
