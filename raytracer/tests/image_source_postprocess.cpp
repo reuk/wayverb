@@ -1,8 +1,9 @@
-#include "raytracer/postprocess.h"
 #include "raytracer/image_source/tree.h"
+#include "raytracer/postprocess.h"
 #include "raytracer/reflector.h"
 
 #include "common/azimuth_elevation.h"
+#include "common/dsp_vector_ops.h"
 #include "common/nan_checking.h"
 #include "common/scene_data_loader.h"
 #include "common/spatial_division/scene_buffers.h"
@@ -17,10 +18,19 @@
 
 namespace {
 
-const aligned::vector<scene_data> test_scenes{
-        geo::get_scene_data(geo::box{glm::vec3(0, 0, 0), glm::vec3(4, 3, 6)}),
-        geo::get_scene_data(geo::box{glm::vec3(0, 0, 0), glm::vec3(3, 3, 3)}),
-        scene_data_loader{OBJ_PATH}.get_scene_data()};
+struct named_scene final {
+    std::string name;
+    scene_data scene;
+};
+
+const aligned::vector<named_scene> test_scenes{
+        named_scene{"large_box",
+                    geo::get_scene_data(
+                            geo::box{glm::vec3(0, 0, 0), glm::vec3(4, 3, 6)})},
+        named_scene{"small_box",
+                    geo::get_scene_data(
+                            geo::box{glm::vec3(0, 0, 0), glm::vec3(3, 3, 3)})},
+        named_scene{"vault", scene_data_loader{OBJ_PATH}.get_scene_data()}};
 
 constexpr auto speed_of_sound{340.0};
 constexpr auto acoustic_impedance{400.0};
@@ -32,15 +42,16 @@ const glm::vec3 source{1, 2, 1};
 const model::receiver_settings receiver{glm::vec3{1, 2, 2}};
 const auto directions{get_random_directions(bench_rays)};
 
-
-}//namespace
+}  // namespace
 
 TEST(image_source_postprocess, intensity) {
     const compute_context cc{};
 
-    for (const auto& scene: test_scenes) {
+    for (const auto& pair : test_scenes) {
         const voxelised_scene_data voxelised{
-                scene, 5, util::padded(scene.get_aabb(), glm::vec3{0.1})};
+                pair.scene,
+                5,
+                util::padded(pair.scene.get_aabb(), glm::vec3{0.1})};
 
         const scene_buffers buffers{cc.context, voxelised};
 
@@ -87,18 +98,22 @@ TEST(image_source_postprocess, intensity) {
                             img_src_results.push_back(calculator(a, b));
                         });
 
-        const auto output{raytracer::run_attenuation(cc,
-                                                     receiver,
-                                                     img_src_results,
-                                                     sample_rate,
-                                                     speed_of_sound,
-                                                     acoustic_impedance,
-                                                     20)};
+        auto output{raytracer::run_attenuation(cc,
+                                               receiver,
+                                               img_src_results,
+                                               sample_rate,
+                                               speed_of_sound,
+                                               acoustic_impedance,
+                                               20)};
 
         if (output.size() != 1) {
             throw std::runtime_error("output should contain just one channel");
         }
 
-        snd::write(build_string(), output, sample_rate, 16);
+        normalize(output);
+
+        const auto fname{build_string(pair.name, ".wav")};
+        std::cout << "writing " << fname << std::endl;
+        snd::write(fname, output, sample_rate, 16);
     }
 }
