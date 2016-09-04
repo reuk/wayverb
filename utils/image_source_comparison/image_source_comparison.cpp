@@ -45,7 +45,7 @@ void run_single(const compute_context& cc,
                 double acoustic_impedance,
                 double sample_rate,
                 const glm::vec3& source,
-                const model::ReceiverSettings& receiver,
+                const model::receiver_settings& receiver,
                 const std::pair<std::string, std::string>& stage,
                 const std::pair<std::string, surface>& surf) {
     scene_data scene{scene_data_loader{std::get<1>(stage)}.get_scene_data()};
@@ -102,7 +102,7 @@ int main() {
     const compute_context cc{};
 
     constexpr glm::vec3 source{0, 1, 0};
-    const model::ReceiverSettings receiver{glm::vec3{0, 1, 1}};
+    const model::receiver_settings receiver{glm::vec3{0, 1, 1}};
 
     const aligned::vector<std::pair<std::string, surface>> surfaces{
             std::make_pair("0", make_surface(0.999, 0.001)),

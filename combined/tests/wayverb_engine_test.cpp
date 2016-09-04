@@ -46,7 +46,7 @@ TEST(engine, engine) {
     }
 
     const auto result{intermediate->attenuate(
-            cc, model::ReceiverSettings{}, output_sample_rate, 20, callback)};
+            cc, model::receiver_settings{}, output_sample_rate, 20, callback)};
 
     std::cout << "\nfinished engine attenuate" << std::endl;
 }

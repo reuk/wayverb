@@ -43,28 +43,12 @@ void trimTail(aligned::vector<aligned::vector<float>>& audioChannels,
         i.resize(len);
 }
 
-aligned::vector<aligned::vector<float>> run_attenuation(
-        const compute_context& cc,
-        const model::ReceiverSettings& receiver,
-        const raytracer::results& input,
-        double output_sample_rate,
-        double acoustic_impedance,
-        double max_seconds) {
-    return run_attenuation(cc,
-                           receiver,
-                           input.get_impulses(),
-                           output_sample_rate,
-                           input.get_speed_of_sound(),
-                           acoustic_impedance,
-                           max_seconds);
-}
-
 //----------------------------------------------------------------------------//
 
-template <model::ReceiverSettings::Mode mode>
+template <enum model::receiver_settings::mode mode>
 aligned::vector<aligned::vector<float>> run_attenuation(
         const compute_context& cc,
-        const model::ReceiverSettings& receiver,
+        const model::receiver_settings& receiver,
         const aligned::vector<impulse>& input,
         double output_sample_rate,
         double speed_of_sound,
@@ -73,9 +57,9 @@ aligned::vector<aligned::vector<float>> run_attenuation(
 
 template <>
 aligned::vector<aligned::vector<float>>
-run_attenuation<model::ReceiverSettings::Mode::microphones>(
+run_attenuation<model::receiver_settings::mode::microphones>(
         const compute_context& cc,
-        const model::ReceiverSettings& receiver,
+        const model::receiver_settings& receiver,
         const aligned::vector<impulse>& input,
         double output_sample_rate,
         double speed_of_sound,
@@ -83,11 +67,11 @@ run_attenuation<model::ReceiverSettings::Mode::microphones>(
         double max_seconds) {
     raytracer::attenuator::microphone attenuator{cc, speed_of_sound};
     return map_to_vector(receiver.microphones, [&](const auto& i) {
-        const auto processed{
-                attenuator.process(input,
-                                   get_pointing(i.pointer, receiver.position),
-                                   i.shape,
-                                   receiver.position)};
+        const auto processed{attenuator.process(
+                input,
+                get_pointing(i.orientable, receiver.position),
+                i.shape,
+                receiver.position)};
         return flatten_filter_and_mixdown(processed.begin(),
                                           processed.end(),
                                           output_sample_rate,
@@ -98,9 +82,9 @@ run_attenuation<model::ReceiverSettings::Mode::microphones>(
 
 template <>
 aligned::vector<aligned::vector<float>>
-run_attenuation<model::ReceiverSettings::Mode::hrtf>(
+run_attenuation<model::receiver_settings::mode::hrtf>(
         const compute_context& cc,
-        const model::ReceiverSettings& receiver,
+        const model::receiver_settings& receiver,
         const aligned::vector<impulse>& input,
         double output_sample_rate,
         double speed_of_sound,
@@ -125,15 +109,15 @@ run_attenuation<model::ReceiverSettings::Mode::hrtf>(
 
 aligned::vector<aligned::vector<float>> run_attenuation(
         const compute_context& cc,
-        const model::ReceiverSettings& receiver,
+        const model::receiver_settings& receiver,
         const aligned::vector<impulse>& input,
         double output_sample_rate,
         double speed_of_sound,
         double acoustic_impedance,
         double max_seconds) {
     switch (receiver.mode) {
-        case model::ReceiverSettings::Mode::microphones:
-            return run_attenuation<model::ReceiverSettings::Mode::microphones>(
+        case model::receiver_settings::mode::microphones:
+            return run_attenuation<model::receiver_settings::mode::microphones>(
                     cc,
                     receiver,
                     input,
@@ -141,8 +125,8 @@ aligned::vector<aligned::vector<float>> run_attenuation(
                     speed_of_sound,
                     acoustic_impedance,
                     max_seconds);
-        case model::ReceiverSettings::Mode::hrtf:
-            return run_attenuation<model::ReceiverSettings::Mode::hrtf>(
+        case model::receiver_settings::mode::hrtf:
+            return run_attenuation<model::receiver_settings::mode::hrtf>(
                     cc,
                     receiver,
                     input,

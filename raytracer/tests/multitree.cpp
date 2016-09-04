@@ -17,7 +17,7 @@ TEST(multitree, construct_image_source_tree_small) {
                           raytracer::image_source::path_element{1, true},
                           raytracer::image_source::path_element{0, true}}};
 
-    const raytracer::image_source::image_source_tree ist{paths};
+    const raytracer::image_source::tree ist{paths};
     const auto& tree{ist.get_branches()};
 
     ASSERT_EQ(tree.size(), 1);
@@ -45,5 +45,5 @@ TEST(multitree, construct_image_source_tree_large) {
     aligned::vector<aligned::vector<raytracer::image_source::path_element>>
             paths{100000};
     std::generate(paths.begin(), paths.end(), make_path);
-    const auto tree{raytracer::image_source::image_source_tree{paths}};
+    const auto tree{raytracer::image_source::tree{paths}};
 }

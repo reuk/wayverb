@@ -133,7 +133,7 @@ int main(int argc, char** argv) {
     scene.set_surfaces(surface);
 
     const model::SingleShot config{
-            2000, 2, 340, 100000, source, model::ReceiverSettings{receiver}};
+            2000, 2, 340, 100000, source, model::receiver_settings{receiver}};
 
     const auto spacing = waveguide::config::grid_spacing(
             speed_of_sound, 1 / get_waveguide_sample_rate(config));

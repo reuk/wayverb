@@ -124,15 +124,7 @@ aligned::vector<float> flatten_filter_and_mixdown(It begin,
 
 aligned::vector<aligned::vector<float>> run_attenuation(
         const compute_context& cc,
-        const model::ReceiverSettings& receiver,
-        const results& input,
-        double output_sample_rate,
-        double acoustic_impedance,
-        double max_seconds);
-
-aligned::vector<aligned::vector<float>> run_attenuation(
-        const compute_context& cc,
-        const model::ReceiverSettings& receiver,
+        const model::receiver_settings& receiver,
         const aligned::vector<impulse>& input,
         double output_sample_rate,
         double speed_of_sound,

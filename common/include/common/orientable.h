@@ -2,54 +2,54 @@
 
 #include "glm/glm.hpp"
 
-struct AzEl final {
+struct az_el final {
     float azimuth{0};
     float elevation{0};
 };
 
-AzEl& operator+=(AzEl& a, const AzEl& b);
-AzEl& operator-=(AzEl& a, const AzEl& b);
-AzEl& operator*=(AzEl& a, const AzEl& b);
-AzEl& operator/=(AzEl& a, const AzEl& b);
+az_el& operator+=(az_el& a, const az_el& b);
+az_el& operator-=(az_el& a, const az_el& b);
+az_el& operator*=(az_el& a, const az_el& b);
+az_el& operator/=(az_el& a, const az_el& b);
 
-AzEl& operator+=(AzEl& a, float b);
-AzEl& operator-=(AzEl& a, float b);
-AzEl& operator*=(AzEl& a, float b);
-AzEl& operator/=(AzEl& a, float b);
+az_el& operator+=(az_el& a, float b);
+az_el& operator-=(az_el& a, float b);
+az_el& operator*=(az_el& a, float b);
+az_el& operator/=(az_el& a, float b);
 
-AzEl operator+(const AzEl& a, const AzEl& b);
-AzEl operator-(const AzEl& a, const AzEl& b);
-AzEl operator*(const AzEl& a, const AzEl& b);
-AzEl operator/(const AzEl& a, const AzEl& b);
+az_el operator+(const az_el& a, const az_el& b);
+az_el operator-(const az_el& a, const az_el& b);
+az_el operator*(const az_el& a, const az_el& b);
+az_el operator/(const az_el& a, const az_el& b);
 
-AzEl operator+(const AzEl& a, float b);
-AzEl operator-(const AzEl& a, float b);
-AzEl operator*(const AzEl& a, float b);
-AzEl operator/(const AzEl& a, float b);
+az_el operator+(const az_el& a, float b);
+az_el operator-(const az_el& a, float b);
+az_el operator*(const az_el& a, float b);
+az_el operator/(const az_el& a, float b);
 
-AzEl operator+(float a, const AzEl& b);
-AzEl operator-(float a, const AzEl& b);
-AzEl operator*(float a, const AzEl& b);
-AzEl operator/(float a, const AzEl& b);
+az_el operator+(float a, const az_el& b);
+az_el operator-(float a, const az_el& b);
+az_el operator*(float a, const az_el& b);
+az_el operator/(float a, const az_el& b);
 
 float compute_azimuth(const glm::vec3& pointing);
 float compute_elevation(const glm::vec3& pointing);
-AzEl compute_azimuth_elevation(const glm::vec3& pointing);
+az_el compute_azimuth_elevation(const glm::vec3& pointing);
 
-glm::vec3 compute_pointing(const AzEl& azel);
+glm::vec3 compute_pointing(const az_el& azel);
 
 //----------------------------------------------------------------------------//
 
-class Orientable {
+class orientable {
 public:
-    Orientable()                  = default;
-    Orientable(const Orientable&) = default;
-    Orientable& operator=(const Orientable&) = default;
-    Orientable(Orientable&&) noexcept        = default;
-    Orientable& operator=(Orientable&&) noexcept = default;
+    orientable() = default;
+    orientable(const orientable&) = default;
+    orientable& operator=(const orientable&) = default;
+    orientable(orientable&&) noexcept = default;
+    orientable& operator=(orientable&&) noexcept = default;
 
 protected:
-    ~Orientable() noexcept = default;
+    ~orientable() noexcept = default;
 
 public:
     glm::vec3 get_pointing() const;
@@ -57,11 +57,11 @@ public:
 
     float get_azimuth() const;
     float get_elevation() const;
-    AzEl get_azimuth_elevation() const;
+    az_el get_azimuth_elevation() const;
 
     void set_azimuth(float u);
     void set_elevation(float u);
-    void set_azimuth_elevation(const AzEl& azel);
+    void set_azimuth_elevation(const az_el& azel);
 
     glm::mat4 get_matrix() const;
 

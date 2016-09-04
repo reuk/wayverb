@@ -19,7 +19,7 @@ void Node::set_scale(float s) { scale = glm::vec3{s}; }
 void Node::set_scale(const glm::vec3& s) { scale = s; }
 
 glm::mat4 Node::get_matrix() const {
-    return glm::translate(get_position()) * Orientable::get_matrix() *
+    return glm::translate(get_position()) * orientable::get_matrix() *
            glm::scale(get_scale());
 }
 

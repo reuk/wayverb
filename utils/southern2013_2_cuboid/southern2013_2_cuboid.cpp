@@ -53,7 +53,7 @@ constexpr auto acoustic_impedance{400.0};
 class test_case_harness final {
 public:
     using single_test = std::function<audio(
-            const surface&, const glm::vec3&, const model::ReceiverSettings&)>;
+            const surface&, const glm::vec3&, const model::receiver_settings&)>;
 
     //  Takes a scene (with a custom surface set), a source, and a receiver.
     //  Returns a signal representing the impulse response for a scene with
@@ -70,7 +70,7 @@ public:
                     const auto& surface{surfaces_[k]};
                     const auto results{t(surface,
                                          source,
-                                         model::ReceiverSettings{receiver})};
+                                         model::receiver_settings{receiver})};
 
                     const auto fname{build_string(results.prefix,
                                                   "_source_",
@@ -119,7 +119,7 @@ public:
 
     audio operator()(const surface& surface,
                      const glm::vec3& source,
-                     const model::ReceiverSettings& receiver) {
+                     const model::receiver_settings& receiver) {
         voxelised_.set_surfaces(surface);
 
         const auto specular{max(absorption_to_pressure_reflectance(
@@ -143,8 +143,14 @@ public:
         }
 
         const auto sample_rate{44100.0};
-        const auto output{raytracer::run_attenuation(
-                compute_context_, receiver, *results, sample_rate, 400, 20)};
+        const auto output{
+                raytracer::run_attenuation(compute_context_,
+                                           receiver,
+                                           results->get_impulses(),
+                                           sample_rate,
+                                           results->get_speed_of_sound(),
+                                           400,
+                                           20)};
 
         if (output.size() != 1) {
             throw std::runtime_error("output should contain just one channel");
@@ -172,7 +178,7 @@ public:
 
     audio operator()(const surface& surface,
                      const glm::vec3& source,
-                     const model::ReceiverSettings& receiver) {
+                     const model::receiver_settings& receiver) {
         auto& mesh{std::get<1>(voxels_and_mesh_)};
         mesh.set_coefficients(waveguide::to_filter_coefficients(
                 aligned::vector<struct surface>{surface}, sample_rate_));

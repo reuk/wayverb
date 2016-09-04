@@ -27,21 +27,13 @@ public:
         });
     }
 
-    aligned::vector<impulse> get_results(const glm::vec3& source,
-                                         const glm::vec3& receiver,
-                                         const voxelised_scene_data& voxelised,
-                                         float speed_of_sound) const {
-        //  TODO replace with a better, pressure-based impulse finder
-        intensity_calculator calculator{receiver, voxelised, speed_of_sound};
-        aligned::vector<impulse> ret{};
-        image_source_tree{reflection_path_builder_.get_data()}.find_valid_paths(
-                source,
-                receiver,
-                voxelised,
-                [&](const auto& image_source, const auto& intersections) {
-                    ret.push_back(calculator(image_source, intersections));
-                });
-        return ret;
+    void postprocess(const glm::vec3& source,
+                     const glm::vec3& receiver,
+                     const voxelised_scene_data& voxelised,
+                     float speed_of_sound,
+                     const postprocessor& callback) const {
+        tree{reflection_path_builder_.get_data()}.find_valid_paths(
+                source, receiver, voxelised, callback);
     }
 
 private:
@@ -59,12 +51,13 @@ void finder::push(const aligned::vector<reflection>& reflections) {
     pimpl_->push(reflections);
 }
 
-aligned::vector<impulse> finder::get_results(
-        const glm::vec3& source,
-        const glm::vec3& receiver,
-        const voxelised_scene_data& voxelised,
-        float speed_of_sound) {
-    return pimpl_->get_results(source, receiver, voxelised, speed_of_sound);
+void finder::postprocess(const glm::vec3& source,
+                         const glm::vec3& receiver,
+                         const voxelised_scene_data& voxelised,
+                         float speed_of_sound,
+                         const postprocessor& callback) const {
+    return pimpl_->postprocess(
+            source, receiver, voxelised, speed_of_sound, callback);
 }
 
 }  // namespace image_source

@@ -15,6 +15,9 @@ namespace raytracer {
 ///     the step number
 using per_step_callback = std::function<void(size_t)>;
 
+using reflection_processor =
+        std::function<void(const aligned::vector<reflection>&)>;
+
 std::experimental::optional<results> run(const compute_context& cc,
                                          const voxelised_scene_data& scene_data,
                                          double speed_of_sound,

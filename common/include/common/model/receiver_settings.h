@@ -7,34 +7,34 @@
 
 namespace model {
 
-struct Pointer {
-    enum class Mode { spherical, look_at };
+struct orientable final {
+    enum class mode { spherical, look_at };
 
-    Mode mode{Mode::spherical};
-    AzEl spherical{};
+    mode mode{mode::spherical};
+    az_el spherical{};
     glm::vec3 look_at{0};
 };
 
-glm::vec3 get_pointing(const Pointer& u, const glm::vec3& position);
+glm::vec3 get_pointing(const orientable& u, const glm::vec3& position);
 
 //----------------------------------------------------------------------------//
 
-struct Microphone {
-    Pointer pointer{};
+struct microphone final {
+    orientable orientable{};
     float shape{0};
 };
 
 //----------------------------------------------------------------------------//
 
-struct ReceiverSettings {
-    enum class Mode { microphones, hrtf };
+struct receiver_settings final {
+    enum class mode { microphones, hrtf };
 
     glm::vec3 position{0, 0, 0};
-    Mode mode{Mode::microphones};
-    aligned::vector<Microphone> microphones{Microphone{}};
-    Pointer hrtf{};
+    mode mode{mode::microphones};
+    aligned::vector<microphone> microphones{microphone{}};
+    orientable hrtf{};
 };
 
-aligned::vector<glm::vec3> get_pointing(const ReceiverSettings& u);
+aligned::vector<glm::vec3> get_pointing(const receiver_settings& u);
 
 }  // namespace model

@@ -1,5 +1,5 @@
-#include "raytracer/construct_impulse.h"
 #include "raytracer/image_source/postprocessors.h"
+#include "raytracer/construct_impulse.h"
 
 #include "common/surfaces.h"
 
@@ -16,8 +16,7 @@ intensity_calculator::intensity_calculator(
 
 impulse intensity_calculator::operator()(
         const glm::vec3& image_source,
-        const aligned::vector<image_source_tree::intersection>& intersections)
-        const {
+        const aligned::vector<reflection_metadata>& intersections) const {
     const auto surface_attenuation{proc::accumulate(
             intersections, make_volume_type(1), [&](auto i, auto j) {
                 const auto triangle{

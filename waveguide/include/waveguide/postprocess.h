@@ -7,7 +7,7 @@
 namespace waveguide {
 
 aligned::vector<aligned::vector<float>> run_attenuation(
-        const model::ReceiverSettings& receiver,
+        const model::receiver_settings& receiver,
         const aligned::vector<run_step_output>& input,
         double waveguide_sample_rate);
 

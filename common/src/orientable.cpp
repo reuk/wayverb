@@ -7,60 +7,60 @@
 namespace {
 
 template <typename Op>
-AzEl& inplace_zip(AzEl& a, const AzEl& b, Op op) {
-    a.azimuth   = op(a.azimuth, b.azimuth);
+az_el& inplace_zip(az_el& a, const az_el& b, Op op) {
+    a.azimuth = op(a.azimuth, b.azimuth);
     a.elevation = op(a.elevation, b.elevation);
     return a;
 }
 
 template <typename Op>
-AzEl zip(const AzEl& a, const AzEl& b, Op op) {
+az_el zip(const az_el& a, const az_el& b, Op op) {
     auto ret = a;
     return inplace_zip(ret, b, op);
 }
 
 }  // namespace
 
-AzEl& operator+=(AzEl& a, const AzEl& b) {
+az_el& operator+=(az_el& a, const az_el& b) {
     return inplace_zip(a, b, std::plus<>());
 }
-AzEl& operator-=(AzEl& a, const AzEl& b) {
+az_el& operator-=(az_el& a, const az_el& b) {
     return inplace_zip(a, b, std::minus<>());
 }
-AzEl& operator*=(AzEl& a, const AzEl& b) {
+az_el& operator*=(az_el& a, const az_el& b) {
     return inplace_zip(a, b, std::multiplies<>());
 }
-AzEl& operator/=(AzEl& a, const AzEl& b) {
+az_el& operator/=(az_el& a, const az_el& b) {
     return inplace_zip(a, b, std::divides<>());
 }
 
-AzEl& operator+=(AzEl& a, float b) { return a += AzEl{b, b}; }
-AzEl& operator-=(AzEl& a, float b) { return a -= AzEl{b, b}; }
-AzEl& operator*=(AzEl& a, float b) { return a *= AzEl{b, b}; }
-AzEl& operator/=(AzEl& a, float b) { return a /= AzEl{b, b}; }
+az_el& operator+=(az_el& a, float b) { return a += az_el{b, b}; }
+az_el& operator-=(az_el& a, float b) { return a -= az_el{b, b}; }
+az_el& operator*=(az_el& a, float b) { return a *= az_el{b, b}; }
+az_el& operator/=(az_el& a, float b) { return a /= az_el{b, b}; }
 
-AzEl operator+(const AzEl& a, const AzEl& b) {
+az_el operator+(const az_el& a, const az_el& b) {
     return zip(a, b, std::plus<>());
 }
-AzEl operator-(const AzEl& a, const AzEl& b) {
+az_el operator-(const az_el& a, const az_el& b) {
     return zip(a, b, std::minus<>());
 }
-AzEl operator*(const AzEl& a, const AzEl& b) {
+az_el operator*(const az_el& a, const az_el& b) {
     return zip(a, b, std::multiplies<>());
 }
-AzEl operator/(const AzEl& a, const AzEl& b) {
+az_el operator/(const az_el& a, const az_el& b) {
     return zip(a, b, std::divides<>());
 }
 
-AzEl operator+(const AzEl& a, float b) { return a + AzEl{b, b}; }
-AzEl operator-(const AzEl& a, float b) { return a - AzEl{b, b}; }
-AzEl operator*(const AzEl& a, float b) { return a * AzEl{b, b}; }
-AzEl operator/(const AzEl& a, float b) { return a / AzEl{b, b}; }
+az_el operator+(const az_el& a, float b) { return a + az_el{b, b}; }
+az_el operator-(const az_el& a, float b) { return a - az_el{b, b}; }
+az_el operator*(const az_el& a, float b) { return a * az_el{b, b}; }
+az_el operator/(const az_el& a, float b) { return a / az_el{b, b}; }
 
-AzEl operator+(float a, const AzEl& b) { return AzEl{a, a} + b; }
-AzEl operator-(float a, const AzEl& b) { return AzEl{a, a} - b; }
-AzEl operator*(float a, const AzEl& b) { return AzEl{a, a} * b; }
-AzEl operator/(float a, const AzEl& b) { return AzEl{a, a} / b; }
+az_el operator+(float a, const az_el& b) { return az_el{a, a} + b; }
+az_el operator-(float a, const az_el& b) { return az_el{a, a} - b; }
+az_el operator*(float a, const az_el& b) { return az_el{a, a} * b; }
+az_el operator/(float a, const az_el& b) { return az_el{a, a} / b; }
 
 //----------------------------------------------------------------------------//
 
@@ -70,10 +70,10 @@ float compute_azimuth(const glm::vec3& pointing) {
 float compute_elevation(const glm::vec3& pointing) {
     return glm::asin(pointing.y);
 }
-AzEl compute_azimuth_elevation(const glm::vec3& pointing) {
-    return AzEl{compute_azimuth(pointing), compute_elevation(pointing)};
+az_el compute_azimuth_elevation(const glm::vec3& pointing) {
+    return az_el{compute_azimuth(pointing), compute_elevation(pointing)};
 }
-glm::vec3 compute_pointing(const AzEl& azel) {
+glm::vec3 compute_pointing(const az_el& azel) {
     return glm::vec3(glm::sin(azel.azimuth) * glm::cos(azel.elevation),
                      glm::sin(azel.elevation),
                      glm::cos(azel.azimuth) * glm::cos(azel.elevation));
@@ -81,29 +81,29 @@ glm::vec3 compute_pointing(const AzEl& azel) {
 
 //----------------------------------------------------------------------------//
 
-glm::vec3 Orientable::get_pointing() const { return pointing; }
+glm::vec3 orientable::get_pointing() const { return pointing; }
 
-void Orientable::set_pointing(const glm::vec3& u) {
+void orientable::set_pointing(const glm::vec3& u) {
     pointing = glm::normalize(u);
 }
 
-float Orientable::get_azimuth() const { return compute_azimuth(pointing); }
-float Orientable::get_elevation() const { return compute_elevation(pointing); }
-AzEl Orientable::get_azimuth_elevation() const {
+float orientable::get_azimuth() const { return compute_azimuth(pointing); }
+float orientable::get_elevation() const { return compute_elevation(pointing); }
+az_el orientable::get_azimuth_elevation() const {
     return compute_azimuth_elevation(pointing);
 }
 
-void Orientable::set_azimuth(float u) {
-    set_azimuth_elevation(AzEl{u, get_elevation()});
+void orientable::set_azimuth(float u) {
+    set_azimuth_elevation(az_el{u, get_elevation()});
 }
-void Orientable::set_elevation(float u) {
-    set_azimuth_elevation(AzEl{get_azimuth(), u});
+void orientable::set_elevation(float u) {
+    set_azimuth_elevation(az_el{get_azimuth(), u});
 }
-void Orientable::set_azimuth_elevation(const AzEl& azel) {
+void orientable::set_azimuth_elevation(const az_el& azel) {
     pointing = compute_pointing(azel);
 }
 
-glm::mat4 Orientable::get_matrix() const {
+glm::mat4 orientable::get_matrix() const {
     auto z_axis = pointing;
     auto x_axis = glm::normalize(glm::cross(pointing, glm::vec3(0, -1, 0)));
     auto y_axis = glm::normalize(glm::cross(z_axis, x_axis));

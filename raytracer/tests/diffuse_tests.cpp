@@ -56,7 +56,7 @@ TEST(diffuse, bad_reflections_box) {
 
 TEST(diffuse, bad_reflections_vault) {
     constexpr glm::vec3 source{0, 1, 0};
-    const model::ReceiverSettings receiver{glm::vec3{0, 1, 1}};
+    const model::receiver_settings receiver{glm::vec3{0, 1, 1}};
 
     const compute_context cc{};
 

@@ -2,6 +2,7 @@
 
 #include "raytracer/construct_impulse.h"
 #include "raytracer/image_source/finder.h"
+#include "raytracer/image_source/postprocessors.h"
 #include "raytracer/multitree.h"
 
 #include "common/aligned/vector.h"
@@ -38,25 +39,14 @@ constexpr bool operator<(const path_element& a, const path_element& b) {
 
 //----------------------------------------------------------------------------//
 
-class image_source_tree final {
+class tree final {
 public:
-    image_source_tree(
-            const aligned::vector<aligned::vector<path_element>>& paths);
-
-    struct intersection final {
-        cl_uint index;  /// The index of the triangle that was intersected.
-        float angle;    /// The angle against the triangle normal.
-    };
-
-    /// Callback will be called with the location of the image source,
-    /// and the series of surface/angle pairs along the image path.
-    using callback = std::function<void(const glm::vec3&,
-                                        const aligned::vector<intersection>&)>;
+    tree(const aligned::vector<aligned::vector<path_element>>& paths);
 
     void find_valid_paths(const glm::vec3& source,
                           const glm::vec3& receiver,
                           const voxelised_scene_data& voxelised,
-                          callback callback) const;
+                          const postprocessor& callback) const;
 
     const multitree<path_element>::branches_type& get_branches() const;
 

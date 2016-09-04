@@ -13,7 +13,7 @@ struct SingleShot {
     float speed_of_sound;
     size_t rays;
     glm::vec3 source;
-    ReceiverSettings receiver_settings;
+    receiver_settings receiver_settings;
 };
 
 struct App {
@@ -22,7 +22,7 @@ struct App {
     float speed_of_sound{340};
     size_t rays{100000};
     aligned::vector<glm::vec3> source{glm::vec3{0}};
-    aligned::vector<ReceiverSettings> receiver_settings{ReceiverSettings{}};
+    aligned::vector<receiver_settings> receiver_settings{1};
 };
 
 float get_waveguide_sample_rate(const SingleShot& a);

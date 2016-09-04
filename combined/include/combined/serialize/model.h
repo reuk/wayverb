@@ -6,7 +6,7 @@
 #include "cereal/types/vector.hpp"
 
 template <typename Archive>
-void serialize(Archive& archive, AzEl& azel) {
+void serialize(Archive& archive, az_el& azel) {
     archive(cereal::make_nvp("azimuth", azel.azimuth),
             cereal::make_nvp("elevation", azel.elevation));
 }
@@ -14,7 +14,7 @@ void serialize(Archive& archive, AzEl& azel) {
 namespace model {
 
 template <typename Archive>
-void serialize(Archive& archive, Pointer& m) {
+void serialize(Archive& archive, orientable& m) {
     archive(cereal::make_nvp("mode", m.mode),
             cereal::make_nvp("spherical", m.spherical),
             cereal::make_nvp("look_at", m.look_at));
@@ -23,15 +23,15 @@ void serialize(Archive& archive, Pointer& m) {
 //----------------------------------------------------------------------------//
 
 template <typename Archive>
-void serialize(Archive& archive, Microphone& m) {
-    archive(cereal::make_nvp("pointer", m.pointer),
+void serialize(Archive& archive, microphone& m) {
+    archive(cereal::make_nvp("orientable", m.orientable),
             cereal::make_nvp("shape", m.shape));
 }
 
 //----------------------------------------------------------------------------//
 
 template <typename Archive>
-void serialize(Archive& archive, ReceiverSettings& m) {
+void serialize(Archive& archive, receiver_settings& m) {
     archive(cereal::make_nvp("position", m.position),
             cereal::make_nvp("mode", m.mode),
             cereal::make_nvp("microphones", m.microphones),

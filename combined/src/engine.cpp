@@ -73,20 +73,21 @@ public:
 
     aligned::vector<aligned::vector<float>> attenuate(
             const compute_context& cc,
-            const model::ReceiverSettings& receiver,
+            const model::receiver_settings& receiver,
             double output_sample_rate,
             double max_length_in_seconds,
             const state_callback& callback) const override {
         callback(wayverb::state::postprocessing, 1.0);
 
         //  attenuate raytracer results
-        auto raytracer_output{
-                raytracer::run_attenuation(cc,
-                                           receiver,
-                                           raytracer_results,
-                                           output_sample_rate,
-                                           acoustic_impedance,
-                                           max_length_in_seconds)};
+        auto raytracer_output{raytracer::run_attenuation(
+                cc,
+                receiver,
+                raytracer_results.get_impulses(),
+                output_sample_rate,
+                raytracer_results.get_speed_of_sound(),
+                acoustic_impedance,
+                max_length_in_seconds)};
         //  attenuate waveguide results
         auto waveguide_output{waveguide::run_attenuation(
                 receiver, waveguide_results, waveguide_sample_rate)};

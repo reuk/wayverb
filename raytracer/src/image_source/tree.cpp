@@ -18,19 +18,19 @@ geo::ray construct_ray(const glm::vec3& from, const glm::vec3& to) {
 
 //----------------------------------------------------------------------------//
 
-class image_source_traversal_callback final {
+class traversal_callback final {
 public:
     struct state final {
         cl_uint index;
         glm::vec3 image_source;
     };
 
-    image_source_traversal_callback(const glm::vec3& source,
-                                    const glm::vec3& receiver,
-                                    const voxelised_scene_data& voxelised,
-                                    image_source_tree::callback& callback,
-                                    aligned::vector<state>& state,
-                                    const path_element& element)
+    traversal_callback(const glm::vec3& source,
+                       const glm::vec3& receiver,
+                       const voxelised_scene_data& voxelised,
+                       const postprocessor& callback,
+                       aligned::vector<state>& state,
+                       const path_element& element)
             : source_(source)
             , receiver_(receiver)
             , voxelised_(voxelised)
@@ -49,10 +49,10 @@ public:
         }
     }
 
-    ~image_source_traversal_callback() noexcept { state_.pop_back(); }
+    ~traversal_callback() noexcept { state_.pop_back(); }
 
-    image_source_traversal_callback operator()(const path_element& p) const {
-        return image_source_traversal_callback{
+    traversal_callback operator()(const path_element& p) const {
+        return traversal_callback{
                 source_, receiver_, voxelised_, callback_, state_, p};
     }
 
@@ -84,7 +84,7 @@ private:
 
     struct valid_path final {
         glm::vec3 image_source;
-        aligned::vector<image_source_tree::intersection> intersections;
+        aligned::vector<reflection_metadata> intersections;
     };
 
     static std::experimental::optional<valid_path> find_valid_path(
@@ -105,7 +105,7 @@ private:
             glm::vec3 prev_intersection;
             cl_uint prev_surface;
         } accumulator{receiver, ~cl_uint{0}};
-        aligned::vector<image_source_tree::intersection> intersections;
+        aligned::vector<reflection_metadata> intersections;
         intersections.reserve(state.size());
 
         for (auto i{state.crbegin()}, end{state.crend()}; i != end; ++i) {
@@ -130,7 +130,7 @@ private:
             const auto angle{std::acos(
                     glm::dot(ray.get_direction(),
                              geo::normal(get_triangle(voxelised, i->index))))};
-            intersections.push_back(image_source_tree::intersection{
+            intersections.push_back(reflection_metadata{
                     i->index,
                     std::min(angle, static_cast<float>(M_PI - angle))});
 
@@ -161,7 +161,7 @@ private:
     const glm::vec3& receiver_;
     const voxelised_scene_data& voxelised_;
 
-    image_source_tree::callback& callback_;
+    const postprocessor& callback_;
     aligned::vector<state>& state_;
 };
 
@@ -176,32 +176,30 @@ multitree<path_element>::branches_type construct_image_source_tree(
     return std::move(root.branches);
 }
 
-image_source_tree::image_source_tree(
-        const aligned::vector<aligned::vector<path_element>>& paths)
+tree::tree(const aligned::vector<aligned::vector<path_element>>& paths)
         : branches_(construct_image_source_tree(paths)) {}
 
-void image_source_tree::find_valid_paths(const glm::vec3& source,
-                                         const glm::vec3& receiver,
-                                         const voxelised_scene_data& voxelised,
-                                         callback callback) const {
+void tree::find_valid_paths(const glm::vec3& source,
+                            const glm::vec3& receiver,
+                            const voxelised_scene_data& voxelised,
+                            const postprocessor& callback) const {
     //  set up a state array
-    aligned::vector<image_source_traversal_callback::state> state{};
+    aligned::vector<traversal_callback::state> state{};
     //  iterate on tree
     //  for each starting node
     for (const auto& branch : branches_) {
         //  traverse all paths on this branch
         traverse_multitree(branch,
-                           image_source_traversal_callback{source,
-                                                           receiver,
-                                                           voxelised,
-                                                           callback,
-                                                           state,
-                                                           branch.item});
+                           traversal_callback{source,
+                                              receiver,
+                                              voxelised,
+                                              callback,
+                                              state,
+                                              branch.item});
     }
 }
 
-const multitree<path_element>::branches_type& image_source_tree::get_branches()
-        const {
+const multitree<path_element>::branches_type& tree::get_branches() const {
     return branches_;
 }
 

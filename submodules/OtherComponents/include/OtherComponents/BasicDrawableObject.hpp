@@ -13,7 +13,7 @@
 #include "modern_gl_utils/updatable.h"
 #include "modern_gl_utils/vao.h"
 
-class Node : public Orientable {
+class Node : public orientable {
 public:
     Node() = default;
 

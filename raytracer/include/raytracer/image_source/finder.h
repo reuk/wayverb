@@ -1,6 +1,7 @@
 #pragma once
 
 #include "raytracer/cl/structs.h"
+#include "raytracer/image_source/postprocessors.h"
 
 #include "common/aligned/vector.h"
 
@@ -17,10 +18,12 @@ public:
     ~finder() noexcept;
 
     void push(const aligned::vector<reflection>&);
-    aligned::vector<impulse> get_results(const glm::vec3& source,
-                                         const glm::vec3& receiver,
-                                         const voxelised_scene_data& scene_data,
-                                         float speed_of_sound);
+
+    void postprocess(const glm::vec3& source,
+                     const glm::vec3& receiver,
+                     const voxelised_scene_data& voxelised,
+                     float speed_of_sound,
+                     const postprocessor& callback) const;
 
 private:
     class impl;

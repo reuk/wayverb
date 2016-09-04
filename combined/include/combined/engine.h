@@ -13,7 +13,7 @@
 //  forward declarations  ----------------------------------------------------//
 
 namespace model {
-struct ReceiverSettings;
+struct receiver_settings;
 }  // namespace model
 
 class compute_context;
@@ -36,7 +36,7 @@ public:
 
     virtual aligned::vector<aligned::vector<float>> attenuate(
             const compute_context& cc,
-            const model::ReceiverSettings& receiver,
+            const model::receiver_settings& receiver,
             double output_sample_rate,
             double max_length_in_seconds,
             const state_callback&) const = 0;

@@ -86,11 +86,13 @@ std::experimental::optional<results> run(const compute_context& cc,
         //  get a single step of the reflections
         const auto reflections{ref.run_step(buffers)};
 
+#ifndef NDEBUG
         //  check reflection kernel output
         for (const auto& ref : reflections) {
             throw_if_suspicious(ref.position);
             throw_if_suspicious(ref.direction);
         }
+#endif
 
         //  find diffuse impulses for these reflections
         dif.push(reflections, buffers);
@@ -100,9 +102,21 @@ std::experimental::optional<results> run(const compute_context& cc,
         callback(i);
     }
 
+    //  fetch image source results
+    aligned::vector<impulse> img_src_results{};
+    const image_source::intensity_calculator calculator{
+            receiver, scene_data, static_cast<float>(speed_of_sound)};
+    img.postprocess(source,
+                    receiver,
+                    scene_data,
+                    speed_of_sound,
+                    [&](const auto& a, const auto& b) {
+                        img_src_results.push_back(calculator(a, b));
+                    });
+
     return results{
             get_direct_impulse(source, receiver, scene_data, speed_of_sound),
-            img.get_results(source, receiver, scene_data, speed_of_sound),
+            std::move(img_src_results),
             std::move(dif.get_results()),
             receiver,
             speed_of_sound};
