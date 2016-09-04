@@ -69,7 +69,7 @@ public:
 
     using state_callback = std::function<void(state, double)>;
     std::unique_ptr<intermediate> run(const std::atomic_bool& keep_going,
-                                      const state_callback&);
+                                      const state_callback&) const;
 
     using raytracer_visual_callback_t =
             std::function<void(const aligned::vector<aligned::vector<impulse>>&,

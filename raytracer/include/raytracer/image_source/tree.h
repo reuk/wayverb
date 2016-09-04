@@ -44,8 +44,8 @@ public:
             const aligned::vector<aligned::vector<path_element>>& paths);
 
     struct intersection final {
-        cl_uint surface;
-        float angle;
+        cl_uint index;  /// The index of the triangle that was intersected.
+        float angle;    /// The angle against the triangle normal.
     };
 
     /// Callback will be called with the location of the image source,
@@ -62,7 +62,6 @@ public:
 
 private:
     multitree<path_element>::branches_type branches_;
-
 };
 
 //----------------------------------------------------------------------------//

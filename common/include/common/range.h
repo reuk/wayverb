@@ -11,49 +11,49 @@ public:
 
     /// setters/getters
 
-    range()
-            : min(0)
-            , max(0) {}
+    constexpr range()
+            : min_(0)
+            , max_(0) {}
 
-    range(const value_type& a, const value_type& b) {
-        maintain_invariant(a, b);
-    }
+    constexpr range(const value_type& a, const value_type& b)
+            : min_(glm::min(a, b))
+            , max_(glm::max(a, b)) {}
 
-    constexpr value_type get_min() const { return min; }
-    constexpr value_type get_max() const { return max; }
+    constexpr value_type get_min() const { return min_; }
+    constexpr value_type get_max() const { return max_; }
 
     /// mutators
 
     constexpr range& operator+=(const value_type& v) {
-        min += v;
-        max += v;
+        min_ += v;
+        max_ += v;
         return *this;
     }
 
     constexpr range& operator-=(const value_type& v) {
-        min -= v;
-        max -= v;
+        min_ -= v;
+        max_ -= v;
         return *this;
     }
 
     constexpr range& pad(const value_type& v) {
-        min -= v;
-        max += v;
-        maintain_invariant(min, max);
+        min_ -= v;
+        max_ += v;
+        maintain_invariant(min_, max_);
         return *this;
     }
 
-    template<typename archive>
+    template <typename archive>
     void serialize(archive&);
 
 private:
     void maintain_invariant(const value_type& a, const value_type& b) {
-        min = glm::min(a, b);
-        max = glm::max(a, b);
+        min_ = glm::min(a, b);
+        max_ = glm::max(a, b);
     }
 
-    value_type min;
-    value_type max;
+    value_type min_;
+    value_type max_;
 };
 
 template <typename t>

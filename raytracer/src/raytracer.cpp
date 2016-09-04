@@ -1,7 +1,7 @@
-#include "raytracer/raytracer.h"
 #include "raytracer/construct_impulse.h"
 #include "raytracer/diffuse/finder.h"
 #include "raytracer/image_source/finder.h"
+#include "raytracer/raytracer.h"
 #include "raytracer/reflector.h"
 
 #include "common/nan_checking.h"
@@ -28,10 +28,8 @@ std::experimental::optional<impulse> get_direct_impulse(
 
     if (!intersection ||
         (intersection && intersection->inter.t > source_to_receiver_length)) {
-        return construct_impulse(make_volume_type(1),
-                                 source,
-                                 source_to_receiver_length,
-                                 speed_of_sound);
+        return construct_impulse(
+                make_volume_type(1), source, receiver, speed_of_sound);
     }
 
     return std::experimental::nullopt;
@@ -42,7 +40,8 @@ std::experimental::optional<results> run(const compute_context& cc,
                                          double speed_of_sound,
                                          const glm::vec3& source,
                                          const glm::vec3& receiver,
-                                         aligned::vector<glm::vec3> directions,
+                                         aligned::vector<glm::vec3>
+                                                 directions,
                                          size_t reflection_depth,
                                          size_t image_source_depth,
                                          const std::atomic_bool& keep_going,

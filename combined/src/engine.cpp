@@ -267,7 +267,7 @@ private:
 
 public:
     std::unique_ptr<intermediate> run(const std::atomic_bool& keep_going,
-                                      const state_callback& callback) {
+                                      const state_callback& callback) const {
         //  RAYTRACER  -------------------------------------------------------//
         callback(state::starting_raytracer, 1.0);
         auto raytracer_results{raytracer::run(
@@ -459,7 +459,7 @@ engine::~engine() noexcept = default;
 
 std::unique_ptr<intermediate> engine::run(
         const std::atomic_bool& keep_going,
-        const engine::state_callback& callback) {
+        const engine::state_callback& callback) const {
     return pimpl->run(keep_going, callback);
 }
 

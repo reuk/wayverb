@@ -25,31 +25,35 @@ public:
         glm::vec3 image_source;
     };
 
-    image_source_traversal_callback(const glm::vec3& receiver,
+    image_source_traversal_callback(const glm::vec3& source,
+                                    const glm::vec3& receiver,
                                     const voxelised_scene_data& voxelised,
                                     image_source_tree::callback& callback,
                                     aligned::vector<state>& state,
                                     const path_element& element)
-            : receiver_(receiver)
+            : source_(source)
+            , receiver_(receiver)
             , voxelised_(voxelised)
             , callback_(callback)
             , state_(state) {
         //  Find the image source location and intersected triangle.
-        state_.push_back(path_element_to_state(voxelised_, state_, element));
+        state_.push_back(
+                path_element_to_state(source_, voxelised_, state_, element));
 
         //  Find whether this is a valid path, and if it is, call the callback.
-        if (const auto valid{find_valid_path(receiver_, voxelised_, state_)}) {
-            callback_(valid->image_source, valid->intersections);
+        if (element.visible) {
+            if (const auto valid{find_valid_path(
+                        source_, receiver_, voxelised_, state_)}) {
+                callback_(valid->image_source, valid->intersections);
+            }
         }
     }
 
-    ~image_source_traversal_callback() noexcept {
-        state_.pop_back();
-    }
+    ~image_source_traversal_callback() noexcept { state_.pop_back(); }
 
     image_source_traversal_callback operator()(const path_element& p) const {
         return image_source_traversal_callback{
-                receiver_, voxelised_, callback_, state_, p};
+                source_, receiver_, voxelised_, callback_, state_, p};
     }
 
 private:
@@ -67,15 +71,15 @@ private:
                            get_triangle(voxelised, triangle_index));
     }
 
-    static state path_element_to_state(const voxelised_scene_data& voxelised,
+    static state path_element_to_state(const glm::vec3& source,
+                                       const voxelised_scene_data& voxelised,
                                        const aligned::vector<state>& state,
                                        const path_element& p) {
-        if (state.empty())  {
-            throw std::runtime_error("state vector is empty");
-        }
         return {p.index,
                 find_image_source(
-                        state.back().image_source, voxelised, p.index)};
+                        state.empty() ? source : state.back().image_source,
+                        voxelised,
+                        p.index)};
     }
 
     struct valid_path final {
@@ -84,6 +88,7 @@ private:
     };
 
     static std::experimental::optional<valid_path> find_valid_path(
+            const glm::vec3& source,
             const glm::vec3& receiver,
             const voxelised_scene_data& voxelised,
             const aligned::vector<state>& state) {
@@ -96,15 +101,21 @@ private:
 
         //  check that we can cast a ray to the receiver from all of the image
         //  sources, through the correct triangles
-        glm::vec3 prev_intersection{receiver};  //  trace from here
+        struct final {
+            glm::vec3 prev_intersection;
+            cl_uint prev_surface;
+        } accumulator{receiver, ~cl_uint{0}};
         aligned::vector<image_source_tree::intersection> intersections;
+        intersections.reserve(state.size());
 
         for (auto i{state.crbegin()}, end{state.crend()}; i != end; ++i) {
             //  find the ray from the receiver to the image source
-            const auto ray{construct_ray(i->image_source, prev_intersection)};
+            const auto ray{construct_ray(accumulator.prev_intersection,
+                                         i->image_source)};
 
             //  now check for intersections with the scene
-            const auto intersection{intersects(voxelised, ray)};
+            const auto intersection{
+                    intersects(voxelised, ray, accumulator.prev_surface)};
 
             //  If we didn't find an intersection or if the intersected triangle
             //  isn't the correct one.
@@ -116,34 +127,37 @@ private:
             //  This path segment is valid.
             //  Find angle between ray and triangle normal at intersection.
             //  Add appropriate intersection to ret.
+            const auto angle{std::acos(
+                    glm::dot(ray.get_direction(),
+                             geo::normal(get_triangle(voxelised, i->index))))};
             intersections.push_back(image_source_tree::intersection{
                     i->index,
-                    std::acos(glm::dot(
-                            ray.get_direction(),
-                            geo::normal(get_triangle(voxelised, i->index))))});
+                    std::min(angle, static_cast<float>(M_PI - angle))});
 
             //  Update accumulator.
-            prev_intersection = ray.get_position() +
-                                ray.get_direction() * intersection->inter.t;
+            accumulator = {ray.get_position() +
+                                   ray.get_direction() * intersection->inter.t,
+                           i->index};
         }
 
-        if (intersections.size() < 2) {
-            throw std::runtime_error(
-                    "intersection number should always be two or more (from "
-                    "source to intersection, and from receiver to "
-                    "intersection)");
+        //  Ensure there is line-of-sight from source to initial image-source
+        //  intersection point.
+        {
+            const auto ray{
+                    construct_ray(source, accumulator.prev_intersection)};
+            const auto intersection{intersects(voxelised, ray)};
+            if (!intersection ||
+                intersection->index != accumulator.prev_surface) {
+                return std::experimental::nullopt;
+            }
         }
-
-        //  Final intersections is from the source and we don't care.
-        intersections.pop_back();
 
         //  If we got here, the path is a valid image-source path.
         //  We compute the impulse and push it onto the output collection.
         return valid_path{final_image_source, intersections};
     }
 
-    std::experimental::optional<impulse> compute_impulse() const;
-
+    const glm::vec3& source_;
     const glm::vec3& receiver_;
     const voxelised_scene_data& voxelised_;
 
@@ -170,19 +184,19 @@ void image_source_tree::find_valid_paths(const glm::vec3& source,
                                          const glm::vec3& receiver,
                                          const voxelised_scene_data& voxelised,
                                          callback callback) const {
+    //  set up a state array
+    aligned::vector<image_source_traversal_callback::state> state{};
     //  iterate on tree
     //  for each starting node
     for (const auto& branch : branches_) {
-        //  set up a state array
-        aligned::vector<image_source_traversal_callback::state> state{
-                image_source_traversal_callback::state{branch.item.index,
-                                                       source}};
-
         //  traverse all paths on this branch
-        traverse_multitree(
-                branch,
-                image_source_traversal_callback{
-                        receiver, voxelised, callback, state, branch.item});
+        traverse_multitree(branch,
+                           image_source_traversal_callback{source,
+                                                           receiver,
+                                                           voxelised,
+                                                           callback,
+                                                           state,
+                                                           branch.item});
     }
 }
 

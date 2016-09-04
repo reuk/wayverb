@@ -24,7 +24,7 @@ callraytrace () {
 }
 
 export GLOG_logtostderr=1
-export GTEST_FILTER="*engine*"
+#export GTEST_FILTER="*engine*"
 
 cmake .. && make && ctest -V
 #cmake .. && make && ./utils/image_source_comparison/image_source_comparison

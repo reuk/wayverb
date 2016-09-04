@@ -28,21 +28,22 @@ TEST(multitree, construct_image_source_tree_small) {
     ASSERT_EQ(std::next(tree.begin()->branches.begin())->item.index, 1);
 }
 
-/*
 TEST(multitree, construct_image_source_tree_large) {
     std::default_random_engine engine{std::random_device{}()};
-    std::uniform_int_distribution<cl_ulong> distribution(0, 99);
+    std::uniform_int_distribution<cl_uint> distribution{0, 99};
 
     const auto make_path{[&] {
-        aligned::vector<raytracer::path_element> ret{distribution(engine)};
+        aligned::vector<raytracer::image_source::path_element> ret{
+                distribution(engine)};
         std::generate(ret.begin(), ret.end(), [&] {
-            return raytracer::path_element{distribution(engine), true};
+            return raytracer::image_source::path_element{distribution(engine),
+                                                         true};
         });
         return ret;
     }};
 
-    aligned::vector<aligned::vector<raytracer::path_element>> paths{100000};
+    aligned::vector<aligned::vector<raytracer::image_source::path_element>>
+            paths{100000};
     std::generate(paths.begin(), paths.end(), make_path);
-    const auto tree{raytracer::construct_image_source_tree(paths)};
+    const auto tree{raytracer::image_source::image_source_tree{paths}};
 }
-*/
