@@ -261,56 +261,46 @@ constexpr auto map(const T& t, Op op) {
 
 //  relational ops
 
-template <typename T, typename detail::enable_if_is_vector_t<T, int> = 0>
+template <typename T, detail::enable_if_is_vector_t<T, int> = 0>
 constexpr auto operator==(const T& a, const T& b) {
     //    return detail::zip(a, b, std::equal_to<>());
     return detail::accumulate(
             detail::zip(a, b, std::equal_to<>()), true, std::logical_and<>());
 }
 
-template <typename T, typename detail::enable_if_is_vector_t<T, int> = 0>
+template <typename T, detail::enable_if_is_vector_t<T, int> = 0>
 constexpr auto operator!(const T& a) {
     return detail::map(a, std::logical_not<>());
 }
 
-template <typename T, typename detail::enable_if_is_vector_t<T, int> = 0>
+template <typename T, detail::enable_if_is_vector_t<T, int> = 0>
 constexpr auto operator!=(const T& a, const T& b) {
     return !(a == b);
 }
 
 //  arithmetic ops -----------------------------------------------------------//
 
-template <typename T,
-          typename U,
-          typename detail::enable_if_is_vector_t<T, int> = 0>
+template <typename T, typename U, detail::enable_if_is_vector_t<T, int> = 0>
 constexpr auto& operator+=(T& a, const U& b) {
     return detail::inplace_zip(a, b, std::plus<>());
 }
 
-template <typename T,
-          typename U,
-          typename detail::enable_if_is_vector_t<T, int> = 0>
+template <typename T, typename U, detail::enable_if_is_vector_t<T, int> = 0>
 constexpr auto& operator-=(T& a, const U& b) {
     return detail::inplace_zip(a, b, std::minus<>());
 }
 
-template <typename T,
-          typename U,
-          typename detail::enable_if_is_vector_t<T, int> = 0>
+template <typename T, typename U, detail::enable_if_is_vector_t<T, int> = 0>
 constexpr auto& operator*=(T& a, const U& b) {
     return detail::inplace_zip(a, b, std::multiplies<>());
 }
 
-template <typename T,
-          typename U,
-          typename detail::enable_if_is_vector_t<T, int> = 0>
+template <typename T, typename U, detail::enable_if_is_vector_t<T, int> = 0>
 constexpr auto& operator/=(T& a, const U& b) {
     return detail::inplace_zip(a, b, std::divides<>());
 }
 
-template <typename T,
-          typename U,
-          typename detail::enable_if_is_vector_t<T, int> = 0>
+template <typename T, typename U, detail::enable_if_is_vector_t<T, int> = 0>
 constexpr auto& operator%=(T& a, const U& b) {
     return detail::inplace_zip(a, b, std::modulus<>());
 }
@@ -319,72 +309,72 @@ constexpr auto& operator%=(T& a, const U& b) {
 
 template <typename T,
           typename U,
-          typename std::enable_if_t<detail::is_vector_type_v<T> ||
-                                            detail::is_vector_type_v<U>,
-                                    int> = 0>
+          std::enable_if_t<detail::is_vector_type_v<T> ||
+                                   detail::is_vector_type_v<U>,
+                           int> = 0>
 constexpr auto operator+(const T& a, const U& b) {
     return detail::zip(a, b, std::plus<>());
 }
 
 template <typename T,
           typename U,
-          typename std::enable_if_t<detail::is_vector_type_v<T> ||
-                                            detail::is_vector_type_v<U>,
-                                    int> = 0>
+          std::enable_if_t<detail::is_vector_type_v<T> ||
+                                   detail::is_vector_type_v<U>,
+                           int> = 0>
 constexpr auto operator-(const T& a, const U& b) {
     return detail::zip(a, b, std::minus<>());
 }
 
 template <typename T,
           typename U,
-          typename std::enable_if_t<detail::is_vector_type_v<T> ||
-                                            detail::is_vector_type_v<U>,
-                                    int> = 0>
+          std::enable_if_t<detail::is_vector_type_v<T> ||
+                                   detail::is_vector_type_v<U>,
+                           int> = 0>
 constexpr auto operator*(const T& a, const U& b) {
     return detail::zip(a, b, std::multiplies<>());
 }
 
 template <typename T,
           typename U,
-          typename std::enable_if_t<detail::is_vector_type_v<T> ||
-                                            detail::is_vector_type_v<U>,
-                                    int> = 0>
+          std::enable_if_t<detail::is_vector_type_v<T> ||
+                                   detail::is_vector_type_v<U>,
+                           int> = 0>
 constexpr auto operator/(const T& a, const U& b) {
     return detail::zip(a, b, std::divides<>());
 }
 
 template <typename T,
           typename U,
-          typename std::enable_if_t<detail::is_vector_type_v<T> ||
-                                            detail::is_vector_type_v<U>,
-                                    int> = 0>
+          std::enable_if_t<detail::is_vector_type_v<T> ||
+                                   detail::is_vector_type_v<U>,
+                           int> = 0>
 constexpr auto operator%(const T& a, const U& b) {
     return detail::zip(a, b, std::modulus<>());
 }
 
-template <typename T, typename detail::enable_if_is_vector_t<T, int> = 0>
+template <typename T, detail::enable_if_is_vector_t<T, int> = 0>
 constexpr auto operator+(const T& a) {
     return a;
 }
 
-template <typename T, typename detail::enable_if_is_vector_t<T, int> = 0>
+template <typename T, detail::enable_if_is_vector_t<T, int> = 0>
 constexpr auto operator-(const T& a) {
     return detail::map(a, std::negate<>());
 }
 
 //  other reductions ---------------------------------------------------------//
 
-template <typename T, typename detail::enable_if_is_vector_t<T, int> = 0>
+template <typename T, detail::enable_if_is_vector_t<T, int> = 0>
 constexpr auto sum(const T& t) {
     return detail::accumulate(t, 0, std::plus<>());
 }
 
-template <typename T, typename detail::enable_if_is_vector_t<T, int> = 0>
+template <typename T, detail::enable_if_is_vector_t<T, int> = 0>
 constexpr auto product(const T& t) {
     return detail::accumulate(t, 1, std::multiplies<>());
 }
 
-template <typename T, typename detail::enable_if_is_vector_t<T, int> = 0>
+template <typename T, detail::enable_if_is_vector_t<T, int> = 0>
 constexpr auto mean(const T& t) {
     return sum(t) / detail::components_v<T>;
 }
@@ -470,5 +460,13 @@ inline auto sqrt(const T& t) {
     return detail::map(t, [](auto i) {
         using std::sqrt;
         return sqrt(i);
+    });
+}
+
+template <typename T, detail::enable_if_is_vector_t<T, int> = 0>
+inline auto log(const T& t) {
+    return detail::map(t, [](auto i) {
+        using std::log;
+        return log(i);
     });
 }

@@ -25,4 +25,9 @@ triangle_vec2 get_triangle_vec2(const triangle& t,
 triangle_vec2 get_triangle_vec2(const triangle& t,
                                 const aligned::vector<cl_float3>& v);
 
+//----------------------------------------------------------------------------//
+
+float twice_squared_area(const triangle_vec3& triangle);
+float area(const triangle_vec3& triangle);
+
 }  // namespace geo

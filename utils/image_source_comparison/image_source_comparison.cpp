@@ -1,5 +1,6 @@
+#include "raytracer/image_source/finder.h"
 #include "raytracer/postprocess.h"
-#include "raytracer/raytracer.h"
+#include "raytracer/reflector.h"
 
 #include "common/azimuth_elevation.h"
 #include "common/cl/common.h"
@@ -52,50 +53,59 @@ void run_single(const compute_context& cc,
     scene.set_surfaces(std::get<1>(surf));
     const voxelised_scene_data voxelised{
             scene, 5, util::padded(scene.get_aabb(), glm::vec3{0.1})};
+    const scene_buffers buffers{cc.context, voxelised};
 
-    constexpr std::atomic_bool keep_going{true};
+    const auto directions{get_random_directions(100000)};
 
-    const auto reflections{100};
-    progress_bar pb{std::cout, reflections};
-    const auto results{raytracer::run(cc,
-                                      voxelised,
-                                      speed_of_sound,
-                                      source,
-                                      receiver.position,
-                                      get_random_directions(100000),
-                                      reflections,
-                                      10,
-                                      keep_going,
-                                      [&](auto) { pb += 1; })};
+    raytracer::reflector ref{
+            cc,
+            receiver.position,
+            raytracer::get_rays_from_directions(source, directions),
+            speed_of_sound};
 
-    assert(results);
+    //  TODO how to calculate reflection depth properly?
+    const auto reflection_depth{20};
 
-    auto write_out{[&](
-            bool direct, bool img_src, bool diffuse, std::string name) {
-        const auto impulses{results->get_impulses(direct, img_src, diffuse)};
-        auto sig{
-                mixdown(raytracer::convert_to_histogram(impulses.begin(),
-                                                        impulses.end(),
-                                                        sample_rate,
-                                                        acoustic_impedance,
-                                                        20))};
+    //  this will collect the first reflections, to a specified depth,
+    //  and use them to find unique image-source paths
+    raytracer::image_source::finder img{directions.size(), reflection_depth};
 
-        check(sig);
-        normalize(sig);
+    //  run the simulation proper
 
-        snd::write(build_string(std::get<0>(stage),
-                                "_",
-                                std::get<0>(surf),
-                                "_",
-                                name,
-                                ".wav"),
-                   {sig},
-                   sample_rate,
-                   32);
-    }};
+    //  up until the max reflection depth
+    for (auto i = 0u; i != reflection_depth; ++i) {
+        //  get a single step of the reflections
+        const auto reflections{ref.run_step(buffers)};
 
-    write_out(true, true, false, "img_src");
-    write_out(true, false, true, "diffuse");
+        //  find diffuse impulses for these reflections
+        img.push(reflections);
+    }
+
+    aligned::vector<impulse> img_src_results{};
+    const raytracer::image_source::intensity_calculator calculator{
+            receiver.position, voxelised, static_cast<float>(speed_of_sound)};
+    img.postprocess(source,
+                    receiver.position,
+                    voxelised,
+                    speed_of_sound,
+                    [&](const auto& a, const auto& b) {
+                        img_src_results.push_back(calculator(a, b));
+                    });
+
+    auto sig{mixdown(raytracer::convert_to_histogram(img_src_results.begin(),
+                                                     img_src_results.end(),
+                                                     sample_rate,
+                                                     acoustic_impedance,
+                                                     20))};
+
+    check(sig);
+    normalize(sig);
+    mul(sig, 1.0f - std::numeric_limits<float>::epsilon());
+
+    snd::write(build_string(std::get<0>(stage), "_", std::get<0>(surf), ".wav"),
+               {sig},
+               sample_rate,
+               32);
 }
 
 int main() {
@@ -105,9 +115,9 @@ int main() {
     const model::receiver_settings receiver{glm::vec3{0, 1, 1}};
 
     const aligned::vector<std::pair<std::string, surface>> surfaces{
-            std::make_pair("0", make_surface(0.999, 0.001)),
-            std::make_pair("1", make_surface(0.99, 0.001)),
-            std::make_pair("2", make_surface(0.9, 0.001))};
+            std::make_pair("0", make_surface(0.001, 0.001)),
+            std::make_pair("1", make_surface(0.01, 0.001)),
+            std::make_pair("2", make_surface(0.1, 0.001))};
 
     const aligned::vector<std::pair<std::string, std::string>> objects{
             std::make_pair("vault", OBJ_PATH),

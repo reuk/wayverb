@@ -76,18 +76,20 @@ scene_data get_scene_data(const box& b) {
             {{b.get_max().x, b.get_min().y, b.get_max().z}},
             {{b.get_min().x, b.get_max().y, b.get_max().z}},
             {{b.get_max().x, b.get_max().y, b.get_max().z}}};
-    aligned::vector<triangle> triangles{{0, 0, 1, 5},
-                                        {0, 0, 4, 5},
-                                        {0, 0, 1, 3},
-                                        {0, 0, 2, 3},
-                                        {0, 0, 2, 6},
-                                        {0, 0, 4, 6},
-                                        {0, 1, 5, 7},
-                                        {0, 1, 3, 7},
-                                        {0, 2, 3, 7},
-                                        {0, 2, 6, 7},
-                                        {0, 4, 5, 7},
-                                        {0, 4, 6, 7}};
+    aligned::vector<triangle> triangles{
+            {0, 0, 1, 5},
+            {0, 0, 5, 4},
+            {0, 1, 0, 3},
+            {0, 0, 2, 3},
+            {0, 2, 0, 6},
+            {0, 0, 4, 6},
+            {0, 5, 1, 7},
+            {0, 1, 3, 7},
+            {0, 3, 2, 7},
+            {0, 2, 6, 7},
+            {0, 4, 5, 7},
+            {0, 6, 4, 7},
+    };
     aligned::vector<scene_data::material> materials{{"default", surface{}}};
 
     return scene_data(triangles, vertices, materials);
