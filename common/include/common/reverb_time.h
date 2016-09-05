@@ -48,10 +48,19 @@ bool triangles_are_oriented(It begin, It end) {
             }
         }
     }
+    //  No triangles share a pair of vertices.
     return true;
 }
 
+/// http://research.microsoft.com/en-us/um/people/chazhang/publications/icip01_ChaZhang.pdf
 float estimate_room_volume(const scene_data& scene);
+
+//----------------------------------------------------------------------------//
+
+/// Sound intensity absorption coefficient calculator. (fu2015 eq. 11)
+float estimate_air_intensity_absorption(float frequency, float humidity);
+
+volume_type estimate_air_intensity_absorption(float humidity);
 
 //----------------------------------------------------------------------------//
 

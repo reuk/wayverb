@@ -27,7 +27,6 @@ triangle_vec2 get_triangle_vec2(const triangle& t,
 
 //----------------------------------------------------------------------------//
 
-float twice_squared_area(const triangle_vec3& triangle);
 float area(const triangle_vec3& triangle);
 
 }  // namespace geo
