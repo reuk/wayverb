@@ -106,8 +106,8 @@ private:
                                           glm::vec3{2.09, 3.08, 0.96},
                                           glm::vec3{3.91, 1.89, 1.69},
                                           glm::vec3{2.09, 0.99, 1.62}};
-    aligned::vector<surface> surfaces_{make_surface(0.8, 0),
-                                       make_surface(0.9, 0)};
+    aligned::vector<surface> surfaces_{
+            make_surface(0.01, 0), make_surface(0.1, 0), make_surface(0.2, 0)};
 };
 
 //----------------------------------------------------------------------------//
@@ -122,10 +122,8 @@ public:
                      const model::receiver_settings& receiver) {
         voxelised_.set_surfaces(surface);
 
-        const auto specular{max(absorption_to_pressure_reflectance(
-                surface.specular_absorption))};
         const auto reflections{raytracer::compute_optimum_reflection_number(
-                decibels::db2a(-60), specular)};
+                min(surface.specular_absorption))};
         progress_bar pb{std::cout, reflections};
         const auto results{raytracer::run(compute_context_,
                                           voxelised_,
@@ -134,7 +132,7 @@ public:
                                           receiver.position,
                                           get_random_directions(100000),
                                           reflections,
-                                          20,
+                                          reflections,
                                           true,
                                           [&](auto i) { pb += 1; })};
 

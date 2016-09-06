@@ -2,14 +2,15 @@
 
 #include "raytracer/attenuator.h"
 
+#include "common/decibels.h"
 #include "common/dsp_vector_ops.h"
 #include "common/map_to_vector.h"
 
 namespace raytracer {
 
-size_t compute_optimum_reflection_number(float min_amp,
-                                         float max_reflectivity) {
-    return std::log(min_amp) / std::log(max_reflectivity);
+/// Keep tracing until power has fallen by 60 decibels.
+size_t compute_optimum_reflection_number(float absorption) {
+    return -3 / std::log10(1 - absorption);
 }
 
 /// Find the index of the last sample with an amplitude of minVol or higher,

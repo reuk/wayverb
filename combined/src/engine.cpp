@@ -159,24 +159,24 @@ private:
     aligned::vector<waveguide::run_step_output> waveguide_results;
 };
 
-float max_reflectivity(const volume_type& vt) {
-    return max(absorption_to_pressure_reflectance(vt));
+
+float min_absorption(const surface& surface) {
+    return min(surface.specular_absorption);
 }
 
-float max_reflectivity(const surface& surface) {
-    return max_reflectivity(surface.specular_absorption);
+float min_absorption(const scene_data::material& material) {
+    return min_absorption(material.surface);
 }
 
-float max_reflectivity(const scene_data::material& material) {
-    return max_reflectivity(material.surface);
-}
-
-float max_reflectivity(const aligned::vector<scene_data::material>& materials) {
+float min_absorption(const aligned::vector<scene_data::material>& materials) {
+    if (materials.empty()) {
+        throw std::runtime_error("can't find min absorption of empty vector");
+    }
     return std::accumulate(materials.begin() + 1,
                            materials.end(),
-                           max_reflectivity(materials.front()),
+                           min_absorption(materials.front()),
                            [](const auto& i, const auto& j) {
-                               return std::max(i, max_reflectivity(j));
+                               return std::max(i, min_absorption(j));
                            });
 }
 
@@ -201,8 +201,7 @@ public:
                    waveguide_sample_rate,
                    rays,
                    raytracer::compute_optimum_reflection_number(
-                           decibels::db2a(-60.0),
-                           max_reflectivity(scene_data.get_materials())),
+                           min_absorption(scene_data.get_materials())),
                    speed_of_sound,
                    acoustic_impedance) {}
 
