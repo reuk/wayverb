@@ -9,30 +9,24 @@ namespace raytracer {
 template <typename T>
 class iterative_builder final {
 public:
-    iterative_builder(size_t items, size_t iterations)
+    iterative_builder(size_t items)
             : count(0)
-            , depth(iterations)
             , data(items) {
-        for (auto& i : data) {
-            i.reserve(iterations);
-        }
     }
 
     template <typename U, typename Func>
     void push(const aligned::vector<U>& input, Func func) {
-        if (count < depth) {
-            const auto num_items = data.size();
-            if (input.size() != num_items) {
-                throw std::runtime_error(
-                        "incorrect vector size passed to iterative_builder");
-            }
-
-            for (auto i = 0u; i != num_items; ++i) {
-                push_item(i, func(input[i]));
-            }
-
-            count += 1;
+        const auto num_items = data.size();
+        if (input.size() != num_items) {
+            throw std::runtime_error(
+                    "incorrect vector size passed to iterative_builder");
         }
+
+        for (auto i = 0u; i != num_items; ++i) {
+            push_item(i, func(input[i]));
+        }
+
+        count += 1;
     }
 
     template <typename U>
@@ -52,7 +46,6 @@ private:
     }
 
     size_t count;
-    size_t depth;
     aligned::vector<aligned::vector<T>> data;
 };
 

@@ -6,6 +6,7 @@
 #include "common/cl/geometry.h"
 #include "common/cl/include.h"
 #include "common/geo/geometric.h"
+#include "common/map_to_vector.h"
 
 #include "glm/glm.hpp"
 
@@ -13,8 +14,14 @@ class scene_buffers;
 
 namespace raytracer {
 
-aligned::vector<geo::ray> get_rays_from_directions(
-        const glm::vec3& source, const aligned::vector<glm::vec3>& directions);
+template <typename It> /// Iterator over directions
+aligned::vector<geo::ray> get_rays_from_directions(It begin, It end,
+        const glm::vec3& source ) {
+    return map_to_vector(begin, end, [&](const auto& i) {
+        return geo::ray{source, i};
+    });
+}
+
 aligned::vector<geo::ray> get_random_rays(const glm::vec3& source, size_t num);
 
 class reflector final {

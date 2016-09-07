@@ -2,7 +2,6 @@
 
 #include "common/azimuth_elevation.h"
 #include "common/conversions.h"
-#include "common/map_to_vector.h"
 #include "common/spatial_division/scene_buffers.h"
 
 #include <random>
@@ -27,15 +26,10 @@ aligned::vector<cl_float> get_direction_rng(size_t num) {
 
 namespace raytracer {
 
-aligned::vector<geo::ray> get_rays_from_directions(
-        const glm::vec3& source, const aligned::vector<glm::vec3>& directions) {
-    return map_to_vector(directions, [&](const auto& i) {
-        return geo::ray{source, i};
-    });
-}
-
 aligned::vector<geo::ray> get_random_rays(const glm::vec3& source, size_t num) {
-    return get_rays_from_directions(source, get_random_directions(num));
+    const auto directions{get_random_directions(num)};
+    return get_rays_from_directions(
+            directions.begin(), directions.end(), source);
 }
 
 //----------------------------------------------------------------------------//

@@ -1,7 +1,6 @@
 #pragma once
 
 #include "raytracer/construct_impulse.h"
-#include "raytracer/image_source/finder.h"
 #include "raytracer/image_source/postprocessors.h"
 #include "raytracer/multitree.h"
 
@@ -41,7 +40,7 @@ constexpr bool operator<(const path_element& a, const path_element& b) {
 
 class tree final {
 public:
-    tree(const aligned::vector<aligned::vector<path_element>>& paths);
+    void push(const aligned::vector<path_element>& path);
 
     void find_valid_paths(const glm::vec3& source,
                           const glm::vec3& receiver,
@@ -51,7 +50,7 @@ public:
     const multitree<path_element>::branches_type& get_branches() const;
 
 private:
-    multitree<path_element>::branches_type branches_;
+    multitree<path_element> root_{path_element{}};
 };
 
 //----------------------------------------------------------------------------//

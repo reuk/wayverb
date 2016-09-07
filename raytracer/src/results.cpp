@@ -41,7 +41,9 @@ aligned::vector<impulse> results::get_impulses(bool use_direct,
     const size_t direct_size = use_direct ? 1 : 0;
     const size_t image_source_size = use_image_source ? image_source.size() : 0;
     const size_t diffuse_size =
-            use_diffuse ? diffuse.size() * diffuse.front().size() : 0;
+            use_diffuse && diffuse.size()
+                    ? diffuse.size() * diffuse.front().size()
+                    : 0;
 
     aligned::vector<impulse> ret;
     ret.reserve(direct_size + image_source_size + diffuse_size);

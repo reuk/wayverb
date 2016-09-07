@@ -84,9 +84,9 @@ inline void normalize(T& ret) {
 
 template <typename T>
 inline void kernel_normalize(T& ret) {
-    auto get_sum = [&ret] { return proc::accumulate(ret, 0.0); };
-    auto sum = get_sum();
-    if (sum != 0) {
-        mul(ret, 1.0 / std::abs(sum));
+    const auto sum{std::abs(proc::accumulate(ret, 0.0))};
+    if (sum) {
+        mul(ret,
+            1.0 / sum - std::numeric_limits<typename T::value_type>::epsilon());
     }
 }

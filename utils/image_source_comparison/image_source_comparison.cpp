@@ -1,4 +1,5 @@
 #include "raytracer/image_source/finder.h"
+#include "raytracer/image_source/reflection_path_builder.h"
 #include "raytracer/postprocess.h"
 #include "raytracer/reflector.h"
 
@@ -60,7 +61,8 @@ void run_single(const compute_context& cc,
     raytracer::reflector ref{
             cc,
             receiver.position,
-            raytracer::get_rays_from_directions(source, directions),
+            raytracer::get_rays_from_directions(
+                    directions.begin(), directions.end(), source),
             speed_of_sound};
 
     //  TODO how to calculate reflection depth properly?
@@ -68,7 +70,8 @@ void run_single(const compute_context& cc,
 
     //  this will collect the first reflections, to a specified depth,
     //  and use them to find unique image-source paths
-    raytracer::image_source::finder img{directions.size(), reflection_depth};
+    raytracer::image_source::finder img{};
+    raytracer::image_source::reflection_path_builder builder{directions.size()};
 
     //  run the simulation proper
 
@@ -78,8 +81,10 @@ void run_single(const compute_context& cc,
         const auto reflections{ref.run_step(buffers)};
 
         //  find diffuse impulses for these reflections
-        img.push(reflections);
+        builder.push(reflections);
     }
+
+    img.push(builder.get_data());
 
     aligned::vector<impulse> img_src_results{};
     const raytracer::image_source::intensity_calculator calculator{
@@ -129,7 +134,8 @@ int main() {
 
     for (auto stage : objects) {
         for (auto surf : surfaces) {
-            run_single(cc, 340, 400, sample_rate, source, receiver, stage, surf);
+            run_single(
+                    cc, 340, 400, sample_rate, source, receiver, stage, surf);
         }
     }
 

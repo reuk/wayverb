@@ -42,7 +42,7 @@ finder::finder(const compute_context& cc,
                                             0}),
                   false))
         , impulse_buffer(cc.context, CL_MEM_READ_WRITE, sizeof(impulse) * rays)
-        , impulse_builder(rays, depth) {}
+        , impulse_builder(rays) {}
 
 void finder::push(const aligned::vector<reflection>& reflections,
                   const scene_buffers& buffers) {

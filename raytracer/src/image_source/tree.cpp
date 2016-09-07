@@ -176,8 +176,9 @@ multitree<path_element>::branches_type construct_image_source_tree(
     return std::move(root.branches);
 }
 
-tree::tree(const aligned::vector<aligned::vector<path_element>>& paths)
-        : branches_(construct_image_source_tree(paths)) {}
+void tree::push(const aligned::vector<path_element>& path) {
+    add_path(root_, path.cbegin(), path.cend());
+}
 
 void tree::find_valid_paths(const glm::vec3& source,
                             const glm::vec3& receiver,
@@ -185,9 +186,10 @@ void tree::find_valid_paths(const glm::vec3& source,
                             const postprocessor& callback) const {
     //  set up a state array
     aligned::vector<traversal_callback::state> state{};
+
     //  iterate on tree
     //  for each starting node
-    for (const auto& branch : branches_) {
+    for (const auto& branch : root_.branches) {
         //  traverse all paths on this branch
         traverse_multitree(branch,
                            traversal_callback{source,
@@ -200,7 +202,7 @@ void tree::find_valid_paths(const glm::vec3& source,
 }
 
 const multitree<path_element>::branches_type& tree::get_branches() const {
-    return branches_;
+    return root_.branches;
 }
 
 }  // namespace image_source

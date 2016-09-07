@@ -1,6 +1,7 @@
 #include "raytracer/construct_impulse.h"
 #include "raytracer/diffuse/finder.h"
 #include "raytracer/image_source/finder.h"
+#include "raytracer/image_source/reflection_path_builder.h"
 #include "raytracer/raytracer.h"
 #include "raytracer/reflector.h"
 
@@ -35,17 +36,30 @@ std::experimental::optional<impulse> get_direct_impulse(
     return std::experimental::nullopt;
 }
 
-std::experimental::optional<results> run(const compute_context& cc,
-                                         const voxelised_scene_data& scene_data,
-                                         double speed_of_sound,
-                                         const glm::vec3& source,
-                                         const glm::vec3& receiver,
-                                         aligned::vector<glm::vec3>
-                                                 directions,
-                                         size_t reflection_depth,
-                                         size_t image_source_depth,
-                                         const std::atomic_bool& keep_going,
-                                         const per_step_callback& callback) {
+/// This better use random access iterators!
+template <typename It, typename Func>
+void in_chunks(It begin, It end, size_t chunk_size, const Func& f) {
+    for (; chunk_size <= std::distance(begin, end);
+         std::advance(begin, chunk_size)) {
+        f(begin, std::next(begin, chunk_size));
+    }
+
+    if (begin != end) {
+        f(begin, end);
+    }
+}
+
+std::experimental::optional<results> run(
+        const compute_context& cc,
+        const voxelised_scene_data& scene_data,
+        double speed_of_sound,
+        const glm::vec3& source,
+        const glm::vec3& receiver,
+        const aligned::vector<glm::vec3>& directions,
+        size_t reflection_depth,
+        size_t image_source_depth,
+        const std::atomic_bool& keep_going,
+        const per_step_callback& callback) {
     if (reflection_depth < image_source_depth) {
         throw std::runtime_error(
                 "can't do image-source deeper than the max reflection depth");
@@ -56,50 +70,80 @@ std::experimental::optional<results> run(const compute_context& cc,
     //  load the scene into device memory
     const scene_buffers buffers{cc.context, scene_data};
 
-    //  this is the object that generates first-pass reflections
-    reflector ref{cc,
-                  receiver,
-                  get_rays_from_directions(source, directions),
-                  speed_of_sound};
+    //  set up somewhere to store image source results
+    image_source::finder img{};
 
-    //  this will collect the first reflections, to a specified depth,
-    //  and use them to find unique image-source paths
-    image_source::finder img{directions.size(), image_source_depth};
+    /// Small = lower memory usage
+    /// Large = better parallelisation
+    //  TODO tune this
+    constexpr auto group_size{1 << 13};
 
-    //  this will incrementally process diffuse responses
-    diffuse::finder dif{cc,
-                        source,
-                        receiver,
-                        speed_of_sound,
-                        directions.size(),
-                        reflection_depth};
+    //  TODO fix diffuse tracing
+    //  for each group
+    in_chunks(directions.cbegin(),
+              directions.cend(),
+              group_size,
+              [&cc,
+               speed_of_sound,
+               &source,
+               &receiver,
+               reflection_depth,
+               &keep_going,
+               &buffers,
+               &img](auto begin, auto end) {
+                  if (!keep_going) {
+                      return;
+                  }
 
-    //  run the simulation proper
+                  //  this is the object that generates first-pass reflections
+                  reflector ref{cc,
+                                receiver,
+                                get_rays_from_directions(begin, end, source),
+                                speed_of_sound};
 
-    //  up until the max reflection depth
-    for (auto i = 0u; i != reflection_depth; ++i) {
-        //  if the user cancelled, return an empty result
-        if (!keep_going) {
-            return std::experimental::nullopt;
-        }
+                  image_source::reflection_path_builder builder{
+                          static_cast<size_t>(std::distance(begin, end))};
 
-        //  get a single step of the reflections
-        const auto reflections{ref.run_step(buffers)};
+                  //  this will incrementally process diffuse responses
+                  // diffuse::finder dif{cc,
+                  //                    source,
+                  //                    receiver,
+                  //                    speed_of_sound,
+                  //                    directions.size(),
+                  //                    reflection_depth};
+
+                  //  run the simulation proper
+
+                  //  up until the max reflection depth
+                  for (auto i = 0u; i != reflection_depth; ++i) {
+                      //  if the user cancelled, return an empty result
+                      if (!keep_going) {
+                          return;
+                      }
+
+                      //  get a single step of the reflections
+                      const auto reflections{ref.run_step(buffers)};
 
 #ifndef NDEBUG
-        //  check reflection kernel output
-        for (const auto& ref : reflections) {
-            throw_if_suspicious(ref.position);
-            throw_if_suspicious(ref.direction);
-        }
+                      //  check reflection kernel output
+                      for (const auto& ref : reflections) {
+                          throw_if_suspicious(ref.position);
+                          throw_if_suspicious(ref.direction);
+                      }
 #endif
 
-        //  find diffuse impulses for these reflections
-        dif.push(reflections, buffers);
-        img.push(reflections);
+                      //  find diffuse impulses for these reflections
+                      // dif.push(reflections, buffers);
 
-        //  we did a step!
-        callback(i);
+                      //  push ray paths
+                      builder.push(reflections);
+                  }
+
+                  img.push(builder.get_data());
+              });
+
+    if (!keep_going) {
+        return std::experimental::nullopt;
     }
 
     //  fetch image source results
@@ -117,7 +161,8 @@ std::experimental::optional<results> run(const compute_context& cc,
     return results{
             get_direct_impulse(source, receiver, scene_data, speed_of_sound),
             std::move(img_src_results),
-            std::move(dif.get_results()),
+            // std::move(dif.get_results()),
+            aligned::vector<aligned::vector<impulse>>{},
             receiver,
             speed_of_sound};
 }
