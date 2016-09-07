@@ -13,6 +13,48 @@ size_t compute_optimum_reflection_number(float absorption) {
     return -3 / std::log10(1 - absorption);
 }
 
+float min_absorption(const surface& surface) {
+    return min(surface.specular_absorption);
+}
+
+float min_absorption(const aligned::vector<surface>& surfaces) {
+    if (surfaces.empty()) {
+        throw std::runtime_error("can't find min absorption of empty vector");
+    }
+    return std::accumulate(surfaces.begin() + 1,
+                           surfaces.end(),
+                           min_absorption(surfaces.front()),
+                           [](const auto& i, const auto& j) {
+                               using std::max;
+                               return max(i, min_absorption(j));
+                           });
+}
+
+float min_absorption(const scene_data::material& material) {
+    return min_absorption(material.surface);
+}
+
+float min_absorption(const aligned::vector<scene_data::material>& materials) {
+    if (materials.empty()) {
+        throw std::runtime_error("can't find min absorption of empty vector");
+    }
+    return std::accumulate(materials.begin() + 1,
+                           materials.end(),
+                           min_absorption(materials.front()),
+                           [](const auto& i, const auto& j) {
+                               return std::max(i, min_absorption(j));
+                           });
+}
+
+size_t compute_optimum_reflection_number(
+        const aligned::vector<surface>& surfaces) {
+    return compute_optimum_reflection_number(min_absorption(surfaces));
+}
+
+size_t compute_optimum_reflection_number(const scene_data& scene) {
+    return compute_optimum_reflection_number(scene.get_surfaces());
+}
+
 /// Find the index of the last sample with an amplitude of minVol or higher,
 /// then resize the vectors down to this length.
 void trimTail(aligned::vector<aligned::vector<float>>& audioChannels,

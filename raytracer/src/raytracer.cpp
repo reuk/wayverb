@@ -1,8 +1,8 @@
+#include "raytracer/raytracer.h"
 #include "raytracer/construct_impulse.h"
 #include "raytracer/diffuse/finder.h"
 #include "raytracer/image_source/finder.h"
 #include "raytracer/image_source/reflection_path_builder.h"
-#include "raytracer/raytracer.h"
 #include "raytracer/reflector.h"
 
 #include "common/nan_checking.h"
@@ -73,90 +73,63 @@ std::experimental::optional<results> run(
     //  set up somewhere to store image source results
     image_source::finder img{};
 
-    /// Small = lower memory usage
-    /// Large = better parallelisation
-    //  TODO tune this
-    constexpr auto group_size{1 << 13};
+    //  this is the object that generates first-pass reflections
+    reflector ref{cc,
+                  receiver,
+                  get_rays_from_directions(
+                          directions.begin(), directions.end(), source),
+                  speed_of_sound};
 
-    //  TODO fix diffuse tracing
-    //  for each group
-    in_chunks(directions.cbegin(),
-              directions.cend(),
-              group_size,
-              [&cc,
-               speed_of_sound,
-               &source,
-               &receiver,
-               reflection_depth,
-               &keep_going,
-               &buffers,
-               &img](auto begin, auto end) {
-                  if (!keep_going) {
-                      return;
-                  }
+    image_source::reflection_path_builder builder{directions.size()};
 
-                  //  this is the object that generates first-pass reflections
-                  reflector ref{cc,
-                                receiver,
-                                get_rays_from_directions(begin, end, source),
-                                speed_of_sound};
+    //  this will incrementally process diffuse responses
+    diffuse::finder dif{cc,
+                        source,
+                        receiver,
+                        speed_of_sound,
+                        directions.size(),
+                        reflection_depth};
 
-                  image_source::reflection_path_builder builder{
-                          static_cast<size_t>(std::distance(begin, end))};
+    //  run the simulation proper
 
-                  //  this will incrementally process diffuse responses
-                  // diffuse::finder dif{cc,
-                  //                    source,
-                  //                    receiver,
-                  //                    speed_of_sound,
-                  //                    directions.size(),
-                  //                    reflection_depth};
+    //  up until the max reflection depth
+    for (auto i = 0u; i != reflection_depth; ++i) {
+        //  if the user cancelled, return an empty result
+        if (!keep_going) {
+            return std::experimental::nullopt;
+        }
 
-                  //  run the simulation proper
-
-                  //  up until the max reflection depth
-                  for (auto i = 0u; i != reflection_depth; ++i) {
-                      //  if the user cancelled, return an empty result
-                      if (!keep_going) {
-                          return;
-                      }
-
-                      //  get a single step of the reflections
-                      const auto reflections{ref.run_step(buffers)};
+        //  get a single step of the reflections
+        const auto reflections{ref.run_step(buffers)};
 
 #ifndef NDEBUG
-                      //  check reflection kernel output
-                      for (const auto& ref : reflections) {
-                          throw_if_suspicious(ref.position);
-                          throw_if_suspicious(ref.direction);
-                      }
+        //  check reflection kernel output
+        for (const auto& ref : reflections) {
+            throw_if_suspicious(ref.position);
+            throw_if_suspicious(ref.direction);
+        }
 #endif
 
-                      //  find diffuse impulses for these reflections
-                      // dif.push(reflections, buffers);
+        //  find diffuse impulses for these reflections
+        dif.push(reflections, buffers);
 
-                      //  push ray paths
-                      builder.push(reflections);
-                  }
+        //  push ray paths
+        builder.push(reflections);
 
-                  img.push(builder.get_data());
-              });
+        callback(i);
+    }
+
+    img.push(builder.get_data());
 
     if (!keep_going) {
         return std::experimental::nullopt;
     }
 
     //  fetch image source results
-    aligned::vector<impulse> img_src_results{};
     const image_source::intensity_calculator calculator{
             receiver, scene_data, static_cast<float>(speed_of_sound)};
-    img.postprocess(source,
-                    receiver,
-                    scene_data,
-                    speed_of_sound,
-                    [&](const auto& a, const auto& b) {
-                        img_src_results.push_back(calculator(a, b));
-                    });
+    auto img_src_results(image_source::postprocess(
+            img, source, receiver, scene_data, speed_of_sound, calculator));
 
     return results{
             get_direct_impulse(source, receiver, scene_data, speed_of_sound),

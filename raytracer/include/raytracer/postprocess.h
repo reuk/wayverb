@@ -14,6 +14,11 @@ namespace raytracer {
 /// Get the number of necessary reflections for a given min amplitude.
 size_t compute_optimum_reflection_number(float absorption);
 
+/// Get the number of necessary reflections for a given scene.
+size_t compute_optimum_reflection_number(
+        const aligned::vector<surface>& surfaces);
+size_t compute_optimum_reflection_number(const scene_data& scene);
+
 template <typename It>
 aligned::vector<volume_type> convert_to_histogram(It begin,
                                                   It end,

@@ -15,9 +15,9 @@ impulse construct_impulse(const volume_type& volume,
                           const glm::vec3& receiver,
                           double speed_of_sound) {
     const auto distance{glm::distance(source, receiver)};
-    return impulse{volume * power_attenuation_for_distance(distance),
-                   to_cl_float3(source),
-                   static_cast<cl_float>(distance / speed_of_sound)};
+    return {volume * power_attenuation_for_distance(distance),
+            to_cl_float3(source),
+            static_cast<cl_float>(distance / speed_of_sound)};
 }
 
 }  // namespace raytracer

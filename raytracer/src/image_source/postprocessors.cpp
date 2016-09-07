@@ -23,7 +23,7 @@ impulse intensity_calculator::operator()(
                         voxelised_.get_scene_data().get_triangles()[j.index]};
                 const auto surface{voxelised_.get_scene_data()
                                            .get_surfaces()[triangle.surface]};
-                const auto reflectance{absorption_to_pressure_reflectance(
+                const auto reflectance{absorption_to_energy_reflectance(
                         surface.specular_absorption)};
                 return i * reflectance;
             })};

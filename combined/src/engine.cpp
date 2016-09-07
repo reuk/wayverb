@@ -159,27 +159,6 @@ private:
     aligned::vector<waveguide::run_step_output> waveguide_results;
 };
 
-
-float min_absorption(const surface& surface) {
-    return min(surface.specular_absorption);
-}
-
-float min_absorption(const scene_data::material& material) {
-    return min_absorption(material.surface);
-}
-
-float min_absorption(const aligned::vector<scene_data::material>& materials) {
-    if (materials.empty()) {
-        throw std::runtime_error("can't find min absorption of empty vector");
-    }
-    return std::accumulate(materials.begin() + 1,
-                           materials.end(),
-                           min_absorption(materials.front()),
-                           [](const auto& i, const auto& j) {
-                               return std::max(i, min_absorption(j));
-                           });
-}
-
 }  // namespace
 
 namespace wayverb {
@@ -200,8 +179,7 @@ public:
                    receiver,
                    waveguide_sample_rate,
                    rays,
-                   raytracer::compute_optimum_reflection_number(
-                           min_absorption(scene_data.get_materials())),
+                   raytracer::compute_optimum_reflection_number(scene_data),
                    speed_of_sound,
                    acoustic_impedance) {}
 

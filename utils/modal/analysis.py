@@ -1,10 +1,15 @@
+#!/usr/local/bin/python
+
 import argparse
 import numpy as np
 import pysndfile
 import matplotlib
 import matplotlib.pyplot as plt
+import itertools
+import os.path
 
 SPEED_OF_SOUND = 340
+
 
 def modal_analysis(fnames, max_frequency, room_dim=None):
     plt.figure()
@@ -21,13 +26,15 @@ def modal_analysis(fnames, max_frequency, room_dim=None):
         mask = freqs < max_frequency
         fft = 20 * np.log10(fft[mask])
         freqs = freqs[mask]
-        plt.plot(freqs, fft)
+        plt.plot(freqs, fft, label=os.path.basename(fname))
 
     if room_dim is not None:
-        for dim in room_dim:
-            frequency = SPEED_OF_SOUND / dim
-            for frequency in np.arange(frequency, max_frequency, frequency):
-                plt.axvline(frequency)
+        ranges = [[(x / i) ** 2 for x in range(10)] for i in room_dim]
+        all_frequencies = [(SPEED_OF_SOUND / 2) * np.sqrt(a + b + c)
+                           for a, b, c in itertools.product(*ranges)]
+        filtered_frequencies = [i for i in all_frequencies if i < max_frequency]
+        for f in filtered_frequencies:
+            plt.axvline(f)
 
     plt.show()
 

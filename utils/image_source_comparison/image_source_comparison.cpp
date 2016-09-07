@@ -1,5 +1,6 @@
 #include "raytracer/image_source/finder.h"
 #include "raytracer/image_source/reflection_path_builder.h"
+#include "raytracer/image_source/run.h"
 #include "raytracer/postprocess.h"
 #include "raytracer/reflector.h"
 
@@ -54,54 +55,18 @@ void run_single(const compute_context& cc,
     scene.set_surfaces(std::get<1>(surf));
     const voxelised_scene_data voxelised{
             scene, 5, util::padded(scene.get_aabb(), glm::vec3{0.1})};
-    const scene_buffers buffers{cc.context, voxelised};
 
     const auto directions{get_random_directions(100000)};
 
-    raytracer::reflector ref{
-            cc,
-            receiver.position,
-            raytracer::get_rays_from_directions(
-                    directions.begin(), directions.end(), source),
-            speed_of_sound};
-
-    //  TODO how to calculate reflection depth properly?
-    const auto reflection_depth{20};
-
-    //  this will collect the first reflections, to a specified depth,
-    //  and use them to find unique image-source paths
-    raytracer::image_source::finder img{};
-    raytracer::image_source::reflection_path_builder builder{directions.size()};
-
-    //  run the simulation proper
-
-    //  up until the max reflection depth
-    for (auto i = 0u; i != reflection_depth; ++i) {
-        //  get a single step of the reflections
-        const auto reflections{ref.run_step(buffers)};
-
-        //  find diffuse impulses for these reflections
-        builder.push(reflections);
-    }
-
-    img.push(builder.get_data());
-
-    aligned::vector<impulse> img_src_results{};
-    const raytracer::image_source::intensity_calculator calculator{
-            receiver.position, voxelised, static_cast<float>(speed_of_sound)};
-    img.postprocess(source,
-                    receiver.position,
-                    voxelised,
-                    speed_of_sound,
-                    [&](const auto& a, const auto& b) {
-                        img_src_results.push_back(calculator(a, b));
-                    });
-
-    auto sig{mixdown(raytracer::convert_to_histogram(img_src_results.begin(),
-                                                     img_src_results.end(),
-                                                     sample_rate,
-                                                     acoustic_impedance,
-                                                     20))};
+    auto sig{raytracer::image_source::run(directions.cbegin(),
+                                          directions.cend(),
+                                          cc,
+                                          voxelised,
+                                          source,
+                                          receiver.position,
+                                          speed_of_sound,
+                                          acoustic_impedance,
+                                          sample_rate)};
 
     check(sig);
     normalize(sig);
