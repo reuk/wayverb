@@ -25,6 +25,9 @@ aligned::vector<volume_type> convert_to_histogram(It begin,
                                                   float histogram_frequency,
                                                   float acoustic_impedance,
                                                   float max_seconds) {
+    if (begin == end) {
+        return aligned::vector<volume_type>{};
+    }
     const auto max_time_in_input{
             std::max_element(begin, end, [](auto i, auto j) {
                 return i.time < j.time;

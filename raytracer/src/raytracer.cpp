@@ -1,8 +1,8 @@
-#include "raytracer/raytracer.h"
 #include "raytracer/construct_impulse.h"
 #include "raytracer/diffuse/finder.h"
 #include "raytracer/image_source/finder.h"
 #include "raytracer/image_source/reflection_path_builder.h"
+#include "raytracer/raytracer.h"
 #include "raytracer/reflector.h"
 
 #include "common/nan_checking.h"
@@ -134,8 +134,7 @@ std::experimental::optional<results> run(
     return results{
             get_direct_impulse(source, receiver, scene_data, speed_of_sound),
             std::move(img_src_results),
-            // std::move(dif.get_results()),
-            aligned::vector<aligned::vector<impulse>>{},
+            std::move(dif.get_results()),
             receiver,
             speed_of_sound};
 }
