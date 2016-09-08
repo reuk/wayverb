@@ -8,7 +8,7 @@
 namespace raytracer {
 namespace image_source {
 
-template <typename It>	///	iterator over ray directions
+template <typename It>  ///	iterator over ray directions
 aligned::vector<float> run(It begin,
                            It end,
                            const compute_context& cc,
@@ -31,21 +31,23 @@ aligned::vector<float> run(It begin,
     //  this will collect the first reflections, to a specified depth,
     //  and use them to find unique image-source paths
     raytracer::image_source::finder img{};
-    raytracer::image_source::reflection_path_builder builder{
-            static_cast<size_t>(std::distance(begin, end))};
+    {
+        raytracer::image_source::reflection_path_builder builder{
+                static_cast<size_t>(std::distance(begin, end))};
 
-    //  run the simulation proper
+        //  run the simulation proper
 
-    //  up until the max reflection depth
-    for (auto i{0u}; i != reflection_depth; ++i) {
-        //  get a single step of the reflections
-        const auto reflections{ref.run_step(buffers)};
+        //  up until the max reflection depth
+        for (auto i{0u}; i != reflection_depth; ++i) {
+            //  get a single step of the reflections
+            const auto reflections{ref.run_step(buffers)};
 
-        //  find diffuse impulses for these reflections
-        builder.push(reflections);
+            //  find diffuse impulses for these reflections
+            builder.push(reflections);
+        }
+
+        img.push(builder.get_data());
     }
-
-    img.push(builder.get_data());
 
     const raytracer::image_source::intensity_calculator calculator{
             receiver, voxelised, static_cast<float>(speed_of_sound)};

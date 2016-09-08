@@ -5,8 +5,12 @@
 
 namespace detail {
 
-/// Does *NOT* automatically construct objects.
-/// *DOES* automatically destruct up to 'size_' elements when destructed.
+/// Handles memory management for vector-like classes.
+/// Has a fixed capacity, and allows objects to be constructed or destroyed at
+/// the end of the internal array.
+/// For a true dynamic array, this must be wrapped in another class that
+/// handles copy/move when a size greater than the current capacity is
+/// requested.
 template <typename T>
 class recursive_vector_impl final {
 public:
@@ -26,15 +30,8 @@ public:
     using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
     explicit recursive_vector_impl(size_type size = 0)
-            : size_{size}
-            , capacity_{size}
+            : capacity_{size}
             , ptr_{size ? allocator_traits::allocate(alloc_, size) : nullptr} {}
-
-    recursive_vector_impl(const recursive_vector_impl&) = delete;
-    recursive_vector_impl(recursive_vector_impl&&) = delete;
-
-    recursive_vector_impl& operator=(const recursive_vector_impl&) = delete;
-    recursive_vector_impl& operator=(recursive_vector_impl&&) = delete;
 
     void swap(recursive_vector_impl& other) noexcept {
         using std::swap;
@@ -44,9 +41,34 @@ public:
         swap(ptr_, other.ptr_);
     }
 
+    recursive_vector_impl(const recursive_vector_impl& other)
+            : capacity_{other.size_}
+            , ptr_{other.ptr_ ? allocator_traits::allocate(alloc_, other.size_)
+                              : nullptr} {
+        for (auto i{other.begin()}, end{other.end()}; i != end; ++i) {
+            construct(*i);
+        }
+    }
+
+    recursive_vector_impl(recursive_vector_impl&& other) noexcept {
+        swap(other);
+    }
+
+    recursive_vector_impl& operator=(const recursive_vector_impl& other) {
+        auto copy{other};
+        swap(copy);
+        return *this;
+    }
+    recursive_vector_impl& operator=(recursive_vector_impl&& other) noexcept {
+        swap(other);
+        return *this;
+    }
+
     ~recursive_vector_impl() noexcept {
-        destroy(ptr_, ptr_ + size_);
-        allocator_traits::deallocate(alloc_, ptr_, size_);
+        while (size_) {
+            destroy();
+        }
+        allocator_traits::deallocate(alloc_, ptr_, capacity_);
     }
 
     template <typename... Ts>
@@ -56,16 +78,9 @@ public:
         size_ += 1;
     }
 
-    template <typename Ptr>
-    void destroy(Ptr p) noexcept {
-        allocator_traits::destroy(alloc_, p);
-    }
-
-    template <typename It>
-    void destroy(It begin, It end) noexcept {
-        for (; begin != end; ++begin) {
-            destroy(begin);
-        }
+    void destroy() noexcept {
+        size_ -= 1;
+        allocator_traits::destroy(alloc_, ptr_ + size_);
     }
 
     size_type size() const { return size_; }
@@ -114,70 +129,80 @@ public:
     using reverse_iterator = std::reverse_iterator<iterator>;
     using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
-    recursive_vector() = default;
-
     void swap(recursive_vector& other) noexcept {
         using std::swap;
         swap(impl_, other.impl_);
     }
 
-    recursive_vector(const recursive_vector& other)
-            : impl_{other.size()} {
-        for (auto i{other.cbegin()}, end{other.cend()}; i != end; ++i) {
-            impl_.construct(*i);
-        }
-    }
-
-    recursive_vector(recursive_vector&& other) noexcept { swap(other); }
-
-    recursive_vector& operator=(const recursive_vector& other) {
-        auto copy{other};
-        swap(copy);
-        return *this;
-    }
-
-    recursive_vector& operator=(recursive_vector&& other) noexcept {
-        swap(other);
-        return *this;
-    }
-
-    /// Forgive me father for I have sinned.
     template <typename It>
-    iterator insert(const_iterator pos, It begin, It end) {
-        const auto extra_elements{std::distance(begin, end)};
-        const auto space_required{extra_elements + impl_.size()};
-        if (impl_.capacity() < space_required) {
+    iterator insert(const_iterator pos, It first, It last) {
+        const auto n{std::distance(first, last)};
+        const auto c{impl_.capacity()};
+        const auto new_size{impl_.size() + n};
+        const auto old_pos{std::distance(impl_.cbegin(), pos)};
+        //  If there's already room for the new elements.
+        if (new_size <= c) {
+            //  Default-construct some new elements at the end.
+            const auto old_end{impl_.end()};
+            while (impl_.size() < new_size) {
+                impl_.construct();
+            }
+            //  Move items back.
+            const auto r{impl_.begin() + old_pos};
+            std::move_backward(r, old_end, impl_.begin() + new_size);
+            std::copy(first, last, r);
+            return r;
+        }
+        //  There wasn't room for the new elements, so we construct a new
+        //  storage area, and move each element across.
+        //  This line might throw, which is fine, because the object is still
+        //  in a valid state.
+        impl_type v{std::max(impl_.size() + n, impl_.capacity() * 2 + 1)};
+        //  Function is nothrow from here on.
+        for (auto i{impl_.begin()}; i != pos; ++i) {
+            v.construct(std::move(*i));
+        }
+        for (auto i{first}; i != last; ++i) {
+            v.construct(std::move(*i));
+        }
+        for (auto i{pos}; i != impl_.end(); ++i) {
+            v.construct(std::move(*i));
+        }
+        //  Take ownership of the copy;
+        impl_.swap(v);
+        return impl_.begin() + old_pos;
+    }
+
+    iterator erase(const_iterator begin, const_iterator end) {
+        //  Move elements down the range one-by-one.
+        const auto p{impl_.begin() + std::distance(impl_.cbegin(), begin)};
+        std::move(impl_.begin() + std::distance(impl_.cbegin(), end),
+                  impl_.end(),
+                  p);
+        //  Destroy the moved-from elements.
+        const auto num{std::distance(begin, end)};
+        for (auto i{0u}; i != num; ++i) {
+            impl_.destroy();
+        }
+        return p;
+    }
+
+    void reserve(size_type new_cap) {
+        if (new_cap > impl_.capacity()) {
             //  We have to reallocate.
             //  Create a new impl to store the data.
-            impl_type to_copy{std::max(space_required, impl_.size() * 2 + 1)};
-            for (auto i{impl_.begin()}; i != pos; ++i) {
-                to_copy.construct(std::move(*i));
-            }
-            const auto ret{to_copy.end()};
-            for (auto i{begin}; i != end; ++i) {
-                to_copy.construct(std::move(*i));
-            }
-            for (auto i{pos}; i != impl_.end(); ++i) {
-                to_copy.construct(std::move(*i));
+            impl_type v{std::max(new_cap, impl_.capacity() * 2 + 1)};
+            //  Copy/move elements across one-by-one.
+            for (auto i{impl_.begin()}, end{impl_.end()}; i != end; ++i) {
+                v.construct(std::move(*i));
             }
             //  Swap internals.
-            impl_.swap(to_copy);
-            return ret;
+            impl_.swap(v);
         }
-        //  Make space at pos by moving elements along the allocated space.
-        const auto lim{pos - 1};
-        for (auto i{impl_.end() - 1}, last{impl_.begin() + space_required - 1};
-             i != lim;
-             --i, --last) {
-            *last = std::move(*i);
-        }
-        //  Move elements in.
-        const auto offset{impl_.begin() + std::distance(impl_.cbegin(), pos)};
-        for (iterator i{offset}; begin != end; ++begin, ++i) {
-            *i = std::move(*begin);
-        }
-        return offset;
     }
+
+    pointer data() { return impl_.begin(); }
+    const_pointer data() const { return impl_.cbegin(); }
 
     size_type size() const { return impl_.size(); }
     size_type capacity() const { return impl_.capacity(); }

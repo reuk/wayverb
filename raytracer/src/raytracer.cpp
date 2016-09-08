@@ -92,34 +92,36 @@ std::experimental::optional<results> run(
 
     //  run the simulation proper
 
-    //  up until the max reflection depth
-    for (auto i = 0u; i != reflection_depth; ++i) {
-        //  if the user cancelled, return an empty result
-        if (!keep_going) {
-            return std::experimental::nullopt;
-        }
+    {
+        //  up until the max reflection depth
+        for (auto i = 0u; i != reflection_depth; ++i) {
+            //  if the user cancelled, return an empty result
+            if (!keep_going) {
+                return std::experimental::nullopt;
+            }
 
-        //  get a single step of the reflections
-        const auto reflections{ref.run_step(buffers)};
+            //  get a single step of the reflections
+            const auto reflections{ref.run_step(buffers)};
 
 #ifndef NDEBUG
-        //  check reflection kernel output
-        for (const auto& ref : reflections) {
-            throw_if_suspicious(ref.position);
-            throw_if_suspicious(ref.direction);
-        }
+            //  check reflection kernel output
+            for (const auto& ref : reflections) {
+                throw_if_suspicious(ref.position);
+                throw_if_suspicious(ref.direction);
+            }
 #endif
 
-        //  find diffuse impulses for these reflections
-        dif.push(reflections, buffers);
+            //  find diffuse impulses for these reflections
+            dif.push(reflections, buffers);
 
-        //  push ray paths
-        builder.push(reflections);
+            //  push ray paths
+            builder.push(reflections);
 
-        callback(i);
+            callback(i);
+        }
+
+        img.push(builder.get_data());
     }
-
-    img.push(builder.get_data());
 
     if (!keep_going) {
         return std::experimental::nullopt;
