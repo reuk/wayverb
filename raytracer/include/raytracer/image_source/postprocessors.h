@@ -7,6 +7,8 @@
 
 #include "glm/fwd.hpp"
 
+#include <complex>
+
 /// The image source finder is designed just to ascertain whether or not each
 /// 'possible' image-source path is an *actual* image-source path.
 /// Once it's worked this out, it delegates to one of these secondary functions
@@ -34,6 +36,24 @@ public:
                          float speed_of_sound);
 
     impulse operator()(
+            const glm::vec3& image_source,
+            const aligned::vector<reflection_metadata>& intersections) const;
+
+private:
+    const glm::vec3& receiver_;
+    const voxelised_scene_data& voxelised_;
+    float speed_of_sound_;
+};
+
+//----------------------------------------------------------------------------//
+
+class phase_calculator_v1 final {
+public:
+    phase_calculator_v1(const glm::vec3& receiver,
+                        const voxelised_scene_data& voxelised,
+                        float speed_of_sound);
+
+    std::array<std::complex<float>, 8> operator()(
             const glm::vec3& image_source,
             const aligned::vector<reflection_metadata>& intersections) const;
 

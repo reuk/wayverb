@@ -1,6 +1,6 @@
+#include "common/reverb_time.h"
 #include "common/geo/triangle_vec.h"
 #include "common/hrtf.h"
-#include "common/reverb_time.h"
 #include "common/stl_wrappers.h"
 
 float area(const scene_data& scene, size_t material_index) {

@@ -74,37 +74,10 @@ public:
 
                     auto sd{scene_data_};
                     sd.set_surfaces(surface);
-                    const auto sabine_rt60{
-                            sabine_reverb_time(sd, make_volume_type(0)).s[0]};
-                    const auto eyring_rt60{
-                            eyring_reverb_time(sd, make_volume_type(0)).s[0]};
-                    const auto mean_estimate{(sabine_rt60 + eyring_rt60) / 2};
-                    if (0.5 <
-                        std::abs((sabine_rt60 - eyring_rt60) / mean_estimate)) {
-                        throw std::runtime_error(
-                                "mismatch between rt60 estimates");
-                    }
-                    std::cout << "estimated rt60: " << sabine_rt60 << ", "
-                              << eyring_rt60 << '\n';
 
                     const auto results{t(surface,
                                          source,
                                          model::receiver_settings{receiver})};
-
-                    const auto measured_rt20{rt20(results.data) /
-                                             results.sample_rate};
-                    const auto measured_rt30{rt30(results.data) /
-                                             results.sample_rate};
-                    const auto measured_rt60{
-                            (measured_rt20 * 3 + measured_rt30 * 2) / 2};
-                    std::cout << "measured rt60 is around " << measured_rt60
-                              << '\n';
-
-                    if (0.5 < std::abs(((mean_estimate - measured_rt60) * 2) /
-                                       (mean_estimate + measured_rt60))) {
-                        throw std::runtime_error(
-                                "mismatch between estimated and measured rt60");
-                    }
 
                     const auto fname{build_string(results.prefix,
                                                   "_source_",
@@ -117,10 +90,21 @@ public:
 
                     snd::write(fname, {results.data}, results.sample_rate, 16);
 
+                    const auto measured_rt20{rt20(results.data) /
+                                             results.sample_rate};
+                    const auto measured_rt30{rt30(results.data) /
+                                             results.sample_rate};
+
+                    std::cout << "rt20: " << measured_rt20 << std::endl;
+                    std::cout << "rt30: " << measured_rt30 << std::endl;
+                    const auto measured_rt60{
+                            (measured_rt20 * 3 + measured_rt30 * 2) / 2};
+                    std::cout << "measured rt60 is around " << measured_rt60
+                              << '\n';
+
                     count += 1;
                     std::cout << "finished: test " << count << " of "
-                              << max_tests << '\n'
-                              << std::flush;
+                              << max_tests << '\n' << std::flush;
                 }
             }
         }
@@ -165,6 +149,7 @@ public:
         const auto directions{get_random_directions(100000)};
 
         const auto sample_rate{44100.0};
+        static auto count{0};
         const auto results{raytracer::image_source::run(directions.begin(),
                                                         directions.end(),
                                                         compute_context_,
@@ -175,8 +160,13 @@ public:
                                                         acoustic_impedance,
                                                         sample_rate)};
 
+        const auto fname{
+                build_string("img_src_intensity_source_", count++, ".wav")};
+
+        snd::write(fname, {results}, sample_rate, 16);
         const auto pressure{
                 map_to_vector(results, [](auto i) { return std::sqrt(i); })};
+
         return {pressure, sample_rate, "image_source"};
     }
 

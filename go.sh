@@ -26,9 +26,9 @@ callraytrace () {
 export GLOG_logtostderr=1
 #export GTEST_FILTER="*recursive*"
 
-cmake .. && make && ctest -V
+#cmake .. && make && ctest -V
 #cmake .. && make && cd utils/image_source_comparison && ./image_source_comparison
-#cmake .. && make && cd utils/southern2013_2_cuboid && ./southern2013_2_cuboid
+cmake .. && make && cd utils/southern2013_2_cuboid && ./southern2013_2_cuboid
 #cmake .. && make && make doc && ctest -V
 #cmake .. && make && ctest -V && callraytrace vault vault vault
 #cmake .. && make && ./tests/hybrid_test/hybrid_test ../tests/hybrid_test/output

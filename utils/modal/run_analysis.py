@@ -8,12 +8,13 @@ def main():
     root_dir = '../../build/utils/southern2013_2_cuboid'
 
     fnames = [os.path.join(root_dir, i) for i in [
-        'raytracer_source_4_receiver_3_surface_0.wav',
-        'raytracer_source_4_receiver_3_surface_1.wav',
-        'raytracer_source_4_receiver_3_surface_2.wav',
-        'waveguide_source_4_receiver_3_surface_0.wav',
-        'waveguide_source_4_receiver_3_surface_1.wav',
-        'waveguide_source_4_receiver_3_surface_2.wav',
+        'image_source_source_0_receiver_0_surface_0.wav',
+        #'raytracer_source_4_receiver_3_surface_0.wav',
+        #'raytracer_source_4_receiver_3_surface_1.wav',
+        #'raytracer_source_4_receiver_3_surface_2.wav',
+        #'waveguide_source_4_receiver_3_surface_0.wav',
+        #'waveguide_source_4_receiver_3_surface_1.wav',
+        #'waveguide_source_4_receiver_3_surface_2.wav',
     ]]
 
     max_frequency = 120

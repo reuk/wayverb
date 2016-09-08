@@ -92,8 +92,8 @@ private:
             const glm::vec3& receiver,
             const voxelised_scene_data& voxelised,
             const aligned::vector<state>& state) {
-        //  in weird scenarios the image source might end up getting plastered
-        //  over the receiver, which is bad, so we quit with null in that case
+        //  In weird scenarios the image source might end up getting plastered
+        //  over the receiver, which is bad, so we quit with null in that case.
         const auto final_image_source{state.back().image_source};
         if (receiver == final_image_source) {
             return std::experimental::nullopt;

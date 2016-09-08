@@ -50,7 +50,7 @@ aligned::vector<float> run(It begin,
     }
 
     const raytracer::image_source::intensity_calculator calculator{
-            receiver, voxelised, static_cast<float>(speed_of_sound)};
+            receiver, voxelised, speed_of_sound};
     const auto img_src_results{image_source::postprocess(
             img, source, receiver, voxelised, speed_of_sound, calculator)};
 
