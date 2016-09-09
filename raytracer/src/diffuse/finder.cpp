@@ -88,7 +88,7 @@ void finder::push(const aligned::vector<reflection>& reflections,
     aligned::vector<std::experimental::optional<impulse>> no_invalid;
     no_invalid.reserve(rays);
     for (auto& i : ret) {
-        no_invalid.push_back(
+        no_invalid.emplace_back(
                 i.time ? std::experimental::make_optional<impulse>(std::move(i))
                        : std::experimental::nullopt);
     }

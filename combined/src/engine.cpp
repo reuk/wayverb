@@ -308,7 +308,7 @@ public:
                                 std::back_inserter(waveguide_results))}};
 
         if (waveguide_visual_callback) {
-            postprocessors.push_back(waveguide_visual_callback);
+            postprocessors.emplace_back(waveguide_visual_callback);
         }
 
         const auto waveguide_steps_completed{waveguide::run(

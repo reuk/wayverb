@@ -37,7 +37,7 @@ void gaussian::operator()(cl::CommandQueue& queue,
 #ifndef NDEBUG
             throw_if_suspicious(gauss);
 #endif
-            pressures.push_back(gauss);
+            pressures.emplace_back(gauss);
         }
 
         //  now copy to the buffer

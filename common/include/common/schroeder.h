@@ -12,7 +12,7 @@ auto squared_integrated(It begin, It end) {
     for (; begin != end; ++begin) {
         using std::pow;
         running_total += *begin * *begin;
-        ret.push_back(running_total);
+        ret.emplace_back(running_total);
     }
     return ret;
 }

@@ -11,8 +11,7 @@ class iterative_builder final {
 public:
     iterative_builder(size_t items)
             : count(0)
-            , data(items) {
-    }
+            , data(items) {}
 
     template <typename U, typename Func>
     void push(const aligned::vector<U>& input, Func func) {
@@ -38,7 +37,9 @@ public:
     aligned::vector<aligned::vector<T>>& get_data() { return data; }
 
 private:
-    void push_item(size_t index, const T& item) { data[index].push_back(item); }
+    void push_item(size_t index, const T& item) {
+        data[index].emplace_back(item);
+    }
     void push_item(size_t index, const std::experimental::optional<T>& item) {
         if (item) {
             push_item(index, *item);

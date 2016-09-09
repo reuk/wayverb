@@ -163,7 +163,7 @@ public:
             v.construct(std::move(*i));
         }
         for (auto i{first}; i != last; ++i) {
-            v.construct(std::move(*i));
+            v.construct(*i);
         }
         for (auto i{pos}; i != impl_.end(); ++i) {
             v.construct(std::move(*i));

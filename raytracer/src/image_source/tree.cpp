@@ -37,7 +37,7 @@ public:
             , callback_(callback)
             , state_(state) {
         //  Find the image source location and intersected triangle.
-        state_.push_back(
+        state_.emplace_back(
                 path_element_to_state(source_, voxelised_, state_, element));
 
         //  Find whether this is a valid path, and if it is, call the callback.
@@ -130,7 +130,7 @@ private:
             const auto angle{std::acos(
                     glm::dot(ray.get_direction(),
                              geo::normal(get_triangle(voxelised, i->index))))};
-            intersections.push_back(reflection_metadata{
+            intersections.emplace_back(reflection_metadata{
                     i->index,
                     std::min(angle, static_cast<float>(M_PI - angle))});
 
@@ -180,29 +180,22 @@ void tree::push(const aligned::vector<path_element>& path) {
     add_path(root_, path.cbegin(), path.cend());
 }
 
-void tree::find_valid_paths(const glm::vec3& source,
-                            const glm::vec3& receiver,
-                            const voxelised_scene_data& voxelised,
-                            const postprocessor& callback) const {
-    //  set up a state array
-    aligned::vector<traversal_callback::state> state{};
-
-    //  iterate on tree
-    //  for each starting node
-    for (const auto& branch : root_.branches) {
-        //  traverse all paths on this branch
-        traverse_multitree(branch,
-                           traversal_callback{source,
-                                              receiver,
-                                              voxelised,
-                                              callback,
-                                              state,
-                                              branch.item});
-    }
-}
-
 const multitree<path_element>::branches_type& tree::get_branches() const {
     return root_.branches;
+}
+
+void find_valid_paths(const multitree<path_element>& tree,
+                      const glm::vec3& source,
+                      const glm::vec3& receiver,
+                      const voxelised_scene_data& voxelised,
+                      const postprocessor& callback) {
+    //  set up a state array
+    aligned::vector<traversal_callback::state> state{};
+    //  traverse all paths on this branch
+    traverse_multitree(
+            tree,
+            traversal_callback{
+                    source, receiver, voxelised, callback, state, tree.item});
 }
 
 }  // namespace image_source

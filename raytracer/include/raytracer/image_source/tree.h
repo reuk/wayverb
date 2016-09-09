@@ -41,17 +41,17 @@ constexpr bool operator<(const path_element& a, const path_element& b) {
 class tree final {
 public:
     void push(const aligned::vector<path_element>& path);
-
-    void find_valid_paths(const glm::vec3& source,
-                          const glm::vec3& receiver,
-                          const voxelised_scene_data& voxelised,
-                          const postprocessor& callback) const;
-
     const multitree<path_element>::branches_type& get_branches() const;
 
 private:
     multitree<path_element> root_{path_element{}};
 };
+
+void find_valid_paths(const multitree<path_element>& tree,
+                      const glm::vec3& source,
+                      const glm::vec3& receiver,
+                      const voxelised_scene_data& voxelised,
+                      const postprocessor& callback);
 
 //----------------------------------------------------------------------------//
 

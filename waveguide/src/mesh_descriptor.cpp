@@ -1,5 +1,5 @@
-#include "waveguide/mesh_descriptor.h"
 #include "waveguide/config.h"
+#include "waveguide/mesh_descriptor.h"
 
 #include "common/stl_wrappers.h"
 
@@ -78,7 +78,7 @@ aligned::vector<glm::vec3> compute_node_positions(const mesh_descriptor& d) {
     const auto nodes{compute_num_nodes(d)};
     ret.reserve(nodes);
     for (auto i{0u}; i != nodes; ++i) {
-        ret.push_back(compute_position(d, i));
+        ret.emplace_back(compute_position(d, i));
     }
     return ret;
 }

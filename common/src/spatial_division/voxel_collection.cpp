@@ -16,9 +16,9 @@ aligned::vector<cl_uint> get_flattened(const voxel_collection<3>& voxels) {
                 const glm::ivec3 ind(x, y, z);
                 ret[to_flat(ind)] = ret.size();
                 const auto& v{voxels.get_voxel(ind)};
-                ret.push_back(v.size());
+                ret.emplace_back(v.size());
                 for (const auto& i : v) {
-                    ret.push_back(i);
+                    ret.emplace_back(i);
                 }
             }
         }

@@ -66,7 +66,7 @@ struct reflector_fixture : public ::testing::Test {
         aligned::vector<std::experimental::optional<intersection>> ret;
         ret.reserve(rays.size());
         for (auto i{0u}; i != rays.size(); ++i) {
-            ret.push_back(intersects(
+            ret.emplace_back(intersects(
                     voxelised, convert(rays[i]), reflections[i].triangle));
         }
         return ret;
@@ -78,7 +78,7 @@ struct reflector_fixture : public ::testing::Test {
         aligned::vector<std::experimental::optional<intersection>> ret;
         ret.reserve(rays.size());
         for (auto i{0u}; i != rays.size(); ++i) {
-            ret.push_back(geo::ray_triangle_intersection(
+            ret.emplace_back(geo::ray_triangle_intersection(
                     convert(rays[i]),
                     voxelised.get_scene_data().get_triangles(),
                     convert(voxelised.get_scene_data().get_vertices()),

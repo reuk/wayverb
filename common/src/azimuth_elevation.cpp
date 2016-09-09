@@ -21,7 +21,7 @@ aligned::vector<glm::vec3> get_random_directions(size_t num) {
 
     for (auto i = 0u; i != num; ++i) {
         const direction_rng rng(engine);
-        ret.push_back(sphere_point(rng.get_z(), rng.get_theta()));
+        ret.emplace_back(sphere_point(rng.get_z(), rng.get_theta()));
     }
     return ret;
 }

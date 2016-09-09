@@ -48,7 +48,7 @@ aligned::vector<impulse> results::get_impulses(bool use_direct,
     aligned::vector<impulse> ret;
     ret.reserve(direct_size + image_source_size + diffuse_size);
 
-    for_each_impulse([&](const auto& i) { ret.push_back(i); },
+    for_each_impulse([&](const auto& i) { ret.emplace_back(i); },
                      use_direct,
                      use_image_source,
                      use_diffuse);

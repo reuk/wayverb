@@ -17,7 +17,7 @@ program_wrapper::program_wrapper(const compute_context& cc,
             std::vector<std::pair<const char*, size_t>> ret;
             ret.reserve(sources.size());
             for (const auto& source : sources) {
-                ret.push_back(std::make_pair(source.data(), source.size()));
+                ret.emplace_back(std::make_pair(source.data(), source.size()));
             }
             return ret;
         }()) {}
@@ -35,12 +35,9 @@ void program_wrapper::build(const cl::Device& device) const {
         program.build({device}, "-Werror");
     } catch (const cl::Error& e) {
         std::cerr << program.template getBuildInfo<CL_PROGRAM_BUILD_LOG>(device)
-                  << "\n"
-                  << e.what() << std::endl;
+                  << "\n" << e.what() << std::endl;
         throw;
     }
 }
 
-cl::Device program_wrapper::get_device() const {
-    return device;
-}
+cl::Device program_wrapper::get_device() const { return device; }

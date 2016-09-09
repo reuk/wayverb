@@ -1,5 +1,5 @@
-#include "compressed_waveguide.h"
 #include "compile_time.h"
+#include "compressed_waveguide.h"
 
 #include "common/write_audio_file.h"
 
@@ -46,13 +46,7 @@ aligned::vector<float> compressed_rectangular_waveguide::run(
     }
 
     //  run waveguide for each sample of input
-    aligned::vector<float> ret;
-    for (auto i : input) {
-        //  run the step
-        auto o = (this->*step)(i);
-        ret.push_back(o);
-    }
-    return ret;
+    return map_to_vector(input, [&](auto i) { return (this->*step)(i); });
 }
 
 float compressed_rectangular_waveguide::run_hard_step(float i) {

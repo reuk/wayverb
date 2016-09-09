@@ -8,7 +8,7 @@ auto map_to_vector(It begin, It end, Callback callback) {
     aligned::vector<ret_type> ret;
     ret.reserve(std::distance(begin, end));
     for (; begin != end; ++begin) {
-        ret.push_back(callback(*begin));
+        ret.emplace_back(callback(*begin));
     }
     return ret;
 }

@@ -180,8 +180,9 @@ TEST(raytrace, image_source) {
                     const auto base_vol{pow(s, reflections)};
                     const auto volume{volumes[index] * base_vol};
 
-                    proper_image_source_impulses.push_back(attenuated_impulse{
-                            make_volume_type(volume), times[index]});
+                    proper_image_source_impulses.emplace_back(
+                            attenuated_impulse{make_volume_type(volume),
+                                               times[index]});
                 }
             }
         }

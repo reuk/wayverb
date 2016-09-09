@@ -94,7 +94,7 @@ TEST(voxel, surrounded) {
         std::set<size_t> problem_surfaces{};
         for (auto i{0u}; i != directions.size(); ++i) {
             if (!static_cast<bool>(fast_intersections[i])) {
-                problem_directions.push_back(directions[i]);
+                problem_directions.emplace_back(directions[i]);
                 problem_surfaces.insert(slow_intersections[i]->index);
             }
         }
@@ -149,7 +149,7 @@ void compare(const glm::vec3& source, const scene_data& scene) {
     aligned::vector<glm::vec3> problematic{};
     for (auto i{0u}; i != directions.size(); ++i) {
         if (fast_intersections[i] != slow_intersections[i]) {
-            problematic.push_back(directions[i]);
+            problematic.emplace_back(directions[i]);
         }
         ASSERT_EQ(static_cast<bool>(fast_intersections[i]),
                   static_cast<bool>(slow_intersections[i]));

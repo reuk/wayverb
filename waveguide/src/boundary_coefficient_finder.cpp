@@ -94,7 +94,7 @@ boundary_index_data compute_boundary_index_data(
         //  i am dead inside and idk what <algorithm> this is
         for (const auto& i : nodes) {
             if (is_boundary<1>(i.boundary_type)) {
-                ret.push_back(out[i.boundary_index]);
+                ret.emplace_back(out[i.boundary_index]);
             }
         }
         return ret;

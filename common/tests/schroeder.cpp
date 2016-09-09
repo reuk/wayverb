@@ -32,7 +32,7 @@ auto generate_noise_tail(float rt60) {
     const auto coeff{std::exp(std::log(decibels::db2a(-60)) / rt60)};    
     auto amp{1.0};
     for (auto i{0u}; i < rt60; ++i, amp *= coeff) {
-        ret.push_back(distribution(engine) * amp);        
+        ret.emplace_back(distribution(engine) * amp);
     }
     return ret;
 }

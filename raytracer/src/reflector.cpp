@@ -15,8 +15,8 @@ aligned::vector<cl_float> get_direction_rng(size_t num) {
 
     for (auto i = 0u; i != num; ++i) {
         const direction_rng rng(engine);
-        ret.push_back(rng.get_z());
-        ret.push_back(rng.get_theta());
+        ret.emplace_back(rng.get_z());
+        ret.emplace_back(rng.get_theta());
     }
 
     return ret;

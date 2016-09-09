@@ -70,9 +70,6 @@ std::experimental::optional<results> run(
     //  load the scene into device memory
     const scene_buffers buffers{cc.context, scene_data};
 
-    //  set up somewhere to store image source results
-    image_source::finder img{};
-
     //  this is the object that generates first-pass reflections
     reflector ref{cc,
                   receiver,
@@ -90,8 +87,9 @@ std::experimental::optional<results> run(
                         directions.size(),
                         reflection_depth};
 
-    //  run the simulation proper
+    image_source::tree tree{};
 
+    //  run the simulation proper
     {
         //  up until the max reflection depth
         for (auto i = 0u; i != reflection_depth; ++i) {
@@ -120,7 +118,9 @@ std::experimental::optional<results> run(
             callback(i);
         }
 
-        img.push(builder.get_data());
+        for (const auto& path : builder.get_data()) {
+            tree.push(path);
+        }
     }
 
     if (!keep_going) {
@@ -131,7 +131,7 @@ std::experimental::optional<results> run(
     const image_source::intensity_calculator calculator{
             receiver, scene_data, static_cast<float>(speed_of_sound)};
     auto img_src_results(image_source::postprocess(
-            img, source, receiver, scene_data, speed_of_sound, calculator));
+            tree.get_branches(), source, receiver, scene_data, calculator));
 
     return results{
             get_direct_impulse(source, receiver, scene_data, speed_of_sound),

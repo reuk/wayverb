@@ -30,7 +30,7 @@ aligned::vector<float> run(It begin,
 
     //  this will collect the first reflections, to a specified depth,
     //  and use them to find unique image-source paths
-    raytracer::image_source::finder img{};
+    tree tree{};
     {
         raytracer::image_source::reflection_path_builder builder{
                 static_cast<size_t>(std::distance(begin, end))};
@@ -46,13 +46,15 @@ aligned::vector<float> run(It begin,
             builder.push(reflections);
         }
 
-        img.push(builder.get_data());
+        for (const auto& path : builder.get_data()) {
+            tree.push(path);
+        }
     }
 
     const raytracer::image_source::intensity_calculator calculator{
             receiver, voxelised, speed_of_sound};
     const auto img_src_results{image_source::postprocess(
-            img, source, receiver, voxelised, speed_of_sound, calculator)};
+            tree.get_branches(), source, receiver, voxelised, calculator)};
 
     return mixdown(raytracer::convert_to_histogram(img_src_results.begin(),
                                                    img_src_results.end(),

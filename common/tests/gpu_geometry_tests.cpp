@@ -99,7 +99,7 @@ aligned::vector<geo::triangle_vec3> random_triangle_vec3s(size_t num) {
     aligned::vector<geo::triangle_vec3> ret;
     ret.reserve(num);
     for (auto i{0u}; i != num; ++i) {
-        ret.push_back(random_triangle_vec3(engine));
+        ret.emplace_back(random_triangle_vec3(engine));
     }
     return ret;
 }
@@ -110,7 +110,7 @@ aligned::vector<geo::ray> random_rays(size_t num) {
     aligned::vector<geo::ray> ret;
     ret.reserve(num);
     for (auto i{0u}; i != num; ++i) {
-        ret.push_back(random_ray(engine));
+        ret.emplace_back(random_ray(engine));
     }
     return ret;
 }
@@ -176,9 +176,9 @@ random_triangles(size_t num) {
 
     for (auto i{0u}; i != num; ++i) {
         for (auto j{0u}; j != 3; ++j) {
-            vertices.push_back(random_unit_vector(engine));
+            vertices.emplace_back(random_unit_vector(engine));
         }
-        triangles.push_back(triangle{0, i * 3 + 0, i * 3 + 1, i * 3 + 2});
+        triangles.emplace_back(triangle{0, i * 3 + 0, i * 3 + 1, i * 3 + 2});
     }
 
     return std::make_tuple(vertices, triangles);
