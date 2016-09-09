@@ -7,6 +7,7 @@ namespace raytracer {
 namespace image_source {
 
 intensity_calculator::intensity_calculator(
+        const glm::vec3&,
         const glm::vec3& receiver,
         const voxelised_scene_data& voxelised,
         float speed_of_sound)
@@ -34,7 +35,8 @@ impulse intensity_calculator::operator()(
 
 //----------------------------------------------------------------------------//
 
-phase_calculator_v1::phase_calculator_v1(const glm::vec3& receiver,
+phase_calculator_v1::phase_calculator_v1(const glm::vec3&,
+                                         const glm::vec3& receiver,
                                          const voxelised_scene_data& voxelised,
                                          float speed_of_sound)
         : receiver_{receiver}

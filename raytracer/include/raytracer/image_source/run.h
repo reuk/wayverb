@@ -51,10 +51,8 @@ aligned::vector<float> run(It begin,
         }
     }
 
-    const raytracer::image_source::intensity_calculator calculator{
-            receiver, voxelised, speed_of_sound};
-    const auto img_src_results{image_source::postprocess(
-            tree.get_branches(), source, receiver, voxelised, calculator)};
+    const auto img_src_results{postprocess<intensity_calculator>(
+            tree.get_branches(), source, receiver, voxelised, speed_of_sound)};
 
     return mixdown(raytracer::convert_to_histogram(img_src_results.begin(),
                                                    img_src_results.end(),

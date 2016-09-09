@@ -18,7 +18,8 @@ auto postprocess(const multitree<path_element>& tree,
                  const glm::vec3& source,
                  const glm::vec3& receiver,
                  const voxelised_scene_data& voxelised,
-                 const Func& callback) {
+                 float speed_of_sound) {
+    Func callback{source, receiver, voxelised, speed_of_sound};
     using value_type = decltype(
             callback(std::declval<glm::vec3>(),
                      std::declval<aligned::vector<reflection_metadata>>()));
@@ -27,7 +28,7 @@ auto postprocess(const multitree<path_element>& tree,
                      source,
                      receiver,
                      voxelised,
-                     [&callback, &ret](const auto& a, const auto& b) {
+                     [&](const auto& a, const auto& b) {
                          ret.emplace_back(callback(a, b));
                      });
     return ret;
@@ -38,15 +39,16 @@ auto postprocess(const multitree<path_element>::branches_type& branches,
                  const glm::vec3& source,
                  const glm::vec3& receiver,
                  const voxelised_scene_data& voxelised,
-                 const Func& callback) {
-    using value_type = decltype(postprocess(
-            *branches.begin(), source, receiver, voxelised, callback));
-
+                 const float speed_of_sound) {
     auto futures{map_to_vector(branches, [&](const auto& branch) {
-        return std::async(std::launch::async, [=] {
-            return postprocess(branch, source, receiver, voxelised, callback);
+        return std::async(std::launch::async, [&] {
+            return postprocess<Func>(
+                    branch, source, receiver, voxelised, speed_of_sound);
         });
     })};
+
+    using value_type = decltype(
+            std::declval<typename decltype(futures)::value_type>().get());
 
     //  Collect futures.
     value_type ret;

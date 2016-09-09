@@ -128,10 +128,13 @@ std::experimental::optional<results> run(
     }
 
     //  fetch image source results
-    const image_source::intensity_calculator calculator{
-            receiver, scene_data, static_cast<float>(speed_of_sound)};
-    auto img_src_results(image_source::postprocess(
-            tree.get_branches(), source, receiver, scene_data, calculator));
+    auto img_src_results(
+            image_source::postprocess<image_source::intensity_calculator>(
+                    tree.get_branches(),
+                    source,
+                    receiver,
+                    scene_data,
+                    speed_of_sound));
 
     return results{
             get_direct_impulse(source, receiver, scene_data, speed_of_sound),

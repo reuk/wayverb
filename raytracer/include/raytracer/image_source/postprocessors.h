@@ -31,7 +31,8 @@ using postprocessor = std::function<void(
 
 class intensity_calculator final {
 public:
-    intensity_calculator(const glm::vec3& receiver,
+    intensity_calculator(const glm::vec3& source,
+                         const glm::vec3& receiver,
                          const voxelised_scene_data& voxelised,
                          float speed_of_sound);
 
@@ -49,7 +50,8 @@ private:
 
 class phase_calculator_v1 final {
 public:
-    phase_calculator_v1(const glm::vec3& receiver,
+    phase_calculator_v1(const glm::vec3& source,
+                        const glm::vec3& receiver,
                         const voxelised_scene_data& voxelised,
                         float speed_of_sound);
 
