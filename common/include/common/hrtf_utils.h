@@ -6,15 +6,6 @@
 
 enum class hrtf_channel { left, right };
 
-template <typename T>
-void for_each_band(double sample_rate, T callback) {
-    for (auto i{0ul}, end{hrtf_data::edges.size() - 1};
-         i != end && hrtf_data::edges[i] < sample_rate * 0.5;
-         ++i) {
-        callback(i, hrtf_data::edges[i + 0], hrtf_data::edges[i + 1]);
-    }
-}
-
 /// Given a vector of frequency band signals, a vector of band edges, and
 /// a sampling rate, filter the bands and sum them down.
 

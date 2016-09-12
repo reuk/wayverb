@@ -9,13 +9,13 @@
 #include "waveguide/waveguide.h"
 
 #include "common/azimuth_elevation.h"
+#include "common/frequency_domain_filter.h"
 #include "common/progress_bar.h"
 
 #include <iostream>
 
 //  current problems
-//      * levels seem to be incorrect
-//      * needs crossover filtering
+//      * waveguide contribution is way too short
 //
 //  needs testing
 //      * modal response / level
@@ -65,7 +65,7 @@ audio img_src_and_waveguide_test::operator()(
     const float calibration_factor = waveguide::rectilinear_calibration_factor(
             waveguide_sample_rate_, speed_of_sound_);
     const auto sample_rate{44100.0};
-    const auto corrected_waveguide{waveguide::adjust_sampling_rate(
+    auto corrected_waveguide{waveguide::adjust_sampling_rate(
             map_to_vector(
                     waveguide_results,
                     [=](auto i) { return i.pressure * calibration_factor; }),
@@ -87,7 +87,7 @@ audio img_src_and_waveguide_test::operator()(
             sample_rate)};
 
     if (const auto direct{raytracer::get_direct_impulse(
-            source, receiver.position, voxels, speed_of_sound_)}) {
+                source, receiver.position, voxels, speed_of_sound_)}) {
         impulses.emplace_back(*direct);
     }
 
@@ -98,11 +98,34 @@ audio img_src_and_waveguide_test::operator()(
                                                     acoustic_impedance_,
                                                     20))};
 
-    const auto pressure{map_to_vector(img_src_results,
-                                      [](auto i) { return std::sqrt(i); })};
+    auto pressure{map_to_vector(img_src_results,
+                                [](auto i) { return std::sqrt(i); })};
 
-    aligned::vector<float> output{};
-    output.resize(std::max(corrected_waveguide.size(), pressure.size()), 0);
+    const auto max_size{std::max(corrected_waveguide.size(), pressure.size())};
+    {
+        //  Do some crossover filtering
+        const auto cutoff{waveguide_sample_rate_ * 0.196 / sample_rate};
+        const auto width{std::min(cutoff, 0.5 - cutoff) * 0.2};
+        pressure.resize(max_size);
+        corrected_waveguide.resize(max_size);
+        fast_filter filter{max_size};
+        filter.filter(pressure.begin(),
+                      pressure.end(),
+                      pressure.begin(),
+                      [=](auto cplx, auto freq) {
+                          return cplx * compute_hipass_magnitude(
+                                                freq, cutoff, width, 0);
+                      });
+        filter.filter(corrected_waveguide.begin(),
+                      corrected_waveguide.end(),
+                      corrected_waveguide.begin(),
+                      [=](auto cplx, auto freq) {
+                          return cplx * compute_lopass_magnitude(
+                                                freq, cutoff, width, 0);
+                      });
+    }
+
+    aligned::vector<float> output(max_size);
 
     for (auto i{0ul}, end{pressure.size()}; i != end; ++i) {
         output[i] += pressure[i];
@@ -112,5 +135,5 @@ audio img_src_and_waveguide_test::operator()(
         output[i] += corrected_waveguide[i];
     }
 
-    return {output, sample_rate, "img_src_and_waveguide"};
+    return {std::move(output), sample_rate, "img_src_and_waveguide"};
 }

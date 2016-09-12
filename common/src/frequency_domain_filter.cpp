@@ -36,7 +36,7 @@ public:
         //  Run inverse fft, placing ifft output back into owner.rbuf_.
         fftwf_execute(ifft_);
 
-        for (auto & i : rbuf_) {
+        for (auto& i : rbuf_) {
             i /= rbuf_size;
         }
     }
@@ -79,4 +79,58 @@ float upper_band_edge(float centre, float p, float P, size_t l) {
         throw std::runtime_error("P must be greater than 0");
     }
     return std::cos(M_PI * band_edge_impl(centre, p, P, l) / 2);
+}
+
+float band_edge_frequency(int band, size_t bands, float lower, float upper) {
+    return lower * std::pow(upper / lower, band / static_cast<float>(bands));
+}
+
+float compute_bandpass_magnitude(float frequency,
+                                 float lower,
+                                 float lower_edge_width,
+                                 float upper,
+                                 float upper_edge_width,
+                                 size_t l) {
+    if (frequency < lower - lower_edge_width ||
+        upper + upper_edge_width <= frequency) {
+        return 0;
+    }
+
+    const auto lower_p{frequency - lower};
+    if (-lower_edge_width <= lower_p && lower_p < lower_edge_width) {
+        return lower_band_edge(lower, lower_p, lower_edge_width, l);
+    }
+
+    const auto upper_p{frequency - upper};
+    if (-upper_edge_width <= upper_p && upper_p < upper_edge_width) {
+        return upper_band_edge(upper, upper_p, upper_edge_width, l);
+    }
+
+    return 1;
+}
+
+float compute_lopass_magnitude(float frequency,
+                               float cutoff,
+                               float width,
+                               size_t l) {
+    if (frequency < cutoff - width) {
+        return 1;
+    }
+    if (cutoff + width <= frequency) {
+        return 0;
+    }
+    return upper_band_edge(cutoff, frequency - cutoff, width, l);
+}
+
+float compute_hipass_magnitude(float frequency,
+                               float cutoff,
+                               float width,
+                               size_t l) {
+    if (frequency < cutoff - width) {
+        return 0;
+    }
+    if (cutoff + width <= frequency) {
+        return 1;
+    }
+    return lower_band_edge(cutoff, frequency - cutoff, width, l);
 }

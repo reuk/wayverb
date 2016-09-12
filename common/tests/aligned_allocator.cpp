@@ -68,3 +68,13 @@ TEST(aligned, array) {
     }
     std::cout << std::flush;
 }
+
+aligned::vector<float> my_func() {
+    aligned::vector<float> ret{};
+    ret.resize(10000);
+    return ret;
+}
+
+TEST(aligned_allocator, vector_resize) {
+    const auto vec{my_func()};
+}

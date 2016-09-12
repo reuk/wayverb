@@ -62,8 +62,17 @@ cl::Device get_device(const cl::Context& context) {
 
 }  // namespace
 
-compute_context::compute_context()
-        : compute_context(device_type::gpu) {}
+compute_context::compute_context() {
+    for (auto type : {device_type::gpu, device_type::cpu}) {
+        try {
+            context = ::get_context(type);
+            device = ::get_device(context);
+            return;
+        } catch (...) {
+        }
+    }
+    throw std::runtime_error("no OpenCL context contains a usable device");
+}
 
 compute_context::compute_context(device_type type)
         : compute_context(::get_context(type)) {}

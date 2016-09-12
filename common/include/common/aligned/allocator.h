@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cassert>
 #include <memory>
 
 namespace aligned {
@@ -35,18 +36,18 @@ public:
     //  rebinding the allocator for another type should respect the alignment
     //  of that other type
     template <typename U>
-    struct rebind {
+    struct rebind final {
         using other = allocator<U>;
     };
 
     //  allocate a type that we know will have the correct alignment
     //  then reinterpret the pointer
-    T* allocate(std::size_t n) {
+    T* allocate(std::size_t n) const {
         return reinterpret_cast<T*>(new aligned_type[n]);
     }
 
     //  deallocate previously allocated memory
-    void deallocate(T* p, std::size_t) noexcept {
+    void deallocate(T* p, std::size_t s) const noexcept {
         delete[] reinterpret_cast<aligned_type*>(p);
     }
 };

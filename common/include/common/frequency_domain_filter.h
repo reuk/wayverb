@@ -33,13 +33,7 @@ public:
     /// output range. Output range should be as big or bigger than input range.
     template <typename In, typename Out>
     void filter(In begin, In end, Out output_it, const callback& callback) {
-        const auto dist{std::distance(begin, end)};
-        if (dist != rbuf_.size()) {
-            throw std::runtime_error(
-                    "filter input have size equal to that used to initialise "
-                    "the filter");
-        }
-
+        rbuf_.zero();
         std::copy(begin, end, rbuf_.begin());
         filter_impl(callback);
         std::copy(rbuf_.begin(), rbuf_.end(), output_it);
@@ -60,3 +54,60 @@ private:
 
 float lower_band_edge(float centre, float p, float P, size_t l);
 float upper_band_edge(float centre, float p, float P, size_t l);
+
+float band_edge_frequency(int band, size_t bands, float lower, float upper);
+
+template <size_t bands>
+std::array<float, bands + 1> band_edge_frequencies(float lower, float upper) {
+    std::array<float, bands + 1> ret;
+    for (auto i{0u}; i != bands + 1; ++i) {
+        ret[i] = band_edge_frequency(i, bands, lower, upper);
+    }
+    return ret;
+}
+
+template <size_t bands>
+std::array<float, bands + 1> band_centre_frequencies(float lower, float upper) {
+    std::array<float, bands + 1> ret;
+    for (auto i{0ul}; i != ret.size(); ++i) {
+        ret[i] = band_edge_frequency(i * 2 + 1, bands * 2, lower, upper);
+    }
+    return ret;
+}
+
+template <size_t bands>
+std::array<float, bands + 1> band_edge_widths(float lower,
+                                              float upper,
+                                              float overlap) {
+    std::array<float, bands + 1> ret;
+    for (int i{0}; i != ret.size(); ++i) {
+        ret[i] = std::abs(
+                (band_edge_frequency(i * 2, bands * 2, lower, upper) -
+                 band_edge_frequency(i * 2 + 1, bands * 2, lower, upper)) *
+                overlap);
+    }
+    return ret;
+}
+
+/// frequency: normalized frequency, from 0 to 0.5
+/// lower: the normalized lower band edge frequency of this band
+/// lower_edge_width: half the absolute width of the lower crossover
+/// upper: the normalized upper band edge frequency of this band
+/// upper_edge_width: half the absolute width of the upper crossover
+/// l: the slope (0 is shallow, higher is steeper)
+float compute_bandpass_magnitude(float frequency,
+                                 float lower,
+                                 float lower_edge_width,
+                                 float upper,
+                                 float upper_edge_width,
+                                 size_t l);
+
+float compute_lopass_magnitude(float frequency,
+                               float cutoff,
+                               float width,
+                               size_t l);
+
+float compute_hipass_magnitude(float frequency,
+                               float cutoff,
+                               float width,
+                               size_t l);

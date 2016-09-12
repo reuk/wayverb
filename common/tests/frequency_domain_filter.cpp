@@ -97,3 +97,37 @@ TEST(fast_filter, band_edges) {
         }
     }
 }
+
+TEST(fast_filter, lopass) {
+    std::default_random_engine engine{std::random_device{}()};
+    std::uniform_real_distribution<float> distribution(-1, 1);
+
+    aligned::vector<float> sig;
+    for (auto i{0ul}; i != 44100 * 10; ++i) {
+        sig.emplace_back(distribution(engine));
+    }
+
+    fast_filter filter{sig.size()};
+    filter.filter(
+            sig.begin(), sig.end(), sig.begin(), [](auto cplx, auto freq) {
+                return cplx * compute_lopass_magnitude(freq, 0.25, 0.05, 0);
+            });
+    snd::write("lopass_noise.wav", {sig}, 44100, 16);
+}
+
+TEST(fast_filter, hipass) {
+    std::default_random_engine engine{std::random_device{}()};
+    std::uniform_real_distribution<float> distribution(-1, 1);
+
+    aligned::vector<float> sig;
+    for (auto i{0ul}; i != 44100 * 10; ++i) {
+        sig.emplace_back(distribution(engine));
+    }
+
+    fast_filter filter{sig.size()};
+    filter.filter(
+            sig.begin(), sig.end(), sig.begin(), [](auto cplx, auto freq) {
+                return cplx * compute_hipass_magnitude(freq, 0.25, 0.05, 0);
+            });
+    snd::write("hipass_noise.wav", {sig}, 44100, 16);
+}
