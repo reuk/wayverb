@@ -8,16 +8,16 @@
 namespace raytracer {
 namespace image_source {
 
-template <typename It>  ///	iterator over ray directions
-aligned::vector<float> run(It begin,
-                           It end,
-                           const compute_context& cc,
-                           const voxelised_scene_data& voxelised,
-                           const glm::vec3& source,
-                           const glm::vec3& receiver,
-                           float speed_of_sound,
-                           float acoustic_impedance,
-                           float sample_rate) {
+template <typename calculator, typename It>  /// iterator over ray directions
+aligned::vector<impulse> run(It begin,
+                             It end,
+                             const compute_context& cc,
+                             const voxelised_scene_data& voxelised,
+                             const glm::vec3& source,
+                             const glm::vec3& receiver,
+                             float speed_of_sound,
+                             float acoustic_impedance,
+                             float sample_rate) {
     const auto reflection_depth{raytracer::compute_optimum_reflection_number(
             voxelised.get_scene_data())};
 
@@ -28,21 +28,21 @@ aligned::vector<float> run(It begin,
             raytracer::get_rays_from_directions(begin, end, source),
             speed_of_sound};
 
-    //  this will collect the first reflections, to a specified depth,
-    //  and use them to find unique image-source paths
+    //  This will collect the first reflections, to a specified depth,
+    //  and use them to find unique image-source paths.
     tree tree{};
     {
         raytracer::image_source::reflection_path_builder builder{
                 static_cast<size_t>(std::distance(begin, end))};
 
-        //  run the simulation proper
+        //  Run the simulation proper.
 
-        //  up until the max reflection depth
+        //  Up until the max reflection depth.
         for (auto i{0u}; i != reflection_depth; ++i) {
-            //  get a single step of the reflections
+            //  Get a single step of the reflections.
             const auto reflections{ref.run_step(buffers)};
 
-            //  find diffuse impulses for these reflections
+            //  Find diffuse impulses for these reflections.
             builder.push(reflections);
         }
 
@@ -51,14 +51,8 @@ aligned::vector<float> run(It begin,
         }
     }
 
-    const auto img_src_results{postprocess<intensity_calculator>(
-            tree.get_branches(), source, receiver, voxelised, speed_of_sound)};
-
-    return mixdown(raytracer::convert_to_histogram(img_src_results.begin(),
-                                                   img_src_results.end(),
-                                                   sample_rate,
-                                                   acoustic_impedance,
-                                                   20));
+    return postprocess<calculator>(
+            tree.get_branches(), source, receiver, voxelised, speed_of_sound);
 }
 
 }  // namespace image_source

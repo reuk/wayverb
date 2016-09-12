@@ -34,7 +34,8 @@ inline biquad_coefficients_array get_biquads_array(
             std::make_index_sequence<biquad_sections>(), n, sr, callback);
 }
 
-coefficients_biquad get_peak_coefficients(const filter_descriptor& n, double sr);
+coefficients_biquad get_peak_coefficients(const filter_descriptor& n,
+                                          double sr);
 
 biquad_coefficients_array get_peak_biquads_array(
         const std::array<filter_descriptor, biquad_sections>& n, double sr);
@@ -84,5 +85,4 @@ constexpr bool is_stable(const coefficients<L>& coeffs) {
 coefficients_canonical to_impedance_coefficients(
         const coefficients_canonical& c);
 
-
-}//namespace waveguide
+}  // namespace waveguide

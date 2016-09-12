@@ -24,3 +24,14 @@ T absorption_to_pressure_reflectance(T t) {
     using std::sqrt;
     return sqrt(absorption_to_energy_reflectance(t));
 }
+
+template <typename T>
+T pressure_reflectance_to_average_wall_impedance(T t) {
+    return (1 + t) / (1 - t);
+}
+
+template <typename T>
+T average_wall_impedance_to_pressure_reflectance(T t, float angle) {
+    const T tmp = t * std::cos(angle);
+    return (tmp - 1) / (tmp + 1);
+}

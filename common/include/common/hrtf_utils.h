@@ -8,8 +8,8 @@ enum class hrtf_channel { left, right };
 
 template <typename T>
 void for_each_band(double sample_rate, T callback) {
-    for (auto i = 0u; i != hrtf_data::edges.size() - 1 &&
-                      hrtf_data::edges[i] < sample_rate * 0.5;
+    for (auto i{0ul}, end{hrtf_data::edges.size() - 1};
+         i != end && hrtf_data::edges[i] < sample_rate * 0.5;
          ++i) {
         callback(i, hrtf_data::edges[i + 0], hrtf_data::edges[i + 1]);
     }

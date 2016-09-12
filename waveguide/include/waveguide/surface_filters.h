@@ -8,6 +8,7 @@
 namespace waveguide {
 
 //  TODO need better method of generating filters
+//  complex curve fitting, levy
 
 template <size_t I>
 inline filter_descriptor compute_filter_descriptor(const surface& surface) {

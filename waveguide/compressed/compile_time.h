@@ -1,5 +1,10 @@
 #pragma once
 
+#include "common/map_to_vector.h"
+
+#include <tuple>
+#include <algorithm>
+
 namespace {
 // std::ostream& operator<<(std::ostream& os, const index& i) {
 //    return os << "[" << i.x << ", " << i.y << ", " << i.z << "]";

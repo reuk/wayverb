@@ -1,4 +1,5 @@
 #include "raytracer/image_source/finder.h"
+#include "raytracer/image_source/postprocessors.h"
 #include "raytracer/image_source/reflection_path_builder.h"
 #include "raytracer/image_source/run.h"
 #include "raytracer/postprocess.h"
@@ -58,15 +59,17 @@ void run_single(const compute_context& cc,
 
     const auto directions{get_random_directions(100000)};
 
-    auto sig{raytracer::image_source::run(directions.cbegin(),
-                                          directions.cend(),
-                                          cc,
-                                          voxelised,
-                                          source,
-                                          receiver.position,
-                                          speed_of_sound,
-                                          acoustic_impedance,
-                                          sample_rate)};
+    auto sig{raytracer::image_source::run<
+            raytracer::image_source::fast_pressure_calculator>(
+            directions.cbegin(),
+            directions.cend(),
+            cc,
+            voxelised,
+            source,
+            receiver.position,
+            speed_of_sound,
+            acoustic_impedance,
+            sample_rate)};
 
     check(sig);
     normalize(sig);
@@ -85,9 +88,9 @@ int main() {
     const model::receiver_settings receiver{glm::vec3{0, 1, 1}};
 
     const aligned::vector<std::pair<std::string, surface>> surfaces{
-            std::make_pair("0", make_surface(0.001, 0.001)),
-            std::make_pair("1", make_surface(0.01, 0.001)),
-            std::make_pair("2", make_surface(0.1, 0.001))};
+            std::make_pair("0", make_surface(0.04, 0)),
+            std::make_pair("1", make_surface(0.08, 0)),
+            std::make_pair("2", make_surface(0.16, 0))};
 
     const aligned::vector<std::pair<std::string, std::string>> objects{
             std::make_pair("vault", OBJ_PATH),

@@ -57,7 +57,6 @@ auto postprocess(const multitree<path_element>::branches_type& branches,
         ret.insert(ret.end(), thread_results.begin(), thread_results.end());
     }
 
-    //  C++11 is the biz.
     return ret;
 }
 

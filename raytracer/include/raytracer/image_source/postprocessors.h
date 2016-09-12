@@ -48,14 +48,40 @@ private:
 
 //----------------------------------------------------------------------------//
 
-class phase_calculator_v1 final {
+class fast_pressure_calculator final {
 public:
-    phase_calculator_v1(const glm::vec3& source,
-                        const glm::vec3& receiver,
-                        const voxelised_scene_data& voxelised,
-                        float speed_of_sound);
+    fast_pressure_calculator(const glm::vec3& source,
+                             const glm::vec3& receiver,
+                             const voxelised_scene_data& voxelised,
+                             float speed_of_sound);
 
-    std::array<std::complex<float>, 8> operator()(
+    impulse operator()(
+            const glm::vec3& image_source,
+            const aligned::vector<reflection_metadata>& intersections) const;
+
+private:
+    const glm::vec3& receiver_;
+    const voxelised_scene_data& voxelised_;
+    float speed_of_sound_;
+
+    aligned::vector<volume_type> surface_impedances_;
+};
+
+//----------------------------------------------------------------------------//
+
+#if 0
+class dumb_slow_fft_pressure_calculator final {
+public:
+    dumb_slow_fft_pressure_calculator(const glm::vec3& source,
+                                      const glm::vec3& receiver,
+                                      const voxelised_scene_data& voxelised,
+                                      float speed_of_sound);
+
+    constexpr static auto output_spectrum_size{1 << 9};
+
+    /// Returns a full FFT spectrum for this reflection which should be summed
+    /// with the 'output spectrum'.
+    std::array<std::complex<float>, output_spectrum_size> operator()(
             const glm::vec3& image_source,
             const aligned::vector<reflection_metadata>& intersections) const;
 
@@ -64,6 +90,7 @@ private:
     const voxelised_scene_data& voxelised_;
     float speed_of_sound_;
 };
+#endif
 
 }  // namespace image_source
 }  // namespace raytracer

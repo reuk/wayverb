@@ -148,6 +148,13 @@ constexpr mapping_iterator_adapter<U, V> operator-(
     return it - n;
 }
 
+template <class U, class V>
+constexpr typename mapping_iterator_adapter<U, V>::difference_type operator-(
+        const mapping_iterator_adapter<U, V>& a,
+        const mapping_iterator_adapter<U, V>& b) {
+    return a.base() - b.base();
+}
+
 // make iterators quickly ----------------------------------------------------//
 
 template <class U, class V>

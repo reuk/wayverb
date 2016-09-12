@@ -1,12 +1,11 @@
 #include "common/fast_convolver.h"
-
 #include "fftw/plan.h"
-
-using fftwf::rbuf;
-using cbuf = fftwf::buffer<fftwf_complex>;
 
 class fast_convolver::impl final {
 public:
+    using rbuf = fftwf::rbuf;
+    using cbuf = fftwf::buffer<fftwf_complex>;
+
     explicit impl(fast_convolver& owner, size_t fft_length)
             : fft_length(fft_length)
             , cplx_length(fft_length / 2 + 1)
