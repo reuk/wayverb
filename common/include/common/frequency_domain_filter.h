@@ -56,13 +56,7 @@ private:
 
 //----------------------------------------------------------------------------//
 
-/// See schroeder2011 equation 5.46
-/// c: centre frequency of filter band
-/// n: centre frequency of next band
-/// lo: lower limit of filter band
-/// hi: upper limit of filter band
-/// f: compute amplitude at this frequency
-/// fnext: centre frequency of next frequency band
-/// returns: magnitude at frequency f
-float rcf(float c, float n, float lo, float hi, float f);
+/// See antoni2010 equations 19 and 20
 
+float lower_band_edge(float centre, float p, float P, size_t l);
+float upper_band_edge(float centre, float p, float P, size_t l);

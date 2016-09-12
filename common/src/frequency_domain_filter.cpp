@@ -62,15 +62,21 @@ void fast_filter::filter_impl(const callback& callback) {
 
 //----------------------------------------------------------------------------//
 
-float rcf(float c, float n, float lo, float hi, float f) {
-    using std::cos;
-    if (lo <= f) {
-        return (1 + cos(2 * M_PI * f / c)) / 2;
-    }
+float band_edge_impl(float centre, float p, float P, size_t l) {
+    return l ? std::sin(M_PI * band_edge_impl(centre, p, P, l - 1) / 2)
+             : (((p / P) + 1) / 2);
+}
 
-    if (f < hi) {
-        return (1 - cos(2 * M_PI * f / n)) / 2;
+float lower_band_edge(float centre, float p, float P, size_t l) {
+    if (P <= 0) {
+        throw std::runtime_error("P must be greater than 0");
     }
+    return std::sin(M_PI * band_edge_impl(centre, p, P, l) / 2);
+}
 
-    return 0;
+float upper_band_edge(float centre, float p, float P, size_t l) {
+    if (P <= 0) {
+        throw std::runtime_error("P must be greater than 0");
+    }
+    return std::cos(M_PI * band_edge_impl(centre, p, P, l) / 2);
 }

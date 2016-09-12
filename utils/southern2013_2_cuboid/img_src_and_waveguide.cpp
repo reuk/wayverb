@@ -3,6 +3,7 @@
 #include "raytracer/image_source/run.h"
 #include "raytracer/raytracer.h"
 
+#include "waveguide/calibration.h"
 #include "waveguide/make_transparent.h"
 #include "waveguide/surface_filters.h"
 #include "waveguide/waveguide.h"
@@ -13,8 +14,8 @@
 #include <iostream>
 
 //  current problems
-//      * timing is incorrect or direct impulse is missing
 //      * levels seem to be incorrect
+//      * needs crossover filtering
 //
 //  needs testing
 //      * modal response / level
@@ -61,9 +62,13 @@ audio img_src_and_waveguide_test::operator()(
                                                 acoustic_impedance_,
                                                 [&](auto i) { pb += 1; })};
 
+    const float calibration_factor = waveguide::rectilinear_calibration_factor(
+            waveguide_sample_rate_, speed_of_sound_);
     const auto sample_rate{44100.0};
     const auto corrected_waveguide{waveguide::adjust_sampling_rate(
-            map_to_vector(waveguide_results, [](auto i) { return i.pressure; }),
+            map_to_vector(
+                    waveguide_results,
+                    [=](auto i) { return i.pressure * calibration_factor; }),
             waveguide_sample_rate_,
             sample_rate)};
 

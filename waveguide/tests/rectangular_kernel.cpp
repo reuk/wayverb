@@ -346,8 +346,9 @@ TEST(compare_filters, compare_filters) {
 
         auto div = buf_1;
         proc::transform(buf_1, buf_2.begin(), div.begin(), [](auto i, auto j) {
-            if (i == 0 || j == 0)
-                return 0.0;
+            if (i == 0 || j == 0) {
+                return 0.0f;
+            }
             return std::abs(decibels::a2db(std::abs(i / j)));
         });
 

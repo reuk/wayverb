@@ -1,5 +1,7 @@
 #include "common/frequency_domain_filter.h"
 #include "common/aligned/vector.h"
+#include "common/decibels.h"
+#include "common/dsp_vector_ops.h"
 #include "common/hrtf_utils.h"
 #include "common/stl_wrappers.h"
 #include "common/write_audio_file.h"
@@ -60,17 +62,38 @@ TEST(fast_filter, multiband_filter) {
 
     aligned::vector<volume_type> multiband;
     for (auto i{0ul}; i != 44100 * 10; ++i) {
-        multiband.emplace_back(volume_type{{distribution(engine) * 8 / 8.0f,
-                                            distribution(engine) * 7 / 8.0f,
-                                            distribution(engine) * 6 / 8.0f,
-                                            distribution(engine) * 5 / 8.0f,
-                                            distribution(engine) * 4 / 8.0f,
-                                            distribution(engine) * 3 / 8.0f,
-                                            distribution(engine) * 2 / 8.0f,
-                                            distribution(engine) * 1 / 8.0f}});
+        multiband.emplace_back(volume_type{
+                {distribution(engine) * decibels::db2a(-60.0f * 0 / 8.0f),
+                 distribution(engine) * decibels::db2a(-60.0f * 1 / 8.0f),
+                 distribution(engine) * decibels::db2a(-60.0f * 2 / 8.0f),
+                 distribution(engine) * decibels::db2a(-60.0f * 3 / 8.0f),
+                 distribution(engine) * decibels::db2a(-60.0f * 4 / 8.0f),
+                 distribution(engine) * decibels::db2a(-60.0f * 5 / 8.0f),
+                 distribution(engine) * decibels::db2a(-60.0f * 6 / 8.0f),
+                 distribution(engine) * decibels::db2a(-60.0f * 7 / 8.0f)}});
     }
+
+    multiband[44100] = make_volume_type(1);
+    multiband[88200] = make_volume_type(1);
+    multiband[132300] = make_volume_type(1);
 
     const auto results{multiband_filter_and_mixdown(multiband, 44100)};
 
     snd::write("multiband_noise.wav", {results}, 44100, 16);
+}
+
+TEST(fast_filter, band_edges) {
+    {
+        const auto centre{0.25};
+        const auto P{0.1};
+
+        for (auto l{0u}; l != 4; ++l) {
+            for (auto p{-P}, end{P}; p < end; p += 0.02) {
+                const auto lower{lower_band_edge(centre, p, P, l)};
+                const auto upper{upper_band_edge(centre, p, P, l)};
+                std::cout << "lower: " << lower << ", upper: " << upper << '\n';
+                ASSERT_NEAR(lower * lower + upper * upper, 1, 0.000001) << p;
+            }
+        }
+    }
 }

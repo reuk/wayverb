@@ -4,18 +4,28 @@
 
 namespace decibels {
 
-inline double p2db(double p) {
-    return 10 * std::log10(p);
-}
-inline double db2p(double db) {
-    return std::pow(10, db / 10);
+template <typename T>
+inline T p2db(T p) {
+    using std::pow;
+    return 10 * log10(p);
 }
 
-inline double a2db(double a) {
-    return 20 * std::log10(a);
+template <typename T>
+inline T db2p(T db) {
+    using std::pow;
+    return pow(10, db / 10);
 }
-inline double db2a(double db) {
-    return std::pow(10, db / 20);
+
+template <typename T>
+inline T a2db(T a) {
+    using std::log10;
+    return 20 * log10(a);
+}
+
+template <typename T>
+inline T db2a(T db) {
+    using std::pow;
+    return pow(10, db / 20);
 }
 
 }  // namespace decibels
