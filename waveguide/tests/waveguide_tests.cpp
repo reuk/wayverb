@@ -1,16 +1,20 @@
 #include "waveguide/config.h"
+#include "waveguide/default_kernel.h"
 #include "waveguide/filters.h"
 #include "waveguide/mesh.h"
 #include "waveguide/postprocessor/microphone.h"
+#include "waveguide/postprocessor/single_node.h"
 #include "waveguide/preprocessor/single_soft_source.h"
 #include "waveguide/program.h"
 #include "waveguide/setup.h"
+#include "waveguide/surface_filters.h"
 #include "waveguide/waveguide.h"
 
 #include "common/cl/common.h"
 #include "common/progress_bar.h"
 #include "common/sinc.h"
 #include "common/spatial_division/voxelised_scene_data.h"
+#include "common/write_audio_file.h"
 
 #include "gtest/gtest.h"
 
@@ -32,70 +36,112 @@ TEST(peak_filter_coefficients, peak_filter_coefficients) {
 }
 
 TEST(run_waveguide, run_waveguide) {
-    const auto steps{64000};
+    const auto steps{700};
 
     const compute_context cc{};
 
-    //  get opencl program
-    waveguide::program waveguide_program{cc};
+    const geo::box box{glm::vec3{0, 0, 0}, glm::vec3{4, 3, 6}};
+    constexpr glm::vec3 source{2, 1.5, 1};
 
-    const geo::box box(glm::vec3(0, 0, 0), glm::vec3(4, 3, 6));
-    constexpr glm::vec3 source(1, 1, 1);
-    constexpr glm::vec3 receiver(2, 1, 5);
-    constexpr auto v = 0.5;
-    constexpr surface surface{volume_type{{v, v, v, v, v, v, v, v}},
-                              volume_type{{v, v, v, v, v, v, v, v}}};
+    aligned::vector<glm::vec3> receivers{
+            {2, 1.5, 2}, {2, 1.5, 3}, {2, 1.5, 4}, {2, 1.5, 5}};
 
     //  init simulation parameters
 
-    auto scene_data = geo::get_scene_data(box);
-    scene_data.set_surfaces(surface);
-
-    const voxelised_scene_data voxelised(
-            scene_data, 5, util::padded(scene_data.get_aabb(), glm::vec3{0.1}));
+    const auto scene_data{geo::get_scene_data(box)};
 
     constexpr auto speed_of_sound{340.0};
-    constexpr auto acoustic_impedance{400.0};
+    const auto voxels_and_mesh{waveguide::compute_voxels_and_mesh(
+            cc, scene_data, source, samplerate, speed_of_sound)};
 
-    const auto model{
-            waveguide::compute_mesh(cc, voxelised, 0.03, speed_of_sound)};
+    auto model{std::get<1>(voxels_and_mesh)};
+    model.set_coefficients(waveguide::to_flat_coefficients(
+            aligned::vector<surface>{make_surface(0.01, 0)}));
 
     //  get a waveguide
 
-    const auto source_index = compute_index(model.get_descriptor(), source);
-    const auto receiver_index = compute_index(model.get_descriptor(), receiver);
+    const auto source_index{compute_index(model.get_descriptor(), source)};
 
     if (!waveguide::is_inside(model, source_index)) {
         throw std::runtime_error("source is outside of mesh!");
     }
-    if (!waveguide::is_inside(model, receiver_index)) {
-        throw std::runtime_error("receiver is outside of mesh!");
+
+    class output_holder final {
+    public:
+        output_holder(size_t node)
+                : node_{node} {}
+
+        waveguide::step_postprocessor get_postprocessor() const {
+            return waveguide::postprocessor::node{
+                    node_, [&](auto i) { output_.emplace_back(i); }};
+        }
+
+        const auto& get_output() const { return output_; }
+
+    private:
+        mutable aligned::vector<float> output_;
+        size_t node_;
+    };
+
+    waveguide::default_kernel kernel{samplerate, 0.196};
+    auto input{kernel.kernel};
+    input.resize(steps);
+
+    waveguide::preprocessor::single_soft_source preprocessor{source_index,
+                                                             input};
+
+    aligned::vector<output_holder> output_holders;
+    output_holders.reserve(receivers.size());
+    for (const auto& receiver : receivers) {
+        const auto receiver_index{
+                compute_index(model.get_descriptor(), receiver)};
+        if (!waveguide::is_inside(model, receiver_index)) {
+            throw std::runtime_error("receiver is outside of mesh!");
+        }
+        output_holders.emplace_back(receiver_index);
     }
 
-    std::atomic_bool keep_going{true};
-    progress_bar pb(std::cout, steps);
+    progress_bar pb{std::cout, steps};
     auto callback_counter{0};
+    const auto completed_steps{waveguide::run(
+            cc,
+            model,
+            input.size(),
+            preprocessor,
+            map_to_vector(output_holders,
+                          [](auto& i) { return i.get_postprocessor(); }),
+            [&](auto i) {
+                pb += 1;
+                ASSERT_EQ(i, callback_counter++);
+            },
+            true)};
 
-    aligned::vector<float> input(1000);
-    input[0] = 1;
+    ASSERT_EQ(completed_steps, input.size());
 
-    const auto results{waveguide::run(cc,
-                                      model,
-                                      source_index,
-                                      input,
-                                      receiver_index,
-                                      speed_of_sound,
-                                      acoustic_impedance,
-                                      [&](auto i) {
-                                          pb += 1;
-                                          ASSERT_EQ(i, callback_counter++);
-                                      })};
+    auto count{0ul};
+    for (const auto& output_holder : output_holders) {
+        snd::write(build_string("waveguide_receiver_", count++, ".wav"),
+                   {output_holder.get_output()},
+                   samplerate,
+                   16);
+    }
 
-    ASSERT_FALSE(results.empty());
+    const auto max_values{
+            map_to_vector(output_holders, [](const auto& output_holder) {
+                const auto output{output_holder.get_output()};
+                const auto begin{proc::find_if(output, [](auto samp) {
+                    return 0.0001 < std::abs(samp);
+                })};
+                const auto end{
+                        begin +
+                        std::min(std::distance(begin, output.end()), 100l)};
+                if (begin == end) {
+                    return 0.0f;
+                }
+                return *std::max_element(begin, end);
+            })};
 
-    const auto output =
-            map_to_vector(results, [](auto i) { return i.pressure; });
-
-    const auto max_amp = max_mag(output);
-    std::cout << "max_mag: " << max_amp << std::endl;
+    for (auto val : max_values) {
+        std::cout << "value: " << val << '\n';
+    }
 }

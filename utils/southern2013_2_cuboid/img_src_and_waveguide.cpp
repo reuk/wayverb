@@ -59,7 +59,7 @@ audio img_src_and_waveguide_test::operator()(
     const auto directions{get_random_directions(100000)};
 
     auto impulses{raytracer::image_source::run<
-            raytracer::image_source::fast_pressure_calculator>(
+            raytracer::image_source::comparison_calculator>(
             directions.begin(),
             directions.end(),
             compute_context_,

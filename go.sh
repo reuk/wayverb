@@ -24,7 +24,7 @@ callraytrace () {
 }
 
 export GLOG_logtostderr=1
-#export GTEST_FILTER="*schroeder*"
+#export GTEST_FILTER="*run_waveguide*"
 
 #cmake .. && make && ctest -V
 #cmake .. && make && cd utils/image_source_comparison && ./image_source_comparison

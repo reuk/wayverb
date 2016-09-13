@@ -72,6 +72,25 @@ private:
 
 //----------------------------------------------------------------------------//
 
+class comparison_calculator final {
+public:
+    comparison_calculator(const glm::vec3& source,
+                          const glm::vec3& receiver,
+                          const voxelised_scene_data& voxelised,
+                          float speed_of_sound,
+                          float acoustic_impedance);
+
+    impulse operator()(
+            const glm::vec3& image_source,
+            const aligned::vector<reflection_metadata>& intersections) const;
+
+private:
+    intensity_calculator intensity_;
+    fast_pressure_calculator fast_pressure_;
+};
+
+//----------------------------------------------------------------------------//
+
 #if 0
 class dumb_slow_fft_pressure_calculator final {
 public:

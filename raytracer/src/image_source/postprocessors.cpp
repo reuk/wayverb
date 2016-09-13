@@ -85,11 +85,57 @@ impulse fast_pressure_calculator::operator()(
 
     //  pressure = sqrt((strength * acoustic_impedance) / (4 * M_PI)) / distance
     //  'strength' is implicitly 1
-    const float raw_pressure = std::sqrt(acoustic_impedance_ / (4 * M_PI));
+    const float raw_pressure =
+            std::sqrt(acoustic_impedance_ / (4 * M_PI)) / distance;
     return impulse{pressure_to_intensity(surface_attenuation * raw_pressure,
                                          acoustic_impedance_),
                    to_cl_float3(image_source),
                    static_cast<cl_float>(distance / speed_of_sound_)};
+}
+
+//----------------------------------------------------------------------------//
+
+comparison_calculator::comparison_calculator(
+        const glm::vec3& source,
+        const glm::vec3& receiver,
+        const voxelised_scene_data& voxelised,
+        float speed_of_sound,
+        float acoustic_impedance)
+        : intensity_{source,
+                     receiver,
+                     voxelised,
+                     speed_of_sound,
+                     acoustic_impedance}
+        , fast_pressure_{source,
+                         receiver,
+                         voxelised,
+                         speed_of_sound,
+                         acoustic_impedance} {}
+
+impulse comparison_calculator::operator()(
+        const glm::vec3& image_source,
+        const aligned::vector<reflection_metadata>& intersections) const {
+    const auto intensity{intensity_(image_source, intersections)};
+    const auto fast_pressure{fast_pressure_(image_source, intersections)};
+
+    if (intensity.position != fast_pressure.position) {
+        throw std::runtime_error("mismatched position");
+    }
+
+    if (intensity.time != fast_pressure.time) {
+        throw std::runtime_error("mismatched times");
+    }
+
+    /*
+    using std::abs;
+    const auto difference{abs(intensity.volume - fast_pressure.volume)};
+    const auto mean{(abs(intensity.volume) + abs(fast_pressure.volume)) / 2};
+    if (any(make_volume_type(1) < (difference / mean))) {
+        throw std::runtime_error("mismatched volumes");
+    }
+    */
+
+    return fast_pressure;
 }
 
 //----------------------------------------------------------------------------//

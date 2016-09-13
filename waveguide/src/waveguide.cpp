@@ -123,10 +123,11 @@ aligned::vector<run_step_output> run(const compute_context& cc,
                                      double speed_of_sound,
                                      double acoustic_impedance,
                                      const per_step_callback& callback) {
-    preprocessor::single_soft_source preprocessor(source_index, input);
+    preprocessor::single_soft_source preprocessor{source_index, input};
 
-    aligned::vector<run_step_output> ret;
+    aligned::vector<run_step_output> ret{};
     ret.reserve(input.size());
+
     aligned::vector<step_postprocessor> postprocessors{
             postprocessor::microphone{
                     mesh.get_descriptor(),
@@ -144,7 +145,7 @@ aligned::vector<run_step_output> run(const compute_context& cc,
                            true)};
 
     if (results != input.size()) {
-        throw std::runtime_error("failed to complete waveguide run");
+        throw std::runtime_error{"failed to complete waveguide run"};
     }
 
     return ret;

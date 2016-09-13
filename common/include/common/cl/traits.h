@@ -475,3 +475,11 @@ inline auto log(const T& t) {
         return log(i);
     });
 }
+
+template <typename T, detail::enable_if_is_vector_t<T, int> = 0>
+inline auto abs(const T& t) {
+    return detail::map(t, [](auto i) {
+        using std::abs;
+        return abs(i);
+    });
+}
