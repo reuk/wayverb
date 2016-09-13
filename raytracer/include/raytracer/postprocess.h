@@ -23,7 +23,6 @@ template <typename It>
 aligned::vector<volume_type> convert_to_histogram(It begin,
                                                   It end,
                                                   float histogram_frequency,
-                                                  float acoustic_impedance,
                                                   float max_seconds) {
     if (begin == end) {
         return aligned::vector<volume_type>{};
@@ -120,14 +119,10 @@ template <typename It>  /// It is an iterator through impulse types
 aligned::vector<float> flatten_filter_and_mixdown(It begin,
                                                   It end,
                                                   float output_sample_rate,
-                                                  float acoustic_impedance,
                                                   float max_seconds) {
-    return multiband_filter_and_mixdown(convert_to_histogram(begin,
-                                                             end,
-                                                             output_sample_rate,
-                                                             acoustic_impedance,
-                                                             max_seconds),
-                                        output_sample_rate);
+    return multiband_filter_and_mixdown(
+            convert_to_histogram(begin, end, output_sample_rate, max_seconds),
+            output_sample_rate);
 }
 
 aligned::vector<aligned::vector<float>> run_attenuation(

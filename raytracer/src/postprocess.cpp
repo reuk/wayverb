@@ -118,7 +118,6 @@ run_attenuation<model::receiver_settings::mode::microphones>(
         return flatten_filter_and_mixdown(processed.begin(),
                                           processed.end(),
                                           output_sample_rate,
-                                          acoustic_impedance,
                                           max_seconds);
     });
 }
@@ -145,7 +144,6 @@ run_attenuation<model::receiver_settings::mode::hrtf>(
         return flatten_filter_and_mixdown(processed.begin(),
                                           processed.end(),
                                           output_sample_rate,
-                                          acoustic_impedance,
                                           max_seconds);
     });
 }

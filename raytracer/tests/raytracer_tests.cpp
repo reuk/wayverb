@@ -243,7 +243,7 @@ TEST(raytrace, image_source) {
         ASSERT_FALSE(i.empty());
         {
             auto mixed_down{mixdown(raytracer::convert_to_histogram(
-                    i.begin(), i.end(), sample_rate, acoustic_impedance, 20))};
+                    i.begin(), i.end(), sample_rate, 20))};
             normalize(mixed_down);
             snd::write(
                     build_string(SCRATCH_PATH, "/", name, "_no_processing.wav"),
@@ -253,7 +253,7 @@ TEST(raytrace, image_source) {
         }
         {
             auto processed{raytracer::flatten_filter_and_mixdown(
-                    i.begin(), i.end(), sample_rate, acoustic_impedance, 20)};
+                    i.begin(), i.end(), sample_rate, 20)};
             normalize(processed);
             snd::write(build_string(SCRATCH_PATH, "/", name, "_processed.wav"),
                        {processed},

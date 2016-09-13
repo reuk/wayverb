@@ -75,12 +75,12 @@ audio img_src_and_waveguide_test::operator()(
         impulses.emplace_back(*direct);
     }
 
-    auto img_src_results{
-            mixdown(raytracer::convert_to_histogram(impulses.begin(),
-                                                    impulses.end(),
-                                                    sample_rate,
-                                                    acoustic_impedance_,
-                                                    20))};
+    auto img_src_results{map_to_vector(
+            mixdown(raytracer::convert_to_histogram(
+                    impulses.begin(), impulses.end(), sample_rate, 20)),
+            [=](auto i) {
+                return intensity_to_pressure(i, acoustic_impedance_);
+            })};
     {
         static auto count{0};
         snd::write(build_string("raw_img_src_", count++, ".wav"),

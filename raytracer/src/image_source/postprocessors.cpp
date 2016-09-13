@@ -3,6 +3,7 @@
 
 #include "common/conversions.h"
 #include "common/map_to_vector.h"
+#include "common/pressure_intensity.h"
 #include "common/surfaces.h"
 
 namespace raytracer {
@@ -85,7 +86,8 @@ impulse fast_pressure_calculator::operator()(
     //  pressure = sqrt((strength * acoustic_impedance) / (4 * M_PI)) / distance
     //  'strength' is implicitly 1
     const float raw_pressure = std::sqrt(acoustic_impedance_ / (4 * M_PI));
-    return impulse{surface_attenuation * raw_pressure,
+    return impulse{pressure_to_intensity(surface_attenuation * raw_pressure,
+                                         acoustic_impedance_),
                    to_cl_float3(image_source),
                    static_cast<cl_float>(distance / speed_of_sound_)};
 }

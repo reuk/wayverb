@@ -8,8 +8,8 @@
 //  Z: specific acoustic impedance, c. 400
 //  ambient density: acoustic impedance / speed of sound
 
-template <typename T>
-inline T pressure_to_intensity(T pressure, T Z) {
+template <typename T, typename U>
+inline T pressure_to_intensity(T pressure, U Z) {
     return pressure * pressure / Z;
 }
 

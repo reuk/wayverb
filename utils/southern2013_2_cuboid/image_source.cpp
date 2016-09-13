@@ -33,13 +33,8 @@ audio image_source_test::operator()(const surface& surface,
             acoustic_impedance_,
             sample_rate)};
 
-    const auto img_src_results{
-            mixdown(raytracer::convert_to_histogram(impulses.begin(),
-                                                    impulses.end(),
-                                                    sample_rate,
-                                                    acoustic_impedance_,
-                                                    20))};
-
+    const auto img_src_results{mixdown(raytracer::convert_to_histogram(
+            impulses.begin(), impulses.end(), sample_rate, 20))};
 
     static auto count{0};
     const auto fname{
