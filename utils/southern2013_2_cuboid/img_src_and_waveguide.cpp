@@ -108,7 +108,7 @@ audio img_src_and_waveguide_test::operator()(
         const auto width{std::min(cutoff, 0.5 - cutoff) * 0.2};
         pressure.resize(max_size);
         corrected_waveguide.resize(max_size);
-        fast_filter filter{max_size};
+        fast_filter filter{max_size * 2};
         filter.filter(pressure.begin(),
                       pressure.end(),
                       pressure.begin(),

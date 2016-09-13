@@ -33,10 +33,16 @@ public:
     /// output range. Output range should be as big or bigger than input range.
     template <typename In, typename Out>
     void filter(In begin, In end, Out output_it, const callback& callback) {
+        const auto dist{std::distance(begin, end)};
+        if (dist > rbuf_.size()) {
+            throw std::runtime_error(
+                    "fast_filter::filter: input signal is too long");
+        }
+
         rbuf_.zero();
         std::copy(begin, end, rbuf_.begin());
         filter_impl(callback);
-        std::copy(rbuf_.begin(), rbuf_.end(), output_it);
+        std::copy(rbuf_.begin(), rbuf_.begin() + dist, output_it);
     }
 
 private:

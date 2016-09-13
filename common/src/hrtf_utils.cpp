@@ -17,7 +17,7 @@ aligned::vector<aligned::vector<float>> mixdown(
 
 void multiband_filter(aligned::vector<volume_type>& bands, double sample_rate) {
     constexpr auto num_bands{8};
-    fast_filter filter{bands.size()};
+    fast_filter filter{bands.size() * 2};
 
     const auto lower{20 / sample_rate}, upper{20000 / sample_rate};
 
