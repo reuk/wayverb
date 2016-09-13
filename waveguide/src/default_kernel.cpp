@@ -11,9 +11,9 @@ namespace waveguide {
 #define THE_KERNEL_FUNCTION kernels::ricker_kernel
 //#define THE_KERNEL_FUNCTION kernels::sin_modulated_gaussian_kernel
 
-default_kernel::default_kernel(double sampling_frequency)
-        : default_kernel(THE_KERNEL_FUNCTION(sampling_frequency)) {
-}
+default_kernel::default_kernel(double sampling_frequency, double valid_portion)
+        : default_kernel(
+                  THE_KERNEL_FUNCTION(sampling_frequency, valid_portion)) {}
 
 default_kernel::default_kernel(aligned::vector<float>&& opaque)
         : kernel(make_transparent(opaque))

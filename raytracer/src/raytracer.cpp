@@ -53,6 +53,7 @@ std::experimental::optional<results> run(
         const compute_context& cc,
         const voxelised_scene_data& scene_data,
         double speed_of_sound,
+        double acoustic_impedance,
         const glm::vec3& source,
         const glm::vec3& receiver,
         const aligned::vector<glm::vec3>& directions,
@@ -134,7 +135,8 @@ std::experimental::optional<results> run(
                     source,
                     receiver,
                     scene_data,
-                    speed_of_sound));
+                    speed_of_sound,
+                    acoustic_impedance));
 
     return results{
             get_direct_impulse(source, receiver, scene_data, speed_of_sound),

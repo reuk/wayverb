@@ -29,7 +29,7 @@ auto generate_noise_tail(float rt60) {
 
     aligned::vector<float> ret;
 
-    const auto coeff{std::exp(std::log(decibels::db2a(-60)) / rt60)};    
+    const auto coeff{std::exp(std::log(decibels::db2a(-60)) / rt60)};
     auto amp{1.0};
     for (auto i{0u}; i < rt60; ++i, amp *= coeff) {
         ret.emplace_back(distribution(engine) * amp);
@@ -41,8 +41,14 @@ TEST(schroeder, decay_time_from_points) {
     for (auto length : {1000.0, 2000.0, 10000.0, 20000.0, 100000.0}) {
         const auto noise{generate_noise_tail(length)};
 
-        ASSERT_NEAR(rt20(noise) * 3, length, length * 0.1);
-        ASSERT_NEAR(rt30(noise) * 2, length, length * 0.1);
-        ASSERT_NEAR(edt(noise) * 6, length, length * 0.1);
+        ASSERT_NEAR(rt20(noise.begin(), noise.end()).samples * 3,
+                    length,
+                    length * 0.1);
+        ASSERT_NEAR(rt30(noise.begin(), noise.end()).samples * 2,
+                    length,
+                    length * 0.1);
+        ASSERT_NEAR(edt(noise.begin(), noise.end()).samples * 6,
+                    length,
+                    length * 0.1);
     }
 }

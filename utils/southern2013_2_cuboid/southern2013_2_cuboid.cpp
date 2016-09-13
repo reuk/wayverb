@@ -41,6 +41,7 @@
 
 #include "common/azimuth_elevation.h"
 #include "common/decibels.h"
+#include "common/dsp_vector_ops.h"
 #include "common/progress_bar.h"
 #include "common/reverb_time.h"
 #include "common/schroeder.h"
@@ -71,9 +72,10 @@ public:
                     auto sd{scene_data_};
                     sd.set_surfaces(surface);
 
-                    const auto results{t(surface,
+                    auto results{t(surface,
                                          source,
                                          model::receiver_settings{receiver})};
+                    normalize(results.data);
 
                     const auto fname{build_string(results.prefix,
                                                   "_source_",
@@ -86,9 +88,11 @@ public:
 
                     snd::write(fname, {results.data}, results.sample_rate, 16);
 
-                    const auto measured_rt20{rt20(results.data) /
+                    const auto begin{results.data.begin()};
+                    const auto end{results.data.end()};
+                    const auto measured_rt20{rt20(begin, end).samples /
                                              results.sample_rate};
-                    const auto measured_rt30{rt30(results.data) /
+                    const auto measured_rt30{rt30(begin, end).samples /
                                              results.sample_rate};
 
                     std::cout << "rt20: " << measured_rt20 << std::endl;

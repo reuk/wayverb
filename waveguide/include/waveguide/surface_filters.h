@@ -1,9 +1,10 @@
 #pragma once
 
+#include "waveguide/filters.h"
+
+#include "common/map_to_vector.h"
 #include "common/scene_data.h"
 #include "common/surfaces.h"
-
-#include "waveguide/filters.h"
 
 namespace waveguide {
 
@@ -35,24 +36,33 @@ constexpr std::array<filter_descriptor, biquad_sections> to_filter_descriptors(
 inline coefficients_canonical to_filter_coefficients(const surface& surface,
                                                      float sr) {
     const auto descriptors{to_filter_descriptors(surface)};
-    //  transform filter parameters into a set of biquad coefficients
+    //  Transform filter parameters into a set of biquad coefficients.
     const auto individual_coeffs{get_peak_biquads_array(descriptors, sr)};
-    //  combine biquad coefficients into coefficients for a single
-    //  high-order
-    //  filter
+    //  Combine biquad coefficients into coefficients for a single
+    //  high-order filter.
     const auto ret{convolve(individual_coeffs)};
 
-    //  transform from reflection filter to impedance filter
+    //  Transform from reflection filter to impedance filter.
     return to_impedance_coefficients(ret);
 }
 
 inline aligned::vector<coefficients_canonical> to_filter_coefficients(
-        aligned::vector<surface> surfaces, float sr) {
-    aligned::vector<coefficients_canonical> ret(surfaces.size());
-    proc::transform(surfaces, ret.begin(), [sr](auto i) {
-        return to_filter_coefficients(i, sr);
-    });
-    return ret;
+        const aligned::vector<surface>& surfaces, float sr) {
+    return map_to_vector(surfaces,
+                         [=](auto i) { return to_filter_coefficients(i, sr); });
+}
+
+inline coefficients_canonical to_flat_coefficients(const surface& surface) {
+    const auto reflectance{
+            absorption_to_pressure_reflectance(surface.specular_absorption)};
+    const coefficients_canonical ret{{reflectance.s[0]}, {1}};
+    return to_impedance_coefficients(ret);
+}
+
+inline aligned::vector<coefficients_canonical> to_flat_coefficients(
+        const aligned::vector<surface>& surfaces) {
+    return map_to_vector(surfaces,
+                         [](auto i) { return to_flat_coefficients(i); });
 }
 
 }  // namespace waveguide

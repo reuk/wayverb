@@ -74,24 +74,30 @@ int main(int argc, char** argv) {
             throw std::runtime_error("source is outside of mesh!");
         }
 
-        struct signal {
+        struct signal final {
             std::string name;
             aligned::vector<float> kernel;
         };
 
+        const auto valid_portion{0.196};
+
         aligned::vector<signal> signals{
                 signal{"dirac", aligned::vector<float>{1.0}},
-                signal{"gauss", kernels::gaussian_kernel(sampling_frequency)},
+                signal{"gauss",
+                       kernels::gaussian_kernel(sampling_frequency,
+                                                valid_portion)},
                 signal{"sinmod_gauss",
                        kernels::sin_modulated_gaussian_kernel(
-                               sampling_frequency)},
-                signal{"ricker", kernels::ricker_kernel(sampling_frequency)},
+                               sampling_frequency, valid_portion)},
+                signal{"ricker",
+                       kernels::ricker_kernel(sampling_frequency,
+                                              valid_portion)},
                 signal{"hi_sinc",
                        hipass_sinc_kernel(sampling_frequency, 100, 401)},
                 signal{"band_sinc",
                        bandpass_sinc_kernel(sampling_frequency,
                                             100,
-                                            sampling_frequency * 0.25,
+                                            sampling_frequency * valid_portion,
                                             401)},
         };
 

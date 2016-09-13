@@ -51,8 +51,12 @@ aligned::vector<impulse> run(It begin,
         }
     }
 
-    return postprocess<calculator>(
-            tree.get_branches(), source, receiver, voxelised, speed_of_sound);
+    return postprocess<calculator>(tree.get_branches(),
+                                   source,
+                                   receiver,
+                                   voxelised,
+                                   speed_of_sound,
+                                   acoustic_impedance);
 }
 
 }  // namespace image_source

@@ -10,7 +10,7 @@ namespace waveguide {
 class default_kernel {
 public:
     /// Construct the kernel.
-    default_kernel(double sampling_frequency);
+    default_kernel(double sampling_frequency, double valid_portion);
 
     /// The waveguide kernel.
     const aligned::vector<float> kernel;

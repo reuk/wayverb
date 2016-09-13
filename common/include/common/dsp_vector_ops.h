@@ -35,13 +35,16 @@ inline auto mean(const T& t) {
 
 template <typename T>
 inline float max_mag(const T& t) {
-    return proc::accumulate(
-            t, 0.0f, [](auto a, auto b) { return std::max(a, max_mag(b)); });
+    return proc::accumulate(t, 0.0f, [](auto a, auto b) {
+        using std::max;
+        return max(a, max_mag(b));
+    });
 }
 
 template <>
 inline float max_mag(const float& t) {
-    return std::fabs(t);
+    using std::fabs;
+    return fabs(t);
 }
 
 /// Recursively divide by reference.
@@ -76,8 +79,7 @@ inline void mul(float& ret, float f) {
 /// divide every item in the vector by that value.
 template <typename T>
 inline void normalize(T& ret) {
-    auto mag = max_mag(ret);
-    if (mag != 0) {
+    if (const auto mag{max_mag(ret)}) {
         mul(ret, 1.0 / mag);
     }
 }

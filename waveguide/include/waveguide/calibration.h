@@ -7,9 +7,11 @@
 namespace waveguide {
 /// Given a source strength, calculate the distance at which the source produces
 /// intensity 1W/m^2.
-inline double distance_for_unit_intensity(double strength) {
+template <typename T>
+inline auto distance_for_unit_intensity(T strength) {
     //  Intensity for distance is given by 1 / (4 * pi * distance * distance)
-    return std::sqrt(strength / (4 * M_PI));
+    using std::sqrt;
+    return sqrt(strength / (4 * M_PI));
 }
 
 /// r = distance at which the geometric sound source has intensity 1W/m^2

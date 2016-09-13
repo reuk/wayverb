@@ -34,7 +34,8 @@ public:
     intensity_calculator(const glm::vec3& source,
                          const glm::vec3& receiver,
                          const voxelised_scene_data& voxelised,
-                         float speed_of_sound);
+                         float speed_of_sound,
+                         float acoustic_impedance);
 
     impulse operator()(
             const glm::vec3& image_source,
@@ -53,7 +54,8 @@ public:
     fast_pressure_calculator(const glm::vec3& source,
                              const glm::vec3& receiver,
                              const voxelised_scene_data& voxelised,
-                             float speed_of_sound);
+                             float speed_of_sound,
+                             float acoustic_impedance);
 
     impulse operator()(
             const glm::vec3& image_source,
@@ -63,6 +65,7 @@ private:
     const glm::vec3& receiver_;
     const voxelised_scene_data& voxelised_;
     float speed_of_sound_;
+    float acoustic_impedance_;
 
     aligned::vector<volume_type> surface_impedances_;
 };

@@ -30,6 +30,7 @@ std::experimental::optional<results> run(
         const compute_context& cc,
         const voxelised_scene_data& scene_data,
         double speed_of_sound,
+        double acoustic_impedance,
         const glm::vec3& source,
         const glm::vec3& receiver,
         const aligned::vector<glm::vec3>& directions,

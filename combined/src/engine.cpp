@@ -231,11 +231,12 @@ public:
                 compute_context,
                 voxelised,
                 speed_of_sound,
+                acoustic_impedance,
                 source,
                 receiver,
                 get_random_directions(rays),
                 impulses,
-                std::min(size_t{10},
+                std::min(size_t{20},
                          impulses),  //  TODO set this more intelligently
                 keep_going,
                 [&](auto step) {
@@ -264,7 +265,8 @@ public:
         //  WAVEGUIDE  -------------------------------------------------------//
         callback(state::starting_waveguide, 1.0);
 
-        const auto input{waveguide::default_kernel(waveguide_sample_rate)};
+        const auto input{
+                waveguide::default_kernel(waveguide_sample_rate, 0.196)};
 
         //  this is the number of steps to run the raytracer for
         //  TODO is there a less dumb way of doing this?

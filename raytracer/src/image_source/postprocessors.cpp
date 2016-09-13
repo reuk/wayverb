@@ -1,5 +1,5 @@
-#include "raytracer/image_source/postprocessors.h"
 #include "raytracer/construct_impulse.h"
+#include "raytracer/image_source/postprocessors.h"
 
 #include "common/conversions.h"
 #include "common/map_to_vector.h"
@@ -12,7 +12,8 @@ intensity_calculator::intensity_calculator(
         const glm::vec3&,
         const glm::vec3& receiver,
         const voxelised_scene_data& voxelised,
-        float speed_of_sound)
+        float speed_of_sound,
+        float)
         : receiver_{receiver}
         , voxelised_{voxelised}
         , speed_of_sound_{speed_of_sound} {}
@@ -46,10 +47,12 @@ fast_pressure_calculator::fast_pressure_calculator(
         const glm::vec3& source,
         const glm::vec3& receiver,
         const voxelised_scene_data& voxelised,
-        float speed_of_sound)
+        float speed_of_sound,
+        float acoustic_impedance)
         : receiver_{receiver}
         , voxelised_{voxelised}
         , speed_of_sound_{speed_of_sound}
+        , acoustic_impedance_{acoustic_impedance}
         , surface_impedances_{map_to_vector(
                   voxelised.get_scene_data().get_materials(),
                   [](auto material) {
@@ -75,11 +78,14 @@ impulse fast_pressure_calculator::operator()(
                                 impedance, j.angle)};
                 return i * reflectance;
             })};
-    //  TODO Calculate correct attenuation due to distance.
+
+    //  siltanen2013 equation 2
     const auto distance{glm::distance(image_source, receiver_)};
-    const auto volume{surface_attenuation /
-                      static_cast<float>(4 * M_PI * distance)};
-    return impulse{volume * volume,
+
+    //  pressure = sqrt((strength * acoustic_impedance) / (4 * M_PI)) / distance
+    //  'strength' is implicitly 1
+    const float raw_pressure = std::sqrt(acoustic_impedance_ / (4 * M_PI));
+    return impulse{surface_attenuation * raw_pressure,
                    to_cl_float3(image_source),
                    static_cast<cl_float>(distance / speed_of_sound_)};
 }
