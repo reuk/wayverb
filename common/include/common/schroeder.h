@@ -52,13 +52,13 @@ reverb_time decay_time_from_points(It begin,
 
     const auto comparator{[](auto i, auto j) { return i.y < j; }};
     const auto regression_end{std::lower_bound(in_db_with_times.crbegin(),
-                                                 in_db_with_times.crend(),
-                                                 begin_db,
-                                                 comparator)};
-    const auto regression_begin{std::lower_bound(in_db_with_times.crbegin(),
                                                in_db_with_times.crend(),
-                                               end_db,
+                                               begin_db,
                                                comparator)};
+    const auto regression_begin{std::lower_bound(in_db_with_times.crbegin(),
+                                                 in_db_with_times.crend(),
+                                                 end_db,
+                                                 comparator)};
 
     const auto regression{
             simple_linear_regression(regression_begin, regression_end)};
