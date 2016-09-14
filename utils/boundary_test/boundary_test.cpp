@@ -23,9 +23,6 @@
 #include "common/sinc.h"
 #include "common/write_audio_file.h"
 
-#include "samplerate.h"
-#include "sndfile.hh"
-
 #include <gflags/gflags.h>
 
 #include <algorithm>
@@ -69,7 +66,7 @@ private:
             const coefficients_canonical& coefficients) const {
         const auto scene_data{geo::get_scene_data(boundary)};
         const auto spacing{waveguide::config::grid_spacing(
-                speed_of_sound, 1 / (filter_frequency_ * 4))};
+                speed_of_sound, 1 / (filter_frequency * 4))};
 
         auto mesh{waveguide::compute_mesh(
                 cc_,
@@ -87,7 +84,7 @@ private:
                 compute_index(mesh.get_descriptor(), source_position_)};
 
         auto input{waveguide::make_transparent({1.0f})};
-        input.resize(steps_, 0);
+        input.resize(steps, 0);
         waveguide::preprocessor::single_soft_source preprocessor{source_index,
                                                                  input};
 
@@ -119,7 +116,7 @@ private:
             output_holders.emplace_back(receiver_index);
         }
 
-        progress_bar pb{std::cout, steps_};
+        progress_bar pb{std::cout, input.size()};
         waveguide::run(
                 cc_,
                 mesh,
@@ -142,7 +139,7 @@ private:
     free_field_results get_free_field_results() const {
         auto results{run_simulation(no_wall_,
                                     {image_position_, receiver_position_},
-                                    coefficients_canonical{})};
+                                    coefficients_canonical{{1}, {1}})};
 
         const auto window{right_hanning(results.front().size())};
         for (auto& i : results) {
@@ -156,9 +153,8 @@ public:
     aligned::vector<float> run_full_test(
             const std::string& test_name,
             const coefficients_canonical& coefficients) const {
-        auto reflected{
-                run_simulation(wall_, {receiver_position_}, coefficients)
-                        .front()};
+        auto reflected{run_simulation(wall_, {receiver_position_}, coefficients)
+                               .front()};
 
         const auto window{right_hanning(reflected.size())};
         elementwise_multiply(reflected, window);
@@ -169,57 +165,47 @@ public:
                         subbed.begin(),
                         [](const auto& i, const auto& j) { return j - i; });
 
-        const auto param_string{build_string(
-                std::setprecision(4), "_az_", azimuth_, "_el_", elevation_)};
-
         snd::write(build_string(output_folder_,
                                 "/",
                                 test_name,
-                                param_string,
                                 "_windowed_free_field.wav"),
                    {free_field_.image},
-                   out_sr_,
-                   bit_depth_);
-        snd::write(build_string(output_folder_,
-                                "/",
-                                test_name,
-                                param_string,
-                                "_windowed_subbed.wav"),
-                   {subbed},
-                   out_sr_,
-                   bit_depth_);
+                   out_sr,
+                   bit_depth);
+        snd::write(
+                build_string(
+                        output_folder_, "/", test_name, "_windowed_subbed.wav"),
+                {subbed},
+                out_sr,
+                bit_depth);
 
         return subbed;
     }
 
-    auto get_waveguide_sample_rate() const {return waveguide_sample_rate_;}
+    static constexpr auto speed_of_sound{340.0};
+    static constexpr auto filter_frequency{2000.0};
+    static constexpr auto waveguide_sample_rate{filter_frequency / 0.196f};
+    static constexpr auto out_sr{44100};
+    static constexpr auto bit_depth{16};
+    static constexpr auto dim{300};
+    static constexpr auto steps{dim * 1.4};
 
 private:
-    static constexpr auto speed_of_sound{340.0};
-
     const compute_context cc_{};
-    const float filter_frequency_{2000.0};
-    const float waveguide_sample_rate_{filter_frequency_ / 0.196f};
-    const float out_sr_{44100.0};
-    const size_t bit_depth_{16};
-    const size_t dim_{300};
-    const size_t steps_ = dim_ * 1.4;
 
-    const size_t desired_nodes_{dim_ * dim_ * dim_};
     const float divisions_ = waveguide::config::grid_spacing(
-            speed_of_sound, 1 / waveguide_sample_rate_);
+            speed_of_sound, 1 / waveguide_sample_rate);
 
-    const geo::box wall_{
-            glm::vec3{0, 0, 0},
-            glm::vec3{static_cast<float>(desired_nodes_)} * divisions_};
+    const geo::box wall_{glm::vec3{0, 0, 0},
+                         glm::vec3{static_cast<float>(dim)} * divisions_};
     const glm::vec3 far_{wall_.get_max()};
     const glm::vec3 new_dim_{far_.x * 2, far_.y, far_.z};
     const geo::box no_wall_{glm::vec3{0}, new_dim_};
 
-    const float source_dist_nodes_{glm::length(glm::vec3(desired_nodes_)) / 8};
-    const float source_dist_{source_dist_nodes_ * divisions_};
-
     const glm::vec3 wall_centre_{centre(no_wall_)};
+
+    const float source_dist_nodes_{glm::length(glm::vec3{dim}) / 8};
+    const float source_dist_{source_dist_nodes_ * divisions_};
 
     const std::string output_folder_;
     const float azimuth_;
@@ -236,6 +222,23 @@ private:
     const free_field_results free_field_{get_free_field_results()};
 };
 
+template <typename T>
+void serialize(T& archive, coefficients_canonical& coefficients) {
+    archive(cereal::make_nvp("b", coefficients.b),
+            cereal::make_nvp("a", coefficients.a));
+}
+
+struct coefficient_package final {
+    std::string name;
+    coefficients_canonical coefficients;
+};
+
+template <typename T>
+void serialize(T& archive, coefficient_package& c) {
+    archive(cereal::make_nvp("name", c.name),
+            cereal::make_nvp("coefficients", c.coefficients));
+}
+
 int main(int argc, char** argv) {
     gflags::ParseCommandLineFlags(&argc, &argv, true);
 
@@ -250,58 +253,79 @@ int main(int argc, char** argv) {
         return EXIT_FAILURE;
     }
 
-    const auto output_folder{std::string(argv[1])};
+    const std::string output_folder{argv[1]};
 
     const auto azimuth{std::stof(argv[2])};
     const auto elevation{std::stof(argv[3])};
 
-    const boundary_test test{output_folder, azimuth, elevation};
-
     try {
-        struct surface_package final {
-            std::string name;
-            surface surface;
-        };
+        const boundary_test test{output_folder, azimuth, elevation};
 
-        const cl_float lo{0.01};
-        const cl_float hi{0.9};
+        // struct surface_package final {
+        //    std::string name;
+        //    surface surface;
+        //};
 
-        const auto surface_set = {
-                surface_package{"anechoic",
-                                surface{{{lo, lo, lo, lo, lo, lo, lo, lo}},
-                                        {{lo, lo, lo, lo, lo, lo, lo, lo}}}},
-                surface_package{"filtered_1",
-                                surface{{{hi, lo, lo, lo, lo, lo, lo, lo}},
-                                        {{hi, lo, lo, lo, lo, lo, lo, lo}}}},
-                surface_package{"filtered_2",
-                                surface{{{lo, hi, lo, lo, lo, lo, lo, lo}},
-                                        {{lo, hi, lo, lo, lo, lo, lo, lo}}}},
-                surface_package{"filtered_3",
-                                surface{{{lo, lo, hi, lo, lo, lo, lo, lo}},
-                                        {{lo, lo, hi, lo, lo, lo, lo, lo}}}},
-                surface_package{
-                        "filtered_4",
-                        surface{{{0.4, 0.3, 0.5, 0.8, hi, hi, hi, hi}},
-                                {{0.4, 0.3, 0.5, 0.8, hi, hi, hi, hi}}}},
-                surface_package{"filtered_5",
-                                surface{{{lo, hi, hi, hi, hi, hi, hi, hi}},
-                                        {{lo, hi, hi, hi, hi, hi, hi, hi}}}},
-                surface_package{"filtered_6",
-                                surface{{{hi, lo, hi, hi, hi, hi, hi, hi}},
-                                        {{hi, lo, hi, hi, hi, hi, hi, hi}}}},
-                surface_package{"filtered_7",
-                                surface{{{hi, hi, lo, hi, hi, hi, hi, hi}},
-                                        {{hi, hi, lo, hi, hi, hi, hi, hi}}}},
-                surface_package{"flat",
-                                surface{{{hi, hi, hi, hi, hi, hi, hi, hi}},
-                                        {{hi, hi, hi, hi, hi, hi, hi, hi}}}},
-        };
+        // const cl_float lo{0.01};
+        // const cl_float hi{0.9};
 
-        const auto all_test_results{map_to_vector(surface_set, [&](auto i) {
-            const auto coefficients{waveguide::to_filter_coefficients(
-                    i.surface, test.get_waveguide_sample_rate())};
-            return test.run_full_test(i.name, coefficients);
-        })};
+        // const auto surface_set = {
+        //        surface_package{"anechoic",
+        //                        surface{{{lo, lo, lo, lo, lo, lo, lo, lo}},
+        //                                {{lo, lo, lo, lo, lo, lo, lo, lo}}}},
+        //        surface_package{"filtered_1",
+        //                        surface{{{hi, lo, lo, lo, lo, lo, lo, lo}},
+        //                                {{hi, lo, lo, lo, lo, lo, lo, lo}}}},
+        //        surface_package{"filtered_2",
+        //                        surface{{{lo, hi, lo, lo, lo, lo, lo, lo}},
+        //                                {{lo, hi, lo, lo, lo, lo, lo, lo}}}},
+        //        surface_package{"filtered_3",
+        //                        surface{{{lo, lo, hi, lo, lo, lo, lo, lo}},
+        //                                {{lo, lo, hi, lo, lo, lo, lo, lo}}}},
+        //        surface_package{
+        //                "filtered_4",
+        //                surface{{{0.4, 0.3, 0.5, 0.8, hi, hi, hi, hi}},
+        //                        {{0.4, 0.3, 0.5, 0.8, hi, hi, hi, hi}}}},
+        //        surface_package{"filtered_5",
+        //                        surface{{{lo, hi, hi, hi, hi, hi, hi, hi}},
+        //                                {{lo, hi, hi, hi, hi, hi, hi, hi}}}},
+        //        surface_package{"filtered_6",
+        //                        surface{{{hi, lo, hi, hi, hi, hi, hi, hi}},
+        //                                {{hi, lo, hi, hi, hi, hi, hi, hi}}}},
+        //        surface_package{"filtered_7",
+        //                        surface{{{hi, hi, lo, hi, hi, hi, hi, hi}},
+        //                                {{hi, hi, lo, hi, hi, hi, hi, hi}}}},
+        //        surface_package{"flat",
+        //                        surface{{{hi, hi, hi, hi, hi, hi, hi, hi}},
+        //                                {{hi, hi, hi, hi, hi, hi, hi, hi}}}},
+        //};
+
+        // const auto coefficients_set{
+        //        map_to_vector(surface_set, [&](auto i) {
+        //            const auto coefficients{waveguide::to_filter_coefficients(
+        //                    i.surface, test.get_waveguide_sample_rate())};
+        //            return coefficient_package{i.name, coefficients};
+        //        })};
+        aligned::vector<coefficient_package> coefficients_set{
+                {"flat_0",
+                 waveguide::to_flat_coefficients(make_surface(0.0199, 0))},
+                {"flat_1",
+                 waveguide::to_flat_coefficients(make_surface(0.19, 0))},
+                {"flat_2",
+                 waveguide::to_flat_coefficients(make_surface(0.36, 0))}};
+
+        {
+            //  Write coefficients to file.
+            std::ofstream file{
+                    build_string(output_folder, "/coefficients.txt")};
+            cereal::JSONOutputArchive archive{file};
+            archive(cereal::make_nvp("coefficients", coefficients_set));
+        }
+
+        const auto all_test_results{
+                map_to_vector(coefficients_set, [&](auto i) {
+                    return test.run_full_test(i.name, i.coefficients);
+                })};
 
         if (all_test_results.front() == all_test_results.back()) {
             std::cerr << "somehow both test results are the same even though "

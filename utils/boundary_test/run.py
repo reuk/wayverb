@@ -1,10 +1,12 @@
+#!/usr/local/bin/python
+
 from subprocess import call
 from os.path import join
 from os import environ
 from math import pi
 
-exe = "/Users/reuben/dev/waveguide/build/tests/boundary_test/boundary_test"
-out_dir = "/Users/reuben/dev/waveguide/tests/boundary_test/output"
+exe = "/Users/reuben/development/waveguide/build/utils/boundary_test/boundary_test"
+out_dir = "/Users/reuben/development/waveguide/utils/boundary_test/output"
 
 environ["GLOG_logtostderr"] = "1"
 

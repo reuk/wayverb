@@ -1,2 +1,2 @@
-python run.py
-python graph.py
+./run.py
+./graphs.py

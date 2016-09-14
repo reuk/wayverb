@@ -1,3 +1,5 @@
+#!/usr/local/bin/python
+
 import numpy as np
 import matplotlib
 render = True
@@ -8,26 +10,23 @@ from string import split
 import scipy.signal as signal
 import wave
 import math
+import os
+import re
+import json
 
 import sys
 sys.path.append("python")
-
-from boundary_modelling import get_notch_coeffs, series_coeffs, db2a, a2db
-from filter_stability import to_filter_coefficients, Surface
-
-COURANT = 1 / np.sqrt(3)
-COURANT_SQ = COURANT * COURANT
 
 USE_DB_AXES = True
 
 CUTOFF = 0.196
 
 
+def a2db(a):
+    return 20 * np.log10(a)
+
+
 def compute_boundary_coefficients(b_imp, a_imp, azimuth, elevation):
-    # b_imp - b coefficients of the boundary impedance filter
-    # a_imp - a coefficients of the boundary impedance filter
-    # azimuth (theta)
-    # elevation (phi)
     ca = np.cos(azimuth)
     ce = np.cos(elevation)
 
@@ -42,9 +41,8 @@ def compute_boundary_coefficients(b_imp, a_imp, azimuth, elevation):
     return num, den
 
 
-def frequency_plot(num, den, sr, label):
+def frequency_plot(num, den, label):
     w, h = signal.freqz(num, den)
-#    w *= sr / 2 * np.pi
     n = len(w)
     w.resize(n / 2)
     h.resize(n / 2)
@@ -60,38 +58,12 @@ def frequency_plot(num, den, sr, label):
     plt.axvline(CUTOFF)
 
 
-def base_coeffs(i, sr):
-    return series_coeffs(to_filter_coefficients(Surface(i, i), sr))
-
-
-def impedance_coeffs(n, d, sr):
-    num = [a + b for b, a in zip(n, d)]
-    den = [a - b for b, a in zip(n, d)]
-
-    a0 = den[0]
-
-    num = [i / a0 for i in num]
-    den = [i / a0 for i in den]
-
-    return num, den
-
-
-def surface_filter_plot(i, sr):
-    num, den = base_coeffs(i, sr)
-    frequency_plot(num, den, sr, "reflectance filter response")
-
-
-def boundary_coefficient_plot(i, sr, azimuth, elevation):
-    num, den = base_coeffs(i, sr)
-    num, den = impedance_coeffs(num, den, sr)
+def boundary_coefficient_plot(num, den, azimuth, elevation):
     num, den = compute_boundary_coefficients(num, den, azimuth, elevation)
-    frequency_plot(num, den, sr, "predicted response")
+    frequency_plot(num, den, "predicted response")
 
 
-def show_graph(free_field_file, subbed_file, name, surface, azimuth, elevation):
-    filter_frequency = 2000
-    sr = filter_frequency * 4
-
+def show_graph(free_field_file, subbed_file, num, den, azimuth, elevation):
     files = [("free", free_field_file), ("reflection response", subbed_file), ]
 
     def get_signals(f):
@@ -113,127 +85,60 @@ def show_graph(free_field_file, subbed_file, name, surface, azimuth, elevation):
     if USE_DB_AXES:
         div = a2db(div)
     do_plot("divided", div)
-    boundary_coefficient_plot(surface, sr, azimuth, elevation)
+    boundary_coefficient_plot(num, den, azimuth, elevation)
 
     plt.title(
         " azimuth: " +
         str(azimuth) +
         ", elevation: " +
         str(elevation))
-    surface_filter_plot(surface, sr)
     plt.legend()
 
 
 def main():
-    azel = [
-        (0, 0),
-        (0.7854, 0),
-        (0.7854, 0.7854),
-        (1.047, 1.047),
-    ]
-
-    root = "/Users/reuben/dev/waveguide/boundary_test/output/"
+    output_folder = "/Users/reuben/development/waveguide/utils/boundary_test/output"
     suffix_free = "_windowed_free_field.wav"
     suffix_subb = "_windowed_subbed.wav"
 
-    lo = 0.01
-    hi = 0.9
+    info_file = "coefficients.txt"
 
-    names = [
-        ("anechoic",
-            [lo, lo, lo, lo, lo, lo, lo, lo]),
-        ("filtered_1",
-            [hi, lo, lo, lo, lo, lo, lo, lo]),
-        ("filtered_2",
-            [lo, hi, lo, lo, lo, lo, lo, lo]),
-        ("filtered_3",
-            [lo, lo, hi, lo, lo, lo, lo, lo]),
-        ("filtered_4",
-            [0.4, 0.3, 0.5, 0.8, 0.9, hi, hi, hi]),
-        ("filtered_5",
-            [lo, hi, hi, hi, hi, hi, hi, hi]),
-        ("filtered_6",
-            [hi, lo, hi, hi, hi, hi, hi, hi]),
-        ("filtered_7",
-            [hi, hi, lo, hi, hi, hi, hi, hi]),
-        ("flat",
-            [hi, hi, hi, hi, hi, hi, hi, hi]),
-    ]
+    subdirs = [
+        root for root,
+        subdirs,
+        _ in os.walk(output_folder) if not subdirs]
 
-    for az, el in azel:
-        az_el = "az_" + str(az) + "_el_" + str(el)
-
-        def make_fname(i, suffix):
-            return root + az_el + "/" + i + "_" + az_el + suffix
-
-        files = [(make_fname(i, suffix_free), make_fname(i, suffix_subb), i, j)
-                 for i, j in names]
-
-        for a, b, c, d in files:
-            plt.figure()
-            show_graph(a, b, c, d, az, el)
-            plt.show()
-            if render:
-                plt.savefig(subbed_file + ".plot.pdf", bbox_inches="tight")
-
-
-def one_page():
-    azel = [
-        (0, 0),
-        (0.7854, 0),
-        (0.7854, 0.7854),
-        (1.047, 1.047),
-    ]
-
-    root = "/Users/reuben/dev/waveguide/tests/boundary_test/output/"
-    suffix_free = "_windowed_free_field.wav"
-    suffix_subb = "_windowed_subbed.wav"
-
-    lo = 0.01
-    hi = 0.9
-
-    names = [
-        ("anechoic",
-            [lo, lo, lo, lo, lo, lo, lo, lo]),
-        ("filtered_1",
-            [hi, lo, lo, lo, lo, lo, lo, lo]),
-        ("filtered_2",
-            [lo, hi, lo, lo, lo, lo, lo, lo]),
-        ("filtered_3",
-            [lo, lo, hi, lo, lo, lo, lo, lo]),
-        ("filtered_5",
-            [lo, hi, hi, hi, hi, hi, hi, hi]),
-        ("filtered_6",
-            [hi, lo, hi, hi, hi, hi, hi, hi]),
-        ("filtered_7",
-            [hi, hi, lo, hi, hi, hi, hi, hi]),
-        ("flat",
-            [hi, hi, hi, hi, hi, hi, hi, hi]),
-    ]
-
-    for az, el in azel:
-        az_el = "az_" + str(az) + "_el_" + str(el)
-
-        def make_fname(i, suffix):
-            return root + az_el + "/" + i + "_" + az_el + suffix
-
-        files = [(make_fname(i, suffix_free), make_fname(i, suffix_subb), i, j)
-                 for i, j in names]
-
+    matcher = re.compile("az_([0-9]+\.[0-9]+)_el_([0-9]+\.[0-9]+)")
+    for subdir in subdirs:
         plt.figure(figsize=(8.27, 11.69))
-        for (a, b, c, d), i in zip(files, range(len(files))):
-            plt.subplot(4, 2, i + 1)
-            show_graph(a, b, c, d, az, el)
+
+        groups = matcher.match(os.path.basename(subdir)).groups()
+        azimuth = float(groups[0])
+        elevation = float(groups[1])
+
+        with open(os.path.join(subdir, info_file)) as f:
+            obj = json.load(f)
+
+        num_subplots = len(obj["coefficients"])
+        for item, subplot in zip(obj["coefficients"], range(num_subplots)):
+            numerator = [item["coefficients"]["b"][
+                "value" + str(i)] for i in range(len(item["coefficients"]["b"]))]
+            denominator = [item["coefficients"]["a"][
+                "value" + str(i)] for i in range(len(item["coefficients"]["a"]))]
+
+            plt.subplot(num_subplots, 1, subplot + 1)
+            show_graph(os.path.join(subdir, item["name"] + suffix_free),
+                       os.path.join(subdir, item["name"] + suffix_subb),
+                       numerator, denominator, azimuth, elevation)
+
         plt.tight_layout()
         plt.show()
         if render:
             plt.savefig(
-                root +
-                az_el +
-                "/" +
-                az_el +
-                ".plot.pdf",
-                bbox_inches="tight", dpi=300)
+                os.path.join(
+                    subdir,
+                    "plot.pdf"),
+                bbox_inches="tight",
+                dpi=300)
 
 
 if __name__ == "__main__":
@@ -247,4 +152,4 @@ if __name__ == "__main__":
 
     matplotlib.rcParams.update(pgf_with_rc_fonts)
 
-    one_page()
+    main()
