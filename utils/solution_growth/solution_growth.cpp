@@ -53,8 +53,8 @@ int main(int argc, char** argv) {
     try {
         const glm::vec3 source{4.8, 2.18, 2.12};
         const glm::vec3 receiver{3.91, 1.89, 1.69};
-        const auto sampling_frequency{5000.0};
-   
+        const auto sampling_frequency{8000.0};
+
         const auto surface{make_surface(0.2, 0)};
 
         const compute_context cc{};
@@ -63,7 +63,8 @@ int main(int argc, char** argv) {
         auto scene_data{geo::get_scene_data(boundary)};
         scene_data.set_surfaces(surface);
 
-        const auto rt60{sabine_reverb_time(scene_data, make_volume_type(0)).s[0]};
+        const auto rt60{
+                sabine_reverb_time(scene_data, make_volume_type(0)).s[0]};
 
         const size_t simulation_length =
                 std::pow(std::floor(std::log(sampling_frequency * rt60 * 2) /
@@ -83,7 +84,7 @@ int main(int argc, char** argv) {
                 cc, voxelised, spacing, speed_of_sound)};
         model.set_coefficients({waveguide::to_flat_coefficients(surface)});
 
-        const auto receiver_index {
+        const auto receiver_index{
                 compute_index(model.get_descriptor(), receiver)};
         const auto source_index{compute_index(model.get_descriptor(), source)};
 
@@ -133,23 +134,39 @@ int main(int argc, char** argv) {
                                               400,
                                               [&](auto) { pb += 1; })};
 
-            auto output{map_to_vector(
+            const auto output{map_to_vector(
                     results, [](const auto& i) { return i.pressure; })};
 
             {
-                const auto fname{build_string(
-                        "solution_growth.", i.name, ".transparent.wav")};
-
-                snd::write(fname, {output}, sampling_frequency, 16);
+                snd::write(
+                        build_string(
+                                "solution_growth.", i.name, ".transparent.wav"),
+                        {output},
+                        sampling_frequency,
+                        16);
             }
 
             {
+                auto copy{output};
                 filter::extra_linear_dc_blocker u;
-                filter::run_two_pass(u, output.begin(), output.end());
+                filter::run_two_pass(u, copy.begin(), copy.end());
+                snd::write(
+                        build_string(
+                                "solution_growth.", i.name, ".dc_blocked.wav"),
+                        {copy},
+                        sampling_frequency,
+                        16);
+            }
 
-                const auto fname{build_string(
-                        "solution_growth.", i.name, ".dc_blocked.wav")};
-                snd::write(fname, {output}, sampling_frequency, 16);
+            {
+                auto copy{output};
+                filter::block_dc(copy.begin(), copy.end(), sampling_frequency);
+                snd::write(build_string("solution_growth.",
+                                        i.name,
+                                        ".butterworth_blocked.wav"),
+                           {copy},
+                           sampling_frequency,
+                           16);
             }
         }
     } catch (const std::runtime_error& e) {
