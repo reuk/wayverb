@@ -25,11 +25,10 @@ double grid_spacing(double speed_of_sound, double time_step) {
 
 }  // namespace config
 
-aligned::vector<float> adjust_sampling_rate(aligned::vector<float>&& w_results,
+aligned::vector<float> adjust_sampling_rate(aligned::vector<float> w_results,
                                             double in_sr,
                                             double out_sr) {
     aligned::vector<float> out_signal(out_sr * w_results.size() / in_sr);
-
     SRC_DATA sample_rate_info{w_results.data(),
                               out_signal.data(),
                               long(w_results.size()),
@@ -38,7 +37,6 @@ aligned::vector<float> adjust_sampling_rate(aligned::vector<float>&& w_results,
                               0,
                               0,
                               out_sr / in_sr};
-
     src_simple(&sample_rate_info, SRC_SINC_BEST_QUALITY, 1);
     return out_signal;
 }

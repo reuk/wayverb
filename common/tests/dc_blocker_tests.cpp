@@ -116,7 +116,7 @@ TEST(dc_blocker, big_offset) {
     ASSERT_EQ(dc.filter(2), 2 / 16.0);
 }
 
-aligned::vector<float> generate_noise(size_t samples, float mag=0.5f) {
+aligned::vector<float> generate_noise(size_t samples, float mag = 0.5f) {
     std::default_random_engine engine{std::random_device()()};
     std::uniform_real_distribution<float> dist{-mag, mag};
     aligned::vector<float> ret(samples);
@@ -198,5 +198,20 @@ TEST(dc_blocker, block_dc) {
         filter::block_dc(
                 constant_offset.begin(), constant_offset.end(), sample_rate);
         snd::write("constant_offset.wav", {constant_offset}, sample_rate, 16);
+    }
+
+    {
+        auto increasing_offset{noise};
+        const auto inc{0.001};
+        auto offset{0.0};
+        for (auto& sample : increasing_offset) {
+            sample = (sample * 0.1) + offset;
+            offset += inc;
+        }
+        filter::block_dc(increasing_offset.begin(),
+                         increasing_offset.end(),
+                         sample_rate);
+        snd::write(
+                "increasing_offset.wav", {increasing_offset}, sample_rate, 16);
     }
 }

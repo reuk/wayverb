@@ -1,6 +1,6 @@
 #include "waveguide/config.h"
-#include "waveguide/default_kernel.h"
 #include "waveguide/filters.h"
+#include "waveguide/make_transparent.h"
 #include "waveguide/mesh.h"
 #include "waveguide/postprocessor/microphone.h"
 #include "waveguide/postprocessor/single_node.h"
@@ -83,8 +83,7 @@ TEST(run_waveguide, run_waveguide) {
         size_t node_;
     };
 
-    waveguide::default_kernel kernel{samplerate, 0.196};
-    auto input{kernel.kernel};
+    auto input{waveguide::make_transparent(aligned::vector<float>{1})};
     input.resize(steps);
 
     waveguide::preprocessor::single_soft_source preprocessor{source_index,

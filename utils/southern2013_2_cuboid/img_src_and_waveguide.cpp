@@ -4,12 +4,12 @@
 #include "raytracer/raytracer.h"
 
 #include "waveguide/calibration.h"
-#include "waveguide/default_kernel.h"
 #include "waveguide/make_transparent.h"
 #include "waveguide/surface_filters.h"
 #include "waveguide/waveguide.h"
 
 #include "common/azimuth_elevation.h"
+#include "common/dc_blocker.h"
 #include "common/dsp_vector_ops.h"
 #include "common/frequency_domain_filter.h"
 #include "common/progress_bar.h"
@@ -38,8 +38,6 @@ img_src_and_waveguide_test::img_src_and_waveguide_test(const scene_data& sd,
         , speed_of_sound_{speed_of_sound}
         , acoustic_impedance_{acoustic_impedance} {}
 
-#define USE_DEFAULT_KERNEL 0
-
 audio img_src_and_waveguide_test::operator()(
         const surface& surface,
         const glm::vec3& source,
@@ -55,7 +53,7 @@ audio img_src_and_waveguide_test::operator()(
 
     const auto sample_rate{44100.0};
 
-    //  Run raytracer.
+    //  Run raytracer.  ------------------------------------------------------//
 
     const auto directions{get_random_directions(100000)};
 
@@ -96,26 +94,21 @@ audio img_src_and_waveguide_test::operator()(
             sample_rate};
     std::cout << "raytracer rt60: " << raytracer_rt60 << '\n' << std::flush;
 
-    //  Run waveguide.
+    //  Run waveguide.  ------------------------------------------------------//
 
+    //  Find input and output nodes.
     const auto input_node{compute_index(mesh.get_descriptor(), source)};
     const auto output_node{
             compute_index(mesh.get_descriptor(), receiver.position)};
 
-    const auto normalised_max{0.196};
-    const waveguide::default_kernel kernel{waveguide_sample_rate_,
-                                           normalised_max};
-#if USE_DEFAULT_KERNEL
-    auto input_signal{kernel.kernel};
-    input_signal.resize(img_src_results.size() * waveguide_sample_rate_ /
-                                sample_rate +
-                        kernel.correction_offset_in_samples);
-#else
+    //  Create input signal.
+    //  Here we're using a dirac delta, made transparent, resized to the step
+    //  number.
     auto input_signal{waveguide::make_transparent(aligned::vector<float>{1})};
     input_signal.resize(img_src_results.size() * waveguide_sample_rate_ /
                         sample_rate);
-#endif
 
+    //  Run the waveguide simulation.
     progress_bar pb{std::cerr, input_signal.size()};
     const auto waveguide_results{waveguide::run(compute_context_,
                                                 mesh,
@@ -126,19 +119,42 @@ audio img_src_and_waveguide_test::operator()(
                                                 acoustic_impedance_,
                                                 [&](auto i) { pb += 1; })};
 
+    //  Compute required amplitude adjustment.
     const float calibration_factor = waveguide::rectilinear_calibration_factor(
             waveguide_sample_rate_, speed_of_sound_);
+
+    //  Adjust magnitude.
+    auto magnitude_adjusted{map_to_vector(waveguide_results, [=](auto i) {
+        return i.pressure * calibration_factor;
+    })};
+
+    //  Filter out everything above the waveguide nyquist.
+    {
+        fast_filter filter{magnitude_adjusted.size() * 2};
+        filter.filter(magnitude_adjusted.begin(),
+                      magnitude_adjusted.end(),
+                      magnitude_adjusted.begin(),
+                      [=](auto cplx, auto freq) {
+                          //   We use quite a wide 'crossover' band here to
+                          //   minimize ring - everything over 0.2 is pretty
+                          //   much guaranteed to be garbage anyway.
+                          return cplx *
+                                 compute_hipass_magnitude(freq, 0.25, 0.05, 0);
+                      });
+    }
+
+    //  Filter out dc component.
+    filter::block_dc(magnitude_adjusted.begin(),
+                     magnitude_adjusted.end(),
+                     waveguide_sample_rate_);
+
+    //  Convert sampling rate.
     auto corrected_waveguide{waveguide::adjust_sampling_rate(
-            map_to_vector(
-                    waveguide_results,
-                    [=](auto i) { return i.pressure * calibration_factor; }),
-            waveguide_sample_rate_,
-            sample_rate)};
-#if USE_DEFAULT_KERNEL
-    corrected_waveguide.erase(
-            corrected_waveguide.begin(),
-            corrected_waveguide.begin() + kernel.correction_offset_in_samples);
-#endif
+            magnitude_adjusted, waveguide_sample_rate_, sample_rate)};
+
+    // filter::block_dc(corrected_waveguide.begin(),
+    //                 corrected_waveguide.end(),
+    //                 sample_rate);
 
     {
         static auto count{0};
@@ -161,8 +177,9 @@ audio img_src_and_waveguide_test::operator()(
             std::max(corrected_waveguide.size(), img_src_results.size())};
     {
         //  Do some crossover filtering
-        const auto normalised_cutoff{0.15};
-        const auto normalised_width{normalised_max - normalised_cutoff};
+        const auto waveguide_max{0.16};
+        const auto normalised_width{0.2};
+        const auto normalised_cutoff{waveguide_max - (normalised_width / 2)};
 
         const auto adjust_frequency{[=](auto i) {
             return i * waveguide_sample_rate_ / sample_rate;

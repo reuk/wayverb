@@ -121,8 +121,8 @@ private:
 
 //----------------------------------------------------------------------------//
 
-/// This uses a second-butterworth filter for a flat passband and steep falloff.
-/// The second-order butterworth provides a reasonable balance between stope
+/// This uses a butterworth filter for a flat passband and steep falloff.
+/// The butterworth is chosen to provide a reasonable balance between stope
 /// steepness and impulse response length.
 /// To maintain zero-phase the filter is run forwards then backwards over the
 /// input, doubling the steepness of the falloff.
@@ -131,8 +131,13 @@ template <typename It>
 void block_dc(It begin, It end, double sr) {
     auto hipass{make_series_biquads(
             compute_hipass_butterworth_coefficients<1>(10, sr))};
-//    const auto ir{impulse_response(hipass, 1 << 13)};
-//    const auto rt{rt30(ir.begin(), ir.end())};
+    //const auto ir{impulse_response(hipass, 1 << 13)};
+    //const size_t rt = std::ceil(rt30(ir.begin(), ir.end()).samples);
+    //const auto in_size{std::distance(begin, end)};
+    //aligned::vector<float> copy(in_size + 2 * rt);
+    //std::copy(begin, end, copy.begin() + rt);
+    //run_two_pass(hipass, copy.begin(), copy.end());
+    //std::copy(copy.begin() + rt, copy.begin() + rt + in_size, begin);
     run_two_pass(hipass, begin, end);
 }
 

@@ -143,15 +143,15 @@ int main() {
     test_case_harness test_case_harness{};
 
     aligned::vector<test_case_harness::single_test> tests{
-            img_src_and_waveguide_test{test_case_harness.get_scene_data(),
-                                       speed_of_sound,
-                                       acoustic_impedance},
+            // img_src_and_waveguide_test{test_case_harness.get_scene_data(),
+            //                            speed_of_sound,
+            //                            acoustic_impedance},
             // image_source_test{test_case_harness.get_scene_data(),
             //                  speed_of_sound,
             //                  acoustic_impedance},
-            // waveguide_test{test_case_harness.get_scene_data(),
-            //               speed_of_sound,
-            //               acoustic_impedance},
+            waveguide_test{test_case_harness.get_scene_data(),
+                           speed_of_sound,
+                           acoustic_impedance},
     };
 
     for (auto& i : tests) {

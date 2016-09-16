@@ -24,12 +24,12 @@ callraytrace () {
 }
 
 export GLOG_logtostderr=1
-export GTEST_FILTER="*filters_common*"
+#export GTEST_FILTER="*filters_common*"
 
-cmake .. && make && ctest -V
+#cmake .. && make && ctest -V
 #cmake .. && make && cd utils/image_source_comparison && ./image_source_comparison
 
-#cmake .. && make && cd utils/southern2013_2_cuboid && ./southern2013_2_cuboid | tee output.txt
+cmake .. && make && cd utils/southern2013_2_cuboid && ./southern2013_2_cuboid | tee output.txt
 
 #cmake .. && make && make doc && ctest -V
 #cmake .. && make && ctest -V && callraytrace vault vault vault

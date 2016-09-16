@@ -21,7 +21,7 @@
 #include "waveguide/attenuator/hrtf.h"
 #include "waveguide/attenuator/microphone.h"
 #include "waveguide/boundary_adjust.h"
-#include "waveguide/default_kernel.h"
+#include "waveguide/make_transparent.h"
 #include "waveguide/mesh.h"
 #include "waveguide/postprocess.h"
 #include "waveguide/postprocessor/microphone.h"
@@ -265,16 +265,13 @@ public:
         //  WAVEGUIDE  -------------------------------------------------------//
         callback(state::starting_waveguide, 1.0);
 
-        const auto input{
-                waveguide::default_kernel(waveguide_sample_rate, 0.196)};
+        auto input{waveguide::make_transparent(aligned::vector<float>{1})};
 
         //  this is the number of steps to run the raytracer for
         //  TODO is there a less dumb way of doing this?
-        const auto steps{std::ceil(max_time * waveguide_sample_rate) +
-                         input.opaque_kernel_size};
-
-        waveguide::preprocessor::single_soft_source preprocessor(source_index,
-                                                                 input.kernel);
+        const auto steps{std::ceil(max_time * waveguide_sample_rate)};
+        waveguide::preprocessor::single_soft_source preprocessor{source_index,
+                                                                 input};
 
         //  If the max raytracer time is large this could take forever...
         aligned::vector<waveguide::run_step_output> waveguide_results;
@@ -311,13 +308,6 @@ public:
         //  valid
 
         callback(state::finishing_waveguide, 1.0);
-
-        //  correct for filter time offset
-        assert(input.correction_offset_in_samples < waveguide_results.size());
-
-        waveguide_results.erase(
-                waveguide_results.begin(),
-                waveguide_results.begin() + input.correction_offset_in_samples);
 
         std::unique_ptr<intermediate> ret = std::make_unique<intermediate_impl>(
                 source,

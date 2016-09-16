@@ -1,7 +1,6 @@
 #include "waveguide/attenuator/microphone.h"
 #include "waveguide/boundary_adjust.h"
 #include "waveguide/config.h"
-#include "waveguide/default_kernel.h"
 #include "waveguide/mesh.h"
 #include "waveguide/postprocessor/microphone.h"
 #include "waveguide/preprocessor/gaussian.h"
