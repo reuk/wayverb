@@ -2,6 +2,7 @@
 
 #include "common/aligned/vector.h"
 #include "common/filters_common.h"
+#include "common/schroeder.h"
 #include "common/stl_wrappers.h"
 
 namespace filter {
@@ -117,5 +118,22 @@ private:
     delay_line delay_line;
     n_moving_averages<4> moving_averages;
 };
+
+//----------------------------------------------------------------------------//
+
+/// This uses a second-butterworth filter for a flat passband and steep falloff.
+/// The second-order butterworth provides a reasonable balance between stope
+/// steepness and impulse response length.
+/// To maintain zero-phase the filter is run forwards then backwards over the
+/// input, doubling the steepness of the falloff.
+/// It will also introduce some pre- and post-ring.
+template <typename It>
+void block_dc(It begin, It end, double sr) {
+    auto hipass{make_series_biquads(
+            compute_hipass_butterworth_coefficients<1>(10, sr))};
+//    const auto ir{impulse_response(hipass, 1 << 13)};
+//    const auto rt{rt30(ir.begin(), ir.end())};
+    run_two_pass(hipass, begin, end);
+}
 
 }  // namespace filter

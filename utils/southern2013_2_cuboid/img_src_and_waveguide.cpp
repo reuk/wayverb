@@ -20,12 +20,10 @@
 
 template <typename It>
 float estimate_rt60(It begin, It end) {
-    const auto measured_rt20{rt20(begin, end)};
-    const auto measured_rt30{rt30(begin, end)};
-    return std::get<0>(std::min(
-            std::make_tuple(measured_rt20.samples * 3, measured_rt20.r),
-            std::make_tuple(measured_rt30.samples * 2, measured_rt30.r),
-            [](auto a, auto b) { return std::get<1>(a) < std::get<1>(b); }));
+    return std::min(rt20(begin, end),
+                    rt30(begin, end),
+                    [](auto a, auto b) { return a.r < b.r; })
+            .samples;
 }
 
 img_src_and_waveguide_test::img_src_and_waveguide_test(const scene_data& sd,
@@ -62,16 +60,15 @@ audio img_src_and_waveguide_test::operator()(
     const auto directions{get_random_directions(100000)};
 
     auto impulses{raytracer::image_source::run<
-            raytracer::image_source::comparison_calculator>(
-            directions.begin(),
-            directions.end(),
-            compute_context_,
-            voxels,
-            source,
-            receiver.position,
-            speed_of_sound_,
-            acoustic_impedance_,
-            sample_rate)};
+            raytracer::image_source::comparison_calculator>(directions.begin(),
+                                                            directions.end(),
+                                                            compute_context_,
+                                                            voxels,
+                                                            source,
+                                                            receiver.position,
+                                                            speed_of_sound_,
+                                                            acoustic_impedance_,
+                                                            sample_rate)};
 
     if (const auto direct{raytracer::get_direct_impulse(
                 source, receiver.position, voxels, speed_of_sound_)}) {

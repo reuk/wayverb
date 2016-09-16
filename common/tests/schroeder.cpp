@@ -1,5 +1,5 @@
-#include "common/schroeder.h"
 #include "common/decibels.h"
+#include "common/schroeder.h"
 
 #include "gtest/gtest.h"
 
@@ -41,14 +41,11 @@ TEST(schroeder, decay_time_from_points) {
     for (auto length : {1000.0, 2000.0, 10000.0, 20000.0, 100000.0}) {
         const auto noise{generate_noise_tail(length)};
 
-        ASSERT_NEAR(rt20(noise.begin(), noise.end()).samples * 3,
-                    length,
-                    length * 0.1);
-        ASSERT_NEAR(rt30(noise.begin(), noise.end()).samples * 2,
-                    length,
-                    length * 0.1);
-        ASSERT_NEAR(edt(noise.begin(), noise.end()).samples * 6,
-                    length,
-                    length * 0.1);
+        ASSERT_NEAR(
+                rt20(noise.begin(), noise.end()).samples, length, length * 0.1);
+        ASSERT_NEAR(
+                rt30(noise.begin(), noise.end()).samples, length, length * 0.1);
+        ASSERT_NEAR(
+                edt(noise.begin(), noise.end()).samples, length, length * 0.1);
     }
 }

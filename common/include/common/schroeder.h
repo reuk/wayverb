@@ -40,7 +40,8 @@ template <typename It>
 reverb_time decay_time_from_points(It begin,
                                    It end,
                                    float begin_db,
-                                   float end_db) {
+                                   float end_db,
+                                   float min_db) {
     const auto integrated{
             squared_integrated(std::make_reverse_iterator(end),
                                std::make_reverse_iterator(begin))};
@@ -68,20 +69,20 @@ reverb_time decay_time_from_points(It begin,
     const auto find_time{
             [&](auto level) { return (level - regression.c) / regression.m; }};
 
-    return {find_time(end_db) - find_time(begin_db), regression.r};
+    return {find_time(min_db), regression.r};
 }
 
 template <typename It>
 reverb_time rt20(It begin, It end) {
-    return decay_time_from_points(begin, end, -5, -25);
+    return decay_time_from_points(begin, end, -5, -25, -60);
 }
 
 template <typename It>
 reverb_time rt30(It begin, It end) {
-    return decay_time_from_points(begin, end, -5, -35);
+    return decay_time_from_points(begin, end, -5, -35, -60);
 }
 
 template <typename It>
 reverb_time edt(It begin, It end) {
-    return decay_time_from_points(begin, end, 0, -10);
+    return decay_time_from_points(begin, end, 0, -10, -60);
 }

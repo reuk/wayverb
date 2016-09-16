@@ -243,4 +243,12 @@ auto compute_lopass_butterworth_coefficients(
             cutoff, sr, compute_lopass_butterworth_segment);
 }
 
+template <typename IIR>
+aligned::vector<float> impulse_response(IIR& filt, size_t steps) {
+    aligned::vector<float> ret(steps, 0.0f);
+    ret.front() = 1;
+    run_one_pass(filt, ret.begin(), ret.end());
+    return ret;
+}
+
 }  // namespace filter

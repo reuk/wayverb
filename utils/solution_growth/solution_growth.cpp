@@ -51,8 +51,8 @@ aligned::vector<float> make_mls(size_t length) {
 int main(int argc, char** argv) {
     gflags::ParseCommandLineFlags(&argc, &argv, true);
     try {
-        glm::vec3 source{4.8, 2.18, 2.12};
-        glm::vec3 receiver{3.91, 1.89, 1.69};
+        const glm::vec3 source{4.8, 2.18, 2.12};
+        const glm::vec3 receiver{3.91, 1.89, 1.69};
         const auto sampling_frequency{5000.0};
    
         const auto surface{make_surface(0.2, 0)};

@@ -73,8 +73,8 @@ public:
                     sd.set_surfaces(surface);
 
                     auto results{t(surface,
-                                         source,
-                                         model::receiver_settings{receiver})};
+                                   source,
+                                   model::receiver_settings{receiver})};
                     normalize(results.data);
 
                     const auto fname{build_string(results.prefix,
@@ -97,8 +97,8 @@ public:
 
                     std::cout << "rt20: " << measured_rt20 << std::endl;
                     std::cout << "rt30: " << measured_rt30 << std::endl;
-                    const auto measured_rt60{
-                            (measured_rt20 * 3 + measured_rt30 * 2) / 2};
+                    const auto measured_rt60{(measured_rt20 + measured_rt30) /
+                                             2};
                     std::cout << "measured rt60 is around " << measured_rt60
                               << '\n';
 

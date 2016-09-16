@@ -32,8 +32,8 @@ void run_filter(
         const std::array<filter::biquad::coefficients, num>& coefficients) {
     static_assert(num != 0, "Why would we want a zero-item filter?");
 
-    auto lopass{filter::make_series_biquads(coefficients)};
-    filter::run_two_pass(lopass, sig.begin(), sig.end());
+    auto filt{filter::make_series_biquads(coefficients)};
+    filter::run_two_pass(filt, sig.begin(), sig.end());
     snd::write(build_string(name, ".wav"), {sig}, sample_rate, bit_depth);
 }
 
