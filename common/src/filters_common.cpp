@@ -7,51 +7,35 @@
 
 namespace filter {
 
-LopassWindowedSinc::LopassWindowedSinc(int inputLength)
-        : convolver(KERNEL_LENGTH + inputLength - 1) {}
+lopass_windowed_sinc::lopass_windowed_sinc(int inputLength)
+        : convolver_{KERNEL_LENGTH + inputLength - 1} {}
 
-void LopassWindowedSinc::set_params(double co, double s) {
+void lopass_windowed_sinc::set_params(double co, double s) {
     const auto i{lopass_sinc_kernel(s, co, KERNEL_LENGTH)};
-    proc::copy(i, kernel.begin());
+    proc::copy(i, kernel_.begin());
 }
 
-HipassWindowedSinc::HipassWindowedSinc(int inputLength)
-        : convolver(KERNEL_LENGTH + inputLength - 1) {}
+hipass_windowed_sinc::hipass_windowed_sinc(int inputLength)
+        : convolver_{KERNEL_LENGTH + inputLength - 1} {}
 
-void HipassWindowedSinc::set_params(double co, double s) {
+void hipass_windowed_sinc::set_params(double co, double s) {
     const auto i{hipass_sinc_kernel(s, co, KERNEL_LENGTH)};
-    proc::copy(i, kernel.begin());
+    proc::copy(i, kernel_.begin());
 }
 
-BandpassWindowedSinc::BandpassWindowedSinc(int inputLength)
-        : convolver(KERNEL_LENGTH + inputLength - 1) {}
+bandpass_windowed_sinc::bandpass_windowed_sinc(int inputLength)
+        : convolver_{KERNEL_LENGTH + inputLength - 1} {}
 
-void BandpassWindowedSinc::set_params(double l, double h, double s) {
+void bandpass_windowed_sinc::set_params(double l, double h, double s) {
     const auto i{bandpass_sinc_kernel(s, l, h, KERNEL_LENGTH)};
-    proc::copy(i, kernel.begin());
+    proc::copy(i, kernel_.begin());
 }
 
 //----------------------------------------------------------------------------//
 
-Biquad::Biquad(double b0, double b1, double b2, double a1, double a2)
-        : b0(b0)
-        , b1(b1)
-        , b2(b2)
-        , a1(a1)
-        , a2(a2) {}
-
-double Biquad::filter(double i) {
-    const auto out{i * b0 + z1};
-    z1 = i * b1 + z2 - a1 * out;
-    z2 = i * b2 - a2 * out;
-    return out;
-}
-
-void Biquad::clear() { z1 = z2 = 0; }
-
-//----------------------------------------------------------------------------//
-
-Biquad make_bandpass_biquad(double lo, double hi, double sr) {
+biquad::coefficients compute_bandpass_biquad_coefficients(double lo,
+                                                          double hi,
+                                                          double sr) {
     const auto c{sqrt(lo * hi)};
     const auto omega{2 * M_PI * c / sr};
     const auto cs{cos(omega)};
@@ -71,14 +55,15 @@ Biquad make_bandpass_biquad(double lo, double hi, double sr) {
 }
 
 namespace {
-double getC(double co, double sr) {
+double get_c(double co, double sr) {
     const auto wcT{M_PI * co / sr};
     return cos(wcT) / sin(wcT);
 }
 }  // namespace
 
-Biquad make_linkwitz_riley_lopass(double cutoff, double sr) {
-    const auto c{getC(cutoff, sr)};
+biquad::coefficients compute_linkwitz_riley_lopass_coefficients(double cutoff,
+                                                                double sr) {
+    const auto c{get_c(cutoff, sr)};
     const auto a0{c * c + c * sqrt(2) + 1};
     return {1 / a0,
             2 / a0,
@@ -87,8 +72,9 @@ Biquad make_linkwitz_riley_lopass(double cutoff, double sr) {
             (c * c - c * sqrt(2) + 1) / a0};
 }
 
-Biquad make_linkwitz_riley_hipass(double cutoff, double sr) {
-    const auto c{getC(cutoff, sr)};
+biquad::coefficients compute_linkwitz_riley_hipass_coefficients(double cutoff,
+                                                                double sr) {
+    const auto c{get_c(cutoff, sr)};
     const auto a0{c * c + c * sqrt(2) + 1};
     return {(c * c) / a0,
             (-2 * c * c) / a0,
@@ -97,6 +83,41 @@ Biquad make_linkwitz_riley_hipass(double cutoff, double sr) {
             (c * c - c * sqrt(2) + 1) / a0};
 }
 
-Biquad make_dc_blocker() { return {1, 1, 0, 0.995, 0}; }
+biquad::coefficients compute_dc_blocker_coefficients() {
+    return {1, 1, 0, 0.995, 0};
+}
+
+//----------------------------------------------------------------------------//
+
+biquad::coefficients compute_lopass_butterworth_segment(double cf,
+                                                        size_t order,
+                                                        size_t segment) {
+    const auto cf2{cf * cf};
+    const auto p{2 * cf * std::cos(M_PI * (order + 2 * (segment + 1) - 1) /
+                                   (2 * order))};
+    const auto a0{1 - p + cf2};
+    return {cf2 / a0,
+            (2.0 * cf2) / a0,
+            cf2 / a0,
+            (2.0 * (cf2 - 1.0)) / a0,
+            (cf2 + p + 1.0) / a0};
+}
+
+//----------------------------------------------------------------------------//
+
+biquad::coefficients compute_hipass_butterworth_segment(double cf,
+                                                        size_t order,
+                                                        size_t segment) {
+    const auto cf2{cf * cf};
+    const auto cf3{cf * cf2};
+    const auto p{2 * cf2 * std::cos(M_PI * (order + 2 * (segment + 1) - 1) /
+                                    (2 * order))};
+    const auto a0{cf - p + cf3};
+    return {cf / a0,
+            (-2.0 * cf) / a0,
+            cf / a0,
+            (2.0 * (cf3 - cf)) / a0,
+            (cf3 + p + cf) / a0};
+}
 
 }  // namespace filter

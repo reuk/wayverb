@@ -14,84 +14,116 @@
 /// filtering.
 namespace filter {
 
-class LopassWindowedSinc final {
+///	FIR filter concept:
+///		* implements a method 'filter' which takes two iterators and returns
+///		  a filtered vector of float.
+
+class lopass_windowed_sinc final {
 public:
-    explicit LopassWindowedSinc(int inputLength);
-
-    /// Filter a vector of data.
-    template <typename It>
-    aligned::vector<float> filter(It b, It e) {
-        return convolver.convolve(kernel.begin(), kernel.end(), b, e);
-    }
-
-    void set_params(double co, double s);
-
-private:
-    static const auto KERNEL_LENGTH{99};
-    fast_convolver convolver;
-    std::array<float, KERNEL_LENGTH> kernel;
-};
-
-/// An interesting windowed-sinc hipass filter.
-class HipassWindowedSinc final {
-public:
-    explicit HipassWindowedSinc(int inputLength);
+    explicit lopass_windowed_sinc(int inputLength);
 
     /// Filter a vector of data.
     template <typename It>
     aligned::vector<float> filter(It begin, It end) {
-        return convolver.convolve(
-                std::begin(kernel), std::end(kernel), begin, end);
+        return convolver_.convolve(
+                std::begin(kernel_), std::end(kernel_), begin, end);
     }
 
     void set_params(double co, double s);
 
 private:
-    static const auto KERNEL_LENGTH{99};
-    fast_convolver convolver;
-    std::array<float, KERNEL_LENGTH> kernel;
+    static constexpr size_t KERNEL_LENGTH{99};
+    fast_convolver convolver_;
+    std::array<float, KERNEL_LENGTH> kernel_;
 };
 
-/// An interesting windowed-sinc bandpass filter.
-class BandpassWindowedSinc final {
+/// An interesting windowed-sinc hipass filter.
+class hipass_windowed_sinc final {
 public:
-    explicit BandpassWindowedSinc(int inputLength);
+    explicit hipass_windowed_sinc(int inputLength);
 
     /// Filter a vector of data.
     template <typename It>
-    aligned::vector<float> filter(It b, It e) {
-        return convolver.convolve(kernel.begin(), kernel.end(), b, e);
+    aligned::vector<float> filter(It begin, It end) {
+        return convolver_.convolve(
+                std::begin(kernel_), std::end(kernel_), begin, end);
+    }
+
+    void set_params(double co, double s);
+
+private:
+    static constexpr size_t KERNEL_LENGTH{99};
+    fast_convolver convolver_;
+    std::array<float, KERNEL_LENGTH> kernel_;
+};
+
+/// An interesting windowed-sinc bandpass filter.
+class bandpass_windowed_sinc final {
+public:
+    explicit bandpass_windowed_sinc(int inputLength);
+
+    /// Filter a vector of data.
+    template <typename It>
+    aligned::vector<float> filter(It begin, It end) {
+        return convolver_.convolve(
+                std::begin(kernel_), std::end(kernel_), begin, end);
     }
 
     void set_params(double l, double h, double s);
 
 private:
-    static const auto KERNEL_LENGTH{99};
-    fast_convolver convolver;
-    std::array<float, KERNEL_LENGTH> kernel;
+    static constexpr size_t KERNEL_LENGTH{99};
+    fast_convolver convolver_;
+    std::array<float, KERNEL_LENGTH> kernel_;
 };
 
 //----------------------------------------------------------------------------//
+
+///	IIR filter concept:
+///		* implements a method 'filter' which takes a single double, filters it,
+///		  and returns a single filtered double.
+///		* implements a method 'clear' which zeros any state that might affect
+///		  future output from 'filter' but which does not change the
+///		  characteristics of the filter.
 
 /// A super-simple biquad filter.
-/// Oh hey it's basically a functor
-class Biquad final {
+///	Adheres to the IIR filter concept.
+
+class biquad final {
 public:
-    Biquad(double b0, double b1, double b2, double a1, double a2);
-    double filter(double i);
-    void clear();
+    struct coefficients final {
+        double b0{0}, b1{0}, b2{0}, a1{0}, a2{0};
+    };
+
+    constexpr biquad(const coefficients& coefficients)
+            : coefficients_{coefficients} {}
+
+    ///	Run the filter for one step.
+    constexpr double filter(double i) {
+        const auto out{i * coefficients_.b0 + z1_};
+        z1_ = i * coefficients_.b1 - coefficients_.a1 * out + z2_;
+        z2_ = i * coefficients_.b2 - coefficients_.a2 * out;
+        return out;
+    }
+
+    ///	Resets delay lines, does *not* affect filter coefficients.
+    constexpr void clear() { z1_ = z2_ = 0; }
 
 private:
-    double b0{0}, b1{0}, b2{0}, a1{0}, a2{0};
-    double z1{0}, z2{0};
+    coefficients coefficients_;
+    double z1_{0}, z2_{0};
 };
 
 //----------------------------------------------------------------------------//
 
-Biquad make_bandpass_biquad(double lo, double hi, double sr);
-Biquad make_linkwitz_riley_lopass(double cutoff, double sr);
-Biquad make_linkwitz_riley_hipass(double cutoff, double sr);
-Biquad make_dc_blocker();
+biquad::coefficients compute_bandpass_biquad_coefficients(double lo,
+                                                          double hi,
+                                                          double sr);
+biquad::coefficients compute_linkwitz_riley_lopass_coefficients(double cutoff,
+                                                                double sr);
+biquad::coefficients compute_linkwitz_riley_hipass_coefficients(double cutoff,
+                                                                double sr);
+biquad::coefficients compute_dc_blocker_coefficients_();
 
 //----------------------------------------------------------------------------//
 
@@ -115,10 +147,100 @@ void run_two_pass(Filter& filter, It begin, It end) {
 
 template <typename It>
 void linkwitz_riley_bandpass(double lo, double hi, double s, It begin, It end) {
-    auto lopass{make_linkwitz_riley_lopass(hi, s)};
+    biquad lopass{compute_linkwitz_riley_lopass_coefficients(hi, s)};
     run_two_pass(lopass, begin, end);
-    auto hipass{make_linkwitz_riley_hipass(lo, s)};
+    biquad hipass{compute_linkwitz_riley_hipass_coefficients(lo, s)};
     run_two_pass(hipass, begin, end);
+}
+
+//----------------------------------------------------------------------------//
+
+template <size_t... i>
+constexpr auto make_biquads(
+        const std::array<biquad::coefficients, sizeof...(i)>& coefficients,
+        std::index_sequence<i...>) {
+    return std::array<biquad, sizeof...(i)>{{biquad{coefficients[i]}...}};
+}
+
+template <size_t num>
+constexpr auto make_biquads(
+        const std::array<biquad::coefficients, num>& coefficients) {
+    return make_biquads(coefficients, std::make_index_sequence<num>{});
+}
+
+///	Adheres to the IIR filter concept.
+template <size_t num>
+class series_biquads final {
+public:
+    static constexpr auto num_biquads{num};
+    static constexpr auto order{num_biquads * 2};
+
+    constexpr series_biquads(
+            const std::array<biquad::coefficients, num_biquads>& coefficients)
+            : biquads_{make_biquads(coefficients)} {}
+
+    constexpr double filter(double i) {
+        for (auto& biquad : biquads_) {
+            i = biquad.filter(i);
+        }
+        return i;
+    }
+
+    constexpr void clear() {
+        for (auto& biquad : biquads_) {
+            biquad.clear();
+        }
+    }
+
+private:
+    std::array<biquad, num_biquads> biquads_;
+};
+
+template <size_t num>
+constexpr auto make_series_biquads(
+        const std::array<biquad::coefficients, num>& coefficients) {
+    return series_biquads<num>{coefficients};
+}
+
+//----------------------------------------------------------------------------//
+
+biquad::coefficients compute_lopass_butterworth_segment(double cf,
+                                                        size_t order,
+                                                        size_t segment);
+
+biquad::coefficients compute_hipass_butterworth_segment(double cf,
+                                                        size_t order,
+                                                        size_t segment);
+
+template <typename Callback, size_t... i>
+auto compute_butterworth_segments(double cf,
+                                  Callback callback,
+                                  std::index_sequence<i...>) {
+    const auto order{sizeof...(i) * 2};
+    return std::array<biquad::coefficients, sizeof...(i)>{
+            {callback(cf, order, i)...}};
+}
+
+template <size_t num, typename Callback>
+auto compute_butterworth_coefficients(
+    double cutoff, double sr, Callback callback) {
+    return compute_butterworth_segments(std::tan(M_PI * cutoff / sr),
+                                        callback,
+                                        std::make_index_sequence<num>{});
+}
+
+template <size_t num>
+auto compute_hipass_butterworth_coefficients(
+    double cutoff, double sr) {
+    return compute_butterworth_coefficients<num>(
+            cutoff, sr, compute_hipass_butterworth_segment);
+}
+
+template <size_t num>
+auto compute_lopass_butterworth_coefficients(
+    double cutoff, double sr) {
+    return compute_butterworth_coefficients<num>(
+            cutoff, sr, compute_lopass_butterworth_segment);
 }
 
 }  // namespace filter
