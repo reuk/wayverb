@@ -35,7 +35,8 @@ public:
                          const glm::vec3& receiver,
                          const voxelised_scene_data& voxelised,
                          float speed_of_sound,
-                         float acoustic_impedance);
+                         float acoustic_impedance,
+                         bool flip_phase=true);
 
     impulse operator()(
             const glm::vec3& image_source,
@@ -45,6 +46,7 @@ private:
     const glm::vec3& receiver_;
     const voxelised_scene_data& voxelised_;
     float speed_of_sound_;
+    bool flip_phase_;
 };
 
 //----------------------------------------------------------------------------//
@@ -55,7 +57,8 @@ public:
                              const glm::vec3& receiver,
                              const voxelised_scene_data& voxelised,
                              float speed_of_sound,
-                             float acoustic_impedance);
+                             float acoustic_impedance,
+                             bool flip_phase = true);
 
     impulse operator()(
             const glm::vec3& image_source,
@@ -66,6 +69,7 @@ private:
     const voxelised_scene_data& voxelised_;
     float speed_of_sound_;
     float acoustic_impedance_;
+    bool flip_phase_;
 
     aligned::vector<volume_type> surface_impedances_;
 };
@@ -78,7 +82,8 @@ public:
                           const glm::vec3& receiver,
                           const voxelised_scene_data& voxelised,
                           float speed_of_sound,
-                          float acoustic_impedance);
+                          float acoustic_impedance,
+                          bool flip_phase_=true);
 
     impulse operator()(
             const glm::vec3& image_source,

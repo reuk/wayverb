@@ -14,10 +14,12 @@ intensity_calculator::intensity_calculator(
         const glm::vec3& receiver,
         const voxelised_scene_data& voxelised,
         float speed_of_sound,
-        float)
+        float,
+        bool flip_phase)
         : receiver_{receiver}
         , voxelised_{voxelised}
-        , speed_of_sound_{speed_of_sound} {}
+        , speed_of_sound_{speed_of_sound}
+        , flip_phase_{flip_phase} {}
 
 impulse intensity_calculator::operator()(
         const glm::vec3& image_source,
@@ -32,7 +34,7 @@ impulse intensity_calculator::operator()(
                                            .surface};
                 const auto reflectance{absorption_to_energy_reflectance(
                         surface.specular_absorption)};
-                return i * reflectance;
+                return i * reflectance * (flip_phase_ ? -1 : 1);
             })};
     return construct_impulse(
             surface_attenuation, image_source, receiver_, speed_of_sound_);
@@ -49,11 +51,13 @@ fast_pressure_calculator::fast_pressure_calculator(
         const glm::vec3& receiver,
         const voxelised_scene_data& voxelised,
         float speed_of_sound,
-        float acoustic_impedance)
+        float acoustic_impedance,
+        bool flip_phase)
         : receiver_{receiver}
         , voxelised_{voxelised}
         , speed_of_sound_{speed_of_sound}
         , acoustic_impedance_{acoustic_impedance}
+        , flip_phase_{flip_phase}
         , surface_impedances_{map_to_vector(
                   voxelised.get_scene_data().get_materials(),
                   [](auto material) {
@@ -77,12 +81,12 @@ impulse fast_pressure_calculator::operator()(
                 const auto reflectance{
                         average_wall_impedance_to_pressure_reflectance(
                                 impedance, j.angle)};
-                return i * reflectance;
+                return i * reflectance * (flip_phase_ ? -1 : 1);
             })};
 
-    //  siltanen2013 equation 2
     const auto distance{glm::distance(image_source, receiver_)};
 
+    //  siltanen2013 equation 2
     //  pressure = sqrt((strength * acoustic_impedance) / (4 * M_PI)) / distance
     //  'strength' is implicitly 1
     const float raw_pressure =
@@ -100,17 +104,20 @@ comparison_calculator::comparison_calculator(
         const glm::vec3& receiver,
         const voxelised_scene_data& voxelised,
         float speed_of_sound,
-        float acoustic_impedance)
+        float acoustic_impedance,
+        bool flip_phase)
         : intensity_{source,
                      receiver,
                      voxelised,
                      speed_of_sound,
-                     acoustic_impedance}
+                     acoustic_impedance,
+                     flip_phase}
         , fast_pressure_{source,
                          receiver,
                          voxelised,
                          speed_of_sound,
-                         acoustic_impedance} {}
+                         acoustic_impedance,
+                         flip_phase} {}
 
 impulse comparison_calculator::operator()(
         const glm::vec3& image_source,

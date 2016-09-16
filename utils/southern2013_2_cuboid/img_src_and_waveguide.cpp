@@ -10,6 +10,7 @@
 #include "waveguide/waveguide.h"
 
 #include "common/azimuth_elevation.h"
+#include "common/dsp_vector_ops.h"
 #include "common/frequency_domain_filter.h"
 #include "common/progress_bar.h"
 #include "common/schroeder.h"
@@ -38,6 +39,8 @@ img_src_and_waveguide_test::img_src_and_waveguide_test(const scene_data& sd,
                   speed_of_sound)}
         , speed_of_sound_{speed_of_sound}
         , acoustic_impedance_{acoustic_impedance} {}
+
+#define USE_DEFAULT_KERNEL 0
 
 audio img_src_and_waveguide_test::operator()(
         const surface& surface,
@@ -83,8 +86,10 @@ audio img_src_and_waveguide_test::operator()(
             })};
     {
         static auto count{0};
+        auto copy{img_src_results};
+        normalize(copy);
         snd::write(build_string("raw_img_src_", count++, ".wav"),
-                   {img_src_results},
+                   {copy},
                    sample_rate,
                    16);
     }
@@ -92,7 +97,7 @@ audio img_src_and_waveguide_test::operator()(
     const auto raytracer_rt60{
             estimate_rt60(img_src_results.begin(), img_src_results.end()) /
             sample_rate};
-    std::cout << "raytracer rt60: " << raytracer_rt60 << '\n';
+    std::cout << "raytracer rt60: " << raytracer_rt60 << '\n' << std::flush;
 
     //  Run waveguide.
 
@@ -103,17 +108,18 @@ audio img_src_and_waveguide_test::operator()(
     const auto normalised_max{0.196};
     const waveguide::default_kernel kernel{waveguide_sample_rate_,
                                            normalised_max};
-#if 0
+#if USE_DEFAULT_KERNEL
     auto input_signal{kernel.kernel};
-#else
-    auto input_signal{waveguide::make_transparent(aligned::vector<float>{1})};
-#endif
-
     input_signal.resize(img_src_results.size() * waveguide_sample_rate_ /
                                 sample_rate +
                         kernel.correction_offset_in_samples);
+#else
+    auto input_signal{waveguide::make_transparent(aligned::vector<float>{1})};
+    input_signal.resize(img_src_results.size() * waveguide_sample_rate_ /
+                        sample_rate);
+#endif
 
-    progress_bar pb{std::cout, input_signal.size()};
+    progress_bar pb{std::cerr, input_signal.size()};
     const auto waveguide_results{waveguide::run(compute_context_,
                                                 mesh,
                                                 input_node,
@@ -131,14 +137,18 @@ audio img_src_and_waveguide_test::operator()(
                     [=](auto i) { return i.pressure * calibration_factor; }),
             waveguide_sample_rate_,
             sample_rate)};
+#if USE_DEFAULT_KERNEL
     corrected_waveguide.erase(
             corrected_waveguide.begin(),
             corrected_waveguide.begin() + kernel.correction_offset_in_samples);
+#endif
 
     {
         static auto count{0};
+        auto copy{corrected_waveguide};
+        normalize(copy);
         snd::write(build_string("raw_waveguide_", count++, ".wav"),
-                   {corrected_waveguide},
+                   {copy},
                    sample_rate,
                    16);
     }
@@ -177,10 +187,16 @@ audio img_src_and_waveguide_test::operator()(
 
         {
             static auto count{0};
+            auto copy{img_src_results};
+            normalize(copy);
             snd::write(build_string("filtered_raytracer_", count++, ".wav"),
-                       {img_src_results},
+                       {copy},
                        sample_rate,
                        16);
+
+            const auto rt60{estimate_rt60(copy.begin(), copy.end()) /
+                            sample_rate};
+            std::cout << "filtered raytracer rt60: " << rt60 << '\n';
         }
 
         filter.filter(corrected_waveguide.begin(),
@@ -193,10 +209,15 @@ audio img_src_and_waveguide_test::operator()(
 
         {
             static auto count{0};
+            auto copy{corrected_waveguide};
+            normalize(copy);
             snd::write(build_string("filtered_waveguide_", count++, ".wav"),
-                       {corrected_waveguide},
+                       {copy},
                        sample_rate,
                        16);
+            const auto rt60{estimate_rt60(copy.begin(), copy.end()) /
+                            sample_rate};
+            std::cout << "filtered waveguide rt60: " << rt60 << '\n';
         }
     }
 

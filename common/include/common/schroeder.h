@@ -5,6 +5,7 @@
 #include "common/linear_regression.h"
 #include "common/map_to_vector.h"
 #include "common/stl_wrappers.h"
+#include "common/string_builder.h"
 
 #include "glm/glm.hpp"
 
@@ -29,8 +30,8 @@ struct reverb_time final {
     double samples;
 
     /// The product-moment correlation coefficient.
-    /// Should probably be between -1 <= r < -0.95, where lower is better.
-    /// If -0.95 < r the reverb time probably shouldn't be trusted.
+    /// Should ideally be between -1 <= r < -0.95, where lower is better.
+    /// If -0.95 <= r the reverb time probably shouldn't be trusted.
     double r;
 };
 

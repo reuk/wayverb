@@ -53,21 +53,5 @@ void find_valid_paths(const multitree<path_element>& tree,
                       const voxelised_scene_data& voxelised,
                       const postprocessor& callback);
 
-//----------------------------------------------------------------------------//
-
-template <typename It>
-volume_type compute_volume(It begin, It end, const scene_data& scene_data) {
-    return std::accumulate(
-            begin,
-            end,
-            make_volume_type(1),
-            [&](const auto& volume, const auto& i) {
-                const auto scene_triangle{scene_data.get_triangles()[i]};
-                const auto surface{
-                        scene_data.get_surfaces()[scene_triangle.surface]};
-                return volume * surface.specular;
-            });
-}
-
 }  // namespace image_source
 }  // namespace raytracer

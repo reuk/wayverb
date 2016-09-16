@@ -483,3 +483,9 @@ inline auto abs(const T& t) {
         return abs(i);
     });
 }
+
+template <typename T, detail::enable_if_is_vector_t<T, int> = 0>
+inline auto copysign(const T& t, const T& u) {
+    using std::copysign;
+    return detail::zip(t, u, [](auto i, auto j) { return copysign(i, j); });
+}
