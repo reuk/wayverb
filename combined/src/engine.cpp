@@ -257,10 +257,13 @@ public:
         const auto impulses{raytracer_results->get_impulses()};
 
         //  look for the max time of an impulse
-        const auto max_time{
-                proc::max_element(impulses, [](const auto& a, const auto& b) {
-                    return a.time < b.time;
-                })->time};
+        const auto max_time{proc::max_element(impulses,
+                                              [](const auto& a, const auto& b) {
+                                                  return a.distance <
+                                                         b.distance;
+                                              })
+                                    ->distance /
+                            speed_of_sound};
 
         //  WAVEGUIDE  -------------------------------------------------------//
         callback(state::starting_waveguide, 1.0);

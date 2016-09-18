@@ -102,7 +102,7 @@ struct alignas(1 << 5) impulse final {
     volume_type volume;  //  actual per-band volume of the impulse
     cl_float3 position;  //  position of the secondary source (used for
                          //  attenuation)
-    cl_float time;       //  time that the impulse is received
+    cl_float distance;   //  distance that the carrier ray has travelled
 };
 
 template <>
@@ -111,13 +111,13 @@ struct cl_representation<impulse> final {
 typedef struct {
     volume_type volume;
     float3 position;
-    float time;
+    float distance;
 } impulse;
 )"};
 };
 
 constexpr auto to_tuple(const impulse& x) {
-    return std::tie(x.volume, x.position, x.time);
+    return std::tie(x.volume, x.position, x.distance);
 }
 
 constexpr bool operator==(const impulse& a, const impulse& b) {
@@ -132,7 +132,7 @@ constexpr bool operator!=(const impulse& a, const impulse& b) {
 
 struct alignas(1 << 5) attenuated_impulse final {
     volume_type volume;
-    cl_float time;
+    cl_float distance;
 };
 
 template <>
@@ -140,13 +140,13 @@ struct cl_representation<attenuated_impulse> final {
     static constexpr auto value{R"(
 typedef struct {
     volume_type volume;
-    float time;
+    float distance;
 } attenuated_impulse;
 )"};
 };
 
 constexpr auto to_tuple(const attenuated_impulse& x) {
-    return std::tie(x.volume, x.time);
+    return std::tie(x.volume, x.distance);
 }
 
 constexpr bool operator==(const attenuated_impulse& a,

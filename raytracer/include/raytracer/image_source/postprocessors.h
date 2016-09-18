@@ -31,7 +31,6 @@ public:
     intensity_calculator(const glm::vec3& source,
                          const glm::vec3& receiver,
                          const voxelised_scene_data& voxelised,
-                         float speed_of_sound,
                          float acoustic_impedance,
                          bool flip_phase);
 
@@ -42,7 +41,6 @@ public:
 private:
     const glm::vec3& receiver_;
     const voxelised_scene_data& voxelised_;
-    float speed_of_sound_;
     bool flip_phase_;
 };
 
@@ -53,7 +51,6 @@ public:
     fast_pressure_calculator(const glm::vec3& source,
                              const glm::vec3& receiver,
                              const voxelised_scene_data& voxelised,
-                             float speed_of_sound,
                              float acoustic_impedance,
                              bool flip_phase);
 
@@ -64,7 +61,6 @@ public:
 private:
     const glm::vec3& receiver_;
     const voxelised_scene_data& voxelised_;
-    float speed_of_sound_;
     float acoustic_impedance_;
     bool flip_phase_;
 
@@ -78,7 +74,6 @@ public:
     comparison_calculator(const glm::vec3& source,
                           const glm::vec3& receiver,
                           const voxelised_scene_data& voxelised,
-                          float speed_of_sound,
                           float acoustic_impedance,
                           bool flip_phase);
 

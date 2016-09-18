@@ -1,7 +1,7 @@
+#include "raytracer/raytracer.h"
 #include "raytracer/diffuse/finder.h"
 #include "raytracer/image_source/finder.h"
 #include "raytracer/image_source/reflection_path_builder.h"
-#include "raytracer/raytracer.h"
 #include "raytracer/reflector.h"
 
 #include "common/nan_checking.h"
@@ -29,8 +29,7 @@ std::experimental::optional<impulse> get_direct_impulse(
 
     if (!intersection ||
         (intersection && intersection->inter.t > source_to_receiver_length)) {
-        return impulse{make_volume_type(1) * intensity_for_distance(
-                                                     source_to_receiver_length),
+        return impulse{make_volume_type(1),
                        to_cl_float3(source),
                        static_cast<cl_float>(source_to_receiver_length /
                                              speed_of_sound)};
@@ -138,7 +137,6 @@ std::experimental::optional<results> run(
                     source,
                     receiver,
                     scene_data,
-                    speed_of_sound,
                     acoustic_impedance));
 
     return results{

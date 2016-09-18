@@ -157,14 +157,6 @@ TEST(raytrace, image_source) {
     proc::transform(images, distances.begin(), [&receiver](auto i) {
         return glm::distance(receiver, i);
     });
-    std::array<float, images.size()> times;
-    proc::transform(distances, times.begin(), [](auto i) {
-        return i / speed_of_sound;
-    });
-    std::array<float, images.size()> volumes;
-    proc::transform(distances, volumes.begin(), [](auto i) {
-        return intensity_for_distance(i);
-    });
 
     aligned::vector<attenuated_impulse> proper_image_source_impulses;
 
@@ -179,18 +171,17 @@ TEST(raytrace, image_source) {
                 if (reflections <= shells) {
                     const auto index{i + j * L + k * L * L};
                     const auto base_vol{pow(s, reflections)};
-                    const auto volume{volumes[index] * base_vol};
 
                     proper_image_source_impulses.emplace_back(
-                            attenuated_impulse{make_volume_type(volume),
-                                               times[index]});
+                            attenuated_impulse{make_volume_type(base_vol),
+                                               distances[index]});
                 }
             }
         }
     }
 
     const auto sort_by_time{[](auto& i) {
-        proc::sort(i, [](auto a, auto b) { return a.time < b.time; });
+        proc::sort(i, [](auto a, auto b) { return a.distance < b.distance; });
     }};
 
     sort_by_time(proper_image_source_impulses);
@@ -229,11 +220,12 @@ TEST(raytrace, image_source) {
                 output.end(),
                 output.front(),
                 [i](auto a, auto b) {
-                    return std::abs(a.time - i.time) < std::abs(b.time - i.time)
+                    return std::abs(a.distance - i.distance) <
+                                           std::abs(b.distance - i.distance)
                                    ? a
                                    : b;
                 })};
-        ASSERT_NEAR(i.time, closest.time, 0.001);
+        ASSERT_NEAR(i.distance, closest.distance, 0.001);
     }
 
     auto postprocess{[](const auto& i, const std::string& name) {
@@ -242,7 +234,7 @@ TEST(raytrace, image_source) {
         ASSERT_FALSE(i.empty());
         {
             auto mixed_down{mixdown(raytracer::convert_to_histogram(
-                    i.begin(), i.end(), sample_rate, 20))};
+                    i.begin(), i.end(), speed_of_sound, sample_rate, 20))};
             normalize(mixed_down);
             snd::write(
                     build_string(SCRATCH_PATH, "/", name, "_no_processing.wav"),
@@ -252,7 +244,7 @@ TEST(raytrace, image_source) {
         }
         {
             auto processed{raytracer::flatten_filter_and_mixdown(
-                    i.begin(), i.end(), sample_rate, 20)};
+                    i.begin(), i.end(), speed_of_sound, sample_rate, 20)};
             normalize(processed);
             snd::write(build_string(SCRATCH_PATH, "/", name, "_processed.wav"),
                        {processed},

@@ -22,16 +22,18 @@ size_t compute_optimum_reflection_number(const scene_data& scene);
 template <typename It>
 aligned::vector<volume_type> convert_to_histogram(It begin,
                                                   It end,
+                                                  float speed_of_sound,
                                                   float histogram_frequency,
                                                   float max_seconds) {
     if (begin == end) {
         return aligned::vector<volume_type>{};
     }
-    const auto max_time_in_input{
+    const auto max_distance_in_input{
             std::max_element(begin, end, [](auto i, auto j) {
-                return i.time < j.time;
-            })->time};
-    const auto max_time{std::min(max_time_in_input, max_seconds)};
+                return i.distance < j.distance;
+            })->distance};
+    const auto max_time{
+            std::min(max_distance_in_input / speed_of_sound, max_seconds)};
 
     const size_t output_size = std::round(max_time * histogram_frequency) + 1;
 
@@ -39,7 +41,8 @@ aligned::vector<volume_type> convert_to_histogram(It begin,
     //  then adding its energy to the appropriate histogram bin.
     aligned::vector<volume_type> ret{output_size, make_volume_type(0)};
     for (auto i{begin}; i != end; ++i) {
-        const auto bin{std::round(i->time * histogram_frequency)};
+        const auto bin{
+                std::round(i->distance * histogram_frequency / speed_of_sound)};
         if (bin < ret.size()) {
             ret[bin] += i->volume;
         }
@@ -67,6 +70,7 @@ inline auto find_predelay(const T& ret) {
                            });
 }
 
+#if 0
 /// The base case of the findPredelay recursion.
 template <typename T>
 inline auto find_predelay_base(const T& t) {
@@ -114,15 +118,20 @@ inline void fix_predelay(T& ret) {
     auto predelay = findPredelay(ret);
     fixPredelay(ret, predelay);
 }
+#endif
 
 template <typename It>  /// It is an iterator through impulse types
 aligned::vector<float> flatten_filter_and_mixdown(It begin,
                                                   It end,
+                                                  float speed_of_sound,
                                                   float output_sample_rate,
                                                   float max_seconds) {
-    return multiband_filter_and_mixdown(
-            convert_to_histogram(begin, end, output_sample_rate, max_seconds),
-            output_sample_rate);
+    return multiband_filter_and_mixdown(convert_to_histogram(begin,
+                                                             end,
+                                                             speed_of_sound,
+                                                             output_sample_rate,
+                                                             max_seconds),
+                                        output_sample_rate);
 }
 
 aligned::vector<aligned::vector<float>> run_attenuation(

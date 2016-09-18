@@ -78,7 +78,7 @@ void finder::push(const aligned::vector<reflection>& reflections,
         const auto s{ret[i]};
         throw_if_suspicious(s.volume);
         throw_if_suspicious(s.position);
-        throw_if_suspicious(s.time);
+        throw_if_suspicious(s.distance);
     }
 #endif
 
@@ -89,15 +89,16 @@ void finder::push(const aligned::vector<reflection>& reflections,
     no_invalid.reserve(rays);
     for (auto& i : ret) {
         no_invalid.emplace_back(
-                i.time ? std::experimental::make_optional<impulse>(std::move(i))
-                       : std::experimental::nullopt);
+                i.distance ? std::experimental::make_optional<impulse>(
+                                     std::move(i))
+                           : std::experimental::nullopt);
     }
 
     impulse_builder.push(map_to_vector(
             ret, [](auto i) -> std::experimental::optional<impulse> {
-                return i.time ? std::experimental::make_optional<impulse>(
-                                        std::move(i))
-                              : std::experimental::nullopt;
+                return i.distance ? std::experimental::make_optional<impulse>(
+                                            std::move(i))
+                                  : std::experimental::nullopt;
             }));
 }
 

@@ -147,15 +147,15 @@ int main() {
             // image_source_depth_test{test_case_harness.get_scene_data(),
             //                         speed_of_sound,
             //                         acoustic_impedance},
-            // img_src_and_waveguide_test{test_case_harness.get_scene_data(),
-            //                            speed_of_sound,
-            //                            acoustic_impedance},
+            img_src_and_waveguide_test{test_case_harness.get_scene_data(),
+                                       speed_of_sound,
+                                       acoustic_impedance},
             // image_source_test{test_case_harness.get_scene_data(),
             //                  speed_of_sound,
             //                  acoustic_impedance},
-            waveguide_test{test_case_harness.get_scene_data(),
-                           speed_of_sound,
-                           acoustic_impedance},
+            // waveguide_test{test_case_harness.get_scene_data(),
+            //                speed_of_sound,
+            //                acoustic_impedance},
     };
 
     for (auto& i : tests) {

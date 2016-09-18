@@ -75,8 +75,11 @@ audio img_src_and_waveguide_test::operator()(
     }
 
     auto img_src_results{map_to_vector(
-            mixdown(raytracer::convert_to_histogram(
-                    impulses.begin(), impulses.end(), sample_rate, 20)),
+            mixdown(raytracer::convert_to_histogram(impulses.begin(),
+                                                    impulses.end(),
+                                                    speed_of_sound_,
+                                                    sample_rate,
+                                                    20)),
             [=](auto i) {
                 return intensity_to_pressure(i, acoustic_impedance_);
             })};

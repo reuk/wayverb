@@ -12,12 +12,10 @@ intensity_calculator::intensity_calculator(
         const glm::vec3&,
         const glm::vec3& receiver,
         const voxelised_scene_data& voxelised,
-        float speed_of_sound,
         float,
         bool flip_phase)
         : receiver_{receiver}
         , voxelised_{voxelised}
-        , speed_of_sound_{speed_of_sound}
         , flip_phase_{flip_phase} {}
 
 impulse intensity_calculator::operator()(
@@ -37,9 +35,7 @@ impulse intensity_calculator::operator()(
             })};
 
     const auto distance{glm::distance(image_source, receiver_)};
-    return {surface_attenuation * intensity_for_distance(distance),
-            to_cl_float3(image_source),
-            static_cast<cl_float>(distance / speed_of_sound_)};
+    return {surface_attenuation, to_cl_float3(image_source), distance};
 }
 
 //----------------------------------------------------------------------------//
@@ -52,12 +48,10 @@ fast_pressure_calculator::fast_pressure_calculator(
         const glm::vec3& source,
         const glm::vec3& receiver,
         const voxelised_scene_data& voxelised,
-        float speed_of_sound,
         float acoustic_impedance,
         bool flip_phase)
         : receiver_{receiver}
         , voxelised_{voxelised}
-        , speed_of_sound_{speed_of_sound}
         , acoustic_impedance_{acoustic_impedance}
         , flip_phase_{flip_phase}
         , surface_impedances_{map_to_vector(
@@ -88,13 +82,9 @@ impulse fast_pressure_calculator::operator()(
 
     const auto distance{glm::distance(image_source, receiver_)};
 
-    return {pressure_to_intensity(
-                    surface_attenuation *
-                            pressure_for_distance(distance,
-                                                  acoustic_impedance_),
-                    acoustic_impedance_),
+    return {pressure_to_intensity(surface_attenuation, acoustic_impedance_),
             to_cl_float3(image_source),
-            static_cast<cl_float>(distance / speed_of_sound_)};
+            distance};
 }
 
 //----------------------------------------------------------------------------//
@@ -103,19 +93,16 @@ comparison_calculator::comparison_calculator(
         const glm::vec3& source,
         const glm::vec3& receiver,
         const voxelised_scene_data& voxelised,
-        float speed_of_sound,
         float acoustic_impedance,
         bool flip_phase)
         : intensity_{source,
                      receiver,
                      voxelised,
-                     speed_of_sound,
                      acoustic_impedance,
                      flip_phase}
         , fast_pressure_{source,
                          receiver,
                          voxelised,
-                         speed_of_sound,
                          acoustic_impedance,
                          flip_phase} {}
 
@@ -129,7 +116,7 @@ impulse comparison_calculator::operator()(
         throw std::runtime_error("mismatched position");
     }
 
-    if (intensity.time != fast_pressure.time) {
+    if (intensity.distance != fast_pressure.distance) {
         throw std::runtime_error("mismatched times");
     }
 

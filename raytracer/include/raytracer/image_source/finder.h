@@ -18,10 +18,8 @@ auto postprocess(const multitree<path_element>& tree,
                  const glm::vec3& source,
                  const glm::vec3& receiver,
                  const voxelised_scene_data& voxelised,
-                 float speed_of_sound,
                  float acoustic_impedance) {
-    Func callback{
-            source, receiver, voxelised, speed_of_sound, acoustic_impedance, false};
+    Func callback{source, receiver, voxelised, acoustic_impedance, false};
     using value_type = decltype(
             callback(std::declval<glm::vec3>(),
                      std::declval<aligned::vector<reflection_metadata>>()));
@@ -41,16 +39,11 @@ auto postprocess(const multitree<path_element>::branches_type& branches,
                  const glm::vec3& source,
                  const glm::vec3& receiver,
                  const voxelised_scene_data& voxelised,
-                 const float speed_of_sound,
                  float acoustic_impedance) {
     auto futures{map_to_vector(branches, [&](const auto& branch) {
         return std::async(std::launch::async, [&] {
-            return postprocess<Func>(branch,
-                                     source,
-                                     receiver,
-                                     voxelised,
-                                     speed_of_sound,
-                                     acoustic_impedance);
+            return postprocess<Func>(
+                    branch, source, receiver, voxelised, acoustic_impedance);
         });
     })};
 

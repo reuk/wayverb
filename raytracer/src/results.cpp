@@ -8,7 +8,7 @@ template <typename T>
 void impulse_check(const impulse& i, T t) {
     throw_if_suspicious(i.volume);
     throw_if_suspicious(i.position);
-    throw_if_suspicious(i.time);
+    throw_if_suspicious(i.distance);
 }
 
 results::results(std::experimental::optional<impulse>&& direct,

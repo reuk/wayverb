@@ -55,7 +55,6 @@ auto run(It begin,
                                    source,
                                    receiver,
                                    voxelised,
-                                   speed_of_sound,
                                    acoustic_impedance);
 }
 
