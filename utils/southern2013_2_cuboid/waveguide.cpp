@@ -4,6 +4,7 @@
 #include "waveguide/surface_filters.h"
 #include "waveguide/waveguide.h"
 
+#include "common/dc_blocker.h"
 #include "common/dsp_vector_ops.h"
 #include "common/frequency_domain_filter.h"
 #include "common/progress_bar.h"
@@ -73,9 +74,8 @@ audio waveguide_test::operator()(const surface& surface,
                    16);
     }
 
-    //  Filter out everything above the waveguide nyquist, and remove DC offset.
+    //  Filter out everything above the waveguide nyquist.
     {
-        const auto hipass_cutoff{10 / sample_rate_};
         fast_filter filter{pressure_signal.size() * 2};
         filter.filter(pressure_signal.begin(),
                       pressure_signal.end(),
@@ -85,11 +85,11 @@ audio waveguide_test::operator()(const surface& surface,
                           //   minimize ring - everything over 0.2 is pretty
                           //   much guaranteed to be garbage anyway.
                           return cplx *
-                                 compute_lopass_magnitude(freq, 0.25, 0.05, 0) *
-                                 compute_hipass_magnitude(freq,
-                                                          hipass_cutoff,
-                                                          hipass_cutoff / 2,
-                                                          0);
+                                 compute_lopass_magnitude(freq, 0.25, 0.1, 0);
+                                 //compute_hipass_magnitude(freq,
+                                 //                         hipass_cutoff,
+                                 //                         hipass_cutoff / 2,
+                                 //                         0);
                       });
     }
 
@@ -105,6 +105,46 @@ audio waveguide_test::operator()(const surface& surface,
 
     //  Filter out dc component.
 
+    {
+        auto logged{map_to_vector(
+                pressure_signal, [](auto i) { return std::log(i); })};
+        {
+            static auto count{0};
+            snd::write(build_string("logged_", count++, ".wav"),
+                       {logged},
+                       sample_rate_,
+                       16);
+        }
+
+        auto x{0ul};
+        auto xy{map_to_vector(logged, [&x](auto y) {
+            return glm::vec2{x++, y};
+        })};
+
+        const auto regression{
+                simple_linear_regression(xy.begin() + xy.size() / 2, xy.end())};
+
+        const auto b{std::exp(regression.c)};
+        const auto a{regression.m};
+        for (auto & i : xy) {
+            i.y -= b * std::exp(i.x * a);
+        }
+
+        pressure_signal = map_to_vector(xy, [](auto i) {return i.y;});
+    }
+
+    //filter::block_dc(
+    //        pressure_signal.begin(), pressure_signal.end(), sample_rate_);
+
+    {
+        static auto count{0};
+        auto copy{pressure_signal};
+        normalize(copy);
+        snd::write(build_string("dc_blocked_", count++, ".wav"),
+                   {copy},
+                   sample_rate_,
+                   16);
+    }
 
     return {pressure_signal, sample_rate_, "waveguide"};
 }

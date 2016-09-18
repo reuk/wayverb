@@ -1,5 +1,6 @@
 #include "common/dc_blocker.h"
 #include "common/dsp_vector_ops.h"
+#include "common/frequency_domain_filter.h"
 #include "common/string_builder.h"
 #include "common/write_audio_file.h"
 
@@ -186,32 +187,163 @@ TEST(dc_blocker, io) {
     }
 }
 
-TEST(dc_blocker, block_dc) {
+namespace {
+using callback = std::function<aligned::vector<float>(
+        aligned::vector<float> sig, float cutoff, float sample_rate)>;
+
+const aligned::vector<std::tuple<callback, std::string>> trial_blockers{
+
+        {[](auto sig, auto cutoff, auto sample_rate) {
+             auto blocker{make_series_biquads(
+                     filter::compute_hipass_butterworth_coefficients<1>(
+                             10, sample_rate))};
+             filter::run_two_pass(blocker, sig.begin(), sig.end());
+             return sig;
+         },
+         "butterworth_1"},
+
+        {[](auto sig, auto cutoff, auto sample_rate) {
+             const aligned::vector<float> zeros(sig.size(), 0);
+             sig.insert(sig.begin(), zeros.begin(), zeros.end());
+             auto blocker{make_series_biquads(
+                     filter::compute_hipass_butterworth_coefficients<1>(
+                             10, sample_rate))};
+             filter::run_two_pass(blocker, sig.begin(), sig.end());
+             return aligned::vector<float>(sig.begin() + zeros.size(),
+                                           sig.end());
+         },
+         "prepadded_butterworth_1"},
+
+        {[](auto sig, auto cutoff, auto sample_rate) {
+             auto blocker{make_series_biquads(
+                     filter::compute_hipass_butterworth_coefficients<2>(
+                             10, sample_rate))};
+             filter::run_two_pass(blocker, sig.begin(), sig.end());
+             return sig;
+         },
+         "butterworth_2"},
+
+        {[](auto sig, auto cutoff, auto sample_rate) {
+             auto blocker{make_series_biquads(
+                     filter::compute_hipass_butterworth_coefficients<3>(
+                             10, sample_rate))};
+             filter::run_two_pass(blocker, sig.begin(), sig.end());
+             return sig;
+         },
+         "butterworth_3"},
+
+        {[](auto sig, auto cutoff, auto sample_rate) {
+             filter::biquad blocker{
+                     filter::compute_dc_blocker_coefficients(0.999)};
+             filter::run_one_pass(blocker, sig.begin(), sig.end());
+             return sig;
+         },
+         "biquad_onepass"},
+
+        {[](auto sig, auto cutoff, auto sample_rate) {
+             filter::biquad blocker{
+                     filter::compute_dc_blocker_coefficients(0.999)};
+             filter::run_two_pass(blocker, sig.begin(), sig.end());
+             return sig;
+         },
+         "biquad_twopass"},
+
+        {[](auto sig, auto cutoff, auto sample_rate) {
+             const auto normalised_cutoff{cutoff / sample_rate};
+             fast_filter blocker{sig.size()};
+             blocker.filter(sig.begin(),
+                            sig.end(),
+                            sig.begin(),
+                            [=](auto cplx, auto freq) {
+                                return cplx * compute_hipass_magnitude(
+                                                      freq,
+                                                      normalised_cutoff,
+                                                      normalised_cutoff / 2,
+                                                      0);
+                            });
+             return sig;
+         },
+         "fft"},
+
+        {[](auto sig, auto cutoff, auto sample_rate) {
+             const auto normalised_cutoff{cutoff / sample_rate};
+             fast_filter blocker{sig.size() * 2};
+             blocker.filter(sig.begin(),
+                            sig.end(),
+                            sig.begin(),
+                            [=](auto cplx, auto freq) {
+                                return cplx * compute_hipass_magnitude(
+                                                      freq,
+                                                      normalised_cutoff,
+                                                      normalised_cutoff / 2,
+                                                      0);
+                            });
+             return sig;
+         },
+         "padded_fft"},
+
+};
+}  // namespace
+
+TEST(dc_blocker, impulses) {
+	const auto sample_rate{44100.0};
+	const auto cutoff{10.0};
+
+    aligned::vector<float> input(sample_rate * 10, 0);
+    input[20000] = 1;
+	input[40000] = 1;
+	input[60000] = 1;
+	input[80000] = 1;
+	input[100000] = 1;
+	input[200000] = 1;
+	input[300000] = 1;
+	input[400000] = 1;
+
+    for (const auto& i : trial_blockers) {
+        {
+            const auto output{std::get<0>(i)(input, cutoff, sample_rate)};
+            snd::write(build_string(
+                               "impulses.dc_blocker.", std::get<1>(i), ".wav"),
+                       {output},
+                       sample_rate,
+                       16);
+        }
+    }
+}
+
+TEST(dc_blocker, increasing_offset) {
     const auto sample_rate{44100.0};
+    const auto cutoff{40.0};
     const auto noise{generate_noise(sample_rate * 10)};
 
-    {
-        auto constant_offset{noise};
-        for (auto& sample : constant_offset) {
-            sample += 10;
-        }
-        filter::block_dc(
-                constant_offset.begin(), constant_offset.end(), sample_rate);
-        snd::write("constant_offset.wav", {constant_offset}, sample_rate, 16);
+    auto increasing_offset{noise};
+    const auto inc{0.001};
+    auto offset{0.0};
+    for (auto& sample : increasing_offset) {
+        sample = (sample * 0.1) + offset;
+        offset += inc;
     }
 
-    {
-        auto increasing_offset{noise};
-        const auto inc{0.001};
-        auto offset{0.0};
-        for (auto& sample : increasing_offset) {
-            sample = (sample * 0.1) + offset;
-            offset += inc;
+    for (const auto& i : trial_blockers) {
+        {
+            const auto output{
+                    std::get<0>(i)(increasing_offset, cutoff, sample_rate)};
+            snd::write(build_string("dc_blocker.", std::get<1>(i), ".wav"),
+                       {output},
+                       sample_rate,
+                       16);
         }
-        filter::block_dc(increasing_offset.begin(),
-                         increasing_offset.end(),
-                         sample_rate);
-        snd::write(
-                "increasing_offset.wav", {increasing_offset}, sample_rate, 16);
+        {
+            auto input{increasing_offset};
+            input.insert(input.end(),
+                         increasing_offset.crbegin(),
+                         increasing_offset.crend());
+            const auto output{std::get<0>(i)(input, cutoff, sample_rate)};
+            snd::write(build_string(
+                               "mirrored.dc_blocker.", std::get<1>(i), ".wav"),
+                       {output},
+                       sample_rate,
+                       16);
+        }
     }
 }

@@ -123,7 +123,7 @@ biquad::coefficients compute_linkwitz_riley_lopass_coefficients(double cutoff,
                                                                 double sr);
 biquad::coefficients compute_linkwitz_riley_hipass_coefficients(double cutoff,
                                                                 double sr);
-biquad::coefficients compute_dc_blocker_coefficients_();
+biquad::coefficients compute_dc_blocker_coefficients(double a = 0.995);
 
 //----------------------------------------------------------------------------//
 
@@ -135,6 +135,8 @@ void run_one_pass(Filter& filter, It begin, It end) {
     }
 }
 
+///	This isn't a true 'filtfilt' because it doesn't pad or attempt to estimate
+///	initial conditions.
 template <typename Filter, typename It>
 void run_two_pass(Filter& filter, It begin, It end) {
     run_one_pass(filter, begin, end);

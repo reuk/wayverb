@@ -131,13 +131,6 @@ template <typename It>
 void block_dc(It begin, It end, double sr) {
     auto hipass{make_series_biquads(
             compute_hipass_butterworth_coefficients<1>(10, sr))};
-    //const auto ir{impulse_response(hipass, 1 << 13)};
-    //const size_t rt = std::ceil(rt30(ir.begin(), ir.end()).samples);
-    //const auto in_size{std::distance(begin, end)};
-    //aligned::vector<float> copy(in_size + 2 * rt);
-    //std::copy(begin, end, copy.begin() + rt);
-    //run_two_pass(hipass, copy.begin(), copy.end());
-    //std::copy(copy.begin() + rt, copy.begin() + rt + in_size, begin);
     run_two_pass(hipass, begin, end);
 }
 

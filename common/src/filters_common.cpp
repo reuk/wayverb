@@ -83,8 +83,8 @@ biquad::coefficients compute_linkwitz_riley_hipass_coefficients(double cutoff,
             (c * c - c * sqrt(2) + 1) / a0};
 }
 
-biquad::coefficients compute_dc_blocker_coefficients() {
-    return {1, 1, 0, 0.995, 0};
+biquad::coefficients compute_dc_blocker_coefficients(double a) {
+    return {1, -1, 0, -a, 0};
 }
 
 //----------------------------------------------------------------------------//
