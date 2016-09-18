@@ -70,56 +70,6 @@ inline auto find_predelay(const T& ret) {
                            });
 }
 
-#if 0
-/// The base case of the findPredelay recursion.
-template <typename T>
-inline auto find_predelay_base(const T& t) {
-    return t.time;
-}
-
-template <>
-inline auto find_predelay(const attenuated_impulse& i) {
-    return find_predelay_base(i);
-}
-
-template <>
-inline auto find_predelay(const impulse& i) {
-    return find_predelay_base(i);
-}
-
-/// Recursively subtract a time value from the time fields of a collection of
-/// impulses.
-template <typename T>
-inline void fix_predelay(T& ret, float seconds) {
-    for (auto& i : ret) {
-        fixPredelay(i, seconds);
-    }
-}
-
-template <typename T>
-inline void fix_predelay_base(T& ret, float seconds) {
-    ret.time = ret.time > seconds ? ret.time - seconds : 0;
-}
-
-/// The base case of the fixPredelay recursion.
-template <>
-inline void fix_predelay(attenuated_impulse& ret, float seconds) {
-    fix_predelay_base(ret, seconds);
-}
-
-template <>
-inline void fix_predelay(impulse& ret, float seconds) {
-    fix_predelay_base(ret, seconds);
-}
-
-/// Fixes predelay by finding and then removing predelay.
-template <typename T>
-inline void fix_predelay(T& ret) {
-    auto predelay = findPredelay(ret);
-    fixPredelay(ret, predelay);
-}
-#endif
-
 template <typename It>  /// It is an iterator through impulse types
 aligned::vector<float> flatten_filter_and_mixdown(It begin,
                                                   It end,

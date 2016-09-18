@@ -93,6 +93,23 @@ audio img_src_and_waveguide_test::operator()(
                    16);
     }
 
+    for (auto i{1ul}, end{img_src_results.size()}; i < end; ++i) {
+        const auto time{i / sample_rate};
+        const auto distance{time * speed_of_sound_};
+        img_src_results[i] *=
+                pressure_for_distance(distance, acoustic_impedance_);
+    }
+
+    {
+        static auto count{0};
+        auto copy{img_src_results};
+        normalize(copy);
+        snd::write(build_string("raw_img_src_attenuated_", count++, ".wav"),
+                   {copy},
+                   sample_rate,
+                   16);
+    }
+
     const auto raytracer_rt60{
             estimate_rt60(img_src_results.begin(), img_src_results.end()) /
             sample_rate};
