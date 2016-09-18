@@ -9,15 +9,15 @@ namespace raytracer {
 namespace image_source {
 
 template <typename calculator, typename It>  /// iterator over ray directions
-aligned::vector<impulse> run(It begin,
-                             It end,
-                             const compute_context& cc,
-                             const voxelised_scene_data& voxelised,
-                             const glm::vec3& source,
-                             const glm::vec3& receiver,
-                             float speed_of_sound,
-                             float acoustic_impedance,
-                             float sample_rate) {
+auto run(It begin,
+         It end,
+         const compute_context& cc,
+         const voxelised_scene_data& voxelised,
+         const glm::vec3& source,
+         const glm::vec3& receiver,
+         float speed_of_sound,
+         float acoustic_impedance,
+         float sample_rate) {
     const auto reflection_depth{raytracer::compute_optimum_reflection_number(
             voxelised.get_scene_data())};
 

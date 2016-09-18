@@ -19,14 +19,11 @@ namespace raytracer {
 namespace image_source {
 
 struct reflection_metadata final {
-    cl_uint index;  /// The index of the triangle that was intersected.
-    float angle;    /// The angle against the triangle normal.
+    cl_uint index;    /// The index of the triangle that was intersected.
+    float cos_angle;  /// The cosine of the angle against the triangle normal.
 };
 
 /// All image-source postprocessors should be convertible to this type.
-using postprocessor = std::function<void(
-        const glm::vec3&, const aligned::vector<reflection_metadata>&)>;
-
 //----------------------------------------------------------------------------//
 
 class intensity_calculator final {
@@ -36,7 +33,7 @@ public:
                          const voxelised_scene_data& voxelised,
                          float speed_of_sound,
                          float acoustic_impedance,
-                         bool flip_phase=true);
+                         bool flip_phase);
 
     impulse operator()(
             const glm::vec3& image_source,
@@ -58,7 +55,7 @@ public:
                              const voxelised_scene_data& voxelised,
                              float speed_of_sound,
                              float acoustic_impedance,
-                             bool flip_phase = true);
+                             bool flip_phase);
 
     impulse operator()(
             const glm::vec3& image_source,
@@ -83,7 +80,7 @@ public:
                           const voxelised_scene_data& voxelised,
                           float speed_of_sound,
                           float acoustic_impedance,
-                          bool flip_phase_=true);
+                          bool flip_phase);
 
     impulse operator()(
             const glm::vec3& image_source,
@@ -96,28 +93,29 @@ private:
 
 //----------------------------------------------------------------------------//
 
-#if 0
-class dumb_slow_fft_pressure_calculator final {
+template <typename Impl>
+class depth_counter_calculator final {
 public:
-    dumb_slow_fft_pressure_calculator(const glm::vec3& source,
-                                      const glm::vec3& receiver,
-                                      const voxelised_scene_data& voxelised,
-                                      float speed_of_sound);
+    template <typename... Ts>
+    depth_counter_calculator(Ts&&... ts)
+            : impl_{std::forward<Ts>(ts)...} {}
 
-    constexpr static auto output_spectrum_size{1 << 9};
+    struct return_type final {
+        decltype(std::declval<Impl>().operator()(
+                std::declval<glm::vec3>(),
+                std::declval<aligned::vector<reflection_metadata>>())) value;
+        size_t depth;
+    };
 
-    /// Returns a full FFT spectrum for this reflection which should be summed
-    /// with the 'output spectrum'.
-    std::array<std::complex<float>, output_spectrum_size> operator()(
+    return_type operator()(
             const glm::vec3& image_source,
-            const aligned::vector<reflection_metadata>& intersections) const;
+            const aligned::vector<reflection_metadata>& intersections) const {
+        return {impl_(image_source, intersections), intersections.size()};
+    }
 
 private:
-    const glm::vec3& receiver_;
-    const voxelised_scene_data& voxelised_;
-    float speed_of_sound_;
+    Impl impl_;
 };
-#endif
 
 }  // namespace image_source
 }  // namespace raytracer

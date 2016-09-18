@@ -1,6 +1,5 @@
 #pragma once
 
-#include "raytracer/construct_impulse.h"
 #include "raytracer/image_source/postprocessors.h"
 #include "raytracer/multitree.h"
 
@@ -46,6 +45,9 @@ public:
 private:
     multitree<path_element> root_{path_element{}};
 };
+
+using postprocessor = std::function<void(
+        const glm::vec3&, const aligned::vector<reflection_metadata>&)>;
 
 void find_valid_paths(const multitree<path_element>& tree,
                       const glm::vec3& source,

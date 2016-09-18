@@ -1,4 +1,3 @@
-#include "raytracer/construct_impulse.h"
 #include "raytracer/diffuse/finder.h"
 #include "raytracer/image_source/finder.h"
 #include "raytracer/image_source/reflection_path_builder.h"
@@ -6,6 +5,7 @@
 #include "raytracer/reflector.h"
 
 #include "common/nan_checking.h"
+#include "common/pressure_intensity.h"
 #include "common/spatial_division/scene_buffers.h"
 #include "common/spatial_division/voxelised_scene_data.h"
 
@@ -29,8 +29,11 @@ std::experimental::optional<impulse> get_direct_impulse(
 
     if (!intersection ||
         (intersection && intersection->inter.t > source_to_receiver_length)) {
-        return construct_impulse(
-                make_volume_type(1), source, receiver, speed_of_sound);
+        return impulse{make_volume_type(1) * intensity_for_distance(
+                                                     source_to_receiver_length),
+                       to_cl_float3(source),
+                       static_cast<cl_float>(source_to_receiver_length /
+                                             speed_of_sound)};
     }
 
     return std::experimental::nullopt;

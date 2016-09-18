@@ -15,3 +15,6 @@ inline T intensity_to_pressure(T intensity, U Z) {
     using std::abs;
     return copysign(sqrt(abs(intensity * Z)), intensity);
 }
+
+float intensity_for_distance(float distance);
+float pressure_for_distance(float distance, float acoustic_impedance);

@@ -58,15 +58,16 @@ audio img_src_and_waveguide_test::operator()(
     const auto directions{get_random_directions(100000)};
 
     auto impulses{raytracer::image_source::run<
-            raytracer::image_source::comparison_calculator>(directions.begin(),
-                                                            directions.end(),
-                                                            compute_context_,
-                                                            voxels,
-                                                            source,
-                                                            receiver.position,
-                                                            speed_of_sound_,
-                                                            acoustic_impedance_,
-                                                            sample_rate)};
+            raytracer::image_source::fast_pressure_calculator>(
+            directions.begin(),
+            directions.end(),
+            compute_context_,
+            voxels,
+            source,
+            receiver.position,
+            speed_of_sound_,
+            acoustic_impedance_,
+            sample_rate)};
 
     if (const auto direct{raytracer::get_direct_impulse(
                 source, receiver.position, voxels, speed_of_sound_)}) {
@@ -128,6 +129,16 @@ audio img_src_and_waveguide_test::operator()(
         return i.pressure * calibration_factor;
     })};
 
+    {
+        static auto count{0};
+        auto copy{magnitude_adjusted};
+        normalize(copy);
+        snd::write(build_string("raw_waveguide_", count++, ".wav"),
+                   {copy},
+                   sample_rate,
+                   16);
+    }
+
     //  Filter out everything above the waveguide nyquist.
     {
         fast_filter filter{magnitude_adjusted.size() * 2};
@@ -142,7 +153,6 @@ audio img_src_and_waveguide_test::operator()(
                                  compute_hipass_magnitude(freq, 0.25, 0.05, 0);
                       });
     }
-
     //  Filter out dc component.
     filter::block_dc(magnitude_adjusted.begin(),
                      magnitude_adjusted.end(),
@@ -152,15 +162,11 @@ audio img_src_and_waveguide_test::operator()(
     auto corrected_waveguide{waveguide::adjust_sampling_rate(
             magnitude_adjusted, waveguide_sample_rate_, sample_rate)};
 
-    // filter::block_dc(corrected_waveguide.begin(),
-    //                 corrected_waveguide.end(),
-    //                 sample_rate);
-
     {
         static auto count{0};
         auto copy{corrected_waveguide};
         normalize(copy);
-        snd::write(build_string("raw_waveguide_", count++, ".wav"),
+        snd::write(build_string("corrected_waveguide_", count++, ".wav"),
                    {copy},
                    sample_rate,
                    16);

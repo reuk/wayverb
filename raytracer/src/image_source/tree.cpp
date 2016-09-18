@@ -127,12 +127,11 @@ private:
             //  This path segment is valid.
             //  Find angle between ray and triangle normal at intersection.
             //  Add appropriate intersection to ret.
-            const auto angle{std::acos(
+            const auto cos_angle{std::abs(
                     glm::dot(ray.get_direction(),
                              geo::normal(get_triangle(voxelised, i->index))))};
-            intersections.emplace_back(reflection_metadata{
-                    i->index,
-                    std::min(angle, static_cast<float>(M_PI - angle))});
+            intersections.emplace_back(
+                    reflection_metadata{i->index, cos_angle});
 
             //  Update accumulator.
             accumulator = {ray.get_position() +

@@ -1,4 +1,3 @@
-#include "raytracer/construct_impulse.h"
 #include "raytracer/image_source/postprocessors.h"
 
 #include "common/conversions.h"
@@ -36,8 +35,11 @@ impulse intensity_calculator::operator()(
                         surface.specular_absorption)};
                 return i * reflectance * (flip_phase_ ? -1 : 1);
             })};
-    return construct_impulse(
-            surface_attenuation, image_source, receiver_, speed_of_sound_);
+
+    const auto distance{glm::distance(image_source, receiver_)};
+    return {surface_attenuation * intensity_for_distance(distance),
+            to_cl_float3(image_source),
+            static_cast<cl_float>(distance / speed_of_sound_)};
 }
 
 //----------------------------------------------------------------------------//
@@ -80,21 +82,19 @@ impulse fast_pressure_calculator::operator()(
                 const auto impedance{surface_impedances_[surface_index]};
                 const auto reflectance{
                         average_wall_impedance_to_pressure_reflectance(
-                                impedance, j.angle)};
+                                impedance, j.cos_angle)};
                 return i * reflectance * (flip_phase_ ? -1 : 1);
             })};
 
     const auto distance{glm::distance(image_source, receiver_)};
 
-    //  siltanen2013 equation 2
-    //  pressure = sqrt((strength * acoustic_impedance) / (4 * M_PI)) / distance
-    //  'strength' is implicitly 1
-    const float raw_pressure =
-            std::sqrt(acoustic_impedance_ / (4 * M_PI)) / distance;
-    return impulse{pressure_to_intensity(surface_attenuation * raw_pressure,
-                                         acoustic_impedance_),
-                   to_cl_float3(image_source),
-                   static_cast<cl_float>(distance / speed_of_sound_)};
+    return {pressure_to_intensity(
+                    surface_attenuation *
+                            pressure_for_distance(distance,
+                                                  acoustic_impedance_),
+                    acoustic_impedance_),
+            to_cl_float3(image_source),
+            static_cast<cl_float>(distance / speed_of_sound_)};
 }
 
 //----------------------------------------------------------------------------//
@@ -133,44 +133,8 @@ impulse comparison_calculator::operator()(
         throw std::runtime_error("mismatched times");
     }
 
-    /*
-    using std::abs;
-    const auto difference{abs(intensity.volume - fast_pressure.volume)};
-    const auto mean{(abs(intensity.volume) + abs(fast_pressure.volume)) / 2};
-    if (any(make_volume_type(1) < (difference / mean))) {
-        throw std::runtime_error("mismatched volumes");
-    }
-    */
-
     return fast_pressure;
 }
-
-//----------------------------------------------------------------------------//
-
-#if 0
-//  I'm calling this a 'nice-to-have' for the time-being.
-dumb_slow_fft_pressure_calculator::dumb_slow_fft_pressure_calculator(
-        const glm::vec3&,
-        const glm::vec3& receiver,
-        const voxelised_scene_data& voxelised,
-        float speed_of_sound)
-        : receiver_{receiver}
-        , voxelised_{voxelised}
-        , speed_of_sound_{speed_of_sound} {}
-
-std::array<std::complex<float>,
-           dumb_slow_fft_pressure_calculator::output_spectrum_size>
-dumb_slow_fft_pressure_calculator::operator()(
-        const glm::vec3& image_source,
-        const aligned::vector<reflection_metadata>& intersections) const {
-    //  TODO
-    //  Work out how large the final spectrum needs to be.
-    //      It should be large enough that when the irfft is taken, the signal
-    //      has the correct reverb length.
-    //  For each surface in the scene, produce a base reflection spectrum.
-    throw std::runtime_error("not implemented");
-}
-#endif
 
 }  // namespace image_source
 }  // namespace raytracer

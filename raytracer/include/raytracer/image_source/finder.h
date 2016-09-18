@@ -21,7 +21,7 @@ auto postprocess(const multitree<path_element>& tree,
                  float speed_of_sound,
                  float acoustic_impedance) {
     Func callback{
-            source, receiver, voxelised, speed_of_sound, acoustic_impedance};
+            source, receiver, voxelised, speed_of_sound, acoustic_impedance, false};
     using value_type = decltype(
             callback(std::declval<glm::vec3>(),
                      std::declval<aligned::vector<reflection_metadata>>()));

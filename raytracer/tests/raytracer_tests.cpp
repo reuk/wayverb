@@ -1,5 +1,4 @@
 #include "raytracer/attenuator.h"
-#include "raytracer/construct_impulse.h"
 #include "raytracer/postprocess.h"
 #include "raytracer/raytracer.h"
 #include "raytracer/reflector.h"
@@ -164,7 +163,7 @@ TEST(raytrace, image_source) {
     });
     std::array<float, images.size()> volumes;
     proc::transform(distances, volumes.begin(), [](auto i) {
-        return raytracer::power_attenuation_for_distance(i);
+        return intensity_for_distance(i);
     });
 
     aligned::vector<attenuated_impulse> proper_image_source_impulses;

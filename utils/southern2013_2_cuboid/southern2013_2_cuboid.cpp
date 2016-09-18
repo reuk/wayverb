@@ -26,6 +26,7 @@
 //  see whether results for [image source, diffuse tail, waveguide] match up
 
 #include "image_source.h"
+#include "image_source_depth.h"
 #include "img_src_and_waveguide.h"
 #include "waveguide.h"
 
@@ -143,6 +144,9 @@ int main() {
     test_case_harness test_case_harness{};
 
     aligned::vector<test_case_harness::single_test> tests{
+            // image_source_depth_test{test_case_harness.get_scene_data(),
+            //                         speed_of_sound,
+            //                         acoustic_impedance},
             // img_src_and_waveguide_test{test_case_harness.get_scene_data(),
             //                            speed_of_sound,
             //                            acoustic_impedance},

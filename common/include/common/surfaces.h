@@ -31,8 +31,8 @@ T pressure_reflectance_to_average_wall_impedance(T t) {
 }
 
 template <typename T>
-T average_wall_impedance_to_pressure_reflectance(T t, float angle) {
+T average_wall_impedance_to_pressure_reflectance(T t, float cos_angle) {
     using std::cos;
-    const T tmp = t * cos(angle);
+    const T tmp = t * cos_angle;
     return (tmp - 1) / (tmp + 1);
 }
