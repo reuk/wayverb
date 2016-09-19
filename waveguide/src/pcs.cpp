@@ -48,13 +48,3 @@ filter::biquad::coefficients mech_sphere(double M,
     const auto a2{1 - (2 * R * beta / den)};
     return {b0, 0, b2, a1, a2};
 }
-
-//----------------------------------------------------------------------------//
-
-aligned::vector<double> pcs_design(
-        double M, double f0, double Q, double maxF, double fc, double T) {
-    auto h{maxflat(fc, 16, maxF, 1 << 12)};
-    filter::biquad filt{mech_sphere(M, f0, Q, T)};
-    run_one_pass(filt, h.begin(), h.end());
-    return h;
-}

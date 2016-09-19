@@ -2,9 +2,9 @@
 
 #include "stl_wrappers.h"
 
+#include <cmath>
 #include <numeric>
 #include <vector>
-#include <cmath>
 
 template <typename T>
 inline float sum(const T& t) {
@@ -33,46 +33,25 @@ inline auto mean(const T& t) {
     return sum(t) / count(t);
 }
 
+inline double max_mag(float t) { return std::fabs(t); }
+inline double max_mag(double t) { return std::fabs(t); }
+
 template <typename T>
 inline float max_mag(const T& t) {
-    return proc::accumulate(t, 0.0f, [](auto a, auto b) {
-        using std::max;
-        return max(a, max_mag(b));
-    });
-}
-
-template <>
-inline float max_mag(const float& t) {
-    using std::fabs;
-    return fabs(t);
-}
-
-/// Recursively divide by reference.
-template <typename T>
-inline void div(T& ret, float f) {
-    for (auto& i : ret) {
-        div(i, f);
-    }
-}
-
-/// The base case of the div recursion.
-template <>
-inline void div(float& ret, float f) {
-    ret /= f;
-}
-
-/// Recursively multiply by reference.
-template <typename T>
-inline void mul(T& ret, float f) {
-    for (auto& i : ret) {
-        mul(i, f);
-    }
+    return proc::accumulate(
+            t, 0.0, [](double a, auto b) { return std::max(a, max_mag(b)); });
 }
 
 /// The base case of the mul recursion.
-template <>
-inline void mul(float& ret, float f) {
-    ret *= f;
+inline void mul(float& ret, double f) { ret *= f; }
+inline void mul(double& ret, double f) { ret *= f; }
+
+/// Recursively multiply by reference.
+template <typename T>
+inline void mul(T& ret, double f) {
+    for (auto& i : ret) {
+        mul(i, f);
+    }
 }
 
 /// Find the largest absolute value in an arbitarily nested vector, then

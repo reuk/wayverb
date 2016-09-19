@@ -20,7 +20,9 @@ microphone::microphone(const glm::vec3& pointing, float shape)
         , shape_(shape) {}
 
 aligned::vector<float> microphone::process(
-        const aligned::vector<run_step_output>& input) const {
+        const aligned::vector<
+                waveguide::postprocessor::microphone_state::output>& input)
+        const {
     //  TODO filter with diffuse-field-response filter here
     //  make sure to use zero-phase filtering
     return map_to_vector(input, [&](auto i) {

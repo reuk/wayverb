@@ -85,8 +85,8 @@ private:
 
         auto input{waveguide::make_transparent({1.0f})};
         input.resize(steps, 0);
-        waveguide::preprocessor::single_soft_source preprocessor{source_index,
-                                                                 input};
+        auto prep{waveguide::preprocessor::make_single_soft_source(
+                source_index, input.begin(), input.end())};
 
         class output_holder final {
         public:
@@ -121,7 +121,7 @@ private:
                 cc_,
                 mesh,
                 input.size(),
-                preprocessor,
+                prep,
                 map_to_vector(output_holders,
                               [](auto& i) { return i.get_postprocessor(); }),
                 [&](auto i) { pb += 1; },

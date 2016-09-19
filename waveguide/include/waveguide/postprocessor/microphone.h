@@ -1,15 +1,17 @@
 #pragma once
 
-#include "waveguide/waveguide.h"
-
+#include "common/cl/include.h"
 #include "common/output_iterator_callback.h"
+
+#include "glm/glm.hpp"
+
+#include <array>
+#include <functional>
 
 struct mesh_descriptor;
 
 namespace waveguide {
 namespace postprocessor {
-
-namespace detail {
 
 class microphone_state final {
 public:
@@ -18,9 +20,14 @@ public:
                      double ambient_density,
                      size_t output_node);
 
-    run_step_output operator()(cl::CommandQueue& queue,
-                               const cl::Buffer& buffer,
-                               size_t step);
+    struct output final {
+        glm::vec3 intensity;
+        float pressure;
+    };
+
+    output operator()(cl::CommandQueue& queue,
+                      const cl::Buffer& buffer,
+                      size_t step);
 
     size_t get_output_node() const;
 
@@ -33,13 +40,11 @@ private:
     glm::dvec3 velocity_{0};
 };
 
-}  // namespace detail
-
 //----------------------------------------------------------------------------//
 
 class microphone final {
 public:
-    using output_callback = std::function<void(run_step_output)>;
+    using output_callback = std::function<void(microphone_state::output)>;
 
     microphone(const mesh_descriptor& mesh_descriptor,
                double sample_rate,
@@ -52,7 +57,7 @@ public:
                     size_t step);
 
 private:
-    detail::microphone_state microphone_state_;
+    microphone_state microphone_state_;
     output_callback callback_;
 };
 

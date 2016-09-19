@@ -114,7 +114,8 @@ int main(int argc, char** argv) {
             const waveguide::preprocessor::gaussian generator{
                     model.get_descriptor(), source, std::sqrt(variance)};
 
-            aligned::vector<waveguide::run_step_output> results;
+            aligned::vector<waveguide::postprocessor::microphone_state::output>
+                    results;
             aligned::vector<waveguide::step_postprocessor> postprocessors{
                     waveguide::postprocessor::microphone{
                             model.get_descriptor(),

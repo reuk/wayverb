@@ -1,9 +1,7 @@
 #include "common/conversions.h"
 #include "common/exceptions.h"
 #include "waveguide/mesh.h"
-#include "waveguide/postprocessor/microphone.h"
 #include "waveguide/postprocessor/visualiser.h"
-#include "waveguide/preprocessor/single_soft_source.h"
 #include "waveguide/surface_filters.h"
 #include "waveguide/waveguide.h"
 
@@ -111,44 +109,6 @@ size_t run(const compute_context& cc,
         callback(step);
     }
     return step;
-}
-
-//----------------------------------------------------------------------------//
-
-aligned::vector<run_step_output> run(const compute_context& cc,
-                                     const mesh& mesh,
-                                     size_t source_index,
-                                     const aligned::vector<float>& input,
-                                     size_t receiver_index,
-                                     double speed_of_sound,
-                                     double acoustic_impedance,
-                                     const per_step_callback& callback) {
-    preprocessor::single_soft_source preprocessor{source_index, input};
-
-    aligned::vector<run_step_output> ret{};
-    ret.reserve(input.size());
-
-    aligned::vector<step_postprocessor> postprocessors{
-            postprocessor::microphone{
-                    mesh.get_descriptor(),
-                    compute_sample_rate(mesh.get_descriptor(), speed_of_sound),
-                    acoustic_impedance / speed_of_sound,
-                    receiver_index,
-                    make_output_iterator_callback(std::back_inserter(ret))}};
-
-    const auto results{run(cc,
-                           mesh,
-                           input.size(),
-                           preprocessor,
-                           postprocessors,
-                           callback,
-                           true)};
-
-    if (results != input.size()) {
-        throw std::runtime_error{"failed to complete waveguide run"};
-    }
-
-    return ret;
 }
 
 }  // namespace waveguide

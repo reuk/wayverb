@@ -1,11 +1,12 @@
 #include "waveguide/postprocessor/microphone.h"
 #include "waveguide/mesh_descriptor.h"
 
+#include "common/cl/common.h"
 #include "common/map_to_vector.h"
 
 namespace waveguide {
 namespace postprocessor {
-namespace detail {
+
 microphone_state::microphone_state(const mesh_descriptor& mesh_descriptor,
                                    double sample_rate,
                                    double ambient_density,
@@ -24,9 +25,9 @@ microphone_state::microphone_state(const mesh_descriptor& mesh_descriptor,
     }
 }
 
-run_step_output microphone_state::operator()(cl::CommandQueue& queue,
-                                             const cl::Buffer& buffer,
-                                             size_t) {
+microphone_state::output microphone_state::operator()(cl::CommandQueue& queue,
+                                                      const cl::Buffer& buffer,
+                                                      size_t) {
     //  copy out node pressure
     const auto pressure{
             read_single_value<cl_float>(queue, buffer, output_node_)};
@@ -64,11 +65,12 @@ run_step_output microphone_state::operator()(cl::CommandQueue& queue,
     //  and the pressure
     const auto intensity{velocity_ * static_cast<double>(pressure)};
 
-    return run_step_output{intensity, pressure};
+    return {intensity, pressure};
 }
 
 size_t microphone_state::get_output_node() const { return output_node_; }
-}  // namespace detail
+
+//----------------------------------------------------------------------------//
 
 microphone::microphone(const mesh_descriptor& mesh_descriptor,
                        double sample_rate,

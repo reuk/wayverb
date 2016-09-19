@@ -1,7 +1,10 @@
 #pragma once
 
-#include "config.h"
-#include "program.h"
+#include "waveguide/config.h"
+#include "waveguide/mesh.h"
+#include "waveguide/postprocessor/microphone.h"
+#include "waveguide/preprocessor/single_soft_source.h"
+#include "waveguide/program.h"
 
 #include "glm/glm.hpp"
 
@@ -36,20 +39,40 @@ size_t run(const compute_context& cc,
            const per_step_callback& callback,
            const std::atomic_bool& keep_going);
 
-struct run_step_output final {
-    glm::vec3 intensity;
-    float pressure;
-};
-
 /// Simplified run function to just hammer through an entire simulation and
 /// return the output. Nothing fancy.
-aligned::vector<run_step_output> run(const compute_context& cc,
-                                     const mesh& mesh,
-                                     size_t input_node,
-                                     const aligned::vector<float>& input,
-                                     size_t output_node,
-                                     double speed_of_sound,
-                                     double acoustic_impedance,
-                                     const per_step_callback& callback);
+template <typename It>
+aligned::vector<postprocessor::microphone_state::output> run(
+        const compute_context& cc,
+        const mesh& mesh,
+        size_t input_node,
+        It begin,
+        It end,
+        size_t output_node,
+        double speed_of_sound,
+        double acoustic_impedance,
+        const per_step_callback& callback) {
+    auto prep{preprocessor::make_single_soft_source(input_node, begin, end)};
+
+    aligned::vector<postprocessor::microphone_state::output> ret{};
+
+    aligned::vector<step_postprocessor> postprocessors{
+            postprocessor::microphone{
+                    mesh.get_descriptor(),
+                    compute_sample_rate(mesh.get_descriptor(), speed_of_sound),
+                    acoustic_impedance / speed_of_sound,
+                    output_node,
+                    make_output_iterator_callback(std::back_inserter(ret))}};
+
+    run(cc,
+        mesh,
+        std::distance(begin, end),
+        prep,
+        postprocessors,
+        callback,
+        true);
+
+    return ret;
+}
 
 }  // namespace waveguide

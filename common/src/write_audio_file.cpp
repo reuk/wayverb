@@ -7,8 +7,9 @@
 
 namespace {
 
+template <typename T>
 void write(const std::string& fname,
-           const aligned::vector<aligned::vector<float>>& outdata,
+           const aligned::vector<aligned::vector<T>>& outdata,
            float sr,
            int bd,
            int ftype) {
@@ -76,8 +77,17 @@ void write(const std::string& fname,
            const aligned::vector<aligned::vector<float>>& signal,
            double sample_rate,
            size_t bit_depth) {
-    auto format = get_file_format(fname);
-    auto depth = get_file_depth(bit_depth);
+    const auto format{get_file_format(fname)};
+    const auto depth{get_file_depth(bit_depth)};
     ::write(fname, signal, sample_rate, depth, format);
 }
-}//namespace snd
+
+void write(const std::string& fname,
+           const aligned::vector<aligned::vector<double>>& signal,
+           double sample_rate,
+           size_t bit_depth) {
+    const auto format{get_file_format(fname)};
+    const auto depth{get_file_depth(bit_depth)};
+    ::write(fname, signal, sample_rate, depth, format);
+}
+}  // namespace snd

@@ -86,8 +86,8 @@ TEST(run_waveguide, run_waveguide) {
     auto input{waveguide::make_transparent(aligned::vector<float>{1})};
     input.resize(steps);
 
-    waveguide::preprocessor::single_soft_source preprocessor{source_index,
-                                                             input};
+    auto prep{waveguide::preprocessor::make_single_soft_source(
+            source_index, input.begin(), input.end())};
 
     aligned::vector<output_holder> output_holders;
     output_holders.reserve(receivers.size());
@@ -106,7 +106,7 @@ TEST(run_waveguide, run_waveguide) {
             cc,
             model,
             input.size(),
-            preprocessor,
+            prep,
             map_to_vector(output_holders,
                           [](auto& i) { return i.get_postprocessor(); }),
             [&](auto i) {

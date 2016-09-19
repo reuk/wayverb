@@ -42,7 +42,8 @@ public:
             double waveguide_sample_rate,
             double acoustic_impedance,
             raytracer::results&& raytracer_results,
-            aligned::vector<waveguide::run_step_output>&& waveguide_results)
+            aligned::vector<waveguide::postprocessor::microphone_state::output>
+                    waveguide_results)
             : source(source)
             , receiver(receiver)
             , waveguide_sample_rate(waveguide_sample_rate)
@@ -135,7 +136,8 @@ private:
     double acoustic_impedance;
 
     raytracer::results raytracer_results;
-    aligned::vector<waveguide::run_step_output> waveguide_results;
+    aligned::vector<waveguide::postprocessor::microphone_state::output>
+            waveguide_results;
 };
 
 }  // namespace
@@ -273,11 +275,12 @@ public:
         //  this is the number of steps to run the raytracer for
         //  TODO is there a less dumb way of doing this?
         const auto steps{std::ceil(max_time * waveguide_sample_rate)};
-        waveguide::preprocessor::single_soft_source preprocessor{source_index,
-                                                                 input};
+        auto prep{waveguide::preprocessor::make_single_soft_source(
+                source_index, input.begin(), input.end())};
 
         //  If the max raytracer time is large this could take forever...
-        aligned::vector<waveguide::run_step_output> waveguide_results;
+        aligned::vector<waveguide::postprocessor::microphone_state::output>
+                waveguide_results;
         waveguide_results.reserve(steps);
         aligned::vector<waveguide::step_postprocessor> postprocessors{
                 waveguide::postprocessor::microphone{
@@ -296,7 +299,7 @@ public:
                 compute_context,
                 mesh,
                 steps,
-                preprocessor,
+                prep,
                 postprocessors,
                 [&](auto step) {
                     callback(state::running_waveguide, step / (steps - 1.0));

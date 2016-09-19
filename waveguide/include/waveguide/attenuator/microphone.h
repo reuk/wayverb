@@ -12,8 +12,9 @@ class microphone final {
 public:
     microphone(const glm::vec3& pointing, float shape);
 
-    aligned::vector<float> process(
-            const aligned::vector<run_step_output>& input) const;
+    aligned::vector<float>
+    process(const aligned::vector<
+            waveguide::postprocessor::microphone_state::output>& input) const;
 
 private:
     glm::vec3 pointing_;

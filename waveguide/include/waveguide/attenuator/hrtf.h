@@ -16,8 +16,10 @@ public:
          const glm::vec3& up,
          hrtf_channel channel);
 
-    aligned::vector<volume_type> process(
-            const aligned::vector<run_step_output>& input) const;
+    aligned::vector<volume_type>
+    process(const aligned::vector<
+            waveguide::postprocessor::microphone_state::output>& input) const;
+
 private:
     glm::vec3 direction_;
     glm::vec3 up_;

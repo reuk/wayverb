@@ -26,7 +26,7 @@ callraytrace () {
 export GLOG_logtostderr=1
 export GTEST_FILTER="*pcs*"
 
-cmake .. && make && ctest -V
+#cmake .. && make && ctest -V
 #cmake .. && make && cd utils/image_source_comparison && ./image_source_comparison
 
 #cmake .. && make && cd utils/southern2013_2_cuboid && ./southern2013_2_cuboid | tee output.txt
@@ -41,3 +41,5 @@ cmake .. && make && ctest -V
 #cmake .. && make && ./tests/mesh_impulse_response/write_compensation_signal
 
 #cmake .. && make && cd utils/solution_growth && ./solution_growth
+
+cmake .. && make && cd utils/sheaffer2014 && ./sheaffer2014

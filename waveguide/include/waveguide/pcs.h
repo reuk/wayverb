@@ -35,16 +35,3 @@ filter::biquad::coefficients mech_sphere(double M,
                                          double f0,
                                          double Q,
                                          double T);
-
-/// Design a physically-constrained source for fdtd simulation.
-/// Uses a maxflat fir kernel as the pulse shaping filter, and a
-/// pulsating sphere model as the mechanical filter.
-///
-/// M:      mass of sphere
-/// f0:     normalised low resonance of mechanical system (0.5=nyquist)
-/// Q:      Q of mechanical system
-/// maxF:   maximum driving force of sphere (newtons)
-/// fc:     normalised cutoff frequency pulse (0.5=nyquist)
-/// T:      temporal sample period (s)
-aligned::vector<double> pcs_design(
-        double M, double f0, double Q, double maxF, double fc, double T);
