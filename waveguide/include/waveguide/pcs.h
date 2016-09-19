@@ -3,6 +3,8 @@
 #include "common/aligned/vector.h"
 #include "common/filters_common.h"
 
+namespace waveguide {
+
 /// See sheaffer2014 and the source-modelling-toolbox.
 /// paper: physical and numerical constraints in source modeling for finite
 /// difference simulation of room acoustics
@@ -35,3 +37,26 @@ filter::biquad::coefficients mech_sphere(double M,
                                          double f0,
                                          double Q,
                                          double T);
+
+/// Create an input signal from scratch.
+///
+/// According to sheaffer terminology, the first 'pulse shaping' filter is
+/// a 'maxflat' FIR filter.
+/// This filter's cutoff is placed AT the waveguide nyquist (i.e. 0.25 fs),
+/// and the filter uses 64 taps to give a steep rolloff.
+///
+/// The initial kernel is filtered by an IIR mechanical filter, which simulates
+/// a pulsating sphere.
+/// The parameters for this filter are arbitrary at the moment.
+///
+/// Finally, the output from the first two filters is filtered by a 'injection'
+/// IIR filter.
+/// This filter approximates the time derivative of the previous filters.
+///
+/// *NOTE*
+/// This input signal should be used as a soft, not a transparent source.
+///
+/// TODO experiment with the parameters of the mechanical filter.
+aligned::vector<double> design_pcs_source(size_t length, double sample_rate);
+
+}  // namespace waveguide

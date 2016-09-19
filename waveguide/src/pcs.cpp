@@ -3,6 +3,8 @@
 #include <cmath>
 #include <numeric>
 
+namespace waveguide {
+
 aligned::vector<double> maxflat(double f0,
                                 uint32_t N,
                                 double A,
@@ -48,3 +50,22 @@ filter::biquad::coefficients mech_sphere(double M,
     const auto a2{1 - (2 * R * beta / den)};
     return {b0, 0, b2, a1, a2};
 }
+
+//----------------------------------------------------------------------------//
+
+aligned::vector<double> design_pcs_source(size_t length, double sample_rate) {
+    auto pulse_shaping_filter{maxflat(0.25, 64, 1, length)};
+    filter::biquad mechanical_filter{
+            mech_sphere(1.0, 50 / sample_rate, 0.75, 1 / sample_rate)};
+    run_one_pass(mechanical_filter,
+                 pulse_shaping_filter.begin(),
+                 pulse_shaping_filter.end());
+    const auto one_over_two_T{sample_rate / 2};
+    filter::biquad injection_filter{{one_over_two_T, 0, -one_over_two_T, 0, 0}};
+    run_one_pass(injection_filter,
+                 pulse_shaping_filter.begin(),
+                 pulse_shaping_filter.end());
+    return pulse_shaping_filter;
+}
+
+}  // namespace waveguide

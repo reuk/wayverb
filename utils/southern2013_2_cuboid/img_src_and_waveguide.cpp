@@ -5,6 +5,7 @@
 
 #include "waveguide/calibration.h"
 #include "waveguide/make_transparent.h"
+#include "waveguide/pcs.h"
 #include "waveguide/surface_filters.h"
 #include "waveguide/waveguide.h"
 
@@ -123,11 +124,10 @@ audio img_src_and_waveguide_test::operator()(
             compute_index(mesh.get_descriptor(), receiver.position)};
 
     //  Create input signal.
-    //  Here we're using a dirac delta, made transparent, resized to the step
-    //  number.
-    auto input_signal{waveguide::make_transparent(aligned::vector<float>{1})};
-    input_signal.resize(img_src_results.size() * waveguide_sample_rate_ /
-                        sample_rate);
+    const auto waveguide_steps{img_src_results.size() * waveguide_sample_rate_ /
+                               sample_rate};
+    const auto input_signal{waveguide::design_pcs_source(
+            waveguide_steps, waveguide_sample_rate_)};
 
     //  Run the waveguide simulation.
     progress_bar pb{std::cerr, input_signal.size()};
@@ -159,25 +159,6 @@ audio img_src_and_waveguide_test::operator()(
                    sample_rate,
                    16);
     }
-
-    //  Filter out everything above the waveguide nyquist.
-    {
-        fast_filter filter{magnitude_adjusted.size() * 2};
-        filter.filter(magnitude_adjusted.begin(),
-                      magnitude_adjusted.end(),
-                      magnitude_adjusted.begin(),
-                      [=](auto cplx, auto freq) {
-                          //   We use quite a wide 'crossover' band here to
-                          //   minimize ring - everything over 0.2 is pretty
-                          //   much guaranteed to be garbage anyway.
-                          return cplx *
-                                 compute_hipass_magnitude(freq, 0.25, 0.05, 0);
-                      });
-    }
-    //  Filter out dc component.
-    filter::block_dc(magnitude_adjusted.begin(),
-                     magnitude_adjusted.end(),
-                     waveguide_sample_rate_);
 
     //  Convert sampling rate.
     auto corrected_waveguide{waveguide::adjust_sampling_rate(
@@ -214,6 +195,8 @@ audio img_src_and_waveguide_test::operator()(
 
         const auto cutoff{adjust_frequency(normalised_cutoff)};
         const auto width{adjust_frequency(normalised_width)};
+
+        //  TODO this filtering seems a bit wack
 
         img_src_results.resize(max_size);
         corrected_waveguide.resize(max_size);

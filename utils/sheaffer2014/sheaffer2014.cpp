@@ -38,7 +38,7 @@ int main() {
 
     auto& mesh{std::get<1>(voxels_and_mesh)};
     mesh.set_coefficients(
-            {waveguide::to_flat_coefficients(make_surface(0.1, 0))});
+            {waveguide::to_flat_coefficients(make_surface(0.005991, 0))});
 
     const auto input_node{compute_index(mesh.get_descriptor(), source)};
     const auto output_node{compute_index(mesh.get_descriptor(), receiver)};
@@ -46,43 +46,9 @@ int main() {
     //  Now we get to do the interesting new bit:
     //  Set up a physically modelled source signal.
 
-    const auto write{[=](auto name, auto sig) {
-        snd::write(build_string(name, ".wav"), {sig}, sample_rate, 16);
-        normalize(sig);
-        snd::write(build_string("normalised.", name, ".wav"),
-                   {sig},
-                   sample_rate,
-                   16);
-    }};
+    const auto input_signal{waveguide::design_pcs_source(1 << 13, sample_rate)};
 
-    auto pulse_shaping_filter{maxflat(0.075, 16, 250e-6, 1 << 12)};
-    write("pulse_shaping_filter", pulse_shaping_filter);
-
-    {
-        filter::biquad mechanical_filter{
-                mech_sphere(0.025, 100 / sample_rate, 0.7, 1 / sample_rate)};
-        run_one_pass(mechanical_filter,
-                     pulse_shaping_filter.begin(),
-                     pulse_shaping_filter.end());
-    }
-    write("transduced", pulse_shaping_filter);
-
-    const auto one_over_two_T{sample_rate / 2};
-
-    {
-        filter::biquad injection_filter{
-                {one_over_two_T, 0, -one_over_two_T, 0, 0}};
-        run_one_pass(injection_filter,
-                     pulse_shaping_filter.begin(),
-                     pulse_shaping_filter.end());
-    }
-
-    write("injected", pulse_shaping_filter);
-
-    //  Now run the actual simulation.
-
-    auto input_signal{pulse_shaping_filter};
-    input_signal.resize(1 << 16, 0);
+    //  Run the simulation.
 
     progress_bar pb{std::cerr, input_signal.size()};
     const auto results{waveguide::run(cc,
@@ -97,6 +63,16 @@ int main() {
 
     const auto pressures{
             map_to_vector(results, [](auto i) { return i.pressure; })};
+
+    const auto write{[=](auto name, auto sig) {
+        snd::write(build_string(name, ".wav"), {sig}, sample_rate, 16);
+        normalize(sig);
+        snd::write(build_string("normalised.", name, ".wav"),
+                   {sig},
+                   sample_rate,
+                   16);
+    }};
+
     write("output", pressures);
 
     return EXIT_SUCCESS;
