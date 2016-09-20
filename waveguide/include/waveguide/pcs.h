@@ -56,7 +56,11 @@ filter::biquad::coefficients mech_sphere(double M,
 /// *NOTE*
 /// This input signal should be used as a soft, not a transparent source.
 ///
-/// TODO experiment with the parameters of the mechanical filter.
-aligned::vector<double> design_pcs_source(size_t length, double sample_rate);
+/// TODO
+aligned::vector<double> design_pcs_source(size_t length,
+                                          double sample_rate,
+                                          double sphere_mass,
+                                          double low_cutoff_hz,
+                                          double low_q);
 
 }  // namespace waveguide

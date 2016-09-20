@@ -53,10 +53,14 @@ filter::biquad::coefficients mech_sphere(double M,
 
 //----------------------------------------------------------------------------//
 
-aligned::vector<double> design_pcs_source(size_t length, double sample_rate) {
-    auto pulse_shaping_filter{maxflat(0.25, 64, 1, length)};
-    filter::biquad mechanical_filter{
-            mech_sphere(1.0, 50 / sample_rate, 0.75, 1 / sample_rate)};
+aligned::vector<double> design_pcs_source(size_t length,
+                                          double sample_rate,
+                                          double sphere_mass,
+                                          double low_cutoff_hz,
+                                          double low_q) {
+    auto pulse_shaping_filter{maxflat(0.20, 16, 1, length)};
+    filter::biquad mechanical_filter{mech_sphere(
+            sphere_mass, low_cutoff_hz / sample_rate, low_q, 1 / sample_rate)};
     run_one_pass(mechanical_filter,
                  pulse_shaping_filter.begin(),
                  pulse_shaping_filter.end());
