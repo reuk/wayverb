@@ -5,6 +5,9 @@
 
 #include "waveguide/make_transparent.h"
 #include "waveguide/mesh.h"
+#include "waveguide/postprocessor/output_holder.h"
+#include "waveguide/postprocessor/single_node.h"
+#include "waveguide/preprocessor/single_soft_source.h"
 #include "waveguide/waveguide.h"
 
 #include "gtest/gtest.h"
@@ -13,7 +16,6 @@
 #include <cmath>
 
 constexpr auto speed_of_sound{340.0};
-constexpr auto acoustic_impedance{400.0};
 
 namespace {
 template <typename T>
@@ -59,19 +61,25 @@ TEST(verify_compensation_signal, verify_compensation_signal_normal) {
     const auto receiver_index{compute_index(model.get_descriptor(), centre)};
 
     multitest([&] {
+        auto prep{waveguide::preprocessor::make_single_soft_source(
+                receiver_index, transparent.begin(), transparent.end())};
+
+        waveguide::postprocessor::output_accumulator<
+                waveguide::postprocessor::node_state>
+                postprocessor{receiver_index};
+
         progress_bar pb(std::cout, transparent.size());
-        const auto output{waveguide::run(cc,
-                                         model,
-                                         receiver_index,
-                                         transparent.begin(),
-                                         transparent.end(),
-                                         receiver_index,
-                                         speed_of_sound,
-                                         acoustic_impedance,
-                                         [&](auto) { pb += 1; })};
+        waveguide::run(cc,
+                       model,
+                       prep,
+                       [&](auto& queue, const auto& buffer, auto step) {
+                           postprocessor(queue, buffer, step);
+                           pb += 1;
+                       },
+                       true);
 
-        assert(output.size() == transparent.size());
+        assert(postprocessor.get_output().size() == transparent.size());
 
-        return map_to_vector(output, [](const auto& i) { return i.pressure; });
+        return postprocessor.get_output();
     });
 }

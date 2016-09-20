@@ -3,6 +3,7 @@
 #include "waveguide/make_transparent.h"
 #include "waveguide/mesh.h"
 #include "waveguide/postprocessor/microphone.h"
+#include "waveguide/postprocessor/output_holder.h"
 #include "waveguide/postprocessor/single_node.h"
 #include "waveguide/preprocessor/single_soft_source.h"
 #include "waveguide/program.h"
@@ -66,56 +67,34 @@ TEST(run_waveguide, run_waveguide) {
         throw std::runtime_error("source is outside of mesh!");
     }
 
-    class output_holder final {
-    public:
-        output_holder(size_t node)
-                : node_{node} {}
-
-        waveguide::step_postprocessor get_postprocessor() const {
-            return waveguide::postprocessor::node{
-                    node_, [&](auto i) { output_.emplace_back(i); }};
-        }
-
-        const auto& get_output() const { return output_; }
-
-    private:
-        mutable aligned::vector<float> output_;
-        size_t node_;
-    };
-
     auto input{waveguide::make_transparent(aligned::vector<float>{1})};
     input.resize(steps);
 
     auto prep{waveguide::preprocessor::make_single_soft_source(
             source_index, input.begin(), input.end())};
 
-    aligned::vector<output_holder> output_holders;
-    output_holders.reserve(receivers.size());
-    for (const auto& receiver : receivers) {
-        const auto receiver_index{
-                compute_index(model.get_descriptor(), receiver)};
+    auto output_holders{map_to_vector(receivers, [&](auto i) {
+        const auto receiver_index{compute_index(model.get_descriptor(), i)};
         if (!waveguide::is_inside(model, receiver_index)) {
             throw std::runtime_error("receiver is outside of mesh!");
         }
-        output_holders.emplace_back(receiver_index);
-    }
+        return waveguide::postprocessor::output_accumulator<
+                waveguide::postprocessor::node_state>{receiver_index};
+    })};
 
-    progress_bar pb{std::cout, steps};
+    progress_bar pb{std::cerr, steps};
     auto callback_counter{0};
-    const auto completed_steps{waveguide::run(
-            cc,
-            model,
-            input.size(),
-            prep,
-            map_to_vector(output_holders,
-                          [](auto& i) { return i.get_postprocessor(); }),
-            [&](auto i) {
-                pb += 1;
-                ASSERT_EQ(i, callback_counter++);
-            },
-            true)};
-
-    ASSERT_EQ(completed_steps, input.size());
+    waveguide::run(cc,
+                   model,
+                   prep,
+                   [&](auto& queue, const auto& buffer, auto step) {
+                       for (auto& i : output_holders) {
+                           i(queue, buffer, step);
+                       }
+                       pb += 1;
+                       ASSERT_EQ(step, callback_counter++);
+                   },
+                   true);
 
     auto count{0ul};
     for (const auto& output_holder : output_holders) {

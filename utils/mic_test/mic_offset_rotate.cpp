@@ -3,6 +3,7 @@
 #include "waveguide/config.h"
 #include "waveguide/mesh.h"
 #include "waveguide/postprocessor/microphone.h"
+#include "waveguide/postprocessor/output_holder.h"
 #include "waveguide/preprocessor/gaussian.h"
 #include "waveguide/waveguide.h"
 
@@ -112,33 +113,30 @@ int main(int argc, char** argv) {
             const auto variance{4 * model.get_descriptor().spacing};
             //  standard deviation is the sqrt of the variance
             const waveguide::preprocessor::gaussian generator{
-                    model.get_descriptor(), source, std::sqrt(variance)};
+                    model.get_descriptor(), source, std::sqrt(variance), steps};
 
-            aligned::vector<waveguide::postprocessor::microphone_state::output>
-                    results;
-            aligned::vector<waveguide::step_postprocessor> postprocessors{
-                    waveguide::postprocessor::microphone{
-                            model.get_descriptor(),
-                            waveguide_sr,
-                            acoustic_impedance / speed_of_sound,
-                            receiver_index,
-                            make_output_iterator_callback(
-                                    std::back_inserter(results))}};
+            waveguide::postprocessor::output_accumulator<
+                    waveguide::postprocessor::microphone_state>
+                    postprocessor{model.get_descriptor(),
+                                  waveguide_sr,
+                                  acoustic_impedance / speed_of_sound,
+                                  receiver_index};
 
             std::cout << "running " << steps << " steps" << std::endl;
 
             progress_bar pb(std::cout, steps);
             waveguide::run(cc,
                            model,
-                           steps,
                            generator,
-                           postprocessors,
-                           [&](auto) { pb += 1; },
+                           [&](auto& queue, const auto& buffer, auto step) {
+                               postprocessor(queue, buffer, step);
+                               pb += 1;
+                           },
                            true);
 
             auto out_signal{waveguide::attenuator::microphone{
                     glm::vec3{0, 0, 1},
-                    directionality}.process(results)};
+                    directionality}.process(postprocessor.get_output())};
 
             const auto bands{8};
             const auto min_band{80};

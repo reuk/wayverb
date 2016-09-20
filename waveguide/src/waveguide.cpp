@@ -1,9 +1,9 @@
+#include "waveguide/waveguide.h"
 #include "common/conversions.h"
 #include "common/exceptions.h"
 #include "waveguide/mesh.h"
 #include "waveguide/postprocessor/visualiser.h"
 #include "waveguide/surface_filters.h"
-#include "waveguide/waveguide.h"
 
 #include <cassert>
 #include <iostream>
@@ -12,10 +12,8 @@ namespace waveguide {
 
 size_t run(const compute_context& cc,
            const mesh& mesh,
-           size_t ideal_steps,
            const step_preprocessor& preprocessor,
-           const aligned::vector<step_postprocessor>& postprocessors,
-           const per_step_callback& callback,
+           const step_postprocessor& postprocessor,
            const std::atomic_bool& keep_going) {
     cl::Buffer previous{cc.context,
                         CL_MEM_READ_WRITE,
@@ -56,12 +54,12 @@ size_t run(const compute_context& cc,
 
     //  run
     auto step{0u};
-    for (; step != ideal_steps && keep_going; ++step) {
+
+    //  The preprocessor returns 'true' while it should be run.
+    //  It also updates the mesh with new pressure values.
+    for (; preprocessor(queue, current, step) && keep_going; ++step) {
         //  set flag state to successful
         write_single_value(queue, error_flag_buffer, 0, id_success);
-
-        //  update the mesh with new inputs
-        preprocessor(queue, current, step);
 
         //  run kernel
         kernel(cl::EnqueueArgs(queue,
@@ -100,13 +98,9 @@ size_t run(const compute_context& cc,
             }
         }
 
-        for (auto& i : postprocessors) {
-            i(queue, current, step);
-        }
+        postprocessor(queue, current, step);
 
         std::swap(previous, current);
-
-        callback(step);
     }
     return step;
 }

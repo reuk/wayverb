@@ -1,6 +1,7 @@
 #include "waveguide/make_transparent.h"
 #include "waveguide/mesh.h"
-#include "waveguide/postprocessor/microphone.h"
+#include "waveguide/postprocessor/output_holder.h"
+#include "waveguide/postprocessor/single_node.h"
 #include "waveguide/preprocessor/single_soft_source.h"
 #include "waveguide/waveguide.h"
 
@@ -29,26 +30,31 @@ TEST(waveguide_init, waveguide_init) {
     transparent.resize(steps, 0);
 
     constexpr auto speed_of_sound{340.0};
-    constexpr auto acoustic_impedance{400.0};
 
     const auto model{
             waveguide::compute_mesh(cc, voxelised, 0.04, speed_of_sound)};
     const auto receiver_index{compute_index(model.get_descriptor(), centre)};
 
-    progress_bar pb(std::cout, steps);
-    const auto output{waveguide::run(cc,
-                                     model,
-                                     receiver_index,
-                                     transparent.begin(),
-                                     transparent.end(),
-                                     receiver_index,
-                                     speed_of_sound,
-                                     acoustic_impedance,
-                                     [&](auto) { pb += 1; })};
+    auto prep{waveguide::preprocessor::make_single_soft_source(
+            receiver_index, transparent.begin(), transparent.end())};
 
-    ASSERT_EQ(transparent.size(), output.size());
+    waveguide::postprocessor::output_accumulator<
+            waveguide::postprocessor::node_state>
+            postprocessor{receiver_index};
+
+    progress_bar pb(std::cout, steps);
+    waveguide::run(cc,
+                   model,
+                   prep,
+                   [&](auto& queue, const auto& buffer, auto step) {
+                        postprocessor(queue, buffer, step);
+                        pb += 1;
+                   },
+                   true);
+
+    ASSERT_EQ(transparent.size(), postprocessor.get_output().size());
 
     for (auto i{0u}; i != input.size(); ++i) {
-        ASSERT_NEAR(output[i].pressure, input[i], 0.00001);
+        ASSERT_NEAR(postprocessor.get_output()[i], input[i], 0.00001);
     }
 }

@@ -5,10 +5,7 @@
 
 namespace waveguide {
 
-aligned::vector<double> maxflat(double f0,
-                                uint32_t N,
-                                double A,
-                                uint32_t hLen) {
+offset_signal maxflat(double f0, uint32_t N, double A, uint32_t hLen) {
     aligned::vector<double> h(hLen, 0.0f);
     const int64_t Q{2 * N - 1};
     for (auto n{-Q}, end{Q + 1}; n != end; ++n) {
@@ -29,7 +26,7 @@ aligned::vector<double> maxflat(double f0,
     for (auto& i : h) {
         i *= scale_factor;
     }
-    return h;
+    return {std::move(h), N * 2};
 }
 
 //----------------------------------------------------------------------------//
@@ -53,22 +50,22 @@ filter::biquad::coefficients mech_sphere(double M,
 
 //----------------------------------------------------------------------------//
 
-aligned::vector<double> design_pcs_source(size_t length,
-                                          double sample_rate,
-                                          double sphere_mass,
-                                          double low_cutoff_hz,
-                                          double low_q) {
+offset_signal design_pcs_source(size_t length,
+                                double sample_rate,
+                                double sphere_mass,
+                                double low_cutoff_hz,
+                                double low_q) {
     auto pulse_shaping_filter{maxflat(0.20, 16, 1, length)};
     filter::biquad mechanical_filter{mech_sphere(
             sphere_mass, low_cutoff_hz / sample_rate, low_q, 1 / sample_rate)};
     run_one_pass(mechanical_filter,
-                 pulse_shaping_filter.begin(),
-                 pulse_shaping_filter.end());
+                 pulse_shaping_filter.signal.begin(),
+                 pulse_shaping_filter.signal.end());
     const auto one_over_two_T{sample_rate / 2};
     filter::biquad injection_filter{{one_over_two_T, 0, -one_over_two_T, 0, 0}};
     run_one_pass(injection_filter,
-                 pulse_shaping_filter.begin(),
-                 pulse_shaping_filter.end());
+                 pulse_shaping_filter.signal.begin(),
+                 pulse_shaping_filter.signal.end());
     return pulse_shaping_filter;
 }
 

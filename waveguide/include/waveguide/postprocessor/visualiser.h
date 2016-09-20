@@ -1,6 +1,9 @@
 #pragma once
 
-#include "waveguide/waveguide.h"
+#include "common/aligned/vector.h"
+#include "common/cl/include.h"
+
+#include <functional>
 
 namespace waveguide {
 namespace postprocessor {

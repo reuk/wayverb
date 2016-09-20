@@ -1,78 +1,41 @@
 #pragma once
 
-#include "waveguide/config.h"
-#include "waveguide/mesh.h"
-#include "waveguide/postprocessor/microphone.h"
-#include "waveguide/preprocessor/single_soft_source.h"
-#include "waveguide/program.h"
+#include "common/cl/include.h"
 
-#include "glm/glm.hpp"
+#include <atomic>
+#include <functional>
+
+class compute_context;
 
 namespace waveguide {
 
 class mesh;
 
-/// arguments
-///     the queue to use
-///     the current mesh state buffer
-///     the step number
-using step_preprocessor =
-        std::function<void(cl::CommandQueue&, cl::Buffer&, size_t)>;
+/// Run before each waveguide iteration.
+///
+/// returns:        true if the simulation should continue
+using step_preprocessor = std::function<bool(
+        cl::CommandQueue& queue, cl::Buffer& buffer, size_t step)>;
 
-/// arguments
-///     the queue to use
-///     the current mesh state buffer
-//      the step number
-using step_postprocessor =
-        std::function<void(cl::CommandQueue&, const cl::Buffer&, size_t)>;
-
-using per_step_callback = std::function<void(size_t)>;
+/// Run after each waveguide iteration.
+/// Could be a stateful object which accumulates mesh state in some way.
+using step_postprocessor = std::function<void(
+        cl::CommandQueue& queue, const cl::Buffer& buffer, size_t step)>;
 
 /// Will set up and run a waveguide using an existing 'template' (the mesh).
-/// Could be part of a class which stores the template and cl buffers to make
-/// multiple runs faster.
+///
+/// cc:             OpenCL context and device to use
+/// mesh:           contains node placements and surface filter information
+/// pre:            will be run before each step, should inject inputs
+/// post:           will be run after each step, should collect outputs
+/// keep_going:     toggle this from another thread to quit early
+///
+/// returns:        the number of steps completed successfully
+
 size_t run(const compute_context& cc,
            const mesh& mesh,
-           size_t ideal_steps,
-           const step_preprocessor& preprocessor,
-           const aligned::vector<step_postprocessor>& postprocessors,
-           const per_step_callback& callback,
+           const step_preprocessor& pre,
+           const step_postprocessor& post,
            const std::atomic_bool& keep_going);
-
-/// Simplified run function to just hammer through an entire simulation and
-/// return the output. Nothing fancy.
-template <typename It>
-aligned::vector<postprocessor::microphone_state::output> run(
-        const compute_context& cc,
-        const mesh& mesh,
-        size_t input_node,
-        It begin,
-        It end,
-        size_t output_node,
-        double speed_of_sound,
-        double acoustic_impedance,
-        const per_step_callback& callback) {
-    auto prep{preprocessor::make_single_soft_source(input_node, begin, end)};
-
-    aligned::vector<postprocessor::microphone_state::output> ret{};
-
-    aligned::vector<step_postprocessor> postprocessors{
-            postprocessor::microphone{
-                    mesh.get_descriptor(),
-                    compute_sample_rate(mesh.get_descriptor(), speed_of_sound),
-                    acoustic_impedance / speed_of_sound,
-                    output_node,
-                    make_output_iterator_callback(std::back_inserter(ret))}};
-
-    run(cc,
-        mesh,
-        std::distance(begin, end),
-        prep,
-        postprocessors,
-        callback,
-        true);
-
-    return ret;
-}
 
 }  // namespace waveguide

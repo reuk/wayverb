@@ -4,8 +4,12 @@
 #include "raytracer/raytracer.h"
 
 #include "waveguide/calibration.h"
+#include "waveguide/config.h"
 #include "waveguide/make_transparent.h"
 #include "waveguide/pcs.h"
+#include "waveguide/postprocessor/output_holder.h"
+#include "waveguide/postprocessor/single_node.h"
+#include "waveguide/preprocessor/single_soft_source.h"
 #include "waveguide/surface_filters.h"
 #include "waveguide/waveguide.h"
 
@@ -56,7 +60,7 @@ audio img_src_and_waveguide_test::operator()(
 
     //  Run raytracer.  ------------------------------------------------------//
 
-    const auto directions{get_random_directions(100000)};
+    const auto directions{get_random_directions(1000)};
 
     auto impulses{raytracer::image_source::run<
             raytracer::image_source::fast_pressure_calculator>(
@@ -127,28 +131,35 @@ audio img_src_and_waveguide_test::operator()(
     const auto waveguide_steps{img_src_results.size() * waveguide_sample_rate_ /
                                sample_rate};
     const auto input_signal{waveguide::design_pcs_source(
-            waveguide_steps, waveguide_sample_rate_)};
+            waveguide_steps, waveguide_sample_rate_, 0.01, 100, 1)};
+    auto prep{waveguide::preprocessor::make_single_soft_source(
+            input_node,
+            input_signal.signal.begin(),
+            input_signal.signal.end())};
+
+    waveguide::postprocessor::output_accumulator<
+            waveguide::postprocessor::node_state>
+            postprocessor{output_node};
 
     //  Run the waveguide simulation.
-    progress_bar pb{std::cerr, input_signal.size()};
-    const auto waveguide_results{waveguide::run(compute_context_,
-                                                mesh,
-                                                input_node,
-                                                input_signal.begin(),
-                                                input_signal.end(),
-                                                output_node,
-                                                speed_of_sound_,
-                                                acoustic_impedance_,
-                                                [&](auto i) { pb += 1; })};
+    progress_bar pb{std::cerr, input_signal.signal.size()};
+    waveguide::run(compute_context_,
+                   mesh,
+                   prep,
+                   [&](auto& a, const auto& b, auto c) {
+                       postprocessor(a, b, c);
+                       pb += 1;
+                   },
+                   true);
 
     //  Compute required amplitude adjustment.
     const float calibration_factor = waveguide::rectilinear_calibration_factor(
             waveguide_sample_rate_, speed_of_sound_);
 
     //  Adjust magnitude.
-    auto magnitude_adjusted{map_to_vector(waveguide_results, [=](auto i) {
-        return i.pressure * calibration_factor;
-    })};
+    auto magnitude_adjusted{
+            map_to_vector(postprocessor.get_output(),
+                          [=](auto i) { return i * calibration_factor; })};
 
     {
         static auto count{0};
@@ -159,6 +170,11 @@ audio img_src_and_waveguide_test::operator()(
                    sample_rate,
                    16);
     }
+
+    //  Remove initial samples from waveguide output so that it lines up with
+    //  raytracer output.
+//    magnitude_adjusted.erase(magnitude_adjusted.begin(),
+//                             magnitude_adjusted.begin() + input_signal.offset);
 
     //  Convert sampling rate.
     auto corrected_waveguide{waveguide::adjust_sampling_rate(
@@ -186,7 +202,7 @@ audio img_src_and_waveguide_test::operator()(
     {
         //  Do some crossover filtering
         const auto waveguide_max{0.16};
-        const auto normalised_width{0.2};
+        const auto normalised_width{0.02};
         const auto normalised_cutoff{waveguide_max - (normalised_width / 2)};
 
         const auto adjust_frequency{[=](auto i) {
@@ -195,8 +211,6 @@ audio img_src_and_waveguide_test::operator()(
 
         const auto cutoff{adjust_frequency(normalised_cutoff)};
         const auto width{adjust_frequency(normalised_width)};
-
-        //  TODO this filtering seems a bit wack
 
         img_src_results.resize(max_size);
         corrected_waveguide.resize(max_size);

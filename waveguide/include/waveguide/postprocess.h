@@ -1,6 +1,6 @@
 #pragma once
 
-#include "waveguide/waveguide.h"
+#include "waveguide/postprocessor/microphone.h"
 
 #include "common/model/receiver_settings.h"
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "waveguide/waveguide.h"
+#include "waveguide/postprocessor/microphone.h"
 
 #include "common/aligned/vector.h"
 #include "common/hrtf_utils.h"

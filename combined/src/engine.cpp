@@ -21,10 +21,12 @@
 #include "waveguide/attenuator/hrtf.h"
 #include "waveguide/attenuator/microphone.h"
 #include "waveguide/boundary_adjust.h"
+#include "waveguide/config.h"
 #include "waveguide/make_transparent.h"
 #include "waveguide/mesh.h"
 #include "waveguide/postprocess.h"
 #include "waveguide/postprocessor/microphone.h"
+#include "waveguide/postprocessor/output_holder.h"
 #include "waveguide/postprocessor/visualiser.h"
 #include "waveguide/preprocessor/single_soft_source.h"
 #include "waveguide/setup.h"
@@ -279,29 +281,23 @@ public:
                 source_index, input.begin(), input.end())};
 
         //  If the max raytracer time is large this could take forever...
-        aligned::vector<waveguide::postprocessor::microphone_state::output>
-                waveguide_results;
-        waveguide_results.reserve(steps);
-        aligned::vector<waveguide::step_postprocessor> postprocessors{
-                waveguide::postprocessor::microphone{
-                        mesh.get_descriptor(),
-                        waveguide_sample_rate,
-                        acoustic_impedance / speed_of_sound,
-                        receiver_index,
-                        make_output_iterator_callback(
-                                std::back_inserter(waveguide_results))}};
 
-        if (waveguide_visual_callback) {
-            postprocessors.emplace_back(waveguide_visual_callback);
-        }
+        waveguide::postprocessor::output_accumulator<
+                waveguide::postprocessor::microphone_state>
+                mic_output{mesh.get_descriptor(),
+                           waveguide_sample_rate,
+                           acoustic_impedance / speed_of_sound,
+                           receiver_index};
 
         const auto waveguide_steps_completed{waveguide::run(
                 compute_context,
                 mesh,
-                steps,
                 prep,
-                postprocessors,
-                [&](auto step) {
+                [&](auto& queue, const auto& buffer, auto step) {
+                    mic_output(queue, buffer, step);
+                    if (waveguide_visual_callback) {
+                        waveguide_visual_callback(queue, buffer, step);
+                    }
                     callback(state::running_waveguide, step / (steps - 1.0));
                 },
                 keep_going)};
@@ -321,7 +317,7 @@ public:
                 waveguide_sample_rate,
                 acoustic_impedance,
                 std::move(*raytracer_results),
-                std::move(waveguide_results));
+                mic_output.get_output());
 
         return ret;
     }

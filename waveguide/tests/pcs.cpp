@@ -22,7 +22,7 @@ TEST(pcs, factdbl) {
 
 TEST(pcs, maxflat) {
     for (const auto& pair : aligned::vector<
-                 std::tuple<aligned::vector<double>, aligned::vector<double>>>{
+                 std::tuple<waveguide::offset_signal, aligned::vector<double>>>{
                  {waveguide::maxflat(0.1, 4, 1, 1024),
                   aligned::vector<double>{-0.00580,
                                           -0.01272,
@@ -66,10 +66,12 @@ TEST(pcs, maxflat) {
 
          }) {
         for (auto i{0ul},
-             end{std::min(std::get<0>(pair).size(), std::get<1>(pair).size())};
+             end{std::min(std::get<0>(pair).signal.size(),
+                          std::get<1>(pair).size())};
              i != end;
              ++i) {
-            ASSERT_NEAR(std::get<0>(pair)[i], std::get<1>(pair)[i], 0.00001);
+            ASSERT_NEAR(
+                    std::get<0>(pair).signal[i], std::get<1>(pair)[i], 0.00001);
         }
     }
 }

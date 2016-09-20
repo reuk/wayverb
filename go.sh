@@ -42,4 +42,6 @@ export GLOG_logtostderr=1
 
 #cmake .. && make && cd utils/solution_growth && ./solution_growth
 
-cmake .. && make && cd utils/sheaffer2014 && ./sheaffer2014
+#cmake .. && make && cd utils/sheaffer2014 && ./sheaffer2014
+
+cmake .. && make && cd utils/waveguide_distance_test && ./waveguide_distance_test

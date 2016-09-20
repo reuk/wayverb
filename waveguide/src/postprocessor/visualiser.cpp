@@ -1,5 +1,7 @@
 #include "waveguide/postprocessor/visualiser.h"
 
+#include "common/cl/common.h"
+
 namespace waveguide {
 namespace postprocessor {
 

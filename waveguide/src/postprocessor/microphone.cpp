@@ -25,9 +25,8 @@ microphone_state::microphone_state(const mesh_descriptor& mesh_descriptor,
     }
 }
 
-microphone_state::output microphone_state::operator()(cl::CommandQueue& queue,
-                                                      const cl::Buffer& buffer,
-                                                      size_t) {
+microphone_state::value_type microphone_state::operator()(
+        cl::CommandQueue& queue, const cl::Buffer& buffer, size_t) {
     //  copy out node pressure
     const auto pressure{
             read_single_value<cl_float>(queue, buffer, output_node_)};
@@ -69,28 +68,6 @@ microphone_state::output microphone_state::operator()(cl::CommandQueue& queue,
 }
 
 size_t microphone_state::get_output_node() const { return output_node_; }
-
-//----------------------------------------------------------------------------//
-
-microphone::microphone(const mesh_descriptor& mesh_descriptor,
-                       double sample_rate,
-                       double ambient_density,
-                       size_t output_node,
-                       output_callback callback)
-        : microphone_state_(
-                  mesh_descriptor, sample_rate, ambient_density, output_node)
-        , callback_(std::move(callback)) {
-    if (ambient_density < 0.5 || 10 < ambient_density) {
-        throw std::runtime_error{
-                "ambient density value looks a bit suspicious"};
-    }
-}
-
-void microphone::operator()(cl::CommandQueue& queue,
-                            const cl::Buffer& buffer,
-                            size_t step) {
-    callback_(microphone_state_(queue, buffer, step));
-}
 
 }  // namespace postprocessor
 }  // namespace waveguide

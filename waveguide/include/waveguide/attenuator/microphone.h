@@ -1,7 +1,9 @@
 #pragma once
 
-#include "common/aligned/vector.h"
+#include "waveguide/postprocessor/microphone.h"
 #include "waveguide/waveguide.h"
+
+#include "common/aligned/vector.h"
 
 #include "glm/fwd.hpp"
 

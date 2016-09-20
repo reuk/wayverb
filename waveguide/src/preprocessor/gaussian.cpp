@@ -1,5 +1,6 @@
 #include "waveguide/preprocessor/gaussian.h"
 
+#include "common/cl/common.h"
 #include "common/nan_checking.h"
 #include "common/string_builder.h"
 
@@ -15,14 +16,16 @@ float gaussian::compute(const glm::vec3& x, float sdev) {
 
 gaussian::gaussian(const mesh_descriptor& descriptor,
                    const glm::vec3& centre_pos,
-                   float sdev)
-        : descriptor_(descriptor)
-        , centre_pos_(centre_pos)
-        , sdev_(sdev) {}
+                   float sdev,
+                   size_t steps)
+        : descriptor_{descriptor}
+        , centre_pos_{centre_pos}
+        , sdev_{sdev}
+        , steps_{steps} {}
 
-void gaussian::operator()(cl::CommandQueue& queue,
+bool gaussian::operator()(cl::CommandQueue& queue,
                           cl::Buffer& buffer,
-                          size_t step) const {
+                          size_t step) {
     //  if this is the first step
     if (step == 0) {
         //  set all the mesh values
@@ -43,6 +46,7 @@ void gaussian::operator()(cl::CommandQueue& queue,
         //  now copy to the buffer
         cl::copy(queue, pressures.begin(), pressures.end(), buffer);
     }
+    return step != steps_;
 }
 
 }  // namespace preprocessor

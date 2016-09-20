@@ -19,13 +19,18 @@ constexpr auto factdbl(T t) {
     return out;
 }
 
+struct offset_signal final {
+    aligned::vector<double> signal;
+    size_t offset;
+};
+
 /// Design a maxflat lowpass pulse.
 ///
 /// f0:     normalised cutoff frequency
 /// N:      filter order
 /// A:      pulse peak amplitude
 /// hLen:   full, padded length
-aligned::vector<double> maxflat(double f0, uint32_t N, double A, uint32_t hlen);
+offset_signal maxflat(double f0, uint32_t N, double A, uint32_t hlen);
 
 /// Design a mechanical filter simulating a small pulsating sphere.
 ///
@@ -56,11 +61,12 @@ filter::biquad::coefficients mech_sphere(double M,
 /// *NOTE*
 /// This input signal should be used as a soft, not a transparent source.
 ///
-/// TODO
-aligned::vector<double> design_pcs_source(size_t length,
-                                          double sample_rate,
-                                          double sphere_mass,
-                                          double low_cutoff_hz,
-                                          double low_q);
+/// TODO find correct mass for sphere so that level correction still works
+/// properly.
+offset_signal design_pcs_source(size_t length,
+                                double sample_rate,
+                                double sphere_mass,
+                                double low_cutoff_hz,
+                                double low_q);
 
 }  // namespace waveguide

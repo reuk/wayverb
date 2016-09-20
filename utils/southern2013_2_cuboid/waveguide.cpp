@@ -1,6 +1,9 @@
 #include "waveguide.h"
 
 #include "waveguide/make_transparent.h"
+#include "waveguide/postprocessor/output_holder.h"
+#include "waveguide/postprocessor/single_node.h"
+#include "waveguide/preprocessor/single_soft_source.h"
 #include "waveguide/surface_filters.h"
 #include "waveguide/waveguide.h"
 
@@ -21,8 +24,9 @@ waveguide_test::waveguide_test(const scene_data& sd,
                                                               glm::vec3{0},
                                                               sample_rate_,
                                                               speed_of_sound)}
-        , speed_of_sound_{speed_of_sound}
-        , acoustic_impedance_{acoustic_impedance} {}
+//, speed_of_sound_{speed_of_sound}
+//, acoustic_impedance_{acoustic_impedance}
+{}
 
 audio waveguide_test::operator()(const surface& surface,
                                  const glm::vec3& source,
@@ -49,21 +53,26 @@ audio waveguide_test::operator()(const surface& surface,
             waveguide::make_transparent(aligned::vector<float>{1})};
     input_signal.resize(sample_rate_ * predicted_rt60);
 
+    auto prep{waveguide::preprocessor::make_single_soft_source(
+            input_node, input_signal.begin(), input_signal.end())};
+
+    waveguide::postprocessor::output_accumulator<
+            waveguide::postprocessor::node_state>
+            postprocessor{output_node};
+
     progress_bar pb{std::cerr, input_signal.size()};
-    const auto results{waveguide::run(compute_context_,
-                                      mesh,
-                                      input_node,
-                                      input_signal.begin(),
-                                      input_signal.end(),
-                                      output_node,
-                                      speed_of_sound_,
-                                      acoustic_impedance_,
-                                      [&](auto i) { pb += 1; })};
+    waveguide::run(compute_context_,
+                   mesh,
+                   prep,
+                   [&](auto& a, const auto& b, auto c) {
+                       postprocessor(a, b, c);
+                       pb += 1;
+                   },
+                   true);
 
     //  Extract pressure signal.
     //  TODO via microphone simulation.
-    auto pressure_signal{
-            map_to_vector(results, [](auto i) { return i.pressure; })};
+    auto pressure_signal{postprocessor.get_output()};
 
     {
         static auto count{0};
@@ -133,9 +142,6 @@ audio waveguide_test::operator()(const surface& surface,
 
         pressure_signal = map_to_vector(xy, [](auto i) {return i.y;});
     }
-
-    //filter::block_dc(
-    //        pressure_signal.begin(), pressure_signal.end(), sample_rate_);
 
     {
         static auto count{0};

@@ -2,8 +2,6 @@
 
 #include "waveguide/mesh_descriptor.h"
 
-#include "common/cl/common.h"
-
 namespace waveguide {
 namespace preprocessor {
 
@@ -13,16 +11,16 @@ public:
 
     gaussian(const mesh_descriptor& descriptor,
              const glm::vec3& centre_pos,
-             float sdev);
+             float sdev,
+             size_t steps);
 
-    void operator()(cl::CommandQueue& queue,
-                    cl::Buffer& buffer,
-                    size_t step) const;
+    bool operator()(cl::CommandQueue& queue, cl::Buffer& buffer, size_t step);
 
 private:
     mesh_descriptor descriptor_;
     glm::vec3 centre_pos_;
     float sdev_;
+    size_t steps_;
 };
 
 }  // namespace preprocessor

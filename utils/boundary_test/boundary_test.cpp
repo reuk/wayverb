@@ -3,6 +3,7 @@
 #include "waveguide/config.h"
 #include "waveguide/make_transparent.h"
 #include "waveguide/mesh.h"
+#include "waveguide/postprocessor/output_holder.h"
 #include "waveguide/postprocessor/single_node.h"
 #include "waveguide/preprocessor/single_soft_source.h"
 #include "waveguide/surface_filters.h"
@@ -88,44 +89,26 @@ private:
         auto prep{waveguide::preprocessor::make_single_soft_source(
                 source_index, input.begin(), input.end())};
 
-        class output_holder final {
-        public:
-            output_holder(size_t node)
-                    : node_{node} {}
-
-            waveguide::step_postprocessor get_postprocessor() const {
-                return waveguide::postprocessor::node{
-                        node_, [&](auto i) { output_.emplace_back(i); }};
-            }
-
-            const auto& get_output() const { return output_; }
-
-        private:
-            mutable aligned::vector<float> output_;
-            size_t node_;
-        };
-
-        aligned::vector<output_holder> output_holders;
-        output_holders.reserve(receivers.size());
-        for (const auto& receiver : receivers) {
-            const auto receiver_index{
-                    compute_index(mesh.get_descriptor(), receiver)};
+        auto output_holders{map_to_vector(receivers, [&](auto i) {
+            const auto receiver_index{compute_index(mesh.get_descriptor(), i)};
             if (!waveguide::is_inside(mesh, receiver_index)) {
                 throw std::runtime_error{"receiver is outside of mesh!"};
             }
-            output_holders.emplace_back(receiver_index);
-        }
+            return waveguide::postprocessor::output_accumulator<
+                    waveguide::postprocessor::node_state>{receiver_index};
+        })};
 
         progress_bar pb{std::cout, input.size()};
-        waveguide::run(
-                cc_,
-                mesh,
-                input.size(),
-                prep,
-                map_to_vector(output_holders,
-                              [](auto& i) { return i.get_postprocessor(); }),
-                [&](auto i) { pb += 1; },
-                true);
+        waveguide::run(cc_,
+                       mesh,
+                       prep,
+                       [&](auto& queue, const auto& buffer, auto step) {
+                           for (auto& i : output_holders) {
+                               i(queue, buffer, step);
+                               pb += 1;
+                           }
+                       },
+                       true);
 
         return map_to_vector(output_holders,
                              [](const auto& i) { return i.get_output(); });

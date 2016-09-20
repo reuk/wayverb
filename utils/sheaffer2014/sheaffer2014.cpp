@@ -1,5 +1,8 @@
 #include "waveguide/mesh.h"
 #include "waveguide/pcs.h"
+#include "waveguide/postprocessor/output_holder.h"
+#include "waveguide/postprocessor/single_node.h"
+#include "waveguide/preprocessor/single_soft_source.h"
 #include "waveguide/surface_filters.h"
 #include "waveguide/waveguide.h"
 
@@ -33,7 +36,6 @@ void test_from_paper() {
     const geo::box box{glm::vec3{-3}, glm::vec3{3}};
     const auto sample_rate{16000.0};
     const auto speed_of_sound{340.0};
-    const auto acoustic_impedance{400.0};
 
     const compute_context cc{};
 
@@ -64,32 +66,36 @@ void test_from_paper() {
     filter::biquad mechanical_filter{waveguide::mech_sphere(
             0.025, 100 / sample_rate, 0.7, 1 / sample_rate)};
     run_one_pass(mechanical_filter,
-                 pulse_shaping_filter.begin(),
-                 pulse_shaping_filter.end());
+                 pulse_shaping_filter.signal.begin(),
+                 pulse_shaping_filter.signal.end());
     const auto one_over_two_T{sample_rate / 2};
     filter::biquad injection_filter{{one_over_two_T, 0, -one_over_two_T, 0, 0}};
     run_one_pass(injection_filter,
-                 pulse_shaping_filter.begin(),
-                 pulse_shaping_filter.end());
+                 pulse_shaping_filter.signal.begin(),
+                 pulse_shaping_filter.signal.end());
     const auto input_signal{pulse_shaping_filter};
 
     //  Run the simulation.
+    auto prep{waveguide::preprocessor::make_single_soft_source(
+            input_node,
+            input_signal.signal.begin(),
+            input_signal.signal.end())};
 
-    progress_bar pb{std::cerr, input_signal.size()};
-    const auto results{waveguide::run(cc,
-                                      mesh,
-                                      input_node,
-                                      input_signal.begin(),
-                                      input_signal.end(),
-                                      output_node,
-                                      speed_of_sound,
-                                      acoustic_impedance,
-                                      [&](auto i) { pb += 1; })};
+    waveguide::postprocessor::output_accumulator<
+            waveguide::postprocessor::node_state>
+            postprocessor{output_node};
 
-    const auto pressures{
-            map_to_vector(results, [](auto i) { return i.pressure; })};
+    progress_bar pb{std::cerr, input_signal.signal.size()};
+    waveguide::run(cc,
+                   mesh,
+                   prep,
+                   [&](auto& a, const auto& b, auto c) {
+                       postprocessor(a, b, c);
+                       pb += 1;
+                   },
+                   true);
 
-    write("test_from_paper", pressures, sample_rate);
+    write("test_from_paper", postprocessor.get_output(), sample_rate);
 }
 
 auto get_mass_test_signals(double sample_rate) {
@@ -115,7 +121,6 @@ void other_tests() {
     const geo::box box{glm::vec3{-3}, glm::vec3{3}};
     const auto sample_rate{4000.0};
     const auto speed_of_sound{340.0};
-    const auto acoustic_impedance{400.0};
 
     const compute_context cc{};
 
@@ -145,27 +150,31 @@ void other_tests() {
         auto count{0};
         for (const auto& input_signal : signals) {
             write(build_string(name, "_test_input_", count),
-                  input_signal,
+                  input_signal.signal,
                   sample_rate);
 
             //  Run the simulation.
+            auto prep{waveguide::preprocessor::make_single_soft_source(
+                    input_node,
+                    input_signal.signal.begin(),
+                    input_signal.signal.end())};
 
-            progress_bar pb{std::cerr, input_signal.size()};
-            const auto results{waveguide::run(cc,
-                                              mesh,
-                                              input_node,
-                                              input_signal.begin(),
-                                              input_signal.end(),
-                                              output_node,
-                                              speed_of_sound,
-                                              acoustic_impedance,
-                                              [&](auto i) { pb += 1; })};
+            waveguide::postprocessor::output_accumulator<
+                    waveguide::postprocessor::node_state>
+                    postprocessor{output_node};
 
-            const auto pressures{
-                    map_to_vector(results, [](auto i) { return i.pressure; })};
+            progress_bar pb{std::cerr, input_signal.signal.size()};
+            waveguide::run(cc,
+                           mesh,
+                           prep,
+                           [&](auto& a, const auto& b, auto c) {
+                               postprocessor(a, b, c);
+                               pb += 1;
+                           },
+                           true);
 
             write(build_string(name, "_test_output_", count),
-                  pressures,
+                  postprocessor.get_output(),
                   sample_rate);
 
             count += 1;

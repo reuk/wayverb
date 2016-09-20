@@ -3,6 +3,9 @@
 #include "waveguide/config.h"
 #include "waveguide/make_transparent.h"
 #include "waveguide/mesh.h"
+#include "waveguide/postprocessor/output_holder.h"
+#include "waveguide/postprocessor/single_node.h"
+#include "waveguide/preprocessor/single_soft_source.h"
 #include "waveguide/surface_filters.h"
 #include "waveguide/waveguide.h"
 
@@ -31,11 +34,6 @@
 #include <map>
 #include <numeric>
 #include <random>
-
-//  TODO try a butterworth-filtered impulse
-//  TODO work out why dc-blocked version isn't working
-//  TODO test a super-steep butterworth as a dc blocker
-//      zero-phase via two-pass filtering
 
 constexpr auto speed_of_sound{340.0};
 
@@ -124,31 +122,34 @@ int main(int argc, char** argv) {
             auto kernel{waveguide::make_transparent(i.kernel)};
             kernel.resize(simulation_length);
 
-            progress_bar pb{std::cout, kernel.size()};
-            const auto results{waveguide::run(cc,
-                                              model,
-                                              source_index,
-                                              kernel.begin(),
-                                              kernel.end(),
-                                              receiver_index,
-                                              speed_of_sound,
-                                              400,
-                                              [&](auto) { pb += 1; })};
+            auto prep{waveguide::preprocessor::make_single_soft_source(
+                    receiver_index, kernel.begin(), kernel.end())};
 
-            const auto output{map_to_vector(
-                    results, [](const auto& i) { return i.pressure; })};
+            waveguide::postprocessor::output_accumulator<
+                    waveguide::postprocessor::node_state>
+                    postprocessor{receiver_index};
+
+            progress_bar pb{std::cout, kernel.size()};
+            waveguide::run(cc,
+                           model,
+                           prep,
+                           [&](auto& a, const auto& b, auto c) {
+                               postprocessor(a, b, c);
+                               pb += 1;
+                           },
+                           true);
 
             {
                 snd::write(
                         build_string(
                                 "solution_growth.", i.name, ".transparent.wav"),
-                        {output},
+                        {postprocessor.get_output()},
                         sampling_frequency,
                         16);
             }
 
             {
-                auto copy{output};
+                auto copy{postprocessor.get_output()};
                 filter::extra_linear_dc_blocker u;
                 filter::run_two_pass(u, copy.begin(), copy.end());
                 snd::write(
@@ -160,7 +161,7 @@ int main(int argc, char** argv) {
             }
 
             {
-                auto copy{output};
+                auto copy{postprocessor.get_output()};
                 filter::block_dc(copy.begin(), copy.end(), sampling_frequency);
                 snd::write(build_string("solution_growth.",
                                         i.name,

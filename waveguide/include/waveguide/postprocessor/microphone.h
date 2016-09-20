@@ -25,7 +25,8 @@ public:
         float pressure;
     };
 
-    output operator()(cl::CommandQueue& queue,
+    using value_type = output;
+    value_type operator()(cl::CommandQueue& queue,
                       const cl::Buffer& buffer,
                       size_t step);
 
@@ -38,27 +39,6 @@ private:
     size_t output_node_;
     std::array<cl_uint, 6> surrounding_nodes_;
     glm::dvec3 velocity_{0};
-};
-
-//----------------------------------------------------------------------------//
-
-class microphone final {
-public:
-    using output_callback = std::function<void(microphone_state::output)>;
-
-    microphone(const mesh_descriptor& mesh_descriptor,
-               double sample_rate,
-               double ambient_density,
-               size_t output_node,
-               output_callback callback);
-
-    void operator()(cl::CommandQueue& queue,
-                    const cl::Buffer& buffer,
-                    size_t step);
-
-private:
-    microphone_state microphone_state_;
-    output_callback callback_;
 };
 
 }  // namespace postprocessor
