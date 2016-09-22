@@ -1,13 +1,13 @@
 #pragma once
 
-#include "waveguide/waveguide.h"
+#include "common/cl/include.h"
 
 namespace waveguide {
 namespace postprocessor {
 
-class node_state final {
+class node final {
 public:
-    node_state(size_t output_node);
+    node(size_t output_node);
 
     using value_type = float;
     value_type operator()(cl::CommandQueue& queue,
@@ -17,7 +17,7 @@ public:
     size_t get_output_node() const;
 
 private:
-    size_t output_node;
+    size_t output_node_;
 };
 
 }  // namespace postprocessor

@@ -1,8 +1,8 @@
 #include "waveguide/make_transparent.h"
 #include "waveguide/mesh.h"
-#include "waveguide/postprocessor/output_holder.h"
-#include "waveguide/postprocessor/single_node.h"
-#include "waveguide/preprocessor/single_soft_source.h"
+#include "waveguide/postprocessor/node.h"
+#include "waveguide/postprocessor/output_accumulator.h"
+#include "waveguide/preprocessor/soft_source.h"
 #include "waveguide/waveguide.h"
 
 #include "common/progress_bar.h"
@@ -35,11 +35,10 @@ TEST(waveguide_init, waveguide_init) {
             waveguide::compute_mesh(cc, voxelised, 0.04, speed_of_sound)};
     const auto receiver_index{compute_index(model.get_descriptor(), centre)};
 
-    auto prep{waveguide::preprocessor::make_single_soft_source(
+    auto prep{waveguide::preprocessor::make_soft_source(
             receiver_index, transparent.begin(), transparent.end())};
 
-    waveguide::postprocessor::output_accumulator<
-            waveguide::postprocessor::node_state>
+    waveguide::postprocessor::output_accumulator<waveguide::postprocessor::node>
             postprocessor{receiver_index};
 
     progress_bar pb(std::cout, steps);
@@ -47,8 +46,8 @@ TEST(waveguide_init, waveguide_init) {
                    model,
                    prep,
                    [&](auto& queue, const auto& buffer, auto step) {
-                        postprocessor(queue, buffer, step);
-                        pb += 1;
+                       postprocessor(queue, buffer, step);
+                       pb += 1;
                    },
                    true);
 

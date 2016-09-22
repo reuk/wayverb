@@ -6,9 +6,9 @@ namespace waveguide {
 namespace preprocessor {
 
 template <typename It>
-class single_hard_source final : public base {
+class hard_source final : public base {
 public:
-    single_hard_source(size_t node, It begin, It end)
+    hard_source(size_t node, It begin, It end)
             : node_{node}
             , begin_{begin}
             , end_{end}
@@ -16,7 +16,7 @@ public:
 
     bool operator()(cl::CommandQueue& queue, cl::Buffer& buffer, size_t) {
         const cl_float new_pressure = begin_ != end_ ? *begin_++ : 0;
-        write_single_value(queue, buffer, node_, new_pressure);
+        write_value(queue, buffer, node_, new_pressure);
         return begin_ != end_;
     }
 
@@ -28,8 +28,8 @@ private:
 };
 
 template <typename It>
-auto make_single_hard_source(size_t node, It begin, It end) {
-    return single_hard_source<It>{node, begin, end};
+auto make_hard_source(size_t node, It begin, It end) {
+    return hard_source<It>{node, begin, end};
 }
 
 }  // namespace preprocessor

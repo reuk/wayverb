@@ -5,9 +5,9 @@
 
 #include "waveguide/make_transparent.h"
 #include "waveguide/mesh.h"
-#include "waveguide/postprocessor/output_holder.h"
-#include "waveguide/postprocessor/single_node.h"
-#include "waveguide/preprocessor/single_soft_source.h"
+#include "waveguide/postprocessor/node.h"
+#include "waveguide/postprocessor/output_accumulator.h"
+#include "waveguide/preprocessor/soft_source.h"
 #include "waveguide/waveguide.h"
 
 #include "gtest/gtest.h"
@@ -61,11 +61,11 @@ TEST(verify_compensation_signal, verify_compensation_signal_normal) {
     const auto receiver_index{compute_index(model.get_descriptor(), centre)};
 
     multitest([&] {
-        auto prep{waveguide::preprocessor::make_single_soft_source(
+        auto prep{waveguide::preprocessor::make_soft_source(
                 receiver_index, transparent.begin(), transparent.end())};
 
         waveguide::postprocessor::output_accumulator<
-                waveguide::postprocessor::node_state>
+                waveguide::postprocessor::node>
                 postprocessor{receiver_index};
 
         progress_bar pb(std::cout, transparent.size());

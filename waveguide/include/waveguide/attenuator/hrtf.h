@@ -12,13 +12,11 @@ namespace attenuator {
 
 class hrtf final {
 public:
-    hrtf(const glm::vec3& direction,
-         const glm::vec3& up,
-         hrtf_channel channel);
+    hrtf(const glm::vec3& direction, const glm::vec3& up, hrtf_channel channel);
 
-    aligned::vector<volume_type>
-    process(const aligned::vector<
-            waveguide::postprocessor::microphone_state::output>& input) const;
+    aligned::vector<volume_type> process(
+            const aligned::vector<waveguide::postprocessor::microphone::output>&
+                    input) const;
 
 private:
     glm::vec3 direction_;

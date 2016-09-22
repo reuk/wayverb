@@ -59,7 +59,7 @@ size_t run(const compute_context& cc,
     //  It also updates the mesh with new pressure values.
     for (; preprocessor(queue, current, step) && keep_going; ++step) {
         //  set flag state to successful
-        write_single_value(queue, error_flag_buffer, 0, id_success);
+        write_value(queue, error_flag_buffer, 0, id_success);
 
         //  run kernel
         kernel(cl::EnqueueArgs(queue,
@@ -77,8 +77,8 @@ size_t run(const compute_context& cc,
                error_flag_buffer);
 
         //  read out flag value
-        if (const auto error_flag{read_single_value<error_code>(
-                    queue, error_flag_buffer, 0)}) {
+        if (const auto error_flag{
+                    read_value<error_code>(queue, error_flag_buffer, 0)}) {
             if (error_flag & id_inf_error) {
                 throw exceptions::value_is_inf(
                         "pressure value is inf, check filter coefficients");

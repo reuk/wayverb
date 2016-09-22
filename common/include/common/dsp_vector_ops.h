@@ -6,15 +6,13 @@
 #include <numeric>
 #include <vector>
 
-template <typename T>
-inline float sum(const T& t) {
-    return proc::accumulate(
-            t, 0.0f, [](const auto& a, const auto& b) { return a + sum(b); });
-}
+inline double sum(float t) { return t; }
+inline double sum(double t) { return t; }
 
-template <>
-inline float sum(const float& t) {
-    return t;
+template <typename T>
+inline auto sum(const T& t) {
+    return proc::accumulate(
+            t, 0.0, [](const auto& a, const auto& b) { return a + sum(b); });
 }
 
 template <typename T>
@@ -37,7 +35,7 @@ inline double max_mag(float t) { return std::fabs(t); }
 inline double max_mag(double t) { return std::fabs(t); }
 
 template <typename T>
-inline float max_mag(const T& t) {
+inline auto max_mag(const T& t) {
     return proc::accumulate(
             t, 0.0, [](double a, auto b) { return std::max(a, max_mag(b)); });
 }

@@ -1,6 +1,6 @@
 #include "waveguide/mesh.h"
 #include "waveguide/postprocessor/microphone.h"
-#include "waveguide/postprocessor/output_holder.h"
+#include "waveguide/postprocessor/output_accumulator.h"
 #include "waveguide/preprocessor/gaussian.h"
 #include "waveguide/waveguide.h"
 
@@ -49,7 +49,7 @@ TEST(nan_in_waveguide, nan_in_waveguide) {
             model.get_descriptor(), source, std::sqrt(variance), steps};
 
     waveguide::postprocessor::output_accumulator<
-            waveguide::postprocessor::microphone_state>
+            waveguide::postprocessor::microphone>
             postprocessor{model.get_descriptor(),
                           waveguide_sr,
                           acoustic_impedance / speed_of_sound,

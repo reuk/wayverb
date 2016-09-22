@@ -1,9 +1,9 @@
 #include "waveguide.h"
 
 #include "waveguide/make_transparent.h"
-#include "waveguide/postprocessor/output_holder.h"
-#include "waveguide/postprocessor/single_node.h"
-#include "waveguide/preprocessor/single_soft_source.h"
+#include "waveguide/postprocessor/node.h"
+#include "waveguide/postprocessor/output_accumulator.h"
+#include "waveguide/preprocessor/soft_source.h"
 #include "waveguide/surface_filters.h"
 #include "waveguide/waveguide.h"
 
@@ -49,15 +49,13 @@ audio waveguide_test::operator()(const surface& surface,
             compute_index(mesh.get_descriptor(), receiver.position)};
 
     //  Create input signal.
-    auto input_signal{
-            waveguide::make_transparent(aligned::vector<float>{1})};
+    auto input_signal{waveguide::make_transparent(aligned::vector<float>{1})};
     input_signal.resize(sample_rate_ * predicted_rt60);
 
-    auto prep{waveguide::preprocessor::make_single_soft_source(
+    auto prep{waveguide::preprocessor::make_soft_source(
             input_node, input_signal.begin(), input_signal.end())};
 
-    waveguide::postprocessor::output_accumulator<
-            waveguide::postprocessor::node_state>
+    waveguide::postprocessor::output_accumulator<waveguide::postprocessor::node>
             postprocessor{output_node};
 
     progress_bar pb{std::cerr, input_signal.size()};
@@ -96,10 +94,10 @@ audio waveguide_test::operator()(const surface& surface,
                           //   much guaranteed to be garbage anyway.
                           return cplx *
                                  compute_lopass_magnitude(freq, 0.25, 0.1, 0);
-                                 //compute_hipass_magnitude(freq,
-                                 //                         hipass_cutoff,
-                                 //                         hipass_cutoff / 2,
-                                 //                         0);
+                          // compute_hipass_magnitude(freq,
+                          //                         hipass_cutoff,
+                          //                         hipass_cutoff / 2,
+                          //                         0);
                       });
     }
 
@@ -116,8 +114,8 @@ audio waveguide_test::operator()(const surface& surface,
     //  Filter out dc component.
 
     {
-        auto logged{map_to_vector(
-                pressure_signal, [](auto i) { return std::log(i); })};
+        auto logged{map_to_vector(pressure_signal,
+                                  [](auto i) { return std::log(i); })};
         {
             static auto count{0};
             snd::write(build_string("logged_", count++, ".wav"),
@@ -136,11 +134,11 @@ audio waveguide_test::operator()(const surface& surface,
 
         const auto b{std::exp(regression.c)};
         const auto a{regression.m};
-        for (auto & i : xy) {
+        for (auto& i : xy) {
             i.y -= b * std::exp(i.x * a);
         }
 
-        pressure_signal = map_to_vector(xy, [](auto i) {return i.y;});
+        pressure_signal = map_to_vector(xy, [](auto i) { return i.y; });
     }
 
     {

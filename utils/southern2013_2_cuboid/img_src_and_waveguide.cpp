@@ -7,9 +7,9 @@
 #include "waveguide/config.h"
 #include "waveguide/make_transparent.h"
 #include "waveguide/pcs.h"
-#include "waveguide/postprocessor/output_holder.h"
-#include "waveguide/postprocessor/single_node.h"
-#include "waveguide/preprocessor/single_soft_source.h"
+#include "waveguide/postprocessor/node.h"
+#include "waveguide/postprocessor/output_accumulator.h"
+#include "waveguide/preprocessor/soft_source.h"
 #include "waveguide/surface_filters.h"
 #include "waveguide/waveguide.h"
 
@@ -132,13 +132,12 @@ audio img_src_and_waveguide_test::operator()(
                                sample_rate};
     const auto input_signal{waveguide::design_pcs_source(
             waveguide_steps, waveguide_sample_rate_, 0.01, 100, 1)};
-    auto prep{waveguide::preprocessor::make_single_soft_source(
+    auto prep{waveguide::preprocessor::make_soft_source(
             input_node,
             input_signal.signal.begin(),
             input_signal.signal.end())};
 
-    waveguide::postprocessor::output_accumulator<
-            waveguide::postprocessor::node_state>
+    waveguide::postprocessor::output_accumulator<waveguide::postprocessor::node>
             postprocessor{output_node};
 
     //  Run the waveguide simulation.
@@ -173,8 +172,9 @@ audio img_src_and_waveguide_test::operator()(
 
     //  Remove initial samples from waveguide output so that it lines up with
     //  raytracer output.
-//    magnitude_adjusted.erase(magnitude_adjusted.begin(),
-//                             magnitude_adjusted.begin() + input_signal.offset);
+    //    magnitude_adjusted.erase(magnitude_adjusted.begin(),
+    //                             magnitude_adjusted.begin() +
+    //                             input_signal.offset);
 
     //  Convert sampling rate.
     auto corrected_waveguide{waveguide::adjust_sampling_rate(

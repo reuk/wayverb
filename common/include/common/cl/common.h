@@ -36,9 +36,7 @@ aligned::vector<T> read_from_buffer(const cl::CommandQueue& queue,
 }
 
 template <typename T>
-T read_single_value(cl::CommandQueue& queue,
-                    const cl::Buffer& buffer,
-                    size_t index) {
+T read_value(cl::CommandQueue& queue, const cl::Buffer& buffer, size_t index) {
     T ret;
     queue.enqueueReadBuffer(
             buffer, CL_TRUE, sizeof(T) * index, sizeof(T), &ret);
@@ -46,10 +44,10 @@ T read_single_value(cl::CommandQueue& queue,
 }
 
 template <typename T>
-void write_single_value(cl::CommandQueue& queue,
-                        cl::Buffer& buffer,
-                        size_t index,
-                        T val) {
+void write_value(cl::CommandQueue& queue,
+                 cl::Buffer& buffer,
+                 size_t index,
+                 T val) {
     queue.enqueueWriteBuffer(
             buffer, CL_TRUE, sizeof(T) * index, sizeof(T), &val);
 }

@@ -9,14 +9,14 @@ namespace waveguide {
 template <enum model::receiver_settings::mode mode>
 aligned::vector<aligned::vector<float>> run_attenuation(
         const model::receiver_settings& receiver,
-        const aligned::vector<postprocessor::microphone_state::output>& input,
+        const aligned::vector<postprocessor::microphone::output>& input,
         double waveguide_sample_rate);
 
 template <>
 aligned::vector<aligned::vector<float>>
 run_attenuation<model::receiver_settings::mode::microphones>(
         const model::receiver_settings& receiver,
-        const aligned::vector<postprocessor::microphone_state::output>& input,
+        const aligned::vector<postprocessor::microphone::output>& input,
         double waveguide_sample_rate) {
     return map_to_vector(receiver.microphones, [&](const auto& i) {
         return attenuator::microphone{
@@ -29,7 +29,7 @@ template <>
 aligned::vector<aligned::vector<float>>
 run_attenuation<model::receiver_settings::mode::hrtf>(
         const model::receiver_settings& receiver,
-        const aligned::vector<postprocessor::microphone_state::output>& input,
+        const aligned::vector<postprocessor::microphone::output>& input,
         double waveguide_sample_rate) {
     const auto channels = {hrtf_channel::left, hrtf_channel::right};
     return map_to_vector(channels, [&](const auto& i) {
@@ -45,7 +45,7 @@ run_attenuation<model::receiver_settings::mode::hrtf>(
 
 aligned::vector<aligned::vector<float>> run_attenuation(
         const model::receiver_settings& receiver,
-        const aligned::vector<postprocessor::microphone_state::output>& input,
+        const aligned::vector<postprocessor::microphone::output>& input,
         double sample_rate) {
     switch (receiver.mode) {
         case model::receiver_settings::mode::microphones:

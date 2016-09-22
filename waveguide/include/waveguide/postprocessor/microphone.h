@@ -13,12 +13,12 @@ struct mesh_descriptor;
 namespace waveguide {
 namespace postprocessor {
 
-class microphone_state final {
+class microphone final {
 public:
-    microphone_state(const mesh_descriptor& mesh_descriptor,
-                     double sample_rate,
-                     double ambient_density,
-                     size_t output_node);
+    microphone(const mesh_descriptor& mesh_descriptor,
+               double sample_rate,
+               double ambient_density,
+               size_t output_node);
 
     struct output final {
         glm::vec3 intensity;
@@ -27,8 +27,8 @@ public:
 
     using value_type = output;
     value_type operator()(cl::CommandQueue& queue,
-                      const cl::Buffer& buffer,
-                      size_t step);
+                          const cl::Buffer& buffer,
+                          size_t step);
 
     size_t get_output_node() const;
 

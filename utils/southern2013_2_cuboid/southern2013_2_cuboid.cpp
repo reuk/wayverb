@@ -53,13 +53,13 @@
 
 class test_case_harness final {
 public:
-    using single_test = std::function<audio(
+    using test = std::function<audio(
             const surface&, const glm::vec3&, const model::receiver_settings&)>;
 
     //  Takes a scene (with a custom surface set), a source, and a receiver.
     //  Returns a signal representing the impulse response for a scene with
     //  these settings.
-    void run_all_tests(single_test t) const {
+    void run_all_tests(test t) const {
         const auto max_tests{sources_.size() * receivers_.size() *
                              surfaces_.size()};
         auto count{0u};
@@ -105,7 +105,8 @@ public:
 
                     count += 1;
                     std::cout << "finished: test " << count << " of "
-                              << max_tests << '\n' << std::flush;
+                              << max_tests << '\n'
+                              << std::flush;
                 }
             }
         }
@@ -143,7 +144,7 @@ int main() {
 
     test_case_harness test_case_harness{};
 
-    aligned::vector<test_case_harness::single_test> tests{
+    aligned::vector<test_case_harness::test> tests{
             // image_source_depth_test{test_case_harness.get_scene_data(),
             //                         speed_of_sound,
             //                         acoustic_impedance},

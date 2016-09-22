@@ -53,9 +53,8 @@ hrtf::hrtf(const glm::vec3& direction,
         , channel_(channel) {}
 
 aligned::vector<volume_type> hrtf::process(
-        const aligned::vector<
-                waveguide::postprocessor::microphone_state::output>& input)
-        const {
+        const aligned::vector<waveguide::postprocessor::microphone::output>&
+                input) const {
     aligned::vector<volume_type> ret(input.size());
 
     for (auto band{0u}; band != detail::components_v<volume_type>; ++band) {

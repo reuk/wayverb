@@ -26,9 +26,9 @@
 #include "waveguide/mesh.h"
 #include "waveguide/postprocess.h"
 #include "waveguide/postprocessor/microphone.h"
-#include "waveguide/postprocessor/output_holder.h"
+#include "waveguide/postprocessor/output_accumulator.h"
 #include "waveguide/postprocessor/visualiser.h"
-#include "waveguide/preprocessor/single_soft_source.h"
+#include "waveguide/preprocessor/soft_source.h"
 #include "waveguide/setup.h"
 #include "waveguide/waveguide.h"
 
@@ -44,7 +44,7 @@ public:
             double waveguide_sample_rate,
             double acoustic_impedance,
             raytracer::results&& raytracer_results,
-            aligned::vector<waveguide::postprocessor::microphone_state::output>
+            aligned::vector<waveguide::postprocessor::microphone::output>
                     waveguide_results)
             : source(source)
             , receiver(receiver)
@@ -138,7 +138,7 @@ private:
     double acoustic_impedance;
 
     raytracer::results raytracer_results;
-    aligned::vector<waveguide::postprocessor::microphone_state::output>
+    aligned::vector<waveguide::postprocessor::microphone::output>
             waveguide_results;
 };
 
@@ -277,13 +277,13 @@ public:
         //  this is the number of steps to run the raytracer for
         //  TODO is there a less dumb way of doing this?
         const auto steps{std::ceil(max_time * waveguide_sample_rate)};
-        auto prep{waveguide::preprocessor::make_single_soft_source(
+        auto prep{waveguide::preprocessor::make_soft_source(
                 source_index, input.begin(), input.end())};
 
         //  If the max raytracer time is large this could take forever...
 
         waveguide::postprocessor::output_accumulator<
-                waveguide::postprocessor::microphone_state>
+                waveguide::postprocessor::microphone>
                 mic_output{mesh.get_descriptor(),
                            waveguide_sample_rate,
                            acoustic_impedance / speed_of_sound,

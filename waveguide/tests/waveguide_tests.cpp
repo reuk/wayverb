@@ -3,9 +3,9 @@
 #include "waveguide/make_transparent.h"
 #include "waveguide/mesh.h"
 #include "waveguide/postprocessor/microphone.h"
-#include "waveguide/postprocessor/output_holder.h"
-#include "waveguide/postprocessor/single_node.h"
-#include "waveguide/preprocessor/single_soft_source.h"
+#include "waveguide/postprocessor/node.h"
+#include "waveguide/postprocessor/output_accumulator.h"
+#include "waveguide/preprocessor/soft_source.h"
 #include "waveguide/program.h"
 #include "waveguide/setup.h"
 #include "waveguide/surface_filters.h"
@@ -70,7 +70,7 @@ TEST(run_waveguide, run_waveguide) {
     auto input{waveguide::make_transparent(aligned::vector<float>{1})};
     input.resize(steps);
 
-    auto prep{waveguide::preprocessor::make_single_soft_source(
+    auto prep{waveguide::preprocessor::make_soft_source(
             source_index, input.begin(), input.end())};
 
     auto output_holders{map_to_vector(receivers, [&](auto i) {
@@ -79,7 +79,7 @@ TEST(run_waveguide, run_waveguide) {
             throw std::runtime_error("receiver is outside of mesh!");
         }
         return waveguide::postprocessor::output_accumulator<
-                waveguide::postprocessor::node_state>{receiver_index};
+                waveguide::postprocessor::node>{receiver_index};
     })};
 
     progress_bar pb{std::cerr, steps};

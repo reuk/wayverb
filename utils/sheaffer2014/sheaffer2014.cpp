@@ -1,8 +1,8 @@
 #include "waveguide/mesh.h"
 #include "waveguide/pcs.h"
-#include "waveguide/postprocessor/output_holder.h"
-#include "waveguide/postprocessor/single_node.h"
-#include "waveguide/preprocessor/single_soft_source.h"
+#include "waveguide/postprocessor/node.h"
+#include "waveguide/postprocessor/output_accumulator.h"
+#include "waveguide/preprocessor/soft_source.h"
 #include "waveguide/surface_filters.h"
 #include "waveguide/waveguide.h"
 
@@ -76,13 +76,12 @@ void test_from_paper() {
     const auto input_signal{pulse_shaping_filter};
 
     //  Run the simulation.
-    auto prep{waveguide::preprocessor::make_single_soft_source(
+    auto prep{waveguide::preprocessor::make_soft_source(
             input_node,
             input_signal.signal.begin(),
             input_signal.signal.end())};
 
-    waveguide::postprocessor::output_accumulator<
-            waveguide::postprocessor::node_state>
+    waveguide::postprocessor::output_accumulator<waveguide::postprocessor::node>
             postprocessor{output_node};
 
     progress_bar pb{std::cerr, input_signal.signal.size()};
@@ -154,13 +153,13 @@ void other_tests() {
                   sample_rate);
 
             //  Run the simulation.
-            auto prep{waveguide::preprocessor::make_single_soft_source(
+            auto prep{waveguide::preprocessor::make_soft_source(
                     input_node,
                     input_signal.signal.begin(),
                     input_signal.signal.end())};
 
             waveguide::postprocessor::output_accumulator<
-                    waveguide::postprocessor::node_state>
+                    waveguide::postprocessor::node>
                     postprocessor{output_node};
 
             progress_bar pb{std::cerr, input_signal.signal.size()};

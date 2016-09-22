@@ -7,10 +7,10 @@
 namespace waveguide {
 namespace postprocessor {
 
-microphone_state::microphone_state(const mesh_descriptor& mesh_descriptor,
-                                   double sample_rate,
-                                   double ambient_density,
-                                   size_t output_node)
+microphone::microphone(const mesh_descriptor& mesh_descriptor,
+                       double sample_rate,
+                       double ambient_density,
+                       size_t output_node)
         : mesh_spacing_(mesh_descriptor.spacing)
         , sample_rate_(sample_rate)
         , ambient_density_(ambient_density)
@@ -25,15 +25,15 @@ microphone_state::microphone_state(const mesh_descriptor& mesh_descriptor,
     }
 }
 
-microphone_state::value_type microphone_state::operator()(
-        cl::CommandQueue& queue, const cl::Buffer& buffer, size_t) {
+microphone::value_type microphone::operator()(cl::CommandQueue& queue,
+                                              const cl::Buffer& buffer,
+                                              size_t) {
     //  copy out node pressure
-    const auto pressure{
-            read_single_value<cl_float>(queue, buffer, output_node_)};
+    const auto pressure{read_value<cl_float>(queue, buffer, output_node_)};
 
     //  copy out surrounding pressures
     auto surrounding{map_to_vector(surrounding_nodes_, [&](auto i) {
-        return read_single_value<cl_float>(queue, buffer, i);
+        return read_value<cl_float>(queue, buffer, i);
     })};
 
     //  pressure difference vector is obtained by subtracting the central
@@ -67,7 +67,7 @@ microphone_state::value_type microphone_state::operator()(
     return {intensity, pressure};
 }
 
-size_t microphone_state::get_output_node() const { return output_node_; }
+size_t microphone::get_output_node() const { return output_node_; }
 
 }  // namespace postprocessor
 }  // namespace waveguide

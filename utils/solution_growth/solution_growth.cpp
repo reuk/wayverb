@@ -3,9 +3,9 @@
 #include "waveguide/config.h"
 #include "waveguide/make_transparent.h"
 #include "waveguide/mesh.h"
-#include "waveguide/postprocessor/output_holder.h"
-#include "waveguide/postprocessor/single_node.h"
-#include "waveguide/preprocessor/single_soft_source.h"
+#include "waveguide/postprocessor/node.h"
+#include "waveguide/postprocessor/output_accumulator.h"
+#include "waveguide/preprocessor/soft_source.h"
 #include "waveguide/surface_filters.h"
 #include "waveguide/waveguide.h"
 
@@ -122,11 +122,11 @@ int main(int argc, char** argv) {
             auto kernel{waveguide::make_transparent(i.kernel)};
             kernel.resize(simulation_length);
 
-            auto prep{waveguide::preprocessor::make_single_soft_source(
+            auto prep{waveguide::preprocessor::make_soft_source(
                     receiver_index, kernel.begin(), kernel.end())};
 
             waveguide::postprocessor::output_accumulator<
-                    waveguide::postprocessor::node_state>
+                    waveguide::postprocessor::node>
                     postprocessor{receiver_index};
 
             progress_bar pb{std::cout, kernel.size()};
