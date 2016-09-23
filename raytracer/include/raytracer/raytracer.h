@@ -13,11 +13,10 @@ namespace raytracer {
 
 /// If there is line-of-sight between source and receiver, return the relative
 /// time and intensity of the generated impulse.
-std::experimental::optional<impulse> get_direct_impulse(
+std::experimental::optional<impulse> get_direct(
         const glm::vec3& source,
         const glm::vec3& receiver,
-        const voxelised_scene_data& scene_data,
-        double speed_of_sound);
+        const voxelised_scene_data& scene_data);
 
 /// arguments
 ///     the step number

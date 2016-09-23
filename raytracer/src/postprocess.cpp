@@ -115,11 +115,12 @@ run_attenuation<model::receiver_settings::mode::microphones>(
                 get_pointing(i.orientable, receiver.position),
                 i.shape,
                 receiver.position)};
-        return flatten_filter_and_mixdown(processed.begin(),
-                                          processed.end(),
-                                          speed_of_sound,
-                                          output_sample_rate,
-                                          max_seconds);
+        return multiband_filter_and_mixdown(dirac_histogram(processed.begin(),
+                                                            processed.end(),
+                                                            speed_of_sound,
+                                                            output_sample_rate,
+                                                            max_seconds),
+                                            output_sample_rate);
     });
 }
 
@@ -142,11 +143,12 @@ run_attenuation<model::receiver_settings::mode::hrtf>(
                 glm::vec3(0, 1, 0),
                 receiver.position,
                 i)};
-        return flatten_filter_and_mixdown(processed.begin(),
-                                          processed.end(),
-                                          speed_of_sound,
-                                          output_sample_rate,
-                                          max_seconds);
+        return multiband_filter_and_mixdown(dirac_histogram(processed.begin(),
+                                                            processed.end(),
+                                                            speed_of_sound,
+                                                            output_sample_rate,
+                                                            max_seconds),
+                                            output_sample_rate);
     });
 }
 

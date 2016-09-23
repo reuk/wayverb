@@ -76,6 +76,11 @@ TEST(pcs, maxflat) {
     }
 }
 
+TEST(pcs, g0) {
+    ASSERT_NEAR(
+            waveguide::compute_g0(400, 340, 44100, 0.05), 0.92259, 0.000001);
+}
+
 TEST(pcs, mech_sphere) {
     for (const auto& pair :
          aligned::vector<std::tuple<filter::biquad::coefficients,

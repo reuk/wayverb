@@ -9,6 +9,7 @@
 #include "waveguide/pcs.h"
 #include "waveguide/postprocessor/node.h"
 #include "waveguide/postprocessor/output_accumulator.h"
+#include "waveguide/preprocessor/hard_source.h"
 #include "waveguide/preprocessor/soft_source.h"
 #include "waveguide/surface_filters.h"
 #include "waveguide/waveguide.h"
@@ -29,6 +30,21 @@ float estimate_rt60(It begin, It end) {
                     rt30(begin, end),
                     [](auto a, auto b) { return a.r < b.r; })
             .samples;
+}
+
+template <typename It, typename T>
+void run_fast_filter(It begin, It end, const T& callback) {
+    const auto sig_size{std::distance(begin, end)};
+    //  Set up buffer, twice the size of input signal.
+    aligned::vector<float> input(sig_size * 2, 0.0f);
+    //  Copy input signal halfway through input buffer.
+    const auto input_begin{input.begin() + input.size() / 4};
+    std::copy(begin, end, input_begin);
+    //  Set up and run the filter.
+    fast_filter filter{input.size()};
+    filter.filter(input.begin(), input.end(), input.begin(), callback);
+    //  Copy output to iterator.
+    std::copy(input_begin, input_begin + sig_size, begin);
 }
 
 img_src_and_waveguide_test::img_src_and_waveguide_test(const scene_data& sd,
@@ -60,7 +76,7 @@ audio img_src_and_waveguide_test::operator()(
 
     //  Run raytracer.  ------------------------------------------------------//
 
-    const auto directions{get_random_directions(1000)};
+    const auto directions{get_random_directions(10000)};
 
     auto impulses{raytracer::image_source::run<
             raytracer::image_source::fast_pressure_calculator>(
@@ -74,36 +90,29 @@ audio img_src_and_waveguide_test::operator()(
             acoustic_impedance_,
             sample_rate)};
 
-    if (const auto direct{raytracer::get_direct_impulse(
-                source, receiver.position, voxels, speed_of_sound_)}) {
+    if (const auto direct{
+                raytracer::get_direct(source, receiver.position, voxels)}) {
         impulses.emplace_back(*direct);
     }
 
-    auto img_src_results{map_to_vector(
-            mixdown(raytracer::convert_to_histogram(impulses.begin(),
-                                                    impulses.end(),
-                                                    speed_of_sound_,
-                                                    sample_rate,
-                                                    20)),
-            [=](auto i) {
-                return intensity_to_pressure(i, acoustic_impedance_);
-            })};
-    {
-        static auto count{0};
-        auto copy{img_src_results};
-        normalize(copy);
-        snd::write(build_string("raw_img_src_", count++, ".wav"),
-                   {copy},
-                   sample_rate,
-                   16);
+    for (auto& imp : impulses) {
+        imp.volume *= pressure_for_distance(imp.distance, acoustic_impedance_);
     }
 
-    for (auto i{1ul}, end{img_src_results.size()}; i < end; ++i) {
-        const auto time{i / sample_rate};
-        const auto distance{time * speed_of_sound_};
-        img_src_results[i] *=
-                pressure_for_distance(distance, acoustic_impedance_);
+    auto histogram{raytracer::sinc_histogram(impulses.begin(),
+                                             impulses.end(),
+                                             speed_of_sound_,
+                                             sample_rate,
+                                             20)};
+
+    //  TODO Filter properly.
+    //  For now we just divide pressures by 8.
+    for (auto& samp : histogram) {
+        samp /= 8;
     }
+
+    //  Mixdown.
+    auto img_src_results{mixdown(histogram)};
 
     {
         static auto count{0};
@@ -128,20 +137,17 @@ audio img_src_and_waveguide_test::operator()(
             compute_index(mesh.get_descriptor(), receiver.position)};
 
     //  Create input signal.
-    const auto waveguide_steps{img_src_results.size() * waveguide_sample_rate_ /
-                               sample_rate};
-    const auto input_signal{waveguide::design_pcs_source(
-            waveguide_steps, waveguide_sample_rate_, 0.01, 100, 1)};
-    auto prep{waveguide::preprocessor::make_soft_source(
-            input_node,
-            input_signal.signal.begin(),
-            input_signal.signal.end())};
+    aligned::vector<float> input_signal{1.0f};
+    input_signal.resize(img_src_results.size() * waveguide_sample_rate_ /
+                        sample_rate);
+    auto prep{waveguide::preprocessor::make_hard_source(
+            input_node, input_signal.begin(), input_signal.end())};
 
     waveguide::postprocessor::output_accumulator<waveguide::postprocessor::node>
             postprocessor{output_node};
 
     //  Run the waveguide simulation.
-    progress_bar pb{std::cerr, input_signal.signal.size()};
+    progress_bar pb{std::cerr, input_signal.size()};
     waveguide::run(compute_context_,
                    mesh,
                    prep,
@@ -153,7 +159,7 @@ audio img_src_and_waveguide_test::operator()(
 
     //  Compute required amplitude adjustment.
     const float calibration_factor = waveguide::rectilinear_calibration_factor(
-            waveguide_sample_rate_, speed_of_sound_);
+            mesh.get_descriptor().spacing);
 
     //  Adjust magnitude.
     auto magnitude_adjusted{
@@ -169,12 +175,6 @@ audio img_src_and_waveguide_test::operator()(
                    sample_rate,
                    16);
     }
-
-    //  Remove initial samples from waveguide output so that it lines up with
-    //  raytracer output.
-    //    magnitude_adjusted.erase(magnitude_adjusted.begin(),
-    //                             magnitude_adjusted.begin() +
-    //                             input_signal.offset);
 
     //  Convert sampling rate.
     auto corrected_waveguide{waveguide::adjust_sampling_rate(
@@ -214,14 +214,12 @@ audio img_src_and_waveguide_test::operator()(
 
         img_src_results.resize(max_size);
         corrected_waveguide.resize(max_size);
-        fast_filter filter{max_size * 2};
-        filter.filter(img_src_results.begin(),
-                      img_src_results.end(),
-                      img_src_results.begin(),
-                      [=](auto cplx, auto freq) {
-                          return cplx * compute_hipass_magnitude(
-                                                freq, cutoff, width, 0);
-                      });
+        run_fast_filter(img_src_results.begin(),
+                        img_src_results.end(),
+                        [=](auto cplx, auto freq) {
+                            return cplx * compute_hipass_magnitude(
+                                                  freq, cutoff, width, 0);
+                        });
 
         {
             static auto count{0};
@@ -237,13 +235,12 @@ audio img_src_and_waveguide_test::operator()(
             std::cout << "filtered raytracer rt60: " << rt60 << '\n';
         }
 
-        filter.filter(corrected_waveguide.begin(),
-                      corrected_waveguide.end(),
-                      corrected_waveguide.begin(),
-                      [=](auto cplx, auto freq) {
-                          return cplx * compute_lopass_magnitude(
-                                                freq, cutoff, width, 0);
-                      });
+        run_fast_filter(corrected_waveguide.begin(),
+                        corrected_waveguide.end(),
+                        [=](auto cplx, auto freq) {
+                            return cplx * compute_lopass_magnitude(
+                                                  freq, cutoff, width, 0);
+                        });
 
         {
             static auto count{0};

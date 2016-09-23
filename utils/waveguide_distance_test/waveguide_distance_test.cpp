@@ -44,10 +44,8 @@ int main() {
             cc, geo::get_scene_data(box), source, sample_rate, speed_of_sound)};
 
     auto& mesh{std::get<1>(voxels_and_mesh)};
-    // mesh.set_coefficients(
-    //        {waveguide::to_flat_coefficients(make_surface(0.005991, 0))});
     mesh.set_coefficients(
-            {waveguide::to_flat_coefficients(make_surface(1, 0))});
+            {waveguide::to_flat_coefficients(make_surface(0, 0))});
 
     const auto input_node{compute_index(mesh.get_descriptor(), source)};
 
@@ -63,17 +61,27 @@ int main() {
     })};
 
     //  Set up a source signal.
-
-    const auto input_signal{
-            waveguide::design_pcs_source(1 << 16, sample_rate, 0.01, 100, 1)};
+#if 1
+    const auto acoustic_impedance{400.0};
+    const auto input_signal{waveguide::design_pcs_source(1 << 16,
+                                                         acoustic_impedance,
+                                                         speed_of_sound,
+                                                         sample_rate,
+                                                         0.05,
+                                                         0.01,
+                                                         100,
+                                                         1)
+                                    .signal};
+#else
+    aligned::vector<float> input_signal{1.0f};
+    input_signal.resize(1 << 15);
+#endif
     auto prep{waveguide::preprocessor::make_soft_source(
-            input_node,
-            input_signal.signal.begin(),
-            input_signal.signal.end())};
+            input_node, input_signal.begin(), input_signal.end())};
 
     //  Run the simulation.
 
-    progress_bar pb{std::cerr, input_signal.signal.size()};
+    progress_bar pb{std::cerr, input_signal.size()};
     waveguide::run(cc,
                    mesh,
                    prep,

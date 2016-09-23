@@ -61,7 +61,7 @@ public:
 private:
     const glm::vec3& receiver_;
     const voxelised_scene_data& voxelised_;
-    float acoustic_impedance_;
+//    float acoustic_impedance_;
     bool flip_phase_;
 
     aligned::vector<volume_type> surface_impedances_;

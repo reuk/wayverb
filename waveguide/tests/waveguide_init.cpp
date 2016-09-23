@@ -41,7 +41,7 @@ TEST(waveguide_init, waveguide_init) {
     waveguide::postprocessor::output_accumulator<waveguide::postprocessor::node>
             postprocessor{receiver_index};
 
-    progress_bar pb(std::cout, steps);
+    progress_bar pb{std::cout, steps};
     waveguide::run(cc,
                    model,
                    prep,

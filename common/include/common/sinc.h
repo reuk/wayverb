@@ -1,11 +1,15 @@
 #pragma once
 
-#include "common/dsp_vector_ops.h"
 #include "common/aligned/vector.h"
+#include "common/dsp_vector_ops.h"
 
 /// sinc t = sin (pi . t) / pi . t
 template <typename T>
 T sinc(T t) {
+    if (t == 0) {
+        return 1.0;
+    }
+
     T pit = M_PI * t;
     return sin(pit) / pit;
 }
@@ -20,12 +24,7 @@ aligned::vector<T> sinc_kernel(double cutoff, int length) {
 
     aligned::vector<T> ret(length);
     for (auto i = 0u; i != length; ++i) {
-        if (i == ((length - 1) / 2)) {
-            ret[i] = 1;
-            //  ret[i] = 2 * cutoff;
-        } else {
-            ret[i] = sinc(2 * cutoff * (i - (length - 1) / 2.0));
-        }
+        ret[i] = sinc(2 * cutoff * (i - (length - 1) / 2.0));
     }
     return ret;
 }
@@ -47,7 +46,7 @@ aligned::vector<T> blackman(int length) {
     aligned::vector<T> ret(length);
     for (auto i = 0u; i != length; ++i) {
         const auto offset = i / (length - 1.0);
-        ret[i]            = (a0 - a1 * cos(2 * M_PI * offset) +
+        ret[i] = (a0 - a1 * cos(2 * M_PI * offset) +
                   a2 * cos(4 * M_PI * offset));
     }
     return ret;
@@ -101,7 +100,7 @@ aligned::vector<T> bandpass_sinc_kernel(double sr,
                                         double lo,
                                         double hi,
                                         int length) {
-    auto lop    = lopass_sinc_kernel(sr, lo, length);
+    auto lop = lopass_sinc_kernel(sr, lo, length);
     auto kernel = lopass_sinc_kernel(sr, hi, length);
     proc::transform(kernel, lop.begin(), kernel.begin(), [](auto a, auto b) {
         return a - b;

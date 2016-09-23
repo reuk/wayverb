@@ -26,6 +26,9 @@ gaussian::gaussian(const mesh_descriptor& descriptor,
 bool gaussian::operator()(cl::CommandQueue& queue,
                           cl::Buffer& buffer,
                           size_t step) {
+    if (step == steps_) {
+        return false;
+    }
     //  if this is the first step
     if (step == 0) {
         //  set all the mesh values
@@ -46,7 +49,7 @@ bool gaussian::operator()(cl::CommandQueue& queue,
         //  now copy to the buffer
         cl::copy(queue, pressures.begin(), pressures.end(), buffer);
     }
-    return step != steps_;
+    return true;
 }
 
 }  // namespace preprocessor

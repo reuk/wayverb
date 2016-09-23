@@ -233,7 +233,7 @@ TEST(raytrace, image_source) {
         const auto sample_rate{44100.0};
         ASSERT_FALSE(i.empty());
         {
-            auto mixed_down{mixdown(raytracer::convert_to_histogram(
+            auto mixed_down{mixdown(raytracer::dirac_histogram(
                     i.begin(), i.end(), speed_of_sound, sample_rate, 20))};
             normalize(mixed_down);
             snd::write(
@@ -243,8 +243,13 @@ TEST(raytrace, image_source) {
                     bit_depth);
         }
         {
-            auto processed{raytracer::flatten_filter_and_mixdown(
-                    i.begin(), i.end(), speed_of_sound, sample_rate, 20)};
+            auto processed{multiband_filter_and_mixdown(
+                    raytracer::dirac_histogram(i.begin(),
+                                               i.end(),
+                                               speed_of_sound,
+                                               sample_rate,
+                                               20),
+                    sample_rate)};
             normalize(processed);
             snd::write(build_string(SCRATCH_PATH, "/", name, "_processed.wav"),
                        {processed},

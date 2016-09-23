@@ -14,19 +14,8 @@ inline auto distance_for_unit_intensity(T strength) {
     return sqrt(strength / (4 * M_PI));
 }
 
-/// r = distance at which the geometric sound source has intensity 1W/m^2
-/// sr = waveguide mesh sampling rate
-inline double rectilinear_calibration_factor(double r,
-                                             double sr,
-                                             double speed_of_sound) {
-    const auto courant{1 / std::sqrt(3.0)};
-    const auto x{speed_of_sound / (courant * sr)};
-    return r / (x * 0.3405);
-}
-
-inline double rectilinear_calibration_factor(double sr, double speed_of_sound) {
-    return rectilinear_calibration_factor(
-            distance_for_unit_intensity(1), sr, speed_of_sound);
+inline double rectilinear_calibration_factor(double grid_spacing) {
+    return distance_for_unit_intensity(1) / (0.3405 * grid_spacing);
 }
 
 }  // namespace waveguide

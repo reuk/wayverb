@@ -1,4 +1,5 @@
 #include "waveguide/pcs.h"
+#include "waveguide/config.h"
 
 #include <cmath>
 #include <numeric>
@@ -31,6 +32,19 @@ offset_signal maxflat(double f0, uint32_t N, double A, uint32_t hLen) {
 
 //----------------------------------------------------------------------------//
 
+double compute_g0(double acoustic_impedance,
+                  double speed_of_sound,
+                  double sample_rate,
+                  double radius) {
+    const auto courant_squared{1.0 / 3};
+    const auto ambient_density{acoustic_impedance / speed_of_sound};
+    const auto sphere_surface_area{4 * M_PI * radius * radius};
+    const auto spatial_sample_period{
+            config::grid_spacing(speed_of_sound, 1 / sample_rate)};
+    return courant_squared * ambient_density * sphere_surface_area /
+           spatial_sample_period;
+}
+
 filter::biquad::coefficients mech_sphere(double M,
                                          double f0,
                                          double Q,
@@ -51,7 +65,10 @@ filter::biquad::coefficients mech_sphere(double M,
 //----------------------------------------------------------------------------//
 
 offset_signal design_pcs_source(size_t length,
+                                double acoustic_impedance,
+                                double speed_of_sound,
                                 double sample_rate,
+                                double radius,
                                 double sphere_mass,
                                 double low_cutoff_hz,
                                 double low_q) {
@@ -61,6 +78,11 @@ offset_signal design_pcs_source(size_t length,
     run_one_pass(mechanical_filter,
                  pulse_shaping_filter.signal.begin(),
                  pulse_shaping_filter.signal.end());
+    const auto g0{compute_g0(
+            acoustic_impedance, speed_of_sound, sample_rate, radius)};
+    for (auto& samp : pulse_shaping_filter.signal) {
+        samp *= g0;
+    }
     const auto one_over_two_T{sample_rate / 2};
     filter::biquad injection_filter{{one_over_two_T, 0, -one_over_two_T, 0, 0}};
     run_one_pass(injection_filter,

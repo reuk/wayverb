@@ -73,6 +73,10 @@ public:
                     auto sd{scene_data_};
                     sd.set_surfaces(surface);
 
+                    const auto predicted_rt60{
+                            eyring_reverb_time(sd, make_volume_type(0))};
+                    std::cout << "eyring rt60: " << predicted_rt60.s[0] << '\n';
+
                     auto results{t(surface,
                                    source,
                                    model::receiver_settings{receiver})};
@@ -105,8 +109,7 @@ public:
 
                     count += 1;
                     std::cout << "finished: test " << count << " of "
-                              << max_tests << '\n'
-                              << std::flush;
+                              << max_tests << '\n' << std::flush;
                 }
             }
         }

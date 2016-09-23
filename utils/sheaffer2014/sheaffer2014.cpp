@@ -97,21 +97,37 @@ void test_from_paper() {
     write("test_from_paper", postprocessor.get_output(), sample_rate);
 }
 
-auto get_mass_test_signals(double sample_rate) {
+auto get_mass_test_signals(double acoustic_impedance,
+                           double speed_of_sound,
+                           double sample_rate) {
     return map_to_vector(
             aligned::vector<double>{0.025, 0.05, 0.1, 0.2, 0.4, 0.8},
             [=](auto i) {
-                return waveguide::design_pcs_source(
-                        1 << 15, sample_rate, i, 100, 1);
+                return waveguide::design_pcs_source(1 << 15,
+                                                    acoustic_impedance,
+                                                    speed_of_sound,
+                                                    sample_rate,
+                                                    0.05,
+                                                    i,
+                                                    100,
+                                                    1);
             });
 }
 
-auto get_cutoff_test_signals(double sample_rate) {
-    return map_to_vector(aligned::vector<double>{20, 40, 60, 80, 100, 120},
-                         [=](auto i) {
-                             return waveguide::design_pcs_source(
-                                     1 << 15, sample_rate, 0.01, i, 1);
-                         });
+auto get_cutoff_test_signals(double acoustic_impedance,
+                             double speed_of_sound,
+                             double sample_rate) {
+    return map_to_vector(
+            aligned::vector<double>{20, 40, 60, 80, 100, 120}, [=](auto i) {
+                return waveguide::design_pcs_source(1 << 15,
+                                                    acoustic_impedance,
+                                                    speed_of_sound,
+                                                    sample_rate,
+                                                    0.05,
+                                                    0.01,
+                                                    i,
+                                                    1);
+            });
 }
 
 void other_tests() {
@@ -119,6 +135,7 @@ void other_tests() {
 
     const geo::box box{glm::vec3{-3}, glm::vec3{3}};
     const auto sample_rate{4000.0};
+    const auto acoustic_impedance{400.0};
     const auto speed_of_sound{340.0};
 
     const compute_context cc{};
@@ -181,7 +198,9 @@ void other_tests() {
     }};
 
     // run_tests("mass", get_mass_test_signals(sample_rate));
-    run_tests("cutoff", get_cutoff_test_signals(sample_rate));
+    run_tests("cutoff",
+              get_cutoff_test_signals(
+                      acoustic_impedance, speed_of_sound, sample_rate));
 }
 
 int main() {

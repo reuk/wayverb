@@ -131,3 +131,15 @@ TEST(fast_filter, hipass) {
             });
     snd::write("hipass_noise.wav", {sig}, 44100, 16);
 }
+
+TEST(fast_filter, transients) {
+    aligned::vector<float> sig(1 << 13);
+    sig[1 << 12] = 1.0f;
+
+    fast_filter filter{sig.size()};
+    filter.filter(
+            sig.begin(), sig.end(), sig.begin(), [](auto cplx, auto freq) {
+                return cplx * compute_hipass_magnitude(freq, 0.25, 0.05, 0);
+            });
+    snd::write("transients.wav", {sig}, 44100, 16);
+}

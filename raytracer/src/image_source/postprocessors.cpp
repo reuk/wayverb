@@ -52,7 +52,7 @@ fast_pressure_calculator::fast_pressure_calculator(
         bool flip_phase)
         : receiver_{receiver}
         , voxelised_{voxelised}
-        , acoustic_impedance_{acoustic_impedance}
+//        , acoustic_impedance_{acoustic_impedance}
         , flip_phase_{flip_phase}
         , surface_impedances_{map_to_vector(
                   voxelised.get_scene_data().get_materials(),
@@ -68,6 +68,7 @@ fast_pressure_calculator::fast_pressure_calculator(
 impulse fast_pressure_calculator::operator()(
         const glm::vec3& image_source,
         const aligned::vector<reflection_metadata>& intersections) const {
+    //  Find the product of all reflection coefficients along the ray path.
     const auto surface_attenuation{proc::accumulate(
             intersections, make_volume_type(1), [&](auto i, auto j) {
                 const auto surface_index{voxelised_.get_scene_data()
@@ -80,11 +81,9 @@ impulse fast_pressure_calculator::operator()(
                 return i * reflectance * (flip_phase_ ? -1 : 1);
             })};
 
-    const auto distance{glm::distance(image_source, receiver_)};
-
-    return {pressure_to_intensity(surface_attenuation, acoustic_impedance_),
+    return {surface_attenuation,
             to_cl_float3(image_source),
-            distance};
+            glm::distance(image_source, receiver_)};
 }
 
 //----------------------------------------------------------------------------//

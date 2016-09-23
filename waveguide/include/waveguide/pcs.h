@@ -32,6 +32,12 @@ struct offset_signal final {
 /// hLen:   full, padded length
 offset_signal maxflat(double f0, uint32_t N, double A, uint32_t hlen);
 
+/// Compute mech sphere corrective output gain.
+double compute_g0(double acoustic_impedance,
+                  double speed_of_sound,
+                  double sample_rate,
+                  double radius);
+
 /// Design a mechanical filter simulating a small pulsating sphere.
 ///
 /// M:      mass of sphere
@@ -64,7 +70,10 @@ filter::biquad::coefficients mech_sphere(double M,
 /// TODO find correct mass for sphere so that level correction still works
 /// properly.
 offset_signal design_pcs_source(size_t length,
+                                double acoustic_impedance,
+                                double speed_of_sound,
                                 double sample_rate,
+                                double radius,
                                 double sphere_mass,
                                 double low_cutoff_hz,
                                 double low_q);

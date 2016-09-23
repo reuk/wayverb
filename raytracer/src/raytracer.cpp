@@ -1,7 +1,7 @@
-#include "raytracer/raytracer.h"
 #include "raytracer/diffuse/finder.h"
 #include "raytracer/image_source/finder.h"
 #include "raytracer/image_source/reflection_path_builder.h"
+#include "raytracer/raytracer.h"
 #include "raytracer/reflector.h"
 
 #include "common/nan_checking.h"
@@ -11,11 +11,10 @@
 
 namespace raytracer {
 
-std::experimental::optional<impulse> get_direct_impulse(
+std::experimental::optional<impulse> get_direct(
         const glm::vec3& source,
         const glm::vec3& receiver,
-        const voxelised_scene_data& scene_data,
-        double speed_of_sound) {
+        const voxelised_scene_data& scene_data) {
     if (source == receiver) {
         return std::experimental::nullopt;
     }
@@ -28,11 +27,10 @@ std::experimental::optional<impulse> get_direct_impulse(
     const auto intersection{intersects(scene_data, to_receiver)};
 
     if (!intersection ||
-        (intersection && intersection->inter.t > source_to_receiver_length)) {
+        (intersection && intersection->inter.t >= source_to_receiver_length)) {
         return impulse{make_volume_type(1),
                        to_cl_float3(source),
-                       static_cast<cl_float>(source_to_receiver_length /
-                                             speed_of_sound)};
+                       source_to_receiver_length};
     }
 
     return std::experimental::nullopt;
@@ -139,12 +137,11 @@ std::experimental::optional<results> run(
                     scene_data,
                     acoustic_impedance));
 
-    return results{
-            get_direct_impulse(source, receiver, scene_data, speed_of_sound),
-            std::move(img_src_results),
-            std::move(dif.get_results()),
-            receiver,
-            speed_of_sound};
+    return results{get_direct(source, receiver, scene_data),
+                   std::move(img_src_results),
+                   std::move(dif.get_results()),
+                   receiver,
+                   speed_of_sound};
 }
 
 }  // namespace raytracer
