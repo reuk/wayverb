@@ -1,6 +1,6 @@
 #include "common/conversions.h"
-#include "common/spatial_division/voxelised_scene_data.h"
 #include "common/scene_data_loader.h"
+#include "common/spatial_division/voxelised_scene_data.h"
 
 #include "gtest/gtest.h"
 
@@ -16,17 +16,16 @@
 
 TEST(boundary, tunnel) {
     const scene_data_loader scene_loader{OBJ_PATH_TUNNEL};
-    const scene_data scene{scene_loader.get_scene_data()};
-    const voxelised_scene_data boundary(
-            scene, 5, util::padded(scene.get_aabb(), glm::vec3{2}));
+    const auto scene{scene_loader.get_scene_data()};
+    const auto boundary{make_voxelised_scene_data(scene, 5, 2.0f)};
 
-    const auto centre = util::centre(boundary.get_voxels().get_aabb());
+    const auto centre{util::centre(boundary.get_voxels().get_aabb())};
 
     ASSERT_EQ(*count_intersections(boundary,
-                                  geo::ray{centre,
-                                           glm::vec3{-0.108882785,
-                                                     0.075211525,
-                                                     0.991205215}}),
+                                   geo::ray{centre,
+                                            glm::vec3{-0.108882785,
+                                                      0.075211525,
+                                                      0.991205215}}),
               1);
 
     {
@@ -65,9 +64,8 @@ TEST(boundary, tunnel) {
 
 TEST(boundary, bedroom) {
     const scene_data_loader scene_loader{OBJ_PATH_BEDROOM};
-    const scene_data scene{scene_loader.get_scene_data()};
-    const voxelised_scene_data boundary(
-            scene, 5, util::padded(scene.get_aabb(), glm::vec3{0.1}));
+    const auto scene{scene_loader.get_scene_data()};
+    const auto boundary{make_voxelised_scene_data(scene, 5, 0.1f)};
 
     const auto centre = util::centre(boundary.get_voxels().get_aabb());
 

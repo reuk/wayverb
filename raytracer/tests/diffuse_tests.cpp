@@ -17,16 +17,15 @@ TEST(diffuse, bad_reflections_box) {
     const geo::box box(glm::vec3(0, 0, 0), glm::vec3(4, 3, 6));
     constexpr glm::vec3 source{1, 2, 1};
     constexpr glm::vec3 receiver{2, 1, 5};
-    constexpr auto s = 0.9;
-    constexpr auto d = 0.1;
+    constexpr auto s{0.01};
+    constexpr auto d{0.1};
     constexpr auto surface{make_surface(s, d)};
 
     const compute_context cc{};
 
-    auto scene = geo::get_scene_data(box);
-    scene.set_surfaces(surface);
-    const voxelised_scene_data voxelised(
-            scene, 5, util::padded(scene.get_aabb(), glm::vec3{0.1}));
+    const auto scene{geo::get_scene_data(box, surface)};
+    const auto voxelised{make_voxelised_scene_data(
+            scene, 5, util::padded(geo::get_aabb(scene), 0.1f))};
 
     const scene_buffers buffers{cc.context, voxelised};
 
@@ -60,9 +59,10 @@ TEST(diffuse, bad_reflections_vault) {
 
     const compute_context cc{};
 
-    const scene_data scene{scene_data_loader{OBJ_PATH}.get_scene_data()};
-    const voxelised_scene_data voxelised(
-            scene, 5, util::padded(scene.get_aabb(), glm::vec3{0.1}));
+    const auto scene{scene_with_extracted_surfaces(
+            scene_data_loader{OBJ_PATH}.get_scene_data())};
+    const auto voxelised{make_voxelised_scene_data(
+            scene, 5, util::padded(geo::get_aabb(scene), 0.1f))};
 
     const scene_buffers buffers{cc.context, voxelised};
 

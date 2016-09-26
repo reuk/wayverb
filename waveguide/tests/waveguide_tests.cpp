@@ -4,13 +4,13 @@
 #include "waveguide/mesh.h"
 #include "waveguide/postprocessor/microphone.h"
 #include "waveguide/postprocessor/node.h"
-#include "waveguide/postprocessor/output_accumulator.h"
 #include "waveguide/preprocessor/soft_source.h"
 #include "waveguide/program.h"
 #include "waveguide/setup.h"
 #include "waveguide/surface_filters.h"
 #include "waveguide/waveguide.h"
 
+#include "common/callback_accumulator.h"
 #include "common/cl/common.h"
 #include "common/progress_bar.h"
 #include "common/sinc.h"
@@ -49,7 +49,7 @@ TEST(run_waveguide, run_waveguide) {
 
     //  init simulation parameters
 
-    const auto scene_data{geo::get_scene_data(box)};
+    const auto scene_data{geo::get_scene_data(box, make_surface(0.01, 0))};
 
     constexpr auto speed_of_sound{340.0};
     const auto voxels_and_mesh{waveguide::compute_voxels_and_mesh(
@@ -78,8 +78,8 @@ TEST(run_waveguide, run_waveguide) {
         if (!waveguide::is_inside(model, receiver_index)) {
             throw std::runtime_error("receiver is outside of mesh!");
         }
-        return waveguide::postprocessor::output_accumulator<
-                waveguide::postprocessor::node>{receiver_index};
+        return callback_accumulator<float, waveguide::postprocessor::node>{
+                receiver_index};
     })};
 
     progress_bar pb{std::cerr, steps};

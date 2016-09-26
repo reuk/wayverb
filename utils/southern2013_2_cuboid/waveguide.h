@@ -8,7 +8,7 @@
 
 class waveguide_test final {
 public:
-    waveguide_test(const scene_data& sd,
+    waveguide_test(const generic_scene_data<cl_float3, surface>& sd,
                    float speed_of_sound,
                    float acoustic_impedance);
 
@@ -19,7 +19,8 @@ public:
 private:
     compute_context compute_context_{};
     double sample_rate_{10000.0};
-    std::tuple<voxelised_scene_data, waveguide::mesh> voxels_and_mesh_;
+    std::tuple<voxelised_scene_data<cl_float3, surface>, waveguide::mesh>
+            voxels_and_mesh_;
     //float speed_of_sound_;
     //float acoustic_impedance_;
 };

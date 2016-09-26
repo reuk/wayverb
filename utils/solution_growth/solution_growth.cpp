@@ -4,12 +4,12 @@
 #include "waveguide/make_transparent.h"
 #include "waveguide/mesh.h"
 #include "waveguide/postprocessor/node.h"
-#include "waveguide/postprocessor/output_accumulator.h"
 #include "waveguide/preprocessor/soft_source.h"
 #include "waveguide/surface_filters.h"
 #include "waveguide/waveguide.h"
 
 #include "common/azimuth_elevation.h"
+#include "common/callback_accumulator.h"
 #include "common/cl/common.h"
 #include "common/conversions.h"
 #include "common/dc_blocker.h"
@@ -58,8 +58,7 @@ int main(int argc, char** argv) {
         const compute_context cc{};
         const geo::box boundary{glm::vec3{0}, glm::vec3{5.56, 3.97, 2.81}};
 
-        auto scene_data{geo::get_scene_data(boundary)};
-        scene_data.set_surfaces(surface);
+        const auto scene_data{geo::get_scene_data(boundary, surface)};
 
         const auto rt60{
                 sabine_reverb_time(scene_data, make_volume_type(0)).s[0]};
@@ -73,11 +72,11 @@ int main(int argc, char** argv) {
         const auto spacing{waveguide::config::grid_spacing(
                 speed_of_sound, 1 / sampling_frequency)};
 
-        const voxelised_scene_data voxelised(
+        const auto voxelised{make_voxelised_scene_data(
                 scene_data,
                 5,
                 waveguide::compute_adjusted_boundary(
-                        scene_data.get_aabb(), receiver, spacing));
+                        geo::get_aabb(scene_data), receiver, spacing))};
         auto model{waveguide::compute_mesh(
                 cc, voxelised, spacing, speed_of_sound)};
         model.set_coefficients({waveguide::to_flat_coefficients(surface)});
@@ -125,8 +124,7 @@ int main(int argc, char** argv) {
             auto prep{waveguide::preprocessor::make_soft_source(
                     receiver_index, kernel.begin(), kernel.end())};
 
-            waveguide::postprocessor::output_accumulator<
-                    waveguide::postprocessor::node>
+            callback_accumulator<float, waveguide::postprocessor::node>
                     postprocessor{receiver_index};
 
             progress_bar pb{std::cout, kernel.size()};

@@ -2,12 +2,13 @@
 
 #include "audio.h"
 
+#include "common/cl/common.h"
 #include "common/model/receiver_settings.h"
 #include "common/spatial_division/voxelised_scene_data.h"
 
 class image_source_depth_test final {
 public:
-    image_source_depth_test(const scene_data& sd,
+    image_source_depth_test(const generic_scene_data<cl_float3, surface>& sd,
                             float speed_of_sound,
                             float acoustic_impedance);
 
@@ -17,7 +18,7 @@ public:
 
 private:
     compute_context compute_context_{};
-    voxelised_scene_data voxelised_;
+    voxelised_scene_data<cl_float3, surface> voxelised_;
     float speed_of_sound_;
     float acoustic_impedance_;
 };

@@ -1,10 +1,10 @@
 #include "waveguide/make_transparent.h"
 #include "waveguide/mesh.h"
 #include "waveguide/postprocessor/node.h"
-#include "waveguide/postprocessor/output_accumulator.h"
 #include "waveguide/preprocessor/soft_source.h"
 #include "waveguide/waveguide.h"
 
+#include "common/callback_accumulator.h"
 #include "common/progress_bar.h"
 #include "common/spatial_division/voxelised_scene_data.h"
 
@@ -15,11 +15,10 @@
 TEST(waveguide_init, waveguide_init) {
     const compute_context cc{};
 
-    auto scene_data{geo::get_scene_data(geo::box{glm::vec3{-1}, glm::vec3{1}})};
-    scene_data.set_surfaces(make_surface(0.999, 0.999));
+    auto scene_data{geo::get_scene_data(geo::box{glm::vec3{-1}, glm::vec3{1}},
+                                        make_surface(0.001, 0))};
 
-    const voxelised_scene_data voxelised{
-            scene_data, 5, util::padded(scene_data.get_aabb(), glm::vec3{0.1})};
+    const auto voxelised{make_voxelised_scene_data(scene_data, 5, 0.1f)};
 
     constexpr glm::vec3 centre{0, 0, 0};
 
@@ -38,8 +37,8 @@ TEST(waveguide_init, waveguide_init) {
     auto prep{waveguide::preprocessor::make_soft_source(
             receiver_index, transparent.begin(), transparent.end())};
 
-    waveguide::postprocessor::output_accumulator<waveguide::postprocessor::node>
-            postprocessor{receiver_index};
+    callback_accumulator<float, waveguide::postprocessor::node> postprocessor{
+            receiver_index};
 
     progress_bar pb{std::cout, steps};
     waveguide::run(cc,

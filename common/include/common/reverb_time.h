@@ -1,7 +1,9 @@
 #pragma once
 
 #include "common/aligned/set.h"
+#include "common/geo/triangle_vec.h"
 #include "common/scene_data.h"
+#include "common/specular_absorption_extraction_trait.h"
 
 /// IMPORTANT
 /// The following functions assume that the scene being modelled has the
@@ -14,17 +16,53 @@
 /// a result, let alone a *valid* result.
 
 /// Find the area covered by a particular material.
-float area(const scene_data& scene, size_t material_index);
+template <typename Vertex, typename Surface>
+double area(const generic_scene_data<Vertex, Surface>& scene,
+            size_t surface_index) {
+    //  TODO this is dumb because of the linear search.
+    //  If this becomes a bottleneck, maybe scene_data could store surfaces
+    //  pre-sorted by material.
+    return proc::accumulate(
+            scene.get_triangles(), 0.0, [&](auto running_total, auto tri) {
+                return running_total +
+                       (tri.surface == surface_index
+                                ? geo::area(geo::get_triangle_vec3(
+                                          tri, scene.get_vertices()))
+                                : 0.0);
+            });
+}
 
 /// Find the total surface area of an object.
-float area(const scene_data& scene);
+template <typename Vertex, typename Surface>
+double area(const generic_scene_data<Vertex, Surface>& scene) {
+    //  This is OK - we have to look at every triangle anyway.
+    return proc::accumulate(
+            scene.get_triangles(), 0.0, [&](auto running_total, auto tri) {
+                return running_total + geo::area(geo::get_triangle_vec3(
+                                               tri, scene.get_vertices()));
+            });
+}
 
 /// The product of the area covered by a material with the absorption
 /// coefficient of that material.
-volume_type absorption_area(const scene_data& scene, size_t surface_index);
+template <typename Vertex, typename Surface>
+auto absorption_area(const generic_scene_data<Vertex, Surface>& scene,
+                     size_t surface_index) {
+    return get_specular_absorption(scene.get_surfaces()[surface_index]) *
+           area(scene, surface_index);
+}
 
 /// Sum of the absorption areas for all materials in the scene.
-volume_type equivalent_absorption_area(const scene_data& scene);
+template <typename Vertex, typename Surface>
+auto equivalent_absorption_area(
+        const generic_scene_data<Vertex, Surface>& scene) {
+    const auto num_surfaces{scene.get_surfaces().size()};
+    decltype(absorption_area(scene, 0)) running_total{};
+    for (auto i{0u}; i != num_surfaces; ++i) {
+        running_total += absorption_area(scene, i);
+    }
+    return running_total;
+}
 
 //----------------------------------------------------------------------------//
 //
@@ -42,7 +80,7 @@ bool triangles_are_oriented(It begin, It end) {
         //  For each pair of vertices.
         for (const auto& pair : get_index_pairs(*begin)) {
             //  See whether this pair of vertices has already been found.
-            if (! table.insert(pair).second) {
+            if (!table.insert(pair).second) {
                 //  The pair already existed.
                 return false;
             }
@@ -52,8 +90,22 @@ bool triangles_are_oriented(It begin, It end) {
     return true;
 }
 
+float six_times_tetrahedron_volume(const geo::triangle_vec3& t);
+
 /// http://research.microsoft.com/en-us/um/people/chazhang/publications/icip01_ChaZhang.pdf
-float estimate_room_volume(const scene_data& scene);
+template <typename Vertex, typename Surface>
+float estimate_room_volume(const generic_scene_data<Vertex, Surface>& scene) {
+    return std::abs(proc::accumulate(
+                   scene.get_triangles(),
+                   0.0f,
+                   [&](auto running_total, auto tri) {
+                       return running_total +
+                              six_times_tetrahedron_volume(
+                                      geo::get_triangle_vec3(
+                                              tri, scene.get_vertices()));
+                   })) /
+           6;
+}
 
 //----------------------------------------------------------------------------//
 
@@ -68,9 +120,23 @@ volume_type estimate_air_intensity_absorption(float humidity);
 
 /// Sabine reverb time (use the damping constant function above too)
 /// (kuttruff 5.9) (vorlander 4.33)
-volume_type sabine_reverb_time(const scene_data& scene_data,
-                               volume_type air_coefficient);
+template <typename Vertex, typename Surface, typename Coeff>
+auto sabine_reverb_time(const generic_scene_data<Vertex, Surface>& scene,
+                        Coeff air_coefficient) {
+    const auto room_volume{estimate_room_volume(scene)};
+    const auto absorption_area{equivalent_absorption_area(scene)};
+    return (0.161f * room_volume) /
+           (absorption_area + (4 * room_volume * air_coefficient));
+}
 
 /// Eyring reverb time (kuttruff 5.24) (vorlander 4.32)
-volume_type eyring_reverb_time(const scene_data& scene,
-                               volume_type air_coefficient);
+template <typename Vertex, typename Surface, typename Coeff>
+auto eyring_reverb_time(const generic_scene_data<Vertex, Surface>& scene,
+                        Coeff air_coefficient) {
+    const auto room_volume{estimate_room_volume(scene)};
+    const auto absorption_area{equivalent_absorption_area(scene)};
+    const auto full_area{area(scene)};
+    return (0.161f * room_volume) /
+           (-full_area * log(1 - (absorption_area / full_area)) +
+            (4 * room_volume * air_coefficient));
+}

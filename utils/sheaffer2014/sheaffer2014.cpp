@@ -1,11 +1,11 @@
 #include "waveguide/mesh.h"
 #include "waveguide/pcs.h"
 #include "waveguide/postprocessor/node.h"
-#include "waveguide/postprocessor/output_accumulator.h"
 #include "waveguide/preprocessor/soft_source.h"
 #include "waveguide/surface_filters.h"
 #include "waveguide/waveguide.h"
 
+#include "common/callback_accumulator.h"
 #include "common/dsp_vector_ops.h"
 #include "common/map_to_vector.h"
 #include "common/progress_bar.h"
@@ -44,12 +44,12 @@ void test_from_paper() {
     const glm::vec3 source{
             std::sin(M_PI / 4) * radius, 0, std::cos(M_PI / 4) * radius};
 
-    auto voxels_and_mesh{
-            waveguide::compute_voxels_and_mesh(cc,
-                                               geo::get_scene_data(box),
-                                               receiver,
-                                               sample_rate,
-                                               speed_of_sound)};
+    auto voxels_and_mesh{waveguide::compute_voxels_and_mesh(
+            cc,
+            geo::get_scene_data(box, make_surface(0, 0)),
+            receiver,
+            sample_rate,
+            speed_of_sound)};
 
     auto& mesh{std::get<1>(voxels_and_mesh)};
     mesh.set_coefficients(
@@ -81,8 +81,8 @@ void test_from_paper() {
             input_signal.signal.begin(),
             input_signal.signal.end())};
 
-    waveguide::postprocessor::output_accumulator<waveguide::postprocessor::node>
-            postprocessor{output_node};
+    callback_accumulator<float, waveguide::postprocessor::node> postprocessor{
+            output_node};
 
     progress_bar pb{std::cerr, input_signal.signal.size()};
     waveguide::run(cc,
@@ -145,12 +145,12 @@ void other_tests() {
     const glm::vec3 source{
             std::sin(M_PI / 4) * radius, 0, std::cos(M_PI / 4) * radius};
 
-    auto voxels_and_mesh{
-            waveguide::compute_voxels_and_mesh(cc,
-                                               geo::get_scene_data(box),
-                                               receiver,
-                                               sample_rate,
-                                               speed_of_sound)};
+    auto voxels_and_mesh{waveguide::compute_voxels_and_mesh(
+            cc,
+            geo::get_scene_data(box, make_surface(0, 0)),
+            receiver,
+            sample_rate,
+            speed_of_sound)};
 
     auto& mesh{std::get<1>(voxels_and_mesh)};
     mesh.set_coefficients(
@@ -175,8 +175,7 @@ void other_tests() {
                     input_signal.signal.begin(),
                     input_signal.signal.end())};
 
-            waveguide::postprocessor::output_accumulator<
-                    waveguide::postprocessor::node>
+            callback_accumulator<float, waveguide::postprocessor::node>
                     postprocessor{output_node};
 
             progress_bar pb{std::cerr, input_signal.signal.size()};

@@ -2,11 +2,11 @@
 
 #include "waveguide/make_transparent.h"
 #include "waveguide/postprocessor/node.h"
-#include "waveguide/postprocessor/output_accumulator.h"
 #include "waveguide/preprocessor/soft_source.h"
 #include "waveguide/surface_filters.h"
 #include "waveguide/waveguide.h"
 
+#include "common/callback_accumulator.h"
 #include "common/dc_blocker.h"
 #include "common/dsp_vector_ops.h"
 #include "common/frequency_domain_filter.h"
@@ -16,7 +16,7 @@
 
 #include <iostream>
 
-waveguide_test::waveguide_test(const scene_data& sd,
+waveguide_test::waveguide_test(const generic_scene_data<cl_float3, surface>& sd,
                                float speed_of_sound,
                                float acoustic_impedance)
         : voxels_and_mesh_{waveguide::compute_voxels_and_mesh(compute_context_,
@@ -55,8 +55,8 @@ audio waveguide_test::operator()(const surface& surface,
     auto prep{waveguide::preprocessor::make_soft_source(
             input_node, input_signal.begin(), input_signal.end())};
 
-    waveguide::postprocessor::output_accumulator<waveguide::postprocessor::node>
-            postprocessor{output_node};
+    callback_accumulator<float, waveguide::postprocessor::node> postprocessor{
+            output_node};
 
     progress_bar pb{std::cerr, input_signal.size()};
     waveguide::run(compute_context_,

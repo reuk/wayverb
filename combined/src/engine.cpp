@@ -1,18 +1,5 @@
 #include "combined/engine.h"
 
-#include "common/aligned/set.h"
-#include "common/azimuth_elevation.h"
-#include "common/cl/common.h"
-#include "common/conversions.h"
-#include "common/dc_blocker.h"
-#include "common/filters_common.h"
-#include "common/kernel.h"
-#include "common/map_to_vector.h"
-#include "common/model/receiver_settings.h"
-#include "common/pressure_intensity.h"
-#include "common/spatial_division/voxelised_scene_data.h"
-#include "common/surfaces.h"
-
 #include "raytracer/attenuator.h"
 #include "raytracer/postprocess.h"
 #include "raytracer/raytracer.h"
@@ -26,11 +13,24 @@
 #include "waveguide/mesh.h"
 #include "waveguide/postprocess.h"
 #include "waveguide/postprocessor/microphone.h"
-#include "waveguide/postprocessor/output_accumulator.h"
 #include "waveguide/postprocessor/visualiser.h"
 #include "waveguide/preprocessor/soft_source.h"
 #include "waveguide/setup.h"
 #include "waveguide/waveguide.h"
+
+#include "common/aligned/set.h"
+#include "common/azimuth_elevation.h"
+#include "common/callback_accumulator.h"
+#include "common/cl/common.h"
+#include "common/conversions.h"
+#include "common/dc_blocker.h"
+#include "common/filters_common.h"
+#include "common/kernel.h"
+#include "common/map_to_vector.h"
+#include "common/model/receiver_settings.h"
+#include "common/pressure_intensity.h"
+#include "common/spatial_division/voxelised_scene_data.h"
+#include "common/surfaces.h"
 
 #include <cmath>
 
@@ -191,7 +191,8 @@ public:
 
 private:
     impl(const compute_context& cc,
-         std::tuple<voxelised_scene_data, waveguide::mesh>&& pair,
+         std::tuple<voxelised_scene_data<cl_float3, surface>, waveguide::mesh>&&
+                 pair,
          const glm::vec3& source,
          const glm::vec3& receiver,
          double waveguide_sample_rate,
@@ -282,8 +283,8 @@ public:
 
         //  If the max raytracer time is large this could take forever...
 
-        waveguide::postprocessor::output_accumulator<
-                waveguide::postprocessor::microphone>
+        callback_accumulator<waveguide::postprocessor::microphone::output,
+                             waveguide::postprocessor::microphone>
                 mic_output{mesh.get_descriptor(),
                            waveguide_sample_rate,
                            acoustic_impedance / speed_of_sound,
@@ -352,7 +353,7 @@ public:
 private:
     compute_context compute_context;
 
-    voxelised_scene_data voxelised;
+    voxelised_scene_data<cl_float3, surface> voxelised;
     waveguide::mesh mesh;
 
     double speed_of_sound;

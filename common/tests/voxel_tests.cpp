@@ -1,4 +1,5 @@
 #include "common/azimuth_elevation.h"
+#include "common/cl/common.h"
 #include "common/conversions.h"
 #include "common/map_to_vector.h"
 #include "common/scene_data_loader.h"
@@ -14,20 +15,21 @@
 #endif
 
 namespace {
-auto get_voxelised(const scene_data& scene) {
-    return voxelised_scene_data{
-            scene, 5, util::padded(scene.get_aabb(), glm::vec3{0.1})};
+template <typename Vertex, typename Surface>
+auto get_voxelised(const generic_scene_data<Vertex, Surface>& scene) {
+    return make_voxelised_scene_data(scene, 5, 0.1f);
 }
 
-aligned::vector<scene_data> get_test_scenes() {
-    static aligned::vector<scene_data> test_scenes{
+auto get_test_scenes() {
+    return aligned::vector<scene_data_loader::scene_data>{
             geo::get_scene_data(
-                    geo::box{glm::vec3(0, 0, 0), glm::vec3(4, 3, 6)}),
+                    geo::box{glm::vec3(0, 0, 0), glm::vec3(4, 3, 6)},
+                    scene_data_loader::material{"default", make_surface(0, 0)}),
             geo::get_scene_data(
-                    geo::box{glm::vec3(0, 0, 0), glm::vec3(3, 3, 3)}),
+                    geo::box{glm::vec3(0, 0, 0), glm::vec3(3, 3, 3)},
+                    scene_data_loader::material{"default", make_surface(0, 0)}),
             scene_data_loader{OBJ_PATH}.get_scene_data()};
-    return test_scenes;
-};
+}
 
 TEST(voxel, construct) {
     for (const auto& scene : get_test_scenes()) {
@@ -67,7 +69,8 @@ TEST(voxel, flatten) {
 TEST(voxel, surrounded) {
     const glm::vec3 source{1, 2, 1};
     for (const auto& scene : get_test_scenes()) {
-        const auto voxelised{get_voxelised(scene)};
+        const auto voxelised{
+                get_voxelised(scene_with_extracted_surfaces(scene))};
         const compute_context cc{};
         const scene_buffers buffers{cc.context, voxelised};
 
@@ -122,8 +125,10 @@ TEST(voxel, surrounded) {
     }
 }
 
-void compare(const glm::vec3& source, const scene_data& scene) {
-    const auto voxelised{get_voxelised(scene)};
+template <typename Vertex, typename Surface>
+void compare(const glm::vec3& source,
+             const generic_scene_data<Vertex, Surface>& scene) {
+    const auto voxelised{get_voxelised(scene_with_extracted_surfaces(scene))};
     const compute_context cc{};
     const scene_buffers buffers{cc.context, voxelised};
 

@@ -1,4 +1,6 @@
 #include "common/scene_data_loader.h"
+#include "common/conversions.h"
+#include "common/map_to_vector.h"
 #include "common/scene_data.h"
 
 #include "assimp/Exporter.hpp"
@@ -8,74 +10,72 @@
 
 class scene_data_loader::impl final {
 public:
-    impl(const std::string& scene_file) {
-        const auto scene{importer.ReadFile(
+    auto load_from_file(const std::string& scene_file) {
+        const auto scene{importer_.ReadFile(
                 scene_file,
                 (aiProcess_Triangulate | aiProcess_GenSmoothNormals |
                  aiProcess_FlipUVs))};
 
         if (!scene) {
-            throw std::runtime_error(
+            throw std::runtime_error{
                     "scene pointer is null - couldn't load scene for some "
-                    "reason");
+                    "reason"};
         }
 
-        struct scene_data::contents contents {};
-        contents.materials.resize(scene->mNumMaterials);
-        std::transform(scene->mMaterials,
-                       scene->mMaterials + scene->mNumMaterials,
-                       contents.materials.begin(),
-                       [](auto i) {
-                           aiString material_name;
-                           i->Get(AI_MATKEY_NAME, material_name);
-                           return scene_data::material{material_name.C_Str(),
-                                                       surface{}};
-                       });
+        aligned::vector<triangle> triangles{};
+        aligned::vector<cl_float3> vertices{};
 
-        for (auto i = 0u; i != scene->mNumMeshes; ++i) {
-            auto mesh = scene->mMeshes[i];
+        auto materials{map_to_vector(
+                scene->mMaterials,
+                scene->mMaterials + scene->mNumMaterials,
+                [](auto i) {
+                    aiString material_name;
+                    i->Get(AI_MATKEY_NAME, material_name);
+                    return material{material_name.C_Str(), surface{}};
+                })};
 
-            aligned::vector<cl_float3> vertices(mesh->mNumVertices);
-            std::transform(mesh->mVertices,
-                           mesh->mVertices + mesh->mNumVertices,
-                           vertices.begin(),
-                           [](auto i) { return to_cl_float3(i); });
+        for (auto i{0u}; i != scene->mNumMeshes; ++i) {
+            const auto mesh{scene->mMeshes[i]};
 
-            aligned::vector<triangle> triangles(mesh->mNumFaces);
-            std::transform(
-                    mesh->mFaces,
-                    mesh->mFaces + mesh->mNumFaces,
-                    triangles.begin(),
-                    [&mesh, &contents](auto i) {
-                        return triangle{
-                                mesh->mMaterialIndex,
-                                static_cast<cl_uint>(i.mIndices[0] +
-                                                     contents.vertices.size()),
-                                static_cast<cl_uint>(i.mIndices[1] +
-                                                     contents.vertices.size()),
-                                static_cast<cl_uint>(i.mIndices[2] +
-                                                     contents.vertices.size())};
-                    });
+            auto mesh_vertices{
+                    map_to_vector(mesh->mVertices,
+                                  mesh->mVertices + mesh->mNumVertices,
+                                  [](auto i) { return to_cl_float3(i); })};
+            auto mesh_triangles{map_to_vector(
+                    mesh->mFaces, mesh->mFaces + mesh->mNumFaces, [&](auto i) {
+                        return triangle{mesh->mMaterialIndex,
+                                        static_cast<cl_uint>(i.mIndices[0] +
+                                                             vertices.size()),
+                                        static_cast<cl_uint>(i.mIndices[1] +
+                                                             vertices.size()),
+                                        static_cast<cl_uint>(i.mIndices[2] +
+                                                             vertices.size())};
+                    })};
 
-            contents.vertices.insert(
-                    contents.vertices.end(), vertices.begin(), vertices.end());
-            contents.triangles.insert(contents.triangles.end(),
-                                      triangles.begin(),
-                                      triangles.end());
+            vertices.insert(
+                    vertices.end(), mesh_vertices.begin(), mesh_vertices.end());
+            triangles.insert(triangles.end(),
+                             mesh_triangles.begin(),
+                             mesh_triangles.end());
         }
 
-        data.set_contents(std::move(contents));
+        return make_scene_data(std::move(triangles),
+                               std::move(vertices),
+                               std::move(materials));
     }
+
+    impl(const std::string& scene_file)
+            : data_{load_from_file(scene_file)} {}
 
     void save(const std::string& f) const {
-        Assimp::Exporter().Export(importer.GetScene(), "obj", f);
+        Assimp::Exporter().Export(importer_.GetScene(), "obj", f);
     }
 
-    const scene_data& get_scene_data() const { return data; }
+    const scene_data& get_scene_data() const { return data_; }
 
 private:
-    Assimp::Importer importer;
-    scene_data data;
+    Assimp::Importer importer_;
+    scene_data data_;
 };
 
 scene_data_loader::scene_data_loader(scene_data_loader&&) noexcept = default;
@@ -84,7 +84,7 @@ scene_data_loader& scene_data_loader::operator=(scene_data_loader&&) noexcept =
 scene_data_loader::~scene_data_loader() noexcept = default;
 
 scene_data_loader::scene_data_loader(const std::string& scene_file)
-        : pimpl(std::make_unique<impl>(scene_file)) {}
+        : pimpl{std::make_unique<impl>(scene_file)} {}
 
 bool scene_data_loader::is_loaded() const { return pimpl != nullptr; }
 
@@ -96,17 +96,17 @@ void scene_data_loader::save(const std::string& f) const {
     if (is_loaded()) {
         pimpl->save(f);
     } else {
-        throw std::logic_error("can't save if nothing's been loaded");
+        throw std::logic_error{"can't save if nothing's been loaded"};
     }
 }
 
 void scene_data_loader::clear() { pimpl = nullptr; }
 
-const scene_data& scene_data_loader::get_scene_data() const {
+const scene_data_loader::scene_data& scene_data_loader::get_scene_data() const {
     if (is_loaded()) {
         return pimpl->get_scene_data();
     } else {
-        throw std::logic_error(
-                "can't access scene data if nothing's been loaded");
+        throw std::logic_error{
+                "can't access scene data if nothing's been loaded"};
     }
 }

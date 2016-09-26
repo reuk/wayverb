@@ -25,3 +25,4 @@ cmake .. && make && ctest -V
 #cmake .. && make && cd utils/waveguide_distance_test && ./waveguide_distance_test
 
 #cmake .. && make && cd utils/southern2011 && ./southern2011
+#cmake .. && make && cd utils/siltanen2013 && ./siltanen2013

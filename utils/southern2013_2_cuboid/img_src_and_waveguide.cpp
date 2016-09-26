@@ -8,13 +8,13 @@
 #include "waveguide/make_transparent.h"
 #include "waveguide/pcs.h"
 #include "waveguide/postprocessor/node.h"
-#include "waveguide/postprocessor/output_accumulator.h"
 #include "waveguide/preprocessor/hard_source.h"
 #include "waveguide/preprocessor/soft_source.h"
 #include "waveguide/surface_filters.h"
 #include "waveguide/waveguide.h"
 
 #include "common/azimuth_elevation.h"
+#include "common/callback_accumulator.h"
 #include "common/dc_blocker.h"
 #include "common/dsp_vector_ops.h"
 #include "common/frequency_domain_filter.h"
@@ -47,9 +47,10 @@ void run_fast_filter(It begin, It end, const T& callback) {
     std::copy(input_begin, input_begin + sig_size, begin);
 }
 
-img_src_and_waveguide_test::img_src_and_waveguide_test(const scene_data& sd,
-                                                       float speed_of_sound,
-                                                       float acoustic_impedance)
+img_src_and_waveguide_test::img_src_and_waveguide_test(
+        const generic_scene_data<cl_float3, surface>& sd,
+        float speed_of_sound,
+        float acoustic_impedance)
         : voxels_and_mesh_{waveguide::compute_voxels_and_mesh(
                   compute_context_,
                   sd,
@@ -79,6 +80,7 @@ audio img_src_and_waveguide_test::operator()(
     const auto directions{get_random_directions(10000)};
 
     auto impulses{raytracer::image_source::run<
+            impulse,
             raytracer::image_source::fast_pressure_calculator>(
             directions.begin(),
             directions.end(),
@@ -143,8 +145,8 @@ audio img_src_and_waveguide_test::operator()(
     auto prep{waveguide::preprocessor::make_hard_source(
             input_node, input_signal.begin(), input_signal.end())};
 
-    waveguide::postprocessor::output_accumulator<waveguide::postprocessor::node>
-            postprocessor{output_node};
+    callback_accumulator<float, waveguide::postprocessor::node> postprocessor{
+            output_node};
 
     //  Run the waveguide simulation.
     progress_bar pb{std::cerr, input_signal.size()};

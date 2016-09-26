@@ -1,5 +1,7 @@
 #pragma once
 
+#include "common/conversions.h"
+
 #include "glm/glm.hpp"
 
 namespace util {
@@ -12,12 +14,14 @@ public:
     /// setters/getters
 
     constexpr range()
-            : min_(0)
-            , max_(0) {}
+            : min_{0}
+            , max_{0} {}
 
     constexpr range(const value_type& a, const value_type& b)
-            : min_(glm::min(a, b))
-            , max_(glm::max(a, b)) {}
+            : min_{a}
+            , max_{b} {
+        maintain_invariant();
+    }
 
     constexpr value_type get_min() const { return min_; }
     constexpr value_type get_max() const { return max_; }
@@ -39,7 +43,7 @@ public:
     constexpr range& pad(const value_type& v) {
         min_ -= v;
         max_ += v;
-        maintain_invariant(min_, max_);
+        maintain_invariant();
         return *this;
     }
 
@@ -47,9 +51,15 @@ public:
     void serialize(archive&);
 
 private:
-    void maintain_invariant(const value_type& a, const value_type& b) {
-        min_ = glm::min(a, b);
-        max_ = glm::max(a, b);
+    void maintain_invariant() {
+        using glm::min;
+        using glm::max;
+
+        const auto a{min_};
+        const auto b{max_};
+
+        min_ = min(a, b);
+        max_ = max(a, b);
     }
 
     value_type min_;
@@ -58,7 +68,7 @@ private:
 
 template <typename t>
 range<t> make_range(const t& a, const t& b) {
-    return range<t>(a, b);
+    return range<t>{a, b};
 }
 
 //----------------------------------------------------------------------------//
@@ -76,20 +86,25 @@ constexpr bool operator!=(const range<t>& a, const range<t>& b) {
 
 template <typename t>
 inline range<t> operator+(const range<t>& a, const t& b) {
-    auto ret = a;
+    auto ret{a};
     return ret += b;
 }
 
 template <typename t>
 inline range<t> operator-(const range<t>& a, const t& b) {
-    auto ret = a;
+    auto ret{a};
     return ret -= b;
 }
 
 template <typename t>
 inline auto padded(const range<t>& a, const t& b) {
-    auto ret = a;
+    auto ret{a};
     return ret.pad(b);
+}
+
+template <typename t, typename u>
+inline auto padded(const range<t>& a, const u& b) {
+    return padded(a, t{b});
 }
 
 template <typename t>
@@ -116,10 +131,14 @@ inline auto min_max(it begin, it end) {
         throw std::runtime_error("can't minmax empty range");
     }
 
-    auto mini = *begin, maxi = *begin;
-    for (auto i = begin + 1; i != end; ++i) {
-        mini = glm::min(*i, mini);
-        maxi = glm::max(*i, maxi);
+    using glm::min;
+    using glm::max;
+
+    auto mini{to_vec3(*begin)}, maxi{to_vec3(*begin)};
+    for (auto i{begin + 1}; i != end; ++i) {
+        const auto pt{to_vec3(*i)};
+        mini = min(pt, mini);
+        maxi = max(pt, maxi);
     }
     return make_range(mini, maxi);
 }

@@ -36,9 +36,10 @@ const auto the_rays = get_random_directions(bench_rays);
 TEST(raytrace, new) {
     const compute_context cc{};
 
-    const scene_data scene{scene_data_loader{OBJ_PATH}.get_scene_data()};
-    const voxelised_scene_data voxelised{
-            scene, 5, util::padded(scene.get_aabb(), glm::vec3{0.1})};
+    const auto scene{scene_with_extracted_surfaces(
+            scene_data_loader{OBJ_PATH}.get_scene_data())};
+    const auto voxelised{make_voxelised_scene_data(
+            scene, 5, util::padded(geo::get_aabb(scene), 0.1f))};
 
     auto results{raytracer::run(cc,
                                 voxelised,
@@ -96,16 +97,15 @@ std::array<glm::vec3, num_images(SHELL)> images_for_shell(
 }
 
 TEST(raytrace, same_location) {
-    geo::box box(glm::vec3(0, 0, 0), glm::vec3(4, 3, 6));
-    auto receiver = source;
-    constexpr auto s = 0.9;
-    constexpr auto d = 0.1;
+    geo::box box{glm::vec3{0, 0, 0}, glm::vec3{4, 3, 6}};
+    auto receiver{source};
+    constexpr auto s{0.9};
+    constexpr auto d{0.1};
     constexpr auto surface{make_surface(s, d)};
 
-    auto scene{geo::get_scene_data(box)};
-    scene.set_surfaces(surface);
-    const voxelised_scene_data voxelised(
-            scene, 5, util::padded(scene.get_aabb(), glm::vec3{0.1}));
+    const auto scene{geo::get_scene_data(box, surface)};
+    const auto voxelised{make_voxelised_scene_data(
+            scene, 5, util::padded(geo::get_aabb(scene), 0.1f))};
 
     const compute_context cc;
 
@@ -189,10 +189,9 @@ TEST(raytrace, image_source) {
     //  raytracing method
     const compute_context cc{};
 
-    auto scene{geo::get_scene_data(box)};
-    scene.set_surfaces(surface);
-    const voxelised_scene_data voxelised{
-            scene, 5, util::padded(scene.get_aabb(), glm::vec3{0.1})};
+    const auto scene{geo::get_scene_data(box, surface)};
+    const auto voxelised{make_voxelised_scene_data(
+            scene, 5, util::padded(geo::get_aabb(scene), 0.1f))};
 
     auto results{raytracer::run(cc,
                                 voxelised,

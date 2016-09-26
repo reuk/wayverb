@@ -1,6 +1,7 @@
 #include "waveguide/mesh.h"
 #include "waveguide/pcs.h"
 #include "waveguide/postprocessor/node.h"
+#include "waveguide/preprocessor/hard_source.h"
 #include "waveguide/preprocessor/soft_source.h"
 #include "waveguide/surface_filters.h"
 #include "waveguide/waveguide.h"
@@ -9,20 +10,33 @@
 #include "common/dsp_vector_ops.h"
 #include "common/map_to_vector.h"
 #include "common/progress_bar.h"
+#include "common/sinc.h"
 #include "common/write_audio_file.h"
 
 #include <iostream>
 
+template <typename T>
+void write(const std::string& name, T t, double sample_rate) {
+    const auto do_it{[&](const auto& name) {
+        snd::write(build_string(name, ".wav"), {t}, sample_rate, 16);
+    }};
+
+    do_it(name);
+    normalize(t);
+    do_it(build_string("normalized.", name));
+
+    const auto window{right_hanning(t.size())};
+    elementwise_multiply(t, window);
+    do_it(build_string("windowed.", name));
+}
+
 int main() {
-    const geo::box box{glm::vec3{0}, glm::vec3{25.48, 17.57, 17.13}};
-    const auto sample_rate{10000.0};
+    const geo::box box{glm::vec3{0}, glm::vec3{5.56, 3.97, 2.81}};
+    const auto sample_rate{16000.0};
     const auto speed_of_sound{340.0};
 
-    const glm::vec3 source{10.32, 10.78, 4.49};
-    const glm::vec3 receiver{0.32, 10.78, 4.49};
-
-    const auto time_in_seconds{0.1};
-    const auto time_in_steps{time_in_seconds * sample_rate};
+    const glm::vec3 source{2.09, 2.12, 2.12};
+    const glm::vec3 receiver{2.09, 3.08, 0.96};
 
     const compute_context cc{};
     auto voxels_and_mesh{waveguide::compute_voxels_and_mesh(
@@ -33,19 +47,16 @@ int main() {
             speed_of_sound)};
 
     auto& mesh{std::get<1>(voxels_and_mesh)};
-    mesh.set_coefficients(
-            {waveguide::to_flat_coefficients(make_surface(1, 0))});
+    mesh.set_coefficients({waveguide::to_flat_coefficients(
+            make_surface(1 - pow(0.999, 2), 0))});
 
     const auto input_node{compute_index(mesh.get_descriptor(), source)};
     const auto output_node{compute_index(mesh.get_descriptor(), receiver)};
 
-    //auto input_signal{
-    //        waveguide::design_pcs_source(1 << 16, sample_rate, 0.01, 100, 1)
-    //                .signal};
     aligned::vector<float> input_signal{1.0f};
-    input_signal.resize(time_in_steps);
+    input_signal.resize(4.0 * sample_rate, 0.0f);
 
-    auto prep{waveguide::preprocessor::make_soft_source(
+    auto prep{waveguide::preprocessor::make_hard_source(
             input_node, input_signal.begin(), input_signal.end())};
 
     callback_accumulator<float, waveguide::postprocessor::node> post{
@@ -61,5 +72,5 @@ int main() {
                    },
                    true);
 
-    snd::write("waveguide.wav", {post.get_output()}, sample_rate, 16);
+    write("waveguide", post.get_output(), sample_rate);
 }

@@ -115,11 +115,12 @@ public:
         }
     }
 
-    scene_data get_scene_data() const { return scene_data_; }
+    auto get_scene_data() const { return scene_data_; }
 
 private:
     geo::box box_{glm::vec3{0}, glm::vec3{5.56, 3.97, 2.81}};
-    scene_data scene_data_{geo::get_scene_data(box_)};
+    generic_scene_data<cl_float3, surface> scene_data_{
+            geo::get_scene_data(box_, make_surface(0, 0))};
     aligned::vector<glm::vec3> sources_{
             // glm::vec3{2.71, 1.89, 1.69},
             // glm::vec3{4.10, 1.39, 1.82},

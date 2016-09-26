@@ -26,21 +26,23 @@
 #endif
 
 namespace {
-auto get_voxelised(const scene_data& sd) {
-    return voxelised_scene_data{
-            sd, 5, util::padded(sd.get_aabb(), glm::vec3{0.3})};
+template <typename Vertex, typename Surface>
+auto get_voxelised(const generic_scene_data<Vertex, Surface>& sd) {
+    return make_voxelised_scene_data(sd, 5, 0.3f);
 }
 
 struct mesh_fixture : public ::testing::Test {
-    auto get_mesh(const voxelised_scene_data& voxelised) {
+    using vsd = voxelised_scene_data<cl_float3, surface>;
+
+    auto get_mesh(const vsd& voxelised) {
         const scene_buffers buffers{cc.context, voxelised};
         return waveguide::compute_mesh(cc, voxelised, 0.1, 340);
     }
 
     const compute_context cc;
     cl::CommandQueue queue{cc.context, cc.device};
-    const voxelised_scene_data voxelised{
-            get_voxelised(scene_data_loader{THE_MODEL}.get_scene_data())};
+    const vsd voxelised{get_voxelised(scene_with_extracted_surfaces(
+            scene_data_loader{THE_MODEL}.get_scene_data()))};
 };
 
 TEST_F(mesh_fixture, locator_index) {

@@ -1,14 +1,14 @@
 #pragma once
 
 #include "common/cl/voxel_structs.h"
-
-class voxelised_scene_data;
+#include "common/spatial_division/voxelised_scene_data.h"
 
 /// Provides a simple utility for loading voxelised scene data to the gpu in
 /// one go.
 class scene_buffers final {
 public:
-    scene_buffers(const cl::Context&, const voxelised_scene_data& scene_data);
+    scene_buffers(const cl::Context&,
+                  const voxelised_scene_data<cl_float3, surface>& scene_data);
 
     cl::Context get_context() const;
 

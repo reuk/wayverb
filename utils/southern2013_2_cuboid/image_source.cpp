@@ -6,10 +6,11 @@
 #include "common/string_builder.h"
 #include "common/write_audio_file.h"
 
-image_source_test::image_source_test(const scene_data& sd,
-                                     float speed_of_sound,
-                                     float acoustic_impedance)
-        : voxelised_{sd, 5, padded(sd.get_aabb(), glm::vec3{0.1})}
+image_source_test::image_source_test(
+        const generic_scene_data<cl_float3, surface>& sd,
+        float speed_of_sound,
+        float acoustic_impedance)
+        : voxelised_{sd, 5, padded(geo::get_aabb(sd), glm::vec3{0.1})}
         , speed_of_sound_{speed_of_sound}
         , acoustic_impedance_{acoustic_impedance} {}
 
@@ -22,6 +23,7 @@ audio image_source_test::operator()(const surface& surface,
 
     const auto sample_rate{44100.0};
     const auto impulses{raytracer::image_source::run<
+            impulse,
             raytracer::image_source::fast_pressure_calculator>(
             directions.begin(),
             directions.end(),

@@ -11,31 +11,6 @@
 
 namespace raytracer {
 
-std::experimental::optional<impulse> get_direct(
-        const glm::vec3& source,
-        const glm::vec3& receiver,
-        const voxelised_scene_data& scene_data) {
-    if (source == receiver) {
-        return std::experimental::nullopt;
-    }
-
-    const auto source_to_receiver{receiver - source};
-    const auto source_to_receiver_length{glm::length(source_to_receiver)};
-    const auto direction{glm::normalize(source_to_receiver)};
-    const geo::ray to_receiver{source, direction};
-
-    const auto intersection{intersects(scene_data, to_receiver)};
-
-    if (!intersection ||
-        (intersection && intersection->inter.t >= source_to_receiver_length)) {
-        return impulse{make_volume_type(1),
-                       to_cl_float3(source),
-                       source_to_receiver_length};
-    }
-
-    return std::experimental::nullopt;
-}
-
 /// This better use random access iterators!
 template <typename It, typename Func>
 void in_chunks(It begin, It end, size_t chunk_size, const Func& f) {
@@ -51,7 +26,7 @@ void in_chunks(It begin, It end, size_t chunk_size, const Func& f) {
 
 std::experimental::optional<results> run(
         const compute_context& cc,
-        const voxelised_scene_data& scene_data,
+        const voxelised_scene_data<cl_float3, surface>& scene_data,
         double speed_of_sound,
         double acoustic_impedance,
         const glm::vec3& source,
@@ -130,7 +105,8 @@ std::experimental::optional<results> run(
 
     //  fetch image source results
     auto img_src_results(
-            image_source::postprocess<image_source::intensity_calculator>(
+            image_source::postprocess<impulse,
+                                      image_source::intensity_calculator>(
                     tree.get_branches(),
                     source,
                     receiver,

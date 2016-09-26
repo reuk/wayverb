@@ -1,14 +1,14 @@
 #include "compressed_waveguide.h"
 
-#include "common/progress_bar.h"
-#include "common/spatial_division/voxelised_scene_data.h"
-
 #include "waveguide/make_transparent.h"
 #include "waveguide/mesh.h"
 #include "waveguide/postprocessor/node.h"
-#include "waveguide/postprocessor/output_accumulator.h"
 #include "waveguide/preprocessor/soft_source.h"
 #include "waveguide/waveguide.h"
+
+#include "common/progress_bar.h"
+#include "common/spatial_division/voxelised_scene_data.h"
+#include "common/callback_accumulator.h"
 
 #include "gtest/gtest.h"
 
@@ -49,10 +49,12 @@ TEST(verify_compensation_signal, verify_compensation_signal_normal) {
 
     const compute_context cc{};
 
-    auto scene_data{geo::get_scene_data(geo::box(glm::vec3(-1), glm::vec3(1)))};
-    scene_data.set_surfaces(make_surface(0.5, 0));
-    const voxelised_scene_data voxelised{
-            scene_data, 5, util::padded(scene_data.get_aabb(), glm::vec3{0.1})};
+    auto scene_data{geo::get_scene_data(geo::box(glm::vec3(-1), glm::vec3(1)),
+                                        make_surface(0.5, 0))};
+    const auto voxelised{make_voxelised_scene_data(
+            scene_data,
+            5,
+            util::padded(geo::get_aabb(scene_data), glm::vec3{0.1}))};
 
     const auto model{
             waveguide::compute_mesh(cc, voxelised, 0.05, speed_of_sound)};
@@ -64,8 +66,7 @@ TEST(verify_compensation_signal, verify_compensation_signal_normal) {
         auto prep{waveguide::preprocessor::make_soft_source(
                 receiver_index, transparent.begin(), transparent.end())};
 
-        waveguide::postprocessor::output_accumulator<
-                waveguide::postprocessor::node>
+        callback_accumulator<float, waveguide::postprocessor::node>
                 postprocessor{receiver_index};
 
         progress_bar pb(std::cout, transparent.size());

@@ -1,11 +1,11 @@
 #include "waveguide/mesh.h"
 #include "waveguide/pcs.h"
 #include "waveguide/postprocessor/node.h"
-#include "waveguide/postprocessor/output_accumulator.h"
 #include "waveguide/preprocessor/soft_source.h"
 #include "waveguide/surface_filters.h"
 #include "waveguide/waveguide.h"
 
+#include "common/callback_accumulator.h"
 #include "common/dsp_vector_ops.h"
 #include "common/map_to_vector.h"
 #include "common/progress_bar.h"
@@ -41,7 +41,11 @@ int main() {
     }
 
     auto voxels_and_mesh{waveguide::compute_voxels_and_mesh(
-            cc, geo::get_scene_data(box), source, sample_rate, speed_of_sound)};
+            cc,
+            geo::get_scene_data(box, make_surface(0, 0)),
+            source,
+            sample_rate,
+            speed_of_sound)};
 
     auto& mesh{std::get<1>(voxels_and_mesh)};
     mesh.set_coefficients(
@@ -56,8 +60,8 @@ int main() {
         if (!waveguide::is_inside(mesh, receiver_index)) {
             throw std::runtime_error{"receiver is outside of mesh!"};
         }
-        return waveguide::postprocessor::output_accumulator<
-                waveguide::postprocessor::node>{receiver_index};
+        return callback_accumulator<float, waveguide::postprocessor::node>{
+                receiver_index};
     })};
 
     //  Set up a source signal.

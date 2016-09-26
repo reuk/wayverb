@@ -34,7 +34,7 @@ void mesh::set_coefficients(
 //----------------------------------------------------------------------------//
 
 mesh compute_mesh(const compute_context& cc,
-                  const voxelised_scene_data& voxelised,
+                  const voxelised_scene_data<cl_float3, surface>& voxelised,
                   float mesh_spacing,
                   float speed_of_sound) {
     const setup_program program{cc};
@@ -111,19 +111,19 @@ mesh compute_mesh(const compute_context& cc,
     return {desc, std::move(v)};
 }
 
-std::tuple<voxelised_scene_data, mesh> compute_voxels_and_mesh(
-        const compute_context& cc,
-        const scene_data& scene,
-        const glm::vec3& anchor,
-        double sample_rate,
-        double speed_of_sound) {
+std::tuple<voxelised_scene_data<cl_float3, surface>, mesh>
+compute_voxels_and_mesh(const compute_context& cc,
+                        const generic_scene_data<cl_float3, surface>& scene,
+                        const glm::vec3& anchor,
+                        double sample_rate,
+                        double speed_of_sound) {
     const auto mesh_spacing{
             waveguide::config::grid_spacing(speed_of_sound, 1 / sample_rate)};
-    auto voxelised{voxelised_scene_data{
+    auto voxelised{make_voxelised_scene_data(
             scene,
             5,
             waveguide::compute_adjusted_boundary(
-                    scene.get_aabb(), anchor, mesh_spacing)}};
+                    geo::get_aabb(scene), anchor, mesh_spacing))};
     auto mesh{compute_mesh(cc, voxelised, mesh_spacing, speed_of_sound)};
     return std::make_tuple(std::move(voxelised), std::move(mesh));
 }

@@ -4,13 +4,13 @@
 #include "waveguide/make_transparent.h"
 #include "waveguide/mesh.h"
 #include "waveguide/postprocessor/node.h"
-#include "waveguide/postprocessor/output_accumulator.h"
 #include "waveguide/preprocessor/soft_source.h"
 #include "waveguide/surface_filters.h"
 #include "waveguide/waveguide.h"
 
 #include "common/almost_equal.h"
 #include "common/azimuth_elevation.h"
+#include "common/callback_accumulator.h"
 #include "common/cl/common.h"
 #include "common/conversions.h"
 #include "common/map_to_vector.h"
@@ -65,18 +65,19 @@ private:
             const geo::box& boundary,
             const aligned::vector<glm::vec3>& receivers,
             const coefficients_canonical& coefficients) const {
-        const auto scene_data{geo::get_scene_data(boundary)};
+        const auto scene_data{
+                geo::get_scene_data(boundary, make_surface(0, 0))};
         const auto spacing{waveguide::config::grid_spacing(
                 speed_of_sound, 1 / (filter_frequency * 4))};
 
         auto mesh{waveguide::compute_mesh(
                 cc_,
-                voxelised_scene_data(scene_data,
-                                     5,
-                                     waveguide::compute_adjusted_boundary(
-                                             scene_data.get_aabb(),
-                                             source_position_,
-                                             spacing)),
+                make_voxelised_scene_data(scene_data,
+                                          5,
+                                          waveguide::compute_adjusted_boundary(
+                                                  geo::get_aabb(scene_data),
+                                                  source_position_,
+                                                  spacing)),
                 spacing,
                 speed_of_sound)};
         mesh.set_coefficients({coefficients});
@@ -94,8 +95,8 @@ private:
             if (!waveguide::is_inside(mesh, receiver_index)) {
                 throw std::runtime_error{"receiver is outside of mesh!"};
             }
-            return waveguide::postprocessor::output_accumulator<
-                    waveguide::postprocessor::node>{receiver_index};
+            return callback_accumulator<float, waveguide::postprocessor::node>{
+                    receiver_index};
         })};
 
         progress_bar pb{std::cout, input.size()};

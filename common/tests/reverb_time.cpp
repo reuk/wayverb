@@ -1,4 +1,5 @@
 #include "common/reverb_time.h"
+#include "common/geo/box.h"
 #include "common/scene_data_loader.h"
 
 #include "gtest/gtest.h"
@@ -52,7 +53,7 @@ TEST(reverb_time, triangles_are_oriented) {
     }
 
     for (const auto& box : test_boxes) {
-        const auto scene{geo::get_scene_data(box)};
+        const auto scene{geo::get_scene_data(box, make_surface(0.5, 0.5))};
         const auto& triangles{scene.get_triangles()};
         ASSERT_TRUE(triangles_are_oriented(triangles.begin(), triangles.end()));
     }
@@ -61,21 +62,21 @@ TEST(reverb_time, triangles_are_oriented) {
 TEST(reverb_time, area) {
     {
         const geo::box box{glm::vec3{-1}, glm::vec3{0}};
-        ASSERT_EQ(area(geo::get_scene_data(box)), 6);
+        ASSERT_EQ(area(geo::get_scene_data(box, 0)), 6);
     }
     {
         const geo::box box{glm::vec3{-1}, glm::vec3{1}};
-        ASSERT_EQ(area(geo::get_scene_data(box)), 24);
+        ASSERT_EQ(area(geo::get_scene_data(box, 0)), 24);
     }
     {
         const geo::box box{glm::vec3{0}, glm::vec3{1}};
-        ASSERT_EQ(area(geo::get_scene_data(box)), 6);
+        ASSERT_EQ(area(geo::get_scene_data(box, 0)), 6);
     }
 }
 
 TEST(reverb_time, room_volume) {
     for (const auto& box : test_boxes) {
-        const auto scene{geo::get_scene_data(box)};
+        const auto scene{geo::get_scene_data(box, 0)};
         const auto& triangles{scene.get_triangles()};
         ASSERT_TRUE(triangles_are_oriented(triangles.begin(), triangles.end()));
         const auto dim{dimensions(box)};
@@ -143,46 +144,48 @@ accuracy);
 
 TEST(reverb_time, sabine) {
     //    const auto air_absorption(estimate_air_intensity_absorption(0.3));
-//    const volume_type air_absorption{{0.1 * 0.001,
-//                                      0.2 * 0.001,
-//                                      0.5 * 0.001,
-//                                      1.1 * 0.001,
-//                                      2.7 * 0.001,
-//                                      9.4 * 0.001,
-//                                      29 * 0.001,
-//                                      50 * 0.001}};
+    //    const volume_type air_absorption{{0.1 * 0.001,
+    //                                      0.2 * 0.001,
+    //                                      0.5 * 0.001,
+    //                                      1.1 * 0.001,
+    //                                      2.7 * 0.001,
+    //                                      9.4 * 0.001,
+    //                                      29 * 0.001,
+    //                                      50 * 0.001}};
 
     const geo::box southern_box{glm::vec3{0, 0, 0},
                                 glm::vec3{5.56, 3.97, 2.81}};
-    auto southern_scene{geo::get_scene_data(southern_box)};
+    auto southern_scene{geo::get_scene_data(southern_box, make_surface(0, 0))};
 
+    {
         const volume_type air_absorption{};
-    for (auto i{0u}; i != 10; ++i) {
-        const auto reflection_coefficient{i * 0.1};
-        southern_scene.set_surfaces(
-                make_surface(1 - pow(reflection_coefficient, 2), 0));
-        const auto t30{sabine_reverb_time(southern_scene, air_absorption) / 2};
-        std::cout << "reflection: " << reflection_coefficient
-                  << ", t30: " << t30.s[4] << '\n';
+        for (auto i{0u}; i != 10; ++i) {
+            const auto reflection_coefficient{i * 0.1};
+            southern_scene.set_surfaces(
+                    make_surface(1 - pow(reflection_coefficient, 2), 0));
+            const auto t30{sabine_reverb_time(southern_scene, air_absorption) /
+                           2};
+            std::cout << "reflection: " << reflection_coefficient
+                      << ", t30: " << t30.s[4] << '\n';
+        }
     }
 
     for (const auto& box : test_boxes) {
-        auto scene{geo::get_scene_data(box)};
+        const auto air_absorption{0.0};
+        const auto t0{sabine_reverb_time(geo::get_scene_data(box, 0.0001),
+                                         air_absorption)};
 
-        scene.set_surfaces(make_surface(0.0001, 0));
-        const auto t0{sabine_reverb_time(scene, air_absorption)};
+        const auto t1{sabine_reverb_time(geo::get_scene_data(box, 0.001),
+                                         air_absorption)};
 
-        scene.set_surfaces(make_surface(0.001, 0));
-        const auto t1{sabine_reverb_time(scene, air_absorption)};
+        const auto t2{sabine_reverb_time(geo::get_scene_data(box, 0.01),
+                                         air_absorption)};
 
-        scene.set_surfaces(make_surface(0.01, 0));
-        const auto t2{sabine_reverb_time(scene, air_absorption)};
+        const auto t3{sabine_reverb_time(geo::get_scene_data(box, 0.1),
+                                         air_absorption)};
 
-        scene.set_surfaces(make_surface(0.1, 0));
-        const auto t3{sabine_reverb_time(scene, air_absorption)};
-
-        ASSERT_TRUE(all(t1 < t0));
-        ASSERT_TRUE(all(t2 < t1));
-        ASSERT_TRUE(all(t3 < t2));
+        ASSERT_LT(t1, t0);
+        ASSERT_LT(t2, t1);
+        ASSERT_LT(t3, t2);
     }
 }

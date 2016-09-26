@@ -3,10 +3,9 @@
 #include "common/geo/geometric.h"
 #include "common/geo/triangle_vec.h"
 #include "common/range.h"
+#include "common/scene_data.h"
 
 #include "glm/glm.hpp"
-
-class scene_data;
 
 namespace geo {
 
@@ -29,7 +28,32 @@ std::experimental::optional<float> intersects(const box& b, const ray& ray);
 /// (t0, t1) along the ray.
 bool intersects(const box& b, const ray& ray, float t0, float t1);
 
-scene_data get_scene_data(const box& b);
+template <typename Surface>
+auto get_scene_data(const box& b, Surface s) {
+    return make_scene_data(
+            aligned::vector<triangle>{{0, 0, 1, 5},
+                                      {0, 0, 5, 4},
+                                      {0, 1, 0, 3},
+                                      {0, 0, 2, 3},
+                                      {0, 2, 0, 6},
+                                      {0, 0, 4, 6},
+                                      {0, 5, 1, 7},
+                                      {0, 1, 3, 7},
+                                      {0, 3, 2, 7},
+                                      {0, 2, 6, 7},
+                                      {0, 4, 5, 7},
+                                      {0, 6, 4, 7}},
+            aligned::vector<cl_float3>{
+                    {{b.get_min().x, b.get_min().y, b.get_min().z}},
+                    {{b.get_max().x, b.get_min().y, b.get_min().z}},
+                    {{b.get_min().x, b.get_max().y, b.get_min().z}},
+                    {{b.get_max().x, b.get_max().y, b.get_min().z}},
+                    {{b.get_min().x, b.get_min().y, b.get_max().z}},
+                    {{b.get_max().x, b.get_min().y, b.get_max().z}},
+                    {{b.get_min().x, b.get_max().y, b.get_max().z}},
+                    {{b.get_max().x, b.get_max().y, b.get_max().z}}},
+            aligned::vector<Surface>{std::move(s)});
+}
 
 constexpr glm::vec3 mirror_on_axis(const glm::vec3& v,
                                    const glm::vec3& pt,
@@ -50,6 +74,12 @@ constexpr glm::vec3 mirror(const box& b, const glm::vec3& v, wall w) {
         case wall::nz: return mirror_on_axis(v, b.get_min(), direction::z);
         case wall::pz: return mirror_on_axis(v, b.get_max(), direction::z);
     }
+}
+
+template <typename Vertex, typename Surface>
+auto get_aabb(const generic_scene_data<Vertex, Surface>& scene) {
+    return util::min_max(scene.get_vertices().begin(),
+                         scene.get_vertices().end());
 }
 
 glm::vec3 mirror_inside(const box& b, const glm::vec3& v, direction d);

@@ -1,9 +1,9 @@
 #include "waveguide/mesh.h"
 #include "waveguide/postprocessor/microphone.h"
-#include "waveguide/postprocessor/output_accumulator.h"
 #include "waveguide/preprocessor/gaussian.h"
 #include "waveguide/waveguide.h"
 
+#include "common/callback_accumulator.h"
 #include "common/progress_bar.h"
 
 #include "gtest/gtest.h"
@@ -19,9 +19,8 @@ TEST(nan_in_waveguide, nan_in_waveguide) {
 
     const auto s{1.5f};
     const geo::box box{glm::vec3{-s}, glm::vec3{s}};
-    auto scene_data{geo::get_scene_data(box)};
     const auto r{0.9f};
-    scene_data.set_surfaces(make_surface(r, r));
+    auto scene_data{geo::get_scene_data(box, make_surface(r, r))};
 
     constexpr auto speed_of_sound{340.0};
     constexpr auto acoustic_impedance{400.0};
@@ -48,8 +47,8 @@ TEST(nan_in_waveguide, nan_in_waveguide) {
     const waveguide::preprocessor::gaussian generator{
             model.get_descriptor(), source, std::sqrt(variance), steps};
 
-    waveguide::postprocessor::output_accumulator<
-            waveguide::postprocessor::microphone>
+    callback_accumulator<waveguide::postprocessor::microphone::output,
+                         waveguide::postprocessor::microphone>
             postprocessor{model.get_descriptor(),
                           waveguide_sr,
                           acoustic_impedance / speed_of_sound,

@@ -16,8 +16,7 @@ TEST(engine, engine) {
     constexpr auto output_sample_rate{96000.0};
     constexpr auto surface{make_surface(0.9, 0.9)};
 
-    auto scene_data{geo::get_scene_data(box)};
-    scene_data.set_surfaces(surface);
+    const auto scene_data{geo::get_scene_data(box, surface)};
 
     constexpr auto waveguide_sample_rate{8000};
     //    constexpr auto waveguide_filter_frequency = 4000;

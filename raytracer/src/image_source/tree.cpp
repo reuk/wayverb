@@ -18,6 +18,8 @@ geo::ray construct_ray(const glm::vec3& from, const glm::vec3& to) {
 
 //----------------------------------------------------------------------------//
 
+using vsd = voxelised_scene_data<cl_float3, surface>;
+
 class traversal_callback final {
 public:
     struct state final {
@@ -27,7 +29,7 @@ public:
 
     traversal_callback(const glm::vec3& source,
                        const glm::vec3& receiver,
-                       const voxelised_scene_data& voxelised,
+                       const vsd& voxelised,
                        const postprocessor& callback,
                        aligned::vector<state>& state,
                        const path_element& element)
@@ -44,7 +46,9 @@ public:
         if (element.visible) {
             if (const auto valid{find_valid_path(
                         source_, receiver_, voxelised_, state_)}) {
-                callback_(valid->image_source, valid->intersections);
+                callback_(valid->image_source,
+                          valid->intersections.begin(),
+                          valid->intersections.end());
             }
         }
     }
@@ -57,7 +61,7 @@ public:
     }
 
 private:
-    static auto get_triangle(const voxelised_scene_data& voxelised,
+    static auto get_triangle(const vsd& voxelised,
                              const cl_uint triangle_index) {
         const auto& scene{voxelised.get_scene_data()};
         return geo::get_triangle_vec3(scene.get_triangles()[triangle_index],
@@ -65,14 +69,14 @@ private:
     }
 
     static glm::vec3 find_image_source(const glm::vec3& previous_source,
-                                       const voxelised_scene_data& voxelised,
+                                       const vsd& voxelised,
                                        const cl_uint triangle_index) {
         return geo::mirror(previous_source,
                            get_triangle(voxelised, triangle_index));
     }
 
     static state path_element_to_state(const glm::vec3& source,
-                                       const voxelised_scene_data& voxelised,
+                                       const vsd& voxelised,
                                        const aligned::vector<state>& state,
                                        const path_element& p) {
         return {p.index,
@@ -90,7 +94,7 @@ private:
     static std::experimental::optional<valid_path> find_valid_path(
             const glm::vec3& source,
             const glm::vec3& receiver,
-            const voxelised_scene_data& voxelised,
+            const vsd& voxelised,
             const aligned::vector<state>& state) {
         //  In weird scenarios the image source might end up getting plastered
         //  over the receiver, which is bad, so we quit with null in that case.
@@ -158,7 +162,7 @@ private:
 
     const glm::vec3& source_;
     const glm::vec3& receiver_;
-    const voxelised_scene_data& voxelised_;
+    const vsd& voxelised_;
 
     const postprocessor& callback_;
     aligned::vector<state>& state_;
@@ -186,7 +190,7 @@ const multitree<path_element>::branches_type& tree::get_branches() const {
 void find_valid_paths(const multitree<path_element>& tree,
                       const glm::vec3& source,
                       const glm::vec3& receiver,
-                      const voxelised_scene_data& voxelised,
+                      const vsd& voxelised,
                       const postprocessor& callback) {
     //  set up a state array
     aligned::vector<traversal_callback::state> state{};

@@ -28,17 +28,15 @@ const auto badly_behaved_rays{aligned::vector<geo::ray>{
         geo::ray{glm::vec3{0, 0.000000596046448, 1.53889632},
                  glm::vec3{0.434765905, -0.869531512, 0.234293744}}}};
 
-auto get_voxelised(scene_data scene) {
-    scene.set_surfaces(surface{volume_type{{1, 1, 1, 1, 1, 1, 1, 1}},
-                               volume_type{{0, 0, 0, 0, 0, 0, 0, 0}}});
-    return voxelised_scene_data{
-            scene, 5, util::padded(scene.get_aabb(), glm::vec3{0.1})};
+template <typename Scene>
+auto get_voxelised(Scene scene) {
+    return make_voxelised_scene_data(scene, 5, 0.1f);
 }
 
 struct reflector_fixture : public ::testing::Test {
-    const geo::box box{glm::vec3(0, 0, 0), glm::vec3(4, 3, 6)};
-    const voxelised_scene_data voxelised{
-            get_voxelised(geo::get_scene_data(box))};
+    const geo::box box{glm::vec3{0}, glm::vec3{4, 3, 6}};
+    const voxelised_scene_data<cl_float3, surface> voxelised{
+            get_voxelised(geo::get_scene_data(box, make_surface(0, 0)))};
     const compute_context cc{};
     const scene_buffers buffers{cc.context, voxelised};
 

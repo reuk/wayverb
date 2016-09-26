@@ -37,6 +37,10 @@ constexpr auto make_surface(float s, float d) {
     return surface{make_volume_type(s), make_volume_type(d)};
 }
 
+inline auto get_specular_absorption(const surface& s) {
+    return s.specular_absorption;
+}
+
 //----------------------------------------------------------------------------//
 
 struct alignas(1 << 3) triangle final {

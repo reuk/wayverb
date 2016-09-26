@@ -1,58 +1,16 @@
 #include "raytracer/postprocess.h"
-
 #include "raytracer/attenuator.h"
 
 #include "common/decibels.h"
 #include "common/dsp_vector_ops.h"
 #include "common/map_to_vector.h"
+#include "common/specular_absorption_extraction_trait.h"
 
 namespace raytracer {
 
 /// Keep tracing until power has fallen by 60 decibels.
-size_t compute_optimum_reflection_number(float absorption) {
-    return -3 / std::log10(1 - absorption);
-}
-
-float min_absorption(const surface& surface) {
-    return min(surface.specular_absorption);
-}
-
-float min_absorption(const aligned::vector<surface>& surfaces) {
-    if (surfaces.empty()) {
-        throw std::runtime_error("can't find min absorption of empty vector");
-    }
-    return std::accumulate(surfaces.begin() + 1,
-                           surfaces.end(),
-                           min_absorption(surfaces.front()),
-                           [](const auto& i, const auto& j) {
-                               using std::max;
-                               return max(i, min_absorption(j));
-                           });
-}
-
-float min_absorption(const scene_data::material& material) {
-    return min_absorption(material.surface);
-}
-
-float min_absorption(const aligned::vector<scene_data::material>& materials) {
-    if (materials.empty()) {
-        throw std::runtime_error("can't find min absorption of empty vector");
-    }
-    return std::accumulate(materials.begin() + 1,
-                           materials.end(),
-                           min_absorption(materials.front()),
-                           [](const auto& i, const auto& j) {
-                               return std::max(i, min_absorption(j));
-                           });
-}
-
-size_t compute_optimum_reflection_number(
-        const aligned::vector<surface>& surfaces) {
-    return compute_optimum_reflection_number(min_absorption(surfaces));
-}
-
-size_t compute_optimum_reflection_number(const scene_data& scene) {
-    return compute_optimum_reflection_number(scene.get_surfaces());
+size_t compute_optimum_reflection_number(double absorption) {
+    return std::ceil(-3 / std::log10(1 - absorption));
 }
 
 /// Find the index of the last sample with an amplitude of minVol or higher,

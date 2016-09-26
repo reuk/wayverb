@@ -47,12 +47,14 @@ private:
 };
 
 using postprocessor = std::function<void(
-        const glm::vec3&, const aligned::vector<reflection_metadata>&)>;
+        const glm::vec3&,
+        aligned::vector<reflection_metadata>::const_iterator,
+        aligned::vector<reflection_metadata>::const_iterator)>;
 
 void find_valid_paths(const multitree<path_element>& tree,
                       const glm::vec3& source,
                       const glm::vec3& receiver,
-                      const voxelised_scene_data& voxelised,
+                      const voxelised_scene_data<cl_float3, surface>& voxelised,
                       const postprocessor& callback);
 
 }  // namespace image_source

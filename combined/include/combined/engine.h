@@ -5,6 +5,7 @@
 #include "raytracer/cl/structs.h"
 
 #include "common/aligned/vector.h"
+#include "common/scene_data.h"
 
 #include "glm/glm.hpp"
 
@@ -17,7 +18,6 @@ struct receiver_settings;
 }  // namespace model
 
 class compute_context;
-class scene_data;
 
 //  engine  ------------------------------------------------------------------//
 
@@ -44,6 +44,8 @@ public:
 
 class engine final {
 public:
+    using scene_data = generic_scene_data<cl_float3, surface>;
+
     engine(const compute_context& compute_context,
            const scene_data& scene_data,
            const glm::vec3& source,

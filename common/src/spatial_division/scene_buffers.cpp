@@ -1,9 +1,11 @@
 #include "common/spatial_division/scene_buffers.h"
+#include "common/cl/common.h"
 #include "common/conversions.h"
 #include "common/spatial_division/voxelised_scene_data.h"
 
-scene_buffers::scene_buffers(const cl::Context& context,
-                             const voxelised_scene_data& scene_data)
+scene_buffers::scene_buffers(
+        const cl::Context& context,
+        const voxelised_scene_data<cl_float3, surface>& scene_data)
         : context(context)
         , voxel_index_buffer(load_to_buffer(
                   context, get_flattened(scene_data.get_voxels()), true))

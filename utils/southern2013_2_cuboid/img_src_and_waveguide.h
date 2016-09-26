@@ -5,7 +5,7 @@
 
 class img_src_and_waveguide_test final {
 public:
-    img_src_and_waveguide_test(const scene_data& sd,
+    img_src_and_waveguide_test(const generic_scene_data<cl_float3, surface>& sd,
                                float speed_of_sound,
                                float acoustic_impedance);
 
@@ -15,8 +15,9 @@ public:
 
 private:
     compute_context compute_context_{};
-    double waveguide_sample_rate_{9000.0};
-    std::tuple<voxelised_scene_data, waveguide::mesh> voxels_and_mesh_;
+    double waveguide_sample_rate_{18000.0};
+    std::tuple<voxelised_scene_data<cl_float3, surface>, waveguide::mesh>
+            voxels_and_mesh_;
     float speed_of_sound_;
     float acoustic_impedance_;
 };

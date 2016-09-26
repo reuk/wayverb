@@ -8,11 +8,11 @@
 namespace raytracer {
 namespace image_source {
 
-template <typename calculator, typename It>  /// iterator over ray directions
+template <typename Ret, typename Func, typename It>  /// iterator over ray directions
 auto run(It begin,
          It end,
          const compute_context& cc,
-         const voxelised_scene_data& voxelised,
+         const voxelised_scene_data<cl_float3, surface>& voxelised,
          const glm::vec3& source,
          const glm::vec3& receiver,
          float speed_of_sound,
@@ -51,11 +51,11 @@ auto run(It begin,
         }
     }
 
-    return postprocess<calculator>(tree.get_branches(),
-                                   source,
-                                   receiver,
-                                   voxelised,
-                                   acoustic_impedance);
+    return postprocess<Ret, Func>(tree.get_branches(),
+                                  source,
+                                  receiver,
+                                  voxelised,
+                                  acoustic_impedance);
 }
 
 }  // namespace image_source
