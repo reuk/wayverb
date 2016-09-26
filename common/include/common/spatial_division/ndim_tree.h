@@ -1,8 +1,8 @@
 #pragma once
 
 #include "common/geo/box.h"
-#include "common/stl_wrappers.h"
 #include "common/indexing.h"
+#include "common/stl_wrappers.h"
 
 #include <memory>
 
@@ -47,17 +47,17 @@ public:
               const item_checker& callback,
               const aligned::vector<size_t>& to_test,
               const aabb_type& aabb)
-            : aabb(aabb)
-            , items(compute_contained_items(callback, to_test, aabb))
-            , nodes(compute_nodes(depth, callback, items, aabb)) {}
+            : aabb_{aabb}
+            , items_{compute_contained_items(callback, to_test, aabb)}
+            , nodes_{compute_nodes(depth, callback, items_, aabb)} {}
 
-    aabb_type get_aabb() const { return aabb; }
-    bool has_nodes() const { return nodes != nullptr; }
-    const node_array& get_nodes() const { return *nodes; }
-    aligned::vector<size_t> get_items() const { return items; }
+    aabb_type get_aabb() const { return aabb_; }
+    bool has_nodes() const { return nodes_ != nullptr; }
+    const node_array& get_nodes() const { return *nodes_; }
+    aligned::vector<size_t> get_items() const { return items_; }
 
     size_t get_side() const {
-        return nodes ? 2 * nodes->front().get_side() : 1;
+        return nodes_ ? 2 * nodes_->front().get_side() : 1;
     }
 
 private:
@@ -91,7 +91,7 @@ private:
         return ret;
     }
 
-    aabb_type aabb;                     //  the bounding box of the node
-    aligned::vector<size_t> items;      //  indices of contained items
-    std::unique_ptr<node_array> nodes;  //  contained nodes
+    aabb_type aabb_;                     //  the bounding box of the node
+    aligned::vector<size_t> items_;      //  indices of contained items
+    std::unique_ptr<node_array> nodes_;  //  contained nodes
 };

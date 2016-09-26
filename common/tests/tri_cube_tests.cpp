@@ -205,7 +205,7 @@ TEST(tri_cube_tests, check_line) {
     }
 }
 
-TEST(point_triangle_intersection, point_triangle_intersection) {
+TEST(tri_cube_tests, point_triangle_intersection) {
     ASSERT_EQ(geo::where::inside,
               geo::point_triangle_intersection(
                       glm::vec3(0, 0, 0),
@@ -260,7 +260,7 @@ TEST(point_triangle_intersection, point_triangle_intersection) {
     }
 }
 
-TEST(old, old) {
+TEST(tri_cube_tests, old) {
     auto edge = 0.5f;
     ASSERT_EQ(INSIDE,
               t_c_intersection(Triangle3{Point3{-10, -5, edge},
@@ -329,7 +329,7 @@ TEST(old, old) {
                                          Point3{-outside, 5, 10}}));
 }
 
-TEST(specific, specific) {
+TEST(tri_cube_tests, specific) {
     auto edge = 0.5;
     ASSERT_EQ(geo::where::inside,
               geo::t_c_intersection(
@@ -489,5 +489,33 @@ TEST(specific, specific) {
 
         ASSERT_EQ(false, geo::overlaps(aabb, v0));
         ASSERT_EQ(false, geo::overlaps(aabb, v1));
+    }
+}
+
+TEST(tri_cube_tests, comparison) {
+    std::default_random_engine engine{std::random_device{}()};
+    std::uniform_real_distribution<float> dist{-10, 10};
+
+    for (auto i{0ul}; i != 1 << 20; ++i) {
+        const auto x0{dist(engine)};
+        const auto y0{dist(engine)};
+        const auto z0{dist(engine)};
+
+        const auto x1{dist(engine)};
+        const auto y1{dist(engine)};
+        const auto z1{dist(engine)};
+
+        const auto x2{dist(engine)};
+        const auto y2{dist(engine)};
+        const auto z2{dist(engine)};
+
+        ASSERT_EQ(geo::overlaps(geo::box{glm::vec3{-0.5}, glm::vec3{0.5}},
+                                geo::triangle_vec3{{glm::vec3{x0, y0, z0},
+                                                    glm::vec3{x1, y1, z1},
+                                                    glm::vec3{x2, y2, z2}}}),
+                  t_c_intersection(Triangle3{Point3{x0, y0, z0},
+                                             Point3{x1, y1, z1},
+                                             Point3{x2, y2, z2}}) == INSIDE)
+                << i;
     }
 }

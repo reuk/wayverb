@@ -2,6 +2,6 @@
 
 int main(int argc, char** argv) {
     ::testing::InitGoogleTest(&argc, argv);
-    //::testing::GTEST_FLAG(filter) = "*dc_blocker*";
+    //::testing::GTEST_FLAG(filter) = "*voxel*";
     return RUN_ALL_TESTS();
 }

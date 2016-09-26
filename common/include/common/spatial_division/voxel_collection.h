@@ -96,21 +96,21 @@ public:
 
     /// Construct directly from an existing tree.
     voxel_collection(const ndim_tree<n>& tree)
-            : aabb(tree.get_aabb())
-            , data(detail::voxelise(tree)) {}
+            : aabb_{tree.get_aabb()}
+            , data_{detail::voxelise(tree)} {}
 
-    aabb_type get_aabb() const { return aabb; }
-    size_t get_side() const { return data.size(); }
+    aabb_type get_aabb() const { return aabb_; }
+    size_t get_side() const { return data_.size(); }
     const auto& get_voxel(indexing::index_t<n> i) const {
-        return detail::index<n>(data, i);
+        return detail::index<n>(data_, i);
     }
     auto& get_voxel(indexing::index_t<n> i) {
-        return detail::index<n>(data, i);
+        return detail::index<n>(data_, i);
     }
 
 private:
-    aabb_type aabb;
-    data_type data;
+    aabb_type aabb_;
+    data_type data_;
 };
 
 //----------------------------------------------------------------------------//

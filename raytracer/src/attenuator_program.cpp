@@ -31,7 +31,7 @@ kernel void microphone_kernel(float3 mic_pos,
         const float ATTENUATION = microphone_attenuation(
             &speaker, get_direction(mic_pos, thisImpulse->position));
         impulsesOut[i] = (attenuated_impulse){thisImpulse->volume * ATTENUATION,
-                                             thisImpulse->time};
+                                             thisImpulse->distance};
     }
 }
 
@@ -101,7 +101,7 @@ kernel void hrtf_kernel(float3 mic_pos,
 
         impulsesOut[i] =
             (attenuated_impulse){thisImpulse->volume * ATTENUATION,
-                                thisImpulse->time + diff * SECONDS_PER_METER};
+                                 thisImpulse->distance + diff};
     }
 }
 

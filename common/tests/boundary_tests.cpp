@@ -15,9 +15,8 @@
 #endif
 
 TEST(boundary, tunnel) {
-    const scene_data_loader scene_loader{OBJ_PATH_TUNNEL};
-    const auto scene{scene_loader.get_scene_data()};
-    const auto boundary{make_voxelised_scene_data(scene, 5, 2.0f)};
+    const auto boundary{make_voxelised_scene_data(
+            scene_data_loader{OBJ_PATH_TUNNEL}.get_scene_data(), 5, 2.0f)};
 
     const auto centre{util::centre(boundary.get_voxels().get_aabb())};
 
@@ -29,7 +28,7 @@ TEST(boundary, tunnel) {
               1);
 
     {
-        const auto dist = 100;
+        const auto dist{100};
         ASSERT_FALSE(inside(boundary, centre + glm::vec3(dist, 0, 0)));
         ASSERT_FALSE(inside(boundary, centre + glm::vec3(-dist, 0, 0)));
         ASSERT_FALSE(inside(boundary, centre + glm::vec3(0, dist, 0)));
@@ -52,7 +51,7 @@ TEST(boundary, tunnel) {
 
     ASSERT_TRUE(inside(boundary, centre));
     {
-        const auto dist = 0.1;
+        const auto dist{0.1};
         ASSERT_TRUE(inside(boundary, centre + glm::vec3(dist, 0, 0)));
         ASSERT_TRUE(inside(boundary, centre + glm::vec3(-dist, 0, 0)));
         ASSERT_TRUE(inside(boundary, centre + glm::vec3(0, dist, 0)));
@@ -63,13 +62,12 @@ TEST(boundary, tunnel) {
 }
 
 TEST(boundary, bedroom) {
-    const scene_data_loader scene_loader{OBJ_PATH_BEDROOM};
-    const auto scene{scene_loader.get_scene_data()};
-    const auto boundary{make_voxelised_scene_data(scene, 5, 0.1f)};
+    const auto boundary{make_voxelised_scene_data(
+            scene_data_loader{OBJ_PATH_BEDROOM}.get_scene_data(), 5, 0.1f)};
 
-    const auto centre = util::centre(boundary.get_voxels().get_aabb());
+    const auto centre{util::centre(boundary.get_voxels().get_aabb())};
 
-    const auto dist = 100;
+    const auto dist{100};
     ASSERT_FALSE(inside(boundary, centre + glm::vec3(dist, 0, 0)));
     ASSERT_FALSE(inside(boundary, centre + glm::vec3(-dist, 0, 0)));
     ASSERT_FALSE(inside(boundary, centre + glm::vec3(0, dist, 0)));
@@ -103,7 +101,7 @@ TEST(boundary, bedroom) {
 
     ASSERT_TRUE(inside(boundary, centre));
     {
-        const auto dist = 0.1;
+        const auto dist{0.1};
         ASSERT_TRUE(inside(boundary, centre + glm::vec3(dist, 0, 0)));
         ASSERT_TRUE(inside(boundary, centre + glm::vec3(-dist, 0, 0)));
         ASSERT_TRUE(inside(boundary, centre + glm::vec3(0, dist, 0)));

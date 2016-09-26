@@ -21,7 +21,7 @@ public:
             : scene_{std::move(scene)}
             , voxels_{ndim_tree<3>{
                       octree_depth,
-                      [&](auto item, const auto& aabb) {
+                      [this](auto item, const auto& aabb) {
                           // This is a bit greedy - we're sacrificing some speed
                           // in the name of correctness.
                           return geo::overlaps(

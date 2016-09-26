@@ -278,6 +278,8 @@ public:
         //  this is the number of steps to run the raytracer for
         //  TODO is there a less dumb way of doing this?
         const auto steps{std::ceil(max_time * waveguide_sample_rate)};
+        input.resize(steps);
+
         auto prep{waveguide::preprocessor::make_soft_source(
                 source_index, input.begin(), input.end())};
 
@@ -312,14 +314,13 @@ public:
 
         callback(state::finishing_waveguide, 1.0);
 
-        std::unique_ptr<intermediate> ret = std::make_unique<intermediate_impl>(
+        std::unique_ptr<intermediate> ret{std::make_unique<intermediate_impl>(
                 source,
                 receiver,
                 waveguide_sample_rate,
                 acoustic_impedance,
                 std::move(*raytracer_results),
-                mic_output.get_output());
-
+                mic_output.get_output())};
         return ret;
     }
 

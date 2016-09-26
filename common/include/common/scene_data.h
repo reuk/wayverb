@@ -92,7 +92,7 @@ aligned::vector<glm::vec3> convert(const aligned::vector<cl_float3>& c);
 template <typename Vertex, typename Surface>
 auto compute_triangle_indices(
         const generic_scene_data<Vertex, Surface>& scene) {
-    aligned::vector<size_t> ret{scene.get_triangles().size()};
+    aligned::vector<size_t> ret(scene.get_triangles().size());
     std::iota(ret.begin(), ret.end(), 0);
     return ret;
 }

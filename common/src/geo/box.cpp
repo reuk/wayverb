@@ -13,7 +13,7 @@ box mirror(const box& b, wall w) {
 }
 
 bool overlaps(const box& b, const triangle_vec3& t) {
-    auto coll = t;
+    auto coll{t};
     for (auto& i : coll) {
         i = (i - centre(b)) / dimensions(b);
     }

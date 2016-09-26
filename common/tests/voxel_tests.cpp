@@ -31,20 +31,11 @@ auto get_test_scenes() {
             scene_data_loader{OBJ_PATH}.get_scene_data()};
 }
 
-TEST(voxel, construct) {
-    for (const auto& scene : get_test_scenes()) {
-        const auto voxelised{get_voxelised(scene)};
-    }
-}
-
 TEST(voxel, walk) {
     for (const auto& scene : get_test_scenes()) {
         const auto voxelised{get_voxelised(scene)};
-
-        const auto rays = 1000;
-        const auto directions = get_random_directions(rays);
-        for (const auto& i : directions) {
-            geo::ray ray(glm::vec3(0, 1, 0), to_vec3(i));
+        for (const auto& i : get_random_directions(1000)) {
+            geo::ray ray{glm::vec3{0, 1, 0}, to_vec3(i)};
             bool has_triangles{false};
             traverse(voxelised.get_voxels(),
                      ray,
@@ -102,14 +93,18 @@ TEST(voxel, surrounded) {
             }
         }
 
-        std::cout << "problem directions:\n";
-        for (const auto i : problem_directions) {
-            std::cout << '{' << i.x << ", " << i.y << ", " << i.z << "}\n";
+        if (!problem_directions.empty()) {
+            std::cout << "problem directions:\n";
+            for (const auto i : problem_directions) {
+                std::cout << '{' << i.x << ", " << i.y << ", " << i.z << "}\n";
+            }
         }
 
-        std::cout << "problem surfaces:\n";
-        for (const auto i : problem_surfaces) {
-            std::cout << i << '\n';
+        if (!problem_surfaces.empty()) {
+            std::cout << "problem surfaces:\n";
+            for (const auto i : problem_surfaces) {
+                std::cout << i << '\n';
+            }
         }
 
         //  now let's try just the problematic directions
