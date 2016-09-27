@@ -18,10 +18,10 @@ geo::ray construct_ray(const glm::vec3& from, const glm::vec3& to) {
 
 //----------------------------------------------------------------------------//
 
-using vsd = voxelised_scene_data<cl_float3, surface>;
-
 class traversal_callback final {
 public:
+    using vsd = voxelised_scene_data<cl_float3, surface>;
+
     struct state final {
         cl_uint index;
         glm::vec3 image_source;
@@ -134,8 +134,12 @@ private:
             const auto cos_angle{std::abs(
                     glm::dot(ray.get_direction(),
                              geo::normal(get_triangle(voxelised, i->index))))};
+
+            const auto surface_index{voxelised.get_scene_data()
+                                             .get_triangles()[i->index]
+                                             .surface};
             intersections.emplace_back(
-                    reflection_metadata{i->index, cos_angle});
+                    reflection_metadata{surface_index, cos_angle});
 
             //  Update accumulator.
             accumulator = {ray.get_position() +
@@ -190,7 +194,7 @@ const multitree<path_element>::branches_type& tree::get_branches() const {
 void find_valid_paths(const multitree<path_element>& tree,
                       const glm::vec3& source,
                       const glm::vec3& receiver,
-                      const vsd& voxelised,
+                      const voxelised_scene_data<cl_float3, surface>& voxelised,
                       const postprocessor& callback) {
     //  set up a state array
     aligned::vector<traversal_callback::state> state{};

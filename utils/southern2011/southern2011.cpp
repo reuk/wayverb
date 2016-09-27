@@ -48,8 +48,7 @@ int main() {
     auto prep{waveguide::preprocessor::make_soft_source(
             input_node, input_signal.begin(), input_signal.end())};
 
-    callback_accumulator<float, waveguide::postprocessor::node> post{
-            output_node};
+    callback_accumulator<waveguide::postprocessor::node> post{output_node};
 
     progress_bar pb{std::cerr, input_signal.size()};
     waveguide::run(cc,

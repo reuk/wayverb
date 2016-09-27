@@ -31,15 +31,14 @@ constexpr auto bench_reflections{128};
 constexpr auto bench_rays{1 << 15};
 
 const glm::vec3 source{1, 2, 1};
-const auto the_rays = get_random_directions(bench_rays);
+const auto the_rays{get_random_directions(bench_rays)};
 
 TEST(raytrace, new) {
     const compute_context cc{};
 
     const auto scene{scene_with_extracted_surfaces(
             scene_data_loader{OBJ_PATH}.get_scene_data())};
-    const auto voxelised{make_voxelised_scene_data(
-            scene, 5, util::padded(geo::get_aabb(scene), 0.1f))};
+    const auto voxelised{make_voxelised_scene_data(scene, 5, 0.1f)};
 
     auto results{raytracer::run(cc,
                                 voxelised,

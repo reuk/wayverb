@@ -8,8 +8,8 @@
 namespace raytracer {
 namespace image_source {
 
-template <typename Ret, typename Func, typename It>  /// iterator over ray directions
-auto run(It begin,
+template <typename Func, typename It>
+auto run(It begin,  /// Iterators over ray directions.
          It end,
          const compute_context& cc,
          const voxelised_scene_data<cl_float3, surface>& voxelised,
@@ -51,11 +51,11 @@ auto run(It begin,
         }
     }
 
-    return postprocess<Ret, Func>(tree.get_branches(),
-                                  source,
-                                  receiver,
-                                  voxelised,
-                                  acoustic_impedance);
+    return postprocess<Func>(tree.get_branches(),
+                             source,
+                             receiver,
+                             voxelised,
+                             acoustic_impedance);
 }
 
 }  // namespace image_source

@@ -9,9 +9,9 @@ namespace postprocessor {
 node::node(size_t output_node)
         : output_node_{output_node} {}
 
-float node::operator()(cl::CommandQueue& queue,
-                       const cl::Buffer& buffer,
-                       size_t step) const {
+node::return_type node::operator()(cl::CommandQueue& queue,
+                                   const cl::Buffer& buffer,
+                                   size_t step) const {
     return read_value<cl_float>(queue, buffer, output_node_);
 }
 

@@ -55,7 +55,7 @@ audio waveguide_test::operator()(const surface& surface,
     auto prep{waveguide::preprocessor::make_soft_source(
             input_node, input_signal.begin(), input_signal.end())};
 
-    callback_accumulator<float, waveguide::postprocessor::node> postprocessor{
+    callback_accumulator<waveguide::postprocessor::node> postprocessor{
             output_node};
 
     progress_bar pb{std::cerr, input_signal.size()};

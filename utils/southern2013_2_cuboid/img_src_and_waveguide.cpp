@@ -61,11 +61,11 @@ img_src_and_waveguide_test::img_src_and_waveguide_test(
         , acoustic_impedance_{acoustic_impedance} {}
 
 audio img_src_and_waveguide_test::operator()(
-        const surface& surface,
+        const surface& surf,
         const glm::vec3& source,
         const model::receiver_settings& receiver) {
     auto& voxels{std::get<0>(voxels_and_mesh_)};
-    voxels.set_surfaces(surface);
+    voxels.set_surfaces(surf);
 
     auto& mesh{std::get<1>(voxels_and_mesh_)};
     // mesh.set_coefficients(waveguide::to_filter_coefficients(
@@ -79,18 +79,23 @@ audio img_src_and_waveguide_test::operator()(
 
     const auto directions{get_random_directions(10000)};
 
-    auto impulses{raytracer::image_source::run<
-            impulse,
-            raytracer::image_source::fast_pressure_calculator>(
-            directions.begin(),
-            directions.end(),
-            compute_context_,
-            voxels,
-            source,
-            receiver.position,
-            speed_of_sound_,
-            acoustic_impedance_,
-            sample_rate)};
+    auto impulses{map_to_vector(
+            raytracer::image_source::run<
+                    raytracer::image_source::fast_pressure_calculator<surface>>(
+                    directions.begin(),
+                    directions.end(),
+                    compute_context_,
+                    voxels,
+                    source,
+                    receiver.position,
+                    speed_of_sound_,
+                    acoustic_impedance_,
+                    sample_rate),
+            [](auto i) {
+                return impulse{i.volume,
+                               to_cl_float3(i.position),
+                               static_cast<float>(i.distance)};
+            })};
 
     if (const auto direct{
                 raytracer::get_direct(source, receiver.position, voxels)}) {
@@ -145,7 +150,7 @@ audio img_src_and_waveguide_test::operator()(
     auto prep{waveguide::preprocessor::make_hard_source(
             input_node, input_signal.begin(), input_signal.end())};
 
-    callback_accumulator<float, waveguide::postprocessor::node> postprocessor{
+    callback_accumulator<waveguide::postprocessor::node> postprocessor{
             output_node};
 
     //  Run the waveguide simulation.

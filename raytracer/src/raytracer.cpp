@@ -104,14 +104,19 @@ std::experimental::optional<results> run(
     }
 
     //  fetch image source results
-    auto img_src_results(
-            image_source::postprocess<impulse,
-                                      image_source::intensity_calculator>(
-                    tree.get_branches(),
-                    source,
-                    receiver,
-                    scene_data,
-                    acoustic_impedance));
+    auto img_src_results{
+            map_to_vector(image_source::postprocess<
+                                  image_source::intensity_calculator<surface>>(
+                                  tree.get_branches(),
+                                  source,
+                                  receiver,
+                                  scene_data,
+                                  acoustic_impedance),
+                          [](auto i) {
+                              return impulse{i.volume,
+                                             to_cl_float3(i.position),
+                                             static_cast<cl_float>(i.distance)};
+                          })};
 
     return results{get_direct(source, receiver, scene_data),
                    std::move(img_src_results),

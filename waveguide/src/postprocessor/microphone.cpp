@@ -25,9 +25,9 @@ microphone::microphone(const mesh_descriptor& mesh_descriptor,
     }
 }
 
-microphone::value_type microphone::operator()(cl::CommandQueue& queue,
-                                              const cl::Buffer& buffer,
-                                              size_t) {
+microphone::return_type microphone::operator()(cl::CommandQueue& queue,
+                                               const cl::Buffer& buffer,
+                                               size_t) {
     //  copy out node pressure
     const auto pressure{read_value<cl_float>(queue, buffer, output_node_)};
 

@@ -18,21 +18,20 @@ image_source_depth_test::image_source_depth_test(
         , acoustic_impedance_{acoustic_impedance} {}
 
 audio image_source_depth_test::operator()(
-        const surface& surface,
+        const surface& surf,
         const glm::vec3& source,
         const model::receiver_settings& receiver) {
-    voxelised_.set_surfaces(surface);
+    voxelised_.set_surfaces(surf);
 
     const auto sample_rate{44100.0};
 
     const auto directions{get_random_directions(10000)};
 
     using inner_callback = raytracer::image_source::depth_counter_calculator<
-            raytracer::image_source::fast_pressure_calculator>;
+            raytracer::image_source::fast_pressure_calculator<surface>>;
 
     auto impulses{
-            raytracer::image_source::run<inner_callback::return_type,
-                                         inner_callback>(directions.begin(),
+            raytracer::image_source::run<inner_callback>(directions.begin(),
                                                          directions.end(),
                                                          compute_context_,
                                                          voxelised_,
@@ -44,7 +43,10 @@ audio image_source_depth_test::operator()(
 
     aligned::map<size_t, aligned::vector<impulse>> impulses_by_depth{};
     for (const auto& i : impulses) {
-        impulses_by_depth[i.depth].emplace_back(i.value);
+        impulses_by_depth[i.depth].emplace_back(
+                impulse{i.value.volume,
+                        to_cl_float3(i.value.position),
+                        static_cast<float>(i.value.distance)});
     }
 
     const auto mixdown_and_convert{[=](const auto& i) {

@@ -25,10 +25,10 @@ public:
         float pressure;
     };
 
-    using value_type = output;
-    value_type operator()(cl::CommandQueue& queue,
-                          const cl::Buffer& buffer,
-                          size_t step);
+    using return_type = output;
+    return_type operator()(cl::CommandQueue& queue,
+                           const cl::Buffer& buffer,
+                           size_t step);
 
     size_t get_output_node() const;
 

@@ -124,8 +124,8 @@ int main(int argc, char** argv) {
             auto prep{waveguide::preprocessor::make_soft_source(
                     receiver_index, kernel.begin(), kernel.end())};
 
-            callback_accumulator<float, waveguide::postprocessor::node>
-                    postprocessor{receiver_index};
+            callback_accumulator<waveguide::postprocessor::node> postprocessor{
+                    receiver_index};
 
             progress_bar pb{std::cout, kernel.size()};
             waveguide::run(cc,

@@ -14,17 +14,16 @@ image_source_test::image_source_test(
         , speed_of_sound_{speed_of_sound}
         , acoustic_impedance_{acoustic_impedance} {}
 
-audio image_source_test::operator()(const surface& surface,
+audio image_source_test::operator()(const surface& surf,
                                     const glm::vec3& source,
                                     const model::receiver_settings& receiver) {
-    voxelised_.set_surfaces(surface);
+    voxelised_.set_surfaces(surf);
 
     const auto directions{get_random_directions(100000)};
 
     const auto sample_rate{44100.0};
     const auto impulses{raytracer::image_source::run<
-            impulse,
-            raytracer::image_source::fast_pressure_calculator>(
+            raytracer::image_source::fast_pressure_calculator<surface>>(
             directions.begin(),
             directions.end(),
             compute_context_,

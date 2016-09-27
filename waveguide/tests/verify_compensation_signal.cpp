@@ -66,8 +66,8 @@ TEST(verify_compensation_signal, verify_compensation_signal_normal) {
         auto prep{waveguide::preprocessor::make_soft_source(
                 receiver_index, transparent.begin(), transparent.end())};
 
-        callback_accumulator<float, waveguide::postprocessor::node>
-                postprocessor{receiver_index};
+        callback_accumulator<waveguide::postprocessor::node> postprocessor{
+                receiver_index};
 
         progress_bar pb(std::cout, transparent.size());
         waveguide::run(cc,

@@ -47,12 +47,11 @@ TEST(nan_in_waveguide, nan_in_waveguide) {
     const waveguide::preprocessor::gaussian generator{
             model.get_descriptor(), source, std::sqrt(variance), steps};
 
-    callback_accumulator<waveguide::postprocessor::microphone::output,
-                         waveguide::postprocessor::microphone>
-            postprocessor{model.get_descriptor(),
-                          waveguide_sr,
-                          acoustic_impedance / speed_of_sound,
-                          receiver_index};
+    callback_accumulator<waveguide::postprocessor::microphone> postprocessor{
+            model.get_descriptor(),
+            waveguide_sr,
+            acoustic_impedance / speed_of_sound,
+            receiver_index};
 
     std::cout << "running " << steps << " steps" << std::endl;
 

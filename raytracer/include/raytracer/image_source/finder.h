@@ -13,14 +13,14 @@
 namespace raytracer {
 namespace image_source {
 
-template <typename Ret, typename Func>
+template <typename Func>
 auto postprocess(const multitree<path_element>& tree,
                  const glm::vec3& source,
                  const glm::vec3& receiver,
                  const voxelised_scene_data<cl_float3, surface>& voxelised,
                  float acoustic_impedance) {
-    callback_accumulator<Ret, Func> callback{
-            source, receiver, voxelised, acoustic_impedance, false};
+    callback_accumulator<Func> callback{
+            receiver, voxelised.get_scene_data().get_surfaces(), false};
     find_valid_paths(
             tree,
             source,
@@ -30,7 +30,7 @@ auto postprocess(const multitree<path_element>& tree,
     return callback.get_output();
 }
 
-template <typename Ret, typename Func>
+template <typename Func>
 auto postprocess(const multitree<path_element>::branches_type& branches,
                  const glm::vec3& source,
                  const glm::vec3& receiver,
@@ -38,7 +38,7 @@ auto postprocess(const multitree<path_element>::branches_type& branches,
                  float acoustic_impedance) {
     auto futures{map_to_vector(branches, [&](const auto& branch) {
         return std::async(std::launch::async, [&] {
-            return postprocess<Ret, Func>(
+            return postprocess<Func>(
                     branch, source, receiver, voxelised, acoustic_impedance);
         });
     })};

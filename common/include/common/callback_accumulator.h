@@ -2,7 +2,7 @@
 
 #include "common/aligned/vector.h"
 
-template <typename Ret, typename T>
+template <typename T, typename Ret = typename T::return_type>
 class callback_accumulator final {
 public:
     template <typename... Ts>

@@ -95,7 +95,7 @@ private:
             if (!waveguide::is_inside(mesh, receiver_index)) {
                 throw std::runtime_error{"receiver is outside of mesh!"};
             }
-            return callback_accumulator<float, waveguide::postprocessor::node>{
+            return callback_accumulator<waveguide::postprocessor::node>{
                     receiver_index};
         })};
 

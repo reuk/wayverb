@@ -285,12 +285,11 @@ public:
 
         //  If the max raytracer time is large this could take forever...
 
-        callback_accumulator<waveguide::postprocessor::microphone::output,
-                             waveguide::postprocessor::microphone>
-                mic_output{mesh.get_descriptor(),
-                           waveguide_sample_rate,
-                           acoustic_impedance / speed_of_sound,
-                           receiver_index};
+        callback_accumulator<waveguide::postprocessor::microphone> mic_output{
+                mesh.get_descriptor(),
+                waveguide_sample_rate,
+                acoustic_impedance / speed_of_sound,
+                receiver_index};
 
         const auto waveguide_steps_completed{waveguide::run(
                 compute_context,

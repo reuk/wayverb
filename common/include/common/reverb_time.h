@@ -3,7 +3,7 @@
 #include "common/aligned/set.h"
 #include "common/geo/triangle_vec.h"
 #include "common/scene_data.h"
-#include "common/specular_absorption_extraction_trait.h"
+#include "common/specular_absorption.h"
 
 /// IMPORTANT
 /// The following functions assume that the scene being modelled has the

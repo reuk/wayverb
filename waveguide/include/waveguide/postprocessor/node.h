@@ -9,10 +9,10 @@ class node final {
 public:
     node(size_t output_node);
 
-    using value_type = float;
-    value_type operator()(cl::CommandQueue& queue,
-                          const cl::Buffer& buffer,
-                          size_t step) const;
+    using return_type = float;
+    return_type operator()(cl::CommandQueue& queue,
+                           const cl::Buffer& buffer,
+                           size_t step) const;
 
     size_t get_output_node() const;
 

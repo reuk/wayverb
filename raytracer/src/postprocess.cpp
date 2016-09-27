@@ -4,7 +4,7 @@
 #include "common/decibels.h"
 #include "common/dsp_vector_ops.h"
 #include "common/map_to_vector.h"
-#include "common/specular_absorption_extraction_trait.h"
+#include "common/specular_absorption.h"
 
 namespace raytracer {
 
