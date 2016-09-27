@@ -7,12 +7,9 @@
 #include "common/write_audio_file.h"
 
 image_source_test::image_source_test(
-        const generic_scene_data<cl_float3, surface>& sd,
-        float speed_of_sound,
-        float acoustic_impedance)
+        const generic_scene_data<cl_float3, surface>& sd, float speed_of_sound)
         : voxelised_{sd, 5, padded(geo::get_aabb(sd), glm::vec3{0.1})}
-        , speed_of_sound_{speed_of_sound}
-        , acoustic_impedance_{acoustic_impedance} {}
+        , speed_of_sound_{speed_of_sound} {}
 
 audio image_source_test::operator()(const surface& surf,
                                     const glm::vec3& source,
@@ -23,16 +20,14 @@ audio image_source_test::operator()(const surface& surf,
 
     const auto sample_rate{44100.0};
     const auto impulses{raytracer::image_source::run<
-            raytracer::image_source::fast_pressure_calculator<surface>>(
+            raytracer::image_source::fast_pressure_calculator<>>(
             directions.begin(),
             directions.end(),
             compute_context_,
             voxelised_,
             source,
             receiver.position,
-            speed_of_sound_,
-            acoustic_impedance_,
-            sample_rate)};
+            speed_of_sound_)};
 
     const auto img_src_results{
             mixdown(raytracer::dirac_histogram(impulses.begin(),

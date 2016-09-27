@@ -1,5 +1,6 @@
 #pragma once
 
+#include "raytracer/image_source/run.h"
 #include "raytracer/results.h"
 
 #include "common/cl/common.h"
@@ -13,10 +14,11 @@ namespace raytracer {
 /// If there is line-of-sight between source and receiver, return the relative
 /// time and intensity of the generated impulse.
 template <typename Vertex, typename Surface>
-std::experimental::optional<impulse> get_direct(
-        const glm::vec3& source,
-        const glm::vec3& receiver,
-        const voxelised_scene_data<Vertex, Surface>& scene_data) {
+std::experimental::optional<
+        image_source::generic_impulse<specular_absorption_t<Surface>>>
+get_direct(const glm::vec3& source,
+           const glm::vec3& receiver,
+           const voxelised_scene_data<Vertex, Surface>& scene_data) {
     if (source == receiver) {
         return std::experimental::nullopt;
     }
@@ -30,9 +32,10 @@ std::experimental::optional<impulse> get_direct(
 
     if (!intersection ||
         (intersection && intersection->inter.t >= source_to_receiver_length)) {
-        return impulse{make_volume_type(1),
-                       to_cl_float3(source),
-                       source_to_receiver_length};
+        return image_source::generic_impulse<specular_absorption_t<Surface>>{
+                unit_constructor_v<specular_absorption_t<Surface>>,
+                source,
+                source_to_receiver_length};
     }
 
     return std::experimental::nullopt;
@@ -49,7 +52,6 @@ std::experimental::optional<results> run(
         const compute_context& cc,
         const voxelised_scene_data<cl_float3, surface>& scene_data,
         double speed_of_sound,
-        double acoustic_impedance,
         const glm::vec3& source,
         const glm::vec3& receiver,
         const aligned::vector<glm::vec3>& directions,

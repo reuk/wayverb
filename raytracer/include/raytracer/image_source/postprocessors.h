@@ -60,7 +60,7 @@ generic_impulse<specular_absorption_t<Surface>> compute_intensity(
             glm::distance(image_source, receiver)};
 }
 
-template <typename Surface>
+template <typename Surface = surface>
 class intensity_calculator final {
 public:
     intensity_calculator(const glm::vec3& receiver,
@@ -114,7 +114,7 @@ generic_impulse<Imp> compute_fast_pressure(
 /// the time domain.
 /// Uses equation 9.22 from the kuttruff book, assuming single-sample
 /// reflection/convolution kernels.
-template <typename Surface>
+template <typename Surface = surface>
 class fast_pressure_calculator final {
 public:
     fast_pressure_calculator(const glm::vec3& receiver,

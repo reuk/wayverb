@@ -28,7 +28,6 @@ std::experimental::optional<results> run(
         const compute_context& cc,
         const voxelised_scene_data<cl_float3, surface>& scene_data,
         double speed_of_sound,
-        double acoustic_impedance,
         const glm::vec3& source,
         const glm::vec3& receiver,
         const aligned::vector<glm::vec3>& directions,
@@ -103,26 +102,27 @@ std::experimental::optional<results> run(
         return std::experimental::nullopt;
     }
 
-    //  fetch image source results
-    auto img_src_results{
-            map_to_vector(image_source::postprocess<
-                                  image_source::intensity_calculator<surface>>(
-                                  tree.get_branches(),
-                                  source,
-                                  receiver,
-                                  scene_data,
-                                  acoustic_impedance),
-                          [](auto i) {
-                              return impulse{i.volume,
-                                             to_cl_float3(i.position),
-                                             static_cast<cl_float>(i.distance)};
-                          })};
+    const auto convert_impulse{[](const auto& imp) {
+        return impulse{imp.volume,
+                       to_cl_float3(imp.position),
+                       static_cast<cl_float>(imp.distance)};
+    }};
 
-    return results{get_direct(source, receiver, scene_data),
-                   std::move(img_src_results),
-                   std::move(dif.get_results()),
-                   receiver,
-                   speed_of_sound};
+    //  fetch image source results
+    auto img_src_results{map_to_vector(
+            image_source::postprocess<image_source::intensity_calculator<>>(
+                    tree.get_branches(), source, receiver, scene_data),
+            convert_impulse)};
+
+    auto direct{get_direct(source, receiver, scene_data)};
+
+    return results{
+            direct ? std::experimental::make_optional(convert_impulse(*direct))
+                   : std::experimental::nullopt,
+            std::move(img_src_results),
+            std::move(dif.get_results()),
+            receiver,
+            speed_of_sound};
 }
 
 }  // namespace raytracer

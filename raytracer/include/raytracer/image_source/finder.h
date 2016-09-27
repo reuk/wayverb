@@ -17,8 +17,7 @@ template <typename Func>
 auto postprocess(const multitree<path_element>& tree,
                  const glm::vec3& source,
                  const glm::vec3& receiver,
-                 const voxelised_scene_data<cl_float3, surface>& voxelised,
-                 float acoustic_impedance) {
+                 const voxelised_scene_data<cl_float3, surface>& voxelised) {
     callback_accumulator<Func> callback{
             receiver, voxelised.get_scene_data().get_surfaces(), false};
     find_valid_paths(
@@ -34,12 +33,10 @@ template <typename Func>
 auto postprocess(const multitree<path_element>::branches_type& branches,
                  const glm::vec3& source,
                  const glm::vec3& receiver,
-                 const voxelised_scene_data<cl_float3, surface>& voxelised,
-                 float acoustic_impedance) {
+                 const voxelised_scene_data<cl_float3, surface>& voxelised) {
     auto futures{map_to_vector(branches, [&](const auto& branch) {
         return std::async(std::launch::async, [&] {
-            return postprocess<Func>(
-                    branch, source, receiver, voxelised, acoustic_impedance);
+            return postprocess<Func>(branch, source, receiver, voxelised);
         });
     })};
 

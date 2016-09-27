@@ -1,4 +1,5 @@
 #include "raytracer/attenuator.h"
+#include "raytracer/image_source/exact.h"
 #include "raytracer/postprocess.h"
 #include "raytracer/raytracer.h"
 #include "raytracer/reflector.h"
@@ -26,12 +27,11 @@
 #endif
 
 constexpr auto speed_of_sound{340.0};
-constexpr auto acoustic_impedance{400.0};
 constexpr auto bench_reflections{128};
 constexpr auto bench_rays{1 << 15};
 
 const glm::vec3 source{1, 2, 1};
-const auto the_rays{get_random_directions(bench_rays)};
+const auto the_rays = get_random_directions(bench_rays);
 
 TEST(raytrace, new) {
     const compute_context cc{};
@@ -43,7 +43,6 @@ TEST(raytrace, new) {
     auto results{raytracer::run(cc,
                                 voxelised,
                                 speed_of_sound,
-                                acoustic_impedance,
                                 source,
                                 glm::vec3(0, 1.75, 0),
                                 the_rays,
@@ -55,56 +54,15 @@ TEST(raytrace, new) {
     ASSERT_TRUE(results);
 }
 
-constexpr int width_for_shell(int shell) { return shell * 2 + 1; }
-
-constexpr int num_images(int shell) {
-    auto w = width_for_shell(shell);
-    return w * w * w;
-}
-
-template <int SHELL>
-std::array<glm::vec3, num_images(SHELL)> images_for_shell(
-        const geo::box& box, const glm::vec3& source) {
-    std::array<glm::vec3, num_images(SHELL)> ret;
-
-    auto image = source;
-
-    constexpr auto L = width_for_shell(SHELL);
-    for (int i = 0; i != L; ++i) {
-        auto x = i - SHELL;
-        auto reflected_x =
-                x % 2 ? mirror_inside(box, image, geo::direction::x) : image;
-        for (int j = 0; j != L; ++j) {
-            auto y = j - SHELL;
-            auto reflected_y =
-                    y % 2 ? mirror_inside(box, reflected_x, geo::direction::y)
-                          : reflected_x;
-            for (int k = 0; k != L; ++k) {
-                auto z = k - SHELL;
-                auto reflected_z =
-                        z % 2 ? mirror_inside(
-                                        box, reflected_y, geo::direction::z)
-                              : reflected_y;
-
-                ret[i + j * L + k * L * L] =
-                        reflected_z + glm::vec3(x, y, z) * dimensions(box);
-            }
-        }
-    }
-
-    return ret;
-}
-
 TEST(raytrace, same_location) {
     geo::box box{glm::vec3{0, 0, 0}, glm::vec3{4, 3, 6}};
     auto receiver{source};
-    constexpr auto s{0.9};
+    constexpr auto s{0.1};
     constexpr auto d{0.1};
     constexpr auto surface{make_surface(s, d)};
 
     const auto scene{geo::get_scene_data(box, surface)};
-    const auto voxelised{make_voxelised_scene_data(
-            scene, 5, util::padded(geo::get_aabb(scene), 0.1f))};
+    const auto voxelised{make_voxelised_scene_data(scene, 5, 0.1f)};
 
     const compute_context cc;
 
@@ -115,7 +73,6 @@ TEST(raytrace, same_location) {
             raytracer::run(cc,
                            voxelised,
                            speed_of_sound,
-                           acoustic_impedance,
                            source,
                            receiver,
                            the_rays,
@@ -140,124 +97,4 @@ TEST(raytrace, same_location) {
             }
         }
     }
-}
-
-TEST(raytrace, image_source) {
-    //  proper method
-    const geo::box box{glm::vec3{0, 0, 0}, glm::vec3{4, 3, 6}};
-    constexpr glm::vec3 receiver{2, 1, 5};
-    constexpr auto s{0.9};
-    constexpr auto d{0.1};
-    constexpr auto surface{make_surface(s, d)};
-
-    constexpr auto shells{3};
-    const auto images{images_for_shell<shells>(box, source)};
-    std::array<float, images.size()> distances;
-    proc::transform(images, distances.begin(), [&receiver](auto i) {
-        return glm::distance(receiver, i);
-    });
-
-    aligned::vector<attenuated_impulse> proper_image_source_impulses;
-
-    constexpr auto L{width_for_shell(shells)};
-    for (auto i{0}; i != L; ++i) {
-        for (auto j{0}; j != L; ++j) {
-            for (auto k{0}; k != L; ++k) {
-                const glm::vec3 shell_dim{std::abs(i - shells),
-                                          std::abs(j - shells),
-                                          std::abs(k - shells)};
-                const auto reflections{shell_dim.x + shell_dim.y + shell_dim.z};
-                if (reflections <= shells) {
-                    const auto index{i + j * L + k * L * L};
-                    const auto base_vol{pow(s, reflections)};
-
-                    proper_image_source_impulses.emplace_back(
-                            attenuated_impulse{make_volume_type(base_vol),
-                                               distances[index]});
-                }
-            }
-        }
-    }
-
-    const auto sort_by_time{[](auto& i) {
-        proc::sort(i, [](auto a, auto b) { return a.distance < b.distance; });
-    }};
-
-    sort_by_time(proper_image_source_impulses);
-
-    //  raytracing method
-    const compute_context cc{};
-
-    const auto scene{geo::get_scene_data(box, surface)};
-    const auto voxelised{make_voxelised_scene_data(
-            scene, 5, util::padded(geo::get_aabb(scene), 0.1f))};
-
-    auto results{raytracer::run(cc,
-                                voxelised,
-                                speed_of_sound,
-                                acoustic_impedance,
-                                source,
-                                receiver,
-                                the_rays,
-                                100,
-                                10,
-                                true,
-                                [](auto) {})};
-
-    ASSERT_TRUE(results);
-
-    auto output{results->get_impulses(true, true, false)};
-
-    ASSERT_TRUE(output.size() > 1);
-
-    sort_by_time(output);
-
-    for (auto i : proper_image_source_impulses) {
-        const auto closest{std::accumulate(
-                output.begin() + 1,
-                output.end(),
-                output.front(),
-                [i](auto a, auto b) {
-                    return std::abs(a.distance - i.distance) <
-                                           std::abs(b.distance - i.distance)
-                                   ? a
-                                   : b;
-                })};
-        ASSERT_NEAR(i.distance, closest.distance, 0.001);
-    }
-
-    auto postprocess{[](const auto& i, const std::string& name) {
-        const auto bit_depth{16};
-        const auto sample_rate{44100.0};
-        ASSERT_FALSE(i.empty());
-        {
-            auto mixed_down{mixdown(raytracer::dirac_histogram(
-                    i.begin(), i.end(), speed_of_sound, sample_rate, 20))};
-            normalize(mixed_down);
-            snd::write(
-                    build_string(SCRATCH_PATH, "/", name, "_no_processing.wav"),
-                    {mixed_down},
-                    sample_rate,
-                    bit_depth);
-        }
-        {
-            auto processed{multiband_filter_and_mixdown(
-                    raytracer::dirac_histogram(i.begin(),
-                                               i.end(),
-                                               speed_of_sound,
-                                               sample_rate,
-                                               20),
-                    sample_rate)};
-            normalize(processed);
-            snd::write(build_string(SCRATCH_PATH, "/", name, "_processed.wav"),
-                       {processed},
-                       sample_rate,
-                       bit_depth);
-        }
-    }};
-
-    postprocess(output, "raytraced");
-    postprocess(proper_image_source_impulses, "image_src");
-    postprocess(results->get_impulses(false, false, true), "diffuse");
-    postprocess(results->get_impulses(), "full");
 }

@@ -236,7 +236,6 @@ public:
                 compute_context,
                 voxelised,
                 speed_of_sound,
-                acoustic_impedance,
                 source,
                 receiver,
                 get_random_directions(rays),

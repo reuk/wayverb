@@ -88,11 +88,33 @@ void traverse_images(const geo::box& box,
     }
 }
 
-void find_impulses(const geo::box& box,
+template <typename Callback, typename Surface>
+auto find_impulses(const geo::box& box,
+        const glm::vec3& source,
+        const glm::vec3& receiver,
+        const Surface& surface,
+        size_t shells) {
+    aligned::vector<Surface> surfaces{surface};
+    callback_accumulator<Callback> callback{receiver, surfaces, false};
+    traverse_images(
+            box, source, shells, [&](const auto& img, auto begin, auto end) {
+                callback(img, begin, end);
+            });
+    return callback.get_output();
+}
+
+template <typename Callback, typename Surface>
+auto find_impulses(const geo::box& box,
                    const glm::vec3& source,
                    const glm::vec3& receiver,
-                   double acoustic_impedance,
-                   double absorption);
+                   const Surface& surface) {
+    return find_impulses<Callback>(
+            box,
+            source,
+            receiver,
+            surface,
+            compute_optimum_reflection_number(min_absorption(surface)));
+}
 
 }  // namespace image_source
 }  // namespace raytracer
