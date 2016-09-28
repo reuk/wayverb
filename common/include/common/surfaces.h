@@ -32,7 +32,9 @@ T pressure_reflectance_to_average_wall_impedance(T t) {
 
 template <typename T>
 T average_wall_impedance_to_pressure_reflectance(T t, float cos_angle) {
-    using std::cos;
+    if (cos_angle < 0 || 1 < cos_angle) {
+        throw std::runtime_error{"cos angle is outside valid range"};
+    }
     const T tmp = t * cos_angle;
     return (tmp - 1) / (tmp + 1);
 }

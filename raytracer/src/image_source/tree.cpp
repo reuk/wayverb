@@ -161,7 +161,7 @@ private:
 
         //  If we got here, the path is a valid image-source path.
         //  We compute the impulse and push it onto the output collection.
-        return valid_path{final_image_source, intersections};
+        return valid_path{final_image_source, std::move(intersections)};
     }
 
     const glm::vec3& source_;
