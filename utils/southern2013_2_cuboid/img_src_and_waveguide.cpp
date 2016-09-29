@@ -79,27 +79,19 @@ audio img_src_and_waveguide_test::operator()(
 
     const auto directions{get_random_directions(10000)};
 
-    const auto convert_impulse{[](const auto& i) {
-        return impulse{i.volume,
-                       to_cl_float3(i.position),
-                       static_cast<float>(i.distance)};
-    }};
-
-    auto impulses{map_to_vector(
-            raytracer::image_source::run<
-                    raytracer::image_source::fast_pressure_calculator<surface>>(
-                    directions.begin(),
-                    directions.end(),
-                    compute_context_,
-                    voxels,
-                    source,
-                    receiver.position,
-                    speed_of_sound_),
-            convert_impulse)};
+    auto impulses{raytracer::image_source::run<
+            raytracer::image_source::fast_pressure_calculator<surface>>(
+            directions.begin(),
+            directions.end(),
+            compute_context_,
+            voxels,
+            source,
+            receiver.position,
+            speed_of_sound_)};
 
     if (const auto direct{
-                raytracer::get_direct(source, receiver.position, voxels)}) {
-        impulses.emplace_back(convert_impulse(*direct));
+                raytracer::get_direct<8>(source, receiver.position, voxels)}) {
+        impulses.emplace_back(*direct);
     }
 
     for (auto& imp : impulses) {

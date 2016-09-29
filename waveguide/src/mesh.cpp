@@ -40,7 +40,7 @@ mesh compute_mesh(const compute_context& cc,
     const setup_program program{cc};
     cl::CommandQueue queue{cc.context, cc.device};
 
-    const scene_buffers buffers{cc.context, voxelised};
+    const auto buffers{make_scene_buffers(cc.context, voxelised)};
 
     const auto desc{[&] {
         const auto aabb{voxelised.get_voxels().get_aabb()};

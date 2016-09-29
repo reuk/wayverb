@@ -57,21 +57,19 @@ TEST(image_source, image_source_position) {
               (glm::vec3{1, 1, -11}));
 }
 
-bool approximately_matches(
-        const raytracer::image_source::generic_impulse<volume_type>& a,
-        const raytracer::image_source::generic_impulse<volume_type>& b) {
+template <size_t channels>
+bool approximately_matches(const impulse<channels>& a,
+                           const impulse<channels>& b) {
     const auto near{[](auto a, auto b) { return nearby(a, b, 0.0001); }};
-    return near(a.distance, b.distance) && near(a.position.x, b.position.x) &&
-           near(a.position.y, b.position.y) &&
-           near(a.position.z, b.position.z) &&
-           near(a.volume.s[0], b.volume.s[0]) &&
-           near(a.volume.s[1], b.volume.s[1]) &&
-           near(a.volume.s[2], b.volume.s[2]) &&
-           near(a.volume.s[3], b.volume.s[3]) &&
-           near(a.volume.s[4], b.volume.s[4]) &&
-           near(a.volume.s[5], b.volume.s[5]) &&
-           near(a.volume.s[6], b.volume.s[6]) &&
-           near(a.volume.s[7], b.volume.s[7]);
+    for (auto i{0ul}; i != channels; ++i) {
+        if (!near (a.volume.s[i], b.volume.s[0])) {
+            return false;
+        }
+    }
+    return near(a.distance, b.distance) &&
+           near(a.position.s[0], b.position.s[0]) &&
+           near(a.position.s[1], b.position.s[1]) &&
+           near(a.position.s[2], b.position.s[2]);
 }
 
 template <typename callback>
@@ -79,8 +77,7 @@ void image_source_test() {
     const geo::box box{glm::vec3{0, 0, 0}, glm::vec3{4, 3, 6}};
     constexpr glm::vec3 source{1, 1, 1};
     constexpr glm::vec3 receiver{2, 1, 5};
-    constexpr auto absorption{0.1};
-    constexpr auto surface{make_surface(absorption, 0)};
+    constexpr auto surface{make_surface(0.1f, 0)};
 
     constexpr auto speed_of_sound{340.0};
     constexpr auto shells{3};
@@ -90,7 +87,7 @@ void image_source_test() {
 
     const auto check_distances{[&](const auto& range) {
         for (const auto& imp : range) {
-            ASSERT_NEAR(glm::distance(receiver, imp.position),
+            ASSERT_NEAR(glm::distance(to_vec3(receiver), to_vec3(imp.position)),
                         imp.distance,
                         0.0001);
         }
@@ -126,12 +123,9 @@ void image_source_test() {
 
     check_range(inexact_impulses);
 
-    if (const auto direct{raytracer::get_direct(source, receiver, voxelised)}) {
-        inexact_impulses.emplace_back(
-                raytracer::image_source::generic_impulse<volume_type>{
-                        direct->volume,
-                        to_vec3(direct->position),
-                        direct->distance});
+    if (const auto direct{
+                raytracer::get_direct<8>(source, receiver, voxelised)}) {
+        inexact_impulses.emplace_back(*direct);
     }
 
     ASSERT_TRUE(inexact_impulses.size() > 1);
@@ -159,8 +153,7 @@ void image_source_test() {
         const auto upper{possible_upper == inexact_impulses.end()
                                  ? possible_upper
                                  : possible_upper + 1};
-        aligned::vector<raytracer::image_source::generic_impulse<volume_type>>
-                possibilities(lower, upper);
+        aligned::vector<impulse<8>> possibilities(lower, upper);
         if (std::none_of(lower, upper, [&](const auto& x) {
                 return approximately_matches(i, x);
             })) {

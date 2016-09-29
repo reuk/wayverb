@@ -2,7 +2,6 @@
 #include "waveguide/filters.h"
 #include "waveguide/make_transparent.h"
 #include "waveguide/mesh.h"
-#include "waveguide/postprocessor/microphone.h"
 #include "waveguide/postprocessor/node.h"
 #include "waveguide/preprocessor/soft_source.h"
 #include "waveguide/program.h"

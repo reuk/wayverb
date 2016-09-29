@@ -23,13 +23,6 @@
 namespace raytracer {
 namespace image_source {
 
-template <typename Vol>
-struct generic_impulse final {
-    Vol volume;
-    glm::vec3 position;
-    double distance;
-};
-
 struct reflection_metadata final {
     cl_uint surface_index;  /// The index of the triangle that was intersected.
     float cos_angle;  /// The cosine of the angle against the triangle normal.
@@ -38,40 +31,50 @@ struct reflection_metadata final {
 //----------------------------------------------------------------------------//
 
 template <typename Surface, typename It>
-generic_impulse<specular_absorption_t<Surface>> compute_intensity(
-        const glm::vec3& receiver,
-        const aligned::vector<Surface>& surfaces,
-        bool flip_phase,
-        const glm::vec3& image_source,
-        It begin,
-        It end) {
+auto compute_intensity(const glm::vec3& receiver,
+                       const aligned::vector<Surface>& surfaces,
+                       bool flip_phase,
+                       const glm::vec3& image_source,
+                       It begin,
+                       It end) {
+    using channel_t = specular_absorption_t<Surface>;
+    constexpr auto channels{detail::components_v<channel_t>};
+
     const auto surface_attenuation{std::accumulate(
             begin,
             end,
-            unit_constructor_v<specular_absorption_t<Surface>>,
+            unit_constructor_v<
+                    detail::cl_vector_constructor_t<float, channels>>,
             [&](auto i, auto j) {
                 const auto reflectance{absorption_to_energy_reflectance(
                         get_specular_absorption(surfaces[j.surface_index]))};
                 return i * reflectance * (flip_phase ? -1 : 1);
             })};
 
-    return {surface_attenuation,
-            image_source,
-            glm::distance(image_source, receiver)};
+    return impulse<channels>{surface_attenuation,
+                             to_cl_float3(image_source),
+                             glm::distance(image_source, receiver)};
 }
 
 template <typename Surface = surface>
 class intensity_calculator final {
 public:
     intensity_calculator(const glm::vec3& receiver,
-                         aligned::vector<Surface>
-                                 surfaces,
+                         aligned::vector<Surface> surfaces,
                          bool flip_phase)
             : receiver_{receiver}
             , surfaces_{std::move(surfaces)}
             , flip_phase_{flip_phase} {}
 
-    using return_type = generic_impulse<specular_absorption_t<Surface>>;
+    using return_type = decltype(compute_intensity(
+            std::declval<glm::vec3>(),
+            std::declval<aligned::vector<Surface>>(),
+            std::declval<bool>(),
+            std::declval<glm::vec3>(),
+            std::declval<
+                    aligned::vector<reflection_metadata>::const_iterator>(),
+            std::declval<
+                    aligned::vector<reflection_metadata>::const_iterator>()));
 
     template <typename It>
     return_type operator()(const glm::vec3& image_source,
@@ -90,24 +93,29 @@ private:
 //----------------------------------------------------------------------------//
 
 template <typename Imp, typename It>
-generic_impulse<Imp> compute_fast_pressure(
-        const glm::vec3& receiver,
-        const aligned::vector<Imp>& surface_impedances,
-        bool flip_phase,
-        const glm::vec3& image_source,
-        It begin,
-        It end) {
+auto compute_fast_pressure(const glm::vec3& receiver,
+                           const aligned::vector<Imp>& surface_impedances,
+                           bool flip_phase,
+                           const glm::vec3& image_source,
+                           It begin,
+                           It end) {
+    constexpr auto channels{detail::components_v<Imp>};
+
     const auto surface_attenuation{std::accumulate(
-            begin, end, unit_constructor_v<Imp>, [&](auto i, auto j) {
+            begin,
+            end,
+            unit_constructor_v<
+                    detail::cl_vector_constructor_t<float, channels>>,
+            [&](auto i, auto j) {
                 const auto reflectance{
                         average_wall_impedance_to_pressure_reflectance(
                                 surface_impedances[j.surface_index],
                                 j.cos_angle)};
                 return i * reflectance * (flip_phase ? -1 : 1);
             })};
-    return {surface_attenuation,
-            image_source,
-            glm::distance(image_source, receiver)};
+    return impulse<channels>{surface_attenuation,
+                             to_cl_float3(image_source),
+                             glm::distance(image_source, receiver)};
 }
 
 /// A simple pressure calculator which accumulates pressure responses in
@@ -130,7 +138,15 @@ public:
                       })}
             , flip_phase_{flip_phase} {}
 
-    using return_type = generic_impulse<specular_absorption_t<Surface>>;
+    using return_type = decltype(compute_fast_pressure(
+            std::declval<glm::vec3>(),
+            std::declval<aligned::vector<specular_absorption_t<Surface>>>(),
+            std::declval<bool>(),
+            std::declval<glm::vec3>(),
+            std::declval<
+                    aligned::vector<reflection_metadata>::const_iterator>(),
+            std::declval<
+                    aligned::vector<reflection_metadata>::const_iterator>()));
 
     template <typename It>
     return_type operator()(const glm::vec3& image_source,
@@ -146,8 +162,7 @@ public:
 
 private:
     glm::vec3 receiver_;
-    aligned::vector<decltype(get_specular_absorption(std::declval<Surface>()))>
-            surface_impedances_;
+    aligned::vector<specular_absorption_t<Surface>> surface_impedances_;
     bool flip_phase_;
 };
 

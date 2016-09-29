@@ -8,13 +8,24 @@
 #include <functional>
 #include <type_traits>
 
-namespace detail {
+#define CL_UNIT(cl_type)      \
+    struct cl_type##1 final { \
+        cl_type s[1];         \
+    };
+
+#define CL_FOR_EACH_TYPE(macro)                                         \
+    macro(cl_char) macro(cl_uchar) macro(cl_short) macro(cl_ushort)     \
+            macro(cl_int) macro(cl_uint) macro(cl_long) macro(cl_ulong) \
+                    macro(cl_float) macro(cl_double)
+
+CL_FOR_EACH_TYPE(CL_UNIT)
 
 //  macro machinery ----------------------------------------------------------//
 
-#define CL_VECTOR_REGISTER_PREFIX(macro, cl_type_prefix_) \
-    macro(cl_type_prefix_##2) macro(cl_type_prefix_##4)   \
-            macro(cl_type_prefix_##8) macro(cl_type_prefix_##16)
+#define CL_VECTOR_REGISTER_PREFIX(macro, cl_type_prefix_)       \
+    macro(cl_type_prefix_##1) macro(cl_type_prefix_##2)         \
+            macro(cl_type_prefix_##4) macro(cl_type_prefix_##8) \
+                    macro(cl_type_prefix_##16)
 
 #define CL_VECTOR_REGISTER(macro)               \
     CL_VECTOR_REGISTER_PREFIX(macro, cl_char)   \
@@ -27,6 +38,8 @@ namespace detail {
     CL_VECTOR_REGISTER_PREFIX(macro, cl_ulong)  \
     CL_VECTOR_REGISTER_PREFIX(macro, cl_float)  \
     CL_VECTOR_REGISTER_PREFIX(macro, cl_double)
+
+namespace detail {
 
 //  find properties, given cl vector type ------------------------------------//
 
@@ -257,6 +270,50 @@ constexpr auto map(const T& t, Op op) {
     return ret;
 }
 
+//  conversions probably -----------------------------------------------------//
+
+template <typename T, typename U, enable_if_is_vector_t<U, int> = 0>
+constexpr T convert(const U& u) {
+    struct conversion final {
+        constexpr value_type_t<T> operator()(const value_type_t<U>& u) const {
+            return u;
+        }
+    };
+    return map(u, conversion{});
+}
+
+template <typename T, typename U, enable_if_is_not_vector_t<U, int> = 0>
+constexpr T convert(const U& u) {
+    return construct_vector<T>(u);
+}
+
+template <typename... Ts>
+using common_value_t = std::common_type_t<value_type_t<Ts>...>;
+
+template <typename...>
+struct common_size;
+
+template <typename... Ts>
+constexpr auto common_size_v{common_size<Ts...>::value};
+
+template <typename T>
+struct common_size<T> final {
+    static constexpr auto value{components_v<T>};
+};
+
+template <typename T, typename... Ts>
+struct common_size<T, Ts...> final {
+    static_assert(common_size_v<T> == common_size_v<Ts...> ||
+                          common_size_v<T> == 1 || common_size_v<Ts...> == 1,
+                  "size must be 1, or match the other size");
+    static constexpr auto value{
+            std::max(common_size_v<T>, common_size_v<Ts...>)};
+};
+
+template <typename... Ts>
+using common_vector_t =
+        cl_vector_constructor_t<common_value_t<Ts...>, common_size_v<Ts...>>;
+
 }  // namespace detail
 
 //  relational ops
@@ -484,8 +541,20 @@ inline auto abs(const T& t) {
     });
 }
 
-template <typename T, detail::enable_if_is_vector_t<T, int> = 0>
-inline auto copysign(const T& t, const T& u) {
+template <typename T, typename U, detail::enable_if_is_vector_t<T, int> = 0>
+inline auto copysign(const T& t, const U& u) {
+    using common_t = detail::common_vector_t<T, U>;
     using std::copysign;
-    return detail::zip(t, u, [](auto i, auto j) { return copysign(i, j); });
+    return detail::zip(detail::convert<common_t>(t),
+                       detail::convert<common_t>(u),
+                       [](auto i, auto j) { return copysign(i, j); });
+}
+
+template <typename T, typename U, detail::enable_if_is_vector_t<T, int> = 0>
+inline auto pow(const T& t, const U& u) {
+    using common_t = detail::common_vector_t<T, U>;
+    using std::pow;
+    return detail::zip(detail::convert<common_t>(t),
+                       detail::convert<common_t>(u),
+                       [](auto i, auto j) { return pow(i, j); });
 }

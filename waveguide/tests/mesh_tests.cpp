@@ -35,7 +35,7 @@ struct mesh_fixture : public ::testing::Test {
     using vsd = voxelised_scene_data<cl_float3, surface>;
 
     auto get_mesh(const vsd& voxelised) {
-        const scene_buffers buffers{cc.context, voxelised};
+        const auto buffers{make_scene_buffers(cc.context, voxelised)};
         return waveguide::compute_mesh(cc, voxelised, 0.1, 340);
     }
 

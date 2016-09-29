@@ -1,5 +1,7 @@
 #pragma once
 
+#if 0
+
 #include "cl/structs.h"
 
 #include "common/program_wrapper.h"
@@ -38,3 +40,5 @@ private:
 };
 
 }  // namespace raytracer
+
+#endif

@@ -73,10 +73,10 @@ public:
     std::unique_ptr<intermediate> run(const std::atomic_bool& keep_going,
                                       const state_callback&) const;
 
-    using raytracer_visual_callback_t =
-            std::function<void(const aligned::vector<aligned::vector<impulse>>&,
-                               const glm::vec3&,
-                               const glm::vec3&)>;
+    using raytracer_visual_callback_t = std::function<void(
+            const aligned::vector<aligned::vector<impulse<8>>>&,
+            const glm::vec3&,
+            const glm::vec3&)>;
     void register_raytracer_visual_callback(
             raytracer_visual_callback_t callback);
     void unregister_raytracer_visual_callback();

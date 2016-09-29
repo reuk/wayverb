@@ -13,12 +13,12 @@ struct mesh_descriptor;
 namespace waveguide {
 namespace postprocessor {
 
-class microphone final {
+class directional_receiver final {
 public:
-    microphone(const mesh_descriptor& mesh_descriptor,
-               double sample_rate,
-               double ambient_density,
-               size_t output_node);
+    directional_receiver(const mesh_descriptor& mesh_descriptor,
+                         double sample_rate,
+                         double ambient_density,
+                         size_t output_node);
 
     struct output final {
         glm::vec3 intensity;

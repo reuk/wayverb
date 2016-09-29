@@ -41,7 +41,8 @@ finder::finder(const compute_context& cc,
                                             to_cl_float3(source),
                                             0}),
                   false))
-        , impulse_buffer(cc.context, CL_MEM_READ_WRITE, sizeof(impulse) * rays)
+        , impulse_buffer(
+                  cc.context, CL_MEM_READ_WRITE, sizeof(impulse<8>) * rays)
         , impulse_builder(rays) {}
 
 void finder::push(const aligned::vector<reflection>& reflections,
@@ -71,7 +72,7 @@ void finder::push(const aligned::vector<reflection>& reflections,
 #endif
 
     //  copy impulses out
-    auto ret{read_from_buffer<impulse>(queue, impulse_buffer)};
+    auto ret{read_from_buffer<impulse<8>>(queue, impulse_buffer)};
 
 #ifndef NDEBUG
     for (auto i{0u}; i != ret.size(); ++i) {
@@ -85,28 +86,30 @@ void finder::push(const aligned::vector<reflection>& reflections,
     //  maybe a bit slow but w/e
     //  we profile then we burn it down so that something beautiful can rise
     //  from the weird ashes
-    aligned::vector<std::experimental::optional<impulse>> no_invalid;
+    aligned::vector<std::experimental::optional<impulse<8>>> no_invalid;
     no_invalid.reserve(rays);
     for (auto& i : ret) {
         no_invalid.emplace_back(
-                i.distance ? std::experimental::make_optional<impulse>(
+                i.distance ? std::experimental::make_optional<impulse<8>>(
                                      std::move(i))
                            : std::experimental::nullopt);
     }
 
     impulse_builder.push(map_to_vector(
-            ret, [](auto i) -> std::experimental::optional<impulse> {
-                return i.distance ? std::experimental::make_optional<impulse>(
-                                            std::move(i))
-                                  : std::experimental::nullopt;
+            ret, [](auto i) -> std::experimental::optional<impulse<8>> {
+                return i.distance
+                               ? std::experimental::make_optional<impulse<8>>(
+                                         std::move(i))
+                               : std::experimental::nullopt;
             }));
 }
 
-const aligned::vector<aligned::vector<impulse>>& finder::get_results() const {
+const aligned::vector<aligned::vector<impulse<8>>>& finder::get_results()
+        const {
     return impulse_builder.get_data();
 }
 
-aligned::vector<aligned::vector<impulse>>& finder::get_results() {
+aligned::vector<aligned::vector<impulse<8>>>& finder::get_results() {
     return impulse_builder.get_data();
 }
 

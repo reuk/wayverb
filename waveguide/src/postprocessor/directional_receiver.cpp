@@ -1,5 +1,5 @@
-#include "waveguide/postprocessor/microphone.h"
 #include "waveguide/mesh_descriptor.h"
+#include "waveguide/postprocessor/directional_receiver.h"
 
 #include "common/cl/common.h"
 #include "common/map_to_vector.h"
@@ -7,10 +7,11 @@
 namespace waveguide {
 namespace postprocessor {
 
-microphone::microphone(const mesh_descriptor& mesh_descriptor,
-                       double sample_rate,
-                       double ambient_density,
-                       size_t output_node)
+directional_receiver::directional_receiver(
+        const mesh_descriptor& mesh_descriptor,
+        double sample_rate,
+        double ambient_density,
+        size_t output_node)
         : mesh_spacing_(mesh_descriptor.spacing)
         , sample_rate_(sample_rate)
         , ambient_density_(ambient_density)
@@ -19,15 +20,15 @@ microphone::microphone(const mesh_descriptor& mesh_descriptor,
     for (auto i : surrounding_nodes_) {
         if (i == ~cl_uint{0}) {
             throw std::runtime_error(
-                    "can't place microphone at this node as it is adjacent to "
+                    "can't place directional_receiver at this node as it is "
+                    "adjacent to "
                     "a boundary");
         }
     }
 }
 
-microphone::return_type microphone::operator()(cl::CommandQueue& queue,
-                                               const cl::Buffer& buffer,
-                                               size_t) {
+directional_receiver::return_type directional_receiver::operator()(
+        cl::CommandQueue& queue, const cl::Buffer& buffer, size_t) {
     //  copy out node pressure
     const auto pressure{read_value<cl_float>(queue, buffer, output_node_)};
 
@@ -67,7 +68,7 @@ microphone::return_type microphone::operator()(cl::CommandQueue& queue,
     return {intensity, pressure};
 }
 
-size_t microphone::get_output_node() const { return output_node_; }
+size_t directional_receiver::get_output_node() const { return output_node_; }
 
 }  // namespace postprocessor
 }  // namespace waveguide

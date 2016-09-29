@@ -4,17 +4,6 @@
 #include "common/cl/scene_structs.h"
 #include "common/cl/traits.h"
 
-constexpr volume_type air_coefficient{{0.001f * -0.1f,
-                                       0.001f * -0.2f,
-                                       0.001f * -0.5f,
-                                       0.001f * -1.1f,
-                                       0.001f * -2.7f,
-                                       0.001f * -9.4f,
-                                       0.001f * -29.0f,
-                                       0.001f * -60.0f}};
-
-//----------------------------------------------------------------------------//
-
 /// Rays will not intersect with the same surface that was referenced by the
 /// previous reflection along a ray.
 /// Ensure that the `triangle` field of the initial reflection buffer is set
@@ -98,15 +87,17 @@ constexpr bool operator!=(const diffuse_path_info& a,
 
 /// An impulse contains a volume, a time in seconds, and the direction from
 /// which it came (useful for attenuation/hrtf stuff).
+template <size_t channels = 8>
 struct alignas(1 << 5) impulse final {
-    volume_type volume;  //  actual per-band volume of the impulse
+    detail::cl_vector_constructor_t<float, channels>
+            volume;      //  actual per-band volume of the impulse
     cl_float3 position;  //  position of the secondary source (used for
                          //  attenuation)
     cl_float distance;   //  distance that the carrier ray has travelled
 };
 
 template <>
-struct cl_representation<impulse> final {
+struct cl_representation<impulse<8>> final {
     static constexpr auto value{R"(
 typedef struct {
     volume_type volume;
@@ -116,27 +107,33 @@ typedef struct {
 )"};
 };
 
-constexpr auto to_tuple(const impulse& x) {
+template <size_t channels>
+constexpr auto to_tuple(const impulse<channels>& x) {
     return std::tie(x.volume, x.position, x.distance);
 }
 
-constexpr bool operator==(const impulse& a, const impulse& b) {
+template <size_t channels>
+constexpr bool operator==(const impulse<channels>& a,
+                          const impulse<channels>& b) {
     return to_tuple(a) == to_tuple(b);
 }
 
-constexpr bool operator!=(const impulse& a, const impulse& b) {
+template <size_t channels>
+constexpr bool operator!=(const impulse<channels>& a,
+                          const impulse<channels>& b) {
     return !(a == b);
 }
 
 //----------------------------------------------------------------------------//
 
+template <size_t channels = 8>
 struct alignas(1 << 5) attenuated_impulse final {
-    volume_type volume;
+    detail::cl_vector_constructor_t<float, channels> volume;
     cl_float distance;
 };
 
 template <>
-struct cl_representation<attenuated_impulse> final {
+struct cl_representation<attenuated_impulse<8>> final {
     static constexpr auto value{R"(
 typedef struct {
     volume_type volume;
@@ -145,47 +142,19 @@ typedef struct {
 )"};
 };
 
-constexpr auto to_tuple(const attenuated_impulse& x) {
+template <size_t channels>
+constexpr auto to_tuple(const attenuated_impulse<channels>& x) {
     return std::tie(x.volume, x.distance);
 }
 
-constexpr bool operator==(const attenuated_impulse& a,
-                          const attenuated_impulse& b) {
+template <size_t channels>
+constexpr bool operator==(const attenuated_impulse<channels>& a,
+                          const attenuated_impulse<channels>& b) {
     return to_tuple(a) == to_tuple(b);
 }
 
-constexpr bool operator!=(const attenuated_impulse& a,
-                          const attenuated_impulse& b) {
-    return !(a == b);
-}
-
-//----------------------------------------------------------------------------//
-
-/// Each speaker has a (normalized-unit) direction, and a coefficient in the
-/// range 0-1 which describes its polar pattern from omni to bidirectional.
-struct alignas(1 << 4) microphone final {
-    cl_float3 direction;
-    cl_float coefficient;
-};
-
-template <>
-struct cl_representation<microphone> final {
-    static constexpr auto value{R"(
-typedef struct {
-    float3 direction;
-    float coefficient;
-} microphone;
-)"};
-};
-
-constexpr auto to_tuple(const microphone& x) {
-    return std::tie(x.direction, x.coefficient);
-}
-
-constexpr bool operator==(const microphone& a, const microphone& b) {
-    return to_tuple(a) == to_tuple(b);
-}
-
-constexpr bool operator!=(const microphone& a, const microphone& b) {
+template <size_t channels>
+constexpr bool operator!=(const attenuated_impulse<channels>& a,
+                          const attenuated_impulse<channels>& b) {
     return !(a == b);
 }

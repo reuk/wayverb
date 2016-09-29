@@ -1,8 +1,8 @@
-#include "waveguide/attenuator/microphone.h"
 #include "waveguide/boundary_adjust.h"
 #include "waveguide/config.h"
 #include "waveguide/mesh.h"
-#include "waveguide/postprocessor/microphone.h"
+#include "waveguide/postprocess.h"
+#include "waveguide/postprocessor/directional_receiver.h"
 #include "waveguide/preprocessor/gaussian.h"
 #include "waveguide/waveguide.h"
 
@@ -115,7 +115,7 @@ int main(int argc, char** argv) {
             const waveguide::preprocessor::gaussian generator{
                     model.get_descriptor(), source, std::sqrt(variance), steps};
 
-            callback_accumulator<waveguide::postprocessor::microphone>
+            callback_accumulator<waveguide::postprocessor::directional_receiver>
                     postprocessor{model.get_descriptor(),
                                   waveguide_sr,
                                   acoustic_impedance / speed_of_sound,
@@ -133,9 +133,10 @@ int main(int argc, char** argv) {
                            },
                            true);
 
-            auto out_signal{waveguide::attenuator::microphone{
-                    glm::vec3{0, 0, 1},
-                    directionality}.process(postprocessor.get_output())};
+            auto out_signal{waveguide::attenuate(
+                    microphone{glm::vec3{0, 0, 1}, directionality},
+                    postprocessor.get_output().begin(),
+                    postprocessor.get_output().end())};
 
             const auto bands{8};
             const auto min_band{80};

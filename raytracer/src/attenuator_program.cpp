@@ -1,3 +1,5 @@
+#if 0
+
 #include "raytracer/attenuator_program.h"
 
 #include "raytracer/cl/structs.h"
@@ -13,27 +15,6 @@ namespace raytracer {
 
 constexpr auto source{R"(
 #define NULL (0)
-
-float microphone_attenuation(microphone * speaker, float3 direction);
-float microphone_attenuation(microphone * speaker, float3 direction) {
-    return ((1 - speaker->coefficient) +
-            speaker->coefficient *
-                dot(normalize(direction), normalize(speaker->direction)));
-}
-
-kernel void microphone_kernel(float3 mic_pos,
-                       global impulse * impulsesIn,
-                       global attenuated_impulse * impulsesOut,
-                       microphone speaker) {
-    size_t i = get_global_id(0);
-    global impulse * thisImpulse = impulsesIn + i;
-    if (any(thisImpulse->volume != 0)) {
-        const float ATTENUATION = microphone_attenuation(
-            &speaker, get_direction(mic_pos, thisImpulse->position));
-        impulsesOut[i] = (attenuated_impulse){thisImpulse->volume * ATTENUATION,
-                                             thisImpulse->distance};
-    }
-}
 
 float3 transform(float3 pointing, float3 up, float3 d);
 float3 transform(float3 pointing, float3 up, float3 d) {
@@ -117,8 +98,8 @@ attenuator_program::attenuator_program(const compute_context& cc,
                                   cl_representation_v<triangle_verts>,
                                   cl_representation_v<reflection>,
                                   cl_representation_v<diffuse_path_info>,
-                                  cl_representation_v<impulse>,
-                                  cl_representation_v<attenuated_impulse>,
+                                  cl_representation_v<impulse<8>>,
+                                  cl_representation_v<attenuated_impulse<8>>,
                                   cl_representation_v<microphone>,
                                   cl_representation_v<aabb>,
                                   cl_representation_v<ray>,
@@ -133,3 +114,5 @@ attenuator_program::attenuator_program(const compute_context& cc,
 }
 
 }  // namespace raytracer
+
+#endif

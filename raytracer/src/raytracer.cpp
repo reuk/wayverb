@@ -1,7 +1,7 @@
+#include "raytracer/raytracer.h"
 #include "raytracer/diffuse/finder.h"
 #include "raytracer/image_source/finder.h"
 #include "raytracer/image_source/reflection_path_builder.h"
-#include "raytracer/raytracer.h"
 #include "raytracer/reflector.h"
 
 #include "common/nan_checking.h"
@@ -24,7 +24,7 @@ void in_chunks(It begin, It end, size_t chunk_size, const Func& f) {
     }
 }
 
-std::experimental::optional<results> run(
+std::experimental::optional<results<impulse<8>>> run(
         const compute_context& cc,
         const voxelised_scene_data<cl_float3, surface>& scene_data,
         double speed_of_sound,
@@ -67,7 +67,7 @@ std::experimental::optional<results> run(
     //  run the simulation proper
     {
         //  up until the max reflection depth
-        for (auto i = 0u; i != reflection_depth; ++i) {
+        for (auto i{0u}; i != reflection_depth; ++i) {
             //  if the user cancelled, return an empty result
             if (!keep_going) {
                 return std::experimental::nullopt;
@@ -102,27 +102,18 @@ std::experimental::optional<results> run(
         return std::experimental::nullopt;
     }
 
-    const auto convert_impulse{[](const auto& imp) {
-        return impulse{imp.volume,
-                       to_cl_float3(imp.position),
-                       static_cast<cl_float>(imp.distance)};
-    }};
-
     //  fetch image source results
-    auto img_src_results{map_to_vector(
+    auto img_src_results{
             image_source::postprocess<image_source::intensity_calculator<>>(
-                    tree.get_branches(), source, receiver, scene_data),
-            convert_impulse)};
+                    tree.get_branches(), source, receiver, scene_data)};
 
-    auto direct{get_direct(source, receiver, scene_data)};
+    auto direct{get_direct<8>(source, receiver, scene_data)};
 
-    return results{
-            direct ? std::experimental::make_optional(convert_impulse(*direct))
-                   : std::experimental::nullopt,
-            std::move(img_src_results),
-            std::move(dif.get_results()),
-            receiver,
-            speed_of_sound};
+    return results<impulse<8>>{std::move(direct),
+                               std::move(img_src_results),
+                               std::move(dif.get_results()),
+                               receiver,
+                               speed_of_sound};
 }
 
 }  // namespace raytracer

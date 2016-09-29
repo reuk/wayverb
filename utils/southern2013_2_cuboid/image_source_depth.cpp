@@ -39,12 +39,9 @@ audio image_source_depth_test::operator()(
                                                          receiver.position,
                                                          speed_of_sound_)};
 
-    aligned::map<size_t, aligned::vector<impulse>> impulses_by_depth{};
+    aligned::map<size_t, aligned::vector<impulse<8>>> impulses_by_depth{};
     for (const auto& i : impulses) {
-        impulses_by_depth[i.depth].emplace_back(
-                impulse{i.value.volume,
-                        to_cl_float3(i.value.position),
-                        static_cast<float>(i.value.distance)});
+        impulses_by_depth[i.depth].emplace_back(i.value);
     }
 
     const auto mixdown_and_convert{[=](const auto& i) {

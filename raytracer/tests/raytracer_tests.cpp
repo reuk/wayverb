@@ -1,4 +1,3 @@
-#include "raytracer/attenuator.h"
 #include "raytracer/image_source/exact.h"
 #include "raytracer/postprocess.h"
 #include "raytracer/raytracer.h"

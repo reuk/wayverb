@@ -1,5 +1,5 @@
 #include "waveguide/mesh.h"
-#include "waveguide/postprocessor/microphone.h"
+#include "waveguide/postprocessor/directional_receiver.h"
 #include "waveguide/preprocessor/gaussian.h"
 #include "waveguide/waveguide.h"
 
@@ -47,11 +47,11 @@ TEST(nan_in_waveguide, nan_in_waveguide) {
     const waveguide::preprocessor::gaussian generator{
             model.get_descriptor(), source, std::sqrt(variance), steps};
 
-    callback_accumulator<waveguide::postprocessor::microphone> postprocessor{
-            model.get_descriptor(),
-            waveguide_sr,
-            acoustic_impedance / speed_of_sound,
-            receiver_index};
+    callback_accumulator<waveguide::postprocessor::directional_receiver>
+            postprocessor{model.get_descriptor(),
+                          waveguide_sr,
+                          acoustic_impedance / speed_of_sound,
+                          receiver_index};
 
     std::cout << "running " << steps << " steps" << std::endl;
 

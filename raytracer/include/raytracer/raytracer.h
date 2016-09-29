@@ -13,12 +13,11 @@ namespace raytracer {
 
 /// If there is line-of-sight between source and receiver, return the relative
 /// time and intensity of the generated impulse.
-template <typename Vertex, typename Surface>
-std::experimental::optional<
-        image_source::generic_impulse<specular_absorption_t<Surface>>>
-get_direct(const glm::vec3& source,
-           const glm::vec3& receiver,
-           const voxelised_scene_data<Vertex, Surface>& scene_data) {
+template <size_t channels, typename Vertex, typename Surface>
+std::experimental::optional<impulse<channels>> get_direct(
+        const glm::vec3& source,
+        const glm::vec3& receiver,
+        const voxelised_scene_data<Vertex, Surface>& scene_data) {
     if (source == receiver) {
         return std::experimental::nullopt;
     }
@@ -32,9 +31,10 @@ get_direct(const glm::vec3& source,
 
     if (!intersection ||
         (intersection && intersection->inter.t >= source_to_receiver_length)) {
-        return image_source::generic_impulse<specular_absorption_t<Surface>>{
-                unit_constructor_v<specular_absorption_t<Surface>>,
-                source,
+        return impulse<channels>{
+                unit_constructor_v<
+                        ::detail::cl_vector_constructor_t<float, channels>>,
+                to_cl_float3(source),
                 source_to_receiver_length};
     }
 
@@ -48,7 +48,7 @@ using per_step_callback = std::function<void(size_t)>;
 using reflection_processor =
         std::function<void(const aligned::vector<reflection>&)>;
 
-std::experimental::optional<results> run(
+std::experimental::optional<results<impulse<8>>> run(
         const compute_context& cc,
         const voxelised_scene_data<cl_float3, surface>& scene_data,
         double speed_of_sound,

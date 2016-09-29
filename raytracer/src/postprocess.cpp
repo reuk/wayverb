@@ -1,5 +1,4 @@
 #include "raytracer/postprocess.h"
-#include "raytracer/attenuator.h"
 
 #include "common/decibels.h"
 #include "common/dsp_vector_ops.h"
@@ -42,102 +41,6 @@ void trimTail(aligned::vector<aligned::vector<float>>& audioChannels,
     // Resize.
     for (auto&& i : audioChannels)
         i.resize(len);
-}
-
-//----------------------------------------------------------------------------//
-
-template <enum model::receiver_settings::mode mode>
-aligned::vector<aligned::vector<float>> run_attenuation(
-        const compute_context& cc,
-        const model::receiver_settings& receiver,
-        const aligned::vector<impulse>& input,
-        double output_sample_rate,
-        double speed_of_sound,
-        double acoustic_impedance,
-        double max_seconds);
-
-template <>
-aligned::vector<aligned::vector<float>>
-run_attenuation<model::receiver_settings::mode::microphones>(
-        const compute_context& cc,
-        const model::receiver_settings& receiver,
-        const aligned::vector<impulse>& input,
-        double output_sample_rate,
-        double speed_of_sound,
-        double acoustic_impedance,
-        double max_seconds) {
-    raytracer::attenuator::microphone attenuator{cc, speed_of_sound};
-    return map_to_vector(receiver.microphones, [&](const auto& i) {
-        const auto processed{attenuator.process(
-                input,
-                get_pointing(i.orientable, receiver.position),
-                i.shape,
-                receiver.position)};
-        return multiband_filter_and_mixdown(dirac_histogram(processed.begin(),
-                                                            processed.end(),
-                                                            speed_of_sound,
-                                                            output_sample_rate,
-                                                            max_seconds),
-                                            output_sample_rate);
-    });
-}
-
-template <>
-aligned::vector<aligned::vector<float>>
-run_attenuation<model::receiver_settings::mode::hrtf>(
-        const compute_context& cc,
-        const model::receiver_settings& receiver,
-        const aligned::vector<impulse>& input,
-        double output_sample_rate,
-        double speed_of_sound,
-        double acoustic_impedance,
-        double max_seconds) {
-    raytracer::attenuator::hrtf attenuator{cc, speed_of_sound};
-    const auto channels = {hrtf_channel::left, hrtf_channel::right};
-    return map_to_vector(channels, [&](const auto& i) {
-        const auto processed{attenuator.process(
-                input,
-                get_pointing(receiver.hrtf, receiver.position),
-                glm::vec3(0, 1, 0),
-                receiver.position,
-                i)};
-        return multiband_filter_and_mixdown(dirac_histogram(processed.begin(),
-                                                            processed.end(),
-                                                            speed_of_sound,
-                                                            output_sample_rate,
-                                                            max_seconds),
-                                            output_sample_rate);
-    });
-}
-
-aligned::vector<aligned::vector<float>> run_attenuation(
-        const compute_context& cc,
-        const model::receiver_settings& receiver,
-        const aligned::vector<impulse>& input,
-        double output_sample_rate,
-        double speed_of_sound,
-        double acoustic_impedance,
-        double max_seconds) {
-    switch (receiver.mode) {
-        case model::receiver_settings::mode::microphones:
-            return run_attenuation<model::receiver_settings::mode::microphones>(
-                    cc,
-                    receiver,
-                    input,
-                    output_sample_rate,
-                    speed_of_sound,
-                    acoustic_impedance,
-                    max_seconds);
-        case model::receiver_settings::mode::hrtf:
-            return run_attenuation<model::receiver_settings::mode::hrtf>(
-                    cc,
-                    receiver,
-                    input,
-                    output_sample_rate,
-                    speed_of_sound,
-                    acoustic_impedance,
-                    max_seconds);
-    }
 }
 
 }  // namespace raytracer

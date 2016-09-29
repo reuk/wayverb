@@ -1,63 +1,30 @@
 #pragma once
 
-#include "raytracer/attenuator_program.h"
-#include "raytracer/results.h"
+#include "raytracer/cl/structs.h"
 
-#include "common/cl/include.h"
-#include "common/hrtf_utils.h"
+#include "common/map_to_vector.h"
+
+#include "glm/glm.hpp"
 
 namespace raytracer {
-namespace attenuator {
 
-/// Class for parallel HRTF attenuation of raytrace results.
-class hrtf final {
-public:
-    hrtf(const compute_context& cc, double speed_of_sound);
+template <typename Method, size_t channels>
+auto attenuate(const Method& method,
+               const glm::vec3& position,
+               const impulse<channels>& i) {
+    return attenuated_impulse<channels>{
+            i.volume * attenuation(method, to_vec3(i.position) - position),
+            i.distance};
+}
 
-    /// Attenuate some raytrace results.
-    /// The outer vector corresponds to separate channels, the inner vector
-    /// contains the impulses, each of which has a time and an 8-band volume.
-    aligned::vector<attenuated_impulse> process(
-            const aligned::vector<impulse>& results,
-            const glm::vec3& direction,
-            const glm::vec3& up,
-            const glm::vec3& position,
-            hrtf_channel channel);
+template <typename Method, typename It>
+auto attenuate(const Method& method,
+               const glm::vec3& position,
+               It begin,
+               It end) {
+    return map_to_vector(begin, end, [&](const auto& impulse) {
+        return attenuate(method, position, impulse);
+    });
+}
 
-    const std::array<std::array<std::array<cl_float8, 180>, 360>, 2>&
-    get_hrtf_data() const;
-
-private:
-    using kernel_type =
-            decltype(std::declval<attenuator_program>().get_hrtf_kernel());
-
-    cl::CommandQueue queue;
-    kernel_type kernel;
-
-    cl::Buffer cl_hrtf;
-};
-
-/// Class for parallel Speaker attenuation of raytrace results.
-class microphone final {
-public:
-    microphone(const compute_context& cc, double speed_of_sound);
-
-    /// Attenuate some raytrace results.
-    /// The outer vector corresponds to separate channels, the inner vector
-    /// contains the impulses, each of which has a time and an 8-band volume.
-    aligned::vector<attenuated_impulse> process(
-            const aligned::vector<impulse>& results,
-            const glm::vec3& pointing,
-            float shape,
-            const glm::vec3& position);
-
-private:
-    using kernel_type = decltype(
-            std::declval<attenuator_program>().get_microphone_kernel());
-
-    cl::CommandQueue queue;
-    kernel_type kernel;
-};
-
-}  // namespace attenuator
 }  // namespace raytracer

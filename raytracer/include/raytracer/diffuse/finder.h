@@ -24,8 +24,8 @@ public:
 
     void push(const aligned::vector<reflection>& reflections,
               const scene_buffers& scene_buffers);
-    const aligned::vector<aligned::vector<impulse>>& get_results() const;
-    aligned::vector<aligned::vector<impulse>>& get_results();
+    const aligned::vector<aligned::vector<impulse<8>>>& get_results() const;
+    aligned::vector<aligned::vector<impulse<8>>>& get_results();
 
 private:
     using kernel_t = decltype(std::declval<program>().get_kernel());
@@ -40,7 +40,7 @@ private:
     cl::Buffer diffuse_path_buffer;
     cl::Buffer impulse_buffer;
 
-    iterative_builder<impulse> impulse_builder;
+    iterative_builder<impulse<8>> impulse_builder;
 };
 
 }  // namespace diffuse

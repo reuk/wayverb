@@ -1,4 +1,3 @@
-#include "waveguide/attenuator/microphone.h"
 #include "waveguide/boundary_adjust.h"
 #include "waveguide/config.h"
 #include "waveguide/make_transparent.h"

@@ -7,10 +7,9 @@
 #include "common/cl/include.h"
 #include "common/geo/geometric.h"
 #include "common/map_to_vector.h"
+#include "common/spatial_division/scene_buffers.h"
 
 #include "glm/glm.hpp"
-
-class scene_buffers;
 
 namespace raytracer {
 

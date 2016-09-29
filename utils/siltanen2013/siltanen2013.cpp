@@ -6,6 +6,9 @@
 #include "waveguide/surface_filters.h"
 #include "waveguide/waveguide.h"
 
+#include "raytracer/image_source/exact.h"
+#include "raytracer/image_source/postprocessors.h"
+
 #include "common/callback_accumulator.h"
 #include "common/dsp_vector_ops.h"
 #include "common/map_to_vector.h"
@@ -31,13 +34,19 @@ void write(const std::string& name, T t, double sample_rate) {
 }
 
 int main() {
+
+    //  constants ------------------------------------------------------------//
     const geo::box box{glm::vec3{0}, glm::vec3{5.56, 3.97, 2.81}};
-    const auto sample_rate{16000.0};
-    const auto speed_of_sound{340.0};
+    constexpr auto sample_rate{16000.0};
+    constexpr auto speed_of_sound{340.0};
+    constexpr auto acoustic_impedance{400.0};
 
-    const glm::vec3 source{2.09, 2.12, 2.12};
-    const glm::vec3 receiver{2.09, 3.08, 0.96};
+    constexpr glm::vec3 source{2.09, 2.12, 2.12};
+    constexpr glm::vec3 receiver{2.09, 3.08, 0.96};
 
+    const auto surface{make_surface(1 - pow(0.99, 2), 0)};
+
+    //  waveguide ------------------------------------------------------------//
     const compute_context cc{};
     auto voxels_and_mesh{waveguide::compute_voxels_and_mesh(
             cc,
@@ -47,8 +56,7 @@ int main() {
             speed_of_sound)};
 
     auto& mesh{std::get<1>(voxels_and_mesh)};
-    mesh.set_coefficients({waveguide::to_flat_coefficients(
-            make_surface(1 - pow(0.999, 2), 0))});
+    mesh.set_coefficients({waveguide::to_flat_coefficients(surface)});
 
     const auto input_node{compute_index(mesh.get_descriptor(), source)};
     const auto output_node{compute_index(mesh.get_descriptor(), receiver)};
@@ -72,4 +80,30 @@ int main() {
                    true);
 
     write("waveguide", post.get_output(), sample_rate);
+
+    //  exact image source ---------------------------------------------------//
+
+    //  Find exact reflection coefficient products.
+    auto impulses{raytracer::image_source::find_impulses<
+            raytracer::image_source::fast_pressure_calculator<>>(
+            box, source, receiver, surface)};
+
+    //  Correct for distance travelled.
+    for (auto& imp : impulses) {
+        imp.volume *= pressure_for_distance(imp.distance, acoustic_impedance);
+    }
+
+    //  Create audio file.
+    auto histogram{raytracer::sinc_histogram(
+            impulses.begin(), impulses.end(), speed_of_sound, sample_rate, 20)};
+
+    //  Filter
+    for (auto& samp : histogram) {
+        samp /= 8;
+    }
+    
+    //  Mix down.
+    auto img_src_results{mixdown(histogram)};
+
+    write("exact_img_src", img_src_results, sample_rate);
 }

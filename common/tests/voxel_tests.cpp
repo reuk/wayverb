@@ -63,7 +63,7 @@ TEST(voxel, surrounded) {
         const auto voxelised{
                 get_voxelised(scene_with_extracted_surfaces(scene))};
         const compute_context cc{};
-        const scene_buffers buffers{cc.context, voxelised};
+        const auto buffers{make_scene_buffers(cc.context, voxelised)};
 
         const auto directions{get_random_directions(1000)};
 
@@ -125,7 +125,7 @@ void compare(const glm::vec3& source,
              const generic_scene_data<Vertex, Surface>& scene) {
     const auto voxelised{get_voxelised(scene_with_extracted_surfaces(scene))};
     const compute_context cc{};
-    const scene_buffers buffers{cc.context, voxelised};
+    const auto buffers{make_scene_buffers(cc.context, voxelised)};
 
     const auto directions{get_random_directions(1000)};
 

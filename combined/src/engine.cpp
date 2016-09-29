@@ -1,24 +1,23 @@
 #include "combined/engine.h"
 
-#include "raytracer/attenuator.h"
 #include "raytracer/postprocess.h"
 #include "raytracer/raytracer.h"
 #include "raytracer/reflector.h"
 
-#include "waveguide/attenuator/hrtf.h"
-#include "waveguide/attenuator/microphone.h"
 #include "waveguide/boundary_adjust.h"
 #include "waveguide/config.h"
 #include "waveguide/make_transparent.h"
 #include "waveguide/mesh.h"
 #include "waveguide/postprocess.h"
-#include "waveguide/postprocessor/microphone.h"
+#include "waveguide/postprocessor/directional_receiver.h"
 #include "waveguide/postprocessor/visualiser.h"
 #include "waveguide/preprocessor/soft_source.h"
 #include "waveguide/setup.h"
 #include "waveguide/waveguide.h"
 
 #include "common/aligned/set.h"
+#include "common/attenuator/hrtf.h"
+#include "common/attenuator/microphone.h"
 #include "common/azimuth_elevation.h"
 #include "common/callback_accumulator.h"
 #include "common/cl/common.h"
@@ -43,8 +42,9 @@ public:
             const glm::vec3& receiver,
             double waveguide_sample_rate,
             double acoustic_impedance,
-            raytracer::results&& raytracer_results,
-            aligned::vector<waveguide::postprocessor::microphone::output>
+            raytracer::results<impulse<8>> raytracer_results,
+            aligned::vector<
+                    waveguide::postprocessor::directional_receiver::output>
                     waveguide_results)
             : source(source)
             , receiver(receiver)
@@ -62,17 +62,20 @@ public:
         callback(wayverb::state::postprocessing, 1.0);
 
         //  attenuate raytracer results
+        const auto  raytracer_impulses{raytracer_results.get_impulses()};
         auto raytracer_output{raytracer::run_attenuation(
-                cc,
                 receiver,
-                raytracer_results.get_impulses(),
-                output_sample_rate,
                 raytracer_results.get_speed_of_sound(),
-                acoustic_impedance,
-                max_length_in_seconds)};
+                output_sample_rate,
+                max_length_in_seconds,
+                raytracer_impulses.begin(),
+                raytracer_impulses.end())};
         //  attenuate waveguide results
-        auto waveguide_output{waveguide::run_attenuation(
-                receiver, waveguide_results, waveguide_sample_rate)};
+        auto waveguide_output{
+                waveguide::run_attenuation(receiver,
+                                           waveguide_sample_rate,
+                                           waveguide_results.begin(),
+                                           waveguide_results.end())};
 
         //  correct raytracer results for dc
         filter::extra_linear_dc_blocker blocker;
@@ -137,8 +140,8 @@ private:
     double waveguide_sample_rate;
     double acoustic_impedance;
 
-    raytracer::results raytracer_results;
-    aligned::vector<waveguide::postprocessor::microphone::output>
+    raytracer::results<impulse<8>> raytracer_results;
+    aligned::vector<waveguide::postprocessor::directional_receiver::output>
             waveguide_results;
 };
 
@@ -284,11 +287,11 @@ public:
 
         //  If the max raytracer time is large this could take forever...
 
-        callback_accumulator<waveguide::postprocessor::microphone> mic_output{
-                mesh.get_descriptor(),
-                waveguide_sample_rate,
-                acoustic_impedance / speed_of_sound,
-                receiver_index};
+        callback_accumulator<waveguide::postprocessor::directional_receiver>
+                mic_output{mesh.get_descriptor(),
+                           waveguide_sample_rate,
+                           acoustic_impedance / speed_of_sound,
+                           receiver_index};
 
         const auto waveguide_steps_completed{waveguide::run(
                 compute_context,
