@@ -66,6 +66,9 @@ CL_VECTOR_REGISTER(DEFINE_CL_VECTOR_TYPE_TRAIT)
 template <typename T>
 constexpr auto is_vector_type_v = cl_vector_type_trait<T>::is_vector_type;
 
+template <typename T>
+using is_vector_type_t = std::integral_constant<bool, is_vector_type_v<T>>;
+
 template <typename T, typename U = void>
 using enable_if_is_vector_t = std::enable_if_t<is_vector_type_v<T>, U>;
 
@@ -77,6 +80,26 @@ constexpr auto components_v = cl_vector_type_trait<T>::components;
 
 template <typename T>
 using value_type_t = typename cl_vector_type_trait<T>::value_type;
+
+template<typename...>
+struct any;
+
+template <typename... Ts>
+constexpr auto any_v{any<Ts...>::value};
+
+template <typename T>
+struct any<T> final {
+    static constexpr auto value{T::value};
+};
+
+template <typename T, typename... Ts>
+struct any<T, Ts...> final {
+    static constexpr auto value{any_v<T> || any_v<Ts...>};
+};
+
+template <typename U, typename... Ts>
+using enable_if_any_is_vector_t =
+        std::enable_if_t<any_v<is_vector_type_t<Ts>...>, U>;
 
 //  constructing from type + size --------------------------------------------//
 
@@ -318,11 +341,17 @@ using common_vector_t =
 
 //  relational ops
 
-template <typename T, detail::enable_if_is_vector_t<T, int> = 0>
-constexpr auto operator==(const T& a, const T& b) {
+template <typename T,
+          typename U,
+          detail::enable_if_any_is_vector_t<int, T, U> = 0>
+constexpr auto operator==(const T& a, const U& b) {
     //    return detail::zip(a, b, std::equal_to<>());
-    return detail::accumulate(
-            detail::zip(a, b, std::equal_to<>()), true, std::logical_and<>());
+    using common_t = detail::common_vector_t<T, U>;
+    return detail::accumulate(detail::zip(detail::convert<common_t>(a),
+                                          detail::convert<common_t>(b),
+                                          std::equal_to<>()),
+                              true,
+                              std::logical_and<>());
 }
 
 template <typename T, detail::enable_if_is_vector_t<T, int> = 0>
@@ -330,14 +359,21 @@ constexpr auto operator!(const T& a) {
     return detail::map(a, std::logical_not<>());
 }
 
-template <typename T, detail::enable_if_is_vector_t<T, int> = 0>
-constexpr auto operator!=(const T& a, const T& b) {
+template <typename T,
+          typename U,
+          detail::enable_if_any_is_vector_t<int, T, U> = 0>
+constexpr auto operator!=(const T& a, const U& b) {
     return !(a == b);
 }
 
-template <typename T, detail::enable_if_is_vector_t<T, int> = 0>
-constexpr auto operator<(const T& a, const T& b) {
-    return detail::zip(a, b, std::less<>());
+template <typename T,
+          typename U,
+          detail::enable_if_any_is_vector_t<int, T, U> = 0>
+constexpr auto operator<(const T& a, const U& b) {
+    using common_t = detail::common_vector_t<T, U>;
+    return detail::zip(detail::convert<common_t>(a),
+                       detail::convert<common_t>(b),
+                       std::less<>());
 }
 
 //  arithmetic ops -----------------------------------------------------------//
@@ -371,45 +407,35 @@ constexpr auto& operator%=(T& a, const U& b) {
 
 template <typename T,
           typename U,
-          std::enable_if_t<detail::is_vector_type_v<T> ||
-                                   detail::is_vector_type_v<U>,
-                           int> = 0>
+          detail::enable_if_any_is_vector_t<int, T, U> = 0>
 constexpr auto operator+(const T& a, const U& b) {
     return detail::zip(a, b, std::plus<>());
 }
 
 template <typename T,
           typename U,
-          std::enable_if_t<detail::is_vector_type_v<T> ||
-                                   detail::is_vector_type_v<U>,
-                           int> = 0>
+          detail::enable_if_any_is_vector_t<int, T, U> = 0>
 constexpr auto operator-(const T& a, const U& b) {
     return detail::zip(a, b, std::minus<>());
 }
 
 template <typename T,
           typename U,
-          std::enable_if_t<detail::is_vector_type_v<T> ||
-                                   detail::is_vector_type_v<U>,
-                           int> = 0>
+          detail::enable_if_any_is_vector_t<int, T, U> = 0>
 constexpr auto operator*(const T& a, const U& b) {
     return detail::zip(a, b, std::multiplies<>());
 }
 
 template <typename T,
           typename U,
-          std::enable_if_t<detail::is_vector_type_v<T> ||
-                                   detail::is_vector_type_v<U>,
-                           int> = 0>
+          detail::enable_if_any_is_vector_t<int, T, U> = 0>
 constexpr auto operator/(const T& a, const U& b) {
     return detail::zip(a, b, std::divides<>());
 }
 
 template <typename T,
           typename U,
-          std::enable_if_t<detail::is_vector_type_v<T> ||
-                                   detail::is_vector_type_v<U>,
-                           int> = 0>
+          detail::enable_if_any_is_vector_t<int, T, U> = 0>
 constexpr auto operator%(const T& a, const U& b) {
     return detail::zip(a, b, std::modulus<>());
 }
@@ -541,7 +567,9 @@ inline auto abs(const T& t) {
     });
 }
 
-template <typename T, typename U, detail::enable_if_is_vector_t<T, int> = 0>
+template <typename T,
+          typename U,
+          detail::enable_if_any_is_vector_t<int, T, U> = 0>
 inline auto copysign(const T& t, const U& u) {
     using common_t = detail::common_vector_t<T, U>;
     using std::copysign;
@@ -550,7 +578,9 @@ inline auto copysign(const T& t, const U& u) {
                        [](auto i, auto j) { return copysign(i, j); });
 }
 
-template <typename T, typename U, detail::enable_if_is_vector_t<T, int> = 0>
+template <typename T,
+          typename U,
+          detail::enable_if_any_is_vector_t<int, T, U> = 0>
 inline auto pow(const T& t, const U& u) {
     using common_t = detail::common_vector_t<T, U>;
     using std::pow;

@@ -2,6 +2,7 @@
 
 #include "common/aligned/vector.h"
 #include "common/sinc.h"
+#include "common/specular_absorption.h"
 
 namespace raytracer {
 
@@ -12,8 +13,10 @@ auto histogram(It begin,
                double sample_rate,
                double max_time,
                const T& callback) {
+    using value_type = decltype(begin->volume);
+
     if (begin == end) {
-        return aligned::vector<volume_type>{};
+        return aligned::vector<value_type>{};
     }
     const auto max_distance_in_input{
             std::max_element(begin, end, [](auto i, auto j) {
@@ -23,7 +26,7 @@ auto histogram(It begin,
             std::min(max_distance_in_input / speed_of_sound, max_time)};
     const size_t output_size = std::round(max_t * sample_rate) + 1;
 
-    aligned::vector<volume_type> ret{output_size, make_volume_type(0)};
+    aligned::vector<value_type> ret{output_size, value_type{}};
     for (auto i{begin}; i != end; ++i) {
         const auto time{i->distance / speed_of_sound};
         callback(i->volume,
@@ -89,19 +92,23 @@ void sinc_sum(T value,
     }
 }
 
+template <typename T>
+class WhatType;
+
 template <typename It>
 auto sinc_histogram(It begin,
                     It end,
                     double speed_of_sound,
                     double sample_rate,
                     double max_time) {
-    return histogram(
-            begin,
-            end,
-            speed_of_sound,
-            sample_rate,
-            max_time,
-            sinc_sum<volume_type, aligned::vector<volume_type>::iterator>);
+    using value_type = decltype(begin->volume);
+    return histogram(begin,
+                     end,
+                     speed_of_sound,
+                     sample_rate,
+                     max_time,
+                     sinc_sum<value_type,
+                              typename aligned::vector<value_type>::iterator>);
 }
 
 }  // namespace raytracer

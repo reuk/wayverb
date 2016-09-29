@@ -45,10 +45,10 @@ audio image_source_depth_test::operator()(
     }
 
     const auto mixdown_and_convert{[=](const auto& i) {
+        const auto histogram{raytracer::dirac_histogram(
+                i.begin(), i.end(), speed_of_sound_, sample_rate, 20)};
         return map_to_vector(
-                mixdown(raytracer::dirac_histogram(
-                        i.begin(), i.end(), speed_of_sound_, sample_rate, 20)),
-                [=](auto i) {
+                mixdown(histogram.begin(), histogram.end()), [=](auto i) {
                     return intensity_to_pressure(i, acoustic_impedance_) * 0.1f;
                 });
     }};

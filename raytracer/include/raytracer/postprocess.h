@@ -16,6 +16,14 @@
 
 namespace raytracer {
 
+constexpr auto min(double x) {
+    return x;
+}
+
+constexpr auto min(float x) {
+    return x;
+}
+
 template <typename T>
 double min_absorption(const T& t) {
     return min(get_specular_absorption(t));

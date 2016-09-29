@@ -6,13 +6,14 @@
 #include <numeric>
 #include <vector>
 
-inline double sum(float t) { return t; }
-inline double sum(double t) { return t; }
+inline double recursive_sum(float t) { return t; }
+inline double recursive_sum(double t) { return t; }
 
 template <typename T>
-inline auto sum(const T& t) {
-    return proc::accumulate(
-            t, 0.0, [](const auto& a, const auto& b) { return a + sum(b); });
+inline auto recursive_sum(const T& t) {
+    return proc::accumulate(t, 0.0, [](const auto& a, const auto& b) {
+        return a + recursive_sum(b);
+    });
 }
 
 template <typename T>
@@ -28,7 +29,7 @@ inline auto count(const std::vector<T, Allocator>& coll) {
 
 template <typename T>
 inline auto mean(const T& t) {
-    return sum(t) / count(t);
+    return recursive_sum(t) / count(t);
 }
 
 inline double max_mag(float t) { return std::fabs(t); }

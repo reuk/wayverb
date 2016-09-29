@@ -44,7 +44,7 @@ int main() {
     constexpr glm::vec3 source{2.09, 2.12, 2.12};
     constexpr glm::vec3 receiver{2.09, 3.08, 0.96};
 
-    const auto surface{make_surface(1 - pow(0.99, 2), 0)};
+    const float absorption = 1 - pow(0.99, 2);
 
     //  waveguide ------------------------------------------------------------//
     const compute_context cc{};
@@ -56,7 +56,8 @@ int main() {
             speed_of_sound)};
 
     auto& mesh{std::get<1>(voxels_and_mesh)};
-    mesh.set_coefficients({waveguide::to_flat_coefficients(surface)});
+    mesh.set_coefficients(
+            {waveguide::to_flat_coefficients(make_surface(absorption, 0))});
 
     const auto input_node{compute_index(mesh.get_descriptor(), source)};
     const auto output_node{compute_index(mesh.get_descriptor(), receiver)};
@@ -85,8 +86,8 @@ int main() {
 
     //  Find exact reflection coefficient products.
     auto impulses{raytracer::image_source::find_impulses<
-            raytracer::image_source::fast_pressure_calculator<>>(
-            box, source, receiver, surface)};
+            raytracer::image_source::fast_pressure_calculator<cl_float1>>(
+            box, source, receiver, cl_float1{{absorption}})};
 
     //  Correct for distance travelled.
     for (auto& imp : impulses) {
@@ -97,13 +98,8 @@ int main() {
     auto histogram{raytracer::sinc_histogram(
             impulses.begin(), impulses.end(), speed_of_sound, sample_rate, 20)};
 
-    //  Filter
-    for (auto& samp : histogram) {
-        samp /= 8;
-    }
-    
-    //  Mix down.
-    auto img_src_results{mixdown(histogram)};
+    //  Extract.
+    const auto img_src{map_to_vector(histogram, [](auto i) { return i.s[0]; })};
 
-    write("exact_img_src", img_src_results, sample_rate);
+    write("exact_img_src", img_src, sample_rate);
 }

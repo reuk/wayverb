@@ -111,7 +111,7 @@ audio img_src_and_waveguide_test::operator()(
     }
 
     //  Mixdown.
-    auto img_src_results{mixdown(histogram)};
+    auto img_src_results{mixdown(histogram.begin(), histogram.end())};
 
     {
         static auto count{0};
