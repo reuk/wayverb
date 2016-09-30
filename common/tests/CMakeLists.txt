@@ -3,9 +3,8 @@ cmake_minimum_required(VERSION 3.0)
 include_directories(
     ${CMAKE_SOURCE_DIR}/include
     ${CMAKE_SOURCE_DIR}/submodules/cereal/include
-    #"/usr/local/include/"
+    ${CMAKE_SOURCE_DIR}/submodules/Catch/include
 )
-#link_directories(/usr/local/lib)
 
 set(name common_tests)
 file(GLOB sources "*.cpp")
