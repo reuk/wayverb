@@ -95,12 +95,15 @@ aligned::vector<aligned::vector<float>> attenuate_microphone(
                 receiver.position,
                 begin,
                 end)};
-        return multiband_filter_and_mixdown(dirac_histogram(processed.begin(),
-                                                            processed.end(),
-                                                            speed_of_sound,
-                                                            sample_rate,
-                                                            max_seconds),
-                                            sample_rate);
+        const auto make_iterator{[&](auto i) {
+            return make_histogram_iterator(std::move(i), speed_of_sound);
+        }};
+        return multiband_filter_and_mixdown(
+                dirac_histogram(make_iterator(processed.begin()),
+                                make_iterator(processed.end()),
+                                sample_rate,
+                                max_seconds),
+                sample_rate);
     });
 }
 
@@ -121,12 +124,17 @@ aligned::vector<aligned::vector<float>> attenuate_hrtf(
                           receiver.position,
                           begin,
                           end)};
-        return multiband_filter_and_mixdown(dirac_histogram(processed.begin(),
-                                                            processed.end(),
-                                                            speed_of_sound,
-                                                            sample_rate,
-                                                            max_seconds),
-                                            sample_rate);
+
+        const auto make_iterator{[&](auto i) {
+            return make_histogram_iterator(std::move(i), speed_of_sound);
+        }};
+
+        return multiband_filter_and_mixdown(
+                dirac_histogram(make_iterator(processed.begin()),
+                                make_iterator(processed.end()),
+                                sample_rate,
+                                max_seconds),
+                sample_rate);
     });
 }
 

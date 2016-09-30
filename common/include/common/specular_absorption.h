@@ -1,5 +1,7 @@
 #pragma once
 
+#include "common/cl/scene_structs.h"
+
 template <typename T>
 struct specular_absorption_extraction_trait final {
     static const auto& run(const T& s) { return s; }

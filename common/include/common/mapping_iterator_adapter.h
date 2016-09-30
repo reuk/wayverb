@@ -8,11 +8,11 @@ class mapping_iterator_adapter final {
 public:
     using iterator_category =
             typename std::iterator_traits<It>::iterator_category;
-    using value_type =
-            std::decay_t<decltype(std::declval<Mapper>()(*std::declval<It>()))>;
+    
+    using value_type = decltype(std::declval<Mapper>()(*std::declval<It>()));;
     using difference_type = typename std::iterator_traits<It>::difference_type;
-    using pointer = value_type*;
-    using reference = value_type&;
+    using reference = std::add_lvalue_reference_t<value_type>;
+    using pointer = std::add_pointer_t<reference>;
 
     constexpr mapping_iterator_adapter() = default;
     constexpr explicit mapping_iterator_adapter(It it)
@@ -42,12 +42,26 @@ public:
         return *this;
     }
 
+    constexpr mapping_iterator_adapter(const mapping_iterator_adapter&) =
+            default;
+    constexpr mapping_iterator_adapter(mapping_iterator_adapter&&) noexcept =
+            default;
+    constexpr mapping_iterator_adapter& operator=(
+            const mapping_iterator_adapter&) = default;
+    constexpr mapping_iterator_adapter& operator=(
+            mapping_iterator_adapter&&) noexcept = default;
+
     constexpr It base() const { return it_; }
 
-    constexpr reference operator*() const { return mapper_(*it_); }
-    constexpr pointer operator->() const { return &operator*(); }
+    constexpr value_type operator*() const {
+        return mapper_(*it_);
+    }
 
-    constexpr reference operator[](difference_type n) const {
+    constexpr auto operator->() const {
+        return &operator*();
+    }
+
+    constexpr value_type operator[](difference_type n) const {
         return mapper_(it_[n]);
     }
 

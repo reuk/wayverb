@@ -1,3 +1,4 @@
+#include "waveguide/calibration.h"
 #include "waveguide/mesh.h"
 #include "waveguide/pcs.h"
 #include "waveguide/postprocessor/node.h"
@@ -13,27 +14,54 @@
 #include "common/dsp_vector_ops.h"
 #include "common/map_to_vector.h"
 #include "common/progress_bar.h"
+#include "common/reverb_time.h"
 #include "common/sinc.h"
 #include "common/write_audio_file.h"
 
 #include <iostream>
 
-template <typename T>
-void write(const std::string& name, T t, double sample_rate) {
-    const auto do_it{[&](const auto& name) {
-        snd::write(build_string(name, ".wav"), {t}, sample_rate, 16);
+void postprocess_outputs(aligned::vector<float> waveguide,
+                         aligned::vector<float> raytracer,
+                         double grid_spacing,
+                         double sample_rate) {
+    const auto mag{std::max(max_mag(waveguide), max_mag(raytracer))};
+    for (auto& i : waveguide) {
+        i /= mag;
+    }
+    for (auto& i : raytracer) {
+        i /= mag;
+    }
+
+    snd::write("waveguide.normal.raw.wav", {waveguide}, sample_rate, 16);
+    snd::write("raytracer.normal.raw.wav", {raytracer}, sample_rate, 16);
+
+    const auto calibration_factor{
+            waveguide::rectilinear_calibration_factor(grid_spacing)};
+    std::cout << "calibration factor: " << calibration_factor << '\n';
+
+    for (auto& i : waveguide) {
+        i *= calibration_factor;
+    }
+
+    snd::write("waveguide.calibrated.wav", {waveguide}, sample_rate, 16);
+
+    const auto window{[](auto& sig) {
+        elementwise_multiply(sig, right_hanning(sig.size()));
     }};
 
-    do_it(name);
-    normalize(t);
-    do_it(build_string("normalized.", name));
+    //  TODO If the windows have different lengths does this mess with the 
+    //  frequency response?
+    window(waveguide);
+    window(raytracer);
 
-    const auto window{right_hanning(t.size())};
-    elementwise_multiply(t, window);
-    do_it(build_string("windowed.", name));
+    snd::write("waveguide.windowed.wav", {waveguide}, sample_rate, 16);
+    snd::write("raytracer.windowed.wav", {raytracer}, sample_rate, 16);
 }
 
 int main() {
+
+    //  TODO find why sinc histogram frequency response is pants / wrong
+    //  TODO should histogram be summed in the pressure or intensity domain?
 
     //  constants ------------------------------------------------------------//
     const geo::box box{glm::vec3{0}, glm::vec3{5.56, 3.97, 2.81}};
@@ -44,16 +72,21 @@ int main() {
     constexpr glm::vec3 source{2.09, 2.12, 2.12};
     constexpr glm::vec3 receiver{2.09, 3.08, 0.96};
 
-    const float absorption = 1 - pow(0.99, 2);
+    const float absorption = 1 - pow(0.95, 2);
 
     //  waveguide ------------------------------------------------------------//
     const compute_context cc{};
     auto voxels_and_mesh{waveguide::compute_voxels_and_mesh(
             cc,
-            geo::get_scene_data(box, make_surface(0, 0)),
+            geo::get_scene_data(box, make_surface(absorption, 0)),
             source,
             sample_rate,
             speed_of_sound)};
+
+    const auto eyring{
+            eyring_reverb_time(std::get<0>(voxels_and_mesh).get_scene_data(), 0)
+                    .s[0]};
+    std::cout << "expected reverb time: " << eyring << '\n';
 
     auto& mesh{std::get<1>(voxels_and_mesh)};
     mesh.set_coefficients(
@@ -63,7 +96,9 @@ int main() {
     const auto output_node{compute_index(mesh.get_descriptor(), receiver)};
 
     aligned::vector<float> input_signal{1.0f};
-    input_signal.resize(4.0 * sample_rate, 0.0f);
+    input_signal.resize(eyring * sample_rate, 0.0f);
+
+    std::cout << "running " << input_signal.size() << " steps\n";
 
     auto prep{waveguide::preprocessor::make_hard_source(
             input_node, input_signal.begin(), input_signal.end())};
@@ -80,14 +115,17 @@ int main() {
                    },
                    true);
 
-    write("waveguide", post.get_output(), sample_rate);
+    auto waveguide_output{post.get_output()};
+
+    //  TODO lopass waveguide output
+    //  TODO hipass waveguide output
 
     //  exact image source ---------------------------------------------------//
 
     //  Find exact reflection coefficient products.
-    auto impulses{raytracer::image_source::find_impulses<
+    auto impulses{raytracer::image_source::find_all_impulses<
             raytracer::image_source::fast_pressure_calculator<cl_float1>>(
-            box, source, receiver, cl_float1{{absorption}})};
+            box, source, receiver, cl_float1{{absorption}}, speed_of_sound)};
 
     //  Correct for distance travelled.
     for (auto& imp : impulses) {
@@ -95,11 +133,21 @@ int main() {
     }
 
     //  Create audio file.
-    auto histogram{raytracer::sinc_histogram(
-            impulses.begin(), impulses.end(), speed_of_sound, sample_rate, 20)};
+    const auto make_iterator{[=](auto i) {
+        return raytracer::make_histogram_iterator(std::move(i), speed_of_sound);
+    }};
+    auto histogram{raytracer::sinc_histogram(make_iterator(impulses.begin()),
+                                             make_iterator(impulses.end()),
+                                             sample_rate,
+                                             20)};
 
     //  Extract.
-    const auto img_src{map_to_vector(histogram, [](auto i) { return i.s[0]; })};
+    auto img_src{map_to_vector(histogram, [](auto i) { return i.s[0]; })};
 
-    write("exact_img_src", img_src, sample_rate);
+    postprocess_outputs(post.get_output(),
+                        std::move(img_src),
+                        std::get<1>(voxels_and_mesh).get_descriptor().spacing,
+                        sample_rate);
+
+    //  TODO compare to 'fast' image source output
 }

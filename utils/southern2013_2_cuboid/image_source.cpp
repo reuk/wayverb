@@ -29,11 +29,15 @@ audio image_source_test::operator()(const surface& surf,
             receiver.position,
             speed_of_sound_)};
 
-    const auto histogram{raytracer::dirac_histogram(impulses.begin(),
-                                                    impulses.end(),
-                                                    speed_of_sound_,
-                                                    sample_rate,
-                                                    20)};
+    const auto make_iterator{[=](auto i) {
+        return raytracer::make_histogram_iterator(std::move(i),
+                                                  speed_of_sound_);
+    }};
+    const auto histogram{
+            raytracer::dirac_histogram(make_iterator(impulses.begin()),
+                                       make_iterator(impulses.end()),
+                                       sample_rate,
+                                       20)};
     const auto img_src_results{mixdown(histogram.begin(), histogram.end())};
 
     static auto count{0};

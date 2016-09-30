@@ -98,11 +98,14 @@ audio img_src_and_waveguide_test::operator()(
         imp.volume *= pressure_for_distance(imp.distance, acoustic_impedance_);
     }
 
-    auto histogram{raytracer::sinc_histogram(impulses.begin(),
-                                             impulses.end(),
-                                             speed_of_sound_,
-                                             sample_rate,
-                                             20)};
+    const auto make_iterator{[=](auto i) {
+        return raytracer::make_histogram_iterator(std::move(i),
+                                                  speed_of_sound_);
+    }};
+    auto histogram{raytracer::dirac_histogram(make_iterator(impulses.begin()),
+                                              make_iterator(impulses.end()),
+                                              sample_rate,
+                                              20)};
 
     //  TODO Filter properly.
     //  For now we just divide pressures by 8.

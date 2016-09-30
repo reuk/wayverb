@@ -37,54 +37,60 @@ void image_at_index(const geo::box& box,
                     const glm::vec3& source,
                     const glm::vec3& receiver,
                     const glm::ivec3& image_index,
+                    double max_distance,
+                    aligned::vector<reflection_metadata>& scratch,
                     const Callback& callback) {
     const auto pos{image_position(box, source, image_index)};
+    if (max_distance < glm::distance(receiver, pos)) {
+        return;
+    }
+
     //  Find intersection angles.
     const auto shell_dim{glm::abs(image_index)};
-    const auto reflections{shell_dim.x + shell_dim.y + shell_dim.z};
     //  Find angles with each of the walls.
     const auto direction{glm::normalize(pos - receiver)};
-    const auto cos_x_angle{std::abs(glm::dot(direction, glm::vec3{1, 0, 0}))};
-    const auto cos_y_angle{std::abs(glm::dot(direction, glm::vec3{0, 1, 0}))};
-    const auto cos_z_angle{std::abs(glm::dot(direction, glm::vec3{0, 0, 1}))};
+    const auto cos_angles{glm::abs(direction)};
 
     //  Add the right number of reflections with each angle.
     //  This is fine supposing the reflection operation is associative.
-    aligned::vector<reflection_metadata> intersections{};
-    intersections.reserve(reflections);
+    scratch.clear();
     for (auto c{0ul}; c != shell_dim.x; ++c) {
-        intersections.emplace_back(reflection_metadata{0, cos_x_angle});
+        scratch.emplace_back(reflection_metadata{0, cos_angles.x});
     }
     for (auto c{0ul}; c != shell_dim.y; ++c) {
-        intersections.emplace_back(reflection_metadata{0, cos_y_angle});
+        scratch.emplace_back(reflection_metadata{0, cos_angles.y});
     }
     for (auto c{0ul}; c != shell_dim.z; ++c) {
-        intersections.emplace_back(reflection_metadata{0, cos_z_angle});
+        scratch.emplace_back(reflection_metadata{0, cos_angles.z});
     }
 
     //  Call the callback.
-    callback(pos, intersections.begin(), intersections.end());
+    callback(pos, scratch.begin(), scratch.end());
 }
 
 template <typename Callback>
 void traverse_images(const geo::box& box,
                      const glm::vec3& source,
                      const glm::vec3& receiver,
-                     size_t shell,
+                     size_t shells,
+                     double max_distance,
                      const Callback& callback) {
-    const auto width{width_for_shell(shell)};
+    aligned::vector<reflection_metadata> scratch;
+    const auto width{width_for_shell(shells)};
     for (auto i{0ul}; i != width; ++i) {
-        const auto x{i - shell};
+        const auto x{i - shells};
         for (auto j{0ul}; j != width; ++j) {
-            const auto y{j - shell};
+            const auto y{j - shells};
             for (auto k{0ul}; k != width; ++k) {
-                const auto z{k - shell};
+                const auto z{k - shells};
 
-                const glm::ivec3 ind{x, y, z};
-                const auto abs{glm::abs(ind)};
-                if (abs.x + abs.y + abs.z < shell) {
-                    image_at_index(box, source, receiver, ind, callback);
-                }
+                image_at_index(box,
+                               source,
+                               receiver,
+                               glm::ivec3{x, y, z},
+                               max_distance,
+                               scratch,
+                               callback);
             }
         }
     }
@@ -95,13 +101,18 @@ auto find_impulses(const geo::box& box,
                    const glm::vec3& source,
                    const glm::vec3& receiver,
                    const Surface& surface,
-                   size_t shells) {
+                   double max_distance) {
+    const auto dim{dimensions(box)};
+    const auto min_dim{std::min({dim.x, dim.y, dim.z})};
+    const auto shells{std::ceil(max_distance / min_dim)};
+
     aligned::vector<Surface> surfaces{surface};
     callback_accumulator<Callback> callback{receiver, surfaces, false};
     traverse_images(box,
                     source,
                     receiver,
                     shells,
+                    max_distance,
                     [&](const auto& img, auto begin, auto end) {
                         callback(img, begin, end);
                     });
@@ -109,16 +120,17 @@ auto find_impulses(const geo::box& box,
 }
 
 template <typename Callback, typename Surface>
-auto find_impulses(const geo::box& box,
-                   const glm::vec3& source,
-                   const glm::vec3& receiver,
-                   const Surface& surface) {
-    return find_impulses<Callback>(
-            box,
-            source,
-            receiver,
-            surface,
-            compute_optimum_reflection_number(min_absorption(surface)));
+auto find_all_impulses(const geo::box& box,
+                       const glm::vec3& source,
+                       const glm::vec3& receiver,
+                       const Surface& surface,
+                       double speed_of_sound) {
+    const auto rt{
+            eyring_reverb_time(geo::get_scene_data(box, surface), 0).s[0]};
+    const auto max_dist{rt * speed_of_sound};
+    // const auto shells{
+    //        compute_optimum_reflection_number(min_absorption(surface))};
+    return find_impulses<Callback>(box, source, receiver, surface, max_dist);
 }
 
 }  // namespace image_source
