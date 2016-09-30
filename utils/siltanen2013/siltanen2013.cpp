@@ -13,6 +13,7 @@
 #include "common/callback_accumulator.h"
 #include "common/dsp_vector_ops.h"
 #include "common/map_to_vector.h"
+#include "common/pressure_intensity.h"
 #include "common/progress_bar.h"
 #include "common/reverb_time.h"
 #include "common/sinc.h"
@@ -49,8 +50,6 @@ void postprocess_outputs(aligned::vector<float> waveguide,
         elementwise_multiply(sig, right_hanning(sig.size()));
     }};
 
-    //  TODO If the windows have different lengths does this mess with the 
-    //  frequency response?
     window(waveguide);
     window(raytracer);
 
@@ -59,15 +58,11 @@ void postprocess_outputs(aligned::vector<float> waveguide,
 }
 
 int main() {
-
-    //  TODO find why sinc histogram frequency response is pants / wrong
-    //  TODO should histogram be summed in the pressure or intensity domain?
-
     //  constants ------------------------------------------------------------//
     const geo::box box{glm::vec3{0}, glm::vec3{5.56, 3.97, 2.81}};
     constexpr auto sample_rate{16000.0};
     constexpr auto speed_of_sound{340.0};
-    constexpr auto acoustic_impedance{400.0};
+    constexpr auto acoustic_impedance{400.0f};
 
     constexpr glm::vec3 source{2.09, 2.12, 2.12};
     constexpr glm::vec3 receiver{2.09, 3.08, 0.96};
@@ -117,8 +112,28 @@ int main() {
 
     auto waveguide_output{post.get_output()};
 
-    //  TODO lopass waveguide output
-    //  TODO hipass waveguide output
+    {
+        //  Filter waveguide output.
+        const auto waveguide_max{0.16};
+        const auto normalised_width{0.02};
+        const auto normalised_cutoff{waveguide_max - (normalised_width / 2)};
+
+        const auto low_cutoff{100 / sample_rate};
+
+        fast_filter filter{waveguide_output.size() * 2};
+        filter.filter(waveguide_output.begin(),
+                      waveguide_output.end(),
+                      waveguide_output.begin(),
+                      [=](auto cplx, auto freq) {
+                          return compute_lopass_magnitude(freq,
+                                                          normalised_cutoff,
+                                                          normalised_width,
+                                                          0) *
+                                 compute_hipass_magnitude(
+                                         freq, low_cutoff, low_cutoff * 2, 0) *
+                                 cplx;
+                      });
+    }
 
     //  exact image source ---------------------------------------------------//
 
@@ -132,7 +147,7 @@ int main() {
         imp.volume *= pressure_for_distance(imp.distance, acoustic_impedance);
     }
 
-    //  Create audio file.
+    //  Mix down to histogram.
     const auto make_iterator{[=](auto i) {
         return raytracer::make_histogram_iterator(std::move(i), speed_of_sound);
     }};
@@ -144,7 +159,7 @@ int main() {
     //  Extract.
     auto img_src{map_to_vector(histogram, [](auto i) { return i.s[0]; })};
 
-    postprocess_outputs(post.get_output(),
+    postprocess_outputs(std::move(waveguide_output),
                         std::move(img_src),
                         std::get<1>(voxels_and_mesh).get_descriptor().spacing,
                         sample_rate);
