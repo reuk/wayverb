@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<JUCERPROJECT id="Wayx2u" name="wayverb" projectType="guiapp" version="1.0.0"
+              bundleIdentifier="com.yourcompany.wayverb" includeBinaryInAppConfig="1"
+              jucerVersion="4.2.4">
+  <MAINGROUP id="aLrqtw" name="wayverb">
+    <GROUP id="{99297383-F68C-02A8-A8E3-BC9E43EF7E23}" name="Source">
+      <FILE id="iPrTHr" name="Application.cpp" compile="1" resource="0" file="Source/Application.cpp"/>
+      <FILE id="rN717c" name="Application.hpp" compile="0" resource="0" file="Source/Application.hpp"/>
+      <FILE id="tWHDpt" name="BasicPanel.hpp" compile="0" resource="0" file="Source/BasicPanel.hpp"/>
+      <FILE id="wQy6kr" name="BottomPanel.cpp" compile="1" resource="0" file="Source/BottomPanel.cpp"/>
+      <FILE id="RfFMwI" name="BottomPanel.hpp" compile="0" resource="0" file="Source/BottomPanel.hpp"/>
+      <FILE id="WiZYKa" name="BoxObject.cpp" compile="1" resource="0" file="Source/BoxObject.cpp"/>
+      <FILE id="Wr7SC1" name="BoxObject.hpp" compile="0" resource="0" file="Source/BoxObject.hpp"/>
+      <FILE id="Vl03ji" name="CommandIDs.hpp" compile="0" resource="0" file="Source/CommandIDs.hpp"/>
+      <FILE id="d2xIzq" name="DirectionEditor.cpp" compile="1" resource="0"
+            file="Source/DirectionEditor.cpp"/>
+      <FILE id="Kx1dCL" name="DirectionEditor.hpp" compile="0" resource="0"
+            file="Source/DirectionEditor.hpp"/>
+      <FILE id="IXuLEV" name="EngineFunctor.cpp" compile="1" resource="0"
+            file="Source/EngineFunctor.cpp"/>
+      <FILE id="bxcmAU" name="EngineFunctor.hpp" compile="0" resource="0"
+            file="Source/EngineFunctor.hpp"/>
+      <FILE id="HVgw0a" name="EngineThread.cpp" compile="1" resource="0"
+            file="Source/EngineThread.cpp"/>
+      <FILE id="Xlc1Lh" name="EngineThread.hpp" compile="0" resource="0"
+            file="Source/EngineThread.hpp"/>
+      <FILE id="c0nxLj" name="FullModel.hpp" compile="0" resource="0" file="Source/FullModel.hpp"/>
+      <FILE id="sm3ffs" name="HelpWindow.cpp" compile="1" resource="0" file="Source/HelpWindow.cpp"/>
+      <FILE id="Jlq5fI" name="HelpWindow.hpp" compile="0" resource="0" file="Source/HelpWindow.hpp"/>
+      <FILE id="nV5I85" name="LeftPanel.cpp" compile="1" resource="0" file="Source/LeftPanel.cpp"/>
+      <FILE id="C7v2rm" name="LeftPanel.hpp" compile="0" resource="0" file="Source/LeftPanel.hpp"/>
+      <FILE id="Segug2" name="LitSceneShader.cpp" compile="1" resource="0"
+            file="Source/LitSceneShader.cpp"/>
+      <FILE id="jBiht7" name="LitSceneShader.hpp" compile="0" resource="0"
+            file="Source/LitSceneShader.hpp"/>
+      <FILE id="MwO5uu" name="MainComponent.cpp" compile="1" resource="0"
+            file="Source/MainComponent.cpp"/>
+      <FILE id="u8y1l1" name="MainComponent.hpp" compile="0" resource="0"
+            file="Source/MainComponent.hpp"/>
+      <FILE id="qFgiN5" name="MeshGeneratorFunctor.cpp" compile="1" resource="0"
+            file="Source/MeshGeneratorFunctor.cpp"/>
+      <FILE id="DVLyYX" name="MeshGeneratorFunctor.hpp" compile="0" resource="0"
+            file="Source/MeshGeneratorFunctor.hpp"/>
+      <FILE id="A2nrgv" name="MeshObject.cpp" compile="1" resource="0" file="Source/MeshObject.cpp"/>
+      <FILE id="QqFybe" name="MeshObject.hpp" compile="0" resource="0" file="Source/MeshObject.hpp"/>
+      <FILE id="cHPicG" name="MeshShader.cpp" compile="1" resource="0" file="Source/MeshShader.cpp"/>
+      <FILE id="VyCTLE" name="MeshShader.hpp" compile="0" resource="0" file="Source/MeshShader.hpp"/>
+      <FILE id="Yvm2qn" name="MicrophoneEditor.cpp" compile="1" resource="0"
+            file="Source/MicrophoneEditor.cpp"/>
+      <FILE id="EKDnEF" name="MicrophoneEditor.hpp" compile="0" resource="0"
+            file="Source/MicrophoneEditor.hpp"/>
+      <FILE id="iezi0R" name="ModelObject.cpp" compile="1" resource="0" file="Source/ModelObject.cpp"/>
+      <FILE id="uc1FYl" name="ModelObject.hpp" compile="0" resource="0" file="Source/ModelObject.hpp"/>
+      <FILE id="t5BpnH" name="ModelRenderer.cpp" compile="1" resource="0"
+            file="Source/ModelRenderer.cpp"/>
+      <FILE id="trpg3n" name="ModelRenderer.hpp" compile="0" resource="0"
+            file="Source/ModelRenderer.hpp"/>
+      <FILE id="EIrOOQ" name="ModelRendererComponent.cpp" compile="1" resource="0"
+            file="Source/ModelRendererComponent.cpp"/>
+      <FILE id="JDCTHY" name="ModelRendererComponent.hpp" compile="0" resource="0"
+            file="Source/ModelRendererComponent.hpp"/>
+      <FILE id="Qnx6Jx" name="PointObject.cpp" compile="1" resource="0" file="Source/PointObject.cpp"/>
+      <FILE id="sVvZX8" name="PointObject.hpp" compile="0" resource="0" file="Source/PointObject.hpp"/>
+      <FILE id="lrH1cA" name="PolarPatternDisplay.cpp" compile="1" resource="0"
+            file="Source/PolarPatternDisplay.cpp"/>
+      <FILE id="mFMJlf" name="PolarPatternDisplay.hpp" compile="0" resource="0"
+            file="Source/PolarPatternDisplay.hpp"/>
+      <FILE id="YaPT5I" name="Presets.cpp" compile="1" resource="0" file="Source/Presets.cpp"/>
+      <FILE id="SiarNt" name="Presets.hpp" compile="0" resource="0" file="Source/Presets.hpp"/>
+      <FILE id="eQ8blu" name="ProgressButton.cpp" compile="1" resource="0"
+            file="Source/ProgressButton.cpp"/>
+      <FILE id="a2rpvR" name="ProgressButton.hpp" compile="0" resource="0"
+            file="Source/ProgressButton.hpp"/>
+      <FILE id="rH3Z3y" name="PropertyComponentLAF.cpp" compile="1" resource="0"
+            file="Source/PropertyComponentLAF.cpp"/>
+      <FILE id="PsoAas" name="PropertyComponentLAF.hpp" compile="0" resource="0"
+            file="Source/PropertyComponentLAF.hpp"/>
+      <FILE id="HoXS8l" name="RayVisualisation.cpp" compile="1" resource="0"
+            file="Source/RayVisualisation.cpp"/>
+      <FILE id="m69Bwm" name="RayVisualisation.hpp" compile="0" resource="0"
+            file="Source/RayVisualisation.hpp"/>
+      <FILE id="xRJ0S0" name="SourcesEditor.cpp" compile="1" resource="0"
+            file="Source/SourcesEditor.cpp"/>
+      <FILE id="EyHDds" name="SourcesEditor.hpp" compile="0" resource="0"
+            file="Source/SourcesEditor.hpp"/>
+      <FILE id="li64X4" name="SurfaceModel.cpp" compile="1" resource="0"
+            file="Source/SurfaceModel.cpp"/>
+      <FILE id="XwHO0X" name="SurfaceModel.hpp" compile="0" resource="0"
+            file="Source/SurfaceModel.hpp"/>
+      <FILE id="uITPlb" name="SurfacePanel.cpp" compile="1" resource="0"
+            file="Source/SurfacePanel.cpp"/>
+      <FILE id="bcgxHG" name="SurfacePanel.hpp" compile="0" resource="0"
+            file="Source/SurfacePanel.hpp"/>
+      <FILE id="qUUs6d" name="TextDisplayProperty.hpp" compile="0" resource="0"
+            file="Source/TextDisplayProperty.hpp"/>
+      <FILE id="KXQoXt" name="ValueWrapperEditableListBox.hpp" compile="0"
+            resource="0" file="Source/ValueWrapperEditableListBox.hpp"/>
+      <FILE id="j6WcXH" name="ValueWrapperSlider.hpp" compile="0" resource="0"
+            file="Source/ValueWrapperSlider.hpp"/>
+      <FILE id="ajAmXD" name="Vec3Editor.cpp" compile="1" resource="0" file="Source/Vec3Editor.cpp"/>
+      <FILE id="CPKKle" name="Vec3Editor.hpp" compile="0" resource="0" file="Source/Vec3Editor.hpp"/>
+      <FILE id="LrlcpV" name="wayverb.png" compile="0" resource="1" file="Source/wayverb.png"/>
+    </GROUP>
+  </MAINGROUP>
+  <EXPORTFORMATS>
+    <XCODE_MAC targetFolder="Builds/MacOSX" extraDefs="" extraCompilerFlags="-I../../../common/include&#10;-I../../../waveguide/include&#10;-I../../../raytracer/include&#10;-I../../../combined/include&#10;-I../../../include&#10;-I../../../build/include&#10;-std=c++14"
+               smallIcon="LrlcpV" bigIcon="LrlcpV" documentExtensions="way"
+               externalLibraries="" extraLinkerFlags="" extraFrameworks="OpenCL">
+      <CONFIGURATIONS>
+        <CONFIGURATION name="Debug" osxSDK="default" osxCompatibility="default" osxArchitecture="default"
+                       isDebug="1" optimisation="1" targetName="visualiser"/>
+        <CONFIGURATION name="Release" osxSDK="default" osxCompatibility="default" osxArchitecture="default"
+                       isDebug="0" optimisation="3" targetName="visualiser"/>
+      </CONFIGURATIONS>
+      <MODULEPATHS>
+        <MODULEPATH id="juce_core" path="../../JUCE/modules"/>
+        <MODULEPATH id="juce_events" path="../../JUCE/modules"/>
+        <MODULEPATH id="juce_graphics" path="../../JUCE/modules"/>
+        <MODULEPATH id="juce_data_structures" path="../../JUCE/modules"/>
+        <MODULEPATH id="juce_gui_basics" path="../../JUCE/modules"/>
+        <MODULEPATH id="juce_gui_extra" path="../../JUCE/modules"/>
+        <MODULEPATH id="juce_cryptography" path="../../JUCE/modules"/>
+        <MODULEPATH id="juce_video" path="../../JUCE/modules"/>
+        <MODULEPATH id="juce_opengl" path="../../JUCE/modules"/>
+        <MODULEPATH id="juce_audio_basics" path="../../JUCE/modules"/>
+        <MODULEPATH id="juce_audio_devices" path="../../JUCE/modules"/>
+        <MODULEPATH id="juce_audio_formats" path="../../JUCE/modules"/>
+        <MODULEPATH id="juce_audio_processors" path="../../JUCE/modules"/>
+        <MODULEPATH id="juce_audio_utils" path="../../JUCE/modules"/>
+      </MODULEPATHS>
+    </XCODE_MAC>
+  </EXPORTFORMATS>
+  <MODULES>
+    <MODULE id="juce_audio_basics" showAllCode="0" useLocalCopy="1"/>
+    <MODULE id="juce_audio_devices" showAllCode="1" useLocalCopy="1"/>
+    <MODULE id="juce_audio_formats" showAllCode="1" useLocalCopy="1"/>
+    <MODULE id="juce_audio_processors" showAllCode="1" useLocalCopy="1"/>
+    <MODULE id="juce_audio_utils" showAllCode="1" useLocalCopy="1"/>
+    <MODULE id="juce_core" showAllCode="1" useLocalCopy="1"/>
+    <MODULE id="juce_cryptography" showAllCode="1" useLocalCopy="1"/>
+    <MODULE id="juce_data_structures" showAllCode="1" useLocalCopy="1"/>
+    <MODULE id="juce_events" showAllCode="1" useLocalCopy="1"/>
+    <MODULE id="juce_graphics" showAllCode="1" useLocalCopy="1"/>
+    <MODULE id="juce_gui_basics" showAllCode="1" useLocalCopy="1"/>
+    <MODULE id="juce_gui_extra" showAllCode="1" useLocalCopy="1"/>
+    <MODULE id="juce_opengl" showAllCode="1" useLocalCopy="1"/>
+    <MODULE id="juce_video" showAllCode="1" useLocalCopy="1"/>
+  </MODULES>
+  <JUCEOPTIONS/>
+  <LIVE_SETTINGS>
+    <OSX/>
+  </LIVE_SETTINGS>
+</JUCERPROJECT>

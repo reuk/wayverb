@@ -24,8 +24,6 @@
 #include "common/sinc.h"
 #include "common/write_audio_file.h"
 
-#include <gflags/gflags.h>
-
 #include <algorithm>
 #include <cmath>
 #include <iomanip>
@@ -224,8 +222,6 @@ void serialize(T& archive, coefficient_package& c) {
 }
 
 int main(int argc, char** argv) {
-    gflags::ParseCommandLineFlags(&argc, &argv, true);
-
     if (argc != 4) {
         std::cerr
                 << "expecting an output folder, an azimuth, and an elevation\n";

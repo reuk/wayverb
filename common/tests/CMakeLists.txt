@@ -1,12 +1,9 @@
 cmake_minimum_required(VERSION 3.0)
 
 include_directories(
-    ${CMAKE_SOURCE_DIR}/include
-    ${CMAKE_SOURCE_DIR}/submodules/cereal/include
-    ${CMAKE_SOURCE_DIR}/submodules/Catch/include
+    ${CMAKE_BINARY_DIR}/include
 )
 
-set(name common_tests)
 file(GLOB sources "*.cpp")
 
 add_definitions(-DSCRATCH_PATH="${CMAKE_BINARY_DIR}")
@@ -21,8 +18,10 @@ add_definitions(-DMAT_PATH_BEDROOM="${CMAKE_SOURCE_DIR}/demo/assets/materials/ma
 add_definitions(-DOBJ_PATH_BAD_BOX="${CMAKE_SOURCE_DIR}/demo/assets/test_models/small_square.obj")
 add_definitions(-DMAT_PATH_BAD_BOX="${CMAKE_SOURCE_DIR}/demo/assets/materials/damped.json")
 
-add_executable(${name} ${sources})
+add_executable(common_tests ${sources})
 
-target_link_libraries(${name} common gtest)
+add_dependencies(common_tests cereal_external)
 
-add_test(NAME ${name} COMMAND ${name})
+target_link_libraries(common_tests common gtest)
+
+add_test(NAME common_tests COMMAND common_tests)

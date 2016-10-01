@@ -1,0 +1,30 @@
+{
+  "DVTSourceControlWorkspaceBlueprintPrimaryRemoteRepositoryKey" : "7C27BCE8EFD7BF6CA8CD9F295638A8F658E9620D",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyRepositoryLocationsKey" : {
+
+  },
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyStatesKey" : {
+    "7C27BCE8EFD7BF6CA8CD9F295638A8F658E9620D" : 0,
+    "DEBAC9C6799FD4E8074B3BAF720718E3C3499FA0" : 0
+  },
+  "DVTSourceControlWorkspaceBlueprintIdentifierKey" : "DEC7155E-B4E4-4E41-AF6E-65420D7523E7",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyPathsKey" : {
+    "7C27BCE8EFD7BF6CA8CD9F295638A8F658E9620D" : "waveguide\/",
+    "DEBAC9C6799FD4E8074B3BAF720718E3C3499FA0" : "JUCE\/"
+  },
+  "DVTSourceControlWorkspaceBlueprintNameKey" : "wayverb",
+  "DVTSourceControlWorkspaceBlueprintVersion" : 204,
+  "DVTSourceControlWorkspaceBlueprintRelativePathToProjectKey" : "wayverb\/Builds\/MacOSX\/wayverb.xcodeproj",
+  "DVTSourceControlWorkspaceBlueprintRemoteRepositoriesKey" : [
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/github.com\/reuk\/wayverb.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "7C27BCE8EFD7BF6CA8CD9F295638A8F658E9620D"
+    },
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/github.com\/julianstorer\/JUCE.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "DEBAC9C6799FD4E8074B3BAF720718E3C3499FA0"
+    }
+  ]
+}

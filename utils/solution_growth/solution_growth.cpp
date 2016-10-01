@@ -24,8 +24,6 @@
 #include "common/spatial_division/voxelised_scene_data.h"
 #include "common/write_audio_file.h"
 
-#include <gflags/gflags.h>
-
 #include <algorithm>
 #include <cmath>
 #include <iomanip>
@@ -46,7 +44,6 @@ aligned::vector<float> make_mls(size_t length) {
 }
 
 int main(int argc, char** argv) {
-    gflags::ParseCommandLineFlags(&argc, &argv, true);
     try {
         const glm::vec3 source{4.8, 2.18, 2.12};
         const glm::vec3 receiver{3.91, 1.89, 1.69};

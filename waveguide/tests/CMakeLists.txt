@@ -3,13 +3,9 @@ cmake_minimum_required(VERSION 3.0)
 project(waveguide_tests)
 
 include_directories(
-    ${CMAKE_SOURCE_DIR}/include
-    ${CMAKE_SOURCE_DIR}/submodules/cereal/include
-    #"/usr/local/include/"
+    ${CMAKE_BINARY_DIR}/include
 )
-#link_directories(/usr/local/lib)
 
-set(name waveguide_tests)
 file(GLOB sources "*.cpp")
 
 add_definitions(-DSCRATCH_PATH="${CMAKE_BINARY_DIR}")
@@ -24,8 +20,8 @@ add_definitions(-DMAT_PATH_BEDROOM="${CMAKE_SOURCE_DIR}/demo/assets/materials/ma
 add_definitions(-DOBJ_PATH_BAD_BOX="${CMAKE_SOURCE_DIR}/demo/assets/test_models/small_square.obj")
 add_definitions(-DMAT_PATH_BAD_BOX="${CMAKE_SOURCE_DIR}/demo/assets/materials/damped.json")
 
-add_executable(${name} ${sources})
+add_executable(waveguide_tests ${sources})
 
-target_link_libraries(${name} waveguide compressed-waveguide gtest)
+target_link_libraries(waveguide_tests waveguide compressed-waveguide gtest)
 
-add_test(NAME ${name} COMMAND ${name})
+add_test(NAME waveguide_tests COMMAND waveguide_tests)

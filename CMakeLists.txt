@@ -23,7 +23,7 @@ else()
     set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
     set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
 
-    set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/submodules/hana/cmake")
+    include(dependencies.txt)
 
     add_subdirectory(submodules)
 
@@ -32,7 +32,6 @@ else()
     add_subdirectory(waveguide)
     add_subdirectory(raytracer)
     add_subdirectory(combined)
-    #add_subdirectory(tests)
     add_subdirectory(data)
     add_subdirectory(utils)
 

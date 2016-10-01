@@ -17,8 +17,6 @@
 #include "common/spatial_division/voxelised_scene_data.h"
 #include "common/write_audio_file.h"
 
-#include <gflags/gflags.h>
-
 #include <algorithm>
 #include <cmath>
 #include <fstream>
@@ -34,8 +32,6 @@ enum class PolarPattern {
 };
 
 int main(int argc, char** argv) {
-    gflags::ParseCommandLineFlags(&argc, &argv, true);
-
     if (argc != 3) {
         std::cerr << "expecting an output folder and a polar pattern\nactually "
                      "found: ";
