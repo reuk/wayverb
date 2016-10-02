@@ -79,7 +79,6 @@ void image_source_test() {
     constexpr glm::vec3 receiver{2, 1, 5};
     constexpr auto surface{make_surface(0.1f, 0)};
 
-    constexpr auto speed_of_sound{340.0};
     constexpr auto shells{3};
 
     auto exact_impulses{raytracer::image_source::find_impulses<callback>(
@@ -118,8 +117,7 @@ void image_source_test() {
                                                    compute_context{},
                                                    voxelised,
                                                    source,
-                                                   receiver,
-                                                   speed_of_sound)};
+                                                   receiver)};
 
     check_range(inexact_impulses);
 

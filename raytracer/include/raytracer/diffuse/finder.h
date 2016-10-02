@@ -18,7 +18,6 @@ public:
     finder(const compute_context& cc,
            const glm::vec3& source,
            const glm::vec3& receiver,
-           double speed_of_sound,
            size_t rays,
            size_t depth);
 

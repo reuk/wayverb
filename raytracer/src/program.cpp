@@ -1,7 +1,6 @@
 #include "raytracer/program.h"
 
 #include "raytracer/cl/brdf.h"
-#include "raytracer/cl/speed_of_sound_declaration.h"
 #include "raytracer/cl/structs.h"
 
 #include "common/cl/geometry.h"
@@ -140,7 +139,7 @@ kernel void reflections(global ray* rays,  //  ray
 
 )"};
 
-program::program(const compute_context& cc, double speed_of_sound)
+program::program(const compute_context& cc)
         : program_wrapper(cc,
                           std::vector<std::string>{
                                   cl_representation_v<volume_type>,
@@ -157,8 +156,6 @@ program::program(const compute_context& cc, double speed_of_sound)
                                   ::cl_sources::geometry,
                                   ::cl_sources::voxel,
                                   ::cl_sources::brdf,
-                                  ::cl_sources::speed_of_sound_declaration(
-                                          speed_of_sound),
                                   source}) {}
 
 }  // namespace raytracer

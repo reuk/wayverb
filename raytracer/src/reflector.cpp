@@ -36,11 +36,10 @@ aligned::vector<geo::ray> get_random_rays(const glm::vec3& source, size_t num) {
 
 reflector::reflector(const compute_context& cc,
                      const glm::vec3& receiver,
-                     const aligned::vector<geo::ray>& rays,
-                     double speed_of_sound)
+                     const aligned::vector<geo::ray>& rays)
         : cc(cc)
         , queue(cc.context, cc.device)
-        , kernel(program{cc, speed_of_sound}.get_kernel())
+        , kernel(program{cc}.get_kernel())
         , receiver(to_cl_float3(receiver))
         , rays(rays.size())
         , ray_buffer(load_to_buffer(

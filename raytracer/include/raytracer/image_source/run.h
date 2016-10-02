@@ -14,8 +14,7 @@ auto run(It begin,  /// Iterators over ray directions.
          const compute_context& cc,
          const voxelised_scene_data<cl_float3, surface>& voxelised,
          const glm::vec3& source,
-         const glm::vec3& receiver,
-         float speed_of_sound) {
+         const glm::vec3& receiver) {
     const auto reflection_depth{raytracer::compute_optimum_reflection_number(
             voxelised.get_scene_data())};
 
@@ -23,8 +22,7 @@ auto run(It begin,  /// Iterators over ray directions.
     raytracer::reflector ref{
             cc,
             receiver,
-            raytracer::get_rays_from_directions(begin, end, source),
-            speed_of_sound};
+            raytracer::get_rays_from_directions(begin, end, source)};
 
     //  This will collect the first reflections, to a specified depth,
     //  and use them to find unique image-source paths.

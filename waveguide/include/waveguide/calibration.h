@@ -14,8 +14,17 @@ inline auto distance_for_unit_intensity(T strength) {
     return sqrt(strength / (4 * M_PI));
 }
 
-inline double rectilinear_calibration_factor(double grid_spacing) {
-    return distance_for_unit_intensity(1) / (0.3405 * grid_spacing);
+template <typename T, typename U>
+inline auto distance_for_unit_pressure(T strength, U acoustic_impedance) {
+    using std::sqrt;
+    return sqrt((strength * acoustic_impedance) / (4 * M_PI));
+}
+
+template <typename T, typename U>
+inline auto rectilinear_calibration_factor(T grid_spacing,
+                                           U acoustic_impedance) {
+    return distance_for_unit_pressure(1.0, acoustic_impedance) /
+           (0.3405 * grid_spacing);
 }
 
 }  // namespace waveguide

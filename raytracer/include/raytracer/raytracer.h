@@ -51,7 +51,6 @@ using reflection_processor =
 std::experimental::optional<results<impulse<8>>> run(
         const compute_context& cc,
         const voxelised_scene_data<cl_float3, surface>& scene_data,
-        double speed_of_sound,
         const glm::vec3& source,
         const glm::vec3& receiver,
         const aligned::vector<glm::vec3>& directions,

@@ -1,6 +1,5 @@
 #include "raytracer/diffuse/program.h"
 #include "raytracer/cl/brdf.h"
-#include "raytracer/cl/speed_of_sound_declaration.h"
 #include "raytracer/cl/structs.h"
 
 #include "common/cl/geometry.h"
@@ -73,17 +72,14 @@ kernel void diffuse(const global reflection* reflections,  //  input
         output_volume = new_volume * diffuse_brdf * power_attenuation_for_distance(total_distance);
     }
 
-    //  find output time
-    const float output_time = total_distance / SPEED_OF_SOUND;
-
     //  set output
     diffuse_output[thread] =
-            (impulse){output_volume, reflections[thread].position, output_time};
+            (impulse){output_volume, reflections[thread].position, total_distance};
 }
 
 )"};
 
-program::program(const compute_context& cc, double speed_of_sound)
+program::program(const compute_context& cc)
         : program_wrapper_(cc,
                            std::vector<std::string>{
                                    cl_representation_v<volume_type>,
@@ -100,8 +96,6 @@ program::program(const compute_context& cc, double speed_of_sound)
                                    ::cl_sources::geometry,
                                    ::cl_sources::voxel,
                                    ::cl_sources::brdf,
-                                   ::cl_sources::speed_of_sound_declaration(
-                                           speed_of_sound),
                                    source}) {}
 
 }  // namespace diffuse

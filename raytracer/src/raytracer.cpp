@@ -27,7 +27,6 @@ void in_chunks(It begin, It end, size_t chunk_size, const Func& f) {
 std::experimental::optional<results<impulse<8>>> run(
         const compute_context& cc,
         const voxelised_scene_data<cl_float3, surface>& scene_data,
-        double speed_of_sound,
         const glm::vec3& source,
         const glm::vec3& receiver,
         const aligned::vector<glm::vec3>& directions,
@@ -49,18 +48,13 @@ std::experimental::optional<results<impulse<8>>> run(
     reflector ref{cc,
                   receiver,
                   get_rays_from_directions(
-                          directions.begin(), directions.end(), source),
-                  speed_of_sound};
+                          directions.begin(), directions.end(), source)};
 
     image_source::reflection_path_builder builder{directions.size()};
 
     //  this will incrementally process diffuse responses
-    diffuse::finder dif{cc,
-                        source,
-                        receiver,
-                        speed_of_sound,
-                        directions.size(),
-                        reflection_depth};
+    diffuse::finder dif{
+            cc, source, receiver, directions.size(), reflection_depth};
 
     image_source::tree tree{};
 
@@ -112,8 +106,7 @@ std::experimental::optional<results<impulse<8>>> run(
     return results<impulse<8>>{std::move(direct),
                                std::move(img_src_results),
                                std::move(dif.get_results()),
-                               receiver,
-                               speed_of_sound};
+                               receiver};
 }
 
 }  // namespace raytracer

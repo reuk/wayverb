@@ -25,7 +25,6 @@
 #define SCRATCH_PATH ""
 #endif
 
-constexpr auto speed_of_sound{340.0};
 constexpr auto bench_reflections{128};
 constexpr auto bench_rays{1 << 15};
 
@@ -41,7 +40,6 @@ TEST(raytrace, new) {
 
     auto results{raytracer::run(cc,
                                 voxelised,
-                                speed_of_sound,
                                 source,
                                 glm::vec3(0, 1.75, 0),
                                 the_rays,
@@ -71,7 +69,6 @@ TEST(raytrace, same_location) {
     const auto results =
             raytracer::run(cc,
                            voxelised,
-                           speed_of_sound,
                            source,
                            receiver,
                            the_rays,

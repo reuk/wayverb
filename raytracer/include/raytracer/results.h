@@ -24,13 +24,11 @@ public:
     results(std::experimental::optional<impulse> direct,
             aligned::vector<impulse> image_source,
             aligned::vector<aligned::vector<impulse>> diffuse,
-            const glm::vec3& receiver,
-            double speed_of_sound)
+            const glm::vec3& receiver)
             : direct_{std::move(direct)}
             , image_source_{std::move(image_source)}
             , diffuse_{std::move(diffuse)}
-            , receiver_{receiver}
-            , speed_of_sound_{speed_of_sound} {
+            , receiver_{receiver} {
         //  Do a quick test to make sure the results look alright
         for_each_impulse([](const auto& i) {
             impulse_check(i, [](auto i) {
@@ -106,7 +104,6 @@ public:
     }
 
     glm::vec3 get_receiver() const { return receiver_; }
-    double get_speed_of_sound() const { return speed_of_sound_; }
 
 private:
     std::experimental::optional<impulse> direct_;
@@ -114,7 +111,6 @@ private:
     aligned::vector<aligned::vector<impulse>> diffuse_;
 
     glm::vec3 receiver_;
-    double speed_of_sound_;
 };
 
 }  // namespace raytracer

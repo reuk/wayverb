@@ -9,7 +9,7 @@ namespace raytracer {
 
 class program final {
 public:
-    program(const compute_context& cc, double speed_of_sound);
+    program(const compute_context& cc);
 
     auto get_kernel() const {
         return program_wrapper.get_kernel<cl::Buffer,  //  ray

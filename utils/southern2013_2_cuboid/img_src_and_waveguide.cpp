@@ -86,8 +86,7 @@ audio img_src_and_waveguide_test::operator()(
             compute_context_,
             voxels,
             source,
-            receiver.position,
-            speed_of_sound_)};
+            receiver.position)};
 
     if (const auto direct{
                 raytracer::get_direct<8>(source, receiver.position, voxels)}) {
@@ -161,7 +160,7 @@ audio img_src_and_waveguide_test::operator()(
 
     //  Compute required amplitude adjustment.
     const float calibration_factor = waveguide::rectilinear_calibration_factor(
-            mesh.get_descriptor().spacing);
+            mesh.get_descriptor().spacing, acoustic_impedance_);
 
     //  Adjust magnitude.
     auto magnitude_adjusted{

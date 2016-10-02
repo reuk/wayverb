@@ -23,12 +23,11 @@ namespace diffuse {
 finder::finder(const compute_context& cc,
                const glm::vec3& source,
                const glm::vec3& receiver,
-               double speed_of_sound,
                size_t rays,
                size_t depth)
         : cc(cc)
         , queue(cc.context, cc.device)
-        , kernel(program{cc, speed_of_sound}.get_kernel())
+        , kernel(program{cc}.get_kernel())
         , receiver(to_cl_float3(receiver))
         , rays(rays)
         , reflections_buffer(

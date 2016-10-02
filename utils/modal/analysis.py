@@ -36,6 +36,7 @@ def modal_analysis(fnames, max_frequency, room_dim=None):
         for f in filtered_frequencies:
             plt.axvline(f)
 
+    plt.legend()
     plt.show()
 
 

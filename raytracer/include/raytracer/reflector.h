@@ -27,8 +27,7 @@ class reflector final {
 public:
     reflector(const compute_context& cc,
               const glm::vec3& receiver,
-              const aligned::vector<geo::ray>& rays,
-              double speed_of_sound);
+              const aligned::vector<geo::ray>& rays);
 
     aligned::vector<reflection> run_step(const scene_buffers& buffers);
 

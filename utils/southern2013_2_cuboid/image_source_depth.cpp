@@ -36,8 +36,7 @@ audio image_source_depth_test::operator()(
                                                          compute_context_,
                                                          voxelised_,
                                                          source,
-                                                         receiver.position,
-                                                         speed_of_sound_)};
+                                                         receiver.position)};
 
     aligned::map<size_t, aligned::vector<impulse<8>>> impulses_by_depth{};
     for (const auto& i : impulses) {

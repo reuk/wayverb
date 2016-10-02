@@ -26,8 +26,7 @@ audio image_source_test::operator()(const surface& surf,
             compute_context_,
             voxelised_,
             source,
-            receiver.position,
-            speed_of_sound_)};
+            receiver.position)};
 
     const auto make_iterator{[=](auto i) {
         return raytracer::make_histogram_iterator(std::move(i),

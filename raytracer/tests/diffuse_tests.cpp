@@ -11,8 +11,6 @@
 #define OBJ_PATH ""
 #endif
 
-constexpr auto speed_of_sound{340.0};
-
 TEST(diffuse, bad_reflections_box) {
     const geo::box box(glm::vec3(0, 0, 0), glm::vec3(4, 3, 6));
     constexpr glm::vec3 source{1, 2, 1};
@@ -48,7 +46,7 @@ TEST(diffuse, bad_reflections_box) {
     };
 
     raytracer::diffuse::finder diff{
-            cc, source, receiver, speed_of_sound, bad_reflections.size(), 1};
+            cc, source, receiver, bad_reflections.size(), 1};
 
     diff.push(bad_reflections, buffers);
 }
@@ -89,12 +87,8 @@ TEST(diffuse, bad_reflections_vault) {
                        true},
     };
 
-    raytracer::diffuse::finder diff{cc,
-                                    source,
-                                    receiver.position,
-                                    speed_of_sound,
-                                    bad_reflections.size(),
-                                    1};
+    raytracer::diffuse::finder diff{
+            cc, source, receiver.position, bad_reflections.size(), 1};
 
     diff.push(bad_reflections, buffers);
 }
