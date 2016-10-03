@@ -8,7 +8,8 @@ def main():
     root_dir = '../../build/utils/siltanen2013'
 
     fnames = [os.path.join(root_dir, i) for i in [
-        'raytracer.normal.raw.wav',
+        'exact_img_src.normal.raw.wav',
+        'fast_img_src.normal.raw.wav',
         'waveguide.calibrated.wav',
         #'raw_img_src_attenuated_0.wav',
         #'img_src_and_waveguide_source_0_receiver_0_surface_0.wav',

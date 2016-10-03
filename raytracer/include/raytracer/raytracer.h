@@ -13,13 +13,15 @@ namespace raytracer {
 
 /// If there is line-of-sight between source and receiver, return the relative
 /// time and intensity of the generated impulse.
-template <size_t channels, typename Vertex, typename Surface>
-std::experimental::optional<impulse<channels>> get_direct(
-        const glm::vec3& source,
-        const glm::vec3& receiver,
-        const voxelised_scene_data<Vertex, Surface>& scene_data) {
+template <typename Vertex, typename Surface>
+auto get_direct(const glm::vec3& source,
+                const glm::vec3& receiver,
+                const voxelised_scene_data<Vertex, Surface>& scene_data) {
+    constexpr auto channels{
+            ::detail::components_v<specular_absorption_t<Surface>>};
+
     if (source == receiver) {
-        return std::experimental::nullopt;
+        return std::experimental::optional<impulse<channels>>{};
     }
 
     const auto source_to_receiver{receiver - source};
@@ -31,14 +33,14 @@ std::experimental::optional<impulse<channels>> get_direct(
 
     if (!intersection ||
         (intersection && intersection->inter.t >= source_to_receiver_length)) {
-        return impulse<channels>{
+        return std::experimental::make_optional(impulse<channels>{
                 unit_constructor_v<
                         ::detail::cl_vector_constructor_t<float, channels>>,
                 to_cl_float3(source),
-                source_to_receiver_length};
+                source_to_receiver_length});
     }
 
-    return std::experimental::nullopt;
+    return std::experimental::optional<impulse<channels>>{};
 }
 
 /// arguments

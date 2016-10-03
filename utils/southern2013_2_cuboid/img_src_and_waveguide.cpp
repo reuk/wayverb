@@ -89,7 +89,7 @@ audio img_src_and_waveguide_test::operator()(
             receiver.position)};
 
     if (const auto direct{
-                raytracer::get_direct<8>(source, receiver.position, voxels)}) {
+                raytracer::get_direct(source, receiver.position, voxels)}) {
         impulses.emplace_back(*direct);
     }
 

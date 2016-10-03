@@ -1,0 +1,25 @@
+From 0e1689b21b45dee89aa3de6daa212f1ee4d852f6 Mon Sep 17 00:00:00 2001
+From: reuk <reuben.thomas@me.com>
+Date: Mon, 3 Oct 2016 12:56:24 +0100
+Subject: [PATCH] modified carbon include path
+
+---
+ examples/audio_out.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/examples/audio_out.c b/examples/audio_out.c
+index 4ba8fb4..255033b 100644
+--- a/examples/audio_out.c
++++ b/examples/audio_out.c
+@@ -432,7 +432,7 @@ opensoundsys_close (AUDIO_OUT *audio_out)
+ 
+ #if (defined (__MACH__) && defined (__APPLE__)) /* MacOSX */
+ 
+-#include <Carbon.h>
++#include <Carbon/Carbon.h>
+ #include <CoreAudio/AudioHardware.h>
+ 
+ #define	MACOSX_MAGIC	MAKE_MAGIC ('M', 'a', 'c', ' ', 'O', 'S', ' ', 'X')
+-- 
+2.10.0
+

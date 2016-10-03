@@ -59,28 +59,32 @@ add_dependencies(fftwf fftw_external)
 # sndfile ######################################################################
 
 ExternalProject_Add(
-    libsndfile_external
+    sndfile_external
     PREFIX ${CMAKE_BINARY_DIR}
-    DOWNLOAD_COMMAND ${GIT_EXECUTABLE} clone --depth 1 --branch 1.0.27 https://github.com/erikd/libsndfile.git libsndfile_external
+    DOWNLOAD_COMMAND ${GIT_EXECUTABLE} clone --depth 1 --branch 1.0.27 https://github.com/erikd/libsndfile.git sndfile_external
     CONFIGURE_COMMAND <SOURCE_DIR>/autogen.sh && <SOURCE_DIR>/configure --prefix=<INSTALL_DIR> --disable-external-libs
 )
 
 add_library(sndfile UNKNOWN IMPORTED)
 set_property(TARGET sndfile PROPERTY IMPORTED_LOCATION ${CMAKE_BINARY_DIR}/lib/libsndfile.a)
-add_dependencies(sndfile libsndfile_external) 
+add_dependencies(sndfile sndfile_external) 
 
 # samplerate ###################################################################
+
+# The default libsamplerate distribution uses a deprecated path to Carbon, so
+# we have to manually patch it to modify the path before building.
 
 ExternalProject_Add(
     samplerate_external
     PREFIX ${CMAKE_BINARY_DIR}
     DOWNLOAD_COMMAND ${GIT_EXECUTABLE} clone --depth 1 https://github.com/erikd/libsamplerate.git samplerate_external
-    CONFIGURE_COMMAND <SOURCE_DIR>/autogen.sh && <SOURCE_DIR>/configure --prefix=<INSTALL_DIR>
+    PATCH_COMMAND ${GIT_EXECUTABLE} apply ${CMAKE_SOURCE_DIR}/fix_carbon.patch
+    CONFIGURE_COMMAND <SOURCE_DIR>/autogen.sh && <SOURCE_DIR>/configure --prefix=<INSTALL_DIR> --disable-dependency-tracking 
 )
 
 add_library(samplerate UNKNOWN IMPORTED)
 set_property(TARGET samplerate PROPERTY IMPORTED_LOCATION ${CMAKE_BINARY_DIR}/lib/libsamplerate.a)
-add_dependencies(samplerate libsamplerate_external) 
+add_dependencies(samplerate samplerate_external) 
 
 # gtest ########################################################################
 

@@ -121,8 +121,7 @@ void image_source_test() {
 
     check_range(inexact_impulses);
 
-    if (const auto direct{
-                raytracer::get_direct<8>(source, receiver, voxelised)}) {
+    if (const auto direct{raytracer::get_direct(source, receiver, voxelised)}) {
         inexact_impulses.emplace_back(*direct);
     }
 
