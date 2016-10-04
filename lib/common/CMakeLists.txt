@@ -13,7 +13,7 @@ file(GLOB_RECURSE private_headers "src/*.h")
 
 add_library(common STATIC ${sources} ${public_headers} ${private_headers})
 
-add_dependencies(common glm_external)
+add_dependencies(common glm_external opencl_cpp_external cereal_external)
 
 target_include_directories(common
     PUBLIC
