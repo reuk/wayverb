@@ -6,8 +6,4 @@ include_directories(${CMAKE_BINARY_DIR}/include)
 
 add_executable(write_compensation_signal write_compensation_signal.cpp)
 
-target_link_libraries(
-    write_compensation_signal
-    waveguide
-    compressed-waveguide
-    common)
+target_link_libraries(write_compensation_signal waveguide common)

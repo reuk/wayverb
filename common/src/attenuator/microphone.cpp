@@ -16,7 +16,9 @@ void microphone::set_shape(float shape) {
 }
 
 float attenuation(const microphone& mic, const glm::vec3& incident) {
-    return (1 - mic.get_shape()) +
-           mic.get_shape() *
-                   glm::dot(mic.get_pointing(), glm::normalize(incident));
+    if (const auto l{glm::length(incident)}) {
+        return (1 - mic.get_shape()) +
+               mic.get_shape() * glm::dot(mic.get_pointing(), incident / l);
+    }
+    return 0;
 }

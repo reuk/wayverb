@@ -20,4 +20,3 @@ private:
     aligned::vector<Ret> output_;
     T postprocessor_;
 };
-

@@ -110,7 +110,8 @@ TEST(fast_filter, lopass) {
     fast_filter filter{sig.size()};
     filter.filter(
             sig.begin(), sig.end(), sig.begin(), [](auto cplx, auto freq) {
-                return cplx * compute_lopass_magnitude(freq, 0.25, 0.05, 0);
+                return cplx * static_cast<float>(compute_lopass_magnitude(
+                                      freq, 0.25, 0.05, 0));
             });
     snd::write("lopass_noise.wav", {sig}, 44100, 16);
 }
@@ -127,7 +128,8 @@ TEST(fast_filter, hipass) {
     fast_filter filter{sig.size()};
     filter.filter(
             sig.begin(), sig.end(), sig.begin(), [](auto cplx, auto freq) {
-                return cplx * compute_hipass_magnitude(freq, 0.25, 0.05, 0);
+                return cplx * static_cast<float>(compute_hipass_magnitude(
+                                      freq, 0.25, 0.05, 0));
             });
     snd::write("hipass_noise.wav", {sig}, 44100, 16);
 }
@@ -139,7 +141,8 @@ TEST(fast_filter, transients) {
     fast_filter filter{sig.size()};
     filter.filter(
             sig.begin(), sig.end(), sig.begin(), [](auto cplx, auto freq) {
-                return cplx * compute_hipass_magnitude(freq, 0.25, 0.05, 0);
+                return cplx * static_cast<float>(compute_hipass_magnitude(
+                                      freq, 0.25, 0.05, 0));
             });
     snd::write("transients.wav", {sig}, 44100, 16);
 }

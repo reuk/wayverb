@@ -4,11 +4,11 @@
 
 #include "common/aligned/vector.h"
 #include "common/cl/geometry.h"
-#include "common/cl/include.h"
 #include "common/geo/geometric.h"
 #include "common/map_to_vector.h"
 #include "common/spatial_division/scene_buffers.h"
 
+#include "CL/cl.hpp"
 #include "glm/glm.hpp"
 
 namespace raytracer {

@@ -15,15 +15,15 @@ add_library(waveguide STATIC ${sources} ${public_headers} ${private_headers})
 
 add_dependencies(waveguide glm_external)
 
+include_directories(${WAYVERB_BINARY_DIR}/include)
+
 target_include_directories(waveguide
     PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>
     PRIVATE
-    ${WAYVERB_BINARY_DIR}/include
 )
 
 target_link_libraries(waveguide wayverb-data common samplerate)
 
-add_subdirectory(compressed)
 add_subdirectory(tests)

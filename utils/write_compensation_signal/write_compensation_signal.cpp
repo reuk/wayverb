@@ -1,4 +1,4 @@
-#include "compressed_waveguide.h"
+#include "waveguide/compressed/waveguide.h"
 
 #include "common/write_audio_file.h"
 

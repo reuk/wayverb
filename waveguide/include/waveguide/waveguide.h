@@ -1,6 +1,6 @@
 #pragma once
 
-#include "common/cl/include.h"
+#include "CL/cl.hpp"
 
 #include <atomic>
 #include <functional>

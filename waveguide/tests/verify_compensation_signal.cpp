@@ -1,5 +1,4 @@
-#include "compressed_waveguide.h"
-
+#include "waveguide/compressed/waveguide.h"
 #include "waveguide/make_transparent.h"
 #include "waveguide/mesh.h"
 #include "waveguide/postprocessor/node.h"

@@ -12,6 +12,7 @@ namespace waveguide {
 template <typename It>
 aligned::vector<aligned::vector<float>> attenuate_microphone(
         const model::receiver_settings& receiver,
+        double acoustic_impedance,
         double sample_rate,
         It begin,
         It end) {
@@ -19,6 +20,7 @@ aligned::vector<aligned::vector<float>> attenuate_microphone(
         return attenuate(
                 microphone{get_pointing(i.orientable, receiver.position),
                            i.shape},
+                acoustic_impedance,
                 begin,
                 end);
     });
@@ -27,6 +29,7 @@ aligned::vector<aligned::vector<float>> attenuate_microphone(
 template <typename It>
 aligned::vector<aligned::vector<float>> attenuate_hrtf(
         const model::receiver_settings& receiver,
+        double acoustic_impedance,
         double sample_rate,
         It begin,
         It end) {
@@ -36,6 +39,7 @@ aligned::vector<aligned::vector<float>> attenuate_hrtf(
                 attenuate(hrtf{get_pointing(receiver.hrtf, receiver.position),
                                glm::vec3{0, 1, 0},
                                i},
+                          acoustic_impedance,
                           begin,
                           end),
                 sample_rate);
@@ -47,14 +51,17 @@ aligned::vector<aligned::vector<float>> attenuate_hrtf(
 template <typename It>
 aligned::vector<aligned::vector<float>> run_attenuation(
         const model::receiver_settings& receiver,
+        double acoustic_impedance,
         double sample_rate,
         It begin,
         It end) {
     switch (receiver.mode) {
         case model::receiver_settings::mode::microphones:
-            return attenuate_microphone(receiver, sample_rate, begin, end);
+            return attenuate_microphone(
+                    receiver, acoustic_impedance, sample_rate, begin, end);
         case model::receiver_settings::mode::hrtf:
-            return attenuate_hrtf(receiver, sample_rate, begin, end);
+            return attenuate_hrtf(
+                    receiver, acoustic_impedance, sample_rate, begin, end);
     }
 }
 

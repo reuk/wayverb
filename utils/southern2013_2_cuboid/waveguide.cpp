@@ -93,7 +93,8 @@ audio waveguide_test::operator()(const surface& surface,
                           //   minimize ring - everything over 0.2 is pretty
                           //   much guaranteed to be garbage anyway.
                           return cplx *
-                                 compute_lopass_magnitude(freq, 0.25, 0.1, 0);
+                                 static_cast<float>(compute_lopass_magnitude(
+                                         freq, 0.25, 0.1, 0));
                           // compute_hipass_magnitude(freq,
                           //                         hipass_cutoff,
                           //                         hipass_cutoff / 2,

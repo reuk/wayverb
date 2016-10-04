@@ -1,5 +1,5 @@
-#include "compile_time.h"
-#include "compressed_waveguide.h"
+#include "waveguide/compressed/waveguide.h"
+#include "waveguide/compressed/compile_time.h"
 
 #include "common/write_audio_file.h"
 

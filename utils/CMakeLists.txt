@@ -7,7 +7,12 @@ endif()
 
 include_directories(
     ${CMAKE_SOURCE_DIR}/include
-    ${CMAKE_SOURCE_DIR}/submodules/cereal/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${WAYVERB_BINARY_DIR}/include
+
+    ${CMAKE_SOURCE_DIR}/common/include
+    ${CMAKE_SOURCE_DIR}/raytracer/include
+    ${CMAKE_SOURCE_DIR}/waveguide/include
 )
 
 add_subdirectory(boundary_test)

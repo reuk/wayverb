@@ -251,16 +251,18 @@ const aligned::vector<std::tuple<callback, std::string>> trial_blockers{
         {[](auto sig, auto cutoff, auto sample_rate) {
              const auto normalised_cutoff{cutoff / sample_rate};
              fast_filter blocker{sig.size()};
-             blocker.filter(sig.begin(),
-                            sig.end(),
-                            sig.begin(),
-                            [=](auto cplx, auto freq) {
-                                return cplx * compute_hipass_magnitude(
-                                                      freq,
-                                                      normalised_cutoff,
-                                                      normalised_cutoff / 2,
-                                                      0);
-                            });
+             blocker.filter(
+                     sig.begin(),
+                     sig.end(),
+                     sig.begin(),
+                     [=](auto cplx, auto freq) {
+                         return cplx *
+                                static_cast<float>(compute_hipass_magnitude(
+                                        freq,
+                                        normalised_cutoff,
+                                        normalised_cutoff / 2,
+                                        0));
+                     });
              return sig;
          },
          "fft"},
@@ -268,16 +270,18 @@ const aligned::vector<std::tuple<callback, std::string>> trial_blockers{
         {[](auto sig, auto cutoff, auto sample_rate) {
              const auto normalised_cutoff{cutoff / sample_rate};
              fast_filter blocker{sig.size() * 2};
-             blocker.filter(sig.begin(),
-                            sig.end(),
-                            sig.begin(),
-                            [=](auto cplx, auto freq) {
-                                return cplx * compute_hipass_magnitude(
-                                                      freq,
-                                                      normalised_cutoff,
-                                                      normalised_cutoff / 2,
-                                                      0);
-                            });
+             blocker.filter(
+                     sig.begin(),
+                     sig.end(),
+                     sig.begin(),
+                     [=](auto cplx, auto freq) {
+                         return cplx *
+                                static_cast<float>(compute_hipass_magnitude(
+                                        freq,
+                                        normalised_cutoff,
+                                        normalised_cutoff / 2,
+                                        0));
+                     });
              return sig;
          },
          "padded_fft"},

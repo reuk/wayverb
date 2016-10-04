@@ -1,7 +1,6 @@
 #pragma once
 
-#include "common/cl/include.h"
-
+#include "CL/cl.hpp"
 #include "glm/glm.hpp"
 
 template <typename T>

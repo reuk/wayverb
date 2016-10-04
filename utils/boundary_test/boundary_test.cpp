@@ -13,15 +13,13 @@
 #include "common/callback_accumulator.h"
 #include "common/cl/common.h"
 #include "common/conversions.h"
+#include "common/filters_common.h"
 #include "common/map_to_vector.h"
 #include "common/progress_bar.h"
 #include "common/scene_data.h"
-#include "common/spatial_division/voxelised_scene_data.h"
-
 #include "common/serialize/surface.h"
-
-#include "common/filters_common.h"
 #include "common/sinc.h"
+#include "common/spatial_division/voxelised_scene_data.h"
 #include "common/write_audio_file.h"
 
 #include <algorithm>
@@ -104,8 +102,8 @@ private:
                        [&](auto& queue, const auto& buffer, auto step) {
                            for (auto& i : output_holders) {
                                i(queue, buffer, step);
-                               pb += 1;
                            }
+                           pb += 1;
                        },
                        true);
 
@@ -241,51 +239,6 @@ int main(int argc, char** argv) {
     try {
         const boundary_test test{output_folder, azimuth, elevation};
 
-        // struct surface_package final {
-        //    std::string name;
-        //    surface surface;
-        //};
-
-        // const cl_float lo{0.01};
-        // const cl_float hi{0.9};
-
-        // const auto surface_set = {
-        //        surface_package{"anechoic",
-        //                        surface{{{lo, lo, lo, lo, lo, lo, lo, lo}},
-        //                                {{lo, lo, lo, lo, lo, lo, lo, lo}}}},
-        //        surface_package{"filtered_1",
-        //                        surface{{{hi, lo, lo, lo, lo, lo, lo, lo}},
-        //                                {{hi, lo, lo, lo, lo, lo, lo, lo}}}},
-        //        surface_package{"filtered_2",
-        //                        surface{{{lo, hi, lo, lo, lo, lo, lo, lo}},
-        //                                {{lo, hi, lo, lo, lo, lo, lo, lo}}}},
-        //        surface_package{"filtered_3",
-        //                        surface{{{lo, lo, hi, lo, lo, lo, lo, lo}},
-        //                                {{lo, lo, hi, lo, lo, lo, lo, lo}}}},
-        //        surface_package{
-        //                "filtered_4",
-        //                surface{{{0.4, 0.3, 0.5, 0.8, hi, hi, hi, hi}},
-        //                        {{0.4, 0.3, 0.5, 0.8, hi, hi, hi, hi}}}},
-        //        surface_package{"filtered_5",
-        //                        surface{{{lo, hi, hi, hi, hi, hi, hi, hi}},
-        //                                {{lo, hi, hi, hi, hi, hi, hi, hi}}}},
-        //        surface_package{"filtered_6",
-        //                        surface{{{hi, lo, hi, hi, hi, hi, hi, hi}},
-        //                                {{hi, lo, hi, hi, hi, hi, hi, hi}}}},
-        //        surface_package{"filtered_7",
-        //                        surface{{{hi, hi, lo, hi, hi, hi, hi, hi}},
-        //                                {{hi, hi, lo, hi, hi, hi, hi, hi}}}},
-        //        surface_package{"flat",
-        //                        surface{{{hi, hi, hi, hi, hi, hi, hi, hi}},
-        //                                {{hi, hi, hi, hi, hi, hi, hi, hi}}}},
-        //};
-
-        // const auto coefficients_set{
-        //        map_to_vector(surface_set, [&](auto i) {
-        //            const auto coefficients{waveguide::to_filter_coefficients(
-        //                    i.surface, test.get_waveguide_sample_rate())};
-        //            return coefficient_package{i.name, coefficients};
-        //        })};
         aligned::vector<coefficient_package> coefficients_set{
                 {"flat_0",
                  waveguide::to_flat_coefficients(make_surface(0.0199, 0))},

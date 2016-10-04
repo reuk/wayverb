@@ -2,7 +2,7 @@ mkdir -p build
 cd build
 
 export GLOG_logtostderr=1
-#export GTEST_FILTER="*histogram*"
+#export GTEST_FILTER="*attenuate*"
 
 #cmake .. && make && ctest -V
 #cmake .. && make && cd utils/image_source_comparison && ./image_source_comparison
@@ -13,7 +13,7 @@ export GLOG_logtostderr=1
 #cmake .. && make && ./tests/hybrid_test/hybrid_test ../tests/hybrid_test/output
 #cmake .. && make && ./impulse_gen/impulse_gen
 
-#cmake .. && make && cd ../tests/mic_test && python run_and_graph.py
+#cmake .. && make && cd ../utils/mic_test && ./run_and_graph.sh
 
 #cmake .. && make && ./tests/mesh_impulse_response/write_compensation_signal
 

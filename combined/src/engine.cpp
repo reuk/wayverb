@@ -75,6 +75,7 @@ public:
         //  attenuate waveguide results
         auto waveguide_output{
                 waveguide::run_attenuation(receiver,
+                                           acoustic_impedance_,
                                            waveguide_sample_rate_,
                                            waveguide_results_.begin(),
                                            waveguide_results_.end())};

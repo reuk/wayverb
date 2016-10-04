@@ -35,12 +35,13 @@ void multiband_filter(It begin, It end, double sample_rate) {
         const auto b{make_cl_type_iterator(begin, i)};
         const auto e{make_cl_type_iterator(end, i)};
         filter.filter(b, e, b, [&](auto cplx, auto freq) {
-            return cplx * compute_bandpass_magnitude(freq,
-                                                     band_edges[i + 0],
-                                                     edge_widths[i + 0],
-                                                     band_edges[i + 1],
-                                                     edge_widths[i + 1],
-                                                     l);
+            return cplx * static_cast<float>(
+                                  compute_bandpass_magnitude(freq,
+                                                             band_edges[i + 0],
+                                                             edge_widths[i + 0],
+                                                             band_edges[i + 1],
+                                                             edge_widths[i + 1],
+                                                             l));
         });
     }
 }

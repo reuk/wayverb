@@ -1,5 +1,7 @@
 #pragma once
 
+#include <iterator>
+
 template <typename It>
 class output_iterator_callback final {
 public:

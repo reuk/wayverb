@@ -218,8 +218,9 @@ audio img_src_and_waveguide_test::operator()(
         run_fast_filter(img_src_results.begin(),
                         img_src_results.end(),
                         [=](auto cplx, auto freq) {
-                            return cplx * compute_hipass_magnitude(
-                                                  freq, cutoff, width, 0);
+                            return cplx *
+                                   static_cast<float>(compute_hipass_magnitude(
+                                           freq, cutoff, width, 0));
                         });
 
         {
@@ -239,8 +240,9 @@ audio img_src_and_waveguide_test::operator()(
         run_fast_filter(corrected_waveguide.begin(),
                         corrected_waveguide.end(),
                         [=](auto cplx, auto freq) {
-                            return cplx * compute_lopass_magnitude(
-                                                  freq, cutoff, width, 0);
+                            return cplx *
+                                   static_cast<float>(compute_lopass_magnitude(
+                                           freq, cutoff, width, 0));
                         });
 
         {

@@ -1,4 +1,4 @@
-#include "common/frequency_domain_filter.h"
+#include "common/frequency_domain_fiLter.h"
 #include "fftw/plan.h"
 
 #include <cmath>
@@ -62,35 +62,35 @@ void fast_filter::filter_impl(const callback& callback) {
 
 //----------------------------------------------------------------------------//
 
-float band_edge_impl(float centre, float p, float P, size_t l) {
+double band_edge_impl(double centre, double p, double P, size_t l) {
     return l ? std::sin(M_PI * band_edge_impl(centre, p, P, l - 1) / 2)
              : (((p / P) + 1) / 2);
 }
 
-float lower_band_edge(float centre, float p, float P, size_t l) {
+double lower_band_edge(double centre, double p, double P, size_t l) {
     if (P <= 0) {
         throw std::runtime_error("P must be greater than 0");
     }
     return std::sin(M_PI * band_edge_impl(centre, p, P, l) / 2);
 }
 
-float upper_band_edge(float centre, float p, float P, size_t l) {
+double upper_band_edge(double centre, double p, double P, size_t l) {
     if (P <= 0) {
         throw std::runtime_error("P must be greater than 0");
     }
     return std::cos(M_PI * band_edge_impl(centre, p, P, l) / 2);
 }
 
-float band_edge_frequency(int band, size_t bands, float lower, float upper) {
-    return lower * std::pow(upper / lower, band / static_cast<float>(bands));
+double band_edge_frequency(int band, size_t bands, double lower, double upper) {
+    return lower * std::pow(upper / lower, band / static_cast<double>(bands));
 }
 
-float compute_bandpass_magnitude(float frequency,
-                                 float lower,
-                                 float lower_edge_width,
-                                 float upper,
-                                 float upper_edge_width,
-                                 size_t l) {
+double compute_bandpass_magnitude(double frequency,
+                                  double lower,
+                                  double lower_edge_width,
+                                  double upper,
+                                  double upper_edge_width,
+                                  size_t l) {
     if (frequency < lower - lower_edge_width ||
         upper + upper_edge_width <= frequency) {
         return 0;
@@ -109,10 +109,10 @@ float compute_bandpass_magnitude(float frequency,
     return 1;
 }
 
-float compute_lopass_magnitude(float frequency,
-                               float cutoff,
-                               float width,
-                               size_t l) {
+double compute_lopass_magnitude(double frequency,
+                                double cutoff,
+                                double width,
+                                size_t l) {
     if (frequency < cutoff - width) {
         return 1;
     }
@@ -122,10 +122,10 @@ float compute_lopass_magnitude(float frequency,
     return upper_band_edge(cutoff, frequency - cutoff, width, l);
 }
 
-float compute_hipass_magnitude(float frequency,
-                               float cutoff,
-                               float width,
-                               size_t l) {
+double compute_hipass_magnitude(double frequency,
+                                double cutoff,
+                                double width,
+                                size_t l) {
     if (frequency < cutoff - width) {
         return 0;
     }

@@ -1,6 +1,5 @@
 #pragma once
 
-#include "common/cl/include.h"
 #include "common/cl/representation.h"
 #include "common/geo/box.h"
 

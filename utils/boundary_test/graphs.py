@@ -14,6 +14,8 @@ import os
 import re
 import json
 
+from paths import *
+
 import sys
 sys.path.append("python")
 
@@ -96,7 +98,6 @@ def show_graph(free_field_file, subbed_file, num, den, azimuth, elevation):
 
 
 def main():
-    output_folder = "/Users/reuben/development/waveguide/utils/boundary_test/output"
     suffix_free = "_windowed_free_field.wav"
     suffix_subb = "_windowed_subbed.wav"
 
@@ -105,7 +106,7 @@ def main():
     subdirs = [
         root for root,
         subdirs,
-        _ in os.walk(output_folder) if not subdirs]
+        _ in os.walk(out_dir) if not subdirs]
 
     matcher = re.compile("az_([0-9]+\.[0-9]+)_el_([0-9]+\.[0-9]+)")
     for subdir in subdirs:

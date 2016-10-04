@@ -15,8 +15,6 @@
 include(ExternalProject)
 find_package(Git REQUIRED)
 
-set(dependency_path ${CMAKE_BINARY_DIR}/dependencies)
-
 # glm ##########################################################################
 
 ExternalProject_Add(
@@ -109,6 +107,13 @@ ExternalProject_Add(
 )
 
 # opencl #######################################################################
+
+ExternalProject_Add(
+    opencl_cpp_external
+    PREFIX ${CMAKE_BINARY_DIR}
+    DOWNLOAD_COMMAND ${GIT_EXECUTABLE} clone --depth 1 --branch v2.0.10 https://github.com/KhronosGroup/OpenCL-CLHPP.git opencl_cpp_external
+    CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>/include -DBUILD_DOCS=OFF -DBUILD_EXAMPLES=OFF -DBUILD_TESTS=OFF
+)
 
 find_library(opencl_lib OpenCL)
 mark_as_advanced(opencl_lib)
