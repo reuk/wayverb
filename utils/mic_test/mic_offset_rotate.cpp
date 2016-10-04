@@ -58,70 +58,38 @@ int main(int argc, char** argv) {
     const auto oversample_ratio{1.0};
     const auto sample_rate{filter_frequency * oversample_ratio * (1 / 0.16)};
 
-    const glm::vec3 receiver{0, 0, 0};
-    const auto test_locations{16};
-
-    const compute_context cc{};
-
-    const auto scene_data{geo::get_scene_data(box, make_surface(0, 0))};
-
     constexpr auto speed_of_sound{340.0};
     constexpr auto acoustic_impedance{400.0};
 
-    auto voxels_and_model{waveguide::compute_voxels_and_mesh(
-            cc, scene_data, receiver, sample_rate, speed_of_sound)};
-
-    auto& model{std::get<1>(voxels_and_model)};
-    model.set_coefficients(
-            {waveguide::to_flat_coefficients(make_surface(0, 0))});
+    const glm::vec3 receiver{0, 0, 0};
+    const auto test_locations{16};
+    const microphone mic{glm::vec3{0, 0, 1}, directionality};
 
     constexpr auto bands{8};
+
+    //  simulations ----------------------------------------------------------//
+
     aligned::vector<angle_info<bands>> output;
 
     for (auto i{0u}; i != test_locations; ++i) {
         const auto angle{i * M_PI * 2 / test_locations + M_PI};
 
         const glm::vec3 source{std::sin(angle), 0, std::cos(angle)};
-        const auto dist{glm::distance(source, receiver)};
-        const auto time_between_source_receiver{dist / speed_of_sound};
-        const size_t required_steps =
-                time_between_source_receiver * sample_rate;
+        //const auto dist{glm::distance(source, receiver)};
+        //const auto time_between_source_receiver{dist / speed_of_sound};
+        //const size_t required_steps =
+        //        time_between_source_receiver * sample_rate;
 
-        const auto receiver_index{
-                compute_index(model.get_descriptor(), receiver)};
-
-        const auto steps{2 * required_steps};
-
-        aligned::vector<float> input{1.0f};
-        input.resize(steps, 0.0f);
-        const auto generator{waveguide::preprocessor::make_hard_source(
-                compute_index(model.get_descriptor(), source),
-                input.begin(),
-                input.end())};
-
-        callback_accumulator<waveguide::postprocessor::directional_receiver>
-                postprocessor{model.get_descriptor(),
-                              sample_rate,
-                              acoustic_impedance / speed_of_sound,
-                              receiver_index};
-
-        std::cout << "running " << steps << " steps" << std::endl;
-
-        progress_bar pb(std::cout, steps);
-        waveguide::run(cc,
-                       model,
-                       generator,
-                       [&](auto& queue, const auto& buffer, auto step) {
-                           postprocessor(queue, buffer, step);
-                           pb += 1;
-                       },
-                       true);
-
-        auto out_signal{waveguide::attenuate(
-                microphone{glm::vec3{0, 0, 1}, directionality},
-                acoustic_impedance,
-                postprocessor.get_output().begin(),
-                postprocessor.get_output().end())};
+        auto waveguide{run_waveguide(box,
+                                     0,
+                                     source,
+                                     receiver,
+                                     mic,
+                                     speed_of_sound,
+                                     acoustic_impedance,
+                                     sample_rate)};
+        const auto signal{waveguide::attenuate(
+                mic, acoustic_impedance, waveguide.begin(), waveguide.end())};
 
         const auto lower{100 / sample_rate},
                 upper{filter_frequency / sample_rate};
@@ -131,10 +99,10 @@ int main(int argc, char** argv) {
         angle_info<bands> info;
         info.angle = angle;
 
-        fast_filter filter{out_signal.size() * 2};
+        fast_filter filter{signal.size() * 2};
 
         for (auto i{0u}; i != bands; ++i) {
-            auto band{out_signal};
+            auto band{signal};
 
             filter.filter(band.begin(),
                           band.end(),

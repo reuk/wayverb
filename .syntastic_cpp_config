@@ -1,10 +1,9 @@
--Iinclude/
--Iwaveguide/include
--Iwaveguide/compressed
--Iraytracer/include
--Icommon/include
--Idata
--Icombined/include
+-Ilib/waveguide/include
+-Ilib/raytracer/include
+-Ilib/common/include
+-Ilib/combined/include
+-Ilib/data
+-Iutils/include
 -Ibuild/include
 -Wall
 -Werror

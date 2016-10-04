@@ -28,11 +28,7 @@ else()
     add_subdirectory(submodules)
 
     enable_testing()
-    add_subdirectory(common)
-    add_subdirectory(waveguide)
-    add_subdirectory(raytracer)
-    add_subdirectory(combined)
-    add_subdirectory(data)
+    add_subdirectory(lib)
     add_subdirectory(utils)
 
     include(CPack)
