@@ -12,9 +12,9 @@ template <typename Method, size_t channels>
 auto attenuate(const Method& method,
                const glm::vec3& position,
                const impulse<channels>& i) {
-    return attenuated_impulse<channels>{
-            i.volume * attenuation(method, to_vec3(i.position) - position),
-            i.distance};
+    const auto dir{to_vec3(i.position) - position};
+    const auto att{attenuation(method, dir)};
+    return attenuated_impulse<channels>{i.volume * att, i.distance};
 }
 
 template <typename Method, typename It>

@@ -13,7 +13,7 @@ export GLOG_logtostderr=1
 #cmake .. && make && ./tests/hybrid_test/hybrid_test ../tests/hybrid_test/output
 #cmake .. && make && ./impulse_gen/impulse_gen
 
-#cmake .. && make && cd ../utils/mic_test && ./run_and_graph.sh
+cmake .. && make && cd ../utils/mic_test && ./run_and_graph.sh
 
 #cmake .. && make && ./tests/mesh_impulse_response/write_compensation_signal
 
@@ -24,4 +24,4 @@ export GLOG_logtostderr=1
 #cmake .. && make && cd utils/waveguide_distance_test && ./waveguide_distance_test
 
 #cmake .. && make && cd utils/southern2011 && ./southern2011
-cmake .. && make && cd utils/siltanen2013 && ./siltanen2013
+#cmake .. && make && cd utils/siltanen2013 && ./siltanen2013

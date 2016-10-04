@@ -3,9 +3,7 @@ build
 xcproj
 Testing
 reference
-tests/boundary_test/output
-tests/hybrid_test/output
-tests/mic_test/output
+*/output/
 demo/impulses
 demo/logfile.txt
 docs

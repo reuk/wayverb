@@ -119,19 +119,5 @@ auto find_impulses(const geo::box& box,
     return callback.get_output();
 }
 
-template <typename Callback, typename Surface>
-auto find_all_impulses(const geo::box& box,
-                       const glm::vec3& source,
-                       const glm::vec3& receiver,
-                       const Surface& surface,
-                       double speed_of_sound) {
-    const auto rt{
-            eyring_reverb_time(geo::get_scene_data(box, surface), 0).s[0]};
-    const auto max_dist{rt * speed_of_sound};
-    // const auto shells{
-    //        compute_optimum_reflection_number(min_absorption(surface))};
-    return find_impulses<Callback>(box, source, receiver, surface, max_dist);
-}
-
 }  // namespace image_source
 }  // namespace raytracer

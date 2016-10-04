@@ -167,4 +167,10 @@ template <size_t n>
 using range_t = range<range_value_t<n>>;
 }  // namespace detail
 
+template <typename T, typename U, typename V>
+constexpr auto map(T x, range<U> in, range<V> out) {
+    return (((x - in.get_min()) * dimensions(out)) / dimensions(in)) +
+           out.get_min();
+}
+
 }  // namespace util

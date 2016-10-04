@@ -1,6 +1,7 @@
 #pragma once
 
 #include "common/fftw/buffer.h"
+#include "common/range.h"
 
 #include <complex>
 #include <functional>
@@ -61,36 +62,35 @@ private:
 double lower_band_edge(double centre, double p, double P, size_t l);
 double upper_band_edge(double centre, double p, double P, size_t l);
 
-double band_edge_frequency(int band, size_t bands, double lower, double upper);
+double band_edge_frequency(int band, size_t bands, util::range<double> range);
 
 template <size_t bands>
-std::array<double, bands + 1> band_edge_frequencies(double lower, double upper) {
+std::array<double, bands + 1> band_edge_frequencies(util::range<double> range) {
     std::array<double, bands + 1> ret;
     for (auto i{0u}; i != bands + 1; ++i) {
-        ret[i] = band_edge_frequency(i, bands, lower, upper);
+        ret[i] = band_edge_frequency(i, bands, range);
     }
     return ret;
 }
 
 template <size_t bands>
-std::array<double, bands + 1> band_centre_frequencies(double lower, double upper) {
+std::array<double, bands + 1> band_centre_frequencies(
+        util::range<double> range) {
     std::array<double, bands + 1> ret;
     for (auto i{0ul}; i != ret.size(); ++i) {
-        ret[i] = band_edge_frequency(i * 2 + 1, bands * 2, lower, upper);
+        ret[i] = band_edge_frequency(i * 2 + 1, bands * 2, range);
     }
     return ret;
 }
 
 template <size_t bands>
-std::array<double, bands + 1> band_edge_widths(double lower,
-                                              double upper,
-                                              double overlap) {
+std::array<double, bands + 1> band_edge_widths(util::range<double> range,
+                                               double overlap) {
     std::array<double, bands + 1> ret;
     for (int i{0}; i != ret.size(); ++i) {
-        ret[i] = std::abs(
-                (band_edge_frequency(i * 2, bands * 2, lower, upper) -
-                 band_edge_frequency(i * 2 + 1, bands * 2, lower, upper)) *
-                overlap);
+        ret[i] = std::abs((band_edge_frequency(i * 2, bands * 2, range) -
+                           band_edge_frequency(i * 2 + 1, bands * 2, range)) *
+                          overlap);
     }
     return ret;
 }
@@ -102,11 +102,10 @@ std::array<double, bands + 1> band_edge_widths(double lower,
 /// upper_edge_width: half the absolute width of the upper crossover
 /// l: the slope (0 is shallow, higher is steeper)
 double compute_bandpass_magnitude(double frequency,
-                                 double lower,
-                                 double lower_edge_width,
-                                 double upper,
-                                 double upper_edge_width,
-                                 size_t l);
+                                  util::range<double> range,
+                                  double lower_edge_width,
+                                  double upper_edge_width,
+                                  size_t l);
 
 double compute_lopass_magnitude(double frequency,
                                double cutoff,

@@ -17,31 +17,27 @@ aligned::vector<float> mixdown(It begin, It end) {
 
 template <typename It>
 void multiband_filter(It begin, It end, double sample_rate) {
-    //  TODO check the performance here.
     fast_filter filter{static_cast<size_t>(std::distance(begin, end)) * 2};
 
     constexpr auto num_bands{8};
 
-    const auto lower{20 / sample_rate}, upper{20000 / sample_rate};
+    const util::range<double> audible_range{20 / sample_rate,
+                                            20000 / sample_rate};
 
-    const auto band_edges{band_edge_frequencies<num_bands>(lower, upper)};
-
-    constexpr auto overlap{1};
-    const auto edge_widths{band_edge_widths<num_bands>(lower, upper, overlap)};
-
-    constexpr auto l{0};
+    const auto band_edges{band_edge_frequencies<num_bands>(audible_range)};
+    const auto edge_widths{band_edge_widths<num_bands>(audible_range, 1)};
 
     for (auto i{0ul}; i != num_bands; ++i) {
         const auto b{make_cl_type_iterator(begin, i)};
         const auto e{make_cl_type_iterator(end, i)};
         filter.filter(b, e, b, [&](auto cplx, auto freq) {
-            return cplx * static_cast<float>(
-                                  compute_bandpass_magnitude(freq,
-                                                             band_edges[i + 0],
-                                                             edge_widths[i + 0],
-                                                             band_edges[i + 1],
-                                                             edge_widths[i + 1],
-                                                             l));
+            return cplx * static_cast<float>(compute_bandpass_magnitude(
+                                  freq,
+                                  util::range<double>{band_edges[i],
+                                                      band_edges[i + 1]},
+                                  edge_widths[i + 0],
+                                  edge_widths[i + 1],
+                                  0));
         });
     }
 }

@@ -11,6 +11,7 @@
 //  TODO test raytracer diffuse output to compenstate for fast img-src decay
 
 int main() {
+
     //  constants ------------------------------------------------------------//
 
     const geo::box box{glm::vec3{0}, glm::vec3{5.56, 3.97, 2.81}};
@@ -28,32 +29,35 @@ int main() {
 
     //  simulations ----------------------------------------------------------//
 
-    auto waveguide{run_waveguide(box,
-                                 absorption,
-                                 source,
-                                 receiver,
-                                 mic,
-                                 speed_of_sound,
-                                 acoustic_impedance,
-                                 sample_rate)};
+    auto waveguide{run(box,
+                       absorption,
+                       source,
+                       receiver,
+                       mic,
+                       speed_of_sound,
+                       acoustic_impedance,
+                       sample_rate,
+                       run_waveguide)};
 
-    auto exact_img_src{run_exact_img_src(box,
-                                         absorption,
-                                         source,
-                                         receiver,
-                                         mic,
-                                         speed_of_sound,
-                                         acoustic_impedance,
-                                         sample_rate)};
+    auto exact_img_src{run(box,
+                           absorption,
+                           source,
+                           receiver,
+                           mic,
+                           speed_of_sound,
+                           acoustic_impedance,
+                           sample_rate,
+                           run_exact_img_src)};
 
-    auto fast_img_src{run_fast_img_src(box,
-                                       absorption,
-                                       source,
-                                       receiver,
-                                       mic,
-                                       speed_of_sound,
-                                       acoustic_impedance,
-                                       sample_rate)};
+    auto fast_img_src{run(box,
+                          absorption,
+                          source,
+                          receiver,
+                          mic,
+                          speed_of_sound,
+                          acoustic_impedance,
+                          sample_rate,
+                          run_fast_img_src)};
 
     //  postprocessing -------------------------------------------------------//
 

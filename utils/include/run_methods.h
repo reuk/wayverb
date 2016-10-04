@@ -50,7 +50,8 @@ auto run_waveguide(const geo::box& box,
                    const microphone& microphone,
                    float speed_of_sound,
                    float acoustic_impedance,
-                   float sample_rate) {
+                   float sample_rate,
+                   float simulation_time) {
     std::cout << "running waveguide\n";
 
     const compute_context cc{};
@@ -60,11 +61,6 @@ auto run_waveguide(const geo::box& box,
             source,
             sample_rate,
             speed_of_sound)};
-
-    const auto eyring{
-            eyring_reverb_time(std::get<0>(voxels_and_mesh).get_scene_data(), 0)
-                    .s[0]};
-    std::cout << "expected reverb time: " << eyring << '\n';
 
     auto& mesh{std::get<1>(voxels_and_mesh)};
     mesh.set_coefficients(
@@ -80,7 +76,7 @@ auto run_waveguide(const geo::box& box,
     std::cout << "calibration factor: " << calibration_factor << '\n';
 
     aligned::vector<float> input_signal{static_cast<float>(calibration_factor)};
-    input_signal.resize(eyring * sample_rate, 0.0f);
+    input_signal.resize(simulation_time * sample_rate, 0.0f);
 
     std::cout << "running " << input_signal.size() << " steps\n";
 
@@ -104,7 +100,6 @@ auto run_waveguide(const geo::box& box,
                    true);
 
     return post.get_output();
-
 }
 
 template <typename It>
@@ -141,13 +136,17 @@ auto run_exact_img_src(const geo::box& box,
                        const microphone& microphone,
                        float speed_of_sound,
                        float acoustic_impedance,
-                       float sample_rate) {
+                       float sample_rate,
+                       float simulation_time) {
     std::cout << "running exact img src\n";
 
-    //  Find exact reflection coefficient products.
-    auto impulses{raytracer::image_source::find_all_impulses<
+    auto impulses{raytracer::image_source::find_impulses<
             raytracer::image_source::fast_pressure_calculator<cl_float1>>(
-            box, source, receiver, cl_float1{{absorption}}, speed_of_sound)};
+            box,
+            source,
+            receiver,
+            cl_float1{{absorption}},
+            simulation_time * speed_of_sound)};
 
     return postprocess_impulses(impulses.begin(),
                                 impulses.end(),
@@ -165,7 +164,8 @@ auto run_fast_img_src(const geo::box& box,
                       const microphone& microphone,
                       float speed_of_sound,
                       float acoustic_impedance,
-                      float sample_rate) {
+                      float sample_rate,
+                      float ) {
     std::cout << "running fast img src\n";
 
     const auto voxelised{make_voxelised_scene_data(
@@ -192,5 +192,29 @@ auto run_fast_img_src(const geo::box& box,
                                 speed_of_sound,
                                 acoustic_impedance,
                                 sample_rate);
+}
+
+template <typename Callback>
+auto run(const geo::box& box,
+         float absorption,
+         const glm::vec3& source,
+         const glm::vec3& receiver,
+         const microphone& microphone,
+         float speed_of_sound,
+         float acoustic_impedance,
+         float sample_rate,
+         const Callback& callback) {
+    const auto eyring{
+            eyring_reverb_time(geo::get_scene_data(box, absorption), 0)};
+    std::cout << "expected reverb time: " << eyring << '\n';
+    return callback(box,
+                    absorption,
+                    source,
+                    receiver,
+                    microphone,
+                    speed_of_sound,
+                    acoustic_impedance,
+                    sample_rate,
+                    eyring);
 }
 
