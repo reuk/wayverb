@@ -2,7 +2,7 @@ mkdir -p build
 cd build
 
 export GLOG_logtostderr=1
-export GTEST_FILTER="*build_program*"
+#export GTEST_FILTER="*waveguide_init*"
 
 cmake .. && make && ctest -V
 #cmake .. && make && cd utils/image_source_comparison && ./image_source_comparison

@@ -1,8 +1,8 @@
--Ilib/waveguide/include
--Ilib/raytracer/include
--Ilib/common/include
--Ilib/combined/include
--Ilib/data
+-Ilibrary/waveguide/include
+-Ilibrary/waveguide/compensation_signal/lib/include
+-Ilibrary/raytracer/include
+-Ilibrary/common/include
+-Ilibrary/combined/include
 -Iutils/include
 -Ibuild/include
 -Wall

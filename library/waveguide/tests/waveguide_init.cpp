@@ -53,6 +53,6 @@ TEST(waveguide_init, waveguide_init) {
     ASSERT_EQ(transparent.size(), postprocessor.get_output().size());
 
     for (auto i{0u}; i != input.size(); ++i) {
-        ASSERT_NEAR(postprocessor.get_output()[i], input[i], 0.00001);
+        ASSERT_NEAR(postprocessor.get_output()[i], input[i], 0.0001) << i;
     }
 }

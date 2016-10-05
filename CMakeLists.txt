@@ -28,7 +28,7 @@ else()
     add_subdirectory(submodules)
 
     enable_testing()
-    add_subdirectory(lib)
+    add_subdirectory(library)
     add_subdirectory(utils)
 
     include(CPack)

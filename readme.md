@@ -86,7 +86,7 @@ Project Structure
 Important Folders
 -----------------
 
-* **lib**: all the library code for the project. This is further subdivided:
+* **library**: all the library code for the project. This is further subdivided:
     * **common**: generic utilities such as data structures, architectural
       patterns and DSP helpers
     * **raytracer**: components which relate specifically to geometric acoustics

@@ -54,7 +54,7 @@ TEST(histogram, sinc) {
         const auto result{raytracer::sinc_histogram(
                 items.begin(), items.end(), sample_rate, max_time)};
 
-        ASSERT_EQ(result.size(), 1.0);
+        ASSERT_EQ(result.size(), 200);
         ASSERT_EQ(result.front(), 1.0);
     }
 
@@ -66,7 +66,7 @@ TEST(histogram, sinc) {
         ASSERT_EQ(result.size(), max_time + 1);
         ASSERT_EQ(result.front(), 1.0);
         for (auto i{result.begin() + 1}, end{result.end()}; i != end; ++i) {
-            ASSERT_EQ(*i, 0.0);
+            ASSERT_NEAR(*i, 0.0, 0.0000001);
         }
     }
 }

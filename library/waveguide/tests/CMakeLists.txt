@@ -16,8 +16,10 @@ add_definitions(-DMAT_PATH_BEDROOM="${CMAKE_SOURCE_DIR}/demo/assets/materials/ma
 add_definitions(-DOBJ_PATH_BAD_BOX="${CMAKE_SOURCE_DIR}/demo/assets/test_models/small_square.obj")
 add_definitions(-DMAT_PATH_BAD_BOX="${CMAKE_SOURCE_DIR}/demo/assets/materials/damped.json")
 
+include_directories(${CMAKE_BINARY_DIR}/include)
+
 add_executable(waveguide_tests ${sources})
 
-target_link_libraries(waveguide_tests waveguide gtest)
+target_link_libraries(waveguide_tests compensation_signal waveguide gtest)
 
 add_test(NAME waveguide_tests COMMAND waveguide_tests)
