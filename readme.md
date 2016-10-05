@@ -3,42 +3,86 @@ wayverb
 
 *hybrid waveguide and raytracing room acoustics on the GPU*
 
-This is an ongoing research project, I'll have more to say here in a couple of
-months.
-
-Structure
-=========
+Project Structure
+=================
 
 Important Folders
 -----------------
 
-* *waveguide* - waveguide library
-* *rayverb* - raytracing library
-* *common* - shared code for the waveguide and raytracing libraries
-* *tests* - simple verification tests will live here soon
-* *cmd* - the command-line tool itself
-* *visualiser* - precursor to an eventual GUI tool for configuring simulations
+* **lib**: all the library code for the project. This is further subdivided:
+    * **common**: generic utilities such as data structures, architectural
+      patterns and DSP helpers
+    * **raytracer**: components which relate specifically to geometric acoustics
+    * **waveguide**: components which relate specifically to FDTD air pressure
+      simulation
+    * **combined**: one way of combining the raytracer and waveguide components
+      for broadband room acoustics simutions
 
-Other stuff
------------
+* **utils**: a collection of programs primarily for testing outputs from the
+  library components
 
-* *mic_test* - programs for replicating tests similar to those in "Simulation of
-  Directional Microphones in Digital Waveguide Mesh-Based Models of Room
-  Acoustics", Hacıhabiboglu, IEEE transactions on audio, speech, and language
-  processing, vol. 18, no. 2, February 2010 (might be moved to *tests* soon)
-* *boundary_test* - program for testing frequency-dependent boundaries in the
-  rectilinear waveguide mesh, and for graphing results.
-* *python* - handful of programs to check/graph results. Will be removed if I
-  find a good C++ graphing library
-* *docs* - anything I feel like I should write about as I'm working
+* **wayverb**: a GUI interface to the `combined` library written with JUCE
 
-Updating the JUCE project
-=========================
+Other Folders
+-------------
 
-1. Make necessary changes to .jucer file, then click 'save + open'
-2. Run `./mkxcproj.sh` to generate an xcode project for the wayverb engine
-3. Drag `xcproj/WAYVERB.xcodeproj` to the left bar in xc project that the jucer
-   opened previously.
-4. In the wayverb xc project settings, go to `Build Phases` and click on
-   `Link Binary With Libraries`.
-5. Add all the libraries from the engine xc project.
+* **scripts**: a 'scratchpad' folder for python and octave prototypes
+
+* **submodules**: This project has several dependencies. For the most part,
+  these have official distributions, which CMake can fetch automatically when
+  the project is configured. This folder holds supporting code which has no
+  official distribution.
+
+* **demo**: assets for testing purposes
+
+* **config**: These files configure the Travis CI process which automatically
+  builds and publishes the library documentation.
+
+Requirements
+============
+
+This project has been tested on macOS 10.11.6.
+
+The library code *should* be platform-independent, but relies on experimental
+language features from C++17, so you'll need a recent compiler to build it.
+It also links against the OpenCL framework.
+It should be possible to build on Linux by modifying the 'opencl' section of
+`dependencies.txt` to find your system's opencl drivers.
+
+While this project *might* work on a mac with integrated graphics, ideally you
+should use a recent mac with a discrete graphics card.
+You could be waiting a long time otherwise!
+
+Build Instructions
+==================
+
+Library Only
+------------
+
+This project has a fairly standard CMake build process.
+You should be able to `git clone` a copy of the repository, then from the
+project folder run:
+
+```
+mkdir -b build      # create a folder to hold built products
+cd build            # move to that folder
+cmake ..            # run cmake to configure the build
+make                # run the build itself
+```
+
+The first time you run this, cmake will download all the project's dependencies
+and build local copies of them.
+The build will be quite slow for this reason (depending on the speed of your
+internet connection).
+
+Graphical App
+-------------
+
+The app is built with JUCE, and JUCE likes to own its own build.
+
+An Xcode project is included, which you should be able to open and run in the
+normal way.
+
+If you have a copy of the Projucer installed, you're welcome to try generating
+a Linux project from the included `wayverb.jucer`, but it's not guaranteed to
+work.
