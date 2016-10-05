@@ -1,5 +1,6 @@
 #include "run_methods.h"
 
+#include "common/aligned/map.h"
 #include "common/write_audio_file.h"
 
 #include <iostream>
@@ -8,7 +9,19 @@
 //
 //  TODO bidirectional mic outputs don't match
 
-int main() {
+template <typename It>
+void normalize(It begin, It end) {
+    const auto max_mags{
+            map_to_vector(begin, end, [](auto i) { return max_mag(i); })};
+    const auto mag{*std::max_element(max_mags.begin(), max_mags.end())};
+    std::for_each(begin, end, [=](auto& vec) {
+        for (auto& samp : vec) {
+            samp /= mag;
+        }
+    });
+}
+
+int main(int argc, char** argv) {
 
     //  constants ------------------------------------------------------------//
 
@@ -23,21 +36,17 @@ int main() {
     constexpr auto reflectance{0.95};
     const auto absorption{1 - pow(reflectance, 2)};
 
-    const microphone mic{glm::vec3{0, 0, 1}, 1.0};
+    const aligned::map<std::string, float> polar_pattern_map{
+            {"omnidirectional", 0.0f},
+            {"cardioid", 0.5f},
+            {"bidirectional", 1.0f}};
 
     //  simulations ----------------------------------------------------------//
 
-    auto waveguide{run(box,
-                       absorption,
-                       source,
-                       receiver,
-                       mic,
-                       speed_of_sound,
-                       acoustic_impedance,
-                       sample_rate,
-                       run_waveguide)};
+    for (const auto& pair : polar_pattern_map) {
+        const microphone mic{glm::vec3{0, 0, 1}, pair.second};
 
-    auto exact_img_src{run(box,
+        auto waveguide{run(box,
                            absorption,
                            source,
                            receiver,
@@ -45,55 +54,70 @@ int main() {
                            speed_of_sound,
                            acoustic_impedance,
                            sample_rate,
-                           run_exact_img_src)};
+                           run_waveguide)};
 
-    auto fast_img_src{run(box,
-                          absorption,
-                          source,
-                          receiver,
-                          mic,
-                          speed_of_sound,
-                          acoustic_impedance,
-                          sample_rate,
-                          run_fast_img_src)};
+        auto exact_img_src{run(box,
+                               absorption,
+                               source,
+                               receiver,
+                               mic,
+                               speed_of_sound,
+                               acoustic_impedance,
+                               sample_rate,
+                               run_exact_img_src)};
 
-    //  postprocessing -------------------------------------------------------//
+        auto fast_img_src{run(box,
+                              absorption,
+                              source,
+                              receiver,
+                              mic,
+                              speed_of_sound,
+                              acoustic_impedance,
+                              sample_rate,
+                              run_fast_img_src)};
 
-    auto waveguide_pressure{
-            map_to_vector(waveguide, [](auto i) { return i.pressure; })};
-    waveguide_filter(
-            waveguide_pressure.begin(), waveguide_pressure.end(), sample_rate);
+        //  postprocessing ---------------------------------------------------//
 
-    auto waveguide_attenuated{waveguide::attenuate(
-            mic, acoustic_impedance, waveguide.begin(), waveguide.end())};
-    waveguide_filter(waveguide_attenuated.begin(),
-                     waveguide_attenuated.end(),
-                     sample_rate);
+        auto waveguide_pressure{
+                map_to_vector(waveguide, [](auto i) { return i.pressure; })};
+        waveguide_filter(waveguide_pressure.begin(),
+                         waveguide_pressure.end(),
+                         sample_rate);
 
-    const auto outputs = {&waveguide_pressure,
-                          &waveguide_attenuated,
-                          &exact_img_src,
-                          &fast_img_src};
+        auto waveguide_attenuated{waveguide::attenuate(
+                mic, acoustic_impedance, waveguide.begin(), waveguide.end())};
+        waveguide_filter(waveguide_attenuated.begin(),
+                         waveguide_attenuated.end(),
+                         sample_rate);
 
-    //  Normalise all outputs against one another.
-    const auto max_mags{
-            map_to_vector(outputs, [](auto i) { return max_mag(*i); })};
+        const auto outputs = {&waveguide_pressure,
+                              &waveguide_attenuated,
+                              &exact_img_src,
+                              &fast_img_src};
 
-    const auto mag{*std::max_element(max_mags.begin(), max_mags.end())};
+        const auto make_iterator{[](auto i) {
+            return make_mapping_iterator_adapter(
+                    std::move(i), [](auto& i) -> auto& { return *i; });
+        }};
+        normalize(make_iterator(outputs.begin()), make_iterator(outputs.end()));
 
-    for (const auto& ptr : outputs) {
-        for (auto& samp : *ptr) {
-            samp /= mag;
-        }
+        snd::write(build_string(pair.first, ".waveguide_pressure.wav"),
+                   {waveguide_pressure},
+                   sample_rate,
+                   16);
+        snd::write(build_string(pair.first, ".waveguide_attenuated.wav"),
+                   {waveguide_attenuated},
+                   sample_rate,
+                   16);
+        snd::write(build_string(pair.first, ".exact_img_src.wav"),
+                   {exact_img_src},
+                   sample_rate,
+                   16);
+        snd::write(build_string(pair.first, ".fast_img_src.wav"),
+                   {fast_img_src},
+                   sample_rate,
+                   16);
     }
-
-    snd::write("waveguide_pressure.wav", {waveguide_pressure}, sample_rate, 16);
-    snd::write("waveguide_attenuated.wav",
-               {waveguide_attenuated},
-               sample_rate,
-               16);
-    snd::write("exact_img_src.wav", {exact_img_src}, sample_rate, 16);
-    snd::write("fast_img_src.wav", {fast_img_src}, sample_rate, 16);
 
     return EXIT_SUCCESS;
 }

@@ -13,7 +13,7 @@ aligned::vector<cl_float> get_direction_rng(size_t num) {
     ret.reserve(2 * num);
     std::default_random_engine engine{std::random_device()()};
 
-    for (auto i = 0u; i != num; ++i) {
+    for (auto i{0ul}; i != num; ++i) {
         const direction_rng rng(engine);
         ret.emplace_back(rng.get_z());
         ret.emplace_back(rng.get_theta());
@@ -62,7 +62,7 @@ reflector::reflector(const compute_context& cc,
 
 aligned::vector<reflection> reflector::run_step(const scene_buffers& buffers) {
     //  get some new rng and copy it to device memory
-    auto rng = get_direction_rng(rays);
+    auto rng{get_direction_rng(rays)};
     cl::copy(queue, std::begin(rng), std::end(rng), rng_buffer);
 
     //  get the kernel and run it

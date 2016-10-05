@@ -1,8 +1,7 @@
 #pragma once
 
+#include "common/cl/include.h"
 #include "common/stl_wrappers.h"
-
-#include "CL/cl.hpp"
 
 #include <algorithm>
 #include <cmath>

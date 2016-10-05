@@ -1,6 +1,6 @@
 #pragma once
 
-#include "CL/cl.hpp"
+#include "common/cl/include.h"
 
 namespace waveguide {
 namespace postprocessor {

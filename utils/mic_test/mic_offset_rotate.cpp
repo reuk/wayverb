@@ -100,9 +100,8 @@ int main(int argc, char** argv) {
     //  arguments ------------------------------------------------------------//
 
     if (argc != 3) {
-        std::cerr << "expected an output folder and a polar pattern\n";
-
-        return EXIT_FAILURE;
+        throw std::runtime_error{
+                "expected an output folder and a polar pattern"};
     }
 
     std::string output_folder{argv[1]};
@@ -118,7 +117,6 @@ int main(int argc, char** argv) {
         throw std::runtime_error{"unrecognised polar pattern"};
     }
     const auto directionality{it->second};
-    std::cout << "directionality: " << directionality << std::endl;
 
     //  constants ------------------------------------------------------------//
 
@@ -181,13 +179,6 @@ int main(int argc, char** argv) {
                                          acoustic_impedance,
                                          sample_rate,
                                          simulation_time)};
-        /*
-        static int count{0};
-        snd::write(build_string(output_folder, "/output_", count++, ".wav"),
-                {ret},
-                sample_rate,
-                16);
-        */
         return ret;
     });
 

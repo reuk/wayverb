@@ -1,8 +1,7 @@
 #pragma once
 
 #include "common/aligned/vector.h"
-
-#include "CL/cl.hpp"
+#include "common/cl/include.h"
 
 #include <functional>
 

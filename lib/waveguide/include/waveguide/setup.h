@@ -6,13 +6,13 @@
 #include "waveguide/program.h"
 
 #include "common/aligned/vector.h"
+#include "common/cl/include.h"
 #include "common/map_to_vector.h"
 #include "common/program_wrapper.h"
 #include "common/spatial_division/scene_buffers.h"
 #include "common/spatial_division/voxel_collection.h"
 #include "common/stl_wrappers.h"
 
-#include "CL/cl.hpp"
 #include "glm/fwd.hpp"
 
 namespace waveguide {
