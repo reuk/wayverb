@@ -6,16 +6,11 @@ addons:
             - cmake
             - cmake-data
 
-git:
-    submodules: false
-
 before_install:
 - openssl aes-256-cbc -K $encrypted_a544c41f119b_key -iv $encrypted_a544c41f119b_iv
   -in config/travisci_rsa.enc -out config/travisci_rsa -d
 - chmod 0600 config/travisci_rsa
 - cp config/travisci_rsa ~/.ssh/id_rsa
-- sed -i 's/git@github.com:/https:\/\/github.com\//' .gitmodules
-- git submodule update --init --recursive
 
 install:
 - sudo apt-get install --yes doxygen graphviz cmake
