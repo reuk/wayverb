@@ -4,11 +4,9 @@
 
 #include <iostream>
 
-//  TODO test with waveguide + raytracer microphone modelling.
-//      omni mics: should produce the same output as the raw pressure values
-//                 in both cases (write a unit test?), currently doesn't
-//  
 //  TODO test raytracer diffuse output to compenstate for fast img-src decay
+//
+//  TODO bidirectional mic outputs don't match
 
 int main() {
 
@@ -22,10 +20,10 @@ int main() {
     constexpr glm::vec3 source{2.09, 2.12, 2.12};
     constexpr glm::vec3 receiver{2.09, 3.08, 0.96};
 
-    constexpr auto reflectance{0.9};
+    constexpr auto reflectance{0.95};
     const auto absorption{1 - pow(reflectance, 2)};
 
-    const microphone mic{glm::vec3{0, 0, 1}, 0.5};
+    const microphone mic{glm::vec3{0, 0, 1}, 1.0};
 
     //  simulations ----------------------------------------------------------//
 

@@ -70,19 +70,11 @@ auto per_band_energy(It begin, It end, util::range<double> range) {
 template <size_t bands, typename Callback>
 auto run_single_angle(float angle,
                       const glm::vec3& receiver,
-                      float speed_of_sound,
-                      float sample_rate,
                       util::range<double> audible_range,
                       const Callback& callback) {
     const glm::vec3 source{receiver +
                            glm::vec3{std::sin(angle), 0, std::cos(angle)}};
-    const auto dist{glm::distance(source, receiver)};
-    const auto time_between_source_receiver{dist / speed_of_sound};
-    const size_t required_steps =
-           time_between_source_receiver * sample_rate;
-
-    const auto signal{callback(
-            source, receiver, required_steps, speed_of_sound, sample_rate)};
+    const auto signal{callback(source, receiver)};
     return angle_info<bands>{
             angle,
             per_band_energy<bands>(
@@ -99,17 +91,12 @@ auto run_multiple_angles(const glm::vec3& receiver,
     const auto angles{
             generate_range<test_locations>(util::range<double>{0, 2 * M_PI})};
     return map_to_vector(angles, [&](auto angle) {
-        return run_single_angle<bands>(angle,
-                                       receiver,
-                                       speed_of_sound,
-                                       sample_rate,
-                                       audible_range,
-                                       callback);
+        return run_single_angle<bands>(
+                angle, receiver, audible_range, callback);
     });
 }
 
 int main(int argc, char** argv) {
-
     //  arguments ------------------------------------------------------------//
 
     if (argc != 3) {
@@ -122,7 +109,9 @@ int main(int argc, char** argv) {
     std::string polar_string{argv[2]};
 
     const aligned::map<std::string, float> polar_pattern_map{
-            {"omni", 0.0f}, {"cardioid", 0.5f}, {"bidirectional", 1.0f}};
+            {"omnidirectional", 0.0f},
+            {"cardioid", 0.5f},
+            {"bidirectional", 1.0f}};
 
     const auto it{polar_pattern_map.find(polar_string)};
     if (it == polar_pattern_map.end()) {
@@ -150,6 +139,8 @@ int main(int argc, char** argv) {
 
     const auto simulation_time{2 / speed_of_sound};
 
+    constexpr auto absorption{0.001f};
+
     //  simulations ----------------------------------------------------------//
 
     const auto run{[&](const auto& name, const auto& callback) {
@@ -166,43 +157,39 @@ int main(int argc, char** argv) {
                 cereal::make_nvp("energies", output));
     }};
 
-    /*
-    run("waveguide",
-        [&](const auto& source,
-            const auto& receiver,
-            auto steps,
-            auto speed_of_sound,
-            auto sample_rate) {
-            auto output{run_waveguide(box,
-                                      0,
-                                      source,
-                                      receiver,
-                                      mic,
-                                      speed_of_sound,
-                                      acoustic_impedance,
-                                      sample_rate,
-                                      simulation_time)};
-            return waveguide::attenuate(
-                    mic, acoustic_impedance, output.begin(), output.end());
-        });
-    */
+    run("waveguide", [&](const auto& source, const auto& receiver) {
+        auto output{run_waveguide(box,
+                                  absorption,
+                                  source,
+                                  receiver,
+                                  mic,
+                                  speed_of_sound,
+                                  acoustic_impedance,
+                                  sample_rate,
+                                  simulation_time)};
+        return waveguide::attenuate(
+                mic, acoustic_impedance, output.begin(), output.end());
+    });
 
-    run("img_src",
-        [&](const auto& source,
-            const auto& receiver,
-            auto steps,
-            auto speed_of_sound,
-            auto sample_rate) {
-            return run_exact_img_src(box,
-                                     0,
-                                     source,
-                                     receiver,
-                                     mic,
-                                     speed_of_sound,
-                                     acoustic_impedance,
-                                     sample_rate,
-                                     simulation_time);
-        });
+    run("img_src", [&](const auto& source, const auto& receiver) {
+        const auto ret{run_exact_img_src(box,
+                                         absorption,
+                                         source,
+                                         receiver,
+                                         mic,
+                                         speed_of_sound,
+                                         acoustic_impedance,
+                                         sample_rate,
+                                         simulation_time)};
+        /*
+        static int count{0};
+        snd::write(build_string(output_folder, "/output_", count++, ".wav"),
+                {ret},
+                sample_rate,
+                16);
+        */
+        return ret;
+    });
 
     return EXIT_SUCCESS;
 }

@@ -220,6 +220,8 @@ void serialize(T& archive, coefficient_package& c) {
 }
 
 int main(int argc, char** argv) {
+    //  arguments ------------------------------------------------------------//
+
     if (argc != 4) {
         std::cerr
                 << "expecting an output folder, an azimuth, and an elevation\n";

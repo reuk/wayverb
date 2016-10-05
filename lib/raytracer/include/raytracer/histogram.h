@@ -39,6 +39,9 @@ auto histogram(It begin,
                const T& callback) {
     using value_type = decltype(volume(*begin));
 
+    //  TODO need to pad a bit for sinc outputs - need both sides of the sinc
+    //  kernel
+
     if (begin == end) {
         return aligned::vector<value_type>{};
     }
@@ -90,6 +93,7 @@ void sinc_sum(T value,
 
     const ptrdiff_t ideal_begin = std::floor(centre_sample - width / 2);
     const ptrdiff_t ideal_end = std::ceil(centre_sample + width / 2);
+    ret.resize(std::max(ret.size(), static_cast<size_t>(ideal_end)));
 
     const auto begin_samp{std::max(static_cast<ptrdiff_t>(0), ideal_begin)};
     const auto end_samp{

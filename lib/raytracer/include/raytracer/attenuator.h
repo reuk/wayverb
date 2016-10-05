@@ -2,6 +2,7 @@
 
 #include "raytracer/cl/structs.h"
 
+#include "common/conversions.h"
 #include "common/map_to_vector.h"
 
 #include "glm/glm.hpp"

@@ -10,7 +10,7 @@ from paths import *
 environ["GLOG_logtostderr"] = "1"
 
 def main():
-    for pattern in ["omni", "cardioid", "bidirectional"]:
+    for pattern in ["omnidirectional", "cardioid", "bidirectional"]:
         o_dir = join(out_dir, pattern)
         cmd_1 = ["mkdir", "-p", o_dir]
         cmd_2 = [exe, o_dir, pattern]
