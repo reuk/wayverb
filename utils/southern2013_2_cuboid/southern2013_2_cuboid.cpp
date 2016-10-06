@@ -47,7 +47,6 @@
 #include "common/reverb_time.h"
 #include "common/schroeder.h"
 #include "common/spatial_division/voxelised_scene_data.h"
-#include "common/write_audio_file.h"
 
 #include <iostream>
 
@@ -91,7 +90,9 @@ public:
                                                   k,
                                                   ".wav")};
 
-                    snd::write(fname, {results.data}, results.sample_rate, 16);
+                    write(fname,
+                          make_audio_file(results.data, results.sample_rate),
+                          16);
 
                     const auto begin{results.data.begin()};
                     const auto end{results.data.end()};
@@ -109,7 +110,8 @@ public:
 
                     count += 1;
                     std::cout << "finished: test " << count << " of "
-                              << max_tests << '\n' << std::flush;
+                              << max_tests << '\n'
+                              << std::flush;
                 }
             }
         }

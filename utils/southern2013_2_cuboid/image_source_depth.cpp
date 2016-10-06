@@ -7,7 +7,8 @@
 #include "common/azimuth_elevation.h"
 #include "common/dsp_vector_ops.h"
 #include "common/string_builder.h"
-#include "common/write_audio_file.h"
+
+#include "audio_file/audio_file.h"
 
 image_source_depth_test::image_source_depth_test(
         const generic_scene_data<cl_float3, surface>& sd,
@@ -62,10 +63,9 @@ audio image_source_depth_test::operator()(
     static auto count{0};
     for (const auto& i : impulses_by_depth) {
         const auto img_src_results{mixdown_and_convert(i.second)};
-        snd::write(build_string("img_src_depth_", i.first, "_", count, ".wav"),
-                   {img_src_results},
-                   sample_rate,
-                   16);
+        write(build_string("img_src_depth_", i.first, "_", count, ".wav"),
+              make_audio_file(img_src_results, sample_rate),
+              16);
     }
     count += 1;
     return {mixdown_and_convert(impulses_by_depth.begin()->second),

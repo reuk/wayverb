@@ -2,6 +2,8 @@
 
 #include "common/aligned/vector.h"
 
+#include "audio_file/audio_file.h"
+
 #include <string>
 
 struct audio final {

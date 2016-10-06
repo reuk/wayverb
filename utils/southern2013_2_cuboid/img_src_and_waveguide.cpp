@@ -20,7 +20,8 @@
 #include "common/frequency_domain_filter.h"
 #include "common/progress_bar.h"
 #include "common/schroeder.h"
-#include "common/write_audio_file.h"
+
+#include "audio_file/audio_file.h"
 
 #include <iostream>
 
@@ -119,10 +120,9 @@ audio img_src_and_waveguide_test::operator()(
         static auto count{0};
         auto copy{img_src_results};
         normalize(copy);
-        snd::write(build_string("raw_img_src_attenuated_", count++, ".wav"),
-                   {copy},
-                   sample_rate,
-                   16);
+        write(build_string("raw_img_src_attenuated_", count++, ".wav"),
+              make_audio_file(copy, sample_rate),
+              16);
     }
 
     const auto raytracer_rt60{
@@ -171,10 +171,9 @@ audio img_src_and_waveguide_test::operator()(
         static auto count{0};
         auto copy{magnitude_adjusted};
         normalize(copy);
-        snd::write(build_string("raw_waveguide_", count++, ".wav"),
-                   {copy},
-                   sample_rate,
-                   16);
+        write(build_string("raw_waveguide_", count++, ".wav"),
+              make_audio_file(copy, sample_rate),
+              16);
     }
 
     //  Convert sampling rate.
@@ -185,10 +184,9 @@ audio img_src_and_waveguide_test::operator()(
         static auto count{0};
         auto copy{corrected_waveguide};
         normalize(copy);
-        snd::write(build_string("corrected_waveguide_", count++, ".wav"),
-                   {copy},
-                   sample_rate,
-                   16);
+        write(build_string("corrected_waveguide_", count++, ".wav"),
+              make_audio_file(copy, sample_rate),
+              16);
     }
 
     const auto waveguide_rt60{estimate_rt60(corrected_waveguide.begin(),
@@ -227,10 +225,9 @@ audio img_src_and_waveguide_test::operator()(
             static auto count{0};
             auto copy{img_src_results};
             normalize(copy);
-            snd::write(build_string("filtered_raytracer_", count++, ".wav"),
-                       {copy},
-                       sample_rate,
-                       16);
+            write(build_string("filtered_raytracer_", count++, ".wav"),
+                  make_audio_file(copy, sample_rate),
+                  16);
 
             const auto rt60{estimate_rt60(copy.begin(), copy.end()) /
                             sample_rate};
@@ -249,10 +246,9 @@ audio img_src_and_waveguide_test::operator()(
             static auto count{0};
             auto copy{corrected_waveguide};
             normalize(copy);
-            snd::write(build_string("filtered_waveguide_", count++, ".wav"),
-                       {copy},
-                       sample_rate,
-                       16);
+            write(build_string("filtered_waveguide_", count++, ".wav"),
+                  make_audio_file(copy, sample_rate),
+                  16);
             const auto rt60{estimate_rt60(copy.begin(), copy.end()) /
                             sample_rate};
             std::cout << "filtered waveguide rt60: " << rt60 << '\n';

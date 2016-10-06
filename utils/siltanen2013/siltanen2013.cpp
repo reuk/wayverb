@@ -1,7 +1,8 @@
 #include "run_methods.h"
 
 #include "common/aligned/map.h"
-#include "common/write_audio_file.h"
+
+#include "audio_file/audio_file.h"
 
 #include <iostream>
 
@@ -101,22 +102,18 @@ int main(int argc, char** argv) {
         }};
         normalize(make_iterator(outputs.begin()), make_iterator(outputs.end()));
 
-        snd::write(build_string(pair.first, ".waveguide_pressure.wav"),
-                   {waveguide_pressure},
-                   sample_rate,
-                   16);
-        snd::write(build_string(pair.first, ".waveguide_attenuated.wav"),
-                   {waveguide_attenuated},
-                   sample_rate,
-                   16);
-        snd::write(build_string(pair.first, ".exact_img_src.wav"),
-                   {exact_img_src},
-                   sample_rate,
-                   16);
-        snd::write(build_string(pair.first, ".fast_img_src.wav"),
-                   {fast_img_src},
-                   sample_rate,
-                   16);
+        write(build_string(pair.first, ".waveguide_pressure.wav"),
+              make_audio_file(waveguide_pressure, sample_rate),
+              16);
+        write(build_string(pair.first, ".waveguide_attenuated.wav"),
+              make_audio_file(waveguide_attenuated, sample_rate),
+              16);
+        write(build_string(pair.first, ".exact_img_src.wav"),
+              make_audio_file(exact_img_src, sample_rate),
+              16);
+        write(build_string(pair.first, ".fast_img_src.wav"),
+              make_audio_file(fast_img_src, sample_rate),
+              16);
     }
 
     return EXIT_SUCCESS;

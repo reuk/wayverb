@@ -1,7 +1,9 @@
 -Ilibrary/waveguide/include
+-Ilibrary/audio_file/include
 -Ilibrary/waveguide/compensation_signal/lib/include
 -Ilibrary/raytracer/include
 -Ilibrary/common/include
+-Ilibrary/common/hrtf/lib/include
 -Ilibrary/combined/include
 -Iutils/include
 -Ibuild/include

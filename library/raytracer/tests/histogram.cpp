@@ -1,7 +1,5 @@
 #include "raytracer/histogram.h"
 
-#include "common/write_audio_file.h"
-
 #include "gtest/gtest.h"
 
 struct item final {

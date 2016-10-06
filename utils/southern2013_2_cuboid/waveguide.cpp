@@ -12,7 +12,8 @@
 #include "common/frequency_domain_filter.h"
 #include "common/progress_bar.h"
 #include "common/reverb_time.h"
-#include "common/write_audio_file.h"
+
+#include "audio_file/audio_file.h"
 
 #include <iostream>
 
@@ -76,10 +77,9 @@ audio waveguide_test::operator()(const surface& surface,
         static auto count{0};
         auto copy{pressure_signal};
         normalize(copy);
-        snd::write(build_string("pressure_signal_", count++, ".wav"),
-                   {copy},
-                   sample_rate_,
-                   16);
+        write(build_string("pressure_signal_", count++, ".wav"),
+              make_audio_file(copy, sample_rate_),
+              16);
     }
 
     //  Filter out everything above the waveguide nyquist.
@@ -106,10 +106,9 @@ audio waveguide_test::operator()(const surface& surface,
         static auto count{0};
         auto copy{pressure_signal};
         normalize(copy);
-        snd::write(build_string("nyquist_filtered_", count++, ".wav"),
-                   {copy},
-                   sample_rate_,
-                   16);
+        write(build_string("nyquist_filtered_", count++, ".wav"),
+              make_audio_file(copy, sample_rate_),
+              16);
     }
 
     //  Filter out dc component.
@@ -119,10 +118,9 @@ audio waveguide_test::operator()(const surface& surface,
                                   [](auto i) { return std::log(i); })};
         {
             static auto count{0};
-            snd::write(build_string("logged_", count++, ".wav"),
-                       {logged},
-                       sample_rate_,
-                       16);
+            write(build_string("logged_", count++, ".wav"),
+                  make_audio_file(logged, sample_rate_),
+                  16);
         }
 
         auto x{0ul};
@@ -146,10 +144,9 @@ audio waveguide_test::operator()(const surface& surface,
         static auto count{0};
         auto copy{pressure_signal};
         normalize(copy);
-        snd::write(build_string("dc_blocked_", count++, ".wav"),
-                   {copy},
-                   sample_rate_,
-                   16);
+        write(build_string("dc_blocked_", count++, ".wav"),
+              make_audio_file(copy, sample_rate_),
+              16);
     }
 
     return {pressure_signal, sample_rate_, "waveguide"};

@@ -3,7 +3,7 @@
 #include "common/aligned/map.h"
 #include "common/map.h"
 #include "common/range.h"
-#include "common/write_audio_file.h"
+#include "common/per_band_energy.h"
 
 #include "cereal/archives/JSON.hpp"
 #include "cereal/cereal.hpp"
@@ -35,34 +35,6 @@ constexpr auto generate_range(util::range<T> r) {
     std::array<T, num> ret;
     for (auto i{0ul}; i != ret.size(); ++i) {
         ret[i] = util::map(i, util::range<T>{0, num}, r);
-    }
-    return ret;
-}
-
-template <size_t bands, typename It>
-auto per_band_energy(It begin, It end, util::range<double> range) {
-    std::array<float, bands> ret{};
-
-    const auto edges{band_edge_frequencies<bands>(range)};
-    const auto widths{band_edge_widths<bands>(range, 1)};
-
-    const size_t input_size = std::distance(begin, end);
-    fast_filter filter{input_size * 2};
-    for (auto i{0u}; i != bands; ++i) {
-        aligned::vector<float> band(input_size, 0);
-        filter.filter(begin, end, band.begin(), [&](auto cplx, auto freq) {
-            return cplx * static_cast<float>(compute_bandpass_magnitude(
-                                  freq,
-                                  util::range<double>{edges[i], edges[i + 1]},
-                                  widths[i],
-                                  widths[i + 1],
-                                  0));
-        });
-
-        const auto band_energy{std::sqrt(proc::accumulate(
-                band, 0.0, [](auto a, auto b) { return a + b * b; }))};
-
-        ret[i] = band_energy;
     }
     return ret;
 }

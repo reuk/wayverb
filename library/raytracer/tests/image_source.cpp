@@ -2,8 +2,6 @@
 #include "raytracer/image_source/run.h"
 #include "raytracer/raytracer.h"
 
-#include "common/write_audio_file.h"
-
 #include "gtest/gtest.h"
 
 TEST(image_source, image_source_position) {

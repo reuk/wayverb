@@ -4,7 +4,8 @@
 
 #include "common/azimuth_elevation.h"
 #include "common/string_builder.h"
-#include "common/write_audio_file.h"
+
+#include "audio_file/audio_file.h"
 
 image_source_test::image_source_test(
         const generic_scene_data<cl_float3, surface>& sd, float speed_of_sound)
@@ -42,7 +43,7 @@ audio image_source_test::operator()(const surface& surf,
     static auto count{0};
     const auto fname{
             build_string("img_src_intensity_source_", count++, ".wav")};
-    snd::write(fname, {img_src_results}, sample_rate, 16);
+    write(fname, make_audio_file(img_src_results, sample_rate), 16);
     const auto pressure{map_to_vector(img_src_results,
                                       [](auto i) { return std::sqrt(i); })};
 

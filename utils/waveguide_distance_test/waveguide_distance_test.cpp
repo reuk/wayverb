@@ -9,7 +9,8 @@
 #include "common/dsp_vector_ops.h"
 #include "common/map_to_vector.h"
 #include "common/progress_bar.h"
-#include "common/write_audio_file.h"
+
+#include "audio_file/audio_file.h"
 
 #include <iostream>
 
@@ -116,8 +117,9 @@ int main() {
     auto count{0};
     for (const auto& i : outputs) {
         //  Write out.
-        snd::write(
-                build_string("distance_", count, ".wav"), {i}, sample_rate, 16);
+        write(build_string("distance_", count, ".wav"),
+              make_audio_file(i, sample_rate),
+              16);
         count += 1;
     }
 

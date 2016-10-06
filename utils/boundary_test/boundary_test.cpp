@@ -20,7 +20,8 @@
 #include "common/serialize/surface.h"
 #include "common/sinc.h"
 #include "common/spatial_division/voxelised_scene_data.h"
-#include "common/write_audio_file.h"
+
+#include "audio_file/audio_file.h"
 
 #include <algorithm>
 #include <cmath>
@@ -57,10 +58,9 @@ public:
             , elevation_{elevation} {}
 
 private:
-    aligned::vector<aligned::vector<float>> run_simulation(
-            const geo::box& boundary,
-            const aligned::vector<glm::vec3>& receivers,
-            const coefficients_canonical& coefficients) const {
+    auto run_simulation(const geo::box& boundary,
+                        const aligned::vector<glm::vec3>& receivers,
+                        const coefficients_canonical& coefficients) const {
         const auto scene_data{
                 geo::get_scene_data(boundary, make_surface(0, 0))};
         const auto spacing{waveguide::config::grid_spacing(
@@ -112,8 +112,8 @@ private:
     }
 
     struct free_field_results final {
-        aligned::vector<float> image;
-        aligned::vector<float> direct;
+        std::vector<float> image;
+        std::vector<float> direct;
     };
 
     free_field_results get_free_field_results() const {
@@ -126,7 +126,8 @@ private:
             elementwise_multiply(i, window);
         }
 
-        return {std::move(results[0]), std::move(results[1])};
+        return {std::vector<float>(results[0].begin(), results[0].end()),
+                std::vector<float>(results[1].begin(), results[1].end())};
     }
 
 public:
@@ -145,19 +146,16 @@ public:
                         subbed.begin(),
                         [](const auto& i, const auto& j) { return j - i; });
 
-        snd::write(build_string(output_folder_,
-                                "/",
-                                test_name,
-                                "_windowed_free_field.wav"),
-                   {free_field_.image},
-                   out_sr,
-                   bit_depth);
-        snd::write(
-                build_string(
-                        output_folder_, "/", test_name, "_windowed_subbed.wav"),
-                {subbed},
-                out_sr,
-                bit_depth);
+        write(build_string(output_folder_,
+                           "/",
+                           test_name,
+                           "_windowed_free_field.wav"),
+              make_audio_file(free_field_.image, out_sr),
+              bit_depth);
+        write(build_string(
+                      output_folder_, "/", test_name, "_windowed_subbed.wav"),
+              make_audio_file(subbed, out_sr),
+              bit_depth);
 
         return subbed;
     }

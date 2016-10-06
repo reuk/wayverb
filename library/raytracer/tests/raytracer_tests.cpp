@@ -11,7 +11,6 @@
 #include "common/scene_data_loader.h"
 #include "common/spatial_division/voxelised_scene_data.h"
 #include "common/string_builder.h"
-#include "common/write_audio_file.h"
 
 #include "gtest/gtest.h"
 

@@ -4,7 +4,8 @@
 
 #include "common/cl/common.h"
 #include "common/timed_scope.h"
-#include "common/write_audio_file.h"
+
+#include "audio_file/audio_file.h"
 
 #include "gtest/gtest.h"
 
@@ -287,14 +288,14 @@ TEST_F(testing_rk_biquad, filtering) {
     auto results{run_kernel(program.get_filter_test_kernel())};
     ASSERT_TRUE(proc::none_of(results, [](auto i) { return std::isnan(i); }));
     ASSERT_TRUE(proc::none_of(results, [](auto i) { return std::isinf(i); }));
-    snd::write("./filtered_noise.wav", {results}, testing::sr, 16);
+    write("./filtered_noise.wav", make_audio_file(results, testing::sr), 16);
 }
 
 TEST_F(testing_rk_filter, filtering_2) {
     auto results = run_kernel(program.get_filter_test_2_kernel());
     ASSERT_TRUE(proc::none_of(results, [](auto i) { return std::isnan(i); }));
     ASSERT_TRUE(proc::none_of(results, [](auto i) { return std::isinf(i); }));
-    snd::write("./filtered_noise_2.wav", {results}, testing::sr, 16);
+    write("./filtered_noise_2.wav", make_audio_file(results, testing::sr), 16);
 }
 
 class testing_rk_biquad_quiet : public rk_biquad<QuietNoiseGenerator>,
@@ -306,14 +307,18 @@ TEST_F(testing_rk_biquad_quiet, filtering) {
     auto results = run_kernel(program.get_filter_test_kernel());
     ASSERT_TRUE(proc::none_of(results, [](auto i) { return std::isnan(i); }));
     ASSERT_TRUE(proc::none_of(results, [](auto i) { return std::isinf(i); }));
-    snd::write("./filtered_noise_quiet.wav", {results}, testing::sr, 16);
+    write("./filtered_noise_quiet.wav",
+          make_audio_file(results, testing::sr),
+          16);
 }
 
 TEST_F(testing_rk_filter_quiet, filtering_2) {
     auto results = run_kernel(program.get_filter_test_2_kernel());
     ASSERT_TRUE(proc::none_of(results, [](auto i) { return std::isnan(i); }));
     ASSERT_TRUE(proc::none_of(results, [](auto i) { return std::isinf(i); }));
-    snd::write("./filtered_noise_2_quiet.wav", {results}, testing::sr, 16);
+    write("./filtered_noise_2_quiet.wav",
+          make_audio_file(results, testing::sr),
+          16);
 }
 
 TEST(compare_filters, compare_filters) {
@@ -372,8 +377,14 @@ TEST(compare_filters, compare_filters) {
         Logger::log_err("max div / dB: ", max_div);
         */
 
-        snd::write("./buf_1.wav", {buf_1}, testing::sr, 16);
-        snd::write("./buf_2.wav", {buf_2}, testing::sr, 16);
+        write("./buf_1.wav",
+              make_audio_file(std::vector<float>(buf_1.begin(), buf_1.end()),
+                              testing::sr),
+              16);
+        write("./buf_2.wav",
+              make_audio_file(std::vector<float>(buf_2.begin(), buf_2.end()),
+                              testing::sr),
+              16);
     };
 
     using Imp = ImpulseGenerator<200>;

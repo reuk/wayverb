@@ -2,7 +2,8 @@
 #include "common/dsp_vector_ops.h"
 #include "common/frequency_domain_filter.h"
 #include "common/string_builder.h"
-#include "common/write_audio_file.h"
+
+#include "audio_file/audio_file.h"
 
 #include "gtest/gtest.h"
 
@@ -117,7 +118,7 @@ TEST(dc_blocker, big_offset) {
     ASSERT_EQ(dc.filter(2), 2 / 16.0);
 }
 
-aligned::vector<float> generate_noise(size_t samples, float mag = 0.5f) {
+auto generate_noise(size_t samples, float mag = 0.5f) {
     std::default_random_engine engine{std::random_device()()};
     std::uniform_real_distribution<float> dist{-mag, mag};
     aligned::vector<float> ret(samples);
@@ -126,7 +127,7 @@ aligned::vector<float> generate_noise(size_t samples, float mag = 0.5f) {
     return ret;
 }
 
-aligned::vector<float> generate_sweep(size_t samples) {
+auto generate_sweep(size_t samples) {
     double phase{0};
     aligned::vector<float> ret(samples);
     for (auto i = 0u; i != samples; ++i) {
@@ -137,14 +138,14 @@ aligned::vector<float> generate_sweep(size_t samples) {
     return ret;
 }
 
-aligned::vector<float> generate_impulse(size_t samples) {
+auto generate_impulse(size_t samples) {
     aligned::vector<float> ret(samples, 0);
     ret[ret.size() / 2] = 1;
     return ret;
 }
 
 TEST(dc_blocker, io) {
-    struct signal {
+    struct signal final {
         std::string name;
         aligned::vector<float> kernel;
     };
@@ -158,22 +159,17 @@ TEST(dc_blocker, io) {
     };
 
     for (const auto& i : signals) {
-        snd::write(build_string("dc_test.input.", i.name, ".wav"),
-                   {i.kernel},
-                   44100,
-                   16);
+        write(build_string("dc_test.input.", i.name, ".wav"),
+              make_audio_file(i.kernel, 44100),
+              16);
 
         auto run{[&i](auto& filter, const auto& filter_name, auto i) {
             filter::run_two_pass(filter, i.kernel.begin(), i.kernel.end());
             normalize(i.kernel);
-            snd::write(build_string("dc_test.output.",
-                                    filter_name,
-                                    ".",
-                                    i.name,
-                                    ".wav"),
-                       {i.kernel},
-                       44100,
-                       16);
+            write(build_string(
+                          "dc_test.output.", filter_name, ".", i.name, ".wav"),
+                  make_audio_file(i.kernel, 44100),
+                  16);
         }};
 
         {
@@ -290,27 +286,25 @@ const aligned::vector<std::tuple<callback, std::string>> trial_blockers{
 }  // namespace
 
 TEST(dc_blocker, impulses) {
-	const auto sample_rate{44100.0};
-	const auto cutoff{10.0};
+    const auto sample_rate{44100.0};
+    const auto cutoff{10.0};
 
     aligned::vector<float> input(sample_rate * 10, 0);
     input[20000] = 1;
-	input[40000] = 1;
-	input[60000] = 1;
-	input[80000] = 1;
-	input[100000] = 1;
-	input[200000] = 1;
-	input[300000] = 1;
-	input[400000] = 1;
+    input[40000] = 1;
+    input[60000] = 1;
+    input[80000] = 1;
+    input[100000] = 1;
+    input[200000] = 1;
+    input[300000] = 1;
+    input[400000] = 1;
 
     for (const auto& i : trial_blockers) {
         {
             const auto output{std::get<0>(i)(input, cutoff, sample_rate)};
-            snd::write(build_string(
-                               "impulses.dc_blocker.", std::get<1>(i), ".wav"),
-                       {output},
-                       sample_rate,
-                       16);
+            write(build_string("impulses.dc_blocker.", std::get<1>(i), ".wav"),
+                  make_audio_file(output, sample_rate),
+                  16);
         }
     }
 }
@@ -332,10 +326,9 @@ TEST(dc_blocker, increasing_offset) {
         {
             const auto output{
                     std::get<0>(i)(increasing_offset, cutoff, sample_rate)};
-            snd::write(build_string("dc_blocker.", std::get<1>(i), ".wav"),
-                       {output},
-                       sample_rate,
-                       16);
+            write(build_string("dc_blocker.", std::get<1>(i), ".wav"),
+                  make_audio_file(output, sample_rate),
+                  16);
         }
         {
             auto input{increasing_offset};
@@ -343,11 +336,9 @@ TEST(dc_blocker, increasing_offset) {
                          increasing_offset.crbegin(),
                          increasing_offset.crend());
             const auto output{std::get<0>(i)(input, cutoff, sample_rate)};
-            snd::write(build_string(
-                               "mirrored.dc_blocker.", std::get<1>(i), ".wav"),
-                       {output},
-                       sample_rate,
-                       16);
+            write(build_string("mirrored.dc_blocker.", std::get<1>(i), ".wav"),
+                  make_audio_file(output, sample_rate),
+                  16);
         }
     }
 }

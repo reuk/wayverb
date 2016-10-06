@@ -9,19 +9,23 @@
 #include "common/dsp_vector_ops.h"
 #include "common/map_to_vector.h"
 #include "common/progress_bar.h"
-#include "common/write_audio_file.h"
+
+#include "audio_file/audio_file.h"
 
 #include <iostream>
 
-template <typename T>
-void write(const std::string& name, T sig, double sample_rate) {
+template <typename T, typename Alloc>
+void write(const std::string& name,
+           std::vector<T, Alloc> sig,
+           double sample_rate) {
     const auto bit_depth{16};
-    snd::write(build_string(name, ".wav"), {sig}, sample_rate, bit_depth);
+    write(build_string(name, ".wav"),
+          make_audio_file(sig, sample_rate),
+          bit_depth);
     normalize(sig);
-    snd::write(build_string("normalised.", name, ".wav"),
-               {sig},
-               sample_rate,
-               bit_depth);
+    write(build_string("normalised.", name, ".wav"),
+          make_audio_file(sig, sample_rate),
+          bit_depth);
 }
 
 /// Attempts to replicate the physically modelled source tests from the paper

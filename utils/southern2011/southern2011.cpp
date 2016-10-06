@@ -9,7 +9,8 @@
 #include "common/dsp_vector_ops.h"
 #include "common/map_to_vector.h"
 #include "common/progress_bar.h"
-#include "common/write_audio_file.h"
+
+#include "audio_file/audio_file.h"
 
 #include <iostream>
 
@@ -60,5 +61,5 @@ int main() {
                    },
                    true);
 
-    snd::write("waveguide.wav", {post.get_output()}, sample_rate, 16);
+    write("waveguide.wav", make_audio_file(post.get_output(), sample_rate), 16);
 }

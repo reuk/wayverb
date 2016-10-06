@@ -14,7 +14,8 @@
 #include "common/progress_bar.h"
 #include "common/sinc.h"
 #include "common/spatial_division/voxelised_scene_data.h"
-#include "common/write_audio_file.h"
+
+#include "audio_file/audio_file.h"
 
 #include "gtest/gtest.h"
 
@@ -97,10 +98,9 @@ TEST(run_waveguide, run_waveguide) {
 
     auto count{0ul};
     for (const auto& output_holder : output_holders) {
-        snd::write(build_string("waveguide_receiver_", count++, ".wav"),
-                   {output_holder.get_output()},
-                   samplerate,
-                   16);
+        write(build_string("waveguide_receiver_", count++, ".wav"),
+              make_audio_file(output_holder.get_output(), samplerate),
+              16);
     }
 
     const auto max_values{

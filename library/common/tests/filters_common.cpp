@@ -1,6 +1,7 @@
 #include "common/filters_common.h"
 #include "common/string_builder.h"
-#include "common/write_audio_file.h"
+
+#include "audio_file/audio_file.h"
 
 #include "gtest/gtest.h"
 
@@ -8,7 +9,7 @@
 
 namespace {
 
-aligned::vector<float> white_noise(size_t length) {
+auto white_noise(size_t length) {
     std::default_random_engine engine{std::random_device{}()};
     const auto mag{0.5};
     std::uniform_real_distribution<float> distribution(-mag, mag);
@@ -34,7 +35,9 @@ void run_filter(
 
     auto filt{filter::make_series_biquads(coefficients)};
     filter::run_two_pass(filt, sig.begin(), sig.end());
-    snd::write(build_string(name, ".wav"), {sig}, sample_rate, bit_depth);
+    write(build_string(name, ".wav"),
+          make_audio_file(sig, sample_rate),
+          bit_depth);
 }
 
 template <size_t num>

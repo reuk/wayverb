@@ -22,7 +22,8 @@
 #include "common/serialize/surface.h"
 #include "common/sinc.h"
 #include "common/spatial_division/voxelised_scene_data.h"
-#include "common/write_audio_file.h"
+
+#include "audio_file/audio_file.h"
 
 #include <algorithm>
 #include <cmath>
@@ -134,35 +135,31 @@ int main(int argc, char** argv) {
                            true);
 
             {
-                snd::write(
-                        build_string(
-                                "solution_growth.", i.name, ".transparent.wav"),
-                        {postprocessor.get_output()},
-                        sampling_frequency,
-                        16);
+                write(build_string(
+                              "solution_growth.", i.name, ".transparent.wav"),
+                      make_audio_file(postprocessor.get_output(),
+                                      sampling_frequency),
+                      16);
             }
 
             {
                 auto copy{postprocessor.get_output()};
                 filter::extra_linear_dc_blocker u;
                 filter::run_two_pass(u, copy.begin(), copy.end());
-                snd::write(
-                        build_string(
-                                "solution_growth.", i.name, ".dc_blocked.wav"),
-                        {copy},
-                        sampling_frequency,
-                        16);
+                write(build_string(
+                              "solution_growth.", i.name, ".dc_blocked.wav"),
+                      make_audio_file(copy, sampling_frequency),
+                      16);
             }
 
             {
                 auto copy{postprocessor.get_output()};
                 filter::block_dc(copy.begin(), copy.end(), sampling_frequency);
-                snd::write(build_string("solution_growth.",
-                                        i.name,
-                                        ".butterworth_blocked.wav"),
-                           {copy},
-                           sampling_frequency,
-                           16);
+                write(build_string("solution_growth.",
+                                   i.name,
+                                   ".butterworth_blocked.wav"),
+                      make_audio_file(copy, sampling_frequency),
+                      16);
             }
         }
     } catch (const std::runtime_error& e) {

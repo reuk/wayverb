@@ -4,7 +4,8 @@
 #include "common/dsp_vector_ops.h"
 #include "common/hrtf_utils.h"
 #include "common/stl_wrappers.h"
-#include "common/write_audio_file.h"
+
+#include "audio_file/audio_file.h"
 
 #include "gtest/gtest.h"
 
@@ -79,7 +80,7 @@ TEST(fast_filter, multiband_filter) {
 
     const auto results{multiband_filter_and_mixdown(multiband, 44100)};
 
-    snd::write("multiband_noise.wav", {results}, 44100, 16);
+    write("multiband_noise.wav", make_audio_file(results, 44100), 16);
 }
 
 TEST(fast_filter, band_edges) {
@@ -113,7 +114,7 @@ TEST(fast_filter, lopass) {
                 return cplx * static_cast<float>(compute_lopass_magnitude(
                                       freq, 0.25, 0.05, 0));
             });
-    snd::write("lopass_noise.wav", {sig}, 44100, 16);
+    write("lopass_noise.wav", make_audio_file(sig, 44100), 16);
 }
 
 TEST(fast_filter, hipass) {
@@ -131,7 +132,7 @@ TEST(fast_filter, hipass) {
                 return cplx * static_cast<float>(compute_hipass_magnitude(
                                       freq, 0.25, 0.05, 0));
             });
-    snd::write("hipass_noise.wav", {sig}, 44100, 16);
+    write("hipass_noise.wav", make_audio_file(sig, 44100), 16);
 }
 
 TEST(fast_filter, transients) {
@@ -144,5 +145,5 @@ TEST(fast_filter, transients) {
                 return cplx * static_cast<float>(compute_hipass_magnitude(
                                       freq, 0.25, 0.05, 0));
             });
-    snd::write("transients.wav", {sig}, 44100, 16);
+    write("transients.wav", make_audio_file(sig, 44100), 16);
 }
