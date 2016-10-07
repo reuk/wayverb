@@ -1,8 +1,8 @@
 #include "raytracer/diffuse/finder.h"
 
-#include "common/map_to_vector.h"
 #include "common/nan_checking.h"
-#include "common/stl_wrappers.h"
+
+#include "utilities/map_to_vector.h"
 
 #include <experimental/optional>
 
@@ -95,7 +95,9 @@ void finder::push(const aligned::vector<reflection>& reflections,
     }
 
     impulse_builder.push(map_to_vector(
-            ret, [](auto i) -> std::experimental::optional<impulse<8>> {
+            begin(ret),
+            end(ret),
+            [](auto i) -> std::experimental::optional<impulse<8>> {
                 return i.distance
                                ? std::experimental::make_optional<impulse<8>>(
                                          std::move(i))

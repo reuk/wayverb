@@ -1,7 +1,8 @@
 #pragma once
 
-#include "common/map_to_vector.h"
 #include "common/scene_data.h"
+
+#include "utilities/map_to_vector.h"
 
 class scene_data_loader final {
 public:

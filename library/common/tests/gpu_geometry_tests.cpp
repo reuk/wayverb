@@ -3,9 +3,10 @@
 #include "common/cl/geometry_structs.h"
 #include "common/conversions.h"
 #include "common/geo/geometric.h"
-#include "common/map_to_vector.h"
 #include "common/program_wrapper.h"
-#include "common/progress_bar.h"
+
+#include "utilities/map_to_vector.h"
+#include "utilities/progress_bar.h"
 
 #include "gtest/gtest.h"
 
@@ -130,13 +131,16 @@ TEST(gpu_geometry, triangle_vert_intersection) {
 
     const auto triangle_verts_buffer{load_to_buffer(
             cc.context,
-            map_to_vector(triangle_verts,
+            map_to_vector(begin(triangle_verts),
+                          end(triangle_verts),
                           [](const auto& i) { return convert(i); }),
             true)};
 
     const auto rays_buffer{load_to_buffer(
             cc.context,
-            map_to_vector(rays, [](const auto& i) { return convert(i); }),
+            map_to_vector(begin(rays),
+                          end(rays),
+                          [](const auto& i) { return convert(i); }),
             true)};
 
     cl::Buffer triangle_inter_buffer{
@@ -150,8 +154,9 @@ TEST(gpu_geometry, triangle_vert_intersection) {
     const auto gpu_ret{
             read_from_buffer<triangle_inter>(queue, triangle_inter_buffer)};
 
-    ASSERT_TRUE(proc::any_of(gpu_ret,
-                             [](const auto& i) { return i.t || i.u || i.v; }));
+    ASSERT_TRUE(std::any_of(begin(gpu_ret), end(gpu_ret), [](const auto& i) {
+        return i.t || i.u || i.v;
+    }));
 
     for (auto i{0u}; i != num_tests; ++i) {
         const auto inter{
@@ -203,13 +208,16 @@ TEST(gpu_geometry, ray_triangle_intersection) {
 
     const auto vertices_buffer{load_to_buffer(
             cc.context,
-            map_to_vector(std::get<0>(triangles),
+            map_to_vector(begin(std::get<0>(triangles)),
+                          end(std::get<0>(triangles)),
                           [](const auto& i) { return to_cl_float3(i); }),
             true)};
 
     const auto rays_buffer{load_to_buffer(
             cc.context,
-            map_to_vector(rays, [](const auto& i) { return convert(i); }),
+            map_to_vector(begin(rays),
+                          end(rays),
+                          [](const auto& i) { return convert(i); }),
             true)};
 
     cl::Buffer intersections_buffer{

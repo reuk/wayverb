@@ -1,8 +1,9 @@
 #pragma once
 
-#include "common/aligned/vector.h"
 #include "common/sinc.h"
 #include "common/specular_absorption.h"
+
+#include "utilities/aligned/vector.h"
 
 namespace detail {
 struct histogram_mapper final {

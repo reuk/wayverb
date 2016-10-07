@@ -7,8 +7,9 @@
 
 #include "common/callback_accumulator.h"
 #include "common/dsp_vector_ops.h"
-#include "common/map_to_vector.h"
-#include "common/progress_bar.h"
+
+#include "utilities/map_to_vector.h"
+#include "utilities/progress_bar.h"
 
 #include "audio_file/audio_file.h"
 
@@ -56,14 +57,16 @@ int main() {
 
     //  Set up receivers.
 
-    auto output_holders{map_to_vector(receivers, [&](auto i) {
-        const auto receiver_index{compute_index(mesh.get_descriptor(), i)};
-        if (!waveguide::is_inside(mesh, receiver_index)) {
-            throw std::runtime_error{"receiver is outside of mesh!"};
-        }
-        return callback_accumulator<waveguide::postprocessor::node>{
-                receiver_index};
-    })};
+    auto output_holders{
+            map_to_vector(begin(receivers), end(receivers), [&](auto i) {
+                const auto receiver_index{
+                        compute_index(mesh.get_descriptor(), i)};
+                if (!waveguide::is_inside(mesh, receiver_index)) {
+                    throw std::runtime_error{"receiver is outside of mesh!"};
+                }
+                return callback_accumulator<waveguide::postprocessor::node>{
+                        receiver_index};
+            })};
 
     //  Set up a source signal.
 #if 1
@@ -98,18 +101,23 @@ int main() {
                    },
                    true);
 
-    auto outputs{map_to_vector(output_holders,
+    auto outputs{map_to_vector(begin(output_holders),
+                               end(output_holders),
                                [](const auto& i) { return i.get_output(); })};
     normalize(outputs);
     const auto mag_values{
-            map_to_vector(outputs, [](const auto& i) { return max_mag(i); })};
+            map_to_vector(begin(outputs), end(outputs), [](const auto& i) {
+                return max_mag(i);
+            })};
     for (auto mag : mag_values) {
         std::cout << "mag: " << mag << '\n';
     }
 
     //  We expect to see a 1 / r^2 relationship between distance and rms.
-    const auto rms_values{map_to_vector(
-            outputs, [](const auto& i) { return rms(i.begin(), i.end()); })};
+    const auto rms_values{
+            map_to_vector(begin(outputs), end(outputs), [](const auto& i) {
+                return rms(i.begin(), i.end());
+            })};
     for (auto rms : rms_values) {
         std::cout << "rms: " << rms << '\n';
     }
@@ -118,7 +126,7 @@ int main() {
     for (const auto& i : outputs) {
         //  Write out.
         write(build_string("distance_", count, ".wav"),
-              make_audio_file(i, sample_rate),
+              audio_file::make_audio_file(i, sample_rate),
               16);
         count += 1;
     }

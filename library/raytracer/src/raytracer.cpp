@@ -99,7 +99,11 @@ std::experimental::optional<results<impulse<8>>> run(
     //  fetch image source results
     auto img_src_results{
             image_source::postprocess<image_source::intensity_calculator<>>(
-                    tree.get_branches(), source, receiver, scene_data)};
+                    begin(tree.get_branches()),
+                    end(tree.get_branches()),
+                    source,
+                    receiver,
+                    scene_data)};
 
     auto direct{get_direct(source, receiver, scene_data)};
 

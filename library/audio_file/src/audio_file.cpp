@@ -5,6 +5,8 @@
 #include <sstream>
 #include <unordered_map>
 
+namespace audio_file {
+
 namespace detail {
 
 int get_file_format(const std::string& fname) {
@@ -109,3 +111,5 @@ audio_file<double> read(const std::string& fname) {
                     interleaved.begin(), interleaved.end(), channels),
             static_cast<double>(infile.samplerate()));
 }
+
+}  // namespace audio_file

@@ -4,7 +4,8 @@
 #include "waveguide/waveguide.h"
 
 #include "common/callback_accumulator.h"
-#include "common/progress_bar.h"
+
+#include "utilities/progress_bar.h"
 
 #include "gtest/gtest.h"
 

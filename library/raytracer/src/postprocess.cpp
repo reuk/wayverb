@@ -1,9 +1,10 @@
 #include "raytracer/postprocess.h"
 
-#include "common/decibels.h"
 #include "common/dsp_vector_ops.h"
-#include "common/map_to_vector.h"
 #include "common/specular_absorption.h"
+
+#include "utilities/decibels.h"
+#include "utilities/map_to_vector.h"
 
 namespace raytracer {
 
@@ -22,8 +23,11 @@ void trimTail(aligned::vector<aligned::vector<float>>& audioChannels,
             int>;
 
     // Find last index of required amplitude or greater.
-    auto len = proc::accumulate(
-            audioChannels, 0, [minVol](auto current, const auto& i) {
+    const auto len{std::accumulate(
+            begin(audioChannels),
+            end(audioChannels),
+            0,
+            [minVol](auto current, const auto& i) {
                 return std::max(
                         index_type{current},
                         index_type{
@@ -36,7 +40,7 @@ void trimTail(aligned::vector<aligned::vector<float>>& audioChannels,
                                                       })
                                                  .base()) -
                                 1});
-            });
+            })};
 
     // Resize.
     for (auto&& i : audioChannels)

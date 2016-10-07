@@ -2,7 +2,6 @@
 #include "common/geo/box.h"
 #include "common/geo/geometric.h"
 #include "common/hrtf.h"
-#include "common/stl_wrappers.h"
 
 std::array<std::pair<cl_uint, cl_uint>, 3> get_index_pairs(const triangle& t) {
     return {{std::make_pair(t.v0, t.v1),

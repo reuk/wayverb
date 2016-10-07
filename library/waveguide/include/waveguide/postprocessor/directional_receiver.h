@@ -1,7 +1,6 @@
 #pragma once
 
 #include "common/cl/include.h"
-#include "common/output_iterator_callback.h"
 
 #include "glm/glm.hpp"
 

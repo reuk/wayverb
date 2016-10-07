@@ -5,8 +5,6 @@
 #include "waveguide/cl/utils.h"
 #include "waveguide/mesh_descriptor.h"
 
-#include "common/stl_wrappers.h"
-
 namespace waveguide {
 
 //----------------------------------------------------------------------------//

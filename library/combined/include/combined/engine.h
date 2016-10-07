@@ -4,8 +4,9 @@
 
 #include "raytracer/cl/structs.h"
 
-#include "common/aligned/vector.h"
 #include "common/scene_data.h"
+
+#include "utilities/aligned/vector.h"
 
 #include "glm/glm.hpp"
 

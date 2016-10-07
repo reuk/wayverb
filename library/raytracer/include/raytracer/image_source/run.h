@@ -47,7 +47,11 @@ auto run(It begin,  /// Iterators over ray directions.
         }
     }
 
-    return postprocess<Func>(tree.get_branches(), source, receiver, voxelised);
+    return postprocess<Func>(std::begin(tree.get_branches()),
+                             std::end(tree.get_branches()),
+                             source,
+                             receiver,
+                             voxelised);
 }
 
 }  // namespace image_source

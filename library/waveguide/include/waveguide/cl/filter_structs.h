@@ -2,7 +2,6 @@
 
 #include "common/cl/representation.h"
 #include "common/cl/traits.h"
-#include "common/stl_wrappers.h"
 
 constexpr size_t biquad_order{2};
 constexpr size_t biquad_sections{3};
@@ -29,7 +28,8 @@ struct alignas(1 << 3) memory final {
 
 template <size_t D>
 inline bool operator==(const memory<D>& a, const memory<D>& b) {
-    return proc::equal(a.array, std::begin(b.array));
+    return std::equal(
+            std::begin(a.array), std::end(a.array), std::begin(b.array));
 }
 
 template <size_t D>
@@ -49,8 +49,8 @@ struct alignas(1 << 3) coefficients final {
 
 template <size_t D>
 inline bool operator==(const coefficients<D>& a, const coefficients<D>& b) {
-    return proc::equal(a.a, std::begin(b.a)) &&
-           proc::equal(a.b, std::begin(b.b));
+    return std::equal(std::begin(a.a), std::end(a.a), std::begin(b.a)) &&
+           std::equal(std::begin(a.b), std::end(a.b), std::begin(b.b));
 }
 
 template <size_t D>

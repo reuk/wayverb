@@ -18,7 +18,6 @@ include_directories(
 add_subdirectory(boundary_test)
 add_subdirectory(mic_test)
 add_subdirectory(solution_growth)
-add_subdirectory(southern2013_2_cuboid)
 add_subdirectory(sheaffer2014)
 add_subdirectory(waveguide_distance_test)
 add_subdirectory(southern2011)

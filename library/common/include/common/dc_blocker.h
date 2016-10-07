@@ -1,9 +1,9 @@
 #pragma once
 
-#include "common/aligned/vector.h"
 #include "common/filters_common.h"
 #include "common/schroeder.h"
-#include "common/stl_wrappers.h"
+
+#include "utilities/aligned/vector.h"
 
 namespace filter {
 

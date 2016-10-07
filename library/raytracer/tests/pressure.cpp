@@ -1,7 +1,7 @@
 #include "raytracer/pressure.h"
 
-#include "common/aligned/vector.h"
-#include "common/mapping_iterator_adapter.h"
+#include "utilities/aligned/vector.h"
+#include "utilities/mapping_iterator_adapter.h"
 
 #include "gtest/gtest.h"
 

@@ -1,5 +1,6 @@
 #include "common/nan_checking.h"
-#include "common/string_builder.h"
+
+#include "utilities/string_builder.h"
 
 #include "gtest/gtest.h"
 

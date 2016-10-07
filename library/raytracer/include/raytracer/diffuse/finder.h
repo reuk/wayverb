@@ -5,10 +5,11 @@
 #include "raytracer/cl/structs.h"
 #include "raytracer/iterative_builder.h"
 
-#include "common/aligned/vector.h"
 #include "common/cl/common.h"
 #include "common/conversions.h"
 #include "common/spatial_division/scene_buffers.h"
+
+#include "utilities/aligned/vector.h"
 
 namespace raytracer {
 namespace diffuse {

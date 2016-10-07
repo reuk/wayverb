@@ -1,7 +1,8 @@
 #pragma once
 
-#include "common/aligned/vector.h"
 #include "common/cl/include.h"
+
+#include "utilities/aligned/vector.h"
 
 #include "glm/glm.hpp"
 

@@ -5,13 +5,13 @@
 #include "waveguide/mesh_descriptor.h"
 #include "waveguide/program.h"
 
-#include "common/aligned/vector.h"
 #include "common/cl/include.h"
-#include "common/map_to_vector.h"
 #include "common/program_wrapper.h"
 #include "common/spatial_division/scene_buffers.h"
 #include "common/spatial_division/voxel_collection.h"
-#include "common/stl_wrappers.h"
+
+#include "utilities/aligned/vector.h"
+#include "utilities/map_to_vector.h"
 
 #include "glm/fwd.hpp"
 
@@ -76,7 +76,8 @@ static boundary_data_array<N> construct_boundary_data_array(
 template <size_t n>
 inline aligned::vector<boundary_data_array<n>> get_boundary_data(
         const vectors& d) {
-    return map_to_vector(d.get_boundary_indices<n>(), [](const auto& i) {
+    const auto indices{d.get_boundary_indices<n>()};
+    return map_to_vector(begin(indices), end(indices), [](const auto& i) {
         return construct_boundary_data_array(i);
     });
 }

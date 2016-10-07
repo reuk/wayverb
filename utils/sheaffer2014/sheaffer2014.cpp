@@ -7,8 +7,9 @@
 
 #include "common/callback_accumulator.h"
 #include "common/dsp_vector_ops.h"
-#include "common/map_to_vector.h"
-#include "common/progress_bar.h"
+
+#include "utilities/map_to_vector.h"
+#include "utilities/progress_bar.h"
 
 #include "audio_file/audio_file.h"
 
@@ -20,11 +21,11 @@ void write(const std::string& name,
            double sample_rate) {
     const auto bit_depth{16};
     write(build_string(name, ".wav"),
-          make_audio_file(sig, sample_rate),
+          audio_file::make_audio_file(sig, sample_rate),
           bit_depth);
     normalize(sig);
     write(build_string("normalised.", name, ".wav"),
-          make_audio_file(sig, sample_rate),
+          audio_file::make_audio_file(sig, sample_rate),
           bit_depth);
 }
 
@@ -104,34 +105,33 @@ void test_from_paper() {
 auto get_mass_test_signals(double acoustic_impedance,
                            double speed_of_sound,
                            double sample_rate) {
-    return map_to_vector(
-            aligned::vector<double>{0.025, 0.05, 0.1, 0.2, 0.4, 0.8},
-            [=](auto i) {
-                return waveguide::design_pcs_source(1 << 15,
-                                                    acoustic_impedance,
-                                                    speed_of_sound,
-                                                    sample_rate,
-                                                    0.05,
-                                                    i,
-                                                    100,
-                                                    1);
-            });
+    const aligned::vector<double> sig{0.025, 0.05, 0.1, 0.2, 0.4, 0.8};
+    return map_to_vector(begin(sig), end(sig), [=](auto i) {
+        return waveguide::design_pcs_source(1 << 15,
+                                            acoustic_impedance,
+                                            speed_of_sound,
+                                            sample_rate,
+                                            0.05,
+                                            i,
+                                            100,
+                                            1);
+    });
 }
 
 auto get_cutoff_test_signals(double acoustic_impedance,
                              double speed_of_sound,
                              double sample_rate) {
-    return map_to_vector(
-            aligned::vector<double>{20, 40, 60, 80, 100, 120}, [=](auto i) {
-                return waveguide::design_pcs_source(1 << 15,
-                                                    acoustic_impedance,
-                                                    speed_of_sound,
-                                                    sample_rate,
-                                                    0.05,
-                                                    0.01,
-                                                    i,
-                                                    1);
-            });
+    const aligned::vector<double> sig{20, 40, 60, 80, 100, 120};
+    return map_to_vector(begin(sig), end(sig), [=](auto i) {
+        return waveguide::design_pcs_source(1 << 15,
+                                            acoustic_impedance,
+                                            speed_of_sound,
+                                            sample_rate,
+                                            0.05,
+                                            0.01,
+                                            i,
+                                            1);
+    });
 }
 
 void other_tests() {

@@ -1,7 +1,9 @@
 #pragma once
 
-#include "fast_convolver.h"
-#include "stl_wrappers.h"
+#include "frequency_domain/filter.h"
+#include "frequency_domain/convolver.h"
+
+#include "utilities/aligned/vector.h"
 
 #include <algorithm>
 #include <array>
@@ -13,6 +15,8 @@
 /// This namespace houses all of the machinery for multiband crossover
 /// filtering.
 namespace filter {
+
+using convolver = frequency_domain::convolver;
 
 ///	FIR filter concept:
 ///		* implements a method 'filter' which takes two iterators and returns
@@ -33,7 +37,7 @@ public:
 
 private:
     static constexpr size_t KERNEL_LENGTH{99};
-    fast_convolver convolver_;
+    convolver convolver_;
     std::array<float, KERNEL_LENGTH> kernel_;
 };
 
@@ -53,7 +57,7 @@ public:
 
 private:
     static constexpr size_t KERNEL_LENGTH{99};
-    fast_convolver convolver_;
+    convolver convolver_;
     std::array<float, KERNEL_LENGTH> kernel_;
 };
 
@@ -73,7 +77,7 @@ public:
 
 private:
     static constexpr size_t KERNEL_LENGTH{99};
-    fast_convolver convolver_;
+    convolver convolver_;
     std::array<float, KERNEL_LENGTH> kernel_;
 };
 

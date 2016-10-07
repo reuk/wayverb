@@ -1,7 +1,8 @@
 #pragma once
 
 #include "common/cl/scene_structs.h"
-#include "common/mapping_iterator_adapter.h"
+
+#include "utilities/mapping_iterator_adapter.h"
 
 #include <iterator>
 #include <type_traits>

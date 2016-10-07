@@ -91,7 +91,7 @@ voxel_data_t<n> voxelise(const ndim_tree<n>& tree) {
 template <size_t n>
 class voxel_collection final {
 public:
-    using aabb_type = util::detail::range_t<n>;
+    using aabb_type = detail::range_t<n>;
     using data_type = detail::voxel_data_t<n>;
 
     /// Construct directly from an existing tree.
@@ -123,7 +123,7 @@ auto voxel_dimensions(const voxel_collection<n>& voxels) {
 
 template <size_t n>
 auto voxel_aabb(const voxel_collection<n>& voxels, indexing::index_t<n> i) {
-    using vt = util::detail::range_t<n>;
+    using vt = detail::range_t<n>;
     const auto dim = voxel_dimensions(voxels);
     const auto root = voxels.get_aabb().get_min() + (dim * decltype(dim){i});
     return vt(root, root + dim);

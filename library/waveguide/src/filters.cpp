@@ -1,5 +1,6 @@
 #include "waveguide/filters.h"
-#include "common/reduce.h"
+
+#include "utilities/reduce.h"
 
 #include <array>
 
@@ -25,7 +26,7 @@ biquad_coefficients_array get_peak_biquads_array(
 
 coefficients_canonical convolve(const biquad_coefficients_array& a) {
     std::array<coefficients_biquad, biquad_sections> t;
-    proc::copy(a.array, t.begin());
+    std::copy(std::begin(a.array), std::end(a.array), t.begin());
     return reduce(t,
                   [](const auto& i, const auto& j) { return convolve(i, j); });
 }
@@ -35,20 +36,23 @@ coefficients_canonical convolve(const biquad_coefficients_array& a) {
 coefficients_canonical to_impedance_coefficients(
         const coefficients_canonical& c) {
     coefficients_canonical ret;
-    proc::transform(
-            c.a, std::begin(c.b), std::begin(ret.b), [](auto a, auto b) {
-                return a + b;
-            });
-    proc::transform(
-            c.a, std::begin(c.b), std::begin(ret.a), [](auto a, auto b) {
-                return a - b;
-            });
+    std::transform(std::begin(c.a),
+                   std::end(c.a),
+                   std::begin(c.b),
+                   std::begin(ret.b),
+                   [](auto a, auto b) { return a + b; });
+    std::transform(std::begin(c.a),
+                   std::end(c.a),
+                   std::begin(c.b),
+                   std::begin(ret.a),
+                   [](auto a, auto b) { return a - b; });
 
     if (ret.a[0] != 0) {
-        const auto norm = 1.0 / ret.a[0];
-        const auto do_normalize = [norm](auto& i) {
-            proc::for_each(i, [norm](auto& i) { i *= norm; });
-        };
+        const auto norm{1.0 / ret.a[0]};
+        const auto do_normalize{[norm](auto& i) {
+            std::for_each(
+                    std::begin(i), std::end(i), [norm](auto& i) { i *= norm; });
+        }};
         do_normalize(ret.b);
         do_normalize(ret.a);
     }

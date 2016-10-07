@@ -7,10 +7,8 @@
 #include "common/cl/common.h"
 #include "common/conversions.h"
 #include "common/dsp_vector_ops.h"
-#include "common/map_to_vector.h"
 #include "common/scene_data_loader.h"
 #include "common/spatial_division/voxelised_scene_data.h"
-#include "common/string_builder.h"
 
 #include "gtest/gtest.h"
 

@@ -3,7 +3,6 @@
 #include "waveguide/waveguide.h"
 
 #include "common/cl/common.h"
-#include "common/timed_scope.h"
 
 #include "audio_file/audio_file.h"
 
@@ -57,7 +56,7 @@ private:
         auto ret = aligned::vector<aligned::vector<cl_float>>{
                 40000, aligned::vector<cl_float>(size, 0)};
         for (auto& i : ret)
-            proc::generate(i, [] { return range(engine); });
+            std::generate(begin(i), end(i), [] { return range(engine); });
         return ret;
     }
 
@@ -117,14 +116,19 @@ std::uniform_real_distribution<float> range{min_v, max_v};
 
 surface random_surface() {
     surface ret;
-    proc::generate(ret.specular_absorption.s, [] { return range(engine); });
-    proc::generate(ret.diffuse_coefficient.s, [] { return range(engine); });
+    std::generate(std::begin(ret.specular_absorption.s),
+                  std::end(ret.specular_absorption.s),
+                  [] { return range(engine); });
+    std::generate(std::begin(ret.diffuse_coefficient.s),
+                  std::end(ret.diffuse_coefficient.s),
+                  [] { return range(engine); });
     return ret;
 };
 
 std::array<surface, parallel_size> compute_surfaces() {
     std::array<surface, parallel_size> ret;
-    proc::generate(ret, [] { return random_surface(); });
+    std::generate(
+            std::begin(ret), std::end(ret), [] { return random_surface(); });
     return ret;
 }
 
@@ -136,9 +140,10 @@ compute_descriptors() {
     std::array<std::array<waveguide::filter_descriptor, biquad_sections>,
                parallel_size>
             ret;
-    proc::transform(surfaces, ret.begin(), [](auto i) {
-        return waveguide::to_filter_descriptors(i);
-    });
+    std::transform(
+            std::begin(surfaces), std::end(surfaces), ret.begin(), [](auto i) {
+                return waveguide::to_filter_descriptors(i);
+            });
     return ret;
 }
 
@@ -177,9 +182,12 @@ std::array<typename CoefficientTypeTrait<FilterType::biquad_cascade>::type,
            parallel_size>
 compute_coeffs<FilterType::biquad_cascade>() {
     std::array<biquad_coefficients_array, parallel_size> ret;
-    proc::transform(descriptors, ret.begin(), [](const auto& n) {
-        return waveguide::get_peak_biquads_array(n, sr);
-    });
+    std::transform(begin(descriptors),
+                   end(descriptors),
+                   ret.begin(),
+                   [](const auto& n) {
+                       return waveguide::get_peak_biquads_array(n, sr);
+                   });
     return ret;
 }
 
@@ -191,9 +199,13 @@ compute_coeffs<FilterType::single_reflectance>() {
             typename CoefficientTypeTrait<FilterType::single_reflectance>::type,
             parallel_size>
             ret;
-    proc::transform(descriptors, ret.begin(), [](const auto& n) {
-        return waveguide::convolve(waveguide::get_peak_biquads_array(n, sr));
-    });
+    std::transform(begin(descriptors),
+                   end(descriptors),
+                   ret.begin(),
+                   [](const auto& n) {
+                       return waveguide::convolve(
+                               waveguide::get_peak_biquads_array(n, sr));
+                   });
     return ret;
 }
 
@@ -205,10 +217,14 @@ compute_coeffs<FilterType::single_impedance>() {
             typename CoefficientTypeTrait<FilterType::single_reflectance>::type,
             parallel_size>
             ret;
-    proc::transform(descriptors, ret.begin(), [](const auto& n) {
-        return waveguide::to_impedance_coefficients(
-                waveguide::convolve(waveguide::get_peak_biquads_array(n, sr)));
-    });
+    std::transform(
+            begin(descriptors),
+            end(descriptors),
+            ret.begin(),
+            [](const auto& n) {
+                return waveguide::to_impedance_coefficients(waveguide::convolve(
+                        waveguide::get_peak_biquads_array(n, sr)));
+            });
     return ret;
 }
 }
@@ -219,28 +235,25 @@ public:
     virtual ~kernel() noexcept = default;
 
     template <typename Kernel>
-    auto run_kernel(Kernel&& k) {
+    auto run_kernel(Kernel k) {
         auto kernel = std::move(k);
+        cl::CommandQueue queue{cc.context, cc.device};
+        for (auto i = 0u; i != input.size(); ++i) {
+            cl::copy(queue, input[i].begin(), input[i].end(), cl_input);
 
-        {
-            cl::CommandQueue queue{cc.context, cc.device};
-            TimedScope timer("filtering");
-            for (auto i = 0u; i != input.size(); ++i) {
-                cl::copy(queue, input[i].begin(), input[i].end(), cl_input);
+            kernel(cl::EnqueueArgs(queue, cl::NDRange(testing::parallel_size)),
+                   cl_input,
+                   cl_output,
+                   cl_memory,
+                   cl_coeffs);
 
-                kernel(cl::EnqueueArgs(queue,
-                                       cl::NDRange(testing::parallel_size)),
-                       cl_input,
-                       cl_output,
-                       cl_memory,
-                       cl_coeffs);
-
-                cl::copy(queue, cl_output, output[i].begin(), output[i].end());
-            }
+            cl::copy(queue, cl_output, output[i].begin(), output[i].end());
         }
         auto buf = aligned::vector<cl_float>(output.size());
-        proc::transform(
-                output, buf.begin(), [](const auto& i) { return i.front(); });
+        std::transform(
+                begin(output), end(output), buf.begin(), [](const auto& i) {
+                    return i.front();
+                });
         return buf;
     }
 
@@ -286,16 +299,28 @@ class testing_rk_filter : public rk_filter<NoiseGenerator>,
 
 TEST_F(testing_rk_biquad, filtering) {
     auto results{run_kernel(program.get_filter_test_kernel())};
-    ASSERT_TRUE(proc::none_of(results, [](auto i) { return std::isnan(i); }));
-    ASSERT_TRUE(proc::none_of(results, [](auto i) { return std::isinf(i); }));
-    write("./filtered_noise.wav", make_audio_file(results, testing::sr), 16);
+    ASSERT_TRUE(std::none_of(begin(results), end(results), [](auto i) {
+        return std::isnan(i);
+    }));
+    ASSERT_TRUE(std::none_of(begin(results), end(results), [](auto i) {
+        return std::isinf(i);
+    }));
+    write("./filtered_noise.wav",
+          audio_file::make_audio_file(results, testing::sr),
+          16);
 }
 
 TEST_F(testing_rk_filter, filtering_2) {
     auto results = run_kernel(program.get_filter_test_2_kernel());
-    ASSERT_TRUE(proc::none_of(results, [](auto i) { return std::isnan(i); }));
-    ASSERT_TRUE(proc::none_of(results, [](auto i) { return std::isinf(i); }));
-    write("./filtered_noise_2.wav", make_audio_file(results, testing::sr), 16);
+    ASSERT_TRUE(std::none_of(begin(results), end(results), [](auto i) {
+        return std::isnan(i);
+    }));
+    ASSERT_TRUE(std::none_of(begin(results), end(results), [](auto i) {
+        return std::isinf(i);
+    }));
+    write("./filtered_noise_2.wav",
+          audio_file::make_audio_file(results, testing::sr),
+          16);
 }
 
 class testing_rk_biquad_quiet : public rk_biquad<QuietNoiseGenerator>,
@@ -305,19 +330,27 @@ class testing_rk_filter_quiet : public rk_filter<QuietNoiseGenerator>,
 
 TEST_F(testing_rk_biquad_quiet, filtering) {
     auto results = run_kernel(program.get_filter_test_kernel());
-    ASSERT_TRUE(proc::none_of(results, [](auto i) { return std::isnan(i); }));
-    ASSERT_TRUE(proc::none_of(results, [](auto i) { return std::isinf(i); }));
+    ASSERT_TRUE(std::none_of(begin(results), end(results), [](auto i) {
+        return std::isnan(i);
+    }));
+    ASSERT_TRUE(std::none_of(begin(results), end(results), [](auto i) {
+        return std::isinf(i);
+    }));
     write("./filtered_noise_quiet.wav",
-          make_audio_file(results, testing::sr),
+          audio_file::make_audio_file(results, testing::sr),
           16);
 }
 
 TEST_F(testing_rk_filter_quiet, filtering_2) {
     auto results = run_kernel(program.get_filter_test_2_kernel());
-    ASSERT_TRUE(proc::none_of(results, [](auto i) { return std::isnan(i); }));
-    ASSERT_TRUE(proc::none_of(results, [](auto i) { return std::isinf(i); }));
+    ASSERT_TRUE(std::none_of(begin(results), end(results), [](auto i) {
+        return std::isnan(i);
+    }));
+    ASSERT_TRUE(std::none_of(begin(results), end(results), [](auto i) {
+        return std::isinf(i);
+    }));
     write("./filtered_noise_2_quiet.wav",
-          make_audio_file(results, testing::sr),
+          audio_file::make_audio_file(results, testing::sr),
           16);
 }
 
@@ -333,7 +366,7 @@ TEST(compare_filters, compare_filters) {
                     sizeof(BiquadCoefficientsArray));
     */
 
-    auto test = [](auto&& biquad, auto&& filter) {
+    auto test = [](auto biquad, auto filter) {
         for (auto i = 0; i != biquad.input.size(); ++i) {
             for (auto j = 0; j != biquad.input[i].size(); ++j) {
                 ASSERT_EQ(biquad.input[i][j], filter.input[i][j]);
@@ -345,17 +378,23 @@ TEST(compare_filters, compare_filters) {
                 filter.run_kernel(filter.program.get_filter_test_2_kernel());
 
         auto diff = buf_1;
-        proc::transform(buf_1, buf_2.begin(), diff.begin(), [](auto i, auto j) {
-            return std::abs(i - j);
-        });
+        std::transform(std::begin(buf_1),
+                       std::end(buf_1),
+                       buf_2.begin(),
+                       diff.begin(),
+                       [](auto i, auto j) { return std::abs(i - j); });
 
         auto div = buf_1;
-        proc::transform(buf_1, buf_2.begin(), div.begin(), [](auto i, auto j) {
-            if (i == 0 || j == 0) {
-                return 0.0f;
-            }
-            return std::abs(decibels::a2db(std::abs(i / j)));
-        });
+        std::transform(std::begin(buf_1),
+                       std::end(buf_1),
+                       buf_2.begin(),
+                       div.begin(),
+                       [](auto i, auto j) {
+                           if (i == 0 || j == 0) {
+                               return 0.0f;
+                           }
+                           return std::abs(decibels::a2db(std::abs(i / j)));
+                       });
 
         /*
         std::for_each(
@@ -363,7 +402,7 @@ TEST(compare_filters, compare_filters) {
         */
 
         // auto min_diff = *std::min_element(diff.begin(), diff.end());
-        auto max_diff = *proc::max_element(diff);
+        auto max_diff{*std::max_element(std::begin(diff), std::end(diff))};
 
         ASSERT_TRUE(max_diff < 0.001) << max_diff;
 
@@ -378,12 +417,14 @@ TEST(compare_filters, compare_filters) {
         */
 
         write("./buf_1.wav",
-              make_audio_file(std::vector<float>(buf_1.begin(), buf_1.end()),
-                              testing::sr),
+              audio_file::make_audio_file(
+                      std::vector<float>(buf_1.begin(), buf_1.end()),
+                      testing::sr),
               16);
         write("./buf_2.wav",
-              make_audio_file(std::vector<float>(buf_2.begin(), buf_2.end()),
-                              testing::sr),
+              audio_file::make_audio_file(
+                      std::vector<float>(buf_2.begin(), buf_2.end()),
+                      testing::sr),
               16);
     };
 

@@ -15,7 +15,6 @@
 #include "waveguide/setup.h"
 #include "waveguide/waveguide.h"
 
-#include "common/aligned/set.h"
 #include "common/attenuator/hrtf.h"
 #include "common/attenuator/microphone.h"
 #include "common/azimuth_elevation.h"
@@ -25,7 +24,6 @@
 #include "common/dc_blocker.h"
 #include "common/filters_common.h"
 #include "common/kernel.h"
-#include "common/map_to_vector.h"
 #include "common/model/receiver_settings.h"
 #include "common/pressure_intensity.h"
 #include "common/spatial_division/voxelised_scene_data.h"
@@ -93,8 +91,10 @@ public:
 
         //  correct waveguide sampling rate
         for (auto& i : waveguide_output) {
-            i = waveguide::adjust_sampling_rate(
-                    std::move(i), waveguide_sample_rate_, output_sample_rate);
+            i = waveguide::adjust_sampling_rate(i.data(),
+                                                i.data() + i.size(),
+                                                waveguide_sample_rate_,
+                                                output_sample_rate);
         }
 
         //  convert waveguide output from intensity level back to pressure lvl
@@ -121,16 +121,18 @@ public:
 
         aligned::vector<aligned::vector<float>> ret;
         ret.reserve(max.size());
-        proc::transform(
-                max,
+        std::transform(
+                begin(max),
+                end(max),
                 min.begin(),
                 std::back_inserter(ret),
                 [](const auto& a, const auto& b) {
                     auto ret{a};
-                    proc::transform(
-                            b, a.begin(), ret.begin(), [](auto a, auto b) {
-                                return a + b;
-                            });
+                    std::transform(begin(b),
+                                   end(b),
+                                   a.begin(),
+                                   ret.begin(),
+                                   [](auto a, auto b) { return a + b; });
                     return ret;
                 });
 
@@ -268,18 +270,20 @@ public:
         const auto impulses{raytracer_results->get_impulses()};
 
         //  look for the max time of an impulse
-        const auto max_time{proc::max_element(impulses,
-                                              [](const auto& a, const auto& b) {
-                                                  return a.distance <
-                                                         b.distance;
-                                              })
+        const auto max_time{std::max_element(begin(impulses),
+                                             end(impulses),
+                                             [](const auto& a, const auto& b) {
+                                                 return a.distance < b.distance;
+                                             })
                                     ->distance /
                             speed_of_sound_};
 
         //  WAVEGUIDE  -------------------------------------------------------//
         callback(state::starting_waveguide, 1.0);
 
-        auto input{waveguide::make_transparent(aligned::vector<float>{1})};
+        const aligned::vector<float> raw_input{1.0f};
+        auto input{waveguide::make_transparent(
+                raw_input.data(), raw_input.data() + raw_input.size())};
 
         //  this is the number of steps to run the raytracer for
         //  TODO is there a less dumb way of doing this?

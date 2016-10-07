@@ -2,17 +2,17 @@
 
 #include "common/geo/box.h"
 #include "common/indexing.h"
-#include "common/stl_wrappers.h"
+#include "common/spatial_division/range.h"
 
 #include <memory>
 
 namespace detail {
 
 template <size_t n,
-          typename aabb_type = util::detail::range_t<n>,
+          typename aabb_type = detail::range_t<n>,
           typename next_boundaries_type = std::array<aabb_type, (1 << n)>>
 next_boundaries_type next_boundaries(const aabb_type& parent) {
-    using vt = util::detail::range_value_t<n>;
+    using vt = detail::range_value_t<n>;
 
     const auto c = centre(parent);
 
@@ -35,7 +35,7 @@ next_boundaries_type next_boundaries(const aabb_type& parent) {
 template <size_t n>
 class ndim_tree final {
 public:
-    using aabb_type = util::detail::range_t<n>;
+    using aabb_type = detail::range_t<n>;
     using node_array = std::array<ndim_tree, (1 << n)>;
 
     /// Given the index of an item, and a bounding box, returns whether or not
@@ -68,9 +68,10 @@ private:
             const aligned::vector<size_t>& to_test,
             const aabb_type& aabb) {
         aligned::vector<size_t> ret;
-        proc::copy_if(to_test, std::back_inserter(ret), [&](auto i) {
-            return callback(i, aabb);
-        });
+        std::copy_if(begin(to_test),
+                     end(to_test),
+                     std::back_inserter(ret),
+                     [&](auto i) { return callback(i, aabb); });
         return ret;
     }
 
@@ -85,9 +86,10 @@ private:
 
         const auto next = detail::next_boundaries<n>(aabb);
         auto ret = std::make_unique<std::array<ndim_tree, (1 << n)>>();
-        proc::transform(next, ret->begin(), [&](const auto& i) {
-            return ndim_tree(depth - 1, callback, to_test, i);
-        });
+        std::transform(
+                begin(next), end(next), ret->begin(), [&](const auto& i) {
+                    return ndim_tree(depth - 1, callback, to_test, i);
+                });
         return ret;
     }
 

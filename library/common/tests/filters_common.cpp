@@ -1,5 +1,6 @@
 #include "common/filters_common.h"
-#include "common/string_builder.h"
+
+#include "utilities/string_builder.h"
 
 #include "audio_file/audio_file.h"
 
@@ -36,7 +37,7 @@ void run_filter(
     auto filt{filter::make_series_biquads(coefficients)};
     filter::run_two_pass(filt, sig.begin(), sig.end());
     write(build_string(name, ".wav"),
-          make_audio_file(sig, sample_rate),
+          audio_file::make_audio_file(sig, sample_rate),
           bit_depth);
 }
 

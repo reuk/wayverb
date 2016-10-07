@@ -1,7 +1,6 @@
 #pragma once
 
 #include "common/cl/include.h"
-#include "common/stl_wrappers.h"
 
 #include <algorithm>
 #include <cmath>
@@ -488,7 +487,7 @@ constexpr bool any(const T& t) {
 }
 
 template <typename T, detail::enable_if_is_vector_t<T, int> = 0>
-constexpr auto min(const T& t) {
+constexpr auto min_element(const T& t) {
     using value_type = detail::value_type_t<T>;
     struct min final {
         constexpr value_type operator()(value_type a, value_type b) const {
@@ -500,7 +499,7 @@ constexpr auto min(const T& t) {
 }
 
 template <typename T, detail::enable_if_is_vector_t<T, int> = 0>
-constexpr auto max(const T& t) {
+constexpr auto max_element(const T& t) {
     using value_type = detail::value_type_t<T>;
     struct max final {
         constexpr value_type operator()(value_type a, value_type b) const {
@@ -523,7 +522,9 @@ template <typename T,
 constexpr auto map_func_to_bool(const T& t, Func f) {
     using Ret = detail::cl_vector_constructor_t<bool, components>;
     Ret ret{};
-    proc::transform(t.s, ret.s, [&](auto i) { return f(i); });
+    std::transform(std::begin(t.s), std::end(t.s), ret.s, [&](auto i) {
+        return f(i);
+    });
     return ret;
 }
 

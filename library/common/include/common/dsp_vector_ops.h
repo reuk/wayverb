@@ -1,7 +1,5 @@
 #pragma once
 
-#include "stl_wrappers.h"
-
 #include <cmath>
 #include <numeric>
 #include <vector>
@@ -11,15 +9,18 @@ inline double recursive_sum(double t) { return t; }
 
 template <typename T>
 inline auto recursive_sum(const T& t) {
-    return proc::accumulate(t, 0.0, [](const auto& a, const auto& b) {
-        return a + recursive_sum(b);
-    });
+    return std::accumulate(
+            begin(t), end(t), 0.0, [](const auto& a, const auto& b) {
+                return a + recursive_sum(b);
+            });
 }
 
 template <typename T>
 inline auto count(const T& t) {
-    return proc::accumulate(
-            t, 0u, [](const auto& a, const auto& b) { return a + count(b); });
+    return std::accumulate(
+            begin(t), end(t), 0u, [](const auto& a, const auto& b) {
+                return a + count(b);
+            });
 }
 
 template <typename T, typename Allocator>
@@ -37,8 +38,9 @@ inline double max_mag(double t) { return std::fabs(t); }
 
 template <typename T>
 inline auto max_mag(const T& t) {
-    return proc::accumulate(
-            t, 0.0, [](double a, auto b) { return std::max(a, max_mag(b)); });
+    return std::accumulate(begin(t), end(t), 0.0, [](double a, auto b) {
+        return std::max(a, max_mag(b));
+    });
 }
 
 /// The base case of the mul recursion.
@@ -64,7 +66,7 @@ inline void normalize(T& ret) {
 
 template <typename T>
 inline void kernel_normalize(T& ret) {
-    const auto sum{std::abs(proc::accumulate(ret, 0.0))};
+    const auto sum{std::abs(std::accumulate(begin(ret), end(ret), 0.0))};
     if (sum) {
         mul(ret,
             1.0 / sum - std::numeric_limits<typename T::value_type>::epsilon());

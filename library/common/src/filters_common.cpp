@@ -12,7 +12,7 @@ lopass_windowed_sinc::lopass_windowed_sinc(int inputLength)
 
 void lopass_windowed_sinc::set_params(double co, double s) {
     const auto i{lopass_sinc_kernel(s, co, KERNEL_LENGTH)};
-    proc::copy(i, kernel_.begin());
+    std::copy(begin(i), end(i), kernel_.begin());
 }
 
 hipass_windowed_sinc::hipass_windowed_sinc(int inputLength)
@@ -20,7 +20,7 @@ hipass_windowed_sinc::hipass_windowed_sinc(int inputLength)
 
 void hipass_windowed_sinc::set_params(double co, double s) {
     const auto i{hipass_sinc_kernel(s, co, KERNEL_LENGTH)};
-    proc::copy(i, kernel_.begin());
+    std::copy(begin(i), end(i), kernel_.begin());
 }
 
 bandpass_windowed_sinc::bandpass_windowed_sinc(int inputLength)
@@ -28,7 +28,7 @@ bandpass_windowed_sinc::bandpass_windowed_sinc(int inputLength)
 
 void bandpass_windowed_sinc::set_params(double l, double h, double s) {
     const auto i{bandpass_sinc_kernel(s, l, h, KERNEL_LENGTH)};
-    proc::copy(i, kernel_.begin());
+    std::copy(begin(i), end(i), kernel_.begin());
 }
 
 //----------------------------------------------------------------------------//

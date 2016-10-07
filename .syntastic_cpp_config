@@ -1,5 +1,7 @@
 -Ilibrary/waveguide/include
+-Ilibrary/utilities/include
 -Ilibrary/audio_file/include
+-Ilibrary/frequency_domain/include
 -Ilibrary/waveguide/compensation_signal/lib/include
 -Ilibrary/raytracer/include
 -Ilibrary/common/include

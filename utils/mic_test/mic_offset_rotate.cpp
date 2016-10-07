@@ -1,9 +1,10 @@
 #include "run_methods.h"
 
-#include "common/aligned/map.h"
-#include "common/map.h"
-#include "common/range.h"
 #include "common/per_band_energy.h"
+
+#include "utilities/aligned/map.h"
+#include "utilities/map.h"
+#include "utilities/range.h"
 
 #include "cereal/archives/JSON.hpp"
 #include "cereal/cereal.hpp"
@@ -31,10 +32,10 @@ void serialize(T& archive, angle_info<bands>& info) {
 }
 
 template <size_t num, typename T>
-constexpr auto generate_range(util::range<T> r) {
+constexpr auto generate_range(range<T> r) {
     std::array<T, num> ret;
     for (auto i{0ul}; i != ret.size(); ++i) {
-        ret[i] = util::map(i, util::range<T>{0, num}, r);
+        ret[i] = map(i, range<T>{0, num}, r);
     }
     return ret;
 }
@@ -42,7 +43,7 @@ constexpr auto generate_range(util::range<T> r) {
 template <size_t bands, typename Callback>
 auto run_single_angle(float angle,
                       const glm::vec3& receiver,
-                      util::range<double> audible_range,
+                      range<double> audible_range,
                       const Callback& callback) {
     const glm::vec3 source{receiver +
                            glm::vec3{std::sin(angle), 0, std::cos(angle)}};
@@ -57,12 +58,12 @@ template <size_t bands, typename Callback>
 auto run_multiple_angles(const glm::vec3& receiver,
                          float speed_of_sound,
                          float sample_rate,
-                         util::range<double> audible_range,
+                         range<double> audible_range,
                          const Callback& callback) {
     constexpr auto test_locations{16};
     const auto angles{
-            generate_range<test_locations>(util::range<double>{0, 2 * M_PI})};
-    return map_to_vector(angles, [&](auto angle) {
+            generate_range<test_locations>(range<double>{0, 2 * M_PI})};
+    return map_to_vector(begin(angles), end(angles), [&](auto angle) {
         return run_single_angle<bands>(
                 angle, receiver, audible_range, callback);
     });
@@ -118,8 +119,7 @@ int main(int argc, char** argv) {
                 receiver,
                 speed_of_sound,
                 sample_rate,
-                util::range<double>{80 / sample_rate,
-                                    filter_frequency / sample_rate},
+                range<double>{80 / sample_rate, filter_frequency / sample_rate},
                 callback)};
         std::ofstream file{output_folder + "/" + name + ".txt"};
         cereal::JSONOutputArchive archive{file};

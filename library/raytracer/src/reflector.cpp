@@ -44,7 +44,8 @@ reflector::reflector(const compute_context& cc,
         , rays(rays.size())
         , ray_buffer(load_to_buffer(
                   cc.context,
-                  map_to_vector(rays,
+                  map_to_vector(begin(rays),
+                                end(rays),
                                 [&](const auto& i) { return convert(i); }),
                   false))
         , reflection_buffer(load_to_buffer(

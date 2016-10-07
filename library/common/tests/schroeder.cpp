@@ -1,5 +1,6 @@
-#include "common/decibels.h"
 #include "common/schroeder.h"
+
+#include "utilities/decibels.h"
 
 #include "gtest/gtest.h"
 

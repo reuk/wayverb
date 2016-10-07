@@ -1,7 +1,8 @@
 #include "waveguide/postprocessor/node.h"
 
 #include "common/cl/common.h"
-#include "common/map_to_vector.h"
+
+#include "utilities/map_to_vector.h"
 
 namespace waveguide {
 namespace postprocessor {

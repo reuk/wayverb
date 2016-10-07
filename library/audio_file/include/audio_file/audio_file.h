@@ -3,6 +3,8 @@
 #include <string>
 #include <vector>
 
+namespace audio_file {
+
 namespace detail {
 
 template <typename It>
@@ -98,3 +100,5 @@ void write(const std::string& fname,
                               format,
                               depth);
 }
+
+}  // namespace audio_file

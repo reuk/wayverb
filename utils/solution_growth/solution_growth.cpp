@@ -14,14 +14,15 @@
 #include "common/dc_blocker.h"
 #include "common/filters_common.h"
 #include "common/kernel.h"
-#include "common/map_to_vector.h"
 #include "common/maximum_length_sequence.h"
-#include "common/progress_bar.h"
 #include "common/reverb_time.h"
 #include "common/scene_data.h"
 #include "common/serialize/surface.h"
 #include "common/sinc.h"
 #include "common/spatial_division/voxelised_scene_data.h"
+
+#include "utilities/map_to_vector.h"
+#include "utilities/progress_bar.h"
 
 #include "audio_file/audio_file.h"
 
@@ -115,7 +116,8 @@ int main(int argc, char** argv) {
         };
 
         for (const auto& i : signals) {
-            auto kernel{waveguide::make_transparent(i.kernel)};
+            auto kernel{waveguide::make_transparent(
+                    i.kernel.data(), i.kernel.data() + i.kernel.size())};
             kernel.resize(simulation_length);
 
             auto prep{waveguide::preprocessor::make_soft_source(
@@ -137,7 +139,7 @@ int main(int argc, char** argv) {
             {
                 write(build_string(
                               "solution_growth.", i.name, ".transparent.wav"),
-                      make_audio_file(postprocessor.get_output(),
+                      audio_file::make_audio_file(postprocessor.get_output(),
                                       sampling_frequency),
                       16);
             }
@@ -148,7 +150,7 @@ int main(int argc, char** argv) {
                 filter::run_two_pass(u, copy.begin(), copy.end());
                 write(build_string(
                               "solution_growth.", i.name, ".dc_blocked.wav"),
-                      make_audio_file(copy, sampling_frequency),
+                      audio_file::make_audio_file(copy, sampling_frequency),
                       16);
             }
 
@@ -158,7 +160,7 @@ int main(int argc, char** argv) {
                 write(build_string("solution_growth.",
                                    i.name,
                                    ".butterworth_blocked.wav"),
-                      make_audio_file(copy, sampling_frequency),
+                      audio_file::make_audio_file(copy, sampling_frequency),
                       16);
             }
         }

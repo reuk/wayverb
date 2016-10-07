@@ -2,7 +2,7 @@
 
 #include "waveguide/cl/filter_structs.h"
 
-#include "common/decibels.h"
+#include "utilities/decibels.h"
 
 #include <cmath>
 #include <functional>
@@ -78,7 +78,7 @@ constexpr bool is_stable(const std::array<double, 1>& a) {
 template <size_t L>
 constexpr bool is_stable(const coefficients<L>& coeffs) {
     std::array<double, L + 1> denom;
-    proc::copy(coeffs.a, denom.begin());
+    std::copy(std::begin(coeffs.a), std::end(coeffs.a), denom.begin());
     return is_stable(denom);
 }
 

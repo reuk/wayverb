@@ -1,8 +1,7 @@
 #include "raytracer/image_source/tree.h"
 
-#include "common/map_to_vector.h"
-#include "common/mapping_iterator_adapter.h"
-#include "common/output_iterator_callback.h"
+#include "utilities/map_to_vector.h"
+#include "utilities/mapping_iterator_adapter.h"
 
 namespace raytracer {
 namespace image_source {

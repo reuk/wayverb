@@ -1,13 +1,13 @@
 #pragma once
 
 #include "common/cl/common.h"
-#include "common/decibels.h"
 #include "common/hrtf.h"
 #include "common/program_wrapper.h"
 #include "common/scene_data.h"
-#include "common/stl_wrappers.h"
-#include "common/string_builder.h"
 #include "waveguide/cl/structs.h"
+
+#include "utilities/decibels.h"
+#include "utilities/string_builder.h"
 
 #include <algorithm>
 #include <cassert>

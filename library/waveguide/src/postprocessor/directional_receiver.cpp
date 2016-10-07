@@ -2,7 +2,6 @@
 #include "waveguide/mesh_descriptor.h"
 
 #include "common/cl/common.h"
-#include "common/map_to_vector.h"
 
 namespace waveguide {
 namespace postprocessor {

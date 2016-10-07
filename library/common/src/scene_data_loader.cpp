@@ -1,7 +1,8 @@
 #include "common/scene_data_loader.h"
 #include "common/conversions.h"
-#include "common/map_to_vector.h"
 #include "common/scene_data.h"
+
+#include "utilities/map_to_vector.h"
 
 #include "assimp/Exporter.hpp"
 #include "assimp/Importer.hpp"

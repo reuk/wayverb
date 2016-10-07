@@ -1,7 +1,10 @@
 #include "common/dc_blocker.h"
 #include "common/dsp_vector_ops.h"
-#include "common/frequency_domain_filter.h"
-#include "common/string_builder.h"
+
+#include "frequency_domain/envelope.h"
+#include "frequency_domain/filter.h"
+
+#include "utilities/string_builder.h"
 
 #include "audio_file/audio_file.h"
 
@@ -160,7 +163,7 @@ TEST(dc_blocker, io) {
 
     for (const auto& i : signals) {
         write(build_string("dc_test.input.", i.name, ".wav"),
-              make_audio_file(i.kernel, 44100),
+              audio_file::make_audio_file(i.kernel, 44100),
               16);
 
         auto run{[&i](auto& filter, const auto& filter_name, auto i) {
@@ -168,7 +171,7 @@ TEST(dc_blocker, io) {
             normalize(i.kernel);
             write(build_string(
                           "dc_test.output.", filter_name, ".", i.name, ".wav"),
-                  make_audio_file(i.kernel, 44100),
+                  audio_file::make_audio_file(i.kernel, 44100),
                   16);
         }};
 
@@ -246,18 +249,20 @@ const aligned::vector<std::tuple<callback, std::string>> trial_blockers{
 
         {[](auto sig, auto cutoff, auto sample_rate) {
              const auto normalised_cutoff{cutoff / sample_rate};
-             fast_filter blocker{sig.size()};
-             blocker.filter(
+             frequency_domain::filter blocker{sig.size()};
+             blocker.run(
                      sig.begin(),
                      sig.end(),
                      sig.begin(),
                      [=](auto cplx, auto freq) {
                          return cplx *
-                                static_cast<float>(compute_hipass_magnitude(
-                                        freq,
-                                        normalised_cutoff,
-                                        normalised_cutoff / 2,
-                                        0));
+                                static_cast<float>(
+                                        frequency_domain::
+                                                compute_hipass_magnitude(
+                                                        freq,
+                                                        normalised_cutoff,
+                                                        normalised_cutoff / 2,
+                                                        0));
                      });
              return sig;
          },
@@ -265,18 +270,20 @@ const aligned::vector<std::tuple<callback, std::string>> trial_blockers{
 
         {[](auto sig, auto cutoff, auto sample_rate) {
              const auto normalised_cutoff{cutoff / sample_rate};
-             fast_filter blocker{sig.size() * 2};
-             blocker.filter(
+             frequency_domain::filter blocker{sig.size() * 2};
+             blocker.run(
                      sig.begin(),
                      sig.end(),
                      sig.begin(),
                      [=](auto cplx, auto freq) {
                          return cplx *
-                                static_cast<float>(compute_hipass_magnitude(
-                                        freq,
-                                        normalised_cutoff,
-                                        normalised_cutoff / 2,
-                                        0));
+                                static_cast<float>(
+                                        frequency_domain::
+                                                compute_hipass_magnitude(
+                                                        freq,
+                                                        normalised_cutoff,
+                                                        normalised_cutoff / 2,
+                                                        0));
                      });
              return sig;
          },
@@ -303,7 +310,7 @@ TEST(dc_blocker, impulses) {
         {
             const auto output{std::get<0>(i)(input, cutoff, sample_rate)};
             write(build_string("impulses.dc_blocker.", std::get<1>(i), ".wav"),
-                  make_audio_file(output, sample_rate),
+                  audio_file::make_audio_file(output, sample_rate),
                   16);
         }
     }
@@ -327,7 +334,7 @@ TEST(dc_blocker, increasing_offset) {
             const auto output{
                     std::get<0>(i)(increasing_offset, cutoff, sample_rate)};
             write(build_string("dc_blocker.", std::get<1>(i), ".wav"),
-                  make_audio_file(output, sample_rate),
+                  audio_file::make_audio_file(output, sample_rate),
                   16);
         }
         {
@@ -337,7 +344,7 @@ TEST(dc_blocker, increasing_offset) {
                          increasing_offset.crend());
             const auto output{std::get<0>(i)(input, cutoff, sample_rate)};
             write(build_string("mirrored.dc_blocker.", std::get<1>(i), ".wav"),
-                  make_audio_file(output, sample_rate),
+                  audio_file::make_audio_file(output, sample_rate),
                   16);
         }
     }

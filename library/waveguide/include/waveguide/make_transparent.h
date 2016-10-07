@@ -1,9 +1,9 @@
 #pragma once
 
-#include "common/aligned/vector.h"
+#include "utilities/aligned/vector.h"
 
 namespace waveguide {
 
-aligned::vector<float> make_transparent(const aligned::vector<float>& kernel);
+std::vector<float> make_transparent(const float* begin, const float* end);
 
 }  // namespace waveguide

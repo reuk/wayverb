@@ -1,6 +1,6 @@
 #pragma once
 
-#include "common/aligned/vector.h"
+#include "utilities/aligned/vector.h"
 
 #include <cmath>
 #include <stdexcept>

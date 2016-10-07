@@ -5,9 +5,10 @@
 #include "waveguide/mesh_descriptor.h"
 
 #include "common/cl/representation.h"
-#include "common/popcount.h"
 #include "common/program_wrapper.h"
 #include "common/spatial_division/scene_buffers.h"
+
+#include "utilities/popcount.h"
 
 namespace waveguide {
 

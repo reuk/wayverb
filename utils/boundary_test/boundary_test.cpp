@@ -14,12 +14,13 @@
 #include "common/cl/common.h"
 #include "common/conversions.h"
 #include "common/filters_common.h"
-#include "common/map_to_vector.h"
-#include "common/progress_bar.h"
 #include "common/scene_data.h"
 #include "common/serialize/surface.h"
 #include "common/sinc.h"
 #include "common/spatial_division/voxelised_scene_data.h"
+
+#include "utilities/progress_bar.h"
+#include "utilities/map_to_vector.h"
 
 #include "audio_file/audio_file.h"
 
@@ -81,19 +82,24 @@ private:
         const auto source_index{
                 compute_index(mesh.get_descriptor(), source_position_)};
 
-        auto input{waveguide::make_transparent({1.0f})};
+        const aligned::vector<float> raw_input{1.0f};
+        auto input{waveguide::make_transparent(
+                raw_input.data(), raw_input.data() + raw_input.size())};
         input.resize(steps, 0);
         auto prep{waveguide::preprocessor::make_soft_source(
                 source_index, input.begin(), input.end())};
 
-        auto output_holders{map_to_vector(receivers, [&](auto i) {
-            const auto receiver_index{compute_index(mesh.get_descriptor(), i)};
-            if (!waveguide::is_inside(mesh, receiver_index)) {
-                throw std::runtime_error{"receiver is outside of mesh!"};
-            }
-            return callback_accumulator<waveguide::postprocessor::node>{
-                    receiver_index};
-        })};
+        auto output_holders{
+                map_to_vector(begin(receivers), end(receivers), [&](auto i) {
+                    const auto receiver_index{
+                            compute_index(mesh.get_descriptor(), i)};
+                    if (!waveguide::is_inside(mesh, receiver_index)) {
+                        throw std::runtime_error{
+                                "receiver is outside of mesh!"};
+                    }
+                    return callback_accumulator<waveguide::postprocessor::node>{
+                            receiver_index};
+                })};
 
         progress_bar pb{std::cout, input.size()};
         waveguide::run(cc_,
@@ -107,7 +113,8 @@ private:
                        },
                        true);
 
-        return map_to_vector(output_holders,
+        return map_to_vector(begin(output_holders),
+                             end(output_holders),
                              [](const auto& i) { return i.get_output(); });
     }
 
@@ -141,20 +148,21 @@ public:
         elementwise_multiply(reflected, window);
 
         auto subbed{reflected};
-        proc::transform(reflected,
-                        free_field_.direct.begin(),
-                        subbed.begin(),
-                        [](const auto& i, const auto& j) { return j - i; });
+        std::transform(begin(reflected),
+                       end(reflected),
+                       free_field_.direct.begin(),
+                       subbed.begin(),
+                       [](const auto& i, const auto& j) { return j - i; });
 
         write(build_string(output_folder_,
                            "/",
                            test_name,
                            "_windowed_free_field.wav"),
-              make_audio_file(free_field_.image, out_sr),
+              audio_file::make_audio_file(free_field_.image, out_sr),
               bit_depth);
         write(build_string(
                       output_folder_, "/", test_name, "_windowed_subbed.wav"),
-              make_audio_file(subbed, out_sr),
+              audio_file::make_audio_file(subbed, out_sr),
               bit_depth);
 
         return subbed;
@@ -255,8 +263,8 @@ int main(int argc, char** argv) {
             archive(cereal::make_nvp("coefficients", coefficients_set));
         }
 
-        const auto all_test_results{
-                map_to_vector(coefficients_set, [&](auto i) {
+        const auto all_test_results{map_to_vector(
+                begin(coefficients_set), end(coefficients_set), [&](auto i) {
                     return test.run_full_test(i.name, i.coefficients);
                 })};
 

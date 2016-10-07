@@ -4,9 +4,10 @@
 #include "raytracer/image_source/postprocessors.h"
 #include "raytracer/image_source/tree.h"
 
-#include "common/aligned/vector.h"
 #include "common/callback_accumulator.h"
 #include "common/spatial_division/voxelised_scene_data.h"
+
+#include "utilities/aligned/vector.h"
 
 #include <future>
 
@@ -29,16 +30,19 @@ auto postprocess(const multitree<path_element>& tree,
     return callback.get_output();
 }
 
-template <typename Func>
-auto postprocess(const multitree<path_element>::branches_type& branches,
+template <typename Func, typename It>
+auto postprocess(It begin_branches,
+                 It end_branches,
                  const glm::vec3& source,
                  const glm::vec3& receiver,
                  const voxelised_scene_data<cl_float3, surface>& voxelised) {
-    auto futures{map_to_vector(branches, [&](const auto& branch) {
-        return std::async(std::launch::async, [&] {
-            return postprocess<Func>(branch, source, receiver, voxelised);
-        });
-    })};
+    auto futures{map_to_vector(
+            begin_branches, end_branches, [&](const auto& branch) {
+                return std::async(std::launch::async, [&] {
+                    return postprocess<Func>(
+                            branch, source, receiver, voxelised);
+                });
+            })};
 
     using value_type = decltype(
             std::declval<typename decltype(futures)::value_type>().get());

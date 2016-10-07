@@ -7,8 +7,9 @@
 
 #include "common/callback_accumulator.h"
 #include "common/dsp_vector_ops.h"
-#include "common/map_to_vector.h"
-#include "common/progress_bar.h"
+
+#include "utilities/map_to_vector.h"
+#include "utilities/progress_bar.h"
 
 #include "audio_file/audio_file.h"
 
@@ -61,5 +62,7 @@ int main() {
                    },
                    true);
 
-    write("waveguide.wav", make_audio_file(post.get_output(), sample_rate), 16);
+    write("waveguide.wav",
+          audio_file::make_audio_file(post.get_output(), sample_rate),
+          16);
 }

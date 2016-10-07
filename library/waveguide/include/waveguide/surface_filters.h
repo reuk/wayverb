@@ -2,9 +2,10 @@
 
 #include "waveguide/filters.h"
 
-#include "common/map_to_vector.h"
 #include "common/scene_data.h"
 #include "common/surfaces.h"
+
+#include "utilities/map_to_vector.h"
 
 namespace waveguide {
 
@@ -48,8 +49,9 @@ inline coefficients_canonical to_filter_coefficients(const surface& surface,
 
 inline aligned::vector<coefficients_canonical> to_filter_coefficients(
         const aligned::vector<surface>& surfaces, float sr) {
-    return map_to_vector(surfaces,
-                         [=](auto i) { return to_filter_coefficients(i, sr); });
+    return map_to_vector(begin(surfaces), end(surfaces), [=](auto i) {
+        return to_filter_coefficients(i, sr);
+    });
 }
 
 inline coefficients_canonical to_flat_coefficients(const surface& surface) {
@@ -61,8 +63,9 @@ inline coefficients_canonical to_flat_coefficients(const surface& surface) {
 
 inline aligned::vector<coefficients_canonical> to_flat_coefficients(
         const aligned::vector<surface>& surfaces) {
-    return map_to_vector(surfaces,
-                         [](auto i) { return to_flat_coefficients(i); });
+    return map_to_vector(begin(surfaces), end(surfaces), [](auto i) {
+        return to_flat_coefficients(i);
+    });
 }
 
 }  // namespace waveguide

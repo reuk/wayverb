@@ -3,21 +3,22 @@
 /// This file contains methods for running acoustic simulations in boxes with
 /// a single type of 'flat-response' surface.
 
+#include "waveguide/attenuator.h"
 #include "waveguide/calibration.h"
 #include "waveguide/mesh.h"
 #include "waveguide/postprocessor/directional_receiver.h"
 #include "waveguide/preprocessor/hard_source.h"
 #include "waveguide/surface_filters.h"
 #include "waveguide/waveguide.h"
-#include "waveguide/attenuator.h"
 
 #include "raytracer/image_source/exact.h"
 #include "raytracer/image_source/postprocessors.h"
 #include "raytracer/image_source/run.h"
 #include "raytracer/raytracer.h"
 
-#include "common/progress_bar.h"
 #include "common/reverb_time.h"
+
+#include "utilities/progress_bar.h"
 
 #include <iostream>
 
@@ -28,16 +29,19 @@ auto waveguide_filter(It begin, It end, float sample_rate) {
     const auto normalised_width{0.02};
     const auto normalised_cutoff{waveguide_max - (normalised_width / 2)};
 
-    fast_filter filter{static_cast<size_t>(std::distance(begin, end)) * 2};
-    filter.filter(begin, end, begin, [=](auto cplx, auto freq) {
-        const auto ret{cplx *
-                       static_cast<float>(compute_lopass_magnitude(
-                               freq, normalised_cutoff, normalised_width, 0))};
+    frequency_domain::filter filter{
+            static_cast<size_t>(std::distance(begin, end)) * 2};
+    filter.run(begin, end, begin, [=](auto cplx, auto freq) {
+        const auto ret{
+                cplx *
+                static_cast<float>(frequency_domain::compute_lopass_magnitude(
+                        freq, normalised_cutoff, normalised_width, 0))};
         const auto hipass{false};
         if (hipass) {
             const auto low_cutoff{100 / sample_rate};
-            return ret * static_cast<float>(compute_hipass_magnitude(
-                                 freq, low_cutoff, low_cutoff * 2, 0));
+            return ret * static_cast<float>(
+                                 frequency_domain::compute_hipass_magnitude(
+                                         freq, low_cutoff, low_cutoff * 2, 0));
         }
         return ret;
     });
@@ -126,7 +130,9 @@ auto postprocess_impulses(It begin,
                                                    20)};
 
     //  Extract.
-    return map_to_vector(histogram, [](auto i) { return i.s[0]; });
+    return map_to_vector(std::begin(histogram),
+                         std::end(histogram),
+                         [](auto i) { return i.s[0]; });
 }
 
 auto run_exact_img_src(const geo::box& box,
@@ -165,7 +171,7 @@ auto run_fast_img_src(const geo::box& box,
                       float speed_of_sound,
                       float acoustic_impedance,
                       float sample_rate,
-                      float ) {
+                      float) {
     std::cout << "running fast img src\n";
 
     const auto voxelised{make_voxelised_scene_data(

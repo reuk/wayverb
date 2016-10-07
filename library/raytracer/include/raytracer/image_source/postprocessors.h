@@ -2,13 +2,14 @@
 
 #include "raytracer/cl/structs.h"
 
-#include "common/aligned/vector.h"
 #include "common/conversions.h"
-#include "common/map_to_vector.h"
 #include "common/scene_data.h"
 #include "common/specular_absorption.h"
 #include "common/surfaces.h"
 #include "common/unit_constructor.h"
+
+#include "utilities/aligned/vector.h"
+#include "utilities/map_to_vector.h"
 
 #include "glm/fwd.hpp"
 
@@ -130,7 +131,8 @@ public:
                              bool flip_phase)
             : receiver_{receiver}
             , surface_impedances_{map_to_vector(
-                      surfaces,
+                      begin(surfaces),
+                      end(surfaces),
                       [](auto material) {
                           return pressure_reflectance_to_average_wall_impedance(
                                   absorption_to_pressure_reflectance(

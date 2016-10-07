@@ -25,7 +25,7 @@ public:
                           // This is a bit greedy - we're sacrificing some speed
                           // in the name of correctness.
                           return geo::overlaps(
-                                  util::padded(aabb, glm::vec3{0.001}),
+                                  padded(aabb, glm::vec3{0.001}),
                                   geo::get_triangle_vec3(
                                           scene_.get_triangles()[item],
                                           scene_.get_vertices()));
@@ -66,7 +66,7 @@ template <typename Vertex, typename Surface, typename Pad>
 auto make_voxelised_scene_data(generic_scene_data<Vertex, Surface> scene,
                                size_t octree_depth,
                                Pad padding) {
-    const auto aabb{util::padded(geo::get_aabb(scene), padding)};
+    const auto aabb{padded(geo::get_aabb(scene), padding)};
     return make_voxelised_scene_data(std::move(scene), octree_depth, aabb);
 }
 

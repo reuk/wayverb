@@ -1,6 +1,6 @@
 #pragma once
 
-#include "common/aligned/vector.h"
+#include "utilities/aligned/vector.h"
 
 #include <vector>
 
@@ -13,7 +13,8 @@ double grid_spacing(double speed_of_sound, double time_step);
 
 }  // namespace config
 
-aligned::vector<float> adjust_sampling_rate(aligned::vector<float> w_results,
+aligned::vector<float> adjust_sampling_rate(const float* begin,
+                                            const float* end,
                                             double in_sr,
                                             double out_sr);
 

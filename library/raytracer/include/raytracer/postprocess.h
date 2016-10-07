@@ -9,24 +9,24 @@
 #include "common/attenuator/microphone.h"
 #include "common/cl/common.h"
 #include "common/hrtf_utils.h"
-#include "common/map_to_vector.h"
 #include "common/model/receiver_settings.h"
 #include "common/pressure_intensity.h"
-#include "common/stl_wrappers.h"
+
+#include "utilities/map_to_vector.h"
 
 namespace raytracer {
 
-constexpr auto min(double x) {
+constexpr auto min_element(double x) {
     return x;
 }
 
-constexpr auto min(float x) {
+constexpr auto min_element(float x) {
     return x;
 }
 
 template <typename T>
 double min_absorption(const T& t) {
-    return min(get_specular_absorption(t));
+    return min_element(get_specular_absorption(t));
 }
 
 template <typename It>
@@ -88,23 +88,28 @@ aligned::vector<aligned::vector<float>> attenuate_microphone(
         double max_seconds,
         It begin,
         It end) {
-    return map_to_vector(receiver.microphones, [&](const auto& i) {
-        const auto processed{attenuate(
-                microphone{get_pointing(i.orientable, receiver.position),
-                           i.shape},
-                receiver.position,
-                begin,
-                end)};
-        const auto make_iterator{[&](auto i) {
-            return make_histogram_iterator(std::move(i), speed_of_sound);
-        }};
-        return multiband_filter_and_mixdown(
-                dirac_histogram(make_iterator(processed.begin()),
-                                make_iterator(processed.end()),
-                                sample_rate,
-                                max_seconds),
-                sample_rate);
-    });
+    return map_to_vector(
+            std::begin(receiver.microphones),
+            std::end(receiver.microphones),
+            [&](const auto& i) {
+                const auto processed{attenuate(
+                        microphone{
+                                get_pointing(i.orientable, receiver.position),
+                                i.shape},
+                        receiver.position,
+                        begin,
+                        end)};
+                const auto make_iterator{[&](auto i) {
+                    return make_histogram_iterator(std::move(i),
+                                                   speed_of_sound);
+                }};
+                return multiband_filter_and_mixdown(
+                        dirac_histogram(make_iterator(processed.begin()),
+                                        make_iterator(processed.end()),
+                                        sample_rate,
+                                        max_seconds),
+                        sample_rate);
+            });
 }
 
 template <typename It>
@@ -116,26 +121,28 @@ aligned::vector<aligned::vector<float>> attenuate_hrtf(
         It begin,
         It end) {
     const auto channels = {hrtf::channel::left, hrtf::channel::right};
-    return map_to_vector(channels, [&](const auto& i) {
-        const auto processed{
-                attenuate(hrtf{get_pointing(receiver.hrtf, receiver.position),
-                               glm::vec3{0, 1, 0},
-                               i},
-                          receiver.position,
-                          begin,
-                          end)};
+    return map_to_vector(
+            std::begin(channels), std::end(channels), [&](const auto& i) {
+                const auto processed{attenuate(
+                        hrtf{get_pointing(receiver.hrtf, receiver.position),
+                             glm::vec3{0, 1, 0},
+                             i},
+                        receiver.position,
+                        begin,
+                        end)};
 
-        const auto make_iterator{[&](auto i) {
-            return make_histogram_iterator(std::move(i), speed_of_sound);
-        }};
+                const auto make_iterator{[&](auto i) {
+                    return make_histogram_iterator(std::move(i),
+                                                   speed_of_sound);
+                }};
 
-        return multiband_filter_and_mixdown(
-                dirac_histogram(make_iterator(processed.begin()),
-                                make_iterator(processed.end()),
-                                sample_rate,
-                                max_seconds),
-                sample_rate);
-    });
+                return multiband_filter_and_mixdown(
+                        dirac_histogram(make_iterator(processed.begin()),
+                                        make_iterator(processed.end()),
+                                        sample_rate,
+                                        max_seconds),
+                        sample_rate);
+            });
 }
 
 template <typename It>

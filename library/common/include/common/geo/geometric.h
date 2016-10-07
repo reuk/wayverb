@@ -1,15 +1,16 @@
 #pragma once
 
-#include "common/aligned/vector.h"
 #include "common/almost_equal.h"
 #include "common/cl/geometry_structs.h"
 #include "common/conversions.h"
 #include "common/geo/triangle_vec.h"
-#include "common/stl_wrappers.h"
+
+#include "utilities/aligned/vector.h"
 
 #include "glm/glm.hpp"
 
 #include <experimental/optional>
+#include <numeric>
 
 namespace geo {
 
@@ -69,8 +70,9 @@ std::experimental::optional<intersection> ray_triangle_intersection(
         const aligned::vector<triangle>& triangles,
         const aligned::vector<t>& vertices,
         size_t to_ignore = ~size_t{0}) {
-    return proc::accumulate(
-            triangle_indices,
+    return std::accumulate(
+            begin(triangle_indices),
+            end(triangle_indices),
             std::experimental::optional<intersection>{},
             [&](const auto& i, const auto& j) {
                 return intersection_accumulator(

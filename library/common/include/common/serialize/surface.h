@@ -1,7 +1,6 @@
 #pragma once
 
 #include "common/scene_data_loader.h"
-#include "common/stl_wrappers.h"
 
 #include "common/serialize/json_read_write.h"
 
@@ -15,7 +14,9 @@ void serialize(Archive& archive, volume_type& m) {
     if (s != 8) {
         throw std::runtime_error("volume array must be of length 8");
     }
-    proc::for_each(m.s, [&archive](auto& i) { archive(i); });
+    std::for_each(std::begin(m.s), std::end(m.s), [&archive](auto& i) {
+        archive(i);
+    });
 }
 JSON_OSTREAM_OVERLOAD(volume_type);
 

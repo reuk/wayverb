@@ -1,6 +1,8 @@
 #include "common/geo/box.h"
 #include "common/geo/tri_cube_intersection.h"
 
+#include "utilities/range.h"
+
 #include "tri_cube_c.h"
 
 #include "gtest/gtest.h"
@@ -431,13 +433,13 @@ TEST(tri_cube_tests, specific) {
         const geo::box b2(
                 glm::vec3(-9.5, -0.0000000000000021191102, -7.5999999),
                 glm::vec3(-7.125, 0.449999988, -5.69999981));
-        const auto centre = util::centre(b2);
+        const auto cent = centre(b2);
         const auto x0 = b2.get_min().x;
         //      auto y0 = b2.get_min().y;
         const auto z0 = b2.get_min().z;
-        const auto xc = centre.x;
-        const auto yc = centre.y;
-        const auto zc = centre.z;
+        const auto xc = cent.x;
+        const auto yc = cent.y;
+        const auto zc = cent.z;
         //      auto x1 = b2.get_max().x;
         const auto y1 = b2.get_max().y;
         //      auto z1 = b2.get_max().z;

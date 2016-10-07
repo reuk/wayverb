@@ -1,9 +1,10 @@
 #pragma once
 
-#include "common/aligned/set.h"
 #include "common/geo/triangle_vec.h"
 #include "common/scene_data.h"
 #include "common/specular_absorption.h"
+
+#include "utilities/aligned/set.h"
 
 /// IMPORTANT
 /// The following functions assume that the scene being modelled has the
@@ -22,8 +23,11 @@ double area(const generic_scene_data<Vertex, Surface>& scene,
     //  TODO this is dumb because of the linear search.
     //  If this becomes a bottleneck, maybe scene_data could store surfaces
     //  pre-sorted by material.
-    return proc::accumulate(
-            scene.get_triangles(), 0.0, [&](auto running_total, auto tri) {
+    return std::accumulate(
+            begin(scene.get_triangles()),
+            end(scene.get_triangles()),
+            0.0,
+            [&](auto running_total, auto tri) {
                 return running_total +
                        (tri.surface == surface_index
                                 ? geo::area(geo::get_triangle_vec3(
@@ -36,8 +40,11 @@ double area(const generic_scene_data<Vertex, Surface>& scene,
 template <typename Vertex, typename Surface>
 double area(const generic_scene_data<Vertex, Surface>& scene) {
     //  This is OK - we have to look at every triangle anyway.
-    return proc::accumulate(
-            scene.get_triangles(), 0.0, [&](auto running_total, auto tri) {
+    return std::accumulate(
+            begin(scene.get_triangles()),
+            end(scene.get_triangles()),
+            0.0,
+            [&](auto running_total, auto tri) {
                 return running_total + geo::area(geo::get_triangle_vec3(
                                                tri, scene.get_vertices()));
             });
@@ -95,8 +102,9 @@ float six_times_tetrahedron_volume(const geo::triangle_vec3& t);
 /// http://research.microsoft.com/en-us/um/people/chazhang/publications/icip01_ChaZhang.pdf
 template <typename Vertex, typename Surface>
 float estimate_room_volume(const generic_scene_data<Vertex, Surface>& scene) {
-    return std::abs(proc::accumulate(
-                   scene.get_triangles(),
+    return std::abs(std::accumulate(
+                   begin(scene.get_triangles()),
+                   end(scene.get_triangles()),
                    0.0f,
                    [&](auto running_total, auto tri) {
                        return running_total +

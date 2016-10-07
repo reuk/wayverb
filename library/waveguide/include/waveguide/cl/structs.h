@@ -91,7 +91,7 @@ struct alignas(1 << 3) boundary_data_array final {
 template <size_t D>
 bool operator==(const boundary_data_array<D>& a,
                 const boundary_data_array<D>& b) {
-    return proc::equal(a.array, std::begin(b.array));
+    return std::equal(begin(a.array), end(a.array), begin(b.array));
 }
 
 template <size_t D>

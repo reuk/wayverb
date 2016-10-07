@@ -2,7 +2,6 @@
 
 #include "common/conversions.h"
 #include "common/geo/box.h"
-#include "common/map_to_vector.h"
 #include "common/spatial_division/voxelised_scene_data.h"
 
 #include "glm/glm.hpp"
@@ -94,10 +93,12 @@ TEST_F(reflector_fixture, locations) {
     const auto current_rays{reflector.get_rays()};
     const auto reflections{reflector.run_step(buffers)};
 
-    ASSERT_TRUE(proc::any_of(reflections,
-                             [](const auto& i) { return i.keep_going; }));
-    ASSERT_TRUE(proc::all_of(reflections,
-                             [](const auto& i) { return i.keep_going; }));
+    ASSERT_TRUE(std::any_of(begin(reflections),
+                            end(reflections),
+                            [](const auto& i) { return i.keep_going; }));
+    ASSERT_TRUE(std::all_of(begin(reflections),
+                            end(reflections),
+                            [](const auto& i) { return i.keep_going; }));
 
     for (auto i = 0; i != current_rays.size(); ++i) {
         ASSERT_TRUE(fast_intersections[i]);

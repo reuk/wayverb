@@ -2,7 +2,7 @@
 
 #include "waveguide/postprocessor/directional_receiver.h"
 
-#include "common/map_to_vector.h"
+#include "utilities/map_to_vector.h"
 
 namespace waveguide {
 

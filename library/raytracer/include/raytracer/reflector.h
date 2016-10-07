@@ -2,20 +2,22 @@
 
 #include "raytracer/program.h"
 
-#include "common/aligned/vector.h"
 #include "common/cl/geometry.h"
 #include "common/cl/include.h"
 #include "common/geo/geometric.h"
-#include "common/map_to_vector.h"
 #include "common/spatial_division/scene_buffers.h"
+
+#include "utilities/aligned/vector.h"
+#include "utilities/map_to_vector.h"
 
 #include "glm/glm.hpp"
 
 namespace raytracer {
 
-template <typename It> /// Iterator over directions
-aligned::vector<geo::ray> get_rays_from_directions(It begin, It end,
-        const glm::vec3& source ) {
+template <typename It>  /// Iterator over directions
+aligned::vector<geo::ray> get_rays_from_directions(It begin,
+                                                   It end,
+                                                   const glm::vec3& source) {
     return map_to_vector(begin, end, [&](const auto& i) {
         return geo::ray{source, i};
     });

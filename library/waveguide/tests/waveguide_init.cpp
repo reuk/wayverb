@@ -5,8 +5,9 @@
 #include "waveguide/waveguide.h"
 
 #include "common/callback_accumulator.h"
-#include "common/progress_bar.h"
 #include "common/spatial_division/voxelised_scene_data.h"
+
+#include "utilities/progress_bar.h"
 
 #include "gtest/gtest.h"
 
@@ -23,7 +24,8 @@ TEST(waveguide_init, waveguide_init) {
     constexpr glm::vec3 centre{0, 0, 0};
 
     const aligned::vector<float> input(20, 1);
-    auto transparent{waveguide::make_transparent(input)};
+    auto transparent{waveguide::make_transparent(input.data(),
+                                                 input.data() + input.size())};
 
     constexpr auto steps{100};
     transparent.resize(steps, 0);

@@ -11,9 +11,10 @@
 
 #include "common/callback_accumulator.h"
 #include "common/cl/common.h"
-#include "common/progress_bar.h"
 #include "common/sinc.h"
 #include "common/spatial_division/voxelised_scene_data.h"
+
+#include "utilities/progress_bar.h"
 
 #include "audio_file/audio_file.h"
 
@@ -32,7 +33,9 @@ TEST(peak_filter_coefficients, peak_filter_coefficients) {
         const auto coefficients =
                 waveguide::get_peak_coefficients(descriptor, samplerate);
 
-        ASSERT_TRUE(proc::equal(coefficients.b, std::begin(coefficients.a)));
+        ASSERT_TRUE(std::equal(std::begin(coefficients.b),
+                               std::end(coefficients.b),
+                               std::begin(coefficients.a)));
     }
 }
 
@@ -67,20 +70,24 @@ TEST(run_waveguide, run_waveguide) {
         throw std::runtime_error("source is outside of mesh!");
     }
 
-    auto input{waveguide::make_transparent(aligned::vector<float>{1})};
+    const aligned::vector<float> raw_input{1.0f};
+    auto input{waveguide::make_transparent(
+            raw_input.data(), raw_input.data() + raw_input.size())};
     input.resize(steps);
 
     auto prep{waveguide::preprocessor::make_soft_source(
             source_index, input.begin(), input.end())};
 
-    auto output_holders{map_to_vector(receivers, [&](auto i) {
-        const auto receiver_index{compute_index(model.get_descriptor(), i)};
-        if (!waveguide::is_inside(model, receiver_index)) {
-            throw std::runtime_error("receiver is outside of mesh!");
-        }
-        return callback_accumulator<waveguide::postprocessor::node>{
-                receiver_index};
-    })};
+    auto output_holders{
+            map_to_vector(begin(receivers), end(receivers), [&](auto i) {
+                const auto receiver_index{
+                        compute_index(model.get_descriptor(), i)};
+                if (!waveguide::is_inside(model, receiver_index)) {
+                    throw std::runtime_error("receiver is outside of mesh!");
+                }
+                return callback_accumulator<waveguide::postprocessor::node>{
+                        receiver_index};
+            })};
 
     progress_bar pb{std::cerr, steps};
     auto callback_counter{0};
@@ -99,16 +106,20 @@ TEST(run_waveguide, run_waveguide) {
     auto count{0ul};
     for (const auto& output_holder : output_holders) {
         write(build_string("waveguide_receiver_", count++, ".wav"),
-              make_audio_file(output_holder.get_output(), samplerate),
+              audio_file::make_audio_file(output_holder.get_output(),
+                                          samplerate),
               16);
     }
 
-    const auto max_values{
-            map_to_vector(output_holders, [](const auto& output_holder) {
+    const auto max_values{map_to_vector(
+            begin(output_holders),
+            end(output_holders),
+            [](const auto& output_holder) {
                 const auto output{output_holder.get_output()};
-                const auto begin{proc::find_if(output, [](auto samp) {
-                    return 0.0001 < std::abs(samp);
-                })};
+                const auto begin{std::find_if(
+                        std::begin(output), std::end(output), [](auto samp) {
+                            return 0.0001 < std::abs(samp);
+                        })};
                 const auto end{
                         begin +
                         std::min(std::distance(begin, output.end()), 100l)};

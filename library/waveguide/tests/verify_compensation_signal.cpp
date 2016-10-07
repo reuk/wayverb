@@ -6,9 +6,10 @@
 
 #include "compensation_signal/waveguide.h"
 
-#include "common/progress_bar.h"
 #include "common/spatial_division/voxelised_scene_data.h"
 #include "common/callback_accumulator.h"
+
+#include "utilities/progress_bar.h"
 
 #include "gtest/gtest.h"
 
@@ -28,8 +29,9 @@ void multitest(T run) {
 }  // namespace
 
 TEST(verify_compensation_signal, verify_compensation_signal_compressed) {
-    const aligned::vector<float> input{1, 2, 3, 4, 5, 4, 3, 2, 1};
-    const auto transparent{waveguide::make_transparent(input)};
+    const std::vector<float> input{1, 2, 3, 4, 5, 4, 3, 2, 1};
+    const auto transparent{waveguide::make_transparent(
+            input.data(), input.data() + input.size())};
 
     const auto steps{100};
 
@@ -39,14 +41,15 @@ TEST(verify_compensation_signal, verify_compensation_signal_compressed) {
     multitest([&] {
         auto t{transparent};
         progress_bar pb{std::cerr, steps};
-        return waveguide.run_soft_source(std::move(t),
-                                         [&](auto step) { pb += 1; });
+        return waveguide.run_soft_source(
+                t.begin(), t.end(), [&](auto step) { pb += 1; });
     });
 }
 
 TEST(verify_compensation_signal, verify_compensation_signal_normal) {
-    const aligned::vector<float> input{1, 2, 3, 4, 5, 6, 5, 4, 3, 2, 1};
-    auto transparent{waveguide::make_transparent(input)};
+    const std::vector<float> input{1, 2, 3, 4, 5, 6, 5, 4, 3, 2, 1};
+    auto transparent{waveguide::make_transparent(input.data(),
+                                                 input.data() + input.size())};
     transparent.resize(100);
 
     const compute_context cc{};
@@ -54,9 +57,7 @@ TEST(verify_compensation_signal, verify_compensation_signal_normal) {
     auto scene_data{geo::get_scene_data(geo::box(glm::vec3(-1), glm::vec3(1)),
                                         make_surface(0.5, 0))};
     const auto voxelised{make_voxelised_scene_data(
-            scene_data,
-            5,
-            util::padded(geo::get_aabb(scene_data), glm::vec3{0.1}))};
+            scene_data, 5, padded(geo::get_aabb(scene_data), glm::vec3{0.1}))};
 
     constexpr auto speed_of_sound{340.0};
     const auto model{

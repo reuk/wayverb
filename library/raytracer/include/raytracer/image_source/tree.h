@@ -3,10 +3,11 @@
 #include "raytracer/image_source/postprocessors.h"
 #include "raytracer/multitree.h"
 
-#include "common/aligned/vector.h"
 #include "common/cl/include.h"
 #include "common/geo/triangle_vec.h"
 #include "common/spatial_division/voxelised_scene_data.h"
+
+#include "utilities/aligned/vector.h"
 
 namespace raytracer {
 namespace image_source {

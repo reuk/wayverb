@@ -2,8 +2,9 @@
 
 #include "raytracer/cl/structs.h"
 
-#include "common/aligned/vector.h"
 #include "common/nan_checking.h"
+
+#include "utilities/aligned/vector.h"
 
 #include "glm/glm.hpp"
 

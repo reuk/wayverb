@@ -1,10 +1,10 @@
 #include "waveguide/mesh.h"
 
 #include "common/cl/common.h"
-#include "common/progress_bar.h"
 #include "common/scene_data_loader.h"
 #include "common/spatial_division/voxelised_scene_data.h"
-#include "common/timed_scope.h"
+
+#include "utilities/progress_bar.h"
 
 #include "gtest/gtest.h"
 

@@ -6,10 +6,11 @@
 #include "waveguide/surface_filters.h"
 
 #include "common/conversions.h"
-#include "common/popcount.h"
 #include "common/scene_data_loader.h"
 #include "common/spatial_division/scene_buffers.h"
 #include "common/spatial_division/voxelised_scene_data.h"
+
+#include "utilities/popcount.h"
 
 #include <iostream>
 

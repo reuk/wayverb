@@ -1,6 +1,6 @@
 #include "combined/model.h"
 
-#include "common/aligned/vector.h"
+#include "utilities/aligned/vector.h"
 
 namespace {
 template <typename T>

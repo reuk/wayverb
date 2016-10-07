@@ -1,6 +1,6 @@
 #include "run_methods.h"
 
-#include "common/aligned/map.h"
+#include "utilities/aligned/map.h"
 
 #include "audio_file/audio_file.h"
 
@@ -80,7 +80,9 @@ int main(int argc, char** argv) {
         //  postprocessing ---------------------------------------------------//
 
         auto waveguide_pressure{
-                map_to_vector(waveguide, [](auto i) { return i.pressure; })};
+                map_to_vector(begin(waveguide), end(waveguide), [](auto i) {
+                    return i.pressure;
+                })};
         waveguide_filter(waveguide_pressure.begin(),
                          waveguide_pressure.end(),
                          sample_rate);
@@ -103,16 +105,16 @@ int main(int argc, char** argv) {
         normalize(make_iterator(outputs.begin()), make_iterator(outputs.end()));
 
         write(build_string(pair.first, ".waveguide_pressure.wav"),
-              make_audio_file(waveguide_pressure, sample_rate),
+              audio_file::make_audio_file(waveguide_pressure, sample_rate),
               16);
         write(build_string(pair.first, ".waveguide_attenuated.wav"),
-              make_audio_file(waveguide_attenuated, sample_rate),
+              audio_file::make_audio_file(waveguide_attenuated, sample_rate),
               16);
         write(build_string(pair.first, ".exact_img_src.wav"),
-              make_audio_file(exact_img_src, sample_rate),
+              audio_file::make_audio_file(exact_img_src, sample_rate),
               16);
         write(build_string(pair.first, ".fast_img_src.wav"),
-              make_audio_file(fast_img_src, sample_rate),
+              audio_file::make_audio_file(fast_img_src, sample_rate),
               16);
     }
 

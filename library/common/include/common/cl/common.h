@@ -1,7 +1,8 @@
 #pragma once
 
-#include "common/aligned/vector.h"
 #include "common/cl/traits.h"
+
+#include "utilities/aligned/vector.h"
 
 enum class device_type { cpu, gpu };
 

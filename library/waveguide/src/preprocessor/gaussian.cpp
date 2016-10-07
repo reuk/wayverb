@@ -2,7 +2,6 @@
 
 #include "common/cl/common.h"
 #include "common/nan_checking.h"
-#include "common/string_builder.h"
 
 #include <iostream>
 

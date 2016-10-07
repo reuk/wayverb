@@ -18,10 +18,10 @@ TEST(boundary, tunnel) {
     const auto boundary{make_voxelised_scene_data(
             scene_data_loader{OBJ_PATH_TUNNEL}.get_scene_data(), 5, 2.0f)};
 
-    const auto centre{util::centre(boundary.get_voxels().get_aabb())};
+    const auto cent{centre(boundary.get_voxels().get_aabb())};
 
     ASSERT_EQ(*count_intersections(boundary,
-                                   geo::ray{centre,
+                                   geo::ray{cent,
                                             glm::vec3{-0.108882785,
                                                       0.075211525,
                                                       0.991205215}}),
@@ -29,12 +29,12 @@ TEST(boundary, tunnel) {
 
     {
         const auto dist{100};
-        ASSERT_FALSE(inside(boundary, centre + glm::vec3(dist, 0, 0)));
-        ASSERT_FALSE(inside(boundary, centre + glm::vec3(-dist, 0, 0)));
-        ASSERT_FALSE(inside(boundary, centre + glm::vec3(0, dist, 0)));
-        ASSERT_FALSE(inside(boundary, centre + glm::vec3(0, -dist, 0)));
-        ASSERT_FALSE(inside(boundary, centre + glm::vec3(0, 0, dist)));
-        ASSERT_FALSE(inside(boundary, centre + glm::vec3(0, 0, -dist)));
+        ASSERT_FALSE(inside(boundary, cent + glm::vec3(dist, 0, 0)));
+        ASSERT_FALSE(inside(boundary, cent + glm::vec3(-dist, 0, 0)));
+        ASSERT_FALSE(inside(boundary, cent + glm::vec3(0, dist, 0)));
+        ASSERT_FALSE(inside(boundary, cent + glm::vec3(0, -dist, 0)));
+        ASSERT_FALSE(inside(boundary, cent + glm::vec3(0, 0, dist)));
+        ASSERT_FALSE(inside(boundary, cent + glm::vec3(0, 0, -dist)));
     }
 
     for (const auto& i : {
@@ -49,15 +49,15 @@ TEST(boundary, tunnel) {
         ASSERT_FALSE(inside(boundary, i));
     }
 
-    ASSERT_TRUE(inside(boundary, centre));
+    ASSERT_TRUE(inside(boundary, cent));
     {
         const auto dist{0.1};
-        ASSERT_TRUE(inside(boundary, centre + glm::vec3(dist, 0, 0)));
-        ASSERT_TRUE(inside(boundary, centre + glm::vec3(-dist, 0, 0)));
-        ASSERT_TRUE(inside(boundary, centre + glm::vec3(0, dist, 0)));
-        ASSERT_TRUE(inside(boundary, centre + glm::vec3(0, -dist, 0)));
-        ASSERT_TRUE(inside(boundary, centre + glm::vec3(0, 0, dist)));
-        ASSERT_TRUE(inside(boundary, centre + glm::vec3(0, 0, -dist)));
+        ASSERT_TRUE(inside(boundary, cent + glm::vec3(dist, 0, 0)));
+        ASSERT_TRUE(inside(boundary, cent + glm::vec3(-dist, 0, 0)));
+        ASSERT_TRUE(inside(boundary, cent + glm::vec3(0, dist, 0)));
+        ASSERT_TRUE(inside(boundary, cent + glm::vec3(0, -dist, 0)));
+        ASSERT_TRUE(inside(boundary, cent + glm::vec3(0, 0, dist)));
+        ASSERT_TRUE(inside(boundary, cent + glm::vec3(0, 0, -dist)));
     }
 }
 
@@ -65,15 +65,15 @@ TEST(boundary, bedroom) {
     const auto boundary{make_voxelised_scene_data(
             scene_data_loader{OBJ_PATH_BEDROOM}.get_scene_data(), 5, 0.1f)};
 
-    const auto centre{util::centre(boundary.get_voxels().get_aabb())};
+    const auto cent{centre(boundary.get_voxels().get_aabb())};
 
     const auto dist{100};
-    ASSERT_FALSE(inside(boundary, centre + glm::vec3(dist, 0, 0)));
-    ASSERT_FALSE(inside(boundary, centre + glm::vec3(-dist, 0, 0)));
-    ASSERT_FALSE(inside(boundary, centre + glm::vec3(0, dist, 0)));
-    ASSERT_FALSE(inside(boundary, centre + glm::vec3(0, -dist, 0)));
-    ASSERT_FALSE(inside(boundary, centre + glm::vec3(0, 0, dist)));
-    ASSERT_FALSE(inside(boundary, centre + glm::vec3(0, 0, -dist)));
+    ASSERT_FALSE(inside(boundary, cent + glm::vec3(dist, 0, 0)));
+    ASSERT_FALSE(inside(boundary, cent + glm::vec3(-dist, 0, 0)));
+    ASSERT_FALSE(inside(boundary, cent + glm::vec3(0, dist, 0)));
+    ASSERT_FALSE(inside(boundary, cent + glm::vec3(0, -dist, 0)));
+    ASSERT_FALSE(inside(boundary, cent + glm::vec3(0, 0, dist)));
+    ASSERT_FALSE(inside(boundary, cent + glm::vec3(0, 0, -dist)));
 
     for (const auto& i : {
                  glm::vec3(1.70000005, -1.70000005, -4.11999989),
@@ -99,14 +99,14 @@ TEST(boundary, bedroom) {
         ASSERT_FALSE(inside(boundary, i));
     }
 
-    ASSERT_TRUE(inside(boundary, centre));
+    ASSERT_TRUE(inside(boundary, cent));
     {
         const auto dist{0.1};
-        ASSERT_TRUE(inside(boundary, centre + glm::vec3(dist, 0, 0)));
-        ASSERT_TRUE(inside(boundary, centre + glm::vec3(-dist, 0, 0)));
-        ASSERT_TRUE(inside(boundary, centre + glm::vec3(0, dist, 0)));
-        ASSERT_TRUE(inside(boundary, centre + glm::vec3(0, -dist, 0)));
-        ASSERT_TRUE(inside(boundary, centre + glm::vec3(0, 0, dist)));
-        ASSERT_TRUE(inside(boundary, centre + glm::vec3(0, 0, -dist)));
+        ASSERT_TRUE(inside(boundary, cent + glm::vec3(dist, 0, 0)));
+        ASSERT_TRUE(inside(boundary, cent + glm::vec3(-dist, 0, 0)));
+        ASSERT_TRUE(inside(boundary, cent + glm::vec3(0, dist, 0)));
+        ASSERT_TRUE(inside(boundary, cent + glm::vec3(0, -dist, 0)));
+        ASSERT_TRUE(inside(boundary, cent + glm::vec3(0, 0, dist)));
+        ASSERT_TRUE(inside(boundary, cent + glm::vec3(0, 0, -dist)));
     }
 }

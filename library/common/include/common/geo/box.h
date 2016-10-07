@@ -2,14 +2,16 @@
 
 #include "common/geo/geometric.h"
 #include "common/geo/triangle_vec.h"
-#include "common/range.h"
 #include "common/scene_data.h"
+
+#include "utilities/mapping_iterator_adapter.h"
+#include "utilities/range.h"
 
 #include "glm/glm.hpp"
 
 namespace geo {
 
-using box = util::range<glm::vec3>;
+using box = range<glm::vec3>;
 
 enum class wall { nx, px, ny, py, nz, pz };
 enum class direction { x, y, z };
@@ -76,10 +78,20 @@ constexpr glm::vec3 mirror(const box& b, const glm::vec3& v, wall w) {
     }
 }
 
-template <typename Vertex, typename Surface>
-auto get_aabb(const generic_scene_data<Vertex, Surface>& scene) {
-    return util::min_max(scene.get_vertices().begin(),
-                         scene.get_vertices().end());
+template <typename Surface>
+auto get_aabb(const generic_scene_data<glm::vec3, Surface>& scene) {
+    return enclosing_range(scene.get_vertices().begin(),
+                           scene.get_vertices().end());
+}
+
+template <typename Surface>
+auto get_aabb(const generic_scene_data<cl_float3, Surface>& scene) {
+    const auto make_iterator{[](auto i) {
+        return make_mapping_iterator_adapter(std::move(i),
+                                             [](auto i) { return to_vec3(i); });
+    }};
+    return enclosing_range(make_iterator(scene.get_vertices().begin()),
+                           make_iterator(scene.get_vertices().end()));
 }
 
 glm::vec3 mirror_inside(const box& b, const glm::vec3& v, direction d);

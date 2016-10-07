@@ -1,11 +1,11 @@
 #pragma once
 
-#include "common/aligned/vector.h"
-#include "common/decibels.h"
 #include "common/linear_regression.h"
-#include "common/map_to_vector.h"
-#include "common/stl_wrappers.h"
-#include "common/string_builder.h"
+
+#include "utilities/aligned/vector.h"
+#include "utilities/decibels.h"
+#include "utilities/map_to_vector.h"
+#include "utilities/string_builder.h"
 
 #include "glm/glm.hpp"
 

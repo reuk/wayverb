@@ -25,6 +25,14 @@ target_include_directories(common
     ${CMAKE_BINARY_DIR}/include
 )
 
-target_link_libraries(common ${opencl_lib} assimp zlibstatic fftwf audio_file)
+target_link_libraries(common
+    ${opencl_lib}
+    assimp
+    zlibstatic 
+    fftwf 
+    audio_file 
+    frequency_domain
+    utilities
+)
 
 add_subdirectory(tests)

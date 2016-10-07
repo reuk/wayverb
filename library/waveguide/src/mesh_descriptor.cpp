@@ -1,8 +1,6 @@
 #include "waveguide/config.h"
 #include "waveguide/mesh_descriptor.h"
 
-#include "common/stl_wrappers.h"
-
 size_t compute_index(const mesh_descriptor& d, const glm::ivec3& pos) {
     return pos.x + pos.y * d.dimensions.s[0] +
            pos.z * d.dimensions.s[0] * d.dimensions.s[1];
@@ -45,11 +43,14 @@ void compute_neighbors(const mesh_descriptor& d,
             glm::ivec3(loc.x, loc.y, loc.z + 1),
     }};
 
-    proc::transform(n_loc, output, [&](const auto& i) {
-        auto inside = glm::all(glm::lessThanEqual(glm::ivec3(0), i)) &&
-                      glm::all(glm::lessThan(i, to_ivec3(d.dimensions)));
-        return inside ? compute_index(d, i) : mesh_descriptor::no_neighbor;
-    });
+    std::transform(
+            std::begin(n_loc), std::end(n_loc), output, [&](const auto& i) {
+                auto inside =
+                        glm::all(glm::lessThanEqual(glm::ivec3(0), i)) &&
+                        glm::all(glm::lessThan(i, to_ivec3(d.dimensions)));
+                return inside ? compute_index(d, i)
+                              : mesh_descriptor::no_neighbor;
+            });
 }
 
 std::array<cl_uint, 6> compute_neighbors(const mesh_descriptor& d,

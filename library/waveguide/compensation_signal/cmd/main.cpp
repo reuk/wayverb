@@ -1,6 +1,6 @@
 #include "compensation_signal/waveguide.h"
 
-#include "common/progress_bar.h"
+#include "utilities/progress_bar.h"
 
 #include <iomanip>
 #include <iostream>
@@ -56,8 +56,9 @@ int main(int argc, char** argv) {
 
     //  run the waveguide with an impulsive hard source
     progress_bar pb{std::cerr, steps};
-    const auto output{waveguide.run_hard_source(aligned::vector<float>{0, 1},
-                                                [&](auto step) { pb += 1; })};
+    const std::vector<float> sig{0.0f, 1.0f};
+    const auto output{waveguide.run_hard_source(
+            sig.begin(), sig.end(), [&](auto step) { pb += 1; })};
 
     //  write a cpp source file
     generate_data_file(std::cout, output.begin(), output.end());

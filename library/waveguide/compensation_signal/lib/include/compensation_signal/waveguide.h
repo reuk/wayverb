@@ -2,9 +2,10 @@
 
 #include "compensation_signal/compile_time.h"
 
-#include "common/aligned/vector.h"
 #include "common/cl/common.h"
 #include "common/program_wrapper.h"
+
+#include "utilities/aligned/vector.h"
 
 #include <array>
 
@@ -38,20 +39,24 @@ public:
                              .get_kernel());
     compressed_rectangular_waveguide(const compute_context& cc, size_t steps);
 
-    template <typename T>
-    aligned::vector<float> run_hard_source(aligned::vector<float> input,
+    template <typename It, typename T>
+    aligned::vector<float> run_hard_source(It begin,
+                                           It end,
                                            const T& per_step) {
-        return run(std::move(input),
+        return run(begin,
+                   end,
                    [](auto& queue, auto& buffer, auto input) {
                        write_value(queue, buffer, 0, input);
                    },
                    per_step);
     }
 
-    template <typename T>
-    aligned::vector<float> run_soft_source(aligned::vector<float> input,
+    template <typename It, typename T>
+    aligned::vector<float> run_soft_source(It begin,
+                                           It end,
                                            const T& per_step) {
-        return run(std::move(input),
+        return run(begin,
+                   end,
                    [](auto& queue, auto& buffer, auto input) {
                        const auto c{read_value<cl_float>(queue, buffer, 0)};
                        write_value(queue, buffer, 0, c + input);
@@ -60,12 +65,11 @@ public:
     }
 
 private:
-    template <typename T, typename U>
-    aligned::vector<float> run(aligned::vector<float> input,
+    template <typename It, typename T, typename U>
+    aligned::vector<float> run(It begin,
+                               It end,
                                const T& writer,
                                const U& per_step) {
-        input.resize(dimension_ * 2);
-
         //  init buffers
         {
             //  don't want to keep this in scope for too long!
@@ -75,12 +79,10 @@ private:
         }
 
         aligned::vector<float> ret{};
-        ret.reserve(input.size());
+        ret.reserve(std::distance(begin, end));
 
-        auto count{0ul};
-        for (auto it{input.begin()}, end{input.end()}; it != end;
-             ++it, ++count) {
-            writer(queue_, current_, *it);
+        for (auto count{0ul}; count != dimension_ * 2; ++count) {
+            writer(queue_, current_, begin == end ? 0 : *begin);
 
             //  run the kernel
             kernel_(cl::EnqueueArgs(queue_, tetrahedron(dimension_)),
@@ -95,6 +97,10 @@ private:
             ret.emplace_back(read_value<cl_float>(queue_, current_, 0));
 
             per_step(count);
+
+            if (begin != end) {
+                ++begin;
+            }
         }
 
         return ret;

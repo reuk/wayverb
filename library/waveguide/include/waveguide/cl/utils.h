@@ -2,7 +2,6 @@
 
 #include "common/cl/representation.h"
 #include "common/cl/traits.h"
-#include "common/stl_wrappers.h"
 
 #include <string>
 

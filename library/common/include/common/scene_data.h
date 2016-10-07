@@ -1,9 +1,12 @@
 #pragma once
 
-#include "common/aligned/vector.h"
 #include "common/cl/scene_structs.h"
 
+#include "utilities/aligned/vector.h"
+
 #include "glm/glm.hpp"
+
+#include <numeric>
 
 class mesh_boundary;
 struct triangle;
