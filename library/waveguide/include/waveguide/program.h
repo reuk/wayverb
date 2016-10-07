@@ -1,7 +1,6 @@
 #pragma once
 
 #include "common/cl/common.h"
-#include "common/hrtf.h"
 #include "common/program_wrapper.h"
 #include "common/scene_data.h"
 #include "waveguide/cl/structs.h"

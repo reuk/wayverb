@@ -95,18 +95,16 @@ mesh compute_mesh(const compute_context& cc,
         return read_from_buffer<condensed_node>(queue, node_buffer);
     }()};
 
-    const auto sample_rate{1 / config::time_step(speed_of_sound, mesh_spacing)};
-
     //  IMPORTANT
     //  compute_boundary_index_data mutates the nodes array, so it must
     //  be run before condensing the nodes.
     auto boundary_data{
             compute_boundary_index_data(cc.device, buffers, desc, nodes)};
 
+    //  TODO Use appropriate method for finding filter coefficients.
     auto v{vectors{
             std::move(nodes),
-            to_filter_coefficients(voxelised.get_scene_data().get_surfaces(),
-                                   sample_rate),
+            to_flat_coefficients(voxelised.get_scene_data().get_surfaces()),
             std::move(boundary_data)}};
 
     return {desc, std::move(v)};

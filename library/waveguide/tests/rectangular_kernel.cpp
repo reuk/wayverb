@@ -2,6 +2,8 @@
 #include "waveguide/surface_filters.h"
 #include "waveguide/waveguide.h"
 
+#include "utilities/map.h"
+
 #include "common/cl/common.h"
 
 #include "audio_file/audio_file.h"
@@ -16,6 +18,9 @@ class InputGenerator {
 public:
     virtual aligned::vector<aligned::vector<cl_float>> compute_input(
             int size) = 0;
+
+protected:
+    ~InputGenerator() noexcept = default;
 };
 
 class NoiseGenerator : public InputGenerator {
@@ -114,7 +119,7 @@ constexpr auto parallel_size{1 << 8};
 std::default_random_engine engine{std::random_device()()};
 std::uniform_real_distribution<float> range{min_v, max_v};
 
-surface random_surface() {
+auto random_surface() {
     surface ret;
     std::generate(std::begin(ret.specular_absorption.s),
                   std::end(ret.specular_absorption.s),
@@ -125,29 +130,16 @@ surface random_surface() {
     return ret;
 };
 
-std::array<surface, parallel_size> compute_surfaces() {
+auto compute_surfaces() {
     std::array<surface, parallel_size> ret;
     std::generate(
             std::begin(ret), std::end(ret), [] { return random_surface(); });
     return ret;
 }
 
-static const auto surfaces = compute_surfaces();
-
-std::array<std::array<waveguide::filter_descriptor, biquad_sections>,
-           parallel_size>
-compute_descriptors() {
-    std::array<std::array<waveguide::filter_descriptor, biquad_sections>,
-               parallel_size>
-            ret;
-    std::transform(
-            std::begin(surfaces), std::end(surfaces), ret.begin(), [](auto i) {
-                return waveguide::to_filter_descriptors(i);
-            });
-    return ret;
-}
-
-static const auto descriptors = compute_descriptors();
+static const auto descriptors{map(compute_surfaces(), [](auto i) {
+    return waveguide::to_filter_descriptors(i);
+})};
 
 enum class FilterType {
     biquad_cascade,
@@ -155,78 +147,26 @@ enum class FilterType {
     single_impedance,
 };
 
-template <FilterType FT>
-struct CoefficientTypeTrait;
-
-template <>
-struct CoefficientTypeTrait<FilterType::biquad_cascade> {
-    using type = biquad_coefficients_array;
-};
-
-template <>
-struct CoefficientTypeTrait<FilterType::single_reflectance> {
-    using type = coefficients<biquad_sections * coefficients_biquad::order>;
-};
-
-template <>
-struct CoefficientTypeTrait<FilterType::single_impedance> {
-    using type = coefficients<biquad_sections * coefficients_biquad::order>;
-};
-
-template <FilterType FT>
-std::array<typename CoefficientTypeTrait<FT>::type, parallel_size>
-compute_coeffs();
-
-template <>
-std::array<typename CoefficientTypeTrait<FilterType::biquad_cascade>::type,
-           parallel_size>
-compute_coeffs<FilterType::biquad_cascade>() {
-    std::array<biquad_coefficients_array, parallel_size> ret;
-    std::transform(begin(descriptors),
-                   end(descriptors),
-                   ret.begin(),
-                   [](const auto& n) {
-                       return waveguide::get_peak_biquads_array(n, sr);
-                   });
-    return ret;
+auto compute_coeffs(
+        std::integral_constant<FilterType, FilterType::biquad_cascade>) {
+    return map(descriptors, [](const auto& n) {
+        return waveguide::get_peak_biquads_array(n, sr);
+    });
 }
 
-template <>
-std::array<typename CoefficientTypeTrait<FilterType::single_reflectance>::type,
-           parallel_size>
-compute_coeffs<FilterType::single_reflectance>() {
-    std::array<
-            typename CoefficientTypeTrait<FilterType::single_reflectance>::type,
-            parallel_size>
-            ret;
-    std::transform(begin(descriptors),
-                   end(descriptors),
-                   ret.begin(),
-                   [](const auto& n) {
-                       return waveguide::convolve(
-                               waveguide::get_peak_biquads_array(n, sr));
-                   });
-    return ret;
+auto compute_coeffs(
+        std::integral_constant<FilterType, FilterType::single_reflectance>) {
+    return map(descriptors, [](const auto& n) {
+        return waveguide::convolve(waveguide::get_peak_biquads_array(n, sr));
+    });
 }
 
-template <>
-std::array<typename CoefficientTypeTrait<FilterType::single_impedance>::type,
-           parallel_size>
-compute_coeffs<FilterType::single_impedance>() {
-    std::array<
-            typename CoefficientTypeTrait<FilterType::single_reflectance>::type,
-            parallel_size>
-            ret;
-    std::transform(
-            begin(descriptors),
-            end(descriptors),
-            ret.begin(),
-            [](const auto& n) {
-                return waveguide::to_impedance_coefficients(waveguide::convolve(
-                        waveguide::get_peak_biquads_array(n, sr)));
-            });
-    return ret;
-}
+auto compute_coeffs(
+        std::integral_constant<FilterType, FilterType::single_impedance>) {
+    return map(descriptors, [](const auto& n) {
+        return waveguide::to_impedance_coefficients(
+                waveguide::convolve(waveguide::get_peak_biquads_array(n, sr)));
+    });
 }
 
 template <typename Memory, testing::FilterType FT, typename Generator>
@@ -260,9 +200,14 @@ public:
     const compute_context cc;
     const waveguide::program program{cc};
     aligned::vector<Memory> memory{testing::parallel_size, Memory{}};
-    std::array<typename testing::CoefficientTypeTrait<FT>::type,
-               testing::parallel_size>
-            coeffs{testing::compute_coeffs<FT>()};
+
+    static auto compute_coeffs() {
+        return testing::compute_coeffs(
+                std::integral_constant<FilterType, FT>{});
+    }
+
+    decltype(compute_coeffs()) coeffs{compute_coeffs()};
+
     cl::Buffer cl_memory{cc.context, memory.begin(), memory.end(), false};
     cl::Buffer cl_coeffs{cc.context, coeffs.begin(), coeffs.end(), false};
     aligned::vector<aligned::vector<cl_float>> input{
@@ -597,3 +542,4 @@ TEST(impulse_response, filters) {
 //    proc::transform(
 //        output, buf.begin(), [](const auto& i) { return i.front(); });
 //}
+}

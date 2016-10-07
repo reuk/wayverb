@@ -98,3 +98,9 @@ glm::vec3 mirror_inside(const box& b, const glm::vec3& v, direction d);
 box mirror(const box& b, wall w);
 
 }  // namespace geo
+
+inline auto inside(const geo::box& a, const glm::vec3& b) {
+    return glm::all(glm::lessThan(a.get_min(), b)) &&
+           glm::all(glm::lessThan(b, a.get_max()));
+}
+

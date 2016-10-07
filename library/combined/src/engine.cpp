@@ -35,13 +35,15 @@ namespace {
 
 class intermediate_impl : public wayverb::intermediate {
 public:
+    static constexpr auto bands{8};
+
     intermediate_impl(
             const glm::vec3& source,
             const glm::vec3& receiver,
             double speed_of_sound,
             double acoustic_impedance,
             double waveguide_sample_rate,
-            raytracer::results<impulse<8>> raytracer_results,
+            raytracer::results<impulse<bands>> raytracer_results,
             aligned::vector<
                     waveguide::postprocessor::directional_receiver::output>
                     waveguide_results)
@@ -61,6 +63,9 @@ public:
             const state_callback& callback) const override {
         callback(wayverb::state::postprocessing, 1.0);
 
+        const range<double> normalised_audible_range{
+                20 / output_sample_rate, 20000 / output_sample_rate};
+
         //  attenuate raytracer results
         const auto raytracer_impulses{raytracer_results_.get_impulses()};
         auto raytracer_output{
@@ -68,6 +73,7 @@ public:
                                            speed_of_sound_,
                                            output_sample_rate,
                                            max_length_in_seconds,
+                                           normalised_audible_range,
                                            raytracer_impulses.begin(),
                                            raytracer_impulses.end())};
         //  attenuate waveguide results
@@ -75,6 +81,7 @@ public:
                 waveguide::run_attenuation(receiver,
                                            acoustic_impedance_,
                                            waveguide_sample_rate_,
+                                           normalised_audible_range,
                                            waveguide_results_.begin(),
                                            waveguide_results_.end())};
 

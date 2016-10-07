@@ -1,7 +1,8 @@
 #include "common/reverb_time.h"
 #include "common/geo/box.h"
 #include "common/geo/geometric.h"
-#include "common/hrtf.h"
+
+#include "hrtf/bands.h"
 
 std::array<std::pair<cl_uint, cl_uint>, 3> get_index_pairs(const triangle& t) {
     return {{std::make_pair(t.v0, t.v1),
@@ -27,10 +28,10 @@ float estimate_air_intensity_absorption(float frequency, float humidity) {
 
 volume_type estimate_air_intensity_absorption(float humidity) {
     volume_type ret{};
-    for (auto i{0u}; i != 8; ++i) {
-        const auto frequency{(hrtf_data::edges[i] + hrtf_data::edges[i + 1]) *
-                             0.5};
-        ret.s[i] = estimate_air_intensity_absorption(frequency, humidity);
+    for (auto it{std::begin(ret.s)}, end{std::end(ret.s)}; it != end; ++it) {
+        const auto index{std::distance(std::begin(ret.s), it)};
+        const auto frequency{hrtf::band_centres_hz[index]};
+        *it = estimate_air_intensity_absorption(frequency, humidity);
     }
     return ret;
 }

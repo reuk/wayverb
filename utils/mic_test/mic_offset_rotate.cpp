@@ -1,6 +1,6 @@
 #include "run_methods.h"
 
-#include "common/per_band_energy.h"
+#include "frequency_domain/multiband_filter.h"
 
 #include "utilities/aligned/map.h"
 #include "utilities/map.h"
@@ -22,7 +22,7 @@
 template <size_t bands>
 struct angle_info final {
     float angle;
-    std::array<float, bands> energy;
+    std::array<double, bands> energy;
 };
 
 template <typename T, size_t bands>
@@ -50,7 +50,7 @@ auto run_single_angle(float angle,
     const auto signal{callback(source, receiver)};
     return angle_info<bands>{
             angle,
-            per_band_energy<bands>(
+            frequency_domain::per_band_energy<bands>(
                     signal.begin(), signal.end(), audible_range)};
 }
 

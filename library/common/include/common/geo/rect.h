@@ -32,3 +32,8 @@ bool overlaps(const rect& rect, const std::array<glm::vec2, n>& shape) {
 }
 
 }  // namespace geo
+
+inline auto inside(const geo::rect& a, const glm::vec2& b) {
+    return glm::all(glm::lessThan(a.get_min(), b)) &&
+           glm::all(glm::lessThan(b, a.get_max()));
+}

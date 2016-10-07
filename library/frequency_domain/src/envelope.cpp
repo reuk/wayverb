@@ -21,29 +21,29 @@ double upper_band_edge(double centre, double p, double P, size_t l) {
     return std::cos(M_PI * band_edge_impl(centre, p, P, l) / 2);
 }
 
-double band_edge_frequency(int band, size_t bands, double min, double max) {
-    return min * std::pow(max / min, band / static_cast<double>(bands));
+double band_edge_frequency(int band, size_t bands, range<double> r) {
+    return r.get_min() * std::pow(r.get_max() / r.get_min(),
+                                  band / static_cast<double>(bands));
 }
 
 double compute_bandpass_magnitude(double frequency,
-                                  double min,
-                                  double max,
+                                  range<double> r,
                                   double lower_edge_width,
                                   double upper_edge_width,
                                   size_t l) {
-    if (frequency < min - lower_edge_width ||
-        min + upper_edge_width <= frequency) {
+    if (frequency < r.get_min() - lower_edge_width ||
+        r.get_min() + upper_edge_width <= frequency) {
         return 0;
     }
 
-    const auto lower_p{frequency - min};
+    const auto lower_p{frequency - r.get_min()};
     if (-lower_edge_width <= lower_p && lower_p < lower_edge_width) {
-        return lower_band_edge(min, lower_p, lower_edge_width, l);
+        return lower_band_edge(r.get_min(), lower_p, lower_edge_width, l);
     }
 
-    const auto upper_p{frequency - max};
+    const auto upper_p{frequency - r.get_max()};
     if (-upper_edge_width <= upper_p && upper_p < upper_edge_width) {
-        return upper_band_edge(max, upper_p, upper_edge_width, l);
+        return upper_band_edge(r.get_max(), upper_p, upper_edge_width, l);
     }
 
     return 1;

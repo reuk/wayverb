@@ -1,10 +1,13 @@
+#include "common/cl/iterator.h"
+#include "common/cl/scene_structs.h"
 #include "common/dsp_vector_ops.h"
-#include "common/hrtf_utils.h"
+#include "common/mixdown.h"
 
 #include "utilities/aligned/vector.h"
 #include "utilities/decibels.h"
 
 #include "frequency_domain/filter.h"
+#include "frequency_domain/multiband_filter.h"
 
 #include "audio_file/audio_file.h"
 
@@ -33,10 +36,22 @@ TEST(multiband_filter, multiband_filter) {
     multiband[88200] = make_volume_type(1);
     multiband[132300] = make_volume_type(1);
 
-    const auto results{multiband_filter_and_mixdown(multiband, 44100)};
+    const auto sample_rate{44100.0};
+
+    const range<double> nrange{20 / sample_rate, 20000 / sample_rate};
+
+    constexpr auto bands{detail::components_v<volume_type>};
+
+    const auto results{multiband_filter_and_mixdown<bands>(
+            multiband.begin(),
+            multiband.end(),
+            nrange,
+            [](auto it, auto index) {
+                return make_cl_type_iterator(std::move(it), index);
+            })};
 
     write("multiband_noise.wav",
-          audio_file::make_audio_file(results, 44100),
+          audio_file::make_audio_file(results, sample_rate),
           16);
 }
 

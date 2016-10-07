@@ -1,5 +1,7 @@
 #pragma once
 
+#include "utilities/range.h"
+
 #include <array>
 #include <cmath>
 
@@ -10,36 +12,34 @@ namespace frequency_domain {
 double lower_band_edge(double centre, double p, double P, size_t l);
 double upper_band_edge(double centre, double p, double P, size_t l);
 
-double band_edge_frequency(int band, size_t bands, double min, double max);
+double band_edge_frequency(int band, size_t bands, range<double> r);
 
 template <size_t bands>
-std::array<double, bands + 1> band_edge_frequencies(double min, double max) {
+std::array<double, bands + 1> band_edge_frequencies(range<double> r) {
     std::array<double, bands + 1> ret;
     for (auto i{0u}; i != bands + 1; ++i) {
-        ret[i] = band_edge_frequency(i, bands, min, max);
+        ret[i] = band_edge_frequency(i, bands, r);
     }
     return ret;
 }
 
 template <size_t bands>
-std::array<double, bands + 1> band_centre_frequencies(double min, double max) {
+std::array<double, bands + 1> band_centre_frequencies(range<double> r) {
     std::array<double, bands + 1> ret;
     for (auto i{0ul}; i != ret.size(); ++i) {
-        ret[i] = band_edge_frequency(i * 2 + 1, bands * 2, min, max);
+        ret[i] = band_edge_frequency(i * 2 + 1, bands * 2, r);
     }
     return ret;
 }
 
 template <size_t bands>
-std::array<double, bands + 1> band_edge_widths(double min,
-                                               double max,
+std::array<double, bands + 1> band_edge_widths(range<double> r,
                                                double overlap) {
     std::array<double, bands + 1> ret;
     for (int i{0}; i != ret.size(); ++i) {
-        ret[i] =
-                std::abs((band_edge_frequency(i * 2, bands * 2, min, max) -
-                          band_edge_frequency(i * 2 + 1, bands * 2, min, max)) *
-                         overlap);
+        ret[i] = std::abs((band_edge_frequency(i * 2 + 0, bands * 2, r) -
+                           band_edge_frequency(i * 2 + 1, bands * 2, r)) *
+                          overlap);
     }
     return ret;
 }
@@ -51,8 +51,7 @@ std::array<double, bands + 1> band_edge_widths(double min,
 /// upper_edge_width: half the absolute width of the upper crossover
 /// l: the slope (0 is shallow, higher is steeper)
 double compute_bandpass_magnitude(double frequency,
-                                  double min,
-                                  double max,
+                                  range<double> r,
                                   double lower_edge_width,
                                   double upper_edge_width,
                                   size_t l);

@@ -37,6 +37,6 @@ using cl_type_iterator =
 
 template <class It>
 constexpr cl_type_iterator<It> make_cl_type_iterator(It it, size_t index) {
-    return make_mapping_iterator_adapter(it,
+    return make_mapping_iterator_adapter(std::move(it),
                                          detail::cl_type_index_mapper{index});
 }

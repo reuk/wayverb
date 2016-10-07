@@ -1,6 +1,9 @@
 #pragma once
 
+#include <algorithm>
+#include <cmath>
 #include <numeric>
+#include <stdexcept>
 
 template <typename t>
 class range final {
@@ -44,7 +47,7 @@ public:
     }
 
 private:
-    void maintain_invariant() {
+    constexpr void maintain_invariant() {
         const auto a{min_};
         const auto b{max_};
 
@@ -101,12 +104,6 @@ inline auto padded(const range<t>& a, const u& b) {
 }
 
 template <typename t>
-inline auto inside(const range<t>& a, const t& b) {
-    return glm::all(glm::lessThan(a.get_min(), b)) &&
-           glm::all(glm::lessThan(b, a.get_max()));
-}
-
-template <typename t>
 inline auto centre(const range<t>& a) {
     return (a.get_min() + a.get_max()) * t{0.5};
 }
@@ -120,6 +117,11 @@ template <typename T, typename U, typename V>
 constexpr auto map(T x, range<U> in, range<V> out) {
     return (((x - in.get_min()) * dimensions(out)) / dimensions(in)) +
            out.get_min();
+}
+
+template <typename T>
+constexpr auto inside(const range<T>& r, const T& t) {
+    return r.get_min() <= t && t < r.get_max();
 }
 
 //----------------------------------------------------------------------------//
