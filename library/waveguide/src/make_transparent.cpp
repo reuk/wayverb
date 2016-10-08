@@ -9,7 +9,8 @@ namespace waveguide {
 std::vector<float> make_transparent(const float* begin, const float* end) {
     //  window ir
     const auto input_size{std::distance(begin, end)};
-    auto windowed{right_hanning(input_size)};
+
+    auto windowed{right_hanning(mesh_impulse_response.size())};
     elementwise_multiply(windowed, mesh_impulse_response);
 
     //  create convolver

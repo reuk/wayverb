@@ -11,7 +11,7 @@
 #include "waveguide/postprocess.h"
 #include "waveguide/postprocessor/directional_receiver.h"
 #include "waveguide/postprocessor/visualiser.h"
-#include "waveguide/preprocessor/soft_source.h"
+#include "waveguide/preprocessor/hard_source.h"
 #include "waveguide/setup.h"
 #include "waveguide/waveguide.h"
 
@@ -298,12 +298,12 @@ public:
         auto input{waveguide::make_transparent(
                 raw_input.data(), raw_input.data() + raw_input.size())};
 
-        //  this is the number of steps to run the raytracer for
+        //  this is the number of steps to run the waveguide for
         //  TODO is there a less dumb way of doing this?
         const auto steps{std::ceil(max_time * waveguide_sample_rate_)};
         input.resize(steps);
 
-        auto prep{waveguide::preprocessor::make_soft_source(
+        auto prep{waveguide::preprocessor::make_hard_source(
                 source_index_, input.begin(), input.end())};
 
         //  If the max raytracer time is large this could take forever...

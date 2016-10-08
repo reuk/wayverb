@@ -33,6 +33,12 @@ public:
                                       dir == direction::forwards ? 1 : -1,
                                       FFTW_ESTIMATE)} {}
 
+    impl(const impl&) = delete;
+    impl(impl&&) = delete;
+
+    impl& operator=(const impl&) = delete;
+    impl& operator=(impl&&) = delete;
+
     template <typename It>
     auto run(It begin, It end) {
         i_buf_.zero();
