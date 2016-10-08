@@ -51,15 +51,15 @@ float compute_azimuth(const glm::vec3& pointing) {
     return std::atan2(pointing.x, pointing.z);
 }
 float compute_elevation(const glm::vec3& pointing) {
-    return glm::asin(pointing.y);
+    return std::asin(pointing.y);
 }
 az_el compute_azimuth_elevation(const glm::vec3& pointing) {
     return az_el{compute_azimuth(pointing), compute_elevation(pointing)};
 }
 glm::vec3 compute_pointing(const az_el& azel) {
-    return glm::vec3(glm::sin(azel.azimuth) * glm::cos(azel.elevation),
-                     glm::sin(azel.elevation),
-                     glm::cos(azel.azimuth) * glm::cos(azel.elevation));
+    return glm::vec3(std::sin(azel.azimuth) * std::cos(azel.elevation),
+                     std::sin(azel.elevation),
+                     std::cos(azel.azimuth) * std::cos(azel.elevation));
 }
 
 //----------------------------------------------------------------------------//

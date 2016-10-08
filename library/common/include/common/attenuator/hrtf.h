@@ -1,6 +1,7 @@
 #pragma once
 
 #include "common/cl/scene_structs.h"
+#include "common/orientable.h"
 
 #include "glm/glm.hpp"
 
@@ -29,6 +30,8 @@ glm::vec3 transform(const glm::vec3& pointing,
                     const glm::vec3& d);
 
 float degrees(float radians);
+
+az_el compute_look_up_angles(const glm::vec3& pt);
 
 template <typename It>
 constexpr auto to_volume_type(It begin, It end) {

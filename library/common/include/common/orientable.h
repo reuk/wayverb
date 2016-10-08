@@ -2,6 +2,8 @@
 
 #include "glm/glm.hpp"
 
+#include <tuple>
+
 struct az_el final {
     float azimuth{0};
     float elevation{0};
@@ -22,6 +24,22 @@ float compute_elevation(const glm::vec3& pointing);
 az_el compute_azimuth_elevation(const glm::vec3& pointing);
 
 glm::vec3 compute_pointing(const az_el& azel);
+
+constexpr auto to_tuple(az_el& x) {
+    return std::tie(x.azimuth, x.elevation);
+}
+
+constexpr auto to_tuple(const az_el&x) {
+    return std::tie(x.azimuth, x.elevation);
+}
+
+constexpr auto operator==(const az_el& a, const az_el& b) {
+    return to_tuple(a) == to_tuple(b);
+}
+
+constexpr auto operator!=(const az_el& a, const az_el& b) {
+    return !(a == b);
+}
 
 //----------------------------------------------------------------------------//
 

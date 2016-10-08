@@ -3,6 +3,48 @@
 
 #include "gtest/gtest.h"
 
+TEST(attenuator, transform) {
+    {
+        const auto test{[](auto vec) {
+            ASSERT_EQ(transform(glm::vec3{0, 0, 1}, glm::vec3{0, 1, 0}, vec), vec);
+        }};
+        test(glm::vec3{1, 0, 0});
+        test(glm::vec3{-1, 0, 0});
+        test(glm::vec3{0, 1, 0});
+        test(glm::vec3{0, -1, 0});
+        test(glm::vec3{0, 0, 1});
+        test(glm::vec3{0, 0, -1});
+    }
+
+    {
+        const auto test{[](auto a, auto b) {
+            ASSERT_NEAR(glm::distance(transform(glm::vec3{1, 0, 0}, glm::vec3{0, 1, 0}, a), b), 0, 0.0001);
+        }};
+        test(glm::vec3{1, 0, 0}, glm::vec3{0, 0, 1});
+        test(glm::vec3{-1, 0, 0}, glm::vec3{0, 0, -1});
+        test(glm::vec3{0, 1, 0}, glm::vec3{0, 1, 0});
+        test(glm::vec3{0, -1, 0}, glm::vec3{0, -1, 0});
+        test(glm::vec3{0, 0, 1}, glm::vec3{-1, 0, 0});
+        test(glm::vec3{0, 0, -1}, glm::vec3{1, 0, 0});
+    }
+}
+
+TEST(attenuator, compute_look_up_angles) {
+    const auto test{[](auto pt, auto azel) {
+        const auto result{compute_look_up_angles(pt)};
+        ASSERT_NEAR(result.azimuth, azel.azimuth, 0.0001);
+        ASSERT_NEAR(result.elevation, azel.elevation, 0.0001);
+    }};
+    test(glm::vec3{0, 0, 1}, (az_el{0, 0}));
+    test(glm::vec3{0, 0, -1}, (az_el{180, 0}));
+
+    test(glm::vec3{0, 1, 0}, (az_el{0, 90}));
+    test(glm::vec3{0, -1, 0}, (az_el{0, 270}));
+
+    test(glm::vec3{1, 0, 0}, (az_el{270, 0}));
+    test(glm::vec3{-1, 0, 0}, (az_el{90, 0})); 
+}
+
 TEST(attenuator, microphone) {
     {
         const microphone mic{glm::vec3{1, 0, 0}, 0};

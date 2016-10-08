@@ -29,6 +29,8 @@
 #include "common/spatial_division/voxelised_scene_data.h"
 #include "common/surfaces.h"
 
+#include "hrtf/meta.h"
+
 #include <cmath>
 
 namespace {
@@ -63,8 +65,12 @@ public:
             const state_callback& callback) const override {
         callback(wayverb::state::postprocessing, 1.0);
 
-        const range<double> normalised_audible_range{
-                20 / output_sample_rate, 20000 / output_sample_rate};
+        if (output_sample_rate <= hrtf_data::audible_range.get_max()) {
+            throw std::runtime_error{"sample rate too low"};
+        }
+
+        const range<double> normalised_audible_range{hrtf_data::audible_range.get_min() / output_sample_rate,
+            hrtf_data::audible_range.get_max() / output_sample_rate};
 
         //  attenuate raytracer results
         const auto raytracer_impulses{raytracer_results_.get_impulses()};

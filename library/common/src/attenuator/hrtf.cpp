@@ -1,5 +1,4 @@
 #include "common/attenuator/hrtf.h"
-#include "common/orientable.h"
 
 #include "common/hrtf_look_up_table.h"
 
@@ -33,10 +32,22 @@ glm::vec3 transform(const glm::vec3& pointing,
 
 float degrees(float radians) { return radians * 180 / M_PI; }
 
+az_el compute_look_up_angles(const glm::vec3& pt) {
+    auto radians{compute_azimuth_elevation(pt)};
+    radians.azimuth = -radians.azimuth;
+    while (radians.azimuth < 0) {
+        radians.azimuth += M_PI * 2;
+    }
+    while (radians.elevation < 0) {
+        radians.elevation += M_PI * 2;
+    }
+    return az_el{degrees(radians.azimuth), degrees(radians.elevation)};
+}
+
 volume_type attenuation(const hrtf& hrtf, const glm::vec3& incident) {
     const auto transformed{transform(hrtf.get_pointing(), hrtf.get_up(), incident)};
-    const auto azel{compute_azimuth_elevation(transformed)};
-    const auto channels{hrtf_look_up_table::look_up_angles(degrees(azel.azimuth), degrees(azel.elevation))};
+    const auto look_up_angles{compute_look_up_angles(transformed)};
+    const auto channels{hrtf_look_up_table::look_up_angles(look_up_angles.azimuth, look_up_angles.elevation)};
     const auto channel{channels[hrtf.get_channel() == hrtf::channel::left ? 0 : 1]};
     return to_volume_type(std::begin(channel), std::end(channel));
 }
