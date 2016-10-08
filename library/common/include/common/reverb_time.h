@@ -120,7 +120,8 @@ float estimate_room_volume(const generic_scene_data<Vertex, Surface>& scene) {
 /// Sound intensity absorption coefficient calculator. (fu2015 eq. 11)
 float estimate_air_intensity_absorption(float frequency, float humidity);
 
-volume_type estimate_air_intensity_absorption(float humidity);
+volume_type estimate_air_intensity_absorption(
+        const std::array<float, 8>& band_centres, float humidity);
 
 //----------------------------------------------------------------------------//
 

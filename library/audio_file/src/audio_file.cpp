@@ -2,6 +2,8 @@
 
 #include "sndfile.hh"
 
+#include <fstream>
+#include <iostream>
 #include <sstream>
 #include <unordered_map>
 
@@ -102,6 +104,12 @@ template void write_interleaved<const double*>(const std::string& name,
 }  // namespace detail
 
 audio_file<double> read(const std::string& fname) {
+    {
+        std::ifstream is{fname};
+        if (!is.good()) {
+            throw std::runtime_error{"audio_file::read: unable to open file"};
+        }
+    }
     SndfileHandle infile{fname, SFM_READ};
     const auto channels{infile.channels()};
     std::vector<double> interleaved(infile.frames() * channels);

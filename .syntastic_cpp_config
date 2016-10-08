@@ -5,7 +5,7 @@
 -Ilibrary/waveguide/compensation_signal/lib/include
 -Ilibrary/raytracer/include
 -Ilibrary/common/include
--Ilibrary/common/hrtf/lib/include
+-Ilibrary/hrtf/lib/include
 -Ilibrary/combined/include
 -Iutils/include
 -Ibuild/include
