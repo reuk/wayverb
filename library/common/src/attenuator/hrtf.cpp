@@ -1,4 +1,7 @@
 #include "common/attenuator/hrtf.h"
+#include "common/orientable.h"
+
+#include "common/hrtf_look_up_table.h"
 
 hrtf::hrtf(const glm::vec3& pointing, const glm::vec3& up, channel channel)
         : pointing_{glm::normalize(pointing)}
@@ -25,33 +28,15 @@ glm::vec3 transform(const glm::vec3& pointing,
     const auto x{glm::normalize(glm::cross(up, pointing))};
     const auto y{glm::cross(pointing, x)};
     const auto z{pointing};
-    return glm::vec3(glm::dot(x, d), glm::dot(y, d), glm::dot(z, d));
-}
-
-float azimuth(const glm::vec3& d) { return atan2(d.x, d.z); }
-
-float elevation(const glm::vec3& d) {
-    return atan2(d.y, glm::length(glm::vec2(d.x, d.z)));
+    return glm::vec3{glm::dot(x, d), glm::dot(y, d), glm::dot(z, d)};
 }
 
 float degrees(float radians) { return radians * 180 / M_PI; }
 
-/*
-float attenuation(const glm::vec3& direction,
-                  const glm::vec3& up,
-                  hrtf_channel channel,
-                  const glm::vec3& incident,
-                  int band) {
-    auto transformed = transform(direction, up, incident);
-    int a = degrees(azimuth(transformed)) + 180;
-    a %= 360;
-    int e = degrees(elevation(transformed));
-    e = 90 - e;
-    return hrtf_data::data[channel == hrtf_channel::left ? 0 : 1][a][e].s[band];
-}
-*/
-
 volume_type attenuation(const hrtf& hrtf, const glm::vec3& incident) {
-    //  TODO - regenerate hrtf data / lookup table
-    throw std::runtime_error{"attenuation(hrtf, incident) not implemented"};
+    const auto transformed{transform(hrtf.get_pointing(), hrtf.get_up(), incident)};
+    const auto azel{compute_azimuth_elevation(transformed)};
+    const auto channels{hrtf_look_up_table::look_up_angles(degrees(azel.azimuth), degrees(azel.elevation))};
+    const auto channel{channels[hrtf.get_channel() == hrtf::channel::left ? 0 : 1]};
+    return to_volume_type(std::begin(channel), std::end(channel));
 }

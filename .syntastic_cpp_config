@@ -9,6 +9,8 @@
 -Ilibrary/combined/include
 -Iutils/include
 -Ibuild/include
+-Ibuild/library/common
+-Ibuild/library/waveguide
 -Wall
 -Werror
 -ferror-limit=100

@@ -23,6 +23,7 @@ target_include_directories(common
     PRIVATE
     src
     ${CMAKE_BINARY_DIR}/include
+    ${CMAKE_CURRENT_BINARY_DIR}
 )
 
 target_link_libraries(common

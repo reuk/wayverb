@@ -24,4 +24,19 @@ private:
     channel channel_;
 };
 
+glm::vec3 transform(const glm::vec3& pointing,
+                    const glm::vec3& up,
+                    const glm::vec3& d);
+
+float degrees(float radians);
+
+template <typename It>
+constexpr auto to_volume_type(It begin, It end) {
+    volume_type ret{};
+    for (auto it{std::begin(ret.s)}; begin != end; ++begin, ++it) {
+        *it = *begin;
+    }
+    return ret;
+}
+
 volume_type attenuation(const hrtf& hrtf, const glm::vec3& incident);
