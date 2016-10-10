@@ -45,9 +45,15 @@ az_el compute_look_up_angles(const glm::vec3& pt) {
 }
 
 volume_type attenuation(const hrtf& hrtf, const glm::vec3& incident) {
-    const auto transformed{transform(hrtf.get_pointing(), hrtf.get_up(), incident)};
-    const auto look_up_angles{compute_look_up_angles(transformed)};
-    const auto channels{hrtf_look_up_table::look_up_angles(look_up_angles.azimuth, look_up_angles.elevation)};
-    const auto channel{channels[hrtf.get_channel() == hrtf::channel::left ? 0 : 1]};
-    return to_volume_type(std::begin(channel), std::end(channel));
+    if (const auto l{glm::length(incident)}) {
+        const auto transformed{
+                transform(hrtf.get_pointing(), hrtf.get_up(), incident / l)};
+        const auto look_up_angles{compute_look_up_angles(transformed)};
+        const auto channels{hrtf_look_up_table::look_up_angles(
+                look_up_angles.azimuth, look_up_angles.elevation)};
+        const auto channel{
+                channels[hrtf.get_channel() == hrtf::channel::left ? 0 : 1]};
+        return to_volume_type(std::begin(channel), std::end(channel));
+    }
+    return volume_type{};
 }

@@ -298,52 +298,6 @@ constexpr auto map(const T& t, const Op& op) {
     return map(t, op, std::make_index_sequence<components_v<T>>{});
 }
 
-//  conversions probably -----------------------------------------------------//
-
-/*
-template <typename T, typename U, enable_if_is_vector_t<U, int> = 0>
-constexpr T convert(const U& u) {
-    struct conversion final {
-        constexpr value_type_t<T> operator()(const value_type_t<U>& u) const {
-            return u;
-        }
-    };
-    return map(u, conversion{});
-}
-
-template <typename T, typename U, enable_if_is_not_vector_t<U, int> = 0>
-constexpr T convert(const U& u) {
-    return construct_vector<T>(u);
-}
-
-template <typename... Ts>
-using common_value_t = std::common_type_t<value_type_t<Ts>...>;
-
-template <typename...>
-struct common_size;
-
-template <typename... Ts>
-constexpr auto common_size_v{common_size<Ts...>::value};
-
-template <typename T>
-struct common_size<T> final {
-    static constexpr auto value{components_v<T>};
-};
-
-template <typename T, typename... Ts>
-struct common_size<T, Ts...> final {
-    static_assert(common_size_v<T> == common_size_v<Ts...> ||
-                          common_size_v<T> == 1 || common_size_v<Ts...> == 1,
-                  "size must be 1, or match the other size");
-    static constexpr auto value{
-            std::max(common_size_v<T>, common_size_v<Ts...>)};
-};
-
-template <typename... Ts>
-using common_vector_t =
-        cl_vector_constructor_t<common_value_t<Ts...>, common_size_v<Ts...>>;
-*/
-
 }  // namespace detail
 
 //  relational ops

@@ -13,7 +13,7 @@ auto attenuate(const Method& method,
     using std::sqrt;
     using std::copysign;
     using std::pow;
-    const auto att{attenuation(method, -glm::normalize(i.intensity))};
+    const auto att{attenuation(method, -i.intensity)};
     const auto intensity{glm::length(i.intensity) * pow(att, 2.0f)};
     //  return copysign(sqrt(intensity), i.pressure);   //  haci2010 method
     return copysign(sqrt(intensity * Z), i.pressure);   //  scaled method
