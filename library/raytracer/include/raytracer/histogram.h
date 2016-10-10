@@ -23,12 +23,12 @@ struct histogram_mapper final {
 namespace raytracer {
 
 template <typename T>
-auto time(const T& t) {
+constexpr auto time(const T& t) {
     return t.time;
 }
 
 template <typename T>
-auto volume(const T& t) {
+constexpr auto volume(const T& t) {
     return t.volume;
 }
 
@@ -39,9 +39,6 @@ auto histogram(It begin,
                double max_time,
                const T& callback) {
     using value_type = decltype(volume(*begin));
-
-    //  TODO need to pad a bit for sinc outputs - need both sides of the sinc
-    //  kernel
 
     if (begin == end) {
         return aligned::vector<value_type>{};

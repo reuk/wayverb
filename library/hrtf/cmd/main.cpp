@@ -3,11 +3,10 @@
 /// These can be processed at run-time to produce a fast lookup table (or a
 /// slow lookup table or whatever).
 
-#include "dir.h"
 #include "bracketer.h"
+#include "dir.h"
 
-#include "hrtf/entry.h"
-#include "hrtf/meta.h"
+#include "hrtf/multiband.h"
 
 #include "utilities/map.h"
 
@@ -33,7 +32,9 @@ std::ostream& operator<<(std::ostream& os, const std::array<T, I>& arr) {
 
 std::ostream& operator<<(std::ostream& os, const hrtf_data::entry& x) {
     bracketer b{os, "{", "}"};
-    return os << x.azimuth << ",\n" << x.elevation << ",\n" << x.energy << ",\n";
+    return os << x.azimuth << ",\n"
+              << x.elevation << ",\n"
+              << x.energy << ",\n";
 }
 
 template <typename T, typename Alloc>
@@ -53,7 +54,8 @@ void generate_data_file(std::ostream& os,
 #pragma once
 #include "hrtf/entry.h"
 namespace hrtf_data {
-constexpr entry entries[] = )" << entries << R"(;
+constexpr entry entries[] = )"
+       << entries << R"(;
 }  // namespace hrtf_data
 )";
 }
@@ -83,20 +85,12 @@ int main(int argc, char** argv) {
                 throw std::runtime_error{"hrtf data files must be stereo"};
             }
 
-            if (audio.sample_rate < hrtf_data::audible_range.get_max()) {
-                throw std::runtime_error{"insufficiently high sampling rate"};
-            }
-
-            const range<double> normalised_range{
-                hrtf_data::audible_range.get_min() / audio.sample_rate,
-                hrtf_data::audible_range.get_max() / audio.sample_rate};
-
             const auto energy{
                     map(std::array<size_t, 2>{{0, 1}}, [&](auto channel) {
-                        return frequency_domain::per_band_energy<hrtf_data::bands>(
+                        return hrtf_data::per_band_energy(
                                 begin(audio.signal[channel]),
                                 end(audio.signal[channel]),
-                                normalised_range);
+                                audio.sample_rate);
                     })};
 
             results.emplace_back(hrtf_data::entry{az, el, energy});

@@ -10,11 +10,11 @@
 namespace frequency_domain {
 
 template <size_t bands_plus_one, typename It, typename Callback>
-void multiband_filter(It begin,
-                      It end,
-                      const std::array<double, bands_plus_one>& edges,
-                      const std::array<double, bands_plus_one>& widths,
-                      const Callback& callback) {
+void multiband_filter(
+        It begin,
+        It end,
+        const std::array<edge_and_width, bands_plus_one>& edges_and_widths,
+        const Callback& callback) {
     constexpr auto bands{bands_plus_one - 1};
     filter filt{static_cast<size_t>(std::distance(begin, end)) * 2};
 
@@ -24,24 +24,11 @@ void multiband_filter(It begin,
         filt.run(b, e, b, [&](auto cplx, auto freq) {
             return cplx * static_cast<float>(compute_bandpass_magnitude(
                                   freq,
-                                  range<double>{edges[i], edges[i + 1]},
-                                  widths[i + 0],
-                                  widths[i + 1],
+                                  edges_and_widths[i + 0],
+                                  edges_and_widths[i + 1],
                                   0));
         });
     }
-}
-
-template <size_t bands, typename It, typename Callback>
-void multiband_filter(It begin,
-                      It end,
-                      range<double> audible,
-                      const Callback& callback) {
-    multiband_filter(begin,
-                     end,
-                     band_edge_frequencies<bands>(audible),
-                     band_edge_widths<bands>(audible, 1),
-                     callback);
 }
 
 template <typename It>
@@ -50,15 +37,26 @@ auto rms(It begin, It end) {
             begin, end, 0.0, [](auto a, auto b) { return a + b * b; }));
 }
 
+template <typename It, typename Callback>
+auto band_rms(It begin, It end, const Callback& callback, size_t band) {
+    const auto b{callback(begin, band)};
+    const auto e{callback(end, band)};
+    return rms(b, e);
+}
+
+template <typename It, typename Callback, size_t... Ix>
+auto multiband_rms(It begin,
+                   It end,
+                   const Callback& callback,
+                   std::index_sequence<Ix...>) {
+    return std::array<double, sizeof...(Ix)>{
+            {band_rms(begin, end, callback, Ix)...}};
+}
+
 template <size_t bands, typename It, typename Callback>
 auto multiband_rms(It begin, It end, const Callback& callback) {
-    std::array<double, bands> ret{};
-    for (auto i{0ul}; i != bands; ++i) {
-        const auto b{callback(begin, i)};
-        const auto e{callback(end, i)};
-        ret[i] = rms(b, e);
-    }
-    return ret;
+    return multiband_rms(
+            begin, end, callback, std::make_index_sequence<bands>{});
 }
 
 template <size_t bands, typename T>
@@ -93,11 +91,14 @@ private:
     size_t index_;
 };
 
-template <size_t bands, typename It>
-auto per_band_energy(It begin, It end, range<double> audible) {
+template <size_t bands_plus_one, typename It>
+auto per_band_energy(
+        It begin,
+        It end,
+        const std::array<edge_and_width, bands_plus_one>& edges_and_widths) {
+    constexpr auto bands{bands_plus_one - 1};
+
     auto multiband{make_multiband<bands>(begin, end)};
-    const auto edges{band_edge_frequencies<bands>(audible)};
-    const auto widths{band_edge_widths<bands>(audible, 1)};
 
     const auto callback{[](auto it, auto index) {
         return make_mapping_iterator_adapter(std::move(it), indexer{index});
@@ -105,14 +106,14 @@ auto per_band_energy(It begin, It end, range<double> audible) {
 
     multiband_filter(std::begin(multiband),
                      std::end(multiband),
-                     edges,
-                     widths,
+                     edges_and_widths,
                      callback);
     auto rms{multiband_rms<bands>(
             std::begin(multiband), std::end(multiband), callback)};
 
     for (auto i{0ul}; i != bands; ++i) {
-        const auto width{edges[i + 1] - edges[i]};
+        const auto width{edges_and_widths[i + 1].edge -
+                         edges_and_widths[i].edge};
         rms[i] /= width;
     }
 

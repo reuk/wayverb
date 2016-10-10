@@ -38,14 +38,10 @@ TEST(multiband_filter, multiband_filter) {
 
     const auto sample_rate{44100.0};
 
-    const range<double> nrange{20 / sample_rate, 20000 / sample_rate};
-
-    constexpr auto bands{detail::components_v<volume_type>};
-
-    const auto results{multiband_filter_and_mixdown<bands>(
+    const auto results{multiband_filter_and_mixdown(
             multiband.begin(),
             multiband.end(),
-            nrange,
+            sample_rate,
             [](auto it, auto index) {
                 return make_cl_type_iterator(std::move(it), index);
             })};

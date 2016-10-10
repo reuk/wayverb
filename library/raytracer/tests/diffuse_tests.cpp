@@ -22,8 +22,7 @@ TEST(diffuse, bad_reflections_box) {
     const compute_context cc{};
 
     const auto scene{geo::get_scene_data(box, surface)};
-    const auto voxelised{make_voxelised_scene_data(
-            scene, 5, padded(geo::get_aabb(scene), 0.1f))};
+    const auto voxelised{make_voxelised_scene_data(scene, 5, 0.1f)};
 
     const scene_buffers buffers{cc.context, voxelised};
 
@@ -59,8 +58,7 @@ TEST(diffuse, bad_reflections_vault) {
 
     const auto scene{scene_with_extracted_surfaces(
             scene_data_loader{OBJ_PATH}.get_scene_data())};
-    const auto voxelised{make_voxelised_scene_data(
-            scene, 5, padded(geo::get_aabb(scene), 0.1f))};
+    const auto voxelised{make_voxelised_scene_data(scene, 5, 0.1f)};
 
     const scene_buffers buffers{cc.context, voxelised};
 

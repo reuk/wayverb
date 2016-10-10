@@ -29,7 +29,7 @@
 #include "common/spatial_division/voxelised_scene_data.h"
 #include "common/surfaces.h"
 
-#include "hrtf/meta.h"
+#include "hrtf/multiband.h"
 
 #include <cmath>
 
@@ -65,13 +65,6 @@ public:
             const state_callback& callback) const override {
         callback(wayverb::state::postprocessing, 1.0);
 
-        if (output_sample_rate <= hrtf_data::audible_range.get_max()) {
-            throw std::runtime_error{"sample rate too low"};
-        }
-
-        const range<double> normalised_audible_range{hrtf_data::audible_range.get_min() / output_sample_rate,
-            hrtf_data::audible_range.get_max() / output_sample_rate};
-
         //  attenuate raytracer results
         const auto raytracer_impulses{raytracer_results_.get_impulses()};
         auto raytracer_output{
@@ -79,7 +72,6 @@ public:
                                            speed_of_sound_,
                                            output_sample_rate,
                                            max_length_in_seconds,
-                                           normalised_audible_range,
                                            raytracer_impulses.begin(),
                                            raytracer_impulses.end())};
         //  attenuate waveguide results
@@ -87,7 +79,6 @@ public:
                 waveguide::run_attenuation(receiver,
                                            acoustic_impedance_,
                                            waveguide_sample_rate_,
-                                           normalised_audible_range,
                                            waveguide_results_.begin(),
                                            waveguide_results_.end())};
 

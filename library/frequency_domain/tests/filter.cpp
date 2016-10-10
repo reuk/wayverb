@@ -84,7 +84,7 @@ TEST(filter, lopass) {
     filter.run(sig.begin(), sig.end(), sig.begin(), [](auto cplx, auto freq) {
         return cplx *
                static_cast<float>(frequency_domain::compute_lopass_magnitude(
-                       freq, 0.25, 0.05, 0));
+                       freq, frequency_domain::edge_and_width{0.25, 0.05}));
     });
     write("lopass_noise.wav", audio_file::make_audio_file(sig, 44100), 16);
 }
@@ -102,7 +102,7 @@ TEST(filter, hipass) {
     filter.run(sig.begin(), sig.end(), sig.begin(), [](auto cplx, auto freq) {
         return cplx *
                static_cast<float>(frequency_domain::compute_hipass_magnitude(
-                       freq, 0.25, 0.05, 0));
+                       freq, frequency_domain::edge_and_width{0.25, 0.05}));
     });
     write("hipass_noise.wav", audio_file::make_audio_file(sig, 44100), 16);
 }
@@ -115,7 +115,7 @@ TEST(filter, transients) {
     filter.run(sig.begin(), sig.end(), sig.begin(), [](auto cplx, auto freq) {
         return cplx *
                static_cast<float>(frequency_domain::compute_hipass_magnitude(
-                       freq, 0.25, 0.05, 0));
+                       freq, frequency_domain::edge_and_width{0.25, 0.05}));
     });
     write("transients.wav", audio_file::make_audio_file(sig, 44100), 16);
 }

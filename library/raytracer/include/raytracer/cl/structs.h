@@ -96,6 +96,11 @@ struct alignas(1 << 5) impulse final {
     cl_float distance;   //  distance that the carrier ray has travelled
 };
 
+template <typename T>
+constexpr auto make_impulse(T volume, cl_float3 position, cl_float distance) {
+    return impulse<detail::components_v<T>>{volume, position, distance};
+}
+
 template <>
 struct cl_representation<impulse<8>> final {
     static constexpr auto value{R"(
@@ -126,11 +131,16 @@ constexpr bool operator!=(const impulse<channels>& a,
 
 //----------------------------------------------------------------------------//
 
-template <size_t channels = 8>
+template <size_t channels>
 struct alignas(1 << 5) attenuated_impulse final {
     detail::cl_vector_constructor_t<float, channels> volume;
     cl_float distance;
 };
+
+template <typename T>
+constexpr auto make_attenuated_impulse(T volume, cl_float distance) {
+    return attenuated_impulse<detail::components_v<T>>{volume, distance};
+}
 
 template <>
 struct cl_representation<attenuated_impulse<8>> final {

@@ -21,58 +21,78 @@ double upper_band_edge(double centre, double p, double P, size_t l) {
     return std::cos(M_PI * band_edge_impl(centre, p, P, l) / 2);
 }
 
-double band_edge_frequency(int band, size_t bands, range<double> r) {
+double band_edge_frequency(size_t band, size_t bands, range<double> r) {
     return r.get_min() * std::pow(r.get_max() / r.get_min(),
                                   band / static_cast<double>(bands));
 }
 
+double band_centre_frequency(size_t band, size_t bands, range<double> r) {
+    return band_edge_frequency(band * 2 + 1, bands * 2, r);
+}
+
+double band_edge_width(size_t band,
+                       size_t bands,
+                       range<double> r,
+                       double overlap) {
+    return (band_edge_frequency(band * 2 + 1, bands * 2, r) -
+            band_edge_frequency(band * 2 + 0, bands * 2, r)) *
+           overlap;
+}
+
+edge_and_width band_edge_and_width(size_t band,
+                                   size_t bands,
+                                   range<double> r,
+                                   double overlap) {
+    return {band_edge_frequency(band, bands, r),
+            band_edge_width(band, bands, r, overlap)};
+}
+
 double compute_bandpass_magnitude(double frequency,
-                                  range<double> r,
-                                  double lower_edge_width,
-                                  double upper_edge_width,
+                                  edge_and_width lower,
+                                  edge_and_width upper,
                                   size_t l) {
-    if (frequency < r.get_min() - lower_edge_width ||
-        r.get_min() + upper_edge_width <= frequency) {
+    if (frequency < lower.edge - lower.width ||
+        upper.edge + upper.width <= frequency) {
         return 0;
     }
 
-    const auto lower_p{frequency - r.get_min()};
-    if (-lower_edge_width <= lower_p && lower_p < lower_edge_width) {
-        return lower_band_edge(r.get_min(), lower_p, lower_edge_width, l);
+    const auto lower_p{frequency - lower.edge};
+    if (-lower.width < lower_p && lower_p <= lower.width) {
+        return lower_band_edge(lower.edge, lower_p, lower.width, l);
     }
 
-    const auto upper_p{frequency - r.get_max()};
-    if (-upper_edge_width <= upper_p && upper_p < upper_edge_width) {
-        return upper_band_edge(r.get_max(), upper_p, upper_edge_width, l);
+    const auto upper_p{frequency - upper.edge};
+    if (-upper.width < upper_p && upper_p <= upper.width) {
+        return upper_band_edge(upper.edge, upper_p, upper.width, l);
     }
 
     return 1;
 }
 
 double compute_lopass_magnitude(double frequency,
-                                double cutoff,
-                                double width,
+                                edge_and_width cutoff,
                                 size_t l) {
-    if (frequency < cutoff - width) {
+    if (frequency < cutoff.edge - cutoff.width) {
         return 1;
     }
-    if (cutoff + width <= frequency) {
+    if (cutoff.edge + cutoff.width <= frequency) {
         return 0;
     }
-    return upper_band_edge(cutoff, frequency - cutoff, width, l);
+    return upper_band_edge(
+            cutoff.edge, frequency - cutoff.edge, cutoff.width, l);
 }
 
 double compute_hipass_magnitude(double frequency,
-                                double cutoff,
-                                double width,
+                                edge_and_width cutoff,
                                 size_t l) {
-    if (frequency < cutoff - width) {
+    if (frequency < cutoff.edge - cutoff.width) {
         return 0;
     }
-    if (cutoff + width <= frequency) {
+    if (cutoff.edge + cutoff.width <= frequency) {
         return 1;
     }
-    return lower_band_edge(cutoff, frequency - cutoff, width, l);
+    return lower_band_edge(
+            cutoff.edge, frequency - cutoff.edge, cutoff.width, l);
 }
 
 }  // namespace frequency_domain

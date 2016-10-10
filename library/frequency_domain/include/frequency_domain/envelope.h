@@ -12,36 +12,39 @@ namespace frequency_domain {
 double lower_band_edge(double centre, double p, double P, size_t l);
 double upper_band_edge(double centre, double p, double P, size_t l);
 
-double band_edge_frequency(int band, size_t bands, range<double> r);
+double band_edge_frequency(size_t band, size_t bands, range<double> r);
+double band_centre_frequency(size_t band, size_t bands, range<double> r);
 
-template <size_t bands>
-std::array<double, bands + 1> band_edge_frequencies(range<double> r) {
-    std::array<double, bands + 1> ret;
-    for (auto i{0u}; i != bands + 1; ++i) {
-        ret[i] = band_edge_frequency(i, bands, r);
-    }
-    return ret;
+double band_edge_width(size_t band,
+                       size_t bands,
+                       range<double> r,
+                       double overlap);
+
+/// Holds parameters for a frequency-domain crossover filter.
+/// 'edge' is a frequency (Hz or normalised)
+/// 'width' is the width of the crossover at this frequency
+struct edge_and_width final {
+    double edge;
+    double width;
+};
+
+edge_and_width band_edge_and_width(size_t band,
+                                   size_t bands,
+                                   range<double> r,
+                                   double overlap);
+
+template <size_t... Ix>
+auto band_edges_and_widths(range<double> r,
+                           double overlap,
+                           std::index_sequence<Ix...>) {
+    return std::array<edge_and_width, sizeof...(Ix)>{
+            {band_edge_and_width(Ix, sizeof...(Ix) - 1, r, overlap)...}};
 }
 
 template <size_t bands>
-std::array<double, bands + 1> band_centre_frequencies(range<double> r) {
-    std::array<double, bands + 1> ret;
-    for (auto i{0ul}; i != ret.size(); ++i) {
-        ret[i] = band_edge_frequency(i * 2 + 1, bands * 2, r);
-    }
-    return ret;
-}
-
-template <size_t bands>
-std::array<double, bands + 1> band_edge_widths(range<double> r,
-                                               double overlap) {
-    std::array<double, bands + 1> ret;
-    for (int i{0}; i != ret.size(); ++i) {
-        ret[i] = std::abs((band_edge_frequency(i * 2 + 0, bands * 2, r) -
-                           band_edge_frequency(i * 2 + 1, bands * 2, r)) *
-                          overlap);
-    }
-    return ret;
+auto band_edges_and_widths(range<double> r, double overlap) {
+    return band_edges_and_widths(
+            r, overlap, std::make_index_sequence<bands + 1>{});
 }
 
 /// frequency: normalized frequency, from 0 to 0.5
@@ -51,19 +54,16 @@ std::array<double, bands + 1> band_edge_widths(range<double> r,
 /// upper_edge_width: half the absolute width of the upper crossover
 /// l: the slope (0 is shallow, higher is steeper)
 double compute_bandpass_magnitude(double frequency,
-                                  range<double> r,
-                                  double lower_edge_width,
-                                  double upper_edge_width,
-                                  size_t l);
+                                  edge_and_width lower,
+                                  edge_and_width upper,
+                                  size_t l = 0);
 
 double compute_lopass_magnitude(double frequency,
-                                double cutoff,
-                                double width,
-                                size_t l);
+                                edge_and_width cutoff,
+                                size_t l = 0);
 
 double compute_hipass_magnitude(double frequency,
-                                double cutoff,
-                                double width,
-                                size_t l);
+                                edge_and_width cutoff,
+                                size_t l = 0);
 
 }  // namespace frequency_domain

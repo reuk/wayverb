@@ -8,6 +8,7 @@
 namespace raytracer {
 namespace image_source {
 
+//  Has to take voxelised_scene_data<cl_float3, surface> because it uses GPU.
 template <typename Func, typename It>
 auto run(It begin,  /// Iterators over ray directions.
          It end,

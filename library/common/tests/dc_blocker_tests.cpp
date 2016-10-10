@@ -255,14 +255,14 @@ const aligned::vector<std::tuple<callback, std::string>> trial_blockers{
                      sig.end(),
                      sig.begin(),
                      [=](auto cplx, auto freq) {
-                         return cplx *
-                                static_cast<float>(
-                                        frequency_domain::
-                                                compute_hipass_magnitude(
-                                                        freq,
+                         return static_cast<float>(
+                                        frequency_domain::compute_hipass_magnitude(
+                                                freq,
+                                                frequency_domain::edge_and_width{
                                                         normalised_cutoff,
-                                                        normalised_cutoff / 2,
-                                                        0));
+                                                        normalised_cutoff *
+                                                                0.5})) *
+                                cplx;
                      });
              return sig;
          },
@@ -276,14 +276,14 @@ const aligned::vector<std::tuple<callback, std::string>> trial_blockers{
                      sig.end(),
                      sig.begin(),
                      [=](auto cplx, auto freq) {
-                         return cplx *
-                                static_cast<float>(
-                                        frequency_domain::
-                                                compute_hipass_magnitude(
-                                                        freq,
+                         return static_cast<float>(
+                                        frequency_domain::compute_hipass_magnitude(
+                                                freq,
+                                                frequency_domain::edge_and_width{
                                                         normalised_cutoff,
-                                                        normalised_cutoff / 2,
-                                                        0));
+                                                        normalised_cutoff *
+                                                                0.5})) *
+                                cplx;
                      });
              return sig;
          },

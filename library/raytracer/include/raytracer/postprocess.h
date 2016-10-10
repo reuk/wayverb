@@ -88,7 +88,6 @@ aligned::vector<aligned::vector<float>> attenuate_microphone(
         double speed_of_sound,
         double sample_rate,
         double max_seconds,
-        range<double> audible_range, 
         It begin,
         It end) {
     return map_to_vector(
@@ -111,13 +110,10 @@ aligned::vector<aligned::vector<float>> attenuate_microphone(
                                                sample_rate,
                                                max_seconds)};
 
-                constexpr auto bands{::detail::components_v<typename decltype(
-                        histogram)::value_type>};
-
-                return multiband_filter_and_mixdown<bands>(
+                return multiband_filter_and_mixdown(
                         histogram.begin(),
                         histogram.end(),
-                        audible_range,
+                        sample_rate,
                         [](auto it, auto index) {
                             return make_cl_type_iterator(std::move(it), index);
                         });
@@ -130,7 +126,6 @@ aligned::vector<aligned::vector<float>> attenuate_hrtf(
         double speed_of_sound,
         double sample_rate,
         double max_seconds,
-        range<double> audible_range,
         It begin,
         It end) {
     const auto channels = {hrtf::channel::left, hrtf::channel::right};
@@ -153,13 +148,10 @@ aligned::vector<aligned::vector<float>> attenuate_hrtf(
                                                sample_rate,
                                                max_seconds)};
 
-                constexpr auto bands{::detail::components_v<typename decltype(
-                        histogram)::value_type>};
-
-                return multiband_filter_and_mixdown<bands>(
+                return multiband_filter_and_mixdown(
                         histogram.begin(),
                         histogram.end(),
-                        audible_range,
+                        sample_rate,
                         [](auto it, auto index) {
                             return make_cl_type_iterator(std::move(it), index);
                         });
@@ -172,7 +164,6 @@ aligned::vector<aligned::vector<float>> run_attenuation(
         double speed_of_sound,
         double sample_rate,
         double max_seconds,
-        range<double> audible_range,
         It begin,
         It end) {
     switch (receiver.mode) {
@@ -181,7 +172,6 @@ aligned::vector<aligned::vector<float>> run_attenuation(
                                         speed_of_sound,
                                         sample_rate,
                                         max_seconds,
-                                        audible_range,
                                         begin,
                                         end);
         case model::receiver_settings::mode::hrtf:
@@ -189,7 +179,6 @@ aligned::vector<aligned::vector<float>> run_attenuation(
                                   speed_of_sound,
                                   sample_rate,
                                   max_seconds,
-                                  audible_range,
                                   begin,
                                   end);
     }

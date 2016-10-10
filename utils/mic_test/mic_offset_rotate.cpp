@@ -21,9 +21,15 @@
 
 template <size_t bands>
 struct angle_info final {
-    float angle;
+    double angle;
     std::array<double, bands> energy;
 };
+
+template <size_t bands>
+constexpr auto make_angle_info(double angle,
+                               const std::array<double, bands>& energy) {
+    return angle_info<bands>{angle, energy};
+}
 
 template <typename T, size_t bands>
 void serialize(T& archive, angle_info<bands>& info) {
@@ -43,29 +49,31 @@ constexpr auto generate_range(range<T> r) {
 template <size_t bands, typename Callback>
 auto run_single_angle(float angle,
                       const glm::vec3& receiver,
-                      range<double> audible_range,
+                      double sample_rate,
                       const Callback& callback) {
-    const glm::vec3 source{receiver +
-                           glm::vec3{std::sin(angle), 0, std::cos(angle)}};
+    constexpr auto distance{1.0};
+    const glm::vec3 source{receiver + glm::vec3{distance * std::sin(angle),
+                                                0,
+                                                distance * std::cos(angle)}};
+    constexpr range<double> valid_frequency_range{0.01, 0.16};
+    const auto params{frequency_domain::band_edges_and_widths<8>(
+            valid_frequency_range, 1)};
     const auto signal{callback(source, receiver)};
-    return angle_info<bands>{
-            angle,
-            frequency_domain::per_band_energy<bands>(
-                    signal.begin(), signal.end(), audible_range)};
+    return make_angle_info(angle,
+                           frequency_domain::per_band_energy(
+                                   signal.begin(), signal.end(), params));
 }
 
 template <size_t bands, typename Callback>
 auto run_multiple_angles(const glm::vec3& receiver,
                          float speed_of_sound,
                          float sample_rate,
-                         range<double> audible_range,
                          const Callback& callback) {
     constexpr auto test_locations{16};
     const auto angles{
             generate_range<test_locations>(range<double>{0, 2 * M_PI})};
     return map_to_vector(begin(angles), end(angles), [&](auto angle) {
-        return run_single_angle<bands>(
-                angle, receiver, audible_range, callback);
+        return run_single_angle<bands>(angle, receiver, sample_rate, callback);
     });
 }
 
@@ -119,7 +127,6 @@ int main(int argc, char** argv) {
                 receiver,
                 speed_of_sound,
                 sample_rate,
-                range<double>{80 / sample_rate, filter_frequency / sample_rate},
                 callback)};
         std::ofstream file{output_folder + "/" + name + ".txt"};
         cereal::JSONOutputArchive archive{file};
@@ -128,30 +135,27 @@ int main(int argc, char** argv) {
     }};
 
     run("waveguide", [&](const auto& source, const auto& receiver) {
-        auto output{run_waveguide(box,
-                                  absorption,
-                                  source,
-                                  receiver,
-                                  mic,
-                                  speed_of_sound,
-                                  acoustic_impedance,
-                                  sample_rate,
-                                  simulation_time)};
-        return waveguide::attenuate(
-                mic, acoustic_impedance, output.begin(), output.end());
+        return run_waveguide(box,
+                             absorption,
+                             source,
+                             receiver,
+                             mic,
+                             speed_of_sound,
+                             acoustic_impedance,
+                             sample_rate,
+                             simulation_time);
     });
 
     run("img_src", [&](const auto& source, const auto& receiver) {
-        const auto ret{run_exact_img_src(box,
-                                         absorption,
-                                         source,
-                                         receiver,
-                                         mic,
-                                         speed_of_sound,
-                                         acoustic_impedance,
-                                         sample_rate,
-                                         simulation_time)};
-        return ret;
+        return run_exact_img_src(box,
+                                 absorption,
+                                 source,
+                                 receiver,
+                                 mic,
+                                 speed_of_sound,
+                                 acoustic_impedance,
+                                 sample_rate,
+                                 simulation_time);
     });
 
     return EXIT_SUCCESS;

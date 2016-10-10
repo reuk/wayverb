@@ -6,6 +6,7 @@
 #include "waveguide/attenuator.h"
 #include "waveguide/calibration.h"
 #include "waveguide/mesh.h"
+#include "waveguide/multiband.h"
 #include "waveguide/postprocessor/directional_receiver.h"
 #include "waveguide/preprocessor/hard_source.h"
 #include "waveguide/surface_filters.h"
@@ -17,6 +18,7 @@
 #include "raytracer/raytracer.h"
 
 #include "common/reverb_time.h"
+#include "common/mixdown.h"
 
 #include "utilities/progress_bar.h"
 
@@ -24,34 +26,49 @@
 
 template <typename It>
 auto waveguide_filter(It begin, It end, float sample_rate) {
+    auto processed{waveguide::multiband_process(begin, end, sample_rate)};
+
     //  Filter waveguide output.
     const auto waveguide_max{0.16};
     const auto normalised_width{0.02};
     const auto normalised_cutoff{waveguide_max - (normalised_width / 2)};
 
-    frequency_domain::filter filter{
-            static_cast<size_t>(std::distance(begin, end)) * 2};
-    filter.run(begin, end, begin, [=](auto cplx, auto freq) {
-        const auto ret{
-                cplx *
-                static_cast<float>(frequency_domain::compute_lopass_magnitude(
-                        freq, normalised_cutoff, normalised_width, 0))};
-        const auto hipass{false};
-        if (hipass) {
-            const auto low_cutoff{100 / sample_rate};
-            return ret * static_cast<float>(
-                                 frequency_domain::compute_hipass_magnitude(
-                                         freq, low_cutoff, low_cutoff * 2, 0));
-        }
-        return ret;
-    });
+    frequency_domain::filter filter{processed.size() * 2};
+    filter.run(
+            processed.begin(),
+            processed.end(),
+            processed.begin(),
+            [=](auto cplx, auto freq) {
+                const auto ret{
+                        cplx *
+                        static_cast<float>(
+                                frequency_domain::compute_lopass_magnitude(
+                                        freq,
+                                        frequency_domain::edge_and_width{
+                                                normalised_cutoff,
+                                                normalised_width}))};
+                const auto hipass{false};
+                if (hipass) {
+                    const auto low_cutoff{100 / sample_rate};
+                    return ret *
+                           static_cast<float>(
+                                   frequency_domain::compute_hipass_magnitude(
+                                           freq,
+                                           frequency_domain::edge_and_width{
+                                                   low_cutoff,
+                                                   low_cutoff * 2}));
+                }
+                return ret;
+            });
+    return processed;
 }
 
+template <typename Attenuator>
 auto run_waveguide(const geo::box& box,
                    float absorption,
                    const glm::vec3& source,
                    const glm::vec3& receiver,
-                   const microphone& microphone,
+                   const Attenuator& attenuator,
                    float speed_of_sound,
                    float acoustic_impedance,
                    float sample_rate,
@@ -103,19 +120,24 @@ auto run_waveguide(const geo::box& box,
                    },
                    true);
 
-    return post.get_output();
+    auto attenuated{waveguide::attenuate(attenuator,
+                                         acoustic_impedance,
+                                         begin(post.get_output()),
+                                         end(post.get_output()))};
+
+    return waveguide_filter(begin(attenuated), end(attenuated), sample_rate);
 }
 
-template <typename It>
+template <typename Attenuator, typename It>
 auto postprocess_impulses(It begin,
                           It end,
                           const glm::vec3& receiver,
-                          const microphone& microphone,
+                          const Attenuator& attenuator,
                           float speed_of_sound,
                           float acoustic_impedance,
                           float sample_rate) {
     //  Correct for directionality of the receiver.
-    auto attenuated{raytracer::attenuate(microphone, receiver, begin, end)};
+    auto attenuated{raytracer::attenuate(attenuator, receiver, begin, end)};
 
     //  Correct for distance travelled.
     for (auto& it : attenuated) {
@@ -130,16 +152,15 @@ auto postprocess_impulses(It begin,
                                                    20)};
 
     //  Extract.
-    return map_to_vector(std::begin(histogram),
-                         std::end(histogram),
-                         [](auto i) { return i.s[0]; });
+    return mixdown(std::begin(histogram), std::end(histogram));
 }
 
+template <typename Attenuator>
 auto run_exact_img_src(const geo::box& box,
                        float absorption,
                        const glm::vec3& source,
                        const glm::vec3& receiver,
-                       const microphone& microphone,
+                       const Attenuator& attenuator,
                        float speed_of_sound,
                        float acoustic_impedance,
                        float sample_rate,
@@ -147,31 +168,31 @@ auto run_exact_img_src(const geo::box& box,
     std::cout << "running exact img src\n";
 
     auto impulses{raytracer::image_source::find_impulses<
-            raytracer::image_source::fast_pressure_calculator<cl_float1>>(
+            raytracer::image_source::fast_pressure_calculator<surface>>(
             box,
             source,
             receiver,
-            cl_float1{{absorption}},
+            make_surface(absorption, 0),
             simulation_time * speed_of_sound)};
 
     return postprocess_impulses(impulses.begin(),
                                 impulses.end(),
                                 receiver,
-                                microphone,
+                                attenuator,
                                 speed_of_sound,
                                 acoustic_impedance,
                                 sample_rate);
 }
 
+template <typename Attenuator>
 auto run_fast_img_src(const geo::box& box,
                       float absorption,
                       const glm::vec3& source,
                       const glm::vec3& receiver,
-                      const microphone& microphone,
+                      const Attenuator& attenuator,
                       float speed_of_sound,
                       float acoustic_impedance,
-                      float sample_rate,
-                      float) {
+                      float sample_rate) {
     std::cout << "running fast img src\n";
 
     const auto voxelised{make_voxelised_scene_data(
@@ -194,33 +215,8 @@ auto run_fast_img_src(const geo::box& box,
     return postprocess_impulses(impulses.begin(),
                                 impulses.end(),
                                 receiver,
-                                microphone,
+                                attenuator,
                                 speed_of_sound,
                                 acoustic_impedance,
                                 sample_rate);
 }
-
-template <typename Callback>
-auto run(const geo::box& box,
-         float absorption,
-         const glm::vec3& source,
-         const glm::vec3& receiver,
-         const microphone& microphone,
-         float speed_of_sound,
-         float acoustic_impedance,
-         float sample_rate,
-         const Callback& callback) {
-    const auto eyring{
-            eyring_reverb_time(geo::get_scene_data(box, absorption), 0)};
-    std::cout << "expected reverb time: " << eyring << '\n';
-    return callback(box,
-                    absorption,
-                    source,
-                    receiver,
-                    microphone,
-                    speed_of_sound,
-                    acoustic_impedance,
-                    sample_rate,
-                    eyring);
-}
-

@@ -16,7 +16,7 @@ auto attenuate(const Method& method,
                const impulse<channels>& i) {
     const auto dir{to_vec3(i.position) - position};
     const auto att{attenuation(method, dir)};
-    return attenuated_impulse<channels>{i.volume * att, i.distance};
+    return make_attenuated_impulse(i.volume * att, i.distance);
 }
 
 template <typename Method, typename It>

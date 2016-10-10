@@ -54,10 +54,10 @@ private:
     voxel_collection<3> voxels_;
 };
 
-template <typename Vertex, typename Surface>
+template <typename Vertex, typename Surface, typename T>
 auto make_voxelised_scene_data(generic_scene_data<Vertex, Surface> scene,
                                size_t octree_depth,
-                               const geo::box& aabb) {
+                               const range<T>& aabb) {
     return voxelised_scene_data<Vertex, Surface>{
             std::move(scene), octree_depth, aabb};
 }
@@ -66,7 +66,7 @@ template <typename Vertex, typename Surface, typename Pad>
 auto make_voxelised_scene_data(generic_scene_data<Vertex, Surface> scene,
                                size_t octree_depth,
                                Pad padding) {
-    const auto aabb{padded(geo::get_aabb(scene), padding)};
+    const auto aabb{padded(geo::get_aabb(scene), glm::vec3{padding})};
     return make_voxelised_scene_data(std::move(scene), octree_depth, aabb);
 }
 

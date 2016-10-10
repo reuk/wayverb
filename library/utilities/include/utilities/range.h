@@ -4,6 +4,7 @@
 #include <cmath>
 #include <numeric>
 #include <stdexcept>
+#include <type_traits>
 
 template <typename t>
 class range final {
@@ -22,24 +23,53 @@ public:
         maintain_invariant();
     }
 
+    template <typename V>
+    constexpr range(const range<V>& r)
+            : min_{r.get_min()}
+            , max_{r.get_max()} {}
+
+    template <typename V>
+    constexpr range(range<V>&& r) noexcept
+            : min_{std::move(r.min_)}
+            , max_{std::move(r.max_)} {}
+
     constexpr auto get_min() const { return min_; }
     constexpr auto get_max() const { return max_; }
 
     /// mutators
 
-    constexpr range& operator+=(const value_type& v) {
+    template <typename V>
+    constexpr range& operator+=(const V& v) {
         min_ += v;
         max_ += v;
         return *this;
     }
 
-    constexpr range& operator-=(const value_type& v) {
+    template <typename V>
+    constexpr range& operator-=(const V& v) {
         min_ -= v;
         max_ -= v;
         return *this;
     }
 
-    constexpr range& pad(const value_type& v) {
+    template <typename V>
+    constexpr range& operator*=(const V& v) {
+        min_ *= v;
+        max_ *= v;
+        maintain_invariant();
+        return *this;
+    }
+
+    template <typename V>
+    constexpr range& operator/=(const V& v) {
+        min_ /= v;
+        max_ /= v;
+        maintain_invariant();
+        return *this;
+    }
+
+    template <typename V>
+    constexpr range& pad(const V& v) {
         min_ -= v;
         max_ += v;
         maintain_invariant();
@@ -69,38 +99,45 @@ range<t> make_range(const t& a, const t& b) {
 
 //----------------------------------------------------------------------------//
 
-template <typename t>
-constexpr bool operator==(const range<t>& a, const range<t>& b) {
+template <typename A, typename B>
+constexpr bool operator==(const range<A>& a, const range<B>& b) {
     return std::make_tuple(a.get_min(), a.get_max()) ==
            std::make_tuple(b.get_min(), b.get_max());
 }
 
-template <typename t>
-constexpr bool operator!=(const range<t>& a, const range<t>& b) {
+template <typename A, typename B>
+constexpr bool operator!=(const range<A>& a, const range<B>& b) {
     return !(a == b);
 }
 
-template <typename t>
-inline range<t> operator+(const range<t>& a, const t& b) {
-    auto ret{a};
+template <typename A, typename B>
+inline auto operator+(const range<A>& a, const B& b) {
+    range<std::common_type_t<A, B>> ret{a};
     return ret += b;
 }
 
-template <typename t>
-inline range<t> operator-(const range<t>& a, const t& b) {
-    auto ret{a};
+template <typename A, typename B>
+inline auto operator-(const range<A>& a, const B& b) {
+    range<std::common_type_t<A, B>> ret{a};
     return ret -= b;
 }
 
-template <typename t>
-inline auto padded(const range<t>& a, const t& b) {
-    auto ret{a};
-    return ret.pad(b);
+template <typename A, typename B>
+inline auto operator*(const range<A>& a, const B& b) {
+    range<std::common_type_t<A, B>> ret{a};
+    return ret *= b;
 }
 
-template <typename t, typename u>
-inline auto padded(const range<t>& a, const u& b) {
-    return padded(a, t(b));
+template <typename A, typename B>
+inline auto operator/(const range<A>& a, const B& b) {
+    range<std::common_type_t<A, B>> ret{a};
+    return ret /= b;
+}
+
+template <typename A, typename B>
+inline auto padded(const range<A>& a, const B& b) {
+    range<std::common_type_t<A, B>> ret{a};
+    return ret.pad(b);
 }
 
 template <typename t>

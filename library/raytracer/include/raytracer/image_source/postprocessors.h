@@ -91,6 +91,14 @@ private:
     bool flip_phase_;
 };
 
+template <typename Surface>
+constexpr auto make_intensity_calculator(const glm::vec3& receiver,
+        aligned::vector<Surface> surfaces,
+        bool flip_phase) {
+    return intensity_calculator<Surface>{
+            receiver, std::move(surfaces), flip_phase};
+}
+
 //----------------------------------------------------------------------------//
 
 template <typename Imp, typename It>
@@ -167,6 +175,13 @@ private:
     aligned::vector<specular_absorption_t<Surface>> surface_impedances_;
     bool flip_phase_;
 };
+
+template <typename Surface>
+constexpr auto make_fast_pressure_calculator(const glm::vec3& receiver,
+        const aligned::vector<Surface>& surfaces,
+        bool flip_phase) {
+    return fast_pressure_calculator<Surface>{receiver, surfaces, flip_phase};
+}
 
 //----------------------------------------------------------------------------//
 
