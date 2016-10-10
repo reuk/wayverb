@@ -44,7 +44,7 @@ namespace detail {
 
 template <typename T>
 struct cl_vector_type_trait final {
-    static constexpr auto is_vector_type = false;
+    using is_vector_type = std::false_type;
     using value_type = T;
     static constexpr size_t components = 1;
 };
@@ -52,7 +52,7 @@ struct cl_vector_type_trait final {
 #define DEFINE_CL_VECTOR_TYPE_TRAIT(cl_type)                                  \
     template <>                                                               \
     struct cl_vector_type_trait<cl_type> final {                              \
-        static constexpr auto is_vector_type = true;                          \
+        using is_vector_type = std::true_type;                                \
         using array_type = decltype(std::declval<cl_type>().s);               \
         static_assert(std::rank<array_type>::value == 1,                      \
                       "vector types have array rank 1");                      \
@@ -63,10 +63,10 @@ struct cl_vector_type_trait final {
 CL_VECTOR_REGISTER(DEFINE_CL_VECTOR_TYPE_TRAIT)
 
 template <typename T>
-constexpr auto is_vector_type_v = cl_vector_type_trait<T>::is_vector_type;
+using is_vector_type_t = typename cl_vector_type_trait<T>::is_vector_type;
 
 template <typename T>
-using is_vector_type_t = std::integral_constant<bool, is_vector_type_v<T>>;
+constexpr auto is_vector_type_v{is_vector_type_t<T>{}};
 
 template <typename T, typename U = void>
 using enable_if_is_vector_t = std::enable_if_t<is_vector_type_v<T>, U>;
@@ -80,7 +80,7 @@ constexpr auto components_v = cl_vector_type_trait<T>::components;
 template <typename T>
 using value_type_t = typename cl_vector_type_trait<T>::value_type;
 
-template<typename...>
+template <typename...>
 struct any;
 
 template <typename... Ts>
@@ -192,33 +192,48 @@ constexpr auto accumulate(const T& t, const Accumulator& accumulator, Op op) {
             accumulator::accumulatable_vector<T>(t), accumulator, op);
 }
 
+template <typename T, typename U, typename Op, size_t... Ix>
+constexpr auto& inplace_zip_both_vector(T& t,
+                                        const U& u,
+                                        const Op& op,
+                                        std::index_sequence<Ix...>) {
+    return t = T{{static_cast<value_type_t<T>>(op(t.s[Ix], u.s[Ix]))...}};
+}
+
 template <typename T,
           typename U,
           typename Op,
           enable_if_is_vector_t<U, int> = 0>
-constexpr auto& inplace_zip(T& t, const U& u, Op op) {
-    using std::begin;
-    using std::end;
-    auto i = begin(t.s);
-    auto j = begin(u.s);
-    for (; i != end(t.s); ++i, ++j) {
-        *i = op(*i, *j);
-    }
-    return t;
+constexpr auto& inplace_zip(T& t, const U& u, const Op& op) {
+    return inplace_zip_both_vector(
+            t, u, op, std::make_index_sequence<components_v<T>>{});
+}
+
+template <typename T, typename U, typename Op, size_t... Ix>
+constexpr auto& inplace_zip_one_vector(T& t,
+                                       const U& u,
+                                       const Op& op,
+                                       std::index_sequence<Ix...>) {
+    return t = T{{static_cast<value_type_t<T>>(op(t.s[Ix], u))...}};
 }
 
 template <typename T,
           typename U,
           typename Op,
           enable_if_is_not_vector_t<U, int> = 0>
-constexpr auto& inplace_zip(T& t, const U& u, Op op) {
-    using std::begin;
-    using std::end;
-    auto i = begin(t.s);
-    for (; i != end(t.s); ++i) {
-        *i = op(*i, u);
-    }
-    return t;
+constexpr auto& inplace_zip(T& t, const U& u, const Op& op) {
+    return inplace_zip_one_vector(
+            t, u, op, std::make_index_sequence<components_v<T>>{});
+}
+
+template <typename T, typename U, typename Op, size_t... Ix>
+constexpr auto zip_both_vector(const T& t,
+                               const U& u,
+                               const Op& op,
+                               std::index_sequence<Ix...>) {
+    using value_type = decltype(op(t.s[0], u.s[0]));
+    return cl_vector_constructor_t<value_type, sizeof...(Ix)>{
+            {op(t.s[Ix], u.s[Ix])...}};
 }
 
 template <typename T,
@@ -227,22 +242,19 @@ template <typename T,
           std::enable_if_t<is_vector_type_v<T> && is_vector_type_v<U> &&
                                    components_v<T> == components_v<U>,
                            int> = 0>
-constexpr auto zip(const T& t, const U& u, Op op) {
-    using value_type = decltype(op(t.s[0], u.s[0]));
+constexpr auto zip(const T& t, const U& u, const Op& op) {
+    return zip_both_vector(
+            t, u, op, std::make_index_sequence<components_v<T>>{});
+}
 
-    cl_vector_constructor_t<value_type, components_v<T>> ret{};
-
-    using std::begin;
-    using std::end;
-
-    auto i = begin(t.s);
-    auto j = begin(u.s);
-    auto k = begin(ret.s);
-    for (; i != end(t.s); ++i, ++j, ++k) {
-        *k = op(*i, *j);
-    }
-
-    return ret;
+template <typename T, typename U, typename Op, size_t... Ix>
+constexpr auto zip_first_vector(const T& t,
+                                const U& u,
+                                const Op& op,
+                                std::index_sequence<Ix...>) {
+    using value_type = decltype(op(t.s[0], u));
+    return cl_vector_constructor_t<value_type, sizeof...(Ix)>{
+            {op(t.s[Ix], u)...}};
 }
 
 template <
@@ -250,10 +262,19 @@ template <
         typename U,
         typename Op,
         std::enable_if_t<is_vector_type_v<T> && !is_vector_type_v<U>, int> = 0>
-constexpr auto zip(const T& t, U u, Op op) {
-    return zip(t,
-               construct_vector<cl_vector_constructor_t<U, components_v<T>>>(u),
-               op);
+constexpr auto zip(const T& t, const U& u, const Op& op) {
+    return zip_first_vector(
+            t, u, op, std::make_index_sequence<components_v<T>>{});
+}
+
+template <typename T, typename U, typename Op, size_t... Ix>
+constexpr auto zip_second_vector(const T& t,
+                                 const U& u,
+                                 const Op& op,
+                                 std::index_sequence<Ix...>) {
+    using value_type = decltype(op(t, u.s[0]));
+    return cl_vector_constructor_t<value_type, sizeof...(Ix)>{
+            {op(t, u.s[Ix])...}};
 }
 
 template <
@@ -261,39 +282,25 @@ template <
         typename U,
         typename Op,
         std::enable_if_t<!is_vector_type_v<T> && is_vector_type_v<U>, int> = 0>
-constexpr auto zip(T t, const U& u, Op op) {
-    return zip(construct_vector<cl_vector_constructor_t<T, components_v<U>>>(t),
-               u,
-               op);
+constexpr auto zip(const T& t, const U& u, const Op& op) {
+    return zip_second_vector(
+            t, u, op, std::make_index_sequence<components_v<U>>{});
 }
 
-template <typename T, typename Op, enable_if_is_vector_t<T, int> = 0>
-constexpr auto& for_each(T& t, Op op) {
-    for (auto& i : t.s) {
-        i = op(i);
-    }
-    return t;
-}
-
-template <typename T, typename Op, enable_if_is_vector_t<T, int> = 0>
-constexpr auto map(const T& t, Op op) {
+template <typename T, typename Op, size_t... Ix>
+constexpr auto map(const T& t, const Op& op, std::index_sequence<Ix...>) {
     using value_type = decltype(op(t.s[0]));
+    return cl_vector_constructor_t<value_type, sizeof...(Ix)>{{op(t.s[Ix])...}};
+}
 
-    cl_vector_constructor_t<value_type, components_v<T>> ret{};
-
-    using std::begin;
-    using std::end;
-    auto i{begin(t.s)};
-    auto j{begin(ret.s)};
-    for (; i != end(t.s); ++i, ++j) {
-        *j = op(*i);
-    }
-
-    return ret;
+template <typename T, typename Op, enable_if_is_vector_t<T, int> = 0>
+constexpr auto map(const T& t, const Op& op) {
+    return map(t, op, std::make_index_sequence<components_v<T>>{});
 }
 
 //  conversions probably -----------------------------------------------------//
 
+/*
 template <typename T, typename U, enable_if_is_vector_t<U, int> = 0>
 constexpr T convert(const U& u) {
     struct conversion final {
@@ -335,6 +342,7 @@ struct common_size<T, Ts...> final {
 template <typename... Ts>
 using common_vector_t =
         cl_vector_constructor_t<common_value_t<Ts...>, common_size_v<Ts...>>;
+*/
 
 }  // namespace detail
 
@@ -344,13 +352,8 @@ template <typename T,
           typename U,
           detail::enable_if_any_is_vector_t<int, T, U> = 0>
 constexpr auto operator==(const T& a, const U& b) {
-    //    return detail::zip(a, b, std::equal_to<>());
-    using common_t = detail::common_vector_t<T, U>;
-    return detail::accumulate(detail::zip(detail::convert<common_t>(a),
-                                          detail::convert<common_t>(b),
-                                          std::equal_to<>()),
-                              true,
-                              std::logical_and<>());
+    return detail::accumulate(
+            detail::zip(a, b, std::equal_to<>()), true, std::logical_and<>());
 }
 
 template <typename T, detail::enable_if_is_vector_t<T, int> = 0>
@@ -369,10 +372,7 @@ template <typename T,
           typename U,
           detail::enable_if_any_is_vector_t<int, T, U> = 0>
 constexpr auto operator<(const T& a, const U& b) {
-    using common_t = detail::common_vector_t<T, U>;
-    return detail::zip(detail::convert<common_t>(a),
-                       detail::convert<common_t>(b),
-                       std::less<>());
+    return detail::zip(a, b, std::less<>());
 }
 
 //  arithmetic ops -----------------------------------------------------------//
@@ -513,79 +513,46 @@ constexpr auto max_element(const T& t) {
 
 //  misc ---------------------------------------------------------------------//
 
-namespace detail {
-
-template <typename T,
-          typename Func,
-          size_t components = detail::components_v<T>,
-          detail::enable_if_is_vector_t<T, int> = 0>
-constexpr auto map_func_to_bool(const T& t, Func f) {
-    using Ret = detail::cl_vector_constructor_t<bool, components>;
-    Ret ret{};
-    std::transform(std::begin(t.s), std::end(t.s), ret.s, [&](auto i) {
-        return f(i);
-    });
-    return ret;
-}
-
-}  // namespace detail
-
 template <typename T,
           size_t components = detail::components_v<T>,
           detail::enable_if_is_vector_t<T, int> = 0>
 constexpr auto isnan(const T& t) {
-    return detail::map_func_to_bool(t, [](auto i) { return std::isnan(i); });
+    return detail::map(t, [](auto i) { return std::isnan(i); });
 }
 
 template <typename T,
           size_t components = detail::components_v<T>,
           detail::enable_if_is_vector_t<T, int> = 0>
 constexpr auto isinf(const T& t) {
-    return detail::map_func_to_bool(t, [](auto i) { return std::isinf(i); });
+    return detail::map(t, [](auto i) { return std::isinf(i); });
 }
 
 template <typename T, detail::enable_if_is_vector_t<T, int> = 0>
 inline auto sqrt(const T& t) {
-    return detail::map(t, [](auto i) {
-        using std::sqrt;
-        return sqrt(i);
-    });
+    return detail::map(t, [](auto i) { return std::sqrt(i); });
 }
 
 template <typename T, detail::enable_if_is_vector_t<T, int> = 0>
 inline auto log(const T& t) {
-    return detail::map(t, [](auto i) {
-        using std::log;
-        return log(i);
-    });
+    return detail::map(t, [](auto i) { return std::log(i); });
 }
 
 template <typename T, detail::enable_if_is_vector_t<T, int> = 0>
 inline auto abs(const T& t) {
-    return detail::map(t, [](auto i) {
-        using std::abs;
-        return abs(i);
-    });
+    return detail::map(t, [](auto i) { return std::abs(i); });
 }
 
 template <typename T,
           typename U,
           detail::enable_if_any_is_vector_t<int, T, U> = 0>
 inline auto copysign(const T& t, const U& u) {
-    using common_t = detail::common_vector_t<T, U>;
-    using std::copysign;
-    return detail::zip(detail::convert<common_t>(t),
-                       detail::convert<common_t>(u),
-                       [](auto i, auto j) { return copysign(i, j); });
+    return detail::zip(
+            t, u, [](auto i, auto j) { return std::copysign(i, j); });
 }
 
 template <typename T,
           typename U,
           detail::enable_if_any_is_vector_t<int, T, U> = 0>
 inline auto pow(const T& t, const U& u) {
-    using common_t = detail::common_vector_t<T, U>;
-    using std::pow;
-    return detail::zip(detail::convert<common_t>(t),
-                       detail::convert<common_t>(u),
-                       [](auto i, auto j) { return pow(i, j); });
+    return detail::zip(t, u, [](auto i, auto j) { return std::pow(i, j); });
 }

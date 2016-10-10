@@ -2,9 +2,9 @@ mkdir -p build
 cd build
 
 export GLOG_logtostderr=1
-#export GTEST_FILTER="*mps*"
+#export GTEST_FILTER="*attenuator*"
 
-cmake .. && make && ctest -V
+#cmake .. && make && ctest -V
 #cmake .. && make && cd utils/image_source_comparison && ./image_source_comparison
 
 #cmake .. && make && cd utils/southern2013_2_cuboid && ./southern2013_2_cuboid | tee output.txt
@@ -24,4 +24,4 @@ cmake .. && make && ctest -V
 #cmake .. && make && cd utils/waveguide_distance_test && ./waveguide_distance_test
 
 #cmake .. && make && cd utils/southern2011 && ./southern2011
-#cmake .. && make && cd utils/siltanen2013 && ./siltanen2013
+cmake .. && make && cd utils/siltanen2013 && ./siltanen2013

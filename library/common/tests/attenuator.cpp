@@ -6,7 +6,8 @@
 TEST(attenuator, transform) {
     {
         const auto test{[](auto vec) {
-            ASSERT_EQ(transform(glm::vec3{0, 0, 1}, glm::vec3{0, 1, 0}, vec), vec);
+            ASSERT_EQ(transform(glm::vec3{0, 0, 1}, glm::vec3{0, 1, 0}, vec),
+                      vec);
         }};
         test(glm::vec3{1, 0, 0});
         test(glm::vec3{-1, 0, 0});
@@ -18,7 +19,12 @@ TEST(attenuator, transform) {
 
     {
         const auto test{[](auto a, auto b) {
-            ASSERT_NEAR(glm::distance(transform(glm::vec3{1, 0, 0}, glm::vec3{0, 1, 0}, a), b), 0, 0.0001);
+            ASSERT_NEAR(glm::distance(transform(glm::vec3{1, 0, 0},
+                                                glm::vec3{0, 1, 0},
+                                                a),
+                                      b),
+                        0,
+                        0.0001);
         }};
         test(glm::vec3{1, 0, 0}, glm::vec3{0, 0, 1});
         test(glm::vec3{-1, 0, 0}, glm::vec3{0, 0, -1});
@@ -42,7 +48,20 @@ TEST(attenuator, compute_look_up_angles) {
     test(glm::vec3{0, -1, 0}, (az_el{0, 270}));
 
     test(glm::vec3{1, 0, 0}, (az_el{270, 0}));
-    test(glm::vec3{-1, 0, 0}, (az_el{90, 0})); 
+    test(glm::vec3{-1, 0, 0}, (az_el{90, 0}));
+}
+
+TEST(attenuator, hrtf) {
+    ASSERT_NE(attenuation(hrtf{glm::vec3{0, 0, 1},
+                               glm::vec3{0, 1, 0},
+                               hrtf::channel::left},
+                          glm::vec3{0, 0, 1}),
+              volume_type{});
+    ASSERT_NE(attenuation(hrtf{glm::vec3{0, 0, 1},
+                               glm::vec3{0, 1, 0},
+                               hrtf::channel::right},
+                          glm::vec3{0, 0, 1}),
+              volume_type{});
 }
 
 TEST(attenuator, microphone) {

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "common/cl/scene_structs.h"
 #include "common/mixdown.h"
 
 namespace waveguide {
@@ -41,4 +42,4 @@ auto multiband_process(It begin, It end, double sample_rate) {
     return aligned::vector<float>(begin, end);
 }
 
-}//namespace waveguide
+}  // namespace waveguide

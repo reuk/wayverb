@@ -115,5 +115,4 @@ ExternalProject_Add(
     CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>/include -DBUILD_DOCS=OFF -DBUILD_EXAMPLES=OFF -DBUILD_TESTS=OFF
 )
 
-find_library(opencl_lib OpenCL)
-mark_as_advanced(opencl_lib)
+find_package(OpenCL REQUIRED)

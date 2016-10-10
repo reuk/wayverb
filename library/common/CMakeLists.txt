@@ -27,7 +27,7 @@ target_include_directories(common
 )
 
 target_link_libraries(common
-    ${opencl_lib}
+    ${OpenCL_LIBRARIES}
     assimp
     zlibstatic 
     fftwf 

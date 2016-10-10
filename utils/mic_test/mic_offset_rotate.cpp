@@ -1,4 +1,8 @@
-#include "run_methods.h"
+#include "box/img_src.h"
+#include "box/waveguide.h"
+
+#include "common/attenuator/hrtf.h"
+#include "common/attenuator/microphone.h"
 
 #include "frequency_domain/multiband_filter.h"
 
@@ -124,10 +128,7 @@ int main(int argc, char** argv) {
 
     const auto run{[&](const auto& name, const auto& callback) {
         const auto output{run_multiple_angles<bands>(
-                receiver,
-                speed_of_sound,
-                sample_rate,
-                callback)};
+                receiver, speed_of_sound, sample_rate, callback)};
         std::ofstream file{output_folder + "/" + name + ".txt"};
         cereal::JSONOutputArchive archive{file};
         archive(cereal::make_nvp("directionality", directionality),
@@ -135,27 +136,32 @@ int main(int argc, char** argv) {
     }};
 
     run("waveguide", [&](const auto& source, const auto& receiver) {
-        return run_waveguide(box,
-                             absorption,
-                             source,
-                             receiver,
-                             mic,
-                             speed_of_sound,
-                             acoustic_impedance,
-                             sample_rate,
-                             simulation_time);
+        auto raw{run_waveguide(box,
+                               absorption,
+                               source,
+                               receiver,
+                               speed_of_sound,
+                               acoustic_impedance,
+                               sample_rate,
+                               simulation_time)};
+        return postprocess_waveguide(
+                begin(raw), end(raw), mic, sample_rate, acoustic_impedance);
     });
 
     run("img_src", [&](const auto& source, const auto& receiver) {
-        return run_exact_img_src(box,
-                                 absorption,
-                                 source,
-                                 receiver,
-                                 mic,
-                                 speed_of_sound,
-                                 acoustic_impedance,
-                                 sample_rate,
-                                 simulation_time);
+        auto raw{run_exact_img_src(box,
+                                   absorption,
+                                   source,
+                                   receiver,
+                                   speed_of_sound,
+                                   simulation_time)};
+        return postprocess_impulses(begin(raw),
+                                    end(raw),
+                                    receiver,
+                                    mic,
+                                    speed_of_sound,
+                                    acoustic_impedance,
+                                    sample_rate);
     });
 
     return EXIT_SUCCESS;

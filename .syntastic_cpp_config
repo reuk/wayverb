@@ -7,7 +7,7 @@
 -Ilibrary/common/include
 -Ilibrary/hrtf/lib/include
 -Ilibrary/combined/include
--Iutils/include
+-Iutils/box/include
 -Ibuild/include
 -Ibuild/library/common
 -Ibuild/library/waveguide

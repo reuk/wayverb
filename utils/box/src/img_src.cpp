@@ -1,0 +1,44 @@
+#include "box/img_src.h"
+
+#include "raytracer/image_source/exact.h"
+#include "raytracer/image_source/run.h"
+#include "raytracer/raytracer.h"
+
+aligned::vector<impulse<8>> run_exact_img_src(const geo::box& box,
+                                              float absorption,
+                                              const glm::vec3& source,
+                                              const glm::vec3& receiver,
+                                              float speed_of_sound,
+                                              float simulation_time) {
+    return raytracer::image_source::find_impulses<
+            raytracer::image_source::fast_pressure_calculator<surface>>(
+            box,
+            source,
+            receiver,
+            make_surface(absorption, 0),
+            simulation_time * speed_of_sound);
+}
+
+aligned::vector<impulse<8>> run_fast_img_src(const geo::box& box,
+                                             float absorption,
+                                             const glm::vec3& source,
+                                             const glm::vec3& receiver) {
+    const auto voxelised{make_voxelised_scene_data(
+            geo::get_scene_data(box, make_surface(absorption, 0)), 2, 0.1f)};
+
+    const auto directions{get_random_directions(1 << 13)};
+    auto impulses{raytracer::image_source::run<
+            raytracer::image_source::fast_pressure_calculator<surface>>(
+            directions.begin(),
+            directions.end(),
+            compute_context{},
+            voxelised,
+            source,
+            receiver)};
+
+    if (const auto direct{raytracer::get_direct(source, receiver, voxelised)}) {
+        impulses.emplace_back(*direct);
+    }
+
+    return impulses;
+}

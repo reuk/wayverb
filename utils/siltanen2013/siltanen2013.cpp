@@ -1,6 +1,13 @@
-#include "run_methods.h"
+#include "box/img_src.h"
+#include "box/waveguide.h"
+
+#include "common/attenuator/hrtf.h"
+#include "common/attenuator/microphone.h"
+#include "common/cl/iterator.h"
+#include "common/reverb_time.h"
 
 #include "utilities/aligned/map.h"
+#include "utilities/string_builder.h"
 
 #include "audio_file/audio_file.h"
 
@@ -32,6 +39,8 @@ int main(int argc, char** argv) {
 
     constexpr glm::vec3 source{2.09, 2.12, 2.12};
     constexpr glm::vec3 receiver{2.09, 3.08, 0.96};
+    const glm::vec3 pointing{0, 0, 1};
+    const glm::vec3 up{0, 1, 0};
 
     constexpr auto reflectance{0.95};
     const auto absorption{1 - pow(reflectance, 2)};
@@ -46,41 +55,47 @@ int main(int argc, char** argv) {
 
     std::cerr << "expected reverb time: " << eyring << '\n';
 
-    const auto test{[&](auto prefix, auto attenuator) {
-        //  tests ------------------------------------------------------------//
+    //  tests ----------------------------------------------------------------//
 
-        auto waveguide{run_waveguide(box,
-                                     absorption,
-                                     source,
-                                     receiver,
-                                     attenuator,
-                                     speed_of_sound,
-                                     acoustic_impedance,
-                                     sample_rate,
-                                     eyring)};
+    const auto waveguide{run_waveguide(box,
+                                       absorption,
+                                       source,
+                                       receiver,
+                                       speed_of_sound,
+                                       acoustic_impedance,
+                                       sample_rate,
+                                       eyring)};
 
-        auto exact_img_src{run_exact_img_src(box,
-                                             absorption,
-                                             source,
-                                             receiver,
-                                             attenuator,
-                                             speed_of_sound,
-                                             acoustic_impedance,
-                                             sample_rate,
-                                             eyring)};
+    const auto exact_img_src{run_exact_img_src(
+            box, absorption, source, receiver, speed_of_sound, eyring)};
 
-        auto fast_img_src{run_fast_img_src(box,
-                                           absorption,
-                                           source,
-                                           receiver,
-                                           attenuator,
-                                           speed_of_sound,
-                                           acoustic_impedance,
-                                           sample_rate)};
+    const auto fast_img_src{
+            run_fast_img_src(box, absorption, source, receiver)};
 
-        //  postprocessing ---------------------------------------------------//
+    //  postprocessing -------------------------------------------------------//
 
-        const auto outputs = {&waveguide, &exact_img_src, &fast_img_src};
+    const auto postprocess{[&](auto prefix, auto attenuator) {
+        auto waveguide_p{postprocess_waveguide(begin(waveguide),
+                                               end(waveguide),
+                                               attenuator,
+                                               sample_rate,
+                                               acoustic_impedance)};
+
+        const auto impulses_p{[&](auto begin, auto end) {
+            return postprocess_impulses(begin,
+                                        end,
+                                        receiver,
+                                        attenuator,
+                                        speed_of_sound,
+                                        acoustic_impedance,
+                                        sample_rate);
+        }};
+
+        auto exact_img_src_p{
+                impulses_p(begin(exact_img_src), end(exact_img_src))};
+        auto fast_img_src_p{impulses_p(begin(fast_img_src), end(fast_img_src))};
+
+        const auto outputs = {&waveguide_p, &exact_img_src_p, &fast_img_src_p};
 
         const auto make_iterator{[](auto i) {
             return make_mapping_iterator_adapter(
@@ -89,27 +104,25 @@ int main(int argc, char** argv) {
         normalize(make_iterator(outputs.begin()), make_iterator(outputs.end()));
 
         write(build_string(prefix, ".waveguide.wav"),
-              audio_file::make_audio_file(waveguide, sample_rate),
+              audio_file::make_audio_file(waveguide_p, sample_rate),
               16);
         write(build_string(prefix, ".exact_img_src.wav"),
-              audio_file::make_audio_file(exact_img_src, sample_rate),
+              audio_file::make_audio_file(exact_img_src_p, sample_rate),
               16);
         write(build_string(prefix, ".fast_img_src.wav"),
-              audio_file::make_audio_file(fast_img_src, sample_rate),
+              audio_file::make_audio_file(fast_img_src_p, sample_rate),
               16);
     }};
 
     //  simulations ----------------------------------------------------------//
 
-    const glm::vec3 pointing{0, 0, 1};
-    const glm::vec3 up{0, 1, 0};
 
     for (const auto& pair : polar_pattern_map) {
-        test(pair.first, microphone{pointing, pair.second});
+        postprocess(pair.first, microphone{pointing, pair.second});
     }
 
-    test("hrtf_l", hrtf{pointing, up, hrtf::channel::left});
-    test("hrtf_r", hrtf{pointing, up, hrtf::channel::right});
+    postprocess("hrtf_l", hrtf{pointing, up, hrtf::channel::left});
+    postprocess("hrtf_r", hrtf{pointing, up, hrtf::channel::right});
 
     return EXIT_SUCCESS;
 }
