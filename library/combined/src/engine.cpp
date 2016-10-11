@@ -68,19 +68,19 @@ public:
         //  attenuate raytracer results
         const auto raytracer_impulses{raytracer_results_.get_impulses()};
         auto raytracer_output{
-                raytracer::run_attenuation(receiver,
+                raytracer::run_attenuation(begin(raytracer_impulses),
+                                           end(raytracer_impulses),
+                                           receiver,
                                            speed_of_sound_,
                                            output_sample_rate,
-                                           max_length_in_seconds,
-                                           raytracer_impulses.begin(),
-                                           raytracer_impulses.end())};
+                                           max_length_in_seconds)};
         //  attenuate waveguide results
         auto waveguide_output{
-                waveguide::run_attenuation(receiver,
+                waveguide::run_attenuation(begin(waveguide_results_),
+                                           end(waveguide_results_),
+                                           receiver,
                                            acoustic_impedance_,
-                                           waveguide_sample_rate_,
-                                           waveguide_results_.begin(),
-                                           waveguide_results_.end())};
+                                           waveguide_sample_rate_)};
 
         //  correct raytracer results for dc
         filter::extra_linear_dc_blocker blocker;

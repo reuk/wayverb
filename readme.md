@@ -57,7 +57,7 @@ You should be able to `git clone` a copy of the repository, then from the
 project folder run:
 
 ```
-mkdir -b build      # create a folder to hold built products
+mkdir -p build      # create a folder to hold built products
 cd build            # move to that folder
 cmake ..            # run cmake to configure the build
 make                # run the build itself

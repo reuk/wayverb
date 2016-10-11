@@ -43,6 +43,8 @@ run_waveguide(const geo::box& box,
     const auto calibration_factor{waveguide::rectilinear_calibration_factor(
             grid_spacing, acoustic_impedance)};
 
+    std::cerr << "calibration factor: " << calibration_factor << '\n';
+
     aligned::vector<float> input_signal{static_cast<float>(calibration_factor)};
     input_signal.resize(simulation_time * sample_rate, 0.0f);
 

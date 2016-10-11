@@ -154,14 +154,15 @@ int main(int argc, char** argv) {
                                    source,
                                    receiver,
                                    speed_of_sound,
+                                   acoustic_impedance,
                                    simulation_time)};
-        return postprocess_impulses(begin(raw),
-                                    end(raw),
-                                    receiver,
-                                    mic,
-                                    speed_of_sound,
-                                    acoustic_impedance,
-                                    sample_rate);
+        return raytracer::postprocess(begin(raw),
+                                      end(raw),
+                                      mic,
+                                      receiver,
+                                      speed_of_sound,
+                                      sample_rate,
+                                      simulation_time);
     });
 
     return EXIT_SUCCESS;

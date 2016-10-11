@@ -18,13 +18,9 @@
 
 namespace raytracer {
 
-constexpr auto min_element(double x) {
-    return x;
-}
+constexpr auto min_element(double x) { return x; }
 
-constexpr auto min_element(float x) {
-    return x;
-}
+constexpr auto min_element(float x) { return x; }
 
 template <typename T>
 double min_absorption(const T& t) {
@@ -82,105 +78,97 @@ inline auto find_predelay(const T& ret) {
 
 //----------------------------------------------------------------------------//
 
-template <typename It>
-aligned::vector<aligned::vector<float>> attenuate_microphone(
-        const model::receiver_settings& receiver,
-        double speed_of_sound,
-        double sample_rate,
-        double max_seconds,
-        It begin,
-        It end) {
-    return map_to_vector(
-            std::begin(receiver.microphones),
-            std::end(receiver.microphones),
-            [&](const auto& i) {
-                const auto processed{attenuate(
-                        microphone{
-                                get_pointing(i.orientable, receiver.position),
-                                i.shape},
-                        receiver.position,
-                        begin,
-                        end)};
-                const auto make_iterator{[&](auto i) {
-                    return make_histogram_iterator(std::move(i),
-                                                   speed_of_sound);
-                }};
-                auto histogram{dirac_histogram(make_iterator(processed.begin()),
-                                               make_iterator(processed.end()),
-                                               sample_rate,
-                                               max_seconds)};
-
-                return multiband_filter_and_mixdown(
-                        histogram.begin(),
-                        histogram.end(),
-                        sample_rate,
-                        [](auto it, auto index) {
-                            return make_cl_type_iterator(std::move(it), index);
-                        });
-            });
-}
-
-template <typename It>
-aligned::vector<aligned::vector<float>> attenuate_hrtf(
-        const model::receiver_settings& receiver,
-        double speed_of_sound,
-        double sample_rate,
-        double max_seconds,
-        It begin,
-        It end) {
-    const auto channels = {hrtf::channel::left, hrtf::channel::right};
-    return map_to_vector(
-            std::begin(channels), std::end(channels), [&](const auto& i) {
-                const auto processed{attenuate(
-                        hrtf{get_pointing(receiver.hrtf, receiver.position),
-                             glm::vec3{0, 1, 0},
-                             i},
-                        receiver.position,
-                        begin,
-                        end)};
-
-                const auto make_iterator{[&](auto i) {
-                    return make_histogram_iterator(std::move(i),
-                                                   speed_of_sound);
-                }};
-                auto histogram{dirac_histogram(make_iterator(processed.begin()),
-                                               make_iterator(processed.end()),
-                                               sample_rate,
-                                               max_seconds)};
-
-                return multiband_filter_and_mixdown(
-                        histogram.begin(),
-                        histogram.end(),
-                        sample_rate,
-                        [](auto it, auto index) {
-                            return make_cl_type_iterator(std::move(it), index);
-                        });
-            });
-}
-
-template <typename It>
-aligned::vector<aligned::vector<float>> run_attenuation(
-        const model::receiver_settings& receiver,
-        double speed_of_sound,
-        double sample_rate,
-        double max_seconds,
-        It begin,
-        It end) {
-    switch (receiver.mode) {
-        case model::receiver_settings::mode::microphones:
-            return attenuate_microphone(receiver,
-                                        speed_of_sound,
+template <typename InputIt>
+auto postprocess(InputIt b,
+                 InputIt e,
+                 const glm::vec3& position,
+                 double speed_of_sound,
+                 double sample_rate,
+                 double max_seconds) {
+    const auto make_iterator{[&](auto it) {
+        return make_histogram_iterator(std::move(it), speed_of_sound);
+    }};
+    auto histogram{sinc_histogram(
+            make_iterator(b), make_iterator(e), sample_rate, max_seconds)};
+    return multiband_filter_and_mixdown(histogram.begin(),
+                                        histogram.end(),
                                         sample_rate,
-                                        max_seconds,
-                                        begin,
-                                        end);
-        case model::receiver_settings::mode::hrtf:
-            return attenuate_hrtf(receiver,
-                                  speed_of_sound,
-                                  sample_rate,
-                                  max_seconds,
-                                  begin,
-                                  end);
+                                        [](auto it, auto index) {
+                                            return make_cl_type_iterator(
+                                                    std::move(it), index);
+                                        });
+}
+
+template <typename InputIt, typename Method>
+auto postprocess(InputIt b,
+                 InputIt e,
+                 const Method& method,
+                 const glm::vec3& position,
+                 double speed_of_sound,
+                 double sample_rate,
+                 double max_seconds) {
+    const auto make_iterator{[&](auto it) {
+        return make_attenuator_iterator(std::move(it), method, position);
+    }};
+    return postprocess(make_iterator(b),
+                       make_iterator(e),
+                       position,
+                       speed_of_sound,
+                       sample_rate,
+                       max_seconds);
+}
+
+template <typename InputIt, typename AttenuatorIt>
+auto postprocess(InputIt b_input,
+                 InputIt e_input,
+                 AttenuatorIt b_attenuator,
+                 AttenuatorIt e_attenuator,
+                 const glm::vec3& position,
+                 double speed_of_sound,
+                 double sample_rate,
+                 double max_seconds) {
+    return map_to_vector(b_attenuator, e_attenuator, [&](const auto& i) {
+        return postprocess(b_input,
+                           e_input,
+                           i,
+                           position,
+                           speed_of_sound,
+                           sample_rate,
+                           max_seconds);
+    });
+}
+
+template <typename It>
+auto run_attenuation(It b,
+                     It e,
+                     const model::receiver_settings& receiver,
+                     double speed_of_sound,
+                     double sample_rate,
+                     double max_seconds) {
+    switch (receiver.mode) {
+        case model::receiver_settings::mode::microphones: {
+            return postprocess(b,
+                               e,
+                               make_microphone_iterator(
+                                       begin(receiver.microphones), receiver),
+                               make_microphone_iterator(
+                                       end(receiver.microphones), receiver),
+                               receiver.position,
+                               speed_of_sound,
+                               sample_rate,
+                               max_seconds);
+        }
+        case model::receiver_settings::mode::hrtf: {
+            const auto channels = {hrtf::channel::left, hrtf::channel::right};
+            return postprocess(b,
+                               e,
+                               make_hrtf_iterator(begin(channels), receiver),
+                               make_hrtf_iterator(end(channels), receiver),
+                               receiver.position,
+                               speed_of_sound,
+                               sample_rate,
+                               max_seconds);
+        }
     }
 }
 

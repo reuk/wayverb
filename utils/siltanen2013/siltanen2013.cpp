@@ -66,13 +66,74 @@ int main(int argc, char** argv) {
                                        sample_rate,
                                        eyring)};
 
-    const auto exact_img_src{run_exact_img_src(
-            box, absorption, source, receiver, speed_of_sound, eyring)};
+    const auto exact_img_src{run_exact_img_src(box,
+                                               absorption,
+                                               source,
+                                               receiver,
+                                               speed_of_sound,
+                                               acoustic_impedance,
+                                               eyring)};
 
-    const auto fast_img_src{
-            run_fast_img_src(box, absorption, source, receiver)};
+    const auto fast_img_src{run_fast_img_src(
+            box, absorption, source, receiver, acoustic_impedance)};
+
+    const auto normalize_and_write{[&](auto prefix,
+                                       auto& waveguide,
+                                       auto& exact_img_src,
+                                       auto& fast_img_src) {
+        const auto make_iterator{[](auto i) {
+            return make_mapping_iterator_adapter(
+                    std::move(i), [](auto& i) -> auto& { return *i; });
+        }};
+
+        const auto outputs = {&waveguide, &exact_img_src, &fast_img_src};
+        normalize(make_iterator(begin(outputs)), make_iterator(end(outputs)));
+
+        write(build_string(prefix, ".waveguide.wav"),
+              audio_file::make_audio_file(waveguide, sample_rate),
+              16);
+        write(build_string(prefix, ".exact_img_src.wav"),
+              audio_file::make_audio_file(exact_img_src, sample_rate),
+              16);
+        write(build_string(prefix, ".fast_img_src.wav"),
+              audio_file::make_audio_file(fast_img_src, sample_rate),
+              16);
+    }};
+
+    {
+        auto waveguide_p{postprocess_waveguide(
+                begin(waveguide), end(waveguide), sample_rate)};
+
+        const auto run_postprocess_impulses{[&](auto begin, auto end) {
+            return raytracer::postprocess(std::move(begin),
+                                          std::move(end),
+                                          receiver,
+                                          speed_of_sound,
+                                          acoustic_impedance,
+                                          sample_rate);
+        }};
+
+        auto exact_img_src_p{run_postprocess_impulses(begin(exact_img_src),
+                                                      end(exact_img_src))};
+        auto fast_img_src_p{run_postprocess_impulses(begin(fast_img_src),
+                                                     end(fast_img_src))};
+
+        normalize_and_write(
+                "no_processing", waveguide_p, exact_img_src_p, fast_img_src_p);
+    }
 
     //  postprocessing -------------------------------------------------------//
+
+    const auto run_postprocess_impulses{
+            [&](auto begin, auto end, auto attenuator) {
+                return raytracer::postprocess(std::move(begin),
+                                              std::move(end),
+                                              std::move(attenuator),
+                                              receiver,
+                                              speed_of_sound,
+                                              acoustic_impedance,
+                                              sample_rate);
+            }};
 
     const auto postprocess{[&](auto prefix, auto attenuator) {
         auto waveguide_p{postprocess_waveguide(begin(waveguide),
@@ -81,41 +142,16 @@ int main(int argc, char** argv) {
                                                sample_rate,
                                                acoustic_impedance)};
 
-        const auto impulses_p{[&](auto begin, auto end) {
-            return postprocess_impulses(begin,
-                                        end,
-                                        receiver,
-                                        attenuator,
-                                        speed_of_sound,
-                                        acoustic_impedance,
-                                        sample_rate);
-        }};
+        auto exact_img_src_p{run_postprocess_impulses(
+                begin(exact_img_src), end(exact_img_src), attenuator)};
+        auto fast_img_src_p{run_postprocess_impulses(
+                begin(fast_img_src), end(fast_img_src), attenuator)};
 
-        auto exact_img_src_p{
-                impulses_p(begin(exact_img_src), end(exact_img_src))};
-        auto fast_img_src_p{impulses_p(begin(fast_img_src), end(fast_img_src))};
-
-        const auto outputs = {&waveguide_p, &exact_img_src_p, &fast_img_src_p};
-
-        const auto make_iterator{[](auto i) {
-            return make_mapping_iterator_adapter(
-                    std::move(i), [](auto& i) -> auto& { return *i; });
-        }};
-        normalize(make_iterator(outputs.begin()), make_iterator(outputs.end()));
-
-        write(build_string(prefix, ".waveguide.wav"),
-              audio_file::make_audio_file(waveguide_p, sample_rate),
-              16);
-        write(build_string(prefix, ".exact_img_src.wav"),
-              audio_file::make_audio_file(exact_img_src_p, sample_rate),
-              16);
-        write(build_string(prefix, ".fast_img_src.wav"),
-              audio_file::make_audio_file(fast_img_src_p, sample_rate),
-              16);
+        normalize_and_write(
+                prefix, waveguide_p, exact_img_src_p, fast_img_src_p);
     }};
 
     //  simulations ----------------------------------------------------------//
-
 
     for (const auto& pair : polar_pattern_map) {
         postprocess(pair.first, microphone{pointing, pair.second});

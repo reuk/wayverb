@@ -1,5 +1,7 @@
 #pragma once
 
+#include "common/attenuator/hrtf.h"
+#include "common/attenuator/microphone.h"
 #include "common/orientable.h"
 
 #include "utilities/aligned/vector.h"
@@ -37,5 +39,35 @@ struct receiver_settings final {
 };
 
 aligned::vector<glm::vec3> get_pointing(const receiver_settings& u);
+
+struct microphone_mapper final {
+    glm::vec3 position_;
+
+    template <typename T>
+    auto operator()(const T& t) const {
+        return ::microphone{get_pointing(t.orientable, position_), t.shape};
+    }
+};
+
+struct hrtf_mapper final {
+    glm::vec3 pointing_;
+
+    template <typename T>
+    auto operator()(const T& t) const {
+        return ::hrtf{pointing_, glm::vec3{0, 1, 0}, t};
+    }
+};
+
+template <typename It>
+auto make_microphone_iterator(It it, const receiver_settings& r) {
+    return make_mapping_iterator_adapter(std::move(it),
+                                         microphone_mapper{r.position});
+}
+
+template <typename It>
+auto make_hrtf_iterator(It it, const receiver_settings& r) {
+    return make_mapping_iterator_adapter(
+            std::move(it), hrtf_mapper{get_pointing(r.hrtf, r.position)});
+}
 
 }  // namespace model

@@ -1,36 +1,22 @@
 #pragma once
 
-#include "waveguide/attenuator.h"
-#include "waveguide/multiband.h"
+#include "waveguide/postprocess.h"
 #include "waveguide/postprocessor/directional_receiver.h"
 
 #include "common/geo/box.h"
 
 #include "utilities/aligned/vector.h"
 
-template <typename It, typename Attenuator>
-auto postprocess_waveguide(It begin,
-                           It end,
-                           const Attenuator& attenuator,
-                           float sample_rate,
-                           float acoustic_impedance) {
-    auto attenuated{
-            waveguide::attenuate(attenuator, acoustic_impedance, begin, end)};
-
-    auto processed{waveguide::multiband_process(
-            std::begin(attenuated), std::end(attenuated), sample_rate)};
-
-    //  Filter waveguide output.
+template <typename It>
+void lopass(It b, It e, double sample_rate) {
     const auto waveguide_max{0.16};
     const auto normalised_width{0.02};
     const auto normalised_cutoff{waveguide_max - (normalised_width / 2)};
 
-    frequency_domain::filter filter{processed.size() * 2};
+    frequency_domain::filter filter{static_cast<size_t>(std::distance(b, e)) *
+                                    2};
     filter.run(
-            processed.begin(),
-            processed.end(),
-            processed.begin(),
-            [=](auto cplx, auto freq) {
+            b, e, b, [=](auto cplx, auto freq) {
                 const auto ret{
                         cplx *
                         static_cast<float>(
@@ -52,6 +38,24 @@ auto postprocess_waveguide(It begin,
                 }
                 return ret;
             });
+}
+
+template <typename It>
+auto postprocess_waveguide(It b, It e, double sample_rate) {
+    auto processed{waveguide::postprocess(b, e, sample_rate)};
+    lopass(begin(processed), end(processed), sample_rate);
+    return processed;
+}
+
+template <typename It, typename Attenuator>
+auto postprocess_waveguide(It b,
+                           It e,
+                           const Attenuator& attenuator,
+                           float sample_rate,
+                           float acoustic_impedance) {
+    auto processed{waveguide::postprocess(
+            b, e, attenuator, acoustic_impedance, sample_rate)};
+    lopass(begin(processed), end(processed), sample_rate);
     return processed;
 }
 
