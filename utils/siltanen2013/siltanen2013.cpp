@@ -1,4 +1,5 @@
 #include "box/img_src.h"
+#include "box/raytracer.h"
 #include "box/waveguide.h"
 
 #include "common/attenuator/hrtf.h"
@@ -13,9 +14,9 @@
 
 #include <iostream>
 
-//  TODO test raytracer diffuse output to compenstate for fast img-src decay
+//  TODO mic output modal responses don't match
 //
-//  TODO bidirectional mic outputs modal responses don't match
+//  TODO proper crossover filter
 
 template <typename It>
 void normalize(It begin, It end) {
@@ -77,16 +78,21 @@ int main(int argc, char** argv) {
     const auto fast_img_src{run_fast_img_src(
             box, absorption, source, receiver, acoustic_impedance)};
 
+    const auto raytracer{run_raytracer(
+            box, absorption, source, receiver, acoustic_impedance)};
+
     const auto normalize_and_write{[&](auto prefix,
                                        auto& waveguide,
                                        auto& exact_img_src,
-                                       auto& fast_img_src) {
+                                       auto& fast_img_src,
+                                       auto& raytracer) {
         const auto make_iterator{[](auto i) {
             return make_mapping_iterator_adapter(
                     std::move(i), [](auto& i) -> auto& { return *i; });
         }};
 
-        const auto outputs = {&waveguide, &exact_img_src, &fast_img_src};
+        const auto outputs = {
+                &waveguide, &exact_img_src, &fast_img_src, &raytracer};
         normalize(make_iterator(begin(outputs)), make_iterator(end(outputs)));
 
         write(build_string(prefix, ".waveguide.wav"),
@@ -97,6 +103,9 @@ int main(int argc, char** argv) {
               16);
         write(build_string(prefix, ".fast_img_src.wav"),
               audio_file::make_audio_file(fast_img_src, sample_rate),
+              16);
+        write(build_string(prefix, ".raytracer.wave"),
+              audio_file::make_audio_file(raytracer, sample_rate),
               16);
     }};
 
@@ -117,9 +126,14 @@ int main(int argc, char** argv) {
                                                       end(exact_img_src))};
         auto fast_img_src_p{run_postprocess_impulses(begin(fast_img_src),
                                                      end(fast_img_src))};
+        auto raytracer_p{
+                run_postprocess_impulses(begin(raytracer), end(raytracer))};
 
-        normalize_and_write(
-                "no_processing", waveguide_p, exact_img_src_p, fast_img_src_p);
+        normalize_and_write("no_processing",
+                            waveguide_p,
+                            exact_img_src_p,
+                            fast_img_src_p,
+                            raytracer_p);
     }
 
     //  postprocessing -------------------------------------------------------//
@@ -146,9 +160,14 @@ int main(int argc, char** argv) {
                 begin(exact_img_src), end(exact_img_src), attenuator)};
         auto fast_img_src_p{run_postprocess_impulses(
                 begin(fast_img_src), end(fast_img_src), attenuator)};
+        auto raytracer_p{run_postprocess_impulses(
+                begin(raytracer), end(raytracer), attenuator)};
 
-        normalize_and_write(
-                prefix, waveguide_p, exact_img_src_p, fast_img_src_p);
+        normalize_and_write(prefix,
+                            waveguide_p,
+                            exact_img_src_p,
+                            fast_img_src_p,
+                            raytracer_p);
     }};
 
     //  simulations ----------------------------------------------------------//

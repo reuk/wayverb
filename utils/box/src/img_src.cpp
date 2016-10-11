@@ -36,8 +36,8 @@ aligned::vector<impulse<8>> run_fast_img_src(const geo::box& box,
     const auto directions{get_random_directions(1 << 13)};
     auto impulses{raytracer::image_source::run<
             raytracer::image_source::fast_pressure_calculator<surface>>(
-            directions.begin(),
-            directions.end(),
+            begin(directions),
+            end(directions),
             compute_context{},
             voxelised,
             source,

@@ -65,16 +65,11 @@ public:
         return ret;
     }
 
-    using impulse_callback = std::function<void(const impulse&)>;
+    template <typename impulse_callback>
     void for_each_impulse(const impulse_callback& callback,
                           bool direct = true,
                           bool image_source = true,
                           bool diffuse = true) const {
-        if (!callback) {
-            throw std::runtime_error(
-                    "no callback passed to results::for_each_impulse!");
-        }
-
         if (direct && direct_) {
             callback(*direct_);
         }

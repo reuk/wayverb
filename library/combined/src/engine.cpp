@@ -244,16 +244,15 @@ public:
     std::unique_ptr<intermediate> run(const std::atomic_bool& keep_going,
                                       const state_callback& callback) const {
         //  RAYTRACER  -------------------------------------------------------//
+        const auto directions{get_random_directions(rays_)};
         callback(state::starting_raytracer, 1.0);
         auto raytracer_results{raytracer::run(
+                begin(directions),
+                end(directions),
                 compute_context_,
                 voxelised_,
                 source_,
                 receiver_,
-                get_random_directions(rays_),
-                impulses_,
-                std::min(size_t{20},
-                         impulses_),  //  TODO set this more intelligently
                 keep_going,
                 [&](auto step) {
                     callback(state::running_raytracer,

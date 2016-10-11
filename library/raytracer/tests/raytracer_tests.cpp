@@ -22,11 +22,11 @@
 #define SCRATCH_PATH ""
 #endif
 
-constexpr auto bench_reflections{128};
-constexpr auto bench_rays{1 << 15};
 
 const glm::vec3 source{1, 2, 1};
-const auto the_rays = get_random_directions(bench_rays);
+
+constexpr auto bench_rays{1 << 15};
+const auto the_rays{get_random_directions(bench_rays)};
 
 TEST(raytrace, new) {
     const compute_context cc{};
@@ -35,13 +35,12 @@ TEST(raytrace, new) {
             scene_data_loader{OBJ_PATH}.get_scene_data())};
     const auto voxelised{make_voxelised_scene_data(scene, 5, 0.1f)};
 
-    auto results{raytracer::run(cc,
+    auto results{raytracer::run(begin(the_rays),
+                                end(the_rays),
+                                cc,
                                 voxelised,
                                 source,
                                 glm::vec3(0, 1.75, 0),
-                                the_rays,
-                                bench_reflections,
-                                10,
                                 true,
                                 [](auto) {})};
 
@@ -63,28 +62,27 @@ TEST(raytrace, same_location) {
     auto callback_count{0};
 
     std::atomic_bool keep_going{true};
-    const auto results =
-            raytracer::run(cc,
+    const auto results{
+            raytracer::run(begin(the_rays),
+                           end(the_rays),
+                           cc,
                            voxelised,
                            source,
                            receiver,
-                           the_rays,
-                           bench_reflections,
-                           10,
                            keep_going,
-                           [&](auto i) { ASSERT_EQ(i, callback_count++); });
+                           [&](auto i) { ASSERT_EQ(i, callback_count++); })};
 
     ASSERT_TRUE(results);
 
-    const auto diffuse = results->get_diffuse();
+    const auto diffuse{results->get_diffuse()};
 
-    for (auto i = 0u; i != bench_rays; ++i) {
-        const auto intersection =
-                intersects(voxelised, geo::ray{source, the_rays[i]});
+    for (auto i{0ul}; i != bench_rays; ++i) {
+        const auto intersection{
+                intersects(voxelised, geo::ray{source, the_rays[i]})};
         if (intersection) {
-            const auto cpu_position =
-                    source + (the_rays[i] * intersection->inter.t);
-            const auto gpu_position = to_vec3(diffuse[i][0].position);
+            const auto cpu_position{source +
+                                    (the_rays[i] * intersection->inter.t)};
+            const auto gpu_position{to_vec3(diffuse[i][0].position)};
             if (!nearby(cpu_position, gpu_position, 0.0001)) {
                 ;
             }

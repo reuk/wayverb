@@ -11,19 +11,6 @@
 
 namespace raytracer {
 
-/// This better use random access iterators!
-template <typename It, typename Func>
-void in_chunks(It begin, It end, size_t chunk_size, const Func& f) {
-    for (; chunk_size <= std::distance(begin, end);
-         std::advance(begin, chunk_size)) {
-        f(begin, std::next(begin, chunk_size));
-    }
-
-    if (begin != end) {
-        f(begin, end);
-    }
-}
-
 std::experimental::optional<results<impulse<8>>> run(
         const compute_context& cc,
         const voxelised_scene_data<cl_float3, surface>& scene_data,
