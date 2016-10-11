@@ -127,6 +127,9 @@ auto sinc_histogram(It begin, It end, double sample_rate, double max_time) {
 
 template <typename T>
 auto make_histogram_iterator(T t, double speed_of_sound) {
+    if (speed_of_sound < 300 || 400 <= speed_of_sound) {
+        throw std::runtime_error{"speed_of_sound outside expected range"};
+    }
     return make_mapping_iterator_adapter(
             std::move(t), ::detail::histogram_mapper{speed_of_sound});
 }

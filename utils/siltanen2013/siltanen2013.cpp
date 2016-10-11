@@ -109,8 +109,8 @@ int main(int argc, char** argv) {
                                           std::move(end),
                                           receiver,
                                           speed_of_sound,
-                                          acoustic_impedance,
-                                          sample_rate);
+                                          sample_rate,
+                                          eyring);
         }};
 
         auto exact_img_src_p{run_postprocess_impulses(begin(exact_img_src),
@@ -131,8 +131,8 @@ int main(int argc, char** argv) {
                                               std::move(attenuator),
                                               receiver,
                                               speed_of_sound,
-                                              acoustic_impedance,
-                                              sample_rate);
+                                              sample_rate,
+                                              eyring);
             }};
 
     const auto postprocess{[&](auto prefix, auto attenuator) {

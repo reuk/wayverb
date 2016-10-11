@@ -5,22 +5,13 @@ import os.path
 
 
 def main():
-    root_dir = '../../build/utils/siltanen2013'
+    root_dir = '/Users/reuben/development/waveguide/build/utils/siltanen2013'
 
     fnames = [os.path.join(root_dir, i) for i in [
         'omnidirectional.exact_img_src.wav',
-        'omnidirectional.waveguide_attenuated.wav',
-        #'cardioid.fast_img_src.wav',
-        #'waveguide_pressure.wav',
-        #'raw_img_src_attenuated_0.wav',
-        #'img_src_and_waveguide_source_0_receiver_0_surface_0.wav',
-        #'image_source_source_0_receiver_0_surface_0.wav',
-        #'raytracer_source_4_receiver_3_surface_0.wav',
-        #'raytracer_source_4_receiver_3_surface_1.wav',
-        #'raytracer_source_4_receiver_3_surface_2.wav',
-        #'waveguide_source_4_receiver_3_surface_0.wav',
-        #'waveguide_source_4_receiver_3_surface_1.wav',
-        #'waveguide_source_4_receiver_3_surface_2.wav',
+        'omnidirectional.waveguide.wav',
+        #'no_processing.exact_img_src.wav',
+        #'no_processing.waveguide.wav',
     ]]
 
     max_frequency = 120

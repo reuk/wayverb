@@ -43,6 +43,9 @@ struct attenuate_mapper final {
 
 template <typename Method>
 auto make_attenuate_mapper(Method method, float Z) {
+    if (Z < 300 || 500 <= Z) {
+        throw std::runtime_error{"acoustic impedance outside expected range"};
+    }
     return attenuate_mapper<Method>{std::move(method), Z};
 }
 
