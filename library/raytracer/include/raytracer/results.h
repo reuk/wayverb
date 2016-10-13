@@ -32,8 +32,8 @@ public:
             const glm::vec3& receiver)
             : data_{[&] {
                 aligned::vector<Impulse> ret;
-                ret.resize(std::distance(b_image_source, e_image_source) +
-                           std::distance(b_diffuse, e_diffuse));
+                ret.reserve(std::distance(b_image_source, e_image_source) +
+                            std::distance(b_diffuse, e_diffuse));
                 ret.insert(ret.end(), b_image_source, e_image_source);
                 ret.insert(ret.end(), b_diffuse, e_diffuse);
                 return ret;

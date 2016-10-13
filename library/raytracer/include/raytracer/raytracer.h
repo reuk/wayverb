@@ -72,6 +72,7 @@ std::experimental::optional<raytracer_output> run(
         const glm::vec3& source,
         const glm::vec3& receiver,
         size_t rays_to_visualise,
+        bool flip_phase,
         const std::atomic_bool& keep_going,
         const PerStepCallback& callback) {
     const size_t num_directions = std::distance(b_direction, e_direction);
@@ -136,7 +137,8 @@ std::experimental::optional<raytracer_output> run(
                     end(tree.get_branches()),
                     source,
                     receiver,
-                    voxelised)};
+                    voxelised,
+                    flip_phase)};
 
     if (const auto direct{get_direct(source, receiver, voxelised)}) {
         // img_src_results.insert(img_src_results.begin(), *direct);

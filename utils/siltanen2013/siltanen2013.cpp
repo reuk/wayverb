@@ -71,7 +71,8 @@ int main(int argc, char** argv) {
                                                         scattering,
                                                         source,
                                                         receiver,
-                                                        acoustic_impedance))};
+                                                        acoustic_impedance,
+                                                        true))};
 
     /*
     const auto waveguide{make_named_value("waveguide",

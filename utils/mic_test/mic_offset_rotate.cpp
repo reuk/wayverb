@@ -155,7 +155,8 @@ int main(int argc, char** argv) {
                                    receiver,
                                    speed_of_sound,
                                    acoustic_impedance,
-                                   simulation_time)};
+                                   simulation_time,
+                                   false)};
         return raytracer::postprocess(begin(raw),
                                       end(raw),
                                       mic,

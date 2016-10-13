@@ -101,13 +101,14 @@ auto find_impulses(const geo::box& box,
                    const glm::vec3& source,
                    const glm::vec3& receiver,
                    const Surface& surface,
-                   double max_distance) {
+                   double max_distance,
+                   bool flip_phase) {
     const auto dim{dimensions(box)};
     const auto min_dim{std::min({dim.x, dim.y, dim.z})};
     const auto shells{std::ceil(max_distance / min_dim)};
 
     aligned::vector<Surface> surfaces{surface};
-    callback_accumulator<Callback> callback{receiver, surfaces, false};
+    callback_accumulator<Callback> callback{receiver, surfaces, flip_phase};
     traverse_images(box,
                     source,
                     receiver,

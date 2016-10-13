@@ -80,7 +80,7 @@ void image_source_test() {
     constexpr auto shells{3};
 
     auto exact_impulses{raytracer::image_source::find_impulses<callback>(
-            box, source, receiver, surface, shells)};
+            box, source, receiver, surface, shells, false)};
 
     const auto check_distances{[&](const auto& range) {
         for (const auto& imp : range) {
@@ -115,7 +115,8 @@ void image_source_test() {
                                                    compute_context{},
                                                    voxelised,
                                                    source,
-                                                   receiver)};
+                                                   receiver,
+                                                   false)};
 
     check_range(inexact_impulses);
 

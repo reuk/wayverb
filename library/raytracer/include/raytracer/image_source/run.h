@@ -15,7 +15,8 @@ auto run(It b,  /// Iterators over ray directions.
          const compute_context& cc,
          const voxelised_scene_data<cl_float3, surface>& voxelised,
          const glm::vec3& source,
-         const glm::vec3& receiver) {
+         const glm::vec3& receiver,
+         bool flip_phase) {
     const auto reflection_depth{raytracer::compute_optimum_reflection_number(
             voxelised.get_scene_data())};
 
@@ -50,7 +51,8 @@ auto run(It b,  /// Iterators over ray directions.
                              end(tree.get_branches()),
                              source,
                              receiver,
-                             voxelised);
+                             voxelised,
+                             flip_phase);
 }
 
 }  // namespace image_source

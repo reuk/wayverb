@@ -256,6 +256,7 @@ public:
                 source_,
                 receiver_,
                 rays_to_visualise,
+                true,
                 keep_going,
                 [&](auto step) {
                     callback(state::running_raytracer,
