@@ -80,8 +80,14 @@ kernel void reflections(global ray* rays,  //  ray
     const ray this_ray = rays[thread];
 
     //  find the intersection between scene geometry and this ray
-    const intersection closest_intersection = voxel_traversal(
-            this_ray, voxel_index, global_aabb, side, triangles, vertices, previous_triangle);
+    const intersection closest_intersection =
+            voxel_traversal(this_ray,
+                            voxel_index,
+                            global_aabb,
+                            side,
+                            triangles,
+                            vertices,
+                            previous_triangle);
 
     //  didn't find an intersection, should halt this thread
     if (!closest_intersection.inter.t) {
@@ -104,14 +110,15 @@ kernel void reflections(global ray* rays,  //  ray
     tnorm *= signbit(dot(tnorm, specular));
 
     //  see whether the receiver is visible from this point
-    const bool is_intersection = voxel_point_intersection(intersection_pt,
-                                                          receiver,
-                                                          voxel_index,
-                                                          global_aabb,
-                                                          side,
-                                                          triangles,
-                                                          vertices,
-                                                          closest_intersection.index);
+    const bool is_intersection =
+            voxel_point_intersection(intersection_pt,
+                                     receiver,
+                                     voxel_index,
+                                     global_aabb,
+                                     side,
+                                     triangles,
+                                     vertices,
+                                     closest_intersection.index);
 
     //  now we can populate the output
     reflections[thread] = (reflection){intersection_pt,
@@ -129,13 +136,14 @@ kernel void reflections(global ray* rays,  //  ray
     const float3 random_unit_vector = sphere_point(z, theta);
     //  scattering coefficient is the average of the diffuse coefficients
     const surface s = surfaces[closest_triangle.surface];
-    const float scatter = mean(s.diffuse_coefficient);
-    const float3 scattering = lambert_scattering(
-            specular, tnorm, random_unit_vector, scatter);
+    const float scatter = mean(s.scattering);
+    const float3 scattering =
+            lambert_scattering(specular, tnorm, random_unit_vector, scatter);
 
     //  find the next ray to trace
     rays[thread] = (ray){intersection_pt, scattering};
 }
+
 
 )"};
 

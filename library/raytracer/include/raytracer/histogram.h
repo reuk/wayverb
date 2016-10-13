@@ -1,7 +1,6 @@
 #pragma once
 
 #include "common/sinc.h"
-#include "common/specular_absorption.h"
 
 #include "utilities/aligned/vector.h"
 

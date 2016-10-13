@@ -1,7 +1,6 @@
 #include "raytracer/postprocess.h"
 
 #include "common/dsp_vector_ops.h"
-#include "common/specular_absorption.h"
 
 #include "utilities/decibels.h"
 #include "utilities/map_to_vector.h"

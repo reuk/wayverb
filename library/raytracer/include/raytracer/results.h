@@ -12,26 +12,35 @@
 
 namespace raytracer {
 
-template <typename impulse, typename T>
-void impulse_check(const impulse& i, T t) {
+template <typename Impulse, typename T>
+void impulse_check(const Impulse& i, T t) {
     throw_if_suspicious(i.volume);
     throw_if_suspicious(i.position);
     throw_if_suspicious(i.distance);
 }
 
-template <typename impulse>
+//----------------------------------------------------------------------------//
+
+template <typename Impulse>
 class results final {
 public:
-    results(std::experimental::optional<impulse> direct,
-            aligned::vector<impulse> image_source,
-            aligned::vector<aligned::vector<impulse>> diffuse,
+    template <typename A, typename B>
+    results(A b_image_source,
+            A e_image_source,
+            B b_diffuse,
+            B e_diffuse,
             const glm::vec3& receiver)
-            : direct_{std::move(direct)}
-            , image_source_{std::move(image_source)}
-            , diffuse_{std::move(diffuse)}
+            : data_{[&] {
+                aligned::vector<Impulse> ret;
+                ret.resize(std::distance(b_image_source, e_image_source) +
+                           std::distance(b_diffuse, e_diffuse));
+                ret.insert(ret.end(), b_image_source, e_image_source);
+                ret.insert(ret.end(), b_diffuse, e_diffuse);
+                return ret;
+            }()}
+            , separator_{std::distance(b_image_source, e_image_source)}
             , receiver_{receiver} {
-        //  Do a quick test to make sure the results look alright
-        for_each_impulse([](const auto& i) {
+        for (const auto& i : data_) {
             impulse_check(i, [](auto i) {
                 using std::isnan;
                 return isnan(i);
@@ -40,72 +49,33 @@ public:
                 using std::isinf;
                 return isinf(i);
             });
-        });
-    }
-
-    aligned::vector<impulse> get_impulses(bool direct = true,
-                                          bool image_source = true,
-                                          bool diffuse = true) const {
-        const size_t direct_size = direct ? 1 : 0;
-        const size_t image_source_size =
-                image_source ? image_source_.size() : 0;
-        const size_t diffuse_size =
-                diffuse && diffuse_.size()
-                        ? diffuse_.size() * diffuse_.front().size()
-                        : 0;
-
-        aligned::vector<impulse> ret;
-        ret.reserve(direct_size + image_source_size + diffuse_size);
-
-        for_each_impulse([&](const auto& i) { ret.emplace_back(i); },
-                         direct,
-                         image_source,
-                         diffuse);
-
-        return ret;
-    }
-
-    template <typename impulse_callback>
-    void for_each_impulse(const impulse_callback& callback,
-                          bool direct = true,
-                          bool image_source = true,
-                          bool diffuse = true) const {
-        if (direct && direct_) {
-            callback(*direct_);
-        }
-
-        if (image_source) {
-            for (const auto& i : image_source_) {
-                callback(i);
-            }
-        }
-
-        if (diffuse) {
-            for (const auto& i : diffuse_) {
-                for (const auto& j : i) {
-                    callback(j);
-                }
-            }
         }
     }
 
-    const std::experimental::optional<impulse>& get_direct() const {
-        return direct_;
-    }
-    const aligned::vector<impulse>& get_image_source() const {
-        return image_source_;
-    }
-    const aligned::vector<aligned::vector<impulse>>& get_diffuse() const {
-        return diffuse_;
-    }
+    auto image_source_begin() const { return data_.begin(); }
+    auto image_source_begin() { return data_.begin(); }
 
-    glm::vec3 get_receiver() const { return receiver_; }
+    auto image_source_end() const { return data_.begin() + separator_; }
+    auto image_source_end() { return data_.begin() + separator_; }
+
+    auto diffuse_begin() const { return data_.begin() + separator_; }
+    auto diffuse_begin() { return data_.begin() + separator_; }
+
+    auto diffuse_end() const { return data_.end(); }
+    auto diffuse_end() { return data_.end(); }
+
+    auto begin() const { return data_.begin(); }
+    auto begin() { return data_.begin(); }
+
+    auto end() const { return data_.end(); }
+    auto end() { return data_.end(); }
+
+    const auto& get_data() const { return data_; }
+    auto& get_data() { return data_; }
 
 private:
-    std::experimental::optional<impulse> direct_;
-    aligned::vector<impulse> image_source_;
-    aligned::vector<aligned::vector<impulse>> diffuse_;
-
+    aligned::vector<Impulse> data_;
+    ptrdiff_t separator_;
     glm::vec3 receiver_;
 };
 

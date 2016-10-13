@@ -8,6 +8,7 @@
 #include "raytracer/reflector.h"
 #include "raytracer/results.h"
 
+#include "common/channels.h"
 #include "common/cl/common.h"
 #include "common/cl/geometry.h"
 #include "common/nan_checking.h"
@@ -25,8 +26,7 @@ template <typename Vertex, typename Surface>
 auto get_direct(const glm::vec3& source,
                 const glm::vec3& receiver,
                 const voxelised_scene_data<Vertex, Surface>& scene_data) {
-    constexpr auto channels{
-            ::detail::components_v<specular_absorption_t<Surface>>};
+    constexpr auto channels{channels_v<Surface>};
 
     if (source == receiver) {
         return std::experimental::optional<impulse<channels>>{};
@@ -53,60 +53,69 @@ auto get_direct(const glm::vec3& source,
 
 //----------------------------------------------------------------------------//
 
+struct raytracer_output final {
+    using audio_t = results<impulse<8>>;
+    using visual_t = aligned::vector<aligned::vector<reflection>>;
+
+    audio_t audio;
+    visual_t visual;
+};
+
 /// arguments
 ///     the step number
-using per_step_callback = std::function<void(size_t)>;
-
-using reflection_processor =
-        std::function<void(const aligned::vector<reflection>&)>;
-
-template <typename It>
-std::experimental::optional<results<impulse<8>>> run(
+template <typename It, typename PerStepCallback>
+std::experimental::optional<raytracer_output> run(
         It b_direction,
         It e_direction,
         const compute_context& cc,
         const voxelised_scene_data<cl_float3, surface>& voxelised,
         const glm::vec3& source,
         const glm::vec3& receiver,
+        size_t rays_to_visualise,
         const std::atomic_bool& keep_going,
-        const per_step_callback& callback) {
+        const PerStepCallback& callback) {
+    const size_t num_directions = std::distance(b_direction, e_direction);
+    if (num_directions < rays_to_visualise) {
+        throw std::runtime_error{
+                "raytracer::run: can't visualise more rays than will be "
+                "traced"};
+    }
 
     const scene_buffers buffers{cc.context, voxelised};
 
-    size_t num_directions = std::distance(b_direction, e_direction);
-
-    //  this is the object that generates first-pass reflections
+    //  This is the object that generates first-pass reflections.
     reflector ref{cc,
                   receiver,
                   get_rays_from_directions(b_direction, e_direction, source)};
 
+    //  This collects the valid image source paths.
     image_source::reflection_path_builder builder{num_directions};
 
-    const auto reflection_depth{raytracer::compute_optimum_reflection_number(
-            voxelised.get_scene_data())};
+    //  This will incrementally process diffuse responses.
+    diffuse::finder dif{cc, source, receiver, num_directions};
 
-    //  this will incrementally process diffuse responses
-    diffuse::finder dif{cc, source, receiver, num_directions, reflection_depth};
+    //  This collects raw reflections to be visualised.
+    iterative_builder<reflection> reflection_data{rays_to_visualise};
 
     image_source::tree tree{};
 
     //  run the simulation proper
     {
         //  up until the max reflection depth
+        const auto reflection_depth{
+                raytracer::compute_optimum_reflection_number(
+                        voxelised.get_scene_data())};
         for (auto i{0ul}; i != reflection_depth; ++i) {
             //  if the user cancelled, return an empty result
             if (!keep_going) {
                 return std::experimental::nullopt;
             }
 
-            //  get a single step of the reflections
             const auto reflections{ref.run_step(buffers)};
-
-            //  find diffuse impulses for these reflections
-            dif.push(reflections, buffers);
-
-            //  push ray paths
-            builder.push(reflections);
+            builder.push(begin(reflections), end(reflections));
+            dif.push(begin(reflections), end(reflections), buffers);
+            reflection_data.push(begin(reflections),
+                                 begin(reflections) + rays_to_visualise);
 
             callback(i);
         }
@@ -122,19 +131,24 @@ std::experimental::optional<results<impulse<8>>> run(
 
     //  fetch image source results
     auto img_src_results{
-            image_source::postprocess<image_source::intensity_calculator<>>(
+            image_source::postprocess<image_source::fast_pressure_calculator<>>(
                     begin(tree.get_branches()),
                     end(tree.get_branches()),
                     source,
                     receiver,
                     voxelised)};
 
-    auto direct{get_direct(source, receiver, voxelised)};
+    if (const auto direct{get_direct(source, receiver, voxelised)}) {
+        // img_src_results.insert(img_src_results.begin(), *direct);
+        img_src_results.emplace_back(*direct);
+    }
 
-    return results<impulse<8>>{std::move(direct),
-                               std::move(img_src_results),
-                               std::move(dif.get_results()),
-                               receiver};
+    return raytracer_output{raytracer_output::audio_t{begin(img_src_results),
+                                                      end(img_src_results),
+                                                      begin(dif.get_data()),
+                                                      end(dif.get_data()),
+                                                      receiver},
+                            std::move(reflection_data.get_data())};
 }
 
 }  // namespace raytracer

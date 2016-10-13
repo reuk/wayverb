@@ -27,6 +27,12 @@ const auto badly_behaved_rays{aligned::vector<geo::ray>{
         geo::ray{glm::vec3{0, 0.000000596046448, 1.53889632},
                  glm::vec3{0.434765905, -0.869531512, 0.234293744}}}};
 
+aligned::vector<geo::ray> get_random_rays(const glm::vec3& source, size_t num) {
+    const auto directions{get_random_directions(num)};
+    return raytracer::get_rays_from_directions(
+            directions.begin(), directions.end(), source);
+}
+
 template <typename Scene>
 auto get_voxelised(Scene scene) {
     return make_voxelised_scene_data(scene, 5, 0.1f);
@@ -44,8 +50,7 @@ struct reflector_fixture : public ::testing::Test {
 
 #define OPT (0)
 #if OPT == 0
-    const aligned::vector<geo::ray> rays{
-            raytracer::get_random_rays(source, 10000)};
+    const aligned::vector<geo::ray> rays{get_random_rays(source, 10000)};
 #elif OPT == 1
     const aligned::vector<geo::ray> rays{raytracer::get_rays_from_directions(
             source, badly_behaved_directions)};

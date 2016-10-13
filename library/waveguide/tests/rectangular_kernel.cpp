@@ -119,15 +119,15 @@ constexpr auto parallel_size{1 << 8};
 std::default_random_engine engine{std::random_device()()};
 std::uniform_real_distribution<float> range{min_v, max_v};
 
-auto random_surface() {
-    surface ret;
-    std::generate(std::begin(ret.specular_absorption.s),
-                  std::end(ret.specular_absorption.s),
-                  [] { return range(engine); });
-    std::generate(std::begin(ret.diffuse_coefficient.s),
-                  std::end(ret.diffuse_coefficient.s),
-                  [] { return range(engine); });
+auto random_volume_type() {
+    volume_type ret{};
+    std::generate(
+            std::begin(ret.s), std::end(ret.s), [] { return range(engine); });
     return ret;
+}
+
+auto random_surface() {
+    return surface{random_volume_type(), random_volume_type()};
 };
 
 auto compute_surfaces() {

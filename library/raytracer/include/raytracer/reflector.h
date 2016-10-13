@@ -15,15 +15,11 @@
 namespace raytracer {
 
 template <typename It>  /// Iterator over directions
-aligned::vector<geo::ray> get_rays_from_directions(It begin,
-                                                   It end,
-                                                   const glm::vec3& source) {
+auto get_rays_from_directions(It begin, It end, const glm::vec3& source) {
     return map_to_vector(begin, end, [&](const auto& i) {
         return geo::ray{source, i};
     });
 }
-
-aligned::vector<geo::ray> get_random_rays(const glm::vec3& source, size_t num);
 
 class reflector final {
 public:
@@ -40,16 +36,16 @@ public:
 private:
     using kernel_t = decltype(std::declval<program>().get_kernel());
 
-    compute_context cc;
-    cl::CommandQueue queue;
-    kernel_t kernel;
-    cl_float3 receiver;
-    size_t rays;
+    compute_context cc_;
+    cl::CommandQueue queue_;
+    kernel_t kernel_;
+    cl_float3 receiver_;
+    size_t rays_;
 
-    cl::Buffer ray_buffer;
-    cl::Buffer reflection_buffer;
+    cl::Buffer ray_buffer_;
+    cl::Buffer reflection_buffer_;
 
-    cl::Buffer rng_buffer;
+    cl::Buffer rng_buffer_;
 };
 
 }  // namespace raytracer

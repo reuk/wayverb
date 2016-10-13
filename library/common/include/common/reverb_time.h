@@ -1,8 +1,8 @@
 #pragma once
 
+#include "common/absorption.h"
 #include "common/geo/triangle_vec.h"
 #include "common/scene_data.h"
-#include "common/specular_absorption.h"
 
 #include "utilities/aligned/set.h"
 
@@ -40,14 +40,14 @@ double area(const generic_scene_data<Vertex, Surface>& scene,
 template <typename Vertex, typename Surface>
 double area(const generic_scene_data<Vertex, Surface>& scene) {
     //  This is OK - we have to look at every triangle anyway.
-    return std::accumulate(
-            begin(scene.get_triangles()),
-            end(scene.get_triangles()),
-            0.0,
-            [&](auto running_total, auto tri) {
-                return running_total + geo::area(geo::get_triangle_vec3(
-                                               tri, scene.get_vertices()));
-            });
+    return std::accumulate(begin(scene.get_triangles()),
+                           end(scene.get_triangles()),
+                           0.0,
+                           [&](auto running_total, auto tri) {
+                               return running_total +
+                                      geo::area(geo::get_triangle_vec3(
+                                              tri, scene.get_vertices()));
+                           });
 }
 
 /// The product of the area covered by a material with the absorption
@@ -55,7 +55,7 @@ double area(const generic_scene_data<Vertex, Surface>& scene) {
 template <typename Vertex, typename Surface>
 auto absorption_area(const generic_scene_data<Vertex, Surface>& scene,
                      size_t surface_index) {
-    return get_specular_absorption(scene.get_surfaces()[surface_index]) *
+    return get_absorption(scene.get_surfaces()[surface_index]) *
            area(scene, surface_index);
 }
 

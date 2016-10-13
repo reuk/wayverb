@@ -10,8 +10,8 @@ namespace image_source {
 
 //  Has to take voxelised_scene_data<cl_float3, surface> because it uses GPU.
 template <typename Func, typename It>
-auto run(It begin,  /// Iterators over ray directions.
-         It end,
+auto run(It b,  /// Iterators over ray directions.
+         It e,
          const compute_context& cc,
          const voxelised_scene_data<cl_float3, surface>& voxelised,
          const glm::vec3& source,
@@ -21,16 +21,14 @@ auto run(It begin,  /// Iterators over ray directions.
 
     const scene_buffers buffers{cc.context, voxelised};
     raytracer::reflector ref{
-            cc,
-            receiver,
-            raytracer::get_rays_from_directions(begin, end, source)};
+            cc, receiver, raytracer::get_rays_from_directions(b, e, source)};
 
     //  This will collect the first reflections, to a specified depth,
     //  and use them to find unique image-source paths.
     tree tree{};
     {
         raytracer::image_source::reflection_path_builder builder{
-                static_cast<size_t>(std::distance(begin, end))};
+                static_cast<size_t>(std::distance(b, e))};
 
         //  Run the simulation proper.
 
@@ -40,7 +38,7 @@ auto run(It begin,  /// Iterators over ray directions.
             const auto reflections{ref.run_step(buffers)};
 
             //  Find diffuse impulses for these reflections.
-            builder.push(reflections);
+            builder.push(begin(reflections), end(reflections));
         }
 
         for (const auto& path : builder.get_data()) {
@@ -48,8 +46,8 @@ auto run(It begin,  /// Iterators over ray directions.
         }
     }
 
-    return postprocess<Func>(std::begin(tree.get_branches()),
-                             std::end(tree.get_branches()),
+    return postprocess<Func>(begin(tree.get_branches()),
+                             end(tree.get_branches()),
                              source,
                              receiver,
                              voxelised);

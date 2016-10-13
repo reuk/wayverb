@@ -2,6 +2,7 @@
 
 #include "waveguide/filters.h"
 
+#include "common/absorption.h"
 #include "common/scene_data.h"
 #include "common/surfaces.h"
 
@@ -16,7 +17,9 @@ namespace waveguide {
 
 template <size_t I>
 inline auto compute_filter_descriptor(const surface& surface) {
-    throw std::runtime_error{"this idea was doomed from the beginning"};
+    throw std::runtime_error{
+            "compute_filter_descriptor: this idea was doomed from the "
+            "beginning"};
     return filter_descriptor{};
     /*
     const auto reflectance{
@@ -62,7 +65,7 @@ inline aligned::vector<coefficients_canonical> to_filter_coefficients(
 
 inline coefficients_canonical to_flat_coefficients(const surface& surface) {
     const auto reflectance{
-            absorption_to_pressure_reflectance(surface.specular_absorption)};
+            absorption_to_pressure_reflectance(get_absorption(surface))};
     const coefficients_canonical ret{{reflectance.s[0]}, {1}};
     return to_impedance_coefficients(ret);
 }

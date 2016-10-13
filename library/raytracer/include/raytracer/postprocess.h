@@ -24,7 +24,7 @@ constexpr auto min_element(float x) { return x; }
 
 template <typename T>
 double min_absorption(const T& t) {
-    return min_element(get_specular_absorption(t));
+    return min_element(get_absorption(t));
 }
 
 template <typename It>

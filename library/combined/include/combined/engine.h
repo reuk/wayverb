@@ -75,7 +75,7 @@ public:
                                       const state_callback&) const;
 
     using raytracer_visual_callback_t = std::function<void(
-            const aligned::vector<aligned::vector<impulse<8>>>&,
+            const aligned::vector<aligned::vector<reflection>>&,
             const glm::vec3&,
             const glm::vec3&)>;
     void register_raytracer_visual_callback(

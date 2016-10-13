@@ -157,11 +157,6 @@ void image_source_test() {
     }
 }
 
-TEST(image_source, intensity) {
-    ASSERT_NO_THROW(image_source_test<
-                    raytracer::image_source::intensity_calculator<>>());
-}
-
 TEST(image_source, fast_pressure) {
     ASSERT_NO_THROW(image_source_test<
                     raytracer::image_source::fast_pressure_calculator<>>());

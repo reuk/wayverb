@@ -8,15 +8,20 @@
 #include "common/reverb_time.h"
 
 #include "utilities/aligned/map.h"
+#include "utilities/named_value.h"
 #include "utilities/string_builder.h"
+#include "utilities/type_debug.h"
 
 #include "audio_file/audio_file.h"
 
 #include <iostream>
 
 //  TODO mic output modal responses don't match
-//
+
 //  TODO proper crossover filter
+
+//  Absorption = proportion of energy lost to reflecting surface
+//  Diffusion = proportion of energy directly reflected to diffusely reflected
 
 template <typename It>
 void normalize(It begin, It end) {
@@ -46,6 +51,8 @@ int main(int argc, char** argv) {
     constexpr auto reflectance{0.95};
     const auto absorption{1 - pow(reflectance, 2)};
 
+    const auto scattering{0.1};
+
     const aligned::map<std::string, float> polar_pattern_map{
             {"omnidirectional", 0.0f},
             {"cardioid", 0.5f},
@@ -58,83 +65,89 @@ int main(int argc, char** argv) {
 
     //  tests ----------------------------------------------------------------//
 
-    const auto waveguide{run_waveguide(box,
-                                       absorption,
-                                       source,
-                                       receiver,
-                                       speed_of_sound,
-                                       acoustic_impedance,
-                                       sample_rate,
-                                       eyring)};
+    const auto raytracer{make_named_value("raytracer",
+                                          run_raytracer(box,
+                                                        absorption,
+                                                        scattering,
+                                                        source,
+                                                        receiver,
+                                                        acoustic_impedance))};
 
-    const auto exact_img_src{run_exact_img_src(box,
+    /*
+    const auto waveguide{make_named_value("waveguide",
+                                          run_waveguide(box,
+                                                        absorption,
+                                                        source,
+                                                        receiver,
+                                                        speed_of_sound,
+                                                        acoustic_impedance,
+                                                        sample_rate,
+                                                        eyring))};
+
+    const auto exact_img_src{
+            make_named_value("exact_img_src",
+                             run_exact_img_src(box,
                                                absorption,
                                                source,
                                                receiver,
                                                speed_of_sound,
                                                acoustic_impedance,
-                                               eyring)};
+                                               eyring))};
 
-    const auto fast_img_src{run_fast_img_src(
-            box, absorption, source, receiver, acoustic_impedance)};
+    const auto fast_img_src{make_named_value(
+            "fast_img_src",
+            run_fast_img_src(
+                    box, absorption, source, receiver, acoustic_impedance))};
+    */
 
-    const auto raytracer{run_raytracer(
-            box, absorption, source, receiver, acoustic_impedance)};
-
-    const auto normalize_and_write{[&](auto prefix,
-                                       auto& waveguide,
-                                       auto& exact_img_src,
-                                       auto& fast_img_src,
-                                       auto& raytracer) {
+    const auto normalize_and_write{[&](auto prefix, auto b, auto e) {
         const auto make_iterator{[](auto i) {
             return make_mapping_iterator_adapter(
-                    std::move(i), [](auto& i) -> auto& { return *i; });
+                    std::move(i),
+                    [](const auto& i) -> auto& { return i->value; });
         }};
 
-        const auto outputs = {
-                &waveguide, &exact_img_src, &fast_img_src, &raytracer};
-        normalize(make_iterator(begin(outputs)), make_iterator(end(outputs)));
+        normalize(make_iterator(b), make_iterator(e));
 
-        write(build_string(prefix, ".waveguide.wav"),
-              audio_file::make_audio_file(waveguide, sample_rate),
-              16);
-        write(build_string(prefix, ".exact_img_src.wav"),
-              audio_file::make_audio_file(exact_img_src, sample_rate),
-              16);
-        write(build_string(prefix, ".fast_img_src.wav"),
-              audio_file::make_audio_file(fast_img_src, sample_rate),
-              16);
-        write(build_string(prefix, ".raytracer.wave"),
-              audio_file::make_audio_file(raytracer, sample_rate),
-              16);
+        for (; b != e; ++b) {
+            write(build_string(prefix, ".", (*b)->name, ".wav"),
+                  audio_file::make_audio_file((*b)->value, sample_rate),
+                  16);
+        }
     }};
 
     {
-        auto waveguide_p{postprocess_waveguide(
-                begin(waveguide), end(waveguide), sample_rate)};
-
-        const auto run_postprocess_impulses{[&](auto begin, auto end) {
-            return raytracer::postprocess(std::move(begin),
-                                          std::move(end),
-                                          receiver,
-                                          speed_of_sound,
-                                          sample_rate,
-                                          eyring);
+        const auto run_postprocess_impulses{[&](const auto& in) {
+            return map(in, [&](const auto& i) {
+                return raytracer::postprocess(begin(i),
+                                              end(i),
+                                              receiver,
+                                              speed_of_sound,
+                                              sample_rate,
+                                              eyring);
+            });
         }};
 
-        auto exact_img_src_p{run_postprocess_impulses(begin(exact_img_src),
-                                                      end(exact_img_src))};
-        auto fast_img_src_p{run_postprocess_impulses(begin(fast_img_src),
-                                                     end(fast_img_src))};
-        auto raytracer_p{
-                run_postprocess_impulses(begin(raytracer), end(raytracer))};
+        auto raytracer_p{run_postprocess_impulses(raytracer)};
 
-        normalize_and_write("no_processing",
-                            waveguide_p,
-                            exact_img_src_p,
-                            fast_img_src_p,
-                            raytracer_p);
+        /*
+        auto exact_img_src_p{run_postprocess_impulses(exact_img_src)};
+        auto fast_img_src_p{run_postprocess_impulses(fast_img_src)};
+
+        auto waveguide_p{map(waveguide, [&](const auto& i) {
+            return postprocess_waveguide(begin(i), end(i), sample_rate);
+        })};
+
+        const auto results = {
+                &waveguide_p, &exact_img_src_p, &fast_img_src_p, &raytracer_p};
+        */
+
+        const auto results = {&raytracer_p};
+
+        normalize_and_write("no_processing", begin(results), end(results));
     }
+
+    /*
 
     //  postprocessing -------------------------------------------------------//
 
@@ -150,24 +163,27 @@ int main(int argc, char** argv) {
             }};
 
     const auto postprocess{[&](auto prefix, auto attenuator) {
-        auto waveguide_p{postprocess_waveguide(begin(waveguide),
-                                               end(waveguide),
-                                               attenuator,
-                                               sample_rate,
-                                               acoustic_impedance)};
+        auto waveguide_p{map(waveguide, [&](const auto& i) {
+            return postprocess_waveguide(begin(i),
+                                         end(i),
+                                         attenuator,
+                                         sample_rate,
+                                         acoustic_impedance);
+        })};
+        auto exact_img_src_p{map(exact_img_src, [&](const auto& i) {
+            return run_postprocess_impulses(begin(i), end(i), attenuator);
+        })};
+        auto fast_img_src_p{map(fast_img_src, [&](const auto& i) {
+            return run_postprocess_impulses(begin(i), end(i), attenuator);
+        })};
+        auto raytracer_p{map(raytracer, [&](const auto& i) {
+            return run_postprocess_impulses(begin(i), end(i), attenuator);
+        })};
 
-        auto exact_img_src_p{run_postprocess_impulses(
-                begin(exact_img_src), end(exact_img_src), attenuator)};
-        auto fast_img_src_p{run_postprocess_impulses(
-                begin(fast_img_src), end(fast_img_src), attenuator)};
-        auto raytracer_p{run_postprocess_impulses(
-                begin(raytracer), end(raytracer), attenuator)};
+        const auto results = {
+                &waveguide_p, &exact_img_src_p, &fast_img_src_p, &raytracer_p};
 
-        normalize_and_write(prefix,
-                            waveguide_p,
-                            exact_img_src_p,
-                            fast_img_src_p,
-                            raytracer_p);
+        normalize_and_write(prefix, begin(results), end(results));
     }};
 
     //  simulations ----------------------------------------------------------//
@@ -178,6 +194,8 @@ int main(int argc, char** argv) {
 
     postprocess("hrtf_l", hrtf{pointing, up, hrtf::channel::left});
     postprocess("hrtf_r", hrtf{pointing, up, hrtf::channel::right});
+
+    */
 
     return EXIT_SUCCESS;
 }

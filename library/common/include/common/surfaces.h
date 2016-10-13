@@ -11,8 +11,12 @@
 //      generate reflectance filter from pressure-reflectance per-band values
 //      convert to impedance filter
 //
-//  ray tracer:
-//      ????
+//  image source:
+//      generate wall impedances from pressure reflectances
+//      convert back taking angle into account
+//
+//  scattering:
+//      ???
 
 template <typename T>
 T absorption_to_energy_reflectance(T t) {
@@ -38,4 +42,20 @@ T average_wall_impedance_to_pressure_reflectance(T t, float cos_angle) {
     const T tmp = t * cos_angle;
     const T ret = (tmp - 1) / (tmp + 1);
     return ret;
+}
+
+//  vorlander2007 p. 45
+//  absorption = a, scattering = s
+//  total reflected energy = 1 - a
+//  scattered energy = s (1 - a)
+//  specular energy = (1 - s) (1 - a)
+
+template <typename T, typename U>
+T scattered_pressure(T total_reflected, U scattering) {
+    return total_reflected * scattering;
+}
+
+template <typename T, typename U>
+T specular_pressure(T total_reflected, U scattering) {
+    return total_reflected * (1 - scattering);
 }

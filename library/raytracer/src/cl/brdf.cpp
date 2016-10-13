@@ -6,7 +6,7 @@ const char* brdf{R"(
 //  theta range: -pi to pi
 float3 sphere_point(float z, float theta);
 float3 sphere_point(float z, float theta) {
-    float t = sqrt(1 - z * z);
+    const float t = sqrt(1 - z * z);
     return (float3)(t * cos(theta), z, t * sin(theta));
 }
 
@@ -22,14 +22,21 @@ float3 lambert_vector(float3 surface_normal, float3 random) {
     return random * signbit(dot(random, surface_normal));
 }
 
-float3 lambert_scattering(float3 specular, float3 surface_normal, float3 random, float d);
-float3 lambert_scattering(float3 specular, float3 surface_normal, float3 random, float d) {
-    float3 l = lambert_vector(surface_normal, random);
+float3 lambert_scattering(float3 specular,
+                          float3 surface_normal,
+                          float3 random,
+                          float d);
+float3 lambert_scattering(float3 specular,
+                          float3 surface_normal,
+                          float3 random,
+                          float d) {
+    const float3 l = lambert_vector(surface_normal, random);
     return normalize((l * d) + (specular * (1 - d)));
 }
 
 //----------------------------------------------------------------------------//
 
+/*
 //  Taken from
 //  http://file.scirp.org/pdf/OJA_2015122513452619.pdf
 //  but with some modifications so that rays only radiate out in a hemisphere
@@ -63,7 +70,6 @@ float brdf_mag(float y, float d) {
     return get_frac(numerator, denominator);
 }
 
-
 //  specular: the specular reflection direction (unit vector)
 //  outgoing: the actual direction of the outgoing reflection (unit vector)
 //  d: the directionality coefficient of the surface
@@ -72,18 +78,24 @@ float brdf_mag_for_outgoing(float3 specular, float3 outgoing, float d) {
     return brdf_mag(dot(specular, outgoing), d);
 }
 
-volume_type brdf_mags_for_outgoing(float3 specular, float3 outgoing, volume_type d);
-volume_type brdf_mags_for_outgoing(float3 specular, float3 outgoing, volume_type d) {
-    return (volume_type)(
-        brdf_mag_for_outgoing(specular, outgoing, d.s0),
-        brdf_mag_for_outgoing(specular, outgoing, d.s1),
-        brdf_mag_for_outgoing(specular, outgoing, d.s2),
-        brdf_mag_for_outgoing(specular, outgoing, d.s3),
-        brdf_mag_for_outgoing(specular, outgoing, d.s4),
-        brdf_mag_for_outgoing(specular, outgoing, d.s5),
-        brdf_mag_for_outgoing(specular, outgoing, d.s6),
-        brdf_mag_for_outgoing(specular, outgoing, d.s7));
+volume_type brdf_mags_for_outgoing(float3 specular,
+                                   float3 outgoing,
+                                   volume_type d);
+volume_type brdf_mags_for_outgoing(float3 specular,
+                                   float3 outgoing,
+                                   volume_type d) {
+    return (volume_type)(brdf_mag_for_outgoing(specular, outgoing, d.s0),
+                         brdf_mag_for_outgoing(specular, outgoing, d.s1),
+                         brdf_mag_for_outgoing(specular, outgoing, d.s2),
+                         brdf_mag_for_outgoing(specular, outgoing, d.s3),
+                         brdf_mag_for_outgoing(specular, outgoing, d.s4),
+                         brdf_mag_for_outgoing(specular, outgoing, d.s5),
+                         brdf_mag_for_outgoing(specular, outgoing, d.s6),
+                         brdf_mag_for_outgoing(specular, outgoing, d.s7));
 }
+*/
+
+//----------------------------------------------------------------------------//
 
 float mean(volume_type v);
 float mean(volume_type v) {

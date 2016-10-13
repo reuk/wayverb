@@ -66,10 +66,11 @@ public:
         callback(wayverb::state::postprocessing, 1.0);
 
         //  attenuate raytracer results
-        const auto raytracer_impulses{raytracer_results_.get_impulses()};
+        const auto b_impulses{raytracer_results_.begin()},
+                e_impulses{raytracer_results_.end()};
         auto raytracer_output{
-                raytracer::run_attenuation(begin(raytracer_impulses),
-                                           end(raytracer_impulses),
+                raytracer::run_attenuation(b_impulses,
+                                           e_impulses,
                                            receiver,
                                            speed_of_sound_,
                                            output_sample_rate,
@@ -244,6 +245,7 @@ public:
     std::unique_ptr<intermediate> run(const std::atomic_bool& keep_going,
                                       const state_callback& callback) const {
         //  RAYTRACER  -------------------------------------------------------//
+        const auto rays_to_visualise{std::min(1000ul, rays_)};
         const auto directions{get_random_directions(rays_)};
         callback(state::starting_raytracer, 1.0);
         auto raytracer_results{raytracer::run(
@@ -253,6 +255,7 @@ public:
                 voxelised_,
                 source_,
                 receiver_,
+                rays_to_visualise,
                 keep_going,
                 [&](auto step) {
                     callback(state::running_raytracer,
@@ -267,14 +270,15 @@ public:
 
         if (raytracer_visual_callback_) {
             raytracer_visual_callback_(
-                    raytracer_results->get_diffuse(), source_, receiver_);
+                    raytracer_results->visual, source_, receiver_);
         }
 
-        const auto impulses{raytracer_results->get_impulses()};
+        const auto b_impulses{raytracer_results->audio.begin()},
+                e_impulses{raytracer_results->audio.end()};
 
         //  look for the max time of an impulse
-        const auto max_time{std::max_element(begin(impulses),
-                                             end(impulses),
+        const auto max_time{std::max_element(b_impulses,
+                                             e_impulses,
                                              [](const auto& a, const auto& b) {
                                                  return a.distance < b.distance;
                                              })
@@ -332,7 +336,7 @@ public:
                 speed_of_sound_,
                 acoustic_impedance_,
                 waveguide_sample_rate_,
-                std::move(*raytracer_results),
+                std::move(raytracer_results->audio),
                 mic_output.get_output())};
         return ret;
     }

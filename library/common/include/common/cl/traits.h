@@ -48,18 +48,20 @@ template <typename T>
 struct cl_vector_type_trait final {
     using is_vector_type = std::false_type;
     using value_type = T;
-    static constexpr size_t components = 1;
+    using components = std::integral_constant<size_t, 1>;
 };
 
-#define DEFINE_CL_VECTOR_TYPE_TRAIT(cl_type)                                  \
-    template <>                                                               \
-    struct cl_vector_type_trait<cl_type> final {                              \
-        using is_vector_type = std::true_type;                                \
-        using array_type = decltype(std::declval<cl_type>().s);               \
-        static_assert(std::rank<array_type>::value == 1,                      \
-                      "vector types have array rank 1");                      \
-        using value_type = std::remove_all_extents_t<array_type>;             \
-        static constexpr auto components = std::extent<array_type, 0>::value; \
+#define DEFINE_CL_VECTOR_TYPE_TRAIT(cl_type)                               \
+    template <>                                                            \
+    struct cl_vector_type_trait<cl_type> final {                           \
+        using is_vector_type = std::true_type;                             \
+        using array_type = decltype(std::declval<cl_type>().s);            \
+        static_assert(std::rank<array_type>::value == 1,                   \
+                      "vector types have array rank 1");                   \
+        using value_type = std::remove_all_extents_t<array_type>;          \
+        using components =                                                 \
+                std::integral_constant<size_t,                             \
+                                       std::extent<array_type, 0>::value>; \
     };
 
 CL_VECTOR_REGISTER(DEFINE_CL_VECTOR_TYPE_TRAIT)
@@ -77,7 +79,10 @@ template <typename T, typename U = void>
 using enable_if_is_not_vector_t = std::enable_if_t<!is_vector_type_v<T>, U>;
 
 template <typename T>
-constexpr auto components_v = cl_vector_type_trait<T>::components;
+using components_t = typename cl_vector_type_trait<T>::components;
+
+template <typename T>
+constexpr auto components_v{components_t<T>{}};
 
 template <typename T>
 using value_type_t = typename cl_vector_type_trait<T>::value_type;
@@ -107,13 +112,11 @@ using enable_if_any_is_vector_t =
 template <typename T, size_t N>
 struct cl_vector_constructor;
 
-#define DEFINE_CL_VECTOR_CONSTRUCTOR_TRAIT(cl_type)             \
-    template <>                                                 \
-    struct cl_vector_constructor<                               \
-            typename cl_vector_type_trait<cl_type>::value_type, \
-            cl_vector_type_trait<cl_type>::components>          \
-            final {                                             \
-        using type = cl_type;                                   \
+#define DEFINE_CL_VECTOR_CONSTRUCTOR_TRAIT(cl_type)                            \
+    template <>                                                                \
+    struct cl_vector_constructor<value_type_t<cl_type>, components_v<cl_type>> \
+            final {                                                            \
+        using type = cl_type;                                                  \
     };
 
 CL_VECTOR_REGISTER(DEFINE_CL_VECTOR_CONSTRUCTOR_TRAIT)
