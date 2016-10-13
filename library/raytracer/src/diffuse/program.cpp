@@ -60,7 +60,8 @@ kernel void diffuse(const global reflection* reflections,  //  input
 
                     global diffuse_path_info* diffuse_path,  //  accumulator
 
-                    global impulse* diffuse_output) {  //  output
+                    global impulse* diffuse_output,
+                    char flip_phase) {  //  output
     const size_t thread = get_global_id(0);
 
     //  zero out output
@@ -113,6 +114,10 @@ kernel void diffuse(const global reflection* reflections,  //  input
         const float cos_angle = fabs(dot(tnorm, normalize(to_receiver)));
         output_volume = cos_angle * scattered_pressure(outgoing_pressure,
                                                 reflective_surface.scattering);
+
+        if (flip_phase) {
+            output_volume *= -1;
+        }
     }
 
     //  set output

@@ -40,7 +40,7 @@ public:
                               sizeof(impulse<8>) * rays} {}
 
     template <typename It>
-    void push(It b, It e, const scene_buffers& scene_buffers) {
+    void push(It b, It e, const scene_buffers& scene_buffers, bool flip_phase) {
         //  copy the current batch of reflections to the device
         cl::copy(queue_, b, e, reflections_buffer_);
 
@@ -52,7 +52,8 @@ public:
                 scene_buffers.get_vertices_buffer(),
                 scene_buffers.get_surfaces_buffer(),
                 diffuse_path_buffer_,
-                impulse_buffer_);
+                impulse_buffer_,
+                flip_phase);
 
         //  copy impulses out
         const auto ret{read_from_buffer<impulse<8>>(queue_, impulse_buffer_)};

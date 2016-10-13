@@ -17,6 +17,7 @@
 #include "common/spatial_division/voxelised_scene_data.h"
 
 #include <experimental/optional>
+#include <iostream>
 
 namespace raytracer {
 
@@ -114,7 +115,8 @@ std::experimental::optional<raytracer_output> run(
 
             const auto reflections{ref.run_step(buffers)};
             builder.push(begin(reflections), end(reflections));
-            dif.push(begin(reflections), end(reflections), buffers);
+            const auto flip_phase{!(i % 2)};
+            dif.push(begin(reflections), end(reflections), buffers, flip_phase);
             reflection_data.push(begin(reflections),
                                  begin(reflections) + rays_to_visualise);
 

@@ -19,7 +19,8 @@ public:
                                            cl::Buffer,  // vertices
                                            cl::Buffer,  // surfaces
                                            cl::Buffer,  // diffuse_path_info
-                                           cl::Buffer   // diffuse_output
+                                           cl::Buffer,  // diffuse_output
+                                           cl_char      // flip_phases
                                            >("diffuse");
     }
 
