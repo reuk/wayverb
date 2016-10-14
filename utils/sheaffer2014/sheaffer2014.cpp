@@ -89,13 +89,13 @@ void test_from_paper() {
     callback_accumulator<waveguide::postprocessor::node> postprocessor{
             output_node};
 
-    progress_bar pb{std::cerr, input_signal.signal.size()};
+    progress_bar pb;
     waveguide::run(cc,
                    mesh,
                    prep,
                    [&](auto& a, const auto& b, auto c) {
                        postprocessor(a, b, c);
-                       pb += 1;
+                       set_progress(pb, c, input_signal.signal.size());
                    },
                    true);
 
@@ -182,13 +182,13 @@ void other_tests() {
             callback_accumulator<waveguide::postprocessor::node> postprocessor{
                     output_node};
 
-            progress_bar pb{std::cerr, input_signal.signal.size()};
+            progress_bar pb;
             waveguide::run(cc,
                            mesh,
                            prep,
                            [&](auto& a, const auto& b, auto c) {
                                postprocessor(a, b, c);
-                               pb += 1;
+                               set_progress(pb, c, input_signal.signal.size());
                            },
                            true);
 

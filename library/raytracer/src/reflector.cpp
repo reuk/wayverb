@@ -40,20 +40,17 @@ reflector::reflector(const compute_context& cc,
                   cc.context,
                   map_to_vector(begin(rays),
                                 end(rays),
-                                [&](const auto& i) { return convert(i); }),
+                                [](const auto& i) { return convert(i); }),
                   false)}
-        , reflection_buffer_{load_to_buffer(
-                  cc.context,
-                  aligned::vector<reflection>(rays.size(),
-                                              reflection{cl_float3{},
-                                                         cl_float3{},
-                                                         ~cl_uint{0},
-                                                         cl_char{true},
-                                                         cl_char{}}),
-                  false)}
+        , reflection_buffer_{cc.context,
+                             CL_MEM_READ_WRITE,
+                             rays.size() * sizeof(reflection)}
         , rng_buffer_{cc.context,
                       CL_MEM_READ_WRITE,
-                      rays.size() * 2 * sizeof(cl_float)} {}
+                      rays.size() * 2 * sizeof(cl_float)} {
+    program{cc_}.get_init_reflections_kernel()(
+            cl::EnqueueArgs{queue_, cl::NDRange{rays_}}, reflection_buffer_);
+}
 
 aligned::vector<reflection> reflector::run_step(const scene_buffers& buffers) {
     //  get some new rng and copy it to device memory

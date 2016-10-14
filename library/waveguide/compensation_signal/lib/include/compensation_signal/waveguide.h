@@ -71,12 +71,8 @@ private:
                                const T& writer,
                                const U& per_step) {
         //  init buffers
-        {
-            //  don't want to keep this in scope for too long!
-            aligned::vector<cl_float> n(tetrahedron(dimension_ + 1), 0);
-            cl::copy(queue_, n.begin(), n.end(), previous_);
-            cl::copy(queue_, n.begin(), n.end(), current_);
-        }
+        fill_buffer(queue_, previous_, 0.0f);
+        fill_buffer(queue_, current_, 0.0f);
 
         aligned::vector<float> ret{};
         ret.reserve(std::distance(begin, end));

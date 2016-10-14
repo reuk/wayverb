@@ -12,7 +12,7 @@ public:
     program(const compute_context& cc);
 
     auto get_kernel() const {
-        return program_wrapper.get_kernel<cl::Buffer,  //  ray
+        return program_wrapper_.get_kernel<cl::Buffer,  //  ray
                                           cl_float3,   //  receiver
                                           cl::Buffer,  //  voxel_index
                                           aabb,        //  global_aabb
@@ -25,15 +25,19 @@ public:
                                           >("reflections");
     }
 
-    template <cl_program_info T>
-    auto get_info() const {
-        return program_wrapper.template get_info<T>();
+    auto get_init_reflections_kernel() const {
+        return program_wrapper_.get_kernel<cl::Buffer>("init_reflections");
     }
 
-    cl::Device get_device() const { return program_wrapper.get_device(); }
+    template <cl_program_info T>
+    auto get_info() const {
+        return program_wrapper_.template get_info<T>();
+    }
+
+    cl::Device get_device() const { return program_wrapper_.get_device(); }
 
 private:
-    program_wrapper program_wrapper;
+    program_wrapper program_wrapper_;
 };
 
 }  // namespace raytracer

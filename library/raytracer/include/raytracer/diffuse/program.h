@@ -24,6 +24,13 @@ public:
                                            >("diffuse");
     }
 
+    auto get_init_diffuse_path_info_kernel() const {
+        return program_wrapper_.get_kernel<cl::Buffer,   // buffer
+                                           volume_type,  // initial volume
+                                           cl_float3     // initial position
+                                           >("init_diffuse_path_info");
+    }
+
 private:
     program_wrapper program_wrapper_;
 };

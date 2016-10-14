@@ -89,7 +89,7 @@ int main() {
 
     //  Run the simulation.
 
-    progress_bar pb{std::cerr, input_signal.size()};
+    progress_bar pb;
     waveguide::run(cc,
                    mesh,
                    prep,
@@ -97,7 +97,7 @@ int main() {
                        for (auto& i : output_holders) {
                            i(a, b, c);
                        }
-                       pb += 1;
+                       set_progress(pb, c, input_signal.size());
                    },
                    true);
 

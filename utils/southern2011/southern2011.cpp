@@ -52,13 +52,13 @@ int main() {
 
     callback_accumulator<waveguide::postprocessor::node> post{output_node};
 
-    progress_bar pb{std::cerr, input_signal.size()};
+    progress_bar pb;
     waveguide::run(cc,
                    mesh,
                    prep,
                    [&](auto& queue, const auto& buffer, auto step) {
                        post(queue, buffer, step);
-                       pb += 1;
+                       set_progress(pb, step, input_signal.size());
                    },
                    true);
 

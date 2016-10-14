@@ -89,7 +89,7 @@ TEST(run_waveguide, run_waveguide) {
                         receiver_index};
             })};
 
-    progress_bar pb{std::cerr, steps};
+    progress_bar pb;
     auto callback_counter{0};
     waveguide::run(cc,
                    model,
@@ -98,7 +98,7 @@ TEST(run_waveguide, run_waveguide) {
                        for (auto& i : output_holders) {
                            i(queue, buffer, step);
                        }
-                       pb += 1;
+                       set_progress(pb, step, steps);
                        ASSERT_EQ(step, callback_counter++);
                    },
                    true);

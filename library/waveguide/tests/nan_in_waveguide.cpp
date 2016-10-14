@@ -56,13 +56,13 @@ TEST(nan_in_waveguide, nan_in_waveguide) {
 
     std::cout << "running " << steps << " steps" << std::endl;
 
-    progress_bar pb(std::cout, steps);
+    progress_bar pb{std::cout};
     waveguide::run(cc,
                    model,
                    generator,
                    [&](auto& queue, const auto& buffer, auto step) {
                        postprocessor(queue, buffer, step);
-                       pb += 1;
+                       set_progress(pb, step, steps);
                    },
                    true);
 }

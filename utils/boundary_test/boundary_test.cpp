@@ -101,7 +101,7 @@ private:
                             receiver_index};
                 })};
 
-        progress_bar pb{std::cout, input.size()};
+        progress_bar pb{};
         waveguide::run(cc_,
                        mesh,
                        prep,
@@ -109,7 +109,7 @@ private:
                            for (auto& i : output_holders) {
                                i(queue, buffer, step);
                            }
-                           pb += 1;
+                           set_progress(pb, step, steps);
                        },
                        true);
 

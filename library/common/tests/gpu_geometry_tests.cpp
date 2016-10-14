@@ -233,8 +233,8 @@ TEST(gpu_geometry, ray_triangle_intersection) {
     const auto gpu_intersections{
             read_from_buffer<intersection>(queue, intersections_buffer)};
 
-    auto pb{progress_bar{std::cout, num_tests}};
-    for (auto i{0u}; i != num_tests; ++i, pb += 1) {
+    auto pb{progress_bar{std::cerr}};
+    for (auto i{0u}; i != num_tests; ++i) {
         const auto inter{geo::ray_triangle_intersection(
                 rays[i], std::get<1>(triangles), std::get<0>(triangles))};
         if (inter) {
@@ -246,5 +246,7 @@ TEST(gpu_geometry, ray_triangle_intersection) {
             ASSERT_TRUE(almost_equal(
                     gpu_intersections[i].inter.v, inter->inter.v, 10));
         }
+
+        set_progress(pb, i, num_tests);
     }
 }

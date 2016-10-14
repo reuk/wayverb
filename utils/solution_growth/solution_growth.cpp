@@ -126,13 +126,13 @@ int main(int argc, char** argv) {
             callback_accumulator<waveguide::postprocessor::node> postprocessor{
                     receiver_index};
 
-            progress_bar pb{std::cout, kernel.size()};
+            progress_bar pb;
             waveguide::run(cc,
                            model,
                            prep,
                            [&](auto& a, const auto& b, auto c) {
                                postprocessor(a, b, c);
-                               pb += 1;
+                               set_progress(pb, c, kernel.size());
                            },
                            true);
 
@@ -140,7 +140,7 @@ int main(int argc, char** argv) {
                 write(build_string(
                               "solution_growth.", i.name, ".transparent.wav"),
                       audio_file::make_audio_file(postprocessor.get_output(),
-                                      sampling_frequency),
+                                                  sampling_frequency),
                       16);
             }
 

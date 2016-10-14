@@ -47,6 +47,15 @@ void reflect_and_add_triangle_to_history(triangle_verts current,
     history[iteration] = current;
 }
 
+kernel void init_reflections(global reflection* reflections) {
+    const size_t thread = get_global_id(0);
+    reflections[thread] = (reflection){(float3)(0),
+                                       (float3)(0),
+                                       ~(uint)0,
+                                       (char)true,
+                                       (char)0};
+}
+
 kernel void reflections(global ray* rays,  //  ray
 
                         float3 receiver,  //  receiver
@@ -148,22 +157,22 @@ kernel void reflections(global ray* rays,  //  ray
 )"};
 
 program::program(const compute_context& cc)
-        : program_wrapper(cc,
-                          std::vector<std::string>{
-                                  cl_representation_v<volume_type>,
-                                  cl_representation_v<surface>,
-                                  cl_representation_v<triangle>,
-                                  cl_representation_v<triangle_verts>,
-                                  cl_representation_v<reflection>,
-                                  cl_representation_v<diffuse_path_info>,
-                                  cl_representation_v<impulse<8>>,
-                                  cl_representation_v<aabb>,
-                                  cl_representation_v<ray>,
-                                  cl_representation_v<triangle_inter>,
-                                  cl_representation_v<intersection>,
-                                  ::cl_sources::geometry,
-                                  ::cl_sources::voxel,
-                                  ::cl_sources::brdf,
-                                  source}) {}
+        : program_wrapper_{cc,
+                           std::vector<std::string>{
+                                   cl_representation_v<volume_type>,
+                                   cl_representation_v<surface>,
+                                   cl_representation_v<triangle>,
+                                   cl_representation_v<triangle_verts>,
+                                   cl_representation_v<reflection>,
+                                   cl_representation_v<diffuse_path_info>,
+                                   cl_representation_v<impulse<8>>,
+                                   cl_representation_v<aabb>,
+                                   cl_representation_v<ray>,
+                                   cl_representation_v<triangle_inter>,
+                                   cl_representation_v<intersection>,
+                                   ::cl_sources::geometry,
+                                   ::cl_sources::voxel,
+                                   ::cl_sources::brdf,
+                                   source}} {}
 
 }  // namespace raytracer

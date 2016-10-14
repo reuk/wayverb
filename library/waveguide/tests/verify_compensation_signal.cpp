@@ -6,8 +6,8 @@
 
 #include "compensation_signal/waveguide.h"
 
-#include "common/spatial_division/voxelised_scene_data.h"
 #include "common/callback_accumulator.h"
+#include "common/spatial_division/voxelised_scene_data.h"
 
 #include "utilities/progress_bar.h"
 
@@ -40,9 +40,10 @@ TEST(verify_compensation_signal, verify_compensation_signal_compressed) {
 
     multitest([&] {
         auto t{transparent};
-        progress_bar pb{std::cerr, steps};
-        return waveguide.run_soft_source(
-                t.begin(), t.end(), [&](auto step) { pb += 1; });
+        progress_bar pb{std::cerr};
+        return waveguide.run_soft_source(t.begin(), t.end(), [&](auto step) {
+            set_progress(pb, step, steps);
+        });
     });
 }
 
@@ -73,13 +74,13 @@ TEST(verify_compensation_signal, verify_compensation_signal_normal) {
         callback_accumulator<waveguide::postprocessor::node> postprocessor{
                 receiver_index};
 
-        progress_bar pb(std::cout, transparent.size());
+        progress_bar pb{std::cout};
         waveguide::run(cc,
                        model,
                        prep,
                        [&](auto& queue, const auto& buffer, auto step) {
                            postprocessor(queue, buffer, step);
-                           pb += 1;
+                           set_progress(pb, step, transparent.size());
                        },
                        true);
 

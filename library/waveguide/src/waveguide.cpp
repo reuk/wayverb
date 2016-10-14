@@ -42,12 +42,8 @@ size_t run(const compute_context& cc,
 
     cl::CommandQueue queue{cc.context, cc.device};
 
-    const auto zero_mesh{[&](auto& buffer) {
-        aligned::vector<cl_uchar> n(buffer.template getInfo<CL_MEM_SIZE>(), 0);
-        cl::copy(queue, n.begin(), n.end(), buffer);
-    }};
-    zero_mesh(previous);
-    zero_mesh(current);
+    fill_buffer(queue, previous, 0.0f);
+    fill_buffer(queue, current, 0.0f);
 
     const program program{cc};
     auto kernel{program.get_kernel()};

@@ -42,13 +42,13 @@ TEST(waveguide_init, waveguide_init) {
     callback_accumulator<waveguide::postprocessor::node> postprocessor{
             receiver_index};
 
-    progress_bar pb{std::cout, steps};
+    progress_bar pb;
     waveguide::run(cc,
                    model,
                    prep,
                    [&](auto& queue, const auto& buffer, auto step) {
                        postprocessor(queue, buffer, step);
-                       pb += 1;
+                       set_progress(pb, step, steps);
                    },
                    true);
 

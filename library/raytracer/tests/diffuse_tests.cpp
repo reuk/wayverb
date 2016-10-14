@@ -18,6 +18,7 @@ TEST(diffuse, bad_reflections_box) {
     constexpr auto s{0.01};
     constexpr auto d{0.1};
     constexpr auto surface{make_surface(s, d)};
+    constexpr auto acoustic_impedance{340.0};
 
     const compute_context cc{};
 
@@ -45,12 +46,13 @@ TEST(diffuse, bad_reflections_box) {
     };
 
     raytracer::diffuse::finder diff{
-            cc, source, receiver, bad_reflections.size()};
+            cc, source, receiver, bad_reflections.size(), acoustic_impedance};
 
     diff.push(begin(bad_reflections), end(bad_reflections), buffers, false);
 }
 
 TEST(diffuse, bad_reflections_vault) {
+    constexpr auto acoustic_impedance{340.0};
     constexpr glm::vec3 source{0, 1, 0};
     const model::receiver_settings receiver{glm::vec3{0, 1, 1}};
 
@@ -85,8 +87,11 @@ TEST(diffuse, bad_reflections_vault) {
                        true},
     };
 
-    raytracer::diffuse::finder diff{
-            cc, source, receiver.position, bad_reflections.size()};
+    raytracer::diffuse::finder diff{cc,
+                                    source,
+                                    receiver.position,
+                                    bad_reflections.size(),
+                                    acoustic_impedance};
 
     diff.push(begin(bad_reflections), end(bad_reflections), buffers, false);
 }

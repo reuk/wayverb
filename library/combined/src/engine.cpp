@@ -171,25 +171,6 @@ public:
          double speed_of_sound,
          double acoustic_impedance)
             : impl(cc,
-                   scene_data,
-                   source,
-                   receiver,
-                   waveguide_sample_rate,
-                   rays,
-                   raytracer::compute_optimum_reflection_number(scene_data),
-                   speed_of_sound,
-                   acoustic_impedance) {}
-
-    impl(const compute_context& cc,
-         const scene_data& scene_data,
-         const glm::vec3& source,
-         const glm::vec3& receiver,
-         double waveguide_sample_rate,
-         size_t rays,
-         size_t impulses,
-         double speed_of_sound,
-         double acoustic_impedance)
-            : impl(cc,
                    waveguide::compute_voxels_and_mesh(cc,
                                                       scene_data,
                                                       receiver,
@@ -199,7 +180,6 @@ public:
                    receiver,
                    waveguide_sample_rate,
                    rays,
-                   impulses,
                    speed_of_sound,
                    acoustic_impedance) {}
 
@@ -211,7 +191,6 @@ private:
          const glm::vec3& receiver,
          double waveguide_sample_rate,
          size_t rays,
-         size_t impulses,
          double speed_of_sound,
          double acoustic_impedance)
             : compute_context_{cc}
@@ -223,7 +202,6 @@ private:
             , receiver_{receiver}
             , waveguide_sample_rate_{waveguide_sample_rate}
             , rays_{rays}
-            , impulses_{impulses}
             , source_index_{compute_index(mesh_.get_descriptor(), source)}
             , receiver_index_{compute_index(mesh_.get_descriptor(), receiver)} {
         const auto is_index_inside{[&](auto index) {
@@ -248,20 +226,21 @@ public:
         const auto rays_to_visualise{std::min(1000ul, rays_)};
         const auto directions{get_random_directions(rays_)};
         callback(state::starting_raytracer, 1.0);
-        auto raytracer_results{raytracer::run(
-                begin(directions),
-                end(directions),
-                compute_context_,
-                voxelised_,
-                source_,
-                receiver_,
-                rays_to_visualise,
-                true,
-                keep_going,
-                [&](auto step) {
-                    callback(state::running_raytracer,
-                             step / (impulses_ - 1.0));
-                })};
+        auto raytracer_results{
+                raytracer::run(begin(directions),
+                               end(directions),
+                               compute_context_,
+                               voxelised_,
+                               source_,
+                               receiver_,
+                               acoustic_impedance_,
+                               rays_to_visualise,
+                               true,
+                               keep_going,
+                               [&](auto step, auto total_steps) {
+                                   callback(state::running_raytracer,
+                                            step / (total_steps - 1.0));
+                               })};
 
         if (!(keep_going && raytracer_results)) {
             return nullptr;
@@ -382,7 +361,6 @@ private:
     glm::vec3 receiver_;
     double waveguide_sample_rate_;
     size_t rays_;
-    size_t impulses_;
 
     size_t source_index_;
     size_t receiver_index_;
@@ -391,25 +369,8 @@ private:
     raytracer_visual_callback_t raytracer_visual_callback_;
 };
 
-constexpr auto speed_of_sound{340};
-constexpr auto acoustic_impedance{400};
-
-engine::engine(const compute_context& compute_context,
-               const scene_data& scene_data,
-               const glm::vec3& source,
-               const glm::vec3& receiver,
-               double waveguide_sample_rate,
-               size_t rays,
-               size_t impulses)
-        : pimpl(std::make_unique<impl>(compute_context,
-                                       scene_data,
-                                       source,
-                                       receiver,
-                                       waveguide_sample_rate,
-                                       rays,
-                                       impulses,
-                                       speed_of_sound,
-                                       acoustic_impedance)) {}
+constexpr auto speed_of_sound{340.0};
+constexpr auto acoustic_impedance{400.0};
 
 engine::engine(const compute_context& compute_context,
                const scene_data& scene_data,

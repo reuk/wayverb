@@ -51,6 +51,13 @@ volume_type specular_pressure(volume_type total_reflected,
     return total_reflected * (1 - scattering);
 }
 
+kernel void init_diffuse_path_info(global diffuse_path_info* info,
+    volume_type volume,
+    float3 position) {
+    const size_t thread = get_global_id(0);
+    info[thread] = (diffuse_path_info){volume, position, 0};
+}
+
 kernel void diffuse(const global reflection* reflections,  //  input
                     float3 receiver,
 

@@ -1,7 +1,5 @@
 #pragma once
 
-#include "combined/engine_state.h"
-
 #include "raytracer/cl/structs.h"
 
 #include "common/scene_data.h"
@@ -23,6 +21,32 @@ class compute_context;
 //  engine  ------------------------------------------------------------------//
 
 namespace wayverb {
+
+enum class state {
+    idle,
+    initialising,
+    starting_raytracer,
+    running_raytracer,
+    finishing_raytracer,
+    starting_waveguide,
+    running_waveguide,
+    finishing_waveguide,
+    postprocessing,
+};
+
+constexpr auto to_string(state s) {
+    switch (s) {
+        case state::idle: return "idle";
+        case state::initialising: return "initialising";
+        case state::starting_raytracer: return "starting raytracer";
+        case state::running_raytracer: return "running raytracer";
+        case state::finishing_raytracer: return "finishing raytracer";
+        case state::starting_waveguide: return "starting waveguide";
+        case state::running_waveguide: return "running waveguide";
+        case state::finishing_waveguide: return "finishing waveguide";
+        case state::postprocessing: return "postprocessing";
+    }
+}
 
 class intermediate {
 public:
@@ -46,14 +70,6 @@ public:
 class engine final {
 public:
     using scene_data = generic_scene_data<cl_float3, surface>;
-
-    engine(const compute_context& compute_context,
-           const scene_data& scene_data,
-           const glm::vec3& source,
-           const glm::vec3& receiver,
-           double waveguide_sample_rate,
-           size_t rays,
-           size_t impulses);
 
     engine(const compute_context& compute_context,
            const scene_data& scene_data,

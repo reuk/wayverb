@@ -1,23 +1,16 @@
 #pragma once
 
-#include <iosfwd>
+#include <iostream>
 
 class progress_bar final {
 public:
-    progress_bar(std::ostream& os, size_t expected);
+    progress_bar(std::ostream& os = std::cerr);
 
-    size_t get_expected() const;
-    size_t get_count() const;
-
-    size_t operator+=(size_t i);
+    void set_progress(float progress);
 
 private:
-    /// from 0-1
-    void draw(double progress);
-    void draw_percentage(double progress);
-    void draw_bar(double progress);
-
-    std::ostream& os;
-    size_t expected;
-    size_t count{0};
+    std::ostream& os_;
 };
+
+void set_progress(progress_bar& pb, float progress);
+void set_progress(progress_bar& pb, int step, int steps);

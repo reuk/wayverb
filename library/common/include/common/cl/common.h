@@ -20,7 +20,7 @@ public:
 
 template <typename T>
 cl::Buffer load_to_buffer(const cl::Context& context, T t, bool read_only) {
-    return cl::Buffer(context, std::begin(t), std::end(t), read_only);
+    return cl::Buffer{context, std::begin(t), std::end(t), read_only};
 }
 
 template <typename T>
@@ -51,4 +51,31 @@ void write_value(cl::CommandQueue& queue,
                  T val) {
     queue.enqueueWriteBuffer(
             buffer, CL_TRUE, sizeof(T) * index, sizeof(T), &val);
+}
+
+template <int N>
+struct is_power_of_two final {
+    using type = std::integral_constant<bool, N && !(N & (N - 1))>;
+};
+
+template <int N>
+using is_power_of_two_t = typename is_power_of_two<N>::type;
+
+template <int N>
+constexpr auto is_power_of_two_v{is_power_of_two_t<N>{}};
+
+template <typename T>
+void fill_buffer(cl::CommandQueue& queue,
+                 cl::Buffer& buffer,
+                 const T& pattern) {
+    const auto buffer_size{buffer.getInfo<CL_MEM_SIZE>()};
+    constexpr auto item_size{sizeof(T)};
+    static_assert(is_power_of_two_v<item_size>,
+                  "item size must be a smallish power of two");
+    if (buffer_size % item_size) {
+        throw std::runtime_error{
+                "fill_buffer: buffer size is not a multiple of pattern size"};
+    }
+    constexpr auto offset{0};
+    queue.enqueueFillBuffer(buffer, pattern, offset, buffer_size);
 }

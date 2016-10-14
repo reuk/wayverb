@@ -22,12 +22,11 @@ TEST(engine, engine) {
     //    constexpr auto waveguide_filter_frequency = 4000;
 
     constexpr auto rays{1 << 15};
-    constexpr auto impulses{128};
 
     const compute_context cc{};
 
     const wayverb::engine e{
-            cc, scene_data, source, mic, waveguide_sample_rate, rays, impulses};
+            cc, scene_data, source, mic, waveguide_sample_rate, rays};
 
     std::cout << "finished engine init" << std::endl;
 

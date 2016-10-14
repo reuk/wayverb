@@ -72,6 +72,7 @@ std::experimental::optional<raytracer_output> run(
         const voxelised_scene_data<cl_float3, surface>& voxelised,
         const glm::vec3& source,
         const glm::vec3& receiver,
+        double acoustic_impedance,
         size_t rays_to_visualise,
         bool flip_phase,
         const std::atomic_bool& keep_going,
@@ -94,7 +95,8 @@ std::experimental::optional<raytracer_output> run(
     image_source::reflection_path_builder builder{num_directions};
 
     //  This will incrementally process diffuse responses.
-    diffuse::finder dif{cc, source, receiver, num_directions};
+    diffuse::finder dif{
+            cc, source, receiver, num_directions, acoustic_impedance};
 
     //  This collects raw reflections to be visualised.
     iterative_builder<reflection> reflection_data{rays_to_visualise};
@@ -120,7 +122,7 @@ std::experimental::optional<raytracer_output> run(
             reflection_data.push(begin(reflections),
                                  begin(reflections) + rays_to_visualise);
 
-            callback(i);
+            callback(i, reflection_depth);
         }
 
         for (const auto& path : builder.get_data()) {

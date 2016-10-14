@@ -6,6 +6,7 @@
 
 #include "common/cl/common.h"
 #include "common/conversions.h"
+#include "common/pressure_intensity.h"
 #include "common/spatial_division/scene_buffers.h"
 
 #include "utilities/aligned/vector.h"
@@ -18,7 +19,8 @@ public:
     finder(const compute_context& cc,
            const glm::vec3& source,
            const glm::vec3& receiver,
-           size_t rays)
+           size_t rays,
+           double acoustic_impedance)
             : cc_{cc}
             , queue_{cc.context, cc.device}
             , kernel_{program{cc}.get_kernel()}
@@ -27,17 +29,22 @@ public:
             , reflections_buffer_{cc.context,
                                   CL_MEM_READ_WRITE,
                                   sizeof(reflection) * rays}
-            , diffuse_path_buffer_{load_to_buffer(
-                      cc.context,
-                      aligned::vector<diffuse_path_info>(
-                              rays,
-                              diffuse_path_info{make_volume_type(1.0 / rays),
-                                                to_cl_float3(source),
-                                                0}),
-                      false)}
+            , diffuse_path_buffer_{cc.context,
+                                   CL_MEM_READ_WRITE,
+                                   sizeof(diffuse_path_info) * rays}
             , impulse_buffer_{cc.context,
                               CL_MEM_READ_WRITE,
-                              sizeof(impulse<8>) * rays} {}
+                              sizeof(impulse<8>) * rays} {
+        const auto starting_intensity{1.0 / rays};
+        const auto starting_pressure{
+                intensity_to_pressure(starting_intensity, acoustic_impedance)};
+
+        program{cc_}.get_init_diffuse_path_info_kernel()(
+                cl::EnqueueArgs{queue_, cl::NDRange{rays_}},
+                diffuse_path_buffer_,
+                make_volume_type(starting_pressure),
+                to_cl_float3(source));
+    }
 
     template <typename It>
     void push(It b, It e, const scene_buffers& scene_buffers, bool flip_phase) {

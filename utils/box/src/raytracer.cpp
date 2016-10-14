@@ -28,10 +28,11 @@ aligned::vector<impulse<8>> run_raytracer(const geo::box& box,
                                 voxelised,
                                 source,
                                 receiver,
+                                acoustic_impedance,
                                 0,
                                 flip_phase,
                                 true,
-                                [](auto i) {})};
+                                [](auto i, auto steps) {})};
 
     if (!results) {
         throw std::runtime_error{"raytracer failed to generate results"};

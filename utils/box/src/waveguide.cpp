@@ -57,13 +57,13 @@ run_waveguide(const geo::box& box,
             acoustic_impedance / speed_of_sound,
             output_node};
 
-    progress_bar pb{std::cerr, input_signal.size()};
+    progress_bar pb;
     run(cc,
         mesh,
         prep,
         [&](auto& queue, const auto& buffer, auto step) {
             post(queue, buffer, step);
-            pb += 1;
+            set_progress(pb, step, input_signal.size());
         },
         true);
 

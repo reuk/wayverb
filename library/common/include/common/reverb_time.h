@@ -72,7 +72,7 @@ auto equivalent_absorption_area(
 }
 
 //----------------------------------------------------------------------------//
-//
+
 std::array<std::pair<cl_uint, cl_uint>, 3> get_index_pairs(const triangle& t);
 
 /// This probably isn't the fastest way of doing this...
