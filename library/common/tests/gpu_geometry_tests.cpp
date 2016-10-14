@@ -233,7 +233,7 @@ TEST(gpu_geometry, ray_triangle_intersection) {
     const auto gpu_intersections{
             read_from_buffer<intersection>(queue, intersections_buffer)};
 
-    auto pb{progress_bar{std::cerr}};
+    progress_bar pb;
     for (auto i{0u}; i != num_tests; ++i) {
         const auto inter{geo::ray_triangle_intersection(
                 rays[i], std::get<1>(triangles), std::get<0>(triangles))};

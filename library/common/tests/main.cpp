@@ -2,6 +2,6 @@
 
 int main(int argc, char** argv) {
     ::testing::InitGoogleTest(&argc, argv);
-    //::testing::GTEST_FLAG(filter) = "*mps*";
+    //::testing::GTEST_FLAG(filter) = "*ray_triangle_intersection*";
     return RUN_ALL_TESTS();
 }
