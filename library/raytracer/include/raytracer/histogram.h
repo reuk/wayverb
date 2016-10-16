@@ -3,6 +3,7 @@
 #include "common/sinc.h"
 
 #include "utilities/aligned/vector.h"
+#include "utilities/mapping_iterator_adapter.h"
 
 namespace detail {
 struct histogram_mapper final {
@@ -31,31 +32,45 @@ constexpr auto volume(const T& t) {
     return t.volume;
 }
 
-template <typename It, typename T>
-auto histogram(It begin,
-               It end,
-               double sample_rate,
-               double max_time,
-               const T& callback) {
-    using value_type = decltype(volume(*begin));
-
-    if (begin == end) {
-        return aligned::vector<value_type>{};
+struct time_functor final {
+    template <typename T>
+    constexpr auto operator()(const T& t) const {
+        return time(t);
     }
-    const auto max_time_in_input{time(*std::max_element(
-            begin, end, [](auto i, auto j) { return time(i) < time(j); }))};
+};
+
+template <typename V, typename It, typename T>
+void incremental_histogram(aligned::vector<V>& ret,
+                           It b,
+                           It e,
+                           double sample_rate,
+                           double max_time,
+                           const T& callback) {
+    const auto make_time_iterator{[](auto it) {
+        return make_mapping_iterator_adapter(std::move(it), time_functor{});
+    }};
+    const auto max_time_in_input{
+            *std::max_element(make_time_iterator(b), make_time_iterator(e))};
     const auto max_t{std::min(max_time_in_input, max_time)};
     const size_t output_size = std::floor(max_t * sample_rate) + 1;
-
-    aligned::vector<value_type> ret(output_size, value_type{});
-    for (auto i{begin}; i != end; ++i) {
-        const auto item_time{time(*i)};
-        const auto centre_sample{item_time * sample_rate};
-        if (0 <= centre_sample && centre_sample < ret.size()) {
-            callback(volume(*i), item_time, sample_rate, ret);
-        }
+    if (ret.size() < output_size) {
+        ret.resize(output_size, V());
     }
 
+    for (; b != e; ++b) {
+        const auto item_time{time(*b)};
+        if (item_time < max_time) {
+            callback(volume(*b), item_time, sample_rate, ret);
+        }
+    }    
+}
+
+template <typename It, typename T>
+auto histogram(
+        It b, It e, double sample_rate, double max_time, const T& callback) {
+    using value_type = decltype(volume(*b));
+    aligned::vector<value_type> ret{};
+    incremental_histogram(ret, b, e, sample_rate, max_time, callback);
     return ret;
 }
 
@@ -67,16 +82,15 @@ void dirac_sum(T value,
     ret[item_time * sample_rate] += value;
 }
 
-template <typename It>
-auto dirac_histogram(It begin, It end, double sample_rate, double max_time) {
-    return histogram(begin,
-                     end,
-                     sample_rate,
-                     max_time,
-                     [](auto value, auto time, auto sr, auto& ret) {
-                         dirac_sum(value, time, sr, ret);
-                     });
-}
+struct dirac_sum_functor final {
+    template <typename T>
+    void operator()(T value,
+                    double item_time,
+                    double sample_rate,
+                    aligned::vector<T>& ret) const {
+        dirac_sum(value, item_time, sample_rate, ret);
+    }
+};
 
 /// See fu2015 2.2.2 'Discrete form of the impulse response'
 template <typename T>
@@ -109,16 +123,15 @@ void sinc_sum(T value,
     }
 }
 
-template <typename It>
-auto sinc_histogram(It begin, It end, double sample_rate, double max_time) {
-    return histogram(begin,
-                     end,
-                     sample_rate,
-                     max_time,
-                     [](auto value, auto time, auto sr, auto& ret) {
-                         sinc_sum(value, time, sr, ret);
-                     });
-}
+struct sinc_sum_functor final {
+    template <typename T>
+    void operator()(T value,
+                    double item_time,
+                    double sample_rate,
+                    aligned::vector<T>& ret) const {
+        sinc_sum(value, item_time, sample_rate, ret);
+    }
+};
 
 //----------------------------------------------------------------------------//
 
@@ -131,36 +144,6 @@ auto make_histogram_iterator(T t, double speed_of_sound) {
     }
     return make_mapping_iterator_adapter(
             std::move(t), ::detail::histogram_mapper{speed_of_sound});
-}
-
-template <typename It>
-auto dirac_histogram(It begin,
-                     It end,
-                     double speed_of_sound,
-                     double sample_rate,
-                     double max_time) {
-    const auto make_iterator{[=](auto i) {
-        return raytracer::make_histogram_iterator(std::move(i), speed_of_sound);
-    }};
-    return dirac_histogram(make_iterator(std::move(begin)),
-                           make_iterator(std::move(end)),
-                           sample_rate,
-                           max_time);
-}
-
-template <typename It>
-auto sinc_histogram(It begin,
-                    It end,
-                    double speed_of_sound,
-                    double sample_rate,
-                    double max_time) {
-    const auto make_iterator{[=](auto i) {
-        return raytracer::make_histogram_iterator(std::move(i), speed_of_sound);
-    }};
-    return sinc_histogram(make_iterator(std::move(begin)),
-                          make_iterator(std::move(end)),
-                          sample_rate,
-                          max_time);
 }
 
 }  // namespace raytracer

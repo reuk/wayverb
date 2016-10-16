@@ -28,30 +28,6 @@ namespace raytracer {
 
 //----------------------------------------------------------------------------//
 
-reflector::reflector(const compute_context& cc,
-                     const glm::vec3& receiver,
-                     const aligned::vector<geo::ray>& rays)
-        : cc_{cc}
-        , queue_{cc.context, cc.device}
-        , kernel_{program{cc}.get_kernel()}
-        , receiver_{to_cl_float3(receiver)}
-        , rays_{rays.size()}
-        , ray_buffer_{load_to_buffer(
-                  cc.context,
-                  map_to_vector(begin(rays),
-                                end(rays),
-                                [](const auto& i) { return convert(i); }),
-                  false)}
-        , reflection_buffer_{cc.context,
-                             CL_MEM_READ_WRITE,
-                             rays.size() * sizeof(reflection)}
-        , rng_buffer_{cc.context,
-                      CL_MEM_READ_WRITE,
-                      rays.size() * 2 * sizeof(cl_float)} {
-    program{cc_}.get_init_reflections_kernel()(
-            cl::EnqueueArgs{queue_, cl::NDRange{rays_}}, reflection_buffer_);
-}
-
 aligned::vector<reflection> reflector::run_step(const scene_buffers& buffers) {
     //  get some new rng and copy it to device memory
     const auto rng{get_direction_rng(rays_)};

@@ -21,8 +21,13 @@ auto run(It b,  /// Iterators over ray directions.
             voxelised.get_scene_data())};
 
     const scene_buffers buffers{cc.context, voxelised};
+    const auto make_ray_iterator{[&](auto it) {
+        return make_mapping_iterator_adapter(std::move(it), [&](const auto& i) {
+            return geo::ray{source, i};
+        });
+    }};
     raytracer::reflector ref{
-            cc, receiver, raytracer::get_rays_from_directions(b, e, source)};
+            cc, receiver, make_ray_iterator(b), make_ray_iterator(e)};
 
     //  This will collect the first reflections, to a specified depth,
     //  and use them to find unique image-source paths.

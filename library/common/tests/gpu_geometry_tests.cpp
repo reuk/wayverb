@@ -19,34 +19,44 @@
 class program final {
 public:
     program(const compute_context& cc)
-            : wrapper(cc,
-                      std::vector<std::string>{
-                              cl_representation_v<volume_type>,
-                              cl_representation_v<surface>,
-                              cl_representation_v<triangle>,
-                              cl_representation_v<triangle_verts>,
-                              cl_representation_v<ray>,
-                              cl_representation_v<triangle_inter>,
-                              cl_representation_v<intersection>,
-                              cl_sources::geometry,
-                              source}) {}
+            : wrapper_{cc,
+                       std::vector<std::string>{
+                               cl_representation_v<volume_type>,
+                               cl_representation_v<surface>,
+                               cl_representation_v<triangle>,
+                               cl_representation_v<triangle_verts>,
+                               cl_representation_v<ray>,
+                               cl_representation_v<triangle_inter>,
+                               cl_representation_v<intersection>,
+                               cl_sources::geometry,
+                               source_}} {}
 
     auto get_triangle_vert_intersection_test_kernel() const {
-        return wrapper.get_kernel<cl::Buffer, cl::Buffer, cl::Buffer>(
+        return wrapper_.get_kernel<cl::Buffer, cl::Buffer, cl::Buffer>(
                 "triangle_vert_intersection_test");
     }
 
     auto get_ray_triangle_intersection_test_kernel() const {
-        return wrapper.get_kernel<cl::Buffer,
-                                  cl_uint,
-                                  cl::Buffer,
-                                  cl::Buffer,
-                                  cl::Buffer>("ray_triangle_intersection_test");
+        return wrapper_.get_kernel<cl::Buffer,
+                                   cl_uint,
+                                   cl::Buffer,
+                                   cl::Buffer,
+                                   cl::Buffer>(
+                "ray_triangle_intersection_test");
+    }
+
+    auto get_line_segment_sphere_intersection_test_kernel() const {
+        return wrapper_.get_kernel<cl::Buffer,
+                                   cl::Buffer,
+                                   cl::Buffer,
+                                   cl::Buffer,
+                                   cl::Buffer>(
+                "line_segment_sphere_intersection_test");
     }
 
 private:
-    program_wrapper wrapper;
-    static constexpr auto source{R"(
+    program_wrapper wrapper_;
+    static constexpr auto source_{R"(
 
 kernel void triangle_vert_intersection_test(
         const global triangle_verts* t,
@@ -77,10 +87,20 @@ kernel void ray_triangle_intersection_test(
     ret[thread] = j;
 }
 
+kernel void line_segment_sphere_intersection_test(
+        const global float3* p1,
+        const global float3* p2,
+        const global float3* sc,
+        const global float* r,
+        global char* ret) {
+    const size_t thread = get_global_id(0);
+    ret[thread] = line_segment_sphere_intersection(p1[thread], p2[thread], sc[thread], r[thread]);
+}
+
 )"};
 };
 
-constexpr const char* program::source;
+constexpr const char* program::source_;
 
 template <typename t>
 geo::triangle_vec3 random_triangle_vec3(t& engine) {
@@ -200,7 +220,6 @@ TEST(gpu_geometry, ray_triangle_intersection) {
 
     const program prog{cc};
     auto kernel{prog.get_ray_triangle_intersection_test_kernel()};
-
     cl::CommandQueue queue{cc.context, cc.device};
 
     const auto triangles_buffer{
@@ -248,5 +267,63 @@ TEST(gpu_geometry, ray_triangle_intersection) {
         }
 
         set_progress(pb, i, num_tests);
+    }
+}
+
+TEST(gpu_geometry, line_sphere_intersection) {
+    //  preamble
+    const compute_context cc{};
+    const program prog{cc};
+    auto kernel{prog.get_line_segment_sphere_intersection_test_kernel()};
+    cl::CommandQueue queue{cc.context, cc.device};
+
+    //  set up test cases
+    struct test_case final {
+        cl_float3 p1;
+        cl_float3 p2;
+        cl_float3 sc;
+        cl_float r;
+        bool expected_result;
+    };
+
+    aligned::vector<test_case> test_cases{
+
+            {{{-1, 0, 0}}, {{1, 0, 0}}, {{0, 0, 0}}, 0.1, true},
+            {{{0, -1, 0}}, {{0, 1, 0}}, {{0, 0, 0}}, 0.1, true},
+            {{{0, 0, -1}}, {{0, 0, 1}}, {{0, 0, 0}}, 0.1, true},
+
+            {{{-1, 0, 0}}, {{1, 0, 0}}, {{0, 1, 0}}, 0.1, false},
+            {{{-1, 0, 0}}, {{1, 0, 0}}, {{0, -1, 0}}, 0.1, false},
+
+            {{{-1, 0, 0}}, {{1, 0, 0}}, {{0, 0, 0}}, 10, true},
+
+    };
+
+    //  set up buffers
+    const auto gen_buffer{[&](const auto& lambda) {
+        return load_to_buffer(
+                cc.context,
+                map_to_vector(begin(test_cases), end(test_cases), lambda),
+                true);
+    }};
+
+    const auto p1_buffer{gen_buffer([](const auto& i) { return i.p1; })};
+    const auto p2_buffer{gen_buffer([](const auto& i) { return i.p2; })};
+    const auto sc_buffer{gen_buffer([](const auto& i) { return i.sc; })};
+    const auto r_buffer{gen_buffer([](const auto& i) { return i.r; })};
+    cl::Buffer ret_buffer{
+            cc.context, CL_MEM_READ_WRITE, sizeof(cl_char) * test_cases.size()};
+
+    kernel(cl::EnqueueArgs{queue, cl::NDRange{test_cases.size()}},
+           p1_buffer,
+           p2_buffer,
+           sc_buffer,
+           r_buffer,
+           ret_buffer);
+
+    const auto results{read_from_buffer<cl_char>(queue, ret_buffer)};
+
+    for (auto i{0ul}, e{test_cases.size()}; i != e; ++i) {
+        ASSERT_EQ(test_cases[i].expected_result, results[i]);
     }
 }

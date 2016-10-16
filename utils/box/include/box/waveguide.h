@@ -4,6 +4,7 @@
 #include "waveguide/postprocessor/directional_receiver.h"
 
 #include "common/geo/box.h"
+#include "common/model/parameters.h"
 
 #include "utilities/aligned/vector.h"
 
@@ -62,9 +63,6 @@ auto postprocess_waveguide(It b,
 aligned::vector<waveguide::postprocessor::directional_receiver::output>
 run_waveguide(const geo::box& box,
               float absorption,
-              const glm::vec3& source,
-              const glm::vec3& receiver,
-              float speed_of_sound,
-              float acoustic_impedance,
+              const model::parameters& params,
               float sample_rate,
               float simulation_time);

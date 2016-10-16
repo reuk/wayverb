@@ -3,14 +3,13 @@
 #include "raytracer/attenuator.h"
 #include "raytracer/cl/structs.h"
 #include "raytracer/histogram.h"
-#include "raytracer/results.h"
 
 #include "common/attenuator/hrtf.h"
 #include "common/attenuator/microphone.h"
 #include "common/cl/common.h"
 #include "common/cl/iterator.h"
 #include "common/mixdown.h"
-#include "common/model/receiver_settings.h"
+#include "common/model/receiver.h"
 #include "common/pressure_intensity.h"
 #include "common/scene_data.h"
 
@@ -19,7 +18,6 @@
 namespace raytracer {
 
 constexpr auto min_element(double x) { return x; }
-
 constexpr auto min_element(float x) { return x; }
 
 template <typename T>
@@ -88,15 +86,15 @@ auto postprocess(InputIt b,
     const auto make_iterator{[&](auto it) {
         return make_histogram_iterator(std::move(it), speed_of_sound);
     }};
-    auto histogram{sinc_histogram(
-            make_iterator(b), make_iterator(e), sample_rate, max_seconds)};
-    return multiband_filter_and_mixdown(histogram.begin(),
-                                        histogram.end(),
-                                        sample_rate,
-                                        [](auto it, auto index) {
-                                            return make_cl_type_iterator(
-                                                    std::move(it), index);
-                                        });
+    auto hist{histogram(make_iterator(b),
+                        make_iterator(e),
+                        sample_rate,
+                        max_seconds,
+                        sinc_sum_functor{})};
+    return multiband_filter_and_mixdown(
+            begin(hist), end(hist), sample_rate, [](auto it, auto index) {
+                return make_cl_type_iterator(std::move(it), index);
+            });
 }
 
 template <typename InputIt, typename Method>
@@ -141,34 +139,28 @@ auto postprocess(InputIt b_input,
 template <typename It>
 auto run_attenuation(It b,
                      It e,
-                     const model::receiver_settings& receiver,
+                     const model::receiver& receiver,
                      double speed_of_sound,
                      double sample_rate,
                      double max_seconds) {
+    const auto run{[&](auto tag) {
+        return postprocess(b,
+                           e,
+                           get_begin(receiver, tag),
+                           get_end(receiver, tag),
+                           receiver.position,
+                           speed_of_sound,
+                           sample_rate,
+                           max_seconds);
+    }};
+
     switch (receiver.mode) {
-        case model::receiver_settings::mode::microphones: {
-            return postprocess(b,
-                               e,
-                               make_microphone_iterator(
-                                       begin(receiver.microphones), receiver),
-                               make_microphone_iterator(
-                                       end(receiver.microphones), receiver),
-                               receiver.position,
-                               speed_of_sound,
-                               sample_rate,
-                               max_seconds);
-        }
-        case model::receiver_settings::mode::hrtf: {
-            const auto channels = {hrtf::channel::left, hrtf::channel::right};
-            return postprocess(b,
-                               e,
-                               make_hrtf_iterator(begin(channels), receiver),
-                               make_hrtf_iterator(end(channels), receiver),
-                               receiver.position,
-                               speed_of_sound,
-                               sample_rate,
-                               max_seconds);
-        }
+        case model::receiver::mode::microphones:
+            return run(model::receiver::mode_t<
+                       model::receiver::mode::microphones>{});
+
+        case model::receiver::mode::hrtf:
+            return run(model::receiver::mode_t<model::receiver::mode::hrtf>{});
     }
 }
 

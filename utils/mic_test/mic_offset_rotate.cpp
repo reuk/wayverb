@@ -70,7 +70,6 @@ auto run_single_angle(float angle,
 
 template <size_t bands, typename Callback>
 auto run_multiple_angles(const glm::vec3& receiver,
-                         float speed_of_sound,
                          float sample_rate,
                          const Callback& callback) {
     constexpr auto test_locations{16};
@@ -112,23 +111,18 @@ int main(int argc, char** argv) {
     const auto oversample_ratio{1.0};
     const auto sample_rate{filter_frequency * oversample_ratio * (1 / 0.16)};
 
-    constexpr auto speed_of_sound{340.0};
-    constexpr auto acoustic_impedance{400.0};
-
     const glm::vec3 receiver{0, 0, 0};
     const microphone mic{glm::vec3{0, 0, 1}, directionality};
 
     constexpr auto bands{8};
-
-    const auto simulation_time{2 / speed_of_sound};
 
     constexpr auto absorption{0.001f};
 
     //  simulations ----------------------------------------------------------//
 
     const auto run{[&](const auto& name, const auto& callback) {
-        const auto output{run_multiple_angles<bands>(
-                receiver, speed_of_sound, sample_rate, callback)};
+        const auto output{
+                run_multiple_angles<bands>(receiver, sample_rate, callback)};
         std::ofstream file{output_folder + "/" + name + ".txt"};
         cereal::JSONOutputArchive archive{file};
         archive(cereal::make_nvp("directionality", directionality),
@@ -136,32 +130,29 @@ int main(int argc, char** argv) {
     }};
 
     run("waveguide", [&](const auto& source, const auto& receiver) {
+        const model::parameters params{source, receiver};
         auto raw{run_waveguide(box,
                                absorption,
-                               source,
-                               receiver,
-                               speed_of_sound,
-                               acoustic_impedance,
+                               params,
                                sample_rate,
-                               simulation_time)};
-        return postprocess_waveguide(
-                begin(raw), end(raw), mic, sample_rate, acoustic_impedance);
+                               2 / params.speed_of_sound)};
+        return postprocess_waveguide(begin(raw),
+                                     end(raw),
+                                     mic,
+                                     sample_rate,
+                                     params.acoustic_impedance);
     });
 
     run("img_src", [&](const auto& source, const auto& receiver) {
-        auto raw{run_exact_img_src(box,
-                                   absorption,
-                                   source,
-                                   receiver,
-                                   speed_of_sound,
-                                   acoustic_impedance,
-                                   simulation_time,
-                                   false)};
+        const model::parameters params{source, receiver};
+        const auto simulation_time{2 / params.speed_of_sound};
+        auto raw{run_exact_img_src(
+                box, absorption, params, simulation_time, false)};
         return raytracer::postprocess(begin(raw),
                                       end(raw),
                                       mic,
-                                      receiver,
-                                      speed_of_sound,
+                                      params.receiver,
+                                      params.speed_of_sound,
                                       sample_rate,
                                       simulation_time);
     });

@@ -28,6 +28,10 @@ struct edge_and_width final {
     double width;
 };
 
+constexpr auto edge(const edge_and_width& e) {
+    return e.edge;
+}
+
 edge_and_width band_edge_and_width(size_t band,
                                    size_t bands,
                                    range<double> r,
@@ -45,6 +49,19 @@ template <size_t bands>
 auto band_edges_and_widths(range<double> r, double overlap) {
     return band_edges_and_widths(
             r, overlap, std::make_index_sequence<bands + 1>{});
+}
+
+template <typename T, size_t... Ix>
+auto bandwidths(const std::array<T, sizeof...(Ix) + 1>& edges,
+                std::index_sequence<Ix...>) {
+    using value_type = decltype(edge(edges[1]) - edge(edges[0]));
+    return std::array<value_type, sizeof...(Ix)>{
+            {edge(edges[Ix + 1]) - edge(edges[Ix])...}};
+}
+
+template <typename T, size_t edges>
+auto bandwidths(const std::array<T, edges>& e) {
+    return bandwidths(e, std::make_index_sequence<edges - 1>{});
 }
 
 /// frequency: normalized frequency, from 0 to 0.5

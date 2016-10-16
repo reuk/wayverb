@@ -7,7 +7,7 @@
 #include "common/cl/iterator.h"
 #include "common/cl/scene_structs.h"
 #include "common/mixdown.h"
-#include "common/model/receiver_settings.h"
+#include "common/model/receiver.h"
 
 #include "utilities/map_to_vector.h"
 
@@ -87,29 +87,25 @@ auto postprocess(InputIt b_input,
 template <typename It>
 auto run_attenuation(It b,
                      It e,
-                     const model::receiver_settings& receiver,
+                     const model::receiver& receiver,
                      double acoustic_impedance,
                      double sample_rate) {
+    const auto run{[&](auto tag) {
+        return postprocess(b,
+                           e,
+                           get_begin(receiver, tag),
+                           get_end(receiver, tag),
+                           acoustic_impedance,
+                           sample_rate);
+    }};
+
     switch (receiver.mode) {
-        case model::receiver_settings::mode::microphones: {
-            return postprocess(b,
-                               e,
-                               make_microphone_iterator(
-                                       begin(receiver.microphones), receiver),
-                               make_microphone_iterator(
-                                       end(receiver.microphones), receiver),
-                               acoustic_impedance,
-                               sample_rate);
-        }
-        case model::receiver_settings::mode::hrtf: {
-            const auto channels = {hrtf::channel::left, hrtf::channel::right};
-            return postprocess(b,
-                               e,
-                               make_hrtf_iterator(begin(channels), receiver),
-                               make_hrtf_iterator(end(channels), receiver),
-                               acoustic_impedance,
-                               sample_rate);
-        }
+        case model::receiver::mode::microphones:
+            return run(model::receiver::mode_t<
+                       model::receiver::mode::microphones>{});
+
+        case model::receiver::mode::hrtf:
+            return run(model::receiver::mode_t<model::receiver::mode::hrtf>{});
     }
 }
 

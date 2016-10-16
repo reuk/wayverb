@@ -1,16 +1,17 @@
 #pragma once
 
 #include "raytracer/diffuse/finder.h"
+#include "raytracer/diffuse/postprocessing.h"
+#include "raytracer/get_direct.h"
 #include "raytracer/image_source/finder.h"
 #include "raytracer/image_source/reflection_path_builder.h"
 #include "raytracer/image_source/run.h"
 #include "raytracer/raytracer.h"
 #include "raytracer/reflector.h"
-#include "raytracer/results.h"
 
-#include "common/channels.h"
 #include "common/cl/common.h"
 #include "common/cl/geometry.h"
+#include "common/model/parameters.h"
 #include "common/nan_checking.h"
 #include "common/pressure_intensity.h"
 #include "common/spatial_division/scene_buffers.h"
@@ -21,58 +22,22 @@
 
 namespace raytracer {
 
-/// If there is line-of-sight between source and receiver, return the relative
-/// time and intensity of the generated impulse.
-template <typename Vertex, typename Surface>
-auto get_direct(const glm::vec3& source,
-                const glm::vec3& receiver,
-                const voxelised_scene_data<Vertex, Surface>& scene_data) {
-    constexpr auto channels{channels_v<Surface>};
-
-    if (source == receiver) {
-        return std::experimental::optional<impulse<channels>>{};
-    }
-
-    const auto source_to_receiver{receiver - source};
-    const auto source_to_receiver_length{glm::length(source_to_receiver)};
-    const auto direction{glm::normalize(source_to_receiver)};
-    const geo::ray to_receiver{source, direction};
-
-    const auto intersection{intersects(scene_data, to_receiver)};
-
-    if (!intersection ||
-        (intersection && intersection->inter.t >= source_to_receiver_length)) {
-        return std::experimental::make_optional(impulse<channels>{
-                unit_constructor_v<
-                        ::detail::cl_vector_constructor_t<float, channels>>,
-                to_cl_float3(source),
-                source_to_receiver_length});
-    }
-
-    return std::experimental::optional<impulse<channels>>{};
-}
-
-//----------------------------------------------------------------------------//
-
-struct raytracer_output final {
-    using audio_t = results<impulse<8>>;
-    using visual_t = aligned::vector<aligned::vector<reflection>>;
-
-    audio_t audio;
-    visual_t visual;
+struct results final {
+    aligned::vector<impulse<8>> img_src;
+    aligned::vector<impulse<8>> diffuse;
+    aligned::vector<aligned::vector<reflection>> visual;
+    model::parameters parameters;
 };
 
 /// arguments
 ///     the step number
 template <typename It, typename PerStepCallback>
-std::experimental::optional<raytracer_output> run(
+std::experimental::optional<results> run(
         It b_direction,
         It e_direction,
         const compute_context& cc,
         const voxelised_scene_data<cl_float3, surface>& voxelised,
-        const glm::vec3& source,
-        const glm::vec3& receiver,
-        double acoustic_impedance,
+        const model::parameters& params,
         size_t rays_to_visualise,
         bool flip_phase,
         const std::atomic_bool& keep_going,
@@ -87,16 +52,24 @@ std::experimental::optional<raytracer_output> run(
     const scene_buffers buffers{cc.context, voxelised};
 
     //  This is the object that generates first-pass reflections.
+    const auto make_ray_iterator{[&](auto it) {
+        return make_mapping_iterator_adapter(std::move(it), [&](const auto& i) {
+            return geo::ray{params.source, i};
+        });
+    }};
+
     reflector ref{cc,
-                  receiver,
-                  get_rays_from_directions(b_direction, e_direction, source)};
+                  params.receiver,
+                  make_ray_iterator(b_direction),
+                  make_ray_iterator(e_direction)};
 
     //  This collects the valid image source paths.
     image_source::reflection_path_builder builder{num_directions};
 
     //  This will incrementally process diffuse responses.
-    diffuse::finder dif{
-            cc, source, receiver, num_directions, acoustic_impedance};
+    //  TODO Slow, but gives more flexibility for posptprocessing.
+    diffuse::finder dif{cc, params, 1.0f, num_directions};
+    aligned::vector<impulse<8>> diffuse_results;
 
     //  This collects raw reflections to be visualised.
     iterative_builder<reflection> reflection_data{rays_to_visualise};
@@ -117,10 +90,14 @@ std::experimental::optional<raytracer_output> run(
 
             const auto reflections{ref.run_step(buffers)};
             builder.push(begin(reflections), end(reflections));
-            const auto flip_phase{!(i % 2)};
-            dif.push(begin(reflections), end(reflections), buffers, flip_phase);
             reflection_data.push(begin(reflections),
                                  begin(reflections) + rays_to_visualise);
+
+            const auto dif_step_output{
+                    dif.process(begin(reflections), end(reflections), buffers)};
+            diffuse_results.insert(end(diffuse_results),
+                                   begin(dif_step_output),
+                                   end(dif_step_output));
 
             callback(i, reflection_depth);
         }
@@ -134,27 +111,36 @@ std::experimental::optional<raytracer_output> run(
         return std::experimental::nullopt;
     }
 
-    //  fetch image source results
-    auto img_src_results{
-            image_source::postprocess<image_source::fast_pressure_calculator<>>(
-                    begin(tree.get_branches()),
-                    end(tree.get_branches()),
-                    source,
-                    receiver,
-                    voxelised,
-                    flip_phase)};
+    const auto img_src_results{[&] {
+        //  fetch image source results
+        auto ret{image_source::postprocess<
+                image_source::fast_pressure_calculator<>>(
+                begin(tree.get_branches()),
+                end(tree.get_branches()),
+                params.source,
+                params.receiver,
+                voxelised,
+                flip_phase)};
 
-    if (const auto direct{get_direct(source, receiver, voxelised)}) {
-        // img_src_results.insert(img_src_results.begin(), *direct);
-        img_src_results.emplace_back(*direct);
-    }
+        if (const auto direct{
+                    get_direct(params.source, params.receiver, voxelised)}) {
+            // img_src_results.insert(img_src_results.begin(), *direct);
+            ret.emplace_back(*direct);
+        }
 
-    return raytracer_output{raytracer_output::audio_t{begin(img_src_results),
-                                                      end(img_src_results),
-                                                      begin(dif.get_data()),
-                                                      end(dif.get_data()),
-                                                      receiver},
-                            std::move(reflection_data.get_data())};
+        //  Correct for distance travelled.
+        for (auto& imp : ret) {
+            imp.volume *= pressure_for_distance(imp.distance,
+                                                params.acoustic_impedance);
+        }
+
+        return ret;
+    }()};
+
+    return results{std::move(img_src_results),
+                   std::move(diffuse_results),
+                   std::move(reflection_data.get_data()),
+                   params};
 }
 
 }  // namespace raytracer

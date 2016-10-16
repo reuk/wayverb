@@ -19,18 +19,6 @@ auto attenuate(const Method& method,
     return make_attenuated_impulse(i.volume * att, i.distance);
 }
 
-/*
-template <typename Method, typename It>
-auto attenuate(const Method& method,
-               const glm::vec3& position,
-               It begin,
-               It end) {
-    return map_to_vector(begin, end, [&](const auto& impulse) {
-        return attenuate(method, position, impulse);
-    });
-}
-*/
-
 template <typename Method>
 struct attenuate_mapper final {
     Method method;

@@ -16,7 +16,7 @@ void multiband_filter(
         const std::array<edge_and_width, bands_plus_one>& edges_and_widths,
         const Callback& callback) {
     constexpr auto bands{bands_plus_one - 1};
-    filter filt{static_cast<size_t>(std::distance(begin, end)) * 2};
+    filter filt{static_cast<size_t>(std::distance(begin, end))};
 
     for (auto i{0ul}; i != bands; ++i) {
         const auto b{callback(begin, i)};
@@ -32,9 +32,15 @@ void multiband_filter(
 }
 
 template <typename It>
-auto rms(It begin, It end) {
-    return std::sqrt(std::accumulate(
-            begin, end, 0.0, [](auto a, auto b) { return a + b * b; }));
+auto square_sum(It b, It e) {
+    return std::accumulate(b, e, std::decay_t<decltype(*b)>(),
+    [](auto a, auto b) { return a + b * b; });
+}
+
+template <typename It>
+auto rms(It b, It e) {
+    using std::sqrt;
+    return sqrt(square_sum(b, e));
 }
 
 template <typename It, typename Callback>

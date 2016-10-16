@@ -15,19 +15,16 @@
 aligned::vector<waveguide::postprocessor::directional_receiver::output>
 run_waveguide(const geo::box& box,
               float absorption,
-              const glm::vec3& source,
-              const glm::vec3& receiver,
-              float speed_of_sound,
-              float acoustic_impedance,
+              const model::parameters& params,
               float sample_rate,
               float simulation_time) {
     const compute_context cc{};
     auto voxels_and_mesh{waveguide::compute_voxels_and_mesh(
             cc,
             geo::get_scene_data(box, make_surface(absorption, 0)),
-            source,
+            params.source,
             sample_rate,
-            speed_of_sound)};
+            params.speed_of_sound)};
 
     //  TODO stop using flat coefficients probably
 
@@ -35,13 +32,14 @@ run_waveguide(const geo::box& box,
     mesh.set_coefficients(
             {waveguide::to_flat_coefficients(make_surface(absorption, 0))});
 
-    const auto input_node{compute_index(mesh.get_descriptor(), source)};
-    const auto output_node{compute_index(mesh.get_descriptor(), receiver)};
+    const auto input_node{compute_index(mesh.get_descriptor(), params.source)};
+    const auto output_node{
+            compute_index(mesh.get_descriptor(), params.receiver)};
 
     const auto grid_spacing{mesh.get_descriptor().spacing};
 
     const auto calibration_factor{waveguide::rectilinear_calibration_factor(
-            grid_spacing, acoustic_impedance)};
+            grid_spacing, params.acoustic_impedance)};
 
     std::cerr << "calibration factor: " << calibration_factor << '\n';
 
@@ -54,7 +52,7 @@ run_waveguide(const geo::box& box,
     callback_accumulator<waveguide::postprocessor::directional_receiver> post{
             mesh.get_descriptor(),
             sample_rate,
-            acoustic_impedance / speed_of_sound,
+            params.acoustic_impedance / params.speed_of_sound,
             output_node};
 
     progress_bar pb;

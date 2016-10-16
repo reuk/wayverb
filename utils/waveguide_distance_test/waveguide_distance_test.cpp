@@ -8,25 +8,14 @@
 #include "common/callback_accumulator.h"
 #include "common/dsp_vector_ops.h"
 
+#include "frequency_domain/multiband_filter.h"
+
 #include "utilities/map_to_vector.h"
 #include "utilities/progress_bar.h"
 
 #include "audio_file/audio_file.h"
 
 #include <iostream>
-
-template <typename It>
-auto rms(It begin, It end) {
-    if (begin == end) {
-        throw std::runtime_error{"can't find rms of empty range"};
-    }
-
-    using std::sqrt;
-    return sqrt(std::accumulate(
-            begin + 1, end, *begin, [](const auto& i, const auto& j) {
-                return i + j * j;
-            }));
-}
 
 int main() {
     const geo::box box{glm::vec3{0}, glm::vec3{1, 1, 12}};
@@ -116,7 +105,7 @@ int main() {
     //  We expect to see a 1 / r^2 relationship between distance and rms.
     const auto rms_values{
             map_to_vector(begin(outputs), end(outputs), [](const auto& i) {
-                return rms(i.begin(), i.end());
+                return frequency_domain::rms(i.begin(), i.end());
             })};
     for (auto rms : rms_values) {
         std::cout << "rms: " << rms << '\n';

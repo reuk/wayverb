@@ -23,9 +23,28 @@ auto get_rays_from_directions(It begin, It end, const glm::vec3& source) {
 
 class reflector final {
 public:
-    reflector(const compute_context& cc,
-              const glm::vec3& receiver,
-              const aligned::vector<geo::ray>& rays);
+    template <typename It>
+    reflector(const compute_context& cc, const glm::vec3& receiver, It b, It e)
+            : cc_{cc}
+            , queue_{cc.context, cc.device}
+            , kernel_{program{cc}.get_kernel()}
+            , receiver_{to_cl_float3(receiver)}
+            , rays_(std::distance(b, e))
+            , ray_buffer_{load_to_buffer(
+                      cc.context,
+                      map_to_vector(
+                              b, e, [](const auto& i) { return convert(i); }),
+                      false)}
+            , reflection_buffer_{cc.context,
+                                 CL_MEM_READ_WRITE,
+                                 rays_ * sizeof(reflection)}
+            , rng_buffer_{cc.context,
+                          CL_MEM_READ_WRITE,
+                          rays_ * 2 * sizeof(cl_float)} {
+        program{cc_}.get_init_reflections_kernel()(
+                cl::EnqueueArgs{queue_, cl::NDRange{rays_}},
+                reflection_buffer_);
+    }
 
     aligned::vector<reflection> run_step(const scene_buffers& buffers);
 

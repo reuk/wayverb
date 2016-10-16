@@ -1,7 +1,7 @@
 #include "raytracer/diffuse/finder.h"
 
 #include "common/geo/box.h"
-#include "common/model/receiver_settings.h"
+#include "common/model/receiver.h"
 #include "common/scene_data_loader.h"
 #include "common/spatial_division/voxelised_scene_data.h"
 
@@ -13,12 +13,10 @@
 
 TEST(diffuse, bad_reflections_box) {
     const geo::box box(glm::vec3(0, 0, 0), glm::vec3(4, 3, 6));
-    constexpr glm::vec3 source{1, 2, 1};
-    constexpr glm::vec3 receiver{2, 1, 5};
+    constexpr model::parameters params{glm::vec3{1, 2, 1}, glm::vec3{2, 1, 5}};
     constexpr auto s{0.01};
     constexpr auto d{0.1};
     constexpr auto surface{make_surface(s, d)};
-    constexpr auto acoustic_impedance{340.0};
 
     const compute_context cc{};
 
@@ -45,16 +43,13 @@ TEST(diffuse, bad_reflections_box) {
                        true},
     };
 
-    raytracer::diffuse::finder diff{
-            cc, source, receiver, bad_reflections.size(), acoustic_impedance};
+    raytracer::diffuse::finder diff{cc, params, 1.0f, bad_reflections.size()};
 
-    diff.push(begin(bad_reflections), end(bad_reflections), buffers, false);
+    diff.process(begin(bad_reflections), end(bad_reflections), buffers);
 }
 
 TEST(diffuse, bad_reflections_vault) {
-    constexpr auto acoustic_impedance{340.0};
-    constexpr glm::vec3 source{0, 1, 0};
-    const model::receiver_settings receiver{glm::vec3{0, 1, 1}};
+    constexpr model::parameters params{glm::vec3{0, 1, 0}, glm::vec3{0, 1, 1}};
 
     const compute_context cc{};
 
@@ -87,11 +82,7 @@ TEST(diffuse, bad_reflections_vault) {
                        true},
     };
 
-    raytracer::diffuse::finder diff{cc,
-                                    source,
-                                    receiver.position,
-                                    bad_reflections.size(),
-                                    acoustic_impedance};
+    raytracer::diffuse::finder diff{cc, params, 1.0f, bad_reflections.size()};
 
-    diff.push(begin(bad_reflections), end(bad_reflections), buffers, false);
+    diff.process(begin(bad_reflections), end(bad_reflections), buffers);
 }

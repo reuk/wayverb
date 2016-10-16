@@ -15,12 +15,14 @@ public:
     auto get_kernel() const {
         return program_wrapper_.get_kernel<cl::Buffer,  // reflections
                                            cl_float3,   // receiver
+                                           float,       // receiver radius
+                                           float,       // acoustic impedance
                                            cl::Buffer,  // triangles
                                            cl::Buffer,  // vertices
                                            cl::Buffer,  // surfaces
-                                           cl::Buffer,  // diffuse_path_info
-                                           cl::Buffer,  // diffuse_output
-                                           cl_char      // flip_phases
+                                           cl::Buffer,  // diffuse path info
+                                           cl::Buffer,  // diffuse output
+                                           cl::Buffer   // intersected output
                                            >("diffuse");
     }
 

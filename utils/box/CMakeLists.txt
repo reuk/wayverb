@@ -14,4 +14,4 @@ target_include_directories(box
     ${CMAKE_BINARY_DIR}/include
 )
 
-target_link_libraries(box combined waveguide raytracer common)
+target_link_libraries(box waveguide raytracer common)
