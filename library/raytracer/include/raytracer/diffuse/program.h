@@ -16,7 +16,6 @@ public:
         return program_wrapper_.get_kernel<cl::Buffer,  // reflections
                                            cl_float3,   // receiver
                                            float,       // receiver radius
-                                           float,       // acoustic impedance
                                            cl::Buffer,  // triangles
                                            cl::Buffer,  // vertices
                                            cl::Buffer,  // surfaces

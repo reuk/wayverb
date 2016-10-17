@@ -4,6 +4,8 @@
 #include <functional>
 #include <type_traits>
 
+//----------------------------------------------------------------------------//
+
 template <typename T>
 struct tuple_like_size;
 
@@ -62,39 +64,47 @@ constexpr const auto& tuple_like_getter(const T (&x)[Ix]) {
 
 //----------------------------------------------------------------------------//
 
-template <typename Func, typename A, typename T>
-constexpr auto reduce(const A& a,
-                      const T&,
-                      std::integral_constant<size_t, 0>,
-                      const Func& = Func{}) {
-    return a;
+template <typename Callback, typename T>
+constexpr auto reduce_params(Callback&&, T&& t) {
+    return t;
 }
 
-template <typename Func, typename A, typename T, size_t i>
-constexpr auto reduce(const A& a,
-                      const T& data,
-                      std::integral_constant<size_t, i>,
-                      const Func& f = Func{}) {
-    return reduce(f(a, tuple_like_getter<i - 1>(data)),
-                  data,
-                  std::integral_constant<size_t, i - 1>{},
-                  f);
+template <typename Callback, typename T, typename... Ts>
+constexpr auto reduce_params(Callback&& callback, T&& t, Ts&&... ts) {
+    return callback(std::forward<T>(t),
+                    reduce_params(std::forward<Callback>(callback),
+                                  std::forward<Ts>(ts)...));
 }
 
-template <typename Func, typename T>
-constexpr auto reduce(const T& data, const Func& f = Func()) {
-    return reduce(data.back(),
-                  data,
-                  std::integral_constant<size_t, tuple_like_size_v<T> - 1>{},
-                  f);
+template <typename Callback, typename T, size_t... Ix>
+constexpr auto reduce(Callback&& callback,
+                      const T& t,
+                      std::index_sequence<Ix...>) {
+    return reduce_params(std::forward<Callback>(callback),
+                         tuple_like_getter<Ix>(t)...);
 }
 
-template <typename Func, typename T, typename Start>
-constexpr auto reduce(const T& data,
-                      const Start& starting_value,
-                      const Func& f = Func()) {
-    return reduce(starting_value,
-                  data,
-                  std::integral_constant<size_t, tuple_like_size_v<T>>{},
-                  f);
+template <typename Callback, typename T>
+constexpr auto reduce(Callback&& callback, const T& t) {
+    return reduce(std::forward<Callback>(callback),
+                  t,
+                  std::make_index_sequence<tuple_like_size_v<T>>{});
+}
+
+template <typename Callback, typename Init, typename T, size_t... Ix>
+constexpr auto reduce(Callback&& callback,
+                      const Init& init,
+                      const T& t,
+                      std::index_sequence<Ix...>) {
+    return reduce_params(std::forward<Callback>(callback),
+                         init,
+                         tuple_like_getter<Ix>(t)...);
+}
+
+template <typename Callback, typename Init, typename T>
+constexpr auto reduce(Callback& callback, const Init& init, const T& t) {
+    return reduce(std::forward<Callback>(callback),
+                  init,
+                  t,
+                  std::make_index_sequence<tuple_like_size_v<T>>{});
 }

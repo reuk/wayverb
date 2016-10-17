@@ -34,6 +34,32 @@ void normalize(It begin, It end) {
     });
 }
 
+template <typename... Ts>
+auto sum_params(Ts&&... ts) {
+    return reduce_params(std::plus<>{}, std::forward<Ts>(ts)...);
+}
+
+template <typename It, typename... Its>
+auto sum_ranges(It b, It e, Its... its) {
+    using value_type = decltype(sum_params(*b, *its...));
+    aligned::vector<value_type> ret;
+    ret.reserve(std::distance(b, e));
+    while (b != e) {
+        ret.emplace_back(sum_params(*b++, (*its++)...));
+    }
+    return ret;
+}
+
+template <typename T, typename... Ts>
+auto sum_vectors(T&& t, Ts&&... ts) {
+    const auto max_len{reduce_params(
+            [](auto a, auto b) { return std::max(a.size(), b.size()); },
+            t,
+            ts...)};
+    sequential_foreach([&](auto& vec) { vec.resize(max_len); }, t, ts...);
+    return sum_ranges(begin(t), end(t), begin(ts)...);
+}
+
 int main(int argc, char** argv) {
     //  constants ------------------------------------------------------------//
 
@@ -105,6 +131,12 @@ int main(int argc, char** argv) {
                 mixdown(begin(raytracer.value.stochastic.specular_histogram),
                         end(raytracer.value.stochastic.specular_histogram)))};
 
+        const auto summed_hist{[&] {
+            auto diffuse_hist{raytracer.value.stochastic.diffuse_histogram};
+            auto specular_hist{raytracer.value.stochastic.specular_histogram};
+            return sum_vectors(diffuse_hist, specular_hist);
+        }()};
+
         const auto room_volume{
                 estimate_room_volume(geo::get_scene_data(box, 0))};
         const auto dirac_sequence{raytracer::prepare_dirac_sequence(
@@ -114,7 +146,7 @@ int main(int argc, char** argv) {
                 "diffuse",
                 raytracer::mono_diffuse_postprocessing(
                         raytracer::energy_histogram{
-                                raytracer.value.stochastic.specular_histogram,
+                                summed_hist,
                                 raytracer.value.stochastic.sample_rate},
                         dirac_sequence))};
 
@@ -130,19 +162,8 @@ int main(int argc, char** argv) {
         auto specular{make_named_value(
                 "specular", run_postprocess_impulses(raytracer.value.img_src))};
 
-        aligned::vector<float> summed(
-                std::max(specular.value.size(), diffuse.value.size()), 0);
-
-        for (auto i{0ul}, e{specular.value.size()}; i != e; ++i) {
-            summed[i] += specular.value[i];
-        }
-
-        for (auto i{0ul}, e{diffuse.value.size()}; i != e; ++i) {
-            summed[i] += diffuse.value[i];
-        }
-
-        auto raytracer_full{
-                make_named_value("raytracer_full", std::move(summed))};
+        auto raytracer_full{make_named_value(
+                "raytracer_full", sum_vectors(specular.value, diffuse.value))};
 
         /*
         auto exact_img_src_p{run_postprocess_impulses(exact_img_src)};

@@ -47,16 +47,6 @@ volume_type specular(volume_type total_reflected, volume_type scattering) {
     return total_reflected * (1 - scattering);
 }
 
-float intensity_for_distance(float distance);
-float intensity_for_distance(float distance) {
-    return 1 / (4 * M_PI * distance * distance);
-}
-
-float pressure_for_distance(float distance, float acoustic_impedance);
-float pressure_for_distance(float distance, float acoustic_impedance) {
-    return sqrt(acoustic_impedance / (4 * M_PI)) / distance;
-}
-
 kernel void init_diffuse_path_info(global diffuse_path_info* info,
                                    volume_type volume,
                                    float3 position) {
@@ -67,7 +57,6 @@ kernel void init_diffuse_path_info(global diffuse_path_info* info,
 kernel void diffuse(const global reflection* reflections,
                     float3 receiver,
                     float receiver_radius,
-                    float acoustic_impedance,
 
                     const global triangle* triangles,
                     const global float3* vertices,
@@ -77,9 +66,6 @@ kernel void diffuse(const global reflection* reflections,
 
                     global impulse* diffuse_output,
                     global impulse* intersected_output) {
-    //  Traces in terms of pressure - it's easier to go pressure -> intensity
-    //  than the reverse.
-
     const size_t thread = get_global_id(0);
 
     //  zero out output
@@ -97,13 +83,11 @@ kernel void diffuse(const global reflection* reflections,
     const size_t surface_index = reflective_triangle.surface;
     const surface reflective_surface = surfaces[surface_index];
 
-    // const volume_type reflectance =
-    //        absorption_to_energy_reflectance(reflective_surface.absorption);
     const volume_type reflectance =
-            absorption_to_pressure_reflectance(reflective_surface.absorption);
+            absorption_to_energy_reflectance(reflective_surface.absorption);
 
-    const volume_type last_pressure = diffuse_path[thread].volume;
-    const volume_type outgoing = last_pressure * reflectance;
+    const volume_type last_volume = diffuse_path[thread].volume;
+    const volume_type outgoing = last_volume * reflectance;
 
     const volume_type specular_accumulator =
             specular(outgoing, reflective_surface.scattering);
@@ -129,11 +113,8 @@ kernel void diffuse(const global reflection* reflections,
         const float to_receiver_distance = length(to_receiver);
         const float total_distance = last_distance + to_receiver_distance;
 
-        intersected_output[thread] = (impulse){
-                last_pressure * pressure_for_distance(total_distance,
-                                                      acoustic_impedance),
-                last_position,
-                total_distance};
+        intersected_output[thread] =
+                (impulse){last_volume, last_position, total_distance};
     }
 
     //  diffuse output
@@ -165,11 +146,8 @@ kernel void diffuse(const global reflection* reflections,
                 scattered(outgoing, reflective_surface.scattering);
 
         //  set output
-        diffuse_output[thread] = (impulse){
-                output_volume * pressure_for_distance(total_distance,
-                                                      acoustic_impedance),
-                this_position,
-                total_distance};
+        diffuse_output[thread] =
+                (impulse){output_volume, this_position, total_distance};
     }
 }
 

@@ -126,12 +126,6 @@ public:
                     size_t total) {
         auto output{finder_.process(b, e, buffers)};
         const auto to_histogram{[&](auto& in, auto& out) {
-            std::for_each(begin(in), end(in), [&](auto& impulse) {
-                impulse.volume = pressure_to_intensity(
-                        impulse.volume,
-                        static_cast<float>(params_.acoustic_impedance));
-            });
-
             const auto make_iterator{[&](auto it) {
                 return make_histogram_iterator(std::move(it),
                                                params_.speed_of_sound);
@@ -187,8 +181,6 @@ constexpr auto make_callback_wrapper_processor(T t) {
     return callback_wrapper_processor<T>{std::move(t)};
 }
 
-/// arguments
-///     the step number
 template <typename It, typename PerStepCallback>
 std::experimental::optional<results> run(
         It b_direction,

@@ -27,8 +27,8 @@ biquad_coefficients_array get_peak_biquads_array(
 coefficients_canonical convolve(const biquad_coefficients_array& a) {
     std::array<coefficients_biquad, biquad_sections> t;
     std::copy(std::begin(a.array), std::end(a.array), t.begin());
-    return reduce(t,
-                  [](const auto& i, const auto& j) { return convolve(i, j); });
+    return reduce([](const auto& i, const auto& j) { return convolve(i, j); },
+                  t);
 }
 
 /// Given a set of canonical coefficients describing a reflectance filter,

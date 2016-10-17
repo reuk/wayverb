@@ -145,7 +145,7 @@ template <typename T,
 constexpr auto accumulate(const T& t,
                           const Accumulator& accumulator,
                           const Op& op) {
-    return reduce(t.s, accumulator, op);
+    return reduce(op, accumulator, t.s);
 }
 
 template <typename T, typename U, typename Op, size_t... Ix>
