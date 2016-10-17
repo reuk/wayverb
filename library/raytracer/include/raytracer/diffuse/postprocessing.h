@@ -51,12 +51,12 @@ dirac_sequence prepare_dirac_sequence(double speed_of_sound,
                                       double sample_rate,
                                       double max_time);
 
-struct diffuse_results final {
+struct energy_histogram final {
     aligned::vector<volume_type> full_histogram;
     double sample_rate;
 };
 
 aligned::vector<float> mono_diffuse_postprocessing(
-        const diffuse_results& diff, const dirac_sequence& sequence);
+        const energy_histogram& diff, const dirac_sequence& sequence);
 
 }  // namespace raytracer

@@ -16,7 +16,7 @@ void multiband_filter(
         const std::array<edge_and_width, bands_plus_one>& edges_and_widths,
         const Callback& callback) {
     constexpr auto bands{bands_plus_one - 1};
-    filter filt{static_cast<size_t>(std::distance(begin, end))};
+    filter filt{2 * static_cast<size_t>(std::distance(begin, end))};
 
     for (auto i{0ul}; i != bands; ++i) {
         const auto b{callback(begin, i)};

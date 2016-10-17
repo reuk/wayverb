@@ -113,23 +113,27 @@ kernel void diffuse(const global reflection* reflections,
 
     //  find the new distance to this reflection
     const float last_distance = diffuse_path[thread].distance;
-    const float this_distance = last_distance + distance(last_position, this_position);
+    const float this_distance =
+            last_distance + distance(last_position, this_position);
 
     //  set accumulator
-    diffuse_path[thread] = (diffuse_path_info){ specular_accumulator, this_position, this_distance};
+    diffuse_path[thread] = (diffuse_path_info){
+            specular_accumulator, this_position, this_distance};
 
     //  compute output
-    
+
     //  specular output
-    if (line_segment_sphere_intersection(last_position, this_position, receiver, receiver_radius)) {
+    if (line_segment_sphere_intersection(
+                last_position, this_position, receiver, receiver_radius)) {
         const float3 to_receiver = receiver - last_position;
         const float to_receiver_distance = length(to_receiver);
         const float total_distance = last_distance + to_receiver_distance;
 
         intersected_output[thread] = (impulse){
-            last_pressure * pressure_for_distance(total_distance, acoustic_impedance),
-            last_position,
-            total_distance};            
+                last_pressure * pressure_for_distance(total_distance,
+                                                      acoustic_impedance),
+                last_position,
+                total_distance};
     }
 
     //  diffuse output
@@ -152,7 +156,8 @@ kernel void diffuse(const global reflection* reflections,
         //      y = opening angle
         //      theta = angle between receiver centre and surface normal
 
-        const float sin_y = receiver_radius / max(receiver_radius, to_receiver_distance);
+        const float sin_y =
+                receiver_radius / max(receiver_radius, to_receiver_distance);
         const float angle_correction = 1 - sqrt(1 - sin_y * sin_y);
 
         volume_type output_volume =

@@ -116,7 +116,7 @@ void weight_sequence(aligned::vector<volume_type>& sequence,
 }
 
 aligned::vector<float> mono_diffuse_postprocessing(
-        const diffuse_results& diff, const dirac_sequence& sequence) {
+        const energy_histogram& diff, const dirac_sequence& sequence) {
     auto copy{sequence.sequence};
     weight_sequence(copy,
                     sequence.bandwidths,

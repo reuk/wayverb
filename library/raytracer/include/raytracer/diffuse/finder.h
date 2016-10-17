@@ -37,9 +37,9 @@ public:
             , diffuse_output_buffer_{cc.context,
                                      CL_MEM_READ_WRITE,
                                      sizeof(impulse<8>) * rays}
-            , intersected_output_buffer_{cc.context,
-                                         CL_MEM_READ_WRITE,
-                                         sizeof(impulse<8>) * rays} {
+            , specular_output_buffer_{cc.context,
+                                      CL_MEM_READ_WRITE,
+                                      sizeof(impulse<8>) * rays} {
         const auto starting_intensity{1.0 / rays};
         const auto starting_pressure{
                 intensity_to_pressure(starting_intensity, acoustic_impedance_)};
@@ -50,6 +50,11 @@ public:
                 make_volume_type(starting_pressure),
                 to_cl_float3(params.source));
     }
+
+    struct results final {
+        aligned::vector<impulse<8>> specular;
+        aligned::vector<impulse<8>> diffuse;
+    };
 
     /// Find diffuse impulses, given a range of `reflection` data.
     /// Calculates in terms of pressure.
@@ -70,24 +75,21 @@ public:
                 scene_buffers.get_surfaces_buffer(),
                 diffuse_path_buffer_,
                 diffuse_output_buffer_,
-                intersected_output_buffer_);
+                specular_output_buffer_);
 
-        //  copy impulses out
-        const auto diffuse_out{
-                read_from_buffer<impulse<8>>(queue_, diffuse_output_buffer_)};
-        const auto intersected_out{read_from_buffer<impulse<8>>(
-                queue_, intersected_output_buffer_)};
+        const auto read_out_impulses{[&](const auto& buffer) {
+            auto raw{read_from_buffer<impulse<8>>(queue_, buffer)};
+            raw.erase(std::remove_if(begin(raw),
+                                     end(raw),
+                                     [](const auto& impulse) {
+                                         return !impulse.distance;
+                                     }),
+                      end(raw));
+            return raw;
+        }};
 
-        aligned::vector<impulse<8>> results;
-        std::copy_if(begin(diffuse_out),
-                     end(diffuse_out),
-                     std::back_inserter(results),
-                     [](const auto& i) { return i.distance; });
-        std::copy_if(begin(intersected_out),
-                     end(intersected_out),
-                     std::back_inserter(results),
-                     [](const auto& i) { return i.distance; });
-        return results;
+        return results{read_out_impulses(specular_output_buffer_),
+                       read_out_impulses(diffuse_output_buffer_)};
     }
 
 private:
@@ -104,7 +106,7 @@ private:
     cl::Buffer reflections_buffer_;
     cl::Buffer diffuse_path_buffer_;
     cl::Buffer diffuse_output_buffer_;
-    cl::Buffer intersected_output_buffer_;
+    cl::Buffer specular_output_buffer_;
 };
 
 }  // namespace diffuse

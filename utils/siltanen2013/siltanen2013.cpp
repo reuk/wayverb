@@ -96,50 +96,27 @@ int main(int argc, char** argv) {
     }};
 
     {
-        constexpr auto histogram_sr{1000.0};
-        constexpr auto max_time{60.0};
-        const auto diffuse_intensity{map_to_vector(
-                begin(raytracer.value.diffuse),
-                end(raytracer.value.diffuse),
-                [&](auto i) {
-                    i.volume = pressure_to_intensity(
-                            i.volume,
-                            static_cast<float>(params.acoustic_impedance));
-                    return i;
-                })};
-
-        const auto make_histogram{[&](auto b, auto e) {
-            const auto make_iterator{[&](auto it) {
-                return raytracer::make_histogram_iterator(
-                        std::move(it), params.speed_of_sound);
-            }};
-
-            return raytracer::diffuse_results{
-                    histogram(make_iterator(b),
-                              make_iterator(e),
-                              histogram_sr,
-                              max_time,
-                              raytracer::dirac_sum_functor{}),
-                    histogram_sr};
-        }};
-
-        const auto intensity_histogram{make_histogram(begin(diffuse_intensity),
-                                                      end(diffuse_intensity))};
-
-        auto named_intensity_hist{make_named_value(
-                "intensity_histogram",
-                mixdown(begin(intensity_histogram.full_histogram),
-                        end(intensity_histogram.full_histogram)))};
+        auto named_diffuse_hist{make_named_value(
+                "diffuse_histogram",
+                mixdown(begin(raytracer.value.raytraced.diffuse_histogram),
+                        end(raytracer.value.raytraced.diffuse_histogram)))};
+        auto named_specular_hist{make_named_value(
+                "specular_histogram",
+                mixdown(begin(raytracer.value.raytraced.specular_histogram),
+                        end(raytracer.value.raytraced.specular_histogram)))};
 
         const auto room_volume{
                 estimate_room_volume(geo::get_scene_data(box, 0))};
         const auto dirac_sequence{raytracer::prepare_dirac_sequence(
                 params.speed_of_sound, room_volume, sample_rate, eyring)};
 
-        auto diffuse{
-                make_named_value("diffuse",
-                                 raytracer::mono_diffuse_postprocessing(
-                                         intensity_histogram, dirac_sequence))};
+        auto diffuse{make_named_value(
+                "diffuse",
+                raytracer::mono_diffuse_postprocessing(
+                        raytracer::energy_histogram{
+                                raytracer.value.raytraced.specular_histogram,
+                                raytracer.value.raytraced.sample_rate},
+                        dirac_sequence))};
 
         const auto run_postprocess_impulses{[&](const auto& in) {
             return raytracer::postprocess(begin(in),
@@ -184,7 +161,8 @@ int main(int argc, char** argv) {
                                  mixdown(begin(dirac_sequence.sequence),
                                          end(dirac_sequence.sequence)))};
 
-        const auto results = {&named_intensity_hist,
+        const auto results = {&named_diffuse_hist,
+                              &named_specular_hist,
                               &named_dirac_sequence,
                               &diffuse,
                               &specular,
