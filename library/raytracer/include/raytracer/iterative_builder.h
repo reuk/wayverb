@@ -10,11 +10,11 @@ template <typename T>
 class iterative_builder final {
 public:
     iterative_builder(size_t items)
-            : data(items) {}
+            : data_{items} {}
 
     template <typename It, typename Func>
     void push(It b, It e, const Func& func) {
-        const auto num_items{data.size()};
+        const auto num_items{data_.size()};
         if (std::distance(b, e) != num_items) {
             throw std::runtime_error{
                     "incorrect range size passed to iterative_builder"};
@@ -30,12 +30,12 @@ public:
         push(b, e, [](const auto& i) -> const auto& { return i; });
     }
 
-    const auto& get_data() const { return data; }
-    auto& get_data() { return data; }
+    const auto& get_data() const { return data_; }
+    auto& get_data() { return data_; }
 
 private:
     void push_item(size_t index, T item) {
-        data[index].emplace_back(std::move(item));
+        data_[index].emplace_back(std::move(item));
     }
     void push_item(size_t index, const std::experimental::optional<T>& item) {
         if (item) {
@@ -43,7 +43,7 @@ private:
         }
     }
 
-    aligned::vector<aligned::vector<T>> data;
+    aligned::vector<aligned::vector<T>> data_;
 };
 
 }  // namespace raytracer

@@ -14,15 +14,18 @@ glm::vec3 sphere_point(double z, double theta) {
     return sphere(std::sqrt(1 - z * z), z, theta);
 }
 
+auto sphere_point(const direction_rng& rng) {
+    return sphere_point(rng.get_z(), rng.get_theta());
+}
+
 aligned::vector<glm::vec3> get_random_directions(size_t num) {
-    aligned::vector<glm::vec3> ret;
-    ret.reserve(num);
+    aligned::vector<glm::vec3> ret(num);
     std::default_random_engine engine{std::random_device()()};
 
-    for (auto i = 0u; i != num; ++i) {
-        const direction_rng rng(engine);
-        ret.emplace_back(sphere_point(rng.get_z(), rng.get_theta()));
-    }
+    std::generate(begin(ret), end(ret), [&] {
+        return sphere_point(direction_rng{engine});
+    });
+
     return ret;
 }
 

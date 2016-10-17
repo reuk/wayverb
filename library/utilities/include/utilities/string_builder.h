@@ -1,11 +1,8 @@
 #pragma once
 
-#include <sstream>
+#include "utilities/sequential_foreach.h"
 
-template <typename Fun, typename... Ts>
-inline void sequential_foreach(Fun f, const Ts&... args) {
-    (void)std::initializer_list<int>{((void)f(args), 0)...};
-}
+#include <sstream>
 
 template <typename... Ts>
 inline std::ostream& to_stream(std::ostream& os, const Ts&... ts) {

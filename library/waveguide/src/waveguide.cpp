@@ -15,15 +15,11 @@ size_t run(const compute_context& cc,
            const step_preprocessor& preprocessor,
            const step_postprocessor& postprocessor,
            const std::atomic_bool& keep_going) {
-    cl::Buffer previous{cc.context,
-                        CL_MEM_READ_WRITE,
-                        mesh.get_structure().get_condensed_nodes().size() *
-                                sizeof(cl_float)};
-
-    cl::Buffer current{cc.context,
-                       CL_MEM_READ_WRITE,
-                       mesh.get_structure().get_condensed_nodes().size() *
-                               sizeof(cl_float)};
+    cl::CommandQueue queue{cc.context, cc.device};
+    auto previous{make_filled_buffer(
+            queue, mesh.get_structure().get_condensed_nodes().size(), 0.0f)};
+    auto current{make_filled_buffer(
+            queue, mesh.get_structure().get_condensed_nodes().size(), 0.0f)};
 
     const auto node_buffer{load_to_buffer(
             cc.context, mesh.get_structure().get_condensed_nodes(), true)};
@@ -39,11 +35,6 @@ size_t run(const compute_context& cc,
             cc.context, get_boundary_data<2>(mesh.get_structure()), false)};
     auto boundary_buffer_3{load_to_buffer(
             cc.context, get_boundary_data<3>(mesh.get_structure()), false)};
-
-    cl::CommandQueue queue{cc.context, cc.device};
-
-    fill_buffer(queue, previous, 0.0f);
-    fill_buffer(queue, current, 0.0f);
 
     const program program{cc};
     auto kernel{program.get_kernel()};

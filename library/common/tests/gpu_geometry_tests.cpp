@@ -6,6 +6,7 @@
 #include "common/program_wrapper.h"
 
 #include "utilities/map_to_vector.h"
+#include "utilities/mapping_iterator_adapter.h"
 #include "utilities/progress_bar.h"
 
 #include "gtest/gtest.h"
@@ -54,14 +55,17 @@ public:
                 "line_segment_sphere_intersection_test");
     }
 
+    auto get_line_segment_sphere_percentage_test_kernel() const {
+        return wrapper_.get_kernel<cl_float3, cl::Buffer, cl_float3, cl_float, cl::Buffer>("line_segment_sphere_percentage_test");
+    }
+
 private:
     program_wrapper wrapper_;
     static constexpr auto source_{R"(
 
-kernel void triangle_vert_intersection_test(
-        const global triangle_verts* t,
-        const global ray* r,
-        global triangle_inter* ret) {
+kernel void triangle_vert_intersection_test(const global triangle_verts* t,
+                                            const global ray* r,
+                                            global triangle_inter* ret) {
     const size_t thread = get_global_id(0);
     ret[thread] = (triangle_inter){};
     const triangle_verts i = t[thread];
@@ -70,31 +74,36 @@ kernel void triangle_vert_intersection_test(
     ret[thread] = k;
 }
 
-kernel void ray_triangle_intersection_test(
-        const global triangle* triangles,
-        uint num_triangles,
-        const global float3* vertices,
-        const global ray* rays,
-        global intersection* ret) {
+kernel void ray_triangle_intersection_test(const global triangle* triangles,
+                                           uint num_triangles,
+                                           const global float3* vertices,
+                                           const global ray* rays,
+                                           global intersection* ret) {
     const size_t thread = get_global_id(0);
     ret[thread] = (intersection){};
     const ray i = rays[thread];
-    const intersection j = ray_triangle_intersection(i,
-                                                     triangles,
-                                                     num_triangles,
-                                                     vertices,
-                                                     ~(uint)(0));
+    const intersection j = ray_triangle_intersection(
+            i, triangles, num_triangles, vertices, ~(uint)(0));
     ret[thread] = j;
 }
 
-kernel void line_segment_sphere_intersection_test(
-        const global float3* p1,
-        const global float3* p2,
-        const global float3* sc,
-        const global float* r,
-        global char* ret) {
+kernel void line_segment_sphere_intersection_test(const global float3* p1,
+                                                  const global float3* p2,
+                                                  const global float3* sc,
+                                                  const global float* r,
+                                                  global char* ret) {
     const size_t thread = get_global_id(0);
-    ret[thread] = line_segment_sphere_intersection(p1[thread], p2[thread], sc[thread], r[thread]);
+    ret[thread] = line_segment_sphere_intersection(
+            p1[thread], p2[thread], sc[thread], r[thread]);
+}
+
+kernel void line_segment_sphere_percentage_test(float3 p1,
+                                                const global float3* p2,
+                                                float3 sc,
+                                                float r,
+                                                global char* ret) {
+    const size_t thread = get_global_id(0);
+    ret[thread] = line_segment_sphere_intersection(p1, p2[thread], sc, r);
 }
 
 )"};
@@ -297,6 +306,12 @@ TEST(gpu_geometry, line_sphere_intersection) {
 
             {{{-1, 0, 0}}, {{1, 0, 0}}, {{0, 0, 0}}, 10, true},
 
+            {{{0, 0, 0}}, {{100, 0, 0}}, {{1.5, 0, 0}}, 1, true},
+            {{{0, 0, 0}}, {{-100, 0, 0}}, {{1.5, 0, 0}}, 1, false},
+
+            {{{0, 0, 0}}, {{100, 0, 0}}, {{0, 2, 0}}, 1.9, false},
+            {{{0, 0, 0}}, {{100, 0, 0}}, {{0, 2, 0}}, 2.1, true},
+
     };
 
     //  set up buffers
@@ -325,5 +340,56 @@ TEST(gpu_geometry, line_sphere_intersection) {
 
     for (auto i{0ul}, e{test_cases.size()}; i != e; ++i) {
         ASSERT_EQ(test_cases[i].expected_result, results[i]);
+    }
+}
+
+TEST(gpu_geometry, line_sphere_percentage) {
+    const compute_context cc{};
+    const program prog{cc};
+    auto kernel{prog.get_line_segment_sphere_percentage_test_kernel()};
+    cl::CommandQueue queue{cc.context, cc.device};
+
+    std::default_random_engine engine{std::random_device{}()};
+    std::uniform_real_distribution<float> distance_dist{1.0f, 10.0f};
+    std::uniform_real_distribution<float> radius_dist{0.1f, 1.0f};
+
+    constexpr auto tests{1 << 20};
+
+    for (auto i{0ul}; i != 100; ++i) {
+        const auto sphere_distance{distance_dist(engine)};
+        const auto sphere_radius{radius_dist(engine)};
+
+        const auto expected_proportion{
+                (1 - cos(asin(sphere_radius / sphere_distance))) / 2};
+
+        const auto directions{get_random_directions(tests)};
+        const auto p2_buffer{load_to_buffer(
+                cc.context,
+                map_to_vector(begin(directions),
+                              end(directions),
+                              [&](const auto& i) {
+                                  const auto line_length{2 * (sphere_distance +
+                                                              sphere_radius)};
+                                  return to_cl_float3(i * line_length);
+                              }),
+                true)};
+
+        cl::Buffer ret_buffer{
+                cc.context, CL_MEM_READ_WRITE, sizeof(cl_char) * tests};
+
+        kernel(cl::EnqueueArgs{queue, cl::NDRange{tests}},
+               cl_float3{{0, 0, 0}},
+               p2_buffer,
+               cl_float3{{sphere_distance, 0, 0}},
+               sphere_radius,
+               ret_buffer);
+
+        const auto results{read_from_buffer<cl_char>(queue, ret_buffer)};
+        const auto intersections{std::count_if(
+                begin(results), end(results), [](auto i) { return i; })};
+
+        const auto found_proportion{intersections / static_cast<double>(tests)};
+
+        ASSERT_NEAR(expected_proportion, found_proportion, 0.01);
     }
 }

@@ -79,3 +79,10 @@ void fill_buffer(cl::CommandQueue& queue,
     constexpr auto offset{0};
     queue.enqueueFillBuffer(buffer, pattern, offset, buffer_size);
 }
+
+template <typename T>
+auto make_filled_buffer(cl::CommandQueue& queue, size_t size, const T& pattern) {
+    cl::Buffer ret{queue.getInfo<CL_QUEUE_CONTEXT>(), CL_MEM_READ_WRITE, sizeof(T) * size};
+    fill_buffer(queue, ret, pattern);
+    return ret;
+}

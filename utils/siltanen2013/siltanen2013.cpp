@@ -98,12 +98,12 @@ int main(int argc, char** argv) {
     {
         auto named_diffuse_hist{make_named_value(
                 "diffuse_histogram",
-                mixdown(begin(raytracer.value.raytraced.diffuse_histogram),
-                        end(raytracer.value.raytraced.diffuse_histogram)))};
+                mixdown(begin(raytracer.value.stochastic.diffuse_histogram),
+                        end(raytracer.value.stochastic.diffuse_histogram)))};
         auto named_specular_hist{make_named_value(
                 "specular_histogram",
-                mixdown(begin(raytracer.value.raytraced.specular_histogram),
-                        end(raytracer.value.raytraced.specular_histogram)))};
+                mixdown(begin(raytracer.value.stochastic.specular_histogram),
+                        end(raytracer.value.stochastic.specular_histogram)))};
 
         const auto room_volume{
                 estimate_room_volume(geo::get_scene_data(box, 0))};
@@ -114,8 +114,8 @@ int main(int argc, char** argv) {
                 "diffuse",
                 raytracer::mono_diffuse_postprocessing(
                         raytracer::energy_histogram{
-                                raytracer.value.raytraced.specular_histogram,
-                                raytracer.value.raytraced.sample_rate},
+                                raytracer.value.stochastic.specular_histogram,
+                                raytracer.value.stochastic.sample_rate},
                         dirac_sequence))};
 
         const auto run_postprocess_impulses{[&](const auto& in) {

@@ -160,12 +160,13 @@ float3 get_direction(float3 from, float3 to) {
 
 bool line_segment_sphere_intersection(float3 p1, float3 p2, float3 sc, float r);
 bool line_segment_sphere_intersection(float3 p1, float3 p2, float3 sc, float r) {
-   const float3 dp = p2 - p1;
-   const float a = dot(dp, dp);
-   const float b = 2 * dot(dp, p1 - sc);
-   const float c = dot(sc, sc) + dot(p1, p1) - 2 * dot(sc, p1) - r * r;
-   const float bb4ac = b * b - 4 * a * c;
-   return (! almost_equal(fabs(a), 0, ULP)) && 0 <= bb4ac;
+    const float3 diff = p2 - p1;
+    const float u = dot(sc - p1, diff) / dot(diff, diff);
+    if (u < 0 || 1 < u) {
+        return false;
+    }
+    const float3 closest = p1 + u * diff - sc;
+    return dot(closest, closest) < r * r;
 }
 
 )"};

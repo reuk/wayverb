@@ -2,14 +2,14 @@
 
 #include "utilities/aligned/vector.h"
 
+#include <algorithm>
+
 template <typename It, typename Callback>
-auto map_to_vector(It begin, It end, Callback callback) {
+auto map_to_vector(It b, It e, const Callback &callback) {
     using ReturnType = std::decay_t<decltype(
             std::declval<Callback>()(*std::declval<It>()))>;
-    aligned::vector<ReturnType> ret{};
-    ret.reserve(std::distance(begin, end));
-    for (; begin != end; ++begin) {
-        ret.emplace_back(callback(*begin));
-    }
+    aligned::vector<ReturnType> ret;
+    ret.reserve(std::distance(b, e));
+    std::transform(b, e, std::back_inserter(ret), callback);
     return ret;
 }
