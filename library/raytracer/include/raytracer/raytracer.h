@@ -98,7 +98,7 @@ public:
                     const scene_buffers& buffers,
                     size_t step,
                     size_t total) {
-        builder_.push(b, b + builder_.get_data().size());
+        builder_.push(b, b + builder_.get_num_items());
     }
 
     auto get_results() { return std::move(builder_.get_data()); }
@@ -214,11 +214,6 @@ std::experimental::optional<results> run(
     visual_processor visual_processor{rays_to_visualise};
     auto callback_wrapper_processor{make_callback_wrapper_processor(callback)};
 
-    const auto processors{std::tie(image_source_processor,
-                                   stochastic_processor,
-                                   visual_processor,
-                                   callback_wrapper_processor)};
-
     const auto make_ray_iterator{[&](auto it) {
         return make_mapping_iterator_adapter(std::move(it), [&](const auto& i) {
             return geo::ray{params.source, i};
@@ -242,7 +237,7 @@ std::experimental::optional<results> run(
 
         const auto reflections{ref.run_step(buffers)};
         const auto b{begin(reflections)};
-        const auto e{begin(reflections)};
+        const auto e{end(reflections)};
         call_each(std::tie(image_source_processor,
                            stochastic_processor,
                            visual_processor,
