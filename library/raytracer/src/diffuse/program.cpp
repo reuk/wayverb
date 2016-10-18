@@ -57,7 +57,6 @@ kernel void init_diffuse_path_info(global diffuse_path_info* info,
 kernel void diffuse(const global reflection* reflections,
                     float3 receiver,
                     float receiver_radius,
-                    uint iteration,
 
                     const global triangle* triangles,
                     const global float3* vertices,
@@ -90,9 +89,6 @@ kernel void diffuse(const global reflection* reflections,
     const volume_type last_volume = diffuse_path[thread].volume;
     const volume_type outgoing = last_volume * reflectance;
 
-    const volume_type specular_accumulator =
-            specular(outgoing, reflective_surface.scattering);
-
     const float3 last_position = diffuse_path[thread].position;
     const float3 this_position = reflections[thread].position;
 
@@ -103,7 +99,7 @@ kernel void diffuse(const global reflection* reflections,
 
     //  set accumulator
     diffuse_path[thread] = (diffuse_path_info){
-            specular_accumulator, this_position, this_distance};
+            outgoing, this_position, this_distance};
 
     //  compute output
     

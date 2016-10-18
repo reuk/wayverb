@@ -28,7 +28,10 @@ finder::finder(const compute_context& cc,
     const auto dist{glm::distance(params.source, params.receiver)};
     const auto sin_y{receiver_radius / std::max(receiver_radius, dist)};
     const auto cos_y{std::sqrt(1 - sin_y * sin_y)};
-    const auto starting_intensity{2.0 / (rays * dist * dist * (1 - cos_y))};
+
+    //  The extra factor of 4pi here is because
+    //  image-source intensity = 1 / 4pir^2 instead of just 1 / r^2
+    const auto starting_intensity{2.0 / (4 * M_PI * rays * dist * dist * (1 - cos_y))};
 
     program{cc_}.get_init_diffuse_path_info_kernel()(
             cl::EnqueueArgs{queue_, cl::NDRange{rays_}},

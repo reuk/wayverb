@@ -64,17 +64,17 @@ int main(int argc, char** argv) {
     //  constants ------------------------------------------------------------//
 
     const geo::box box{glm::vec3{0}, glm::vec3{5.56, 3.97, 2.81}};
-    constexpr auto sample_rate{16000.0};
+    constexpr auto sample_rate{44100.0};
 
     constexpr model::parameters params{glm::vec3{2.09, 2.12, 2.12},
                                        glm::vec3{2.09, 3.08, 0.96}};
     constexpr glm::vec3 pointing{0, 0, 1};
     constexpr glm::vec3 up{0, 1, 0};
 
-    constexpr auto reflectance{0.95};
+    constexpr auto reflectance{0.99};
     const auto absorption{1 - pow(reflectance, 2)};
 
-    const auto scattering{0.1};
+    const auto scattering{0.05};
 
     const aligned::map<std::string, float> polar_pattern_map{
             {"omnidirectional", 0.0f},
@@ -90,7 +90,7 @@ int main(int argc, char** argv) {
 
     const auto raytracer{make_named_value(
             "raytracer",
-            run_raytracer(box, absorption, scattering, params, false))};
+            run_raytracer(box, absorption, scattering, params, 4))};
 
     /*
     const auto waveguide{make_named_value(
@@ -132,10 +132,11 @@ int main(int argc, char** argv) {
         const auto dirac_sequence{raytracer::prepare_dirac_sequence(
                 params.speed_of_sound, room_volume, sample_rate, eyring)};
 
-        auto diffuse{make_named_value(
-                "diffuse",
-                raytracer::mono_diffuse_postprocessing(
-                        raytracer.value.stochastic, dirac_sequence))};
+        auto diffuse{make_named_value("diffuse",
+                                      raytracer::mono_diffuse_postprocessing(
+                                              raytracer.value.stochastic,
+                                              dirac_sequence,
+                                              params.acoustic_impedance))};
 
         const auto run_postprocess_impulses{[&](const auto& in) {
             return raytracer::postprocess(begin(in),

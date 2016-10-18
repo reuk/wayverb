@@ -10,7 +10,7 @@ inline auto hrtf_band_params(double sample_rate) {
     constexpr range<double> audible_range{20, 20000};
 
     return frequency_domain::band_edges_and_widths<entry::bands>(
-            audible_range / sample_rate, 1);
+            audible_range / sample_rate, 0.5);
 }
 
 template <typename It, typename Callback>

@@ -13,6 +13,17 @@
 
 namespace raytracer {
 
+template <typename T, size_t... Ix>
+constexpr auto array_to_volume_type(const std::array<T, 8>& t,
+                                    std::index_sequence<Ix...>) {
+    return volume_type{{static_cast<float>(t[Ix])...}};
+}
+
+template <typename T>
+constexpr auto array_to_volume_type(const std::array<T, 8>& t) {
+    return array_to_volume_type(t, std::make_index_sequence<8>{});
+}
+
 /// See schroder2011 5.3.4. , p.70
 
 double constant_mean_event_occurrence(double speed_of_sound,
@@ -38,7 +49,8 @@ void weight_sequence(aligned::vector<volume_type>& sequence,
                      const volume_type& bandwidths,
                      double sequence_sample_rate,
                      const aligned::vector<volume_type>& histogram,
-                     double histogram_sample_rate);
+                     double histogram_sample_rate,
+                     double acoustic_impedance);
 
 struct dirac_sequence final {
     aligned::vector<volume_type> sequence;
@@ -57,6 +69,6 @@ struct energy_histogram final {
 };
 
 aligned::vector<float> mono_diffuse_postprocessing(
-        const energy_histogram& diff, const dirac_sequence& sequence);
+        const energy_histogram& diff, const dirac_sequence& sequence, double acoustic_impedance);
 
 }  // namespace raytracer

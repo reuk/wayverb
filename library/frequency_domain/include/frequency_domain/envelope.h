@@ -7,6 +7,8 @@
 
 namespace frequency_domain {
 
+double max_width_factor(range<double> r, double step);
+
 /// See antoni2010 equations 19 and 20
 
 double lower_band_edge(double centre, double p, double P, size_t l);
@@ -14,11 +16,6 @@ double upper_band_edge(double centre, double p, double P, size_t l);
 
 double band_edge_frequency(size_t band, size_t bands, range<double> r);
 double band_centre_frequency(size_t band, size_t bands, range<double> r);
-
-double band_edge_width(size_t band,
-                       size_t bands,
-                       range<double> r,
-                       double overlap);
 
 /// Holds parameters for a frequency-domain crossover filter.
 /// 'edge' is a frequency (Hz or normalised)
@@ -32,23 +29,28 @@ constexpr auto edge(const edge_and_width& e) {
     return e.edge;
 }
 
-edge_and_width band_edge_and_width(size_t band,
-                                   size_t bands,
-                                   range<double> r,
-                                   double overlap);
+constexpr auto make_edge_with_width_factor(double edge, double width_factor) {
+    return edge_and_width{edge, edge * width_factor};
+}
 
 template <size_t... Ix>
 auto band_edges_and_widths(range<double> r,
-                           double overlap,
+                           double max_width_factor,
                            std::index_sequence<Ix...>) {
     return std::array<edge_and_width, sizeof...(Ix)>{
-            {band_edge_and_width(Ix, sizeof...(Ix) - 1, r, overlap)...}};
+            {make_edge_with_width_factor(
+                    band_edge_frequency(Ix, sizeof...(Ix) - 1, r),
+                    max_width_factor)...}};
 }
 
 template <size_t bands>
 auto band_edges_and_widths(range<double> r, double overlap) {
+    if (overlap < 0 || 1 < overlap) {
+        throw std::runtime_error{"overlap is outside valid range [0, 1)"};
+    }
+    const auto width_factor{max_width_factor(r, 1.0 / bands) * overlap};
     return band_edges_and_widths(
-            r, overlap, std::make_index_sequence<bands + 1>{});
+            r, width_factor, std::make_index_sequence<bands + 1>{});
 }
 
 template <typename T, size_t... Ix>

@@ -10,7 +10,7 @@ raytracer::results run_raytracer(const geo::box& box,
                                  float absorption,
                                  float scattering,
                                  const model::parameters& params,
-                                 bool flip_phase) {
+                                 size_t image_source_order) {
     const auto voxelised{make_voxelised_scene_data(
             geo::get_scene_data(box, make_surface(absorption, scattering)),
             2,
@@ -25,7 +25,8 @@ raytracer::results run_raytracer(const geo::box& box,
                                 cc,
                                 voxelised,
                                 params,
-                                3,
+                                0.2f,
+                                image_source_order,
                                 0,
                                 true,
                                 [](auto i, auto steps) {})};
@@ -34,5 +35,5 @@ raytracer::results run_raytracer(const geo::box& box,
         throw std::runtime_error{"raytracer failed to generate results"};
     }
 
-    return *results;
+    return std::move(*results);
 }

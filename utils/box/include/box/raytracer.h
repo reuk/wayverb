@@ -14,4 +14,4 @@ raytracer::results run_raytracer(const geo::box& box,
                                  float absorption,
                                  float diffusion,
                                  const model::parameters& params,
-                                 bool flip_phase);
+                                 size_t image_source_order);

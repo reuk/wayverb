@@ -72,7 +72,6 @@ public:
 
         if (const auto direct{
                     get_direct(params_.source, params_.receiver, voxelised_)}) {
-            // img_src_results.insert(img_src_results.begin(), *direct);
             ret.emplace_back(*direct);
         }
 
@@ -135,7 +134,7 @@ public:
                  const scene_buffers& buffers,
                  size_t step,
                  size_t total) {
-        const auto output{finder_.process(b, e, buffers, step)};
+        const auto output{finder_.process(b, e, buffers)};
         const auto to_histogram{[&](auto& in) {
             const auto make_iterator{[&](auto it) {
                 return make_histogram_iterator(std::move(it),
@@ -225,6 +224,7 @@ std::experimental::optional<results> run(
         const compute_context& cc,
         const voxelised_scene_data<cl_float3, surface>& voxelised,
         const model::parameters& params,
+        float receiver_radius,
         size_t max_image_source_order,
         size_t rays_to_visualise,
         const std::atomic_bool& keep_going,
@@ -241,8 +241,12 @@ std::experimental::optional<results> run(
                                                   voxelised,
                                                   max_image_source_order,
                                                   num_directions};
-    stochastic_processor stochastic_processor{
-            cc, params, 1.0, 1000.0, max_image_source_order, num_directions};
+    stochastic_processor stochastic_processor{cc,
+                                              params,
+                                              receiver_radius,
+                                              1000.0,
+                                              max_image_source_order,
+                                              num_directions};
     visual_processor visual_processor{rays_to_visualise};
     auto callback_wrapper_processor{make_callback_wrapper_processor(callback)};
 

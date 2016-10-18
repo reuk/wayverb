@@ -16,7 +16,6 @@ public:
         return program_wrapper_.get_kernel<cl::Buffer,  // reflections
                                            cl_float3,   // receiver
                                            cl_float,    // receiver radius
-                                           cl_uint,     // iteration number
                                            cl::Buffer,  // triangles
                                            cl::Buffer,  // vertices
                                            cl::Buffer,  // surfaces

@@ -138,6 +138,11 @@ constexpr auto construct_vector(Input input) {
     return ret;
 }
 
+template <typename T, typename Op, enable_if_is_vector_t<T, int> = 0>
+constexpr auto accumulate(const T& t, const Op& op) {
+    return reduce(op, t.s);
+}
+
 template <typename T,
           typename Accumulator,
           typename Op,
@@ -187,7 +192,7 @@ constexpr auto zip_both_vector(const T& t,
                                const U& u,
                                const Op& op,
                                std::index_sequence<Ix...>) {
-    using value_type = decltype(op(t.s[0], u.s[0]));
+    using value_type = std::decay_t<decltype(op(t.s[0], u.s[0]))>;
     return cl_vector_constructor_t<value_type, sizeof...(Ix)>{
             {op(t.s[Ix], u.s[Ix])...}};
 }
@@ -208,7 +213,7 @@ constexpr auto zip_first_vector(const T& t,
                                 const U& u,
                                 const Op& op,
                                 std::index_sequence<Ix...>) {
-    using value_type = decltype(op(t.s[0], u));
+    using value_type = std::decay_t<decltype(op(t.s[0], u))>;
     return cl_vector_constructor_t<value_type, sizeof...(Ix)>{
             {op(t.s[Ix], u)...}};
 }
@@ -228,7 +233,7 @@ constexpr auto zip_second_vector(const T& t,
                                  const U& u,
                                  const Op& op,
                                  std::index_sequence<Ix...>) {
-    using value_type = decltype(op(t, u.s[0]));
+    using value_type = std::decay_t<decltype(op(t, u.s[0]))>;
     return cl_vector_constructor_t<value_type, sizeof...(Ix)>{
             {op(t, u.s[Ix])...}};
 }
@@ -245,7 +250,7 @@ constexpr auto zip(const T& t, const U& u, const Op& op) {
 
 template <typename T, typename Op, size_t... Ix>
 constexpr auto map(const T& t, const Op& op, std::index_sequence<Ix...>) {
-    using value_type = decltype(op(t.s[0]));
+    using value_type = std::decay_t<decltype(op(t.s[0]))>;
     return cl_vector_constructor_t<value_type, sizeof...(Ix)>{{op(t.s[Ix])...}};
 }
 
@@ -263,7 +268,7 @@ template <typename T,
           detail::enable_if_any_is_vector_t<int, T, U> = 0>
 constexpr auto operator==(const T& a, const U& b) {
     return detail::accumulate(
-            detail::zip(a, b, std::equal_to<>{}), true, std::logical_and<>{});
+            detail::zip(a, b, std::equal_to<>{}), std::logical_and<>{});
 }
 
 template <typename T, detail::enable_if_is_vector_t<T, int> = 0>
@@ -363,12 +368,12 @@ constexpr auto operator-(const T& a) {
 
 template <typename T, detail::enable_if_is_vector_t<T, int> = 0>
 constexpr auto sum(const T& t) {
-    return detail::accumulate(t, 0, std::plus<>{});
+    return detail::accumulate(t, std::plus<>{});
 }
 
 template <typename T, detail::enable_if_is_vector_t<T, int> = 0>
 constexpr auto product(const T& t) {
-    return detail::accumulate(t, 1, std::multiplies<>{});
+    return detail::accumulate(t, std::multiplies<>{});
 }
 
 template <typename T, detail::enable_if_is_vector_t<T, int> = 0>
@@ -380,37 +385,42 @@ constexpr auto mean(const T& t) {
 
 template <typename T, detail::enable_if_is_vector_t<T, int> = 0>
 constexpr bool all(const T& t) {
-    return detail::accumulate(t, true, std::logical_and<>{});
+    return detail::accumulate(t, std::logical_and<>{});
 }
 
 template <typename T, detail::enable_if_is_vector_t<T, int> = 0>
 constexpr bool any(const T& t) {
-    return detail::accumulate(t, false, std::logical_or<>{});
+    return detail::accumulate(t, std::logical_or<>{});
 }
+
+namespace detail {
+
+struct max_functor final {
+    template <typename T>
+    constexpr const auto& operator()(const T& a, const T& b) const {
+        using std::max;
+        return max(a, b);
+    }
+};
+
+struct min_functor final {
+    template <typename T>
+    constexpr const auto& operator()(const T& a, const T& b) const {
+        using std::min;
+        return min(a, b);
+    }
+};
+
+}  // namespace detail
 
 template <typename T, detail::enable_if_is_vector_t<T, int> = 0>
 constexpr auto min_element(const T& t) {
-    using value_type = detail::value_type_t<T>;
-    struct min final {
-        constexpr value_type operator()(value_type a, value_type b) const {
-            using std::min;
-            return min(a, b);
-        }
-    };
-    return detail::accumulate(t, std::numeric_limits<value_type>::max(), min{});
+    return detail::accumulate(t, detail::min_functor{});
 }
 
 template <typename T, detail::enable_if_is_vector_t<T, int> = 0>
 constexpr auto max_element(const T& t) {
-    using value_type = detail::value_type_t<T>;
-    struct max final {
-        constexpr value_type operator()(value_type a, value_type b) const {
-            using std::max;
-            return max(a, b);
-        }
-    };
-    return detail::accumulate(
-            t, std::numeric_limits<value_type>::lowest(), max{});
+    return detail::accumulate(t, detail::max_functor{});
 }
 
 //  misc ---------------------------------------------------------------------//
@@ -457,4 +467,18 @@ template <typename T,
           detail::enable_if_any_is_vector_t<int, T, U> = 0>
 inline auto pow(const T& t, const U& u) {
     return detail::zip(t, u, [](auto i, auto j) { return std::pow(i, j); });
+}
+
+template <typename T,
+          typename U,
+          detail::enable_if_any_is_vector_t<int, T, U> = 0>
+inline auto max(const T& t, const U& u) {
+    return detail::zip(t, u, detail::max_functor{});
+}
+
+template <typename T,
+          typename U,
+          detail::enable_if_any_is_vector_t<int, T, U> = 0>
+inline auto min(const T& t, const U& u) {
+    return detail::zip(t, u, detail::min_functor{});
 }

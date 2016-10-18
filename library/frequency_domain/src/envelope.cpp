@@ -2,6 +2,12 @@
 
 namespace frequency_domain {
 
+double max_width_factor(range<double> r, double step) {
+    using std::pow;
+    const auto base{std::pow(r.get_max() / r.get_min(), step)};
+    return (base - 1) / (base + 1);
+}
+
 double band_edge_impl(double centre, double p, double P, size_t l) {
     return l ? std::sin(M_PI * band_edge_impl(centre, p, P, l - 1) / 2)
              : (((p / P) + 1) / 2);
@@ -11,14 +17,14 @@ double lower_band_edge(double centre, double p, double P, size_t l) {
     if (P <= 0) {
         throw std::runtime_error("P must be greater than 0");
     }
-    return std::sin(M_PI * band_edge_impl(centre, p, P, l) / 2);
+    return std::pow(std::sin(M_PI * band_edge_impl(centre, p, P, l) / 2), 2.0);
 }
 
 double upper_band_edge(double centre, double p, double P, size_t l) {
     if (P <= 0) {
         throw std::runtime_error("P must be greater than 0");
     }
-    return std::cos(M_PI * band_edge_impl(centre, p, P, l) / 2);
+    return std::pow(std::cos(M_PI * band_edge_impl(centre, p, P, l) / 2), 2.0);
 }
 
 double band_edge_frequency(size_t band, size_t bands, range<double> r) {
@@ -28,23 +34,6 @@ double band_edge_frequency(size_t band, size_t bands, range<double> r) {
 
 double band_centre_frequency(size_t band, size_t bands, range<double> r) {
     return band_edge_frequency(band * 2 + 1, bands * 2, r);
-}
-
-double band_edge_width(size_t band,
-                       size_t bands,
-                       range<double> r,
-                       double overlap) {
-    return (band_edge_frequency(band * 2 + 1, bands * 2, r) -
-            band_edge_frequency(band * 2 + 0, bands * 2, r)) *
-           overlap;
-}
-
-edge_and_width band_edge_and_width(size_t band,
-                                   size_t bands,
-                                   range<double> r,
-                                   double overlap) {
-    return {band_edge_frequency(band, bands, r),
-            band_edge_width(band, bands, r, overlap)};
 }
 
 double compute_bandpass_magnitude(double frequency,

@@ -14,7 +14,8 @@ void multiband_filter(
         It begin,
         It end,
         const std::array<edge_and_width, bands_plus_one>& edges_and_widths,
-        const Callback& callback) {
+        const Callback& callback,
+        size_t l = 0) {
     constexpr auto bands{bands_plus_one - 1};
     filter filt{2 * static_cast<size_t>(std::distance(begin, end))};
 
@@ -26,7 +27,7 @@ void multiband_filter(
                                   freq,
                                   edges_and_widths[i + 0],
                                   edges_and_widths[i + 1],
-                                  0));
+                                  l));
         });
     }
 }
@@ -80,21 +81,28 @@ auto make_multiband(It begin, It end) {
 
 class indexer final {
 public:
-    indexer(size_t index)
+    constexpr explicit indexer(size_t index)
             : index_{index} {}
 
     template <typename T>
-    auto& operator()(T& t) const {
+    constexpr auto& operator()(T& t) const {
         return t[index_];
     }
 
     template <typename T>
-    const auto& operator()(const T& t) const {
+    constexpr const auto& operator()(const T& t) const {
         return t[index_];
     }
 
 private:
     size_t index_;
+};
+
+struct make_indexer_iterator final {
+    template <typename It>
+    constexpr auto operator()(It it, size_t index) const {
+        return make_mapping_iterator_adapter(std::move(it), indexer{index});
+    }
 };
 
 template <size_t bands_plus_one, typename It>
@@ -106,16 +114,13 @@ auto per_band_energy(
 
     auto multiband{make_multiband<bands>(begin, end)};
 
-    const auto callback{[](auto it, auto index) {
-        return make_mapping_iterator_adapter(std::move(it), indexer{index});
-    }};
-
     multiband_filter(std::begin(multiband),
                      std::end(multiband),
                      edges_and_widths,
-                     callback);
-    auto rms{multiband_rms<bands>(
-            std::begin(multiband), std::end(multiband), callback)};
+                     make_indexer_iterator{});
+    auto rms{multiband_rms<bands>(std::begin(multiband),
+                                  std::end(multiband),
+                                  make_indexer_iterator{})};
 
     for (auto i{0ul}; i != bands; ++i) {
         const auto width{edges_and_widths[i + 1].edge -

@@ -2,6 +2,7 @@
 
 #include "common/cl/iterator.h"
 #include "common/mixdown.h"
+#include "common/pressure_intensity.h"
 
 #include "utilities/map.h"
 
@@ -43,17 +44,6 @@ aligned::vector<float> generate_dirac_sequence(double speed_of_sound,
     return ret;
 }
 
-template <typename T, size_t... Ix>
-constexpr auto array_to_volume_type(const std::array<T, 8>& t,
-                                    std::index_sequence<Ix...>) {
-    return volume_type{{static_cast<float>(t[Ix])...}};
-}
-
-template <typename T>
-constexpr auto array_to_volume_type(const std::array<T, 8>& t) {
-    return array_to_volume_type(t, std::make_index_sequence<8>{});
-}
-
 dirac_sequence prepare_dirac_sequence(double speed_of_sound,
                                       double room_volume,
                                       double sample_rate,
@@ -78,7 +68,7 @@ dirac_sequence prepare_dirac_sequence(double speed_of_sound,
 
 std::ostream& operator<<(std::ostream& o, const volume_type& v) {
     o << "[";
-    for (const auto & i : v.s) {
+    for (const auto& i : v.s) {
         o << i << ", ";
     }
     return o << "]";
@@ -88,7 +78,8 @@ void weight_sequence(aligned::vector<volume_type>& sequence,
                      const volume_type& bandwidths,
                      double sequence_sample_rate,
                      const aligned::vector<volume_type>& histogram,
-                     double histogram_sample_rate) {
+                     double histogram_sample_rate,
+                     double acoustic_impedance) {
     //  If the dirac sequence is longer than the histogram data we have, we
     //  shorten it.
     //  This avoids weird noise stuff at the end of the processed sequence.
@@ -107,22 +98,31 @@ void weight_sequence(aligned::vector<volume_type>& sequence,
         }};
         const auto beg{get_sequence_index(i)};
         const auto end{get_sequence_index(i + 1)};
-        const auto sequence_energy{frequency_domain::square_sum(beg, end)};
+        const auto summed_square{frequency_domain::square_sum(beg, end)};
 
-        const auto scale_factor{
-                sqrt(2 * histogram[i] * bandwidths / sequence_energy)};
+        //  vorlander2007 eq 11.51
+        //  schroder2011 eq 5.47
+
+        const auto scale_factor{intensity_to_pressure(
+                detail::zip(histogram[i] * bandwidths / summed_square,
+                            summed_square,
+                            [](auto i, auto j) { return j ? i : 0; }),
+                acoustic_impedance)};
         for_each(beg, end, [&](auto& i) { i *= scale_factor; });
     }
 }
 
 aligned::vector<float> mono_diffuse_postprocessing(
-        const energy_histogram& diff, const dirac_sequence& sequence) {
+        const energy_histogram& diff,
+        const dirac_sequence& sequence,
+        double acoustic_impedance) {
     auto copy{sequence.sequence};
     weight_sequence(copy,
                     sequence.bandwidths,
                     sequence.sample_rate,
                     diff.full_histogram,
-                    diff.sample_rate);
+                    diff.sample_rate,
+                    acoustic_impedance);
     return mixdown(begin(copy), end(copy));
 }
 

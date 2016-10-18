@@ -45,7 +45,7 @@ TEST(diffuse, bad_reflections_box) {
 
     raytracer::diffuse::finder diff{cc, params, 1.0f, bad_reflections.size()};
 
-    diff.process(begin(bad_reflections), end(bad_reflections), buffers, 0);
+    diff.process(begin(bad_reflections), end(bad_reflections), buffers);
 }
 
 TEST(diffuse, bad_reflections_vault) {
@@ -84,5 +84,5 @@ TEST(diffuse, bad_reflections_vault) {
 
     raytracer::diffuse::finder diff{cc, params, 1.0f, bad_reflections.size()};
 
-    diff.process(begin(bad_reflections), end(bad_reflections), buffers, 0);
+    diff.process(begin(bad_reflections), end(bad_reflections), buffers);
 }

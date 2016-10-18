@@ -30,8 +30,7 @@ public:
     template <typename It>
     auto process(It b,
                  It e,
-                 const scene_buffers& scene_buffers,
-                 size_t iteration) {
+                 const scene_buffers& scene_buffers) {
         //  copy the current batch of reflections to the device
         cl::copy(queue_, b, e, reflections_buffer_);
 
@@ -40,7 +39,6 @@ public:
                 reflections_buffer_,
                 receiver_,
                 receiver_radius_,
-                iteration,
                 scene_buffers.get_triangles_buffer(),
                 scene_buffers.get_vertices_buffer(),
                 scene_buffers.get_surfaces_buffer(),
