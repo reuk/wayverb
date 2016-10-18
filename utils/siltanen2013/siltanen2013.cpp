@@ -122,20 +122,10 @@ int main(int argc, char** argv) {
     }};
 
     {
-        auto named_diffuse_hist{make_named_value(
-                "diffuse_histogram",
-                mixdown(begin(raytracer.value.stochastic.diffuse_histogram),
-                        end(raytracer.value.stochastic.diffuse_histogram)))};
-        auto named_specular_hist{make_named_value(
-                "specular_histogram",
-                mixdown(begin(raytracer.value.stochastic.specular_histogram),
-                        end(raytracer.value.stochastic.specular_histogram)))};
-
-        const auto summed_hist{[&] {
-            auto diffuse_hist{raytracer.value.stochastic.diffuse_histogram};
-            auto specular_hist{raytracer.value.stochastic.specular_histogram};
-            return sum_vectors(diffuse_hist, specular_hist);
-        }()};
+        auto named_hist{make_named_value(
+                "summed_histogram",
+                mixdown(begin(raytracer.value.stochastic.full_histogram),
+                        end(raytracer.value.stochastic.full_histogram)))};
 
         const auto room_volume{
                 estimate_room_volume(geo::get_scene_data(box, 0))};
@@ -145,10 +135,7 @@ int main(int argc, char** argv) {
         auto diffuse{make_named_value(
                 "diffuse",
                 raytracer::mono_diffuse_postprocessing(
-                        raytracer::energy_histogram{
-                                summed_hist,
-                                raytracer.value.stochastic.sample_rate},
-                        dirac_sequence))};
+                        raytracer.value.stochastic, dirac_sequence))};
 
         const auto run_postprocess_impulses{[&](const auto& in) {
             return raytracer::postprocess(begin(in),
@@ -182,8 +169,7 @@ int main(int argc, char** argv) {
                                  mixdown(begin(dirac_sequence.sequence),
                                          end(dirac_sequence.sequence)))};
 
-        const auto results = {&named_diffuse_hist,
-                              &named_specular_hist,
+        const auto results = {&named_hist,
                               &named_dirac_sequence,
                               &diffuse,
                               &specular,

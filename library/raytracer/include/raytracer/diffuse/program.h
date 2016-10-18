@@ -15,7 +15,8 @@ public:
     auto get_kernel() const {
         return program_wrapper_.get_kernel<cl::Buffer,  // reflections
                                            cl_float3,   // receiver
-                                           float,       // receiver radius
+                                           cl_float,    // receiver radius
+                                           cl_uint,     // iteration number
                                            cl::Buffer,  // triangles
                                            cl::Buffer,  // vertices
                                            cl::Buffer,  // surfaces

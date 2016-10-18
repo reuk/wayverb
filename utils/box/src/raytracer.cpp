@@ -25,8 +25,8 @@ raytracer::results run_raytracer(const geo::box& box,
                                 cc,
                                 voxelised,
                                 params,
+                                3,
                                 0,
-                                flip_phase,
                                 true,
                                 [](auto i, auto steps) {})};
 

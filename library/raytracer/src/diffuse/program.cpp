@@ -57,6 +57,7 @@ kernel void init_diffuse_path_info(global diffuse_path_info* info,
 kernel void diffuse(const global reflection* reflections,
                     float3 receiver,
                     float receiver_radius,
+                    uint iteration,
 
                     const global triangle* triangles,
                     const global float3* vertices,
@@ -105,7 +106,7 @@ kernel void diffuse(const global reflection* reflections,
             specular_accumulator, this_position, this_distance};
 
     //  compute output
-
+    
     //  specular output
     if (line_segment_sphere_intersection(
                 last_position, this_position, receiver, receiver_radius)) {
@@ -113,8 +114,10 @@ kernel void diffuse(const global reflection* reflections,
         const float to_receiver_distance = length(to_receiver);
         const float total_distance = last_distance + to_receiver_distance;
 
+        const volume_type output_volume = last_volume;
+
         intersected_output[thread] =
-                (impulse){last_volume, last_position, total_distance};
+                (impulse){output_volume, last_position, total_distance};
     }
 
     //  diffuse output
@@ -141,7 +144,7 @@ kernel void diffuse(const global reflection* reflections,
                 receiver_radius / max(receiver_radius, to_receiver_distance);
         const float angle_correction = 1 - sqrt(1 - sin_y * sin_y);
 
-        volume_type output_volume =
+        const volume_type output_volume =
                 angle_correction * 2 * cos_angle *
                 scattered(outgoing, reflective_surface.scattering);
 

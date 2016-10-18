@@ -41,6 +41,17 @@ constexpr auto apply_each(Callbacks&& callbacks, const Collection& c) {
                       std::make_index_sequence<std::tuple_size<Callbacks>{}>{});
 }
 
+template <typename Callbacks, size_t... Ix>
+constexpr auto apply_each(Callbacks&& callbacks, std::index_sequence<Ix...>) {
+    return std::make_tuple(std::get<Ix>(callbacks)()...);
+}
+
+template <typename Callbacks>
+constexpr auto apply_each(Callbacks&& callbacks) {
+    return apply_each(std::forward<Callbacks>(callbacks),
+                      std::make_index_sequence<std::tuple_size<Callbacks>{}>{});
+}
+
 //----------------------------------------------------------------------------//
 
 template <typename Callbacks, typename Collection, size_t... Ix>
@@ -62,3 +73,13 @@ void call_each(Callbacks&& callbacks, const Collection& c) {
               std::make_index_sequence<std::tuple_size<Callbacks>{}>{});
 }
 
+template <typename Callbacks, size_t... Ix>
+void call_each(Callbacks&& callbacks, std::index_sequence<Ix...>) {
+    (void)std::initializer_list<int>{((void)std::get<Ix>(callbacks)(), 0)...};
+}
+
+template <typename Callbacks>
+void call_each(Callbacks&& callbacks) {
+    call_each(std::forward<Callbacks>(callbacks),
+              std::make_index_sequence<std::tuple_size<Callbacks>{}>{});
+}
