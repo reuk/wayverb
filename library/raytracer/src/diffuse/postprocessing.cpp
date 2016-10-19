@@ -4,6 +4,7 @@
 #include "common/mixdown.h"
 #include "common/pressure_intensity.h"
 
+#include "utilities/for_each.h"
 #include "utilities/map.h"
 
 #include <iostream>
@@ -23,10 +24,10 @@ double t0(double constant) {
     return std::pow(2.0 * std::log(2.0) / constant, 1.0 / 3.0);
 }
 
-aligned::vector<float> generate_dirac_sequence(double speed_of_sound,
-                                               double room_volume,
-                                               double sample_rate,
-                                               double max_time) {
+dirac_sequence generate_dirac_sequence(double speed_of_sound,
+                                       double room_volume,
+                                       double sample_rate,
+                                       double max_time) {
     const auto constant_mean_occurrence{
             constant_mean_event_occurrence(speed_of_sound, room_volume)};
 
@@ -41,29 +42,7 @@ aligned::vector<float> generate_dirac_sequence(double speed_of_sound,
         const bool negative = twice % 2;
         ret[sample_index] = negative ? -1 : 1;
     }
-    return ret;
-}
-
-dirac_sequence prepare_dirac_sequence(double speed_of_sound,
-                                      double room_volume,
-                                      double sample_rate,
-                                      double max_time) {
-    const auto single{generate_dirac_sequence(
-            speed_of_sound, room_volume, sample_rate, max_time)};
-    auto multi{map_to_vector(begin(single), end(single), [](auto i) {
-        return make_volume_type(i);
-    })};
-
-    const auto params{hrtf_data::hrtf_band_params(sample_rate)};
-
-    frequency_domain::multiband_filter(
-            begin(multi), end(multi), params, [](auto it, auto index) {
-                return make_cl_type_iterator(std::move(it), index);
-            });
-
-    return {multi,
-            array_to_volume_type(frequency_domain::bandwidths(params)),
-            sample_rate};
+    return {ret, sample_rate};
 }
 
 std::ostream& operator<<(std::ostream& o, const volume_type& v) {
@@ -74,56 +53,59 @@ std::ostream& operator<<(std::ostream& o, const volume_type& v) {
     return o << "]";
 }
 
-void weight_sequence(aligned::vector<volume_type>& sequence,
-                     const volume_type& bandwidths,
-                     double sequence_sample_rate,
-                     const aligned::vector<volume_type>& histogram,
-                     double histogram_sample_rate,
-                     double acoustic_impedance) {
-    //  If the dirac sequence is longer than the histogram data we have, we
-    //  shorten it.
-    //  This avoids weird noise stuff at the end of the processed sequence.
+aligned::vector<volume_type> weight_sequence(const energy_histogram& histogram,
+                                             const dirac_sequence& sequence,
+                                             double acoustic_impedance) {
+    auto ret{map_to_vector(begin(sequence.sequence),
+                           end(sequence.sequence),
+                           [](auto i) { return make_volume_type(i); })};
+
     const auto convert_index{[&](auto ind) -> size_t {
-        return ind * sequence_sample_rate / histogram_sample_rate;
+        return ind * sequence.sample_rate / histogram.sample_rate;
     }};
-    const auto ideal_sequence_length{convert_index(histogram.size())};
-    if (ideal_sequence_length < sequence.size()) {
-        sequence.resize(ideal_sequence_length);
+
+    const auto ideal_sequence_length{
+            convert_index(histogram.full_histogram.size())};
+    if (ideal_sequence_length < ret.size()) {
+        ret.resize(ideal_sequence_length);
     }
 
-    for (auto i{0ul}, e{histogram.size()}; i != e; ++i) {
+    for (auto i{0ul}, e{histogram.full_histogram.size()}; i != e; ++i) {
         const auto get_sequence_index{[&](auto ind) {
-            return sequence.begin() +
-                   std::min(convert_index(ind), sequence.size());
+            return ret.begin() + std::min(convert_index(ind), ret.size());
         }};
+
         const auto beg{get_sequence_index(i)};
         const auto end{get_sequence_index(i + 1)};
-        const auto summed_square{frequency_domain::square_sum(beg, end)};
 
-        //  vorlander2007 eq 11.51
-        //  schroder2011 eq 5.47
+        const auto squared_summed{frequency_domain::square_sum(beg, end)};
 
-        const auto scale_factor{intensity_to_pressure(
-                detail::zip(histogram[i] * bandwidths / summed_square,
-                            summed_square,
-                            [](auto i, auto j) { return j ? i : 0; }),
+        auto scale_factor{intensity_to_pressure(
+                histogram.full_histogram[i] / squared_summed,
                 acoustic_impedance)};
-        for_each(beg, end, [&](auto& i) { i *= scale_factor; });
+
+        for_each([](auto& i) { i = std::isfinite(i) ? i : 0.0f; },
+                 scale_factor.s);
+
+        std::for_each(beg, end, [&](auto& i) { i *= scale_factor; });
     }
+
+    return ret;
 }
 
 aligned::vector<float> mono_diffuse_postprocessing(
-        const energy_histogram& diff,
+        const energy_histogram& histogram,
         const dirac_sequence& sequence,
         double acoustic_impedance) {
-    auto copy{sequence.sequence};
-    weight_sequence(copy,
-                    sequence.bandwidths,
-                    sequence.sample_rate,
-                    diff.full_histogram,
-                    diff.sample_rate,
-                    acoustic_impedance);
-    return mixdown(begin(copy), end(copy));
+    auto weighted{weight_sequence(histogram, sequence, acoustic_impedance)};
+    hrtf_data::multiband_filter(begin(weighted),
+                                end(weighted),
+                                sequence.sample_rate,
+                                [](auto it, auto index) {
+                                    return make_cl_type_iterator(std::move(it),
+                                                                 index);
+                                });
+    return mixdown(begin(weighted), end(weighted));
 }
 
 }  // namespace raytracer

@@ -85,13 +85,14 @@ int main(int argc, char** argv) {
                 throw std::runtime_error{"hrtf data files must be stereo"};
             }
 
-            const auto energy{
-                    map(std::array<size_t, 2>{{0, 1}}, [&](auto channel) {
+            const auto energy{map(
+                    [&](auto channel) {
                         return hrtf_data::per_band_energy(
                                 begin(audio.signal[channel]),
                                 end(audio.signal[channel]),
                                 audio.sample_rate);
-                    })};
+                    },
+                    std::array<size_t, 2>{{0, 1}})};
 
             results.emplace_back(hrtf_data::entry{az, el, energy});
         }

@@ -137,9 +137,9 @@ auto compute_surfaces() {
     return ret;
 }
 
-static const auto descriptors{map(compute_surfaces(), [](auto i) {
-    return waveguide::to_filter_descriptors(i);
-})};
+static const auto descriptors{
+        map([](auto i) { return waveguide::to_filter_descriptors(i); },
+            compute_surfaces())};
 
 enum class FilterType {
     biquad_cascade,
@@ -149,24 +149,31 @@ enum class FilterType {
 
 auto compute_coeffs(
         std::integral_constant<FilterType, FilterType::biquad_cascade>) {
-    return map(descriptors, [](const auto& n) {
-        return waveguide::get_peak_biquads_array(n, sr);
-    });
+    return map(
+            [](const auto& n) {
+                return waveguide::get_peak_biquads_array(n, sr);
+            },
+            descriptors);
 }
 
 auto compute_coeffs(
         std::integral_constant<FilterType, FilterType::single_reflectance>) {
-    return map(descriptors, [](const auto& n) {
-        return waveguide::convolve(waveguide::get_peak_biquads_array(n, sr));
-    });
+    return map(
+            [](const auto& n) {
+                return waveguide::convolve(
+                        waveguide::get_peak_biquads_array(n, sr));
+            },
+            descriptors);
 }
 
 auto compute_coeffs(
         std::integral_constant<FilterType, FilterType::single_impedance>) {
-    return map(descriptors, [](const auto& n) {
-        return waveguide::to_impedance_coefficients(
-                waveguide::convolve(waveguide::get_peak_biquads_array(n, sr)));
-    });
+    return map(
+            [](const auto& n) {
+                return waveguide::to_impedance_coefficients(waveguide::convolve(
+                        waveguide::get_peak_biquads_array(n, sr)));
+            },
+            descriptors);
 }
 
 template <typename Memory, testing::FilterType FT, typename Generator>

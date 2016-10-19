@@ -249,14 +249,14 @@ constexpr auto zip(const T& t, const U& u, const Op& op) {
 }
 
 template <typename T, typename Op, size_t... Ix>
-constexpr auto map(const T& t, const Op& op, std::index_sequence<Ix...>) {
+constexpr auto map_impl(const T& t, const Op& op, std::index_sequence<Ix...>) {
     using value_type = std::decay_t<decltype(op(t.s[0]))>;
     return cl_vector_constructor_t<value_type, sizeof...(Ix)>{{op(t.s[Ix])...}};
 }
 
 template <typename T, typename Op, enable_if_is_vector_t<T, int> = 0>
 constexpr auto map(const T& t, const Op& op) {
-    return map(t, op, std::make_index_sequence<components_v<T>>{});
+    return map_impl(t, op, std::make_index_sequence<components_v<T>>{});
 }
 
 }  // namespace detail
@@ -267,8 +267,8 @@ template <typename T,
           typename U,
           detail::enable_if_any_is_vector_t<int, T, U> = 0>
 constexpr auto operator==(const T& a, const U& b) {
-    return detail::accumulate(
-            detail::zip(a, b, std::equal_to<>{}), std::logical_and<>{});
+    return detail::accumulate(detail::zip(a, b, std::equal_to<>{}),
+                              std::logical_and<>{});
 }
 
 template <typename T, detail::enable_if_is_vector_t<T, int> = 0>

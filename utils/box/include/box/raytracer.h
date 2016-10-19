@@ -11,7 +11,6 @@
 #include "common/pressure_intensity.h"
 
 raytracer::results run_raytracer(const geo::box& box,
-                                 float absorption,
-                                 float diffusion,
+                                 const surface& surface,
                                  const model::parameters& params,
                                  size_t image_source_order);

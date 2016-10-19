@@ -274,11 +274,11 @@ std::experimental::optional<results> run(
         const auto reflections{ref.run_step(buffers)};
         const auto b{begin(reflections)};
         const auto e{end(reflections)};
-        call_each(map(std::tie(image_source_processor,
+        call_each(map(make_process_functor_adapter{},
+                      std::tie(image_source_processor,
                                stochastic_processor,
                                visual_processor,
-                               callback_wrapper_processor),
-                      make_process_functor_adapter{}),
+                               callback_wrapper_processor)),
                   std::tie(b, e, buffers, i, reflection_depth));
     }
 

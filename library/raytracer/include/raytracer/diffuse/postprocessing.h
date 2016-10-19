@@ -40,28 +40,15 @@ auto interval_size(Engine& engine, double mean_occurrence) {
 
 double t0(double constant);
 
-aligned::vector<float> generate_dirac_sequence(double speed_of_sound,
-                                               double room_volume,
-                                               double sample_rate,
-                                               double max_time);
-
-void weight_sequence(aligned::vector<volume_type>& sequence,
-                     const volume_type& bandwidths,
-                     double sequence_sample_rate,
-                     const aligned::vector<volume_type>& histogram,
-                     double histogram_sample_rate,
-                     double acoustic_impedance);
-
 struct dirac_sequence final {
-    aligned::vector<volume_type> sequence;
-    volume_type bandwidths;
+    aligned::vector<float> sequence;
     double sample_rate;
 };
 
-dirac_sequence prepare_dirac_sequence(double speed_of_sound,
-                                      double room_volume,
-                                      double sample_rate,
-                                      double max_time);
+dirac_sequence generate_dirac_sequence(double speed_of_sound,
+                                       double room_volume,
+                                       double sample_rate,
+                                       double max_time);
 
 struct energy_histogram final {
     aligned::vector<volume_type> full_histogram;
@@ -69,6 +56,8 @@ struct energy_histogram final {
 };
 
 aligned::vector<float> mono_diffuse_postprocessing(
-        const energy_histogram& diff, const dirac_sequence& sequence, double acoustic_impedance);
+        const energy_histogram& histogram,
+        const dirac_sequence& sequence,
+        double acoustic_impedance);
 
 }  // namespace raytracer

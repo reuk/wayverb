@@ -34,8 +34,10 @@ void multiband_filter(
 
 template <typename It>
 auto square_sum(It b, It e) {
-    return std::accumulate(b, e, std::decay_t<decltype(*b)>(),
-    [](auto a, auto b) { return a + b * b; });
+    return std::accumulate(
+            b, e, std::decay_t<decltype(*b)>(), [](auto a, auto b) {
+                return a + b * b;
+            });
 }
 
 template <typename It>

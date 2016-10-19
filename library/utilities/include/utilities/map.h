@@ -1,30 +1,34 @@
 #pragma once
 
-#include <array>
-#include <tuple>
+#include "utilities/is_tuple.h"
+#include "utilities/tuple_like.h"
 
-template <typename Func, typename T, size_t num, size_t... ind>
-constexpr auto map(const std::array<T, num>& t,
-                   std::index_sequence<ind...>,
-                   const Func& func) {
-    using value_type = decltype(func(t[0]));
-    return std::array<value_type, num>{{func(t[ind])...}};
+//  arrays
+
+template <typename Func, typename T, size_t... Ix>
+constexpr auto map(Func&& func,
+                   T&& t,
+                   std::index_sequence<Ix...>,
+                   std::enable_if_t<!is_tuple_v<std::decay_t<T>>, int> = 0) {
+    using value_type = decltype(func(tuple_like_getter<0>(t)));
+    return std::array<value_type, sizeof...(Ix)>{
+            {func(tuple_like_getter<Ix>(t))...}};
 }
 
-template <typename Func, typename T, size_t num>
-constexpr auto map(const std::array<T, num>& t, const Func& func) {
-    return map(t, std::make_index_sequence<num>{}, func);
+template <typename Func, typename T, size_t... Ix>
+constexpr auto map(Func&& func,
+                   T&& t,
+                   std::index_sequence<Ix...>,
+                   std::enable_if_t<is_tuple_v<std::decay_t<T>>, int> = 0) {
+    return std::make_tuple(func(tuple_like_getter<Ix>(t))...);
 }
 
-template <typename Func, typename... Ts, size_t... ind>
-constexpr auto map(const std::tuple<Ts...>& tup,
-                   std::index_sequence<ind...>,
-                   const Func& func) {
-    return std::make_tuple(func(std::get<ind>(tup))...);
-}
+//  master dispatching function ----------------------------------------------//
 
-template <typename Func, typename... Ts>
-constexpr auto map(const std::tuple<Ts...>& t, const Func& func) {
-    return map(t, std::make_index_sequence<sizeof...(Ts)>{}, func);
+template <typename Func, typename T>
+constexpr auto map(Func&& func, T&& t) {
+    return map(std::forward<Func>(func),
+               std::forward<T>(t),
+               std::make_index_sequence<
+                       tuple_like_size_v<decay_const_ref_t<T>>>{});
 }
-

@@ -15,6 +15,7 @@
 #include "audio_file/audio_file.h"
 
 #include <iostream>
+
 //  TODO mic output modal responses don't match
 
 //  TODO proper crossover filter
@@ -71,10 +72,13 @@ int main(int argc, char** argv) {
     constexpr glm::vec3 pointing{0, 0, 1};
     constexpr glm::vec3 up{0, 1, 0};
 
-    constexpr auto reflectance{0.99};
-    const auto absorption{1 - pow(reflectance, 2)};
+    // constexpr auto reflectance{0.99};
+    // const auto absorption{1 - pow(reflectance, 2)};
+    // constexpr auto scattering{0.05};
 
-    const auto scattering{0.05};
+    constexpr surface surface{
+            {{0.05, 0.05, 0.07, 0.1, 0.12, 0.14, 0.16, 0.17}},
+            {{0.05, 0.05, 0.07, 0.1, 0.12, 0.14, 0.16, 0.17}}};
 
     const aligned::map<std::string, float> polar_pattern_map{
             {"omnidirectional", 0.0f},
@@ -82,15 +86,12 @@ int main(int argc, char** argv) {
             {"bidirectional", 1.0f}};
 
     const auto eyring{
-            eyring_reverb_time(geo::get_scene_data(box, absorption), 0)};
-
-    std::cerr << "expected reverb time: " << eyring << '\n';
+            eyring_reverb_time(geo::get_scene_data(box, surface), 0.0f)};
 
     //  tests ----------------------------------------------------------------//
 
     const auto raytracer{make_named_value(
-            "raytracer",
-            run_raytracer(box, absorption, scattering, params, 4))};
+            "raytracer", run_raytracer(box, surface, params, 4))};
 
     /*
     const auto waveguide{make_named_value(
@@ -127,11 +128,12 @@ int main(int argc, char** argv) {
                 mixdown(begin(raytracer.value.stochastic.full_histogram),
                         end(raytracer.value.stochastic.full_histogram)))};
 
+        const auto max_time{max_element(eyring)};
+
         const auto room_volume{
                 estimate_room_volume(geo::get_scene_data(box, 0))};
-        const auto dirac_sequence{raytracer::prepare_dirac_sequence(
-                params.speed_of_sound, room_volume, sample_rate, eyring)};
-
+        const auto dirac_sequence{raytracer::generate_dirac_sequence(
+                params.speed_of_sound, room_volume, sample_rate, max_time)};
         auto diffuse{make_named_value("diffuse",
                                       raytracer::mono_diffuse_postprocessing(
                                               raytracer.value.stochastic,
@@ -144,7 +146,7 @@ int main(int argc, char** argv) {
                                           params.receiver,
                                           params.speed_of_sound,
                                           sample_rate,
-                                          eyring);
+                                          max_time);
         }};
 
         auto specular{make_named_value(
@@ -166,9 +168,7 @@ int main(int argc, char** argv) {
         */
 
         auto named_dirac_sequence{
-                make_named_value("dirac_sequence",
-                                 mixdown(begin(dirac_sequence.sequence),
-                                         end(dirac_sequence.sequence)))};
+                make_named_value("dirac_sequence", dirac_sequence.sequence)};
 
         const auto results = {&named_hist,
                               &named_dirac_sequence,

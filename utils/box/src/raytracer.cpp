@@ -7,14 +7,11 @@
 #include "audio_file/audio_file.h"
 
 raytracer::results run_raytracer(const geo::box& box,
-                                 float absorption,
-                                 float scattering,
+                                 const surface& surface,
                                  const model::parameters& params,
                                  size_t image_source_order) {
     const auto voxelised{make_voxelised_scene_data(
-            geo::get_scene_data(box, make_surface(absorption, scattering)),
-            2,
-            0.1f)};
+            geo::get_scene_data(box, surface), 2, 0.1f)};
 
     const compute_context cc{};
 
