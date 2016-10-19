@@ -1,14 +1,16 @@
 #pragma once
 
+#include "utilities/tuple_like.h"
+
 #include <initializer_list>
 #include <tuple>
 #include <utility>
 
 template <typename Callback, typename Collection, size_t... Ix>
 constexpr auto apply(Callback&& callback,
-           const Collection& c,
-           std::index_sequence<Ix...>) {
-    return callback(std::get<Ix>(c)...);
+                     const Collection& c,
+                     std::index_sequence<Ix...>) {
+    return callback(tuple_like_getter<Ix>(c)...);
 }
 
 /// Given a callable thing and a tuple of arguments, call the thing using the
@@ -17,16 +19,17 @@ template <typename Callback, typename Collection>
 constexpr auto apply(Callback&& callback, const Collection& c) {
     return apply(std::forward<Callback>(callback),
                  c,
-                 std::make_index_sequence<std::tuple_size<Collection>{}>{});
+                 std::make_index_sequence<
+                         tuple_like_size_v<decay_const_ref_t<Collection>>>{});
 }
 
 //----------------------------------------------------------------------------//
 
 template <typename Callbacks, typename Collection, size_t... Ix>
 constexpr auto apply_each(Callbacks&& callbacks,
-                const Collection& c,
-                std::index_sequence<Ix...>) {
-    return std::make_tuple(apply(std::get<Ix>(callbacks), c)...);
+                          const Collection& c,
+                          std::index_sequence<Ix...>) {
+    return std::make_tuple(apply(tuple_like_getter<Ix>(callbacks), c)...);
 }
 
 /// Given a tuple of callable things and a tuple of arguments, call each thing
@@ -36,20 +39,24 @@ constexpr auto apply_each(Callbacks&& callbacks,
 /// to a collection, this applies a collection of functions to the same thing.
 template <typename Callbacks, typename Collection>
 constexpr auto apply_each(Callbacks&& callbacks, const Collection& c) {
-    return apply_each(std::forward<Callbacks>(callbacks),
-                      c,
-                      std::make_index_sequence<std::tuple_size<Callbacks>{}>{});
+    return apply_each(
+            std::forward<Callbacks>(callbacks),
+            c,
+            std::make_index_sequence<
+                    tuple_like_size_v<decay_const_ref_t<Callbacks>>>{});
 }
 
 template <typename Callbacks, size_t... Ix>
 constexpr auto apply_each(Callbacks&& callbacks, std::index_sequence<Ix...>) {
-    return std::make_tuple(std::get<Ix>(callbacks)()...);
+    return std::make_tuple(tuple_like_getter<Ix>(callbacks)()...);
 }
 
 template <typename Callbacks>
 constexpr auto apply_each(Callbacks&& callbacks) {
-    return apply_each(std::forward<Callbacks>(callbacks),
-                      std::make_index_sequence<std::tuple_size<Callbacks>{}>{});
+    return apply_each(
+            std::forward<Callbacks>(callbacks),
+            std::make_index_sequence<
+                    tuple_like_size_v<decay_const_ref_t<Callbacks>>>{});
 }
 
 //----------------------------------------------------------------------------//
@@ -59,7 +66,7 @@ void call_each(Callbacks&& callbacks,
                const Collection& c,
                std::index_sequence<Ix...>) {
     (void)std::initializer_list<int>{
-            ((void)apply(std::get<Ix>(callbacks), c), 0)...};
+            ((void)apply(tuple_like_getter<Ix>(callbacks), c), 0)...};
 }
 
 /// Given a tuple of callable things and a tuple of arguments, call each thing
@@ -70,16 +77,19 @@ template <typename Callbacks, typename Collection>
 void call_each(Callbacks&& callbacks, const Collection& c) {
     call_each(std::forward<Callbacks>(callbacks),
               c,
-              std::make_index_sequence<std::tuple_size<Callbacks>{}>{});
+              std::make_index_sequence<
+                      tuple_like_size_v<decay_const_ref_t<Callbacks>>>{});
 }
 
 template <typename Callbacks, size_t... Ix>
 void call_each(Callbacks&& callbacks, std::index_sequence<Ix...>) {
-    (void)std::initializer_list<int>{((void)std::get<Ix>(callbacks)(), 0)...};
+    (void)std::initializer_list<int>{
+            ((void)tuple_like_getter<Ix>(callbacks)(), 0)...};
 }
 
 template <typename Callbacks>
 void call_each(Callbacks&& callbacks) {
     call_each(std::forward<Callbacks>(callbacks),
-              std::make_index_sequence<std::tuple_size<Callbacks>{}>{});
+              std::make_index_sequence<
+                      tuple_like_size_v<decay_const_ref_t<Callbacks>>>{});
 }

@@ -123,10 +123,13 @@ int main(int argc, char** argv) {
     }};
 
     {
-        auto named_hist{make_named_value(
-                "summed_histogram",
-                mixdown(begin(raytracer.value.stochastic.full_histogram),
-                        end(raytracer.value.stochastic.full_histogram)))};
+        const auto& img_src{std::get<0>(raytracer.value)};
+        const auto& stochastic{std::get<1>(raytracer.value)};
+
+        auto named_hist{
+                make_named_value("summed_histogram",
+                                 mixdown(begin(stochastic.full_histogram),
+                                         end(stochastic.full_histogram)))};
 
         const auto max_time{max_element(eyring)};
 
@@ -136,7 +139,7 @@ int main(int argc, char** argv) {
                 params.speed_of_sound, room_volume, sample_rate, max_time)};
         auto diffuse{make_named_value("diffuse",
                                       raytracer::mono_diffuse_postprocessing(
-                                              raytracer.value.stochastic,
+                                              stochastic,
                                               dirac_sequence,
                                               params.acoustic_impedance))};
 
@@ -149,8 +152,8 @@ int main(int argc, char** argv) {
                                           max_time);
         }};
 
-        auto specular{make_named_value(
-                "specular", run_postprocess_impulses(raytracer.value.img_src))};
+        auto specular{make_named_value("specular",
+                                       run_postprocess_impulses(img_src))};
 
         auto raytracer_full{make_named_value(
                 "raytracer_full", sum_vectors(specular.value, diffuse.value))};
