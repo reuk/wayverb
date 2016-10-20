@@ -12,10 +12,10 @@
 class scene_data_loader::impl final {
 public:
     auto load_from_file(const std::string& scene_file) {
-        const auto scene{importer_.ReadFile(
+        const auto scene = importer_.ReadFile(
                 scene_file,
                 (aiProcess_Triangulate | aiProcess_GenSmoothNormals |
-                 aiProcess_FlipUVs))};
+                 aiProcess_FlipUVs));
 
         if (!scene) {
             throw std::runtime_error{
@@ -26,23 +26,23 @@ public:
         aligned::vector<triangle> triangles{};
         aligned::vector<cl_float3> vertices{};
 
-        auto materials{map_to_vector(
+        auto materials = map_to_vector(
                 scene->mMaterials,
                 scene->mMaterials + scene->mNumMaterials,
                 [](auto i) {
                     aiString material_name;
                     i->Get(AI_MATKEY_NAME, material_name);
-                    return material{material_name.C_Str(), surface{}};
-                })};
+                    return material{material_name.C_Str(), surface<8>{}};
+                });
 
-        for (auto i{0u}; i != scene->mNumMeshes; ++i) {
-            const auto mesh{scene->mMeshes[i]};
+        for (auto i = 0u; i != scene->mNumMeshes; ++i) {
+            const auto mesh = scene->mMeshes[i];
 
-            auto mesh_vertices{
+            auto mesh_vertices =
                     map_to_vector(mesh->mVertices,
                                   mesh->mVertices + mesh->mNumVertices,
-                                  [](auto i) { return to_cl_float3(i); })};
-            auto mesh_triangles{map_to_vector(
+                                  [](auto i) { return to_cl_float3(i); });
+            auto mesh_triangles = map_to_vector(
                     mesh->mFaces, mesh->mFaces + mesh->mNumFaces, [&](auto i) {
                         return triangle{mesh->mMaterialIndex,
                                         static_cast<cl_uint>(i.mIndices[0] +
@@ -51,7 +51,7 @@ public:
                                                              vertices.size()),
                                         static_cast<cl_uint>(i.mIndices[2] +
                                                              vertices.size())};
-                    })};
+                    });
 
             vertices.insert(
                     vertices.end(), mesh_vertices.begin(), mesh_vertices.end());

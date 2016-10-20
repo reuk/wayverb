@@ -33,12 +33,12 @@ bool gaussian::operator()(cl::CommandQueue& queue,
         //  set all the mesh values
 
         //  first on the CPU
-        const auto nodes{items_in_buffer<cl_float>(buffer)};
+        const auto nodes = items_in_buffer<cl_float>(buffer);
         aligned::vector<cl_float> pressures;
         pressures.reserve(nodes);
-        for (auto i{0u}; i != nodes; ++i) {
-            const auto gauss{compute(
-                    compute_position(descriptor_, i) - centre_pos_, sdev_)};
+        for (auto i = 0u; i != nodes; ++i) {
+            const auto gauss = compute(
+                    compute_position(descriptor_, i) - centre_pos_, sdev_);
 #ifndef NDEBUG
             throw_if_suspicious(gauss);
 #endif

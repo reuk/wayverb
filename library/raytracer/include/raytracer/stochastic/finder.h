@@ -13,7 +13,7 @@
 #include "utilities/aligned/vector.h"
 
 namespace raytracer {
-namespace diffuse {
+namespace stochastic {
 
 class finder final {
 public:
@@ -24,7 +24,7 @@ public:
 
     struct results final {
         aligned::vector<impulse<8>> specular;
-        aligned::vector<impulse<8>> diffuse;
+        aligned::vector<impulse<8>> stochastic;
     };
 
     template <typename It>
@@ -42,12 +42,12 @@ public:
                 scene_buffers.get_triangles_buffer(),
                 scene_buffers.get_vertices_buffer(),
                 scene_buffers.get_surfaces_buffer(),
-                diffuse_path_buffer_,
-                diffuse_output_buffer_,
+                stochastic_path_buffer_,
+                stochastic_output_buffer_,
                 specular_output_buffer_);
 
-        const auto read_out_impulses{[&](const auto& buffer) {
-            auto raw{read_from_buffer<impulse<8>>(queue_, buffer)};
+        const auto read_out_impulses = [&](const auto& buffer) {
+            auto raw = read_from_buffer<impulse<8>>(queue_, buffer);
             raw.erase(std::remove_if(begin(raw),
                                      end(raw),
                                      [](const auto& impulse) {
@@ -55,10 +55,10 @@ public:
                                      }),
                       end(raw));
             return raw;
-        }};
+        };
 
         return results{read_out_impulses(specular_output_buffer_),
-                       read_out_impulses(diffuse_output_buffer_)};
+                       read_out_impulses(stochastic_output_buffer_)};
     }
 
 private:
@@ -72,10 +72,10 @@ private:
     size_t rays_;
 
     cl::Buffer reflections_buffer_;
-    cl::Buffer diffuse_path_buffer_;
-    cl::Buffer diffuse_output_buffer_;
+    cl::Buffer stochastic_path_buffer_;
+    cl::Buffer stochastic_output_buffer_;
     cl::Buffer specular_output_buffer_;
 };
 
-}  // namespace diffuse
+}  // namespace stochastic
 }  // namespace raytracer

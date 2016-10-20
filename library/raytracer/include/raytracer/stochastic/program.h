@@ -6,7 +6,7 @@
 #include "common/spatial_division/scene_buffers.h"
 
 namespace raytracer {
-namespace diffuse {
+namespace stochastic {
 
 class program final {
 public:
@@ -19,13 +19,13 @@ public:
                                            cl::Buffer,  // triangles
                                            cl::Buffer,  // vertices
                                            cl::Buffer,  // surfaces
-                                           cl::Buffer,  // diffuse path info
-                                           cl::Buffer,  // diffuse output
+                                           cl::Buffer,  // stochastic path info
+                                           cl::Buffer,  // stochastic output
                                            cl::Buffer   // intersected output
-                                           >("diffuse");
+                                           >("stochastic");
     }
 
-    auto get_init_diffuse_path_info_kernel() const {
+    auto get_init_stochastic_path_info_kernel() const {
         return program_wrapper_.get_kernel<cl::Buffer,   // buffer
                                            volume_type,  // initial volume
                                            cl_float3     // initial position
@@ -36,5 +36,5 @@ private:
     program_wrapper program_wrapper_;
 };
 
-}  // namespace diffuse
+}  // namespace stochastic
 }  // namespace raytracer

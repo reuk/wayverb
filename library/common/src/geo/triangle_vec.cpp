@@ -29,12 +29,12 @@ triangle_vec2 get_triangle_vec2(const triangle& t,
 //----------------------------------------------------------------------------//
 
 float area(const triangle_vec3& triangle) {
-    const auto v0{triangle[1] - triangle[0]};
-    const auto v1{triangle[2] - triangle[0]};
-    
-    const auto a{std::pow(v0.y * v1.z - v0.z * v1.y, 2)};
-    const auto b{std::pow(v0.z * v1.x - v0.x * v1.z, 2)};
-    const auto c{std::pow(v0.x * v1.y - v0.y * v1.x, 2)};
+    const auto v0 = triangle[1] - triangle[0];
+    const auto v1 = triangle[2] - triangle[0];
+
+    const auto a = std::pow(v0.y * v1.z - v0.z * v1.y, 2);
+    const auto b = std::pow(v0.z * v1.x - v0.x * v1.z, 2);
+    const auto c = std::pow(v0.x * v1.y - v0.y * v1.x, 2);
     return std::sqrt(a + b + c) / 2;
 }
 

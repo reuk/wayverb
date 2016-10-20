@@ -13,10 +13,10 @@ auto attenuate(const Method& method,
     using std::sqrt;
     using std::copysign;
     using std::pow;
-    const auto att{attenuation(method, -i.intensity)};
-    const auto intensity{glm::length(i.intensity) * pow(att, 2.0f)};
+    const auto att = attenuation(method, -i.intensity);
+    const auto intensity = glm::length(i.intensity) * pow(att, 2.0f);
     //  return copysign(sqrt(intensity), i.pressure);   //  haci2010 method
-    return copysign(sqrt(intensity * Z), i.pressure);   //  scaled method
+    return copysign(sqrt(intensity * Z), i.pressure);  //  scaled method
     //  return att * i.pressure;
 }
 
@@ -48,7 +48,6 @@ auto make_attenuate_mapper(Method method, float Z) {
     }
     return attenuate_mapper<Method>{std::move(method), Z};
 }
-
 
 template <typename It, typename Method>
 auto make_attenuator_iterator(It it, const Method& method, float Z) {

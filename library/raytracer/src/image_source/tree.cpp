@@ -43,8 +43,8 @@ public:
 
         //  Find whether this is a valid path, and if it is, call the callback.
         if (element.visible) {
-            if (const auto valid{find_valid_path(
-                        source_, receiver_, voxelised_, state_)}) {
+            if (const auto valid = find_valid_path(
+                        source_, receiver_, voxelised_, state_)) {
                 callback_(valid->image_source,
                           valid->intersections.begin(),
                           valid->intersections.end());
@@ -97,7 +97,7 @@ private:
             const aligned::vector<state>& state) {
         //  In weird scenarios the image source might end up getting plastered
         //  over the receiver, which is bad, so we quit with null in that case.
-        const auto final_image_source{state.back().image_source};
+        const auto final_image_source = state.back().image_source;
         if (receiver == final_image_source) {
             return std::experimental::nullopt;
         }
@@ -111,14 +111,14 @@ private:
         aligned::vector<reflection_metadata> intersections;
         intersections.reserve(state.size());
 
-        for (auto i{state.crbegin()}, end{state.crend()}; i != end; ++i) {
+        for (auto i = state.crbegin(), end = state.crend(); i != end; ++i) {
             //  find the ray from the receiver to the image source
-            const auto ray{construct_ray(accumulator.prev_intersection,
-                                         i->image_source)};
+            const auto ray = construct_ray(accumulator.prev_intersection,
+                                           i->image_source);
 
             //  now check for intersections with the scene
-            const auto intersection{
-                    intersects(voxelised, ray, accumulator.prev_surface)};
+            const auto intersection =
+                    intersects(voxelised, ray, accumulator.prev_surface);
 
             //  If we didn't find an intersection or if the intersected triangle
             //  isn't the correct one.
@@ -130,13 +130,13 @@ private:
             //  This path segment is valid.
             //  Find angle between ray and triangle normal at intersection.
             //  Add appropriate intersection to ret.
-            const auto cos_angle{std::abs(
+            const auto cos_angle = std::abs(
                     glm::dot(ray.get_direction(),
-                             geo::normal(get_triangle(voxelised, i->index))))};
+                             geo::normal(get_triangle(voxelised, i->index))));
 
-            const auto surface_index{voxelised.get_scene_data()
-                                             .get_triangles()[i->index]
-                                             .surface};
+            const auto surface_index = voxelised.get_scene_data()
+                                               .get_triangles()[i->index]
+                                               .surface;
             intersections.emplace_back(
                     reflection_metadata{surface_index, cos_angle});
 
@@ -149,9 +149,9 @@ private:
         //  Ensure there is line-of-sight from source to initial image-source
         //  intersection point.
         {
-            const auto ray{
-                    construct_ray(source, accumulator.prev_intersection)};
-            const auto intersection{intersects(voxelised, ray)};
+            const auto ray =
+                    construct_ray(source, accumulator.prev_intersection);
+            const auto intersection = intersects(voxelised, ray);
             if (!intersection ||
                 intersection->index != accumulator.prev_surface) {
                 return std::experimental::nullopt;

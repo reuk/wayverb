@@ -14,9 +14,9 @@ std::array<glm::vec2, 4> outline(const rect& r);
 
 template <size_t n>
 bool overlaps(const rect& rect, const std::array<glm::vec2, n>& shape) {
-    const auto rect_axes{detail::normals(rect)};
-    const auto rect_outline{detail::outline(rect)};
-    const auto shape_axes{detail::normals_2d(shape)};
+    const auto rect_axes = detail::normals(rect);
+    const auto rect_outline = detail::outline(rect);
+    const auto shape_axes = detail::normals_2d(shape);
     return detail::overlaps(rect_outline.begin(),
                             rect_outline.end(),
                             shape.begin(),

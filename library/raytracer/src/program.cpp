@@ -11,7 +11,7 @@
 
 namespace raytracer {
 
-constexpr auto source{R"(
+constexpr auto source=R"(
 #define PRINT_INT3(VAR) printf("%v3hld\n", (VAR));
 #define PRINT_FLOAT3(VAR) printf("%2.2v3hlf\n", (VAR));
 
@@ -153,26 +153,24 @@ kernel void reflections(global ray* rays,  //  ray
     rays[thread] = (ray){intersection_pt, scattering};
 }
 
-
-)"};
+)";
 
 program::program(const compute_context& cc)
-        : program_wrapper_{cc,
-                           std::vector<std::string>{
-                                   cl_representation_v<volume_type>,
-                                   cl_representation_v<surface>,
-                                   cl_representation_v<triangle>,
-                                   cl_representation_v<triangle_verts>,
-                                   cl_representation_v<reflection>,
-                                   cl_representation_v<diffuse_path_info>,
-                                   cl_representation_v<impulse<8>>,
-                                   cl_representation_v<aabb>,
-                                   cl_representation_v<ray>,
-                                   cl_representation_v<triangle_inter>,
-                                   cl_representation_v<intersection>,
-                                   ::cl_sources::geometry,
-                                   ::cl_sources::voxel,
-                                   ::cl_sources::brdf,
-                                   source}} {}
+        : program_wrapper_{
+                  cc,
+                  std::vector<std::string>{cl_representation_v<volume_type>,
+                                           cl_representation_v<surface>,
+                                           cl_representation_v<triangle>,
+                                           cl_representation_v<triangle_verts>,
+                                           cl_representation_v<reflection>,
+                                           cl_representation_v<impulse<8>>,
+                                           cl_representation_v<aabb>,
+                                           cl_representation_v<ray>,
+                                           cl_representation_v<triangle_inter>,
+                                           cl_representation_v<intersection>,
+                                           ::cl_sources::geometry,
+                                           ::cl_sources::voxel,
+                                           ::cl_sources::brdf,
+                                           source}} {}
 
 }  // namespace raytracer

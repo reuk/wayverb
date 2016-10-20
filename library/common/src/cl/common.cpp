@@ -14,18 +14,18 @@ cl::Context get_context(device_type type) {
             0,
     };
 
-    const auto convert_device_type{[](auto type) {
+    const auto convert_device_type = [](auto type) {
         switch (type) {
             case device_type::cpu: return CL_DEVICE_TYPE_CPU;
             case device_type::gpu: return CL_DEVICE_TYPE_GPU;
         }
-    }};
+    };
 
     return cl::Context(convert_device_type(type), cps);
 }
 
 cl::Device get_device(const cl::Context& context) {
-    auto devices{context.getInfo<CL_CONTEXT_DEVICES>()};
+    auto devices = context.getInfo<CL_CONTEXT_DEVICES>();
 
     devices.erase(
             std::remove_if(
@@ -52,7 +52,7 @@ cl::Device get_device(const cl::Context& context) {
         throw std::runtime_error("no suitable devices available");
     }
 
-    const auto device{devices.front()};
+    const auto device = devices.front();
 
     std::cerr << "device selected: " << device.getInfo<CL_DEVICE_NAME>()
               << '\n';

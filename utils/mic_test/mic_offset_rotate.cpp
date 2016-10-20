@@ -44,7 +44,7 @@ void serialize(T& archive, angle_info<bands>& info) {
 template <size_t num, typename T>
 constexpr auto generate_range(range<T> r) {
     std::array<T, num> ret;
-    for (auto i{0ul}; i != ret.size(); ++i) {
+    for (auto i = 0ul; i != ret.size(); ++i) {
         ret[i] = map(i, range<T>{0, num}, r);
     }
     return ret;
@@ -55,14 +55,14 @@ auto run_single_angle(float angle,
                       const glm::vec3& receiver,
                       double sample_rate,
                       const Callback& callback) {
-    constexpr auto distance{1.0};
+    constexpr auto distance = 1.0;
     const glm::vec3 source{receiver + glm::vec3{distance * std::sin(angle),
                                                 0,
                                                 distance * std::cos(angle)}};
     constexpr range<double> valid_frequency_range{0.01, 0.16};
-    const auto params{frequency_domain::band_edges_and_widths<8>(
-            valid_frequency_range, 1)};
-    const auto signal{callback(source, receiver)};
+    const auto params = frequency_domain::band_edges_and_widths<8>(
+            valid_frequency_range, 1);
+    const auto signal = callback(source, receiver);
     return make_angle_info(angle,
                            frequency_domain::per_band_energy(
                                    signal.begin(), signal.end(), params));
@@ -72,9 +72,9 @@ template <size_t bands, typename Callback>
 auto run_multiple_angles(const glm::vec3& receiver,
                          float sample_rate,
                          const Callback& callback) {
-    constexpr auto test_locations{16};
-    const auto angles{
-            generate_range<test_locations>(range<double>{0, 2 * M_PI})};
+    constexpr auto test_locations = 16;
+    const auto angles =
+            generate_range<test_locations>(range<double>{0, 2 * M_PI});
     return map_to_vector(begin(angles), end(angles), [&](auto angle) {
         return run_single_angle<bands>(angle, receiver, sample_rate, callback);
     });
@@ -96,46 +96,46 @@ int main(int argc, char** argv) {
             {"cardioid", 0.5f},
             {"bidirectional", 1.0f}};
 
-    const auto it{polar_pattern_map.find(polar_string)};
+    const auto it = polar_pattern_map.find(polar_string);
     if (it == polar_pattern_map.end()) {
         throw std::runtime_error{"unrecognised polar pattern"};
     }
-    const auto directionality{it->second};
+    const auto directionality = it->second;
 
     //  constants ------------------------------------------------------------//
 
-    const auto s{1.5f};
+    const auto s = 1.5f;
     const geo::box box{glm::vec3{-s}, glm::vec3{s}};
 
-    const auto filter_frequency{8000.0};
-    const auto oversample_ratio{1.0};
-    const auto sample_rate{filter_frequency * oversample_ratio * (1 / 0.16)};
+    const auto filter_frequency = 8000.0;
+    const auto oversample_ratio = 1.0;
+    const auto sample_rate = filter_frequency * oversample_ratio * (1 / 0.16);
 
     const glm::vec3 receiver{0, 0, 0};
-    const microphone mic{glm::vec3{0, 0, 1}, directionality};
+    const attenuator::microphone mic{glm::vec3{0, 0, 1}, directionality};
 
-    constexpr auto bands{8};
+    constexpr auto bands = 8;
 
-    constexpr auto absorption{0.001f};
+    constexpr auto absorption = 0.001f;
 
     //  simulations ----------------------------------------------------------//
 
-    const auto run{[&](const auto& name, const auto& callback) {
-        const auto output{
-                run_multiple_angles<bands>(receiver, sample_rate, callback)};
+    const auto run = [&](const auto& name, const auto& callback) {
+        const auto output =
+                run_multiple_angles<bands>(receiver, sample_rate, callback);
         std::ofstream file{output_folder + "/" + name + ".txt"};
         cereal::JSONOutputArchive archive{file};
         archive(cereal::make_nvp("directionality", directionality),
                 cereal::make_nvp("energies", output));
-    }};
+    };
 
     run("waveguide", [&](const auto& source, const auto& receiver) {
         const model::parameters params{source, receiver};
-        auto raw{run_waveguide(box,
-                               absorption,
-                               params,
-                               sample_rate,
-                               2 / params.speed_of_sound)};
+        auto raw = run_waveguide(box,
+                                 make_surface(absorption, 0),
+                                 params,
+                                 sample_rate,
+                                 2 / params.speed_of_sound);
         return postprocess_waveguide(begin(raw),
                                      end(raw),
                                      mic,
@@ -145,9 +145,9 @@ int main(int argc, char** argv) {
 
     run("img_src", [&](const auto& source, const auto& receiver) {
         const model::parameters params{source, receiver};
-        const auto simulation_time{2 / params.speed_of_sound};
-        auto raw{run_exact_img_src(
-                box, absorption, params, simulation_time, false)};
+        const auto simulation_time = 2 / params.speed_of_sound;
+        auto raw = run_exact_img_src(
+                box, absorption, params, simulation_time, false);
         return raytracer::postprocess(begin(raw),
                                       end(raw),
                                       mic,

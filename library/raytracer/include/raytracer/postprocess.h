@@ -55,25 +55,6 @@ size_t compute_optimum_reflection_number(
                                              scene.get_surfaces().end());
 }
 
-/// Recursively check a collection of impulses for the earliest non-zero time of
-/// an impulse.
-template <typename T>
-inline auto find_predelay(const T& ret) {
-    return std::accumulate(ret.begin() + 1,
-                           ret.end(),
-                           findPredelay(ret.front()),
-                           [](auto a, const auto& b) {
-                               auto pd = findPredelay(b);
-                               if (a == 0) {
-                                   return pd;
-                               }
-                               if (pd == 0) {
-                                   return a;
-                               }
-                               return std::min(a, pd);
-                           });
-}
-
 //----------------------------------------------------------------------------//
 
 template <typename InputIt>
@@ -83,14 +64,14 @@ auto postprocess(InputIt b,
                  double speed_of_sound,
                  double sample_rate,
                  double max_seconds) {
-    const auto make_iterator{[&](auto it) {
+    const auto make_iterator = [&](auto it) {
         return make_histogram_iterator(std::move(it), speed_of_sound);
-    }};
-    auto hist{histogram(make_iterator(b),
-                        make_iterator(e),
-                        sample_rate,
-                        max_seconds,
-                        sinc_sum_functor{})};
+    };
+    auto hist = histogram(make_iterator(b),
+                          make_iterator(e),
+                          sample_rate,
+                          max_seconds,
+                          sinc_sum_functor{});
     return multiband_filter_and_mixdown(
             begin(hist), end(hist), sample_rate, [](auto it, auto index) {
                 return make_cl_type_iterator(std::move(it), index);
@@ -105,9 +86,9 @@ auto postprocess(InputIt b,
                  double speed_of_sound,
                  double sample_rate,
                  double max_seconds) {
-    const auto make_iterator{[&](auto it) {
+    const auto make_iterator = [&](auto it) {
         return make_attenuator_iterator(std::move(it), method, position);
-    }};
+    };
     return postprocess(make_iterator(b),
                        make_iterator(e),
                        position,
@@ -143,7 +124,7 @@ auto run_attenuation(It b,
                      double speed_of_sound,
                      double sample_rate,
                      double max_seconds) {
-    const auto run{[&](auto tag) {
+    const auto run = [&](auto tag) {
         return postprocess(b,
                            e,
                            get_begin(receiver, tag),
@@ -152,7 +133,7 @@ auto run_attenuation(It b,
                            speed_of_sound,
                            sample_rate,
                            max_seconds);
-    }};
+    };
 
     switch (receiver.mode) {
         case model::receiver::mode::microphones:

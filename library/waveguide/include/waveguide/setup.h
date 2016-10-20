@@ -76,7 +76,7 @@ static boundary_data_array<N> construct_boundary_data_array(
 template <size_t n>
 inline aligned::vector<boundary_data_array<n>> get_boundary_data(
         const vectors& d) {
-    const auto indices{d.get_boundary_indices<n>()};
+    const auto indices = d.get_boundary_indices<n>();
     return map_to_vector(begin(indices), end(indices), [](const auto& i) {
         return construct_boundary_data_array(i);
     });

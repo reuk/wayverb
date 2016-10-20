@@ -1,4 +1,4 @@
-#include "raytracer/diffuse/finder.h"
+#include "raytracer/stochastic/finder.h"
 
 #include "common/geo/box.h"
 #include "common/model/receiver.h"
@@ -11,7 +11,7 @@
 #define OBJ_PATH ""
 #endif
 
-TEST(diffuse, bad_reflections_box) {
+TEST(stochastic, bad_reflections_box) {
     const geo::box box(glm::vec3(0, 0, 0), glm::vec3(4, 3, 6));
     constexpr model::parameters params{glm::vec3{1, 2, 1}, glm::vec3{2, 1, 5}};
     constexpr auto s{0.01};
@@ -43,12 +43,13 @@ TEST(diffuse, bad_reflections_box) {
                        true},
     };
 
-    raytracer::diffuse::finder diff{cc, params, 1.0f, bad_reflections.size()};
+    raytracer::stochastic::finder diff{
+            cc, params, 1.0f, bad_reflections.size()};
 
     diff.process(begin(bad_reflections), end(bad_reflections), buffers);
 }
 
-TEST(diffuse, bad_reflections_vault) {
+TEST(stochastic, bad_reflections_vault) {
     constexpr model::parameters params{glm::vec3{0, 1, 0}, glm::vec3{0, 1, 1}};
 
     const compute_context cc{};
@@ -82,7 +83,8 @@ TEST(diffuse, bad_reflections_vault) {
                        true},
     };
 
-    raytracer::diffuse::finder diff{cc, params, 1.0f, bad_reflections.size()};
+    raytracer::stochastic::finder diff{
+            cc, params, 1.0f, bad_reflections.size()};
 
     diff.process(begin(bad_reflections), end(bad_reflections), buffers);
 }

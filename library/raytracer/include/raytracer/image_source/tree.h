@@ -1,6 +1,6 @@
 #pragma once
 
-#include "raytracer/image_source/postprocessors.h"
+#include "raytracer/image_source/fast_pressure_calculator.h"
 #include "raytracer/multitree.h"
 
 #include "common/cl/include.h"

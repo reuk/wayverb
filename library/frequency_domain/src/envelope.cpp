@@ -4,7 +4,7 @@ namespace frequency_domain {
 
 double max_width_factor(range<double> r, double step) {
     using std::pow;
-    const auto base{std::pow(r.get_max() / r.get_min(), step)};
+    const auto base = std::pow(r.get_max() / r.get_min(), step);
     return (base - 1) / (base + 1);
 }
 
@@ -45,12 +45,12 @@ double compute_bandpass_magnitude(double frequency,
         return 0;
     }
 
-    const auto lower_p{frequency - lower.edge};
+    const auto lower_p = frequency - lower.edge;
     if (-lower.width < lower_p && lower_p <= lower.width) {
         return lower_band_edge(lower.edge, lower_p, lower.width, l);
     }
 
-    const auto upper_p{frequency - upper.edge};
+    const auto upper_p = frequency - upper.edge;
     if (-upper.width < upper_p && upper_p <= upper.width) {
         return upper_band_edge(upper.edge, upper_p, upper.width, l);
     }

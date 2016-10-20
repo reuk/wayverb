@@ -1,12 +1,6 @@
 #pragma once
 
-#include "raytracer/diffuse/finder.h"
-#include "raytracer/diffuse/postprocessing.h"
-#include "raytracer/get_direct.h"
-#include "raytracer/image_source/finder.h"
-#include "raytracer/image_source/reflection_path_builder.h"
-#include "raytracer/image_source/run.h"
-#include "raytracer/raytracer.h"
+#include "raytracer/postprocess.h"
 #include "raytracer/reflector.h"
 
 #include "common/cl/common.h"
@@ -35,7 +29,7 @@ public:
 
     template <typename... Ts>
     constexpr auto operator()(Ts&&... ts) {
-        return t_.process(std::forward<Ts>(ts)...);        
+        return t_.process(std::forward<Ts>(ts)...);
     }
 
 private:
@@ -83,10 +77,10 @@ struct make_get_results_functor_adapter final {
 ///     per_step_callback:  Will be called every step with the current step
 ///                         number and the total number of steps.
 ///     callbacks:          A tuple of callbacks which can be called with
-//                          simulation parameters to construct processing
-//                          objects.
-//                          Each processing object should have a 'process'
-//                          and a 'get_results' method.
+///                         simulation parameters to construct processing
+///                         objects.
+///                         Each processing object should have a 'process'
+///                         and a 'get_results' method.
 template <typename It, typename PerStepCallback, typename Callbacks>
 auto run(It b_direction,
          It e_direction,
@@ -98,16 +92,16 @@ auto run(It b_direction,
          Callbacks&& callbacks) {
     const scene_buffers buffers{cc.context, voxelised};
 
-    const auto make_ray_iterator{[&](auto it) {
+    const auto make_ray_iterator = [&](auto it) {
         return make_mapping_iterator_adapter(std::move(it), [&](const auto& i) {
             return geo::ray{params.source, i};
         });
-    }};
+    };
 
-    const auto num_directions{std::distance(b_direction, e_direction)};
-    auto processors{
+    const auto num_directions = std::distance(b_direction, e_direction);
+    auto processors =
             apply_each(std::forward<Callbacks>(callbacks),
-                       std::tie(cc, params, voxelised, num_directions))};
+                       std::tie(cc, params, voxelised, num_directions));
 
     using return_type = decltype(
             apply_each(map(make_get_results_functor_adapter{}, processors)));
@@ -117,19 +111,18 @@ auto run(It b_direction,
                   make_ray_iterator(b_direction),
                   make_ray_iterator(e_direction)};
 
-    for (auto i{0ul},
-         reflection_depth{
-                 compute_optimum_reflection_number(voxelised.get_scene_data()),
-         };
+    for (auto i = 0ul,
+              reflection_depth = compute_optimum_reflection_number(
+                      voxelised.get_scene_data());
          i != reflection_depth;
          ++i) {
         if (!keep_going) {
             return std::experimental::optional<return_type>{};
         }
 
-        const auto reflections{ref.run_step(buffers)};
-        const auto b{begin(reflections)};
-        const auto e{end(reflections)};
+        const auto reflections = ref.run_step(buffers);
+        const auto b = begin(reflections);
+        const auto e = end(reflections);
         call_each(map(make_process_functor_adapter{}, processors),
                   std::tie(b, e, buffers, i, reflection_depth));
 

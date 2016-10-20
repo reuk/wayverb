@@ -16,12 +16,12 @@ void multiband_filter(
         const std::array<edge_and_width, bands_plus_one>& edges_and_widths,
         const Callback& callback,
         size_t l = 0) {
-    constexpr auto bands{bands_plus_one - 1};
+    constexpr auto bands = bands_plus_one - 1;
     filter filt{2 * static_cast<size_t>(std::distance(begin, end))};
 
-    for (auto i{0ul}; i != bands; ++i) {
-        const auto b{callback(begin, i)};
-        const auto e{callback(end, i)};
+    for (auto i = 0ul; i != bands; ++i) {
+        const auto b = callback(begin, i);
+        const auto e = callback(end, i);
         filt.run(b, e, b, [&](auto cplx, auto freq) {
             return cplx * static_cast<float>(compute_bandpass_magnitude(
                                   freq,
@@ -48,8 +48,8 @@ auto rms(It b, It e) {
 
 template <typename It, typename Callback>
 auto band_rms(It begin, It end, const Callback& callback, size_t band) {
-    const auto b{callback(begin, band)};
-    const auto e{callback(end, band)};
+    const auto b = callback(begin, band);
+    const auto e = callback(end, band);
     return rms(b, e);
 }
 
@@ -112,21 +112,21 @@ auto per_band_energy(
         It begin,
         It end,
         const std::array<edge_and_width, bands_plus_one>& edges_and_widths) {
-    constexpr auto bands{bands_plus_one - 1};
+    constexpr auto bands = bands_plus_one - 1;
 
-    auto multiband{make_multiband<bands>(begin, end)};
+    auto multiband = make_multiband<bands>(begin, end);
 
     multiband_filter(std::begin(multiband),
                      std::end(multiband),
                      edges_and_widths,
                      make_indexer_iterator{});
-    auto rms{multiband_rms<bands>(std::begin(multiband),
-                                  std::end(multiband),
-                                  make_indexer_iterator{})};
+    auto rms = multiband_rms<bands>(std::begin(multiband),
+                                    std::end(multiband),
+                                    make_indexer_iterator{});
 
-    for (auto i{0ul}; i != bands; ++i) {
-        const auto width{edges_and_widths[i + 1].edge -
-                         edges_and_widths[i].edge};
+    for (auto i = 0ul; i != bands; ++i) {
+        const auto width =
+                edges_and_widths[i + 1].edge - edges_and_widths[i].edge;
         rms[i] /= width;
     }
 

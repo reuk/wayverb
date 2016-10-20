@@ -63,4 +63,5 @@ auto make_scene_buffers(
     return generic_scene_buffers<Vertex, Surface>{context, scene_data};
 }
 
-using scene_buffers = generic_scene_buffers<cl_float3, surface>;
+using scene_buffers =
+        generic_scene_buffers<cl_float3, surface<simulation_channels>>;

@@ -56,8 +56,8 @@ std::experimental::optional<intersection> intersection_accumulator(
     if (triangle_index == to_ignore) {
         return current;
     }
-    const auto i{
-            triangle_intersection(triangles[triangle_index], vertices, ray)};
+    const auto i =
+            triangle_intersection(triangles[triangle_index], vertices, ray);
     return (i && (!current || i->t < current->inter.t))
                    ? intersection{*i, static_cast<cl_uint>(triangle_index)}
                    : current;
@@ -87,7 +87,7 @@ std::experimental::optional<intersection> ray_triangle_intersection(
         const aligned::vector<t>& vertices,
         size_t to_ignore = ~size_t{0}) {
     std::experimental::optional<intersection> ret;
-    for (auto i{0u}; i != triangles.size(); ++i) {
+    for (auto i = 0u; i != triangles.size(); ++i) {
         ret = intersection_accumulator(
                 ray, i, triangles, vertices, ret, to_ignore);
     }

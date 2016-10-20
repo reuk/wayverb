@@ -66,7 +66,7 @@ template <typename Vertex, typename Surface, typename Pad>
 auto make_voxelised_scene_data(generic_scene_data<Vertex, Surface> scene,
                                size_t octree_depth,
                                Pad padding) {
-    const auto aabb{padded(geo::get_aabb(scene), glm::vec3{padding})};
+    const auto aabb = padded(geo::get_aabb(scene), glm::vec3{padding});
     return make_voxelised_scene_data(std::move(scene), octree_depth, aabb);
 }
 

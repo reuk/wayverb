@@ -26,7 +26,7 @@ constexpr bool operator<(const multitree<T>& a, const multitree<T>& b) {
 template <typename T, typename It>
 void add_path(multitree<T>& tree, It begin, It end) {
     if (begin != end) {
-        const auto it{tree.branches.insert(multitree<T>{*begin}).first};
+        const auto it = tree.branches.insert(multitree<T>{*begin}).first;
         add_path(*it, std::next(begin), end);
     }
 }
@@ -36,7 +36,7 @@ namespace detail {
 /// The trick here is that the callback can be a stateful object...
 template <typename T, typename Callback>
 void traverse_multitree(const multitree<T>& tree, const Callback& callback) {
-    const auto next{callback(tree.item)};
+    const auto next = callback(tree.item);
     for (const auto& i : tree.branches) {
         detail::traverse_multitree(i, next);
     }

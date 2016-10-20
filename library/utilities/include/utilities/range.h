@@ -78,8 +78,8 @@ public:
 
 private:
     constexpr void maintain_invariant() {
-        const auto a{min_};
-        const auto b{max_};
+        const auto a = min_;
+        const auto b = max_;
 
         using std::min;
         using std::max;

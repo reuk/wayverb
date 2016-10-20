@@ -56,14 +56,14 @@ void write_interleaved(const std::string& name,
                        int sr,
                        int ftype,
                        int bd) {
-    const auto fmt{ftype | bd};
+    const auto fmt = ftype | bd;
     if (!SndfileHandle::formatCheck(fmt, channels, sr)) {
         throw std::runtime_error(
                 "looks like libsndfile can't write with those parameters");
     }
 
     SndfileHandle outfile{name, SFM_WRITE, fmt, channels, sr};
-    const auto written{outfile.write(data, num)};
+    const auto written = outfile.write(data, num);
     if (!written) {
         throw std::runtime_error("failed to write audio file");
     }
@@ -111,7 +111,7 @@ audio_file<double> read(const std::string& fname) {
         }
     }
     SndfileHandle infile{fname, SFM_READ};
-    const auto channels{infile.channels()};
+    const auto channels = infile.channels();
     std::vector<double> interleaved(infile.frames() * channels);
     infile.readf(interleaved.data(), infile.frames());
     return make_audio_file(

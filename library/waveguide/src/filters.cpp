@@ -48,11 +48,11 @@ coefficients_canonical to_impedance_coefficients(
                    [](auto a, auto b) { return a - b; });
 
     if (ret.a[0] != 0) {
-        const auto norm{1.0 / ret.a[0]};
-        const auto do_normalize{[norm](auto& i) {
+        const auto norm = 1.0 / ret.a[0];
+        const auto do_normalize = [norm](auto& i) {
             std::for_each(
                     std::begin(i), std::end(i), [norm](auto& i) { i *= norm; });
-        }};
+        };
         do_normalize(ret.b);
         do_normalize(ret.a);
     }

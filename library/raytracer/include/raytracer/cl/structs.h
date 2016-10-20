@@ -22,7 +22,7 @@ struct alignas(1 << 4) reflection final {
 
 template <>
 struct cl_representation<reflection> final {
-    static constexpr auto value{R"(
+    static constexpr auto value = R"(
 typedef struct {
     float3 position;
     float3 direction;
@@ -30,7 +30,7 @@ typedef struct {
     char keep_going;
     char receiver_visible;
 } reflection;
-)"};
+)";
 };
 
 constexpr auto to_tuple(const reflection& x) {
@@ -51,7 +51,7 @@ constexpr bool operator!=(const reflection& a, const reflection& b) {
 
 //----------------------------------------------------------------------------//
 
-struct alignas(1 << 5) diffuse_path_info final {
+struct alignas(1 << 5) stochastic_path_info final {
     volume_type volume;  //  product of previous specular components
     cl_float3 position;  //  because otherwise we won't be able to
                          //  calculate a new distance
@@ -59,27 +59,27 @@ struct alignas(1 << 5) diffuse_path_info final {
 };
 
 template <>
-struct cl_representation<diffuse_path_info> final {
-    static constexpr auto value{R"(
+struct cl_representation<stochastic_path_info> final {
+    static constexpr auto value = R"(
 typedef struct {
     volume_type volume;
     float3 position;
     float distance;
-} diffuse_path_info;
-)"};
+} stochastic_path_info;
+)";
 };
 
-constexpr auto to_tuple(const diffuse_path_info& x) {
+constexpr auto to_tuple(const stochastic_path_info& x) {
     return std::tie(x.volume, x.position, x.distance);
 }
 
-constexpr bool operator==(const diffuse_path_info& a,
-                          const diffuse_path_info& b) {
+constexpr bool operator==(const stochastic_path_info& a,
+                          const stochastic_path_info& b) {
     return to_tuple(a) == to_tuple(b);
 }
 
-constexpr bool operator!=(const diffuse_path_info& a,
-                          const diffuse_path_info& b) {
+constexpr bool operator!=(const stochastic_path_info& a,
+                          const stochastic_path_info& b) {
     return !(a == b);
 }
 
@@ -87,7 +87,7 @@ constexpr bool operator!=(const diffuse_path_info& a,
 
 /// An impulse contains a volume, a time in seconds, and the direction from
 /// which it came (useful for attenuation/hrtf stuff).
-template <size_t channels = 8>
+template <size_t channels>
 struct alignas(1 << 5) impulse final {
     detail::cl_vector_constructor_t<float, channels>
             volume;      //  actual per-band volume of the impulse
@@ -103,13 +103,13 @@ constexpr auto make_impulse(T volume, cl_float3 position, cl_float distance) {
 
 template <>
 struct cl_representation<impulse<8>> final {
-    static constexpr auto value{R"(
+    static constexpr auto value = R"(
 typedef struct {
     volume_type volume;
     float3 position;
     float distance;
 } impulse;
-)"};
+)";
 };
 
 template <size_t channels>
@@ -144,12 +144,12 @@ constexpr auto make_attenuated_impulse(T volume, cl_float distance) {
 
 template <>
 struct cl_representation<attenuated_impulse<8>> final {
-    static constexpr auto value{R"(
+    static constexpr auto value = R"(
 typedef struct {
     volume_type volume;
     float distance;
 } attenuated_impulse;
-)"};
+)";
 };
 
 template <size_t channels>

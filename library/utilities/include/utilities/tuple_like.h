@@ -32,7 +32,7 @@ template <typename T>
 using tuple_like_size_t = typename tuple_like_size<T>::type;
 
 template <typename T>
-constexpr auto tuple_like_size_v{tuple_like_size_t<T>{}};
+constexpr auto tuple_like_size_v = tuple_like_size_t<T>{};
 
 //----------------------------------------------------------------------------//
 

@@ -17,7 +17,7 @@ public:
     convolver(convolver&&) = delete;
     convolver& operator=(convolver&&) = delete;
 
-	~convolver() noexcept;
+    ~convolver() noexcept;
 
     template <typename T, typename U>
     auto convolve(const T& a, const U& b) {
@@ -28,17 +28,17 @@ public:
 
     template <typename It, typename Jt>
     auto convolve(It a_begin, It a_end, Jt b_begin, Jt b_end) {
-        const auto d0{std::distance(a_begin, a_end)};
-        const auto d1{std::distance(b_begin, b_end)};
+        const auto d0 = std::distance(a_begin, a_end);
+        const auto d1 = std::distance(b_begin, b_end);
         if (d0 + d1 - 1 != get_fft_length()) {
             throw std::runtime_error{"inputs must sum to FFT_LENGTH + 1"};
         }
 
-		r2c_i_.zero();
+        r2c_i_.zero();
         std::copy(a_begin, a_end, r2c_i_.begin());
         forward_fft_a();
 
-		r2c_i_.zero();
+        r2c_i_.zero();
         std::copy(b_begin, b_end, r2c_i_.begin());
         forward_fft_b();
 

@@ -8,14 +8,14 @@ void draw_percentage(std::ostream& os, float progress) {
 }
 
 void draw_bar(std::ostream& os, float progress) {
-    constexpr auto width{73ul};
+    constexpr auto width = 73ul;
     const size_t filled = progress * width;
-    const auto blank{width - filled};
+    const auto blank = width - filled;
     os << '[';
-    for (auto i{0ul}; i != filled; ++i) {
+    for (auto i = 0ul; i != filled; ++i) {
         os << '/';
     }
-    for (auto i{0ul}; i != blank; ++i) {
+    for (auto i = 0ul; i != blank; ++i) {
         os << ' ';
     }
     os << "] ";

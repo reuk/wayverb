@@ -14,7 +14,7 @@ namespace waveguide {
 template <typename T>
 constexpr auto factdbl(T t) {
     double out{1};
-    for (auto i{t}; i >= 1; i -= 2) {
+    for (auto i = t; i >= 1; i -= 2) {
         out *= i;
     }
     return out;

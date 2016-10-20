@@ -1,4 +1,4 @@
-#include "raytracer/diffuse/postprocessing.h"
+#include "raytracer/stochastic/postprocessing.h"
 
 #include "common/cl/iterator.h"
 #include "common/mixdown.h"
@@ -10,6 +10,7 @@
 #include <iostream>
 
 namespace raytracer {
+namespace stochastic {
 
 double constant_mean_event_occurrence(double speed_of_sound,
                                       double room_volume) {
@@ -28,16 +29,16 @@ dirac_sequence generate_dirac_sequence(double speed_of_sound,
                                        double room_volume,
                                        double sample_rate,
                                        double max_time) {
-    const auto constant_mean_occurrence{
-            constant_mean_event_occurrence(speed_of_sound, room_volume)};
+    const auto constant_mean_occurrence =
+            constant_mean_event_occurrence(speed_of_sound, room_volume);
 
     std::default_random_engine engine{std::random_device{}()};
 
     aligned::vector<float> ret(std::ceil(max_time * sample_rate), 0);
-    for (auto t{t0(constant_mean_occurrence)}; t < max_time;
+    for (auto t = t0(constant_mean_occurrence); t < max_time;
          t += interval_size(
                  engine, mean_event_occurrence(constant_mean_occurrence, t))) {
-        const auto sample_index{t * sample_rate};
+        const auto sample_index = t * sample_rate;
         const size_t twice = 2 * sample_index;
         const bool negative = twice % 2;
         ret[sample_index] = negative ? -1 : 1;
@@ -56,33 +57,33 @@ std::ostream& operator<<(std::ostream& o, const volume_type& v) {
 aligned::vector<volume_type> weight_sequence(const energy_histogram& histogram,
                                              const dirac_sequence& sequence,
                                              double acoustic_impedance) {
-    auto ret{map_to_vector(begin(sequence.sequence),
-                           end(sequence.sequence),
-                           [](auto i) { return make_volume_type(i); })};
+    auto ret = map_to_vector(begin(sequence.sequence),
+                             end(sequence.sequence),
+                             [](auto i) { return make_volume_type(i); });
 
-    const auto convert_index{[&](auto ind) -> size_t {
+    const auto convert_index = [&](auto ind) -> size_t {
         return ind * sequence.sample_rate / histogram.sample_rate;
-    }};
+    };
 
-    const auto ideal_sequence_length{
-            convert_index(histogram.full_histogram.size())};
+    const auto ideal_sequence_length =
+            convert_index(histogram.full_histogram.size());
     if (ideal_sequence_length < ret.size()) {
         ret.resize(ideal_sequence_length);
     }
 
-    for (auto i{0ul}, e{histogram.full_histogram.size()}; i != e; ++i) {
-        const auto get_sequence_index{[&](auto ind) {
+    for (auto i = 0ul, e = histogram.full_histogram.size(); i != e; ++i) {
+        const auto get_sequence_index = [&](auto ind) {
             return ret.begin() + std::min(convert_index(ind), ret.size());
-        }};
+        };
 
-        const auto beg{get_sequence_index(i)};
-        const auto end{get_sequence_index(i + 1)};
+        const auto beg = get_sequence_index(i);
+        const auto end = get_sequence_index(i + 1);
 
-        const auto squared_summed{frequency_domain::square_sum(beg, end)};
+        const auto squared_summed = frequency_domain::square_sum(beg, end);
 
-        auto scale_factor{intensity_to_pressure(
+        auto scale_factor = intensity_to_pressure(
                 histogram.full_histogram[i] / squared_summed,
-                acoustic_impedance)};
+                acoustic_impedance);
 
         for_each([](auto& i) { i = std::isfinite(i) ? i : 0.0f; },
                  scale_factor.s);
@@ -97,7 +98,7 @@ aligned::vector<float> mono_diffuse_postprocessing(
         const energy_histogram& histogram,
         const dirac_sequence& sequence,
         double acoustic_impedance) {
-    auto weighted{weight_sequence(histogram, sequence, acoustic_impedance)};
+    auto weighted = weight_sequence(histogram, sequence, acoustic_impedance);
     hrtf_data::multiband_filter(begin(weighted),
                                 end(weighted),
                                 sequence.sample_rate,
@@ -108,4 +109,5 @@ aligned::vector<float> mono_diffuse_postprocessing(
     return mixdown(begin(weighted), end(weighted));
 }
 
+}  // namespace stochastic
 }  // namespace raytracer

@@ -42,32 +42,32 @@ reverb_time decay_time_from_points(It begin,
                                    float begin_db,
                                    float end_db,
                                    float min_db) {
-    const auto integrated{
-            squared_integrated(std::make_reverse_iterator(end),
-                               std::make_reverse_iterator(begin))};
+    const auto integrated = squared_integrated(
+            std::make_reverse_iterator(end), std::make_reverse_iterator(begin));
 
     size_t time{0};
-    const auto in_db_with_times{map_to_vector(
+    const auto in_db_with_times = map_to_vector(
             integrated.crbegin(), integrated.crend(), [&](auto i) {
                 return glm::vec2{time++, decibels::p2db(i / integrated.back())};
-            })};
+            });
 
-    const auto comparator{[](auto i, auto j) { return i.y < j; }};
-    const auto regression_end{std::lower_bound(in_db_with_times.crbegin(),
-                                               in_db_with_times.crend(),
-                                               begin_db,
-                                               comparator)};
-    const auto regression_begin{std::lower_bound(in_db_with_times.crbegin(),
+    const auto comparator = [](auto i, auto j) { return i.y < j; };
+    const auto regression_end = std::lower_bound(in_db_with_times.crbegin(),
                                                  in_db_with_times.crend(),
-                                                 end_db,
-                                                 comparator)};
+                                                 begin_db,
+                                                 comparator);
+    const auto regression_begin = std::lower_bound(in_db_with_times.crbegin(),
+                                                   in_db_with_times.crend(),
+                                                   end_db,
+                                                   comparator);
 
-    const auto regression{
-            simple_linear_regression(regression_begin, regression_end)};
+    const auto regression =
+            simple_linear_regression(regression_begin, regression_end);
 
     //  Find time between desired points on regression line.
-    const auto find_time{
-            [&](auto level) { return (level - regression.c) / regression.m; }};
+    const auto find_time = [&](auto level) {
+        return (level - regression.c) / regression.m;
+    };
 
     return {find_time(min_db), regression.r};
 }

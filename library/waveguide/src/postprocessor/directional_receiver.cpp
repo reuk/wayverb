@@ -29,16 +29,16 @@ directional_receiver::directional_receiver(
 directional_receiver::return_type directional_receiver::operator()(
         cl::CommandQueue& queue, const cl::Buffer& buffer, size_t) {
     //  copy out node pressure
-    const auto pressure{read_value<cl_float>(queue, buffer, output_node_)};
+    const auto pressure = read_value<cl_float>(queue, buffer, output_node_);
 
     //  copy out surrounding pressures
 
     //  pressure difference vector is obtained by subtracting the central
     //  junction pressure from the pressure values of neighboring junctions
     //  and dividing these terms by the spatial sampling period
-    constexpr auto num_surrounding{6};
+    constexpr auto num_surrounding = 6;
     std::array<cl_float, num_surrounding> surrounding;
-    for (auto i{0ul}; i != num_surrounding; ++i) {
+    for (auto i = 0ul; i != num_surrounding; ++i) {
         surrounding[i] =
                 (read_value<cl_float>(queue, buffer, surrounding_nodes_[i]) -
                  pressure) /
@@ -62,7 +62,7 @@ directional_receiver::return_type directional_receiver::operator()(
 
     //  the instantaneous intensity is obtained by multiplying the velocity
     //  and the pressure
-    const auto intensity{velocity_ * static_cast<double>(pressure)};
+    const auto intensity = velocity_ * static_cast<double>(pressure);
 
     return {intensity, pressure};
 }

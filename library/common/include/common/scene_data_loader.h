@@ -8,7 +8,7 @@ class scene_data_loader final {
 public:
     struct material final {
         std::string name;
-        surface surface;
+        surface<simulation_bands> surface;
     };
 
     scene_data_loader() = default;

@@ -11,10 +11,11 @@ std::array<std::pair<cl_uint, cl_uint>, 3> get_index_pairs(const triangle& t) {
 float six_times_tetrahedron_volume(const geo::triangle_vec3& t) {
     /// From Efficient Feature Extraction for 2d/3d Objects in Mesh
     /// Representation, Cha Zhang and Tsuhan Chen
-    const auto volume{(t[1].x * t[2].y * t[0].z) - (t[2].x * t[1].y * t[0].z) +
-                      (t[2].x * t[0].y * t[1].z) - (t[0].x * t[2].y * t[1].z) +
-                      (t[0].x * t[1].y * t[2].z) - (t[1].x * t[0].y * t[2].z)};
-    const auto sign{glm::dot(glm::normalize(t[0]), geo::normal(t))};
+    const auto volume =
+            (t[1].x * t[2].y * t[0].z) - (t[2].x * t[1].y * t[0].z) +
+            (t[2].x * t[0].y * t[1].z) - (t[0].x * t[2].y * t[1].z) +
+            (t[0].x * t[1].y * t[2].z) - (t[1].x * t[0].y * t[2].z);
+    const auto sign = glm::dot(glm::normalize(t[0]), geo::normal(t));
     return std::copysign(volume, sign);
 }
 
@@ -22,15 +23,4 @@ float six_times_tetrahedron_volume(const geo::triangle_vec3& t) {
 
 float estimate_air_intensity_absorption(float frequency, float humidity) {
     return (0.0275 / humidity) * std::pow(frequency / 1000, 1.7);
-}
-
-volume_type estimate_air_intensity_absorption(
-        const std::array<float, 8>& band_centres, float humidity) {
-    volume_type ret{};
-    for (auto it{std::begin(ret.s)}, end{std::end(ret.s)}; it != end; ++it) {
-        const auto index{std::distance(std::begin(ret.s), it)};
-        const auto frequency{band_centres[index]};
-        *it = estimate_air_intensity_absorption(frequency, humidity);
-    }
-    return ret;
 }

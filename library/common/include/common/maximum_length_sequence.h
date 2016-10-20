@@ -16,8 +16,8 @@ constexpr uint32_t masks[] = {
 template <typename Word>
 void generate_maximum_length_sequence(Word order,
                                       const mls_callback& callback) {
-    const auto signal_length{(Word{1} << order) - 1};
-    const auto mask{masks[order]};
+    const auto signal_length = (Word{1} << order) - 1;
+    const auto mask = masks[order];
     for (Word i{0ul}, reg{1}; i != signal_length; ++i) {
         callback(reg & 1, i);
         reg = (reg >> 1) ^ Word { (0 - (reg & 1)) & mask };

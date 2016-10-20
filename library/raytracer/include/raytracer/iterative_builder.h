@@ -14,14 +14,14 @@ public:
 
     template <typename It, typename Func>
     void push(It b, It e, const Func& func) {
-        const auto input_size{std::distance(b, e)};
-        const auto num_items{get_num_items()};
+        const auto input_size = std::distance(b, e);
+        const auto num_items = get_num_items();
         if (input_size != num_items) {
             throw std::runtime_error{
                     "incorrect range size passed to iterative_builder"};
         }
 
-        for (auto i{0ul}; i != num_items; ++i) {
+        for (auto i = 0ul; i != num_items; ++i) {
             push_item(i, func(b[i]));
         }
     }
@@ -34,9 +34,7 @@ public:
     const auto& get_data() const { return data_; }
     auto& get_data() { return data_; }
 
-    auto get_num_items() const {
-        return data_.size();
-    }
+    auto get_num_items() const { return data_.size(); }
 
 private:
     void push_item(size_t index, T item) {

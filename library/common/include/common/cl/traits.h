@@ -70,7 +70,7 @@ template <typename T>
 using is_vector_type_t = typename cl_vector_type_trait<T>::is_vector_type;
 
 template <typename T>
-constexpr auto is_vector_type_v{is_vector_type_t<T>{}};
+constexpr auto is_vector_type_v = is_vector_type_t<T>{};
 
 template <typename T, typename U = void>
 using enable_if_is_vector_t = std::enable_if_t<is_vector_type_v<T>, U>;
@@ -82,7 +82,7 @@ template <typename T>
 using components_t = typename cl_vector_type_trait<T>::components;
 
 template <typename T>
-constexpr auto components_v{components_t<T>{}};
+constexpr auto components_v = components_t<T>{};
 
 template <typename T>
 using value_type_t = typename cl_vector_type_trait<T>::value_type;
@@ -91,16 +91,16 @@ template <typename...>
 struct any;
 
 template <typename... Ts>
-constexpr auto any_v{any<Ts...>::value};
+constexpr auto any_v = any<Ts...>::value;
 
 template <typename T>
 struct any<T> final {
-    static constexpr auto value{T::value};
+    static constexpr auto value = T::value;
 };
 
 template <typename T, typename... Ts>
 struct any<T, Ts...> final {
-    static constexpr auto value{any_v<T> || any_v<Ts...>};
+    static constexpr auto value = any_v<T> || any_v<Ts...>;
 };
 
 template <typename U, typename... Ts>
@@ -128,15 +128,6 @@ template <size_t N>
 struct cl_vector_constructor<bool, N> final {
     using type = cl_vector_constructor_t<cl_char, N>;
 };
-
-template <typename Ret, typename Input>
-constexpr auto construct_vector(Input input) {
-    Ret ret{};
-    for (auto& i : ret.s) {
-        i = input;
-    }
-    return ret;
-}
 
 template <typename T, typename Op, enable_if_is_vector_t<T, int> = 0>
 constexpr auto accumulate(const T& t, const Op& op) {
@@ -481,4 +472,13 @@ template <typename T,
           detail::enable_if_any_is_vector_t<int, T, U> = 0>
 inline auto min(const T& t, const U& u) {
     return detail::zip(t, u, detail::min_functor{});
+}
+
+template <size_t Components, typename Input>
+constexpr auto construct_vector(Input input) {
+    detail::cl_vector_constructor_t<Input, Components> ret{};
+    for (auto& i : ret.s) {
+        i = input;
+    }
+    return ret;
 }

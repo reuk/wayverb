@@ -10,12 +10,12 @@ struct alignas(1 << 4) aabb final {
 
 template <>
 struct cl_representation<aabb> final {
-    static constexpr auto value{R"(
+    static constexpr auto value = R"(
 typedef struct {
     float3 c0;
     float3 c1;
 } aabb;
-)"};
+)";
 };
 
 constexpr auto to_tuple(const aabb& x) { return std::tie(x.c0, x.c1); }

@@ -46,19 +46,19 @@ void incremental_histogram(aligned::vector<V>& ret,
                            double sample_rate,
                            double max_time,
                            const T& callback) {
-    const auto make_time_iterator{[](auto it) {
+    const auto make_time_iterator = [](auto it) {
         return make_mapping_iterator_adapter(std::move(it), time_functor{});
-    }};
-    const auto max_time_in_input{
-            *std::max_element(make_time_iterator(b), make_time_iterator(e))};
-    const auto max_t{std::min(max_time_in_input, max_time)};
+    };
+    const auto max_time_in_input =
+            *std::max_element(make_time_iterator(b), make_time_iterator(e));
+    const auto max_t = std::min(max_time_in_input, max_time);
     const size_t output_size = std::floor(max_t * sample_rate) + 1;
     if (ret.size() < output_size) {
         ret.resize(output_size, V());
     }
 
     for (; b != e; ++b) {
-        const auto item_time{time(*b)};
+        const auto item_time = time(*b);
         if (item_time < max_time) {
             callback(volume(*b), item_time, sample_rate, ret);
         }
@@ -98,27 +98,27 @@ void sinc_sum(T value,
               double item_time,
               double sample_rate,
               aligned::vector<T>& ret) {
-    constexpr auto width{400};  //  Impulse width in samples.
+    constexpr auto width = 400;  //  Impulse width in samples.
 
-    const auto centre_sample{item_time * sample_rate};
+    const auto centre_sample = item_time * sample_rate;
 
     const ptrdiff_t ideal_begin = std::floor(centre_sample - width / 2);
     const ptrdiff_t ideal_end = std::ceil(centre_sample + width / 2);
     ret.resize(std::max(ret.size(), static_cast<size_t>(ideal_end)));
 
-    const auto begin_samp{std::max(static_cast<ptrdiff_t>(0), ideal_begin)};
-    const auto end_samp{
-            std::min(static_cast<ptrdiff_t>(ret.size()), ideal_end)};
+    const auto begin_samp = std::max(static_cast<ptrdiff_t>(0), ideal_begin);
+    const auto end_samp =
+            std::min(static_cast<ptrdiff_t>(ret.size()), ideal_end);
 
-    const auto begin_it{ret.begin() + begin_samp};
-    const auto end_it{ret.begin() + end_samp};
+    const auto begin_it = ret.begin() + begin_samp;
+    const auto end_it = ret.begin() + end_samp;
 
-    for (auto i{begin_it}; i != end_it; ++i) {
-        const auto this_time{std::distance(ret.begin(), i) / sample_rate};
-        const auto relative_time{this_time - item_time};
-        const auto angle{2 * M_PI * relative_time};
-        const auto envelope{0.5 * (1 + std::cos(angle / width))};
-        const auto filt{sinc(relative_time * sample_rate)};
+    for (auto i = begin_it; i != end_it; ++i) {
+        const auto this_time = std::distance(ret.begin(), i) / sample_rate;
+        const auto relative_time = this_time - item_time;
+        const auto angle = 2 * M_PI * relative_time;
+        const auto envelope = 0.5 * (1 + std::cos(angle / width));
+        const auto filt = sinc(relative_time * sample_rate);
         *i += value * envelope * filt;
     }
 }

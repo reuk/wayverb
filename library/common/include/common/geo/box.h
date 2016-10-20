@@ -86,10 +86,10 @@ auto get_aabb(const generic_scene_data<glm::vec3, Surface>& scene) {
 
 template <typename Surface>
 auto get_aabb(const generic_scene_data<cl_float3, Surface>& scene) {
-    const auto make_iterator{[](auto i) {
+    const auto make_iterator = [](auto i) {
         return make_mapping_iterator_adapter(std::move(i),
                                              [](auto i) { return to_vec3(i); });
-    }};
+    };
     return enclosing_range(make_iterator(scene.get_vertices().begin()),
                            make_iterator(scene.get_vertices().end()));
 }

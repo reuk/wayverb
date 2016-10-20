@@ -1,4 +1,4 @@
-#include "raytracer/diffuse/program.h"
+#include "raytracer/stochastic/program.h"
 #include "raytracer/cl/brdf.h"
 #include "raytracer/cl/structs.h"
 
@@ -9,9 +9,9 @@
 #include "common/cl/voxel_structs.h"
 
 namespace raytracer {
-namespace diffuse {
+namespace stochastic {
 
-constexpr auto source{R"(
+constexpr auto source = R"(
 
 //  These functions replicate functionality from common/surfaces.h
 
@@ -47,14 +47,14 @@ volume_type specular(volume_type total_reflected, volume_type scattering) {
     return total_reflected * (1 - scattering);
 }
 
-kernel void init_diffuse_path_info(global diffuse_path_info* info,
+kernel void init_stochastic_path_info(global stochastic_path_info* info,
                                    volume_type volume,
                                    float3 position) {
     const size_t thread = get_global_id(0);
-    info[thread] = (diffuse_path_info){volume, position, 0};
+    info[thread] = (stochastic_path_info){volume, position, 0};
 }
 
-kernel void diffuse(const global reflection* reflections,
+kernel void stochastic(const global reflection* reflections,
                     float3 receiver,
                     float receiver_radius,
 
@@ -62,14 +62,14 @@ kernel void diffuse(const global reflection* reflections,
                     const global float3* vertices,
                     const global surface* surfaces,
 
-                    global diffuse_path_info* diffuse_path,
+                    global stochastic_path_info* stochastic_path,
 
-                    global impulse* diffuse_output,
+                    global impulse* stochastic_output,
                     global impulse* intersected_output) {
     const size_t thread = get_global_id(0);
 
     //  zero out output
-    diffuse_output[thread] = (impulse){};
+    stochastic_output[thread] = (impulse){};
     intersected_output[thread] = (impulse){};
 
     //  if this thread doesn't have anything to do, stop now
@@ -86,19 +86,19 @@ kernel void diffuse(const global reflection* reflections,
     const volume_type reflectance =
             absorption_to_energy_reflectance(reflective_surface.absorption);
 
-    const volume_type last_volume = diffuse_path[thread].volume;
+    const volume_type last_volume = stochastic_path[thread].volume;
     const volume_type outgoing = last_volume * reflectance;
 
-    const float3 last_position = diffuse_path[thread].position;
+    const float3 last_position = stochastic_path[thread].position;
     const float3 this_position = reflections[thread].position;
 
     //  find the new distance to this reflection
-    const float last_distance = diffuse_path[thread].distance;
+    const float last_distance = stochastic_path[thread].distance;
     const float this_distance =
             last_distance + distance(last_position, this_position);
 
     //  set accumulator
-    diffuse_path[thread] = (diffuse_path_info){
+    stochastic_path[thread] = (stochastic_path_info){
             outgoing, this_position, this_distance};
 
     //  compute output
@@ -116,7 +116,7 @@ kernel void diffuse(const global reflection* reflections,
                 (impulse){output_volume, last_position, total_distance};
     }
 
-    //  diffuse output
+    //  stochastic output
     if (reflections[thread].receiver_visible) {
         const float3 to_receiver = receiver - this_position;
         const float to_receiver_distance = length(to_receiver);
@@ -145,12 +145,12 @@ kernel void diffuse(const global reflection* reflections,
                 scattered(outgoing, reflective_surface.scattering);
 
         //  set output
-        diffuse_output[thread] =
+        stochastic_output[thread] =
                 (impulse){output_volume, this_position, total_distance};
     }
 }
 
-)"};
+)";
 
 program::program(const compute_context& cc)
         : program_wrapper_(cc,
@@ -160,7 +160,7 @@ program::program(const compute_context& cc)
                                    cl_representation_v<triangle>,
                                    cl_representation_v<triangle_verts>,
                                    cl_representation_v<reflection>,
-                                   cl_representation_v<diffuse_path_info>,
+                                   cl_representation_v<stochastic_path_info>,
                                    cl_representation_v<impulse<8>>,
                                    cl_representation_v<aabb>,
                                    cl_representation_v<ray>,
@@ -171,5 +171,5 @@ program::program(const compute_context& cc)
                                    ::cl_sources::brdf,
                                    source}) {}
 
-}  // namespace diffuse
+}  // namespace stochastic
 }  // namespace raytracer

@@ -1,5 +1,7 @@
 #include "common/attenuator/microphone.h"
 
+namespace attenuator {
+
 microphone::microphone(const glm::vec3& pointing, float shape)
         : pointing_{glm::normalize(pointing)}
         , shape_{glm::clamp(shape, 0.0f, 1.0f)} {}
@@ -16,9 +18,11 @@ void microphone::set_shape(float shape) {
 }
 
 float attenuation(const microphone& mic, const glm::vec3& incident) {
-    if (const auto l{glm::length(incident)}) {
+    if (const auto l = glm::length(incident)) {
         return (1 - mic.get_shape()) +
                mic.get_shape() * glm::dot(mic.get_pointing(), incident / l);
     }
     return 0;
 }
+
+}  // namespace attenuator

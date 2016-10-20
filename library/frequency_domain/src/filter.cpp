@@ -22,15 +22,15 @@ public:
         //  Run forward fft, placing fft output into cbuf_.
         fftwf_execute(fft_);
 
-        const auto rbuf_size{rbuf_.size()};
+        const auto rbuf_size = rbuf_.size();
         //  Modify magnitudes in the frequency domain.
-        for (auto i{0ul}, end{cbuf_.size()}; i != end; ++i) {
-            const auto normalised_frequency{i / static_cast<float>(rbuf_size)};
+        for (auto i = 0ul, end = cbuf_.size(); i != end; ++i) {
+            const auto normalised_frequency = i / static_cast<float>(rbuf_size);
             auto& bin{cbuf_.data()[i]};
             auto& re{bin[0]};
             auto& im{bin[1]};
-            const auto new_value{callback(std::complex<float>{re, im},
-                                          normalised_frequency)};
+            const auto new_value =
+                    callback(std::complex<float>{re, im}, normalised_frequency);
             re = new_value.real();
             im = new_value.imag();
         }

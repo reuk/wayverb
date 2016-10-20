@@ -12,42 +12,42 @@ struct linear_regression final {
 
 template <typename It>
 linear_regression simple_linear_regression(It begin, It end) {
-    const auto n{std::distance(begin, end)};
+    const auto n = std::distance(begin, end);
 
     if (!n) {
         throw std::runtime_error("can't find regression of empty range");
     }
 
-    const auto sx{
+    const auto sx =
             std::accumulate(begin, end, 0.0, [](auto running_total, auto i) {
                 return running_total + i.x;
-            })};
-    const auto sy{
+            });
+    const auto sy =
             std::accumulate(begin, end, 0.0, [](auto running_total, auto i) {
                 return running_total + i.y;
-            })};
-    const auto sxx{
+            });
+    const auto sxx =
             std::accumulate(begin, end, 0.0, [](auto running_total, auto i) {
                 return running_total + i.x * i.x;
-            })};
-    const auto sxy{
+            });
+    const auto sxy =
             std::accumulate(begin, end, 0.0, [](auto running_total, auto i) {
                 return running_total + i.x * i.y;
-            })};
-    const auto syy{
+            });
+    const auto syy =
             std::accumulate(begin, end, 0.0, [](auto running_total, auto i) {
                 return running_total + i.y * i.y;
-            })};
+            });
 
-    const auto denominator{n * sxx - sx * sx};
+    const auto denominator = n * sxx - sx * sx;
     if (!denominator) {
         throw std::runtime_error("regression test: denominator of 0");
     }
 
-    const auto numerator{n * sxy - sx * sy};
-    const auto m{numerator / denominator};
-    const auto c{sy / n - m * sx / n};
-    const auto r{numerator /
-                 std::sqrt((n * sxx - sx * sx) * (n * syy - sy * sy))};
+    const auto numerator = n * sxy - sx * sy;
+    const auto m = numerator / denominator;
+    const auto c = sy / n - m * sx / n;
+    const auto r =
+            numerator / std::sqrt((n * sxx - sx * sx) * (n * syy - sy * sy));
     return {m, c, r};
 }

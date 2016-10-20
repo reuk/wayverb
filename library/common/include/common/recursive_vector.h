@@ -45,7 +45,7 @@ public:
             : capacity_{other.size_}
             , ptr_{other.ptr_ ? allocator_traits::allocate(alloc_, other.size_)
                               : nullptr} {
-        for (auto i{other.begin()}, end{other.end()}; i != end; ++i) {
+        for (auto i = other.begin(), end = other.end(); i != end; ++i) {
             construct(*i);
         }
     }
@@ -55,7 +55,7 @@ public:
     }
 
     recursive_vector_impl& operator=(const recursive_vector_impl& other) {
-        auto copy{other};
+        auto copy = other;
         swap(copy);
         return *this;
     }
@@ -136,19 +136,19 @@ public:
 
     template <typename It>
     iterator insert(const_iterator pos, It first, It last) {
-        const auto n{std::distance(first, last)};
-        const auto c{impl_.capacity()};
-        const auto new_size{impl_.size() + n};
-        const auto old_pos{std::distance(impl_.cbegin(), pos)};
+        const auto n = std::distance(first, last);
+        const auto c = impl_.capacity();
+        const auto new_size = impl_.size() + n;
+        const auto old_pos = std::distance(impl_.cbegin(), pos);
         //  If there's already room for the new elements.
         if (new_size <= c) {
             //  Default-construct some new elements at the end.
-            const auto old_end{impl_.end()};
+            const auto old_end = impl_.end();
             while (impl_.size() < new_size) {
                 impl_.construct();
             }
             //  Move items back.
-            const auto r{impl_.begin() + old_pos};
+            const auto r = impl_.begin() + old_pos;
             std::move_backward(r, old_end, impl_.begin() + new_size);
             std::copy(first, last, r);
             return r;
@@ -159,13 +159,13 @@ public:
         //  in a valid state.
         impl_type v{std::max(impl_.size() + n, impl_.capacity() * 2 + 1)};
         //  Function is nothrow from here on.
-        for (auto i{impl_.begin()}; i != pos; ++i) {
+        for (auto i = impl_.begin(); i != pos; ++i) {
             v.construct(std::move(*i));
         }
-        for (auto i{first}; i != last; ++i) {
+        for (auto i = first; i != last; ++i) {
             v.construct(*i);
         }
-        for (auto i{pos}; i != impl_.end(); ++i) {
+        for (auto i = pos; i != impl_.end(); ++i) {
             v.construct(std::move(*i));
         }
         //  Take ownership of the copy;
@@ -175,13 +175,13 @@ public:
 
     iterator erase(const_iterator begin, const_iterator end) {
         //  Move elements down the range one-by-one.
-        const auto p{impl_.begin() + std::distance(impl_.cbegin(), begin)};
+        const auto p = impl_.begin() + std::distance(impl_.cbegin(), begin);
         std::move(impl_.begin() + std::distance(impl_.cbegin(), end),
                   impl_.end(),
                   p);
         //  Destroy the moved-from elements.
-        const auto num{std::distance(begin, end)};
-        for (auto i{0u}; i != num; ++i) {
+        const auto num = std::distance(begin, end);
+        for (auto i = 0u; i != num; ++i) {
             impl_.destroy();
         }
         return p;
@@ -193,7 +193,7 @@ public:
             //  Create a new impl to store the data.
             impl_type v{std::max(new_cap, impl_.capacity() * 2 + 1)};
             //  Copy/move elements across one-by-one.
-            for (auto i{impl_.begin()}, end{impl_.end()}; i != end; ++i) {
+            for (auto i = impl_.begin(), end = impl_.end(); i != end; ++i) {
                 v.construct(std::move(*i));
             }
             //  Swap internals.
@@ -237,7 +237,7 @@ public:
     const auto cend() const { return data_.cend(); }
 
     auto find(const T& t) const {
-        const auto it{std::lower_bound(data_.begin(), data_.end(), t, comp_)};
+        const auto it = std::lower_bound(data_.begin(), data_.end(), t, comp_);
         if (it != data_.end() && values_equal(t, *it)) {
             return it;
         }
@@ -245,7 +245,7 @@ public:
     }
 
     auto insert(T t) {
-        const auto it{std::lower_bound(data_.begin(), data_.end(), t, comp_)};
+        const auto it = std::lower_bound(data_.begin(), data_.end(), t, comp_);
         if (it != data_.end() && values_equal(t, *it)) {
             return std::make_pair(it, false);
         }

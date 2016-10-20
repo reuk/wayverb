@@ -5,6 +5,9 @@
 template <typename T, typename Ret = typename T::return_type>
 class callback_accumulator final {
 public:
+    callback_accumulator(T t)
+            : postprocessor_{std::move(t)} {}
+
     template <typename... Ts>
     callback_accumulator(Ts&&... ts)
             : postprocessor_{std::forward<Ts>(ts)...} {}
@@ -20,3 +23,8 @@ private:
     aligned::vector<Ret> output_;
     T postprocessor_;
 };
+
+template <typename T>
+auto make_callback_accumulator(T t) {
+    return callback_accumulator<T>{std::move(t)};
+}

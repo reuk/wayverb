@@ -16,31 +16,31 @@ size_t run(const compute_context& cc,
            const step_postprocessor& postprocessor,
            const std::atomic_bool& keep_going) {
     cl::CommandQueue queue{cc.context, cc.device};
-    auto previous{make_filled_buffer(
-            queue, mesh.get_structure().get_condensed_nodes().size(), 0.0f)};
-    auto current{make_filled_buffer(
-            queue, mesh.get_structure().get_condensed_nodes().size(), 0.0f)};
+    auto previous = make_filled_buffer(
+            queue, mesh.get_structure().get_condensed_nodes().size(), 0.0f);
+    auto current = make_filled_buffer(
+            queue, mesh.get_structure().get_condensed_nodes().size(), 0.0f);
 
-    const auto node_buffer{load_to_buffer(
-            cc.context, mesh.get_structure().get_condensed_nodes(), true)};
+    const auto node_buffer = load_to_buffer(
+            cc.context, mesh.get_structure().get_condensed_nodes(), true);
 
-    const auto boundary_coefficients_buffer{load_to_buffer(
-            cc.context, mesh.get_structure().get_coefficients(), true)};
+    const auto boundary_coefficients_buffer = load_to_buffer(
+            cc.context, mesh.get_structure().get_coefficients(), true);
 
     cl::Buffer error_flag_buffer{cc.context, CL_MEM_READ_WRITE, sizeof(cl_int)};
 
-    auto boundary_buffer_1{load_to_buffer(
-            cc.context, get_boundary_data<1>(mesh.get_structure()), false)};
-    auto boundary_buffer_2{load_to_buffer(
-            cc.context, get_boundary_data<2>(mesh.get_structure()), false)};
-    auto boundary_buffer_3{load_to_buffer(
-            cc.context, get_boundary_data<3>(mesh.get_structure()), false)};
+    auto boundary_buffer_1=load_to_buffer(
+            cc.context, get_boundary_data<1>(mesh.get_structure()), false);
+    auto boundary_buffer_2 = load_to_buffer(
+            cc.context, get_boundary_data<2>(mesh.get_structure()), false);
+    auto boundary_buffer_3 = load_to_buffer(
+            cc.context, get_boundary_data<3>(mesh.get_structure()), false);
 
     const program program{cc};
-    auto kernel{program.get_kernel()};
+    auto kernel = program.get_kernel();
 
     //  run
-    auto step{0u};
+    auto step = 0u;
 
     //  The preprocessor returns 'true' while it should be run.
     //  It also updates the mesh with new pressure values.
@@ -64,8 +64,8 @@ size_t run(const compute_context& cc,
                error_flag_buffer);
 
         //  read out flag value
-        if (const auto error_flag{
-                    read_value<error_code>(queue, error_flag_buffer, 0)}) {
+        if (const auto error_flag =
+                    read_value<error_code>(queue, error_flag_buffer, 0)) {
             if (error_flag & id_inf_error) {
                 throw exceptions::value_is_inf(
                         "pressure value is inf, check filter coefficients");

@@ -17,7 +17,8 @@ public:
         if (begin_ == end_) {
             return false;
         }
-        const auto current_pressure{read_value<cl_float>(queue, buffer, node_)};
+        const auto current_pressure =
+                read_value<cl_float>(queue, buffer, node_);
         write_value(queue, buffer, node_, current_pressure + *begin_++);
         return true;
     }

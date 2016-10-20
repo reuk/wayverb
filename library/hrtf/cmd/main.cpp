@@ -69,30 +69,30 @@ int main(int argc, char** argv) {
 
     std::vector<hrtf_data::entry> results;
 
-    const auto entries{list_directory(base_path.c_str())};
+    const auto entries = list_directory(base_path.c_str());
     const std::regex name_regex{".*R([0-9]+)_T([0-9]+)_P([0-9]+).*"};
     for (const auto& entry : entries) {
         std::smatch match{};
         if (std::regex_match(entry, match, name_regex)) {
-            const auto az{std::stoi(match[2].str())};
-            const auto el{std::stoi(match[3].str())};
+            const auto az = std::stoi(match[2].str());
+            const auto el = std::stoi(match[3].str());
 
-            const auto full_path{base_path + "/" + entry};
+            const auto full_path = base_path + "/" + entry;
 
-            const auto audio{audio_file::read(full_path)};
+            const auto audio=audio_file::read(full_path);
 
             if (audio.signal.size() != 2) {
                 throw std::runtime_error{"hrtf data files must be stereo"};
             }
 
-            const auto energy{map(
+            const auto energy = map(
                     [&](auto channel) {
                         return hrtf_data::per_band_energy(
                                 begin(audio.signal[channel]),
                                 end(audio.signal[channel]),
                                 audio.sample_rate);
                     },
-                    std::array<size_t, 2>{{0, 1}})};
+                    std::array<size_t, 2>{{0, 1}});
 
             results.emplace_back(hrtf_data::entry{az, el, energy});
         }

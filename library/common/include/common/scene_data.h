@@ -24,16 +24,16 @@ public:
             : triangles_{triangles}
             , vertices_{vertices}
             , surfaces_{surfaces} {
-        const auto check_surface{[&](auto s) {
+        const auto check_surface = [&](auto s) {
             if (s < 0 || surfaces_.size() <= s) {
                 throw std::runtime_error{"surface index is out of range"};
             }
-        }};
-        const auto check_vertex{[&](auto v) {
+        };
+        const auto check_vertex = [&](auto v) {
             if (v < 0 || vertices_.size() <= v) {
                 throw std::runtime_error{"vertex index is out of range"};
             }
-        }};
+        };
 
         for (const auto& tri : triangles_) {
             check_surface(tri.surface);

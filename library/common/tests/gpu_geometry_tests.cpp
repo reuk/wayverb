@@ -22,8 +22,8 @@ public:
     program(const compute_context& cc)
             : wrapper_{cc,
                        std::vector<std::string>{
-                               cl_representation_v<volume_type>,
-                               cl_representation_v<surface>,
+                               cl_representation_v<bands_type>,
+                               cl_representation_v<surface<simulation_bands>>,
                                cl_representation_v<triangle>,
                                cl_representation_v<triangle_verts>,
                                cl_representation_v<ray>,
@@ -56,7 +56,12 @@ public:
     }
 
     auto get_line_segment_sphere_percentage_test_kernel() const {
-        return wrapper_.get_kernel<cl_float3, cl::Buffer, cl_float3, cl_float, cl::Buffer>("line_segment_sphere_percentage_test");
+        return wrapper_.get_kernel<cl_float3,
+                                   cl::Buffer,
+                                   cl_float3,
+                                   cl_float,
+                                   cl::Buffer>(
+                "line_segment_sphere_percentage_test");
     }
 
 private:

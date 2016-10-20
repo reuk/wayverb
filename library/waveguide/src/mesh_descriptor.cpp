@@ -11,13 +11,13 @@ size_t compute_index(const mesh_descriptor& d, const glm::vec3& pos) {
 }
 
 glm::ivec3 compute_locator(const mesh_descriptor& d, size_t index) {
-    const auto x{div(index, d.dimensions.s[0])};
-    const auto y{div(x.quot, d.dimensions.s[1])};
+    const auto x = div(index, d.dimensions.s[0]);
+    const auto y = div(x.quot, d.dimensions.s[1]);
     return glm::ivec3{x.rem, y.rem, y.quot % d.dimensions.s[2]};
 }
 
 glm::ivec3 compute_locator(const mesh_descriptor& d, const glm::vec3& v) {
-    const auto transformed{v - to_vec3(d.min_corner)};
+    const auto transformed = v - to_vec3(d.min_corner);
     return glm::round(transformed / d.spacing);
 }
 
@@ -76,9 +76,9 @@ size_t compute_num_nodes(const mesh_descriptor& d) {
 
 aligned::vector<glm::vec3> compute_node_positions(const mesh_descriptor& d) {
     aligned::vector<glm::vec3> ret;
-    const auto nodes{compute_num_nodes(d)};
+    const auto nodes = compute_num_nodes(d);
     ret.reserve(nodes);
-    for (auto i{0u}; i != nodes; ++i) {
+    for (auto i = 0u; i != nodes; ++i) {
         ret.emplace_back(compute_position(d, i));
     }
     return ret;

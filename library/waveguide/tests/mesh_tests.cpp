@@ -32,7 +32,7 @@ auto get_voxelised(const generic_scene_data<Vertex, Surface>& sd) {
 }
 
 struct mesh_fixture : public ::testing::Test {
-    using vsd = voxelised_scene_data<cl_float3, surface>;
+    using vsd = voxelised_scene_data<cl_float3, surface<simulation_channels>>;
 
     auto get_mesh(const vsd& voxelised) {
         const auto buffers{make_scene_buffers(cc.context, voxelised)};

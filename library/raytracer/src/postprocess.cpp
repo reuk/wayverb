@@ -22,7 +22,7 @@ void trimTail(aligned::vector<aligned::vector<float>>& audioChannels,
             int>;
 
     // Find last index of required amplitude or greater.
-    const auto len{std::accumulate(
+    const auto len = std::accumulate(
             begin(audioChannels),
             end(audioChannels),
             0,
@@ -39,7 +39,7 @@ void trimTail(aligned::vector<aligned::vector<float>>& audioChannels,
                                                       })
                                                  .base()) -
                                 1});
-            })};
+            });
 
     // Resize.
     for (auto&& i : audioChannels)

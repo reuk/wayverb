@@ -8,7 +8,7 @@
 #include <array>
 
 struct alignas(1 << 4) mesh_descriptor final {
-    static constexpr auto no_neighbor{~cl_uint{0}};
+    static constexpr auto no_neighbor = ~cl_uint{0};
 
     cl_float3 min_corner;
     cl_int3 dimensions;
@@ -17,13 +17,13 @@ struct alignas(1 << 4) mesh_descriptor final {
 
 template <>
 struct cl_representation<mesh_descriptor> final {
-    static constexpr auto value{R"(
+    static constexpr auto value = R"(
 typedef struct {
     float3 min_corner;
     int3 dimensions;
     float spacing;
 } mesh_descriptor;
-)"};
+)";
 };
 
 constexpr auto to_tuple(const mesh_descriptor& x) {

@@ -27,7 +27,7 @@ private:
 
 template<typename t>
 glm::vec3 random_unit_vector(t& engine) {
-    const auto rng{direction_rng{engine}};
+    const auto rng = direction_rng{engine};
     return sphere_point(rng.get_z(), rng.get_theta());
 }
 

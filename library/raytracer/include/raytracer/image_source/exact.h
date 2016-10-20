@@ -1,6 +1,6 @@
 #pragma once
 
-#include "raytracer/image_source/postprocessors.h"
+#include "raytracer/image_source/fast_pressure_calculator.h"
 #include "raytracer/postprocess.h"
 
 #include "common/callback_accumulator.h"
@@ -26,8 +26,8 @@ constexpr auto num_images(size_t shell) {
 inline auto image_position(const geo::box& box,
                            const glm::vec3& source,
                            const glm::ivec3& image_index) {
-    const auto mirrored{centre(box) * 2.0f - source};
-    const auto selector{glm::equal(glm::abs(image_index) % 2, glm::ivec3{1})};
+    const auto mirrored = centre(box) * 2.0f - source;
+    const auto selector = glm::equal(glm::abs(image_index) % 2, glm::ivec3{1});
     return glm::mix(source, mirrored, selector) +
            dimensions(box) * glm::vec3{image_index};
 }
@@ -40,27 +40,27 @@ void image_at_index(const geo::box& box,
                     double max_distance,
                     aligned::vector<reflection_metadata>& scratch,
                     const Callback& callback) {
-    const auto pos{image_position(box, source, image_index)};
+    const auto pos = image_position(box, source, image_index);
     if (max_distance < glm::distance(receiver, pos)) {
         return;
     }
 
     //  Find intersection angles.
-    const auto shell_dim{glm::abs(image_index)};
+    const auto shell_dim = glm::abs(image_index);
     //  Find angles with each of the walls.
-    const auto direction{glm::normalize(pos - receiver)};
-    const auto cos_angles{glm::abs(direction)};
+    const auto direction = glm::normalize(pos - receiver);
+    const auto cos_angles = glm::abs(direction);
 
     //  Add the right number of reflections with each angle.
     //  This is fine supposing the reflection operation is associative.
     scratch.clear();
-    for (auto c{0ul}; c != shell_dim.x; ++c) {
+    for (auto c = 0ul; c != shell_dim.x; ++c) {
         scratch.emplace_back(reflection_metadata{0, cos_angles.x});
     }
-    for (auto c{0ul}; c != shell_dim.y; ++c) {
+    for (auto c = 0ul; c != shell_dim.y; ++c) {
         scratch.emplace_back(reflection_metadata{0, cos_angles.y});
     }
-    for (auto c{0ul}; c != shell_dim.z; ++c) {
+    for (auto c = 0ul; c != shell_dim.z; ++c) {
         scratch.emplace_back(reflection_metadata{0, cos_angles.z});
     }
 
@@ -76,13 +76,13 @@ void traverse_images(const geo::box& box,
                      double max_distance,
                      const Callback& callback) {
     aligned::vector<reflection_metadata> scratch;
-    const auto width{width_for_shell(shells)};
-    for (auto i{0ul}; i != width; ++i) {
-        const auto x{i - shells};
-        for (auto j{0ul}; j != width; ++j) {
-            const auto y{j - shells};
-            for (auto k{0ul}; k != width; ++k) {
-                const auto z{k - shells};
+    const auto width = width_for_shell(shells);
+    for (auto i = 0ul; i != width; ++i) {
+        const auto x = i - shells;
+        for (auto j = 0ul; j != width; ++j) {
+            const auto y = j - shells;
+            for (auto k = 0ul; k != width; ++k) {
+                const auto z = k - shells;
 
                 image_at_index(box,
                                source,
@@ -96,19 +96,19 @@ void traverse_images(const geo::box& box,
     }
 }
 
-template <typename Callback, typename Surface>
+template <typename Surface>
 auto find_impulses(const geo::box& box,
                    const glm::vec3& source,
                    const glm::vec3& receiver,
                    const Surface& surface,
                    double max_distance,
                    bool flip_phase) {
-    const auto dim{dimensions(box)};
-    const auto min_dim{std::min({dim.x, dim.y, dim.z})};
-    const auto shells{std::ceil(max_distance / min_dim)};
+    const auto dim = dimensions(box);
+    const auto min_dim = std::min({dim.x, dim.y, dim.z});
+    const auto shells = std::ceil(max_distance / min_dim);
 
-    aligned::vector<Surface> surfaces{surface};
-    callback_accumulator<Callback> callback{receiver, surfaces, flip_phase};
+    auto callback = make_callback_accumulator(make_fast_pressure_calculator(
+            &surface, &surface + 1, receiver, flip_phase));
     traverse_images(box,
                     source,
                     receiver,

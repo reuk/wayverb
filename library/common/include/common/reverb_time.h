@@ -1,6 +1,5 @@
 #pragma once
 
-#include "common/absorption.h"
 #include "common/geo/triangle_vec.h"
 #include "common/scene_data.h"
 
@@ -55,7 +54,7 @@ double area(const generic_scene_data<Vertex, Surface>& scene) {
 template <typename Vertex, typename Surface>
 auto absorption_area(const generic_scene_data<Vertex, Surface>& scene,
                      size_t surface_index) {
-    return get_absorption(scene.get_surfaces()[surface_index]) *
+    return scene.get_surfaces()[surface_index].absorption *
            area(scene, surface_index);
 }
 
@@ -63,9 +62,9 @@ auto absorption_area(const generic_scene_data<Vertex, Surface>& scene,
 template <typename Vertex, typename Surface>
 auto equivalent_absorption_area(
         const generic_scene_data<Vertex, Surface>& scene) {
-    const auto num_surfaces{scene.get_surfaces().size()};
+    const auto num_surfaces = scene.get_surfaces().size();
     decltype(absorption_area(scene, 0)) running_total{};
-    for (auto i{0u}; i != num_surfaces; ++i) {
+    for (auto i = 0u; i != num_surfaces; ++i) {
         running_total += absorption_area(scene, i);
     }
     return running_total;
@@ -120,8 +119,21 @@ float estimate_room_volume(const generic_scene_data<Vertex, Surface>& scene) {
 /// Sound intensity absorption coefficient calculator. (fu2015 eq. 11)
 float estimate_air_intensity_absorption(float frequency, float humidity);
 
-volume_type estimate_air_intensity_absorption(
-        const std::array<float, 8>& band_centres, float humidity);
+template <size_t... Ix>
+auto estimate_air_intensity_absorption(
+        const std::array<float, sizeof...(Ix)>& band_centres,
+        float humidity,
+        std::index_sequence<Ix...>) {
+    return std::array<float, sizeof...(Ix)>{{estimate_air_intensity_absorption(
+            std::get<Ix>(band_centres), humidity)...}};
+}
+
+template <size_t Bands>
+auto estimate_air_intensity_absorption(
+        const std::array<float, Bands>& band_centres, float humidity) {
+    return estimate_air_intensity_absorption(
+            band_centres, humidity, std::make_index_sequence<Bands>{});
+}
 
 //----------------------------------------------------------------------------//
 
@@ -132,8 +144,8 @@ volume_type estimate_air_intensity_absorption(
 template <typename Vertex, typename Surface, typename Coeff>
 auto sabine_reverb_time(const generic_scene_data<Vertex, Surface>& scene,
                         Coeff air_coefficient) {
-    const auto room_volume{estimate_room_volume(scene)};
-    const auto absorption_area{equivalent_absorption_area(scene)};
+    const auto room_volume = estimate_room_volume(scene);
+    const auto absorption_area = equivalent_absorption_area(scene);
     return (0.161f * room_volume) /
            (absorption_area + (4 * room_volume * air_coefficient));
 }
@@ -142,9 +154,9 @@ auto sabine_reverb_time(const generic_scene_data<Vertex, Surface>& scene,
 template <typename Vertex, typename Surface, typename Coeff>
 auto eyring_reverb_time(const generic_scene_data<Vertex, Surface>& scene,
                         Coeff air_coefficient) {
-    const auto room_volume{estimate_room_volume(scene)};
-    const auto absorption_area{equivalent_absorption_area(scene)};
-    const auto full_area{area(scene)};
+    const auto room_volume = estimate_room_volume(scene);
+    const auto absorption_area = equivalent_absorption_area(scene);
+    const auto full_area = area(scene);
     return (0.161f * room_volume) /
            (-full_area * log(1 - (absorption_area / full_area)) +
             (4 * room_volume * air_coefficient));

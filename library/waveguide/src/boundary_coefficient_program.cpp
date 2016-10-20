@@ -8,7 +8,7 @@
 
 namespace waveguide {
 
-constexpr auto source{R"(
+constexpr auto source = R"(
 //  adapted from
 //  http://www.geometrictools.com/GTEngine/Include/Mathematics/GteDistPointtriangleExact.h
 float point_triangle_distance_squared(triangle_verts triangle, float3 point);
@@ -481,7 +481,7 @@ kernel void boundary_coefficient_finder_3d(
         }
     }
 }
-)"};
+)";
 
 boundary_coefficient_program::boundary_coefficient_program(
         const compute_context& cc)

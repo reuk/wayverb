@@ -9,7 +9,7 @@ namespace waveguide {
 
 //----------------------------------------------------------------------------//
 
-constexpr auto source{R"(
+constexpr auto source = R"(
 #define courant (1.0f / sqrt(3.0f))
 #define courant_sq (1.0f / 3.0f)
 
@@ -525,7 +525,7 @@ kernel void condensed_waveguide(
     previous[index] = next_pressure;
 }
 
-)"};
+)";
 
 program::program(const compute_context& cc)
         : program_wrapper(

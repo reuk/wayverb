@@ -59,14 +59,14 @@ inline void mul(T& ret, double f) {
 /// divide every item in the vector by that value.
 template <typename T>
 inline void normalize(T& ret) {
-    if (const auto mag{max_mag(ret)}) {
+    if (const auto mag = max_mag(ret)) {
         mul(ret, 1.0 / mag);
     }
 }
 
 template <typename T>
 inline void kernel_normalize(T& ret) {
-    const auto sum{std::abs(std::accumulate(begin(ret), end(ret), 0.0))};
+    const auto sum = std::abs(std::accumulate(begin(ret), end(ret), 0.0));
     if (sum) {
         mul(ret,
             1.0 / sum - std::numeric_limits<typename T::value_type>::epsilon());

@@ -129,8 +129,8 @@ private:
 /// It will also introduce some pre- and post-ring.
 template <typename It>
 void block_dc(It begin, It end, double sr) {
-    auto hipass{make_series_biquads(
-            compute_hipass_butterworth_coefficients<1>(10, sr))};
+    auto hipass = make_series_biquads(
+            compute_hipass_butterworth_coefficients<1>(10, sr));
     run_two_pass(hipass, begin, end);
 }
 

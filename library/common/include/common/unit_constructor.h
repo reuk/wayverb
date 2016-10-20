@@ -32,4 +32,4 @@ struct unit_constructor<cl_float8> final {
 };
 
 template <typename T>
-constexpr auto unit_constructor_v{unit_constructor<T>::value};
+constexpr auto unit_constructor_v = unit_constructor<T>::value;

@@ -25,9 +25,7 @@ struct edge_and_width final {
     double width;
 };
 
-constexpr auto edge(const edge_and_width& e) {
-    return e.edge;
-}
+constexpr auto edge(const edge_and_width& e) { return e.edge; }
 
 constexpr auto make_edge_with_width_factor(double edge, double width_factor) {
     return edge_and_width{edge, edge * width_factor};
@@ -48,7 +46,7 @@ auto band_edges_and_widths(range<double> r, double overlap) {
     if (overlap < 0 || 1 < overlap) {
         throw std::runtime_error{"overlap is outside valid range [0, 1)"};
     }
-    const auto width_factor{max_width_factor(r, 1.0 / bands) * overlap};
+    const auto width_factor = max_width_factor(r, 1.0 / bands) * overlap;
     return band_edges_and_widths(
             r, width_factor, std::make_index_sequence<bands + 1>{});
 }

@@ -46,9 +46,9 @@ public:
         c2r_i_.zero();
         c2r_o_.zero();
 
-        auto x{acplx_.begin()};
-        auto y{bcplx_.begin()};
-        auto z{c2r_i_.begin()};
+        auto x = acplx_.begin();
+        auto y = bcplx_.begin();
+        auto z = c2r_i_.begin();
 
         for (; z != c2r_i_.end(); ++x, ++y, ++z) {
             (*z)[0] += (*x)[0] * (*y)[0] - (*x)[1] * (*y)[1];
@@ -88,9 +88,7 @@ convolver::convolver(size_t fft_length)
 
 convolver::~convolver() noexcept = default;
 
-size_t convolver::get_fft_length() const {
-    return pimpl_->get_fft_length();
-}
+size_t convolver::get_fft_length() const { return pimpl_->get_fft_length(); }
 
 void convolver::forward_fft_a() { pimpl_->forward_fft_a(); }
 void convolver::forward_fft_b() { pimpl_->forward_fft_b(); }

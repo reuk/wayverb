@@ -12,9 +12,9 @@ using real = cl_double;
 
 template <>
 struct cl_representation<real> final {
-    static constexpr auto value{R"(
+    static constexpr auto value = R"(
 typedef double real;
-)"};
+)";
 };
 
 //----------------------------------------------------------------------------//
@@ -42,7 +42,7 @@ inline bool operator!=(const memory<D>& a, const memory<D>& b) {
 /// IIR filter coefficient storage.
 template <size_t o>
 struct alignas(1 << 3) coefficients final {
-    static constexpr auto order{o};
+    static constexpr auto order = o;
     real b[order + 1]{};
     real a[order + 1]{};
 };
@@ -98,11 +98,11 @@ struct alignas(1 << 3) biquad_memory_array final {
 
 template <>
 struct cl_representation<biquad_memory_array> final {
-    static constexpr auto value{R"(
+    static constexpr auto value = R"(
 typedef struct {
     memory_biquad array[BIQUAD_SECTIONS];
 } biquad_memory_array;
-)"};
+)";
 };
 
 //----------------------------------------------------------------------------//
@@ -114,9 +114,9 @@ struct alignas(1 << 3) biquad_coefficients_array final {
 
 template <>
 struct cl_representation<biquad_coefficients_array> final {
-    static constexpr auto value{R"(
+    static constexpr auto value = R"(
 typedef struct {
     coefficients_biquad array[BIQUAD_SECTIONS];
 } biquad_coefficients_array;
-)"};
+)";
 };

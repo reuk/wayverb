@@ -82,11 +82,11 @@ public:
     }
 
     constexpr mapping_iterator_adapter operator+(difference_type n) const {
-        auto ret{*this};
+        auto ret = *this;
         return ret += n;
     }
     constexpr mapping_iterator_adapter operator-(difference_type n) const {
-        auto ret{*this};
+        auto ret = *this;
         return ret -= n;
     }
 

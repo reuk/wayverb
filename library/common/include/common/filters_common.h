@@ -104,7 +104,7 @@ public:
 
     ///	Run the filter for one step.
     constexpr double filter(double i) {
-        const auto out{i * coefficients_.b0 + z1_};
+        const auto out = i * coefficients_.b0 + z1_;
         z1_ = i * coefficients_.b1 - coefficients_.a1 * out + z2_;
         z2_ = i * coefficients_.b2 - coefficients_.a2 * out;
         return out;
@@ -178,8 +178,8 @@ constexpr auto make_biquads(
 template <size_t num>
 class series_biquads final {
 public:
-    static constexpr auto num_biquads{num};
-    static constexpr auto order{num_biquads * 2};
+    static constexpr auto num_biquads = num;
+    static constexpr auto order = num_biquads * 2;
 
     constexpr series_biquads(
             const std::array<biquad::coefficients, num_biquads>& coefficients)
@@ -222,7 +222,7 @@ template <typename Callback, size_t... i>
 auto compute_butterworth_segments(double cf,
                                   Callback callback,
                                   std::index_sequence<i...>) {
-    const auto order{sizeof...(i) * 2};
+    const auto order = sizeof...(i) * 2;
     return std::array<biquad::coefficients, sizeof...(i)>{
             {callback(cf, order, i)...}};
 }

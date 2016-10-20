@@ -2,7 +2,6 @@
 
 #include "waveguide/filters.h"
 
-#include "common/absorption.h"
 #include "common/scene_data.h"
 #include "common/surfaces.h"
 
@@ -16,7 +15,7 @@ namespace waveguide {
 //  complex curve fitting, levy
 
 template <size_t I>
-inline auto compute_filter_descriptor(const surface& surface) {
+inline auto compute_filter_descriptor(const surface<I>& surface) {
     throw std::runtime_error{
             "compute_filter_descriptor: this idea was doomed from the "
             "beginning"};
@@ -31,6 +30,7 @@ inline auto compute_filter_descriptor(const surface& surface) {
     */
 }
 
+/*
 template <size_t... Ix>
 constexpr auto to_filter_descriptors(std::index_sequence<Ix...>,
                                      const surface& surface) {
@@ -45,12 +45,12 @@ constexpr auto to_filter_descriptors(const surface& surface) {
 
 inline coefficients_canonical to_filter_coefficients(const surface& surface,
                                                      float sr) {
-    const auto descriptors{to_filter_descriptors(surface)};
+    const auto descriptors = to_filter_descriptors(surface);
     //  Transform filter parameters into a set of biquad coefficients.
-    const auto individual_coeffs{get_peak_biquads_array(descriptors, sr)};
+    const auto individual_coeffs = get_peak_biquads_array(descriptors, sr);
     //  Combine biquad coefficients into coefficients for a single
     //  high-order filter.
-    const auto ret{convolve(individual_coeffs)};
+    const auto ret = convolve(individual_coeffs);
 
     //  Transform from reflection filter to impedance filter.
     return to_impedance_coefficients(ret);
@@ -62,16 +62,19 @@ inline aligned::vector<coefficients_canonical> to_filter_coefficients(
         return to_filter_coefficients(i, sr);
     });
 }
+*/
 
-inline coefficients_canonical to_flat_coefficients(const surface& surface) {
-    const auto reflectance{
-            absorption_to_pressure_reflectance(get_absorption(surface))};
+template <size_t Channels>
+coefficients_canonical to_flat_coefficients(const surface<Channels>& surface) {
+    const auto reflectance =
+            absorption_to_pressure_reflectance(surface.absorption);
     const coefficients_canonical ret{{reflectance.s[0]}, {1}};
     return to_impedance_coefficients(ret);
 }
 
-inline aligned::vector<coefficients_canonical> to_flat_coefficients(
-        const aligned::vector<surface>& surfaces) {
+template <size_t Channels>
+aligned::vector<coefficients_canonical> to_flat_coefficients(
+        const aligned::vector<surface<Channels>>& surfaces) {
     return map_to_vector(begin(surfaces), end(surfaces), [](auto i) {
         return to_flat_coefficients(i);
     });

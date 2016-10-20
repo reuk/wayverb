@@ -19,7 +19,7 @@
 //      ???
 
 template <typename T>
-T absorption_to_energy_reflectance(T t) {
+constexpr T absorption_to_energy_reflectance(T t) {
     return 1 - t;
 }
 
@@ -30,12 +30,12 @@ T absorption_to_pressure_reflectance(T t) {
 }
 
 template <typename T>
-T pressure_reflectance_to_average_wall_impedance(T t) {
+constexpr T pressure_reflectance_to_average_wall_impedance(T t) {
     return (1 + t) / (1 - t);
 }
 
 template <typename T>
-T average_wall_impedance_to_pressure_reflectance(T t, float cos_angle) {
+constexpr T average_wall_impedance_to_pressure_reflectance(T t, float cos_angle) {
     if (cos_angle < 0 || 1 < cos_angle) {
         throw std::runtime_error{"cos angle is outside valid range"};
     }
@@ -51,11 +51,11 @@ T average_wall_impedance_to_pressure_reflectance(T t, float cos_angle) {
 //  specular energy = (1 - s) (1 - a)
 
 template <typename T, typename U>
-T scattered_pressure(T total_reflected, U scattering) {
+constexpr T scattered_pressure(T total_reflected, U scattering) {
     return total_reflected * scattering;
 }
 
 template <typename T, typename U>
-T specular_pressure(T total_reflected, U scattering) {
+constexpr T specular_pressure(T total_reflected, U scattering) {
     return total_reflected * (1 - scattering);
 }

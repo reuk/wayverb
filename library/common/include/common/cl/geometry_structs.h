@@ -14,12 +14,12 @@ struct alignas(1 << 4) ray final {
 
 template <>
 struct cl_representation<ray> final {
-    static constexpr auto value{R"(
+    static constexpr auto value = R"(
 typedef struct {
     float3 position;
     float3 direction;
 } ray;
-)"};
+)";
 };
 
 constexpr auto to_tuple(const ray& x) {
@@ -42,13 +42,13 @@ struct alignas(1 << 2) triangle_inter final {
 
 template <>
 struct cl_representation<triangle_inter> final {
-    static constexpr auto value{R"(
+    static constexpr auto value = R"(
 typedef struct {
     float t;
     float u;
     float v;
 } triangle_inter;
-)"};
+)";
 };
 
 constexpr bool operator==(const triangle_inter& a, const triangle_inter& b) {
@@ -74,12 +74,12 @@ struct alignas(1 << 3) intersection final {
 
 template <>
 struct cl_representation<intersection> final {
-    static constexpr auto value{R"(
+    static constexpr auto value = R"(
 typedef struct {
     triangle_inter inter;
     uint index;
 } intersection;
-)"};
+)";
 };
 
 constexpr auto to_tuple(const intersection& x) {

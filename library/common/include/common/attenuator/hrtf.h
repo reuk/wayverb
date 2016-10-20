@@ -5,6 +5,8 @@
 
 #include "glm/glm.hpp"
 
+namespace attenuator {
+
 class hrtf final {
 public:
     enum class channel { left, right };
@@ -12,20 +14,26 @@ public:
     static constexpr std::array<channel, 2> channels{
             {channel::left, channel::right}};
 
-    hrtf(const glm::vec3& pointing, const glm::vec3& up, channel channel);
+    hrtf(const glm::vec3& pointing,
+         const glm::vec3& up,
+         channel channel,
+         float radius = 0.1);
 
     glm::vec3 get_pointing() const;
     glm::vec3 get_up() const;
     channel get_channel() const;
+    float get_radius() const;
 
     void set_pointing(const glm::vec3& pointing);
     void set_up(const glm::vec3& up);
     void set_channel(channel channel);
+    void set_radius(float radius);
 
 private:
     glm::vec3 pointing_;
     glm::vec3 up_;
     channel channel_;
+    float radius_;
 };
 
 glm::vec3 transform(const glm::vec3& pointing,
@@ -36,13 +44,20 @@ float degrees(float radians);
 
 az_el compute_look_up_angles(const glm::vec3& pt);
 
-template <typename It>
-constexpr auto to_volume_type(It begin, It end) {
-    volume_type ret{};
-    for (auto it{std::begin(ret.s)}; begin != end; ++begin, ++it) {
-        *it = *begin;
-    }
-    return ret;
+template <typename T, size_t... Ix>
+constexpr auto to_cl_float_vector(const std::array<T, sizeof...(Ix)>& x,
+                                  std::index_sequence<Ix...>) {
+    using return_type = detail::cl_vector_constructor_t<float, sizeof...(Ix)>;
+    return return_type{{static_cast<float>(std::get<Ix>(x))...}};
 }
 
-volume_type attenuation(const hrtf& hrtf, const glm::vec3& incident);
+template <typename T, size_t I>
+constexpr auto to_cl_float_vector(const std::array<T, I>& x) {
+    return to_cl_float_vector(x, std::make_index_sequence<I>{});
+}
+
+bands_type attenuation(const hrtf& hrtf, const glm::vec3& incident);
+
+glm::vec3 get_ear_position(const hrtf& hrtf, const glm::vec3& base_position);
+
+}  // namespace attenuator

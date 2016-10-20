@@ -25,10 +25,14 @@ auto get_test_scenes() {
     return aligned::vector<scene_data_loader::scene_data>{
             geo::get_scene_data(
                     geo::box{glm::vec3(0, 0, 0), glm::vec3(4, 3, 6)},
-                    scene_data_loader::material{"default", make_surface(0, 0)}),
+                    scene_data_loader::material{
+                            "default",
+                            make_surface<simulation_channels>(0, 0)}),
             geo::get_scene_data(
                     geo::box{glm::vec3(0, 0, 0), glm::vec3(3, 3, 3)},
-                    scene_data_loader::material{"default", make_surface(0, 0)}),
+                    scene_data_loader::material{
+                            "default",
+                            make_surface<simulation_channels>(0, 0)}),
             scene_data_loader{OBJ_PATH}.get_scene_data()};
 }
 

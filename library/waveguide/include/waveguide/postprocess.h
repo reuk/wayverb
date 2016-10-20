@@ -17,8 +17,8 @@ template <typename T>
 using dereferenced_t = decltype(*std::declval<T>());
 
 template <typename T, typename U>
-constexpr auto dereferenced_type_matches_v{
-        std::is_same<std::decay_t<dereferenced_t<T>>, U>::value};
+constexpr auto dereferenced_type_matches_v =
+        std::is_same<std::decay_t<dereferenced_t<T>>, U>::value;
 
 /// We need a unified interface for dealing with single-band microphone output
 /// and multi-band hrtf output.
@@ -66,8 +66,8 @@ auto postprocess(InputIt b,
                  const Method& method,
                  double acoustic_impedance,
                  double sample_rate) {
-    auto attenuated{map_to_vector(
-            b, e, make_attenuate_mapper(method, acoustic_impedance))};
+    auto attenuated = map_to_vector(
+            b, e, make_attenuate_mapper(method, acoustic_impedance));
     return postprocess(begin(attenuated), end(attenuated), sample_rate);
 }
 
@@ -90,14 +90,14 @@ auto run_attenuation(It b,
                      const model::receiver& receiver,
                      double acoustic_impedance,
                      double sample_rate) {
-    const auto run{[&](auto tag) {
+    const auto run = [&](auto tag) {
         return postprocess(b,
                            e,
                            get_begin(receiver, tag),
                            get_end(receiver, tag),
                            acoustic_impedance,
                            sample_rate);
-    }};
+    };
 
     switch (receiver.mode) {
         case model::receiver::mode::microphones:

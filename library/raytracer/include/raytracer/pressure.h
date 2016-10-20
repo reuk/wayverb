@@ -60,7 +60,7 @@ namespace raytracer {
 /// interpolation.
 /// y0 and y1 are interpolation values, x is between 0 and 1
 float cosine_interpolation(float y0, float y1, float x) {
-    const auto phase{(1 - std::cos(x * M_PI)) * 0.5};
+    const auto phase = (1 - std::cos(x * M_PI)) * 0.5;
     return y0 * (1 - phase) + y1 * phase;
 }
 
@@ -109,7 +109,7 @@ struct img_src_calculation final {
 
     static auto compute_unit_phase_spectrum(
             const bins<real>& per_band_frequencies, real time) {
-        const auto phases{compute_phase(per_band_frequencies, time)};
+        const auto phases = compute_phase(per_band_frequencies, time);
         return map_bins(phases, [](auto i) { return std::exp(cplx{0, -i}); });
     }
 
@@ -118,34 +118,34 @@ struct img_src_calculation final {
             const bins<real>& per_band_amplitudes,
             const bins<real>& per_band_frequencies,
             real sample_rate) {
-        const auto extend{[](auto min, auto arr, auto max) {
+        const auto extend = [](auto min, auto arr, auto max) {
             std::array<real, num_bands + 2> extended;
             extended.front() = min;
             extended.back() = max;
             std::copy(arr.begin(), arr.end(), extended.begin() + 1);
             return extended;
-        }};
+        };
 
-        const auto extended_amplitudes{extend(0, per_band_amplitudes, 0)};
-        const auto extended_frequencies{
-                extend(0, per_band_frequencies, sample_rate / 2)};
+        const auto extended_amplitudes = extend(0, per_band_amplitudes, 0);
+        const auto extended_frequencies =
+                extend(0, per_band_frequencies, sample_rate / 2);
 
         std::array<real, output_bins> ret;
-        auto this_band{1u};
-        for (auto i{0u}; i != ret.size(); ++i) {
-            const auto bin_frequency{(i * sample_rate) / (2 * ret.size())};
+        auto this_band = 1u;
+        for (auto i = 0u; i != ret.size(); ++i) {
+            const auto bin_frequency = (i * sample_rate) / (2 * ret.size());
             while (extended_frequencies[this_band] < bin_frequency) {
                 this_band += 1;
             }
 
-            const auto lower{extended_frequencies[this_band - 1]};
-            const auto upper{extended_frequencies[this_band]};
-            const auto x{(bin_frequency - lower) / (upper - lower)};
+            const auto lower = extended_frequencies[this_band - 1];
+            const auto upper = extended_frequencies[this_band];
+            const auto x = (bin_frequency - lower) / (upper - lower);
             ret[i] = cosine_interpolation(extended_amplitudes[this_band - 1],
                                           extended_amplitudes[this_band],
                                           x);
         }
-        
+
         return ret;
     }
 
@@ -159,12 +159,12 @@ struct img_src_calculation final {
                                         //  4 pi
             const bins<real>& per_band_frequencies) {
         //  Find the phase spectrum at this distance.
-        const auto time{distance / speed_of_sound};
+        const auto time = distance / speed_of_sound;
 
-        auto spectrum{compute_unit_phase_spectrum(per_band_frequencies, time)};
+        auto spectrum = compute_unit_phase_spectrum(per_band_frequencies, time);
 
         //  Correct spectrum for pressure loss over distance travelled.
-        const auto amplitude{amplitude_adjustment / distance};
+        const auto amplitude = amplitude_adjustment / distance;
         for (auto& i : spectrum) {
             i *= amplitude;
         }

@@ -12,6 +12,7 @@
 #include <random>
 
 namespace raytracer {
+namespace stochastic {
 
 template <typename T, size_t... Ix>
 constexpr auto array_to_volume_type(const std::array<T, 8>& t,
@@ -60,4 +61,5 @@ aligned::vector<float> mono_diffuse_postprocessing(
         const dirac_sequence& sequence,
         double acoustic_impedance);
 
+}  // namespace stochastic
 }  // namespace raytracer

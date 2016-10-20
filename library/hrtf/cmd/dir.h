@@ -34,7 +34,7 @@ inline auto list_directory(const char* name) {
     dir directory{name};
     std::vector<std::string> ret{};
 
-    while (const auto ptr{directory.read()}) {
+    while (const auto ptr = directory.read()) {
         ret.emplace_back(ptr->d_name, ptr->d_name + ptr->d_namlen);
     }
 

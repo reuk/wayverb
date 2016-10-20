@@ -9,7 +9,7 @@
 
 namespace waveguide {
 
-constexpr auto source{R"(
+constexpr auto source = R"(
 int3 relative_locator_single(boundary_type a);
 int3 relative_locator_single(boundary_type a) {
     switch (a) {
@@ -170,25 +170,26 @@ kernel void set_node_boundary_type(global condensed_node* nodes,
     }
 }
 
-)"};
+)";
 
 setup_program::setup_program(const compute_context& cc)
         : program_wrapper(
                   cc,
-                  std::vector<std::string>{cl_representation_v<volume_type>,
-                                           cl_representation_v<surface>,
-                                           cl_representation_v<triangle>,
-                                           cl_representation_v<triangle_verts>,
-                                           cl_representation_v<boundary_type>,
-                                           cl_representation_v<condensed_node>,
-                                           cl_representation_v<mesh_descriptor>,
-                                           cl_representation_v<aabb>,
-                                           cl_representation_v<ray>,
-                                           cl_representation_v<triangle_inter>,
-                                           cl_representation_v<intersection>,
-                                           ::cl_sources::geometry,
-                                           ::cl_sources::voxel,
-                                           ::cl_sources::utils,
-                                           source}) {}
+                  std::vector<std::string>{
+                          cl_representation_v<volume_type>,
+                          cl_representation_v<surface<simulation_channels>>,
+                          cl_representation_v<triangle>,
+                          cl_representation_v<triangle_verts>,
+                          cl_representation_v<boundary_type>,
+                          cl_representation_v<condensed_node>,
+                          cl_representation_v<mesh_descriptor>,
+                          cl_representation_v<aabb>,
+                          cl_representation_v<ray>,
+                          cl_representation_v<triangle_inter>,
+                          cl_representation_v<intersection>,
+                          ::cl_sources::geometry,
+                          ::cl_sources::voxel,
+                          ::cl_sources::utils,
+                          source}) {}
 
 }  // namespace waveguide

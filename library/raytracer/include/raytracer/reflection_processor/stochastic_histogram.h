@@ -1,5 +1,11 @@
 #pragma once
 
+#include "raytracer/histogram.h"
+#include "raytracer/stochastic/finder.h"
+#include "raytracer/stochastic/postprocessing.h"
+
+#include "common/spatial_division/scene_buffers.h"
+
 namespace raytracer {
 namespace reflection_processor {
 
@@ -13,11 +19,7 @@ public:
                          float receiver_radius,
                          float sample_rate,
                          size_t max_image_source_order,
-                         size_t items)
-            : finder_{cc, params, receiver_radius, items}
-            , params_{params}
-            , sample_rate_{sample_rate}
-            , max_image_source_order_{max_image_source_order} {}
+                         size_t items);
 
     template <typename It>
     void process(It b,
@@ -25,32 +27,32 @@ public:
                  const scene_buffers& buffers,
                  size_t step,
                  size_t total) {
-        const auto output{finder_.process(b, e, buffers)};
-        const auto to_histogram{[&](auto& in) {
-            const auto make_iterator{[&](auto it) {
+        const auto output = finder_.process(b, e, buffers);
+        const auto to_histogram = [&](auto& in) {
+            const auto make_iterator = [&](auto it) {
                 return make_histogram_iterator(std::move(it),
                                                params_.speed_of_sound);
-            }};
-            constexpr auto max_time{60.0};
+            };
+
+            constexpr auto max_time = 60.0;
             incremental_histogram(histogram_,
                                   make_iterator(begin(in)),
                                   make_iterator(end(in)),
                                   sample_rate_,
                                   max_time,
                                   dirac_sum_functor{});
-        }};
-        to_histogram(output.diffuse);
+        };
+
+        to_histogram(output.stochastic);
         if (max_image_source_order_ <= step) {
             to_histogram(output.specular);
         }
     }
 
-    auto get_results() {
-        return energy_histogram{std::move(histogram_), sample_rate_};
-    }
+    stochastic::energy_histogram get_results();
 
 private:
-    diffuse::finder finder_;
+    stochastic::finder finder_;
     model::parameters params_;
     float sample_rate_;
     size_t max_image_source_order_;
@@ -62,22 +64,13 @@ class make_stochastic_histogram final {
 public:
     make_stochastic_histogram(float receiver_radius,
                               float sample_rate,
-                              size_t max_order)
-            : receiver_radius_{receiver_radius}
-            , sample_rate_{sample_rate}
-            , max_order_{max_order} {}
+                              size_t max_order);
 
-    auto operator()(const compute_context& cc,
-                    const model::parameters& params,
-                    const voxelised_scene_data<cl_float3, surface>& voxelised,
-                    size_t num_directions) const {
-        return stochastic_histogram{cc,
-                                    params,
-                                    receiver_radius_,
-                                    sample_rate_,
-                                    max_order_,
-                                    num_directions};
-    }
+    stochastic_histogram operator()(
+            const compute_context& cc,
+            const model::parameters& params,
+            const voxelised_scene_data<cl_float3, surface>& voxelised,
+            size_t num_directions) const;
 
 private:
     float receiver_radius_;

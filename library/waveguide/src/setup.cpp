@@ -10,14 +10,14 @@ vectors::vectors(aligned::vector<condensed_node> nodes,
         , coefficients_(std::move(coefficients))
         , boundary_index_data_(std::move(boundary_index_data)) {
 #ifndef NDEBUG
-    auto throw_if_mismatch{[&](auto checker, auto size) {
+    auto throw_if_mismatch = [&](auto checker, auto size) {
         if (count_boundary_type(condensed_nodes_.begin(),
                                 condensed_nodes_.end(),
                                 checker) != size) {
             throw std::runtime_error(
                     "number of nodes does not match number of boundaries");
         }
-    }};
+    };
 
     throw_if_mismatch(is_boundary<1>, boundary_index_data_.b1.size());
     throw_if_mismatch(is_boundary<2>, boundary_index_data_.b2.size());

@@ -35,7 +35,7 @@ public:
     /// output range. Output range should be as big or bigger than input range.
     template <typename In, typename Out>
     void run(In begin, In end, Out output_it, const callback& callback) {
-        const auto dist{std::distance(begin, end)};
+        const auto dist = std::distance(begin, end);
         if (dist > rbuf_.size()) {
             throw std::runtime_error(
                     "filter::filter: input signal is too long");

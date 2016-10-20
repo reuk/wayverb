@@ -16,5 +16,5 @@ template <typename T>
 using is_tuple_t = typename is_tuple<T>::type;
 
 template <typename T>
-constexpr auto is_tuple_v{is_tuple_t<T>{}};
+constexpr auto is_tuple_v = is_tuple_t<T>{};
 

@@ -84,7 +84,7 @@ auto make_complex(It it, It end) {
 std::vector<std::complex<float>> run(dft_1d& fft,
                                      const float* begin,
                                      const float* end) {
-    const auto cplx{make_complex(begin, end)};
+    const auto cplx = make_complex(begin, end);
     return run(fft, cplx.data(), cplx.data() + cplx.size());
 }
 

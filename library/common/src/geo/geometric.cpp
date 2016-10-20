@@ -9,32 +9,32 @@ std::experimental::optional<triangle_inter> triangle_intersection(
         const triangle_vec3& tri, const ray& ray, size_t ulp) {
     //  from Fast, Minimum Storage Ray/Triangle Intersection
     //  by Moller and Trumbore
-    const auto e0{tri[1] - tri[0]};
-    const auto e1{tri[2] - tri[0]};
+    const auto e0 = tri[1] - tri[0];
+    const auto e1 = tri[2] - tri[0];
 
-    const auto pvec{glm::cross(ray.get_direction(), e1)};
-    const auto det{glm::dot(e0, pvec)};
+    const auto pvec = glm::cross(ray.get_direction(), e1);
+    const auto det = glm::dot(e0, pvec);
 
     if (almost_equal(det, 0.0f, ulp)) {
         return std::experimental::nullopt;
     }
 
-    const auto invdet{1 / det};
-    const auto tvec{ray.get_position() - tri[0]};
-    const auto u{invdet * glm::dot(tvec, pvec)};
+    const auto invdet = 1 / det;
+    const auto tvec = ray.get_position() - tri[0];
+    const auto u = invdet * glm::dot(tvec, pvec);
 
     if (u < 0 || 1 < u) {
         return std::experimental::nullopt;
     }
 
-    const auto qvec{glm::cross(tvec, e0)};
-    const auto v{invdet * glm::dot(ray.get_direction(), qvec)};
+    const auto qvec = glm::cross(tvec, e0);
+    const auto v = invdet * glm::dot(ray.get_direction(), qvec);
 
     if (v < 0 || 1 < v + u) {
         return std::experimental::nullopt;
     }
 
-    const auto t{invdet * glm::dot(e1, qvec)};
+    const auto t = invdet * glm::dot(e1, qvec);
 
     if (t < 0 || almost_equal(t, 0.0f, ulp)) {
         return std::experimental::nullopt;
@@ -47,13 +47,13 @@ bool point_intersection(const glm::vec3& begin,
                         const glm::vec3& point,
                         const aligned::vector<triangle>& triangles,
                         const aligned::vector<glm::vec3>& vertices) {
-    const auto begin_to_point{point - begin};
-    const auto mag{glm::length(begin_to_point)};
-    const auto direction{glm::normalize(begin_to_point)};
+    const auto begin_to_point = point - begin;
+    const auto mag = glm::length(begin_to_point);
+    const auto direction = glm::normalize(begin_to_point);
 
     const ray to_point(begin, direction);
 
-    const auto ret{ray_triangle_intersection(to_point, triangles, vertices)};
+    const auto ret = ray_triangle_intersection(to_point, triangles, vertices);
 
     return !ret || mag < ret->inter.t;
 }

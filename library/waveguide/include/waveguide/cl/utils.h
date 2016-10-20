@@ -19,7 +19,7 @@ typedef enum : cl_int {
 
 template <>
 struct cl_representation<boundary_type> final {
-    static constexpr auto value{R"(
+    static constexpr auto value = R"(
 typedef enum {
     id_none = 0,
     id_inside = 1 << 0,
@@ -31,7 +31,7 @@ typedef enum {
     id_pz = 1 << 6,
     id_reentrant = 1 << 7,
 } boundary_type;
-)"};
+)";
 };
 
 constexpr boundary_type port_index_to_boundary_type(unsigned int i) {
@@ -40,8 +40,8 @@ constexpr boundary_type port_index_to_boundary_type(unsigned int i) {
 
 //----------------------------------------------------------------------------//
 
-constexpr auto no_neighbor{~cl_uint{0}};
-constexpr auto num_ports{size_t{6}};
+constexpr auto no_neighbor = ~cl_uint{0};
+constexpr auto num_ports = size_t{6};
 
 namespace cl_sources {
 extern const char* utils;

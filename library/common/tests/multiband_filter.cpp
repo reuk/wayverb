@@ -19,9 +19,9 @@ TEST(multiband_filter, multiband_filter) {
     std::default_random_engine engine{std::random_device{}()};
     std::uniform_real_distribution<float> distribution(-1, 1);
 
-    aligned::vector<volume_type> multiband;
+    aligned::vector<bands_type> multiband;
     for (auto i{0ul}; i != 44100 * 10; ++i) {
-        multiband.emplace_back(volume_type{
+        multiband.emplace_back(bands_type{
                 {distribution(engine) * decibels::db2a(-60.0f * 0 / 8.0f),
                  distribution(engine) * decibels::db2a(-60.0f * 1 / 8.0f),
                  distribution(engine) * decibels::db2a(-60.0f * 2 / 8.0f),
@@ -32,9 +32,9 @@ TEST(multiband_filter, multiband_filter) {
                  distribution(engine) * decibels::db2a(-60.0f * 7 / 8.0f)}});
     }
 
-    multiband[44100] = make_volume_type(1);
-    multiband[88200] = make_volume_type(1);
-    multiband[132300] = make_volume_type(1);
+    multiband[44100] = make_bands_type(1);
+    multiband[88200] = make_bands_type(1);
+    multiband[132300] = make_bands_type(1);
 
     const auto sample_rate{44100.0};
 
