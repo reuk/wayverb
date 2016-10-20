@@ -40,8 +40,9 @@ auto get_voxelised(Scene scene) {
 
 struct reflector_fixture : public ::testing::Test {
     const geo::box box{glm::vec3{0}, glm::vec3{4, 3, 6}};
-    const voxelised_scene_data<cl_float3, surface> voxelised{
-            get_voxelised(geo::get_scene_data(box, make_surface(0, 0)))};
+    const voxelised_scene_data<cl_float3, surface<simulation_bands>> voxelised{
+            get_voxelised(geo::get_scene_data(
+                    box, make_surface<simulation_bands>(0, 0)))};
     const compute_context cc{};
     const scene_buffers buffers{cc.context, voxelised};
 

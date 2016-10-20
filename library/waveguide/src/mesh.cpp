@@ -36,7 +36,7 @@ void mesh::set_coefficients(
 
 mesh compute_mesh(
         const compute_context& cc,
-        const voxelised_scene_data<cl_float3, surface<simulation_channels>>&
+        const voxelised_scene_data<cl_float3, surface<simulation_bands>>&
                 voxelised,
         float mesh_spacing,
         float speed_of_sound) {
@@ -113,11 +113,10 @@ mesh compute_mesh(
     return {desc, std::move(v)};
 }
 
-std::tuple<voxelised_scene_data<cl_float3, surface<simulation_channels>>, mesh>
+std::tuple<voxelised_scene_data<cl_float3, surface<simulation_bands>>, mesh>
 compute_voxels_and_mesh(
         const compute_context& cc,
-        const generic_scene_data<cl_float3, surface<simulation_channels>>&
-                scene,
+        const generic_scene_data<cl_float3, surface<simulation_bands>>& scene,
         const glm::vec3& anchor,
         double sample_rate,
         double speed_of_sound) {

@@ -23,6 +23,7 @@ constexpr auto make_bands_type(float f) {
 
 template <size_t bands>
 struct alignas(1 << 5) surface {
+    using bands_t = std::integral_constant<size_t, bands>;
     using container = detail::cl_vector_constructor_t<float, bands>;
     container absorption;
     container scattering;

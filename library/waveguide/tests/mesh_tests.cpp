@@ -32,7 +32,7 @@ auto get_voxelised(const generic_scene_data<Vertex, Surface>& sd) {
 }
 
 struct mesh_fixture : public ::testing::Test {
-    using vsd = voxelised_scene_data<cl_float3, surface<simulation_channels>>;
+    using vsd = voxelised_scene_data<cl_float3, surface<simulation_bands>>;
 
     auto get_mesh(const vsd& voxelised) {
         const auto buffers{make_scene_buffers(cc.context, voxelised)};
@@ -58,8 +58,8 @@ TEST_F(mesh_fixture, position_index) {
     const auto mesh{get_mesh(voxelised)};
     const auto lim{mesh.get_structure().get_condensed_nodes().size()};
     for (auto i{0u}; i != lim; ++i) {
-        const auto loc{compute_locator(mesh    .get_descriptor(), i)};
-        const auto pos{compute_position(mesh   .get_descriptor(), loc)};
+        const auto loc{compute_locator(mesh.get_descriptor(), i)};
+        const auto pos{compute_position(mesh.get_descriptor(), loc)};
         ASSERT_TRUE(loc == compute_locator(mesh.get_descriptor(), pos));
     }
 }

@@ -158,19 +158,20 @@ kernel void reflections(global ray* rays,  //  ray
 program::program(const compute_context& cc)
         : program_wrapper_{
                   cc,
-                  std::vector<std::string>{cl_representation_v<volume_type>,
-                                           cl_representation_v<surface>,
-                                           cl_representation_v<triangle>,
-                                           cl_representation_v<triangle_verts>,
-                                           cl_representation_v<reflection>,
-                                           cl_representation_v<impulse<8>>,
-                                           cl_representation_v<aabb>,
-                                           cl_representation_v<ray>,
-                                           cl_representation_v<triangle_inter>,
-                                           cl_representation_v<intersection>,
-                                           ::cl_sources::geometry,
-                                           ::cl_sources::voxel,
-                                           ::cl_sources::brdf,
-                                           source}} {}
+                  std::vector<std::string>{
+                          cl_representation_v<bands_type>,
+                          cl_representation_v<surface<simulation_bands>>,
+                          cl_representation_v<triangle>,
+                          cl_representation_v<triangle_verts>,
+                          cl_representation_v<reflection>,
+                          cl_representation_v<impulse<8>>,
+                          cl_representation_v<aabb>,
+                          cl_representation_v<ray>,
+                          cl_representation_v<triangle_inter>,
+                          cl_representation_v<intersection>,
+                          ::cl_sources::geometry,
+                          ::cl_sources::voxel,
+                          ::cl_sources::brdf,
+                          source}} {}
 
 }  // namespace raytracer

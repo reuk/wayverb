@@ -15,40 +15,40 @@ constexpr auto source = R"(
 
 //  These functions replicate functionality from common/surfaces.h
 
-volume_type absorption_to_energy_reflectance(volume_type t);
-volume_type absorption_to_energy_reflectance(volume_type t) { return 1 - t; }
+bands_type absorption_to_energy_reflectance(bands_type t);
+bands_type absorption_to_energy_reflectance(bands_type t) { return 1 - t; }
 
-volume_type absorption_to_pressure_reflectance(volume_type t);
-volume_type absorption_to_pressure_reflectance(volume_type t) {
+bands_type absorption_to_pressure_reflectance(bands_type t);
+bands_type absorption_to_pressure_reflectance(bands_type t) {
     return sqrt(absorption_to_energy_reflectance(t));
 }
 
-volume_type pressure_reflectance_to_average_wall_impedance(volume_type t);
-volume_type pressure_reflectance_to_average_wall_impedance(volume_type t) {
+bands_type pressure_reflectance_to_average_wall_impedance(bands_type t);
+bands_type pressure_reflectance_to_average_wall_impedance(bands_type t) {
     return (1 + t) / (1 - t);
 }
 
-volume_type average_wall_impedance_to_pressure_reflectance(volume_type t,
+bands_type average_wall_impedance_to_pressure_reflectance(bands_type t,
                                                            float cos_angle);
-volume_type average_wall_impedance_to_pressure_reflectance(volume_type t,
+bands_type average_wall_impedance_to_pressure_reflectance(bands_type t,
                                                            float cos_angle) {
-    const volume_type tmp = t * cos_angle;
-    const volume_type ret = (tmp - 1) / (tmp + 1);
+    const bands_type tmp = t * cos_angle;
+    const bands_type ret = (tmp - 1) / (tmp + 1);
     return ret;
 }
 
-volume_type scattered(volume_type total_reflected, volume_type scattering);
-volume_type scattered(volume_type total_reflected, volume_type scattering) {
+bands_type scattered(bands_type total_reflected, bands_type scattering);
+bands_type scattered(bands_type total_reflected, bands_type scattering) {
     return total_reflected * scattering;
 }
 
-volume_type specular(volume_type total_reflected, volume_type scattering);
-volume_type specular(volume_type total_reflected, volume_type scattering) {
+bands_type specular(bands_type total_reflected, bands_type scattering);
+bands_type specular(bands_type total_reflected, bands_type scattering) {
     return total_reflected * (1 - scattering);
 }
 
 kernel void init_stochastic_path_info(global stochastic_path_info* info,
-                                   volume_type volume,
+                                   bands_type volume,
                                    float3 position) {
     const size_t thread = get_global_id(0);
     info[thread] = (stochastic_path_info){volume, position, 0};
@@ -83,11 +83,11 @@ kernel void stochastic(const global reflection* reflections,
     const size_t surface_index = reflective_triangle.surface;
     const surface reflective_surface = surfaces[surface_index];
 
-    const volume_type reflectance =
+    const bands_type reflectance =
             absorption_to_energy_reflectance(reflective_surface.absorption);
 
-    const volume_type last_volume = stochastic_path[thread].volume;
-    const volume_type outgoing = last_volume * reflectance;
+    const bands_type last_volume = stochastic_path[thread].volume;
+    const bands_type outgoing = last_volume * reflectance;
 
     const float3 last_position = stochastic_path[thread].position;
     const float3 this_position = reflections[thread].position;
@@ -110,7 +110,7 @@ kernel void stochastic(const global reflection* reflections,
         const float to_receiver_distance = length(to_receiver);
         const float total_distance = last_distance + to_receiver_distance;
 
-        const volume_type output_volume = last_volume;
+        const bands_type output_volume = last_volume;
 
         intersected_output[thread] =
                 (impulse){output_volume, last_position, total_distance};
@@ -140,7 +140,7 @@ kernel void stochastic(const global reflection* reflections,
                 receiver_radius / max(receiver_radius, to_receiver_distance);
         const float angle_correction = 1 - sqrt(1 - sin_y * sin_y);
 
-        const volume_type output_volume =
+        const bands_type output_volume =
                 angle_correction * 2 * cos_angle *
                 scattered(outgoing, reflective_surface.scattering);
 
@@ -153,23 +153,24 @@ kernel void stochastic(const global reflection* reflections,
 )";
 
 program::program(const compute_context& cc)
-        : program_wrapper_(cc,
-                           std::vector<std::string>{
-                                   cl_representation_v<volume_type>,
-                                   cl_representation_v<surface>,
-                                   cl_representation_v<triangle>,
-                                   cl_representation_v<triangle_verts>,
-                                   cl_representation_v<reflection>,
-                                   cl_representation_v<stochastic_path_info>,
-                                   cl_representation_v<impulse<8>>,
-                                   cl_representation_v<aabb>,
-                                   cl_representation_v<ray>,
-                                   cl_representation_v<triangle_inter>,
-                                   cl_representation_v<intersection>,
-                                   ::cl_sources::geometry,
-                                   ::cl_sources::voxel,
-                                   ::cl_sources::brdf,
-                                   source}) {}
+        : program_wrapper_(
+                  cc,
+                  std::vector<std::string>{
+                          cl_representation_v<bands_type>,
+                          cl_representation_v<surface<simulation_bands>>,
+                          cl_representation_v<triangle>,
+                          cl_representation_v<triangle_verts>,
+                          cl_representation_v<reflection>,
+                          cl_representation_v<stochastic_path_info>,
+                          cl_representation_v<impulse<simulation_bands>>,
+                          cl_representation_v<aabb>,
+                          cl_representation_v<ray>,
+                          cl_representation_v<triangle_inter>,
+                          cl_representation_v<intersection>,
+                          ::cl_sources::geometry,
+                          ::cl_sources::voxel,
+                          ::cl_sources::brdf,
+                          source}) {}
 
 }  // namespace stochastic
 }  // namespace raytracer

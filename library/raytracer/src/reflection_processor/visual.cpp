@@ -16,7 +16,8 @@ make_visual::make_visual(size_t items)
 visual make_visual::operator()(
         const compute_context& cc,
         const model::parameters& params,
-        const voxelised_scene_data<cl_float3, surface>& voxelised,
+        const voxelised_scene_data<cl_float3, surface<simulation_bands>>&
+                voxelised,
         size_t num_directions) const {
     return visual{items_};
 }

@@ -19,34 +19,34 @@
 
 int main() {
     const geo::box box{glm::vec3{0}, glm::vec3{1, 1, 12}};
-    const auto sample_rate{5000.0};
-    const auto speed_of_sound{340.0};
+    const auto sample_rate = 5000.0;
+    const auto speed_of_sound = 340.0;
 
     const compute_context cc{};
 
     const glm::vec3 source{0.5, 0.5, 0.5};
 
     aligned::vector<glm::vec3> receivers;
-    for (auto i{0ul}; i < dimensions(box).z; ++i) {
+    for (auto i = 0ul; i < dimensions(box).z; ++i) {
         receivers.emplace_back(source + glm::vec3{0, 0, i});
     }
 
-    auto voxels_and_mesh{waveguide::compute_voxels_and_mesh(
+    auto voxels_and_mesh = waveguide::compute_voxels_and_mesh(
             cc,
-            geo::get_scene_data(box, make_surface(0, 0)),
+            geo::get_scene_data(box, make_surface<simulation_bands>(0, 0)),
             source,
             sample_rate,
-            speed_of_sound)};
+            speed_of_sound);
 
     auto& mesh{std::get<1>(voxels_and_mesh)};
-    mesh.set_coefficients(
-            {waveguide::to_flat_coefficients(make_surface(0, 0))});
+    mesh.set_coefficients({waveguide::to_flat_coefficients(
+            make_surface<simulation_bands>(0, 0))});
 
-    const auto input_node{compute_index(mesh.get_descriptor(), source)};
+    const auto input_node = compute_index(mesh.get_descriptor(), source);
 
     //  Set up receivers.
 
-    auto output_holders{
+    auto output_holders =
             map_to_vector(begin(receivers), end(receivers), [&](auto i) {
                 const auto receiver_index{
                         compute_index(mesh.get_descriptor(), i)};
@@ -55,26 +55,26 @@ int main() {
                 }
                 return callback_accumulator<waveguide::postprocessor::node>{
                         receiver_index};
-            })};
+            });
 
-    //  Set up a source signal.
+//  Set up a source signal.
 #if 1
-    const auto acoustic_impedance{400.0};
-    const auto input_signal{waveguide::design_pcs_source(1 << 16,
-                                                         acoustic_impedance,
-                                                         speed_of_sound,
-                                                         sample_rate,
-                                                         0.05,
-                                                         0.01,
-                                                         100,
-                                                         1)
-                                    .signal};
+    const auto acoustic_impedance = 400.0;
+    const auto input_signal = waveguide::design_pcs_source(1 << 16,
+                                                           acoustic_impedance,
+                                                           speed_of_sound,
+                                                           sample_rate,
+                                                           0.05,
+                                                           0.01,
+                                                           100,
+                                                           1)
+                                      .signal;
 #else
     aligned::vector<float> input_signal{1.0f};
     input_signal.resize(1 << 15);
 #endif
-    auto prep{waveguide::preprocessor::make_soft_source(
-            input_node, input_signal.begin(), input_signal.end())};
+    auto prep = waveguide::preprocessor::make_soft_source(
+            input_node, input_signal.begin(), input_signal.end());
 
     //  Run the simulation.
 
@@ -90,28 +90,28 @@ int main() {
                    },
                    true);
 
-    auto outputs{map_to_vector(begin(output_holders),
-                               end(output_holders),
-                               [](const auto& i) { return i.get_output(); })};
+    auto outputs = map_to_vector(begin(output_holders),
+                                 end(output_holders),
+                                 [](const auto& i) { return i.get_output(); });
     normalize(outputs);
-    const auto mag_values{
+    const auto mag_values =
             map_to_vector(begin(outputs), end(outputs), [](const auto& i) {
                 return max_mag(i);
-            })};
+            });
     for (auto mag : mag_values) {
         std::cout << "mag: " << mag << '\n';
     }
 
     //  We expect to see a 1 / r^2 relationship between distance and rms.
-    const auto rms_values{
+    const auto rms_values =
             map_to_vector(begin(outputs), end(outputs), [](const auto& i) {
                 return frequency_domain::rms(i.begin(), i.end());
-            })};
+            });
     for (auto rms : rms_values) {
         std::cout << "rms: " << rms << '\n';
     }
 
-    auto count{0};
+    auto count = 0;
     for (const auto& i : outputs) {
         //  Write out.
         write(build_string("distance_", count, ".wav"),

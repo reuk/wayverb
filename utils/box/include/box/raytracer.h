@@ -1,7 +1,6 @@
 #pragma once
 
 #include "raytracer/cl/structs.h"
-#include "raytracer/postprocess.h"
 #include "raytracer/raytracer.h"
 #include "raytracer/reflection_processor/image_source.h"
 #include "raytracer/reflection_processor/stochastic_histogram.h"
@@ -17,7 +16,7 @@
 #include "audio_file/audio_file.h"
 
 auto run_raytracer(const geo::box& box,
-                   const surface& surface,
+                   const surface<simulation_bands>& surface,
                    const model::parameters& params,
                    size_t image_source_order) {
     const auto voxelised = make_voxelised_scene_data(

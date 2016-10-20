@@ -17,7 +17,7 @@ TEST(waveguide_init, waveguide_init) {
     const compute_context cc{};
 
     auto scene_data{geo::get_scene_data(geo::box{glm::vec3{-1}, glm::vec3{1}},
-                                        make_surface(0.001, 0))};
+                                        make_surface<simulation_bands>(0.001, 0))};
 
     const auto voxelised{make_voxelised_scene_data(scene_data, 5, 0.1f)};
 

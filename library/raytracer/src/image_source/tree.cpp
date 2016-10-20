@@ -19,7 +19,7 @@ geo::ray construct_ray(const glm::vec3& from, const glm::vec3& to) {
 
 class traversal_callback final {
 public:
-    using vsd = voxelised_scene_data<cl_float3, surface>;
+    using vsd = voxelised_scene_data<cl_float3, surface<simulation_bands>>;
 
     struct state final {
         cl_uint index;
@@ -190,11 +190,13 @@ const multitree<path_element>::branches_type& tree::get_branches() const {
     return root_.branches;
 }
 
-void find_valid_paths(const multitree<path_element>& tree,
-                      const glm::vec3& source,
-                      const glm::vec3& receiver,
-                      const voxelised_scene_data<cl_float3, surface>& voxelised,
-                      const postprocessor& callback) {
+void find_valid_paths(
+        const multitree<path_element>& tree,
+        const glm::vec3& source,
+        const glm::vec3& receiver,
+        const voxelised_scene_data<cl_float3, surface<simulation_bands>>&
+                voxelised,
+        const postprocessor& callback) {
     //  set up a state array
     aligned::vector<traversal_callback::state> state{};
     //  traverse all paths on this branch

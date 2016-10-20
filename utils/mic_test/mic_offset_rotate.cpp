@@ -1,6 +1,8 @@
 #include "box/img_src.h"
 #include "box/waveguide.h"
 
+#include "raytracer/image_source/postprocess.h"
+
 #include "common/attenuator/hrtf.h"
 #include "common/attenuator/microphone.h"
 
@@ -117,6 +119,7 @@ int main(int argc, char** argv) {
     constexpr auto bands = 8;
 
     constexpr auto absorption = 0.001f;
+    constexpr auto scattering = 0.0f;
 
     //  simulations ----------------------------------------------------------//
 
@@ -131,11 +134,12 @@ int main(int argc, char** argv) {
 
     run("waveguide", [&](const auto& source, const auto& receiver) {
         const model::parameters params{source, receiver};
-        auto raw = run_waveguide(box,
-                                 make_surface(absorption, 0),
-                                 params,
-                                 sample_rate,
-                                 2 / params.speed_of_sound);
+        auto raw = run_waveguide(
+                box,
+                make_surface<simulation_bands>(absorption, scattering),
+                params,
+                sample_rate,
+                2 / params.speed_of_sound);
         return postprocess_waveguide(begin(raw),
                                      end(raw),
                                      mic,
@@ -146,15 +150,18 @@ int main(int argc, char** argv) {
     run("img_src", [&](const auto& source, const auto& receiver) {
         const model::parameters params{source, receiver};
         const auto simulation_time = 2 / params.speed_of_sound;
-        auto raw = run_exact_img_src(
-                box, absorption, params, simulation_time, false);
-        return raytracer::postprocess(begin(raw),
-                                      end(raw),
-                                      mic,
-                                      params.receiver,
-                                      params.speed_of_sound,
-                                      sample_rate,
-                                      simulation_time);
+        auto raw = run_exact_img_src(box,
+                                     make_surface<1>(absorption, scattering),
+                                     params,
+                                     simulation_time,
+                                     false);
+        return raytracer::image_source::postprocess(begin(raw),
+                                                    end(raw),
+                                                    mic,
+                                                    params.receiver,
+                                                    params.speed_of_sound,
+                                                    sample_rate,
+                                                    simulation_time);
     });
 
     return EXIT_SUCCESS;

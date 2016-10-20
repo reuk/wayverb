@@ -8,7 +8,7 @@
 #include <cereal/types/vector.hpp>
 
 template <typename Archive>
-void serialize(Archive& archive, volume_type& m) {
+void serialize(Archive& archive, bands_type& m) {
     cereal::size_type s = 8;
     archive(cereal::make_size_tag(s));
     if (s != 8) {
@@ -18,14 +18,15 @@ void serialize(Archive& archive, volume_type& m) {
         archive(i);
     });
 }
-JSON_OSTREAM_OVERLOAD(volume_type);
+JSON_OSTREAM_OVERLOAD(bands_type);
 
-template <typename Archive>
-void serialize(Archive& archive, surface& m) {
+template <typename Archive, size_t Bands>
+void serialize(Archive& archive, surface<Bands>& m) {
     archive(cereal::make_nvp("absorption", m.absorption),
             cereal::make_nvp("scattering", m.scattering));
 }
-JSON_OSTREAM_OVERLOAD(surface);
+template <size_t Bands>
+JSON_OSTREAM_OVERLOAD(surface<Bands>);
 
 template <typename Archive>
 void serialize(Archive& archive, scene_data_loader::material& m) {

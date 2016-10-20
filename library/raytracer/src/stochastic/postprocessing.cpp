@@ -46,7 +46,7 @@ dirac_sequence generate_dirac_sequence(double speed_of_sound,
     return {ret, sample_rate};
 }
 
-std::ostream& operator<<(std::ostream& o, const volume_type& v) {
+std::ostream& operator<<(std::ostream& o, const bands_type& v) {
     o << "[";
     for (const auto& i : v.s) {
         o << i << ", ";
@@ -54,12 +54,12 @@ std::ostream& operator<<(std::ostream& o, const volume_type& v) {
     return o << "]";
 }
 
-aligned::vector<volume_type> weight_sequence(const energy_histogram& histogram,
-                                             const dirac_sequence& sequence,
-                                             double acoustic_impedance) {
+aligned::vector<bands_type> weight_sequence(const energy_histogram& histogram,
+                                            const dirac_sequence& sequence,
+                                            double acoustic_impedance) {
     auto ret = map_to_vector(begin(sequence.sequence),
                              end(sequence.sequence),
-                             [](auto i) { return make_volume_type(i); });
+                             [](auto i) { return make_bands_type(i); });
 
     const auto convert_index = [&](auto ind) -> size_t {
         return ind * sequence.sample_rate / histogram.sample_rate;

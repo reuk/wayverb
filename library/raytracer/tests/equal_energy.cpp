@@ -13,7 +13,9 @@ TEST(equal_energy, img_src_and_stochastic) {
     constexpr model::parameters params{glm::vec3{-2, 0, 0}, glm::vec3{2, 0, 0}};
 
     const auto voxelised = make_voxelised_scene_data(
-            geo::get_scene_data(box, make_surface(absorption, scattering)),
+            geo::get_scene_data(
+                    box,
+                    make_surface<simulation_bands>(absorption, scattering)),
             2,
             0.1f);
 
@@ -28,7 +30,7 @@ TEST(equal_energy, img_src_and_stochastic) {
 
     raytracer::stochastic::finder finder{
             cc, params, receiver_radius, directions.size()};
-    aligned::vector<volume_type> histogram;
+    aligned::vector<bands_type> histogram;
 
     const auto make_ray_iterator = [&](auto it) {
         return make_mapping_iterator_adapter(std::move(it), [&](const auto& i) {

@@ -56,7 +56,7 @@ TEST(verify_compensation_signal, verify_compensation_signal_normal) {
     const compute_context cc{};
 
     auto scene_data{geo::get_scene_data(geo::box(glm::vec3(-1), glm::vec3(1)),
-                                        make_surface(0.5, 0))};
+                                        make_surface<simulation_bands>(0.5, 0))};
     const auto voxelised{make_voxelised_scene_data(
             scene_data, 5, padded(geo::get_aabb(scene_data), glm::vec3{0.1}))};
 

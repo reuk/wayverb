@@ -28,11 +28,11 @@ constexpr auto dereferenced_type_matches_v =
 /// We start with the 'audible range' defined in Hz.
 /// This gives us well-defined 8-band edges and widths, also in Hz.
 
-/// If the iterator is over `volume_type` use this one.
+/// If the iterator is over `bands_type` use this one.
 /// Audible range is normalised in terms of the waveguide sampling rate.
 template <typename It,
           std::enable_if_t<std::is_same<std::decay_t<dereferenced_t<It>>,
-                                        volume_type>::value,
+                                        bands_type>::value,
                            int> = 0>
 auto postprocess(It begin, It end, double sample_rate) {
     return multiband_filter_and_mixdown(

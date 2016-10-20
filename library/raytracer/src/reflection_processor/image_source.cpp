@@ -12,7 +12,8 @@ image_source::image_source(
         size_t max_order,
         bool flip_phase,
         const model::parameters& params,
-        const voxelised_scene_data<cl_float3, surface>& voxelised,
+        const voxelised_scene_data<cl_float3, surface<simulation_bands>>&
+                voxelised,
         size_t items)
         : params_{params}
         , voxelised_{voxelised}
@@ -59,7 +60,8 @@ make_image_source::make_image_source(size_t max_order, bool flip_phase)
 image_source make_image_source::operator()(
         const compute_context& cc,
         const model::parameters& params,
-        const voxelised_scene_data<cl_float3, surface>& voxelised,
+        const voxelised_scene_data<cl_float3, surface<simulation_bands>>&
+                voxelised,
         size_t num_directions) const {
     return {max_order_, flip_phase_, params, voxelised, num_directions};
 }

@@ -2,7 +2,6 @@
 
 #include "raytracer/cl/structs.h"
 
-#include "common/absorption.h"
 #include "common/conversions.h"
 #include "common/scene_data.h"
 #include "common/surfaces.h"
@@ -123,7 +122,7 @@ constexpr auto make_fast_pressure_calculator(It b_surfaces,
                                              const glm::vec3& receiver,
                                              bool flip_phase) {
     using multichannel_type =
-            absorption_t<std::decay_t<decltype(*std::declval<It>())>>;
+            std::decay_t<decltype(std::declval<It>()->absorption)>;
     return fast_pressure_calculator<multichannel_type>{
             std::move(b_surfaces), std::move(e_surfaces), receiver, flip_phase};
 }

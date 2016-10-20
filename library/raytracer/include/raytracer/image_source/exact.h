@@ -1,7 +1,6 @@
 #pragma once
 
 #include "raytracer/image_source/fast_pressure_calculator.h"
-#include "raytracer/postprocess.h"
 
 #include "common/callback_accumulator.h"
 #include "common/geo/box.h"

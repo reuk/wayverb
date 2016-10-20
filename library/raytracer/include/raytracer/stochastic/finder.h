@@ -23,14 +23,12 @@ public:
            size_t rays);
 
     struct results final {
-        aligned::vector<impulse<8>> specular;
-        aligned::vector<impulse<8>> stochastic;
+        aligned::vector<impulse<simulation_bands>> specular;
+        aligned::vector<impulse<simulation_bands>> stochastic;
     };
 
     template <typename It>
-    auto process(It b,
-                 It e,
-                 const scene_buffers& scene_buffers) {
+    auto process(It b, It e, const scene_buffers& scene_buffers) {
         //  copy the current batch of reflections to the device
         cl::copy(queue_, b, e, reflections_buffer_);
 
@@ -47,7 +45,8 @@ public:
                 specular_output_buffer_);
 
         const auto read_out_impulses = [&](const auto& buffer) {
-            auto raw = read_from_buffer<impulse<8>>(queue_, buffer);
+            auto raw =
+                    read_from_buffer<impulse<simulation_bands>>(queue_, buffer);
             raw.erase(std::remove_if(begin(raw),
                                      end(raw),
                                      [](const auto& impulse) {

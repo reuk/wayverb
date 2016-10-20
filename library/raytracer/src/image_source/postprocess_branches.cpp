@@ -4,14 +4,18 @@
 namespace raytracer {
 namespace image_source {
 
-aligned::vector<impulse<8>> postprocess_branches(
+aligned::vector<impulse<simulation_bands>> postprocess_branches(
         const multitree<path_element>& tree,
         const glm::vec3& source,
         const glm::vec3& receiver,
-        const voxelised_scene_data<cl_float3, surface>& voxelised,
+        const voxelised_scene_data<cl_float3, surface<simulation_bands>>&
+                voxelised,
         bool flip_phase) {
-    callback_accumulator<fast_pressure_calculator> callback{
-            receiver, voxelised.get_scene_data().get_surfaces(), flip_phase};
+    auto callback = make_callback_accumulator(make_fast_pressure_calculator(
+            begin(voxelised.get_scene_data().get_surfaces()),
+            end(voxelised.get_scene_data().get_surfaces()),
+            receiver,
+            flip_phase));
     find_valid_paths(
             tree,
             source,

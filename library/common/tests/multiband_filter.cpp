@@ -15,21 +15,26 @@
 
 #include <random>
 
+template <typename Engine, size_t... Ix>
+auto multiband_sample(Engine& engine, std::index_sequence<Ix...>) {
+    std::uniform_real_distribution<float> distribution(-1, 1);
+    return bands_type{
+            {distribution(engine) * decibels::db2a(-60.0f * Ix / 8.0f)...}};
+}
+
+template <typename Engine>
+auto multiband_sample(Engine& engine) {
+    return multiband_sample(engine,
+                            std::make_index_sequence<simulation_bands>{});
+}
+
 TEST(multiband_filter, multiband_filter) {
     std::default_random_engine engine{std::random_device{}()};
     std::uniform_real_distribution<float> distribution(-1, 1);
 
     aligned::vector<bands_type> multiband;
     for (auto i{0ul}; i != 44100 * 10; ++i) {
-        multiband.emplace_back(bands_type{
-                {distribution(engine) * decibels::db2a(-60.0f * 0 / 8.0f),
-                 distribution(engine) * decibels::db2a(-60.0f * 1 / 8.0f),
-                 distribution(engine) * decibels::db2a(-60.0f * 2 / 8.0f),
-                 distribution(engine) * decibels::db2a(-60.0f * 3 / 8.0f),
-                 distribution(engine) * decibels::db2a(-60.0f * 4 / 8.0f),
-                 distribution(engine) * decibels::db2a(-60.0f * 5 / 8.0f),
-                 distribution(engine) * decibels::db2a(-60.0f * 6 / 8.0f),
-                 distribution(engine) * decibels::db2a(-60.0f * 7 / 8.0f)}});
+        multiband.emplace_back(multiband_sample(engine));
     }
 
     multiband[44100] = make_bands_type(1);

@@ -34,7 +34,7 @@
 #include <numeric>
 #include <random>
 
-constexpr auto speed_of_sound{340.0};
+constexpr auto speed_of_sound = 340.0;
 
 aligned::vector<float> make_mls(size_t length) {
     const size_t order = std::floor(std::log(length) / std::log(2)) + 1;
@@ -49,17 +49,16 @@ int main(int argc, char** argv) {
     try {
         const glm::vec3 source{4.8, 2.18, 2.12};
         const glm::vec3 receiver{3.91, 1.89, 1.69};
-        const auto sampling_frequency{8000.0};
+        const auto sampling_frequency = 8000.0;
 
-        const auto surface{make_surface(0.2, 0)};
+        const auto surface = make_surface<simulation_bands>(0.2, 0);
 
         const compute_context cc{};
         const geo::box boundary{glm::vec3{0}, glm::vec3{5.56, 3.97, 2.81}};
 
-        const auto scene_data{geo::get_scene_data(boundary, surface)};
+        const auto scene_data = geo::get_scene_data(boundary, surface);
 
-        const auto rt60{
-                sabine_reverb_time(scene_data, make_volume_type(0)).s[0]};
+        const auto rt60 = max_element(eyring_reverb_time(scene_data, 0));
 
         const size_t simulation_length =
                 std::pow(std::floor(std::log(sampling_frequency * rt60 * 2) /
@@ -67,21 +66,21 @@ int main(int argc, char** argv) {
                                  1,
                          2);
 
-        const auto spacing{waveguide::config::grid_spacing(
-                speed_of_sound, 1 / sampling_frequency)};
+        const auto spacing = waveguide::config::grid_spacing(
+                speed_of_sound, 1 / sampling_frequency);
 
-        const auto voxelised{make_voxelised_scene_data(
+        const auto voxelised = make_voxelised_scene_data(
                 scene_data,
                 5,
                 waveguide::compute_adjusted_boundary(
-                        geo::get_aabb(scene_data), receiver, spacing))};
-        auto model{waveguide::compute_mesh(
-                cc, voxelised, spacing, speed_of_sound)};
+                        geo::get_aabb(scene_data), receiver, spacing));
+        auto model =
+                waveguide::compute_mesh(cc, voxelised, spacing, speed_of_sound);
         model.set_coefficients({waveguide::to_flat_coefficients(surface)});
 
-        const auto receiver_index{
-                compute_index(model.get_descriptor(), receiver)};
-        const auto source_index{compute_index(model.get_descriptor(), source)};
+        const auto receiver_index =
+                compute_index(model.get_descriptor(), receiver);
+        const auto source_index = compute_index(model.get_descriptor(), source);
 
         if (!waveguide::is_inside(model, receiver_index)) {
             throw std::runtime_error("receiver is outside of mesh!");
@@ -95,7 +94,7 @@ int main(int argc, char** argv) {
             aligned::vector<float> kernel;
         };
 
-        const auto valid_portion{0.15};
+        const auto valid_portion = 0.15;
 
         aligned::vector<signal> signals{
                 {"dirac", aligned::vector<float>{1.0}},
@@ -116,12 +115,12 @@ int main(int argc, char** argv) {
         };
 
         for (const auto& i : signals) {
-            auto kernel{waveguide::make_transparent(
-                    i.kernel.data(), i.kernel.data() + i.kernel.size())};
+            auto kernel = waveguide::make_transparent(
+                    i.kernel.data(), i.kernel.data() + i.kernel.size());
             kernel.resize(simulation_length);
 
-            auto prep{waveguide::preprocessor::make_soft_source(
-                    receiver_index, kernel.begin(), kernel.end())};
+            auto prep = waveguide::preprocessor::make_soft_source(
+                    receiver_index, kernel.begin(), kernel.end());
 
             callback_accumulator<waveguide::postprocessor::node> postprocessor{
                     receiver_index};
@@ -145,7 +144,7 @@ int main(int argc, char** argv) {
             }
 
             {
-                auto copy{postprocessor.get_output()};
+                auto copy = postprocessor.get_output();
                 filter::extra_linear_dc_blocker u;
                 filter::run_two_pass(u, copy.begin(), copy.end());
                 write(build_string(
@@ -155,7 +154,7 @@ int main(int argc, char** argv) {
             }
 
             {
-                auto copy{postprocessor.get_output()};
+                auto copy = postprocessor.get_output();
                 filter::block_dc(copy.begin(), copy.end(), sampling_frequency);
                 write(build_string("solution_growth.",
                                    i.name,

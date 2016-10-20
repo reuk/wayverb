@@ -176,8 +176,8 @@ setup_program::setup_program(const compute_context& cc)
         : program_wrapper(
                   cc,
                   std::vector<std::string>{
-                          cl_representation_v<volume_type>,
-                          cl_representation_v<surface<simulation_channels>>,
+                          cl_representation_v<bands_type>,
+                          cl_representation_v<surface<simulation_bands>>,
                           cl_representation_v<triangle>,
                           cl_representation_v<triangle_verts>,
                           cl_representation_v<boundary_type>,

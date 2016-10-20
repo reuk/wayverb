@@ -54,7 +54,7 @@ TEST(reverb_time, triangles_are_oriented) {
 
     for (const auto& box : test_boxes) {
         const auto scene{geo::get_scene_data(
-                box, make_surface<simulation_channels>(0.5, 0.5))};
+                box, make_surface<simulation_bands>(0.5, 0.5))};
         const auto& triangles{scene.get_triangles()};
         ASSERT_TRUE(triangles_are_oriented(triangles.begin(), triangles.end()));
     }
@@ -157,13 +157,13 @@ TEST(reverb_time, sabine) {
     const geo::box southern_box{glm::vec3{0, 0, 0},
                                 glm::vec3{5.56, 3.97, 2.81}};
     auto southern_scene{geo::get_scene_data(
-            southern_box, make_surface<simulation_channels>(0, 0))};
+            southern_box, make_surface<simulation_bands>(0, 0))};
 
     {
-        const volume_type air_absorption{};
+        const bands_type air_absorption{};
         for (auto i{0u}; i != 10; ++i) {
             const auto reflection_coefficient{i * 0.1};
-            southern_scene.set_surfaces(make_surface<simulation_channels>(
+            southern_scene.set_surfaces(make_surface<simulation_bands>(
                     1 - pow(reflection_coefficient, 2), 0));
             const auto t30{sabine_reverb_time(southern_scene, air_absorption) /
                            2};

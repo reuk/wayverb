@@ -2,6 +2,8 @@
 #include "box/raytracer.h"
 #include "box/waveguide.h"
 
+#include "raytracer/image_source/postprocess.h"
+
 #include "common/attenuator/hrtf.h"
 #include "common/attenuator/microphone.h"
 #include "common/cl/iterator.h"
@@ -76,7 +78,7 @@ int main(int argc, char** argv) {
     // const auto absorption=1 - pow(reflectance, 2);
     // constexpr auto scattering=0.05;
 
-    constexpr surface surface{
+    constexpr surface<simulation_bands> surface{
             {{0.05, 0.05, 0.07, 0.1, 0.12, 0.14, 0.16, 0.17}},
             {{0.05, 0.05, 0.07, 0.1, 0.12, 0.14, 0.16, 0.17}}};
 
@@ -175,8 +177,26 @@ int main(int argc, char** argv) {
     const auto postprocess = [&](auto prefix, auto attenuator) {
         auto raytracer_p = map(
                 [&](const auto& i) {
-                    return run_postprocess_impulses(
-                            begin(i), end(i), attenuator);
+                    const auto& image_source_output = std::get<0>(i);
+                    const auto& stochastic_output = std::get<1>(i);
+
+                    const auto image_source_processed =
+                            raytracer::image_source::postprocess(
+                                    begin(image_source_output),
+                                    end(image_source_output),
+                                    attenuator,
+                                    params.receiver,
+                                    params.speed_of_sound,
+                                    sample_rate,
+                                    max_time);
+
+                    //const auto room_volume =
+                    //        estimate_room_volume(geo::get_scene_data(box, 0));
+
+                    const auto tail = raytracer::stochastic::postprocess(
+                            stochastic_output, attenuator);
+
+                    return sum_vectors(image_source_processed, tail);
                 },
                 raytracer_raw);
 
@@ -192,13 +212,13 @@ int main(int argc, char** argv) {
 
         const auto run_postprocess_impulses = [&](
                 auto b, auto e, auto attenuator) {
-            return raytracer::postprocess(std::move(b),
-                                          std::move(e),
-                                          std::move(attenuator),
-                                          params.receiver,
-                                          params.speed_of_sound,
-                                          sample_rate,
-                                          eyring);
+            return raytracer::image_source::postprocess(std::move(b),
+                                                        std::move(e),
+                                                        attenuator,
+                                                        params.receiver,
+                                                        params.speed_of_sound,
+                                                        sample_rate,
+                                                        max_time);
         };
 
         auto exact_img_src_p = map(

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "raytracer/postprocess.h"
+#include "raytracer/optimum_reflection_number.h"
 #include "raytracer/reflector.h"
 
 #include "common/cl/common.h"
@@ -85,7 +85,8 @@ template <typename It, typename PerStepCallback, typename Callbacks>
 auto run(It b_direction,
          It e_direction,
          const compute_context& cc,
-         const voxelised_scene_data<cl_float3, surface>& voxelised,
+         const voxelised_scene_data<cl_float3, surface<simulation_bands>>&
+                 voxelised,
          const model::parameters& params,
          const std::atomic_bool& keep_going,
          PerStepCallback&& per_step_callback,

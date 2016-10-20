@@ -17,13 +17,14 @@ finder::finder(const compute_context& cc,
                               CL_MEM_READ_WRITE,
                               sizeof(reflection) * rays}
         , stochastic_path_buffer_{cc.context,
-                               CL_MEM_READ_WRITE,
-                               sizeof(stochastic_path_info) * rays}
+                                  CL_MEM_READ_WRITE,
+                                  sizeof(stochastic_path_info) * rays}
         , stochastic_output_buffer_{cc.context,
-                                 CL_MEM_READ_WRITE,
-                                 sizeof(impulse<8>) * rays}
-        , specular_output_buffer_{
-                  cc.context, CL_MEM_READ_WRITE, sizeof(impulse<8>) * rays} {
+                                    CL_MEM_READ_WRITE,
+                                    sizeof(impulse<simulation_bands>) * rays}
+        , specular_output_buffer_{cc.context,
+                                  CL_MEM_READ_WRITE,
+                                  sizeof(impulse<simulation_bands>) * rays} {
     //  see schroder2011 5.54
     const auto dist = glm::distance(params.source, params.receiver);
     const auto sin_y = receiver_radius / std::max(receiver_radius, dist);
@@ -37,7 +38,7 @@ finder::finder(const compute_context& cc,
     program{cc_}.get_init_stochastic_path_info_kernel()(
             cl::EnqueueArgs{queue_, cl::NDRange{rays_}},
             stochastic_path_buffer_,
-            make_volume_type(starting_intensity),
+            make_bands_type(starting_intensity),
             to_cl_float3(params.source));
 }
 

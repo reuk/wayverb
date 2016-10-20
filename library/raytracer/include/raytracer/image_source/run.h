@@ -2,7 +2,6 @@
 
 #include "raytracer/image_source/postprocess_branches.h"
 #include "raytracer/image_source/reflection_path_builder.h"
-#include "raytracer/postprocess.h"
 #include "raytracer/raytracer.h"
 #include "raytracer/reflection_processor/image_source.h"
 #include "raytracer/reflector.h"
@@ -15,7 +14,8 @@ template <typename It>
 auto run(It b,  /// Iterators over ray directions.
          It e,
          const compute_context& cc,
-         const voxelised_scene_data<cl_float3, surface>& voxelised,
+         const voxelised_scene_data<cl_float3, surface<simulation_bands>>&
+                 voxelised,
          const model::parameters& params,
          bool flip_phase) {
     const auto callbacks =

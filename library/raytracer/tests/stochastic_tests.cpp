@@ -16,7 +16,7 @@ TEST(stochastic, bad_reflections_box) {
     constexpr model::parameters params{glm::vec3{1, 2, 1}, glm::vec3{2, 1, 5}};
     constexpr auto s{0.01};
     constexpr auto d{0.1};
-    constexpr auto surface{make_surface(s, d)};
+    constexpr auto surface{make_surface<simulation_bands>(s, d)};
 
     const compute_context cc{};
 

@@ -78,68 +78,52 @@ class ImpulseGenerator : public InputGenerator {
 public:
     virtual aligned::vector<aligned::vector<cl_float>> compute_input(
             int size) override {
-        auto ret = aligned::vector<aligned::vector<cl_float>>{
-                SAMPLES, aligned::vector<cl_float>(size, 0)};
-        for (auto& i : ret.front())
+        auto ret = aligned::vector<aligned::vector<cl_float>>(
+                SAMPLES, aligned::vector<cl_float>(size, 0));
+        for (auto& i : ret.front()) {
             i = 0.25;
+        }
         return ret;
     }
 };
 
 namespace testing {
 constexpr auto sr{44100.0};
-constexpr auto min_v{0.05};
-constexpr auto max_v{0.95};
-
-#if 0
-TEST(stability, filters) {
-    for (auto s : {
-             Surface{{{0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9}},
-                     {{0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9}}},
-             Surface{{{0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1}},
-                     {{0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1}}},
-             Surface{{{0.4, 0.3, 0.5, 0.8, 0.9, 0.9, 0.9, 0.9}},
-                     {{0.4, 0.3, 0.5, 0.8, 0.9, 0.9, 0.9, 0.9}}},
-         }) {
-        auto descriptors = RectangularWaveguide::to_filter_descriptors(s);
-        auto individual_coeffs =
-            program::get_peak_biquads_array(descriptors, sr);
-        std::cout << individual_coeffs << std::endl;
-        auto reflectance = program::convolve(individual_coeffs);
-        //        ASSERT_TRUE(program::is_stable(reflectance)) << s;
-        auto impedance =
-            program::to_impedance_coefficients(reflectance);
-        ASSERT_TRUE(program::is_stable(impedance)) << s;
-    }
-}
-#endif
 
 constexpr auto parallel_size{1 << 8};
 
 std::default_random_engine engine{std::random_device()()};
-std::uniform_real_distribution<float> range{min_v, max_v};
 
-auto random_volume_type() {
-    volume_type ret{};
-    std::generate(
-            std::begin(ret.s), std::end(ret.s), [] { return range(engine); });
-    return ret;
+auto random_filter_descriptor() {
+    return waveguide::filter_descriptor{
+            std::uniform_real_distribution<double>{0, 2}(engine),
+            std::uniform_real_distribution<double>{0, 0.5}(engine),
+            std::uniform_real_distribution<double>{0, 1}(engine)};
 }
 
-auto random_surface() {
-    return surface{random_volume_type(), random_volume_type()};
-};
-
-auto compute_surfaces() {
-    std::array<surface, parallel_size> ret;
-    std::generate(
-            std::begin(ret), std::end(ret), [] { return random_surface(); });
-    return ret;
+template <size_t... Ix>
+auto random_filter_descriptors(std::index_sequence<Ix...>) {
+    return std::array<waveguide::filter_descriptor, sizeof...(Ix)>{
+            {((void)Ix, random_filter_descriptor())...}};
 }
 
-static const auto descriptors{
-        map([](auto i) { return waveguide::to_filter_descriptors(i); },
-            compute_surfaces())};
+auto random_filter_descriptors() {
+    return random_filter_descriptors(
+            std::make_index_sequence<biquad_sections>{});
+}
+
+template <size_t ... Ix>
+auto compute_descriptors(std::index_sequence<Ix...>) {
+    return std::array<std::array<waveguide::filter_descriptor, biquad_sections>,
+                      sizeof...(Ix)>{
+            {((void)Ix, random_filter_descriptors())...}};
+}
+
+auto compute_descriptors() {
+    return compute_descriptors(std::make_index_sequence<parallel_size>{});
+}
+
+static const auto descriptors{compute_descriptors()};
 
 enum class FilterType {
     biquad_cascade,

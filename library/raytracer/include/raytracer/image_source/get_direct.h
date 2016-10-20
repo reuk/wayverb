@@ -2,7 +2,6 @@
 
 #include "raytracer/cl/structs.h"
 
-#include "common/channels.h"
 #include "common/spatial_division/voxelised_scene_data.h"
 #include "common/unit_constructor.h"
 
@@ -15,7 +14,7 @@ template <typename Vertex, typename Surface>
 auto get_direct(const glm::vec3& source,
                 const glm::vec3& receiver,
                 const voxelised_scene_data<Vertex, Surface>& scene_data) {
-    constexpr auto channels = channels_v<Surface>;
+    constexpr auto channels = typename Surface::bands_t{};
 
     if (source == receiver) {
         return std::experimental::optional<impulse<channels>>{};

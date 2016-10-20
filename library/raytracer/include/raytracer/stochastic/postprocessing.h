@@ -15,14 +15,14 @@ namespace raytracer {
 namespace stochastic {
 
 template <typename T, size_t... Ix>
-constexpr auto array_to_volume_type(const std::array<T, 8>& t,
-                                    std::index_sequence<Ix...>) {
-    return volume_type{{static_cast<float>(t[Ix])...}};
+constexpr auto array_to_bands_type(const std::array<T, 8>& t,
+                                   std::index_sequence<Ix...>) {
+    return bands_type{{static_cast<float>(t[Ix])...}};
 }
 
 template <typename T>
-constexpr auto array_to_volume_type(const std::array<T, 8>& t) {
-    return array_to_volume_type(t, std::make_index_sequence<8>{});
+constexpr auto array_to_bands_type(const std::array<T, 8>& t) {
+    return array_to_bands_type(t, std::make_index_sequence<8>{});
 }
 
 /// See schroder2011 5.3.4. , p.70
@@ -52,7 +52,7 @@ dirac_sequence generate_dirac_sequence(double speed_of_sound,
                                        double max_time);
 
 struct energy_histogram final {
-    aligned::vector<volume_type> full_histogram;
+    aligned::vector<bands_type> full_histogram;
     double sample_rate;
 };
 

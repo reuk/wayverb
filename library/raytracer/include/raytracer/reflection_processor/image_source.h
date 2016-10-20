@@ -11,11 +11,13 @@ namespace reflection_processor {
 
 class image_source final {
 public:
-    image_source(size_t max_order,
-                 bool flip_phase,
-                 const model::parameters& params,
-                 const voxelised_scene_data<cl_float3, surface>& voxelised,
-                 size_t items);
+    image_source(
+            size_t max_order,
+            bool flip_phase,
+            const model::parameters& params,
+            const voxelised_scene_data<cl_float3, surface<simulation_bands>>&
+                    voxelised,
+            size_t items);
 
     template <typename It>
     void process(It b,
@@ -32,7 +34,8 @@ public:
 
 private:
     model::parameters params_;
-    const voxelised_scene_data<cl_float3, surface>& voxelised_;
+    const voxelised_scene_data<cl_float3, surface<simulation_bands>>&
+            voxelised_;
     size_t max_image_source_order_;
     bool flip_phase_;
 
@@ -46,7 +49,8 @@ public:
     image_source operator()(
             const compute_context& cc,
             const model::parameters& params,
-            const voxelised_scene_data<cl_float3, surface>& voxelised,
+            const voxelised_scene_data<cl_float3, surface<simulation_bands>>&
+                    voxelised,
             size_t num_directions) const;
 
 private:

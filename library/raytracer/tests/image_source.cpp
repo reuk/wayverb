@@ -74,7 +74,7 @@ bool approximately_matches(const impulse<channels>& a,
 void image_source_test() {
     const geo::box box{glm::vec3{0, 0, 0}, glm::vec3{4, 3, 6}};
     constexpr model::parameters params{glm::vec3{1, 1, 1}, glm::vec3{2, 1, 5}};
-    constexpr auto surface = make_surface(0.1f, 0);
+    constexpr auto surface = make_surface<simulation_bands>(0.1f, 0);
 
     constexpr auto shells = 3;
 

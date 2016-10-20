@@ -64,4 +64,4 @@ auto make_scene_buffers(
 }
 
 using scene_buffers =
-        generic_scene_buffers<cl_float3, surface<simulation_channels>>;
+        generic_scene_buffers<cl_float3, surface<simulation_bands>>;

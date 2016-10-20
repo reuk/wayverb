@@ -21,7 +21,8 @@ TEST(nan_in_waveguide, nan_in_waveguide) {
     const auto s{1.5f};
     const geo::box box{glm::vec3{-s}, glm::vec3{s}};
     const auto r{0.9f};
-    auto scene_data{geo::get_scene_data(box, make_surface(r, r))};
+    auto scene_data{
+            geo::get_scene_data(box, make_surface<simulation_bands>(r, r))};
 
     constexpr auto speed_of_sound{340.0};
     constexpr auto acoustic_impedance{400.0};

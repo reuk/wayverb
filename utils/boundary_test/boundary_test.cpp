@@ -19,8 +19,8 @@
 #include "common/sinc.h"
 #include "common/spatial_division/voxelised_scene_data.h"
 
-#include "utilities/progress_bar.h"
 #include "utilities/map_to_vector.h"
+#include "utilities/progress_bar.h"
 
 #include "audio_file/audio_file.h"
 
@@ -62,8 +62,8 @@ private:
     auto run_simulation(const geo::box& boundary,
                         const aligned::vector<glm::vec3>& receivers,
                         const coefficients_canonical& coefficients) const {
-        const auto scene_data{
-                geo::get_scene_data(boundary, make_surface(0, 0))};
+        const auto scene_data{geo::get_scene_data(
+                boundary, make_surface<simulation_bands>(0, 0))};
         const auto spacing{waveguide::config::grid_spacing(
                 speed_of_sound, 1 / (filter_frequency * 4))};
 
@@ -249,11 +249,14 @@ int main(int argc, char** argv) {
 
         aligned::vector<coefficient_package> coefficients_set{
                 {"flat_0",
-                 waveguide::to_flat_coefficients(make_surface(0.0199, 0))},
+                 waveguide::to_flat_coefficients(
+                         make_surface<simulation_bands>(0.0199, 0))},
                 {"flat_1",
-                 waveguide::to_flat_coefficients(make_surface(0.19, 0))},
+                 waveguide::to_flat_coefficients(
+                         make_surface<simulation_bands>(0.19, 0))},
                 {"flat_2",
-                 waveguide::to_flat_coefficients(make_surface(0.36, 0))}};
+                 waveguide::to_flat_coefficients(
+                         make_surface<simulation_bands>(0.36, 0))}};
 
         {
             //  Write coefficients to file.

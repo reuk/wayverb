@@ -57,7 +57,7 @@ private:
     float sample_rate_;
     size_t max_image_source_order_;
 
-    aligned::vector<volume_type> histogram_;
+    aligned::vector<bands_type> histogram_;
 };
 
 class make_stochastic_histogram final {
@@ -69,7 +69,8 @@ public:
     stochastic_histogram operator()(
             const compute_context& cc,
             const model::parameters& params,
-            const voxelised_scene_data<cl_float3, surface>& voxelised,
+            const voxelised_scene_data<cl_float3, surface<simulation_bands>>&
+                    voxelised,
             size_t num_directions) const;
 
 private:

@@ -52,7 +52,8 @@ TEST(run_waveguide, run_waveguide) {
 
     //  init simulation parameters
 
-    const auto scene_data{geo::get_scene_data(box, make_surface(0.01, 0))};
+    const auto scene_data{
+            geo::get_scene_data(box, make_surface<simulation_bands>(0.01, 0))};
 
     constexpr auto speed_of_sound{340.0};
     const auto voxels_and_mesh{waveguide::compute_voxels_and_mesh(
@@ -60,7 +61,8 @@ TEST(run_waveguide, run_waveguide) {
 
     auto model{std::get<1>(voxels_and_mesh)};
     model.set_coefficients(waveguide::to_flat_coefficients(
-            aligned::vector<surface>{make_surface(0.01, 0)}));
+            aligned::vector<surface<simulation_bands>>{
+                    make_surface<simulation_bands>(0.01, 0)}));
 
     //  get a waveguide
 
