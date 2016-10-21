@@ -13,16 +13,16 @@ public:
 
     auto get_kernel() const {
         return program_wrapper_.get_kernel<cl::Buffer,  //  ray
-                                          cl_float3,   //  receiver
-                                          cl::Buffer,  //  voxel_index
-                                          aabb,        //  global_aabb
-                                          cl_uint,     //  side
-                                          cl::Buffer,  //  triangles
-                                          cl::Buffer,  //  vertices
-                                          cl::Buffer,  //  surfaces
-                                          cl::Buffer,  //  rng
-                                          cl::Buffer   //  reflection
-                                          >("reflections");
+                                           cl_float3,   //  receiver
+                                           cl::Buffer,  //  voxel_index
+                                           aabb,        //  global_aabb
+                                           cl_uint,     //  side
+                                           cl::Buffer,  //  triangles
+                                           cl::Buffer,  //  vertices
+                                           cl::Buffer,  //  surfaces
+                                           cl::Buffer,  //  rng
+                                           cl::Buffer   //  reflection
+                                           >("reflections");
     }
 
     auto get_init_reflections_kernel() const {
