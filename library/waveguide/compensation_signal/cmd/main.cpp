@@ -26,12 +26,9 @@ void generate_data_file(std::ostream& os, It begin, It end) {
 const std::array<float, )"
        << elements << "> mesh_impulse_response{{\n";
 
-    for (auto count{0ul}; begin != end; ++begin, ++count) {
+    for (; begin != end; ++begin) {
         os << std::setprecision(std::numeric_limits<float>::max_digits10)
-           << *begin << ", ";
-        if (count && !(count % 8)) {
-            os << "\n";
-        }
+           << *begin << ",\n";
     }
 
     os << "}};\n";
@@ -51,7 +48,7 @@ int main(int argc, char** argv) {
     progress_bar pb{std::cerr};
     const std::vector<float> sig{0.0f, 1.0f};
     const auto output{
-            waveguide.run_hard_source(sig.begin(), sig.end(), [&](auto step) {
+            waveguide.run_hard_source(begin(sig), end(sig), [&](auto step) {
                 set_progress(pb, step, steps);
             })};
 

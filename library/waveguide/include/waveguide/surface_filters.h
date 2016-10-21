@@ -67,8 +67,8 @@ inline aligned::vector<coefficients_canonical> to_filter_coefficients(
 template <size_t Channels>
 coefficients_canonical to_flat_coefficients(const surface<Channels>& surface) {
     const auto reflectance =
-            absorption_to_pressure_reflectance(surface.absorption);
-    const coefficients_canonical ret{{reflectance.s[0]}, {1}};
+            absorption_to_pressure_reflectance(surface.absorption.s[0]);
+    const coefficients_canonical ret{{reflectance}, {1}};
     return to_impedance_coefficients(ret);
 }
 

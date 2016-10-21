@@ -16,7 +16,7 @@ auto postprocess(const energy_histogram& histogram,
                  double sample_rate,
                  double max_seconds) {
     //  TODO should be directional depending on receiver...
-    throw std::runtime_error{"stochastic::postprocess not implemented yet"};
+    //  throw std::runtime_error{"stochastic::postprocess not implemented yet"};
 
     const auto dirac_sequence = generate_dirac_sequence(
             speed_of_sound, room_volume, sample_rate, max_seconds);

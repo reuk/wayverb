@@ -80,10 +80,16 @@ private:
                                const U& per_step) {
         //  init buffers
         const auto buffer_size = tetrahedron(dimension_);
-        zero_buffer_kernel_(cl::EnqueueArgs{queue_, cl::NDRange{buffer_size}},
-                            previous_);
-        zero_buffer_kernel_(cl::EnqueueArgs{queue_, cl::NDRange{buffer_size}},
-                            current_);
+        zero_buffer_kernel_(
+                cl::EnqueueArgs{queue_,
+                                cl::NDRange{previous_.getInfo<CL_MEM_SIZE>() /
+                                            sizeof(cl_float)}},
+                previous_);
+        zero_buffer_kernel_(
+                cl::EnqueueArgs{queue_,
+                                cl::NDRange{current_.getInfo<CL_MEM_SIZE>() /
+                                            sizeof(cl_float)}},
+                current_);
 
         aligned::vector<float> ret{};
         ret.reserve(std::distance(begin, end));
