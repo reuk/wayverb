@@ -14,9 +14,13 @@ public:
     explicit compressed_rectangular_waveguide_program(
             const compute_context& cc);
 
-    auto get_kernel() const {
+    auto get_compressed_waveguide_kernel() const {
         return program_wrapper_.get_kernel<cl::Buffer, cl::Buffer>(
                 "compressed_waveguide");
+    }
+
+    auto get_zero_buffer_kernel() const {
+        return program_wrapper_.get_kernel<cl::Buffer>("zero_buffer");
     }
 
     template <cl_program_info T>
@@ -34,9 +38,13 @@ private:
 
 class compressed_rectangular_waveguide final {
 public:
-    using kernel_type =
+    using compressed_waveguide_kernel =
             decltype(std::declval<compressed_rectangular_waveguide_program>()
-                             .get_kernel());
+                             .get_compressed_waveguide_kernel());
+    using zero_buffer_kernel =
+            decltype(std::declval<compressed_rectangular_waveguide_program>()
+                             .get_zero_buffer_kernel());
+
     compressed_rectangular_waveguide(const compute_context& cc, size_t steps);
 
     template <typename It, typename T>
@@ -45,7 +53,7 @@ public:
                                            const T& per_step) {
         return run(begin,
                    end,
-                   [](auto& queue, auto& buffer, auto input) {
+                   [](auto& queue, auto& buffer, float input) {
                        write_value(queue, buffer, 0, input);
                    },
                    per_step);
@@ -57,8 +65,8 @@ public:
                                            const T& per_step) {
         return run(begin,
                    end,
-                   [](auto& queue, auto& buffer, auto input) {
-                       const auto c{read_value<cl_float>(queue, buffer, 0)};
+                   [](auto& queue, auto& buffer, float input) {
+                       const auto c = read_value<cl_float>(queue, buffer, 0);
                        write_value(queue, buffer, 0, c + input);
                    },
                    per_step);
@@ -71,17 +79,21 @@ private:
                                const T& writer,
                                const U& per_step) {
         //  init buffers
-        fill_buffer(queue_, previous_, 0.0f);
-        fill_buffer(queue_, current_, 0.0f);
+        const auto buffer_size = tetrahedron(dimension_);
+        zero_buffer_kernel_(cl::EnqueueArgs{queue_, cl::NDRange{buffer_size}},
+                            previous_);
+        zero_buffer_kernel_(cl::EnqueueArgs{queue_, cl::NDRange{buffer_size}},
+                            current_);
 
         aligned::vector<float> ret{};
         ret.reserve(std::distance(begin, end));
 
-        for (auto count{0ul}; count != dimension_ * 2; ++count) {
-            writer(queue_, current_, begin == end ? 0 : *begin);
+        for (auto count = 0ul; count != dimension_ * 2; ++count) {
+            writer(queue_, current_, begin == end ? 0.0f : *begin++);
 
             //  run the kernel
-            kernel_(cl::EnqueueArgs(queue_, tetrahedron(dimension_)),
+            compressed_waveguide_kernel_(
+                    cl::EnqueueArgs{queue_, cl::NDRange{buffer_size}},
                     previous_,
                     current_);
 
@@ -93,17 +105,14 @@ private:
             ret.emplace_back(read_value<cl_float>(queue_, current_, 0));
 
             per_step(count);
-
-            if (begin != end) {
-                ++begin;
-            }
         }
 
         return ret;
     }
 
     cl::CommandQueue queue_;
-    kernel_type kernel_;
+    compressed_waveguide_kernel compressed_waveguide_kernel_;
+    zero_buffer_kernel zero_buffer_kernel_;
     size_t dimension_;
 
     cl::Buffer current_;

@@ -487,6 +487,11 @@ float next_waveguide_pressure(
     }
 }
 
+kernel void zero_buffer(global float* buffer) {
+    const size_t thread = get_global_id(0);
+    buffer[thread] = 0.0f;
+}
+
 kernel void condensed_waveguide(
         global float* previous,
         const global float* current,
@@ -528,7 +533,7 @@ kernel void condensed_waveguide(
 )";
 
 program::program(const compute_context& cc)
-        : program_wrapper(
+        : program_wrapper_{
                   cc,
                   std::vector<std::string>{
                           ::cl_sources::filter_constants,
@@ -549,6 +554,6 @@ program::program(const compute_context& cc)
                           cl_representation_v<boundary_type>,
                           ::cl_sources::filters,
                           cl_sources::utils,
-                          source}) {}
+                          source}} {}
 
 }  // namespace waveguide

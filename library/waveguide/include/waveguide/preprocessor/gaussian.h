@@ -14,7 +14,9 @@ public:
              float sdev,
              size_t steps);
 
-    bool operator()(cl::CommandQueue& queue, cl::Buffer& buffer, size_t step);
+    bool operator()(cl::CommandQueue& queue,
+                    cl::Buffer& buffer,
+                    size_t step) const;
 
 private:
     mesh_descriptor descriptor_;

@@ -53,6 +53,7 @@ void write_value(cl::CommandQueue& queue,
             buffer, CL_TRUE, sizeof(T) * index, sizeof(T), &val);
 }
 
+/*
 template <int N>
 struct is_power_of_two final {
     using type = std::integral_constant<bool, N && !(N & (N - 1))>;
@@ -90,3 +91,4 @@ auto make_filled_buffer(cl::CommandQueue& queue,
     fill_buffer(queue, ret, pattern);
     return ret;
 }
+*/

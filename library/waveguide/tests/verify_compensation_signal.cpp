@@ -17,12 +17,12 @@
 #include <cmath>
 
 namespace {
-template <typename T>
-void multitest(T run) {
+template <typename T, typename U>
+void multitest(T run, U input) {
     constexpr auto iterations{100};
-    const auto proper_output{run()};
+    const auto proper_output{run(input)};
     for (auto i{0ul}; i != iterations; ++i) {
-        const auto output{run()};
+        const auto output{run(input)};
         ASSERT_EQ(output, proper_output);
     }
 }
@@ -35,16 +35,13 @@ TEST(verify_compensation_signal, verify_compensation_signal_compressed) {
 
     const auto steps{100};
 
-    const compute_context c{};
-    compressed_rectangular_waveguide waveguide(c, steps);
-
-    multitest([&] {
-        auto t{transparent};
-        progress_bar pb{std::cerr};
-        return waveguide.run_soft_source(t.begin(), t.end(), [&](auto step) {
-            set_progress(pb, step, steps);
-        });
-    });
+    compressed_rectangular_waveguide waveguide{compute_context{}, steps};
+    multitest(
+            [&](const auto& input) {
+                return waveguide.run_soft_source(
+                        begin(input), end(input), [&](auto step) {});
+            },
+            transparent);
 }
 
 TEST(verify_compensation_signal, verify_compensation_signal_normal) {
@@ -55,8 +52,9 @@ TEST(verify_compensation_signal, verify_compensation_signal_normal) {
 
     const compute_context cc{};
 
-    auto scene_data{geo::get_scene_data(geo::box(glm::vec3(-1), glm::vec3(1)),
-                                        make_surface<simulation_bands>(0.5, 0))};
+    auto scene_data{
+            geo::get_scene_data(geo::box(glm::vec3(-1), glm::vec3(1)),
+                                make_surface<simulation_bands>(0.5, 0))};
     const auto voxelised{make_voxelised_scene_data(
             scene_data, 5, padded(geo::get_aabb(scene_data), glm::vec3{0.1}))};
 
@@ -67,25 +65,24 @@ TEST(verify_compensation_signal, verify_compensation_signal_normal) {
     constexpr glm::vec3 centre{0, 0, 0};
     const auto receiver_index{compute_index(model.get_descriptor(), centre)};
 
-    multitest([&] {
-        auto prep{waveguide::preprocessor::make_soft_source(
-                receiver_index, transparent.begin(), transparent.end())};
+    multitest(
+            [&](const auto& input) {
+                callback_accumulator<waveguide::postprocessor::node>
+                        postprocessor{receiver_index};
 
-        callback_accumulator<waveguide::postprocessor::node> postprocessor{
-                receiver_index};
+                waveguide::run(
+                        cc,
+                        model,
+                        waveguide::preprocessor::make_soft_source(
+                                receiver_index, begin(input), end(input)),
+                        [&](auto& queue, const auto& buffer, auto step) {
+                            postprocessor(queue, buffer, step);
+                        },
+                        true);
 
-        progress_bar pb{std::cout};
-        waveguide::run(cc,
-                       model,
-                       prep,
-                       [&](auto& queue, const auto& buffer, auto step) {
-                           postprocessor(queue, buffer, step);
-                           set_progress(pb, step, transparent.size());
-                       },
-                       true);
+                assert(postprocessor.get_output().size() == transparent.size());
 
-        assert(postprocessor.get_output().size() == transparent.size());
-
-        return postprocessor.get_output();
-    });
+                return postprocessor.get_output();
+            },
+            transparent);
 }

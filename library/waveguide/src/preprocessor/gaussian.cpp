@@ -24,7 +24,7 @@ gaussian::gaussian(const mesh_descriptor& descriptor,
 
 bool gaussian::operator()(cl::CommandQueue& queue,
                           cl::Buffer& buffer,
-                          size_t step) {
+                          size_t step) const {
     if (step == steps_) {
         return false;
     }

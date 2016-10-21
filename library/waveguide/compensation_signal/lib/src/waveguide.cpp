@@ -5,7 +5,10 @@
 compressed_rectangular_waveguide::compressed_rectangular_waveguide(
         const compute_context& cc, size_t steps)
         : queue_{cc.context, cc.device}
-        , kernel_{compressed_rectangular_waveguide_program{cc}.get_kernel()}
+        , compressed_waveguide_kernel_{compressed_rectangular_waveguide_program{
+                  cc}.get_compressed_waveguide_kernel()}
+        , zero_buffer_kernel_{compressed_rectangular_waveguide_program{
+                  cc}.get_zero_buffer_kernel()}
         , dimension_{(steps + 1) / 2}
         , current_{cc.context,
                    CL_MEM_READ_WRITE,
@@ -100,6 +103,11 @@ kernel void compressed_waveguide(global float* previous,
                                  const global float* current) {
     int index = get_global_id(0);
     waveguide_cell_update(previous, current, to_locator(index));
+}
+
+kernel void zero_buffer(global float* buf) {
+    size_t thread = get_global_id(0);
+    buf[thread] = 0;
 }
 
 )"};

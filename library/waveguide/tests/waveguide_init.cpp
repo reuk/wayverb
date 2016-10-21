@@ -45,7 +45,9 @@ TEST(waveguide_init, waveguide_init) {
     progress_bar pb;
     waveguide::run(cc,
                    model,
-                   prep,
+                   [&](auto& queue, auto& buffer, auto step) {
+                       return prep(queue, buffer, step);
+                   },
                    [&](auto& queue, const auto& buffer, auto step) {
                        postprocessor(queue, buffer, step);
                        set_progress(pb, step, steps);

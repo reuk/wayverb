@@ -2,9 +2,6 @@ mkdir -p build
 cd build
 
 # fails:
-# waveguide
-#   compare_filters.compare_filters
-#   verify_compenation_signal.*
 # raytracer
 #   attenuator.hrtf
 #   equal_enrgy.img_src_and_stochastic
@@ -14,7 +11,7 @@ cd build
 
 export CL_LOG_ERRORS=stdout
 export GLOG_logtostderr=1
-export GTEST_FILTER="*compare_filters*"
+export GTEST_FILTER="*verify_compensation*"
 cmake .. && make && ctest -V
 
 #cmake .. && make && cd utils/image_source_comparison && ./image_source_comparison

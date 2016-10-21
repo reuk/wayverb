@@ -94,7 +94,9 @@ TEST(run_waveguide, run_waveguide) {
     auto callback_counter{0};
     waveguide::run(cc,
                    model,
-                   prep,
+                   [&](auto& queue, auto& buffer, auto step) {
+                       return prep(queue, buffer, step);
+                   },
                    [&](auto& queue, const auto& buffer, auto step) {
                        for (auto& i : output_holders) {
                            i(queue, buffer, step);
