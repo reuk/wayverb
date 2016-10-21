@@ -49,35 +49,37 @@ int main(int argc, char** argv) {
     // const auto absorption=1 - pow(reflectance, 2);
     // constexpr auto scattering=0.05;
 
-    constexpr surface<simulation_bands> surface{
+    constexpr auto scattering_surface = surface<simulation_bands>{
             {{0.1, 0.1, 0.1, 0.1, 0.12, 0.14, 0.16, 0.17}},
             {{0.1, 0.1, 0.1, 0.1, 0.12, 0.14, 0.16, 0.17}}};
 
-    const auto eyring =
-            eyring_reverb_time(geo::get_scene_data(box, surface), 0.0f);
-    const auto max_time = max_element(eyring);
+    constexpr auto no_scattering_surface = surface<simulation_bands>{
+            scattering_surface.absorption, bands_type{}};
 
-    const auto room_volume = estimate_room_volume(geo::get_scene_data(box, 0));
+    const auto scene_data = geo::get_scene_data(box, scattering_surface);
+
+    const auto room_volume = estimate_room_volume(scene_data);
+    const auto eyring = eyring_reverb_time(scene_data, 0.0f);
+    const auto max_time = max_element(eyring);
 
     //  tests ----------------------------------------------------------------//
 
     const auto raytracer_raw = make_named_value(
-            "raytracer", run_raytracer(box, surface, params, 4));
-
-    /*
+            "raytracer", run_raytracer(box, scattering_surface, params, 4));
 
     const auto waveguide_raw = make_named_value(
             "waveguide",
-            run_waveguide(box, surface, params, sample_rate, max_time));
+            run_waveguide(
+                    box, scattering_surface, params, sample_rate, max_time));
 
     const auto exact_img_src_raw = make_named_value(
             "exact_img_src",
-            run_exact_img_src(box, surface, params, max_time, true));
+            run_exact_img_src(
+                    box, no_scattering_surface, params, max_time, true));
 
     const auto fast_img_src_raw = make_named_value(
-            "fast_img_src", run_fast_img_src(box, surface, params, true));
-
-    */
+            "fast_img_src",
+            run_fast_img_src(box, scattering_surface, params, true));
 
     const auto normalize_and_write = [&](auto prefix, auto b, auto e) {
         const auto make_iterator = [](auto i) {
@@ -111,7 +113,6 @@ int main(int argc, char** argv) {
                 },
                 raytracer_raw);
 
-        /*
         auto waveguide_p = map(
                 [&](const auto& i) {
                     return postprocess_waveguide(begin(i),
@@ -146,10 +147,9 @@ int main(int argc, char** argv) {
                             begin(i), end(i), attenuator);
                 },
                 fast_img_src_raw);
-        */
 
-        const auto results = {//&waveguide_p, &exact_img_src_p, &fast_img_src_p,
-                              &raytracer_p};
+        const auto results = {
+                &waveguide_p, &exact_img_src_p, &fast_img_src_p, &raytracer_p};
 
         normalize_and_write(prefix, begin(results), end(results));
     };
