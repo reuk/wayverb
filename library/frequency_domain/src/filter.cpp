@@ -38,6 +38,7 @@ public:
         //  Run inverse fft, placing ifft output back into owner.rbuf_.
         fftwf_execute(ifft_);
 
+        //  Normalize the filter output.
         for (auto& i : rbuf_) {
             i /= rbuf_size;
         }

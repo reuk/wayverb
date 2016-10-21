@@ -10,26 +10,32 @@
 namespace frequency_domain {
 
 template <size_t bands_plus_one, typename It, typename Callback>
-void multiband_filter(
+auto multiband_filter(
         It begin,
         It end,
         const std::array<edge_and_width, bands_plus_one>& edges_and_widths,
         const Callback& callback,
         size_t l = 0) {
     constexpr auto bands = bands_plus_one - 1;
-    filter filt{2 * static_cast<size_t>(std::distance(begin, end))};
+    filter filt{static_cast<size_t>(std::distance(begin, end) << 5)};
+
+    //  Will store the area under each frequency-domain window.
+    std::array<double, bands> integrated_bands{};
 
     for (auto i = 0ul; i != bands; ++i) {
         const auto b = callback(begin, i);
         const auto e = callback(end, i);
         filt.run(b, e, b, [&](auto cplx, auto freq) {
-            return cplx * static_cast<float>(compute_bandpass_magnitude(
-                                  freq,
-                                  edges_and_widths[i + 0],
-                                  edges_and_widths[i + 1],
-                                  l));
+            const auto amp = compute_bandpass_magnitude(
+                    freq, edges_and_widths[i + 0], edges_and_widths[i + 1], l);
+
+            integrated_bands[i] += amp;
+
+            return cplx * static_cast<float>(amp);
         });
     }
+
+    return integrated_bands;
 }
 
 template <typename It>
@@ -116,18 +122,17 @@ auto per_band_energy(
 
     auto multiband = make_multiband<bands>(begin, end);
 
-    multiband_filter(std::begin(multiband),
-                     std::end(multiband),
-                     edges_and_widths,
-                     make_indexer_iterator{});
+    const auto band_widths = multiband_filter(std::begin(multiband),
+                                              std::end(multiband),
+                                              edges_and_widths,
+                                              make_indexer_iterator{});
+
     auto rms = multiband_rms<bands>(std::begin(multiband),
                                     std::end(multiband),
                                     make_indexer_iterator{});
 
     for (auto i = 0ul; i != bands; ++i) {
-        const auto width =
-                edges_and_widths[i + 1].edge - edges_and_widths[i].edge;
-        rms[i] /= width;
+        rms[i] *= bands / sqrt(band_widths[i]);
     }
 
     return rms;

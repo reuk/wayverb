@@ -53,8 +53,8 @@ int main(int argc, char** argv) {
             {{0.1, 0.1, 0.1, 0.1, 0.12, 0.14, 0.16, 0.17}},
             {{0.1, 0.1, 0.1, 0.1, 0.12, 0.14, 0.16, 0.17}}};
 
-    constexpr auto no_scattering_surface = surface<simulation_bands>{
-            scattering_surface.absorption, bands_type{}};
+    //constexpr auto no_scattering_surface = surface<simulation_bands>{
+    //        scattering_surface.absorption, bands_type{}};
 
     const auto scene_data = geo::get_scene_data(box, scattering_surface);
 
@@ -66,6 +66,8 @@ int main(int argc, char** argv) {
 
     const auto raytracer_raw = make_named_value(
             "raytracer", run_raytracer(box, scattering_surface, params, 4));
+
+    /*
 
     const auto waveguide_raw = make_named_value(
             "waveguide",
@@ -80,6 +82,8 @@ int main(int argc, char** argv) {
     const auto fast_img_src_raw = make_named_value(
             "fast_img_src",
             run_fast_img_src(box, scattering_surface, params, true));
+
+    */
 
     const auto normalize_and_write = [&](auto prefix, auto b, auto e) {
         const auto make_iterator = [](auto i) {
@@ -113,6 +117,8 @@ int main(int argc, char** argv) {
                 },
                 raytracer_raw);
 
+        /*
+         
         auto waveguide_p = map(
                 [&](const auto& i) {
                     return postprocess_waveguide(begin(i),
@@ -148,8 +154,10 @@ int main(int argc, char** argv) {
                 },
                 fast_img_src_raw);
 
-        const auto results = {
-                &waveguide_p, &exact_img_src_p, &fast_img_src_p, &raytracer_p};
+        */
+
+        const auto results = {//&waveguide_p, &exact_img_src_p, &fast_img_src_p,
+                              &raytracer_p};
 
         normalize_and_write(prefix, begin(results), end(results));
     };
