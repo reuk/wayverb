@@ -4,11 +4,10 @@ cd build
 # fails:
 # raytracer
 #   attenuator.hrtf
-#   image_source.fast_pressure
 
 export CL_LOG_ERRORS=stdout
 export GLOG_logtostderr=1
-export GTEST_FILTER="*bad_reflections*"
+export GTEST_FILTER="*fast_pressure*"
 cmake .. && make && ctest -V
 
 #cmake .. && make && cd utils/image_source_comparison && ./image_source_comparison

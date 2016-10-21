@@ -90,20 +90,7 @@ void image_source_test() {
         }
     };
 
-    const auto check_volumes = [](const auto& range) {
-        for (const auto& imp : range) {
-            for (const auto& band : imp.volume.s) {
-                ASSERT_LE(band, 1);
-            }
-        }
-    };
-
-    const auto check_range = [&](const auto& range) {
-        check_distances(range);
-        check_volumes(range);
-    };
-
-    check_range(exact_impulses);
+    check_distances(exact_impulses);
 
     const auto voxelised = make_voxelised_scene_data(
             geo::get_scene_data(box, surface), 5, 0.1f);
@@ -116,7 +103,7 @@ void image_source_test() {
                                                          params,
                                                          false);
 
-    check_range(inexact_impulses);
+    check_distances(inexact_impulses);
 
     ASSERT_TRUE(inexact_impulses.size() > 1);
 
