@@ -26,12 +26,11 @@ static constexpr auto samplerate{44100.0};
 
 TEST(peak_filter_coefficients, peak_filter_coefficients) {
     static std::default_random_engine engine{std::random_device()()};
-    static std::uniform_real_distribution<cl_float> range{0, samplerate / 2};
+    static std::uniform_real_distribution<cl_float> range{0, 0.5};
     for (auto i = 0; i != 10; ++i) {
         const auto descriptor =
                 waveguide::filter_descriptor{0, range(engine), 1.414};
-        const auto coefficients =
-                waveguide::get_peak_coefficients(descriptor, samplerate);
+        const auto coefficients = waveguide::get_peak_coefficients(descriptor);
 
         ASSERT_TRUE(std::equal(std::begin(coefficients.b),
                                std::end(coefficients.b),

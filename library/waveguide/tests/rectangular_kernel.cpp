@@ -96,7 +96,7 @@ std::default_random_engine engine{std::random_device()()};
 
 auto random_filter_descriptor() {
     return waveguide::filter_descriptor{
-            std::uniform_real_distribution<double>{0, 2}(engine),
+            std::uniform_real_distribution<double>{0.1, 1}(engine),
             std::uniform_real_distribution<double>{0, 0.5}(engine),
             std::uniform_real_distribution<double>{0, 1}(engine)};
 }
@@ -112,7 +112,7 @@ auto random_filter_descriptors() {
             std::make_index_sequence<biquad_sections>{});
 }
 
-template <size_t ... Ix>
+template <size_t... Ix>
 auto compute_descriptors(std::index_sequence<Ix...>) {
     return std::array<std::array<waveguide::filter_descriptor, biquad_sections>,
                       sizeof...(Ix)>{
@@ -134,9 +134,7 @@ enum class FilterType {
 auto compute_coeffs(
         std::integral_constant<FilterType, FilterType::biquad_cascade>) {
     return map(
-            [](const auto& n) {
-                return waveguide::get_peak_biquads_array(n, sr);
-            },
+            [](const auto& n) { return waveguide::get_peak_biquads_array(n); },
             descriptors);
 }
 
@@ -145,7 +143,7 @@ auto compute_coeffs(
     return map(
             [](const auto& n) {
                 return waveguide::convolve(
-                        waveguide::get_peak_biquads_array(n, sr));
+                        waveguide::get_peak_biquads_array(n));
             },
             descriptors);
 }
@@ -155,7 +153,7 @@ auto compute_coeffs(
     return map(
             [](const auto& n) {
                 return waveguide::to_impedance_coefficients(waveguide::convolve(
-                        waveguide::get_peak_biquads_array(n, sr)));
+                        waveguide::get_peak_biquads_array(n)));
             },
             descriptors);
 }
@@ -291,26 +289,16 @@ TEST_F(testing_rk_filter_quiet, filtering_2) {
 }
 
 TEST(compare_filters, compare_filters) {
-    /*
-    Logger::log_err("cpu: sizeof(CanonicalMemory): ",
-                    sizeof(CanonicalMemory));
-    Logger::log_err("cpu: sizeof(BiquadMemoryArray): ",
-                    sizeof(BiquadMemoryArray));
-    Logger::log_err("cpu: sizeof(CanonicalCoefficients): ",
-                    sizeof(CanonicalCoefficients));
-    Logger::log_err("cpu: sizeof(BiquadCoefficientsArray): ",
-                    sizeof(BiquadCoefficientsArray));
-    */
-
-    auto test = [](auto biquad, auto filter) {
+    const auto test = [](auto biquad, auto filter) {
         for (auto i = 0; i != biquad.input.size(); ++i) {
             for (auto j = 0; j != biquad.input[i].size(); ++j) {
                 ASSERT_EQ(biquad.input[i][j], filter.input[i][j]);
             }
         }
 
-        auto buf_1 = biquad.run_kernel(biquad.program.get_filter_test_kernel());
-        auto buf_2 =
+        const auto buf_1 =
+                biquad.run_kernel(biquad.program.get_filter_test_kernel());
+        const auto buf_2 =
                 filter.run_kernel(filter.program.get_filter_test_2_kernel());
 
         auto diff = buf_1;
@@ -332,25 +320,9 @@ TEST(compare_filters, compare_filters) {
                            return std::abs(decibels::a2db(std::abs(i / j)));
                        });
 
-        /*
-        std::for_each(
-            diff.begin(), diff.end(), [](auto i) { ASSERT_NEAR(i, 0, 0.001); });
-        */
-
-        // auto min_diff = *std::min_element(diff.begin(), diff.end());
-        auto max_diff{*std::max_element(std::begin(diff), std::end(diff))};
+        const auto max_diff{*std::max_element(begin(diff), end(diff))};
 
         ASSERT_TRUE(max_diff < 0.001) << max_diff;
-
-        /*
-        auto min_div = *std::min_element(div.begin(), div.end());
-        auto max_div = *std::max_element(div.begin(), div.end());
-
-        Logger::log_err("min diff: ", min_diff);
-        Logger::log_err("max diff: ", max_diff);
-        Logger::log_err("min div / dB: ", min_div);
-        Logger::log_err("max div / dB: ", max_div);
-        */
 
         write("./buf_1.wav",
               audio_file::make_audio_file(

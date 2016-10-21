@@ -6,10 +6,9 @@
 
 namespace waveguide {
 
-coefficients_biquad get_peak_coefficients(const filter_descriptor& n,
-                                          double sr) {
+coefficients_biquad get_peak_coefficients(const filter_descriptor& n) {
     const auto A = decibels::db2a(n.gain / 2);
-    const auto w0 = 2.0 * M_PI * n.centre / sr;
+    const auto w0 = 2.0 * M_PI * n.centre;
     const auto cw0 = cos(w0);
     const auto sw0 = sin(w0);
     const auto alpha = sw0 / 2.0 * n.Q;
@@ -20,15 +19,13 @@ coefficients_biquad get_peak_coefficients(const filter_descriptor& n,
 }
 
 biquad_coefficients_array get_peak_biquads_array(
-        const std::array<filter_descriptor, biquad_sections>& n, double sr) {
-    return get_biquads_array(n, sr, get_peak_coefficients);
+        const std::array<filter_descriptor, biquad_sections>& n) {
+    return get_biquads_array(get_peak_coefficients, n);
 }
 
 coefficients_canonical convolve(const biquad_coefficients_array& a) {
-    std::array<coefficients_biquad, biquad_sections> t;
-    std::copy(std::begin(a.array), std::end(a.array), t.begin());
     return reduce([](const auto& i, const auto& j) { return convolve(i, j); },
-                  t);
+                  a.array);
 }
 
 /// Given a set of canonical coefficients describing a reflectance filter,
