@@ -37,11 +37,8 @@ struct reverb_time final {
 
 /// Uses backward-curve integration method.
 template <typename It>
-reverb_time decay_time_from_points(It begin,
-                                   It end,
-                                   float begin_db,
-                                   float end_db,
-                                   float min_db) {
+reverb_time decay_time_from_points(
+        It begin, It end, float begin_db, float end_db, float min_db) {
     const auto integrated = squared_integrated(
             std::make_reverse_iterator(end), std::make_reverse_iterator(begin));
 
