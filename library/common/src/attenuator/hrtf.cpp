@@ -4,6 +4,8 @@
 
 namespace attenuator {
 
+constexpr std::array<hrtf::channel, 2> hrtf::channels;
+
 hrtf::hrtf(const glm::vec3& pointing,
            const glm::vec3& up,
            channel channel,

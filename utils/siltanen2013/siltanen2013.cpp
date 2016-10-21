@@ -3,6 +3,7 @@
 #include "box/waveguide.h"
 
 #include "raytracer/image_source/postprocess.h"
+#include "raytracer/stochastic/postprocess.h"
 
 #include "common/attenuator/hrtf.h"
 #include "common/attenuator/microphone.h"
@@ -21,9 +22,6 @@
 //  TODO mic output modal responses don't match
 
 //  TODO proper crossover filter
-
-//  Absorption = proportion of energy lost to reflecting surface
-//  Diffusion = proportion of energy directly reflected to diffusely reflected
 
 template <typename It>
 void normalize(It begin, It end) {
@@ -54,7 +52,7 @@ auto sum_ranges(It b, It e, Its... its) {
 }
 
 template <typename T, typename... Ts>
-auto sum_vectors(T&& t, Ts&&... ts) {
+auto sum_vectors(T t, Ts... ts) {
     const auto max_len = reduce_params(
             [](auto a, auto b) { return std::max(a.size(), b.size()); },
             t,
@@ -190,11 +188,18 @@ int main(int argc, char** argv) {
                                     sample_rate,
                                     max_time);
 
-                    //const auto room_volume =
-                    //        estimate_room_volume(geo::get_scene_data(box, 0));
+                    const auto room_volume =
+                            estimate_room_volume(geo::get_scene_data(box, 0));
 
                     const auto tail = raytracer::stochastic::postprocess(
-                            stochastic_output, attenuator);
+                            stochastic_output,
+                            attenuator,
+                            params.receiver,
+                            room_volume,
+                            params.acoustic_impedance,
+                            params.speed_of_sound,
+                            sample_rate,
+                            max_time);
 
                     return sum_vectors(image_source_processed, tail);
                 },

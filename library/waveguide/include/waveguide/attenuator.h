@@ -2,10 +2,13 @@
 
 #include "waveguide/postprocessor/directional_receiver.h"
 
+#include "common/attenuator/null.h"
+
 #include "utilities/map_to_vector.h"
 
 namespace waveguide {
 
+/// For hrtf/microphone attenuators, we can just do this.
 template <typename Method>
 auto attenuate(const Method& method,
                float Z,
@@ -15,20 +18,15 @@ auto attenuate(const Method& method,
     using std::pow;
     const auto att = attenuation(method, -i.intensity);
     const auto intensity = glm::length(i.intensity) * pow(att, 2.0f);
-    //  return copysign(sqrt(intensity), i.pressure);   //  haci2010 method
     return copysign(sqrt(intensity * Z), i.pressure);  //  scaled method
-    //  return att * i.pressure;
 }
 
-/*
-template <typename Method, typename It>
-auto attenuate(const Method& method, float Z, It begin, It end) {
-    //  TODO Filter with diffuse-field-response filter here.
-    //  Make sure to use zero-phase filtering.
-    return map_to_vector(
-            begin, end, [&](const auto& i) { return attenuate(method, Z, i); });
+/// For the null attenuator, we just extract the absolute/omni pressure.
+inline auto attenuate(const attenuator::null& null,
+                      float Z,
+                      const postprocessor::directional_receiver::output& i) {
+    return i.pressure;
 }
-*/
 
 template <typename Method>
 struct attenuate_mapper final {

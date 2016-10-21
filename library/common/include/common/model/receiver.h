@@ -81,4 +81,29 @@ inline auto get_end(const receiver& r, receiver::mode_t<receiver::mode::hrtf>) {
     return make_hrtf_iterator(end(attenuator::hrtf::channels), r);
 }
 
+//----------------------------------------------------------------------------//
+
+template <typename Input, typename... Ts>
+auto run_attenuation(const model::receiver& receiver,
+                     const Input& input,
+                     const Ts&... params) {
+    const auto run = [&](auto tag) {
+        return map_to_vector(get_begin(receiver, tag),
+                             get_end(receiver, tag),
+                             [&](const auto& attenuator) {
+                                 return postprocess(
+                                         input, attenuator, params...);
+                             });
+    };
+
+    switch (receiver.mode) {
+        case model::receiver::mode::microphones:
+            return run(model::receiver::mode_t<
+                       model::receiver::mode::microphones>{});
+
+        case model::receiver::mode::hrtf:
+            return run(model::receiver::mode_t<model::receiver::mode::hrtf>{});
+    }
+}
+
 }  // namespace model

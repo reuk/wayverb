@@ -18,15 +18,18 @@
 namespace raytracer {
 namespace image_source {
 
-template <typename InputIt>
+template <typename InputIt, typename Method>
 auto postprocess(InputIt b,
                  InputIt e,
+                 const Method& method,
                  const glm::vec3& position,
                  double speed_of_sound,
                  double sample_rate,
                  double max_seconds) {
     const auto make_iterator = [&](auto it) {
-        return make_histogram_iterator(std::move(it), speed_of_sound);
+        return make_histogram_iterator(
+                make_attenuator_iterator(std::move(it), method, position),
+                speed_of_sound);
     };
     auto hist = histogram(make_iterator(b),
                           make_iterator(e),
@@ -37,73 +40,6 @@ auto postprocess(InputIt b,
             begin(hist), end(hist), sample_rate, [](auto it, auto index) {
                 return make_cl_type_iterator(std::move(it), index);
             });
-}
-
-template <typename InputIt, typename Method>
-auto postprocess(InputIt b,
-                 InputIt e,
-                 const Method& method,
-                 const glm::vec3& position,
-                 double speed_of_sound,
-                 double sample_rate,
-                 double max_seconds) {
-    const auto make_iterator = [&](auto it) {
-        return make_attenuator_iterator(std::move(it), method, position);
-    };
-    return postprocess(make_iterator(b),
-                       make_iterator(e),
-                       position,
-                       speed_of_sound,
-                       sample_rate,
-                       max_seconds);
-}
-
-template <typename InputIt, typename AttenuatorIt>
-auto postprocess(InputIt b_input,
-                 InputIt e_input,
-                 AttenuatorIt b_attenuator,
-                 AttenuatorIt e_attenuator,
-                 const glm::vec3& position,
-                 double speed_of_sound,
-                 double sample_rate,
-                 double max_seconds) {
-    return map_to_vector(b_attenuator, e_attenuator, [&](const auto& i) {
-        return postprocess(b_input,
-                           e_input,
-                           i,
-                           position,
-                           speed_of_sound,
-                           sample_rate,
-                           max_seconds);
-    });
-}
-
-template <typename It>
-auto run_attenuation(It b,
-                     It e,
-                     const model::receiver& receiver,
-                     double speed_of_sound,
-                     double sample_rate,
-                     double max_seconds) {
-    const auto run = [&](auto tag) {
-        return postprocess(b,
-                           e,
-                           get_begin(receiver, tag),
-                           get_end(receiver, tag),
-                           receiver.position,
-                           speed_of_sound,
-                           sample_rate,
-                           max_seconds);
-    };
-
-    switch (receiver.mode) {
-        case model::receiver::mode::microphones:
-            return run(model::receiver::mode_t<
-                       model::receiver::mode::microphones>{});
-
-        case model::receiver::mode::hrtf:
-            return run(model::receiver::mode_t<model::receiver::mode::hrtf>{});
-    }
 }
 
 }  // namespace image_source

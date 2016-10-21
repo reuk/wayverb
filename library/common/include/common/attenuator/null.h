@@ -1,7 +1,7 @@
 #pragma once
 
-#include "glm/fwd.hpp"
+namespace attenuator {
 
-class null_attenuator final {};
+class null final {};
 
-double attenuation(null_attenuator, const glm::vec3& );
+}  // namespace attenuator

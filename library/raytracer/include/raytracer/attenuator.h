@@ -4,6 +4,7 @@
 
 #include "common/attenuator/hrtf.h"
 #include "common/attenuator/microphone.h"
+#include "common/attenuator/null.h"
 #include "common/conversions.h"
 
 #include "utilities/map_to_vector.h"
@@ -11,6 +12,13 @@
 #include "glm/glm.hpp"
 
 namespace raytracer {
+
+template <size_t channels>
+auto attenuate(const attenuator::null& null,
+               const glm::vec3& position,
+               const impulse<channels>& i) {
+    return make_attenuated_impulse(i.volume, i.distance);
+}
 
 /// For a microphone, we just look up the direction of the impulse from the
 /// receiver and scale the volume appropriately.
@@ -59,11 +67,9 @@ auto make_attenuate_mapper(Method method, const glm::vec3& position) {
 }
 
 template <typename It, typename Method>
-auto make_attenuator_iterator(It it,
-                              const Method& method,
-                              const glm::vec3& position) {
+auto make_attenuator_iterator(It it, Method method, const glm::vec3& position) {
     return make_mapping_iterator_adapter(
-            std::move(it), make_attenuate_mapper(method, position));
+            std::move(it), make_attenuate_mapper(std::move(method), position));
 }
 
 }  // namespace raytracer

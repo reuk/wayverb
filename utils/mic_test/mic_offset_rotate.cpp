@@ -150,11 +150,12 @@ int main(int argc, char** argv) {
     run("img_src", [&](const auto& source, const auto& receiver) {
         const model::parameters params{source, receiver};
         const auto simulation_time = 2 / params.speed_of_sound;
-        auto raw = run_exact_img_src(box,
-                                     make_surface<1>(absorption, scattering),
-                                     params,
-                                     simulation_time,
-                                     false);
+        const auto raw =
+                run_exact_img_src(box,
+                                  make_surface<1>(absorption, scattering),
+                                  params,
+                                  simulation_time,
+                                  false);
         return raytracer::image_source::postprocess(begin(raw),
                                                     end(raw),
                                                     mic,

@@ -41,16 +41,6 @@ auto postprocess(It begin, It end, double sample_rate) {
             });
 }
 
-/// If the iterator is over directional receiver output, extract the pressure.
-template <typename It,
-          std::enable_if_t<std::is_same<std::decay_t<dereferenced_t<It>>,
-                                        postprocessor::directional_receiver::
-                                                output>::value,
-                           int> = 0>
-auto postprocess(It begin, It end, double sample_rate) {
-    return map_to_vector(begin, end, [](const auto& i) { return i.pressure; });
-}
-
 /// If the iterator is over a floating-point type use this one.
 template <typename It,
           std::enable_if_t<std::is_floating_point<
@@ -59,6 +49,8 @@ template <typename It,
 auto postprocess(It begin, It end, double sample_rate) {
     return aligned::vector<float>(begin, end);
 }
+
+//----------------------------------------------------------------------------//
 
 template <typename InputIt, typename Method>
 auto postprocess(InputIt b,
@@ -69,44 +61,6 @@ auto postprocess(InputIt b,
     auto attenuated = map_to_vector(
             b, e, make_attenuate_mapper(method, acoustic_impedance));
     return postprocess(begin(attenuated), end(attenuated), sample_rate);
-}
-
-template <typename InputIt, typename AttenuatorIt>
-auto postprocess(InputIt b_input,
-                 InputIt e_input,
-                 AttenuatorIt b_attenuator,
-                 AttenuatorIt e_attenuator,
-                 double acoustic_impedance,
-                 double sample_rate) {
-    return map_to_vector(b_attenuator, e_attenuator, [&](const auto& i) {
-        return postprocess(
-                b_input, e_input, i, acoustic_impedance, sample_rate);
-    });
-}
-
-template <typename It>
-auto run_attenuation(It b,
-                     It e,
-                     const model::receiver& receiver,
-                     double acoustic_impedance,
-                     double sample_rate) {
-    const auto run = [&](auto tag) {
-        return postprocess(b,
-                           e,
-                           get_begin(receiver, tag),
-                           get_end(receiver, tag),
-                           acoustic_impedance,
-                           sample_rate);
-    };
-
-    switch (receiver.mode) {
-        case model::receiver::mode::microphones:
-            return run(model::receiver::mode_t<
-                       model::receiver::mode::microphones>{});
-
-        case model::receiver::mode::hrtf:
-            return run(model::receiver::mode_t<model::receiver::mode::hrtf>{});
-    }
 }
 
 }  // namespace waveguide

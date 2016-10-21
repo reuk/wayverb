@@ -94,10 +94,9 @@ aligned::vector<bands_type> weight_sequence(const energy_histogram& histogram,
     return ret;
 }
 
-aligned::vector<float> mono_diffuse_postprocessing(
-        const energy_histogram& histogram,
-        const dirac_sequence& sequence,
-        double acoustic_impedance) {
+aligned::vector<float> mono_postprocessing(const energy_histogram& histogram,
+                                           const dirac_sequence& sequence,
+                                           double acoustic_impedance) {
     auto weighted = weight_sequence(histogram, sequence, acoustic_impedance);
     hrtf_data::multiband_filter(begin(weighted),
                                 end(weighted),

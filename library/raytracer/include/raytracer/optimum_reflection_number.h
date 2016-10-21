@@ -1,5 +1,12 @@
 #pragma once
 
+#include "common/scene_data.h"
+
+#include <algorithm>
+#include <cmath>
+#include <numeric>
+#include <stdexcept>
+
 namespace raytracer {
 
 constexpr auto min_element(double x) { return x; }
@@ -13,7 +20,7 @@ double min_absorption(const T& t) {
 template <typename It>
 double min_absorption(It begin, It end) {
     if (begin == end) {
-        throw std::runtime_error("can't find min absorption of empty vector");
+        throw std::runtime_error{"can't find min absorption of empty vector"};
     }
     return std::accumulate(begin + 1,
                            end,

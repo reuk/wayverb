@@ -56,10 +56,9 @@ struct energy_histogram final {
     double sample_rate;
 };
 
-aligned::vector<float> mono_diffuse_postprocessing(
-        const energy_histogram& histogram,
-        const dirac_sequence& sequence,
-        double acoustic_impedance);
+aligned::vector<float> mono_postprocessing(const energy_histogram& histogram,
+                                           const dirac_sequence& sequence,
+                                           double acoustic_impedance);
 
 }  // namespace stochastic
 }  // namespace raytracer

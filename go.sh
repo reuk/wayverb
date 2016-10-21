@@ -3,7 +3,7 @@ cd build
 
 export CL_LOG_ERRORS=stdout
 export GLOG_logtostderr=1
-export GTEST_FILTER="*attenuator*"
+#export GTEST_FILTER="*attenuator*"
 cmake .. && make && ctest -V
 
 #cmake .. && make && cd utils/image_source_comparison && ./image_source_comparison
