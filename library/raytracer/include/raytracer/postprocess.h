@@ -7,9 +7,9 @@
 
 namespace raytracer {
 
-template <typename Method>
+template <typename Histogram, typename Method>
 auto postprocess(const std::tuple<aligned::vector<impulse<simulation_bands>>,
-                                  stochastic::energy_histogram>& input,
+                                  Histogram>& input,
                  const Method& method,
                  const glm::vec3& position,
                  double room_volume,

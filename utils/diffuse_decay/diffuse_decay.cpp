@@ -60,7 +60,7 @@ auto produce_histogram(
         to_histogram(output.specular);
     }
 
-    return raytracer::stochastic::energy_histogram{histogram, histogram_sr};
+    return raytracer::stochastic::energy_histogram{histogram_sr, histogram};
 }
 
 int main() {
@@ -100,7 +100,7 @@ int main() {
                   16);
         }
 
-        auto processed = raytracer::stochastic::mono_postprocessing(
+        auto processed = raytracer::stochastic::postprocessing(
                 histogram, dirac_sequence, params.acoustic_impedance);
 
         write(build_string("enveloped_dirac.", sample_rate, ".wav"),

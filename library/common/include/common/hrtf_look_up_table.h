@@ -2,6 +2,8 @@
 
 #include "hrtf_entries.h"
 
+#include "common/vector_look_up_table.h"
+
 #include "utilities/reduce.h"
 
 #include <algorithm>
@@ -59,81 +61,29 @@ constexpr auto find_inc(const hrtf_data::entry* it,
     return ret;
 }
 
-constexpr auto az_inc = find_inc(std::begin(hrtf_data::entries),
-                                 std::end(hrtf_data::entries),
-                                 azimuth{});
-constexpr auto el_inc = find_inc(std::begin(hrtf_data::entries),
-                                 std::end(hrtf_data::entries),
-                                 elevation{});
+constexpr auto b = std::begin(hrtf_data::entries);
+constexpr auto e = std::end(hrtf_data::entries);
 
-constexpr auto az_num = 360 / az_inc;
-constexpr auto el_num = 360 / el_inc;
+constexpr auto az_num = 360 / find_inc(b, e, azimuth{});
+constexpr auto el_num = (180 / find_inc(b, e, elevation{})) - 1;
 
-constexpr size_t index_from_azimuth(int az) { return (az % 360) / az_inc; }
+constexpr auto generate_hrtf_table() {
+    using hrtf_table =
+            vector_look_up_table<std::array<std::array<double, 8>, 2>,
+                                 az_num,
+                                 el_num>;
 
-constexpr int azimuth_from_index(size_t ind) { return ind * az_inc; }
+    hrtf_table ret{};
 
-constexpr size_t index_from_elevation(int el) { return (el % 360) / el_inc; }
-
-constexpr int elevation_from_index(size_t ind) { return ind * el_inc; }
-
-constexpr auto energy_for_angles(const hrtf_data::entry* it,
-                                 const hrtf_data::entry* end,
-                                 int azimuth,
-                                 int elevation) {
-    for (; it != end; ++it) {
-        if (it->azimuth == azimuth && it->elevation == elevation) {
-            return it->energy;
-        }
+    for (auto it = b; it != e; ++it) {
+        const auto azel = az_el{static_cast<float>(azimuth{}(*it)),
+                                static_cast<float>(elevation{}(*it))};
+        ret.at(hrtf_table::angles_to_indices(azel)) = it->energy;
     }
-    return decltype(it->energy){};
+
+    return ret;
 }
 
-constexpr auto energy_for_indices(const hrtf_data::entry* it,
-                                  const hrtf_data::entry* end,
-                                  size_t az,
-                                  size_t el) {
-    return energy_for_angles(
-            it, end, azimuth_from_index(az), elevation_from_index(el));
-}
-
-template <size_t... Ix>
-constexpr auto generate_look_up_array(const hrtf_data::entry* it,
-                                      const hrtf_data::entry* end,
-                                      size_t azimuth_index,
-                                      std::index_sequence<Ix...>) {
-    using value_type = decltype(hrtf_data::entries[0].energy);
-    return std::array<value_type, sizeof...(Ix)>{
-            {energy_for_indices(it, end, azimuth_index, Ix)...}};
-}
-
-constexpr auto generate_look_up_array(const hrtf_data::entry* it,
-                                      const hrtf_data::entry* end,
-                                      size_t azimuth_index) {
-    return generate_look_up_array(
-            it, end, azimuth_index, std::make_index_sequence<el_num>{});
-}
-
-template <size_t... Ix>
-constexpr auto generate_look_up_table(const hrtf_data::entry* it,
-                                      const hrtf_data::entry* end,
-                                      std::index_sequence<Ix...>) {
-    using value_type = decltype(generate_look_up_array(it, end, 0));
-    return std::array<value_type, sizeof...(Ix)>{
-            {generate_look_up_array(it, end, Ix)...}};
-}
-
-constexpr auto generate_look_up_table(const hrtf_data::entry* it,
-                                      const hrtf_data::entry* end) {
-    return generate_look_up_table(it, end, std::make_index_sequence<az_num>{});
-}
-
-constexpr auto look_up_table = generate_look_up_table(
-        std::begin(hrtf_data::entries), std::end(hrtf_data::entries));
-
-constexpr auto look_up_angles(int azimuth, int elevation) {
-    return look_up_table[index_from_azimuth(azimuth)]
-                        [index_from_elevation(elevation)];
-}
+constexpr auto table = generate_hrtf_table();
 
 }  // namespace hrtf_look_up_table

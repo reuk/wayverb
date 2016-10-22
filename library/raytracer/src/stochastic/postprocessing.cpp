@@ -46,14 +46,6 @@ dirac_sequence generate_dirac_sequence(double speed_of_sound,
     return {ret, sample_rate};
 }
 
-std::ostream& operator<<(std::ostream& o, const bands_type& v) {
-    o << "[";
-    for (const auto& i : v.s) {
-        o << i << ", ";
-    }
-    return o << "]";
-}
-
 aligned::vector<bands_type> weight_sequence(const energy_histogram& histogram,
                                             const dirac_sequence& sequence,
                                             double acoustic_impedance) {
@@ -66,12 +58,12 @@ aligned::vector<bands_type> weight_sequence(const energy_histogram& histogram,
     };
 
     const auto ideal_sequence_length =
-            convert_index(histogram.full_histogram.size());
+            convert_index(histogram.histogram.size());
     if (ideal_sequence_length < ret.size()) {
         ret.resize(ideal_sequence_length);
     }
 
-    for (auto i = 0ul, e = histogram.full_histogram.size(); i != e; ++i) {
+    for (auto i = 0ul, e = histogram.histogram.size(); i != e; ++i) {
         const auto get_sequence_index = [&](auto ind) {
             return ret.begin() + std::min(convert_index(ind), ret.size());
         };
@@ -82,8 +74,7 @@ aligned::vector<bands_type> weight_sequence(const energy_histogram& histogram,
         const auto squared_summed = frequency_domain::square_sum(beg, end);
 
         auto scale_factor = intensity_to_pressure(
-                histogram.full_histogram[i] / squared_summed,
-                acoustic_impedance);
+                histogram.histogram[i] / squared_summed, acoustic_impedance);
 
         for_each([](auto& i) { i = std::isfinite(i) ? i : 0.0f; },
                  scale_factor.s);
@@ -94,9 +85,9 @@ aligned::vector<bands_type> weight_sequence(const energy_histogram& histogram,
     return ret;
 }
 
-aligned::vector<float> mono_postprocessing(const energy_histogram& histogram,
-                                           const dirac_sequence& sequence,
-                                           double acoustic_impedance) {
+aligned::vector<float> postprocessing(const energy_histogram& histogram,
+                                      const dirac_sequence& sequence,
+                                      double acoustic_impedance) {
     auto weighted = weight_sequence(histogram, sequence, acoustic_impedance);
     hrtf_data::multiband_filter(begin(weighted),
                                 end(weighted),

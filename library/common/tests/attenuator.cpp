@@ -72,22 +72,6 @@ TEST(attenuator, transform) {
     }
 }
 
-TEST(attenuator, compute_look_up_angles) {
-    const auto test = [](auto pt, auto azel) {
-        const auto result = attenuator::compute_look_up_angles(pt);
-        ASSERT_NEAR(result.azimuth, azel.azimuth, 0.0001);
-        ASSERT_NEAR(result.elevation, azel.elevation, 0.0001);
-    };
-    test(glm::vec3{0, 0, 1}, (az_el{0, 0}));
-    test(glm::vec3{0, 0, -1}, (az_el{180, 0}));
-
-    test(glm::vec3{0, 1, 0}, (az_el{0, 90}));
-    test(glm::vec3{0, -1, 0}, (az_el{0, 270}));
-
-    test(glm::vec3{1, 0, 0}, (az_el{270, 0}));
-    test(glm::vec3{-1, 0, 0}, (az_el{90, 0}));
-}
-
 TEST(attenuator, hrtf) {
     ASSERT_NE(attenuation(attenuator::hrtf{glm::vec3{0, 0, 1},
                                            glm::vec3{0, 1, 0},

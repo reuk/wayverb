@@ -87,17 +87,13 @@ TEST(histogram, sinc) {
     constexpr auto sample_rate{1.0};
     constexpr auto max_time{1000.0};
 
-    const auto sinc_callback{[](auto value, auto time, auto sr, auto& ret) {
-        raytracer::sinc_sum(value, time, sr, ret);
-    }};
-
     {
         const auto items = {item{1.0, 0.0}};
         const auto result{raytracer::histogram(items.begin(),
                                                items.end(),
                                                sample_rate,
                                                max_time,
-                                               sinc_callback)};
+                                               raytracer::sinc_sum_functor{})};
 
         ASSERT_EQ(result.size(), 200);
         ASSERT_EQ(result.front(), 1.0);
@@ -109,7 +105,7 @@ TEST(histogram, sinc) {
                                                items.end(),
                                                sample_rate,
                                                max_time,
-                                               sinc_callback)};
+                                               raytracer::sinc_sum_functor{})};
 
         ASSERT_EQ(result.size(), max_time + 1);
         ASSERT_EQ(result.front(), 1.0);

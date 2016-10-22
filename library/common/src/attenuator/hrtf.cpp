@@ -46,27 +46,14 @@ glm::vec3 transform(const glm::vec3& pointing,
     return glm::vec3{glm::dot(x, d), glm::dot(y, d), glm::dot(z, d)};
 }
 
-float degrees(float radians) { return radians * 180 / M_PI; }
-
-az_el compute_look_up_angles(const glm::vec3& pt) {
-    auto radians = compute_azimuth_elevation(pt);
-    radians.azimuth = -radians.azimuth;
-    while (radians.azimuth < 0) {
-        radians.azimuth += M_PI * 2;
-    }
-    while (radians.elevation < 0) {
-        radians.elevation += M_PI * 2;
-    }
-    return az_el{degrees(radians.azimuth), degrees(radians.elevation)};
-}
-
 bands_type attenuation(const hrtf& hrtf, const glm::vec3& incident) {
     if (const auto l = glm::length(incident)) {
         const auto transformed =
                 transform(hrtf.get_pointing(), hrtf.get_up(), incident / l);
-        const auto look_up_angles = compute_look_up_angles(transformed);
-        const auto channels = hrtf_look_up_table::look_up_angles(
-                look_up_angles.azimuth, look_up_angles.elevation);
+
+        using table = decltype(hrtf_look_up_table::table);
+        const auto channels =
+                hrtf_look_up_table::table.at(table::index(transformed));
         const auto channel =
                 channels[hrtf.get_channel() == hrtf::channel::left ? 0 : 1];
         return to_cl_float_vector(channel);

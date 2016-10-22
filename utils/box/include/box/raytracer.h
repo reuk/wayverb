@@ -30,7 +30,9 @@ auto run_raytracer(const geo::box& box,
     const auto callbacks = std::make_tuple(
             raytracer::reflection_processor::make_image_source{
                     max_img_src_order, true},
-            raytracer::reflection_processor::make_stochastic_histogram{
+            // raytracer::reflection_processor::make_stochastic_histogram{
+            //        0.1f, 1000.0f, max_img_src_order + 1},
+            raytracer::reflection_processor::make_directional_histogram{
                     0.1f, 1000.0f, max_img_src_order + 1});
 
     auto results = raytracer::run(begin(directions),

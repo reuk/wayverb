@@ -1,7 +1,6 @@
 #pragma once
 
 #include "common/cl/scene_structs.h"
-#include "common/orientable.h"
 
 #include "glm/glm.hpp"
 
@@ -39,10 +38,6 @@ private:
 glm::vec3 transform(const glm::vec3& pointing,
                     const glm::vec3& up,
                     const glm::vec3& d);
-
-float degrees(float radians);
-
-az_el compute_look_up_angles(const glm::vec3& pt);
 
 template <typename T, size_t... Ix>
 constexpr auto to_cl_float_vector(const std::array<T, sizeof...(Ix)>& x,

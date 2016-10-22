@@ -1,7 +1,11 @@
 #pragma once
 
+#include "common/attenuator/null.h"
+#include "common/cl/iterator.h"
 #include "common/cl/scene_structs.h"
+#include "common/mixdown.h"
 #include "common/model/parameters.h"
+#include "common/vector_look_up_table.h"
 
 #include "hrtf/multiband.h"
 
@@ -52,13 +56,94 @@ dirac_sequence generate_dirac_sequence(double speed_of_sound,
                                        double max_time);
 
 struct energy_histogram final {
-    aligned::vector<bands_type> full_histogram;
     double sample_rate;
+    aligned::vector<bands_type> histogram;
 };
 
-aligned::vector<float> mono_postprocessing(const energy_histogram& histogram,
-                                           const dirac_sequence& sequence,
-                                           double acoustic_impedance);
+template <size_t Az, size_t El>
+struct directional_energy_histogram final {
+    double sample_rate;
+    vector_look_up_table<aligned::vector<bands_type>, Az, El> histogram;
+};
+
+//  Special case for the null attenuator.
+template <size_t Az, size_t El>
+auto compute_summed_histogram(
+        const directional_energy_histogram<Az, El>& histogram,
+        const attenuator::null& method,
+        const glm::vec3& receiver_position) {
+    aligned::vector<bands_type> ret;
+    for (auto azimuth_index = 0ul; azimuth_index != Az; ++azimuth_index) {
+        for (auto elevation_index = 0ul; elevation_index != El;
+             ++elevation_index) {
+            const auto& segment =
+                    histogram.histogram.table[azimuth_index][elevation_index];
+            for (auto i = 0ul, end = segment.size(); i != end; ++i) {
+                ret[i] += segment[i];
+            }
+        }
+    }
+
+    return energy_histogram{histogram.sample_rate, ret};
+}
+
+template <size_t Az, size_t El, typename Method>
+auto compute_summed_histogram(
+        const directional_energy_histogram<Az, El>& histogram,
+        const Method& method,
+        const glm::vec3& receiver_position) {
+    using hist = std::decay_t<decltype(histogram.histogram)>;
+
+    aligned::vector<bands_type> ret;
+
+    for (auto azimuth_index = 0ul; azimuth_index != Az; ++azimuth_index) {
+        for (auto elevation_index = 0ul; elevation_index != El;
+             ++elevation_index) {
+            //  azimuth and elevation are in world-space here.
+            //  This is the direction that the histogram segment is pointing,
+            //  in world space.
+            const auto pointing = hist::pointing(
+                    typename hist::index_pair{azimuth_index, elevation_index});
+
+            //  This is the attenuation of the receiver in that direction.
+            const auto factor = attenuation(method, pointing);
+
+            const auto& segment =
+                    histogram.histogram.table[azimuth_index][elevation_index];
+
+            //  Ensure that the return vector is large enough.
+            ret.resize(std::max(ret.size(), segment.size()));
+
+            //  For each histogram bin in this segment, attenuate it
+            //  appropriately and add it to the return vector.
+            for (auto i = 0ul, end = segment.size(); i != end; ++i) {
+                ret[i] += segment[i] * factor;
+            }
+        }
+    }
+
+    return energy_histogram{histogram.sample_rate, ret};
+}
+
+aligned::vector<bands_type> weight_sequence(const energy_histogram& histogram,
+                                            const dirac_sequence& sequence,
+                                            double acoustic_impedance);
+
+aligned::vector<float> postprocessing(const energy_histogram& histogram,
+                                      const dirac_sequence& sequence,
+                                      double acoustic_impedance);
+
+template <size_t Az, size_t El, typename Method>
+aligned::vector<float> postprocessing(
+        const directional_energy_histogram<Az, El>& histogram,
+        const Method& method,
+        const glm::vec3& receiver_position,
+        const dirac_sequence& sequence,
+        double acoustic_impedance) {
+    const auto summed =
+            compute_summed_histogram(histogram, method, receiver_position);
+    return postprocessing(summed, sequence, acoustic_impedance);
+}
 
 }  // namespace stochastic
 }  // namespace raytracer
