@@ -20,14 +20,6 @@
 #include <iostream>
 
 template <typename Collection>
-void normalize_tuple(Collection&& collection) {
-    const auto max_magnitude =
-            reduce([](auto a, auto b) { return std::max(a, b); },
-                   map([](const auto& i) { return max_mag(i); }, collection));
-    for_each([&](auto& i) { mul(i, 1 / max_magnitude); }, collection);
-}
-
-template <typename Collection>
 void write_tuple(const char* prefix,
                  double sample_rate,
                  Collection&& collection) {
@@ -183,26 +175,30 @@ int main(int argc, char** argv) {
     const auto scene_data = geo::get_scene_data(box, scattering_surface);
 
     const auto room_volume = estimate_room_volume(scene_data);
-    const auto eyring = eyring_reverb_time(scene_data, 0.0f);
-    const auto max_time = max_element(eyring);
+    // const auto eyring = eyring_reverb_time(scene_data, 0.0f);
+    // const auto max_time = max_element(eyring);
 
     //  tests ----------------------------------------------------------------//
 
     const auto rendered = apply_each(std::make_tuple(
             raytracer_renderer{
-                    box, scattering_surface, params, room_volume, sample_rate},
-            waveguide_renderer{
-                    box, scattering_surface, params, sample_rate, max_time}
+                    box, scattering_surface, params, room_volume, sample_rate}
+            // waveguide_renderer{
+            //        box, scattering_surface, params, sample_rate, max_time}
             // img_src_renderer{
-            //        box, scattering_surface, params, sample_rate, max_time},
+            //        box, scattering_surface, params, sample_rate, max_time}
             ));
 
     for_each(
             [&](const auto& tup) {
                 auto processed =
                         apply_each(rendered, std::make_tuple(std::get<1>(tup)));
-                normalize_tuple(map([](auto& i) -> auto& { return i.value; },
-                                    processed));
+                const auto max_magnitude = reduce(
+                        [](auto a, auto b) { return std::max(a, b); },
+                        map([](const auto& i) { return max_mag(i.value); },
+                            processed));
+                for_each([&](auto& i) { mul(i.value, 1.0 / max_magnitude); },
+                         processed);
                 write_tuple(std::get<0>(tup), sample_rate, processed);
             },
             std::make_tuple(
