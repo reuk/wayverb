@@ -61,31 +61,27 @@ void incremental_histogram(Ret& ret,
                            It b,
                            It e,
                            double sample_rate,
-                           double max_time,
                            const T& callback) {
     const auto make_time_iterator = [](auto it) {
         return make_mapping_iterator_adapter(std::move(it), time_functor{});
     };
-    const auto max_time_in_input = std::min(
-            *std::max_element(make_time_iterator(b), make_time_iterator(e)),
-            max_time);
+    const auto max_time_in_input =
+            *std::max_element(make_time_iterator(b), make_time_iterator(e));
 
     resize_if_necessary(ret, std::floor(max_time_in_input * sample_rate) + 1);
 
     for (; b != e; ++b) {
         const auto item_time = time(*b);
-        if (item_time < max_time_in_input) {
-            callback(*b, item_time, sample_rate, ret);
-        }
+        callback(*b, item_time, sample_rate, ret);
     }
 }
 
 template <typename It, typename T>
 auto histogram(
-        It b, It e, double sample_rate, double max_time, const T& callback) {
+        It b, It e, double sample_rate, const T& callback) {
     using value_type = decltype(volume(*b));
     aligned::vector<value_type> ret{};
-    incremental_histogram(ret, b, e, sample_rate, max_time, callback);
+    incremental_histogram(ret, b, e, sample_rate, callback);
     return ret;
 }
 

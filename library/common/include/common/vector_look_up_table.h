@@ -112,5 +112,5 @@ struct vector_look_up_table final {
     }
 
     /// Using a C array because it's more constexpr-ready than std::array.
-    T table[azimuth_divisions][elevation_divisions];
+    T table[azimuth_divisions][elevation_divisions]{};
 };

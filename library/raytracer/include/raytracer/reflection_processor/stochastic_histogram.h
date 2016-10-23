@@ -16,7 +16,7 @@ void resize_if_necessary(vector_look_up_table<std::vector<T, Alloc>, Az, El>& t,
                 elevation.resize(new_size);
             }
         }
-    }    
+    }
 }
 
 namespace raytracer {
@@ -76,7 +76,6 @@ public:
                  const scene_buffers& buffers,
                  size_t step,
                  size_t total) {
-
         const auto output = finder_.process(b, e, buffers);
 
         struct intermediate_impulse final {
@@ -89,7 +88,7 @@ public:
             aligned::vector<intermediate_impulse> ret;
             ret.reserve(output.stochastic.size() + output.specular.size());
 
-            const auto push_vector = [&](const auto& vec ) {
+            const auto push_vector = [&](const auto& vec) {
                 for (const auto& impulse : vec) {
                     ret.emplace_back(intermediate_impulse{
                             impulse.volume,
@@ -107,12 +106,10 @@ public:
             return ret;
         }();
 
-        constexpr auto max_time = 60.0;
         incremental_histogram(histogram_.histogram,
                               begin(intermediate),
                               end(intermediate),
                               histogram_.sample_rate,
-                              max_time,
                               energy_histogram_sum_functor{});
     }
 

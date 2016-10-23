@@ -66,18 +66,16 @@ struct directional_energy_histogram final {
     vector_look_up_table<aligned::vector<bands_type>, Az, El> histogram;
 };
 
-//  Special case for the null attenuator.
 template <size_t Az, size_t El>
-auto compute_summed_histogram(
-        const directional_energy_histogram<Az, El>& histogram,
-        const attenuator::null& method,
-        const glm::vec3& receiver_position) {
+auto sum_directional_histogram(
+        const directional_energy_histogram<Az, El>& histogram) {
     aligned::vector<bands_type> ret;
     for (auto azimuth_index = 0ul; azimuth_index != Az; ++azimuth_index) {
         for (auto elevation_index = 0ul; elevation_index != El;
              ++elevation_index) {
             const auto& segment =
                     histogram.histogram.table[azimuth_index][elevation_index];
+            ret.resize(std::max(ret.size(), segment.size()));
             for (auto i = 0ul, end = segment.size(); i != end; ++i) {
                 ret[i] += segment[i];
             }
@@ -85,6 +83,15 @@ auto compute_summed_histogram(
     }
 
     return energy_histogram{histogram.sample_rate, ret};
+}
+
+//  Special case for the null attenuator.
+template <size_t Az, size_t El>
+auto compute_summed_histogram(
+        const directional_energy_histogram<Az, El>& histogram,
+        const attenuator::null& method,
+        const glm::vec3& receiver_position) {
+    return sum_directional_histogram(histogram);
 }
 
 template <size_t Az, size_t El, typename Method>
@@ -99,7 +106,6 @@ auto compute_summed_histogram(
     for (auto azimuth_index = 0ul; azimuth_index != Az; ++azimuth_index) {
         for (auto elevation_index = 0ul; elevation_index != El;
              ++elevation_index) {
-            //  azimuth and elevation are in world-space here.
             //  This is the direction that the histogram segment is pointing,
             //  in world space.
             const auto pointing = hist::pointing(

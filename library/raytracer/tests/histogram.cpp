@@ -9,7 +9,6 @@ struct item final {
 
 TEST(histogram, incremental) {
     constexpr auto sample_rate{1.0};
-    constexpr auto max_time{100.0};
 
     const auto a = {item{1.0, 0.0}};
     const auto b = {item{1.0, 1.0}};
@@ -21,7 +20,6 @@ TEST(histogram, incremental) {
                                          begin(range),
                                          end(range),
                                          sample_rate,
-                                         max_time,
                                          raytracer::dirac_sum_functor{});
     }};
 
@@ -37,14 +35,12 @@ TEST(histogram, incremental) {
 
 TEST(histogram, dirac) {
     constexpr auto sample_rate{1.0};
-    constexpr auto max_time{100.0};
 
     {
         const auto items = {item{1.0, 0.0}};
         const auto result{raytracer::histogram(items.begin(),
                                                items.end(),
                                                sample_rate,
-                                               max_time,
                                                raytracer::dirac_sum_functor{})};
         ASSERT_EQ(result.size(), 1);
         ASSERT_EQ(result.front(), 1.0);
@@ -55,20 +51,9 @@ TEST(histogram, dirac) {
         const auto result{raytracer::histogram(items.begin(),
                                                items.end(),
                                                sample_rate,
-                                               max_time,
                                                raytracer::dirac_sum_functor{})};
         ASSERT_EQ(result.size(), 100);
         ASSERT_EQ(result.back(), 2.0);
-    }
-
-    {
-        const auto items = {item{0.0, 200.0}};
-        const auto result{raytracer::histogram(items.begin(),
-                                               items.end(),
-                                               sample_rate,
-                                               max_time,
-                                               raytracer::dirac_sum_functor{})};
-        ASSERT_EQ(result.size(), 101);
     }
 
     {
@@ -76,7 +61,6 @@ TEST(histogram, dirac) {
         const auto result{raytracer::histogram(items.begin(),
                                                items.end(),
                                                sample_rate,
-                                               max_time,
                                                raytracer::dirac_sum_functor{})};
         ASSERT_EQ(result.size(), 2);
         ASSERT_EQ(result[1], 3.0);
@@ -85,32 +69,15 @@ TEST(histogram, dirac) {
 
 TEST(histogram, sinc) {
     constexpr auto sample_rate{1.0};
-    constexpr auto max_time{1000.0};
 
     {
         const auto items = {item{1.0, 0.0}};
         const auto result{raytracer::histogram(items.begin(),
                                                items.end(),
                                                sample_rate,
-                                               max_time,
                                                raytracer::sinc_sum_functor{})};
 
         ASSERT_EQ(result.size(), 200);
         ASSERT_EQ(result.front(), 1.0);
-    }
-
-    {
-        const auto items = {item{1.0, 0.0}, item{0.0, 10000.0}};
-        const auto result{raytracer::histogram(items.begin(),
-                                               items.end(),
-                                               sample_rate,
-                                               max_time,
-                                               raytracer::sinc_sum_functor{})};
-
-        ASSERT_EQ(result.size(), max_time + 1);
-        ASSERT_EQ(result.front(), 1.0);
-        for (auto i{result.begin() + 1}, end{result.end()}; i != end; ++i) {
-            ASSERT_NEAR(*i, 0.0, 0.0000001);
-        }
     }
 }

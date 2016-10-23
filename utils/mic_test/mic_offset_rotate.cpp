@@ -161,8 +161,7 @@ int main(int argc, char** argv) {
                                                     mic,
                                                     params.receiver,
                                                     params.speed_of_sound,
-                                                    sample_rate,
-                                                    simulation_time);
+                                                    sample_rate);
     });
 
     return EXIT_SUCCESS;

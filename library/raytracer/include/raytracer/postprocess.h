@@ -15,16 +15,14 @@ auto postprocess(const std::tuple<aligned::vector<impulse<simulation_bands>>,
                  double room_volume,
                  double acoustic_impedance,
                  double speed_of_sound,
-                 double sample_rate,
-                 double max_time) {
+                 double sample_rate) {
     const auto head =
             raytracer::image_source::postprocess(begin(std::get<0>(input)),
                                                  end(std::get<0>(input)),
                                                  method,
                                                  position,
                                                  speed_of_sound,
-                                                 sample_rate,
-                                                 max_time);
+                                                 sample_rate);
 
     const auto tail = raytracer::stochastic::postprocess(std::get<1>(input),
                                                          method,
@@ -32,8 +30,7 @@ auto postprocess(const std::tuple<aligned::vector<impulse<simulation_bands>>,
                                                          room_volume,
                                                          acoustic_impedance,
                                                          speed_of_sound,
-                                                         sample_rate,
-                                                         max_time);
+                                                         sample_rate);
 
     return sum_vectors(head, tail);
 }

@@ -24,8 +24,7 @@ auto postprocess(InputIt b,
                  const Method& method,
                  const glm::vec3& position,
                  double speed_of_sound,
-                 double sample_rate,
-                 double max_seconds) {
+                 double sample_rate) {
     const auto make_iterator = [&](auto it) {
         return make_histogram_iterator(
                 make_attenuator_iterator(std::move(it), method, position),
@@ -34,7 +33,6 @@ auto postprocess(InputIt b,
     auto hist = histogram(make_iterator(b),
                           make_iterator(e),
                           sample_rate,
-                          max_seconds,
                           sinc_sum_functor{});
     return multiband_filter_and_mixdown(
             begin(hist), end(hist), sample_rate, [](auto it, auto index) {

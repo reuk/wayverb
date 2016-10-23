@@ -48,12 +48,10 @@ auto produce_histogram(
                         std::move(it), params.speed_of_sound);
             };
 
-            constexpr auto max_time = 60.0;
             incremental_histogram(histogram,
                                   make_iterator(begin(in)),
                                   make_iterator(end(in)),
                                   histogram_sr,
-                                  max_time,
                                   raytracer::dirac_sum_functor{});
         };
         to_histogram(output.stochastic);

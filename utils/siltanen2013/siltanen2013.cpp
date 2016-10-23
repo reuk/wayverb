@@ -10,6 +10,7 @@
 #include "common/reverb_time.h"
 
 #include "utilities/aligned/map.h"
+#include "utilities/for_each.h"
 #include "utilities/named_value.h"
 #include "utilities/string_builder.h"
 #include "utilities/type_debug.h"
@@ -18,21 +19,151 @@
 
 #include <iostream>
 
-//  TODO mic output modal responses don't match
-
-//  TODO proper crossover filter
-
-template <typename It>
-void normalize(It begin, It end) {
-    const auto max_mags =
-            map_to_vector(begin, end, [](auto i) { return max_mag(i); });
-    const auto mag = *std::max_element(max_mags.begin(), max_mags.end());
-    std::for_each(begin, end, [=](auto& vec) {
-        for (auto& samp : vec) {
-            samp /= mag;
-        }
-    });
+template <typename Collection>
+void normalize_tuple(Collection&& collection) {
+    const auto max_magnitude =
+            reduce([](auto a, auto b) { return std::max(a, b); },
+                   map([](const auto& i) { return max_mag(i); }, collection));
+    for_each([&](auto& i) { mul(i, 1 / max_magnitude); }, collection);
 }
+
+template <typename Collection>
+void write_tuple(const char* prefix,
+                 double sample_rate,
+                 Collection&& collection) {
+    for_each(
+            [&](const auto& i) {
+                write(build_string(prefix, ".", i.name, ".wav"),
+                      audio_file::make_audio_file(i.value, sample_rate),
+                      16);
+            },
+            collection);
+}
+
+//----------------------------------------------------------------------------//
+
+template <typename Input>
+struct raytracer_processor final {
+    Input input;
+    const model::parameters& params;
+    const float& room_volume;
+    const float& sample_rate;
+
+    template <typename U>
+    auto operator()(const U& attenuator) const {
+        return make_named_value(
+                "raytracer",
+                raytracer::postprocess(input,
+                                       attenuator,
+                                       params.receiver,
+                                       room_volume,
+                                       params.acoustic_impedance,
+                                       params.speed_of_sound,
+                                       sample_rate));
+    }
+};
+
+template <typename Input>
+constexpr auto make_raytracer_processor(Input input,
+                                        const model::parameters& params,
+                                        const float& room_volume,
+                                        const float& sample_rate) {
+    return raytracer_processor<Input>{
+            std::move(input), params, room_volume, sample_rate};
+}
+
+struct raytracer_renderer final {
+    const geo::box& box;
+    const surface<simulation_bands>& scattering_surface;
+    const model::parameters& params;
+    const float& room_volume;
+    const float& sample_rate;
+
+    auto operator()() const {
+        return make_raytracer_processor(
+                run_raytracer(box, scattering_surface, params, 4),
+                params,
+                room_volume,
+                sample_rate);
+    }
+};
+
+//----------------------------------------------------------------------------//
+
+struct waveguide_processor final {
+    aligned::vector<waveguide::postprocessor::directional_receiver::output>
+            input;
+    const model::parameters& params;
+    const float& sample_rate;
+
+    template <typename U>
+    auto operator()(const U& attenuator) const {
+        return make_named_value(
+                "waveguide",
+                postprocess_waveguide(begin(input),
+                                      end(input),
+                                      attenuator,
+                                      sample_rate,
+                                      params.acoustic_impedance));
+    }
+};
+
+struct waveguide_renderer final {
+    const geo::box& box;
+    const surface<simulation_bands>& scattering_surface;
+    const model::parameters& params;
+    const float& sample_rate;
+    const float& max_time;
+
+    auto operator()() const {
+        return waveguide_processor{
+                run_waveguide(
+                        box, scattering_surface, params, sample_rate, max_time),
+                params,
+                sample_rate};
+    }
+};
+
+//----------------------------------------------------------------------------//
+
+struct img_src_processor final {
+    aligned::vector<impulse<simulation_bands>> input;
+    const model::parameters& params;
+    const float& sample_rate;
+
+    template <typename U>
+    auto operator()(const U& attenuator) const {
+        return make_named_value(
+                "img_src",
+                raytracer::image_source::postprocess(begin(input),
+                                                     end(input),
+                                                     attenuator,
+                                                     params.receiver,
+                                                     params.speed_of_sound,
+                                                     sample_rate));
+    }
+};
+
+struct img_src_renderer final {
+    const geo::box& box;
+    const surface<simulation_bands>& scattering_surface;
+    const model::parameters& params;
+    const float& sample_rate;
+    const float& max_time;
+
+    auto operator()() const {
+        return img_src_processor{
+                run_exact_img_src(
+                        box,
+                        surface<simulation_bands>{scattering_surface.absorption,
+                                                  bands_type{}},
+                        params,
+                        max_time,
+                        true),
+                params,
+                sample_rate};
+    }
+};
 
 int main(int argc, char** argv) {
     //  constants ------------------------------------------------------------//
@@ -45,16 +176,9 @@ int main(int argc, char** argv) {
     constexpr glm::vec3 pointing{0, 0, 1};
     constexpr glm::vec3 up{0, 1, 0};
 
-    // constexpr auto reflectance=0.99;
-    // const auto absorption=1 - pow(reflectance, 2);
-    // constexpr auto scattering=0.05;
-
     constexpr auto scattering_surface = surface<simulation_bands>{
             {{0.1, 0.1, 0.1, 0.1, 0.12, 0.14, 0.16, 0.17}},
             {{0.1, 0.1, 0.1, 0.1, 0.12, 0.14, 0.16, 0.17}}};
-
-    //constexpr auto no_scattering_surface = surface<simulation_bands>{
-    //        scattering_surface.absorption, bands_type{}};
 
     const auto scene_data = geo::get_scene_data(box, scattering_surface);
 
@@ -64,121 +188,41 @@ int main(int argc, char** argv) {
 
     //  tests ----------------------------------------------------------------//
 
-    const auto raytracer_raw = make_named_value(
-            "raytracer", run_raytracer(box, scattering_surface, params, 4));
+    const auto rendered = apply_each(std::make_tuple(
+            raytracer_renderer{
+                    box, scattering_surface, params, room_volume, sample_rate},
+            waveguide_renderer{
+                    box, scattering_surface, params, sample_rate, max_time}
+            // img_src_renderer{
+            //        box, scattering_surface, params, sample_rate, max_time},
+            ));
 
-    /*
-
-    const auto waveguide_raw = make_named_value(
-            "waveguide",
-            run_waveguide(
-                    box, scattering_surface, params, sample_rate, max_time));
-
-    const auto exact_img_src_raw = make_named_value(
-            "exact_img_src",
-            run_exact_img_src(
-                    box, no_scattering_surface, params, max_time, true));
-
-    const auto fast_img_src_raw = make_named_value(
-            "fast_img_src",
-            run_fast_img_src(box, scattering_surface, params, true));
-
-    */
-
-    const auto normalize_and_write = [&](auto prefix, auto b, auto e) {
-        const auto make_iterator = [](auto i) {
-            return make_mapping_iterator_adapter(
-                    std::move(i),
-                    [](const auto& i) -> auto& { return i->value; });
-        };
-
-        normalize(make_iterator(b), make_iterator(e));
-
-        for (; b != e; ++b) {
-            write(build_string(prefix, ".", (*b)->name, ".wav"),
-                  audio_file::make_audio_file((*b)->value, sample_rate),
-                  16);
-        }
-    };
-
-    //  postprocessing -------------------------------------------------------//
-
-    const auto postprocess = [&](auto prefix, auto attenuator) {
-        auto raytracer_p = map(
-                [&](const auto& i) {
-                    return raytracer::postprocess(i,
-                                                  attenuator,
-                                                  params.receiver,
-                                                  room_volume,
-                                                  params.acoustic_impedance,
-                                                  params.speed_of_sound,
-                                                  sample_rate,
-                                                  max_time);
-                },
-                raytracer_raw);
-
-        /*
-         
-        auto waveguide_p = map(
-                [&](const auto& i) {
-                    return postprocess_waveguide(begin(i),
-                                                 end(i),
-                                                 attenuator,
-                                                 sample_rate,
-                                                 params.acoustic_impedance);
-                },
-                waveguide_raw);
-
-        const auto run_postprocess_impulses = [&](
-                auto b, auto e, auto attenuator) {
-            return raytracer::image_source::postprocess(std::move(b),
-                                                        std::move(e),
-                                                        attenuator,
-                                                        params.receiver,
-                                                        params.speed_of_sound,
-                                                        sample_rate,
-                                                        max_time);
-        };
-
-        auto exact_img_src_p = map(
-                [&](const auto& i) {
-                    return run_postprocess_impulses(
-                            begin(i), end(i), attenuator);
-                },
-                exact_img_src_raw);
-
-        auto fast_img_src_p = map(
-                [&](const auto& i) {
-                    return run_postprocess_impulses(
-                            begin(i), end(i), attenuator);
-                },
-                fast_img_src_raw);
-
-        */
-
-        const auto results = {//&waveguide_p, &exact_img_src_p, &fast_img_src_p,
-                              &raytracer_p};
-
-        normalize_and_write(prefix, begin(results), end(results));
-    };
-
-    postprocess("null", attenuator::null{});
-
-    postprocess(
-            "hrtf_l",
-            attenuator::hrtf{pointing, up, attenuator::hrtf::channel::left});
-    postprocess(
-            "hrtf_r",
-            attenuator::hrtf{pointing, up, attenuator::hrtf::channel::right});
-
-    const aligned::map<std::string, float> polar_pattern_map{
-            {"omnidirectional", 0.0f},
-            {"cardioid", 0.5f},
-            {"bidirectional", 1.0f}};
-
-    for (const auto& pair : polar_pattern_map) {
-        postprocess(pair.first, attenuator::microphone{pointing, pair.second});
-    }
+    for_each(
+            [&](const auto& tup) {
+                auto processed =
+                        apply_each(rendered, std::make_tuple(std::get<1>(tup)));
+                normalize_tuple(map([](auto& i) -> auto& { return i.value; },
+                                    processed));
+                write_tuple(std::get<0>(tup), sample_rate, processed);
+            },
+            std::make_tuple(
+                    std::make_tuple("null", attenuator::null{}),
+                    std::make_tuple(
+                            "hrtf_l",
+                            attenuator::hrtf{pointing,
+                                             up,
+                                             attenuator::hrtf::channel::left}),
+                    std::make_tuple(
+                            "hrtf_r",
+                            attenuator::hrtf{pointing,
+                                             up,
+                                             attenuator::hrtf::channel::right}),
+                    std::make_tuple("omnidirectional",
+                                    attenuator::microphone{pointing, 0.0f}),
+                    std::make_tuple("cardioid",
+                                    attenuator::microphone{pointing, 0.5f}),
+                    std::make_tuple("bidirectional",
+                                    attenuator::microphone{pointing, 1.0f})));
 
     return EXIT_SUCCESS;
 }

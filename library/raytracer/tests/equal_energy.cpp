@@ -1,11 +1,25 @@
-#include "raytracer/histogram.h"
 #include "raytracer/image_source/get_direct.h"
-#include "raytracer/reflector.h"
-#include "raytracer/stochastic/finder.h"
+#include "raytracer/raytracer.h"
+#include "raytracer/reflection_processor/stochastic_histogram.h"
 
 #include "gtest/gtest.h"
 
-TEST(equal_energy, img_src_and_stochastic) {
+namespace {
+
+const auto& sum_histogram(
+        const raytracer::stochastic::energy_histogram& histogram) {
+    return histogram;
+}
+
+template <size_t Az, size_t El>
+auto sum_histogram(
+        const raytracer::stochastic::directional_energy_histogram<Az, El>&
+                histogram) {
+    return raytracer::stochastic::sum_directional_histogram(histogram);
+}
+
+template <typename Histogram>
+void run_test() {
     const geo::box box{glm::vec3{-4}, glm::vec3{4}};
     constexpr auto absorption = 0.1;
     constexpr auto scattering = 0.1;
@@ -19,49 +33,21 @@ TEST(equal_energy, img_src_and_stochastic) {
             2,
             0.1f);
 
-    const compute_context cc{};
+    const auto callbacks = std::make_tuple(Histogram{1.0f, 1000.0f, 0});
 
     const auto directions = get_random_directions(1 << 16);
+    const auto results = raytracer::run(begin(directions),
+                                        end(directions),
+                                        compute_context{},
+                                        voxelised,
+                                        params,
+                                        true,
+                                        [](auto i, auto steps) {},
+                                        callbacks);
 
-    const scene_buffers buffers{cc.context, voxelised};
+    ASSERT_TRUE(results);
 
-    constexpr auto receiver_radius = 1.5f;
-    constexpr auto histogram_sr = 1000.0f;
-
-    raytracer::stochastic::finder finder{
-            cc, params, receiver_radius, directions.size()};
-    aligned::vector<bands_type> histogram;
-
-    const auto make_ray_iterator = [&](auto it) {
-        return make_mapping_iterator_adapter(std::move(it), [&](const auto& i) {
-            return geo::ray{params.source, i};
-        });
-    };
-
-    raytracer::reflector ref{cc,
-                             params.receiver,
-                             make_ray_iterator(begin(directions)),
-                             make_ray_iterator(end(directions))};
-
-    const auto reflections = ref.run_step(buffers);
-
-    const auto output =
-            finder.process(begin(reflections), end(reflections), buffers);
-    const auto to_histogram = [&](auto& in) {
-        const auto make_iterator = [&](auto it) {
-            return raytracer::make_histogram_iterator(std::move(it),
-                                                      params.speed_of_sound);
-        };
-        constexpr auto max_time = 60.0;
-        incremental_histogram(histogram,
-                              make_iterator(begin(in)),
-                              make_iterator(end(in)),
-                              histogram_sr,
-                              max_time,
-                              raytracer::dirac_sum_functor{});
-    };
-    to_histogram(output.stochastic);
-    to_histogram(output.specular);
+    const auto histogram = sum_histogram(std::get<0>(*results)).histogram;
 
     const auto direct = raytracer::image_source::get_direct(
             params.source, params.receiver, voxelised);
@@ -77,5 +63,16 @@ TEST(equal_energy, img_src_and_stochastic) {
     const auto histogram_energy = histogram_nonzero->s[0];
     std::cout << "histogram energy: " << histogram_energy << '\n';
 
-    ASSERT_NEAR(direct_energy, histogram_energy, 0.01);
+    ASSERT_LT(std::abs(direct_energy - histogram_energy) * 2 /
+                      (direct_energy + histogram_energy),
+              0.1);  //  energy values should be within 10% of one another
+}
+}  // namespace
+
+TEST(equal_energy, omni) {
+    run_test<raytracer::reflection_processor::make_stochastic_histogram>();
+}
+
+TEST(equal_energy, directional) {
+    run_test<raytracer::reflection_processor::make_directional_histogram>();
 }
