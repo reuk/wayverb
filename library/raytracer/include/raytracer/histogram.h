@@ -71,8 +71,7 @@ void incremental_histogram(Ret& ret,
     resize_if_necessary(ret, std::floor(max_time_in_input * sample_rate) + 1);
 
     for (; b != e; ++b) {
-        const auto item_time = time(*b);
-        callback(*b, item_time, sample_rate, ret);
+        callback(*b, sample_rate, ret);
     }
 }
 
@@ -87,19 +86,17 @@ auto histogram(
 
 template <typename T, typename U, typename Alloc>
 void dirac_sum(const T& item,
-               double item_time,
                double sample_rate,
                std::vector<U, Alloc>& ret) {
-    ret[item_time * sample_rate] += volume(item);
+    ret[time(item) * sample_rate] += volume(item);
 }
 
 struct dirac_sum_functor final {
     template <typename T, typename Ret>
     void operator()(const T& item,
-                    double item_time,
                     double sample_rate,
                     Ret& ret) const {
-        dirac_sum(item, item_time, sample_rate, ret);
+        dirac_sum(item, sample_rate, ret);
     }
 };
 
@@ -107,11 +104,11 @@ struct dirac_sum_functor final {
 struct sinc_sum_functor final {
     template <typename T, typename Ret>
     void operator()(const T& item,
-                    double item_time,
                     double sample_rate,
                     Ret& ret) const {
         constexpr auto width = 400;  //  Impulse width in samples.
 
+        const auto item_time = time(item);
         const auto centre_sample = item_time * sample_rate;
 
         const ptrdiff_t ideal_begin = std::floor(centre_sample - width / 2);

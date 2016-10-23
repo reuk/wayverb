@@ -26,7 +26,6 @@ auto postprocess(const std::tuple<aligned::vector<impulse<simulation_bands>>,
 
     const auto tail = raytracer::stochastic::postprocess(std::get<1>(input),
                                                          method,
-                                                         position,
                                                          room_volume,
                                                          acoustic_impedance,
                                                          speed_of_sound,

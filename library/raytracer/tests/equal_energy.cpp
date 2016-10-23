@@ -2,24 +2,14 @@
 #include "raytracer/raytracer.h"
 #include "raytracer/reflection_processor/stochastic_histogram.h"
 
+#include "common/attenuator/microphone.h"
+
 #include "gtest/gtest.h"
 
 namespace {
 
-const auto& sum_histogram(
-        const raytracer::stochastic::energy_histogram& histogram) {
-    return histogram;
-}
-
-template <size_t Az, size_t El>
-auto sum_histogram(
-        const raytracer::stochastic::directional_energy_histogram<Az, El>&
-                histogram) {
-    return raytracer::stochastic::sum_directional_histogram(histogram);
-}
-
-template <typename Histogram>
-void run_test() {
+template <typename Histogram, typename Attenuator>
+void run_test(const Attenuator& attenuator) {
     const geo::box box{glm::vec3{-4}, glm::vec3{4}};
     constexpr auto absorption = 0.1;
     constexpr auto scattering = 0.1;
@@ -47,32 +37,50 @@ void run_test() {
 
     ASSERT_TRUE(results);
 
-    const auto histogram = sum_histogram(std::get<0>(*results)).histogram;
+    const auto histogram =
+            compute_summed_histogram(std::get<0>(*results), attenuator)
+                    .histogram;
 
     const auto direct = raytracer::image_source::get_direct(
             params.source, params.receiver, voxelised);
 
-    const auto direct_energy = intensity_for_distance(direct->distance);
-    std::cout << "direct energy: " << direct_energy << '\n';
+    const auto direct_energy =
+            attenuation(attenuator,
+                        glm::normalize(params.source - params.receiver)) *
+            intensity_for_distance(direct->distance);
 
-    const auto histogram_nonzero =
-            std::find_if(begin(histogram), end(histogram), [](const auto& i) {
+    const auto histogram_energy =
+            *std::find_if(begin(histogram), end(histogram), [](const auto& i) {
                 return any(i);
             });
 
-    const auto histogram_energy = histogram_nonzero->s[0];
-    std::cout << "histogram energy: " << histogram_energy << '\n';
+    using std::abs;
+    const auto difference = abs(direct_energy - histogram_energy) * 2 /
+                            (direct_energy + histogram_energy);
 
-    ASSERT_LT(std::abs(direct_energy - histogram_energy) * 2 /
-                      (direct_energy + histogram_energy),
-              0.1);  //  energy values should be within 10% of one another
+    //  energy values should be within 10% of one another
+    ASSERT_TRUE(all(difference < 0.1));
 }
 }  // namespace
 
 TEST(equal_energy, omni) {
-    run_test<raytracer::reflection_processor::make_stochastic_histogram>();
+    run_test<raytracer::reflection_processor::make_stochastic_histogram>(
+            attenuator::null{});
 }
 
 TEST(equal_energy, directional) {
-    run_test<raytracer::reflection_processor::make_directional_histogram>();
+    run_test<raytracer::reflection_processor::make_directional_histogram>(
+            attenuator::null{});
+}
+
+TEST(equal_energy, cardioid) {
+    run_test<raytracer::reflection_processor::make_directional_histogram>(
+            attenuator::microphone{glm::vec3{-1, 0, 0}, 0.5f});
+}
+
+TEST(equal_energy, hrtf) {
+    run_test<raytracer::reflection_processor::make_directional_histogram>(
+            attenuator::hrtf{glm::vec3{-1, 0, 0},
+                             glm::vec3{0, 1, 0},
+                             attenuator::hrtf::channel::left});
 }

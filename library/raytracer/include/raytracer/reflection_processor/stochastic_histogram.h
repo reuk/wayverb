@@ -24,30 +24,27 @@ namespace reflection_processor {
 
 template <typename T, typename U, typename Alloc>
 void energy_histogram_sum(const T& item,
-                          double item_time,
                           double sample_rate,
                           std::vector<U, Alloc>& ret) {
-    ret[item_time * sample_rate] += volume(item);
+    ret[time(item) * sample_rate] += volume(item);
 }
 
 template <typename T, typename U, typename Alloc, size_t Az, size_t El>
 void energy_histogram_sum(
         const T& item,
-        double item_time,
         double sample_rate,
         vector_look_up_table<std::vector<U, Alloc>, Az, El>& ret) {
     using table = std::decay_t<decltype(ret)>;
-    ret.at(table::index(item.pointing))[item_time * sample_rate] +=
+    ret.at(table::index(item.pointing))[time(item) * sample_rate] +=
             volume(item);
 }
 
 struct energy_histogram_sum_functor final {
     template <typename T, typename Ret>
     void operator()(const T& item,
-                    double item_time,
                     double sample_rate,
                     Ret& ret) const {
-        energy_histogram_sum(item, item_time, sample_rate, ret);
+        energy_histogram_sum(item, sample_rate, ret);
     }
 };
 

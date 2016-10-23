@@ -202,7 +202,7 @@ int main(int argc, char** argv) {
                 write_tuple(std::get<0>(tup), sample_rate, processed);
             },
             std::make_tuple(
-                    std::make_tuple("null", attenuator::null{}),
+//                    std::make_tuple("null", attenuator::null{}),
                     std::make_tuple(
                             "hrtf_l",
                             attenuator::hrtf{pointing,

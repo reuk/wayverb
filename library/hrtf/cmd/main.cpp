@@ -87,10 +87,11 @@ int main(int argc, char** argv) {
 
             const auto energy = map(
                     [&](auto channel) {
-                        return hrtf_data::per_band_energy(
-                                begin(audio.signal[channel]),
-                                end(audio.signal[channel]),
-                                audio.sample_rate);
+                        return map([](auto i) { return sqrt(i); },
+                                   hrtf_data::per_band_energy(
+                                           begin(audio.signal[channel]),
+                                           end(audio.signal[channel]),
+                                           audio.sample_rate));
                     },
                     std::array<size_t, 2>{{0, 1}});
 

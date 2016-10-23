@@ -85,20 +85,24 @@ auto sum_directional_histogram(
     return energy_histogram{histogram.sample_rate, ret};
 }
 
+template <typename Method>
+auto compute_summed_histogram(const energy_histogram& histogram,
+                              const Method&) {
+    return histogram;
+}
+
 //  Special case for the null attenuator.
 template <size_t Az, size_t El>
 auto compute_summed_histogram(
         const directional_energy_histogram<Az, El>& histogram,
-        const attenuator::null& method,
-        const glm::vec3& receiver_position) {
+        const attenuator::null& method) {
     return sum_directional_histogram(histogram);
 }
 
 template <size_t Az, size_t El, typename Method>
 auto compute_summed_histogram(
         const directional_energy_histogram<Az, El>& histogram,
-        const Method& method,
-        const glm::vec3& receiver_position) {
+        const Method& method) {
     using hist = std::decay_t<decltype(histogram.histogram)>;
 
     aligned::vector<bands_type> ret;
@@ -112,7 +116,10 @@ auto compute_summed_histogram(
                     typename hist::index_pair{azimuth_index, elevation_index});
 
             //  This is the attenuation of the receiver in that direction.
-            const auto factor = attenuation(method, pointing);
+            //  We're dealing in energies, so we square the directional
+            //  response.
+            const auto att = attenuation(method, pointing);
+            const auto factor = att * att;
 
             const auto& segment =
                     histogram.histogram.table[azimuth_index][elevation_index];
@@ -143,11 +150,9 @@ template <size_t Az, size_t El, typename Method>
 aligned::vector<float> postprocessing(
         const directional_energy_histogram<Az, El>& histogram,
         const Method& method,
-        const glm::vec3& receiver_position,
         const dirac_sequence& sequence,
         double acoustic_impedance) {
-    const auto summed =
-            compute_summed_histogram(histogram, method, receiver_position);
+    const auto summed = compute_summed_histogram(histogram, method);
     return postprocessing(summed, sequence, acoustic_impedance);
 }
 

@@ -65,21 +65,23 @@ aligned::vector<bands_type> weight_sequence(const energy_histogram& histogram,
 
     for (auto i = 0ul, e = histogram.histogram.size(); i != e; ++i) {
         const auto get_sequence_index = [&](auto ind) {
-            return ret.begin() + std::min(convert_index(ind), ret.size());
+            return std::min(convert_index(ind), ret.size());
         };
 
         const auto beg = get_sequence_index(i);
         const auto end = get_sequence_index(i + 1);
 
-        const auto squared_summed = frequency_domain::square_sum(beg, end);
+        const auto squared_summed = frequency_domain::square_sum(
+                begin(sequence.sequence) + beg, begin(sequence.sequence) + end);
+        const auto scale_factor =
+                squared_summed ? intensity_to_pressure(histogram.histogram[i] /
+                                                               squared_summed,
+                                                       acoustic_impedance)
+                               : cl_double8{};
 
-        auto scale_factor = intensity_to_pressure(
-                histogram.histogram[i] / squared_summed, acoustic_impedance);
-
-        for_each([](auto& i) { i = std::isfinite(i) ? i : 0.0f; },
-                 scale_factor.s);
-
-        std::for_each(beg, end, [&](auto& i) { i *= scale_factor; });
+        std::for_each(begin(ret) + beg, begin(ret) + end, [&](auto& i) {
+            i *= scale_factor;
+        });
     }
 
     return ret;
@@ -89,14 +91,13 @@ aligned::vector<float> postprocessing(const energy_histogram& histogram,
                                       const dirac_sequence& sequence,
                                       double acoustic_impedance) {
     auto weighted = weight_sequence(histogram, sequence, acoustic_impedance);
-    hrtf_data::multiband_filter(begin(weighted),
-                                end(weighted),
-                                sequence.sample_rate,
-                                [](auto it, auto index) {
-                                    return make_cl_type_iterator(std::move(it),
-                                                                 index);
-                                });
-    return mixdown(begin(weighted), end(weighted));
+    return multiband_filter_and_mixdown(begin(weighted),
+                                        end(weighted),
+                                        sequence.sample_rate,
+                                        [](auto it, auto index) {
+                                            return make_cl_type_iterator(
+                                                    std::move(it), index);
+                                        });
 }
 
 }  // namespace stochastic
