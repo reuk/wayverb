@@ -16,7 +16,7 @@ file(GLOB_RECURSE private_headers "src/*.h")
 
 add_library(waveguide STATIC ${sources} ${public_headers} ${private_headers} ${outfile})
 
-add_dependencies(waveguide glm_external)
+add_dependencies(waveguide glm_external eigen_external)
 
 target_include_directories(waveguide
     PUBLIC

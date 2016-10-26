@@ -10,7 +10,7 @@ float3 sphere_point(float z, float theta) {
     return (float3)(t * cos(theta), z, t * sin(theta));
 }
 
-//----------------------------------------------------------------------------//
+////////////////////////////////////////////////////////////////////////////////
 
 //  surface_normal: the direction of the surface normal (unit vector)
 //  random: a random vector (unit vector)
@@ -34,7 +34,7 @@ float3 lambert_scattering(float3 specular,
     return normalize((l * d) + (specular * (1 - d)));
 }
 
-//----------------------------------------------------------------------------//
+////////////////////////////////////////////////////////////////////////////////
 
 /*
 //  Taken from
@@ -95,7 +95,7 @@ bands_type brdf_mags_for_outgoing(float3 specular,
 }
 */
 
-//----------------------------------------------------------------------------//
+////////////////////////////////////////////////////////////////////////////////
 
 float mean(bands_type v);
 float mean(bands_type v) {

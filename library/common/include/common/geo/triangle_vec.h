@@ -26,7 +26,7 @@ triangle_vec2 get_triangle_vec2(const triangle& t,
 triangle_vec2 get_triangle_vec2(const triangle& t,
                                 const aligned::vector<cl_float3>& v);
 
-//----------------------------------------------------------------------------//
+////////////////////////////////////////////////////////////////////////////////
 
 float area(const triangle_vec3& triangle);
 

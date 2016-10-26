@@ -4,8 +4,6 @@
 
 #include "common/vector_look_up_table.h"
 
-#include "utilities/reduce.h"
-
 #include <algorithm>
 #include <numeric>
 

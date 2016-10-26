@@ -38,7 +38,7 @@ constexpr boundary_type port_index_to_boundary_type(unsigned int i) {
     return static_cast<boundary_type>(1 << (i + 1));
 }
 
-//----------------------------------------------------------------------------//
+////////////////////////////////////////////////////////////////////////////////
 
 constexpr auto no_neighbor = ~cl_uint{0};
 constexpr auto num_ports = size_t{6};

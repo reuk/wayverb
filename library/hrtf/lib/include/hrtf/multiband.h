@@ -6,11 +6,16 @@
 
 namespace hrtf_data {
 
-inline auto hrtf_band_params(double sample_rate) {
-    constexpr range<double> audible_range{20, 20000};
+constexpr range<double> audible_range{20, 20000};
 
+inline auto hrtf_band_params(double sample_rate) {
     return frequency_domain::band_edges_and_widths<entry::bands>(
             audible_range / sample_rate, 1);
+}
+
+inline auto hrtf_band_centres(double sample_rate) {
+    return frequency_domain::band_centres<entry::bands>(audible_range /
+                                                        sample_rate);
 }
 
 template <typename It, typename Callback>

@@ -10,7 +10,7 @@
 
 #include <functional>
 
-//  forward declarations  ----------------------------------------------------//
+//  forward declarations  //////////////////////////////////////////////////////
 
 namespace model {
 struct receiver_settings;
@@ -18,7 +18,7 @@ struct receiver_settings;
 
 class compute_context;
 
-//  engine  ------------------------------------------------------------------//
+//  engine  ////////////////////////////////////////////////////////////////////
 
 namespace wayverb {
 

@@ -31,6 +31,8 @@ constexpr auto make_edge_with_width_factor(double edge, double width_factor) {
     return edge_and_width{edge, edge * width_factor};
 }
 
+////////////////////////////////////////////////////////////////////////////////
+
 template <size_t... Ix>
 auto band_edges_and_widths(range<double> r,
                            double max_width_factor,
@@ -51,6 +53,8 @@ auto band_edges_and_widths(range<double> r, double overlap) {
             r, width_factor, std::make_index_sequence<bands + 1>{});
 }
 
+////////////////////////////////////////////////////////////////////////////////
+
 template <typename T, size_t... Ix>
 auto bandwidths(const std::array<T, sizeof...(Ix) + 1>& edges,
                 std::index_sequence<Ix...>) {
@@ -63,6 +67,21 @@ template <typename T, size_t edges>
 auto bandwidths(const std::array<T, edges>& e) {
     return bandwidths(e, std::make_index_sequence<edges - 1>{});
 }
+
+////////////////////////////////////////////////////////////////////////////////
+
+template <size_t... Ix>
+auto band_centres(range<double> r, std::index_sequence<Ix...>) {
+    return std::array<double, sizeof...(Ix)>{
+            {band_centre_frequency(Ix, sizeof...(Ix), r)...}};
+}
+
+template <size_t bands>
+auto band_centres(range<double> r) {
+    return band_centres(r, std::make_index_sequence<bands>{});
+}
+
+////////////////////////////////////////////////////////////////////////////////
 
 /// frequency: normalized frequency, from 0 to 0.5
 /// lower: the normalized lower band edge frequency of this band

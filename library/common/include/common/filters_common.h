@@ -81,7 +81,7 @@ private:
     std::array<float, KERNEL_LENGTH> kernel_;
 };
 
-//----------------------------------------------------------------------------//
+////////////////////////////////////////////////////////////////////////////////
 
 ///	IIR filter concept:
 ///		* implements a method 'filter' which takes a single double, filters it,
@@ -118,7 +118,7 @@ private:
     double z1_{0}, z2_{0};
 };
 
-//----------------------------------------------------------------------------//
+////////////////////////////////////////////////////////////////////////////////
 
 biquad::coefficients compute_bandpass_biquad_coefficients(double lo,
                                                           double hi,
@@ -129,7 +129,7 @@ biquad::coefficients compute_linkwitz_riley_hipass_coefficients(double cutoff,
                                                                 double sr);
 biquad::coefficients compute_dc_blocker_coefficients(double a = 0.995);
 
-//----------------------------------------------------------------------------//
+////////////////////////////////////////////////////////////////////////////////
 
 template <typename Filter, typename It>
 void run_one_pass(Filter& filter, It begin, It end) {
@@ -149,7 +149,7 @@ void run_two_pass(Filter& filter, It begin, It end) {
                  std::make_reverse_iterator(begin));
 }
 
-//----------------------------------------------------------------------------//
+////////////////////////////////////////////////////////////////////////////////
 
 template <typename It>
 void linkwitz_riley_bandpass(double lo, double hi, double s, It begin, It end) {
@@ -159,7 +159,7 @@ void linkwitz_riley_bandpass(double lo, double hi, double s, It begin, It end) {
     run_two_pass(hipass, begin, end);
 }
 
-//----------------------------------------------------------------------------//
+////////////////////////////////////////////////////////////////////////////////
 
 template <size_t... i>
 constexpr auto make_biquads(
@@ -208,7 +208,7 @@ constexpr auto make_series_biquads(
     return series_biquads<num>{coefficients};
 }
 
-//----------------------------------------------------------------------------//
+////////////////////////////////////////////////////////////////////////////////
 
 biquad::coefficients compute_lopass_butterworth_segment(double cf,
                                                         size_t order,

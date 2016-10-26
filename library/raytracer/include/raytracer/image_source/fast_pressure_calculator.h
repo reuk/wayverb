@@ -24,7 +24,7 @@ struct reflection_metadata final {
     float cos_angle;  /// The cosine of the angle against the triangle normal.
 };
 
-//----------------------------------------------------------------------------//
+////////////////////////////////////////////////////////////////////////////////
 
 template <typename Channels, typename It>
 auto compute_fast_pressure(const glm::vec3& receiver,

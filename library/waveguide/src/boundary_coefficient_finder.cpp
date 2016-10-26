@@ -19,7 +19,7 @@ void set_boundary_index(it begin, it end, func f) {
 
 }  // namespace
 
-//----------------------------------------------------------------------------//
+////////////////////////////////////////////////////////////////////////////////
 
 template <typename T, typename It, typename Func>
 cl::Buffer init_buffer(It begin,

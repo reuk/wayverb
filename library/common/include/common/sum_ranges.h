@@ -1,8 +1,10 @@
 #pragma once
 
+#include "utilities/foldl.h"
+
 template <typename... Ts>
 auto sum_params(Ts&&... ts) {
-    return reduce_params(std::plus<>{}, std::forward<Ts>(ts)...);
+    return foldl_params(std::plus<>{}, std::forward<Ts>(ts)...);
 }
 
 template <typename It, typename... Its>
@@ -18,11 +20,11 @@ auto sum_ranges(It b, It e, Its... its) {
 
 template <typename T, typename... Ts>
 auto sum_vectors(T t, Ts... ts) {
-    const auto max_len = reduce_params(
+    const auto max_len = foldl_params(
             [](auto a, auto b) { return std::max(a.size(), b.size()); },
             t,
             ts...);
-    sequential_foreach([&](auto& vec) { vec.resize(max_len); }, t, ts...);
+    for_each_params([&](auto& vec) { vec.resize(max_len); }, t, ts...);
     return sum_ranges(begin(t), end(t), begin(ts)...);
 }
 

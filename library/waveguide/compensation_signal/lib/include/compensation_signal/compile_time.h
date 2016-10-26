@@ -166,12 +166,3 @@ static_assert(18 == to_index(locator<size_t>{3, 3, 2}), "to_locator");
 static_assert(19 == to_index(locator<size_t>{3, 3, 3}), "to_locator");
 
 }  // namespace
-
-//----------------------------------------------------------------------------//
-
-
-class compile_time_compressed_waveguide final {
-public:
-
-private:
-};

@@ -70,7 +70,7 @@ auto make_voxelised_scene_data(generic_scene_data<Vertex, Surface> scene,
     return make_voxelised_scene_data(std::move(scene), octree_depth, aabb);
 }
 
-//----------------------------------------------------------------------------//
+////////////////////////////////////////////////////////////////////////////////
 
 template <typename Vertex, typename Surface>
 std::experimental::optional<intersection> intersects(

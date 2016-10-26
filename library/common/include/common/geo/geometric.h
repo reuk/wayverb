@@ -30,7 +30,7 @@ private:
     glm::vec3 direction;
 };
 
-//----------------------------------------------------------------------------//
+////////////////////////////////////////////////////////////////////////////////
 
 std::experimental::optional<triangle_inter> triangle_intersection(
         const triangle_vec3& tri, const ray& ray, size_t ulp = 10);
@@ -43,7 +43,7 @@ std::experimental::optional<triangle_inter> triangle_intersection(
     return triangle_intersection(get_triangle_vec3(tri, vertices), ray);
 }
 
-//----------------------------------------------------------------------------//
+////////////////////////////////////////////////////////////////////////////////
 
 template <typename t>
 std::experimental::optional<intersection> intersection_accumulator(

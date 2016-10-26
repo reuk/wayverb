@@ -36,7 +36,7 @@ constexpr bool operator<(const path_element& a, const path_element& b) {
     return a.index < b.index;
 }
 
-//----------------------------------------------------------------------------//
+////////////////////////////////////////////////////////////////////////////////
 
 class tree final {
 public:

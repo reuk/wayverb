@@ -2,7 +2,7 @@
 
 #include "common/cl/include.h"
 
-#include "utilities/reduce.h"
+#include "utilities/foldl.h"
 
 #include <algorithm>
 #include <cmath>
@@ -21,7 +21,7 @@
 
 CL_FOR_EACH_TYPE(CL_UNIT)
 
-//  macro machinery ----------------------------------------------------------//
+//  macro machinery ////////////////////////////////////////////////////////////
 
 #define CL_VECTOR_REGISTER_PREFIX(macro, cl_type_prefix_)       \
     macro(cl_type_prefix_##1) macro(cl_type_prefix_##2)         \
@@ -42,7 +42,7 @@ CL_FOR_EACH_TYPE(CL_UNIT)
 
 namespace detail {
 
-//  find properties, given cl vector type ------------------------------------//
+//  find properties, given cl vector type //////////////////////////////////////
 
 template <typename T>
 struct cl_vector_type_trait final {
@@ -107,7 +107,7 @@ template <typename U, typename... Ts>
 using enable_if_any_is_vector_t =
         std::enable_if_t<any_v<is_vector_type_t<Ts>...>, U>;
 
-//  constructing from type + size --------------------------------------------//
+//  constructing from type + size //////////////////////////////////////////////
 
 template <typename T, size_t N>
 struct cl_vector_constructor;
@@ -131,7 +131,7 @@ struct cl_vector_constructor<bool, N> final {
 
 template <typename T, typename Op, enable_if_is_vector_t<T, int> = 0>
 constexpr auto accumulate(const T& t, const Op& op) {
-    return reduce(op, t.s);
+    return foldl(op, t.s);
 }
 
 template <typename T,
@@ -141,7 +141,7 @@ template <typename T,
 constexpr auto accumulate(const T& t,
                           const Accumulator& accumulator,
                           const Op& op) {
-    return reduce(op, accumulator, t.s);
+    return foldl(op, accumulator, t.s);
 }
 
 template <typename T, typename U, typename Op, size_t... Ix>
@@ -281,7 +281,7 @@ constexpr auto operator<(const T& a, const U& b) {
     return detail::zip(a, b, std::less<>{});
 }
 
-//  arithmetic ops -----------------------------------------------------------//
+//  arithmetic ops /////////////////////////////////////////////////////////////
 
 template <typename T, typename U, detail::enable_if_is_vector_t<T, int> = 0>
 constexpr auto& operator+=(T& a, const U& b) {
@@ -308,7 +308,7 @@ constexpr auto& operator%=(T& a, const U& b) {
     return detail::inplace_zip(a, b, std::modulus<>{});
 }
 
-//----------------------------------------------------------------------------//
+////////////////////////////////////////////////////////////////////////////////
 
 template <typename T,
           typename U,
@@ -355,7 +355,7 @@ constexpr auto operator-(const T& a) {
     return detail::map(a, std::negate<>{});
 }
 
-//  other reductions ---------------------------------------------------------//
+//  other reductions ///////////////////////////////////////////////////////////
 
 template <typename T, detail::enable_if_is_vector_t<T, int> = 0>
 constexpr auto sum(const T& t) {
@@ -372,7 +372,7 @@ constexpr auto mean(const T& t) {
     return sum(t) / detail::components_v<T>;
 }
 
-//  logical reductions -------------------------------------------------------//
+//  logical reductions /////////////////////////////////////////////////////////
 
 template <typename T, detail::enable_if_is_vector_t<T, int> = 0>
 constexpr bool all(const T& t) {
@@ -414,7 +414,7 @@ constexpr auto max_element(const T& t) {
     return detail::accumulate(t, detail::max_functor{});
 }
 
-//  misc ---------------------------------------------------------------------//
+//  misc ///////////////////////////////////////////////////////////////////////
 
 template <typename T,
           size_t components = detail::components_v<T>,

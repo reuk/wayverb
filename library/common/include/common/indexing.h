@@ -31,7 +31,7 @@ using index_t = typename index<n>::type;
 template <size_t n>
 constexpr auto numbered_dimensions_t = index<n>::numbered_dimensions;
 
-//----------------------------------------------------------------------------//
+////////////////////////////////////////////////////////////////////////////////
 
 template <size_t n>
 inline index_t<n> relative_position(size_t i) {
@@ -39,7 +39,7 @@ inline index_t<n> relative_position(size_t i) {
     return (mask & static_cast<unsigned>(i)) / mask;
 }
 
-//----------------------------------------------------------------------------//
+////////////////////////////////////////////////////////////////////////////////
 
 template <size_t n>
 inline auto front(index_t<n> i) {
@@ -51,7 +51,7 @@ inline auto back(index_t<n> i) {
     return i[n - 1];
 }
 
-//----------------------------------------------------------------------------//
+////////////////////////////////////////////////////////////////////////////////
 
 template <size_t n>
 index_t<n - 1> reduce(index_t<n> i);
@@ -65,7 +65,7 @@ inline index_t<2> reduce<3>(index_t<3> i) {
     return i;
 }
 
-//----------------------------------------------------------------------------//
+////////////////////////////////////////////////////////////////////////////////
 
 template <size_t n>
 index_t<n - 1> tail(index_t<n> i);
@@ -80,7 +80,7 @@ inline index_t<2> tail<3>(index_t<3> i) {
     return index_t<2>{i[1], i[2]};
 }
 
-//----------------------------------------------------------------------------//
+////////////////////////////////////////////////////////////////////////////////
 
 template <size_t n>
 inline unsigned product(index_t<n> i) {
@@ -92,7 +92,7 @@ inline unsigned product<1>(index_t<1> i) {
     return i;
 }
 
-//----------------------------------------------------------------------------//
+////////////////////////////////////////////////////////////////////////////////
 
 /// Convert an n-dimensional index into a 1D one to index into a flat array.
 template <size_t n>

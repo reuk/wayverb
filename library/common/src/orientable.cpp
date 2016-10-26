@@ -45,7 +45,7 @@ az_el operator/(const az_el& a, const az_el& b) {
     return copy /= b;
 }
 
-//----------------------------------------------------------------------------//
+////////////////////////////////////////////////////////////////////////////////
 
 float compute_azimuth(const glm::vec3& pointing) {
     return std::atan2(pointing.x, pointing.z);
@@ -62,7 +62,7 @@ glm::vec3 compute_pointing(const az_el& azel) {
                      std::cos(azel.azimuth) * std::cos(azel.elevation));
 }
 
-//----------------------------------------------------------------------------//
+////////////////////////////////////////////////////////////////////////////////
 
 orientable::orientable(const glm::vec3& pointing)
         : pointing_{glm::normalize(pointing)} {}

@@ -1,9 +1,9 @@
+#include "waveguide/mesh.h"
 #include "waveguide/boundary_adjust.h"
 #include "waveguide/config.h"
-#include "waveguide/mesh.h"
+#include "waveguide/fitted_boundary.h"
 #include "waveguide/mesh_setup_program.h"
 #include "waveguide/program.h"
-#include "waveguide/surface_filters.h"
 
 #include "common/conversions.h"
 #include "common/scene_data_loader.h"
@@ -32,7 +32,7 @@ void mesh::set_coefficients(
     vectors_.set_coefficients(coefficients);
 }
 
-//----------------------------------------------------------------------------//
+////////////////////////////////////////////////////////////////////////////////
 
 mesh compute_mesh(
         const compute_context& cc,

@@ -15,7 +15,7 @@ geo::ray construct_ray(const glm::vec3& from, const glm::vec3& to) {
     return geo::ray(from, glm::normalize(to - from));
 }
 
-//----------------------------------------------------------------------------//
+////////////////////////////////////////////////////////////////////////////////
 
 class traversal_callback final {
 public:
@@ -171,7 +171,7 @@ private:
     aligned::vector<state>& state_;
 };
 
-//----------------------------------------------------------------------------//
+////////////////////////////////////////////////////////////////////////////////
 
 multitree<path_element>::branches_type construct_image_source_tree(
         const aligned::vector<aligned::vector<path_element>>& paths) {

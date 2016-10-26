@@ -222,7 +222,7 @@ private:
 public:
     std::unique_ptr<intermediate> run(const std::atomic_bool& keep_going,
                                       const state_callback& callback) const {
-        //  RAYTRACER  -------------------------------------------------------//
+        //  RAYTRACER  /////////////////////////////////////////////////////////
         const auto rays_to_visualise{std::min(1000ul, rays_)};
         const auto directions{get_random_directions(rays_)};
         callback(state::starting_raytracer, 1.0);
@@ -265,7 +265,7 @@ public:
                                     ->distance /
                             speed_of_sound_};
 
-        //  WAVEGUIDE  -------------------------------------------------------//
+        //  WAVEGUIDE  /////////////////////////////////////////////////////////
         callback(state::starting_waveguide, 1.0);
 
         const aligned::vector<float> raw_input{1.0f};

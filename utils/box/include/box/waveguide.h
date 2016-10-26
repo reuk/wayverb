@@ -1,11 +1,11 @@
 #pragma once
 
 #include "waveguide/calibration.h"
+#include "waveguide/fitted_boundary.h"
 #include "waveguide/mesh.h"
 #include "waveguide/postprocess.h"
 #include "waveguide/postprocessor/directional_receiver.h"
 #include "waveguide/preprocessor/hard_source.h"
-#include "waveguide/surface_filters.h"
 #include "waveguide/waveguide.h"
 
 #include "common/geo/box.h"

@@ -31,7 +31,7 @@ void bandpass_windowed_sinc::set_params(double l, double h, double s) {
     std::copy(begin(i), end(i), kernel_.begin());
 }
 
-//----------------------------------------------------------------------------//
+////////////////////////////////////////////////////////////////////////////////
 
 biquad::coefficients compute_bandpass_biquad_coefficients(double lo,
                                                           double hi,
@@ -87,7 +87,7 @@ biquad::coefficients compute_dc_blocker_coefficients(double a) {
     return {1, -1, 0, -a, 0};
 }
 
-//----------------------------------------------------------------------------//
+////////////////////////////////////////////////////////////////////////////////
 
 biquad::coefficients compute_lopass_butterworth_segment(double cf,
                                                         size_t order,
@@ -103,7 +103,7 @@ biquad::coefficients compute_lopass_butterworth_segment(double cf,
             (cf2 + p + 1.0) / a0};
 }
 
-//----------------------------------------------------------------------------//
+////////////////////////////////////////////////////////////////////////////////
 
 biquad::coefficients compute_hipass_butterworth_segment(double cf,
                                                         size_t order,

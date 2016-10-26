@@ -193,7 +193,7 @@ int main(int argc, char** argv) {
             [&](const auto& tup) {
                 auto processed =
                         apply_each(rendered, std::make_tuple(std::get<1>(tup)));
-                const auto max_magnitude = reduce(
+                const auto max_magnitude = foldl(
                         [](auto a, auto b) { return std::max(a, b); },
                         map([](const auto& i) { return max_mag(i.value); },
                             processed));

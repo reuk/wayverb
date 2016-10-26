@@ -19,7 +19,7 @@ float six_times_tetrahedron_volume(const geo::triangle_vec3& t) {
     return std::copysign(volume, sign);
 }
 
-//----------------------------------------------------------------------------//
+////////////////////////////////////////////////////////////////////////////////
 
 float estimate_air_intensity_absorption(float frequency, float humidity) {
     return (0.0275 / humidity) * std::pow(frequency / 1000, 1.7);

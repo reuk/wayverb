@@ -19,7 +19,7 @@ void impulse_check(const Impulse& i, T t) {
     throw_if_suspicious(i.distance);
 }
 
-//----------------------------------------------------------------------------//
+////////////////////////////////////////////////////////////////////////////////
 
 template <typename Impulse>
 class results final {

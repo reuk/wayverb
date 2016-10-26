@@ -8,7 +8,7 @@ using voxel = aligned::vector<size_t>;
 
 namespace detail {
 
-//----------------------------------------------------------------------------//
+////////////////////////////////////////////////////////////////////////////////
 
 template <size_t n>
 struct voxel_data_trait final {
@@ -29,7 +29,7 @@ struct voxel_data_trait<0> final {
 template <size_t n>
 using voxel_data_t = typename voxel_data_trait<n>::data_type;
 
-//----------------------------------------------------------------------------//
+////////////////////////////////////////////////////////////////////////////////
 
 template <size_t n>
 inline const voxel& index(const typename voxel_data_trait<n>::data_type& data,
@@ -56,7 +56,7 @@ inline voxel& index<1>(typename voxel_data_trait<1>::data_type& data,
     return data[i];
 }
 
-//----------------------------------------------------------------------------//
+////////////////////////////////////////////////////////////////////////////////
 
 template <size_t n>
 void voxelise(const ndim_tree<n>& tree,
@@ -80,7 +80,7 @@ voxel_data_t<n> voxelise(const ndim_tree<n>& tree) {
     return ret;
 }
 
-//----------------------------------------------------------------------------//
+////////////////////////////////////////////////////////////////////////////////
 
 }  // namespace detail
 
@@ -113,7 +113,7 @@ private:
     data_type data_;
 };
 
-//----------------------------------------------------------------------------//
+////////////////////////////////////////////////////////////////////////////////
 
 template <size_t n>
 auto voxel_dimensions(const voxel_collection<n>& voxels) {

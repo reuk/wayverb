@@ -97,7 +97,7 @@ range<t> make_range(const t& a, const t& b) {
     return range<t>{a, b};
 }
 
-//----------------------------------------------------------------------------//
+////////////////////////////////////////////////////////////////////////////////
 
 template <typename A, typename B>
 constexpr bool operator==(const range<A>& a, const range<B>& b) {
@@ -161,7 +161,7 @@ constexpr auto inside(const range<T>& r, const T& t) {
     return r.get_min() <= t && t < r.get_max();
 }
 
-//----------------------------------------------------------------------------//
+////////////////////////////////////////////////////////////////////////////////
 
 template <typename It, typename T>
 inline auto accumulate_min(It begin, It end, T starting_value) {

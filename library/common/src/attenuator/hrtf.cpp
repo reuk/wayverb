@@ -35,7 +35,7 @@ void hrtf::set_radius(float radius) {
     radius_ = radius;
 }
 
-//----------------------------------------------------------------------------//
+////////////////////////////////////////////////////////////////////////////////
 
 glm::vec3 transform(const glm::vec3& pointing,
                     const glm::vec3& up,

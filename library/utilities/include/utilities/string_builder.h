@@ -1,12 +1,12 @@
 #pragma once
 
-#include "utilities/sequential_foreach.h"
+#include "utilities/for_each.h"
 
 #include <sstream>
 
 template <typename... Ts>
 inline std::ostream& to_stream(std::ostream& os, const Ts&... ts) {
-    sequential_foreach([&os](const auto& i) { os << i; }, ts...);
+    for_each_params([&os](const auto& i) { os << i; }, ts...);
     return os;
 }
 

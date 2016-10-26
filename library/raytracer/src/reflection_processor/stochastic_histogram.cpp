@@ -24,7 +24,7 @@ operator()(const compute_context& cc,
             num_directions};
 }
 
-//----------------------------------------------------------------------------//
+////////////////////////////////////////////////////////////////////////////////
 
 make_directional_histogram::make_directional_histogram(float receiver_radius,
                                                        float sample_rate,

@@ -1,7 +1,7 @@
 #include "frequency_domain/multiband_filter.h"
 
+#include "utilities/foldl.h"
 #include "utilities/map_to_vector.h"
-#include "utilities/reduce.h"
 #include "utilities/string_builder.h"
 
 #include "audio_file/audio_file.h"
@@ -64,9 +64,10 @@ TEST(frequency_domain, reconstruction) {
               16);
     }
 
-    auto mixed{map_to_vector(begin(multiband_noise),
-                             end(multiband_noise),
-                             [](auto i) { return reduce(std::plus<>{}, i); })};
+    const auto mixed{map_to_vector(
+            begin(multiband_noise), end(multiband_noise), [](auto i) {
+                return foldl(std::plus<>{}, i);
+            })};
 
     write("multiband_filtered_noise.wav",
           audio_file::make_audio_file(mixed, sample_rate),

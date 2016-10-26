@@ -1,6 +1,6 @@
 #include "frequency_domain/multiband_filter.h"
 
-#include "utilities/reduce.h"
+#include "utilities/foldl.h"
 
 #include "gtest/gtest.h"
 
@@ -28,7 +28,7 @@ TEST(multiband, noise) {
     const auto energy = frequency_domain::per_band_energy(
             begin(noise_signal), end(noise_signal), params);
 
-    const auto mean = reduce(std::plus<>{}, energy) / bands;
+    const auto mean = foldl(std::plus<>{}, energy) / bands;
 
     ASSERT_NEAR(mean, 1.0, 0.01);
 

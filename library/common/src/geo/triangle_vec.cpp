@@ -26,7 +26,7 @@ triangle_vec2 get_triangle_vec2(const triangle& t,
             {to_vec3(v[t.v0]), to_vec3(v[t.v1]), to_vec3(v[t.v2])}};
 }
 
-//----------------------------------------------------------------------------//
+////////////////////////////////////////////////////////////////////////////////
 
 float area(const triangle_vec3& triangle) {
     const auto v0 = triangle[1] - triangle[0];

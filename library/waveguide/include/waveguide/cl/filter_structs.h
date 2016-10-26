@@ -6,24 +6,24 @@
 constexpr size_t biquad_order{2};
 constexpr size_t biquad_sections{3};
 
-//----------------------------------------------------------------------------//
+////////////////////////////////////////////////////////////////////////////////
 
-using real = cl_double;
+using filt_real = cl_double;
 
 template <>
-struct cl_representation<real> final {
+struct cl_representation<filt_real> final {
     static constexpr auto value = R"(
-typedef double real;
+typedef double filt_real;
 )";
 };
 
-//----------------------------------------------------------------------------//
+////////////////////////////////////////////////////////////////////////////////
 
-/// Just an array of reals to use as a delay line.
+/// Just an array of filt_real to use as a delay line.
 template <size_t o>
 struct alignas(1 << 3) memory final {
     static constexpr size_t order = o;
-    real array[order]{};
+    filt_real array[order]{};
 };
 
 template <size_t D>
@@ -37,14 +37,14 @@ inline bool operator!=(const memory<D>& a, const memory<D>& b) {
     return !(a == b);
 }
 
-//----------------------------------------------------------------------------//
+////////////////////////////////////////////////////////////////////////////////
 
 /// IIR filter coefficient storage.
 template <size_t o>
 struct alignas(1 << 3) coefficients final {
     static constexpr auto order = o;
-    real b[order + 1]{};
-    real a[order + 1]{};
+    filt_real b[order + 1]{};
+    filt_real a[order + 1]{};
 };
 
 template <size_t D>
@@ -58,7 +58,7 @@ inline bool operator!=(const coefficients<D>& a, const coefficients<D>& b) {
     return !(a == b);
 }
 
-//----------------------------------------------------------------------------//
+////////////////////////////////////////////////////////////////////////////////
 
 using memory_biquad = memory<biquad_order>;
 
@@ -89,7 +89,7 @@ struct cl_representation<coefficients_canonical> final {
     static const std::string value;
 };
 
-//----------------------------------------------------------------------------//
+////////////////////////////////////////////////////////////////////////////////
 
 /// Several biquad delay lines in a row.
 struct alignas(1 << 3) biquad_memory_array final {
@@ -105,7 +105,7 @@ typedef struct {
 )";
 };
 
-//----------------------------------------------------------------------------//
+////////////////////////////////////////////////////////////////////////////////
 
 /// Several sets of biquad parameters.
 struct alignas(1 << 3) biquad_coefficients_array final {

@@ -21,7 +21,7 @@ constexpr bool is_inside(const condensed_node& c) {
     return c.boundary_type && id_inside;
 }
 
-//----------------------------------------------------------------------------//
+////////////////////////////////////////////////////////////////////////////////
 
 class vectors final {
 public:
@@ -61,7 +61,7 @@ vectors::get_boundary_indices<3>() const {
     return boundary_index_data_.b3;
 }
 
-//----------------------------------------------------------------------------//
+////////////////////////////////////////////////////////////////////////////////
 
 template <size_t N>
 static boundary_data_array<N> construct_boundary_data_array(

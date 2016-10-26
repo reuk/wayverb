@@ -1,5 +1,5 @@
+#include "waveguide/filters.h"
 #include "waveguide/program.h"
-#include "waveguide/surface_filters.h"
 #include "waveguide/waveguide.h"
 
 #include "utilities/map.h"

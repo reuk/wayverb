@@ -19,8 +19,6 @@
 
 namespace raytracer {
 
-//----------------------------------------------------------------------------//
-
 template <typename T>
 class process_functor_adapter final {
 public:
@@ -65,7 +63,7 @@ struct make_get_results_functor_adapter final {
     }
 };
 
-//----------------------------------------------------------------------------//
+////////////////////////////////////////////////////////////////////////////////
 
 /// parameters:
 ///     b_direction:        first iterator to a range of ray directions

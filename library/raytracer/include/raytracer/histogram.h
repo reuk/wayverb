@@ -134,7 +134,7 @@ struct sinc_sum_functor final {
     }
 };
 
-//----------------------------------------------------------------------------//
+////////////////////////////////////////////////////////////////////////////////
 
 /// These functions are for volume/distance pairs rather than volume/time.
 

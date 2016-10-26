@@ -26,7 +26,7 @@ aligned::vector<cl_float> get_direction_rng(size_t num) {
 
 namespace raytracer {
 
-//----------------------------------------------------------------------------//
+////////////////////////////////////////////////////////////////////////////////
 
 aligned::vector<reflection> reflector::run_step(const scene_buffers& buffers) {
     //  get some new rng and copy it to device memory

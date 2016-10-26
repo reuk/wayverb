@@ -7,8 +7,6 @@
 
 namespace waveguide {
 
-//----------------------------------------------------------------------------//
-
 constexpr auto source = R"(
 #define courant (1.0f / sqrt(3.0f))
 #define courant_sq (1.0f / 3.0f)
@@ -159,22 +157,22 @@ void ghost_point_pressure_update(
         float inner_pressure,
         global boundary_data* bd,
         const global coefficients_canonical* boundary) {
-    const real filt_state = bd->filter_memory.array[0];
-    const real b0 = boundary->b[0];
-    const real a0 = boundary->a[0];
+    const filt_real filt_state = bd->filter_memory.array[0];
+    const filt_real b0 = boundary->b[0];
+    const filt_real a0 = boundary->a[0];
 
-    const real diff = (a0 * (prev_pressure - next_pressure)) / (b0 * courant) +
+    const filt_real diff = (a0 * (prev_pressure - next_pressure)) / (b0 * courant) +
                       (filt_state / b0);
 #if 0
-    const real ghost_pressure = inner_pressure + diff;
-    const real filter_input = inner_pressure - ghost_pressure;
+    const filt_real ghost_pressure = inner_pressure + diff;
+    const filt_real filter_input = inner_pressure - ghost_pressure;
 #else
-    const real filter_input = -diff;
+    const filt_real filter_input = -diff;
 #endif
     filter_step_canonical(filter_input, &(bd->filter_memory), boundary);
 }
 
-//----------------------------------------------------------------------------//
+////////////////////////////////////////////////////////////////////////////////
 
 #define TEMPLATE_SUM_SURROUNDING_PORTS(dimensions)                           \
     float CAT(get_summed_surrounding_, dimensions)(                          \
@@ -227,7 +225,7 @@ float get_summed_surrounding_3(const global condensed_node* nodes,
     return 0;
 }
 
-//----------------------------------------------------------------------------//
+////////////////////////////////////////////////////////////////////////////////
 
 float get_inner_pressure(const global condensed_node* nodes,
                          const global float* current,
@@ -282,7 +280,7 @@ GET_CURRENT_SURROUNDING_WEIGHTING_TEMPLATE(1);
 GET_CURRENT_SURROUNDING_WEIGHTING_TEMPLATE(2);
 GET_CURRENT_SURROUNDING_WEIGHTING_TEMPLATE(3);
 
-//----------------------------------------------------------------------------//
+////////////////////////////////////////////////////////////////////////////////
 
 #define GET_FILTER_WEIGHTING_TEMPLATE(dimensions)                         \
     float CAT(get_filter_weighting_, dimensions)(                         \
@@ -294,7 +292,7 @@ GET_CURRENT_SURROUNDING_WEIGHTING_TEMPLATE(3);
         float sum = 0;                                                    \
         for (int i = 0; i != dimensions; ++i) {                           \
             boundary_data bd = bda->array[i];                             \
-            const real filt_state = bd.filter_memory.array[0];            \
+            const filt_real filt_state = bd.filter_memory.array[0];            \
             sum += filt_state /                                           \
                    boundary_coefficients[bd.coefficient_index].b[0];      \
         }                                                                 \
@@ -305,7 +303,7 @@ GET_FILTER_WEIGHTING_TEMPLATE(1);
 GET_FILTER_WEIGHTING_TEMPLATE(2);
 GET_FILTER_WEIGHTING_TEMPLATE(3);
 
-//----------------------------------------------------------------------------//
+////////////////////////////////////////////////////////////////////////////////
 
 #define GET_COEFF_WEIGHTING_TEMPLATE(dimensions)                             \
     float CAT(get_coeff_weighting_, dimensions)(                             \
@@ -327,7 +325,7 @@ GET_COEFF_WEIGHTING_TEMPLATE(1);
 GET_COEFF_WEIGHTING_TEMPLATE(2);
 GET_COEFF_WEIGHTING_TEMPLATE(3);
 
-//----------------------------------------------------------------------------//
+////////////////////////////////////////////////////////////////////////////////
 
 #define BOUNDARY_TEMPLATE(dimensions)                                          \
     float CAT(boundary_, dimensions)(                                          \
@@ -387,7 +385,7 @@ BOUNDARY_TEMPLATE(1);
 BOUNDARY_TEMPLATE(2);
 BOUNDARY_TEMPLATE(3);
 
-//----------------------------------------------------------------------------//
+////////////////////////////////////////////////////////////////////////////////
 
 #define ENABLE_BOUNDARIES (1)
 
@@ -537,7 +535,7 @@ program::program(const compute_context& cc)
                   cc,
                   std::vector<std::string>{
                           ::cl_sources::filter_constants,
-                          cl_representation_v<real>,
+                          cl_representation_v<filt_real>,
                           cl_representation_v<mesh_descriptor>,
                           cl_representation_v<memory_biquad>,
                           cl_representation_v<coefficients_biquad>,

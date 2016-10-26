@@ -25,7 +25,7 @@ typedef enum {
 )";
 };
 
-//----------------------------------------------------------------------------//
+////////////////////////////////////////////////////////////////////////////////
 
 struct alignas(1 << 3) condensed_node final {
     cl_int boundary_type{};
@@ -51,7 +51,7 @@ inline bool operator!=(const condensed_node& a, const condensed_node& b) {
     return !(a == b);
 }
 
-//----------------------------------------------------------------------------//
+////////////////////////////////////////////////////////////////////////////////
 
 /// Stores filter coefficients for a single high-order filter, and an index
 /// into an array of filter parameters which describe the filter being
@@ -80,7 +80,7 @@ inline bool operator!=(const boundary_data& a, const boundary_data& b) {
     return !(a == b);
 }
 
-//----------------------------------------------------------------------------//
+////////////////////////////////////////////////////////////////////////////////
 
 template <size_t D>
 struct alignas(1 << 3) boundary_data_array final {

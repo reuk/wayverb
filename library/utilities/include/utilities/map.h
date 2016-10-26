@@ -23,7 +23,7 @@ constexpr auto map(Func&& func,
     return std::make_tuple(func(tuple_like_getter<Ix>(t))...);
 }
 
-//  master dispatching function ----------------------------------------------//
+//  master dispatching function  ///////////////////////////////////////////////
 
 template <typename Func, typename T>
 constexpr auto map(Func&& func, T&& t) {

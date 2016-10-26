@@ -30,7 +30,7 @@ offset_signal maxflat(double f0, uint32_t N, double A, uint32_t hLen) {
     return {std::move(h), N * 2};
 }
 
-//----------------------------------------------------------------------------//
+////////////////////////////////////////////////////////////////////////////////
 
 double compute_g0(double acoustic_impedance,
                   double speed_of_sound,
@@ -62,7 +62,7 @@ filter::biquad::coefficients mech_sphere(double M,
     return {b0, 0, b2, a1, a2};
 }
 
-//----------------------------------------------------------------------------//
+////////////////////////////////////////////////////////////////////////////////
 
 offset_signal design_pcs_source(size_t length,
                                 double acoustic_impedance,

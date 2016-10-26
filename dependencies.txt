@@ -106,6 +106,15 @@ ExternalProject_Add(
     CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR> -DJUST_INSTALL_CEREAL=ON
 )
 
+# eigen ########################################################################
+
+ExternalProject_Add(
+    eigen_external
+    PREFIX ${CMAKE_BINARY_DIR}
+    DOWNLOAD_COMMAND ${GIT_EXECUTABLE} clone --depth 1 --branch 3.1.2 https://github.com/RLovelett/eigen.git eigen_external
+    CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
+)
+
 # opencl #######################################################################
 
 ExternalProject_Add(

@@ -50,7 +50,7 @@ auto postprocess(It begin, It end, double sample_rate) {
     return aligned::vector<float>(begin, end);
 }
 
-//----------------------------------------------------------------------------//
+////////////////////////////////////////////////////////////////////////////////
 
 template <typename InputIt, typename Method>
 auto postprocess(InputIt b,

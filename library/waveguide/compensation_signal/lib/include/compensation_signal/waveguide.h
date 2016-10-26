@@ -34,7 +34,7 @@ private:
     program_wrapper program_wrapper_;
 };
 
-//----------------------------------------------------------------------------//
+////////////////////////////////////////////////////////////////////////////////
 
 class compressed_rectangular_waveguide final {
 public:

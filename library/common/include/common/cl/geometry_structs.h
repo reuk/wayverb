@@ -5,8 +5,6 @@
 
 #include <string>
 
-//----------------------------------------------------------------------------//
-
 struct alignas(1 << 4) ray final {
     cl_float3 position;
     cl_float3 direction;
@@ -32,7 +30,7 @@ constexpr bool operator==(const ray& a, const ray& b) {
 
 constexpr bool operator!=(const ray& a, const ray& b) { return !(a == b); }
 
-//----------------------------------------------------------------------------//
+////////////////////////////////////////////////////////////////////////////////
 
 struct alignas(1 << 2) triangle_inter final {
     cl_float t;  //  the distance along the ray to the intersection
@@ -65,7 +63,7 @@ constexpr bool is_degenerate(const triangle_inter& i) {
            almost_equal(i.u + i.v, 1.0f, ulp);
 }
 
-//----------------------------------------------------------------------------//
+////////////////////////////////////////////////////////////////////////////////
 
 struct alignas(1 << 3) intersection final {
     triangle_inter inter;

@@ -70,7 +70,7 @@ auto equivalent_absorption_area(
     return running_total;
 }
 
-//----------------------------------------------------------------------------//
+////////////////////////////////////////////////////////////////////////////////
 
 std::array<std::pair<cl_uint, cl_uint>, 3> get_index_pairs(const triangle& t);
 
@@ -114,7 +114,7 @@ float estimate_room_volume(const generic_scene_data<Vertex, Surface>& scene) {
            6;
 }
 
-//----------------------------------------------------------------------------//
+////////////////////////////////////////////////////////////////////////////////
 
 /// Sound intensity absorption coefficient calculator. (fu2015 eq. 11)
 float estimate_air_intensity_absorption(float frequency, float humidity);
@@ -135,7 +135,7 @@ auto estimate_air_intensity_absorption(
             band_centres, humidity, std::make_index_sequence<Bands>{});
 }
 
-//----------------------------------------------------------------------------//
+////////////////////////////////////////////////////////////////////////////////
 
 //  USE THESE ONES
 

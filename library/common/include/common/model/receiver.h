@@ -27,7 +27,7 @@ struct receiver final {
 
 aligned::vector<glm::vec3> get_pointing(const receiver& u);
 
-//----------------------------------------------------------------------------//
+////////////////////////////////////////////////////////////////////////////////
 
 struct microphone_mapper final {
     glm::vec3 position;
@@ -60,7 +60,7 @@ auto make_hrtf_iterator(It it, const receiver& r) {
             std::move(it), hrtf_mapper{get_pointing(r.hrtf, r.position)});
 }
 
-//----------------------------------------------------------------------------//
+////////////////////////////////////////////////////////////////////////////////
 
 inline auto get_begin(const receiver& r,
                       receiver::mode_t<receiver::mode::microphones>) {
@@ -81,7 +81,7 @@ inline auto get_end(const receiver& r, receiver::mode_t<receiver::mode::hrtf>) {
     return make_hrtf_iterator(end(attenuator::hrtf::channels), r);
 }
 
-//----------------------------------------------------------------------------//
+////////////////////////////////////////////////////////////////////////////////
 
 template <typename Input, typename... Ts>
 auto run_attenuation(const model::receiver& receiver,

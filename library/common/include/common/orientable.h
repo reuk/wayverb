@@ -41,7 +41,7 @@ constexpr auto operator!=(const az_el& a, const az_el& b) {
     return !(a == b);
 }
 
-//----------------------------------------------------------------------------//
+////////////////////////////////////////////////////////////////////////////////
 
 /// Invariant: pointing_ is a unit vector.
 class orientable final {

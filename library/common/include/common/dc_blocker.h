@@ -23,7 +23,7 @@ private:
     size_t index;
 };
 
-//----------------------------------------------------------------------------//
+////////////////////////////////////////////////////////////////////////////////
 
 class moving_average final {
 public:
@@ -41,7 +41,7 @@ private:
     double single_delay;
 };
 
-//----------------------------------------------------------------------------//
+////////////////////////////////////////////////////////////////////////////////
 
 template <int modules>
 class n_moving_averages final {
@@ -70,7 +70,7 @@ private:
     std::array<moving_average, modules> averages;
 };
 
-//----------------------------------------------------------------------------//
+////////////////////////////////////////////////////////////////////////////////
 
 class linear_dc_blocker final {
 public:
@@ -94,7 +94,7 @@ private:
     n_moving_averages<2> moving_averages;
 };
 
-//----------------------------------------------------------------------------//
+////////////////////////////////////////////////////////////////////////////////
 
 class extra_linear_dc_blocker final {
 public:
@@ -119,7 +119,7 @@ private:
     n_moving_averages<4> moving_averages;
 };
 
-//----------------------------------------------------------------------------//
+////////////////////////////////////////////////////////////////////////////////
 
 /// This uses a butterworth filter for a flat passband and steep falloff.
 /// The butterworth is chosen to provide a reasonable balance between stope

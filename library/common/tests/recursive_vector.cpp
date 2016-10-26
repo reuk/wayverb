@@ -135,7 +135,7 @@ TEST(recursive_vector_impl, move_assign) {
     ASSERT_EQ(*(b.begin() + 1), (non_trivial{"world", 2.0}));
 }
 
-//----------------------------------------------------------------------------//
+////////////////////////////////////////////////////////////////////////////////
 
 TEST(recursive_vector, size_capacity) {
     const recursive_vector<int> vec{}; 
@@ -284,7 +284,7 @@ TEST(recursive_vector, reserve) {
     ASSERT_EQ(vec.capacity(), 100);
 }
 
-//----------------------------------------------------------------------------//
+////////////////////////////////////////////////////////////////////////////////
 
 TEST(recursive_vector_backed_set, insert) {
     recursive_vector_backed_set<int> set;

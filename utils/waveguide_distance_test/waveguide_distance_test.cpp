@@ -2,7 +2,7 @@
 #include "waveguide/pcs.h"
 #include "waveguide/postprocessor/node.h"
 #include "waveguide/preprocessor/soft_source.h"
-#include "waveguide/surface_filters.h"
+#include "waveguide/fitted_boundary.h"
 #include "waveguide/waveguide.h"
 
 #include "common/callback_accumulator.h"

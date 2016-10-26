@@ -23,7 +23,7 @@ constexpr auto apply(Callback&& callback, const Collection& c) {
                          tuple_like_size_v<decay_const_ref_t<Collection>>>{});
 }
 
-//----------------------------------------------------------------------------//
+////////////////////////////////////////////////////////////////////////////////
 
 template <typename Callbacks, typename Collection, size_t... Ix>
 constexpr auto apply_each(Callbacks&& callbacks,
@@ -59,7 +59,7 @@ constexpr auto apply_each(Callbacks&& callbacks) {
                     tuple_like_size_v<decay_const_ref_t<Callbacks>>>{});
 }
 
-//----------------------------------------------------------------------------//
+////////////////////////////////////////////////////////////////////////////////
 
 template <typename Callbacks, typename Collection, size_t... Ix>
 void call_each(Callbacks&& callbacks,

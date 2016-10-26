@@ -38,7 +38,7 @@ namespace raytracer {
 //  the total distance travelled from the image source, and adjust the level
 //  also depending on the distance
 //
-//  ------------------------------------------------------------------------  //
+////////////////////////////////////////////////////////////////////////////////
 //
 //  OK here's what we'll do
 //  -----------------------

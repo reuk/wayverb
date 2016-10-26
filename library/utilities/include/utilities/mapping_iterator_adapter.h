@@ -108,7 +108,7 @@ private:
     friend class mapping_iterator_adapter;
 };
 
-// comparisons ---------------------------------------------------------------//
+//  comparisons  ///////////////////////////////////////////////////////////////
 
 template <class A, class B, class C, class D>
 constexpr bool operator==(const mapping_iterator_adapter<A, B>& lhs,
@@ -146,7 +146,7 @@ constexpr bool operator>=(const mapping_iterator_adapter<A, B>& lhs,
     return lhs.base() >= rhs.base();
 }
 
-// non-member arithmetic ops -------------------------------------------------//
+//  non-member arithmetic ops  /////////////////////////////////////////////////
 
 template <class U, class V>
 constexpr mapping_iterator_adapter<U, V> operator+(
@@ -169,7 +169,7 @@ constexpr typename mapping_iterator_adapter<U, V>::difference_type operator-(
     return a.base() - b.base();
 }
 
-// make iterators quickly ----------------------------------------------------//
+//  make iterators quickly  ////////////////////////////////////////////////////
 
 template <class U, class V>
 constexpr mapping_iterator_adapter<U, V> make_mapping_iterator_adapter(

@@ -20,7 +20,7 @@ void serialize(Archive& archive, orientable& m) {
             cereal::make_nvp("look_at", m.look_at));
 }
 
-//----------------------------------------------------------------------------//
+////////////////////////////////////////////////////////////////////////////////
 
 template <typename Archive>
 void serialize(Archive& archive, microphone& m) {
@@ -28,7 +28,7 @@ void serialize(Archive& archive, microphone& m) {
             cereal::make_nvp("shape", m.shape));
 }
 
-//----------------------------------------------------------------------------//
+////////////////////////////////////////////////////////////////////////////////
 
 template <typename Archive>
 void serialize(Archive& archive, receiver_settings& m) {
@@ -38,7 +38,7 @@ void serialize(Archive& archive, receiver_settings& m) {
             cereal::make_nvp("hrtf", m.hrtf));
 }
 
-//----------------------------------------------------------------------------//
+////////////////////////////////////////////////////////////////////////////////
 
 template <typename Archive>
 void serialize(Archive& archive, SingleShot& m) {
@@ -49,7 +49,7 @@ void serialize(Archive& archive, SingleShot& m) {
             cereal::make_nvp("receiver_settings", m.receiver_settings));
 }
 
-//----------------------------------------------------------------------------//
+////////////////////////////////////////////////////////////////////////////////
 
 template <typename Archive>
 void serialize(Archive& archive, App& m) {

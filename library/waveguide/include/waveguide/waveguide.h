@@ -2,7 +2,6 @@
 
 #include "waveguide/mesh.h"
 #include "waveguide/postprocessor/visualiser.h"
-#include "waveguide/surface_filters.h"
 #include "waveguide/waveguide.h"
 
 #include "common/cl/include.h"

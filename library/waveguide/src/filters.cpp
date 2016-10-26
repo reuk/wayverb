@@ -1,6 +1,6 @@
 #include "waveguide/filters.h"
 
-#include "utilities/reduce.h"
+#include "utilities/foldl.h"
 
 #include <array>
 
@@ -24,8 +24,8 @@ biquad_coefficients_array get_peak_biquads_array(
 }
 
 coefficients_canonical convolve(const biquad_coefficients_array& a) {
-    return reduce([](const auto& i, const auto& j) { return convolve(i, j); },
-                  a.array);
+    return foldl([](const auto& i, const auto& j) { return convolve(i, j); },
+                 a.array);
 }
 
 /// Given a set of canonical coefficients describing a reflectance filter,

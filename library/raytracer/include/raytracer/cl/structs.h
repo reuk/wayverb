@@ -49,7 +49,7 @@ constexpr bool operator!=(const reflection& a, const reflection& b) {
     return !(a == b);
 }
 
-//----------------------------------------------------------------------------//
+////////////////////////////////////////////////////////////////////////////////
 
 struct alignas(1 << 5) stochastic_path_info final {
     bands_type volume;   //  product of previous specular components
@@ -83,7 +83,7 @@ constexpr bool operator!=(const stochastic_path_info& a,
     return !(a == b);
 }
 
-//----------------------------------------------------------------------------//
+////////////////////////////////////////////////////////////////////////////////
 
 /// An impulse contains a volume, a time in seconds, and the direction from
 /// which it came (useful for attenuation/hrtf stuff).
@@ -129,7 +129,7 @@ constexpr bool operator!=(const impulse<channels>& a,
     return !(a == b);
 }
 
-//----------------------------------------------------------------------------//
+////////////////////////////////////////////////////////////////////////////////
 
 template <size_t channels>
 struct alignas(1 << 5) attenuated_impulse final {

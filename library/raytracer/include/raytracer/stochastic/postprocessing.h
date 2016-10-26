@@ -29,7 +29,7 @@ constexpr auto array_to_bands_type(const std::array<T, 8>& t) {
     return array_to_bands_type(t, std::make_index_sequence<8>{});
 }
 
-/// See schroder2011 5.3.4. , p.70
+/// See schroder2011 5.3.4., p.70
 
 double constant_mean_event_occurrence(double speed_of_sound,
                                       double room_volume);

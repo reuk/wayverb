@@ -19,7 +19,7 @@ constexpr auto make_bands_type(float f) {
     return construct_vector<simulation_bands>(f);
 }
 
-//----------------------------------------------------------------------------//
+////////////////////////////////////////////////////////////////////////////////
 
 template <size_t bands>
 struct alignas(1 << 5) surface {
@@ -45,7 +45,7 @@ constexpr auto make_surface(float s, float d) {
                           construct_vector<bands>(d)};
 }
 
-//----------------------------------------------------------------------------//
+////////////////////////////////////////////////////////////////////////////////
 
 struct alignas(1 << 3) triangle final {
     cl_uint surface;
@@ -78,7 +78,7 @@ constexpr bool operator!=(const triangle& a, const triangle& b) {
     return !(a == b);
 }
 
-//----------------------------------------------------------------------------//
+////////////////////////////////////////////////////////////////////////////////
 
 struct alignas(1 << 4) triangle_verts final {
     cl_float3 v0;
