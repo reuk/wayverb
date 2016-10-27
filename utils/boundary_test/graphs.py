@@ -60,12 +60,12 @@ def frequency_plot(num, den, label):
     plt.axvline(CUTOFF)
 
 
-def boundary_coefficient_plot(num, den, azimuth, elevation):
+def boundary_coefficient_plot(num, den, azimuth, elevation, label):
     num, den = compute_boundary_coefficients(num, den, azimuth, elevation)
-    frequency_plot(num, den, "predicted response")
+    frequency_plot(num, den, label)
 
 
-def show_graph(free_field_file, subbed_file, num, den, azimuth, elevation):
+def show_graph(free_field_file, subbed_file, reflectance, impedance, azimuth, elevation):
     files = [("free", free_field_file), ("reflection response", subbed_file), ]
 
     def get_signals(f):
@@ -87,15 +87,19 @@ def show_graph(free_field_file, subbed_file, num, den, azimuth, elevation):
     if USE_DB_AXES:
         div = a2db(div)
     do_plot("divided", div)
-    boundary_coefficient_plot(num, den, azimuth, elevation)
 
-    plt.title(
-        " azimuth: " +
-        str(azimuth) +
-        ", elevation: " +
-        str(elevation))
+    def bcp((b, a), az, el, label):
+        boundary_coefficient_plot(b, a, az, el, label)
+
+    bcp(reflectance, azimuth, elevation, "reflectance")
+    bcp(impedance, azimuth, elevation, "impedance")
+
     plt.legend()
 
+def extract_filter_coefficients(item):
+    b = [item["b"]["value" + str(i)] for i in range(len(item["b"]))]
+    a = [item["a"]["value" + str(i)] for i in range(len(item["a"]))]
+    return b, a
 
 def main():
     suffix_free = "_windowed_free_field.wav"
@@ -121,15 +125,16 @@ def main():
 
         num_subplots = len(obj["coefficients"])
         for item, subplot in zip(obj["coefficients"], range(num_subplots)):
-            numerator = [item["coefficients"]["b"][
-                "value" + str(i)] for i in range(len(item["coefficients"]["b"]))]
-            denominator = [item["coefficients"]["a"][
-                "value" + str(i)] for i in range(len(item["coefficients"]["a"]))]
+            b, a = extract_filter_coefficients(item["impedance_coefficients"])
 
-            plt.subplot(num_subplots, 1, subplot + 1)
+            ax = plt.subplot(num_subplots, 1, subplot + 1)
+            ax.set_title(item["name"])
             show_graph(os.path.join(subdir, item["name"] + suffix_free),
                        os.path.join(subdir, item["name"] + suffix_subb),
-                       numerator, denominator, azimuth, elevation)
+                       extract_filter_coefficients(item["reflectance_coefficients"]),
+                       extract_filter_coefficients(item["impedance_coefficients"]),
+                       azimuth,
+                       elevation)
 
         plt.tight_layout()
         plt.show()

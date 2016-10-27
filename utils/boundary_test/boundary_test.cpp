@@ -6,6 +6,7 @@
 #include "waveguide/postprocess.h"
 #include "waveguide/postprocessor/node.h"
 #include "waveguide/preprocessor/soft_source.h"
+#include "waveguide/stable.h"
 #include "waveguide/waveguide.h"
 
 #include "common/almost_equal.h"
@@ -223,13 +224,17 @@ void serialize(T& archive, coefficients_canonical& coefficients) {
 
 struct coefficient_package final {
     std::string name;
-    coefficients_canonical coefficients;
+    coefficients_canonical reflectance_coefficients;
+    coefficients_canonical impedance_coefficients;
 };
 
 template <typename T>
 void serialize(T& archive, coefficient_package& c) {
     archive(cereal::make_nvp("name", c.name),
-            cereal::make_nvp("coefficients", c.coefficients));
+            cereal::make_nvp("reflectance_coefficients",
+                             c.reflectance_coefficients),
+            cereal::make_nvp("impedance_coefficients",
+                             c.impedance_coefficients));
 }
 
 int main(int argc, char** argv) {
@@ -253,53 +258,72 @@ int main(int argc, char** argv) {
 
     //  fitted boundaries  /////////////////////////////////////////////////////
 
-    constexpr auto waveguide_sample_rate = 10000.0;
+    constexpr auto waveguide_sample_rate = 8000.0;
 
-    const auto make_filter_coefficients = [&](const auto& absorption) {
-        const auto band_centres =
-                hrtf_data::hrtf_band_centres(waveguide_sample_rate);
-
-        const auto reflectance = map(
-                [](double i) { return absorption_to_pressure_reflectance(i); },
-                absorption);
-
-        return waveguide::to_impedance_coefficients(
-                waveguide::make_coefficients_canonical(
-                        waveguide::arbitrary_magnitude_filter<
-                                coefficients_canonical::order>(
-                                band_centres, reflectance, 0, 10)));
+    const auto make_reflectance_coefficients = [&](const auto& absorption) {
+        return waveguide::compute_reflectance_filter_coefficients(
+                absorption, waveguide_sample_rate);
     };
 
     try {
         const boundary_test test{
                 output_folder, waveguide_sample_rate, azimuth, elevation};
 
-        aligned::vector<coefficient_package> coefficients_set{
-                {"flat_0",
-                 waveguide::to_flat_coefficients(
-                         make_surface<simulation_bands>(0.0199, 0))},
-                {"flat_1",
-                 waveguide::to_flat_coefficients(
-                         make_surface<simulation_bands>(0.19, 0))},
-                {"flat_2",
-                 waveguide::to_flat_coefficients(
-                         make_surface<simulation_bands>(0.36, 0))},
+        const aligned::vector<std::tuple<const char*, coefficients_canonical>>
+                raw_tests{
+                        //  {"flat_0",
+                        //   waveguide::to_flat_coefficients(
+                        //           make_surface<simulation_bands>(0.0199,
+                        //           0))},
+                        //  {"flat_1",
+                        //   waveguide::to_flat_coefficients(
+                        //           make_surface<simulation_bands>(0.19, 0))},
+                        //  {"flat_2",
+                        //   waveguide::to_flat_coefficients(
+                        //           make_surface<simulation_bands>(0.36, 0))},
 
-                {"flat_fitted_0",
-                 make_filter_coefficients(make_bands_type(0.0199).s)},
-                {"flat_fitted_1",
-                 make_filter_coefficients(make_bands_type(0.19).s)},
-                {"flat_fitted_2",
-                 make_filter_coefficients(make_bands_type(0.36).s)},
+                        //  {"flat_fitted_0",
+                        //   make_filter_coefficients(make_bands_type(0.0199).s)},
+                        //  {"flat_fitted_1",
+                        //   make_filter_coefficients(make_bands_type(0.19).s)},
+                        //  {"flat_fitted_2",
+                        //   make_filter_coefficients(make_bands_type(0.36).s)},
 
-                {"sloping_fitted_0",
-                 make_filter_coefficients(std::array<double, simulation_bands>{
-                         {0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09}})},
-                {"sloping_fitted_1",
-                 make_filter_coefficients(std::array<double, simulation_bands>{
-                         {0.09, 0.08, 0.07, 0.06, 0.05, 0.04, 0.03, 0.02}})},
+                        {"sloping_fitted_0",
+                         make_reflectance_coefficients(
+                                 std::array<double, simulation_bands>{{0.0,
+                                                                       0.05,
+                                                                       0.1,
+                                                                       0.15,
+                                                                       0.2,
+                                                                       0.25,
+                                                                       0.3,
+                                                                       0.35}})},
+                        {"sloping_fitted_1",
+                         make_reflectance_coefficients(
+                                 std::array<double, simulation_bands>{{0.35,
+                                                                       0.3,
+                                                                       0.25,
+                                                                       0.2,
+                                                                       0.15,
+                                                                       0.1,
+                                                                       0.05,
+                                                                       0.0}})},
 
-        };
+                        {"sudden",
+                         make_reflectance_coefficients(
+                                 std::array<double, simulation_bands>{
+                                         {0, 1, 0, 1, 0, 1, 0, 1}})},
+                };
+
+        const auto coefficients_set = map_to_vector(
+                begin(raw_tests), end(raw_tests), [](const auto& tup) {
+                    return coefficient_package{
+                            std::get<0>(tup),
+                            std::get<1>(tup),
+                            waveguide::to_impedance_coefficients(
+                                    std::get<1>(tup))};
+                });
 
         {
             //  Write coefficients to file.
@@ -311,7 +335,7 @@ int main(int argc, char** argv) {
 
         const auto all_test_results = map_to_vector(
                 begin(coefficients_set), end(coefficients_set), [&](auto i) {
-                    return test.run_full_test(i.name, i.coefficients);
+                    return test.run_full_test(i.name, i.impedance_coefficients);
                 });
 
         if (all_test_results.front() == all_test_results.back()) {

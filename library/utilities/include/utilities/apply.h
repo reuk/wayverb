@@ -6,19 +6,23 @@
 #include <tuple>
 #include <utility>
 
-template <typename Callback, typename Collection, size_t... Ix>
-constexpr auto apply(Callback&& callback,
-                     const Collection& c,
-                     std::index_sequence<Ix...>) {
-    return callback(tuple_like_getter<Ix>(c)...);
+template <typename Func, typename... Ts>
+constexpr auto apply_params(Func&& func, Ts&&... ts) {
+    return func(std::forward<Ts>(ts)...);
+}
+
+template <typename Func, typename T, size_t... Ix>
+constexpr auto apply(Func&& func, T&& t, std::index_sequence<Ix...>) {
+    return apply_params(std::forward<Func>(func),
+                        tuple_like_getter<Ix>(std::forward<T>(t))...);
 }
 
 /// Given a callable thing and a tuple of arguments, call the thing using the
 /// tuple contents as arguments.
 template <typename Callback, typename Collection>
-constexpr auto apply(Callback&& callback, const Collection& c) {
+constexpr auto apply(Callback&& callback, Collection&& c) {
     return apply(std::forward<Callback>(callback),
-                 c,
+                 std::forward<Collection>(c),
                  std::make_index_sequence<
                          tuple_like_size_v<decay_const_ref_t<Collection>>>{});
 }

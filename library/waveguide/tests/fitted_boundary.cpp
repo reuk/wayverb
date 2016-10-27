@@ -3,7 +3,6 @@
 #include "utilities/apply.h"
 #include "utilities/decibels.h"
 #include "utilities/for_each.h"
-#include "utilities/zip.h"
 
 #include "gtest/gtest.h"
 
@@ -31,16 +30,14 @@ std::ostream &operator<<(
 TEST(fitted_boundary, eqnerror) {
     const auto test = [](const auto &a, const auto &b) {
         for_each(
-                [](const auto &tup) {
-                    for_each(
-                            [](const auto &tup) {
-                                ASSERT_NEAR(std::get<0>(tup),
-                                            std::get<1>(tup),
-                                            0.00000001);
-                            },
-                            zip(std::get<0>(tup), std::get<1>(tup)));
+                [](auto a, auto b) {
+                    for_each([](auto a,
+                                auto b) { ASSERT_NEAR(a, b, 0.00000001); },
+                             a,
+                             b);
                 },
-                zip(a, b));
+                a,
+                b);
     };
 
     {

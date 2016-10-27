@@ -6,6 +6,10 @@ class progress_bar final {
 public:
     progress_bar(std::ostream& os = std::cerr);
 
+    //  We print a newline on destruction so that separate progress bars get
+    //  separated out.
+    ~progress_bar() noexcept;
+
     void set_progress(float progress);
 
 private:

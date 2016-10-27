@@ -54,34 +54,4 @@ constexpr coefficients<A + B> convolve(const coefficients<A>& a,
 
 coefficients_canonical convolve(const biquad_coefficients_array& a);
 
-template <size_t L>
-constexpr bool is_stable(const std::array<double, L>& a) {
-    auto rci = a[L - 1];
-    if (std::abs(rci) >= 1) {
-        return false;
-    }
-
-    constexpr auto next_size = L - 1;
-    std::array<double, next_size> next_array;
-    for (auto i = 0; i != next_size; ++i) {
-        next_array[i] = (a[i] - rci * a[next_size - i]) / (1 - rci * rci);
-    }
-    return is_stable(next_array);
-}
-
-template <>
-constexpr bool is_stable(const std::array<double, 1>& a) {
-    return true;
-}
-
-template <size_t L>
-constexpr bool is_stable(const coefficients<L>& coeffs) {
-    std::array<double, L + 1> denom;
-    std::copy(std::begin(coeffs.a), std::end(coeffs.a), denom.begin());
-    return is_stable(denom);
-}
-
-coefficients_canonical to_impedance_coefficients(
-        const coefficients_canonical& c);
-
 }  // namespace waveguide

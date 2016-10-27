@@ -1,4 +1,5 @@
 #include "waveguide/filters.h"
+#include "waveguide/fitted_boundary.h"
 #include "waveguide/program.h"
 #include "waveguide/waveguide.h"
 

@@ -25,6 +25,10 @@ void draw_bar(std::ostream& os, float progress) {
 progress_bar::progress_bar(std::ostream& os)
         : os_{os} {}
 
+progress_bar::~progress_bar() noexcept {
+    os_ << '\n';
+}
+
 void progress_bar::set_progress(float progress) {
     progress = std::max(0.0f, std::min(1.0f, progress));
 
