@@ -49,11 +49,11 @@ public:
 private:
     std::string str_;
     double value_;
-};
 
-auto to_tuple(const non_trivial& a) {
-    return std::make_tuple(a.get_str(), a.get_value());
-}
+    friend auto to_tuple(const non_trivial& a) {
+        return std::tie(a.str_, a.value_);
+    }
+};
 
 bool operator==(const non_trivial& a, const non_trivial& b) {
     return to_tuple(a) == to_tuple(b);

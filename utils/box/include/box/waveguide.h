@@ -22,29 +22,24 @@ void lopass(It b, It e, double sample_rate) {
 
     frequency_domain::filter filter{static_cast<size_t>(std::distance(b, e)) *
                                     2};
-    filter.run(
-            b, e, b, [=](auto cplx, auto freq) {
-                const auto ret{
-                        cplx *
-                        static_cast<float>(
-                                frequency_domain::compute_lopass_magnitude(
-                                        freq,
-                                        frequency_domain::edge_and_width{
-                                                normalised_cutoff,
-                                                normalised_width}))};
-                const auto hipass{false};
-                if (hipass) {
-                    const auto low_cutoff{100 / sample_rate};
-                    return ret *
-                           static_cast<float>(
-                                   frequency_domain::compute_hipass_magnitude(
-                                           freq,
-                                           frequency_domain::edge_and_width{
-                                                   low_cutoff,
-                                                   low_cutoff * 2}));
-                }
-                return ret;
-            });
+    filter.run(b, e, b, [=](auto cplx, auto freq) {
+        const auto ret{
+                cplx *
+                static_cast<float>(frequency_domain::compute_lopass_magnitude(
+                        freq,
+                        frequency_domain::edge_and_width{normalised_cutoff,
+                                                         normalised_width}))};
+        const auto hipass{false};
+        if (hipass) {
+            const auto low_cutoff{100 / sample_rate};
+            return ret * static_cast<float>(
+                                 frequency_domain::compute_hipass_magnitude(
+                                         freq,
+                                         frequency_domain::edge_and_width{
+                                                 low_cutoff, low_cutoff * 2}));
+        }
+        return ret;
+    });
 }
 
 template <typename It>
@@ -83,14 +78,15 @@ run_waveguide(const geo::box& box,
 
     //  TODO stop using flat coefficients probably
 
-    auto& mesh{std::get<1>(voxels_and_mesh)};
-    mesh.set_coefficients({waveguide::to_flat_coefficients(absorption)});
+    voxels_and_mesh.mesh.set_coefficients(
+            {waveguide::to_flat_coefficients(absorption)});
 
-    const auto input_node{compute_index(mesh.get_descriptor(), params.source)};
-    const auto output_node{
-            compute_index(mesh.get_descriptor(), params.receiver)};
+    const auto input_node{compute_index(voxels_and_mesh.mesh.get_descriptor(),
+                                        params.source)};
+    const auto output_node{compute_index(voxels_and_mesh.mesh.get_descriptor(),
+                                         params.receiver)};
 
-    const auto grid_spacing{mesh.get_descriptor().spacing};
+    const auto grid_spacing{voxels_and_mesh.mesh.get_descriptor().spacing};
 
     const auto calibration_factor{waveguide::rectilinear_calibration_factor(
             grid_spacing, params.acoustic_impedance)};
@@ -104,14 +100,14 @@ run_waveguide(const geo::box& box,
             input_node, input_signal.begin(), input_signal.end())};
 
     callback_accumulator<waveguide::postprocessor::directional_receiver> post{
-            mesh.get_descriptor(),
+            voxels_and_mesh.mesh.get_descriptor(),
             sample_rate,
             params.acoustic_impedance / params.speed_of_sound,
             output_node};
 
     progress_bar pb;
     run(cc,
-        mesh,
+        voxels_and_mesh.mesh,
         prep,
         [&](auto& queue, const auto& buffer, auto step) {
             post(queue, buffer, step);

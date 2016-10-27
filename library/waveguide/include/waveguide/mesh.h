@@ -31,10 +31,14 @@ mesh compute_mesh(
         float mesh_spacing,
         float speed_of_sound);
 
+struct voxels_and_mesh final {
+    voxelised_scene_data<cl_float3, surface<simulation_bands>> voxels;
+    mesh mesh;
+};
+
 /// this one should be prefered - will set up a voxelised scene with the correct
 /// boundaries, and then will use it to create a mesh
-std::tuple<voxelised_scene_data<cl_float3, surface<simulation_bands>>, mesh>
-compute_voxels_and_mesh(
+voxels_and_mesh compute_voxels_and_mesh(
         const compute_context& cc,
         const generic_scene_data<cl_float3, surface<simulation_bands>>& scene,
         const glm::vec3& anchor,  //  probably the receiver if you want it to

@@ -1,8 +1,8 @@
+#include "waveguide/fitted_boundary.h"
 #include "waveguide/mesh.h"
 #include "waveguide/pcs.h"
 #include "waveguide/postprocessor/node.h"
 #include "waveguide/preprocessor/soft_source.h"
-#include "waveguide/fitted_boundary.h"
 #include "waveguide/waveguide.h"
 
 #include "common/callback_accumulator.h"
@@ -38,19 +38,20 @@ int main() {
             sample_rate,
             speed_of_sound);
 
-    auto& mesh{std::get<1>(voxels_and_mesh)};
-    mesh.set_coefficients({waveguide::to_flat_coefficients(
+    voxels_and_mesh.mesh.set_coefficients({waveguide::to_flat_coefficients(
             make_surface<simulation_bands>(0, 0))});
 
-    const auto input_node = compute_index(mesh.get_descriptor(), source);
+    const auto input_node =
+            compute_index(voxels_and_mesh.mesh.get_descriptor(), source);
 
     //  Set up receivers.
 
     auto output_holders =
             map_to_vector(begin(receivers), end(receivers), [&](auto i) {
-                const auto receiver_index{
-                        compute_index(mesh.get_descriptor(), i)};
-                if (!waveguide::is_inside(mesh, receiver_index)) {
+                const auto receiver_index{compute_index(
+                        voxels_and_mesh.mesh.get_descriptor(), i)};
+                if (!waveguide::is_inside(voxels_and_mesh.mesh,
+                                          receiver_index)) {
                     throw std::runtime_error{"receiver is outside of mesh!"};
                 }
                 return callback_accumulator<waveguide::postprocessor::node>{
@@ -80,7 +81,7 @@ int main() {
 
     progress_bar pb;
     waveguide::run(cc,
-                   mesh,
+                   voxels_and_mesh.mesh,
                    prep,
                    [&](auto& a, const auto& b, auto c) {
                        for (auto& i : output_holders) {

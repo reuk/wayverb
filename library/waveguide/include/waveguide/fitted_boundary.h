@@ -119,18 +119,15 @@ auto to_impedance_coefficients(const coefficients<order>& c) {
 
 template <size_t... Ix>
 constexpr auto make_coefficients_canonical(
-        const std::tuple<std::array<double, coefficients_canonical::order + 1>,
-                         std::array<double, coefficients_canonical::order + 1>>&
-                coeffs,
+        const filter_coefficients<sizeof...(Ix) - 1, sizeof...(Ix) - 1>& coeffs,
         std::index_sequence<Ix...>) {
-    return coefficients_canonical{{std::get<Ix>(std::get<0>(coeffs))...},
-                                  {std::get<Ix>(std::get<1>(coeffs))...}};
+    return coefficients_canonical{{std::get<Ix>(coeffs.b)...},
+                                  {std::get<Ix>(coeffs.a)...}};
 }
 
 constexpr auto make_coefficients_canonical(
-        const std::tuple<std::array<double, coefficients_canonical::order + 1>,
-                         std::array<double, coefficients_canonical::order + 1>>&
-                coeffs) {
+        const filter_coefficients<coefficients_canonical::order,
+                                  coefficients_canonical::order>& coeffs) {
     return make_coefficients_canonical(
             coeffs,
             std::make_index_sequence<coefficients_canonical::order + 1>{});

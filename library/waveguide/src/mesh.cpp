@@ -113,8 +113,7 @@ mesh compute_mesh(
     return {desc, std::move(v)};
 }
 
-std::tuple<voxelised_scene_data<cl_float3, surface<simulation_bands>>, mesh>
-compute_voxels_and_mesh(
+voxels_and_mesh compute_voxels_and_mesh(
         const compute_context& cc,
         const generic_scene_data<cl_float3, surface<simulation_bands>>& scene,
         const glm::vec3& anchor,
@@ -128,7 +127,7 @@ compute_voxels_and_mesh(
             waveguide::compute_adjusted_boundary(
                     geo::get_aabb(scene), anchor, mesh_spacing));
     auto mesh = compute_mesh(cc, voxelised, mesh_spacing, speed_of_sound);
-    return std::make_tuple(std::move(voxelised), std::move(mesh));
+    return {std::move(voxelised), std::move(mesh)};
 }
 
 }  // namespace waveguide

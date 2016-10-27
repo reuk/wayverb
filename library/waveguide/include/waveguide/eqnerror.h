@@ -71,11 +71,24 @@ auto split_real_imag(const Eigen::Matrix<std::complex<double>, Row, Col>& mat) {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-template <size_t M, size_t N, size_t I>
-auto eqnerror(const std::array<double, I>& frequencies,
-              const std::array<std::complex<double>, I>& response,
-              const std::array<double, I>& weight,
-              size_t iter = 0) {
+template <size_t B, size_t A>
+struct filter_coefficients final {
+    using b_order = std::integral_constant<size_t, B>;
+    using a_order = std::integral_constant<size_t, A>;
+
+    using b_size = std::integral_constant<size_t, b_order{} + 1>;
+    using a_size = std::integral_constant<size_t, a_order{} + 1>;
+
+    std::array<double, b_size{}> b;
+    std::array<double, a_size{}> a;
+};
+
+template <size_t B, size_t A, size_t I>
+filter_coefficients<B, A> eqnerror(
+        const std::array<double, I>& frequencies,
+        const std::array<std::complex<double>, I>& response,
+        const std::array<double, I>& weight,
+        size_t iter = 0) {
     using namespace std::complex_literals;
 
     // D0 = D(:); w = w(:); W0 = W(:);
@@ -86,15 +99,15 @@ auto eqnerror(const std::array<double, I>& frequencies,
     // A0 = [-D0(:,ones(N,1)).*exp(-1i*w*(1:N)), exp(-1i*w*(0:M))];
     const auto A0 = [&] {
         const auto first_bit =
-                -D0.template replicate<1, N>().array() *
-                exp((-1.i * w0 * Eigen::Matrix<double, 1, N>::LinSpaced(1, N))
+                -D0.template replicate<1, A>().array() *
+                exp((-1.i * w0 * Eigen::Matrix<double, 1, A>::LinSpaced(1, A))
                             .array());
 
         const auto second_bit = exp(
-                (-1.i * w0 * Eigen::Matrix<double, 1, M + 1>::LinSpaced(0, M))
+                (-1.i * w0 * Eigen::Matrix<double, 1, B + 1>::LinSpaced(0, B))
                         .array());
 
-        Eigen::Matrix<std::complex<double>, I, N + M + 1> ret{};
+        Eigen::Matrix<std::complex<double>, I, A + B + 1> ret{};
         ret << first_bit, second_bit;
         return ret;
     }();
@@ -102,8 +115,8 @@ auto eqnerror(const std::array<double, I>& frequencies,
     // den = ones(L,1);
     Eigen::Matrix<std::complex<double>, I, 1> den =
             Eigen::Matrix<std::complex<double>, I, 1>::Ones();
-    std::array<double, N + 1> a;
-    std::array<double, M + 1> b;
+    std::array<double, A + 1> a;
+    std::array<double, B + 1> b;
 
     // for k = 1:iter,
     for (auto k = 0ul; k != iter + 1; ++k) {
@@ -111,24 +124,24 @@ auto eqnerror(const std::array<double, I>& frequencies,
         const Eigen::Matrix<double, I, 1> W = W0.array() / abs(den.array());
 
         // A = A0.*W(:,ones(M+N+1,1)); D = D0.*W;
-        const Eigen::Matrix<std::complex<double>, I, M + N + 1> A =
-                A0.array() * W.template replicate<1, M + N + 1>().array();
+        const Eigen::Matrix<std::complex<double>, I, B + A + 1> A_mat =
+                A0.array() * W.template replicate<1, B + A + 1>().array();
 
         const Eigen::Matrix<std::complex<double>, I, 1> D =
                 D0.array() * W.array();
 
         // x = [real(A);imag(A)]\[real(D);imag(D)];
-        const auto x = split_real_imag(A).colPivHouseholderQr().solve(
+        const auto x = split_real_imag(A_mat).colPivHouseholderQr().solve(
                 split_real_imag(D));
 
         // a = [1;x(1:N)]; b = x(N+1:M+N+1);
         a = to_array([&] {
-            Eigen::Matrix<double, N + 1, 1> ret{};
-            ret << 1.0, x.template segment<N>(0);
+            Eigen::Matrix<double, A + 1, 1> ret{};
+            ret << 1.0, x.template segment<A>(0);
             return ret;
         }());
         b = to_array(
-                Eigen::Matrix<double, M + 1, 1>{x.template segment<M + 1>(N)});
+                Eigen::Matrix<double, B + 1, 1>{x.template segment<B + 1>(A)});
 
         // den = freqz(a,1,w);
         den = to_eigen_vector(freqz(a, frequencies));
@@ -136,7 +149,7 @@ auto eqnerror(const std::array<double, I>& frequencies,
         // end
     }
 
-    return std::make_tuple(b, a);
+    return {b, a};
 }
 
 }  // namespace waveguide

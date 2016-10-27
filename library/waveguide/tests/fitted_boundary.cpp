@@ -8,17 +8,16 @@
 
 namespace {
 
-template <typename T, size_t B, size_t A>
-std::ostream &operator<<(
-        std::ostream &os,
-        const std::tuple<std::array<T, B>, std::array<T, A>> &tup) {
+template <size_t B, size_t A>
+std::ostream &operator<<(std::ostream &os,
+                         const waveguide::filter_coefficients<B, A> &coeffs) {
     os << "b:\n";
-    for (const auto &b : std::get<0>(tup)) {
+    for (const auto &b : coeffs.b) {
         os << "    " << b << '\n';
     }
 
     os << "a:\n";
-    for (const auto &a : std::get<1>(tup)) {
+    for (const auto &a : coeffs.a) {
         os << "    " << a << '\n';
     }
 
@@ -27,17 +26,15 @@ std::ostream &operator<<(
 
 }  // namespace
 
+template <typename T, size_t N>
+void test_arrays_near(const std::array<T, N>& a, const std::array<T, N>& b) {
+    for_each([](auto a, auto b) { ASSERT_NEAR(a, b, 0.00000001); }, a, b);
+}
+
 TEST(fitted_boundary, eqnerror) {
-    const auto test = [](const auto &a, const auto &b) {
-        for_each(
-                [](auto a, auto b) {
-                    for_each([](auto a,
-                                auto b) { ASSERT_NEAR(a, b, 0.00000001); },
-                             a,
-                             b);
-                },
-                a,
-                b);
+    const auto test = [](const auto &computed, const auto &desired) {
+        test_arrays_near(computed.b, desired.b);
+        test_arrays_near(computed.a, desired.a);
     };
 
     {
@@ -48,12 +45,9 @@ TEST(fitted_boundary, eqnerror) {
                              std::array<double, 3>{{1, 1, 1}}, frequencies, 1),
                      std::array<double, 3>{{1, 1, 1}}),
 
-             std::make_tuple(std::array<double, 3>{{
-                                     -2.6366e-16, 1.0000e+00, 2.0390e-15,
-                             }},
-                             std::array<double, 3>{{
-                                     1.0000e+00, 3.2715e-15, -4.4409e-16,
-                             }}));
+             waveguide::filter_coefficients<2, 2>{
+                     {{-2.6366e-16, 1.0000e+00, 2.0390e-15}},
+                     {{1.0000e+00, 3.2715e-15, -4.4409e-16}}});
     }
 
     {

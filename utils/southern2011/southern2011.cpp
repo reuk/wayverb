@@ -34,12 +34,13 @@ int main() {
             sample_rate,
             speed_of_sound);
 
-    auto& mesh{std::get<1>(voxels_and_mesh)};
-    mesh.set_coefficients({waveguide::to_flat_coefficients(
+    voxels_and_mesh.mesh.set_coefficients({waveguide::to_flat_coefficients(
             make_surface<simulation_bands>(1, 0))});
 
-    const auto input_node = compute_index(mesh.get_descriptor(), source);
-    const auto output_node = compute_index(mesh.get_descriptor(), receiver);
+    const auto input_node =
+            compute_index(voxels_and_mesh.mesh.get_descriptor(), source);
+    const auto output_node =
+            compute_index(voxels_and_mesh.mesh.get_descriptor(), receiver);
 
     // auto input_signal{
     //        waveguide::design_pcs_source(1 << 16, sample_rate, 0.01, 100, 1)
@@ -54,7 +55,7 @@ int main() {
 
     progress_bar pb;
     waveguide::run(cc,
-                   mesh,
+                   voxels_and_mesh.mesh,
                    prep,
                    [&](auto& queue, const auto& buffer, auto step) {
                        post(queue, buffer, step);

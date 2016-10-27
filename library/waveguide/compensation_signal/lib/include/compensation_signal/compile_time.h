@@ -14,8 +14,13 @@ struct locator final {
 };
 
 template <typename T>
+constexpr auto to_tuple(const locator<T>& a) {
+    return std::tie(a.x, a.y, a.z);
+}
+
+template <typename T>
 constexpr bool operator==(const locator<T>& a, const locator<T>& b) {
-    return std::make_tuple(a.x, a.y, a.z) == std::make_tuple(b.x, b.y, b.z);
+    return to_tuple(a) == to_tuple(b);
 }
 
 template <typename T>

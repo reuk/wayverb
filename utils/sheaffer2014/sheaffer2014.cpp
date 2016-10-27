@@ -56,12 +56,13 @@ void test_from_paper() {
             sample_rate,
             speed_of_sound);
 
-    auto& mesh{std::get<1>(voxels_and_mesh)};
-    mesh.set_coefficients({waveguide::to_flat_coefficients(
+    voxels_and_mesh.mesh.set_coefficients({waveguide::to_flat_coefficients(
             make_surface<simulation_bands>(0.005991, 0))});
 
-    const auto input_node = compute_index(mesh.get_descriptor(), source);
-    const auto output_node = compute_index(mesh.get_descriptor(), receiver);
+    const auto input_node =
+            compute_index(voxels_and_mesh.mesh.get_descriptor(), source);
+    const auto output_node =
+            compute_index(voxels_and_mesh.mesh.get_descriptor(), receiver);
 
     //  Now we get to do the interesting new bit:
     //  Set up a physically modelled source signal.
@@ -89,7 +90,7 @@ void test_from_paper() {
 
     progress_bar pb;
     waveguide::run(cc,
-                   mesh,
+                   voxels_and_mesh.mesh,
                    prep,
                    [&](auto& a, const auto& b, auto c) {
                        postprocessor(a, b, c);
@@ -154,12 +155,13 @@ void other_tests() {
             sample_rate,
             speed_of_sound);
 
-    auto& mesh{std::get<1>(voxels_and_mesh)};
-    mesh.set_coefficients({waveguide::to_flat_coefficients(
+    voxels_and_mesh.mesh.set_coefficients({waveguide::to_flat_coefficients(
             make_surface<simulation_bands>(0.005991, 0))});
 
-    const auto input_node = compute_index(mesh.get_descriptor(), source);
-    const auto output_node = compute_index(mesh.get_descriptor(), receiver);
+    const auto input_node =
+            compute_index(voxels_and_mesh.mesh.get_descriptor(), source);
+    const auto output_node =
+            compute_index(voxels_and_mesh.mesh.get_descriptor(), receiver);
 
     //  Now we get to do the interesting new bit:
     //  Set up a physically modelled source signal.
@@ -182,7 +184,7 @@ void other_tests() {
 
             progress_bar pb;
             waveguide::run(cc,
-                           mesh,
+                           voxels_and_mesh.mesh,
                            prep,
                            [&](auto& a, const auto& b, auto c) {
                                postprocessor(a, b, c);
