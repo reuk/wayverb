@@ -16,7 +16,7 @@ file(GLOB_RECURSE private_headers "src/*.h")
 
 add_library(waveguide STATIC ${sources} ${public_headers} ${private_headers} ${outfile})
 
-add_dependencies(waveguide glm_external eigen_external)
+add_dependencies(waveguide glm_external)
 
 target_include_directories(waveguide
     PUBLIC
@@ -27,5 +27,4 @@ target_include_directories(waveguide
     ${CMAKE_CURRENT_BINARY_DIR}
 )
 
-target_link_libraries(waveguide common samplerate)
-
+target_link_libraries(waveguide common samplerate itpp)

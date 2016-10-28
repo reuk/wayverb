@@ -13,3 +13,9 @@ struct filter_coefficients final {
     std::array<double, b_size{}> b;
     std::array<double, a_size{}> a;
 };
+
+template <size_t B, size_t A>
+constexpr auto make_filter_coefficients(const std::array<double, B>& b,
+                                        const std::array<double, A>& a) {
+    return filter_coefficients<B - 1, A - 1>{b, a};
+}

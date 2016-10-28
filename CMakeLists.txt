@@ -25,8 +25,6 @@ else()
 
     include(dependencies.txt)
 
-    add_subdirectory(submodules)
-
     enable_testing()
     add_subdirectory(library)
     add_subdirectory(utils)

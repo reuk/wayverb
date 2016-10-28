@@ -106,14 +106,23 @@ ExternalProject_Add(
     CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR> -DJUST_INSTALL_CEREAL=ON
 )
 
-# eigen ########################################################################
+# itpp #########################################################################
+
+# The only tag, r4.3.0, has a bunch of build warnings, so we just get the most
+# recent one and hope that it's less broken and compatible.
+# We also hobble the library by hiding some packages from it, which makes
+# linking a bit simpler.
 
 ExternalProject_Add(
-    eigen_external
+    itpp_external
     PREFIX ${CMAKE_BINARY_DIR}
-    DOWNLOAD_COMMAND ${GIT_EXECUTABLE} clone --depth 1 --branch 3.1.2 https://github.com/RLovelett/eigen.git eigen_external
-    CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
+    DOWNLOAD_COMMAND ${GIT_EXECUTABLE} clone --depth 1 git://git.code.sf.net/p/itpp/git itpp_external
+    CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR> -DITPP_SHARED_LIB=off -DHTML_DOCS=off -DCMAKE_DISABLE_FIND_PACKAGE_BLAS=on -DCMAKE_DISABLE_FIND_PACKAGE_LAPACK=on -DCMAKE_DISABLE_FIND_PACKAGE_FFT=on
 )
+
+add_library(itpp UNKNOWN IMPORTED)
+set_property(TARGET itpp PROPERTY IMPORTED_LOCATION ${CMAKE_BINARY_DIR}/lib/libitpp_static.a)
+add_dependencies(itpp itpp_external)
 
 # opencl #######################################################################
 
