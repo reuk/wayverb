@@ -52,34 +52,42 @@ auto arbitrary_magnitude_filter(const std::array<double, N>& centres,
 
     const auto scaled_centres = map([](auto i) { return i * M_PI; }, centres);
 
-    const auto points = zip_to_point_array(scaled_centres, amplitudes);
+//    const auto points = zip_to_point_array(scaled_centres, amplitudes);
+//
+//    constexpr auto specification_points = 1<<4;
+//    std::array<double, specification_points> interp_amplitudes;
+//    std::array<double, specification_points> interp_frequencies;
+//
+//    for (auto i = 0; i != specification_points; ++i) {
+//        interp_frequencies[i] = i * M_PI / specification_points;
+//        /// TODO If we want to interpolate a sorted list, we could go faster
+//        /// because we don't need to binary search each time.
+//        interp_amplitudes[i] = interp(begin(points),
+//                                      end(points),
+//                                      interp_frequencies[i],
+//                                      cosine_interp_functor{});
+//    }
+//
+//    const auto response =
+//            make_response(interp_amplitudes, interp_frequencies, delay);
+//
+//    ///	TODO I don't really know how to specify error weightings.
+//    const auto error_weighting = [&] {
+//        std::array<double, specification_points> ret;
+//        std::fill(begin(ret), end(ret), 1);
+//        return ret;
+//    }();
 
-    constexpr auto specification_points = 100;
-    std::array<double, specification_points> interp_amplitudes;
-    std::array<double, specification_points> interp_frequencies;
-
-    for (auto i = 0; i != specification_points; ++i) {
-        interp_frequencies[i] = i * M_PI / specification_points;
-        /// TODO If we want to interpolate a sorted list, we could go faster
-        /// because we don't need to binary search each time.
-        interp_amplitudes[i] = interp(begin(points),
-                                      end(points),
-                                      interp_frequencies[i],
-                                      cosine_interp_functor{});
-    }
-
-    const auto response =
-            make_response(interp_amplitudes, interp_frequencies, delay);
-
-    ///	TODO I don't really know how to specify error weightings.
     const auto error_weighting = [&] {
-        std::array<double, specification_points> ret;
+        std::array<double, N> ret;
         std::fill(begin(ret), end(ret), 1);
         return ret;
     }();
 
+    const auto response = make_response(amplitudes, scaled_centres, delay);
+
     return eqnerror<OutputOrder, OutputOrder>(
-            interp_frequencies, response, error_weighting, iterations);
+            centres, response, error_weighting, iterations);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -156,18 +164,19 @@ aligned::vector<coefficients_canonical> to_flat_coefficients(
 template <typename T>
 auto compute_reflectance_filter_coefficients(T&& absorption,
                                              double sample_rate) {
-    const auto band_centres = hrtf_data::hrtf_band_centres(sample_rate);
+    const auto band_centres = map([](auto i) {return i * 2;},hrtf_data::hrtf_band_centres(sample_rate));
     const auto reflectance =
             map([](double i) { return absorption_to_pressure_reflectance(i); },
                 absorption);
 
-    for (auto delay = 0; delay != 50; ++delay) {
+    constexpr auto lim = 1000;
+    for (auto delay = 0; delay != lim; ++delay) {
         const auto reflectance_coeffs = make_coefficients_canonical(
                 arbitrary_magnitude_filter<coefficients_canonical::order>(
                         band_centres,
                         reflectance,
                         coefficients_canonical::order,
-                        10));
+                        20));
 
         if (is_stable(reflectance_coeffs.a)) {
             return reflectance_coeffs;

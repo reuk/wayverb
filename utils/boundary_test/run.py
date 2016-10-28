@@ -2,12 +2,9 @@
 
 from subprocess import call
 from os.path import join
-from os import environ
 from math import pi
 
 from paths import *
-
-environ["GLOG_logtostderr"] = "1"
 
 def main():
     for azimuth, elevation in [

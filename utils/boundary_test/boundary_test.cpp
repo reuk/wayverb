@@ -27,8 +27,11 @@
 
 #include "audio_file/audio_file.h"
 
+#include "cereal/archives/json.hpp"
+
 #include <algorithm>
 #include <cmath>
+#include <fstream>
 #include <iomanip>
 #include <iostream>
 #include <map>
@@ -329,8 +332,8 @@ int main(int argc, char** argv) {
             //  Write coefficients to file.
             std::ofstream file{
                     build_string(output_folder, "/coefficients.txt")};
-            cereal::JSONOutputArchive archive{file};
-            archive(cereal::make_nvp("coefficients", coefficients_set));
+            cereal::JSONOutputArchive{file}(
+                    cereal::make_nvp("coefficients", coefficients_set));
         }
 
         const auto all_test_results = map_to_vector(

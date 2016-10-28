@@ -1,5 +1,6 @@
 #pragma once
 
+#include "common/filter_coefficients.h"
 #include "common/freqz.h"
 
 #include "utilities/foldl.h"
@@ -70,18 +71,6 @@ auto split_real_imag(const Eigen::Matrix<std::complex<double>, Row, Col>& mat) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
-template <size_t B, size_t A>
-struct filter_coefficients final {
-    using b_order = std::integral_constant<size_t, B>;
-    using a_order = std::integral_constant<size_t, A>;
-
-    using b_size = std::integral_constant<size_t, b_order{} + 1>;
-    using a_size = std::integral_constant<size_t, a_order{} + 1>;
-
-    std::array<double, b_size{}> b;
-    std::array<double, a_size{}> a;
-};
 
 template <size_t B, size_t A, size_t I>
 filter_coefficients<B, A> eqnerror(

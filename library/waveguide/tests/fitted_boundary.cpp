@@ -1,8 +1,12 @@
 #include "waveguide/fitted_boundary.h"
 
+#include "common/serialize/filter_coefficients.h"
+
 #include "utilities/apply.h"
 #include "utilities/decibels.h"
 #include "utilities/for_each.h"
+
+#include "cereal/archives/json.hpp"
 
 #include "gtest/gtest.h"
 
@@ -10,17 +14,8 @@ namespace {
 
 template <size_t B, size_t A>
 std::ostream &operator<<(std::ostream &os,
-                         const waveguide::filter_coefficients<B, A> &coeffs) {
-    os << "b:\n";
-    for (const auto &b : coeffs.b) {
-        os << "    " << b << '\n';
-    }
-
-    os << "a:\n";
-    for (const auto &a : coeffs.a) {
-        os << "    " << a << '\n';
-    }
-
+                         const filter_coefficients<B, A> &coeffs) {
+    cereal::JSONOutputArchive{os}(coeffs);
     return os;
 }
 
@@ -45,7 +40,7 @@ TEST(fitted_boundary, eqnerror) {
                              std::array<double, 3>{{1, 1, 1}}, frequencies, 1),
                      std::array<double, 3>{{1, 1, 1}}),
 
-             waveguide::filter_coefficients<2, 2>{
+             filter_coefficients<2, 2>{
                      {{-2.6366e-16, 1.0000e+00, 2.0390e-15}},
                      {{1.0000e+00, 3.2715e-15, -4.4409e-16}}});
     }

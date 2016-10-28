@@ -125,7 +125,7 @@ def main():
 
         num_subplots = len(obj["coefficients"])
         for item, subplot in zip(obj["coefficients"], range(num_subplots)):
-            b, a = extract_filter_coefficients(item["impedance_coefficients"])
+            #b, a = extract_filter_coefficients(item["impedance_coefficients"])
 
             ax = plt.subplot(num_subplots, 1, subplot + 1)
             ax.set_title(item["name"])

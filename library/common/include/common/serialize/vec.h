@@ -1,13 +1,11 @@
 #pragma once
 
-#include "common/serialize/json_read_write.h"
-
 #include "glm/glm.hpp"
 
-namespace glm {
+namespace cereal {
 
 template <typename Archive>
-void serialize(Archive& archive, vec3& m) {
+void serialize(Archive& archive, glm::vec3& m) {
     cereal::size_type s = 3;
     archive(cereal::make_size_tag(s));
     if (s != 3) {
@@ -16,5 +14,4 @@ void serialize(Archive& archive, vec3& m) {
     archive(m.x, m.y, m.z);
 }
 
-}  // namespace glm
-JSON_OSTREAM_OVERLOAD(glm::vec3);
+}  // namespace cereal

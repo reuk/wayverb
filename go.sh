@@ -2,7 +2,6 @@ mkdir -p build
 cd build
 
 export CL_LOG_ERRORS=stdout
-export GLOG_logtostderr=1
 #export GTEST_FILTER="*fitted_boundary*"
 #cmake .. && make && ctest -V
 
@@ -29,4 +28,6 @@ export GLOG_logtostderr=1
 #cmake .. && make && cd utils/southern2011 && ./southern2011
 #cmake .. && make && cd utils/siltanen2013 && ./siltanen2013
 
-cmake .. && make && cd ../utils/boundary_test && ./run_and_graph.sh
+#cmake .. && make && cd ../utils/boundary_test && ./run_and_graph.sh
+
+cmake .. && make && cd ../utils/fitted_boundary && ./run_and_graph.sh
