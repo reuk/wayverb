@@ -1,5 +1,8 @@
 #pragma once
 
+#include "waveguide/frequency_domain_envelope.h"
+
+#include "common/cosine_interp.h"
 #include "common/filter_coefficients.h"
 
 #include "itpp/signal/filter_design.h"
@@ -8,11 +11,11 @@ namespace waveguide {
 
 namespace detail {
 
-template <size_t I>
-auto to_itpp_vec(const std::array<double, I>& x) {
-    itpp::vec ret(I);
-    for (auto i = 0; i != I; ++i) {
-        ret[i] = x[i];
+template <typename It>
+auto to_itpp_vec(It b, It e) {
+    itpp::vec ret(std::distance(b, e));
+    for (auto i = 0; b != e; ++b, ++i) {
+        ret[i] = *b;
     }
     return ret;
 }
@@ -34,15 +37,46 @@ auto to_array(const itpp::vec& x) {
 
 }  // namespace detail
 
+////////////////////////////////////////////////////////////////////////////////
+
+constexpr auto make_interp_point(const frequency_domain_envelope::point& pt) {
+    struct ret final {double x; double y;};
+    return ret{pt.frequency, pt.amplitude};
+}
+
+template <typename It>
+constexpr auto make_interp_iterator(It it) {
+    return make_mapping_iterator_adapter(std::move(it), make_interp_point);
+}
+
 /// Given a sorted array of frequencies from 0-1 (dc to nyquist) and an array of
 /// amplitudes, create an IIR filter of order N which approximates this
 /// frequency response.
-template <size_t N, size_t I>
-auto arbitrary_magnitude_filter(const std::array<double, I>& f,
-                                const std::array<double, I>& m) {
+template <size_t N>
+auto arbitrary_magnitude_filter(frequency_domain_envelope env) {
+    remove_outside_frequency_range(env, make_range(0.0, 1.0));
+    env.insert(frequency_domain_envelope::point{0.0, 0.0});
+    env.insert(frequency_domain_envelope::point{1.0, 0.0});
+
+    const auto new_envelope = [&] {
+        const auto npts = 256;
+        frequency_domain_envelope ret;
+        for (auto i = 0; i != npts; ++i) {
+            const auto frequency = i / (npts - 1.0);
+            ret.insert(frequency_domain_envelope::point{frequency, interp(make_interp_iterator(env.cbegin()), make_interp_iterator(env.cend()), frequency, linear_interp_functor{})});
+        }
+        return ret;
+    }();
+
     itpp::vec b;
     itpp::vec a;
-    yulewalk(N, detail::to_itpp_vec(f), detail::to_itpp_vec(m), b, a);
+    yulewalk(N,
+             detail::to_itpp_vec(make_frequency_iterator(new_envelope.cbegin()),
+                                 make_frequency_iterator(new_envelope.cend())),
+             detail::to_itpp_vec(make_amplitude_iterator(new_envelope.cbegin()),
+                                 make_amplitude_iterator(new_envelope.cend())),
+             b,
+             a);
     return make_filter_coefficients(detail::to_array<N + 1>(b),
                                     detail::to_array<N + 1>(a));
 }

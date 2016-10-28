@@ -57,11 +57,13 @@ auto interp(It b, It e, double a, Func&& func) {
             });
 
     if (it == b) {
-        return b->y;
+        auto tmp = *b;
+        return tmp.y;
     }
 
     if (it == e) {
-        return (e - 1)->y;
+        auto tmp = *(e - 1);
+        return tmp.y;
     }
 
     const auto a1 = *(it - 1);

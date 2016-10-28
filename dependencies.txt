@@ -7,65 +7,65 @@
 # The advantage of this approach is that we can deal with cmake and autotools
 # builds in much the same way.
 # Also cmake can magically download stuff from nearly anywhere which is neat.
-# The disadvantage is that we have to hard-code the names of the generated
-# libraries that we want to use, which will change between platforms.
-# While we target macOS alone, this isn't a problem, but it might turn into a
-# problem if we target Windows at any point.
 
 include(ExternalProject)
 find_package(Git REQUIRED)
+
+set(DEPENDENCY_INSTALL_PREFIX ${CMAKE_BINARY_DIR})
+
+#set(GLOBAL_DEPENDENCY_CMAKE_FLAGS -GNinja)
 
 # glm ##########################################################################
 
 ExternalProject_Add(
     glm_external
-    PREFIX ${CMAKE_BINARY_DIR}
+    PREFIX ${DEPENDENCY_INSTALL_PREFIX}
     DOWNLOAD_COMMAND ${GIT_EXECUTABLE} clone --depth 1 --branch 0.9.8.1 https://github.com/g-truc/glm.git glm_external
-    CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR> 
+    CMAKE_ARGS ${GLOBAL_DEPENDENCY_CMAKE_FLAGS} -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR> 
 )
 
 # assimp #######################################################################
 
 ExternalProject_Add(
     assimp_external
-    PREFIX ${CMAKE_BINARY_DIR}
+    PREFIX ${DEPENDENCY_INSTALL_PREFIX}
     DOWNLOAD_COMMAND ${GIT_EXECUTABLE} clone --depth 1 --branch v3.3.1 https://github.com/assimp/assimp.git assimp_external
-    CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR> -DASSIMP_BUILD_TESTS=OFF -DASSIMP_BUILD_STATIC_LIB=ON -DBUILD_SHARED_LIBS=OFF -DASSIMP_BUILD_ZLIB=ON
+    CMAKE_ARGS ${GLOBAL_DEPENDENCY_CMAKE_FLAGS} -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR> -DASSIMP_BUILD_TESTS=OFF -DASSIMP_BUILD_STATIC_LIB=ON -DBUILD_SHARED_LIBS=OFF -DASSIMP_BUILD_ZLIB=ON
 )
 
 add_library(assimp UNKNOWN IMPORTED)
-set_property(TARGET assimp PROPERTY IMPORTED_LOCATION ${CMAKE_BINARY_DIR}/lib/libassimp.a)
 add_dependencies(assimp assimp_external) 
+set_property(TARGET assimp PROPERTY IMPORTED_LOCATION ${DEPENDENCY_INSTALL_PREFIX}/lib/libassimp.a)
 
 add_library(zlibstatic UNKNOWN IMPORTED)
-set_property(TARGET zlibstatic PROPERTY IMPORTED_LOCATION ${CMAKE_BINARY_DIR}/lib/libzlibstatic.a)
 add_dependencies(zlibstatic assimp_external) 
+set_property(TARGET zlibstatic PROPERTY IMPORTED_LOCATION ${DEPENDENCY_INSTALL_PREFIX}/lib/libzlibstatic.a)
 
-# fftw3 ########################################################################
+# fftw3 float ##################################################################
 
 ExternalProject_Add(
-    fftw_external
-    PREFIX ${CMAKE_BINARY_DIR}
+    fftwf_external
+    PREFIX ${DEPENDENCY_INSTALL_PREFIX}
     URL http://fftw.org/fftw-3.3.5.tar.gz
     CONFIGURE_COMMAND <SOURCE_DIR>/configure --prefix=<INSTALL_DIR> --enable-float
 )
 
 add_library(fftwf UNKNOWN IMPORTED)
-set_property(TARGET fftwf PROPERTY IMPORTED_LOCATION ${CMAKE_BINARY_DIR}/lib/libfftw3f.a)
-add_dependencies(fftwf fftw_external) 
+add_dependencies(fftwf fftwf_external) 
+set_property(TARGET fftwf PROPERTY IMPORTED_LOCATION ${DEPENDENCY_INSTALL_PREFIX}/lib/libfftw3f.a)
 
 # sndfile ######################################################################
 
 ExternalProject_Add(
     sndfile_external
-    PREFIX ${CMAKE_BINARY_DIR}
+    PREFIX ${DEPENDENCY_INSTALL_PREFIX}
     DOWNLOAD_COMMAND ${GIT_EXECUTABLE} clone --depth 1 --branch 1.0.27 https://github.com/erikd/libsndfile.git sndfile_external
-    CONFIGURE_COMMAND <SOURCE_DIR>/autogen.sh && <SOURCE_DIR>/configure --prefix=<INSTALL_DIR> --disable-external-libs
+    CONFIGURE_COMMAND <SOURCE_DIR>/autogen.sh && <SOURCE_DIR>/configure --disable-external-libs --prefix=<INSTALL_DIR>
 )
 
 add_library(sndfile UNKNOWN IMPORTED)
-set_property(TARGET sndfile PROPERTY IMPORTED_LOCATION ${CMAKE_BINARY_DIR}/lib/libsndfile.a)
 add_dependencies(sndfile sndfile_external) 
+set_property(TARGET sndfile PROPERTY IMPORTED_LOCATION ${DEPENDENCY_INSTALL_PREFIX}/lib/libsndfile.a)
 
 # samplerate ###################################################################
 
@@ -74,39 +74,50 @@ add_dependencies(sndfile sndfile_external)
 
 ExternalProject_Add(
     samplerate_external
-    PREFIX ${CMAKE_BINARY_DIR}
+    PREFIX ${DEPENDENCY_INSTALL_PREFIX}
     DOWNLOAD_COMMAND ${GIT_EXECUTABLE} clone --depth 1 https://github.com/erikd/libsamplerate.git samplerate_external
     PATCH_COMMAND ${GIT_EXECUTABLE} apply ${CMAKE_SOURCE_DIR}/fix_carbon.patch
     CONFIGURE_COMMAND <SOURCE_DIR>/autogen.sh && <SOURCE_DIR>/configure --prefix=<INSTALL_DIR> --disable-dependency-tracking 
 )
 
 add_library(samplerate UNKNOWN IMPORTED)
-set_property(TARGET samplerate PROPERTY IMPORTED_LOCATION ${CMAKE_BINARY_DIR}/lib/libsamplerate.a)
 add_dependencies(samplerate samplerate_external) 
+set_property(TARGET samplerate PROPERTY IMPORTED_LOCATION ${DEPENDENCY_INSTALL_PREFIX}/lib/libsamplerate.a)
 
 # gtest ########################################################################
 
 ExternalProject_Add(
     gtest_external
-    PREFIX ${CMAKE_BINARY_DIR}
+    PREFIX ${DEPENDENCY_INSTALL_PREFIX}
     DOWNLOAD_COMMAND ${GIT_EXECUTABLE} clone --depth 1 --branch release-1.8.0 https://github.com/google/googletest.git gtest_external
-    CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR> 
+    CMAKE_ARGS ${GLOBAL_DEPENDENCY_CMAKE_FLAGS} -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR> 
 )
 
 add_library(gtest UNKNOWN IMPORTED)
-set_property(TARGET gtest PROPERTY IMPORTED_LOCATION ${CMAKE_BINARY_DIR}/lib/libgtest.a)
 add_dependencies(gtest gtest_external) 
+set_property(TARGET gtest PROPERTY IMPORTED_LOCATION ${DEPENDENCY_INSTALL_PREFIX}/lib/libgtest.a)
 
 # cereal #######################################################################
 
 ExternalProject_Add(
     cereal_external
-    PREFIX ${CMAKE_BINARY_DIR}
+    PREFIX ${DEPENDENCY_INSTALL_PREFIX}
     DOWNLOAD_COMMAND ${GIT_EXECUTABLE} clone --depth 1 --branch v1.2.1 https://github.com/USCiLab/cereal.git cereal_external
-    CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR> -DJUST_INSTALL_CEREAL=ON
+    CMAKE_ARGS ${GLOBAL_DEPENDENCY_CMAKE_FLAGS} -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR> -DJUST_INSTALL_CEREAL=ON
 )
 
 # itpp #########################################################################
+
+ExternalProject_Add(
+    fftw_external
+    PREFIX ${DEPENDENCY_INSTALL_PREFIX}
+    URL http://fftw.org/fftw-3.3.5.tar.gz
+    CONFIGURE_COMMAND <SOURCE_DIR>/configure --prefix=<INSTALL_DIR>
+)
+
+add_library(fftw UNKNOWN IMPORTED)
+add_dependencies(fftw fftw_external)
+set_property(TARGET fftw PROPERTY IMPORTED_LOCATION ${DEPENDENCY_INSTALL_PREFIX}/lib/libfftw3.a)
 
 # The only tag, r4.3.0, has a bunch of build warnings, so we just get the most
 # recent one and hope that it's less broken and compatible.
@@ -115,22 +126,28 @@ ExternalProject_Add(
 
 ExternalProject_Add(
     itpp_external
-    PREFIX ${CMAKE_BINARY_DIR}
+    PREFIX ${DEPENDENCY_INSTALL_PREFIX}
     DOWNLOAD_COMMAND ${GIT_EXECUTABLE} clone --depth 1 git://git.code.sf.net/p/itpp/git itpp_external
-    CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR> -DITPP_SHARED_LIB=off -DHTML_DOCS=off -DCMAKE_DISABLE_FIND_PACKAGE_BLAS=on -DCMAKE_DISABLE_FIND_PACKAGE_LAPACK=on -DCMAKE_DISABLE_FIND_PACKAGE_FFT=on
+    CMAKE_ARGS ${GLOBAL_DEPENDENCY_CMAKE_FLAGS} -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR> -DITPP_SHARED_LIB=off -DHTML_DOCS=off #-DCMAKE_DISABLE_FIND_PACKAGE_BLAS=on -DCMAKE_DISABLE_FIND_PACKAGE_LAPACK=on
 )
 
+add_dependencies(itpp_external fftw_external)
+
 add_library(itpp UNKNOWN IMPORTED)
-set_property(TARGET itpp PROPERTY IMPORTED_LOCATION ${CMAKE_BINARY_DIR}/lib/libitpp_static.a)
 add_dependencies(itpp itpp_external)
+set_property(TARGET itpp PROPERTY IMPORTED_LOCATION ${DEPENDENCY_INSTALL_PREFIX}/lib/libitpp_static.a)
+
+find_package(BLAS REQUIRED)
+find_package(LAPACK REQUIRED)
+set(ITPP_LIBRARIES itpp fftw ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
 
 # opencl #######################################################################
 
 ExternalProject_Add(
     opencl_cpp_external
-    PREFIX ${CMAKE_BINARY_DIR}
+    PREFIX ${DEPENDENCY_INSTALL_PREFIX}
     DOWNLOAD_COMMAND ${GIT_EXECUTABLE} clone --depth 1 --branch v2.0.10 https://github.com/KhronosGroup/OpenCL-CLHPP.git opencl_cpp_external
-    CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>/include -DBUILD_DOCS=OFF -DBUILD_EXAMPLES=OFF -DBUILD_TESTS=OFF
+    CMAKE_ARGS ${GLOBAL_DEPENDENCY_CMAKE_FLAGS} -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>/include -DBUILD_DOCS=OFF -DBUILD_EXAMPLES=OFF -DBUILD_TESTS=OFF
 )
 
 find_package(OpenCL REQUIRED)

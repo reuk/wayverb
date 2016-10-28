@@ -27,4 +27,4 @@ target_include_directories(waveguide
     ${CMAKE_CURRENT_BINARY_DIR}
 )
 
-target_link_libraries(waveguide common samplerate itpp)
+target_link_libraries(waveguide common samplerate ${ITPP_LIBRARIES})

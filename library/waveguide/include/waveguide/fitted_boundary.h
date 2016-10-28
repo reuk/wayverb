@@ -99,7 +99,8 @@ auto compute_reflectance_filter_coefficients(T&& absorption,
     for (auto delay = 0; delay != lim; ++delay) {
         const auto reflectance_coeffs = make_coefficients_canonical(
                 arbitrary_magnitude_filter<coefficients_canonical::order>(
-                        band_centres, reflectance));
+                        make_frequency_domain_envelope(band_centres,
+                                                       reflectance)));
 
         if (is_stable(reflectance_coeffs.a)) {
             return reflectance_coeffs;

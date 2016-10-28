@@ -52,8 +52,6 @@ def main():
 
     for item, subplot in zip(root, range(num_subplots)):
         key, value = item.popitem()
-        print key
-        print value
         ax = plt.subplot(num_subplots, 1, subplot + 1)
         ax.set_title(key)
 

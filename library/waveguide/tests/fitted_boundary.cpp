@@ -31,8 +31,8 @@ TEST(fitted_boundary, compute_boundary_filter) {
     constexpr std::array<double, 5> amplitudes{{0, 1, 0.5, 1, 0}};
     constexpr auto order = 6;
 
-    const auto coeffs =
-            waveguide::arbitrary_magnitude_filter<order>(centres, amplitudes);
+    const auto coeffs = waveguide::arbitrary_magnitude_filter<order>(
+            waveguide::make_frequency_domain_envelope(centres, amplitudes));
 
     std::cout << coeffs << '\n';
 }

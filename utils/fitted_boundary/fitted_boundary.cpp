@@ -30,15 +30,19 @@ void serialize(Archive& archive, reflectance_and_impedance& rai) {
 }  // namespace cereal
 
 template <size_t... Ix>
-constexpr auto make_slope_array(double begin, double end, std::index_sequence<Ix...>) {
-    return std::array<double, sizeof...(Ix)>{{
-        linear_interp(Ix / (sizeof...(Ix) - 1.0), begin, end)...}};
+constexpr auto make_slope_array(double begin,
+                                double end,
+                                std::index_sequence<Ix...>) {
+    return std::array<double, sizeof...(Ix)>{
+            {linear_interp(Ix / (sizeof...(Ix) - 1.0), begin, end)...}};
 }
 
 template <size_t N>
 constexpr auto make_slope_array(double begin, double end) {
     return make_slope_array(begin, end, std::make_index_sequence<N>{});
 }
+
+////////////////////////////////////////////////////////////////////////////////
 
 int main(int argc, char** argv) {
     constexpr auto sample_rate = 44100.0;
@@ -51,16 +55,15 @@ int main(int argc, char** argv) {
     const auto reflectance = std::vector<named_value<coefficients_canonical>>{
             {"sloping_fitted_0",
              make_reflectance_coefficients(
-             make_slope_array<simulation_bands>(0.5, 1))},
+                     make_slope_array<simulation_bands>(0, 1))},
 
-           {"sloping_fitted_1",
-            make_reflectance_coefficients(
-            make_slope_array<simulation_bands>(1, 0.5))},
-            /*
-           {"sudden",
-            make_reflectance_coefficients(std::array<double, simulation_bands>{
-                    {0, 1, 0, 1, 0, 1, 0, 1}})},
-                    */
+            {"sloping_fitted_1",
+             make_reflectance_coefficients(
+                     make_slope_array<simulation_bands>(1, 0))},
+
+            {"sudden",
+             make_reflectance_coefficients(std::array<double, simulation_bands>{
+                     {0, 1, 0, 1, 0, 1, 0, 1}})},
     };
 
     const auto output = map_to_vector(
