@@ -1,19 +1,11 @@
 #include "combined/engine.h"
+#include "combined/postprocess.h"
 
 #include "raytracer/postprocess.h"
 #include "raytracer/raytracer.h"
 #include "raytracer/reflector.h"
 
-#include "waveguide/boundary_adjust.h"
-#include "waveguide/config.h"
-#include "waveguide/make_transparent.h"
-#include "waveguide/mesh.h"
-#include "waveguide/postprocess.h"
-#include "waveguide/postprocessor/directional_receiver.h"
-#include "waveguide/postprocessor/visualiser.h"
-#include "waveguide/preprocessor/hard_source.h"
-#include "waveguide/setup.h"
-#include "waveguide/waveguide.h"
+#include "waveguide/canonical.h"
 
 #include "common/attenuator/hrtf.h"
 #include "common/attenuator/microphone.h"
@@ -24,6 +16,7 @@
 #include "common/dc_blocker.h"
 #include "common/filters_common.h"
 #include "common/kernel.h"
+#include "common/model/receiver.h"
 #include "common/pressure_intensity.h"
 #include "common/spatial_division/voxelised_scene_data.h"
 #include "common/surfaces.h"
@@ -34,129 +27,56 @@
 
 namespace {
 
+template <typename Histogram>
 class intermediate_impl : public wayverb::intermediate {
 public:
-    static constexpr auto bands = 8;
-
-    intermediate_impl(
-            const glm::vec3& source,
-            const glm::vec3& receiver,
-            double speed_of_sound,
-            double acoustic_impedance,
-            double waveguide_sample_rate,
-            raytracer::results<impulse<bands>> raytracer_results,
-            aligned::vector<
-                    waveguide::postprocessor::directional_receiver::output>
-                    waveguide_results)
-            : source_{source}
-            , receiver_{receiver}
-            , speed_of_sound_{speed_of_sound}
+    intermediate_impl(wayverb::combined_results<Histogram> to_process,
+                      const glm::vec3& receiver_position,
+                      double room_volume,
+                      double acoustic_impedance,
+                      double speed_of_sound)
+            : to_process_{std::move(to_process)}
+            , receiver_position_{receiver_position}
+            , room_volume_{room_volume}
             , acoustic_impedance_{acoustic_impedance}
-            , waveguide_sample_rate_{waveguide_sample_rate}
-            , raytracer_results_{std::move(raytracer_results)}
-            , waveguide_results_{std::move(waveguide_results)} {}
+            , speed_of_sound_{speed_of_sound} {}
 
     aligned::vector<aligned::vector<float>> attenuate(
-            const compute_context& cc,
-            const model::receiver_settings& receiver,
-            double output_sample_rate,
-            double max_length_in_seconds,
-            const state_callback& callback) const override {
-        callback(wayverb::state::postprocessing, 1.0);
-
-        //  attenuate raytracer results
-        const auto b_impulses = raytracer_results_.begin(),
-                   e_impulses = raytracer_results_.end();
-        auto raytracer_output =
-                raytracer::run_attenuation(b_impulses,
-                                           e_impulses,
-                                           receiver,
-                                           speed_of_sound_,
-                                           output_sample_rate,
-                                           max_length_in_seconds);
-
-        //  attenuate waveguide results
-        auto waveguide_output =
-                waveguide::run_attenuation(begin(waveguide_results_),
-                                           end(waveguide_results_),
-                                           receiver,
-                                           acoustic_impedance_,
-                                           waveguide_sample_rate_);
-
-        //  correct raytracer results for dc
-        filter::extra_linear_dc_blocker blocker;
-        for (auto& i : raytracer_output) {
-            filter::run_two_pass(blocker, i.begin(), i.end());
-        }
-
-        //  correct waveguide results for dc
-        for (auto& i : waveguide_output) {
-            filter::run_two_pass(blocker, i.begin(), i.end());
-        }
-
-        //  correct waveguide sampling rate
-        for (auto& i : waveguide_output) {
-            i = waveguide::adjust_sampling_rate(i.data(),
-                                                i.data() + i.size(),
-                                                waveguide_sample_rate_,
-                                                output_sample_rate);
-        }
-
-        //  convert waveguide output from intensity level back to pressure lvl
-        for (auto& i : waveguide_output) {
-            for (auto& j : i) {
-                j = intensity_to_pressure(
-                        j, static_cast<float>(acoustic_impedance_));
-            }
-        }
-
-        //  TODO scale waveguide output to match raytracer level
-        //  TODO crossover filtering
-
-        //  mixdown
-        assert(raytracer_output.size() == waveguide_output.size());
-        auto mm = std::minmax(raytracer_output,
-                              waveguide_output,
-                              [](const auto& a, const auto& b) {
-                                  return a.front().size() < b.front().size();
-                              });
-
-        auto& min{mm.first};
-        auto& max{mm.second};
-
-        aligned::vector<aligned::vector<float>> ret;
-        ret.reserve(max.size());
-        std::transform(
-                begin(max),
-                end(max),
-                min.begin(),
-                std::back_inserter(ret),
-                [](const auto& a, const auto& b) {
-                    auto ret = a;
-                    std::transform(begin(b),
-                                   end(b),
-                                   a.begin(),
-                                   ret.begin(),
-                                   [](auto a, auto b) { return a + b; });
-                    return ret;
-                });
-
-        return max;
+            const model::receiver& receiver,
+            double output_sample_rate) const override {
+        return model::run_attenuation(receiver,
+                                      to_process_,
+                                      receiver_position_,
+                                      room_volume_,
+                                      acoustic_impedance_,
+                                      speed_of_sound_,
+                                      output_sample_rate);
     }
 
 private:
-    glm::vec3 source_;
-    glm::vec3 receiver_;
-    double speed_of_sound_;
+    wayverb::combined_results<Histogram> to_process_;
+    glm::vec3 receiver_position_;
+    double room_volume_;
     double acoustic_impedance_;
-    double waveguide_sample_rate_;
-
-    raytracer::results<impulse<8>> raytracer_results_;
-    aligned::vector<waveguide::postprocessor::directional_receiver::output>
-            waveguide_results_;
+    double speed_of_sound_;
 };
 
+template <typename Histogram>
+auto make_intermediate_impl_ptr(wayverb::combined_results<Histogram> to_process,
+                                const glm::vec3& receiver_position,
+                                double room_volume,
+                                double acoustic_impedance,
+                                double speed_of_sound) {
+    return std::make_unique<intermediate_impl<Histogram>>(std::move(to_process),
+                                                          receiver_position,
+                                                          room_volume,
+                                                          acoustic_impedance,
+                                                          speed_of_sound);
+}
+
 }  // namespace
+
+////////////////////////////////////////////////////////////////////////////////
 
 namespace wayverb {
 
@@ -164,160 +84,103 @@ class engine::impl final {
 public:
     impl(const compute_context& cc,
          const scene_data& scene_data,
-         const glm::vec3& source,
-         const glm::vec3& receiver,
+         const model::parameters& params,
          double waveguide_sample_rate,
-         size_t rays,
-         double speed_of_sound,
-         double acoustic_impedance)
+         size_t rays)
             : impl(cc,
                    waveguide::compute_voxels_and_mesh(cc,
                                                       scene_data,
-                                                      receiver,
+                                                      params.receiver,
                                                       waveguide_sample_rate,
-                                                      speed_of_sound),
-                   source,
-                   receiver,
+                                                      params.speed_of_sound),
+                   params,
                    waveguide_sample_rate,
-                   rays,
-                   speed_of_sound,
-                   acoustic_impedance) {}
+                   rays) {}
 
 private:
     impl(const compute_context& cc,
-         std::tuple<voxelised_scene_data<cl_float3, surface>, waveguide::mesh>&&
-                 pair,
-         const glm::vec3& source,
-         const glm::vec3& receiver,
+         waveguide::voxels_and_mesh pair,
+         const model::parameters& params,
          double waveguide_sample_rate,
-         size_t rays,
-         double speed_of_sound,
-         double acoustic_impedance)
+         size_t rays)
             : compute_context_{cc}
-            , voxelised_{std::move(std::get<0>(pair))}
-            , mesh_{std::move(std::get<1>(pair))}
-            , speed_of_sound_{speed_of_sound}
-            , acoustic_impedance_{acoustic_impedance}
-            , source_{source}
-            , receiver_{receiver}
+            , voxelised_{std::move(pair.voxels)}
+            , mesh_{std::move(pair.mesh)}
+            , params_{params}
+            , room_volume_{estimate_room_volume(pair.voxels.get_scene_data())}
             , waveguide_sample_rate_{waveguide_sample_rate}
-            , rays_{rays}
-            , source_index_{compute_index(mesh_.get_descriptor(), source)}
-            , receiver_index_{compute_index(mesh_.get_descriptor(), receiver)} {
-        const auto is_index_inside = [&](auto index) {
-            return waveguide::is_inside(
-                    mesh_.get_structure().get_condensed_nodes()[index]);
-        };
-
-        if (!is_index_inside(source_index_)) {
-            throw std::runtime_error(
-                    "invalid source position - probably outside mesh");
-        }
-        if (!is_index_inside(receiver_index_)) {
-            throw std::runtime_error(
-                    "invalid receiver position - probably outside mesh");
-        }
-    }
+            , rays_{rays} {}
 
 public:
     std::unique_ptr<intermediate> run(const std::atomic_bool& keep_going,
                                       const state_callback& callback) const {
         //  RAYTRACER  /////////////////////////////////////////////////////////
+
+        const auto max_image_source_order = 5;
         const auto rays_to_visualise = std::min(1000ul, rays_);
         const auto directions = get_random_directions(rays_);
-        callback(state::starting_raytracer, 1.0);
-        auto raytracer_results =
-                raytracer::run(begin(directions),
-                               end(directions),
-                               compute_context_,
-                               voxelised_,
-                               source_,
-                               receiver_,
-                               acoustic_impedance_,
-                               rays_to_visualise,
-                               true,
-                               keep_going,
-                               [&](auto step, auto total_steps) {
-                                   callback(state::running_raytracer,
-                                            step / (total_steps - 1.0));
-                               });
 
-        if (!(keep_going && raytracer_results)) {
+        callback(state::starting_raytracer, 1.0);
+
+        auto raytracer_output =
+                raytracer::canonical(begin(directions),
+                                     end(directions),
+                                     compute_context_,
+                                     voxelised_,
+                                     params_,
+                                     max_image_source_order,
+                                     rays_to_visualise,
+                                     keep_going,
+                                     [&](auto step, auto total_steps) {
+                                         callback(state::running_raytracer,
+                                                  step / (total_steps - 1.0));
+                                     });
+
+        if (!(keep_going && raytracer_output)) {
             return nullptr;
         }
 
         callback(state::finishing_raytracer, 1.0);
 
         if (raytracer_visual_callback_) {
-            raytracer_visual_callback_(
-                    raytracer_results->visual, source_, receiver_);
+            raytracer_visual_callback_(std::move(raytracer_output->visual),
+                                       params_.source,
+                                       params_.receiver);
         }
 
-        const auto b_impulses = raytracer_results->audio.begin(),
-                   e_impulses = raytracer_results->audio.end();
-
         //  look for the max time of an impulse
-        const auto max_time =
-                std::max_element(b_impulses,
-                                 e_impulses,
-                                 [](const auto& a, const auto& b) {
-                                     return a.distance < b.distance;
-                                 })
-                        ->distance /
-                speed_of_sound_;
+        const auto max_stochastic_time =
+                max_time(raytracer_output->aural.stochastic);
 
         //  WAVEGUIDE  /////////////////////////////////////////////////////////
         callback(state::starting_waveguide, 1.0);
 
-        const aligned::vector<float> raw_input{1.0f};
-        auto input = waveguide::make_transparent(
-                raw_input.data(), raw_input.data() + raw_input.size());
-
-        //  this is the number of steps to run the waveguide for
-        //  TODO is there a less dumb way of doing this?
-        const auto steps=std::ceil(max_time * waveguide_sample_rate_);
-        input.resize(steps);
-
-        //  If the max raytracer time is large this could take forever...
-
-        callback_accumulator<waveguide::postprocessor::directional_receiver>
-                mic_output{mesh_.get_descriptor(),
-                           waveguide_sample_rate_,
-                           acoustic_impedance_ / speed_of_sound_,
-                           receiver_index_};
-
-        const auto waveguide_steps_completed = waveguide::run(
+        auto waveguide_output = waveguide::detail::canonical_impl(
                 compute_context_,
                 mesh_,
-                waveguide::preprocessor::make_hard_source(
-                        source_index_, input.begin(), input.end()),
-                [&](auto& queue, const auto& buffer, auto step) {
-                    mic_output(queue, buffer, step);
-                    if (waveguide_visual_callback_) {
-                        waveguide_visual_callback_(queue, buffer, step);
-                    }
-                    callback(state::running_waveguide, step / (steps - 1.0));
-                },
-                keep_going);
+                waveguide_sample_rate_,
+                max_stochastic_time,
+                params_,
+                keep_going,
+                [&](auto step, auto steps) {
+                    callback(state::running_raytracer, step / (steps - 1.0));
+                });
 
-        if (waveguide_steps_completed != steps) {
+        if (!(keep_going && waveguide_output)) {
             return nullptr;
         }
 
-        //  if we got here, we can assume waveguide_results is complete and
-        //  valid
-
         callback(state::finishing_waveguide, 1.0);
 
-        std::unique_ptr<intermediate> ret{std::make_unique<intermediate_impl>(
-                source_,
-                receiver_,
-                speed_of_sound_,
-                acoustic_impedance_,
-                waveguide_sample_rate_,
-                std::move(raytracer_results->audio),
-                mic_output.get_output())};
-        return ret;
+        return make_intermediate_impl_ptr(
+                make_combined_results(
+                        std::move(raytracer_output->aural),
+                        waveguide_results{std::move(*waveguide_output),
+                                          waveguide_sample_rate_}),
+                params_.receiver,
+                room_volume_,
+                params_.acoustic_impedance,
+                params_.speed_of_sound);
     }
 
     aligned::vector<glm::vec3> get_node_positions() const {
@@ -326,16 +189,18 @@ public:
 
     void register_waveguide_visual_callback(
             waveguide_visual_callback_t callback) {
-        //  visualiser returns current waveguide step, but we want the mesh time
-        waveguide_visual_callback_ = waveguide::postprocessor::visualiser{
-                [=](const auto& pressures, size_t step) {
-                    //  convert step to time
-                    callback(pressures, step / waveguide_sample_rate_);
-                }};
+        //  visualiser returns current waveguide step, but we want the mesh
+        //  time
+        waveguide_visual_callback_ = [=](
+                auto& queue, const auto& buffer, auto step) {
+            //  convert step to time
+            callback(read_from_buffer<cl_float>(queue, buffer),
+                     step / waveguide_sample_rate_);
+        };
     }
 
     void unregister_waveguide_visual_callback() {
-        waveguide_visual_callback_ = waveguide::step_postprocessor{};
+        waveguide_visual_callback_ = waveguide_callback_wrapper_t{};
     }
 
     void register_raytracer_visual_callback(
@@ -350,26 +215,23 @@ public:
 private:
     compute_context compute_context_;
 
-    voxelised_scene_data<cl_float3, surface> voxelised_;
+    voxelised_scene_data<cl_float3, surface<simulation_bands>> voxelised_;
     waveguide::mesh mesh_;
 
-    double speed_of_sound_;
-    double acoustic_impedance_;
+    model::parameters params_;
 
-    glm::vec3 source_;
-    glm::vec3 receiver_;
+    double room_volume_;
     double waveguide_sample_rate_;
     size_t rays_;
 
-    size_t source_index_;
-    size_t receiver_index_;
+    using waveguide_callback_wrapper_t = std::function<void(
+            cl::CommandQueue& queue, const cl::Buffer& buffer, size_t step)>;
 
-    waveguide::step_postprocessor waveguide_visual_callback_;
+    waveguide_callback_wrapper_t waveguide_visual_callback_;
     raytracer_visual_callback_t raytracer_visual_callback_;
 };
 
-constexpr auto speed_of_sound = 340.0;
-constexpr auto acoustic_impedance = 400.0;
+////////////////////////////////////////////////////////////////////////////////
 
 engine::engine(const compute_context& compute_context,
                const scene_data& scene_data,
@@ -377,14 +239,12 @@ engine::engine(const compute_context& compute_context,
                const glm::vec3& receiver,
                double waveguide_sample_rate,
                size_t rays)
-        : pimpl(std::make_unique<impl>(compute_context,
-                                       scene_data,
-                                       source,
-                                       receiver,
-                                       waveguide_sample_rate,
-                                       rays,
-                                       speed_of_sound,
-                                       acoustic_impedance)) {}
+        : pimpl(std::make_unique<impl>(
+                  compute_context,
+                  scene_data,
+                  model::parameters{source, receiver, 340.0, 400.0},
+                  waveguide_sample_rate,
+                  rays)) {}
 
 engine::~engine() noexcept = default;
 

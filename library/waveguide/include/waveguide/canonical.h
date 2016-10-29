@@ -5,6 +5,7 @@
 #include "waveguide/preprocessor/hard_source.h"
 #include "waveguide/waveguide.h"
 
+#include "common/callback_accumulator.h"
 #include "common/reverb_time.h"
 
 #include <cmath>
@@ -13,11 +14,6 @@
 /// you can supply different combinations of sources and receivers.
 /// The method below drives the combination deemed to be most approriate for
 /// single-run simulation.
-
-/// TODO
-/// The method in multiband_waveguide.h shows a different approach which more
-/// accurately simulates frequency-dependent boundaries, but which runs several
-/// times slower.
 
 namespace waveguide {
 
@@ -33,7 +29,13 @@ canonical_impl(const compute_context& cc,
                const std::atomic_bool& keep_going,
                Callback&& callback) {
     const auto compute_mesh_index = [&](const auto& pt) {
-        return compute_index(mesh.get_descriptor(), pt);
+        const auto ret = compute_index(mesh.get_descriptor(), pt);
+        if (!waveguide::is_inside(
+                    mesh.get_structure().get_condensed_nodes()[ret])) {
+            throw std::runtime_error{
+                    "source/receiver node position appears to be outside mesh"};
+        }
+        return ret;
     };
 
     const auto ideal_steps = std::ceil(sample_rate * simulation_time);
@@ -109,6 +111,8 @@ canonical_single_band(
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/// This method shows a different approach which more accurately simulates
+/// frequency-dependent boundaries, but which runs several times slower.
 template <typename Callback>
 std::experimental::optional<aligned::vector<
         aligned::vector<postprocessor::directional_receiver::output>>>

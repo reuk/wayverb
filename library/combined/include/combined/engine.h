@@ -13,14 +13,14 @@
 //  forward declarations  //////////////////////////////////////////////////////
 
 namespace model {
-struct receiver_settings;
+struct receiver;
 }  // namespace model
 
 class compute_context;
 
-//  engine  ////////////////////////////////////////////////////////////////////
-
 namespace wayverb {
+
+//  state information  /////////////////////////////////////////////////////////
 
 enum class state {
     idle,
@@ -48,10 +48,10 @@ constexpr auto to_string(state s) {
     }
 }
 
+//  postprocessing  ////////////////////////////////////////////////////////////
+
 class intermediate {
 public:
-    using state_callback = std::function<void(state, double)>;
-
     intermediate() = default;
     intermediate(const intermediate&) = default;
     intermediate& operator=(const intermediate&) = default;
@@ -60,16 +60,15 @@ public:
     virtual ~intermediate() noexcept = default;
 
     virtual aligned::vector<aligned::vector<float>> attenuate(
-            const compute_context& cc,
-            const model::receiver_settings& receiver,
-            double output_sample_rate,
-            double max_length_in_seconds,
-            const state_callback&) const = 0;
+            const model::receiver& receiver,
+            double output_sample_rate) const = 0;
 };
+
+//  engine  ////////////////////////////////////////////////////////////////////
 
 class engine final {
 public:
-    using scene_data = generic_scene_data<cl_float3, surface>;
+    using scene_data = generic_scene_data<cl_float3, surface<simulation_bands>>;
 
     engine(const compute_context& compute_context,
            const scene_data& scene_data,
@@ -90,16 +89,16 @@ public:
     std::unique_ptr<intermediate> run(const std::atomic_bool& keep_going,
                                       const state_callback&) const;
 
-    using raytracer_visual_callback_t = std::function<void(
-            const aligned::vector<aligned::vector<reflection>>&,
-            const glm::vec3&,
-            const glm::vec3&)>;
+    using raytracer_visual_callback_t =
+            std::function<void(aligned::vector<aligned::vector<reflection>>,
+                               const glm::vec3&,
+                               const glm::vec3&)>;
     void register_raytracer_visual_callback(
             raytracer_visual_callback_t callback);
     void unregister_raytracer_visual_callback();
 
     using waveguide_visual_callback_t =
-            std::function<void(const aligned::vector<cl_float>&, double)>;
+            std::function<void(aligned::vector<cl_float>, double)>;
     void register_waveguide_visual_callback(
             waveguide_visual_callback_t callback);
     void unregister_waveguide_visual_callback();

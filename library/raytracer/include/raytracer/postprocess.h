@@ -1,6 +1,7 @@
 #pragma once
 
 #include "raytracer/image_source/postprocess.h"
+#include "raytracer/raytracer.h"
 #include "raytracer/stochastic/postprocess.h"
 
 #include "common/sum_ranges.h"
@@ -8,28 +9,27 @@
 namespace raytracer {
 
 template <typename Histogram, typename Method>
-auto postprocess(const std::tuple<aligned::vector<impulse<simulation_bands>>,
-                                  Histogram>& input,
+auto postprocess(const aural_results<Histogram>& input,
                  const Method& method,
                  const glm::vec3& position,
                  double room_volume,
                  double acoustic_impedance,
                  double speed_of_sound,
-                 double sample_rate) {
+                 double output_sample_rate) {
     const auto head =
-            raytracer::image_source::postprocess(begin(std::get<0>(input)),
-                                                 end(std::get<0>(input)),
+            raytracer::image_source::postprocess(begin(input.image_source),
+                                                 end(input.image_source),
                                                  method,
                                                  position,
                                                  speed_of_sound,
-                                                 sample_rate);
+                                                 output_sample_rate);
 
-    const auto tail = raytracer::stochastic::postprocess(std::get<1>(input),
+    const auto tail = raytracer::stochastic::postprocess(input.stochastic,
                                                          method,
                                                          room_volume,
                                                          acoustic_impedance,
                                                          speed_of_sound,
-                                                         sample_rate);
+                                                         output_sample_rate);
 
     return sum_vectors(head, tail);
 }

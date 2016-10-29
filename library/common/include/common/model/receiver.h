@@ -6,6 +6,7 @@
 #include "common/orientable.h"
 
 #include "utilities/aligned/vector.h"
+#include "utilities/map_to_vector.h"
 #include "utilities/mapping_iterator_adapter.h"
 
 #include <vector>

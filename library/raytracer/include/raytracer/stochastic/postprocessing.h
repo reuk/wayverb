@@ -67,6 +67,25 @@ struct directional_energy_histogram final {
 };
 
 template <size_t Az, size_t El>
+auto max_size(
+        const vector_look_up_table<aligned::vector<bands_type>, Az, El>& hist) {
+    size_t ret = 0;
+
+    for (size_t a = 0; a != Az; ++a) {
+        for (size_t e = 0; e != El; ++e) {
+            ret = std::max(ret, hist.table[a][e].size());
+        }
+    }
+
+    return ret;
+}
+
+template <size_t Az, size_t El>
+auto max_time(const directional_energy_histogram<Az, El>& hist) {
+    return max_size(hist.histogram) / hist.sample_rate;
+}
+
+template <size_t Az, size_t El>
 auto sum_directional_histogram(
         const directional_energy_histogram<Az, El>& histogram) {
     aligned::vector<bands_type> ret;

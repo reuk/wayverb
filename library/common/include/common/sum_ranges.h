@@ -1,6 +1,7 @@
 #pragma once
 
 #include "utilities/foldl.h"
+#include "utilities/for_each.h"
 
 template <typename... Ts>
 auto sum_params(Ts&&... ts) {
