@@ -30,6 +30,9 @@ auto interleave(It begin, It end) {
 
 template <typename It>
 auto deinterleave(It begin, It end, size_t channels) {
+    if (channels == 0) {
+        throw std::runtime_error{"deinterleave: channels must be non-zero"};
+    }
     const auto in_size = std::distance(begin, end);
     if (in_size % channels) {
         throw std::runtime_error{

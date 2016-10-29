@@ -8,14 +8,26 @@ namespace hrtf_data {
 
 constexpr range<double> audible_range{20, 20000};
 
+inline auto hrtf_band_params_hz() {
+    return frequency_domain::band_edges_and_widths<entry::bands>(audible_range,
+                                                                 1);
+}
+
 inline auto hrtf_band_params(double sample_rate) {
-    return frequency_domain::band_edges_and_widths<entry::bands>(
-            audible_range / sample_rate, 1);
+    return map(
+            [&](const auto& i) {
+                return make_edge_with_width_factor(i.edge / sample_rate,
+                                                   i.width / sample_rate);
+            },
+            hrtf_band_centres_hz());
+}
+
+inline auto hrtf_band_centres_hz() {
+    return frequency_domain::band_centres<entry::bands>(audible_range);
 }
 
 inline auto hrtf_band_centres(double sample_rate) {
-    return frequency_domain::band_centres<entry::bands>(audible_range /
-                                                        sample_rate);
+    return map([&](auto i) { return i / sample_rate; }, hrtf_band_centres_hz());
 }
 
 template <typename It, typename Callback>

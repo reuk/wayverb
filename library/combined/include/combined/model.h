@@ -25,8 +25,6 @@ struct App {
     aligned::vector<receiver_settings> receiver_settings{1};
 };
 
-float get_waveguide_sample_rate(const SingleShot& a);
-float get_waveguide_sample_rate(const App& a);
 SingleShot get_single_shot(const App& a, size_t input, size_t output);
 aligned::vector<SingleShot> get_all_input_output_combinations(const App& a);
 
