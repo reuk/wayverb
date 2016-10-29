@@ -3,8 +3,8 @@ cd build
 if cmake .. ; then
 
 export CL_LOG_ERRORS=stdout
-#export GTEST_FILTER="*fitted_boundary*"
-#make && ctest -V
+#export GTEST_FILTER="*multiband*"
+make && ctest -V
 
 #make && cd utils/image_source_comparison && ./image_source_comparison
 
@@ -31,6 +31,6 @@ export CL_LOG_ERRORS=stdout
 
 #make && cd ../utils/boundary_test && ./run_and_graph.sh
 
-make && cd ../utils/fitted_boundary && ./run_and_graph.sh
+#make && cd ../utils/fitted_boundary && ./run_and_graph.sh
 
 fi

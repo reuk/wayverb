@@ -19,12 +19,12 @@ auto multiband_run(
                 "greater is recommended"};
     }
 
-    const auto band_centres_hz = hrtf_data::hrtf_band_centres_hz();
+    const auto band_edges_hz = hrtf_data::hrtf_band_centres_hz();
 
     //  For each band, up until some maximum.
     for (auto band = 0; band != max_bands; ++band) {
         //  Calculate the appropriate waveguide sampling rate.
-        const auto max_frequency_hz = band_centres_hz[band];
+        const auto max_frequency_hz = band_edges_hz[band + 1];
         const auto waveguide_sample_rate =
                 centre_frequency_hz * oversampling / 0.25;
 

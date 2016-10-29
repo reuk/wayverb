@@ -62,7 +62,7 @@ auto run_single_angle(float angle,
                                                 0,
                                                 distance * std::cos(angle)}};
     constexpr range<double> valid_frequency_range{0.01, 0.16};
-    const auto params = frequency_domain::band_edges_and_widths<8>(
+    const auto params = frequency_domain::compute_multiband_params<8>(
             valid_frequency_range, 1);
     const auto signal = callback(source, receiver);
     return make_angle_info(angle,

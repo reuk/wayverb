@@ -250,20 +250,19 @@ const aligned::vector<std::tuple<callback, std::string>> trial_blockers{
         {[](auto sig, auto cutoff, auto sample_rate) {
              const auto normalised_cutoff{cutoff / sample_rate};
              frequency_domain::filter blocker{sig.size()};
-             blocker.run(
-                     sig.begin(),
-                     sig.end(),
-                     sig.begin(),
-                     [=](auto cplx, auto freq) {
-                         return static_cast<float>(
-                                        frequency_domain::compute_hipass_magnitude(
-                                                freq,
-                                                frequency_domain::edge_and_width{
-                                                        normalised_cutoff,
-                                                        normalised_cutoff *
-                                                                0.5})) *
-                                cplx;
-                     });
+             blocker.run(sig.begin(),
+                         sig.end(),
+                         sig.begin(),
+                         [=](auto cplx, auto freq) {
+                             return static_cast<float>(
+                                            frequency_domain::
+                                                    compute_hipass_magnitude(
+                                                            freq,
+                                                            normalised_cutoff,
+                                                            normalised_cutoff *
+                                                                    0.5)) *
+                                    cplx;
+                         });
              return sig;
          },
          "fft"},
@@ -271,20 +270,19 @@ const aligned::vector<std::tuple<callback, std::string>> trial_blockers{
         {[](auto sig, auto cutoff, auto sample_rate) {
              const auto normalised_cutoff{cutoff / sample_rate};
              frequency_domain::filter blocker{sig.size() * 2};
-             blocker.run(
-                     sig.begin(),
-                     sig.end(),
-                     sig.begin(),
-                     [=](auto cplx, auto freq) {
-                         return static_cast<float>(
-                                        frequency_domain::compute_hipass_magnitude(
-                                                freq,
-                                                frequency_domain::edge_and_width{
-                                                        normalised_cutoff,
-                                                        normalised_cutoff *
-                                                                0.5})) *
-                                cplx;
-                     });
+             blocker.run(sig.begin(),
+                         sig.end(),
+                         sig.begin(),
+                         [=](auto cplx, auto freq) {
+                             return static_cast<float>(
+                                            frequency_domain::
+                                                    compute_hipass_magnitude(
+                                                            freq,
+                                                            normalised_cutoff,
+                                                            normalised_cutoff *
+                                                                    0.5)) *
+                                    cplx;
+                         });
              return sig;
          },
          "padded_fft"},

@@ -22,9 +22,9 @@ TEST(multiband, noise) {
     constexpr auto bands = 8;
     constexpr auto sample_rate = 44100.0;
 
-    const auto params = frequency_domain::band_edges_and_widths<bands>(
-            audible_range / sample_rate, 1);
-
+    const auto range = audible_range / sample_rate;
+    const auto params =
+            frequency_domain::compute_multiband_params<bands>(range, 1);
     const auto energy = frequency_domain::per_band_energy(
             begin(noise_signal), end(noise_signal), params);
 

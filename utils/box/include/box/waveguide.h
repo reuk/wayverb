@@ -26,17 +26,13 @@ void lopass(It b, It e, double sample_rate) {
         const auto ret{
                 cplx *
                 static_cast<float>(frequency_domain::compute_lopass_magnitude(
-                        freq,
-                        frequency_domain::edge_and_width{normalised_cutoff,
-                                                         normalised_width}))};
+                        freq, normalised_cutoff, normalised_width))};
         const auto hipass{false};
         if (hipass) {
             const auto low_cutoff{100 / sample_rate};
             return ret * static_cast<float>(
                                  frequency_domain::compute_hipass_magnitude(
-                                         freq,
-                                         frequency_domain::edge_and_width{
-                                                 low_cutoff, low_cutoff * 2}));
+                                         freq, low_cutoff, low_cutoff * 2));
         }
         return ret;
     });

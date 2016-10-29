@@ -23,7 +23,9 @@ void run_test(const Attenuator& attenuator) {
             2,
             0.1f);
 
-    const auto callbacks = std::make_tuple(Histogram{1.0f, 1000.0f, 0});
+    constexpr auto histogram_sample_rate = 1000.0;
+    const auto callbacks =
+            std::make_tuple(Histogram{1.0f, histogram_sample_rate, 0});
 
     const auto directions = get_random_directions(1 << 16);
     const auto results = raytracer::run(begin(directions),
@@ -37,29 +39,34 @@ void run_test(const Attenuator& attenuator) {
 
     ASSERT_TRUE(results);
 
-    const auto histogram =
-            compute_summed_histogram(std::get<0>(*results), attenuator)
-                    .histogram;
+    const auto direct_energy = [&] {
+        const auto direct = raytracer::image_source::get_direct(
+                params.source, params.receiver, voxelised);
+        const auto att = attenuation(
+                attenuator, glm::normalize(params.source - params.receiver));
+        return att * att * intensity_for_distance(direct->distance);
+    }();
 
-    const auto direct = raytracer::image_source::get_direct(
-            params.source, params.receiver, voxelised);
-
-    const auto direct_energy =
-            attenuation(attenuator,
-                        glm::normalize(params.source - params.receiver)) *
-            intensity_for_distance(direct->distance);
-
-    const auto histogram_energy =
-            *std::find_if(begin(histogram), end(histogram), [](const auto& i) {
-                return any(i);
-            });
+    const auto histogram_energy = [&] {
+        const auto histogram =
+                compute_summed_histogram(std::get<0>(*results), attenuator)
+                        .histogram;
+        const auto histogram_bin =
+                glm::distance(params.source, params.receiver) *
+                histogram_sample_rate / params.speed_of_sound;
+        return histogram[histogram_bin];
+    }();
 
     using std::abs;
-    const auto difference = abs(direct_energy - histogram_energy) * 2 /
-                            (direct_energy + histogram_energy);
+    const auto denominator = abs(abs(direct_energy) + abs(histogram_energy));
+    if (all(denominator)) {
+        const auto difference =
+                abs(abs(direct_energy) - abs(histogram_energy)) * 2 /
+                denominator;
 
-    //  energy values should be within 10% of one another
-    ASSERT_TRUE(all(difference < 0.1));
+        //  energy values should be within 10% of one another
+        ASSERT_TRUE(all(difference < 0.1));
+    }
 }
 }  // namespace
 
@@ -74,8 +81,16 @@ TEST(equal_energy, directional) {
 }
 
 TEST(equal_energy, cardioid) {
-    run_test<raytracer::reflection_processor::make_directional_histogram>(
-            attenuator::microphone{glm::vec3{-1, 0, 0}, 0.5f});
+    const auto go = [](auto dir) {
+        run_test<raytracer::reflection_processor::make_directional_histogram>(
+                attenuator::microphone{dir, 0.5f});
+    };
+    go(glm::vec3{-1, 0, 0});
+    go(glm::vec3{1, 0, 0});
+    go(glm::vec3{0, -1, 0});
+    go(glm::vec3{0, 1, 0});
+    go(glm::vec3{0, 0, -1});
+    go(glm::vec3{0, 0, 1});
 }
 
 TEST(equal_energy, hrtf) {

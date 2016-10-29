@@ -9,13 +9,32 @@
 
 namespace frequency_domain {
 
+template <size_t N>
+struct edges_and_width_factor final {
+    std::array<double, N> edges;
+    double width_factor;
+};
+
+template <size_t N>
+constexpr auto make_edges_and_width_factor(const std::array<double, N>& edges,
+                                           double width_factor) {
+    return edges_and_width_factor<N>{edges, width_factor};
+}
+
+template <size_t N>
+auto compute_multiband_params(range<double> audible_range, double overlap) {
+    return make_edges_and_width_factor(band_edges<N>(audible_range),
+                                       width_factor(audible_range, N, overlap));
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 template <size_t bands_plus_one, typename It, typename Callback>
-auto multiband_filter(
-        It begin,
-        It end,
-        const std::array<edge_and_width, bands_plus_one>& edges_and_widths,
-        const Callback& callback,
-        size_t l = 0) {
+auto multiband_filter(It begin,
+                      It end,
+                      const edges_and_width_factor<bands_plus_one>& params,
+                      const Callback& callback,
+                      size_t l = 0) {
     constexpr auto bands = bands_plus_one - 1;
     filter filt{static_cast<size_t>(std::distance(begin, end) << 5)};
 
@@ -27,7 +46,10 @@ auto multiband_filter(
         const auto e = callback(end, i);
         filt.run(b, e, b, [&](auto cplx, auto freq) {
             const auto amp = compute_bandpass_magnitude(
-                    freq, edges_and_widths[i + 0], edges_and_widths[i + 1], l);
+                    freq,
+                    make_range(params.edges[i + 0], params.edges[i + 1]),
+                    params.width_factor,
+                    l);
 
             integrated_bands[i] += amp;
 
@@ -114,17 +136,16 @@ struct make_indexer_iterator final {
 };
 
 template <size_t bands_plus_one, typename It>
-auto per_band_energy(
-        It begin,
-        It end,
-        const std::array<edge_and_width, bands_plus_one>& edges_and_widths) {
+auto per_band_energy(It begin,
+                     It end,
+                     const edges_and_width_factor<bands_plus_one>& params) {
     constexpr auto bands = bands_plus_one - 1;
 
     auto multiband = make_multiband<bands>(begin, end);
 
     const auto band_widths = multiband_filter(std::begin(multiband),
                                               std::end(multiband),
-                                              edges_and_widths,
+                                              params,
                                               make_indexer_iterator{});
 
     auto rms = multiband_rms<bands>(std::begin(multiband),
