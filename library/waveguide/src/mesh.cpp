@@ -28,6 +28,11 @@ bool is_inside(const mesh& m, size_t node_index) {
 }
 
 void mesh::set_coefficients(
+        coefficients_canonical coefficients) {
+    vectors_.set_coefficients(coefficients);
+}
+
+void mesh::set_coefficients(
         aligned::vector<coefficients_canonical> coefficients) {
     vectors_.set_coefficients(coefficients);
 }
@@ -40,8 +45,8 @@ mesh compute_mesh(
                 voxelised,
         float mesh_spacing,
         float speed_of_sound) {
-    const setup_program program{cc};
-    cl::CommandQueue queue{cc.context, cc.device};
+    const auto program = setup_program{cc};
+    auto queue = cl::CommandQueue {cc.context, cc.device};
 
     const auto buffers = make_scene_buffers(cc.context, voxelised);
 
@@ -104,10 +109,18 @@ mesh compute_mesh(
     auto boundary_data =
             compute_boundary_index_data(cc.device, buffers, desc, nodes);
 
-    //  TODO Use appropriate method for finding filter coefficients.
     auto v = vectors{
             std::move(nodes),
-            to_flat_coefficients(voxelised.get_scene_data().get_surfaces()),
+            map_to_vector(begin(voxelised.get_scene_data().get_surfaces()),
+                          end(voxelised.get_scene_data().get_surfaces()),
+                          [&](const auto& surface) {
+                              return to_impedance_coefficients(
+                                      compute_reflectance_filter_coefficients(
+                                              surface.absorption.s,
+                                              1 / waveguide::config::time_step(
+                                                          speed_of_sound,
+                                                          mesh_spacing)));
+                          }),
             std::move(boundary_data)};
 
     return {desc, std::move(v)};

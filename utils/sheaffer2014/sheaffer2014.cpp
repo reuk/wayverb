@@ -56,8 +56,11 @@ void test_from_paper() {
             sample_rate,
             speed_of_sound);
 
-    voxels_and_mesh.mesh.set_coefficients({waveguide::to_flat_coefficients(
-            make_surface<simulation_bands>(0.005991, 0))});
+    {
+        constexpr auto absorption = 0.005991;
+        voxels_and_mesh.mesh.set_coefficients(
+                waveguide::to_flat_coefficients(absorption));
+    }
 
     const auto input_node =
             compute_index(voxels_and_mesh.mesh.get_descriptor(), source);
@@ -155,8 +158,8 @@ void other_tests() {
             sample_rate,
             speed_of_sound);
 
-    voxels_and_mesh.mesh.set_coefficients({waveguide::to_flat_coefficients(
-            make_surface<simulation_bands>(0.005991, 0))});
+    voxels_and_mesh.mesh.set_coefficients(
+            waveguide::to_flat_coefficients(0.005991));
 
     const auto input_node =
             compute_index(voxels_and_mesh.mesh.get_descriptor(), source);

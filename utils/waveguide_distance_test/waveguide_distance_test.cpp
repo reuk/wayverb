@@ -38,8 +38,7 @@ int main() {
             sample_rate,
             speed_of_sound);
 
-    voxels_and_mesh.mesh.set_coefficients({waveguide::to_flat_coefficients(
-            make_surface<simulation_bands>(0, 0))});
+    voxels_and_mesh.mesh.set_coefficients(waveguide::to_flat_coefficients(0));
 
     const auto input_node =
             compute_index(voxels_and_mesh.mesh.get_descriptor(), source);

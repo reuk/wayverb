@@ -58,16 +58,15 @@ TEST(run_waveguide, run_waveguide) {
     auto voxels_and_mesh = waveguide::compute_voxels_and_mesh(
             cc, scene_data, source, samplerate, speed_of_sound);
 
-    auto& model = voxels_and_mesh.mesh;
-    model.set_coefficients(waveguide::to_flat_coefficients(
-            aligned::vector<surface<simulation_bands>>{
-                    make_surface<simulation_bands>(0.01, 0)}));
+    voxels_and_mesh.mesh.set_coefficients(
+            waveguide::to_flat_coefficients(0.01));
 
     //  get a waveguide
 
-    const auto source_index = compute_index(model.get_descriptor(), source);
+    const auto source_index =
+            compute_index(voxels_and_mesh.mesh.get_descriptor(), source);
 
-    if (!waveguide::is_inside(model, source_index)) {
+    if (!waveguide::is_inside(voxels_and_mesh.mesh, source_index)) {
         throw std::runtime_error("source is outside of mesh!");
     }
 
@@ -82,8 +81,9 @@ TEST(run_waveguide, run_waveguide) {
     auto output_holders =
             map_to_vector(begin(receivers), end(receivers), [&](auto i) {
                 const auto receiver_index =
-                        compute_index(model.get_descriptor(), i);
-                if (!waveguide::is_inside(model, receiver_index)) {
+                        compute_index(voxels_and_mesh.mesh.get_descriptor(), i);
+                if (!waveguide::is_inside(voxels_and_mesh.mesh,
+                                          receiver_index)) {
                     throw std::runtime_error("receiver is outside of mesh!");
                 }
                 return callback_accumulator<waveguide::postprocessor::node>{
@@ -93,7 +93,7 @@ TEST(run_waveguide, run_waveguide) {
     progress_bar pb;
     auto callback_counter = 0;
     waveguide::run(cc,
-                   model,
+                   voxels_and_mesh.mesh,
                    [&](auto& queue, auto& buffer, auto step) {
                        return prep(queue, buffer, step);
                    },

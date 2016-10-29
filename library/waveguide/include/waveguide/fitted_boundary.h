@@ -68,20 +68,9 @@ constexpr auto make_coefficients_canonical(
 
 ////////////////////////////////////////////////////////////////////////////////
 
-template <size_t Channels>
-coefficients_canonical to_flat_coefficients(const surface<Channels>& surface) {
-    const auto reflectance =
-            absorption_to_pressure_reflectance(surface.absorption.s[0]);
-    const coefficients_canonical ret{{reflectance}, {1}};
-    return to_impedance_coefficients(ret);
-}
-
-template <size_t Channels>
-aligned::vector<coefficients_canonical> to_flat_coefficients(
-        const aligned::vector<surface<Channels>>& surfaces) {
-    return map_to_vector(begin(surfaces), end(surfaces), [](auto i) {
-        return to_flat_coefficients(i);
-    });
+inline auto to_flat_coefficients(double absorption) {
+    return to_impedance_coefficients(coefficients_canonical{
+            {absorption_to_pressure_reflectance(absorption)}, {1}});
 }
 
 ////////////////////////////////////////////////////////////////////////////////

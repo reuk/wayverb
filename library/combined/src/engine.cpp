@@ -24,7 +24,6 @@
 #include "common/dc_blocker.h"
 #include "common/filters_common.h"
 #include "common/kernel.h"
-#include "common/model/receiver_settings.h"
 #include "common/pressure_intensity.h"
 #include "common/spatial_division/voxelised_scene_data.h"
 #include "common/surfaces.h"
@@ -37,7 +36,7 @@ namespace {
 
 class intermediate_impl : public wayverb::intermediate {
 public:
-    static constexpr auto bands{8};
+    static constexpr auto bands = 8;
 
     intermediate_impl(
             const glm::vec3& source,
@@ -66,22 +65,23 @@ public:
         callback(wayverb::state::postprocessing, 1.0);
 
         //  attenuate raytracer results
-        const auto b_impulses{raytracer_results_.begin()},
-                e_impulses{raytracer_results_.end()};
-        auto raytracer_output{
+        const auto b_impulses = raytracer_results_.begin(),
+                   e_impulses = raytracer_results_.end();
+        auto raytracer_output =
                 raytracer::run_attenuation(b_impulses,
                                            e_impulses,
                                            receiver,
                                            speed_of_sound_,
                                            output_sample_rate,
-                                           max_length_in_seconds)};
+                                           max_length_in_seconds);
+
         //  attenuate waveguide results
-        auto waveguide_output{
+        auto waveguide_output =
                 waveguide::run_attenuation(begin(waveguide_results_),
                                            end(waveguide_results_),
                                            receiver,
                                            acoustic_impedance_,
-                                           waveguide_sample_rate_)};
+                                           waveguide_sample_rate_);
 
         //  correct raytracer results for dc
         filter::extra_linear_dc_blocker blocker;
@@ -115,11 +115,11 @@ public:
 
         //  mixdown
         assert(raytracer_output.size() == waveguide_output.size());
-        auto mm{std::minmax(raytracer_output,
-                            waveguide_output,
-                            [](const auto& a, const auto& b) {
-                                return a.front().size() < b.front().size();
-                            })};
+        auto mm = std::minmax(raytracer_output,
+                              waveguide_output,
+                              [](const auto& a, const auto& b) {
+                                  return a.front().size() < b.front().size();
+                              });
 
         auto& min{mm.first};
         auto& max{mm.second};
@@ -132,7 +132,7 @@ public:
                 min.begin(),
                 std::back_inserter(ret),
                 [](const auto& a, const auto& b) {
-                    auto ret{a};
+                    auto ret = a;
                     std::transform(begin(b),
                                    end(b),
                                    a.begin(),
@@ -204,10 +204,10 @@ private:
             , rays_{rays}
             , source_index_{compute_index(mesh_.get_descriptor(), source)}
             , receiver_index_{compute_index(mesh_.get_descriptor(), receiver)} {
-        const auto is_index_inside{[&](auto index) {
+        const auto is_index_inside = [&](auto index) {
             return waveguide::is_inside(
                     mesh_.get_structure().get_condensed_nodes()[index]);
-        }};
+        };
 
         if (!is_index_inside(source_index_)) {
             throw std::runtime_error(
@@ -223,10 +223,10 @@ public:
     std::unique_ptr<intermediate> run(const std::atomic_bool& keep_going,
                                       const state_callback& callback) const {
         //  RAYTRACER  /////////////////////////////////////////////////////////
-        const auto rays_to_visualise{std::min(1000ul, rays_)};
-        const auto directions{get_random_directions(rays_)};
+        const auto rays_to_visualise = std::min(1000ul, rays_);
+        const auto directions = get_random_directions(rays_);
         callback(state::starting_raytracer, 1.0);
-        auto raytracer_results{
+        auto raytracer_results =
                 raytracer::run(begin(directions),
                                end(directions),
                                compute_context_,
@@ -240,7 +240,7 @@ public:
                                [&](auto step, auto total_steps) {
                                    callback(state::running_raytracer,
                                             step / (total_steps - 1.0));
-                               })};
+                               });
 
         if (!(keep_going && raytracer_results)) {
             return nullptr;
@@ -253,32 +253,30 @@ public:
                     raytracer_results->visual, source_, receiver_);
         }
 
-        const auto b_impulses{raytracer_results->audio.begin()},
-                e_impulses{raytracer_results->audio.end()};
+        const auto b_impulses = raytracer_results->audio.begin(),
+                   e_impulses = raytracer_results->audio.end();
 
         //  look for the max time of an impulse
-        const auto max_time{std::max_element(b_impulses,
-                                             e_impulses,
-                                             [](const auto& a, const auto& b) {
-                                                 return a.distance < b.distance;
-                                             })
-                                    ->distance /
-                            speed_of_sound_};
+        const auto max_time =
+                std::max_element(b_impulses,
+                                 e_impulses,
+                                 [](const auto& a, const auto& b) {
+                                     return a.distance < b.distance;
+                                 })
+                        ->distance /
+                speed_of_sound_;
 
         //  WAVEGUIDE  /////////////////////////////////////////////////////////
         callback(state::starting_waveguide, 1.0);
 
         const aligned::vector<float> raw_input{1.0f};
-        auto input{waveguide::make_transparent(
-                raw_input.data(), raw_input.data() + raw_input.size())};
+        auto input = waveguide::make_transparent(
+                raw_input.data(), raw_input.data() + raw_input.size());
 
         //  this is the number of steps to run the waveguide for
         //  TODO is there a less dumb way of doing this?
-        const auto steps{std::ceil(max_time * waveguide_sample_rate_)};
+        const auto steps=std::ceil(max_time * waveguide_sample_rate_);
         input.resize(steps);
-
-        auto prep{waveguide::preprocessor::make_hard_source(
-                source_index_, input.begin(), input.end())};
 
         //  If the max raytracer time is large this could take forever...
 
@@ -288,10 +286,11 @@ public:
                            acoustic_impedance_ / speed_of_sound_,
                            receiver_index_};
 
-        const auto waveguide_steps_completed{waveguide::run(
+        const auto waveguide_steps_completed = waveguide::run(
                 compute_context_,
                 mesh_,
-                prep,
+                waveguide::preprocessor::make_hard_source(
+                        source_index_, input.begin(), input.end()),
                 [&](auto& queue, const auto& buffer, auto step) {
                     mic_output(queue, buffer, step);
                     if (waveguide_visual_callback_) {
@@ -299,7 +298,7 @@ public:
                     }
                     callback(state::running_waveguide, step / (steps - 1.0));
                 },
-                keep_going)};
+                keep_going);
 
         if (waveguide_steps_completed != steps) {
             return nullptr;
@@ -369,8 +368,8 @@ private:
     raytracer_visual_callback_t raytracer_visual_callback_;
 };
 
-constexpr auto speed_of_sound{340.0};
-constexpr auto acoustic_impedance{400.0};
+constexpr auto speed_of_sound = 340.0;
+constexpr auto acoustic_impedance = 400.0;
 
 engine::engine(const compute_context& compute_context,
                const scene_data& scene_data,

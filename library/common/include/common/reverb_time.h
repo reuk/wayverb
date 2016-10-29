@@ -139,25 +139,62 @@ auto estimate_air_intensity_absorption(
 
 //  USE THESE ONES
 
+template <typename Absorption, typename Coeff>
+auto sabine_reverb_time(double room_volume,
+                        Absorption absorption_area,
+                        Coeff air_coefficient) {
+    if (room_volume <= 0) {
+        throw std::runtime_error{
+                "sabine_reverb_time: room_volume must be greater than 0"};
+    }
+    if (any(absorption_area <= 0)) {
+        throw std::runtime_error{
+                "sabine_reverb_time: absorption_area must be greater than 0"};
+    }
+
+    const auto numerator = 0.161f * room_volume;
+    const auto denominator =
+            absorption_area + (4 * room_volume * air_coefficient);
+    return numerator / denominator;
+}
+
 /// Sabine reverb time (use the damping constant function above too)
 /// (kuttruff 5.9) (vorlander 4.33)
 template <typename Vertex, typename Surface, typename Coeff>
 auto sabine_reverb_time(const generic_scene_data<Vertex, Surface>& scene,
                         Coeff air_coefficient) {
-    const auto room_volume = estimate_room_volume(scene);
-    const auto absorption_area = equivalent_absorption_area(scene);
-    return (0.161f * room_volume) /
-           (absorption_area + (4 * room_volume * air_coefficient));
+    return sabine_reverb_time(estimate_room_volume(scene),
+                              equivalent_absorption_area(scene),
+                              air_coefficient);
+}
+
+template <typename Absorption, typename Coeff>
+auto eyring_reverb_time(double room_volume,
+                        Absorption absorption_area,
+                        double full_area,
+                        Coeff air_coefficient) {
+    if (room_volume <= 0) {
+        throw std::runtime_error{
+                "eyring_reverb_time: room_volume must be greater than 0"};
+    }
+    if (any(absorption_area <= 0)) {
+        throw std::runtime_error{
+                "eyring_reverb_time: absorption_area must be greater than 0"};
+    }
+
+    const auto numerator = 0.161f * room_volume;
+    const auto denominator =
+            -full_area * log(1 - (absorption_area / full_area)) +
+            (4 * room_volume * air_coefficient);
+    return numerator / denominator;
 }
 
 /// Eyring reverb time (kuttruff 5.24) (vorlander 4.32)
 template <typename Vertex, typename Surface, typename Coeff>
 auto eyring_reverb_time(const generic_scene_data<Vertex, Surface>& scene,
                         Coeff air_coefficient) {
-    const auto room_volume = estimate_room_volume(scene);
-    const auto absorption_area = equivalent_absorption_area(scene);
-    const auto full_area = area(scene);
-    return (0.161f * room_volume) /
-           (-full_area * log(1 - (absorption_area / full_area)) +
-            (4 * room_volume * air_coefficient));
+    return eyring_reverb_time(estimate_room_volume(scene),
+                              equivalent_absorption_area(scene),
+                              area(scene),
+                              air_coefficient);
 }

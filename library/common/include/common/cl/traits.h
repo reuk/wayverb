@@ -281,6 +281,13 @@ constexpr auto operator<(const T& a, const U& b) {
     return detail::zip(a, b, std::less<>{});
 }
 
+template <typename T,
+          typename U,
+          detail::enable_if_any_is_vector_t<int, T, U> = 0>
+constexpr auto operator<=(const T& a, const U& b) {
+    return detail::zip(a, b, std::less_equal<>{});
+}
+
 //  arithmetic ops /////////////////////////////////////////////////////////////
 
 template <typename T, typename U, detail::enable_if_is_vector_t<T, int> = 0>

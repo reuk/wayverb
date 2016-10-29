@@ -34,6 +34,10 @@ const aligned::vector<coefficients_canonical>& vectors::get_coefficients()
     return coefficients_;
 }
 
+void vectors::set_coefficients(coefficients_canonical c) {
+    std::fill(begin(coefficients_), end(coefficients_), c);
+}
+
 void vectors::set_coefficients(aligned::vector<coefficients_canonical> c) {
     if (c.size() != coefficients_.size()) {
         throw std::runtime_error(

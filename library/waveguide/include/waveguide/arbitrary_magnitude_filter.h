@@ -40,7 +40,10 @@ auto to_array(const itpp::vec& x) {
 ////////////////////////////////////////////////////////////////////////////////
 
 constexpr auto make_interp_point(const frequency_domain_envelope::point& pt) {
-    struct ret final {double x; double y;};
+    struct ret final {
+        double x;
+        double y;
+    };
     return ret{pt.frequency, pt.amplitude};
 }
 
@@ -63,7 +66,12 @@ auto arbitrary_magnitude_filter(frequency_domain_envelope env) {
         frequency_domain_envelope ret;
         for (auto i = 0; i != npts; ++i) {
             const auto frequency = i / (npts - 1.0);
-            ret.insert(frequency_domain_envelope::point{frequency, interp(make_interp_iterator(env.cbegin()), make_interp_iterator(env.cend()), frequency, linear_interp_functor{})});
+            ret.insert(frequency_domain_envelope::point{
+                    frequency,
+                    interp(make_interp_iterator(env.cbegin()),
+                           make_interp_iterator(env.cend()),
+                           frequency,
+                           linear_interp_functor{})});
         }
         return ret;
     }();

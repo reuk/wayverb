@@ -1,10 +1,10 @@
 #include "waveguide/boundary_adjust.h"
 #include "waveguide/config.h"
+#include "waveguide/fitted_boundary.h"
 #include "waveguide/make_transparent.h"
 #include "waveguide/mesh.h"
 #include "waveguide/postprocessor/node.h"
 #include "waveguide/preprocessor/soft_source.h"
-#include "waveguide/fitted_boundary.h"
 #include "waveguide/waveguide.h"
 
 #include "common/azimuth_elevation.h"
@@ -51,7 +51,8 @@ int main(int argc, char** argv) {
         const glm::vec3 receiver{3.91, 1.89, 1.69};
         const auto sampling_frequency = 8000.0;
 
-        const auto surface = make_surface<simulation_bands>(0.2, 0);
+        constexpr auto absorption = 0.2;
+        const auto surface = make_surface<simulation_bands>(absorption, 0);
 
         const compute_context cc{};
         const geo::box boundary{glm::vec3{0}, glm::vec3{5.56, 3.97, 2.81}};
@@ -76,7 +77,7 @@ int main(int argc, char** argv) {
                         geo::get_aabb(scene_data), receiver, spacing));
         auto model =
                 waveguide::compute_mesh(cc, voxelised, spacing, speed_of_sound);
-        model.set_coefficients({waveguide::to_flat_coefficients(surface)});
+        model.set_coefficients(waveguide::to_flat_coefficients(absorption));
 
         const auto receiver_index =
                 compute_index(model.get_descriptor(), receiver);
