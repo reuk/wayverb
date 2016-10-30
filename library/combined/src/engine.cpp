@@ -1,8 +1,8 @@
 #include "combined/engine.h"
 #include "combined/postprocess.h"
 
+#include "raytracer/canonical.h"
 #include "raytracer/postprocess.h"
-#include "raytracer/raytracer.h"
 #include "raytracer/reflector.h"
 
 #include "waveguide/canonical.h"
@@ -20,6 +20,8 @@
 #include "common/pressure_intensity.h"
 #include "common/spatial_division/voxelised_scene_data.h"
 #include "common/surfaces.h"
+
+#include "utilities/event.h"
 
 #include "hrtf/multiband.h"
 
@@ -80,55 +82,65 @@ auto make_intermediate_impl_ptr(wayverb::combined_results<Histogram> to_process,
 
 namespace wayverb {
 
-class engine::impl final {
+class engine::impl {
 public:
-    impl(const compute_context& cc,
-         const scene_data& scene_data,
-         const model::parameters& params,
-         double waveguide_sample_rate,
-         size_t rays)
-            : impl(cc,
-                   waveguide::compute_voxels_and_mesh(cc,
-                                                      scene_data,
-                                                      params.receiver,
-                                                      waveguide_sample_rate,
-                                                      params.speed_of_sound),
-                   params,
-                   waveguide_sample_rate,
-                   rays) {}
+    impl() = default;
 
-private:
-    impl(const compute_context& cc,
-         waveguide::voxels_and_mesh pair,
-         const model::parameters& params,
-         double waveguide_sample_rate,
-         size_t rays)
+    impl(const impl&) = default;
+    impl(impl&&) noexcept = default;
+
+    impl& operator=(const impl&) = default;
+    impl& operator=(impl&&) noexcept = default;
+
+    virtual ~impl() noexcept = default;
+
+    virtual std::unique_ptr<intermediate> run(
+            const std::atomic_bool& keep_going,
+            const state_callback& callback) const = 0;
+
+    virtual waveguide_node_positions_changed::scoped_connector
+    add_scoped_waveguide_node_positions_changed_callback(
+            waveguide_node_positions_changed::callback_type callback) = 0;
+
+    virtual waveguide_node_pressures_changed::scoped_connector
+    add_scoped_waveguide_node_pressures_changed_callback(
+            waveguide_node_pressures_changed::callback_type callback) = 0;
+
+    virtual raytracer_reflections_generated::scoped_connector
+    add_scoped_raytracer_reflections_generated_callback(
+            raytracer_reflections_generated::callback_type callback) = 0;
+};
+
+template <typename WaveguideParams>
+class concrete_impl : public engine::impl {
+public:
+    concrete_impl(const compute_context& cc,
+                  engine::scene_data scene_data,
+                  const glm::vec3& source,
+                  const glm::vec3& receiver,
+                  const raytracer::simulation_parameters& raytracer,
+                  const WaveguideParams& waveguide)
             : compute_context_{cc}
-            , voxelised_{std::move(pair.voxels)}
-            , mesh_{std::move(pair.mesh)}
-            , params_{params}
-            , room_volume_{estimate_room_volume(pair.voxels.get_scene_data())}
-            , waveguide_sample_rate_{waveguide_sample_rate}
-            , rays_{rays} {}
+            , scene_data_{std::move(scene_data)}
+            , room_volume_{estimate_room_volume(scene_data_)}
+            , params_{source, receiver, 340.0, 400.0}
+            , raytracer_{raytracer}
+            , waveguide_{waveguide} {}
 
-public:
-    std::unique_ptr<intermediate> run(const std::atomic_bool& keep_going,
-                                      const state_callback& callback) const {
+    std::unique_ptr<intermediate> run(
+            const std::atomic_bool& keep_going,
+            const engine::state_callback& callback) const override {
         //  RAYTRACER  /////////////////////////////////////////////////////////
 
-        const auto max_image_source_order = 5;
-        const auto rays_to_visualise = std::min(1000ul, rays_);
-        const auto directions = get_random_directions(rays_);
+        const auto rays_to_visualise = std::min(1000ul, raytracer_.rays);
 
         callback(state::starting_raytracer, 1.0);
 
         auto raytracer_output =
-                raytracer::canonical(begin(directions),
-                                     end(directions),
-                                     compute_context_,
-                                     voxelised_,
+                raytracer::canonical(compute_context_,
+                                     scene_data_,
                                      params_,
-                                     max_image_source_order,
+                                     raytracer_,
                                      rays_to_visualise,
                                      keep_going,
                                      [&](auto step, auto total_steps) {
@@ -142,11 +154,7 @@ public:
 
         callback(state::finishing_raytracer, 1.0);
 
-        if (raytracer_visual_callback_) {
-            raytracer_visual_callback_(std::move(raytracer_output->visual),
-                                       params_.source,
-                                       params_.receiver);
-        }
+        raytracer_reflections_generated_(std::move(raytracer_output->visual));
 
         //  look for the max time of an impulse
         const auto max_stochastic_time =
@@ -155,15 +163,15 @@ public:
         //  WAVEGUIDE  /////////////////////////////////////////////////////////
         callback(state::starting_waveguide, 1.0);
 
-        auto waveguide_output = waveguide::detail::canonical_impl(
+        auto waveguide_output = waveguide::canonical(
                 compute_context_,
-                mesh_,
-                waveguide_sample_rate_,
-                max_stochastic_time,
+                scene_data_,
                 params_,
+                waveguide_,
+                max_stochastic_time,
                 keep_going,
                 [&](auto step, auto steps) {
-                    callback(state::running_raytracer, step / (steps - 1.0));
+                    callback(state::running_waveguide, step / (steps - 1.0));
                 });
 
         if (!(keep_going && waveguide_output)) {
@@ -183,102 +191,106 @@ public:
                 params_.speed_of_sound);
     }
 
-    aligned::vector<glm::vec3> get_node_positions() const {
-        return compute_node_positions(mesh_.get_descriptor());
+    engine::waveguide_node_positions_changed::scoped_connector
+    add_scoped_waveguide_node_positions_changed_callback(
+            engine::waveguide_node_positions_changed::callback_type callback)
+            override {
+        return waveguide_node_positions_changed_.add_scoped(
+                std::move(callback));
     }
 
-    void register_waveguide_visual_callback(
-            waveguide_visual_callback_t callback) {
-        //  visualiser returns current waveguide step, but we want the mesh
-        //  time
-        waveguide_visual_callback_ = [=](
-                auto& queue, const auto& buffer, auto step) {
-            //  convert step to time
-            callback(read_from_buffer<cl_float>(queue, buffer),
-                     step / waveguide_sample_rate_);
-        };
+    engine::waveguide_node_pressures_changed::scoped_connector
+    add_scoped_waveguide_node_pressures_changed_callback(
+            engine::waveguide_node_pressures_changed::callback_type callback)
+            override {
+        return waveguide_node_pressures_changed_.add_scoped(
+                std::move(callback));
     }
 
-    void unregister_waveguide_visual_callback() {
-        waveguide_visual_callback_ = waveguide_callback_wrapper_t{};
-    }
-
-    void register_raytracer_visual_callback(
-            raytracer_visual_callback_t callback) {
-        raytracer_visual_callback_ = callback;
-    }
-
-    void unregister_raytracer_visual_callback() {
-        raytracer_visual_callback_ = raytracer_visual_callback_t{};
+    engine::raytracer_reflections_generated::scoped_connector
+    add_scoped_raytracer_reflections_generated_callback(
+            engine::raytracer_reflections_generated::callback_type callback)
+            override {
+        return raytracer_reflections_generated_.add_scoped(std::move(callback));
     }
 
 private:
     compute_context compute_context_;
-
-    voxelised_scene_data<cl_float3, surface<simulation_bands>> voxelised_;
-    waveguide::mesh mesh_;
-
-    model::parameters params_;
-
+    engine::scene_data scene_data_;
     double room_volume_;
-    double waveguide_sample_rate_;
-    size_t rays_;
+    model::parameters params_;
+    raytracer::simulation_parameters raytracer_;
+    WaveguideParams waveguide_;
 
-    using waveguide_callback_wrapper_t = std::function<void(
-            cl::CommandQueue& queue, const cl::Buffer& buffer, size_t step)>;
-
-    waveguide_callback_wrapper_t waveguide_visual_callback_;
-    raytracer_visual_callback_t raytracer_visual_callback_;
+    engine::waveguide_node_positions_changed waveguide_node_positions_changed_;
+    engine::waveguide_node_pressures_changed waveguide_node_pressures_changed_;
+    engine::raytracer_reflections_generated raytracer_reflections_generated_;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
 
 engine::engine(const compute_context& compute_context,
-               const scene_data& scene_data,
+               scene_data scene_data,
                const glm::vec3& source,
                const glm::vec3& receiver,
-               double waveguide_sample_rate,
-               size_t rays)
-        : pimpl(std::make_unique<impl>(
+               const raytracer::simulation_parameters& raytracer,
+               const waveguide::single_band_parameters& waveguide)
+        : pimpl_{std::make_unique<
+                  concrete_impl<waveguide::single_band_parameters>>(
                   compute_context,
-                  scene_data,
-                  model::parameters{source, receiver, 340.0, 400.0},
-                  waveguide_sample_rate,
-                  rays)) {}
+                  std::move(scene_data),
+                  source,
+                  receiver,
+                  raytracer,
+                  waveguide)} {}
+
+engine::engine(const compute_context& compute_context,
+               scene_data scene_data,
+               const glm::vec3& source,
+               const glm::vec3& receiver,
+               const raytracer::simulation_parameters& raytracer,
+               const waveguide::multiple_band_parameters& waveguide)
+        : pimpl_{std::make_unique<
+                  concrete_impl<waveguide::multiple_band_parameters>>(
+                  compute_context,
+                  std::move(scene_data),
+                  source,
+                  receiver,
+                  raytracer,
+                  waveguide)} {}
 
 engine::~engine() noexcept = default;
 
 std::unique_ptr<intermediate> engine::run(
         const std::atomic_bool& keep_going,
         const engine::state_callback& callback) const {
-    return pimpl->run(keep_going, callback);
+    return pimpl_->run(keep_going, callback);
 }
 
-aligned::vector<glm::vec3> engine::get_node_positions() const {
-    return pimpl->get_node_positions();
+engine::waveguide_node_positions_changed::scoped_connector
+engine::add_scoped_waveguide_node_positions_changed_callback(
+        waveguide_node_positions_changed::callback_type callback) {
+    return pimpl_->add_scoped_waveguide_node_positions_changed_callback(
+            std::move(callback));
 }
 
-void engine::register_raytracer_visual_callback(
-        raytracer_visual_callback_t callback) {
-    pimpl->register_raytracer_visual_callback(std::move(callback));
+engine::waveguide_node_pressures_changed::scoped_connector
+engine::add_scoped_waveguide_node_pressures_changed_callback(
+        waveguide_node_pressures_changed::callback_type callback) {
+    return pimpl_->add_scoped_waveguide_node_pressures_changed_callback(
+            std::move(callback));
 }
 
-void engine::unregister_raytracer_visual_callback() {
-    pimpl->unregister_raytracer_visual_callback();
-}
-
-void engine::register_waveguide_visual_callback(
-        waveguide_visual_callback_t callback) {
-    pimpl->register_waveguide_visual_callback(std::move(callback));
-}
-
-void engine::unregister_waveguide_visual_callback() {
-    pimpl->unregister_waveguide_visual_callback();
+engine::raytracer_reflections_generated::scoped_connector
+engine::add_scoped_raytracer_reflections_generated_callback(
+        raytracer_reflections_generated::callback_type callback) {
+    return pimpl_->add_scoped_raytracer_reflections_generated_callback(
+            std::move(callback));
 }
 
 void engine::swap(engine& rhs) noexcept {
     using std::swap;
-    swap(pimpl, rhs.pimpl);
+    swap(pimpl_, rhs.pimpl_);
 }
 
 void swap(engine& a, engine& b) noexcept { a.swap(b); }

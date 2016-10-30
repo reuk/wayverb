@@ -29,22 +29,37 @@ auto compute_multiband_params(range<double> audible_range, double overlap) {
 
 ////////////////////////////////////////////////////////////////////////////////
 
+template <typename T>
+size_t next_power_of_two(T t) {
+    return std::ceil(std::log2(t));
+}
+
+template <typename T>
+size_t best_fft_length(T t) {
+    return std::pow(2, next_power_of_two(t));
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 template <size_t bands_plus_one, typename It, typename Callback>
-auto multiband_filter(It begin,
-                      It end,
+auto multiband_filter(It b,
+                      It e,
                       const edges_and_width_factor<bands_plus_one>& params,
                       const Callback& callback,
                       size_t l = 0) {
     constexpr auto bands = bands_plus_one - 1;
-    filter filt{static_cast<size_t>(std::distance(begin, end) << 5)};
+
+    //  A bit of extra padding here so that discontinuities at the end get
+    //  truncated away.
+    filter filt{best_fft_length(std::distance(b, e)) << 2};
 
     //  Will store the area under each frequency-domain window.
     std::array<double, bands> integrated_bands{};
 
     for (auto i = 0ul; i != bands; ++i) {
-        const auto b = callback(begin, i);
-        const auto e = callback(end, i);
-        filt.run(b, e, b, [&](auto cplx, auto freq) {
+        const auto mapping_b = callback(b, i);
+        const auto mapping_e = callback(e, i);
+        filt.run(mapping_b, mapping_e, mapping_b, [&](auto cplx, auto freq) {
             const auto amp = compute_bandpass_magnitude(
                     freq,
                     make_range(params.edges[i + 0], params.edges[i + 1]),

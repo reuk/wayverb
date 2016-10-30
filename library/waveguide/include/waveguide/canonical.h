@@ -1,12 +1,16 @@
 #pragma once
 
 #include "waveguide/calibration.h"
+#include "waveguide/fitted_boundary.h"
 #include "waveguide/postprocessor/directional_receiver.h"
 #include "waveguide/preprocessor/hard_source.h"
+#include "waveguide/simulation_parameters.h"
 #include "waveguide/waveguide.h"
 
 #include "common/callback_accumulator.h"
 #include "common/reverb_time.h"
+
+#include "hrtf/multiband.h"
 
 #include <cmath>
 
@@ -87,26 +91,26 @@ canonical_impl(const compute_context& cc,
 template <typename Callback>
 std::experimental::optional<
         aligned::vector<postprocessor::directional_receiver::output>>
-canonical_single_band(
-        const compute_context& cc,
-        const generic_scene_data<cl_float3, surface<simulation_bands>>& scene,
-        double sample_rate,
-        double simulation_time,
-        const model::parameters& params,
-        const std::atomic_bool& keep_going,
-        Callback&& callback) {
-    return detail::canonical_impl(cc,
-                                  compute_voxels_and_mesh(cc,
-                                                          scene,
-                                                          params.receiver,
-                                                          sample_rate,
-                                                          params.speed_of_sound)
-                                          .mesh,
-                                  sample_rate,
-                                  simulation_time,
-                                  params,
-                                  keep_going,
-                                  std::forward<Callback>(callback));
+canonical(const compute_context& cc,
+          const generic_scene_data<cl_float3, surface<simulation_bands>>& scene,
+          const model::parameters& params,
+          const single_band_parameters& sim_params,
+          double simulation_time,
+          const std::atomic_bool& keep_going,
+          Callback&& callback) {
+    return detail::canonical_impl(
+            cc,
+            compute_voxels_and_mesh(cc,
+                                    scene,
+                                    params.receiver,
+                                    sim_params.sample_rate,
+                                    params.speed_of_sound)
+                    .mesh,
+            sim_params.sample_rate,
+            simulation_time,
+            params,
+            keep_going,
+            std::forward<Callback>(callback));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -116,20 +120,27 @@ canonical_single_band(
 template <typename Callback>
 std::experimental::optional<aligned::vector<
         aligned::vector<postprocessor::directional_receiver::output>>>
-canonical_multiple_band(
-        const compute_context& cc,
-        const generic_scene_data<cl_float3, surface<simulation_bands>>& scene,
-        double sample_rate,
-        double simulation_time,
-        size_t max_bands,
-        const model::parameters& params,
-        const std::atomic_bool& keep_going,
-        Callback&& callback) {
+canonical(const compute_context& cc,
+          const generic_scene_data<cl_float3, surface<simulation_bands>>& scene,
+          const model::parameters& params,
+          const multiple_band_parameters& sim_params,
+          double simulation_time,
+          const std::atomic_bool& keep_going,
+          Callback&& callback) {
+    const auto band_params = hrtf_data::hrtf_band_params_hz();
+
     aligned::vector<
             aligned::vector<postprocessor::directional_receiver::output>>
             ret;
+    
+    //  For each band, up to the maximum band specified.
+    for (auto band = 0; band != sim_params.bands; ++band) {
 
-    for (auto band = 0; band != max_bands; ++band) {
+        //  Find the waveguide sampling rate required.
+        const auto sample_rate = band_params.edges[band + 1] /
+                                 (0.25 * sim_params.usable_portion);
+
+        //  Generate a mesh using the largest possible grid spacing.
         const auto mesh = [&] {
             auto ret = compute_voxels_and_mesh(cc,
                                                scene,

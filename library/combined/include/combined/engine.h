@@ -1,10 +1,14 @@
 #pragma once
 
 #include "raytracer/cl/structs.h"
+#include "raytracer/simulation_parameters.h"
+
+#include "waveguide/simulation_parameters.h"
 
 #include "common/scene_data.h"
 
 #include "utilities/aligned/vector.h"
+#include "utilities/event.h"
 
 #include "glm/glm.hpp"
 
@@ -70,12 +74,22 @@ class engine final {
 public:
     using scene_data = generic_scene_data<cl_float3, surface<simulation_bands>>;
 
+    //  Note: Passing scene_data by value is deliberate, as we need to own
+    //  the scene, and users can std::move if they don't need their own copy.
+
     engine(const compute_context& compute_context,
-           const scene_data& scene_data,
+           scene_data scene_data,
            const glm::vec3& source,
            const glm::vec3& receiver,
-           double waveguide_sample_rate,
-           size_t rays);
+           const raytracer::simulation_parameters& raytracer,
+           const waveguide::single_band_parameters& waveguide);
+
+    engine(const compute_context& compute_context,
+           scene_data scene_data,
+           const glm::vec3& source,
+           const glm::vec3& receiver,
+           const raytracer::simulation_parameters& raytracer,
+           const waveguide::multiple_band_parameters& waveguide);
 
     engine(const engine& rhs) = delete;
     engine& operator=(const engine& rhs) = delete;
@@ -89,27 +103,35 @@ public:
     std::unique_ptr<intermediate> run(const std::atomic_bool& keep_going,
                                       const state_callback&) const;
 
-    using raytracer_visual_callback_t =
-            std::function<void(aligned::vector<aligned::vector<reflection>>,
-                               const glm::vec3&,
-                               const glm::vec3&)>;
-    void register_raytracer_visual_callback(
-            raytracer_visual_callback_t callback);
-    void unregister_raytracer_visual_callback();
+    //  notifications  /////////////////////////////////////////////////////////
 
-    using waveguide_visual_callback_t =
-            std::function<void(aligned::vector<cl_float>, double)>;
-    void register_waveguide_visual_callback(
-            waveguide_visual_callback_t callback);
-    void unregister_waveguide_visual_callback();
+    using waveguide_node_positions_changed = event<aligned::vector<glm::vec3>>;
 
-    aligned::vector<glm::vec3> get_node_positions() const;
+    waveguide_node_positions_changed::scoped_connector
+            add_scoped_waveguide_node_positions_changed_callback(
+                    waveguide_node_positions_changed::callback_type);
+
+    using waveguide_node_pressures_changed = event<aligned::vector<float>>;
+
+    waveguide_node_pressures_changed::scoped_connector
+            add_scoped_waveguide_node_pressures_changed_callback(
+                    waveguide_node_pressures_changed::callback_type);
+
+    using raytracer_reflections_generated =
+            event<aligned::vector<aligned::vector<reflection>>>;
+
+    raytracer_reflections_generated::scoped_connector
+            add_scoped_raytracer_reflections_generated_callback(
+                    raytracer_reflections_generated::callback_type);
+
+    //  utilities  /////////////////////////////////////////////////////////////
 
     void swap(engine&) noexcept;
 
-private:
     class impl;
-    std::unique_ptr<impl> pimpl;
+
+private:
+    std::unique_ptr<impl> pimpl_;
 };
 
 void swap(engine&, engine&) noexcept;

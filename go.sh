@@ -4,7 +4,7 @@ if cmake .. ; then
 
 export CL_LOG_ERRORS=stdout
 #export GTEST_FILTER="*multiband*"
-make && ctest -V
+#make && ctest -V
 
 #make && cd utils/image_source_comparison && ./image_source_comparison
 
@@ -27,7 +27,7 @@ make && ctest -V
 #make && cd utils/diffuse_decay && ./diffuse_decay
 
 #make && cd utils/southern2011 && ./southern2011
-#make && cd utils/siltanen2013 && ./siltanen2013
+make && cd utils/siltanen2013 && ./siltanen2013
 
 #make && cd ../utils/boundary_test && ./run_and_graph.sh
 

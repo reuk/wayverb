@@ -1,7 +1,7 @@
 #pragma once
 
+#include "raytracer/canonical.h"
 #include "raytracer/image_source/postprocess.h"
-#include "raytracer/raytracer.h"
 #include "raytracer/stochastic/postprocess.h"
 
 #include "common/sum_ranges.h"
