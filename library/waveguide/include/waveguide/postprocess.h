@@ -79,21 +79,46 @@ auto postprocess(const simulation_results& results,
                  double output_sample_rate) {
     aligned::vector<float> ret;
 
+    auto prev_cutoff = 0.0;
+
     for (const auto& band : results.bands) {
-        const auto processed = postprocess(band,
-                                           results.usable_portion,
-                                           method,
-                                           acoustic_impedance,
-                                           output_sample_rate);
+        auto processed = postprocess(band,
+                                     results.usable_portion,
+                                     method,
+                                     acoustic_impedance,
+                                     output_sample_rate);
 
-        //  TODO Remove this line.
-        throw std::runtime_error{"not implemented"};
+        const auto cutoff = compute_cutoff_frequency(band.sample_rate,
+                                                     results.usable_portion);
 
-        //  TODO For the lowest band, lopass based on sampling rate and usable
-        //  portion.
-        //  For other bands, bandpass based on previous band cutoff.
-        
-        //  TODO Add results to ret.
+        //  Bandpass based on previous band cutoff.
+        frequency_domain::filter filt{
+                frequency_domain::best_fft_length(processed.size()) << 2};
+
+        constexpr auto l = 0;
+        constexpr auto width = 1.0;
+
+        const auto b = begin(processed);
+        const auto e = end(processed);
+        filt.run(b, e, b, [&](auto cplx, auto freq) {
+            return cplx * static_cast<float>(
+                                  frequency_domain::compute_bandpass_magnitude(
+                                          freq,
+                                          make_range(prev_cutoff, cutoff),
+                                          width,
+                                          l));
+        });
+
+        //  Add results to ret.
+        ret.resize(std::max(ret.size(), processed.size()), 0.0f);
+        std::transform(begin(processed),
+                       end(processed),
+                       begin(ret),
+                       begin(ret),
+                       std::plus<>{});
+
+        //  Update prev cutoff.
+        prev_cutoff = cutoff;
     }
 
     return ret;
