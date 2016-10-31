@@ -73,7 +73,10 @@ struct raytracer_renderer final {
 
     auto operator()() const {
         return make_raytracer_processor(
-                run_raytracer(box, scattering_surface, params, 4),
+                run_raytracer(box,
+                              scattering_surface,
+                              params,
+                              raytracer::simulation_parameters{1 << 16, 5}),
                 params,
                 room_volume,
                 sample_rate);
@@ -83,8 +86,7 @@ struct raytracer_renderer final {
 //----------------------------------------------------------------------------//
 
 struct waveguide_processor final {
-    aligned::vector<waveguide::postprocessor::directional_receiver::output>
-            input;
+    waveguide::simulation_results input;
     const model::parameters& params;
     const float& sample_rate;
 
@@ -92,8 +94,7 @@ struct waveguide_processor final {
     auto operator()(const U& attenuator) const {
         return make_named_value(
                 "waveguide",
-                postprocess_waveguide(begin(input),
-                                      end(input),
+                postprocess_waveguide(input,
                                       attenuator,
                                       sample_rate,
                                       params.acoustic_impedance));

@@ -8,6 +8,7 @@
 #include "waveguide/waveguide.h"
 
 #include "common/callback_accumulator.h"
+#include "common/model/parameters.h"
 #include "common/reverb_time.h"
 
 #include "hrtf/multiband.h"
@@ -21,17 +22,22 @@
 
 namespace waveguide {
 
+struct band final {
+    aligned::vector<postprocessor::directional_receiver::output> directional;
+    double sample_rate;
+};
+
 namespace detail {
+
 template <typename Callback>
-std::experimental::optional<
-        aligned::vector<postprocessor::directional_receiver::output>>
-canonical_impl(const compute_context& cc,
-               const mesh& mesh,
-               double sample_rate,
-               double simulation_time,
-               const model::parameters& params,
-               const std::atomic_bool& keep_going,
-               Callback&& callback) {
+std::experimental::optional<band> canonical_impl(
+        const compute_context& cc,
+        const mesh& mesh,
+        double sample_rate,
+        double simulation_time,
+        const model::parameters& params,
+        const std::atomic_bool& keep_going,
+        Callback&& callback) {
     const auto compute_mesh_index = [&](const auto& pt) {
         const auto ret = compute_index(mesh.get_descriptor(), pt);
         if (!waveguide::is_inside(
@@ -75,12 +81,30 @@ canonical_impl(const compute_context& cc,
         return std::experimental::nullopt;
     }
 
-    return std::move(output_accumulator.get_output());
+    return band{std::move(output_accumulator.get_output()), sample_rate};
 }
 
 }  // namespace detail
 
 ////////////////////////////////////////////////////////////////////////////////
+
+struct simulation_results final {
+    aligned::vector<band> bands;
+    double usable_portion;
+};
+
+auto compute_cutoff_frequency(const simulation_results& results) {
+    if (!std::is_sorted(
+                begin(results.bands), end(results.bands), [](auto i, auto j) {
+                    return i.sample_rate < j.sample_rate;
+                })) {
+        throw std::runtime_error{
+                "compute_cutoff_frequency: bands must be stored in order of "
+                "increasing sample rate"};
+    }
+    return compute_cutoff_frequency(results.bands.back().sample_rate,
+                                    results.usable_portion);
+}
 
 /// Run a waveguide using:
 ///     specified sample rate
@@ -89,28 +113,31 @@ canonical_impl(const compute_context& cc,
 ///     single hard source
 ///     single directional receiver
 template <typename Callback>
-std::experimental::optional<
-        aligned::vector<postprocessor::directional_receiver::output>>
-canonical(const compute_context& cc,
-          const generic_scene_data<cl_float3, surface<simulation_bands>>& scene,
-          const model::parameters& params,
-          const single_band_parameters& sim_params,
-          double simulation_time,
-          const std::atomic_bool& keep_going,
-          Callback&& callback) {
-    return detail::canonical_impl(
-            cc,
-            compute_voxels_and_mesh(cc,
-                                    scene,
-                                    params.receiver,
-                                    sim_params.sample_rate,
-                                    params.speed_of_sound)
-                    .mesh,
-            sim_params.sample_rate,
-            simulation_time,
-            params,
-            keep_going,
-            std::forward<Callback>(callback));
+std::experimental::optional<simulation_results> canonical(
+        const compute_context& cc,
+        const generic_scene_data<cl_float3, surface<simulation_bands>>& scene,
+        const model::parameters& params,
+        const single_band_parameters& sim_params,
+        double simulation_time,
+        const std::atomic_bool& keep_going,
+        Callback&& callback) {
+    if (auto ret = detail::canonical_impl(
+                cc,
+                compute_voxels_and_mesh(cc,
+                                        scene,
+                                        params.receiver,
+                                        sim_params.sample_rate,
+                                        params.speed_of_sound)
+                        .mesh,
+                sim_params.sample_rate,
+                simulation_time,
+                params,
+                keep_going,
+                std::forward<Callback>(callback))) {
+        return simulation_results{{std::move(*ret)}, sim_params.usable_portion};
+    }
+
+    return std::experimental::nullopt;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -118,24 +145,20 @@ canonical(const compute_context& cc,
 /// This method shows a different approach which more accurately simulates
 /// frequency-dependent boundaries, but which runs several times slower.
 template <typename Callback>
-std::experimental::optional<aligned::vector<
-        aligned::vector<postprocessor::directional_receiver::output>>>
-canonical(const compute_context& cc,
-          const generic_scene_data<cl_float3, surface<simulation_bands>>& scene,
-          const model::parameters& params,
-          const multiple_band_parameters& sim_params,
-          double simulation_time,
-          const std::atomic_bool& keep_going,
-          Callback&& callback) {
+std::experimental::optional<simulation_results> canonical(
+        const compute_context& cc,
+        const generic_scene_data<cl_float3, surface<simulation_bands>>& scene,
+        const model::parameters& params,
+        const multiple_band_parameters& sim_params,
+        double simulation_time,
+        const std::atomic_bool& keep_going,
+        Callback&& callback) {
     const auto band_params = hrtf_data::hrtf_band_params_hz();
 
-    aligned::vector<
-            aligned::vector<postprocessor::directional_receiver::output>>
-            ret;
-    
+    simulation_results ret{{}, sim_params.usable_portion};
+
     //  For each band, up to the maximum band specified.
     for (auto band = 0; band != sim_params.bands; ++band) {
-
         //  Find the waveguide sampling rate required.
         const auto sample_rate = band_params.edges[band + 1] /
                                  (0.25 * sim_params.usable_portion);
@@ -162,13 +185,17 @@ canonical(const compute_context& cc,
             return ret.mesh;
         }();
 
-        ret.emplace_back(detail::canonical_impl(cc,
-                                                mesh,
-                                                sample_rate,
-                                                simulation_time,
-                                                params,
-                                                keep_going,
-                                                callback));
+        if (auto rendered_band = detail::canonical_impl(cc,
+                                                        mesh,
+                                                        sample_rate,
+                                                        simulation_time,
+                                                        params,
+                                                        keep_going,
+                                                        callback)) {
+            ret.bands.emplace_back(*rendered_band);
+        } else {
+            return std::experimental::nullopt;
+        }
     }
 
     return ret;

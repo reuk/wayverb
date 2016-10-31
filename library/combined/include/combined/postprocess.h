@@ -2,26 +2,23 @@
 
 #include "raytracer/postprocess.h"
 
+#include "waveguide/canonical.h"
 #include "waveguide/config.h"
 #include "waveguide/postprocess.h"
 
-namespace wayverb {
+#include "common/sum_ranges.h"
 
-struct waveguide_results final {
-    aligned::vector<waveguide::postprocessor::directional_receiver::output>
-            directional;
-    double sample_rate;
-};
+namespace wayverb {
 
 template <typename Histogram>
 struct combined_results final {
     raytracer::aural_results<Histogram> raytracer;
-    waveguide_results waveguide;
+    waveguide::simulation_results waveguide;
 };
 
 template <typename Histogram>
 auto make_combined_results(raytracer::aural_results<Histogram> raytracer,
-                           waveguide_results waveguide) {
+                           waveguide::simulation_results waveguide) {
     return combined_results<Histogram>{std::move(raytracer),
                                        std::move(waveguide)};
 }
@@ -42,22 +39,19 @@ auto crossover_filter(LoIt b_lo,
 
     constexpr auto l = 0;
 
-    return sum_vectors(
-            [&] {
-                auto ret = std::vector<float>(std::distance(b_lo, e_lo));
-                filt.run(b_lo, e_lo, begin(ret), [&](auto cplx, auto freq) {
+    const auto run_filter =
+            [&](auto b, auto e, auto mag_func) {
+                auto ret = std::vector<float>(std::distance(b, e));
+                filt.run(b, e, begin(ret), [&](auto cplx, auto freq) {
                     return cplx *
-                           compute_lopass_magnitude(freq, cutoff, width, l);
+                           static_cast<float>(mag_func(freq, cutoff, width, l));
                 });
                 return ret;
-            }(),
-            [&] {
-                auto ret = std::vector<float>(std::distance(b_hi, e_hi));
-                filt.run(b_hi, e_hi, begin(ret), [&](auto cplx, auto freq) {
-                    return cplx *
-                           compute_hipass_magnitude(freq, cutoff, width, l);
-                });
-            }());
+            };
+
+    return sum_vectors(
+            run_filter(b_lo, e_lo, frequency_domain::compute_lopass_magnitude),
+            run_filter(b_hi, e_hi, frequency_domain::compute_hipass_magnitude));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -72,18 +66,11 @@ auto postprocess(const combined_results<Histogram>& input,
                  double output_sample_rate) {
     //  Individual processing.
     const auto waveguide_processed = [&] {
-        auto ret = waveguide::postprocess(begin(input.waveguide.directional),
-                                          end(input.waveguide.directional),
+        auto ret = waveguide::postprocess(input.waveguide,
                                           method,
                                           acoustic_impedance,
-                                          input.waveguide.sample_rate);
+                                          output_sample_rate);
         //  TODO DC removal.
-
-        //  Samplerate conversion.
-        ret = waveguide::adjust_sampling_rate(ret.data(),
-                                              ret.data() + ret.size(),
-                                              input.waveguide.sample_rate,
-                                              output_sample_rate);
 
         return ret;
     }();
@@ -96,6 +83,9 @@ auto postprocess(const combined_results<Histogram>& input,
                                                             speed_of_sound,
                                                             output_sample_rate);
 
+    const auto cutoff =
+            compute_cutoff_frequency(input.waveguide) / output_sample_rate;
+    const auto width = 0.2;  //  Wider = more natural-sounding
     return crossover_filter(begin(waveguide_processed),
                             end(waveguide_processed),
                             begin(raytracer_processed),

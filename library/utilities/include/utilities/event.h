@@ -11,7 +11,7 @@ class event final {
 
 public:
     event()
-            : pimpl_{std::make_unique<impl>()} {}
+            : pimpl_{std::make_shared<impl>()} {}
 
     using key_type = size_t;
     using callback_type = std::function<void(Ts&&... ts)>;
@@ -22,25 +22,21 @@ public:
 
     class disconnector final {
     public:
-        constexpr disconnector(impl& impl, key_type key)
-                : impl_{&impl}
+        constexpr disconnector(std::shared_ptr<impl> pimpl, key_type key)
+                : pimpl_{pimpl}
                 , key_{key} {}
 
-        void operator()() const noexcept { impl_->remove(key_); }
+        void operator()() const noexcept { pimpl_->remove(key_); }
 
     private:
-        impl* impl_;
+        std::shared_ptr<impl> pimpl_;
         key_type key_;
     };
 
     using scoped_connector = final_act<disconnector>;
 
-    /// Returns a connection object which will automatically remove the
-    /// connection when it goes out of scope.
-    /// Of course, to avoid dangling references, the scoped connection must
-    /// be destroyed before the signal itself.
     auto add_scoped(callback_type callback) {
-        return make_final_act(disconnector{*pimpl_, add(std::move(callback))});
+        return make_final_act(disconnector{pimpl_, add(std::move(callback))});
     }
 
     void remove(key_type key) { pimpl_.remove(key); }
@@ -80,5 +76,9 @@ private:
         std::unordered_map<key_type, callback_type> slots_;
     };
 
-    std::unique_ptr<impl> pimpl_;
+    /// We use a shared pointer here, so that scoped_connectors can make their
+    /// own shared_ptrs, thereby increasing the lifespan of the impl object and
+    /// ensuring that the disconnector will not attempt to dereference a
+    /// previously-deleted pointer.
+    std::shared_ptr<impl> pimpl_;
 };

@@ -1,6 +1,8 @@
 #pragma once
 
 #include "waveguide/attenuator.h"
+#include "waveguide/canonical.h"
+#include "waveguide/config.h"
 
 #include "common/attenuator/hrtf.h"
 #include "common/attenuator/microphone.h"
@@ -52,15 +54,49 @@ auto postprocess(It begin, It end, double sample_rate) {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-template <typename InputIt, typename Method>
-auto postprocess(InputIt b,
-                 InputIt e,
+template <typename Method>
+auto postprocess(const band& band,
+                 double usable_portion,
                  const Method& method,
                  double acoustic_impedance,
-                 double sample_rate) {
-    auto attenuated = map_to_vector(
-            b, e, make_attenuate_mapper(method, acoustic_impedance));
-    return postprocess(begin(attenuated), end(attenuated), sample_rate);
+                 double output_sample_rate) {
+    auto attenuated =
+            map_to_vector(begin(band.directional),
+                          end(band.directional),
+                          make_attenuate_mapper(method, acoustic_impedance));
+    const auto ret =
+            postprocess(begin(attenuated), end(attenuated), band.sample_rate);
+    return waveguide::adjust_sampling_rate(ret.data(),
+                                           ret.data() + ret.size(),
+                                           band.sample_rate,
+                                           output_sample_rate);
+}
+
+template <typename Method>
+auto postprocess(const simulation_results& results,
+                 const Method& method,
+                 double acoustic_impedance,
+                 double output_sample_rate) {
+    aligned::vector<float> ret;
+
+    for (const auto& band : results.bands) {
+        const auto processed = postprocess(band,
+                                           results.usable_portion,
+                                           method,
+                                           acoustic_impedance,
+                                           output_sample_rate);
+
+        //  TODO Remove this line.
+        throw std::runtime_error{"not implemented"};
+
+        //  TODO For the lowest band, lopass based on sampling rate and usable
+        //  portion.
+        //  For other bands, bandpass based on previous band cutoff.
+        
+        //  TODO Add results to ret.
+    }
+
+    return ret;
 }
 
 }  // namespace waveguide

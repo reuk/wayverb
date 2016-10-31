@@ -140,11 +140,8 @@ int main(int argc, char** argv) {
                 params,
                 sample_rate,
                 2 / params.speed_of_sound);
-        return postprocess_waveguide(begin(raw),
-                                     end(raw),
-                                     mic,
-                                     sample_rate,
-                                     params.acoustic_impedance);
+        return postprocess_waveguide(
+                raw, mic, sample_rate, params.acoustic_impedance);
     });
 
     run("img_src", [&](const auto& source, const auto& receiver) {

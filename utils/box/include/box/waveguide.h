@@ -1,22 +1,9 @@
 #pragma once
 
-/*
-#include "waveguide/calibration.h"
-#include "waveguide/fitted_boundary.h"
-#include "waveguide/mesh.h"
-#include "waveguide/postprocessor/directional_receiver.h"
-#include "waveguide/preprocessor/hard_source.h"
-*/
 #include "waveguide/canonical.h"
 #include "waveguide/postprocess.h"
 
 #include "utilities/progress_bar.h"
-/*
-#include "common/geo/box.h"
-#include "common/model/parameters.h"
-
-#include "utilities/aligned/vector.h"
-*/
 
 template <typename It>
 void lopass(It b, It e, double sample_rate) {
@@ -42,40 +29,31 @@ void lopass(It b, It e, double sample_rate) {
     });
 }
 
-template <typename It>
-auto postprocess_waveguide(It b, It e, double sample_rate) {
-    auto processed{waveguide::postprocess(b, e, sample_rate)};
-    lopass(begin(processed), end(processed), sample_rate);
-    return processed;
-}
-
-template <typename It, typename Attenuator>
-auto postprocess_waveguide(It b,
-                           It e,
+template <typename Attenuator>
+auto postprocess_waveguide(const waveguide::simulation_results& sim_results,
                            const Attenuator& attenuator,
                            float sample_rate,
                            float acoustic_impedance) {
     auto processed{waveguide::postprocess(
-            b, e, attenuator, acoustic_impedance, sample_rate)};
+            sim_results, attenuator, acoustic_impedance, sample_rate)};
     lopass(begin(processed), end(processed), sample_rate);
     return processed;
 }
 
 template <typename Absorption>
-aligned::vector<waveguide::postprocessor::directional_receiver::output>
-run_waveguide(const geo::box& box,
-              Absorption absorption,
-              const model::parameters& params,
-              float sample_rate,
-              float simulation_time) {
+auto run_waveguide(const geo::box& box,
+                   Absorption absorption,
+                   const model::parameters& params,
+                   float sample_rate,
+                   float simulation_time) {
     const auto scene = geo::get_scene_data(box, absorption);
     progress_bar pb;
-    return *waveguide::canonical_single_band(
+    return *waveguide::canonical(
             compute_context{},
             scene,
-            sample_rate,
-            max_element(eyring_reverb_time(scene, 0.0)),
             params,
+            waveguide::single_band_parameters{sample_rate, 0.6},
+            max_element(eyring_reverb_time(scene, 0.0)),
             true,
             [&](auto step, auto steps) { set_progress(pb, step, steps); });
 }

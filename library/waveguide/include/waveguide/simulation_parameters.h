@@ -18,6 +18,11 @@ struct single_band_parameters final {
     double usable_portion;
 };
 
+constexpr auto compute_cutoff_frequency(double sample_rate,
+                                        double usable_portion) {
+    return sample_rate * 0.25 * usable_portion;
+}
+
 struct multiple_band_parameters final {
     /// The number of bands which should be simulated with the waveguide.
     /// Be careful with high numbers.

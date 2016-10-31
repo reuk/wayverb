@@ -181,10 +181,8 @@ public:
         callback(state::finishing_waveguide, 1.0);
 
         return make_intermediate_impl_ptr(
-                make_combined_results(
-                        std::move(raytracer_output->aural),
-                        waveguide_results{std::move(*waveguide_output),
-                                          waveguide_sample_rate_}),
+                make_combined_results(std::move(raytracer_output->aural),
+                                      std::move(*waveguide_output)),
                 params_.receiver,
                 room_volume_,
                 params_.acoustic_impedance,
