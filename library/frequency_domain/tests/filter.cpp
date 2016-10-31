@@ -54,16 +54,12 @@ TEST(filter, reduce_magnitude) {
 }
 
 TEST(filter, band_edges) {
-        const auto centre{0.25};
         const auto P{0.1};
 
         for (auto l{0u}; l != 4; ++l) {
             for (auto p{-P}, end{P}; p < end; p += 0.02) {
-                const auto lower{
-                        frequency_domain::lower_band_edge(centre, p, P, l)};
-                const auto upper{
-                        frequency_domain::upper_band_edge(centre, p, P, l)};
-                std::cout << "lower: " << lower << ", upper: " << upper << '\n';
+                const auto lower{frequency_domain::lower_band_edge(p, P, l)};
+                const auto upper{frequency_domain::upper_band_edge(p, P, l)};
                 ASSERT_NEAR(lower + upper, 1, 0.000001) << p;
             }
         }

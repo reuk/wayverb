@@ -37,5 +37,5 @@ TEST(engine, engine) {
     }
 
     const auto result =
-            intermediate->attenuate(model::receiver{}, output_sample_rate);
+            intermediate->postprocess(attenuator::null{}, output_sample_rate);
 }

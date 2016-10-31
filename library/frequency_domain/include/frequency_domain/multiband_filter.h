@@ -3,6 +3,8 @@
 #include "frequency_domain/envelope.h"
 #include "frequency_domain/filter.h"
 
+#include "utilities/foldl.h"
+#include "utilities/map.h"
 #include "utilities/map_to_vector.h"
 #include "utilities/mapping_iterator_adapter.h"
 #include "utilities/range.h"
@@ -51,10 +53,12 @@ auto multiband_filter(It b,
 
     //  A bit of extra padding here so that discontinuities at the end get
     //  truncated away.
-    filter filt{best_fft_length(std::distance(b, e)) << 2};
+    const auto bins = best_fft_length(std::distance(b, e)) << 2;
+    filter filt{bins};
 
     //  Will store the area under each frequency-domain window.
-    std::array<double, bands> integrated_bands{};
+    std::array<double, bands> summed_squared{};
+    std::array<double, bands> integrated_envelopes{};
 
     for (auto i = 0ul; i != bands; ++i) {
         const auto mapping_b = callback(b, i);
@@ -65,14 +69,21 @@ auto multiband_filter(It b,
                     make_range(params.edges[i + 0], params.edges[i + 1]),
                     params.width_factor,
                     l);
-
-            integrated_bands[i] += amp;
-
-            return cplx * static_cast<float>(amp);
+            integrated_envelopes[i] += amp;
+            const auto ret = cplx * static_cast<float>(amp);
+            const auto abs_ret = std::abs(ret);
+            summed_squared[i] += abs_ret * abs_ret;
+            return ret;
         });
     }
 
-    return integrated_bands;
+    std::array<double, bands> normalized_rms{};
+    for (auto i = 0; i != bands; ++i) {
+        normalized_rms[i] =
+                std::sqrt(summed_squared[i] / integrated_envelopes[i]);
+    }
+
+    return normalized_rms;
 }
 
 template <typename It>
@@ -87,28 +98,6 @@ template <typename It>
 auto rms(It b, It e) {
     using std::sqrt;
     return sqrt(square_sum(b, e));
-}
-
-template <typename It, typename Callback>
-auto band_rms(It begin, It end, const Callback& callback, size_t band) {
-    const auto b = callback(begin, band);
-    const auto e = callback(end, band);
-    return rms(b, e);
-}
-
-template <typename It, typename Callback, size_t... Ix>
-auto multiband_rms(It begin,
-                   It end,
-                   const Callback& callback,
-                   std::index_sequence<Ix...>) {
-    return std::array<double, sizeof...(Ix)>{
-            {band_rms(begin, end, callback, Ix)...}};
-}
-
-template <size_t bands, typename It, typename Callback>
-auto multiband_rms(It begin, It end, const Callback& callback) {
-    return multiband_rms(
-            begin, end, callback, std::make_index_sequence<bands>{});
 }
 
 template <size_t bands, typename T>
@@ -158,18 +147,10 @@ auto per_band_energy(It begin,
 
     auto multiband = make_multiband<bands>(begin, end);
 
-    const auto band_widths = multiband_filter(std::begin(multiband),
-                                              std::end(multiband),
-                                              params,
-                                              make_indexer_iterator{});
-
-    auto rms = multiband_rms<bands>(std::begin(multiband),
-                                    std::end(multiband),
-                                    make_indexer_iterator{});
-
-    for (auto i = 0ul; i != bands; ++i) {
-        rms[i] *= bands / sqrt(band_widths[i]);
-    }
+    const auto rms = multiband_filter(std::begin(multiband),
+                                      std::end(multiband),
+                                      params,
+                                      make_indexer_iterator{});
 
     return rms;
 }

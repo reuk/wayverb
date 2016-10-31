@@ -5,6 +5,9 @@
 
 #include "waveguide/simulation_parameters.h"
 
+#include "common/attenuator/hrtf.h"
+#include "common/attenuator/microphone.h"
+#include "common/attenuator/null.h"
 #include "common/scene_data.h"
 
 #include "utilities/aligned/vector.h"
@@ -57,15 +60,24 @@ constexpr auto to_string(state s) {
 class intermediate {
 public:
     intermediate() = default;
+
     intermediate(const intermediate&) = default;
-    intermediate& operator=(const intermediate&) = default;
     intermediate(intermediate&&) noexcept = default;
+
+    intermediate& operator=(const intermediate&) = default;
     intermediate& operator=(intermediate&&) noexcept = default;
+
     virtual ~intermediate() noexcept = default;
 
-    virtual aligned::vector<aligned::vector<float>> attenuate(
-            const model::receiver& receiver,
-            double output_sample_rate) const = 0;
+    virtual aligned::vector<float> postprocess(
+            const attenuator::hrtf& attenuator, double sample_rate) const = 0;
+
+    virtual aligned::vector<float> postprocess(
+            const attenuator::microphone& attenuator,
+            double sample_rate) const = 0;
+
+    virtual aligned::vector<float> postprocess(
+            const attenuator::null& attenuator, double sample_rate) const = 0;
 };
 
 //  engine  ////////////////////////////////////////////////////////////////////
@@ -92,10 +104,10 @@ public:
            const waveguide::multiple_band_parameters& waveguide);
 
     engine(const engine& rhs) = delete;
-    engine& operator=(const engine& rhs) = delete;
+    engine(engine&& rhs) noexcept;
 
-    engine(engine&& rhs) noexcept = default;
-    engine& operator=(engine&& rhs) noexcept = default;
+    engine& operator=(const engine& rhs) = delete;
+    engine& operator=(engine&& rhs) noexcept;
 
     ~engine() noexcept;
 

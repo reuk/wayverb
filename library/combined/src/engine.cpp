@@ -43,19 +43,34 @@ public:
             , acoustic_impedance_{acoustic_impedance}
             , speed_of_sound_{speed_of_sound} {}
 
-    aligned::vector<aligned::vector<float>> attenuate(
-            const model::receiver& receiver,
-            double output_sample_rate) const override {
-        return model::run_attenuation(receiver,
-                                      to_process_,
-                                      receiver_position_,
-                                      room_volume_,
-                                      acoustic_impedance_,
-                                      speed_of_sound_,
-                                      output_sample_rate);
+    aligned::vector<float> postprocess(const attenuator::hrtf& attenuator,
+                                       double sample_rate) const override {
+        return postprocess_impl(attenuator, sample_rate);
+    }
+
+    aligned::vector<float> postprocess(const attenuator::microphone& attenuator,
+                                       double sample_rate) const override {
+        return postprocess_impl(attenuator, sample_rate);
+    }
+
+    aligned::vector<float> postprocess(const attenuator::null& attenuator,
+                                       double sample_rate) const override {
+        return postprocess_impl(attenuator, sample_rate);
     }
 
 private:
+    template <typename Attenuator>
+    auto postprocess_impl(const Attenuator& attenuator,
+                          double output_sample_rate) const {
+        return wayverb::postprocess(to_process_,
+                                    attenuator,
+                                    receiver_position_,
+                                    room_volume_,
+                                    acoustic_impedance_,
+                                    speed_of_sound_,
+                                    output_sample_rate);
+    }
+
     wayverb::combined_results<Histogram> to_process_;
     glm::vec3 receiver_position_;
     double room_volume_;
@@ -256,6 +271,10 @@ engine::engine(const compute_context& compute_context,
                   receiver,
                   raytracer,
                   waveguide)} {}
+
+engine::engine(engine&& rhs) noexcept = default;
+
+engine& engine::operator=(engine&& rhs) noexcept = default;
 
 engine::~engine() noexcept = default;
 

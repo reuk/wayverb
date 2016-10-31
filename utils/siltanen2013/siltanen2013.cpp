@@ -19,6 +19,7 @@
 
 #include "audio_file/audio_file.h"
 
+#include <iomanip>
 #include <iostream>
 
 template <typename Collection>
@@ -170,7 +171,7 @@ struct engine_processor final {
     auto operator()(const U& attenuator) const {
         return make_named_value(
                 "engine",
-                intermediate->attenuate(attenuator, output_sample_rate));
+                intermediate->postprocess(attenuator, output_sample_rate));
     }
 };
 
@@ -178,9 +179,12 @@ struct engine_renderer final {
     wayverb::engine engine;
     const float& output_sample_rate;
     auto operator()() const {
-        return engine_processor{
-                engine.run(true, [](auto state, auto progress) {}),
-                output_sample_rate};
+        const auto callback = [](auto state, auto progress) {
+            std::cout << '\r' << std::setw(30) << to_string(state)
+                      << std::setw(10) << progress << std::flush;
+        };
+
+        return engine_processor{engine.run(true, callback), output_sample_rate};
     }
 };
 
@@ -190,10 +194,10 @@ int main(int argc, char** argv) {
     //  constants //////////////////////////////////////////////////////////////
 
     const auto box = geo::box{glm::vec3{0}, glm::vec3{5.56, 3.97, 2.81}};
-    constexpr auto sample_rate = 16000.0;
+    constexpr auto sample_rate = 44100.0;
 
-    constexpr model::parameters params{glm::vec3{2.09, 2.12, 2.12},
-                                       glm::vec3{2.09, 3.08, 0.96}};
+    constexpr auto source = glm::vec3{2.09, 2.12, 2.12};
+    constexpr auto receiver = glm::vec3{2.09, 3.08, 0.96};
     constexpr glm::vec3 pointing{0, 0, 1};
     constexpr glm::vec3 up{0, 1, 0};
 
@@ -203,15 +207,26 @@ int main(int argc, char** argv) {
 
     const auto scene_data = geo::get_scene_data(box, scattering_surface);
 
-    const auto room_volume = estimate_room_volume(scene_data);
+    // const auto room_volume = estimate_room_volume(scene_data);
     // const auto eyring = eyring_reverb_time(scene_data, 0.0f);
     // const auto max_time = max_element(eyring);
 
     //  tests //////////////////////////////////////////////////////////////////
 
     const auto rendered = apply_each(std::make_tuple(
-            raytracer_renderer{
-                    box, scattering_surface, params, room_volume, sample_rate}
+            engine_renderer{
+                    wayverb::engine{
+                            compute_context{},
+                            scene_data,
+                            source,
+                            receiver,
+                            raytracer::simulation_parameters{1 << 16, 0},
+                            waveguide::single_band_parameters{10000.0, 0.6}},
+                    sample_rate}
+
+            // raytracer_renderer{
+            //         box, scattering_surface, params, room_volume,
+            //         sample_rate}
             // waveguide_renderer{
             //        box, scattering_surface, params, sample_rate, max_time}
             // img_src_renderer{

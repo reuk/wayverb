@@ -12,8 +12,8 @@ double width_factor(range<double> r, size_t bands, double overlap);
 
 /// See antoni2010 equations 19 and 20
 
-double lower_band_edge(double centre, double p, double P, size_t l);
-double upper_band_edge(double centre, double p, double P, size_t l);
+double lower_band_edge(double p, double P, size_t l);
+double upper_band_edge(double p, double P, size_t l);
 
 double band_edge_frequency(size_t band, size_t bands, range<double> r);
 double band_centre_frequency(size_t band, size_t bands, range<double> r);
