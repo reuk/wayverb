@@ -2,6 +2,8 @@
 #include "box/raytracer.h"
 #include "box/waveguide.h"
 
+#include "combined/engine.h"
+
 #include "raytracer/postprocess.h"
 
 #include "common/attenuator/hrtf.h"
@@ -32,7 +34,7 @@ void write_tuple(const char* prefix,
             collection);
 }
 
-//----------------------------------------------------------------------------//
+////////////////////////////////////////////////////////////////////////////////
 
 template <typename Input>
 struct raytracer_processor final {
@@ -83,7 +85,7 @@ struct raytracer_renderer final {
     }
 };
 
-//----------------------------------------------------------------------------//
+////////////////////////////////////////////////////////////////////////////////
 
 struct waveguide_processor final {
     waveguide::simulation_results input;
@@ -117,7 +119,7 @@ struct waveguide_renderer final {
     }
 };
 
-//----------------------------------------------------------------------------//
+////////////////////////////////////////////////////////////////////////////////
 
 struct img_src_processor final {
     aligned::vector<impulse<simulation_bands>> input;
@@ -158,8 +160,34 @@ struct img_src_renderer final {
     }
 };
 
+////////////////////////////////////////////////////////////////////////////////
+
+struct engine_processor final {
+    std::unique_ptr<wayverb::intermediate> intermediate;
+    const float& output_sample_rate;
+
+    template <typename U>
+    auto operator()(const U& attenuator) const {
+        return make_named_value(
+                "engine",
+                intermediate->attenuate(attenuator, output_sample_rate));
+    }
+};
+
+struct engine_renderer final {
+    wayverb::engine engine;
+    const float& output_sample_rate;
+    auto operator()() const {
+        return engine_processor{
+                engine.run(true, [](auto state, auto progress) {}),
+                output_sample_rate};
+    }
+};
+
+////////////////////////////////////////////////////////////////////////////////
+
 int main(int argc, char** argv) {
-    //  constants ------------------------------------------------------------//
+    //  constants //////////////////////////////////////////////////////////////
 
     const auto box = geo::box{glm::vec3{0}, glm::vec3{5.56, 3.97, 2.81}};
     constexpr auto sample_rate = 16000.0;
@@ -179,7 +207,7 @@ int main(int argc, char** argv) {
     // const auto eyring = eyring_reverb_time(scene_data, 0.0f);
     // const auto max_time = max_element(eyring);
 
-    //  tests ----------------------------------------------------------------//
+    //  tests //////////////////////////////////////////////////////////////////
 
     const auto rendered = apply_each(std::make_tuple(
             raytracer_renderer{
