@@ -220,7 +220,7 @@ int main(int argc, char** argv) {
                             scene_data,
                             source,
                             receiver,
-                            raytracer::simulation_parameters{1 << 16, 0},
+                            raytracer::simulation_parameters{1 << 16, 4},
                             waveguide::single_band_parameters{10000.0, 0.6}},
                     sample_rate}
 

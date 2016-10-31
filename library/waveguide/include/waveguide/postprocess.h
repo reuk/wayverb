@@ -79,7 +79,8 @@ auto postprocess(const simulation_results& results,
                  double output_sample_rate) {
     aligned::vector<float> ret;
 
-    auto prev_cutoff = 0.0;
+    const auto dc_block_hz = 10.0;
+    auto prev_cutoff = dc_block_hz / output_sample_rate;
 
     for (const auto& band : results.bands) {
         auto processed = postprocess(band,

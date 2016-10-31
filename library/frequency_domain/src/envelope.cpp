@@ -79,10 +79,10 @@ double compute_lopass_magnitude(double frequency,
     if (frequency < edge - absolute_width) {
         return 1;
     }
-    if (edge + absolute_width <= frequency) {
-        return 0;
+    if (frequency < edge + absolute_width) {
+        return upper_band_edge(frequency - edge, absolute_width, l);
     }
-    return upper_band_edge(frequency - edge, absolute_width, l);
+    return 0;
 }
 
 double compute_hipass_magnitude(double frequency,
@@ -97,10 +97,10 @@ double compute_hipass_magnitude(double frequency,
     if (frequency < edge - absolute_width) {
         return 0;
     }
-    if (edge + absolute_width <= frequency) {
-        return 1;
+    if (frequency < edge + absolute_width) {
+        return lower_band_edge(frequency - edge, absolute_width, l);
     }
-    return lower_band_edge(frequency - edge, absolute_width, l);
+    return 1;
 }
 
 }  // namespace frequency_domain

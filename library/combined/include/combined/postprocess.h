@@ -65,15 +65,8 @@ auto postprocess(const combined_results<Histogram>& input,
                  double speed_of_sound,
                  double output_sample_rate) {
     //  Individual processing.
-    const auto waveguide_processed = [&] {
-        auto ret = waveguide::postprocess(input.waveguide,
-                                          method,
-                                          acoustic_impedance,
-                                          output_sample_rate);
-        //  TODO DC removal.
-
-        return ret;
-    }();
+    const auto waveguide_processed = waveguide::postprocess(
+            input.waveguide, method, acoustic_impedance, output_sample_rate);
 
     const auto raytracer_processed = raytracer::postprocess(input.raytracer,
                                                             method,
