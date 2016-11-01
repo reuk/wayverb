@@ -25,201 +25,101 @@
 #include <iomanip>
 #include <iostream>
 
-template <typename Collection>
-void write_tuple(const char* prefix,
-                 double sample_rate,
-                 Collection&& collection) {
-    for_each(
-            [&](const auto& i) {
-                write(build_string(prefix, ".", i.name, ".wav"),
-                      audio_file::make_audio_file(i.value, sample_rate),
-                      16);
-            },
-            collection);
+template <typename It>
+void write_tuple(It b, It e, const char* prefix, double sample_rate) {
+    for_each(b, e, [&](const auto& i) {
+        write(build_string(prefix, ".", i.name, ".wav"),
+              audio_file::make_audio_file(i.value, sample_rate),
+              16);
+    });
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
-template <typename Input>
-struct raytracer_processor final {
-    Input input;
-    const model::parameters& params;
-    const float& room_volume;
-    const float& sample_rate;
+struct processor {
+    processor() = default;
+    processor(const processor&) = default;
+    processor(processor&&) noexcept = default;
+    processor& operator=(const processor&) = default;
+    processor& operator=(processor&&) noexcept = default;
+    virtual ~processor() = default;
 
-    template <typename U>
-    auto operator()(const U& attenuator) const {
-        return make_named_value(
-                "raytracer",
-                raytracer::postprocess(input,
-                                       attenuator,
-                                       params.receiver,
-                                       room_volume,
-                                       params.acoustic_impedance,
-                                       params.speed_of_sound,
-                                       sample_rate));
-    }
+    virtual named_value<aligned::vector<float>> process(
+            const attenuator::null& attenuator) const = 0;
+    virtual named_value<aligned::vector<float>> process(
+            const attenuator::hrtf& attenuator) const = 0;
+    virtual named_value<aligned::vector<float>> process(
+            const attenuator::microphone& attenuator) const = 0;
 };
 
-template <typename Input>
-constexpr auto make_raytracer_processor(Input input,
-                                        const model::parameters& params,
-                                        const float& room_volume,
-                                        const float& sample_rate) {
-    return raytracer_processor<Input>{
-            std::move(input), params, room_volume, sample_rate};
-}
+template <typename Callback>
+class concrete_processor final : public processor {
+public:
+    explicit concrete_processor(Callback callback)
+            : callback_{std::move(callback)} {}
 
-struct raytracer_renderer final {
-    const geo::box& box;
-    const surface<simulation_bands>& scattering_surface;
-    const model::parameters& params;
-    const float& room_volume;
-    const float& sample_rate;
-
-    auto operator()() const {
-        return make_raytracer_processor(
-                run_raytracer(box,
-                              scattering_surface,
-                              params,
-                              raytracer::simulation_parameters{1 << 16, 5}),
-                params,
-                room_volume,
-                sample_rate);
+    named_value<aligned::vector<float>> process(
+            const attenuator::null& attenuator) const override {
+        return callback_(attenuator);
     }
+    named_value<aligned::vector<float>> process(
+            const attenuator::hrtf& attenuator) const override {
+        return callback_(attenuator);
+    }
+    named_value<aligned::vector<float>> process(
+            const attenuator::microphone& attenuator) const override {
+        return callback_(attenuator);
+    }
+
+private:
+    Callback callback_;
 };
 
-////////////////////////////////////////////////////////////////////////////////
-
-struct waveguide_processor final {
-    waveguide::simulation_results input;
-    const double& acoustic_impedance;
-    const float& output_sample_rate;
-    const char* name;
-
-    template <typename U>
-    auto operator()(const U& attenuator) const {
-        return make_named_value(name,
-                                waveguide::postprocess(input,
-                                                       attenuator,
-                                                       acoustic_impedance,
-                                                       output_sample_rate));
-    }
-};
-
-template <typename WaveguideParams>
-struct waveguide_renderer final {
-    const generic_scene_data<cl_float3, surface<simulation_bands>>& scene;
-    const model::parameters& params;
-    const WaveguideParams& waveguide_params;
-    const float& max_time;
-    const float& output_sample_rate;
-    const char* name;
-
-    auto operator()() const {
-        progress_bar pb;
-        return waveguide_processor{
-                *waveguide::canonical(
-                        compute_context{},
-                        scene,
-                        params,
-                        waveguide_params,
-                        max_element(eyring_reverb_time(scene, 0.0)),
-                        true,
-                        [&](auto step, auto steps) {
-                            set_progress(pb, step, steps);
-                        }),
-                params.acoustic_impedance,
-                output_sample_rate,
-                name};
-    }
-};
-
-template <typename WaveguideParams>
-auto make_waveguide_renderer(
-        const generic_scene_data<cl_float3, surface<simulation_bands>>& scene,
-        const model::parameters& params,
-        const WaveguideParams& waveguide_params,
-        const float& max_time,
-        const float& output_sample_rate,
-        const char* name) {
-    return waveguide_renderer<WaveguideParams>{scene,
-                                               params,
-                                               waveguide_params,
-                                               max_time,
-                                               output_sample_rate,
-                                               name};
+template <typename Callback>
+auto make_concrete_processor_ptr(Callback callback) {
+    return std::make_unique<concrete_processor<Callback>>(std::move(callback));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
-struct img_src_processor final {
-    aligned::vector<impulse<simulation_bands>> input;
-    const model::parameters& params;
-    const float& sample_rate;
+struct renderer {
+    renderer() = default;
+    renderer(const renderer&) = default;
+    renderer(renderer&&) noexcept = default;
+    renderer& operator=(const renderer&) = default;
+    renderer& operator=(renderer&&) noexcept = default;
+    virtual ~renderer() noexcept = default;
 
-    template <typename U>
-    auto operator()(const U& attenuator) const {
-        return make_named_value(
-                "img_src",
-                raytracer::image_source::postprocess(begin(input),
-                                                     end(input),
-                                                     attenuator,
-                                                     params.receiver,
-                                                     params.speed_of_sound,
-                                                     sample_rate));
-    }
+    virtual std::unique_ptr<processor> render() const = 0;
 };
 
-struct img_src_renderer final {
-    const geo::box& box;
-    const surface<simulation_bands>& scattering_surface;
-    const model::parameters& params;
-    const float& sample_rate;
-    const float& max_time;
+template <typename Callback>
+class concrete_renderer final : public renderer {
+public:
+    explicit concrete_renderer(Callback callback)
+            : callback_{std::move(callback)} {}
 
-    auto operator()() const {
-        return img_src_processor{
-                run_exact_img_src(
-                        box,
-                        surface<simulation_bands>{scattering_surface.absorption,
-                                                  bands_type{}},
-                        params,
-                        max_time,
-                        false),
-                params,
-                sample_rate};
+    std::unique_ptr<processor> render() const override {
+        return make_concrete_processor_ptr(callback_());
     }
+
+private:
+    Callback callback_;
 };
+
+template <typename Callback>
+auto make_concrete_renderer_ptr(Callback callback) {
+    return std::make_unique<concrete_renderer<Callback>>(std::move(callback));
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 
-struct engine_processor final {
-    std::unique_ptr<wayverb::intermediate> intermediate;
-    const float& output_sample_rate;
-
-    template <typename U>
-    auto operator()(const U& attenuator) const {
-        return make_named_value(
-                "engine",
-                intermediate->postprocess(attenuator, output_sample_rate));
+struct max_mag_functor final {
+    template <typename T>
+    auto operator()(T&& t) const {
+        return max_mag(t.value);
     }
 };
-
-struct engine_renderer final {
-    wayverb::engine engine;
-    const float& output_sample_rate;
-    auto operator()() const {
-        const auto callback = [](auto state, auto progress) {
-            std::cout << '\r' << std::setw(30) << to_string(state)
-                      << std::setw(10) << progress << std::flush;
-        };
-
-        return engine_processor{engine.run(true, callback), output_sample_rate};
-    }
-};
-
-////////////////////////////////////////////////////////////////////////////////
 
 int main(int argc, char** argv) {
     //  constants //////////////////////////////////////////////////////////////
@@ -235,12 +135,10 @@ int main(int argc, char** argv) {
     constexpr auto scattering_surface = surface<simulation_bands>{
             {{0.1, 0.1, 0.1, 0.1, 0.12, 0.14, 0.16, 0.17}},
             {{0.1, 0.1, 0.1, 0.1, 0.12, 0.14, 0.16, 0.17}}};
-    // constexpr auto scattering_surface =
-    //        make_surface<simulation_bands>(0.1, 0.1);
 
     const auto scene_data = geo::get_scene_data(box, scattering_surface);
 
-    // const auto room_volume = estimate_room_volume(scene_data);
+    const auto room_volume = estimate_room_volume(scene_data);
     const auto eyring = eyring_reverb_time(scene_data, 0.0f);
     const auto max_time = max_element(eyring);
 
@@ -248,57 +146,132 @@ int main(int argc, char** argv) {
 
     //  tests //////////////////////////////////////////////////////////////////
 
-    const auto rendered = apply_each(std::make_tuple(
-            /*
-                engine_renderer{
-                        wayverb::engine{
-                                compute_context{},
+    aligned::vector<std::unique_ptr<renderer>> renderers;
+
+    renderers.emplace_back(make_concrete_renderer_ptr([&] {
+        const auto callback = [](auto state, auto progress) {
+            std::cout << '\r' << std::setw(30) << to_string(state)
+                      << std::setw(10) << progress << std::flush;
+        };
+
+        auto input =
+                wayverb::engine{compute_context{},
                                 scene_data,
                                 params,
                                 raytracer::simulation_parameters{1 << 16, 4},
                                 waveguide::single_band_parameters{
-                                        sample_rate * 0.25, usable_portion}},
-                        sample_rate},
+                                        sample_rate * 0.25, usable_portion}}
+                        .run(true, callback);
 
-                raytracer_renderer{
-                        box, scattering_surface, params, room_volume,
-               sample_rate},
-            */
+        return [&, input = std::move(input) ](const auto& attenuator) {
+            return make_named_value(
+                    "engine", input->postprocess(attenuator, sample_rate));
+        };
+    }));
 
-            make_waveguide_renderer(scene_data,
-                                    params,
-                                    waveguide::single_band_parameters{
-                                            sample_rate, usable_portion},
-                                    max_time,
-                                    sample_rate,
-                                    "waveguide.single_band"),
+    renderers.emplace_back(make_concrete_renderer_ptr([&] {
+        auto input =
+                run_raytracer(box,
+                              scattering_surface,
+                              params,
+                              raytracer::simulation_parameters{1 << 16, 5});
+        return [&, input = std::move(input) ](const auto& attenuator) {
+            return make_named_value(
+                    "raytracer",
+                    raytracer::postprocess(input,
+                                           attenuator,
+                                           params.receiver,
+                                           room_volume,
+                                           params.acoustic_impedance,
+                                           params.speed_of_sound,
+                                           sample_rate));
+        };
+    }));
 
-            /*
-            make_waveguide_renderer(
+    renderers.emplace_back(make_concrete_renderer_ptr([&] {
+        auto input = run_exact_img_src(
+                box,
+                surface<simulation_bands>{scattering_surface.absorption,
+                                          bands_type{}},
+                params,
+                max_time,
+                false);
+
+        return [&, input = std::move(input)](const auto& attenuator) {
+            return make_named_value(
+                    "img_src",
+                    raytracer::image_source::postprocess(begin(input),
+                                                         end(input),
+                                                         attenuator,
+                                                         params.receiver,
+                                                         params.speed_of_sound,
+                                                         sample_rate));
+        };
+    }));
+
+    const auto make_waveguide_renderer = [&](const auto& name,
+                                             const auto& waveguide_params) {
+        return make_concrete_renderer_ptr([&] {
+            progress_bar pb;
+            auto input = *waveguide::canonical(
+                    compute_context{},
                     scene_data,
                     params,
-                    waveguide::multiple_band_parameters{3, 0.25},
-                    max_time,
-                    sample_rate,
-                    "waveguide.multiple_band")
-            */
+                    waveguide_params,
+                    max_element(eyring_reverb_time(scene_data, 0.0)),
+                    true,
+                    [&](auto step, auto steps) {
+                        set_progress(pb, step, steps);
+                    });
 
-            img_src_renderer{
-                    box, scattering_surface, params, sample_rate, max_time}
+            return [&, input = std::move(input) ](const auto& attenuator) {
+                return make_named_value(
+                        name,
+                        waveguide::postprocess(input,
+                                               attenuator,
+                                               params.acoustic_impedance,
+                                               sample_rate));
+            };
+        });
+    };
 
-            ));
+    renderers.emplace_back(make_waveguide_renderer(
+            "waveguide.single_band",
+            waveguide::single_band_parameters{sample_rate, usable_portion}));
+
+    renderers.emplace_back(make_waveguide_renderer(
+            "waveguide.multiple_band",
+            waveguide::multiple_band_parameters{3, usable_portion}));
+
+    const auto rendered =
+            map_to_vector(begin(renderers), end(renderers), [](const auto& i) {
+                return i->render();
+            });
 
     for_each(
             [&](const auto& tup) {
-                auto processed =
-                        apply_each(rendered, std::make_tuple(std::get<1>(tup)));
-                const auto max_magnitude = foldl(
-                        [](auto a, auto b) { return std::max(a, b); },
-                        map([](const auto& i) { return max_mag(i.value); },
-                            processed));
-                for_each([&](auto& i) { mul(i.value, 1.0 / max_magnitude); },
-                         processed);
-                write_tuple(std::get<0>(tup), sample_rate, processed);
+                auto processed = map_to_vector(
+                        begin(rendered), end(rendered), [&](const auto& i) {
+                            return i->process(std::get<1>(tup));
+                        });
+
+                const auto make_iterator = [](auto it) {
+                    return make_mapping_iterator_adapter(std::move(it),
+                                                         max_mag_functor{});
+                };
+
+                const auto max_magnitude =
+                        *std::max_element(make_iterator(begin(processed)),
+                                          make_iterator(end(processed)));
+
+                for (auto& i : processed) {
+                    mul(i.value, 1.0 / max_magnitude);
+                }
+
+                write_tuple(begin(processed),
+                            end(processed),
+                            std::get<0>(tup),
+                            sample_rate);
             },
 
             std::make_tuple(std::make_tuple("null", attenuator::null{})
