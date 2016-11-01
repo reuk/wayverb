@@ -1,7 +1,9 @@
 #include "box/img_src.h"
-#include "box/waveguide.h"
 
 #include "raytracer/image_source/postprocess.h"
+
+#include "waveguide/canonical.h"
+#include "waveguide/postprocess.h"
 
 #include "common/attenuator/hrtf.h"
 #include "common/attenuator/microphone.h"
@@ -10,6 +12,7 @@
 
 #include "utilities/aligned/map.h"
 #include "utilities/map.h"
+#include "utilities/progress_bar.h"
 #include "utilities/range.h"
 
 #include "cereal/archives/JSON.hpp"
@@ -116,16 +119,17 @@ int main(int argc, char** argv) {
     const glm::vec3 receiver{0, 0, 0};
     const attenuator::microphone mic{glm::vec3{0, 0, 1}, directionality};
 
-    constexpr auto bands = 8;
-
     constexpr auto absorption = 0.001f;
     constexpr auto scattering = 0.0f;
+
+    const auto scene_data = geo::get_scene_data(
+            box, make_surface<simulation_bands>(absorption, scattering));
 
     //  simulations ----------------------------------------------------------//
 
     const auto run = [&](const auto& name, const auto& callback) {
-        const auto output =
-                run_multiple_angles<bands>(receiver, sample_rate, callback);
+        const auto output = run_multiple_angles<simulation_bands>(
+                receiver, sample_rate, callback);
         std::ofstream file{output_folder + "/" + name + ".txt"};
         cereal::JSONOutputArchive archive{file};
         archive(cereal::make_nvp("directionality", directionality),
@@ -133,15 +137,18 @@ int main(int argc, char** argv) {
     };
 
     run("waveguide", [&](const auto& source, const auto& receiver) {
+        progress_bar pb;
         const model::parameters params{source, receiver};
-        auto raw = run_waveguide(
-                box,
-                make_surface<simulation_bands>(absorption, scattering),
+        auto raw = *waveguide::canonical(
+                compute_context{},
+                scene_data,
                 params,
-                sample_rate,
-                2 / params.speed_of_sound);
-        return postprocess_waveguide(
-                raw, mic, sample_rate, params.acoustic_impedance);
+                waveguide::single_band_parameters{sample_rate, 0.6},
+                2 / params.speed_of_sound,
+                true,
+                [&](auto step, auto steps) { set_progress(pb, step, steps); });
+        return waveguide::postprocess(
+                raw, mic, params.acoustic_impedance, sample_rate);
     });
 
     run("img_src", [&](const auto& source, const auto& receiver) {

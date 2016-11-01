@@ -33,6 +33,10 @@ public:
 
     /// Filters data. It is safe to supply the same range as the input and
     /// output range. Output range should be as big or bigger than input range.
+    /// TODO this is going to be slow because it will do a whole bunch of 
+    /// virtual call to the callback parameter.
+    /// Not sure how to speed this up while keeping all the fft stuff behind a
+    /// compiler firewall.
     template <typename In, typename Out>
     void run(In begin, In end, Out output_it, const callback& callback) {
         const auto dist = std::distance(begin, end);

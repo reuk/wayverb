@@ -110,19 +110,28 @@ std::experimental::optional<simulation_results> canonical(
         double simulation_time,
         const std::atomic_bool& keep_going,
         Callback&& callback) {
-    if (auto ret = detail::canonical_impl(
-                cc,
-                compute_voxels_and_mesh(cc,
-                                        scene,
-                                        params.receiver,
-                                        sim_params.sample_rate,
-                                        params.speed_of_sound)
-                        .mesh,
-                sim_params.sample_rate,
-                simulation_time,
-                params,
-                keep_going,
-                std::forward<Callback>(callback))) {
+    auto voxelised = compute_voxels_and_mesh(cc,
+                                             scene,
+                                             params.receiver,
+                                             sim_params.sample_rate,
+                                             params.speed_of_sound);
+
+    //  TODO remove this
+    std::cerr << "canonical (single band overload): using flat coefficients!\n";
+    voxelised.mesh.set_coefficients(map_to_vector(
+            begin(voxelised.voxels.get_scene_data().get_surfaces()),
+            end(voxelised.voxels.get_scene_data().get_surfaces()),
+            [&](const auto& surface) {
+                return to_flat_coefficients(surface.absorption.s[0]);
+            }));
+
+    if (auto ret = detail::canonical_impl(cc,
+                                          voxelised.mesh,
+                                          sim_params.sample_rate,
+                                          simulation_time,
+                                          params,
+                                          keep_going,
+                                          std::forward<Callback>(callback))) {
         return simulation_results{{std::move(*ret)}, sim_params.usable_portion};
     }
 

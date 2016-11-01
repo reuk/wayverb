@@ -131,14 +131,13 @@ class concrete_impl : public engine::impl {
 public:
     concrete_impl(const compute_context& cc,
                   engine::scene_data scene_data,
-                  const glm::vec3& source,
-                  const glm::vec3& receiver,
+                  const model::parameters& parameters,
                   const raytracer::simulation_parameters& raytracer,
                   const WaveguideParams& waveguide)
             : compute_context_{cc}
             , scene_data_{std::move(scene_data)}
             , room_volume_{estimate_room_volume(scene_data_)}
-            , params_{source, receiver, 340.0, 400.0}
+            , parameters_{parameters}
             , raytracer_{raytracer}
             , waveguide_{waveguide} {}
 
@@ -154,7 +153,7 @@ public:
         auto raytracer_output =
                 raytracer::canonical(compute_context_,
                                      scene_data_,
-                                     params_,
+                                     parameters_,
                                      raytracer_,
                                      rays_to_visualise,
                                      keep_going,
@@ -181,7 +180,7 @@ public:
         auto waveguide_output = waveguide::canonical(
                 compute_context_,
                 scene_data_,
-                params_,
+                parameters_,
                 waveguide_,
                 max_stochastic_time,
                 keep_going,
@@ -198,10 +197,10 @@ public:
         return make_intermediate_impl_ptr(
                 make_combined_results(std::move(raytracer_output->aural),
                                       std::move(*waveguide_output)),
-                params_.receiver,
+                parameters_.receiver,
                 room_volume_,
-                params_.acoustic_impedance,
-                params_.speed_of_sound);
+                parameters_.acoustic_impedance,
+                parameters_.speed_of_sound);
     }
 
     engine::waveguide_node_positions_changed::scoped_connector
@@ -231,7 +230,7 @@ private:
     compute_context compute_context_;
     engine::scene_data scene_data_;
     double room_volume_;
-    model::parameters params_;
+    model::parameters parameters_;
     raytracer::simulation_parameters raytracer_;
     WaveguideParams waveguide_;
 
@@ -244,31 +243,27 @@ private:
 
 engine::engine(const compute_context& compute_context,
                scene_data scene_data,
-               const glm::vec3& source,
-               const glm::vec3& receiver,
+               const model::parameters& parameters,
                const raytracer::simulation_parameters& raytracer,
                const waveguide::single_band_parameters& waveguide)
         : pimpl_{std::make_unique<
                   concrete_impl<waveguide::single_band_parameters>>(
                   compute_context,
                   std::move(scene_data),
-                  source,
-                  receiver,
+                  parameters,
                   raytracer,
                   waveguide)} {}
 
 engine::engine(const compute_context& compute_context,
                scene_data scene_data,
-               const glm::vec3& source,
-               const glm::vec3& receiver,
+               const model::parameters& parameters,
                const raytracer::simulation_parameters& raytracer,
                const waveguide::multiple_band_parameters& waveguide)
         : pimpl_{std::make_unique<
                   concrete_impl<waveguide::multiple_band_parameters>>(
                   compute_context,
                   std::move(scene_data),
-                  source,
-                  receiver,
+                  parameters,
                   raytracer,
                   waveguide)} {}
 

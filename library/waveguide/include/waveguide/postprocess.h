@@ -90,7 +90,7 @@ auto postprocess(const simulation_results& results,
                                      output_sample_rate);
 
         const auto cutoff = compute_cutoff_frequency(band.sample_rate,
-                                                     results.usable_portion);
+                                                     results.usable_portion) / output_sample_rate;
 
         //  Bandpass based on previous band cutoff.
         frequency_domain::filter filt{

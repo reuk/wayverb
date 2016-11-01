@@ -1,10 +1,12 @@
 #include "box/img_src.h"
 #include "box/raytracer.h"
-#include "box/waveguide.h"
 
 #include "combined/engine.h"
 
 #include "raytracer/postprocess.h"
+
+#include "waveguide/canonical.h"
+#include "waveguide/postprocess.h"
 
 #include "common/attenuator/hrtf.h"
 #include "common/attenuator/microphone.h"
@@ -14,6 +16,7 @@
 #include "utilities/aligned/map.h"
 #include "utilities/for_each.h"
 #include "utilities/named_value.h"
+#include "utilities/progress_bar.h"
 #include "utilities/string_builder.h"
 #include "utilities/type_debug.h"
 
@@ -90,35 +93,58 @@ struct raytracer_renderer final {
 
 struct waveguide_processor final {
     waveguide::simulation_results input;
-    const model::parameters& params;
-    const float& sample_rate;
+    const double& acoustic_impedance;
+    const float& output_sample_rate;
+    const char* name;
 
     template <typename U>
     auto operator()(const U& attenuator) const {
         return make_named_value(
-                "waveguide",
-                postprocess_waveguide(input,
-                                      attenuator,
-                                      sample_rate,
-                                      params.acoustic_impedance));
+                name,
+                waveguide::postprocess(input, attenuator, acoustic_impedance, output_sample_rate));
     }
 };
 
+template <typename WaveguideParams>
 struct waveguide_renderer final {
-    const geo::box& box;
-    const surface<simulation_bands>& scattering_surface;
+    const generic_scene_data<cl_float3, surface<simulation_bands>>& scene;
     const model::parameters& params;
-    const float& sample_rate;
+    const WaveguideParams& waveguide_params;
     const float& max_time;
+    const float& output_sample_rate;
+    const char* name;
 
     auto operator()() const {
-        return waveguide_processor{
-                run_waveguide(
-                        box, scattering_surface, params, sample_rate, max_time),
-                params,
-                sample_rate};
+    progress_bar pb;
+    return waveguide_processor{*waveguide::canonical(
+            compute_context{},
+            scene,
+            params,
+            waveguide_params,
+            max_element(eyring_reverb_time(scene, 0.0)),
+            true,
+            [&](auto step, auto steps) { set_progress(pb, step, steps); }),
+            params.acoustic_impedance,
+            output_sample_rate,
+            name};
     }
 };
+
+template <typename WaveguideParams>
+auto make_waveguide_renderer(
+        const generic_scene_data<cl_float3, surface<simulation_bands>>& scene,
+        const model::parameters& params,
+        const WaveguideParams& waveguide_params,
+        const float& max_time,
+        const float& output_sample_rate,
+        const char* name) {
+    return waveguide_renderer<WaveguideParams>{scene,
+                                               params,
+                                               waveguide_params,
+                                               max_time,
+                                               output_sample_rate,
+                                               name};
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -194,44 +220,66 @@ int main(int argc, char** argv) {
     //  constants //////////////////////////////////////////////////////////////
 
     const auto box = geo::box{glm::vec3{0}, glm::vec3{5.56, 3.97, 2.81}};
-    constexpr auto sample_rate = 44100.0;
+    constexpr auto sample_rate = 16000.0;
 
-    constexpr auto source = glm::vec3{2.09, 2.12, 2.12};
-    constexpr auto receiver = glm::vec3{2.09, 3.08, 0.96};
+    constexpr auto params = model::parameters{glm::vec3{2.09, 2.12, 2.12},
+                                              glm::vec3{2.09, 3.08, 0.96}};
     constexpr glm::vec3 pointing{0, 0, 1};
     constexpr glm::vec3 up{0, 1, 0};
 
-    constexpr auto scattering_surface = surface<simulation_bands>{
-            {{0.1, 0.1, 0.1, 0.1, 0.12, 0.14, 0.16, 0.17}},
-            {{0.1, 0.1, 0.1, 0.1, 0.12, 0.14, 0.16, 0.17}}};
+    //constexpr auto scattering_surface = surface<simulation_bands>{
+    //        {{0.1, 0.1, 0.1, 0.1, 0.12, 0.14, 0.16, 0.17}},
+    //        {{0.1, 0.1, 0.1, 0.1, 0.12, 0.14, 0.16, 0.17}}};
+    constexpr auto scattering_surface =
+            make_surface<simulation_bands>(0.1, 0.1);
 
     const auto scene_data = geo::get_scene_data(box, scattering_surface);
 
-    // const auto room_volume = estimate_room_volume(scene_data);
-    // const auto eyring = eyring_reverb_time(scene_data, 0.0f);
-    // const auto max_time = max_element(eyring);
+    //const auto room_volume = estimate_room_volume(scene_data);
+    const auto eyring = eyring_reverb_time(scene_data, 0.0f);
+    const auto max_time = max_element(eyring);
+
+    constexpr auto usable_portion = 0.6;
 
     //  tests //////////////////////////////////////////////////////////////////
 
     const auto rendered = apply_each(std::make_tuple(
+        /*
             engine_renderer{
                     wayverb::engine{
                             compute_context{},
                             scene_data,
-                            source,
-                            receiver,
+                            params,
                             raytracer::simulation_parameters{1 << 16, 4},
-                            waveguide::single_band_parameters{10000.0, 0.6}},
-                    sample_rate}
+                            waveguide::single_band_parameters{
+                                    sample_rate * 0.25, usable_portion}},
+                    sample_rate},
 
-            // raytracer_renderer{
-            //         box, scattering_surface, params, room_volume,
-            //         sample_rate}
-            // waveguide_renderer{
-            //        box, scattering_surface, params, sample_rate, max_time}
-            // img_src_renderer{
-            //        box, scattering_surface, params, sample_rate, max_time}
-            ));
+            raytracer_renderer{
+                    box, scattering_surface, params, room_volume, sample_rate},
+        */
+
+            make_waveguide_renderer(scene_data,
+                                    params,
+                                    waveguide::single_band_parameters{
+                                            sample_rate, usable_portion},
+                                    max_time,
+                                    sample_rate,
+                                    "waveguide.single_band"),
+
+        /*
+            make_waveguide_renderer(
+                    box,
+                    scattering_surface,
+                    params,
+                    waveguide::multiple_band_parameters{5, usable_portion},
+                    max_time,
+                    sample_rate,
+                    "waveguide.multiple_band"),
+        */
+
+            img_src_renderer{
+                    box, scattering_surface, params, sample_rate, max_time}));
 
     for_each(
             [&](const auto& tup) {
@@ -245,8 +293,9 @@ int main(int argc, char** argv) {
                          processed);
                 write_tuple(std::get<0>(tup), sample_rate, processed);
             },
-            std::make_tuple(
-//                    std::make_tuple("null", attenuator::null{}),
+
+            std::make_tuple(std::make_tuple("null", attenuator::null{})
+                            /*,
                     std::make_tuple(
                             "hrtf_l",
                             attenuator::hrtf{pointing,
@@ -262,7 +311,7 @@ int main(int argc, char** argv) {
                     std::make_tuple("cardioid",
                                     attenuator::microphone{pointing, 0.5f}),
                     std::make_tuple("bidirectional",
-                                    attenuator::microphone{pointing, 1.0f})));
+                                    attenuator::microphone{pointing, 1.0f})*/));
 
     return EXIT_SUCCESS;
 }

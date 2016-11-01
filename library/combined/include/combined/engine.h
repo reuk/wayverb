@@ -8,6 +8,7 @@
 #include "common/attenuator/hrtf.h"
 #include "common/attenuator/microphone.h"
 #include "common/attenuator/null.h"
+#include "common/model/parameters.h"
 #include "common/scene_data.h"
 
 #include "utilities/aligned/vector.h"
@@ -91,15 +92,13 @@ public:
 
     engine(const compute_context& compute_context,
            scene_data scene_data,
-           const glm::vec3& source,
-           const glm::vec3& receiver,
+           const model::parameters& parameters,
            const raytracer::simulation_parameters& raytracer,
            const waveguide::single_band_parameters& waveguide);
 
     engine(const compute_context& compute_context,
            scene_data scene_data,
-           const glm::vec3& source,
-           const glm::vec3& receiver,
+           const model::parameters& parameters,
            const raytracer::simulation_parameters& raytracer,
            const waveguide::multiple_band_parameters& waveguide);
 
