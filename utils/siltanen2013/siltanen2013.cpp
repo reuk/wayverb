@@ -144,70 +144,82 @@ int main(int argc, char** argv) {
 
     constexpr auto usable_portion = 0.6;
 
+    constexpr auto volume_factor = 0.1;
+
     //  tests //////////////////////////////////////////////////////////////////
 
     aligned::vector<std::unique_ptr<renderer>> renderers;
 
-    renderers.emplace_back(make_concrete_renderer_ptr([&] {
-        const auto callback = [](auto state, auto progress) {
-            std::cout << '\r' << std::setw(30) << to_string(state)
-                      << std::setw(10) << progress << std::flush;
-        };
+    if (false) {
+        //  engine /////////////////////////////////////////////////////////////
+        renderers.emplace_back(make_concrete_renderer_ptr([&] {
+            const auto callback = [](auto state, auto progress) {
+                std::cout << '\r' << std::setw(30) << to_string(state)
+                          << std::setw(10) << progress << std::flush;
+            };
 
-        auto input =
-                wayverb::engine{compute_context{},
-                                scene_data,
-                                params,
-                                raytracer::simulation_parameters{1 << 16, 4},
-                                waveguide::single_band_parameters{
-                                        sample_rate * 0.25, usable_portion}}
-                        .run(true, callback);
+            auto input =
+                    wayverb::engine{
+                            compute_context{},
+                            scene_data,
+                            params,
+                            raytracer::simulation_parameters{1 << 16, 4},
+                            waveguide::single_band_parameters{
+                                    sample_rate * 0.25, usable_portion}}
+                            .run(true, callback);
 
-        return [&, input = std::move(input) ](const auto& attenuator) {
-            return make_named_value(
-                    "engine", input->postprocess(attenuator, sample_rate));
-        };
-    }));
+            return [&, input = std::move(input) ](const auto& attenuator) {
+                return make_named_value(
+                        "engine", input->postprocess(attenuator, sample_rate));
+            };
+        }));
+    }
 
-    renderers.emplace_back(make_concrete_renderer_ptr([&] {
-        auto input =
-                run_raytracer(box,
-                              scattering_surface,
-                              params,
-                              raytracer::simulation_parameters{1 << 16, 5});
-        return [&, input = std::move(input) ](const auto& attenuator) {
-            return make_named_value(
-                    "raytracer",
-                    raytracer::postprocess(input,
-                                           attenuator,
-                                           params.receiver,
-                                           room_volume,
-                                           params.acoustic_impedance,
-                                           params.speed_of_sound,
-                                           sample_rate));
-        };
-    }));
+    if (false) {
+        //  raytracer //////////////////////////////////////////////////////////
+        renderers.emplace_back(make_concrete_renderer_ptr([&] {
+            auto input =
+                    run_raytracer(box,
+                                  scattering_surface,
+                                  params,
+                                  raytracer::simulation_parameters{1 << 16, 5});
+            return [&, input = std::move(input) ](const auto& attenuator) {
+                return make_named_value(
+                        "raytracer",
+                        raytracer::postprocess(input,
+                                               attenuator,
+                                               params.receiver,
+                                               room_volume,
+                                               params.acoustic_impedance,
+                                               params.speed_of_sound,
+                                               sample_rate));
+            };
+        }));
+    }
 
-    renderers.emplace_back(make_concrete_renderer_ptr([&] {
-        auto input = run_exact_img_src(
-                box,
-                surface<simulation_bands>{scattering_surface.absorption,
-                                          bands_type{}},
-                params,
-                max_time,
-                false);
+    if (true) {
+        //  image source ///////////////////////////////////////////////////////
+        renderers.emplace_back(make_concrete_renderer_ptr([&] {
+            auto input = run_exact_img_src(
+                    box,
+                    surface<simulation_bands>{scattering_surface.absorption,
+                                              bands_type{}},
+                    params,
+                    max_time,
+                    false);
 
-        return [&, input = std::move(input)](const auto& attenuator) {
-            return make_named_value(
-                    "img_src",
-                    raytracer::image_source::postprocess(begin(input),
-                                                         end(input),
-                                                         attenuator,
-                                                         params.receiver,
-                                                         params.speed_of_sound,
-                                                         sample_rate));
-        };
-    }));
+            return [&, input = std::move(input) ](const auto& attenuator) {
+                return make_named_value("img_src",
+                                        raytracer::image_source::postprocess(
+                                                begin(input),
+                                                end(input),
+                                                attenuator,
+                                                params.receiver,
+                                                params.speed_of_sound,
+                                                sample_rate));
+            };
+        }));
+    }
 
     const auto make_waveguide_renderer = [&](const auto& name,
                                              const auto& waveguide_params) {
@@ -235,13 +247,20 @@ int main(int argc, char** argv) {
         });
     };
 
-    renderers.emplace_back(make_waveguide_renderer(
-            "waveguide.single_band",
-            waveguide::single_band_parameters{sample_rate, usable_portion}));
+    if (true) {
+        //  single band ////////////////////////////////////////////////////////
+        renderers.emplace_back(
+                make_waveguide_renderer("waveguide.single_band",
+                                        waveguide::single_band_parameters{
+                                                sample_rate, usable_portion}));
+    }
 
-    renderers.emplace_back(make_waveguide_renderer(
-            "waveguide.multiple_band",
-            waveguide::multiple_band_parameters{3, usable_portion}));
+    if (true) {
+        //  multiple band //////////////////////////////////////////////////////
+        renderers.emplace_back(make_waveguide_renderer(
+                "waveguide.multiple_band",
+                waveguide::multiple_band_parameters{3, usable_portion}));
+    }
 
     const auto rendered =
             map_to_vector(begin(renderers), end(renderers), [](const auto& i) {
@@ -255,17 +274,28 @@ int main(int argc, char** argv) {
                             return i->process(std::get<1>(tup));
                         });
 
-                const auto make_iterator = [](auto it) {
-                    return make_mapping_iterator_adapter(std::move(it),
-                                                         max_mag_functor{});
-                };
+                constexpr auto normalize = false;
+                if (normalize) {
+                    const auto make_iterator = [](auto it) {
+                        return make_mapping_iterator_adapter(std::move(it),
+                                                             max_mag_functor{});
+                    };
 
-                const auto max_magnitude =
-                        *std::max_element(make_iterator(begin(processed)),
-                                          make_iterator(end(processed)));
+                    const auto max_magnitude =
+                            *std::max_element(make_iterator(begin(processed)),
+                                              make_iterator(end(processed)));
 
-                for (auto& i : processed) {
-                    mul(i.value, 1.0 / max_magnitude);
+                    const auto norm_factor = 1.0 / max_magnitude;
+
+                    std::cout << "norm factor: " << norm_factor << '\n';
+
+                    for (auto& i : processed) {
+                        mul(i.value, norm_factor);
+                    }
+                } else {
+                    for (auto& i : processed) {
+                        mul(i.value, volume_factor);
+                    }
                 }
 
                 write_tuple(begin(processed),
