@@ -116,15 +116,6 @@ std::experimental::optional<simulation_results> canonical(
                                              sim_params.sample_rate,
                                              params.speed_of_sound);
 
-    //  TODO remove this
-    std::cerr << "canonical (single band overload): using flat coefficients!\n";
-    voxelised.mesh.set_coefficients(map_to_vector(
-            begin(voxelised.voxels.get_scene_data().get_surfaces()),
-            end(voxelised.voxels.get_scene_data().get_surfaces()),
-            [&](const auto& surface) {
-                return to_flat_coefficients(surface.absorption.s[0]);
-            }));
-
     if (auto ret = detail::canonical_impl(cc,
                                           voxelised.mesh,
                                           sim_params.sample_rate,

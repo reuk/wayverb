@@ -99,9 +99,11 @@ struct waveguide_processor final {
 
     template <typename U>
     auto operator()(const U& attenuator) const {
-        return make_named_value(
-                name,
-                waveguide::postprocess(input, attenuator, acoustic_impedance, output_sample_rate));
+        return make_named_value(name,
+                                waveguide::postprocess(input,
+                                                       attenuator,
+                                                       acoustic_impedance,
+                                                       output_sample_rate));
     }
 };
 
@@ -115,18 +117,21 @@ struct waveguide_renderer final {
     const char* name;
 
     auto operator()() const {
-    progress_bar pb;
-    return waveguide_processor{*waveguide::canonical(
-            compute_context{},
-            scene,
-            params,
-            waveguide_params,
-            max_element(eyring_reverb_time(scene, 0.0)),
-            true,
-            [&](auto step, auto steps) { set_progress(pb, step, steps); }),
-            params.acoustic_impedance,
-            output_sample_rate,
-            name};
+        progress_bar pb;
+        return waveguide_processor{
+                *waveguide::canonical(
+                        compute_context{},
+                        scene,
+                        params,
+                        waveguide_params,
+                        max_element(eyring_reverb_time(scene, 0.0)),
+                        true,
+                        [&](auto step, auto steps) {
+                            set_progress(pb, step, steps);
+                        }),
+                params.acoustic_impedance,
+                output_sample_rate,
+                name};
     }
 };
 
@@ -181,7 +186,7 @@ struct img_src_renderer final {
                                                   bands_type{}},
                         params,
                         max_time,
-                        true),
+                        false),
                 params,
                 sample_rate};
     }
@@ -220,22 +225,22 @@ int main(int argc, char** argv) {
     //  constants //////////////////////////////////////////////////////////////
 
     const auto box = geo::box{glm::vec3{0}, glm::vec3{5.56, 3.97, 2.81}};
-    constexpr auto sample_rate = 16000.0;
+    constexpr auto sample_rate = 10000.0;
 
     constexpr auto params = model::parameters{glm::vec3{2.09, 2.12, 2.12},
                                               glm::vec3{2.09, 3.08, 0.96}};
     constexpr glm::vec3 pointing{0, 0, 1};
     constexpr glm::vec3 up{0, 1, 0};
 
-    //constexpr auto scattering_surface = surface<simulation_bands>{
-    //        {{0.1, 0.1, 0.1, 0.1, 0.12, 0.14, 0.16, 0.17}},
-    //        {{0.1, 0.1, 0.1, 0.1, 0.12, 0.14, 0.16, 0.17}}};
-    constexpr auto scattering_surface =
-            make_surface<simulation_bands>(0.1, 0.1);
+    constexpr auto scattering_surface = surface<simulation_bands>{
+            {{0.1, 0.1, 0.1, 0.1, 0.12, 0.14, 0.16, 0.17}},
+            {{0.1, 0.1, 0.1, 0.1, 0.12, 0.14, 0.16, 0.17}}};
+    // constexpr auto scattering_surface =
+    //        make_surface<simulation_bands>(0.1, 0.1);
 
     const auto scene_data = geo::get_scene_data(box, scattering_surface);
 
-    //const auto room_volume = estimate_room_volume(scene_data);
+    // const auto room_volume = estimate_room_volume(scene_data);
     const auto eyring = eyring_reverb_time(scene_data, 0.0f);
     const auto max_time = max_element(eyring);
 
@@ -244,20 +249,21 @@ int main(int argc, char** argv) {
     //  tests //////////////////////////////////////////////////////////////////
 
     const auto rendered = apply_each(std::make_tuple(
-        /*
-            engine_renderer{
-                    wayverb::engine{
-                            compute_context{},
-                            scene_data,
-                            params,
-                            raytracer::simulation_parameters{1 << 16, 4},
-                            waveguide::single_band_parameters{
-                                    sample_rate * 0.25, usable_portion}},
-                    sample_rate},
+            /*
+                engine_renderer{
+                        wayverb::engine{
+                                compute_context{},
+                                scene_data,
+                                params,
+                                raytracer::simulation_parameters{1 << 16, 4},
+                                waveguide::single_band_parameters{
+                                        sample_rate * 0.25, usable_portion}},
+                        sample_rate},
 
-            raytracer_renderer{
-                    box, scattering_surface, params, room_volume, sample_rate},
-        */
+                raytracer_renderer{
+                        box, scattering_surface, params, room_volume,
+               sample_rate},
+            */
 
             make_waveguide_renderer(scene_data,
                                     params,
@@ -267,19 +273,20 @@ int main(int argc, char** argv) {
                                     sample_rate,
                                     "waveguide.single_band"),
 
-        /*
+            /*
             make_waveguide_renderer(
-                    box,
-                    scattering_surface,
+                    scene_data,
                     params,
-                    waveguide::multiple_band_parameters{5, usable_portion},
+                    waveguide::multiple_band_parameters{3, 0.25},
                     max_time,
                     sample_rate,
-                    "waveguide.multiple_band"),
-        */
+                    "waveguide.multiple_band")
+            */
 
             img_src_renderer{
-                    box, scattering_surface, params, sample_rate, max_time}));
+                    box, scattering_surface, params, sample_rate, max_time}
+
+            ));
 
     for_each(
             [&](const auto& tup) {

@@ -10,12 +10,12 @@ def main():
     fnames = [os.path.join(root_dir, i) for i in [
         'null.img_src.wav',
         'null.waveguide.single_band.wav',
-        #'null.waveguide.multiple_band.wav',
+        'null.waveguide.multiple_band.wav',
         #'no_processing.exact_img_src.wav',
         #'no_processing.waveguide.wav',
     ]]
 
-    max_frequency = 120
+    max_frequency = 240 
     room_dim = [5.56, 3.97, 2.81]
 
     analysis.modal_analysis(fnames, max_frequency, room_dim)

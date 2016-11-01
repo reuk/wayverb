@@ -12,12 +12,12 @@ namespace wayverb {
 
 template <typename Histogram>
 struct combined_results final {
-    raytracer::aural_results<Histogram> raytracer;
+    raytracer::simulation_results<Histogram> raytracer;
     waveguide::simulation_results waveguide;
 };
 
 template <typename Histogram>
-auto make_combined_results(raytracer::aural_results<Histogram> raytracer,
+auto make_combined_results(raytracer::simulation_results<Histogram> raytracer,
                            waveguide::simulation_results waveguide) {
     return combined_results<Histogram>{std::move(raytracer),
                                        std::move(waveguide)};
@@ -39,15 +39,13 @@ auto crossover_filter(LoIt b_lo,
 
     constexpr auto l = 0;
 
-    const auto run_filter =
-            [&](auto b, auto e, auto mag_func) {
-                auto ret = std::vector<float>(std::distance(b, e));
-                filt.run(b, e, begin(ret), [&](auto cplx, auto freq) {
-                    return cplx *
-                           static_cast<float>(mag_func(freq, cutoff, width, l));
-                });
-                return ret;
-            };
+    const auto run_filter = [&](auto b, auto e, auto mag_func) {
+        auto ret = std::vector<float>(std::distance(b, e));
+        filt.run(b, e, begin(ret), [&](auto cplx, auto freq) {
+            return cplx * static_cast<float>(mag_func(freq, cutoff, width, l));
+        });
+        return ret;
+    };
 
     return sum_vectors(
             run_filter(b_lo, e_lo, frequency_domain::compute_lopass_magnitude),

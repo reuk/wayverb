@@ -9,7 +9,7 @@
 namespace raytracer {
 
 template <typename Histogram, typename Method>
-auto postprocess(const aural_results<Histogram>& input,
+auto postprocess(const simulation_results<Histogram>& input,
                  const Method& method,
                  const glm::vec3& position,
                  double room_volume,

@@ -97,7 +97,7 @@ auto postprocess(const simulation_results& results,
                 frequency_domain::best_fft_length(processed.size()) << 2};
 
         constexpr auto l = 0;
-        constexpr auto width = 1.0;
+        constexpr auto width = 0.1;
 
         const auto b = begin(processed);
         const auto e = end(processed);

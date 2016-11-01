@@ -11,27 +11,28 @@ std::tuple<reflection_processor::make_image_source,
 make_canonical_callbacks(size_t max_image_source_order, size_t visual_items);
 
 template <typename Histogram>
-struct aural_results final {
+struct simulation_results final {
     aligned::vector<impulse<simulation_bands>> image_source;
     Histogram stochastic;
 };
 
 template <typename Histogram>
-auto make_aural_results(aligned::vector<impulse<simulation_bands>> image_source,
-                        Histogram stochastic) {
-    return aural_results<Histogram>{std::move(image_source),
-                                    std::move(stochastic)};
+auto make_simulation_results(
+        aligned::vector<impulse<simulation_bands>> image_source,
+        Histogram stochastic) {
+    return simulation_results<Histogram>{std::move(image_source),
+                                         std::move(stochastic)};
 }
 
 template <typename Histogram>
 struct canonical_results final {
-    aural_results<Histogram> aural;
+    simulation_results<Histogram> aural;
     aligned::vector<aligned::vector<reflection>> visual;
 };
 
 template <typename Histogram>
 auto make_canonical_results(
-        aural_results<Histogram> aural,
+        simulation_results<Histogram> aural,
         aligned::vector<aligned::vector<reflection>> visual) {
     return canonical_results<Histogram>{std::move(aural), std::move(visual)};
 }
@@ -58,8 +59,8 @@ auto canonical(
                 make_canonical_callbacks(sim_params.maximum_image_source_order,
                                          visual_items));
     return tup ? std::experimental::make_optional(make_canonical_results(
-                         make_aural_results(std::move(std::get<0>(*tup)),
-                                            std::move(std::get<1>(*tup))),
+                         make_simulation_results(std::move(std::get<0>(*tup)),
+                                                 std::move(std::get<1>(*tup))),
                          std::move(std::get<2>(*tup))))
                : std::experimental::nullopt;
 }
