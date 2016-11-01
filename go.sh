@@ -3,7 +3,7 @@ cd build
 if cmake .. ; then
 
 export CL_LOG_ERRORS=stdout
-#export GTEST_FILTER="*multiband*"
+#export GTEST_FILTER="*stable*"
 #make && ctest -V
 
 #make && cd utils/image_source_comparison && ./image_source_comparison
