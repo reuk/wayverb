@@ -27,6 +27,11 @@ struct band final {
     double sample_rate;
 };
 
+struct bandpass_band final {
+    band band;
+    range<double> valid_hz;
+};
+
 namespace detail {
 
 template <typename Callback>
@@ -89,11 +94,8 @@ std::experimental::optional<band> canonical_impl(
 ////////////////////////////////////////////////////////////////////////////////
 
 struct simulation_results final {
-    aligned::vector<band> bands;
-    double usable_portion;
+    aligned::vector<bandpass_band> bands;
 };
-
-double compute_cutoff_frequency(const simulation_results& results);
 
 /// Run a waveguide using:
 ///     specified sample rate
@@ -123,7 +125,7 @@ std::experimental::optional<simulation_results> canonical(
                                           params,
                                           keep_going,
                                           std::forward<Callback>(callback))) {
-        return simulation_results{{std::move(*ret)}, sim_params.usable_portion};
+        return simulation_results{{bandpass_band{std::move(*ret), make_range(0.0, compute_cutoff_frequency(sim_params.sample_rate, sim_params.usable_portion))}}};
     }
 
     return std::experimental::nullopt;
@@ -131,26 +133,37 @@ std::experimental::optional<simulation_results> canonical(
 
 ////////////////////////////////////////////////////////////////////////////////
 
+inline auto set_flat_coefficients_for_band(voxels_and_mesh& voxels_and_mesh,
+                                           size_t band) {
+    voxels_and_mesh.mesh.set_coefficients(map_to_vector(
+            begin(voxels_and_mesh.voxels.get_scene_data().get_surfaces()),
+            end(voxels_and_mesh.voxels.get_scene_data().get_surfaces()),
+            [&](const auto& surface) {
+                return to_flat_coefficients(surface.absorption.s[band]);
+            }));
+}
+
 /// This method shows a different approach which more accurately simulates
 /// frequency-dependent boundaries, but which runs several times slower.
 template <typename Callback>
-std::experimental::optional<simulation_results> canonical(
-        const compute_context& cc,
-        const generic_scene_data<cl_float3, surface<simulation_bands>>& scene,
-        const model::parameters& params,
-        const multiple_band_parameters& sim_params,
-        double simulation_time,
-        const std::atomic_bool& keep_going,
-        Callback&& callback) {
+[[deprecated("really slow and inaccurate compared to the single-band version")]]
+std::experimental::optional<simulation_results>
+canonical(const compute_context& cc,
+          const generic_scene_data<cl_float3, surface<simulation_bands>>& scene,
+          const model::parameters& params,
+          const multiple_band_variable_spacing_parameters& sim_params,
+          double simulation_time,
+          const std::atomic_bool& keep_going,
+          Callback&& callback) {
     const auto band_params = hrtf_data::hrtf_band_params_hz();
 
-    simulation_results ret{{}, sim_params.usable_portion};
+    simulation_results ret{};
 
     //  For each band, up to the maximum band specified.
     for (auto band = 0; band != sim_params.bands; ++band) {
         //  Find the waveguide sampling rate required.
-        const auto sample_rate = band_params.edges[band + 1] /
-                                 (0.25 * sim_params.usable_portion);
+        const auto sample_rate = compute_sampling_frequency(
+                band_params.edges[band + 1], sim_params.usable_portion);
 
         //  Generate a mesh using the largest possible grid spacing.
         const auto mesh = [&] {
@@ -160,20 +173,10 @@ std::experimental::optional<simulation_results> canonical(
                                                sample_rate,
                                                params.speed_of_sound);
 
-            //  By default, the mesh will attempt to generate a fitted boundary
-            //  filter for each surface.
-            //  We're going to replace that filter with a flat-response filter
-            //  for this frequency band.
-            ret.mesh.set_coefficients(map_to_vector(
-                    begin(ret.voxels.get_scene_data().get_surfaces()),
-                    end(ret.voxels.get_scene_data().get_surfaces()),
-                    [&](const auto& surface) {
-                        return to_flat_coefficients(surface.absorption.s[band]);
-                    }));
+            set_flat_coefficients_for_band(ret, band);
 
             return ret.mesh;
         }();
-
         if (auto rendered_band = detail::canonical_impl(cc,
                                                         mesh,
                                                         sample_rate,
@@ -181,7 +184,56 @@ std::experimental::optional<simulation_results> canonical(
                                                         params,
                                                         keep_going,
                                                         callback)) {
-            ret.bands.emplace_back(*rendered_band);
+            ret.bands.emplace_back(
+                    bandpass_band{std::move(*rendered_band),
+                                  make_range(band_params.edges[band],
+                                             band_params.edges[band + 1])});
+        } else {
+            return std::experimental::nullopt;
+        }
+    }
+
+    return ret;
+}
+
+/// This is a sort of middle ground - more accurate boundary modelling, but
+/// really unbelievably slow.
+template <typename Callback>
+[[deprecated("really slow and inaccurate compared to the single-band version")]]
+std::experimental::optional<simulation_results>
+canonical(const compute_context& cc,
+          const generic_scene_data<cl_float3, surface<simulation_bands>>& scene,
+          const model::parameters& params,
+          const multiple_band_constant_spacing_parameters& sim_params,
+          double simulation_time,
+          const std::atomic_bool& keep_going,
+          Callback&& callback) {
+    const auto band_params = hrtf_data::hrtf_band_params_hz();
+
+    //  Find the waveguide sampling rate required.
+    auto voxels_and_mesh = compute_voxels_and_mesh(cc,
+                                                   scene,
+                                                   params.receiver,
+                                                   sim_params.sample_rate,
+                                                   params.speed_of_sound);
+
+    simulation_results ret{};
+
+    //  For each band, up to the maximum band specified.
+    for (auto band = 0; band != sim_params.bands; ++band) {
+        set_flat_coefficients_for_band(voxels_and_mesh, band);
+
+        if (auto rendered_band = detail::canonical_impl(cc,
+                                                        voxels_and_mesh.mesh,
+                                                        sim_params.sample_rate,
+                                                        simulation_time,
+                                                        params,
+                                                        keep_going,
+                                                        callback)) {
+            ret.bands.emplace_back(
+                    bandpass_band{std::move(*rendered_band),
+                                  make_range(band_params.edges[band],
+                                             band_params.edges[band + 1])});
         } else {
             return std::experimental::nullopt;
         }

@@ -54,6 +54,13 @@ auto crossover_filter(LoIt b_lo,
 
 ////////////////////////////////////////////////////////////////////////////////
 
+struct max_frequency_functor final {
+    template <typename T>
+    auto operator()(T&& t) const {
+        return t.valid_hz.get_max();
+    }
+};
+
 template <typename Histogram, typename Method>
 auto postprocess(const combined_results<Histogram>& input,
                  const Method& method,
@@ -74,8 +81,12 @@ auto postprocess(const combined_results<Histogram>& input,
                                                             speed_of_sound,
                                                             output_sample_rate);
 
-    const auto cutoff =
-            compute_cutoff_frequency(input.waveguide) / output_sample_rate;
+    const auto make_iterator = [](auto it) {
+        return make_mapping_iterator_adapter(std::move(it), max_frequency_functor{});
+    };
+
+    const auto cutoff = *std::max_element(make_iterator(begin(input.waveguide.bands)),
+                                          make_iterator(end(input.waveguide.bands))) / output_sample_rate;
     const auto width = 0.2;  //  Wider = more natural-sounding
     return crossover_filter(begin(waveguide_processed),
                             end(waveguide_processed),

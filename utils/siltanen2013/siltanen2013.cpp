@@ -133,8 +133,8 @@ int main(int argc, char** argv) {
     constexpr glm::vec3 up{0, 1, 0};
 
     constexpr auto scattering_surface = surface<simulation_bands>{
-            {{0.1, 0.1, 0.1, 0.1, 0.12, 0.14, 0.16, 0.17}},
-            {{0.1, 0.1, 0.1, 0.1, 0.12, 0.14, 0.16, 0.17}}};
+            {{0.1, 0.5, 0.1, 0.5, 0.12, 0.14, 0.16, 0.17}},
+            {{0.1, 0.5, 0.1, 0.5, 0.12, 0.14, 0.16, 0.17}}};
 
     const auto scene_data = geo::get_scene_data(box, scattering_surface);
 
@@ -158,15 +158,14 @@ int main(int argc, char** argv) {
                           << std::setw(10) << progress << std::flush;
             };
 
-            auto input =
-                    wayverb::engine{
-                            compute_context{},
-                            scene_data,
-                            params,
-                            raytracer::simulation_parameters{1 << 16, 4},
-                            waveguide::single_band_parameters{
-                                    sample_rate * 0.25, usable_portion}}
-                            .run(true, callback);
+            auto input = wayverb::engine{compute_context{},
+                                         scene_data,
+                                         params,
+                                         raytracer::simulation_parameters{
+                                                 1 << 16, 4},
+                                         waveguide::single_band_parameters{
+                                                 sample_rate, usable_portion}}
+                                 .run(true, callback);
 
             return [&, input = std::move(input) ](const auto& attenuator) {
                 return make_named_value(
@@ -197,7 +196,7 @@ int main(int argc, char** argv) {
         }));
     }
 
-    if (true) {
+    if (false) {
         //  image source ///////////////////////////////////////////////////////
         renderers.emplace_back(make_concrete_renderer_ptr([&] {
             auto input = run_exact_img_src(
@@ -247,7 +246,7 @@ int main(int argc, char** argv) {
         });
     };
 
-    if (true) {
+    if (false) {
         //  single band ////////////////////////////////////////////////////////
         renderers.emplace_back(
                 make_waveguide_renderer("waveguide.single_band",
@@ -255,11 +254,20 @@ int main(int argc, char** argv) {
                                                 sample_rate, usable_portion}));
     }
 
-    if (true) {
-        //  multiple band //////////////////////////////////////////////////////
+    if (false) {
+        //  multiple band variable spacing /////////////////////////////////////
         renderers.emplace_back(make_waveguide_renderer(
-                "waveguide.multiple_band",
-                waveguide::multiple_band_parameters{3, usable_portion}));
+                "waveguide.multiple_band.variable_spacing",
+                waveguide::multiple_band_variable_spacing_parameters{
+                        3, usable_portion}));
+    }
+
+    if (true) {
+        //  multiple band constant spacing /////////////////////////////////////
+        renderers.emplace_back(make_waveguide_renderer(
+                "waveguide.multiple_band.constant_spacing",
+                waveguide::multiple_band_constant_spacing_parameters{
+                        3, sample_rate, usable_portion}));
     }
 
     const auto rendered =

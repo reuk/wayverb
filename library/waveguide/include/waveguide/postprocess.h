@@ -56,7 +56,6 @@ auto postprocess(It begin, It end, double sample_rate) {
 
 template <typename Method>
 auto postprocess(const band& band,
-                 double usable_portion,
                  const Method& method,
                  double acoustic_impedance,
                  double output_sample_rate) {
@@ -79,18 +78,11 @@ auto postprocess(const simulation_results& results,
                  double output_sample_rate) {
     aligned::vector<float> ret;
 
-    const auto dc_block_hz = 10.0;
-    auto prev_cutoff = dc_block_hz / output_sample_rate;
-
     for (const auto& band : results.bands) {
-        auto processed = postprocess(band,
-                                     results.usable_portion,
-                                     method,
-                                     acoustic_impedance,
-                                     output_sample_rate);
+        auto processed = postprocess(
+                band.band, method, acoustic_impedance, output_sample_rate);
 
-        const auto cutoff = compute_cutoff_frequency(band.sample_rate,
-                                                     results.usable_portion) / output_sample_rate;
+        const auto cutoff = band.valid_hz / output_sample_rate;
 
         //  Bandpass based on previous band cutoff.
         frequency_domain::filter filt{
@@ -105,21 +97,14 @@ auto postprocess(const simulation_results& results,
             return cplx * static_cast<float>(
                                   frequency_domain::compute_bandpass_magnitude(
                                           freq,
-                                          make_range(prev_cutoff, cutoff),
+                                          cutoff,
                                           width,
                                           l));
         });
 
         //  Add results to ret.
         ret.resize(std::max(ret.size(), processed.size()), 0.0f);
-        std::transform(begin(processed),
-                       end(processed),
-                       begin(ret),
-                       begin(ret),
-                       std::plus<>{});
-
-        //  Update prev cutoff.
-        prev_cutoff = cutoff;
+        std::transform(b, e, begin(ret), begin(ret), std::plus<>{});
     }
 
     return ret;
