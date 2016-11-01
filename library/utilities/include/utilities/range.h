@@ -6,6 +6,8 @@
 #include <stdexcept>
 #include <type_traits>
 
+namespace util {
+
 template <typename t>
 class range final {
 public:
@@ -188,3 +190,4 @@ inline auto enclosing_range(It begin, It end) {
                       accumulate_max(begin + 1, end, *begin));
 }
 
+}  // namespace util

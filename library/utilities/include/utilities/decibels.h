@@ -2,6 +2,7 @@
 
 #include <cmath>
 
+namespace util {
 namespace decibels {
 
 template <typename T>
@@ -29,3 +30,4 @@ inline T db2a(T db) {
 }
 
 }  // namespace decibels
+}  // namespace util

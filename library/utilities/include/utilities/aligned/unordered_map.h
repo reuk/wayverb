@@ -4,6 +4,7 @@
 
 #include <unordered_map>
 
+namespace util {
 namespace aligned {
 
 template <typename T,
@@ -14,3 +15,4 @@ using unordered_map =
         std::unordered_map<T, U, Hash, Equal, allocator<std::pair<const T, U>>>;
 
 }  // namespace aligned
+}  // namespace util

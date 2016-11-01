@@ -3,6 +3,7 @@
 #include <cassert>
 #include <memory>
 
+namespace util {
 namespace aligned {
 
 template <typename T, std::size_t N = alignof(T)>
@@ -64,4 +65,5 @@ constexpr bool operator!=(const allocator<T, N>&,
     return false;
 }
 
-}  //  namespace aligned
+}  // namespace aligned
+}  // namespace util

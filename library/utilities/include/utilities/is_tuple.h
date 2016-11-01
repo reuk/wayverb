@@ -2,6 +2,8 @@
 
 #include <tuple>
 
+namespace util {
+
 template <typename T>
 struct is_tuple final {
     using type = std::false_type;
@@ -18,3 +20,4 @@ using is_tuple_t = typename is_tuple<T>::type;
 template <typename T>
 constexpr auto is_tuple_v = is_tuple_t<T>{};
 
+}  // namespace util

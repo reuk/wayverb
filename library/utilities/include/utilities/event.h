@@ -5,6 +5,8 @@
 #include <functional>
 #include <unordered_map>
 
+namespace util {
+
 template <typename... Ts>
 class event final {
     class impl;
@@ -82,3 +84,5 @@ private:
     /// previously-deleted pointer.
     std::shared_ptr<impl> pimpl_;
 };
+
+}  // namespace util

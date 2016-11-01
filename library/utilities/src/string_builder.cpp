@@ -1,5 +1,7 @@
 #include "utilities/string_builder.h"
 
+namespace util {
+
 Bracketer::Bracketer(std::ostream& os, const char* open, const char* closed)
         : os(os)
         , closed(closed) {
@@ -9,3 +11,5 @@ Bracketer::Bracketer(std::ostream& os, const char* open, const char* closed)
 Bracketer::~Bracketer() {
     os << closed << "  ";
 }
+
+}  // namespace util

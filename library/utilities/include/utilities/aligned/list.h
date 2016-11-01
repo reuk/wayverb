@@ -4,10 +4,11 @@
 
 #include <list>
 
+namespace util {
 namespace aligned {
 
 template <typename T>
 using list = std::list<T, allocator<T>>;
 
 }  // namespace aligned
-
+}  // namespace util

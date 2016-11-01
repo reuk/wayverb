@@ -2,6 +2,8 @@
 
 #include <ostream>
 
+namespace util {
+
 namespace {
 void draw_percentage(std::ostream& os, float progress) {
     os << static_cast<size_t>(progress * 100) << "%";
@@ -25,9 +27,7 @@ void draw_bar(std::ostream& os, float progress) {
 progress_bar::progress_bar(std::ostream& os)
         : os_{os} {}
 
-progress_bar::~progress_bar() noexcept {
-    os_ << '\n';
-}
+progress_bar::~progress_bar() noexcept { os_ << '\n'; }
 
 void progress_bar::set_progress(float progress) {
     progress = std::max(0.0f, std::min(1.0f, progress));
@@ -45,3 +45,5 @@ void set_progress(progress_bar& pb, float progress) {
 void set_progress(progress_bar& pb, int step, int steps) {
     set_progress(pb, step / (steps - 1.0));
 }
+
+}  // namespace util

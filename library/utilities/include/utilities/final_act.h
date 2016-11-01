@@ -1,5 +1,7 @@
 #pragma once
 
+namespace util {
+
 template <typename T>
 class final_act final {
 public:
@@ -40,3 +42,5 @@ template <typename T>
 constexpr auto make_final_act(T&& t) {
     return final_act<T>{std::forward<T>(t)};
 }
+
+}  // namespace util

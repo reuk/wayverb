@@ -5,6 +5,8 @@
 #include <tuple>
 #include <type_traits>
 
+namespace util {
+
 template <typename T>
 using decay_const_ref_t = std::remove_cv_t<std::remove_reference_t<T>>;
 
@@ -53,3 +55,4 @@ constexpr const auto& tuple_like_getter(const T (&x)[Ix]) {
     return x[I];
 }
 
+}  // namespace util

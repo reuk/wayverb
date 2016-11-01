@@ -5,6 +5,8 @@
 #include <initializer_list>
 #include <utility>
 
+namespace util {
+
 template <typename Func, typename... Ts>
 void for_each_params(Func&& func, Ts&&... ts) {
     (void)std::initializer_list<int>{((void)func(std::forward<Ts>(ts)), 0)...};
@@ -45,3 +47,5 @@ void for_each(Func&& func, T&& t, Ts&&... ts) {
             std::forward<T>(t),
             std::forward<Ts>(ts)...);
 }
+
+}  // namespace util

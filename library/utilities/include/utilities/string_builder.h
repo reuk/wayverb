@@ -4,6 +4,8 @@
 
 #include <sstream>
 
+namespace util {
+
 template <typename... Ts>
 inline std::ostream& to_stream(std::ostream& os, const Ts&... ts) {
     for_each_params([&os](const auto& i) { os << i; }, ts...);
@@ -28,3 +30,5 @@ private:
     std::ostream& os;
     const char* closed;
 };
+
+}  // namespace util

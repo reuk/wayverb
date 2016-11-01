@@ -6,6 +6,8 @@
 #include <tuple>
 #include <utility>
 
+namespace util {
+
 template <typename Func, typename... Ts>
 constexpr auto apply_params(Func&& func, Ts&&... ts) {
     return func(std::forward<Ts>(ts)...);
@@ -97,3 +99,5 @@ void call_each(Callbacks&& callbacks) {
               std::make_index_sequence<
                       tuple_like_size_v<decay_const_ref_t<Callbacks>>>{});
 }
+
+}  // namespace util

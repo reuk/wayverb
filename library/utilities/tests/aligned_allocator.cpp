@@ -9,6 +9,8 @@
 #include <set>
 #include <vector>
 
+namespace util {
+
 struct alignas(1 << 4) troublesome {
     float s;
 };
@@ -78,3 +80,5 @@ aligned::vector<float> my_func() {
 TEST(aligned_allocator, vector_resize) {
     const auto vec{my_func()};
 }
+
+}  // namespace util

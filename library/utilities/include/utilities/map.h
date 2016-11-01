@@ -3,6 +3,8 @@
 #include "utilities/is_tuple.h"
 #include "utilities/tuple_like.h"
 
+namespace util {
+
 //  arrays
 
 template <typename Func, typename T, size_t... Ix>
@@ -32,3 +34,5 @@ constexpr auto map(Func&& func, T&& t) {
                std::make_index_sequence<
                        tuple_like_size_v<decay_const_ref_t<T>>>{});
 }
+
+}  // namespace util

@@ -4,6 +4,8 @@
 
 #include <algorithm>
 
+namespace util {
+
 template <typename It, typename Callback>
 auto map_to_vector(It b, It e, const Callback &callback) {
     using ReturnType = std::decay_t<decltype(
@@ -13,3 +15,5 @@ auto map_to_vector(It b, It e, const Callback &callback) {
     std::transform(b, e, std::back_inserter(ret), callback);
     return ret;
 }
+
+}  // namespace util

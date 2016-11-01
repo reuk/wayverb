@@ -2,6 +2,8 @@
 
 #include <iostream>
 
+namespace util {
+
 class progress_bar final {
 public:
     progress_bar(std::ostream& os = std::cerr);
@@ -18,3 +20,5 @@ private:
 
 void set_progress(progress_bar& pb, float progress);
 void set_progress(progress_bar& pb, int step, int steps);
+
+}  // namespace util

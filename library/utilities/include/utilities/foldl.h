@@ -2,6 +2,8 @@
 
 #include "utilities/tuple_like.h"
 
+namespace util {
+
 template <typename Callback, typename T>
 constexpr auto foldl_params(Callback&&, T&& t) -> decltype(std::forward<T>(t)) {
     return std::forward<T>(t);
@@ -46,3 +48,5 @@ constexpr auto foldl(Callback&& callback, const Init& init, const T& t) {
                  t,
                  std::make_index_sequence<tuple_like_size_v<T>>{});
 }
+
+}  // namespace util
