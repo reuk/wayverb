@@ -259,20 +259,6 @@ engine::engine(
         scene_data scene_data,
         const model::parameters& parameters,
         const raytracer::simulation_parameters& raytracer,
-        const waveguide::multiple_band_variable_spacing_parameters& waveguide)
-        : pimpl_{std::make_unique<concrete_impl<
-                  waveguide::multiple_band_variable_spacing_parameters>>(
-                  compute_context,
-                  std::move(scene_data),
-                  parameters,
-                  raytracer,
-                  waveguide)} {}
-
-engine::engine(
-        const compute_context& compute_context,
-        scene_data scene_data,
-        const model::parameters& parameters,
-        const raytracer::simulation_parameters& raytracer,
         const waveguide::multiple_band_constant_spacing_parameters& waveguide)
         : pimpl_{std::make_unique<concrete_impl<
                   waveguide::multiple_band_constant_spacing_parameters>>(

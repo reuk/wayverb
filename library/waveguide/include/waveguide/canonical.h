@@ -199,7 +199,6 @@ canonical(const compute_context& cc,
 /// This is a sort of middle ground - more accurate boundary modelling, but
 /// really unbelievably slow.
 template <typename Callback>
-[[deprecated("really slow and inaccurate compared to the single-band version")]]
 std::experimental::optional<simulation_results>
 canonical(const compute_context& cc,
           const generic_scene_data<cl_float3, surface<simulation_bands>>& scene,

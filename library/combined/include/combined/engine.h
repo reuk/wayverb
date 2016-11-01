@@ -96,15 +96,6 @@ public:
            const raytracer::simulation_parameters& raytracer,
            const waveguide::single_band_parameters& waveguide);
 
-    [[deprecated]]
-    engine(const compute_context& compute_context,
-           scene_data scene_data,
-           const model::parameters& parameters,
-           const raytracer::simulation_parameters& raytracer,
-           const waveguide::multiple_band_variable_spacing_parameters&
-                   waveguide);
-
-    [[deprecated]]
     engine(const compute_context& compute_context,
            scene_data scene_data,
            const model::parameters& parameters,

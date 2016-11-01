@@ -107,6 +107,23 @@ auto postprocess(const simulation_results& results,
         std::transform(b, e, begin(ret), begin(ret), std::plus<>{});
     }
 
+    {
+        //  DC blocking, just in case...
+        //  Won't catch exponential drift, but should get really low
+        //  oscillations.
+        constexpr auto dc_block_hz = 10.0;
+        const auto dc_block = dc_block_hz / output_sample_rate;
+        frequency_domain::filter filt{
+                frequency_domain::best_fft_length(ret.size()) << 2};
+        const auto b = begin(ret);
+        const auto e = end(ret);
+        filt.run(b, e, b, [&](auto cplx, auto freq) {
+            return cplx * static_cast<float>(
+                                  frequency_domain::compute_hipass_magnitude(
+                                          freq, dc_block, 1.0, 0));
+        });
+    }
+
     return ret;
 }
 
