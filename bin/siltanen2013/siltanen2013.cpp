@@ -160,7 +160,7 @@ int main(int argc, char** argv) {
             };
 
             auto input =
-                    wayverb::engine{
+                    combined::engine{
                             core::compute_context{},
                             scene_data,
                             params,

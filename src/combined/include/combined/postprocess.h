@@ -8,7 +8,7 @@
 
 #include "core/sum_ranges.h"
 
-namespace wayverb {
+namespace combined {
 
 template <typename Histogram>
 struct combined_results final {
@@ -99,4 +99,4 @@ auto postprocess(const combined_results<Histogram>& input,
                             width);
 }
 
-}  // namespace wayverb
+}  // namespace combined

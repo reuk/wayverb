@@ -27,7 +27,7 @@ struct receiver;
 class compute_context;
 }  // namespace core
 
-namespace wayverb {
+namespace combined {
 
 //  state information  /////////////////////////////////////////////////////////
 
@@ -155,4 +155,4 @@ private:
 
 void swap(engine&, engine&) noexcept;
 
-}  // namespace wayverb
+}  // namespace combined

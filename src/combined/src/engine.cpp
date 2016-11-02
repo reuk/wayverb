@@ -27,12 +27,13 @@
 
 #include <cmath>
 
+namespace combined {
 namespace {
 
 template <typename Histogram>
-class intermediate_impl : public wayverb::intermediate {
+class intermediate_impl : public intermediate {
 public:
-    intermediate_impl(wayverb::combined_results<Histogram> to_process,
+    intermediate_impl(combined_results<Histogram> to_process,
                       const glm::vec3& receiver_position,
                       double room_volume,
                       double acoustic_impedance,
@@ -65,16 +66,16 @@ private:
     template <typename Attenuator>
     auto postprocess_impl(const Attenuator& attenuator,
                           double output_sample_rate) const {
-        return wayverb::postprocess(to_process_,
-                                    attenuator,
-                                    receiver_position_,
-                                    room_volume_,
-                                    acoustic_impedance_,
-                                    speed_of_sound_,
-                                    output_sample_rate);
+        return ::combined::postprocess(to_process_,
+                                       attenuator,
+                                       receiver_position_,
+                                       room_volume_,
+                                       acoustic_impedance_,
+                                       speed_of_sound_,
+                                       output_sample_rate);
     }
 
-    wayverb::combined_results<Histogram> to_process_;
+    combined_results<Histogram> to_process_;
     glm::vec3 receiver_position_;
     double room_volume_;
     double acoustic_impedance_;
@@ -82,7 +83,7 @@ private:
 };
 
 template <typename Histogram>
-auto make_intermediate_impl_ptr(wayverb::combined_results<Histogram> to_process,
+auto make_intermediate_impl_ptr(combined_results<Histogram> to_process,
                                 const glm::vec3& receiver_position,
                                 double room_volume,
                                 double acoustic_impedance,
@@ -97,8 +98,6 @@ auto make_intermediate_impl_ptr(wayverb::combined_results<Histogram> to_process,
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
-
-namespace wayverb {
 
 class engine::impl {
 public:
@@ -311,4 +310,4 @@ void engine::swap(engine& rhs) noexcept {
 
 void swap(engine& a, engine& b) noexcept { a.swap(b); }
 
-}  // namespace wayverb
+}  // namespace combined

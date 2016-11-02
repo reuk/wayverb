@@ -5,13 +5,13 @@
 #include "cereal/cereal.hpp"
 #include "cereal/types/vector.hpp"
 
+namespace cereal {
+
 template <typename Archive>
 void serialize(Archive& archive, az_el& azel) {
     archive(cereal::make_nvp("azimuth", azel.azimuth),
             cereal::make_nvp("elevation", azel.elevation));
 }
-
-namespace model {
 
 template <typename Archive>
 void serialize(Archive& archive, orientable& m) {
@@ -60,4 +60,4 @@ void serialize(Archive& archive, App& m) {
             cereal::make_nvp("receiver_settings", m.receiver_settings));
 }
 
-}  // namespace model
+}  // namespace cereal

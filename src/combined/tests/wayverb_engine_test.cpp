@@ -19,11 +19,11 @@ TEST(engine, engine) {
 
     const auto scene_data = core::geo::get_scene_data(box, surface);
 
-    const wayverb::engine e{core::compute_context{},
-                            scene_data,
-                            params,
-                            raytracer::simulation_parameters{1 << 16, 5},
-                            waveguide::single_band_parameters{10000, 0.5}};
+    const combined::engine e{core::compute_context{},
+                             scene_data,
+                             params,
+                             raytracer::simulation_parameters{1 << 16, 5},
+                             waveguide::single_band_parameters{10000, 0.5}};
 
     const auto callback = [](auto state, auto progress) {
         std::cout << '\r' << std::setw(30) << to_string(state) << std::setw(10)
