@@ -50,6 +50,10 @@ Make sure all modules are namespaced.
 
 Reduce visiblity of methods wherever possible.
 
+Static analysis.
+
+Fuzzing.
+
 nice-to-have
 ============
 

@@ -4,12 +4,12 @@
 -Ilibrary/frequency_domain/include
 -Ilibrary/waveguide/compensation_signal/lib/include
 -Ilibrary/raytracer/include
--Ilibrary/common/include
+-Ilibrary/core/include
 -Ilibrary/hrtf/lib/include
 -Ilibrary/combined/include
 -Iutils/box/include
 -Ibuild/include
--Ibuild/library/common
+-Ibuild/library/core
 -Ibuild/library/waveguide
 -Wall
 -Werror
