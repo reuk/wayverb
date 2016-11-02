@@ -12,7 +12,7 @@
 TEST(nan_in_waveguide, nan_in_waveguide) {
     const auto filter_frequency = 11025.0;
     const auto oversample_ratio = 1.0;
-    const auto waveguide_sr = filter_frequency * oversample_ratio * (1 / 0.196);
+    const auto waveguide_sr = filter_frequency * oversample_ratio / 0.15;
 
     const compute_context cc{device_type::gpu};
 
@@ -57,7 +57,7 @@ TEST(nan_in_waveguide, nan_in_waveguide) {
 
     std::cout << "running " << steps << " steps" << std::endl;
 
-    progress_bar pb{std::cout};
+    util::progress_bar pb{std::cout};
     waveguide::run(cc,
                    model,
                    generator,

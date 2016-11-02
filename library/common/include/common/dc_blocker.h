@@ -19,7 +19,7 @@ public:
     void clear();
 
 private:
-    aligned::vector<double> data;
+    util::aligned::vector<double> data;
     size_t index;
 };
 
@@ -79,8 +79,8 @@ public:
     double filter(double x);
 
     template <typename It>
-    aligned::vector<float> filter(It begin, It end) {
-        aligned::vector<float> ret(begin, end);
+    util::aligned::vector<float> filter(It begin, It end) {
+        util::aligned::vector<float> ret(begin, end);
         std::for_each(std::begin(ret), std::end(ret), [this](auto& i) {
             i = this->filter(i);
         });
@@ -103,8 +103,8 @@ public:
     double filter(double x);
 
     template <typename It>
-    aligned::vector<float> filter(It begin, It end) {
-        aligned::vector<float> ret(begin, end);
+    util::aligned::vector<float> filter(It begin, It end) {
+        util::aligned::vector<float> ret(begin, end);
         std::for_each(std::begin(ret), std::end(ret), [this](auto& i) {
             i = this->filter(i);
         });

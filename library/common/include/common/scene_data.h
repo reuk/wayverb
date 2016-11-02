@@ -18,9 +18,9 @@ public:
     using surface_type = Surface;
 
     generic_scene_data() = default;
-    generic_scene_data(aligned::vector<triangle> triangles,
-                       aligned::vector<vertex_type> vertices,
-                       aligned::vector<surface_type> surfaces)
+    generic_scene_data(util::aligned::vector<triangle> triangles,
+                       util::aligned::vector<vertex_type> vertices,
+                       util::aligned::vector<surface_type> surfaces)
             : triangles_{triangles}
             , vertices_{vertices}
             , surfaces_{surfaces} {
@@ -43,13 +43,13 @@ public:
         }
     }
 
-    const aligned::vector<triangle>& get_triangles() const {
+    const util::aligned::vector<triangle>& get_triangles() const {
         return triangles_;
     }
-    const aligned::vector<vertex_type>& get_vertices() const {
+    const util::aligned::vector<vertex_type>& get_vertices() const {
         return vertices_;
     }
-    const aligned::vector<surface_type>& get_surfaces() const {
+    const util::aligned::vector<surface_type>& get_surfaces() const {
         return surfaces_;
     }
 
@@ -64,9 +64,10 @@ public:
     /// safety guarantee.
     template <typename It>
     void set_surfaces(It begin, It end) {
-        generic_scene_data copy{triangles_,
-                                vertices_,
-                                aligned::vector<surface_type>{begin, end}};
+        generic_scene_data copy{
+                triangles_,
+                vertices_,
+                util::aligned::vector<surface_type>{begin, end}};
         swap(copy);
     }
 
@@ -77,25 +78,26 @@ public:
     }
 
 private:
-    aligned::vector<triangle> triangles_;
-    aligned::vector<vertex_type> vertices_;
-    aligned::vector<surface_type> surfaces_;
+    util::aligned::vector<triangle> triangles_;
+    util::aligned::vector<vertex_type> vertices_;
+    util::aligned::vector<surface_type> surfaces_;
 };
 
 template <typename Vertex, typename Surface>
-auto make_scene_data(aligned::vector<triangle> triangles,
-                     aligned::vector<Vertex> vertices,
-                     aligned::vector<Surface> surfaces) {
+auto make_scene_data(util::aligned::vector<triangle> triangles,
+                     util::aligned::vector<Vertex> vertices,
+                     util::aligned::vector<Surface> surfaces) {
     return generic_scene_data<Vertex, Surface>{
             std::move(triangles), std::move(vertices), std::move(surfaces)};
 }
 
-aligned::vector<glm::vec3> convert(const aligned::vector<cl_float3>& c);
+util::aligned::vector<glm::vec3> convert(
+        const util::aligned::vector<cl_float3>& c);
 
 template <typename Vertex, typename Surface>
 auto compute_triangle_indices(
         const generic_scene_data<Vertex, Surface>& scene) {
-    aligned::vector<size_t> ret(scene.get_triangles().size());
+    util::aligned::vector<size_t> ret(scene.get_triangles().size());
     std::iota(ret.begin(), ret.end(), 0);
     return ret;
 }

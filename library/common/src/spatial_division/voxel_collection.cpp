@@ -1,11 +1,12 @@
 #include "common/spatial_division/voxel_collection.h"
 #include "common/scene_data.h"
 
-aligned::vector<cl_uint> get_flattened(const voxel_collection<3>& voxels) {
+util::aligned::vector<cl_uint> get_flattened(
+        const voxel_collection<3>& voxels) {
     const auto side = voxels.get_side();
     const auto dim = pow(side, 3);
 
-    aligned::vector<cl_uint> ret(dim);
+    util::aligned::vector<cl_uint> ret(dim);
 
     const auto to_flat = [side](auto i) {
         return i.x * side * side + i.y * side + i.z;

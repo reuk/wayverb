@@ -28,8 +28,8 @@ struct reflection_metadata final {
 
 template <typename Channels, typename It>
 auto compute_fast_pressure(const glm::vec3& receiver,
-                           const aligned::vector<Channels>& impedance,
-                           const aligned::vector<Channels>& scattering,
+                           const util::aligned::vector<Channels>& impedance,
+                           const util::aligned::vector<Channels>& scattering,
                            bool flip_phase,
                            const glm::vec3& image_source,
                            It begin,
@@ -73,7 +73,7 @@ public:
                              const glm::vec3& receiver,
                              bool flip_phase)
             : receiver_{receiver}
-            , surface_impedances_{map_to_vector(
+            , surface_impedances_{util::map_to_vector(
                       b_surfaces,
                       e_surfaces,
                       [](const auto& surface) {
@@ -81,7 +81,7 @@ public:
                                   absorption_to_pressure_reflectance(
                                           surface.absorption));
                       })}
-            , surface_scattering_{map_to_vector(
+            , surface_scattering_{util::map_to_vector(
                       b_surfaces,
                       e_surfaces,
                       [](const auto& surface) { return surface.scattering; })}
@@ -89,8 +89,8 @@ public:
 
     using return_type = decltype(compute_fast_pressure(
             std::declval<glm::vec3>(),
-            std::declval<aligned::vector<multichannel_type>>(),
-            std::declval<aligned::vector<multichannel_type>>(),
+            std::declval<util::aligned::vector<multichannel_type>>(),
+            std::declval<util::aligned::vector<multichannel_type>>(),
             std::declval<bool>(),
             std::declval<glm::vec3>(),
             std::declval<const reflection_metadata*>(),
@@ -111,8 +111,8 @@ public:
 
 private:
     glm::vec3 receiver_;
-    aligned::vector<multichannel_type> surface_impedances_;
-    aligned::vector<multichannel_type> surface_scattering_;
+    util::aligned::vector<multichannel_type> surface_impedances_;
+    util::aligned::vector<multichannel_type> surface_scattering_;
     bool flip_phase_;
 };
 

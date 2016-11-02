@@ -23,7 +23,7 @@ public:
         builder_.push(b, b + builder_.get_num_items());
     }
 
-    aligned::vector<aligned::vector<reflection>> get_results();
+    util::aligned::vector<util::aligned::vector<reflection>> get_results();
 
 private:
     iterative_builder<reflection> builder_;

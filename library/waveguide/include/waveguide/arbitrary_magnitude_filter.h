@@ -49,7 +49,8 @@ constexpr auto make_interp_point(const frequency_domain_envelope::point& pt) {
 
 template <typename It>
 constexpr auto make_interp_iterator(It it) {
-    return make_mapping_iterator_adapter(std::move(it), make_interp_point);
+    return util::make_mapping_iterator_adapter(std::move(it),
+                                               make_interp_point);
 }
 
 /// Given a sorted array of frequencies from 0-1 (dc to nyquist) and an array of
@@ -57,7 +58,7 @@ constexpr auto make_interp_iterator(It it) {
 /// frequency response.
 template <size_t N>
 auto arbitrary_magnitude_filter(frequency_domain_envelope env) {
-    remove_outside_frequency_range(env, make_range(0.0, 1.0));
+    remove_outside_frequency_range(env, util::make_range(0.0, 1.0));
     env.insert(frequency_domain_envelope::point{0.0, 0.0});
     env.insert(frequency_domain_envelope::point{1.0, 0.0});
 

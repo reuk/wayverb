@@ -82,7 +82,7 @@ public:
         };
 
         const auto intermediate = [&] {
-            aligned::vector<intermediate_impulse> ret;
+            util::aligned::vector<intermediate_impulse> ret;
             ret.reserve(output.stochastic.size() + output.specular.size());
 
             const auto push_vector = [&](const auto& vec) {

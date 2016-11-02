@@ -34,7 +34,7 @@ bool gaussian::operator()(cl::CommandQueue& queue,
 
         //  first on the CPU
         const auto nodes = items_in_buffer<cl_float>(buffer);
-        aligned::vector<cl_float> pressures;
+        util::aligned::vector<cl_float> pressures;
         pressures.reserve(nodes);
         for (auto i = 0u; i != nodes; ++i) {
             const auto gauss = compute(

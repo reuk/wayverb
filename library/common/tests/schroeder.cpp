@@ -8,17 +8,17 @@
 
 TEST(schroeder, squared_integrated) {
     {
-        aligned::vector<float> sig(100, 1.0f);
+        util::aligned::vector<float> sig(100, 1.0f);
         const auto integrated = squared_integrated(sig.begin(), sig.end());
         ASSERT_EQ(integrated.back(), 100);
     }
     {
-        aligned::vector<float> sig(100, -1.0f);
+        util::aligned::vector<float> sig(100, -1.0f);
         const auto integrated = squared_integrated(sig.begin(), sig.end());
         ASSERT_EQ(integrated.back(), 100);
     }
     {
-        aligned::vector<float> sig(10, 2.0f);
+        util::aligned::vector<float> sig(10, 2.0f);
         const auto integrated = squared_integrated(sig.begin(), sig.end());
         ASSERT_EQ(integrated.back(), 40);
     }
@@ -28,9 +28,9 @@ auto generate_noise_tail(float rt60) {
     std::default_random_engine engine{std::random_device{}()};
     std::uniform_real_distribution<float> distribution{-1, 1};
 
-    aligned::vector<float> ret;
+    util::aligned::vector<float> ret;
 
-    const auto min_amp = std::log(decibels::db2a(-60.0));
+    const auto min_amp = std::log(util::decibels::db2a(-60.0));
     for (auto i = 0u; i < rt60; ++i) {
         ret.emplace_back(distribution(engine) * std::exp(min_amp * i / rt60));
     }

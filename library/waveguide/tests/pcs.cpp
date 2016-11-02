@@ -21,27 +21,28 @@ TEST(pcs, factdbl) {
 }
 
 TEST(pcs, maxflat) {
-    for (const auto& pair : aligned::vector<
-                 std::tuple<waveguide::offset_signal, aligned::vector<double>>>{
+    for (const auto& pair :
+         util::aligned::vector<std::tuple<waveguide::offset_signal,
+                                          util::aligned::vector<double>>>{
                  {waveguide::maxflat(0.1, 4, 1, 1024),
-                  aligned::vector<double>{-0.00580,
-                                          -0.01272,
-                                          0.00000,
-                                          0.08268,
-                                          0.28443,
-                                          0.58864,
-                                          0.87895,
-                                          1.00000,
-                                          0.87895,
-                                          0.58864,
-                                          0.28443,
-                                          0.08268,
-                                          0.00000,
-                                          -0.01272,
-                                          -0.00580}},
+                  util::aligned::vector<double>{-0.00580,
+                                                -0.01272,
+                                                0.00000,
+                                                0.08268,
+                                                0.28443,
+                                                0.58864,
+                                                0.87895,
+                                                1.00000,
+                                                0.87895,
+                                                0.58864,
+                                                0.28443,
+                                                0.08268,
+                                                0.00000,
+                                                -0.01272,
+                                                -0.00580}},
 
                  {waveguide::maxflat(0.1, 8, 1, 1024),
-                  aligned::vector<double>{
+                  util::aligned::vector<double>{
                           0.00000,  0.00004,  0.00026,  0.00081,  0.00135,
                           -0.00000, -0.00712, -0.02341, -0.04446, -0.04931,
                           0.00000,  0.14119,  0.38036,  0.66779,  0.90673,
@@ -51,7 +52,7 @@ TEST(pcs, maxflat) {
                           0.00000}},
 
                  {waveguide::maxflat(0.01, 16, 1, 1024),
-                  aligned::vector<double>{
+                  util::aligned::vector<double>{
                           0.00000, 0.00000, 0.00000, 0.00000, 0.00000, 0.00000,
                           0.00001, 0.00003, 0.00007, 0.00018, 0.00041, 0.00090,
                           0.00188, 0.00373, 0.00707, 0.01279, 0.02218, 0.03689,
@@ -83,8 +84,8 @@ TEST(pcs, g0) {
 
 TEST(pcs, mech_sphere) {
     for (const auto& pair :
-         aligned::vector<std::tuple<filter::biquad::coefficients,
-                                    filter::biquad::coefficients>>{
+         util::aligned::vector<std::tuple<filter::biquad::coefficients,
+                                          filter::biquad::coefficients>>{
 
                  {waveguide::mech_sphere(0.025, 0.003, 0.7, 1.0 / 16000),
                   filter::biquad::coefficients{

@@ -25,7 +25,7 @@ TEST(stochastic, bad_reflections_box) {
 
     const scene_buffers buffers{cc.context, voxelised};
 
-    const aligned::vector<reflection> bad_reflections{
+    const util::aligned::vector<reflection> bad_reflections{
             reflection{cl_float3{{2.66277409, 0.0182733424, 6}},
                        cl_float3{{-0.474790603, 0.544031799, -0.691811323}},
                        10,
@@ -60,7 +60,7 @@ TEST(stochastic, bad_reflections_vault) {
 
     const scene_buffers buffers{cc.context, voxelised};
 
-    const aligned::vector<reflection> bad_reflections{
+    const util::aligned::vector<reflection> bad_reflections{
             reflection{cl_float3{{2.29054403, 1.00505638, -1.5}},
                        cl_float3{{-0.682838321, 0.000305294991, 0.730569482}},
                        2906,

@@ -6,8 +6,8 @@
 #include "common/spatial_division/voxel_collection.h"
 #include "common/spatial_division/voxelised_scene_data.h"
 
-#include "utilities/string_builder.h"
 #include "utilities/map_to_vector.h"
+#include "utilities/string_builder.h"
 
 #include "gtest/gtest.h"
 
@@ -22,7 +22,7 @@ auto get_voxelised(const generic_scene_data<Vertex, Surface>& scene) {
 }
 
 auto get_test_scenes() {
-    return aligned::vector<scene_data_loader::scene_data>{
+    return util::aligned::vector<scene_data_loader::scene_data>{
             geo::get_scene_data(
                     geo::box{glm::vec3(0, 0, 0), glm::vec3(4, 3, 6)},
                     scene_data_loader::material{
@@ -36,7 +36,7 @@ auto get_test_scenes() {
 
 TEST(voxel, walk) {
     for (const auto& scene : get_test_scenes()) {
-        const auto voxelised{get_voxelised(scene)};
+        const auto voxelised = get_voxelised(scene);
         for (const auto& i : get_random_directions(1000)) {
             geo::ray ray{glm::vec3{0, 1, 0}, to_vec3(i)};
             bool has_triangles{false};
@@ -55,7 +55,7 @@ TEST(voxel, walk) {
 
 TEST(voxel, flatten) {
     for (const auto& scene : get_test_scenes()) {
-        const auto voxelised{get_voxelised(scene)};
+        const auto voxelised = get_voxelised(scene);
         const auto f = get_flattened(voxelised.get_voxels());
     }
 }
@@ -63,24 +63,24 @@ TEST(voxel, flatten) {
 TEST(voxel, surrounded) {
     const glm::vec3 source{1, 2, 1};
     for (const auto& scene : get_test_scenes()) {
-        const auto voxelised{
-                get_voxelised(scene_with_extracted_surfaces(scene))};
+        const auto voxelised =
+                get_voxelised(scene_with_extracted_surfaces(scene));
         const compute_context cc{};
-        const auto buffers{make_scene_buffers(cc.context, voxelised)};
+        const auto buffers = make_scene_buffers(cc.context, voxelised);
 
-        const auto directions{get_random_directions(1000)};
+        const auto directions = get_random_directions(1000);
 
-        const auto get_fast_intersections{[&](const auto& directions) {
-            return map_to_vector(
+        const auto get_fast_intersections = [&](const auto& directions) {
+            return util::map_to_vector(
                     begin(directions), end(directions), [&](const auto& i) {
-                        const auto ray{geo::ray{source, i}};
+                        const auto ray = geo::ray{source, i};
                         return intersects(voxelised, ray);
                     });
-        }};
-        const auto fast_intersections{get_fast_intersections(directions)};
+        };
+        const auto fast_intersections = get_fast_intersections(directions);
 
-        const auto slow_intersections{[&](const auto& directions) {
-            return map_to_vector(
+        const auto slow_intersections = [&](const auto& directions) {
+            return util::map_to_vector(
                     begin(directions), end(directions), [&](const auto& i) {
                         return geo::ray_triangle_intersection(
                                 geo::ray{source, i},
@@ -88,11 +88,11 @@ TEST(voxel, surrounded) {
                                 convert(voxelised.get_scene_data()
                                                 .get_vertices()));
                     });
-        }(directions)};
+        }(directions);
 
-        aligned::vector<glm::vec3> problem_directions{};
+        util::aligned::vector<glm::vec3> problem_directions{};
         std::set<size_t> problem_surfaces{};
-        for (auto i{0u}; i != directions.size(); ++i) {
+        for (auto i = 0u; i != directions.size(); ++i) {
             if (!static_cast<bool>(fast_intersections[i])) {
                 problem_directions.emplace_back(directions[i]);
                 problem_surfaces.insert(slow_intersections[i]->index);
@@ -114,10 +114,10 @@ TEST(voxel, surrounded) {
         }
 
         //  now let's try just the problematic directions
-        const auto problem_intersections{
-                get_fast_intersections(problem_directions)};
+        const auto problem_intersections =
+                get_fast_intersections(problem_directions);
 
-        for (auto i{0u}; i != directions.size(); ++i) {
+        for (auto i = 0u; i != directions.size(); ++i) {
             ASSERT_EQ(static_cast<bool>(fast_intersections[i]),
                       static_cast<bool>(slow_intersections[i]));
             ASSERT_EQ(fast_intersections[i]->index,
@@ -129,33 +129,33 @@ TEST(voxel, surrounded) {
 template <typename Vertex, typename Surface>
 void compare(const glm::vec3& source,
              const generic_scene_data<Vertex, Surface>& scene) {
-    const auto voxelised{get_voxelised(scene_with_extracted_surfaces(scene))};
+    const auto voxelised = get_voxelised(scene_with_extracted_surfaces(scene));
     const compute_context cc{};
-    const auto buffers{make_scene_buffers(cc.context, voxelised)};
+    const auto buffers = make_scene_buffers(cc.context, voxelised);
 
-    const auto directions{get_random_directions(1000)};
+    const auto directions = get_random_directions(1000);
 
-    const auto get_fast_intersections{[&](const auto& directions) {
-        return map_to_vector(
+    const auto get_fast_intersections = [&](const auto& directions) {
+        return util::map_to_vector(
                 begin(directions), end(directions), [&](const auto& i) {
                     const auto ray{geo::ray{source, i}};
                     return intersects(voxelised, ray);
                 });
-    }};
-    const auto fast_intersections{get_fast_intersections(directions)};
+    };
+    const auto fast_intersections = get_fast_intersections(directions);
 
-    const auto slow_intersections{[&](const auto& directions) {
-        return map_to_vector(
+    const auto slow_intersections = [&](const auto& directions) {
+        return util::map_to_vector(
                 begin(directions), end(directions), [&](const auto& i) {
                     return geo::ray_triangle_intersection(
                             geo::ray{source, i},
                             voxelised.get_scene_data().get_triangles(),
                             convert(voxelised.get_scene_data().get_vertices()));
                 });
-    }(directions)};
+    }(directions);
 
-    aligned::vector<glm::vec3> problematic{};
-    for (auto i{0u}; i != directions.size(); ++i) {
+    util::aligned::vector<glm::vec3> problematic{};
+    for (auto i = 0u; i != directions.size(); ++i) {
         if (fast_intersections[i] != slow_intersections[i]) {
             problematic.emplace_back(directions[i]);
         }
@@ -169,7 +169,7 @@ void compare(const glm::vec3& source,
 
     if (!problematic.empty()) {
         for (const auto& i : problematic) {
-            std::cout << build_string(i.x, ", ", i.y, ", ", i.z, '\n');
+            std::cout << util::build_string(i.x, ", ", i.y, ", ", i.z, '\n');
         }
     }
 

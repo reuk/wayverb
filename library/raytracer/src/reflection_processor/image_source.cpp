@@ -21,7 +21,7 @@ image_source::image_source(
         , flip_phase_{flip_phase}
         , builder_{items} {}
 
-aligned::vector<impulse<8>> image_source::get_results() {
+util::aligned::vector<impulse<8>> image_source::get_results() {
     raytracer::image_source::tree tree{};
     for (const auto& path : builder_.get_data()) {
         tree.push(path);

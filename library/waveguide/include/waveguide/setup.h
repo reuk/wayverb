@@ -25,39 +25,40 @@ constexpr bool is_inside(const condensed_node& c) {
 
 class vectors final {
 public:
-    vectors(aligned::vector<condensed_node> nodes,
-            aligned::vector<coefficients_canonical>
-                    coefficients,
+    vectors(util::aligned::vector<condensed_node> nodes,
+            util::aligned::vector<coefficients_canonical> coefficients,
             boundary_index_data boundary_index_data);
 
     template <size_t n>
-    const aligned::vector<boundary_index_array<n>>& get_boundary_indices()
+    const util::aligned::vector<boundary_index_array<n>>& get_boundary_indices()
             const;
 
-    const aligned::vector<condensed_node>& get_condensed_nodes() const;
-    const aligned::vector<coefficients_canonical>& get_coefficients() const;
+    const util::aligned::vector<condensed_node>& get_condensed_nodes() const;
+    const util::aligned::vector<coefficients_canonical>& get_coefficients()
+            const;
 
     void set_coefficients(coefficients_canonical coefficients);
-    void set_coefficients(aligned::vector<coefficients_canonical> coefficients);
+    void set_coefficients(
+            util::aligned::vector<coefficients_canonical> coefficients);
 
 private:
-    aligned::vector<condensed_node> condensed_nodes_;
-    aligned::vector<coefficients_canonical> coefficients_;
+    util::aligned::vector<condensed_node> condensed_nodes_;
+    util::aligned::vector<coefficients_canonical> coefficients_;
     boundary_index_data boundary_index_data_;
 };
 
 template <>
-inline const aligned::vector<boundary_index_array<1>>&
+inline const util::aligned::vector<boundary_index_array<1>>&
 vectors::get_boundary_indices<1>() const {
     return boundary_index_data_.b1;
 }
 template <>
-inline const aligned::vector<boundary_index_array<2>>&
+inline const util::aligned::vector<boundary_index_array<2>>&
 vectors::get_boundary_indices<2>() const {
     return boundary_index_data_.b2;
 }
 template <>
-inline const aligned::vector<boundary_index_array<3>>&
+inline const util::aligned::vector<boundary_index_array<3>>&
 vectors::get_boundary_indices<3>() const {
     return boundary_index_data_.b3;
 }
@@ -75,10 +76,10 @@ static boundary_data_array<N> construct_boundary_data_array(
 }
 
 template <size_t n>
-inline aligned::vector<boundary_data_array<n>> get_boundary_data(
+inline util::aligned::vector<boundary_data_array<n>> get_boundary_data(
         const vectors& d) {
     const auto indices = d.get_boundary_indices<n>();
-    return map_to_vector(begin(indices), end(indices), [](const auto& i) {
+    return util::map_to_vector(begin(indices), end(indices), [](const auto& i) {
         return construct_boundary_data_array(i);
     });
 }

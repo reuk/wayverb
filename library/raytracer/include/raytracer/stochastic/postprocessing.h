@@ -46,7 +46,7 @@ auto interval_size(Engine& engine, double mean_occurrence) {
 double t0(double constant);
 
 struct dirac_sequence final {
-    aligned::vector<float> sequence;
+    util::aligned::vector<float> sequence;
     double sample_rate;
 };
 
@@ -57,18 +57,19 @@ dirac_sequence generate_dirac_sequence(double speed_of_sound,
 
 struct energy_histogram final {
     double sample_rate;
-    aligned::vector<bands_type> histogram;
+    util::aligned::vector<bands_type> histogram;
 };
 
 template <size_t Az, size_t El>
 struct directional_energy_histogram final {
     double sample_rate;
-    vector_look_up_table<aligned::vector<bands_type>, Az, El> histogram;
+    vector_look_up_table<util::aligned::vector<bands_type>, Az, El> histogram;
 };
 
 template <size_t Az, size_t El>
 auto max_size(
-        const vector_look_up_table<aligned::vector<bands_type>, Az, El>& hist) {
+        const vector_look_up_table<util::aligned::vector<bands_type>, Az, El>&
+                hist) {
     size_t ret = 0;
 
     for (size_t a = 0; a != Az; ++a) {
@@ -88,7 +89,7 @@ auto max_time(const directional_energy_histogram<Az, El>& hist) {
 template <size_t Az, size_t El>
 auto sum_directional_histogram(
         const directional_energy_histogram<Az, El>& histogram) {
-    aligned::vector<bands_type> ret;
+    util::aligned::vector<bands_type> ret;
     for (auto azimuth_index = 0ul; azimuth_index != Az; ++azimuth_index) {
         for (auto elevation_index = 0ul; elevation_index != El;
              ++elevation_index) {
@@ -124,7 +125,7 @@ auto compute_summed_histogram(
         const Method& method) {
     using hist = std::decay_t<decltype(histogram.histogram)>;
 
-    aligned::vector<bands_type> ret;
+    util::aligned::vector<bands_type> ret;
 
     for (auto azimuth_index = 0ul; azimuth_index != Az; ++azimuth_index) {
         for (auto elevation_index = 0ul; elevation_index != El;
@@ -157,16 +158,17 @@ auto compute_summed_histogram(
     return energy_histogram{histogram.sample_rate, ret};
 }
 
-aligned::vector<bands_type> weight_sequence(const energy_histogram& histogram,
+util::aligned::vector<bands_type> weight_sequence(
+        const energy_histogram& histogram,
+        const dirac_sequence& sequence,
+        double acoustic_impedance);
+
+util::aligned::vector<float> postprocessing(const energy_histogram& histogram,
                                             const dirac_sequence& sequence,
                                             double acoustic_impedance);
 
-aligned::vector<float> postprocessing(const energy_histogram& histogram,
-                                      const dirac_sequence& sequence,
-                                      double acoustic_impedance);
-
 template <size_t Az, size_t El, typename Method>
-aligned::vector<float> postprocessing(
+util::aligned::vector<float> postprocessing(
         const directional_energy_histogram<Az, El>& histogram,
         const Method& method,
         const dirac_sequence& sequence,

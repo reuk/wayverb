@@ -70,14 +70,14 @@ public:
 
     virtual ~intermediate() noexcept = default;
 
-    virtual aligned::vector<float> postprocess(
+    virtual util::aligned::vector<float> postprocess(
             const attenuator::hrtf& attenuator, double sample_rate) const = 0;
 
-    virtual aligned::vector<float> postprocess(
+    virtual util::aligned::vector<float> postprocess(
             const attenuator::microphone& attenuator,
             double sample_rate) const = 0;
 
-    virtual aligned::vector<float> postprocess(
+    virtual util::aligned::vector<float> postprocess(
             const attenuator::null& attenuator, double sample_rate) const = 0;
 };
 
@@ -117,20 +117,22 @@ public:
 
     //  notifications  /////////////////////////////////////////////////////////
 
-    using waveguide_node_positions_changed = event<aligned::vector<glm::vec3>>;
+    using waveguide_node_positions_changed =
+            util::event<util::aligned::vector<glm::vec3>>;
 
     waveguide_node_positions_changed::scoped_connector
             add_scoped_waveguide_node_positions_changed_callback(
                     waveguide_node_positions_changed::callback_type);
 
-    using waveguide_node_pressures_changed = event<aligned::vector<float>>;
+    using waveguide_node_pressures_changed =
+            util::event<util::aligned::vector<float>>;
 
     waveguide_node_pressures_changed::scoped_connector
             add_scoped_waveguide_node_pressures_changed_callback(
                     waveguide_node_pressures_changed::callback_type);
 
-    using raytracer_reflections_generated =
-            event<aligned::vector<aligned::vector<reflection>>>;
+    using raytracer_reflections_generated = util::event<
+            util::aligned::vector<util::aligned::vector<reflection>>>;
 
     raytracer_reflections_generated::scoped_connector
             add_scoped_raytracer_reflections_generated_callback(

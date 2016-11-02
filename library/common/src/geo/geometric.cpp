@@ -45,8 +45,8 @@ std::experimental::optional<triangle_inter> triangle_intersection(
 
 bool point_intersection(const glm::vec3& begin,
                         const glm::vec3& point,
-                        const aligned::vector<triangle>& triangles,
-                        const aligned::vector<glm::vec3>& vertices) {
+                        const util::aligned::vector<triangle>& triangles,
+                        const util::aligned::vector<glm::vec3>& vertices) {
     const auto begin_to_point = point - begin;
     const auto mag = glm::length(begin_to_point);
     const auto direction = glm::normalize(begin_to_point);

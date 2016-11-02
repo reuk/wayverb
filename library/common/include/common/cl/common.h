@@ -29,9 +29,9 @@ size_t items_in_buffer(const cl::Buffer& buffer) {
 }
 
 template <typename T>
-aligned::vector<T> read_from_buffer(const cl::CommandQueue& queue,
-                                    const cl::Buffer& buffer) {
-    aligned::vector<T> ret(items_in_buffer<T>(buffer));
+util::aligned::vector<T> read_from_buffer(const cl::CommandQueue& queue,
+                                          const cl::Buffer& buffer) {
+    util::aligned::vector<T> ret(items_in_buffer<T>(buffer));
     cl::copy(queue, buffer, ret.begin(), ret.end());
     return ret;
 }
@@ -52,43 +52,3 @@ void write_value(cl::CommandQueue& queue,
     queue.enqueueWriteBuffer(
             buffer, CL_TRUE, sizeof(T) * index, sizeof(T), &val);
 }
-
-/*
-template <int N>
-struct is_power_of_two final {
-    using type = std::integral_constant<bool, N && !(N & (N - 1))>;
-};
-
-template <int N>
-using is_power_of_two_t = typename is_power_of_two<N>::type;
-
-template <int N>
-constexpr auto is_power_of_two_v = is_power_of_two_t<N>{};
-
-template <typename T>
-void fill_buffer(cl::CommandQueue& queue,
-                 cl::Buffer& buffer,
-                 const T& pattern) {
-    const auto buffer_size = buffer.getInfo<CL_MEM_SIZE>();
-    constexpr auto item_size = sizeof(T);
-    static_assert(is_power_of_two_v<item_size>,
-                  "item size must be a smallish power of two");
-    if (buffer_size % item_size) {
-        throw std::runtime_error{
-                "fill_buffer: buffer size is not a multiple of pattern size"};
-    }
-    constexpr auto offset = 0;
-    queue.enqueueFillBuffer(buffer, pattern, offset, buffer_size);
-}
-
-template <typename T>
-auto make_filled_buffer(cl::CommandQueue& queue,
-                        size_t size,
-                        const T& pattern) {
-    cl::Buffer ret{queue.getInfo<CL_QUEUE_CONTEXT>(),
-                   CL_MEM_READ_WRITE,
-                   sizeof(T) * size};
-    fill_buffer(queue, ret, pattern);
-    return ret;
-}
-*/

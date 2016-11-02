@@ -4,7 +4,7 @@
 #include "common/indexing.h"
 #include "common/spatial_division/ndim_tree.h"
 
-using voxel = aligned::vector<size_t>;
+using voxel = util::aligned::vector<size_t>;
 
 namespace detail {
 
@@ -14,7 +14,7 @@ template <size_t n>
 struct voxel_data_trait final {
     using prev_type = voxel_data_trait<n - 1>;
     using nested_type = typename prev_type::data_type;
-    using data_type = aligned::vector<nested_type>;
+    using data_type = util::aligned::vector<nested_type>;
     static data_type get_blank(size_t size) {
         return data_type(size, prev_type::get_blank(size));
     }
@@ -130,8 +130,7 @@ auto voxel_aabb(const voxel_collection<n>& voxels, indexing::index_t<n> i) {
 }
 
 /// Returns a flat array-representation of the collection.
-/// TODO document the array format
-aligned::vector<cl_uint> get_flattened(const voxel_collection<3>& voxels);
+util::aligned::vector<cl_uint> get_flattened(const voxel_collection<3>& voxels);
 
 /// arguments
 ///     a ray and

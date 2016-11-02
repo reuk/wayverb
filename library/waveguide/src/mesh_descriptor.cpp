@@ -74,8 +74,9 @@ size_t compute_num_nodes(const mesh_descriptor& d) {
     return d.dimensions.s[0] * d.dimensions.s[1] * d.dimensions.s[2];
 }
 
-aligned::vector<glm::vec3> compute_node_positions(const mesh_descriptor& d) {
-    aligned::vector<glm::vec3> ret;
+util::aligned::vector<glm::vec3> compute_node_positions(
+        const mesh_descriptor& d) {
+    util::aligned::vector<glm::vec3> ret;
     const auto nodes = compute_num_nodes(d);
     ret.reserve(nodes);
     for (auto i = 0u; i != nodes; ++i) {

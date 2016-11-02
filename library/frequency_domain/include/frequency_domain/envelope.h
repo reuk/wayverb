@@ -7,27 +7,27 @@
 
 namespace frequency_domain {
 
-double max_width_factor(range<double> r, double step);
-double width_factor(range<double> r, size_t bands, double overlap);
+double max_width_factor(util::range<double> r, double step);
+double width_factor(util::range<double> r, size_t bands, double overlap);
 
 /// See antoni2010 equations 19 and 20
 
 double lower_band_edge(double p, double P, size_t l);
 double upper_band_edge(double p, double P, size_t l);
 
-double band_edge_frequency(size_t band, size_t bands, range<double> r);
-double band_centre_frequency(size_t band, size_t bands, range<double> r);
+double band_edge_frequency(size_t band, size_t bands, util::range<double> r);
+double band_centre_frequency(size_t band, size_t bands, util::range<double> r);
 
 ////////////////////////////////////////////////////////////////////////////////
 
 template <size_t... Ix>
-auto band_edges(range<double> r, std::index_sequence<Ix...>) {
+auto band_edges(util::range<double> r, std::index_sequence<Ix...>) {
     return std::array<double, sizeof...(Ix)>{
             {band_edge_frequency(Ix, sizeof...(Ix) - 1, r)...}};
 }
 
 template <size_t bands>
-auto band_edges(range<double> r) {
+auto band_edges(util::range<double> r) {
     return band_edges(r, std::make_index_sequence<bands + 1>{});
 }
 
@@ -49,13 +49,13 @@ auto bandwidths(const std::array<T, edges>& e) {
 ////////////////////////////////////////////////////////////////////////////////
 
 template <size_t... Ix>
-auto band_centres(range<double> r, std::index_sequence<Ix...>) {
+auto band_centres(util::range<double> r, std::index_sequence<Ix...>) {
     return std::array<double, sizeof...(Ix)>{
             {band_centre_frequency(Ix, sizeof...(Ix), r)...}};
 }
 
 template <size_t bands>
-auto band_centres(range<double> r) {
+auto band_centres(util::range<double> r) {
     return band_centres(r, std::make_index_sequence<bands>{});
 }
 
@@ -68,7 +68,7 @@ auto band_centres(range<double> r) {
 /// upper_edge_width: half the absolute width of the upper crossover
 /// l: the slope (0 is shallow, higher is steeper)
 double compute_bandpass_magnitude(double frequency,
-                                  range<double> r,
+                                  util::range<double> r,
                                   double width_factor,
                                   size_t l = 0);
 

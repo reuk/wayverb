@@ -22,11 +22,11 @@ struct receiver final {
     template <enum mode M>
     using mode_t = std::integral_constant<enum mode, M>;
 
-    aligned::vector<microphone> microphones{};
+    util::aligned::vector<microphone> microphones{};
     orientable hrtf{};
 };
 
-aligned::vector<glm::vec3> get_pointing(const receiver& u);
+util::aligned::vector<glm::vec3> get_pointing(const receiver& u);
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -51,13 +51,13 @@ struct hrtf_mapper final {
 
 template <typename It>
 auto make_microphone_iterator(It it, const receiver& r) {
-    return make_mapping_iterator_adapter(std::move(it),
-                                         microphone_mapper{r.position});
+    return util::make_mapping_iterator_adapter(std::move(it),
+                                               microphone_mapper{r.position});
 }
 
 template <typename It>
 auto make_hrtf_iterator(It it, const receiver& r) {
-    return make_mapping_iterator_adapter(
+    return util::make_mapping_iterator_adapter(
             std::move(it), hrtf_mapper{get_pointing(r.hrtf, r.position)});
 }
 

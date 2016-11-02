@@ -6,13 +6,13 @@
 #include <random>
 
 TEST(multitree, construct_image_source_tree_small) {
-    const aligned::vector<
-            aligned::vector<raytracer::image_source::path_element>>
-            paths{aligned::vector<raytracer::image_source::path_element>{
+    const util::aligned::vector<
+            util::aligned::vector<raytracer::image_source::path_element>>
+            paths{util::aligned::vector<raytracer::image_source::path_element>{
                           raytracer::image_source::path_element{0, true},
                           raytracer::image_source::path_element{0, true},
                           raytracer::image_source::path_element{0, true}},
-                  aligned::vector<raytracer::image_source::path_element>{
+                  util::aligned::vector<raytracer::image_source::path_element>{
                           raytracer::image_source::path_element{0, true},
                           raytracer::image_source::path_element{1, true},
                           raytracer::image_source::path_element{0, true}}};
@@ -36,7 +36,7 @@ TEST(multitree, construct_image_source_tree_large) {
     std::uniform_int_distribution<cl_uint> distribution{0, 99};
 
     const auto make_path{[&] {
-        aligned::vector<raytracer::image_source::path_element> ret{
+        util::aligned::vector<raytracer::image_source::path_element> ret{
                 distribution(engine)};
         std::generate(ret.begin(), ret.end(), [&] {
             return raytracer::image_source::path_element{distribution(engine),
@@ -45,7 +45,8 @@ TEST(multitree, construct_image_source_tree_large) {
         return ret;
     }};
 
-    aligned::vector<aligned::vector<raytracer::image_source::path_element>>
+    util::aligned::vector<
+            util::aligned::vector<raytracer::image_source::path_element>>
             paths{100000};
     std::generate(paths.begin(), paths.end(), make_path);
     raytracer::image_source::tree tree{};

@@ -18,7 +18,7 @@ constexpr bool is_boundary(cl_int i) {
 
 template <size_t dim>
 constexpr bool is_boundary(cl_int i) {
-    return is_boundary(i) && popcount(i) == dim;
+    return is_boundary(i) && util::popcount(i) == dim;
 }
 
 constexpr bool is_1d_boundary_or_reentrant(cl_int i) {
@@ -33,15 +33,15 @@ size_t count_boundary_type(It begin, It end, Func f) {
 
 //  or maybe keep the buffers on the gpu?
 struct boundary_index_data final {
-    aligned::vector<boundary_index_array_1> b1;
-    aligned::vector<boundary_index_array_2> b2;
-    aligned::vector<boundary_index_array_3> b3;
+    util::aligned::vector<boundary_index_array_1> b1;
+    util::aligned::vector<boundary_index_array_2> b2;
+    util::aligned::vector<boundary_index_array_3> b3;
 };
 
 boundary_index_data compute_boundary_index_data(
         const cl::Device& device,
         const scene_buffers& buffers,
         const mesh_descriptor& descriptor,
-        aligned::vector<condensed_node>& nodes);
+        util::aligned::vector<condensed_node>& nodes);
 
 }  // namespace waveguide

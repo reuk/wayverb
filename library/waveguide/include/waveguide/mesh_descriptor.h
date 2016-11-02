@@ -57,4 +57,5 @@ double compute_sample_rate(const mesh_descriptor& d, double speed_of_sound);
 
 size_t compute_num_nodes(const mesh_descriptor& d);
 
-aligned::vector<glm::vec3> compute_node_positions(const mesh_descriptor& d);
+util::aligned::vector<glm::vec3> compute_node_positions(
+        const mesh_descriptor& d);

@@ -49,7 +49,7 @@ template <typename It,
                                    std::decay_t<dereferenced_t<It>>>::value,
                            int> = 0>
 auto postprocess(It begin, It end, double sample_rate) {
-    return aligned::vector<float>(begin, end);
+    return util::aligned::vector<float>(begin, end);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -59,10 +59,10 @@ auto postprocess(const band& band,
                  const Method& method,
                  double acoustic_impedance,
                  double output_sample_rate) {
-    auto attenuated =
-            map_to_vector(begin(band.directional),
-                          end(band.directional),
-                          make_attenuate_mapper(method, acoustic_impedance));
+    auto attenuated = util::map_to_vector(
+            begin(band.directional),
+            end(band.directional),
+            make_attenuate_mapper(method, acoustic_impedance));
     const auto ret =
             postprocess(begin(attenuated), end(attenuated), band.sample_rate);
     return waveguide::adjust_sampling_rate(ret.data(),
@@ -76,7 +76,7 @@ auto postprocess(const simulation_results& results,
                  const Method& method,
                  double acoustic_impedance,
                  double output_sample_rate) {
-    aligned::vector<float> ret;
+    util::aligned::vector<float> ret;
 
     for (const auto& band : results.bands) {
         auto processed = postprocess(
@@ -96,10 +96,7 @@ auto postprocess(const simulation_results& results,
         filt.run(b, e, b, [&](auto cplx, auto freq) {
             return cplx * static_cast<float>(
                                   frequency_domain::compute_bandpass_magnitude(
-                                          freq,
-                                          cutoff,
-                                          width,
-                                          l));
+                                          freq, cutoff, width, l));
         });
 
         //  Add results to ret.

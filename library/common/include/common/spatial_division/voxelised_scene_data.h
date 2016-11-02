@@ -57,7 +57,7 @@ private:
 template <typename Vertex, typename Surface, typename T>
 auto make_voxelised_scene_data(generic_scene_data<Vertex, Surface> scene,
                                size_t octree_depth,
-                               const range<T>& aabb) {
+                               const util::range<T>& aabb) {
     return voxelised_scene_data<Vertex, Surface>{
             std::move(scene), octree_depth, aabb};
 }

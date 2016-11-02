@@ -39,7 +39,7 @@ boundary_index_data compute_boundary_index_data(
         const cl::Device& device,
         const scene_buffers& buffers,
         const mesh_descriptor& descriptor,
-        aligned::vector<condensed_node>& nodes) {
+        util::aligned::vector<condensed_node>& nodes) {
     //  load up buffers
     auto index_buffer_1 =
             init_buffer<boundary_index_array_1>(nodes.begin(),
@@ -88,7 +88,7 @@ boundary_index_data compute_boundary_index_data(
         const auto num_surfaces_1d =
                 count_boundary_type(nodes.begin(), nodes.end(), is_boundary<1>);
 
-        aligned::vector<boundary_index_array_1> ret;
+        util::aligned::vector<boundary_index_array_1> ret;
         ret.reserve(num_surfaces_1d);
 
         //  we need to remove reentrant nodes from these results

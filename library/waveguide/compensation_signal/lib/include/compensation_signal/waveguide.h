@@ -48,9 +48,9 @@ public:
     compressed_rectangular_waveguide(const compute_context& cc, size_t steps);
 
     template <typename It, typename T>
-    aligned::vector<float> run_hard_source(It begin,
-                                           It end,
-                                           const T& per_step) {
+    util::aligned::vector<float> run_hard_source(It begin,
+                                                 It end,
+                                                 const T& per_step) {
         return run(begin,
                    end,
                    [](auto& queue, auto& buffer, float input) {
@@ -60,9 +60,9 @@ public:
     }
 
     template <typename It, typename T>
-    aligned::vector<float> run_soft_source(It begin,
-                                           It end,
-                                           const T& per_step) {
+    util::aligned::vector<float> run_soft_source(It begin,
+                                                 It end,
+                                                 const T& per_step) {
         return run(begin,
                    end,
                    [](auto& queue, auto& buffer, float input) {
@@ -74,10 +74,10 @@ public:
 
 private:
     template <typename It, typename T, typename U>
-    aligned::vector<float> run(It begin,
-                               It end,
-                               const T& writer,
-                               const U& per_step) {
+    util::aligned::vector<float> run(It begin,
+                                     It end,
+                                     const T& writer,
+                                     const U& per_step) {
         //  init buffers
         const auto buffer_size = tetrahedron(dimension_);
         zero_buffer_kernel_(
@@ -91,7 +91,7 @@ private:
                                             sizeof(cl_float)}},
                 current_);
 
-        aligned::vector<float> ret{};
+        util::aligned::vector<float> ret{};
         ret.reserve(std::distance(begin, end));
 
         for (auto count = 0ul; count != dimension_ * 2; ++count) {

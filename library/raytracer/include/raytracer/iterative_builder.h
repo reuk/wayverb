@@ -46,7 +46,7 @@ private:
         }
     }
 
-    aligned::vector<aligned::vector<T>> data_;
+    util::aligned::vector<util::aligned::vector<T>> data_;
 };
 
 }  // namespace raytracer

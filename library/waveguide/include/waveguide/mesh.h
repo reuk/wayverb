@@ -15,7 +15,8 @@ public:
     const vectors& get_structure() const;
 
     void set_coefficients(coefficients_canonical coefficients);
-    void set_coefficients(aligned::vector<coefficients_canonical> coefficients);
+    void set_coefficients(
+            util::aligned::vector<coefficients_canonical> coefficients);
 
 private:
     mesh_descriptor descriptor_;

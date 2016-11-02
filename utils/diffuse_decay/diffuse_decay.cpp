@@ -24,12 +24,13 @@ auto produce_histogram(
 
     raytracer::stochastic::finder finder{
             cc, params, receiver_radius, directions.size()};
-    aligned::vector<bands_type> histogram;
+    util::aligned::vector<bands_type> histogram;
 
     const auto make_ray_iterator = [&](auto it) {
-        return make_mapping_iterator_adapter(std::move(it), [&](const auto& i) {
-            return geo::ray{params.source, i};
-        });
+        return util::make_mapping_iterator_adapter(
+                std::move(it), [&](const auto& i) {
+                    return geo::ray{params.source, i};
+                });
     };
 
     raytracer::reflector ref{cc,
@@ -93,7 +94,7 @@ int main() {
         {
             auto mono = dirac_sequence.sequence;
             normalize(mono);
-            write(build_string("raw_dirac.", sample_rate, ".wav"),
+            write(util::build_string("raw_dirac.", sample_rate, ".wav"),
                   audio_file::make_audio_file(mono, dirac_sequence.sample_rate),
                   16);
         }
@@ -101,7 +102,7 @@ int main() {
         auto processed = raytracer::stochastic::postprocessing(
                 histogram, dirac_sequence, params.acoustic_impedance);
 
-        write(build_string("enveloped_dirac.", sample_rate, ".wav"),
+        write(util::build_string("enveloped_dirac.", sample_rate, ".wav"),
               audio_file::make_audio_file(processed, sample_rate),
               16);
 
@@ -122,7 +123,8 @@ int main() {
             i /= norm;
         }
 
-        write(build_string("normalized_enveloped_dirac.", sample_rate, ".wav"),
+        write(util::build_string(
+                      "normalized_enveloped_dirac.", sample_rate, ".wav"),
               audio_file::make_audio_file(processed, sample_rate),
               16);
 

@@ -3,8 +3,8 @@
 
 namespace waveguide {
 
-vectors::vectors(aligned::vector<condensed_node> nodes,
-                 aligned::vector<coefficients_canonical> coefficients,
+vectors::vectors(util::aligned::vector<condensed_node> nodes,
+                 util::aligned::vector<coefficients_canonical> coefficients,
                  boundary_index_data boundary_index_data)
         : condensed_nodes_(std::move(nodes))
         , coefficients_(std::move(coefficients))
@@ -25,11 +25,12 @@ vectors::vectors(aligned::vector<condensed_node> nodes,
 #endif
 }
 
-const aligned::vector<condensed_node>& vectors::get_condensed_nodes() const {
+const util::aligned::vector<condensed_node>& vectors::get_condensed_nodes()
+        const {
     return condensed_nodes_;
 }
 
-const aligned::vector<coefficients_canonical>& vectors::get_coefficients()
+const util::aligned::vector<coefficients_canonical>& vectors::get_coefficients()
         const {
     return coefficients_;
 }
@@ -38,7 +39,8 @@ void vectors::set_coefficients(coefficients_canonical c) {
     std::fill(begin(coefficients_), end(coefficients_), c);
 }
 
-void vectors::set_coefficients(aligned::vector<coefficients_canonical> c) {
+void vectors::set_coefficients(
+        util::aligned::vector<coefficients_canonical> c) {
     if (c.size() != coefficients_.size()) {
         throw std::runtime_error(
                 "size of new coefficients vector must be equal to the existing "

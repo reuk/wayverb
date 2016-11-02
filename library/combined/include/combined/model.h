@@ -21,11 +21,12 @@ struct App {
     float oversample_ratio{2};
     float speed_of_sound{340};
     size_t rays{100000};
-    aligned::vector<glm::vec3> source{glm::vec3{0}};
-    aligned::vector<receiver> receiver{1};
+    util::aligned::vector<glm::vec3> source{glm::vec3{0}};
+    util::aligned::vector<receiver> receiver{1};
 };
 
 SingleShot get_single_shot(const App& a, size_t input, size_t output);
-aligned::vector<SingleShot> get_all_input_output_combinations(const App& a);
+util::aligned::vector<SingleShot> get_all_input_output_combinations(
+        const App& a);
 
 }  // namespace model

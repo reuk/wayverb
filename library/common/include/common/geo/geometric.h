@@ -38,7 +38,7 @@ std::experimental::optional<triangle_inter> triangle_intersection(
 template <typename t>
 std::experimental::optional<triangle_inter> triangle_intersection(
         const triangle& tri,
-        const aligned::vector<t>& vertices,
+        const util::aligned::vector<t>& vertices,
         const ray& ray) {
     return triangle_intersection(get_triangle_vec3(tri, vertices), ray);
 }
@@ -49,8 +49,8 @@ template <typename t>
 std::experimental::optional<intersection> intersection_accumulator(
         const ray& ray,
         size_t triangle_index,
-        const aligned::vector<triangle>& triangles,
-        const aligned::vector<t> vertices,
+        const util::aligned::vector<triangle>& triangles,
+        const util::aligned::vector<t> vertices,
         const std::experimental::optional<intersection>& current,
         size_t to_ignore = ~size_t{0}) {
     if (triangle_index == to_ignore) {
@@ -66,9 +66,9 @@ std::experimental::optional<intersection> intersection_accumulator(
 template <typename t>
 std::experimental::optional<intersection> ray_triangle_intersection(
         const ray& ray,
-        const aligned::vector<size_t>& triangle_indices,
-        const aligned::vector<triangle>& triangles,
-        const aligned::vector<t>& vertices,
+        const util::aligned::vector<size_t>& triangle_indices,
+        const util::aligned::vector<triangle>& triangles,
+        const util::aligned::vector<t>& vertices,
         size_t to_ignore = ~size_t{0}) {
     return std::accumulate(
             begin(triangle_indices),
@@ -83,8 +83,8 @@ std::experimental::optional<intersection> ray_triangle_intersection(
 template <typename t>
 std::experimental::optional<intersection> ray_triangle_intersection(
         const ray& ray,
-        const aligned::vector<triangle>& triangles,
-        const aligned::vector<t>& vertices,
+        const util::aligned::vector<triangle>& triangles,
+        const util::aligned::vector<t>& vertices,
         size_t to_ignore = ~size_t{0}) {
     std::experimental::optional<intersection> ret;
     for (auto i = 0u; i != triangles.size(); ++i) {
@@ -96,15 +96,15 @@ std::experimental::optional<intersection> ray_triangle_intersection(
 
 bool point_intersection(const glm::vec3& begin,
                         const glm::vec3& point,
-                        const aligned::vector<triangle>& triangles,
-                        const aligned::vector<glm::vec3>& vertices);
+                        const util::aligned::vector<triangle>& triangles,
+                        const util::aligned::vector<glm::vec3>& vertices);
 
 float point_triangle_distance_squared(const triangle_vec3& triangle,
                                       const glm::vec3& point);
 
 template <typename t>
 float point_triangle_distance_squared(const triangle& tri,
-                                      const aligned::vector<t>& vertices,
+                                      const util::aligned::vector<t>& vertices,
                                       const glm::vec3& point) {
     return point_triangle_distance_squared(get_triangle_vec3(tri, vertices),
                                            point);

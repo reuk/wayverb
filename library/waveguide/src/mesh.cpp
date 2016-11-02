@@ -33,7 +33,7 @@ void mesh::set_coefficients(
 }
 
 void mesh::set_coefficients(
-        aligned::vector<coefficients_canonical> coefficients) {
+        util::aligned::vector<coefficients_canonical> coefficients) {
     vectors_.set_coefficients(coefficients);
 }
 
@@ -111,16 +111,17 @@ mesh compute_mesh(
 
     auto v = vectors{
             std::move(nodes),
-            map_to_vector(begin(voxelised.get_scene_data().get_surfaces()),
-                          end(voxelised.get_scene_data().get_surfaces()),
-                          [&](const auto& surface) {
-                              return to_impedance_coefficients(
-                                      compute_reflectance_filter_coefficients(
-                                              surface.absorption.s,
-                                              1 / waveguide::config::time_step(
-                                                          speed_of_sound,
-                                                          mesh_spacing)));
-                          }),
+            util::map_to_vector(
+                    begin(voxelised.get_scene_data().get_surfaces()),
+                    end(voxelised.get_scene_data().get_surfaces()),
+                    [&](const auto& surface) {
+                        return to_impedance_coefficients(
+                                compute_reflectance_filter_coefficients(
+                                        surface.absorption.s,
+                                        1 / waveguide::config::time_step(
+                                                    speed_of_sound,
+                                                    mesh_spacing)));
+                    }),
             std::move(boundary_data)};
 
     return {desc, std::move(v)};

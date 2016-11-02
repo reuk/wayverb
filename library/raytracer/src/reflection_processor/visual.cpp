@@ -6,7 +6,7 @@ namespace reflection_processor {
 visual::visual(size_t items)
         : builder_{items} {}
 
-aligned::vector<aligned::vector<reflection>> visual::get_results() {
+util::aligned::vector<util::aligned::vector<reflection>> visual::get_results() {
     return std::move(builder_.get_data());
 }
 

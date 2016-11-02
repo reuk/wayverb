@@ -13,8 +13,9 @@ SingleShot get_single_shot(const App& a, size_t input, size_t output) {
                       a.receiver[output]};
 }
 
-aligned::vector<SingleShot> get_all_input_output_combinations(const App& a) {
-    aligned::vector<SingleShot> ret;
+util::aligned::vector<SingleShot> get_all_input_output_combinations(
+        const App& a) {
+    util::aligned::vector<SingleShot> ret;
     ret.reserve(a.source.size() * a.receiver.size());
     for (const auto& i : a.source) {
         for (const auto& j : a.receiver) {

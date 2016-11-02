@@ -13,13 +13,13 @@ inline double gaussian(double t, double bandwidth) {
 }
 
 template <typename T = float>
-aligned::vector<T> gaussian_kernel(double sampling_frequency,
-                                   double valid_portion) {
+util::aligned::vector<T> gaussian_kernel(double sampling_frequency,
+                                         double valid_portion) {
     const auto upper = sampling_frequency * valid_portion;
     const auto o = 2 / (M_PI * upper);
     const auto l = std::ceil(8 * o * sampling_frequency) * 2;
     const auto time_offset = l / (2 * sampling_frequency);
-    aligned::vector<T> ret;
+    util::aligned::vector<T> ret;
     ret.reserve(l);
     for (auto i = 0u; i != l; ++i) {
         ret.emplace_back(gaussian((i / sampling_frequency) - time_offset, o));
@@ -34,13 +34,13 @@ inline double sin_modulated_gaussian(double t,
 }
 
 template <typename T = float>
-aligned::vector<T> sin_modulated_gaussian_kernel(double sampling_frequency,
-                                                 double valid_portion) {
+util::aligned::vector<T> sin_modulated_gaussian_kernel(
+        double sampling_frequency, double valid_portion) {
     const auto upper = sampling_frequency * valid_portion;
     const auto o = 2 / (M_PI * upper);
     const auto l = std::ceil(8 * o * sampling_frequency) * 2;
     const auto time_offset = l / (2 * sampling_frequency);
-    aligned::vector<T> ret;
+    util::aligned::vector<T> ret;
     ret.reserve(l);
     for (auto i = 0u; i != l; ++i) {
         ret.emplace_back(sin_modulated_gaussian(
@@ -60,13 +60,13 @@ inline double ricker(double t, double f) {
 }
 
 template <typename T = float>
-aligned::vector<T> ricker_kernel(double sampling_frequency,
-                                 double valid_portion) {
+util::aligned::vector<T> ricker_kernel(double sampling_frequency,
+                                       double valid_portion) {
     const auto upper = sampling_frequency * valid_portion;
     const auto o = 2 / (M_PI * upper);
     const auto l = std::ceil(8 * o * sampling_frequency) * 2;
     const auto time_offset = l / (2 * sampling_frequency);
-    aligned::vector<T> ret;
+    util::aligned::vector<T> ret;
     ret.reserve(l);
     for (auto i = 0u; i != l; ++i) {
         ret.emplace_back(

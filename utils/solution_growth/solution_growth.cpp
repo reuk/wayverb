@@ -36,9 +36,9 @@
 
 constexpr auto speed_of_sound = 340.0;
 
-aligned::vector<float> make_mls(size_t length) {
+util::aligned::vector<float> make_mls(size_t length) {
     const size_t order = std::floor(std::log(length) / std::log(2)) + 1;
-    aligned::vector<float> ret;
+    util::aligned::vector<float> ret;
     ret.reserve(std::pow(2, order));
     generate_maximum_length_sequence(
             order, [&](auto value, auto step) { ret.emplace_back(value); });
@@ -92,13 +92,13 @@ int main(int argc, char** argv) {
 
         struct signal final {
             std::string name;
-            aligned::vector<float> kernel;
+            util::aligned::vector<float> kernel;
         };
 
         const auto valid_portion = 0.15;
 
-        aligned::vector<signal> signals{
-                {"dirac", aligned::vector<float>{1.0}},
+        util::aligned::vector<signal> signals{
+                {"dirac", util::aligned::vector<float>{1.0}},
                 {"gauss",
                  kernels::gaussian_kernel(sampling_frequency, valid_portion)},
                 {"sinmod_gauss",
@@ -126,7 +126,7 @@ int main(int argc, char** argv) {
             callback_accumulator<waveguide::postprocessor::node> postprocessor{
                     receiver_index};
 
-            progress_bar pb;
+            util::progress_bar pb;
             waveguide::run(cc,
                            model,
                            prep,
@@ -137,7 +137,7 @@ int main(int argc, char** argv) {
                            true);
 
             {
-                write(build_string(
+                write(util::build_string(
                               "solution_growth.", i.name, ".transparent.wav"),
                       audio_file::make_audio_file(postprocessor.get_output(),
                                                   sampling_frequency),
@@ -148,7 +148,7 @@ int main(int argc, char** argv) {
                 auto copy = postprocessor.get_output();
                 filter::extra_linear_dc_blocker u;
                 filter::run_two_pass(u, copy.begin(), copy.end());
-                write(build_string(
+                write(util::build_string(
                               "solution_growth.", i.name, ".dc_blocked.wav"),
                       audio_file::make_audio_file(copy, sampling_frequency),
                       16);
@@ -157,7 +157,7 @@ int main(int argc, char** argv) {
             {
                 auto copy = postprocessor.get_output();
                 filter::block_dc(copy.begin(), copy.end(), sampling_frequency);
-                write(build_string("solution_growth.",
+                write(util::build_string("solution_growth.",
                                    i.name,
                                    ".butterworth_blocked.wav"),
                       audio_file::make_audio_file(copy, sampling_frequency),

@@ -13,7 +13,7 @@
 namespace raytracer {
 namespace image_source {
 
-aligned::vector<impulse<simulation_bands>> postprocess_branches(
+util::aligned::vector<impulse<simulation_bands>> postprocess_branches(
         const multitree<path_element>& tree,
         const glm::vec3& source,
         const glm::vec3& receiver,
@@ -30,7 +30,7 @@ auto postprocess_branches(
         const voxelised_scene_data<cl_float3, surface<simulation_bands>>&
                 voxelised,
         bool flip_phase) {
-    auto futures = map_to_vector(
+    auto futures = util::map_to_vector(
             b_branches, e_branches, [&](const auto& branch) {
                 return std::async(std::launch::async, [&] {
                     return postprocess_branches(

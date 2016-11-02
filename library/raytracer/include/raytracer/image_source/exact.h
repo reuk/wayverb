@@ -37,7 +37,7 @@ void image_at_index(const geo::box& box,
                     const glm::vec3& receiver,
                     const glm::ivec3& image_index,
                     double max_distance,
-                    aligned::vector<reflection_metadata>& scratch,
+                    util::aligned::vector<reflection_metadata>& scratch,
                     const Callback& callback) {
     const auto pos = image_position(box, source, image_index);
     if (max_distance < glm::distance(receiver, pos)) {
@@ -74,7 +74,7 @@ void traverse_images(const geo::box& box,
                      size_t shells,
                      double max_distance,
                      const Callback& callback) {
-    aligned::vector<reflection_metadata> scratch;
+    util::aligned::vector<reflection_metadata> scratch;
     const auto width = width_for_shell(shells);
     for (auto i = 0ul; i != width; ++i) {
         const auto x = i - shells;

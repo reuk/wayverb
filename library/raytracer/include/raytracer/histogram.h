@@ -63,7 +63,8 @@ void incremental_histogram(Ret& ret,
                            double sample_rate,
                            const T& callback) {
     const auto make_time_iterator = [](auto it) {
-        return make_mapping_iterator_adapter(std::move(it), time_functor{});
+        return util::make_mapping_iterator_adapter(std::move(it),
+                                                   time_functor{});
     };
     const auto max_time_in_input =
             *std::max_element(make_time_iterator(b), make_time_iterator(e));
@@ -79,7 +80,7 @@ template <typename It, typename T>
 auto histogram(
         It b, It e, double sample_rate, const T& callback) {
     using value_type = decltype(volume(*b));
-    aligned::vector<value_type> ret{};
+    util::aligned::vector<value_type> ret{};
     incremental_histogram(ret, b, e, sample_rate, callback);
     return ret;
 }
@@ -143,8 +144,8 @@ auto make_histogram_iterator(T t, double speed_of_sound) {
     if (speed_of_sound < 300 || 400 <= speed_of_sound) {
         throw std::runtime_error{"speed_of_sound outside expected range"};
     }
-    return make_mapping_iterator_adapter(std::move(t),
-                                         histogram_mapper{speed_of_sound});
+    return util::make_mapping_iterator_adapter(
+            std::move(t), histogram_mapper{speed_of_sound});
 }
 
 }  // namespace raytracer

@@ -20,10 +20,10 @@
 #define OBJ_PATH_BAD_BOX ""
 #endif
 
-const aligned::vector<const char*> test_scenes{
+const util::aligned::vector<const char*> test_scenes{
         OBJ_PATH, OBJ_PATH_TUNNEL, OBJ_PATH_BEDROOM, OBJ_PATH_BAD_BOX};
 
-const aligned::vector<geo::box> test_boxes{
+const util::aligned::vector<geo::box> test_boxes{
         geo::box{glm::vec3{-1}, glm::vec3{0}},
         geo::box{glm::vec3{-1}, glm::vec3{1}},
         geo::box{glm::vec3{0}, glm::vec3{1}},
@@ -33,15 +33,15 @@ const aligned::vector<geo::box> test_boxes{
 
 TEST(reverb_time, triangles_are_oriented) {
     {
-        aligned::vector<triangle> triangles{{0, 0, 1, 2}};
+        util::aligned::vector<triangle> triangles{{0, 0, 1, 2}};
         ASSERT_TRUE(triangles_are_oriented(triangles.begin(), triangles.end()));
     }
     {
-        aligned::vector<triangle> triangles{{0, 0, 1, 2}, {0, 0, 2, 3}};
+        util::aligned::vector<triangle> triangles{{0, 0, 1, 2}, {0, 0, 2, 3}};
         ASSERT_TRUE(triangles_are_oriented(triangles.begin(), triangles.end()));
     }
     {
-        aligned::vector<triangle> triangles{{0, 0, 1, 2}, {0, 0, 3, 2}};
+        util::aligned::vector<triangle> triangles{{0, 0, 1, 2}, {0, 0, 3, 2}};
         ASSERT_FALSE(
                 triangles_are_oriented(triangles.begin(), triangles.end()));
     }

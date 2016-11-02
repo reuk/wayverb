@@ -12,7 +12,7 @@
 
 TEST(frequency_domain, widths) {
     constexpr auto sample_rate = 44100.0;
-    constexpr range<double> audible_range{20, 20000};
+    constexpr util::range<double> audible_range{20, 20000};
     constexpr auto bands = 8;
 
     const auto range = audible_range / sample_rate;
@@ -29,9 +29,9 @@ TEST(frequency_domain, widths) {
 
 TEST(frequency_domain, reconstruction) {
     constexpr auto sample_rate = 5000.0;
-    constexpr range<double> audible_range{20, 20000};
+    constexpr util::range<double> audible_range{20, 20000};
 
-    aligned::vector<float> noise{};
+    util::aligned::vector<float> noise{};
     {
         std::default_random_engine engine{std::random_device{}()};
         constexpr auto amp = 0.5;
@@ -63,17 +63,17 @@ TEST(frequency_domain, reconstruction) {
             frequency_domain::make_indexer_iterator{});
 
     for (auto band = 0ul; band != 8; ++band) {
-        const auto audio = map_to_vector(begin(multiband_noise),
-                                         end(multiband_noise),
-                                         frequency_domain::indexer{band});
-        write(build_string("band_", band, ".wav"),
+        const auto audio = util::map_to_vector(begin(multiband_noise),
+                                               end(multiband_noise),
+                                               frequency_domain::indexer{band});
+        write(util::build_string("band_", band, ".wav"),
               audio_file::make_audio_file(audio, sample_rate),
               16);
     }
 
-    const auto mixed = map_to_vector(
+    const auto mixed = util::map_to_vector(
             begin(multiband_noise), end(multiband_noise), [](auto i) {
-                return foldl(std::plus<>{}, i);
+                return util::foldl(std::plus<>{}, i);
             });
 
     write("multiband_filtered_noise.wav",

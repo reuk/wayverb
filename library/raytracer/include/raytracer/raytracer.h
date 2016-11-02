@@ -96,18 +96,19 @@ auto run(It b_direction,
     const scene_buffers buffers{cc.context, voxelised};
 
     const auto make_ray_iterator = [&](auto it) {
-        return make_mapping_iterator_adapter(std::move(it), [&](const auto& i) {
-            return geo::ray{params.source, i};
-        });
+        return util::make_mapping_iterator_adapter(
+                std::move(it), [&](const auto& i) {
+                    return geo::ray{params.source, i};
+                });
     };
 
     const auto num_directions = std::distance(b_direction, e_direction);
     auto processors =
-            apply_each(std::forward<Callbacks>(callbacks),
-                       std::tie(cc, params, voxelised, num_directions));
+            util::apply_each(std::forward<Callbacks>(callbacks),
+                             std::tie(cc, params, voxelised, num_directions));
 
-    using return_type = decltype(
-            apply_each(map(make_get_results_functor_adapter{}, processors)));
+    using return_type = decltype(util::apply_each(
+            util::map(make_get_results_functor_adapter{}, processors)));
 
     reflector ref{cc,
                   params.receiver,
@@ -126,14 +127,14 @@ auto run(It b_direction,
         const auto reflections = ref.run_step(buffers);
         const auto b = begin(reflections);
         const auto e = end(reflections);
-        call_each(map(make_process_functor_adapter{}, processors),
-                  std::tie(b, e, buffers, i, reflection_depth));
+        util::call_each(util::map(make_process_functor_adapter{}, processors),
+                        std::tie(b, e, buffers, i, reflection_depth));
 
         per_step_callback(i, reflection_depth);
     }
 
-    return std::experimental::make_optional(
-            apply_each(map(make_get_results_functor_adapter{}, processors)));
+    return std::experimental::make_optional(util::apply_each(
+            util::map(make_get_results_functor_adapter{}, processors)));
 }
 
 }  // namespace raytracer

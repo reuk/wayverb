@@ -21,7 +21,7 @@ constexpr auto factdbl(T t) {
 }
 
 struct offset_signal final {
-    aligned::vector<double> signal;
+    util::aligned::vector<double> signal;
     size_t offset;
 };
 

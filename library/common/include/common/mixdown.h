@@ -5,16 +5,16 @@
 #include "utilities/map_to_vector.h"
 
 template <typename It>
-auto mixdown(It begin, It end) {
-    return map_to_vector(begin, end, [](const auto& i) { return sum(i); });
+auto mixdown(It b, It e) {
+    return util::map_to_vector(b, e, [](const auto& i) { return sum(i); });
 }
 
-
 template <typename It, typename Callback>
-auto multiband_filter_and_mixdown(It begin,
-                                                    It end,
-                                                    double sample_rate,
-                                                    const Callback& callback) {
-    hrtf_data::multiband_filter(begin, end, sample_rate, callback);
-    return mixdown(begin, end);
+auto multiband_filter_and_mixdown(It b,
+                                  It e,
+                                  double sample_rate,
+                                  Callback&& callback) {
+    hrtf_data::multiband_filter(
+            b, e, sample_rate, std::forward<Callback>(callback));
+    return mixdown(b, e);
 }

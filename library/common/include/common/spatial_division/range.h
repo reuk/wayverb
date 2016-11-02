@@ -27,5 +27,5 @@ template <size_t n>
 using range_value_t = typename range_value<n>::type;
 
 template <size_t n>
-using range_t = range<range_value_t<n>>;
+using range_t = util::range<range_value_t<n>>;
 }  // namespace detail

@@ -79,7 +79,7 @@ template <typename It>  /// Iterator through a collection of triangles.
 bool triangles_are_oriented(It begin, It end) {
     //  The scene is consistently oriented if no triangles in the scene share
     //  an edge with the same winding direction.
-    aligned::set<std::pair<cl_uint, cl_uint>> table;
+    util::aligned::set<std::pair<cl_uint, cl_uint>> table;
 
     //  For each triangle.
     for (; begin != end; ++begin) {

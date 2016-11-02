@@ -47,10 +47,10 @@ void serialize(T& archive, angle_info<bands>& info) {
 }
 
 template <size_t num, typename T>
-constexpr auto generate_range(range<T> r) {
+constexpr auto generate_range(util::range<T> r) {
     std::array<T, num> ret;
-    for (auto i = 0ul; i != ret.size(); ++i) {
-        ret[i] = map(i, range<T>{0, num}, r);
+    for (auto i = 0; i != ret.size(); ++i) {
+        ret[i] = map(i, util::make_range(size_t{0}, num), r);
     }
     return ret;
 }
@@ -64,7 +64,7 @@ auto run_single_angle(float angle,
     const glm::vec3 source{receiver + glm::vec3{distance * std::sin(angle),
                                                 0,
                                                 distance * std::cos(angle)}};
-    constexpr range<double> valid_frequency_range{0.01, 0.16};
+    constexpr util::range<double> valid_frequency_range{0.01, 0.16};
     const auto params = frequency_domain::compute_multiband_params<8>(
             valid_frequency_range, 1);
     const auto signal = callback(source, receiver);
@@ -79,8 +79,8 @@ auto run_multiple_angles(const glm::vec3& receiver,
                          const Callback& callback) {
     constexpr auto test_locations = 16;
     const auto angles =
-            generate_range<test_locations>(range<double>{0, 2 * M_PI});
-    return map_to_vector(begin(angles), end(angles), [&](auto angle) {
+            generate_range<test_locations>(util::range<double>{0, 2 * M_PI});
+    return util::map_to_vector(begin(angles), end(angles), [&](auto angle) {
         return run_single_angle<bands>(angle, receiver, sample_rate, callback);
     });
 }
@@ -96,7 +96,7 @@ int main(int argc, char** argv) {
     std::string output_folder{argv[1]};
     std::string polar_string{argv[2]};
 
-    const aligned::map<std::string, float> polar_pattern_map{
+    const util::aligned::map<std::string, float> polar_pattern_map{
             {"omnidirectional", 0.0f},
             {"cardioid", 0.5f},
             {"bidirectional", 1.0f}};
@@ -137,7 +137,7 @@ int main(int argc, char** argv) {
     };
 
     run("waveguide", [&](const auto& source, const auto& receiver) {
-        progress_bar pb;
+        util::progress_bar pb;
         const model::parameters params{source, receiver};
         auto raw = *waveguide::canonical(
                 compute_context{},

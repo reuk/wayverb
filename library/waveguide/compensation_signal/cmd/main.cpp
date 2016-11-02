@@ -45,7 +45,7 @@ int main(int argc, char** argv) {
 
     compressed_rectangular_waveguide waveguide{cc, steps};
 
-    progress_bar pb{std::cerr};
+    util::progress_bar pb{std::cerr};
     const std::vector<float> sig{0.0f, 1.0f};
     const auto output{
             waveguide.run_hard_source(begin(sig), end(sig), [&](auto step) {

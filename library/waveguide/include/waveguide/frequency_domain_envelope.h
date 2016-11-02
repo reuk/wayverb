@@ -54,16 +54,16 @@ constexpr bool compare_points(const frequency_domain_envelope::point& a,
 
 template <typename It>
 constexpr auto make_frequency_iterator(It it) {
-    return make_mapping_iterator_adapter(std::move(it), get_frequency);
+    return util::make_mapping_iterator_adapter(std::move(it), get_frequency);
 }
 
 template <typename It>
 constexpr auto make_amplitude_iterator(It it) {
-    return make_mapping_iterator_adapter(std::move(it), get_amplitude);
+    return util::make_mapping_iterator_adapter(std::move(it), get_amplitude);
 }
 
 void remove_outside_frequency_range(frequency_domain_envelope& env,
-                                    range<double> r);
+                                    util::range<double> r);
 
 template <size_t N>
 auto make_frequency_domain_envelope(const std::array<double, N>& frequency,

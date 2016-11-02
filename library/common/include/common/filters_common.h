@@ -1,7 +1,7 @@
 #pragma once
 
-#include "frequency_domain/filter.h"
 #include "frequency_domain/convolver.h"
+#include "frequency_domain/filter.h"
 
 #include "utilities/aligned/vector.h"
 
@@ -28,7 +28,7 @@ public:
 
     /// Filter a vector of data.
     template <typename It>
-    aligned::vector<float> filter(It begin, It end) {
+    util::aligned::vector<float> filter(It begin, It end) {
         return convolver_.convolve(
                 std::begin(kernel_), std::end(kernel_), begin, end);
     }
@@ -48,7 +48,7 @@ public:
 
     /// Filter a vector of data.
     template <typename It>
-    aligned::vector<float> filter(It begin, It end) {
+    util::aligned::vector<float> filter(It begin, It end) {
         return convolver_.convolve(
                 std::begin(kernel_), std::end(kernel_), begin, end);
     }
@@ -68,7 +68,7 @@ public:
 
     /// Filter a vector of data.
     template <typename It>
-    aligned::vector<float> filter(It begin, It end) {
+    util::aligned::vector<float> filter(It begin, It end) {
         return convolver_.convolve(
                 std::begin(kernel_), std::end(kernel_), begin, end);
     }
@@ -228,30 +228,29 @@ auto compute_butterworth_segments(double cf,
 }
 
 template <size_t num, typename Callback>
-auto compute_butterworth_coefficients(
-    double cutoff, double sr, Callback callback) {
+auto compute_butterworth_coefficients(double cutoff,
+                                      double sr,
+                                      Callback callback) {
     return compute_butterworth_segments(std::tan(M_PI * cutoff / sr),
                                         callback,
                                         std::make_index_sequence<num>{});
 }
 
 template <size_t num>
-auto compute_hipass_butterworth_coefficients(
-    double cutoff, double sr) {
+auto compute_hipass_butterworth_coefficients(double cutoff, double sr) {
     return compute_butterworth_coefficients<num>(
             cutoff, sr, compute_hipass_butterworth_segment);
 }
 
 template <size_t num>
-auto compute_lopass_butterworth_coefficients(
-    double cutoff, double sr) {
+auto compute_lopass_butterworth_coefficients(double cutoff, double sr) {
     return compute_butterworth_coefficients<num>(
             cutoff, sr, compute_lopass_butterworth_segment);
 }
 
 template <typename IIR>
-aligned::vector<float> impulse_response(IIR& filt, size_t steps) {
-    aligned::vector<float> ret(steps, 0.0f);
+util::aligned::vector<float> impulse_response(IIR& filt, size_t steps) {
+    util::aligned::vector<float> ret(steps, 0.0f);
     ret.front() = 1;
     run_one_pass(filt, ret.begin(), ret.end());
     return ret;

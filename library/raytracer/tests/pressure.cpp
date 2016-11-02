@@ -36,7 +36,7 @@ TEST(pressure, cosine_smoothing) {
 }
 
 TEST(pressure, compute_pressure_spectrum) {
-    aligned::vector<context::bins<context::real>> absorption_coefficients{
+    util::aligned::vector<context::bins<context::real>> absorption_coefficients{
             context::bins<context::real>{
                     {0.1, 0.1, 0.2, 0.2, 0.3, 0.3, 0.4, 0.4}},
             context::bins<context::real>{
@@ -44,7 +44,7 @@ TEST(pressure, compute_pressure_spectrum) {
             context::bins<context::real>{
                     {0.0, 0.0, 0.0, 0.0, 0.1, 0.2, 0.3, 0.4}}};
 
-    aligned::vector<size_t> surface_indices{0, 0, 1, 0, 2};
+    util::aligned::vector<size_t> surface_indices{0, 0, 1, 0, 2};
 
     const auto coefficient_indexer{
             [&](auto i) { return absorption_coefficients[i]; }};
@@ -57,10 +57,10 @@ TEST(pressure, compute_pressure_spectrum) {
             {50, 100, 200, 400, 800, 1600, 3200, 6400}};
 
     const auto pressure_spectrum{context::compute_pressure_spectrum(
-            make_mapping_iterator_adapter(surface_indices.begin(),
-                                          coefficient_indexer),
-            make_mapping_iterator_adapter(surface_indices.end(),
-                                          coefficient_indexer),
+            util::make_mapping_iterator_adapter(surface_indices.begin(),
+                                                coefficient_indexer),
+            util::make_mapping_iterator_adapter(surface_indices.end(),
+                                                coefficient_indexer),
             distance,
             speed_of_sound,
             1.0,

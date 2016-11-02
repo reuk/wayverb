@@ -128,10 +128,10 @@ geo::ray random_ray(t& engine) {
     return geo::ray{glm::vec3{0}, random_unit_vector(engine)};
 }
 
-aligned::vector<geo::triangle_vec3> random_triangle_vec3s(size_t num) {
+util::aligned::vector<geo::triangle_vec3> random_triangle_vec3s(size_t num) {
     auto engine = std::default_random_engine{std::random_device{}()};
 
-    aligned::vector<geo::triangle_vec3> ret;
+    util::aligned::vector<geo::triangle_vec3> ret;
     ret.reserve(num);
     for (auto i = 0u; i != num; ++i) {
         ret.emplace_back(random_triangle_vec3(engine));
@@ -139,10 +139,10 @@ aligned::vector<geo::triangle_vec3> random_triangle_vec3s(size_t num) {
     return ret;
 }
 
-aligned::vector<geo::ray> random_rays(size_t num) {
+util::aligned::vector<geo::ray> random_rays(size_t num) {
     auto engine = std::default_random_engine{std::random_device{}()};
 
-    aligned::vector<geo::ray> ret;
+    util::aligned::vector<geo::ray> ret;
     ret.reserve(num);
     for (auto i = 0u; i != num; ++i) {
         ret.emplace_back(random_ray(engine));
@@ -165,16 +165,16 @@ TEST(gpu_geometry, triangle_vert_intersection) {
 
     const auto triangle_verts_buffer = load_to_buffer(
             cc.context,
-            map_to_vector(begin(triangle_verts),
-                          end(triangle_verts),
-                          [](const auto& i) { return convert(i); }),
+            util::map_to_vector(begin(triangle_verts),
+                                end(triangle_verts),
+                                [](const auto& i) { return convert(i); }),
             true);
 
     const auto rays_buffer = load_to_buffer(
             cc.context,
-            map_to_vector(begin(rays),
-                          end(rays),
-                          [](const auto& i) { return convert(i); }),
+            util::map_to_vector(begin(rays),
+                                end(rays),
+                                [](const auto& i) { return convert(i); }),
             true);
 
     cl::Buffer triangle_inter_buffer{
@@ -205,16 +205,16 @@ TEST(gpu_geometry, triangle_vert_intersection) {
 }
 
 struct really_basic_scene final {
-    aligned::vector<glm::vec3> vertices;
-    aligned::vector<triangle> triangles;
+    util::aligned::vector<glm::vec3> vertices;
+    util::aligned::vector<triangle> triangles;
 };
 
 really_basic_scene random_triangles(size_t num) {
     std::default_random_engine engine{std::random_device{}()};
 
-    aligned::vector<glm::vec3> vertices;
+    util::aligned::vector<glm::vec3> vertices;
     vertices.reserve(num * 3);
-    aligned::vector<triangle> triangles;
+    util::aligned::vector<triangle> triangles;
     triangles.reserve(num);
 
     for (auto i = 0u; i != num; ++i) {
@@ -245,16 +245,16 @@ TEST(gpu_geometry, ray_triangle_intersection) {
 
     const auto vertices_buffer = load_to_buffer(
             cc.context,
-            map_to_vector(begin(scene.vertices),
-                          end(scene.vertices),
-                          [](const auto& i) { return to_cl_float3(i); }),
+            util::map_to_vector(begin(scene.vertices),
+                                end(scene.vertices),
+                                [](const auto& i) { return to_cl_float3(i); }),
             true);
 
     const auto rays_buffer = load_to_buffer(
             cc.context,
-            map_to_vector(begin(rays),
-                          end(rays),
-                          [](const auto& i) { return convert(i); }),
+            util::map_to_vector(begin(rays),
+                                end(rays),
+                                [](const auto& i) { return convert(i); }),
             true);
 
     cl::Buffer intersections_buffer{
@@ -270,7 +270,7 @@ TEST(gpu_geometry, ray_triangle_intersection) {
     const auto gpu_intersections =
             read_from_buffer<intersection>(queue, intersections_buffer);
 
-    progress_bar pb;
+    util::progress_bar pb;
     for (auto i = 0u; i != num_tests; ++i) {
         const auto inter = geo::ray_triangle_intersection(
                 rays[i], scene.triangles, scene.vertices);
@@ -304,7 +304,7 @@ TEST(gpu_geometry, line_sphere_intersection) {
         bool expected_result;
     };
 
-    aligned::vector<test_case> test_cases{
+    util::aligned::vector<test_case> test_cases{
 
             {{{-1, 0, 0}}, {{1, 0, 0}}, {{0, 0, 0}}, 0.1, true},
             {{{0, -1, 0}}, {{0, 1, 0}}, {{0, 0, 0}}, 0.1, true},
@@ -327,7 +327,7 @@ TEST(gpu_geometry, line_sphere_intersection) {
     const auto gen_buffer = [&](const auto& lambda) {
         return load_to_buffer(
                 cc.context,
-                map_to_vector(begin(test_cases), end(test_cases), lambda),
+                util::map_to_vector(begin(test_cases), end(test_cases), lambda),
                 true);
     };
 
@@ -374,13 +374,14 @@ TEST(gpu_geometry, line_sphere_percentage) {
         const auto directions = get_random_directions(tests);
         const auto p2_buffer = load_to_buffer(
                 cc.context,
-                map_to_vector(begin(directions),
-                              end(directions),
-                              [&](const auto& i) {
-                                  const auto line_length{2 * (sphere_distance +
-                                                              sphere_radius)};
-                                  return to_cl_float3(i * line_length);
-                              }),
+                util::map_to_vector(
+                        begin(directions),
+                        end(directions),
+                        [&](const auto& i) {
+                            const auto line_length{
+                                    2 * (sphere_distance + sphere_radius)};
+                            return to_cl_float3(i * line_length);
+                        }),
                 true);
 
         cl::Buffer ret_buffer{

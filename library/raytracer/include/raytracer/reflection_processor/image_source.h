@@ -30,7 +30,7 @@ public:
         }
     }
 
-    aligned::vector<impulse<8>> get_results();
+    util::aligned::vector<impulse<8>> get_results();
 
 private:
     model::parameters params_;

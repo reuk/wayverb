@@ -131,7 +131,7 @@ struct cl_vector_constructor<bool, N> final {
 
 template <typename T, typename Op, enable_if_is_vector_t<T, int> = 0>
 constexpr auto accumulate(const T& t, const Op& op) {
-    return foldl(op, t.s);
+    return util::foldl(op, t.s);
 }
 
 template <typename T,
@@ -141,7 +141,7 @@ template <typename T,
 constexpr auto accumulate(const T& t,
                           const Accumulator& accumulator,
                           const Op& op) {
-    return foldl(op, accumulator, t.s);
+    return util::foldl(op, accumulator, t.s);
 }
 
 template <typename T, typename U, typename Op, size_t... Ix>

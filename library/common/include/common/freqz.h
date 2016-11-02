@@ -33,7 +33,7 @@ constexpr auto zip_with_indices(const std::array<T, N>& arr) {
 
 template <size_t N>
 auto freqz(const std::array<double, N>& coeffs, double frequency) {
-    return foldl(
+    return util::foldl(
             [&](const auto& accumulator, const auto& item) {
                 using namespace std::complex_literals;
                 return accumulator +

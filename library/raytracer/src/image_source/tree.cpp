@@ -30,7 +30,7 @@ public:
                        const glm::vec3& receiver,
                        const vsd& voxelised,
                        const postprocessor& callback,
-                       aligned::vector<state>& state,
+                       util::aligned::vector<state>& state,
                        const path_element& element)
             : source_(source)
             , receiver_(receiver)
@@ -74,10 +74,11 @@ private:
                            get_triangle(voxelised, triangle_index));
     }
 
-    static state path_element_to_state(const glm::vec3& source,
-                                       const vsd& voxelised,
-                                       const aligned::vector<state>& state,
-                                       const path_element& p) {
+    static state path_element_to_state(
+            const glm::vec3& source,
+            const vsd& voxelised,
+            const util::aligned::vector<state>& state,
+            const path_element& p) {
         return {p.index,
                 find_image_source(
                         state.empty() ? source : state.back().image_source,
@@ -87,14 +88,14 @@ private:
 
     struct valid_path final {
         glm::vec3 image_source;
-        aligned::vector<reflection_metadata> intersections;
+        util::aligned::vector<reflection_metadata> intersections;
     };
 
     static std::experimental::optional<valid_path> find_valid_path(
             const glm::vec3& source,
             const glm::vec3& receiver,
             const vsd& voxelised,
-            const aligned::vector<state>& state) {
+            const util::aligned::vector<state>& state) {
         //  In weird scenarios the image source might end up getting plastered
         //  over the receiver, which is bad, so we quit with null in that case.
         const auto final_image_source = state.back().image_source;
@@ -108,7 +109,7 @@ private:
             glm::vec3 prev_intersection;
             cl_uint prev_surface;
         } accumulator{receiver, ~cl_uint{0}};
-        aligned::vector<reflection_metadata> intersections;
+        util::aligned::vector<reflection_metadata> intersections;
         intersections.reserve(state.size());
 
         for (auto i = state.crbegin(), end = state.crend(); i != end; ++i) {
@@ -168,13 +169,14 @@ private:
     const vsd& voxelised_;
 
     const postprocessor& callback_;
-    aligned::vector<state>& state_;
+    util::aligned::vector<state>& state_;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
 
 multitree<path_element>::branches_type construct_image_source_tree(
-        const aligned::vector<aligned::vector<path_element>>& paths) {
+        const util::aligned::vector<util::aligned::vector<path_element>>&
+                paths) {
     multitree<path_element> root{path_element{}};
     for (const auto& i : paths) {
         add_path(root, i.begin(), i.end());
@@ -182,7 +184,7 @@ multitree<path_element>::branches_type construct_image_source_tree(
     return std::move(root.branches);
 }
 
-void tree::push(const aligned::vector<path_element>& path) {
+void tree::push(const util::aligned::vector<path_element>& path) {
     add_path(root_, path.cbegin(), path.cend());
 }
 
@@ -198,7 +200,7 @@ void find_valid_paths(
                 voxelised,
         const postprocessor& callback) {
     //  set up a state array
-    aligned::vector<traversal_callback::state> state{};
+    util::aligned::vector<traversal_callback::state> state{};
     //  traverse all paths on this branch
     traverse_multitree(
             tree,

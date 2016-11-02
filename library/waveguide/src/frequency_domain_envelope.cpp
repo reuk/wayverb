@@ -40,7 +40,7 @@ frequency_domain_envelope::const_iterator frequency_domain_envelope::erase(
 }
 
 void remove_outside_frequency_range(frequency_domain_envelope& env,
-                                    range<double> r) {
+                                    util::range<double> r) {
     /// Remove from the beginning to the first equal/greater frequency relative
     /// to the range minimum.
     env.erase(env.cbegin(),

@@ -35,7 +35,7 @@ private:
 
 template <typename It>
 auto extract_surfaces(It begin, It end) {
-    return map_to_vector(begin, end, [](auto i) { return i.surface; });
+    return util::map_to_vector(begin, end, [](auto i) { return i.surface; });
 }
 
 template <typename Vertex, typename Surface>

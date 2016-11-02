@@ -43,18 +43,21 @@ public:
             , acoustic_impedance_{acoustic_impedance}
             , speed_of_sound_{speed_of_sound} {}
 
-    aligned::vector<float> postprocess(const attenuator::hrtf& attenuator,
-                                       double sample_rate) const override {
+    util::aligned::vector<float> postprocess(
+            const attenuator::hrtf& attenuator,
+            double sample_rate) const override {
         return postprocess_impl(attenuator, sample_rate);
     }
 
-    aligned::vector<float> postprocess(const attenuator::microphone& attenuator,
-                                       double sample_rate) const override {
+    util::aligned::vector<float> postprocess(
+            const attenuator::microphone& attenuator,
+            double sample_rate) const override {
         return postprocess_impl(attenuator, sample_rate);
     }
 
-    aligned::vector<float> postprocess(const attenuator::null& attenuator,
-                                       double sample_rate) const override {
+    util::aligned::vector<float> postprocess(
+            const attenuator::null& attenuator,
+            double sample_rate) const override {
         return postprocess_impl(attenuator, sample_rate);
     }
 

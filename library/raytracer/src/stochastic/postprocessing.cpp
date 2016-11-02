@@ -34,7 +34,7 @@ dirac_sequence generate_dirac_sequence(double speed_of_sound,
 
     std::default_random_engine engine{std::random_device{}()};
 
-    aligned::vector<float> ret(std::ceil(max_time * sample_rate), 0);
+    util::aligned::vector<float> ret(std::ceil(max_time * sample_rate), 0);
     for (auto t = t0(constant_mean_occurrence); t < max_time;
          t += interval_size(
                  engine, mean_event_occurrence(constant_mean_occurrence, t))) {
@@ -46,12 +46,13 @@ dirac_sequence generate_dirac_sequence(double speed_of_sound,
     return {ret, sample_rate};
 }
 
-aligned::vector<bands_type> weight_sequence(const energy_histogram& histogram,
-                                            const dirac_sequence& sequence,
-                                            double acoustic_impedance) {
-    auto ret = map_to_vector(begin(sequence.sequence),
-                             end(sequence.sequence),
-                             [](auto i) { return make_bands_type(i); });
+util::aligned::vector<bands_type> weight_sequence(
+        const energy_histogram& histogram,
+        const dirac_sequence& sequence,
+        double acoustic_impedance) {
+    auto ret = util::map_to_vector(begin(sequence.sequence),
+                                   end(sequence.sequence),
+                                   [](auto i) { return make_bands_type(i); });
 
     const auto convert_index = [&](auto ind) -> size_t {
         return ind * sequence.sample_rate / histogram.sample_rate;
@@ -87,9 +88,9 @@ aligned::vector<bands_type> weight_sequence(const energy_histogram& histogram,
     return ret;
 }
 
-aligned::vector<float> postprocessing(const energy_histogram& histogram,
-                                      const dirac_sequence& sequence,
-                                      double acoustic_impedance) {
+util::aligned::vector<float> postprocessing(const energy_histogram& histogram,
+                                            const dirac_sequence& sequence,
+                                            double acoustic_impedance) {
     auto weighted = weight_sequence(histogram, sequence, acoustic_impedance);
     return multiband_filter_and_mixdown(begin(weighted),
                                         end(weighted),

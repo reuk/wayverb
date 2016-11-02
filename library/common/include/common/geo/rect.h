@@ -5,7 +5,7 @@
 
 namespace geo {
 
-using rect = range<glm::vec2>;
+using rect = util::range<glm::vec2>;
 
 namespace detail {
 std::array<glm::vec2, 2> normals(const rect& r);

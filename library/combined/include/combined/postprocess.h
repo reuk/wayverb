@@ -82,11 +82,14 @@ auto postprocess(const combined_results<Histogram>& input,
                                                             output_sample_rate);
 
     const auto make_iterator = [](auto it) {
-        return make_mapping_iterator_adapter(std::move(it), max_frequency_functor{});
+        return util::make_mapping_iterator_adapter(std::move(it),
+                                                   max_frequency_functor{});
     };
 
-    const auto cutoff = *std::max_element(make_iterator(begin(input.waveguide.bands)),
-                                          make_iterator(end(input.waveguide.bands))) / output_sample_rate;
+    const auto cutoff =
+            *std::max_element(make_iterator(begin(input.waveguide.bands)),
+                              make_iterator(end(input.waveguide.bands))) /
+            output_sample_rate;
     const auto width = 0.2;  //  Wider = more natural-sounding
     return crossover_filter(begin(waveguide_processed),
                             end(waveguide_processed),

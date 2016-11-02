@@ -46,7 +46,7 @@ TEST(run_waveguide, run_waveguide) {
     const geo::box box{glm::vec3{0, 0, 0}, glm::vec3{4, 3, 6}};
     constexpr glm::vec3 source{2, 1.5, 1};
 
-    aligned::vector<glm::vec3> receivers{
+    util::aligned::vector<glm::vec3> receivers{
             {2, 1.5, 2}, {2, 1.5, 3}, {2, 1.5, 4}, {2, 1.5, 5}};
 
     //  init simulation parameters
@@ -70,7 +70,7 @@ TEST(run_waveguide, run_waveguide) {
         throw std::runtime_error("source is outside of mesh!");
     }
 
-    const aligned::vector<float> raw_input{1.0f};
+    const util::aligned::vector<float> raw_input{1.0f};
     auto input = waveguide::make_transparent(
             raw_input.data(), raw_input.data() + raw_input.size());
     input.resize(steps);
@@ -79,7 +79,7 @@ TEST(run_waveguide, run_waveguide) {
             source_index, input.begin(), input.end());
 
     auto output_holders =
-            map_to_vector(begin(receivers), end(receivers), [&](auto i) {
+            util::map_to_vector(begin(receivers), end(receivers), [&](auto i) {
                 const auto receiver_index =
                         compute_index(voxels_and_mesh.mesh.get_descriptor(), i);
                 if (!waveguide::is_inside(voxels_and_mesh.mesh,
@@ -90,7 +90,7 @@ TEST(run_waveguide, run_waveguide) {
                         receiver_index};
             });
 
-    progress_bar pb;
+    util::progress_bar pb;
     auto callback_counter = 0;
     waveguide::run(cc,
                    voxels_and_mesh.mesh,
@@ -108,13 +108,13 @@ TEST(run_waveguide, run_waveguide) {
 
     auto count = 0ul;
     for (const auto& output_holder : output_holders) {
-        write(build_string("waveguide_receiver_", count++, ".wav"),
+        write(util::build_string("waveguide_receiver_", count++, ".wav"),
               audio_file::make_audio_file(output_holder.get_output(),
                                           samplerate),
               16);
     }
 
-    const auto max_values = map_to_vector(
+    const auto max_values = util::map_to_vector(
             begin(output_holders),
             end(output_holders),
             [](const auto& output_holder) {

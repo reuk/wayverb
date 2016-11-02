@@ -26,7 +26,7 @@ int main() {
 
     const glm::vec3 source{0.5, 0.5, 0.5};
 
-    aligned::vector<glm::vec3> receivers;
+    util::aligned::vector<glm::vec3> receivers;
     for (auto i = 0ul; i < dimensions(box).z; ++i) {
         receivers.emplace_back(source + glm::vec3{0, 0, i});
     }
@@ -46,7 +46,7 @@ int main() {
     //  Set up receivers.
 
     auto output_holders =
-            map_to_vector(begin(receivers), end(receivers), [&](auto i) {
+            util::map_to_vector(begin(receivers), end(receivers), [&](auto i) {
                 const auto receiver_index{compute_index(
                         voxels_and_mesh.mesh.get_descriptor(), i)};
                 if (!waveguide::is_inside(voxels_and_mesh.mesh,
@@ -78,7 +78,7 @@ int main() {
 
     //  Run the simulation.
 
-    progress_bar pb;
+    util::progress_bar pb;
     waveguide::run(cc,
                    voxels_and_mesh.mesh,
                    prep,
@@ -90,12 +90,12 @@ int main() {
                    },
                    true);
 
-    auto outputs = map_to_vector(begin(output_holders),
+    auto outputs = util::map_to_vector(begin(output_holders),
                                  end(output_holders),
                                  [](const auto& i) { return i.get_output(); });
     normalize(outputs);
     const auto mag_values =
-            map_to_vector(begin(outputs), end(outputs), [](const auto& i) {
+            util::map_to_vector(begin(outputs), end(outputs), [](const auto& i) {
                 return max_mag(i);
             });
     for (auto mag : mag_values) {
@@ -104,7 +104,7 @@ int main() {
 
     //  We expect to see a 1 / r^2 relationship between distance and rms.
     const auto rms_values =
-            map_to_vector(begin(outputs), end(outputs), [](const auto& i) {
+            util::map_to_vector(begin(outputs), end(outputs), [](const auto& i) {
                 return frequency_domain::rms(i.begin(), i.end());
             });
     for (auto rms : rms_values) {
@@ -114,7 +114,7 @@ int main() {
     auto count = 0;
     for (const auto& i : outputs) {
         //  Write out.
-        write(build_string("distance_", count, ".wav"),
+        write(util::build_string("distance_", count, ".wav"),
               audio_file::make_audio_file(i, sample_rate),
               16);
         count += 1;

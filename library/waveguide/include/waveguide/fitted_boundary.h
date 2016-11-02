@@ -11,7 +11,6 @@
 
 #include "hrtf/multiband.h"
 
-#include "utilities/aligned/vector.h"
 #include "utilities/for_each.h"
 #include "utilities/map.h"
 
@@ -39,7 +38,7 @@ auto to_impedance_coefficients(const coefficients<order>& c) {
     if (ret.a[0]) {
         const auto norm = 1.0 / ret.a[0];
         const auto do_normalize = [&](auto& i) {
-            for_each([&](auto& i) { i *= norm; }, i);
+            util::for_each([&](auto& i) { i *= norm; }, i);
         };
         do_normalize(ret.b);
         do_normalize(ret.a);
@@ -78,11 +77,12 @@ inline auto to_flat_coefficients(double absorption) {
 template <typename T>
 auto compute_reflectance_filter_coefficients(T&& absorption,
                                              double sample_rate) {
-    const auto band_centres = map([](auto i) { return i * 2; },
-                                  hrtf_data::hrtf_band_centres(sample_rate));
-    const auto reflectance =
-            map([](double i) { return absorption_to_pressure_reflectance(i); },
-                absorption);
+    const auto band_centres =
+            util::map([](auto i) { return i * 2; },
+                      hrtf_data::hrtf_band_centres(sample_rate));
+    const auto reflectance = util::map(
+            [](double i) { return absorption_to_pressure_reflectance(i); },
+            absorption);
 
     constexpr auto lim = 1000;
     for (auto delay = 0; delay != lim; ++delay) {

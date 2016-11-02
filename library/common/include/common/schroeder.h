@@ -14,7 +14,7 @@
 template <typename It>
 auto squared_integrated(It begin, It end) {
     using numeric = std::decay_t<decltype(*begin)>;
-    aligned::vector<numeric> ret;
+    util::aligned::vector<numeric> ret;
     numeric running_total{};
     for (; begin != end; ++begin) {
         using std::pow;
@@ -43,9 +43,10 @@ reverb_time decay_time_from_points(
             std::make_reverse_iterator(end), std::make_reverse_iterator(begin));
 
     size_t time{0};
-    const auto in_db_with_times = map_to_vector(
+    const auto in_db_with_times = util::map_to_vector(
             integrated.crbegin(), integrated.crend(), [&](auto i) {
-                return glm::vec2{time++, decibels::p2db(i / integrated.back())};
+                return glm::vec2{time++,
+                                 util::decibels::p2db(i / integrated.back())};
             });
 
     const auto comparator = [](auto i, auto j) { return i.y < j; };

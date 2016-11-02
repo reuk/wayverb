@@ -39,8 +39,8 @@
 #include <random>
 
 struct FullTestResults final {
-    aligned::vector<float> windowed_free_field_signal;
-    aligned::vector<float> windowed_reflection_signal;
+    util::aligned::vector<float> windowed_free_field_signal;
+    util::aligned::vector<float> windowed_reflection_signal;
 };
 
 auto to_tuple(const FullTestResults& x) {
@@ -68,7 +68,7 @@ public:
 
 private:
     auto run_simulation(const geo::box& boundary,
-                        const aligned::vector<glm::vec3>& receivers,
+                        const util::aligned::vector<glm::vec3>& receivers,
                         const coefficients_canonical& coefficients) const {
         const auto scene_data = geo::get_scene_data(
                 boundary, make_surface<simulation_bands>(0, 0));
@@ -90,7 +90,7 @@ private:
                 compute_index(mesh.get_descriptor(), source_position_);
 
         const auto input = [&] {
-            const aligned::vector<float> raw_input{1.0f};
+            const util::aligned::vector<float> raw_input{1.0f};
             auto ret = waveguide::make_transparent(
                     raw_input.data(), raw_input.data() + raw_input.size());
             ret.resize(steps, 0);
@@ -101,7 +101,7 @@ private:
                 source_index, input.begin(), input.end());
 
         auto output_holders =
-                map_to_vector(begin(receivers), end(receivers), [&](auto i) {
+                util::map_to_vector(begin(receivers), end(receivers), [&](auto i) {
                     const auto receiver_index{
                             compute_index(mesh.get_descriptor(), i)};
                     if (!waveguide::is_inside(mesh, receiver_index)) {
@@ -112,7 +112,7 @@ private:
                             receiver_index};
                 });
 
-        progress_bar pb{};
+        util::progress_bar pb{};
         waveguide::run(cc_,
                        mesh,
                        prep,
@@ -124,7 +124,7 @@ private:
                        },
                        true);
 
-        return map_to_vector(begin(output_holders),
+        return util::map_to_vector(begin(output_holders),
                              end(output_holders),
                              [](const auto& i) { return i.get_output(); });
     }
@@ -149,7 +149,7 @@ private:
     }
 
 public:
-    aligned::vector<float> run_full_test(
+    util::aligned::vector<float> run_full_test(
             const std::string& test_name,
             const coefficients_canonical& coefficients) const {
         auto reflected =
@@ -166,13 +166,13 @@ public:
                        subbed.begin(),
                        [](const auto& i, const auto& j) { return j - i; });
 
-        write(build_string(output_folder_,
+        write(util::build_string(output_folder_,
                            "/",
                            test_name,
                            "_windowed_free_field.wav"),
               audio_file::make_audio_file(free_field_.image, out_sr),
               bit_depth);
-        write(build_string(
+        write(util::build_string(
                       output_folder_, "/", test_name, "_windowed_subbed.wav"),
               audio_file::make_audio_file(subbed, out_sr),
               bit_depth);
@@ -272,7 +272,7 @@ int main(int argc, char** argv) {
         const boundary_test test{
                 output_folder, waveguide_sample_rate, azimuth, elevation};
 
-        const aligned::vector<std::tuple<const char*, coefficients_canonical>>
+        const util::aligned::vector<std::tuple<const char*, coefficients_canonical>>
                 raw_tests{
                         //  {"flat_0",
                         //   waveguide::to_flat_coefficients(
@@ -319,7 +319,7 @@ int main(int argc, char** argv) {
                                          {0, 1, 0, 1, 0, 1, 0, 1}})},
                 };
 
-        const auto coefficients_set = map_to_vector(
+        const auto coefficients_set = util::map_to_vector(
                 begin(raw_tests), end(raw_tests), [](const auto& tup) {
                     return coefficient_package{
                             std::get<0>(tup),
@@ -331,12 +331,12 @@ int main(int argc, char** argv) {
         {
             //  Write coefficients to file.
             std::ofstream file{
-                    build_string(output_folder, "/coefficients.txt")};
+                util::build_string(output_folder, "/coefficients.txt")};
             cereal::JSONOutputArchive{file}(
                     cereal::make_nvp("coefficients", coefficients_set));
         }
 
-        const auto all_test_results = map_to_vector(
+        const auto all_test_results = util::map_to_vector(
                 begin(coefficients_set), end(coefficients_set), [&](auto i) {
                     return test.run_full_test(i.name, i.impedance_coefficients);
                 });

@@ -4,7 +4,7 @@
 namespace raytracer {
 namespace image_source {
 
-aligned::vector<impulse<simulation_bands>> postprocess_branches(
+util::aligned::vector<impulse<simulation_bands>> postprocess_branches(
         const multitree<path_element>& tree,
         const glm::vec3& source,
         const glm::vec3& receiver,

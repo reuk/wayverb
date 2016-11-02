@@ -18,6 +18,7 @@
 #include "utilities/named_value.h"
 #include "utilities/progress_bar.h"
 #include "utilities/string_builder.h"
+#include "utilities/tuple_like.h"
 #include "utilities/type_debug.h"
 
 #include "audio_file/audio_file.h"
@@ -28,7 +29,7 @@
 template <typename It>
 void write_tuple(It b, It e, const char* prefix, double sample_rate) {
     for_each(b, e, [&](const auto& i) {
-        write(build_string(prefix, ".", i.name, ".wav"),
+        write(util::build_string(prefix, ".", i.name, ".wav"),
               audio_file::make_audio_file(i.value, sample_rate),
               16);
     });
@@ -44,11 +45,11 @@ struct processor {
     processor& operator=(processor&&) noexcept = default;
     virtual ~processor() = default;
 
-    virtual named_value<aligned::vector<float>> process(
+    virtual util::named_value<util::aligned::vector<float>> process(
             const attenuator::null& attenuator) const = 0;
-    virtual named_value<aligned::vector<float>> process(
+    virtual util::named_value<util::aligned::vector<float>> process(
             const attenuator::hrtf& attenuator) const = 0;
-    virtual named_value<aligned::vector<float>> process(
+    virtual util::named_value<util::aligned::vector<float>> process(
             const attenuator::microphone& attenuator) const = 0;
 };
 
@@ -58,15 +59,15 @@ public:
     explicit concrete_processor(Callback callback)
             : callback_{std::move(callback)} {}
 
-    named_value<aligned::vector<float>> process(
+    util::named_value<util::aligned::vector<float>> process(
             const attenuator::null& attenuator) const override {
         return callback_(attenuator);
     }
-    named_value<aligned::vector<float>> process(
+    util::named_value<util::aligned::vector<float>> process(
             const attenuator::hrtf& attenuator) const override {
         return callback_(attenuator);
     }
-    named_value<aligned::vector<float>> process(
+    util::named_value<util::aligned::vector<float>> process(
             const attenuator::microphone& attenuator) const override {
         return callback_(attenuator);
     }
@@ -148,7 +149,7 @@ int main(int argc, char** argv) {
 
     //  tests //////////////////////////////////////////////////////////////////
 
-    aligned::vector<std::unique_ptr<renderer>> renderers;
+    util::aligned::vector<std::unique_ptr<renderer>> renderers;
 
     if (true) {
         //  engine /////////////////////////////////////////////////////////////
@@ -170,7 +171,7 @@ int main(int argc, char** argv) {
                             .run(true, callback);
 
             return [&, input = std::move(input) ](const auto& attenuator) {
-                return make_named_value(
+                return util::make_named_value(
                         "engine", input->postprocess(attenuator, sample_rate));
             };
         }));
@@ -185,7 +186,7 @@ int main(int argc, char** argv) {
                                   params,
                                   raytracer::simulation_parameters{1 << 16, 5});
             return [&, input = std::move(input) ](const auto& attenuator) {
-                return make_named_value(
+                return util::make_named_value(
                         "raytracer",
                         raytracer::postprocess(input,
                                                attenuator,
@@ -210,7 +211,7 @@ int main(int argc, char** argv) {
                     false);
 
             return [&, input = std::move(input) ](const auto& attenuator) {
-                return make_named_value("img_src",
+                return util::make_named_value("img_src",
                                         raytracer::image_source::postprocess(
                                                 begin(input),
                                                 end(input),
@@ -225,7 +226,7 @@ int main(int argc, char** argv) {
     const auto make_waveguide_renderer = [&](const auto& name,
                                              const auto& waveguide_params) {
         return make_concrete_renderer_ptr([&] {
-            progress_bar pb;
+            util::progress_bar pb;
             auto input = *waveguide::canonical(
                     compute_context{},
                     scene_data,
@@ -238,7 +239,7 @@ int main(int argc, char** argv) {
                     });
 
             return [&, input = std::move(input) ](const auto& attenuator) {
-                return make_named_value(
+                return util::make_named_value(
                         name,
                         waveguide::postprocess(input,
                                                attenuator,
@@ -264,14 +265,14 @@ int main(int argc, char** argv) {
                         3, sample_rate, usable_portion}));
     }
 
-    const auto rendered =
-            map_to_vector(begin(renderers), end(renderers), [](const auto& i) {
+    const auto rendered = util::map_to_vector(
+            begin(renderers), end(renderers), [](const auto& i) {
                 return i->render();
             });
 
-    for_each(
+    util::for_each(
             [&](const auto& tup) {
-                auto processed = map_to_vector(
+                auto processed = util::map_to_vector(
                         begin(rendered), end(rendered), [&](const auto& i) {
                             return i->process(std::get<1>(tup));
                         });

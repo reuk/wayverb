@@ -31,4 +31,4 @@ glm::vec3 random_unit_vector(t& engine) {
     return sphere_point(rng.get_z(), rng.get_theta());
 }
 
-aligned::vector<glm::vec3> get_random_directions(size_t num);
+util::aligned::vector<glm::vec3> get_random_directions(size_t num);

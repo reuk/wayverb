@@ -20,7 +20,7 @@ public:
     const auto& get_output() const { return output_; }
 
 private:
-    aligned::vector<Ret> output_;
+    util::aligned::vector<Ret> output_;
     T postprocessor_;
 };
 

@@ -12,13 +12,13 @@ make_canonical_callbacks(size_t max_image_source_order, size_t visual_items);
 
 template <typename Histogram>
 struct simulation_results final {
-    aligned::vector<impulse<simulation_bands>> image_source;
+    util::aligned::vector<impulse<simulation_bands>> image_source;
     Histogram stochastic;
 };
 
 template <typename Histogram>
 auto make_simulation_results(
-        aligned::vector<impulse<simulation_bands>> image_source,
+        util::aligned::vector<impulse<simulation_bands>> image_source,
         Histogram stochastic) {
     return simulation_results<Histogram>{std::move(image_source),
                                          std::move(stochastic)};
@@ -27,13 +27,13 @@ auto make_simulation_results(
 template <typename Histogram>
 struct canonical_results final {
     simulation_results<Histogram> aural;
-    aligned::vector<aligned::vector<reflection>> visual;
+    util::aligned::vector<util::aligned::vector<reflection>> visual;
 };
 
 template <typename Histogram>
 auto make_canonical_results(
         simulation_results<Histogram> aural,
-        aligned::vector<aligned::vector<reflection>> visual) {
+        util::aligned::vector<util::aligned::vector<reflection>> visual) {
     return canonical_results<Histogram>{std::move(aural), std::move(visual)};
 }
 

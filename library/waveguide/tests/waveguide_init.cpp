@@ -16,33 +16,34 @@
 TEST(waveguide_init, waveguide_init) {
     const compute_context cc{};
 
-    auto scene_data{geo::get_scene_data(geo::box{glm::vec3{-1}, glm::vec3{1}},
-                                        make_surface<simulation_bands>(0.001, 0))};
+    auto scene_data =
+            geo::get_scene_data(geo::box{glm::vec3{-1}, glm::vec3{1}},
+                                make_surface<simulation_bands>(0.001, 0));
 
-    const auto voxelised{make_voxelised_scene_data(scene_data, 5, 0.1f)};
+    const auto voxelised = make_voxelised_scene_data(scene_data, 5, 0.1f);
 
     constexpr glm::vec3 centre{0, 0, 0};
 
-    const aligned::vector<float> input(20, 1);
-    auto transparent{waveguide::make_transparent(input.data(),
-                                                 input.data() + input.size())};
+    const util::aligned::vector<float> input(20, 1);
+    auto transparent = waveguide::make_transparent(input.data(),
+                                                   input.data() + input.size());
 
-    constexpr auto steps{100};
+    constexpr auto steps = 100;
     transparent.resize(steps, 0);
 
-    constexpr auto speed_of_sound{340.0};
+    constexpr auto speed_of_sound = 340.0;
 
-    const auto model{
-            waveguide::compute_mesh(cc, voxelised, 0.04, speed_of_sound)};
-    const auto receiver_index{compute_index(model.get_descriptor(), centre)};
+    const auto model =
+            waveguide::compute_mesh(cc, voxelised, 0.04, speed_of_sound);
+    const auto receiver_index = compute_index(model.get_descriptor(), centre);
 
-    auto prep{waveguide::preprocessor::make_soft_source(
-            receiver_index, transparent.begin(), transparent.end())};
+    auto prep = waveguide::preprocessor::make_soft_source(
+            receiver_index, transparent.begin(), transparent.end());
 
     callback_accumulator<waveguide::postprocessor::node> postprocessor{
             receiver_index};
 
-    progress_bar pb;
+    util::progress_bar pb;
     waveguide::run(cc,
                    model,
                    [&](auto& queue, auto& buffer, auto step) {
@@ -56,7 +57,7 @@ TEST(waveguide_init, waveguide_init) {
 
     ASSERT_EQ(transparent.size(), postprocessor.get_output().size());
 
-    for (auto i{0u}; i != input.size(); ++i) {
+    for (auto i = 0u; i != input.size(); ++i) {
         ASSERT_NEAR(postprocessor.get_output()[i], input[i], 0.0001) << i;
     }
 }

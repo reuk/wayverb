@@ -24,7 +24,8 @@ constexpr auto make_edges_and_width_factor(const std::array<double, N>& edges,
 }
 
 template <size_t N>
-auto compute_multiband_params(range<double> audible_range, double overlap) {
+auto compute_multiband_params(util::range<double> audible_range,
+                              double overlap) {
     return make_edges_and_width_factor(band_edges<N>(audible_range),
                                        width_factor(audible_range, N, overlap));
 }
@@ -66,7 +67,7 @@ auto multiband_filter(It b,
         filt.run(mapping_b, mapping_e, mapping_b, [&](auto cplx, auto freq) {
             const auto amp = compute_bandpass_magnitude(
                     freq,
-                    make_range(params.edges[i + 0], params.edges[i + 1]),
+                    util::make_range(params.edges[i + 0], params.edges[i + 1]),
                     params.width_factor,
                     l);
             integrated_envelopes[i] += amp;
@@ -109,7 +110,7 @@ auto init_array(const T& t) {
 
 template <size_t bands, typename It>
 auto make_multiband(It begin, It end) {
-    return map_to_vector(
+    return util::map_to_vector(
             begin, end, [](const auto& i) { return init_array<bands>(i); });
 }
 
@@ -135,7 +136,8 @@ private:
 struct make_indexer_iterator final {
     template <typename It>
     constexpr auto operator()(It it, size_t index) const {
-        return make_mapping_iterator_adapter(std::move(it), indexer{index});
+        return util::make_mapping_iterator_adapter(std::move(it),
+                                                   indexer{index});
     }
 };
 

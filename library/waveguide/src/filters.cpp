@@ -7,7 +7,7 @@
 namespace waveguide {
 
 coefficients_biquad get_peak_coefficients(const filter_descriptor& n) {
-    const auto A = decibels::db2a(n.gain / 2);
+    const auto A = util::decibels::db2a(n.gain / 2);
     const auto w0 = 2.0 * M_PI * n.centre;
     const auto cw0 = cos(w0);
     const auto sw0 = sin(w0);
@@ -24,8 +24,9 @@ biquad_coefficients_array get_peak_biquads_array(
 }
 
 coefficients_canonical convolve(const biquad_coefficients_array& a) {
-    return foldl([](const auto& i, const auto& j) { return convolve(i, j); },
-                 a.array);
+    return util::foldl(
+            [](const auto& i, const auto& j) { return convolve(i, j); },
+            a.array);
 }
 
 }  // namespace waveguide

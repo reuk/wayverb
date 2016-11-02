@@ -8,14 +8,15 @@
 
 namespace hrtf_data {
 
-constexpr range<double> audible_range{20, 20000};
+constexpr util::range<double> audible_range{20, 20000};
 
 inline auto hrtf_band_centres_hz() {
     return frequency_domain::band_centres<entry::bands>(audible_range);
 }
 
 inline auto hrtf_band_centres(double sample_rate) {
-    return map([&](auto i) { return i / sample_rate; }, hrtf_band_centres_hz());
+    return util::map([&](auto i) { return i / sample_rate; },
+                     hrtf_band_centres_hz());
 }
 
 inline auto hrtf_band_params_hz() {
@@ -26,7 +27,7 @@ inline auto hrtf_band_params_hz() {
 inline auto hrtf_band_params(double sample_rate) {
     const auto hz = hrtf_band_params_hz();
     return frequency_domain::make_edges_and_width_factor(
-            map([&](auto i) { return i / sample_rate; }, hz.edges),
+            util::map([&](auto i) { return i / sample_rate; }, hz.edges),
             hz.width_factor);
 }
 

@@ -8,6 +8,7 @@
 #include "common/conversions.h"
 
 #include "utilities/map_to_vector.h"
+#include "utilities/mapping_iterator_adapter.h"
 
 #include "glm/glm.hpp"
 
@@ -68,7 +69,7 @@ auto make_attenuate_mapper(Method method, const glm::vec3& position) {
 
 template <typename It, typename Method>
 auto make_attenuator_iterator(It it, Method method, const glm::vec3& position) {
-    return make_mapping_iterator_adapter(
+    return util::make_mapping_iterator_adapter(
             std::move(it), make_attenuate_mapper(std::move(method), position));
 }
 

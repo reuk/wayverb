@@ -23,8 +23,8 @@ public:
            size_t rays);
 
     struct results final {
-        aligned::vector<impulse<simulation_bands>> specular;
-        aligned::vector<impulse<simulation_bands>> stochastic;
+        util::aligned::vector<impulse<simulation_bands>> specular;
+        util::aligned::vector<impulse<simulation_bands>> stochastic;
     };
 
     template <typename It>

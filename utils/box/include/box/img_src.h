@@ -33,7 +33,7 @@ auto run_exact_img_src(const geo::box& box,
     return ret;
 }
 
-aligned::vector<impulse<8>> run_fast_img_src(
+util::aligned::vector<impulse<8>> run_fast_img_src(
         const geo::box& box,
         const surface<simulation_bands>& surface,
         const model::parameters& params,

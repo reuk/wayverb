@@ -13,7 +13,7 @@ TEST(histogram, incremental) {
     const auto a = {item{1.0, 0.0}};
     const auto b = {item{1.0, 1.0}};
     const auto c = {item{1.0, 2.0}};
-    aligned::vector<double> histogram;
+    util::aligned::vector<double> histogram;
 
     const auto add_to_histogram{[&](const auto& range) {
         raytracer::incremental_histogram(histogram,

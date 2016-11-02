@@ -7,7 +7,7 @@
 namespace waveguide {
 
 offset_signal maxflat(double f0, uint32_t N, double A, uint32_t hLen) {
-    aligned::vector<double> h(hLen, 0.0f);
+    util::aligned::vector<double> h(hLen, 0.0f);
     const int64_t Q{2 * N - 1};
     for (auto n = -Q, end = Q + 1; n != end; ++n) {
         const auto top = std::pow(factdbl(Q), 2) * std::sin(n * 2 * M_PI * f0);

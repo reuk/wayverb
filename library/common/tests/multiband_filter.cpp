@@ -18,8 +18,8 @@
 template <typename Engine, size_t... Ix>
 auto multiband_sample(Engine& engine, std::index_sequence<Ix...>) {
     std::uniform_real_distribution<float> distribution(-1, 1);
-    return bands_type{
-            {distribution(engine) * decibels::db2a(-60.0f * Ix / 8.0f)...}};
+    return bands_type{{distribution(engine) *
+                       util::decibels::db2a(-60.0f * Ix / 8.0f)...}};
 }
 
 template <typename Engine>
@@ -32,7 +32,7 @@ TEST(multiband_filter, multiband_filter) {
     std::default_random_engine engine{std::random_device{}()};
     std::uniform_real_distribution<float> distribution(-1, 1);
 
-    aligned::vector<bands_type> multiband;
+    util::aligned::vector<bands_type> multiband;
     for (auto i{0ul}; i != 44100 * 10; ++i) {
         multiband.emplace_back(multiband_sample(engine));
     }
@@ -43,13 +43,13 @@ TEST(multiband_filter, multiband_filter) {
 
     const auto sample_rate{44100.0};
 
-    const auto results{multiband_filter_and_mixdown(
+    const auto results = multiband_filter_and_mixdown(
             multiband.begin(),
             multiband.end(),
             sample_rate,
             [](auto it, auto index) {
                 return make_cl_type_iterator(std::move(it), index);
-            })};
+            });
 
     write("multiband_noise.wav",
           audio_file::make_audio_file(results, sample_rate),

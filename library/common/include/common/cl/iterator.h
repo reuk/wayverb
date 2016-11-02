@@ -33,10 +33,10 @@ private:
 
 template <typename It>
 using cl_type_iterator =
-        mapping_iterator_adapter<It, detail::cl_type_index_mapper>;
+        util::mapping_iterator_adapter<It, detail::cl_type_index_mapper>;
 
 template <class It>
 constexpr cl_type_iterator<It> make_cl_type_iterator(It it, size_t index) {
-    return make_mapping_iterator_adapter(std::move(it),
-                                         detail::cl_type_index_mapper{index});
+    return util::make_mapping_iterator_adapter(
+            std::move(it), detail::cl_type_index_mapper{index});
 }

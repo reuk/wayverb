@@ -20,11 +20,11 @@ void write(const std::string& name,
            std::vector<T, Alloc> sig,
            double sample_rate) {
     const auto bit_depth = 16;
-    write(build_string(name, ".wav"),
+    write(util::build_string(name, ".wav"),
           audio_file::make_audio_file(sig, sample_rate),
           bit_depth);
     normalize(sig);
-    write(build_string("normalised.", name, ".wav"),
+    write(util::build_string("normalised.", name, ".wav"),
           audio_file::make_audio_file(sig, sample_rate),
           bit_depth);
 }
@@ -91,7 +91,7 @@ void test_from_paper() {
     callback_accumulator<waveguide::postprocessor::node> postprocessor{
             output_node};
 
-    progress_bar pb;
+    util::progress_bar pb;
     waveguide::run(cc,
                    voxels_and_mesh.mesh,
                    prep,
@@ -107,8 +107,8 @@ void test_from_paper() {
 auto get_mass_test_signals(double acoustic_impedance,
                            double speed_of_sound,
                            double sample_rate) {
-    const aligned::vector<double> sig{0.025, 0.05, 0.1, 0.2, 0.4, 0.8};
-    return map_to_vector(begin(sig), end(sig), [=](auto i) {
+    const util::aligned::vector<double> sig{0.025, 0.05, 0.1, 0.2, 0.4, 0.8};
+    return util::map_to_vector(begin(sig), end(sig), [=](auto i) {
         return waveguide::design_pcs_source(1 << 15,
                                             acoustic_impedance,
                                             speed_of_sound,
@@ -123,8 +123,8 @@ auto get_mass_test_signals(double acoustic_impedance,
 auto get_cutoff_test_signals(double acoustic_impedance,
                              double speed_of_sound,
                              double sample_rate) {
-    const aligned::vector<double> sig{20, 40, 60, 80, 100, 120};
-    return map_to_vector(begin(sig), end(sig), [=](auto i) {
+    const util::aligned::vector<double> sig{20, 40, 60, 80, 100, 120};
+    return util::map_to_vector(begin(sig), end(sig), [=](auto i) {
         return waveguide::design_pcs_source(1 << 15,
                                             acoustic_impedance,
                                             speed_of_sound,
@@ -172,7 +172,7 @@ void other_tests() {
     const auto run_tests = [&](auto name, auto signals) {
         auto count = 0;
         for (const auto& input_signal : signals) {
-            write(build_string(name, "_test_input_", count),
+            write(util::build_string(name, "_test_input_", count),
                   input_signal.signal,
                   sample_rate);
 
@@ -185,7 +185,7 @@ void other_tests() {
             callback_accumulator<waveguide::postprocessor::node> postprocessor{
                     output_node};
 
-            progress_bar pb;
+            util::progress_bar pb;
             waveguide::run(cc,
                            voxels_and_mesh.mesh,
                            prep,
@@ -195,7 +195,7 @@ void other_tests() {
                            },
                            true);
 
-            write(build_string(name, "_test_output_", count),
+            write(util::build_string(name, "_test_output_", count),
                   postprocessor.get_output(),
                   sample_rate);
 

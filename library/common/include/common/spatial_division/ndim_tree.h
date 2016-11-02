@@ -45,7 +45,7 @@ public:
     ndim_tree() = default;
     ndim_tree(size_t depth,
               const item_checker& callback,
-              const aligned::vector<size_t>& to_test,
+              const util::aligned::vector<size_t>& to_test,
               const aabb_type& aabb)
             : aabb_{aabb}
             , items_{compute_contained_items(callback, to_test, aabb)}
@@ -54,7 +54,7 @@ public:
     aabb_type get_aabb() const { return aabb_; }
     bool has_nodes() const { return nodes_ != nullptr; }
     const node_array& get_nodes() const { return *nodes_; }
-    aligned::vector<size_t> get_items() const { return items_; }
+    util::aligned::vector<size_t> get_items() const { return items_; }
 
     size_t get_side() const {
         return nodes_ ? 2 * nodes_->front().get_side() : 1;
@@ -63,11 +63,11 @@ public:
 private:
     using next_boundaries_type = std::array<aabb_type, (1 << n)>;
 
-    static aligned::vector<size_t> compute_contained_items(
+    static util::aligned::vector<size_t> compute_contained_items(
             const item_checker& callback,
-            const aligned::vector<size_t>& to_test,
+            const util::aligned::vector<size_t>& to_test,
             const aabb_type& aabb) {
-        aligned::vector<size_t> ret;
+        util::aligned::vector<size_t> ret;
         std::copy_if(begin(to_test),
                      end(to_test),
                      std::back_inserter(ret),
@@ -78,7 +78,7 @@ private:
     static std::unique_ptr<node_array> compute_nodes(
             size_t depth,
             const item_checker& callback,
-            const aligned::vector<size_t>& to_test,
+            const util::aligned::vector<size_t>& to_test,
             const aabb_type& aabb) {
         if (!depth) {
             return nullptr;
@@ -93,7 +93,7 @@ private:
         return ret;
     }
 
-    aabb_type aabb_;                     //  the bounding box of the node
-    aligned::vector<size_t> items_;      //  indices of contained items
-    std::unique_ptr<node_array> nodes_;  //  contained nodes
+    aabb_type aabb_;                       //  the bounding box of the node
+    util::aligned::vector<size_t> items_;  //  indices of contained items
+    std::unique_ptr<node_array> nodes_;    //  contained nodes
 };

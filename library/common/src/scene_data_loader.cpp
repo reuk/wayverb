@@ -23,10 +23,10 @@ public:
                     "reason"};
         }
 
-        aligned::vector<triangle> triangles{};
-        aligned::vector<cl_float3> vertices{};
+        util::aligned::vector<triangle> triangles{};
+        util::aligned::vector<cl_float3> vertices{};
 
-        auto materials = map_to_vector(
+        auto materials = util::map_to_vector(
                 scene->mMaterials,
                 scene->mMaterials + scene->mNumMaterials,
                 [](auto i) {
@@ -39,10 +39,10 @@ public:
             const auto mesh = scene->mMeshes[i];
 
             auto mesh_vertices =
-                    map_to_vector(mesh->mVertices,
-                                  mesh->mVertices + mesh->mNumVertices,
-                                  [](auto i) { return to_cl_float3(i); });
-            auto mesh_triangles = map_to_vector(
+                    util::map_to_vector(mesh->mVertices,
+                                        mesh->mVertices + mesh->mNumVertices,
+                                        [](auto i) { return to_cl_float3(i); });
+            auto mesh_triangles = util::map_to_vector(
                     mesh->mFaces, mesh->mFaces + mesh->mNumFaces, [&](auto i) {
                         return triangle{mesh->mMaterialIndex,
                                         static_cast<cl_uint>(i.mIndices[0] +

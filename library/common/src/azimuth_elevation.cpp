@@ -18,8 +18,8 @@ auto sphere_point(const direction_rng& rng) {
     return sphere_point(rng.get_z(), rng.get_theta());
 }
 
-aligned::vector<glm::vec3> get_random_directions(size_t num) {
-    aligned::vector<glm::vec3> ret(num);
+util::aligned::vector<glm::vec3> get_random_directions(size_t num) {
+    util::aligned::vector<glm::vec3> ret(num);
     std::default_random_engine engine{std::random_device()()};
 
     std::generate(begin(ret), end(ret), [&] {

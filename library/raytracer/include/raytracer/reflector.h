@@ -16,7 +16,7 @@ namespace raytracer {
 
 template <typename It>  /// Iterator over directions
 auto get_rays_from_directions(It begin, It end, const glm::vec3& source) {
-    return map_to_vector(begin, end, [&](const auto& i) {
+    return util::map_to_vector(begin, end, [&](const auto& i) {
         return geo::ray{source, i};
     });
 }
@@ -32,7 +32,7 @@ public:
             , rays_(std::distance(b, e))
             , ray_buffer_{load_to_buffer(
                       cc.context,
-                      map_to_vector(
+                      util::map_to_vector(
                               b, e, [](const auto& i) { return convert(i); }),
                       false)}
             , reflection_buffer_{cc.context,
@@ -46,11 +46,11 @@ public:
                 reflection_buffer_);
     }
 
-    aligned::vector<reflection> run_step(const scene_buffers& buffers);
+    util::aligned::vector<reflection> run_step(const scene_buffers& buffers);
 
-    aligned::vector<ray> get_rays() const;
-    aligned::vector<reflection> get_reflections() const;
-    aligned::vector<cl_float> get_rng() const;
+    util::aligned::vector<ray> get_rays() const;
+    util::aligned::vector<reflection> get_reflections() const;
+    util::aligned::vector<cl_float> get_rng() const;
 
 private:
     using kernel_t = decltype(std::declval<program>().get_kernel());

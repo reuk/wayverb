@@ -40,7 +40,7 @@ constexpr bool operator<(const path_element& a, const path_element& b) {
 
 class tree final {
 public:
-    void push(const aligned::vector<path_element>& path);
+    void push(const util::aligned::vector<path_element>& path);
     const multitree<path_element>::branches_type& get_branches() const;
 
 private:
@@ -49,8 +49,8 @@ private:
 
 using postprocessor = std::function<void(
         const glm::vec3&,
-        aligned::vector<reflection_metadata>::const_iterator,
-        aligned::vector<reflection_metadata>::const_iterator)>;
+        util::aligned::vector<reflection_metadata>::const_iterator,
+        util::aligned::vector<reflection_metadata>::const_iterator)>;
 
 void find_valid_paths(
         const multitree<path_element>& tree,

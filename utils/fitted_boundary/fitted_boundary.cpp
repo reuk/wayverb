@@ -17,7 +17,7 @@ struct reflectance_and_impedance final {
 namespace cereal {
 
 template <typename Archive, typename T>
-void serialize(Archive& archive, named_value<T>& named) {
+void serialize(Archive& archive, ::util::named_value<T>& named) {
     archive(make_nvp(named.name, named.value));
 }
 
@@ -52,19 +52,21 @@ int main(int argc, char** argv) {
                                                                   sample_rate);
     };
 
-    const auto reflectance = std::vector<named_value<coefficients_canonical>>{
-            {"sloping_fitted_0",
-             make_reflectance_coefficients(
-                     make_slope_array<simulation_bands>(0, 1))},
+    const auto reflectance =
+            std::vector<util::named_value<coefficients_canonical>>{
+                    {"sloping_fitted_0",
+                     make_reflectance_coefficients(
+                             make_slope_array<simulation_bands>(0, 1))},
 
-            {"sloping_fitted_1",
-             make_reflectance_coefficients(
-                     make_slope_array<simulation_bands>(1, 0))},
+                    {"sloping_fitted_1",
+                     make_reflectance_coefficients(
+                             make_slope_array<simulation_bands>(1, 0))},
 
-            {"sudden",
-             make_reflectance_coefficients(std::array<double, simulation_bands>{
-                     {0, 1, 0, 1, 0, 1, 0, 1}})},
-    };
+                    {"sudden",
+                     make_reflectance_coefficients(
+                             std::array<double, simulation_bands>{
+                                     {0, 1, 0, 1, 0, 1, 0, 1}})},
+            };
 
     const auto output = map_to_vector(
             begin(reflectance), end(reflectance), [](const auto& i) {

@@ -17,8 +17,8 @@
 
 class InputGenerator {
 public:
-    virtual aligned::vector<aligned::vector<cl_float>> compute_input(
-            int size) = 0;
+    virtual util::aligned::vector<util::aligned::vector<cl_float>>
+    compute_input(int size) = 0;
 
 protected:
     ~InputGenerator() noexcept = default;
@@ -26,16 +26,17 @@ protected:
 
 class NoiseGenerator : public InputGenerator {
 public:
-    virtual aligned::vector<aligned::vector<cl_float>> compute_input(
-            int size) override {
+    virtual util::aligned::vector<util::aligned::vector<cl_float>>
+    compute_input(int size) override {
         static auto ret = generate(size);
         return ret;
     }
 
 private:
-    static aligned::vector<aligned::vector<cl_float>> generate(int size) {
-        auto ret = aligned::vector<aligned::vector<cl_float>>{
-                10000, aligned::vector<cl_float>(size, 0)};
+    static util::aligned::vector<util::aligned::vector<cl_float>> generate(
+            int size) {
+        auto ret = util::aligned::vector<util::aligned::vector<cl_float>>{
+                10000, util::aligned::vector<cl_float>(size, 0)};
         for (auto& i : ret)
             std::generate(i.begin(), i.end(), [] { return range(engine); });
         return ret;
@@ -51,16 +52,17 @@ std::uniform_real_distribution<cl_float> NoiseGenerator::range{-r, r};
 
 class QuietNoiseGenerator : public InputGenerator {
 public:
-    virtual aligned::vector<aligned::vector<cl_float>> compute_input(
-            int size) override {
+    virtual util::aligned::vector<util::aligned::vector<cl_float>>
+    compute_input(int size) override {
         static auto ret = generate(size);
         return ret;
     }
 
 private:
-    static aligned::vector<aligned::vector<cl_float>> generate(int size) {
-        auto ret = aligned::vector<aligned::vector<cl_float>>{
-                40000, aligned::vector<cl_float>(size, 0)};
+    static util::aligned::vector<util::aligned::vector<cl_float>> generate(
+            int size) {
+        auto ret = util::aligned::vector<util::aligned::vector<cl_float>>{
+                40000, util::aligned::vector<cl_float>(size, 0)};
         for (auto& i : ret)
             std::generate(begin(i), end(i), [] { return range(engine); });
         return ret;
@@ -77,10 +79,10 @@ std::uniform_real_distribution<cl_float> QuietNoiseGenerator::range{-r, r};
 template <size_t SAMPLES>
 class ImpulseGenerator : public InputGenerator {
 public:
-    virtual aligned::vector<aligned::vector<cl_float>> compute_input(
-            int size) override {
-        auto ret = aligned::vector<aligned::vector<cl_float>>(
-                SAMPLES, aligned::vector<cl_float>(size, 0));
+    virtual util::aligned::vector<util::aligned::vector<cl_float>>
+    compute_input(int size) override {
+        auto ret = util::aligned::vector<util::aligned::vector<cl_float>>(
+                SAMPLES, util::aligned::vector<cl_float>(size, 0));
         for (auto& i : ret.front()) {
             i = 0.25;
         }
@@ -134,14 +136,14 @@ enum class FilterType {
 
 auto compute_coeffs(
         std::integral_constant<FilterType, FilterType::biquad_cascade>) {
-    return map(
+    return util::map(
             [](const auto& n) { return waveguide::get_peak_biquads_array(n); },
             descriptors);
 }
 
 auto compute_coeffs(
         std::integral_constant<FilterType, FilterType::single_reflectance>) {
-    return map(
+    return util::map(
             [](const auto& n) {
                 return waveguide::convolve(
                         waveguide::get_peak_biquads_array(n));
@@ -151,7 +153,7 @@ auto compute_coeffs(
 
 auto compute_coeffs(
         std::integral_constant<FilterType, FilterType::single_impedance>) {
-    return map(
+    return util::map(
             [](const auto& n) {
                 return waveguide::to_impedance_coefficients(waveguide::convolve(
                         waveguide::get_peak_biquads_array(n)));
@@ -179,7 +181,7 @@ public:
 
             cl::copy(queue, cl_output, output[i].begin(), output[i].end());
         }
-        auto buf = aligned::vector<cl_float>(output.size());
+        auto buf = util::aligned::vector<cl_float>(output.size());
         std::transform(
                 begin(output), end(output), buf.begin(), [](const auto& i) {
                     return i.front();
@@ -189,7 +191,7 @@ public:
 
     const compute_context cc;
     const waveguide::program program{cc};
-    aligned::vector<Memory> memory{testing::parallel_size, Memory{}};
+    util::aligned::vector<Memory> memory{testing::parallel_size, Memory{}};
 
     static auto compute_coeffs() {
         return testing::compute_coeffs(
@@ -200,10 +202,11 @@ public:
 
     cl::Buffer cl_memory{cc.context, memory.begin(), memory.end(), false};
     cl::Buffer cl_coeffs{cc.context, coeffs.begin(), coeffs.end(), false};
-    aligned::vector<aligned::vector<cl_float>> input{
+    util::aligned::vector<util::aligned::vector<cl_float>> input{
             Generator::compute_input(testing::parallel_size)};
-    aligned::vector<aligned::vector<cl_float>> output{
-            input.size(), aligned::vector<cl_float>(testing::parallel_size, 0)};
+    util::aligned::vector<util::aligned::vector<cl_float>> output{
+            input.size(),
+            util::aligned::vector<cl_float>(testing::parallel_size, 0)};
     cl::Buffer cl_input{cc.context,
                         CL_MEM_READ_WRITE,
                         testing::parallel_size * sizeof(cl_float)};
@@ -310,16 +313,17 @@ TEST(compare_filters, compare_filters) {
                        [](auto i, auto j) { return std::abs(i - j); });
 
         auto div = buf_1;
-        std::transform(std::begin(buf_1),
-                       std::end(buf_1),
-                       buf_2.begin(),
-                       div.begin(),
-                       [](auto i, auto j) {
-                           if (i == 0 || j == 0) {
-                               return 0.0f;
-                           }
-                           return std::abs(decibels::a2db(std::abs(i / j)));
-                       });
+        std::transform(
+                std::begin(buf_1),
+                std::end(buf_1),
+                buf_2.begin(),
+                div.begin(),
+                [](auto i, auto j) {
+                    if (i == 0 || j == 0) {
+                        return 0.0f;
+                    }
+                    return std::abs(util::decibels::a2db(std::abs(i / j)));
+                });
 
         const auto max_diff{*std::max_element(begin(diff), end(diff))};
 
@@ -343,31 +347,11 @@ TEST(compare_filters, compare_filters) {
     test(rk_biquad<NoiseGenerator>{}, rk_filter<NoiseGenerator>{});
 }
 
-/*
-TEST(filter_stability, filter_stability) {
-    std::default_random_engine engine{std::random_device()()};
-    std::uniform_real_distribution<float> range{-1, 1};
-    constexpr auto order = 200;
-    constexpr auto tries = 20;
-    for (auto i = 0; i != tries; ++i) {
-        std::array<float, order> poly;
-        std::generate(poly.begin(),
-                      poly.end(),
-                      [&engine, &range] { return range(engine); });
-
-        auto stable = program::is_stable(poly);
-    }
-}
-*/
-
 template <typename T>
-struct PrintType;
-
-template <typename T>
-aligned::vector<aligned::vector<T>> transpose(
-        const aligned::vector<aligned::vector<T>>& t) {
-    aligned::vector<aligned::vector<T>> ret(t.front().size(),
-                                            aligned::vector<T>(t.size()));
+util::aligned::vector<util::aligned::vector<T>> transpose(
+        const util::aligned::vector<util::aligned::vector<T>>& t) {
+    util::aligned::vector<util::aligned::vector<T>> ret(
+            t.front().size(), util::aligned::vector<T>(t.size()));
     for (auto i = 0u; i != ret.size(); ++i) {
         for (auto j = 0u; j != ret.front().size(); ++j) {
             ret[i][j] = t[j][i];
@@ -376,134 +360,4 @@ aligned::vector<aligned::vector<T>> transpose(
     return ret;
 }
 
-#if 0
-TEST(impulse_response, filters) {
-    {
-        //  try an analytical method to test filter stability
-        proc::for_each(
-            testing::compute_coeffs<testing::FilterType::single_reflectance>(),
-            [](const auto& i) {
-                ASSERT_TRUE(program::is_stable(i));
-            });
-        //  test that the reflectance filters are stable(ish)
-        rk_filter<ImpulseGenerator<10000>> filter;
-        auto buf = filter.run_kernel(filter.program.get_filter_test_2_kernel());
-        auto full_output = transpose(filter.output);
-        ASSERT_EQ(full_output.front(), buf);
-
-        proc::for_each(
-            proc::zip(full_output, testing::surfaces, testing::descriptors),
-            [](const auto& i) {
-                auto samples = std::get<0>(i);
-                proc::transform(samples, samples.begin(), [](auto x) {
-                    return std::abs(x);
-                });
-                ASSERT_TRUE(samples.back() < 1e-10) << std::get<1>(i) << " "
-                                                    << samples;
-            });
-    }
-    {
-        //  try an analytical method to test filter stability
-        proc::for_each(
-            testing::compute_coeffs<testing::FilterType::single_impedance>(),
-            [](const auto& i) {
-                ASSERT_TRUE(program::is_stable(i));
-            });
-        //  TODO need a reliable way of making impedance filters stable if they
-        //  are not already
-        rk_impedance<ImpulseGenerator<10000>> filter;
-        auto buf = filter.run_kernel(filter.program.get_filter_test_2_kernel());
-        auto full_output = transpose(filter.output);
-        ASSERT_EQ(full_output.front(), buf);
-
-        proc::for_each(
-            proc::zip(full_output, testing::surfaces, testing::descriptors),
-            [](const auto& i) {
-                auto samples = std::get<0>(i);
-                proc::transform(samples, samples.begin(), [](auto x) {
-                    return std::abs(x);
-                });
-            });
-    }
-}
-#endif
-
-// TEST(ghost_point, filters) {
-//    ComputeContext compute_context;
-//    program program{get_program<program>(
-//        compute_context.context, compute_context.device)};
-//
-//    constexpr auto v = 0.9;
-//    constexpr Surface surface{{{v, v, v, v, v, v, v, v}},
-//                              {{v, v, v, v, v, v, v, v}}};
-//
-//    auto c = RectangularWaveguide::to_filter_coefficients(surface,
-//    testing::sr);
-//
-//    LOG(INFO) << c;
-//
-//    std::array<program::CanonicalCoefficients,
-//               testing::parallel_size>
-//#if 0
-//        coefficients{{program::CanonicalCoefficients{
-//            {2, 0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0, 0}}}};
-//
-//#else
-//        coefficients{{c}};
-//#endif
-//
-//        cl::Buffer cl_coefficients{compute_context.context,
-//                                   coefficients.begin(),
-//                                   coefficients.end(),
-//                                   false};
-//    std::array<program::BoundaryData, testing::parallel_size>
-//        boundary_data{};
-//    cl::Buffer cl_boundary_data{compute_context.context,
-//                                boundary_data.begin(),
-//                                boundary_data.end(),
-//                                false};
-//
-//    aligned::vector<cl_float> debug(testing::parallel_size, 0);
-//    cl::Buffer cl_debug_buffer{
-//        compute_context.context, debug.begin(), debug.end(), false};
-//
-//    //    aligned::vector<aligned::vector<cl_float>> input{
-//    // ImpulseGenerator<10000>().compute_input(testing::parallel_size)};
-//    aligned::vector<aligned::vector<cl_float>> input{
-//        NoiseGenerator().compute_input(testing::parallel_size)};
-//    aligned::vector<aligned::vector<cl_float>> output{
-//        input.size(), aligned::vector<cl_float>(testing::parallel_size, 0)};
-//    cl::Buffer cl_input{compute_context.context,
-//                        CL_MEM_READ_WRITE,
-//                        testing::parallel_size * sizeof(cl_float)};
-//
-//    auto kernel = program.get_ghost_point_test_kernel();
-//
-//    for (auto i = 0u; i != input.size(); ++i) {
-//        cl::copy(
-//            compute_context.queue, input[i].begin(), input[i].end(),
-//            cl_input);
-//        cl::copy(
-//            compute_context.queue, debug.begin(), debug.end(),
-//            cl_debug_buffer);
-//
-//        kernel(cl::EnqueueArgs(compute_context.queue,
-//                               cl::NDRange(testing::parallel_size)),
-//               cl_input,
-//               cl_boundary_data,
-//               cl_coefficients);
-//
-//        cl::copy(compute_context.queue,
-//                 cl_boundary_data,
-//                 boundary_data.begin(),
-//                 boundary_data.end());
-//
-//        proc::transform(boundary_data, output[i].begin(), [](auto i) {
-//            return i.filter_memory.array[0];
-//        });
-//    }
-//    auto buf = aligned::vector<cl_float>(output.size());
-//    proc::transform(
-//        output, buf.begin(), [](const auto& i) { return i.front(); });
-//}
-}
+}  // namespace testing

@@ -4,19 +4,20 @@
 
 namespace model {
 
-aligned::vector<glm::vec3> get_pointing(const receiver& u) {
+util::aligned::vector<glm::vec3> get_pointing(const receiver& u) {
     switch (u.mode) {
         case receiver::mode::microphones: {
-            return map_to_vector(begin(u.microphones),
-                                 end(u.microphones),
-                                 [&](const auto& i) {
-                                     return get_pointing(i.orientable,
-                                                         u.position);
-                                 });
+            return util::map_to_vector(begin(u.microphones),
+                                       end(u.microphones),
+                                       [&](const auto& i) {
+                                           return get_pointing(i.orientable,
+                                                               u.position);
+                                       });
         }
 
         case receiver::mode::hrtf: {
-            return aligned::vector<glm::vec3>{get_pointing(u.hrtf, u.position)};
+            return util::aligned::vector<glm::vec3>{
+                    get_pointing(u.hrtf, u.position)};
         }
     }
 }
