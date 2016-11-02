@@ -1,8 +1,13 @@
 #include "core/spatial_division/voxel_collection.h"
+#include "core/cl/traits.h"
 #include "core/scene_data.h"
+
+namespace core {
 
 util::aligned::vector<cl_uint> get_flattened(
         const voxel_collection<3>& voxels) {
+    using std::pow;
+
     const auto side = voxels.get_side();
     const auto dim = pow(side, 3);
 
@@ -115,3 +120,5 @@ void traverse(const voxel_collection<3>& voxels,
         t_max[min_i] += t_delta[min_i];
     }
 }
+
+}  // namespace core

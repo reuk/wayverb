@@ -4,6 +4,8 @@
 
 #include "glm/glm.hpp"
 
+namespace core {
+
 namespace {
 const auto eps = 10e-5;
 }  // namespace
@@ -230,3 +232,4 @@ where t_c_intersection(const triangle_vec3& t) {
 }
 
 }  // namespace geo
+}  // namespace core

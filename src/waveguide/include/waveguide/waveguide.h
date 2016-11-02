@@ -33,7 +33,7 @@ namespace waveguide {
 /// Could be a stateful object which accumulates mesh state in some way.
 
 template <typename step_preprocessor, typename step_postprocessor>
-size_t run(const compute_context& cc,
+size_t run(const core::compute_context& cc,
            const mesh& mesh,
            step_preprocessor&& pre,
            step_postprocessor&& post,
@@ -53,19 +53,19 @@ size_t run(const compute_context& cc,
     auto previous = make_zeroed_buffer();
     auto current = make_zeroed_buffer();
 
-    const auto node_buffer = load_to_buffer(
+    const auto node_buffer = core::load_to_buffer(
             cc.context, mesh.get_structure().get_condensed_nodes(), true);
 
-    const auto boundary_coefficients_buffer = load_to_buffer(
+    const auto boundary_coefficients_buffer = core::load_to_buffer(
             cc.context, mesh.get_structure().get_coefficients(), true);
 
     cl::Buffer error_flag_buffer{cc.context, CL_MEM_READ_WRITE, sizeof(cl_int)};
 
-    auto boundary_buffer_1 = load_to_buffer(
+    auto boundary_buffer_1 = core::load_to_buffer(
             cc.context, get_boundary_data<1>(mesh.get_structure()), false);
-    auto boundary_buffer_2 = load_to_buffer(
+    auto boundary_buffer_2 = core::load_to_buffer(
             cc.context, get_boundary_data<2>(mesh.get_structure()), false);
-    auto boundary_buffer_3 = load_to_buffer(
+    auto boundary_buffer_3 = core::load_to_buffer(
             cc.context, get_boundary_data<3>(mesh.get_structure()), false);
 
     auto kernel = program.get_kernel();
@@ -77,7 +77,7 @@ size_t run(const compute_context& cc,
     //  It also updates the mesh with new pressure values.
     for (; pre(queue, current, step) && keep_going; ++step) {
         //  set flag state to successful
-        write_value(queue, error_flag_buffer, 0, id_success);
+        core::write_value(queue, error_flag_buffer, 0, id_success);
 
         //  run kernel
         kernel(cl::EnqueueArgs(queue,
@@ -96,14 +96,14 @@ size_t run(const compute_context& cc,
 
         //  read out flag value
         if (const auto error_flag =
-                    read_value<error_code>(queue, error_flag_buffer, 0)) {
+                    core::read_value<error_code>(queue, error_flag_buffer, 0)) {
             if (error_flag & id_inf_error) {
-                throw exceptions::value_is_inf(
+                throw core::exceptions::value_is_inf(
                         "pressure value is inf, check filter coefficients");
             }
 
             if (error_flag & id_nan_error) {
-                throw exceptions::value_is_nan(
+                throw core::exceptions::value_is_nan(
                         "pressure value is nan, check filter coefficients");
             }
 

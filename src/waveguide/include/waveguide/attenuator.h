@@ -22,7 +22,7 @@ auto attenuate(const Method& method,
 }
 
 /// For the null attenuator, we just extract the absolute/omni pressure.
-inline auto attenuate(const attenuator::null& null,
+inline auto attenuate(const core::attenuator::null& null,
                       float Z,
                       const postprocessor::directional_receiver::output& i) {
     return i.pressure;

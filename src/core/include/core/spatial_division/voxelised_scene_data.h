@@ -6,6 +6,8 @@
 
 #include <random>
 
+namespace core {
+
 template <typename Vertex, typename Surface>
 class voxelised_scene_data final {
 public:
@@ -169,3 +171,5 @@ bool inside(const voxelised_scene_data<Vertex, Surface>& voxelised,
         }
     }
 }
+
+}  // namespace core

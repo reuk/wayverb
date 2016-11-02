@@ -6,7 +6,7 @@
 #include "gtest/gtest.h"
 
 TEST(image_source, image_source_position) {
-    const geo::box box{glm::vec3{0}, glm::vec3{4, 3, 6}};
+    const core::geo::box box{glm::vec3{0}, glm::vec3{4, 3, 6}};
     const glm::vec3 source{1};
 
     ASSERT_EQ(raytracer::image_source::image_position(
@@ -59,7 +59,7 @@ TEST(image_source, image_source_position) {
 template <size_t channels>
 bool approximately_matches(const impulse<channels>& a,
                            const impulse<channels>& b) {
-    const auto near = [](auto a, auto b) { return nearby(a, b, 0.0001); };
+    const auto near = [](auto a, auto b) { return core::nearby(a, b, 0.0001); };
     for (auto i = 0ul; i != channels; ++i) {
         if (!near (a.volume.s[i], b.volume.s[0])) {
             return false;
@@ -72,9 +72,11 @@ bool approximately_matches(const impulse<channels>& a,
 }
 
 void image_source_test() {
-    const geo::box box{glm::vec3{0, 0, 0}, glm::vec3{4, 3, 6}};
-    constexpr model::parameters params{glm::vec3{1, 1, 1}, glm::vec3{2, 1, 5}};
-    constexpr auto surface = make_surface<simulation_bands>(0.1f, 0);
+    const core::geo::box box{glm::vec3{0, 0, 0}, glm::vec3{4, 3, 6}};
+    constexpr core::model::parameters params{glm::vec3{1, 1, 1},
+                                             glm::vec3{2, 1, 5}};
+    constexpr auto surface =
+            core::make_surface<core::simulation_bands>(0.1f, 0);
 
     constexpr auto shells = 3;
 
@@ -83,8 +85,8 @@ void image_source_test() {
 
     const auto check_distances = [&](const auto& range) {
         for (const auto& imp : range) {
-            ASSERT_NEAR(glm::distance(to_vec3(params.receiver),
-                                      to_vec3(imp.position)),
+            ASSERT_NEAR(glm::distance(core::to_vec3(params.receiver),
+                                      core::to_vec3(imp.position)),
                         imp.distance,
                         0.0001);
         }
@@ -93,15 +95,16 @@ void image_source_test() {
     check_distances(exact_impulses);
 
     const auto voxelised = make_voxelised_scene_data(
-            geo::get_scene_data(box, surface), 5, 0.1f);
+            core::geo::get_scene_data(box, surface), 5, 0.1f);
 
-    const auto directions = get_random_directions(10000);
-    auto inexact_impulses = raytracer::image_source::run(directions.begin(),
-                                                         directions.end(),
-                                                         compute_context{},
-                                                         voxelised,
-                                                         params,
-                                                         false);
+    const auto directions = core::get_random_directions(10000);
+    auto inexact_impulses =
+            raytracer::image_source::run(directions.begin(),
+                                         directions.end(),
+                                         core::compute_context{},
+                                         voxelised,
+                                         params,
+                                         false);
 
     check_distances(inexact_impulses);
 

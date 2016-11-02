@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <memory>
 
+namespace core {
 namespace detail {
 
 /// Handles memory management for vector-like classes.
@@ -268,3 +269,5 @@ private:
     Comp comp_;
     recursive_vector<T> data_;
 };
+
+}  // namespace core

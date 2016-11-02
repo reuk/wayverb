@@ -6,6 +6,8 @@
 #include <cmath>
 #include <complex>
 
+namespace core {
+
 template <typename T>
 struct item_and_index final {
     T item;
@@ -65,3 +67,4 @@ auto freqz(const std::array<double, B>& b_coeffs,
                frequencies);
 }
 
+}  // namespace core

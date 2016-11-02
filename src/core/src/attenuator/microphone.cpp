@@ -1,5 +1,6 @@
 #include "core/attenuator/microphone.h"
 
+namespace core {
 namespace attenuator {
 
 microphone::microphone(const glm::vec3& pointing, float shape)
@@ -26,3 +27,4 @@ float attenuation(const microphone& mic, const glm::vec3& incident) {
 }
 
 }  // namespace attenuator
+}  // namespace core

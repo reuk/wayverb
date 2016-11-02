@@ -3,6 +3,8 @@
 #include "core/cl/representation.h"
 #include "core/cl/traits.h"
 
+namespace core {
+
 /// If you change this, remember to update the cl_representation for bands_type
 constexpr auto simulation_bands = 8;
 
@@ -108,3 +110,5 @@ constexpr bool operator==(const triangle_verts& a, const triangle_verts& b) {
 constexpr bool operator!=(const triangle_verts& a, const triangle_verts& b) {
     return !(a == b);
 }
+
+}  // namespace core

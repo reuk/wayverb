@@ -45,10 +45,10 @@ double compute_g0(double acoustic_impedance,
 /// f0:     normalised low resonance of mechanical system
 /// Q:      Q of mechanical system
 /// T:      temporal sample period
-filter::biquad::coefficients mech_sphere(double M,
-                                         double f0,
-                                         double Q,
-                                         double T);
+core::filter::biquad::coefficients mech_sphere(double M,
+                                               double f0,
+                                               double Q,
+                                               double T);
 
 /// Create an input signal from scratch.
 ///

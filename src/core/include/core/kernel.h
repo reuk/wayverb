@@ -6,6 +6,7 @@
 #include <stdexcept>
 #include <vector>
 
+namespace core {
 namespace kernels {
 
 inline double gaussian(double t, double bandwidth) {
@@ -76,3 +77,4 @@ util::aligned::vector<T> ricker_kernel(double sampling_frequency,
 }
 
 }  // namespace kernels
+}  // namespace core

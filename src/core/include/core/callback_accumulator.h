@@ -2,6 +2,8 @@
 
 #include "utilities/aligned/vector.h"
 
+namespace core {
+
 template <typename T, typename Ret = typename T::return_type>
 class callback_accumulator final {
 public:
@@ -28,3 +30,5 @@ template <typename T>
 auto make_callback_accumulator(T t) {
     return callback_accumulator<T>{std::move(t)};
 }
+
+}  // namespace core

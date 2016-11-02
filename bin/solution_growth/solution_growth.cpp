@@ -40,7 +40,7 @@ util::aligned::vector<float> make_mls(size_t length) {
     const size_t order = std::floor(std::log(length) / std::log(2)) + 1;
     util::aligned::vector<float> ret;
     ret.reserve(std::pow(2, order));
-    generate_maximum_length_sequence(
+    core::generate_maximum_length_sequence(
             order, [&](auto value, auto step) { ret.emplace_back(value); });
     return ret;
 }
@@ -52,12 +52,14 @@ int main(int argc, char** argv) {
         const auto sampling_frequency = 8000.0;
 
         constexpr auto absorption = 0.2;
-        const auto surface = make_surface<simulation_bands>(absorption, 0);
+        const auto surface =
+                core::make_surface<core::simulation_bands>(absorption, 0);
 
-        const compute_context cc{};
-        const geo::box boundary{glm::vec3{0}, glm::vec3{5.56, 3.97, 2.81}};
+        const core::compute_context cc{};
+        const core::geo::box boundary{glm::vec3{0},
+                                      glm::vec3{5.56, 3.97, 2.81}};
 
-        const auto scene_data = geo::get_scene_data(boundary, surface);
+        const auto scene_data = core::geo::get_scene_data(boundary, surface);
 
         const auto rt60 = max_element(eyring_reverb_time(scene_data, 0));
 
@@ -74,7 +76,7 @@ int main(int argc, char** argv) {
                 scene_data,
                 5,
                 waveguide::compute_adjusted_boundary(
-                        geo::get_aabb(scene_data), receiver, spacing));
+                        core::geo::get_aabb(scene_data), receiver, spacing));
         auto model =
                 waveguide::compute_mesh(cc, voxelised, spacing, speed_of_sound);
         model.set_coefficients(waveguide::to_flat_coefficients(absorption));
@@ -100,18 +102,21 @@ int main(int argc, char** argv) {
         util::aligned::vector<signal> signals{
                 {"dirac", util::aligned::vector<float>{1.0}},
                 {"gauss",
-                 kernels::gaussian_kernel(sampling_frequency, valid_portion)},
+                 core::kernels::gaussian_kernel(sampling_frequency,
+                                                valid_portion)},
                 {"sinmod_gauss",
-                 kernels::sin_modulated_gaussian_kernel(sampling_frequency,
-                                                        valid_portion)},
+                 core::kernels::sin_modulated_gaussian_kernel(
+                         sampling_frequency, valid_portion)},
                 {"ricker",
-                 kernels::ricker_kernel(sampling_frequency, valid_portion)},
-                {"hi_sinc", hipass_sinc_kernel(sampling_frequency, 100, 401)},
+                 core::kernels::ricker_kernel(sampling_frequency,
+                                              valid_portion)},
+                {"hi_sinc",
+                 core::hipass_sinc_kernel(sampling_frequency, 100, 401)},
                 {"band_sinc",
-                 bandpass_sinc_kernel(sampling_frequency,
-                                      100,
-                                      sampling_frequency * valid_portion,
-                                      401)},
+                 core::bandpass_sinc_kernel(sampling_frequency,
+                                            100,
+                                            sampling_frequency * valid_portion,
+                                            401)},
                 {"mls", make_mls(sampling_frequency * rt60)},
         };
 
@@ -123,8 +128,8 @@ int main(int argc, char** argv) {
             auto prep = waveguide::preprocessor::make_soft_source(
                     receiver_index, kernel.begin(), kernel.end());
 
-            callback_accumulator<waveguide::postprocessor::node> postprocessor{
-                    receiver_index};
+            core::callback_accumulator<waveguide::postprocessor::node>
+                    postprocessor{receiver_index};
 
             util::progress_bar pb;
             waveguide::run(cc,
@@ -146,8 +151,8 @@ int main(int argc, char** argv) {
 
             {
                 auto copy = postprocessor.get_output();
-                filter::extra_linear_dc_blocker u;
-                filter::run_two_pass(u, copy.begin(), copy.end());
+                core::filter::extra_linear_dc_blocker u;
+                core::filter::run_two_pass(u, copy.begin(), copy.end());
                 write(util::build_string(
                               "solution_growth.", i.name, ".dc_blocked.wav"),
                       audio_file::make_audio_file(copy, sampling_frequency),
@@ -156,7 +161,8 @@ int main(int argc, char** argv) {
 
             {
                 auto copy = postprocessor.get_output();
-                filter::block_dc(copy.begin(), copy.end(), sampling_frequency);
+                core::filter::block_dc(
+                        copy.begin(), copy.end(), sampling_frequency);
                 write(util::build_string("solution_growth.",
                                    i.name,
                                    ".butterworth_blocked.wav"),

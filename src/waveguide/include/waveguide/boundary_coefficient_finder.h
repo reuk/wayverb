@@ -40,7 +40,7 @@ struct boundary_index_data final {
 
 boundary_index_data compute_boundary_index_data(
         const cl::Device& device,
-        const scene_buffers& buffers,
+        const core::scene_buffers& buffers,
         const mesh_descriptor& descriptor,
         util::aligned::vector<condensed_node>& nodes);
 

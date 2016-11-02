@@ -2,6 +2,8 @@
 
 #include "core/cl/common.h"
 
+namespace core {
+
 class program_wrapper final {
 public:
     program_wrapper(const compute_context& cc, const std::string& source);
@@ -37,3 +39,5 @@ private:
     cl::Device device;
     cl::Program program;
 };
+
+}  // namespace core

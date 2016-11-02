@@ -17,23 +17,28 @@ namespace raytracer {
 template <typename It>  /// Iterator over directions
 auto get_rays_from_directions(It begin, It end, const glm::vec3& source) {
     return util::map_to_vector(begin, end, [&](const auto& i) {
-        return geo::ray{source, i};
+        return core::geo::ray{source, i};
     });
 }
 
 class reflector final {
 public:
     template <typename It>
-    reflector(const compute_context& cc, const glm::vec3& receiver, It b, It e)
+    reflector(const core::compute_context& cc,
+              const glm::vec3& receiver,
+              It b,
+              It e)
             : cc_{cc}
             , queue_{cc.context, cc.device}
             , kernel_{program{cc}.get_kernel()}
-            , receiver_{to_cl_float3(receiver)}
+            , receiver_{core::to_cl_float3(receiver)}
             , rays_(std::distance(b, e))
-            , ray_buffer_{load_to_buffer(
+            , ray_buffer_{core::load_to_buffer(
                       cc.context,
                       util::map_to_vector(
-                              b, e, [](const auto& i) { return convert(i); }),
+                              b,
+                              e,
+                              [](const auto& i) { return core::convert(i); }),
                       false)}
             , reflection_buffer_{cc.context,
                                  CL_MEM_READ_WRITE,
@@ -46,16 +51,17 @@ public:
                 reflection_buffer_);
     }
 
-    util::aligned::vector<reflection> run_step(const scene_buffers& buffers);
+    util::aligned::vector<reflection> run_step(
+            const core::scene_buffers& buffers);
 
-    util::aligned::vector<ray> get_rays() const;
+    util::aligned::vector<core::ray> get_rays() const;
     util::aligned::vector<reflection> get_reflections() const;
     util::aligned::vector<cl_float> get_rng() const;
 
 private:
     using kernel_t = decltype(std::declval<program>().get_kernel());
 
-    compute_context cc_;
+    core::compute_context cc_;
     cl::CommandQueue queue_;
     kernel_t kernel_;
     cl_float3 receiver_;

@@ -4,6 +4,7 @@
 
 #include "utilities/range.h"
 
+namespace core {
 namespace geo {
 
 using rect = util::range<glm::vec2>;
@@ -38,3 +39,4 @@ inline auto inside(const geo::rect& a, const glm::vec2& b) {
     return glm::all(glm::lessThan(a.get_min(), b)) &&
            glm::all(glm::lessThan(b, a.get_max()));
 }
+}  // namespace core

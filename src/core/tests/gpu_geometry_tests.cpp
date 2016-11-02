@@ -19,17 +19,18 @@
 
 class program final {
 public:
-    program(const compute_context& cc)
+    program(const core::compute_context& cc)
             : wrapper_{cc,
                        std::vector<std::string>{
-                               cl_representation_v<bands_type>,
-                               cl_representation_v<surface<simulation_bands>>,
-                               cl_representation_v<triangle>,
-                               cl_representation_v<triangle_verts>,
-                               cl_representation_v<ray>,
-                               cl_representation_v<triangle_inter>,
-                               cl_representation_v<intersection>,
-                               cl_sources::geometry,
+                               core::cl_representation_v<core::bands_type>,
+                               core::cl_representation_v<
+                                       core::surface<core::simulation_bands>>,
+                               core::cl_representation_v<core::triangle>,
+                               core::cl_representation_v<core::triangle_verts>,
+                               core::cl_representation_v<core::ray>,
+                               core::cl_representation_v<core::triangle_inter>,
+                               core::cl_representation_v<core::intersection>,
+                               core::cl_sources::geometry,
                                source_}} {}
 
     auto get_triangle_vert_intersection_test_kernel() const {
@@ -65,7 +66,7 @@ public:
     }
 
 private:
-    program_wrapper wrapper_;
+    core::program_wrapper wrapper_;
     static constexpr auto source_ = R"(
 
 kernel void triangle_vert_intersection_test(const global triangle_verts* t,
@@ -117,21 +118,21 @@ kernel void line_segment_sphere_percentage_test(float3 p1,
 constexpr const char* program::source_;
 
 template <typename t>
-geo::triangle_vec3 random_triangle_vec3(t& engine) {
-    return geo::triangle_vec3{{random_unit_vector(engine),
-                               random_unit_vector(engine),
-                               random_unit_vector(engine)}};
+auto random_triangle_vec3(t& engine) {
+    return core::geo::triangle_vec3{{core::random_unit_vector(engine),
+                                     core::random_unit_vector(engine),
+                                     core::random_unit_vector(engine)}};
 }
 
 template <typename t>
-geo::ray random_ray(t& engine) {
-    return geo::ray{glm::vec3{0}, random_unit_vector(engine)};
+auto random_ray(t& engine) {
+    return core::geo::ray{glm::vec3{0}, core::random_unit_vector(engine)};
 }
 
-util::aligned::vector<geo::triangle_vec3> random_triangle_vec3s(size_t num) {
+auto random_triangle_vec3s(size_t num) {
     auto engine = std::default_random_engine{std::random_device{}()};
 
-    util::aligned::vector<geo::triangle_vec3> ret;
+    util::aligned::vector<core::geo::triangle_vec3> ret;
     ret.reserve(num);
     for (auto i = 0u; i != num; ++i) {
         ret.emplace_back(random_triangle_vec3(engine));
@@ -139,10 +140,10 @@ util::aligned::vector<geo::triangle_vec3> random_triangle_vec3s(size_t num) {
     return ret;
 }
 
-util::aligned::vector<geo::ray> random_rays(size_t num) {
+auto random_rays(size_t num) {
     auto engine = std::default_random_engine{std::random_device{}()};
 
-    util::aligned::vector<geo::ray> ret;
+    util::aligned::vector<core::geo::ray> ret;
     ret.reserve(num);
     for (auto i = 0u; i != num; ++i) {
         ret.emplace_back(random_ray(engine));
@@ -156,7 +157,7 @@ TEST(gpu_geometry, triangle_vert_intersection) {
     const auto triangle_verts = random_triangle_vec3s(num_tests);
     const auto rays = random_rays(num_tests);
 
-    const compute_context cc{};
+    const core::compute_context cc{};
 
     const program prog{cc};
     auto kernel = prog.get_triangle_vert_intersection_test_kernel();
@@ -167,26 +168,27 @@ TEST(gpu_geometry, triangle_vert_intersection) {
             cc.context,
             util::map_to_vector(begin(triangle_verts),
                                 end(triangle_verts),
-                                [](const auto& i) { return convert(i); }),
+                                [](const auto& i) { return core::convert(i); }),
             true);
 
     const auto rays_buffer = load_to_buffer(
             cc.context,
             util::map_to_vector(begin(rays),
                                 end(rays),
-                                [](const auto& i) { return convert(i); }),
+                                [](const auto& i) { return core::convert(i); }),
             true);
 
-    cl::Buffer triangle_inter_buffer{
-            cc.context, CL_MEM_READ_WRITE, sizeof(triangle_inter) * num_tests};
+    cl::Buffer triangle_inter_buffer{cc.context,
+                                     CL_MEM_READ_WRITE,
+                                     sizeof(core::triangle_inter) * num_tests};
 
     kernel(cl::EnqueueArgs(queue, cl::NDRange(num_tests)),
            triangle_verts_buffer,
            rays_buffer,
            triangle_inter_buffer);
 
-    const auto gpu_ret =
-            read_from_buffer<triangle_inter>(queue, triangle_inter_buffer);
+    const auto gpu_ret = core::read_from_buffer<core::triangle_inter>(
+            queue, triangle_inter_buffer);
 
     ASSERT_TRUE(std::any_of(begin(gpu_ret), end(gpu_ret), [](const auto& i) {
         return i.t || i.u || i.v;
@@ -194,19 +196,22 @@ TEST(gpu_geometry, triangle_vert_intersection) {
 
     for (auto i = 0u; i != num_tests; ++i) {
         const auto inter =
-                geo::triangle_intersection(triangle_verts[i], rays[i]);
+                core::geo::triangle_intersection(triangle_verts[i], rays[i]);
 
         if (inter) {
-            ASSERT_TRUE(almost_equal(gpu_ret[i].t, inter ? inter->t : 0, 1));
-            ASSERT_TRUE(almost_equal(gpu_ret[i].u, inter ? inter->u : 0, 1));
-            ASSERT_TRUE(almost_equal(gpu_ret[i].v, inter ? inter->v : 0, 1));
+            ASSERT_TRUE(
+                    core::almost_equal(gpu_ret[i].t, inter ? inter->t : 0, 1));
+            ASSERT_TRUE(
+                    core::almost_equal(gpu_ret[i].u, inter ? inter->u : 0, 1));
+            ASSERT_TRUE(
+                    core::almost_equal(gpu_ret[i].v, inter ? inter->v : 0, 1));
         }
     }
 }
 
 struct really_basic_scene final {
     util::aligned::vector<glm::vec3> vertices;
-    util::aligned::vector<triangle> triangles;
+    util::aligned::vector<core::triangle> triangles;
 };
 
 really_basic_scene random_triangles(size_t num) {
@@ -214,14 +219,15 @@ really_basic_scene random_triangles(size_t num) {
 
     util::aligned::vector<glm::vec3> vertices;
     vertices.reserve(num * 3);
-    util::aligned::vector<triangle> triangles;
+    util::aligned::vector<core::triangle> triangles;
     triangles.reserve(num);
 
     for (auto i = 0u; i != num; ++i) {
         for (auto j = 0u; j != 3; ++j) {
-            vertices.emplace_back(random_unit_vector(engine));
+            vertices.emplace_back(core::random_unit_vector(engine));
         }
-        triangles.emplace_back(triangle{0, i * 3 + 0, i * 3 + 1, i * 3 + 2});
+        triangles.emplace_back(
+                core::triangle{0, i * 3 + 0, i * 3 + 1, i * 3 + 2});
     }
 
     return {vertices, triangles};
@@ -234,7 +240,7 @@ TEST(gpu_geometry, ray_triangle_intersection) {
     const auto scene = random_triangles(num_triangles);
     const auto rays = random_rays(num_tests);
 
-    const compute_context cc{};
+    const core::compute_context cc{};
 
     const program prog{cc};
     auto kernel = prog.get_ray_triangle_intersection_test_kernel();
@@ -243,22 +249,24 @@ TEST(gpu_geometry, ray_triangle_intersection) {
     const auto triangles_buffer =
             load_to_buffer(cc.context, scene.triangles, true);
 
-    const auto vertices_buffer = load_to_buffer(
+    const auto vertices_buffer = core::load_to_buffer(
             cc.context,
-            util::map_to_vector(begin(scene.vertices),
-                                end(scene.vertices),
-                                [](const auto& i) { return to_cl_float3(i); }),
+            util::map_to_vector(
+                    begin(scene.vertices),
+                    end(scene.vertices),
+                    [](const auto& i) { return core::to_cl_float3(i); }),
             true);
 
     const auto rays_buffer = load_to_buffer(
             cc.context,
             util::map_to_vector(begin(rays),
                                 end(rays),
-                                [](const auto& i) { return convert(i); }),
+                                [](const auto& i) { return core::convert(i); }),
             true);
 
-    cl::Buffer intersections_buffer{
-            cc.context, CL_MEM_READ_WRITE, sizeof(intersection) * num_tests};
+    cl::Buffer intersections_buffer{cc.context,
+                                    CL_MEM_READ_WRITE,
+                                    sizeof(core::intersection) * num_tests};
 
     kernel(cl::EnqueueArgs(queue, cl::NDRange(num_tests)),
            triangles_buffer,
@@ -267,20 +275,20 @@ TEST(gpu_geometry, ray_triangle_intersection) {
            rays_buffer,
            intersections_buffer);
 
-    const auto gpu_intersections =
-            read_from_buffer<intersection>(queue, intersections_buffer);
+    const auto gpu_intersections = core::read_from_buffer<core::intersection>(
+            queue, intersections_buffer);
 
     util::progress_bar pb;
     for (auto i = 0u; i != num_tests; ++i) {
-        const auto inter = geo::ray_triangle_intersection(
+        const auto inter = ray_triangle_intersection(
                 rays[i], scene.triangles, scene.vertices);
         if (inter) {
             ASSERT_EQ(gpu_intersections[i].index, inter->index);
-            ASSERT_TRUE(almost_equal(
+            ASSERT_TRUE(core::almost_equal(
                     gpu_intersections[i].inter.t, inter->inter.t, 10));
-            ASSERT_TRUE(almost_equal(
+            ASSERT_TRUE(core::almost_equal(
                     gpu_intersections[i].inter.u, inter->inter.u, 10));
-            ASSERT_TRUE(almost_equal(
+            ASSERT_TRUE(core::almost_equal(
                     gpu_intersections[i].inter.v, inter->inter.v, 10));
         }
 
@@ -290,7 +298,7 @@ TEST(gpu_geometry, ray_triangle_intersection) {
 
 TEST(gpu_geometry, line_sphere_intersection) {
     //  preamble
-    const compute_context cc{};
+    const core::compute_context cc{};
     const program prog{cc};
     auto kernel = prog.get_line_segment_sphere_intersection_test_kernel();
     cl::CommandQueue queue{cc.context, cc.device};
@@ -325,7 +333,7 @@ TEST(gpu_geometry, line_sphere_intersection) {
 
     //  set up buffers
     const auto gen_buffer = [&](const auto& lambda) {
-        return load_to_buffer(
+        return core::load_to_buffer(
                 cc.context,
                 util::map_to_vector(begin(test_cases), end(test_cases), lambda),
                 true);
@@ -345,7 +353,7 @@ TEST(gpu_geometry, line_sphere_intersection) {
            r_buffer,
            ret_buffer);
 
-    const auto results = read_from_buffer<cl_char>(queue, ret_buffer);
+    const auto results = core::read_from_buffer<cl_char>(queue, ret_buffer);
 
     for (auto i = 0ul, e = test_cases.size(); i != e; ++i) {
         ASSERT_EQ(test_cases[i].expected_result, results[i]);
@@ -353,7 +361,7 @@ TEST(gpu_geometry, line_sphere_intersection) {
 }
 
 TEST(gpu_geometry, line_sphere_percentage) {
-    const compute_context cc{};
+    const core::compute_context cc{};
     const program prog{cc};
     auto kernel = prog.get_line_segment_sphere_percentage_test_kernel();
     cl::CommandQueue queue{cc.context, cc.device};
@@ -371,8 +379,8 @@ TEST(gpu_geometry, line_sphere_percentage) {
         const auto expected_proportion =
                 (1 - cos(asin(sphere_radius / sphere_distance))) / 2;
 
-        const auto directions = get_random_directions(tests);
-        const auto p2_buffer = load_to_buffer(
+        const auto directions = core::get_random_directions(tests);
+        const auto p2_buffer = core::load_to_buffer(
                 cc.context,
                 util::map_to_vector(
                         begin(directions),
@@ -380,7 +388,7 @@ TEST(gpu_geometry, line_sphere_percentage) {
                         [&](const auto& i) {
                             const auto line_length{
                                     2 * (sphere_distance + sphere_radius)};
-                            return to_cl_float3(i * line_length);
+                            return core::to_cl_float3(i * line_length);
                         }),
                 true);
 
@@ -394,7 +402,7 @@ TEST(gpu_geometry, line_sphere_percentage) {
                sphere_radius,
                ret_buffer);
 
-        const auto results = read_from_buffer<cl_char>(queue, ret_buffer);
+        const auto results = core::read_from_buffer<cl_char>(queue, ret_buffer);
         const auto intersections = std::count_if(
                 begin(results), end(results), [](auto i) { return i; });
 

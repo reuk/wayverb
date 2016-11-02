@@ -17,7 +17,7 @@ namespace waveguide {
 
 class program final {
 public:
-    program(const compute_context& cc);
+    program(const core::compute_context& cc);
 
     auto get_kernel() const {
         return program_wrapper_
@@ -57,7 +57,7 @@ public:
     cl::Device get_device() const { return program_wrapper_.get_device(); }
 
 private:
-    program_wrapper program_wrapper_;
+    core::program_wrapper program_wrapper_;
 };
 
 }  // namespace waveguide

@@ -17,7 +17,7 @@ public:
     template <typename It>
     void process(It b,
                  It e,
-                 const scene_buffers& buffers,
+                 const core::scene_buffers& buffers,
                  size_t step,
                  size_t total) {
         builder_.push(b, b + builder_.get_num_items());
@@ -33,12 +33,12 @@ class make_visual final {
 public:
     explicit make_visual(size_t items);
 
-    visual operator()(
-            const compute_context& cc,
-            const model::parameters& params,
-            const voxelised_scene_data<cl_float3, surface<simulation_bands>>&
-                    voxelised,
-            size_t num_directions) const;
+    visual operator()(const core::compute_context& cc,
+                      const core::model::parameters& params,
+                      const core::voxelised_scene_data<
+                              cl_float3,
+                              core::surface<core::simulation_bands>>& voxelised,
+                      size_t num_directions) const;
 
 private:
     size_t items_;

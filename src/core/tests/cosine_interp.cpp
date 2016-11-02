@@ -5,22 +5,22 @@
 #include "gtest/gtest.h"
 
 TEST(interp, linear) {
-    ASSERT_EQ(linear_interp(0, -100, 100), -100);
-    ASSERT_EQ(linear_interp(1, -100, 100), 100);
-    ASSERT_EQ(linear_interp(0.5, -100, 100), 0);
+    ASSERT_EQ(core::linear_interp(0, -100, 100), -100);
+    ASSERT_EQ(core::linear_interp(1, -100, 100), 100);
+    ASSERT_EQ(core::linear_interp(0.5, -100, 100), 0);
 }
 
 TEST(interp, cosine) {
-    ASSERT_EQ(cosine_interp(0, -100, 100), -100);
-    ASSERT_EQ(cosine_interp(1, -100, 100), 100);
-    ASSERT_EQ(cosine_interp(0.5, -100, 100), 0);
+    ASSERT_EQ(core::cosine_interp(0, -100, 100), -100);
+    ASSERT_EQ(core::cosine_interp(1, -100, 100), 100);
+    ASSERT_EQ(core::cosine_interp(0.5, -100, 100), 0);
 }
 
 TEST(interp, interp) {
-    ASSERT_EQ(interp(0, -1, 1, -100, 100, linear_interp_functor{}), 0);
-    ASSERT_EQ(interp(0, -1, 1, -100, 100, cosine_interp_functor{}), 0);
+    ASSERT_EQ(interp(0, -1, 1, -100, 100, core::linear_interp_functor{}), 0);
+    ASSERT_EQ(interp(0, -1, 1, -100, 100, core::cosine_interp_functor{}), 0);
 
-    ASSERT_EQ(interp(0, -2, 1, 0, 3, linear_interp_functor{}), 2);
+    ASSERT_EQ(interp(0, -2, 1, 0, 3, core::linear_interp_functor{}), 2);
 
     ////////////////////////////////////////////////////////////////////////////
 
@@ -32,9 +32,11 @@ TEST(interp, interp) {
     std::vector<point> points{{0, 0}, {2, 4}, {4, 0}, {8, -100}, {10, 20}};
 
     const auto test = [&](auto x, auto actual) {
-        ASSERT_EQ(
-                interp(begin(points), end(points), x, linear_interp_functor{}),
-                actual);
+        ASSERT_EQ(interp(begin(points),
+                         end(points),
+                         x,
+                         core::linear_interp_functor{}),
+                  actual);
     };
 
     test(0, 0);

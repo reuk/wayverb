@@ -51,15 +51,17 @@ auto to_impedance_coefficients(const coefficients<order>& c) {
 
 template <size_t... Ix>
 constexpr auto make_coefficients_canonical(
-        const filter_coefficients<sizeof...(Ix) - 1, sizeof...(Ix) - 1>& coeffs,
+        const core::filter_coefficients<sizeof...(Ix) - 1, sizeof...(Ix) - 1>&
+                coeffs,
         std::index_sequence<Ix...>) {
     return coefficients_canonical{{std::get<Ix>(coeffs.b)...},
                                   {std::get<Ix>(coeffs.a)...}};
 }
 
 constexpr auto make_coefficients_canonical(
-        const filter_coefficients<coefficients_canonical::order,
-                                  coefficients_canonical::order>& coeffs) {
+        const core::filter_coefficients<coefficients_canonical::order,
+                                        coefficients_canonical::order>&
+                coeffs) {
     return make_coefficients_canonical(
             coeffs,
             std::make_index_sequence<coefficients_canonical::order + 1>{});
@@ -69,7 +71,7 @@ constexpr auto make_coefficients_canonical(
 
 inline auto to_flat_coefficients(double absorption) {
     return to_impedance_coefficients(coefficients_canonical{
-            {absorption_to_pressure_reflectance(absorption)}, {1}});
+            {core::absorption_to_pressure_reflectance(absorption)}, {1}});
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -81,7 +83,9 @@ auto compute_reflectance_filter_coefficients(T&& absorption,
             util::map([](auto i) { return i * 2; },
                       hrtf_data::hrtf_band_centres(sample_rate));
     const auto reflectance = util::map(
-            [](double i) { return absorption_to_pressure_reflectance(i); },
+            [](double i) {
+                return core::absorption_to_pressure_reflectance(i);
+            },
             absorption);
 
     constexpr auto lim = 1000;

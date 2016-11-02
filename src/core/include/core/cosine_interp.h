@@ -6,6 +6,8 @@
 #include <cmath>
 #include <stdexcept>
 
+namespace core {
+
 /// x is between 0 and 1
 /// a is a value
 /// b is another value
@@ -71,3 +73,5 @@ auto interp(It b, It e, double a, Func&& func) {
 
     return interp(a, a1.x, a2.x, a1.y, a2.y, std::forward<Func>(func));
 }
+
+}  // namespace core

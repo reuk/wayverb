@@ -11,7 +11,7 @@ constexpr size_t biquad_sections{3};
 using filt_real = cl_double;
 
 template <>
-struct cl_representation<filt_real> final {
+struct core::cl_representation<filt_real> final {
     static constexpr auto value = R"(
 typedef double filt_real;
 )";
@@ -63,21 +63,21 @@ inline bool operator!=(const coefficients<D>& a, const coefficients<D>& b) {
 using memory_biquad = memory<biquad_order>;
 
 template <>
-struct cl_representation<memory_biquad> final {
+struct core::cl_representation<memory_biquad> final {
     static const std::string value;
 };
 
 using coefficients_biquad = coefficients<biquad_order>;
 
 template <>
-struct cl_representation<coefficients_biquad> final {
+struct core::cl_representation<coefficients_biquad> final {
     static const std::string value;
 };
 
 using memory_canonical = memory<memory_biquad::order * biquad_sections>;
 
 template <>
-struct cl_representation<memory_canonical> final {
+struct core::cl_representation<memory_canonical> final {
     static const std::string value;
 };
 
@@ -85,7 +85,7 @@ using coefficients_canonical =
         coefficients<coefficients_biquad::order * biquad_sections>;
 
 template <>
-struct cl_representation<coefficients_canonical> final {
+struct core::cl_representation<coefficients_canonical> final {
     static const std::string value;
 };
 
@@ -97,7 +97,7 @@ struct alignas(1 << 3) biquad_memory_array final {
 };
 
 template <>
-struct cl_representation<biquad_memory_array> final {
+struct core::cl_representation<biquad_memory_array> final {
     static constexpr auto value = R"(
 typedef struct {
     memory_biquad array[BIQUAD_SECTIONS];
@@ -113,7 +113,7 @@ struct alignas(1 << 3) biquad_coefficients_array final {
 };
 
 template <>
-struct cl_representation<biquad_coefficients_array> final {
+struct core::cl_representation<biquad_coefficients_array> final {
     static constexpr auto value = R"(
 typedef struct {
     coefficients_biquad array[BIQUAD_SECTIONS];

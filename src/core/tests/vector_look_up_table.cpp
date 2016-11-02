@@ -3,7 +3,7 @@
 #include "gtest/gtest.h"
 
 TEST(vector_look_up_table, index) {
-    using table = vector_look_up_table<float, 20, 9>;
+    using table = core::vector_look_up_table<float, 20, 9>;
 
     const auto test = [](auto pt, auto azel) {
         const auto result = table::index(pt);
@@ -21,7 +21,7 @@ TEST(vector_look_up_table, index) {
 }
 
 TEST(vector_look_up_table, pointing) {
-    using table = vector_look_up_table<float, 20, 9>;
+    using table = core::vector_look_up_table<float, 20, 9>;
 
     const auto test = [](auto azel, auto pt) {
         const auto results = table::pointing(azel);

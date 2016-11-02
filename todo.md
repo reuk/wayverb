@@ -54,6 +54,8 @@ Static analysis.
 
 Fuzzing.
 
+cl_representation - improve so that I don't have to reopen the core namespace.
+
 nice-to-have
 ============
 

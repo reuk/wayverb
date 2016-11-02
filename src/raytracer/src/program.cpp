@@ -155,22 +155,23 @@ kernel void reflections(global ray* rays,  //  ray
 
 )";
 
-program::program(const compute_context& cc)
+program::program(const core::compute_context& cc)
         : program_wrapper_{
                   cc,
                   std::vector<std::string>{
-                          cl_representation_v<bands_type>,
-                          cl_representation_v<surface<simulation_bands>>,
-                          cl_representation_v<triangle>,
-                          cl_representation_v<triangle_verts>,
-                          cl_representation_v<reflection>,
-                          cl_representation_v<impulse<8>>,
-                          cl_representation_v<aabb>,
-                          cl_representation_v<ray>,
-                          cl_representation_v<triangle_inter>,
-                          cl_representation_v<intersection>,
-                          ::cl_sources::geometry,
-                          ::cl_sources::voxel,
+                          core::cl_representation_v<core::bands_type>,
+                          core::cl_representation_v<
+                                  core::surface<core::simulation_bands>>,
+                          core::cl_representation_v<core::triangle>,
+                          core::cl_representation_v<core::triangle_verts>,
+                          core::cl_representation_v<core::aabb>,
+                          core::cl_representation_v<core::ray>,
+                          core::cl_representation_v<core::triangle_inter>,
+                          core::cl_representation_v<core::intersection>,
+                          core::cl_representation_v<reflection>,
+                          core::cl_representation_v<impulse<8>>,
+                          core::cl_sources::geometry,
+                          core::cl_sources::voxel,
                           ::cl_sources::brdf,
                           source}} {}
 

@@ -6,20 +6,22 @@
 namespace raytracer {
 namespace image_source {
 
-geo::ray construct_ray(const glm::vec3& from, const glm::vec3& to) {
+core::geo::ray construct_ray(const glm::vec3& from, const glm::vec3& to) {
     if (from == to) {
         throw std::runtime_error(
                 "tried to construct a ray pointing towards its starting "
                 "location");
     }
-    return geo::ray(from, glm::normalize(to - from));
+    return {from, glm::normalize(to - from)};
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 class traversal_callback final {
 public:
-    using vsd = voxelised_scene_data<cl_float3, surface<simulation_bands>>;
+    using vsd =
+            core::voxelised_scene_data<cl_float3,
+                                       core::surface<core::simulation_bands>>;
 
     struct state final {
         cl_uint index;
@@ -63,15 +65,15 @@ private:
     static auto get_triangle(const vsd& voxelised,
                              const cl_uint triangle_index) {
         const auto& scene{voxelised.get_scene_data()};
-        return geo::get_triangle_vec3(scene.get_triangles()[triangle_index],
-                                      scene.get_vertices());
+        return core::geo::get_triangle_vec3(
+                scene.get_triangles()[triangle_index], scene.get_vertices());
     }
 
     static glm::vec3 find_image_source(const glm::vec3& previous_source,
                                        const vsd& voxelised,
                                        const cl_uint triangle_index) {
-        return geo::mirror(previous_source,
-                           get_triangle(voxelised, triangle_index));
+        return core::geo::mirror(previous_source,
+                                 get_triangle(voxelised, triangle_index));
     }
 
     static state path_element_to_state(
@@ -131,9 +133,9 @@ private:
             //  This path segment is valid.
             //  Find angle between ray and triangle normal at intersection.
             //  Add appropriate intersection to ret.
-            const auto cos_angle = std::abs(
-                    glm::dot(ray.get_direction(),
-                             geo::normal(get_triangle(voxelised, i->index))));
+            const auto cos_angle = std::abs(glm::dot(
+                    ray.get_direction(),
+                    core::geo::normal(get_triangle(voxelised, i->index))));
 
             const auto surface_index = voxelised.get_scene_data()
                                                .get_triangles()[i->index]
@@ -196,7 +198,8 @@ void find_valid_paths(
         const multitree<path_element>& tree,
         const glm::vec3& source,
         const glm::vec3& receiver,
-        const voxelised_scene_data<cl_float3, surface<simulation_bands>>&
+        const core::voxelised_scene_data<cl_float3,
+                                         core::surface<core::simulation_bands>>&
                 voxelised,
         const postprocessor& callback) {
     //  set up a state array

@@ -14,15 +14,15 @@ TEST(nan_in_waveguide, nan_in_waveguide) {
     const auto oversample_ratio = 1.0;
     const auto waveguide_sr = filter_frequency * oversample_ratio / 0.15;
 
-    const compute_context cc{device_type::gpu};
+    const core::compute_context cc{core::device_type::gpu};
 
     const glm::vec3 mic{0, 0, 0};
 
     const auto s = 1.5f;
-    const geo::box box{glm::vec3{-s}, glm::vec3{s}};
+    const core::geo::box box{glm::vec3{-s}, glm::vec3{s}};
     const auto r = 0.9f;
-    auto scene_data =
-            geo::get_scene_data(box, make_surface<simulation_bands>(r, r));
+    auto scene_data = core::geo::get_scene_data(
+            box, core::make_surface<core::simulation_bands>(r, r));
 
     constexpr auto speed_of_sound = 340.0;
     constexpr auto acoustic_impedance = 400.0;
@@ -49,7 +49,7 @@ TEST(nan_in_waveguide, nan_in_waveguide) {
     const waveguide::preprocessor::gaussian generator{
             model.get_descriptor(), source, std::sqrt(variance), steps};
 
-    callback_accumulator<waveguide::postprocessor::directional_receiver>
+    core::callback_accumulator<waveguide::postprocessor::directional_receiver>
             postprocessor{model.get_descriptor(),
                           waveguide_sr,
                           acoustic_impedance / speed_of_sound,

@@ -3,6 +3,8 @@
 #include "utilities/foldl.h"
 #include "utilities/for_each.h"
 
+namespace core {
+
 template <typename... Ts>
 auto sum_params(Ts&&... ts) {
     return util::foldl_params(std::plus<>{}, std::forward<Ts>(ts)...);
@@ -29,3 +31,4 @@ auto sum_vectors(T t, Ts... ts) {
     return sum_ranges(begin(t), end(t), begin(ts)...);
 }
 
+}  // namespace core

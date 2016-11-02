@@ -7,6 +7,8 @@
 #include <iterator>
 #include <type_traits>
 
+namespace core {
+
 /// An iterator adapter that is designed to allow iterating over a single 'band'
 /// of a collection of cl_ vectors.
 ///
@@ -40,3 +42,5 @@ constexpr cl_type_iterator<It> make_cl_type_iterator(It it, size_t index) {
     return util::make_mapping_iterator_adapter(
             std::move(it), detail::cl_type_index_mapper{index});
 }
+
+}  // namespace core

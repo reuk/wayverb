@@ -5,6 +5,8 @@
 
 #include "utilities/aligned/set.h"
 
+namespace core {
+
 /// IMPORTANT
 /// The following functions assume that the scene being modelled has the
 /// following properties:
@@ -198,3 +200,5 @@ auto eyring_reverb_time(const generic_scene_data<Vertex, Surface>& scene,
                               area(scene),
                               air_coefficient);
 }
+
+}  // namespace core

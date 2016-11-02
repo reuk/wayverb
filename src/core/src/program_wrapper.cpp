@@ -2,6 +2,8 @@
 
 #include <iostream>
 
+namespace core {
+
 program_wrapper::program_wrapper(const compute_context& cc,
                                  const std::string& source)
         : program_wrapper(cc, std::make_pair(source.data(), source.size())) {}
@@ -41,3 +43,5 @@ void program_wrapper::build(const cl::Device& device) const {
 }
 
 cl::Device program_wrapper::get_device() const { return device; }
+
+}  // namespace core

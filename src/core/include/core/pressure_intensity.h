@@ -2,6 +2,8 @@
 
 #include <cmath>
 
+namespace core {
+
 template <typename T, typename U>
 inline auto pressure_to_intensity(T pressure, U Z) {
     using std::copysign;
@@ -18,3 +20,5 @@ inline auto intensity_to_pressure(T intensity, U Z) {
 
 double intensity_for_distance(double distance);
 double pressure_for_distance(double distance, double acoustic_impedance);
+
+}  // namespace core

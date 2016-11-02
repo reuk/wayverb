@@ -37,11 +37,11 @@ namespace detail {
 
 template <typename Callback>
 std::experimental::optional<band> canonical_impl(
-        const compute_context& cc,
+        const core::compute_context& cc,
         const mesh& mesh,
         double sample_rate,
         double simulation_time,
-        const model::parameters& params,
+        const core::model::parameters& params,
         const std::atomic_bool& keep_going,
         Callback&& callback) {
     const auto compute_mesh_index = [&](const auto& pt) {
@@ -63,7 +63,7 @@ std::experimental::optional<band> canonical_impl(
         return raw;
     }();
 
-    auto output_accumulator = callback_accumulator<
+    auto output_accumulator = core::callback_accumulator<
             waveguide::postprocessor::directional_receiver>{
             mesh.get_descriptor(),
             sample_rate,
@@ -106,9 +106,11 @@ struct simulation_results final {
 ///     single directional receiver
 template <typename Callback>
 std::experimental::optional<simulation_results> canonical(
-        const compute_context& cc,
-        const generic_scene_data<cl_float3, surface<simulation_bands>>& scene,
-        const model::parameters& params,
+        const core::compute_context& cc,
+        const core::generic_scene_data<cl_float3,
+                                       core::surface<core::simulation_bands>>&
+                scene,
+        const core::model::parameters& params,
         const single_band_parameters& sim_params,
         double simulation_time,
         const std::atomic_bool& keep_going,
@@ -155,9 +157,11 @@ template <typename Callback>
 [
         [deprecated("really slow and inaccurate compared to the single-band "
                     "version")]] std::experimental::optional<simulation_results>
-canonical(const compute_context& cc,
-          const generic_scene_data<cl_float3, surface<simulation_bands>>& scene,
-          const model::parameters& params,
+canonical(const core::compute_context& cc,
+          const core::generic_scene_data<cl_float3,
+                                         core::surface<core::simulation_bands>>&
+                  scene,
+          const core::model::parameters& params,
           const multiple_band_variable_spacing_parameters& sim_params,
           double simulation_time,
           const std::atomic_bool& keep_going,
@@ -207,9 +211,11 @@ canonical(const compute_context& cc,
 /// really unbelievably slow.
 template <typename Callback>
 std::experimental::optional<simulation_results> canonical(
-        const compute_context& cc,
-        const generic_scene_data<cl_float3, surface<simulation_bands>>& scene,
-        const model::parameters& params,
+        const core::compute_context& cc,
+        const core::generic_scene_data<cl_float3,
+                                       core::surface<core::simulation_bands>>&
+                scene,
+        const core::model::parameters& params,
         const multiple_band_constant_spacing_parameters& sim_params,
         double simulation_time,
         const std::atomic_bool& keep_going,

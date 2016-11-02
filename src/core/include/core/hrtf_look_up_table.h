@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <numeric>
 
+namespace core {
 namespace hrtf_look_up_table {
 
 struct azimuth final {
@@ -85,3 +86,4 @@ constexpr auto generate_hrtf_table() {
 constexpr auto table = generate_hrtf_table();
 
 }  // namespace hrtf_look_up_table
+}  // namespace core

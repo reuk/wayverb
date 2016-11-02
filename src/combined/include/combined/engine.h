@@ -20,11 +20,12 @@
 
 //  forward declarations  //////////////////////////////////////////////////////
 
+namespace core {
 namespace model {
 struct receiver;
 }  // namespace model
-
 class compute_context;
+}  // namespace core
 
 namespace wayverb {
 
@@ -71,34 +72,38 @@ public:
     virtual ~intermediate() noexcept = default;
 
     virtual util::aligned::vector<float> postprocess(
-            const attenuator::hrtf& attenuator, double sample_rate) const = 0;
-
-    virtual util::aligned::vector<float> postprocess(
-            const attenuator::microphone& attenuator,
+            const core::attenuator::hrtf& attenuator,
             double sample_rate) const = 0;
 
     virtual util::aligned::vector<float> postprocess(
-            const attenuator::null& attenuator, double sample_rate) const = 0;
+            const core::attenuator::microphone& attenuator,
+            double sample_rate) const = 0;
+
+    virtual util::aligned::vector<float> postprocess(
+            const core::attenuator::null& attenuator,
+            double sample_rate) const = 0;
 };
 
 //  engine  ////////////////////////////////////////////////////////////////////
 
 class engine final {
 public:
-    using scene_data = generic_scene_data<cl_float3, surface<simulation_bands>>;
+    using scene_data =
+            core::generic_scene_data<cl_float3,
+                                     core::surface<core::simulation_bands>>;
 
     //  Note: Passing scene_data by value is deliberate, as we need to own
     //  the scene, and users can std::move if they don't need their own copy.
 
-    engine(const compute_context& compute_context,
+    engine(const core::compute_context& compute_context,
            scene_data scene_data,
-           const model::parameters& parameters,
+           const core::model::parameters& parameters,
            const raytracer::simulation_parameters& raytracer,
            const waveguide::single_band_parameters& waveguide);
 
-    engine(const compute_context& compute_context,
+    engine(const core::compute_context& compute_context,
            scene_data scene_data,
-           const model::parameters& parameters,
+           const core::model::parameters& parameters,
            const raytracer::simulation_parameters& raytracer,
            const waveguide::multiple_band_constant_spacing_parameters&
                    waveguide);

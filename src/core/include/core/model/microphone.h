@@ -2,6 +2,7 @@
 
 #include "core/model/orientable.h"
 
+namespace core {
 namespace model {
 
 struct microphone final {
@@ -10,3 +11,4 @@ struct microphone final {
 };
 
 }  // namespace model
+}  // namespace core

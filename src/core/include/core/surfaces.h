@@ -2,6 +2,8 @@
 
 #include "core/cl/scene_structs.h"
 
+namespace core {
+
 //  for both methods:
 //      define absorption coefficients per-band
 //      convert to absolute pressure-reflectance values 
@@ -59,3 +61,5 @@ template <typename T, typename U>
 constexpr T specular_pressure(T total_reflected, U scattering) {
     return total_reflected * (1 - scattering);
 }
+
+}  // namespace core

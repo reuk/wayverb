@@ -10,7 +10,7 @@ namespace stochastic {
 
 class program final {
 public:
-    program(const compute_context& cc);
+    program(const core::compute_context& cc);
 
     auto get_kernel() const {
         return program_wrapper_.get_kernel<cl::Buffer,  // reflections
@@ -26,14 +26,14 @@ public:
     }
 
     auto get_init_stochastic_path_info_kernel() const {
-        return program_wrapper_.get_kernel<cl::Buffer,  // buffer
-                                           bands_type,  // initial energy
-                                           cl_float3    // initial position
+        return program_wrapper_.get_kernel<cl::Buffer,        // buffer
+                                           core::bands_type,  // initial energy
+                                           cl_float3  // initial position
                                            >("init_stochastic_path_info");
     }
 
 private:
-    program_wrapper program_wrapper_;
+    core::program_wrapper program_wrapper_;
 };
 
 }  // namespace stochastic

@@ -1,5 +1,6 @@
 #pragma once
 
+/*
 #include "core/model/receiver.h"
 #include "core/orientable.h"
 
@@ -30,3 +31,4 @@ util::aligned::vector<SingleShot> get_all_input_output_combinations(
         const App& a);
 
 }  // namespace model
+*/

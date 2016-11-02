@@ -34,7 +34,7 @@ constexpr auto make_slope_array(double begin,
                                 double end,
                                 std::index_sequence<Ix...>) {
     return std::array<double, sizeof...(Ix)>{
-            {linear_interp(Ix / (sizeof...(Ix) - 1.0), begin, end)...}};
+            {core::linear_interp(Ix / (sizeof...(Ix) - 1.0), begin, end)...}};
 }
 
 template <size_t N>
@@ -56,15 +56,15 @@ int main(int argc, char** argv) {
             std::vector<util::named_value<coefficients_canonical>>{
                     {"sloping_fitted_0",
                      make_reflectance_coefficients(
-                             make_slope_array<simulation_bands>(0, 1))},
+                             make_slope_array<core::simulation_bands>(0, 1))},
 
                     {"sloping_fitted_1",
                      make_reflectance_coefficients(
-                             make_slope_array<simulation_bands>(1, 0))},
+                             make_slope_array<core::simulation_bands>(1, 0))},
 
                     {"sudden",
                      make_reflectance_coefficients(
-                             std::array<double, simulation_bands>{
+                             std::array<double, core::simulation_bands>{
                                      {0, 1, 0, 1, 0, 1, 0, 1}})},
             };
 

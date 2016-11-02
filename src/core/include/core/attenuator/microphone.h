@@ -2,6 +2,7 @@
 
 #include "glm/glm.hpp"
 
+namespace core {
 namespace attenuator {
 
 /// Super-simple class which maintains microphone invariants.
@@ -24,3 +25,4 @@ private:
 float attenuation(const microphone& mic, const glm::vec3& incident);
 
 }  // namespace attenuator
+}  // namespace core

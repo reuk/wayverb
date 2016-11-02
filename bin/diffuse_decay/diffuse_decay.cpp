@@ -10,26 +10,27 @@
 #include "utilities/string_builder.h"
 
 auto produce_histogram(
-        const voxelised_scene_data<cl_float3, surface<simulation_bands>>&
+        const core::voxelised_scene_data<cl_float3,
+                                         core::surface<core::simulation_bands>>&
                 voxelised,
-        const model::parameters& params) {
-    const compute_context cc{};
+        const core::model::parameters& params) {
+    const core::compute_context cc{};
 
-    const auto directions = get_random_directions(1 << 16);
+    const auto directions = core::get_random_directions(1 << 16);
 
-    const scene_buffers buffers{cc.context, voxelised};
+    const core::scene_buffers buffers{cc.context, voxelised};
 
     constexpr auto receiver_radius = 0.1f;
     constexpr auto histogram_sr = 1000.0f;
 
     raytracer::stochastic::finder finder{
             cc, params, receiver_radius, directions.size()};
-    util::aligned::vector<bands_type> histogram;
+    util::aligned::vector<core::bands_type> histogram;
 
     const auto make_ray_iterator = [&](auto it) {
         return util::make_mapping_iterator_adapter(
                 std::move(it), [&](const auto& i) {
-                    return geo::ray{params.source, i};
+                    return core::geo::ray{params.source, i};
                 });
     };
 
@@ -63,16 +64,18 @@ auto produce_histogram(
 }
 
 int main() {
-    constexpr model::parameters params{glm::vec3{-2, 0, 0}, glm::vec3{2, 0, 0}};
+    constexpr core::model::parameters params{glm::vec3{-2, 0, 0},
+                                             glm::vec3{2, 0, 0}};
 
-    const geo::box box{glm::vec3{-4}, glm::vec3{4}};
+    const core::geo::box box{glm::vec3{-4}, glm::vec3{4}};
     constexpr auto absorption = 0.1;
     constexpr auto scattering = 0.1;
 
     const auto voxelised = make_voxelised_scene_data(
-            geo::get_scene_data(
+            core::geo::get_scene_data(
                     box,
-                    make_surface<simulation_bands>(absorption, scattering)),
+                    core::make_surface<core::simulation_bands>(absorption,
+                                                               scattering)),
             2,
             0.1f);
 
@@ -93,7 +96,7 @@ int main() {
 
         {
             auto mono = dirac_sequence.sequence;
-            normalize(mono);
+            core::normalize(mono);
             write(util::build_string("raw_dirac.", sample_rate, ".wav"),
                   audio_file::make_audio_file(mono, dirac_sequence.sample_rate),
                   16);
@@ -114,7 +117,7 @@ int main() {
         const auto direct = raytracer::image_source::get_direct(
                 params.source, params.receiver, voxelised);
 
-        const auto direct_pressure = pressure_for_distance(
+        const auto direct_pressure = core::pressure_for_distance(
                 direct->distance, params.acoustic_impedance);
 
         const auto norm = std::max(max_raytracer_amplitude, direct_pressure);

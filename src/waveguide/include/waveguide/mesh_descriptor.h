@@ -16,7 +16,7 @@ struct alignas(1 << 4) mesh_descriptor final {
 };
 
 template <>
-struct cl_representation<mesh_descriptor> final {
+struct core::cl_representation<mesh_descriptor> final {
     static constexpr auto value = R"(
 typedef struct {
     float3 min_corner;
@@ -51,7 +51,7 @@ void compute_neighbors(const mesh_descriptor& d, size_t index, cl_uint* output);
 std::array<cl_uint, 6> compute_neighbors(const mesh_descriptor& d,
                                          size_t index);
 
-geo::box compute_aabb(const mesh_descriptor& d);
+core::geo::box compute_aabb(const mesh_descriptor& d);
 
 double compute_sample_rate(const mesh_descriptor& d, double speed_of_sound);
 

@@ -4,9 +4,9 @@
 
 namespace waveguide {
 
-geo::box compute_adjusted_boundary(const geo::box& min_boundary,
-                                   const glm::vec3& anchor,
-                                   float cube_side) {
+core::geo::box compute_adjusted_boundary(const core::geo::box& min_boundary,
+                                         const glm::vec3& anchor,
+                                         float cube_side) {
     const auto dif = anchor - min_boundary.get_min();
     const glm::ivec3 ceiled{glm::ceil(dif / cube_side)};
     const auto extra = 1;

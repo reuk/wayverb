@@ -6,21 +6,21 @@
 
 TEST(recursive_vector_impl, size_capacity) {
     {
-        detail::recursive_vector_impl<int> vec{};
+        core::detail::recursive_vector_impl<int> vec{};
         ASSERT_EQ(vec.size(), 0);
         ASSERT_EQ(vec.capacity(), 0);
     }
 
     {
-        detail::recursive_vector_impl<int> vec{100};
+        core::detail::recursive_vector_impl<int> vec{100};
         ASSERT_EQ(vec.size(), 0);
         ASSERT_EQ(vec.capacity(), 100);
     }
 }
 
 TEST(recursive_vector_impl, swap) {
-    detail::recursive_vector_impl<int> a{0};
-    detail::recursive_vector_impl<int> b{100};
+    core::detail::recursive_vector_impl<int> a{0};
+    core::detail::recursive_vector_impl<int> b{100};
 
     ASSERT_EQ(a.size(), 0);
     ASSERT_EQ(b.size(), 0);
@@ -64,7 +64,7 @@ bool operator!=(const non_trivial& a, const non_trivial& b) {
 }
 
 TEST(recursive_vector_impl, construct) {
-    detail::recursive_vector_impl<non_trivial> vec{100};
+    core::detail::recursive_vector_impl<non_trivial> vec{100};
     ASSERT_EQ(vec.capacity(), 100);
 
     vec.construct("hello", 1);
@@ -78,7 +78,7 @@ TEST(recursive_vector_impl, construct) {
 }
 
 TEST(recursive_vector_impl, copy) {
-    detail::recursive_vector_impl<non_trivial> a{100};
+    core::detail::recursive_vector_impl<non_trivial> a{100};
     a.construct("hello", 1);
     a.construct("world", 2);
 
@@ -92,7 +92,7 @@ TEST(recursive_vector_impl, copy) {
 }
 
 TEST(recursive_vector_impl, move) {
-    detail::recursive_vector_impl<non_trivial> a{100};
+    core::detail::recursive_vector_impl<non_trivial> a{100};
     a.construct("hello", 1);
     a.construct("world", 2);
 
@@ -106,11 +106,11 @@ TEST(recursive_vector_impl, move) {
 }
 
 TEST(recursive_vector_impl, copy_assign) {
-    detail::recursive_vector_impl<non_trivial> a{100};
+    core::detail::recursive_vector_impl<non_trivial> a{100};
     a.construct("hello", 1);
     a.construct("world", 2);
 
-    detail::recursive_vector_impl<non_trivial> b{};
+    core::detail::recursive_vector_impl<non_trivial> b{};
     b = a;
     ASSERT_EQ(b.size(), a.size());
 
@@ -121,11 +121,11 @@ TEST(recursive_vector_impl, copy_assign) {
 }
 
 TEST(recursive_vector_impl, move_assign) {
-    detail::recursive_vector_impl<non_trivial> a{100};
+    core::detail::recursive_vector_impl<non_trivial> a{100};
     a.construct("hello", 1);
     a.construct("world", 2);
 
-    detail::recursive_vector_impl<non_trivial> b{};
+    core::detail::recursive_vector_impl<non_trivial> b{};
     b = std::move(a);
 
     ASSERT_EQ(a.size(), 0);
@@ -138,13 +138,13 @@ TEST(recursive_vector_impl, move_assign) {
 ////////////////////////////////////////////////////////////////////////////////
 
 TEST(recursive_vector, size_capacity) {
-    const recursive_vector<int> vec{}; 
+    const core::recursive_vector<int> vec{};
     ASSERT_EQ(vec.size(), 0);
     ASSERT_EQ(vec.capacity(), 0);
 }
 
 TEST(recursive_vector, insert) {
-    recursive_vector<int> vec{};
+    core::recursive_vector<int> vec{};
     const auto a = {1, 2, 3, 4};
     const auto i{vec.insert(vec.end(), a.begin(), a.end())};
 
@@ -239,7 +239,7 @@ TEST(recursive_vector, insert) {
 }
 
 TEST(recursive_vector, erase) {
-    recursive_vector<int> vec{};
+    core::recursive_vector<int> vec{};
     const auto a = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
     vec.insert(vec.begin(), a.begin(), a.end());
 
@@ -277,7 +277,7 @@ TEST(recursive_vector, erase) {
 }
 
 TEST(recursive_vector, reserve) {
-    recursive_vector<int> vec{};
+    core::recursive_vector<int> vec{};
     vec.reserve(100);
 
     ASSERT_EQ(vec.size(), 0);
@@ -287,7 +287,7 @@ TEST(recursive_vector, reserve) {
 ////////////////////////////////////////////////////////////////////////////////
 
 TEST(recursive_vector_backed_set, insert) {
-    recursive_vector_backed_set<int> set;
+    core::recursive_vector_backed_set<int> set;
 
     std::default_random_engine engine{std::random_device{}()};
     std::uniform_int_distribution<int> distribution(-100, 100);
@@ -316,7 +316,7 @@ TEST(recursive_vector_backed_set, insert) {
 }
 
 TEST(recursive_vector_backed_set, find) {
-    recursive_vector_backed_set<int> set;
+    core::recursive_vector_backed_set<int> set;
 
     std::default_random_engine engine{std::random_device{}()};
     std::uniform_int_distribution<int> distribution(-100, 100);

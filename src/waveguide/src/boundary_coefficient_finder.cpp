@@ -37,7 +37,7 @@ cl::Buffer init_buffer(It begin,
 //  mmmmmm beautiful
 boundary_index_data compute_boundary_index_data(
         const cl::Device& device,
-        const scene_buffers& buffers,
+        const core::scene_buffers& buffers,
         const mesh_descriptor& descriptor,
         util::aligned::vector<condensed_node>& nodes) {
     //  load up buffers
@@ -53,11 +53,11 @@ boundary_index_data compute_boundary_index_data(
 
     //  load the nodes vector to a cl buffer
     const auto nodes_buffer =
-            load_to_buffer(buffers.get_context(), nodes, true);
+            core::load_to_buffer(buffers.get_context(), nodes, true);
 
     //  fire up the program
     const boundary_coefficient_program program{
-            compute_context{buffers.get_context(), device}};
+            core::compute_context{buffers.get_context(), device}};
 
     //  create a queue to make sure the cl stuff gets ordered properly
     cl::CommandQueue queue{buffers.get_context(), device};
@@ -80,10 +80,10 @@ boundary_index_data compute_boundary_index_data(
                buffers.get_side(),
                buffers.get_triangles_buffer(),
                buffers.get_triangles_buffer().getInfo<CL_MEM_SIZE>() /
-                       sizeof(triangle),
+                       sizeof(core::triangle),
                buffers.get_vertices_buffer());
-        const auto out =
-                read_from_buffer<boundary_index_array_1>(queue, index_buffer_1);
+        const auto out = core::read_from_buffer<boundary_index_array_1>(
+                queue, index_buffer_1);
 
         const auto num_surfaces_1d =
                 count_boundary_type(nodes.begin(), nodes.end(), is_boundary<1>);
@@ -108,7 +108,8 @@ boundary_index_data compute_boundary_index_data(
                descriptor,
                index_buffer_2,
                index_buffer_1);
-        return read_from_buffer<boundary_index_array_2>(queue, index_buffer_2);
+        return core::read_from_buffer<boundary_index_array_2>(queue,
+                                                              index_buffer_2);
     }();
 
     auto ret_3 = [&] {
@@ -118,7 +119,8 @@ boundary_index_data compute_boundary_index_data(
                descriptor,
                index_buffer_3,
                index_buffer_1);
-        return read_from_buffer<boundary_index_array_3>(queue, index_buffer_3);
+        return core::read_from_buffer<boundary_index_array_3>(queue,
+                                                              index_buffer_3);
     }();
 
     //  finally, update node boundary indices so that the 1d indices point only

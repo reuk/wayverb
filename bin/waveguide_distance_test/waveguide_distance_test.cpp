@@ -18,11 +18,11 @@
 #include <iostream>
 
 int main() {
-    const geo::box box{glm::vec3{0}, glm::vec3{1, 1, 12}};
+    const core::geo::box box{glm::vec3{0}, glm::vec3{1, 1, 12}};
     const auto sample_rate = 5000.0;
     const auto speed_of_sound = 340.0;
 
-    const compute_context cc{};
+    const core::compute_context cc{};
 
     const glm::vec3 source{0.5, 0.5, 0.5};
 
@@ -33,7 +33,8 @@ int main() {
 
     auto voxels_and_mesh = waveguide::compute_voxels_and_mesh(
             cc,
-            geo::get_scene_data(box, make_surface<simulation_bands>(0, 0)),
+            core::geo::get_scene_data(
+                    box, core::make_surface<core::simulation_bands>(0, 0)),
             source,
             sample_rate,
             speed_of_sound);
@@ -53,8 +54,8 @@ int main() {
                                           receiver_index)) {
                     throw std::runtime_error{"receiver is outside of mesh!"};
                 }
-                return callback_accumulator<waveguide::postprocessor::node>{
-                        receiver_index};
+                return core::callback_accumulator<
+                        waveguide::postprocessor::node>{receiver_index};
             });
 
 //  Set up a source signal.
@@ -90,21 +91,22 @@ int main() {
                    },
                    true);
 
-    auto outputs = util::map_to_vector(begin(output_holders),
-                                 end(output_holders),
-                                 [](const auto& i) { return i.get_output(); });
-    normalize(outputs);
-    const auto mag_values =
-            util::map_to_vector(begin(outputs), end(outputs), [](const auto& i) {
-                return max_mag(i);
+    auto outputs = util::map_to_vector(
+            begin(output_holders), end(output_holders), [](const auto& i) {
+                return i.get_output();
+            });
+    core::normalize(outputs);
+    const auto mag_values = util::map_to_vector(
+            begin(outputs), end(outputs), [](const auto& i) {
+                return core::max_mag(i);
             });
     for (auto mag : mag_values) {
         std::cout << "mag: " << mag << '\n';
     }
 
     //  We expect to see a 1 / r^2 relationship between distance and rms.
-    const auto rms_values =
-            util::map_to_vector(begin(outputs), end(outputs), [](const auto& i) {
+    const auto rms_values = util::map_to_vector(
+            begin(outputs), end(outputs), [](const auto& i) {
                 return frequency_domain::rms(i.begin(), i.end());
             });
     for (auto rms : rms_values) {

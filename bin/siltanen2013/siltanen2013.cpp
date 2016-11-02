@@ -46,11 +46,11 @@ struct processor {
     virtual ~processor() = default;
 
     virtual util::named_value<util::aligned::vector<float>> process(
-            const attenuator::null& attenuator) const = 0;
+            const core::attenuator::null& attenuator) const = 0;
     virtual util::named_value<util::aligned::vector<float>> process(
-            const attenuator::hrtf& attenuator) const = 0;
+            const core::attenuator::hrtf& attenuator) const = 0;
     virtual util::named_value<util::aligned::vector<float>> process(
-            const attenuator::microphone& attenuator) const = 0;
+            const core::attenuator::microphone& attenuator) const = 0;
 };
 
 template <typename Callback>
@@ -60,15 +60,15 @@ public:
             : callback_{std::move(callback)} {}
 
     util::named_value<util::aligned::vector<float>> process(
-            const attenuator::null& attenuator) const override {
+            const core::attenuator::null& attenuator) const override {
         return callback_(attenuator);
     }
     util::named_value<util::aligned::vector<float>> process(
-            const attenuator::hrtf& attenuator) const override {
+            const core::attenuator::hrtf& attenuator) const override {
         return callback_(attenuator);
     }
     util::named_value<util::aligned::vector<float>> process(
-            const attenuator::microphone& attenuator) const override {
+            const core::attenuator::microphone& attenuator) const override {
         return callback_(attenuator);
     }
 
@@ -118,26 +118,26 @@ auto make_concrete_renderer_ptr(Callback callback) {
 struct max_mag_functor final {
     template <typename T>
     auto operator()(T&& t) const {
-        return max_mag(t.value);
+        return core::max_mag(t.value);
     }
 };
 
 int main(int argc, char** argv) {
     //  constants //////////////////////////////////////////////////////////////
 
-    const auto box = geo::box{glm::vec3{0}, glm::vec3{5.56, 3.97, 2.81}};
+    const auto box = core::geo::box{glm::vec3{0}, glm::vec3{5.56, 3.97, 2.81}};
     constexpr auto sample_rate = 10000.0;
 
-    constexpr auto params = model::parameters{glm::vec3{2.09, 2.12, 2.12},
-                                              glm::vec3{2.09, 3.08, 0.96}};
+    constexpr auto params = core::model::parameters{
+            glm::vec3{2.09, 2.12, 2.12}, glm::vec3{2.09, 3.08, 0.96}};
     constexpr glm::vec3 pointing{0, 0, 1};
     constexpr glm::vec3 up{0, 1, 0};
 
-    constexpr auto scattering_surface = surface<simulation_bands>{
+    constexpr auto scattering_surface = core::surface<core::simulation_bands>{
             {{0.1, 0.1, 0.11, 0.12, 0.13, 0.14, 0.16, 0.17}},
             {{0.1, 0.1, 0.11, 0.12, 0.13, 0.14, 0.16, 0.17}}};
 
-    const auto scene_data = geo::get_scene_data(box, scattering_surface);
+    const auto scene_data = core::geo::get_scene_data(box, scattering_surface);
 
     const auto room_volume = estimate_room_volume(scene_data);
     const auto eyring = eyring_reverb_time(scene_data, 0.0f);
@@ -161,7 +161,7 @@ int main(int argc, char** argv) {
 
             auto input =
                     wayverb::engine{
-                            compute_context{},
+                            core::compute_context{},
                             scene_data,
                             params,
                             raytracer::simulation_parameters{1 << 16, 4},
@@ -204,21 +204,22 @@ int main(int argc, char** argv) {
         renderers.emplace_back(make_concrete_renderer_ptr([&] {
             auto input = run_exact_img_src(
                     box,
-                    surface<simulation_bands>{scattering_surface.absorption,
-                                              bands_type{}},
+                    core::surface<core::simulation_bands>{
+                            scattering_surface.absorption, core::bands_type{}},
                     params,
                     max_time,
                     false);
 
             return [&, input = std::move(input) ](const auto& attenuator) {
-                return util::make_named_value("img_src",
-                                        raytracer::image_source::postprocess(
-                                                begin(input),
-                                                end(input),
-                                                attenuator,
-                                                params.receiver,
-                                                params.speed_of_sound,
-                                                sample_rate));
+                return util::make_named_value(
+                        "img_src",
+                        raytracer::image_source::postprocess(
+                                begin(input),
+                                end(input),
+                                attenuator,
+                                params.receiver,
+                                params.speed_of_sound,
+                                sample_rate));
             };
         }));
     }
@@ -228,7 +229,7 @@ int main(int argc, char** argv) {
         return make_concrete_renderer_ptr([&] {
             util::progress_bar pb;
             auto input = *waveguide::canonical(
-                    compute_context{},
+                    core::compute_context{},
                     scene_data,
                     params,
                     waveguide_params,
@@ -293,11 +294,11 @@ int main(int argc, char** argv) {
                     std::cout << "norm factor: " << norm_factor << '\n';
 
                     for (auto& i : processed) {
-                        mul(i.value, norm_factor);
+                        core::mul(i.value, norm_factor);
                     }
                 } else {
                     for (auto& i : processed) {
-                        mul(i.value, volume_factor);
+                        core::mul(i.value, volume_factor);
                     }
                 }
 
@@ -307,7 +308,7 @@ int main(int argc, char** argv) {
                             sample_rate);
             },
 
-            std::make_tuple(std::make_tuple("null", attenuator::null{})
+            std::make_tuple(std::make_tuple("null", core::attenuator::null{})
                             /*,
                     std::make_tuple(
                             "hrtf_l",

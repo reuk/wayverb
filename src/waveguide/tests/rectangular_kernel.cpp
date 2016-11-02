@@ -189,7 +189,7 @@ public:
         return buf;
     }
 
-    const compute_context cc;
+    const core::compute_context cc;
     const waveguide::program program{cc};
     util::aligned::vector<Memory> memory{testing::parallel_size, Memory{}};
 

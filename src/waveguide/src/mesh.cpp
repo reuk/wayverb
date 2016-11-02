@@ -39,8 +39,9 @@ void mesh::set_coefficients(
 ////////////////////////////////////////////////////////////////////////////////
 
 mesh compute_mesh(
-        const compute_context& cc,
-        const voxelised_scene_data<cl_float3, surface<simulation_bands>>&
+        const core::compute_context& cc,
+        const core::voxelised_scene_data<cl_float3,
+                                         core::surface<core::simulation_bands>>&
                 voxelised,
         float mesh_spacing,
         float speed_of_sound) {
@@ -52,8 +53,9 @@ mesh compute_mesh(
     const auto desc = [&] {
         const auto aabb = voxelised.get_voxels().get_aabb();
         const auto dim = glm::ivec3{dimensions(aabb) / mesh_spacing};
-        return mesh_descriptor{
-                to_cl_float3(aabb.get_min()), to_cl_int3(dim), mesh_spacing};
+        return mesh_descriptor{core::to_cl_float3(aabb.get_min()),
+                               core::to_cl_int3(dim),
+                               mesh_spacing};
     }();
 
     auto nodes = [&] {
@@ -82,7 +84,8 @@ mesh compute_mesh(
 
 #ifndef NDEBUG
         {
-            auto nodes = read_from_buffer<condensed_node>(queue, node_buffer);
+            auto nodes =
+                    core::read_from_buffer<condensed_node>(queue, node_buffer);
             const auto count =
                     count_boundary_type(nodes.begin(), nodes.end(), [](auto i) {
                         return i == id_inside;
@@ -99,7 +102,7 @@ mesh compute_mesh(
             kernel(enqueue(), node_buffer, desc);
         }
 
-        return read_from_buffer<condensed_node>(queue, node_buffer);
+        return core::read_from_buffer<condensed_node>(queue, node_buffer);
     }();
 
     //  IMPORTANT
@@ -127,8 +130,10 @@ mesh compute_mesh(
 }
 
 voxels_and_mesh compute_voxels_and_mesh(
-        const compute_context& cc,
-        const generic_scene_data<cl_float3, surface<simulation_bands>>& scene,
+        const core::compute_context& cc,
+        const core::generic_scene_data<cl_float3,
+                                       core::surface<core::simulation_bands>>&
+                scene,
         const glm::vec3& anchor,
         double sample_rate,
         double speed_of_sound) {
@@ -138,7 +143,7 @@ voxels_and_mesh compute_voxels_and_mesh(
             scene,
             5,
             waveguide::compute_adjusted_boundary(
-                    geo::get_aabb(scene), anchor, mesh_spacing));
+                    core::geo::get_aabb(scene), anchor, mesh_spacing));
     auto mesh = compute_mesh(cc, voxelised, mesh_spacing, speed_of_sound);
     return {std::move(voxelised), std::move(mesh)};
 }

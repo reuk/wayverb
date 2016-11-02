@@ -8,6 +8,8 @@
 
 #include <numeric>
 
+namespace core {
+
 class mesh_boundary;
 struct triangle;
 
@@ -101,3 +103,5 @@ auto compute_triangle_indices(
     std::iota(ret.begin(), ret.end(), 0);
     return ret;
 }
+
+}  // namespace core

@@ -16,7 +16,7 @@
 TEST(dc_blocker, delay_line) {
     constexpr auto LENGTH = 4;
 
-    filter::delay_line dl(LENGTH);
+    core::filter::delay_line dl(LENGTH);
 
     for (auto i = 0; i != LENGTH; ++i) {
         ASSERT_EQ(dl[i], 0);
@@ -44,7 +44,7 @@ TEST(dc_blocker, delay_line) {
 }
 
 TEST(dc_blocker, moving_average) {
-    filter::moving_average ma(4);
+    core::filter::moving_average ma(4);
     ASSERT_EQ(ma.filter(0), 0);
     ASSERT_EQ(ma.filter(0), 0);
     ASSERT_EQ(ma.filter(0), 0);
@@ -62,7 +62,7 @@ TEST(dc_blocker, moving_average) {
 }
 
 TEST(dc_blocker, two_moving_average) {
-    filter::n_moving_averages<2> ma(4);
+    core::filter::n_moving_averages<2> ma(4);
     ASSERT_EQ(ma.filter(0), 0);
     ASSERT_EQ(ma.filter(0), 0);
     ASSERT_EQ(ma.filter(0), 0);
@@ -87,7 +87,7 @@ TEST(dc_blocker, two_moving_average) {
 }
 
 TEST(dc_blocker, dc_blocker) {
-    filter::linear_dc_blocker dc(4);
+    core::filter::linear_dc_blocker dc(4);
     ASSERT_EQ(dc.filter(0), 0);
     ASSERT_EQ(dc.filter(0), 0);
     ASSERT_EQ(dc.filter(0), 0);
@@ -112,7 +112,7 @@ TEST(dc_blocker, dc_blocker) {
 }
 
 TEST(dc_blocker, big_offset) {
-    filter::linear_dc_blocker dc(4);
+    core::filter::linear_dc_blocker dc(4);
     ASSERT_EQ(dc.filter(2), -2 / 16.0);
     ASSERT_EQ(dc.filter(2), -6 / 16.0);
     ASSERT_EQ(dc.filter(2), -12 / 16.0);
@@ -167,8 +167,9 @@ TEST(dc_blocker, io) {
               16);
 
         auto run{[&i](auto& filter, const auto& filter_name, auto i) {
-            filter::run_two_pass(filter, i.kernel.begin(), i.kernel.end());
-            normalize(i.kernel);
+            core::filter::run_two_pass(
+                    filter, i.kernel.begin(), i.kernel.end());
+            core::normalize(i.kernel);
             write(util::build_string(
                           "dc_test.output.", filter_name, ".", i.name, ".wav"),
                   audio_file::make_audio_file(i.kernel, 44100),
@@ -176,11 +177,12 @@ TEST(dc_blocker, io) {
         }};
 
         {
-            filter::linear_dc_blocker dc;
+            core::filter::linear_dc_blocker dc;
             run(dc, "normal", i);
         }
+
         {
-            filter::extra_linear_dc_blocker dc;
+            core::filter::extra_linear_dc_blocker dc;
             run(dc, "super", i);
         }
     }
@@ -194,9 +196,9 @@ const util::aligned::vector<std::tuple<callback, std::string>> trial_blockers{
 
         {[](auto sig, auto cutoff, auto sample_rate) {
              auto blocker{make_series_biquads(
-                     filter::compute_hipass_butterworth_coefficients<1>(
+                     core::filter::compute_hipass_butterworth_coefficients<1>(
                              10, sample_rate))};
-             filter::run_two_pass(blocker, sig.begin(), sig.end());
+             run_two_pass(blocker, sig.begin(), sig.end());
              return sig;
          },
          "butterworth_1"},
@@ -205,9 +207,9 @@ const util::aligned::vector<std::tuple<callback, std::string>> trial_blockers{
              const util::aligned::vector<float> zeros(sig.size(), 0);
              sig.insert(sig.begin(), zeros.begin(), zeros.end());
              auto blocker{make_series_biquads(
-                     filter::compute_hipass_butterworth_coefficients<1>(
+                     core::filter::compute_hipass_butterworth_coefficients<1>(
                              10, sample_rate))};
-             filter::run_two_pass(blocker, sig.begin(), sig.end());
+             run_two_pass(blocker, sig.begin(), sig.end());
              return util::aligned::vector<float>(sig.begin() + zeros.size(),
                                                  sig.end());
          },
@@ -215,34 +217,34 @@ const util::aligned::vector<std::tuple<callback, std::string>> trial_blockers{
 
         {[](auto sig, auto cutoff, auto sample_rate) {
              auto blocker{make_series_biquads(
-                     filter::compute_hipass_butterworth_coefficients<2>(
+                     core::filter::compute_hipass_butterworth_coefficients<2>(
                              10, sample_rate))};
-             filter::run_two_pass(blocker, sig.begin(), sig.end());
+             run_two_pass(blocker, sig.begin(), sig.end());
              return sig;
          },
          "butterworth_2"},
 
         {[](auto sig, auto cutoff, auto sample_rate) {
              auto blocker{make_series_biquads(
-                     filter::compute_hipass_butterworth_coefficients<3>(
+                     core::filter::compute_hipass_butterworth_coefficients<3>(
                              10, sample_rate))};
-             filter::run_two_pass(blocker, sig.begin(), sig.end());
+             run_two_pass(blocker, sig.begin(), sig.end());
              return sig;
          },
          "butterworth_3"},
 
         {[](auto sig, auto cutoff, auto sample_rate) {
-             filter::biquad blocker{
-                     filter::compute_dc_blocker_coefficients(0.999)};
-             filter::run_one_pass(blocker, sig.begin(), sig.end());
+             auto blocker = core::filter::biquad{
+                     core::filter::compute_dc_blocker_coefficients(0.999)};
+             run_one_pass(blocker, sig.begin(), sig.end());
              return sig;
          },
          "biquad_onepass"},
 
         {[](auto sig, auto cutoff, auto sample_rate) {
-             filter::biquad blocker{
-                     filter::compute_dc_blocker_coefficients(0.999)};
-             filter::run_two_pass(blocker, sig.begin(), sig.end());
+             auto blocker = core::filter::biquad{
+                     core::filter::compute_dc_blocker_coefficients(0.999)};
+             run_two_pass(blocker, sig.begin(), sig.end());
              return sig;
          },
          "biquad_twopass"},

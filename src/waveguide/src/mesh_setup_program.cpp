@@ -172,24 +172,24 @@ kernel void set_node_boundary_type(global condensed_node* nodes,
 
 )";
 
-setup_program::setup_program(const compute_context& cc)
-        : program_wrapper(
-                  cc,
-                  std::vector<std::string>{
-                          cl_representation_v<bands_type>,
-                          cl_representation_v<surface<simulation_bands>>,
-                          cl_representation_v<triangle>,
-                          cl_representation_v<triangle_verts>,
-                          cl_representation_v<boundary_type>,
-                          cl_representation_v<condensed_node>,
-                          cl_representation_v<mesh_descriptor>,
-                          cl_representation_v<aabb>,
-                          cl_representation_v<ray>,
-                          cl_representation_v<triangle_inter>,
-                          cl_representation_v<intersection>,
-                          ::cl_sources::geometry,
-                          ::cl_sources::voxel,
-                          ::cl_sources::utils,
-                          source}) {}
+setup_program::setup_program(const core::compute_context& cc)
+        : wrapper_{cc,
+                   std::vector<std::string>{
+                           core::cl_representation_v<core::bands_type>,
+                           core::cl_representation_v<
+                                   core::surface<core::simulation_bands>>,
+                           core::cl_representation_v<core::triangle>,
+                           core::cl_representation_v<core::triangle_verts>,
+                           core::cl_representation_v<core::aabb>,
+                           core::cl_representation_v<core::ray>,
+                           core::cl_representation_v<core::triangle_inter>,
+                           core::cl_representation_v<core::intersection>,
+                           core::cl_representation_v<boundary_type>,
+                           core::cl_representation_v<condensed_node>,
+                           core::cl_representation_v<mesh_descriptor>,
+                           core::cl_sources::geometry,
+                           core::cl_sources::voxel,
+                           ::cl_sources::utils,
+                           source}} {}
 
 }  // namespace waveguide

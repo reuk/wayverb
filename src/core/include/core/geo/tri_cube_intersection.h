@@ -7,6 +7,7 @@
 
 #include "glm/fwd.hpp"
 
+namespace core {
 namespace geo {
 
 enum class where { inside, outside };
@@ -22,4 +23,5 @@ where check_line(const glm::vec3& p1, const glm::vec3& p2, int outcode_diff);
 where point_triangle_intersection(const glm::vec3& p, const triangle_vec3& t);
 where t_c_intersection(const triangle_vec3& t);
 
-}//namespace geo
+}  // namespace geo
+}  // namespace core

@@ -14,7 +14,7 @@ struct multitree final {
             : item(std::move(item)) {}
 
     T item;
-    using branches_type = recursive_vector_backed_set<multitree<T>>;
+    using branches_type = core::recursive_vector_backed_set<multitree<T>>;
     branches_type branches;
 };
 

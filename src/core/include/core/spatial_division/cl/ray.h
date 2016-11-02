@@ -4,6 +4,8 @@
 
 #include <string>
 
+namespace core {
+
 namespace cl_sources {
 const std::string ray(R"(
 
@@ -19,3 +21,4 @@ typedef struct {
 
 )");
 }  // namespace cl_sources
+}  // namespace core

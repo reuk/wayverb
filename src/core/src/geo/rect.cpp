@@ -1,5 +1,6 @@
 #include "core/geo/rect.h"
 
+namespace core {
 namespace geo {
 namespace detail {
 
@@ -16,3 +17,4 @@ std::array<glm::vec2, 4> outline(const rect& r) {
 
 }  // namespace detail
 }  // namespace geo
+}  // namespace core

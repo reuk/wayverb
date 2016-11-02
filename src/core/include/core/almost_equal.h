@@ -2,6 +2,8 @@
 
 #include "glm/glm.hpp"
 
+namespace core {
+
 template <typename T, typename U>
 inline bool within_tolerance(T a, U tolerance) {
     return std::abs(a) <= tolerance;
@@ -22,3 +24,5 @@ template <typename T>
 inline bool nearby(const T& a, const T& b, double dist) {
     return glm::distance(a, b) <= dist;
 }
+
+}  // namespace core

@@ -12,7 +12,7 @@
 class compressed_rectangular_waveguide_program final {
 public:
     explicit compressed_rectangular_waveguide_program(
-            const compute_context& cc);
+            const core::compute_context& cc);
 
     auto get_compressed_waveguide_kernel() const {
         return program_wrapper_.get_kernel<cl::Buffer, cl::Buffer>(
@@ -31,7 +31,7 @@ public:
     cl::Device get_device() const { return program_wrapper_.get_device(); }
 
 private:
-    program_wrapper program_wrapper_;
+    core::program_wrapper program_wrapper_;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -45,7 +45,8 @@ public:
             decltype(std::declval<compressed_rectangular_waveguide_program>()
                              .get_zero_buffer_kernel());
 
-    compressed_rectangular_waveguide(const compute_context& cc, size_t steps);
+    compressed_rectangular_waveguide(const core::compute_context& cc,
+                                     size_t steps);
 
     template <typename It, typename T>
     util::aligned::vector<float> run_hard_source(It begin,
@@ -54,7 +55,7 @@ public:
         return run(begin,
                    end,
                    [](auto& queue, auto& buffer, float input) {
-                       write_value(queue, buffer, 0, input);
+                       core::write_value(queue, buffer, 0, input);
                    },
                    per_step);
     }
@@ -66,8 +67,9 @@ public:
         return run(begin,
                    end,
                    [](auto& queue, auto& buffer, float input) {
-                       const auto c = read_value<cl_float>(queue, buffer, 0);
-                       write_value(queue, buffer, 0, c + input);
+                       const auto c =
+                               core::read_value<cl_float>(queue, buffer, 0);
+                       core::write_value(queue, buffer, 0, c + input);
                    },
                    per_step);
     }
@@ -108,7 +110,7 @@ private:
             swap(previous_, current_);
 
             //  get output value
-            ret.emplace_back(read_value<cl_float>(queue_, current_, 0));
+            ret.emplace_back(core::read_value<cl_float>(queue_, current_, 0));
 
             per_step(count);
         }

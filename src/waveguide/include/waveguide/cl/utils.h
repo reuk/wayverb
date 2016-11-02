@@ -18,7 +18,7 @@ typedef enum : cl_int {
 } boundary_type;
 
 template <>
-struct cl_representation<boundary_type> final {
+struct core::cl_representation<boundary_type> final {
     static constexpr auto value = R"(
 typedef enum {
     id_none = 0,

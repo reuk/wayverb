@@ -8,6 +8,8 @@
 
 #include <array>
 
+namespace core {
+
 struct triangle;
 
 namespace geo {
@@ -31,3 +33,4 @@ triangle_vec2 get_triangle_vec2(const triangle& t,
 float area(const triangle_vec3& triangle);
 
 }  // namespace geo
+}  // namespace core

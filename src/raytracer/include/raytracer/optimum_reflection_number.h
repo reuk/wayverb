@@ -44,7 +44,7 @@ size_t compute_optimum_reflection_number(It begin, It end) {
 /// Get the number of necessary reflections for a given scene.
 template <typename Vertex, typename Surface>
 size_t compute_optimum_reflection_number(
-        const generic_scene_data<Vertex, Surface>& scene) {
+        const core::generic_scene_data<Vertex, Surface>& scene) {
     return compute_optimum_reflection_number(scene.get_surfaces().begin(),
                                              scene.get_surfaces().end());
 }

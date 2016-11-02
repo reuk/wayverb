@@ -2,6 +2,7 @@
 
 #include "glm/glm.hpp"
 
+namespace core {
 namespace indexing {
 
 /// types for indexing into n-dimensional data
@@ -108,3 +109,4 @@ inline unsigned flatten<1>(index_t<1> i, index_t<1>) {
 }
 
 }  // namespace indexing
+}  // namespace core

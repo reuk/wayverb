@@ -1,5 +1,6 @@
 #include "combined/model.h"
 
+/*
 #include "utilities/aligned/vector.h"
 
 namespace model {
@@ -31,3 +32,4 @@ util::aligned::vector<SingleShot> get_all_input_output_combinations(
 }
 
 }  // namespace model
+*/

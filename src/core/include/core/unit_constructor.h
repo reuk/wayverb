@@ -2,6 +2,8 @@
 
 #include "core/cl/scene_structs.h"
 
+namespace core {
+
 template <typename T>
 struct unit_constructor;
 
@@ -33,3 +35,5 @@ struct unit_constructor<cl_float8> final {
 
 template <typename T>
 constexpr auto unit_constructor_v = unit_constructor<T>::value;
+
+}  // namespace core

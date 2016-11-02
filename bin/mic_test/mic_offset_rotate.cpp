@@ -110,25 +110,26 @@ int main(int argc, char** argv) {
     //  constants ------------------------------------------------------------//
 
     const auto s = 1.5f;
-    const geo::box box{glm::vec3{-s}, glm::vec3{s}};
+    const core::geo::box box{glm::vec3{-s}, glm::vec3{s}};
 
     const auto filter_frequency = 8000.0;
     const auto oversample_ratio = 1.0;
     const auto sample_rate = filter_frequency * oversample_ratio * (1 / 0.16);
 
     const glm::vec3 receiver{0, 0, 0};
-    const attenuator::microphone mic{glm::vec3{0, 0, 1}, directionality};
+    const core::attenuator::microphone mic{glm::vec3{0, 0, 1}, directionality};
 
     constexpr auto absorption = 0.001f;
     constexpr auto scattering = 0.0f;
 
-    const auto scene_data = geo::get_scene_data(
-            box, make_surface<simulation_bands>(absorption, scattering));
+    const auto scene_data = core::geo::get_scene_data(
+            box,
+            core::make_surface<core::simulation_bands>(absorption, scattering));
 
     //  simulations ----------------------------------------------------------//
 
     const auto run = [&](const auto& name, const auto& callback) {
-        const auto output = run_multiple_angles<simulation_bands>(
+        const auto output = run_multiple_angles<core::simulation_bands>(
                 receiver, sample_rate, callback);
         std::ofstream file{output_folder + "/" + name + ".txt"};
         cereal::JSONOutputArchive archive{file};
@@ -138,9 +139,9 @@ int main(int argc, char** argv) {
 
     run("waveguide", [&](const auto& source, const auto& receiver) {
         util::progress_bar pb;
-        const model::parameters params{source, receiver};
+        const core::model::parameters params{source, receiver};
         auto raw = *waveguide::canonical(
-                compute_context{},
+                core::compute_context{},
                 scene_data,
                 params,
                 waveguide::single_band_parameters{sample_rate, 0.6},
@@ -152,11 +153,11 @@ int main(int argc, char** argv) {
     });
 
     run("img_src", [&](const auto& source, const auto& receiver) {
-        const model::parameters params{source, receiver};
+        const core::model::parameters params{source, receiver};
         const auto simulation_time = 2 / params.speed_of_sound;
         const auto raw =
                 run_exact_img_src(box,
-                                  make_surface<1>(absorption, scattering),
+                                  core::make_surface<1>(absorption, scattering),
                                   params,
                                   simulation_time,
                                   false);

@@ -2,6 +2,8 @@
 
 #include <cmath>
 
+namespace core {
+
 glm::vec3 sphere(double cosz, double sinz, double theta) {
     return glm::vec3(cosz * cos(theta), sinz, cosz * sin(theta));
 }
@@ -29,3 +31,4 @@ util::aligned::vector<glm::vec3> get_random_directions(size_t num) {
     return ret;
 }
 
+}  // namespace core

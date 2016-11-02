@@ -12,7 +12,7 @@ typedef enum : cl_int {
 } error_code;
 
 template <>
-struct cl_representation<error_code> final {
+struct core::cl_representation<error_code> final {
     static constexpr auto value = R"(
 typedef enum {
     id_success = 0,
@@ -33,7 +33,7 @@ struct alignas(1 << 3) condensed_node final {
 };
 
 template <>
-struct cl_representation<condensed_node> final {
+struct core::cl_representation<condensed_node> final {
     static constexpr auto value = R"(
 typedef struct {
     int boundary_type;
@@ -62,7 +62,7 @@ struct alignas(1 << 3) boundary_data final {
 };
 
 template <>
-struct cl_representation<boundary_data> final {
+struct core::cl_representation<boundary_data> final {
     static constexpr auto value = R"(
 typedef struct {
     memory_canonical filter_memory;
@@ -104,22 +104,22 @@ using boundary_data_array_1 = boundary_data_array<1>;
 using boundary_data_array_2 = boundary_data_array<2>;
 using boundary_data_array_3 = boundary_data_array<3>;
 
-template<>
-struct cl_representation<boundary_data_array_1> final {
+template <>
+struct core::cl_representation<boundary_data_array_1> final {
     static constexpr auto value = R"(
 typedef struct { boundary_data array[1]; } boundary_data_array_1;
 )";
 };
 
-template<>
-struct cl_representation<boundary_data_array_2> final {
+template <>
+struct core::cl_representation<boundary_data_array_2> final {
     static constexpr auto value = R"(
 typedef struct { boundary_data array[2]; } boundary_data_array_2;
 )";
 };
 
-template<>
-struct cl_representation<boundary_data_array_3> final {
+template <>
+struct core::cl_representation<boundary_data_array_3> final {
     static constexpr auto value = R"(
 typedef struct { boundary_data array[3]; } boundary_data_array_3;
 )";

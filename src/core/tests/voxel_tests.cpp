@@ -17,28 +17,30 @@
 
 namespace {
 template <typename Vertex, typename Surface>
-auto get_voxelised(const generic_scene_data<Vertex, Surface>& scene) {
+auto get_voxelised(const core::generic_scene_data<Vertex, Surface>& scene) {
     return make_voxelised_scene_data(scene, 5, 0.1f);
 }
 
 auto get_test_scenes() {
-    return util::aligned::vector<scene_data_loader::scene_data>{
-            geo::get_scene_data(
-                    geo::box{glm::vec3(0, 0, 0), glm::vec3(4, 3, 6)},
-                    scene_data_loader::material{
-                            "default", make_surface<simulation_bands>(0, 0)}),
-            geo::get_scene_data(
-                    geo::box{glm::vec3(0, 0, 0), glm::vec3(3, 3, 3)},
-                    scene_data_loader::material{
-                            "default", make_surface<simulation_bands>(0, 0)}),
-            scene_data_loader{OBJ_PATH}.get_scene_data()};
+    return util::aligned::vector<core::scene_data_loader::scene_data>{
+            core::geo::get_scene_data(
+                    core::geo::box{glm::vec3(0, 0, 0), glm::vec3(4, 3, 6)},
+                    core::scene_data_loader::material{
+                            "default",
+                            core::make_surface<core::simulation_bands>(0, 0)}),
+            core::geo::get_scene_data(
+                    core::geo::box{glm::vec3(0, 0, 0), glm::vec3(3, 3, 3)},
+                    core::scene_data_loader::material{
+                            "default",
+                            core::make_surface<core::simulation_bands>(0, 0)}),
+            core::scene_data_loader{OBJ_PATH}.get_scene_data()};
 }
 
 TEST(voxel, walk) {
     for (const auto& scene : get_test_scenes()) {
         const auto voxelised = get_voxelised(scene);
-        for (const auto& i : get_random_directions(1000)) {
-            geo::ray ray{glm::vec3{0, 1, 0}, to_vec3(i)};
+        for (const auto& i : core::get_random_directions(1000)) {
+            core::geo::ray ray{glm::vec3{0, 1, 0}, core::to_vec3(i)};
             bool has_triangles{false};
             traverse(voxelised.get_voxels(),
                      ray,
@@ -65,15 +67,15 @@ TEST(voxel, surrounded) {
     for (const auto& scene : get_test_scenes()) {
         const auto voxelised =
                 get_voxelised(scene_with_extracted_surfaces(scene));
-        const compute_context cc{};
+        const core::compute_context cc{};
         const auto buffers = make_scene_buffers(cc.context, voxelised);
 
-        const auto directions = get_random_directions(1000);
+        const auto directions = core::get_random_directions(1000);
 
         const auto get_fast_intersections = [&](const auto& directions) {
             return util::map_to_vector(
                     begin(directions), end(directions), [&](const auto& i) {
-                        const auto ray = geo::ray{source, i};
+                        const auto ray = core::geo::ray{source, i};
                         return intersects(voxelised, ray);
                     });
         };
@@ -82,11 +84,11 @@ TEST(voxel, surrounded) {
         const auto slow_intersections = [&](const auto& directions) {
             return util::map_to_vector(
                     begin(directions), end(directions), [&](const auto& i) {
-                        return geo::ray_triangle_intersection(
-                                geo::ray{source, i},
+                        return core::geo::ray_triangle_intersection(
+                                core::geo::ray{source, i},
                                 voxelised.get_scene_data().get_triangles(),
-                                convert(voxelised.get_scene_data()
-                                                .get_vertices()));
+                                core::convert(voxelised.get_scene_data()
+                                                      .get_vertices()));
                     });
         }(directions);
 
@@ -128,17 +130,17 @@ TEST(voxel, surrounded) {
 
 template <typename Vertex, typename Surface>
 void compare(const glm::vec3& source,
-             const generic_scene_data<Vertex, Surface>& scene) {
+             const core::generic_scene_data<Vertex, Surface>& scene) {
     const auto voxelised = get_voxelised(scene_with_extracted_surfaces(scene));
-    const compute_context cc{};
+    const core::compute_context cc{};
     const auto buffers = make_scene_buffers(cc.context, voxelised);
 
-    const auto directions = get_random_directions(1000);
+    const auto directions = core::get_random_directions(1000);
 
     const auto get_fast_intersections = [&](const auto& directions) {
         return util::map_to_vector(
                 begin(directions), end(directions), [&](const auto& i) {
-                    const auto ray{geo::ray{source, i}};
+                    const auto ray{core::geo::ray{source, i}};
                     return intersects(voxelised, ray);
                 });
     };
@@ -147,10 +149,11 @@ void compare(const glm::vec3& source,
     const auto slow_intersections = [&](const auto& directions) {
         return util::map_to_vector(
                 begin(directions), end(directions), [&](const auto& i) {
-                    return geo::ray_triangle_intersection(
-                            geo::ray{source, i},
+                    return core::geo::ray_triangle_intersection(
+                            core::geo::ray{source, i},
                             voxelised.get_scene_data().get_triangles(),
-                            convert(voxelised.get_scene_data().get_vertices()));
+                            core::convert(
+                                    voxelised.get_scene_data().get_vertices()));
                 });
     }(directions);
 

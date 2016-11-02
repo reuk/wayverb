@@ -1,6 +1,7 @@
 #include "core/attenuator/hrtf.h"
 #include "core/hrtf_look_up_table.h"
 
+namespace core {
 namespace attenuator {
 
 constexpr std::array<hrtf::channel, 2> hrtf::channels;
@@ -69,3 +70,4 @@ glm::vec3 get_ear_position(const hrtf& hrtf, const glm::vec3& base_position) {
 }
 
 }  // namespace attenuator
+}  // namespace core

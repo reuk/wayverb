@@ -44,19 +44,19 @@ public:
             , speed_of_sound_{speed_of_sound} {}
 
     util::aligned::vector<float> postprocess(
-            const attenuator::hrtf& attenuator,
+            const core::attenuator::hrtf& attenuator,
             double sample_rate) const override {
         return postprocess_impl(attenuator, sample_rate);
     }
 
     util::aligned::vector<float> postprocess(
-            const attenuator::microphone& attenuator,
+            const core::attenuator::microphone& attenuator,
             double sample_rate) const override {
         return postprocess_impl(attenuator, sample_rate);
     }
 
     util::aligned::vector<float> postprocess(
-            const attenuator::null& attenuator,
+            const core::attenuator::null& attenuator,
             double sample_rate) const override {
         return postprocess_impl(attenuator, sample_rate);
     }
@@ -132,9 +132,9 @@ public:
 template <typename WaveguideParams>
 class concrete_impl : public engine::impl {
 public:
-    concrete_impl(const compute_context& cc,
+    concrete_impl(const core::compute_context& cc,
                   engine::scene_data scene_data,
-                  const model::parameters& parameters,
+                  const core::model::parameters& parameters,
                   const raytracer::simulation_parameters& raytracer,
                   const WaveguideParams& waveguide)
             : compute_context_{cc}
@@ -230,10 +230,10 @@ public:
     }
 
 private:
-    compute_context compute_context_;
+    core::compute_context compute_context_;
     engine::scene_data scene_data_;
     double room_volume_;
-    model::parameters parameters_;
+    core::model::parameters parameters_;
     raytracer::simulation_parameters raytracer_;
     WaveguideParams waveguide_;
 
@@ -244,9 +244,9 @@ private:
 
 ////////////////////////////////////////////////////////////////////////////////
 
-engine::engine(const compute_context& compute_context,
+engine::engine(const core::compute_context& compute_context,
                scene_data scene_data,
-               const model::parameters& parameters,
+               const core::model::parameters& parameters,
                const raytracer::simulation_parameters& raytracer,
                const waveguide::single_band_parameters& waveguide)
         : pimpl_{std::make_unique<
@@ -258,9 +258,9 @@ engine::engine(const compute_context& compute_context,
                   waveguide)} {}
 
 engine::engine(
-        const compute_context& compute_context,
+        const core::compute_context& compute_context,
         scene_data scene_data,
-        const model::parameters& parameters,
+        const core::model::parameters& parameters,
         const raytracer::simulation_parameters& raytracer,
         const waveguide::multiple_band_constant_spacing_parameters& waveguide)
         : pimpl_{std::make_unique<concrete_impl<

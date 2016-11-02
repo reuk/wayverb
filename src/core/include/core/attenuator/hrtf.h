@@ -4,6 +4,7 @@
 
 #include "glm/glm.hpp"
 
+namespace core {
 namespace attenuator {
 
 class hrtf final {
@@ -42,7 +43,7 @@ glm::vec3 transform(const glm::vec3& pointing,
 template <typename T, size_t... Ix>
 constexpr auto to_cl_float_vector(const std::array<T, sizeof...(Ix)>& x,
                                   std::index_sequence<Ix...>) {
-    using return_type = detail::cl_vector_constructor_t<float, sizeof...(Ix)>;
+    using return_type = ::detail::cl_vector_constructor_t<float, sizeof...(Ix)>;
     return return_type{{static_cast<float>(std::get<Ix>(x))...}};
 }
 
@@ -56,3 +57,4 @@ bands_type attenuation(const hrtf& hrtf, const glm::vec3& incident);
 glm::vec3 get_ear_position(const hrtf& hrtf, const glm::vec3& base_position);
 
 }  // namespace attenuator
+}  // namespace core

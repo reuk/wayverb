@@ -6,6 +6,8 @@
 
 #include <random>
 
+namespace core {
+
 glm::vec3 sphere_point(double z, double theta);
 glm::vec3 point_on_sphere(double az, double el);
 
@@ -32,3 +34,5 @@ glm::vec3 random_unit_vector(t& engine) {
 }
 
 util::aligned::vector<glm::vec3> get_random_directions(size_t num);
+
+}  // namespace core

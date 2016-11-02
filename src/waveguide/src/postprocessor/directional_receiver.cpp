@@ -29,7 +29,8 @@ directional_receiver::directional_receiver(
 directional_receiver::return_type directional_receiver::operator()(
         cl::CommandQueue& queue, const cl::Buffer& buffer, size_t) {
     //  copy out node pressure
-    const auto pressure = read_value<cl_float>(queue, buffer, output_node_);
+    const auto pressure =
+            core::read_value<cl_float>(queue, buffer, output_node_);
 
     //  copy out surrounding pressures
 
@@ -39,10 +40,10 @@ directional_receiver::return_type directional_receiver::operator()(
     constexpr auto num_surrounding = 6;
     std::array<cl_float, num_surrounding> surrounding;
     for (auto i = 0ul; i != num_surrounding; ++i) {
-        surrounding[i] =
-                (read_value<cl_float>(queue, buffer, surrounding_nodes_[i]) -
-                 pressure) /
-                mesh_spacing_;
+        surrounding[i] = (core::read_value<cl_float>(
+                                  queue, buffer, surrounding_nodes_[i]) -
+                          pressure) /
+                         mesh_spacing_;
     }
 
     //  the approximation of the pressure gradient is obtained by

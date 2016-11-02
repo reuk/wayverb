@@ -14,9 +14,10 @@ make_visual::make_visual(size_t items)
         : items_{items} {}
 
 visual make_visual::operator()(
-        const compute_context& cc,
-        const model::parameters& params,
-        const voxelised_scene_data<cl_float3, surface<simulation_bands>>&
+        const core::compute_context& cc,
+        const core::model::parameters& params,
+        const core::voxelised_scene_data<cl_float3,
+                                         core::surface<core::simulation_bands>>&
                 voxelised,
         size_t num_directions) const {
     return visual{items_};

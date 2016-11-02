@@ -2,6 +2,8 @@
 
 #include <array>
 
+namespace core {
+
 template <size_t B, size_t A>
 struct filter_coefficients final {
     using b_order = std::integral_constant<size_t, B>;
@@ -19,3 +21,5 @@ constexpr auto make_filter_coefficients(const std::array<double, B>& b,
                                         const std::array<double, A>& a) {
     return filter_coefficients<B - 1, A - 1>{b, a};
 }
+
+}  // namespace core

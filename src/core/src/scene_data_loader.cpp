@@ -9,6 +9,8 @@
 #include "assimp/postprocess.h"
 #include "assimp/scene.h"
 
+namespace core {
+
 class scene_data_loader::impl final {
 public:
     auto load_from_file(const std::string& scene_file) {
@@ -111,3 +113,4 @@ const scene_data_loader::scene_data& scene_data_loader::get_scene_data() const {
                 "can't access scene data if nothing's been loaded"};
     }
 }
+}  // namespace core

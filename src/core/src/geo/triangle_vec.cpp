@@ -2,6 +2,7 @@
 #include "core/cl/scene_structs.h"
 #include "core/conversions.h"
 
+namespace core {
 namespace geo {
 
 triangle_vec3 get_triangle_vec3(const triangle& t,
@@ -39,3 +40,4 @@ float area(const triangle_vec3& triangle) {
 }
 
 }  // namespace geo
+}  // namespace core

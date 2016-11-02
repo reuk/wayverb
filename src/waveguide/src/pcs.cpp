@@ -45,10 +45,10 @@ double compute_g0(double acoustic_impedance,
            spatial_sample_period;
 }
 
-filter::biquad::coefficients mech_sphere(double M,
-                                         double f0,
-                                         double Q,
-                                         double T) {
+core::filter::biquad::coefficients mech_sphere(double M,
+                                               double f0,
+                                               double Q,
+                                               double T) {
     const auto fs = 1 / T;
     const auto w0 = 2 * M_PI * f0 * fs;
     const auto K = M * std::pow(w0, 2);
@@ -73,7 +73,7 @@ offset_signal design_pcs_source(size_t length,
                                 double low_cutoff_hz,
                                 double low_q) {
     auto pulse_shaping_filter = maxflat(0.20, 16, 1, length);
-    filter::biquad mechanical_filter{mech_sphere(
+    core::filter::biquad mechanical_filter{mech_sphere(
             sphere_mass, low_cutoff_hz / sample_rate, low_q, 1 / sample_rate)};
     run_one_pass(mechanical_filter,
                  pulse_shaping_filter.signal.begin(),
@@ -84,7 +84,8 @@ offset_signal design_pcs_source(size_t length,
         samp *= g0;
     }
     const auto one_over_two_T = sample_rate / 2;
-    filter::biquad injection_filter{{one_over_two_T, 0, -one_over_two_T, 0, 0}};
+    core::filter::biquad injection_filter{
+            {one_over_two_T, 0, -one_over_two_T, 0, 0}};
     run_one_pass(injection_filter,
                  pulse_shaping_filter.signal.begin(),
                  pulse_shaping_filter.signal.end());

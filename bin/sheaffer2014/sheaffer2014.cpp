@@ -23,7 +23,7 @@ void write(const std::string& name,
     write(util::build_string(name, ".wav"),
           audio_file::make_audio_file(sig, sample_rate),
           bit_depth);
-    normalize(sig);
+    core::normalize(sig);
     write(util::build_string("normalised.", name, ".wav"),
           audio_file::make_audio_file(sig, sample_rate),
           bit_depth);
@@ -38,11 +38,11 @@ void write(const std::string& name,
 void test_from_paper() {
     //  Set up all the generic features of the simulation.
 
-    const geo::box box{glm::vec3{-3}, glm::vec3{3}};
+    const core::geo::box box{glm::vec3{-3}, glm::vec3{3}};
     const auto sample_rate = 16000.0;
     const auto speed_of_sound = 340.0;
 
-    const compute_context cc{};
+    const core::compute_context cc{};
 
     const glm::vec3 receiver{0};
     const auto radius = 1.5;
@@ -51,7 +51,8 @@ void test_from_paper() {
 
     auto voxels_and_mesh = waveguide::compute_voxels_and_mesh(
             cc,
-            geo::get_scene_data(box, make_surface<simulation_bands>(0, 0)),
+            core::geo::get_scene_data(
+                    box, core::make_surface<core::simulation_bands>(0, 0)),
             receiver,
             sample_rate,
             speed_of_sound);
@@ -72,13 +73,14 @@ void test_from_paper() {
 
     const auto length = 1 << 12;
     auto pulse_shaping_filter = waveguide::maxflat(0.075, 16, 250e-6, length);
-    filter::biquad mechanical_filter{waveguide::mech_sphere(
+    core::filter::biquad mechanical_filter{waveguide::mech_sphere(
             0.025, 100 / sample_rate, 0.7, 1 / sample_rate)};
     run_one_pass(mechanical_filter,
                  pulse_shaping_filter.signal.begin(),
                  pulse_shaping_filter.signal.end());
     const auto one_over_two_T = sample_rate / 2;
-    filter::biquad injection_filter{{one_over_two_T, 0, -one_over_two_T, 0, 0}};
+    core::filter::biquad injection_filter{
+            {one_over_two_T, 0, -one_over_two_T, 0, 0}};
     run_one_pass(injection_filter,
                  pulse_shaping_filter.signal.begin(),
                  pulse_shaping_filter.signal.end());
@@ -88,7 +90,7 @@ void test_from_paper() {
     auto prep = waveguide::preprocessor::make_soft_source(
             input_node, input_signal.signal.begin(), input_signal.signal.end());
 
-    callback_accumulator<waveguide::postprocessor::node> postprocessor{
+    core::callback_accumulator<waveguide::postprocessor::node> postprocessor{
             output_node};
 
     util::progress_bar pb;
@@ -139,12 +141,12 @@ auto get_cutoff_test_signals(double acoustic_impedance,
 void other_tests() {
     //  Set up all the generic features of the simulation.
 
-    const geo::box box{glm::vec3{-3}, glm::vec3{3}};
+    const core::geo::box box{glm::vec3{-3}, glm::vec3{3}};
     const auto sample_rate = 4000.0;
     const auto acoustic_impedance = 400.0;
     const auto speed_of_sound = 340.0;
 
-    const compute_context cc{};
+    const core::compute_context cc{};
 
     const glm::vec3 receiver{0};
     const auto radius = 1.5;
@@ -153,7 +155,8 @@ void other_tests() {
 
     auto voxels_and_mesh = waveguide::compute_voxels_and_mesh(
             cc,
-            geo::get_scene_data(box, make_surface<simulation_bands>(0, 0)),
+            core::geo::get_scene_data(
+                    box, core::make_surface<core::simulation_bands>(0, 0)),
             receiver,
             sample_rate,
             speed_of_sound);
@@ -182,8 +185,8 @@ void other_tests() {
                     input_signal.signal.begin(),
                     input_signal.signal.end());
 
-            callback_accumulator<waveguide::postprocessor::node> postprocessor{
-                    output_node};
+            core::callback_accumulator<waveguide::postprocessor::node>
+                    postprocessor{output_node};
 
             util::progress_bar pb;
             waveguide::run(cc,

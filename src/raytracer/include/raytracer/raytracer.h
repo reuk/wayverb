@@ -84,21 +84,23 @@ struct make_get_results_functor_adapter final {
 ///                         Each processing object should have a 'process'
 ///                         and a 'get_results' method.
 template <typename It, typename PerStepCallback, typename Callbacks>
-auto run(It b_direction,
-         It e_direction,
-         const compute_context& cc,
-         const voxelised_scene_data<cl_float3, surface<simulation_bands>>&
-                 voxelised,
-         const model::parameters& params,
-         const std::atomic_bool& keep_going,
-         PerStepCallback&& per_step_callback,
-         Callbacks&& callbacks) {
-    const scene_buffers buffers{cc.context, voxelised};
+auto run(
+        It b_direction,
+        It e_direction,
+        const core::compute_context& cc,
+        const core::voxelised_scene_data<cl_float3,
+                                         core::surface<core::simulation_bands>>&
+                voxelised,
+        const core::model::parameters& params,
+        const std::atomic_bool& keep_going,
+        PerStepCallback&& per_step_callback,
+        Callbacks&& callbacks) {
+    const core::scene_buffers buffers{cc.context, voxelised};
 
     const auto make_ray_iterator = [&](auto it) {
         return util::make_mapping_iterator_adapter(
                 std::move(it), [&](const auto& i) {
-                    return geo::ray{params.source, i};
+                    return core::geo::ray{params.source, i};
                 });
     };
 

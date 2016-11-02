@@ -14,7 +14,7 @@ util::aligned::vector<cl_float> get_direction_rng(size_t num) {
     std::default_random_engine engine{std::random_device()()};
 
     for (auto i = 0ul; i != num; ++i) {
-        const direction_rng rng(engine);
+        const core::direction_rng rng(engine);
         ret.emplace_back(rng.get_z());
         ret.emplace_back(rng.get_theta());
     }
@@ -29,7 +29,7 @@ namespace raytracer {
 ////////////////////////////////////////////////////////////////////////////////
 
 util::aligned::vector<reflection> reflector::run_step(
-        const scene_buffers& buffers) {
+        const core::scene_buffers& buffers) {
     //  get some new rng and copy it to device memory
     const auto rng{get_direction_rng(rays_)};
     cl::copy(queue_, std::begin(rng), std::end(rng), rng_buffer_);
@@ -47,19 +47,19 @@ util::aligned::vector<reflection> reflector::run_step(
             rng_buffer_,
             reflection_buffer_);
 
-    return read_from_buffer<reflection>(queue_, reflection_buffer_);
+    return core::read_from_buffer<reflection>(queue_, reflection_buffer_);
 }
 
-util::aligned::vector<ray> reflector::get_rays() const {
-    return read_from_buffer<ray>(queue_, ray_buffer_);
+util::aligned::vector<core::ray> reflector::get_rays() const {
+    return core::read_from_buffer<core::ray>(queue_, ray_buffer_);
 }
 
 util::aligned::vector<reflection> reflector::get_reflections() const {
-    return read_from_buffer<reflection>(queue_, reflection_buffer_);
+    return core::read_from_buffer<reflection>(queue_, reflection_buffer_);
 }
 
 util::aligned::vector<cl_float> reflector::get_rng() const {
-    return read_from_buffer<cl_float>(queue_, rng_buffer_);
+    return core::read_from_buffer<cl_float>(queue_, rng_buffer_);
 }
 
 }  // namespace raytracer

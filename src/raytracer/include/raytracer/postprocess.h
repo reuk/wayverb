@@ -31,7 +31,7 @@ auto postprocess(const simulation_results<Histogram>& input,
                                                          speed_of_sound,
                                                          output_sample_rate);
 
-    return sum_vectors(head, tail);
+    return core::sum_vectors(head, tail);
 }
 
 }  // namesapce raytracer

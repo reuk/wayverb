@@ -2,6 +2,7 @@
 
 #include "glm/glm.hpp"
 
+namespace core {
 namespace cereal {
 
 template <typename Archive>
@@ -15,3 +16,4 @@ void serialize(Archive& archive, glm::vec3& m) {
 }
 
 }  // namespace cereal
+}//namespace core 

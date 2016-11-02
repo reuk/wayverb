@@ -10,8 +10,8 @@ std::vector<float> make_transparent(const float* begin, const float* end) {
     //  window ir
     const auto input_size = std::distance(begin, end);
 
-    auto windowed = right_hanning(mesh_impulse_response.size());
-    elementwise_multiply(windowed, mesh_impulse_response);
+    auto windowed = core::right_hanning(mesh_impulse_response.size());
+    core::elementwise_multiply(windowed, mesh_impulse_response);
 
     //  create convolver
     frequency_domain::convolver convolver{input_size + windowed.size() - 1};

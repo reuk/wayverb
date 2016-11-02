@@ -4,6 +4,8 @@
 
 #include "utilities/map_to_vector.h"
 
+namespace core {
+
 template <typename It>
 auto mixdown(It b, It e) {
     return util::map_to_vector(b, e, [](const auto& i) { return sum(i); });
@@ -18,3 +20,5 @@ auto multiband_filter_and_mixdown(It b,
             b, e, sample_rate, std::forward<Callback>(callback));
     return mixdown(b, e);
 }
+
+}  // namespace core

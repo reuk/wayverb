@@ -47,7 +47,7 @@ auto crossover_filter(LoIt b_lo,
         return ret;
     };
 
-    return sum_vectors(
+    return core::sum_vectors(
             run_filter(b_lo, e_lo, frequency_domain::compute_lopass_magnitude),
             run_filter(b_hi, e_hi, frequency_domain::compute_hipass_magnitude));
 }

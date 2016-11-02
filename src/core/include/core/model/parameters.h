@@ -2,6 +2,7 @@
 
 #include "glm/glm.hpp"
 
+namespace core {
 namespace model {
 
 struct parameters final {
@@ -16,3 +17,4 @@ constexpr auto get_ambient_density(const parameters& s) {
 }
 
 }  // namespace model
+}  // namespace core

@@ -19,10 +19,10 @@
 namespace {
 template <typename T, typename U>
 void multitest(T run, U input) {
-    constexpr auto iterations{100};
-    const auto proper_output{run(input)};
-    for (auto i{0ul}; i != iterations; ++i) {
-        const auto output{run(input)};
+    constexpr auto iterations = 100;
+    const auto proper_output = run(input);
+    for (auto i = 0ul; i != iterations; ++i) {
+        const auto output = run(input);
         ASSERT_EQ(output, proper_output);
     }
 }
@@ -35,7 +35,7 @@ TEST(verify_compensation_signal, verify_compensation_signal_compressed) {
 
     const auto steps{100};
 
-    compressed_rectangular_waveguide waveguide{compute_context{}, steps};
+    compressed_rectangular_waveguide waveguide{core::compute_context{}, steps};
     multitest(
             [&](const auto& input) {
                 return waveguide.run_soft_source(
@@ -50,24 +50,26 @@ TEST(verify_compensation_signal, verify_compensation_signal_normal) {
                                                  input.data() + input.size())};
     transparent.resize(100);
 
-    const compute_context cc{};
+    const core::compute_context cc{};
 
-    auto scene_data{
-            geo::get_scene_data(geo::box(glm::vec3(-1), glm::vec3(1)),
-                                make_surface<simulation_bands>(0.5, 0))};
-    const auto voxelised{make_voxelised_scene_data(
-            scene_data, 5, padded(geo::get_aabb(scene_data), glm::vec3{0.1}))};
+    auto scene_data = core::geo::get_scene_data(
+            core::geo::box(glm::vec3(-1), glm::vec3(1)),
+            core::make_surface<core::simulation_bands>(0.5, 0));
+    const auto voxelised = make_voxelised_scene_data(
+            scene_data,
+            5,
+            padded(core::geo::get_aabb(scene_data), glm::vec3{0.1}));
 
-    constexpr auto speed_of_sound{340.0};
-    const auto model{
-            waveguide::compute_mesh(cc, voxelised, 0.05, speed_of_sound)};
+    constexpr auto speed_of_sound = 340.0;
+    const auto model =
+            waveguide::compute_mesh(cc, voxelised, 0.05, speed_of_sound);
 
     constexpr glm::vec3 centre{0, 0, 0};
-    const auto receiver_index{compute_index(model.get_descriptor(), centre)};
+    const auto receiver_index = compute_index(model.get_descriptor(), centre);
 
     multitest(
             [&](const auto& input) {
-                callback_accumulator<waveguide::postprocessor::node>
+                core::callback_accumulator<waveguide::postprocessor::node>
                         postprocessor{receiver_index};
 
                 waveguide::run(

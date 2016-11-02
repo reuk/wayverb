@@ -2,12 +2,12 @@
 
 #include "raytracer/canonical.h"
 
-auto run_raytracer(const geo::box& box,
-                   const surface<simulation_bands>& surface,
-                   const model::parameters& params,
+auto run_raytracer(const core::geo::box& box,
+                   const core::surface<core::simulation_bands>& surface,
+                   const core::model::parameters& params,
                    const raytracer::simulation_parameters& sim_params) {
-    auto results = raytracer::canonical(compute_context{},
-                                        geo::get_scene_data(box, surface),
+    auto results = raytracer::canonical(core::compute_context{},
+                                        core::geo::get_scene_data(box, surface),
                                         params,
                                         sim_params,
                                         0,

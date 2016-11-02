@@ -2,6 +2,8 @@
 
 #include <functional>
 
+namespace core {
+
 using mls_callback = std::function<void(bool value, size_t step)>;
 
 namespace {
@@ -23,3 +25,5 @@ void generate_maximum_length_sequence(Word order,
         reg = (reg >> 1) ^ Word { (0 - (reg & 1)) & mask };
     }
 }
+
+}  // namespace core

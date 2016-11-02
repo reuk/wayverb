@@ -17,7 +17,7 @@ public:
         if (begin_ == end_) {
             return false;
         }
-        write_value(queue, buffer, node_, *begin_++);
+        core::write_value(queue, buffer, node_, *begin_++);
         return true;
     }
 

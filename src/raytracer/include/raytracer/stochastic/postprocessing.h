@@ -21,7 +21,7 @@ namespace stochastic {
 template <typename T, size_t... Ix>
 constexpr auto array_to_bands_type(const std::array<T, 8>& t,
                                    std::index_sequence<Ix...>) {
-    return bands_type{{static_cast<float>(t[Ix])...}};
+    return core::bands_type{{static_cast<float>(t[Ix])...}};
 }
 
 template <typename T>
@@ -57,19 +57,21 @@ dirac_sequence generate_dirac_sequence(double speed_of_sound,
 
 struct energy_histogram final {
     double sample_rate;
-    util::aligned::vector<bands_type> histogram;
+    util::aligned::vector<core::bands_type> histogram;
 };
 
 template <size_t Az, size_t El>
 struct directional_energy_histogram final {
     double sample_rate;
-    vector_look_up_table<util::aligned::vector<bands_type>, Az, El> histogram;
+    core::vector_look_up_table<util::aligned::vector<core::bands_type>, Az, El>
+            histogram;
 };
 
 template <size_t Az, size_t El>
-auto max_size(
-        const vector_look_up_table<util::aligned::vector<bands_type>, Az, El>&
-                hist) {
+auto max_size(const core::vector_look_up_table<
+              util::aligned::vector<core::bands_type>,
+              Az,
+              El>& hist) {
     size_t ret = 0;
 
     for (size_t a = 0; a != Az; ++a) {
@@ -89,7 +91,7 @@ auto max_time(const directional_energy_histogram<Az, El>& hist) {
 template <size_t Az, size_t El>
 auto sum_directional_histogram(
         const directional_energy_histogram<Az, El>& histogram) {
-    util::aligned::vector<bands_type> ret;
+    util::aligned::vector<core::bands_type> ret;
     for (auto azimuth_index = 0ul; azimuth_index != Az; ++azimuth_index) {
         for (auto elevation_index = 0ul; elevation_index != El;
              ++elevation_index) {
@@ -115,7 +117,7 @@ auto compute_summed_histogram(const energy_histogram& histogram,
 template <size_t Az, size_t El>
 auto compute_summed_histogram(
         const directional_energy_histogram<Az, El>& histogram,
-        const attenuator::null& method) {
+        const core::attenuator::null& method) {
     return sum_directional_histogram(histogram);
 }
 
@@ -125,7 +127,7 @@ auto compute_summed_histogram(
         const Method& method) {
     using hist = std::decay_t<decltype(histogram.histogram)>;
 
-    util::aligned::vector<bands_type> ret;
+    util::aligned::vector<core::bands_type> ret;
 
     for (auto azimuth_index = 0ul; azimuth_index != Az; ++azimuth_index) {
         for (auto elevation_index = 0ul; elevation_index != El;
@@ -158,7 +160,7 @@ auto compute_summed_histogram(
     return energy_histogram{histogram.sample_rate, ret};
 }
 
-util::aligned::vector<bands_type> weight_sequence(
+util::aligned::vector<core::bands_type> weight_sequence(
         const energy_histogram& histogram,
         const dirac_sequence& sequence,
         double acoustic_impedance);

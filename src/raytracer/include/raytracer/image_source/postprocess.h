@@ -34,9 +34,9 @@ auto postprocess(InputIt b,
                           make_iterator(e),
                           sample_rate,
                           sinc_sum_functor{});
-    return multiband_filter_and_mixdown(
+    return core::multiband_filter_and_mixdown(
             begin(hist), end(hist), sample_rate, [](auto it, auto index) {
-                return make_cl_type_iterator(std::move(it), index);
+                return core::make_cl_type_iterator(std::move(it), index);
             });
 }
 

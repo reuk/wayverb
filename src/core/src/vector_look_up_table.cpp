@@ -1,5 +1,6 @@
 #include "core/vector_look_up_table.h"
 
+namespace core {
 namespace {
 
 using test_table_a = vector_look_up_table<float, 24, 11>;
@@ -51,3 +52,4 @@ static_assert(test_table_b::elevation_to_index(270) == 0, "elevation_to_index");
 static_assert(test_table_b::elevation_to_index(-90) == 0, "elevation_to_index");
 
 }  // namespace
+}  // namespace core

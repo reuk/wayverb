@@ -11,6 +11,8 @@
 
 #include <cmath>
 
+namespace core {
+
 template <typename It>
 auto squared_integrated(It begin, It end) {
     using numeric = std::decay_t<decltype(*begin)>;
@@ -84,3 +86,5 @@ template <typename It>
 reverb_time edt(It begin, It end) {
     return decay_time_from_points(begin, end, 0, -10, -60);
 }
+
+}  // namespace core

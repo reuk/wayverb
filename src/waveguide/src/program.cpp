@@ -530,26 +530,26 @@ kernel void condensed_waveguide(
 
 )";
 
-program::program(const compute_context& cc)
+program::program(const core::compute_context& cc)
         : program_wrapper_{
                   cc,
                   std::vector<std::string>{
+                          core::cl_representation_v<filt_real>,
+                          core::cl_representation_v<mesh_descriptor>,
+                          core::cl_representation_v<memory_biquad>,
+                          core::cl_representation_v<coefficients_biquad>,
+                          core::cl_representation_v<memory_canonical>,
+                          core::cl_representation_v<coefficients_canonical>,
+                          core::cl_representation_v<biquad_memory_array>,
+                          core::cl_representation_v<biquad_coefficients_array>,
+                          core::cl_representation_v<error_code>,
+                          core::cl_representation_v<condensed_node>,
+                          core::cl_representation_v<boundary_data>,
+                          core::cl_representation_v<boundary_data_array_1>,
+                          core::cl_representation_v<boundary_data_array_2>,
+                          core::cl_representation_v<boundary_data_array_3>,
+                          core::cl_representation_v<boundary_type>,
                           ::cl_sources::filter_constants,
-                          cl_representation_v<filt_real>,
-                          cl_representation_v<mesh_descriptor>,
-                          cl_representation_v<memory_biquad>,
-                          cl_representation_v<coefficients_biquad>,
-                          cl_representation_v<memory_canonical>,
-                          cl_representation_v<coefficients_canonical>,
-                          cl_representation_v<biquad_memory_array>,
-                          cl_representation_v<biquad_coefficients_array>,
-                          cl_representation_v<error_code>,
-                          cl_representation_v<condensed_node>,
-                          cl_representation_v<boundary_data>,
-                          cl_representation_v<boundary_data_array_1>,
-                          cl_representation_v<boundary_data_array_2>,
-                          cl_representation_v<boundary_data_array_3>,
-                          cl_representation_v<boundary_type>,
                           ::cl_sources::filters,
                           cl_sources::utils,
                           source}} {}

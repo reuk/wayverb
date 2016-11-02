@@ -34,28 +34,28 @@ auto compute_fast_pressure(const glm::vec3& receiver,
                            const glm::vec3& image_source,
                            It begin,
                            It end) {
-    constexpr auto channels = detail::components_v<Channels>;
+    constexpr auto channels = ::detail::components_v<Channels>;
 
     const auto surface_attenuation = std::accumulate(
             begin,
             end,
-            unit_constructor_v<
-                    detail::cl_vector_constructor_t<float, channels>>,
+            core::unit_constructor_v<
+                    ::detail::cl_vector_constructor_t<float, channels>>,
             [&](auto i, auto j) {
                 const auto surface_impedance = impedance[j.surface_index];
                 const auto surface_scattering = scattering[j.surface_index];
 
                 const auto reflectance =
-                        average_wall_impedance_to_pressure_reflectance(
+                        core::average_wall_impedance_to_pressure_reflectance(
                                 surface_impedance, j.cos_angle);
-                const auto outgoing =
-                        specular_pressure(i * reflectance, surface_scattering);
+                const auto outgoing = core::specular_pressure(
+                        i * reflectance, surface_scattering);
 
                 return outgoing * (flip_phase ? -1 : 1);
             });
 
     return impulse<channels>{surface_attenuation,
-                             to_cl_float3(image_source),
+                             core::to_cl_float3(image_source),
                              glm::distance(image_source, receiver)};
 }
 
@@ -77,9 +77,10 @@ public:
                       b_surfaces,
                       e_surfaces,
                       [](const auto& surface) {
-                          return pressure_reflectance_to_average_wall_impedance(
-                                  absorption_to_pressure_reflectance(
-                                          surface.absorption));
+                          return core::
+                                  pressure_reflectance_to_average_wall_impedance(
+                                          core::absorption_to_pressure_reflectance(
+                                                  surface.absorption));
                       })}
             , surface_scattering_{util::map_to_vector(
                       b_surfaces,

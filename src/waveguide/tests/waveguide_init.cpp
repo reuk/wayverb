@@ -14,11 +14,11 @@
 #include <algorithm>
 
 TEST(waveguide_init, waveguide_init) {
-    const compute_context cc{};
+    const core::compute_context cc{};
 
-    auto scene_data =
-            geo::get_scene_data(geo::box{glm::vec3{-1}, glm::vec3{1}},
-                                make_surface<simulation_bands>(0.001, 0));
+    auto scene_data = core::geo::get_scene_data(
+            core::geo::box{glm::vec3{-1}, glm::vec3{1}},
+            core::make_surface<core::simulation_bands>(0.001, 0));
 
     const auto voxelised = make_voxelised_scene_data(scene_data, 5, 0.1f);
 
@@ -40,7 +40,7 @@ TEST(waveguide_init, waveguide_init) {
     auto prep = waveguide::preprocessor::make_soft_source(
             receiver_index, transparent.begin(), transparent.end());
 
-    callback_accumulator<waveguide::postprocessor::node> postprocessor{
+    core::callback_accumulator<waveguide::postprocessor::node> postprocessor{
             receiver_index};
 
     util::progress_bar pb;

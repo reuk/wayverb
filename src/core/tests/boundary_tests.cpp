@@ -16,15 +16,17 @@
 
 TEST(boundary, tunnel) {
     const auto boundary{make_voxelised_scene_data(
-            scene_data_loader{OBJ_PATH_TUNNEL}.get_scene_data(), 5, 2.0f)};
+            core::scene_data_loader{OBJ_PATH_TUNNEL}.get_scene_data(),
+            5,
+            2.0f)};
 
     const auto cent{centre(boundary.get_voxels().get_aabb())};
 
     ASSERT_EQ(*count_intersections(boundary,
-                                   geo::ray{cent,
-                                            glm::vec3{-0.108882785,
-                                                      0.075211525,
-                                                      0.991205215}}),
+                                   core::geo::ray{cent,
+                                                  glm::vec3{-0.108882785,
+                                                            0.075211525,
+                                                            0.991205215}}),
               1);
 
     {
@@ -45,8 +47,8 @@ TEST(boundary, tunnel) {
                  glm::vec3(0.679999828, -1.18999958, -52.1900024),
                  glm::vec3(-0.680000067, 1.19000006, -52.1900024),
          }) {
-        ASSERT_FALSE(inside(boundary.get_voxels().get_aabb(), i));
-        ASSERT_FALSE(inside(boundary, i));
+        ASSERT_FALSE(core::inside(boundary.get_voxels().get_aabb(), i));
+        ASSERT_FALSE(core::inside(boundary, i));
     }
 
     ASSERT_TRUE(inside(boundary, cent));
@@ -63,7 +65,9 @@ TEST(boundary, tunnel) {
 
 TEST(boundary, bedroom) {
     const auto boundary{make_voxelised_scene_data(
-            scene_data_loader{OBJ_PATH_BEDROOM}.get_scene_data(), 5, 0.1f)};
+            core::scene_data_loader{OBJ_PATH_BEDROOM}.get_scene_data(),
+            5,
+            0.1f)};
 
     const auto cent{centre(boundary.get_voxels().get_aabb())};
 
@@ -95,8 +99,8 @@ TEST(boundary, bedroom) {
                  glm::vec3(-1.70000005, 0, -3.77999997),
                  glm::vec3(-1.70000005, 0.680000067, -3.77999997),
          }) {
-        ASSERT_FALSE(inside(boundary.get_voxels().get_aabb(), i));
-        ASSERT_FALSE(inside(boundary, i));
+        ASSERT_FALSE(core::inside(boundary.get_voxels().get_aabb(), i));
+        ASSERT_FALSE(core::inside(boundary, i));
     }
 
     ASSERT_TRUE(inside(boundary, cent));

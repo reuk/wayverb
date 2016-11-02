@@ -12,6 +12,8 @@
 #include <memory>
 #include <vector>
 
+namespace core {
+
 /// This namespace houses all of the machinery for multiband crossover
 /// filtering.
 namespace filter {
@@ -257,3 +259,4 @@ util::aligned::vector<float> impulse_response(IIR& filt, size_t steps) {
 }
 
 }  // namespace filter
+}  // namespace core

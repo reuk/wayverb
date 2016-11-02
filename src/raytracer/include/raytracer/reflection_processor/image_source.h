@@ -11,18 +11,18 @@ namespace reflection_processor {
 
 class image_source final {
 public:
-    image_source(
-            size_t max_order,
-            bool flip_phase,
-            const model::parameters& params,
-            const voxelised_scene_data<cl_float3, surface<simulation_bands>>&
-                    voxelised,
-            size_t items);
+    image_source(size_t max_order,
+                 bool flip_phase,
+                 const core::model::parameters& params,
+                 const core::voxelised_scene_data<
+                         cl_float3,
+                         core::surface<core::simulation_bands>>& voxelised,
+                 size_t items);
 
     template <typename It>
     void process(It b,
                  It e,
-                 const scene_buffers& buffers,
+                 const core::scene_buffers& buffers,
                  size_t step,
                  size_t total) {
         if (step < max_image_source_order_) {
@@ -33,8 +33,9 @@ public:
     util::aligned::vector<impulse<8>> get_results();
 
 private:
-    model::parameters params_;
-    const voxelised_scene_data<cl_float3, surface<simulation_bands>>&
+    core::model::parameters params_;
+    const core::voxelised_scene_data<cl_float3,
+                                     core::surface<core::simulation_bands>>&
             voxelised_;
     size_t max_image_source_order_;
     bool flip_phase_;
@@ -47,10 +48,11 @@ public:
     make_image_source(size_t max_order, bool flip_phase);
 
     image_source operator()(
-            const compute_context& cc,
-            const model::parameters& params,
-            const voxelised_scene_data<cl_float3, surface<simulation_bands>>&
-                    voxelised,
+            const core::compute_context& cc,
+            const core::model::parameters& params,
+            const core::voxelised_scene_data<
+                    cl_float3,
+                    core::surface<core::simulation_bands>>& voxelised,
             size_t num_directions) const;
 
 private:

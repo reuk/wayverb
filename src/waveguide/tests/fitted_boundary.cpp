@@ -11,18 +11,17 @@
 #include "gtest/gtest.h"
 
 namespace {
-
 template <size_t B, size_t A>
 std::ostream &operator<<(std::ostream &os,
-                         const filter_coefficients<B, A> &coeffs) {
-    cereal::JSONOutputArchive{os}(coeffs);
+                         const core::filter_coefficients<B, A> &coeffs) {
+    cereal::JSONOutputArchive archive{os};
+    archive(coeffs);
     return os;
 }
-
 }  // namespace
 
 template <typename T, size_t N>
-void test_arrays_near(const std::array<T, N>& a, const std::array<T, N>& b) {
+void test_arrays_near(const std::array<T, N> &a, const std::array<T, N> &b) {
     for_each([](auto a, auto b) { ASSERT_NEAR(a, b, 0.00000001); }, a, b);
 }
 

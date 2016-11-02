@@ -9,6 +9,7 @@
 
 #include "glm/glm.hpp"
 
+namespace core {
 namespace geo {
 
 using box = util::range<glm::vec3>;
@@ -104,3 +105,4 @@ inline auto inside(const geo::box& a, const glm::vec3& b) {
            glm::all(glm::lessThan(b, a.get_max()));
 }
 
+}  // namespace core

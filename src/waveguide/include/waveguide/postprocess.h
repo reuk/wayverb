@@ -34,12 +34,12 @@ constexpr auto dereferenced_type_matches_v =
 /// Audible range is normalised in terms of the waveguide sampling rate.
 template <typename It,
           std::enable_if_t<std::is_same<std::decay_t<dereferenced_t<It>>,
-                                        bands_type>::value,
+                                        core::bands_type>::value,
                            int> = 0>
 auto postprocess(It begin, It end, double sample_rate) {
-    return multiband_filter_and_mixdown(
+    return core::multiband_filter_and_mixdown(
             begin, end, sample_rate, [](auto it, auto index) {
-                return make_cl_type_iterator(std::move(it), index);
+                return core::make_cl_type_iterator(std::move(it), index);
             });
 }
 

@@ -1,6 +1,6 @@
 #include "waveguide/cl/filter_structs.h"
 
-const std::string cl_representation<memory_biquad>::value{
+const std::string core::cl_representation<memory_biquad>::value{
         R"(
 typedef struct {
     filt_real array[)" +
@@ -12,7 +12,7 @@ typedef memory_)" +
         std::to_string(memory_biquad::order) + R"( memory_biquad;
 )"};
 
-const std::string cl_representation<coefficients_biquad>::value{
+const std::string core::cl_representation<coefficients_biquad>::value{
         R"(
 typedef struct {
     filt_real b[)" +
@@ -26,7 +26,7 @@ typedef coefficients_)" +
         std::to_string(coefficients_biquad::order) + R"( coefficients_biquad;
 )"};
 
-const std::string cl_representation<memory_canonical>::value{
+const std::string core::cl_representation<memory_canonical>::value{
         R"(
 typedef struct {
     filt_real array[)" +
@@ -38,7 +38,7 @@ typedef memory_)" +
         std::to_string(memory_canonical::order) + R"( memory_canonical;
 )"};
 
-const std::string cl_representation<coefficients_canonical>::value{
+const std::string core::cl_representation<coefficients_canonical>::value{
         R"(
 typedef struct {
     filt_real b[)" +

@@ -5,6 +5,8 @@
 
 #include <string>
 
+namespace core {
+
 struct alignas(1 << 4) ray final {
     cl_float3 position;
     cl_float3 direction;
@@ -91,3 +93,5 @@ constexpr bool operator==(const intersection& a, const intersection& b) {
 constexpr bool operator!=(const intersection& a, const intersection& b) {
     return !(a == b);
 }
+
+}  // namespace core

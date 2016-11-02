@@ -4,6 +4,8 @@
 #include "core/indexing.h"
 #include "core/spatial_division/ndim_tree.h"
 
+namespace core {
+
 using voxel = util::aligned::vector<size_t>;
 
 namespace detail {
@@ -148,3 +150,6 @@ using traversal_callback =
 void traverse(const voxel_collection<3>& voxels,
               const geo::ray& ray,
               const traversal_callback& fun);
+
+}  // namespace core
+

@@ -4,6 +4,7 @@
 
 #include "glm/glm.hpp"
 
+namespace core {
 namespace model {
 
 glm::vec3 get_pointing(const az_el& az_el, const glm::vec3& position);
@@ -19,3 +20,4 @@ struct orientable final {
 glm::vec3 get_pointing(const orientable& o, const glm::vec3& position);
 
 }  // namespace model
+}  // namespace core

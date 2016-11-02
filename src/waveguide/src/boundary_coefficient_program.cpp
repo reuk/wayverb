@@ -484,24 +484,24 @@ kernel void boundary_coefficient_finder_3d(
 )";
 
 boundary_coefficient_program::boundary_coefficient_program(
-        const compute_context& cc)
-        : wrapper(cc,
-                  std::vector<std::string>{
-                          cl_representation_v<mesh_descriptor>,
-                          cl_representation_v<boundary_type>,
-                          cl_representation_v<condensed_node>,
-                          cl_representation_v<boundary_index_array_1>,
-                          cl_representation_v<boundary_index_array_2>,
-                          cl_representation_v<boundary_index_array_3>,
-                          cl_representation_v<aabb>,
-                          cl_representation_v<ray>,
-                          cl_representation_v<triangle_inter>,
-                          cl_representation_v<intersection>,
-                          cl_representation_v<triangle_verts>,
-                          cl_representation_v<triangle>,
-                          ::cl_sources::utils,
-                          ::cl_sources::geometry,
-                          ::cl_sources::voxel,
-                          source}) {}
+        const core::compute_context& cc)
+        : wrapper_{cc,
+                   std::vector<std::string>{
+                           core::cl_representation_v<mesh_descriptor>,
+                           core::cl_representation_v<boundary_type>,
+                           core::cl_representation_v<condensed_node>,
+                           core::cl_representation_v<boundary_index_array_1>,
+                           core::cl_representation_v<boundary_index_array_2>,
+                           core::cl_representation_v<boundary_index_array_3>,
+                           core::cl_representation_v<core::aabb>,
+                           core::cl_representation_v<core::ray>,
+                           core::cl_representation_v<core::triangle_inter>,
+                           core::cl_representation_v<core::intersection>,
+                           core::cl_representation_v<core::triangle_verts>,
+                           core::cl_representation_v<core::triangle>,
+                           core::cl_sources::geometry,
+                           core::cl_sources::voxel,
+                           ::cl_sources::utils,
+                           source}} {}
 
 }  // namespace waveguide

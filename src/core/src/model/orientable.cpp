@@ -1,5 +1,6 @@
 #include "core/model/orientable.h"
 
+namespace core {
 namespace model {
 
 glm::vec3 get_pointing(const az_el& azimuth_elevation,
@@ -21,3 +22,4 @@ glm::vec3 get_pointing(const orientable& o, const glm::vec3& position) {
 }
 
 }  // namespace model
+}  // namespace core

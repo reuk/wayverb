@@ -3,6 +3,7 @@
 #include "utilities/aligned/vector.h"
 #include "utilities/string_builder.h"
 
+namespace core {
 namespace geo {
 
 std::experimental::optional<triangle_inter> triangle_intersection(
@@ -207,3 +208,4 @@ triangle_vec3 mirror(const triangle_vec3& in, const triangle_vec3& t) {
 }
 
 }  // namespace geo
+}  // namespace core

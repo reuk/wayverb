@@ -18,8 +18,8 @@ public:
             return false;
         }
         const auto current_pressure =
-                read_value<cl_float>(queue, buffer, node_);
-        write_value(queue, buffer, node_, current_pressure + *begin_++);
+                core::read_value<cl_float>(queue, buffer, node_);
+        core::write_value(queue, buffer, node_, current_pressure + *begin_++);
         return true;
     }
 

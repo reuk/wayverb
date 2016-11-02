@@ -13,7 +13,7 @@ namespace image_source {
 template <typename Vertex, typename Surface>
 auto get_direct(const glm::vec3& source,
                 const glm::vec3& receiver,
-                const voxelised_scene_data<Vertex, Surface>& scene_data) {
+                const core::voxelised_scene_data<Vertex, Surface>& scene_data) {
     constexpr auto channels = typename Surface::bands_t{};
 
     if (source == receiver) {
@@ -23,16 +23,16 @@ auto get_direct(const glm::vec3& source,
     const auto source_to_receiver = receiver - source;
     const auto source_to_receiver_length = glm::length(source_to_receiver);
     const auto direction = glm::normalize(source_to_receiver);
-    const geo::ray to_receiver{source, direction};
+    const core::geo::ray to_receiver{source, direction};
 
     const auto intersection = intersects(scene_data, to_receiver);
 
     if (!intersection ||
         (intersection && intersection->inter.t >= source_to_receiver_length)) {
         return std::experimental::make_optional(impulse<channels>{
-                unit_constructor_v<
+                core::unit_constructor_v<
                         ::detail::cl_vector_constructor_t<float, channels>>,
-                to_cl_float3(source),
+                core::to_cl_float3(source),
                 source_to_receiver_length});
     }
 

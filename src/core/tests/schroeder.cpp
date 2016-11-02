@@ -9,17 +9,20 @@
 TEST(schroeder, squared_integrated) {
     {
         util::aligned::vector<float> sig(100, 1.0f);
-        const auto integrated = squared_integrated(sig.begin(), sig.end());
+        const auto integrated =
+                core::squared_integrated(sig.begin(), sig.end());
         ASSERT_EQ(integrated.back(), 100);
     }
     {
         util::aligned::vector<float> sig(100, -1.0f);
-        const auto integrated = squared_integrated(sig.begin(), sig.end());
+        const auto integrated =
+                core::squared_integrated(sig.begin(), sig.end());
         ASSERT_EQ(integrated.back(), 100);
     }
     {
         util::aligned::vector<float> sig(10, 2.0f);
-        const auto integrated = squared_integrated(sig.begin(), sig.end());
+        const auto integrated =
+                core::squared_integrated(sig.begin(), sig.end());
         ASSERT_EQ(integrated.back(), 40);
     }
 }
@@ -41,11 +44,14 @@ TEST(schroeder, decay_time_from_points) {
     for (const auto& length : {1000.0, 2000.0, 10000.0, 20000.0, 100000.0}) {
         const auto noise = generate_noise_tail(length);
 
-        ASSERT_NEAR(
-                rt20(begin(noise), end(noise)).samples, length, length * 0.1);
-        ASSERT_NEAR(
-                rt30(begin(noise), end(noise)).samples, length, length * 0.1);
-        ASSERT_NEAR(
-                edt(begin(noise), end(noise)).samples, length, length * 0.1);
+        ASSERT_NEAR(core::rt20(begin(noise), end(noise)).samples,
+                    length,
+                    length * 0.1);
+        ASSERT_NEAR(core::rt30(begin(noise), end(noise)).samples,
+                    length,
+                    length * 0.1);
+        ASSERT_NEAR(core::edt(begin(noise), end(noise)).samples,
+                    length,
+                    length * 0.1);
     }
 }

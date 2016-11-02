@@ -84,23 +84,23 @@ TEST(pcs, g0) {
 
 TEST(pcs, mech_sphere) {
     for (const auto& pair :
-         util::aligned::vector<std::tuple<filter::biquad::coefficients,
-                                          filter::biquad::coefficients>>{
+         util::aligned::vector<std::tuple<core::filter::biquad::coefficients,
+                                          core::filter::biquad::coefficients>>{
 
                  {waveguide::mech_sphere(0.025, 0.003, 0.7, 1.0 / 16000),
-                  filter::biquad::coefficients{
+                  core::filter::biquad::coefficients{
                           0.0012333, 0.00000, -0.0012333, -1.9731, 0.97343}},
 
                  {waveguide::mech_sphere(0.025, 0.003, 0.7, 1.0 / 10000),
-                  filter::biquad::coefficients{
+                  core::filter::biquad::coefficients{
                           0.00197, 0.00000, -0.00197, -1.97308, 0.97343}},
 
                  {waveguide::mech_sphere(0.0025, 0.006, 1.5, 1.0 / 10000),
-                  filter::biquad::coefficients{
+                  core::filter::biquad::coefficients{
                           0.01975, 0.00000, -0.01975, -1.97378, 0.97518}},
 
                  {waveguide::mech_sphere(0.03, 0.01, 2, 1.0 / 10000),
-                  filter::biquad::coefficients{
+                  core::filter::biquad::coefficients{
                           0.00164, 0.00000, -0.00164, -1.96520, 0.96909}},
 
          }) {

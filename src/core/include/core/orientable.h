@@ -4,6 +4,8 @@
 
 #include <tuple>
 
+namespace core {
+
 struct az_el final {
     float azimuth{0};
     float elevation{0};
@@ -56,3 +58,5 @@ class orientable final {
 private:
     glm::vec3 pointing_{0, 0, 1};
 };
+
+}  // namespace core

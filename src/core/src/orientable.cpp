@@ -4,6 +4,7 @@
 
 #include <functional>
 
+namespace core {
 namespace {
 
 template <typename Op>
@@ -83,3 +84,4 @@ glm::mat4 orientable::get_matrix() const {
                      glm::vec4(z_axis, 0),
                      glm::vec4(0, 0, 0, 1));
 }
+}  // namespace core

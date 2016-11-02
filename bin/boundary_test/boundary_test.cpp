@@ -67,20 +67,21 @@ public:
             , elevation_{elevation} {}
 
 private:
-    auto run_simulation(const geo::box& boundary,
+    auto run_simulation(const core::geo::box& boundary,
                         const util::aligned::vector<glm::vec3>& receivers,
                         const coefficients_canonical& coefficients) const {
-        const auto scene_data = geo::get_scene_data(
-                boundary, make_surface<simulation_bands>(0, 0));
+        const auto scene_data = core::geo::get_scene_data(
+                boundary, core::make_surface<core::simulation_bands>(0, 0));
 
         auto mesh = waveguide::compute_mesh(
                 cc_,
-                make_voxelised_scene_data(scene_data,
-                                          5,
-                                          waveguide::compute_adjusted_boundary(
-                                                  geo::get_aabb(scene_data),
-                                                  source_position_,
-                                                  divisions_)),
+                make_voxelised_scene_data(
+                        scene_data,
+                        5,
+                        waveguide::compute_adjusted_boundary(
+                                core::geo::get_aabb(scene_data),
+                                source_position_,
+                                divisions_)),
                 divisions_,
                 speed_of_sound);
 
@@ -100,16 +101,16 @@ private:
         auto prep = waveguide::preprocessor::make_soft_source(
                 source_index, input.begin(), input.end());
 
-        auto output_holders =
-                util::map_to_vector(begin(receivers), end(receivers), [&](auto i) {
+        auto output_holders = util::map_to_vector(
+                begin(receivers), end(receivers), [&](auto i) {
                     const auto receiver_index{
                             compute_index(mesh.get_descriptor(), i)};
                     if (!waveguide::is_inside(mesh, receiver_index)) {
                         throw std::runtime_error{
                                 "receiver is outside of mesh!"};
                     }
-                    return callback_accumulator<waveguide::postprocessor::node>{
-                            receiver_index};
+                    return core::callback_accumulator<
+                            waveguide::postprocessor::node>{receiver_index};
                 });
 
         util::progress_bar pb{};
@@ -124,9 +125,10 @@ private:
                        },
                        true);
 
-        return util::map_to_vector(begin(output_holders),
-                             end(output_holders),
-                             [](const auto& i) { return i.get_output(); });
+        return util::map_to_vector(
+                begin(output_holders), end(output_holders), [](const auto& i) {
+                    return i.get_output();
+                });
     }
 
     struct free_field_results final {
@@ -139,9 +141,9 @@ private:
                                       {image_position_, receiver_position_},
                                       coefficients_canonical{{1}, {1}});
 
-        const auto window = right_hanning(results.front().size());
+        const auto window = core::right_hanning(results.front().size());
         for (auto& i : results) {
-            elementwise_multiply(i, window);
+            core::elementwise_multiply(i, window);
         }
 
         return {std::vector<float>(results[0].begin(), results[0].end()),
@@ -156,8 +158,8 @@ public:
                 run_simulation(wall_, {receiver_position_}, coefficients)
                         .front();
 
-        const auto window = right_hanning(reflected.size());
-        elementwise_multiply(reflected, window);
+        const auto window = core::right_hanning(reflected.size());
+        core::elementwise_multiply(reflected, window);
 
         auto subbed = reflected;
         std::transform(begin(reflected),
@@ -167,9 +169,9 @@ public:
                        [](const auto& i, const auto& j) { return j - i; });
 
         write(util::build_string(output_folder_,
-                           "/",
-                           test_name,
-                           "_windowed_free_field.wav"),
+                                 "/",
+                                 test_name,
+                                 "_windowed_free_field.wav"),
               audio_file::make_audio_file(free_field_.image, out_sr),
               bit_depth);
         write(util::build_string(
@@ -187,7 +189,7 @@ public:
     static constexpr auto steps = dim * 1.4;
 
 private:
-    const compute_context cc_;
+    const core::compute_context cc_;
 
     const std::string output_folder_;
     const float waveguide_sample_rate_;
@@ -197,11 +199,11 @@ private:
     const float divisions_ = waveguide::config::grid_spacing(
             speed_of_sound, 1 / waveguide_sample_rate_);
 
-    const geo::box wall_{glm::vec3{0, 0, 0},
-                         glm::vec3{static_cast<float>(dim)} * divisions_};
+    const core::geo::box wall_{glm::vec3{0, 0, 0},
+                               glm::vec3{static_cast<float>(dim)} * divisions_};
     const glm::vec3 far_ = wall_.get_max();
     const glm::vec3 new_dim_{far_.x * 2, far_.y, far_.z};
-    const geo::box no_wall_{glm::vec3{0}, new_dim_};
+    const core::geo::box no_wall_{glm::vec3{0}, new_dim_};
 
     const glm::vec3 wall_centre_ = centre(no_wall_);
 
@@ -209,7 +211,7 @@ private:
     const float source_dist_ = source_dist_nodes_ * divisions_;
 
     const glm::vec3 source_offset_ =
-            point_on_sphere(azimuth_ + M_PI, elevation_) * source_dist_;
+            core::point_on_sphere(azimuth_ + M_PI, elevation_) * source_dist_;
 
     const glm::vec3 source_position_ = wall_centre_ + source_offset_;
     const glm::vec3 image_position_ = wall_centre_ - source_offset_;
@@ -272,7 +274,8 @@ int main(int argc, char** argv) {
         const boundary_test test{
                 output_folder, waveguide_sample_rate, azimuth, elevation};
 
-        const util::aligned::vector<std::tuple<const char*, coefficients_canonical>>
+        const util::aligned::vector<
+                std::tuple<const char*, coefficients_canonical>>
                 raw_tests{
                         //  {"flat_0",
                         //   waveguide::to_flat_coefficients(
@@ -294,28 +297,30 @@ int main(int argc, char** argv) {
 
                         {"sloping_fitted_0",
                          make_reflectance_coefficients(
-                                 std::array<double, simulation_bands>{{0.0,
-                                                                       0.05,
-                                                                       0.1,
-                                                                       0.15,
-                                                                       0.2,
-                                                                       0.25,
-                                                                       0.3,
-                                                                       0.35}})},
+                                 std::array<double, core::simulation_bands>{
+                                         {0.0,
+                                          0.05,
+                                          0.1,
+                                          0.15,
+                                          0.2,
+                                          0.25,
+                                          0.3,
+                                          0.35}})},
                         {"sloping_fitted_1",
                          make_reflectance_coefficients(
-                                 std::array<double, simulation_bands>{{0.35,
-                                                                       0.3,
-                                                                       0.25,
-                                                                       0.2,
-                                                                       0.15,
-                                                                       0.1,
-                                                                       0.05,
-                                                                       0.0}})},
+                                 std::array<double, core::simulation_bands>{
+                                         {0.35,
+                                          0.3,
+                                          0.25,
+                                          0.2,
+                                          0.15,
+                                          0.1,
+                                          0.05,
+                                          0.0}})},
 
                         {"sudden",
                          make_reflectance_coefficients(
-                                 std::array<double, simulation_bands>{
+                                 std::array<double, core::simulation_bands>{
                                          {0, 1, 0, 1, 0, 1, 0, 1}})},
                 };
 
@@ -331,7 +336,7 @@ int main(int argc, char** argv) {
         {
             //  Write coefficients to file.
             std::ofstream file{
-                util::build_string(output_folder, "/coefficients.txt")};
+                    util::build_string(output_folder, "/coefficients.txt")};
             cereal::JSONOutputArchive{file}(
                     cereal::make_nvp("coefficients", coefficients_set));
         }

@@ -4,6 +4,8 @@
 
 #include "utilities/map_to_vector.h"
 
+namespace core {
+
 class scene_data_loader final {
 public:
     struct material final {
@@ -46,3 +48,5 @@ auto scene_with_extracted_surfaces(
                            extract_surfaces(scene.get_surfaces().begin(),
                                             scene.get_surfaces().end()));
 }
+
+}  // namespace core

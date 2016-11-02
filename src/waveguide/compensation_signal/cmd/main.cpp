@@ -41,7 +41,7 @@ int main(int argc, char** argv) {
 
     const size_t steps = std::stoi(argv[1]);
 
-    const compute_context cc{};
+    const core::compute_context cc{};
 
     compressed_rectangular_waveguide waveguide{cc, steps};
 

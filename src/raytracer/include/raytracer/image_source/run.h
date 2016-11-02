@@ -11,13 +11,15 @@ namespace image_source {
 
 //  Has to take voxelised_scene_data<cl_float3, surface> because it uses GPU.
 template <typename It>
-auto run(It b,  /// Iterators over ray directions.
-         It e,
-         const compute_context& cc,
-         const voxelised_scene_data<cl_float3, surface<simulation_bands>>&
-                 voxelised,
-         const model::parameters& params,
-         bool flip_phase) {
+auto run(
+        It b,  /// Iterators over ray directions.
+        It e,
+        const core::compute_context& cc,
+        const core::voxelised_scene_data<cl_float3,
+                                         core::surface<core::simulation_bands>>&
+                voxelised,
+        const core::model::parameters& params,
+        bool flip_phase) {
     const auto callbacks =
             std::make_tuple(raytracer::reflection_processor::make_image_source{
                     std::numeric_limits<size_t>::max(), flip_phase});

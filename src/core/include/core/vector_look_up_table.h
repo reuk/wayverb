@@ -8,6 +8,8 @@
 
 #include "glm/glm.hpp"
 
+namespace core {
+
 template <typename U>
 static constexpr const auto& clamp(const U& x, const U& mini, const U& maxi) {
     using std::min;
@@ -114,3 +116,5 @@ struct vector_look_up_table final {
     /// Using a C array because it's more constexpr-ready than std::array.
     T table[azimuth_divisions][elevation_divisions]{};
 };
+
+}  // namespace core

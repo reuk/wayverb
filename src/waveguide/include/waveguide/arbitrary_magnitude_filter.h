@@ -72,7 +72,7 @@ auto arbitrary_magnitude_filter(frequency_domain_envelope env) {
                     interp(make_interp_iterator(env.cbegin()),
                            make_interp_iterator(env.cend()),
                            frequency,
-                           linear_interp_functor{})});
+                           core::linear_interp_functor{})});
         }
         return ret;
     }();
@@ -86,8 +86,8 @@ auto arbitrary_magnitude_filter(frequency_domain_envelope env) {
                                  make_amplitude_iterator(new_envelope.cend())),
              b,
              a);
-    return make_filter_coefficients(detail::to_array<N + 1>(b),
-                                    detail::to_array<N + 1>(a));
+    return core::make_filter_coefficients(detail::to_array<N + 1>(b),
+                                          detail::to_array<N + 1>(a));
 }
 
 }  // namespace waveguide

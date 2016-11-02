@@ -4,6 +4,8 @@
 
 #include "glm/glm.hpp"
 
+namespace core {
+
 template <typename T>
 constexpr cl_float3 to_cl_float3(const T& t) {
     return cl_float3{{t.x, t.y, t.z, 0}};
@@ -33,3 +35,5 @@ template <>
 constexpr glm::ivec3 to_ivec3(const cl_int3& t) {
     return glm::ivec3{t.s[0], t.s[1], t.s[2]};
 }
+
+}  // namespace core

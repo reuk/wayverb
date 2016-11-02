@@ -2,6 +2,7 @@
 #include "core/geo/tri_cube_intersection.h"
 #include "core/scene_data.h"
 
+namespace core {
 namespace geo {
 
 glm::vec3 mirror_inside(const box& b, const glm::vec3& v, direction d) {
@@ -67,3 +68,4 @@ bool intersects(const box& b, const ray& ray, float t0, float t1) {
 }
 
 }  // namespace geo
+}  // namespace core

@@ -4,6 +4,8 @@
 
 #include "utilities/aligned/vector.h"
 
+namespace core {
+
 enum class device_type { cpu, gpu };
 
 /// invariant: device is a valid device for the context
@@ -52,3 +54,5 @@ void write_value(cl::CommandQueue& queue,
     queue.enqueueWriteBuffer(
             buffer, CL_TRUE, sizeof(T) * index, sizeof(T), &val);
 }
+
+}  // namespace core

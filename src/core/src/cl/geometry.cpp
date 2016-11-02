@@ -1,7 +1,8 @@
 #include "core/cl/geometry.h"
 
+namespace core {
 namespace cl_sources {
-const char* geometry{R"(
+const char* geometry = R"(
 bool almost_equal(float x, float y, size_t ulp);
 bool almost_equal(float x, float y, size_t ulp) {
     const float abs_diff = fabs(x - y);
@@ -161,5 +162,7 @@ bool line_segment_sphere_intersection(float3 p1, float3 p2, float3 sc, float r) 
     return dot(closest, closest) < r * r;
 }
 
-)"};
+)";
+
 }  // namespace cl_sources
+}  // namespace core

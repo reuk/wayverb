@@ -2,6 +2,7 @@
 
 #include "utilities/map_to_vector.h"
 
+namespace core {
 namespace model {
 
 util::aligned::vector<glm::vec3> get_pointing(const receiver& u) {
@@ -23,3 +24,4 @@ util::aligned::vector<glm::vec3> get_pointing(const receiver& u) {
 }
 
 }  // namespace model
+}  // namespace core

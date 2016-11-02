@@ -22,7 +22,7 @@ constexpr auto num_images(size_t shell) {
     return power(width_for_shell(shell), 3);
 }
 
-inline auto image_position(const geo::box& box,
+inline auto image_position(const core::geo::box& box,
                            const glm::vec3& source,
                            const glm::ivec3& image_index) {
     const auto mirrored = centre(box) * 2.0f - source;
@@ -32,7 +32,7 @@ inline auto image_position(const geo::box& box,
 }
 
 template <typename Callback>
-void image_at_index(const geo::box& box,
+void image_at_index(const core::geo::box& box,
                     const glm::vec3& source,
                     const glm::vec3& receiver,
                     const glm::ivec3& image_index,
@@ -68,7 +68,7 @@ void image_at_index(const geo::box& box,
 }
 
 template <typename Callback>
-void traverse_images(const geo::box& box,
+void traverse_images(const core::geo::box& box,
                      const glm::vec3& source,
                      const glm::vec3& receiver,
                      size_t shells,
@@ -96,7 +96,7 @@ void traverse_images(const geo::box& box,
 }
 
 template <typename Surface>
-auto find_impulses(const geo::box& box,
+auto find_impulses(const core::geo::box& box,
                    const glm::vec3& source,
                    const glm::vec3& receiver,
                    const Surface& surface,
@@ -106,8 +106,9 @@ auto find_impulses(const geo::box& box,
     const auto min_dim = std::min({dim.x, dim.y, dim.z});
     const auto shells = std::ceil(max_distance / min_dim);
 
-    auto callback = make_callback_accumulator(make_fast_pressure_calculator(
-            &surface, &surface + 1, receiver, flip_phase));
+    auto callback =
+            core::make_callback_accumulator(make_fast_pressure_calculator(
+                    &surface, &surface + 1, receiver, flip_phase));
     traverse_images(box,
                     source,
                     receiver,

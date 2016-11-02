@@ -10,8 +10,9 @@ namespace reflection_processor {
 image_source::image_source(
         size_t max_order,
         bool flip_phase,
-        const model::parameters& params,
-        const voxelised_scene_data<cl_float3, surface<simulation_bands>>&
+        const core::model::parameters& params,
+        const core::voxelised_scene_data<cl_float3,
+                                         core::surface<core::simulation_bands>>&
                 voxelised,
         size_t items)
         : params_{params}
@@ -45,8 +46,8 @@ util::aligned::vector<impulse<8>> image_source::get_results() {
 
     //  Correct for distance travelled.
     for (auto& imp : ret) {
-        imp.volume *=
-                pressure_for_distance(imp.distance, params_.acoustic_impedance);
+        imp.volume *= core::pressure_for_distance(imp.distance,
+                                                  params_.acoustic_impedance);
     }
 
     return ret;
@@ -57,9 +58,10 @@ make_image_source::make_image_source(size_t max_order, bool flip_phase)
         , flip_phase_{flip_phase} {}
 
 image_source make_image_source::operator()(
-        const compute_context& cc,
-        const model::parameters& params,
-        const voxelised_scene_data<cl_float3, surface<simulation_bands>>&
+        const core::compute_context& cc,
+        const core::model::parameters& params,
+        const core::voxelised_scene_data<cl_float3,
+                                         core::surface<core::simulation_bands>>&
                 voxelised,
         size_t num_directions) const {
     return {max_order_, flip_phase_, params, voxelised, num_directions};

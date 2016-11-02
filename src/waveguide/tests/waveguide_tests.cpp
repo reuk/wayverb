@@ -41,9 +41,9 @@ TEST(peak_filter_coefficients, peak_filter_coefficients) {
 TEST(run_waveguide, run_waveguide) {
     const auto steps = 700;
 
-    const compute_context cc{};
+    const core::compute_context cc{};
 
-    const geo::box box{glm::vec3{0, 0, 0}, glm::vec3{4, 3, 6}};
+    const core::geo::box box{glm::vec3{0, 0, 0}, glm::vec3{4, 3, 6}};
     constexpr glm::vec3 source{2, 1.5, 1};
 
     util::aligned::vector<glm::vec3> receivers{
@@ -51,8 +51,8 @@ TEST(run_waveguide, run_waveguide) {
 
     //  init simulation parameters
 
-    const auto scene_data =
-            geo::get_scene_data(box, make_surface<simulation_bands>(0.01, 0));
+    const auto scene_data = core::geo::get_scene_data(
+            box, core::make_surface<core::simulation_bands>(0.01, 0));
 
     constexpr auto speed_of_sound = 340.0;
     auto voxels_and_mesh = waveguide::compute_voxels_and_mesh(
@@ -86,8 +86,8 @@ TEST(run_waveguide, run_waveguide) {
                                           receiver_index)) {
                     throw std::runtime_error("receiver is outside of mesh!");
                 }
-                return callback_accumulator<waveguide::postprocessor::node>{
-                        receiver_index};
+                return core::callback_accumulator<
+                        waveguide::postprocessor::node>{receiver_index};
             });
 
     util::progress_bar pb;

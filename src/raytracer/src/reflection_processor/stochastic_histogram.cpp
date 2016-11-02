@@ -11,11 +11,13 @@ make_stochastic_histogram::make_stochastic_histogram(float receiver_radius,
         , max_order_{max_order} {}
 
 stochastic_histogram<stochastic::energy_histogram> make_stochastic_histogram::
-operator()(const compute_context& cc,
-           const model::parameters& params,
-           const voxelised_scene_data<cl_float3, surface<simulation_bands>>&
-                   voxelised,
-           size_t num_directions) const {
+operator()(
+        const core::compute_context& cc,
+        const core::model::parameters& params,
+        const core::voxelised_scene_data<cl_float3,
+                                         core::surface<core::simulation_bands>>&
+                voxelised,
+        size_t num_directions) const {
     return {cc,
             params,
             receiver_radius_,
@@ -35,9 +37,10 @@ make_directional_histogram::make_directional_histogram(float receiver_radius,
 
 stochastic_histogram<stochastic::directional_energy_histogram<20, 9>>
 make_directional_histogram::operator()(
-        const compute_context& cc,
-        const model::parameters& params,
-        const voxelised_scene_data<cl_float3, surface<simulation_bands>>&
+        const core::compute_context& cc,
+        const core::model::parameters& params,
+        const core::voxelised_scene_data<cl_float3,
+                                         core::surface<core::simulation_bands>>&
                 voxelised,
         size_t num_directions) const {
     return {cc,

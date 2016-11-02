@@ -43,12 +43,12 @@ auto canonical(
         const core::generic_scene_data<cl_float3,
                                        core::surface<core::simulation_bands>>&
                 scene,
-        const core::model::parameters& params,
+        const model::parameters& params,
         const simulation_parameters& sim_params,
         size_t visual_items,
         const std::atomic_bool& keep_going,
         Callback&& callback) {
-    const auto directions = core::get_random_directions(sim_params.rays);
+    const auto directions = get_random_directions(sim_params.rays);
 
     auto tup =
             run(begin(directions),

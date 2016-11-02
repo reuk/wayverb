@@ -15,7 +15,7 @@
 namespace raytracer {
 
 template <size_t channels>
-auto attenuate(const attenuator::null& null,
+auto attenuate(const core::attenuator::null& null,
                const glm::vec3& position,
                const impulse<channels>& i) {
     return make_attenuated_impulse(i.volume, i.distance);
@@ -24,10 +24,10 @@ auto attenuate(const attenuator::null& null,
 /// For a microphone, we just look up the direction of the impulse from the
 /// receiver and scale the volume appropriately.
 template <size_t channels>
-auto attenuate(const attenuator::microphone& mic,
+auto attenuate(const core::attenuator::microphone& mic,
                const glm::vec3& position,
                const impulse<channels>& i) {
-    const auto dir = to_vec3(i.position) - position;
+    const auto dir = core::to_vec3(i.position) - position;
     const auto att = attenuation(mic, dir);
     return make_attenuated_impulse(i.volume * att, i.distance);
 }
@@ -36,12 +36,12 @@ auto attenuate(const attenuator::microphone& mic,
 /// whether the channel is left or right, which should introduce some reasonably
 /// convincing interchannel time difference.
 template <size_t channels>
-auto attenuate(const attenuator::hrtf& hrtf,
+auto attenuate(const core::attenuator::hrtf& hrtf,
                const glm::vec3& position,
                const impulse<channels>& i) {
     const auto adjusted_listener_position = get_ear_position(hrtf, position);
 
-    const auto impulse_position = to_vec3(i.position);
+    const auto impulse_position = core::to_vec3(i.position);
 
     const auto dir = impulse_position - adjusted_listener_position;
     const auto att = attenuation(hrtf, dir);

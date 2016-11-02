@@ -5,6 +5,7 @@
 
 #include "utilities/aligned/vector.h"
 
+namespace core {
 namespace filter {
 
 class delay_line final {
@@ -135,3 +136,4 @@ void block_dc(It begin, It end, double sr) {
 }
 
 }  // namespace filter
+}  // namespace core

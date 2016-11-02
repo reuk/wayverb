@@ -3,6 +3,7 @@
 #include "core/cl/scene_structs.h"
 #include "core/geo/triangle_vec.h"
 
+namespace core {
 namespace geo {
 
 namespace detail {
@@ -111,3 +112,4 @@ bool overlaps_2d(const std::array<glm::vec2, n>& a,
 }
 
 }  // namespace geo
+}  // namespace core

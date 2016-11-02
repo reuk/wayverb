@@ -2,6 +2,7 @@
 
 #include <exception>
 
+namespace core {
 namespace exceptions {
 
 class exception : public std::runtime_error {
@@ -28,3 +29,4 @@ class value_is_inf final : public suspicious_value {
 };
 
 }  // namespace exceptions
+}  // namespace core

@@ -8,8 +8,9 @@
 #include "core/spatial_division/scene_buffers.h"
 
 template <typename T, typename Alloc, size_t Az, size_t El>
-void resize_if_necessary(vector_look_up_table<std::vector<T, Alloc>, Az, El>& t,
-                         size_t new_size) {
+void resize_if_necessary(
+        core::vector_look_up_table<std::vector<T, Alloc>, Az, El>& t,
+        size_t new_size) {
     for (auto& azimuth : t.table) {
         for (auto& elevation : azimuth) {
             if (elevation.size() < new_size) {
@@ -33,7 +34,7 @@ template <typename T, typename U, typename Alloc, size_t Az, size_t El>
 void energy_histogram_sum(
         const T& item,
         double sample_rate,
-        vector_look_up_table<std::vector<U, Alloc>, Az, El>& ret) {
+        core::vector_look_up_table<std::vector<U, Alloc>, Az, El>& ret) {
     using table = std::decay_t<decltype(ret)>;
     ret.at(table::index(item.pointing))[time(item) * sample_rate] +=
             volume(item);
@@ -56,8 +57,8 @@ public:
     /// A max_image_source_order of 0 = direct energy from image-source
     /// An order of 1 = direct and one reflection from image-source
     /// i.e. the order == the number of reflections for each image
-    stochastic_histogram(const compute_context& cc,
-                         const model::parameters& params,
+    stochastic_histogram(const core::compute_context& cc,
+                         const core::model::parameters& params,
                          float receiver_radius,
                          float sample_rate,
                          size_t max_image_source_order,
@@ -70,13 +71,13 @@ public:
     template <typename It>
     void process(It b,
                  It e,
-                 const scene_buffers& buffers,
+                 const core::scene_buffers& buffers,
                  size_t step,
                  size_t total) {
         const auto output = finder_.process(b, e, buffers);
 
         struct intermediate_impulse final {
-            bands_type volume;
+            core::bands_type volume;
             double time;
             glm::vec3 pointing;
         };
@@ -90,7 +91,7 @@ public:
                     ret.emplace_back(intermediate_impulse{
                             impulse.volume,
                             impulse.distance / params_.speed_of_sound,
-                            glm::normalize(to_vec3(impulse.position) -
+                            glm::normalize(core::to_vec3(impulse.position) -
                                            params_.receiver)});
                 }
             };
@@ -114,7 +115,7 @@ public:
 
 private:
     stochastic::finder finder_;
-    model::parameters params_;
+    core::model::parameters params_;
     size_t max_image_source_order_;
     Histogram histogram_;
 };
@@ -126,10 +127,11 @@ public:
                               size_t max_order);
 
     stochastic_histogram<stochastic::energy_histogram> operator()(
-            const compute_context& cc,
-            const model::parameters& params,
-            const voxelised_scene_data<cl_float3, surface<simulation_bands>>&
-                    voxelised,
+            const core::compute_context& cc,
+            const core::model::parameters& params,
+            const core::voxelised_scene_data<
+                    cl_float3,
+                    core::surface<core::simulation_bands>>& voxelised,
             size_t num_directions) const;
 
 private:
@@ -145,10 +147,11 @@ public:
                                size_t max_order);
 
     stochastic_histogram<stochastic::directional_energy_histogram<20, 9>>
-    operator()(const compute_context& cc,
-               const model::parameters& params,
-               const voxelised_scene_data<cl_float3, surface<simulation_bands>>&
-                       voxelised,
+    operator()(const core::compute_context& cc,
+               const core::model::parameters& params,
+               const core::voxelised_scene_data<
+                       cl_float3,
+                       core::surface<core::simulation_bands>>& voxelised,
                size_t num_directions) const;
 
 private:

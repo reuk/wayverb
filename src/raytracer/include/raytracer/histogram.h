@@ -129,7 +129,7 @@ struct sinc_sum_functor final {
             const auto relative_time = this_time - item_time;
             const auto angle = 2 * M_PI * relative_time;
             const auto envelope = 0.5 * (1 + std::cos(angle / width));
-            const auto filt = sinc(relative_time * sample_rate);
+            const auto filt = core::sinc(relative_time * sample_rate);
             *i += volume(item) * envelope * filt;
         }
     }

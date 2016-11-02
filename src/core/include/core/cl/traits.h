@@ -9,6 +9,9 @@
 #include <functional>
 #include <type_traits>
 
+//  Most of this has to live in the global namespace because the cl_* types
+//  live in the global namespace, and we want name lookup to work.
+
 #define CL_UNIT(cl_type)      \
     struct cl_type##1 final { \
         cl_type s[1];         \
@@ -252,116 +255,6 @@ constexpr auto map(const T& t, const Op& op) {
 
 }  // namespace detail
 
-//  relational ops
-
-template <typename T,
-          typename U,
-          detail::enable_if_any_is_vector_t<int, T, U> = 0>
-constexpr auto operator==(const T& a, const U& b) {
-    return detail::accumulate(detail::zip(a, b, std::equal_to<>{}),
-                              std::logical_and<>{});
-}
-
-template <typename T, detail::enable_if_is_vector_t<T, int> = 0>
-constexpr auto operator!(const T& a) {
-    return detail::map(a, std::logical_not<>{});
-}
-
-template <typename T,
-          typename U,
-          detail::enable_if_any_is_vector_t<int, T, U> = 0>
-constexpr auto operator!=(const T& a, const U& b) {
-    return !(a == b);
-}
-
-template <typename T,
-          typename U,
-          detail::enable_if_any_is_vector_t<int, T, U> = 0>
-constexpr auto operator<(const T& a, const U& b) {
-    return detail::zip(a, b, std::less<>{});
-}
-
-template <typename T,
-          typename U,
-          detail::enable_if_any_is_vector_t<int, T, U> = 0>
-constexpr auto operator<=(const T& a, const U& b) {
-    return detail::zip(a, b, std::less_equal<>{});
-}
-
-//  arithmetic ops /////////////////////////////////////////////////////////////
-
-template <typename T, typename U, detail::enable_if_is_vector_t<T, int> = 0>
-constexpr auto& operator+=(T& a, const U& b) {
-    return detail::inplace_zip(a, b, std::plus<>{});
-}
-
-template <typename T, typename U, detail::enable_if_is_vector_t<T, int> = 0>
-constexpr auto& operator-=(T& a, const U& b) {
-    return detail::inplace_zip(a, b, std::minus<>{});
-}
-
-template <typename T, typename U, detail::enable_if_is_vector_t<T, int> = 0>
-constexpr auto& operator*=(T& a, const U& b) {
-    return detail::inplace_zip(a, b, std::multiplies<>{});
-}
-
-template <typename T, typename U, detail::enable_if_is_vector_t<T, int> = 0>
-constexpr auto& operator/=(T& a, const U& b) {
-    return detail::inplace_zip(a, b, std::divides<>{});
-}
-
-template <typename T, typename U, detail::enable_if_is_vector_t<T, int> = 0>
-constexpr auto& operator%=(T& a, const U& b) {
-    return detail::inplace_zip(a, b, std::modulus<>{});
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-template <typename T,
-          typename U,
-          detail::enable_if_any_is_vector_t<int, T, U> = 0>
-constexpr auto operator+(const T& a, const U& b) {
-    return detail::zip(a, b, std::plus<>{});
-}
-
-template <typename T,
-          typename U,
-          detail::enable_if_any_is_vector_t<int, T, U> = 0>
-constexpr auto operator-(const T& a, const U& b) {
-    return detail::zip(a, b, std::minus<>{});
-}
-
-template <typename T,
-          typename U,
-          detail::enable_if_any_is_vector_t<int, T, U> = 0>
-constexpr auto operator*(const T& a, const U& b) {
-    return detail::zip(a, b, std::multiplies<>{});
-}
-
-template <typename T,
-          typename U,
-          detail::enable_if_any_is_vector_t<int, T, U> = 0>
-constexpr auto operator/(const T& a, const U& b) {
-    return detail::zip(a, b, std::divides<>{});
-}
-
-template <typename T,
-          typename U,
-          detail::enable_if_any_is_vector_t<int, T, U> = 0>
-constexpr auto operator%(const T& a, const U& b) {
-    return detail::zip(a, b, std::modulus<>{});
-}
-
-template <typename T, detail::enable_if_is_vector_t<T, int> = 0>
-constexpr auto operator+(const T& a) {
-    return a;
-}
-
-template <typename T, detail::enable_if_is_vector_t<T, int> = 0>
-constexpr auto operator-(const T& a) {
-    return detail::map(a, std::negate<>{});
-}
-
 //  other reductions ///////////////////////////////////////////////////////////
 
 template <typename T, detail::enable_if_is_vector_t<T, int> = 0>
@@ -488,4 +381,114 @@ constexpr auto construct_vector(Input input) {
         i = input;
     }
     return ret;
+}
+
+//  operator overloads /////////////////////////////////////////////////////////
+
+template <typename T,
+          typename U,
+          detail::enable_if_any_is_vector_t<int, T, U> = 0>
+constexpr auto operator==(const T& a, const U& b) {
+    return detail::accumulate(detail::zip(a, b, std::equal_to<>{}),
+                              std::logical_and<>{});
+}
+
+template <typename T, detail::enable_if_is_vector_t<T, int> = 0>
+constexpr auto operator!(const T& a) {
+    return detail::map(a, std::logical_not<>{});
+}
+
+template <typename T,
+          typename U,
+          detail::enable_if_any_is_vector_t<int, T, U> = 0>
+constexpr auto operator!=(const T& a, const U& b) {
+    return !(a == b);
+}
+
+template <typename T,
+          typename U,
+          detail::enable_if_any_is_vector_t<int, T, U> = 0>
+constexpr auto operator<(const T& a, const U& b) {
+    return detail::zip(a, b, std::less<>{});
+}
+
+template <typename T,
+          typename U,
+          detail::enable_if_any_is_vector_t<int, T, U> = 0>
+constexpr auto operator<=(const T& a, const U& b) {
+    return detail::zip(a, b, std::less_equal<>{});
+}
+
+//  arithmetic ops /////////////////////////////////////////////////////////////
+
+template <typename T, typename U, detail::enable_if_is_vector_t<T, int> = 0>
+constexpr auto& operator+=(T& a, const U& b) {
+    return detail::inplace_zip(a, b, std::plus<>{});
+}
+
+template <typename T, typename U, detail::enable_if_is_vector_t<T, int> = 0>
+constexpr auto& operator-=(T& a, const U& b) {
+    return detail::inplace_zip(a, b, std::minus<>{});
+}
+
+template <typename T, typename U, detail::enable_if_is_vector_t<T, int> = 0>
+constexpr auto& operator*=(T& a, const U& b) {
+    return detail::inplace_zip(a, b, std::multiplies<>{});
+}
+
+template <typename T, typename U, detail::enable_if_is_vector_t<T, int> = 0>
+constexpr auto& operator/=(T& a, const U& b) {
+    return detail::inplace_zip(a, b, std::divides<>{});
+}
+
+template <typename T, typename U, detail::enable_if_is_vector_t<T, int> = 0>
+constexpr auto& operator%=(T& a, const U& b) {
+    return detail::inplace_zip(a, b, std::modulus<>{});
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+template <typename T,
+          typename U,
+          detail::enable_if_any_is_vector_t<int, T, U> = 0>
+constexpr auto operator+(const T& a, const U& b) {
+    return detail::zip(a, b, std::plus<>{});
+}
+
+template <typename T,
+          typename U,
+          detail::enable_if_any_is_vector_t<int, T, U> = 0>
+constexpr auto operator-(const T& a, const U& b) {
+    return detail::zip(a, b, std::minus<>{});
+}
+
+template <typename T,
+          typename U,
+          detail::enable_if_any_is_vector_t<int, T, U> = 0>
+constexpr auto operator*(const T& a, const U& b) {
+    return detail::zip(a, b, std::multiplies<>{});
+}
+
+template <typename T,
+          typename U,
+          detail::enable_if_any_is_vector_t<int, T, U> = 0>
+constexpr auto operator/(const T& a, const U& b) {
+    return detail::zip(a, b, std::divides<>{});
+}
+
+template <typename T,
+          typename U,
+          detail::enable_if_any_is_vector_t<int, T, U> = 0>
+constexpr auto operator%(const T& a, const U& b) {
+    return detail::zip(a, b, std::modulus<>{});
+}
+
+template <typename T, detail::enable_if_is_vector_t<T, int> = 0>
+constexpr auto operator+(const T& a) {
+    return a;
+}
+
+template <typename T, detail::enable_if_is_vector_t<T, int> = 0>
+constexpr auto operator-(const T& a) {
+    return detail::map(a, std::negate<>{});
 }

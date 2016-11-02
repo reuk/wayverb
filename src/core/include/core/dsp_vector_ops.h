@@ -4,6 +4,8 @@
 #include <numeric>
 #include <vector>
 
+namespace core {
+
 inline double recursive_sum(float t) { return t; }
 inline double recursive_sum(double t) { return t; }
 
@@ -72,3 +74,5 @@ inline void kernel_normalize(T& ret) {
             1.0 / sum - std::numeric_limits<typename T::value_type>::epsilon());
     }
 }
+
+}  // namespace core

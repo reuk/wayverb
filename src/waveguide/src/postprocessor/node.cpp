@@ -13,7 +13,7 @@ node::node(size_t output_node)
 node::return_type node::operator()(cl::CommandQueue& queue,
                                    const cl::Buffer& buffer,
                                    size_t step) const {
-    return read_value<cl_float>(queue, buffer, output_node_);
+    return core::read_value<cl_float>(queue, buffer, output_node_);
 }
 
 size_t node::get_output_node() const { return output_node_; }

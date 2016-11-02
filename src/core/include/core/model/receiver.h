@@ -11,6 +11,7 @@
 
 #include <vector>
 
+namespace core {
 namespace model {
 
 struct receiver final {
@@ -108,3 +109,4 @@ auto run_attenuation(const model::receiver& receiver,
 }
 
 }  // namespace model
+}  // namespace core

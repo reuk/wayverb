@@ -29,15 +29,15 @@ float brdf_mag(float y, float d) {
 }
 
 auto check_inf(float y, float d) {
-    const auto brdf{brdf_mag(y, d)};
-    if (is_any_inf(brdf)) {
+    const auto brdf = brdf_mag(y, d);
+    if (core::is_any_inf(brdf)) {
         std::cout << util::build_string("inf! y: ", y, ", d: ", d, '\n');
     }
 }
 
 auto check_nan(float y, float d) {
-    const auto brdf{brdf_mag(y, d)};
-    if (is_any_nan(brdf)) {
+    const auto brdf = brdf_mag(y, d);
+    if (core::is_any_nan(brdf)) {
         std::cout << util::build_string("nan! y: ", y, ", d: ", d, '\n');
     }
 }
@@ -46,10 +46,10 @@ TEST(brdf, brdf) {
     std::default_random_engine engine{std::random_device{}()};
     std::uniform_real_distribution<float> distribution{0, 1};
 
-    for (auto i{0u}; i != 1 << 21; ++i) {
+    for (auto i = 0u; i != 1 << 21; ++i) {
         //  edge cases
-        const auto a{distribution(engine)};
-        const auto b{distribution(engine)};
+        const auto a = distribution(engine);
+        const auto b = distribution(engine);
 
         for (auto j : std::vector<float>{0, 0.5, 1}) {
             check_inf(a, j);

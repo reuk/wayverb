@@ -4,6 +4,8 @@
 
 #include "utilities/aligned/vector.h"
 
+namespace core {
+
 /// sinc t = sin (pi . t) / pi . t
 template <typename T>
 T sinc(T t) {
@@ -115,3 +117,5 @@ util::aligned::vector<T> bandpass_sinc_kernel(double sr,
     //    kernel_normalize(kernel);
     return kernel;
 }
+
+}  // namespace core

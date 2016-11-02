@@ -3,13 +3,12 @@
 
 namespace cl_sources {
 
-const std::string filter_constants{
+const std::string filter_constants =
         "#define BIQUAD_SECTIONS " + std::to_string(biquad_sections) + "\n" +
         "#define BIQUAD_ORDER " + std::to_string(biquad_order) + "\n" +
-        "#define CANONICAL_FILTER_ORDER " +
-        std::to_string(biquad_sections * 2)};
+        "#define CANONICAL_FILTER_ORDER " + std::to_string(biquad_sections * 2);
 
-const char* filters{R"(
+const char* filters = R"(
 #define CAT(a, b) PRIMITIVE_CAT(a, b)
 #define PRIMITIVE_CAT(a, b) a##b
 
@@ -73,6 +72,6 @@ kernel void filter_test_2(
                                           canonical_coefficients + index);
 }
 
-)"};
+)";
 
 }  // namespace cl_sources

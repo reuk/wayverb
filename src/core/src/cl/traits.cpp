@@ -1,4 +1,5 @@
 #include "core/cl/traits.h"
+namespace core {
 
 //  vector types should know they're vector types
 static_assert(detail::is_vector_type_v<cl_float3>, "");
@@ -41,3 +42,4 @@ static_assert(cl_double{2} * cl_float4{{1, 0, 1, 0}} ==
                       cl_double4{{2, 0, 2, 0}},
               "");
 static_assert(cl_int4{{10, 20, 30, 40}} % 4 == cl_int4{{2, 0, 2, 0}}, "");
+}  // namespace core

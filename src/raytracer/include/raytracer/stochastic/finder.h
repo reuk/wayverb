@@ -17,18 +17,18 @@ namespace stochastic {
 
 class finder final {
 public:
-    finder(const compute_context& cc,
-           const model::parameters& params,
+    finder(const core::compute_context& cc,
+           const core::model::parameters& params,
            float receiver_radius,
            size_t rays);
 
     struct results final {
-        util::aligned::vector<impulse<simulation_bands>> specular;
-        util::aligned::vector<impulse<simulation_bands>> stochastic;
+        util::aligned::vector<impulse<core::simulation_bands>> specular;
+        util::aligned::vector<impulse<core::simulation_bands>> stochastic;
     };
 
     template <typename It>
-    auto process(It b, It e, const scene_buffers& scene_buffers) {
+    auto process(It b, It e, const core::scene_buffers& scene_buffers) {
         //  copy the current batch of reflections to the device
         cl::copy(queue_, b, e, reflections_buffer_);
 
@@ -45,8 +45,8 @@ public:
                 specular_output_buffer_);
 
         const auto read_out_impulses = [&](const auto& buffer) {
-            auto raw =
-                    read_from_buffer<impulse<simulation_bands>>(queue_, buffer);
+            auto raw = core::read_from_buffer<impulse<core::simulation_bands>>(
+                    queue_, buffer);
             raw.erase(std::remove_if(begin(raw),
                                      end(raw),
                                      [](const auto& impulse) {
@@ -63,7 +63,7 @@ public:
 private:
     using kernel_t = decltype(std::declval<program>().get_kernel());
 
-    compute_context cc_;
+    core::compute_context cc_;
     cl::CommandQueue queue_;
     kernel_t kernel_;
     cl_float3 receiver_;

@@ -1,5 +1,6 @@
 #include "core/dc_blocker.h"
 
+namespace core {
 namespace filter {
 
 delay_line::delay_line(int length)
@@ -75,3 +76,4 @@ void extra_linear_dc_blocker::clear() {
 }
 
 }  // namespace filter
+}  // namespace core

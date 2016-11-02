@@ -3,7 +3,7 @@
 #include <iostream>
 
 compressed_rectangular_waveguide::compressed_rectangular_waveguide(
-        const compute_context& cc, size_t steps)
+        const core::compute_context& cc, size_t steps)
         : queue_{cc.context, cc.device}
         , compressed_waveguide_kernel_{compressed_rectangular_waveguide_program{
                   cc}.get_compressed_waveguide_kernel()}
@@ -17,16 +17,13 @@ compressed_rectangular_waveguide::compressed_rectangular_waveguide(
                     CL_MEM_READ_WRITE,
                     sizeof(cl_float) * tetrahedron(dimension_ + 1)} {}
 
-constexpr const char* source{R"(
+constexpr const char* source = R"(
+
 int triangle(int i);
-int triangle(int i) {
-    return (i * (i + 1)) / 2;
-}
+int triangle(int i) { return (i * (i + 1)) / 2; }
 
 int tetrahedron(int i);
-int tetrahedron(int i) {
-    return (i * (i + 1) * (i + 2)) / 6;
-}
+int tetrahedron(int i) { return (i * (i + 1) * (i + 2)) / 6; }
 
 void swap(int* a, int* b);
 void swap(int* a, int* b) {
@@ -80,9 +77,7 @@ int3 fold_locator(int3 i) {
 }
 
 int to_index(int3 l);
-int to_index(int3 l) {
-    return tetrahedron(l.x) + triangle(l.y) + l.z;
-}
+int to_index(int3 l) { return tetrahedron(l.x) + triangle(l.y) + l.z; }
 
 void waveguide_cell_update(global float* prev,
                            const global float* curr,
@@ -91,12 +86,15 @@ void waveguide_cell_update(global float* prev,
                            const global float* curr,
                            int3 locator) {
     int this_index = to_index(locator);
-    prev[this_index] = (curr[to_index(fold_locator(locator + (int3)(-1,  0,  0)))] +
-                        curr[to_index(fold_locator(locator + (int3)( 1,  0,  0)))] +
-                        curr[to_index(fold_locator(locator + (int3)( 0, -1,  0)))] +
-                        curr[to_index(fold_locator(locator + (int3)( 0,  1,  0)))] +
-                        curr[to_index(fold_locator(locator + (int3)( 0,  0, -1)))] +
-                        curr[to_index(fold_locator(locator + (int3)( 0,  0,  1)))]) / 3.0 - prev[this_index];
+    prev[this_index] =
+            (curr[to_index(fold_locator(locator + (int3)(-1, 0, 0)))] +
+             curr[to_index(fold_locator(locator + (int3)(1, 0, 0)))] +
+             curr[to_index(fold_locator(locator + (int3)(0, -1, 0)))] +
+             curr[to_index(fold_locator(locator + (int3)(0, 1, 0)))] +
+             curr[to_index(fold_locator(locator + (int3)(0, 0, -1)))] +
+             curr[to_index(fold_locator(locator + (int3)(0, 0, 1)))]) /
+                    3.0 -
+            prev[this_index];
 }
 
 kernel void compressed_waveguide(global float* previous,
@@ -110,8 +108,9 @@ kernel void zero_buffer(global float* buf) {
     buf[thread] = 0;
 }
 
-)"};
+)";
 
 compressed_rectangular_waveguide_program::
-        compressed_rectangular_waveguide_program(const compute_context& cc)
+        compressed_rectangular_waveguide_program(
+                const core::compute_context& cc)
         : program_wrapper_(cc, source) {}

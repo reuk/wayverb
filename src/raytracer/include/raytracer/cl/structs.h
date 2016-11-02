@@ -21,7 +21,7 @@ struct alignas(1 << 4) reflection final {
 };
 
 template <>
-struct cl_representation<reflection> final {
+struct core::cl_representation<reflection> final {
     static constexpr auto value = R"(
 typedef struct {
     float3 position;
@@ -52,14 +52,14 @@ constexpr bool operator!=(const reflection& a, const reflection& b) {
 ////////////////////////////////////////////////////////////////////////////////
 
 struct alignas(1 << 5) stochastic_path_info final {
-    bands_type volume;   //  product of previous specular components
-    cl_float3 position;  //  because otherwise we won't be able to
-                         //  calculate a new distance
-    cl_float distance;   //  total distance travelled
+    core::bands_type volume;  //  product of previous specular components
+    cl_float3 position;       //  because otherwise we won't be able to
+                              //  calculate a new distance
+    cl_float distance;        //  total distance travelled
 };
 
 template <>
-struct cl_representation<stochastic_path_info> final {
+struct core::cl_representation<stochastic_path_info> final {
     static constexpr auto value = R"(
 typedef struct {
     bands_type volume;
@@ -102,7 +102,7 @@ constexpr auto make_impulse(T volume, cl_float3 position, cl_float distance) {
 }
 
 template <>
-struct cl_representation<impulse<8>> final {
+struct core::cl_representation<impulse<8>> final {
     static constexpr auto value = R"(
 typedef struct {
     bands_type volume;
@@ -143,7 +143,7 @@ constexpr auto make_attenuated_impulse(T volume, cl_float distance) {
 }
 
 template <>
-struct cl_representation<attenuated_impulse<8>> final {
+struct core::cl_representation<attenuated_impulse<8>> final {
     static constexpr auto value = R"(
 typedef struct {
     bands_type volume;

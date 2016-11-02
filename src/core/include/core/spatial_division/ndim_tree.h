@@ -6,6 +6,7 @@
 
 #include <memory>
 
+namespace core {
 namespace detail {
 
 template <size_t n,
@@ -97,3 +98,4 @@ private:
     util::aligned::vector<size_t> items_;  //  indices of contained items
     std::unique_ptr<node_array> nodes_;    //  contained nodes
 };
+}//namespace core

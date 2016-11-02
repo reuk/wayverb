@@ -4,6 +4,7 @@
 #include <iostream>
 #include <numeric>
 
+namespace core {
 namespace filter {
 
 lopass_windowed_sinc::lopass_windowed_sinc(int inputLength)
@@ -120,3 +121,4 @@ biquad::coefficients compute_hipass_butterworth_segment(double cf,
 }
 
 }  // namespace filter
+}  // namespace core

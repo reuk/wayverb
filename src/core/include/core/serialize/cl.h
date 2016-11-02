@@ -2,6 +2,7 @@
 
 #include "common/cl_include.h"
 
+namespace core {
 namespace cereal {
 
 template <typename Archive>
@@ -12,3 +13,4 @@ void serialize(Archive& archive, cl_float3& m) {
 }
 
 }  // namespace cereal
+}  // namespace core

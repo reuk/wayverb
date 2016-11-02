@@ -1,5 +1,6 @@
 #include "core/cl/voxel.h"
 
+namespace core {
 namespace cl_sources {
 const char* voxel = R"(
 int3 get_starting_index(float3 position,
@@ -257,3 +258,4 @@ bool voxel_point_intersection(float3 begin,
 )";
 
 }  // namespace cl_sources
+}  // namespace core

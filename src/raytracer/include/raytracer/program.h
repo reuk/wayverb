@@ -9,13 +9,13 @@ namespace raytracer {
 
 class program final {
 public:
-    program(const compute_context& cc);
+    program(const core::compute_context& cc);
 
     auto get_kernel() const {
         return program_wrapper_.get_kernel<cl::Buffer,  //  ray
                                            cl_float3,   //  receiver
                                            cl::Buffer,  //  voxel_index
-                                           aabb,        //  global_aabb
+                                           core::aabb,  //  global_aabb
                                            cl_uint,     //  side
                                            cl::Buffer,  //  triangles
                                            cl::Buffer,  //  vertices
@@ -37,7 +37,7 @@ public:
     cl::Device get_device() const { return program_wrapper_.get_device(); }
 
 private:
-    program_wrapper program_wrapper_;
+    core::program_wrapper program_wrapper_;
 };
 
 }  // namespace raytracer

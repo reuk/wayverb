@@ -4,6 +4,7 @@
 #include <numeric>
 #include <stdexcept>
 
+namespace core {
 struct linear_regression final {
     double m;  /// gradient of regression line
     double c;  /// y intercept
@@ -51,3 +52,4 @@ linear_regression simple_linear_regression(It begin, It end) {
             numerator / std::sqrt((n * sxx - sx * sx) * (n * syy - sy * sy));
     return {m, c, r};
 }
+}  // namespace core
