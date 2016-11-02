@@ -15,7 +15,7 @@
 #include "utilities/progress_bar.h"
 #include "utilities/range.h"
 
-#include "cereal/archives/JSON.hpp"
+#include "cereal/archives/json.hpp"
 #include "cereal/cereal.hpp"
 #include "cereal/types/array.hpp"
 #include "cereal/types/vector.hpp"

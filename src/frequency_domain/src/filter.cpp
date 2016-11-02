@@ -1,4 +1,4 @@
-#include "frequency_domain/fiLter.h"
+#include "frequency_domain/filter.h"
 
 #include "plan.h"
 

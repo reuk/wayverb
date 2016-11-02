@@ -62,7 +62,8 @@ constexpr entry entries[] = )"
 
 int main(int argc, char** argv) {
     if (argc != 2) {
-        throw std::runtime_error{"expected a directory name"};
+        std::cerr << "expected a directory name\n";
+        return EXIT_FAILURE;
     }
 
     const std::string base_path{argv[1]};

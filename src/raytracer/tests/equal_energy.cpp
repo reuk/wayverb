@@ -26,7 +26,7 @@ void run_test(const Attenuator& attenuator) {
             2,
             0.1f);
 
-    constexpr auto histogram_sample_rate = 1000.0;
+    const auto histogram_sample_rate = 1000.0f;
     const auto callbacks =
             std::make_tuple(Histogram{1.0f, histogram_sample_rate, 0});
 

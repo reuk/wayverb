@@ -13,11 +13,15 @@ namespace detail {
 
 template <typename It>
 auto to_itpp_vec(It b, It e) {
-    itpp::vec ret(std::distance(b, e));
-    for (auto i = 0; b != e; ++b, ++i) {
-        ret[i] = *b;
+    const auto size = std::distance(b, e);
+    if (0 < size) {
+        itpp::vec ret(size);
+        for (auto i = 0; b != e; ++b, ++i) {
+            ret[i] = *b;
+        }
+        return ret;
     }
-    return ret;
+    return itpp::vec{};
 }
 
 template <size_t... Ix>

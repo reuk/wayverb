@@ -46,15 +46,9 @@ normal
 
 Ambisonic polar patterns for microphones.
 
-Make sure all modules are namespaced.
-
-Reduce visiblity of methods wherever possible.
-
-Static analysis.
-
 Fuzzing.
 
-cl_representation - improve so that I don't have to reopen the core namespace.
+Reduce visiblity of methods wherever possible.
 
 nice-to-have
 ============
