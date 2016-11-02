@@ -35,8 +35,8 @@ private:
         void operator()(T* t) const noexcept;
     };
 
-    size_t buf_size;
-    std::unique_ptr<T[], destructor> buf;
+    size_t size_;
+    std::unique_ptr<T[], destructor> buf_;
 };
 
 using rbuf = buffer<float>;

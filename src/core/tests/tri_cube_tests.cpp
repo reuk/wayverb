@@ -200,12 +200,13 @@ TEST(tri_cube_tests, check_line) {
         auto x1 = dist(engine);
         auto y1 = dist(engine);
         auto z1 = dist(engine);
-        for (auto diff = 0u; diff != 0x100; ++diff)
+        for (auto diff = 0u; diff != 0x100; ++diff) {
             ASSERT_EQ(check_line(Point3{x0, y0, z0}, Point3{x1, y1, z1}, diff),
                       geo::where::outside ==
                               geo::check_line(glm::vec3(x0, y0, z0),
                                               glm::vec3(x1, y1, z1),
                                               diff));
+        }
     }
 }
 

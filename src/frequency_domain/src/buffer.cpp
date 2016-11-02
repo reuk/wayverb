@@ -5,15 +5,15 @@
 namespace frequency_domain {
 
 template <typename T>
-buffer<T>::buffer(size_t buf_size)
-        : buf_size(buf_size)
-        , buf(type_trait<T>::alloc(buf_size)) {}
+buffer<T>::buffer(size_t buffer_size)
+        : size_{buffer_size}
+        , buf_{type_trait<T>::alloc(buffer_size)} {}
 
 template <typename T>
 buffer<T>::buffer(const buffer& rhs)
-        : buf_size(rhs.buf_size)
-        , buf(type_trait<T>::alloc(buf_size)) {
-    memcpy(data(), rhs.data(), buf_size * sizeof(T));
+        : size_{rhs.size_}
+        , buf_{type_trait<T>::alloc(size_)} {
+    memcpy(data(), rhs.data(), size_ * sizeof(T));
 }
 
 template <typename T>
@@ -25,48 +25,48 @@ buffer<T>& buffer<T>::operator=(buffer rhs) {
 template <typename T>
 void buffer<T>::swap(buffer& rhs) noexcept {
     using std::swap;
-    swap(buf_size, rhs.buf_size);
-    swap(buf, rhs.buf);
+    swap(size_, rhs.size_);
+    swap(buf_, rhs.buf_);
 }
 
 template <typename T>
 size_t buffer<T>::size() const noexcept {
-    return buf_size;
+    return size_;
 }
 
 template <typename T>
 T* buffer<T>::data() {
-    return buf.get();
+    return buf_.get();
 }
 
 template <typename T>
 const T* buffer<T>::data() const {
-    return buf.get();
+    return buf_.get();
 }
 
 template <typename T>
 T* buffer<T>::begin() {
-    return buf.get();
+    return buf_.get();
 }
 
 template <typename T>
 const T* buffer<T>::begin() const {
-    return buf.get();
+    return buf_.get();
 }
 
 template <typename T>
 T* buffer<T>::end() {
-    return begin() + buf_size;
+    return begin() + size_;
 }
 
 template <typename T>
 const T* buffer<T>::end() const {
-    return begin() + buf_size;
+    return begin() + size_;
 }
 
 template <typename T>
 void buffer<T>::zero() {
-    memset(data(), 0, buf_size * sizeof(T));
+    memset(data(), 0, size_ * sizeof(T));
 }
 
 template <typename T>

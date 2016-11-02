@@ -14,150 +14,77 @@ const auto eps = 10e-5;
 namespace geo {
 
 int sign3(const glm::vec3& v) {
-    return (v.x < eps)
-                   ? 0x04
-                   : 0 | (v.x > -eps)
-                             ? 0x20
-                             : 0 | (v.y < eps)
-                                       ? 0x02
-                                       : 0 | (v.y > -eps)
-                                                 ? 0x10
-                                                 : 0 | (v.z < eps)
-                                                           ? 0x01
-                                                           : 0 | (v.z > -eps)
-                                                                     ? 0x08
-                                                                     : 0;
+    return ((v.x < eps) ? (1 << 2) : 0) | ((-eps < v.x) ? (1 << 5) : 0) |
+           ((v.y < eps) ? (1 << 1) : 0) | ((-eps < v.y) ? (1 << 4) : 0) |
+           ((v.z < eps) ? (1 << 0) : 0) | ((-eps < v.z) ? (1 << 3) : 0);
 }
 
 int face_plane(const glm::vec3& p) {
-    auto ret = 0;
-    if (p.x > 0.5) {
-        ret |= 0x01;
-    }
-    if (p.x < -0.5) {
-        ret |= 0x02;
-    }
-    if (p.y > 0.5) {
-        ret |= 0x04;
-    }
-    if (p.y < -0.5) {
-        ret |= 0x08;
-    }
-    if (p.z > 0.5) {
-        ret |= 0x10;
-    }
-    if (p.z < -0.5) {
-        ret |= 0x20;
-    }
-    return ret;
+    return ((0.5 < p.x) ? (1 << 0) : 0) | ((p.x < -0.5) ? (1 << 1) : 0) |
+           ((0.5 < p.y) ? (1 << 2) : 0) | ((p.y < -0.5) ? (1 << 3) : 0) |
+           ((0.5 < p.z) ? (1 << 4) : 0) | ((p.z < -0.5) ? (1 << 5) : 0);
 }
 
 int bevel_2d(const glm::vec3& p) {
-    auto ret = 0;
-    if (p.x + p.y > 1.0) {
-        ret |= 0x001;
-    }
-    if (p.x - p.y > 1.0) {
-        ret |= 0x002;
-    }
-    if (-p.x + p.y > 1.0) {
-        ret |= 0x004;
-    }
-    if (-p.x - p.y > 1.0) {
-        ret |= 0x008;
-    }
-
-    if (p.x + p.z > 1.0) {
-        ret |= 0x010;
-    }
-    if (p.x - p.z > 1.0) {
-        ret |= 0x020;
-    }
-    if (-p.x + p.z > 1.0) {
-        ret |= 0x040;
-    }
-    if (-p.x - p.z > 1.0) {
-        ret |= 0x080;
-    }
-
-    if (p.y + p.z > 1.0) {
-        ret |= 0x100;
-    }
-    if (p.y - p.z > 1.0) {
-        ret |= 0x200;
-    }
-    if (-p.y + p.z > 1.0) {
-        ret |= 0x400;
-    }
-    if (-p.y - p.z > 1.0) {
-        ret |= 0x800;
-    }
-    return ret;
+    return ((1.0 < p.x + p.y) ? (1 << 0) : 0) |
+           ((1.0 < p.x - p.y) ? (1 << 1) : 0) |
+           ((1.0 < -p.x + p.y) ? (1 << 2) : 0) |
+           ((1.0 < -p.x - p.y) ? (1 << 3) : 0) |
+           ((1.0 < p.x + p.z) ? (1 << 4) : 0) |
+           ((1.0 < p.x - p.z) ? (1 << 5) : 0) |
+           ((1.0 < -p.x + p.z) ? (1 << 6) : 0) |
+           ((1.0 < -p.x - p.z) ? (1 << 7) : 0) |
+           ((1.0 < p.y + p.z) ? (1 << 8) : 0) |
+           ((1.0 < p.y - p.z) ? (1 << 9) : 0) |
+           ((1.0 < -p.y + p.z) ? (1 << 10) : 0) |
+           ((1.0 < -p.y - p.z) ? (1 << 11) : 0);
 }
 
 int bevel_3d(const glm::vec3& p) {
-    auto ret = 0;
-    if (p.x + p.y + p.z > 1.5) {
-        ret |= 0x01;
-    }
-    if (p.x + p.y - p.z > 1.5) {
-        ret |= 0x02;
-    }
-    if (p.x - p.y + p.z > 1.5) {
-        ret |= 0x04;
-    }
-    if (p.x - p.y - p.z > 1.5) {
-        ret |= 0x08;
-    }
-    if (-p.x + p.y + p.z > 1.5) {
-        ret |= 0x10;
-    }
-    if (-p.x + p.y - p.z > 1.5) {
-        ret |= 0x20;
-    }
-    if (-p.x - p.y + p.z > 1.5) {
-        ret |= 0x40;
-    }
-    if (-p.x - p.y - p.z > 1.5) {
-        ret |= 0x80;
-    }
-    return ret;
+    return ((1.5 < p.x + p.y + p.z) ? (1 << 0) : 0) |
+           ((1.5 < p.x + p.y - p.z) ? (1 << 1) : 0) |
+           ((1.5 < p.x - p.y + p.z) ? (1 << 2) : 0) |
+           ((1.5 < p.x - p.y - p.z) ? (1 << 3) : 0) |
+           ((1.5 < -p.x + p.y + p.z) ? (1 << 4) : 0) |
+           ((1.5 < -p.x + p.y - p.z) ? (1 << 5) : 0) |
+           ((1.5 < -p.x - p.y + p.z) ? (1 << 6) : 0) |
+           ((1.5 < -p.x - p.y - p.z) ? (1 << 7) : 0);
 }
 
-int check_point(const glm::vec3& p1,
-                const glm::vec3& p2,
-                float alpha,
-                int mask) {
-    return face_plane(glm::mix(p1, p2, alpha)) & mask;
+bool check_point(const glm::vec3& p1,
+                 const glm::vec3& p2,
+                 float alpha,
+                 int mask) {
+    return (face_plane(glm::mix(p1, p2, alpha)) & mask) != 0;
 }
 
 where check_line(const glm::vec3& p1, const glm::vec3& p2, int outcode_diff) {
-    if (0x01 & outcode_diff) {
+    if (((1 << 0) & outcode_diff) != 0) {
         if (!check_point(p1, p2, (0.5 - p1.x) / (p2.x - p1.x), 0x3e)) {
             return where::inside;
         }
     }
-    if (0x02 & outcode_diff) {
+    if (((1 << 1) & outcode_diff) != 0) {
         if (!check_point(p1, p2, (-0.5 - p1.x) / (p2.x - p1.x), 0x3d)) {
             return where::inside;
         }
     }
-    if (0x04 & outcode_diff) {
+    if (((1 << 2) & outcode_diff) != 0) {
         if (!check_point(p1, p2, (0.5 - p1.y) / (p2.y - p1.y), 0x3b)) {
             return where::inside;
         }
     }
-    if (0x08 & outcode_diff) {
+    if (((1 << 3) & outcode_diff) != 0) {
         if (!check_point(p1, p2, (-0.5 - p1.y) / (p2.y - p1.y), 0x37)) {
             return where::inside;
         }
     }
-    if (0x10 & outcode_diff) {
+    if (((1 << 4) & outcode_diff) != 0) {
         if (!check_point(p1, p2, (0.5 - p1.z) / (p2.z - p1.z), 0x2f)) {
             return where::inside;
         }
     }
-    if (0x20 & outcode_diff) {
+    if (((1 << 5) & outcode_diff) != 0) {
         if (!check_point(p1, p2, (-0.5 - p1.z) / (p2.z - p1.z), 0x1f)) {
             return where::inside;
         }

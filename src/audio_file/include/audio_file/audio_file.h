@@ -60,8 +60,8 @@ void write_interleaved(const std::string& name,
                        size_t num,
                        int channels,
                        int sr,
-                       int bd,
-                       int ftype);
+                       int ftype,
+                       int bd);
 
 }  // namespace detail
 

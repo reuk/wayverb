@@ -22,8 +22,8 @@ double width_factor(util::range<double> r, size_t bands, double overlap) {
 /// l = steepness
 
 double band_edge_impl(double p, double P, size_t l) {
-    return l ? std::sin(M_PI * band_edge_impl(p, P, l - 1) / 2)
-             : (((p / P) + 1) / 2);
+    return l != 0 ? std::sin(M_PI * band_edge_impl(p, P, l - 1) / 2)
+                  : (((p / P) + 1) / 2);
 }
 
 double lower_band_edge(double p, double P, size_t l) {
@@ -31,7 +31,7 @@ double lower_band_edge(double p, double P, size_t l) {
         throw std::runtime_error("P must be greater or equal to 0");
     }
     if (P == 0) {
-        return 0 <= p;
+        return 0 <= p ? 1.0 : 0.0;
     }
     return std::pow(std::sin(M_PI * band_edge_impl(p, P, l) / 2), 2.0);
 }
@@ -41,7 +41,7 @@ double upper_band_edge(double p, double P, size_t l) {
         throw std::runtime_error("P must be greater or equal to 0");
     }
     if (P == 0) {
-        return p < 0;
+        return p < 0 ? 1.0 : 0.0;
     }
     return std::pow(std::cos(M_PI * band_edge_impl(p, P, l) / 2), 2.0);
 }
