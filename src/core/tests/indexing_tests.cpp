@@ -2,8 +2,10 @@
 
 #include "gtest/gtest.h"
 
+using namespace wayverb::core;
+
 TEST(indexing, relative_position) {
-    using namespace core::indexing;
+    using namespace indexing;
     ASSERT_EQ(relative_position<1>(0), (index_t<1>{0}));
     ASSERT_EQ(relative_position<1>(1), (index_t<1>{1}));
     ASSERT_EQ(relative_position<1>(2), (index_t<1>{0}));
@@ -37,7 +39,7 @@ TEST(indexing, relative_position) {
 }
 
 TEST(indexing, flatten) {
-    using namespace core::indexing;
+    using namespace indexing;
     ASSERT_EQ(flatten<1>(index_t<1>{0}, index_t<1>{0}), 0);
     ASSERT_EQ(flatten<1>(index_t<1>{1}, index_t<1>{0}), 1);
 

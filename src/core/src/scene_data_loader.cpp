@@ -9,6 +9,7 @@
 #include "assimp/postprocess.h"
 #include "assimp/scene.h"
 
+namespace wayverb {
 namespace core {
 
 class scene_data_loader::impl final {
@@ -114,3 +115,4 @@ const scene_data_loader::scene_data& scene_data_loader::get_scene_data() const {
     }
 }
 }  // namespace core
+}  // namespace wayverb

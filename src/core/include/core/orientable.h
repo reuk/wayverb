@@ -4,6 +4,7 @@
 
 #include <tuple>
 
+namespace wayverb {
 namespace core {
 
 struct az_el final {
@@ -60,3 +61,4 @@ private:
 };
 
 }  // namespace core
+}  // namespace wayverb

@@ -2,6 +2,7 @@
 
 #include "core/model/orientable.h"
 
+namespace wayverb {
 namespace core {
 namespace model {
 
@@ -12,3 +13,4 @@ struct microphone final {
 
 }  // namespace model
 }  // namespace core
+}  // namespace wayverb

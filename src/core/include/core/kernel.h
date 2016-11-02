@@ -6,6 +6,7 @@
 #include <stdexcept>
 #include <vector>
 
+namespace wayverb {
 namespace core {
 namespace kernels {
 
@@ -78,3 +79,4 @@ util::aligned::vector<T> ricker_kernel(double sampling_frequency,
 
 }  // namespace kernels
 }  // namespace core
+}  // namespace wayverb

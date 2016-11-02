@@ -4,6 +4,7 @@
 
 /// See siltanen2013
 
+namespace wayverb {
 namespace waveguide {
 /// Given a source strength, calculate the distance at which the source produces
 /// intensity 1W/m^2.
@@ -28,3 +29,4 @@ inline auto rectilinear_calibration_factor(T grid_spacing,
 }
 
 }  // namespace waveguide
+}  // namespace wayverb

@@ -2,6 +2,7 @@
 #include "core/cl/traits.h"
 #include "core/scene_data.h"
 
+namespace wayverb {
 namespace core {
 
 util::aligned::vector<cl_uint> get_flattened(
@@ -122,3 +123,4 @@ void traverse(const voxel_collection<3>& voxels,
 }
 
 }  // namespace core
+}  // namespace wayverb

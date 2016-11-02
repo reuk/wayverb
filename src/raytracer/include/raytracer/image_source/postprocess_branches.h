@@ -10,6 +10,7 @@
 
 #include <future>
 
+namespace wayverb {
 namespace raytracer {
 namespace image_source {
 
@@ -55,3 +56,4 @@ auto postprocess_branches(
 
 }  // namespace image_source
 }  // namespace raytracer
+}  // namespace wayverb

@@ -4,6 +4,7 @@
 
 #include "core/model/receiver.h"
 
+namespace wayverb {
 namespace raytracer {
 namespace stochastic {
 
@@ -48,3 +49,4 @@ auto postprocess(const directional_energy_histogram<Az, El>& histogram,
 
 }  // namespace stochastic
 }  // namespace raytracer
+}  // namespace wayverb

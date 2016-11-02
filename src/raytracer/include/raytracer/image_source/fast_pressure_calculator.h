@@ -16,6 +16,7 @@
 /// to actually compute the pressure or intensity contributed by that particular
 /// path.
 
+namespace wayverb {
 namespace raytracer {
 namespace image_source {
 
@@ -130,3 +131,4 @@ constexpr auto make_fast_pressure_calculator(It b_surfaces,
 
 }  // namespace image_source
 }  // namespace raytracer
+}  // namespace wayverb

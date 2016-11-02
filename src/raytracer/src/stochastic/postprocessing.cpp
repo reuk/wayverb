@@ -9,6 +9,7 @@
 
 #include <iostream>
 
+namespace wayverb {
 namespace raytracer {
 namespace stochastic {
 
@@ -105,3 +106,4 @@ util::aligned::vector<float> postprocessing(const energy_histogram& histogram,
 
 }  // namespace stochastic
 }  // namespace raytracer
+}  // namespace wayverb

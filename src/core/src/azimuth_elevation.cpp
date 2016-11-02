@@ -2,6 +2,7 @@
 
 #include <cmath>
 
+namespace wayverb {
 namespace core {
 
 glm::vec3 sphere(double cosz, double sinz, double theta) {
@@ -32,3 +33,4 @@ util::aligned::vector<glm::vec3> get_random_directions(size_t num) {
 }
 
 }  // namespace core
+}  // namespace wayverb

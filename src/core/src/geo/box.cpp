@@ -2,6 +2,7 @@
 #include "core/geo/tri_cube_intersection.h"
 #include "core/scene_data.h"
 
+namespace wayverb {
 namespace core {
 namespace geo {
 
@@ -69,3 +70,4 @@ bool intersects(const box& b, const ray& ray, float t0, float t1) {
 
 }  // namespace geo
 }  // namespace core
+}  // namespace wayverb

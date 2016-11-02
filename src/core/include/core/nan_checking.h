@@ -3,6 +3,7 @@
 #include "core/cl/traits.h"
 #include "core/exceptions.h"
 
+namespace wayverb {
 namespace core {
 
 template <typename T, std::enable_if_t<::detail::is_vector_type_v<T>, int> = 0>
@@ -43,3 +44,4 @@ void throw_if_suspicious(const T& t) {
 }
 
 }  // namespace core
+}  // namespace wayverb

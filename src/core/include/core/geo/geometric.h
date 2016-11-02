@@ -12,6 +12,7 @@
 #include <experimental/optional>
 #include <numeric>
 
+namespace wayverb {
 namespace core {
 namespace geo {
 
@@ -135,3 +136,4 @@ constexpr geo::triangle_vec3 convert(const triangle_verts& t) {
     return geo::triangle_vec3{{to_vec3(t.v0), to_vec3(t.v1), to_vec3(t.v2)}};
 }
 }  // namespace core
+}  // namespace wayverb

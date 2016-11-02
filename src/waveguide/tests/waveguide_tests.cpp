@@ -22,15 +22,17 @@
 
 #include <random>
 
+using namespace wayverb::waveguide;
+using namespace wayverb::core;
+
 static constexpr auto samplerate = 44100.0;
 
 TEST(peak_filter_coefficients, peak_filter_coefficients) {
     static std::default_random_engine engine{std::random_device()()};
     static std::uniform_real_distribution<cl_float> range{0, 0.5};
     for (auto i = 0; i != 10; ++i) {
-        const auto descriptor =
-                waveguide::filter_descriptor{0, range(engine), 1.414};
-        const auto coefficients = waveguide::get_peak_coefficients(descriptor);
+        const auto descriptor = filter_descriptor{0, range(engine), 1.414};
+        const auto coefficients = get_peak_coefficients(descriptor);
 
         ASSERT_TRUE(std::equal(std::begin(coefficients.b),
                                std::end(coefficients.b),
@@ -41,9 +43,9 @@ TEST(peak_filter_coefficients, peak_filter_coefficients) {
 TEST(run_waveguide, run_waveguide) {
     const auto steps = 700;
 
-    const core::compute_context cc{};
+    const compute_context cc{};
 
-    const core::geo::box box{glm::vec3{0, 0, 0}, glm::vec3{4, 3, 6}};
+    const geo::box box{glm::vec3{0, 0, 0}, glm::vec3{4, 3, 6}};
     constexpr glm::vec3 source{2, 1.5, 1};
 
     util::aligned::vector<glm::vec3> receivers{
@@ -51,60 +53,58 @@ TEST(run_waveguide, run_waveguide) {
 
     //  init simulation parameters
 
-    const auto scene_data = core::geo::get_scene_data(
-            box, core::make_surface<core::simulation_bands>(0.01, 0));
+    const auto scene_data =
+            geo::get_scene_data(box, make_surface<simulation_bands>(0.01, 0));
 
     constexpr auto speed_of_sound = 340.0;
-    auto voxels_and_mesh = waveguide::compute_voxels_and_mesh(
+    auto voxels_and_mesh = compute_voxels_and_mesh(
             cc, scene_data, source, samplerate, speed_of_sound);
 
-    voxels_and_mesh.mesh.set_coefficients(
-            waveguide::to_flat_coefficients(0.01));
+    voxels_and_mesh.mesh.set_coefficients(to_flat_coefficients(0.01));
 
     //  get a waveguide
 
     const auto source_index =
             compute_index(voxels_and_mesh.mesh.get_descriptor(), source);
 
-    if (!waveguide::is_inside(voxels_and_mesh.mesh, source_index)) {
+    if (!is_inside(voxels_and_mesh.mesh, source_index)) {
         throw std::runtime_error("source is outside of mesh!");
     }
 
     const util::aligned::vector<float> raw_input{1.0f};
-    auto input = waveguide::make_transparent(
-            raw_input.data(), raw_input.data() + raw_input.size());
+    auto input = make_transparent(raw_input.data(),
+                                  raw_input.data() + raw_input.size());
     input.resize(steps);
 
-    auto prep = waveguide::preprocessor::make_soft_source(
+    auto prep = preprocessor::make_soft_source(
             source_index, input.begin(), input.end());
 
     auto output_holders =
             util::map_to_vector(begin(receivers), end(receivers), [&](auto i) {
                 const auto receiver_index =
                         compute_index(voxels_and_mesh.mesh.get_descriptor(), i);
-                if (!waveguide::is_inside(voxels_and_mesh.mesh,
-                                          receiver_index)) {
+                if (!is_inside(voxels_and_mesh.mesh, receiver_index)) {
                     throw std::runtime_error("receiver is outside of mesh!");
                 }
-                return core::callback_accumulator<
-                        waveguide::postprocessor::node>{receiver_index};
+                return callback_accumulator<postprocessor::node>{
+                        receiver_index};
             });
 
     util::progress_bar pb;
     auto callback_counter = 0;
-    waveguide::run(cc,
-                   voxels_and_mesh.mesh,
-                   [&](auto& queue, auto& buffer, auto step) {
-                       return prep(queue, buffer, step);
-                   },
-                   [&](auto& queue, const auto& buffer, auto step) {
-                       for (auto& i : output_holders) {
-                           i(queue, buffer, step);
-                       }
-                       set_progress(pb, step, steps);
-                       ASSERT_EQ(step, callback_counter++);
-                   },
-                   true);
+    run(cc,
+        voxels_and_mesh.mesh,
+        [&](auto& queue, auto& buffer, auto step) {
+            return prep(queue, buffer, step);
+        },
+        [&](auto& queue, const auto& buffer, auto step) {
+            for (auto& i : output_holders) {
+                i(queue, buffer, step);
+            }
+            set_progress(pb, step, steps);
+            ASSERT_EQ(step, callback_counter++);
+        },
+        true);
 
     auto count = 0ul;
     for (const auto& output_holder : output_holders) {

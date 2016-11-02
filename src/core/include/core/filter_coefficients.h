@@ -2,6 +2,7 @@
 
 #include <array>
 
+namespace wayverb {
 namespace core {
 
 template <size_t B, size_t A>
@@ -23,3 +24,4 @@ constexpr auto make_filter_coefficients(const std::array<double, B>& b,
 }
 
 }  // namespace core
+}  // namespace wayverb

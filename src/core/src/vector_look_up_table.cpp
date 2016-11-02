@@ -1,5 +1,6 @@
 #include "core/vector_look_up_table.h"
 
+namespace wayverb {
 namespace core {
 namespace {
 
@@ -53,3 +54,4 @@ static_assert(test_table_b::elevation_to_index(-90) == 0, "elevation_to_index");
 
 }  // namespace
 }  // namespace core
+}  // namespace wayverb

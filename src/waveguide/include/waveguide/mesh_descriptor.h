@@ -7,23 +7,15 @@
 
 #include <array>
 
+namespace wayverb {
+namespace waveguide {
+
 struct alignas(1 << 4) mesh_descriptor final {
     static constexpr auto no_neighbor = ~cl_uint{0};
 
     cl_float3 min_corner;
     cl_int3 dimensions;
     cl_float spacing;
-};
-
-template <>
-struct core::cl_representation<mesh_descriptor> final {
-    static constexpr auto value = R"(
-typedef struct {
-    float3 min_corner;
-    int3 dimensions;
-    float spacing;
-} mesh_descriptor;
-)";
 };
 
 constexpr auto to_tuple(const mesh_descriptor& x) {
@@ -59,3 +51,18 @@ size_t compute_num_nodes(const mesh_descriptor& d);
 
 util::aligned::vector<glm::vec3> compute_node_positions(
         const mesh_descriptor& d);
+
+}  // namespace waveguide
+
+template <>
+struct core::cl_representation<waveguide::mesh_descriptor> final {
+    static constexpr auto value = R"(
+typedef struct {
+    float3 min_corner;
+    int3 dimensions;
+    float spacing;
+} mesh_descriptor;
+)";
+};
+
+}  // namespace wayverb

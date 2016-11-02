@@ -41,9 +41,9 @@ int main(int argc, char** argv) {
 
     const size_t steps = std::stoi(argv[1]);
 
-    const core::compute_context cc{};
+    const wayverb::core::compute_context cc{};
 
-    compressed_rectangular_waveguide waveguide{cc, steps};
+    wayverb::waveguide::compressed_rectangular_waveguide waveguide{cc, steps};
 
     util::progress_bar pb{std::cerr};
     const std::vector<float> sig{0.0f, 1.0f};

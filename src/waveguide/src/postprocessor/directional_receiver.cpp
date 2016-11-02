@@ -3,6 +3,7 @@
 
 #include "core/cl/common.h"
 
+namespace wayverb {
 namespace waveguide {
 namespace postprocessor {
 
@@ -72,3 +73,4 @@ size_t directional_receiver::get_output_node() const { return output_node_; }
 
 }  // namespace postprocessor
 }  // namespace waveguide
+}  // namespace wayverb

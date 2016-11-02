@@ -27,8 +27,8 @@
 
 #include <cmath>
 
+namespace wayverb {
 namespace combined {
-namespace {
 
 template <typename Histogram>
 class intermediate_impl : public intermediate {
@@ -66,13 +66,13 @@ private:
     template <typename Attenuator>
     auto postprocess_impl(const Attenuator& attenuator,
                           double output_sample_rate) const {
-        return ::combined::postprocess(to_process_,
-                                       attenuator,
-                                       receiver_position_,
-                                       room_volume_,
-                                       acoustic_impedance_,
-                                       speed_of_sound_,
-                                       output_sample_rate);
+        return wayverb::combined::postprocess(to_process_,
+                                              attenuator,
+                                              receiver_position_,
+                                              room_volume_,
+                                              acoustic_impedance_,
+                                              speed_of_sound_,
+                                              output_sample_rate);
     }
 
     combined_results<Histogram> to_process_;
@@ -94,8 +94,6 @@ auto make_intermediate_impl_ptr(combined_results<Histogram> to_process,
                                                           acoustic_impedance,
                                                           speed_of_sound);
 }
-
-}  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -311,3 +309,4 @@ void engine::swap(engine& rhs) noexcept {
 void swap(engine& a, engine& b) noexcept { a.swap(b); }
 
 }  // namespace combined
+}  // namespace wayverb

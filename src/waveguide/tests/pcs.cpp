@@ -2,29 +2,31 @@
 
 #include "gtest/gtest.h"
 
+using namespace wayverb::waveguide;
+using namespace wayverb::core;
+
 TEST(pcs, factdbl) {
-    ASSERT_EQ(waveguide::factdbl(-7), 1);
-    ASSERT_EQ(waveguide::factdbl(-6), 1);
-    ASSERT_EQ(waveguide::factdbl(-5), 1);
-    ASSERT_EQ(waveguide::factdbl(-4), 1);
-    ASSERT_EQ(waveguide::factdbl(-3), 1);
-    ASSERT_EQ(waveguide::factdbl(-2), 1);
-    ASSERT_EQ(waveguide::factdbl(-1), 1);
-    ASSERT_EQ(waveguide::factdbl(0), 1);
-    ASSERT_EQ(waveguide::factdbl(1), 1);
-    ASSERT_EQ(waveguide::factdbl(2), 2);
-    ASSERT_EQ(waveguide::factdbl(3), 3);
-    ASSERT_EQ(waveguide::factdbl(4), 8);
-    ASSERT_EQ(waveguide::factdbl(5), 15);
-    ASSERT_EQ(waveguide::factdbl(6), 48);
-    ASSERT_EQ(waveguide::factdbl(7), 105);
+    ASSERT_EQ(factdbl(-7), 1);
+    ASSERT_EQ(factdbl(-6), 1);
+    ASSERT_EQ(factdbl(-5), 1);
+    ASSERT_EQ(factdbl(-4), 1);
+    ASSERT_EQ(factdbl(-3), 1);
+    ASSERT_EQ(factdbl(-2), 1);
+    ASSERT_EQ(factdbl(-1), 1);
+    ASSERT_EQ(factdbl(0), 1);
+    ASSERT_EQ(factdbl(1), 1);
+    ASSERT_EQ(factdbl(2), 2);
+    ASSERT_EQ(factdbl(3), 3);
+    ASSERT_EQ(factdbl(4), 8);
+    ASSERT_EQ(factdbl(5), 15);
+    ASSERT_EQ(factdbl(6), 48);
+    ASSERT_EQ(factdbl(7), 105);
 }
 
 TEST(pcs, maxflat) {
-    for (const auto& pair :
-         util::aligned::vector<std::tuple<waveguide::offset_signal,
-                                          util::aligned::vector<double>>>{
-                 {waveguide::maxflat(0.1, 4, 1, 1024),
+    for (const auto& pair : util::aligned::vector<
+                 std::tuple<offset_signal, util::aligned::vector<double>>>{
+                 {maxflat(0.1, 4, 1, 1024),
                   util::aligned::vector<double>{-0.00580,
                                                 -0.01272,
                                                 0.00000,
@@ -41,7 +43,7 @@ TEST(pcs, maxflat) {
                                                 -0.01272,
                                                 -0.00580}},
 
-                 {waveguide::maxflat(0.1, 8, 1, 1024),
+                 {maxflat(0.1, 8, 1, 1024),
                   util::aligned::vector<double>{
                           0.00000,  0.00004,  0.00026,  0.00081,  0.00135,
                           -0.00000, -0.00712, -0.02341, -0.04446, -0.04931,
@@ -51,7 +53,7 @@ TEST(pcs, maxflat) {
                           -0.00000, 0.00135,  0.00081,  0.00026,  0.00004,
                           0.00000}},
 
-                 {waveguide::maxflat(0.01, 16, 1, 1024),
+                 {maxflat(0.01, 16, 1, 1024),
                   util::aligned::vector<double>{
                           0.00000, 0.00000, 0.00000, 0.00000, 0.00000, 0.00000,
                           0.00001, 0.00003, 0.00007, 0.00018, 0.00041, 0.00090,
@@ -78,29 +80,28 @@ TEST(pcs, maxflat) {
 }
 
 TEST(pcs, g0) {
-    ASSERT_NEAR(
-            waveguide::compute_g0(400, 340, 44100, 0.05), 0.92259, 0.000001);
+    ASSERT_NEAR(compute_g0(400, 340, 44100, 0.05), 0.92259, 0.000001);
 }
 
 TEST(pcs, mech_sphere) {
     for (const auto& pair :
-         util::aligned::vector<std::tuple<core::filter::biquad::coefficients,
-                                          core::filter::biquad::coefficients>>{
+         util::aligned::vector<std::tuple<filter::biquad::coefficients,
+                                          filter::biquad::coefficients>>{
 
-                 {waveguide::mech_sphere(0.025, 0.003, 0.7, 1.0 / 16000),
-                  core::filter::biquad::coefficients{
+                 {mech_sphere(0.025, 0.003, 0.7, 1.0 / 16000),
+                  filter::biquad::coefficients{
                           0.0012333, 0.00000, -0.0012333, -1.9731, 0.97343}},
 
-                 {waveguide::mech_sphere(0.025, 0.003, 0.7, 1.0 / 10000),
-                  core::filter::biquad::coefficients{
+                 {mech_sphere(0.025, 0.003, 0.7, 1.0 / 10000),
+                  filter::biquad::coefficients{
                           0.00197, 0.00000, -0.00197, -1.97308, 0.97343}},
 
-                 {waveguide::mech_sphere(0.0025, 0.006, 1.5, 1.0 / 10000),
-                  core::filter::biquad::coefficients{
+                 {mech_sphere(0.0025, 0.006, 1.5, 1.0 / 10000),
+                  filter::biquad::coefficients{
                           0.01975, 0.00000, -0.01975, -1.97378, 0.97518}},
 
-                 {waveguide::mech_sphere(0.03, 0.01, 2, 1.0 / 10000),
-                  core::filter::biquad::coefficients{
+                 {mech_sphere(0.03, 0.01, 2, 1.0 / 10000),
+                  filter::biquad::coefficients{
                           0.00164, 0.00000, -0.00164, -1.96520, 0.96909}},
 
          }) {

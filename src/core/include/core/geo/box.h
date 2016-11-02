@@ -9,6 +9,7 @@
 
 #include "glm/glm.hpp"
 
+namespace wayverb {
 namespace core {
 namespace geo {
 
@@ -106,3 +107,4 @@ inline auto inside(const geo::box& a, const glm::vec3& b) {
 }
 
 }  // namespace core
+}  // namespace wayverb

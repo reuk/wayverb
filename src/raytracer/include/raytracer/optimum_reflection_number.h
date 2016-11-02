@@ -7,6 +7,7 @@
 #include <numeric>
 #include <stdexcept>
 
+namespace wayverb {
 namespace raytracer {
 
 constexpr auto min_element(double x) { return x; }
@@ -50,3 +51,4 @@ size_t compute_optimum_reflection_number(
 }
 
 }  // namespace raytracer
+}  // namespace wayverb

@@ -2,6 +2,7 @@
 #include "core/geo/box.h"
 #include "core/geo/geometric.h"
 
+namespace wayverb {
 namespace core {
 
 std::array<std::pair<cl_uint, cl_uint>, 3> get_index_pairs(const triangle& t) {
@@ -28,3 +29,4 @@ float estimate_air_intensity_absorption(float frequency, float humidity) {
 }
 
 }  // namespace core
+}  // namespace wayverb

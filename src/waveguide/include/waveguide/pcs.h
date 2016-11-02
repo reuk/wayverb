@@ -4,6 +4,7 @@
 
 #include "utilities/aligned/vector.h"
 
+namespace wayverb {
 namespace waveguide {
 
 /// See sheaffer2014 and the source-modelling-toolbox.
@@ -80,3 +81,4 @@ offset_signal design_pcs_source(size_t length,
                                 double low_q);
 
 }  // namespace waveguide
+}  // namespace wayverb

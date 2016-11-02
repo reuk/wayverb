@@ -8,6 +8,7 @@
 
 #include <numeric>
 
+namespace wayverb {
 namespace core {
 
 class mesh_boundary;
@@ -105,3 +106,4 @@ auto compute_triangle_indices(
 }
 
 }  // namespace core
+}  // namespace wayverb

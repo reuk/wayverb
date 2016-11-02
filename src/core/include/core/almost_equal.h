@@ -2,6 +2,7 @@
 
 #include "glm/glm.hpp"
 
+namespace wayverb {
 namespace core {
 
 template <typename T, typename U>
@@ -26,3 +27,4 @@ inline bool nearby(const T& a, const T& b, double dist) {
 }
 
 }  // namespace core
+}  // namespace wayverb

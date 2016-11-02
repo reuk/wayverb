@@ -4,12 +4,13 @@
 
 #include "samplerate.h"
 
+namespace wayverb {
+namespace waveguide {
+namespace config {
+
 namespace {
 constexpr auto DIM = 3;
 }  // namespace
-
-namespace waveguide {
-namespace config {
 
 double speed_of_sound(double time_step, double grid_spacing) {
     return grid_spacing / (time_step * std::sqrt(DIM));
@@ -44,3 +45,4 @@ util::aligned::vector<float> adjust_sampling_rate(const float* begin,
 }
 
 }  // namespace waveguide
+}  // namespace wayverb

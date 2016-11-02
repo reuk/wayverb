@@ -2,6 +2,9 @@
 
 #include <iostream>
 
+namespace wayverb {
+namespace waveguide {
+
 compressed_rectangular_waveguide::compressed_rectangular_waveguide(
         const core::compute_context& cc, size_t steps)
         : queue_{cc.context, cc.device}
@@ -114,3 +117,6 @@ compressed_rectangular_waveguide_program::
         compressed_rectangular_waveguide_program(
                 const core::compute_context& cc)
         : program_wrapper_(cc, source) {}
+
+}  // namespace waveguide
+}  // namespace wayverb

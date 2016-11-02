@@ -7,18 +7,7 @@
 #include "core/attenuator/hrtf.h"
 #include "core/spatial_division/scene_buffers.h"
 
-template <typename T, typename Alloc, size_t Az, size_t El>
-void resize_if_necessary(
-        core::vector_look_up_table<std::vector<T, Alloc>, Az, El>& t,
-        size_t new_size) {
-    for (auto& azimuth : t.table) {
-        for (auto& elevation : azimuth) {
-            if (elevation.size() < new_size) {
-                elevation.resize(new_size);
-            }
-        }
-    }
-}
+namespace wayverb {
 
 namespace raytracer {
 namespace reflection_processor {
@@ -162,3 +151,4 @@ private:
 
 }  // namespace reflection_processor
 }  // namespace raytracer
+}  // namespace wayverb

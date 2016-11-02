@@ -4,6 +4,9 @@
 #include "core/cl/scene_structs.h"
 #include "core/cl/traits.h"
 
+namespace wayverb {
+namespace raytracer {
+
 /// Rays will not intersect with the same surface that was referenced by the
 /// previous reflection along a ray.
 /// Ensure that the `triangle` field of the initial reflection buffer is set
@@ -18,19 +21,6 @@ struct alignas(1 << 4) reflection final {
                           //  path (like a \0 in a char*)
     cl_char receiver_visible;  //  whether or not the receiver is visible from
                                //  this point
-};
-
-template <>
-struct core::cl_representation<reflection> final {
-    static constexpr auto value = R"(
-typedef struct {
-    float3 position;
-    float3 direction;
-    uint triangle;
-    char keep_going;
-    char receiver_visible;
-} reflection;
-)";
 };
 
 constexpr auto to_tuple(const reflection& x) {
@@ -56,17 +46,6 @@ struct alignas(1 << 5) stochastic_path_info final {
     cl_float3 position;       //  because otherwise we won't be able to
                               //  calculate a new distance
     cl_float distance;        //  total distance travelled
-};
-
-template <>
-struct core::cl_representation<stochastic_path_info> final {
-    static constexpr auto value = R"(
-typedef struct {
-    bands_type volume;
-    float3 position;
-    float distance;
-} stochastic_path_info;
-)";
 };
 
 constexpr auto to_tuple(const stochastic_path_info& x) {
@@ -101,17 +80,6 @@ constexpr auto make_impulse(T volume, cl_float3 position, cl_float distance) {
     return impulse<detail::components_v<T>>{volume, position, distance};
 }
 
-template <>
-struct core::cl_representation<impulse<8>> final {
-    static constexpr auto value = R"(
-typedef struct {
-    bands_type volume;
-    float3 position;
-    float distance;
-} impulse;
-)";
-};
-
 template <size_t channels>
 constexpr auto to_tuple(const impulse<channels>& x) {
     return std::tie(x.volume, x.position, x.distance);
@@ -142,16 +110,6 @@ constexpr auto make_attenuated_impulse(T volume, cl_float distance) {
     return attenuated_impulse<detail::components_v<T>>{volume, distance};
 }
 
-template <>
-struct core::cl_representation<attenuated_impulse<8>> final {
-    static constexpr auto value = R"(
-typedef struct {
-    bands_type volume;
-    float distance;
-} attenuated_impulse;
-)";
-};
-
 template <size_t channels>
 constexpr auto to_tuple(const attenuated_impulse<channels>& x) {
     return std::tie(x.volume, x.distance);
@@ -168,3 +126,52 @@ constexpr bool operator!=(const attenuated_impulse<channels>& a,
                           const attenuated_impulse<channels>& b) {
     return !(a == b);
 }
+
+}  // namespace raytracer
+
+template <>
+struct core::cl_representation<raytracer::reflection> final {
+    static constexpr auto value = R"(
+typedef struct {
+    float3 position;
+    float3 direction;
+    uint triangle;
+    char keep_going;
+    char receiver_visible;
+} reflection;
+)";
+};
+
+template <>
+struct core::cl_representation<raytracer::stochastic_path_info> final {
+    static constexpr auto value = R"(
+typedef struct {
+    bands_type volume;
+    float3 position;
+    float distance;
+} stochastic_path_info;
+)";
+};
+
+template <>
+struct core::cl_representation<raytracer::impulse<8>> final {
+    static constexpr auto value = R"(
+typedef struct {
+    bands_type volume;
+    float3 position;
+    float distance;
+} impulse;
+)";
+};
+
+template <>
+struct core::cl_representation<raytracer::attenuated_impulse<8>> final {
+    static constexpr auto value = R"(
+typedef struct {
+    bands_type volume;
+    float distance;
+} attenuated_impulse;
+)";
+};
+
+}  // namespace wayverb

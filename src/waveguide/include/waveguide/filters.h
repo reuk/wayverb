@@ -7,6 +7,7 @@
 #include <cmath>
 #include <functional>
 
+namespace wayverb {
 namespace waveguide {
 
 /// absolute gain (0 = silent, 1 = unity, 2 = double amplitude etc.)
@@ -55,3 +56,4 @@ constexpr coefficients<A + B> convolve(const coefficients<A>& a,
 coefficients_canonical convolve(const biquad_coefficients_array& a);
 
 }  // namespace waveguide
+}  // namespace wayverb

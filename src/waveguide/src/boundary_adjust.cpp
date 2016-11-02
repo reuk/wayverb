@@ -2,6 +2,7 @@
 
 #include <cassert>
 
+namespace wayverb {
 namespace waveguide {
 
 core::geo::box compute_adjusted_boundary(const core::geo::box& min_boundary,
@@ -21,3 +22,4 @@ core::geo::box compute_adjusted_boundary(const core::geo::box& min_boundary,
 }
 
 }  // namespace waveguide
+}  // namespace wayverb

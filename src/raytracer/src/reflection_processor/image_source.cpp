@@ -4,6 +4,7 @@
 
 #include "core/pressure_intensity.h"
 
+namespace wayverb {
 namespace raytracer {
 namespace reflection_processor {
 
@@ -69,3 +70,4 @@ image_source make_image_source::operator()(
 
 }  // namespace reflection_processor
 }  // namespace raytracer
+}  // namespace wayverb

@@ -1,13 +1,15 @@
 #pragma once
 
-#include <algorithm>
-#include <array>
-#include <cstdlib>
-
 #include "core/orientable.h"
 
 #include "glm/glm.hpp"
 
+#include <algorithm>
+#include <array>
+#include <cstdlib>
+#include <vector>
+
+namespace wayverb {
 namespace core {
 
 template <typename U>
@@ -117,4 +119,18 @@ struct vector_look_up_table final {
     T table[azimuth_divisions][elevation_divisions]{};
 };
 
+template <typename T, typename Alloc, size_t Az, size_t El>
+void resize_if_necessary(
+        core::vector_look_up_table<std::vector<T, Alloc>, Az, El>& t,
+        size_t new_size) {
+    for (auto& azimuth : t.table) {
+        for (auto& elevation : azimuth) {
+            if (elevation.size() < new_size) {
+                elevation.resize(new_size);
+            }
+        }
+    }
+}
+
 }  // namespace core
+}  // namespace wayverb

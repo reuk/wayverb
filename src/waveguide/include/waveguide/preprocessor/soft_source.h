@@ -2,6 +2,7 @@
 
 #include "core/cl/common.h"
 
+namespace wayverb {
 namespace waveguide {
 namespace preprocessor {
 
@@ -36,3 +37,4 @@ auto make_soft_source(size_t node, It begin, It end) {
 
 }  // namespace preprocessor
 }  // namespace waveguide
+}  // namespace wayverb

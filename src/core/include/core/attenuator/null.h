@@ -2,6 +2,7 @@
 
 #include "glm/fwd.hpp"
 
+namespace wayverb {
 namespace core {
 namespace attenuator {
 
@@ -11,3 +12,4 @@ constexpr auto attenuation(const null&, const glm::vec3&) { return 1.0; }
 
 }  // namespace attenuator
 }  // namespace core
+}  // namespace wayverb

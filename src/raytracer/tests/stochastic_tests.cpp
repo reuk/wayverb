@@ -11,20 +11,22 @@
 #define OBJ_PATH ""
 #endif
 
+using namespace wayverb::raytracer;
+using namespace wayverb::core;
+
 TEST(stochastic, bad_reflections_box) {
-    const core::geo::box box{glm::vec3{0, 0, 0}, glm::vec3{4, 3, 6}};
-    constexpr core::model::parameters params{glm::vec3{1, 2, 1},
-                                             glm::vec3{2, 1, 5}};
+    const geo::box box{glm::vec3{0, 0, 0}, glm::vec3{4, 3, 6}};
+    constexpr model::parameters params{glm::vec3{1, 2, 1}, glm::vec3{2, 1, 5}};
     constexpr auto s = 0.01;
     constexpr auto d = 0.1;
-    constexpr auto surface = core::make_surface<core::simulation_bands>(s, d);
+    constexpr auto surface = make_surface<simulation_bands>(s, d);
 
-    const core::compute_context cc{};
+    const compute_context cc{};
 
-    const auto scene = core::geo::get_scene_data(box, surface);
+    const auto scene = geo::get_scene_data(box, surface);
     const auto voxelised = make_voxelised_scene_data(scene, 5, 0.1f);
 
-    const core::scene_buffers buffers{cc.context, voxelised};
+    const scene_buffers buffers{cc.context, voxelised};
 
     const util::aligned::vector<reflection> bad_reflections{
             reflection{cl_float3{{2.66277409, 0.0182733424, 6}},
@@ -44,23 +46,21 @@ TEST(stochastic, bad_reflections_box) {
                        true},
     };
 
-    raytracer::stochastic::finder diff{
-            cc, params, 1.0f, bad_reflections.size()};
+    stochastic::finder diff{cc, params, 1.0f, bad_reflections.size()};
 
     diff.process(begin(bad_reflections), end(bad_reflections), buffers);
 }
 
 TEST(stochastic, bad_reflections_vault) {
-    constexpr core::model::parameters params{glm::vec3{0, 1, 0},
-                                             glm::vec3{0, 1, 1}};
+    constexpr model::parameters params{glm::vec3{0, 1, 0}, glm::vec3{0, 1, 1}};
 
-    const core::compute_context cc{};
+    const compute_context cc{};
 
     const auto scene = scene_with_extracted_surfaces(
-            core::scene_data_loader{OBJ_PATH}.get_scene_data());
+            scene_data_loader{OBJ_PATH}.get_scene_data());
     const auto voxelised = make_voxelised_scene_data(scene, 5, 0.1f);
 
-    const core::scene_buffers buffers{cc.context, voxelised};
+    const scene_buffers buffers{cc.context, voxelised};
 
     const util::aligned::vector<reflection> bad_reflections{
             reflection{cl_float3{{2.29054403, 1.00505638, -1.5}},
@@ -85,8 +85,7 @@ TEST(stochastic, bad_reflections_vault) {
                        true},
     };
 
-    raytracer::stochastic::finder diff{
-            cc, params, 1.0f, bad_reflections.size()};
+    stochastic::finder diff{cc, params, 1.0f, bad_reflections.size()};
 
     diff.process(begin(bad_reflections), end(bad_reflections), buffers);
 }

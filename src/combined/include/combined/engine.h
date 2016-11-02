@@ -18,6 +18,8 @@
 
 #include <functional>
 
+namespace wayverb {
+
 //  forward declarations  //////////////////////////////////////////////////////
 
 namespace core {
@@ -136,8 +138,8 @@ public:
             add_scoped_waveguide_node_pressures_changed_callback(
                     waveguide_node_pressures_changed::callback_type);
 
-    using raytracer_reflections_generated = util::event<
-            util::aligned::vector<util::aligned::vector<reflection>>>;
+    using raytracer_reflections_generated = util::event<util::aligned::vector<
+            util::aligned::vector<raytracer::reflection>>>;
 
     raytracer_reflections_generated::scoped_connector
             add_scoped_raytracer_reflections_generated_callback(
@@ -156,3 +158,4 @@ private:
 void swap(engine&, engine&) noexcept;
 
 }  // namespace combined
+}  // namespace wayverb

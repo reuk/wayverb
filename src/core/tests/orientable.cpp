@@ -2,9 +2,11 @@
 
 #include "gtest/gtest.h"
 
+using namespace wayverb::core;
+
 TEST(orientable, compute_azimuth) {
     const auto test = [](auto pt, auto az) {
-        ASSERT_NEAR(core::compute_azimuth(pt), az, 0.0001);
+        ASSERT_NEAR(compute_azimuth(pt), az, 0.0001);
     };
     test(glm::vec3{-1, 0, 0}, -M_PI * 0.5);
     test(glm::vec3{1, 0, 0}, M_PI * 0.5);
@@ -14,9 +16,9 @@ TEST(orientable, compute_azimuth) {
     test(glm::vec3{0, 0, 1}, 0);
 }
 
-TEST(orientable, compute_elevation){
+TEST(orientable, compute_elevation) {
     const auto test = [](auto pt, auto el) {
-        ASSERT_NEAR(core::compute_elevation(pt), el, 0.0001);
+        ASSERT_NEAR(compute_elevation(pt), el, 0.0001);
     };
     test(glm::vec3{-1, 0, 0}, 0);
     test(glm::vec3{1, 0, 0}, 0);
@@ -28,8 +30,8 @@ TEST(orientable, compute_elevation){
 
 TEST(orientable, round_trip) {
     const auto test = [](float az, float el) {
-        const auto ret = core::compute_azimuth_elevation(
-                compute_pointing(core::az_el{az, el}));
+        const auto ret =
+                compute_azimuth_elevation(compute_pointing(az_el{az, el}));
         ASSERT_NEAR(ret.azimuth, az, 0.0001) << az;
         ASSERT_NEAR(ret.elevation, el, 0.0001) << el;
     };

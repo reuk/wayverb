@@ -110,27 +110,30 @@ int main(int argc, char** argv) {
     //  constants ------------------------------------------------------------//
 
     const auto s = 1.5f;
-    const core::geo::box box{glm::vec3{-s}, glm::vec3{s}};
+    const wayverb::core::geo::box box{glm::vec3{-s}, glm::vec3{s}};
 
     const auto filter_frequency = 8000.0;
     const auto oversample_ratio = 1.0;
     const auto sample_rate = filter_frequency * oversample_ratio * (1 / 0.16);
 
     const glm::vec3 receiver{0, 0, 0};
-    const core::attenuator::microphone mic{glm::vec3{0, 0, 1}, directionality};
+    const wayverb::core::attenuator::microphone mic{glm::vec3{0, 0, 1},
+                                                    directionality};
 
     constexpr auto absorption = 0.001f;
     constexpr auto scattering = 0.0f;
 
-    const auto scene_data = core::geo::get_scene_data(
+    const auto scene_data = wayverb::core::geo::get_scene_data(
             box,
-            core::make_surface<core::simulation_bands>(absorption, scattering));
+            wayverb::core::make_surface<wayverb::core::simulation_bands>(
+                    absorption, scattering));
 
     //  simulations ----------------------------------------------------------//
 
     const auto run = [&](const auto& name, const auto& callback) {
-        const auto output = run_multiple_angles<core::simulation_bands>(
-                receiver, sample_rate, callback);
+        const auto output =
+                run_multiple_angles<wayverb::core::simulation_bands>(
+                        receiver, sample_rate, callback);
         std::ofstream file{output_folder + "/" + name + ".txt"};
         cereal::JSONOutputArchive archive{file};
         archive(cereal::make_nvp("directionality", directionality),
@@ -139,34 +142,35 @@ int main(int argc, char** argv) {
 
     run("waveguide", [&](const auto& source, const auto& receiver) {
         util::progress_bar pb;
-        const core::model::parameters params{source, receiver};
-        auto raw = *waveguide::canonical(
-                core::compute_context{},
+        const wayverb::core::model::parameters params{source, receiver};
+        auto raw = *wayverb::waveguide::canonical(
+                wayverb::core::compute_context{},
                 scene_data,
                 params,
-                waveguide::single_band_parameters{sample_rate, 0.6},
+                wayverb::waveguide::single_band_parameters{sample_rate, 0.6},
                 2 / params.speed_of_sound,
                 true,
                 [&](auto step, auto steps) { set_progress(pb, step, steps); });
-        return waveguide::postprocess(
+        return wayverb::waveguide::postprocess(
                 raw, mic, params.acoustic_impedance, sample_rate);
     });
 
     run("img_src", [&](const auto& source, const auto& receiver) {
-        const core::model::parameters params{source, receiver};
+        const wayverb::core::model::parameters params{source, receiver};
         const auto simulation_time = 2 / params.speed_of_sound;
-        const auto raw =
-                run_exact_img_src(box,
-                                  core::make_surface<1>(absorption, scattering),
-                                  params,
-                                  simulation_time,
-                                  false);
-        return raytracer::image_source::postprocess(begin(raw),
-                                                    end(raw),
-                                                    mic,
-                                                    params.receiver,
-                                                    params.speed_of_sound,
-                                                    sample_rate);
+        const auto raw = run_exact_img_src(
+                box,
+                wayverb::core::make_surface<1>(absorption, scattering),
+                params,
+                simulation_time,
+                false);
+        return wayverb::raytracer::image_source::postprocess(
+                begin(raw),
+                end(raw),
+                mic,
+                params.receiver,
+                params.speed_of_sound,
+                sample_rate);
     });
 
     return EXIT_SUCCESS;

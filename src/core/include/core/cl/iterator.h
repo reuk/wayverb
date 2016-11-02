@@ -7,6 +7,7 @@
 #include <iterator>
 #include <type_traits>
 
+namespace wayverb {
 namespace core {
 
 /// An iterator adapter that is designed to allow iterating over a single 'band'
@@ -44,3 +45,4 @@ constexpr cl_type_iterator<It> make_cl_type_iterator(It it, size_t index) {
 }
 
 }  // namespace core
+}//namespace wayverb 

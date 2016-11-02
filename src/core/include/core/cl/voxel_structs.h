@@ -3,6 +3,7 @@
 #include "core/cl/representation.h"
 #include "core/cl/traits.h"
 
+namespace wayverb {
 namespace core {
 
 struct alignas(1 << 4) aabb final {
@@ -29,3 +30,4 @@ constexpr bool operator==(const aabb& a, const aabb& b) {
 constexpr bool operator!=(const aabb& a, const aabb& b) { return !(a == b); }
 
 }  // namespace core
+}  // namespace wayverb

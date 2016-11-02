@@ -2,6 +2,7 @@
 #include "core/cl/scene_structs.h"
 #include "core/conversions.h"
 
+namespace wayverb {
 namespace core {
 namespace geo {
 
@@ -41,3 +42,4 @@ float area(const triangle_vec3& triangle) {
 
 }  // namespace geo
 }  // namespace core
+}  // namespace wayverb

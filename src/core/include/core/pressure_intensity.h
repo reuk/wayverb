@@ -2,6 +2,7 @@
 
 #include <cmath>
 
+namespace wayverb {
 namespace core {
 
 template <typename T, typename U>
@@ -22,3 +23,4 @@ double intensity_for_distance(double distance);
 double pressure_for_distance(double distance, double acoustic_impedance);
 
 }  // namespace core
+}  // namespace wayverb

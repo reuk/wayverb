@@ -4,6 +4,7 @@
 
 #include <experimental/optional>
 
+namespace wayverb {
 namespace raytracer {
 
 template <typename T>
@@ -50,3 +51,4 @@ private:
 };
 
 }  // namespace raytracer
+}  // namespace wayverb

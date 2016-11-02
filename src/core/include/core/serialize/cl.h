@@ -2,6 +2,7 @@
 
 #include "common/cl_include.h"
 
+namespace wayverb {
 namespace core {
 namespace cereal {
 
@@ -14,3 +15,4 @@ void serialize(Archive& archive, cl_float3& m) {
 
 }  // namespace cereal
 }  // namespace core
+}  // namespace wayverb

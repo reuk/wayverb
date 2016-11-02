@@ -3,6 +3,7 @@
 #include "core/cl/voxel_structs.h"
 #include "core/spatial_division/voxelised_scene_data.h"
 
+namespace wayverb {
 namespace core {
 
 /// Provides a simple utility for loading voxelised scene data to the gpu in
@@ -69,3 +70,4 @@ using scene_buffers =
         generic_scene_buffers<cl_float3, surface<simulation_bands>>;
 
 }  // namespace core
+}  // namespace wayverb

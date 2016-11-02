@@ -4,6 +4,7 @@
 
 #include <vector>
 
+namespace wayverb {
 namespace waveguide {
 namespace config {
 
@@ -19,3 +20,4 @@ util::aligned::vector<float> adjust_sampling_rate(const float* begin,
                                                   double out_sr);
 
 }  // namespace waveguide
+}  // namespace wayverb

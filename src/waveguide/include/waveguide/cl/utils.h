@@ -5,6 +5,9 @@
 
 #include <string>
 
+namespace wayverb {
+namespace waveguide {
+
 typedef enum : cl_int {
     id_none = 0,
     id_inside = 1 << 0,
@@ -17,8 +20,23 @@ typedef enum : cl_int {
     id_reentrant = 1 << 7,
 } boundary_type;
 
+constexpr boundary_type port_index_to_boundary_type(unsigned int i) {
+    return static_cast<boundary_type>(1 << (i + 1));
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+constexpr auto no_neighbor = ~cl_uint{0};
+constexpr auto num_ports = size_t{6};
+
+namespace cl_sources {
+extern const char* utils;
+}  // namespace cl_sources
+
+}  // namespace waveguide
+
 template <>
-struct core::cl_representation<boundary_type> final {
+struct core::cl_representation<waveguide::boundary_type> final {
     static constexpr auto value = R"(
 typedef enum {
     id_none = 0,
@@ -34,15 +52,4 @@ typedef enum {
 )";
 };
 
-constexpr boundary_type port_index_to_boundary_type(unsigned int i) {
-    return static_cast<boundary_type>(1 << (i + 1));
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-constexpr auto no_neighbor = ~cl_uint{0};
-constexpr auto num_ports = size_t{6};
-
-namespace cl_sources {
-extern const char* utils;
-}  // namespace cl_sources
+}  // namespace wayverb

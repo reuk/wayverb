@@ -5,6 +5,7 @@
 
 #include "utilities/aligned/set.h"
 
+namespace wayverb {
 namespace core {
 
 /// IMPORTANT
@@ -202,3 +203,4 @@ auto eyring_reverb_time(const generic_scene_data<Vertex, Surface>& scene,
 }
 
 }  // namespace core
+}  // namespace wayverb

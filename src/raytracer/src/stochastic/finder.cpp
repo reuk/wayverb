@@ -1,5 +1,6 @@
 #include "raytracer/stochastic/finder.h"
 
+namespace wayverb {
 namespace raytracer {
 namespace stochastic {
 
@@ -46,3 +47,4 @@ finder::finder(const core::compute_context& cc,
 
 }  // namespace stochastic
 }  // namespace raytracer
+}  // namespace wayverb

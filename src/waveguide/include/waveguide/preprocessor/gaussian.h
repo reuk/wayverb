@@ -2,6 +2,7 @@
 
 #include "waveguide/mesh_descriptor.h"
 
+namespace wayverb {
 namespace waveguide {
 namespace preprocessor {
 
@@ -27,3 +28,4 @@ private:
 
 }  // namespace preprocessor
 }  // namespace waveguide
+}  // namespace wayverb

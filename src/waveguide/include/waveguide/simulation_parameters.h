@@ -2,6 +2,7 @@
 
 #include <cstdlib>
 
+namespace wayverb {
 namespace waveguide {
 
 struct single_band_parameters final {
@@ -57,3 +58,4 @@ struct multiple_band_constant_spacing_parameters final {
 };
 
 }  // namespace waveguide
+}  // namespace wayverb

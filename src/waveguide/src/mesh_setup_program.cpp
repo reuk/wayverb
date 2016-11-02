@@ -7,6 +7,7 @@
 #include "core/cl/scene_structs.h"
 #include "core/cl/voxel.h"
 
+namespace wayverb {
 namespace waveguide {
 
 constexpr auto source = R"(
@@ -189,7 +190,8 @@ setup_program::setup_program(const core::compute_context& cc)
                            core::cl_representation_v<mesh_descriptor>,
                            core::cl_sources::geometry,
                            core::cl_sources::voxel,
-                           ::cl_sources::utils,
+                           cl_sources::utils,
                            source}} {}
 
 }  // namespace waveguide
+}  // namespace wayverb

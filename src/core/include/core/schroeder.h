@@ -11,6 +11,7 @@
 
 #include <cmath>
 
+namespace wayverb {
 namespace core {
 
 template <typename It>
@@ -88,3 +89,4 @@ reverb_time edt(It begin, It end) {
 }
 
 }  // namespace core
+}  // namespace wayverb

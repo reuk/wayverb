@@ -8,6 +8,9 @@
 
 #include "gtest/gtest.h"
 
+using namespace wayverb::raytracer;
+using namespace wayverb::core;
+
 namespace {
 const auto badly_behaved_directions = util::aligned::vector<glm::vec3>{
         {0.00200532563, -0.903969287, 0.427592695},
@@ -17,7 +20,7 @@ const auto badly_behaved_directions = util::aligned::vector<glm::vec3>{
         {0.551898658, -0.809262037, 0.201253086},
 };
 
-const auto badly_behaved_rays = util::aligned::vector<core::geo::ray>{
+const auto badly_behaved_rays = util::aligned::vector<geo::ray>{
         {glm::vec3{2.91376591, 2.99994421, 6},
          glm::vec3{0.280182242, 0.849850773, -0.446375906}},
         {glm::vec3{4, 2.65516424, 5.99998713},
@@ -28,10 +31,10 @@ const auto badly_behaved_rays = util::aligned::vector<core::geo::ray>{
          glm::vec3{0.434765905, -0.869531512, 0.234293744}},
 };
 
-util::aligned::vector<core::geo::ray> get_random_rays(const glm::vec3& source,
-                                                      size_t num) {
-    const auto directions = core::get_random_directions(num);
-    return raytracer::get_rays_from_directions(
+util::aligned::vector<geo::ray> get_random_rays(const glm::vec3& source,
+                                                size_t num) {
+    const auto directions = get_random_directions(num);
+    return get_rays_from_directions(
             directions.begin(), directions.end(), source);
 }
 
@@ -41,36 +44,32 @@ auto get_voxelised(Scene scene) {
 }
 
 struct reflector_fixture : public ::testing::Test {
-    const core::geo::box box{glm::vec3{0}, glm::vec3{4, 3, 6}};
-    const core::voxelised_scene_data<cl_float3,
-                                     core::surface<core::simulation_bands>>
-            voxelised{get_voxelised(core::geo::get_scene_data(
-                    box, core::make_surface<core::simulation_bands>(0, 0)))};
-    const core::compute_context cc{};
-    const core::scene_buffers buffers{cc.context, voxelised};
+    const geo::box box{glm::vec3{0}, glm::vec3{4, 3, 6}};
+    const voxelised_scene_data<cl_float3, surface<simulation_bands>> voxelised{
+            get_voxelised(geo::get_scene_data(
+                    box, make_surface<simulation_bands>(0, 0)))};
+    const compute_context cc{};
+    const scene_buffers buffers{cc.context, voxelised};
 
     const glm::vec3 source{1, 2, 1};
     const glm::vec3 receiver{2, 1, 2};
 
 #define OPT (0)
 #if OPT == 0
-    const util::aligned::vector<core::geo::ray> rays{
-            get_random_rays(source, 10000)};
+    const util::aligned::vector<geo::ray> rays{get_random_rays(source, 10000)};
 #elif OPT == 1
     const util::aligned::vector<geo::ray> rays{
-            raytracer::get_rays_from_directions(source,
-                                                badly_behaved_directions)};
+            get_rays_from_directions(source, badly_behaved_directions)};
 #elif OPT == 2
     const util::aligned::vector<geo::ray> rays{badly_behaved_rays};
 #endif
 
-    raytracer::reflector reflector{cc, receiver, begin(rays), end(rays)};
+    reflector reflector{cc, receiver, begin(rays), end(rays)};
 
     auto get_fast_intersections() const {
         const auto rays = reflector.get_rays();
         const auto reflections = reflector.get_reflections();
-        util::aligned::vector<std::experimental::optional<core::intersection>>
-                ret;
+        util::aligned::vector<std::experimental::optional<intersection>> ret;
         ret.reserve(rays.size());
         for (auto i = 0u; i != rays.size(); ++i) {
             ret.emplace_back(intersects(
@@ -82,14 +81,13 @@ struct reflector_fixture : public ::testing::Test {
     auto get_slow_intersections() const {
         const auto rays = reflector.get_rays();
         const auto reflections = reflector.get_reflections();
-        util::aligned::vector<std::experimental::optional<core::intersection>>
-                ret;
+        util::aligned::vector<std::experimental::optional<intersection>> ret;
         ret.reserve(rays.size());
         for (auto i = 0u; i != rays.size(); ++i) {
-            ret.emplace_back(core::geo::ray_triangle_intersection(
+            ret.emplace_back(geo::ray_triangle_intersection(
                     convert(rays[i]),
                     voxelised.get_scene_data().get_triangles(),
-                    core::convert(voxelised.get_scene_data().get_vertices()),
+                    convert(voxelised.get_scene_data().get_vertices()),
                     reflections[i].triangle));
         }
         return ret;
@@ -119,8 +117,8 @@ TEST_F(reflector_fixture, locations) {
         const auto cpu_position =
                 converted.get_position() +
                 (converted.get_direction() * fast_intersections[i]->inter.t);
-        const auto gpu_position = core::to_vec3(reflections[i].position);
-        ASSERT_TRUE(core::nearby(gpu_position, cpu_position, 0.00001));
+        const auto gpu_position = to_vec3(reflections[i].position);
+        ASSERT_TRUE(nearby(gpu_position, cpu_position, 0.00001));
     }
 }
 
@@ -142,9 +140,8 @@ TEST_F(reflector_fixture, multi_layer_reflections) {
             const auto cpu_position =
                     converted.get_position() + (converted.get_direction() *
                                                 fast_intersections[j]->inter.t);
-            const auto gpu_position = core::to_vec3(reflections[j].position);
-            const auto is_nearby =
-                    core::nearby(gpu_position, cpu_position, 0.00001);
+            const auto gpu_position = to_vec3(reflections[j].position);
+            const auto is_nearby = nearby(gpu_position, cpu_position, 0.00001);
             if (!is_nearby) {
                 std::cout << j << '\n';
                 std::cout << reflections[j].triangle << ", "

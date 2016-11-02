@@ -12,6 +12,7 @@
 #include <memory>
 #include <vector>
 
+namespace wayverb {
 namespace core {
 
 /// This namespace houses all of the machinery for multiband crossover
@@ -260,3 +261,4 @@ util::aligned::vector<float> impulse_response(IIR& filt, size_t steps) {
 
 }  // namespace filter
 }  // namespace core
+}  // namespace wayverb

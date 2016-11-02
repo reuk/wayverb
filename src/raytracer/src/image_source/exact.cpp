@@ -1,5 +1,6 @@
 #include "raytracer/image_source/exact.h"
 
+namespace wayverb {
 namespace raytracer {
 namespace image_source {
 
@@ -9,3 +10,4 @@ static_assert(power(5, 5) == 3125, "power");
 
 }  // namesapce image_source
 }  // namesapce raytracer
+}  // namespace wayverb

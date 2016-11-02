@@ -2,6 +2,7 @@
 
 #include <functional>
 
+namespace wayverb {
 namespace core {
 
 using mls_callback = std::function<void(bool value, size_t step)>;
@@ -27,3 +28,4 @@ void generate_maximum_length_sequence(Word order,
 }
 
 }  // namespace core
+}  // namespace wayverb

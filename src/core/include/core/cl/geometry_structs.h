@@ -5,6 +5,7 @@
 
 #include <string>
 
+namespace wayverb {
 namespace core {
 
 struct alignas(1 << 4) ray final {
@@ -95,3 +96,4 @@ constexpr bool operator!=(const intersection& a, const intersection& b) {
 }
 
 }  // namespace core
+}  // namespace wayverb

@@ -8,6 +8,7 @@
 #include "core/cl/voxel.h"
 #include "core/cl/voxel_structs.h"
 
+namespace wayverb {
 namespace raytracer {
 namespace stochastic {
 
@@ -176,3 +177,4 @@ program::program(const core::compute_context& cc)
 
 }  // namespace stochastic
 }  // namespace raytracer
+}  // namespace wayverb

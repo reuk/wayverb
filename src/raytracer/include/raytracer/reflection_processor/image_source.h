@@ -6,6 +6,7 @@
 #include "core/model/parameters.h"
 #include "core/spatial_division/scene_buffers.h"
 
+namespace wayverb {
 namespace raytracer {
 namespace reflection_processor {
 
@@ -62,3 +63,4 @@ private:
 
 }  // namespace reflection_processor
 }  // namespace raytracer
+}  // namespace wayverb

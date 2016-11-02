@@ -14,6 +14,7 @@
 
 #include <iostream>
 
+namespace wayverb {
 namespace waveguide {
 
 mesh::mesh(mesh_descriptor descriptor, vectors vectors)
@@ -120,9 +121,8 @@ mesh compute_mesh(
                         return to_impedance_coefficients(
                                 compute_reflectance_filter_coefficients(
                                         surface.absorption.s,
-                                        1 / waveguide::config::time_step(
-                                                    speed_of_sound,
-                                                    mesh_spacing)));
+                                        1 / config::time_step(speed_of_sound,
+                                                              mesh_spacing)));
                     }),
             std::move(boundary_data)};
 
@@ -138,7 +138,7 @@ voxels_and_mesh compute_voxels_and_mesh(
         double sample_rate,
         double speed_of_sound) {
     const auto mesh_spacing =
-            waveguide::config::grid_spacing(speed_of_sound, 1 / sample_rate);
+            config::grid_spacing(speed_of_sound, 1 / sample_rate);
     auto voxelised = make_voxelised_scene_data(
             scene,
             5,
@@ -149,3 +149,4 @@ voxels_and_mesh compute_voxels_and_mesh(
 }
 
 }  // namespace waveguide
+}  // namespace wayverb

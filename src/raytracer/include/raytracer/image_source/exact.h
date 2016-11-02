@@ -9,6 +9,7 @@
 /// exact and fast to calculate.
 /// Here we implement a fast solver for image sources in a cuboid.
 
+namespace wayverb {
 namespace raytracer {
 namespace image_source {
 
@@ -122,3 +123,4 @@ auto find_impulses(const core::geo::box& box,
 
 }  // namespace image_source
 }  // namespace raytracer
+}  // namespace wayverb

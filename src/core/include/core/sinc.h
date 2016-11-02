@@ -4,6 +4,7 @@
 
 #include "utilities/aligned/vector.h"
 
+namespace wayverb {
 namespace core {
 
 /// sinc t = sin (pi . t) / pi . t
@@ -119,3 +120,4 @@ util::aligned::vector<T> bandpass_sinc_kernel(double sr,
 }
 
 }  // namespace core
+}  // namespace wayverb

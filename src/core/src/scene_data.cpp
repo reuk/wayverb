@@ -3,6 +3,7 @@
 
 #include "utilities/map_to_vector.h"
 
+namespace wayverb {
 namespace core {
 
 util::aligned::vector<glm::vec3> convert(
@@ -12,3 +13,4 @@ util::aligned::vector<glm::vec3> convert(
 }
 
 }  // namespace core
+}  // namespace wayverb

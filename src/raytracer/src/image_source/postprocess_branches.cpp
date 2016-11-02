@@ -1,6 +1,7 @@
 #include "raytracer/image_source/postprocess_branches.h"
 #include "raytracer/image_source/fast_pressure_calculator.h"
 
+namespace wayverb {
 namespace raytracer {
 namespace image_source {
 
@@ -29,3 +30,4 @@ util::aligned::vector<impulse<core::simulation_bands>> postprocess_branches(
 
 }  // namespace image_source
 }  // namespace raytracer
+}  // namespace wayverb

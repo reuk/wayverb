@@ -15,6 +15,9 @@
 #include <random>
 #include <type_traits>
 
+using namespace wayverb::waveguide;
+using namespace wayverb::core;
+
 class InputGenerator {
 public:
     virtual util::aligned::vector<util::aligned::vector<cl_float>>
@@ -98,7 +101,7 @@ constexpr auto parallel_size{1 << 8};
 std::default_random_engine engine{std::random_device()()};
 
 auto random_filter_descriptor() {
-    return waveguide::filter_descriptor{
+    return filter_descriptor{
             std::uniform_real_distribution<double>{0.1, 1}(engine),
             std::uniform_real_distribution<double>{0, 0.5}(engine),
             std::uniform_real_distribution<double>{0, 1}(engine)};
@@ -106,7 +109,7 @@ auto random_filter_descriptor() {
 
 template <size_t... Ix>
 auto random_filter_descriptors(std::index_sequence<Ix...>) {
-    return std::array<waveguide::filter_descriptor, sizeof...(Ix)>{
+    return std::array<filter_descriptor, sizeof...(Ix)>{
             {((void)Ix, random_filter_descriptor())...}};
 }
 
@@ -117,7 +120,7 @@ auto random_filter_descriptors() {
 
 template <size_t... Ix>
 auto compute_descriptors(std::index_sequence<Ix...>) {
-    return std::array<std::array<waveguide::filter_descriptor, biquad_sections>,
+    return std::array<std::array<filter_descriptor, biquad_sections>,
                       sizeof...(Ix)>{
             {((void)Ix, random_filter_descriptors())...}};
 }
@@ -136,18 +139,14 @@ enum class FilterType {
 
 auto compute_coeffs(
         std::integral_constant<FilterType, FilterType::biquad_cascade>) {
-    return util::map(
-            [](const auto& n) { return waveguide::get_peak_biquads_array(n); },
-            descriptors);
+    return util::map([](const auto& n) { return get_peak_biquads_array(n); },
+                     descriptors);
 }
 
 auto compute_coeffs(
         std::integral_constant<FilterType, FilterType::single_reflectance>) {
     return util::map(
-            [](const auto& n) {
-                return waveguide::convolve(
-                        waveguide::get_peak_biquads_array(n));
-            },
+            [](const auto& n) { return convolve(get_peak_biquads_array(n)); },
             descriptors);
 }
 
@@ -155,8 +154,8 @@ auto compute_coeffs(
         std::integral_constant<FilterType, FilterType::single_impedance>) {
     return util::map(
             [](const auto& n) {
-                return waveguide::to_impedance_coefficients(waveguide::convolve(
-                        waveguide::get_peak_biquads_array(n)));
+                return to_impedance_coefficients(
+                        convolve(get_peak_biquads_array(n)));
             },
             descriptors);
 }
@@ -189,8 +188,8 @@ public:
         return buf;
     }
 
-    const core::compute_context cc;
-    const waveguide::program program{cc};
+    const compute_context cc;
+    const program program{cc};
     util::aligned::vector<Memory> memory{testing::parallel_size, Memory{}};
 
     static auto compute_coeffs() {

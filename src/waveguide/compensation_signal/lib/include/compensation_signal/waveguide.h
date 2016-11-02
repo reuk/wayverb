@@ -9,6 +9,9 @@
 
 #include <array>
 
+namespace wayverb {
+namespace waveguide {
+
 class compressed_rectangular_waveguide_program final {
 public:
     explicit compressed_rectangular_waveguide_program(
@@ -126,3 +129,6 @@ private:
     cl::Buffer current_;
     cl::Buffer previous_;
 };
+
+}  // namespace waveguide
+}  // namespace wayverb

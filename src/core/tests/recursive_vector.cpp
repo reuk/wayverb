@@ -4,23 +4,25 @@
 
 #include <random>
 
+using namespace wayverb::core;
+
 TEST(recursive_vector_impl, size_capacity) {
     {
-        core::detail::recursive_vector_impl<int> vec{};
+        detail::recursive_vector_impl<int> vec{};
         ASSERT_EQ(vec.size(), 0);
         ASSERT_EQ(vec.capacity(), 0);
     }
 
     {
-        core::detail::recursive_vector_impl<int> vec{100};
+        detail::recursive_vector_impl<int> vec{100};
         ASSERT_EQ(vec.size(), 0);
         ASSERT_EQ(vec.capacity(), 100);
     }
 }
 
 TEST(recursive_vector_impl, swap) {
-    core::detail::recursive_vector_impl<int> a{0};
-    core::detail::recursive_vector_impl<int> b{100};
+    detail::recursive_vector_impl<int> a{0};
+    detail::recursive_vector_impl<int> b{100};
 
     ASSERT_EQ(a.size(), 0);
     ASSERT_EQ(b.size(), 0);
@@ -64,7 +66,7 @@ bool operator!=(const non_trivial& a, const non_trivial& b) {
 }
 
 TEST(recursive_vector_impl, construct) {
-    core::detail::recursive_vector_impl<non_trivial> vec{100};
+    detail::recursive_vector_impl<non_trivial> vec{100};
     ASSERT_EQ(vec.capacity(), 100);
 
     vec.construct("hello", 1);
@@ -78,7 +80,7 @@ TEST(recursive_vector_impl, construct) {
 }
 
 TEST(recursive_vector_impl, copy) {
-    core::detail::recursive_vector_impl<non_trivial> a{100};
+    detail::recursive_vector_impl<non_trivial> a{100};
     a.construct("hello", 1);
     a.construct("world", 2);
 
@@ -92,7 +94,7 @@ TEST(recursive_vector_impl, copy) {
 }
 
 TEST(recursive_vector_impl, move) {
-    core::detail::recursive_vector_impl<non_trivial> a{100};
+    detail::recursive_vector_impl<non_trivial> a{100};
     a.construct("hello", 1);
     a.construct("world", 2);
 
@@ -106,11 +108,11 @@ TEST(recursive_vector_impl, move) {
 }
 
 TEST(recursive_vector_impl, copy_assign) {
-    core::detail::recursive_vector_impl<non_trivial> a{100};
+    detail::recursive_vector_impl<non_trivial> a{100};
     a.construct("hello", 1);
     a.construct("world", 2);
 
-    core::detail::recursive_vector_impl<non_trivial> b{};
+    detail::recursive_vector_impl<non_trivial> b{};
     b = a;
     ASSERT_EQ(b.size(), a.size());
 
@@ -121,11 +123,11 @@ TEST(recursive_vector_impl, copy_assign) {
 }
 
 TEST(recursive_vector_impl, move_assign) {
-    core::detail::recursive_vector_impl<non_trivial> a{100};
+    detail::recursive_vector_impl<non_trivial> a{100};
     a.construct("hello", 1);
     a.construct("world", 2);
 
-    core::detail::recursive_vector_impl<non_trivial> b{};
+    detail::recursive_vector_impl<non_trivial> b{};
     b = std::move(a);
 
     ASSERT_EQ(a.size(), 0);
@@ -138,13 +140,13 @@ TEST(recursive_vector_impl, move_assign) {
 ////////////////////////////////////////////////////////////////////////////////
 
 TEST(recursive_vector, size_capacity) {
-    const core::recursive_vector<int> vec{};
+    const recursive_vector<int> vec{};
     ASSERT_EQ(vec.size(), 0);
     ASSERT_EQ(vec.capacity(), 0);
 }
 
 TEST(recursive_vector, insert) {
-    core::recursive_vector<int> vec{};
+    recursive_vector<int> vec{};
     const auto a = {1, 2, 3, 4};
     const auto i{vec.insert(vec.end(), a.begin(), a.end())};
 
@@ -174,18 +176,66 @@ TEST(recursive_vector, insert) {
     ASSERT_EQ(*(vec.begin() + 7), 4);
 
     const auto x{10};
-    { const auto k{vec.insert(vec.begin(), &x + 0, &x + 1)}; ASSERT_EQ(vec.size(), 9);  ASSERT_EQ(std::distance(vec.begin(), k), 0); }
-    { const auto k{vec.insert(vec.begin(), &x + 0, &x + 1)}; ASSERT_EQ(vec.size(), 10); ASSERT_EQ(std::distance(vec.begin(), k), 0); }
-    { const auto k{vec.insert(vec.begin(), &x + 0, &x + 1)}; ASSERT_EQ(vec.size(), 11); ASSERT_EQ(std::distance(vec.begin(), k), 0); }
-    { const auto k{vec.insert(vec.begin(), &x + 0, &x + 1)}; ASSERT_EQ(vec.size(), 12); ASSERT_EQ(std::distance(vec.begin(), k), 0); }
-    { const auto k{vec.insert(vec.begin(), &x + 0, &x + 1)}; ASSERT_EQ(vec.size(), 13); ASSERT_EQ(std::distance(vec.begin(), k), 0); }
-    { const auto k{vec.insert(vec.begin(), &x + 0, &x + 1)}; ASSERT_EQ(vec.size(), 14); ASSERT_EQ(std::distance(vec.begin(), k), 0); }
-    { const auto k{vec.insert(vec.begin(), &x + 0, &x + 1)}; ASSERT_EQ(vec.size(), 15); ASSERT_EQ(std::distance(vec.begin(), k), 0); }
-    { const auto k{vec.insert(vec.begin(), &x + 0, &x + 1)}; ASSERT_EQ(vec.size(), 16); ASSERT_EQ(std::distance(vec.begin(), k), 0); }
-    { const auto k{vec.insert(vec.begin(), &x + 0, &x + 1)}; ASSERT_EQ(vec.size(), 17); ASSERT_EQ(std::distance(vec.begin(), k), 0); }
-    { const auto k{vec.insert(vec.begin(), &x + 0, &x + 1)}; ASSERT_EQ(vec.size(), 18); ASSERT_EQ(std::distance(vec.begin(), k), 0); }
-    { const auto k{vec.insert(vec.begin(), &x + 0, &x + 1)}; ASSERT_EQ(vec.size(), 19); ASSERT_EQ(std::distance(vec.begin(), k), 0); }
-    { const auto k{vec.insert(vec.begin(), &x + 0, &x + 1)}; ASSERT_EQ(vec.size(), 20); ASSERT_EQ(std::distance(vec.begin(), k), 0); }
+    {
+        const auto k{vec.insert(vec.begin(), &x + 0, &x + 1)};
+        ASSERT_EQ(vec.size(), 9);
+        ASSERT_EQ(std::distance(vec.begin(), k), 0);
+    }
+    {
+        const auto k{vec.insert(vec.begin(), &x + 0, &x + 1)};
+        ASSERT_EQ(vec.size(), 10);
+        ASSERT_EQ(std::distance(vec.begin(), k), 0);
+    }
+    {
+        const auto k{vec.insert(vec.begin(), &x + 0, &x + 1)};
+        ASSERT_EQ(vec.size(), 11);
+        ASSERT_EQ(std::distance(vec.begin(), k), 0);
+    }
+    {
+        const auto k{vec.insert(vec.begin(), &x + 0, &x + 1)};
+        ASSERT_EQ(vec.size(), 12);
+        ASSERT_EQ(std::distance(vec.begin(), k), 0);
+    }
+    {
+        const auto k{vec.insert(vec.begin(), &x + 0, &x + 1)};
+        ASSERT_EQ(vec.size(), 13);
+        ASSERT_EQ(std::distance(vec.begin(), k), 0);
+    }
+    {
+        const auto k{vec.insert(vec.begin(), &x + 0, &x + 1)};
+        ASSERT_EQ(vec.size(), 14);
+        ASSERT_EQ(std::distance(vec.begin(), k), 0);
+    }
+    {
+        const auto k{vec.insert(vec.begin(), &x + 0, &x + 1)};
+        ASSERT_EQ(vec.size(), 15);
+        ASSERT_EQ(std::distance(vec.begin(), k), 0);
+    }
+    {
+        const auto k{vec.insert(vec.begin(), &x + 0, &x + 1)};
+        ASSERT_EQ(vec.size(), 16);
+        ASSERT_EQ(std::distance(vec.begin(), k), 0);
+    }
+    {
+        const auto k{vec.insert(vec.begin(), &x + 0, &x + 1)};
+        ASSERT_EQ(vec.size(), 17);
+        ASSERT_EQ(std::distance(vec.begin(), k), 0);
+    }
+    {
+        const auto k{vec.insert(vec.begin(), &x + 0, &x + 1)};
+        ASSERT_EQ(vec.size(), 18);
+        ASSERT_EQ(std::distance(vec.begin(), k), 0);
+    }
+    {
+        const auto k{vec.insert(vec.begin(), &x + 0, &x + 1)};
+        ASSERT_EQ(vec.size(), 19);
+        ASSERT_EQ(std::distance(vec.begin(), k), 0);
+    }
+    {
+        const auto k{vec.insert(vec.begin(), &x + 0, &x + 1)};
+        ASSERT_EQ(vec.size(), 20);
+        ASSERT_EQ(std::distance(vec.begin(), k), 0);
+    }
 
     ASSERT_EQ(*(vec.begin() + 0), 10);
     ASSERT_EQ(*(vec.begin() + 1), 10);
@@ -239,7 +289,7 @@ TEST(recursive_vector, insert) {
 }
 
 TEST(recursive_vector, erase) {
-    core::recursive_vector<int> vec{};
+    recursive_vector<int> vec{};
     const auto a = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
     vec.insert(vec.begin(), a.begin(), a.end());
 
@@ -277,7 +327,7 @@ TEST(recursive_vector, erase) {
 }
 
 TEST(recursive_vector, reserve) {
-    core::recursive_vector<int> vec{};
+    recursive_vector<int> vec{};
     vec.reserve(100);
 
     ASSERT_EQ(vec.size(), 0);
@@ -287,7 +337,7 @@ TEST(recursive_vector, reserve) {
 ////////////////////////////////////////////////////////////////////////////////
 
 TEST(recursive_vector_backed_set, insert) {
-    core::recursive_vector_backed_set<int> set;
+    recursive_vector_backed_set<int> set;
 
     std::default_random_engine engine{std::random_device{}()};
     std::uniform_int_distribution<int> distribution(-100, 100);
@@ -316,7 +366,7 @@ TEST(recursive_vector_backed_set, insert) {
 }
 
 TEST(recursive_vector_backed_set, find) {
-    core::recursive_vector_backed_set<int> set;
+    recursive_vector_backed_set<int> set;
 
     std::default_random_engine engine{std::random_device{}()};
     std::uniform_int_distribution<int> distribution(-100, 100);

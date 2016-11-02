@@ -2,6 +2,7 @@
 
 #include <iostream>
 
+namespace wayverb {
 namespace core {
 
 program_wrapper::program_wrapper(const compute_context& cc,
@@ -45,3 +46,4 @@ void program_wrapper::build(const cl::Device& device) const {
 cl::Device program_wrapper::get_device() const { return device; }
 
 }  // namespace core
+}  // namespace wayverb

@@ -5,6 +5,7 @@
 #include "core/program_wrapper.h"
 #include "core/spatial_division/scene_buffers.h"
 
+namespace wayverb {
 namespace raytracer {
 namespace stochastic {
 
@@ -38,3 +39,4 @@ private:
 
 }  // namespace stochastic
 }  // namespace raytracer
+}  // namespace wayverb

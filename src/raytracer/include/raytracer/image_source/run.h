@@ -6,6 +6,7 @@
 #include "raytracer/reflection_processor/image_source.h"
 #include "raytracer/reflector.h"
 
+namespace wayverb {
 namespace raytracer {
 namespace image_source {
 
@@ -41,3 +42,4 @@ auto run(
 
 }  // namespace image_source
 }  // namespace raytracer
+}  // namespace wayverb

@@ -4,6 +4,7 @@
 
 #include "glm/glm.hpp"
 
+namespace wayverb {
 namespace core {
 
 template <typename T>
@@ -37,3 +38,4 @@ constexpr glm::ivec3 to_ivec3(const cl_int3& t) {
 }
 
 }  // namespace core
+}  // namespace wayverb

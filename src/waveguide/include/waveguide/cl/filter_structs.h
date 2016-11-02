@@ -3,19 +3,15 @@
 #include "core/cl/representation.h"
 #include "core/cl/traits.h"
 
+namespace wayverb {
+namespace waveguide {
+
 constexpr size_t biquad_order{2};
 constexpr size_t biquad_sections{3};
 
 ////////////////////////////////////////////////////////////////////////////////
 
 using filt_real = cl_double;
-
-template <>
-struct core::cl_representation<filt_real> final {
-    static constexpr auto value = R"(
-typedef double filt_real;
-)";
-};
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -62,47 +58,18 @@ inline bool operator!=(const coefficients<D>& a, const coefficients<D>& b) {
 
 using memory_biquad = memory<biquad_order>;
 
-template <>
-struct core::cl_representation<memory_biquad> final {
-    static const std::string value;
-};
-
 using coefficients_biquad = coefficients<biquad_order>;
-
-template <>
-struct core::cl_representation<coefficients_biquad> final {
-    static const std::string value;
-};
 
 using memory_canonical = memory<memory_biquad::order * biquad_sections>;
 
-template <>
-struct core::cl_representation<memory_canonical> final {
-    static const std::string value;
-};
-
 using coefficients_canonical =
         coefficients<coefficients_biquad::order * biquad_sections>;
-
-template <>
-struct core::cl_representation<coefficients_canonical> final {
-    static const std::string value;
-};
 
 ////////////////////////////////////////////////////////////////////////////////
 
 /// Several biquad delay lines in a row.
 struct alignas(1 << 3) biquad_memory_array final {
     memory_biquad array[biquad_sections]{};
-};
-
-template <>
-struct core::cl_representation<biquad_memory_array> final {
-    static constexpr auto value = R"(
-typedef struct {
-    memory_biquad array[BIQUAD_SECTIONS];
-} biquad_memory_array;
-)";
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -112,11 +79,51 @@ struct alignas(1 << 3) biquad_coefficients_array final {
     coefficients_biquad array[biquad_sections]{};
 };
 
+}  // namespace waveguide
+
 template <>
-struct core::cl_representation<biquad_coefficients_array> final {
+struct core::cl_representation<waveguide::filt_real> final {
+    static constexpr auto value = R"(
+typedef double filt_real;
+)";
+};
+
+template <>
+struct core::cl_representation<waveguide::memory_biquad> final {
+    static const std::string value;
+};
+
+template <>
+struct core::cl_representation<waveguide::coefficients_biquad> final {
+    static const std::string value;
+};
+
+template <>
+struct core::cl_representation<waveguide::memory_canonical> final {
+    static const std::string value;
+};
+
+template <>
+struct core::cl_representation<waveguide::coefficients_canonical> final {
+    static const std::string value;
+};
+
+template <>
+struct core::cl_representation<waveguide::biquad_memory_array> final {
+    static constexpr auto value = R"(
+typedef struct {
+    memory_biquad array[BIQUAD_SECTIONS];
+} biquad_memory_array;
+)";
+};
+
+template <>
+struct core::cl_representation<waveguide::biquad_coefficients_array> final {
     static constexpr auto value = R"(
 typedef struct {
     coefficients_biquad array[BIQUAD_SECTIONS];
 } biquad_coefficients_array;
 )";
 };
+
+}  // namespace wayverb

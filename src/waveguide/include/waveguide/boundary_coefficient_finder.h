@@ -10,6 +10,7 @@
 
 #include "utilities/popcount.h"
 
+namespace wayverb {
 namespace waveguide {
 
 constexpr bool is_boundary(cl_int i) {
@@ -45,3 +46,4 @@ boundary_index_data compute_boundary_index_data(
         util::aligned::vector<condensed_node>& nodes);
 
 }  // namespace waveguide
+}  // namespace wayverb

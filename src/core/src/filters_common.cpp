@@ -4,6 +4,7 @@
 #include <iostream>
 #include <numeric>
 
+namespace wayverb {
 namespace core {
 namespace filter {
 
@@ -122,3 +123,4 @@ biquad::coefficients compute_hipass_butterworth_segment(double cf,
 
 }  // namespace filter
 }  // namespace core
+}  // namespace wayverb

@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <memory>
 
+namespace wayverb {
 namespace core {
 namespace detail {
 
@@ -271,3 +272,4 @@ private:
 };
 
 }  // namespace core
+}  // namespace wayverb

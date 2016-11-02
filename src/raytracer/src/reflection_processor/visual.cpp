@@ -1,5 +1,6 @@
 #include "raytracer/reflection_processor/visual.h"
 
+namespace wayverb {
 namespace raytracer {
 namespace reflection_processor {
 
@@ -25,3 +26,4 @@ visual make_visual::operator()(
 
 }  // namespace reflection_processor
 }  // namespace raytracer
+}  // namespace wayverb

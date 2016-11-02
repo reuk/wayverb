@@ -4,6 +4,7 @@
 
 #include "glm/glm.hpp"
 
+namespace wayverb {
 namespace core {
 namespace model {
 
@@ -21,3 +22,4 @@ glm::vec3 get_pointing(const orientable& o, const glm::vec3& position);
 
 }  // namespace model
 }  // namespace core
+}  // namespace wayverb

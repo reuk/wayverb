@@ -3,9 +3,9 @@
 #include "core/cl/scene_structs.h"
 #include "core/geo/triangle_vec.h"
 
+namespace wayverb {
 namespace core {
 namespace geo {
-
 namespace detail {
 constexpr glm::vec2 perp(const glm::vec2& a) { return glm::vec2(-a.y, a.x); }
 
@@ -113,3 +113,4 @@ bool overlaps_2d(const std::array<glm::vec2, n>& a,
 
 }  // namespace geo
 }  // namespace core
+}  // namespace wayverb

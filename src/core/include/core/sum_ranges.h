@@ -3,6 +3,7 @@
 #include "utilities/foldl.h"
 #include "utilities/for_each.h"
 
+namespace wayverb {
 namespace core {
 
 template <typename... Ts>
@@ -32,3 +33,4 @@ auto sum_vectors(T t, Ts... ts) {
 }
 
 }  // namespace core
+}  // namespace wayverb

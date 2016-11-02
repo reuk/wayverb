@@ -4,6 +4,7 @@
 
 #include <set>
 
+namespace wayverb {
 namespace raytracer {
 
 /// A tree node holds a single item, and optionally a collection of
@@ -52,3 +53,4 @@ void traverse_multitree(const multitree<T>& tree, const Callback& callback) {
 }
 
 }  // namespace raytracer
+}  // namespace wayverb

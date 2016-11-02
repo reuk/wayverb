@@ -6,6 +6,7 @@
 
 #include "utilities/map_to_vector.h"
 
+namespace wayverb {
 namespace waveguide {
 
 /// For hrtf/microphone attenuators, we can just do this.
@@ -54,3 +55,4 @@ auto make_attenuator_iterator(It it, const Method& method, float Z) {
 }
 
 }  // namespace waveguide
+}  // namespace wayverb

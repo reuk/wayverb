@@ -2,6 +2,7 @@
 
 #include <exception>
 
+namespace wayverb {
 namespace core {
 namespace exceptions {
 
@@ -30,3 +31,4 @@ class value_is_inf final : public suspicious_value {
 
 }  // namespace exceptions
 }  // namespace core
+}  // namespace wayverb

@@ -6,6 +6,7 @@
 
 #include <memory>
 
+namespace wayverb {
 namespace core {
 namespace detail {
 
@@ -98,4 +99,5 @@ private:
     util::aligned::vector<size_t> items_;  //  indices of contained items
     std::unique_ptr<node_array> nodes_;    //  contained nodes
 };
-}//namespace core
+}  // namespace core
+}  // namespace wayverb

@@ -2,6 +2,9 @@
 
 #include "waveguide/cl/filter_structs.h"
 
+namespace wayverb {
+namespace waveguide {
+
 typedef enum : cl_int {
     id_success = 0,
     id_inf_error = 1 << 0,
@@ -11,35 +14,11 @@ typedef enum : cl_int {
     id_suspicious_boundary_error = 1 << 4,
 } error_code;
 
-template <>
-struct core::cl_representation<error_code> final {
-    static constexpr auto value = R"(
-typedef enum {
-    id_success = 0,
-    id_inf_error = 1 << 0,
-    id_nan_error = 1 << 1,
-    id_outside_range_error = 1 << 2,
-    id_outside_mesh_error = 1 << 3,
-    id_suspicious_boundary_error = 1 << 4,
-} error_code;
-)";
-};
-
 ////////////////////////////////////////////////////////////////////////////////
 
 struct alignas(1 << 3) condensed_node final {
     cl_int boundary_type{};
     cl_uint boundary_index{};
-};
-
-template <>
-struct core::cl_representation<condensed_node> final {
-    static constexpr auto value = R"(
-typedef struct {
-    int boundary_type;
-    uint boundary_index;
-} condensed_node;
-)";
 };
 
 inline bool operator==(const condensed_node& a, const condensed_node& b) {
@@ -59,16 +38,6 @@ inline bool operator!=(const condensed_node& a, const condensed_node& b) {
 struct alignas(1 << 3) boundary_data final {
     memory_canonical filter_memory{};
     cl_uint coefficient_index{};
-};
-
-template <>
-struct core::cl_representation<boundary_data> final {
-    static constexpr auto value = R"(
-typedef struct {
-    memory_canonical filter_memory;
-    uint coefficient_index;
-} boundary_data;
-)";
 };
 
 inline bool operator==(const boundary_data& a, const boundary_data& b) {
@@ -104,23 +73,61 @@ using boundary_data_array_1 = boundary_data_array<1>;
 using boundary_data_array_2 = boundary_data_array<2>;
 using boundary_data_array_3 = boundary_data_array<3>;
 
+}  // namespace waveguide
+
 template <>
-struct core::cl_representation<boundary_data_array_1> final {
+struct core::cl_representation<waveguide::error_code> final {
+    static constexpr auto value = R"(
+typedef enum {
+    id_success = 0,
+    id_inf_error = 1 << 0,
+    id_nan_error = 1 << 1,
+    id_outside_range_error = 1 << 2,
+    id_outside_mesh_error = 1 << 3,
+    id_suspicious_boundary_error = 1 << 4,
+} error_code;
+)";
+};
+
+template <>
+struct core::cl_representation<waveguide::condensed_node> final {
+    static constexpr auto value = R"(
+typedef struct {
+    int boundary_type;
+    uint boundary_index;
+} condensed_node;
+)";
+};
+
+template <>
+struct core::cl_representation<waveguide::boundary_data> final {
+    static constexpr auto value = R"(
+typedef struct {
+    memory_canonical filter_memory;
+    uint coefficient_index;
+} boundary_data;
+)";
+};
+
+template <>
+struct core::cl_representation<waveguide::boundary_data_array_1> final {
     static constexpr auto value = R"(
 typedef struct { boundary_data array[1]; } boundary_data_array_1;
 )";
 };
 
 template <>
-struct core::cl_representation<boundary_data_array_2> final {
+struct core::cl_representation<waveguide::boundary_data_array_2> final {
     static constexpr auto value = R"(
 typedef struct { boundary_data array[2]; } boundary_data_array_2;
 )";
 };
 
 template <>
-struct core::cl_representation<boundary_data_array_3> final {
+struct core::cl_representation<waveguide::boundary_data_array_3> final {
     static constexpr auto value = R"(
 typedef struct { boundary_data array[3]; } boundary_data_array_3;
 )";
 };
+
+}  // namespace wayverb

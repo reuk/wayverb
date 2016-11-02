@@ -12,6 +12,7 @@
 
 #include "glm/glm.hpp"
 
+namespace wayverb {
 namespace raytracer {
 
 template <size_t channels>
@@ -74,3 +75,4 @@ auto make_attenuator_iterator(It it, Method method, const glm::vec3& position) {
 }
 
 }  // namespace raytracer
+}  // namespace wayverb

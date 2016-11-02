@@ -6,6 +6,7 @@
 #include <cmath>
 #include <stdexcept>
 
+namespace wayverb {
 namespace core {
 
 /// x is between 0 and 1
@@ -75,3 +76,4 @@ auto interp(It b, It e, double a, Func&& func) {
 }
 
 }  // namespace core
+}  // namespace wayverb

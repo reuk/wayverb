@@ -18,11 +18,11 @@
 #include <iostream>
 
 int main() {
-    const core::geo::box box{glm::vec3{0}, glm::vec3{1, 1, 12}};
+    const wayverb::core::geo::box box{glm::vec3{0}, glm::vec3{1, 1, 12}};
     const auto sample_rate = 5000.0;
     const auto speed_of_sound = 340.0;
 
-    const core::compute_context cc{};
+    const wayverb::core::compute_context cc{};
 
     const glm::vec3 source{0.5, 0.5, 0.5};
 
@@ -31,15 +31,18 @@ int main() {
         receivers.emplace_back(source + glm::vec3{0, 0, i});
     }
 
-    auto voxels_and_mesh = waveguide::compute_voxels_and_mesh(
+    auto voxels_and_mesh = wayverb::waveguide::compute_voxels_and_mesh(
             cc,
-            core::geo::get_scene_data(
-                    box, core::make_surface<core::simulation_bands>(0, 0)),
+            wayverb::core::geo::get_scene_data(
+                    box,
+                    wayverb::core::make_surface<
+                            wayverb::core::simulation_bands>(0, 0)),
             source,
             sample_rate,
             speed_of_sound);
 
-    voxels_and_mesh.mesh.set_coefficients(waveguide::to_flat_coefficients(0));
+    voxels_and_mesh.mesh.set_coefficients(
+            wayverb::waveguide::to_flat_coefficients(0));
 
     const auto input_node =
             compute_index(voxels_and_mesh.mesh.get_descriptor(), source);
@@ -50,55 +53,57 @@ int main() {
             util::map_to_vector(begin(receivers), end(receivers), [&](auto i) {
                 const auto receiver_index{compute_index(
                         voxels_and_mesh.mesh.get_descriptor(), i)};
-                if (!waveguide::is_inside(voxels_and_mesh.mesh,
-                                          receiver_index)) {
+                if (!wayverb::waveguide::is_inside(voxels_and_mesh.mesh,
+                                                   receiver_index)) {
                     throw std::runtime_error{"receiver is outside of mesh!"};
                 }
-                return core::callback_accumulator<
-                        waveguide::postprocessor::node>{receiver_index};
+                return wayverb::core::callback_accumulator<
+                        wayverb::waveguide::postprocessor::node>{
+                        receiver_index};
             });
 
 //  Set up a source signal.
 #if 1
     const auto acoustic_impedance = 400.0;
-    const auto input_signal = waveguide::design_pcs_source(1 << 16,
-                                                           acoustic_impedance,
-                                                           speed_of_sound,
-                                                           sample_rate,
-                                                           0.05,
-                                                           0.01,
-                                                           100,
-                                                           1)
-                                      .signal;
+    const auto input_signal =
+            wayverb::waveguide::design_pcs_source(1 << 16,
+                                                  acoustic_impedance,
+                                                  speed_of_sound,
+                                                  sample_rate,
+                                                  0.05,
+                                                  0.01,
+                                                  100,
+                                                  1)
+                    .signal;
 #else
     aligned::vector<float> input_signal{1.0f};
     input_signal.resize(1 << 15);
 #endif
-    auto prep = waveguide::preprocessor::make_soft_source(
+    auto prep = wayverb::waveguide::preprocessor::make_soft_source(
             input_node, input_signal.begin(), input_signal.end());
 
     //  Run the simulation.
 
     util::progress_bar pb;
-    waveguide::run(cc,
-                   voxels_and_mesh.mesh,
-                   prep,
-                   [&](auto& a, const auto& b, auto c) {
-                       for (auto& i : output_holders) {
-                           i(a, b, c);
-                       }
-                       set_progress(pb, c, input_signal.size());
-                   },
-                   true);
+    wayverb::waveguide::run(cc,
+                            voxels_and_mesh.mesh,
+                            prep,
+                            [&](auto& a, const auto& b, auto c) {
+                                for (auto& i : output_holders) {
+                                    i(a, b, c);
+                                }
+                                set_progress(pb, c, input_signal.size());
+                            },
+                            true);
 
     auto outputs = util::map_to_vector(
             begin(output_holders), end(output_holders), [](const auto& i) {
                 return i.get_output();
             });
-    core::normalize(outputs);
+    wayverb::core::normalize(outputs);
     const auto mag_values = util::map_to_vector(
             begin(outputs), end(outputs), [](const auto& i) {
-                return core::max_mag(i);
+                return wayverb::core::max_mag(i);
             });
     for (auto mag : mag_values) {
         std::cout << "mag: " << mag << '\n';

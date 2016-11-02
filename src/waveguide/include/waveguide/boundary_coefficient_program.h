@@ -5,7 +5,9 @@
 #include "core/cl/voxel_structs.h"
 #include "core/program_wrapper.h"
 
+namespace wayverb {
 namespace waveguide {
+
 class boundary_coefficient_program final {
 public:
     boundary_coefficient_program(const core::compute_context& cc);
@@ -44,3 +46,4 @@ private:
 };
 
 }  // namespace waveguide
+}  // namespace wayverb

@@ -4,6 +4,7 @@
 #include <cmath>
 #include <numeric>
 
+namespace wayverb {
 namespace waveguide {
 
 offset_signal maxflat(double f0, uint32_t N, double A, uint32_t hLen) {
@@ -93,3 +94,4 @@ offset_signal design_pcs_source(size_t length,
 }
 
 }  // namespace waveguide
+}  // namespace wayverb

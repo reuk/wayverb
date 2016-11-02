@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <numeric>
 
+namespace wayverb {
 namespace core {
 namespace hrtf_look_up_table {
 
@@ -87,3 +88,4 @@ constexpr auto table = generate_hrtf_table();
 
 }  // namespace hrtf_look_up_table
 }  // namespace core
+}  // namespace wayverb

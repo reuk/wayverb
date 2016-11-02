@@ -5,19 +5,22 @@
 #include <algorithm>
 #include <random>
 
+using namespace wayverb::raytracer;
+using namespace wayverb::core;
+
 TEST(multitree, construct_image_source_tree_small) {
     const util::aligned::vector<
-            util::aligned::vector<raytracer::image_source::path_element>>
-            paths{util::aligned::vector<raytracer::image_source::path_element>{
-                          raytracer::image_source::path_element{0, true},
-                          raytracer::image_source::path_element{0, true},
-                          raytracer::image_source::path_element{0, true}},
-                  util::aligned::vector<raytracer::image_source::path_element>{
-                          raytracer::image_source::path_element{0, true},
-                          raytracer::image_source::path_element{1, true},
-                          raytracer::image_source::path_element{0, true}}};
+            util::aligned::vector<image_source::path_element>>
+            paths{util::aligned::vector<image_source::path_element>{
+                          image_source::path_element{0, true},
+                          image_source::path_element{0, true},
+                          image_source::path_element{0, true}},
+                  util::aligned::vector<image_source::path_element>{
+                          image_source::path_element{0, true},
+                          image_source::path_element{1, true},
+                          image_source::path_element{0, true}}};
 
-    raytracer::image_source::tree ist{};
+    image_source::tree ist{};
     for (const auto& path : paths) {
         ist.push(path);
     }
@@ -36,20 +39,20 @@ TEST(multitree, construct_image_source_tree_large) {
     std::uniform_int_distribution<cl_uint> distribution{0, 99};
 
     const auto make_path{[&] {
-        util::aligned::vector<raytracer::image_source::path_element> ret{
+        util::aligned::vector<image_source::path_element> ret{
                 distribution(engine)};
         std::generate(ret.begin(), ret.end(), [&] {
-            return raytracer::image_source::path_element{distribution(engine),
+            return image_source::path_element{distribution(engine),
                                                          true};
         });
         return ret;
     }};
 
     util::aligned::vector<
-            util::aligned::vector<raytracer::image_source::path_element>>
+            util::aligned::vector<image_source::path_element>>
             paths{100000};
     std::generate(paths.begin(), paths.end(), make_path);
-    raytracer::image_source::tree tree{};
+    image_source::tree tree{};
     for (const auto& path : paths) {
         tree.push(path);
     }

@@ -5,6 +5,7 @@
 
 #include <iostream>
 
+namespace wayverb {
 namespace waveguide {
 namespace preprocessor {
 
@@ -53,3 +54,4 @@ bool gaussian::operator()(cl::CommandQueue& queue,
 
 }  // namespace preprocessor
 }  // namespace waveguide
+}  // namespace wayverb

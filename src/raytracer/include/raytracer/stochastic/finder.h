@@ -12,6 +12,7 @@
 
 #include "utilities/aligned/vector.h"
 
+namespace wayverb {
 namespace raytracer {
 namespace stochastic {
 
@@ -78,3 +79,4 @@ private:
 
 }  // namespace stochastic
 }  // namespace raytracer
+}  // namespace wayverb

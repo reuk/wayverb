@@ -4,6 +4,7 @@
 
 #include <functional>
 
+namespace wayverb {
 namespace core {
 namespace {
 
@@ -85,3 +86,4 @@ glm::mat4 orientable::get_matrix() const {
                      glm::vec4(0, 0, 0, 1));
 }
 }  // namespace core
+}  // namespace wayverb

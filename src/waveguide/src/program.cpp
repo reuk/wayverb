@@ -5,6 +5,7 @@
 #include "waveguide/cl/utils.h"
 #include "waveguide/mesh_descriptor.h"
 
+namespace wayverb {
 namespace waveguide {
 
 constexpr auto source = R"(
@@ -549,9 +550,10 @@ program::program(const core::compute_context& cc)
                           core::cl_representation_v<boundary_data_array_2>,
                           core::cl_representation_v<boundary_data_array_3>,
                           core::cl_representation_v<boundary_type>,
-                          ::cl_sources::filter_constants,
-                          ::cl_sources::filters,
+                          cl_sources::filter_constants,
+                          cl_sources::filters,
                           cl_sources::utils,
                           source}} {}
 
 }  // namespace waveguide
+}  // namespace wayverb

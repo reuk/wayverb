@@ -3,6 +3,7 @@
 #include "core/cl/representation.h"
 #include "core/cl/traits.h"
 
+namespace wayverb {
 namespace core {
 
 /// If you change this, remember to update the cl_representation for bands_type
@@ -112,3 +113,4 @@ constexpr bool operator!=(const triangle_verts& a, const triangle_verts& b) {
 }
 
 }  // namespace core
+}  // namespace wayverb

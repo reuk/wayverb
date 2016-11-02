@@ -5,6 +5,7 @@
 #include "core/cl/voxel_structs.h"
 #include "core/program_wrapper.h"
 
+namespace wayverb {
 namespace waveguide {
 
 class setup_program final {
@@ -33,3 +34,4 @@ private:
 };
 
 }  // namespace waveguide
+}  // namespace wayverb

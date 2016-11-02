@@ -4,6 +4,7 @@
 
 #include "utilities/range.h"
 
+namespace wayverb {
 namespace core {
 namespace geo {
 
@@ -40,3 +41,4 @@ inline auto inside(const geo::rect& a, const glm::vec2& b) {
            glm::all(glm::lessThan(b, a.get_max()));
 }
 }  // namespace core
+}  // namespace wayverb

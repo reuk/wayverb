@@ -13,6 +13,7 @@
 #include <cassert>
 #include <cmath>
 
+namespace wayverb {
 namespace waveguide {
 
 class program final {
@@ -61,3 +62,4 @@ private:
 };
 
 }  // namespace waveguide
+}  // namespace wayverb

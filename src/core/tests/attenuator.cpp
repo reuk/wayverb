@@ -3,7 +3,7 @@
 
 #include "gtest/gtest.h"
 
-namespace core {
+using namespace wayverb::core;
 
 inline auto check_nearby_vectors(const glm::vec3& a, const glm::vec3& b) {
     ASSERT_NEAR(glm::distance(a, b), 0, 0.00001);
@@ -171,4 +171,3 @@ TEST(attenuator, hrtf_ear_position) {
          attenuator::hrtf::channel::right,
          glm::vec3{0, 0, radius});
 }
-}  // namespace core

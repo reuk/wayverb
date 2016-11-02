@@ -13,6 +13,7 @@
 
 #include "utilities/map_to_vector.h"
 
+namespace wayverb {
 namespace waveguide {
 
 template <typename T>
@@ -125,3 +126,4 @@ auto postprocess(const simulation_results& results,
 }
 
 }  // namespace waveguide
+}  // namespace wayverb

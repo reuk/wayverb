@@ -2,6 +2,7 @@
 
 #include <algorithm>
 
+namespace wayverb {
 namespace waveguide {
 
 bool frequency_domain_envelope::check_invariant() const {
@@ -63,3 +64,4 @@ void remove_outside_frequency_range(frequency_domain_envelope& env,
 }
 
 }  // namespace waveguide
+}  // namespace wayverb

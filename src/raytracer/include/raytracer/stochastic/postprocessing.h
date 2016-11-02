@@ -15,6 +15,7 @@
 #include <cmath>
 #include <random>
 
+namespace wayverb {
 namespace raytracer {
 namespace stochastic {
 
@@ -181,3 +182,4 @@ util::aligned::vector<float> postprocessing(
 
 }  // namespace stochastic
 }  // namespace raytracer
+}  // namespace wayverb

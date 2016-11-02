@@ -6,6 +6,7 @@
 
 #include "glm/glm.hpp"
 
+namespace wayverb {
 namespace core {
 namespace detail {
 template <size_t dimensions>
@@ -31,3 +32,4 @@ template <size_t n>
 using range_t = util::range<range_value_t<n>>;
 }  // namespace detail
 }  // namespace core
+}  // namespace wayverb

@@ -1,5 +1,6 @@
 #include "core/cl/voxel.h"
 
+namespace wayverb {
 namespace core {
 namespace cl_sources {
 const char* voxel = R"(
@@ -259,3 +260,4 @@ bool voxel_point_intersection(float3 begin,
 
 }  // namespace cl_sources
 }  // namespace core
+}  // namespace wayverb

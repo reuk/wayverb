@@ -2,6 +2,7 @@
 
 #include "core/geo/box.h"
 
+namespace wayverb {
 namespace waveguide {
 
 core::geo::box compute_adjusted_boundary(const core::geo::box& min_boundary,
@@ -9,3 +10,4 @@ core::geo::box compute_adjusted_boundary(const core::geo::box& min_boundary,
                                          float cube_side);
 
 }  // namespace waveguide
+}  // namespace wayverb

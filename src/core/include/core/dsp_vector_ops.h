@@ -4,6 +4,7 @@
 #include <numeric>
 #include <vector>
 
+namespace wayverb {
 namespace core {
 
 inline double recursive_sum(float t) { return t; }
@@ -76,3 +77,4 @@ inline void kernel_normalize(T& ret) {
 }
 
 }  // namespace core
+}  // namespace wayverb

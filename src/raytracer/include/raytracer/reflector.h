@@ -12,6 +12,7 @@
 
 #include "glm/glm.hpp"
 
+namespace wayverb {
 namespace raytracer {
 
 template <typename It>  /// Iterator over directions
@@ -74,3 +75,4 @@ private:
 };
 
 }  // namespace raytracer
+}  // namespace wayverb

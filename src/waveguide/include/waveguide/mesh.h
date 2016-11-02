@@ -5,6 +5,7 @@
 
 #include "core/spatial_division/voxelised_scene_data.h"
 
+namespace wayverb {
 namespace waveguide {
 
 class mesh final {
@@ -53,3 +54,4 @@ voxels_and_mesh compute_voxels_and_mesh(
         double speed_of_sound);
 
 }  // namespace waveguide
+}  // namespace wayverb

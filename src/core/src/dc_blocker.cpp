@@ -1,5 +1,6 @@
 #include "core/dc_blocker.h"
 
+namespace wayverb {
 namespace core {
 namespace filter {
 
@@ -77,3 +78,4 @@ void extra_linear_dc_blocker::clear() {
 
 }  // namespace filter
 }  // namespace core
+}  // namespace wayverb

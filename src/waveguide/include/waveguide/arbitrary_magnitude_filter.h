@@ -7,8 +7,8 @@
 
 #include "itpp/signal/filter_design.h"
 
+namespace wayverb {
 namespace waveguide {
-
 namespace detail {
 
 template <typename It>
@@ -91,3 +91,4 @@ auto arbitrary_magnitude_filter(frequency_domain_envelope env) {
 }
 
 }  // namespace waveguide
+}  // namespace wayverb

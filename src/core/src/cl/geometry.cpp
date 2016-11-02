@@ -1,5 +1,6 @@
 #include "core/cl/geometry.h"
 
+namespace wayverb {
 namespace core {
 namespace cl_sources {
 const char* geometry = R"(
@@ -166,3 +167,4 @@ bool line_segment_sphere_intersection(float3 p1, float3 p2, float3 sc, float r) 
 
 }  // namespace cl_sources
 }  // namespace core
+}  // namespace wayverb

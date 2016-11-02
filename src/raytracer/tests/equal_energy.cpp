@@ -6,21 +6,23 @@
 
 #include "gtest/gtest.h"
 
+using namespace wayverb::raytracer;
+using namespace wayverb::core;
+
 namespace {
 
 template <typename Histogram, typename Attenuator>
 void run_test(const Attenuator& attenuator) {
-    const core::geo::box box{glm::vec3{-4}, glm::vec3{4}};
+    const geo::box box{glm::vec3{-4}, glm::vec3{4}};
     constexpr auto absorption = 0.1;
     constexpr auto scattering = 0.1;
 
-    constexpr core::model::parameters params{glm::vec3{-2, 0, 0}, glm::vec3{2, 0, 0}};
+    constexpr model::parameters params{glm::vec3{-2, 0, 0}, glm::vec3{2, 0, 0}};
 
     const auto voxelised = make_voxelised_scene_data(
-            core::geo::get_scene_data(
+            geo::get_scene_data(
                     box,
-                    core::make_surface<core::simulation_bands>(absorption,
-                                                               scattering)),
+                    make_surface<simulation_bands>(absorption, scattering)),
             2,
             0.1f);
 
@@ -28,24 +30,24 @@ void run_test(const Attenuator& attenuator) {
     const auto callbacks =
             std::make_tuple(Histogram{1.0f, histogram_sample_rate, 0});
 
-    const auto directions = core::get_random_directions(1 << 16);
-    const auto results = raytracer::run(begin(directions),
-                                        end(directions),
-                                        core::compute_context{},
-                                        voxelised,
-                                        params,
-                                        true,
-                                        [](auto i, auto steps) {},
-                                        callbacks);
+    const auto directions = get_random_directions(1 << 16);
+    const auto results = run(begin(directions),
+                             end(directions),
+                             compute_context{},
+                             voxelised,
+                             params,
+                             true,
+                             [](auto i, auto steps) {},
+                             callbacks);
 
     ASSERT_TRUE(results);
 
     const auto direct_energy = [&] {
-        const auto direct = raytracer::image_source::get_direct(
+        const auto direct = image_source::get_direct(
                 params.source, params.receiver, voxelised);
         const auto att = attenuation(
                 attenuator, glm::normalize(params.source - params.receiver));
-        return att * att * core::intensity_for_distance(direct->distance);
+        return att * att * intensity_for_distance(direct->distance);
     }();
 
     const auto histogram_energy = [&] {
@@ -69,22 +71,21 @@ void run_test(const Attenuator& attenuator) {
         ASSERT_TRUE(all(difference < 0.1));
     }
 }
-}  // namespace
 
 TEST(equal_energy, omni) {
-    run_test<raytracer::reflection_processor::make_stochastic_histogram>(
-            core::attenuator::null{});
+    run_test<reflection_processor::make_stochastic_histogram>(
+            attenuator::null{});
 }
 
 TEST(equal_energy, directional) {
-    run_test<raytracer::reflection_processor::make_directional_histogram>(
-            core::attenuator::null{});
+    run_test<reflection_processor::make_directional_histogram>(
+            attenuator::null{});
 }
 
 TEST(equal_energy, cardioid) {
     const auto go = [](auto dir) {
-        run_test<raytracer::reflection_processor::make_directional_histogram>(
-                core::attenuator::microphone{dir, 0.5f});
+        run_test<reflection_processor::make_directional_histogram>(
+                attenuator::microphone{dir, 0.5f});
     };
     go(glm::vec3{-1, 0, 0});
     go(glm::vec3{1, 0, 0});
@@ -95,8 +96,10 @@ TEST(equal_energy, cardioid) {
 }
 
 TEST(equal_energy, hrtf) {
-    run_test<raytracer::reflection_processor::make_directional_histogram>(
-            core::attenuator::hrtf{glm::vec3{-1, 0, 0},
-                                   glm::vec3{0, 1, 0},
-                                   core::attenuator::hrtf::channel::left});
+    run_test<reflection_processor::make_directional_histogram>(
+            attenuator::hrtf{glm::vec3{-1, 0, 0},
+                             glm::vec3{0, 1, 0},
+                             attenuator::hrtf::channel::left});
 }
+
+}  // namespace

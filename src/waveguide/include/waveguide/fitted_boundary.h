@@ -14,8 +14,8 @@
 #include "utilities/for_each.h"
 #include "utilities/map.h"
 
+namespace wayverb {
 namespace waveguide {
-
 namespace detail {
 template <size_t... Ix>
 constexpr auto to_raw_impedance_coefficients(
@@ -104,3 +104,4 @@ auto compute_reflectance_filter_coefficients(T&& absorption,
 }
 
 }  // namespace waveguide
+}  // namespace wayverb

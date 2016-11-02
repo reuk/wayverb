@@ -2,6 +2,7 @@
 
 #include <cstdlib>
 
+namespace wayverb {
 namespace raytracer {
 
 struct simulation_parameters final {
@@ -22,3 +23,4 @@ struct simulation_parameters final {
 };
 
 }  // namespace raytracer
+}  // namespace wayverb

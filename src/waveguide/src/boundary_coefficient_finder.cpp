@@ -3,6 +3,7 @@
 #include "waveguide/mesh.h"
 #include "waveguide/setup.h"
 
+namespace wayverb {
 namespace waveguide {
 
 namespace {
@@ -131,3 +132,4 @@ boundary_index_data compute_boundary_index_data(
 }
 
 }  // namespace waveguide
+}  // namespace wayverb

@@ -3,6 +3,7 @@
 #include "raytracer/image_source/tree.h"
 #include "raytracer/iterative_builder.h"
 
+namespace wayverb {
 namespace raytracer {
 namespace image_source {
 
@@ -31,3 +32,4 @@ private:
 
 }  // namespace image_source
 }  // namespace raytracer
+}  // namespace wayverb

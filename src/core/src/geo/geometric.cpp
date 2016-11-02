@@ -3,6 +3,7 @@
 #include "utilities/aligned/vector.h"
 #include "utilities/string_builder.h"
 
+namespace wayverb {
 namespace core {
 namespace geo {
 
@@ -209,3 +210,4 @@ triangle_vec3 mirror(const triangle_vec3& in, const triangle_vec3& t) {
 
 }  // namespace geo
 }  // namespace core
+}  // namespace wayverb

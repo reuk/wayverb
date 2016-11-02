@@ -2,6 +2,7 @@
 
 #include "core/cl/scene_structs.h"
 
+namespace wayverb {
 namespace core {
 
 template <typename T>
@@ -37,3 +38,4 @@ template <typename T>
 constexpr auto unit_constructor_v = unit_constructor<T>::value;
 
 }  // namespace core
+}  // namespace wayverb

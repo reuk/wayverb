@@ -3,6 +3,7 @@
 #include "utilities/map_to_vector.h"
 #include "utilities/mapping_iterator_adapter.h"
 
+namespace wayverb {
 namespace raytracer {
 namespace image_source {
 
@@ -213,3 +214,4 @@ void find_valid_paths(
 
 }  // namespace image_source
 }  // namespace raytracer
+}  // namespace wayverb

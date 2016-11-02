@@ -6,6 +6,7 @@
 
 #include "core/sum_ranges.h"
 
+namespace wayverb {
 namespace raytracer {
 
 template <typename Histogram, typename Method>
@@ -35,3 +36,4 @@ auto postprocess(const simulation_results<Histogram>& input,
 }
 
 }  // namesapce raytracer
+}  // namespace wayverb

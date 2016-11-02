@@ -15,6 +15,7 @@
 
 #include "utilities/map_to_vector.h"
 
+namespace wayverb {
 namespace raytracer {
 namespace image_source {
 
@@ -42,3 +43,4 @@ auto postprocess(InputIt b,
 
 }  // namespace image_source
 }  // namespace raytracer
+}  // namespace wayverb

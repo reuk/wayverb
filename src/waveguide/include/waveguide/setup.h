@@ -15,6 +15,7 @@
 
 #include "glm/fwd.hpp"
 
+namespace wayverb {
 namespace waveguide {
 
 constexpr bool is_inside(const condensed_node& c) {
@@ -85,3 +86,4 @@ inline util::aligned::vector<boundary_data_array<n>> get_boundary_data(
 }
 
 }  // namespace waveguide
+}  // namespace wayverb

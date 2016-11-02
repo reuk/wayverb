@@ -2,6 +2,7 @@
 
 #include "utilities/aligned/vector.h"
 
+namespace wayverb {
 namespace core {
 
 template <typename T, typename Ret = typename T::return_type>
@@ -32,3 +33,4 @@ auto make_callback_accumulator(T t) {
 }
 
 }  // namespace core
+}  // namespace wayverb

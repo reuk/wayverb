@@ -2,6 +2,7 @@
 
 #include "glm/glm.hpp"
 
+namespace wayverb {
 namespace core {
 namespace model {
 
@@ -18,3 +19,4 @@ constexpr auto get_ambient_density(const parameters& s) {
 
 }  // namespace model
 }  // namespace core
+}  // namespace wayverb

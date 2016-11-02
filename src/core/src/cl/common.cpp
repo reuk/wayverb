@@ -2,6 +2,7 @@
 
 #include <iostream>
 
+namespace wayverb {
 namespace core {
 namespace {
 
@@ -76,13 +77,14 @@ compute_context::compute_context() {
 }
 
 compute_context::compute_context(device_type type)
-        : compute_context(::core::get_context(type)) {}
+        : compute_context(core::get_context(type)) {}
 
 compute_context::compute_context(const cl::Context& context)
-        : compute_context(context, ::core::get_device(context)) {}
+        : compute_context(context, core::get_device(context)) {}
 
 compute_context::compute_context(const cl::Context& context,
                                  const cl::Device& device)
         : context(context)
         , device(device) {}
 }  // namespace core
+}  // namespace wayverb

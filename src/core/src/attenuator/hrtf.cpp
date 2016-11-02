@@ -1,6 +1,7 @@
 #include "core/attenuator/hrtf.h"
 #include "core/hrtf_look_up_table.h"
 
+namespace wayverb {
 namespace core {
 namespace attenuator {
 
@@ -71,3 +72,4 @@ glm::vec3 get_ear_position(const hrtf& hrtf, const glm::vec3& base_position) {
 
 }  // namespace attenuator
 }  // namespace core
+}  // namespace wayverb

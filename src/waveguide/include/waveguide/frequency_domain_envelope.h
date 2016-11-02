@@ -5,6 +5,7 @@
 
 #include <vector>
 
+namespace wayverb {
 namespace waveguide {
 
 /// Invariant: points are in ascending frequency order.
@@ -79,3 +80,4 @@ auto make_frequency_domain_envelope(const std::array<double, N>& frequency,
 }
 
 }  // namespace waveguide
+}  // namespace wayverb

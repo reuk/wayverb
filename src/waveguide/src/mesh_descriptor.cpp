@@ -1,6 +1,9 @@
 #include "waveguide/mesh_descriptor.h"
 #include "waveguide/config.h"
 
+namespace wayverb {
+namespace waveguide {
+
 size_t compute_index(const mesh_descriptor& d, const glm::ivec3& pos) {
     return pos.x + pos.y * d.dimensions.s[0] +
            pos.z * d.dimensions.s[0] * d.dimensions.s[1];
@@ -85,3 +88,6 @@ util::aligned::vector<glm::vec3> compute_node_positions(
     }
     return ret;
 }
+
+}  // namespace waveguide
+}  // namespace wayverb

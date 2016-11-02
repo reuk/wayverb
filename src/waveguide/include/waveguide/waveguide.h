@@ -11,6 +11,7 @@
 #include <functional>
 #include <iostream>
 
+namespace wayverb {
 namespace waveguide {
 
 /// Will set up and run a waveguide using an existing 'template' (the mesh).
@@ -124,3 +125,4 @@ size_t run(const core::compute_context& cc,
 }
 
 }  // namespace waveguide
+}  // namespace wayverb

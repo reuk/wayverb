@@ -67,19 +67,22 @@ public:
             , elevation_{elevation} {}
 
 private:
-    auto run_simulation(const core::geo::box& boundary,
+    auto run_simulation(const wayverb::core::geo::box& boundary,
                         const util::aligned::vector<glm::vec3>& receivers,
-                        const coefficients_canonical& coefficients) const {
-        const auto scene_data = core::geo::get_scene_data(
-                boundary, core::make_surface<core::simulation_bands>(0, 0));
+                        const wayverb::waveguide::coefficients_canonical&
+                                coefficients) const {
+        const auto scene_data = wayverb::core::geo::get_scene_data(
+                boundary,
+                wayverb::core::make_surface<wayverb::core::simulation_bands>(
+                        0, 0));
 
-        auto mesh = waveguide::compute_mesh(
+        auto mesh = wayverb::waveguide::compute_mesh(
                 cc_,
                 make_voxelised_scene_data(
                         scene_data,
                         5,
-                        waveguide::compute_adjusted_boundary(
-                                core::geo::get_aabb(scene_data),
+                        wayverb::waveguide::compute_adjusted_boundary(
+                                wayverb::core::geo::get_aabb(scene_data),
                                 source_position_,
                                 divisions_)),
                 divisions_,
@@ -92,38 +95,40 @@ private:
 
         const auto input = [&] {
             const util::aligned::vector<float> raw_input{1.0f};
-            auto ret = waveguide::make_transparent(
+            auto ret = wayverb::waveguide::make_transparent(
                     raw_input.data(), raw_input.data() + raw_input.size());
             ret.resize(steps, 0);
             return ret;
         }();
 
-        auto prep = waveguide::preprocessor::make_soft_source(
+        auto prep = wayverb::waveguide::preprocessor::make_soft_source(
                 source_index, input.begin(), input.end());
 
         auto output_holders = util::map_to_vector(
                 begin(receivers), end(receivers), [&](auto i) {
                     const auto receiver_index{
                             compute_index(mesh.get_descriptor(), i)};
-                    if (!waveguide::is_inside(mesh, receiver_index)) {
+                    if (!wayverb::waveguide::is_inside(mesh, receiver_index)) {
                         throw std::runtime_error{
                                 "receiver is outside of mesh!"};
                     }
-                    return core::callback_accumulator<
-                            waveguide::postprocessor::node>{receiver_index};
+                    return wayverb::core::callback_accumulator<
+                            wayverb::waveguide::postprocessor::node>{
+                            receiver_index};
                 });
 
         util::progress_bar pb{};
-        waveguide::run(cc_,
-                       mesh,
-                       prep,
-                       [&](auto& queue, const auto& buffer, auto step) {
-                           for (auto& i : output_holders) {
-                               i(queue, buffer, step);
-                           }
-                           set_progress(pb, step, steps);
-                       },
-                       true);
+        wayverb::waveguide::run(
+                cc_,
+                mesh,
+                prep,
+                [&](auto& queue, const auto& buffer, auto step) {
+                    for (auto& i : output_holders) {
+                        i(queue, buffer, step);
+                    }
+                    set_progress(pb, step, steps);
+                },
+                true);
 
         return util::map_to_vector(
                 begin(output_holders), end(output_holders), [](const auto& i) {
@@ -137,13 +142,15 @@ private:
     };
 
     free_field_results get_free_field_results() const {
-        auto results = run_simulation(no_wall_,
-                                      {image_position_, receiver_position_},
-                                      coefficients_canonical{{1}, {1}});
+        auto results = run_simulation(
+                no_wall_,
+                {image_position_, receiver_position_},
+                wayverb::waveguide::coefficients_canonical{{1}, {1}});
 
-        const auto window = core::right_hanning(results.front().size());
+        const auto window =
+                wayverb::core::right_hanning(results.front().size());
         for (auto& i : results) {
-            core::elementwise_multiply(i, window);
+            wayverb::core::elementwise_multiply(i, window);
         }
 
         return {std::vector<float>(results[0].begin(), results[0].end()),
@@ -153,13 +160,14 @@ private:
 public:
     util::aligned::vector<float> run_full_test(
             const std::string& test_name,
-            const coefficients_canonical& coefficients) const {
+            const wayverb::waveguide::coefficients_canonical& coefficients)
+            const {
         auto reflected =
                 run_simulation(wall_, {receiver_position_}, coefficients)
                         .front();
 
-        const auto window = core::right_hanning(reflected.size());
-        core::elementwise_multiply(reflected, window);
+        const auto window = wayverb::core::right_hanning(reflected.size());
+        wayverb::core::elementwise_multiply(reflected, window);
 
         auto subbed = reflected;
         std::transform(begin(reflected),
@@ -189,21 +197,22 @@ public:
     static constexpr auto steps = dim * 1.4;
 
 private:
-    const core::compute_context cc_;
+    const wayverb::core::compute_context cc_;
 
     const std::string output_folder_;
     const float waveguide_sample_rate_;
     const float azimuth_;
     const float elevation_;
 
-    const float divisions_ = waveguide::config::grid_spacing(
+    const float divisions_ = wayverb::waveguide::config::grid_spacing(
             speed_of_sound, 1 / waveguide_sample_rate_);
 
-    const core::geo::box wall_{glm::vec3{0, 0, 0},
-                               glm::vec3{static_cast<float>(dim)} * divisions_};
+    const wayverb::core::geo::box wall_{
+            glm::vec3{0, 0, 0},
+            glm::vec3{static_cast<float>(dim)} * divisions_};
     const glm::vec3 far_ = wall_.get_max();
     const glm::vec3 new_dim_{far_.x * 2, far_.y, far_.z};
-    const core::geo::box no_wall_{glm::vec3{0}, new_dim_};
+    const wayverb::core::geo::box no_wall_{glm::vec3{0}, new_dim_};
 
     const glm::vec3 wall_centre_ = centre(no_wall_);
 
@@ -211,7 +220,8 @@ private:
     const float source_dist_ = source_dist_nodes_ * divisions_;
 
     const glm::vec3 source_offset_ =
-            core::point_on_sphere(azimuth_ + M_PI, elevation_) * source_dist_;
+            wayverb::core::point_on_sphere(azimuth_ + M_PI, elevation_) *
+            source_dist_;
 
     const glm::vec3 source_position_ = wall_centre_ + source_offset_;
     const glm::vec3 image_position_ = wall_centre_ - source_offset_;
@@ -221,17 +231,20 @@ private:
     const free_field_results free_field_ = get_free_field_results();
 };
 
+struct coefficient_package final {
+    std::string name;
+    wayverb::waveguide::coefficients_canonical reflectance_coefficients;
+    wayverb::waveguide::coefficients_canonical impedance_coefficients;
+};
+
+namespace cereal {
+
 template <typename T>
-void serialize(T& archive, coefficients_canonical& coefficients) {
+void serialize(T& archive,
+               wayverb::waveguide::coefficients_canonical& coefficients) {
     archive(cereal::make_nvp("b", coefficients.b),
             cereal::make_nvp("a", coefficients.a));
 }
-
-struct coefficient_package final {
-    std::string name;
-    coefficients_canonical reflectance_coefficients;
-    coefficients_canonical impedance_coefficients;
-};
 
 template <typename T>
 void serialize(T& archive, coefficient_package& c) {
@@ -241,6 +254,8 @@ void serialize(T& archive, coefficient_package& c) {
             cereal::make_nvp("impedance_coefficients",
                              c.impedance_coefficients));
 }
+
+}  // namespace cereal
 
 int main(int argc, char** argv) {
     //  arguments  /////////////////////////////////////////////////////////////
@@ -266,7 +281,7 @@ int main(int argc, char** argv) {
     constexpr auto waveguide_sample_rate = 8000.0;
 
     const auto make_reflectance_coefficients = [&](const auto& absorption) {
-        return waveguide::compute_reflectance_filter_coefficients(
+        return wayverb::waveguide::compute_reflectance_filter_coefficients(
                 absorption, waveguide_sample_rate);
     };
 
@@ -275,7 +290,8 @@ int main(int argc, char** argv) {
                 output_folder, waveguide_sample_rate, azimuth, elevation};
 
         const util::aligned::vector<
-                std::tuple<const char*, coefficients_canonical>>
+                std::tuple<const char*,
+                           wayverb::waveguide::coefficients_canonical>>
                 raw_tests{
                         //  {"flat_0",
                         //   waveguide::to_flat_coefficients(
@@ -297,7 +313,8 @@ int main(int argc, char** argv) {
 
                         {"sloping_fitted_0",
                          make_reflectance_coefficients(
-                                 std::array<double, core::simulation_bands>{
+                                 std::array<double,
+                                            wayverb::core::simulation_bands>{
                                          {0.0,
                                           0.05,
                                           0.1,
@@ -308,7 +325,8 @@ int main(int argc, char** argv) {
                                           0.35}})},
                         {"sloping_fitted_1",
                          make_reflectance_coefficients(
-                                 std::array<double, core::simulation_bands>{
+                                 std::array<double,
+                                            wayverb::core::simulation_bands>{
                                          {0.35,
                                           0.3,
                                           0.25,
@@ -320,7 +338,8 @@ int main(int argc, char** argv) {
 
                         {"sudden",
                          make_reflectance_coefficients(
-                                 std::array<double, core::simulation_bands>{
+                                 std::array<double,
+                                            wayverb::core::simulation_bands>{
                                          {0, 1, 0, 1, 0, 1, 0, 1}})},
                 };
 
@@ -329,7 +348,7 @@ int main(int argc, char** argv) {
                     return coefficient_package{
                             std::get<0>(tup),
                             std::get<1>(tup),
-                            waveguide::to_impedance_coefficients(
+                            wayverb::waveguide::to_impedance_coefficients(
                                     std::get<1>(tup))};
                 });
 

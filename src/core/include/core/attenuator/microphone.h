@@ -1,7 +1,8 @@
 #pragma once
 
 #include "glm/glm.hpp"
-
+ 
+namespace wayverb {
 namespace core {
 namespace attenuator {
 
@@ -26,3 +27,4 @@ float attenuation(const microphone& mic, const glm::vec3& incident);
 
 }  // namespace attenuator
 }  // namespace core
+}  // namespace wayverb

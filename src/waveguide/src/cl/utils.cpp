@@ -1,5 +1,7 @@
 #include "waveguide/cl/utils.h"
 
+namespace wayverb {
+namespace waveguide {
 namespace cl_sources {
 
 const char* utils{R"(
@@ -73,4 +75,6 @@ float3 compute_node_position(const mesh_descriptor descriptor, int3 locator) {
 
 )"};
 
-}//namespace cl_sources
+}  // namespace cl_sources
+}  // namespace waveguide
+}  // namespace wayverb

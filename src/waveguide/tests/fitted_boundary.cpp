@@ -10,10 +10,13 @@
 
 #include "gtest/gtest.h"
 
+using namespace wayverb::waveguide;
+using namespace wayverb::core;
+
 namespace {
 template <size_t B, size_t A>
 std::ostream &operator<<(std::ostream &os,
-                         const core::filter_coefficients<B, A> &coeffs) {
+                         const filter_coefficients<B, A> &coeffs) {
     cereal::JSONOutputArchive archive{os};
     archive(coeffs);
     return os;
@@ -30,8 +33,8 @@ TEST(fitted_boundary, compute_boundary_filter) {
     constexpr std::array<double, 5> amplitudes{{0, 1, 0.5, 1, 0}};
     constexpr auto order = 6;
 
-    const auto coeffs = waveguide::arbitrary_magnitude_filter<order>(
-            waveguide::make_frequency_domain_envelope(centres, amplitudes));
+    const auto coeffs = arbitrary_magnitude_filter<order>(
+            make_frequency_domain_envelope(centres, amplitudes));
 
     std::cout << coeffs << '\n';
 }

@@ -11,6 +11,7 @@
 
 #include <vector>
 
+namespace wayverb {
 namespace core {
 namespace model {
 
@@ -110,3 +111,4 @@ auto run_attenuation(const model::receiver& receiver,
 
 }  // namespace model
 }  // namespace core
+}  // namespace wayverb

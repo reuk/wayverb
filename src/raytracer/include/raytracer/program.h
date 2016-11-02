@@ -5,6 +5,7 @@
 #include "core/program_wrapper.h"
 #include "core/spatial_division/scene_buffers.h"
 
+namespace wayverb {
 namespace raytracer {
 
 class program final {
@@ -41,3 +42,4 @@ private:
 };
 
 }  // namespace raytracer
+}  // namespace wayverb

@@ -5,6 +5,7 @@
 #include "utilities/aligned/vector.h"
 #include "utilities/mapping_iterator_adapter.h"
 
+namespace wayverb {
 namespace raytracer {
 
 template <typename T>
@@ -149,3 +150,4 @@ auto make_histogram_iterator(T t, double speed_of_sound) {
 }
 
 }  // namespace raytracer
+}  // namespace wayverb

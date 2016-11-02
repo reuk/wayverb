@@ -7,9 +7,11 @@
 #include <array>
 #include <functional>
 
+namespace wayverb {
+namespace waveguide {
+
 struct mesh_descriptor;
 
-namespace waveguide {
 namespace postprocessor {
 
 class directional_receiver final {
@@ -42,3 +44,4 @@ private:
 
 }  // namespace postprocessor
 }  // namespace waveguide
+}  // namespace wayverb

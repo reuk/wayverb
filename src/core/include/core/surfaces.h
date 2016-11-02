@@ -2,6 +2,7 @@
 
 #include "core/cl/scene_structs.h"
 
+namespace wayverb {
 namespace core {
 
 //  for both methods:
@@ -63,3 +64,4 @@ constexpr T specular_pressure(T total_reflected, U scattering) {
 }
 
 }  // namespace core
+}  // namespace wayverb

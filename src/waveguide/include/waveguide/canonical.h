@@ -20,6 +20,7 @@
 /// The method below drives the combination deemed to be most approriate for
 /// single-run simulation.
 
+namespace wayverb {
 namespace waveguide {
 
 struct band final {
@@ -58,30 +59,29 @@ std::experimental::optional<band> canonical_impl(
 
     const auto input = [&] {
         auto raw = util::aligned::vector<float>(ideal_steps, 0.0f);
-        raw.front() = waveguide::rectilinear_calibration_factor(
+        raw.front() = rectilinear_calibration_factor(
                 mesh.get_descriptor().spacing, params.acoustic_impedance);
         return raw;
     }();
 
-    auto output_accumulator = core::callback_accumulator<
-            waveguide::postprocessor::directional_receiver>{
-            mesh.get_descriptor(),
-            sample_rate,
-            params.acoustic_impedance / params.speed_of_sound,
-            compute_mesh_index(params.receiver)};
+    auto output_accumulator =
+            core::callback_accumulator<postprocessor::directional_receiver>{
+                    mesh.get_descriptor(),
+                    sample_rate,
+                    params.acoustic_impedance / params.speed_of_sound,
+                    compute_mesh_index(params.receiver)};
 
-    const auto steps =
-            waveguide::run(cc,
-                           mesh,
-                           waveguide::preprocessor::make_hard_source(
-                                   compute_mesh_index(params.source),
-                                   begin(input),
-                                   end(input)),
-                           [&](auto& queue, const auto& buffer, auto step) {
-                               output_accumulator(queue, buffer, step);
-                               callback(step, ideal_steps);
-                           },
-                           keep_going);
+    const auto steps = run(
+            cc,
+            mesh,
+            preprocessor::make_hard_source(compute_mesh_index(params.source),
+                                           begin(input),
+                                           end(input)),
+            [&](auto& queue, const auto& buffer, auto step) {
+                output_accumulator(queue, buffer, step);
+                callback(step, ideal_steps);
+            },
+            keep_going);
 
     if (steps != ideal_steps) {
         return std::experimental::nullopt;
@@ -255,3 +255,4 @@ std::experimental::optional<simulation_results> canonical(
 }
 
 }  // namespace waveguide
+}  // namespace wayverb

@@ -4,6 +4,7 @@
 #include "core/indexing.h"
 #include "core/spatial_division/ndim_tree.h"
 
+namespace wayverb {
 namespace core {
 
 using voxel = util::aligned::vector<size_t>;
@@ -152,4 +153,4 @@ void traverse(const voxel_collection<3>& voxels,
               const traversal_callback& fun);
 
 }  // namespace core
-
+}  // namespace wayverb

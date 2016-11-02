@@ -4,6 +4,7 @@
 
 #include "utilities/map_to_vector.h"
 
+namespace wayverb {
 namespace core {
 
 class scene_data_loader final {
@@ -50,3 +51,4 @@ auto scene_with_extracted_surfaces(
 }
 
 }  // namespace core
+}  // namespace wayverb

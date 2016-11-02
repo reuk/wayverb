@@ -6,6 +6,7 @@
 #include "core/cl/geometry_structs.h"
 #include "core/cl/voxel.h"
 
+namespace wayverb {
 namespace waveguide {
 
 constexpr auto source = R"(
@@ -501,7 +502,8 @@ boundary_coefficient_program::boundary_coefficient_program(
                            core::cl_representation_v<core::triangle>,
                            core::cl_sources::geometry,
                            core::cl_sources::voxel,
-                           ::cl_sources::utils,
+                           cl_sources::utils,
                            source}} {}
 
 }  // namespace waveguide
+}  // namespace wyaverb

@@ -6,6 +6,7 @@
 #include <cmath>
 #include <complex>
 
+namespace wayverb {
 namespace core {
 
 template <typename T>
@@ -68,3 +69,4 @@ auto freqz(const std::array<double, B>& b_coeffs,
 }
 
 }  // namespace core
+}  // namespace wayverb

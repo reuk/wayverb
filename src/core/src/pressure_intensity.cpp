@@ -1,5 +1,6 @@
 #include "core/pressure_intensity.h"
 
+namespace wayverb {
 namespace core {
 
 double intensity_for_distance(double distance) {
@@ -11,3 +12,4 @@ double pressure_for_distance(double distance, double acoustic_impedance) {
 }
 
 }  // namespace core
+}  // namespace wayverb

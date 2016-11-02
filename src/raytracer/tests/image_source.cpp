@@ -5,63 +5,55 @@
 
 #include "gtest/gtest.h"
 
+using namespace wayverb::raytracer;
+using namespace wayverb::core;
+
+namespace {
+
 TEST(image_source, image_source_position) {
-    const core::geo::box box{glm::vec3{0}, glm::vec3{4, 3, 6}};
+    const geo::box box{glm::vec3{0}, glm::vec3{4, 3, 6}};
     const glm::vec3 source{1};
 
-    ASSERT_EQ(raytracer::image_source::image_position(
-                      box, source, glm::ivec3{0, 0, 0}),
+    ASSERT_EQ(image_source::image_position(box, source, glm::ivec3{0, 0, 0}),
               source);
 
-    ASSERT_EQ(raytracer::image_source::image_position(
-                      box, source, glm::ivec3{1, 0, 0}),
+    ASSERT_EQ(image_source::image_position(box, source, glm::ivec3{1, 0, 0}),
               (glm::vec3{7, 1, 1}));
-    ASSERT_EQ(raytracer::image_source::image_position(
-                      box, source, glm::ivec3{-1, 0, 0}),
+    ASSERT_EQ(image_source::image_position(box, source, glm::ivec3{-1, 0, 0}),
               (glm::vec3{-1, 1, 1}));
 
-    ASSERT_EQ(raytracer::image_source::image_position(
-                      box, source, glm::ivec3{0, 1, 0}),
+    ASSERT_EQ(image_source::image_position(box, source, glm::ivec3{0, 1, 0}),
               (glm::vec3{1, 5, 1}));
-    ASSERT_EQ(raytracer::image_source::image_position(
-                      box, source, glm::ivec3{0, -1, 0}),
+    ASSERT_EQ(image_source::image_position(box, source, glm::ivec3{0, -1, 0}),
               (glm::vec3{1, -1, 1}));
 
-    ASSERT_EQ(raytracer::image_source::image_position(
-                      box, source, glm::ivec3{0, 0, 1}),
+    ASSERT_EQ(image_source::image_position(box, source, glm::ivec3{0, 0, 1}),
               (glm::vec3{1, 1, 11}));
-    ASSERT_EQ(raytracer::image_source::image_position(
-                      box, source, glm::ivec3{0, 0, -1}),
+    ASSERT_EQ(image_source::image_position(box, source, glm::ivec3{0, 0, -1}),
               (glm::vec3{1, 1, -1}));
 
-    ASSERT_EQ(raytracer::image_source::image_position(
-                      box, source, glm::ivec3{2, 0, 0}),
+    ASSERT_EQ(image_source::image_position(box, source, glm::ivec3{2, 0, 0}),
               (glm::vec3{9, 1, 1}));
-    ASSERT_EQ(raytracer::image_source::image_position(
-                      box, source, glm::ivec3{-2, 0, 0}),
+    ASSERT_EQ(image_source::image_position(box, source, glm::ivec3{-2, 0, 0}),
               (glm::vec3{-7, 1, 1}));
 
-    ASSERT_EQ(raytracer::image_source::image_position(
-                      box, source, glm::ivec3{0, 2, 0}),
+    ASSERT_EQ(image_source::image_position(box, source, glm::ivec3{0, 2, 0}),
               (glm::vec3{1, 7, 1}));
-    ASSERT_EQ(raytracer::image_source::image_position(
-                      box, source, glm::ivec3{0, -2, 0}),
+    ASSERT_EQ(image_source::image_position(box, source, glm::ivec3{0, -2, 0}),
               (glm::vec3{1, -5, 1}));
 
-    ASSERT_EQ(raytracer::image_source::image_position(
-                      box, source, glm::ivec3{0, 0, 2}),
+    ASSERT_EQ(image_source::image_position(box, source, glm::ivec3{0, 0, 2}),
               (glm::vec3{1, 1, 13}));
-    ASSERT_EQ(raytracer::image_source::image_position(
-                      box, source, glm::ivec3{0, 0, -2}),
+    ASSERT_EQ(image_source::image_position(box, source, glm::ivec3{0, 0, -2}),
               (glm::vec3{1, 1, -11}));
 }
 
 template <size_t channels>
 bool approximately_matches(const impulse<channels>& a,
                            const impulse<channels>& b) {
-    const auto near = [](auto a, auto b) { return core::nearby(a, b, 0.0001); };
+    const auto near = [](auto a, auto b) { return nearby(a, b, 0.0001); };
     for (auto i = 0ul; i != channels; ++i) {
-        if (!near (a.volume.s[i], b.volume.s[0])) {
+        if (!near(a.volume.s[i], b.volume.s[0])) {
             return false;
         }
     }
@@ -72,21 +64,19 @@ bool approximately_matches(const impulse<channels>& a,
 }
 
 void image_source_test() {
-    const core::geo::box box{glm::vec3{0, 0, 0}, glm::vec3{4, 3, 6}};
-    constexpr core::model::parameters params{glm::vec3{1, 1, 1},
-                                             glm::vec3{2, 1, 5}};
-    constexpr auto surface =
-            core::make_surface<core::simulation_bands>(0.1f, 0);
+    const geo::box box{glm::vec3{0, 0, 0}, glm::vec3{4, 3, 6}};
+    constexpr model::parameters params{glm::vec3{1, 1, 1}, glm::vec3{2, 1, 5}};
+    constexpr auto surface = make_surface<simulation_bands>(0.1f, 0);
 
     constexpr auto shells = 3;
 
-    auto exact_impulses = raytracer::image_source::find_impulses(
+    auto exact_impulses = image_source::find_impulses(
             box, params.source, params.receiver, surface, shells, false);
 
     const auto check_distances = [&](const auto& range) {
         for (const auto& imp : range) {
-            ASSERT_NEAR(glm::distance(core::to_vec3(params.receiver),
-                                      core::to_vec3(imp.position)),
+            ASSERT_NEAR(glm::distance(to_vec3(params.receiver),
+                                      to_vec3(imp.position)),
                         imp.distance,
                         0.0001);
         }
@@ -95,16 +85,15 @@ void image_source_test() {
     check_distances(exact_impulses);
 
     const auto voxelised = make_voxelised_scene_data(
-            core::geo::get_scene_data(box, surface), 5, 0.1f);
+            geo::get_scene_data(box, surface), 5, 0.1f);
 
-    const auto directions = core::get_random_directions(10000);
-    auto inexact_impulses =
-            raytracer::image_source::run(directions.begin(),
-                                         directions.end(),
-                                         core::compute_context{},
-                                         voxelised,
-                                         params,
-                                         false);
+    const auto directions = get_random_directions(10000);
+    auto inexact_impulses = image_source::run(directions.begin(),
+                                              directions.end(),
+                                              compute_context{},
+                                              voxelised,
+                                              params,
+                                              false);
 
     check_distances(inexact_impulses);
 
@@ -143,3 +132,4 @@ void image_source_test() {
 }
 
 TEST(image_source, fast_pressure) { ASSERT_NO_THROW(image_source_test()); }
+}  // namespace

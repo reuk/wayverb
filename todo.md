@@ -59,6 +59,8 @@ cl_representation - improve so that I don't have to reopen the core namespace.
 nice-to-have
 ============
 
+Use Boost Units to validate physical quantities.
+
 Look into other approaches for microphone modelling, which don't affect modal
 response as much.
 

@@ -4,6 +4,7 @@
 
 #include "utilities/aligned/vector.h"
 
+namespace wayverb {
 namespace core {
 
 enum class device_type { cpu, gpu };
@@ -56,3 +57,4 @@ void write_value(cl::CommandQueue& queue,
 }
 
 }  // namespace core
+}  // namespace wayverb

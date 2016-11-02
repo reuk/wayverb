@@ -4,6 +4,7 @@
 
 #include "utilities/map_to_vector.h"
 
+namespace wayverb {
 namespace waveguide {
 namespace postprocessor {
 
@@ -20,3 +21,4 @@ size_t node::get_output_node() const { return output_node_; }
 
 }  // namespace postprocessor
 }  // namespace waveguide
+}  // namespace wayverb

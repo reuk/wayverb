@@ -9,6 +9,7 @@
 #include "core/cl/voxel.h"
 #include "core/cl/voxel_structs.h"
 
+namespace wayverb {
 namespace raytracer {
 
 constexpr auto source=R"(
@@ -176,3 +177,4 @@ program::program(const core::compute_context& cc)
                           source}} {}
 
 }  // namespace raytracer
+}  // namespace wayverb

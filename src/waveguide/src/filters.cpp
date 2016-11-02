@@ -4,6 +4,7 @@
 
 #include <array>
 
+namespace wayverb {
 namespace waveguide {
 
 coefficients_biquad get_peak_coefficients(const filter_descriptor& n) {
@@ -30,3 +31,4 @@ coefficients_canonical convolve(const biquad_coefficients_array& a) {
 }
 
 }  // namespace waveguide
+}  // namespace wayverb

@@ -5,6 +5,7 @@
 
 #include "utilities/aligned/vector.h"
 
+namespace wayverb {
 namespace core {
 namespace filter {
 
@@ -137,3 +138,4 @@ void block_dc(It begin, It end, double sr) {
 
 }  // namespace filter
 }  // namespace core
+}  // namespace wayverb

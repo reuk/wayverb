@@ -4,6 +4,7 @@
 #include <numeric>
 #include <stdexcept>
 
+namespace wayverb {
 namespace core {
 struct linear_regression final {
     double m;  /// gradient of regression line
@@ -53,3 +54,4 @@ linear_regression simple_linear_regression(It begin, It end) {
     return {m, c, r};
 }
 }  // namespace core
+}  // namespace wayverb

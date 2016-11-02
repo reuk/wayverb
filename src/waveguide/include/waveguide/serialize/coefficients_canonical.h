@@ -7,7 +7,8 @@
 namespace cereal {
 
 template <typename Archive>
-void serialize(Archive& archive, coefficients_canonical& c) {
+void serialize(Archive& archive,
+               wayverb::waveguide::coefficients_canonical& c) {
     archive(make_nvp("b", c.b), make_nvp("a", c.a));
 }
 

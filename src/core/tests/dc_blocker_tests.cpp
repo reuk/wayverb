@@ -13,10 +13,12 @@
 #include <algorithm>
 #include <random>
 
+using namespace wayverb::core;
+
 TEST(dc_blocker, delay_line) {
     constexpr auto LENGTH = 4;
 
-    core::filter::delay_line dl(LENGTH);
+    filter::delay_line dl(LENGTH);
 
     for (auto i = 0; i != LENGTH; ++i) {
         ASSERT_EQ(dl[i], 0);
@@ -44,7 +46,7 @@ TEST(dc_blocker, delay_line) {
 }
 
 TEST(dc_blocker, moving_average) {
-    core::filter::moving_average ma(4);
+    filter::moving_average ma(4);
     ASSERT_EQ(ma.filter(0), 0);
     ASSERT_EQ(ma.filter(0), 0);
     ASSERT_EQ(ma.filter(0), 0);
@@ -62,7 +64,7 @@ TEST(dc_blocker, moving_average) {
 }
 
 TEST(dc_blocker, two_moving_average) {
-    core::filter::n_moving_averages<2> ma(4);
+    filter::n_moving_averages<2> ma(4);
     ASSERT_EQ(ma.filter(0), 0);
     ASSERT_EQ(ma.filter(0), 0);
     ASSERT_EQ(ma.filter(0), 0);
@@ -87,7 +89,7 @@ TEST(dc_blocker, two_moving_average) {
 }
 
 TEST(dc_blocker, dc_blocker) {
-    core::filter::linear_dc_blocker dc(4);
+    filter::linear_dc_blocker dc(4);
     ASSERT_EQ(dc.filter(0), 0);
     ASSERT_EQ(dc.filter(0), 0);
     ASSERT_EQ(dc.filter(0), 0);
@@ -112,7 +114,7 @@ TEST(dc_blocker, dc_blocker) {
 }
 
 TEST(dc_blocker, big_offset) {
-    core::filter::linear_dc_blocker dc(4);
+    filter::linear_dc_blocker dc(4);
     ASSERT_EQ(dc.filter(2), -2 / 16.0);
     ASSERT_EQ(dc.filter(2), -6 / 16.0);
     ASSERT_EQ(dc.filter(2), -12 / 16.0);
@@ -167,9 +169,8 @@ TEST(dc_blocker, io) {
               16);
 
         auto run{[&i](auto& filter, const auto& filter_name, auto i) {
-            core::filter::run_two_pass(
-                    filter, i.kernel.begin(), i.kernel.end());
-            core::normalize(i.kernel);
+            filter::run_two_pass(filter, i.kernel.begin(), i.kernel.end());
+            normalize(i.kernel);
             write(util::build_string(
                           "dc_test.output.", filter_name, ".", i.name, ".wav"),
                   audio_file::make_audio_file(i.kernel, 44100),
@@ -177,12 +178,12 @@ TEST(dc_blocker, io) {
         }};
 
         {
-            core::filter::linear_dc_blocker dc;
+            filter::linear_dc_blocker dc;
             run(dc, "normal", i);
         }
 
         {
-            core::filter::extra_linear_dc_blocker dc;
+            filter::extra_linear_dc_blocker dc;
             run(dc, "super", i);
         }
     }
@@ -196,7 +197,7 @@ const util::aligned::vector<std::tuple<callback, std::string>> trial_blockers{
 
         {[](auto sig, auto cutoff, auto sample_rate) {
              auto blocker{make_series_biquads(
-                     core::filter::compute_hipass_butterworth_coefficients<1>(
+                     filter::compute_hipass_butterworth_coefficients<1>(
                              10, sample_rate))};
              run_two_pass(blocker, sig.begin(), sig.end());
              return sig;
@@ -207,7 +208,7 @@ const util::aligned::vector<std::tuple<callback, std::string>> trial_blockers{
              const util::aligned::vector<float> zeros(sig.size(), 0);
              sig.insert(sig.begin(), zeros.begin(), zeros.end());
              auto blocker{make_series_biquads(
-                     core::filter::compute_hipass_butterworth_coefficients<1>(
+                     filter::compute_hipass_butterworth_coefficients<1>(
                              10, sample_rate))};
              run_two_pass(blocker, sig.begin(), sig.end());
              return util::aligned::vector<float>(sig.begin() + zeros.size(),
@@ -217,7 +218,7 @@ const util::aligned::vector<std::tuple<callback, std::string>> trial_blockers{
 
         {[](auto sig, auto cutoff, auto sample_rate) {
              auto blocker{make_series_biquads(
-                     core::filter::compute_hipass_butterworth_coefficients<2>(
+                     filter::compute_hipass_butterworth_coefficients<2>(
                              10, sample_rate))};
              run_two_pass(blocker, sig.begin(), sig.end());
              return sig;
@@ -226,7 +227,7 @@ const util::aligned::vector<std::tuple<callback, std::string>> trial_blockers{
 
         {[](auto sig, auto cutoff, auto sample_rate) {
              auto blocker{make_series_biquads(
-                     core::filter::compute_hipass_butterworth_coefficients<3>(
+                     filter::compute_hipass_butterworth_coefficients<3>(
                              10, sample_rate))};
              run_two_pass(blocker, sig.begin(), sig.end());
              return sig;
@@ -234,16 +235,16 @@ const util::aligned::vector<std::tuple<callback, std::string>> trial_blockers{
          "butterworth_3"},
 
         {[](auto sig, auto cutoff, auto sample_rate) {
-             auto blocker = core::filter::biquad{
-                     core::filter::compute_dc_blocker_coefficients(0.999)};
+             auto blocker = filter::biquad{
+                     filter::compute_dc_blocker_coefficients(0.999)};
              run_one_pass(blocker, sig.begin(), sig.end());
              return sig;
          },
          "biquad_onepass"},
 
         {[](auto sig, auto cutoff, auto sample_rate) {
-             auto blocker = core::filter::biquad{
-                     core::filter::compute_dc_blocker_coefficients(0.999)};
+             auto blocker = filter::biquad{
+                     filter::compute_dc_blocker_coefficients(0.999)};
              run_two_pass(blocker, sig.begin(), sig.end());
              return sig;
          },

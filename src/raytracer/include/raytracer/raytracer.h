@@ -21,6 +21,7 @@
 #include <experimental/optional>
 #include <iostream>
 
+namespace wayverb {
 namespace raytracer {
 
 template <typename T>
@@ -140,3 +141,4 @@ auto run(
 }
 
 }  // namespace raytracer
+}  // namespace wayverb

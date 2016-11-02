@@ -1,6 +1,7 @@
 #include "waveguide/setup.h"
 #include "waveguide/mesh_setup_program.h"
 
+namespace wayverb {
 namespace waveguide {
 
 vectors::vectors(util::aligned::vector<condensed_node> nodes,
@@ -50,3 +51,4 @@ void vectors::set_coefficients(
 }
 
 }  // namespace waveguide
+}  // namespace wayverb

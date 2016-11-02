@@ -1,5 +1,6 @@
 #include "raytracer/reflection_processor/stochastic_histogram.h"
 
+namespace wayverb {
 namespace raytracer {
 namespace reflection_processor {
 
@@ -53,3 +54,4 @@ make_directional_histogram::operator()(
 
 }  // namespace reflection_processor
 }  // namespace raytracer
+}  // namespace wayverb

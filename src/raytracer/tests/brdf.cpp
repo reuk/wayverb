@@ -7,6 +7,9 @@
 #include <cmath>
 #include <random>
 
+using namespace wayverb::core;
+
+namespace {
 float get_frac(float numerator, float denominator) {
     return denominator ? numerator / denominator : 0;
 }
@@ -30,14 +33,14 @@ float brdf_mag(float y, float d) {
 
 auto check_inf(float y, float d) {
     const auto brdf = brdf_mag(y, d);
-    if (core::is_any_inf(brdf)) {
+    if (is_any_inf(brdf)) {
         std::cout << util::build_string("inf! y: ", y, ", d: ", d, '\n');
     }
 }
 
 auto check_nan(float y, float d) {
     const auto brdf = brdf_mag(y, d);
-    if (core::is_any_nan(brdf)) {
+    if (is_any_nan(brdf)) {
         std::cout << util::build_string("nan! y: ", y, ", d: ", d, '\n');
     }
 }
@@ -66,3 +69,5 @@ TEST(brdf, brdf) {
         check_nan(b, a);
     }
 }
+
+}  // namespace

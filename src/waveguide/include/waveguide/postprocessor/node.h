@@ -2,6 +2,7 @@
 
 #include "core/cl/include.h"
 
+namespace wayverb {
 namespace waveguide {
 namespace postprocessor {
 
@@ -22,3 +23,4 @@ private:
 
 }  // namespace postprocessor
 }  // namespace waveguide
+}  // namespace wayverb

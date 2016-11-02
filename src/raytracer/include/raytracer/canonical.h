@@ -3,6 +3,7 @@
 #include "raytracer/raytracer.h"
 #include "raytracer/simulation_parameters.h"
 
+namespace wayverb {
 namespace raytracer {
 
 std::tuple<reflection_processor::make_image_source,
@@ -68,3 +69,4 @@ auto canonical(
 }
 
 }  // namespace raytracer
+}  // namespace wayverb

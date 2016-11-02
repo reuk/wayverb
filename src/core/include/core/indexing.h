@@ -2,6 +2,7 @@
 
 #include "glm/glm.hpp"
 
+namespace wayverb {
 namespace core {
 namespace indexing {
 
@@ -110,3 +111,4 @@ inline unsigned flatten<1>(index_t<1> i, index_t<1>) {
 
 }  // namespace indexing
 }  // namespace core
+}  // namespace wayverb

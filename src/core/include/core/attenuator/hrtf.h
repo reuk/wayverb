@@ -4,6 +4,7 @@
 
 #include "glm/glm.hpp"
 
+namespace wayverb {
 namespace core {
 namespace attenuator {
 
@@ -58,3 +59,4 @@ glm::vec3 get_ear_position(const hrtf& hrtf, const glm::vec3& base_position);
 
 }  // namespace attenuator
 }  // namespace core
+}  // namespace wayverb

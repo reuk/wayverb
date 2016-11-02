@@ -5,6 +5,7 @@
 #include "core/spatial_division/voxelised_scene_data.h"
 #include "core/unit_constructor.h"
 
+namespace wayverb {
 namespace raytracer {
 namespace image_source {
 
@@ -41,3 +42,4 @@ auto get_direct(const glm::vec3& source,
 
 }  // namespace image_source
 }  // namespace raytracer
+}  // namespace wayverb

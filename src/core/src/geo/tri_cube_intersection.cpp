@@ -4,6 +4,7 @@
 
 #include "glm/glm.hpp"
 
+namespace wayverb {
 namespace core {
 
 namespace {
@@ -233,3 +234,4 @@ where t_c_intersection(const triangle_vec3& t) {
 
 }  // namespace geo
 }  // namespace core
+}  // namespace wayverb

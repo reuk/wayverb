@@ -1,5 +1,6 @@
 #include "raytracer/canonical.h"
 
+namespace wayverb {
 namespace raytracer {
 
 std::tuple<reflection_processor::make_image_source,
@@ -27,3 +28,4 @@ make_canonical_callbacks(size_t max_image_source_order, size_t visual_items) {
 }
 
 }  // namespace raytracer
+}  // namespace wayverb

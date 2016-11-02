@@ -1,6 +1,8 @@
 #include "waveguide/cl/filters.h"
 #include "waveguide/cl/filter_structs.h"
 
+namespace wayverb {
+namespace waveguide {
 namespace cl_sources {
 
 const std::string filter_constants =
@@ -75,3 +77,5 @@ kernel void filter_test_2(
 )";
 
 }  // namespace cl_sources
+}  // namespace waveguide
+}  // namespace wayverb

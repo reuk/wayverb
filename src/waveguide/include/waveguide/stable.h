@@ -4,6 +4,7 @@
 
 #include <cmath>
 
+namespace wayverb {
 namespace waveguide {
 namespace detail {
 
@@ -49,3 +50,4 @@ constexpr auto is_stable(T&& a) {
 }
 
 }  // namespace waveguide
+}  // namespace wayverb

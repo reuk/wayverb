@@ -8,7 +8,7 @@
 namespace cereal {
 
 template <typename Archive, size_t B, size_t A>
-void serialize(Archive& archive, core::filter_coefficients<B, A>& m) {
+void serialize(Archive& archive, wayverb::core::filter_coefficients<B, A>& m) {
     archive(make_nvp("b", m.b), make_nvp("a", m.a));
 }
 

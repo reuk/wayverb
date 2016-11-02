@@ -8,6 +8,7 @@
 
 #include <array>
 
+namespace wayverb {
 namespace core {
 
 struct triangle;
@@ -34,3 +35,4 @@ float area(const triangle_vec3& triangle);
 
 }  // namespace geo
 }  // namespace core
+}  // namespace wayverb

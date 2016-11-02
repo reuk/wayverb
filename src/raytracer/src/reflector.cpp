@@ -6,6 +6,8 @@
 
 #include <random>
 
+namespace wayverb {
+namespace raytracer {
 namespace {
 
 util::aligned::vector<cl_float> get_direction_rng(size_t num) {
@@ -23,8 +25,6 @@ util::aligned::vector<cl_float> get_direction_rng(size_t num) {
 }
 
 }  // namespace
-
-namespace raytracer {
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -63,3 +63,4 @@ util::aligned::vector<cl_float> reflector::get_rng() const {
 }
 
 }  // namespace raytracer
+}  // namespace wayverb

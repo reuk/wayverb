@@ -4,6 +4,7 @@
 
 #include "utilities/map_to_vector.h"
 
+namespace wayverb {
 namespace core {
 
 template <typename It>
@@ -22,3 +23,4 @@ auto multiband_filter_and_mixdown(It b,
 }
 
 }  // namespace core
+}  // namespace wayverb
