@@ -59,38 +59,6 @@
             endingLineNumber = "166"
             landmarkName = "program_iv_throw_if_false(GLuint handle)"
             landmarkType = "7">
-            <Locations>
-               <Location
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "void mglu::checking::program_iv_throw_if_false&lt;35714u&gt;(unsigned int)"
-                  moduleName = "visualiser"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/reuben/development/waveguide/submodules/modern_gl_utils/include/modern_gl_utils/checking.h"
-                  timestampString = "494456011.727335"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "166"
-                  endingLineNumber = "166"
-                  offsetFromSymbolStart = "1307">
-               </Location>
-               <Location
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "void mglu::checking::program_iv_throw_if_false&lt;35715u&gt;(unsigned int)"
-                  moduleName = "visualiser"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/reuben/development/waveguide/submodules/modern_gl_utils/include/modern_gl_utils/checking.h"
-                  timestampString = "494456011.727531"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "166"
-                  endingLineNumber = "166"
-                  offsetFromSymbolStart = "1307">
-               </Location>
-            </Locations>
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy

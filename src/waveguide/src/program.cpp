@@ -535,14 +535,15 @@ program::program(const core::compute_context& cc)
         : program_wrapper_{
                   cc,
                   std::vector<std::string>{
+                          cl_sources::filter_constants,
                           core::cl_representation_v<filt_real>,
-                          core::cl_representation_v<mesh_descriptor>,
                           core::cl_representation_v<memory_biquad>,
                           core::cl_representation_v<coefficients_biquad>,
                           core::cl_representation_v<memory_canonical>,
                           core::cl_representation_v<coefficients_canonical>,
                           core::cl_representation_v<biquad_memory_array>,
                           core::cl_representation_v<biquad_coefficients_array>,
+                          core::cl_representation_v<mesh_descriptor>,
                           core::cl_representation_v<error_code>,
                           core::cl_representation_v<condensed_node>,
                           core::cl_representation_v<boundary_data>,
@@ -550,7 +551,6 @@ program::program(const core::compute_context& cc)
                           core::cl_representation_v<boundary_data_array_2>,
                           core::cl_representation_v<boundary_data_array_3>,
                           core::cl_representation_v<boundary_type>,
-                          cl_sources::filter_constants,
                           cl_sources::filters,
                           cl_sources::utils,
                           source}} {}

@@ -104,7 +104,7 @@
     </GROUP>
   </MAINGROUP>
   <EXPORTFORMATS>
-    <XCODE_MAC targetFolder="Builds/MacOSX" extraDefs="" extraCompilerFlags="-I../../../build/include&#10;-std=c++14"
+    <XCODE_MAC targetFolder="Builds/MacOSX" extraDefs="" extraCompilerFlags="-I../../../src/audio_file/include&#10;-I../../../src/combined/include&#10;-I../../../src/core/include&#10;-I../../../src/frequency_domain/include&#10;-I../../../src/hrtf/include&#10;-I../../../src/raytracer/include&#10;-I../../../src/utilities/include&#10;-I../../../src/waveguide/include&#10;-I../../../build/include&#10;-std=c++14"
                smallIcon="LrlcpV" bigIcon="LrlcpV" documentExtensions="way"
                externalLibraries="" extraLinkerFlags="" extraFrameworks="OpenCL">
       <CONFIGURATIONS>

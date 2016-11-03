@@ -51,41 +51,48 @@ int bevel_3d(const glm::vec3& p) {
            ((1.5 < -p.x - p.y - p.z) ? (1 << 7) : 0);
 }
 
-bool check_point(const glm::vec3& p1,
-                 const glm::vec3& p2,
-                 float alpha,
-                 int mask) {
-    return (face_plane(glm::mix(p1, p2, alpha)) & mask) != 0;
+where check_point(const glm::vec3& p1,
+                  const glm::vec3& p2,
+                  float alpha,
+                  int mask) {
+    return ((face_plane(glm::mix(p1, p2, alpha)) & mask) == 0) ? where::inside
+                                                               : where::outside;
 }
 
 where check_line(const glm::vec3& p1, const glm::vec3& p2, int outcode_diff) {
     if (((1 << 0) & outcode_diff) != 0) {
-        if (!check_point(p1, p2, (0.5 - p1.x) / (p2.x - p1.x), 0x3e)) {
+        if (check_point(p1, p2, (0.5 - p1.x) / (p2.x - p1.x), 0x3e) ==
+            where::inside) {
             return where::inside;
         }
     }
     if (((1 << 1) & outcode_diff) != 0) {
-        if (!check_point(p1, p2, (-0.5 - p1.x) / (p2.x - p1.x), 0x3d)) {
+        if (check_point(p1, p2, (-0.5 - p1.x) / (p2.x - p1.x), 0x3d) ==
+            where::inside) {
             return where::inside;
         }
     }
     if (((1 << 2) & outcode_diff) != 0) {
-        if (!check_point(p1, p2, (0.5 - p1.y) / (p2.y - p1.y), 0x3b)) {
+        if (check_point(p1, p2, (0.5 - p1.y) / (p2.y - p1.y), 0x3b) ==
+            where::inside) {
             return where::inside;
         }
     }
     if (((1 << 3) & outcode_diff) != 0) {
-        if (!check_point(p1, p2, (-0.5 - p1.y) / (p2.y - p1.y), 0x37)) {
+        if (check_point(p1, p2, (-0.5 - p1.y) / (p2.y - p1.y), 0x37) ==
+            where::inside) {
             return where::inside;
         }
     }
     if (((1 << 4) & outcode_diff) != 0) {
-        if (!check_point(p1, p2, (0.5 - p1.z) / (p2.z - p1.z), 0x2f)) {
+        if (check_point(p1, p2, (0.5 - p1.z) / (p2.z - p1.z), 0x2f) ==
+            where::inside) {
             return where::inside;
         }
     }
     if (((1 << 5) & outcode_diff) != 0) {
-        if (!check_point(p1, p2, (-0.5 - p1.z) / (p2.z - p1.z), 0x1f)) {
+        if (check_point(p1, p2, (-0.5 - p1.z) / (p2.z - p1.z), 0x1f) ==
+            where::inside) {
             return where::inside;
         }
     }

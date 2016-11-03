@@ -1,7 +1,8 @@
 #pragma once
 
-#include "common/aligned/vector.h"
-#include "common/orientable.h"
+#include "orientable.h"
+
+#include "utilities/aligned/vector.h"
 
 #include "modern_gl_utils/buffer_object.h"
 #include "modern_gl_utils/drawable.h"
@@ -13,12 +14,17 @@
 #include "modern_gl_utils/updatable.h"
 #include "modern_gl_utils/vao.h"
 
-class Node : public orientable {
+class node {
 public:
-    Node() = default;
+    node() = default;
 
-    Node(Node&&) noexcept;
-    Node& operator=(Node&&) noexcept;
+    node(const node&) = default;
+    node(node&&) noexcept = default;
+
+    node& operator=(const node&) = default;
+    node& operator=(node&&) noexcept = default;
+
+    virtual ~node() noexcept = default;
 
     glm::vec3 get_position() const;
     void set_position(const glm::vec3& v);
@@ -27,20 +33,24 @@ public:
     void set_scale(float s);
     void set_scale(const glm::vec3& s);
 
+    glm::vec3 get_pointing() const;
+    void set_pointing(const glm::vec3& u);
+
     glm::mat4 get_matrix() const;
 
 private:
-    glm::vec3 position{0};
-    glm::vec3 scale{1};
+    glm::vec3 position_{0};
+    glm::vec3 scale_{1};
+    orientable orientable_;
 };
 
-class BasicDrawableObject : public mglu::drawable, public Node {
+class BasicDrawableObject : public mglu::drawable, public node {
 public:
     template <typename T>
     BasicDrawableObject(const std::shared_ptr<T>& shader,
-                        const aligned::vector<glm::vec3>& g,
-                        const aligned::vector<glm::vec4>& c,
-                        const aligned::vector<GLuint>& i,
+                        const util::aligned::vector<glm::vec3>& g,
+                        const util::aligned::vector<glm::vec4>& c,
+                        const util::aligned::vector<GLuint>& i,
                         GLuint mode)
             : shader(std::make_unique<shader_temp<T>>(shader))
             , color_vector(c)
@@ -101,7 +111,7 @@ private:
 
     std::unique_ptr<shader_base> shader;
 
-    aligned::vector<glm::vec4> color_vector;
+    util::aligned::vector<glm::vec4> color_vector;
 
     mglu::vao vao;
     mglu::static_vbo geometry;

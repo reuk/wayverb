@@ -13,6 +13,11 @@ find_package(Git REQUIRED)
 
 set(DEPENDENCY_INSTALL_PREFIX ${CMAKE_BINARY_DIR})
 
+# Some dependencies depend on one-another - this ensures that we look for those
+# dependencies within the project, *before* looking in the normal system
+# location.
+set(CMAKE_MODULE_PATH ${DEPENDENCY_INSTALL_PREFIX} ${CMAKE_MODULE_PATH})
+
 #set(GLOBAL_DEPENDENCY_CMAKE_FLAGS -GNinja)
 
 # glm ##########################################################################
@@ -151,3 +156,16 @@ ExternalProject_Add(
 )
 
 find_package(OpenCL REQUIRED)
+
+# modern_gl_utils (for app) ####################################################
+
+ExternalProject_Add(
+    modern_gl_utils_external
+    PREFIX ${DEPENDENCY_INSTALL_PREFIX}
+    DOWNLOAD_COMMAND ${GIT_EXECUTABLE} clone --depth 1 https://github.com/reuk/modern_gl_utils.git modern_gl_utils_external
+    CMAKE_ARGS ${GLOBAL_DEPENDENCY_CMAKE_FLAGS} -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
+)
+
+add_library(modern_gl_utils UNKNOWN IMPORTED)
+add_dependencies(modern_gl_utils modern_gl_utils_external glm_external)
+set_property(TARGET modern_gl_utils PROPERTY IMPORTED_LOCATION ${DEPENDENCY_INSTALL_PREFIX}/lib/libmodern_gl_utils.a)

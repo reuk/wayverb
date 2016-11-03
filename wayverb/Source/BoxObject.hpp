@@ -1,6 +1,6 @@
 #pragma once
 
-#include "OtherComponents/BasicDrawableObject.hpp"
+#include "BasicDrawableObject.hpp"
 
 class BoxObject final : public BasicDrawableObject {
 public:
@@ -16,7 +16,7 @@ public:
                        {0.5, -0.5, 0.5},
                        {0.5, 0.5, -0.5},
                        {0.5, 0.5, 0.5}},
-                      aligned::vector<glm::vec4>(8, glm::vec4(0.2, 0.2, 0, 1)),
+                      util::aligned::vector<glm::vec4>(8, glm::vec4(0.2, 0.2, 0, 1)),
                       {0,
                        1,
                        1,

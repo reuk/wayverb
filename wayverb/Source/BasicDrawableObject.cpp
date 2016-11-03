@@ -1,25 +1,21 @@
-#include "OtherComponents/BasicDrawableObject.hpp"
+#include "BasicDrawableObject.hpp"
 
-#include "common/aligned/vector.h"
-#include "common/map_to_vector.h"
+#include "utilities/map_to_vector.h"
 
 #include <vector>
 
-Node::Node(Node&&) noexcept = default;
-Node& Node::operator=(Node&&) noexcept = default;
+glm::vec3 node::get_position() const { return position_; }
+void node::set_position(const glm::vec3& v) { position_ = v; }
 
-glm::vec3 Node::get_position() const { return position; }
+glm::vec3 node::get_scale() const { return scale_; }
+void node::set_scale(float s) { scale_ = glm::vec3{s}; }
+void node::set_scale(const glm::vec3& s) { scale_ = s; }
 
-void Node::set_position(const glm::vec3& v) { position = v; }
+glm::vec3 node::get_pointing() const { return orientable_.get_pointing(); }
+void node::set_pointing(const glm::vec3& u) { orientable_.set_pointing(u); }
 
-glm::vec3 Node::get_scale() const { return scale; }
-
-void Node::set_scale(float s) { scale = glm::vec3{s}; }
-
-void Node::set_scale(const glm::vec3& s) { scale = s; }
-
-glm::mat4 Node::get_matrix() const {
-    return glm::translate(get_position()) * orientable::get_matrix() *
+glm::mat4 node::get_matrix() const {
+    return glm::translate(get_position()) * orientable_.get_matrix() *
            glm::scale(get_scale());
 }
 
@@ -31,8 +27,9 @@ BasicDrawableObject& BasicDrawableObject::operator=(
         BasicDrawableObject&&) noexcept           = default;
 
 void BasicDrawableObject::set_highlight(float amount) {
-    colors.data(map_to_vector(color_vector,
-                              [&](const auto& i) { return i + amount; }));
+    colors.data(util::map_to_vector(begin(color_vector),
+                                    end(color_vector),
+                                    [&](const auto& i) { return i + amount; }));
 }
 
 void BasicDrawableObject::do_draw(const glm::mat4& modelview_matrix) const {

@@ -44,21 +44,5 @@ constexpr auto operator!=(const az_el& a, const az_el& b) {
     return !(a == b);
 }
 
-////////////////////////////////////////////////////////////////////////////////
-
-/// Invariant: pointing_ is a unit vector.
-class orientable final {
-    orientable() = default;
-    orientable(const glm::vec3& pointing);
-
-    glm::vec3 get_pointing() const;
-    void set_pointing(const glm::vec3& u);
-
-    glm::mat4 get_matrix() const;
-
-private:
-    glm::vec3 pointing_{0, 0, 1};
-};
-
 }  // namespace core
 }  // namespace wayverb
