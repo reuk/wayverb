@@ -2,7 +2,7 @@
 
 #include "../JuceLibraryCode/JuceHeader.h"
 
-#include "OtherComponents/AngularLookAndFeel.hpp"
+#include "AngularLookAndFeel.hpp"
 
 class PropertyComponentLAF : public AngularLookAndFeel {
 public:

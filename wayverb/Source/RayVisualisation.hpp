@@ -8,7 +8,7 @@
 #include "raytracer/cl/structs.h"
 #include "raytracer/results.h"
 
-#include "common/aligned/vector.h"
+#include "utilities/aligned/vector.h"
 
 class RayShader final {
 public:
@@ -37,7 +37,7 @@ private:
 class RayVisualisation final : public mglu::drawable {
 public:
     RayVisualisation(const std::shared_ptr<RayShader>& shader,
-                     const aligned::vector<aligned::vector<impulse>>& impulses,
+                     const util::aligned::vector<util::aligned::vector<wayverb::raytracer::impulse<wayverb::core::simulation_bands>>>& impulses,
                      const glm::vec3& source,
                      const glm::vec3& receiver);
 
@@ -50,38 +50,38 @@ private:
         double pressure;
     };
 
-    static aligned::vector<path_data> convert_to_path_data(
-            const aligned::vector<impulse>& impulses, const glm::vec3& source);
+    static util::aligned::vector<path_data> convert_to_path_data(
+            const util::aligned::vector<wayverb::raytracer::impulse<wayverb::core::simulation_bands>>& impulses, const glm::vec3& source);
 
-    static aligned::vector<aligned::vector<path_data>> convert_to_path_data(
-            const aligned::vector<aligned::vector<impulse>>& impulses,
+    static util::aligned::vector<util::aligned::vector<path_data>> convert_to_path_data(
+            const util::aligned::vector<util::aligned::vector<wayverb::raytracer::impulse<wayverb::core::simulation_bands>>>& impulses,
             const glm::vec3& source);
 
-    static aligned::vector<glm::vec3> extract_positions(
-            const aligned::vector<aligned::vector<path_data>>& impulses,
+    static util::aligned::vector<glm::vec3> extract_positions(
+            const util::aligned::vector<util::aligned::vector<path_data>>& impulses,
             const glm::vec3& source);
 
-    static aligned::vector<float> extract_pressures(
-            const aligned::vector<aligned::vector<path_data>>& impulses);
+    static util::aligned::vector<float> extract_pressures(
+            const util::aligned::vector<util::aligned::vector<path_data>>& impulses);
 
-    static aligned::vector<GLuint> compute_indices(
-            const aligned::vector<aligned::vector<path_data>>& impulses,
+    static util::aligned::vector<GLuint> compute_indices(
+            const util::aligned::vector<util::aligned::vector<path_data>>& impulses,
             double distance,
             size_t reflection_points);
 
     static glm::vec3 ray_wavefront_position(
-            const aligned::vector<path_data>& path,
+            const util::aligned::vector<path_data>& path,
             double distance,
             const glm::vec3& source);
 
-    static aligned::vector<glm::vec3> ray_wavefront_position(
-            const aligned::vector<aligned::vector<path_data>>& paths,
+    static util::aligned::vector<glm::vec3> ray_wavefront_position(
+            const util::aligned::vector<util::aligned::vector<path_data>>& paths,
             double distance,
             const glm::vec3& source);
 
     RayVisualisation(
             const std::shared_ptr<RayShader>& shader,
-            const aligned::vector<aligned::vector<path_data>>& impulses,
+            const util::aligned::vector<util::aligned::vector<path_data>>& impulses,
             const glm::vec3& source,
             const glm::vec3& receiver,
             size_t reflection_points);
@@ -98,6 +98,6 @@ private:
     glm::vec3 source;
     glm::vec3 receiver;
 
-    aligned::vector<aligned::vector<path_data>> paths;
+    util::aligned::vector<util::aligned::vector<path_data>> paths;
     size_t reflection_points;
 };

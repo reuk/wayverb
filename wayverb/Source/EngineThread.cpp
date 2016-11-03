@@ -2,30 +2,30 @@
 
 EngineThread::EngineThread(EngineFunctor::Listener& listener,
                            std::atomic_bool& keep_going,
-                           const std::string& file_name,
-                           const model::Persistent& wrapper,
-                           const scene_data& scene_data,
+                            std::string file_name,
+                            model::Persistent wrapper,
+                            scene_data scene_data,
                            bool visualise)
-        : thread(std::thread{EngineFunctor{listener,
+        : thread{std::thread{EngineFunctor{listener,
                                            keep_going,
-                                           file_name,
-                                           wrapper,
-                                           scene_data,
-                                           visualise}}) {}
+                                           std::move(file_name),
+                                           std::move(wrapper),
+                                           std::move(scene_data),
+                                           visualise}}} {}
 
 //----------------------------------------------------------------------------//
 
 ScopedEngineThread::ScopedEngineThread(EngineFunctor::Listener& listener,
-                                       const std::string& file_name,
-                                       const model::Persistent& wrapper,
-                                       const scene_data& scene_data,
+                                        std::string file_name,
+                                        model::Persistent wrapper,
+                                        scene_data scene_data,
                                        bool visualise)
-        : thread(listener,
+        : thread{listener,
                  keep_going,
-                 file_name,
-                 wrapper,
-                 scene_data,
-                 visualise) {}
+                 std::move(file_name),
+                 std::move(wrapper),
+                 std::move(scene_data),
+                 visualise}{}
 
 ScopedEngineThread::~ScopedEngineThread() noexcept { keep_going = false; }
 

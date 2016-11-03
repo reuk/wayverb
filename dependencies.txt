@@ -18,7 +18,7 @@ set(DEPENDENCY_INSTALL_PREFIX ${CMAKE_BINARY_DIR})
 # location.
 set(CMAKE_MODULE_PATH ${DEPENDENCY_INSTALL_PREFIX} ${CMAKE_MODULE_PATH})
 
-#set(GLOBAL_DEPENDENCY_CMAKE_FLAGS -GNinja)
+set(GLOBAL_DEPENDENCY_CMAKE_FLAGS "-DCMAKE_MODULE_PATH=${DEPENDENCY_INSTALL_PREFIX}")
 
 # glm ##########################################################################
 
@@ -157,7 +157,11 @@ ExternalProject_Add(
 
 find_package(OpenCL REQUIRED)
 
-# modern_gl_utils (for app) ####################################################
+################################################################################
+# APP STUFF ####################################################################
+################################################################################
+
+# modern_gl_utils ##############################################################
 
 ExternalProject_Add(
     modern_gl_utils_external
@@ -166,6 +170,8 @@ ExternalProject_Add(
     CMAKE_ARGS ${GLOBAL_DEPENDENCY_CMAKE_FLAGS} -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
 )
 
+add_dependencies(modern_gl_utils_external glm_external)
+
 add_library(modern_gl_utils UNKNOWN IMPORTED)
-add_dependencies(modern_gl_utils modern_gl_utils_external glm_external)
+add_dependencies(modern_gl_utils modern_gl_utils_external)
 set_property(TARGET modern_gl_utils PROPERTY IMPORTED_LOCATION ${DEPENDENCY_INSTALL_PREFIX}/lib/libmodern_gl_utils.a)

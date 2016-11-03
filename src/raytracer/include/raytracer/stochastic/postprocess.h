@@ -2,8 +2,6 @@
 
 #include "raytracer/stochastic/postprocessing.h"
 
-#include "core/model/receiver.h"
-
 namespace wayverb {
 namespace raytracer {
 namespace stochastic {

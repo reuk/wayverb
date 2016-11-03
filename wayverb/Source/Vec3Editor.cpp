@@ -1,5 +1,6 @@
 #include "Vec3Editor.hpp"
 
+/*
 Vec3Editor::Vec3Editor(model::ValueWrapper<glm::vec3>& value,
                        const glm::vec3& min,
                        const glm::vec3& max) {
@@ -28,3 +29,4 @@ Vec3Property::Vec3Property(const String& name,
 
 void Vec3Property::refresh() {
 }
+*/

@@ -1,8 +1,8 @@
 #pragma once
 
 #include "EngineFunctor.hpp"
+#include "WorkQueue.hpp"
 
-#include "OtherComponents/WorkQueue.hpp"
 #include "UtilityComponents/scoped_thread.hpp"
 
 /// Runs the engine on another thread.
@@ -12,7 +12,7 @@ public:
                  std::atomic_bool& keep_going,
                  const std::string& file_name,
                  const model::Persistent& wrapper,
-                 const scene_data& scene_data,
+                 const wayverb::combined::engine::scene_data& scene_data,
                  bool visualise);
 
 private:
@@ -28,7 +28,7 @@ public:
     ScopedEngineThread(EngineFunctor::Listener& listener,
                        const std::string& file_name,
                        const model::Persistent& wrapper,
-                       const scene_data& scene_data,
+                       const wayverb::combined::engine::scene_data& scene_data,
                        bool visualise);
 
     ~ScopedEngineThread() noexcept;
@@ -54,17 +54,17 @@ public:
         virtual void engine_encountered_error(AsyncEngine*,
                                               const std::string& str) = 0;
         virtual void engine_state_changed(AsyncEngine*,
-                                          wayverb::state state,
+                                          wayverb::combined::state state,
                                           double progress) = 0;
         virtual void engine_nodes_changed(
-                AsyncEngine*, const aligned::vector<glm::vec3>& positions) = 0;
+                AsyncEngine*, const util::aligned::vector<glm::vec3>& positions) = 0;
         virtual void engine_waveguide_visuals_changed(
                 AsyncEngine*,
-                const aligned::vector<float>& pressures,
+                const util::aligned::vector<float>& pressures,
                 double current_time) = 0;
         virtual void engine_raytracer_visuals_changed(
                 AsyncEngine*,
-                const aligned::vector<aligned::vector<impulse>>& impulses,
+                const util::aligned::vector<aligned::vector<wayverb::raytracer::impulse<wayverb::core::simulation_bands>>>& impulses,
                 const glm::vec3& sources,
                 const glm::vec3& receivers) = 0;
         virtual void engine_finished(AsyncEngine*) = 0;
@@ -72,7 +72,7 @@ public:
 
     void start(const File& file_name,
                const model::Persistent& wrapper,
-               const scene_data& scene_data,
+               const wayverb::combined::engine::scene_data& scene_data,
                bool visualise);
     void stop();
 
@@ -90,22 +90,22 @@ private:
         ConcreteListener(AsyncEngine& engine);
 
         void engine_encountered_error(const std::string& str) override;
-        void engine_state_changed(wayverb::state state,
+        void engine_state_changed(wayverb::combined::state state,
                                   double progress) override;
         void engine_nodes_changed(
-                const aligned::vector<glm::vec3>& positions) override;
+                const util::aligned::vector<glm::vec3>& positions) override;
         void engine_waveguide_visuals_changed(
-                const aligned::vector<float>& pressures,
+                const util::aligned::vector<float>& pressures,
                 double current_time) override;
         void engine_raytracer_visuals_changed(
-                const aligned::vector<aligned::vector<impulse>>& impulses,
+                const util::aligned::vector<aligned::vector<impulse>>& impulses,
                 const glm::vec3& source,
                 const glm::vec3& receiver) override;
         void engine_finished() override;
 
         void start(const File& file_name,
                    const model::Persistent& wrapper,
-                   const scene_data& scene_data,
+                   const wayverb::combined::engine::scene_data& scene_data,
                    bool visualise);
         void stop();
         bool is_running() const;

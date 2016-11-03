@@ -1,11 +1,10 @@
 #pragma once
 
-#include "FullModel.hpp"
-
 #include "../JuceLibraryCode/JuceHeader.h"
 
 #include "glm/glm.hpp"
 
+/*
 class DirectionEditor : public TabbedComponent,
                         public model::BroadcastListener {
 public:
@@ -31,3 +30,4 @@ public:
 private:
     DirectionEditor direction_editor;
 };
+*/

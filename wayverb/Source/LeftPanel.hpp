@@ -1,10 +1,10 @@
 #pragma once
 
 #include "BottomPanel.hpp"
-#include "FullModel.hpp"
 #include "HelpWindow.hpp"
 #include "SurfaceModel.hpp"
 
+/*
 class LeftPanel : public Component,
                   public model::BroadcastListener,
                   public SettableHelpPanelClient {
@@ -52,3 +52,4 @@ private:
 
     ListenerList<Listener> listener_list;
 };
+*/

@@ -5,6 +5,7 @@
 
 #include "Vec3Editor.hpp"
 
+/*
 std::unique_ptr<Component> MicrophoneListBox::new_component_for_row(
         int row, bool selected) {
     auto ret = std::make_unique<Label>();
@@ -61,3 +62,4 @@ std::unique_ptr<Component> MicrophoneEditorPanel::new_editor(
         model::ValueWrapper<value_type>& v) {
     return std::make_unique<SingleMicrophoneComponent>(v);
 }
+*/

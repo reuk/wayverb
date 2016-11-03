@@ -1,6 +1,6 @@
 #pragma once
 
-#include "glm/glm.hpp"
+#include "core/orientable.h"
  
 namespace wayverb {
 namespace core {
@@ -19,7 +19,7 @@ public:
     void set_shape(float shape);
 
 private:
-    glm::vec3 pointing_{0.0f, 0.0f, 1.0f};
+    orientable orientable_;
     float shape_{0.0f};
 };
 

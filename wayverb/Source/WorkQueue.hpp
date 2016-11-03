@@ -1,6 +1,6 @@
 #pragma once
 
-#include "juce_events/juce_events.h"
+#include "../JuceLibraryCode/JuceHeader.h"
 
 #include <mutex>
 #include <queue>

@@ -1,12 +1,12 @@
 #pragma once
 
 #include "BasicPanel.hpp"
-#include "FullModel.hpp"
 #include "HelpWindow.hpp"
 #include "ValueWrapperEditableListBox.hpp"
 
-#include "common/geo/box.h"
+#include "core/geo/box.h"
 
+/*
 class SourcesListBox : public ValueWrapperListBox<glm::vec3> {
 public:
     using ValueWrapperListBox<glm::vec3>::ValueWrapperListBox;
@@ -24,13 +24,13 @@ using SourcesEditableListBox = ValueWrapperEditableListBox<SourcesListBox>;
 
 class SourcesEditorPanel : public ListEditorPanel<SourcesEditableListBox> {
 public:
-    SourcesEditorPanel(model_type& model, const geo::box& aabb);
+    SourcesEditorPanel(model_type& model, const wayverb::core::geo::box& aabb);
 
 private:
     std::unique_ptr<Component> new_editor(
             model::ValueWrapper<value_type>& v) override;
 
-    geo::box aabb;
+    wayverb::core::geo::box aabb;
 };
 
 //----------------------------------------------------------------------------//
@@ -52,11 +52,11 @@ using ReceiversEditableListBox = ValueWrapperEditableListBox<ReceiversListBox>;
 
 class ReceiversEditorPanel : public ListEditorPanel<ReceiversEditableListBox> {
 public:
-    ReceiversEditorPanel(model_type& model, const geo::box& aabb);
+    ReceiversEditorPanel(model_type& model, const wayverb::core::geo::box& aabb);
 
 private:
-    std::unique_ptr<Component> new_editor(
-            model::ValueWrapper<value_type>& v) override;
+    std::unique_ptr<Component> new_editor(model::ValueWrapper<value_type>& v) override;
 
-    geo::box aabb;
+    wayverb::core::geo::box aabb;
 };
+*/

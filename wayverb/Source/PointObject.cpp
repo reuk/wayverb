@@ -4,8 +4,8 @@
 #include <numeric>
 
 namespace {
-aligned::vector<glm::vec3> compute_ring_points(int num, RingObject::Axis axis) {
-    aligned::vector<glm::vec3> ret(num);
+util::aligned::vector<glm::vec3> compute_ring_points(int num, RingObject::Axis axis) {
+    util::aligned::vector<glm::vec3> ret(num);
     for (auto i = 0; i != num; ++i) {
         auto angle = M_PI * 2 * i / num;
         switch (axis) {
@@ -31,8 +31,8 @@ glm::vec4 compute_ring_color(RingObject::Axis axis) {
     }
 }
 
-aligned::vector<GLuint> compute_ring_indices(int num) {
-    aligned::vector<GLuint> ret(num + 1, 0);
+util::aligned::vector<GLuint> compute_ring_indices(int num) {
+    util::aligned::vector<GLuint> ret(num + 1, 0);
     std::iota(ret.begin(), ret.end() - 1, 0);
     return ret;
 }
@@ -43,7 +43,7 @@ RingObject::RingObject(const std::shared_ptr<mglu::generic_shader>& shader,
                        Axis axis)
         : BasicDrawableObject(shader,
                               compute_ring_points(pts, axis),
-                              aligned::vector<glm::vec4>(pts, color),
+                              util::aligned::vector<glm::vec4>(pts, color),
                               compute_ring_indices(pts),
                               GL_LINE_STRIP) {
     set_scale(0.4);
@@ -55,7 +55,7 @@ LineObject::LineObject(const std::shared_ptr<mglu::generic_shader>& shader,
                        const glm::vec4& color)
         : BasicDrawableObject(shader,
                               {{0, 0, 0}, {0, 0, 1}},
-                              aligned::vector<glm::vec4>(2, color),
+                              util::aligned::vector<glm::vec4>(2, color),
                               {0, 1},
                               GL_LINES) {
     set_scale(0.4);
@@ -90,7 +90,7 @@ glm::mat4 PointObject::get_local_modelview_matrix() const {
     return get_matrix();
 }
 
-void PointObject::set_pointing(const aligned::vector<glm::vec3>& directions) {
+void PointObject::set_pointing(const util::aligned::vector<glm::vec3>& directions) {
     while (directions.size() < lines.size()) {
         lines.pop_back();
     }

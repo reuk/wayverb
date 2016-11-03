@@ -1,6 +1,6 @@
 #include "MeshGeneratorFunctor.hpp"
 
-#include "common/spatial_division/voxelised_scene_data.h"
+#include "core/spatial_division/voxelised_scene_data.h"
 
 MeshGeneratorFunctor::MeshGeneratorFunctor(Listener& listener,
                                            const scene_data& scene,

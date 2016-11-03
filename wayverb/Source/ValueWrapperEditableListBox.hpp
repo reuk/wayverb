@@ -1,6 +1,6 @@
 #pragma once
 
-#include "OtherComponents/ValueWrapperListBox.hpp"
+#include "ValueWrapperListBox.hpp"
 
 template <typename T>
 class ValueWrapperEditableListBox : public Component,

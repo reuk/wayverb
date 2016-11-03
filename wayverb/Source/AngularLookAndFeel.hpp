@@ -1,6 +1,6 @@
 #pragma once
 
-#include "juce_gui_basics/juce_gui_basics.h"
+#include "../JuceLibraryCode/JuceHeader.h"
 
 class AngularLookAndFeel : public juce::LookAndFeel_V3 {
 public:

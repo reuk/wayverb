@@ -2,7 +2,7 @@
 
 #include "raytracer/cl/structs.h"
 
-#include "common/nan_checking.h"
+#include "core/nan_checking.h"
 
 #include "utilities/aligned/vector.h"
 
@@ -31,7 +31,7 @@ public:
             B e_diffuse,
             const glm::vec3& receiver)
             : data_{[&] {
-                aligned::vector<Impulse> ret;
+                util::aligned::vector<Impulse> ret;
                 ret.reserve(std::distance(b_image_source, e_image_source) +
                             std::distance(b_diffuse, e_diffuse));
                 ret.insert(ret.end(), b_image_source, e_image_source);
@@ -74,7 +74,7 @@ public:
     auto& get_data() { return data_; }
 
 private:
-    aligned::vector<Impulse> data_;
+    util::aligned::vector<Impulse> data_;
     ptrdiff_t separator_;
     glm::vec3 receiver_;
 };

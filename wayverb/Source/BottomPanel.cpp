@@ -1,46 +1,41 @@
 #include "BottomPanel.hpp"
 
-BottomPanel::BottomPanel(model::ValueWrapper<model::RenderState>& render_state)
-        : render_state(render_state)
-        , bar(progress) {
-    for (auto i :
-         {&is_rendering_connector, &state_connector, &progress_connector}) {
-        i->trigger();
-    }
-
-    addAndMakeVisible(bar);
-    addAndMakeVisible(button);
+BottomPanel::BottomPanel()
+        : bar_{progress_} {
+    addAndMakeVisible(bar_);
+    addAndMakeVisible(button_);
 }
 
-void BottomPanel::paint(Graphics& g) {
-    g.fillAll(Colours::darkgrey);
-}
+void BottomPanel::paint(Graphics& g) { g.fillAll(Colours::darkgrey); }
 
 void BottomPanel::resized() {
-    auto button_width = 100;
+    const auto button_width = 100;
     auto bounds = getLocalBounds().reduced(2, 2);
 
-    bar.setBounds(bounds.withTrimmedRight(button_width + 1));
-    button.setBounds(bounds.removeFromRight(button_width - 1));
+    bar_.setBounds(bounds.withTrimmedRight(button_width + 1));
+    button_.setBounds(bounds.removeFromRight(button_width - 1));
 }
 
-void BottomPanel::buttonClicked(Button* b) {
-    if (b == &button) {
-        if (render_state.is_rendering.get()) {
-            render_state.stop();
-        } else {
-            render_state.start();
+//  View methods
+void BottomPanel::set_progress(double progress) { progress_ = progress; }
+void BottomPanel::set_bar_text(const std::string& str) {
+    bar_.setTextToDisplay(str.c_str());
+}
+void BottomPanel::set_state(state s) {
+    switch (s) {
+        case state::idle: {
+            button_.setButtonText("render");
+            break;
         }
-    }
+
+        case state::rendering: {
+            button_.setButtonText("cancel");
+            break;
+        }
+    };
 }
 
-void BottomPanel::receive_broadcast(model::Broadcaster* cb) {
-    if (cb == &render_state.is_rendering) {
-        button.setButtonText(render_state.is_rendering.get() ? "cancel"
-                                                             : "render");
-    } else if (cb == &render_state.state) {
-        bar.setTextToDisplay(wayverb::to_string(render_state.state.get()));
-    } else if (cb == &render_state.progress) {
-        progress = render_state.progress.get();
-    }
+//  Controller methods
+void BottomPanel::buttonClicked(Button* b) {
+    //  TODO
 }

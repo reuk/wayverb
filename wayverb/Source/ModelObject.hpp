@@ -1,15 +1,16 @@
 #pragma once
 
-#include "OtherComponents/BasicDrawableObject.hpp"
-#include "OtherComponents/MoreConversions.hpp"
+#include "BasicDrawableObject.hpp"
 
-#include "common/scene_data.h"
+#include "combined/engine.h"
+
+#include "core/scene_data.h"
 
 namespace detail {
 constexpr auto model_colour = 0.5;
 
-inline aligned::vector<GLuint> get_indices(const scene_data& scene_data) {
-    aligned::vector<GLuint> ret;
+inline util::aligned::vector<GLuint> get_indices(const wayverb::combined::engine::scene_data& scene_data) {
+    util::aligned::vector<GLuint> ret;
     ret.reserve(scene_data.get_triangles().size() * 3);
     auto count = 0u;
     for (const auto& tri : scene_data.get_triangles()) {
@@ -25,10 +26,10 @@ inline aligned::vector<GLuint> get_indices(const scene_data& scene_data) {
 class ModelObject final : public BasicDrawableObject {
 public:
     template <typename T>
-    ModelObject(T& shader, const scene_data& scene_data)
+    ModelObject(T& shader, const wayverb::combined::engine::scene_data& scene_data)
             : BasicDrawableObject(shader,
-                                  convert(scene_data.get_vertices()),
-                                  aligned::vector<glm::vec4>(
+                                  wayverb::core::convert(scene_data.get_vertices()),
+                                  util::aligned::vector<glm::vec4>(
                                           scene_data.get_vertices().size(),
                                           glm::vec4(detail::model_colour,
                                                     detail::model_colour,

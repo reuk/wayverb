@@ -1,4 +1,4 @@
-#include "OtherComponents/AngularLookAndFeel.hpp"
+#include "AngularLookAndFeel.hpp"
 
 const juce::Colour AngularLookAndFeel::emphasis{0xff009900};
 

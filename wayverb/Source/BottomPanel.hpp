@@ -1,6 +1,6 @@
 #pragma once
 
-#include "FullModel.hpp"
+#include "connector.hpp"
 
 #include "../JuceLibraryCode/JuceHeader.h"
 
@@ -8,24 +8,25 @@ class BottomPanel : public Component,
                     public model::BroadcastListener,
                     public TextButton::Listener {
 public:
-    BottomPanel(model::ValueWrapper<model::RenderState>& render_state);
+    BottomPanel();
 
     void paint(Graphics& g) override;
     void resized() override;
 
-    void receive_broadcast(model::Broadcaster* b) override;
+    enum class state { idle, rendering };
 
+    //  View methods
+    void set_progress(double progress);
+    void set_bar_text(const std::string& str);
+    void set_state(state s);
+
+    //  Controller methods
     void buttonClicked(Button*) override;
 
 private:
-    double progress{0};
-    model::ValueWrapper<model::RenderState>& render_state;
-    model::BroadcastConnector is_rendering_connector{&render_state.is_rendering,
-                                                     this};
-    model::BroadcastConnector state_connector{&render_state.state, this};
-    model::BroadcastConnector progress_connector{&render_state.progress, this};
+    double progress_{0};
 
-    juce::ProgressBar bar;
-    TextButton button;
-    model::Connector<TextButton> button_connector{&button, this};
+    juce::ProgressBar bar_;
+    TextButton button_;
+    model::Connector<TextButton> button_connector_{&button_, this};
 };

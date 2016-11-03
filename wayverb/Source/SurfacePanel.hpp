@@ -1,10 +1,10 @@
 #pragma once
 
-#include "FullModel.hpp"
 #include "HelpWindow.hpp"
 #include "SurfaceModel.hpp"
 #include "ValueWrapperSlider.hpp"
 
+/*
 class VolumeComponent : public Component {
 public:
     class VolumeSlider : public ValueWrapperSlider<float> {
@@ -162,3 +162,4 @@ private:
     Label title;
     SurfaceComponent surface_component;
 };
+*/

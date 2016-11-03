@@ -1,4 +1,4 @@
-#include "OtherComponents/RenderHelpers.hpp"
+#include "RenderHelpers.hpp"
 
 void BaseContextLifetime::set_viewport(const glm::vec2 &v) {
     viewport = v;

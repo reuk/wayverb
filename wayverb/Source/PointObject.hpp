@@ -1,6 +1,6 @@
 #pragma once
 
-#include "OtherComponents/BasicDrawableObject.hpp"
+#include "BasicDrawableObject.hpp"
 
 class RingObject : public BasicDrawableObject {
 public:
@@ -19,12 +19,12 @@ public:
     LineObject& operator=(LineObject&&) noexcept = default;
 };
 
-class PointObject : public mglu::drawable, public Node {
+class PointObject : public mglu::drawable, public node {
 public:
     PointObject(const std::shared_ptr<mglu::generic_shader>& shader,
                 const glm::vec4& color);
 
-    void set_pointing(const aligned::vector<glm::vec3>& directions);
+    void set_pointing(const util::aligned::vector<glm::vec3>& directions);
 
     void set_highlight(float amount);
 
@@ -39,5 +39,5 @@ private:
     RingObject y_ring;
     RingObject z_ring;
 
-    aligned::vector<LineObject> lines;
+    util::aligned::vector<LineObject> lines;
 };

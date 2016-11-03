@@ -5,8 +5,67 @@
               jucerVersion="4.3.0">
   <MAINGROUP id="aLrqtw" name="wayverb">
     <GROUP id="{99297383-F68C-02A8-A8E3-BC9E43EF7E23}" name="Source">
+      <GROUP id="{382948E0-2673-8E6C-A590-1528CCFA1512}" name="UtilityComponents">
+        <FILE id="Gm7uDO" name="AudioThumbnailPane.cpp" compile="1" resource="0"
+              file="Source/UtilityComponents/AudioThumbnailPane.cpp"/>
+        <FILE id="M9qC3O" name="AudioThumbnailPane.hpp" compile="0" resource="0"
+              file="Source/UtilityComponents/AudioThumbnailPane.hpp"/>
+        <FILE id="NuYzXf" name="BareBonesVUMeter.cpp" compile="1" resource="0"
+              file="Source/UtilityComponents/BareBonesVUMeter.cpp"/>
+        <FILE id="XYIhvZ" name="BareBonesVUMeter.hpp" compile="0" resource="0"
+              file="Source/UtilityComponents/BareBonesVUMeter.hpp"/>
+        <FILE id="Pk37L3" name="DefaultAudio.cpp" compile="1" resource="0"
+              file="Source/UtilityComponents/DefaultAudio.cpp"/>
+        <FILE id="GrGbIP" name="DefaultAudio.hpp" compile="0" resource="0"
+              file="Source/UtilityComponents/DefaultAudio.hpp"/>
+        <FILE id="rkQxJU" name="FileDropComponent.cpp" compile="1" resource="0"
+              file="Source/UtilityComponents/FileDropComponent.cpp"/>
+        <FILE id="WEkc1W" name="FileDropComponent.hpp" compile="0" resource="0"
+              file="Source/UtilityComponents/FileDropComponent.hpp"/>
+        <FILE id="zvwJq5" name="ForEach.hpp" compile="0" resource="0" file="Source/UtilityComponents/ForEach.hpp"/>
+        <FILE id="m0xakn" name="GainSlider.cpp" compile="1" resource="0" file="Source/UtilityComponents/GainSlider.cpp"/>
+        <FILE id="WM18nv" name="GainSlider.hpp" compile="0" resource="0" file="Source/UtilityComponents/GainSlider.hpp"/>
+        <FILE id="TWXJmA" name="lerp.hpp" compile="0" resource="0" file="Source/UtilityComponents/lerp.hpp"/>
+        <FILE id="umULbw" name="LoadWindow.cpp" compile="1" resource="0" file="Source/UtilityComponents/LoadWindow.cpp"/>
+        <FILE id="oDYFtd" name="LoadWindow.hpp" compile="0" resource="0" file="Source/UtilityComponents/LoadWindow.hpp"/>
+        <FILE id="qIDH6G" name="NumberEditor.hpp" compile="0" resource="0"
+              file="Source/UtilityComponents/NumberEditor.hpp"/>
+        <FILE id="kTd3sj" name="PlaybackViewManager.cpp" compile="1" resource="0"
+              file="Source/UtilityComponents/PlaybackViewManager.cpp"/>
+        <FILE id="TUb8fw" name="PlaybackViewManager.hpp" compile="0" resource="0"
+              file="Source/UtilityComponents/PlaybackViewManager.hpp"/>
+        <FILE id="s4wnic" name="Playhead.cpp" compile="1" resource="0" file="Source/UtilityComponents/Playhead.cpp"/>
+        <FILE id="Mgwalg" name="Playhead.hpp" compile="0" resource="0" file="Source/UtilityComponents/Playhead.hpp"/>
+        <FILE id="pu44TE" name="Ruler.cpp" compile="1" resource="0" file="Source/UtilityComponents/Ruler.cpp"/>
+        <FILE id="n5QnM1" name="Ruler.hpp" compile="0" resource="0" file="Source/UtilityComponents/Ruler.hpp"/>
+        <FILE id="hlJSQd" name="scoped_thread.cpp" compile="1" resource="0"
+              file="Source/UtilityComponents/scoped_thread.cpp"/>
+        <FILE id="lh6svN" name="scoped_thread.hpp" compile="0" resource="0"
+              file="Source/UtilityComponents/scoped_thread.hpp"/>
+        <FILE id="qa8m6o" name="StoredSettings.cpp" compile="1" resource="0"
+              file="Source/UtilityComponents/StoredSettings.cpp"/>
+        <FILE id="MB4klR" name="StoredSettings.hpp" compile="0" resource="0"
+              file="Source/UtilityComponents/StoredSettings.hpp"/>
+        <FILE id="SMRhrB" name="Transport.cpp" compile="1" resource="0" file="Source/UtilityComponents/Transport.cpp"/>
+        <FILE id="Ng6h4R" name="Transport.hpp" compile="0" resource="0" file="Source/UtilityComponents/Transport.hpp"/>
+        <FILE id="PBaWaB" name="TransportDisplay.cpp" compile="1" resource="0"
+              file="Source/UtilityComponents/TransportDisplay.cpp"/>
+        <FILE id="D8Ucj6" name="TransportDisplay.hpp" compile="0" resource="0"
+              file="Source/UtilityComponents/TransportDisplay.hpp"/>
+        <FILE id="pw3aDs" name="VUMeter.cpp" compile="1" resource="0" file="Source/UtilityComponents/VUMeter.cpp"/>
+        <FILE id="m1XBaZ" name="VUMeter.hpp" compile="0" resource="0" file="Source/UtilityComponents/VUMeter.hpp"/>
+      </GROUP>
+      <FILE id="oStrOB" name="AngularLookAndFeel.cpp" compile="1" resource="0"
+            file="Source/AngularLookAndFeel.cpp"/>
+      <FILE id="njosKR" name="AngularLookAndFeel.hpp" compile="0" resource="0"
+            file="Source/AngularLookAndFeel.hpp"/>
       <FILE id="iPrTHr" name="Application.cpp" compile="1" resource="0" file="Source/Application.cpp"/>
       <FILE id="rN717c" name="Application.hpp" compile="0" resource="0" file="Source/Application.hpp"/>
+      <FILE id="eqDZil" name="AxesObject.hpp" compile="0" resource="0" file="Source/AxesObject.hpp"/>
+      <FILE id="qTojfK" name="BasicDrawableObject.cpp" compile="1" resource="0"
+            file="Source/BasicDrawableObject.cpp"/>
+      <FILE id="Xn7a2j" name="BasicDrawableObject.hpp" compile="0" resource="0"
+            file="Source/BasicDrawableObject.hpp"/>
       <FILE id="tWHDpt" name="BasicPanel.hpp" compile="0" resource="0" file="Source/BasicPanel.hpp"/>
       <FILE id="wQy6kr" name="BottomPanel.cpp" compile="1" resource="0" file="Source/BottomPanel.cpp"/>
       <FILE id="RfFMwI" name="BottomPanel.hpp" compile="0" resource="0" file="Source/BottomPanel.hpp"/>
@@ -25,7 +84,6 @@
             file="Source/EngineThread.cpp"/>
       <FILE id="Xlc1Lh" name="EngineThread.hpp" compile="0" resource="0"
             file="Source/EngineThread.hpp"/>
-      <FILE id="c0nxLj" name="FullModel.hpp" compile="0" resource="0" file="Source/FullModel.hpp"/>
       <FILE id="sm3ffs" name="HelpWindow.cpp" compile="1" resource="0" file="Source/HelpWindow.cpp"/>
       <FILE id="Jlq5fI" name="HelpWindow.hpp" compile="0" resource="0" file="Source/HelpWindow.hpp"/>
       <FILE id="nV5I85" name="LeftPanel.cpp" compile="1" resource="0" file="Source/LeftPanel.cpp"/>
@@ -60,6 +118,8 @@
             file="Source/ModelRendererComponent.cpp"/>
       <FILE id="JDCTHY" name="ModelRendererComponent.hpp" compile="0" resource="0"
             file="Source/ModelRendererComponent.hpp"/>
+      <FILE id="bhq7ui" name="MoreConversions.hpp" compile="0" resource="0"
+            file="Source/MoreConversions.hpp"/>
       <FILE id="Qnx6Jx" name="PointObject.cpp" compile="1" resource="0" file="Source/PointObject.cpp"/>
       <FILE id="sVvZX8" name="PointObject.hpp" compile="0" resource="0" file="Source/PointObject.hpp"/>
       <FILE id="lrH1cA" name="PolarPatternDisplay.cpp" compile="1" resource="0"
@@ -80,6 +140,10 @@
             file="Source/RayVisualisation.cpp"/>
       <FILE id="m69Bwm" name="RayVisualisation.hpp" compile="0" resource="0"
             file="Source/RayVisualisation.hpp"/>
+      <FILE id="Yd1oFk" name="RenderHelpers.cpp" compile="1" resource="0"
+            file="Source/RenderHelpers.cpp"/>
+      <FILE id="iHG7OD" name="RenderHelpers.hpp" compile="0" resource="0"
+            file="Source/RenderHelpers.hpp"/>
       <FILE id="xRJ0S0" name="SourcesEditor.cpp" compile="1" resource="0"
             file="Source/SourcesEditor.cpp"/>
       <FILE id="EyHDds" name="SourcesEditor.hpp" compile="0" resource="0"
@@ -96,15 +160,18 @@
             file="Source/TextDisplayProperty.hpp"/>
       <FILE id="KXQoXt" name="ValueWrapperEditableListBox.hpp" compile="0"
             resource="0" file="Source/ValueWrapperEditableListBox.hpp"/>
+      <FILE id="aJOYIU" name="ValueWrapperListBox.hpp" compile="0" resource="0"
+            file="Source/ValueWrapperListBox.hpp"/>
       <FILE id="j6WcXH" name="ValueWrapperSlider.hpp" compile="0" resource="0"
             file="Source/ValueWrapperSlider.hpp"/>
       <FILE id="ajAmXD" name="Vec3Editor.cpp" compile="1" resource="0" file="Source/Vec3Editor.cpp"/>
       <FILE id="CPKKle" name="Vec3Editor.hpp" compile="0" resource="0" file="Source/Vec3Editor.hpp"/>
       <FILE id="LrlcpV" name="wayverb.png" compile="0" resource="1" file="Source/wayverb.png"/>
+      <FILE id="ti8vdr" name="WorkQueue.hpp" compile="0" resource="0" file="Source/WorkQueue.hpp"/>
     </GROUP>
   </MAINGROUP>
   <EXPORTFORMATS>
-    <XCODE_MAC targetFolder="Builds/MacOSX" extraDefs="" extraCompilerFlags="-I../../../src/audio_file/include&#10;-I../../../src/combined/include&#10;-I../../../src/core/include&#10;-I../../../src/frequency_domain/include&#10;-I../../../src/hrtf/include&#10;-I../../../src/raytracer/include&#10;-I../../../src/utilities/include&#10;-I../../../src/waveguide/include&#10;-I../../../build/include&#10;-std=c++14"
+    <XCODE_MAC targetFolder="Builds/MacOSX" extraDefs="" extraCompilerFlags="-I../../../src/audio_file/include&#10;-I../../../src/combined/include&#10;-I../../../src/core/include&#10;-I../../../src/frequency_domain/include&#10;-I../../../src/hrtf/include&#10;-I../../../src/raytracer/include&#10;-I../../../src/utilities/include&#10;-I../../../src/waveguide/include&#10;-I../../../xcproj/include&#10;-std=c++14"
                smallIcon="LrlcpV" bigIcon="LrlcpV" documentExtensions="way"
                externalLibraries="" extraLinkerFlags="" extraFrameworks="OpenCL">
       <CONFIGURATIONS>

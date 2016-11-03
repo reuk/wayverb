@@ -1,17 +1,16 @@
 #include "SurfaceModel.hpp"
 
-#include "common/map_to_vector.h"
-#include "common/stl_wrappers.h"
+#include "utilities/map_to_vector.h"
 
 namespace model {
 
-scene_data::material to_material(const std::pair<std::string, surface>& i) {
-    return scene_data::material{i.first, i.second};
+wayverb::core::scene_data_loader::material to_material(const std::pair<std::string, wayverb::core::surface<wayverb::core::simulation_bands>>& i) {
+    return {i.first, i.second};
 }
 
-aligned::vector<scene_data::material> to_material_vector(
-        const aligned::map<std::string, surface>& i) {
-    return map_to_vector(i, to_material);
+util::aligned::vector<wayverb::core::scene_data_loader::material> to_material_vector(
+        const util::aligned::map<std::string, wayverb::core::surface<wayverb::core::simulation_bands>>& i) {
+    return util::map_to_vector(begin(i), end(i), to_material);
 }
 
 }  // namespace model

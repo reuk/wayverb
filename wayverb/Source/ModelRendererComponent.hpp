@@ -1,13 +1,11 @@
 #pragma once
 
-#include "FullModel.hpp"
 #include "HelpWindow.hpp"
 #include "LeftPanel.hpp"
 #include "MeshGeneratorFunctor.hpp"
 #include "MeshObject.hpp"
 #include "ModelRenderer.hpp"
-
-#include "OtherComponents/RenderHelpers.hpp"
+#include "RenderHelpers.hpp"
 
 class ModelRendererComponent
         : public juce::Component,

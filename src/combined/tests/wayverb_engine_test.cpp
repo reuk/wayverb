@@ -2,7 +2,6 @@
 
 #include "core/cl/common.h"
 #include "core/geo/box.h"
-#include "core/model/receiver.h"
 #include "core/scene_data.h"
 
 #include "gtest/gtest.h"

@@ -1,13 +1,12 @@
 #include "PolarPatternDisplay.hpp"
 
-PolarPatternDisplay::PolarPatternDisplay(model::ValueWrapper<float>& shape)
-        : shape(shape) {
+PolarPatternView::PolarPatternView() {
     set_help("polar pattern",
              "Shows the polar pattern corresponding to the selected shape "
              "parameter");
 }
 
-void PolarPatternDisplay::paint(Graphics& g) {
+void PolarPatternView::paint(Graphics& g) {
     Path p;
 
     auto o = getLocalBounds().getCentre();
@@ -16,7 +15,7 @@ void PolarPatternDisplay::paint(Graphics& g) {
     for (auto i = 0; i != segments; ++i) {
         auto angle = i * M_PI * 2 / (segments - 1);
         auto rad = std::abs(
-                base_rad * ((1 - shape.get()) + shape.get() * std::cos(angle)));
+                base_rad * ((1 - shape_) + shape_ * std::cos(angle)));
 
         if (i == 0) {
             p.startNewSubPath(o.x + rad * std::sin(angle),
@@ -29,8 +28,7 @@ void PolarPatternDisplay::paint(Graphics& g) {
     g.strokePath(p, PathStrokeType(2.0f));
 }
 
-void PolarPatternDisplay::receive_broadcast(model::Broadcaster* b) {
-    if (b == &shape) {
-        repaint();
-    }
+void PolarPatternView::set_shape(double shape) {
+    shape_ = shape;
+    repaint();
 }

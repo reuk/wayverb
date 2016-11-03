@@ -11,6 +11,7 @@
 #include <iomanip>
 #include <sstream>
 
+/*
 template <typename T>
 class NumberProperty : public PropertyComponent,
                        public NumberEditor<T>::Listener,
@@ -80,3 +81,4 @@ public:
 private:
     Vec3Editor editor;
 };
+*/

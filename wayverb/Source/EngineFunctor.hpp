@@ -1,8 +1,8 @@
 #pragma once
 
-#include "FullModel.hpp"
-
 #include "combined/engine.h"
+
+#include "model/model.h"
 
 #include <string>
 
@@ -20,15 +20,15 @@ public:
         Listener& operator=(Listener&&) noexcept = default;
 
         virtual void engine_encountered_error(const std::string& str) = 0;
-        virtual void engine_state_changed(wayverb::state state,
+        virtual void engine_state_changed(wayverb::combined::state state,
                                           double progress) = 0;
         virtual void engine_nodes_changed(
-                const aligned::vector<glm::vec3>& positions) = 0;
+                const util::aligned::vector<glm::vec3>& positions) = 0;
         virtual void engine_waveguide_visuals_changed(
-                const aligned::vector<float>& pressures,
+                const util::aligned::vector<float>& pressures,
                 double current_time) = 0;
         virtual void engine_raytracer_visuals_changed(
-                const aligned::vector<aligned::vector<impulse>>& impulses,
+                const util::aligned::vector<util::aligned::vector<wayverb::raytracer::impulse<wayverb::core::simulation_bands>>>& impulses,
                 const glm::vec3& source,
                 const glm::vec3& receiver) = 0;
         virtual void engine_finished() = 0;
@@ -39,9 +39,9 @@ public:
 
     EngineFunctor(Listener& listener,
                   std::atomic_bool& keep_going,
-                  const std::string& file_name,
-                  const model::Persistent& persistent,
-                  const scene_data& scene_data,
+                  std::string file_name,
+                  model::Persistent persistent,
+                  wayverb::combined::engine::scene_data scene_data,
                   bool visualise);
 
     /// Call this to start the simulation.
@@ -51,9 +51,9 @@ private:
     void single_pair(Listener& listener,
                      const std::string& file_name,
                      const model::SingleShot& single_shot,
-                     const scene_data& scene_data,
+                     const wayverb::combined::engine::scene_data& scene_data,
                      bool visualise,
-                     const compute_context& compute_context) const;
+                     const wayverb::core::compute_context& compute_context) const;
 
     /// Receives notifications.
     Listener& listener;
@@ -64,6 +64,6 @@ private:
     /// State.
     std::string file_name;
     model::Persistent persistent;
-    scene_data scene;
+    wayverb::combined::engine::scene_data scene;
     bool visualise;
 };

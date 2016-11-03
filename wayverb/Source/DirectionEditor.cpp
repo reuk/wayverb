@@ -1,8 +1,9 @@
 #include "DirectionEditor.hpp"
 #include "Vec3Editor.hpp"
 
-#include "common/orientable.h"
+#include "core/orientable.h"
 
+/*
 class SphericalEditor : public Component {
 public:
     SphericalEditor(model::ValueWrapper<AzEl>& azel) {
@@ -121,3 +122,4 @@ DirectionProperty::DirectionProperty(
 }
 
 void DirectionProperty::refresh() {}
+*/

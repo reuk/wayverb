@@ -1,10 +1,10 @@
 #include "RayVisualisation.hpp"
 
-#include "OtherComponents/MoreConversions.hpp"
+#include "core/cl/traits.h"
+#include "core/conversions.h"
 
-#include "common/aligned/vector.h"
-#include "common/cl/traits.h"
-#include "common/map_to_vector.h"
+#include "utilities/aligned/vector.h"
+#include "utilities/map_to_vector.h"
 
 #include <numeric>
 
@@ -31,7 +31,7 @@ size_t count(const T& t) {
     return 1;
 }
 template <typename T>
-size_t count(const aligned::vector<T>& t) {
+size_t count(const util::aligned::vector<T>& t) {
     return std::accumulate(
             t.begin(),
             t.end(),
@@ -41,15 +41,15 @@ size_t count(const aligned::vector<T>& t) {
 
 }  // namespace
 
-aligned::vector<RayVisualisation::path_data>
-RayVisualisation::convert_to_path_data(const aligned::vector<impulse>& impulses,
+util::aligned::vector<RayVisualisation::path_data>
+RayVisualisation::convert_to_path_data(const util::aligned::vector<wayverb::raytracer::impulse<wayverb::core::simulation_bands>>& impulses,
                                        const glm::vec3& source) {
-    aligned::vector<path_data> ret;
+    util::aligned::vector<path_data> ret;
     ret.reserve(impulses.size());
 
     distance_accumulator d(source);
     for (const auto& i : impulses) {
-        const auto pos = to_glm_vec3(i.position);
+        const auto pos =wayverb::core::to_vec3(i.position);
         const auto dist = d(pos);
         ret.push_back(
                 path_data{pos, dist, std::abs(mean(i.volume)) * (1 << 20)});
@@ -57,11 +57,11 @@ RayVisualisation::convert_to_path_data(const aligned::vector<impulse>& impulses,
     return ret;
 }
 
-aligned::vector<aligned::vector<RayVisualisation::path_data>>
+util::aligned::vector<util::aligned::vector<RayVisualisation::path_data>>
 RayVisualisation::convert_to_path_data(
-        const aligned::vector<aligned::vector<impulse>>& impulses,
+        const util::aligned::vector<util::aligned::vector<wayverb::raytracer::impulse<wayverb::core::simulation_bands>>>& impulses,
         const glm::vec3& source) {
-    aligned::vector<aligned::vector<path_data>> ret;
+    util::aligned::vector<util::aligned::vector<path_data>> ret;
     ret.reserve(impulses.size());
 
     for (const auto& i : impulses) {
@@ -71,10 +71,10 @@ RayVisualisation::convert_to_path_data(
     return ret;
 }
 
-aligned::vector<glm::vec3> RayVisualisation::extract_positions(
-        const aligned::vector<aligned::vector<path_data>>& impulses,
+util::aligned::vector<glm::vec3> RayVisualisation::extract_positions(
+        const util::aligned::vector<util::aligned::vector<path_data>>& impulses,
         const glm::vec3& source) {
-    aligned::vector<glm::vec3> ret;
+    util::aligned::vector<glm::vec3> ret;
 
     //  first in the buffer is the source position
     ret.push_back(source);
@@ -92,9 +92,9 @@ aligned::vector<glm::vec3> RayVisualisation::extract_positions(
     return ret;
 }
 
-aligned::vector<float> RayVisualisation::extract_pressures(
-        const aligned::vector<aligned::vector<path_data>>& impulses) {
-    aligned::vector<float> ret;
+util::aligned::vector<float> RayVisualisation::extract_pressures(
+        const util::aligned::vector<util::aligned::vector<path_data>>& impulses) {
+    util::aligned::vector<float> ret;
 
     //  source
     ret.push_back(1);
@@ -112,11 +112,11 @@ aligned::vector<float> RayVisualisation::extract_pressures(
     return ret;
 }
 
-aligned::vector<GLuint> RayVisualisation::compute_indices(
-        const aligned::vector<aligned::vector<path_data>>& impulses,
+util::aligned::vector<GLuint> RayVisualisation::compute_indices(
+        const util::aligned::vector<util::aligned::vector<path_data>>& impulses,
         double distance,
         size_t reflection_points) {
-    aligned::vector<GLuint> ret;
+    util::aligned::vector<GLuint> ret;
 
     //  this will hold the begin index of each ray in the vertex buffer
     size_t counter = 1;
@@ -143,7 +143,7 @@ aligned::vector<GLuint> RayVisualisation::compute_indices(
 }
 
 glm::vec3 RayVisualisation::ray_wavefront_position(
-        const aligned::vector<path_data>& path,
+        const util::aligned::vector<path_data>& path,
         double distance,
         const glm::vec3& source) {
     if (path.empty()) {
@@ -169,11 +169,11 @@ glm::vec3 RayVisualisation::ray_wavefront_position(
     return glm::mix(near_node.position, far_node.position, ratio);
 }
 
-aligned::vector<glm::vec3> RayVisualisation::ray_wavefront_position(
-        const aligned::vector<aligned::vector<path_data>>& paths,
+util::aligned::vector<glm::vec3> RayVisualisation::ray_wavefront_position(
+        const util::aligned::vector<util::aligned::vector<path_data>>& paths,
         double distance,
         const glm::vec3& source) {
-    return map_to_vector(paths, [&](const auto& i) {
+    return util::map_to_vector(begin(paths), end(paths), [&](const auto& i) {
         return ray_wavefront_position(i, distance, source);
     });
 }
@@ -225,7 +225,7 @@ void main() {
 
 RayVisualisation::RayVisualisation(
         const std::shared_ptr<RayShader>& shader,
-        const aligned::vector<aligned::vector<impulse>>& impulses,
+        const util::aligned::vector<util::aligned::vector<wayverb::raytracer::impulse<wayverb::core::simulation_bands>>>& impulses,
         const glm::vec3& source,
         const glm::vec3& receiver)
         : RayVisualisation(shader,
@@ -236,7 +236,7 @@ RayVisualisation::RayVisualisation(
 
 RayVisualisation::RayVisualisation(
         const std::shared_ptr<RayShader>& shader,
-        const aligned::vector<aligned::vector<path_data>>& paths,
+        const util::aligned::vector<util::aligned::vector<path_data>>& paths,
         const glm::vec3& source,
         const glm::vec3& receiver,
         size_t reflection_points)

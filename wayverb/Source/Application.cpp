@@ -159,9 +159,9 @@ WayverbApplication::MainWindow::MainWindow(
 }
 
 namespace {
-model::FullModel construct_full_model(const model::Persistent& persistent) {
+model::FullModel construct_full_model(model::Persistent persistent) {
     return model::FullModel{
-            persistent, model::get_presets(), model::RenderState{}};
+            std::move(persistent), model::get_presets(), model::RenderState{}};
 }
 
 File get_sub_path(const File& way, const std::string& name) {
@@ -202,7 +202,7 @@ WayverbApplication::MainWindow::scene_and_model_from_file(const File& f) {
 
         //  return the pair
         return std::make_tuple(
-                std::move(scene_loader), construct_full_model(config), f);
+                std::move(scene_loader), construct_full_model(std::move(config)), f);
     };
 
     auto is_not_way = [&f] {

@@ -2,8 +2,6 @@
 
 #include "../JuceLibraryCode/JuceHeader.h"
 
-#include "FullModel.hpp"
-
 #include "BoxObject.hpp"
 #include "LitSceneShader.hpp"
 #include "MeshObject.hpp"
@@ -11,23 +9,21 @@
 #include "PointObject.hpp"
 #include "RayVisualisation.hpp"
 
-#include "OtherComponents/AxesObject.hpp"
-#include "OtherComponents/BasicDrawableObject.hpp"
-#include "OtherComponents/RenderHelpers.hpp"
+#include "AxesObject.hpp"
+#include "BasicDrawableObject.hpp"
+#include "RenderHelpers.hpp"
 
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtc/noise.hpp"
 #include "glm/gtc/type_ptr.hpp"
 #include "glm/gtx/rotate_vector.hpp"
 
-#include "combined/model.h"
-
 #include "waveguide/waveguide.h"
 
 #include "raytracer/raytracer.h"
 
-#include "common/scene_data.h"
-#include "common/spatial_division/voxel_collection.h"
+#include "core/scene_data.h"
+#include "core/spatial_division/voxel_collection.h"
 
 #include <cmath>
 #include <future>

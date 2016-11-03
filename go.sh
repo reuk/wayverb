@@ -3,7 +3,7 @@ cd build
 if cmake .. ; then
 
 export CL_LOG_ERRORS=stdout
-export GTEST_FILTER="*tri_cube_tests*"
+#export GTEST_FILTER="*tri_cube_tests*"
 cmake --build . && ctest -V
 
 #cmake --build . && cd utils/image_source_comparison && ./image_source_comparison

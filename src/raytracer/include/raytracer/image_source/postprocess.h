@@ -9,7 +9,6 @@
 #include "core/cl/common.h"
 #include "core/cl/iterator.h"
 #include "core/mixdown.h"
-#include "core/model/receiver.h"
 #include "core/pressure_intensity.h"
 #include "core/scene_data.h"
 

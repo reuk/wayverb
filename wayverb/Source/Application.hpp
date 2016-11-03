@@ -1,6 +1,5 @@
 #pragma once
 
-#include "FullModel.hpp"
 #include "MainComponent.hpp"
 
 #include "OtherComponents/AngularLookAndFeel.hpp"

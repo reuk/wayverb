@@ -1,9 +1,8 @@
 #pragma once
 
-#include "FullModel.hpp"
-
 #include "../JuceLibraryCode/JuceHeader.h"
 
+/*
 template <typename T>
 class ValueWrapperSlider : public Component,
                            public Slider::Listener,
@@ -69,3 +68,4 @@ private:
     model::BroadcastConnector value_connector{&value, this};
     Slider slider;
 };
+*/

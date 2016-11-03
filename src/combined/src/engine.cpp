@@ -16,7 +16,6 @@
 #include "core/dc_blocker.h"
 #include "core/filters_common.h"
 #include "core/kernel.h"
-#include "core/model/receiver.h"
 #include "core/pressure_intensity.h"
 #include "core/spatial_division/voxelised_scene_data.h"
 #include "core/surfaces.h"

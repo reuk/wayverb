@@ -12,16 +12,16 @@
 class MeshObject final : public mglu::drawable {
 public:
     MeshObject(const std::shared_ptr<MeshShader>& shader,
-               const aligned::vector<glm::vec3>& positions);
+               const util::aligned::vector<glm::vec3>& positions);
 
-    void set_pressures(const aligned::vector<float>& u);
+    void set_pressures(const util::aligned::vector<float>& u);
     void zero_pressures();
 
 private:
     void do_draw(const glm::mat4& modelview_matrix) const override;
     glm::mat4 get_local_modelview_matrix() const override;
 
-    void set_positions(const aligned::vector<glm::vec3>& positions);
+    void set_positions(const util::aligned::vector<glm::vec3>& positions);
 
     std::shared_ptr<MeshShader> shader;
 
@@ -38,7 +38,7 @@ public:
     enum class mode { closest_surface, boundary_type };
 
     DebugMeshObject(const std::shared_ptr<mglu::generic_shader>& shader,
-                    const waveguide::mesh& model,
+                    const wayverb::waveguide::mesh& model,
                     mode m = mode::boundary_type);
 
 private:

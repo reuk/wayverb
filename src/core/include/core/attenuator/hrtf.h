@@ -12,9 +12,6 @@ class hrtf final {
 public:
     enum class channel { left, right };
 
-    static constexpr std::array<channel, 2> channels{
-            {channel::left, channel::right}};
-
     hrtf(const glm::vec3& pointing,
          const glm::vec3& up,
          channel channel,

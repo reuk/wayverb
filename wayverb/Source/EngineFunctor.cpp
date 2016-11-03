@@ -1,20 +1,22 @@
 #include "EngineFunctor.hpp"
 
+#include "core/cl/common.h"
+
 EngineFunctor::EngineFunctor(Listener& listener,
                              std::atomic_bool& keep_going,
-                             const std::string& file_name,
-                             const model::Persistent& persistent,
-                             const scene_data& scene_data,
+                              std::string file_name,
+                             model::Persistent persistent,
+                              wayverb::combined::engine::scene_data scene_data,
                              bool visualise)
         : listener(listener)
         , keep_going(keep_going)
-        , file_name(file_name)
-        , persistent(persistent)
-        , scene(scene_data)
+        , file_name(std::move(file_name))
+        , persistent(std::move(persistent))
+        , scene(std::move(scene_data))
         , visualise(visualise) {}
 
 void EngineFunctor::operator()() const {
-    compute_context compute_context;
+    wayverb::core::compute_context compute_context;
     try {
         //  for each source/receiver pair
         const auto combinations =
@@ -37,26 +39,29 @@ void EngineFunctor::operator()() const {
 void EngineFunctor::single_pair(Listener& listener,
                                 const std::string& file_name,
                                 const model::SingleShot& single_shot,
-                                const scene_data& scene_data,
+                                const wayverb::combined::engine::scene_data& scene_data,
                                 bool visualise,
-                                const compute_context& compute_context) const {
+                                const wayverb::core::compute_context& compute_context) const {
     auto state_callback = [this, &listener](auto state, auto progress) {
         listener.engine_state_changed(state, progress);
     };
 
     // init the engine
-    state_callback(wayverb::state::initialising, 1.0);
+    state_callback(wayverb::combined::state::initialising, 1.0);
 
-    wayverb::engine engine(compute_context,
+    //  TODO set parameters properly here
+    wayverb::combined::engine engine(compute_context,
                            scene_data,
-                           single_shot.source,
-                           single_shot.receiver_settings.position,
-                           get_waveguide_sample_rate(single_shot),
-                           single_shot.rays);
+                           wayverb::core::model::parameters{single_shot.source,
+                           single_shot.receiver.position},
+                           wayverb::raytracer::simulation_parameters{},
+                           wayverb::waveguide::single_band_parameters{});
 
     //  register a visuliser callback if we want to render the waveguide
     //  state
     if (visualise) {
+        //  TODO register callbacks
+        /*
         listener.engine_nodes_changed(engine.get_node_positions());
         engine.register_waveguide_visual_callback([&](const auto& pressures,
                                                       auto current_time) {
@@ -66,13 +71,14 @@ void EngineFunctor::single_pair(Listener& listener,
                                                       const auto& source,
                                                       const auto& receiver) {
             listener.engine_raytracer_visuals_changed(
-                    aligned::vector<aligned::vector<impulse>>(
+                    util::aligned::vector<util::aligned::vector<impulse>>(
                             impulses.begin(),
                             impulses.begin() +
                                     std::min(size_t{100}, impulses.size())),
                     source,
                     receiver);
         });
+        */
     }
 
     //  now run the simulation proper
@@ -87,12 +93,12 @@ void EngineFunctor::single_pair(Listener& listener,
         throw std::runtime_error("failed to generate intermediate results");
     }
 
-    //  TODO get output sr from dialog
-    intermediate->attenuate(compute_context,
-                            single_shot.receiver_settings,
-                            44100,  //  TODO make this user-changeable
-                            20,     //  TODO and this
-                            state_callback);
+    //  TODO postprocess properly
+    for (const auto& capsule : single_shot.receiver.capsules) {
+        //  TODO get output sr from dialog
+        capsule->postprocess(*intermediate, 44100);
+    }
+
     //  TODO write out
 
     //  Launch viewer window or whatever

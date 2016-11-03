@@ -1,6 +1,6 @@
 #pragma once
 
-#include "orientable.h"
+#include "core/orientable.h"
 
 #include "utilities/aligned/vector.h"
 
@@ -41,7 +41,7 @@ public:
 private:
     glm::vec3 position_{0};
     glm::vec3 scale_{1};
-    orientable orientable_;
+    wayverb::core::orientable orientable_;
 };
 
 class BasicDrawableObject : public mglu::drawable, public node {

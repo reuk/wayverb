@@ -1,10 +1,10 @@
 #include "SurfacePanel.hpp"
 
-#include "common/hrtf.h"
-
 #include <functional>
 #include <iomanip>
 #include <sstream>
+
+/*
 
 VolumeComponent::VolumeSlider::VolumeSlider(model::ValueWrapper<float>& value)
         : ValueWrapperSlider<float>(value) {
@@ -291,3 +291,4 @@ PresetProperty::PresetProperty(
     addAndMakeVisible(preset_component);
 }
 void PresetProperty::refresh() {}
+*/

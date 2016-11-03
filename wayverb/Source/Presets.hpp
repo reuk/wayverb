@@ -1,9 +1,9 @@
 #pragma once
 
-#include "common/scene_data.h"
+#include "core/scene_data_loader.h"
 
 namespace model {
 
-aligned::vector<scene_data::material> get_presets();
+extern util::aligned::vector<wayverb::core::scene_data_loader::material> presets;
 
 }  // namespace model

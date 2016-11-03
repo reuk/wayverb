@@ -9,7 +9,6 @@
 #include "core/cl/iterator.h"
 #include "core/cl/scene_structs.h"
 #include "core/mixdown.h"
-#include "core/model/receiver.h"
 
 #include "utilities/map_to_vector.h"
 

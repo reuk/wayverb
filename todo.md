@@ -53,6 +53,12 @@ Reduce visiblity of methods wherever possible.
 nice-to-have
 ============
 
+Directional sources.
+
+Real-time simulation.
+
+Built-in auralization.
+
 Use Boost Units to validate physical quantities.
 
 Look into other approaches for microphone modelling, which don't affect modal

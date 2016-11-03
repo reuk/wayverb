@@ -1,7 +1,6 @@
 #include "raytracer/stochastic/finder.h"
 
 #include "core/geo/box.h"
-#include "core/model/receiver.h"
 #include "core/scene_data_loader.h"
 #include "core/spatial_division/voxelised_scene_data.h"
 

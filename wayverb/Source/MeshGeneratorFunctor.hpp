@@ -1,10 +1,9 @@
 #pragma once
 
-#include "FullModel.hpp"
-
-#include "OtherComponents/WorkQueue.hpp"
+#include "WorkQueue.hpp"
 #include "UtilityComponents/scoped_thread.hpp"
 
+#include "combined/engine.h"
 #include "waveguide/mesh.h"
 
 class MeshGeneratorFunctor final {
@@ -17,14 +16,14 @@ public:
         Listener(Listener&&) noexcept = default;
         Listener& operator=(Listener&&) noexcept = default;
 
-        virtual void mesh_generator_finished(waveguide::mesh model) = 0;
+        virtual void mesh_generator_finished(wayverb::waveguide::mesh model) = 0;
 
     protected:
         ~Listener() noexcept = default;
     };
 
     MeshGeneratorFunctor(Listener& listener,
-                         const scene_data& scene_data,
+                         wayverb::combined::engine::scene_data scene_data,
                          double sample_rate,
                          double speed_of_sound);
 
@@ -33,7 +32,7 @@ public:
 private:
     Listener& listener_;
 
-    scene_data scene_data_;
+    wayverb::combined::engine::scene_data scene_data_;
     double sample_rate_;
     double speed_of_sound_;
 };
@@ -43,7 +42,7 @@ private:
 class MeshGeneratorThread final {
 public:
     MeshGeneratorThread(MeshGeneratorFunctor::Listener& listener,
-                        const scene_data& scene_data,
+                        const wayverb::combined::engine::scene_data& scene_data,
                         double sample_rate,
                         double speed_of_sound);
 
@@ -64,13 +63,13 @@ public:
         Listener& operator=(Listener&&) noexcept = default;
 
         virtual void async_mesh_generator_finished(const AsyncMeshGenerator*,
-                                                   waveguide::mesh model) = 0;
+                                                   wayverb::waveguide::mesh model) = 0;
 
     protected:
         ~Listener() noexcept = default;
     };
 
-    void run(const scene_data& scene_data,
+    void run(const wayverb::combined::engine::scene_data& scene_data,
              double sample_rate,
              double speed_of_sound);
 
@@ -85,9 +84,9 @@ private:
     public:
         ConcreteListener(AsyncMeshGenerator& mesh_generator);
 
-        void mesh_generator_finished(waveguide::mesh model) override;
+        void mesh_generator_finished(wayverb::waveguide::mesh model) override;
 
-        void run(const scene_data& scene_data,
+        void run(const wayverb::combined::engine::scene_data& scene_data,
                  double sample_rate,
                  double speed_of_sound);
 

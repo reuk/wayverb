@@ -1,21 +1,16 @@
 #pragma once
 
-#include "FullModel.hpp"
 #include "HelpWindow.hpp"
 
 #include "../JuceLibraryCode/JuceHeader.h"
 
-class PolarPatternDisplay : public Component,
-                            public model::BroadcastListener,
-                            public SettableHelpPanelClient {
+class PolarPatternView : public Component, public SettableHelpPanelClient {
 public:
-    PolarPatternDisplay(model::ValueWrapper<float>& shape);
-
+    PolarPatternView();
     void paint(Graphics& g) override;
 
-    void receive_broadcast(model::Broadcaster* b) override;
+    void set_shape (double shape);
 
 private:
-    model::ValueWrapper<float>& shape;
-    model::BroadcastConnector shape_connector{&shape, this};
+    double shape_{0};
 };
