@@ -11,11 +11,11 @@ file(GLOB_RECURSE sources "src/*.cpp")
 file(GLOB_RECURSE public_headers "include/*.h")
 file(GLOB_RECURSE private_headers "src/*.h")
 
-add_library(common STATIC ${sources} ${public_headers} ${private_headers} ${outfile})
+add_library(core STATIC ${sources} ${public_headers} ${private_headers} ${outfile})
 
-add_dependencies(common glm_external opencl_cpp_external cereal_external)
+add_dependencies(core glm_external opencl_cpp_external cereal_external)
 
-target_include_directories(common
+target_include_directories(core
     PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>
@@ -26,7 +26,7 @@ target_include_directories(common
     ${CMAKE_CURRENT_BINARY_DIR}
 )
 
-target_link_libraries(common
+target_link_libraries(core
     ${OpenCL_LIBRARIES}
     assimp
     zlibstatic 

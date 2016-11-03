@@ -4,7 +4,7 @@ if cmake .. ; then
 
 export CL_LOG_ERRORS=stdout
 #export GTEST_FILTER="*stable*"
-#cmake --build . && ctest -V
+cmake --build . && ctest -V
 
 #cmake --build . && cd utils/image_source_comparison && ./image_source_comparison
 

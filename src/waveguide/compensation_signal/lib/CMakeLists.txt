@@ -17,4 +17,4 @@ target_include_directories(compensation_signal
     ${CMAKE_BINARY_DIR}/include
 )
 
-target_link_libraries(compensation_signal common)
+target_link_libraries(compensation_signal core)

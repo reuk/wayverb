@@ -18,10 +18,10 @@ add_definitions(-DMAT_PATH_BEDROOM="${CMAKE_SOURCE_DIR}/demo/assets/materials/ma
 add_definitions(-DOBJ_PATH_BAD_BOX="${CMAKE_SOURCE_DIR}/demo/assets/test_models/small_square.obj")
 add_definitions(-DMAT_PATH_BAD_BOX="${CMAKE_SOURCE_DIR}/demo/assets/materials/damped.json")
 
-add_executable(common_tests ${sources})
+add_executable(core_tests ${sources})
 
-add_dependencies(common_tests cereal_external)
+add_dependencies(core_tests cereal_external)
 
-target_link_libraries(common_tests common gtest)
+target_link_libraries(core_tests core gtest)
 
-add_test(NAME common_tests COMMAND common_tests)
+add_test(NAME core_tests COMMAND core_tests)

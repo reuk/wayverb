@@ -2,7 +2,7 @@
 
 <JUCERPROJECT id="Wayx2u" name="wayverb" projectType="guiapp" version="1.0.0"
               bundleIdentifier="com.yourcompany.wayverb" includeBinaryInAppConfig="1"
-              jucerVersion="4.2.4">
+              jucerVersion="4.3.0">
   <MAINGROUP id="aLrqtw" name="wayverb">
     <GROUP id="{99297383-F68C-02A8-A8E3-BC9E43EF7E23}" name="Source">
       <FILE id="iPrTHr" name="Application.cpp" compile="1" resource="0" file="Source/Application.cpp"/>
@@ -104,7 +104,7 @@
     </GROUP>
   </MAINGROUP>
   <EXPORTFORMATS>
-    <XCODE_MAC targetFolder="Builds/MacOSX" extraDefs="" extraCompilerFlags="-I../../../common/include&#10;-I../../../waveguide/include&#10;-I../../../raytracer/include&#10;-I../../../combined/include&#10;-I../../../include&#10;-I../../../build/include&#10;-std=c++14"
+    <XCODE_MAC targetFolder="Builds/MacOSX" extraDefs="" extraCompilerFlags="-I../../../build/include&#10;-std=c++14"
                smallIcon="LrlcpV" bigIcon="LrlcpV" documentExtensions="way"
                externalLibraries="" extraLinkerFlags="" extraFrameworks="OpenCL">
       <CONFIGURATIONS>

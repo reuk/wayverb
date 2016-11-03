@@ -19,6 +19,6 @@ target_include_directories(raytracer
     ${CMAKE_BINARY_DIR}/include
 )
 
-target_link_libraries(raytracer common)
+target_link_libraries(raytracer core)
 
 add_subdirectory(tests)
