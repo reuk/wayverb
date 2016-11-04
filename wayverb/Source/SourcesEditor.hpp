@@ -34,9 +34,9 @@ private:
 
 //----------------------------------------------------------------------------//
 
-class ReceiversListBox : public ValueWrapperListBox<model::capsules> {
+class ReceiversListBox : public ValueWrapperListBox<model::receiver> {
 public:
-    using ValueWrapperListBox<model::capsules>::ValueWrapperListBox;
+    using ValueWrapperListBox<model::receiver>::ValueWrapperListBox;
 
 private:
     std::unique_ptr<Component> new_component_for_row(int row,

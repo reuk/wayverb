@@ -12,6 +12,7 @@ class hrtf final {
 public:
     enum class channel { left, right };
 
+    hrtf() = default;
     hrtf(const glm::vec3& pointing,
          const glm::vec3& up,
          channel channel,
@@ -27,6 +28,9 @@ public:
     void set_channel(channel channel);
     void set_radius(float radius);
 
+    template <typename Archive>
+    void serialize(Archive&);
+    
 private:
     glm::vec3 pointing_;
     glm::vec3 up_;

@@ -9,16 +9,19 @@ namespace core {
 class orientable final {
 public:
     orientable() = default;
-    orientable(const glm::vec3& pointing);
+    explicit orientable(const glm::vec3& pointing);
 
     glm::vec3 get_pointing() const;
     void set_pointing(const glm::vec3& u);
 
     glm::mat4 get_matrix() const;
 
+    template <typename Archive>
+    void serialize(Archive&);
+
 private:
     glm::vec3 pointing_{0, 0, 1};
 };
 
-}  // namespace wayverb
 }  // namespace core
+}  // namespace wayverb

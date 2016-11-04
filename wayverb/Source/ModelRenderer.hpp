@@ -80,7 +80,7 @@ public:
     PointObjects(const std::shared_ptr<mglu::generic_shader> &shader);
 
     void set_sources(util::aligned::vector<glm::vec3> u);
-    void set_receivers(util::aligned::vector<model::capsules> u);
+    void set_receivers(util::aligned::vector<model::receiver> u);
 
     void draw(const glm::mat4 &matrix) const;
 
@@ -100,8 +100,7 @@ private:
 
 class SceneRendererContextLifetime final : public BaseContextLifetime {
 public:
-    SceneRendererContextLifetime(const wayverb::combined::engine::scene_data &scene_data,
-                                 double speed_of_sound);
+    SceneRendererContextLifetime();
 
     SceneRendererContextLifetime(const SceneRendererContextLifetime &) = delete;
     SceneRendererContextLifetime &operator=(
@@ -110,16 +109,18 @@ public:
     SceneRendererContextLifetime &operator=(SceneRendererContextLifetime &&) =
             default;
 
+    void set_scene(wayverb::combined::engine::scene_data scene);
+
     void set_eye(float u);
     void set_rotation(const wayverb::core::az_el &u);
 
     void set_rendering(bool b);
 
-    void set_positions(const util::aligned::vector<glm::vec3> &positions);
-    void set_pressures(const util::aligned::vector<float> &pressures,
-                       float current_time);
-
-    void set_reflections(const util::aligned::vector<util::aligned::vector<wayverb::raytracer::reflection>>& reflections);
+    void set_positions(util::aligned::vector<glm::vec3> positions);
+    void set_pressures(util::aligned::vector<float> pressures);
+    void set_reflections(util::aligned::vector<util::aligned::vector<wayverb::raytracer::reflection>> reflections,
+                         const glm::vec3& source);
+    void set_distance_travelled(double distance);
 
     void set_highlighted(int u);
     void set_emphasis(const glm::vec3 &c);
@@ -132,7 +133,7 @@ public:
     void mouse_wheel_move(float delta_y);
 
     void set_sources  (util::aligned::vector<glm::vec3> u);
-    void set_receivers(util::aligned::vector<model::capsules> u);
+    void set_receivers(util::aligned::vector<model::receiver> u);
 
     void debug_show_closest_surfaces(wayverb::waveguide::mesh model);
     void debug_show_boundary_types(wayverb::waveguide::mesh model);
@@ -160,7 +161,7 @@ private:
             std::make_shared<LitSceneShader>()};
     std::shared_ptr<RayShader> ray_shader{std::make_shared<RayShader>()};
 
-    MultiMaterialObject model_object;
+    std::unique_ptr<MultiMaterialObject> model_object;
     std::unique_ptr<MeshObject> mesh_object;
     std::unique_ptr<DebugMeshObject> debug_mesh_object;
     std::unique_ptr<RayVisualisation> ray_object;
@@ -168,13 +169,11 @@ private:
     PointObjects point_objects;
     AxesObject axes;
 
-    float speed_of_sound;
-
-    wayverb::core::az_el azel;
-    wayverb::core::az_el azel_target;
-    float eye;
-    float eye_target;
-    glm::vec3 translation;
+    wayverb::core::az_el azel{0, 0};
+    wayverb::core::az_el azel_target{0, 0};
+    float eye{2};
+    float eye_target{2};
+    glm::vec3 translation{0};
 
     bool allow_move_mode{true};
 

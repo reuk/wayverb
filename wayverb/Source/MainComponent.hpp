@@ -5,18 +5,14 @@
 #include "LeftPanel.hpp"
 #include "ModelRendererComponent.hpp"
 
-class MainContentComponent final : public Component,
-                                   public model::BroadcastListener,
-                                   public SettableHelpPanelClient,
-                                   public AsyncEngine::Listener {
+class MainContentComponent final : public Component, public SettableHelpPanelClient {
 public:
-    MainContentComponent(wayverb::combined::engine::scene_data scene_data);
+    MainContentComponent();
 
     void paint(Graphics& g) override;
     void resized() override;
 
-    void receive_broadcast(model::Broadcaster* b) override;
-
+/*
     void engine_encountered_error(AsyncEngine*,
                                   const std::string& str) override;
     void engine_state_changed(AsyncEngine*,
@@ -30,13 +26,13 @@ public:
             double current_time) override;
     void engine_raytracer_visuals_changed(
             AsyncEngine*,
-            const util::aligned::vector<util::aligned::vector<wayverb::raytracer::impulse<wayverb::core::simulation_bands>>>& impulses,
+            const util::aligned::vector<util::aligned::vector<wayverb::raytracer::reflection>>& reflections,
             const glm::vec3& sources,
             const glm::vec3& receivers) override;
     void engine_finished(AsyncEngine*) override;
+    */
 
 private:
-    wayverb::combined::engine::scene_data scene;
     /*
     model::ValueWrapper<model::FullModel>& wrapper;
 

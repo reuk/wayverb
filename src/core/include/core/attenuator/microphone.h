@@ -1,7 +1,7 @@
 #pragma once
 
 #include "core/orientable.h"
- 
+
 namespace wayverb {
 namespace core {
 namespace attenuator {
@@ -18,6 +18,9 @@ public:
     void set_pointing(const glm::vec3& pointing);
     void set_shape(float shape);
 
+    template <typename Archive>
+    void serialize(Archive&);
+    
 private:
     orientable orientable_;
     float shape_{0.0f};

@@ -10,6 +10,30 @@
 
 #include <unordered_set>
 
+struct project final {
+    struct data final {
+        wayverb::core::scene_data_loader scene;
+        model::Persistent data;
+        
+        static File get_model_path(const File& way);
+        static File get_config_path(const File& way);
+
+        static struct data load(const File& f);
+
+        static void save_to(const struct data& pd, const File& f);
+    };
+
+    data data;
+    File file;
+    
+    static project load(const File& file);
+    
+    static bool save_as(project& project);
+    static bool save(project& project);
+};
+
+////////////////////////////////////////////////////////////////////////////////
+
 class WayverbApplication final : public JUCEApplication,
                                  public FileDropComponent::Listener {
 public:
@@ -59,25 +83,15 @@ public:
     };
 
     class MainWindow final : public DocumentWindow,
-                             public ApplicationCommandTarget,
-                             public model::BroadcastListener {
+                             public ApplicationCommandTarget {
     public:
         //  load with a custom config too
-        MainWindow(String name,
-                   wayverb::core::scene_data_loader scene_loader,
-                   model::FullModel model,
-                   File this_file);
-
-        //  if the file is a .way, load a project, else just load like a 3d
-        //  model
-        MainWindow(String name, const File& f);
+        MainWindow(String name, project project);
         virtual ~MainWindow() noexcept;
 
         void closeButtonPressed() override;
 
         bool needs_save() const;
-        bool save_project();
-        bool save_as_project();
 
         void show_help();
 
@@ -87,24 +101,12 @@ public:
         bool perform(const InvocationInfo& info) override;
         ApplicationCommandTarget* getNextCommandTarget() override;
 
-        void receive_broadcast(model::Broadcaster* b) override;
-
     private:
-        MainWindow(String name,
-                   std::tuple<wayverb::core::scene_data_loader, model::FullModel, File>&& p);
-
-        void save_to(const File& f);
-
-        static File get_model_path(const File& way);
-        static File get_config_path(const File& way);
-        static std::tuple<wayverb::core::scene_data_loader, model::FullModel, File>
-        scene_and_model_from_file(const File& f);
-
-        wayverb::core::scene_data_loader scene_loader;
+        project project_;
+        MainContentComponent content_component_;
+        Component::SafePointer<DocumentWindow> help_window_{nullptr};
+        
         //model::ValueWrapper<model::FullModel> wrapper;
-
-        File this_file;
-        MainContentComponent content_component;
 
 /*
         model::BroadcastConnector persistent_connector{&wrapper.persistent,
@@ -114,7 +116,6 @@ public:
         model::BroadcastConnector visualising_connector{
                 &wrapper.render_state.visualise, this};
 */
-        Component::SafePointer<DocumentWindow> help_window{nullptr};
     };
 
     std::unique_ptr<StoredSettings> stored_settings;

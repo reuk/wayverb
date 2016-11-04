@@ -4,14 +4,9 @@
 
 #include <iomanip>
 
-MainContentComponent::MainContentComponent(wayverb::combined::engine::scene_data scene_data)
-        : scene(scene_data)
-        , left_panel()
-        , resizer_bar(&layout_manager, 1, true)
-        , right_panel(scene_data,
-                      wrapper.shown_surface,
-                      wrapper.persistent.app,
-                      wrapper.render_state) {
+MainContentComponent::MainContentComponent()
+        : left_panel()
+        , resizer_bar(&layout_manager, 1, true) {
     set_help("wayverb", "This is the main wayverb app window.");
     auto left_panel_width = 300;
     layout_manager.setItemLayout(
@@ -28,7 +23,7 @@ MainContentComponent::MainContentComponent(wayverb::combined::engine::scene_data
 void MainContentComponent::paint(Graphics& g) { g.fillAll(Colours::darkgrey); }
 
 void MainContentComponent::resized() {
-    aligned::vector<Component*> components{
+    util::aligned::vector<Component*> components{
             &left_panel, &resizer_bar, &right_panel};
     layout_manager.layOutComponents(components.data(),
                                     components.size(),
@@ -40,6 +35,7 @@ void MainContentComponent::resized() {
                                     true);
 }
 
+/*
 void MainContentComponent::engine_encountered_error(AsyncEngine* u,
                                                     const std::string& str) {
     if (u == &engine) {
@@ -49,64 +45,32 @@ void MainContentComponent::engine_encountered_error(AsyncEngine* u,
 }
 
 void MainContentComponent::engine_state_changed(AsyncEngine* u,
-                                                wayverb::state state,
+                                                wayverb::combined::state state,
                                                 double progress) {
-    if (u == &engine) {
-        wrapper.render_state.state.set(state);
-        wrapper.render_state.progress.set(progress);
-    }
+
 }
 
 void MainContentComponent::engine_nodes_changed(
-        AsyncEngine* u, const aligned::vector<glm::vec3>& positions) {
-    if (u == &engine) {
-        right_panel.set_positions(positions);
-    }
+        AsyncEngine* u, const util::aligned::vector<glm::vec3>& positions) {
+
 }
 
 void MainContentComponent::engine_waveguide_visuals_changed(
         AsyncEngine* u,
-        const aligned::vector<float>& pressures,
+        const util::aligned::vector<float>& pressures,
         double current_time) {
-    if (u == &engine) {
-        right_panel.set_pressures(pressures, current_time);
-    }
+
 }
 
 void MainContentComponent::engine_raytracer_visuals_changed(
         AsyncEngine* u,
-        const aligned::vector<aligned::vector<wayverb::raytracer::impulse<wayverb::core::simulation_bands>>>& impulses,
+        const util::aligned::vector<util::aligned::vector<wayverb::raytracer::reflection>>& reflections,
         const glm::vec3& source,
         const glm::vec3& receiver) {
-    if (u == &engine) {
-        right_panel.set_impulses(impulses, source, receiver);
-    }
+
 }
 
 void MainContentComponent::engine_finished(AsyncEngine* u) {
-    if (u == &engine) {
-        wrapper.render_state.stop();
-    }
-}
 
-void MainContentComponent::receive_broadcast(model::Broadcaster* cb) {
-    if (cb == &wrapper.render_state.is_rendering) {
-        if (wrapper.render_state.is_rendering.get()) {
-            FileChooser fc(
-                    "save output", File::nonexistent, "*.wav,*.aif,*.aiff");
-            if (!fc.browseForFileToSave(true)) {
-                wrapper.render_state.stop();
-                return;
-            }
-
-            auto persistent = wrapper.persistent.get();
-            scene.set_surfaces(persistent.materials);
-            engine.start(fc.getResult().getFullPathName(),
-                         persistent,
-                         scene,
-                         wrapper.render_state.visualise.get());
-        } else {
-            engine.stop();
-        }
-    }
 }
+*/

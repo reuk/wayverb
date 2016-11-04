@@ -117,10 +117,12 @@ private:
     public:
         using ContextLifetimeConstructor = std::function<ContextLifetime()>;
 
+        /// Takes a callback which will be used to construct the actual renderer
+        /// object when the opengl context is created.
         explicit Renderer(RendererComponent& listener,
-                          const ContextLifetimeConstructor& constructor)
+                          ContextLifetimeConstructor constructor)
                 : listener(listener)
-                , constructor(constructor) {}
+                , constructor(std::move(constructor)) {}
 
         void newOpenGLContextCreated() override {
             context_lifetime = std::make_unique<lifetime_t>(constructor());
@@ -138,8 +140,6 @@ private:
         }
 
         void openGLContextClosing() override {
-            outgoing_work_queue.push(
-                    [this] { listener.open_gl_context_closing(); });
             context_lifetime = nullptr;
         }
 

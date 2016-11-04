@@ -1,14 +1,102 @@
 #include "Application.hpp"
 #include "CommandIDs.hpp"
 #include "Presets.hpp"
+#include "HelpWindow.hpp"
 
 #include "UtilityComponents/LoadWindow.hpp"
 
 #include "core/serialize/surface.h"
-
-#include "HelpWindow.hpp"
+#include "cereal/archives/json.hpp"
 
 #include <memory>
+#include <fstream>
+
+File project::data::get_model_path(const File& root) {
+    return root.getChildFile("model.model");
+}
+
+File project::data::get_config_path(const File& root) {
+    return root.getChildFile("config.json");
+}
+
+struct project::data project::data::load(const File& file) {
+    const auto is_way = [&] {
+        //  look inside for a model
+        auto model_file = get_model_path(file);
+        if (!model_file.existsAsFile()) {
+            //  TODO show alert window
+        }
+
+        //  load the model
+        wayverb::core::scene_data_loader scene_loader{
+                model_file.getFullPathName().toStdString()};
+        //  look inside for a config
+        auto config_file = get_config_path(file);
+        if (!config_file.existsAsFile()) {
+            //  TODO show alert window
+        }
+
+        struct data ret{std::move(scene_loader)};
+        
+        //  load the config
+        std::ifstream stream(config_file.getFullPathName().toStdString());
+        cereal::JSONInputArchive archive(stream);
+        archive(ret.data);
+
+        //  return the pair
+        return ret;
+    };
+
+    const auto is_not_way = [&] {
+        //  try to load the model
+        wayverb::core::scene_data_loader scene_loader{file.getFullPathName().toStdString()};
+        struct data ret {std::move(scene_loader)};
+        return ret;
+    };
+
+    return file.getFileExtension() == ".way" ? is_way() : is_not_way();
+}
+
+void project::data::save_to(const struct data& pd, const File& f) {
+    f.createDirectory();
+
+    //  write current geometry to file
+    pd.scene.save(get_model_path(f).getFullPathName().toStdString());
+
+    //  write config with all current materials to file
+    std::ofstream stream(get_config_path(f).getFullPathName().toStdString());
+    cereal::JSONOutputArchive archive(stream);
+    archive(pd.data);
+
+    //  TODO register_recent_file(f.getFullPathName().toStdString());
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+project project::load(const File& file) {
+    return project{data::load(file), file};
+}
+
+bool project::save_as(project& project) {
+    FileChooser fc("save project as", File::nonexistent, "*.way");
+    if (fc.browseForFileToSave(true)) {
+        const auto root = fc.getResult();
+        data::save_to(project.data, root);
+        project.file = root;
+        return true;
+    }
+    return false;
+}
+
+bool project::save(project& project) {
+    if (!project.file.exists()) {
+        return save_as(project);
+    }
+    data::save_to(project.data, project.file);
+    return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
 
 namespace {
 StoredSettings& get_app_settings() {
@@ -131,17 +219,11 @@ void WayverbApplication::show_hide_load_window() {
 //----------------------------------------------------------------------------//
 
 //  init from as much outside info as possible
-WayverbApplication::MainWindow::MainWindow(
-        String name,
-        wayverb::core::scene_data_loader scene_loader,
-        model::FullModel model,
-        File this_file)
+WayverbApplication::MainWindow::MainWindow(String name, project project)
         : DocumentWindow(name, Colours::lightgrey, DocumentWindow::allButtons)
-        , scene_loader(std::move(scene_loader))
-        , this_file(std::move(this_file))
-        , content_component(this->scene_loader.get_scene_data()) {
-    content_component.setSize(800, 500);
-    setContentNonOwned(&content_component, true);
+        , project_{std::move(project)} {
+    content_component_.setSize(800, 500);
+    setContentNonOwned(&content_component_, true);
     setUsingNativeTitleBar(true);
     centreWithSize(getWidth(), getHeight());
     setVisible(true);
@@ -152,86 +234,10 @@ WayverbApplication::MainWindow::MainWindow(
     auto& command_manager = WayverbApplication::get_command_manager();
     command_manager.registerAllCommandsForTarget(this);
     addKeyListener(command_manager.getKeyMappings());
-
-    wrapper.needs_save.set(false);
 }
-
-namespace {
-model::FullModel construct_full_model(model::Persistent persistent) {
-    return model::FullModel{
-            std::move(persistent), model::get_presets(), model::RenderState{}};
-}
-
-File get_sub_path(const File& way, const std::string& name) {
-    return way.getChildFile(name.c_str());
-}
-}  // namespace
-
-File WayverbApplication::MainWindow::get_model_path(const File& way) {
-    return get_sub_path(way, "model.model");
-}
-
-File WayverbApplication::MainWindow::get_config_path(const File& way) {
-    return get_sub_path(way, "config.json");
-}
-
-std::tuple<scene_data_loader, model::FullModel, File>
-WayverbApplication::MainWindow::scene_and_model_from_file(const File& f) {
-    auto is_way = [&f] {
-        //  look inside for a model
-        auto model_file = get_model_path(f);
-        if (!model_file.existsAsFile()) {
-            //  TODO show alert window
-        }
-
-        //  load the model
-        scene_data_loader scene_loader{
-                model_file.getFullPathName().toStdString()};
-        //  look inside for a config
-        auto config_file = get_config_path(f);
-        if (!config_file.existsAsFile()) {
-            //  TODO show alert window
-        }
-        //  load the config
-        std::ifstream stream(config_file.getFullPathName().toStdString());
-        cereal::JSONInputArchive archive(stream);
-        model::Persistent config;
-        archive(cereal::make_nvp("persistent", config));
-
-        //  return the pair
-        return std::make_tuple(
-                std::move(scene_loader), construct_full_model(std::move(config)), f);
-    };
-
-    auto is_not_way = [&f] {
-        //  try to load the model
-        scene_data_loader scene_loader{f.getFullPathName().toStdString()};
-        //  return the pair
-        return std::make_tuple(
-                std::move(scene_loader),
-                construct_full_model(model::Persistent{
-                        model::App{}, scene_loader.get_scene_data().get_materials()}),
-                File());
-    };
-
-    return f.getFileExtension() == ".way" ? is_way() : is_not_way();
-}
-
-//  given just a file, work out whether it's a project or a 3d model, then
-//  init appropriately
-WayverbApplication::MainWindow::MainWindow(String name, const File& f)
-        : MainWindow(name, scene_and_model_from_file(f)) {}
-
-WayverbApplication::MainWindow::MainWindow(
-        String name,
-        std::tuple<class scene_data_loader, model::FullModel, File>&& p)
-        : MainWindow(name,
-                     std::move(std::get<0>(p)),
-                     std::move(std::get<1>(p)),
-                     std::move(std::get<2>(p))) {}
 
 WayverbApplication::MainWindow::~MainWindow() noexcept {
-    delete help_window;
+    delete help_window_;
     removeKeyListener(
             WayverbApplication::get_command_manager().getKeyMappings());
 }
@@ -245,7 +251,7 @@ void WayverbApplication::MainWindow::closeButtonPressed() {
             case 0:  // cancel
                 return;
             case 1:  // yes
-                if (!save_project()) {
+                if (!project::save(project_)) {
                     return;
                 }
                 break;
@@ -255,23 +261,13 @@ void WayverbApplication::MainWindow::closeButtonPressed() {
     }
 
     auto& main_windows = WayverbApplication::get_app().main_windows;
-    auto it = proc::find_if(main_windows,
+    auto it = std::find_if(begin(main_windows), end(main_windows),
                             [this](const auto& i) { return i.get() == this; });
     if (it != main_windows.end()) {
         main_windows.erase(it);
     }
 
     WayverbApplication::get_app().show_hide_load_window();
-}
-
-void WayverbApplication::MainWindow::receive_broadcast(model::Broadcaster* b) {
-    if (b == &wrapper.persistent) {
-        wrapper.needs_save.set(true);
-    } else if (b == &wrapper.render_state.is_rendering) {
-        WayverbApplication::get_command_manager().commandStatusChanged();
-    } else if (b == &wrapper.render_state.visualise) {
-        WayverbApplication::get_command_manager().commandStatusChanged();
-    }
 }
 
 void WayverbApplication::MainWindow::getAllCommands(
@@ -310,8 +306,8 @@ void WayverbApplication::MainWindow::getCommandInfo(
                            "Toggle display of ray and wave information",
                            "General",
                            0);
-            result.setTicked(wrapper.render_state.visualise.get());
-            result.setActive(!wrapper.render_state.is_rendering.get());
+            //result.setTicked(wrapper.render_state.visualise.get());
+            //result.setActive(!wrapper.render_state.is_rendering.get());
             break;
 
         case CommandIDs::idShowHelp:
@@ -326,15 +322,15 @@ void WayverbApplication::MainWindow::getCommandInfo(
 }
 bool WayverbApplication::MainWindow::perform(const InvocationInfo& info) {
     switch (info.commandID) {
-        case CommandIDs::idSaveProject: save_project(); return true;
+        case CommandIDs::idSaveProject: project::save(project_); return true;
 
-        case CommandIDs::idSaveAsProject: save_as_project(); return true;
+        case CommandIDs::idSaveAsProject: project::save_as(project_); return true;
 
         case CommandIDs::idCloseProject: closeButtonPressed(); return true;
 
         case CommandIDs::idVisualise:
-            wrapper.render_state.visualise.set(
-                    !wrapper.render_state.visualise.get());
+            //wrapper.render_state.visualise.set(
+            //        !wrapper.render_state.visualise.get());
             return true;
 
         case CommandIDs::idShowHelp: show_help(); return true;
@@ -357,8 +353,8 @@ public:
 }  // namespace
 
 void WayverbApplication::MainWindow::show_help() {
-    if (!help_window) {
-        help_window = new AutoDeleteDocumentWindow(
+    if (!help_window_) {
+        help_window_ = new AutoDeleteDocumentWindow(
                 "help viewer", Colours::darkgrey, closeButton);
         auto panel = new HelpPanel;
         panel->setSize(200, 300);
@@ -372,52 +368,19 @@ void WayverbApplication::MainWindow::show_help() {
                                                   .getMainDisplay()
                                                   .userArea.reduced(20));
 
-        help_window->setBounds(result);
-        help_window->setContentOwned(panel, true);
-        help_window->setResizable(false, false);
-        help_window->setUsingNativeTitleBar(true);
-        help_window->setVisible(true);
-        help_window->setAlwaysOnTop(true);
+        help_window_->setBounds(result);
+        help_window_->setContentOwned(panel, true);
+        help_window_->setResizable(false, false);
+        help_window_->setUsingNativeTitleBar(true);
+        help_window_->setVisible(true);
+        help_window_->setAlwaysOnTop(true);
     }
 }
 
 bool WayverbApplication::MainWindow::needs_save() const {
-    return wrapper.needs_save.get();
-}
-
-bool WayverbApplication::MainWindow::save_project() {
-    if (!this_file.exists()) {
-        return save_as_project();
-    } else if (needs_save()) {
-        save_to(this_file);
-        return true;
-    }
-    return false;
-}
-
-bool WayverbApplication::MainWindow::save_as_project() {
-    FileChooser fc("save project as", File::nonexistent, "*.way");
-    if (fc.browseForFileToSave(true)) {
-        auto root = fc.getResult();
-        save_to(root);
-        this_file = root;
-        return true;
-    }
-    return false;
-}
-
-void WayverbApplication::MainWindow::save_to(const File& f) {
-    f.createDirectory();
-
-    //  write current geometry to file
-    scene_loader.save(get_model_path(f).getFullPathName().toStdString());
-
-    //  write config with all current materials to file
-    std::ofstream stream(get_config_path(f).getFullPathName().toStdString());
-    cereal::JSONOutputArchive archive(stream);
-    archive(cereal::make_nvp("persistent", wrapper.persistent.get()));
-
-    register_recent_file(f.getFullPathName().toStdString());
+    //  TODO
+    // return wrapper.needs_save.get();
+    return true;
 }
 
 WayverbApplication& WayverbApplication::get_app() {
@@ -500,7 +463,7 @@ bool WayverbApplication::perform(const InvocationInfo& info) {
 void WayverbApplication::open_project(const File& file) {
     try {
         main_windows.insert(
-                std::make_unique<MainWindow>(getApplicationName(), file));
+                std::make_unique<MainWindow>(getApplicationName(), project::load(file)));
         register_recent_file(file.getFullPathName().toStdString());
         show_hide_load_window();
     } catch (const std::exception& e) {

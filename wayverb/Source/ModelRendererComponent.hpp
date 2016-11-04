@@ -9,25 +9,24 @@
 
 class ModelRendererComponent
         : public juce::Component,
-          public model::BroadcastListener,
           public SettableHelpPanelClient,
           public LeftPanel::Listener,
           public RendererComponent<SceneRendererContextLifetime>::Listener {
 public:
     using Renderer = RendererComponent<SceneRendererContextLifetime>;
 
-    ModelRendererComponent(wayverb::combined::engine::scene_data model, double speed_of_sound);
+    ModelRendererComponent();
 
     void resized() override;
 
-    void receive_broadcast(model::Broadcaster* b) override;
+    void set_scene(wayverb::combined::engine::scene_data scene);
 
-    void set_positions(const util::aligned::vector<glm::vec3>& positions);
-    void set_pressures(const util::aligned::vector<float>& pressures,
-                       float current_time);
-    void set_impulses(const util::aligned::vector<util::aligned::vector<wayverb::raytracer::impulse<wayverb::core::simulation_bands>>>& impulses,
-                      const glm::vec3& source,
-                      const glm::vec3& receiver);
+    void set_positions(util::aligned::vector<glm::vec3> positions);
+    void set_pressures(util::aligned::vector<float> pressures);
+    void set_reflections(util::aligned::vector<util::aligned::vector<wayverb::raytracer::reflection>> reflections,
+                      const glm::vec3& source);
+
+    void set_distance_travelled(double distance);
 
     void renderer_open_gl_context_created(const Renderer*) override;
     void renderer_open_gl_context_closing(const Renderer*) override;
@@ -37,10 +36,12 @@ public:
     void left_panel_debug_hide_debug_mesh(const LeftPanel*) override;
 
 private:
+/*
     void send_highlighted();
     void send_sources();
     void send_receivers();
     void send_is_rendering();
+*/
 
     wayverb::combined::engine::scene_data model;
 

@@ -177,13 +177,13 @@ void PointObjects::set_sources(util::aligned::vector<glm::vec3> u) {
 }
 
 void PointObjects::set_receivers(
-        util::aligned::vector<model::capsules> u) {
+        util::aligned::vector<model::receiver> u) {
     util::aligned::vector<PointObject> ret;
     ret.reserve(u.size());
     for (const auto &i : u) {
         PointObject p(shader, glm::vec4{0, 0.7, 0.7, 1});
         p.set_position(i.position);
-        p.set_pointing(get_pointing(i));
+        p.set_pointing(util::map_to_vector(begin(i.capsules), end(i.capsules), [](const auto& i) {return i->get_pointing();}));
         ret.emplace_back(std::move(p));
     }
     receivers = std::move(ret);
@@ -237,17 +237,19 @@ util::aligned::vector<PointObject *> PointObjects::get_all_point_objects() {
 
 //----------------------------------------------------------------------------//
 
-SceneRendererContextLifetime::SceneRendererContextLifetime(
-        const wayverb::combined::engine::scene_data &scene_data, double speed_of_sound)
-        : model_object(generic_shader, lit_scene_shader, scene_data)
-        , point_objects(generic_shader)
-        , axes(generic_shader)
-        , speed_of_sound(speed_of_sound) {
-    const auto aabb = wayverb::core::geo::compute_aabb(scene_data);
+SceneRendererContextLifetime::SceneRendererContextLifetime()
+        : point_objects(generic_shader)
+        , axes(generic_shader) {}
+
+void SceneRendererContextLifetime::set_scene(wayverb::combined::engine::scene_data scene) {
+    const auto aabb = wayverb::core::geo::compute_aabb(scene);
     const auto m = centre(aabb);
     const auto max = glm::length(dimensions(aabb));
     eye = eye_target = max > 0 ? 20 / max : 1;
     translation = -glm::vec3(m.x, m.y, m.z);
+    
+    model_object = std::make_unique<MultiMaterialObject>(
+        generic_shader, lit_scene_shader, std::move(scene));
 }
 
 void SceneRendererContextLifetime::set_eye(float u) { set_eye_impl(u); }
@@ -268,33 +270,39 @@ void SceneRendererContextLifetime::set_rendering(bool b) {
 }
 
 void SceneRendererContextLifetime::set_positions(
-        const util::aligned::vector<glm::vec3> &positions) {
-    mesh_object = std::make_unique<MeshObject>(mesh_shader, positions);
+        util::aligned::vector<glm::vec3> positions) {
+    mesh_object = std::make_unique<MeshObject>(mesh_shader, std::move(positions));
 }
 
-void SceneRendererContextLifetime::set_pressures(
-        const util::aligned::vector<float> &pressures, float current_time) {
+void SceneRendererContextLifetime::set_pressures(util::aligned::vector<float> pressures) {
     if (mesh_object) {
-        mesh_object->set_pressures(pressures);
-    }
-
-    if (ray_object) {
-        ray_object->set_distance(current_time * speed_of_sound);
+        mesh_object->set_pressures(std::move(pressures));
     }
 }
 
 void SceneRendererContextLifetime::set_reflections(
-        const util::aligned::vector<util::aligned::vector<wayverb::raytracer::reflection>> &reflections) {
+        util::aligned::vector<util::aligned::vector<wayverb::raytracer::reflection>> reflections, const glm::vec3& source) {
+    //  TODO
     //ray_object = std::make_unique<RayVisualisation>(
     //        ray_shader, impulses, source, receiver);
 }
 
+void SceneRendererContextLifetime::set_distance_travelled(double distance) {
+    if (ray_object) {
+        ray_object->set_distance(distance);
+    }
+}
+
 void SceneRendererContextLifetime::set_highlighted(int u) {
-    model_object.set_highlighted(u);
+    if (model_object) {
+        model_object->set_highlighted(u);
+    }
 }
 
 void SceneRendererContextLifetime::set_emphasis(const glm::vec3 &c) {
-    model_object.set_colour(c);
+    if (model_object) {
+        model_object->set_colour(c);
+    }
 }
 
 void SceneRendererContextLifetime::update(float dt) {
@@ -329,7 +337,9 @@ void SceneRendererContextLifetime::do_draw(
     config_shader(lit_scene_shader);
     config_shader(ray_shader);
 
-    model_object.draw(modelview_matrix);
+    if (model_object) {
+        model_object->draw(modelview_matrix);
+    }
     point_objects.draw(modelview_matrix);
 
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -397,7 +407,7 @@ void SceneRendererContextLifetime::set_sources(
 }
 
 void SceneRendererContextLifetime::set_receivers(
-        util::aligned::vector<model::capsules> u) {
+        util::aligned::vector<model::receiver> u) {
     point_objects.set_receivers(std::move(u));
 }
 
