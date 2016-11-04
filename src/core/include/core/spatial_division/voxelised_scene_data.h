@@ -35,7 +35,7 @@ public:
                       },
                       compute_triangle_indices(scene_),
                       aabb}} {
-        if (aabb == geo::get_aabb(scene_)) {
+        if (aabb == geo::compute_aabb(scene_)) {
             throw std::runtime_error{
                     "remember to add some padding to the voxelisation "
                     "boundary!"};
@@ -69,7 +69,7 @@ template <typename Vertex, typename Surface, typename Pad>
 auto make_voxelised_scene_data(generic_scene_data<Vertex, Surface> scene,
                                size_t octree_depth,
                                Pad padding) {
-    const auto aabb = padded(geo::get_aabb(scene), glm::vec3{padding});
+    const auto aabb = padded(geo::compute_aabb(scene), glm::vec3{padding});
     return make_voxelised_scene_data(std::move(scene), octree_depth, aabb);
 }
 

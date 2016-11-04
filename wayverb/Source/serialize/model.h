@@ -1,6 +1,8 @@
 #pragma once
-#include "combined/model.h"
-#include "common/serialize/vec.h"
+
+#include "core/serialize/vec.h"
+#include "core/az_el.h"
+#include "core/orientable.h"
 
 #include "cereal/cereal.hpp"
 #include "cereal/types/vector.hpp"
@@ -8,25 +10,27 @@
 namespace cereal {
 
 template <typename Archive>
-void serialize(Archive& archive, az_el& azel) {
+void serialize(Archive& archive, wayverb::core::az_el& azel) {
     archive(cereal::make_nvp("azimuth", azel.azimuth),
             cereal::make_nvp("elevation", azel.elevation));
 }
 
+/*
 template <typename Archive>
-void serialize(Archive& archive, orientable& m) {
-    archive(cereal::make_nvp("mode", m.mode),
-            cereal::make_nvp("spherical", m.spherical),
-            cereal::make_nvp("look_at", m.look_at));
+void serialize(Archive& archive, wayverb::core::orientable& m) {
+    archive(cereal::make_nvp("pointing", m.pointing));
 }
+*/
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/*
 template <typename Archive>
 void serialize(Archive& archive, microphone& m) {
     archive(cereal::make_nvp("orientable", m.orientable),
             cereal::make_nvp("shape", m.shape));
 }
+*/
 
 ////////////////////////////////////////////////////////////////////////////////
 

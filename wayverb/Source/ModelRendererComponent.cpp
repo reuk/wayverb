@@ -1,8 +1,8 @@
 #include "ModelRendererComponent.hpp"
-
 #include "Application.hpp"
 #include "CommandIDs.hpp"
-#include "OtherComponents/MoreConversions.hpp"
+
+#include "model/model.h"
 
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_inverse.hpp"
@@ -10,20 +10,10 @@
 #include "glm/gtc/quaternion.hpp"
 #include "glm/gtc/type_ptr.hpp"
 
-#include "combined/model.h"
-
-ModelRendererComponent::ModelRendererComponent(
-        const scene_data &model,
-        model::ValueWrapper<int> &shown_surface,
-        model::ValueWrapper<model::App> &app,
-        model::ValueWrapper<model::RenderState> &render_state)
-        : model(model)
-        , shown_surface(shown_surface)
-        , renderer([ model, sos = app.speed_of_sound.get() ] {
-            return SceneRendererContextLifetime{model, sos};
-        })
-        , app(app)
-        , render_state(render_state) {
+ModelRendererComponent::ModelRendererComponent(wayverb::combined::engine::scene_data model, double speed_of_sound)
+        : model{std::move(model)}
+        , renderer{[=] { return SceneRendererContextLifetime{model, speed_of_sound}; }}
+        {
     set_help("model viewport",
              "This area displays the currently loaded 3D model. Click and drag "
              "to rotate the model, or use the mouse wheel to zoom in and out.");
@@ -33,18 +23,18 @@ ModelRendererComponent::ModelRendererComponent(
 void ModelRendererComponent::resized() { renderer.setBounds(getLocalBounds()); }
 
 void ModelRendererComponent::set_positions(
-        const aligned::vector<glm::vec3> &positions) {
+        const util::aligned::vector<glm::vec3> &positions) {
     renderer.context_command([=](auto &i) { i.set_positions(positions); });
 }
 
 void ModelRendererComponent::set_pressures(
-        const aligned::vector<float> &pressures, float current_time) {
+        const util::aligned::vector<float> &pressures, float current_time) {
     renderer.context_command(
             [=](auto &i) { i.set_pressures(pressures, current_time); });
 }
 
 void ModelRendererComponent::set_impulses(
-        const aligned::vector<aligned::vector<impulse>> &impulses,
+        const util::aligned::vector<util::aligned::vector<wayverb::raytracer::impulse<wayverb::core::simulation_bands>>> &impulses,
         const glm::vec3 &source,
         const glm::vec3 &receiver) {
     renderer.context_command(
@@ -101,25 +91,6 @@ void ModelRendererComponent::renderer_open_gl_context_closing(
         const Renderer *r) {
     //  don't care
 }
-
-/*
-void ModelRendererComponent::source_dragged(
-        SceneRenderer *, const aligned::vector<glm::vec3> &v) {
-    assert(app.source.get().size() == v.size());
-    for (auto i = 0u; i != v.size(); ++i) {
-        app.source[i].set(glm::clamp(
-                v[i], model.get_aabb().get_c0(), model.get_aabb().get_c1()));
-    }
-}
-void ModelRendererComponent::receiver_dragged(
-        SceneRenderer *, const aligned::vector<glm::vec3> &v) {
-    assert(app.receiver_settings.get().size() == v.size());
-    for (auto i = 0u; i != v.size(); ++i) {
-        app.receiver_settings[i].position.set(glm::clamp(
-                v[i], model.get_aabb().get_c0(), model.get_aabb().get_c1()));
-    }
-}
-*/
 
 void ModelRendererComponent::left_panel_debug_show_closest_surfaces(
         const LeftPanel *) {

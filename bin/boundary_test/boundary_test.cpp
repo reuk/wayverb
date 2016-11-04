@@ -82,7 +82,7 @@ private:
                         scene_data,
                         5,
                         wayverb::waveguide::compute_adjusted_boundary(
-                                wayverb::core::geo::get_aabb(scene_data),
+                                wayverb::core::geo::compute_aabb(scene_data),
                                 source_position_,
                                 divisions_)),
                 divisions_,

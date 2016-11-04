@@ -2821,7 +2821,7 @@
 				INSTALL_PATH = "$(HOME)/Applications";
 				MACOSX_DEPLOYMENT_TARGET = 10.11;
 				MACOSX_DEPLOYMENT_TARGET_ppc = 10.4;
-				OTHER_CPLUSPLUSFLAGS = "-I../../../src/audio_file/include -I../../../src/combined/include -I../../../src/core/include -I../../../src/frequency_domain/include -I../../../src/hrtf/include -I../../../src/raytracer/include -I../../../src/utilities/include -I../../../src/waveguide/include -I../../../xcproj/include -std=c++14";
+				OTHER_CPLUSPLUSFLAGS = "-I../../../src/audio_file/include -I../../../src/combined/include -I../../../src/core/include -I../../../src/frequency_domain/include -I../../../src/hrtf/lib/include -I../../../src/raytracer/include -I../../../src/utilities/include -I../../../src/waveguide/include -I../../../xcproj/include -std=c++14";
 				PRODUCT_BUNDLE_IDENTIFIER = com.yourcompany.wayverb;
 				SDKROOT_ppc = macosx10.5; }; name = Debug; };
 		1DCAA0C56212F7734DBC7900 = {isa = XCBuildConfiguration; buildSettings = {
@@ -2845,7 +2845,7 @@
 				INSTALL_PATH = "$(HOME)/Applications";
 				MACOSX_DEPLOYMENT_TARGET = 10.11;
 				MACOSX_DEPLOYMENT_TARGET_ppc = 10.4;
-				OTHER_CPLUSPLUSFLAGS = "-I../../../src/audio_file/include -I../../../src/combined/include -I../../../src/core/include -I../../../src/frequency_domain/include -I../../../src/hrtf/include -I../../../src/raytracer/include -I../../../src/utilities/include -I../../../src/waveguide/include -I../../../xcproj/include -std=c++14";
+				OTHER_CPLUSPLUSFLAGS = "-I../../../src/audio_file/include -I../../../src/combined/include -I../../../src/core/include -I../../../src/frequency_domain/include -I../../../src/hrtf/lib/include -I../../../src/raytracer/include -I../../../src/utilities/include -I../../../src/waveguide/include -I../../../xcproj/include -std=c++14";
 				PRODUCT_BUNDLE_IDENTIFIER = com.yourcompany.wayverb;
 				SDKROOT_ppc = macosx10.5; }; name = Release; };
 		FCA7B81DAB21D9146005787A = {isa = XCBuildConfiguration; buildSettings = {

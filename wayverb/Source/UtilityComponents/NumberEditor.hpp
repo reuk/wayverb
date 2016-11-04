@@ -155,9 +155,7 @@ public:
         virtual void number_editor_value_changed(NumberEditor* e) = 0;
     };
 
-    NumberEditor()
-            : set_value_processor(
-                      std::make_unique<PassthroughValueProcessor>()) {
+    NumberEditor() {
         text_editor.setInputRestrictions(0, "0123456789.-+eE");
         text_editor.setSelectAllWhenFocused(true);
         text_editor.setWantsKeyboardFocus(true);
@@ -209,20 +207,13 @@ public:
     }
 
     void set_value(T x, bool send_changed) {
-        set_text(set_value_processor->process(x), false);
+        set_text(x, false);
         if (send_changed) {
-            listener_list.call(&Listener::number_editor_value_changed, this);
+            //listener_list.call(&Listener::number_editor_value_changed, this);
         }
     }
     T get_value() const {
         return value;
-    }
-
-    void addListener(Listener* l) {
-        listener_list.add(l);
-    }
-    void removeListener(Listener* l) {
-        listener_list.remove(l);
     }
 
     void set_increment(T t) {
@@ -231,14 +222,6 @@ public:
 
     T get_increment() const {
         return inc_dec_buttons.get_increment();
-    }
-
-    void set_clipping(const juce::Range<T>& r) {
-        set_value_processor = std::make_unique<ClippingValueProcessor>(r);
-    }
-
-    void set_non_clipping() {
-        set_value_processor = std::make_unique<PassthroughValueProcessor>();
     }
 
 private:
@@ -250,35 +233,8 @@ private:
         text_editor.setText(ss.str(), send_changed);
     }
 
-    struct SetValueProcessor {
-        virtual ~SetValueProcessor() noexcept = default;
-        virtual T process(T in) const = 0;
-    };
-
-    struct PassthroughValueProcessor : public SetValueProcessor {
-        T process(T in) const override {
-            return in;
-        }
-    };
-
-    struct ClippingValueProcessor : public SetValueProcessor {
-        ClippingValueProcessor(const juce::Range<T>& range)
-                : range(range) {
-        }
-        T process(T in) const override {
-            return range.clipValue(in);
-        }
-
-    private:
-        juce::Range<T> range;
-    };
-
-    std::unique_ptr<SetValueProcessor> set_value_processor;
-
     juce::TextEditor text_editor;
     IncDecButtons<T> inc_dec_buttons;
 
     T value{0};
-
-    juce::ListenerList<Listener> listener_list;
 };

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "FullModel.hpp"
+#include "../JuceLibraryCode/JuceHeader.h"
 
 #include <sstream>
 

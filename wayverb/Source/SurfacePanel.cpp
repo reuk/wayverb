@@ -5,7 +5,6 @@
 #include <sstream>
 
 /*
-
 VolumeComponent::VolumeSlider::VolumeSlider(model::ValueWrapper<float>& value)
         : ValueWrapperSlider<float>(value) {
     set_slider_style(Slider::SliderStyle::LinearVertical);
@@ -13,6 +12,7 @@ VolumeComponent::VolumeSlider::VolumeSlider(model::ValueWrapper<float>& value)
     set_popup_display_enabled(true, nullptr);
     set_range(0.01, 0.99, 0);
 }
+*/
 
 // float VolumeComponent::VolumeSlider::slider_to_value(float t) {
 //    return Decibels::decibelsToGain(t);
@@ -23,6 +23,7 @@ VolumeComponent::VolumeSlider::VolumeSlider(model::ValueWrapper<float>& value)
 
 //----------------------------------------------------------------------------//
 
+/*
 VolumeComponent::VolumeComponent(model::ValueWrapper<volume_type>& value)
         : value(value)
         , s0(value.s0)
@@ -58,9 +59,11 @@ std::array<VolumeComponent::VolumeSlider*, 8>
 VolumeComponent::get_slider_array() {
     return std::array<VolumeSlider*, 8>{&s0, &s1, &s2, &s3, &s4, &s5, &s6, &s7};
 }
+*/
 
 //----------------------------------------------------------------------------//
 
+/*
 VolumeProperty::VolumeProperty(const String& name,
                                model::ValueWrapper<volume_type>& value)
         : PropertyComponent(name, 120)
@@ -69,9 +72,11 @@ VolumeProperty::VolumeProperty(const String& name,
 }
 
 void VolumeProperty::refresh() {}
+*/
 
 //----------------------------------------------------------------------------//
 
+/*
 FrequencyLabelComponent::FrequencyLabelComponent() {
     std::array<std::string, 8> centres;
 
@@ -112,9 +117,11 @@ void FrequencyLabelComponent::resized() {
 std::array<Label*, 8> FrequencyLabelComponent::get_label_array() {
     return std::array<Label*, 8>{&l0, &l1, &l2, &l3, &l4, &l5, &l6, &l7};
 }
+*/
 
 //----------------------------------------------------------------------------//
 
+/*
 FrequencyLabelProperty::FrequencyLabelProperty(const String& name)
         : PropertyComponent(name) {
     addAndMakeVisible(label);
@@ -279,9 +286,11 @@ void PresetComponent::receive_broadcast(model::Broadcaster* cb) {
         }
     }
 }
+*/
 
 //----------------------------------------------------------------------------//
 
+/*
 PresetProperty::PresetProperty(
         model::ValueWrapper<surface>& linked,
         model::ValueWrapper<aligned::vector<scene_data::material>>&

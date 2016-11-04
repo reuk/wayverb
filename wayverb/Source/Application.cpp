@@ -4,8 +4,7 @@
 
 #include "UtilityComponents/LoadWindow.hpp"
 
-#include "combined/serialize/model.h"
-#include "common/serialize/surface.h"
+#include "core/serialize/surface.h"
 
 #include "HelpWindow.hpp"
 
@@ -134,14 +133,13 @@ void WayverbApplication::show_hide_load_window() {
 //  init from as much outside info as possible
 WayverbApplication::MainWindow::MainWindow(
         String name,
-        class scene_data_loader&& scene_loader,
-        model::FullModel&& model,
-        File&& this_file)
+        wayverb::core::scene_data_loader scene_loader,
+        model::FullModel model,
+        File this_file)
         : DocumentWindow(name, Colours::lightgrey, DocumentWindow::allButtons)
         , scene_loader(std::move(scene_loader))
-        , wrapper(nullptr, model)
         , this_file(std::move(this_file))
-        , content_component(this->scene_loader.get_scene_data(), wrapper) {
+        , content_component(this->scene_loader.get_scene_data()) {
     content_component.setSize(800, 500);
     setContentNonOwned(&content_component, true);
     setUsingNativeTitleBar(true);

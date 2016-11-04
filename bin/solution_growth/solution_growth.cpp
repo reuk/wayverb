@@ -78,7 +78,7 @@ int main(int argc, char** argv) {
                 scene_data,
                 5,
                 wayverb::waveguide::compute_adjusted_boundary(
-                        wayverb::core::geo::get_aabb(scene_data),
+                        wayverb::core::geo::compute_aabb(scene_data),
                         receiver,
                         spacing));
         auto model = wayverb::waveguide::compute_mesh(

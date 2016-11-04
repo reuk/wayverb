@@ -4,7 +4,6 @@
 #include "MicrophoneEditor.hpp"
 #include "Vec3Editor.hpp"
 
-/*
 std::unique_ptr<Component> SourcesListBox::new_component_for_row(
         int row, bool selected) {
     auto ret = std::make_unique<Label>();
@@ -19,23 +18,14 @@ std::unique_ptr<Component> SourcesListBox::new_component_for_row(
 
 class SingleSourceComponent : public BasicPanel {
 public:
-    SingleSourceComponent(model::ValueWrapper<glm::vec3>& source,
-                          const geo::box& aabb)
-            : BasicPanel([&source, &aabb](auto& panel) {
-                panel.addProperties({new Vec3Property("source position",
-                                                      source,
-                                                      aabb.get_min(),
-                                                      aabb.get_max())});
+    SingleSourceComponent()
+            : BasicPanel([](auto& panel) {
+                panel.addProperties({new Vec3Property("source position")});
             }) {}
 };
 
-SourcesEditorPanel::SourcesEditorPanel(model_type& model, const geo::box& aabb)
-        : ListEditorPanel<SourcesEditableListBox>(model)
-        , aabb(aabb) {}
-
-std::unique_ptr<Component> SourcesEditorPanel::new_editor(
-        model::ValueWrapper<value_type>& v) {
-    return std::make_unique<SingleSourceComponent>(v, aabb);
+std::unique_ptr<Component> SourcesEditorPanel::new_editor() {
+    return std::make_unique<SingleSourceComponent>();
 }
 
 //----------------------------------------------------------------------------//
@@ -54,9 +44,9 @@ std::unique_ptr<Component> ReceiversListBox::new_component_for_row(
 
 class HrtfModelComponent : public BasicPanel, public SettableHelpPanelClient {
 public:
-    HrtfModelComponent(model::ValueWrapper<model::Pointer>& model)
-            : BasicPanel([&model](auto& panel) {
-                panel.addProperties({new DirectionProperty(model)});
+    HrtfModelComponent()
+            : BasicPanel([](auto& panel) {
+                panel.addProperties({new DirectionProperty()});
             }) {
         set_help("hrtf configurator",
                  "There's only one option, which allows you to choose the "
@@ -68,30 +58,16 @@ public:
 
 class ReceiverSettingsComponent : public TabbedComponent {
 public:
-    ReceiverSettingsComponent(
-            model::ValueWrapper<model::ReceiverSettings>& model)
-            : TabbedComponent(TabbedButtonBar::Orientation::TabsAtTop)
-            , model(model) {
-        addTab("microphones",
-               Colours::darkgrey,
-               new MicrophoneEditorPanel(model.microphones),
-               true);
-        addTab("hrtf",
-               Colours::darkgrey,
-               new HrtfModelComponent(model.hrtf),
-               true);
+    ReceiverSettingsComponent()
+            : TabbedComponent(TabbedButtonBar::Orientation::TabsAtTop) {
     }
-
-private:
-    model::ValueWrapper<model::ReceiverSettings>& model;
 };
 
 class ReceiverSettingsProperty : public PropertyComponent {
 public:
-    ReceiverSettingsProperty(
-            model::ValueWrapper<model::ReceiverSettings>& model)
+    ReceiverSettingsProperty()
             : PropertyComponent("receiver settings", 300)
-            , cmp(model) {
+            , cmp() {
         addAndMakeVisible(cmp);
     }
 
@@ -103,25 +79,16 @@ private:
 
 class SingleReceiverComponent : public BasicPanel {
 public:
-    SingleReceiverComponent(
-            model::ValueWrapper<model::ReceiverSettings>& receiver,
-            const geo::box& aabb)
-            : BasicPanel([&receiver, &aabb](auto& panel) {
-                panel.addProperties({new Vec3Property("receiver position",
-                                                      receiver.position,
-                                                      aabb.get_min(),
-                                                      aabb.get_max())});
-                panel.addProperties({new ReceiverSettingsProperty(receiver)});
+    SingleReceiverComponent()
+            : BasicPanel([](auto& panel) {
+                panel.addProperties({new Vec3Property("receiver position")});
+                panel.addProperties({new ReceiverSettingsProperty()});
             }) {}
 };
 
-ReceiversEditorPanel::ReceiversEditorPanel(model_type& model,
-                                           const geo::box& aabb)
-        : ListEditorPanel<ReceiversEditableListBox>(model)
-        , aabb(aabb) {}
+ReceiversEditorPanel::ReceiversEditorPanel()
+        : ListEditorPanel<ReceiversEditableListBox>() {}
 
-std::unique_ptr<Component> ReceiversEditorPanel::new_editor(
-        model::ValueWrapper<value_type>& v) {
-    return std::make_unique<SingleReceiverComponent>(v, aabb);
+std::unique_ptr<Component> ReceiversEditorPanel::new_editor() {
+    return std::make_unique<SingleReceiverComponent>();
 }
-*/

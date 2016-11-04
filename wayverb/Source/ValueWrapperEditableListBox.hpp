@@ -112,6 +112,7 @@ private:
 template <typename T>
 class ListEditorPanel : public Component, public T::Listener {
 public:
+/*
     using value_type = typename T::value_type;
     using model_type = typename T::model_type;
 
@@ -128,8 +129,10 @@ public:
             editor->setBounds(bounds);
         }
     }
+*/
 
     void selectedRowsChanged(T* lb, int last) override {
+    /*
         assert(last < static_cast<int>(model.size()));
         if (0 <= last) {
             editor = new_editor(model[last]);
@@ -138,9 +141,11 @@ public:
         } else {
             editor = nullptr;
         }
+    */
     }
 
 private:
+/*
     virtual std::unique_ptr<Component> new_editor(
             model::ValueWrapper<value_type>& v) = 0;
 
@@ -150,4 +155,5 @@ private:
     model::Connector<T> list_box_connector{&list_box, this};
 
     std::unique_ptr<Component> editor;
+*/
 };

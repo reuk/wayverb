@@ -9,6 +9,8 @@
 #include "PointObject.hpp"
 #include "RayVisualisation.hpp"
 
+#include "model/model.h"
+
 #include "AxesObject.hpp"
 #include "BasicDrawableObject.hpp"
 #include "RenderHelpers.hpp"
@@ -35,17 +37,17 @@ public:
     MultiMaterialObject(
             const std::shared_ptr<mglu::generic_shader> &generic_shader,
             const std::shared_ptr<LitSceneShader> &lit_scene_shader,
-            const scene_data &scene_data);
+            const wayverb::combined::engine::scene_data &scene_data);
 
     class SingleMaterialSection : public mglu::drawable {
     public:
-        SingleMaterialSection(const scene_data &scene_data, int material_index);
+        SingleMaterialSection(const wayverb::combined::engine::scene_data &scene_data, int material_index);
 
     private:
         void do_draw(const glm::mat4 &modelview_matrix) const override;
         glm::mat4 get_local_modelview_matrix() const override;
 
-        static aligned::vector<GLuint> get_indices(const scene_data &scene_data,
+        static util::aligned::vector<GLuint> get_indices(const wayverb::combined::engine::scene_data &scene_data,
                                                    int material_index);
         mglu::static_ibo ibo;
         GLuint size;
@@ -68,7 +70,7 @@ private:
 
     int highlighted{-1};
 
-    aligned::vector<SingleMaterialSection> sections;
+    util::aligned::vector<SingleMaterialSection> sections;
 };
 
 //----------------------------------------------------------------------------//
@@ -77,8 +79,8 @@ class PointObjects final {
 public:
     PointObjects(const std::shared_ptr<mglu::generic_shader> &shader);
 
-    void set_sources(const aligned::vector<glm::vec3> &u);
-    void set_receivers(const aligned::vector<model::ReceiverSettings> &u);
+    void set_sources(util::aligned::vector<glm::vec3> u);
+    void set_receivers(util::aligned::vector<model::capsules> u);
 
     void draw(const glm::mat4 &matrix) const;
 
@@ -86,19 +88,19 @@ public:
                                        const glm::vec3 &direction);
 
 private:
-    aligned::vector<PointObject *> get_all_point_objects();
+    util::aligned::vector<PointObject *> get_all_point_objects();
 
     std::shared_ptr<mglu::generic_shader> shader;
 
-    aligned::vector<PointObject> sources;
-    aligned::vector<PointObject> receivers;
+    util::aligned::vector<PointObject> sources;
+    util::aligned::vector<PointObject> receivers;
 };
 
 //----------------------------------------------------------------------------//
 
 class SceneRendererContextLifetime final : public BaseContextLifetime {
 public:
-    SceneRendererContextLifetime(const scene_data &scene_data,
+    SceneRendererContextLifetime(const wayverb::combined::engine::scene_data &scene_data,
                                  double speed_of_sound);
 
     SceneRendererContextLifetime(const SceneRendererContextLifetime &) = delete;
@@ -109,17 +111,15 @@ public:
             default;
 
     void set_eye(float u);
-    void set_rotation(const AzEl &u);
+    void set_rotation(const wayverb::core::az_el &u);
 
     void set_rendering(bool b);
 
-    void set_positions(const aligned::vector<glm::vec3> &positions);
-    void set_pressures(const aligned::vector<float> &pressures,
+    void set_positions(const util::aligned::vector<glm::vec3> &positions);
+    void set_pressures(const util::aligned::vector<float> &pressures,
                        float current_time);
 
-    void set_impulses(const aligned::vector<aligned::vector<impulse>> &impulses,
-                      const glm::vec3 &sources,
-                      const glm::vec3 &receivers);
+    void set_reflections(const util::aligned::vector<util::aligned::vector<wayverb::raytracer::reflection>>& reflections);
 
     void set_highlighted(int u);
     void set_emphasis(const glm::vec3 &c);
@@ -131,12 +131,11 @@ public:
     void mouse_up(const glm::vec2 &pos);
     void mouse_wheel_move(float delta_y);
 
-    void set_sources(const aligned::vector<glm::vec3> &u);
+    void set_sources  (util::aligned::vector<glm::vec3> u);
+    void set_receivers(util::aligned::vector<model::capsules> u);
 
-    void set_receivers(const aligned::vector<model::ReceiverSettings> &u);
-
-    void debug_show_closest_surfaces(waveguide::mesh model);
-    void debug_show_boundary_types(waveguide::mesh model);
+    void debug_show_closest_surfaces(wayverb::waveguide::mesh model);
+    void debug_show_boundary_types(wayverb::waveguide::mesh model);
     void debug_hide_model();
 
 private:
@@ -144,7 +143,7 @@ private:
     glm::mat4 get_local_modelview_matrix() const override;
 
     void set_eye_impl(float u);
-    void set_rotation_impl(const AzEl &u);
+    void set_rotation_impl(const wayverb::core::az_el &u);
 
     glm::vec3 get_world_camera_position() const;
     glm::vec3 get_world_camera_direction() const;
@@ -171,8 +170,8 @@ private:
 
     float speed_of_sound;
 
-    AzEl azel;
-    AzEl azel_target;
+    wayverb::core::az_el azel;
+    wayverb::core::az_el azel_target;
     float eye;
     float eye_target;
     glm::vec3 translation;

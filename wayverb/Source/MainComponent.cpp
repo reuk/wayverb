@@ -1,15 +1,12 @@
 #include "MainComponent.hpp"
 
-#include "common/serialize/surface.h"
+#include "core/serialize/surface.h"
 
 #include <iomanip>
 
-MainContentComponent::MainContentComponent(
-        const scene_data& scene_data,
-        model::ValueWrapper<model::FullModel>& wrapper)
+MainContentComponent::MainContentComponent(wayverb::combined::engine::scene_data scene_data)
         : scene(scene_data)
-        , wrapper(wrapper)
-        , left_panel(wrapper, scene_data.get_aabb())
+        , left_panel()
         , resizer_bar(&layout_manager, 1, true)
         , right_panel(scene_data,
                       wrapper.shown_surface,
@@ -78,7 +75,7 @@ void MainContentComponent::engine_waveguide_visuals_changed(
 
 void MainContentComponent::engine_raytracer_visuals_changed(
         AsyncEngine* u,
-        const aligned::vector<aligned::vector<impulse>>& impulses,
+        const aligned::vector<aligned::vector<wayverb::raytracer::impulse<wayverb::core::simulation_bands>>>& impulses,
         const glm::vec3& source,
         const glm::vec3& receiver) {
     if (u == &engine) {

@@ -1,8 +1,6 @@
 #include "MicrophoneEditor.hpp"
 #include "DirectionEditor.hpp"
-
 #include "PolarPatternDisplay.hpp"
-
 #include "Vec3Editor.hpp"
 
 /*

@@ -81,13 +81,13 @@ constexpr glm::vec3 mirror(const box& b, const glm::vec3& v, wall w) {
 }
 
 template <typename Surface>
-auto get_aabb(const generic_scene_data<glm::vec3, Surface>& scene) {
+auto compute_aabb(const generic_scene_data<glm::vec3, Surface>& scene) {
     return enclosing_range(scene.get_vertices().begin(),
                            scene.get_vertices().end());
 }
 
 template <typename Surface>
-auto get_aabb(const generic_scene_data<cl_float3, Surface>& scene) {
+auto compute_aabb(const generic_scene_data<cl_float3, Surface>& scene) {
     const auto make_iterator = [](auto i) {
         return util::make_mapping_iterator_adapter(
                 std::move(i), [](auto i) { return to_vec3(i); });

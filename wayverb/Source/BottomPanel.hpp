@@ -4,9 +4,7 @@
 
 #include "../JuceLibraryCode/JuceHeader.h"
 
-class BottomPanel : public Component,
-                    public model::BroadcastListener,
-                    public TextButton::Listener {
+class BottomPanel : public Component, public TextButton::Listener {
 public:
     BottomPanel();
 
@@ -20,10 +18,10 @@ public:
     void set_bar_text(const std::string& str);
     void set_state(state s);
 
+private:
     //  Controller methods
     void buttonClicked(Button*) override;
-
-private:
+    
     double progress_{0};
 
     juce::ProgressBar bar_;

@@ -4,7 +4,7 @@ EngineThread::EngineThread(EngineFunctor::Listener& listener,
                            std::atomic_bool& keep_going,
                             std::string file_name,
                             model::Persistent wrapper,
-                            scene_data scene_data,
+                            wayverb::combined::engine::scene_data scene_data,
                            bool visualise)
         : thread{std::thread{EngineFunctor{listener,
                                            keep_going,
@@ -18,7 +18,7 @@ EngineThread::EngineThread(EngineFunctor::Listener& listener,
 ScopedEngineThread::ScopedEngineThread(EngineFunctor::Listener& listener,
                                         std::string file_name,
                                         model::Persistent wrapper,
-                                        scene_data scene_data,
+                                        wayverb::combined::engine::scene_data scene_data,
                                        bool visualise)
         : thread{listener,
                  keep_going,
@@ -32,11 +32,11 @@ ScopedEngineThread::~ScopedEngineThread() noexcept { keep_going = false; }
 //----------------------------------------------------------------------------//
 
 void AsyncEngine::start(const File& file_name,
-                        const model::Persistent& wrapper,
-                        const scene_data& scene_data,
+                        model::Persistent wrapper,
+                        wayverb::combined::engine::scene_data scene_data,
                         bool visualise) {
     std::lock_guard<std::mutex> lck(mut);
-    concrete_listener.start(file_name, wrapper, scene_data, visualise);
+    concrete_listener.start(file_name, std::move(wrapper), std::move(scene_data), visualise);
 }
 
 void AsyncEngine::stop() {
@@ -72,7 +72,7 @@ void AsyncEngine::ConcreteListener::engine_encountered_error(
     });
 }
 
-void AsyncEngine::ConcreteListener::engine_state_changed(wayverb::state state,
+void AsyncEngine::ConcreteListener::engine_state_changed(wayverb::combined::state state,
                                                          double progress) {
     work_queue.push([=] {
         listener_list.call(&AsyncEngine::Listener::engine_state_changed,
@@ -83,7 +83,7 @@ void AsyncEngine::ConcreteListener::engine_state_changed(wayverb::state state,
 }
 
 void AsyncEngine::ConcreteListener::engine_nodes_changed(
-        const aligned::vector<glm::vec3>& positions) {
+        const util::aligned::vector<glm::vec3>& positions) {
     work_queue.push([=] {
         listener_list.call(&AsyncEngine::Listener::engine_nodes_changed,
                            &engine,
@@ -92,7 +92,7 @@ void AsyncEngine::ConcreteListener::engine_nodes_changed(
 }
 
 void AsyncEngine::ConcreteListener::engine_waveguide_visuals_changed(
-        const aligned::vector<float>& pressures, double current_time) {
+        const util::aligned::vector<float>& pressures, double current_time) {
     work_queue.push([=] {
         listener_list.call(
                 &AsyncEngine::Listener::engine_waveguide_visuals_changed,
@@ -103,7 +103,7 @@ void AsyncEngine::ConcreteListener::engine_waveguide_visuals_changed(
 }
 
 void AsyncEngine::ConcreteListener::engine_raytracer_visuals_changed(
-        const aligned::vector<aligned::vector<impulse>>& impulses,
+        const util::aligned::vector<util::aligned::vector<wayverb::raytracer::impulse<wayverb::core::simulation_bands>>>& impulses,
         const glm::vec3& source,
         const glm::vec3& receiver) {
     work_queue.push([=] {
@@ -124,14 +124,14 @@ void AsyncEngine::ConcreteListener::engine_finished() {
 }
 
 void AsyncEngine::ConcreteListener::start(const File& file_name,
-                                          const model::Persistent& wrapper,
-                                          const scene_data& scene_data,
+                                          model::Persistent wrapper,
+                                          wayverb::combined::engine::scene_data scene_data,
                                           bool visualise) {
     thread = std::make_unique<ScopedEngineThread>(
             *this,
             file_name.getFullPathName().toStdString(),
-            wrapper,
-            scene_data,
+            std::move(wrapper),
+            std::move(scene_data),
             visualise);
 }
 

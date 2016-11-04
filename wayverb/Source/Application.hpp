@@ -1,13 +1,12 @@
 #pragma once
 
 #include "MainComponent.hpp"
-
-#include "OtherComponents/AngularLookAndFeel.hpp"
+#include "AngularLookAndFeel.hpp"
 
 #include "UtilityComponents/FileDropComponent.hpp"
 #include "UtilityComponents/StoredSettings.hpp"
 
-#include "common/scene_data_loader.h"
+#include "core/scene_data_loader.h"
 
 #include <unordered_set>
 
@@ -65,9 +64,9 @@ public:
     public:
         //  load with a custom config too
         MainWindow(String name,
-                   scene_data_loader&& scene_loader,
-                   model::FullModel&& model,
-                   File&& this_file);
+                   wayverb::core::scene_data_loader scene_loader,
+                   model::FullModel model,
+                   File this_file);
 
         //  if the file is a .way, load a project, else just load like a 3d
         //  model
@@ -92,28 +91,29 @@ public:
 
     private:
         MainWindow(String name,
-                   std::tuple<scene_data_loader, model::FullModel, File>&& p);
+                   std::tuple<wayverb::core::scene_data_loader, model::FullModel, File>&& p);
 
         void save_to(const File& f);
 
         static File get_model_path(const File& way);
         static File get_config_path(const File& way);
-        static std::tuple<scene_data_loader, model::FullModel, File>
+        static std::tuple<wayverb::core::scene_data_loader, model::FullModel, File>
         scene_and_model_from_file(const File& f);
 
-        scene_data_loader scene_loader;
-        model::ValueWrapper<model::FullModel> wrapper;
+        wayverb::core::scene_data_loader scene_loader;
+        //model::ValueWrapper<model::FullModel> wrapper;
 
         File this_file;
         MainContentComponent content_component;
 
+/*
         model::BroadcastConnector persistent_connector{&wrapper.persistent,
                                                        this};
         model::BroadcastConnector is_rendering_connector{
                 &wrapper.render_state.is_rendering, this};
         model::BroadcastConnector visualising_connector{
                 &wrapper.render_state.visualise, this};
-
+*/
         Component::SafePointer<DocumentWindow> help_window{nullptr};
     };
 

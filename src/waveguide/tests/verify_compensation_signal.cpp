@@ -59,7 +59,9 @@ TEST(verify_compensation_signal, verify_compensation_signal_normal) {
             geo::get_scene_data(geo::box(glm::vec3(-1), glm::vec3(1)),
                                 make_surface<simulation_bands>(0.5, 0));
     const auto voxelised = make_voxelised_scene_data(
-            scene_data, 5, padded(geo::get_aabb(scene_data), glm::vec3{0.1}));
+            scene_data,
+            5,
+            padded(geo::compute_aabb(scene_data), glm::vec3{0.1}));
 
     constexpr auto speed_of_sound = 340.0;
     const auto model = compute_mesh(cc, voxelised, 0.05, speed_of_sound);

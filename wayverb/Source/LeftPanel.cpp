@@ -11,6 +11,7 @@
 #include "Vec3Editor.hpp"
 
 namespace {
+
 class ConfigureButton : public ButtonPropertyComponent {
 public:
     ConfigureButton(const String& name)
@@ -31,8 +32,8 @@ public:
     MaterialConfigureButtonComponent(
             int this_surface,
             model::ValueWrapper<int>& shown_surface,
-            model::ValueWrapper<scene_data::material>& value,
-            model::ValueWrapper<aligned::vector<scene_data::material>>&
+            model::ValueWrapper<wayverb::core::scene_data_loader::material>& value,
+            model::ValueWrapper<util::aligned::vector<wayverb::core::scene_data_loader::material>>&
                     preset_model)
             : this_surface(this_surface)
             , shown_surface(shown_surface)
@@ -56,9 +57,8 @@ public:
             shown_surface.set(
                     shown_surface.get() == this_surface ? -1 : this_surface);
         } else if (b == &more_button) {
-            auto panel = new SurfaceComponentWithTitle(value, preset_model);
             CallOutBox::launchAsynchronously(
-                    panel, more_button.getScreenBounds(), nullptr);
+                    new SurfaceComponentWithTitle(), more_button.getScreenBounds(), nullptr);
         }
     }
 
@@ -74,8 +74,8 @@ private:
     model::ValueWrapper<int>& shown_surface;
     model::BroadcastConnector surface_connector{&shown_surface, this};
 
-    model::ValueWrapper<scene_data::material>& value;
-    model::ValueWrapper<aligned::vector<scene_data::material>>& preset_model;
+    model::ValueWrapper<wayverb::core::scene_data_loader::material>& value;
+    model::ValueWrapper<util::aligned::vector<wayverb::core::scene_data_loader::material>>& preset_model;
 
     TextButton show_button{"show"};
     model::Connector<TextButton> show_connector{&show_button, this};
@@ -90,10 +90,10 @@ public:
     MaterialConfigureButton(
             int this_surface,
             model::ValueWrapper<int>& shown_surface,
-            model::ValueWrapper<scene_data::material>& value,
-            model::ValueWrapper<aligned::vector<scene_data::material>>&
+            model::ValueWrapper<wayverb::core::scene_data_loader::material>& value,
+            model::ValueWrapper<util::aligned::vector<wayverb::core::scene_data_loader::material>>&
                     preset_model)
-            : PropertyComponent(value.name.get())
+            : PropertyComponent("TODO set name properly")
             , contents(this_surface, shown_surface, value, preset_model) {
         set_help("surface material",
                  "Click 'show' to highlight everwhere this surface can be "
@@ -112,8 +112,8 @@ private:
 
 Array<PropertyComponent*> make_material_buttons(
         model::ValueWrapper<int>& shown_surface,
-        const model::ValueWrapper<aligned::vector<scene_data::material>>& model,
-        model::ValueWrapper<aligned::vector<scene_data::material>>& preset) {
+        const model::ValueWrapper<util::aligned::vector<wayverb::core::scene_data_loader::material>>& model,
+        model::ValueWrapper<util::aligned::vector<wayverb::core::scene_data_loader::material>>& preset) {
     Array<PropertyComponent*> ret;
     auto count = 0;
     for (const auto& i : model) {
@@ -122,23 +122,6 @@ Array<PropertyComponent*> make_material_buttons(
         ret.add(to_add);
     }
     return ret;
-}
-
-//----------------------------------------------------------------------------//
-
-constexpr auto to_id(model::ReceiverSettings::Mode m) {
-    switch (m) {
-        case model::ReceiverSettings::Mode::hrtf: return 1;
-        case model::ReceiverSettings::Mode::microphones: return 2;
-    }
-}
-
-constexpr auto to_enum(int i) {
-    switch (i) {
-        case 1: return model::ReceiverSettings::Mode::hrtf;
-        case 2: return model::ReceiverSettings::Mode::microphones;
-    }
-    return model::ReceiverSettings::Mode::hrtf;
 }
 
 //----------------------------------------------------------------------------//
@@ -208,45 +191,32 @@ private:
 
 class SourcesConfigureButton : public ConfigureButton {
 public:
-    SourcesConfigureButton(
-            model::ValueWrapper<aligned::vector<glm::vec3>>& model,
-            const geo::box& aabb)
-            : ConfigureButton("sources")
-            , model(model)
-            , aabb(aabb) {}
+    SourcesConfigureButton()
+            : ConfigureButton("sources") {}
 
     void buttonClicked() override {
-        auto cmp = std::make_unique<SourcesEditorPanel>(model, aabb);
+        auto cmp = std::make_unique<SourcesEditorPanel>();
         cmp->setSize(500, 200);
         CallOutBox::launchAsynchronously(
                 cmp.release(), getScreenBounds(), nullptr);
     }
 
 private:
-    model::ValueWrapper<aligned::vector<glm::vec3>>& model;
-    geo::box aabb;
 };
 
 class ReceiversConfigureButton : public ConfigureButton {
 public:
-    ReceiversConfigureButton(
-            model::ValueWrapper<aligned::vector<model::ReceiverSettings>>&
-                    model,
-            const geo::box& aabb)
-            : ConfigureButton("receivers")
-            , model(model)
-            , aabb(aabb) {}
+    ReceiversConfigureButton()
+            : ConfigureButton{"receivers"} {}
 
     void buttonClicked() override {
-        auto cmp = std::make_unique<ReceiversEditorPanel>(model, aabb);
+        auto cmp = std::make_unique<ReceiversEditorPanel>();
         cmp->setSize(800, 400);
         CallOutBox::launchAsynchronously(
                 cmp.release(), getScreenBounds(), nullptr);
     }
 
 private:
-    model::ValueWrapper<aligned::vector<model::ReceiverSettings>>& model;
-    geo::box aabb;
 };
 
 //----------------------------------------------------------------------------//
@@ -275,23 +245,14 @@ private:
 
 //----------------------------------------------------------------------------//
 
-LeftPanel::LeftPanel(model::ValueWrapper<model::FullModel>& model,
-                     const geo::box& aabb)
-        : model(model)
-        , bottom_panel(model.render_state) {
+LeftPanel::LeftPanel() {
     set_help("configuration panel",
              "Use the options in this panel to adjust the various settings of "
              "the simulation.");
 
-    for (auto i : {&filter_frequency_connector, &oversample_ratio_connector}) {
-        i->trigger();
-    }
-
     {
-        auto sources_property = std::make_unique<SourcesConfigureButton>(
-                model.persistent.app.source, aabb);
-        auto receivers_property = std::make_unique<ReceiversConfigureButton>(
-                model.persistent.app.receiver_settings, aabb);
+        auto sources_property = std::make_unique<SourcesConfigureButton>();
+        auto receivers_property = std::make_unique<ReceiversConfigureButton>();
 
         property_panel.addSection(
                 "general",
@@ -300,11 +261,10 @@ LeftPanel::LeftPanel(model::ValueWrapper<model::FullModel>& model,
                          receivers_property.release())});
     }
 
+/*
     {
         Array<PropertyComponent*> materials;
-        materials.addArray(make_material_buttons(model.shown_surface,
-                                                 model.persistent.materials,
-                                                 model.presets));
+        materials.addArray(make_material_buttons());
         property_panel.addSection("materials", materials);
     }
 
@@ -355,6 +315,7 @@ LeftPanel::LeftPanel(model::ValueWrapper<model::FullModel>& model,
                              &Listener::left_panel_debug_hide_debug_mesh, this);
                  })});
     }
+    */
 
     property_panel.setOpaque(false);
 
@@ -367,16 +328,3 @@ void LeftPanel::resized() {
     property_panel.setBounds(getLocalBounds().withTrimmedBottom(panel_height));
     bottom_panel.setBounds(getLocalBounds().removeFromBottom(panel_height));
 }
-
-void LeftPanel::receive_broadcast(model::Broadcaster* cb) {
-    if (cb == &model.render_state.is_rendering) {
-        property_panel.setEnabled(!model.render_state.is_rendering.get());
-    } else if (cb == &model.persistent.app.filter_frequency ||
-               cb == &model.persistent.app.oversample_ratio) {
-        waveguide_sampling_rate_wrapper.set(
-                get_waveguide_sample_rate(model.persistent.app.get()));
-    }
-}
-
-void LeftPanel::addListener(Listener* l) { listener_list.add(l); }
-void LeftPanel::removeListener(Listener* l) { listener_list.remove(l); }

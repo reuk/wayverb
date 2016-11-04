@@ -10,9 +10,9 @@ class EngineThread final {
 public:
     EngineThread(EngineFunctor::Listener& listener,
                  std::atomic_bool& keep_going,
-                 const std::string& file_name,
-                 const model::Persistent& wrapper,
-                 const wayverb::combined::engine::scene_data& scene_data,
+                 std::string file_name,
+                 model::Persistent wrapper,
+                 wayverb::combined::engine::scene_data scene_data,
                  bool visualise);
 
 private:
@@ -26,9 +26,9 @@ private:
 class ScopedEngineThread final {
 public:
     ScopedEngineThread(EngineFunctor::Listener& listener,
-                       const std::string& file_name,
-                       const model::Persistent& wrapper,
-                       const wayverb::combined::engine::scene_data& scene_data,
+                       std::string file_name,
+                       model::Persistent wrapper,
+                       wayverb::combined::engine::scene_data scene_data,
                        bool visualise);
 
     ~ScopedEngineThread() noexcept;
@@ -64,15 +64,15 @@ public:
                 double current_time) = 0;
         virtual void engine_raytracer_visuals_changed(
                 AsyncEngine*,
-                const util::aligned::vector<aligned::vector<wayverb::raytracer::impulse<wayverb::core::simulation_bands>>>& impulses,
+                const util::aligned::vector<util::aligned::vector<wayverb::raytracer::impulse<wayverb::core::simulation_bands>>>& impulses,
                 const glm::vec3& sources,
                 const glm::vec3& receivers) = 0;
         virtual void engine_finished(AsyncEngine*) = 0;
     };
 
     void start(const File& file_name,
-               const model::Persistent& wrapper,
-               const wayverb::combined::engine::scene_data& scene_data,
+               model::Persistent wrapper,
+               wayverb::combined::engine::scene_data scene_data,
                bool visualise);
     void stop();
 
@@ -98,14 +98,14 @@ private:
                 const util::aligned::vector<float>& pressures,
                 double current_time) override;
         void engine_raytracer_visuals_changed(
-                const util::aligned::vector<aligned::vector<impulse>>& impulses,
+                const util::aligned::vector<util::aligned::vector<wayverb::raytracer::impulse<wayverb::core::simulation_bands>>>& impulses,
                 const glm::vec3& source,
                 const glm::vec3& receiver) override;
         void engine_finished() override;
 
         void start(const File& file_name,
-                   const model::Persistent& wrapper,
-                   const wayverb::combined::engine::scene_data& scene_data,
+                   model::Persistent wrapper,
+                   wayverb::combined::engine::scene_data scene_data,
                    bool visualise);
         void stop();
         bool is_running() const;

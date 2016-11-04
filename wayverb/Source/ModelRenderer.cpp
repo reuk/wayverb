@@ -1,16 +1,13 @@
 #include "ModelRenderer.hpp"
 
-#include "OtherComponents/AngularLookAndFeel.hpp"
-#include "OtherComponents/MoreConversions.hpp"
+#include "AngularLookAndFeel.hpp"
 
 #include "modern_gl_utils/exceptions.h"
 
-#include "common/azimuth_elevation.h"
-#include "common/cl/common.h"
-#include "common/conversions.h"
-#include "common/kernel.h"
-
-#include "common/serialize/json_read_write.h"
+#include "core/azimuth_elevation.h"
+#include "core/cl/common.h"
+#include "core/conversions.h"
+#include "core/kernel.h"
 
 class SceneRendererContextLifetime::RotateMouseAction final {
 public:
@@ -23,7 +20,7 @@ public:
     void operator()(const glm::vec2 &position) {
         const auto diff = position - mouse_down_position;
         const auto angle_scale = 0.01;
-        scene.set_rotation(AzEl{static_cast<float>(diff.x * angle_scale +
+        scene.set_rotation(wayverb::core::az_el{static_cast<float>(diff.x * angle_scale +
                                                    starting_azel.azimuth),
                                 static_cast<float>(diff.y * angle_scale +
                                                    starting_azel.elevation)});
@@ -32,7 +29,7 @@ public:
 private:
     glm::vec2 mouse_down_position;
     SceneRendererContextLifetime &scene;
-    AzEl starting_azel;
+    wayverb::core::az_el starting_azel;
 };
 
 class SceneRendererContextLifetime::MoveMouseAction final {
@@ -59,16 +56,16 @@ private:
 //----------------------------------------------------------------------------//
 
 namespace {
-void push_triangle_indices(aligned::vector<GLuint> &ret, const triangle &tri) {
-    ret.push_back(tri.v0);
-    ret.push_back(tri.v1);
-    ret.push_back(tri.v2);
+void push_triangle_indices(util::aligned::vector<GLuint> &ret, const wayverb::core::triangle &tri) {
+    ret.emplace_back(tri.v0);
+    ret.emplace_back(tri.v1);
+    ret.emplace_back(tri.v2);
 }
 }  // namespace
 
-aligned::vector<GLuint> MultiMaterialObject::SingleMaterialSection::get_indices(
-        const scene_data &scene_data, int material_index) {
-    aligned::vector<GLuint> ret;
+util::aligned::vector<GLuint> MultiMaterialObject::SingleMaterialSection::get_indices(
+        const wayverb::combined::engine::scene_data &scene_data, int material_index) {
+    util::aligned::vector<GLuint> ret;
     for (const auto &i : scene_data.get_triangles()) {
         if (i.surface == material_index) {
             push_triangle_indices(ret, i);
@@ -78,7 +75,7 @@ aligned::vector<GLuint> MultiMaterialObject::SingleMaterialSection::get_indices(
 }
 
 MultiMaterialObject::SingleMaterialSection::SingleMaterialSection(
-        const scene_data &scene_data, int material_index) {
+        const wayverb::combined::engine::scene_data &scene_data, int material_index) {
     const auto indices = get_indices(scene_data, material_index);
     size = indices.size();
     ibo.data(indices);
@@ -98,16 +95,16 @@ MultiMaterialObject::SingleMaterialSection::get_local_modelview_matrix() const {
 MultiMaterialObject::MultiMaterialObject(
         const std::shared_ptr<mglu::generic_shader> &g,
         const std::shared_ptr<LitSceneShader> &l,
-        const scene_data &scene_data)
+        const wayverb::combined::engine::scene_data &scene_data)
         : generic_shader(g)
         , lit_scene_shader(l) {
     for (auto i = 0; i != scene_data.get_surfaces().size(); ++i) {
         sections.emplace_back(scene_data, i);
     }
 
-    geometry.data(convert(scene_data.get_vertices()));
+    geometry.data(wayverb::core::convert(scene_data.get_vertices()));
     mglu::check_for_gl_error();
-    colors.data(aligned::vector<glm::vec4>(scene_data.get_vertices().size(),
+    colors.data(util::aligned::vector<glm::vec4>(scene_data.get_vertices().size(),
                                            glm::vec4(0.5, 0.5, 0.5, 1.0)));
     mglu::check_for_gl_error();
 
@@ -168,26 +165,26 @@ void MultiMaterialObject::set_colour(const glm::vec3 &c) {
 PointObjects::PointObjects(const std::shared_ptr<mglu::generic_shader> &shader)
         : shader(shader) {}
 
-void PointObjects::set_sources(const aligned::vector<glm::vec3> &u) {
-    aligned::vector<PointObject> ret;
+void PointObjects::set_sources(util::aligned::vector<glm::vec3> u) {
+    util::aligned::vector<PointObject> ret;
     ret.reserve(u.size());
     for (const auto &i : u) {
         PointObject p(shader, glm::vec4{0.7, 0, 0, 1});
         p.set_position(i);
-        ret.push_back(std::move(p));
+        ret.emplace_back(std::move(p));
     }
     sources = std::move(ret);
 }
 
 void PointObjects::set_receivers(
-        const aligned::vector<model::ReceiverSettings> &u) {
-    aligned::vector<PointObject> ret;
+        util::aligned::vector<model::capsules> u) {
+    util::aligned::vector<PointObject> ret;
     ret.reserve(u.size());
     for (const auto &i : u) {
         PointObject p(shader, glm::vec4{0, 0.7, 0.7, 1});
         p.set_position(i.position);
         p.set_pointing(get_pointing(i));
-        ret.push_back(std::move(p));
+        ret.emplace_back(std::move(p));
     }
     receivers = std::move(ret);
 }
@@ -226,14 +223,14 @@ PointObject *PointObjects::get_currently_hovered(const glm::vec3 &origin,
     return intersection.ref;
 }
 
-aligned::vector<PointObject *> PointObjects::get_all_point_objects() {
-    aligned::vector<PointObject *> ret;
+util::aligned::vector<PointObject *> PointObjects::get_all_point_objects() {
+    util::aligned::vector<PointObject *> ret;
     ret.reserve(sources.size() + receivers.size());
     for (auto &i : sources) {
-        ret.push_back(&i);
+        ret.emplace_back(&i);
     }
     for (auto &i : receivers) {
-        ret.push_back(&i);
+        ret.emplace_back(&i);
     }
     return ret;
 }
@@ -241,12 +238,12 @@ aligned::vector<PointObject *> PointObjects::get_all_point_objects() {
 //----------------------------------------------------------------------------//
 
 SceneRendererContextLifetime::SceneRendererContextLifetime(
-        const scene_data &scene_data, double speed_of_sound)
+        const wayverb::combined::engine::scene_data &scene_data, double speed_of_sound)
         : model_object(generic_shader, lit_scene_shader, scene_data)
         , point_objects(generic_shader)
         , axes(generic_shader)
         , speed_of_sound(speed_of_sound) {
-    const auto aabb = scene_data.get_aabb();
+    const auto aabb = wayverb::core::geo::compute_aabb(scene_data);
     const auto m = centre(aabb);
     const auto max = glm::length(dimensions(aabb));
     eye = eye_target = max > 0 ? 20 / max : 1;
@@ -255,7 +252,7 @@ SceneRendererContextLifetime::SceneRendererContextLifetime(
 
 void SceneRendererContextLifetime::set_eye(float u) { set_eye_impl(u); }
 
-void SceneRendererContextLifetime::set_rotation(const AzEl &u) {
+void SceneRendererContextLifetime::set_rotation(const wayverb::core::az_el &u) {
     set_rotation_impl(u);
 }
 
@@ -271,12 +268,12 @@ void SceneRendererContextLifetime::set_rendering(bool b) {
 }
 
 void SceneRendererContextLifetime::set_positions(
-        const aligned::vector<glm::vec3> &positions) {
+        const util::aligned::vector<glm::vec3> &positions) {
     mesh_object = std::make_unique<MeshObject>(mesh_shader, positions);
 }
 
 void SceneRendererContextLifetime::set_pressures(
-        const aligned::vector<float> &pressures, float current_time) {
+        const util::aligned::vector<float> &pressures, float current_time) {
     if (mesh_object) {
         mesh_object->set_pressures(pressures);
     }
@@ -286,12 +283,10 @@ void SceneRendererContextLifetime::set_pressures(
     }
 }
 
-void SceneRendererContextLifetime::set_impulses(
-        const aligned::vector<aligned::vector<impulse>> &impulses,
-        const glm::vec3 &source,
-        const glm::vec3 &receiver) {
-    ray_object = std::make_unique<RayVisualisation>(
-            ray_shader, impulses, source, receiver);
+void SceneRendererContextLifetime::set_reflections(
+        const util::aligned::vector<util::aligned::vector<wayverb::raytracer::reflection>> &reflections) {
+    //ray_object = std::make_unique<RayVisualisation>(
+    //        ray_shader, impulses, source, receiver);
 }
 
 void SceneRendererContextLifetime::set_highlighted(int u) {
@@ -304,7 +299,7 @@ void SceneRendererContextLifetime::set_emphasis(const glm::vec3 &c) {
 
 void SceneRendererContextLifetime::update(float dt) {
     eye += (eye_target - eye) * 0.1;
-    azel += (azel_target - azel) * 0.1;
+    azel += (azel_target - azel) * wayverb::core::az_el{0.1, 0.1};
 }
 
 void SceneRendererContextLifetime::do_draw(
@@ -397,23 +392,23 @@ void SceneRendererContextLifetime::mouse_wheel_move(float delta_y) {
 }
 
 void SceneRendererContextLifetime::set_sources(
-        const aligned::vector<glm::vec3> &u) {
-    point_objects.set_sources(u);
+        util::aligned::vector<glm::vec3> u) {
+    point_objects.set_sources(std::move(u));
 }
 
 void SceneRendererContextLifetime::set_receivers(
-        const aligned::vector<model::ReceiverSettings> &u) {
-    point_objects.set_receivers(u);
+        util::aligned::vector<model::capsules> u) {
+    point_objects.set_receivers(std::move(u));
 }
 
 void SceneRendererContextLifetime::debug_show_closest_surfaces(
-        waveguide::mesh model) {
+        wayverb::waveguide::mesh model) {
     debug_mesh_object = std::make_unique<DebugMeshObject>(
             generic_shader, model, DebugMeshObject::mode::closest_surface);
 }
 
 void SceneRendererContextLifetime::debug_show_boundary_types(
-        waveguide::mesh model) {
+        wayverb::waveguide::mesh model) {
     debug_mesh_object = std::make_unique<DebugMeshObject>(
             generic_shader, model, DebugMeshObject::mode::boundary_type);
 }
@@ -426,8 +421,8 @@ void SceneRendererContextLifetime::set_eye_impl(float u) {
     eye_target = std::max(0.0f, u);
 }
 
-void SceneRendererContextLifetime::set_rotation_impl(const AzEl &u) {
-    azel_target = AzEl{u.azimuth,
+void SceneRendererContextLifetime::set_rotation_impl(const wayverb::core::az_el &u) {
+    azel_target = wayverb::core::az_el{u.azimuth,
                        glm::clamp(u.elevation,
                                   static_cast<float>(-M_PI / 2),
                                   static_cast<float>(M_PI / 2))};

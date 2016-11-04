@@ -4,9 +4,9 @@
 #include "SurfaceModel.hpp"
 #include "ValueWrapperSlider.hpp"
 
-/*
 class VolumeComponent : public Component {
 public:
+/*
     class VolumeSlider : public ValueWrapperSlider<float> {
     public:
         VolumeSlider(model::ValueWrapper<float>& value);
@@ -32,17 +32,20 @@ private:
     VolumeSlider s7;
 
     std::array<VolumeSlider*, 8> get_slider_array();
+*/
 };
 
 //----------------------------------------------------------------------------//
 
 class VolumeProperty : public PropertyComponent {
 public:
+/*
     VolumeProperty(const String& name, model::ValueWrapper<volume_type>& value);
     void refresh() override;
 
 private:
     VolumeComponent editor;
+*/
 };
 
 //----------------------------------------------------------------------------//
@@ -82,9 +85,9 @@ class PresetComponent : public Component,
                         public ComboBox::Listener,
                         public TextEditor::Listener,
                         public TextButton::Listener,
-                        public model::BroadcastListener,
                         public SettableHelpPanelClient {
 public:
+/*
     PresetComponent(model::ValueWrapper<surface>& linked,
                     model::ValueWrapper<aligned::vector<scene_data::material>>&
                             preset_model);
@@ -117,12 +120,14 @@ private:
 
     TextButton delete_button{"delete"};
     model::Connector<TextButton> delete_button_connector{&delete_button, this};
+*/
 };
 
 //----------------------------------------------------------------------------//
 
 class PresetProperty : public PropertyComponent {
 public:
+/*
     PresetProperty(model::ValueWrapper<surface>& linked,
                    model::ValueWrapper<aligned::vector<scene_data::material>>&
                            preset_model);
@@ -130,12 +135,14 @@ public:
 
 private:
     PresetComponent preset_component;
+*/
 };
 
 //----------------------------------------------------------------------------//
 
 class SurfaceComponent : public Component {
 public:
+/*
     SurfaceComponent(model::ValueWrapper<surface>& value,
                      model::ValueWrapper<aligned::vector<scene_data::material>>&
                              preset_model);
@@ -143,6 +150,7 @@ public:
 
 private:
     PropertyPanel property_panel;
+*/
 };
 
 //----------------------------------------------------------------------------//
@@ -150,6 +158,7 @@ private:
 class SurfaceComponentWithTitle : public Component,
                                   public SettableHelpPanelClient {
 public:
+/*
     SurfaceComponentWithTitle(
             model::ValueWrapper<scene_data::material>& value,
             model::ValueWrapper<aligned::vector<scene_data::material>>&
@@ -161,5 +170,5 @@ public:
 private:
     Label title;
     SurfaceComponent surface_component;
-};
 */
+};

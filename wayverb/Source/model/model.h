@@ -1,5 +1,7 @@
 #pragma once
 
+#include "combined/engine.h"
+
 #include "core/orientable.h"
 #include "core/scene_data_loader.h"
 

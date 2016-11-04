@@ -42,7 +42,7 @@ private:
 class MeshGeneratorThread final {
 public:
     MeshGeneratorThread(MeshGeneratorFunctor::Listener& listener,
-                        const wayverb::combined::engine::scene_data& scene_data,
+                        wayverb::combined::engine::scene_data scene_data,
                         double sample_rate,
                         double speed_of_sound);
 
@@ -69,7 +69,7 @@ public:
         ~Listener() noexcept = default;
     };
 
-    void run(const wayverb::combined::engine::scene_data& scene_data,
+    void run(wayverb::combined::engine::scene_data scene_data,
              double sample_rate,
              double speed_of_sound);
 
@@ -86,7 +86,7 @@ private:
 
         void mesh_generator_finished(wayverb::waveguide::mesh model) override;
 
-        void run(const wayverb::combined::engine::scene_data& scene_data,
+        void run(wayverb::combined::engine::scene_data scene_data,
                  double sample_rate,
                  double speed_of_sound);
 

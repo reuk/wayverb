@@ -16,20 +16,16 @@ class ModelRendererComponent
 public:
     using Renderer = RendererComponent<SceneRendererContextLifetime>;
 
-    ModelRendererComponent(
-            const scene_data& model,
-            model::ValueWrapper<int>& shown_surface,
-            model::ValueWrapper<model::App>& app,
-            model::ValueWrapper<model::RenderState>& render_state);
+    ModelRendererComponent(wayverb::combined::engine::scene_data model, double speed_of_sound);
 
     void resized() override;
 
     void receive_broadcast(model::Broadcaster* b) override;
 
-    void set_positions(const aligned::vector<glm::vec3>& positions);
-    void set_pressures(const aligned::vector<float>& pressures,
+    void set_positions(const util::aligned::vector<glm::vec3>& positions);
+    void set_pressures(const util::aligned::vector<float>& pressures,
                        float current_time);
-    void set_impulses(const aligned::vector<aligned::vector<impulse>>& impulses,
+    void set_impulses(const util::aligned::vector<util::aligned::vector<wayverb::raytracer::impulse<wayverb::core::simulation_bands>>>& impulses,
                       const glm::vec3& source,
                       const glm::vec3& receiver);
 
@@ -46,28 +42,28 @@ private:
     void send_receivers();
     void send_is_rendering();
 
-    const scene_data& model;
-    model::ValueWrapper<int>& shown_surface;
+    wayverb::combined::engine::scene_data model;
 
     class MeshGenerator final : public AsyncMeshGenerator::Listener {
     public:
-        MeshGenerator(const scene_data& scene,
+        MeshGenerator(wayverb::combined::engine::scene_data scene,
                       double sample_rate,
                       double speed_of_sound,
-                      std::function<void(waveguide::mesh)>
+                      std::function<void(wayverb::waveguide::mesh)>
                               on_finished);
 
         void async_mesh_generator_finished(const AsyncMeshGenerator*,
-                                           waveguide::mesh model) override;
+                                           wayverb::waveguide::mesh model) override;
 
     private:
-        std::function<void(waveguide::mesh)> on_finished;
+        std::function<void(wayverb::waveguide::mesh)> on_finished;
         AsyncMeshGenerator generator;
         model::Connector<AsyncMeshGenerator> generator_connector{&generator,
                                                                  this};
     };
 
     Renderer renderer;
+    /*
     model::Connector<Renderer> renderer_connector{&renderer, this};
 
     model::BroadcastConnector shown_connector{&shown_surface, this};
@@ -83,8 +79,6 @@ private:
 
     model::BroadcastConnector facing_direction_connector{&app.receiver_settings,
                                                          this};
-
+    */
     std::unique_ptr<MeshGenerator> generator;
-
-    //    model::Connector<SceneRenderer> scene_drag_connector{&renderer, this};
 };
