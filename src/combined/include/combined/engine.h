@@ -33,7 +33,6 @@ enum class state {
     starting_waveguide,
     running_waveguide,
     finishing_waveguide,
-    postprocessing,
 };
 
 constexpr auto to_string(state s) {
@@ -46,7 +45,6 @@ constexpr auto to_string(state s) {
         case state::starting_waveguide: return "starting waveguide";
         case state::running_waveguide: return "running waveguide";
         case state::finishing_waveguide: return "finishing waveguide";
-        case state::postprocessing: return "postprocessing";
     }
 }
 
@@ -113,11 +111,15 @@ public:
 
     ~engine() noexcept;
 
-    using state_callback = std::function<void(state, double)>;
-    std::unique_ptr<intermediate> run(const std::atomic_bool& keep_going,
-                                      const state_callback&) const;
+    std::unique_ptr<intermediate> run(const std::atomic_bool& keep_going) const;
 
     //  notifications  /////////////////////////////////////////////////////////
+
+    using engine_state_changed = util::event<state, double>;
+
+    engine_state_changed::scoped_connector
+            add_scoped_engine_state_changed_callback(
+                    engine_state_changed::callback_type);
 
     using waveguide_node_positions_changed =
             util::event<util::aligned::vector<glm::vec3>>;

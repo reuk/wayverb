@@ -159,11 +159,6 @@ int main(int argc, char** argv) {
     if (true) {
         //  engine /////////////////////////////////////////////////////////////
         renderers.emplace_back(make_concrete_renderer_ptr([&] {
-            const auto callback = [](auto state, auto progress) {
-                std::cout << '\r' << std::setw(30) << to_string(state)
-                          << std::setw(10) << progress << std::flush;
-            };
-
             auto input =
                     wayverb::combined::engine{
                             wayverb::core::compute_context{},
@@ -176,7 +171,7 @@ int main(int argc, char** argv) {
                             wayverb::waveguide::
                                     multiple_band_constant_spacing_parameters{
                                             3, sample_rate, usable_portion}}
-                            .run(true, callback);
+                            .run(true);
 
             return [&, input = std::move(input) ](const auto& attenuator) {
                 return util::make_named_value(

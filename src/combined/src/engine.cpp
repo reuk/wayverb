@@ -101,8 +101,11 @@ public:
     virtual ~impl() noexcept = default;
 
     virtual std::unique_ptr<intermediate> run(
-            const std::atomic_bool& keep_going,
-            const state_callback& callback) const = 0;
+            const std::atomic_bool& keep_going) const = 0;
+
+    virtual engine_state_changed::scoped_connector
+    add_scoped_engine_state_changed_callback(
+            engine_state_changed::callback_type callback) = 0;
 
     virtual waveguide_node_positions_changed::scoped_connector
     add_scoped_waveguide_node_positions_changed_callback(
@@ -137,33 +140,32 @@ public:
             , waveguide_{waveguide} {}
 
     std::unique_ptr<intermediate> run(
-            const std::atomic_bool& keep_going,
-            const engine::state_callback& callback) const override {
+            const std::atomic_bool& keep_going) const override {
         //  RAYTRACER  /////////////////////////////////////////////////////////
 
         const auto rays_to_visualise = std::min(1000ul, raytracer_.rays);
 
-        callback(state::starting_raytracer, 1.0);
+        engine_state_changed_(state::starting_raytracer, 1.0);
 
-        auto raytracer_output =
-                raytracer::canonical(compute_context_,
-                                     scene_data_,
-                                     source_,
-                                     receiver_,
-                                     environment_,
-                                     raytracer_,
-                                     rays_to_visualise,
-                                     keep_going,
-                                     [&](auto step, auto total_steps) {
-                                         callback(state::running_raytracer,
-                                                  step / (total_steps - 1.0));
-                                     });
+        auto raytracer_output = raytracer::canonical(
+                compute_context_,
+                scene_data_,
+                source_,
+                receiver_,
+                environment_,
+                raytracer_,
+                rays_to_visualise,
+                keep_going,
+                [&](auto step, auto total_steps) {
+                    engine_state_changed_(state::running_raytracer,
+                                          step / (total_steps - 1.0));
+                });
 
         if (!(keep_going && raytracer_output)) {
             return nullptr;
         }
 
-        callback(state::finishing_raytracer, 1.0);
+        engine_state_changed_(state::finishing_raytracer, 1.0);
 
         raytracer_reflections_generated_(std::move(raytracer_output->visual));
 
@@ -172,7 +174,7 @@ public:
                 max_time(raytracer_output->aural.stochastic);
 
         //  WAVEGUIDE  /////////////////////////////////////////////////////////
-        callback(state::starting_waveguide, 1.0);
+        engine_state_changed_(state::starting_waveguide, 1.0);
 
         auto waveguide_output = waveguide::canonical(
                 compute_context_,
@@ -184,14 +186,15 @@ public:
                 max_stochastic_time,
                 keep_going,
                 [&](auto step, auto steps) {
-                    callback(state::running_waveguide, step / (steps - 1.0));
+                    engine_state_changed_(state::running_waveguide,
+                                          step / (steps - 1.0));
                 });
 
         if (!(keep_going && waveguide_output)) {
             return nullptr;
         }
 
-        callback(state::finishing_waveguide, 1.0);
+        engine_state_changed_(state::finishing_waveguide, 1.0);
 
         return make_intermediate_impl_ptr(
                 make_combined_results(std::move(raytracer_output->aural),
@@ -199,6 +202,12 @@ public:
                 receiver_,
                 room_volume_,
                 environment_);
+    }
+
+    engine::engine_state_changed::scoped_connector
+    add_scoped_engine_state_changed_callback(
+            engine::engine_state_changed::callback_type callback) override {
+        return engine_state_changed_.add_scoped(std::move(callback));
     }
 
     engine::waveguide_node_positions_changed::scoped_connector
@@ -234,6 +243,7 @@ private:
     raytracer::simulation_parameters raytracer_;
     WaveguideParams waveguide_;
 
+    engine::engine_state_changed engine_state_changed_;
     engine::waveguide_node_positions_changed waveguide_node_positions_changed_;
     engine::waveguide_node_pressures_changed waveguide_node_pressures_changed_;
     engine::raytracer_reflections_generated raytracer_reflections_generated_;
@@ -283,9 +293,15 @@ engine& engine::operator=(engine&& rhs) noexcept = default;
 engine::~engine() noexcept = default;
 
 std::unique_ptr<intermediate> engine::run(
-        const std::atomic_bool& keep_going,
-        const engine::state_callback& callback) const {
-    return pimpl_->run(keep_going, callback);
+        const std::atomic_bool& keep_going) const {
+    return pimpl_->run(keep_going);
+}
+
+engine::engine_state_changed::scoped_connector
+engine::add_scoped_engine_state_changed_callback(
+        engine_state_changed::callback_type callback) {
+    return pimpl_->add_scoped_engine_state_changed_callback(
+            std::move(callback));
 }
 
 engine::waveguide_node_positions_changed::scoped_connector

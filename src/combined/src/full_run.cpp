@@ -7,15 +7,12 @@ std::experimental::optional<util::aligned::vector<util::aligned::vector<float>>>
 full_run(const engine& engine,
          const util::aligned::vector<std::unique_ptr<capsule_base>>& capsules,
          double sample_rate,
-         const std::atomic_bool& keep_going,
-         const engine::state_callback& callback) {
-    const auto intermediate = engine.run(keep_going, callback);
+         const std::atomic_bool& keep_going) {
+    const auto intermediate = engine.run(keep_going);
 
     if (intermediate == nullptr) {
         return std::experimental::nullopt;
     }
-
-    callback(state::postprocessing, 1.0);
 
     util::aligned::vector<util::aligned::vector<float>> channels;
     for (auto it = begin(capsules), e = end(capsules); it != e && keep_going;

@@ -13,8 +13,7 @@ std::experimental::optional<util::aligned::vector<util::aligned::vector<float>>>
 full_run(const engine& engine,
          const util::aligned::vector<std::unique_ptr<capsule_base>>& capsules,
          double sample_rate,
-         const std::atomic_bool& keep_going,
-         const engine::state_callback& callback);
+         const std::atomic_bool& keep_going);
 
 ////////////////////////////////////////////////////////////////////////////////
 

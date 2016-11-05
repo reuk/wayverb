@@ -28,7 +28,9 @@ public:
                 const util::aligned::vector<float>& pressures,
                 double current_time) = 0;
         virtual void engine_raytracer_visuals_changed(
-                const util::aligned::vector<util::aligned::vector<wayverb::raytracer::impulse<wayverb::core::simulation_bands>>>& impulses,
+                const util::aligned::vector<
+                        util::aligned::vector<wayverb::raytracer::impulse<
+                                wayverb::core::simulation_bands>>>& impulses,
                 const glm::vec3& source,
                 const glm::vec3& receiver) = 0;
         virtual void engine_finished() = 0;
@@ -48,12 +50,13 @@ public:
     void operator()() const;
 
 private:
-    void single_pair(Listener& listener,
-                     const std::string& file_name,
-                     const model::SingleShot& single_shot,
-                     const wayverb::combined::engine::scene_data& scene_data,
-                     bool visualise,
-                     const wayverb::core::compute_context& compute_context) const;
+    void single_pair(
+            Listener& listener,
+            const std::string& file_name,
+            const model::SingleShot& single_shot,
+            const wayverb::combined::engine::scene_data& scene_data,
+            bool visualise,
+            const wayverb::core::compute_context& compute_context) const;
 
     /// Receives notifications.
     Listener& listener;
