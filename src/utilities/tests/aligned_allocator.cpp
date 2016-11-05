@@ -77,8 +77,6 @@ aligned::vector<float> my_func() {
     return ret;
 }
 
-TEST(aligned_allocator, vector_resize) {
-    const auto vec{my_func()};
-}
+TEST(aligned_allocator, vector_resize) { const auto vec{my_func()}; }
 
 }  // namespace util

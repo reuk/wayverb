@@ -40,8 +40,9 @@ private:
             int size) {
         auto ret = util::aligned::vector<util::aligned::vector<cl_float>>{
                 10000, util::aligned::vector<cl_float>(size, 0)};
-        for (auto& i : ret)
+        for (auto& i : ret) {
             std::generate(i.begin(), i.end(), [] { return range(engine); });
+        }
         return ret;
     }
 
@@ -66,8 +67,9 @@ private:
             int size) {
         auto ret = util::aligned::vector<util::aligned::vector<cl_float>>{
                 40000, util::aligned::vector<cl_float>(size, 0)};
-        for (auto& i : ret)
+        for (auto& i : ret) {
             std::generate(begin(i), end(i), [] { return range(engine); });
+        }
         return ret;
     }
 

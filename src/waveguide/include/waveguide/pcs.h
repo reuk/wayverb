@@ -32,7 +32,7 @@ struct offset_signal final {
 /// N:      filter order
 /// A:      pulse peak amplitude
 /// hLen:   full, padded length
-offset_signal maxflat(double f0, uint32_t N, double A, uint32_t hlen);
+offset_signal maxflat(double f0, uint32_t N, double A, uint32_t h_len);
 
 /// Compute mech sphere corrective output gain.
 double compute_g0(double acoustic_impedance,

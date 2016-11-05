@@ -33,7 +33,7 @@ public:
 
 private:
     class impl;
-    std::unique_ptr<impl> pimpl;
+    std::unique_ptr<impl> pimpl_;
 };
 
 template <typename It>

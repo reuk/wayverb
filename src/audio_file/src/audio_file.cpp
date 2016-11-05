@@ -17,7 +17,7 @@ int get_file_format(const std::string& fname) {
             {"aiff", SF_FORMAT_AIFF},
             {"wav", SF_FORMAT_WAV}};
 
-    auto extension = fname.substr(fname.find_last_of(".") + 1);
+    auto extension = fname.substr(fname.find_last_of('.') + 1);
     auto ftypeIt = ftypeTable.find(extension);
     if (ftypeIt == ftypeTable.end()) {
         std::stringstream ss;

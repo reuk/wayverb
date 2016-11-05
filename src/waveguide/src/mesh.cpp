@@ -34,7 +34,7 @@ void mesh::set_coefficients(coefficients_canonical coefficients) {
 
 void mesh::set_coefficients(
         util::aligned::vector<coefficients_canonical> coefficients) {
-    vectors_.set_coefficients(coefficients);
+    vectors_.set_coefficients(std::move(coefficients));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

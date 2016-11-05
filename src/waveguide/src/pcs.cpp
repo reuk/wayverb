@@ -7,15 +7,15 @@
 namespace wayverb {
 namespace waveguide {
 
-offset_signal maxflat(double f0, uint32_t N, double A, uint32_t hLen) {
-    util::aligned::vector<double> h(hLen, 0.0f);
+offset_signal maxflat(double f0, uint32_t N, double A, uint32_t h_len) {
+    util::aligned::vector<double> h(h_len, 0.0f);
     const int64_t Q{2 * N - 1};
     for (auto n = -Q, end = Q + 1; n != end; ++n) {
         const auto top = std::pow(factdbl(Q), 2) * std::sin(n * 2 * M_PI * f0);
         const auto hi = factdbl(2 * N + n - 1);
         const auto lo = factdbl(2 * N - n - 1);
         const auto bot = n * hi * lo;
-        h[n + Q] = top / (bot * (n % 2 ? 2 : M_PI));
+        h[n + Q] = top / (bot * ((n % 2) != 0 ? 2 : M_PI));
     }
     h[Q] = 2 * f0;
     const auto scale_factor =

@@ -20,3 +20,4 @@ apps/impulse/Builds/MacOSX/Build
 *.aiff
 
 compile_commands.json
+build_log.txt

@@ -41,7 +41,7 @@ dirac_sequence generate_dirac_sequence(double speed_of_sound,
                  engine, mean_event_occurrence(constant_mean_occurrence, t))) {
         const auto sample_index = t * sample_rate;
         const size_t twice = 2 * sample_index;
-        const bool negative = twice % 2;
+        const bool negative = (twice % 2) != 0;
         ret[sample_index] = negative ? -1 : 1;
     }
     return {ret, sample_rate};
@@ -77,7 +77,7 @@ util::aligned::vector<core::bands_type> weight_sequence(
         const auto squared_summed = frequency_domain::square_sum(
                 begin(sequence.sequence) + beg, begin(sequence.sequence) + end);
         const auto scale_factor =
-                squared_summed
+                squared_summed != 0.0f
                         ? core::intensity_to_pressure(
                                   histogram.histogram[i] / squared_summed,
                                   acoustic_impedance)

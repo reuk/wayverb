@@ -11,7 +11,7 @@ using namespace wayverb::core;
 
 namespace {
 float get_frac(float numerator, float denominator) {
-    return denominator ? numerator / denominator : 0;
+    return denominator != 0.0f ? numerator / denominator : 0;
 }
 
 float brdf_mag(float y, float d) {

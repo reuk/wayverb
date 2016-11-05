@@ -38,9 +38,8 @@ public:
     const util::aligned::vector<coefficients_canonical>& get_coefficients()
             const;
 
-    void set_coefficients(coefficients_canonical coefficients);
-    void set_coefficients(
-            util::aligned::vector<coefficients_canonical> coefficients);
+    void set_coefficients(coefficients_canonical c);
+    void set_coefficients(util::aligned::vector<coefficients_canonical> c);
 
 private:
     util::aligned::vector<condensed_node> condensed_nodes_;

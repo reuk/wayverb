@@ -28,7 +28,7 @@ directional_receiver::directional_receiver(
 }
 
 directional_receiver::return_type directional_receiver::operator()(
-        cl::CommandQueue& queue, const cl::Buffer& buffer, size_t) {
+        cl::CommandQueue& queue, const cl::Buffer& buffer, size_t /*unused*/) {
     //  copy out node pressure
     const auto pressure =
             core::read_value<cl_float>(queue, buffer, output_node_);

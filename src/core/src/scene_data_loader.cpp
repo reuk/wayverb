@@ -20,7 +20,7 @@ public:
                 (aiProcess_Triangulate | aiProcess_GenSmoothNormals |
                  aiProcess_FlipUVs));
 
-        if (!scene) {
+        if (scene == nullptr) {
             throw std::runtime_error{
                     "scene pointer is null - couldn't load scene for some "
                     "reason"};
@@ -87,32 +87,30 @@ scene_data_loader& scene_data_loader::operator=(scene_data_loader&&) noexcept =
         default;
 scene_data_loader::~scene_data_loader() noexcept = default;
 
-scene_data_loader::scene_data_loader(const std::string& scene_file)
-        : pimpl{std::make_unique<impl>(scene_file)} {}
+scene_data_loader::scene_data_loader(const std::string& fpath)
+        : pimpl_{std::make_unique<impl>(fpath)} {}
 
-bool scene_data_loader::is_loaded() const { return pimpl != nullptr; }
+bool scene_data_loader::is_loaded() const { return pimpl_ != nullptr; }
 
-void scene_data_loader::load(const std::string& scene_file) {
-    pimpl = std::make_unique<impl>(scene_file);
+void scene_data_loader::load(const std::string& f) {
+    pimpl_ = std::make_unique<impl>(f);
 }
 
 void scene_data_loader::save(const std::string& f) const {
     if (is_loaded()) {
-        pimpl->save(f);
+        pimpl_->save(f);
     } else {
         throw std::logic_error{"can't save if nothing's been loaded"};
     }
 }
 
-void scene_data_loader::clear() { pimpl = nullptr; }
+void scene_data_loader::clear() { pimpl_ = nullptr; }
 
 const scene_data_loader::scene_data& scene_data_loader::get_scene_data() const {
     if (is_loaded()) {
-        return pimpl->get_scene_data();
-    } else {
-        throw std::logic_error{
-                "can't access scene data if nothing's been loaded"};
+        return pimpl_->get_scene_data();
     }
+    throw std::logic_error{"can't access scene data if nothing's been loaded"};
 }
 }  // namespace core
 }  // namespace wayverb

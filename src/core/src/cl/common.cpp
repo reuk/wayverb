@@ -34,8 +34,9 @@ cl::Device get_device(const cl::Context& context) {
                     begin(devices),
                     end(devices),
                     [](const cl::Device& i) {
-                        return !i.getInfo<
-                                CL_DEVICE_PREFERRED_VECTOR_WIDTH_DOUBLE>();
+                        return i.getInfo<
+                                       CL_DEVICE_PREFERRED_VECTOR_WIDTH_DOUBLE>() ==
+                               0u;
                     }),
             devices.end());
 
@@ -46,7 +47,7 @@ cl::Device get_device(const cl::Context& context) {
     devices.erase(remove_if(begin(devices),
                             end(devices),
                             [](const cl::Device& i) {
-                                return !i.getInfo<CL_DEVICE_AVAILABLE>();
+                                return i.getInfo<CL_DEVICE_AVAILABLE>() == 0u;
                             }),
                   devices.end());
 

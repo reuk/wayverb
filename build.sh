@@ -3,4 +3,4 @@
 
 mkdir -p build
 cd build
-cmake .. && cmake --build .
+cmake -DCMAKE_CXX_CLANG_TIDY:STRING="clang-tidy;-checks=-*,clang-*,-clang-analyzer-alpha*,performance-*,readability-*" .. && cmake --build .

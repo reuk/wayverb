@@ -3,7 +3,8 @@
 export CL_LOG_ERRORS=stdout
 #export GTEST_FILTER="*tri_cube_tests*"
 
-if ./build.sh ; then
+#if ./build.sh ; then
+if ./build.sh 2>&1 | tee build_log.txt ; then
 cd build
 
 ctest -V

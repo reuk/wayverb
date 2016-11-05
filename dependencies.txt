@@ -13,6 +13,8 @@ find_package(Git REQUIRED)
 
 set(DEPENDENCY_INSTALL_PREFIX ${CMAKE_BINARY_DIR})
 
+set_directory_properties(PROPERTIES EP_PREFIX ${DEPENDENCY_INSTALL_PREFIX})
+
 # Some dependencies depend on one-another - this ensures that we look for those
 # dependencies within the project, *before* looking in the normal system
 # location.
@@ -24,7 +26,6 @@ set(GLOBAL_DEPENDENCY_CMAKE_FLAGS "-DCMAKE_MODULE_PATH=${DEPENDENCY_INSTALL_PREF
 
 ExternalProject_Add(
     glm_external
-    PREFIX ${DEPENDENCY_INSTALL_PREFIX}
     DOWNLOAD_COMMAND ${GIT_EXECUTABLE} clone --depth 1 --branch 0.9.8.1 https://github.com/g-truc/glm.git glm_external
     CMAKE_ARGS ${GLOBAL_DEPENDENCY_CMAKE_FLAGS} -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR> 
 )
@@ -33,7 +34,6 @@ ExternalProject_Add(
 
 ExternalProject_Add(
     assimp_external
-    PREFIX ${DEPENDENCY_INSTALL_PREFIX}
     DOWNLOAD_COMMAND ${GIT_EXECUTABLE} clone --depth 1 --branch v3.3.1 https://github.com/assimp/assimp.git assimp_external
     CMAKE_ARGS ${GLOBAL_DEPENDENCY_CMAKE_FLAGS} -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR> -DASSIMP_BUILD_TESTS=OFF -DASSIMP_BUILD_STATIC_LIB=ON -DBUILD_SHARED_LIBS=OFF -DASSIMP_BUILD_ZLIB=ON
 )
@@ -50,7 +50,6 @@ set_property(TARGET zlibstatic PROPERTY IMPORTED_LOCATION ${DEPENDENCY_INSTALL_P
 
 ExternalProject_Add(
     fftwf_external
-    PREFIX ${DEPENDENCY_INSTALL_PREFIX}
     URL http://fftw.org/fftw-3.3.5.tar.gz
     CONFIGURE_COMMAND <SOURCE_DIR>/configure --prefix=<INSTALL_DIR> --enable-float
 )
@@ -63,7 +62,6 @@ set_property(TARGET fftwf PROPERTY IMPORTED_LOCATION ${DEPENDENCY_INSTALL_PREFIX
 
 ExternalProject_Add(
     sndfile_external
-    PREFIX ${DEPENDENCY_INSTALL_PREFIX}
     DOWNLOAD_COMMAND ${GIT_EXECUTABLE} clone --depth 1 --branch 1.0.27 https://github.com/erikd/libsndfile.git sndfile_external
     CONFIGURE_COMMAND <SOURCE_DIR>/autogen.sh && <SOURCE_DIR>/configure --disable-external-libs --prefix=<INSTALL_DIR>
 )
@@ -79,7 +77,6 @@ set_property(TARGET sndfile PROPERTY IMPORTED_LOCATION ${DEPENDENCY_INSTALL_PREF
 
 ExternalProject_Add(
     samplerate_external
-    PREFIX ${DEPENDENCY_INSTALL_PREFIX}
     DOWNLOAD_COMMAND ${GIT_EXECUTABLE} clone --depth 1 https://github.com/erikd/libsamplerate.git samplerate_external
     PATCH_COMMAND ${GIT_EXECUTABLE} apply ${CMAKE_SOURCE_DIR}/fix_carbon.patch
     CONFIGURE_COMMAND <SOURCE_DIR>/autogen.sh && <SOURCE_DIR>/configure --prefix=<INSTALL_DIR> --disable-dependency-tracking 
@@ -93,7 +90,6 @@ set_property(TARGET samplerate PROPERTY IMPORTED_LOCATION ${DEPENDENCY_INSTALL_P
 
 ExternalProject_Add(
     gtest_external
-    PREFIX ${DEPENDENCY_INSTALL_PREFIX}
     DOWNLOAD_COMMAND ${GIT_EXECUTABLE} clone --depth 1 --branch release-1.8.0 https://github.com/google/googletest.git gtest_external
     CMAKE_ARGS ${GLOBAL_DEPENDENCY_CMAKE_FLAGS} -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR> 
 )
@@ -106,7 +102,6 @@ set_property(TARGET gtest PROPERTY IMPORTED_LOCATION ${DEPENDENCY_INSTALL_PREFIX
 
 ExternalProject_Add(
     cereal_external
-    PREFIX ${DEPENDENCY_INSTALL_PREFIX}
     DOWNLOAD_COMMAND ${GIT_EXECUTABLE} clone --depth 1 --branch v1.2.1 https://github.com/USCiLab/cereal.git cereal_external
     CMAKE_ARGS ${GLOBAL_DEPENDENCY_CMAKE_FLAGS} -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR> -DJUST_INSTALL_CEREAL=ON
 )
@@ -115,7 +110,6 @@ ExternalProject_Add(
 
 ExternalProject_Add(
     fftw_external
-    PREFIX ${DEPENDENCY_INSTALL_PREFIX}
     URL http://fftw.org/fftw-3.3.5.tar.gz
     CONFIGURE_COMMAND <SOURCE_DIR>/configure --prefix=<INSTALL_DIR>
 )
@@ -131,7 +125,6 @@ set_property(TARGET fftw PROPERTY IMPORTED_LOCATION ${DEPENDENCY_INSTALL_PREFIX}
 
 ExternalProject_Add(
     itpp_external
-    PREFIX ${DEPENDENCY_INSTALL_PREFIX}
     DOWNLOAD_COMMAND ${GIT_EXECUTABLE} clone --depth 1 git://git.code.sf.net/p/itpp/git itpp_external
     CMAKE_ARGS ${GLOBAL_DEPENDENCY_CMAKE_FLAGS} -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR> -DITPP_SHARED_LIB=off -DHTML_DOCS=off #-DCMAKE_DISABLE_FIND_PACKAGE_BLAS=on -DCMAKE_DISABLE_FIND_PACKAGE_LAPACK=on
 )
@@ -150,7 +143,6 @@ set(ITPP_LIBRARIES itpp fftw ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
 
 ExternalProject_Add(
     opencl_cpp_external
-    PREFIX ${DEPENDENCY_INSTALL_PREFIX}
     DOWNLOAD_COMMAND ${GIT_EXECUTABLE} clone --depth 1 --branch v2.0.10 https://github.com/KhronosGroup/OpenCL-CLHPP.git opencl_cpp_external
     CMAKE_ARGS ${GLOBAL_DEPENDENCY_CMAKE_FLAGS} -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>/include -DBUILD_DOCS=OFF -DBUILD_EXAMPLES=OFF -DBUILD_TESTS=OFF
 )
@@ -165,7 +157,6 @@ find_package(OpenCL REQUIRED)
 
 ExternalProject_Add(
     modern_gl_utils_external
-    PREFIX ${DEPENDENCY_INSTALL_PREFIX}
     DOWNLOAD_COMMAND ${GIT_EXECUTABLE} clone --depth 1 https://github.com/reuk/modern_gl_utils.git modern_gl_utils_external
     CMAKE_ARGS ${GLOBAL_DEPENDENCY_CMAKE_FLAGS} -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
 )

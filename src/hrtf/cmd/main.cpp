@@ -73,6 +73,9 @@ int main(int argc, char** argv) {
     const auto entries = list_directory(base_path.c_str());
     const std::regex name_regex{".*R([0-9]+)_T([0-9]+)_P([0-9]+).*"};
     for (const auto& entry : entries) {
+        if (entry.empty()) {
+            throw std::runtime_error{"encountered error reading filename"};
+        }
         std::smatch match{};
         if (std::regex_match(entry, match, name_regex)) {
             const auto az = std::stoi(match[2].str());
