@@ -14,22 +14,20 @@ auto postprocess(const simulation_results<Histogram>& input,
                  const Method& method,
                  const glm::vec3& position,
                  double room_volume,
-                 double acoustic_impedance,
-                 double speed_of_sound,
+                 const core::environment& environment,
                  double output_sample_rate) {
     const auto head =
             raytracer::image_source::postprocess(begin(input.image_source),
                                                  end(input.image_source),
                                                  method,
                                                  position,
-                                                 speed_of_sound,
+                                                 environment.speed_of_sound,
                                                  output_sample_rate);
 
     const auto tail = raytracer::stochastic::postprocess(input.stochastic,
                                                          method,
                                                          room_volume,
-                                                         acoustic_impedance,
-                                                         speed_of_sound,
+                                                         environment,
                                                          output_sample_rate);
 
     return core::sum_vectors(head, tail);

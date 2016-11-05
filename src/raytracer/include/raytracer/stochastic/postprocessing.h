@@ -4,7 +4,6 @@
 #include "core/cl/iterator.h"
 #include "core/cl/scene_structs.h"
 #include "core/mixdown.h"
-#include "core/model/parameters.h"
 #include "core/vector_look_up_table.h"
 
 #include "hrtf/multiband.h"

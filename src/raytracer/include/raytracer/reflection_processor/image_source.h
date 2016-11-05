@@ -3,7 +3,7 @@
 #include "raytracer/image_source/reflection_path_builder.h"
 
 #include "core/cl/common.h"
-#include "core/model/parameters.h"
+#include "core/environment.h"
 #include "core/spatial_division/scene_buffers.h"
 
 namespace wayverb {
@@ -14,7 +14,9 @@ class image_source final {
 public:
     image_source(size_t max_order,
                  bool flip_phase,
-                 const core::model::parameters& params,
+                 const glm::vec3& source,
+                 const glm::vec3& receiver,
+                 const core::environment& environment,
                  const core::voxelised_scene_data<
                          cl_float3,
                          core::surface<core::simulation_bands>>& voxelised,
@@ -34,7 +36,9 @@ public:
     util::aligned::vector<impulse<8>> get_results();
 
 private:
-    core::model::parameters params_;
+    glm::vec3 source_;
+    glm::vec3 receiver_;
+    core::environment environment_;
     const core::voxelised_scene_data<cl_float3,
                                      core::surface<core::simulation_bands>>&
             voxelised_;
@@ -50,7 +54,9 @@ public:
 
     image_source operator()(
             const core::compute_context& cc,
-            const core::model::parameters& params,
+            const glm::vec3& source,
+            const glm::vec3& receiver,
+            const core::environment& environment,
             const core::voxelised_scene_data<
                     cl_float3,
                     core::surface<core::simulation_bands>>& voxelised,

@@ -8,7 +8,8 @@
 #include "core/attenuator/hrtf.h"
 #include "core/attenuator/microphone.h"
 #include "core/attenuator/null.h"
-#include "core/model/parameters.h"
+#include "core/cl/common.h"
+#include "core/environment.h"
 #include "core/scene_data.h"
 
 #include "utilities/aligned/vector.h"
@@ -19,16 +20,6 @@
 #include <functional>
 
 namespace wayverb {
-
-//  forward declarations  //////////////////////////////////////////////////////
-
-namespace core {
-namespace model {
-struct receiver;
-}  // namespace model
-class compute_context;
-}  // namespace core
-
 namespace combined {
 
 //  state information  /////////////////////////////////////////////////////////
@@ -99,13 +90,17 @@ public:
 
     engine(const core::compute_context& compute_context,
            scene_data scene_data,
-           const core::model::parameters& parameters,
+           const glm::vec3& source,
+           const glm::vec3& receiver,
+           const core::environment& environment,
            const raytracer::simulation_parameters& raytracer,
            const waveguide::single_band_parameters& waveguide);
 
     engine(const core::compute_context& compute_context,
            scene_data scene_data,
-           const core::model::parameters& parameters,
+           const glm::vec3& source,
+           const glm::vec3& receiver,
+           const core::environment& environment,
            const raytracer::simulation_parameters& raytracer,
            const waveguide::multiple_band_constant_spacing_parameters&
                    waveguide);

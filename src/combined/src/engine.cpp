@@ -35,13 +35,11 @@ public:
     intermediate_impl(combined_results<Histogram> to_process,
                       const glm::vec3& receiver_position,
                       double room_volume,
-                      double acoustic_impedance,
-                      double speed_of_sound)
+                      const core::environment& environment)
             : to_process_{std::move(to_process)}
             , receiver_position_{receiver_position}
             , room_volume_{room_volume}
-            , acoustic_impedance_{acoustic_impedance}
-            , speed_of_sound_{speed_of_sound} {}
+            , environment_{environment} {}
 
     util::aligned::vector<float> postprocess(
             const core::attenuator::hrtf& attenuator,
@@ -69,29 +67,23 @@ private:
                                               attenuator,
                                               receiver_position_,
                                               room_volume_,
-                                              acoustic_impedance_,
-                                              speed_of_sound_,
+                                              environment_,
                                               output_sample_rate);
     }
 
     combined_results<Histogram> to_process_;
     glm::vec3 receiver_position_;
     double room_volume_;
-    double acoustic_impedance_;
-    double speed_of_sound_;
+    core::environment environment_;
 };
 
 template <typename Histogram>
 auto make_intermediate_impl_ptr(combined_results<Histogram> to_process,
                                 const glm::vec3& receiver_position,
                                 double room_volume,
-                                double acoustic_impedance,
-                                double speed_of_sound) {
-    return std::make_unique<intermediate_impl<Histogram>>(std::move(to_process),
-                                                          receiver_position,
-                                                          room_volume,
-                                                          acoustic_impedance,
-                                                          speed_of_sound);
+                                const core::environment& environment) {
+    return std::make_unique<intermediate_impl<Histogram>>(
+            std::move(to_process), receiver_position, room_volume, environment);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -130,13 +122,17 @@ class concrete_impl : public engine::impl {
 public:
     concrete_impl(const core::compute_context& cc,
                   engine::scene_data scene_data,
-                  const core::model::parameters& parameters,
+                  const glm::vec3& source,
+                  const glm::vec3& receiver,
+                  const core::environment& environment,
                   const raytracer::simulation_parameters& raytracer,
                   const WaveguideParams& waveguide)
             : compute_context_{cc}
             , scene_data_{std::move(scene_data)}
             , room_volume_{estimate_room_volume(scene_data_)}
-            , parameters_{parameters}
+            , source_{source}
+            , receiver_{receiver}
+            , environment_{environment}
             , raytracer_{raytracer}
             , waveguide_{waveguide} {}
 
@@ -152,7 +148,9 @@ public:
         auto raytracer_output =
                 raytracer::canonical(compute_context_,
                                      scene_data_,
-                                     parameters_,
+                                     source_,
+                                     receiver_,
+                                     environment_,
                                      raytracer_,
                                      rays_to_visualise,
                                      keep_going,
@@ -179,7 +177,9 @@ public:
         auto waveguide_output = waveguide::canonical(
                 compute_context_,
                 scene_data_,
-                parameters_,
+                source_,
+                receiver_,
+                environment_,
                 waveguide_,
                 max_stochastic_time,
                 keep_going,
@@ -196,10 +196,9 @@ public:
         return make_intermediate_impl_ptr(
                 make_combined_results(std::move(raytracer_output->aural),
                                       std::move(*waveguide_output)),
-                parameters_.receiver,
+                receiver_,
                 room_volume_,
-                parameters_.acoustic_impedance,
-                parameters_.speed_of_sound);
+                environment_);
     }
 
     engine::waveguide_node_positions_changed::scoped_connector
@@ -229,7 +228,9 @@ private:
     core::compute_context compute_context_;
     engine::scene_data scene_data_;
     double room_volume_;
-    core::model::parameters parameters_;
+    glm::vec3 source_;
+    glm::vec3 receiver_;
+    core::environment environment_;
     raytracer::simulation_parameters raytracer_;
     WaveguideParams waveguide_;
 
@@ -242,28 +243,36 @@ private:
 
 engine::engine(const core::compute_context& compute_context,
                scene_data scene_data,
-               const core::model::parameters& parameters,
+               const glm::vec3& source,
+               const glm::vec3& receiver,
+               const core::environment& environment,
                const raytracer::simulation_parameters& raytracer,
                const waveguide::single_band_parameters& waveguide)
         : pimpl_{std::make_unique<
                   concrete_impl<waveguide::single_band_parameters>>(
                   compute_context,
                   std::move(scene_data),
-                  parameters,
+                  source,
+                  receiver,
+                  environment,
                   raytracer,
                   waveguide)} {}
 
 engine::engine(
         const core::compute_context& compute_context,
         scene_data scene_data,
-        const core::model::parameters& parameters,
+        const glm::vec3& source,
+        const glm::vec3& receiver,
+        const core::environment& environment,
         const raytracer::simulation_parameters& raytracer,
         const waveguide::multiple_band_constant_spacing_parameters& waveguide)
         : pimpl_{std::make_unique<concrete_impl<
                   waveguide::multiple_band_constant_spacing_parameters>>(
                   compute_context,
                   std::move(scene_data),
-                  parameters,
+                  source,
+                  receiver,
+                  environment,
                   raytracer,
                   waveguide)} {}
 

@@ -15,7 +15,7 @@ using namespace wayverb::core;
 
 TEST(stochastic, bad_reflections_box) {
     const geo::box box{glm::vec3{0, 0, 0}, glm::vec3{4, 3, 6}};
-    constexpr model::parameters params{glm::vec3{1, 2, 1}, glm::vec3{2, 1, 5}};
+    constexpr glm::vec3 source{1, 2, 1}, receiver{2, 1, 5};
     constexpr auto s = 0.01;
     constexpr auto d = 0.1;
     constexpr auto surface = make_surface<simulation_bands>(s, d);
@@ -45,13 +45,13 @@ TEST(stochastic, bad_reflections_box) {
                        1},
     };
 
-    stochastic::finder diff{cc, params, 1.0f, bad_reflections.size()};
+    stochastic::finder diff{cc, source, receiver, 1.0f, bad_reflections.size()};
 
     diff.process(begin(bad_reflections), end(bad_reflections), buffers);
 }
 
 TEST(stochastic, bad_reflections_vault) {
-    constexpr model::parameters params{glm::vec3{0, 1, 0}, glm::vec3{0, 1, 1}};
+    constexpr glm::vec3 source{0, 1, 0}, receiver{0, 1, 1};
 
     const compute_context cc{};
 
@@ -84,7 +84,7 @@ TEST(stochastic, bad_reflections_vault) {
                        1},
     };
 
-    stochastic::finder diff{cc, params, 1.0f, bad_reflections.size()};
+    stochastic::finder diff{cc, source, receiver, 1.0f, bad_reflections.size()};
 
     diff.process(begin(bad_reflections), end(bad_reflections), buffers);
 }

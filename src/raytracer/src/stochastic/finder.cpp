@@ -5,13 +5,14 @@ namespace raytracer {
 namespace stochastic {
 
 finder::finder(const core::compute_context& cc,
-               const core::model::parameters& params,
+               const glm::vec3& source,
+               const glm::vec3& receiver,
                float receiver_radius,
                size_t rays)
         : cc_{cc}
         , queue_{cc.context, cc.device}
         , kernel_{program{cc}.get_kernel()}
-        , receiver_{core::to_cl_float3(params.receiver)}
+        , receiver_{core::to_cl_float3(receiver)}
         , receiver_radius_{receiver_radius}
         , rays_{rays}
         , reflections_buffer_{cc.context,
@@ -29,7 +30,7 @@ finder::finder(const core::compute_context& cc,
                   CL_MEM_READ_WRITE,
                   sizeof(impulse<core::simulation_bands>) * rays} {
     //  see schroder2011 5.54
-    const auto dist = glm::distance(params.source, params.receiver);
+    const auto dist = glm::distance(source, receiver);
     const auto sin_y = receiver_radius / std::max(receiver_radius, dist);
     const auto cos_y = std::sqrt(1 - sin_y * sin_y);
 
@@ -42,7 +43,7 @@ finder::finder(const core::compute_context& cc,
             cl::EnqueueArgs{queue_, cl::NDRange{rays_}},
             stochastic_path_buffer_,
             core::make_bands_type(starting_intensity),
-            core::to_cl_float3(params.source));
+            core::to_cl_float3(source));
 }
 
 }  // namespace stochastic

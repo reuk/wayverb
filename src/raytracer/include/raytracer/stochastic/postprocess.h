@@ -17,8 +17,7 @@ template <size_t Az, size_t El, typename Method>
 auto postprocess(const directional_energy_histogram<Az, El>& histogram,
                  const Method& method,
                  double room_volume,
-                 double acoustic_impedance,
-                 double speed_of_sound,
+                 const core::environment& environment,
                  double sample_rate) {
     const auto& table = histogram.histogram.table;
 
@@ -40,9 +39,9 @@ auto postprocess(const directional_energy_histogram<Az, El>& histogram,
     const auto max_seconds = max_size / histogram.sample_rate;
 
     const auto dirac_sequence = generate_dirac_sequence(
-            speed_of_sound, room_volume, sample_rate, max_seconds);
+            environment.speed_of_sound, room_volume, sample_rate, max_seconds);
     return postprocessing(
-            histogram, method, dirac_sequence, acoustic_impedance);
+            histogram, method, dirac_sequence, environment.acoustic_impedance);
 }
 
 }  // namespace stochastic

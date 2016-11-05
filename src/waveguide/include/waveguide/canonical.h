@@ -8,7 +8,7 @@
 #include "waveguide/waveguide.h"
 
 #include "core/callback_accumulator.h"
-#include "core/model/parameters.h"
+#include "core/environment.h"
 #include "core/reverb_time.h"
 
 #include "hrtf/multiband.h"
@@ -42,7 +42,9 @@ std::experimental::optional<band> canonical_impl(
         const mesh& mesh,
         double sample_rate,
         double simulation_time,
-        const core::model::parameters& params,
+        const glm::vec3& source,
+        const glm::vec3& receiver,
+        const core::environment& environment,
         const std::atomic_bool& keep_going,
         Callback&& callback) {
     const auto compute_mesh_index = [&](const auto& pt) {
@@ -60,7 +62,7 @@ std::experimental::optional<band> canonical_impl(
     const auto input = [&] {
         auto raw = util::aligned::vector<float>(ideal_steps, 0.0f);
         raw.front() = rectilinear_calibration_factor(
-                mesh.get_descriptor().spacing, params.acoustic_impedance);
+                mesh.get_descriptor().spacing, environment.acoustic_impedance);
         return raw;
     }();
 
@@ -68,20 +70,19 @@ std::experimental::optional<band> canonical_impl(
             core::callback_accumulator<postprocessor::directional_receiver>{
                     mesh.get_descriptor(),
                     sample_rate,
-                    params.acoustic_impedance / params.speed_of_sound,
-                    compute_mesh_index(params.receiver)};
+                    get_ambient_density(environment),
+                    compute_mesh_index(receiver)};
 
-    const auto steps = run(
-            cc,
-            mesh,
-            preprocessor::make_hard_source(compute_mesh_index(params.source),
-                                           begin(input),
-                                           end(input)),
-            [&](auto& queue, const auto& buffer, auto step) {
-                output_accumulator(queue, buffer, step);
-                callback(step, ideal_steps);
-            },
-            keep_going);
+    const auto steps =
+            run(cc,
+                mesh,
+                preprocessor::make_hard_source(
+                        compute_mesh_index(source), begin(input), end(input)),
+                [&](auto& queue, const auto& buffer, auto step) {
+                    output_accumulator(queue, buffer, step);
+                    callback(step, ideal_steps);
+                },
+                keep_going);
 
     if (steps != ideal_steps) {
         return std::experimental::nullopt;
@@ -110,22 +111,26 @@ std::experimental::optional<simulation_results> canonical(
         const core::generic_scene_data<cl_float3,
                                        core::surface<core::simulation_bands>>&
                 scene,
-        const core::model::parameters& params,
+        const glm::vec3& source,
+        const glm::vec3& receiver,
+        const core::environment& environment,
         const single_band_parameters& sim_params,
         double simulation_time,
         const std::atomic_bool& keep_going,
         Callback&& callback) {
     auto voxelised = compute_voxels_and_mesh(cc,
                                              scene,
-                                             params.receiver,
+                                             receiver,
                                              sim_params.sample_rate,
-                                             params.speed_of_sound);
+                                             environment.speed_of_sound);
 
     if (auto ret = detail::canonical_impl(cc,
                                           voxelised.mesh,
                                           sim_params.sample_rate,
                                           simulation_time,
-                                          params,
+                                          source,
+                                          receiver,
+                                          environment,
                                           keep_going,
                                           std::forward<Callback>(callback))) {
         return simulation_results{{bandpass_band{
@@ -161,7 +166,9 @@ canonical(const core::compute_context& cc,
           const core::generic_scene_data<cl_float3,
                                          core::surface<core::simulation_bands>>&
                   scene,
-          const core::model::parameters& params,
+          const glm::vec3& source,
+          const glm::vec3& receiver,
+          const core::environment& environment,
           const multiple_band_variable_spacing_parameters& sim_params,
           double simulation_time,
           const std::atomic_bool& keep_going,
@@ -180,9 +187,9 @@ canonical(const core::compute_context& cc,
         const auto mesh = [&] {
             auto ret = compute_voxels_and_mesh(cc,
                                                scene,
-                                               params.receiver,
+                                               receiver,
                                                sample_rate,
-                                               params.speed_of_sound);
+                                               environment.speed_of_sound);
 
             set_flat_coefficients_for_band(ret, band);
 
@@ -192,7 +199,9 @@ canonical(const core::compute_context& cc,
                                                         mesh,
                                                         sample_rate,
                                                         simulation_time,
-                                                        params,
+                                                        source,
+                                                        receiver,
+                                                        environment,
                                                         keep_going,
                                                         callback)) {
             ret.bands.emplace_back(bandpass_band{
@@ -215,7 +224,9 @@ std::experimental::optional<simulation_results> canonical(
         const core::generic_scene_data<cl_float3,
                                        core::surface<core::simulation_bands>>&
                 scene,
-        const core::model::parameters& params,
+        const glm::vec3& source,
+        const glm::vec3& receiver,
+        const core::environment& environment,
         const multiple_band_constant_spacing_parameters& sim_params,
         double simulation_time,
         const std::atomic_bool& keep_going,
@@ -225,9 +236,9 @@ std::experimental::optional<simulation_results> canonical(
     //  Find the waveguide sampling rate required.
     auto voxels_and_mesh = compute_voxels_and_mesh(cc,
                                                    scene,
-                                                   params.receiver,
+                                                   receiver,
                                                    sim_params.sample_rate,
-                                                   params.speed_of_sound);
+                                                   environment.speed_of_sound);
 
     simulation_results ret{};
 
@@ -239,7 +250,9 @@ std::experimental::optional<simulation_results> canonical(
                                                         voxels_and_mesh.mesh,
                                                         sim_params.sample_rate,
                                                         simulation_time,
-                                                        params,
+                                                        source,
+                                                        receiver,
+                                                        environment,
                                                         keep_going,
                                                         callback)) {
             ret.bands.emplace_back(bandpass_band{

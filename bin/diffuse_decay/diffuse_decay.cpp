@@ -14,7 +14,9 @@ auto produce_histogram(
                 cl_float3,
                 wayverb::core::surface<wayverb::core::simulation_bands>>&
                 voxelised,
-        const wayverb::core::model::parameters& params) {
+        const glm::vec3& source,
+        const glm::vec3& receiver,
+        const wayverb::core::environment& environment) {
     const wayverb::core::compute_context cc{};
 
     const auto directions = wayverb::core::get_random_directions(1 << 16);
@@ -25,18 +27,18 @@ auto produce_histogram(
     constexpr auto histogram_sr = 1000.0f;
 
     wayverb::raytracer::stochastic::finder finder{
-            cc, params, receiver_radius, directions.size()};
+            cc, source, receiver, receiver_radius, directions.size()};
     util::aligned::vector<wayverb::core::bands_type> histogram;
 
     const auto make_ray_iterator = [&](auto it) {
         return util::make_mapping_iterator_adapter(
                 std::move(it), [&](const auto& i) {
-                    return wayverb::core::geo::ray{params.source, i};
+                    return wayverb::core::geo::ray{source, i};
                 });
     };
 
     wayverb::raytracer::reflector ref{cc,
-                                      params.receiver,
+                                      receiver,
                                       make_ray_iterator(begin(directions)),
                                       make_ray_iterator(end(directions))};
 
@@ -48,7 +50,7 @@ auto produce_histogram(
         const auto to_histogram = [&](auto& in) {
             const auto make_iterator = [&](auto it) {
                 return wayverb::raytracer::make_histogram_iterator(
-                        std::move(it), params.speed_of_sound);
+                        std::move(it), environment.speed_of_sound);
             };
 
             incremental_histogram(histogram,
@@ -66,10 +68,10 @@ auto produce_histogram(
 }
 
 int main() {
-    constexpr wayverb::core::model::parameters params{glm::vec3{-2, 0, 0},
-                                                      glm::vec3{2, 0, 0}};
+    constexpr auto source = glm::vec3{-2, 0, 0}, receiver = glm::vec3{2, 0, 0};
 
     const wayverb::core::geo::box box{glm::vec3{-4}, glm::vec3{4}};
+    const wayverb::core::environment environment{};
     constexpr auto absorption = 0.1;
     constexpr auto scattering = 0.1;
 
@@ -82,7 +84,8 @@ int main() {
             2,
             0.1f);
 
-    const auto histogram = produce_histogram(voxelised, params);
+    const auto histogram =
+            produce_histogram(voxelised, source, receiver, environment);
 
     const auto dim = dimensions(box);
     const auto room_volume = dim.x * dim.y * dim.z;
@@ -107,7 +110,7 @@ int main() {
         }
 
         auto processed = wayverb::raytracer::stochastic::postprocessing(
-                histogram, dirac_sequence, params.acoustic_impedance);
+                histogram, dirac_sequence, environment.acoustic_impedance);
 
         write(util::build_string("enveloped_dirac.", sample_rate, ".wav"),
               audio_file::make_audio_file(processed, sample_rate),
@@ -119,10 +122,10 @@ int main() {
                 });
 
         const auto direct = wayverb::raytracer::image_source::get_direct(
-                params.source, params.receiver, voxelised);
+                source, receiver, voxelised);
 
         const auto direct_pressure = wayverb::core::pressure_for_distance(
-                direct->distance, params.acoustic_impedance);
+                direct->distance, environment.acoustic_impedance);
 
         const auto norm = std::max(max_raytracer_amplitude, direct_pressure);
 

@@ -67,19 +67,20 @@ auto postprocess(const combined_results<Histogram>& input,
                  const Method& method,
                  const glm::vec3& receiver_position,
                  double room_volume,
-                 double acoustic_impedance,
-                 double speed_of_sound,
+                 const core::environment& environment,
                  double output_sample_rate) {
     //  Individual processing.
-    const auto waveguide_processed = waveguide::postprocess(
-            input.waveguide, method, acoustic_impedance, output_sample_rate);
+    const auto waveguide_processed =
+            waveguide::postprocess(input.waveguide,
+                                   method,
+                                   environment.acoustic_impedance,
+                                   output_sample_rate);
 
     const auto raytracer_processed = raytracer::postprocess(input.raytracer,
                                                             method,
                                                             receiver_position,
                                                             room_volume,
-                                                            acoustic_impedance,
-                                                            speed_of_sound,
+                                                            environment,
                                                             output_sample_rate);
 
     const auto make_iterator = [](auto it) {

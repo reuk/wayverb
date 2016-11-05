@@ -16,7 +16,9 @@ make_visual::make_visual(size_t items)
 
 visual make_visual::operator()(
         const core::compute_context& cc,
-        const core::model::parameters& params,
+        const glm::vec3& source,
+        const glm::vec3& receiver,
+        const core::environment& environment,
         const core::voxelised_scene_data<cl_float3,
                                          core::surface<core::simulation_bands>>&
                 voxelised,

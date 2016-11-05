@@ -19,7 +19,9 @@ auto run(
         const core::voxelised_scene_data<cl_float3,
                                          core::surface<core::simulation_bands>>&
                 voxelised,
-        const core::model::parameters& params,
+        const glm::vec3& source,
+        const glm::vec3& receiver,
+        const core::environment& environment,
         bool flip_phase) {
     const auto callbacks =
             std::make_tuple(raytracer::reflection_processor::make_image_source{
@@ -28,7 +30,9 @@ auto run(
                                   e,
                                   cc,
                                   voxelised,
-                                  params,
+                                  source,
+                                  receiver,
+                                  environment,
                                   true,
                                   [](auto i, auto steps) {},
                                   callbacks);

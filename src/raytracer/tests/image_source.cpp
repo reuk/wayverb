@@ -65,18 +65,18 @@ bool approximately_matches(const impulse<channels>& a,
 
 void image_source_test() {
     const geo::box box{glm::vec3{0, 0, 0}, glm::vec3{4, 3, 6}};
-    constexpr model::parameters params{glm::vec3{1, 1, 1}, glm::vec3{2, 1, 5}};
+    constexpr glm::vec3 source{1, 1, 1}, receiver{2, 1, 5};
+    constexpr wayverb::core::environment environment{};
     constexpr auto surface = make_surface<simulation_bands>(0.1f, 0);
 
     constexpr auto shells = 3;
 
     auto exact_impulses = image_source::find_impulses(
-            box, params.source, params.receiver, surface, shells, false);
+            box, source, receiver, surface, shells, false);
 
     const auto check_distances = [&](const auto& range) {
         for (const auto& imp : range) {
-            ASSERT_NEAR(glm::distance(to_vec3(params.receiver),
-                                      to_vec3(imp.position)),
+            ASSERT_NEAR(glm::distance(receiver, to_vec3(imp.position)),
                         imp.distance,
                         0.0001);
         }
@@ -92,7 +92,9 @@ void image_source_test() {
                                               directions.end(),
                                               compute_context{},
                                               voxelised,
-                                              params,
+                                              source,
+                                              receiver,
+                                              environment,
                                               false);
 
     check_distances(inexact_impulses);

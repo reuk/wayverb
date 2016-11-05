@@ -17,7 +17,9 @@ void run_test(const Attenuator& attenuator) {
     constexpr auto absorption = 0.1;
     constexpr auto scattering = 0.1;
 
-    constexpr model::parameters params{glm::vec3{-2, 0, 0}, glm::vec3{2, 0, 0}};
+    constexpr glm::vec3 source{-2, 0, 0}, receiver{2, 0, 0};
+
+    constexpr wayverb::core::environment environment{};
 
     const auto voxelised = make_voxelised_scene_data(
             geo::get_scene_data(
@@ -35,7 +37,9 @@ void run_test(const Attenuator& attenuator) {
                              end(directions),
                              compute_context{},
                              voxelised,
-                             params,
+                             source,
+                             receiver,
+                             environment,
                              true,
                              [](auto i, auto steps) {},
                              callbacks);
@@ -43,10 +47,10 @@ void run_test(const Attenuator& attenuator) {
     ASSERT_TRUE(results);
 
     const auto direct_energy = [&] {
-        const auto direct = image_source::get_direct(
-                params.source, params.receiver, voxelised);
+        const auto direct =
+                image_source::get_direct(source, receiver, voxelised);
         const auto att = attenuation(
-                attenuator, glm::normalize(params.source - params.receiver));
+                attenuator, glm::normalize(source - receiver));
         return att * att * intensity_for_distance(direct->distance);
     }();
 
@@ -54,9 +58,9 @@ void run_test(const Attenuator& attenuator) {
         const auto histogram =
                 compute_summed_histogram(std::get<0>(*results), attenuator)
                         .histogram;
-        const auto histogram_bin =
-                glm::distance(params.source, params.receiver) *
-                histogram_sample_rate / params.speed_of_sound;
+        const auto histogram_bin = glm::distance(source, receiver) *
+                                   histogram_sample_rate /
+                                   environment.speed_of_sound;
         return histogram[histogram_bin];
     }();
 

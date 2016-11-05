@@ -130,8 +130,9 @@ int main(int argc, char** argv) {
             wayverb::core::geo::box{glm::vec3{0}, glm::vec3{5.56, 3.97, 2.81}};
     constexpr auto sample_rate = 10000.0;
 
-    constexpr auto params = wayverb::core::model::parameters{
-            glm::vec3{2.09, 2.12, 2.12}, glm::vec3{2.09, 3.08, 0.96}};
+    constexpr auto source = glm::vec3{2.09, 2.12, 2.12},
+                   receiver = glm::vec3{2.09, 3.08, 0.96};
+    constexpr wayverb::core::environment environment{};
     constexpr glm::vec3 pointing{0, 0, 1};
     constexpr glm::vec3 up{0, 1, 0};
 
@@ -167,7 +168,9 @@ int main(int argc, char** argv) {
                     wayverb::combined::engine{
                             wayverb::core::compute_context{},
                             scene_data,
-                            params,
+                            source,
+                            receiver,
+                            environment,
                             wayverb::raytracer::simulation_parameters{1 << 16,
                                                                       4},
                             wayverb::waveguide::
@@ -188,18 +191,19 @@ int main(int argc, char** argv) {
             auto input = run_raytracer(
                     box,
                     scattering_surface,
-                    params,
+                    source,
+                    receiver,
+                    environment,
                     wayverb::raytracer::simulation_parameters{1 << 16, 5});
             return [&, input = std::move(input) ](const auto& attenuator) {
-                return util::make_named_value("raytracer",
-                                              wayverb::raytracer::postprocess(
-                                                      input,
-                                                      attenuator,
-                                                      params.receiver,
-                                                      room_volume,
-                                                      params.acoustic_impedance,
-                                                      params.speed_of_sound,
-                                                      sample_rate));
+                return util::make_named_value(
+                        "raytracer",
+                        wayverb::raytracer::postprocess(input,
+                                                        attenuator,
+                                                        receiver,
+                                                        room_volume,
+                                                        environment,
+                                                        sample_rate));
             };
         }));
     }
@@ -212,7 +216,9 @@ int main(int argc, char** argv) {
                     wayverb::core::surface<wayverb::core::simulation_bands>{
                             scattering_surface.absorption,
                             wayverb::core::bands_type{}},
-                    params,
+                    source,
+                    receiver,
+                    environment,
                     max_time,
                     false);
 
@@ -223,8 +229,8 @@ int main(int argc, char** argv) {
                                 begin(input),
                                 end(input),
                                 attenuator,
-                                params.receiver,
-                                params.speed_of_sound,
+                                receiver,
+                                environment.speed_of_sound,
                                 sample_rate));
             };
         }));
@@ -237,7 +243,9 @@ int main(int argc, char** argv) {
             auto input = *wayverb::waveguide::canonical(
                     wayverb::core::compute_context{},
                     scene_data,
-                    params,
+                    source,
+                    receiver,
+                    environment,
                     waveguide_params,
                     max_element(eyring_reverb_time(scene_data, 0.0)),
                     true,
@@ -246,12 +254,13 @@ int main(int argc, char** argv) {
                     });
 
             return [&, input = std::move(input) ](const auto& attenuator) {
-                return util::make_named_value(name,
-                                              wayverb::waveguide::postprocess(
-                                                      input,
-                                                      attenuator,
-                                                      params.acoustic_impedance,
-                                                      sample_rate));
+                return util::make_named_value(
+                        name,
+                        wayverb::waveguide::postprocess(
+                                input,
+                                attenuator,
+                                environment.acoustic_impedance,
+                                sample_rate));
             };
         });
     };

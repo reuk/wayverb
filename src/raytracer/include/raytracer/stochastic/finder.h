@@ -6,7 +6,6 @@
 
 #include "core/cl/common.h"
 #include "core/conversions.h"
-#include "core/model/parameters.h"
 #include "core/pressure_intensity.h"
 #include "core/spatial_division/scene_buffers.h"
 
@@ -19,7 +18,8 @@ namespace stochastic {
 class finder final {
 public:
     finder(const core::compute_context& cc,
-           const core::model::parameters& params,
+           const glm::vec3& source,
+           const glm::vec3& receiver,
            float receiver_radius,
            size_t rays);
 

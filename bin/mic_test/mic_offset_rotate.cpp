@@ -140,37 +140,40 @@ int main(int argc, char** argv) {
                 cereal::make_nvp("energies", output));
     };
 
+    constexpr wayverb::core::environment env{};
+
     run("waveguide", [&](const auto& source, const auto& receiver) {
         util::progress_bar pb;
-        const wayverb::core::model::parameters params{source, receiver};
         auto raw = *wayverb::waveguide::canonical(
                 wayverb::core::compute_context{},
                 scene_data,
-                params,
+                source,
+                receiver,
+                env,
                 wayverb::waveguide::single_band_parameters{sample_rate, 0.6},
-                2 / params.speed_of_sound,
+                2 / env.speed_of_sound,
                 true,
                 [&](auto step, auto steps) { set_progress(pb, step, steps); });
         return wayverb::waveguide::postprocess(
-                raw, mic, params.acoustic_impedance, sample_rate);
+                raw, mic, env.acoustic_impedance, sample_rate);
     });
 
     run("img_src", [&](const auto& source, const auto& receiver) {
-        const wayverb::core::model::parameters params{source, receiver};
-        const auto simulation_time = 2 / params.speed_of_sound;
+        const auto simulation_time = 2 / env.speed_of_sound;
         const auto raw = run_exact_img_src(
                 box,
                 wayverb::core::make_surface<1>(absorption, scattering),
-                params,
+                source,
+                receiver,
+                env,
                 simulation_time,
                 false);
-        return wayverb::raytracer::image_source::postprocess(
-                begin(raw),
-                end(raw),
-                mic,
-                params.receiver,
-                params.speed_of_sound,
-                sample_rate);
+        return wayverb::raytracer::image_source::postprocess(begin(raw),
+                                                             end(raw),
+                                                             mic,
+                                                             receiver,
+                                                             env.speed_of_sound,
+                                                             sample_rate);
     });
 
     return EXIT_SUCCESS;

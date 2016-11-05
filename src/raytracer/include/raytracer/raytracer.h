@@ -5,7 +5,7 @@
 
 #include "core/cl/common.h"
 #include "core/cl/geometry.h"
-#include "core/model/parameters.h"
+#include "core/environment.h"
 #include "core/nan_checking.h"
 #include "core/pressure_intensity.h"
 #include "core/spatial_division/scene_buffers.h"
@@ -92,7 +92,9 @@ auto run(
         const core::voxelised_scene_data<cl_float3,
                                          core::surface<core::simulation_bands>>&
                 voxelised,
-        const core::model::parameters& params,
+        const glm::vec3& source,
+        const glm::vec3& receiver,
+        const core::environment& environment,
         const std::atomic_bool& keep_going,
         PerStepCallback&& per_step_callback,
         Callbacks&& callbacks) {
@@ -101,20 +103,24 @@ auto run(
     const auto make_ray_iterator = [&](auto it) {
         return util::make_mapping_iterator_adapter(
                 std::move(it), [&](const auto& i) {
-                    return core::geo::ray{params.source, i};
+                    return core::geo::ray{source, i};
                 });
     };
 
     const auto num_directions = std::distance(b_direction, e_direction);
-    auto processors =
-            util::apply_each(std::forward<Callbacks>(callbacks),
-                             std::tie(cc, params, voxelised, num_directions));
+    auto processors = util::apply_each(std::forward<Callbacks>(callbacks),
+                                       std::tie(cc,
+                                                source,
+                                                receiver,
+                                                environment,
+                                                voxelised,
+                                                num_directions));
 
     using return_type = decltype(util::apply_each(
             util::map(make_get_results_functor_adapter{}, processors)));
 
     reflector ref{cc,
-                  params.receiver,
+                  receiver,
                   make_ray_iterator(b_direction),
                   make_ray_iterator(e_direction)};
 

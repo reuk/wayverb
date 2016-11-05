@@ -4,7 +4,7 @@
 #include "raytracer/iterative_builder.h"
 
 #include "core/cl/common.h"
-#include "core/model/parameters.h"
+#include "core/environment.h"
 #include "core/spatial_division/scene_buffers.h"
 
 namespace wayverb {
@@ -35,7 +35,9 @@ public:
     explicit make_visual(size_t items);
 
     visual operator()(const core::compute_context& cc,
-                      const core::model::parameters& params,
+                      const glm::vec3& source,
+                      const glm::vec3& receiver,
+                      const core::environment& environment,
                       const core::voxelised_scene_data<
                               cl_float3,
                               core::surface<core::simulation_bands>>& voxelised,

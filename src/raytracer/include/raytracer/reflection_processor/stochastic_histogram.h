@@ -5,6 +5,7 @@
 #include "raytracer/stochastic/postprocessing.h"
 
 #include "core/attenuator/hrtf.h"
+#include "core/environment.h"
 #include "core/spatial_division/scene_buffers.h"
 
 namespace wayverb {
@@ -31,9 +32,7 @@ void energy_histogram_sum(
 
 struct energy_histogram_sum_functor final {
     template <typename T, typename Ret>
-    void operator()(const T& item,
-                    double sample_rate,
-                    Ret& ret) const {
+    void operator()(const T& item, double sample_rate, Ret& ret) const {
         energy_histogram_sum(item, sample_rate, ret);
     }
 };
@@ -47,13 +46,16 @@ public:
     /// An order of 1 = direct and one reflection from image-source
     /// i.e. the order == the number of reflections for each image
     stochastic_histogram(const core::compute_context& cc,
-                         const core::model::parameters& params,
+                         const glm::vec3& source,
+                         const glm::vec3& receiver,
+                         const core::environment& environment,
                          float receiver_radius,
                          float sample_rate,
                          size_t max_image_source_order,
                          size_t items)
-            : finder_{cc, params, receiver_radius, items}
-            , params_{params}
+            : finder_{cc, source, receiver, receiver_radius, items}
+            , receiver_{receiver}
+            , environment_{environment}
             , max_image_source_order_{max_image_source_order}
             , histogram_{sample_rate} {}
 
@@ -79,9 +81,9 @@ public:
                 for (const auto& impulse : vec) {
                     ret.emplace_back(intermediate_impulse{
                             impulse.volume,
-                            impulse.distance / params_.speed_of_sound,
+                            impulse.distance / environment_.speed_of_sound,
                             glm::normalize(core::to_vec3(impulse.position) -
-                                           params_.receiver)});
+                                           receiver_)});
                 }
             };
 
@@ -104,7 +106,8 @@ public:
 
 private:
     stochastic::finder finder_;
-    core::model::parameters params_;
+    glm::vec3 receiver_;
+    core::environment environment_;
     size_t max_image_source_order_;
     Histogram histogram_;
 };
@@ -117,7 +120,9 @@ public:
 
     stochastic_histogram<stochastic::energy_histogram> operator()(
             const core::compute_context& cc,
-            const core::model::parameters& params,
+            const glm::vec3& source,
+            const glm::vec3& receiver,
+            const core::environment& environment,
             const core::voxelised_scene_data<
                     cl_float3,
                     core::surface<core::simulation_bands>>& voxelised,
@@ -137,7 +142,9 @@ public:
 
     stochastic_histogram<stochastic::directional_energy_histogram<20, 9>>
     operator()(const core::compute_context& cc,
-               const core::model::parameters& params,
+               const glm::vec3& source,
+               const glm::vec3& receiver,
+               const core::environment& environment,
                const core::voxelised_scene_data<
                        cl_float3,
                        core::surface<core::simulation_bands>>& voxelised,
