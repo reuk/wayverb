@@ -10,6 +10,8 @@ dc drift? QUALITY ENGINEERING
 app stuff
 ---------
 
+Pan view.
+
 Finish adding the help panel info.
 
 Display reason for quitting if the engine quits early.

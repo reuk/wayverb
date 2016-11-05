@@ -1,6 +1,8 @@
 #pragma once
 
-#include "WorkQueue.hpp"
+#include "async_work_queue.h"
+
+#include "utilities/event.h"
 
 #include "modern_gl_utils/drawable.h"
 #include "modern_gl_utils/updatable.h"
@@ -124,13 +126,47 @@ private:
                 : listener(listener)
                 , constructor(std::move(constructor)) {}
 
+        template <typename T>
+        void context_command(T&& t) {
+            const auto lck = threading_policy_.get_lock();
+            incoming_work_queue.push(std::forward<T>(t));
+        }
+
+        void set_viewport(const glm::vec2& u) {
+            const auto lck = threading_policy_.get_lock();
+            incoming_work_queue.push([u](auto& i) { i.set_viewport(u); });
+        }
+
+        void mouse_down(const glm::vec2& u) {
+            const auto lck = threading_policy_.get_lock();
+            incoming_work_queue.push([u](auto& i) { i.mouse_down(u); });
+        }
+
+        void mouse_drag(const glm::vec2& u) {
+            const auto lck = threading_policy_.get_lock();
+            incoming_work_queue.push([u](auto& i) { i.mouse_drag(u); });
+        }
+
+        void mouse_up(const glm::vec2& u) {
+            const auto lck = threading_policy_.get_lock();
+            incoming_work_queue.push([u](auto& i) { i.mouse_up(u); });
+        }
+
+        void mouse_wheel_move(float u) {
+            const auto lck = threading_policy_.get_lock();
+            incoming_work_queue.push([u](auto& i) { i.mouse_wheel_move(u); });
+        }
+
+    private:
         void newOpenGLContextCreated() override {
+            const auto lck = threading_policy_.get_lock();
             context_lifetime = std::make_unique<lifetime_t>(constructor());
             outgoing_work_queue.push(
                     [this] { listener.open_gl_context_created(); });
         }
 
         void renderOpenGL() override {
+            const auto lck = threading_policy_.get_lock();
             assert(context_lifetime);
             while (auto method = incoming_work_queue.pop()) {
                 method(*context_lifetime);
@@ -140,37 +176,14 @@ private:
         }
 
         void openGLContextClosing() override {
+            const auto lck = threading_policy_.get_lock();
             context_lifetime = nullptr;
         }
 
-        template <typename T>
-        void context_command(T&& t) {
-            incoming_work_queue.push(std::forward<T>(t));
-        }
+        util::threading_policy::scoped_lock threading_policy_;
 
-        void set_viewport(const glm::vec2& u) {
-            incoming_work_queue.push([u](auto& i) { i.set_viewport(u); });
-        }
-
-        void mouse_down(const glm::vec2& u) {
-            incoming_work_queue.push([u](auto& i) { i.mouse_down(u); });
-        }
-
-        void mouse_drag(const glm::vec2& u) {
-            incoming_work_queue.push([u](auto& i) { i.mouse_drag(u); });
-        }
-
-        void mouse_up(const glm::vec2& u) {
-            incoming_work_queue.push([u](auto& i) { i.mouse_up(u); });
-        }
-
-        void mouse_wheel_move(float u) {
-            incoming_work_queue.push([u](auto& i) { i.mouse_wheel_move(u); });
-        }
-
-    private:
-        WorkQueue<ContextLifetime&> incoming_work_queue;
-        AsyncWorkQueue outgoing_work_queue;
+        util::work_queue<util::threading_policy::no_lock, ContextLifetime&> incoming_work_queue;
+        async_work_queue<util::threading_policy::no_lock> outgoing_work_queue;
 
         RendererComponent& listener;
 

@@ -10,7 +10,6 @@
 class ModelRendererComponent
         : public juce::Component,
           public SettableHelpPanelClient,
-          public LeftPanel::Listener,
           public RendererComponent<SceneRendererContextLifetime>::Listener {
 public:
     using Renderer = RendererComponent<SceneRendererContextLifetime>;
@@ -28,12 +27,19 @@ public:
 
     void set_distance_travelled(double distance);
 
+    //  TODO get rid of these somehow?
     void renderer_open_gl_context_created(const Renderer*) override;
     void renderer_open_gl_context_closing(const Renderer*) override;
 
-    void left_panel_debug_show_closest_surfaces(const LeftPanel*) override;
-    void left_panel_debug_show_boundary_types(const LeftPanel*) override;
-    void left_panel_debug_hide_debug_mesh(const LeftPanel*) override;
+    void left_panel_debug_show_closest_surfaces(
+        wayverb::combined::engine::scene_data scene,
+        double sample_rate,
+        double speed_of_sound);
+    void left_panel_debug_show_boundary_types(
+        wayverb::combined::engine::scene_data scene,
+        double sample_rate,
+        double speed_of_sound);
+    void left_panel_debug_hide_debug_mesh();
 
 private:
 /*
@@ -45,25 +51,7 @@ private:
 
     wayverb::combined::engine::scene_data model;
 
-    class MeshGenerator final : public AsyncMeshGenerator::Listener {
-    public:
-        MeshGenerator(wayverb::combined::engine::scene_data scene,
-                      double sample_rate,
-                      double speed_of_sound,
-                      std::function<void(wayverb::waveguide::mesh)>
-                              on_finished);
-
-        void async_mesh_generator_finished(const AsyncMeshGenerator*,
-                                           wayverb::waveguide::mesh model) override;
-
-    private:
-        std::function<void(wayverb::waveguide::mesh)> on_finished;
-        AsyncMeshGenerator generator;
-        model::Connector<AsyncMeshGenerator> generator_connector{&generator,
-                                                                 this};
-    };
-
-    Renderer renderer;
+    Renderer renderer_;
     /*
     model::Connector<Renderer> renderer_connector{&renderer, this};
 
@@ -81,5 +69,9 @@ private:
     model::BroadcastConnector facing_direction_connector{&app.receiver_settings,
                                                          this};
     */
-    std::unique_ptr<MeshGenerator> generator;
+    struct generator_and_connector final {
+        AsyncMeshGenerator generator;
+        util::event<wayverb::waveguide::mesh>::scoped_connector connector;
+    };
+    std::experimental::optional<generator_and_connector> generator_;
 };

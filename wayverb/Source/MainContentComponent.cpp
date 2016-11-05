@@ -1,4 +1,4 @@
-#include "MainComponent.hpp"
+#include "MainContentComponent.hpp"
 
 #include "core/serialize/surface.h"
 

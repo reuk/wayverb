@@ -1,9 +1,11 @@
 #pragma once
 
 #include "EngineFunctor.hpp"
-#include "WorkQueue.hpp"
 
-#include "UtilityComponents/scoped_thread.hpp"
+#include "../JuceLibraryCode/JuceHeader.h"
+
+#include "utilities/work_queue.h"
+#include "utilities/scoped_thread.h"
 
 /// Runs the engine on another thread.
 class EngineThread final {
@@ -16,7 +18,7 @@ public:
                  bool visualise);
 
 private:
-    scoped_thread thread;
+    util::scoped_thread thread;
 };
 
 //----------------------------------------------------------------------------//

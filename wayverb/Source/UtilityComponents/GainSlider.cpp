@@ -1,7 +1,6 @@
 #include "GainSlider.hpp"
-#include "Lerp.hpp"
 
-#include "juce_audio_basics/juce_audio_basics.h"
+#include "utilities/range.h"
 
 namespace gain_transform {
 
@@ -10,15 +9,16 @@ static const auto skew_factor =
         std::log((-10.0 - db_minimum) / (db_maximum - db_minimum));
 
 double db_gain_to_proportion(double u) {
-    return std::pow(lerp(u, db_minimum, db_maximum, 0.0, 1.0), skew_factor);
+    return std::pow(map(u,
+                        util::make_range(db_minimum, db_maximum),
+                        util::make_range(0.0, 1.0)),
+                    skew_factor);
 }
 
 double proportion_to_db_gain(double u) {
-    return lerp(0.0 < u ? std::exp(std::log(u) / skew_factor) : 0.0,
-                0.0,
-                1.0,
-                db_minimum,
-                db_maximum);
+    return map(0.0 < u ? std::exp(std::log(u) / skew_factor) : 0.0,
+               util::make_range(0.0, 1.0),
+               util::make_range(db_minimum, db_maximum));
 }
 
 }  // namespace gain_transform

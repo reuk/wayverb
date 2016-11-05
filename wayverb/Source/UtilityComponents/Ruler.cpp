@@ -1,5 +1,6 @@
 #include "Ruler.hpp"
-#include "Lerp.hpp"
+
+#include "utilities/range.h"
 
 #include <iomanip>
 #include <sstream>
@@ -45,9 +46,10 @@ void Ruler::paint(juce::Graphics &g) {
     for (auto i = begin;
          i < transport_view_manager.get_visible_range().getEnd();
          i += s) {
-        auto pos = lerp(i,
-                        transport_view_manager.get_visible_range(),
-                        juce::Range<double>(0, getWidth()));
+        auto pos = map(i,
+                        util::make_range(transport_view_manager.get_visible_range().getStart(),
+                                         transport_view_manager.get_visible_range().getEnd()),
+                        util::make_range(0, getWidth()));
         g.drawVerticalLine(pos, 2, getHeight() - 2);
         std::stringstream ss;
         ss << std::fixed << std::setprecision(std::max(0.0, -prec)) << i;
@@ -64,15 +66,17 @@ void Ruler::paint(juce::Graphics &g) {
 }
 
 double Ruler::x_to_time(double x) const {
-    return lerp(x,
-                juce::Range<double>(0, getWidth()),
-                transport_view_manager.get_visible_range());
+    return map(x,
+               util::make_range(0, getWidth()),
+               util::make_range(transport_view_manager.get_visible_range().getStart(),
+                                transport_view_manager.get_visible_range().getEnd()));
 }
 
 double Ruler::time_to_x(double time) const {
-    return lerp(time,
-                transport_view_manager.get_visible_range(),
-                juce::Range<double>(0, getWidth()));
+    return map(time,
+                util::make_range(transport_view_manager.get_visible_range().getStart(),
+                                 transport_view_manager.get_visible_range().getEnd()),
+                util::make_range(0, getWidth()));
 }
 
 struct Ruler::RulerState {

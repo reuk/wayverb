@@ -1,5 +1,6 @@
 #include "AudioThumbnailPane.hpp"
-#include "Lerp.hpp"
+
+#include "utilities/range.h"
 
 AudioThumbnailPane::AudioThumbnailPane(
         juce::AudioTransportSource &audio_transport_source,
@@ -84,14 +85,16 @@ void AudioThumbnailPane::playhead_dragged(Playhead *p,
 }
 
 double AudioThumbnailPane::time_to_x(double t) const {
-    return lerp(t,
-                transport_view_manager.get_visible_range(),
-                juce::Range<double>(0, getWidth()));
+    return map(t,
+                util::make_range(transport_view_manager.get_visible_range().getStart(),
+                                 transport_view_manager.get_visible_range().getEnd()),
+                util::make_range(0, getWidth()));
 }
 double AudioThumbnailPane::x_to_time(double t) const {
-    return lerp(t,
-                juce::Range<double>(0, getWidth()),
-                transport_view_manager.get_visible_range());
+    return map(t,
+                util::make_range(0, getWidth()),
+                util::make_range(transport_view_manager.get_visible_range().getStart(),
+                                 transport_view_manager.get_visible_range().getEnd()));
 }
 void AudioThumbnailPane::position_playhead() {
     playhead.setTopLeftPosition(

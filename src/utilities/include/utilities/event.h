@@ -24,7 +24,8 @@ public:
 
     class disconnector final {
     public:
-        constexpr disconnector(std::shared_ptr<impl> pimpl, key_type key)
+        disconnector() = default;
+        disconnector(std::shared_ptr<impl> pimpl, key_type key)
                 : pimpl_{pimpl}
                 , key_{key} {}
 
@@ -34,18 +35,23 @@ public:
         std::shared_ptr<impl> pimpl_;
         key_type key_;
     };
-
+    
     using scoped_connector = final_act<disconnector>;
 
-    auto add_scoped(callback_type callback) {
-        return make_final_act(disconnector{pimpl_, add(std::move(callback))});
+    auto make_scoped_connector(key_type key) const {
+        return scoped_connector{disconnector{pimpl_, key}};
     }
 
+    auto add_scoped(callback_type callback) {
+        return make_scoped_connector(add(std::move(callback)));
+    }
+    
     void remove(key_type key) { pimpl_.remove(key); }
     void remove_all() { pimpl_->remove_all(); }
 
-    void operator()(Ts&&... ts) const {
-        pimpl_->operator()(std::forward<Ts>(ts)...);
+    template <typename... Us>
+    void operator()(Us&&... us) const {
+        pimpl_->operator()(std::forward<Us>(us)...);
     }
 
 private:
@@ -67,9 +73,10 @@ private:
         void remove(key_type key) { slots_.erase(key); }
         void remove_all() { slots_.clear(); }
 
-        void operator()(Ts&&... ts) const {
+        template <typename... Us>
+        void operator()(Us&&... us) const {
             for (const auto& slot : slots_) {
-                slot.second(std::forward<Ts>(ts)...);
+                slot.second(std::forward<Us>(us)...);
             }
         }
 

@@ -110,7 +110,7 @@ auto random_filter_descriptor() {
 }
 
 template <size_t... Ix>
-auto random_filter_descriptors(std::index_sequence<Ix...>) {
+auto random_filter_descriptors(std::index_sequence<Ix...> /*unused*/) {
     return std::array<filter_descriptor, sizeof...(Ix)>{
             {((void)Ix, random_filter_descriptor())...}};
 }
@@ -121,7 +121,7 @@ auto random_filter_descriptors() {
 }
 
 template <size_t... Ix>
-auto compute_descriptors(std::index_sequence<Ix...>) {
+auto compute_descriptors(std::index_sequence<Ix...> /*unused*/) {
     return std::array<std::array<filter_descriptor, biquad_sections>,
                       sizeof...(Ix)>{
             {((void)Ix, random_filter_descriptors())...}};
@@ -140,20 +140,20 @@ enum class FilterType {
 };
 
 auto compute_coeffs(
-        std::integral_constant<FilterType, FilterType::biquad_cascade>) {
+        std::integral_constant<FilterType, FilterType::biquad_cascade> /*unused*/) {
     return util::map([](const auto& n) { return get_peak_biquads_array(n); },
                      descriptors);
 }
 
 auto compute_coeffs(
-        std::integral_constant<FilterType, FilterType::single_reflectance>) {
+        std::integral_constant<FilterType, FilterType::single_reflectance> /*unused*/) {
     return util::map(
             [](const auto& n) { return convolve(get_peak_biquads_array(n)); },
             descriptors);
 }
 
 auto compute_coeffs(
-        std::integral_constant<FilterType, FilterType::single_impedance>) {
+        std::integral_constant<FilterType, FilterType::single_impedance> /*unused*/) {
     return util::map(
             [](const auto& n) {
                 return to_impedance_coefficients(

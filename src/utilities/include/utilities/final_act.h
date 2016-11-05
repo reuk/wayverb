@@ -5,6 +5,7 @@ namespace util {
 template <typename T>
 class final_act final {
 public:
+    constexpr final_act() = default;
     constexpr final_act(T&& t)
             : t_{std::forward<T>(t)} {}
 
